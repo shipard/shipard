@@ -29,6 +29,14 @@ final class ProfitLossBuilder implements ReportBuilder
 {
     private const CLASSES = ['5', '6'];
 
+    /**
+     * Stabilní klíče řádků (docs/reports.md §16.4), podle kterých Přehled
+     * firmy (#120 D8) čte výsledek, náklady a výnosy — nikdy podle popisku.
+     */
+    public const KEY_RESULT   = 'result';
+    public const KEY_COSTS    = 'costs';
+    public const KEY_REVENUES = 'revenues';
+
     public function build(ReportRequest $request): ReportResult
     {
         $cs        = $request->language === 'cs';
@@ -110,6 +118,21 @@ final class ProfitLossBuilder implements ReportBuilder
         if ($rows !== []) {
             array_pop($rows);
         }
+        // Součty tříd 5 a 6 dostanou stabilní klíč (ReportRow je readonly →
+        // nová instance); ostatní řádky beze změny.
+        foreach ($rows as $i => $row) {
+            if ($row->kind !== ReportRowKind::Subtotal || $row->level !== 1) {
+                continue;
+            }
+            $key = match ($row->account) {
+                '5'     => self::KEY_COSTS,
+                '6'     => self::KEY_REVENUES,
+                default => null,
+            };
+            if ($key !== null) {
+                $rows[$i] = new ReportRow($row->kind, $row->level, $row->account, $row->label, $row->values, $key);
+            }
+        }
         $rows[] = new ReportRow(
             ReportRowKind::Computed,
             0,
@@ -119,6 +142,7 @@ final class ProfitLossBuilder implements ReportBuilder
                 'period' => ['md' => 0.0, 'd' => 0.0, 'balance' => round($result['period'], 2)],
                 'ytd'    => ['md' => 0.0, 'd' => 0.0, 'balance' => round($result['ytd'], 2)],
             ],
+            self::KEY_RESULT,
         );
 
         return new ReportResult(

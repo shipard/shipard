@@ -86,10 +86,7 @@ abstract class AccbalViewerBase extends TableViewer
      */
     protected function viewGroupCondition(string $value, string $balancesAlias = 'b'): array
     {
-        if ($value === 'all' || $value === 'active') {
-            return [null, null];
-        }
-        return [$balancesAlias . '.`code` = %s', $value];
+        return CaseTotals::viewGroupConditionSql($value, $balancesAlias);
     }
 
     /** Lokalizovaný název typu otevřenosti případu ({@see CaseQuery::kindOf}). */

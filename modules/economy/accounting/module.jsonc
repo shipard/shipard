@@ -279,6 +279,10 @@
         {
             "id": "economy.accounting.rules.cz",
             "file": "config/accountingRules.cz.jsonc"
+        },
+        {
+            "id": "economy.accounting.overviewTexts",
+            "file": "config/overviewTexts.jsonc"
         }
     ],
 
@@ -286,6 +290,12 @@
         {
             "file": "config/reports.jsonc"
         }
+    ],
+
+    // Přehled firmy (#120): Peníze → pokladny ze zůstatku účtu v deníku (D5, D19).
+    "overviewBlocks": [
+        {"id": "economy.accounting.cashBalances", "section": "money",  "order": 20, "class": "Shipard\\Module\\Economy\\Accounting\\Overview\\CashBalancesBlock"},
+        {"id": "economy.accounting.profitLoss",   "section": "result", "order": 10, "class": "Shipard\\Module\\Economy\\Accounting\\Overview\\ProfitLossBlock"}
     ],
 
     "prints": [
@@ -299,6 +309,18 @@
             "id": "reports",
             "name": "Reports",
             "name:cs": "Reporty"
+        },
+        // Přehled firmy (#120 D1, D10): root položka mezi Dashboardem (20)
+        // a Chatem (25), jen pro adminy — bariéra je v OverviewController.
+        {
+            "id": "companyOverview",
+            "name": "Company overview",
+            "name:cs": "Přehled firmy",
+            "name:en": "Company overview",
+            "icon": "overview",
+            "navSection": "_top",
+            "navOrder": 22,
+            "adminOnly": true
         }
     ]
 }

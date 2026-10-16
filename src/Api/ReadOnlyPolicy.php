@@ -43,6 +43,8 @@ final class ReadOnlyPolicy
 		'meta'    => [self::ANY => ReadOnlyVerdict::Allow],
 		'openapi' => [self::ANY => ReadOnlyVerdict::Allow],
 		'dsAbout' => [self::ANY => ReadOnlyVerdict::Allow],
+		// Přehled firmy jen čte (saldokonto, výpisy, reporty) — na read-only DS má smysl.
+		'overview' => [self::ANY => ReadOnlyVerdict::Allow],
 
 		'ui' => [
 			'navigation' => ReadOnlyVerdict::Allow,

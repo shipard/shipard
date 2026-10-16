@@ -1,0 +1,21 @@
+{
+    // economy.bank.overviewTexts — texty bloku banky v Přehledu firmy
+    // (BankBalancesBlock). Položka: {text, text:cs, text:en}; holé pole =
+    // anglický fallback shodný s voláním ->t() ve zdroji. ICU MessageFormat.
+
+    "bank.statement": {
+        "text": "According to statement no. {number}",
+        "text:cs": "Podle výpisu č. {number}",
+        "text:en": "According to statement no. {number}"
+    },
+    "bank.lastStatement": {
+        "text": "According to the last statement",
+        "text:cs": "Podle posledního výpisu",
+        "text:en": "According to the last statement"
+    },
+    "bank.noStatement": {
+        "text": "No statement yet",
+        "text:cs": "Zatím žádný výpis",
+        "text:en": "No statement yet"
+    }
+}

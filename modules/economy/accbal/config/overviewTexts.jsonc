@@ -1,0 +1,47 @@
+{
+    // economy.accbal.overviewTexts — texty bloků saldokonta v Přehledu firmy
+    // (ReceivablesBlock, PayablesBlock, AccbalBlockBase). Položka: {text,
+    // text:cs, text:en}; holé pole = anglický fallback shodný s voláním
+    // ->t() ve zdroji. ICU MessageFormat — uvnitř plurálu vždy `#`.
+
+    "receivables.total": {
+        "text": "Receivables",
+        "text:cs": "Pohledávky celkem",
+        "text:en": "Receivables"
+    },
+    "receivables.overdue": {
+        "text": "Overdue receivables",
+        "text:cs": "Pohledávky po splatnosti",
+        "text:en": "Overdue receivables"
+    },
+    "payables.overdue": {
+        "text": "Overdue payables",
+        "text:cs": "Závazky po splatnosti",
+        "text:en": "Overdue payables"
+    },
+    "payables.dueSoon": {
+        "text": "Payables due within 7 days",
+        "text:cs": "Závazky splatné do 7 dní",
+        "text:en": "Payables due within 7 days"
+    },
+    "cases.count": {
+        "text": "{n, plural, one {# case} other {# cases}}",
+        "text:cs": "{n, plural, one {# případ} few {# případy} many {# případu} other {# případů}}",
+        "text:en": "{n, plural, one {# case} other {# cases}}"
+    },
+    "unmatched.summary": {
+        "text": "{n, plural, one {# unmatched payment} other {# unmatched payments}} totalling {amount, number,#,##0.00} {currency}",
+        "text:cs": "{n, plural, one {# nespárovaná platba} few {# nespárované platby} many {# nespárované platby} other {# nespárovaných plateb}} v součtu {amount, number,#,##0.00} {currency}",
+        "text:en": "{n, plural, one {# unmatched payment} other {# unmatched payments}} totalling {amount, number,#,##0.00} {currency}"
+    },
+    "opening.missing": {
+        "text": "Opening balances of the current fiscal year have not been carried over yet, so open items cannot be shown.",
+        "text:cs": "Počáteční stavy běžného účetního období ještě nejsou převedené, otevřené případy proto nelze ukázat.",
+        "text:en": "Opening balances of the current fiscal year have not been carried over yet, so open items cannot be shown."
+    },
+    "fiscalYear.none": {
+        "text": "No fiscal year covers today.",
+        "text:cs": "Dnešní datum nespadá do žádného účetního období.",
+        "text:en": "No fiscal year covers today."
+    }
+}

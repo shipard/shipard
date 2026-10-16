@@ -31,6 +31,7 @@ class ReadOnlyPolicyTest extends TestCase
 			['app', 'avatarUpload', $d403], ['app', 'avatarDelete', $d403],
 			// meta / openapi / dsAbout
 			['meta', 'tables', $allow], ['meta', 'table', $allow], ['openapi', 'spec', $allow], ['dsAbout', 'about', $allow],
+			['overview', 'index', $allow],
 			// ui / settings / dashboard
 			['ui', 'navigation', $allow],
 			['settings', 'navigation', $allow], ['settings', 'accountNavigation', $allow],

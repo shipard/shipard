@@ -1,0 +1,41 @@
+{
+    // economy.vat.overviewTexts — texty bloku DPH v Přehledu firmy (VatBlock).
+    // Položka: {text, text:cs, text:en}; holé pole = anglický fallback shodný
+    // s voláním ->t() ve zdroji. ICU MessageFormat.
+
+    "vat.period": {
+        "text": "VAT return {period}",
+        "text:cs": "Přiznání k DPH {period}",
+        "text:en": "VAT return {period}"
+    },
+    "vat.periodLive": {
+        "text": "VAT return {period} (live)",
+        "text:cs": "Přiznání k DPH {period} (průběžně)",
+        "text:en": "VAT return {period} (live)"
+    },
+    "vat.tax": {
+        "text": "VAT payable",
+        "text:cs": "Vlastní daňová povinnost",
+        "text:en": "VAT payable"
+    },
+    "vat.refund": {
+        "text": "Excess deduction",
+        "text:cs": "Nadměrný odpočet",
+        "text:en": "Excess deduction"
+    },
+    "vat.zero": {
+        "text": "No VAT due",
+        "text:cs": "Nulová daňová povinnost",
+        "text:en": "No VAT due"
+    },
+    "vat.none": {
+        "text": "No documents in the period yet",
+        "text:cs": "V období zatím nejsou doklady",
+        "text:en": "No documents in the period yet"
+    },
+    "period.none": {
+        "text": "No VAT return period covers today.",
+        "text:cs": "Dnešek nespadá do žádného období přiznání k DPH.",
+        "text:en": "No VAT return period covers today."
+    }
+}

@@ -1,0 +1,11 @@
+{
+    // core.system.overviewTexts — texty sběru Přehledu firmy (OverviewCollector).
+    // Položka: {text, text:cs, text:en}; holé pole = anglický fallback shodný
+    // s voláním ->t() ve zdroji (OverviewTextsCatalogTest). ICU MessageFormat.
+
+    "section.blockFailed": {
+        "text": "Part of this section could not be computed.",
+        "text:cs": "Část této sekce se nepodařilo spočítat.",
+        "text:en": "Part of this section could not be computed."
+    }
+}

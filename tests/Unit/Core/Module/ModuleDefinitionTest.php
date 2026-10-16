@@ -714,6 +714,50 @@ class ModuleDefinitionTest extends TestCase
         }
     }
 
+    // ── overviewBlocks (#120 D2) ────────────────────────────────────────────
+
+    public function testOverviewBlocksParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.bank',
+            'name' => 'Bank',
+            'overviewBlocks' => [
+                ['id' => 'economy.bank.balances', 'section' => 'money', 'order' => 10, 'class' => 'Foo\\BankBalancesBlock', 'extra' => 'ignored'],
+                ['id' => 'economy.bank.other', 'section' => 'money', 'class' => 'Foo\\OtherBlock'],
+            ],
+        ]);
+
+        $this->assertSame(
+            [
+                ['id' => 'economy.bank.balances', 'section' => 'money', 'order' => 10, 'class' => 'Foo\\BankBalancesBlock'],
+                ['id' => 'economy.bank.other', 'section' => 'money', 'order' => 1000, 'class' => 'Foo\\OtherBlock'],
+            ],
+            $def->overviewBlocks,
+        );
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->overviewBlocks);
+    }
+
+    public function testOverviewBlocksValidation(): void
+    {
+        foreach ([
+            [['not' => 'a list'], 'must be a JSON array'],
+            [['x'], 'must be an object'],
+            [[['section' => 'money', 'class' => 'Foo\\Bar']], '.id must be an identifier'],
+            [[['id' => 'Bad Id', 'section' => 'money', 'class' => 'Foo\\Bar']], '.id must be an identifier'],
+            [[['id' => 'ok', 'class' => 'Foo\\Bar']], '.section must be an identifier'],
+            [[['id' => 'ok', 'section' => 'money']], "requires 'class'"],
+            [[['id' => 'ok', 'section' => 'money', 'class' => 'Foo\\Bar', 'order' => '10']], '.order must be an integer'],
+            [[['id' => 'ok', 'section' => 'money', 'class' => 'A'], ['id' => 'ok', 'section' => 'vat', 'class' => 'B']], "duplicate id 'ok'"],
+        ] as [$blocks, $message]) {
+            try {
+                ModuleDefinition::fromArray(['id' => 'economy.bank', 'name' => 'Bank', 'overviewBlocks' => $blocks]);
+                $this->fail($message);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString($message, $e->getMessage());
+            }
+        }
+    }
+
     // ── openItemLookup (#69 D3/D8) ──────────────────────────────────────────
 
     public function testOpenItemLookupParsed(): void

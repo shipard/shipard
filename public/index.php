@@ -370,6 +370,7 @@ function dispatch(
 		'sentMessages' => dispatchSentMessages($route, $auth, $tables, $db, $resolved, $configRuntime, $serverConfig),
 		'setup' => dispatchSetup($route, $request, $auth, $db, $alertCheckRegistry, $configRuntime, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'dsAbout' => dispatchDsAbout($route, $auth, $db, $configRuntime, $resolved->config, resolveLanguage($request, $resolved->config), $tables),
+		'overview' => dispatchOverview($route, $auth, $db, $configRuntime, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables),
 		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config, $journalContributors),
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
@@ -1007,6 +1008,57 @@ function dispatchDsAbout(
 	return match ($route->action) {
 		'about' => $ctrl->about($auth),
 		default => Response::error('INTERNAL_ERROR', "Unknown dsAbout action: {$route->action}", 500),
+	};
+}
+
+/** Přehled firmy — GET /_ui/overview (tasks/company-overview.md, #120). */
+function dispatchOverview(
+	Route $route,
+	AuthContext $auth,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+	\Shipard\Core\Config\DataSourceConfig $dsConfig,
+	ModulePathResolver $modulePathResolver,
+	string $language,
+	array $tables = [],
+): Response {
+	if ($configRuntime === null) {
+		return Response::error('INTERNAL_ERROR', 'ConfigRuntime is required for /_ui/overview', 500);
+	}
+
+	// Kontext se staví až po kontrole práv v controlleru — ReportRunner
+	// skenuje moduly (ReportDefinitionLoader), anonym to platit nemá.
+	$contextFactory = static function () use ($db, $configRuntime, $dsConfig, $modulePathResolver, $language, $tables): \Shipard\Core\Overview\OverviewContext {
+		$homeCurrency = (new \Shipard\Core\Settings\SettingsStore($db))->get('economy.homeCurrency');
+		$registry = \Shipard\Api\ReportDefinitionLoader::load($dsConfig, $modulePathResolver, $language);
+		$runner   = new \Shipard\Core\Reports\ReportRunner(
+			$registry,
+			$db,
+			$configRuntime,
+			$dsConfig->getId(),
+			$language,
+			country: $dsConfig->getCountry(),
+		);
+		return new \Shipard\Core\Overview\OverviewContext(
+			$db,
+			$configRuntime,
+			$language,
+			new \DateTimeImmutable('today'),
+			$runner,
+			$tables,
+			$dsConfig->getCountry(),
+			is_string($homeCurrency) && $homeCurrency !== '' ? $homeCurrency : 'czk',
+		);
+	};
+
+	$ctrl = new \Shipard\Api\Controller\OverviewController(
+		\Shipard\Core\Overview\OverviewBlockRegistry::fromConfig($configRuntime),
+		new \Shipard\Core\Overview\OverviewCollector(),
+		$contextFactory,
+	);
+	return match ($route->action) {
+		'index' => $ctrl->index($auth),
+		default => Response::error('INTERNAL_ERROR', "Unknown overview action: {$route->action}", 500),
 	};
 }
 

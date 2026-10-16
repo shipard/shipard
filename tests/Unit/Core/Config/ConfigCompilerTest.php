@@ -449,6 +449,83 @@ class ConfigCompilerTest extends TestCase
         );
     }
 
+    // ── overviewBlocks (#120 D2) ────────────────────────────────────────────
+
+    public function testOverviewBlocksOfAllModulesCompileIntoOneSortedCfgItem(): void
+    {
+        $this->stubModuleDir('economy.bank');
+        $this->stubModuleDir('economy.accounting');
+        ConfigCompiler::compile(
+            [
+                ModuleDefinition::fromArray(['id' => 'economy.bank', 'name' => 'Bank', 'overviewBlocks' => [
+                    ['id' => 'economy.bank.balances', 'section' => 'money', 'order' => 10, 'class' => 'Foo\\Bank'],
+                ]]),
+                ModuleDefinition::fromArray(['id' => 'economy.accounting', 'name' => 'Accounting', 'overviewBlocks' => [
+                    ['id' => 'economy.accounting.profitLoss', 'section' => 'result', 'order' => 10, 'class' => 'Foo\\PL'],
+                    ['id' => 'economy.accounting.cash', 'section' => 'money', 'order' => 5, 'class' => 'Foo\\Cash'],
+                ]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([
+            'economy.accounting.cash'       => ['section' => 'money', 'order' => 5, 'class' => 'Foo\\Cash'],
+            'economy.accounting.profitLoss' => ['section' => 'result', 'order' => 10, 'class' => 'Foo\\PL'],
+            'economy.bank.balances'         => ['section' => 'money', 'order' => 10, 'class' => 'Foo\\Bank'],
+        ], $this->compiledItems('cs')[ConfigCompiler::OVERVIEW_BLOCKS_ITEM]);
+    }
+
+    public function testDuplicateOverviewBlockAcrossModulesIsAnError(): void
+    {
+        $this->stubModuleDir('economy.bank');
+        $this->stubModuleDir('economy.accounting');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Overview block 'money.balances' is declared by more than one module");
+        ConfigCompiler::compile(
+            [
+                ModuleDefinition::fromArray(['id' => 'economy.bank', 'name' => 'Bank', 'overviewBlocks' => [['id' => 'money.balances', 'section' => 'money', 'class' => 'A']]]),
+                ModuleDefinition::fromArray(['id' => 'economy.accounting', 'name' => 'Accounting', 'overviewBlocks' => [['id' => 'money.balances', 'section' => 'money', 'class' => 'B']]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
+    public function testOverviewBlocksCfgItemIsReserved(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/core/system';
+        $this->writeConfigFile($modulePath, 'config/blocks.jsonc', ['x' => ['class' => 'X']]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("cfgItem 'core.overview.blocks' is reserved for overviewBlocks");
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.system', [
+                ['id' => ConfigCompiler::OVERVIEW_BLOCKS_ITEM, 'file' => 'config/blocks.jsonc'],
+            ])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
+    public function testNoOverviewBlocksCompileToEmptyItem(): void
+    {
+        $this->stubModuleDir('core.system');
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.system', [])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::OVERVIEW_BLOCKS_ITEM]);
+    }
+
     public function testNoSendPurposesCompileToEmptyItem(): void
     {
         $this->stubModuleDir('core.system');

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accbal;
 
-use Shipard\Core\Database\SearchCondition;
 
 /**
  * Viewer saldokonta **po případech** (#69 D1, T2) — výchozí vstup do
@@ -14,9 +13,10 @@ use Shipard\Core\Database\SearchCondition;
  * `economy_accbal_ledger`, id řádku = `row_id` (MIN(id) pohybů klíče), ze
  * kterého detail klíč odvodí.
  *
- * Filtry ve dvou úrovních: klíčové (saldokonto = chip, období, partner,
- * VS, SS) jdou do vnitřního dotazu před GROUP BY; případové (otevřenost,
- * typ, po splatnosti) nad agregátem. Období je první filtr s výchozím
+ * Filtry ve dvou úrovních ({@see CaseTotals::conditions}): klíčové
+ * (saldokonto = chip, období, partner, VS, SS, měna) jdou do vnitřního
+ * dotazu před GROUP BY; případové (otevřenost, typ, po splatnosti, splatné
+ * do N dní) nad agregátem. Období je první filtr s výchozím
  * aktuálním fiskálním rokem (`default`, AccbalViewerBase::periodFilter) —
  * případ je na období vázaný (D11), bez filtru by tentýž klíč stál v deseti
  * letech pod sebou; uvolnění „— vše —" ukáže všechna období. „Jen
@@ -31,7 +31,8 @@ use Shipard\Core\Database\SearchCondition;
  * řádek nese součet zůstatku partnera v domácí měně přes celý filtrovaný
  * set (okno `SUM() OVER (PARTITION BY partner)` — počítá se až po WHERE,
  * sedí i přes hranici stránek); footer Σ předpisy / úhrady / zůstatek
- * v domácí měně. Zvýraznění typu doc-state konvencí (design-system.md §4,
+ * v domácí měně, s filtrem měny v této měně ({@see CaseTotals} — týž
+ * výpočet jako Přehled firmy, #120). Zvýraznění typu doc-state konvencí (design-system.md §4,
  * žádná nová barva): dluh bez proužku, dluh po splatnosti `cancelled`
  * (červený „pozor"), přeplatek a úhrada bez předpisu `concept` (žlutý
  * „podívej se"), uzavřený `archive`.
@@ -73,87 +74,22 @@ class CasesViewer extends AccbalViewerBase
         return $this->db->fetchAll($sql, ...$rowParams, ...$caseParams);
     }
 
-    /**
-     * Agregát případů: GROUP BY klíče nad pohyby, které prošly filtry
-     * klíčové úrovně (saldokonto, partner, VS, SS) — sdílený seznamem
-     * i footerem.
-     *
-     * @param list<string> $rowConds
-     */
+    /** Agregát případů — vnitřní dotaz sdílený seznamem, footerem i Přehledem firmy ({@see CaseTotals::casesSql}). */
     private function casesSql(array $rowConds): string
     {
-        $sql = 'SELECT ' . CaseQuery::keyColumnsSql('l') . ', ' . CaseQuery::aggregateColumnsSql('l')
-            . ' FROM `' . $this->table . '` l'
-            . ' LEFT JOIN `economy_accbal_balances` b ON b.`id` = l.`balance`'
-            . ' LEFT JOIN `base_persons_persons` p ON p.`id` = l.`partner`';
-        if ($rowConds !== []) {
-            $sql .= ' WHERE ' . implode(' AND ', $rowConds);
-        }
-        return $sql . ' GROUP BY ' . CaseQuery::keyColumnsSql('l');
+        return CaseTotals::casesSql($this->table, $rowConds);
     }
 
     /**
-     * Filtry ve dvou úrovních: klíčové → vnitřní dotaz (před GROUP BY),
-     * případové → nad agregátem (alias `c`). Bez „Včetně uzavřených" se
-     * přidá otevřenost případu; typ Uzavřeno ji implicitně vypne.
+     * Filtry ve dvou úrovních ({@see CaseTotals::conditions}): klíčové →
+     * vnitřní dotaz (před GROUP BY), případové → nad agregátem (alias `c`).
      *
      * @return array{0: list<string>, 1: list<mixed>, 2: list<string>, 3: list<mixed>}
      *         [rowConds, rowParams, caseConds, caseParams]
      */
     private function buildConditions(array $filters): array
     {
-        $rowConds = [];
-        $rowParams = [];
-        $caseConds = [];
-        $caseParams = [];
-        $includeClosed = false;
-
-        foreach ($filters as $filter) {
-            $id = $filter['id'] ?? null;
-            $value = $filter['value'] ?? null;
-            if ($value === null || $value === '') {
-                continue;
-            }
-            $value = (string) $value;
-            if ($id === 'viewGroup') {
-                [$cond, $param] = $this->viewGroupCondition($value);
-                if ($cond !== null) {
-                    $rowConds[] = $cond;
-                    $rowParams[] = $param;
-                }
-            } elseif ($id === 'fiscal_year') {
-                // Období je součást klíče → řádková úroveň (idx_case), menší
-                // agregát; výsledek totožný s podmínkou nad `c`.
-                $rowConds[] = 'l.`fiscal_year` = %i';
-                $rowParams[] = (int) $value;
-            } elseif ($id === 'partner') {
-                $rowConds[] = SearchCondition::contains('p.`full_name`');
-                $rowParams[] = $value;
-            } elseif ($id === 'payment_reference') {
-                $rowConds[] = 'l.`payment_reference` LIKE %s';
-                $rowParams[] = $value . '%';
-            } elseif ($id === 'specific_symbol') {
-                $rowConds[] = 'l.`specific_symbol` LIKE %s';
-                $rowParams[] = $value . '%';
-            } elseif ($id === 'include_closed' && $value === '1') {
-                $includeClosed = true;
-            } elseif ($id === 'kind' && in_array($value, CaseQuery::KINDS, true)) {
-                $caseConds[] = CaseQuery::kindConditionSql($value, 'c');
-                if ($value === CaseQuery::KIND_CLOSED) {
-                    $includeClosed = true;
-                }
-            } elseif ($id === 'overdue' && $value === '1') {
-                // Po splatnosti = dluh s nejstarším předpisem před dneškem.
-                $caseConds[] = 'c.[residual] > 0 AND c.[due_date] < %s';
-                $caseParams[] = $this->today()->format('Y-m-d');
-            }
-        }
-
-        if (!$includeClosed) {
-            array_unshift($caseConds, CaseQuery::openConditionSql('c'));
-        }
-
-        return [$rowConds, $rowParams, $caseConds, $caseParams];
+        return CaseTotals::conditions($filters, $this->today());
     }
 
     // ── Render ──────────────────────────────────────────────────────────────
@@ -264,38 +200,75 @@ class CasesViewer extends AccbalViewerBase
     }
 
     /**
-     * Součty přes CELÝ filtrovaný set v domácí měně — stejné podmínky obou
-     * úrovní jako selectRows() (řádky přes všechny stránky).
+     * Součty přes CELÝ filtrovaný set — stejné podmínky obou úrovní jako
+     * selectRows() (řádky přes všechny stránky), výpočet {@see CaseTotals}
+     * sdílený s Přehledem firmy. S filtrem měny jsou součty v té měně
+     * (`residual`, obchodní zůstatek), bez něj v domácí (`residual_hc`) —
+     * součet obchodních zůstatků přes měny nedává smysl.
      */
     public function renderGridFooter(?string $search, array $filters): ?array
     {
-        $cs = $this->language === 'cs';
-        [$rowConds, $rowParams, $caseConds, $caseParams] = $this->buildConditions($filters);
+        $cs   = $this->language === 'cs';
+        $rows = (new CaseTotals($this->db, $this->table))->totals($filters, $this->today());
 
-        $sql = 'SELECT SUM(c.`sum_requests_hc`) AS sum_requests, SUM(c.`sum_payments_hc`) AS sum_payments,'
-            . ' SUM(c.`residual_hc`) AS residual, MAX(c.`home_currency`) AS home_currency'
-            . ' FROM (' . $this->casesSql($rowConds) . ') c';
-        if ($caseConds !== []) {
-            $sql .= ' WHERE ' . implode(' AND ', $caseConds);
+        $currency = null;
+        foreach ($filters as $filter) {
+            if (($filter['id'] ?? null) === CaseTotals::FILTER_CURRENCY) {
+                $currency = CaseQuery::normalizeCurrency($filter['value'] ?? null);
+            }
         }
 
-        $r = $this->db->fetchRow($sql, ...$rowParams, ...$caseParams);
+        $hc = '';
+        $residualHc = 0.0;
+        foreach ($rows as $row) {
+            $residualHc += $row['residual_hc'];
+            if ($hc === '' && $row['home_currency'] !== '') {
+                $hc = ' ' . strtoupper($row['home_currency']);
+            }
+        }
 
-        $hc = strtoupper((string) ($r['home_currency'] ?? ''));
-        $hc = $hc !== '' ? ' ' . $hc : '';
+        if ($currency !== null) {
+            $row  = $rows[0] ?? ['sum_requests' => 0.0, 'sum_payments' => 0.0, 'residual' => 0.0];
+            $code = ' ' . strtoupper($currency);
+            return [
+                'sum_requests' => [
+                    ['text' => $cs ? 'Předpisy' : 'Requests', 'class' => 'muted'],
+                    ['text' => $this->formatMoney($row['sum_requests']) . $code],
+                ],
+                'sum_payments' => [
+                    ['text' => $cs ? 'Úhrady' : 'Payments', 'class' => 'muted'],
+                    ['text' => $this->formatMoney($row['sum_payments']) . $code],
+                ],
+                'residual' => [
+                    ['text' => $cs ? 'Zůstatek' : 'Residual', 'class' => 'muted'],
+                    ['text' => $this->formatMoney($row['residual']) . $code, 'class' => 'amount'],
+                ],
+                'residual_hc' => [
+                    ['text' => $cs ? 'Zůstatek (dom.)' : 'Residual (home)', 'class' => 'muted'],
+                    ['text' => $this->formatMoney($residualHc) . $hc, 'class' => 'amount'],
+                ],
+            ];
+        }
+
+        $sumRequests = 0.0;
+        $sumPayments = 0.0;
+        foreach ($rows as $row) {
+            $sumRequests += $row['sum_requests_hc'];
+            $sumPayments += $row['sum_payments_hc'];
+        }
 
         return [
             'sum_requests' => [
                 ['text' => $cs ? 'Předpisy' : 'Requests', 'class' => 'muted'],
-                ['text' => $this->formatMoney($r['sum_requests'] ?? 0) . $hc],
+                ['text' => $this->formatMoney($sumRequests) . $hc],
             ],
             'sum_payments' => [
                 ['text' => $cs ? 'Úhrady' : 'Payments', 'class' => 'muted'],
-                ['text' => $this->formatMoney($r['sum_payments'] ?? 0) . $hc],
+                ['text' => $this->formatMoney($sumPayments) . $hc],
             ],
             'residual_hc' => [
                 ['text' => $cs ? 'Zůstatek' : 'Residual', 'class' => 'muted'],
-                ['text' => $this->formatMoney($r['residual'] ?? 0) . $hc, 'class' => 'amount'],
+                ['text' => $this->formatMoney($residualHc) . $hc, 'class' => 'amount'],
             ],
         ];
     }
@@ -406,9 +379,32 @@ class CasesViewer extends AccbalViewerBase
                     ['value' => CaseQuery::KIND_CLOSED, 'label' => $this->kindLabel(CaseQuery::KIND_CLOSED)],
                 ],
             ],
+            ['id' => CaseTotals::FILTER_CURRENCY, 'label' => $cs ? 'Měna' : 'Currency', 'type' => 'select', 'options' => $this->currencyOptions()],
             ['id' => 'overdue', 'label' => $cs ? 'Po splatnosti' : 'Overdue', 'type' => 'checkbox'],
+            ['id' => CaseTotals::FILTER_DUE_WITHIN, 'label' => $cs ? 'Splatné do (dní)' : 'Due within (days)', 'type' => 'text'],
             ['id' => 'include_closed', 'label' => $cs ? 'Včetně uzavřených' : 'Including closed', 'type' => 'checkbox'],
         ];
+    }
+
+    /**
+     * Měny, které v ledgeru jsou (filtr `currency`, #120): poslední sloupec
+     * `idx_case`, DISTINCT jde po indexu.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function currencyOptions(): array
+    {
+        $rows = $this->db->fetchAll(
+            'SELECT DISTINCT `currency` FROM `' . $this->table . '` WHERE `currency` IS NOT NULL ORDER BY `currency` LIMIT 50',
+        );
+        $options = [];
+        foreach ($rows as $row) {
+            $code = CaseQuery::normalizeCurrency($row['currency'] ?? null);
+            if ($code !== null) {
+                $options[] = ['value' => $code, 'label' => strtoupper($code)];
+            }
+        }
+        return $options;
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

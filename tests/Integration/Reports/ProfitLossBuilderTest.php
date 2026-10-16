@@ -271,4 +271,27 @@ class ProfitLossBuilderTest extends IntegrationTestCase
         $this->assertNotNull($this->findComputedRow($result));
         $this->assertSame('errors', $result->toArray()['status']);
     }
+
+    public function testRowsCarryStableKeysForOverview(): void
+    {
+        // Přehled firmy (#120 D8) čte výsledek, náklady a výnosy podle klíče, ne popisku.
+        $this->seedJournalRow(5, '597901', 100.0, 0.0);
+        $this->seedJournalRow(5, '697901', 0.0, 250.0);
+
+        $result = $this->runReport('synthetic');
+
+        $byKey = [];
+        foreach ($result->rows as $row) {
+            if ($row->key !== null) {
+                $byKey[$row->key] = $row;
+            }
+        }
+        $this->assertSame(['costs', 'revenues', 'result'], array_keys($byKey), 'třída 5, třída 6, výsledek');
+        $this->assertSame('5', $byKey['costs']->account);
+        $this->assertSame(1, $byKey['costs']->level);
+        $this->assertSame(ReportRowKind::Subtotal, $byKey['costs']->kind);
+        $this->assertSame('6', $byKey['revenues']->account);
+        $this->assertSame(ReportRowKind::Computed, $byKey['result']->kind);
+        $this->assertSame($this->findComputedRow($result), $byKey['result']);
+    }
 }

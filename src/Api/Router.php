@@ -82,6 +82,14 @@ class Router
 			return new Route('dsAbout', 'about');
 		}
 
+		// GET /_ui/overview — Přehled firmy (read-only agregace, jen admin; #120).
+		if ($subpath === '/_ui/overview') {
+			if ($method !== 'GET') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('overview', 'index');
+		}
+
 		if ($subpath === '/_ui/settings/navigation') {
 			if ($method !== 'GET') {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);

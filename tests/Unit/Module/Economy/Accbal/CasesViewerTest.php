@@ -243,7 +243,7 @@ class CasesViewerTest extends TestCase
     {
         $filters = $this->makeViewer()->getFilters();
 
-        $this->assertSame(['fiscal_year', 'partner', 'payment_reference', 'kind', 'overdue', 'include_closed'], array_column($filters, 'id'));
+        $this->assertSame(['fiscal_year', 'partner', 'payment_reference', 'kind', 'currency', 'overdue', 'dueWithin', 'include_closed'], array_column($filters, 'id'));
         $kind = $filters[3];
         $this->assertSame('select', $kind['type']);
         $this->assertSame(
@@ -318,8 +318,12 @@ class CasesViewerTest extends TestCase
 
     public function testRenderGridFooterSharesBothConditionLevels(): void
     {
-        $viewer = $this->makeViewer(fetchRowResult: [
-            'sum_requests' => 250000.0, 'sum_payments' => 100000.0, 'residual' => 150000.0, 'home_currency' => 'czk',
+        // Součty per měna (CaseTotals); bez filtru měny footer sčítá domácí (`_hc`) přes měny.
+        $viewer = $this->makeViewer(fetchAllRows: [
+            ['currency' => 'czk', 'home_currency' => 'czk', 'cnt' => 3, 'sum_requests' => 250000.0, 'sum_payments' => 100000.0, 'residual' => 150000.0,
+             'sum_requests_hc' => 250000.0, 'sum_payments_hc' => 100000.0, 'residual_hc' => 150000.0],
+            ['currency' => 'eur', 'home_currency' => 'czk', 'cnt' => 1, 'sum_requests' => 100.0, 'sum_payments' => 0.0, 'residual' => 100.0,
+             'sum_requests_hc' => 2500.0, 'sum_payments_hc' => 0.0, 'residual_hc' => 2500.0],
         ]);
 
         $footer = $viewer->renderGridFooter(null, [
@@ -328,17 +332,56 @@ class CasesViewerTest extends TestCase
         ]);
 
         ['sql' => $sql, 'params' => $params] = $this->queries[0];
-        $this->assertStringContainsString('SUM(c.`sum_requests_hc`) AS sum_requests, SUM(c.`sum_payments_hc`) AS sum_payments, SUM(c.`residual_hc`) AS residual', $sql);
+        $this->assertStringContainsString('SELECT c.`currency`, MAX(c.`home_currency`) AS home_currency, COUNT(*) AS cnt,', $sql);
+        $this->assertStringContainsString('SUM(c.`residual`) AS residual,', $sql);
+        $this->assertStringContainsString('SUM(c.`residual_hc`) AS residual_hc', $sql);
         $this->assertStringContainsString('WHERE b.`code` = %s GROUP BY', $sql, 'klíčová podmínka ve vnitřním dotazu');
-        $this->assertStringContainsString(') c WHERE c.[residual] <> 0 AND c.[residual] > 0', $sql, 'případové podmínky nad agregátem');
+        $this->assertStringContainsString(') c WHERE c.[residual] <> 0 AND c.[residual] > 0 GROUP BY c.`currency`', $sql, 'případové podmínky nad agregátem, pak per měna');
         $this->assertStringNotContainsString('LIMIT', $sql, 'přes všechny stránky');
         $this->assertSame(['payables'], $params);
 
         $this->assertSame(
-            [['text' => 'Zůstatek', 'class' => 'muted'], ['text' => '150 000,00 CZK', 'class' => 'amount']],
+            [['text' => 'Zůstatek', 'class' => 'muted'], ['text' => '152 500,00 CZK', 'class' => 'amount']],
             $footer['residual_hc'],
         );
-        $this->assertSame([['text' => 'Předpisy', 'class' => 'muted'], ['text' => '250 000,00 CZK']], $footer['sum_requests']);
+        $this->assertArrayNotHasKey('residual', $footer, 'obchodní zůstatek přes měny se nesčítá');
+        $this->assertSame([['text' => 'Předpisy', 'class' => 'muted'], ['text' => '252 500,00 CZK']], $footer['sum_requests']);
         $this->assertSame([['text' => 'Úhrady', 'class' => 'muted'], ['text' => '100 000,00 CZK']], $footer['sum_payments']);
+    }
+
+    public function testRenderGridFooterWithCurrencyFilterShowsResidualInThatCurrency(): void
+    {
+        $viewer = $this->makeViewer(fetchAllRows: [
+            ['currency' => 'eur', 'home_currency' => 'czk', 'cnt' => 2, 'sum_requests' => 300.0, 'sum_payments' => 50.0, 'residual' => 250.0,
+             'sum_requests_hc' => 7500.0, 'sum_payments_hc' => 1250.0, 'residual_hc' => 6250.0],
+        ]);
+
+        $footer = $viewer->renderGridFooter(null, [
+            ['id' => 'viewGroup', 'value' => 'receivables'],
+            ['id' => 'currency', 'value' => 'EUR'],
+        ]);
+
+        ['sql' => $sql, 'params' => $params] = $this->queries[0];
+        $this->assertStringContainsString('WHERE b.`code` = %s AND l.`currency` = %s GROUP BY', $sql, 'měna je součást klíče → před GROUP BY');
+        $this->assertSame(['receivables', 'eur'], $params, 'měna normalizovaná malými písmeny');
+
+        $this->assertSame([['text' => 'Zůstatek', 'class' => 'muted'], ['text' => '250,00 EUR', 'class' => 'amount']], $footer['residual']);
+        $this->assertSame([['text' => 'Zůstatek (dom.)', 'class' => 'muted'], ['text' => '6 250,00 CZK', 'class' => 'amount']], $footer['residual_hc']);
+        $this->assertSame([['text' => 'Předpisy', 'class' => 'muted'], ['text' => '300,00 EUR']], $footer['sum_requests']);
+    }
+
+    public function testDueWithinIsCaseLevelInterval(): void
+    {
+        $viewer = $this->makeViewer();
+        $viewer->selectRows(null, [['id' => 'dueWithin', 'value' => '7']], 0);
+
+        ['sql' => $sql, 'params' => $params] = $this->queries[0];
+        $this->assertStringContainsString(') c LEFT JOIN', $sql);
+        $this->assertStringContainsString(' WHERE c.[residual] <> 0 AND c.[residual] > 0 AND c.[due_date] >= %s AND c.[due_date] <= %s ORDER BY', $sql);
+        $today = new \DateTimeImmutable('today');
+        $this->assertSame([$today->format('Y-m-d'), $today->modify('+7 days')->format('Y-m-d')], $params);
+
+        $this->makeViewer()->selectRows(null, [['id' => 'dueWithin', 'value' => 'abc']], 0);
+        $this->assertStringNotContainsString('c.[due_date] >=', $this->queries[0]['sql'], 'neplatná hodnota se ignoruje');
     }
 }

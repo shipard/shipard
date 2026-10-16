@@ -132,6 +132,13 @@
     "config": [
         { "id": "economy.accbal.accSides",          "file": "config/accSides.jsonc" },
         { "id": "economy.accbal.amountsSigns",      "file": "config/amountsSigns.jsonc" },
-        { "id": "economy.accbal.balSides",          "file": "config/balSides.jsonc" }
+        { "id": "economy.accbal.balSides",          "file": "config/balSides.jsonc" },
+        { "id": "economy.accbal.overviewTexts",     "file": "config/overviewTexts.jsonc" }
+    ],
+
+    // Přehled firmy (#120): Pohledávky a Závazky ze saldokonta za běžné období (D6, D19).
+    "overviewBlocks": [
+        { "id": "economy.accbal.receivables", "section": "receivables", "order": 10, "class": "Shipard\\Module\\Economy\\Accbal\\Overview\\ReceivablesBlock" },
+        { "id": "economy.accbal.payables",    "section": "payables",    "order": 10, "class": "Shipard\\Module\\Economy\\Accbal\\Overview\\PayablesBlock" }
     ]
 }

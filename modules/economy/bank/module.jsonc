@@ -98,6 +98,12 @@
         {"id": "economy.bank.txOperations",         "file": "config/txOperations.jsonc"},
         {"id": "economy.bank.txDirections",         "file": "config/txDirections.jsonc"},
         {"id": "economy.bank.reconciliationStates", "file": "config/reconciliationStates.jsonc"},
-        {"id": "economy.bank.statementFormats",     "file": "config/statementFormats.jsonc"}
+        {"id": "economy.bank.statementFormats",     "file": "config/statementFormats.jsonc"},
+        {"id": "economy.bank.overviewTexts",        "file": "config/overviewTexts.jsonc"}
+    ],
+
+    // Přehled firmy (#120): Peníze → banka = koncový zůstatek posledního výpisu per účet.
+    "overviewBlocks": [
+        {"id": "economy.bank.balances", "section": "money", "order": 10, "class": "Shipard\\Module\\Economy\\Bank\\Overview\\BankBalancesBlock"}
     ]
 }

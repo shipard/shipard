@@ -166,21 +166,22 @@ class NavigationControllerTest extends TestCase
         // Root-level order: Dashboard, Chat, Došlá pošta, Úkoly, then sections.
         $rootLabels = array_map(fn($n) => $n['label'], $tree);
         $this->assertSame(
-            ['Dashboard', 'Chat', 'Došlá pošta', 'Odeslaná pošta', 'Spisovna', 'Úkoly', 'Základní', 'Nákup', 'Prodej', 'Zakázky', 'Majetek', 'Účtárna', 'Systém'],
+            ['Dashboard', 'Přehled firmy', 'Chat', 'Došlá pošta', 'Odeslaná pošta', 'Spisovna', 'Úkoly', 'Základní', 'Nákup', 'Prodej', 'Zakázky', 'Majetek', 'Účtárna', 'Systém'],
             $rootLabels,
         );
 
-        // Dashboard + Chat are root leaves (type, no children).
+        // Dashboard + Přehled firmy (#120) + Chat are root leaves (type, no children).
         $this->assertSame('dashboard', $tree[0]['type']);
-        $this->assertSame('chat', $tree[1]['type']);
+        $this->assertSame('panel', $tree[1]['type']);
+        $this->assertSame('chat', $tree[2]['type']);
 
         // _top viewers are root leaves carrying viewerId, ordered by navOrder.
-        $this->assertSame('core.mail.incoming', $tree[2]['viewerId']);
-        $this->assertSame('viewer', $tree[2]['type']);
+        $this->assertSame('core.mail.incoming', $tree[3]['viewerId']);
+        $this->assertSame('viewer', $tree[3]['type']);
         // Odeslaná pošta hned za došlou (#90 D45).
-        $this->assertSame('core.mail.sent', $tree[3]['viewerId']);
-        $this->assertSame('base.registry.documents', $tree[4]['viewerId']);
-        $this->assertSame('tasks.core', $tree[5]['viewerId']);
+        $this->assertSame('core.mail.sent', $tree[4]['viewerId']);
+        $this->assertSame('base.registry.documents', $tree[5]['viewerId']);
+        $this->assertSame('tasks.core', $tree[6]['viewerId']);
 
         // Sections in navSections.order with the right children/order.
         $this->assertSame(
@@ -221,7 +222,7 @@ class NavigationControllerTest extends TestCase
         $tree = $this->tree(['install.base'], 'en');
         $rootLabels = array_map(fn($n) => $n['label'], $tree);
         $this->assertSame(
-            ['Dashboard', 'Chat', 'Incoming messages', 'Sent messages', 'Registry', 'Tasks', 'Basic', 'Purchase', 'Sales', 'Work orders', 'Assets', 'Accounting', 'System'],
+            ['Dashboard', 'Company overview', 'Chat', 'Incoming messages', 'Sent messages', 'Registry', 'Tasks', 'Basic', 'Purchase', 'Sales', 'Work orders', 'Assets', 'Accounting', 'System'],
             $rootLabels,
         );
     }
@@ -316,7 +317,7 @@ class NavigationControllerTest extends TestCase
         $ids  = array_map(fn($n) => $n['id'], $tree);
 
         $this->assertSame(
-            ['dashboard', 'chat', 'viewer:core.mail.incoming', 'viewer:core.mail.sent', 'viewer:base.registry.documents', 'viewer:tasks.core', 'basic', 'purchase', 'sales', 'accounting', 'system'],
+            ['dashboard', 'panel:companyOverview', 'chat', 'viewer:core.mail.incoming', 'viewer:core.mail.sent', 'viewer:base.registry.documents', 'viewer:tasks.core', 'basic', 'purchase', 'sales', 'accounting', 'system'],
             $ids,
         );
         // Fallback labels come from the PHP const, localized by $language.
@@ -620,8 +621,8 @@ class NavigationControllerTest extends TestCase
         $tree = $this->treeWith(['install.base', 'hosting.core'], $this->resolver, $this->admin(), $hosting);
         $ids  = array_map(fn($n) => $n['id'], $tree);
         $this->assertSame(
-            ['panel:hostingPortal', 'dashboard', 'viewer:core.mail.incoming'],
-            array_slice($ids, 0, 3),
+            ['panel:hostingPortal', 'dashboard', 'panel:companyOverview', 'viewer:core.mail.incoming'],
+            array_slice($ids, 0, 4),
         );
         $this->assertNotContains('chat', $ids);
         $this->assertSame('Moje zdroje dat', $tree[0]['label']);
@@ -637,6 +638,27 @@ class NavigationControllerTest extends TestCase
         foreach ($this->allViewerIds($tree) as $viewerId) {
             $this->assertStringStartsNotWith('hosting.', $viewerId);
         }
+    }
+
+    public function testCompanyOverviewPanelBetweenDashboardAndChatForAdminOnly(): void
+    {
+        // Reálný economy.accounting (#120 D1, D10): Přehled firmy je root
+        // položka mezi Dashboardem (20) a Chatem (25), jen pro adminy —
+        // ne-admin ji v navigaci nemá (serverová bariéra je v controlleru).
+        $tree = $this->treeWith(['install.base'], $this->resolver, $this->admin(), $this->defaultTables());
+        $ids  = array_map(fn($n) => $n['id'], $tree);
+        $this->assertContains('panel:companyOverview', $ids);
+        $panel = array_search('panel:companyOverview', $ids, true);
+        $this->assertGreaterThan(array_search('dashboard', $ids, true), $panel, 'za Dashboardem');
+        if (in_array('chat', $ids, true)) {
+            $this->assertLessThan(array_search('chat', $ids, true), $panel, 'před Chatem');
+        }
+        $this->assertSame('Přehled firmy', $tree[$panel]['label']);
+        $this->assertSame('overview', $tree[$panel]['icon']);
+        $this->assertSame('companyOverview', $tree[$panel]['panelId']);
+
+        $tree = $this->treeWith(['install.base'], $this->resolver, $this->nonAdmin(), $this->defaultTables());
+        $this->assertNotContains('panel:companyOverview', array_map(fn($n) => $n['id'], $tree));
     }
 
     // --- fixture helpers ---

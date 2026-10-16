@@ -44,6 +44,7 @@ class ModuleDefinition
         public readonly array $recordSenderProviders = [],
         public readonly array $workOrderInvoiceContributors = [],
         public readonly array $aiFunctions = [],
+        public readonly array $overviewBlocks = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -512,6 +513,58 @@ class ModuleDefinition
             $workOrderInvoiceContributors = array_values($workOrderInvoiceContributors);
         }
 
+        // overviewBlocks — bloky Přehledu firmy (#120 D2): {id, section, order,
+        // class}. ConfigCompiler je složí do cfgItem core.overview.blocks
+        // (sekce z core.overview.sections), instance staví
+        // OverviewBlockRegistry::fromConfig bezparametrickým konstruktorem.
+        $overviewBlocks = [];
+        if (array_key_exists('overviewBlocks', $data)) {
+            if (!is_array($data['overviewBlocks']) || !array_is_list($data['overviewBlocks'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': overviewBlocks must be a JSON array",
+                );
+            }
+            foreach ($data['overviewBlocks'] as $idx => $block) {
+                if (!is_array($block)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': overviewBlocks[{$idx}] must be an object",
+                    );
+                }
+                $blockId = $block['id'] ?? null;
+                if (!is_string($blockId) || !preg_match('/^[a-z][a-zA-Z0-9_.]*$/', $blockId)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': overviewBlocks[{$idx}].id must be an identifier",
+                    );
+                }
+                $section = $block['section'] ?? null;
+                if (!is_string($section) || !preg_match('/^[a-z][a-zA-Z0-9_]*$/', $section)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': overviewBlocks[{$idx}].section must be an identifier",
+                    );
+                }
+                if (!isset($block['class']) || !is_string($block['class']) || $block['class'] === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': overviewBlocks[{$idx}] requires 'class'",
+                    );
+                }
+                $order = $block['order'] ?? 1000;
+                if (!is_int($order)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': overviewBlocks[{$idx}].order must be an integer",
+                    );
+                }
+                if (isset($overviewBlocks[$blockId])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': overviewBlocks has duplicate id '{$blockId}'",
+                    );
+                }
+                $overviewBlocks[$blockId] = [
+                    'id' => $blockId, 'section' => $section, 'order' => $order, 'class' => $block['class'],
+                ];
+            }
+            $overviewBlocks = array_values($overviewBlocks);
+        }
+
         // aiFunctions — AI funkce modulu (#85 D36): co modul volá na jazykovém
         // modelu (`mail.extraction`, `exchange.contentTags`, …). Deklarace nese
         // úroveň modelu (`tier`), výchozí ladění (`defaults`) a požadavky na
@@ -724,6 +777,7 @@ class ModuleDefinition
             recordSenderProviders: $recordSenderProviders,
             workOrderInvoiceContributors: $workOrderInvoiceContributors,
             aiFunctions: $aiFunctions,
+            overviewBlocks: $overviewBlocks,
         );
     }
 

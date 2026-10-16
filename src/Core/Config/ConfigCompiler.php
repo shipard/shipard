@@ -51,6 +51,13 @@ class ConfigCompiler
      */
     public const AI_FUNCTIONS_ITEM = 'core.ai.functions';
 
+    /**
+     * cfgItem složený z `overviewBlocks` aktivních modulů — bloky Přehledu
+     * firmy (#120 D2): klíč = id bloku, hodnota sekce, pořadí a třída,
+     * seřazeno [order, id]. Čte ho OverviewBlockRegistry.
+     */
+    public const OVERVIEW_BLOCKS_ITEM = 'core.overview.blocks';
+
     /** cfgItem s jazyky dokumentů (#94 D3); klíč = jazyk. */
     public const DOCUMENT_LANGUAGES_ITEM = 'world.base.documentLanguages';
 
@@ -205,6 +212,32 @@ class ConfigCompiler
             );
         }
         $rawItems[self::INVOICE_CONTRIBUTORS_ITEM] = $contributors;
+
+        // Bloky Přehledu firmy (`overviewBlocks` v module.jsonc) aktivních
+        // modulů → jeden cfgItem seřazený [order, id]; jádro tak nezávisí na
+        // modulech, které bloky dodávají (banka, účetnictví, saldokonto, DPH).
+        $overviewBlocks = [];
+        foreach ($modules as $module) {
+            foreach ($module->overviewBlocks as $block) {
+                $blockId = (string) $block['id'];
+                if (isset($overviewBlocks[$blockId])) {
+                    throw new \RuntimeException(
+                        "Overview block '{$blockId}' is declared by more than one module"
+                        . " (again in '{$module->id}')",
+                    );
+                }
+                unset($block['id']);
+                $overviewBlocks[$blockId] = $block;
+            }
+        }
+        uksort($overviewBlocks, static fn (string $a, string $b): int
+            => [$overviewBlocks[$a]['order'], $a] <=> [$overviewBlocks[$b]['order'], $b]);
+        if (isset($rawItems[self::OVERVIEW_BLOCKS_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::OVERVIEW_BLOCKS_ITEM . "' is reserved for overviewBlocks",
+            );
+        }
+        $rawItems[self::OVERVIEW_BLOCKS_ITEM] = $overviewBlocks;
 
         // AI funkce (`aiFunctions` v module.jsonc) aktivních modulů → jeden
         // cfgItem v pořadí deklarací. Resolver volání i tabulka nastavení

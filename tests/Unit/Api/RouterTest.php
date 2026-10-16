@@ -68,6 +68,20 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(Response::class, $result);
 	}
 
+	// Přehled firmy (#120)
+	public function testOverviewGet(): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/overview', 'GET');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'overview', 'index');
+	}
+
+	public function testOverviewPostNotAllowed(): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/overview', 'POST');
+		$this->assertInstanceOf(Response::class, $result);
+	}
+
 	// Settings pages
 	public function testSettingsPageGet(): void
 	{

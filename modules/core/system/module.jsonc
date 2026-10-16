@@ -228,6 +228,15 @@
         {
             "id": "core.system.reportExportLabels",
             "file": "config/reportExportLabels.jsonc"
+        },
+        {
+            // Sekce Přehledu firmy (#120 D1) — pořadí a názvy; bloky dodávají moduly.
+            "id": "core.overview.sections",
+            "file": "config/overviewSections.jsonc"
+        },
+        {
+            "id": "core.system.overviewTexts",
+            "file": "config/overviewTexts.jsonc"
         }
     ]
 }

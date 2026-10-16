@@ -1,0 +1,47 @@
+{
+    // economy.accounting.overviewTexts — texty bloků účetnictví v Přehledu
+    // firmy (CashBalancesBlock, ProfitLossBlock). Položka: {text, text:cs,
+    // text:en}; holé pole = anglický fallback shodný s voláním ->t() ve
+    // zdroji. ICU MessageFormat.
+
+    "cash.posted": {
+        "text": "According to posted documents",
+        "text:cs": "Podle zaúčtovaných dokladů",
+        "text:en": "According to posted documents"
+    },
+    "opening.missing": {
+        "text": "Opening balances of the current fiscal year have not been carried over yet, so the balance cannot be shown.",
+        "text:cs": "Počáteční stavy běžného účetního období ještě nejsou převedené, zůstatek proto nelze ukázat.",
+        "text:en": "Opening balances of the current fiscal year have not been carried over yet, so the balance cannot be shown."
+    },
+    "fiscalYear.none": {
+        "text": "No fiscal year covers today.",
+        "text:cs": "Dnešní datum nespadá do žádného účetního období.",
+        "text:en": "No fiscal year covers today."
+    },
+    "month.none": {
+        "text": "Today is not in a regular month of the fiscal year.",
+        "text:cs": "Dnešní datum neleží v žádném běžném měsíci účetního období.",
+        "text:en": "Today is not in a regular month of the fiscal year."
+    },
+    "result.ytd": {
+        "text": "Profit or loss",
+        "text:cs": "Výsledek hospodaření",
+        "text:en": "Profit or loss"
+    },
+    "result.revenues": {
+        "text": "Revenues",
+        "text:cs": "Výnosy",
+        "text:en": "Revenues"
+    },
+    "result.costs": {
+        "text": "Costs",
+        "text:cs": "Náklady",
+        "text:en": "Costs"
+    },
+    "result.sinceStart": {
+        "text": "Since the beginning of fiscal year {year}",
+        "text:cs": "Od začátku účetního období {year}",
+        "text:en": "Since the beginning of fiscal year {year}"
+    }
+}

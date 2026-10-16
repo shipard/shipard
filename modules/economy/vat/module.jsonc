@@ -141,7 +141,15 @@
         { "id": "economy.vat.filingPayerTypes", "file": "config/filingPayerTypes.jsonc" },
         { "id": "economy.vat.filingNextPeriodCodes", "file": "config/filingNextPeriodCodes.jsonc" },
         // Ruční zařazení dokladu do KH (`docs_core_heads.cs_mode`, #77).
-        { "id": "economy.vat.controlStatementModes", "file": "config/controlStatementModes.jsonc" }
+        { "id": "economy.vat.controlStatementModes", "file": "config/controlStatementModes.jsonc" },
+        // Texty bloku DPH v Přehledu firmy (#120).
+        { "id": "economy.vat.overviewTexts", "file": "config/overviewTexts.jsonc" }
+    ],
+
+    // Přehled firmy (#120): DPH = živé přiznání předchozího (bez podání) a běžného
+    // období + termín podání podle země (D7, D16, D17); neplátce blok nevidí.
+    "overviewBlocks": [
+        { "id": "economy.vat.return", "section": "vat", "order": 10, "class": "Shipard\\Module\\Economy\\Vat\\Overview\\VatBlock" }
     ],
 
     // Koeficienty odpočtu patří do Nastavení vedle Registrací DPH; stejný
