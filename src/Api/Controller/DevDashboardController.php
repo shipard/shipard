@@ -6,6 +6,8 @@ namespace Shipard\Api\Controller;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Ai\ServerAiConnection;
+use Shipard\Core\DevJobs\JobLauncher;
+use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
@@ -23,6 +25,10 @@ class DevDashboardController
 
 	private readonly string $repoRoot;
 	private readonly string $spaIndexPath;
+	/** Režim serveru pro pojistku spouštěcích akcí (#103 F6b D60); null = neznámý = ne development. */
+	private readonly ?string $serverMode;
+	private ?JobStore $jobStore;
+	private ?JobLauncher $jobLauncher;
 
 	public function __construct(
 		private readonly string $dataSourcesDir = '/opt/shipard/data-sources',
@@ -30,9 +36,15 @@ class DevDashboardController
 		private readonly ?ModulePathResolver $modulePathResolver = null,
 		?string $spaIndexPath = null,
 		?string $repoRoot = null,
+		?string $serverMode = null,
+		?JobStore $jobStore = null,
+		?JobLauncher $jobLauncher = null,
 	) {
 		$this->repoRoot     = $repoRoot ?? dirname(__DIR__, 3);
 		$this->spaIndexPath = $spaIndexPath ?? $this->repoRoot . '/public/_dev/dev.html';
+		$this->serverMode   = $serverMode;
+		$this->jobStore     = $jobStore;
+		$this->jobLauncher  = $jobLauncher;
 	}
 
 	public function dispatch(Request $request): Response
@@ -42,6 +54,11 @@ class DevDashboardController
 
 		if ($path === '/') {
 			return Response::redirect('/_dev/');
+		}
+
+		// Úlohy na pozadí (#103 F6b D58) — před Testováním: to je GET-only a POST by vrátilo 404.
+		if ($path === DevJobsController::PREFIX || str_starts_with($path, DevJobsController::PREFIX . '/')) {
+			return (new DevJobsController($this->jobStore(), $this->jobLauncher()))->dispatch($request);
 		}
 
 		// Sekce Testování (#103 D51–D53) — jen čtení souborů v checkoutu.
@@ -324,6 +341,22 @@ class DevDashboardController
 	protected function getShpdServerPath(): string
 	{
 		return dirname(__DIR__, 3) . '/bin/shpd-server';
+	}
+
+	/** Režim serveru pro pojistku D60 — bez předání `unknown` (fail-closed, nikdy development). */
+	protected function serverMode(): string
+	{
+		return $this->serverMode ?? 'unknown';
+	}
+
+	protected function jobStore(): JobStore
+	{
+		return $this->jobStore ??= new JobStore(JobStore::defaultDir());
+	}
+
+	protected function jobLauncher(): JobLauncher
+	{
+		return $this->jobLauncher ??= new JobLauncher($this->jobStore());
 	}
 
 	protected function getShpdDsPath(): string

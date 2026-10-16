@@ -8,6 +8,7 @@ use Shipard\Api\Controller\DevDashboardController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Ai\ServerAiConnection;
+use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
 
 class DevDashboardControllerTest extends TestCase
@@ -1145,6 +1146,28 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame(404, $this->getStatus(
 			$this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/ds-upgrade?ds=abcd-1234-efgh-5678'))
 		));
+	}
+
+	/** Úlohy na pozadí (#103 F6b D58) se routují před Testováním — POST na cancel nekončí 404 z GET-only controlleru. */
+	public function testJobsRoutesAreDispatchedBeforeTesting(): void
+	{
+		$ctrl = new DevDashboardController(
+			$this->tmpDir,
+			null,
+			new ModulePathResolver([$this->modulesDir]),
+			$this->spaIndex,
+			$this->tmpRoot,
+			'development',
+			new JobStore($this->tmpRoot . '/run/dev-jobs'),
+		);
+
+		$list = $ctrl->dispatch($this->makeRequest('GET', '/_dev/api/testing/jobs'));
+		$this->assertSame(200, $this->getStatus($list));
+		$this->assertSame([], $list->getPayload()['data']['jobs']);
+
+		$cancel = $ctrl->dispatch($this->makeRequest('POST', '/_dev/api/testing/jobs/20260101-000000-abcdef/cancel'));
+		$this->assertSame(404, $this->getStatus($cancel));
+		$this->assertSame('Job not found', $cancel->getPayload()['error']['message']);
 	}
 }
 

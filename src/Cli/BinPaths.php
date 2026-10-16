@@ -34,6 +34,18 @@ final class BinPaths
         return is_executable($php) ? [$php, self::shpdDs()] : [self::shpdDs()];
     }
 
+    /**
+     * Argv prefix pro spuštění `shpd-server` — stejné pravidlo jako
+     * {@see shpdDsCommand()} (obal úloh vývojářského dashboardu z php-fpm).
+     *
+     * @return list<string>
+     */
+    public static function shpdServerCommand(): array
+    {
+        $php = PHP_BINDIR . '/php';
+        return is_executable($php) ? [$php, self::shpdServer()] : [self::shpdServer()];
+    }
+
     private static function root(): string
     {
         return dirname(__DIR__, 2);

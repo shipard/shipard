@@ -34,6 +34,7 @@ final class ServerApplicationFactory
         $app->add(new \Shipard\Command\Server\DsCronCommand());
         $app->add(new \Shipard\Command\Server\DsListCommand());
         $app->add(new \Shipard\Command\Server\DevAiKeyCommand());
+        $app->add(new \Shipard\Command\Server\DevJobRunCommand());
         $app->add(new \Shipard\Command\Server\DoctorCommand());
         $app->add(new \Shipard\Command\Server\FixPermissionsCommand());
         $app->setDefaultCommand('help');

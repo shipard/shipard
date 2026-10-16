@@ -88,6 +88,7 @@ try {
 				'/opt/shipard/data-sources',
 				$serverConfig->getLogFile(),
 				$modulePathResolver,
+				serverMode: $serverConfig->getMode(),
 			))->dispatch($request);
 			$corsMiddleware->applyTo($response)->send();
 			exit;
