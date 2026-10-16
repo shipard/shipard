@@ -172,6 +172,66 @@ class DataSourceConfig
     }
 
     /**
+     * Třída dat (#126 D6): `dataClass` v main.json — `free` / `realCopy`.
+     * Klíč chybí, je null, má jiný typ nebo neznámou hodnotu → realCopy
+     * (fail-safe); neplatná hodnota zdroj dat nezavírá, ukáže ji `ds-class`
+     * a `ds-list` (U6). Nastavuje `ds-create`, `dataset-seed` a `shpd-ds
+     * ds-class`; vedle ní `purpose`, `origin` a `dataClassChanged`.
+     */
+    public function getDataClass(): DataClass
+    {
+        return DataClass::fromConfig($this->data['dataClass'] ?? null);
+    }
+
+    /** Zdroj dat je volný — ukázková / seedovaná data (třída `free`). */
+    public function isFree(): bool
+    {
+        return $this->getDataClass() === DataClass::Free;
+    }
+
+    /** Klíč `dataClass` je v main.json a má platnou hodnotu. */
+    public function hasExplicitDataClass(): bool
+    {
+        return DataClass::isValidConfigValue($this->data['dataClass'] ?? null);
+    }
+
+    /** Surová hodnota `dataClass` — pro hlášení neplatné hodnoty; null = klíč chybí. */
+    public function getDataClassRaw(): mixed
+    {
+        return $this->data['dataClass'] ?? null;
+    }
+
+    /** Účel zdroje dat (`purpose`, volný text); prázdný nebo ne-řetězec = null. */
+    public function getPurpose(): ?string
+    {
+        return $this->optionalText('purpose');
+    }
+
+    /** Kdo třídu naposledy nastavil (`origin`: `ds-create`, `dataset-seed <sada>`, `ds-class`); null = neznámo. */
+    public function getOrigin(): ?string
+    {
+        return $this->optionalText('origin');
+    }
+
+    /** Kdy se třída naposledy nastavila (`dataClassChanged`, ISO 8601 v UTC); null = neznámo. */
+    public function getDataClassChanged(): ?string
+    {
+        return $this->optionalText('dataClassChanged');
+    }
+
+    /**
+     * Zaniklý příznak `ai.useServerConnection` (#126 D9). Na chování nemá
+     * vliv — serverové AI připojení řídí třída dat (`isFree()`); čte se jen
+     * pro varování `ds-upgrade`, výpis `ds-class show` a přehled `ds-list`.
+     * Klíč odebere první zápis třídy (`MainConfigPatcher::withDataClass`).
+     */
+    public function hasLegacyServerAiFlag(): bool
+    {
+        $ai = $this->data['ai'] ?? null;
+        return is_array($ai) && ($ai['useServerConnection'] ?? false) === true;
+    }
+
+    /**
      * Serverové AI připojení pro vývoj (tasks/testing-phase4.md D40, #103 D10):
      * volitelné `ai.useServerConnection` v main.json — nastavuje `ds-create`
      * na serveru v režimu development (bez `--no-server-ai`) a `dataset-seed`
@@ -180,7 +240,17 @@ class DataSourceConfig
      */
     public function usesServerAiConnection(): bool
     {
-        $ai = $this->data['ai'] ?? null;
-        return is_array($ai) && ($ai['useServerConnection'] ?? false) === true;
+        return $this->hasLegacyServerAiFlag();
+    }
+
+    /** Volitelný textový klíč: trim, prázdný nebo ne-řetězec = null. */
+    private function optionalText(string $key): ?string
+    {
+        $value = $this->data[$key] ?? null;
+        if (!is_string($value)) {
+            return null;
+        }
+        $value = trim($value);
+        return $value === '' ? null : $value;
     }
 }

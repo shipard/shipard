@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Core\Config;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\DataClass;
 use Shipard\Core\Config\DataSourceConfig;
 
 class DataSourceConfigTest extends TestCase
@@ -249,6 +251,119 @@ class DataSourceConfigTest extends TestCase
 
         $this->createConfig($base + ['ai' => ['useServerConnection' => 'yes']]);
         $this->assertFalse((new DataSourceConfig($this->tempDir))->usesServerAiConnection());
+    }
+
+    /** @return array<string, mixed> */
+    private function baseData(): array
+    {
+        return [
+            'id'                => 'abcd-efgh-ijkl-mnop',
+            'name'              => 'Test DS',
+            'database_name'     => 'abcd_efgh_ijkl_mnop',
+            'database_user'     => 'shpd_abcdefgh',
+            'database_password' => 'supersecret',
+            'created'           => '2026-03-12T10:00:00+01:00',
+        ];
+    }
+
+    public function testDataClassDefaultsToRealCopyWithoutBeingExplicit(): void
+    {
+        // #126 D6: chybějící třída = realCopy (fail-safe), bez účelu, původu a času.
+        $this->createConfig($this->baseData());
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertSame(DataClass::RealCopy, $config->getDataClass());
+        $this->assertFalse($config->isFree());
+        $this->assertFalse($config->hasExplicitDataClass());
+        $this->assertNull($config->getDataClassRaw());
+        $this->assertNull($config->getPurpose());
+        $this->assertNull($config->getOrigin());
+        $this->assertNull($config->getDataClassChanged());
+    }
+
+    public function testDataClassFreeReadsPurposeOriginAndChanged(): void
+    {
+        $this->createConfig($this->baseData() + [
+            'dataClass'        => 'free',
+            'purpose'          => '  Ruční zkoušení UI  ',
+            'origin'           => 'dataset-seed cz-vat-payer',
+            'dataClassChanged' => '2026-10-16T12:00:00Z',
+        ]);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertSame(DataClass::Free, $config->getDataClass());
+        $this->assertTrue($config->isFree());
+        $this->assertTrue($config->hasExplicitDataClass());
+        $this->assertSame('free', $config->getDataClassRaw());
+        $this->assertSame('Ruční zkoušení UI', $config->getPurpose(), 'účel se trimuje');
+        $this->assertSame('dataset-seed cz-vat-payer', $config->getOrigin());
+        $this->assertSame('2026-10-16T12:00:00Z', $config->getDataClassChanged());
+    }
+
+    public function testExplicitRealCopyIsExplicit(): void
+    {
+        $this->createConfig($this->baseData() + ['dataClass' => 'realCopy']);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertSame(DataClass::RealCopy, $config->getDataClass());
+        $this->assertTrue($config->hasExplicitDataClass());
+    }
+
+    #[DataProvider('invalidDataClassValues')]
+    public function testInvalidDataClassCountsAsRealCopyAndIsNotExplicit(mixed $raw): void
+    {
+        // U6: neplatná hodnota zdroj dat nezavírá — platí realCopy, třída není explicitní,
+        // surová hodnota zůstává k ohlášení (`ds-class`, `ds-list`).
+        $this->createConfig($this->baseData() + ['dataClass' => $raw]);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertSame(DataClass::RealCopy, $config->getDataClass());
+        $this->assertFalse($config->isFree());
+        $this->assertFalse($config->hasExplicitDataClass());
+        $this->assertSame($raw, $config->getDataClassRaw());
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidDataClassValues(): array
+    {
+        return [
+            'Free s velkým písmenem' => ['Free'],
+            'REALCOPY'               => ['REALCOPY'],
+            'true'                   => [true],
+            'null'                   => [null],
+            'číslo'                  => [1],
+            'pole'                   => [['free']],
+        ];
+    }
+
+    public function testEmptyOrNonStringPurposeOriginAndChangedAreNull(): void
+    {
+        $this->createConfig($this->baseData() + [
+            'dataClass'        => 'free',
+            'purpose'          => '   ',
+            'origin'           => '',
+            'dataClassChanged' => 20261016,
+        ]);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertNull($config->getPurpose());
+        $this->assertNull($config->getOrigin());
+        $this->assertNull($config->getDataClassChanged());
+    }
+
+    public function testHasLegacyServerAiFlagReadsTheAiSectionOnly(): void
+    {
+        // #126 D9: zaniklý příznak se čte jen pro varování — jen přesně `true`.
+        $this->createConfig($this->baseData());
+        $this->assertFalse((new DataSourceConfig($this->tempDir))->hasLegacyServerAiFlag());
+
+        $this->createConfig($this->baseData() + ['ai' => ['useServerConnection' => true]]);
+        $config = new DataSourceConfig($this->tempDir);
+        $this->assertTrue($config->hasLegacyServerAiFlag());
+        $this->assertFalse($config->isFree(), 'příznak třídu neovlivňuje');
+
+        $this->createConfig($this->baseData() + ['ai' => ['useServerConnection' => 'yes']]);
+        $this->assertFalse((new DataSourceConfig($this->tempDir))->hasLegacyServerAiFlag());
     }
 
     public function testMissingRequiredFieldThrowsException(): void
