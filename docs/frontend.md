@@ -135,7 +135,17 @@ Zdroj `src/dev/`: `routes.js` (tabulka rout podle cesty — musí odpovídat
 `api.js` + `stream.js` (JSON obálka a řádkový stream `[STEP]` / `[ERROR]`
 / `[DONE]`), `format.js` (čeština), `pages/` (Zdroje dat, Nový zdroj dat,
 Logy, akce), `pages/testing/` + `testing/metrics.js` (prohlížeč výsledků
-evaluací, #103 D53, `docs/test-corpus.md` § 18). Testy čistých funkcí
+evaluací, #103 D53, `docs/test-corpus.md` § 18) a od F6b spouštění
+(`testing/api.js` volá `/_dev/api/testing/eval/*` a `/_dev/api/testing/jobs*`,
+`testing/jobs.js` = popisky stavů a redukce událostí průběhu;
+`pages/testing/DataSourcesPanel.svelte` panel Zdroje dat se sadou,
+`EvalRunDialog.svelte` odhad + strop útraty, `JobsPage` / `JobDetailPage`
+(polling každé 2 s přes offset `progress.jsonl`), `VerifyResult.svelte`,
+`VariantsPage` / `VariantEditorPage.svelte`). Dialogy jsou dev-lokální
+`components/DevDialog.svelte` + `DevConfirm.svelte` — sdílený `Modal`
+a `ConfirmDialog` tahají `t()`. Routy `testing/jobs…` a `testing/variants…`
+stojí v `routes.js` **před** `testing/:set` (první shoda vítězí — sada se
+nesmí jmenovat `jobs` ani `variants`). Testy čistých funkcí
 v `tests/Unit/dev/`.
 
 ### Dev mód — DS ID v URL

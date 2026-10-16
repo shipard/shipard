@@ -41,12 +41,19 @@ Sekce v horní liště:
   `free`). Průběh (`ds-create` → `ds-upgrade` → `user-create` → příp. seed)
   se vypisuje živě do stránky; po dokončení vede odkaz přímo do nového
   zdroje dat.
-- **Testování** — prohlížeč výsledků evaluací AI nad testovacími sadami
-  (`tests/datasets`, `tests/eval`): sady, běhy sady, detail běhu, detail
-  dokladu s PDF vedle očekávání a výstupu modelu, porovnání dvou běhů,
-  doklad napříč běhy. Jen čte soubory v checkoutu, nic nespouští — běhy
-  vznikají z CLI `shpd-ds ai-eval` (`docs/test-corpus.md` § 18). Na serveru
-  bez `tests/` (instalace z balíčku) se sekce nenabídne.
+- **Testování** — evaluace AI nad testovacími sadami (`tests/datasets`,
+  `tests/eval`, `docs/test-corpus.md` § 18): sady, běhy sady, detail běhu,
+  detail dokladu s PDF vedle očekávání a výstupu modelu, porovnání dvou
+  běhů, doklad napříč běhy. Od F6b se z dashboardu i **spouští** (jen na
+  volných zdrojích dat, viz níže): na stránce sady je panel **Zdroje dat
+  se sadou** — které zdroje dat sadu drží, zda je aktuální a čistý, akce
+  **Přeseedovat**, **Ověřit zaúčtování** (`dataset-verify`), **Spustit
+  evaluaci** (odhad ceny → strop útraty → úloha), **Založit evaluační
+  zdroj dat** (`ds-create --no-cron` + seed, bez uživatele) a přeseedování
+  jiného volného zdroje dat. Dál **Úlohy na pozadí** (seznam, detail
+  s průběhem, zrušení) a **Varianty** (editor souborů
+  `tests/eval/variants/`). Na serveru bez `tests/` (instalace z balíčku)
+  se sekce nenabídne.
 - **Logy** — prohlížeč logu (`/opt/shipard/log/shipard.log`) s filtrováním
   podle úrovně, zdroje dat a fulltextu, obnovování ve stylu `tail -f`
   (při rozbaleném záznamu se pozastaví) a detail záznamu včetně trace
@@ -59,6 +66,43 @@ Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tí
 že **vývojový server běží v důvěryhodné síti**. Oranžový pruh
 „DEVELOPMENT MODE" nahoře je připomínka, ať se prostředí neplete
 s produkčním.
+
+### Úlohy na pozadí a pojistky (F6b)
+
+Delší operace z Testování (přeseedování, ověření, evaluace, založení
+zdroje dat) neběží v HTTP požadavku, ale jako **úloha na pozadí**: API
+zapíše zadání do `/opt/shipard/run/dev-jobs/<id>/` a spustí obal
+`shpd-server dev-job-run` (skrytý příkaz, `setsid`), který kroky provede
+a průběh ukládá do téhož adresáře (`job.json` zadání, `state.json` stav
+a výsledky kroků, `progress.jsonl` průběh `ai-eval`, `output.log` výstup,
+`result.json` výsledek `dataset-verify` / `ai-eval --json`). Úloha přežije
+zavření prohlížeče; detail se obnovuje sám. Na jednom zdroji dat běží
+nejvýš jedna úloha (druhou API odmítne 409 s odkazem na běžící). Starší
+než 14 dní se při výpisu mažou.
+
+- **Zrušit** pošle SIGTERM celé skupině procesů: `ai-eval` nezačne další
+  volání modelu, rozběhnuté doběhne (až 14 minut při zaseknutém volání)
+  a rozpracovaný běh se uloží jako zrušený; seed / verify se přeruší.
+  **Vynutit ukončení** = SIGKILL (výsledek se neuloží, zdroj dat může
+  zůstat v půlce — pak přeseedovat).
+- **Pojistka na serveru** (D60): spouštěcí akce projdou jen v režimu
+  `development`, jen na zdroji dat s třídou **`free`** (reálná kopie, chybějící
+  nebo rozbitá třída = 403 `DS_NOT_FREE`) a jen pro sadu ze seznamu. UI
+  tlačítka u reálných kopií nenabízí, ale ochranu dělá API — žádný parametr
+  ji neobchází.
+- **Útrata**: evaluace z dashboardu má vždy strop útraty (`--max-cost`,
+  předvyplněný 1,5× odhad; bez něj API úlohu nespustí). Odhad
+  (`ai-eval --estimate`) nic nespustí ani nezapíše. Výsledky jdou do
+  `tests/eval/<sada>/` v pracovním stromu — commit dělá člověk.
+- **Která sada ve zdroji dat je**: `dataset-seed` zapíše do `main.json`
+  pole `dataset` (název, hash obsahu sady, čas). Zdroje dat seedované před
+  F6b ho nemají — panel je ukáže jen podle původu `dataset-seed <sada>`
+  s poznámkou „přeseedovat“; ostatní volné zdroje dat jsou v nabídce
+  „Přeseedovat jiný volný zdroj dat“.
+- Totéž z terminálu: `shpd-ds dataset-seed <cesta> -y`, `shpd-ds
+  dataset-verify <cesta> --json`, `shpd-ds ai-eval <cesta> --variant
+  <soubor> --estimate --json` / `--yes --max-cost <USD>`
+  (`docs/cli.md`).
 
 ---
 

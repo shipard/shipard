@@ -194,6 +194,12 @@ dimenze s počtem dokladů.
 7. Souhrn ok / failed / skipped per sekce (sekce `fiscalYears`
    a `accountingItems` nemají soubory ani `counts`), varování, chyby;
    nenulový exit code při jakékoli chybě záznamu.
+8. Záznam sady v `config/main.json` (#103 F6b D59): po úspěšném seedu
+   s resetem `dataset: {name, hash, seededAt}` (`hash` =
+   `EvalRunStore::datasetHash()` nad `mail/` + `expected/`), smazaný už na
+   začátku resetu a odebraný při `--no-reset`. Čte ho `shpd-server ds-list
+   --json` a panel Zdroje dat vývojářského dashboardu (aktuální /
+   zastaralá sada).
 
 Applieři cílí jen stavy 10/40 — stav 70/80 osob a položek seed po uložení
 dorovná přímým UPDATE. Varování applierů (např. `account_not_found`, když DS

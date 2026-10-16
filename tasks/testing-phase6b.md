@@ -1,6 +1,6 @@
 # Testování F6b: spouštění evaluací a evaluační zdroje dat z dashboardu
 
-**Stav:** naplánováno — design schválen 2026-10-16 (#103 D54–D56, D58–D63), čeká na implementaci
+**Stav:** částečně — implementace hotová 2026-10-16 (#103 D54–D56, D58–D63), zbývá ověření evaluace z dashboardu s útratou (po schválení v chatu)
 
 ## Kontext / Cíl
 
@@ -184,23 +184,70 @@ sadu drží (§ 2). Akce:
 
 ## Hotovo když
 
-- [ ] `ds-list --json` ukazuje `dataset` u zdrojů dat seedovaných po změně
-- [ ] `ai-eval --estimate --json` nic nespustí; `--max-cost` zastaví běh
+- [x] `ds-list --json` ukazuje `dataset` u zdrojů dat seedovaných po změně
+- [x] `ai-eval --estimate --json` nic nespustí; `--max-cost` zastaví běh
       po dosažení stropu (unit test s falešným LLM); `--progress-file` píše
       události; SIGTERM ukončí běh bez dalšího volání
-- [ ] API odmítne reseed, verify a eval na `realCopy` (403) i mimo `development`;
+- [x] API odmítne reseed, verify a eval na `realCopy` (403) i mimo `development`;
       druhá úloha na tomtéž zdroji dat 409
 - [ ] z dashboardu na volném zdroji dat: založení evaluačního zdroje dat,
       přeseedování, `dataset-verify` s tabulkou kontrol, evaluace `baseline`
       `--only` 2 dokladů (odhad, potvrzení, průběh, výsledek v prohlížeči),
       zrušení běžící evaluace. **Útrata ověřovacích běhů až po schválení
       v chatu** (orientačně pod 0,5 USD).
-- [ ] editor variant: nová varianta uložená a použitelná v `ai-eval`
-- [ ] soubor výsledků nese cenu štítků; prohlížeč ji ukáže
-- [ ] `docs/dev/dev-daily.md` § 1 (spouštění, úlohy, pojistky),
+- [x] editor variant: nová varianta uložená a použitelná v `ai-eval`
+- [x] soubor výsledků nese cenu štítků; prohlížeč ji ukáže
+- [x] `docs/dev/dev-daily.md` § 1 (spouštění, úlohy, pojistky),
       `docs/test-corpus.md` (`--estimate`, `--max-cost`, `--progress-file`,
       cena štítků, odhad), `docs/cli.md` (`ai-eval`, `dataset-seed`, `ds-list`)
 - [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Implementace 2026-10-16 — co je jinak než v zadání
+
+- **Obal úlohy** `shpd-server dev-job-run <adresář>` (skrytý): `DetachedProcess`
+  přes `setsid -f` PID nevrací, proto API spawnuje obal, který kroky pouští
+  `proc_open` s argv, drží `flock` na `wrapper.lock` (živost místo hádání PID)
+  a píše `state.json`; `job.json` píše jen API (žádný souběh zápisů). Stav se
+  odvozuje při čtení (`starting` → po 60 s `failed`, `running` + volný zámek
+  → `failed`, značka `cancel.json` → `cancelling`). Pod php-fpm není `pcntl`,
+  signály jako čísla (`15` / `9`).
+- **Zrušení**: skupinový SIGTERM; `ai-eval` předává do `AnalysisRequest`
+  hook `beforeAttempt`, který po zrušení zastaví i opakování po přechodné
+  chybě (SIGTERM přeruší `sleep()` v `LlmRetry`); běžící HTTP stream
+  doběhne, proto grace zrušení evaluace 900 s, ostatní 60 s, k tomu
+  `force=1` = SIGKILL. Zrušený běh = exit 130, soubor jen s ≥ 1 hotovým
+  voláním; soubor nese `plannedCalls` a `stoppedBy`.
+- **Přeseedování jiného volného zdroje dat** (schváleno v chatu): panel
+  nabízí volné zdroje dat bez pole `dataset` (a bez původu z jiné sady),
+  protože `ds-class set free` přepsalo `origin` a záložní rozpoznání podle
+  `dataset-seed <sada>` na dev stroji nic nenajde.
+- **Založení bez uživatele** (schváleno v chatu): `create` = `ds-create
+  --no-cron` (+ `--language cs --country <země sady> --module install.base
+  --ds-id <předgenerované>`) a `dataset-seed`; do aplikace přes
+  `auth-emergency-login`. Žádné heslo v argv ani v `job.json`.
+- **Pole `dataset`** se v `main.json` maže na začátku resetu a zapisuje až
+  po úspěšném seedu; `--no-reset` ho odebere (zdroj dat už není čistá kopie
+  jedné sady).
+- **Cena štítků**: `metrics.cost.usd` zůstává jen extrakce; nové `tags.*`
+  a `cost.totalUsd` / `cost.totalPerDocument`; volání nese `tags`
+  (`null` = LLM se nevolalo).
+- **Odhad** `basis` `sameModel` (nejnovější běh nad sadou se stejným
+  `effective.catalogModel`, bez ohledu na variantu a hash; cena/volání vč.
+  `tags.usd`, u starších běhů typická cena štítků) → `series` → `catalog`.
+- **Odhad z API** = synchronní podproces `ai-eval --estimate --json`
+  (`CapturedProcess`, 60 s); s `--json` jde při odmítnutí na stdout
+  i `{ok: false, problems}`.
+- **URL**: `/_dev/api/testing/jobs…` (`DevJobsController`)
+  a `/_dev/api/testing/eval/…` (`DevEvalController`); routy SPA
+  `testing/jobs…`, `testing/variants…` před `testing/:set` — sada se nesmí
+  jmenovat `jobs` ani `variants`.
+- **Editor variant**: identita = název souboru bez `.jsonc`; nová varianta
+  `[a-z0-9][a-z0-9-]{0,63}`; nabídky (připojení, modely platformy
+  serverového připojení, profily) z vybraného volného zdroje dat
+  (`GET …/variants/options?dataSource=`). Dialogy dev SPA jsou lokální
+  (`DevDialog` / `DevConfirm`), ne sdílený `Modal`.
+- `EvalException` už není `final` (`EvalVariantExistsException`,
+  `EvalCancelledException`).
 
 ## Pasti
 

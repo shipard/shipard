@@ -573,12 +573,18 @@ sudo. Souhrn: `N data source(s): X free, Y realCopy (Z without explicit class)`.
       "id": "…", "name": "…", "created": "…",
       "dataClass": "free", "dataClassExplicit": true, "dataClassInvalid": false,
       "purpose": "…", "origin": "dataset-seed cz-vat-payer", "dataClassChanged": "2026-10-16T12:00:00Z",
+      "dataset": { "name": "cz-vat-payer", "hash": "427e83…", "seededAt": "2026-10-16T12:00:00Z" },
       "country": "cz", "defaultLanguage": "cs", "modules": ["install.base"], "databaseName": "…",
       "state": "active", "cron": true, "serverAi": true, "readable": true
     }
   ]
 }
 ```
+
+`dataset` = která sada ve zdroji dat je (#103 F6b D59): zapisuje
+`dataset-seed` po úspěšném seedu (`hash` = hash obsahu sady jako v souboru
+výsledků `ai-eval`), `null` u zdrojů dat seedovaných před F6b, po
+`--no-reset` nebo bez sady. Jen v `--json`, tabulka ho nevypisuje.
 
 Exit 0 i s nečitelnými řádky a bez zdrojů dat (prázdný seznam, tabulka
 `(no data sources)`).
@@ -613,6 +619,21 @@ příznakem a bez třídy upozorní (`[WARN]`), klíč odebere první zápis tř
 a u `--status` při jiných právech než 0600.
 
 ---
+
+### `dev-job-run` (interní, skrytý)
+
+```bash
+shpd-server dev-job-run /opt/shipard/run/dev-jobs/<id>     # spouští jen vývojářský dashboard
+```
+
+Obal úlohy na pozadí vývojářského dashboardu (#103 F6b D58,
+`docs/test-corpus.md` § 18 → Úlohy na pozadí, `docs/dev/dev-daily.md` § 1):
+`JobLauncher` ho spustí přes `setsid -f` jako session leadera, obal drží
+`flock` na `wrapper.lock`, provede kroky z `job.json` (`proc_open` s argv,
+stdout kroku do `result.json` nebo `output.log`) a stav zapisuje do
+`state.json`. SIGTERM = zrušení (běžící krok dostane SIGTERM, po
+`cancelGraceSeconds` SIGKILL), exit 0 hotovo / 1 selhání / 130 zrušeno.
+V nápovědě se neukazuje; ručně se nespouští.
 
 ## `shpd-ds` — kompletní reference
 
@@ -876,8 +897,10 @@ stav** zdroje dat ([ds-state.md](ds-state.md)) — chybějící nebo neplatná
 hodnota zdroj nezavírá, platí jako `realCopy` (U6). Vedle třídy nese
 `main.json` `purpose` (účel, jeden řádek, nejvýš 200 znaků), `origin` (kdo
 třídu nastavil: `ds-create`, `ds-create --real-copy`, `dataset-seed <sada>`,
-`ds-class`) a `dataClassChanged` (ISO 8601 v UTC). Přehled přes všechny
-zdroje: `shpd-server ds-list`.
+`ds-class`) a `dataClassChanged` (ISO 8601 v UTC); nezávisle na třídě
+i `dataset` (`{name, hash, seededAt}` — která sada ve zdroji dat je, píše
+jen `dataset-seed`, #103 F6b D59). Přehled přes všechny zdroje:
+`shpd-server ds-list`.
 
 - **`show`** — třída (u výchozí `not set in main.json — counts as realCopy`,
   u neplatné `invalid value "…" — counts as realCopy`), účel, původ, čas
@@ -1559,6 +1582,8 @@ shpd-ds ai-eval /cesta/k/repu/tests/datasets/cz/vat-payer --variant /cesta/k/rep
 shpd-ds ai-eval … --variant … --only 0101,0902 --yes              # jen dvě buňky, bez dotazu
 shpd-ds ai-eval … --variant … --limit 3 --repeat 3 --save-raw /tmp/eval-raw
 shpd-ds ai-eval … --variant … --yes --json > /tmp/run.json       # soubor výsledků i na stdout
+shpd-ds ai-eval … --variant … --estimate --json                  # jen preflight a odhad, nic nespustí
+shpd-ds ai-eval … --variant … --yes --max-cost 0.5 --progress-file /tmp/progress.jsonl   # strop útraty, průběh pro úlohu dashboardu
 ```
 
 Evaluace AI analýzy nad datovou sadou (#103 F4, `docs/test-corpus.md`
@@ -1579,10 +1604,15 @@ IČO → štítek** (historie řádků a pravidla by pokryly štítky dřív ne�
 aktivní; volání `mail.extraction` s přepsáním varianty jde sestavit.
 
 **Odhad a potvrzení:** před během vypíše počet volání (zprávy × opakování),
-model, připojení a odhad ceny (z posledního běhu téže varianty nad touž
-sadou; jinak z tokenů na doklad posledního běhu nad sadou s modelem téže
-řady — první číslo v ID katalogu — × ceník plánovaného modelu; jinak
-z ceníku katalogu a typické velikosti dokladu). Bez `--yes`
+model, připojení a odhad ceny (z posledního běhu nad sadou se **stejným
+skutečným modelem** extrakce, bez ohledu na variantu a hash, vč. ceny
+štítků — F6b D56; jinak z tokenů na doklad posledního běhu nad sadou
+s modelem téže řady — první číslo v ID katalogu — × ceník plánovaného
+modelu; jinak z ceníku katalogu a typické velikosti dokladu). S `--estimate`
+příkaz po odhadu skončí (exit 0, s `--json` objekt `{ok, set, variant, calls,
+model, tagsModel, estimate, …}` na stdout) — nic nespustí ani nezapíše;
+s `--json` jde při odmítnutí preflightem na stdout i `{ok: false, problems}`.
+Bez `--yes`
 se ptá jen na skutečném terminálu (STDIN je TTY); bez něj — `-n`,
 přesměrovaný nebo prázdný vstup (`< /dev/null`, roura) — končí bez dotazu
 exit 2, útrata je vědomý krok. Odpověď N na terminálu = `Aborted.`,
@@ -1599,12 +1629,18 @@ exit 0. **Stojí peníze.**
 | `--out <adresář>` | Složka výsledků místo `tests/eval/<název sady>/` v repu |
 | `-y, --yes` | Bez potvrzení odhadu |
 | `--json` | Soubor výsledků (+ `file`) jako jediný JSON objekt na stdout, lidské řádky na stderr |
+| `--estimate` | Jen preflight a odhad (s `--json` objekt na stdout), nic nespustí ani nezapíše (F6b D61) |
+| `--max-cost <USD>` | Strop útraty: po jeho dosažení (extrakce + štítky) další volání nezačne; běh se uloží jako neúplný (`stoppedBy: maxCost`, `plannedCalls`) |
+| `--progress-file <soubor>` | Průběh jako JSON řádky `started` / `call` / `finished` / `error` (úloha dashboardu, `docs/test-corpus.md` § 18) |
 
 Exit 0 = běh doběhl (i se špatnými výsledky — ty jsou měření), 1 = některé
 volání selhalo infrastrukturně (`ai_error`, `config_error`, `internal`),
-2 = preflight nebo vstup. Selhání jednoho volání (síť, parser, nevalidní
-canonical) je výsledek zprávy, ne pád. Výstup nikdy přes `| head`
-(SIGPIPE) — `--json > soubor`.
+2 = preflight nebo vstup, 130 = zrušeno. Selhání jednoho volání (síť,
+parser, nevalidní canonical) je výsledek zprávy, ne pád. **SIGTERM / SIGINT**
+(Ctrl-C, zrušení úlohy z dashboardu): další volání modelu nezačne — ani
+opakování po přechodné chybě — rozběhnuté doběhne a běh se uloží se
+`stoppedBy: cancelled` (bez jediného hotového volání bez souboru).
+Výstup nikdy přes `| head` (SIGPIPE) — `--json > soubor`.
 
 #### `ai-eval-compare`
 
@@ -1949,7 +1985,18 @@ atomicky přes `MainConfigFile::patch`, vlastník souboru zůstává zdroji dat.
 Přechod `realCopy` → `free` tu interaktivní potvrzení nechce (U4): reset
 reálná data odstranil dřív, než se třída mění; platí v obou režimech
 serveru (zdroj s `enableReset` na produkci). Selže-li reset, třída se
-nemění — data jsou původní. Souhrn vypíše `Data class: free (origin: …)`
+nemění — data jsou původní.
+
+**Která sada ve zdroji dat je (#103 F6b D59):** po úspěšném seedu zapíše
+do `main.json` pole `dataset` `{name, hash, seededAt}` — `hash` je hash
+obsahu sady (`mail/` + `expected/`, týž jako v souboru výsledků `ai-eval`),
+takže vývojářský dashboard pozná zastaralou sadu. Starý záznam se maže už
+na začátku resetu (po pádu seedu `main.json` netvrdí aktuální sadu);
+`--no-reset` záznam odebere (zdroj dat už není čistá kopie jedné sady) —
+souhrn `Dataset: <sada> (<hash>)` nebo `Dataset: not recorded`. Na třídu
+dat ani `origin` nesahá; čte ho `shpd-server ds-list --json`. Zdroje dat
+seedované před F6b pole nemají — stačí je přeseedovat.
+Souhrn vypíše `Data class: free (origin: …)`
 a ve vývoji stav serverového AI jako `ds-create` (`Server AI: on (free data
 source)` / `off (no server AI key …)`). `--no-reset` třídu ani účel nemění.
 Dřívější `provision.serverAi` v manifestu zaniklo (D9) — je to neznámý klíč

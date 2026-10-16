@@ -823,7 +823,11 @@ doklad podíl bez jediné odchylky (`documents.clean`), správné částky
 (`rows[].totalPrice`, rekapitulace, součty), počet řádků sedí,
 klasifikace, štítek; selhání po typech; cena, tokeny, čas (součet
 a průměr na doklad); totéž po variantách a podobách korpusu
-(`expected/messages.json`). Opakování: podíly jako průměr přes opakování
+(`expected/messages.json`); cena a tokeny jsou **jen extrakce** —
+LLM klasifikace štítků má vlastní `tags.calls` / `tags.usd` /
+`tags.tokens.input` / `tags.tokens.output` (#103 F6b D56) a celek dává
+`cost.totalUsd` / `cost.totalPerDocument` = extrakce + štítky (starší
+běhy tyhle klíče nemají, porovnání je ukáže jako `—`). Opakování: podíly jako průměr přes opakování
 s rozpětím min–max (`range`), stabilita per pole = podíl zpráv se stejnou
 **třídou** stavu ve všech opakováních (`fieldStability`; shoda = `match`
 i `matchNormalized` — mezery v IBAN nebo telefonu nejsou věcná
@@ -848,9 +852,13 @@ profil, cesta, **hash obsahu** `mail/` včetně příloh a `expected/`, počet
 zpráv a výběr), `git` (commit, neuložené změny), `variant` (deklarace
 a `effective`: profil, verze a hash promptu, platforma, připojení s původem,
 model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,
-`repeat`, `metrics`, `range`, `fieldStability`, `formatStability`,
+`repeat`, `plannedCalls` a `stoppedBy` (`maxCost` / `cancelled` / null,
+F6b D61), `metrics`, `range`, `fieldStability`, `formatStability`,
 `byVariant`, `byForm`, `deviationsByField` a `calls` — per zpráva
-a opakování stav, cena, tokeny, čas, klasifikace, štítek, počty stavů polí
+a opakování stav, cena, tokeny, čas, klasifikace, štítek, `tags`
+(spotřeba LLM klasifikace štítků `{tokensIn, tokensOut, costUsd, model}`,
+`null` = LLM se nevolalo: pravidlo IČO, persistnutý štítek, bez nepokrytých
+řádků; F6b D56), počty stavů polí
 (u selhaného volání jen počet chybějících), shody po normalizaci
 `normalized` jako `{path, actual, similarity?}` — od 16. 10. 2026 (D53)
 i s tvarem výstupu, aby prohlížeč výsledků ukázal IBAN s mezerami nebo
@@ -897,6 +905,75 @@ verzí sady (jiný hash) je označený — očekávání v detailu jsou z aktuá
 sady. API `/_dev/api/testing/…` (`DevTestingController`) vybírá sadu, běh
 i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Spouštění
 evaluací z dashboardu je F6b (D54–D56).
+
+### Spouštění z dashboardu (F6b — D54–D56, D58–D63)
+
+Sekce Testování od F6b evaluace i **spouští** (`docs/dev/dev-daily.md` § 1,
+tasks/testing-phase6b.md). Server (`DevEvalController`,
+`/_dev/api/testing/eval/…`) drží pojistku D60: akce reseed / verify /
+estimate / run projdou jen v režimu `development`, na zdroji dat s třídou
+**`free`** a pro sadu ze seznamu (`DevActionGuard`; 403 `DS_NOT_FREE` /
+`FORBIDDEN`, 400 `UNKNOWN_DATASET`); argv kroků se skládá z hodnot z výpisů
+(sada z katalogu, varianta z `variants/`, zdroj dat podle ID), `--only` jen
+tokeny `[A-Za-z0-9._-]`.
+
+- **Zdroje dat sady** (`GET data-sources?dataset=`): zdroje dat s polem
+  `dataset` v `main.json` téhož názvu, nebo s původem `dataset-seed <sada>`
+  (seedované před F6b, bez pole — „přeseedovat“). U každého třída, serverové
+  AI, `dataset.current` (hash = hash sady v pracovním stromu), `usage`
+  z databáze (`EvalDataSourceStatus` — totéž, co hlídá preflight `ai-eval`:
+  doklady, pravidla IČO → štítek, chybějící zprávy, cizí data), běžící
+  úloha, `blockers[]` a `canEval` / `canReseed` / `canVerify`. K tomu
+  `reseedCandidates`: volné zdroje dat bez pole `dataset` a bez původu
+  z jiné sady (nabídka „Přeseedovat jiný volný zdroj dat“).
+- **Odhad** (`POST estimate`): synchronně `ai-eval … --estimate --json`
+  (`CapturedProcess`, limit 60 s) → objekt odhadu; preflight odmítnutí
+  → 422 `EVAL_PREFLIGHT` s `problems`.
+- **Evaluace** (`POST run`): `maxCostUsd` povinný; úloha `eval` = `ai-eval …
+  --yes --json --max-cost <USD> --progress-file <úloha>/progress.jsonl`,
+  stdout → `result.json` (odkaz na soubor běhu), grace zrušení 900 s.
+- **Ověření** (`POST verify`): úloha `verify` = `dataset-verify <sada> --json
+  [--no-apply]`, stdout → `result.json`, v detailu úlohy tabulka kontrol.
+  Snímky hlavní knihy (`--write-ledger-snapshot`) zůstávají v CLI (D29).
+- **Přeseedování** (`POST reseed`): `dataset-seed <sada> --yes`.
+  **Založení** (`POST create`): `ds-create --name "Evaluace — <titulek>"
+  --language cs --country <země sady> --module install.base --no-cron --ds-id
+  <nové> --purpose "evaluace AI — <sada>"` a pak `dataset-seed`; bez
+  uživatele (do aplikace `shpd-ds auth-emergency-login`).
+- **Editor variant** (`GET/PUT variants/{název}`, `GET variants/options?dataSource=`):
+  `EvalVariantStore` nad `tests/eval/variants/` — identita varianty je název
+  souboru bez `.jsonc`, nová varianta `[a-z0-9][a-z0-9-]{0,63}`, validace
+  `EvalVariant::fromArray()`, přepsání jen s `overwrite` (jinak 409
+  `VARIANT_EXISTS`); nabídky (připojení, modely katalogu dostupné na
+  platformě serverového připojení, profily pošty) z konfigurace a databáze
+  zvoleného volného zdroje dat.
+
+### Úlohy na pozadí (F6b — D58)
+
+`src/Core/DevJobs/`: `JobLauncher` zapíše `job.json` (`JobRecord`: typ,
+zdroj dat, sada, varianta, parametry, kroky argv, čas, IP klienta, grace
+zrušení) do `/opt/shipard/run/dev-jobs/<id>/` a přes `setsid -f` spustí
+skrytý obal `shpd-server dev-job-run <adresář>`. Obal drží `flock` na
+`wrapper.lock` (živost — PID se nehádá), píše `state.json` (`JobState`:
+PID, stav, výsledky kroků), kroky pouští `proc_open` s argv
+(`JobStepRunner`; stdout kroku s `captureStdout` do `result.json`, jinak
+s stderr do `output.log`), první selhání zastaví zbytek (`skipped`).
+`JobStore::status()` stav odvozuje při čtení: bez `state.json` do 60 s
+`starting`, pak `failed` (`wrapper_not_started`); `running` s volným
+zámkem `failed` (`wrapper_died`); `running` se značkou `cancel.json`
+`cancelling`. Jedna aktivní úloha na zdroj dat (kritická sekce pod
+`dev-jobs/.lock`, jinak 409 `JOB_RUNNING` s `jobId`). Zrušení =
+`posix_kill(-pid, 15)` celé skupině (obal je session leader): `ai-eval`
+nezačne další volání ani opakování po přechodné chybě (`beforeAttempt`
+→ `EvalCancelledException`), uloží běh se `stoppedBy: cancelled`, exit
+130; obal po `cancelGraceSeconds` (evaluace 900 s — dobíhající volání
+modelu má limit 840 s) pošle SIGKILL; `force=1` z API = SIGKILL hned
+a `state.json` dopíše API (jediný případ vedle selhaného spawnu).
+API `DevJobsController` (`/_dev/api/testing/jobs`, `jobs/{id}?offset=`
+s událostmi průběhu od bajtového offsetu — jen celé řádky — a koncem
+`output.log`, `jobs/{id}/cancel[?force=1]`); úlohy starší 14 dní se při
+výpisu mažou. Pod php-fpm není `pcntl`, proto čísla signálů místo
+konstant `SIGTERM`.
 
 ### Pasti
 
