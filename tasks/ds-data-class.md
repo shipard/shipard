@@ -1,6 +1,6 @@
 # Třída dat zdroje dat, `ds-list` a serverové AI podle třídy (#126 task A)
 
-**Stav:** naplánováno — PRD k implementaci (#126 D6–D12, upřesnění U1–U8 potvrzena 2026-10-16)
+**Stav:** hotovo — implementováno 2026-10-16 (7 commitů, #126 D6–D12, U1–U8); zbývá nasazení a ověření člověkem (oddíl „Nasazení a ověření“) a komentář do #126
 
 > PRD pro Claude Code (7 commitů). Design: issue #126, komentář
 > „Rozhodnutí (2026-10-16)“, body D6–D12. Task B (tajemství do `secrets/`,
@@ -474,6 +474,42 @@ Frontend podle `CLAUDE.md` (`cd frontend && npm run build`).
 
 **Testovací server:** `ds-upgrade` po nasazení; všechny zdroje zůstanou
 `realCopy`, pruh se nezobrazuje (produkce), nic dalšího.
+
+## Hotovo (2026-10-16)
+
+Implementace podle oddílů 1–10 v sedmi commitech. Odchylky a upřesnění
+proti PRD:
+
+- **`DataSourceConfig::hasLegacyServerAiFlag()`** nahradilo
+  `usesServerAiConnection()` — na chování nemá vliv (serverové AI řídí
+  `isFree()`), čte zaniklý klíč jen pro varování `ds-upgrade`, `ds-class
+  show` a inventář (`legacyServerAiFlag`). Přibyl `getDataClassRaw()` pro
+  hlášení neplatné hodnoty v `ds-class show`.
+- **Manifesty sad jsou generované** (`tools/invoice-generator/invoicegen/dataset.py`
+  z `tests/corpus/cz/profiles/*/profile.jsonc`) — `provision.serverAi`
+  zmizelo i z profilů, z `PROVISION_KEYS` generátoru a jeho testů; manifesty
+  upravené ručně na tvar, který build vyprodukuje.
+- **`HostingSyncRunner::buildInventory()`** byl další surový čtenář
+  `main.json` — převeden na `DataSourceInventory::scan()` (nečitelný soubor
+  se vynechá jako dřív). `DataSourceModules` čte přes `DataSourceConfig`,
+  převod nepotřeboval.
+- **`DataSourceInfo::toArray(bool $serverOffersAi)`** vrací rovnou kontrakt
+  `--json` včetně `serverAi`; `legacyServerAiFlag` do JSON nejde.
+- **`ds-create`** má seam `serverOffersAi(ServerConfig)` (mock `ServerConfig`
+  v testech nedá použitelný `DevAiConfig`), `dataset-seed` seam `markFree()`
+  místo `enableServerAi()`; řádek třídy a dotaz `dataset-seed` jsou
+  v commitu 3, ne 5. Titulek sady jde do účelu jen přes `normalizePurpose`
+  (nevyhovující titulek = bez účelu, ne chyba).
+- Help serveru (`ds-list`, nové volby `ds-create`) i DS (`ds-class`) hlídá
+  `HelpDriftTest`; frontend `format.js` dostal čisté funkce
+  `dataClassLabel` / `dataClassTitle` / `truncate` s testy v `node:test`.
+
+Ověření: `php -l`, PHPUnit (`-d memory_limit=1G`) cíleně i celá sada,
+`cd tools/invoice-generator && python3 -m unittest`, `npm run check:i18n`,
+`npm test`, `npm run build`; smoke `shpd-server ds-list` a `ds-class` na
+volném zdroji dat (oddíl „Nasazení a ověření“, kroky 1 a 4). Kroky 2–3
+(označení volných zdrojů, úprava `CLAUDE.local.md` a instrukcí Projektu)
+dělá vlastník stroje.
 
 ## Rozhodnutí k designu (potvrzená)
 

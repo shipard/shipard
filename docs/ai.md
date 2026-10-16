@@ -226,11 +226,14 @@ nemaže. Detaily: [`core_ai_backends.md`](../modules/core/ai/tables/core_ai_back
   adresa, `Shipard\Core\Ai\DevAiConfig` / `DevAiKeyStore`) existuje
   virtuální připojení s kódem **`server`** (`ServerAiConnection`, id 0,
   řádek ve tvaru `core_ai_backends` s markerem). Použije ho jen zdroj dat
-  s příznakem `"ai": {"useServerConnection": true}` v `config/main.json`
-  (`DataSourceConfig::usesServerAiConnection()`; zapisuje `ds-create` ve
-  vývoji bez `--no-server-ai` a `dataset-seed` podle manifestu
-  `provision.serverAi`; obnovená reálná kopie příznak nemá — bez vlastního
-  připojení zůstane bez AI a fronta pošty se nespustí) a jen když nemá
+  s **třídou dat `free`** (`dataClass` v `config/main.json`,
+  `DataSourceConfig::isFree()`, #126 D9; nastavuje `ds-create` ve vývoji
+  bez `--real-copy`, `dataset-seed` po úspěšném resetu a `shpd-ds ds-class
+  set free`; kopie reálných dat `realCopy` i zdroj bez třídy ho nedostanou
+  nikdy, opt-out se nezavádí — bez vlastního připojení zůstanou bez AI
+  a fronta pošty se nespustí; dřívější příznak `ai.useServerConnection`
+  i `provision.serverAi` v manifestu sady zanikly, `ds-upgrade` ve vývoji
+  na zdroj s příznakem bez třídy upozorní) a jen když nemá
   vlastní aktivní připojení **s klíčem** (`AiBackendResolver::defaultBackend()`:
   vlastní připojení má vždy přednost; řádek bez klíče bez příznaku dál
   hlásí `KEY_MISSING`). Resolver pak nese původ připojení `server`

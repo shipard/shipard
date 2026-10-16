@@ -131,13 +131,13 @@ sudo shpd-server fix-permissions
 shpd-server doctor    # ověř že vše zelené
 ```
 
-### `ds-create --name <název> --language <cs|en> --country <cc> [--module <id>] [--ds-id <id>] [--no-cron] [--no-server-ai]`
+### `ds-create --name <název> --language <cs|en> --country <cc> [--module <id>] [--ds-id <id>] [--no-cron] [--real-copy] [--purpose <text>]`
 
 ```bash
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --module=install.base
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --ds-id ab12-cd34-ef56-gh78   # provisioning agent
-sudo shpd-server ds-create --name "Import" --language cs --country cz --no-cron --no-server-ai               # cíl importu: cron vypnutý, bez serverového AI klíče
+sudo shpd-server ds-create --name "Import" --language cs --country cz --real-copy --no-cron --purpose="Ověřování importu"   # cíl importu: kopie reálných dat, cron vypnutý
 ```
 
 Vytvoří nový datový zdroj:
@@ -147,8 +147,11 @@ Vytvoří nový datový zdroj:
 - vytvoří MariaDB databázi a runtime DB uživatele
 - vygeneruje `secrets/secrets.key` pro per-DS šifrování `encrypted_text` sloupců
 - zapíše `config/main.json` (práva 0600) se zvoleným install modulem,
-  jazykem (`defaultLanguage`) a zemí (`country`) — vrstva A dle
-  `docs/ds-setup.md` §5.1
+  jazykem (`defaultLanguage`), zemí (`country`) — vrstva A dle
+  `docs/ds-setup.md` §5.1 — a **třídou dat** (`dataClass`, `origin`,
+  `dataClassChanged`, volitelně `purpose`; #126 D6–D7): na serveru v režimu
+  `development` `free` (ukázková / testovací data), s `--real-copy` nebo
+  v produkci `realCopy`. Přehled tříd dává `ds-list`, změna `shpd-ds ds-class`.
 
 Po vytvoření je třeba spustit `shpd-ds ds-upgrade` z adresáře nového DS,
 aby se založilo schéma a načetla výchozí konfigurace modulů.
@@ -161,7 +164,14 @@ aby se založilo schéma a načetla výchozí konfigurace modulů.
 | `--module <id>` | volitelné (default: `install.base`) — install modul k aktivaci. Musí odpovídat adresáři `modules/install/<suffix>/`, jehož `module.jsonc` má id `install.<suffix>`. Seznam dostupných modulů: `ls modules/install/`. |
 | `--ds-id <id>` | volitelné — explicitní ID místo generovaného (formát `xxxx-xxxx-xxxx-xxxx`, a-z0-9). Používá agent `hosting-sync` (ID generuje hosting). Existující adresář = chyba. |
 | `--no-cron` | volitelné — hned po zápisu `main.json` zapíše `config/state.json` s `"cron": false` (`changedBy: ds-create`), takže DS nikdy neběží se zapnutým cronem ([ds-state.md](ds-state.md) §8). Pro cíl importu (#115 D14). Selhání zápisu je chyba příkazu s radou `shpd-ds ds-state cron --off`; souhrn hlásí `Cron: off`. Bez volby se `state.json` nezakládá. |
-| `--no-server-ai` | volitelné, jen na serveru v režimu `development` — nezapisovat do `main.json` příznak `"ai": {"useServerConnection": true}`, kterým nový DS ve vývoji dostává právo používat serverový AI klíč (`dev-ai-key`, [ai.md](ai.md) §5.1, #103 D40). Pro cíl importu reálné kopie: DS bez vlastního připojení pak zůstane bez AI a frontu pošty nespustí. Souhrn hlásí `Server AI: on/off`; mimo `development` se příznak nezapisuje nikdy. |
+| `--real-copy` | volitelné — třída dat `realCopy` (kopie skutečných dat; cíl importu ze starého Shipardu, obnova zálohy), původ `ds-create --real-copy`. Bez volby je nový DS ve vývoji `free`; v produkci je `realCopy` vždy. Kopie reálných dat nedostane na vývojovém serveru serverové AI připojení (`dev-ai-key`, [ai.md](ai.md) §5.1, #126 D9) — bez vlastního připojení zůstane bez AI a frontu pošty nespustí. Cron tím **nemění** (D7): bez `--no-cron` souhrn jen připomene `Cron: on (a real copy usually runs without periodic jobs …)`. |
+| `--purpose <text>` | volitelné — účel zdroje dat (jeden řádek, nejvýš 200 znaků; `main.json` → `purpose`). Neplatný účel = exit 1 ještě **před** založením databáze. Ukazuje ho `ds-list` a vývojářský dashboard. |
+| `--no-server-ai` | **zastaralé** (U3) — jedno vydání zůstává jako alias `--real-copy` s upozorněním ve výstupu, pak zmizí. |
+
+Souhrn vypíše `Data class:`, `Purpose:` (je-li) a v režimu `development`
+řádek `Server AI:` — `on (free data source)`, `off (realCopy)` nebo
+`off (no server AI key — shpd-server dev-ai-key)`. Nový `main.json` žádný
+příznak `ai.useServerConnection` nenese (zanikl, #126 D9).
 
 Oba povinné přepínače se validují **před** jakoukoli mutací — chybějící
 nebo nevalidní hodnota nenechá po sobě adresář ani databázi.
@@ -516,6 +526,51 @@ kombinaci voleb.
 > Na vývojářském stroji s kopiemi reálných dat spouštěj `--all` vědomě —
 > zapisuje do všech DS.
 
+### `ds-list [--json]`
+
+```bash
+shpd-server ds-list              # tabulka: ID | Name | Class | Purpose | Origin | Country | Modules | Cron | State [| Server AI]
+shpd-server ds-list --json       # stabilní kontrakt pro skripty a Clauda
+```
+
+Přehled zdrojů dat na stroji (#126 D10) — **jediný zdroj přehledu i pro
+Clauda** (ruční tabulka v `CLAUDE.local.md` odpadla, [ai-workflow.md](ai-workflow.md)
+§7). Čte jen `config/main.json` a `config/state.json` přes sdílený čtenář
+`DataSourceInventory` (allowlist polí — bez hesla k databázi, `auth`
+a `mail`, nezávisle na tasku B z #126), do databáze se nepřipojuje, funguje
+i pro zdroj v údržbě a sudo nepotřebuje — stačí uživatel, který `main.json`
+přečte (vlastník zdrojů dat). Řazení podle ID (jako `ds-cron`).
+
+**Tabulka:** `Class` = `free` | `realCopy` | `realCopy*` (třída v `main.json`
+chybí — platí realCopy) | `realCopy!` (neplatná hodnota — platí realCopy);
+legenda pod tabulkou. `Purpose` zkrácený na 40 znaků (plná hodnota
+v `--json`). `Cron` `on` / `off` (poškozený `state.json` → `?`), `State`
+efektivní stav nebo `corrupted`. Sloupec `Server AI` jen na serveru v režimu
+`development`: `on` = zdroj je `free` a server má klíč (`dev-ai-key`).
+Nečitelný `main.json` (0600 pod jiným uživatelem, rozbitý JSON) dá v jeho
+sloupcích `?` a pod tabulkou radu spustit příkaz jako vlastník nebo se
+sudo. Souhrn: `N data source(s): X free, Y realCopy (Z without explicit class)`.
+
+**`--json`:**
+
+```json
+{
+  "server": { "mode": "development", "serverAi": true },
+  "dataSources": [
+    {
+      "id": "…", "name": "…", "created": "…",
+      "dataClass": "free", "dataClassExplicit": true, "dataClassInvalid": false,
+      "purpose": "…", "origin": "dataset-seed cz-vat-payer", "dataClassChanged": "2026-10-16T12:00:00Z",
+      "country": "cz", "defaultLanguage": "cs", "modules": ["install.base"], "databaseName": "…",
+      "state": "active", "cron": true, "serverAi": true, "readable": true
+    }
+  ]
+}
+```
+
+Exit 0 i s nečitelnými řádky a bez zdrojů dat (prázdný seznam, tabulka
+`(no data sources)`).
+
 ### `dev-ai-key --set-key | --status`
 
 ```bash
@@ -533,11 +588,15 @@ v `server.json` (`{"platform": "anthropic", "baseUrl": null}`; chybí =
 history); přepsání = rotace. Příkaz **odmítne server mimo režim
 `development`** — serverové připojení tam neexistuje.
 
-Použije ho jen zdroj dat s příznakem `ai.useServerConnection` v `config/main.json`
-(zapisuje `ds-create` ve vývoji a `dataset-seed` podle manifestu; obnovená
-reálná kopie ho nemá) a jen když nemá vlastní aktivní připojení s klíčem.
-Ověření: `cd /opt/shipard/data-sources/<id> && shpd-ds ai-test --function
-mail.extraction` ukáže připojení `server`. Exit 0; FAILURE mimo
+Použije ho jen zdroj dat s třídou dat `free` (`dataClass` v `config/main.json`,
+#126 D9 — `ds-create` ve vývoji, `dataset-seed` po resetu, `shpd-ds ds-class
+set free`; kopie reálných dat `realCopy` i zdroj bez třídy ho nedostanou
+nikdy, opt-out neexistuje) a jen když nemá vlastní aktivní připojení
+s klíčem. Kdo ho používá, ukáže `ds-list` (sloupec *Server AI*). Ověření:
+`cd /opt/shipard/data-sources/<id> && shpd-ds ai-test --function
+mail.extraction` ukáže připojení `server`. Dřívější příznak
+`ai.useServerConnection` zanikl — `ds-upgrade` ve vývoji na zdroj s tímto
+příznakem a bez třídy upozorní (`[WARN]`), klíč odebere první zápis třídy. Exit 0; FAILURE mimo
 `development`, při špatné kombinaci voleb, prázdném klíči, chybě zápisu
 a u `--status` při jiných právech než 0600.
 
@@ -679,6 +738,15 @@ dotaz zůstává (obchází ho jen `--yes`, ne flag). Flag nikdy nenastavuj na D
 s ostrými daty — `shpd-server doctor` na něj na produkci upozorňuje. Žádný
 `--force` neexistuje záměrně. V development módu se flag nečte.
 
+**Třída dat v dotazu (#126 D11):** za řádkem `Data source: <název> (<id>)`
+příkaz vypíše `Data class: free`, nebo `Data class: realCopy — <účel |
+no purpose set>` — i s `--yes` a `--dry-run`. U kopie reálných dat
+potvrzovací dotaz třídu zopakuje: `This data source is a REAL COPY
+(purpose: …). Drop N table(s) and recreate? [y/N]`. Chování `--yes` se
+nemění; reset třídu **nemění** (cíl importu zůstane `realCopy` i po
+`ds-reset -y` a novém importu) — `free` nastavuje jen `dataset-seed`
+po resetu a `shpd-ds ds-class`.
+
 | Opce | Význam |
 |------|--------|
 | `--keep <tabulka>` | ad-hoc další tabulka k zachování (opakovatelné); aditivní k deklarativní `keepOnReset` |
@@ -764,6 +832,52 @@ HTTP: `suspended` / maintenance / `pending_deletion` → 503 `DS_UNAVAILABLE`
 503, chat vypnutý ([ds-state.md](ds-state.md) §6). Na hostovaných DS bude
 stav řídit hosting (`hosting-sync`, fáze 3); lokální CLI je pro nehostované
 DS a nouzové zásahy.
+
+#### `ds-class`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds ds-class                                   # show (výchozí akce)
+sudo shpd-ds ds-class set realCopy [--purpose="…"] # kdykoli — bezpečný směr
+sudo shpd-ds ds-class set free [--purpose="…"]     # jen interaktivně, s potvrzením [y/N]
+sudo shpd-ds ds-class set free --purpose=""        # na volném zdroji jen odebere účel
+```
+
+Třída dat zdroje dat v `config/main.json` (#126 D6–D9,
+[`tasks/ds-data-class.md`](../tasks/ds-data-class.md)): `free` = ukázková,
+seedovaná nebo testovací data (Claude s nimi smí pracovat bez schválení, na
+vývojovém serveru dostane zdroj serverové AI připojení), `realCopy` = kopie
+skutečných dat (import ze starého Shipardu, obnova zálohy). Třída **není
+stav** zdroje dat ([ds-state.md](ds-state.md)) — chybějící nebo neplatná
+hodnota zdroj nezavírá, platí jako `realCopy` (U6). Vedle třídy nese
+`main.json` `purpose` (účel, jeden řádek, nejvýš 200 znaků), `origin` (kdo
+třídu nastavil: `ds-create`, `ds-create --real-copy`, `dataset-seed <sada>`,
+`ds-class`) a `dataClassChanged` (ISO 8601 v UTC). Přehled přes všechny
+zdroje: `shpd-server ds-list`.
+
+- **`show`** — třída (u výchozí `not set in main.json — counts as realCopy`,
+  u neplatné `invalid value "…" — counts as realCopy`), účel, původ, čas
+  změny; v režimu `development` efektivní `Server AI:` (`on (free data
+  source)` / `off (realCopy)` / `off (no server AI key — shpd-server
+  dev-ai-key)`); `[WARN]`, má-li soubor ještě zaniklý `ai.useServerConnection`.
+- **`set realCopy`** — bez potvrzení, kdykoli (i na zdroji bez třídy —
+  udělá ji explicitní).
+- **`set free`** na zdroji, který `free` není: vyžaduje **interaktivní
+  terminál** — s `-n`, přes MCP most nebo z Claude Code skončí chybou
+  `Marking a data source as free requires an interactive terminal — run
+  the command yourself.` (exit 1, soubor beze změny). Je to pojistka proti
+  omylu, ne proti úmyslu: volné zdroje označuje vlastník stroje sám.
+  Dotaz uvádí název zdroje, třídu a účel (`[y/N]`, výchozí ne); zamítnutí
+  = `Aborted.`, exit 0. Volba `--yes` záměrně **neexistuje**.
+- **Stejná třída** — třída, původ ani čas se nemění, zapíše se jen
+  `--purpose` (je-li uvedené; prázdný řetězec účel odebere), výstup
+  `unchanged`. `set free --purpose=…` na volném zdroji tedy nic nepotvrzuje.
+- Zápis přes `MainConfigFile::patch` (atomicky, 0600, vlastník podle
+  `config/` i pod rootem); první zápis třídy odebere zaniklý
+  `ai.useServerConnection` (U8). Funguje v obou režimech serveru.
+
+Exit 1: není adresář zdroje dat nebo nečitelný `main.json`, neznámá akce
+nebo třída, neplatný účel, přechod na `free` bez terminálu, chyba zápisu.
 
 #### `doc-reaccount <docId> [--force]`
 
@@ -1762,12 +1876,22 @@ a zprávy se zapisují přímo přes Document hooky; přílohy do `att/`, analý
 zpráv jako snapshot (žádné volání AI). Vazby zpráva ↔ doklad se obnoví
 podle čísla dokladu. Fiskální roky se založí pro roky, do kterých spadají
 data sady; účetní položky z nabídky osnovy jen když o ně manifest žádá
-(`provision.accountingItems`, `docs/datasets.md` §1 a §3). Manifest
-s `provision.serverAi: true` (sady korpusu) na serveru v režimu
-`development` zapne zdroji dat příznak `ai.useServerConnection`
-v `config/main.json` — právo používat serverový AI klíč
-(`shpd-server dev-ai-key`, #103 D40); jinde jen poznámka. Zapisuje se
-před resetem (i s `--no-reset`), vlastník souboru zůstává zdroji dat.
+(`provision.accountingItems`, `docs/datasets.md` §1 a §3).
+
+**Třída dat (#126 D7, D11):** před dotazem příkaz vypíše `Data class: free`
+nebo `Data class: realCopy — <účel | no purpose set>`; u kopie reálných dat
+dotaz s resetem uvede `… — a REAL COPY (purpose: …) …`. Po **úspěšném**
+resetu nastaví zdroji dat třídu `free` s původem `dataset-seed <název
+sady>` a účelem z titulku sady, jen když zdroj dat účel nemá (U2) —
+atomicky přes `MainConfigFile::patch`, vlastník souboru zůstává zdroji dat.
+Přechod `realCopy` → `free` tu interaktivní potvrzení nechce (U4): reset
+reálná data odstranil dřív, než se třída mění; platí v obou režimech
+serveru (zdroj s `enableReset` na produkci). Selže-li reset, třída se
+nemění — data jsou původní. Souhrn vypíše `Data class: free (origin: …)`
+a ve vývoji stav serverového AI jako `ds-create` (`Server AI: on (free data
+source)` / `off (no server AI key …)`). `--no-reset` třídu ani účel nemění.
+Dřívější `provision.serverAi` v manifestu zaniklo (D9) — je to neznámý klíč
+a chyba manifestu.
 
 Před jakoukoli změnou proběhne **preflight** — manifest, země sady vs.
 země DS (`country` v manifestu), každý soubor proti schématu
@@ -1780,7 +1904,7 @@ exit code.
 | Opce | Význam |
 |------|--------|
 | `<path>` | Složka sady nebo `.zip` |
-| `--no-reset` | Nemazat DS — doplnit sadu do existujícího obsahu (osoby/položky `mergeAdd`, duplicitní číslo dokladu nebo kód zprávy = chyba záznamu) |
+| `--no-reset` | Nemazat DS — doplnit sadu do existujícího obsahu (osoby/položky `mergeAdd`, duplicitní číslo dokladu nebo kód zprávy = chyba záznamu); třída dat se nemění |
 | `-y, --yes` | Bez potvrzení |
 
 > Manifest s `dateMode` jiným než `fixed` seed odmítne („not implemented“ —
@@ -2012,11 +2136,16 @@ sudo shpd-server ds-upgrade-all   # když se měnily moduly nebo definice tabule
 ### 2. Vytvoření nového DS
 
 ```bash
-sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz
+sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --purpose="Ruční zkoušení UI"
 cd /opt/shipard/data-sources/<id>
 sudo shpd-ds ds-upgrade
 sudo shpd-ds user-create --login=admin --password=... --name="Admin"
+shpd-server ds-list                 # kontrola: ve vývoji Class free, na produkci realCopy
 ```
+
+Na vývojovém serveru je takto založený zdroj `free` (ukázková data, Claude
+s ním smí pracovat bez schválení); cíl importu reálných dat zakládej
+s `--real-copy --no-cron` (workflow 7).
 
 ### 2b. Nastavení čerstvého DS z konzole
 
@@ -2073,15 +2202,20 @@ sudo shpd-ds ds-secrets-health
 ### 7. Opakovaný test importu
 
 ```bash
+# 0. cíl importu: kopie reálných dat (bez serverového AI), cron vypnutý
+sudo shpd-server ds-create --name "Import" --language cs --country cz --real-copy --no-cron --purpose="Ověřování importu"
 cd /opt/shipard/data-sources/<id>
 # 1. zapnout import mód
 #    config/main.json:  "skipProvisioning": true
-sudo shpd-ds ds-reset -y            # čistý stav, schéma bez provisioningu
+sudo shpd-ds ds-reset -y            # čistý stav, schéma bez provisioningu; řádek Data class: realCopy — …
 # 2. … spustit import ze starého Shipardu …
 # 3. vypnout import mód
 #    config/main.json:  "skipProvisioning": false
 sudo shpd-ds ds-upgrade             # doplní zbývající referenční data
 ```
+
+`ds-reset` třídu dat nemění — cíl importu zůstává `realCopy` přes celý
+cyklus reset → reimport (`shpd-server ds-list` to ukáže).
 
 `skipProvisioning` se propíše i přes interní `ds-upgrade` v `ds-reset`,
 takže při zapnutém flagu reset rekreuje jen schéma a žádné referenční data

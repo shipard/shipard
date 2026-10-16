@@ -68,16 +68,20 @@ implementuje.
   agregovaně. Platí i pro Claude při práci s `gh`. Detail: `CLAUDE.md` →
   *Zdroje dat ve veřejných textech*.
 - **Reálná data.** Nese je testovací server a na vývojovém stroji zdroje dat
-  s režimem *reálná kopie* v `CLAUDE.local.md` (kapitola 7). Čtení (soubory, SQL
+  s třídou dat **`realCopy`** (kapitola 7) — přehled dává `shpd-server ds-list`
+  (`--json` pro Clauda), zdroj bez třídy je `realCopy`. Čtení (soubory, SQL
   přes read-only uživatele) je volné. **Jakákoli mutace** — zápisové SQL, mutující
   CLI, zápis souboru (i do `/tmp`), restart služby — jen po explicitním schválení
   v chatu, **jednotlivě**. Na testovacím serveru se zdrojový kód needituje, slouží
   k diagnostice. Do odpovědí nepatří výpisy osobních dat — agregovat, ukazovat jen
-  nezbytné řádky. Zdroje s režimem *volný* (ukázková a seedovaná data) omezení
-  nemají.
-- **Secrets.** Nikdy nečíst `config/main.json` zdroje dat ani `secrets/`. Heslo
-  read-only uživatele se předává přes proměnnou prostředí, nikdy do chatu ani do
-  argumentů příkazu. V Claude Code přímé čtení blokuje `.claude/settings.json`
+  nezbytné řádky. Zdroje s třídou **`free`** (ukázková a seedovaná data) omezení
+  nemají. Na `free` přepíná jen člověk v terminálu (`shpd-ds ds-class set free`
+  bez terminálu skončí chybou) — Claude třídu nemění.
+- **Secrets.** Nikdy nečíst `config/main.json` zdroje dat ani `secrets/`
+  (konfiguraci zdroje dat čte Claude přes `shpd-server ds-list --json`, který
+  tajemství nevypisuje; přímé čtení `main.json` se uvolní až s taskem B z #126).
+  Heslo read-only uživatele se předává přes proměnnou prostředí, nikdy do chatu
+  ani do argumentů příkazu. V Claude Code přímé čtení blokuje `.claude/settings.json`
   (`permissions.deny`) v každém režimu — je to pojistka, ne úplná ochrana:
   zachytí nástroje pro čtení a příkazy, které soubor jmenují (`cat`, `head`, …),
   ne skript nebo aplikaci, která si soubor otevře sama.
@@ -235,25 +239,34 @@ platí pro všechny. Root = **tvůj** checkout, cesty se liší per člověk.
 ### `CLAUDE.local.md` — osobní soubor stroje
 
 Volitelný, v `.gitignore`, v kořeni checkoutu. Popisuje to, co je u každého
-jiné: `project_id` v mostu, cestu k Node, **zdroje dat na dev serveru**, cestu
-k heslu read-only uživatele a případně vlastní workflow. Začít ze šablony:
+jiné: `project_id` v mostu, cestu k Node, adresář zdrojů dat na dev serveru,
+cestu k heslu read-only uživatele a případně vlastní workflow. Začít ze
+šablony:
 
 ```bash
 cp CLAUDE.local.example.md CLAUDE.local.md
 ```
 
-Každý zdroj dat v tabulce má **režim**, podle kterého se Claude chová:
+**Zdroje dat se v souboru nevyjmenovávají** (#126 D10) — přehled dává
+`shpd-server ds-list` (`--json` pro Clauda). Každý zdroj dat má **třídu dat**
+v `config/main.json`, podle které se Claude chová:
 
-| Režim | Co v něm je | Claude smí |
-|-------|-------------|------------|
-| `volný` | ukázková nebo seedovaná data | číst, resetovat, seedovat, zapisovat |
-| `reálná kopie` | kopie ostrých dat (např. import) | číst; mutace jen po schválení, jako na testovacím serveru (kapitola 3) |
+| Třída (`dataClass`) | Co v něm je | Claude smí |
+|---------------------|-------------|------------|
+| `free` | ukázková, seedovaná nebo testovací data | číst, resetovat, seedovat, zapisovat |
+| `realCopy` | kopie ostrých dat (import, obnova zálohy) | číst; mutace jen po schválení, jako na testovacím serveru (kapitola 3) |
 
-Zdroj, který v tabulce chybí, se bere jako `reálná kopie`. Zdroj dat
-v režimu `reálná kopie` má mít **vypnuté periodické úlohy** — žádná úloha
-v něm nemá nic vystavovat ani posílat; přehled a přepínání
-`shpd-server ds-cron` ([`dev/dev-daily.md`](dev/dev-daily.md#4-periodické-úlohy-cron),
-oddíl 4).
+Zdroj bez třídy (nebo s neplatnou hodnotou) je `realCopy`. Třídu nastavuje
+`ds-create` (ve vývoji `free`, s `--real-copy` a v produkci `realCopy`),
+`dataset-seed` po resetu (`free`) a ručně `shpd-ds ds-class` — na `free`
+přepíná **jen člověk v interaktivním terminálu**, z MCP mostu ani Claude
+Code to neprojde ([`cli.md`](cli.md) § `ds-class`). Vedle třídy nese
+`main.json` účel (`purpose`) a původ (`origin`). Serverové AI připojení ve
+vývoji dostane jen zdroj `free`; aplikace nad zdrojem `realCopy` ukazuje
+pruh „Kopie reálných dat“. Zdroj dat `realCopy` má mít **vypnuté periodické
+úlohy** — žádná úloha v něm nemá nic vystavovat ani posílat; třída cron
+nemění, přehled a přepínání `shpd-server ds-cron`
+([`dev/dev-daily.md`](dev/dev-daily.md#4-periodické-úlohy-cron), oddíl 4).
 
 Kdo to načte:
 - **Claude Code** automaticky; `@cesta` importy uvnitř (např. soubor ze
@@ -264,7 +277,7 @@ Kdo to načte:
   kapitola 8).
 
 V `CLAUDE.local.md` smí být názvy zdrojů dat (je mimo repozitář); do
-veřejných textů se z něj přenáší jen prefix ID.
+veřejných textů se přenáší jen prefix ID — i z výstupu `ds-list`.
 
 ---
 
@@ -288,18 +301,22 @@ filů; commit a push dělá člověk.
 **Na začátku práce** si načti `CLAUDE.md` a `docs/ai-workflow.md` z repa
 (z knowledge, nebo přes MCP most s `project_id` `shipard`). Pokud v kořeni
 checkoutu existuje `CLAUDE.local.md`, přečti ho přes most taky — popisuje můj
-stroj a zdroje dat na dev serveru. Týmové přístupy (testovací server apod.)
+stroj. Přehled zdrojů dat na dev serveru a jejich třídu dat zjisti příkazem
+`shpd-server ds-list --json`. Týmové přístupy (testovací server apod.)
 jsou v knowledge, pokud je mám.
 
 **Tvrdá pravidla:**
 - Veřejné texty (issues, komentáře, commity, `docs/`, `tasks/`) bez názvů
   reálných zdrojů dat, firem a osob — jen prefix ID; částky agregovaně.
-- Reálná data (testovací server; na dev serveru zdroje s režimem
-  „reálná kopie“ v `CLAUDE.local.md`): čtení volné, **jakákoli mutace jen
-  po mém explicitním schválení v chatu, jednotlivě**. Na testovacím serveru
-  se zdrojový kód needituje. Do odpovědí žádné výpisy osobních dat.
-- Nikdy nečti `config/main.json` zdrojů dat ani `secrets/`. Hesla nepatří do
-  chatu ani do argumentů příkazů.
+- Reálná data (testovací server; na dev serveru zdroje s třídou dat
+  `realCopy` podle `ds-list` — zdroj bez třídy je `realCopy`): čtení volné,
+  **jakákoli mutace jen po mém explicitním schválení v chatu, jednotlivě**.
+  Třídu dat neměň (`ds-class set free` je jen pro mě v terminálu). Na
+  testovacím serveru se zdrojový kód needituje. Do odpovědí žádné výpisy
+  osobních dat.
+- Nikdy nečti `config/main.json` zdrojů dat ani `secrets/`; konfiguraci
+  zdroje dat ber z `ds-list --json`. Hesla nepatří do chatu ani do argumentů
+  příkazů.
 - Po každém `patch_file` ověř `git diff`. PHPUnit jen s úzkým `--filter`.
   Grep s `--include`, ne široká rekurze přes `modules/`.
 - Nikdy nepushuj.

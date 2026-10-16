@@ -493,9 +493,10 @@ apply výchozí pokladna a účtuje se na 211 místo chybové masky `211???`
 (F3 nález E, `docs/exchange-format.md` → `cash_desk_defaulted`).
 
 `profile.jsonc` nese název, titulek, popis, **pevné** `created` (sada je
-deterministická) a `provision` (`{ "accountingItems": "all", "serverAi": true }`
-— seed založí všechny položky nabídky podle osnovy a na vývojovém serveru
-zapne zdroji dat serverové AI připojení pro evaluaci, F4 D40). `setup/*.jsonc` jsou soubory
+deterministická) a `provision` (`{ "accountingItems": "all" }` — seed
+založí všechny položky nabídky podle osnovy; dřívější `serverAi` zaniklo,
+#126 D9 — serverové AI připojení plyne z třídy dat `free`, kterou seed
+nastaví po resetu). `setup/*.jsonc` jsou soubory
 sekce `setup/` sady (`shpd.dataset.setup.v1`): `settings` (čtyři parametry
 vrstvy C, `economy.homeCurrency czk`, `economy.fiscalYearStartMonth 1`),
 `vat_registrations` jen u plátce, `bank_accounts` (fiktivní účet s mod 11
@@ -740,11 +741,10 @@ modelu na řadu 5 (`docs/roadmap.md` M4).
 ### Předpoklady
 
 - **Vývojový server se serverovým AI klíčem** (D40, `docs/ai.md` § 5.1):
-  `sudo shpd-server dev-ai-key --set-key`; sady korpusu nesou
-  `provision.serverAi: true`, takže `dataset-seed` zapne zdroji dat
-  příznak `ai.useServerConnection` v `config/main.json` a zdroj dat bez
-  vlastního připojení jde přes serverový klíč (`ai-test --function
-  mail.extraction` ukáže připojení `server`).
+  `sudo shpd-server dev-ai-key --set-key`; `dataset-seed` po resetu nastaví
+  zdroji dat třídu `free` (#126 D9), takže zdroj bez vlastního připojení
+  jde přes serverový klíč (`ai-test --function mail.extraction` ukáže
+  připojení `server`; `shpd-server ds-list` sloupec *Server AI* `on`).
 - **Čerstvě naseedovaný zdroj dat** (D39): `ai-eval` odmítne zdroj dat
   s cizí zprávou, s jakýmkoli dokladem (i v Koši) nebo s pravidlem
   IČO → štítek — historie řádků a pravidla by pokryly štítky dřív než AI
@@ -901,9 +901,10 @@ evaluací z dashboardu je F6b (D54–D56).
 ### Pasti
 
 - **Útrata.** Každé volání stojí peníze; odhad a `--yes` nejsou formalita.
-- **Reálná data.** Serverové připojení je opt-in právě proto, aby obnovená
-  reálná kopie nezačala analyzovat poštu; příznak `ai.useServerConnection`
-  se na reálných kopiích nenastavuje ručně.
+- **Reálná data.** Serverové připojení dostane jen zdroj s třídou dat
+  `free` právě proto, aby obnovená reálná kopie nezačala analyzovat poštu;
+  kopie reálných dat (`realCopy`, i zdroj bez třídy) se na `free` nepřepíná
+  (`shpd-ds ds-class set free` je jen pro vlastníka v terminálu).
 - **Očekávání se neupravuje podle modelu.** Rozdíl je výsledek měření;
   chyba očekávání se opravuje v generátoru se schválením.
 - **Nedeterminismus.** Jeden běh nestačí na závěr „lepší / horší“ u malých

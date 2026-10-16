@@ -154,7 +154,7 @@ dnes za něj dělá vývojář z příkazové řádky, a bezpečnost cizích dat
 | Záloha a obnova datového zdroje | — |
 | Samoobslužná správa uživatelů a přístupových práv | — |
 | Zobrazení adresy pro příjem pošty v aplikaci | — |
-| Příkazy `ds-delete` a `ds-list` | — |
+| Příkaz `ds-delete` (`ds-list` hotový dřív jako vývojářský nástroj, #126 — `tasks/ds-data-class.md`) | — |
 | Servisní výmaz nepotřebných tabulek a sloupců | — |
 
 **Hotovo když:** pozvaný uživatel založí firmu, pozve kolegu, pošle první

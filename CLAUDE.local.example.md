@@ -14,16 +14,13 @@ importuješ přes @cesta. Nepotřebné sekce smaž.
 
 ## Zdroje dat na dev serveru
 
-Režim: `volný` = ukázková/seedovaná data, Claude smí resetovat a zapisovat;
-`reálná kopie` = čtení volné, mutace jen po schválení v chatu. Zdroj, který
-tu chybí, je `reálná kopie`. Zdroj v režimu `reálná kopie` má mít vypnuté
-periodické úlohy (`shpd-server ds-cron`).
-
-| DS ID | účel | původ | režim |
-|-------|------|-------|-------|
-| `4l3j-z0bz-kz39-echj` | ukázková data, ruční zkoušení UI | `dataset-seed` | volný |
-| `<ds-id>` | integrační testy | `ds-create` + `dataset-seed` | volný |
-| `<ds-id>` | ověřování importu | import ze starého Shipardu | reálná kopie |
+Přehled, třídu dat, účel a původ každého zdroje dává `shpd-server ds-list`
+(`--json` pro Clauda) — tabulka se tu nevede (#126 D10). Třída `free` =
+ukázková/seedovaná data, Claude smí resetovat a zapisovat; `realCopy` =
+čtení volné, mutace jen po schválení v chatu; zdroj bez třídy je `realCopy`.
+Na `free` přepínám jen já v terminálu: `cd <adresář zdroje> && sudo shpd-ds
+ds-class set free --purpose="…"`. Zdroj `realCopy` má mít vypnuté periodické
+úlohy (`shpd-server ds-cron`).
 
 - Adresář zdroje: `/opt/shipard/data-sources/<ds-id>`
 - Databáze: read-only uživatel `claude_ro`, heslo v `<cesta k souboru>`

@@ -30,6 +30,11 @@ vrátí do `read_only`, ne do `active` (D1).
 **Efektivní stav** = `maintenance aktivní ? suspended : state`. Všechny
 subsystémy rozhodují podle efektivního stavu.
 
+**Třída dat není stav.** `free` / `realCopy` (#126 D6) žije v `config/main.json`
+(`dataClass`, `shpd-ds ds-class`, přehled `shpd-server ds-list`), ne ve
+`state.json` — stav se čte fail-closed a chybná hodnota třídy nesmí zdroj
+dat zavřít; chybějící nebo neplatná třída platí jako `realCopy`.
+
 ## 2. Chování per subsystém
 
 | Efektivní stav | HTTP | `/_mail/incoming` | cron per-DS joby | cron server-level joby |

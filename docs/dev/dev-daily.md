@@ -28,13 +28,17 @@ jak build spustit.
 
 Sekce v horní liště:
 
-- **Zdroje dat** — všechny zdroje dat s názvem, datem vytvoření, databází
-  a stavem periodických úloh (Cron). U každého **Otevřít** (aplikace
+- **Zdroje dat** — všechny zdroje dat s názvem, třídou dat (**volný** /
+  **reálná kopie**; bez třídy v `main.json` šedě — platí reálná kopie;
+  značka **AI** = zdroj používá serverové AI připojení), účelem, datem
+  vytvoření, databází a stavem periodických úloh (Cron). Totéž
+  v terminálu: `shpd-server ds-list`. U každého **Otevřít** (aplikace
   `/{ds-id}/app/` v novém tabu), **Logy** a **Upgrade**. ID lze jedním
   klikem zkopírovat do schránky. Seznam se sám obnovuje (odpočet v hlavičce).
 - **Nový zdroj dat** — založení zdroje dat z formuláře (jazyk, země,
-  instalační modul, login a heslo administrátora, volitelně testovací
-  data). Průběh (`ds-create` → `ds-upgrade` → `user-create` → příp. seed)
+  instalační modul, volitelný účel, login a heslo administrátora, volitelně
+  testovací data); takto založený zdroj je ve vývoji **volný** (třída dat
+  `free`). Průběh (`ds-create` → `ds-upgrade` → `user-create` → příp. seed)
   se vypisuje živě do stránky; po dokončení vede odkaz přímo do nového
   zdroje dat.
 - **Testování** — prohlížeč výsledků evaluací AI nad testovacími sadami
@@ -146,11 +150,12 @@ sudo shpd-server ds-cron --off <id>            # vypnout (např. cíl importu)
 ```
 
 Zdroj dat založený až po instalaci cronu má cron zapnutý (výchozí stav);
-cíl importu zakládej s `ds-create --no-cron`. Vypnutý cron je vidět ve
-sloupci **Cron** vývojářského dashboardu, v `doctor` a jako pruh v aplikaci.
-V `CLAUDE.local.md` odpovídá vypnutému cronu režim `reálná kopie`
-([`../ai-workflow.md`](../ai-workflow.md#7-nastavení-pro-nového-člověka),
-kapitola 7).
+cíl importu zakládej s `ds-create --real-copy --no-cron`. Vypnutý cron je
+vidět ve sloupci **Cron** vývojářského dashboardu, v `shpd-server ds-list`,
+v `doctor` a jako pruh v aplikaci. Třída dat `realCopy` (kopie reálných dat,
+[`../ai-workflow.md`](../ai-workflow.md#7-nastavení-pro-nového-člověka),
+kapitola 7) cron sama nemění — vypnutý cron je u ní zvyk, ne automatika;
+`ds-list` ukáže obojí vedle sebe.
 
 **Jeden tik ručně.** Úlohy slotu pro jediný zdroj dat, bez ohledu na
 přepínač (ladění, dohnání):
