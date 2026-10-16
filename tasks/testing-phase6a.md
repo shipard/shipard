@@ -1,6 +1,6 @@
 # Testování F6a: vývojářský dashboard ve Svelte a prohlížeč výsledků evaluací
 
-**Stav:** částečně — implementace hotová 2026-10-16 (6 commitů), zbývá ověření rekonstrukce proti syrovému výstupu (jedno volání `ai-eval --save-raw` po schválení útraty)
+**Stav:** hotovo — 2026-10-16 (#103 D51–D53, D57; 7 commitů), rekonstrukce ověřená proti syrovému výstupu modelu
 
 ## Kontext / Cíl
 
@@ -173,7 +173,7 @@ Výkon: sada má 20–60 zpráv a běh do 200 kB, nic nestránkovat.
 - [x] prohlížeč nad 13 existujícími běhy: běhy sady, detail běhu, detail
       dokladu s PDF (aspoň dlouhý doklad, účtenka a faktura v EUR), porovnání
       `baseline` (4.6) vs. `baseline` po přepnutí, doklad napříč běhy
-- [ ] rekonstruovaný výstup u jednoho dokladu ověřený proti syrovému výstupu
+- [x] rekonstruovaný výstup u jednoho dokladu ověřený proti syrovému výstupu
       (`ai-eval --only … --save-raw`, jedno volání, po schválení útraty;
       nebo proti existujícímu uloženému syrovému výstupu, pokud je)
 - [x] `docs/dev/dev-daily.md` § 1 (nový dashboard, Testování),
@@ -182,8 +182,16 @@ Výkon: sada má 20–60 zpráv a běh do 200 kB, nic nestránkovat.
 
 ## Hotovo 2026-10-16 — co je jinak než v zadání
 
-Šest commitů na `stable` (druhý vstup Vite → servírování SPA → tvar
-`normalized` → API Testování → obrazovky → dokumentace). Ověřeno
+Sedm commitů na `stable` (druhý vstup Vite → servírování SPA → tvar
+`normalized` → API Testování → obrazovky → dokumentace → uzavření).
+**Rekonstrukce ověřená proti syrovému výstupu:** jedno volání
+`ai-eval cz-vat-payer --variant baseline --only 0301 --repeat 1 --save-raw`
+na evaluačním zdroji dat (0,038 USD, výsledky mimo repo). Všech 79 hodnot
+výstupu z rekonstrukce je v syrové odpovědi modelu — včetně telefonu
+u shody po normalizaci (`+420 596 730 111` s mezerami, očekávání bez nich)
+a špatné spisové značky; počty stavů sedí se souborem běhu. Jediná hodnota
+mimo syrový text je štítek dokladu, který dává druhé volání (klasifikátor
+štítků) a `--save-raw` ukládá jen odpověď extrakce. Ověřeno
 v headless Chromiu: všech šest stránek portu vč. založení zdroje dat se
 seedem až po odkaz (smoke zdroj dat „F6a smoke“, lze smazat),
 Doctor a Upgrade jednoho zdroje; deset obrazovek Testování a interakce
