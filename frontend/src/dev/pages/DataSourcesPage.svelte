@@ -8,7 +8,7 @@
   import { iconAdd, iconRefresh, iconCopy, iconConfirm } from '../../icons.js';
   import { getJson } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
-  import { formatDateTime } from '../format.js';
+  import { formatDateTime, dataClassLabel, dataClassTitle, truncate } from '../format.js';
 
   const STATE_LABELS = {
     read_only: 'jen ke čtení',
@@ -93,6 +93,8 @@
       <tr>
         <th>ID</th>
         <th>Název</th>
+        <th>Třída</th>
+        <th>Účel</th>
         <th>Vytvořeno</th>
         <th>Databáze</th>
         <th>Cron</th>
@@ -101,10 +103,10 @@
     </thead>
     <tbody>
       {#if loading}
-        <tr><td colspan="6" class="dev-empty">Načítám…</td></tr>
+        <tr><td colspan="8" class="dev-empty">Načítám…</td></tr>
       {:else if items.length === 0 && !error}
         <tr>
-          <td colspan="6" class="dev-empty">
+          <td colspan="8" class="dev-empty">
             Zatím žádné zdroje dat. Založ první přes
             <a href={router.href('dsCreate')} onclick={onLinkClick}>Nový zdroj dat</a>
             — zaškrtni „Naseedovat testovací data“, dostaneš ukázkové osoby a poštu.
@@ -126,6 +128,17 @@
               </button>
             </td>
             <td>{ds.name}</td>
+            <!-- Třída dat (#126 D10): bez explicitní třídy šedě (v main.json chybí → reálná kopie);
+                 značka AI = zdroj používá serverové AI připojení. -->
+            <td class="dev-nowrap">
+              <span class:dev-muted={!ds.dataClassExplicit} class:data-class-free={ds.dataClass === 'free'} title={dataClassTitle(ds)}>
+                {dataClassLabel(ds.dataClass)}
+              </span>
+              {#if ds.serverAi}
+                <span class="dev-state dev-state--neutral" title="Používá serverové AI připojení (dev-ai-key)">AI</span>
+              {/if}
+            </td>
+            <td class="dev-muted purpose" title={ds.purpose ?? ''}>{truncate(ds.purpose)}</td>
             <td class="dev-nowrap dev-muted">{ds.created ? formatDateTime(ds.created) : '—'}</td>
             <td><code>{ds.database_name ?? '—'}</code></td>
             <td class="dev-nowrap">
@@ -170,6 +183,9 @@
     font-weight: 600;
     cursor: help;
   }
+
+  .data-class-free { font-weight: 600; }
+  .purpose { max-width: 18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .action {
     display: inline-block;

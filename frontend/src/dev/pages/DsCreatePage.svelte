@@ -19,6 +19,7 @@
     login: 'admin',
     password: 'admin',
     seed: true,
+    purpose: '',
   });
   let showPassword = $state(false);
   let fieldErrors = $state({});
@@ -65,6 +66,11 @@
     if (!['cs', 'en'].includes(form.language)) errors.language = 'Vyber jazyk.';
     if (!/^[a-z]{2}$/.test(form.country)) errors.country = 'Vyber zemi.';
 
+    // Účel (#126 D6) — zrcadlí MainConfigPatcher::normalizePurpose: jeden řádek, max. 200 znaků.
+    const purpose = form.purpose.trim();
+    if (/[\p{Cc}]/u.test(purpose)) errors.purpose = 'Účel musí být jeden řádek bez řídicích znaků.';
+    else if (purpose.length > 200) errors.purpose = 'Účel je příliš dlouhý (max. 200 znaků).';
+
     fieldErrors = errors;
     return Object.keys(errors).length === 0;
   }
@@ -87,6 +93,7 @@
           module: form.module,
           language: form.language,
           country: form.country,
+          purpose: form.purpose.trim(),
         },
         onLine: (line) => {
           if (line.kind !== 'done') lines = [...lines, line];
@@ -132,6 +139,17 @@
       <label for="ds-name">Název</label>
       <input id="ds-name" type="text" bind:value={form.name} maxlength="200" disabled={busy} autocomplete="off" />
       {#if fieldErrors.name}<div class="dev-field__error">{fieldErrors.name}</div>{/if}
+    </div>
+
+    <div class="dev-field" class:has-error={fieldErrors.purpose}>
+      <label for="ds-purpose">Účel <span class="dev-muted">(volitelné)</span></label>
+      <input id="ds-purpose" type="text" bind:value={form.purpose} maxlength="200" disabled={busy} autocomplete="off"
+        placeholder="např. Ruční zkoušení UI" />
+      {#if fieldErrors.purpose}
+        <div class="dev-field__error">{fieldErrors.purpose}</div>
+      {:else}
+        <div class="dev-field__hint">Jeden řádek, max. 200 znaků. Ukáže se ve sloupci Účel a v <code>shpd-server ds-list</code>; zdroj dat založený tady je ve vývoji volný (třída dat <code>free</code>).</div>
+      {/if}
     </div>
 
     <div class="dev-form__row">

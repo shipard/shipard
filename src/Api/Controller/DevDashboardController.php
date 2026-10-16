@@ -8,6 +8,7 @@ use Shipard\Api\Response;
 use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Server\DataSourceInventory;
+use Shipard\Core\Server\MainConfigPatcher;
 
 class DevDashboardController
 {
@@ -244,14 +245,22 @@ class DevDashboardController
 			: 'install.base';
 		$language = is_string($body['language'] ?? null) ? trim($body['language']) : '';
 		$country  = is_string($body['country'] ?? null) ? trim($body['country']) : '';
+		$purpose  = is_string($body['purpose'] ?? null) ? $body['purpose'] : '';
 
 		$errors = $this->validateDsCreateInput($name, $login, $password, $module, $language, $country);
+		// Účel (#126 D6): jediná validace je MainConfigPatcher::normalizePurpose
+		// (sdílí ji ds-create i ds-class); prázdný = bez účelu.
+		try {
+			$purpose = MainConfigPatcher::normalizePurpose($purpose);
+		} catch (\InvalidArgumentException $e) {
+			$errors[] = 'Purpose: ' . $e->getMessage();
+		}
 		if ($errors) {
 			return Response::error('VALIDATION', implode(' ', $errors), 400);
 		}
 
-		return Response::stream(function () use ($name, $login, $password, $seed, $module, $language, $country) {
-			$this->runDsCreatePipeline($name, $login, $password, $seed, $module, $language, $country);
+		return Response::stream(function () use ($name, $login, $password, $seed, $module, $language, $country, $purpose) {
+			$this->runDsCreatePipeline($name, $login, $password, $seed, $module, $language, $country, $purpose);
 		});
 	}
 
@@ -330,19 +339,23 @@ class DevDashboardController
 		string $module,
 		string $language,
 		string $country,
+		string $purpose = '',
 	): void {
 		$shpdServer = $this->getShpdServerPath();
 		$shpdDs     = $this->getShpdDsPath();
 
 		// ── 1. ds-create ────────────────────────────────────────────────
+		// Zdroj dat založený z dashboardu je ve vývoji `free` (#126 D7);
+		// --purpose jen neprázdný.
 		$this->emitStep('Creating data source...');
 		$cmd = sprintf(
-			'%s ds-create --name=%s --module=%s --language=%s --country=%s --no-ansi 2>&1',
+			'%s ds-create --name=%s --module=%s --language=%s --country=%s%s --no-ansi 2>&1',
 			escapeshellarg($shpdServer),
 			escapeshellarg($name),
 			escapeshellarg($module),
 			escapeshellarg($language),
 			escapeshellarg($country),
+			$purpose !== '' ? ' --purpose=' . escapeshellarg($purpose) : '',
 		);
 		[$exitCode, $output] = $this->streamCommand($cmd);
 

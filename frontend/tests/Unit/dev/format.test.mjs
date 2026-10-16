@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   formatNumber, formatPercent, formatPercentDelta, formatDelta, formatUsd, formatMs, formatCommit,
+  dataClassLabel, dataClassTitle, truncate,
 } from '../../../src/dev/format.js';
 
 // Intl v Node odděluje tisíce i desetiny podle cs-CZ (nezlomitelná mezera, čárka);
@@ -32,4 +33,28 @@ test('cena, čas, commit', () => {
   assert.equal(formatMs(null), '—');
   assert.equal(formatCommit('1baa027d9f3c', true), '1baa027d*');
   assert.equal(formatCommit(null), '—');
+});
+
+test('třída dat: free → volný, vše ostatní reálná kopie (#126 D6)', () => {
+  assert.equal(dataClassLabel('free'), 'volný');
+  assert.equal(dataClassLabel('realCopy'), 'reálná kopie');
+  assert.equal(dataClassLabel(undefined), 'reálná kopie');
+  assert.equal(dataClassLabel('Free'), 'reálná kopie');
+});
+
+test('bublina třídy dat: chybějící třída, původ, čas, serverové AI', () => {
+  assert.equal(dataClassTitle({ dataClass: 'realCopy', dataClassExplicit: false }), 'v main.json chybí — platí reálná kopie');
+  const title = dataClassTitle({
+    dataClass: 'free', dataClassExplicit: true, origin: 'dataset-seed cz-vat-payer',
+    dataClassChanged: '2026-10-16T12:00:00Z', serverAi: true,
+  });
+  assert.match(title, /^nastavil: dataset-seed cz-vat-payer · změněno: .+ · používá serverové AI připojení$/);
+  assert.equal(dataClassTitle({ dataClass: 'free', dataClassExplicit: true }), '');
+});
+
+test('zkrácení účelu s výpustkou, prázdný → pomlčka', () => {
+  assert.equal(truncate(null), '—');
+  assert.equal(truncate(''), '—');
+  assert.equal(truncate('Ruční zkoušení UI'), 'Ruční zkoušení UI');
+  assert.equal(truncate('Testovací sada plátce DPH pro evaluaci AI nad korpusem', 40), 'Testovací sada plátce DPH pro evaluaci…');
 });

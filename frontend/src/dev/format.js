@@ -73,6 +73,37 @@ export function formatCommit(commit, dirty = false) {
   return String(commit).slice(0, 8) + (dirty ? '*' : '');
 }
 
+/**
+ * Popisek třídy dat zdroje dat (#126 D6): `free` → „volný“, cokoli
+ * jiného (realCopy, chybějící, neznámé) → „reálná kopie“ — stejný
+ * fail-safe jako server.
+ */
+export function dataClassLabel(dataClass) {
+  return dataClass === 'free' ? 'volný' : 'reálná kopie';
+}
+
+/**
+ * Bublina ke třídě dat: bez explicitní třídy upozorní, že v main.json
+ * chybí; jinak původ a čas změny, pokud jsou.
+ *
+ * @param {{dataClass?: string, dataClassExplicit?: boolean, origin?: string|null, dataClassChanged?: string|null, serverAi?: boolean}} ds
+ */
+export function dataClassTitle(ds) {
+  const parts = [];
+  if (!ds.dataClassExplicit) parts.push('v main.json chybí — platí reálná kopie');
+  if (ds.origin) parts.push(`nastavil: ${ds.origin}`);
+  if (ds.dataClassChanged) parts.push(`změněno: ${formatDateTime(ds.dataClassChanged)}`);
+  if (ds.serverAi) parts.push('používá serverové AI připojení');
+  return parts.join(' · ');
+}
+
+/** Zkrácení na `max` znaků s výpustkou; null/prázdné → pomlčka. */
+export function truncate(text, max = 40) {
+  if (text === null || text === undefined || text === '') return DASH;
+  const s = String(text);
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s;
+}
+
 function toDate(iso) {
   if (!iso) return null;
   const d = new Date(iso);

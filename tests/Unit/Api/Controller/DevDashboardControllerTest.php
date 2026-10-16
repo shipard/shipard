@@ -749,6 +749,46 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertStringContainsString('install.foo', $ctrl->commandsRun[0]);
 	}
 
+	public function testDsCreateValidationRejectsAMultilineOrLongPurpose(): void
+	{
+		// #126 D6: stejná validace jako ds-create --purpose (MainConfigPatcher::normalizePurpose).
+		foreach (["první\ndruhý", str_repeat('x', 201)] as $purpose) {
+			$resp = $this->ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', [
+				'name'     => 'Test',
+				'login'    => 'admin',
+				'password' => 'admin',
+				'language' => 'cs',
+				'country'  => 'cz',
+				'purpose'  => $purpose,
+			]));
+			$this->assertSame(400, $this->getStatus($resp));
+			$payload = $this->getPayloadRaw($resp);
+			$this->assertSame('VALIDATION', $payload['error']['code']);
+			$this->assertStringContainsString('Purpose:', $payload['error']['message']);
+		}
+	}
+
+	public function testDsCreatePipelinePassesPurposeOnlyWhenGiven(): void
+	{
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->commandResults = [[0, "  Directory:     /tmp/test/abc123\n"], [0, ''], [0, '']];
+		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', [
+			'name' => 'Test', 'login' => 'admin', 'password' => 'admin', 'language' => 'cs', 'country' => 'cz',
+			'purpose' => '  Ruční zkoušení UI  ',
+		]));
+		$this->streamToString($resp);
+		$this->assertStringContainsString("--purpose='Ruční zkoušení UI'", $ctrl->commandsRun[0], 'účel normalizovaný (trim)');
+
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->commandResults = [[0, "  Directory:     /tmp/test/abc123\n"], [0, ''], [0, '']];
+		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', [
+			'name' => 'Test', 'login' => 'admin', 'password' => 'admin', 'language' => 'cs', 'country' => 'cz',
+			'purpose' => '   ',
+		]));
+		$this->streamToString($resp);
+		$this->assertStringNotContainsString('--purpose', $ctrl->commandsRun[0], 'prázdný účel se nepředává');
+	}
+
 	public function testDsCreatePipelinePassesLanguageAndCountryFlags(): void
 	{
 		$ctrl = $this->makeTestableCtrl();
