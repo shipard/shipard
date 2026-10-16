@@ -59,3 +59,17 @@ test('matchRoute(buildPath()) je identita', () => {
   assert.deepEqual(r.params, { set: 'cz vat', file: 'a.json' });
   assert.deepEqual(r.query, { b: 'c.json' });
 });
+
+test('úlohy a varianty (F6b) mají přednost před sadou', () => {
+  assert.equal(matchRoute('/_dev/testing/jobs/').name, 'testingJobs');
+  const job = matchRoute('/_dev/testing/jobs/20261016-120000-ab12cd/');
+  assert.equal(job.name, 'testingJob');
+  assert.deepEqual(job.params, { jobId: '20261016-120000-ab12cd' });
+  assert.equal(matchRoute('/_dev/testing/variants').name, 'testingVariants');
+  const variant = matchRoute('/_dev/testing/variants/_new/');
+  assert.equal(variant.name, 'testingVariant');
+  assert.deepEqual(variant.params, { name: '_new' });
+  assert.equal(matchRoute('/_dev/testing/cz-vat-payer/').name, 'testingRuns');
+  assert.equal(buildPath('testingJob', { jobId: 'x' }), '/_dev/testing/jobs/x/');
+  assert.equal(buildPath('testingVariant', { name: 'baseline' }), '/_dev/testing/variants/baseline/');
+});

@@ -14,11 +14,13 @@ export class ApiError extends Error {
    * @param {string} message
    * @param {number} status
    */
-  constructor(code, message, status) {
+  constructor(code, message, status, details = null) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
     this.status = status;
+    /** Doplňující data chyby ze serveru (`error.details`), např. `{jobId}` u 409 JOB_RUNNING. */
+    this.details = details;
   }
 }
 
@@ -31,7 +33,7 @@ async function parseEnvelope(res) {
   }
   if (!res.ok || !payload || payload.success !== true) {
     const err = payload && payload.error ? payload.error : {};
-    throw new ApiError(err.code ?? `HTTP_${res.status}`, err.message ?? `HTTP ${res.status}`, res.status);
+    throw new ApiError(err.code ?? `HTTP_${res.status}`, err.message ?? `HTTP ${res.status}`, res.status, err.details ?? null);
   }
   return payload.data;
 }
@@ -45,6 +47,15 @@ export async function getJson(path) {
 export async function postJson(path, body) {
   const res = await fetch(API_BASE + path, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body ?? {}),
+  });
+  return parseEnvelope(res);
+}
+
+export async function putJson(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(body ?? {}),
   });

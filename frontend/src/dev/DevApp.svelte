@@ -47,7 +47,7 @@
 
   $effect(() => {
     const title = isTesting
-      ? ['Testování', route.params.set, route.params.file, route.params.messageId].filter(Boolean).join(' · ')
+      ? ['Testování', route.name === 'testingJobs' || route.name === 'testingJob' ? 'Úlohy' : null, route.name === 'testingVariants' || route.name === 'testingVariant' ? 'Varianty' : null, route.params.set, route.params.file, route.params.messageId, route.params.jobId, route.params.name].filter(Boolean).join(' · ')
       : (TITLES[route.name] ?? 'Dashboard');
     document.title = `${title} — Shipard dev`;
   });

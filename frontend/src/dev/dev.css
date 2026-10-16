@@ -407,3 +407,32 @@ tr.dev-row--notCompared td { color: var(--shpd-color-text-secondary); font-style
 td.dev-cellstate--missing, td.dev-cellstate--extra, td.dev-cellstate--wrong { background: color-mix(in srgb, var(--shpd-color-state-cancelled-bg) 70%, transparent) !important; }
 td.dev-cellstate--matchNormalized { background: color-mix(in srgb, var(--shpd-color-primary-soft) 70%, transparent) !important; }
 td.dev-cellstate--notCompared { color: var(--shpd-color-text-secondary); font-style: italic; }
+
+/* ── F6b: úlohy, panel zdrojů dat, editor variant ─────────────────────────── */
+.dev-field input[type="number"],
+.dev-field textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--shpd-color-border);
+  border-radius: var(--shpd-radius-sm, 4px);
+  background: var(--shpd-color-surface);
+  color: var(--shpd-color-text);
+  font: inherit;
+}
+.dev-field textarea { min-height: 80px; resize: vertical; }
+.dev-actions { display: flex; flex-wrap: wrap; gap: var(--shpd-space-xs, 4px); align-items: center; }
+.dev-progress { height: 8px; background: var(--shpd-color-surface-alt, var(--shpd-color-border)); border-radius: 4px; overflow: hidden; margin: 4px 0; }
+.dev-progress__bar { height: 100%; background: var(--shpd-color-primary); transition: width 0.3s; }
+.dev-progress__bar--warn { background: var(--shpd-color-warning); }
+.dev-kv { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 0; }
+.dev-kv dt { color: var(--shpd-color-text-muted); }
+.dev-kv dd { margin: 0; }
+.dev-blockers { margin: 0; padding-left: 16px; color: var(--shpd-color-text-muted); font-size: var(--shpd-font-size-sm); }
+.dev-dialog { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); padding: var(--shpd-space-lg); }
+.dev-dialog__card { max-width: calc(100vw - 2 * var(--shpd-space-lg)); max-height: 90vh; display: flex; flex-direction: column; background: var(--shpd-color-surface); color: var(--shpd-color-text); border: 1px solid var(--shpd-color-border); border-radius: var(--shpd-radius-md, 8px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); }
+.dev-dialog__header { display: flex; align-items: center; gap: var(--shpd-space-sm); padding: var(--shpd-space-md) var(--shpd-space-lg); border-bottom: 1px solid var(--shpd-color-border); }
+.dev-dialog__title { font-weight: 600; flex: 1; }
+.dev-dialog__close { border: 0; background: none; color: var(--shpd-color-text-muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.dev-dialog__body { padding: var(--shpd-space-lg); overflow: auto; }
+.dev-dialog__message { white-space: pre-line; line-height: 1.5; }
+.dev-dialog__footer { display: flex; justify-content: flex-end; gap: var(--shpd-space-sm); padding: var(--shpd-space-md) var(--shpd-space-lg); border-top: 1px solid var(--shpd-color-border); }

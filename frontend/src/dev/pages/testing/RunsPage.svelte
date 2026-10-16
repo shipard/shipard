@@ -8,6 +8,7 @@
   import { formatDateTime, formatPercent, formatUsd, formatMs, formatCommit } from '../../format.js';
   import Crumbs from '../../components/Crumbs.svelte';
   import DevTable from '../../components/DevTable.svelte';
+  import DataSourcesPanel from './DataSourcesPanel.svelte';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -56,7 +57,7 @@
     { id: 'clean', label: 'Bez odchylky', align: 'right', sortValue: (r) => r.clean?.avg ?? null, defaultDir: 'desc' },
     { id: 'amountsCorrect', label: 'Částky', align: 'right', sortValue: (r) => r.amountsCorrect?.avg ?? null, defaultDir: 'desc' },
     { id: 'failed', label: 'Selhání', align: 'right' },
-    { id: 'costPerDocument', label: 'Cena / doklad', align: 'right' },
+    { id: 'costPerDocument', label: 'Cena / doklad', align: 'right', sortValue: (r) => r.costTotalPerDocument ?? r.costPerDocument ?? null },
     { id: 'timePerDocumentMs', label: 'Čas / doklad', align: 'right' },
     { id: 'commit', label: 'Commit' },
   ];
@@ -64,7 +65,17 @@
 
 <Crumbs items={[{ label: 'Testování', href: router.href('testingDatasets') }, { label: set }]} />
 <div class="dev-page__head">
-  <h1>Běhy sady {data?.dataset?.title ? `— ${data.dataset.title}` : ''}</h1>
+  <h1>Sada {set}{data?.dataset?.title ? ` — ${data.dataset.title}` : ''}</h1>
+  <span class="dev-page__spacer"></span>
+  <a href={router.href('testingJobs', {}, { dataset: set })} onclick={onLinkClick} class="dev-small">úlohy sady</a>
+</div>
+
+{#key set}
+  <DataSourcesPanel {set} datasetTitle={data?.dataset?.title ?? ''} />
+{/key}
+
+<div class="dev-page__head">
+  <h2>Běhy sady</h2>
   <span class="dev-page__spacer"></span>
   <span class="dev-small dev-muted">{selected.length} / 2 vybrané</span>
   <Button label="Porovnat vybrané" size="sm" disabled={selected.length !== 2} onclick={compareSelected} />
@@ -106,7 +117,7 @@
       {:else if col.id === 'failed'}
         <span class:dev-lvl--bad={row.failed > 0} class="dev-lvl">{row.failed}</span>
       {:else if col.id === 'costPerDocument'}
-        {formatUsd(row.costPerDocument)}
+        <span title={row.tagsUsd === null || row.tagsUsd === undefined ? 'jen extrakce (starší běh bez ceny štítků)' : `extrakce ${formatUsd(row.costPerDocument)} + štítky ${formatUsd(row.tagsUsd / Math.max(1, row.callsTotal))} na doklad`}>{formatUsd(row.costTotalPerDocument ?? row.costPerDocument)}</span>
       {:else if col.id === 'timePerDocumentMs'}
         {formatMs(row.timePerDocumentMs)}
       {:else if col.id === 'commit'}

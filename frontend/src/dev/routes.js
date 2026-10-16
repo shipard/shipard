@@ -21,6 +21,11 @@ const ROUTES = [
   ['ds-upgrade', 'dsUpgrade'],
   // Testování (#103 D53) — sada, běhy, detail běhu, doklad v běhu, porovnání, doklad napříč běhy
   ['testing', 'testingDatasets'],
+  // Úlohy a varianty (F6b) — před `testing/:set`: první shoda vítězí, sada se nesmí jmenovat `jobs` / `variants`
+  ['testing/jobs', 'testingJobs'],
+  ['testing/jobs/:jobId', 'testingJob'],
+  ['testing/variants', 'testingVariants'],
+  ['testing/variants/:name', 'testingVariant'],
   ['testing/:set', 'testingRuns'],
   ['testing/:set/compare', 'testingCompare'],
   ['testing/:set/runs/:file', 'testingRun'],

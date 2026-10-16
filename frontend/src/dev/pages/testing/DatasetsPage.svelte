@@ -20,7 +20,10 @@
 <Crumbs items={[{ label: 'Testování' }]} />
 <div class="dev-page__head">
   <h1>Testovací sady</h1>
-  <span class="dev-muted dev-small">evaluace AI nad korpusem — čte <code>tests/datasets</code> a <code>tests/eval</code>, nic nespouští</span>
+  <span class="dev-muted dev-small">evaluace AI nad korpusem — <code>tests/datasets</code> a <code>tests/eval</code>; spouštění jen na volných zdrojích dat</span>
+  <span class="dev-page__spacer"></span>
+  <a href={router.href('testingJobs')} onclick={onLinkClick}>Úlohy na pozadí</a>
+  <a href={router.href('testingVariants')} onclick={onLinkClick}>Varianty</a>
 </div>
 
 {#if error}

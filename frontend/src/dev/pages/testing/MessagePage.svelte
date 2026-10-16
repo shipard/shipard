@@ -117,6 +117,9 @@
           <span><span class="dev-muted">model</span> <code>{d.model ?? '—'}</code></span>
           <span><span class="dev-muted">cena</span> {formatUsd(d.costUsd)}</span>
           <span><span class="dev-muted">tokeny</span> {formatNumber(d.tokensIn)} / {formatNumber(d.tokensOut)}</span>
+          {#if d.tags}
+            <span><span class="dev-muted">štítky</span> {formatUsd(d.tags.costUsd)} ({formatNumber(d.tags.tokensIn)} / {formatNumber(d.tags.tokensOut)}, <code>{d.tags.model ?? '—'}</code>)</span>
+          {/if}
           <span><span class="dev-muted">čas</span> {formatMs(d.durationMs)}</span>
           <span><span class="dev-muted">klasifikace</span> <ValueCell value={d.classification?.expected} muted /> → <ValueCell value={d.classification?.actual} /> <StateBadge state={d.classification?.state} /></span>
           <span><span class="dev-muted">stavy</span> {d.counts.match} shod · {d.counts.matchNormalized} po norm. · {d.counts.missing} chybí · {d.counts.extra} navíc · {d.counts.wrong} špatně</span>

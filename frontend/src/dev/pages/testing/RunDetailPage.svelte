@@ -51,12 +51,18 @@
     ...repeatIds.map((n) => ({ id: `r${n}`, label: `×${n}`, align: 'right', sortValue: (m) => m.repeats.find((r) => r.repeat === n)?.deviations ?? null })),
     { id: 'total', label: 'Odchylek Σ', align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => r.deviations)), defaultDir: 'desc' },
     { id: 'failed', label: 'Selhání', align: 'right', sortValue: (m) => m.repeats.filter((r) => r.status !== 'ok').length },
-    { id: 'cost', label: 'Cena Σ', align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => r.costUsd)) },
+    { id: 'cost', label: 'Cena Σ', align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => callCost(r))) },
     { id: 'across', label: '', sortable: false },
   ]);
 
   function cellOf(byVariant, key) {
     return byVariant?.[key] ?? {};
+  }
+
+  /** Cena volání = extrakce + LLM štítky (F6b D56); null bez obojího. */
+  function callCost(r) {
+    if ((r.costUsd === null || r.costUsd === undefined) && (r.tagsCostUsd === null || r.tagsCostUsd === undefined)) return null;
+    return (r.costUsd ?? 0) + (r.tagsCostUsd ?? 0);
   }
 </script>
 
@@ -76,7 +82,8 @@
       {data.summary.messages} zpráv × {data.summary.repeat} = {data.summary.callsTotal} volání ·
       připojení {data.summary.connection ?? '—'} ({data.summary.platform ?? '—'}) ·
       dokončeno {formatDateTime(run.finishedAt)} ·
-      cena {formatUsd(data.summary.costUsd)}
+      cena {formatUsd(data.summary.costTotalUsd ?? data.summary.costUsd)}{#if data.summary.tagsUsd !== null && data.summary.tagsUsd !== undefined} (extrakce {formatUsd(data.summary.costUsd)} + štítky {formatUsd(data.summary.tagsUsd)}){/if}
+      {#if run.stoppedBy}· <span class="dev-state dev-state--missing">{run.stoppedBy === 'maxCost' ? 'zastaveno stropem útraty' : 'zrušeno'} — {data.summary.callsTotal} z {run.plannedCalls ?? '?'} volání</span>{/if}
     </div>
     {#if !data.summary.currentSet}
       <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">Běh vznikl nad starší verzí sady (hash <code>{String(data.summary.setHash).slice(0, 12)}</code>). Očekávání v detailu dokladu jsou z aktuální sady a mohou se lišit od těch, proti kterým běh vznikl.</span></div>
@@ -237,7 +244,7 @@
           {@const n = m.repeats.filter((r) => r.status !== 'ok').length}
           {#if n > 0}<StateBadge state="failed" label={`${n}×`} />{:else}<span class="dev-muted">0</span>{/if}
         {:else if col.id === 'cost'}
-          {formatUsd(sumOf(m.repeats.map((r) => r.costUsd)))}
+          {formatUsd(sumOf(m.repeats.map((r) => callCost(r))))}
         {:else if col.id === 'across'}
           <a class="dev-small" href={router.href('testingMessageRuns', { set, messageId: m.messageId })} onclick={onLinkClick}>napříč běhy</a>
         {:else}
