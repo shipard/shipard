@@ -1,6 +1,6 @@
 # Třída dat zdroje dat, `ds-list` a serverové AI podle třídy (#126 task A)
 
-**Stav:** hotovo — implementováno 2026-10-16 (7 commitů, #126 D6–D12, U1–U8); zbývá nasazení a ověření člověkem (oddíl „Nasazení a ověření“) a komentář do #126
+**Stav:** hotovo — implementováno 2026-10-16 (8 commitů, #126 D6–D12, U1–U8); zbývá nasazení a ověření člověkem (oddíl „Nasazení a ověření“) a komentář do #126
 
 > PRD pro Claude Code (7 commitů). Design: issue #126, komentář
 > „Rozhodnutí (2026-10-16)“, body D6–D12. Task B (tajemství do `secrets/`,
@@ -500,6 +500,11 @@ proti PRD:
   místo `enableServerAi()`; řádek třídy a dotaz `dataset-seed` jsou
   v commitu 3, ne 5. Titulek sady jde do účelu jen přes `normalizePurpose`
   (nevyhovující titulek = bez účelu, ne chyba).
+- **`ds-class set free` kontroluje i terminál na stdin** (`stream_isatty`,
+  seam `stdinIsTerminal()`): PRD předpokládalo, že Symfony přepne vstup na
+  neinteraktivní, když stdin není terminál — nepřepne (jen s `-n`); z Claude
+  Code se dotaz jen tiše zamítl (exit 0) a `echo y |` by prošlo. Teď oba
+  případy končí chybou s exit 1, jak oddíl 3 žádá.
 - Help serveru (`ds-list`, nové volby `ds-create`) i DS (`ds-class`) hlídá
   `HelpDriftTest`; frontend `format.js` dostal čisté funkce
   `dataClassLabel` / `dataClassTitle` / `truncate` s testy v `node:test`.

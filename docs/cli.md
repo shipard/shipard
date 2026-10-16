@@ -863,10 +863,12 @@ zdroje: `shpd-server ds-list`.
 - **`set realCopy`** — bez potvrzení, kdykoli (i na zdroji bez třídy —
   udělá ji explicitní).
 - **`set free`** na zdroji, který `free` není: vyžaduje **interaktivní
-  terminál** — s `-n`, přes MCP most nebo z Claude Code skončí chybou
-  `Marking a data source as free requires an interactive terminal — run
-  the command yourself.` (exit 1, soubor beze změny). Je to pojistka proti
-  omylu, ne proti úmyslu: volné zdroje označuje vlastník stroje sám.
+  terminál** — s `-n`, s přesměrovaným stdin (`echo y | …`), přes MCP most
+  nebo z Claude Code skončí chybou `Marking a data source as free requires
+  an interactive terminal — run the command yourself.` (exit 1, soubor beze
+  změny; příkaz kontroluje i to, že stdin je terminál — Symfony sám vstup
+  bez `-n` za neinteraktivní nepovažuje). Je to pojistka proti omylu, ne
+  proti úmyslu: volné zdroje označuje vlastník stroje sám.
   Dotaz uvádí název zdroje, třídu a účel (`[y/N]`, výchozí ne); zamítnutí
   = `Aborted.`, exit 0. Volba `--yes` záměrně **neexistuje**.
 - **Stejná třída** — třída, původ ani čas se nemění, zapíše se jen

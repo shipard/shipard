@@ -15,6 +15,8 @@ class TestableDsClassCommand extends DsClassCommand
 {
     public string $serverMode = 'development';
     public bool $serverAi = false;
+    /** Stdin je terminál — v testech napevno, aby nezáleželo na tom, odkud PHPUnit běží. */
+    public bool $terminal = true;
 
     public function __construct(private readonly string $dsDir)
     {
@@ -39,6 +41,11 @@ class TestableDsClassCommand extends DsClassCommand
     protected function serverOffersAi(): bool
     {
         return $this->serverAi;
+    }
+
+    protected function stdinIsTerminal(): bool
+    {
+        return $this->terminal;
     }
 }
 
@@ -84,11 +91,12 @@ class DsClassCommandTest extends TestCase
         return json_decode((string) file_get_contents($this->dsDir . '/config/main.json'), true);
     }
 
-    private function makeTester(string $serverMode = 'development', bool $serverAi = false): CommandTester
+    private function makeTester(string $serverMode = 'development', bool $serverAi = false, bool $terminal = true): CommandTester
     {
         $cmd = new TestableDsClassCommand($this->dsDir);
         $cmd->serverMode = $serverMode;
         $cmd->serverAi = $serverAi;
+        $cmd->terminal = $terminal;
         $cmd->setHelperSet(new HelperSet([new QuestionHelper()]));
         return new CommandTester($cmd);
     }
@@ -189,6 +197,26 @@ class DsClassCommandTest extends TestCase
         $this->assertSame(Command::FAILURE, $tester->execute(['action' => 'set', 'value' => 'free'], ['interactive' => false]));
         $this->assertStringContainsString('Marking a data source as free requires an interactive terminal — run the command yourself.', $tester->getDisplay());
         $this->assertSame($before, (string) file_get_contents($this->dsDir . '/config/main.json'));
+    }
+
+    public function testSetFreeWithPipedStdinFailsEvenWithAYesOnIt(): void
+    {
+        // Symfony bez `-n` vstup za neinteraktivní nepovažuje — `echo y | shpd-ds ds-class set free`
+        // nesmí projít; kontroluje se, že stdin je terminál.
+        $this->writeMainJson();
+        $before = (string) file_get_contents($this->dsDir . '/config/main.json');
+        $tester = $this->makeTester(terminal: false);
+        $tester->setInputs(['y']);
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['action' => 'set', 'value' => 'free']));
+        $this->assertStringContainsString('requires an interactive terminal', $tester->getDisplay());
+        $this->assertStringNotContainsString('Mark it as free', $tester->getDisplay(), 'dotaz se vůbec nepoloží');
+        $this->assertSame($before, (string) file_get_contents($this->dsDir . '/config/main.json'));
+
+        // set realCopy terminál nepotřebuje.
+        $tester = $this->makeTester(terminal: false);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['action' => 'set', 'value' => 'realCopy']));
+        $this->assertSame('realCopy', $this->mainJson()['dataClass']);
     }
 
     public function testSetFreeDeclinedAborts(): void

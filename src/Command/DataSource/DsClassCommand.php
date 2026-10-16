@@ -75,6 +75,17 @@ class DsClassCommand extends Command
         return ServerAiConnection::detect() !== null;
     }
 
+    /**
+     * Stdin je terminál (D8). Symfony sám vstup bez `-n` za neinteraktivní
+     * nepovažuje — bez této kontroly by dotaz přečetl `echo y |` nebo by
+     * se u zavřeného stdin jen tiše zamítl; přechod na `free` má udělat
+     * člověk u klávesnice.
+     */
+    protected function stdinIsTerminal(): bool
+    {
+        return \defined('STDIN') && @stream_isatty(STDIN);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $dsDir = $this->getDataSourceDir();
@@ -150,8 +161,9 @@ class DsClassCommand extends Command
         }
 
         if (!$sameClass && $target === DataClass::Free) {
-            // Pojistka proti omylu (D8): přechod na free jen z terminálu.
-            if (!$input->isInteractive()) {
+            // Pojistka proti omylu (D8): přechod na free jen z terminálu —
+            // ne s `-n`, ne s přesměrovaným stdin (MCP most, Claude Code).
+            if (!$input->isInteractive() || !$this->stdinIsTerminal()) {
                 return $this->fail($output, 'Marking a data source as free requires an interactive terminal — run the command yourself.');
             }
             $question = new ConfirmationQuestion(sprintf(
