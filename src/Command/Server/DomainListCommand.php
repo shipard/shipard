@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\Server;
 
+use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\DomainsFile;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -58,14 +59,10 @@ class DomainListCommand extends Command
 		return Command::SUCCESS;
 	}
 
+	/** Název přes sdílený čtenář (#126 D10); chybějící nebo nečitelný main.json = `<unknown>`. */
 	protected function resolveDsName(string $dataSourcesDir, string $dsId): string
 	{
-		$configFile = $dataSourcesDir . '/' . $dsId . '/config/main.json';
-		if (!file_exists($configFile)) {
-			return '<unknown>';
-		}
-
-		$data = json_decode(file_get_contents($configFile), true);
-		return $data['name'] ?? '<unknown>';
+		$info = (new DataSourceInventory($dataSourcesDir))->read($dataSourcesDir . '/' . $dsId);
+		return $info === null || !$info->readable ? '<unknown>' : $info->name;
 	}
 }

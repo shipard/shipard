@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Api\Controller\DevDashboardController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Module\ModulePathResolver;
 
 class DevDashboardControllerTest extends TestCase
@@ -37,6 +38,8 @@ class DevDashboardControllerTest extends TestCase
 		mkdir(dirname($this->spaIndex), 0700, true);
 		file_put_contents($this->spaIndex, self::SPA_INDEX);
 		$this->ctrl = $this->makeController(null);
+		// Seznam zdrojů dat zjišťuje serverové AI připojení — testy ho ze stroje nečtou (#126 D9).
+		ServerAiConnection::overrideForTesting(null);
 	}
 
 	/** Controller nad temp adresáři: zdroje dat, moduly, index SPA a „repo root“ (bez tests/). */
@@ -53,6 +56,7 @@ class DevDashboardControllerTest extends TestCase
 
 	protected function tearDown(): void
 	{
+		ServerAiConnection::resetForTesting();
 		$this->rrmdir($this->tmpRoot);
 		foreach ($this->tmpFiles as $f) {
 			if (file_exists($f)) unlink($f);
@@ -87,7 +91,8 @@ class DevDashboardControllerTest extends TestCase
 		rmdir($dir);
 	}
 
-	private function createDs(string $id, string $name, ?string $created = null): void
+	/** @param array<string, mixed> $extra další klíče main.json (třída dat, účel, …) */
+	private function createDs(string $id, string $name, ?string $created = null, array $extra = []): void
 	{
 		$dir = $this->tmpDir . '/' . $id . '/config';
 		mkdir($dir, 0700, true);
@@ -95,11 +100,11 @@ class DevDashboardControllerTest extends TestCase
 			'id'            => $id,
 			'name'          => $name,
 			'database_name' => str_replace('-', '_', $id),
-		];
+		] + $extra;
 		if ($created !== null) {
 			$cfg['created'] = $created;
 		}
-		file_put_contents($dir . '/main.json', json_encode($cfg));
+		file_put_contents($dir . '/main.json', json_encode($cfg, JSON_UNESCAPED_UNICODE));
 	}
 
 	private function makeRequest(string $method, string $uri): Request
@@ -259,6 +264,66 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertTrue($byName['Charlie']['cron']);
 		$this->assertSame('suspended', $byName['Charlie']['state']);
 		$this->assertSame('corrupted', $byName['Delta']['state']);
+	}
+
+	public function testListDataSourcesIncludesTheDataClassAndKeepsTheOldKeys(): void
+	{
+		// #126 D10: přes sdílený inventář — staré klíče zůstávají, přibývá třída, účel, původ a serverové AI.
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Alpha', '2026-10-01T10:00:00+02:00', [
+			'dataClass' => 'free', 'purpose' => 'Ruční zkoušení UI',
+			'origin' => 'dataset-seed cz-vat-payer', 'dataClassChanged' => '2026-10-16T12:00:00Z',
+			'database_password' => 'S3cret!Pw',
+		]);
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Bravo');
+
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/data-sources'));
+		$this->assertSame(200, $this->getStatus($resp));
+		$raw = json_encode($resp->getPayload());
+		$this->assertStringNotContainsString('S3cret!Pw', (string) $raw);
+		$this->assertStringNotContainsString('database_password', (string) $raw);
+
+		$byName = [];
+		foreach ($this->getPayloadRaw($resp)['data'] as $item) {
+			$byName[$item['name']] = $item;
+		}
+		$alpha = $byName['Alpha'];
+		$this->assertSame(
+			['id', 'name', 'created', 'database_name', 'cron', 'state', 'dataClass', 'dataClassExplicit', 'purpose', 'origin', 'dataClassChanged', 'serverAi'],
+			array_keys($alpha),
+		);
+		$this->assertSame('aaaa-aaaa-aaaa-aaaa', $alpha['id']);
+		$this->assertSame('2026-10-01T10:00:00+02:00', $alpha['created']);
+		$this->assertSame('aaaa_aaaa_aaaa_aaaa', $alpha['database_name']);
+		$this->assertTrue($alpha['cron']);
+		$this->assertSame('active', $alpha['state']);
+		$this->assertSame('free', $alpha['dataClass']);
+		$this->assertTrue($alpha['dataClassExplicit']);
+		$this->assertSame('Ruční zkoušení UI', $alpha['purpose']);
+		$this->assertSame('dataset-seed cz-vat-payer', $alpha['origin']);
+		$this->assertSame('2026-10-16T12:00:00Z', $alpha['dataClassChanged']);
+		$this->assertFalse($alpha['serverAi'], 'server žádné připojení nenabízí (overrideForTesting(null))');
+
+		$bravo = $byName['Bravo'];
+		$this->assertSame('realCopy', $bravo['dataClass']);
+		$this->assertFalse($bravo['dataClassExplicit']);
+		$this->assertNull($bravo['purpose']);
+		$this->assertNull($bravo['origin']);
+		$this->assertFalse($bravo['serverAi']);
+	}
+
+	public function testListDataSourcesServerAiFollowsTheServerAndTheClass(): void
+	{
+		ServerAiConnection::overrideForTesting(new ServerAiConnection('anthropic', null, $this->tmpRoot));
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Alpha', null, ['dataClass' => 'free']);
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Bravo', null, ['dataClass' => 'realCopy']);
+		$this->createDs('cccc-cccc-cccc-cccc', 'Charlie');
+
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/data-sources'));
+		$byName = [];
+		foreach ($this->getPayloadRaw($resp)['data'] as $item) {
+			$byName[$item['name']] = $item['serverAi'];
+		}
+		$this->assertSame(['Alpha' => true, 'Bravo' => false, 'Charlie' => false], $byName);
 	}
 
 	public function testListDataSourcesSkipsDirsWithoutMainJson(): void

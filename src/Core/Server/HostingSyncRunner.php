@@ -478,16 +478,14 @@ class HostingSyncRunner
 
     /**
      * Aktivní modul DS vč. tranzitivních závislostí — main.json nese jen
-     * přímé moduly (install.*), rezoluce přes ModuleLoader/ModuleResolver
-     * (vzor DsUpgradeCommand::isModuleActive). Protected seam pro testy.
+     * přímé moduly (install.*, přes sdílený čtenář {@see DataSourceInventory},
+     * #126 D10), rezoluce přes ModuleLoader/ModuleResolver (vzor
+     * DsUpgradeCommand::isModuleActive). Protected seam pro testy.
      * Fallback bez server.json = jen repo modules (vzor bin/shpd-ds).
      */
     protected function isModuleActiveForDs(string $dsDir, string $moduleId): bool
     {
-        $config = json_decode((string) @file_get_contents($dsDir . '/config/main.json'), true);
-        $direct = is_array($config['modules'] ?? null)
-            ? array_values(array_map(strval(...), $config['modules']))
-            : [];
+        $direct = (new DataSourceInventory($this->dataSourcesDir))->read($dsDir)?->modules ?? [];
         if ($direct === []) {
             return false;
         }
@@ -546,28 +544,22 @@ class HostingSyncRunner
     // -------------------------------------------------------------------------
 
     /**
+     * Inventura pro hosting přes sdílený čtenář (#126 D10): jen id, název
+     * a přímé moduly; nečitelný `main.json` se vynechá jako dřív.
+     *
      * @return list<array{ds_id: string, name: string, modules: list<string>}>
      */
     private function buildInventory(): array
     {
-        $dirs = glob($this->dataSourcesDir . '/*', GLOB_ONLYDIR) ?: [];
-        sort($dirs);
-
         $inventory = [];
-        foreach ($dirs as $dir) {
-            $file = $dir . '/config/main.json';
-            if (!is_file($file)) {
+        foreach ((new DataSourceInventory($this->dataSourcesDir))->scan() as $info) {
+            if (!$info->readable) {
                 continue;
             }
-            $config = json_decode((string) @file_get_contents($file), true);
-            if (!is_array($config)) {
-                continue;
-            }
-            $modules = is_array($config['modules'] ?? null) ? $config['modules'] : [];
             $inventory[] = [
-                'ds_id' => (string) ($config['id'] ?? basename($dir)),
-                'name' => (string) ($config['name'] ?? ''),
-                'modules' => array_values(array_map(strval(...), $modules)),
+                'ds_id' => $info->id,
+                'name' => $info->name,
+                'modules' => $info->modules,
             ];
         }
         return $inventory;

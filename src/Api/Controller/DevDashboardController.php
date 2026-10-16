@@ -5,8 +5,9 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\Request;
 use Shipard\Api\Response;
-use Shipard\Core\Config\DataSourceState;
+use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\DataSourceInventory;
 
 class DevDashboardController
 {
@@ -129,34 +130,35 @@ class DevDashboardController
 		]);
 	}
 
+	/**
+	 * Seznam zdrojů dat přes sdílený čtenář {@see DataSourceInventory} (#126
+	 * D10) — allowlist polí, bez tajemství. Nečitelný `main.json` se v seznamu
+	 * neukazuje (jako dřív). Stávající klíče zůstávají, nové: `dataClass`,
+	 * `dataClassExplicit`, `purpose`, `origin`, `dataClassChanged`, `serverAi`
+	 * (efektivní serverové AI připojení: server ho nabízí a zdroj je `free`).
+	 */
 	private function listDataSources(): Response
 	{
+		$serverOffersAi = ServerAiConnection::detect() !== null;
 		$items = [];
-		$dirs = glob($this->dataSourcesDir . '/*', GLOB_ONLYDIR) ?: [];
-		foreach ($dirs as $dsDir) {
-			$configFile = $dsDir . '/config/main.json';
-			if (!is_file($configFile)) {
+		foreach ((new DataSourceInventory($this->dataSourcesDir))->scan() as $info) {
+			if (!$info->readable) {
 				continue;
 			}
-
-			$content = @file_get_contents($configFile);
-			if ($content === false) {
-				continue;
-			}
-			$config = json_decode($content, true);
-			if (!is_array($config) || !isset($config['id'], $config['name'])) {
-				continue;
-			}
-
 			// #115 D11: přepínač periodických úloh + efektivní stav, jen zobrazení.
-			$state = DataSourceState::load($dsDir);
 			$items[] = [
-				'id'            => $config['id'],
-				'name'          => $config['name'],
-				'created'       => $config['created'] ?? null,
-				'database_name' => $config['database_name'] ?? null,
-				'cron'          => $state->isCronEnabled(),
-				'state'         => $state->isCorrupted() ? 'corrupted' : $state->getEffectiveState(),
+				'id'                => $info->id,
+				'name'              => $info->name,
+				'created'           => $info->created,
+				'database_name'     => $info->databaseName,
+				'cron'              => $info->cronEnabled,
+				'state'             => $info->state,
+				'dataClass'         => $info->dataClass->value,
+				'dataClassExplicit' => $info->dataClassExplicit,
+				'purpose'           => $info->purpose,
+				'origin'            => $info->origin,
+				'dataClassChanged'  => $info->dataClassChanged,
+				'serverAi'          => $info->usesServerAi($serverOffersAi),
 			];
 		}
 

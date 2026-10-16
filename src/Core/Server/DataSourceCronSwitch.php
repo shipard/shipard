@@ -56,15 +56,9 @@ final class DataSourceCronSwitch
         return new CronSwitchResult($id, CronSwitchOutcome::Changed, "✓ {$id}: cron {$label}");
     }
 
-    /** Název z `main.json` shovívavě — nečitelný soubor dá `?`, volající kvůli němu neselže. */
+    /** Název z `main.json` shovívavě ({@see DataSourceInventory}) — nečitelný soubor dá `?`, volající kvůli němu neselže. */
     public function displayName(string $id): string
     {
-        $raw = @file_get_contents($this->dataSourcesDir . '/' . $id . '/config/main.json');
-        if ($raw === false) {
-            return '?';
-        }
-        $data = json_decode($raw, true);
-        $name = is_array($data) ? ($data['name'] ?? null) : null;
-        return is_string($name) && $name !== '' ? $name : '?';
+        return (new DataSourceInventory($this->dataSourcesDir))->read($this->dataSourcesDir . '/' . $id)?->name ?? '?';
     }
 }
