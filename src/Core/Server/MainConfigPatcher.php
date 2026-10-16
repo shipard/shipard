@@ -25,7 +25,8 @@ final class MainConfigPatcher
      *
      * @param array<string, mixed> $config celý dekódovaný main.json
      * @param array<string, mixed> $provider položka auth.providers
-     *        (id, label, issuer, clientId, clientSecret, autoLinkEmail, …)
+     *        (id, label, issuer, clientId, autoLinkEmail, …) — bez
+     *        clientSecret, ten patří do secrets/oidc-<id>.client-secret (#126 D1)
      * @return array<string, mixed>
      */
     public static function mergeAuthProvider(array $config, array $provider): array
@@ -33,6 +34,12 @@ final class MainConfigPatcher
         $id = (string) ($provider['id'] ?? '');
         if ($id === '' || !preg_match('/^[a-z0-9-]+$/', $id)) {
             throw new \InvalidArgumentException("Auth provider 'id' must match [a-z0-9-]+, got '{$id}'");
+        }
+        // Pojistka #126 D1: tajemství do main.json nevrací žádný zapisovatel.
+        if (array_key_exists('clientSecret', $provider)) {
+            throw new \InvalidArgumentException(
+                "Auth provider must not carry clientSecret — write it to secrets/oidc-{$id}.client-secret",
+            );
         }
 
         $auth = is_array($config['auth'] ?? null) ? $config['auth'] : [];

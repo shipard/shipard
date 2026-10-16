@@ -32,7 +32,6 @@ class MainConfigPatcherTest extends TestCase
             'label' => 'Shipard',
             'issuer' => 'https://portal.example.com/api/v1/_hosting/oidc',
             'clientId' => 'aaaa-bbbb-cccc-dddd',
-            'clientSecret' => 'secret',
             'autoLinkEmail' => false,
         ], $overrides);
     }
@@ -55,17 +54,19 @@ class MainConfigPatcherTest extends TestCase
             'local' => true,
             'providers' => [
                 ['id' => 'keycloak', 'issuer' => 'https://kc.example.com'],
-                $this->provider(['clientSecret' => 'old-secret']),
+                // Položka z doby před migrací (#126 B1) ještě nese clientSecret.
+                $this->provider(['label' => 'Old', 'clientSecret' => 'legacy-secret-fake']),
             ],
         ];
 
-        $result = MainConfigPatcher::mergeAuthProvider($config, $this->provider(['clientSecret' => 'new-secret']));
+        $result = MainConfigPatcher::mergeAuthProvider($config, $this->provider(['label' => 'New']));
 
         $providers = $result['auth']['providers'];
         $this->assertCount(2, $providers);
-        // Cizí provider i pořadí zůstávají, položka se stejným id se nahradí.
+        // Cizí provider i pořadí zůstávají, položka se stejným id se nahradí celá.
         $this->assertSame('keycloak', $providers[0]['id']);
-        $this->assertSame('new-secret', $providers[1]['clientSecret']);
+        $this->assertSame('New', $providers[1]['label']);
+        $this->assertArrayNotHasKey('clientSecret', $providers[1]);
         // Ostatní klíče auth sekce beze změny.
         $this->assertTrue($result['auth']['local']);
     }
@@ -95,6 +96,14 @@ class MainConfigPatcherTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         MainConfigPatcher::mergeAuthProvider($this->baseConfig(), $this->provider(['id' => 'Bad Id!']));
+    }
+
+    public function testProviderWithClientSecretIsRejected(): void
+    {
+        // Pojistka #126 D1: tajemství patří do secrets/, žádný zapisovatel ho do main.json nevrátí.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('secrets/oidc-shipard-id.client-secret');
+        MainConfigPatcher::mergeAuthProvider($this->baseConfig(), $this->provider(['clientSecret' => 'x']));
     }
 
     public function testWithDataClassSetsTheKeysAndDropsTheLegacyServerAiFlag(): void

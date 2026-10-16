@@ -200,9 +200,16 @@ class DsCreateCommandTest extends TestCase
         $this->assertArrayHasKey('id', $config);
         $this->assertArrayHasKey('database_name', $config);
         $this->assertArrayHasKey('database_user', $config);
-        $this->assertArrayHasKey('database_password', $config);
         $this->assertArrayHasKey('created', $config);
         $this->assertSame(0600, fileperms($configFile) & 0777);
+
+        // Heslo k databázi jde do secrets/db.password, ne do main.json (#126 D1, D2).
+        $this->assertArrayNotHasKey('database_password', $config);
+        $passwordFile = $dirs[0] . '/secrets/db.password';
+        $this->assertFileExists($passwordFile);
+        $this->assertSame('TestPassword123!@#$', file_get_contents($passwordFile));
+        $this->assertSame(0600, fileperms($passwordFile) & 0777);
+        $this->assertStringNotContainsString('TestPassword123', $tester->getDisplay());
     }
 
     public function testDsCreateNoCronWritesStateJson(): void

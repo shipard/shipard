@@ -7,12 +7,14 @@ namespace Shipard\Command\Server;
 use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Config\DataClass;
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\DataSourceSecrets;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DatabaseManager;
 use Shipard\Core\Module\InstallModuleRegistry;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Security\SecretsFileWriter;
 use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\Utils\IdGenerator;
@@ -250,6 +252,19 @@ class DsCreateCommand extends Command
 
         $password = $dbManager->generatePassword();
 
+        // Heslo k databázi patří do secrets/db.password, ne do main.json
+        // (#126 D1, D2) — zapsat ještě před založením databáze: selhání
+        // zápisu tak nenechá založeného uživatele bez hesla v souboru.
+        try {
+            $warnings = SecretsFileWriter::write($dataSourceDir, DataSourceSecrets::DB_PASSWORD, $password);
+            foreach ($warnings as $warning) {
+                $output->writeln('<comment>  [WARN] ' . $warning . '</comment>');
+            }
+        } catch (\RuntimeException $e) {
+            $output->writeln('<error>Failed to write secrets/' . DataSourceSecrets::DB_PASSWORD . ': ' . $e->getMessage() . '</error>');
+            return Command::FAILURE;
+        }
+
         try {
             $dbManager->createDatabase($dbName);
             $dbManager->createUser($dbUser, $password, $dbName);
@@ -258,17 +273,16 @@ class DsCreateCommand extends Command
             return Command::FAILURE;
         }
 
-        // Write config file
+        // Write config file — bez tajemství (heslo je v secrets/db.password).
         $mainConfig = [
-            'id'                => $id,
-            'name'              => $name,
-            'modules'           => [$moduleId],
-            'defaultLanguage'   => $language,
-            'country'           => $country,
-            'database_name'     => $dbName,
-            'database_user'     => $dbUser,
-            'database_password' => $password,
-            'created'           => date('c'),
+            'id'              => $id,
+            'name'            => $name,
+            'modules'         => [$moduleId],
+            'defaultLanguage' => $language,
+            'country'         => $country,
+            'database_name'   => $dbName,
+            'database_user'   => $dbUser,
+            'created'         => date('c'),
         ];
         // Třída dat, původ a čas (#126 D6) — stejné čisté funkce jako
         // dataset-seed a ds-class; serverové AI připojení ve vývoji se z třídy

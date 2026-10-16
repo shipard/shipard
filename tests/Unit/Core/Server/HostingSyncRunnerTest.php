@@ -190,17 +190,24 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertNotContains('--force', $mailSetup['argv']);
         $this->assertSame($this->dataSourcesDir . '/' . self::NEW_DS, $mailSetup['cwd']);
 
-        // auth.providers v main.json nového DS, mode 0600, ostatní klíče netknuté.
-        $mainFile = $this->dataSourcesDir . '/' . self::NEW_DS . '/config/main.json';
+        // auth.providers v main.json nového DS bez clientSecret, mode 0600,
+        // ostatní klíče netknuté; tajemství v secrets/ (#126 D1, D2).
+        $dsDir = $this->dataSourcesDir . '/' . self::NEW_DS;
+        $mainFile = $dsDir . '/config/main.json';
         $config = json_decode((string) file_get_contents($mainFile), true);
         $provider = $config['auth']['providers'][0];
         $this->assertSame('shipard-id', $provider['id']);
         $this->assertSame(self::ISSUER, $provider['issuer']);
         $this->assertSame(self::NEW_DS, $provider['clientId']);
-        $this->assertSame('plain-secret', $provider['clientSecret']);
+        $this->assertArrayNotHasKey('clientSecret', $provider);
         $this->assertFalse($provider['autoLinkEmail']);
         $this->assertSame('db', $config['database_name']);
         $this->assertSame(0600, fileperms($mainFile) & 0777);
+        $this->assertStringNotContainsString('plain-secret', (string) file_get_contents($mainFile));
+        $secretFile = $dsDir . '/secrets/oidc-shipard-id.client-secret';
+        $this->assertSame('plain-secret', file_get_contents($secretFile));
+        $this->assertSame(0600, fileperms($secretFile) & 0777);
+        $this->assertSame(0700, fileperms($dsDir . '/secrets') & 0777);
 
         // Confirm ok + mail_token z kroku f. (D4); token externího analyzeru
         // už confirm nenese (#85 D22).
@@ -372,6 +379,33 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertSame('shipard-id', $config['auth']['providers'][0]['id']);
         $this->assertSame(0600, fileperms($mainFile) & 0777);
         $this->assertSame('ok', $runner->httpCalls[2]['body']['status']);
+    }
+
+    public function testClientSecretWriteFailureStopsProvisioningAndKeepsMainJson(): void
+    {
+        // #126 D1: tajemství se zapisuje před merge providera — selhání zápisu
+        // nechá main.json beze změny a krok skončí failed.
+        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
+        $dsDir = $this->dataSourcesDir . '/' . self::NEW_DS;
+        $mainFile = $dsDir . '/config/main.json';
+        $original = (string) file_get_contents($mainFile);
+        file_put_contents($dsDir . '/secrets', 'a file, so mkdir secrets/ fails');
+
+        $runner = $this->makeRunner();
+        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
+        $runner->onModuleCheck = static fn(): bool => true;
+
+        $this->assertFalse($runner->run());
+
+        $confirm = $runner->httpCalls[2];
+        $this->assertSame('failed', $confirm['body']['status']);
+        $this->assertStringStartsWith('auth.providers: Failed to create ', $confirm['body']['error']);
+        $this->assertStringNotContainsString('plain-secret', $confirm['body']['error']);
+
+        $this->assertSame($original, (string) file_get_contents($mainFile));
+        $this->assertFileDoesNotExist($mainFile . '.tmp');
+        $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
+        $this->assertSame(['ds-upgrade', 'domain-add'], $labels);
     }
 
     public function testAuthProviderOwnerFailureStopsProvisioningAndKeepsMainJson(): void

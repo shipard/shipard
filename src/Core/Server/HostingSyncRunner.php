@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Shipard\Core\Server;
 
 use Shipard\Core\Auth\OidcProviderConfig;
+use Shipard\Core\Config\DataSourceSecrets;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
+use Shipard\Core\Security\SecretsFileWriter;
 use Shipard\Core\Utils\IdGenerator;
 use Shipard\Core\Version;
 
@@ -332,15 +334,14 @@ class HostingSyncRunner
         }
 
         // d. auth.providers — OP hostingu (U2: autoLinkEmail false, identita
-        //    se předpropojuje krokem e).
+        //    se předpropojuje krokem e); clientSecret jde zvlášť do secrets/.
         $error = $this->patchAuthProvider($dsDir, [
             'id' => self::PROVIDER_ID,
             'label' => (string) ($oidc['label'] ?? 'Shipard'),
             'issuer' => $issuer,
             'clientId' => (string) ($oidc['client_id'] ?? $dsId),
-            'clientSecret' => $clientSecret,
             'autoLinkEmail' => false,
-        ]);
+        ], $clientSecret);
         if ($error !== null) {
             return $error;
         }
@@ -517,15 +518,27 @@ class HostingSyncRunner
     }
 
     /**
-     * Merge providera do main.json — čistou transformaci dělá
+     * clientSecret do `secrets/oidc-<id>.client-secret` (#126 D1, D2) a potom
+     * merge providera bez tajemství do main.json — čistou transformaci dělá
      * MainConfigPatcher, read-modify-write se správným vlastníkem
      * {@see MainConfigFile::patch()} (tasks/hosting-sync-main-json-owner.md).
-     * Selhání = krok failed, původní soubor zůstává.
+     * Selhání kteréhokoli zápisu = krok failed, main.json zůstává; log nikdy
+     * nenese hodnotu.
      *
-     * @param array<string, mixed> $provider
+     * @param array<string, mixed> $provider položka bez `clientSecret`
      */
-    private function patchAuthProvider(string $dsDir, array $provider): ?string
+    private function patchAuthProvider(string $dsDir, array $provider, #[\SensitiveParameter] string $clientSecret): ?string
     {
+        $secretName = DataSourceSecrets::oidcClientSecret((string) $provider['id']);
+        try {
+            $warnings = SecretsFileWriter::write($dsDir, $secretName, $clientSecret);
+        } catch (\RuntimeException $e) {
+            return 'auth.providers: ' . $e->getMessage();
+        }
+        foreach ($warnings as $warning) {
+            $this->logLine('  [WARN] ' . $warning);
+        }
+
         try {
             MainConfigFile::patch(
                 $dsDir,
@@ -535,7 +548,7 @@ class HostingSyncRunner
         } catch (\RuntimeException $e) {
             return 'auth.providers: ' . $e->getMessage();
         }
-        $this->logLine('  auth.providers merged (' . self::PROVIDER_ID . ').');
+        $this->logLine('  auth.providers merged (' . self::PROVIDER_ID . '), client secret in secrets/' . $secretName . '.');
         return null;
     }
 
