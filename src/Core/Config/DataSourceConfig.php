@@ -7,12 +7,25 @@ namespace Shipard\Core\Config;
 use Shipard\Core\Auth\AuthPolicy;
 use Shipard\Core\Mail\MailRelayConfig;
 
+/**
+ * `config/main.json` zdroje dat. Tajemství (heslo k databázi, heslo relay
+ * pošty, `clientSecret` OIDC providerů) žijí v `secrets/` — co tajemství, to
+ * soubor ({@see DataSourceSecrets}, #126 D1–D3) — a čtou se **líně** až
+ * v `getDatabasePassword()`, `getMailRelay()` a `getAuthPolicy()`: kód, který
+ * potřebuje jen konfiguraci (dispatcher cronu, `DataSourceModules`,
+ * `ds-class`, `DataSourceInventory`), do `secrets/` nesáhne.
+ *
+ * Přechodné období (U1, do tasku B2): hodnota ještě v `main.json` má přednost
+ * před souborem — buď ji migrace (`ds-upgrade`) teprve přesune, nebo ji tam
+ * vložil člověk a je novější; migrace ji vždy přesune a soubor přepíše.
+ */
 class DataSourceConfig
 {
     private array $data = [];
     private ?AuthPolicy $authPolicy = null;
     private ?MailRelayConfig $mailRelay = null;
     private bool $mailRelayParsed = false;
+    private ?DataSourceSecrets $secrets = null;
 
     public function __construct(private readonly string $dataSourceDir)
     {
@@ -34,7 +47,8 @@ class DataSourceConfig
             throw new \RuntimeException("Invalid JSON in data source config: " . json_last_error_msg());
         }
 
-        $required = ['id', 'name', 'database_name', 'database_user', 'database_password', 'created'];
+        // database_password už povinné není — heslo žije v secrets/db.password (#126 D3).
+        $required = ['id', 'name', 'database_name', 'database_user', 'created'];
         foreach ($required as $field) {
             if (!isset($data[$field])) {
                 throw new \RuntimeException("Missing required data source config field: {$field}");
@@ -64,9 +78,30 @@ class DataSourceConfig
         return $this->data['database_user'];
     }
 
+    /**
+     * Heslo k databázi: `main.json` `database_password` (přechodně, U1),
+     * jinak `secrets/db.password`. Chybí-li obojí, výjimka s cestou — nikdy
+     * tiché prázdné heslo.
+     */
     public function getDatabasePassword(): string
     {
-        return $this->data['database_password'];
+        $inConfig = $this->nonEmptyString($this->data['database_password'] ?? null);
+        if ($inConfig !== null) {
+            return $inConfig;
+        }
+        $fromFile = $this->secrets()->get(DataSourceSecrets::DB_PASSWORD);
+        if ($fromFile !== null) {
+            return $fromFile;
+        }
+        throw new \RuntimeException(
+            'Database password missing — expected secrets/' . DataSourceSecrets::DB_PASSWORD . ' (run shpd-ds ds-upgrade)',
+        );
+    }
+
+    /** Tajemství v `secrets/` — líně; veřejné pro `ds-secret` a `doctor` (`has()`). */
+    public function secrets(): DataSourceSecrets
+    {
+        return $this->secrets ??= new DataSourceSecrets($this->dataSourceDir);
     }
 
     public function getCreated(): string
@@ -135,7 +170,28 @@ class DataSourceConfig
      */
     public function getAuthPolicy(): AuthPolicy
     {
-        return $this->authPolicy ??= AuthPolicy::fromArray($this->data['auth'] ?? []);
+        if ($this->authPolicy === null) {
+            $auth = $this->data['auth'] ?? [];
+            if (is_array($auth) && is_array($auth['providers'] ?? null)) {
+                foreach ($auth['providers'] as $i => $provider) {
+                    // clientSecret ze secrets/oidc-<id>.client-secret, pokud není
+                    // v main.json (U1); neplatné id nechat AuthPolicy odmítnout.
+                    if (!is_array($provider) || $this->nonEmptyString($provider['clientSecret'] ?? null) !== null) {
+                        continue;
+                    }
+                    $id = $provider['id'] ?? null;
+                    if (!is_string($id) || !preg_match('/^[a-z0-9-]+$/', $id)) {
+                        continue;
+                    }
+                    $secret = $this->secrets()->get(DataSourceSecrets::oidcClientSecret($id));
+                    if ($secret !== null) {
+                        $auth['providers'][$i]['clientSecret'] = $secret;
+                    }
+                }
+            }
+            $this->authPolicy = AuthPolicy::fromArray(is_array($auth) ? $auth : []);
+        }
+        return $this->authPolicy;
     }
 
     /**
@@ -151,6 +207,16 @@ class DataSourceConfig
             if ($relay !== null) {
                 if (!is_array($relay)) {
                     throw new \RuntimeException("Data source config 'mail.relay' must be an object");
+                }
+                // Heslo ze secrets/mail-relay.password, pokud není v main.json (U1);
+                // chybí-li obojí, relay zůstane bez hesla jako dřív.
+                if ($this->nonEmptyString($relay['password'] ?? null) === null) {
+                    $password = $this->secrets()->get(DataSourceSecrets::MAIL_RELAY_PASSWORD);
+                    if ($password !== null) {
+                        $relay['password'] = $password;
+                    } else {
+                        unset($relay['password']);
+                    }
                 }
                 $this->mailRelay = MailRelayConfig::fromArray($relay);
             }
@@ -229,6 +295,82 @@ class DataSourceConfig
     {
         $ai = $this->data['ai'] ?? null;
         return is_array($ai) && ($ai['useServerConnection'] ?? false) === true;
+    }
+
+    /**
+     * Místa konfigurace, která potřebují tajemství (#126 B1, U6) — ze surového
+     * `main.json`, bez hodnot: `db.password` vždy; `mail-relay.password`, má-li
+     * `main.json` sekci `mail.relay` (povinné jen s `username`);
+     * `oidc-<id>.client-secret` pro každý provider s řetězcovým `id` (i
+     * neplatným — ten `AuthPolicy` odmítne a `ds-secret` / `doctor` ho má
+     * ukázat). Jediný zdroj pro `ds-secret list` a sekci `doctor`.
+     *
+     * @return list<DataSourceSecretSlot>
+     */
+    public function getSecretSlots(): array
+    {
+        $slots = [new DataSourceSecretSlot(
+            name: DataSourceSecrets::DB_PASSWORD,
+            usedBy: 'database',
+            required: true,
+            inMainConfig: $this->nonEmptyString($this->data['database_password'] ?? null) !== null,
+        )];
+
+        $relay = $this->data['mail']['relay'] ?? null;
+        if (is_array($relay)) {
+            $slots[] = new DataSourceSecretSlot(
+                name: DataSourceSecrets::MAIL_RELAY_PASSWORD,
+                usedBy: 'mail.relay',
+                required: $this->nonEmptyString($relay['username'] ?? null) !== null,
+                inMainConfig: $this->nonEmptyString($relay['password'] ?? null) !== null,
+            );
+        }
+
+        $providers = $this->data['auth']['providers'] ?? null;
+        if (is_array($providers)) {
+            foreach ($providers as $provider) {
+                if (!is_array($provider) || !is_string($provider['id'] ?? null) || $provider['id'] === '') {
+                    continue;
+                }
+                $id = $provider['id'];
+                $slots[] = new DataSourceSecretSlot(
+                    name: 'oidc-' . $id . '.client-secret',
+                    usedBy: "auth.providers[{$id}]",
+                    required: true,
+                    inMainConfig: $this->nonEmptyString($provider['clientSecret'] ?? null) !== null,
+                );
+            }
+        }
+
+        return $slots;
+    }
+
+    /**
+     * Názvy souborů tajemství, jejichž hodnota je ještě v `main.json` (pro
+     * `doctor` a `ds-secret list`) — nikdy hodnoty.
+     *
+     * @return list<string>
+     */
+    public function getSecretsInMainConfig(): array
+    {
+        $names = [];
+        foreach ($this->getSecretSlots() as $slot) {
+            if ($slot->inMainConfig) {
+                $names[] = $slot->name;
+            }
+        }
+        return $names;
+    }
+
+    public function hasSecretsInMainConfig(): bool
+    {
+        return $this->getSecretsInMainConfig() !== [];
+    }
+
+    /** Neprázdný řetězec, jinak null (tajemství se netrimují). */
+    private function nonEmptyString(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     /** Volitelný textový klíč: trim, prázdný nebo ne-řetězec = null. */

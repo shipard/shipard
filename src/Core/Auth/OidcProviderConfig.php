@@ -5,7 +5,9 @@ namespace Shipard\Core\Auth;
 
 /**
  * Konfigurace jednoho OIDC providera z `config/main.json` klíče `auth.providers[]`.
- * `clientSecret` se nikdy nesmí dostat do API odpovědí ani logů.
+ * `clientSecret` doplňuje `DataSourceConfig::getAuthPolicy()` ze souboru
+ * `secrets/oidc-<id>.client-secret` (#126 D2) a nikdy se nesmí dostat do API
+ * odpovědí ani logů.
  */
 final readonly class OidcProviderConfig
 {
@@ -46,7 +48,7 @@ final readonly class OidcProviderConfig
 			throw new \RuntimeException("Auth policy: provider '{$this->id}' is missing clientId");
 		}
 		if ($this->clientSecret === '') {
-			throw new \RuntimeException("Auth policy: provider '{$this->id}' is missing clientSecret");
+			throw new \RuntimeException("Auth policy: provider '{$this->id}' is missing clientSecret (secrets/oidc-{$this->id}.client-secret)");
 		}
 	}
 

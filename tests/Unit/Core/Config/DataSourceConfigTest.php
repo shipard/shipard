@@ -26,12 +26,38 @@ class DataSourceConfigTest extends TestCase
             unlink($configFile);
         }
         rmdir($this->tempDir . '/config');
+        $secretsDir = $this->tempDir . '/secrets';
+        if (is_dir($secretsDir)) {
+            @chmod($secretsDir, 0700);
+            foreach (glob($secretsDir . '/*') ?: [] as $f) {
+                @chmod($f, 0600);
+                @unlink($f);
+            }
+            @rmdir($secretsDir);
+        }
         rmdir($this->tempDir);
     }
 
     private function createConfig(array $data): void
     {
         file_put_contents($this->tempDir . '/config/main.json', json_encode($data));
+    }
+
+    /** Soubor tajemství v `secrets/` — hodnoty v testech jsou zjevně falešné. */
+    private function writeSecret(string $name, string $raw): void
+    {
+        if (!is_dir($this->tempDir . '/secrets')) {
+            mkdir($this->tempDir . '/secrets', 0700);
+        }
+        file_put_contents($this->tempDir . '/secrets/' . $name, $raw);
+    }
+
+    /** @return array<string, mixed> main.json bez tajemství (po migraci #126 B1) */
+    private function baseDataWithoutSecrets(): array
+    {
+        $data = $this->baseData();
+        unset($data['database_password']);
+        return $data;
     }
 
     public function testLoadValidConfig(): void
@@ -424,5 +450,202 @@ class DataSourceConfigTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         $config->getMailRelay();
+    }
+
+    // ── tajemství v secrets/ (#126 B1, D3, U1) ─────────────────────────────
+
+    public function testLoadWithoutDatabasePasswordSucceeds(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets());
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertSame('abcd-efgh-ijkl-mnop', $config->getId());
+        $this->assertSame('shpd_abcdefgh', $config->getDatabaseUser());
+    }
+
+    public function testDatabasePasswordMissingEverywhereThrowsWithTheFileName(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets());
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('secrets/db.password');
+        $config->getDatabasePassword();
+    }
+
+    public function testDatabasePasswordComesFromSecretsFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets());
+        $this->writeSecret('db.password', "file-pw-fake\n");
+
+        $this->assertSame('file-pw-fake', (new DataSourceConfig($this->tempDir))->getDatabasePassword());
+    }
+
+    public function testDatabasePasswordInMainJsonWinsOverTheFile(): void
+    {
+        // U1: hodnota v main.json je buď nepřesunutá, nebo novější od člověka.
+        $this->createConfig($this->baseDataWithoutSecrets() + ['database_password' => 'config-pw-fake']);
+        $this->writeSecret('db.password', 'file-pw-fake');
+
+        $this->assertSame('config-pw-fake', (new DataSourceConfig($this->tempDir))->getDatabasePassword());
+    }
+
+    public function testEmptyDatabasePasswordInMainJsonFallsBackToTheFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + ['database_password' => '']);
+        $this->writeSecret('db.password', 'file-pw-fake');
+
+        $this->assertSame('file-pw-fake', (new DataSourceConfig($this->tempDir))->getDatabasePassword());
+    }
+
+    public function testSecretsAreReadLazily(): void
+    {
+        if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            $this->markTestSkipped('root čte i soubor s právy 0000');
+        }
+        $this->createConfig($this->baseDataWithoutSecrets());
+        $this->writeSecret('db.password', 'unreadable-fake');
+        chmod($this->tempDir . '/secrets/db.password', 0000);
+
+        // Konstrukce ani běžné gettery do secrets/ nesáhnou.
+        $config = new DataSourceConfig($this->tempDir);
+        $this->assertSame('Test DS', $config->getName());
+        $this->assertFalse($config->isFree());
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot read secret file');
+        $config->getDatabasePassword();
+    }
+
+    public function testMailRelayPasswordComesFromSecretsFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'ds-mailer']],
+        ]);
+        $this->writeSecret('mail-relay.password', "relay-pw-fake\r\n");
+
+        $relay = (new DataSourceConfig($this->tempDir))->getMailRelay();
+        $this->assertNotNull($relay);
+        $this->assertSame('ds-mailer', $relay->username);
+        $this->assertSame('relay-pw-fake', $relay->password);
+    }
+
+    public function testMailRelayPasswordInMainJsonWinsOverTheFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'config-relay-fake']],
+        ]);
+        $this->writeSecret('mail-relay.password', 'file-relay-fake');
+
+        $this->assertSame('config-relay-fake', (new DataSourceConfig($this->tempDir))->getMailRelay()?->password);
+    }
+
+    public function testMailRelayWithoutAnyPasswordStaysWithoutPassword(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'mail' => ['relay' => ['host' => 'localhost', 'port' => 25, 'security' => 'none']],
+        ]);
+
+        $relay = (new DataSourceConfig($this->tempDir))->getMailRelay();
+        $this->assertNotNull($relay);
+        $this->assertNull($relay->password);
+    }
+
+    /** @return array<string, mixed> */
+    private function providerData(array $overrides = []): array
+    {
+        return array_merge([
+            'id'       => 'shipard-id',
+            'label'    => 'Shipard ID',
+            'issuer'   => 'https://portal.example.com/api/v1/_hosting/oidc',
+            'clientId' => 'abcd-efgh-ijkl-mnop',
+        ], $overrides);
+    }
+
+    public function testAuthPolicyClientSecretComesFromSecretsFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'auth' => ['providers' => [$this->providerData()]],
+        ]);
+        $this->writeSecret('oidc-shipard-id.client-secret', "oidc-fake-secret\n");
+
+        $policy = (new DataSourceConfig($this->tempDir))->getAuthPolicy();
+        $this->assertSame('oidc-fake-secret', $policy->getProvider('shipard-id')?->clientSecret);
+    }
+
+    public function testAuthPolicyClientSecretInMainJsonWinsOverTheFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'auth' => ['providers' => [$this->providerData(['clientSecret' => 'config-oidc-fake'])]],
+        ]);
+        $this->writeSecret('oidc-shipard-id.client-secret', 'file-oidc-fake');
+
+        $policy = (new DataSourceConfig($this->tempDir))->getAuthPolicy();
+        $this->assertSame('config-oidc-fake', $policy->getProvider('shipard-id')?->clientSecret);
+    }
+
+    public function testAuthPolicyMissingClientSecretNamesTheFile(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'auth' => ['providers' => [$this->providerData()]],
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("provider 'shipard-id' is missing clientSecret (secrets/oidc-shipard-id.client-secret)");
+        (new DataSourceConfig($this->tempDir))->getAuthPolicy();
+    }
+
+    public function testAuthPolicyInvalidProviderIdIsRejectedWithoutTouchingSecrets(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'auth' => ['providers' => [$this->providerData(['id' => '../x'])]],
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('must match [a-z0-9-]+');
+        (new DataSourceConfig($this->tempDir))->getAuthPolicy();
+    }
+
+    public function testSecretSlotsDescribeWhatMainJsonNeedsWithoutValues(): void
+    {
+        $this->createConfig($this->baseData() + [
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u']],
+            'auth' => ['providers' => [
+                $this->providerData(['clientSecret' => 'config-oidc-fake']),
+                $this->providerData(['id' => 'github', 'kind' => 'github']),
+                ['label' => 'bez id'],
+            ]],
+        ]);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $slots = $config->getSecretSlots();
+        $this->assertSame(
+            ['db.password', 'mail-relay.password', 'oidc-shipard-id.client-secret', 'oidc-github.client-secret'],
+            array_map(static fn($s) => $s->name, $slots),
+        );
+        $this->assertSame(
+            ['database', 'mail.relay', 'auth.providers[shipard-id]', 'auth.providers[github]'],
+            array_map(static fn($s) => $s->usedBy, $slots),
+        );
+        $this->assertSame([true, true, true, true], array_map(static fn($s) => $s->required, $slots));
+        $this->assertSame([true, false, true, false], array_map(static fn($s) => $s->inMainConfig, $slots));
+
+        $this->assertSame(['db.password', 'oidc-shipard-id.client-secret'], $config->getSecretsInMainConfig());
+        $this->assertTrue($config->hasSecretsInMainConfig());
+    }
+
+    public function testSecretSlotsRelayWithoutUsernameIsNotRequiredAndCleanConfigHasNoneInMainJson(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'mail' => ['relay' => ['host' => 'localhost', 'port' => 25, 'security' => 'none']],
+        ]);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $slots = $config->getSecretSlots();
+        $this->assertCount(2, $slots);
+        $this->assertFalse($slots[1]->required);
+        $this->assertFalse($slots[1]->inMainConfig);
+        $this->assertSame([], $config->getSecretsInMainConfig());
+        $this->assertFalse($config->hasSecretsInMainConfig());
     }
 }
