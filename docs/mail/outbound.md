@@ -99,7 +99,7 @@ celý objekt, ne per-pole):
             "port": 587,
             "security": "starttls",
             "username": "shipard",
-            "password": "…"
+            "password": "…"          // jen v server.json — u DS je heslo v secrets/mail-relay.password
         }
     }
 }
@@ -108,8 +108,13 @@ celý objekt, ne per-pole):
 - `security`: `starttls` (587, default) | `tls` (implicitní TLS, 465) |
   `none` (bez šifrování — lokální Postfix `localhost:25`).
 - `port` default 587, `username`/`password` volitelné.
-- Heslo je plaintext — oba soubory mají 0600, spravuje je provozovatel
-  a leží vedle DB hesel se stejným threat modelem.
+- Heslo v `server.json` je plaintext (soubor root `0600`, spravuje ho
+  provozovatel). U zdroje dat `password` do `main.json` nepatří — žije
+  v `secrets/mail-relay.password` (`shpd-ds ds-secret set
+  mail-relay.password`, skrytý dotaz nebo stdin; #126 D2,
+  [operations/secrets.md](../operations/secrets.md) §5); `ds-upgrade` staré
+  heslo z `main.json` přesune. Ostatní klíče `mail.relay` zůstávají
+  v `main.json`. `doctor` varuje u relay s `username` bez hesla.
 - Lokální Postfix není vyžadován (frontu drží aplikace), ale zůstává
   podporovaný jako `{"host": "localhost", "port": 25, "security": "none"}`.
 

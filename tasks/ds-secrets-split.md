@@ -1,6 +1,6 @@
 # Tajemství zdroje dat mimo `config/main.json` (#126 task B1)
 
-**Stav:** naplánováno — PRD k implementaci (#126 D1–D4, upřesnění U1–U8 potvrzena 2026-10-16)
+**Stav:** hotovo — implementováno 2026-10-16 (6 commitů, oddíl „Hotovo“); zbývá nasazení `ds-upgrade-all` na vývojových strojích, testovacím serveru a hostingu, potom task B2
 
 > PRD pro Claude Code (6 commitů). Design: issue #126, komentář
 > „Rozhodnutí (2026-10-16)“, body D1–D5. Task A (`tasks/ds-data-class.md`)
@@ -315,6 +315,39 @@ testovací server, hosting) nehlásí tajemství v `main.json`:
 Mimo stávající kód heslo k databázi z `main.json` nic nečte (žádný
 skript ani nástroj importu — ověřeno 2026-10-16), B2 tedy nic mimo repo
 nerozbije.
+
+## Hotovo (2026-10-16)
+
+Šest commitů podle oddílu „Commity“. Odchylky a upřesnění proti PRD:
+
+- `ds-create` zapíše `secrets/db.password` ještě **před** založením
+  databáze (PRD: před `main.json`) — selhání zápisu nenechá založeného
+  uživatele databáze bez hesla v souboru.
+- Sloty tajemství (`DataSourceConfig::getSecretSlots()`,
+  `DataSourceSecretSlot {name, usedBy, required, inMainConfig}`) jsou
+  jediný zdroj pro `ds-secret list` i sekci `doctor`; `mail-relay.password`
+  je povinné jen s `username` (`list` ukáže `missing (optional)`, `doctor`
+  mlčí). Provider s neplatným `id` se ve slotech objeví také
+  (`AuthPolicy` ho odmítne) — `doctor` ho hlásí jako tajemství v `main.json`,
+  dokud správce `id` neopraví.
+- Varování migrace u neplatného `id` providera uvádí index položky
+  (`auth.providers[2] has an invalid id …`), ne `id` — to může být cokoli.
+- Krok 0 `ds-upgrade` běží vždy nad skutečným `config/main.json` (i
+  s injektovaným `DataSourceConfig` v testech); šev `createSecretsMigrator()`.
+- `ds-secret set` ze skrytého dotazu odstraní koncový řádek stejně jako
+  ze stdin (`QuestionHelper` bez trimu ho nechává).
+- `doctor`: zdroj s nečitelným `main.json` se v sekci jen vynechá
+  (`· <id>: config unusable — see Data source DB connections above`), chybu
+  už počítá sekce DB connections. Souhrn `All secrets in secrets/ ✓` jen bez
+  varování.
+- `PermissionSpec` beze změny — `secrets/` je hlídaný rekurzivně s `0600`;
+  `docs/operations/permissions.md` dostal řádek o nových souborech.
+- Testovací fixtury (`DoctorCommandTest`, `HostingSyncRunnerTest`,
+  `DsClassCommandTest`, …) dál píší `database_password` do `main.json` —
+  přechodné čtení to pokrývá; přepis na `secrets/` je součást B2.
+
+Ověření 1–4 z oddílu „Nasazení a ověření“ na vývojovém stroji dělá člověk
+(`ds-upgrade` je mutace zdroje `realCopy`, `ds-create` chce `sudo`).
 
 ## Rozhodnutí k designu (potvrzená)
 

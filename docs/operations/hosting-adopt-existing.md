@@ -108,15 +108,23 @@ shpd-ds hosting-oidc-client --ds <DS_ID> --generate \
   --redirect-uri "https://<host DS>/api/v1/_auth/oidc/callback"
 ```
 
-Do `config/main.json` daného DS přidat (read-modify-write, 0600):
+Do `config/main.json` daného DS přidat (read-modify-write, 0600) položku
+**bez** tajemství:
 
 ```jsonc
 "auth": { "providers": [ {
     "id": "shipard-id", "label": "Shipard ID",
     "issuer": "https://<PORTAL_HOST>/api/v1/_hosting/oidc",
-    "clientId": "<DS_ID>", "clientSecret": "<secret>",
+    "clientId": "<DS_ID>",
     "autoLinkEmail": true
 } ] }
+```
+
+Secret do `secrets/oidc-shipard-id.client-secret` (skrytý dotaz; hodnota
+nikdy do argumentu ani do `main.json`, #126 D2):
+
+```bash
+cd /opt/shipard/data-sources/<DS_ID> && sudo shpd-ds ds-secret set oidc-shipard-id.client-secret
 ```
 
 `autoLinkEmail: true` napáruje **existující** uživatele DS podle

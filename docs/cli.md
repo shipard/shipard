@@ -89,6 +89,15 @@ Read-only health check. Vypíše:
   existujícím zdrojům dat; zatuchlý heartbeat `⚠` s radou
   `systemctl status cron` (uspaný notebook, zastavená VM).
 - **Data source DB connections** — pokus o `SELECT 1` na každý DS
+- **Data source secrets** — tajemství zdrojů dat v `secrets/`
+  ([operations/secrets.md](operations/secrets.md) §5, #126 B1): `⚠` tajemství
+  ještě v `config/main.json` (`… still in config/main.json — run shpd-ds
+  ds-upgrade`; v tasku B2 se stane chybou), `✗` chybějící heslo k databázi
+  (v souboru ani v `main.json` — počítá se jako chyba), `⚠` OIDC provider
+  bez `secrets/oidc-<id>.client-secret` (přihlášení přes něj selže), `⚠`
+  `mail.relay` s `username` bez hesla; souhrn `N data source(s) still keep
+  secrets in config/main.json` / `All secrets in secrets/ ✓`. Čte jen
+  přítomnost souborů, nikdy hodnoty
 - **Data source states** — stavy z `config/state.json`
   ([ds-state.md](ds-state.md)): počty per stav a `cron off N`, `⚠` DS
   v maintenance déle než 7 dní (zapomenutá? D8), `✗` poškozený
@@ -144,6 +153,9 @@ Vytvoří nový datový zdroj:
 
 - vygeneruje unikátní ID (`xxxx-xxxx-xxxx-xxxx`)
 - vytvoří `/opt/shipard/data-sources/<id>/` (config, att, cache)
+- zapíše heslo runtime uživatele do `secrets/db.password` (ještě před
+  založením databáze; `main.json` heslo nenese — #126 D1, D2,
+  [operations/secrets.md](operations/secrets.md) §5); selhání = exit 1
 - vytvoří MariaDB databázi a runtime DB uživatele
 - vygeneruje `secrets/secrets.key` pro per-DS šifrování `encrypted_text` sloupců
 - zapíše `config/main.json` (práva 0600) se zvoleným install modulem,
@@ -632,9 +644,21 @@ Vypíše seznam příkazů.
 sudo shpd-ds ds-upgrade
 ```
 
-Synchronizuje DS s aktuálním stavem modulů. Šest kroků (všechny idempotentní —
+Synchronizuje DS s aktuálním stavem modulů. Sedm kroků (všechny idempotentní —
 opakované spuštění bez efektu, pokud se nic nezměnilo):
 
+0. **Secrets migration** — tajemství z `config/main.json`
+   (`database_password`, `mail.relay.password`,
+   `auth.providers[].clientSecret`) do `secrets/` (`db.password`,
+   `mail-relay.password`, `oidc-<id>.client-secret`), teprve potom
+   odebrání klíčů z `main.json` (#126 D4,
+   [operations/secrets.md](operations/secrets.md) §5). Jen soubory, před
+   připojením k databázi; `[INFO] Moved N secret(s) from config/main.json
+   to secrets/: …` i bez `-v`, `[WARN]` u souboru s jinou hodnotou
+   (přepíše se hodnotou z `main.json`) nebo providera s neplatným `id`
+   (tajemství zůstává), `[ERROR]` + exit 1 u nečitelného `main.json`
+   (nic se nemění). Bez tajemství v `main.json` no-op; zůstává natrvalo
+   (obnova starší zálohy)
 1. **Modules resolve** — spočítá závislosti modulů, ověří absenci cyklů
 2. **Table definitions + extensions** — sloučí tabulky modulu s extension sloupci
 3. **Config compile** — vygeneruje `compiled.<jazyk>.json` z JSONC zdrojů
@@ -1304,6 +1328,42 @@ revokovaný klíč vrátí success bez změny. Identifikace přes `--id`
 | `--yes`, `-y` | Skip interaktivního potvrzení. |
 
 ### Secrets
+
+#### `ds-secret`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds ds-secret                                      # list (výchozí akce)
+sudo shpd-ds ds-secret set mail-relay.password         # skrytý dotaz v terminálu
+sudo shpd-ds ds-secret set oidc-github.client-secret
+cat secret.txt | sudo shpd-ds ds-secret set oidc-shipard-id.client-secret   # ze stdin (jedno koncové \n se odstraní)
+```
+
+Tajemství konfigurace zdroje dat v `secrets/` — co tajemství, to soubor
+(#126 B1, U4, [operations/secrets.md](operations/secrets.md) §5,
+[`tasks/ds-secrets-split.md`](../tasks/ds-secrets-split.md)). Ruční zadání
+toho, co správce dřív psal do `config/main.json`: GitHub, Google, „Shipard
+ID“ z `hosting-oidc-client --generate`, relay pošty.
+
+- **`list`** — tabulka `Name | Used by | Status`: `db.password` (vždy),
+  `mail-relay.password` (má-li `main.json` sekci `mail.relay`; bez
+  `username` `missing (optional)`), `oidc-<id>.client-secret` pro každý
+  provider z `auth.providers`. Stav `present` / `missing` /
+  `in main.json (run ds-upgrade)`. Ostatní soubory v `secrets/`
+  (`secrets.key`, klíče hostingu) jen počtem. Nikdy hodnoty ani délky.
+- **`set <name>`** — jen `mail-relay.password` a `oidc-<id>.client-secret`
+  (`id` providera `[a-z0-9-]+`; není-li provider v `main.json`, zapíše
+  a varuje). Hodnota **nikdy z argumentu**: interaktivní terminál → skrytý
+  dotaz, jinak se čte stdin do EOF a odstraní jedno koncové `\n`; prázdná
+  hodnota = exit 1. Zápis `SecretsFileWriter` (0700 / 0600, vlastník zdroje
+  dat i pod `sudo`, varování vlastnictví vypíše). Je-li totéž tajemství
+  ještě v `main.json`, odebere ho — v přechodném období by jinak mělo
+  přednost (U1). Výstup `Secret <name> written.`
+- `db.password` nastavit nejde — musí sedět na uživatele databáze
+  (zapisuje `ds-create`, přesouvá `ds-upgrade`).
+
+Exit 1: není adresář zdroje dat nebo nečitelný `main.json`, neznámá akce
+nebo název, `db.password`, prázdná hodnota, chyba zápisu.
 
 #### `ds-secrets-health`
 

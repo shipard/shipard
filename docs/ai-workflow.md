@@ -79,7 +79,10 @@ implementuje.
   bez terminálu skončí chybou) — Claude třídu nemění.
 - **Secrets.** Nikdy nečíst `config/main.json` zdroje dat ani `secrets/`
   (konfiguraci zdroje dat čte Claude přes `shpd-server ds-list --json`, který
-  tajemství nevypisuje; přímé čtení `main.json` se uvolní až s taskem B z #126).
+  tajemství nevypisuje). Tajemství se z `main.json` stěhují do `secrets/`
+  (task B1 z #126: `ds-upgrade` je přesune, `ds-secret` je zadává); pravidlo
+  „nečíst `main.json`“ platí, dokud task B2 neodstraní přechodné čtení
+  z `main.json` — `secrets/` zůstává tabu natrvalo.
   Heslo read-only uživatele se předává přes proměnnou prostředí, nikdy do chatu
   ani do argumentů příkazu. V Claude Code přímé čtení blokuje `.claude/settings.json`
   (`permissions.deny`) v každém režimu — je to pojistka, ne úplná ochrana:

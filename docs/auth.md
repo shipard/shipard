@@ -30,7 +30,8 @@ session vznikne. Mintování a invalidaci session drží `SessionService`
             "label": "Přihlásit přes Firma a.s.",
             "issuer": "https://login.microsoftonline.com/{tenant}/v2.0",
             "clientId": "...",
-            "clientSecret": "...",
+            // clientSecret NE sem — soubor secrets/oidc-entra.client-secret
+            // (shpd-ds ds-secret set oidc-entra.client-secret, #126 D2)
             "scopes": ["openid", "profile", "email"],   // default tyto tři
             "autoLinkEmail": true,       // default false
             "jitProvision": false        // default false
@@ -42,6 +43,13 @@ session vznikne. Mintování a invalidaci session drží `SessionService`
 - Parsování + validace: `AuthPolicy::fromArray()` / `OidcProviderConfig`
   (`src/Core/Auth/`). Fail-fast: unikátní `id`, `issuer` https URL, neprázdný
   `clientId`/`clientSecret`, `local: false` bez providerů = chyba.
+- `clientSecret` žije v `secrets/oidc-<id>.client-secret` (co tajemství, to
+  soubor — [operations/secrets.md](operations/secrets.md) §5, #126 D2);
+  `DataSourceConfig::getAuthPolicy()` ho providerovi doplní ze souboru.
+  Zápis: `shpd-ds ds-secret set oidc-<id>.client-secret` (skrytý dotaz nebo
+  stdin), hosting přes `hosting-sync`; `ds-upgrade` starý `clientSecret`
+  z `main.json` přesune (do tasku B2 má hodnota v `main.json` přednost).
+  Chybějící tajemství: `… is missing clientSecret (secrets/oidc-<id>.client-secret)`.
 - Validuje se **lazy** při prvním použití (`DataSourceConfig::getAuthPolicy()`),
   ne při načtení configu — rozbitá auth sekce nezablokuje CLI (break-glass).
 - `local: false` → `POST /_auth/login` vrací **403 `AUTH_METHOD_DISABLED`**
@@ -137,11 +145,12 @@ nemluví OIDC — bez discovery, id_tokenu a JWKS — identitu skládá
     "label": "GitHub",
     "kind": "github",
     "clientId": "<z GitHub OAuth App>",
-    "clientSecret": "<z GitHub OAuth App>",
     "autoLinkEmail": true,
     "jitProvision": false
 }
 ```
+
+Client secret z GitHub OAuth App: `shpd-ds ds-secret set oidc-github.client-secret`.
 
 ### Validace id_tokenu (`OidcClient::validateIdToken`)
 
@@ -201,10 +210,13 @@ hosting OP je běžná položka `auth.providers` klientského DS:
     "label": "Shipard ID",
     "issuer": "https://portal.example.com/api/v1/_hosting/oidc",
     "clientId": "<ds_id klientského DS>",
-    "clientSecret": "<z shpd-ds hosting-oidc-client --generate>",
     "autoLinkEmail": true
 }
 ```
+
+Secret z `shpd-ds hosting-oidc-client --generate` patří na klientském DS do
+`secrets/oidc-shipard-id.client-secret` (`shpd-ds ds-secret set
+oidc-shipard-id.client-secret`); agent `hosting-sync` ho tam zapisuje sám.
 
 Dev tvar issueru: `http://127.0.0.1/{hosting-ds-id}/api/v1/_hosting/oidc`
 (http je povolené jen pro localhost/127.0.0.1). Redirect URI klienta
@@ -428,11 +440,17 @@ docker run -d --name keycloak -p 8080:8080 \
         "label": "Keycloak (dev)",
         "issuer": "http://localhost:8080/realms/shipard-dev",
         "clientId": "shipard",
-        "clientSecret": "…",
         "autoLinkEmail": true,
         "jitProvision": true
     }]
 }
+```
+
+6. Client secret z kroku 3 do `secrets/` (skrytý dotaz; `main.json` tajemství
+   nenese, #126 D2):
+
+```bash
+cd /opt/shipard/data-sources/<ds-id> && shpd-ds ds-secret set oidc-keycloak-dev.client-secret
 ```
 
 **Pozn.:** issuer musí být https; jedinou výjimkou je `http://localhost` /

@@ -1,10 +1,15 @@
-# Šifrované secrets v DS
+# Secrets v DS
 
-Per-DS šifrovací mechanismus pro citlivá data v databázi (API klíče,
-přihlašovací údaje, refresh tokeny). Všechny `encrypted_text` sloupce
-v jakémkoli modulu používají tuto infrastrukturu.
+Adresář `secrets/` zdroje dat nese dva druhy tajemství: **klíč** per-DS
+šifrování citlivých dat v databázi (`secrets.key`, §1–4; API klíče,
+přihlašovací údaje, refresh tokeny — všechny `encrypted_text` sloupce
+v jakémkoli modulu) a **tajemství konfigurace** zdroje dat — heslo
+k databázi, heslo relay pošty a `clientSecret` OIDC providerů, co tajemství,
+to soubor (§5; dřív v `config/main.json`).
 
-Plný design: [`tasks/ds-encrypted-secrets.md`](../../tasks/ds-encrypted-secrets.md).
+Plný design: [`tasks/ds-encrypted-secrets.md`](../../tasks/ds-encrypted-secrets.md)
+(šifrování) a [`tasks/ds-secrets-split.md`](../../tasks/ds-secrets-split.md)
+(tajemství konfigurace, #126 B1).
 
 ## 1. Co se šifruje a čím
 
@@ -156,7 +161,60 @@ mechanismu), `ds-upgrade` nový klíč vytvoří, ale **stará data v
 `encrypted_text` sloupcích nebudou dekódovatelná**. Admin musí znovu
 zadat všechny secrets.
 
-## 5. Troubleshooting
+## 5. Tajemství konfigurace zdroje dat
+
+`config/main.json` je čistá konfigurace — tajemství žijí v `secrets/`,
+**co tajemství, to soubor** (#126 D1, D2). Název souboru je odkaz,
+`main.json` žádné odkazy nenese; nové tajemství v budoucnu = nový soubor,
+nikdy klíč v `main.json`.
+
+| Soubor v `secrets/` | Dřív v `main.json` | Zapisuje | Čte |
+|---------------------|--------------------|----------|-----|
+| `db.password` | `database_password` | `ds-create`, migrace v `ds-upgrade` | `DataSourceConfig::getDatabasePassword()` |
+| `mail-relay.password` | `mail.relay.password` | `shpd-ds ds-secret set`, migrace | `DataSourceConfig::getMailRelay()` |
+| `oidc-<id>.client-secret` | `auth.providers[].clientSecret` | `hosting-sync`, `shpd-ds ds-secret set`, migrace | `DataSourceConfig::getAuthPolicy()` |
+
+- `<id>` je `id` providera (`[a-z0-9-]+`). Přípona `.client-secret` se
+  nekříží s `oidc-op.key` hostingu.
+- Obsah souboru je holá hodnota bez konce řádku; při čtení se odstraní
+  jedno koncové `\n` / `\r\n` (soubor uložený editorem), prázdný soubor =
+  tajemství chybí. Čte se **líně** (`Core\Config\DataSourceSecrets`) — kód,
+  který potřebuje jen konfiguraci (`ds-list`, dispatcher cronu), do
+  `secrets/` nesáhne.
+- Zápis výhradně `SecretsFileWriter::write()` (adresář `0700`, soubor
+  `0600`, fsync + rename, vlastník podle kořene zdroje dat i pod `sudo`).
+  **Bez šifrování** — stejný threat model jako `secrets.key` (§2): chrání
+  proti izolované expozici `main.json` a jeho kopií, ne proti přístupu
+  k filesystemu. Práva hlídá `shpd-server doctor` (`secrets/` rekurzivně,
+  obsah nejvýš `0600`), opraví `fix-permissions`.
+- **Záloha:** `secrets/` je součástí tarballu zdroje dat (§4,
+  [migration-guide.md](../migration-guide.md)); heslo k databázi při obnově
+  bere správce z `secrets/db.password`.
+
+**Ruční zadání** (`shpd-ds ds-secret`, [cli.md](../cli.md)): `ds-secret`
+vypíše tabulku Name / Used by / Status (`present` / `missing` /
+`in main.json (run ds-upgrade)`) bez hodnot; `ds-secret set
+mail-relay.password` a `ds-secret set oidc-<id>.client-secret` berou hodnotu
+jen ze skrytého dotazu nebo ze stdin, nikdy z argumentu. `db.password`
+takto nastavit nejde — musí sedět na uživatele databáze.
+
+**Migrace** (#126 D4): krok 0 `shpd-ds ds-upgrade` (`Core\Server\
+DataSourceSecretsMigrator`) tajemství z `main.json` zapíše do `secrets/`
+a teprve potom klíče z `main.json` odebere — pád mezi tím nechá hodnotu
+v obou souborech a další běh migraci dokončí; bez tajemství v `main.json`
+je krok no-op. Liší-li se hodnota v souboru, přepíše ji hodnotou
+z `main.json` s varováním. Migrátor zůstává natrvalo (obnova starší zálohy
+přinese starý `main.json`).
+
+**Přechodné období** (do tasku B2): `DataSourceConfig` čte tajemství i
+z `main.json` a hodnota tam má **přednost** před souborem — je buď ještě
+nepřesunutá, nebo ji tam vložil člověk a je novější. `doctor` (sekce
+*Data source secrets*) hlásí tajemství v `main.json` jako varování; až je
+sekce čistá na všech serverech, task B2 přechodné čtení odstraní, z varování
+udělá chybu a uvolní pravidlo pro AI (`main.json` se smí číst, `secrets/`
+nikdy).
+
+## 6. Troubleshooting
 
 | Symptom                                     | Pravděpodobná příčina           | Řešení                              |
 |---------------------------------------------|---------------------------------|-------------------------------------|
@@ -168,8 +226,11 @@ zadat všechny secrets.
 | `ds-secrets-rotate`: `Refusing to rotate…`  | běh pod jiným uživatelem než root a než vlastník DS — tmp klíč nelze předat vlastníkovi | spustit pod `sudo` nebo jako vlastník DS; nic se nezměnilo |
 | `secrets.key` je `root:root` po rotaci      | rotace starší verzí pod `sudo`  | `sudo shpd-server fix-permissions`, pak `ds-secrets-health` |
 | `AES-256-GCM is not available`              | PHP bez rozšíření OpenSSL       | doinstalovat / povolit `openssl`    |
+| `Database password missing — expected secrets/db.password` | heslo není v `main.json` ani v souboru (ztracený `secrets/` při obnově) | obnovit `secrets/` ze zálohy, nebo nové heslo uživateli databáze a ručně do `secrets/db.password` (0600, vlastník zdroje dat) |
+| `doctor`: `… still in config/main.json — run shpd-ds ds-upgrade` | zdroj dat ještě neprošel migrací | `sudo shpd-ds ds-upgrade` (nebo `shpd-server ds-upgrade-all`) |
+| `doctor`: `auth provider '<id>' has no client secret` | provider bez `secrets/oidc-<id>.client-secret` | `shpd-ds ds-secret set oidc-<id>.client-secret` |
 
-## 6. Implementační reference
+## 7. Implementační reference
 
 - `src/Core/Security/DsSecretCipher.php` — cipher třída + `generateKey()` + `healthCheck()`
 - `src/Core/Database/SchemaIntrospector.php` — vyhledávání `encrypted_text` sloupců
@@ -183,3 +244,9 @@ zadat všechny secrets.
   pro `config/state.json` ([ds-state.md](../ds-state.md) §3)
 - `tests/Fixtures/Module/Test/Secrets/TestSecretDocument.php` — kanárkový vzor pro
   Document classes, které mají `encrypted_text` sloupec
+- `src/Core/Config/DataSourceSecrets.php` — líné čtení tajemství konfigurace
+  (`db.password`, `mail-relay.password`, `oidc-<id>.client-secret`, §5);
+  `DataSourceSecretSlot` = co `main.json` očekává, bez hodnot (`ds-secret list`,
+  `doctor`)
+- `src/Core/Server/DataSourceSecretsMigrator.php` — krok 0 `ds-upgrade`
+- `src/Command/DataSource/DsSecretCommand.php` — `shpd-ds ds-secret`

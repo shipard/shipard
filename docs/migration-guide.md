@@ -7,9 +7,10 @@ postup u jednotlivých subsystémů (zejména secrets) je v `docs/operations/`.
 
 ```
 /opt/shipard/data-sources/{id}/
-├── config/main.json           DB credentials, modules
+├── config/main.json           konfigurace (název DB, DB uživatel, moduly) — bez tajemství
 ├── config/configuration/      kompilovaná konfigurace (regenerovatelná)
 ├── secrets/secrets.key        per-DS šifrovací klíč  ← KRITICKÉ
+├── secrets/db.password        heslo k databázi (+ mail-relay.password, oidc-<id>.client-secret)
 ├── att/                       přílohy
 └── cache/                     thumbnails (regenerovatelné)
 ```
@@ -63,10 +64,13 @@ chown -R shipard:shipard "/opt/shipard/data-sources/${DS_ID}"
 chmod 0700 "/opt/shipard/data-sources/${DS_ID}/secrets"
 chmod 0600 "/opt/shipard/data-sources/${DS_ID}/secrets/secrets.key"
 
-# 3. Database (admin musí mít CREATE DATABASE / CREATE USER)
+# 3. Database (admin musí mít CREATE DATABASE / CREATE USER); heslo je
+#    v secrets/db.password (holá hodnota). Záloha z doby před migrací
+#    tajemství (#126 B1) ho má ještě v main.json (database_password) —
+#    pak ho vezmi odtud a krok 5 (ds-upgrade) ho přesune do secrets/.
 mysql -e "CREATE DATABASE \`${DS_DB}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_czech_ci"
 mysql -e "CREATE USER 'shpd_$(echo ${DS_ID:0:9} | tr -d -)'@'localhost' \
-    IDENTIFIED BY '$(grep database_password /opt/shipard/data-sources/${DS_ID}/config/main.json | ...)'"
+    IDENTIFIED BY '$(cat /opt/shipard/data-sources/${DS_ID}/secrets/db.password)'"
 mysql -e "GRANT ALL ON \`${DS_DB}\`.* TO 'shpd_...'@'localhost'"
 
 # 4. Restore data
@@ -75,8 +79,9 @@ mysql "${DS_DB}" < "ds-${DS_DB}-...sql"
 # 5. Sanity check
 cd "/opt/shipard/data-sources/${DS_ID}"
 bin/shpd-ds ds-state             # očekávej maintenance on (migration) — DS je zatím zavřený
-bin/shpd-ds ds-upgrade           # idempotentní, dorovná schema pokud zaostává
+bin/shpd-ds ds-upgrade           # idempotentní, dorovná schema pokud zaostává; tajemství ze starého main.json přesune do secrets/
 bin/shpd-ds ds-secrets-health    # ověří, že secrets.key sedí na ciphertext v DB
+bin/shpd-ds ds-secret            # db.password present (a relay / OIDC tajemství, má-li je DS)
 
 # 6. Jen na neprodukčním serveru (vývojářský stroj, testovací kopie): vypnout
 #    periodické úlohy, dokud je DS zavřený — kopie nemá nic vystavovat ani

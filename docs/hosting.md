@@ -236,12 +236,14 @@ Jeden běh (cron slot `two-minutes`; `--dry-run` = náhled fronty přes
    settingu (D12), secret dešifrovaný (jediné místo, kde opouští
    hosting — https, jednorázově). Pro každý požadavek (chyba jednoho
    nezastaví další): `ds-create --ds-id --language --country`
-   (existující adresář = skip) → `ds-upgrade` → `domain-add` → merge položky
-   `{id: "shipard-id", label, issuer, clientId, clientSecret,
-   autoLinkEmail: false}` do `auth.providers` (atomicky, 0600, vlastník
-   podle adresáře `config/` — ruční běh pod rootem zdroj dat nezavře,
-   selhání nastavení vlastníka = krok `failed` a `main.json` zůstává;
-   U2 — identita se předpropojuje) → `user-create --admin --if-not-exists
+   (existující adresář = skip) → `ds-upgrade` → `domain-add` → `clientSecret`
+   do `secrets/oidc-shipard-id.client-secret` (`SecretsFileWriter`, #126 D1)
+   a merge položky `{id: "shipard-id", label, issuer, clientId,
+   autoLinkEmail: false}` **bez tajemství** do `auth.providers` (atomicky,
+   0600, vlastník podle adresáře `config/` — ruční běh pod rootem zdroj dat
+   nezavře; selhání zápisu tajemství nebo nastavení vlastníka = krok
+   `failed` a `main.json` zůstává; U2 — identita se předpropojuje) →
+   `user-create --admin --if-not-exists
    --identity-provider shipard-id --identity-issuer … --identity-subject
    {sub}` → `POST /_hosting/server/confirm` `{request_id, ds_id,
    status: "ok"|"failed", error?}`. Confirm `ok` → `lifecycle = active`
@@ -364,7 +366,6 @@ nevědí. Návrat do rozjednané OP transakce po plné navigaci na IdP zajišťu
     "label": "Google",
     "issuer": "https://accounts.google.com",
     "clientId": "<z Google Cloud Console>",
-    "clientSecret": "<z Google Cloud Console>",
     "autoLinkEmail": true,
     "jitProvision": false
 }
@@ -382,7 +383,6 @@ nevědí. Návrat do rozjednané OP transakce po plné navigaci na IdP zajišťu
     "label": "GitHub",
     "kind": "github",
     "clientId": "<z GitHub OAuth App>",
-    "clientSecret": "<z GitHub OAuth App>",
     "autoLinkEmail": true,
     "jitProvision": false
 }
@@ -393,6 +393,9 @@ Provozní poznámky:
 - `autoLinkEmail: true, jitProvision: false` (D4 tasku) — externí IdP je
   jen způsob přihlášení **existujících** účtů (pozvánka/self-service),
   nikoli otevřená registrace. Cizí účet skončí `oidc_no_account`.
+- Client secret obou providerů jde do `secrets/`, ne do `main.json` (#126 D2):
+  `shpd-ds ds-secret set oidc-google.client-secret` /
+  `oidc-github.client-secret` (skrytý dotaz nebo stdin).
 - Editace `config/main.json` hosting DS = mutace na alfě (per-action
   schválení, provádí David). Restart není třeba — config se čte
   per-request. Před zapnutím: `ds-upgrade` (sloupec `return_to`
