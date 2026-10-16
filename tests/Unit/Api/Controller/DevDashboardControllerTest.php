@@ -1168,6 +1168,11 @@ class DevDashboardControllerTest extends TestCase
 		$cancel = $ctrl->dispatch($this->makeRequest('POST', '/_dev/api/testing/jobs/20260101-000000-abcdef/cancel'));
 		$this->assertSame(404, $this->getStatus($cancel));
 		$this->assertSame('Job not found', $cancel->getPayload()['error']['message']);
+
+		// Spouštěcí akce (DevEvalController): bez tests/ v repo rootu TESTING_UNAVAILABLE, ne „Not found“ GET-only Testování.
+		$reseed = $ctrl->dispatch($this->makeRequest('POST', '/_dev/api/testing/eval/reseed'));
+		$this->assertSame(404, $this->getStatus($reseed));
+		$this->assertSame('TESTING_UNAVAILABLE', $reseed->getPayload()['error']['code']);
 	}
 }
 

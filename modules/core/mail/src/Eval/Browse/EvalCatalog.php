@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Mail\Eval\Browse;
 
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
+use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
 
 /**
  * Katalog prohlížeče výsledků evaluací (#103 D52): zdrojem pravdy jsou
@@ -71,6 +72,18 @@ final class EvalCatalog
             }
         }
         return null;
+    }
+
+    /** Soubory variant `tests/eval/variants/` (editor variant a spouštění evaluace, F6b). */
+    public function variantStore(): EvalVariantStore
+    {
+        return new EvalVariantStore(EvalVariantStore::defaultDir($this->repoRoot));
+    }
+
+    /** @return list<string> názvy sad — seznam pro pojistku spouštěcích akcí (D60) */
+    public function datasetNames(): array
+    {
+        return array_map(static fn (EvalDatasetInfo $d): string => $d->name, $this->datasets());
     }
 
     public function runStore(EvalDatasetInfo $dataset): EvalRunStore

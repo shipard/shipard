@@ -10,7 +10,6 @@ use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Module\Core\Exchange\Dataset\DatasetPreflight;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
-use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyPreflight;
 
 /**
  * Preflight `ai-eval` (D39) — nic se nemění, při nálezu příkaz končí exit 2:
@@ -53,29 +52,25 @@ final class EvalPreflight
             $problems[] = 'sada nemá žádnou zprávu v mail/';
         }
 
-        $messages = $this->dataSource->messageNdxByCode();
-        $docs = $this->dataSource->documentSources();
-        $membership = VerifyPreflight::membershipProblems($setMessageIds, array_flip($messages), $docs);
-        if ($membership !== []) {
+        // Čistota zdroje dat — totéž čte panel Zdroje dat dashboardu (D59).
+        $status = EvalDataSourceStatus::inspect($this->dataSource, $setMessageIds);
+        if ($status['membership'] !== []) {
             $problems[] = 'zdroj dat obsahuje data mimo sadu — ai-eval běží jen nad čistě naseedovaným zdrojem dat:';
-            foreach ($membership as $p) {
+            foreach ($status['membership'] as $p) {
                 $problems[] = '  ' . $p;
             }
         }
-        if ($docs !== []) {
+        if ($status['documents'] > 0) {
             $problems[] = sprintf(
                 'zdroj dat má %d doklad(ů) — použité doklady by přes historii řádků pokryly štítky dřív než AI; přeseeduj (shpd-ds dataset-seed <sada> -y)',
-                count($docs),
+                $status['documents'],
             );
         }
-        $rules = $this->dataSource->tagRuleCount();
-        if ($rules > 0) {
-            $problems[] = "zdroj dat má {$rules} pravidel IČO → štítek — pravidlo přeskočí LLM klasifikaci štítků; přeseeduj";
+        if ($status['tagRules'] > 0) {
+            $problems[] = "zdroj dat má {$status['tagRules']} pravidel IČO → štítek — pravidlo přeskočí LLM klasifikaci štítků; přeseeduj";
         }
-        foreach ($setMessageIds as $id) {
-            if (!isset($messages[$id])) {
-                $problems[] = "zpráva {$id} ze sady ve zdroji dat není — přeseeduj";
-            }
+        foreach ($status['missing'] as $id) {
+            $problems[] = "zpráva {$id} ze sady ve zdroji dat není — přeseeduj";
         }
 
         if ($this->dataSource->profile($this->variant->profile) === null) {

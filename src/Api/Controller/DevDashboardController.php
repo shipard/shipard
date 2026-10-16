@@ -56,9 +56,13 @@ class DevDashboardController
 			return Response::redirect('/_dev/');
 		}
 
-		// Úlohy na pozadí (#103 F6b D58) — před Testováním: to je GET-only a POST by vrátilo 404.
+		// Úlohy na pozadí a spouštěcí akce evaluací (#103 F6b D54–D63) — před Testováním:
+		// to je GET-only a POST by vrátilo 404.
 		if ($path === DevJobsController::PREFIX || str_starts_with($path, DevJobsController::PREFIX . '/')) {
 			return (new DevJobsController($this->jobStore(), $this->jobLauncher()))->dispatch($request);
+		}
+		if ($path === DevEvalController::PREFIX || str_starts_with($path, DevEvalController::PREFIX . '/')) {
+			return (new DevEvalController($this->repoRoot, $this->dataSourcesDir, $this->serverMode(), $this->jobStore(), $this->jobLauncher()))->dispatch($request);
 		}
 
 		// Sekce Testování (#103 D51–D53) — jen čtení souborů v checkoutu.
