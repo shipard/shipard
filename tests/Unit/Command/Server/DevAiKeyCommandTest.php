@@ -80,7 +80,8 @@ class DevAiKeyCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('Server AI key created', $display);
         $this->assertStringContainsString('Platform:', $display);
-        $this->assertStringContainsString('useServerConnection', $display);
+        $this->assertStringContainsString('"dataClass": "free"', $display, '#126 D9: kdo klíč používá');
+        $this->assertStringNotContainsString('useServerConnection', $display);
         $this->assertStringNotContainsString('sk-ant-dev-key', $display);
 
         $file = DevAiKeyStore::keyFilePath($this->configDir, 'anthropic');

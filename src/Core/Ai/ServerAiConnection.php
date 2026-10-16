@@ -11,10 +11,11 @@ use Shipard\Core\Logging\ErrorLogger;
  * Serverové AI připojení pro vývoj (tasks/testing-phase4.md D40, #103 D10):
  * virtuální připojení s kódem `server`, které nabízí server v režimu
  * `development` s uloženým klíčem ({@see DevAiKeyStore}). Použije ho jen
- * zdroj dat s příznakem `ai.useServerConnection` v `config/main.json`
- * (`ds-create` ve vývoji, `dataset-seed`) a jen když nemá vlastní aktivní
- * připojení s klíčem — rozhoduje {@see AiBackendResolver}. Mimo
- * `development` {@see detect()} vrací null, takže se nikdy nepoužije.
+ * zdroj dat s třídou dat `free` (`dataClass` v `config/main.json`, #126 D9 —
+ * `ds-create` ve vývoji, `dataset-seed`, `shpd-ds ds-class set free`)
+ * a jen když nemá vlastní aktivní připojení s klíčem — rozhoduje
+ * {@see AiBackendResolver}. Mimo `development` {@see detect()} vrací null,
+ * takže se nikdy nepoužije.
  */
 final class ServerAiConnection
 {

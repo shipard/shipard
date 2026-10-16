@@ -15,12 +15,14 @@ use Shipard\Core\Security\DsSecretCipher;
  * (tasks/ai-functions.md D40). The `api_key` column is `encrypted_text` —
  * see docs/operations/secrets.md.
  *
- * Serverové připojení pro vývoj (tasks/testing-phase4.md D40, #103 D10):
- * zdroj dat s příznakem `ai.useServerConnection` v main.json, na serveru
- * v režimu `development` s uloženým klíčem ({@see ServerAiConnection}),
- * dostane místo chybějícího výchozího připojení s klíčem virtuální řádek
- * `server`. Vlastní aktivní připojení s klíčem má vždy přednost; mimo
- * `development` serverové připojení neexistuje.
+ * Serverové připojení pro vývoj (tasks/testing-phase4.md D40, #103 D10,
+ * #126 D9): zdroj dat s třídou dat `free` (`dataClass` v main.json,
+ * {@see DataSourceConfig::isFree()}), na serveru v režimu `development`
+ * s uloženým klíčem ({@see ServerAiConnection}), dostane místo chybějícího
+ * výchozího připojení s klíčem virtuální řádek `server`. Kopie reálných dat
+ * (`realCopy`, i výchozí bez třídy) ho nedostane nikdy — opt-out neexistuje.
+ * Vlastní aktivní připojení s klíčem má vždy přednost; mimo `development`
+ * serverové připojení neexistuje.
  */
 class AiBackendResolver
 {
@@ -46,8 +48,8 @@ class AiBackendResolver
 
     /**
      * The default active backend row **holding a key**; without one the
-     * server connection (opted-in data source on a development server,
-     * D40); otherwise the keyless default row (resolver reports
+     * server connection (free data source on a development server, D40,
+     * #126 D9); otherwise the keyless default row (resolver reports
      * `KEY_MISSING`) or null when none is configured.
      *
      * @return array<string, mixed>|null
@@ -109,13 +111,13 @@ class AiBackendResolver
 
     /**
      * Virtuální řádek serverového připojení, smí-li ho tento zdroj dat
-     * použít (příznak v main.json) a server ho nabízí; jinak null.
+     * použít (třída dat `free`, #126 D9) a server ho nabízí; jinak null.
      *
      * @return array<string, mixed>|null
      */
     public function serverBackend(): ?array
     {
-        if ($this->dsConfig === null || !$this->dsConfig->usesServerAiConnection()) {
+        if ($this->dsConfig === null || !$this->dsConfig->isFree()) {
             return null;
         }
         return $this->server()?->row();

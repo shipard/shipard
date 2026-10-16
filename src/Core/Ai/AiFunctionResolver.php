@@ -251,7 +251,7 @@ class AiFunctionResolver
                 throw new AiFunctionException(
                     AiFunctionException::NO_CONNECTION,
                     $code === ServerAiConnection::CODE
-                        ? "The server AI connection selected for '{$functionId}' (override) is not available — a development server with a dev-ai-key and a data source opted in (ai.useServerConnection) are required"
+                        ? "The server AI connection selected for '{$functionId}' (override) is not available — a development server with a dev-ai-key and a free data source (dataClass) are required"
                         : "AI connection '{$code}' selected for '{$functionId}' (override) is missing or inactive",
                     ['functionId' => $functionId, 'connectionCode' => $code, 'origin' => ResolvedAiCall::ORIGIN_OVERRIDE],
                 );

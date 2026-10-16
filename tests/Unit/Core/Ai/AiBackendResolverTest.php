@@ -60,10 +60,11 @@ final class AiBackendResolverTest extends TestCase
         return $db;
     }
 
-    private function dsConfig(bool $flag): DataSourceConfig
+    /** Konfigurace zdroje dat s třídou `free` (true) nebo `realCopy` (false) — #126 D9. */
+    private function dsConfig(bool $free): DataSourceConfig
     {
         $config = $this->createMock(DataSourceConfig::class);
-        $config->method('usesServerAiConnection')->willReturn($flag);
+        $config->method('isFree')->willReturn($free);
         return $config;
     }
 
@@ -91,16 +92,16 @@ final class AiBackendResolverTest extends TestCase
         $resolver = new AiBackendResolver($this->db(null), $this->dsConfig(true), $this->server());
         $this->assertTrue(ServerAiConnection::isServerRow((array) $resolver->defaultBackend()));
 
-        // Bez příznaku zůstává řádek bez klíče (resolver hlásí KEY_MISSING jako dřív).
+        // Kopie reálných dat (realCopy): zůstává řádek bez klíče (resolver hlásí KEY_MISSING jako dřív).
         $resolver = new AiBackendResolver($this->db(self::DEFAULT_WITHOUT_KEY), $this->dsConfig(false), $this->server());
         $this->assertSame(self::DEFAULT_WITHOUT_KEY, $resolver->defaultBackend());
         $this->assertNull($resolver->serverBackend());
 
-        // S příznakem, ale server připojení nenabízí (jiný režim, bez klíče) → null.
+        // Volný zdroj, ale server připojení nenabízí (jiný režim, bez klíče) → null.
         $resolver = new AiBackendResolver($this->db(null), $this->dsConfig(true), null, false);
         $this->assertNull($resolver->defaultBackend());
 
-        // Bez konfigurace zdroje dat nikdy (příznak nejde přečíst).
+        // Bez konfigurace zdroje dat nikdy (třída nejde přečíst).
         $resolver = new AiBackendResolver($this->db(null), null, $this->server());
         $this->assertNull($resolver->defaultBackend());
     }
@@ -126,7 +127,7 @@ final class AiBackendResolverTest extends TestCase
         $this->assertTrue(ServerAiConnection::isServerRow((array) $resolver->backendByCode('server')));
 
         $resolver = new AiBackendResolver($this->db(self::DEFAULT_WITH_KEY), $this->dsConfig(false), $this->server());
-        $this->assertNull($resolver->backendByCode('server'), 'kód server bez příznaku zdroje dat');
+        $this->assertNull($resolver->backendByCode('server'), 'kód server u kopie reálných dat');
     }
 
     public function testServerRowKeyWithoutAServerIsAnError(): void

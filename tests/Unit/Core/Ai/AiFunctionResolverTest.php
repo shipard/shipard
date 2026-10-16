@@ -363,7 +363,7 @@ final class AiFunctionResolverTest extends TestCase
             $this->assertSame(ResolvedAiCall::ORIGIN_OVERRIDE, $e->details['origin']);
         }
 
-        // Serverové připojení není k dispozici (jiný režim, bez klíče, bez příznaku).
+        // Serverové připojení není k dispozici (jiný režim, bez klíče, kopie reálných dat).
         $resolver = $this->resolverWithCodes(self::DEFAULT_CONNECTION, [], ['default' => 'sk-default']);
         try {
             $resolver->resolve('mail.extraction', new AiCallOverride(connectionCode: 'server'));
@@ -371,6 +371,7 @@ final class AiFunctionResolverTest extends TestCase
         } catch (AiFunctionException $e) {
             $this->assertSame(AiFunctionException::NO_CONNECTION, $e->errorCode);
             $this->assertStringContainsString('server AI connection', $e->getMessage());
+            $this->assertStringContainsString('free data source (dataClass)', $e->getMessage(), '#126 D9');
         }
     }
 

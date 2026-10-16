@@ -110,9 +110,9 @@ class DevAiKeyCommand extends Command
         $output->writeln('');
         $output->writeln('<comment>Platform:</comment> ' . $devAi->platform
             . ($devAi->baseUrl !== null ? ' (' . $devAi->baseUrl . ')' : ' (default platform URL)'));
-        $output->writeln('<comment>Who uses it:</comment> data sources with "ai": {"useServerConnection": true} in config/main.json');
-        $output->writeln('  (set by ds-create on this server and by dataset-seed; never on restored real copies)');
-        $output->writeln('  and without an active AI connection of their own holding a key.');
+        $output->writeln('<comment>Who uses it:</comment> data sources with "dataClass": "free" in config/main.json');
+        $output->writeln('  (ds-create on this server, dataset-seed, shpd-ds ds-class set free; a real copy — realCopy, or no class — never)');
+        $output->writeln('  and without an active AI connection of their own holding a key. Overview: shpd-server ds-list');
         $output->writeln('<comment>Verify:</comment> cd /opt/shipard/data-sources/<id> && shpd-ds ai-test --function mail.extraction');
 
         return Command::SUCCESS;

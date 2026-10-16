@@ -24,6 +24,9 @@ class TestableDsUpgradeCommand extends DsUpgradeCommand
     /** true = simuluje DS bez katalogu modelů (compiled config bez core.ai.models). */
     public bool $emptyModelCatalog = false;
 
+    /** Režim serveru pro varování vázaná na vývoj (#126 D9). */
+    public string $serverMode = 'development';
+
     public function __construct(
         DataSourceConfig $dsConfig,
         DataSourceConnection $dsConnection,
@@ -41,6 +44,11 @@ class TestableDsUpgradeCommand extends DsUpgradeCommand
     protected function getModulePathResolver(): ModulePathResolver
     {
         return new ModulePathResolver([$this->modulesPath]);
+    }
+
+    protected function getServerMode(): string
+    {
+        return $this->serverMode;
     }
 
     public bool $emptyAiFunctions = false;
@@ -229,7 +237,7 @@ class DsUpgradeCommandTest extends TestCase
         return $dsConfig;
     }
 
-    private function createCommandTester(): CommandTester
+    private function createCommandTester(string $serverMode = 'development'): CommandTester
     {
         $command = new TestableDsUpgradeCommand(
             $this->dsConfig,
@@ -237,11 +245,60 @@ class DsUpgradeCommandTest extends TestCase
             $this->modulesPath,
             $this->dsDir,
         );
+        $command->serverMode = $serverMode;
 
         $app = new Application();
         $app->add($command);
 
         return new CommandTester($command);
+    }
+
+    private const string LEGACY_AI_WARNING = '[WARN] main.json ai.useServerConnection is no longer used';
+
+    public function testLegacyServerAiFlagWithoutADataClassWarnsOnADevelopmentServer(): void
+    {
+        // #126 D9/U8: zaniklý příznak bez explicitní třídy → varování i bez -v;
+        // klíč se neodebírá a třída nenastavuje (příznak mohl mít i cíl importu).
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        $this->dsConfig->method('hasLegacyServerAiFlag')->willReturn(true);
+        $this->dsConfig->method('hasExplicitDataClass')->willReturn(false);
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString(self::LEGACY_AI_WARNING, $display);
+        $this->assertStringContainsString('counts as realCopy (no server AI)', $display);
+        $this->assertStringContainsString('shpd-ds ds-class set free', $display);
+    }
+
+    public function testLegacyServerAiFlagIsSilentInProduction(): void
+    {
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        $this->dsConfig->method('hasLegacyServerAiFlag')->willReturn(true);
+        $this->dsConfig->method('hasExplicitDataClass')->willReturn(false);
+
+        $tester = $this->createCommandTester('production');
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringNotContainsString(self::LEGACY_AI_WARNING, $tester->getDisplay());
+    }
+
+    public function testLegacyServerAiFlagIsSilentOnceTheDataClassIsExplicit(): void
+    {
+        // Explicitní třída = vlastník už rozhodl; příznak zmizí s prvním zápisem třídy.
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        $this->dsConfig->method('hasLegacyServerAiFlag')->willReturn(true);
+        $this->dsConfig->method('hasExplicitDataClass')->willReturn(true);
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringNotContainsString(self::LEGACY_AI_WARNING, $tester->getDisplay());
     }
 
     public function testUpgradeCreatesNewTable(): void

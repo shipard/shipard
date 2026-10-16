@@ -81,6 +81,21 @@ class DsUpgradeCommand extends Command
         return ModulePathResolver::fromServerConfig($cfg, dirname(__DIR__, 3) . '/modules');
     }
 
+    /** Server mode; 'development' when server.json is missing (production always has it). */
+    protected function getServerMode(): string
+    {
+        try {
+            $cfg = $this->serverConfig;
+            if ($cfg === null) {
+                $cfg = new ServerConfig();
+                $cfg->load();
+            }
+            return $cfg->getMode();
+        } catch (\Throwable) {
+            return 'development';
+        }
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $dsDir = $this->getDataSourceDir();
@@ -396,6 +411,18 @@ class DsUpgradeCommand extends Command
         $secretsWarnings = DsSecretCipher::healthCheck($dsConfig);
         foreach ($secretsWarnings as $warning) {
             $output->writeln('<comment>  [WARN] ' . $warning . '</comment>');
+        }
+
+        // Zaniklý příznak serverového AI (#126 D9, U8): bez explicitní třídy
+        // dat se zdroj bere jako realCopy a serverové připojení ztratil — jen
+        // varování, klíč neodebíráme a třídu nenastavujeme (příznak mohl mít
+        // i cíl importu); zmizí s prvním zápisem třídy. V produkci nic.
+        if ($this->getServerMode() === 'development'
+            && $dsConfig->hasLegacyServerAiFlag()
+            && !$dsConfig->hasExplicitDataClass()) {
+            $output->writeln('<comment>  [WARN] main.json ai.useServerConnection is no longer used — '
+                . 'without a data class this data source counts as realCopy (no server AI). '
+                . 'If it holds no real data: shpd-ds ds-class set free</comment>');
         }
 
         // Warning, ne chyba — ds-upgrade musí na DS založených před
