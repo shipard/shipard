@@ -1,6 +1,6 @@
 # Přehled firmy — obrazovka „jak na tom firma je“ (v1)
 
-**Stav:** hotovo — implementováno 2026-10-16 (#120 D1–D19); odchylky od zadání v `docs/overview.md` §8, ruční ověření na dev serveru dle „Hotovo když“ zbývá
+**Stav:** hotovo — implementováno a ověřeno prokliknutím na dev serveru 2026-10-16 (#120 D1–D20); odchylky od zadání v `docs/overview.md` §8
 
 ## Kontext / Cíl
 

@@ -180,6 +180,12 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
   období varování nedávají. Pokladna: místo položek zpráva `openingMissing`
   (bankovní položky zůstávají, sekce `ok`); Pohledávky a Závazky: sekce
   `unavailable`.
+  **Známé omezení (#120 D20):** zdroj dat s deníkem jen za běžné období,
+  bez otevíracích zápisů a s prázdným předchozím obdobím (částečný import)
+  vypadá stejně jako první rok firmy — pojistka nezabere a zůstatky pokladny
+  i saldokonta jsou bez počátečních stavů. Vědomě ponecháno: migrace
+  přináší otevírací doklady; rozlišení (např. příznak zdroje dat
+  „počáteční stavy převedeny“ v onboardingu) případně později.
 - **Saldokonto (D6, D18, D19):** jen skupiny `receivables` / `payables`,
   jen běžné účetní období (`fiscal_year` je součást klíče případu — součet
   přes období by dluh po převodu zdvojil). Bez případů položka s nulou
