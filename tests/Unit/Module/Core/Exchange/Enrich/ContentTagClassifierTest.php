@@ -11,6 +11,7 @@ use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Enrich\ContentTagClassifier;
@@ -75,7 +76,40 @@ class ContentTagClassifierTest extends TestCase
         } else {
             $functions->method('resolve')->willReturn($call ?? $this->call());
         }
+        $functions->method('catalog')->willReturn(ModelCatalog::fromArray([
+            'claude-x' => ['name' => 'X', 'order' => 1, 'tier' => 'fast', 'platformIds' => ['anthropic' => 'claude-x'], 'prices' => ['input' => 1, 'output' => 5]],
+        ]));
         return $functions;
+    }
+
+    /** Spotřeba volání (F6b D56): tokeny, model a cena podle rozhodnutí resolveru; čtení ji nuluje. */
+    public function testUsageOfTheLlmCallIsRecordedAndTakenOnce(): void
+    {
+        $classifier = $this->classifier('{"primaryTag": "vehicle.fuel", "confidence": 0.9, "rowExceptions": []}', call: $this->call(['catalogModel' => 'claude-x']));
+        $this->assertNull($classifier->takeLastUsage(), 'před voláním nic');
+
+        $this->assertSame('vehicle.fuel', $classifier->classify($this->canonical())['primaryTag']);
+        // 100 × 1 + 40 × 5 = 300 / 1M = 0,0003 USD
+        $this->assertSame(['tokensIn' => 100, 'tokensOut' => 40, 'model' => 'claude-x', 'costUsd' => 0.0003], $classifier->takeLastUsage());
+        $this->assertNull($classifier->takeLastUsage(), 'čtení nuluje');
+
+        $this->assertNull($this->classifier('{}')->classify($this->canonical())['primaryTag'], 'prázdný JSON = legitimní „bez štítku“');
+        $noCatalogModel = $this->classifier('{"primaryTag": null, "confidence": 0, "rowExceptions": []}');
+        $noCatalogModel->classify($this->canonical());
+        $this->assertNull($noCatalogModel->takeLastUsage()['costUsd'], 'vlastní ID modelu mimo katalog = bez ceny, tokeny ano');
+    }
+
+    public function testUsageIsRecordedEvenForIncompleteOutputButNotWithoutACall(): void
+    {
+        $llm = $this->createMock(LlmClient::class);
+        $llm->method('streamChat')->willReturn(new LlmChatResult('{"primaryTag": "vehicle.fuel"}', 100, 40, 'max_tokens', 'claude-x'));
+        $classifier = $this->classifier('', llm: $llm);
+        $this->assertNull($classifier->classify($this->canonical()));
+        $this->assertSame(100, $classifier->takeLastUsage()['tokensIn'], 'useknutá odpověď = útrata nastala');
+
+        $unresolved = $this->classifier('{}', unresolved: true);
+        $this->assertNull($unresolved->classify($this->canonical()));
+        $this->assertNull($unresolved->takeLastUsage(), 'nenastavená funkce = bez volání');
     }
 
     /** @param array<string, mixed> $overrides */

@@ -93,6 +93,21 @@ final class AnalysisComputationTest extends TestCase
         ErrorLogger::resetForTesting();
     }
 
+    /** Třetí prvek validace = spotřeba LLM štítků → `validated->tagsUsage` (F6b D56); dvouprvková validace dál funguje. */
+    public function testTagUsageFromValidationReachesTheOutcome(): void
+    {
+        $this->validator = $this->createMock(AnalysisResultWriter::class);
+        $this->validator->method('validateCanonical')->willReturn([json_encode(['docNumber' => 'X']), true, ['tokensIn' => 120, 'tokensOut' => 30, 'model' => 'claude-haiku-5-5', 'costUsd' => 0.0003]]);
+        $outcome = $this->computation(new ComputationLlmClient([self::reply()]))->compute($this->request());
+
+        $this->assertTrue($outcome->ok, (string) $outcome->note);
+        $this->assertSame(['tokensIn' => 120, 'tokensOut' => 30, 'model' => 'claude-haiku-5-5', 'costUsd' => 0.0003], $outcome->validated?->tagsUsage);
+
+        $this->validator = $this->createMock(AnalysisResultWriter::class);
+        $this->validator->method('validateCanonical')->willReturn([json_encode(['docNumber' => 'X']), true]);
+        $this->assertNull($this->computation(new ComputationLlmClient([self::reply()]))->compute($this->request())->validated?->tagsUsage);
+    }
+
     private function computation(ComputationLlmClient $llm): AnalysisComputation
     {
         $attachments = $this->createMock(AttachmentPreparer::class);

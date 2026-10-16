@@ -16,6 +16,22 @@ use Shipard\Module\Core\Mail\Eval\EvalCallResult;
  */
 final class EvalCallResultTest extends TestCase
 {
+    /** F6b D56: `tags` ve výstupu hned za `tag` (null = LLM štítky se nevolaly), cena štítků jako helper. */
+    public function testTagsUsageIsPartOfTheCallRecord(): void
+    {
+        $without = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', 'invoiceReceived', 'it.hosting');
+        $this->assertNull($without->toArray()['tags']);
+        $this->assertSame(0.0, $without->tagsCostUsd());
+        $keys = array_keys($without->toArray());
+        $this->assertSame(array_search('tag', $keys, true) + 1, array_search('tags', $keys, true));
+
+        $tags = ['tokensIn' => 120, 'tokensOut' => 30, 'model' => 'claude-haiku-5-5', 'costUsd' => 0.0003];
+        $with = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', 'invoiceReceived', 'it.hosting', [], $tags);
+        $this->assertSame($tags, $with->toArray()['tags']);
+        $this->assertSame(0.0003, $with->tagsCostUsd());
+        $this->assertSame(0.0, (new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', null, null, [], ['costUsd' => null] + $tags))->tagsCostUsd(), 'bez ceny (model mimo katalog)');
+    }
+
     public function testNormalizedCarriesActualValueAndSimilarity(): void
     {
         $result = new EvalCallResult(

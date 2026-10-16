@@ -84,6 +84,18 @@ final class RowEnrichmentPipeline
     }
 
     /**
+     * Spotřeba posledního LLM volání klasifikace štítků a její vynulování
+     * ({@see ContentTagClassifier::takeLastUsage()}); null = LLM se nevolalo
+     * (pravidlo IČO, persistnutý štítek, bez nepokrytých řádků, bez classifieru).
+     *
+     * @return array{tokensIn: int, tokensOut: int, model: ?string, costUsd: ?float}|null
+     */
+    public function takeTagUsage(): ?array
+    {
+        return $this->classifier?->takeLastUsage();
+    }
+
+    /**
      * Štítek dokumentu z `_resolve.contentTag.tag` obohaceného canonicalu —
      * denormalizace do sloupce `core_mail_message_analyses.content_tag`
      * (karta Nová kategorie, learning handler). Sdílí `/result`

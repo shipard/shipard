@@ -59,6 +59,10 @@ final class EvalRunSummary
             'failed' => (int) ($metrics['calls.failed'] ?? 0),
             'costUsd' => $metrics['cost.usd'] ?? null,
             'costPerDocument' => $metrics['cost.perDocument'] ?? null,
+            // Cena štítků a celkem (#103 F6b D56); starší běhy bez nich mají null.
+            'tagsUsd' => $metrics['tags.usd'] ?? null,
+            'costTotalUsd' => $metrics['cost.totalUsd'] ?? null,
+            'costTotalPerDocument' => $metrics['cost.totalPerDocument'] ?? null,
             'timePerDocumentMs' => $metrics['time.perDocumentMs'] ?? null,
             'setHash' => $setHash,
             'currentSet' => $currentHash !== null && $setHash === $currentHash,

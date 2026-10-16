@@ -141,6 +141,7 @@ final class DevTestingController
 				'errorType' => $call['errorType'] ?? null,
 				'deviations' => \Shipard\Module\Core\Mail\Eval\EvalCallResult::deviationCount($call),
 				'costUsd' => $call['costUsd'] ?? null,
+				'tagsCostUsd' => is_array($call['tags'] ?? null) && is_numeric($call['tags']['costUsd'] ?? null) ? $call['tags']['costUsd'] : null,
 				'durationMs' => $call['durationMs'] ?? null,
 				'tag' => $call['tag'] ?? null,
 				'primaryType' => $call['primaryType'] ?? null,

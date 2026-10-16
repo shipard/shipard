@@ -290,14 +290,14 @@ final class AiEvalCommandTest extends TestCase
 
     public function testEstimateFallsBackToTokensOfARunWithAModelOfTheSameSeries(): void
     {
-        // D44: bez běhu téže varianty tokeny na doklad z běhu jiné varianty (i nad jiným
-        // hashem) s modelem téže řady × ceník plánovaného modelu: 9267 × 2 + 2325 × 10
-        // = 41 784 / 1M = 0,041784 + štítky Haiku 0,0021 = 0,043884.
+        // D44 / D56: bez běhu se stejným modelem tokeny na doklad z běhu jiné varianty (i nad
+        // jiným hashem) s modelem téže řady (Haiku 5.5) × ceník plánovaného modelu (Sonnet 5.5):
+        // 9267 × 2 + 2325 × 10 = 41 784 / 1M = 0,041784 + štítky Haiku 0,0021 = 0,043884.
         mkdir($this->tmp . '/runs/cz-vat-payer', 0750, true);
         file_put_contents($this->tmp . '/runs/cz-vat-payer/2026-10-14-other.json', json_encode([
             'format' => 'shpd.eval.run.v1',
             'set' => ['name' => 'cz-vat-payer', 'hash' => 'old-hash'],
-            'variant' => ['name' => 'other', 'effective' => ['catalogModel' => 'claude-sonnet-5-5']],
+            'variant' => ['name' => 'other', 'effective' => ['catalogModel' => 'claude-haiku-5-5']],
             'startedAt' => '2026-10-14T10:00:00+00:00',
             'metrics' => ['cost.usd' => 3.76, 'calls.total' => 60, 'tokens.inputPerDocument' => 9267, 'tokens.outputPerDocument' => 2325],
         ]));
@@ -306,7 +306,7 @@ final class AiEvalCommandTest extends TestCase
 
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $display = $tester->getDisplay();
-        $this->assertStringContainsString('Odhad ceny: ~0.0439 USD (0.0439 USD / volání z ceníku a tokenů na doklad podle běhu 2026-10-14-other.json — model claude-sonnet-5-5 téže řady)', $display);
+        $this->assertStringContainsString('Odhad ceny: ~0.0439 USD (0.0439 USD / volání z ceníku a tokenů na doklad podle běhu 2026-10-14-other.json — model claude-haiku-5-5 téže řady)', $display);
         $this->assertSame(0, $command->computationsCreated);
     }
 
@@ -338,6 +338,66 @@ final class AiEvalCommandTest extends TestCase
         $this->assertStringContainsString('Spustit? [y/N]', $display);
         $this->assertStringContainsString('Aborted.', $display);
         $this->assertSame(0, $command->computationsCreated);
+    }
+
+    public function testEstimateOnlyPrintsJsonAndRunsNothing(): void
+    {
+        $command = $this->command(self::ndxByCode());
+        $tester = self::execute($command, ['--only' => '0101', '--repeat' => '2', '--estimate' => true, '--json' => true, '--max-cost' => '0.5']);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame(0, $command->computationsCreated);
+        $this->assertDirectoryDoesNotExist($this->tmp . '/runs/cz-vat-payer', 'odhad nic nezapíše');
+        $lines = array_values(array_filter(explode("\n", $tester->getDisplay()), static fn (string $l): bool => str_starts_with($l, '{"ok":true')));
+        $this->assertCount(1, $lines, 'jeden JSON objekt na stdout');
+        $data = json_decode($lines[0], true);
+        $this->assertSame('cz-vat-payer', $data['set']['name']);
+        $this->assertSame(1, $data['set']['messages']);
+        $this->assertSame('baseline', $data['variant']);
+        $this->assertSame(2, $data['repeat']);
+        $this->assertSame(2, $data['calls']);
+        $this->assertSame('claude-sonnet-5-5', $data['model']);
+        $this->assertSame('claude-sonnet-5-5', $data['catalogModel']);
+        $this->assertSame('default', $data['connection']);
+        $this->assertSame('claude-haiku-5-5', $data['tagsModel']);
+        $this->assertSame('catalog', $data['estimate']['basis']);
+        $this->assertIsFloat($data['estimate']['total']);
+        $this->assertSame(0.5, $data['maxCostUsd']);
+
+        $tester = self::execute($command, ['--only' => '0101', '--estimate' => true]);
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertStringContainsString('nic se nespustilo', $tester->getDisplay());
+        $this->assertSame(0, $command->computationsCreated);
+    }
+
+    public function testMaxCostAndProgressFileAreValidatedBeforeAnything(): void
+    {
+        $command = $this->command(self::ndxByCode());
+
+        $tester = self::execute($command, ['--max-cost' => '0', '--yes' => true]);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertStringContainsString('--max-cost', $tester->getDisplay());
+        $tester = self::execute($command, ['--max-cost' => 'abc', '--yes' => true]);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+
+        $tester = self::execute($command, ['--progress-file' => $this->tmp . '/missing-dir/progress.jsonl', '--yes' => true]);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertStringContainsString('--progress-file', $tester->getDisplay());
+        $this->assertSame(0, $command->computationsCreated);
+    }
+
+    public function testJsonRefusalCarriesTheProblems(): void
+    {
+        $command = $this->command(self::ndxByCode());
+        $command->serverMode = 'production';
+        $tester = self::execute($command, ['--estimate' => true, '--json' => true]);
+
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $lines = array_values(array_filter(explode("\n", $tester->getDisplay()), static fn (string $l): bool => str_starts_with($l, '{"ok":false')));
+        $this->assertCount(1, $lines);
+        $data = json_decode($lines[0], true);
+        $this->assertFalse($data['ok']);
+        $this->assertStringContainsString('development', implode(' ', $data['problems']));
     }
 
     public function testRunWritesTheResultsFileAndJson(): void
@@ -404,8 +464,83 @@ final class AiEvalCommandTest extends TestCase
         $command->computation = new ScriptedComputation([EvalRunnerTest::okOutcome($expected)]);
         $tester = self::execute($command, ['--only' => '0101', '--yes' => true]);
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
-        $this->assertStringContainsString('podle posledního běhu 2026-10-15-baseline.json', $tester->getDisplay());
+        $this->assertStringContainsString('podle posledního běhu 2026-10-15-baseline.json se stejným modelem claude-sonnet-5-5', $tester->getDisplay());
         $this->assertFileExists($this->tmp . '/runs/cz-vat-payer/2026-10-15-baseline-2.json');
+    }
+
+    /** F6b D61: strop útraty zastaví další volání, běh je neúplný; průběh v JSON řádcích vč. ceny štítků. */
+    public function testMaxCostStopsTheRunAndProgressFileCarriesTheEvents(): void
+    {
+        $messages = EvalMessages::filter(EvalMessages::fromDataset(DatasetReader::open(self::datasetDir())), ['0101'], null);
+        $expected = $messages[0]->expectedCanonical;
+        $command = $this->command(self::ndxByCode());
+        $command->computation = new ScriptedComputation([
+            EvalRunnerTest::okOutcome($expected, tags: EvalRunnerTest::tags(0.001)),
+            EvalRunnerTest::okOutcome($expected, tags: EvalRunnerTest::tags(0.001)),
+            EvalRunnerTest::okOutcome($expected),
+        ]);
+        $progress = $this->tmp . '/progress.jsonl';
+        $tester = self::execute($command, ['--only' => '0101', '--repeat' => '3', '--yes' => true, '--json' => true, '--max-cost' => '0.03', '--progress-file' => $progress]);
+
+        $display = $tester->getDisplay();
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $display);
+        $this->assertStringContainsString('Strop útraty: 0.0300 USD', $display);
+        $this->assertStringContainsString('Běh neúplný: dosažen strop útraty 0.0300 USD — 2 z 3 volání.', $display);
+        $run = json_decode((string) file_get_contents($this->tmp . '/runs/cz-vat-payer/2026-10-15-baseline.json'), true);
+        $this->assertSame('maxCost', $run['stoppedBy']);
+        $this->assertSame(3, $run['plannedCalls']);
+        $this->assertSame(2, $run['metrics']['calls.total']);
+        $this->assertSame(0.042, $run['metrics']['cost.totalUsd'], '2 × (0,02 + 0,001)');
+        $this->assertSame(0.002, $run['metrics']['tags.usd']);
+        $this->assertSame(EvalRunnerTest::tags(0.001), $run['calls'][0]['tags']);
+
+        $events = array_map(static fn (string $l): array => json_decode($l, true), array_values(array_filter(explode("\n", (string) file_get_contents($progress)))));
+        $this->assertSame(['started', 'call', 'call', 'finished'], array_column($events, 'event'));
+        $this->assertSame(3, $events[0]['calls']);
+        $this->assertSame(0.03, $events[0]['maxCostUsd']);
+        $this->assertSame('claude-sonnet-5-5', $events[0]['model']);
+        $this->assertSame(['messageId' => 'MSG-CORPUS-VP-0101', 'repeat' => 2, 'status' => 'ok', 'spentUsd' => 0.042, 'done' => 2, 'total' => 3], array_intersect_key($events[2], array_flip(['messageId', 'repeat', 'status', 'done', 'total', 'spentUsd'])));
+        $this->assertSame(0.001, $events[2]['tagsCostUsd']);
+        $this->assertSame('maxCost', $events[3]['stoppedBy']);
+        $this->assertStringEndsWith('2026-10-15-baseline.json', $events[3]['file']);
+        $this->assertSame(0.042, $events[3]['spentUsd']);
+    }
+
+    /** F6b D61: SIGTERM = žádné další volání; s výsledkem soubor `stoppedBy: cancelled` a exit 130, bez výsledku nic. */
+    public function testCancellationSavesThePartialRunOrNothing(): void
+    {
+        $messages = EvalMessages::filter(EvalMessages::fromDataset(DatasetReader::open(self::datasetDir())), ['0101'], null);
+        $expected = $messages[0]->expectedCanonical;
+        $command = $this->command(self::ndxByCode());
+        $command->computation = new class($command, EvalRunnerTest::okOutcome($expected)) implements AnalysisComputing {
+            public int $calls = 0;
+            public function __construct(private readonly AiEvalCommand $command, private readonly AnalysisOutcome $outcome) {}
+            public function compute(\Shipard\Module\Core\Mail\Analysis\AnalysisRequest $request): AnalysisOutcome
+            {
+                $this->calls++;
+                $this->command->handleSignal(15); // SIGTERM během prvního volání
+                return $this->outcome;
+            }
+        };
+        $tester = self::execute($command, ['--only' => '0101', '--repeat' => '2', '--yes' => true]);
+
+        $display = $tester->getDisplay();
+        $this->assertSame(AiEvalCommand::EXIT_CANCELLED, $tester->getStatusCode(), $display);
+        $this->assertSame(1, $command->computation->calls, 'druhé volání nezačalo');
+        $this->assertStringContainsString('Běh neúplný: zrušeno (SIGTERM) — 1 z 2 volání.', $display);
+        $run = json_decode((string) file_get_contents($this->tmp . '/runs/cz-vat-payer/2026-10-15-baseline.json'), true);
+        $this->assertSame('cancelled', $run['stoppedBy']);
+        $this->assertSame(1, $run['metrics']['calls.total']);
+
+        // Zrušení před prvním voláním: žádný soubor.
+        $command = $this->command(self::ndxByCode());
+        $command->computation = new ScriptedComputation([]);
+        $command->requestCancel();
+        $tester = self::execute($command, ['--only' => '0101', '--yes' => true, '--out' => $this->tmp . '/none']);
+        $this->assertSame(AiEvalCommand::EXIT_CANCELLED, $tester->getStatusCode());
+        $this->assertStringContainsString('Zrušeno před prvním dokončeným voláním', $tester->getDisplay());
+        $this->assertDirectoryDoesNotExist($this->tmp . '/none');
+        $this->assertFalse($command->handleSignal(15), 'false = Symfony proces neukončí');
     }
 
     public function testExitCodeFollowsTheKindOfFailure(): void

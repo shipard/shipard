@@ -174,6 +174,7 @@ final class AnalysisComputation implements AnalysisComputing
         return new ValidatedCanonical(
             isset($validation[0]) && is_string($validation[0]) ? $validation[0] : null,
             (bool) ($validation[1] ?? false),
+            is_array($validation[2] ?? null) ? $validation[2] : null,
         );
     }
 

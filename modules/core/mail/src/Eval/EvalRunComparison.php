@@ -34,7 +34,8 @@ final class EvalRunComparison
         'fields.vatRecap.hit', 'fields.totals.hit', 'fields.tag.hit', 'fields.rowExceptions.hit', 'fields.classification.hit',
         'documents.clean', 'documents.amountsCorrect', 'documents.rowCountOk', 'documents.classificationOk', 'documents.tagOk',
         'calls.total', 'calls.ok', 'calls.failed',
-        'cost.usd', 'cost.perDocument', 'tokens.input', 'tokens.output', 'tokens.inputPerDocument', 'tokens.outputPerDocument',
+        'cost.usd', 'cost.perDocument', 'cost.totalUsd', 'cost.totalPerDocument', 'tags.usd', 'tags.calls',
+        'tokens.input', 'tokens.output', 'tokens.inputPerDocument', 'tokens.outputPerDocument',
         'time.ms', 'time.perDocumentMs',
     ];
 
@@ -354,7 +355,7 @@ final class EvalRunComparison
         if ($value === null) {
             return '—';
         }
-        if (str_starts_with($key, 'cost.')) {
+        if (str_starts_with($key, 'cost.') || $key === 'tags.usd') {
             return number_format((float) $value, 4, '.', '');
         }
         if ((str_starts_with($key, 'fields.') && !preg_match('/\.(n|missing|extra|wrong)$/', $key)) || str_starts_with($key, 'documents.')) {

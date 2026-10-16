@@ -11,7 +11,9 @@ use Shipard\Core\Ai\AiCallPlan;
  * země, profil, hash obsahu, výběr), git (commit, neuložené změny),
  * varianta deklarovaná i rozepsaná na skutečné hodnoty (profil, verze
  * a hash promptu, platforma a původ připojení, model, ladění, strop,
- * ladění štítků), začátek a konec, opakování, metriky a per zpráva
+ * ladění štítků), začátek a konec, opakování, plánovaný počet volání
+ * a důvod předčasného konce (`stoppedBy`: `maxCost` strop útraty,
+ * `cancelled` SIGTERM; null = doběhlo, D61), metriky a per zpráva
  * × opakování jen odchylky.
  */
 final class EvalRun
@@ -40,6 +42,8 @@ final class EvalRun
         int $repeat,
         array $metrics,
         array $results,
+        ?string $stoppedBy = null,
+        ?int $plannedCalls = null,
     ): array {
         $promptTemplate = $variant->promptTemplate ?? (string) ($profile['prompt_template'] ?? '');
         return [
@@ -78,6 +82,8 @@ final class EvalRun
             'startedAt' => $startedAt,
             'finishedAt' => $finishedAt,
             'repeat' => $repeat,
+            'plannedCalls' => $plannedCalls ?? count($results),
+            'stoppedBy' => $stoppedBy,
             'metrics' => $metrics['metrics'],
             'range' => $metrics['range'] ?? null,
             'fieldStability' => $metrics['fieldStability'] ?? null,

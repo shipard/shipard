@@ -40,6 +40,10 @@ final class EvalRunSummaryTest extends TestCase
         $this->assertGreaterThanOrEqual($summary['hit']['avg'], $summary['hit']['max']);
         $this->assertIsFloat($summary['costPerDocument']);
         $this->assertIsNumeric($summary['timePerDocumentMs']);
+        $this->assertNull($summary['tagsUsd'], 'běh před F6b bez ceny štítků');
+        $this->assertNull($summary['costTotalUsd']);
+        $this->assertNull($summary['costTotalPerDocument']);
+        $this->assertSame(0.0007, EvalRunSummary::fromRun(['metrics' => ['tags.usd' => 0.0007, 'cost.totalUsd' => 1.5, 'cost.totalPerDocument' => 0.05]], null)['tagsUsd']);
 
         $old = EvalRunSummary::fromRun($catalog->run($dataset, '2026-10-15-baseline.json'), $hash);
         $this->assertFalse($old['currentSet'], 'běh × 1 z 15. 10. je nad starší verzí sady');

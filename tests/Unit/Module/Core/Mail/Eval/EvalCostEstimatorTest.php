@@ -9,7 +9,7 @@ use Shipard\Core\Ai\AiCallPlan;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Module\Core\Mail\Eval\EvalCostEstimator;
 
-/** Odhad ceny: poslední běh → běh s modelem téže řady → ceník × násobitel platformy; vlastní model bez ceny (D34, D44). */
+/** Odhad ceny: poslední běh se stejným modelem → běh s modelem téže řady → ceník × násobitel platformy; vlastní model bez ceny (D34, D44, D56). */
 final class EvalCostEstimatorTest extends TestCase
 {
     private static function plan(?string $catalogModel = 'claude-sonnet-4-6', float $multiplier = 1.0): AiCallPlan
@@ -43,18 +43,42 @@ final class EvalCostEstimatorTest extends TestCase
         ];
     }
 
-    public function testLastRunOfTheSameVariantWins(): void
+    public function testLastRunWithTheSameModelWinsAndAddsTagCost(): void
     {
+        // D56: starší běh bez `tags.usd` → k průměru 0,5 / 20 = 0,025 se přičte typická cena štítků Haiku 0,0021.
         $last = self::runFile('2026-10-15-baseline.json', 'claude-sonnet-4-6');
         $last['metrics'] = ['cost.usd' => 0.5, 'calls.total' => 20];
         $series = self::runFile('2026-10-15-sonnet-5-5.json', 'claude-sonnet-5-5');
 
         $estimate = EvalCostEstimator::estimate(10, $last, $series, self::plan(), self::tagPlan(), self::catalog());
         $this->assertSame(
-            ['calls' => 10, 'perCall' => 0.025, 'total' => 0.25, 'basis' => 'lastRun', 'source' => ['file' => '2026-10-15-baseline.json', 'model' => 'claude-sonnet-4-6']],
+            ['calls' => 10, 'perCall' => 0.0271, 'total' => 0.271, 'basis' => 'sameModel', 'source' => ['file' => '2026-10-15-baseline.json', 'model' => 'claude-sonnet-4-6']],
             $estimate,
-            'průměr na volání bez štítků — běh je nenese; řada se nepoužije',
+            'řada se nepoužije, štítky typickou velikostí',
         );
+        $this->assertSame(0.025, EvalCostEstimator::estimate(10, $last, null, self::plan(), null, self::catalog())['perCall'], 'bez funkce štítků bez přirážky');
+
+        // Běh s cenou štítků (F6b krok 2): (0,5 + 0,1) / 20 = 0,03.
+        $last['metrics']['tags.usd'] = 0.1;
+        $this->assertSame(0.03, EvalCostEstimator::estimate(10, $last, null, self::plan(), self::tagPlan(), self::catalog())['perCall']);
+        $last['metrics']['tags.usd'] = 0.0;
+        $this->assertSame(0.025, EvalCostEstimator::estimate(10, $last, null, self::plan(), self::tagPlan(), self::catalog())['perCall'], 'nula = štítky se nevolaly, nic se nepřičítá');
+    }
+
+    public function testSameModelRunIsTheNewestWithTheSameCatalogModelAndKnownCost(): void
+    {
+        $runs = [
+            self::runFile('2026-10-16-other-model.json', 'claude-opus-5-5', started: '2026-10-16T10:00:00+00:00'),
+            self::runFile('2026-10-15-no-calls.json', 'claude-sonnet-5-5', started: '2026-10-15T12:00:00+00:00') + ['metrics' => ['cost.usd' => 0.0, 'calls.total' => 0]],
+            self::runFile('2026-10-15-same.json', 'claude-sonnet-5-5', started: '2026-10-15T11:00:00+00:00'),
+            self::runFile('2026-10-15-same-older.json', 'claude-sonnet-5-5', started: '2026-10-15T10:00:00+00:00'),
+        ];
+        $runs[1]['metrics'] = ['cost.usd' => 0.0, 'calls.total' => 0];
+
+        $this->assertSame('2026-10-15-same.json', basename(EvalCostEstimator::sameModelRun($runs, 'claude-sonnet-5-5')['_file']));
+        $this->assertSame('2026-10-16-other-model.json', basename(EvalCostEstimator::sameModelRun($runs, 'claude-opus-5-5')['_file']));
+        $this->assertNull(EvalCostEstimator::sameModelRun($runs, 'claude-haiku-5-5'), 'jiný model = jiná cena');
+        $this->assertNull(EvalCostEstimator::sameModelRun($runs, null));
     }
 
     public function testSeriesRunTokensPricedByThePlannedModel(): void

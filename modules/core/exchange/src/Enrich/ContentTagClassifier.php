@@ -35,6 +35,15 @@ class ContentTagClassifier
     /** Ořez digestu — víc řádků model pro dominantní štítek nepotřebuje. */
     private const MAX_ROWS = 50;
 
+    /**
+     * Spotřeba posledního volání modelu (tokeny, model, cena podle rozhodnutí
+     * resolveru) — i u useknuté odpovědi, útrata nastala. Čte a nuluje
+     * {@see takeLastUsage()} (evaluace `ai-eval`, #103 F6b D56).
+     *
+     * @var array{tokensIn: int, tokensOut: int, model: ?string, costUsd: ?float}|null
+     */
+    private ?array $lastUsage = null;
+
     private const SYSTEM_PROMPT = <<<'PROMPT'
         You classify accounting documents (invoices, receipts) into a fixed
         semantic taxonomy of content tags. Pick the single tag that best
@@ -70,12 +79,26 @@ class ContentTagClassifier
      */
     public function classify(array $canonical): ?array
     {
+        $this->lastUsage = null;
         try {
             return $this->classifyInner($canonical);
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'ContentTagClassifier: classification failed');
             return null;
         }
+    }
+
+    /**
+     * Spotřeba posledního volání modelu a jeho vynulování; null = LLM se
+     * nevolalo (chybí taxonomie, nenastavená funkce, výjimka před voláním).
+     *
+     * @return array{tokensIn: int, tokensOut: int, model: ?string, costUsd: ?float}|null
+     */
+    public function takeLastUsage(): ?array
+    {
+        $usage = $this->lastUsage;
+        $this->lastUsage = null;
+        return $usage;
     }
 
     /**
@@ -106,6 +129,14 @@ class ContentTagClassifier
         );
 
         $result = $this->llm->streamChat($params, static function (string $delta): void {});
+        $tokensIn = $result->inputTokens ?? 0;
+        $tokensOut = $result->outputTokens ?? 0;
+        try {
+            $cost = $call->costUsd($this->functions->catalog(), $tokensIn, $tokensOut);
+        } catch (\Throwable) {
+            $cost = null; // bez katalogu (testy s mockem resolveru) jen tokeny
+        }
+        $this->lastUsage = ['tokensIn' => $tokensIn, 'tokensOut' => $tokensOut, 'model' => $result->model ?? $params->model, 'costUsd' => $cost];
         if (!$result->isComplete()) {
             // Useknutá nebo odmítnutá odpověď (F0-D4) = totéž co selhání.
             ErrorLogger::warn('ContentTagClassifier: incomplete model output discarded', [

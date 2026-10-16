@@ -8,9 +8,13 @@ use Shipard\Core\Ai\AiCallPlan;
 use Shipard\Core\Ai\ModelCatalog;
 
 /**
- * Odhad ceny běhu před potvrzením (D34, D44), v tomto pořadí:
+ * Odhad ceny běhu před potvrzením (D34, D44, D56), v tomto pořadí:
  *
- *   1. z posledního běhu téže varianty nad toutéž sadou (průměr na volání);
+ *   1. z posledního běhu nad sadou se **stejným skutečným modelem** extrakce
+ *      (`variant.effective.catalogModel`, bez ohledu na variantu a hash sady —
+ *      cena volání téhož modelu se promptem ani očekáváním nemění;
+ *      {@see sameModelRun()}): průměr na volání vč. ceny štítků (`tags.usd`
+ *      z běhu, u starších běhů bez ní typická velikost volání štítků);
  *   2. z tokenů na doklad posledního běhu nad sadou s modelem **téže řady**
  *      × ceník plánovaného modelu ({@see seriesRun()}) — řada = generace
  *      podle prvního čísla v ID katalogu ({@see modelSeries()}); tokenizace
@@ -35,17 +39,19 @@ final class EvalCostEstimator
     }
 
     /**
-     * @param array<string, mixed>|null $lastRun   soubor výsledků posledního běhu téže varianty nad touž sadou
-     * @param array<string, mixed>|null $seriesRun soubor výsledků běhu s modelem téže řady ({@see seriesRun()})
-     * @return array{calls: int, perCall: ?float, total: ?float, basis: 'lastRun'|'series'|'catalog'|'unknown', source: ?array{file: string, model: ?string}}
+     * @param array<string, mixed>|null $sameModelRun soubor výsledků posledního běhu se stejným modelem ({@see sameModelRun()})
+     * @param array<string, mixed>|null $seriesRun    soubor výsledků běhu s modelem téže řady ({@see seriesRun()})
+     * @return array{calls: int, perCall: ?float, total: ?float, basis: 'sameModel'|'series'|'catalog'|'unknown', source: ?array{file: string, model: ?string}}
      */
-    public static function estimate(int $calls, ?array $lastRun, ?array $seriesRun, AiCallPlan $plan, ?AiCallPlan $tagPlan, ModelCatalog $catalog): array
+    public static function estimate(int $calls, ?array $sameModelRun, ?array $seriesRun, AiCallPlan $plan, ?AiCallPlan $tagPlan, ModelCatalog $catalog): array
     {
-        $lastTotal = $lastRun['metrics']['cost.usd'] ?? null;
-        $lastCalls = (int) ($lastRun['metrics']['calls.total'] ?? 0);
-        if ($lastRun !== null && is_numeric($lastTotal) && $lastCalls > 0) {
-            $perCall = round((float) $lastTotal / $lastCalls, 6);
-            return ['calls' => $calls, 'perCall' => $perCall, 'total' => round($perCall * $calls, 4), 'basis' => 'lastRun', 'source' => self::source($lastRun)];
+        $lastTotal = $sameModelRun['metrics']['cost.usd'] ?? null;
+        $lastCalls = (int) ($sameModelRun['metrics']['calls.total'] ?? 0);
+        if ($sameModelRun !== null && is_numeric($lastTotal) && $lastCalls > 0) {
+            $lastTags = $sameModelRun['metrics']['tags.usd'] ?? null;
+            $tagsTotal = is_numeric($lastTags) ? (float) $lastTags : self::tagCost($tagPlan, $catalog) * $lastCalls;
+            $perCall = round(((float) $lastTotal + $tagsTotal) / $lastCalls, 6);
+            return ['calls' => $calls, 'perCall' => $perCall, 'total' => round($perCall * $calls, 4), 'basis' => 'sameModel', 'source' => self::source($sameModelRun)];
         }
 
         if ($seriesRun !== null) {
@@ -77,6 +83,31 @@ final class EvalCostEstimator
     {
         if ($catalogModel !== null && preg_match('/(?:^|-)(\d+)(?=-|$)/', $catalogModel, $m) === 1) {
             return $m[1];
+        }
+        return null;
+    }
+
+    /**
+     * Nejnovější běh se stejným skutečným modelem extrakce jako plánovaný
+     * (`variant.effective.catalogModel`) a se známou cenou a počtem volání;
+     * varianta ani hash sady nerozhodují (D56).
+     *
+     * @param list<array<string, mixed>> $runs soubory výsledků, nejnovější první
+     * @return array<string, mixed>|null
+     */
+    public static function sameModelRun(array $runs, ?string $catalogModel): ?array
+    {
+        if ($catalogModel === null) {
+            return null;
+        }
+        foreach ($runs as $run) {
+            if (($run['variant']['effective']['catalogModel'] ?? null) !== $catalogModel) {
+                continue;
+            }
+            if ((int) ($run['metrics']['calls.total'] ?? 0) <= 0 || !is_numeric($run['metrics']['cost.usd'] ?? null)) {
+                continue;
+            }
+            return $run;
         }
         return null;
     }

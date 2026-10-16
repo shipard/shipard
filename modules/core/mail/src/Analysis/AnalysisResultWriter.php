@@ -440,7 +440,7 @@ class AnalysisResultWriter
      * za běhu AnalysisConfidenceResolver.
      *
      * @param array<string, mixed>|null $extractedJson  Raw canonical from AI (or null).
-     * @return array{0: ?string, 1: bool}  [jsonForDb, isValid]
+     * @return array{0: ?string, 1: bool, 2?: ?array}  [jsonForDb, isValid, spotřeba LLM štítků (#103 F6b D56; jen docs větev)]
      */
     public function validateCanonical(?array $extractedJson, string $docType): array
     {
@@ -492,6 +492,7 @@ class AnalysisResultWriter
             return [
                 (string) json_encode($extractedJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 true,
+                $this->enricher?->takeTagUsage(),
             ];
         }
 

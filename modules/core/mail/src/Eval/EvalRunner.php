@@ -24,6 +24,12 @@ use Shipard\Module\Core\Mail\Analysis\AnalysisRequest;
  */
 final class EvalRunner
 {
+    public const string STOPPED_MAX_COST = 'maxCost';
+    public const string STOPPED_CANCELLED = 'cancelled';
+
+    private ?string $stoppedBy = null;
+    private float $spentUsd = 0.0;
+
     /**
      * @param array<string, mixed>                        $profile  řádek profilu pošty
      * @param \Closure(EvalCallResult, EvalMessage): void|null $onResult průběžný výpis
@@ -38,7 +44,21 @@ final class EvalRunner
         private readonly int $repeat = 1,
         private readonly ?string $rawDir = null,
         private readonly ?\Closure $onResult = null,
+        private readonly ?\Closure $shouldContinue = null,
+        private readonly ?float $maxCostUsd = null,
     ) {}
+
+    /** Důvod předčasného konce posledního běhu: `maxCost`, `cancelled`, null = doběhl. */
+    public function stoppedBy(): ?string
+    {
+        return $this->stoppedBy;
+    }
+
+    /** Útrata posledního běhu (extrakce + štítky). */
+    public function spentUsd(): float
+    {
+        return $this->spentUsd;
+    }
 
     /**
      * @param list<EvalMessage>  $messages
@@ -49,6 +69,8 @@ final class EvalRunner
     public function run(array $messages, array $ndxByCode): array
     {
         $results = [];
+        $this->stoppedBy = null;
+        $this->spentUsd = 0.0;
         foreach ($messages as $message) {
             $ndx = $ndxByCode[$message->messageId] ?? null;
             if ($ndx === null) {
@@ -56,7 +78,18 @@ final class EvalRunner
             }
             $row = $this->dataSource->messageRow($ndx);
             for ($i = 1; $i <= max(1, $this->repeat); $i++) {
+                // Před každým voláním: zrušení (SIGTERM) a strop útraty (D61) — další volání nezačne.
+                $this->stoppedBy = $this->stopReason();
+                if ($this->stoppedBy !== null) {
+                    return $results;
+                }
                 $result = $this->evaluateOnce($message, $ndx, $row, $i);
+                if ($result === null) {
+                    // Zrušení uprostřed čekání na opakování po přechodné chybě (beforeAttempt).
+                    $this->stoppedBy = self::STOPPED_CANCELLED;
+                    return $results;
+                }
+                $this->spentUsd += (float) ($result->costUsd ?? 0) + $result->tagsCostUsd();
                 $results[] = $result;
                 if ($this->onResult !== null) {
                     ($this->onResult)($result, $message);
@@ -66,18 +99,39 @@ final class EvalRunner
         return $results;
     }
 
-    /** @param array<string, mixed> $row */
-    private function evaluateOnce(EvalMessage $message, int $ndx, array $row, int $repeat): EvalCallResult
+    private function stopReason(): ?string
     {
+        if ($this->shouldContinue !== null && !($this->shouldContinue)()) {
+            return self::STOPPED_CANCELLED;
+        }
+        if ($this->maxCostUsd !== null && $this->spentUsd >= $this->maxCostUsd) {
+            return self::STOPPED_MAX_COST;
+        }
+        return null;
+    }
+
+    /** @param array<string, mixed> $row */
+    private function evaluateOnce(EvalMessage $message, int $ndx, array $row, int $repeat): ?EvalCallResult
+    {
+        // SIGTERM přeruší sleep() mezi pokusy LlmRetry a ten by začal další pokus —
+        // hook před pokusem ho po zrušení zastaví (tasks/testing-phase6b.md, rozhodnutí 9).
+        $beforeAttempt = $this->shouldContinue === null ? null : function (): void {
+            if (!($this->shouldContinue)()) {
+                throw new EvalCancelledException('evaluace zrušena (SIGTERM) — další pokus nezačne');
+            }
+        };
         $request = new AnalysisRequest(
             messageId: $ndx,
             message: $row,
             profile: $this->profile,
             call: $this->call,
             promptTemplate: $this->promptTemplate,
+            beforeAttempt: $beforeAttempt,
         );
         try {
             $outcome = $this->computation->compute($request);
+        } catch (EvalCancelledException) {
+            return null;
         } catch (\Throwable $e) {
             return $this->failed($message, $repeat, 'internal', get_class($e) . ': ' . $e->getMessage(), null, null);
         }
@@ -103,7 +157,7 @@ final class EvalRunner
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_OK, null, null,
             $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName,
-            $primaryType, is_string($tag) ? $tag : null, $outcomes,
+            $primaryType, is_string($tag) ? $tag : null, $outcomes, $outcome->validated?->tagsUsage,
         );
     }
 
@@ -121,7 +175,7 @@ final class EvalRunner
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_FAILED, $errorType, $note,
             $outcome?->costUsd, $outcome?->tokensIn, $outcome?->tokensOut, $outcome?->durationMs, $outcome?->modelName,
-            $primaryType, null, $outcomes,
+            $primaryType, null, $outcomes, $outcome?->validated?->tagsUsage,
         );
     }
 

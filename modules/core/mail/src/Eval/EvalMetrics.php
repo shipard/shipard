@@ -20,7 +20,10 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  *     ne), `.amountsCorrect` (řádky `totalPrice`, rekapitulace, součty bez
  *     odchylky), `.rowCountOk`, `.classificationOk`, `.tagOk`;
  *   - `calls.total` / `.ok` / `.failed` / `.failed.<typ>`;
- *   - `cost.usd`, `cost.perDocument`, `tokens.*`, `time.*` (součet, průměr).
+ *   - `cost.usd`, `cost.perDocument`, `tokens.*`, `time.*` (součet, průměr) —
+ *     jen extrakce; k tomu `tags.calls` / `tags.usd` / `tags.tokens.*` (LLM
+ *     klasifikace štítků, #103 F6b D56) a `cost.totalUsd` /
+ *     `cost.totalPerDocument` = extrakce + štítky.
  *
  * Opakování (D41): podíly jako průměr přes opakování, součty jako součet;
  * `range` nese min–max per opakování. `fieldStability` = podíl zpráv se
@@ -98,6 +101,10 @@ final class EvalMetrics
         $tokensIn = 0;
         $tokensOut = 0;
         $time = 0;
+        $tagsCalls = 0;
+        $tagsCost = 0.0;
+        $tagsIn = 0;
+        $tagsOut = 0;
         $failed = [];
 
         foreach ($results as $r) {
@@ -105,6 +112,12 @@ final class EvalMetrics
             $tokensIn += (int) ($r->tokensIn ?? 0);
             $tokensOut += (int) ($r->tokensOut ?? 0);
             $time += (int) ($r->durationMs ?? 0);
+            if ($r->tags !== null) {
+                $tagsCalls++;
+                $tagsCost += $r->tagsCostUsd();
+                $tagsIn += (int) ($r->tags['tokensIn'] ?? 0);
+                $tagsOut += (int) ($r->tags['tokensOut'] ?? 0);
+            }
             // Pole: i selhané volání (jeho outcomes = missing neprázdných polí očekávání, D44).
             foreach ($r->outcomes as $o) {
                 $group = EvalFieldGroups::groupOf($o->nodePath());
@@ -170,6 +183,12 @@ final class EvalMetrics
         $m['documents.tagOk'] = round($tag / $total, 4);
         $m['cost.usd'] = round($cost, 6);
         $m['cost.perDocument'] = round($cost / $total, 6);
+        $m['cost.totalUsd'] = round($cost + $tagsCost, 6);
+        $m['cost.totalPerDocument'] = round(($cost + $tagsCost) / $total, 6);
+        $m['tags.calls'] = $tagsCalls;
+        $m['tags.usd'] = round($tagsCost, 6);
+        $m['tags.tokens.input'] = $tagsIn;
+        $m['tags.tokens.output'] = $tagsOut;
         $m['tokens.input'] = $tokensIn;
         $m['tokens.output'] = $tokensOut;
         $m['tokens.inputPerDocument'] = (int) round($tokensIn / $total);
@@ -217,6 +236,7 @@ final class EvalMetrics
         }
         $total = max(1, (int) ($out['calls.total'] ?? 1));
         $out['cost.perDocument'] = round((float) ($out['cost.usd'] ?? 0) / $total, 6);
+        $out['cost.totalPerDocument'] = round((float) ($out['cost.totalUsd'] ?? 0) / $total, 6);
         $out['tokens.inputPerDocument'] = (int) round((int) ($out['tokens.input'] ?? 0) / $total);
         $out['tokens.outputPerDocument'] = (int) round((int) ($out['tokens.output'] ?? 0) / $total);
         $out['time.perDocumentMs'] = (int) round((int) ($out['time.ms'] ?? 0) / $total);

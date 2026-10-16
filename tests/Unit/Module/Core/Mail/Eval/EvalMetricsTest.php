@@ -105,6 +105,38 @@ final class EvalMetricsTest extends TestCase
         $this->assertSame(['_resolve.contentTag.tag' => 1, 'docNumber' => 1, 'message_classification.primary_type' => 1, 'rows' => 1, 'totals.totalAmount' => 1], $out['deviationsByField']);
     }
 
+    /** F6b D56: štítky zvlášť (`tags.*`), `cost.usd` jen extrakce, `cost.total*` = extrakce + štítky; přes opakování součty. */
+    public function testTagCostIsSummedSeparatelyAndAddedToTheTotal(): void
+    {
+        $tags = ['tokensIn' => 100, 'tokensOut' => 20, 'model' => 'claude-haiku-5-5', 'costUsd' => 0.0005];
+        $withTags = static fn (EvalCallResult $r): EvalCallResult => new EvalCallResult(
+            $r->messageId, $r->repeat, $r->status, $r->errorType, $r->note, $r->costUsd, $r->tokensIn, $r->tokensOut, $r->durationMs, $r->model, $r->primaryType, $r->tag, $r->outcomes, $tags,
+        );
+        $results = [
+            $withTags(self::callResult('A', 1, ['docNumber' => 'match'], 0.02)),
+            self::callResult('B', 1, ['docNumber' => 'match'], 0.03),
+            $withTags(self::callResult('A', 2, ['docNumber' => 'match'], 0.02)),
+            self::callResult('B', 2, ['docNumber' => 'match'], 0.03),
+        ];
+        $m = EvalMetrics::slice(array_slice($results, 0, 2));
+        $this->assertSame(0.05, $m['cost.usd'], 'jen extrakce');
+        $this->assertSame(0.025, $m['cost.perDocument']);
+        $this->assertSame(1, $m['tags.calls']);
+        $this->assertSame(0.0005, $m['tags.usd']);
+        $this->assertSame(100, $m['tags.tokens.input']);
+        $this->assertSame(20, $m['tags.tokens.output']);
+        $this->assertSame(0.0505, $m['cost.totalUsd']);
+        $this->assertSame(0.02525, $m['cost.totalPerDocument']);
+
+        $out = EvalMetrics::compute($results, [self::message('A', 'x'), self::message('B', 'y')], 2);
+        $this->assertSame(0.1, $out['metrics']['cost.usd']);
+        $this->assertSame(2, $out['metrics']['tags.calls']);
+        $this->assertSame(0.001, $out['metrics']['tags.usd']);
+        $this->assertSame(0.101, $out['metrics']['cost.totalUsd']);
+        $this->assertSame(0.02525, $out['metrics']['cost.totalPerDocument'], 'celkem na volání i přes opakování');
+        $this->assertSame(['min' => 0.0005, 'max' => 0.0005], $out['range']['tags.usd']);
+    }
+
     public function testRepeatsAverageRatiosSumCountsAndMeasureStability(): void
     {
         $results = [

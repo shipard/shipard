@@ -23,7 +23,10 @@ final readonly class EvalCallResult
     /** Selhání, za kterými je infrastruktura nebo nastavení — exit 1 příkazu. */
     public const array INFRASTRUCTURE_ERRORS = ['ai_error', 'config_error', 'internal'];
 
-    /** @param list<FieldOutcome> $outcomes */
+    /**
+     * @param list<FieldOutcome> $outcomes
+     * @param array{tokensIn: int, tokensOut: int, model: ?string, costUsd: ?float}|null $tags spotřeba LLM klasifikace štítků (#103 F6b D56); null = LLM se nevolalo
+     */
     public function __construct(
         public string $messageId,
         public int $repeat,
@@ -38,7 +41,14 @@ final readonly class EvalCallResult
         public ?string $primaryType,
         public ?string $tag,
         public array $outcomes = [],
+        public ?array $tags = null,
     ) {}
+
+    /** Cena volání štítků; 0 bez LLM volání nebo bez ceny (model mimo katalog). */
+    public function tagsCostUsd(): float
+    {
+        return is_numeric($this->tags['costUsd'] ?? null) ? (float) $this->tags['costUsd'] : 0.0;
+    }
 
     public function isOk(): bool
     {
@@ -92,6 +102,7 @@ final readonly class EvalCallResult
             'model' => $this->model,
             'primaryType' => $this->primaryType,
             'tag' => $this->tag,
+            'tags' => $this->tags,
         ];
         $out['counts'] = $this->counts();
         if ($this->isOk()) {

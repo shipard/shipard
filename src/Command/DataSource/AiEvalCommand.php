@@ -43,12 +43,14 @@ use Shipard\Module\Core\Mail\Eval\EvalMessage;
 use Shipard\Module\Core\Mail\Eval\EvalMessages;
 use Shipard\Module\Core\Mail\Eval\EvalMetrics;
 use Shipard\Module\Core\Mail\Eval\EvalPreflight;
+use Shipard\Module\Core\Mail\Eval\EvalProgressWriter;
 use Shipard\Module\Core\Mail\Eval\EvalReport;
 use Shipard\Module\Core\Mail\Eval\EvalRun;
 use Shipard\Module\Core\Mail\Eval\EvalRunner;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 use Shipard\Module\Core\Mail\Eval\EvalVariant;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,26 +60,39 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
  * `shpd-ds ai-eval <sada> --variant <soubor> [--only] [--limit] [--repeat]
- * [--save-raw <adresář>] [--out <adresář>] [--yes] [--json]` — evaluace AI
- * analýzy nad datovou sadou (#103 F4, tasks/testing-phase4.md D34–D41,
+ * [--save-raw <adresář>] [--out <adresář>] [--yes] [--json] [--estimate]
+ * [--max-cost <USD>] [--progress-file <soubor>]` — evaluace AI analýzy nad
+ * datovou sadou (#103 F4, tasks/testing-phase4.md D34–D41, F6b D56 / D61,
  * docs/test-corpus.md § 18).
  *
  * Preflight ({@see EvalPreflight}, exit 2, nic se nemění), odhad ceny
- * a potvrzení (bez `--yes` jen na TTY; neinteraktivně končí exit 2 —
- * útrata je vědomý krok), běh nanečisto ({@see EvalRunner} nad
- * {@see AnalysisComputation}: žádný claim, zápis ani změna stavu zprávy),
- * porovnání s `canonicalJson` ideální analýzy ze souborů sady, metriky
- * ({@see EvalMetrics}) a soubor výsledků ({@see EvalRunStore},
- * `tests/eval/<sada>/<datum>-<varianta>[-n].json`). Exit 0 = běh doběhl
- * (i se špatnými výsledky), 1 = některé volání selhalo infrastrukturně
- * (`ai_error`, `config_error`, `internal`), 2 = preflight nebo vstup.
- * Testovatelné přes podtřídu (seamy níže).
+ * ({@see EvalCostEstimator}: poslední běh se stejným modelem → model téže
+ * řady → ceník) a potvrzení (bez `--yes` jen na TTY; neinteraktivně končí
+ * exit 2 — útrata je vědomý krok). `--estimate` skončí po odhadu (s `--json`
+ * jako objekt na stdout) — nic nespustí ani nezapíše. Běh nanečisto
+ * ({@see EvalRunner} nad {@see AnalysisComputation}: žádný claim, zápis ani
+ * změna stavu zprávy), porovnání s `canonicalJson` ideální analýzy ze souborů
+ * sady, metriky ({@see EvalMetrics}) a soubor výsledků ({@see EvalRunStore},
+ * `tests/eval/<sada>/<datum>-<varianta>[-n].json`). `--max-cost` = strop
+ * útraty: po jeho dosažení další volání nezačne a běh se uloží jako neúplný
+ * (`stoppedBy: maxCost`); SIGTERM / SIGINT totéž se `stoppedBy: cancelled`
+ * (exit 130; bez jediného hotového volání bez souboru). `--progress-file`
+ * píše průběh jako JSON řádky ({@see EvalProgressWriter}) pro úlohu
+ * dashboardu; s `--json` jde při odmítnutí na stdout i `{ok: false, problems}`.
+ * Exit 0 = běh doběhl (i se špatnými výsledky), 1 = některé volání selhalo
+ * infrastrukturně (`ai_error`, `config_error`, `internal`), 2 = preflight
+ * nebo vstup, 130 = zrušeno. Testovatelné přes podtřídu (seamy níže).
  */
-class AiEvalCommand extends Command
+class AiEvalCommand extends Command implements SignalableCommandInterface
 {
     public const string AI_FUNCTION = EvalPreflight::AI_FUNCTION;
     public const string CONTENT_TAGS_FUNCTION = 'exchange.contentTags';
+    public const int EXIT_CANCELLED = 130;
     private const string MIN_MEMORY_LIMIT = '512M';
+
+    private bool $cancelRequested = false;
+    /** stdout pro `{ok: false, problems}` při odmítnutí s `--json` (null bez `--json`). */
+    private ?OutputInterface $jsonOut = null;
 
     public function __construct(
         private readonly ?DataSourceConfig $dsConfig = null,
@@ -99,7 +114,35 @@ class AiEvalCommand extends Command
             ->addOption('save-raw', null, InputOption::VALUE_REQUIRED, 'Uložit syrové výstupy modelu do této složky (mimo repo)')
             ->addOption('out', null, InputOption::VALUE_REQUIRED, 'Složka výsledků (výchozí tests/eval/<název sady>/ v repu)')
             ->addOption('yes', 'y', InputOption::VALUE_NONE, 'Bez potvrzení odhadu ceny')
-            ->addOption('json', null, InputOption::VALUE_NONE, 'Soubor výsledků jako JSON na stdout (lidské řádky na stderr)');
+            ->addOption('json', null, InputOption::VALUE_NONE, 'Soubor výsledků jako JSON na stdout (lidské řádky na stderr)')
+            ->addOption('estimate', null, InputOption::VALUE_NONE, 'Jen preflight a odhad ceny (s --json jako objekt na stdout) — nic nespustí ani nezapíše')
+            ->addOption('max-cost', null, InputOption::VALUE_REQUIRED, 'Strop útraty v USD: po jeho dosažení další volání nezačne, běh se uloží jako neúplný (stoppedBy maxCost)')
+            ->addOption('progress-file', null, InputOption::VALUE_REQUIRED, 'Průběh jako JSON řádky (started / call / finished / error) do tohoto souboru — pro úlohu dashboardu');
+    }
+
+    // ── Signály ────────────────────────────────────────────────────────────
+
+    /** @return list<int> */
+    public function getSubscribedSignals(): array
+    {
+        return \defined('SIGTERM') && \defined('SIGINT') ? [\SIGTERM, \SIGINT] : [];
+    }
+
+    /**
+     * SIGTERM / SIGINT: žádné další volání (ani opakování po přechodné chybě),
+     * rozpracovaný běh se uloží jako zrušený. `false` = Symfony proces
+     * neukončí, příkaz doběhne sám.
+     */
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
+    {
+        $this->cancelRequested = true;
+        return false;
+    }
+
+    /** Žádost o zrušení mimo signál (test seam). */
+    public function requestCancel(): void
+    {
+        $this->cancelRequested = true;
     }
 
     // ── Seamy ──────────────────────────────────────────────────────────────
@@ -203,6 +246,8 @@ class AiEvalCommand extends Command
         $json = (bool) $input->getOption('json');
         $err = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
         $human = $json ? $err : $output;
+        $this->jsonOut = $json ? $output : null;
+        // $cancelRequested se nenuluje: signál doručený před startem běhu platí (instance příkazu běží jednou).
 
         $dsDir = $this->getDataSourceDir();
         if ($this->dsConfig === null && !file_exists($dsDir . '/config/main.json')) {
@@ -228,6 +273,22 @@ class AiEvalCommand extends Command
                 return $this->refuse($err, ['--limit musí být kladné celé číslo']);
             }
             $limit = (int) $limitOpt;
+        }
+        $maxCostOpt = $input->getOption('max-cost');
+        $maxCost = null;
+        if ($maxCostOpt !== null) {
+            if (!is_string($maxCostOpt) || !is_numeric($maxCostOpt) || (float) $maxCostOpt <= 0) {
+                return $this->refuse($err, ['--max-cost musí být kladné číslo (USD)']);
+            }
+            $maxCost = (float) $maxCostOpt;
+        }
+        $progressOpt = $input->getOption('progress-file');
+        try {
+            $progress = is_string($progressOpt) && trim($progressOpt) !== ''
+                ? EvalProgressWriter::toFile(trim($progressOpt))
+                : EvalProgressWriter::none();
+        } catch (EvalException $e) {
+            return $this->refuse($err, [$e->getMessage()]);
         }
 
         try {
@@ -280,21 +341,49 @@ class AiEvalCommand extends Command
         $catalog = $resolver->catalog();
         $store = new EvalRunStore($this->runsDir($input->getOption('out'), $manifest->name));
         $setHash = EvalRunStore::datasetHash($reader);
-        $lastRun = $store->runsFor($variant->name, $setHash)[0] ?? null;
-        $seriesRun = $lastRun === null ? EvalCostEstimator::seriesRun($store->runs(), $plan->catalogModel) : null;
+        $runs = $store->runs();
+        $sameModelRun = EvalCostEstimator::sameModelRun($runs, $plan->catalogModel);
+        $seriesRun = $sameModelRun === null ? EvalCostEstimator::seriesRun($runs, $plan->catalogModel) : null;
         $calls = count($selected) * $repeat;
-        $estimate = EvalCostEstimator::estimate($calls, $lastRun, $seriesRun, $plan, $tagPlan, $catalog);
+        $estimate = EvalCostEstimator::estimate($calls, $sameModelRun, $seriesRun, $plan, $tagPlan, $catalog);
 
         $human->writeln(sprintf(
             '<info>Evaluace AI</info> — sada %s: %d zpráv × %d opakování = %d volání, model %s (připojení %s — %s), profil %s',
             $manifest->name, count($selected), $repeat, $calls, $plan->model, $plan->connectionCode, $plan->origins['connection'] ?? '?', $variant->profile,
         ));
         $human->writeln(match ($estimate['basis']) {
-            'lastRun' => sprintf('Odhad ceny: ~%s USD (%s USD / volání podle posledního běhu %s)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', ''), (string) ($estimate['source']['file'] ?? '')),
+            'sameModel' => sprintf('Odhad ceny: ~%s USD (%s USD / volání podle posledního běhu %s se stejným modelem %s, vč. štítků)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', ''), (string) ($estimate['source']['file'] ?? ''), (string) ($estimate['source']['model'] ?? '?')),
             'series' => sprintf('Odhad ceny: ~%s USD (%s USD / volání z ceníku a tokenů na doklad podle běhu %s — model %s téže řady)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', ''), (string) ($estimate['source']['file'] ?? ''), (string) ($estimate['source']['model'] ?? '?')),
             'catalog' => sprintf('Odhad ceny: ~%s USD (%s USD / volání z ceníku katalogu a typické velikosti dokladu)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', '')),
             default => 'Odhad ceny: neznámý (model mimo katalog)',
         });
+        if ($maxCost !== null) {
+            $human->writeln(sprintf('Strop útraty: %s USD', number_format($maxCost, 4, '.', '')));
+        }
+
+        if ($input->getOption('estimate')) {
+            $reader->close();
+            if ($json) {
+                $output->writeln((string) json_encode([
+                    'ok' => true,
+                    'set' => ['name' => $manifest->name, 'hash' => $setHash, 'messages' => count($selected), 'messagesInSet' => count($messages), 'only' => $only, 'limit' => $limit],
+                    'variant' => $variant->name,
+                    'profile' => $variant->profile,
+                    'repeat' => $repeat,
+                    'calls' => $calls,
+                    'model' => $plan->model,
+                    'catalogModel' => $plan->catalogModel,
+                    'connection' => $plan->connectionCode,
+                    'connectionOrigin' => $plan->origins['connection'] ?? null,
+                    'tagsModel' => $tagPlan?->model,
+                    'estimate' => $estimate,
+                    'maxCostUsd' => $maxCost,
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION));
+            } else {
+                $human->writeln('Jen odhad (--estimate) — nic se nespustilo ani nezapsalo.');
+            }
+            return Command::SUCCESS;
+        }
 
         if (!$input->getOption('yes')) {
             if (!$input->isInteractive() || !$this->stdinIsTerminal()) {
@@ -325,6 +414,8 @@ class AiEvalCommand extends Command
         }
         $llm = $this->createLlmClient($catalog);
         $computation = $this->createComputation($db, $dsConfig, $config, $dsDir, $llm, $catalog, $variant);
+        $done = 0;
+        $spent = 0.0;
         $runner = new EvalRunner(
             $computation,
             new CanonicalComparator($projection),
@@ -334,19 +425,56 @@ class AiEvalCommand extends Command
             $variant->promptTemplate,
             $repeat,
             $rawDir,
-            static function (EvalCallResult $r, EvalMessage $m) use ($human, $repeat): void {
+            static function (EvalCallResult $r, EvalMessage $m) use ($human, $repeat, $progress, $calls, &$done, &$spent): void {
+                $done++;
+                $spent += self::callCost($r);
                 $human->writeln(EvalReport::progressLine($r, $m, $repeat));
+                $progress->event(EvalProgressWriter::CALL, [
+                    'messageId' => $r->messageId,
+                    'stem' => $m->stem,
+                    'repeat' => $r->repeat,
+                    'status' => $r->status,
+                    'errorType' => $r->errorType,
+                    'costUsd' => $r->costUsd,
+                    'tagsCostUsd' => self::tagsCost($r),
+                    'durationMs' => $r->durationMs,
+                    'spentUsd' => round($spent, 6),
+                    'done' => $done,
+                    'total' => $calls,
+                ]);
             },
+            fn (): bool => !$this->cancelRequested,
+            $maxCost,
         );
 
         $startedAt = $this->now();
+        $progress->event(EvalProgressWriter::STARTED, [
+            'pid' => getmypid() ?: null,
+            'set' => $manifest->name,
+            'variant' => $variant->name,
+            'calls' => $calls,
+            'messages' => count($selected),
+            'repeat' => $repeat,
+            'model' => $plan->model,
+            'tagsModel' => $tagPlan?->model,
+            'estimate' => $estimate,
+            'maxCostUsd' => $maxCost,
+        ]);
         try {
             $results = $runner->run($selected, $dataSource->messageNdxByCode());
         } catch (EvalException $e) {
             $reader->close();
+            $progress->event(EvalProgressWriter::ERROR, ['message' => $e->getMessage()]);
             return $this->refuse($err, [$e->getMessage()]);
         }
         $finishedAt = $this->now();
+        $stoppedBy = $runner->stoppedBy();
+        if ($stoppedBy === EvalRunner::STOPPED_CANCELLED && $results === []) {
+            $reader->close();
+            $human->writeln('<comment>Zrušeno před prvním dokončeným voláním — žádný soubor výsledků.</comment>');
+            $progress->event(EvalProgressWriter::FINISHED, ['file' => null, 'spentUsd' => 0.0, 'calls' => 0, 'plannedCalls' => $calls, 'stoppedBy' => $stoppedBy]);
+            return self::EXIT_CANCELLED;
+        }
 
         // 5. Metriky, soubor výsledků, souhrn.
         $metrics = EvalMetrics::compute($results, $selected, $repeat);
@@ -372,29 +500,65 @@ class AiEvalCommand extends Command
             $repeat,
             $metrics,
             $results,
+            $stoppedBy,
+            $calls,
         );
         $reader->close();
         try {
             $file = $store->write($run, $startedAt->format('Y-m-d'), $variant->name);
         } catch (EvalException $e) {
             $err->writeln('<error>' . $e->getMessage() . '</error>');
+            $progress->event(EvalProgressWriter::ERROR, ['message' => $e->getMessage()]);
             return Command::FAILURE;
         }
 
         $human->writeln('');
+        if ($stoppedBy !== null) {
+            $human->writeln(sprintf(
+                '<comment>Běh neúplný: %s — %d z %d volání.</comment>',
+                $stoppedBy === EvalRunner::STOPPED_MAX_COST
+                    ? sprintf('dosažen strop útraty %s USD', number_format((float) $maxCost, 4, '.', ''))
+                    : 'zrušeno (SIGTERM)',
+                count($results),
+                $calls,
+            ));
+        }
         foreach (EvalReport::lines($run, $file) as $line) {
             $human->writeln($line);
         }
         if ($json) {
             $output->writeln((string) json_encode(['file' => $file] + $run, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION));
         }
+        $progress->event(EvalProgressWriter::FINISHED, [
+            'file' => $file,
+            'spentUsd' => round($spent, 6),
+            'calls' => count($results),
+            'plannedCalls' => $calls,
+            'stoppedBy' => $stoppedBy,
+        ]);
 
+        if ($stoppedBy === EvalRunner::STOPPED_CANCELLED) {
+            return self::EXIT_CANCELLED;
+        }
         foreach ($results as $r) {
             if ($r->isInfrastructureFailure()) {
                 return Command::FAILURE;
             }
         }
         return Command::SUCCESS;
+    }
+
+    /** Útrata volání: extrakce + LLM štítky (pole `tags` výsledku, F6b krok 2). */
+    private static function callCost(EvalCallResult $r): float
+    {
+        return (float) ($r->costUsd ?? 0) + (self::tagsCost($r) ?? 0.0);
+    }
+
+    /** Cena volání štítků z výsledku; null = LLM klasifikace štítků se nevolala. */
+    private static function tagsCost(EvalCallResult $r): ?float
+    {
+        $tags = $r->tags ?? null;
+        return is_array($tags) && is_numeric($tags['costUsd'] ?? null) ? (float) $tags['costUsd'] : null;
     }
 
     private function contentTagsPlan(AiFunctionResolver $resolver, EvalVariant $variant): ?AiCallPlan
@@ -426,6 +590,8 @@ class AiEvalCommand extends Command
         foreach ($problems as $problem) {
             $err->writeln("  - {$problem}");
         }
+        // S --json dostane volající (úloha dashboardu) důvody i strojově.
+        $this->jsonOut?->writeln((string) json_encode(['ok' => false, 'problems' => $problems], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         return Command::INVALID;
     }
 

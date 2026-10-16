@@ -29,11 +29,17 @@ final class EvalRunnerTest extends TestCase
     }
 
     /** @param array<string, mixed> $canonical */
-    public static function okOutcome(array $canonical, string $primaryType = 'invoiceReceived', bool $valid = true, float $cost = 0.02): AnalysisOutcome
+    /** @param array{tokensIn: int, tokensOut: int, model: ?string, costUsd: ?float}|null $tags spotřeba LLM štítků (F6b D56) */
+    public static function okOutcome(array $canonical, string $primaryType = 'invoiceReceived', bool $valid = true, float $cost = 0.02, ?array $tags = null): AnalysisOutcome
     {
         $body = ['message_classification' => ['primary_type' => $primaryType], 'document' => ['doc_type' => 'invoiceReceived', 'extracted_json' => $canonical]];
         $json = $valid ? json_encode($canonical) : json_encode(['_validationError' => 'x', '_validationIssues' => [['path' => 'rows', 'code' => 'type', 'message' => 'not an array']], '_rawOutput' => $canonical]);
-        return AnalysisOutcome::success($body, $body, new ValidatedCanonical($json, $valid), 1000, 200, 1500, $cost, 'RAW ' . $primaryType, 'claude-sonnet-4-6-x', 'end_turn');
+        return AnalysisOutcome::success($body, $body, new ValidatedCanonical($json, $valid, $tags), 1000, 200, 1500, $cost, 'RAW ' . $primaryType, 'claude-sonnet-4-6-x', 'end_turn');
+    }
+
+    public static function tags(float $cost = 0.0003): array
+    {
+        return ['tokensIn' => 120, 'tokensOut' => 30, 'model' => 'claude-haiku-5-5', 'costUsd' => $cost];
     }
 
     public function testRunComparesEveryMessageAndRepeatWithoutWriting(): void
@@ -142,6 +148,74 @@ final class EvalRunnerTest extends TestCase
 
         $this->expectException(EvalException::class);
         $runner->run($messages, []);
+    }
+
+    /** F6b D56: spotřeba LLM štítků z výpočtu do výsledku volání; D61: strop útraty a zrušení zastaví další volání. */
+    public function testTagUsageMaxCostAndCancellation(): void
+    {
+        $reader = DatasetReader::open(dirname(__DIR__, 6) . '/tests/datasets/cz/vat-payer');
+        $messages = EvalMessages::filter(EvalMessages::fromDataset($reader), ['0101', '0201'], null);
+        usort($messages, static fn ($a, $b): int => strcmp($a->messageId, $b->messageId));
+        $comparator = new CanonicalComparator(Projection::load($reader->resolvePath('expected/projection.jsonc')));
+        $ds = new ArrayEvalDataSource($this->createMock(DataSourceConnection::class), ['MSG-CORPUS-VP-0101' => 11, 'MSG-CORPUS-VP-0201' => 12]);
+        $ndx = ['MSG-CORPUS-VP-0101' => 11, 'MSG-CORPUS-VP-0201' => 12];
+        $ok = fn (int $i, ?array $tags = null) => self::okOutcome($messages[$i]->expectedCanonical, tags: $tags);
+
+        // Štítky: spotřeba z ValidatedCanonical do výsledku, cena běhu = extrakce + štítky.
+        $runner = new EvalRunner(new ScriptedComputation([$ok(0, self::tags()), $ok(1)]), $comparator, $ds, [], self::call());
+        $results = $runner->run($messages, $ndx);
+        $this->assertSame(self::tags(), $results[0]->tags);
+        $this->assertSame(0.0003, $results[0]->tagsCostUsd());
+        $this->assertNull($results[1]->tags);
+        $this->assertSame(0.0, $results[1]->tagsCostUsd());
+        $this->assertNull($runner->stoppedBy());
+        $this->assertSame(0.0403, round($runner->spentUsd(), 4));
+
+        // Strop útraty: 0,02 + 0,0003 ≥ 0,02 po prvním volání → druhé nezačne.
+        $computation = new ScriptedComputation([$ok(0, self::tags()), $ok(1)]);
+        $runner = new EvalRunner($computation, $comparator, $ds, [], self::call(), repeat: 1, maxCostUsd: 0.02);
+        $results = $runner->run($messages, $ndx);
+        $this->assertCount(1, $results);
+        $this->assertCount(1, $computation->requests, 'další volání nezačalo');
+        $this->assertSame(EvalRunner::STOPPED_MAX_COST, $runner->stoppedBy());
+
+        // Zrušení před voláním: shouldContinue false po prvním výsledku.
+        $cancelled = false;
+        $computation = new ScriptedComputation([$ok(0), $ok(1)]);
+        $runner = new EvalRunner($computation, $comparator, $ds, [], self::call(), onResult: function () use (&$cancelled): void { $cancelled = true; }, shouldContinue: function () use (&$cancelled): bool { return !$cancelled; });
+        $this->assertCount(1, $runner->run($messages, $ndx));
+        $this->assertSame(EvalRunner::STOPPED_CANCELLED, $runner->stoppedBy());
+        $this->assertCount(1, $computation->requests);
+
+        // Zrušení uprostřed čekání na opakování: hook beforeAttempt vyhodí EvalCancelledException → bez výsledku, bez dalšího volání.
+        $cancelled = false;
+        $hooking = new class($cancelled) implements AnalysisComputing {
+            public int $calls = 0;
+            public function __construct(private bool &$cancelled) {}
+            public function compute(AnalysisRequest $request): AnalysisOutcome
+            {
+                $this->calls++;
+                $this->cancelled = true;
+                ($request->beforeAttempt)(2); // LlmRetry by tu začal další pokus
+                throw new \LogicException('unreachable');
+            }
+        };
+        $runner = new EvalRunner($hooking, $comparator, $ds, [], self::call(), shouldContinue: function () use (&$cancelled): bool { return !$cancelled; });
+        $this->assertSame([], $runner->run($messages, $ndx));
+        $this->assertSame(EvalRunner::STOPPED_CANCELLED, $runner->stoppedBy());
+        $this->assertSame(1, $hooking->calls);
+
+        // Bez shouldContinue se hook nepředává (ostrý runner má vlastní).
+        $plain = new class implements AnalysisComputing {
+            public ?\Closure $seen = null;
+            public function compute(AnalysisRequest $request): AnalysisOutcome
+            {
+                $this->seen = $request->beforeAttempt;
+                return EvalRunnerTest::okOutcome([]);
+            }
+        };
+        (new EvalRunner($plain, $comparator, $ds, [], self::call()))->run([$messages[0]], $ndx);
+        $this->assertNull($plain->seen);
     }
 
     public function testClassificationOutcome(): void

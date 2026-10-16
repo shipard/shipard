@@ -364,6 +364,7 @@ final class EvalOutputReconstruction
             'durationMs' => $call['durationMs'] ?? null,
             'model' => $call['model'] ?? null,
             'tag' => $call['tag'] ?? null,
+            'tags' => is_array($call['tags'] ?? null) ? $call['tags'] : null,
             'currentSet' => $currentSet,
             'classification' => $classification,
             'counts' => $counts,
