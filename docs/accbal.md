@@ -403,11 +403,14 @@ normalizace (#69 D19).
   letech pod sebou; „— vše —" ukáže všechna období, sloupec Období pak
   rozlišuje), partner, VS, **typ** (dluh / přeplatek / úhrada bez
   předpisu / uzavřeno — úhrady bez předpisu jsou na reimportovaném DS
-  tisíce, musí být samostatně filtrovatelné), po splatnosti, **včetně
-  uzavřených** (výchozí jen otevřené přes obrácený checkbox z doby před
-  `default`; zůstává, nové filtry ho nekopírují). Klíčové filtry včetně
-  období jdou před `GROUP BY` (`l.fiscal_year`, `idx_case`), případové
-  nad agregát; footer sdílí obě úrovně. Zvýraznění doc-state konvencí
+  tisíce, musí být samostatně filtrovatelné), **měna** (select měn
+  z ledgeru, #120), po splatnosti, **splatné do (dní)** (dluh se
+  splatností v ⟨dnes, dnes + N⟩, #120), **včetně uzavřených** (výchozí
+  jen otevřené přes obrácený checkbox z doby před `default`; zůstává,
+  nové filtry ho nekopírují). Klíčové filtry včetně období a měny jdou
+  před `GROUP BY` (`l.fiscal_year`, `l.currency`, `idx_case`), případové
+  nad agregát; footer sdílí obě úrovně (výpočet `CaseTotals`, §3.7 —
+  s filtrem měny součty v té měně). Zvýraznění doc-state konvencí
   (`design-system.md` §4): dluh bez proužku, dluh po splatnosti
   `cancelled`, přeplatek / úhrada bez předpisu `concept`, uzavřený
   `archive`. Detail (z `row_id`) + akce **Pohyby případu** (`open_viewer`
@@ -468,6 +471,35 @@ Doplnit do parserů (CAMT `EndToEndId` ⇒ `payment_reference`), exchange schém
 nesedne na osekaný 10znakový VS z banky.
 
 ---
+
+### 3.7 Součty případů per měna — `CaseTotals` (#120)
+
+`Shipard\Module\Economy\Accbal\CaseTotals` je **jediný výpočet součtů
+otevřených případů**, sdílený patičkou vieweru případů
+(`CasesViewer::renderGridFooter`) a bloky Přehledu firmy
+(`Overview\ReceivablesBlock`, `Overview\PayablesBlock`,
+`docs/overview.md`): číslo po prokliku z přehledu musí sedět s patičkou,
+proto obě strany volají `totals(filtry, dnes)` se stejnou sadou filtrů
+vieweru (blok si mapu filtrů prokliku převede přes `filtersFromMap()`).
+
+- `conditions(filtry, dnes)` — stavba podmínek ve dvou úrovních (přesun
+  z vieweru): klíčové (`viewGroup` → `b.code`, `fiscal_year`, `partner`,
+  `payment_reference`, `specific_symbol`, **`currency`** — normalizovaná
+  malými písmeny, poslední sloupec `idx_case`) před `GROUP BY`, případové
+  (`kind`, `overdue`, **`dueWithin`** = `c.residual > 0 AND c.due_date
+  BETWEEN dnes AND dnes + N`, bez splatnosti se nepočítá; neplatná hodnota
+  se ignoruje) nad agregát; bez `include_closed` otevřenost.
+- `casesSql(tabulka, rowConds)` — vnitřní agregát (přesun z vieweru).
+- `totals()` — `SELECT currency, COUNT(*), SUM(sum_requests), …,
+  SUM(residual), SUM(*_hc) FROM (casesSql) c WHERE caseConds GROUP BY
+  currency`, řádky per měna (`residual` obchodní v měně dokladu,
+  `residual_hc` domácí).
+
+Patička: **bez filtru měny** součty `_hc` přes měny v domácí měně
+(obchodní zůstatek přes měny se nesčítá), **s filtrem měny** `sum_requests`
+/ `sum_payments` / `residual` v této měně (buňka sloupce `residual`) a
+vedle toho `residual_hc`. Přehled firmy bere z řádků per měna `residual`
+a `count`; domácí měna první (D4).
 
 ## 4. Generování pohybů z deníku
 

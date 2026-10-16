@@ -71,6 +71,8 @@ CATALOG_EXEMPT = {CATALOG, "co-dnes-nejde.md", "slovnicek.md"}
 CATALOG_EXTRA_AGENDAS = {
     "Dashboard",
     "Chat",
+    # Přehled firmy — panel modulu economy.accounting (#120), ne viewer.
+    "Přehled firmy",
     # Reporty — položky menu z report deklarací (nejsou viewery),
     # viz docs/reports.md §12.
     "Hlavní kniha",

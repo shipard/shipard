@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
+keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
 related: [slovnicek.md]
 ---
 
@@ -347,3 +347,21 @@ o ISDOC dodavatele požádat.
 *Poznámka pro AI asistenta: když se dotaz uživatele týká něčeho z téhle
 stránky, řekni, že to Shipard zatím neumí, a nabídni náhradní postup, pokud
 existuje. Nevymýšlej návod k funkci, která není.*
+
+---
+
+## Přehled firmy
+
+**Přehled firmy** (v levém menu pod Dashboardem) skládá čísla z toho, co
+už Shipard umí spočítat — nic nového nedopočítává. Proto dnes:
+
+- **Nepřepočítává měny.** Každá měna je samostatný řádek, domácí měna
+  první; součet „všeho v korunách“ přes kurz zatím není.
+- **Pohledávky a závazky bere jen z obchodních faktur** — zálohové
+  faktury, zálohy, půjčky a úvěry ze saldokonta v přehledu nejsou.
+- **Vidí ho jen správce.** Práva pro ostatní uživatele přijdou později.
+- **Obraty po zakázkách** a termíny ze Spisovny nebo z úkolů v něm nejsou;
+  upozornění na pohledávky po splatnosti na Dashboard také zatím nechodí.
+- Dokud nejsou do běžného účetního období převedené počáteční stavy,
+  přehled místo pokladen, pohledávek a závazků řekne, že počáteční stavy
+  chybí — nezkouší hádat.

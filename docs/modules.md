@@ -423,6 +423,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `sendPurposes` | object[] | Ne | Ano (`name`) | Účely odesílání: `id`, `name` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `base.persons.sendPurposes` (viz níže) |
 | `recordSenderProviders` | object[] | Ne | Ne | Odesílatel podle záznamu (#90 D39): `{table, class}`, třída implementuje `RecordSenderProvider`. Jeden poskytovatel na tabulku — druhá registrace téže tabulky je chyba. Čte `RecordSenderProviderLoader`, ptá se `SenderResolver` (`docs/mail/outbound.md`) |
 | `workOrderInvoiceContributors` | object[] | Ne | Ano (`name`) | Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10): `id`, `class`, `name` povinné. `ConfigCompiler` je skládá do cfgItem `economy.workOrders.invoiceContributors` (id → název, třída); instance staví `InvoiceContributorRegistry::fromConfig` (viz níže) |
+| `overviewBlocks` | object[] | Ne | Ne | Bloky Přehledu firmy (#120): `id`, `section`, `class` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `core.overview.blocks` (seřazeno `[order, id]`); instance staví `OverviewBlockRegistry::fromConfig` (viz níže, `docs/overview.md`) |
 | `aiFunctions` | object[] | Ne | Ano (`name`, `description`) | AI funkce modulu (#85 D36): `id` (`oblast.nazev`), `name`, `tier` (`fast` / `balanced` / `strong`), `defaults.maxTokens` povinné; `defaults.temperature`, `requires` (`tools`, `pdf`), `description` volitelné. `ConfigCompiler` je skládá do cfgItem `core.ai.functions`; čte `AiFunctionRegistry`, volání skládá `AiFunctionResolver` (viz níže, `docs/ai.md` §5.3) |
 
 ### Pole `sendPurposes`
@@ -573,6 +574,35 @@ s kanonickými řádky, které nahradí řádky přispěvatele, *Waiting* s dův
 `db` / `config` / `dsConfig`). Běh (`InvoicingRunService`) přispěvatele
 volá nad rozpracovaným kanonickým dokladem před apply; v produkci zatím
 žádný registrovaný není.
+
+### Pole `overviewBlocks`
+
+Bloky obrazovky **Přehled firmy** (#120, `docs/overview.md`): modul dodá
+jeden příspěvek do jedné sekce (`money`, `receivables`, `payables`, `vat`,
+`result` — cfgItem `core.overview.sections` v `core.system`).
+
+```jsonc
+"overviewBlocks": [
+    {
+        "id": "economy.bank.balances",
+        "section": "money",
+        "order": 10,
+        "class": "Shipard\\Module\\Economy\\Bank\\Overview\\BankBalancesBlock"
+    }
+]
+```
+
+`ConfigCompiler` registrace aktivních modulů složí do cfgItem
+`core.overview.blocks` (klíč = id, hodnota `section`, `order`, `class`;
+duplicitní id přes moduly i rezervovaný cfgItem = chyba kompilace).
+`OverviewBlockRegistry::fromConfig` staví instance bezparametrickým
+konstruktorem — neexistující třída nebo třída bez rozhraní se zaloguje
+a přeskočí (DS před `ds-upgrade` nesmí dávat 500). Třída implementuje
+`Shipard\Core\Overview\OverviewBlock` (`isAvailable(OverviewContext)`,
+`collect(OverviewContext): OverviewBlockResult`); texty bere z katalogu
+modulu `<modul>.overviewTexts` (`config/overviewTexts.jsonc`, čtení přes
+`FeedTexts`). Sběr s izolací per blok dělá `OverviewCollector`
+(`GET /_ui/overview`, jen admin).
 
 ### Pole `journalEventHandlers`, `openItemLookup` a `journalContributors`
 

@@ -97,7 +97,7 @@ i čte AI asistentem.
   "reportId": "economy.reports.profitLoss",
   "params": {"period": {"fiscalYear": 2026, "monthFrom": 5, "monthTo": 5}, "detail": "analytic"},
   "generatedAt": "2026-08-21T12:52:46+02:00",
-  "dataSource": "dtje-3qu7-3iof-5imh",
+  "dataSource": "4l3j-z0bz-kz39-echj",
   "status": "ok",
   "messages": [],
   "columns": [
@@ -684,6 +684,11 @@ z něj dělá sloupec „Účet“, takže inventární číslo patří do texto
 sloupce, ne do `account`. `ReportDiff` páruje detail řádky podle
 `key ?? account` — reporty mimo deník tak jdou porovnat `report-diff`
 a dva řádky téhož účtu se nepřepíšou.
+
+Výsledovka (`ProfitLossBuilder`) dává klíč `result` dopočtenému řádku
+výsledku hospodaření a `costs` / `revenues` součtům tříd 5 / 6
+(`ProfitLossBuilder::KEY_*`) — Přehled firmy (#120 D8, `docs/overview.md`)
+čte hodnoty podle klíče, ne podle lokalizovaného popisku.
 
 ### 16.5 Drill-down z řádku (`link`, `cellLinks`)
 

@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 368 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 337.
+Celkem 369 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 338.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -432,6 +432,7 @@ Home obrazovka + modul úkolů. Reference [`docs/dashboard.md`](../docs/dashboar
 | `dashboard-feed-workflow-sections.md` | Sekce feedu podle toku práce (Položky k založení → … → Ostatní), `feedSection` ze serveru, strop a pravdivé počty per sekce (#101) |
 | `dashboard-other-row-title.md` | Řádek sekce Ostatní s titulkem podle obsahu zprávy (`ai_title`), fallback „Neobsahuje doklad ani dokument“, předmět jen když se liší |
 | `feed-texts-catalog.md` | Texty karet feedu z katalogu modulu (`*.feedTexts` cfgItem, `FeedTexts`, ICU MessageFormat pro plurály), fallback anglicky v PHP (#101 D11–D17) |
+| `company-overview.md` | Přehled firmy — obrazovka „jak na tom firma je“: bloky Peníze, Pohledávky, Závazky, DPH, Výsledek hospodaření z existujících výpočtů, registrace `overviewBlocks`, `GET /_ui/overview`, jen pro adminy (#120) |
 
 ## Dev dashboard
 
