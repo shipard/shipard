@@ -286,8 +286,9 @@ D47–D50, M4) podle evaluace F4 / F4b (`tasks/testing-phase4b.md` § 5–6):
 
 Sonnet 5.5 vyšel v evaluaci nejlépe (shoda polí 94,8 % proti 94,1 %
 u Sonnetu 4.6, 2,25× rychlejší, o 22 % levnější); Opus 5.5 a Fable 5.1
-nepřinesly nic navíc, Haiku 5.5 se na vytěžení nehodí (pro štítky se
-teprve měří, D49). `effort` / `thinking` mapa nenese — platí výchozí
+nepřinesly nic navíc, Haiku 5.5 se na vytěžení nehodí a pro štítky
+nestojí za přepnutí (výjimky řádků −1,3 % za úsporu nejvýš 8 % ceny
+dokladu, `tasks/ai-tiers-series5.md` § 3a, D49). `effort` / `thinking` mapa nenese — platí výchozí
 hodnoty modelu (F4b § 6). Sonnet 4.6 zůstává v katalogu aktivní (nejméně
 do 17. 2. 2027) pro zdroje dat s výslovným přepisem; řádek nastavení
 funkce nese `model` jen, když se liší od modelu úrovně
