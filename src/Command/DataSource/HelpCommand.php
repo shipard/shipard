@@ -70,6 +70,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>api-key-revoke</info>          Revoke (deactivate) an API key');
         $output->writeln('');
         $output->writeln('<comment>Secrets:</comment>');
+        $output->writeln('  <info>ds-secret</info>               List or set data source secrets in secrets/ (db.password, mail-relay.password, oidc-<id>.client-secret): list | set <name> — value from a hidden prompt or STDIN, never an argument');
         $output->writeln('  <info>ds-secrets-health</info>       Check health of the per-DS secrets infrastructure');
         $output->writeln('  <info>ds-secrets-rotate</info>       Rotate the per-DS secrets.key — re-encrypts all encrypted_text columns');
         $output->writeln('');
@@ -155,6 +156,7 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds ai-test --function mail.extraction');
         $output->writeln('  shpd-ds ai-eval /path/to/repo/tests/datasets/cz/vat-payer --variant /path/to/repo/tests/eval/variants/baseline.jsonc --only 0101 --yes');
         $output->writeln('  shpd-ds ai-eval-compare tests/eval/cz-vat-payer/A.json tests/eval/cz-vat-payer/B.json');
+        $output->writeln('  shpd-ds ds-secret set mail-relay.password');
         $output->writeln('  shpd-ds ds-secrets-rotate --dry-run');
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');
         $output->writeln('  shpd-ds dataset-seed /tmp/web-demo.zip -y');

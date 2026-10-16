@@ -71,6 +71,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\DocReaccountCommand());
         $app->add(new \Shipard\Command\DataSource\AssetsImportVerifyCommand());
         $app->add(new \Shipard\Command\DataSource\WorkOrdersInvoiceRunCommand());
+        $app->add(new \Shipard\Command\DataSource\DsSecretCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsHealthCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsRotateCommand());
         $app->add(new \Shipard\Command\DataSource\HostingOidcInitCommand());
