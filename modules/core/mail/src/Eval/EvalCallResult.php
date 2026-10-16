@@ -11,7 +11,8 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * Jedno volání evaluace (zpráva × opakování): stav, cena, tokeny, čas,
  * klasifikace a štítek z výstupu modelu a výsledky polí
  * ({@see FieldOutcome}, včetně virtuálního listu klasifikace). Do souboru
- * výsledků jdou jen odchylky, shody jako počty (D36); selhané volání nese
+ * výsledků jdou jen odchylky, shody jako počty (D36) a shody po normalizaci
+ * s výstupní hodnotou (`normalized`, D53); selhané volání nese
  * neprázdné listy očekávání jako `missing` (D44) a do souboru jdou jen
  * jejich počty — seznam by jen opisoval očekávání.
  */
@@ -95,11 +96,63 @@ final readonly class EvalCallResult
         $out['counts'] = $this->counts();
         if ($this->isOk()) {
             $out['normalized'] = array_values(array_map(
-                static fn (FieldOutcome $o): string => $o->path,
+                static function (FieldOutcome $o): array {
+                    $entry = ['path' => $o->path, 'actual' => $o->actual];
+                    if ($o->similarity !== null) {
+                        $entry['similarity'] = $o->similarity;
+                    }
+                    return $entry;
+                },
                 array_filter($this->outcomes, static fn (FieldOutcome $o): bool => $o->state === FieldState::MatchNormalized),
             ));
             $out['deviations'] = array_map(static fn (FieldOutcome $o): array => $o->toArray(), $this->deviations());
         }
         return $out;
+    }
+
+    /**
+     * Shody po normalizaci z volání v souboru výsledků — přijímá oba tvary:
+     * `{path, actual, similarity?}` (od 16. 10. 2026, #103 D53 — prohlížeč
+     * ukáže skutečný tvar výstupu) i původní samotnou cestu (starší běhy;
+     * výstup neznámý, `actualKnown` false → ukáže se očekávání se štítkem).
+     *
+     * @param array<string, mixed> $call položka `calls[]`
+     * @return list<array{path: string, actual: mixed, actualKnown: bool, similarity: ?float}>
+     */
+    public static function normalizedEntries(array $call): array
+    {
+        $out = [];
+        foreach ((array) ($call['normalized'] ?? []) as $entry) {
+            if (is_string($entry)) {
+                $out[] = ['path' => $entry, 'actual' => null, 'actualKnown' => false, 'similarity' => null];
+            } elseif (is_array($entry) && is_string($entry['path'] ?? null)) {
+                $out[] = [
+                    'path' => $entry['path'],
+                    'actual' => $entry['actual'] ?? null,
+                    'actualKnown' => array_key_exists('actual', $entry),
+                    'similarity' => isset($entry['similarity']) && is_numeric($entry['similarity']) ? (float) $entry['similarity'] : null,
+                ];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Počet odchylek volání ze souboru výsledků: u úspěšného volání délka
+     * `deviations`, u selhaného součet `missing + extra + wrong` z `counts`
+     * (D44); selhané volání bez `counts` (běhy před D44) → null.
+     *
+     * @param array<string, mixed> $call
+     */
+    public static function deviationCount(array $call): ?int
+    {
+        if (($call['status'] ?? null) === self::STATUS_OK) {
+            return count((array) ($call['deviations'] ?? []));
+        }
+        $counts = $call['counts'] ?? null;
+        if (!is_array($counts)) {
+            return null;
+        }
+        return (int) ($counts['missing'] ?? 0) + (int) ($counts['extra'] ?? 0) + (int) ($counts['wrong'] ?? 0);
     }
 }

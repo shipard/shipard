@@ -391,7 +391,8 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame(['totals.totalAmount' => 1], $run['deviationsByField']);
         $this->assertCount(2, $run['calls']);
         $this->assertSame([], $run['calls'][0]['deviations']);
-        $this->assertSame(['supplier.vatId'], $run['calls'][1]['normalized']);
+        $this->assertSame('supplier.vatId', $run['calls'][1]['normalized'][0]['path']);
+        $this->assertArrayHasKey('actual', $run['calls'][1]['normalized'][0], 'shoda po normalizaci nese tvar výstupu (D53)');
         $this->assertSame('totals.totalAmount', $run['calls'][1]['deviations'][0]['path']);
         $this->assertSame(['domestic-goods'], array_keys($run['byVariant']));
 

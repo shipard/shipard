@@ -851,10 +851,15 @@ model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,
 `repeat`, `metrics`, `range`, `fieldStability`, `formatStability`,
 `byVariant`, `byForm`, `deviationsByField` a `calls` — per zpráva
 a opakování stav, cena, tokeny, čas, klasifikace, štítek, počty stavů polí
-(u selhaného volání jen počet chybějících), cesty polí shodných po
-normalizaci a **jen odchylky** `{path, state, expected, actual,
-similarity}`. Data korpusu jsou fiktivní, výsledky nad veřejnými sadami
-patří do veřejného repa; nad reálnými doklady jen do soukromého (D8).
+(u selhaného volání jen počet chybějících), shody po normalizaci
+`normalized` jako `{path, actual, similarity?}` — od 16. 10. 2026 (D53)
+i s tvarem výstupu, aby prohlížeč výsledků ukázal IBAN s mezerami nebo
+PSČ s mezerou; běhy před tím mají jen cestu a čtení
+(`EvalCallResult::normalizedEntries()`) přijímá oba tvary — a **jen
+odchylky** `{path, state, expected, actual, similarity}`. `format`
+zůstává `shpd.eval.run.v1`. Data korpusu jsou fiktivní, výsledky nad
+veřejnými sadami patří do veřejného repa; nad reálnými doklady jen do
+soukromého (D8).
 
 ### Porovnání běhů (`shpd-ds ai-eval-compare`, D38)
 
