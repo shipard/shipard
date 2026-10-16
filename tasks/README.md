@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 373 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 343.
+Celkem 374 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 343.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `ds-secrets-split.md` | naplánováno | PRD k implementaci (#126 D1–D4, upřesnění U1–U8 potvrzena 2026-10-16) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -87,6 +88,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `hosting-sync-main-json-owner.md` | `main.json` přepsaný agentem `hosting-sync` pod rootem patří vlastníkovi zdroje dat (`HostingSyncRunner::patchAuthProvider`, `FileOwnership`) |
 | `cron-dev-install.md` | Cron ve vývojové instalaci: první `cron-install` mimo produkci vypne cron existujícím zdrojům dat, `cron-install --check`, `doctor` mimo produkci, `dev-bootstrap.sh`, `dev-update.sh`, rotace logů, návody (#115 fáze 2) |
 | `ds-data-class.md` | Třída dat zdroje dat (`free` / `realCopy`, účel, původ) v `main.json`, `shpd-ds ds-class`, `shpd-server ds-list`, serverové AI podle třídy, třída v dotazu `ds-reset` a pruh „Kopie reálných dat“ (#126 D6–D12) |
+| `ds-secrets-split.md` | Tajemství zdroje dat z `main.json` do `secrets/` (heslo k databázi, relay pošty, OIDC `clientSecret`), přechodné čtení, migrace v `ds-upgrade`, `shpd-ds ds-secret`, sekce `doctor` (#126 B1, D1–D4) |
 | `unified-logging.md` | Produkční `ErrorLogger` (JSON řádky, úrovně, deploy guide, migrace `error_log()`) |
 | `ds-encrypted-secrets.md` | Šifrování citlivých sloupců (`encrypted_text`, per-DS klíč, rotace) |
 | `secrets-openssl-cipher.md` | AES-256-GCM přes OpenSSL místo libsodium — podpora ARM, formát beze změny (#96 D12) |
