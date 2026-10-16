@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Shipard — vývojářský dashboard</title>
+    <script>
+      // Tmavý režim podle systému — dashboard nemá uživatelské nastavení
+      // vzhledu (to má jen aplikace per zdroj dat). Běží před prvním
+      // renderem, aby nebliklo světlé téma. Tokeny viz styles/variables.css.
+      (function () {
+        try {
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) { /* bez matchMedia zůstane světlé téma */ }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/dev/main.js"></script>
+  </body>
+</html>

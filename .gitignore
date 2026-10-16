@@ -2,6 +2,7 @@
 /.phpunit.result.cache
 /frontend/node_modules/
 /public/app/
+/public/_dev/
 /tools/video-runner/node_modules/
 /tools/video-runner/.env
 /tools/video-runner/.storage-state.json

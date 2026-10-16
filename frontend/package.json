@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "vite build && vite build -c vite.dev.config.js",
+    "build:app": "vite build",
+    "build:dashboard": "vite build -c vite.dev.config.js",
+    "dev:dashboard": "vite -c vite.dev.config.js --host",
     "preview": "vite preview",
     "test": "node --test 'tests/Unit/**/*.test.mjs'",
     "check:i18n": "node scripts/check-i18n.mjs"
