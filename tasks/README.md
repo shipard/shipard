@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 370 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 340.
+Celkem 371 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 340.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -26,6 +26,7 @@ nevypisují — níže je jen to, co není dokončené.
 | Task | Stav | Poznámka |
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
+| `ai-tiers-series5.md` | naplánováno | design schválen 2026-10-16 (#103 D47–D50), čeká na implementaci |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -460,6 +461,7 @@ zaúčtování a evaluace AI.
 | `testing-phase3.md` | F3 | Ověření zaúčtování a DPH: `dataset-verify` (apply + kontroly), porovnávač canonicalu v PHP, očekávání DPH a nákladů nezávisle na Shipardu, schválený snímek deníku (#103 D26–D30) |
 | `testing-phase4.md` | F4 | Evaluace AI analýzy: serverové AI připojení pro vývoj (opt-in), analýza nanečisto, varianty, `ai-eval` s opakováním, výsledky v `tests/eval/`, `ai-eval-compare` (#103 D34–D41) |
 | `testing-phase4b.md` | F4 | Oprava očekávání (štítek dlouhých dokladů), prompt v4.8.0, nástroje evaluace, srovnání Sonnet 4.6 / Sonnet 5.5 / Opus 5.5 / Haiku 5.5 / Fable 5.1 (#103 D42–D46) |
+| `ai-tiers-series5.md` | M4 | Výchozí modely úrovní na řadu 5: `fast` a `balanced` Sonnet 5.5, `strong` Opus 5.5, ověřovací běhy (#103 D47–D50) |
 
 ## Drobné
 
