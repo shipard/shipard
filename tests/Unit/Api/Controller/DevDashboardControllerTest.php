@@ -14,9 +14,13 @@ class DevDashboardControllerTest extends TestCase
 	private string $tmpRoot;
 	private string $tmpDir;
 	private string $modulesDir;
+	private string $spaIndex;
 	private DevDashboardController $ctrl;
 	/** @var list<string> */
 	private array $tmpFiles = [];
+
+	/** Obsah „sestaveného“ indexu SPA — controller ho vrací beze změny. */
+	private const SPA_INDEX = "<!doctype html>\n<html lang=\"cs\"><head><title>Shipard dev SPA</title></head><body><div id=\"app\"></div></body></html>\n";
 
 	protected function setUp(): void
 	{
@@ -29,7 +33,22 @@ class DevDashboardControllerTest extends TestCase
 			$this->modulesDir . '/install/base/module.jsonc',
 			(string) json_encode(['id' => 'install.base', 'name' => 'Base']),
 		);
-		$this->ctrl = new DevDashboardController($this->tmpDir, null, new ModulePathResolver([$this->modulesDir]));
+		$this->spaIndex = $this->tmpRoot . '/public/_dev/dev.html';
+		mkdir(dirname($this->spaIndex), 0700, true);
+		file_put_contents($this->spaIndex, self::SPA_INDEX);
+		$this->ctrl = $this->makeController(null);
+	}
+
+	/** Controller nad temp adresáři: zdroje dat, moduly, index SPA a „repo root“ (bez tests/). */
+	private function makeController(?string $logPath): DevDashboardController
+	{
+		return new DevDashboardController(
+			$this->tmpDir,
+			$logPath,
+			new ModulePathResolver([$this->modulesDir]),
+			$this->spaIndex,
+			$this->tmpRoot,
+		);
 	}
 
 	protected function tearDown(): void
@@ -122,30 +141,82 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame('/_dev/', $this->getHeaders($resp)['Location'] ?? null);
 	}
 
-	public function testDashboardPageReturnsHtml(): void
+	// -------------------------------------------------------------------------
+	// SPA (#103 D57): stránky vrací sestavený index, API zůstává
+	// -------------------------------------------------------------------------
+
+	/** @return list<array{string}> */
+	public static function spaPaths(): array
 	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('DEVELOPMENT MODE', $body);
-		$this->assertStringContainsString('Shipard Dev Dashboard', $body);
-		$this->assertStringContainsString((string) gethostname(), $body);
+		return [
+			['/_dev'], ['/_dev/'],
+			['/_dev/logs'], ['/_dev/logs/'], ['/_dev/logs/?ds=abcd-1234-efgh-5678'],
+			['/_dev/ds-create'], ['/_dev/ds-create/?name=Demo'],
+			['/_dev/doctor'], ['/_dev/doctor/'],
+			['/_dev/upgrade-all'], ['/_dev/upgrade-all/'],
+			// validaci ?ds= dělá klient a POST endpoint — stránka je vždy SPA
+			['/_dev/ds-upgrade/?ds=abcd-1234-efgh-5678'], ['/_dev/ds-upgrade/?ds=bad!id'], ['/_dev/ds-upgrade'],
+			['/_dev/testing'], ['/_dev/testing/'], ['/_dev/testing/cz-vat-payer/runs/2026-10-16-baseline.json/'],
+		];
 	}
 
-	public function testDashboardPageWithoutTrailingSlash(): void
+	#[\PHPUnit\Framework\Attributes\DataProvider('spaPaths')]
+	public function testSpaPagesServeBuiltIndex(string $uri): void
 	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Shipard Dev Dashboard', $body);
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', $uri));
+		$this->assertSame(200, $this->getStatus($resp), $uri);
+		$this->assertSame(self::SPA_INDEX, (string) $this->getPayloadRaw($resp), $uri);
 	}
 
-	public function testDashboardPageEmptyStatePointsToNewDsForm(): void
+	public function testSpaWithoutBuildReturns503WithInstructions(): void
 	{
+		unlink($this->spaIndex);
 		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/'));
+		$this->assertSame(503, $this->getStatus($resp));
 		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('No data sources yet', $body);
-		$this->assertStringNotContainsString('sudo shpd-server ds-create', $body);
+		$this->assertStringContainsString('není sestavený', $body);
+		$this->assertStringContainsString('scripts/dev-update.sh', $body);
+	}
+
+	/** @return list<array{string}> */
+	public static function nonSpaPaths(): array
+	{
+		return [
+			['/_dev/random'], ['/_dev/logs/extra'], ['/_dev/doctor/x/'], ['/_dev/ds-upgrade/abcd'],
+			['/_dev/api'], ['/_dev/api/'], ['/_dev/api/unknown'], ['/_devil/'],
+		];
+	}
+
+	#[\PHPUnit\Framework\Attributes\DataProvider('nonSpaPaths')]
+	public function testUnknownPathReturns404(string $uri): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', $uri));
+		$this->assertSame(404, $this->getStatus($resp), $uri);
+		$this->assertSame('NOT_FOUND', $this->getPayloadRaw($resp)['error']['code'] ?? null, $uri);
+	}
+
+	public function testApiInfoReturnsHostnameDirAndTestingFlag(): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info'));
+		$this->assertSame(200, $this->getStatus($resp));
+		$data = $this->getPayloadRaw($resp)['data'];
+		$this->assertSame(gethostname() ?: 'unknown', $data['hostname']);
+		$this->assertSame($this->tmpDir, $data['dataSourcesDir']);
+		$this->assertFalse($data['testing'], 'repo root bez tests/datasets a tests/eval → sekce Testování se nenabízí');
+	}
+
+	public function testApiInfoTestingAvailableWithDatasetsAndEvalDirs(): void
+	{
+		mkdir($this->tmpRoot . '/tests/datasets', 0700, true);
+		mkdir($this->tmpRoot . '/tests/eval', 0700, true);
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info'));
+		$this->assertTrue($this->getPayloadRaw($resp)['data']['testing']);
+	}
+
+	public function testApiInfoPostReturns404(): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('POST', '/_dev/api/info'));
+		$this->assertSame(404, $this->getStatus($resp));
 	}
 
 	public function testListDataSourcesReturnsSorted(): void
@@ -190,15 +261,6 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame('corrupted', $byName['Delta']['state']);
 	}
 
-	public function testDashboardPageHasCronColumn(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/'));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('<th>Cron</th>', $body);
-		$this->assertStringContainsString('colspan="6"', $body);
-		$this->assertStringContainsString('cron-off', $body);
-	}
-
 	public function testListDataSourcesSkipsDirsWithoutMainJson(): void
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Alpha');
@@ -230,12 +292,6 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame([], $payload['data']);
 	}
 
-	public function testUnknownPathReturns404(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/random'));
-		$this->assertSame(404, $this->getStatus($resp));
-	}
-
 	public function testApiDataSourcesPostReturns404(): void
 	{
 		$resp = $this->ctrl->dispatch($this->makeRequest('POST', '/_dev/api/data-sources'));
@@ -259,29 +315,12 @@ class DevDashboardControllerTest extends TestCase
 
 	private function ctrlWithLog(string $logPath): DevDashboardController
 	{
-		return new DevDashboardController($this->tmpDir, $logPath, new ModulePathResolver([$this->modulesDir]));
+		return $this->makeController($logPath);
 	}
 
 	private function jsonLine(array $data): string
 	{
 		return (string) json_encode($data);
-	}
-
-	public function testLogsPageReturnsHtml(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/logs/'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Shipard Logs', $body);
-		$this->assertStringContainsString((string) gethostname(), $body);
-	}
-
-	public function testLogsPageWithoutTrailingSlash(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/logs'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Shipard Logs', $body);
 	}
 
 	public function testApiLogsWithoutLogPathReturns503(): void
@@ -407,20 +446,6 @@ class DevDashboardControllerTest extends TestCase
 	{
 		$rawBody = json_encode($body) ?: '';
 		return Request::fromArray($method, $uri, [], $rawBody, []);
-	}
-
-	public function testDsCreatePageReturnsHtml(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-create/'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Create new Data Source', $body);
-	}
-
-	public function testDsCreatePageWithoutTrailingSlash(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-create'));
-		$this->assertSame(200, $this->getStatus($resp));
 	}
 
 	public function testDsCreateValidationEmptyName(): void
@@ -883,81 +908,6 @@ class DevDashboardControllerTest extends TestCase
 		$out = $this->streamToString($resp);
 		$this->assertStringContainsString('--password=***', $out);
 		$this->assertStringNotContainsString('--password=secret123', $out);
-	}
-
-	// -------------------------------------------------------------------------
-	// Action pages (Doctor / Upgrade All / DS Upgrade) — HTML
-	// -------------------------------------------------------------------------
-
-	public function testDoctorPageReturnsHtml(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/doctor/'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Server Doctor', $body);
-		$this->assertStringContainsString('Run Doctor', $body);
-		$this->assertStringContainsString((string) gethostname(), $body);
-		$this->assertStringContainsString('/_dev/api/doctor', $body);
-	}
-
-	public function testDoctorPageWithoutTrailingSlash(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/doctor'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Server Doctor', $body);
-	}
-
-	public function testUpgradeAllPageReturnsHtml(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/upgrade-all/'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('Upgrade All Data Sources', $body);
-		$this->assertStringContainsString('Run Upgrade All', $body);
-		$this->assertStringContainsString('/_dev/api/upgrade-all', $body);
-	}
-
-	public function testDsUpgradePageWithValidId(): void
-	{
-		$this->createDs('abcd-1234-efgh-5678', 'Demo');
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-upgrade/?ds=abcd-1234-efgh-5678'));
-		$this->assertSame(200, $this->getStatus($resp));
-		$body = (string) $this->getPayloadRaw($resp);
-		$this->assertStringContainsString('abcd-1234-efgh-5678', $body);
-		$this->assertStringContainsString('Run Upgrade', $body);
-		$this->assertStringContainsString('?ds=abcd-1234-efgh-5678', $body);
-	}
-
-	public function testDsUpgradePageWithInvalidIdFormatReturns400(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-upgrade/?ds=bad!id'));
-		$this->assertSame(400, $this->getStatus($resp));
-		$payload = $this->getPayloadRaw($resp);
-		$this->assertSame('INVALID_DS_ID', $payload['error']['code']);
-	}
-
-	public function testDsUpgradePageWithLooseIdReturns400(): void
-	{
-		// Loose 3-group form must be rejected by the strict regex
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-upgrade/?ds=abc-def-ghi'));
-		$this->assertSame(400, $this->getStatus($resp));
-		$payload = $this->getPayloadRaw($resp);
-		$this->assertSame('INVALID_DS_ID', $payload['error']['code']);
-	}
-
-	public function testDsUpgradePageWithoutIdReturns400(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-upgrade/'));
-		$this->assertSame(400, $this->getStatus($resp));
-	}
-
-	public function testDsUpgradePageWithUnknownIdReturns404(): void
-	{
-		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/ds-upgrade/?ds=zzzz-aaaa-bbbb-cccc'));
-		$this->assertSame(404, $this->getStatus($resp));
-		$payload = $this->getPayloadRaw($resp);
-		$this->assertSame('DS_NOT_FOUND', $payload['error']['code']);
 	}
 
 	// -------------------------------------------------------------------------
