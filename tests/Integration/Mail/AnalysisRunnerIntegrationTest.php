@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Integration\Mail;
 
 use Shipard\Api\DocumentLoader;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
@@ -14,6 +15,7 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Core\Mail\Analysis\AnalysisBackendProbe;
 use Shipard\Module\Core\Mail\Analysis\AnalysisRunner;
 use Shipard\Module\Core\Mail\Analysis\AnalysisServices;
 use Shipard\Module\Core\Mail\Analysis\AnalysisSlots;
@@ -64,13 +66,10 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
         parent::setUp();
         ErrorLogger::setLogLevel('error');
 
-        $backend = $this->db->fetchRow(
-            'SELECT b.api_key FROM core_mail_ai_profiles p JOIN core_ai_backends b ON b.id = p.backend
-              WHERE p.is_default = %i AND p.is_active = %i AND b.is_active = %i LIMIT 1',
-            1, 1, 1,
-        );
-        if ($backend === null || (string) ($backend['api_key'] ?? '') === '') {
-            $this->markTestSkipped('DS nemá aktivní výchozí profil s backendem a klíčem — run ai-backend-set-key.');
+        // Stejné kritérium jako sweep runneru: profil → řádek funkce
+        // `mail.extraction` → výchozí připojení zdroje dat (#85 D40).
+        if (!(new AnalysisBackendProbe($this->db))->hasUsableBackend()) {
+            $this->markTestSkipped('DS nemá aktivní výchozí profil s použitelným připojením a klíčem — run ai-backend-set-key.');
         }
         $mailbox = $this->db->fetchRow('SELECT id FROM core_mail_mailboxes WHERE ai_analysis_disabled = %i LIMIT 1', 0);
         if ($mailbox === null) {
@@ -90,6 +89,9 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
     protected function onTearDown(): void
     {
         ErrorLogger::resetForTesting();
+        if (!isset($this->runDir)) {
+            return; // setUp skončil markTestSkipped dřív, než vznikly fixtury
+        }
         $dibi = $this->db->getDibiConnection();
         foreach ($this->messageIds as $id) {
             foreach ($this->attachments->listAttachments(AttachmentPreparer::MAIL_TABLE_ID, $id, true) as $file) {
@@ -174,6 +176,8 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
             null,
             static function (int $seconds): void {},
             'internal:integration-test:' . getmypid(),
+            // Ceník jako v `AnalysisRunnerFactory` — bez katalogu je cena 0 (#85 D33).
+            catalog: ModelCatalog::fromConfig($this->configRuntime),
         );
     }
 
