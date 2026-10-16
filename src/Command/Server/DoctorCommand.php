@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Command\Server;
 
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\DataSourceSecrets;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\RenderConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -137,6 +138,10 @@ class DoctorCommand extends Command
         $dsErrors = $this->checkDataSourceConnections($spec, $output, $mode);
 
         $output->writeln('');
+        $output->writeln('<info>Data source secrets</info>');
+        $secretErrors = $this->checkDataSourceSecrets($spec, $output);
+
+        $output->writeln('');
         $output->writeln('<info>Data source states</info>');
         $stateErrors = $this->checkDataSourceStates($spec, $output, $mode);
 
@@ -149,7 +154,7 @@ class DoctorCommand extends Command
         $output->writeln(str_repeat('─', 55));
 
         $totalIssues = count($issues) + $dsErrors + $fpmErrors + $nginxErrors + $toolErrors
-                     + $mailErrors + $cronErrors + $renderErrors + $stateErrors
+                     + $mailErrors + $cronErrors + $renderErrors + $stateErrors + $secretErrors
                      + ($poolUser !== $shipardUser ? 1 : 0);
         if ($totalIssues === 0) {
             $output->writeln('<info>✓ All checks passed.</info>');
@@ -205,6 +210,77 @@ class DoctorCommand extends Command
                 $output->writeln("  ✗ {$id}: " . $e->getMessage());
                 $errors++;
             }
+        }
+        return $errors;
+    }
+
+    /**
+     * Tajemství zdrojů dat (#126 B1, U6): tajemství ještě v config/main.json je
+     * varování (v tasku B2 se z něj stane chyba), chybějící heslo k databázi
+     * chyba, provider bez tajemství a relay s username bez hesla varování.
+     * Čte jen přítomnost klíčů a existenci souborů ({@see DataSourceSecrets::has()}),
+     * hodnoty nikdy. Souhrn: počet zdrojů s tajemstvím v main.json — podle něj
+     * se pozná, kdy je server připravený na B2.
+     *
+     * @return int number of errors
+     */
+    protected function checkDataSourceSecrets(PermissionSpec $spec, OutputInterface $output): int
+    {
+        $dsList = $spec->discoverDataSources();
+        if (count($dsList) === 0) {
+            $output->writeln('  (no data sources)');
+            return 0;
+        }
+
+        $errors = 0;
+        $withSecretsInConfig = 0;
+        $warnings = 0;
+        foreach ($dsList as $dsDir) {
+            $id = basename($dsDir);
+            try {
+                $cfg = new DataSourceConfig($dsDir);
+            } catch (\Throwable) {
+                $output->writeln("  · {$id}: config unusable — see Data source DB connections above");
+                continue;
+            }
+
+            $secrets = $cfg->secrets();
+            $inConfig = [];
+            foreach ($cfg->getSecretSlots() as $slot) {
+                if ($slot->inMainConfig) {
+                    $inConfig[] = $slot->name;
+                    continue;
+                }
+                if ($secrets->has($slot->name)) {
+                    continue;
+                }
+                if ($slot->name === DataSourceSecrets::DB_PASSWORD) {
+                    $output->writeln("  ✗ {$id}: database password missing (secrets/" . DataSourceSecrets::DB_PASSWORD . ') — restore it from a backup or recreate the database user');
+                    $errors++;
+                } elseif ($slot->name === DataSourceSecrets::MAIL_RELAY_PASSWORD) {
+                    if ($slot->required) {
+                        $output->writeln("  ⚠ {$id}: mail.relay has a username but no password (secrets/" . DataSourceSecrets::MAIL_RELAY_PASSWORD . ') — shpd-ds ds-secret set ' . DataSourceSecrets::MAIL_RELAY_PASSWORD);
+                        $warnings++;
+                    }
+                } else {
+                    $providerId = DataSourceSecrets::oidcProviderIdFromName($slot->name) ?? $slot->usedBy;
+                    $output->writeln("  ⚠ {$id}: auth provider '{$providerId}' has no client secret (secrets/{$slot->name}) — login through it will fail; shpd-ds ds-secret set {$slot->name}");
+                    $warnings++;
+                }
+            }
+            if ($inConfig !== []) {
+                $withSecretsInConfig++;
+                $output->writeln("  ⚠ {$id}: " . implode(', ', $inConfig) . ' still in config/main.json — run shpd-ds ds-upgrade');
+            }
+        }
+
+        if ($withSecretsInConfig > 0) {
+            $output->writeln(sprintf(
+                '  %d data source(s) still keep secrets in config/main.json (shpd-server ds-upgrade-all moves them)',
+                $withSecretsInConfig,
+            ));
+        } elseif ($errors === 0 && $warnings === 0) {
+            $output->writeln('  All secrets in secrets/ ✓');
         }
         return $errors;
     }

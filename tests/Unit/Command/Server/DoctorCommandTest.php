@@ -423,6 +423,12 @@ class DoctorCommandTest extends TestCase
     {
         $this->writeServerJson($mode);
         $this->buildHealthyTree($spec);
+        return $this->commandWithStubsNoTree($spec);
+    }
+
+    /** Druhý příkaz nad už postaveným stromem (srovnání počtu nálezů). */
+    private function commandWithStubsNoTree(PermissionSpec $spec): TestableDoctorCommand
+    {
         $command = $this->makeTester($spec);
         $command->stubPoolUser = $this->testUser;
         return $command;
@@ -669,19 +675,163 @@ class DoctorCommandTest extends TestCase
 
     // ─── enableReset warning ────────────────────────────────────────────────
 
-    private function createDataSourceFixture(PermissionSpec $spec, string $id, bool $enableReset): void
-    {
+    /**
+     * @param array<string, mixed> $extra        další klíče main.json
+     * @param array<string, string> $secretFiles soubory v secrets/ (název → obsah)
+     */
+    private function createDataSourceFixture(
+        PermissionSpec $spec,
+        string $id,
+        bool $enableReset = false,
+        bool $passwordInMainJson = true,
+        array $extra = [],
+        array $secretFiles = [],
+    ): void {
         $dsDir = $spec->getDataSourcesDir() . '/' . $id;
         mkdir($dsDir . '/config', 0750, true);
-        file_put_contents($dsDir . '/config/main.json', json_encode([
-            'id'                => $id,
-            'name'              => 'Test DS',
-            'database_name'     => str_replace('-', '_', $id),
-            'database_user'     => 'shpd_test',
-            'database_password' => 'secret',
-            'created'           => '2026-07-03T10:00:00+02:00',
-            'enableReset'       => $enableReset,
-        ]));
+        $config = [
+            'id'            => $id,
+            'name'          => 'Test DS',
+            'database_name' => str_replace('-', '_', $id),
+            'database_user' => 'shpd_test',
+            'created'       => '2026-07-03T10:00:00+02:00',
+            'enableReset'   => $enableReset,
+        ] + $extra;
+        if ($passwordInMainJson) {
+            $config['database_password'] = 'secret';
+        }
+        file_put_contents($dsDir . '/config/main.json', json_encode($config));
+        // Práva podle kontraktu, aby filesystem checks nepřidávaly nálezy.
+        chmod($dsDir . '/config/main.json', 0600);
+        if ($secretFiles !== []) {
+            mkdir($dsDir . '/secrets', 0700);
+            foreach ($secretFiles as $name => $content) {
+                file_put_contents($dsDir . '/secrets/' . $name, $content);
+                chmod($dsDir . '/secrets/' . $name, 0600);
+            }
+        }
+    }
+
+    /** Počet nálezů z patičky; 0 = „All checks passed“. */
+    private function issuesFound(string $display): int
+    {
+        return preg_match('/Issues found: (\d+)/', $display, $m) === 1 ? (int) $m[1] : 0;
+    }
+
+    /** Výřez sekce Data source secrets. */
+    private function secretsSection(string $display): string
+    {
+        $start = strpos($display, 'Data source secrets');
+        $this->assertNotFalse($start, 'sekce Data source secrets chybí');
+        $end = strpos($display, 'Data source states', $start);
+        return substr($display, $start, $end === false ? null : $end - $start);
+    }
+
+    // ── Data source secrets (#126 B1, U6) ───────────────────────────────────
+
+    public function testSecretsSectionSitsBetweenDbConnectionsAndStates(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $display = $tester->getDisplay();
+
+        $db = strpos($display, 'Data source DB connections');
+        $secrets = strpos($display, 'Data source secrets');
+        $states = strpos($display, 'Data source states');
+        $this->assertTrue($db < $secrets && $secrets < $states);
+        $this->assertStringContainsString('(no data sources)', $this->secretsSection($display));
+    }
+
+    public function testSecretsStillInMainJsonAreAWarningThatDoesNotChangeTheExitCount(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001', passwordInMainJson: true, extra: [
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'relay-fake']],
+        ]);
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002', passwordInMainJson: false, secretFiles: ['db.password' => 'db-fake']);
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $display = $tester->getDisplay();
+        $section = $this->secretsSection($display);
+
+        $this->assertStringContainsString('⚠ test-0001-test-0001: db.password, mail-relay.password still in config/main.json — run shpd-ds ds-upgrade', $section);
+        $this->assertStringNotContainsString('test-0002-test-0002', $section);
+        $this->assertStringContainsString('1 data source(s) still keep secrets in config/main.json', $section);
+        $this->assertStringNotContainsString('All secrets in secrets/', $section);
+        $this->assertStringNotContainsString('fake', $display);
+
+        // Stejný strom bez tajemství v main.json → stejný počet nálezů.
+        $this->recursiveDelete($spec->getDataSourcesDir() . '/test-0001-test-0001');
+        $again = new CommandTester($this->commandWithStubsNoTree($spec));
+        $again->execute([]);
+        $this->assertSame($this->issuesFound($again->getDisplay()), $this->issuesFound($display));
+        $this->assertStringContainsString('All secrets in secrets/ ✓', $this->secretsSection($again->getDisplay()));
+    }
+
+    public function testMissingDatabasePasswordIsAnError(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002', passwordInMainJson: false, secretFiles: ['db.password' => 'db-fake']);
+        $baseline = new CommandTester($command);
+        $baseline->execute([]);
+
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001', passwordInMainJson: false);
+        $tester = new CommandTester($this->commandWithStubsNoTree($spec));
+        $tester->execute([]);
+        $display = $tester->getDisplay();
+
+        $this->assertStringContainsString('✗ test-0001-test-0001: database password missing (secrets/db.password)', $this->secretsSection($display));
+        $this->assertSame($this->issuesFound($baseline->getDisplay()) + 1, $this->issuesFound($display));
+    }
+
+    public function testProviderWithoutSecretAndRelayWithUsernameButNoPasswordAreWarnings(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001', passwordInMainJson: false, extra: [
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u']],
+            'auth' => ['providers' => [
+                ['id' => 'shipard-id', 'issuer' => 'https://idp.example', 'clientId' => 'c'],
+                ['id' => 'github', 'kind' => 'github', 'clientId' => 'c'],
+            ]],
+        ], secretFiles: ['db.password' => 'db-fake', 'oidc-github.client-secret' => 'oidc-fake']);
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002', passwordInMainJson: false, extra: [
+            'mail' => ['relay' => ['host' => 'localhost', 'port' => 25, 'security' => 'none']],
+        ], secretFiles: ['db.password' => 'db-fake']);
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $section = $this->secretsSection($tester->getDisplay());
+
+        $this->assertStringContainsString("⚠ test-0001-test-0001: auth provider 'shipard-id' has no client secret (secrets/oidc-shipard-id.client-secret)", $section);
+        $this->assertStringContainsString('shpd-ds ds-secret set oidc-shipard-id.client-secret', $section);
+        $this->assertStringContainsString('⚠ test-0001-test-0001: mail.relay has a username but no password (secrets/mail-relay.password)', $section);
+        $this->assertStringNotContainsString('github', $section);
+        $this->assertStringNotContainsString('test-0002-test-0002', $section, 'relay bez username heslo nepotřebuje');
+        $this->assertStringNotContainsString('All secrets in secrets/', $section);
+        $this->assertStringNotContainsString('✗', $section);
+        $this->assertStringNotContainsString('fake', $tester->getDisplay());
+    }
+
+    public function testUnusableMainJsonIsSkippedInTheSecretsSection(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $dsDir = $spec->getDataSourcesDir() . '/test-0001-test-0001';
+        mkdir($dsDir . '/config', 0750, true);
+        file_put_contents($dsDir . '/config/main.json', '{not json');
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $section = $this->secretsSection($tester->getDisplay());
+
+        $this->assertStringContainsString('· test-0001-test-0001: config unusable — see Data source DB connections above', $section);
+        $this->assertStringNotContainsString('✗', $section);
     }
 
     public function testEnableResetWarnsOnProduction(): void
