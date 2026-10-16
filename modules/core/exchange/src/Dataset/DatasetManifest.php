@@ -17,9 +17,9 @@ namespace Shipard\Module\Core\Exchange\Dataset;
  * Volitelná pole z #103 F2 (tasks/testing-phase2.md D22/D24): `country`
  * (země vlastní firmy — seed odmítne DS jiné země), `profile` (informativní
  * klíč profilu korpusu) a `provision` (jednorázové akce seedu:
- * `accountingItems` = `"all"` | seznam kódů nabídky osnovy; `serverAi` =
- * `true` → zdroj dat smí používat serverové AI připojení pro vývoj,
- * tasks/testing-phase4.md D40).
+ * `accountingItems` = `"all"` | seznam kódů nabídky osnovy). Dřívější
+ * `provision.serverAi` zaniklo (#126 D9) — serverové AI připojení plyne
+ * z třídy dat, kterou seed po resetu nastaví na `free`.
  */
 final class DatasetManifest
 {
@@ -36,7 +36,7 @@ final class DatasetManifest
     private const COUNTRY_PATTERN = '/^[a-z]{2}$/';
 
     /** Známé klíče objektu `provision`; cokoli jiného je chyba manifestu. */
-    public const PROVISION_KEYS = ['accountingItems', 'serverAi'];
+    public const PROVISION_KEYS = ['accountingItems'];
 
     /** `provision.accountingItems = "all"` = všechny položky nabídky podle osnovy DS. */
     public const PROVISION_ALL = 'all';
@@ -111,15 +111,6 @@ final class DatasetManifest
                 );
             }
         }
-        if (array_key_exists('serverAi', $provision) && !is_bool($provision['serverAi'])) {
-            throw DatasetException::invalidManifest('provision.serverAi must be true or false');
-        }
-    }
-
-    /** Sada žádá o serverové AI připojení pro vývoj (`provision.serverAi: true`, D40). */
-    public function wantsServerAi(): bool
-    {
-        return ($this->provision['serverAi'] ?? false) === true;
     }
 
     /**

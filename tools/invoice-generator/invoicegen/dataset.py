@@ -48,7 +48,7 @@ MAILBOX = "default"
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 CREATED_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SETUP_TABLES = ("settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes")
-PROVISION_KEYS = ("accountingItems", "serverAi")   # serverAi: bool — serverové AI připojení pro vývoj (F4 D40)
+PROVISION_KEYS = ("accountingItems",)   # serverAi zaniklo (#126 D9) — serverové AI plyne z třídy dat
 MANAGED = ("manifest.jsonc", "setup", "persons", "mail", "expected")   # co build v cílové složce spravuje
 LEDGER_SNAPSHOT = "general-ledger.json"   # profiles/<profil>/approved/ → expected/ (F3 D29)
 
@@ -191,9 +191,6 @@ def load_profile(profile_dir: Path, key: str) -> Profile:
     for pkey, pvalue in provision.items():
         if pkey not in PROVISION_KEYS:
             problems.append(f"provision.{pkey}: neznámá akce (známé: {', '.join(PROVISION_KEYS)})")
-        elif pkey == "serverAi":
-            if not isinstance(pvalue, bool):
-                problems.append("provision.serverAi: true nebo false")
         elif pvalue != "all" and not (isinstance(pvalue, list) and pvalue
                                       and all(isinstance(c, str) and c.strip() for c in pvalue)):
             problems.append(f"provision.{pkey}: \"all\" nebo neprázdný seznam kódů nabídky")

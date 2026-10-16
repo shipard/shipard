@@ -16,6 +16,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class TestableDsCreateCommand extends DsCreateCommand
 {
+    /** Server nabízí serverové AI připojení (klíč dev-ai-key) — jen souhrn (#126 D9). */
+    public bool $serverAi = false;
+
     public function __construct(
         ServerConfig $mockConfig,
         DatabaseManager $mockDbManager,
@@ -33,6 +36,16 @@ class TestableDsCreateCommand extends DsCreateCommand
     protected function getModulePathResolver(): ModulePathResolver
     {
         return new ModulePathResolver([$this->modulesDir]);
+    }
+
+    protected function now(): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable('2026-10-16T12:00:00Z');
+    }
+
+    protected function serverOffersAi(ServerConfig $config): bool
+    {
+        return $this->serverAi;
     }
 }
 
@@ -71,7 +84,7 @@ class DsCreateCommandTest extends TestCase
         $this->rmdirRecursive($this->rootDir);
     }
 
-    private function createCommandTester(): CommandTester
+    private function createCommandTester(bool $serverAi = false): CommandTester
     {
         $command = new TestableDsCreateCommand(
             $this->serverConfig,
@@ -79,6 +92,7 @@ class DsCreateCommandTest extends TestCase
             $this->tempDir,
             $this->modulesDir,
         );
+        $command->serverAi = $serverAi;
 
         $app = new Application();
         $app->add($command);
@@ -385,35 +399,138 @@ class DsCreateCommandTest extends TestCase
         return json_decode((string) file_get_contents($dirs[0] . '/config/main.json'), true);
     }
 
-    public function testDsCreateOnADevelopmentServerOptsIntoTheServerAiConnection(): void
+    // ── třída dat (#126 D6, D7, D9) ──────────────────────────────────────────
+
+    private const array BASE_ARGS = ['--name' => 'Dev', '--language' => 'cs', '--country' => 'cz'];
+
+    public function testDsCreateOnADevelopmentServerIsFreeAndUsesTheServerAi(): void
     {
-        // tasks/testing-phase4.md D40: nový zdroj dat ve vývoji smí používat serverový klíč.
+        // D7: ve vývoji free s původem ds-create; D9: serverové AI podle třídy a klíče.
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester(serverAi: true);
+
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Data class:    free', $display);
+        $this->assertStringContainsString('Server AI:     on (free data source)', $display);
+        $this->assertStringNotContainsString('Purpose:', $display);
+        $this->assertStringNotContainsString('a real copy usually runs', $display);
+
+        $config = $this->createdMainJson();
+        $this->assertSame('free', $config['dataClass']);
+        $this->assertSame('ds-create', $config['origin']);
+        $this->assertSame('2026-10-16T12:00:00Z', $config['dataClassChanged']);
+        $this->assertArrayNotHasKey('ai', $config, 'žádný vlastní příznak serverového AI');
+        $this->assertArrayNotHasKey('purpose', $config);
+    }
+
+    public function testDsCreateFreeWithoutAServerKeyReportsServerAiOff(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester(serverAi: false);
+
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS));
+        $this->assertStringContainsString('Server AI:     off (no server AI key — shpd-server dev-ai-key)', $tester->getDisplay());
+        $this->assertSame('free', $this->createdMainJson()['dataClass']);
+    }
+
+    public function testDsCreateRealCopyOnADevelopmentServer(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester(serverAi: true);
+
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS + ['--real-copy' => true]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Data class:    realCopy', $display);
+        $this->assertStringContainsString('Server AI:     off (realCopy)', $display);
+        // D7: třída cron nemění — jen připomínka pro cíl importu.
+        $this->assertStringContainsString('Cron:          on (a real copy usually runs without periodic jobs', $display);
+        $this->assertFileDoesNotExist(glob($this->tempDir . '/*', GLOB_ONLYDIR)[0] . '/config/state.json');
+
+        $config = $this->createdMainJson();
+        $this->assertSame('realCopy', $config['dataClass']);
+        $this->assertSame('ds-create --real-copy', $config['origin']);
+    }
+
+    public function testDsCreateRealCopyWithNoCronHasNoCronReminder(): void
+    {
         $this->serverConfig->method('getMode')->willReturn('development');
         $tester = $this->createCommandTester();
 
-        $this->assertSame(0, $tester->execute(['--name' => 'Dev', '--language' => 'cs', '--country' => 'cz']));
-        $this->assertStringContainsString('Server AI:     on', $tester->getDisplay());
-        $this->assertSame(['useServerConnection' => true], $this->createdMainJson()['ai']);
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS + ['--real-copy' => true, '--no-cron' => true]));
+        $this->assertStringContainsString('Cron:          off', $tester->getDisplay());
+        $this->assertStringNotContainsString('a real copy usually runs', $tester->getDisplay());
     }
 
-    public function testDsCreateNoServerAiLeavesTheFlagOut(): void
+    public function testDsCreateInProductionIsAlwaysRealCopy(): void
     {
-        $this->serverConfig->method('getMode')->willReturn('development');
-        $tester = $this->createCommandTester();
+        $this->serverConfig->method('getMode')->willReturn('production');
 
-        $this->assertSame(0, $tester->execute(['--name' => 'Import', '--language' => 'cs', '--country' => 'cz', '--no-server-ai' => true]));
-        $this->assertStringContainsString('Server AI:     off', $tester->getDisplay());
-        $this->assertArrayNotHasKey('ai', $this->createdMainJson());
+        $tester = $this->createCommandTester(serverAi: true);
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS));
+        $this->assertStringNotContainsString('Server AI:', $tester->getDisplay(), 'mimo development řádek chybí');
+        $config = $this->createdMainJson();
+        $this->assertSame('realCopy', $config['dataClass']);
+        $this->assertSame('ds-create', $config['origin']);
+        $this->assertArrayNotHasKey('ai', $config);
     }
 
-    public function testDsCreateOutsideDevelopmentNeverSetsTheServerAiFlag(): void
+    public function testDsCreateInProductionWithRealCopyKeepsTheOrigin(): void
     {
         $this->serverConfig->method('getMode')->willReturn('production');
         $tester = $this->createCommandTester();
 
-        $this->assertSame(0, $tester->execute(['--name' => 'Prod', '--language' => 'cs', '--country' => 'cz']));
-        $this->assertStringNotContainsString('Server AI:', $tester->getDisplay());
-        $this->assertArrayNotHasKey('ai', $this->createdMainJson());
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS + ['--real-copy' => true]));
+        $this->assertSame('ds-create --real-copy', $this->createdMainJson()['origin']);
+    }
+
+    public function testDsCreateNoServerAiIsADeprecatedAliasOfRealCopy(): void
+    {
+        // U3: jedno vydání zůstává kvůli starým návodům a skriptům importu.
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester(serverAi: true);
+
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS + ['--no-server-ai' => true]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('--no-server-ai is deprecated — use --real-copy', $display);
+        $this->assertStringContainsString('Server AI:     off (realCopy)', $display);
+        $config = $this->createdMainJson();
+        $this->assertSame('realCopy', $config['dataClass']);
+        $this->assertSame('ds-create --real-copy', $config['origin']);
+    }
+
+    public function testDsCreatePurposeIsStoredNormalized(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS + ['--purpose' => '  Ověřování importu  ']));
+        $this->assertStringContainsString('Purpose:       Ověřování importu', $tester->getDisplay());
+        $this->assertSame('Ověřování importu', $this->createdMainJson()['purpose']);
+    }
+
+    public function testDsCreateEmptyPurposeLeavesTheKeyOut(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(self::BASE_ARGS + ['--purpose' => '   ']));
+        $this->assertArrayNotHasKey('purpose', $this->createdMainJson());
+    }
+
+    public function testDsCreateInvalidPurposeFailsBeforeAnyMutation(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(1, $tester->execute(self::BASE_ARGS + ['--purpose' => "první\ndruhý"]));
+        $this->assertStringContainsString('Invalid --purpose: Purpose must be a single line', $tester->getDisplay());
+        $this->assertCount(0, glob($this->tempDir . '/*', GLOB_ONLYDIR), 'žádný adresář zdroje dat');
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(1, $tester->execute(self::BASE_ARGS + ['--purpose' => str_repeat('x', 201)]));
+        $this->assertStringContainsString('Purpose is too long (max 200 characters)', $tester->getDisplay());
+        $this->assertCount(0, glob($this->tempDir . '/*', GLOB_ONLYDIR));
     }
 
     private function rmdirRecursive(string $dir): void

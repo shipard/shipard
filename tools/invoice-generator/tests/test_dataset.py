@@ -204,14 +204,12 @@ class ProfileTest(unittest.TestCase):
             self.assertEqual("cz-test", profile.name)
             self.assertEqual(["bank_accounts", "settings"], sorted(profile.setup))
             self.assertEqual({"accountingItems": "all"}, profile.provision)
-            with_ai = load_profile(self.write_profile(Path(tmp), provision={"accountingItems": "all", "serverAi": True}), "x")
-            self.assertEqual({"accountingItems": "all", "serverAi": True}, with_ai.provision)
 
     def test_invalid_profiles(self) -> None:
         cases = [
             {"name": "CZ Test"}, {"created": "2026-10-14"}, {"provision": {"foo": 1}},
             {"provision": {"accountingItems": []}}, {"extra": 1},
-            {"provision": {"serverAi": "yes"}}, {"provision": {"serverAi": 1}},
+            {"provision": {"serverAi": True}},   # zaniklo (#126 D9)
         ]
         for changes in cases:
             with tempfile.TemporaryDirectory() as tmp, self.assertRaises(DatasetBuildError, msg=str(changes)):

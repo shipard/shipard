@@ -8,8 +8,11 @@ use Shipard\Api\DocumentEventHandlerLoader;
 use Shipard\Api\DocumentLoader;
 use Shipard\Api\JournalEventHandlerLoader;
 use Shipard\Api\TableLoader;
+use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataClass;
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
@@ -58,11 +61,13 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * záznamu. Testovatelné přes podtřídu (seamy getDataSourceDir /
  * buildResolver / runReset / runUpgrade / hasSettingsTable /
  * applySettingsBeforeReset / createContext / createSeeders / createPreflight /
- * getServerMode / enableServerAi).
+ * getServerMode / serverOffersAi / markFree / now).
  *
- * Manifest `provision.serverAi: true` (tasks/testing-phase4.md D40): na
- * serveru v režimu `development` seed zapne příznak `ai.useServerConnection`
- * v `config/main.json` (i s `--no-reset`), jinde jen vypíše poznámku.
+ * Třída dat (#126 D7, U2, U4): po **úspěšném** resetu je zdroj dat `free`
+ * s původem `dataset-seed <sada>` — reset reálná data odstranil dřív, než
+ * se třída mění, proto přechod z `realCopy` nechce interaktivní potvrzení;
+ * účel z titulku sady jen když zdroj dat žádný nemá. `--no-reset` třídu
+ * ani účel nemění. Serverové AI připojení ve vývoji plyne z třídy (D9).
  */
 class DatasetSeedCommand extends Command
 {
@@ -115,15 +120,35 @@ class DatasetSeedCommand extends Command
         }
     }
 
+    protected function now(): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable();
+    }
+
+    /** Server nabízí serverové AI připojení (režim development + uložený klíč) — jen pro souhrn. */
+    protected function serverOffersAi(): bool
+    {
+        return ServerAiConnection::detect() !== null;
+    }
+
     /**
-     * `main.json` → `ai.useServerConnection: true` (atomicky, vlastník podle
-     * `config/`, i pod rootem).
+     * `main.json` → třída `free`, původ a čas (#126 D7); účel z titulku sady
+     * jen když zdroj dat žádný nemá (U2). Atomicky, vlastník podle `config/`,
+     * i pod rootem.
      *
      * @throws \RuntimeException
      */
-    protected function enableServerAi(string $dsDir): void
+    protected function markFree(string $dsDir, string $origin, ?string $purpose): void
     {
-        MainConfigFile::patch($dsDir, static fn (array $config): array => MainConfigPatcher::withServerAi($config, true));
+        $changedAt = DataSourceState::formatUtc($this->now());
+        MainConfigFile::patch($dsDir, static function (array $config) use ($origin, $purpose, $changedAt): array {
+            $config = MainConfigPatcher::withDataClass($config, DataClass::Free, $origin, $changedAt);
+            $current = $config['purpose'] ?? null;
+            if ($purpose !== null && (!is_string($current) || trim($current) === '')) {
+                $config = MainConfigPatcher::withPurpose($config, $purpose);
+            }
+            return $config;
+        });
     }
 
     /**
@@ -297,12 +322,19 @@ class DatasetSeedCommand extends Command
             $counts !== [] ? implode(', ', $counts) : 'bez counts',
         ));
 
-        // 2. Potvrzení.
+        // 2. Třída dat v dotazu (#126 D11) a potvrzení. Řádek se vypíše
+        // i s --yes — delegovaný ds-reset ho zopakuje, nevadí.
+        $isFree = $dsConfig->isFree();
+        $purposeText = $dsConfig->getPurpose();
+        $output->writeln($isFree
+            ? 'Data class: free'
+            : '<comment>Data class: realCopy — ' . ($purposeText ?? 'no purpose set') . '</comment>');
         if (!$input->getOption('yes')) {
+            $realCopyNote = $isFree ? '' : ' — a REAL COPY (purpose: ' . ($purposeText ?? 'none') . ')';
             $question = new ConfirmationQuestion(
                 $merge
-                    ? "Seed dataset '{$manifest->name}' into data source '{$dsConfig->getName()}' WITHOUT reset (merge into existing content)? [y/N] "
-                    : "This will RESET data source '{$dsConfig->getName()}' (all data tables dropped) and seed dataset '{$manifest->name}'. Continue? [y/N] ",
+                    ? "Seed dataset '{$manifest->name}' into data source '{$dsConfig->getName()}'{$realCopyNote} WITHOUT reset (merge into existing content)? [y/N] "
+                    : "This will RESET data source '{$dsConfig->getName()}'{$realCopyNote} (all data tables dropped) and seed dataset '{$manifest->name}'. Continue? [y/N] ",
                 false,
             );
             if (!$this->getHelper('question')->ask($input, $output, $question)) {
@@ -312,22 +344,7 @@ class DatasetSeedCommand extends Command
             }
         }
 
-        // 3. Příznak serverového AI připojení (D40) — jen ve vývoji; schéma
-        // na čerstvém DS, nastavení DS před resetem, reset.
-        if ($manifest->wantsServerAi()) {
-            if ($this->getServerMode() === 'development') {
-                try {
-                    $this->enableServerAi($dsDir);
-                    $output->writeln('Server AI connection enabled for this data source (config/main.json ai.useServerConnection).');
-                } catch (\RuntimeException $e) {
-                    $output->writeln("<error>Server AI flag failed: {$e->getMessage()}</error>");
-                    $reader->close();
-                    return Command::FAILURE;
-                }
-            } else {
-                $output->writeln('<comment>note:</comment> the dataset asks for the server AI connection (provision.serverAi) — available on development servers only, skipped.');
-            }
-        }
+        // 3. Schéma na čerstvém DS, nastavení DS před resetem, reset, třída.
         $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);
         if (!$merge) {
             if (!$this->hasSettingsTable($dsConnection)) {
@@ -353,6 +370,31 @@ class DatasetSeedCommand extends Command
                 $output->writeln('<error>ds-reset failed — dataset not seeded.</error>');
                 $reader->close();
                 return Command::FAILURE;
+            }
+
+            // Třída free až po úspěšném resetu (D7, U4): reálná data jsou pryč.
+            // Titulek sady jako účel jen přes stejnou validaci jako --purpose;
+            // nevyhovující titulek = bez účelu, ne chyba.
+            $origin = 'dataset-seed ' . $manifest->name;
+            try {
+                $titlePurpose = MainConfigPatcher::normalizePurpose($manifest->title);
+                $titlePurpose = $titlePurpose === '' ? null : $titlePurpose;
+            } catch (\InvalidArgumentException) {
+                $titlePurpose = null;
+            }
+            try {
+                $this->markFree($dsDir, $origin, $titlePurpose);
+            } catch (\RuntimeException $e) {
+                $output->writeln("<error>Data class update failed after reset: {$e->getMessage()}</error>");
+                $output->writeln('<comment>  The data source is reset but still counts as realCopy — mark it in a terminal: shpd-ds ds-class set free</comment>');
+                $reader->close();
+                return Command::FAILURE;
+            }
+            $output->writeln("Data class: <info>free</info> (origin: {$origin})");
+            if ($this->getServerMode() === 'development') {
+                $output->writeln($this->serverOffersAi()
+                    ? 'Server AI: on (free data source)'
+                    : 'Server AI: off (no server AI key — shpd-server dev-ai-key)');
             }
         }
 

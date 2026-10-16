@@ -8,8 +8,7 @@
     "country": "cz",
     "profile": "association",
     "provision": {
-        "accountingItems": "all",
-        "serverAi": true
+        "accountingItems": "all"
     },
     "counts": {
         "setup": 3,

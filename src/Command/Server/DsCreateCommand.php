@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Command\Server;
 
 use Shipard\Core\Ai\ServerAiConnection;
+use Shipard\Core\Config\DataClass;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
@@ -12,6 +13,7 @@ use Shipard\Core\Database\DatabaseManager;
 use Shipard\Core\Module\InstallModuleRegistry;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\Utils\IdGenerator;
 use Symfony\Component\Console\Command\Command;
@@ -65,16 +67,39 @@ class DsCreateCommand extends Command
                  'Create the data source with periodic jobs switched off (config/state.json cron: false) — for import targets',
              )
              ->addOption(
+                 'real-copy',
+                 null,
+                 InputOption::VALUE_NONE,
+                 'Mark the data source as a copy of real data (main.json dataClass realCopy) — for import targets; on a development server it then gets no server AI connection',
+             )
+             ->addOption(
+                 'purpose',
+                 null,
+                 InputOption::VALUE_REQUIRED,
+                 'Purpose of the data source (one line, max 200 characters) — shown by shpd-server ds-list',
+             )
+             ->addOption(
                  'no-server-ai',
                  null,
                  InputOption::VALUE_NONE,
-                 'On a development server: do not opt the data source into the server AI key (main.json ai.useServerConnection) — for import targets',
+                 'Deprecated — use --real-copy',
              );
     }
 
     protected function getDataSourcesDir(): string
     {
         return '/opt/shipard/data-sources';
+    }
+
+    protected function now(): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable();
+    }
+
+    /** Server nabízí serverové AI připojení (režim development + uložený klíč) — jen pro souhrn. */
+    protected function serverOffersAi(ServerConfig $config): bool
+    {
+        return ServerAiConnection::detect($config) !== null;
     }
 
     protected function getModulePathResolver(): ModulePathResolver
@@ -131,6 +156,28 @@ class DsCreateCommand extends Command
             return Command::FAILURE;
         }
 
+        // Účel zdroje dat (#126 D6) — validace před jakoukoli mutací; jediné
+        // pravidlo je MainConfigPatcher::normalizePurpose (sdílí ho ds-class
+        // i vývojářský dashboard). Prázdný účel = bez účelu.
+        $purpose = null;
+        $purposeOption = $input->getOption('purpose');
+        if (is_string($purposeOption)) {
+            try {
+                $purpose = MainConfigPatcher::normalizePurpose($purposeOption);
+            } catch (\InvalidArgumentException $e) {
+                $output->writeln('<error>Invalid --purpose: ' . $e->getMessage() . '</error>');
+                return Command::FAILURE;
+            }
+        }
+
+        // Třída dat (#126 D7): --real-copy = kopie reálných dat (cíl importu).
+        // --no-server-ai zůstává jedno vydání jako zastaralý alias (U3).
+        $legacyNoServerAi = (bool) $input->getOption('no-server-ai');
+        if ($legacyNoServerAi) {
+            $output->writeln('<comment>--no-server-ai is deprecated — use --real-copy</comment>');
+        }
+        $realCopyRequested = (bool) $input->getOption('real-copy') || $legacyNoServerAi;
+
         // Load server config first — needed by both the module-path resolver
         // (extraModulesPath) and DatabaseManager.
         $config = $this->serverConfig ?? new ServerConfig();
@@ -140,6 +187,12 @@ class DsCreateCommand extends Command
             $output->writeln('<error>Failed to load server config: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
+
+        // Ve vývoji je nový zdroj dat free (ukázková data), s --real-copy
+        // realCopy; v produkci vždy realCopy — tam jsou všechna data ostrá.
+        $isDevelopment = $config->getMode() === ServerAiConnection::MODE_DEVELOPMENT;
+        $dataClass = $isDevelopment && !$realCopyRequested ? DataClass::Free : DataClass::RealCopy;
+        $origin = $realCopyRequested ? 'ds-create --real-copy' : 'ds-create';
 
         $resolver = $this->getModulePathResolver();
         $registry = new InstallModuleRegistry($resolver);
@@ -217,13 +270,11 @@ class DsCreateCommand extends Command
             'database_password' => $password,
             'created'           => date('c'),
         ];
-        // Serverové AI připojení pro vývoj (tasks/testing-phase4.md D40): jen
-        // ve vývoji a jen opt-in nového zdroje dat; obnovená reálná kopie
-        // příznak nenese. `--no-server-ai` pro cíle importu.
-        $serverAi = $config->getMode() === ServerAiConnection::MODE_DEVELOPMENT && !(bool) $input->getOption('no-server-ai');
-        if ($serverAi) {
-            $mainConfig['ai'] = ['useServerConnection' => true];
-        }
+        // Třída dat, původ a čas (#126 D6) — stejné čisté funkce jako
+        // dataset-seed a ds-class; serverové AI připojení ve vývoji se z třídy
+        // odvozuje (D9), žádný vlastní příznak se nezapisuje.
+        $mainConfig = MainConfigPatcher::withDataClass($mainConfig, $dataClass, $origin, DataSourceState::formatUtc($this->now()));
+        $mainConfig = MainConfigPatcher::withPurpose($mainConfig, $purpose);
 
         $configFile = $configDir . '/main.json';
         file_put_contents($configFile, json_encode($mainConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -279,13 +330,25 @@ class DsCreateCommand extends Command
         $output->writeln("  Database:      <comment>{$dbName}</comment>");
         $output->writeln("  DB User:       <comment>{$dbUser}</comment>");
         $output->writeln("  Directory:     <comment>{$dataSourceDir}</comment>");
+        $output->writeln("  Data class:    <comment>{$dataClass->value}</comment>"
+            . ($dataClass === DataClass::RealCopy ? ' (copy of real data — change with shpd-ds ds-class)' : ''));
+        if ($purpose !== null && $purpose !== '') {
+            $output->writeln("  Purpose:       <comment>{$purpose}</comment>");
+        }
         if ($noCron) {
             $output->writeln('  Cron:          <comment>off</comment> (periodic jobs disabled — shpd-ds ds-state cron --on to enable)');
+        } elseif ($realCopyRequested) {
+            // D7: třída cron nemění — jen připomínka pro cíl importu.
+            $output->writeln('  Cron:          <comment>on</comment> (a real copy usually runs without periodic jobs — --no-cron or shpd-ds ds-state cron --off)');
         }
-        if ($config->getMode() === ServerAiConnection::MODE_DEVELOPMENT) {
-            $output->writeln($serverAi
-                ? '  Server AI:     <comment>on</comment> (uses the server AI key without a connection of its own — shpd-server dev-ai-key)'
-                : '  Server AI:     <comment>off</comment> (--no-server-ai)');
+        if ($isDevelopment) {
+            if ($dataClass !== DataClass::Free) {
+                $output->writeln('  Server AI:     <comment>off</comment> (realCopy)');
+            } elseif ($this->serverOffersAi($config)) {
+                $output->writeln('  Server AI:     <comment>on</comment> (free data source)');
+            } else {
+                $output->writeln('  Server AI:     <comment>off</comment> (no server AI key — shpd-server dev-ai-key)');
+            }
         }
         $output->writeln('');
 

@@ -8,8 +8,7 @@
     "country": "cz",
     "profile": "vat-payer",
     "provision": {
-        "accountingItems": "all",
-        "serverAi": true
+        "accountingItems": "all"
     },
     "counts": {
         "setup": 4,

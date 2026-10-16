@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Server;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\DataClass;
 use Shipard\Core\Server\MainConfigFile;
 use Shipard\Core\Server\MainConfigPatcher;
 
@@ -33,10 +34,13 @@ final class MainConfigFileTest extends TestCase
         $file = MainConfigFile::path($this->dsDir);
         file_put_contents($file, json_encode(['id' => 'x', 'name' => 'Čeština']));
 
-        MainConfigFile::patch($this->dsDir, static fn (array $c): array => MainConfigPatcher::withServerAi($c, true));
+        MainConfigFile::patch($this->dsDir, static fn (array $c): array => MainConfigPatcher::withDataClass($c, DataClass::Free, 'ds-class', '2026-10-16T12:00:00Z'));
 
         $config = json_decode((string) file_get_contents($file), true);
-        $this->assertSame(['id' => 'x', 'name' => 'Čeština', 'ai' => ['useServerConnection' => true]], $config);
+        $this->assertSame(
+            ['id' => 'x', 'name' => 'Čeština', 'dataClass' => 'free', 'origin' => 'ds-class', 'dataClassChanged' => '2026-10-16T12:00:00Z'],
+            $config,
+        );
         $this->assertSame(0600, fileperms($file) & 0777);
         $this->assertStringContainsString("\"name\": \"Čeština\"", (string) file_get_contents($file), 'UTF-8 bez escapování');
         $this->assertFileDoesNotExist($file . '.tmp');

@@ -37,10 +37,12 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
     public int $resetResult = Command::SUCCESS;
     public ?bool $lastMerge = null;
     public string $serverMode = 'development';
-    /** @var list<string> zdroje dat, kterým seed zapnul serverové AI připojení */
-    public array $serverAiEnabled = [];
-    public ?string $serverAiError = null;
-    /** @var list<string> pořadí kroků upgrade / settings / reset */
+    /** Server nabízí serverové AI připojení (klíč dev-ai-key) — jen souhrn (#126 D9). */
+    public bool $serverAi = false;
+    /** @var list<array{string, string, ?string}> volání markFree: adresář, původ, účel z titulku */
+    public array $marked = [];
+    public ?string $markError = null;
+    /** @var list<string> pořadí kroků upgrade / settings / reset / markFree */
     public array $order = [];
     /** @var list<SectionSeeder> */
     public array $seeders = [];
@@ -94,12 +96,18 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
         return $this->serverMode;
     }
 
-    protected function enableServerAi(string $dsDir): void
+    protected function serverOffersAi(): bool
     {
-        if ($this->serverAiError !== null) {
-            throw new \RuntimeException($this->serverAiError);
+        return $this->serverAi;
+    }
+
+    protected function markFree(string $dsDir, string $origin, ?string $purpose): void
+    {
+        if ($this->markError !== null) {
+            throw new \RuntimeException($this->markError);
         }
-        $this->serverAiEnabled[] = $dsDir;
+        $this->order[] = 'markFree';
+        $this->marked[] = [$dsDir, $origin, $purpose];
     }
 
     /** @var (\Closure(DatasetReader, DataSourceConfig, DataSourceConnection, string, bool): SeedContext)|null */
@@ -142,67 +150,137 @@ class DatasetSeedCommandTest extends TestCase
         DatasetReader::removeTree($this->tmp);
     }
 
-    private function writeSet(bool $valid = true, ?string $country = null, bool $serverAi = false): string
+    private function writeSet(bool $valid = true, ?string $country = null): string
     {
-        $dir = $this->tmp . '/set' . ($valid ? '' : '-bad') . ($country !== null ? "-{$country}" : '') . ($serverAi ? '-ai' : '');
+        $dir = $this->tmp . '/set' . ($valid ? '' : '-bad') . ($country !== null ? "-{$country}" : '');
         $w = DatasetWriter::create($dir);
         $w->writeJsonc('persons/0001-acme.jsonc', $valid ? DatasetPreflightTest::person() : ['format' => 'shpd.persons.person']);
         $w->writeManifest(new DatasetManifest(
             'demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z', ['persons' => 1],
             country: $country,
-            provision: $serverAi ? ['serverAi' => true] : [],
         ));
         return $dir;
     }
 
-    // ── serverové AI připojení (tasks/testing-phase4.md D40) ────────────────
+    // ── třída dat (#126 D7, D9, D11) ─────────────────────────────────────────
 
-    public function testServerAiProvisionSetsTheFlagOnADevelopmentServer(): void
+    public function testResetMarksTheDataSourceFreeAfterASuccessfulReset(): void
     {
+        // D7/U2/U4: free až po úspěšném resetu, původ dataset-seed <sada>, účel z titulku sady.
         $cmd = $this->command();
         $tester = new CommandTester($cmd);
-        $exit = $tester->execute(['path' => $this->writeSet(serverAi: true), '--yes' => true]);
+        $exit = $tester->execute(['path' => $this->setDir, '--yes' => true]);
 
-        $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
-        $this->assertSame([$this->dsDir], $cmd->serverAiEnabled);
-        $this->assertStringContainsString('Server AI connection enabled', $tester->getDisplay());
-        $this->assertSame(['settings', 'reset'], $cmd->order);
+        $display = $tester->getDisplay();
+        $this->assertSame(Command::SUCCESS, $exit, $display);
+        $this->assertSame([[$this->dsDir, 'dataset-seed demo', 'Demo']], $cmd->marked);
+        $this->assertSame(['settings', 'reset', 'markFree'], $cmd->order);
+        $this->assertStringContainsString('Data class: free (origin: dataset-seed demo)', $display);
+        $this->assertStringContainsString('Server AI: off (no server AI key — shpd-server dev-ai-key)', $display);
     }
 
-    public function testServerAiProvisionIsSkippedOutsideDevelopmentAndAbsentWithoutTheRequest(): void
+    public function testFreeDataSourceWithAServerKeyReportsServerAiOn(): void
     {
+        $cmd = $this->command();
+        $cmd->serverAi = true;
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir, '--yes' => true]));
+        $this->assertStringContainsString('Server AI: on (free data source)', $tester->getDisplay());
+    }
+
+    public function testProductionSeedMarksFreeWithoutAServerAiLine(): void
+    {
+        // Platí v obou režimech (zdroj s enableReset na produkci); řádek Server AI jen ve vývoji.
         $cmd = $this->command();
         $cmd->serverMode = 'production';
         $tester = new CommandTester($cmd);
-        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->writeSet(serverAi: true), '--yes' => true]));
-        $this->assertSame([], $cmd->serverAiEnabled);
-        $this->assertStringContainsString('development servers only', $tester->getDisplay());
 
-        $cmd = $this->command();
-        $tester = new CommandTester($cmd);
         $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir, '--yes' => true]));
-        $this->assertSame([], $cmd->serverAiEnabled, 'sada bez provision.serverAi main.json nemění');
-        $this->assertStringNotContainsString('Server AI', $tester->getDisplay());
+        $this->assertCount(1, $cmd->marked);
+        $this->assertStringNotContainsString('Server AI:', $tester->getDisplay());
     }
 
-    public function testServerAiFlagFailureStopsBeforeReset(): void
+    public function testFailedResetLeavesTheDataClassAlone(): void
     {
         $cmd = $this->command();
-        $cmd->serverAiError = 'cannot replace main.json';
+        $cmd->resetResult = Command::FAILURE;
         $tester = new CommandTester($cmd);
 
-        $this->assertSame(Command::FAILURE, $tester->execute(['path' => $this->writeSet(serverAi: true), '--yes' => true]));
-        $this->assertStringContainsString('Server AI flag failed: cannot replace main.json', $tester->getDisplay());
+        $this->assertSame(Command::FAILURE, $tester->execute(['path' => $this->setDir, '--yes' => true]));
+        $this->assertSame([], $cmd->marked, 'selhaný reset = data jsou původní, třída se nemění');
+        $this->assertStringNotContainsString('Data class: free (origin', $tester->getDisplay());
+    }
+
+    public function testNoResetLeavesTheDataClassAlone(): void
+    {
+        $cmd = $this->command();
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir, '--yes' => true, '--no-reset' => true]));
+        $this->assertSame([], $cmd->marked);
+        $this->assertStringNotContainsString('Data class: free (origin', $tester->getDisplay());
+    }
+
+    public function testMarkFreeFailureAfterResetIsAnError(): void
+    {
+        $cmd = $this->command();
+        $cmd->markError = 'cannot replace main.json';
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['path' => $this->setDir, '--yes' => true]));
+        $display = $tester->getDisplay();
+        $this->assertSame(1, $cmd->resetRuns);
+        $this->assertStringContainsString('Data class update failed after reset: cannot replace main.json', $display);
+        $this->assertStringContainsString('shpd-ds ds-class set free', $display);
+        $this->assertStringNotContainsString('Seed complete', $display);
+    }
+
+    public function testPromptNamesTheDataClassOfARealCopy(): void
+    {
+        // D11: řádek třídy a dotaz uvádějí REAL COPY s účelem; chování --yes se nemění.
+        $cmd = $this->command(purpose: 'Ověřování importu');
+        $tester = new CommandTester($cmd);
+        $tester->setInputs(['n']);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Data class: realCopy — Ověřování importu', $display);
+        $this->assertStringContainsString("RESET data source 'Test DS' — a REAL COPY (purpose: Ověřování importu) (all data tables dropped)", $display);
+        $this->assertStringContainsString('Aborted.', $display);
         $this->assertSame(0, $cmd->resetRuns);
     }
 
-    private function command(string $dsCountry = 'cz'): TestableDatasetSeedCommand
+    public function testRealCopyWithoutPurposeAndWithYesStillPrintsTheClassLine(): void
+    {
+        $cmd = $this->command();
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir, '--yes' => true]));
+        $this->assertStringContainsString('Data class: realCopy — no purpose set', $tester->getDisplay());
+    }
+
+    public function testPromptForAFreeDataSourceIsPlain(): void
+    {
+        $cmd = $this->command(free: true);
+        $tester = new CommandTester($cmd);
+        $tester->setInputs(['n']);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Data class: free', $display);
+        $this->assertStringNotContainsString('REAL COPY', $display);
+    }
+
+    private function command(string $dsCountry = 'cz', bool $free = false, ?string $purpose = null): TestableDatasetSeedCommand
     {
         $dsConfig = $this->createMock(DataSourceConfig::class);
         $dsConfig->method('getName')->willReturn('Test DS');
         $dsConfig->method('getDefaultLanguage')->willReturn('cs');
         $dsConfig->method('getCountry')->willReturn($dsCountry);
         $dsConfig->method('hasCountry')->willReturn(true);
+        $dsConfig->method('isFree')->willReturn($free);
+        $dsConfig->method('getPurpose')->willReturn($purpose);
         $dsConnection = $this->createMock(DataSourceConnection::class);
 
         $cmd = new TestableDatasetSeedCommand($dsConfig, $dsConnection, $this->dsDir);
@@ -254,7 +332,7 @@ class DatasetSeedCommandTest extends TestCase
         $this->assertStringContainsString('persons:          ok 1', $display);
         $this->assertStringContainsString('Seed complete.', $display);
         $this->assertSame(0, $cmd->upgradeRuns, 'existing schema → no ds-upgrade before settings');
-        $this->assertSame(['settings', 'reset'], $cmd->order);
+        $this->assertSame(['settings', 'reset', 'markFree'], $cmd->order);
     }
 
     public function testFreshDataSourceGetsSchemaBeforeSettings(): void
@@ -265,7 +343,7 @@ class DatasetSeedCommandTest extends TestCase
         $exit = $tester->execute(['path' => $this->setDir, '--yes' => true]);
 
         $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
-        $this->assertSame(['upgrade', 'settings', 'reset'], $cmd->order);
+        $this->assertSame(['upgrade', 'settings', 'reset', 'markFree'], $cmd->order);
         $this->assertStringContainsString('Fresh data source', $tester->getDisplay());
     }
 
