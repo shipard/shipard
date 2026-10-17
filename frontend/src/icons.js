@@ -115,6 +115,11 @@ import {
   faWandMagicSparkles,
   faPrint,
   faMicrochip,
+  faFlask,
+  faStethoscope,
+  faArrowUpFromBracket,
+  faCodeCommit,
+  faClock,
 } from '@fortawesome/free-solid-svg-icons';
 
 // ── Akce (toolbary, tlačítka) ──────────────────────────────────
@@ -208,6 +213,13 @@ export const iconChartPie = faChartPie; // Střediska
 export const iconHash = faHashtag;
 export const iconServer = faServer;
 export const iconDatabase = faDatabase;
+
+// ── Vývojářský dashboard (#129 D5) ──────────────────────────────
+export const iconTesting = faFlask; // sekce Testování — evaluace AI nad sadami
+export const iconDoctor = faStethoscope; // shpd-server doctor
+export const iconUpgrade = faArrowUpFromBracket; // ds-upgrade jednoho zdroje dat i všech
+export const iconCommit = faCodeCommit; // verze s hashem commitu v pruhu
+export const iconClock = faClock; // periodické úlohy (cron vypnutý)
 
 // ── Vzhled / theme ─────────────────────────────────────────────
 export const iconThemeLight = faSun;
@@ -324,6 +336,12 @@ export const iconMap = {
   'question': iconQuestion,
   'warning': iconWarning,
   'info': iconInfo,
+  // vývojářský dashboard (#129 D5)
+  'testing': iconTesting,
+  'doctor': iconDoctor,
+  'upgrade': iconUpgrade,
+  'commit': iconCommit,
+  'clock': iconClock,
 };
 
 /**

@@ -18,76 +18,97 @@
   outline-offset: 2px;
 }
 
-.dev-banner {
-  background: var(--shpd-color-accent);
-  color: #fff;
-  text-align: center;
-  font-size: var(--shpd-font-size-sm);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 3px var(--shpd-space-md);
+/* ---- Pruh a lišta (#129 D6–D8): jeden lepicí blok nad obsahem ---- */
+.dev-top {
+  position: sticky;
+  top: 0;
+  z-index: 100; /* pod Popover a .dev-dialog (1000) */
 }
 
-.dev-header {
+.dev-stripe {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--shpd-space-xl);
-  height: var(--shpd-header-height);
-  padding: 0 var(--shpd-space-xl);
-  background: var(--shpd-color-bg-sidebar);
-  color: var(--shpd-color-text-sidebar);
+  justify-content: space-between;
+  gap: 2px var(--shpd-space-lg);
+  padding: 3px var(--shpd-space-xl);
+  background: var(--dev-stripe-bg);
+  color: var(--dev-stripe-ink);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
-.dev-header__title {
-  color: #fff;
-  font-weight: 600;
-  font-size: var(--shpd-font-size-lg);
-  text-decoration: none;
-  white-space: nowrap;
+.dev-stripe__title {
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
-.dev-header__title:hover { color: #fff; }
-
-.dev-header__server {
-  margin-left: auto;
-  color: var(--shpd-color-text-sidebar-muted);
-  font-size: var(--shpd-font-size-sm);
-  white-space: nowrap;
-}
-
-.dev-header__server code {
-  background: var(--shpd-color-bg-sidebar-hover);
-  color: var(--shpd-color-text-sidebar);
-}
-
-.dev-nav {
+.dev-stripe__meta {
   display: flex;
-  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--shpd-space-lg);
 }
 
-.dev-nav__item {
+.dev-stripe__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dev-stripe__version {
+  font-family: var(--dev-font-mono);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.dev-stripe__version:hover {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.dev-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--shpd-space-sm) var(--shpd-space-xl);
+  min-height: 60px;
+  padding: 0 var(--shpd-space-xl);
+  background: var(--dev-toolbar-bg);
+}
+
+.dev-topbar__logo { display: block; }
+.dev-topbar__logo img { height: 28px; width: auto; }
+
+.dev-topbar__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--shpd-space-md);
+}
+
+.dev-topbar__link {
   display: inline-flex;
   align-items: center;
   gap: var(--shpd-space-sm);
-  padding: 6px 12px;
-  border-radius: var(--shpd-radius-md);
-  color: var(--shpd-color-text-sidebar);
+  padding: 6px 4px;
+  border-bottom: 2px solid transparent;
+  color: var(--dev-toolbar-link);
   text-decoration: none;
   font-size: var(--shpd-font-size-sm);
   font-weight: 500;
   white-space: nowrap;
 }
 
-.dev-nav__item:hover {
-  background: var(--shpd-color-bg-sidebar-hover);
-  color: #fff;
+.dev-topbar__link:hover { color: var(--dev-toolbar-link-active); }
+
+.dev-topbar__link[aria-current="page"] {
+  color: var(--dev-toolbar-link-active);
+  border-bottom-color: var(--shpd-color-accent);
 }
 
-.dev-nav__item--active,
-.dev-nav__item--active:hover {
-  background: var(--shpd-color-sidebar-active-bg);
-  color: #fff;
-}
+/* Přepínač jazyka (fáze 2, D12) přijde mezi navigaci a Dokumentaci. */
+.dev-topbar__docs { margin-left: auto; }
 
 .dev-main {
   flex: 1;

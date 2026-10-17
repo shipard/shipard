@@ -10,7 +10,7 @@
   // smazaný zdroj dat z něj po doběhnutí úlohy zmizí sám. Pojistku dělá server.
   import { onMount } from 'svelte';
   import Button from '../../components/ui/Button.svelte';
-  import { iconAdd, iconRefresh } from '../../icons.js';
+  import { iconAdd, iconRefresh, iconDocument, iconUpgrade, iconUpload, iconCopy, iconDelete } from '../../icons.js';
   import { getJson } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
   import { devInfo } from '../info.svelte.js';
@@ -52,15 +52,15 @@
   /** Položky kebab menu řádku — neaktivní se vůbec nepředávají (D71). */
   function menuItems(ds) {
     const menu = [
-      { key: 'logs', label: 'Logy', href: router.href('logs', {}, { ds: ds.id }) },
-      { key: 'upgrade', label: 'Upgrade', href: router.href('dsUpgrade', {}, { ds: ds.id }) },
+      { key: 'logs', label: 'Logy', icon: iconDocument, href: router.href('logs', {}, { ds: ds.id }) },
+      { key: 'upgrade', label: 'Upgrade', icon: iconUpgrade, href: router.href('dsUpgrade', {}, { ds: ds.id }) },
     ];
     if (canLoadDataset(ds) && !ds.job) {
-      menu.push({ key: 'dataset', label: 'Nahrát datovou sadu', onSelect: () => (loadFor = ds) });
+      menu.push({ key: 'dataset', label: 'Nahrát datovou sadu', icon: iconUpload, onSelect: () => (loadFor = ds) });
     }
-    menu.push({ key: 'copy', label: 'Kopírovat ID', onSelect: () => copyId(ds.id) });
+    menu.push({ key: 'copy', label: 'Kopírovat ID', icon: iconCopy, onSelect: () => copyId(ds.id) });
     if (canDelete(ds) && !ds.job) {
-      menu.push({ key: 'delete', label: 'Smazat…', danger: true, onSelect: () => (deleteFor = ds) });
+      menu.push({ key: 'delete', label: 'Smazat…', icon: iconDelete, danger: true, separator: true, onSelect: () => (deleteFor = ds) });
     }
     return menu;
   }

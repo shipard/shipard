@@ -14,8 +14,10 @@
   import { onLinkClick } from '../router.svelte.js';
 
   /**
-   * items: {key, label, href?, onSelect?, danger?}[] — `href` = odkaz routeru
-   * (naviguje `onLinkClick`), jinak tlačítko s `onSelect`.
+   * items: {key, label, href?, onSelect?, danger?, icon?, separator?}[] —
+   * `href` = odkaz routeru (naviguje `onLinkClick`), jinak tlačítko
+   * s `onSelect`; `icon` z icons.js před textem (#129 D5), `separator`
+   * vykreslí oddělovač nad položkou (Smazat…).
    */
   let { items = [], label = 'Další akce' } = $props();
 
@@ -114,6 +116,9 @@
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="dev-kebab__menu" role="menu" id={menuId} tabindex="-1" bind:this={menuEl} onkeydown={onMenuKeydown}>
       {#each items as item (item.key)}
+        {#if item.separator}
+          <div class="dev-kebab__sep" role="separator"></div>
+        {/if}
         {#if item.href}
           <a
             class="dev-kebab__item"
@@ -121,7 +126,7 @@
             role="menuitem"
             href={item.href}
             onclick={(e) => select(item, e)}
-          >{item.label}</a>
+          >{#if item.icon}<Icon icon={item.icon} size="sm" />{/if}<span>{item.label}</span></a>
         {:else}
           <button
             type="button"
@@ -129,7 +134,7 @@
             class:dev-kebab__item--danger={item.danger}
             role="menuitem"
             onclick={(e) => select(item, e)}
-          >{item.label}</button>
+          >{#if item.icon}<Icon icon={item.icon} size="sm" />{/if}<span>{item.label}</span></button>
         {/if}
       {/each}
     </div>
@@ -141,8 +146,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     vertical-align: middle;
     color: var(--shpd-color-text);
@@ -156,6 +161,9 @@
   .dev-kebab__btn[aria-expanded='true'] {
     border-color: var(--shpd-color-primary);
     color: var(--shpd-color-primary);
+  }
+  .dev-kebab__btn[aria-expanded='true'] {
+    background: var(--shpd-color-primary-soft);
   }
   .dev-kebab__btn:disabled {
     opacity: 0.5;
@@ -171,7 +179,9 @@
     outline: none;
   }
   .dev-kebab__item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: var(--shpd-space-sm);
     text-align: left;
     padding: 8px 14px;
     border: none;
@@ -187,7 +197,12 @@
     background-color: var(--shpd-color-bg-hover);
     outline: none;
   }
-  /* Destruktivní akce (Smazat…) červeně, jako ve formuláři. */
+  .dev-kebab__sep {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--shpd-color-border);
+  }
+  /* Destruktivní akce (Smazat…) červeně včetně ikony, jako ve formuláři. */
   .dev-kebab__item--danger {
     color: var(--shpd-color-danger);
   }

@@ -23,11 +23,12 @@
 </div>
 
 <style>
-  .pane { position: sticky; top: var(--shpd-space-md); }
+  /* Lepí se pod lepicí pruh + lištu (#129 D7); jejich výšku dává DevApp do --dev-top-height. */
+  .pane { position: sticky; top: calc(var(--dev-top-height, 84px) + var(--shpd-space-md)); }
   .bar { display: flex; justify-content: space-between; margin-bottom: var(--shpd-space-xs); }
   .pdf {
     width: 100%;
-    height: calc(100vh - 170px);
+    height: calc(100vh - var(--dev-top-height, 84px) - 110px);
     min-height: 560px;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);

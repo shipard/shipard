@@ -67,6 +67,21 @@ export function formatTime(iso) {
   return d.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+/**
+ * Verze v pruhu dashboardu (#129 D9): `v0.1.1 · 02e2d3b7 · stable`. Bez hashe
+ * (git nedostupný) jen `v0.1.1`; bez větve (odpojená HEAD) bez třetí části.
+ *
+ * @param {{version: string, hash?: string|null, branch?: string|null}} v
+ */
+export function versionLabel(v) {
+  const parts = [`v${v.version}`];
+  if (v.hash) {
+    parts.push(v.hash);
+    if (v.branch) parts.push(v.branch);
+  }
+  return parts.join(' · ');
+}
+
 /** Zkrácený commit `1baa027d`; `dirty` → `1baa027d*`. */
 export function formatCommit(commit, dirty = false) {
   if (!commit) return DASH;

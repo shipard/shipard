@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   formatNumber, formatPercent, formatPercentDelta, formatDelta, formatUsd, formatMs, formatCommit,
-  dataClassLabel, dataClassTitle, truncate,
+  dataClassLabel, dataClassTitle, truncate, versionLabel,
 } from '../../../src/dev/format.js';
 
 // Intl v Node odděluje tisíce i desetiny podle cs-CZ (nezlomitelná mezera, čárka);
@@ -57,4 +57,11 @@ test('zkrácení účelu s výpustkou, prázdný → pomlčka', () => {
   assert.equal(truncate(''), '—');
   assert.equal(truncate('Ruční zkoušení UI'), 'Ruční zkoušení UI');
   assert.equal(truncate('Testovací sada plátce DPH pro evaluaci AI nad korpusem', 40), 'Testovací sada plátce DPH pro evaluaci…');
+});
+
+test('verze v pruhu: hash a větev jen když jsou', () => {
+  assert.equal(versionLabel({ version: '0.1.1', hash: '02e2d3b7', branch: 'stable' }), 'v0.1.1 · 02e2d3b7 · stable');
+  assert.equal(versionLabel({ version: '0.1.1', hash: '02e2d3b7', branch: null }), 'v0.1.1 · 02e2d3b7');
+  assert.equal(versionLabel({ version: '0.1.1', hash: null, branch: null }), 'v0.1.1');
+  assert.equal(versionLabel({ version: '0.1.1' }), 'v0.1.1');
 });

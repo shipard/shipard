@@ -178,4 +178,7 @@
   .facts { display: flex; flex-direction: column; gap: 4px; margin-top: var(--shpd-space-sm); }
   .facts__row { display: flex; flex-wrap: wrap; gap: 4px var(--shpd-space-md); align-items: center; }
   .body:not(.dev-split) { display: block; }
+  /* Sloupec s PDF musí být vysoký jako celý řádek mřížky (.dev-split má
+     align-items: start), jinak sticky PdfPane nemá v čem držet a odroluje. */
+  .body.dev-split > div:first-child { align-self: stretch; }
 </style>
