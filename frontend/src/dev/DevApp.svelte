@@ -11,7 +11,7 @@
   import { router, onLinkClick } from './router.svelte.js';
   import { devInfo } from './info.svelte.js';
   import { versionLabel, formatDateTime } from './format.js';
-  import { DOCS_URL, COMMIT_URL } from './links.js';
+  import { docsUrl, COMMIT_URL } from './links.js';
   import { t, LANGUAGES, currentLanguage, setLanguage } from './i18n/index.js';
   import DataSourcesPage from './pages/DataSourcesPage.svelte';
   import DsCreatePage from './pages/DsCreatePage.svelte';
@@ -124,7 +124,7 @@
           {/if}
         {/each}
       </div>
-      <a class="dev-topbar__link dev-topbar__docs" href={DOCS_URL} target="_blank" rel="noopener">
+      <a class="dev-topbar__link dev-topbar__docs" href={docsUrl(currentLanguage())} target="_blank" rel="noopener">
         <Icon icon={iconBook} size="sm" />{t('app.nav.docs')}
       </a>
     </div>

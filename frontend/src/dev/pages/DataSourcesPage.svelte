@@ -14,13 +14,13 @@
   import Button from '../../components/ui/Button.svelte';
   import Icon from '../../components/ui/Icon.svelte';
   import { iconAdd, iconRefresh, iconDocument, iconUpgrade, iconUpload, iconCopy, iconDelete, iconOpenExternal, iconClock } from '../../icons.js';
-  import { DOCS_URL } from '../links.js';
+  import { docsUrl } from '../links.js';
   import { getJson } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
   import { devInfo } from '../info.svelte.js';
   import { jobTypeLabel, jobStatusLabel } from '../testing/jobs.js';
   import { formatDateTime, dataClassLabel, dataClassTitle, truncate } from '../format.js';
-  import { t, label } from '../i18n/index.js';
+  import { t, label, currentLanguage } from '../i18n/index.js';
   import DevKebabMenu from '../components/DevKebabMenu.svelte';
   import LoadDatasetDialog from './LoadDatasetDialog.svelte';
   import DeleteDataSourceDialog from './DeleteDataSourceDialog.svelte';
@@ -138,9 +138,7 @@
   <span class="dev-muted dev-small">{t('ds.refreshIn', { s: countdown })}</span>
   <span class="dev-page__spacer"></span>
   <Button label={t('common.refresh')} icon={iconRefresh} variant="secondary" size="sm" onclick={refreshNow} />
-  <a href={router.href('dsCreate')} onclick={onLinkClick} class="dev-btn-link">
-    <Button label={t('ds.new')} icon={iconAdd} size="sm" />
-  </a>
+  <a class="dev-btn-primary" href={router.href('dsCreate')} onclick={onLinkClick}><Icon icon={iconAdd} size="sm" />{t('ds.new')}</a>
 </div>
 
 {#if error}
@@ -171,10 +169,8 @@
         <li>{t('ds.start.step3')}</li>
       </ol>
       <div class="dev-btnrow">
-        <a href={router.href('dsCreate')} onclick={onLinkClick} class="dev-btn-link">
-          <Button label={t('ds.start.create')} icon={iconAdd} />
-        </a>
-        <a class="dev-btn-outline dev-btn-outline--md" href={DOCS_URL} target="_blank" rel="noopener">{t('ds.start.guide')}</a>
+        <a class="dev-btn-primary dev-btn-primary--md" href={router.href('dsCreate')} onclick={onLinkClick}><Icon icon={iconAdd} />{t('ds.start.create')}</a>
+        <a class="dev-btn-outline dev-btn-outline--md" href={docsUrl(currentLanguage())} target="_blank" rel="noopener">{t('ds.start.guide')}</a>
       </div>
     </div>
     <aside class="dev-start__aside">
@@ -277,8 +273,6 @@
 {/if}
 
 <style>
-  .dev-btn-link { text-decoration: none; }
-
   .copied { margin-left: 6px; }
 
   .cron-off {

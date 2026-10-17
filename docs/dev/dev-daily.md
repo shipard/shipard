@@ -92,8 +92,9 @@ verze). Pruh i modrá lišta s logem a sekcemi zůstávají při rolování
 nahoře; vpravo v liště je přepínač jazyka **CS · EN** (dashboard je česky
 a anglicky; bez volby podle jazyka prohlížeče, volba se pamatuje v tomto
 prohlížeči) a odkaz **Dokumentace** na
-[shipard.dev/pro-vyvojare](https://shipard.dev/pro-vyvojare/). Výstupy
-příkazů a chybové hlášky serveru zůstávají, jak je nástroje vypíšou.
+[shipard.dev/pro-vyvojare](https://shipard.dev/pro-vyvojare/), v anglickém
+dashboardu na [shipard.dev/en/developers](https://shipard.dev/en/developers/).
+Výstupy příkazů a chybové hlášky serveru zůstávají, jak je nástroje vypíšou.
 
 ### Úlohy na pozadí a pojistky (F6b)
 

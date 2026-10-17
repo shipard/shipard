@@ -408,7 +408,36 @@ code, .dev-code {
 }
 
 .dev-btn-outline:hover { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-hover); }
-.dev-btn-outline--md { height: auto; padding: var(--shpd-space-sm) var(--shpd-space-lg); font-size: var(--shpd-font-size-base); }
+.dev-btn-outline--md { height: auto; padding: var(--shpd-space-sm) var(--shpd-space-lg); font-size: var(--shpd-font-size-base); line-height: 1; } /* výška jako Button md vedle .dev-btn-primary--md */
+
+/* Odkaz jako hlavní tlačítko (Nový zdroj dat): rozměry a písmo jako Button
+ * size="sm", --md jako Button md. Žádný <Button> uvnitř <a> — vnořený
+ * interaktivní prvek je nevalidní a čtečka ho přečte dvakrát. */
+.dev-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--shpd-space-sm);
+  padding: var(--shpd-space-xs) var(--shpd-space-md);
+  border: 1px solid var(--shpd-color-primary);
+  border-radius: var(--shpd-radius-md);
+  background: var(--shpd-color-primary);
+  color: #ffffff;
+  font-size: var(--shpd-font-size-sm);
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.dev-btn-primary:hover {
+  background: var(--shpd-color-primary-hover);
+  border-color: var(--shpd-color-primary-hover);
+  color: #ffffff;
+}
+
+.dev-btn-primary--md { padding: var(--shpd-space-sm) var(--shpd-space-lg); font-size: var(--shpd-font-size-base); }
 
 /* Prázdný stav přehledu zdrojů dat (D15): karta „Začni tady“ + panel vedle, na úzkém okně pod ní */
 .dev-start { display: flex; flex-wrap: wrap; gap: var(--shpd-space-lg); align-items: flex-start; }

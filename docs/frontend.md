@@ -180,7 +180,10 @@ verze (`versionLabel()` ve `format.js` nad `GET /_dev/api/info` →
 commit, `links.js`) a modrá lišta s logem webu
 (`src/dev/assets/shipard-logo.svg`, odkaz na Zdroje dat), navigací
 s ikonami (`aria-current="page"` + oranžové podtržení) a odkazem
-**Dokumentace**; favicon `src/dev/assets/icon-192.png` přes Vite assets
+**Dokumentace** (`docsUrl(lang)` v `links.js`: `cs` → `/pro-vyvojare/`,
+jinak `/en/developers/`; totéž u Návodu pro začátečníky v prázdném stavu);
+hlavní akce Nový zdroj dat je odkaz `.dev-btn-primary` s rozměry `Button`
+(žádný `<Button>` uvnitř `<a>`); favicon `src/dev/assets/icon-192.png` přes Vite assets
 (`publicDir` je vypnutý). Ikony podle významu v `icons.js` (`iconTesting`,
 `iconDoctor`, `iconUpgrade`, `iconCommit`, `iconClock`); `DevKebabMenu`
 bere u položky `icon` a `separator`. Tlačítka (D4): `primary` = jediná

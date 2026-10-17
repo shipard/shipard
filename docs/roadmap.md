@@ -171,7 +171,7 @@ z M0 má vždy přednost.
 |---|---|
 | Agregace alertů do skupinových karet feedu | `dashboard-alert-grouping.md` |
 | Detekce chybějících překladů (validační nástroj) | — |
-| Vývojářský dashboard: vzhled, verze, čeština a angličtina, aktualizace (#129) | `dev-dashboard-look.md` (fáze 1 hotová), fáze 2–3 dle #129 |
+| Vývojářský dashboard: vzhled, verze, čeština a angličtina, aktualizace (#129) | `dev-dashboard-look.md` (fáze 1) a `dev-dashboard-i18n.md` (fáze 2) hotové, fáze 3 (D10–D11) dle #129 |
 
 ---
 
