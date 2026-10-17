@@ -18,6 +18,7 @@ use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Utils\IdGenerator;
+use Shipard\Core\Version;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
 
@@ -157,13 +158,27 @@ class DevDashboardController
 		return Response::html($html);
 	}
 
-	/** Údaje, které dřív vkládalo PHP do HTML: server, adresář zdrojů dat, dostupnost sekce Testování. */
+	/**
+	 * Údaje, které dřív vkládalo PHP do HTML: server, adresář zdrojů dat,
+	 * dostupnost sekce Testování; od #129 D9 i `version` — číslo verze a HEAD
+	 * gitu pro pruh dashboardu. Bez gitu nebo s jeho odmítnutím (PHP-FPM pod
+	 * jiným uživatelem než vlastník checkoutu) jsou `hash`, `fullHash`,
+	 * `branch` a `commitDate` null a pruh ukáže jen číslo verze.
+	 */
 	private function getInfo(): Response
 	{
+		$git = Version::gitInfo();
 		return Response::success([
 			'hostname'       => gethostname() ?: 'unknown',
 			'dataSourcesDir' => $this->dataSourcesDir,
 			'testing'        => is_dir($this->repoRoot . '/tests/datasets') && is_dir($this->repoRoot . '/tests/eval'),
+			'version'        => [
+				'version'    => Version::VERSION,
+				'hash'       => $git['hash'] ?? null,
+				'fullHash'   => $git['fullHash'] ?? null,
+				'branch'     => $git['branch'] ?? null,
+				'commitDate' => $git['commitDate'] ?? null,
+			],
 		]);
 	}
 

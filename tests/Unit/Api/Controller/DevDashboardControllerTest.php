@@ -15,6 +15,7 @@ use Shipard\Core\DevJobs\JobStatus;
 use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Version;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 
 class DevDashboardControllerTest extends TestCase
@@ -243,6 +244,24 @@ class DevDashboardControllerTest extends TestCase
 		mkdir($this->tmpRoot . '/tests/eval', 0700, true);
 		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info'));
 		$this->assertTrue($this->getPayloadRaw($resp)['data']['testing']);
+	}
+
+	/** #129 D9: číslo verze vždy; hash, větev a datum commitu z gitu, nebo všechny null (bez gitu / odmítnutí). */
+	public function testApiInfoIncludesTheVersionAndGitHead(): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info'));
+		$version = $this->getPayloadRaw($resp)['data']['version'];
+		$this->assertSame(['version', 'hash', 'fullHash', 'branch', 'commitDate'], array_keys($version));
+		$this->assertSame(Version::VERSION, $version['version']);
+		$git = Version::gitInfo();
+		if ($git === null) {
+			$this->assertSame([null, null, null, null], [$version['hash'], $version['fullHash'], $version['branch'], $version['commitDate']]);
+		} else {
+			$this->assertSame($git['hash'], $version['hash']);
+			$this->assertSame($git['fullHash'], $version['fullHash']);
+			$this->assertSame($git['branch'], $version['branch']);
+			$this->assertSame($git['commitDate'], $version['commitDate']);
+		}
 	}
 
 	public function testApiInfoPostReturns404(): void

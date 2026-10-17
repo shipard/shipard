@@ -10,15 +10,10 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\StructuredFields\StructuredSchemaValidator;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Core\Version;
 
 class ConfigCompiler
 {
-    /**
-     * Verze formátu kompilovaného configu — nezávislá na verzi aplikace
-     * (Shipard\Core\Version). Bumpovat při změně struktury kompilátu.
-     */
-    private const VERSION = '0.1.0';
-
     /** cfgItem složený z `journalDimensions` aktivních modulů (JournalDimensionSet). */
     public const JOURNAL_DIMENSIONS_ITEM = 'core.accounting.journalDimensions';
 
@@ -322,7 +317,7 @@ class ConfigCompiler
             $output = [
                 '_meta' => [
                     'compiled' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-                    'version' => self::VERSION,
+                    'version' => Version::VERSION,
                     'language' => $language,
                     'modules' => $moduleIds,
                 ],

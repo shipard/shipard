@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Version;
 
 class ConfigCompilerTest extends TestCase
 {
@@ -205,7 +206,7 @@ class ConfigCompilerTest extends TestCase
         $data = json_decode(file_get_contents($outputPath . '/compiled.en.json'), true);
         $meta = $data['_meta'];
         $this->assertArrayHasKey('compiled', $meta);
-        $this->assertSame('0.1.0', $meta['version']);
+        $this->assertSame(Version::VERSION, $meta['version']);
         $this->assertSame('en', $meta['language']);
         $this->assertSame(['core.system'], $meta['modules']);
     }
