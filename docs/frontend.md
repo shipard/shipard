@@ -197,6 +197,34 @@ v `.dev-actions__inner` (jinak se kebab zalomí, B2). Štítky `.dev-badge`
 Přehled zdrojů dat bez jediného zdroje (a bez chyby) kreslí místo tabulky
 kartu **Začni tady** + panel **Co tu ještě najdeš** (`.dev-start`, D15).
 
+**Zastaralost a Aktualizovat (#129 fáze 3, `tasks/dev-dashboard-update.md`).**
+V pruhu vlevo od serveru stojí `components/UpdateChip.svelte`: štítek
+`.dev-stripe__chip` (tlačítko s `aria-expanded`; `--strong` = nejstarší
+chybějící změna starší než 7 dní, nebo výzva **Obnovit stránku**; při běžící
+úloze odkaz na její detail) a bublina nad sdíleným `Popover` (Esc, klik
+mimo, fokus zpět na štítek jako u `DevKebabMenu`) s počtem a stářím změn,
+10 commity (`COMMIT_URL`), odkazem na porovnání (`compareUrl`),
+**Zkontrolovat teď**, žlutou poznámkou s radou k pojistce (`dev-alert
+dev-alert--warning`) a tlačítky **Aktualizovat** (`primary`, neaktivní při
+pojistce) / Zobrazit na GitHubu (`.dev-btn-outline`); na jiné větvi než
+`stable` jen poznámka. Data drží store `updates.svelte.js`: `GET
+/_dev/api/updates` → `{state, stale, checking, head, blockers, canUpdate,
+job}` při startu, každých 5 s jen dokud `checking` nebo běží úloha
+`update`, po `focus` nejvýš jednou za minutu; selhání dotazu nechává
+poslední stav (aktualizace přepisuje PHP i soubory dashboardu); když
+běžící úloha z odpovědi zmizí, doptá se `GET /_dev/api/testing/jobs/<id>`
+— `finished` → štítek **Obnovit stránku** (`location.reload()` až na klik,
+U7), jinak hlášení o selhání s odkazem na úlohu. `POST /_dev/api/updates/check`
+(202) a `POST /_dev/api/updates/run` (201 `{job}`; 409 `UPDATE_BLOCKED`
+s `details.blockers`, 409 `JOB_RUNNING` s `details.jobId` — bublina je
+ukáže s odkazem). Čisté funkce v `updates.js` (`chipKind` — stav z cache
+platí jen pro dnešní HEAD, `daysSince`, `blockerText`, `checkErrorText`;
+test `tests/Unit/dev/updates.test.mjs`). Úloha `update` nemá zdroj dat
+(`dataSource: null`): `JobsPage` i `JobDetailPage` píší „celý server“ bez
+odkazu Otevřít, detail nenabízí Zrušit ani Vynutit (API vrací 409
+`JOB_NOT_CANCELLABLE`), po `finished` ukáže **Obnovit stránku**; chyba
+pollingu u běžící úlohy nepřepisuje poslední stav.
+
 Nedefinované tokeny hlídá `scripts/check-css-tokens.py` v pre-commit hooku
 (D14): projde celý `frontend/src`, token `--shpd-*` / `--dev-*` použitý jako
 `var(--x)` bez fallbacku musí mít definici (`--x:` v CSS, `style=""` nebo
@@ -207,7 +235,7 @@ proto kontrola, ne alias.
 **Čeština a angličtina (#129 D12, `tasks/dev-dashboard-i18n.md`).** Dashboard
 má vlastní slovníky `src/dev/i18n/cs.js` / `en.js` (ploché objekty, tečkové
 klíče podle obrazovky: `app.*`, `common.*`, `ds.*`, `dsCreate.*`, `logs.*`,
-`action.*`, `testing.*`, `jobs.*`, `metrics.*`, `format.*`) a helper
+`action.*`, `testing.*`, `jobs.*`, `updates.*`, `metrics.*`, `format.*`) a helper
 `src/dev/i18n/index.js`: `t(key, params)` nad `IntlMessageFormat`
 (`ignoreTag: true` — `<id>` v textu je text) s cache a fallbackem jazyk →
 `en` → klíč, `has(key)`, `label(prefix, code)` pro kódy ze serveru (stav

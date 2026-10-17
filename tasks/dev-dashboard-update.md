@@ -1,6 +1,6 @@
 # Vývojářský dashboard — zastaralost a Aktualizovat (fáze 3)
 
-**Stav:** naplánováno — zadání podle #129 D16–D22, upřesnění U1–U8 potvrzená
+**Stav:** hotovo — 2026-10-17, #129 fáze 3 (D16–D22, U1–U8); testy nad dočasnými git repozitáři, živě na dev stroji (`ahead 1`, pojistky, kontrola na pozadí přes PHP-FPM); průchod „pozadu → Aktualizovat“ na VM z bootstrapu zbývá člověku
 
 ## Kontext / Cíl
 
@@ -210,29 +210,103 @@ false, null, [])` (jen `development`):
 
 ## Hotovo když
 
-- [ ] `vendor/bin/phpunit --filter '<nové testy>|DevDashboardControllerTest|JobLauncherTest|JobRecordTest'`
-      zelené, pak celá sada; `cd frontend && npm test && npm run check:i18n && npm run build`
+- [x] `vendor/bin/phpunit --filter 'DevUpdate|DevUpdatesController|DevDashboardControllerTest|DevJobsControllerTest|JobLauncherTest|JobRecordTest|JobStoreTest|HelpDriftTest'`
+      zelené, pak celá sada (10 081 testů); `cd frontend && npm test` (205)
+      `&& npm run check:i18n && npm run build`; `scripts/check-css-tokens.py`
 - [ ] na VM z bootstrapu (pozadu, `origin` HTTPS): štítek se objeví po
       první kontrole, bublina ukáže commity, **Aktualizovat** doběhne,
       po obnovení stránky je štítek pryč a pruh ukazuje nový hash;
-      `git status` hlásí „up to date with origin/stable“
-- [ ] na stroji s lokálními nepushnutými commity: štítek ano,
-      Aktualizovat neaktivní s radou `notFastForward`
-- [ ] necommitnutá změna sledovaného souboru → `dirty`; nesledovaný
-      soubor aktualizaci neblokuje
-- [ ] s běžící úlohou na kterémkoli zdroji dat nejde Aktualizovat
+      `git status` hlásí „up to date with origin/stable“ — **zbývá
+      člověku**; testem pokryto nad dočasnými repozitáři
+      (`UpdateCheckerTest`, `DevUpdateCommandTest`: fast-forward, hooky
+      vypnuté, pořadí kroků) a v headless Chromiu s podvrženou odpovědí
+      API (štítek, bublina, Aktualizovat → „aktualizuji…“ → Obnovit stránku)
+- [x] na stroji s lokálními nepushnutými commity: štítek ano,
+      Aktualizovat neaktivní s radou `notFastForward` — živě na dev stroji
+      (`ahead 1`: `dev-update-check` i `GET /_dev/api/updates` hlásí
+      `dirty` + `notFastForward`; štítek se neukáže, protože `behind 0`)
+- [x] necommitnutá změna sledovaného souboru → `dirty`; nesledovaný
+      soubor aktualizaci neblokuje (`UpdateGuardsTest`)
+- [x] s běžící úlohou na kterémkoli zdroji dat nejde Aktualizovat
       spustit (UI i API 409) a během `update` nejde spustit jiná úloha
-- [ ] bez sítě: „nelze ověřit“, stránka se nezasekne
-- [ ] `shpd-server dev-update-check` a `dev-update` v terminálu;
+      (`JobLauncherTest`, `DevUpdatesControllerTest`; UI headless)
+- [x] bez sítě: „nelze ověřit“, stránka se nezasekne (selhaný fetch
+      v `UpdateCheckerTest`; štítek a bublina headless s `ok: false`)
+- [x] `shpd-server dev-update-check` a `dev-update` v terminálu;
       v režimu `production` oba odmítnou (testem)
-- [ ] dokumentace: `docs/cli.md` (oba příkazy); `CLAUDE.md` (seznam
-      příkazů `shpd-server`, sekce Vývojářský dashboard); `docs/frontend.md`
-      → Vývojářský dashboard (štítek, store, API); `docs/dev/dev-daily.md`
-      § 1 (štítek a Aktualizovat, kdy je tlačítko neaktivní a co dělat
-      ručně); `docs/dev/local-dev.md`, pokud popisuje ruční aktualizaci VM;
-      `docs/roadmap.md` M6 (fáze 3 hotová); `tasks/README.md` → sekce Dev
-      dashboard
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] dokumentace: `docs/cli.md` (oba příkazy, `dev-update.sh`); `CLAUDE.md`
+      (seznam příkazů `shpd-server`, sekce Vývojářský dashboard);
+      `docs/frontend.md` → Vývojářský dashboard (štítek, store, API);
+      `docs/dev/dev-daily.md` § 1 a § 3; `docs/dev/local-dev.md` § 6;
+      `docs/roadmap.md` M6; `tasks/README.md` → sekce Dev dashboard beze
+      změny
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Implementační poznámky (2026-10-17)
+
+- **Soubory:** `src/Core/DevUpdate/` (`Upstream`, `UpdateEnvironment`,
+  `Git`, `UpdateStateStore`, `UpdateChecker`, `UpdateGuards`, `UpdateStatus`,
+  `UpdateStepRunner`), `src/Command/Server/DevUpdateCheckCommand.php`,
+  `DevUpdateCommand.php`, `src/Api/Controller/DevUpdatesController.php`,
+  `frontend/src/dev/updates.js`, `updates.svelte.js`,
+  `components/UpdateChip.svelte`; úpravy `JobRecord`, `JobConflict`,
+  `JobLauncher`, `JobStore::activeJobs()`, `DevJobsController::cancel`,
+  `DevJobRunCommand` (preload `JobLauncher`), `CapturedProcess::run(…, env)`,
+  `DevApp.svelte`, `JobsPage`, `JobDetailPage`, `dev.css`, slovníky.
+  Testy: `tests/Fixtures/Core/DevUpdate/GitFixture.php` (bare upstream
+  + autorský klon + checkout, vlastní `bin/` se symlinkem na git a stuby
+  `composer` / `npm`, `GIT_CONFIG_GLOBAL=/dev/null`), `tests/Unit/Core/DevUpdate/*`,
+  `DevUpdateCheckCommandTest`, `DevUpdateCommandTest`, `DevUpdatesControllerTest`,
+  `tests/Unit/dev/updates.test.mjs`.
+- **Hooky při merge vypnuté** (`git -c core.hooksPath=/dev/null merge
+  --ff-only`): na VM z bootstrapu je `core.hooksPath=.githooks` a `post-merge`
+  spouští `dev-update.sh` po každém merge včetně fast-forwardu — krok 3 by
+  běžel dvakrát. Zadání hooky nezmiňovalo.
+- **`dev-update --job=<id>`** (odchylka od „jeden krok `dev-update --yes`“):
+  stejná jako u `ds-delete` — úloha dashboardu je sama aktivní úloha
+  a pojistka `jobRunning` by ji bez `--job` považovala za cizí. Z terminálu
+  bez `--job` blokuje i běžící `update` z dashboardu.
+- **Cache neplatí po změně HEAD:** `state.json` nese `head.hash`; liší-li se
+  od aktuálního HEAD (lokální commit, merge), je stav `stale` →
+  `notChecked` a kontrola na pozadí, štítek se neukazuje (`chipKind`
+  porovnává hash). Jinak by po lokálním commitu lhal až hodinu.
+- **Značka `check.requested`:** API po spawnu `dev-update-check` zapíše
+  značku (mtime, platí 60 s, kontrola ji po zápisu smaže); `checking` =
+  zámek držený **nebo** platná značka. Bez ní by UI hned po „Zkontrolovat
+  teď“ vidělo `checking: false` (proces ještě nedržel zámek) a přestalo se
+  ptát.
+- **Samostatný `DevUpdatesController`** (prefix `/_dev/api/updates`,
+  dispatch z `DevDashboardController` jako u úloh) místo dalších metod
+  v 700řádkovém controlleru; seam `updatesController()` pro testy.
+- **Prostředí podprocesů** = zděděné + pevný `PATH` ze zadání (vždy, ne jen
+  když chybí — terminál i úloha tak mají totéž a `missingTool` platí pro
+  obojí) + `GIT_TERMINAL_PROMPT=0`, `GIT_ASKPASS=/bin/true`, `LC_ALL=C`;
+  `git` a `bash` se spouštějí absolutní cestou z téhož PATH.
+  `CapturedProcess::run()` dostal volitelný `$env` (5. argument `proc_open`).
+- **Kód se mění pod běžícím procesem:** `dev-update` resolvuje vše před
+  krokem 2 (prostředí, cesty, runner, argv kroků) a kroky 3–5 i závěrečný
+  `dev-update-check` běží přes `UpdateStepRunner` (načtený krokem 2) jako
+  samostatné procesy; `dev-job-run` si před kroky načte `JobLauncher`, který
+  jinak lazy-loadovala až cesta zrušení.
+- **`dev-update.sh` běží s `SHPD_DEV_UPDATE_NO_CRON_HINT=1`** — cron hlídá
+  krok 5, připomínka skriptu by byla dvakrát.
+- **Aktuální checkout** (`behind 0` po pojistkách) = „nothing to do“, exit 0,
+  kroky 2–5 neběží; selhaný fetch je `notChecked`, ne „aktuální“.
+- **Chyba kontroly** jde do cache jako `errorCode` (`timeout` / `fetchFailed`
+  / `notARepository` / `gitFailed`) + anglický detail; bublina překládá kód
+  (`updates.error.*`) a detail ukáže v závorce.
+- **Ověřeno živě** na dev stroji (`origin` SSH kanonický → `refs/remotes/origin/stable`,
+  HEAD 1 napřed): `dev-update-check` (výpis i `--json`), `GET /_dev/api/updates`
+  přes nginx + PHP-FPM, `POST …/check` spustil odpojenou kontrolu pod FPM
+  (prázdný PATH) — `check.log` a nový `checkedAt`. Headless Chromium
+  s podvrženým API: štítek světlý / plný (10 dní), bublina (commity, „a 3
+  další“, Zkontrolovat teď → POST, Aktualizovat → POST run → odkaz
+  „aktualizuji…“ → po doběhnutí **Obnovit stránku**), pojistky (žlutá
+  poznámka, tlačítko neaktivní; na jiné větvi bez tlačítek), „nelze
+  ověřit“, aktuální bez štítku, Esc zavře a vrátí fokus; seznam a detail
+  úlohy `update` („celý server“, bez Zrušit, Obnovit stránku); bez chyb
+  v konzoli. Skutečný běh `dev-update` s merge na tomto stroji neproběhl
+  (HEAD napřed = pojistka) — zůstává na VM z bootstrapu.
 
 ## Pasti
 

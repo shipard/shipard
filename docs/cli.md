@@ -670,6 +670,66 @@ příznakem a bez třídy upozorní (`[WARN]`), klíč odebere první zápis tř
 `development`, při špatné kombinaci voleb, prázdném klíči, chybě zápisu
 a u `--status` při jiných právech než 0600.
 
+### `dev-update-check [--json]`
+
+```bash
+shpd-server dev-update-check          # fetch stable z GitHubu: pozadu / napřed, commity, pojistky aktualizace
+shpd-server dev-update-check --json   # totéž jako JSON (stav, pojistky, HEAD) — čte ho dashboard
+```
+
+Kontrola zastaralosti vývojového checkoutu (#129 D16–D18,
+`tasks/dev-dashboard-update.md`): `git fetch --quiet --no-tags` větve
+`stable` z pevné adresy `https://github.com/shipard/shipard.git` —
+anonymně, `GIT_TERMINAL_PROMPT=0`, timeout 30 s; nikdy `fetch origin` ani
+`pull` (SSH s heslem, cizí fork). Cíl fetche je `refs/remotes/origin/stable`,
+když `origin` ukazuje na `shipard/shipard`, jinak `refs/shipard/upstream/stable`.
+Spočítá `behind` / `ahead`, nejstarší chybějící commit, posledních 10 commitů
+a odkaz na porovnání a zapíše to atomicky do
+`/opt/shipard/run/dev-update/state.json` (cache pro štítek v pruhu
+dashboardu; běží pod `flock` na `check.lock` — druhá kontrola naráz skončí
+hned s exit 0). Pojistky aktualizace se počítají při každém volání znovu,
+ne z cache: `notStable`, `dirty` (jen sledované soubory), `notFastForward`
+(lokální commity navíc), `jobRunning`, `missingTool` (`git`, `composer`,
+`npm` v pevném PATH úlohy), `notChecked`. Dashboard příkaz spouští jako
+odpojený proces, když je cache starší než hodinu, chybí, selhala, nebo se
+od ní změnil HEAD. Jen režim `development`. Exit 0 i když je checkout
+pozadu; 1 jen při selhání kontroly (`ok: false`, `errorCode` `timeout` /
+`fetchFailed` / `notARepository` / `gitFailed`) a mimo development.
+
+### `dev-update [--yes] [--job=<id>]`
+
+```bash
+shpd-server dev-update          # kontrola → dotaz → fast-forward → dev-update.sh → ds-upgrade-all → cron check
+shpd-server dev-update --yes    # bez dotazu (úloha dashboardu, skript)
+```
+
+Aktualizace vývojového checkoutu v pěti krocích s hlavičkami `==> [n/5]`
+(#129 D20–D22): 1. `dev-update-check` + pojistky — kterákoli nesplněná =
+exit 1 s radou, nic se nemění (aktuální checkout = „nothing to do“, exit 0);
+2. `git -c core.hooksPath=/dev/null merge --ff-only <cílová reference>` —
+hook `post-merge` z `.githooks` by jinak pustil `dev-update.sh` podruhé;
+3. `bash scripts/dev-update.sh` (už nová verze skriptu, bez připomínky
+cronu); 4. `shpd-server ds-upgrade-all`; 5. `shpd-server cron-install
+--check` — exit 1 je jen upozornění s příkazem `sudo shpd-server
+cron-install`, ne selhání. Na konci nový `dev-update-check`, aby štítek
+v dashboardu zmizel. Podprocesy dostávají pevný `PATH`
+`/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin` (PHP-FPM
+ho nepředává) a git bez dotazů na heslo. **Kód se mění pod běžícím
+procesem:** po kroku 2 příkaz nenačte žádnou novou třídu — vše resolvuje
+předem a kroky 3–5 běží jako samostatné procesy (vzor `upgrade`). Bez
+`--yes` se v terminálu zeptá; neinteraktivně bez `--yes` odmítne. Jen
+režim `development`. Exit 1 při nesplněné pojistce nebo selhání kroků 2–4
+(po selhání kroku 3 nebo 4 je checkout už na nové verzi — dokonči ručně).
+
+| Opce | Význam |
+|------|--------|
+| `--yes`, `-y` | Bez potvrzení (úloha dashboardu, skripty). |
+| `--job=<id>` | Id úlohy dashboardu, která příkaz spouští — vlastní běžící úloha se v pojistce `jobRunning` nepočítá (stejně jako `ds-delete --job`). |
+
+Z dashboardu: štítek **N commitů pozadu** v pruhu → **Aktualizovat**
+([dev/dev-daily.md](dev/dev-daily.md) § 1); úloha `update` nemá zdroj dat
+a nejde zrušit.
+
 ---
 
 ### `dev-job-run` (interní, skrytý)
@@ -2141,6 +2201,12 @@ git config core.hooksPath .githooks
 
 Po této jednorázové konfiguraci se `dev-update.sh` spustí automaticky
 po `git pull`, `git pull --rebase` a `git checkout <branch>`.
+
+Celou aktualizaci včetně stažení `stable` a `ds-upgrade-all` dělá
+`shpd-server dev-update` (v dashboardu tlačítko **Aktualizovat** ve štítku
+zastaralosti) — skript volá jako krok 3 s `SHPD_DEV_UPDATE_NO_CRON_HINT=1`
+a cron zkontroluje sám; hooky při svém merge vypíná, aby skript neběžel
+dvakrát.
 
 ### `scripts/install-packages.sh`
 

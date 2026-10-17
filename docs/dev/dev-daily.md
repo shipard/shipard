@@ -88,7 +88,21 @@ Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tí
 **DEVELOPMENT DASHBOARD** nahoře je připomínka, ať se prostředí neplete
 s produkčním; vpravo v něm je název serveru a verze s hashem commitu
 a větví (odkaz na commit na GitHubu — když PHP nemůže číst git, jen číslo
-verze). Pruh i modrá lišta s logem a sekcemi zůstávají při rolování
+verze). Vlevo od serveru se objeví štítek **N commitů pozadu**, když je
+checkout za `stable` na GitHubu (kontrola anonymním fetchem na pozadí,
+nejvýš hodinu stará; plný tmavý štítek = nejstarší chybějící změna starší
+než týden), nebo **nelze ověřit**, když kontrola selhala (bez sítě).
+Kliknutí otevře bublinu s commity, odkazem na porovnání na GitHubu,
+**Zkontrolovat teď** a tlačítkem **Aktualizovat** — stáhne změny
+(`git merge --ff-only`), spustí `scripts/dev-update.sh` a upgraduje
+všechny zdroje dat jako úlohu na pozadí; po doběhnutí štítek vyzve
+**Obnovit stránku** (build přepsal soubory dashboardu). Tlačítko je
+neaktivní a bublina říká proč, když je checkout na jiné větvi než
+`stable`, má necommitnuté změny sledovaných souborů, lokální commity
+navíc, běží jiná úloha, nebo chybí `git` / `composer` / `npm` — pak
+aktualizuj ručně (`git stash`, `git pull --rebase`, oddíl 3). Totéž
+z terminálu: `shpd-server dev-update-check` a `shpd-server dev-update`.
+Pruh i modrá lišta s logem a sekcemi zůstávají při rolování
 nahoře; vpravo v liště je přepínač jazyka **CS · EN** (dashboard je česky
 a anglicky; bez volby podle jazyka prohlížeče, volba se pamatuje v tomto
 prohlížeči) a odkaz **Dokumentace** na
@@ -107,7 +121,11 @@ a průběh ukládá do téhož adresáře (`job.json` zadání, `state.json` sta
 a výsledky kroků, `progress.jsonl` průběh `ai-eval`, `output.log` výstup,
 `result.json` výsledek `dataset-verify` / `ai-eval --json`). Úloha přežije
 zavření prohlížeče; detail se obnovuje sám. Na jednom zdroji dat běží
-nejvýš jedna úloha (druhou API odmítne 409 s odkazem na běžící). Starší
+nejvýš jedna úloha (druhou API odmítne 409 s odkazem na běžící). Úloha
+**Aktualizace checkoutu** (tlačítko Aktualizovat ve štítku pruhu) zdroj
+dat nemá — v seznamu je u ní „celý server“ — a vylučuje všechny ostatní
+úlohy i naopak; **nejde zrušit**: přerušení uprostřed `composer install`
+nebo buildu by nechalo checkout v půli, zaseknutou řeš v terminálu. Starší
 než 14 dní se při výpisu mažou.
 
 - **Zrušit** pošle SIGTERM celé skupině procesů: `ai-eval` nezačne další
@@ -182,8 +200,14 @@ zaktualizovat i datové zdroje:
 shpd-server ds-upgrade-all
 ```
 
-(Totéž lze spustit tlačítkem **Upgrade All** ve vývojářském dashboardu —
+(Totéž lze spustit tlačítkem **Upgrade všech** ve vývojářském dashboardu —
 viz oddíl 1.)
+
+Celou sekvenci — stažení `stable`, `dev-update.sh` i `ds-upgrade-all` —
+udělá najednou `shpd-server dev-update` (v dashboardu štítek **N commitů
+pozadu** → **Aktualizovat**, oddíl 1). Odmítne, když máš necommitnuté
+změny nebo lokální commity navíc; `shpd-server dev-update-check` jen
+ukáže, co na GitHubu přibylo.
 
 ### Automatizace přes git hooks (volitelné)
 
