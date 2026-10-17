@@ -1,6 +1,6 @@
 # Vývojářský dashboard — vzhled podle shipard.dev (fáze 1)
 
-**Stav:** naplánováno — zadání podle #129 (B1, B2, D1–D9, D13–D15)
+**Stav:** hotovo — 2026-10-17, fáze 1 podle #129 (B1, B2, D1–D9, D13–D15); fáze 2 (D12 čeština a angličtina) a fáze 3 (D10–D11 zastaralost a Aktualizovat) jsou samostatné
 
 ## Kontext / Cíl
 
@@ -297,29 +297,29 @@ slovníku beze změny.
 
 ## Hotovo když
 
-- [ ] `python3 scripts/check-css-tokens.py` projde; hook commit
+- [x] `python3 scripts/check-css-tokens.py` projde; hook commit
       s dočasně přidaným nedefinovaným tokenem zastaví (ověřeno ručně,
       změna se nekomituje)
-- [ ] `vendor/bin/phpunit --filter 'VersionTest|DevDashboardControllerTest|ConfigCompilerTest'`
+- [x] `vendor/bin/phpunit --filter 'VersionTest|DevDashboardControllerTest|ConfigCompilerTest'`
       zelené, pak celá sada
-- [ ] `cd frontend && npm run build` a `npm test` projdou
-- [ ] dashboard v prohlížeči se systémovým tmavým režimem zůstává
+- [x] `cd frontend && npm run build` a `npm test` projdou
+- [x] dashboard v prohlížeči se systémovým tmavým režimem zůstává
       světlý; písmo IBM Plex se načítá z vlastního bundlu (žádný
       požadavek na cizí doménu)
-- [ ] pruh a lišta zůstávají nahoře při rolování dlouhé stránky (Logy);
+- [x] pruh a lišta zůstávají nahoře při rolování dlouhé stránky (Logy);
       kebab menu i dialogy jsou nad lištou; `PdfPane` nezajede pod lištu
-- [ ] pruh: DEVELOPMENT DASHBOARD, hostname, verze s hashem jako odkaz
+- [x] pruh: DEVELOPMENT DASHBOARD, hostname, verze s hashem jako odkaz
       na commit; bez gitu jen číslo verze (testem)
-- [ ] dialog Smazat zdroj dat má pozadí (B1); kebab menu se v přehledu
+- [x] dialog Smazat zdroj dat má pozadí (B1); kebab menu se v přehledu
       zdrojů dat nezalomí ani při šířce okna kolem 1 100 px (B2)
-- [ ] tlačítka na všech stránkách podle § 7; ikony podle § 6
-- [ ] prázdný stav ověřený bez mazání zdrojů dat (např. dočasnou
+- [x] tlačítka na všech stránkách podle § 7; ikony podle § 6
+- [x] prázdný stav ověřený bez mazání zdrojů dat (např. dočasnou
       podmínkou, která se nekomituje, nebo na čisté VM)
-- [ ] v aplikaci proklik komponent dotčených B1 (aspoň
+- [x] v aplikaci proklik komponent dotčených B1 (aspoň
       `DocumentExchangePreviewModal`, `AssetsDepreciationRunDialog`,
       `SessionsPanel`) ve světlém i tmavém vzhledu — pomocný text šedě,
       plochy s pozadím, nic nezmizelo
-- [ ] dokumentace: `docs/frontend.md` → Vývojářský dashboard
+- [x] dokumentace: `docs/frontend.md` → Vývojářský dashboard
       (`theme.css`, písma, tokeny `--dev-*`, tokeny vedlejšího tlačítka,
       logo, kontrola tokenů); `CLAUDE.md` → Vývojářský dashboard
       (sdílí také `theme.css` a tokeny tlačítka); `docs/dev/dev-daily.md`
@@ -329,7 +329,7 @@ slovníku beze změny.
       kontroly; `docs/roadmap.md` M6 — řádek „Vývojářský dashboard:
       vzhled, verze, čeština a angličtina, aktualizace (#129)“;
       `tasks/README.md` → sekce Dev dashboard — řádek tohoto tasku
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Pasti
 
@@ -376,3 +376,40 @@ slovníku beze změny.
   `https://shipard.dev/pro-vyvojare/`.
 - D10–D11 (zastaralost, Aktualizovat) a D12 (čeština a angličtina)
   jsou samostatné fáze 3 a 2.
+
+## Odchylky a upřesnění při implementaci (2026-10-17)
+
+- **Kontrola tokenů hlídá i prefix `--dev-`** (zadání mluví o `--shpd-`):
+  `theme.css` tyhle tokeny zavádí a dashboard je používá bez fallbacku —
+  stejná chyba by jinak zůstala slepá. Definice se počítá i z klíče JS
+  objektu v uvozovkách (`'--shpd-x': …`).
+- **B1 nahradila i použití s fallbackem** (`var(--shpd-color-surface-alt,
+  #f5f5f5)`, `var(--shpd-color-surface, #fff)`, `--shpd-color-surface-raised`)
+  — mrtvé fallbacky v tmavém vzhledu svítily světle. `--shpd-font-mono`
+  (5× s fallbackem `monospace`) zůstává, není v zadání.
+- **Tlačítka, která jen otevřou potvrzení, jsou `secondary`** i když je § 7
+  jmenuje mezi červenými: Zrušit / Vynutit ukončení úlohy
+  (`JobDetailPage`) a Nahradit sadu… (`LoadDatasetDialog`, když zdroj dat
+  sadu už drží) otevírají `DevConfirm`, červené je až jeho potvrzení;
+  Nahrát (rovnou spustí reset) a Smazat zůstávají `danger`.
+- **`--dev-top-height` se měří**, ne odhaduje: `DevApp` čte výšku
+  `.dev-top` přes `bind:clientHeight` a nastavuje token na `.dev-shell`
+  (pruh i lišta smí zalomit); `theme.css` nese jen výchozích 84 px.
+- **Písma jen subsety `latin` + `latin-ext`** (`@fontsource/…/latin-400.css`,
+  `latin-ext-400.css`, …), jako web — ne celé `400.css` s cyrilicí a řečtinou.
+- **`PdfPane` sticky dřív vůbec nedržel**: sloupec s PDF v `MessagePage`
+  (`.dev-split`, `align-items: start`) měl výšku jen svého obsahu, takže
+  sticky neměl v čem posouvat. Sloupec má `align-self: stretch`; s lištou
+  by jinak nebylo co ověřovat.
+- **Odkazy na web** (`DOCS_URL`, `COMMIT_URL`) jsou v `src/dev/links.js`,
+  aby je lišta i prázdný stav sdílely.
+- **Hash z PHP na dev stroji funguje** (PHP-FPM checkout číst smí), takže
+  pruh ukazuje `v0.1.1 · <hash> · stable`; větev `null` u odpojené HEAD
+  a `null` celé informace bez gitu pokrývají testy `VersionTest`.
+- Ověření v headless Chromiu (dashboard bez přihlášení; aplikace
+  s dočasným uživatelem na ukázkovém zdroji dat, po testu smazaným):
+  světlý vzhled při tmavém systému, žádný požadavek mimo origin, lepení
+  při rolování, kebab a dialog nad lištou, řádek akcí při 1 100 px,
+  prázdný stav s podvrženou prázdnou odpovědí API při 1 100 a 700 px,
+  `DocumentExchangePreviewModal`, `AssetsDepreciationRunDialog`
+  a `SessionsPanel` ve světlém i tmavém vzhledu.

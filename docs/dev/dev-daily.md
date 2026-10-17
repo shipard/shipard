@@ -28,10 +28,11 @@ jak build spustit.
 
 Sekce v horní liště:
 
-- **Zdroje dat** — všechny zdroje dat s názvem, třídou dat (**volný** /
-  **reálná kopie**; bez třídy v `main.json` šedě — platí reálná kopie;
-  značka **AI** = zdroj používá serverové AI připojení), účelem, datem
-  vytvoření a stavem periodických úloh (Cron). Totéž v terminálu:
+- **Zdroje dat** — všechny zdroje dat s názvem, třídou dat jako štítkem
+  (**volný** modře, **reálná kopie** žlutě; bez třídy v `main.json` jen
+  s rámečkem — platí reálná kopie; značka **AI** = zdroj používá serverové
+  AI připojení), účelem, datem vytvoření a stavem periodických úloh (Cron
+  **zapnutý** / **vypnutý**). Totéž v terminálu:
   `shpd-server ds-list`. U každého řádku **Otevřít** (aplikace
   `/{ds-id}/app/` v novém tabu) a kebab menu **⋮** — jde ovládat
   i klávesnicí (Enter otevře, šipky přepínají, Esc zavře) — s položkami
@@ -49,7 +50,9 @@ Sekce v horní liště:
   Reálnou kopii dashboard smazat nenabídne a server to odmítne
   (`DS_NOT_FREE`) — nejdřív vědomě `shpd-ds ds-class set free`. Běžící
   úloha je vidět v řádku. Pod účelem je vidět, kterou sadu zdroj dat drží.
-  Seznam se sám obnovuje (odpočet v hlavičce).
+  Seznam se sám obnovuje (odpočet v hlavičce). Bez jediného zdroje dat
+  je místo tabulky karta **Začni tady** s postupem, tlačítkem **Nový zdroj
+  dat s ukázkovými daty** a odkazem na návod pro začátečníky.
 - **Nový zdroj dat** — založení zdroje dat z formuláře (jazyk, země,
   instalační modul, volitelný účel, login a heslo administrátora, v poli
   **Data** volitelně datová sada z `tests/datasets` — země se pak zamkne
@@ -82,8 +85,12 @@ Sekce v horní liště:
 
 Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tím,
 že **vývojový server běží v důvěryhodné síti**. Oranžový pruh
-„DEVELOPMENT MODE" nahoře je připomínka, ať se prostředí neplete
-s produkčním.
+**DEVELOPMENT DASHBOARD** nahoře je připomínka, ať se prostředí neplete
+s produkčním; vpravo v něm je název serveru a verze s hashem commitu
+a větví (odkaz na commit na GitHubu — když PHP nemůže číst git, jen číslo
+verze). Pruh i modrá lišta s logem a sekcemi zůstávají při rolování
+nahoře; vpravo v liště je odkaz **Dokumentace** na
+[shipard.dev/pro-vyvojare](https://shipard.dev/pro-vyvojare/).
 
 ### Úlohy na pozadí a pojistky (F6b)
 
@@ -183,6 +190,14 @@ git config core.hooksPath .githooks
 Stačí spustit jednou v repu. Kdo prostředí rozjel skriptem
 `dev-bootstrap.sh`, má hooky zapnuté už od něj — `dev-update.sh` se po
 `git pull` spustí sám.
+
+Pre-commit hook zastaví commit, když: staged soubory obsahují citlivé
+údaje (`scripts/check-sensitive.py`), souhrn stavů tasků není aktuální
+(`scripts/tasks-index.py --check`), rozcestník nápovědy nebo metadata
+stránek nesedí (`scripts/help-index.py --check`), nebo frontend používá
+CSS token `var(--x)` bez fallbacku, který nikde není definovaný
+(`scripts/check-css-tokens.py`). Každý skript jde spustit i ručně — hláška
+hooku říká který.
 
 ---
 

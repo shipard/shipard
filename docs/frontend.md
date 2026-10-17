@@ -152,6 +152,55 @@ stojí v `routes.js` **před** `testing/:set` (první shoda vítězí — sada s
 nesmí jmenovat `jobs` ani `variants`). Testy čistých funkcí
 v `tests/Unit/dev/`.
 
+**Vzhled (#129 fáze 1, `tasks/dev-dashboard-look.md`).** Dashboard má jen
+světlý vzhled podle shipard.dev. `src/dev/theme.css` (import v `main.js`
+po `variables.css` a `base.css`, před `dev.css`) přepisuje **hodnoty**
+tokenů `--shpd-*` jen v bundlu dashboardu — paleta webu (modrá `#005089`,
+oranžová `#EB6507`, text `#1c2b3a`, hrany `#d7dee6`, plochy `#f4f6f8` /
+`#eef3f8`), písmo `--shpd-font-family` = IBM Plex Sans — a definuje tokeny
+jen dashboardu `--dev-*`: `-stripe-bg` / `-ink` / `-chip-bg` (pruh, tmavý
+text 5 : 1), `-toolbar-bg` / `-link` / `-link-active` (lišta),
+`-class-real-bg` / `-text` (štítek reálné kopie), `-font-mono` (IBM Plex
+Mono pro `code`, `.dev-code`, `.dev-output`), `-top-height` (výška pruhu +
+lišty; `DevApp` ji měří přes `bind:clientHeight` a nastavuje na
+`.dev-shell`, `PdfPane` se lepí pod ni). Písma jsou z `@fontsource/ibm-plex-sans`
+(400–700) a `@fontsource/ibm-plex-mono` (400, 500), subsety `latin` +
+`latin-ext`, importované **jen** v `src/dev/main.js` — z vlastního bundlu,
+žádné Google Fonts. `dev.html` **nikdy nenastavuje `data-theme`** — blok
+`[data-theme="dark"]` ve `variables.css` by vrstvu přepsal; tmavý zůstává
+jen `.dev-output`. Sdílený `Button` čte u varianty `secondary` volitelné
+tokeny `--shpd-btn-secondary-text` / `-border` s fallbackem na dnešní
+hodnoty: aplikace je nedefinuje (vzhled beze změny), `theme.css` z nich
+dělá bílé tlačítko s modrým textem.
+
+`DevApp.svelte` = jeden sticky blok `.dev-top` (`z-index: 100`, pod `Popover`
+a `DevDialog` s 1000): oranžový pruh **DEVELOPMENT DASHBOARD** + server +
+verze (`versionLabel()` ve `format.js` nad `GET /_dev/api/info` →
+`version {version, hash, fullHash, branch, commitDate}`; s hashem odkaz na
+commit, `links.js`) a modrá lišta s logem webu
+(`src/dev/assets/shipard-logo.svg`, odkaz na Zdroje dat), navigací
+s ikonami (`aria-current="page"` + oranžové podtržení) a odkazem
+**Dokumentace**; favicon `src/dev/assets/icon-192.png` přes Vite assets
+(`publicDir` je vypnutý). Ikony podle významu v `icons.js` (`iconTesting`,
+`iconDoctor`, `iconUpgrade`, `iconCommit`, `iconClock`); `DevKebabMenu`
+bere u položky `icon` a `separator`. Tlačítka (D4): `primary` = jediná
+hlavní akce obrazovky nebo dialogu, `secondary` = vše ostatní včetně akcí
+opakovaných v řádcích tabulky a tlačítek, která jen otevřou potvrzení,
+`danger` = tlačítko, které nevratnou akci provede (vč. potvrzení
+v `DevConfirm`); oranžová na tlačítka nepatří. Řada tlačítek mimo tabulku
+je `.dev-btnrow`; buňka akcí `.dev-actions` zůstává `nowrap` s obsahem
+v `.dev-actions__inner` (jinak se kebab zalomí, B2). Štítky `.dev-badge`
+(`--free` / `--real` / `--outline`), odkaz jako tlačítko `.dev-btn-outline`.
+Přehled zdrojů dat bez jediného zdroje (a bez chyby) kreslí místo tabulky
+kartu **Začni tady** + panel **Co tu ještě najdeš** (`.dev-start`, D15).
+
+Nedefinované tokeny hlídá `scripts/check-css-tokens.py` v pre-commit hooku
+(D14): projde celý `frontend/src`, token `--shpd-*` / `--dev-*` použitý jako
+`var(--x)` bez fallbacku musí mít definici (`--x:` v CSS, `style=""` nebo
+JS objektu, direktiva `style:--x=`, `setProperty('--x'`); `var(--x, y)`
+nevadí. Chybějící token prohlížeč tiše zahodí (karta dialogu bez pozadí) —
+proto kontrola, ne alias.
+
 ### Dev mód — DS ID v URL
 
 V dev módu (IP adresa) se aplikace otevírá na `http://{ip}/{ds-id}/app/`. Frontend automaticky detekuje DS ID z URL a přidává ho jako prefix ke všem API voláním (`/{ds-id}/api/v1/...`). Logika je v `api/config.js`.

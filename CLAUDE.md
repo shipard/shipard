@@ -436,7 +436,18 @@ smí názvy nést — tam jsou potřeba k práci.
   v komponentách; sdílí jen `styles/`, `icons.js`, `Button`, `Icon`
   (dialogy dev-lokální `DevDialog` / `DevConfirm`, ne `Modal`).
   Nová stránka = routa v `frontend/src/dev/routes.js` **a** segment
-  v `DevDashboardController::SPA_PAGES`. **Úlohy na pozadí** (#103 F6b
+  v `DevDashboardController::SPA_PAGES`. **Vzhled** (#129 fáze 1,
+  `tasks/dev-dashboard-look.md`): jen světlý — `src/dev/theme.css`
+  přepisuje hodnoty tokenů `--shpd-*` jen v bundlu dashboardu (`data-theme`
+  nikdy) a definuje tokeny `--dev-*`; IBM Plex z `@fontsource` jen v
+  `src/dev/main.js`; sdílený `Button` má u `secondary` tokeny
+  `--shpd-btn-secondary-text` / `-border` s fallbackem (aplikace beze
+  změny); tlačítka `primary` = jediná hlavní akce, `secondary` = ostatní
+  vč. akcí v řádcích a tlačítek, která jen otevřou potvrzení, `danger` =
+  provede nevratnou akci; pruh + lišta = sticky `.dev-top` (z-index 100,
+  lepicí prvky pod ní přes `--dev-top-height`); nedefinovaný token
+  `var(--x)` bez fallbacku zastaví pre-commit
+  (`scripts/check-css-tokens.py`). **Úlohy na pozadí** (#103 F6b
   D58): `src/Core/DevJobs/` (`JobRecord` = `job.json` od API, `JobState`
   = `state.json` jen od obalu, živost přes `flock` na `wrapper.lock`,
   stav odvozený při čtení, `JobLauncher` = jedna aktivní úloha na zdroj
@@ -569,7 +580,7 @@ ve stejném commitu.
 
 1. `php -l` na změněných PHP souborech
 2. `vendor/bin/phpunit --filter 'ClassName'` cíleně, pak celá sada
-3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce)
+3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny, hlídá i pre-commit)
 4. **Aktualizovat `**Stav:**` v task filu** + `python3 scripts/tasks-index.py`
 
 ## Otevřené úkoly
