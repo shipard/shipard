@@ -161,7 +161,7 @@
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-xs, 11px);
+    font-size: var(--shpd-font-size-xs);
   }
   .shpd-convlist__actions {
     display: flex;

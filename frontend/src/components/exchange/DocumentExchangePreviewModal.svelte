@@ -470,7 +470,7 @@
   .shpd-exchange-modal__source-seg + .shpd-exchange-modal__source-seg::before {
     content: '\00B7';
     margin: 0 0.4em;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange-modal__source-code {
@@ -498,7 +498,7 @@
     padding: 2px var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
     border-radius: 999px;
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
     font-variant-numeric: tabular-nums;
@@ -520,7 +520,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--shpd-space-xl);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-size: 0.875rem;
     min-height: 200px;
   }
@@ -535,7 +535,7 @@
     border-bottom: 1px solid var(--shpd-color-border);
     padding: 0 var(--shpd-space-sm);
     gap: var(--shpd-space-xs);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
     flex-shrink: 0;
   }
 
@@ -544,7 +544,7 @@
     background: transparent;
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     cursor: pointer;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     font-size: 0.875rem;
@@ -572,7 +572,7 @@
     min-height: 0;
     border: 1px solid var(--shpd-color-border);
     border-radius: 6px;
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
   }
 
   /* Mobile: single column controlled by tab. */

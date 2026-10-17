@@ -119,7 +119,7 @@
   .shpd-vatcode__hint {
     margin: 0;
     font-size: 0.8125rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-vatcode__heading {
@@ -155,7 +155,7 @@
 
   .shpd-vatcode__option:hover,
   .shpd-vatcode__option:focus-visible {
-    background: var(--shpd-color-surface-alt, #f5f5f5);
+    background: var(--shpd-color-bg-secondary);
     outline: none;
   }
 
@@ -167,7 +167,7 @@
   .shpd-vatcode__code {
     font-family: var(--shpd-font-mono, monospace);
     font-size: 0.75rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-vatcode__label {
@@ -183,7 +183,7 @@
     font-size: 0.6875rem;
     padding: 0 4px;
     border-radius: 3px;
-    background: var(--shpd-color-surface-alt, #f5f5f5);
-    color: var(--shpd-color-text-muted);
+    background: var(--shpd-color-bg-secondary);
+    color: var(--shpd-color-text-secondary);
   }
 </style>

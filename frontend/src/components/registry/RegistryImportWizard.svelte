@@ -483,7 +483,7 @@
     font-size: var(--shpd-font-size-lg);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
     font-family: var(--shpd-font-family);
   }
@@ -506,7 +506,7 @@
     justify-content: center;
     gap: var(--shpd-space-sm);
     padding: var(--shpd-space-xl);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
   }
 
@@ -543,7 +543,7 @@
     padding: var(--shpd-space-md);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease;
   }
@@ -570,7 +570,7 @@
   }
 
   .shpd-registry-wizard__row-index {
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-variant-numeric: tabular-nums;
     min-width: 2ch;
     text-align: right;
@@ -620,7 +620,7 @@
     display: inline-block;
     padding: 2px var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     white-space: nowrap;
   }
@@ -633,7 +633,7 @@
 
   .shpd-registry-wizard__badge--muted {
     background: var(--shpd-color-bg-hover);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     border: 1px solid var(--shpd-color-border);
   }
 
@@ -652,7 +652,7 @@
   .shpd-registry-wizard__card {
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
     padding: var(--shpd-space-md) var(--shpd-space-lg);
   }
 

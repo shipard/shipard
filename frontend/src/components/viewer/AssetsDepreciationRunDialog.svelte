@@ -503,7 +503,7 @@
     border-radius: var(--shpd-radius-sm);
     font-family: inherit;
     font-size: var(--shpd-font-size-sm);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
   }
 
@@ -540,7 +540,7 @@
 
   .shpd-deprun__warning {
     color: var(--shpd-color-state-warning-text, var(--shpd-color-text-secondary));
-    font-size: var(--shpd-font-size-xs, 12px);
+    font-size: var(--shpd-font-size-xs);
   }
 
   .shpd-deprun__heading {

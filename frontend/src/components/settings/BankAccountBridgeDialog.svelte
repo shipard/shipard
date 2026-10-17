@@ -217,7 +217,7 @@
     padding: var(--shpd-space-md);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
   }
 
   .shpd-bank-bridge__row--disabled {
@@ -248,7 +248,7 @@
   .shpd-bank-bridge__badge {
     padding: 1px var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     background: var(--shpd-color-primary-soft, rgba(34, 102, 238, 0.1));
     color: var(--shpd-color-primary);
@@ -257,7 +257,7 @@
 
   .shpd-bank-bridge__badge--muted {
     background: var(--shpd-color-bg-hover);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     border-color: var(--shpd-color-border);
   }
 

@@ -244,7 +244,7 @@
   }
 
   .shpd-vat-prefill__hint {
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 

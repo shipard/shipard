@@ -525,7 +525,7 @@
 
   .shpd-ds-setup__hint {
     margin-top: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 

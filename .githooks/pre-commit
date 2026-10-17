@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
 # pre-commit: ověří citlivé údaje ve staged souborech, soulad generovaných
-# souhrnů (tasks/README.md, help/README.md) se zdroji pravdy a metadata
-# stránek uživatelské dokumentace.
+# souhrnů (tasks/README.md, help/README.md) se zdroji pravdy, metadata
+# stránek uživatelské dokumentace a CSS tokeny frontendu (nedefinovaný
+# token použitý bez fallbacku, #129 D14).
 #
 # Zdroj pravdy je hlavička v task filu. Když se rozejde s indexem, commit
 # se zastaví a stačí spustit generátor.
@@ -28,6 +29,16 @@ if ! python3 "$REPO_ROOT/scripts/tasks-index.py" --check; then
     echo "==> Commit zastaven: souhrn stavů tasků není aktuální."
     echo "    Spusť:  python3 scripts/tasks-index.py"
     echo "    Pak:    git add tasks/README.md"
+    echo ""
+    exit 1
+fi
+
+if ! python3 "$REPO_ROOT/scripts/check-css-tokens.py"; then
+    echo ""
+    echo "==> Commit zastaven: frontend používá nedefinovaný CSS token."
+    echo "    Nahraď ho tokenem ze styles/variables.css (nebo dev/theme.css),"
+    echo "    nebo dej fallback var(--x, hodnota). Kontrola jde celým stromem:"
+    echo "    python3 scripts/check-css-tokens.py"
     echo ""
     exit 1
 fi

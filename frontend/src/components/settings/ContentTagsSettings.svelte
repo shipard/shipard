@@ -306,7 +306,7 @@
     font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-weight: 500;
   }
 
@@ -317,15 +317,15 @@
   .shpd-content-tags__key {
     display: block;
     font-family: var(--shpd-font-mono, monospace);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
-    color: var(--shpd-color-text-muted);
+    font-size: var(--shpd-font-size-xs);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-content-tags__chip {
     display: inline-block;
     padding: 1px var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     white-space: nowrap;
   }
 
@@ -341,13 +341,13 @@
 
   .shpd-content-tags__chip--unmapped {
     background: var(--shpd-color-bg-hover);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-content-tags__items {
     display: block;
     margin-top: 2px;
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -382,7 +382,7 @@
 
   .shpd-content-tags__account {
     font-family: var(--shpd-font-mono, monospace);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -391,7 +391,7 @@
   }
 
   .shpd-content-tags__suggestion--muted {
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-style: italic;
   }
 

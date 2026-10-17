@@ -366,9 +366,9 @@
   .shpd-items-offer__badge {
     padding: 1px var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
     background: var(--shpd-color-bg-hover);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     border: 1px solid var(--shpd-color-border);
     white-space: nowrap;
   }

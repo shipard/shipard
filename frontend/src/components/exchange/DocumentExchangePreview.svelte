@@ -1345,7 +1345,7 @@
 
   .shpd-exchange__subtitle {
     margin: var(--shpd-space-xs) 0 0;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__summary-badge {
@@ -1384,7 +1384,7 @@
     border: 1px solid var(--shpd-color-border);
     border-radius: 6px;
     padding: var(--shpd-space-sm);
-    background: var(--shpd-color-surface);
+    background: var(--shpd-color-bg);
   }
 
   .shpd-exchange__party-header {
@@ -1399,7 +1399,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__party-name {
@@ -1414,7 +1414,7 @@
     flex-wrap: wrap;
     gap: var(--shpd-space-md);
     font-size: 0.8125rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     margin-bottom: var(--shpd-space-xs);
   }
 
@@ -1425,7 +1425,7 @@
   }
 
   .shpd-exchange__party-empty {
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-style: italic;
   }
 
@@ -1485,7 +1485,7 @@
   .shpd-exchange__field-label {
     font-size: 0.6875rem;
     text-transform: uppercase;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     letter-spacing: 0.5px;
   }
 
@@ -1496,7 +1496,7 @@
   .shpd-exchange__field-hint {
     margin-left: 4px;
     font-size: 0.75rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   /* Volba místa plnění / režimu DPH v hlavičce (D16). */
@@ -1513,7 +1513,7 @@
     padding: 2px 4px;
     border: 1px solid var(--shpd-color-border);
     border-radius: 4px;
-    background: var(--shpd-color-surface, #fff);
+    background: var(--shpd-color-bg);
     color: inherit;
     max-width: 100%;
   }
@@ -1593,8 +1593,8 @@
   }
 
   .shpd-exchange__status--skipped {
-    background: var(--shpd-color-text-muted, #888);
-    color: var(--shpd-color-surface, white);
+    background: var(--shpd-color-text-secondary);
+    color: var(--shpd-color-bg);
   }
 
   /* noItem — řádek půjde jen s účtem, bez položky. Pozitivní rozhodnutí
@@ -1646,7 +1646,7 @@
     text-transform: none;
     letter-spacing: normal;
     font-size: 0.75rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__section-heading--split {
@@ -1663,7 +1663,7 @@
     font-size: 0.875rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__rows,
@@ -1686,7 +1686,7 @@
   .shpd-exchange__vat-recap th {
     font-size: 0.6875rem;
     text-transform: uppercase;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     font-weight: 500;
     letter-spacing: 0.5px;
   }
@@ -1710,7 +1710,7 @@
     margin-top: 2px;
     font-size: 0.75rem;
     line-height: 1.3;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     text-align: left;
   }
 
@@ -1744,11 +1744,11 @@
     display: inline-block;
     margin-left: var(--shpd-space-xs);
     padding: 0 4px;
-    background: var(--shpd-color-surface-alt, #f5f5f5);
+    background: var(--shpd-color-bg-secondary);
     border-radius: 3px;
     font-family: var(--shpd-font-mono, monospace);
     font-size: 0.6875rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   /* ── Totals ──────────────────────────────────────────────────────────── */
@@ -1774,7 +1774,7 @@
   .shpd-exchange__recap-source {
     flex-basis: 100%;
     font-size: 0.8125rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__recap-reason {
@@ -1790,19 +1790,19 @@
   }
 
   .shpd-exchange__recap-row--pair td {
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__recap-pair {
     margin-left: var(--shpd-space-xs);
     font-size: 0.6875rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   /* Částka z dokladu dodavatele — jen při rozdílu proti výpočtu. */
   .shpd-exchange__supplier-total {
     font-size: 0.8125rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-exchange__total {
@@ -1871,7 +1871,7 @@
   }
 
   .shpd-exchange__ai-failed-raw pre {
-    background: var(--shpd-color-surface-alt, #f5f5f5);
+    background: var(--shpd-color-bg-secondary);
     padding: var(--shpd-space-sm);
     border-radius: 4px;
     overflow: auto;

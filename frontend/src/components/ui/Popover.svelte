@@ -180,9 +180,7 @@
     z-index: 1000;
     min-width: 240px;
     max-width: 360px;
-    /* --shpd-color-surface v projektu zatím neexistuje — fallback na bg,
-       jinak popover prosvítá podklad. */
-    background: var(--shpd-color-surface, var(--shpd-color-bg));
+    background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
     border-radius: 6px;
     box-shadow: var(--shpd-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));

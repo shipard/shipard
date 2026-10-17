@@ -178,6 +178,7 @@
 
   /* Typography */
   --shpd-font-family: Inter, system-ui, sans-serif;
+  --shpd-font-size-xs: 0.75rem;
   --shpd-font-size-sm: 0.875rem;
   --shpd-font-size-base: 1rem;
   --shpd-font-size-lg: 1.125rem;

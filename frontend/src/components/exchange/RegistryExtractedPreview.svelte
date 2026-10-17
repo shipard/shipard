@@ -129,13 +129,13 @@
   .shpd-registry-preview__party {
     margin: 0;
     font-size: 0.8125rem;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-registry-preview__summary {
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     border-left: 3px solid var(--shpd-color-primary);
-    background: var(--shpd-color-surface-raised, var(--shpd-color-surface));
+    background: var(--shpd-color-bg);
     border-radius: 0 6px 6px 0;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -147,7 +147,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-registry-preview__fields {
@@ -167,7 +167,7 @@
   .shpd-registry-preview__fields th {
     text-align: left;
     font-weight: 500;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     padding: var(--shpd-space-xs) var(--shpd-space-sm) var(--shpd-space-xs) 0;
     white-space: nowrap;
     vertical-align: top;
@@ -183,6 +183,6 @@
   }
 
   .shpd-registry-preview__binder-label {
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
   }
 </style>

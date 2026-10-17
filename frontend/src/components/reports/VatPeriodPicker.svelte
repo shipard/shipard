@@ -266,7 +266,7 @@
 
   .shpd-period__item-flag {
     margin-left: auto;
-    font-size: var(--shpd-font-size-xs, 0.75rem);
+    font-size: var(--shpd-font-size-xs);
   }
 
   .shpd-period__empty {

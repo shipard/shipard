@@ -89,7 +89,7 @@
   .shpd-pdf-panel__empty,
   .shpd-pdf-panel__unsupported {
     padding: var(--shpd-space-lg);
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -132,7 +132,7 @@
     background: transparent;
     padding: var(--shpd-space-xs) var(--shpd-space-md);
     cursor: pointer;
-    color: var(--shpd-color-text-muted);
+    color: var(--shpd-color-text-secondary);
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     white-space: nowrap;
@@ -155,7 +155,7 @@
   .shpd-pdf-panel__img-wrap {
     flex: 1;
     overflow: auto;
-    background: var(--shpd-color-surface-alt, #f5f5f5);
+    background: var(--shpd-color-bg-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
