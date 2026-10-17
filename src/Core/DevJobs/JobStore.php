@@ -289,6 +289,17 @@ final class JobStore
         return null;
     }
 
+    /**
+     * Všechny aktivní úlohy, nejnovější první — zámek celého serveru u úlohy
+     * `update` a pojistka `jobRunning` aktualizace (#129 D21, U1).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function activeJobs(): array
+    {
+        return array_values(array_filter($this->list(), static fn (array $view): bool => $view['active'] === true));
+    }
+
     /** Smaže neaktivní úlohy starší než `$days`; vrací počet smazaných. */
     public function prune(int $days = self::RETENTION_DAYS): int
     {

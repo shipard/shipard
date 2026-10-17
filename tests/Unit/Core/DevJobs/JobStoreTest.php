@@ -174,6 +174,25 @@ final class JobStoreTest extends TestCase
         $this->assertNull($this->store->activeJobFor('aaaa-bbbb-cccc-dddd'), 'dead wrapper = failed = not active');
     }
 
+    public function testActiveJobsListsEveryActiveJobIncludingServerWide(): void
+    {
+        $this->store->create($this->record('20260101-000000-aaaaaa', 'aaaa-bbbb-cccc-dddd', 'set-x', '2026-01-01T00:00:00Z'));
+        $this->store->create($this->record('20261016-115958-bbbbbb', 'eeee-ffff-gggg-hhhh'));
+        $this->store->writeState('20261016-115958-bbbbbb', $this->runningState());
+        $update = new JobRecord('20261016-115959-cccccc', JobRecord::TYPE_UPDATE, '', '', null, null, [], [new JobStep('dev-update', ['true'], $this->dir)], JobStore::formatTime($this->now), null, 60);
+        $this->store->create($update);
+        $this->store->writeState('20261016-115959-cccccc', $this->runningState());
+
+        $this->alive = true;
+        $active = $this->store->activeJobs();
+        $this->assertSame(['20261016-115959-cccccc', '20261016-115958-bbbbbb'], array_column($active, 'id'), 'newest first, the stale one is failed');
+        $this->assertNull($active[0]['dataSource'], 'server-wide job round-trips through job.json without a data source');
+        $this->assertSame(JobRecord::TYPE_UPDATE, $this->store->read('20261016-115959-cccccc')?->type);
+
+        $this->alive = false;
+        $this->assertSame([], $this->store->activeJobs());
+    }
+
     public function testPruneRemovesOnlyInactiveOldJobs(): void
     {
         $this->store->create($this->record('20260101-000000-aaaaaa', 'a1', 'x', '2026-01-01T00:00:00Z')); // old, never started → failed

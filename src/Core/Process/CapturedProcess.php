@@ -23,16 +23,17 @@ final class CapturedProcess
 
     /**
      * @param list<string> $argv
+     * @param array<string, string>|null $env prostředí potomka; null = zděděné (5. argument `proc_open`)
      * @return array{exitCode: ?int, termSignal: ?int, timedOut: bool, stdout: string, stderr: string}
      */
-    public static function run(array $argv, ?string $cwd, float $timeoutSeconds, int $maxBytes = self::MAX_CAPTURE_BYTES): array
+    public static function run(array $argv, ?string $cwd, float $timeoutSeconds, int $maxBytes = self::MAX_CAPTURE_BYTES, ?array $env = null): array
     {
         $descriptors = [
             0 => ['file', '/dev/null', 'r'],
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
-        $process = $argv === [] ? false : @proc_open($argv, $descriptors, $pipes, $cwd);
+        $process = $argv === [] ? false : @proc_open($argv, $descriptors, $pipes, $cwd, $env);
         if (!is_resource($process)) {
             return ['exitCode' => null, 'termSignal' => null, 'timedOut' => false, 'stdout' => '', 'stderr' => 'proc_open failed'];
         }

@@ -63,6 +63,8 @@ class HelpCommand extends Command
         $output->writeln('  <info>ds-cron</info>         List data sources with their periodic-jobs switch, or switch it on/off (--all or IDs)');
         $output->writeln('  <info>ds-list</info>         List data sources: data class, purpose, origin, country, modules, cron, state, server AI (--json)');
         $output->writeln('  <info>dev-ai-key</info>      Store or check the server AI key for development data sources (--set-key | --status)');
+        $output->writeln('  <info>dev-update-check</info> Check how far this development checkout is behind stable on GitHub (--json)');
+        $output->writeln('  <info>dev-update</info>      Update this development checkout: fetch, fast-forward, dev-update.sh, ds-upgrade-all, cron check');
         $output->writeln('  <info>doctor</info>          Diagnose server configuration and permissions');
         $output->writeln('  <info>fix-permissions</info> Fix ownership and modes (requires sudo)');
         $output->writeln('');
@@ -89,6 +91,10 @@ class HelpCommand extends Command
         $output->writeln('  ds-cron [--on|--off] [--all | <id>…]     Overview, or switch periodic jobs per data source');
         $output->writeln('  ds-list [--json]                         Data sources with data class (free | realCopy), purpose, origin, cron, state');
         $output->writeln('  dev-ai-key --set-key | --status          Server AI key (/etc/shipard/secrets/dev-ai-<platform>.key, development only)');
+        $output->writeln('  dev-update-check [--json]                Fetch stable from GitHub (anonymous HTTPS) and report behind / ahead,');
+        $output->writeln('                                           commits and update safeguards; exit 1 only when the check fails (development only)');
+        $output->writeln('  dev-update [--yes] [--job=<id>]           Fetch, git merge --ff-only, scripts/dev-update.sh, ds-upgrade-all, cron-install --check;');
+        $output->writeln('                                           refuses on another branch, dirty tree, local commits, running job, missing tools');
         $output->writeln('  domain-remove --host <host>              Remove a hostname mapping');
         $output->writeln('  doctor                                   Read-only health check (no options)');
         $output->writeln('  fix-permissions [--dry-run] [--force]    Fix /opt/shipard and /etc/shipard');
