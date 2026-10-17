@@ -177,6 +177,31 @@ final class DevUpdatesControllerTest extends TestCase
 		$this->assertSame([], $this->checks, 'the update re-checks itself at the end');
 	}
 
+	public function testFailedCheckIsNotRetriedAutomaticallyForTenMinutes(): void
+	{
+		(new UpdateChecker($this->git, $this->state, $this->fx->base . '/nope.git'))->check();
+		$this->assertFalse($this->state->read()['ok']);
+
+		// Selhání právě teď: GET nic nespouští, stav dál neplatí (notChecked), checking false.
+		$d = $this->data($this->controller()->dispatch($this->request('GET', '/_dev/api/updates')));
+		$this->assertFalse($d['checking']);
+		$this->assertTrue($d['stale']);
+		$this->assertSame(['notChecked'], array_column($d['blockers'], 'code'));
+		$this->assertSame([], $this->checks, 'no new dev-update-check every 5 s without network');
+
+		// „Zkontrolovat teď“ se backoffem neřídí.
+		$r = $this->controller()->dispatch($this->request('POST', '/_dev/api/updates/check'));
+		$this->assertSame(202, $this->statusOf($r));
+		$this->assertCount(1, $this->checks);
+		$this->state->clearRequested();
+
+		// Po 10 minutách GET kontrolu spustí znovu.
+		$this->now = $this->now->modify('+10 minutes');
+		$d = $this->data($this->controller()->dispatch($this->request('GET', '/_dev/api/updates')));
+		$this->assertTrue($d['checking']);
+		$this->assertCount(2, $this->checks);
+	}
+
 	public function testFailedSpawnReportsNotChecking(): void
 	{
 		$this->spawnResult = false;

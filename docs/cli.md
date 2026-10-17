@@ -691,8 +691,9 @@ hned s exit 0). Pojistky aktualizace se počítají při každém volání znovu
 ne z cache: `notStable`, `dirty` (jen sledované soubory), `notFastForward`
 (lokální commity navíc), `jobRunning`, `missingTool` (`git`, `composer`,
 `npm` v pevném PATH úlohy), `notChecked`. Dashboard příkaz spouští jako
-odpojený proces, když je cache starší než hodinu, chybí, selhala, nebo se
-od ní změnil HEAD. Jen režim `development`. Exit 0 i když je checkout
+odpojený proces, když je cache starší než hodinu, chybí, nebo se od ní
+změnil HEAD; po selhané kontrole (bez sítě) nejdřív za 10 minut
+(„Zkontrolovat teď“ kdykoli). Jen režim `development`. Exit 0 i když je checkout
 pozadu; 1 jen při selhání kontroly (`ok: false`, `errorCode` `timeout` /
 `fetchFailed` / `notARepository` / `gitFailed`) a mimo development.
 

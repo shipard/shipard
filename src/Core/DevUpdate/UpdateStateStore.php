@@ -23,7 +23,10 @@ use Shipard\Core\Server\FileOwnership;
  * Cache drží jen stav vůči GitHubu; pojistky (větev, pracovní strom, úlohy,
  * nástroje) se počítají při každém dotazu ({@see UpdateGuards}). Stav je
  * neplatný (`stale`), když chybí, selhal, je starší než MAX_AGE_SECONDS,
- * nebo se od kontroly změnil HEAD (lokální commit, merge). Adresář spadá
+ * nebo se od kontroly změnil HEAD (lokální commit, merge). Automatická
+ * kontrola z API ({@see isAutoCheckDue()}) je k tomu po selhání nejdřív
+ * za RETRY_AFTER_FAILURE_SECONDS — bez sítě by se jinak spouštěla při
+ * každém dotazu dokola; „Zkontrolovat teď“ se backoffem neřídí. Adresář spadá
  * pod `/opt/shipard/run`, který `PermissionSpec` hlídá rekurzivně; zápis
  * pod rootem srovná vlastníka podle run adresáře ({@see FileOwnership}).
  */
@@ -36,6 +39,8 @@ final class UpdateStateStore
 
     public const int MAX_AGE_SECONDS = 3600;
     public const int REQUEST_GRACE_SECONDS = 60;
+    /** Po selhané kontrole (`ok: false`) další automatická nejdřív za 10 minut (U8). */
+    public const int RETRY_AFTER_FAILURE_SECONDS = 600;
 
     /** @param \Closure(): \DateTimeImmutable|null $now */
     public function __construct(
@@ -212,5 +217,24 @@ final class UpdateStateStore
         }
         $stateHead = $state['head']['hash'] ?? null;
         return $headHash === null || !is_string($stateHead) || $stateHead !== $headHash;
+    }
+
+    /**
+     * Má API spustit kontrolu samo: stav neplatí ({@see isStale()}), ale
+     * po selhané kontrole až po RETRY_AFTER_FAILURE_SECONDS od jejího
+     * `checkedAt`. Pojistka `notChecked` tím není dotčená — stav dál neplatí.
+     *
+     * @param array<string, mixed>|null $state
+     */
+    public function isAutoCheckDue(?array $state, ?string $headHash): bool
+    {
+        if (!$this->isStale($state, $headHash)) {
+            return false;
+        }
+        if ($state === null || ($state['ok'] ?? false) === true) {
+            return true;
+        }
+        $checkedAt = is_string($state['checkedAt'] ?? null) ? strtotime($state['checkedAt']) : false;
+        return $checkedAt === false || $this->now()->getTimestamp() - $checkedAt >= self::RETRY_AFTER_FAILURE_SECONDS;
     }
 }

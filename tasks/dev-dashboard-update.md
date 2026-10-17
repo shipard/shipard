@@ -275,6 +275,12 @@ false, null, [])` (jen `development`):
   zámek držený **nebo** platná značka. Bez ní by UI hned po „Zkontrolovat
   teď“ vidělo `checking: false` (proces ještě nedržel zámek) a přestalo se
   ptát.
+- **Oprava po odevzdání (2026-10-17):** bez sítě se kontrola spouštěla při
+  každém dotazu dokola (`isStale()` je pro `ok: false` vždy true) —
+  `UpdateStateStore::isAutoCheckDue()` odděluje „stav neplatí“ (pojistka
+  `notChecked`, tlačítko neaktivní beze změny) od „spustit automaticky“:
+  po selhání nejdřív za 10 minut od jeho `checkedAt`; „Zkontrolovat teď“
+  se backoffem neřídí.
 - **Samostatný `DevUpdatesController`** (prefix `/_dev/api/updates`,
   dispatch z `DevDashboardController` jako u úloh) místo dalších metod
   v 700řádkovém controlleru; seam `updatesController()` pro testy.
@@ -348,7 +354,9 @@ false, null, [])` (jen `development`):
 - ✓ **U7** — po úspěšné aktualizaci výzva **Obnovit stránku**, ne
   automatický reload.
 - ✓ **U8** — prahy jsou konstanty v kódu (hodina, 7 dní, 10 commitů,
-  timeout fetch 30 s), ne nastavení.
+  timeout fetch 30 s), ne nastavení. Doplnění 2026-10-17: po selhané
+  kontrole další automatická nejdřív za 10 minut
+  (`UpdateStateStore::RETRY_AFTER_FAILURE_SECONDS`).
 
 ## Rozhodnutí k designu (potvrzená)
 

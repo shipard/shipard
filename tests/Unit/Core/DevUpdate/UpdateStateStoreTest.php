@@ -62,6 +62,21 @@ final class UpdateStateStoreTest extends TestCase
         $this->assertFalse($this->store->isStale($this->freshState(), 'a1'));
     }
 
+    public function testAutoCheckBacksOffAfterAFailedCheck(): void
+    {
+        $this->assertTrue($this->store->isAutoCheckDue(null, 'a1'), 'missing state');
+        $this->assertFalse($this->store->isAutoCheckDue($this->freshState(), 'a1'), 'fresh state');
+        $this->assertTrue($this->store->isAutoCheckDue($this->freshState(checkedAt: '2026-10-17T10:59:59Z'), 'a1'), 'old successful state');
+        $this->assertTrue($this->store->isAutoCheckDue($this->freshState(head: 'b2'), 'a1'), 'HEAD moved');
+
+        $recentFailure = $this->freshState(checkedAt: '2026-10-17T11:55:00Z', ok: false);
+        $this->assertTrue($this->store->isStale($recentFailure, 'a1'), 'a failed state never counts as valid');
+        $this->assertFalse($this->store->isAutoCheckDue($recentFailure, 'a1'), 'failed 5 minutes ago — no automatic retry yet');
+        $this->assertFalse($this->store->isAutoCheckDue($this->freshState(checkedAt: '2026-10-17T11:50:01Z', ok: false), 'a1'), 'just under 10 minutes');
+        $this->assertTrue($this->store->isAutoCheckDue($this->freshState(checkedAt: '2026-10-17T11:50:00Z', ok: false), 'a1'), 'exactly 10 minutes');
+        $this->assertTrue($this->store->isAutoCheckDue(['ok' => false], 'a1'), 'failed state without a time');
+    }
+
     public function testLockIsExclusiveAndVisibleToTheProbe(): void
     {
         $this->assertFalse($this->store->isLocked(), 'no lock file yet');

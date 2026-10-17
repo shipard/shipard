@@ -24,7 +24,8 @@ use Shipard\Core\Process\DetachedProcess;
  * | metoda | cesta             | odpověď                                                              |
  * |--------|-------------------|----------------------------------------------------------------------|
  * | GET    | `updates`         | `{state, stale, checking, head, blockers, canUpdate, job}`; je-li cache |
- * |        |                   | neplatná a kontrola neběží, spustí odpojený `dev-update-check` (U3)   |
+ * |        |                   | neplatná a kontrola neběží, spustí odpojený `dev-update-check` (U3) — |
+ * |        |                   | po selhané kontrole až za 10 minut (`RETRY_AFTER_FAILURE_SECONDS`)    |
  * | POST   | `updates/check`   | 202 `{checking: true}` — kontrola teď, bez ohledu na stáří cache      |
  * | POST   | `updates/run`     | 201 `{job}` úloha `update`; 409 `UPDATE_BLOCKED {blockers}` /         |
  * |        |                   | `JOB_RUNNING`; 403 mimo development                                   |
@@ -70,12 +71,18 @@ final class DevUpdatesController
 		return Response::error('NOT_FOUND', 'Not found', 404);
 	}
 
-	/** Stav z cache + pojistky teď + běžící úloha; neplatná cache bez běžící kontroly → kontrola na pozadí. */
+	/**
+	 * Stav z cache + pojistky teď + běžící úloha; neplatná cache bez běžící
+	 * kontroly → kontrola na pozadí. Po selhané kontrole (bez sítě) až za
+	 * {@see UpdateStateStore::RETRY_AFTER_FAILURE_SECONDS} — `stale` a pojistka
+	 * `notChecked` platí dál, jen se nespouští proces při každém dotazu.
+	 */
 	private function status(): Response
 	{
 		$snapshot = $this->status->snapshot();
 		$job = $this->activeUpdateJob();
-		if ($snapshot['stale'] && !$snapshot['checking'] && $job === null) {
+		$due = $this->status->store()->isAutoCheckDue($snapshot['state'], $snapshot['head']['hash']);
+		if ($due && !$snapshot['checking'] && $job === null) {
 			$snapshot['checking'] = $this->startCheck();
 		}
 		return Response::success($snapshot + ['job' => $job]);
