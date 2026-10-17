@@ -11,6 +11,8 @@ use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
+use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
+use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
 
 class DevDashboardController
 {
@@ -253,6 +255,13 @@ class DevDashboardController
 		]);
 	}
 
+	/**
+	 * Založení zdroje dat z formuláře (tasks/testing-phase6c.md D64, D65):
+	 * `dataset` = název sady z katalogu (`tests/datasets`), prázdný / chybějící
+	 * = bez dat; se sadou musí země formuláře sedět se zemí sady (`dataset-seed`
+	 * to v preflightu kontroluje znovu). Staré `seed` (náhodné osoby a pošta)
+	 * zaniklo (D67) a ignoruje se.
+	 */
 	private function dsCreate(Request $request): Response
 	{
 		$body = $request->getBody() ?? [];
@@ -260,7 +269,7 @@ class DevDashboardController
 		$name     = is_string($body['name'] ?? null) ? trim($body['name']) : '';
 		$login    = is_string($body['login'] ?? null) ? trim($body['login']) : '';
 		$password = is_string($body['password'] ?? null) ? $body['password'] : '';
-		$seed     = (bool) ($body['seed'] ?? false);
+		$datasetName = is_string($body['dataset'] ?? null) ? trim($body['dataset']) : '';
 		$module   = is_string($body['module'] ?? null) && trim($body['module']) !== ''
 			? trim($body['module'])
 			: 'install.base';
@@ -276,12 +285,27 @@ class DevDashboardController
 		} catch (\InvalidArgumentException $e) {
 			$errors[] = 'Purpose: ' . $e->getMessage();
 		}
+		// Sada jen z katalogu — do příkazu jde její adresář z výpisu, nikdy text z požadavku.
+		$dataset = null;
+		if ($datasetName !== '') {
+			$catalog = new EvalCatalog($this->repoRoot);
+			if (!$catalog->isAvailable()) {
+				$errors[] = 'Datasets are not available on this server (no tests/datasets and tests/eval checkout).';
+			} else {
+				$dataset = $catalog->dataset($datasetName);
+				if ($dataset === null) {
+					$errors[] = "Unknown dataset '{$datasetName}'.";
+				} elseif ($dataset->country !== null && $dataset->country !== $country) {
+					$errors[] = "Country must match the dataset ({$dataset->country}).";
+				}
+			}
+		}
 		if ($errors) {
 			return Response::error('VALIDATION', implode(' ', $errors), 400);
 		}
 
-		return Response::stream(function () use ($name, $login, $password, $seed, $module, $language, $country, $purpose) {
-			$this->runDsCreatePipeline($name, $login, $password, $seed, $module, $language, $country, $purpose);
+		return Response::stream(function () use ($name, $login, $password, $dataset, $module, $language, $country, $purpose) {
+			$this->runDsCreatePipeline($name, $login, $password, $dataset, $module, $language, $country, $purpose);
 		});
 	}
 
@@ -368,11 +392,17 @@ class DevDashboardController
 		return dirname(__DIR__, 3) . '/bin/shpd-ds';
 	}
 
+	/**
+	 * `ds-create` → `ds-upgrade` → `user-create` (heslo přes stdin, D65) →
+	 * `dataset-seed <sada> --yes` (jen se sadou, D64). Admin vzniká před seedem:
+	 * `ds-reset` uvnitř `dataset-seed` uživatele zachová (`keepOnReset`), takže
+	 * i po selhání seedu je zdroj dat s adminem použitelný.
+	 */
 	private function runDsCreatePipeline(
 		string $name,
 		string $login,
 		string $password,
-		bool $seed,
+		?EvalDatasetInfo $dataset,
 		string $module,
 		string $language,
 		string $country,
@@ -425,17 +455,14 @@ class DevDashboardController
 			return;
 		}
 
-		// ── 3. user-create ──────────────────────────────────────────────
+		// ── 3. user-create — heslo přes stdin, ne v argv (D65) ──────────
 		$this->emitStep('Creating admin user "' . $login . '"...');
-		$cmd = sprintf(
-			'cd %s && %s user-create --login=%s --password=%s --name=%s --admin --no-ansi 2>&1',
-			escapeshellarg($dsDir),
-			escapeshellarg($shpdDs),
-			escapeshellarg($login),
-			escapeshellarg($password),
-			escapeshellarg($login),
+		[$exitCode] = $this->streamProcess(
+			[$shpdDs, 'user-create', '--login', $login, '--password-stdin', '--name', $login, '--admin', '--no-ansi'],
+			$dsDir,
+			$password . "\n",
+			redactPassword: true,
 		);
-		[$exitCode] = $this->streamCommand($cmd, redactPassword: true);
 
 		if ($exitCode !== 0) {
 			$this->emitError(
@@ -444,34 +471,26 @@ class DevDashboardController
 			return;
 		}
 
-		// ── 4. seed (optional) ──────────────────────────────────────────
-		if ($seed) {
-			$this->emitStep('Seeding test persons...');
+		// ── 4. dataset-seed (jen se sadou, D64) ─────────────────────────
+		if ($dataset !== null) {
+			$this->emitStep('Seeding dataset ' . $dataset->name . '...');
 			$cmd = sprintf(
-				'cd %s && %s seed-persons --no-ansi 2>&1',
+				'cd %s && %s dataset-seed %s --yes --no-ansi 2>&1',
 				escapeshellarg($dsDir),
 				escapeshellarg($shpdDs),
+				escapeshellarg($dataset->dir),
 			);
 			[$exitCode] = $this->streamCommand($cmd);
 			if ($exitCode !== 0) {
-				$this->emitError('seed-persons failed (DS is otherwise usable)');
-				return;
-			}
-
-			$this->emitStep('Seeding test mail...');
-			$cmd = sprintf(
-				'cd %s && %s seed-mail --no-ansi 2>&1',
-				escapeshellarg($dsDir),
-				escapeshellarg($shpdDs),
-			);
-			[$exitCode] = $this->streamCommand($cmd);
-			if ($exitCode !== 0) {
-				$this->emitError('seed-mail failed (DS is otherwise usable)');
+				$this->emitError(
+					'dataset-seed failed — DS ' . $dsId . ' and its admin user are usable, but the dataset '
+					. $dataset->name . ' is not loaded. Retry with "Nahrát datovou sadu" in the data source list.'
+				);
 				return;
 			}
 		}
 
-		$this->emitDone($dsId);
+		$this->emitDone($dsId, $dataset?->name);
 	}
 
 	/**
@@ -505,6 +524,49 @@ class DevDashboardController
 		return [$exitCode, $captured];
 	}
 
+	/**
+	 * Podproces s argv (bez shellu) a volitelným vstupem na stdin — pro kroky,
+	 * které dostávají tajemství (`user-create --password-stdin`, D65): hodnota
+	 * nejde do argv ani do výpisu procesů. Stdout i stderr se streamují
+	 * po řádcích jako u {@see streamCommand}; `redactPassword` zůstává jako
+	 * obrana do hloubky.
+	 *
+	 * @param list<string> $argv
+	 * @return array{0: int, 1: string} [exitCode, capturedOutput]
+	 */
+	protected function streamProcess(array $argv, string $cwd, ?string $stdin = null, bool $redactPassword = false): array
+	{
+		$descriptors = [
+			0 => $stdin === null ? ['file', '/dev/null', 'r'] : ['pipe', 'r'],
+			1 => ['pipe', 'w'],
+			2 => ['redirect', 1],
+		];
+		$proc = $argv === [] ? false : @proc_open($argv, $descriptors, $pipes, $cwd);
+		if (!is_resource($proc)) {
+			return [-1, ''];
+		}
+		if ($stdin !== null) {
+			fwrite($pipes[0], $stdin);
+			fclose($pipes[0]);
+		}
+
+		$captured = '';
+		while (($line = fgets($pipes[1])) !== false) {
+			$emitted = $redactPassword
+				? preg_replace('/--password=\S+/', '--password=***', $line)
+				: $line;
+
+			echo $emitted;
+			flush();
+
+			$captured .= $line;
+		}
+		fclose($pipes[1]);
+
+		$exitCode = proc_close($proc);
+		return [$exitCode, $captured];
+	}
+
 	private function emitStep(string $msg): void
 	{
 		echo "[STEP] " . $msg . "\n";
@@ -517,10 +579,10 @@ class DevDashboardController
 		flush();
 	}
 
-	private function emitDone(string $dsId): void
+	private function emitDone(string $dsId, ?string $dataset = null): void
 	{
 		$payload = json_encode(
-			['id' => $dsId, 'url' => '/' . $dsId . '/app/'],
+			['id' => $dsId, 'url' => '/' . $dsId . '/app/', 'dataset' => $dataset],
 			JSON_UNESCAPED_SLASHES,
 		);
 		echo "[DONE] " . $payload . "\n";

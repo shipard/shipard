@@ -1,15 +1,25 @@
 <script>
   // Nový zdroj dat — port stránky `/_dev/ds-create/`: formulář, klientská
-  // validace zrcadlí DevDashboardController::validateDsCreateInput, průběh
-  // `ds-create → ds-upgrade → user-create → seed` čtený po kouscích
-  // (api.js streamLines), na konci odkaz do nového zdroje dat.
+  // validace zrcadlí DevDashboardController::dsCreate, průběh
+  // `ds-create → ds-upgrade → user-create → dataset-seed` čtený po kouscích
+  // (api.js streamLines), na konci odkaz do nového zdroje dat. Pole Data
+  // (#103 D64) nabízí sady z tests/datasets — jen když server sekci
+  // Testování nabízí (`/_dev/api/info` → testing); se sadou se země zamkne
+  // na zemi sady a prázdný účel se předvyplní. Heslo admina jde na server
+  // v těle požadavku a dál na stdin `user-create` (D65), nikdy do argv.
   import { onMount } from 'svelte';
   import Button from '../../components/ui/Button.svelte';
   import { getJson, streamLines, ApiError } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
+  import { devInfo } from '../info.svelte.js';
+  import { testingApi } from '../testing/api.js';
   import StreamOutput from '../components/StreamOutput.svelte';
 
   const DEFAULT_MODULE = 'install.base';
+  const COUNTRIES = [
+    { code: 'cz', label: 'Česko (cz)' },
+    { code: 'sk', label: 'Slovensko (sk)' },
+  ];
 
   let form = $state({
     name: router.route.query.name ?? '',
@@ -18,7 +28,7 @@
     module: DEFAULT_MODULE,
     login: 'admin',
     password: 'admin',
-    seed: true,
+    dataset: '',
     purpose: '',
   });
   let showPassword = $state(false);
@@ -28,11 +38,24 @@
   let modules = $state([]);
   let modulesState = $state('loading'); // loading | ok | empty | error
 
+  let datasets = $state([]);
+  let datasetsState = $state('hidden'); // hidden | loading | ok | empty | error
+  /** Účel doplněný automaticky podle sady — přepisuje se jen, dokud ho uživatel nezměnil. */
+  let autoPurpose = $state('');
+
   let busy = $state(false);
   let lines = $state([]);
-  let result = $state(null); // {kind: 'done', url} | {kind: 'error', text} | {kind: 'finished'}
+  let result = $state(null); // {kind: 'done', url, id, dataset} | {kind: 'error', text} | {kind: 'finished'}
 
   const moduleHint = $derived(modules.find((m) => m.id === form.module)?.description ?? '');
+  const selectedDataset = $derived(datasets.find((d) => d.name === form.dataset) ?? null);
+  /** Země zamčená podle sady (sada bez země zemi nechává volnou). */
+  const countryLocked = $derived(Boolean(selectedDataset?.country));
+  const countries = $derived(
+    selectedDataset?.country && !COUNTRIES.some((c) => c.code === selectedDataset.country)
+      ? [...COUNTRIES, { code: selectedDataset.country, label: selectedDataset.country }]
+      : COUNTRIES,
+  );
 
   onMount(async () => {
     try {
@@ -44,7 +67,35 @@
     } catch {
       modulesState = 'error';
     }
+    const info = await devInfo.load();
+    if (info?.testing) {
+      datasetsState = 'loading';
+      try {
+        datasets = await testingApi.datasets();
+        datasetsState = datasets.length === 0 ? 'empty' : 'ok';
+      } catch {
+        datasetsState = 'error';
+      }
+    }
   });
+
+  function datasetLabel(d) {
+    return `${d.title} — ${d.name} · ${d.country ?? 'bez země'} · ${d.profile ?? 'bez profilu'}`;
+  }
+
+  /** Výběr sady: země podle sady, prázdný (nebo dřív automatický) účel = „datová sada <název>“. */
+  function onDatasetChange() {
+    const d = selectedDataset;
+    if (d?.country) form.country = d.country;
+    const purposeUntouched = form.purpose.trim() === '' || form.purpose === autoPurpose;
+    if (d && purposeUntouched) {
+      autoPurpose = `datová sada ${d.name}`;
+      form.purpose = autoPurpose;
+    } else if (!d && purposeUntouched) {
+      form.purpose = '';
+      autoPurpose = '';
+    }
+  }
 
   function validate() {
     const errors = {};
@@ -65,6 +116,14 @@
 
     if (!['cs', 'en'].includes(form.language)) errors.language = 'Vyber jazyk.';
     if (!/^[a-z]{2}$/.test(form.country)) errors.country = 'Vyber zemi.';
+
+    // Sada jen ze seznamu; země musí sedět se zemí sady (server kontroluje znovu, dataset-seed potřetí).
+    if (form.dataset !== '') {
+      if (!selectedDataset) errors.dataset = 'Vyber sadu ze seznamu.';
+      else if (selectedDataset.country && selectedDataset.country !== form.country) {
+        errors.country = `Sada ${selectedDataset.name} je pro zemi ${selectedDataset.country}.`;
+      }
+    }
 
     // Účel (#126 D6) — zrcadlí MainConfigPatcher::normalizePurpose: jeden řádek, max. 200 znaků.
     const purpose = form.purpose.trim();
@@ -89,7 +148,7 @@
           name: form.name.trim(),
           login: form.login.trim(),
           password: form.password,
-          seed: form.seed,
+          dataset: form.dataset || null,
           module: form.module,
           language: form.language,
           country: form.country,
@@ -102,7 +161,12 @@
       if (summary.error) {
         result = { kind: 'error', text: summary.error.text };
       } else if (summary.done) {
-        result = { kind: 'done', url: summary.done.payload?.url ?? null, id: summary.done.payload?.id ?? null };
+        result = {
+          kind: 'done',
+          url: summary.done.payload?.url ?? null,
+          id: summary.done.payload?.id ?? null,
+          dataset: summary.done.payload?.dataset ?? null,
+        };
       } else {
         result = { kind: 'finished' };
       }
@@ -163,13 +227,44 @@
       </div>
       <div class="dev-field" class:has-error={fieldErrors.country}>
         <label for="ds-country">Země</label>
-        <select id="ds-country" bind:value={form.country} disabled={busy}>
-          <option value="cz">Česko (cz)</option>
-          <option value="sk">Slovensko (sk)</option>
+        <select id="ds-country" bind:value={form.country} disabled={busy || countryLocked}>
+          {#each countries as c (c.code)}
+            <option value={c.code}>{c.label}</option>
+          {/each}
         </select>
-        {#if fieldErrors.country}<div class="dev-field__error">{fieldErrors.country}</div>{/if}
+        {#if fieldErrors.country}
+          <div class="dev-field__error">{fieldErrors.country}</div>
+        {:else if countryLocked}
+          <div class="dev-field__hint">Země podle sady {selectedDataset.name}.</div>
+        {/if}
       </div>
     </div>
+
+    {#if datasetsState !== 'hidden'}
+      <div class="dev-field" class:has-error={fieldErrors.dataset}>
+        <label for="ds-dataset">Data</label>
+        <select id="ds-dataset" bind:value={form.dataset} onchange={onDatasetChange} disabled={busy || datasetsState !== 'ok'}>
+          <option value="">žádná (prázdný zdroj dat)</option>
+          {#if datasetsState === 'loading'}
+            <option value="__loading" disabled>Načítám sady…</option>
+          {:else if datasetsState === 'error'}
+            <option value="__error" disabled>Sady se nepodařilo načíst</option>
+          {:else}
+            {#each datasets as d (d.name)}
+              <option value={d.name}>{datasetLabel(d)}</option>
+            {/each}
+          {/if}
+        </select>
+        {#if fieldErrors.dataset}
+          <div class="dev-field__error">{fieldErrors.dataset}</div>
+        {:else}
+          <div class="dev-field__hint">
+            Datová sada z <code>tests/datasets</code> se nahraje hned po založení (<code>dataset-seed</code>);
+            zdroj dat je pak volný a sadu si pamatuje. Bez sady vznikne prázdný zdroj dat.
+          </div>
+        {/if}
+      </div>
+    {/if}
 
     <div class="dev-field" class:has-error={fieldErrors.module}>
       <label for="ds-module">Instalační modul</label>
@@ -221,11 +316,6 @@
       </div>
     </div>
 
-    <div class="dev-field dev-field--inline">
-      <input id="ds-seed" type="checkbox" bind:checked={form.seed} disabled={busy} />
-      <label for="ds-seed">Naseedovat testovací data (osoby a pošta)</label>
-    </div>
-
     {#if formError}
       <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{formError}</span></div>
     {/if}
@@ -245,7 +335,9 @@
 
 {#if result?.kind === 'done'}
   <div class="dev-alert dev-alert--success">
-    <span class="dev-alert__text">Zdroj dat <code>{result.id}</code> je založený.</span>
+    <span class="dev-alert__text">
+      Zdroj dat <code>{result.id}</code> je založený{#if result.dataset} se sadou <code>{result.dataset}</code>{/if}.
+    </span>
     {#if result.url}
       <a href={result.url} target="_blank" rel="noopener">Otevřít zdroj dat →</a>
     {/if}

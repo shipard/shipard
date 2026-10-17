@@ -10,6 +10,7 @@ use Shipard\Api\Response;
 use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 
 class DevDashboardControllerTest extends TestCase
 {
@@ -80,6 +81,10 @@ class DevDashboardControllerTest extends TestCase
 
 	private function rrmdir(string $dir): void
 	{
+		if (is_link($dir)) {
+			unlink($dir); // symlink na tests/datasets repa — nikdy do něj nesestupovat
+			return;
+		}
 		if (!is_dir($dir)) {
 			return;
 		}
@@ -87,9 +92,19 @@ class DevDashboardControllerTest extends TestCase
 		foreach ($entries as $entry) {
 			if ($entry === '.' || $entry === '..') continue;
 			$path = $dir . '/' . $entry;
-			is_dir($path) ? $this->rrmdir($path) : unlink($path);
+			is_dir($path) && !is_link($path) ? $this->rrmdir($path) : unlink($path);
 		}
 		rmdir($dir);
+	}
+
+	/**
+	 * Katalog sad v „repo rootu“ testu: `tests/datasets` jen ke čtení přes
+	 * symlink na checkout, `tests/eval` prázdný (vzor DevEvalControllerTest).
+	 */
+	private function enableDatasets(): void
+	{
+		mkdir($this->tmpRoot . '/tests/eval', 0700, true);
+		symlink(dirname(__DIR__, 4) . '/tests/datasets', $this->tmpRoot . '/tests/datasets');
 	}
 
 	/** @param array<string, mixed> $extra další klíče main.json (třída dat, účel, …) */
@@ -827,9 +842,16 @@ class DevDashboardControllerTest extends TestCase
 		return (string) ob_get_clean();
 	}
 
+	/** Repo root = temp root testu (bez `tests/`, dokud ho enableDatasets() nedoplní). */
 	private function makeTestableCtrl(): TestableDevDashboardController
 	{
-		return new TestableDevDashboardController($this->tmpDir, null, new ModulePathResolver([$this->modulesDir]));
+		return new TestableDevDashboardController($this->tmpDir, null, new ModulePathResolver([$this->modulesDir]), $this->spaIndex, $this->tmpRoot);
+	}
+
+	/** @return array<string, mixed> tělo požadavku ds-create s výchozími platnými poli */
+	private function dsCreateBody(array $overrides = []): array
+	{
+		return $overrides + ['name' => 'Test', 'login' => 'admin', 'password' => 'admin', 'language' => 'cs', 'country' => 'cz'];
 	}
 
 	public function testDsCreatePipelineHappyPath(): void
@@ -855,30 +877,39 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertStringContainsString('[STEP] Creating data source...', $out);
 		$this->assertStringContainsString('[STEP] Running ds-upgrade...', $out);
 		$this->assertStringContainsString('[STEP] Creating admin user', $out);
-		$this->assertStringContainsString('[DONE] {"id":"abc123"', $out);
-		$this->assertCount(3, $ctrl->commandsRun);
+		$this->assertStringNotContainsString('Seeding', $out, 'bez sady žádný seed');
+		$this->assertStringContainsString('[DONE] {"id":"abc123","url":"/abc123/app/","dataset":null}', $out);
+		$this->assertCount(2, $ctrl->commandsRun, 'ds-create + ds-upgrade přes shell');
+		$this->assertCount(1, $ctrl->processesRun, 'user-create jako podproces s argv');
 	}
 
-	public function testDsCreatePipelineCreatesAdministrator(): void
+	public function testDsCreatePipelineCreatesAdministratorWithThePasswordOnStdin(): void
 	{
+		// #103 D65: heslo nejde do argv (ps, shell history), jen na stdin user-create --password-stdin.
 		$ctrl = $this->makeTestableCtrl();
 		$ctrl->commandResults = [
 			[0, "  Directory:     /tmp/test/abc123\n"],
 			[0, ""],
-			[0, ""],
+			[0, "User created successfully.\n"],
 		];
 
-		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', [
-			'name'     => 'Test',
-			'login'    => 'admin',
-			'password' => 'admin',
-			'language' => 'cs',
-			'country'  => 'cz',
-		]));
+		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody([
+			'login' => 'boss', 'password' => 'Tajne-heslo-123',
+		])));
 
-		$this->streamToString($resp);
-		$this->assertStringContainsString(' user-create ', $ctrl->commandsRun[2]);
-		$this->assertStringContainsString(' --admin ', $ctrl->commandsRun[2]);
+		$out = $this->streamToString($resp);
+		$this->assertCount(1, $ctrl->processesRun);
+		$process = $ctrl->processesRun[0];
+		$this->assertSame('/tmp/test/abc123', $process['cwd']);
+		$this->assertSame(
+			['user-create', '--login', 'boss', '--password-stdin', '--name', 'boss', '--admin', '--no-ansi'],
+			array_slice($process['argv'], 1),
+		);
+		$this->assertSame("Tajne-heslo-123\n", $process['stdin']);
+		$this->assertStringNotContainsString('Tajne-heslo-123', implode("\n", $process['argv']));
+		$this->assertStringNotContainsString('Tajne-heslo-123', implode("\n", $ctrl->commandsRun));
+		$this->assertStringNotContainsString('Tajne-heslo-123', $out);
+		$this->assertStringContainsString('[DONE]', $out);
 	}
 
 	public function testDsCreatePipelineCreateFails(): void
@@ -967,31 +998,75 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertCount(1, $ctrl->commandsRun);
 	}
 
-	public function testDsCreatePipelineWithSeed(): void
+	// ── Datová sada při zakládání (#103 D64) ─────────────────────────────
+
+	public function testDsCreatePipelineSeedsTheDatasetAfterTheAdminUser(): void
 	{
+		$this->enableDatasets();
+		$datasetDir = (new EvalCatalog($this->tmpRoot))->dataset('cz-non-payer')?->dir;
+		$this->assertNotNull($datasetDir);
+
 		$ctrl = $this->makeTestableCtrl();
 		$ctrl->commandResults = [
 			[0, "  Directory:     /tmp/x/abc123\n"],
 			[0, ""],
 			[0, ""],
-			[0, ""],
-			[0, ""],
+			[0, "Dataset cz-non-payer — …\n"],
 		];
 
-		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', [
-			'name'     => 'Test',
-			'login'    => 'admin',
-			'password' => 'admin',
-			'language' => 'cs',
-			'country'  => 'cz',
-			'seed'     => true,
-		]));
+		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => 'cz-non-payer'])));
+		$this->assertSame(200, $this->getStatus($resp));
 
 		$out = $this->streamToString($resp);
-		$this->assertStringContainsString('Seeding test persons', $out);
-		$this->assertStringContainsString('Seeding test mail', $out);
-		$this->assertStringContainsString('[DONE]', $out);
-		$this->assertCount(5, $ctrl->commandsRun);
+		$this->assertStringContainsString('[STEP] Seeding dataset cz-non-payer...', $out);
+		$this->assertStringContainsString('[DONE] {"id":"abc123","url":"/abc123/app/","dataset":"cz-non-payer"}', $out);
+		$this->assertCount(3, $ctrl->commandsRun);
+		$this->assertCount(1, $ctrl->processesRun, 'user-create běží před seedem — admin reset v dataset-seed přežije');
+		$seed = $ctrl->commandsRun[2];
+		$this->assertStringStartsWith("cd '/tmp/x/abc123' && ", $seed);
+		$this->assertStringContainsString(' dataset-seed ' . escapeshellarg($datasetDir) . ' --yes --no-ansi', $seed, 'adresář sady z katalogu, ne z požadavku');
+		$this->assertStringNotContainsString('seed-persons', $out . implode(' ', $ctrl->commandsRun));
+	}
+
+	public function testDsCreatePipelineReportsAFailedSeedWithAUsableDataSource(): void
+	{
+		$this->enableDatasets();
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->commandResults = [
+			[0, "  Directory:     /tmp/x/abc123\n"],
+			[0, ""],
+			[0, ""],
+			[1, "Dataset preflight failed — nothing was changed:\n"],
+		];
+
+		$out = $this->streamToString($ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => 'cz-vat-payer']))));
+		$this->assertStringContainsString('[ERROR] dataset-seed failed — DS abc123 and its admin user are usable, but the dataset cz-vat-payer is not loaded.', $out);
+		$this->assertStringContainsString('Nahrát datovou sadu', $out);
+		$this->assertStringNotContainsString('[DONE]', $out);
+	}
+
+	public function testDsCreateValidatesTheDatasetAgainstTheCatalogAndTheCountry(): void
+	{
+		// Bez checkoutu tests/ se sada nedá použít vůbec.
+		$resp = $this->makeTestableCtrl()->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => 'cz-vat-payer'])));
+		$this->assertSame(400, $this->getStatus($resp));
+		$this->assertStringContainsString('Datasets are not available', $this->getPayloadRaw($resp)['error']['message']);
+
+		$this->enableDatasets();
+		$resp = $this->makeTestableCtrl()->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => '../etc'])));
+		$this->assertSame(400, $this->getStatus($resp));
+		$this->assertStringContainsString("Unknown dataset '../etc'", $this->getPayloadRaw($resp)['error']['message']);
+
+		$resp = $this->makeTestableCtrl()->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => 'cz-vat-payer', 'country' => 'sk'])));
+		$this->assertSame(400, $this->getStatus($resp));
+		$this->assertStringContainsString('Country must match the dataset (cz)', $this->getPayloadRaw($resp)['error']['message']);
+
+		// Prázdný / chybějící název = bez sady; staré `seed` se ignoruje.
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->commandResults = [[0, "  Directory:     /tmp/x/abc123\n"], [0, ''], [0, '']];
+		$out = $this->streamToString($ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => '', 'seed' => true]))));
+		$this->assertStringContainsString('"dataset":null}', $out);
+		$this->assertCount(2, $ctrl->commandsRun);
 	}
 
 	public function testDsCreatePasswordRedactedInOutput(): void
@@ -1178,14 +1253,28 @@ class DevDashboardControllerTest extends TestCase
 
 class TestableDevDashboardController extends DevDashboardController
 {
-	/** @var list<array{0: int, 1: string}> */
+	/** @var list<array{0: int, 1: string}> výsledky v pořadí kroků — sdílí je shellové příkazy i podprocesy s argv */
 	public array $commandResults = [];
 	/** @var list<string> */
 	public array $commandsRun = [];
+	/** @var list<array{argv: list<string>, cwd: string, stdin: ?string}> */
+	public array $processesRun = [];
 
 	protected function streamCommand(string $cmd, bool $redactPassword = false): array
 	{
 		$this->commandsRun[] = $cmd;
+		return $this->nextResult($redactPassword);
+	}
+
+	protected function streamProcess(array $argv, string $cwd, ?string $stdin = null, bool $redactPassword = false): array
+	{
+		$this->processesRun[] = ['argv' => $argv, 'cwd' => $cwd, 'stdin' => $stdin];
+		return $this->nextResult($redactPassword);
+	}
+
+	/** @return array{0: int, 1: string} */
+	private function nextResult(bool $redactPassword): array
+	{
 		if (count($this->commandResults) === 0) {
 			return [0, ''];
 		}
