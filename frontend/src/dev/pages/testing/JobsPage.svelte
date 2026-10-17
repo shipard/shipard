@@ -72,7 +72,11 @@
       {:else if col.id === 'type'}
         {jobTypeLabel(job.type)}
       {:else if col.id === 'dataSource'}
-        {job.dataSource?.name} <span class="dev-small dev-muted"><code>{job.dataSource?.id}</code></span>
+        {#if job.dataSource}
+          {job.dataSource.name} <span class="dev-small dev-muted"><code>{job.dataSource.id}</code></span>
+        {:else}
+          <span class="dev-muted">{t('jobs.server')}</span>
+        {/if}
       {:else if col.id === 'status'}
         <span class="dev-lvl dev-lvl--{jobStatusClass(job.status)}">{jobStatusLabel(job.status)}</span>
       {:else if col.id === 'createdAt'}

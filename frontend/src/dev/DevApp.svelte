@@ -1,6 +1,7 @@
 <script>
   // Shell vývojářského dashboardu (#129 D6–D8): jeden lepicí blok z oranžového
-  // pruhu (DEVELOPMENT DASHBOARD, server, verze s hashem jako odkaz na commit)
+  // pruhu (DEVELOPMENT DASHBOARD, štítek zastaralosti — UpdateChip, D19 —,
+  // server, verze s hashem jako odkaz na commit)
   // a modré lišty (logo → Zdroje dat, navigace s ikonami, Dokumentace), pod ním
   // outlet routeru. Stránky v pages/. Výšku bloku měří a dává do
   // --dev-top-height pro lepicí prvky pod lištou (PdfPane).
@@ -10,6 +11,8 @@
   import logoUrl from './assets/shipard-logo.svg';
   import { router, onLinkClick } from './router.svelte.js';
   import { devInfo } from './info.svelte.js';
+  import { updates } from './updates.svelte.js';
+  import UpdateChip from './components/UpdateChip.svelte';
   import { versionLabel, formatDateTime } from './format.js';
   import { docsUrl, COMMIT_URL } from './links.js';
   import { t, LANGUAGES, currentLanguage, setLanguage } from './i18n/index.js';
@@ -71,6 +74,9 @@
 
   onMount(() => {
     devInfo.load();
+    // Štítek zastaralosti (#129 D18): načíst stav, dál se ptát jen při běžící kontrole / úloze a po focusu.
+    updates.startPolling();
+    return () => updates.stopPolling();
   });
 </script>
 
@@ -79,6 +85,7 @@
     <div class="dev-stripe">
       <strong class="dev-stripe__title">DEVELOPMENT DASHBOARD</strong>
       <span class="dev-stripe__meta">
+        <UpdateChip />
         <span class="dev-stripe__item" title={t('app.stripe.server')}>
           <Icon icon={iconServer} size="sm" />
           <span>{devInfo.value?.hostname ?? pending}</span>

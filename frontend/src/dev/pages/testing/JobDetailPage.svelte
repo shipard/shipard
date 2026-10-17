@@ -43,7 +43,9 @@
       offset = d.progress.nextOffset;
       error = null;
     } catch (e) {
-      error = e.message;
+      // Chvilkové selhání pollingu u běžící úlohy nechává poslední stav —
+      // úloha `update` přepisuje PHP i soubory dashboardu (#129 U7).
+      if (job === null || !isActiveStatus(job.status)) error = e.message;
     }
   }
 
@@ -95,11 +97,15 @@
     <span class="dev-lvl dev-lvl--{jobStatusClass(job.status)}">{jobStatusLabel(job.status)}</span>
     <span class="dev-page__spacer"></span>
     <Button label={t('common.refresh')} icon={iconRefresh} variant="secondary" size="sm" disabled={busy} onclick={() => load()} />
-    {#if active && job.status !== 'cancelling'}
-      <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={busy || !job.pid} onclick={() => (confirm = { force: false })} />
-    {/if}
-    {#if job.status === 'cancelling'}
-      <Button label={t('testing.job.forceKill')} variant="secondary" size="sm" disabled={busy} onclick={() => (confirm = { force: true })} />
+    {#if active && job.type === 'update'}
+      <span class="dev-small dev-muted">{t('testing.job.notCancellable')}</span>
+    {:else}
+      {#if active && job.status !== 'cancelling'}
+        <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={busy || !job.pid} onclick={() => (confirm = { force: false })} />
+      {/if}
+      {#if job.status === 'cancelling'}
+        <Button label={t('testing.job.forceKill')} variant="secondary" size="sm" disabled={busy} onclick={() => (confirm = { force: true })} />
+      {/if}
     {/if}
   </div>
 
@@ -118,7 +124,7 @@
       <h2 class="dev-card__title">{t('testing.job.spec')}</h2>
       <dl class="dev-kv">
         <dt>{t('common.dataset')}</dt><dd>{#if job.dataset}<a href={router.href('testingRuns', { set: job.dataset })} onclick={onLinkClick}><code>{job.dataset}</code></a>{:else}—{/if}</dd>
-        <dt>{t('common.dataSource')}</dt><dd>{job.dataSource?.name} <code>{job.dataSource?.id}</code> · <a href="/{job.dataSource?.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a></dd>
+        <dt>{t('common.dataSource')}</dt><dd>{#if job.dataSource}{job.dataSource.name} <code>{job.dataSource.id}</code> · <a href="/{job.dataSource.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a>{:else}<span class="dev-muted">{t('jobs.server')}</span>{/if}</dd>
         {#if job.variant}<dt>{t('testing.col.variant')}</dt><dd><a href={router.href('testingVariant', { name: job.variant })} onclick={onLinkClick}><code>{job.variant}</code></a></dd>{/if}
         {#if job.params && Object.keys(job.params).length}<dt>{t('testing.job.params')}</dt><dd><code>{JSON.stringify(job.params)}</code></dd>{/if}
         <dt>{t('ds.col.created')}</dt><dd>{formatDateTime(job.createdAt)} <span class="dev-muted">{t('testing.job.from', { ip: job.clientIp ?? '?' })}</span></dd>
@@ -224,6 +230,13 @@
           <p>{t('testing.job.created', { id: job.dataSource?.id })} — <a href="/{job.dataSource?.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a> {t('testing.job.createdNote')}</p>
         {:else}
           <div class="dev-empty">{t('testing.job.createFailed')}</div>
+        {/if}
+      {:else if job.type === 'update'}
+        {#if job.status === 'finished'}
+          <p>{t('testing.job.updated')}</p>
+          <div class="dev-btnrow"><Button label={t('testing.job.reloadPage')} variant="primary" size="sm" icon={iconRefresh} onclick={() => location.reload()} /></div>
+        {:else}
+          <div class="dev-empty">{t('testing.job.updateFailed')}</div>
         {/if}
       {:else if job.status === 'finished'}
         <p>{job.params?.previousDataset ? t('testing.job.reseededReplaced', { previous: job.params.previousDataset }) : t('testing.job.reseeded')}</p>

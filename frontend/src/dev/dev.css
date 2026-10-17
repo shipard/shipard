@@ -68,6 +68,44 @@ a.dev-stripe__version:hover {
   text-decoration: underline;
 }
 
+/* Štítek zastaralosti v pruhu (#129 D19, UpdateChip): světlý = pozadu nebo
+ * „nelze ověřit“, plný (--strong) = nejstarší chybějící změna starší než
+ * týden a výzva Obnovit stránku. Tlačítko i odkaz (běžící aktualizace). */
+.dev-stripe__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--dev-stripe-chip-bg);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dev-stripe__chip:hover,
+.dev-stripe__chip[aria-expanded='true'] {
+  color: inherit;
+  background: rgb(20 32 44 / 0.26);
+  text-decoration: none;
+}
+
+.dev-stripe__chip--strong {
+  background: var(--dev-stripe-ink);
+  color: #ffffff;
+}
+
+.dev-stripe__chip--strong:hover,
+.dev-stripe__chip--strong[aria-expanded='true'] {
+  color: #ffffff;
+  background: #000000;
+}
+
 .dev-topbar {
   display: flex;
   flex-wrap: wrap;
