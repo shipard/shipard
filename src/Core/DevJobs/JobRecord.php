@@ -21,7 +21,9 @@ final readonly class JobRecord
     public const string TYPE_VERIFY = 'verify';
     public const string TYPE_RESEED = 'reseed';
     public const string TYPE_CREATE = 'create';
-    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE];
+    /** Smazání volného zdroje dat (`ds-delete <id> --yes`, tasks/ds-delete.md D70). */
+    public const string TYPE_DELETE = 'delete';
+    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE];
 
     /** `Ymd-His-<6 znaků a-z0-9>` — řaditelné podle času, bezpečné jako název adresáře. */
     public const string ID_REGEX = '/^\d{8}-\d{6}-[a-z0-9]{6}$/';

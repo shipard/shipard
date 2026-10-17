@@ -126,16 +126,19 @@ Nginx konfigurace: viz `docs/nginx/app.conf`.
 Druhý vstup Vite (`dev.html`, `vite.dev.config.js`, #103 D57): samostatná
 malá SPA pro vývojářský dashboard (`docs/dev/dev-daily.md` § 1), sestavená
 do `public/_dev/` s `base: '/_dev/'` a bez `publicDir`. S aplikací sdílí
-`styles/`, `icons.js`, `Button` a `Icon` — a záměrně nic, co tahá `t()`
-nebo `api/client.js`; texty má jen česky přímo v komponentách (žádný
+`styles/`, `icons.js`, `Button`, `Icon` a `Popover` (kebab menu) — a záměrně
+nic, co tahá `t()` nebo `api/client.js`; texty má jen česky přímo v komponentách (žádný
 slovník, `check:i18n` se jí netýká). Index servíruje `DevDashboardController`
 (jen v módu development, bez buildu 503 s návodem), assety nginx.
 Zdroj `src/dev/`: `routes.js` (tabulka rout podle cesty — musí odpovídat
 `SPA_PAGES` v controlleru), `router.svelte.js` (History API, `onLinkClick`),
 `api.js` + `stream.js` (JSON obálka a řádkový stream `[STEP]` / `[ERROR]`
-/ `[DONE]`), `format.js` (čeština), `pages/` (Zdroje dat s akcí Nahrát
-datovou sadu — `LoadDatasetDialog.svelte`, Nový zdroj dat s výběrem sady,
-Logy, akce), `pages/testing/` + `testing/metrics.js` (prohlížeč výsledků
+/ `[DONE]`), `format.js` (čeština), `pages/` (Zdroje dat: Otevřít + kebab menu řádku
+`components/DevKebabMenu.svelte` nad sdíleným `Popover` — Logy, Upgrade,
+Nahrát datovou sadu — `LoadDatasetDialog.svelte`, Kopírovat ID, Smazat… —
+`DeleteDataSourceDialog.svelte` s opsáním názvu → `POST
+/_dev/api/data-sources/{id}/delete` = úloha `delete` nad `ds-delete <id>
+--yes` (#103 D70–D71); Nový zdroj dat s výběrem sady, Logy, akce), `pages/testing/` + `testing/metrics.js` (prohlížeč výsledků
 evaluací, #103 D53, `docs/test-corpus.md` § 18) a od F6b spouštění
 (`testing/api.js` volá `/_dev/api/testing/eval/*` a `/_dev/api/testing/jobs*`,
 `testing/jobs.js` = popisky stavů a redukce událostí průběhu;

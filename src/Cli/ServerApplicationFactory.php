@@ -20,6 +20,7 @@ final class ServerApplicationFactory
         $app->add(new \Shipard\Command\Server\HelpCommand());
         $app->add(new \Shipard\Command\Server\ServerInitCommand());
         $app->add(new \Shipard\Command\Server\DsCreateCommand());
+        $app->add(new \Shipard\Command\Server\DsDeleteCommand());
         $app->add(new \Shipard\Command\Server\DsUpgradeAllCommand());
         $app->add(new \Shipard\Command\Server\UpgradeCommand());
         $app->add(new \Shipard\Command\Server\NextTableIdCommand());

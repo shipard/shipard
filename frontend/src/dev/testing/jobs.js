@@ -21,6 +21,7 @@ export const JOB_TYPE_LABELS = {
   verify: 'Ověření zaúčtování',
   reseed: 'Přeseedování',
   create: 'Založení zdroje dat',
+  delete: 'Smazání zdroje dat',
 };
 
 export const STEP_STATUS_LABELS = {

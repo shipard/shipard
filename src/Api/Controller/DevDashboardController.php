@@ -5,12 +5,19 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Cli\BinPaths;
 use Shipard\Core\Ai\ServerAiConnection;
+use Shipard\Core\DevJobs\DevActionGuard;
+use Shipard\Core\DevJobs\JobConflict;
 use Shipard\Core\DevJobs\JobLauncher;
+use Shipard\Core\DevJobs\JobRecord;
+use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
+use Shipard\Core\Utils\IdGenerator;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
 
@@ -24,6 +31,8 @@ class DevDashboardController
 	 * seznamem musí odpovídat.
 	 */
 	private const array SPA_PAGES = ['logs', 'ds-create', 'doctor', 'upgrade-all', 'ds-upgrade', 'testing'];
+	/** Zrušení úlohy smazání: ds-delete běží sekundy, SIGTERM stačí. */
+	public const int DELETE_CANCEL_GRACE_SECONDS = 60;
 
 	private readonly string $repoRoot;
 	private readonly string $spaIndexPath;
@@ -78,6 +87,10 @@ class DevDashboardController
 		}
 		if ($path === '/_dev/api/data-sources' && $method === 'GET') {
 			return $this->listDataSources();
+		}
+		// Smazání zdroje dat jako úloha na pozadí (tasks/ds-delete.md § 2, D70).
+		if ($method === 'POST' && preg_match('#^/_dev/api/data-sources/([^/]+)/delete$#', $path, $m) === 1) {
+			return $this->deleteDataSource(rawurldecode($m[1]), $request);
 		}
 		if ($path === '/_dev/api/install-modules' && $method === 'GET') {
 			return $this->getInstallModules();
@@ -373,6 +386,69 @@ class DevDashboardController
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * `POST /_dev/api/data-sources/{id}/delete` — smazání volného zdroje dat
+	 * jako úloha na pozadí (tasks/ds-delete.md § 2, D70). Pojistka D60
+	 * ({@see DevActionGuard}: režim development, zdroj dat čitelný a s třídou
+	 * free → 403 `FORBIDDEN` / 404 `DS_NOT_FOUND` / 403 `DS_NOT_FREE`), jedna
+	 * úloha na zdroj dat ({@see JobLauncher} → 409 `JOB_RUNNING`), jediný krok
+	 * `shpd-server ds-delete <id> --yes --job <id úlohy>` s cwd v kořeni
+	 * repozitáře — adresář zdroje dat během úlohy zmizí. Preflight CLI (třída,
+	 * běžící úloha) tak běží dvakrát: API odmítne dřív a srozumitelně, CLI je
+	 * poslední pojistka v procesu úlohy; `--job` mu říká, která běžící úloha
+	 * je ta jeho, jinak by se odmítl sám. Routa je tady, ne v `DevEvalController`: ten bez
+	 * `tests/` vrací 404 `TESTING_UNAVAILABLE` a mazání na katalogu sad
+	 * nesmí záviset. Po doběhnutí úlohy zdroj dat ze seznamu zmizí sám
+	 * (adresář neexistuje); záznam úlohy zůstává v historii.
+	 */
+	private function deleteDataSource(string $id, Request $request): Response
+	{
+		if (preg_match(IdGenerator::ID_PATTERN, $id) !== 1) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		$info = (new DataSourceInventory($this->dataSourcesDir))->read(rtrim($this->dataSourcesDir, '/') . '/' . $id);
+		$problem = DevActionGuard::check($this->serverMode(), $info, true, null, []);
+		if ($problem !== null) {
+			return Response::error($problem['code'], $problem['message'], $problem['status']);
+		}
+		/** @var DataSourceInfo $info pojistka s requireDataSource = true prošla */
+		$now = $this->now();
+		// ID úlohy dopředu: ds-delete ho dostane v --job, aby vlastní běžící úlohu
+		// nepovažoval za cizí a neodmítl se (JobStore::activeJobFor).
+		$jobId = JobRecord::newId($now);
+		$record = new JobRecord(
+			$jobId,
+			JobRecord::TYPE_DELETE,
+			$info->id,
+			$info->name,
+			null,
+			null,
+			[],
+			[new JobStep('ds-delete ' . $id, [...$this->serverCommand(), 'ds-delete', $id, '--yes', '--job', $jobId], $this->repoRoot)],
+			JobStore::formatTime($now),
+			$request->getClientIp(),
+			self::DELETE_CANCEL_GRACE_SECONDS,
+		);
+		try {
+			return Response::success(['job' => $this->jobLauncher()->launch($record)], 201);
+		} catch (JobConflict $e) {
+			return Response::error('JOB_RUNNING', $e->getMessage(), 409, ['jobId' => $e->runningJobId, 'dataSource' => $e->dataSourceId]);
+		} catch (\RuntimeException $e) {
+			return Response::error('JOB_LAUNCH_FAILED', $e->getMessage(), 500);
+		}
+	}
+
+	/** Argv prefix `shpd-server` pro kroky úloh (seam pro testy). @return list<string> */
+	protected function serverCommand(): array
+	{
+		return BinPaths::shpdServerCommand();
+	}
+
+	protected function now(): \DateTimeImmutable
+	{
+		return new \DateTimeImmutable();
 	}
 
 	protected function getShpdServerPath(): string

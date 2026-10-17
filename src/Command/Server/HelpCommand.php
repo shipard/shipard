@@ -48,6 +48,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>help</info>           Show this help message');
         $output->writeln('  <info>server-init</info>    Initialize the Shipard server configuration');
         $output->writeln('  <info>ds-create</info>      Create a new data source');
+        $output->writeln('  <info>ds-delete</info>      Delete a free data source outside production: grants, database, DB user, directory (no backup)');
         $output->writeln('  <info>ds-upgrade-all</info> Run ds-upgrade on all data sources');
         $output->writeln('  <info>upgrade</info>        Deploy a new version (git pull, composer, frontend, ds-upgrade-all, doctor)');
         $output->writeln('  <info>next-table-id</info>  Print the next available table ID');
@@ -74,6 +75,8 @@ class HelpCommand extends Command
         $output->writeln('                                           (--module defaults to install.base, --no-cron = periodic jobs off,');
         $output->writeln('                                           --real-copy = copy of real data (import target; no server AI on a development');
         $output->writeln('                                           server), --purpose = one-line purpose shown by ds-list; --no-server-ai is deprecated)');
+        $output->writeln('  ds-delete <id> [--dry-run] [--yes]        Delete a free data source (never in production, never a real copy,');
+        $output->writeln('                                           never with a running dashboard job); confirm by typing the ID, --yes skips it');
         $output->writeln('  ds-upgrade-all [--ds=<id>] [--stop-on-error] [--dry-run]');
         $output->writeln('                                           Upgrade all data sources');
         $output->writeln('  upgrade [--dry-run] [--full] [--skip-ds-upgrade]');

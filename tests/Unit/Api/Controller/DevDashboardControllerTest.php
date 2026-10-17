@@ -8,8 +8,10 @@ use Shipard\Api\Controller\DevDashboardController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Ai\ServerAiConnection;
+use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
 use Shipard\Core\DevJobs\JobState;
+use Shipard\Core\DevJobs\JobStatus;
 use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
@@ -26,6 +28,8 @@ class DevDashboardControllerTest extends TestCase
 	private DevDashboardController $ctrl;
 	/** @var list<string> */
 	private array $tmpFiles = [];
+	/** @var list<array{argv: list<string>, cwd: string}> spawny spouštěče úloh (smazání zdroje dat, D70) */
+	private array $spawns = [];
 
 	/** Obsah „sestaveného“ indexu SPA — controller ho vrací beze změny. */
 	private const SPA_INDEX = "<!doctype html>\n<html lang=\"cs\"><head><title>Shipard dev SPA</title></head><body><div id=\"app\"></div></body></html>\n";
@@ -1299,6 +1303,148 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame(404, $this->getStatus($reseed));
 		$this->assertSame('TESTING_UNAVAILABLE', $reseed->getPayload()['error']['code']);
 	}
+
+	// ── Smazání zdroje dat jako úloha (tasks/ds-delete.md § 2, D70) ────────
+
+	/** Controller se spouštěčem, který místo spawnu jen zaznamená argv; čas pevný, aby byla nová úloha `starting`. */
+	private function deleteController(?string $mode = 'development'): TestableDevDashboardController
+	{
+		$store = new JobStore(
+			$this->tmpRoot . '/jobs',
+			static fn (): bool => true,
+			static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-16T12:00:00Z'),
+		);
+		$launcher = new JobLauncher(
+			$store,
+			function (array $argv, string $cwd, string $log): bool {
+				$this->spawns[] = ['argv' => $argv, 'cwd' => $cwd];
+				return true;
+			},
+			static fn (int $pid, int $signal): bool => true,
+			['/usr/bin/php', '/repo/bin/shpd-server'],
+		);
+		return new TestableDevDashboardController($this->tmpDir, null, new ModulePathResolver([$this->modulesDir]), $this->spaIndex, $this->tmpRoot, $mode, $store, $launcher);
+	}
+
+	private function deleteRequest(string $id): Request
+	{
+		return Request::fromArray('POST', '/_dev/api/data-sources/' . $id . '/delete', [], '', []);
+	}
+
+	public function testDeleteDataSourceLaunchesDeleteJob(): void
+	{
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', '2026-10-01T00:00:00Z', ['dataClass' => 'free']);
+		$ctrl = $this->deleteController();
+
+		$resp = $ctrl->dispatch($this->deleteRequest('aaaa-aaaa-aaaa-aaaa'));
+
+		$this->assertSame(201, $this->getStatus($resp));
+		$job = $this->getPayloadRaw($resp)['data']['job'];
+		$this->assertSame(JobRecord::TYPE_DELETE, $job['type']);
+		$this->assertSame(['id' => 'aaaa-aaaa-aaaa-aaaa', 'name' => 'Volný zdroj'], $job['dataSource']);
+		$this->assertSame('starting', $job['status']);
+		$this->assertCount(1, $job['steps']);
+		$this->assertSame(['/usr/bin/php', '/repo/bin/shpd-server', 'ds-delete', 'aaaa-aaaa-aaaa-aaaa', '--yes', '--job', $job['id']], $job['steps'][0]['argv'], '--job = vlastní úloha, kterou preflight ds-delete přeskočí');
+		$this->assertSame($this->tmpRoot, $job['steps'][0]['cwd'], 'cwd je kořen repozitáře — adresář zdroje dat během úlohy zmizí');
+		$this->assertSame(DevDashboardController::DELETE_CANCEL_GRACE_SECONDS, $job['cancelGraceSeconds']);
+		$this->assertCount(1, $this->spawns);
+		$this->assertSame(['/usr/bin/php', '/repo/bin/shpd-server', 'dev-job-run', $this->tmpRoot . '/jobs/' . $job['id']], $this->spawns[0]['argv']);
+		$stored = (new JobStore($this->tmpRoot . '/jobs'))->read($job['id']);
+		$this->assertNotNull($stored);
+		$this->assertSame(JobRecord::TYPE_DELETE, $stored->type);
+		// Adresář maže až úloha (ds-delete) — API ho nechává.
+		$this->assertDirectoryExists($this->tmpDir . '/aaaa-aaaa-aaaa-aaaa');
+	}
+
+	public function testDeleteDataSourceRefusedOutsideDevelopment(): void
+	{
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
+		foreach ([null, 'production'] as $mode) {
+			$resp = $this->deleteController($mode)->dispatch($this->deleteRequest('aaaa-aaaa-aaaa-aaaa'));
+			$this->assertSame(403, $this->getStatus($resp), var_export($mode, true));
+			$this->assertSame('FORBIDDEN', $this->getPayloadRaw($resp)['error']['code']);
+		}
+		$this->assertSame([], $this->spawns);
+		$this->assertDirectoryExists($this->tmpDir . '/aaaa-aaaa-aaaa-aaaa');
+	}
+
+	public function testDeleteDataSourceRefusedForRealCopyAndMissingClass(): void
+	{
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Reálná kopie', null, ['dataClass' => 'realCopy', 'purpose' => 'účtárna']);
+		$this->createDs('cccc-cccc-cccc-cccc', 'Bez třídy');
+		$ctrl = $this->deleteController();
+		foreach (['bbbb-bbbb-bbbb-bbbb', 'cccc-cccc-cccc-cccc'] as $id) {
+			$resp = $ctrl->dispatch($this->deleteRequest($id));
+			$this->assertSame(403, $this->getStatus($resp), $id);
+			$error = $this->getPayloadRaw($resp)['error'];
+			$this->assertSame('DS_NOT_FREE', $error['code']);
+			$this->assertStringContainsString('delete', $error['message']);
+			$this->assertDirectoryExists($this->tmpDir . '/' . $id);
+		}
+		$this->assertSame([], $this->spawns);
+	}
+
+	public function testDeleteDataSourceUnknownOrInvalidIdIs404(): void
+	{
+		$ctrl = $this->deleteController();
+
+		$resp = $ctrl->dispatch($this->deleteRequest('zzzz-zzzz-zzzz-zzzz'));
+		$this->assertSame(404, $this->getStatus($resp));
+		$this->assertSame('DS_NOT_FOUND', $this->getPayloadRaw($resp)['error']['code']);
+
+		$resp = $ctrl->dispatch($this->deleteRequest('abc'));
+		$this->assertSame(404, $this->getStatus($resp));
+		$this->assertSame('NOT_FOUND', $this->getPayloadRaw($resp)['error']['code']);
+
+		$this->assertSame([], $this->spawns);
+	}
+
+	public function testDeleteDataSourceConflictsWithRunningJob(): void
+	{
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
+		$ctrl = $this->deleteController();
+		$store = new JobStore($this->tmpRoot . '/jobs', static fn (): bool => true);
+		$store->ensureDir();
+		$runningId = JobRecord::newId(new \DateTimeImmutable('2026-10-16T11:59:00Z'));
+		$store->create(new JobRecord(
+			$runningId,
+			JobRecord::TYPE_RESEED,
+			'aaaa-aaaa-aaaa-aaaa',
+			'Volný zdroj',
+			'cz-vat-payer',
+			null,
+			[],
+			[new JobStep('dataset-seed', ['/usr/bin/php', '/repo/bin/shpd-ds', 'dataset-seed'], $this->tmpRoot)],
+			'2026-10-16T11:59:00Z',
+			null,
+			60,
+		));
+		$state = JobState::pending(1);
+		$state->status = JobStatus::RUNNING;
+		$state->pid = 4242;
+		$state->startedAt = '2026-10-16T11:59:01Z';
+		$store->writeState($runningId, $state);
+
+		$resp = $ctrl->dispatch($this->deleteRequest('aaaa-aaaa-aaaa-aaaa'));
+
+		$this->assertSame(409, $this->getStatus($resp));
+		$error = $this->getPayloadRaw($resp)['error'];
+		$this->assertSame('JOB_RUNNING', $error['code']);
+		$this->assertSame($runningId, $error['details']['jobId']);
+		$this->assertSame('aaaa-aaaa-aaaa-aaaa', $error['details']['dataSource']);
+		$this->assertSame([], $this->spawns);
+		$this->assertDirectoryExists($this->tmpDir . '/aaaa-aaaa-aaaa-aaaa');
+	}
+
+	public function testDeleteDataSourceRequiresPost(): void
+	{
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
+
+		$resp = $this->deleteController()->dispatch($this->makeRequest('GET', '/_dev/api/data-sources/aaaa-aaaa-aaaa-aaaa/delete'));
+
+		$this->assertSame(404, $this->getStatus($resp));
+		$this->assertSame([], $this->spawns);
+	}
 }
 
 class TestableDevDashboardController extends DevDashboardController
@@ -1309,6 +1455,17 @@ class TestableDevDashboardController extends DevDashboardController
 	public array $commandsRun = [];
 	/** @var list<array{argv: list<string>, cwd: string, stdin: ?string}> */
 	public array $processesRun = [];
+
+	/** @return list<string> */
+	protected function serverCommand(): array
+	{
+		return ['/usr/bin/php', '/repo/bin/shpd-server'];
+	}
+
+	protected function now(): \DateTimeImmutable
+	{
+		return new \DateTimeImmutable('2026-10-16T12:00:00Z');
+	}
 
 	protected function streamCommand(string $cmd, bool $redactPassword = false): array
 	{

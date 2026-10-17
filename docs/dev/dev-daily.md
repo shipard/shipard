@@ -31,16 +31,25 @@ Sekce v horní liště:
 - **Zdroje dat** — všechny zdroje dat s názvem, třídou dat (**volný** /
   **reálná kopie**; bez třídy v `main.json` šedě — platí reálná kopie;
   značka **AI** = zdroj používá serverové AI připojení), účelem, datem
-  vytvoření, databází a stavem periodických úloh (Cron). Totéž
-  v terminálu: `shpd-server ds-list`. U každého **Otevřít** (aplikace
-  `/{ds-id}/app/` v novém tabu), **Logy** a **Upgrade**; u volného zdroje
-  dat navíc **Nahrát datovou sadu** (jen když je k dispozici sekce
-  Testování): dialog nabídne sady se zemí zdroje dat, ukáže dnešní sadu
-  a upozorní, že reset smaže data — uživatelé, nastavení a API klíče
-  zůstanou. Jiná než dnešní sada chce druhé potvrzení „Nahradit sadu X
-  sadou Y“. Spustí se úloha na pozadí; běžící úloha je vidět v řádku.
-  Pod účelem je vidět, kterou sadu zdroj dat drží. ID lze jedním klikem
-  zkopírovat do schránky. Seznam se sám obnovuje (odpočet v hlavičce).
+  vytvoření a stavem periodických úloh (Cron). Totéž v terminálu:
+  `shpd-server ds-list`. U každého řádku **Otevřít** (aplikace
+  `/{ds-id}/app/` v novém tabu) a kebab menu **⋮** — jde ovládat
+  i klávesnicí (Enter otevře, šipky přepínají, Esc zavře) — s položkami
+  **Logy**, **Upgrade**, **Nahrát datovou sadu** (jen volný zdroj dat, a jen
+  když je k dispozici sekce Testování), **Kopírovat ID** a **Smazat…** (jen
+  volný zdroj dat). Položky, které zrovna nejdou, se v menu neukazují —
+  třeba při běžící úloze. **Nahrát datovou sadu**: dialog nabídne sady se
+  zemí zdroje dat, ukáže dnešní sadu a upozorní, že reset smaže data —
+  uživatelé, nastavení a API klíče zůstanou; jiná než dnešní sada chce
+  druhé potvrzení „Nahradit sadu X sadou Y“. **Smazat…**: dialog vypíše,
+  co zmizí (databáze, DB uživatel, adresář zdroje dat, přístupová práva
+  ostatních DB účtů), varuje, že je to nevratné, a tlačítko Smazat odemkne
+  až přesně opsaný název zdroje dat; pak běží úloha na pozadí
+  (`shpd-server ds-delete <id> --yes`) a řádek po jejím doběhnutí zmizí.
+  Reálnou kopii dashboard smazat nenabídne a server to odmítne
+  (`DS_NOT_FREE`) — nejdřív vědomě `shpd-ds ds-class set free`. Běžící
+  úloha je vidět v řádku. Pod účelem je vidět, kterou sadu zdroj dat drží.
+  Seznam se sám obnovuje (odpočet v hlavičce).
 - **Nový zdroj dat** — založení zdroje dat z formuláře (jazyk, země,
   instalační modul, volitelný účel, login a heslo administrátora, v poli
   **Data** volitelně datová sada z `tests/datasets` — země se pak zamkne
@@ -79,7 +88,8 @@ s produkčním.
 ### Úlohy na pozadí a pojistky (F6b)
 
 Delší operace z Testování (přeseedování, ověření, evaluace, založení
-zdroje dat) neběží v HTTP požadavku, ale jako **úloha na pozadí**: API
+zdroje dat) a smazání zdroje dat ze seznamu zdrojů dat neběží v HTTP
+požadavku, ale jako **úloha na pozadí**: API
 zapíše zadání do `/opt/shipard/run/dev-jobs/<id>/` a spustí obal
 `shpd-server dev-job-run` (skrytý příkaz, `setsid`), který kroky provede
 a průběh ukládá do téhož adresáře (`job.json` zadání, `state.json` stav
@@ -96,7 +106,8 @@ než 14 dní se při výpisu mažou.
   zůstat v půlce — pak přeseedovat).
 - **Pojistka na serveru** (D60): spouštěcí akce projdou jen v režimu
   `development`, jen na zdroji dat s třídou **`free`** (reálná kopie, chybějící
-  nebo rozbitá třída = 403 `DS_NOT_FREE`) a jen pro sadu ze seznamu. UI
+  nebo rozbitá třída = 403 `DS_NOT_FREE`) a jen pro sadu ze seznamu
+  (smazání zdroje dat sadu nemá). UI
   tlačítka u reálných kopií nenabízí, ale ochranu dělá API — žádný parametr
   ji neobchází.
 - **Útrata**: evaluace z dashboardu má vždy strop útraty (`--max-cost`,

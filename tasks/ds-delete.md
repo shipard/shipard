@@ -1,6 +1,6 @@
 # `ds-delete` a úprava přehledu zdrojů dat ve vývojářském dashboardu
 
-**Stav:** naplánováno — design schválen 2026-10-17 (#103 D68–D71), čeká na implementaci
+**Stav:** hotovo — implementováno a živě ověřeno 2026-10-17 (#103 D68–D71); mazání na produkci a hostingu zůstává samostatný návrh v M5
 
 ## Kontext / Cíl
 
@@ -113,21 +113,40 @@ dashboardu se nemažou, jsou to historie.
 
 ## Hotovo když
 
-- [ ] unit testy příkazu a API zelené (úzké `--filter`)
-- [ ] na dev serveru: **nový zkušební zdroj dat** (založ si ho, nemaž
+- [x] unit testy příkazu a API zelené (úzké `--filter`)
+- [x] na dev serveru: **nový zkušební zdroj dat** (založ si ho, nemaž
       cizí) smazaný z CLI s `--dry-run` a pak naostro; databáze, DB
       uživatel, granty i adresář pryč (`SHOW DATABASES`, `mysql.user`,
       `mysql.db`, `ls`)
-- [ ] druhý zkušební zdroj dat smazaný z dashboardu (kebab → Smazat… →
+- [x] druhý zkušební zdroj dat smazaný z dashboardu (kebab → Smazat… →
       opsat název → úloha → řádek zmizí)
-- [ ] `ds-delete` na reálné kopii a v režimu `production` odmítnuté
+- [x] `ds-delete` na reálné kopii a v režimu `production` odmítnuté
       (testem, ne živě)
-- [ ] přehled zdrojů dat: bez sloupce Databáze, Otevřít + kebab menu
+- [x] přehled zdrojů dat: bez sloupce Databáze, Otevřít + kebab menu
       se všemi položkami
-- [ ] `docs/cli.md` (`ds-delete`), `docs/dev/dev-daily.md` § 1 (kebab menu,
+- [x] `docs/cli.md` (`ds-delete`), `docs/dev/dev-daily.md` § 1 (kebab menu,
       mazání), `docs/roadmap.md` M5 (ds-delete pro vývoj hotový, produkce
       a hosting zbývá)
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Implementační poznámky (2026-10-17)
+
+- `src/Command/Server/DsDeleteCommand.php` + nové metody `DatabaseManager`
+  (`databaseExists`, `userExists`, `listDatabaseGrants`,
+  `revokeDatabasePrivileges`, `dropDatabase`, `dropUser`); API
+  `POST /_dev/api/data-sources/{id}/delete` v `DevDashboardController`,
+  typ úlohy `JobRecord::TYPE_DELETE`; UI `dev/components/DevKebabMenu.svelte`
+  (nad sdíleným `Popover`), `dev/pages/DeleteDataSourceDialog.svelte`.
+- **Odchylka od zadání — volba `--job=<id>`:** úloha `delete` spouští
+  `ds-delete`, jehož preflight odmítá běžící úlohu dashboardu — a našel by
+  sám sebe (živě ověřeno: první úloha selhala „has a running … job (delete,
+  running)“). Dashboard proto předává ID úlohy v `--job`; preflight tuhle
+  jednu úlohu přeskočí, jinou aktivní dál odmítá. Ručně se volba nepoužívá.
+- Inline ikona Kopírovat u ID zmizela — D71 ji přesouvá do kebab menu;
+  zpětná vazba „zkopírováno“ se ukáže vedle ID.
+- Živě ověřeno na dvou zkušebních zdrojích dat (CLI s `--dry-run`, opsaným
+  ID i grantem `claude_ro`; dashboard v headless Chromiu až po zmizení
+  řádku), reálná kopie a `production` jen testem.
 
 ## Pasti
 

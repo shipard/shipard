@@ -12,7 +12,7 @@ use Shipard\Core\Server\DataSourceInfo;
  * Pojistka spouštěcích akcí dashboardu (tasks/testing-phase6b.md § 3, D60):
  * server v režimu `development`, cílový zdroj dat čitelný a s třídou **free**
  * (`realCopy`, chybějící nebo rozbitá třída = odmítnout — nikdy reseed
- * reálné kopie) a sada ze seznamu sad. Ochrana je tady, ne v UI; žádný
+ * reálné kopie, nikdy její smazání) a sada ze seznamu sad. Ochrana je tady, ne v UI; žádný
  * parametr požadavku ji neobchází. Seznam sad dodává volající (controller
  * z `EvalCatalog`), aby `Core\DevJobs` nezáviselo na modulech.
  */
@@ -55,7 +55,7 @@ final class DevActionGuard
                     'status' => 403,
                     'message' => "Data source {$dataSource->id} is not a free data source (data class "
                         . ($dataSource->readable ? $dataSource->dataClass->value . ($dataSource->dataClassExplicit ? '' : ', not set in main.json') : 'unknown — main.json unreadable')
-                        . ') — reseed, verify and eval run only on free data sources',
+                        . ') — launch actions (reseed, verify, eval, delete) run only on free data sources',
                 ];
             }
         }

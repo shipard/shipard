@@ -1,20 +1,24 @@
 <script>
-  // Zdroje dat — port původní stránky `/_dev/`: tabulka, akce, kopírování
-  // ID, automatické obnovení (`?refresh=N` 5–3600 s, výchozí 60, parametr
-  // se z URL uklidí jako dřív). Obnovení = nové načtení seznamu, ne reload.
-  // Akce „Nahrát datovou sadu“ (#103 D66) jen u volného zdroje dat a jen
-  // když server nabízí sekci Testování; běžící úloha se ukazuje v řádku
-  // a seznam se při ní obnovuje po 5 s. Pojistku dělá server.
+  // Zdroje dat — port původní stránky `/_dev/`: tabulka, akce, automatické
+  // obnovení (`?refresh=N` 5–3600 s, výchozí 60, parametr se z URL uklidí
+  // jako dřív). Obnovení = nové načtení seznamu, ne reload. Akce (#103 D71):
+  // Otevřít + kebab menu ⋮ (Logy, Upgrade, Nahrát datovou sadu — jen volný
+  // zdroj dat se sekcí Testování a bez běžící úlohy, Kopírovat ID, Smazat… —
+  // jen volný zdroj dat bez běžící úlohy); neaktivní položky se neukazují.
+  // Smazat… (D70) otevře dialog s opsáním názvu a spustí úlohu `delete`.
+  // Běžící úloha se ukazuje v řádku a seznam se při ní obnovuje po 5 s;
+  // smazaný zdroj dat z něj po doběhnutí úlohy zmizí sám. Pojistku dělá server.
   import { onMount } from 'svelte';
   import Button from '../../components/ui/Button.svelte';
-  import Icon from '../../components/ui/Icon.svelte';
-  import { iconAdd, iconRefresh, iconCopy, iconConfirm } from '../../icons.js';
+  import { iconAdd, iconRefresh } from '../../icons.js';
   import { getJson } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
   import { devInfo } from '../info.svelte.js';
   import { JOB_TYPE_LABELS, JOB_STATUS_LABELS } from '../testing/jobs.js';
   import { formatDateTime, dataClassLabel, dataClassTitle, truncate } from '../format.js';
+  import DevKebabMenu from '../components/DevKebabMenu.svelte';
   import LoadDatasetDialog from './LoadDatasetDialog.svelte';
+  import DeleteDataSourceDialog from './DeleteDataSourceDialog.svelte';
 
   const STATE_LABELS = {
     read_only: 'jen ke čtení',
@@ -31,6 +35,7 @@
   let countdown = $state(60);
   let copiedId = $state(null);
   let loadFor = $state(null); // řádek zdroje dat pro dialog Nahrát datovou sadu
+  let deleteFor = $state(null); // řádek zdroje dat pro dialog Smazat zdroj dat
   let notice = $state(null); // {kind: 'success'|'danger', text, jobId?}
   let sinceLoad = 0;
 
@@ -40,12 +45,33 @@
     return Boolean(devInfo.value?.testing) && ds.dataClass === 'free' && ds.state === 'active';
   }
 
+  function canDelete(ds) {
+    return ds.dataClass === 'free';
+  }
+
+  /** Položky kebab menu řádku — neaktivní se vůbec nepředávají (D71). */
+  function menuItems(ds) {
+    const menu = [
+      { key: 'logs', label: 'Logy', href: router.href('logs', {}, { ds: ds.id }) },
+      { key: 'upgrade', label: 'Upgrade', href: router.href('dsUpgrade', {}, { ds: ds.id }) },
+    ];
+    if (canLoadDataset(ds) && !ds.job) {
+      menu.push({ key: 'dataset', label: 'Nahrát datovou sadu', onSelect: () => (loadFor = ds) });
+    }
+    menu.push({ key: 'copy', label: 'Kopírovat ID', onSelect: () => copyId(ds.id) });
+    if (canDelete(ds) && !ds.job) {
+      menu.push({ key: 'delete', label: 'Smazat…', danger: true, onSelect: () => (deleteFor = ds) });
+    }
+    return menu;
+  }
+
   function heldDataset(ds) {
     return ds.dataset?.name ?? ds.legacyDataset ?? null;
   }
 
-  function onDatasetStarted(job) {
+  function onJobStarted(job) {
     loadFor = null;
+    deleteFor = null;
     notice = { kind: 'success', text: `Úloha ${JOB_TYPE_LABELS[job.type] ?? job.type} spuštěna.`, jobId: job.id };
     load();
   }
@@ -82,7 +108,7 @@
       copiedId = id;
       setTimeout(() => {
         if (copiedId === id) copiedId = null;
-      }, 1000);
+      }, 1500);
     } catch {
       /* bez clipboard API (http bez localhost) — nic */
     }
@@ -137,17 +163,16 @@
         <th>Třída</th>
         <th>Účel</th>
         <th>Vytvořeno</th>
-        <th>Databáze</th>
         <th>Cron</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
       {#if loading}
-        <tr><td colspan="8" class="dev-empty">Načítám…</td></tr>
+        <tr><td colspan="7" class="dev-empty">Načítám…</td></tr>
       {:else if items.length === 0 && !error}
         <tr>
-          <td colspan="8" class="dev-empty">
+          <td colspan="7" class="dev-empty">
             Zatím žádné zdroje dat. Založ první přes
             <a href={router.href('dsCreate')} onclick={onLinkClick}>Nový zdroj dat</a>
             — s datovou sadou v poli Data dostaneš rovnou firmu s doklady a poštou.
@@ -158,15 +183,9 @@
           <tr>
             <td class="dev-nowrap">
               <code>{ds.id}</code>
-              <button
-                class="copy-btn"
-                type="button"
-                title="Kopírovat ID"
-                aria-label="Kopírovat ID"
-                onclick={() => copyId(ds.id)}
-              >
-                <Icon icon={copiedId === ds.id ? iconConfirm : iconCopy} size="sm" />
-              </button>
+              {#if copiedId === ds.id}
+                <span class="dev-small dev-muted copied" role="status">zkopírováno</span>
+              {/if}
             </td>
             <td>
               {ds.name}
@@ -197,7 +216,6 @@
               {/if}
             </td>
             <td class="dev-nowrap dev-muted">{ds.created ? formatDateTime(ds.created) : '—'}</td>
-            <td><code>{ds.database_name ?? '—'}</code></td>
             <td class="dev-nowrap">
               {#if ds.cron}
                 <span>zap</span>
@@ -210,17 +228,7 @@
             </td>
             <td class="dev-actions">
               <a class="action" href={`/${ds.id}/app/`} target="_blank" rel="noopener">Otevřít</a>
-              <a class="action" href={router.href('logs', {}, { ds: ds.id })} onclick={onLinkClick}>Logy</a>
-              <a class="action" href={router.href('dsUpgrade', {}, { ds: ds.id })} onclick={onLinkClick}>Upgrade</a>
-              {#if canLoadDataset(ds)}
-                <button
-                  class="action"
-                  type="button"
-                  disabled={Boolean(ds.job)}
-                  title={ds.job ? `Běží úloha ${ds.job.id}` : 'Reset zdroje dat a nahrání datové sady z tests/datasets'}
-                  onclick={() => (loadFor = ds)}
-                >Nahrát datovou sadu</button>
-              {/if}
+              <DevKebabMenu label={`Další akce: ${ds.name}`} items={menuItems(ds)} />
             </td>
           </tr>
         {/each}
@@ -230,23 +238,17 @@
 </div>
 
 {#if loadFor}
-  <LoadDatasetDialog open={true} ds={loadFor} onClose={() => (loadFor = null)} onStarted={onDatasetStarted} />
+  <LoadDatasetDialog open={true} ds={loadFor} onClose={() => (loadFor = null)} onStarted={onJobStarted} />
+{/if}
+
+{#if deleteFor}
+  <DeleteDataSourceDialog open={true} ds={deleteFor} onClose={() => (deleteFor = null)} onStarted={onJobStarted} />
 {/if}
 
 <style>
   .dev-btn-link { text-decoration: none; }
 
-  .copy-btn {
-    background: none;
-    border: 0;
-    padding: 2px 4px;
-    margin-left: 4px;
-    cursor: pointer;
-    color: var(--shpd-color-text-secondary);
-    vertical-align: middle;
-  }
-
-  .copy-btn:hover { color: var(--shpd-color-primary); }
+  .copied { margin-left: 6px; }
 
   .cron-off {
     color: var(--shpd-color-danger);
@@ -272,8 +274,4 @@
     border-color: var(--shpd-color-primary);
     color: var(--shpd-color-primary);
   }
-
-  button.action { font: inherit; font-size: var(--shpd-font-size-sm); cursor: pointer; }
-  button.action:disabled { opacity: 0.5; cursor: default; }
-  button.action:disabled:hover { border-color: var(--shpd-color-border); color: var(--shpd-color-text); }
 </style>

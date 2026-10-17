@@ -154,7 +154,7 @@ dnes za něj dělá vývojář z příkazové řádky, a bezpečnost cizích dat
 | Záloha a obnova datového zdroje | — |
 | Samoobslužná správa uživatelů a přístupových práv | — |
 | Zobrazení adresy pro příjem pošty v aplikaci | — |
-| Příkaz `ds-delete` (`ds-list` hotový dřív jako vývojářský nástroj, #126 — `tasks/ds-data-class.md`) | — |
+| Příkaz `ds-delete` pro produkci a hosting (záloha před smazáním, vazba na portál) — pro vývoj hotový 2026-10-17: volné zdroje dat mimo produkci z CLI i z vývojářského dashboardu (#103 D68–D71, `tasks/ds-delete.md`); `ds-list` hotový dřív (#126) | — (vývoj: `ds-delete.md`) |
 | Servisní výmaz nepotřebných tabulek a sloupců | — |
 
 **Hotovo když:** pozvaný uživatel založí firmu, pozve kolegu, pošle první

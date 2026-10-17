@@ -192,6 +192,58 @@ Vytvořený `config/main.json` bude obsahovat `"modules": ["<id>"]`. Install
 modul je top-level bundle, který deklaruje své závislosti (`core.system`,
 `core.attachments`, …), které `ds-upgrade` tranzitivně rozresolvuje.
 
+### `ds-delete <id> [--dry-run] [--yes]`
+
+```bash
+shpd-server ds-delete ab12-cd34-ef56-gh78 --dry-run   # jen vypíše, co by smazal
+shpd-server ds-delete ab12-cd34-ef56-gh78             # potvrzení opsáním ID
+shpd-server ds-delete ab12-cd34-ef56-gh78 --yes       # neinteraktivně (úloha dashboardu, skript)
+```
+
+Tvrdé smazání **volného** zdroje dat na vývojovém nebo testovacím serveru
+(#103 D68–D69, `tasks/ds-delete.md`) — bez koše a bez zálohy. Smaže
+v tomto pořadí:
+
+1. **granty ostatních účtů** na databázi (`mysql.db`, na vývojovém serveru
+   typicky `claude_ro`) — `DROP DATABASE` je neodebere; název se hledá
+   surový i s escapovanými podtržítky (`a\_b`, tak ho ukládá phpMyAdmin),
+   odebírá se `REVOKE ALL PRIVILEGES` (+ `GRANT OPTION`). Selhání je jen
+   varování `[WARN]` — osiřelý řádek opraví člověk;
+2. **databázi** (`DROP DATABASE IF EXISTS`);
+3. **DB uživatele** zdroje dat (`DROP USER IF EXISTS`);
+4. **adresář** zdroje dat rekurzivně (`config/`, `secrets/`, přílohy, …;
+   symlink se odstraní jako soubor, nikdy se nenásleduje).
+
+**Preflight** (nic se nemění, exit 1 se zprávou) odmítne:
+
+- server v režimu `production` — i s `--yes`; mazání ostrého zdroje dat
+  (záloha, portál hostingu) je samostatný postup ([roadmap.md](roadmap.md) M5);
+- neplatné ID, chybějící adresář, adresář jako symlink, nečitelný nebo
+  rozbitý `config/main.json`;
+- třídu dat jinou než `free` — reálnou kopii (i zdroj bez třídy
+  v `main.json`) smažeš jen po vědomém `cd <adresář> && shpd-ds ds-class
+  set free`; žádný `--force` není;
+- běžící úlohu vývojářského dashboardu na zdroji dat
+  (`JobStore::activeJobFor`) — s odkazem na úlohu. Výjimka `--job=<id>`:
+  úloha dashboardu, která příkaz sama spouští (předává ji `POST
+  /_dev/api/data-sources/{id}/delete`; ručně se nepoužívá).
+
+Před mazáním příkaz vypíše plán — databázi a uživatele s poznámkou „already
+gone“, pokud už neexistují, a granty ostatních účtů; na to potřebuje admin
+spojení k databázi i v `--dry-run`. **Potvrzení** = opsání ID zdroje dat
+v interaktivním terminálu (přesměrovaný stdin nebo `-n` → exit 1 s radou
+`--yes`); jiný text = `Aborted`, exit 1, nic smazáno. `--yes` potvrzení
+přeskočí, preflight ne.
+
+**Opakovatelnost:** chybějící databáze nebo uživatel nejsou chyba, adresář
+se maže až nakonec — po částečném selhání (`Failed to drop database …`)
+zůstane adresář i `main.json` a příkaz jde pustit znovu. **Nemaže:** logy
+(`/opt/shipard/log`), adresáře úloh dashboardu (`/opt/shipard/run/dev-jobs`),
+mapování domén (`domains.json` → `domain-remove`) ani granty na úrovni
+tabulek (`mysql.tables_priv`). Sudo není potřeba — stačí vlastník zdrojů
+dat s čitelným `server.json` (vývojový server); pod rootem funguje stejně.
+Z dashboardu: kebab menu řádku → **Smazat…** ([dev/dev-daily.md](dev/dev-daily.md) § 1).
+
 ### `ds-upgrade-all`
 
 ```bash
