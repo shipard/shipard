@@ -225,7 +225,7 @@
           <div class="dev-empty">Založení nedoběhlo — viz kroky a výstup. Rozpracovaný zdroj dat případně uklidit ručně.</div>
         {/if}
       {:else if job.status === 'finished'}
-        <p>Přeseedováno — zdroj dat je čistý s aktuální sadou.</p>
+        <p>Přeseedováno — zdroj dat je čistý s aktuální sadou{#if job.params?.previousDataset} (nahradila sadu <code>{job.params.previousDataset}</code>){/if}.</p>
       {:else}
         <div class="dev-empty">Úloha nedoběhla — viz výstup.</div>
       {/if}

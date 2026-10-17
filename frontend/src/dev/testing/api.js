@@ -30,7 +30,9 @@ export const testingApi = {
 
   // Evaluační zdroje dat a akce (F6b D54, D55, D61, D63)
   dataSources: (set) => getJson(`/testing/eval/data-sources${query({ dataset: set })}`),
-  reseed: (set, dataSource) => postJson('/testing/eval/reseed', { dataset: set, dataSource }),
+  // `replaceDataset` jen jako true — výměna držené sady za jinou chce výslovné potvrzení (D66), jinak server vrátí 409 DATASET_MISMATCH
+  reseed: (set, dataSource, { replaceDataset = false } = {}) =>
+    postJson('/testing/eval/reseed', { dataset: set, dataSource, ...(replaceDataset ? { replaceDataset: true } : {}) }),
   create: (set) => postJson('/testing/eval/create', { dataset: set }),
   verify: (set, dataSource, apply = true) => postJson('/testing/eval/verify', { dataset: set, dataSource, apply }),
   estimate: (body) => postJson('/testing/eval/estimate', body),

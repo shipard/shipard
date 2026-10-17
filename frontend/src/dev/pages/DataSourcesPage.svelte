@@ -2,13 +2,19 @@
   // Zdroje dat — port původní stránky `/_dev/`: tabulka, akce, kopírování
   // ID, automatické obnovení (`?refresh=N` 5–3600 s, výchozí 60, parametr
   // se z URL uklidí jako dřív). Obnovení = nové načtení seznamu, ne reload.
+  // Akce „Nahrát datovou sadu“ (#103 D66) jen u volného zdroje dat a jen
+  // když server nabízí sekci Testování; běžící úloha se ukazuje v řádku
+  // a seznam se při ní obnovuje po 5 s. Pojistku dělá server.
   import { onMount } from 'svelte';
   import Button from '../../components/ui/Button.svelte';
   import Icon from '../../components/ui/Icon.svelte';
   import { iconAdd, iconRefresh, iconCopy, iconConfirm } from '../../icons.js';
   import { getJson } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
+  import { devInfo } from '../info.svelte.js';
+  import { JOB_TYPE_LABELS, JOB_STATUS_LABELS } from '../testing/jobs.js';
   import { formatDateTime, dataClassLabel, dataClassTitle, truncate } from '../format.js';
+  import LoadDatasetDialog from './LoadDatasetDialog.svelte';
 
   const STATE_LABELS = {
     read_only: 'jen ke čtení',
@@ -16,6 +22,7 @@
     pending_deletion: 'ke smazání',
     corrupted: 'poškozený stav',
   };
+  const JOB_REFRESH_SECONDS = 5;
 
   let items = $state([]);
   let loading = $state(true);
@@ -23,6 +30,25 @@
   let refreshSeconds = $state(60);
   let countdown = $state(60);
   let copiedId = $state(null);
+  let loadFor = $state(null); // řádek zdroje dat pro dialog Nahrát datovou sadu
+  let notice = $state(null); // {kind: 'success'|'danger', text, jobId?}
+  let sinceLoad = 0;
+
+  const hasActiveJob = $derived(items.some((ds) => ds.job));
+
+  function canLoadDataset(ds) {
+    return Boolean(devInfo.value?.testing) && ds.dataClass === 'free' && ds.state === 'active';
+  }
+
+  function heldDataset(ds) {
+    return ds.dataset?.name ?? ds.legacyDataset ?? null;
+  }
+
+  function onDatasetStarted(job) {
+    loadFor = null;
+    notice = { kind: 'success', text: `Úloha ${JOB_TYPE_LABELS[job.type] ?? job.type} spuštěna.`, jobId: job.id };
+    load();
+  }
 
   function readRefreshParam() {
     const raw = router.route.query.refresh;
@@ -41,6 +67,7 @@
     } finally {
       loading = false;
       countdown = refreshSeconds;
+      sinceLoad = 0;
     }
   }
 
@@ -64,10 +91,12 @@
   onMount(() => {
     refreshSeconds = readRefreshParam();
     countdown = refreshSeconds;
+    devInfo.load();
     load();
     const timer = setInterval(() => {
       countdown -= 1;
-      if (countdown <= 0) load();
+      sinceLoad += 1;
+      if (countdown <= 0 || (hasActiveJob && sinceLoad >= JOB_REFRESH_SECONDS)) load();
     }, 1000);
     return () => clearInterval(timer);
   });
@@ -85,6 +114,18 @@
 
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
+{/if}
+
+{#if notice}
+  <div class="dev-alert dev-alert--{notice.kind}">
+    <span class="dev-alert__text">
+      {notice.text}
+      {#if notice.jobId}
+        <a href={router.href('testingJob', { jobId: notice.jobId })} onclick={onLinkClick}>Průběh úlohy {notice.jobId}</a>
+      {/if}
+    </span>
+    <Button label="Zavřít" variant="secondary" size="sm" onclick={() => (notice = null)} />
+  </div>
 {/if}
 
 <div class="dev-table-wrap">
@@ -109,7 +150,7 @@
           <td colspan="8" class="dev-empty">
             Zatím žádné zdroje dat. Založ první přes
             <a href={router.href('dsCreate')} onclick={onLinkClick}>Nový zdroj dat</a>
-            — zaškrtni „Naseedovat testovací data“, dostaneš ukázkové osoby a poštu.
+            — s datovou sadou v poli Data dostaneš rovnou firmu s doklady a poštou.
           </td>
         </tr>
       {:else}
@@ -127,7 +168,16 @@
                 <Icon icon={copiedId === ds.id ? iconConfirm : iconCopy} size="sm" />
               </button>
             </td>
-            <td>{ds.name}</td>
+            <td>
+              {ds.name}
+              {#if ds.job}
+                <div class="dev-small">
+                  <a href={router.href('testingJob', { jobId: ds.job.id })} onclick={onLinkClick} title="Běžící úloha na zdroji dat">
+                    ⟳ {JOB_TYPE_LABELS[ds.job.type] ?? ds.job.type} · {JOB_STATUS_LABELS[ds.job.status] ?? ds.job.status}
+                  </a>
+                </div>
+              {/if}
+            </td>
             <!-- Třída dat (#126 D10): bez explicitní třídy šedě (v main.json chybí → reálná kopie);
                  značka AI = zdroj používá serverové AI připojení. -->
             <td class="dev-nowrap">
@@ -138,7 +188,14 @@
                 <span class="dev-state dev-state--neutral" title="Používá serverové AI připojení (dev-ai-key)">AI</span>
               {/if}
             </td>
-            <td class="dev-muted purpose" title={ds.purpose ?? ''}>{truncate(ds.purpose)}</td>
+            <td class="dev-muted purpose" title={ds.purpose ?? ''}>
+              {truncate(ds.purpose)}
+              {#if heldDataset(ds)}
+                <div class="dev-small" title={ds.dataset ? `seedováno ${formatDateTime(ds.dataset.seededAt)}` : 'sada jen z původu (před F6b) — záznam doplní nové nahrání'}>
+                  sada: <code>{heldDataset(ds)}</code>{#if !ds.dataset} <span class="dev-muted">(z původu)</span>{/if}
+                </div>
+              {/if}
+            </td>
             <td class="dev-nowrap dev-muted">{ds.created ? formatDateTime(ds.created) : '—'}</td>
             <td><code>{ds.database_name ?? '—'}</code></td>
             <td class="dev-nowrap">
@@ -155,6 +212,15 @@
               <a class="action" href={`/${ds.id}/app/`} target="_blank" rel="noopener">Otevřít</a>
               <a class="action" href={router.href('logs', {}, { ds: ds.id })} onclick={onLinkClick}>Logy</a>
               <a class="action" href={router.href('dsUpgrade', {}, { ds: ds.id })} onclick={onLinkClick}>Upgrade</a>
+              {#if canLoadDataset(ds)}
+                <button
+                  class="action"
+                  type="button"
+                  disabled={Boolean(ds.job)}
+                  title={ds.job ? `Běží úloha ${ds.job.id}` : 'Reset zdroje dat a nahrání datové sady z tests/datasets'}
+                  onclick={() => (loadFor = ds)}
+                >Nahrát datovou sadu</button>
+              {/if}
             </td>
           </tr>
         {/each}
@@ -162,6 +228,10 @@
     </tbody>
   </table>
 </div>
+
+{#if loadFor}
+  <LoadDatasetDialog open={true} ds={loadFor} onClose={() => (loadFor = null)} onStarted={onDatasetStarted} />
+{/if}
 
 <style>
   .dev-btn-link { text-decoration: none; }
@@ -202,4 +272,8 @@
     border-color: var(--shpd-color-primary);
     color: var(--shpd-color-primary);
   }
+
+  button.action { font: inherit; font-size: var(--shpd-font-size-sm); cursor: pointer; }
+  button.action:disabled { opacity: 0.5; cursor: default; }
+  button.action:disabled:hover { border-color: var(--shpd-color-border); color: var(--shpd-color-text); }
 </style>
