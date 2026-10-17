@@ -15,6 +15,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class TestableUserCreateCommand extends UserCreateCommand
 {
+    /** Co „přijde“ jako první řádek STDIN při --password-stdin (null = EOF). */
+    public ?string $stdinLine = null;
+
     public function __construct(
         DataSourceConfig $dsConfig,
         DataSourceConnection $dsConnection,
@@ -26,6 +29,11 @@ class TestableUserCreateCommand extends UserCreateCommand
     protected function getDataSourceDir(): string
     {
         return $this->dsDir;
+    }
+
+    protected function readPasswordLine(): ?string
+    {
+        return $this->stdinLine;
     }
 }
 
@@ -50,13 +58,14 @@ class UserCreateCommandTest extends TestCase
         $this->rmdirRecursive($this->tempDir);
     }
 
-    private function createCommandTester(): CommandTester
+    private function createCommandTester(?string $stdinLine = null): CommandTester
     {
         $command = new TestableUserCreateCommand(
             $this->dsConfig,
             $this->dsConnection,
             $this->tempDir,
         );
+        $command->stdinLine = $stdinLine;
 
         $app = new Application();
         $app->add($command);
@@ -185,6 +194,72 @@ class UserCreateCommandTest extends TestCase
         $this->assertNotNull($capturedData);
         $this->assertNotSame('plaintext_password', $capturedData['password_hash']);
         $this->assertTrue(password_verify('plaintext_password', $capturedData['password_hash']));
+    }
+
+    // -------------------------------------------------------------------------
+    // --password-stdin (#103 D65): heslo z prvního řádku stdin, nikdy z argv
+    // -------------------------------------------------------------------------
+
+    public function testPasswordStdinReadsTheFirstLineWithoutItsLineEnding(): void
+    {
+        $this->dsConnection->method('fetchRow')->willReturn(null);
+        $capturedData = null;
+        $this->dsConnection->method('insertRow')
+            ->willReturnCallback(function (string $table, array $data) use (&$capturedData): int {
+                $capturedData = $data;
+                return 7;
+            });
+
+        $tester = $this->createCommandTester(stdinLine: "stdin-secret-fake\r\n");
+        $exitCode = $tester->execute([
+            '--login'          => 'admin',
+            '--name'           => 'Admin',
+            '--admin'          => true,
+            '--password-stdin' => true,
+        ]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertNotNull($capturedData);
+        $this->assertTrue(password_verify('stdin-secret-fake', $capturedData['password_hash']), 'konec řádku se do hesla nepočítá');
+        $this->assertSame(1, $capturedData['is_admin']);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('User created successfully.', $display);
+        $this->assertStringNotContainsString('stdin-secret-fake', $display, 'heslo se nikdy nevypisuje');
+        $this->assertStringNotContainsString('Password: (none', $display, 'účet má lokální heslo');
+    }
+
+    public function testPasswordStdinConflictsWithPasswordOption(): void
+    {
+        $this->dsConnection->expects($this->never())->method('fetchRow');
+        $this->dsConnection->expects($this->never())->method('insertRow');
+
+        $tester = $this->createCommandTester(stdinLine: "whatever\n");
+        $exitCode = $tester->execute([
+            '--login'          => 'admin',
+            '--name'           => 'Admin',
+            '--password'       => 'argv-secret',
+            '--password-stdin' => true,
+        ]);
+
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $this->assertStringContainsString('mutually exclusive', $tester->getDisplay());
+    }
+
+    public function testPasswordStdinWithoutInputFails(): void
+    {
+        $this->dsConnection->expects($this->never())->method('insertRow');
+
+        foreach ([null, "\n", "\r\n"] as $stdinLine) {
+            $tester = $this->createCommandTester(stdinLine: $stdinLine);
+            $exitCode = $tester->execute([
+                '--login'          => 'admin',
+                '--name'           => 'Admin',
+                '--password-stdin' => true,
+            ]);
+
+            $this->assertSame(Command::FAILURE, $exitCode, var_export($stdinLine, true));
+            $this->assertStringContainsString('No password on STDIN', $tester->getDisplay());
+        }
     }
 
     // -------------------------------------------------------------------------

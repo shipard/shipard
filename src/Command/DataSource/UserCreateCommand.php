@@ -25,7 +25,8 @@ class UserCreateCommand extends Command
         $this->setName('user-create')
              ->setDescription('Create a new user in the data source')
              ->addOption('login', null, InputOption::VALUE_REQUIRED, 'Login name')
-             ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Password (omit to create the account without a local password — send an invitation instead)')
+             ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Password on the command line (prefer --password-stdin; omit both to create the account without a local password — send an invitation instead)')
+             ->addOption('password-stdin', null, InputOption::VALUE_NONE, 'Read the password from the first line of STDIN — never lands in argv, shell history or process listings')
              ->addOption('name', null, InputOption::VALUE_REQUIRED, 'Full name')
              ->addOption('email', null, InputOption::VALUE_OPTIONAL, 'E-mail address')
              ->addOption('admin', null, InputOption::VALUE_NONE, 'Grant administrator rights')
@@ -40,6 +41,19 @@ class UserCreateCommand extends Command
         return getcwd();
     }
 
+    /**
+     * První řádek STDIN tak, jak přišel (včetně konce řádku); null = žádný
+     * vstup (EOF, zavřený stdin). Šev pro testy (#103 D65).
+     */
+    protected function readPasswordLine(): ?string
+    {
+        if (!\defined('STDIN')) {
+            return null;
+        }
+        $line = fgets(STDIN);
+        return $line === false ? null : $line;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $dsDir = $this->getDataSourceDir();
@@ -51,6 +65,7 @@ class UserCreateCommand extends Command
 
         $login = $input->getOption('login');
         $password = $input->getOption('password');
+        $passwordStdin = (bool) $input->getOption('password-stdin');
         $fullName = $input->getOption('name');
         $email = $input->getOption('email');
         $isAdmin = (bool) $input->getOption('admin');
@@ -69,6 +84,22 @@ class UserCreateCommand extends Command
         if (($identityIssuer === null) !== ($identitySubject === null)) {
             $output->writeln('<error>Error: --identity-issuer and --identity-subject must be used together</error>');
             return Command::FAILURE;
+        }
+
+        // Heslo ze stdin (#103 D65): první řádek bez konce řádku; s --password
+        // zároveň je to chyba, prázdný nebo žádný řádek také. Hodnota jde jen
+        // do hashe — nikdy do výstupu.
+        if ($passwordStdin) {
+            if ($password !== null) {
+                $output->writeln('<error>Error: --password and --password-stdin are mutually exclusive</error>');
+                return Command::FAILURE;
+            }
+            $line = $this->readPasswordLine();
+            $password = $line === null ? '' : rtrim($line, "\r\n");
+            if ($password === '') {
+                $output->writeln('<error>Error: No password on STDIN (--password-stdin reads the first line)</error>');
+                return Command::FAILURE;
+            }
         }
 
         $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
