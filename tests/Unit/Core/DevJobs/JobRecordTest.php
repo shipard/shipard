@@ -71,4 +71,31 @@ final class JobRecordTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         new JobStep('x', [], '/tmp');
     }
+
+    public function testServerWideUpdateHasNoDataSourceAndCannotBeCancelled(): void
+    {
+        $step = new JobStep('dev-update', ['/usr/bin/php', 'shpd-server', 'dev-update', '--yes'], '/repo');
+        $record = new JobRecord('20261017-120000-abc123', JobRecord::TYPE_UPDATE, '', '', null, null, [], [$step], '2026-10-17T12:00:00Z', '10.0.0.5', 60);
+
+        $this->assertTrue($record->isServerWide());
+        $this->assertFalse($record->isCancellable());
+        $this->assertNull($record->toArray()['dataSource']);
+
+        $copy = JobRecord::fromArray($record->toArray());
+        $this->assertSame($record->toArray(), $copy->toArray());
+        $this->assertSame('', $copy->dataSourceId);
+
+        $delete = new JobRecord('20261017-120000-abc124', JobRecord::TYPE_DELETE, 'aaaa-bbbb-cccc-dddd', 'DS', null, null, [], [$step], '2026-10-17T12:00:00Z', null, 60);
+        $this->assertFalse($delete->isServerWide());
+        $this->assertTrue($delete->isCancellable());
+        $this->assertSame(['id' => 'aaaa-bbbb-cccc-dddd', 'name' => 'DS'], $delete->toArray()['dataSource']);
+    }
+
+    public function testOnlyServerTypesMayOmitTheDataSource(): void
+    {
+        $step = new JobStep('x', ['true'], '/tmp');
+
+        $this->expectException(\InvalidArgumentException::class);
+        new JobRecord('20261017-120000-abc123', JobRecord::TYPE_DELETE, '', '', null, null, [], [$step], '2026-10-17T12:00:00Z', null, 60);
+    }
 }

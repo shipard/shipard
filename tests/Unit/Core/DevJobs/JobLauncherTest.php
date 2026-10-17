@@ -183,6 +183,53 @@ final class JobLauncherTest extends TestCase
         $this->assertSame([], $this->kills);
     }
 
+    private function updateRecord(string $id): JobRecord
+    {
+        return new JobRecord($id, JobRecord::TYPE_UPDATE, '', '', null, null, [], [new JobStep('dev-update', ['true'], '/repo')], JobStore::formatTime($this->now), '10.0.0.5', 60);
+    }
+
+    public function testUpdateExcludesEveryOtherJobAndViceVersa(): void
+    {
+        // Běžící reseed na jednom zdroji dat → update (celý server) nejde spustit.
+        $this->launcher->launch($this->record('20261016-120000-aaaaaa'));
+        try {
+            $this->launcher->launch($this->updateRecord('20261016-120001-bbbbbb'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertSame('20261016-120000-aaaaaa', $e->runningJobId);
+            $this->assertSame('aaaa-bbbb-cccc-dddd', $e->dataSourceId, 'the running job is on a data source');
+            $this->assertStringContainsString('aaaa-bbbb-cccc-dddd', $e->getMessage());
+        }
+        $this->assertCount(1, $this->spawns);
+
+        // Reseed doběhl → update projde a stojí v cestě všemu ostatnímu, i na jiném zdroji dat.
+        $this->alive = false;
+        $done = JobState::pending(1);
+        $done->status = JobStatus::FINISHED;
+        $this->store->writeState('20261016-120000-aaaaaa', $done);
+        $this->alive = true;
+
+        $view = $this->launcher->launch($this->updateRecord('20261016-120002-cccccc'));
+        $this->assertSame(JobStatus::STARTING, $view['status']);
+        $this->assertNull($view['dataSource']);
+        try {
+            $this->launcher->launch($this->record('20261016-120003-dddddd', 'eeee-ffff-gggg-hhhh'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertSame('20261016-120002-cccccc', $e->runningJobId);
+            $this->assertSame('', $e->dataSourceId, 'the running job is server-wide');
+            $this->assertSame(JobRecord::TYPE_UPDATE, $e->runningType);
+            $this->assertStringContainsString('server-wide job 20261016-120002-cccccc (update)', $e->getMessage());
+        }
+        try {
+            $this->launcher->launch($this->updateRecord('20261016-120004-eeeeee'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertSame('20261016-120002-cccccc', $e->runningJobId, 'a second update is refused too');
+        }
+        $this->assertCount(2, $this->spawns);
+    }
+
     private function rrmdir(string $dir): void
     {
         if (!is_dir($dir)) {

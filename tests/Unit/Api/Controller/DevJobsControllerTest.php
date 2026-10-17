@@ -195,6 +195,24 @@ final class DevJobsControllerTest extends TestCase
 		$this->assertSame([[-4242, 15], [-4242, 9]], $this->kills);
 	}
 
+	public function testUpdateJobCannotBeCancelledOrForced(): void
+	{
+		$this->job('20261016-115900-aaaaaa', JobRecord::TYPE_UPDATE, '', '');
+		$this->running('20261016-115900-aaaaaa');
+
+		foreach (['/_dev/api/testing/jobs/20261016-115900-aaaaaa/cancel', '/_dev/api/testing/jobs/20261016-115900-aaaaaa/cancel?force=1'] as $uri) {
+			$r = $this->ctrl->dispatch($this->request('POST', $uri));
+			$this->assertSame(409, $this->statusOf($r), $uri);
+			$this->assertSame('JOB_NOT_CANCELLABLE', $r->getPayload()['error']['code']);
+		}
+		$this->assertSame([], $this->kills, 'no signal was sent');
+
+		$detail = $this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/jobs/20261016-115900-aaaaaa')));
+		$this->assertNull($detail['job']['dataSource']);
+		$this->assertSame(JobStatus::RUNNING, $detail['job']['status']);
+		$this->assertCount(1, $this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/jobs')))['jobs']);
+	}
+
 	private function rrmdir(string $dir): void
 	{
 		if (!is_dir($dir)) {

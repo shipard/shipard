@@ -10,7 +10,8 @@ use Shipard\Core\Process\DetachedProcess;
 
 /**
  * Spuštění a zrušení úlohy (D58). `launch()` běží pod `flock` na
- * `dev-jobs/.lock`: kontrola jediné aktivní úlohy na zdroji dat → zápis
+ * `dev-jobs/.lock`: kontrola jediné aktivní úlohy na zdroji dat (úloha
+ * celého serveru `update` vylučuje všechny, #129 U1) → zápis
  * `job.json` → `setsid -f` obalu `shpd-server dev-job-run <adresář>`
  * ({@see DetachedProcess}). Obal je session leader (PGID = PID), takže
  * zrušení = signál celé skupině `posix_kill(-pid, 15)` zasáhne i kroky;
@@ -52,9 +53,9 @@ final class JobLauncher
         }
         try {
             flock($lock, LOCK_EX);
-            $active = $this->store->activeJobFor($record->dataSourceId);
+            $active = $this->conflictingJob($record);
             if ($active !== null) {
-                throw new JobConflict((string) $active['id'], $record->dataSourceId);
+                throw new JobConflict((string) $active['id'], (string) ($active['dataSource']['id'] ?? ''), (string) $active['type']);
             }
             $this->store->create($record);
             $jobDir = $this->store->jobDir($record->id);
@@ -76,6 +77,24 @@ final class JobLauncher
             fclose($lock);
         }
         return $this->store->view($record, $this->store->readState($record->id));
+    }
+
+    /**
+     * Běžící úloha, která novou vylučuje: úloha celého serveru (`update`,
+     * U1) koliduje s jakoukoli aktivní úlohou; úloha se zdrojem dat
+     * s aktivní úlohou téhož zdroje nebo s jakoukoli úlohou celého serveru.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function conflictingJob(JobRecord $record): ?array
+    {
+        foreach ($this->store->activeJobs() as $job) {
+            $jobDataSource = $job['dataSource']['id'] ?? null;
+            if ($record->isServerWide() || $jobDataSource === null || $jobDataSource === $record->dataSourceId) {
+                return $job;
+            }
+        }
+        return null;
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\Server;
 
+use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
 use Shipard\Core\DevJobs\JobState;
 use Shipard\Core\DevJobs\JobStatus;
@@ -125,6 +126,11 @@ class DevJobRunCommand extends Command implements SignalableCommandInterface
         $state->status = JobStatus::RUNNING;
         $state->startedAt = JobStore::formatTime($this->now());
         $store->writeState($id, $state);
+
+        // Úloha `update` přepíše kód pod běžícím obalem: všechno, co obal
+        // může ještě potřebovat, musí být v paměti teď. JobLauncher jinak
+        // načte až cesta zrušení (konstanty SIGTERM / SIGKILL v runneru).
+        class_exists(JobLauncher::class);
 
         $outputLog = $store->path($id, JobStore::OUTPUT_FILE);
         $resultFile = $store->path($id, JobStore::RESULT_FILE);

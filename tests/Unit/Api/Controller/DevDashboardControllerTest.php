@@ -1350,6 +1350,27 @@ class DevDashboardControllerTest extends TestCase
 		return Request::fromArray('POST', '/_dev/api/data-sources/' . $id . '/delete', [], '', []);
 	}
 
+	public function testUpdatesRoutesAreDispatchedToTheUpdatesController(): void
+	{
+		$ctrl = $this->deleteController();
+
+		$resp = $ctrl->dispatch($this->makeRequest('GET', '/_dev/api/updates'));
+
+		$this->assertSame(200, $this->getStatus($resp));
+		$data = $this->getPayloadRaw($resp)['data'];
+		$this->assertNull($data['state']);
+		$this->assertTrue($data['stale']);
+		$this->assertNull($data['head']['hash'], 'tmpRoot is not a git checkout');
+		$this->assertSame(['notStable', 'dirty', 'notChecked'], array_column($data['blockers'], 'code'), 'fail-closed without git');
+		$this->assertNull($data['job']);
+		$this->assertCount(1, $ctrl->checkSpawns, 'stale cache without a running check starts dev-update-check');
+		$this->assertSame(['/usr/bin/php', '/repo/bin/shpd-server', 'dev-update-check'], $ctrl->checkSpawns[0]['argv']);
+		$this->assertSame($this->tmpRoot, $ctrl->checkSpawns[0]['cwd']);
+		$this->assertFileExists($this->tmpRoot . '/run/dev-update/check.requested');
+
+		$this->assertSame(404, $this->getStatus($ctrl->dispatch($this->makeRequest('GET', '/_dev/api/updates/nope'))));
+	}
+
 	public function testDeleteDataSourceLaunchesDeleteJob(): void
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', '2026-10-01T00:00:00Z', ['dataClass' => 'free']);
@@ -1470,6 +1491,8 @@ class TestableDevDashboardController extends DevDashboardController
 {
 	/** @var list<array{0: int, 1: string}> výsledky v pořadí kroků — sdílí je shellové příkazy i podprocesy s argv */
 	public array $commandResults = [];
+	/** @var list<array{argv: list<string>, cwd: string, log: string}> odpojené kontroly aktualizací (#129 D18) */
+	public array $checkSpawns = [];
 	/** @var list<string> */
 	public array $commandsRun = [];
 	/** @var list<array{argv: list<string>, cwd: string, stdin: ?string}> */
@@ -1484,6 +1507,30 @@ class TestableDevDashboardController extends DevDashboardController
 	protected function now(): \DateTimeImmutable
 	{
 		return new \DateTimeImmutable('2026-10-16T12:00:00Z');
+	}
+
+	/** Cache aktualizací v temp kořeni a zaznamenaný spawn — nikdy skutečný /opt/shipard/run ani git fetch. */
+	protected function updatesController(): \Shipard\Api\Controller\DevUpdatesController
+	{
+		$root = (new \ReflectionProperty(DevDashboardController::class, 'repoRoot'))->getValue($this);
+		$status = new \Shipard\Core\DevUpdate\UpdateStatus(
+			new \Shipard\Core\DevUpdate\Git($root),
+			new \Shipard\Core\DevUpdate\UpdateStateStore($root . '/run/dev-update', fn (): \DateTimeImmutable => $this->now()),
+			$this->jobStore(),
+		);
+		return new \Shipard\Api\Controller\DevUpdatesController(
+			$this->serverMode(),
+			$root,
+			$this->jobStore(),
+			$this->jobLauncher(),
+			$status,
+			$this->serverCommand(),
+			function (array $argv, string $cwd, string $log): bool {
+				$this->checkSpawns[] = ['argv' => $argv, 'cwd' => $cwd, 'log' => $log];
+				return true;
+			},
+			fn (): \DateTimeImmutable => $this->now(),
+		);
 	}
 
 	protected function streamCommand(string $cmd, bool $redactPassword = false): array

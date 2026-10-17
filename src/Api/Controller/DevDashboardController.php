@@ -13,6 +13,9 @@ use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
 use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
+use Shipard\Core\DevUpdate\Git;
+use Shipard\Core\DevUpdate\UpdateStateStore;
+use Shipard\Core\DevUpdate\UpdateStatus;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
@@ -75,6 +78,10 @@ class DevDashboardController
 		}
 		if ($path === DevEvalController::PREFIX || str_starts_with($path, DevEvalController::PREFIX . '/')) {
 			return (new DevEvalController($this->repoRoot, $this->dataSourcesDir, $this->serverMode(), $this->jobStore(), $this->jobLauncher()))->dispatch($request);
+		}
+		// Zastaralost checkoutu a Aktualizovat (#129 D18–D21).
+		if ($path === DevUpdatesController::PREFIX || str_starts_with($path, DevUpdatesController::PREFIX . '/')) {
+			return $this->updatesController()->dispatch($request);
 		}
 
 		// Sekce Testování (#103 D51–D53) — jen čtení souborů v checkoutu.
@@ -485,6 +492,13 @@ class DevDashboardController
 	protected function jobLauncher(): JobLauncher
 	{
 		return $this->jobLauncher ??= new JobLauncher($this->jobStore());
+	}
+
+	/** Controller aktualizací nad skutečným checkoutem a cache v run adresáři (seam pro testy). */
+	protected function updatesController(): DevUpdatesController
+	{
+		$status = new UpdateStatus(new Git($this->repoRoot), new UpdateStateStore(UpdateStateStore::defaultDir()), $this->jobStore());
+		return new DevUpdatesController($this->serverMode(), $this->repoRoot, $this->jobStore(), $this->jobLauncher(), $status, $this->serverCommand());
 	}
 
 	protected function getShpdDsPath(): string

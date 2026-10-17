@@ -23,7 +23,13 @@ final readonly class JobRecord
     public const string TYPE_CREATE = 'create';
     /** Smazání volného zdroje dat (`ds-delete <id> --yes`, tasks/ds-delete.md D70). */
     public const string TYPE_DELETE = 'delete';
-    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE];
+    /** Aktualizace checkoutu (`dev-update --yes --job`, tasks/dev-dashboard-update.md D21). */
+    public const string TYPE_UPDATE = 'update';
+    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE, self::TYPE_UPDATE];
+    /** Úlohy celého serveru — bez zdroje dat (U1): vylučují jakoukoli jinou úlohu a naopak. */
+    public const array SERVER_TYPES = [self::TYPE_UPDATE];
+    /** Úlohy, které z dashboardu nejde zrušit ani vynutit (U2): přerušení by nechalo checkout v půli. */
+    public const array UNCANCELLABLE_TYPES = [self::TYPE_UPDATE];
 
     /** `Ymd-His-<6 znaků a-z0-9>` — řaditelné podle času, bezpečné jako název adresáře. */
     public const string ID_REGEX = '/^\d{8}-\d{6}-[a-z0-9]{6}$/';
@@ -60,8 +66,8 @@ final readonly class JobRecord
                 throw new \InvalidArgumentException('Job steps must be JobStep instances');
             }
         }
-        if ($dataSourceId === '') {
-            throw new \InvalidArgumentException('Job data source id must not be empty');
+        if ($dataSourceId === '' && !in_array($type, self::SERVER_TYPES, true)) {
+            throw new \InvalidArgumentException("Job data source id must not be empty for type '{$type}'");
         }
         if ($cancelGraceSeconds < 0) {
             throw new \InvalidArgumentException('cancelGraceSeconds must not be negative');
@@ -81,6 +87,18 @@ final readonly class JobRecord
     public static function isValidId(string $id): bool
     {
         return preg_match(self::ID_REGEX, $id) === 1;
+    }
+
+    /** Úloha celého serveru (bez zdroje dat, {@see SERVER_TYPES}). */
+    public function isServerWide(): bool
+    {
+        return in_array($this->type, self::SERVER_TYPES, true);
+    }
+
+    /** Smí ji API zrušit / vynutit ({@see UNCANCELLABLE_TYPES}). */
+    public function isCancellable(): bool
+    {
+        return !in_array($this->type, self::UNCANCELLABLE_TYPES, true);
     }
 
     /**
@@ -118,7 +136,7 @@ final readonly class JobRecord
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'dataSource' => ['id' => $this->dataSourceId, 'name' => $this->dataSourceName],
+            'dataSource' => $this->dataSourceId === '' ? null : ['id' => $this->dataSourceId, 'name' => $this->dataSourceName],
             'dataset' => $this->dataset,
             'variant' => $this->variant,
             'params' => $this->params,

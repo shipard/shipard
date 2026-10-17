@@ -21,7 +21,8 @@ use Shipard\Core\DevJobs\JobStore;
  * |--------|----------------------------|--------------------------------------------------------------|
  * | GET    | `jobs?dataset=&ds=&days=`  | `{jobs[]}` nejnovější první (před výpisem úklid po retenci)   |
  * | GET    | `jobs/{id}?offset=&tail=`  | `{job, progress{events,nextOffset}, outputTail, result}`      |
- * | POST   | `jobs/{id}/cancel?force=1` | `{job}` po zrušení; 409 `JOB_NOT_ACTIVE` když není co rušit  |
+ * | POST   | `jobs/{id}/cancel?force=1` | `{job}` po zrušení; 409 `JOB_NOT_ACTIVE` když není co rušit, |
+ * |        |                            | 409 `JOB_NOT_CANCELLABLE` pro typ `update` (#129 U2)          |
  */
 final class DevJobsController
 {
@@ -90,8 +91,18 @@ final class DevJobsController
 
 	private function cancel(string $id, Request $request): Response
 	{
-		if ($this->store->read($id) === null) {
+		$record = $this->store->read($id);
+		if ($record === null) {
 			return $this->notFound('Job not found');
+		}
+		// U2: aktualizaci checkoutu nejde zrušit ani vynutit — přerušení
+		// uprostřed composer install / buildu by nechalo checkout v půli.
+		if (!$record->isCancellable()) {
+			return Response::error(
+				'JOB_NOT_CANCELLABLE',
+				"Job type '{$record->type}' cannot be cancelled from the dashboard — a stuck update is resolved in the terminal",
+				409,
+			);
 		}
 		$force = ($request->getQueryParams()['force'] ?? null) === '1'
 			|| (bool) ($request->getBody()['force'] ?? false);
