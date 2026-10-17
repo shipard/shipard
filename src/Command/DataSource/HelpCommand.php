@@ -133,12 +133,6 @@ class HelpCommand extends Command
         $output->writeln('  <info>dataset-seed</info>            Reset the DS and import a dataset folder/zip (--no-reset to merge, -y)');
         $output->writeln('  <info>dataset-verify</info>          Apply the proposals of a seeded dataset and verify accounting, VAT and costs against expected/ (--no-apply, --json, --write-ledger-snapshot)');
         $output->writeln('');
-        $output->writeln('<comment>Seed (test data):</comment>');
-        $output->writeln('  <info>seed-persons</info>            Generate fake persons with optional contacts and bank accounts');
-        $output->writeln('  <info>seed-clear</info>              Remove all seeded test persons (TEST- prefix)');
-        $output->writeln('  <info>seed-mail</info>               Generate fake mailboxes and incoming messages for core.mail');
-        $output->writeln('  <info>seed-mail-clear</info>         Remove all core.mail seed data (TEST- / TEST-MSG- prefix)');
-        $output->writeln('');
         $output->writeln('<comment>Usage:</comment>');
         $output->writeln('  shpd-ds <command> [options]');
         $output->writeln('');
@@ -162,11 +156,6 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');
         $output->writeln('  shpd-ds dataset-seed /tmp/web-demo.zip -y');
         $output->writeln('  shpd-ds dataset-verify /path/to/repo/tests/datasets/cz/vat-payer');
-        $output->writeln('  shpd-ds seed-persons --count=100 --with-contacts --with-bank-accounts');
-        $output->writeln('  shpd-ds seed-persons -c 20 --company-ratio=60');
-        $output->writeln('  shpd-ds seed-clear');
-        $output->writeln('  shpd-ds seed-mail -c 60');
-        $output->writeln('  shpd-ds seed-mail-clear');
         $output->writeln('');
         $output->writeln('<comment>Note:</comment>');
         $output->writeln('  Run from within a data source directory (must contain config/main.json)');
