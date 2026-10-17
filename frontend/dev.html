@@ -5,18 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Shipard — vývojářský dashboard</title>
-    <script>
-      // Tmavý režim podle systému — dashboard nemá uživatelské nastavení
-      // vzhledu (to má jen aplikace per zdroj dat). Běží před prvním
-      // renderem, aby nebliklo světlé téma. Tokeny viz styles/variables.css.
-      (function () {
-        try {
-          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-          }
-        } catch (e) { /* bez matchMedia zůstane světlé téma */ }
-      })();
-    </script>
+    <!-- Jen světlý vzhled (#129 D2): žádný bootstrap data-theme podle systému,
+         vrstvu tokenů dává src/dev/theme.css. Favicon = ikona aplikace
+         (publicDir je pro dashboard vypnutý, soubor jde přes Vite assets). -->
+    <link rel="icon" type="image/png" href="/src/dev/assets/icon-192.png" />
   </head>
   <body>
     <div id="app"></div>

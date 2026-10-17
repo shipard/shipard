@@ -227,8 +227,10 @@
               {/if}
             </td>
             <td class="dev-actions">
-              <a class="action" href={`/${ds.id}/app/`} target="_blank" rel="noopener">Otevřít</a>
-              <DevKebabMenu label={`Další akce: ${ds.name}`} items={menuItems(ds)} />
+              <span class="dev-actions__inner">
+                <a class="action" href={`/${ds.id}/app/`} target="_blank" rel="noopener">Otevřít</a>
+                <DevKebabMenu label={`Další akce: ${ds.name}`} items={menuItems(ds)} />
+              </span>
             </td>
           </tr>
         {/each}

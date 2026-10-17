@@ -108,7 +108,7 @@
       <input id="eval-only" type="text" bind:value={form.only} placeholder="např. 0101,0902" disabled={estimating || starting} onchange={() => (estimate = null)} />
     </div>
 
-    <div class="dev-actions">
+    <div class="dev-btnrow">
       <Button label="Spočítat odhad" variant="secondary" size="sm" loading={estimating} disabled={starting || variants.length === 0} onclick={runEstimate} />
       <span class="dev-small dev-muted">Odhad nic nespustí ani nezapíše (ai-eval --estimate).</span>
     </div>

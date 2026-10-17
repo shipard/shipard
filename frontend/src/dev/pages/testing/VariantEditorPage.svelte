@@ -254,7 +254,7 @@
           </div>
         </div>
 
-        <div class="dev-actions">
+        <div class="dev-btnrow">
           <Button label={isNew ? 'Uložit variantu' : 'Uložit změny'} type="submit" size="sm" loading={busy} disabled={busy || (isNew && !nameOk) || form.profile.trim() === ''} onclick={() => save(false)} />
           <span class="dev-small dev-muted">Validace stejná jako v <code>ai-eval</code>; existující soubor se přepíše jen s potvrzením.</span>
         </div>

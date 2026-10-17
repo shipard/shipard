@@ -1,0 +1,53 @@
+/* Vývojářský dashboard — vrstva vzhledu podle shipard.dev (#129 D1–D3, D13).
+ *
+ * Přepisuje HODNOTY tokenů aplikace (styles/variables.css) jen v bundlu
+ * dashboardu: importuje ji pouze src/dev/main.js, po variables.css
+ * a base.css, před dev.css. Aplikace se nemění. Dashboard má jen světlý
+ * vzhled (D2) a nikdy nenastavuje data-theme — blok [data-theme="dark"]
+ * ve variables.css by tuhle vrstvu přepsal. Paleta a písmo odpovídají
+ * shpd_web:web-dev/static/style.css. */
+
+:root {
+  /* Modrá a oranžová webu (--blue / --blue-deep, --orange / --orange-deep) */
+  --shpd-color-primary:        #005089;
+  --shpd-color-primary-hover:  #00436f;
+  --shpd-color-primary-soft:   #e6eef5;
+  --shpd-color-accent:         #eb6507;
+  --shpd-color-accent-hover:   #cf5804;
+
+  /* Červená pro nevratné akce — bílý text 5,8 : 1 */
+  --shpd-color-danger:         #c81e1e;
+  --shpd-color-danger-hover:   #a51818;
+
+  /* Text, hrany a plochy webu (--text / --text-muted, --border, --card-gray, --bg-light) */
+  --shpd-color-text:           #1c2b3a;
+  --shpd-color-text-secondary: #5a6b7b;
+  --shpd-color-border:         #d7dee6;
+  --shpd-color-border-strong:  #c3cfdb;
+  --shpd-color-border-subtle:  #e8edf2;
+  --shpd-color-bg:             #ffffff;
+  --shpd-color-bg-secondary:   #f4f6f8;
+  --shpd-color-bg-hover:       #eef3f8;
+
+  /* Písmo (D3): IBM Plex z @fontsource, importy v main.js; velikosti a hustota zůstávají z aplikace */
+  --shpd-font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+
+  /* Vedlejší tlačítko sdíleného Button: bílé s modrým textem (D4).
+     Aplikace tyto tokeny nedefinuje — Button má fallback na dnešní hodnoty. */
+  --shpd-btn-secondary-text:   var(--shpd-color-primary);
+  --shpd-btn-secondary-border: var(--shpd-color-border-strong);
+
+  /* Tokeny jen dashboardu */
+  --dev-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --dev-stripe-bg: #eb6507;                    /* pruh DEVELOPMENT DASHBOARD */
+  --dev-stripe-ink: #14202c;                   /* tmavý text v pruhu, kontrast 5 : 1 (D13) */
+  --dev-stripe-chip-bg: rgb(20 32 44 / 0.14);  /* štítky v pruhu (fáze 3) */
+  --dev-toolbar-bg: #005089;                   /* lišta */
+  --dev-toolbar-link: #cfe0ee;                 /* navigace v liště */
+  --dev-toolbar-link-active: #ffffff;          /* hover a aktivní položka */
+  --dev-class-real-bg: #fff3c4;                /* štítek „reálná kopie“ — žlutá pracovního pruhu webu */
+  --dev-class-real-text: #5a4300;
+  /* Výška pruhu + lišty pro lepicí prvky pod lištou (PdfPane). Výchozí odhad;
+     DevApp ji na .dev-shell přepisuje naměřenou výškou, pruh i lišta smí zalomit. */
+  --dev-top-height: 84px;
+}

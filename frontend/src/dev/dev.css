@@ -10,6 +10,14 @@
   background: var(--shpd-color-bg-secondary);
 }
 
+/* Fokus jako na webu: oranžový obrys u odkazů a tlačítek. Pole formulářů
+ * si nechávají modrý rámeček a záři (.dev-field … :focus níže). */
+.dev-shell a:focus-visible,
+.dev-shell button:focus-visible {
+  outline: 2px solid var(--shpd-color-accent);
+  outline-offset: 2px;
+}
+
 .dev-banner {
   background: var(--shpd-color-accent);
   color: #fff;
@@ -124,7 +132,7 @@
 .dev-num { text-align: right; font-variant-numeric: tabular-nums; }
 
 code, .dev-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--dev-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
   font-size: 0.875em;
   background: var(--shpd-color-bg-secondary);
   padding: 1px 5px;
@@ -229,8 +237,10 @@ code, .dev-code {
 .dev-table tr.is-clickable { cursor: pointer; }
 .dev-table tr.is-dim td { color: var(--shpd-color-text-secondary); }
 .dev-table td.dev-num, .dev-table th.dev-num { text-align: right; }
+/* Buňka akcí řádku: bez flexu, aby se kebab menu nezalomilo pod odkaz (B2);
+ * obsah v inline-flex obalu. Řada tlačítek mimo tabulku = .dev-btnrow. */
 .dev-table .dev-actions { white-space: nowrap; text-align: right; }
-.dev-table .dev-actions > * + * { margin-left: var(--shpd-space-xs); }
+.dev-table .dev-actions__inner { display: inline-flex; align-items: center; gap: var(--shpd-space-xs); vertical-align: middle; }
 
 /* ---- Formuláře ---- */
 .dev-form {
@@ -338,7 +348,7 @@ code, .dev-code {
 .dev-output {
   background: #0f172a;
   color: #e2e8f0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--dev-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
   font-size: 12px;
   line-height: 1.5;
   padding: var(--shpd-space-md);
@@ -420,7 +430,7 @@ td.dev-cellstate--notCompared { color: var(--shpd-color-text-secondary); font-st
   font: inherit;
 }
 .dev-field textarea { min-height: 80px; resize: vertical; }
-.dev-actions { display: flex; flex-wrap: wrap; gap: var(--shpd-space-xs, 4px); align-items: center; }
+.dev-btnrow { display: flex; flex-wrap: wrap; gap: var(--shpd-space-xs); align-items: center; }
 .dev-progress { height: 8px; background: var(--shpd-color-bg-secondary); border-radius: 4px; overflow: hidden; margin: 4px 0; }
 .dev-progress__bar { height: 100%; background: var(--shpd-color-primary); transition: width 0.3s; }
 .dev-progress__bar--warn { background: var(--shpd-color-warning); }

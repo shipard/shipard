@@ -100,11 +100,13 @@
     border-color: var(--shpd-color-primary-hover);
   }
 
-  /* Secondary */
+  /* Secondary. Text a rámeček mají volitelné tokeny s fallbackem na dnešní
+   * hodnoty: aplikace je nedefinuje (vzhled beze změny), vývojářský dashboard
+   * je nastavuje v src/dev/theme.css — bílé tlačítko s modrým textem (#129 D1, D4). */
   .shpd-btn--secondary {
     background-color: var(--shpd-color-bg);
-    color: var(--shpd-color-text);
-    border-color: var(--shpd-color-border);
+    color: var(--shpd-btn-secondary-text, var(--shpd-color-text));
+    border-color: var(--shpd-btn-secondary-border, var(--shpd-color-border));
   }
 
   .shpd-btn--secondary:hover:not(:disabled) {

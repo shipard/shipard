@@ -190,7 +190,7 @@
                 {/if}
               </td>
               <td>
-                <div class="dev-actions">
+                <div class="dev-btnrow">
                   <Button label="Přeseedovat" variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
                   <Button label="Ověřit zaúčtování" variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
                   <span title={row.blockers.join('\n')}>
