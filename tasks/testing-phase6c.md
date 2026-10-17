@@ -1,6 +1,6 @@
 # Testování F6c: datová sada při zakládání zdroje dat a v seznamu zdrojů dat
 
-**Stav:** naplánováno — design schválen 2026-10-17 (#103 D64–D67), čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-17 (#103 D64–D67), ověřeno na dev serveru (založení se sadou `cz-non-payer`, výměna za `cz-vat-payer` ze seznamu); zbývá komentář #103 a alfa
 
 ## Kontext / Cíl
 
@@ -109,19 +109,45 @@ pro vývoj = datové sady (`docs/test-corpus.md`).
 
 ## Hotovo když
 
-- [ ] `user-create --password-stdin` (testy); heslo z formuláře není v argv
-      ani v logu (ověřit `ps` během kroku nebo testem příkazu)
-- [ ] nový zdroj dat z formuláře se sadou `cz-non-payer`: země zamčená
+- [x] `user-create --password-stdin` (testy); heslo z formuláře není v argv
+      ani v logu — `DevDashboardController::streamProcess` (argv bez hesla,
+      stdin), test `testDsCreatePipelineCreatesAdministratorWithThePasswordOnStdin`
+- [x] nový zdroj dat z formuláře se sadou `cz-non-payer`: země zamčená
       na `cz`, průběh včetně `dataset-seed`, zdroj dat je `free`, má
-      `dataset`, admin se přihlásí
-- [ ] „Nahrát datovou sadu“ na volném zdroji dat bez sady i s jinou sadou
+      `dataset`, admin se přihlásí (dev server 2026-10-17, zdroj `izzt-1`)
+- [x] „Nahrát datovou sadu“ na volném zdroji dat bez sady i s jinou sadou
       (druhé potvrzení); na reálné kopii akce není a API vrátí 403
-      (testem, ne živě)
-- [ ] staré seedy pryč, `shpd-ds help` je nevypisuje, testy zelené (úzké `--filter`
-      pro dotčené oblasti)
-- [ ] `docs/dev/dev-daily.md` § 1, `docs/cli.md` (`user-create`, odstraněné
+      (test + živě 409 / 403 / 201)
+- [x] staré seedy pryč, `shpd-ds help` je nevypisuje, testy zelené (celá
+      sada 9 982 testů)
+- [x] `docs/dev/dev-daily.md` § 1, `docs/cli.md` (`user-create`, odstraněné
       `seed-*`), `docs/test-corpus.md` (sada při zakládání a v seznamu)
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Hotovo (2026-10-17)
+
+- `user-create --password-stdin`; formulář posílá heslo na stdin podprocesu
+  (`streamProcess`, argv bez shellu), redakce `--password=` ve výstupu zůstala
+  jako obrana do hloubky.
+- Formulář: pole **Data** (sady z `tests/datasets`, jen s checkoutem `tests/`),
+  země podle sady, účel „datová sada <název>“ dokud ho uživatel nezmění,
+  krok `dataset-seed <sada> --yes`; server ověří sadu proti katalogu a zemi
+  (400). Výsledek `[DONE]` nese `dataset`.
+- API `reseed`: držená sada (`DataSourceInfo::heldDataset()` — pole `dataset`,
+  jinak původ `dataset-seed <sada>`) ≠ požadovaná → 409 `DATASET_MISMATCH`
+  (`current` / `requested`); s `replaceDataset: true` projde, úloha nese
+  `previousDataset`. `GET /_dev/api/data-sources` přidal `country`, `dataset`,
+  `legacyDataset`, `job`.
+- Seznam zdrojů dat: tlačítko **Nahrát datovou sadu** (volný + sekce
+  Testování), `LoadDatasetDialog` (sady se zemí zdroje dat, dnešní sada,
+  varování, druhé potvrzení), běžící úloha v řádku, obnovení po 5 s.
+- Zrušené: `seed-persons`, `seed-clear`, `seed-mail`, `seed-mail-clear`,
+  `src/Core/Seed/` (vč. `FakeContactGenerator`, `FakeBankAccountGenerator`
+  — používal je jen `seed-persons`), generátory pošty, jejich testy.
+
+Odchylky od zadání: žádné. Rozhodnutí mimo D64–D67: `ds-create` z formuláře
+dál s cronem (bez `--no-cron`); po spuštění ze seznamu uživatel zůstává
+v seznamu (panel sady naviguje na úlohu jako dřív).
 
 ## Pasti
 

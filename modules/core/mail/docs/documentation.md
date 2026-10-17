@@ -11,8 +11,10 @@ repozitář). Fáze 3+ přidává AI analyzátor a odeslanou poštu.
 
 - 3 tabulky: `core_mail_mailboxes`, `core_mail_incoming_messages`, `core_mail_message_analyses`
 - 2 cfgItemy: `core.mail.primaryTypes`, `core.mail.docStatesIncoming`
-- PHP třídy: `IncomingMessagesViewer`, `IncomingMessagesForm`, `IncomingMessageDocument`, `FakeMailboxGenerator`, `FakeIncomingMessageGenerator`
-- CLI: `seed-mail`, `seed-mail-clear`
+- PHP třídy: `IncomingMessagesViewer`, `IncomingMessagesForm`, `IncomingMessageDocument`
+  (generátory náhodné pošty `FakeMailboxGenerator` / `FakeIncomingMessageGenerator`
+  a CLI `seed-mail` / `seed-mail-clear` zanikly v #103 D67 — testovací pošta
+  = datové sady, `docs/test-corpus.md`)
 - Kontrakt pro API endpoint (Fáze 2) — viz [`docs/mail/api-contract.md`](../../../../docs/mail/api-contract.md)
 
 **Fáze 2a — přidáno:**
@@ -177,21 +179,13 @@ vyplněný, doplní se `mailbox.default_primary_type` (fallback `other`).
 - `beforeDelete()` — cascade delete přidružených analýz a obsahových attachmentů
   (Shipard nepoužívá FOREIGN KEY, integritu řeší aplikace)
 
-## 7. CLI příkazy
+## 7. Testovací pošta
 
-```bash
-# Z adresáře data sourcu
-cd /opt/shipard/data-sources/<ds-id>
-
-shpd-ds seed-mail                  # 3 schránky (TEST-invoices, -info, -support) + 60 zpráv
-shpd-ds seed-mail --count 80       # ručně 80 zpráv
-shpd-ds seed-mail --attachment-ratio 50  # jen 50 % zpráv dostane PDF přílohu
-
-shpd-ds seed-mail-clear            # smaže TEST- schránky a TEST-MSG- zprávy včetně analýz a attachmentů
-```
-
-Seed příkaz je idempotentní nad `TEST-` schránkami — pokud existují, použije je.
-`message_id` indexy pokračují od posledního použitého (lze volat opakovaně a doplňovat).
+Náhodné seedy (`seed-mail`, `seed-mail-clear`) zanikly (#103 D67). Testovací
+došlá pošta vzniká z datových sad: `shpd-ds dataset-seed <sada> -y`
+z adresáře zdroje dat, nebo z vývojářského dashboardu (pole **Data** ve
+formuláři Nový zdroj dat, akce **Nahrát datovou sadu** v seznamu zdrojů
+dat). Obsah sad a jejich formát: `docs/test-corpus.md`, `docs/datasets.md`.
 
 ## 8. Extensions (budoucí)
 

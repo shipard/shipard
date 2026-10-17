@@ -1245,19 +1245,22 @@ Exit 0 shoda, 1 rozdíly, 2 chyba vstupu; `--strict` odmítne stranu se
 
 ```bash
 sudo shpd-ds user-create --login=jan --name="Jan Novák" --email=jan@example.com
-sudo shpd-ds user-create --login=admin --password=Tajne123 --name="Admin" --admin
+printf '%s\n' "$ADMIN_PW" | sudo shpd-ds user-create --login=admin --password-stdin --name="Admin" --admin
 ```
 
 Vytvoří nového uživatele v DS. **Doporučení:** heslo nezadávat — účet
 vznikne bez lokálního hesla (NULL hash) a uživatel si ho nastaví sám přes
 pozvánku (akce „Poslat pozvánku“ v detailu uživatele v Nastavení, nebo
 `POST /_users/{id}/invite`). Heslo tak nikdy neputuje mimo pásmo. Viz
-`docs/auth.md`.
+`docs/auth.md`. Když heslo zadat musíš (skript, vývojářský dashboard),
+pošli ho na stdin přes `--password-stdin` — `--password` ho nechává
+v argv, shell history a výpisu procesů (#103 D65).
 
 | Opce | Význam |
 |------|--------|
 | `--login <login>` | **povinné** — login |
-| `--password <heslo>` | volitelné — heslo; bez něj účet čeká na pozvánku |
+| `--password-stdin` | volitelné — heslo z **prvního řádku stdin** (konec řádku se odřízne); prázdný nebo žádný řádek = chyba, s `--password` zároveň = chyba. Formulář Nový zdroj dat ho používá vždy |
+| `--password <heslo>` | volitelné — heslo na příkazové řádce (raději `--password-stdin`); bez obou účet čeká na pozvánku |
 | `--name <jméno>` | **povinné** — celé jméno |
 | `--email <email>` | volitelné — e-mailová adresa (pro pozvánku nutná) |
 | `--admin` | volitelné — založit rovnou s administrátorskými právy (`is_admin = 1`) |
@@ -2056,60 +2059,6 @@ nebo odmítnutý preflight. Selhání apply jedné zprávy je výsledek, ne pád
 | `--json` | Report jako JSON na stdout |
 | `--write-ledger-snapshot=<soubor>` | Zapsat aktuální hlavní knihu (`ReportResult` JSON) a vypsat obraty po účtech; kontrola deníku pak končí „přeskočeno“ — snímek schvaluje člověk a commituje do `tests/corpus/<země>/profiles/<profil>/approved/` |
 
-### Seed (testovací data)
-
-> Seed příkazy jsou určené pro vývoj a demo. **Nepouštět na produkční DS.**
-
-#### `seed-persons`
-
-```bash
-sudo shpd-ds seed-persons
-sudo shpd-ds seed-persons --count=100 --with-contacts --with-bank-accounts
-sudo shpd-ds seed-persons -c 20 --company-ratio=60
-```
-
-Vygeneruje fake osoby s prefixem `TEST-` v názvu — později snadno smazatelné
-přes `seed-clear`.
-
-| Opce | Význam |
-|------|--------|
-| `-c, --count <N>` | Počet osob (default: `50`) |
-| `--with-contacts` | Také kontakty |
-| `--with-bank-accounts` | Také bankovní účty |
-| `--company-ratio <0-100>` | Procento firem (default: `40`) |
-
-#### `seed-clear`
-
-```bash
-sudo shpd-ds seed-clear
-```
-
-Smaže všechny seedované osoby (`TEST-` prefix) včetně jejich kontaktů
-a bankovních účtů.
-
-#### `seed-mail`
-
-```bash
-sudo shpd-ds seed-mail
-sudo shpd-ds seed-mail -c 60
-sudo shpd-ds seed-mail --attachment-ratio=20
-```
-
-Vygeneruje fake mailboxy a incoming zprávy pro `core.mail` modul.
-
-| Opce | Význam |
-|------|--------|
-| `-c, --count <N>` | Počet zpráv (default: `60`, doporučení 40–80) |
-| `--attachment-ratio <0-100>` | Procento zpráv s ukázkovou PDF přílohou |
-
-#### `seed-mail-clear`
-
-```bash
-sudo shpd-ds seed-mail-clear
-```
-
-Smaže všechna seedovaná mail data (`TEST-` mailboxy + `TEST-MSG-` zprávy).
-
 ---
 
 ## Pomocné skripty
@@ -2413,14 +2362,13 @@ Detailní postup vč. backfillu existujících DS:
 | `ds-*` | datový zdroj jako celek (`ds-create`, `ds-upgrade`, `ds-upgrade-all`, `ds-secrets-*`) |
 | `mail-*` | core.mail modul a router |
 | `ai-*` | AI připojení, profily a test volání (`ai-test`) |
-| `seed-*` | testovací data |
 | `domain-*` | hostname → DS routing |
 | `*-bootstrap` | jednorázová idempotentní inicializace (system uživatel, default mailbox, default profil) |
 | `*-setup` | opakovatelná konfigurace (typicky generování/rotace API klíčů) |
 
 ### Idempotence
 
-`ds-upgrade`, `*-bootstrap`, `*-setup` (bez `--force`), `seed-*-clear` musí
+`ds-upgrade`, `*-bootstrap` a `*-setup` (bez `--force`) musí
 být idempotentní — opakované spuštění bez efektu, pokud se nic nezměnilo.
 To je conscious design choice; umožňuje pouštět `ds-upgrade-all` po každém
 deployi bez obav.

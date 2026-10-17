@@ -33,14 +33,23 @@ Sekce v horní liště:
   značka **AI** = zdroj používá serverové AI připojení), účelem, datem
   vytvoření, databází a stavem periodických úloh (Cron). Totéž
   v terminálu: `shpd-server ds-list`. U každého **Otevřít** (aplikace
-  `/{ds-id}/app/` v novém tabu), **Logy** a **Upgrade**. ID lze jedním
-  klikem zkopírovat do schránky. Seznam se sám obnovuje (odpočet v hlavičce).
+  `/{ds-id}/app/` v novém tabu), **Logy** a **Upgrade**; u volného zdroje
+  dat navíc **Nahrát datovou sadu** (jen když je k dispozici sekce
+  Testování): dialog nabídne sady se zemí zdroje dat, ukáže dnešní sadu
+  a upozorní, že reset smaže data — uživatelé, nastavení a API klíče
+  zůstanou. Jiná než dnešní sada chce druhé potvrzení „Nahradit sadu X
+  sadou Y“. Spustí se úloha na pozadí; běžící úloha je vidět v řádku.
+  Pod účelem je vidět, kterou sadu zdroj dat drží. ID lze jedním klikem
+  zkopírovat do schránky. Seznam se sám obnovuje (odpočet v hlavičce).
 - **Nový zdroj dat** — založení zdroje dat z formuláře (jazyk, země,
-  instalační modul, volitelný účel, login a heslo administrátora, volitelně
-  testovací data); takto založený zdroj je ve vývoji **volný** (třída dat
-  `free`). Průběh (`ds-create` → `ds-upgrade` → `user-create` → příp. seed)
-  se vypisuje živě do stránky; po dokončení vede odkaz přímo do nového
-  zdroje dat.
+  instalační modul, volitelný účel, login a heslo administrátora, v poli
+  **Data** volitelně datová sada z `tests/datasets` — země se pak zamkne
+  podle sady a prázdný účel se předvyplní „datová sada <název>“); takto
+  založený zdroj je ve vývoji **volný** (třída dat `free`). Průběh
+  (`ds-create` → `ds-upgrade` → `user-create` s heslem přes stdin → se
+  sadou `dataset-seed`) se vypisuje živě do stránky; po dokončení vede
+  odkaz přímo do nového zdroje dat. Když selže až seed, zdroj dat i admin
+  jsou použitelné — sadu dohraješ akcí **Nahrát datovou sadu**.
 - **Testování** — evaluace AI nad testovacími sadami (`tests/datasets`,
   `tests/eval`, `docs/test-corpus.md` § 18): sady, běhy sady, detail běhu,
   detail dokladu s PDF vedle očekávání a výstupu modelu, porovnání dvou
@@ -99,6 +108,11 @@ než 14 dní se při výpisu mažou.
   F6b ho nemají — panel je ukáže jen podle původu `dataset-seed <sada>`
   s poznámkou „přeseedovat“; ostatní volné zdroje dat jsou v nabídce
   „Přeseedovat jiný volný zdroj dat“.
+- **Výměna sady** (F6c): přeseedování zdroje dat, který drží jinou sadu,
+  server pustí jen s výslovným potvrzením (`replaceDataset`, jinak 409
+  `DATASET_MISMATCH`) — v seznamu zdrojů dat je to druhé potvrzení
+  „Nahradit sadu X sadou Y“. Panel sady nabízí jen zdroje dat s touž
+  sadou nebo bez sady, takže se ho to netýká.
 - Totéž z terminálu: `shpd-ds dataset-seed <cesta> -y`, `shpd-ds
   dataset-verify <cesta> --json`, `shpd-ds ai-eval <cesta> --variant
   <soubor> --estimate --json` / `--yes --max-cost <USD>`
@@ -114,7 +128,9 @@ v dashboardu:
 1. Klikni na **Nový zdroj dat**.
 2. Vyplň **Název**, **Login administrátora** a **Heslo administrátora**;
    jazyk, zemi a instalační modul můžeš nechat, jak jsou.
-3. Zaškrtni **Naseedovat testovací data** — dostaneš ukázkové osoby a poštu.
+3. V poli **Data** vyber datovou sadu (např. `cz-non-payer`) — dostaneš
+   firmu s doklady a došlou poštou; země se nastaví podle sady. Bez sady
+   vznikne prázdný zdroj dat.
 4. **Vytvořit zdroj dat**. Průběh se vypisuje do stránky; na konci je odkaz
    **Otevřít zdroj dat →**.
 5. Přihlas se loginem a heslem z kroku 2.

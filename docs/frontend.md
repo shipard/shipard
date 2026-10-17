@@ -133,7 +133,8 @@ slovník, `check:i18n` se jí netýká). Index servíruje `DevDashboardControlle
 Zdroj `src/dev/`: `routes.js` (tabulka rout podle cesty — musí odpovídat
 `SPA_PAGES` v controlleru), `router.svelte.js` (History API, `onLinkClick`),
 `api.js` + `stream.js` (JSON obálka a řádkový stream `[STEP]` / `[ERROR]`
-/ `[DONE]`), `format.js` (čeština), `pages/` (Zdroje dat, Nový zdroj dat,
+/ `[DONE]`), `format.js` (čeština), `pages/` (Zdroje dat s akcí Nahrát
+datovou sadu — `LoadDatasetDialog.svelte`, Nový zdroj dat s výběrem sady,
 Logy, akce), `pages/testing/` + `testing/metrics.js` (prohlížeč výsledků
 evaluací, #103 D53, `docs/test-corpus.md` § 18) a od F6b spouštění
 (`testing/api.js` volá `/_dev/api/testing/eval/*` a `/_dev/api/testing/jobs*`,

@@ -566,6 +566,10 @@ cd /opt/shipard/data-sources/<id>
 shpd-ds dataset-seed /cesta/k/repu/tests/datasets/cz/vat-payer -y
 ```
 
+Z vývojářského dashboardu totéž bez terminálu: pole **Data** ve formuláři
+Nový zdroj dat (sada se nahraje hned po založení), nebo **Nahrát datovou
+sadu** u volného zdroje dat v seznamu (§ 18, F6c).
+
 `dataset-seed` si na čerstvém DS doplní schéma (`ds-upgrade`), zapíše
 nastavení, resetuje DS, založí fiskální rok 2026 a účetní položky
 z nabídky (57 / 57 / 31) a naseeduje vlastní firmu a zprávy
@@ -906,10 +910,11 @@ sady. API `/_dev/api/testing/…` (`DevTestingController`) vybírá sadu, běh
 i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Spouštění
 evaluací z dashboardu je F6b (D54–D56).
 
-### Spouštění z dashboardu (F6b — D54–D56, D58–D63)
+### Spouštění z dashboardu (F6b — D54–D56, D58–D63; F6c — D64–D67)
 
 Sekce Testování od F6b evaluace i **spouští** (`docs/dev/dev-daily.md` § 1,
-tasks/testing-phase6b.md). Server (`DevEvalController`,
+tasks/testing-phase6b.md); F6c (tasks/testing-phase6c.md) přidala sadu do
+formuláře Nový zdroj dat a do seznamu zdrojů dat. Server (`DevEvalController`,
 `/_dev/api/testing/eval/…`) drží pojistku D60: akce reseed / verify /
 estimate / run projdou jen v režimu `development`, na zdroji dat s třídou
 **`free`** a pro sadu ze seznamu (`DevActionGuard`; 403 `DS_NOT_FREE` /
@@ -940,6 +945,25 @@ tokeny `[A-Za-z0-9._-]`.
   --language cs --country <země sady> --module install.base --no-cron --ds-id
   <nové> --purpose "evaluace AI — <sada>"` a pak `dataset-seed`; bez
   uživatele (do aplikace `shpd-ds auth-emergency-login`).
+- **Výměna sady** (F6c D66): `reseed` na zdroji dat, který drží jinou sadu
+  (pole `dataset`, nebo původ `dataset-seed <sada>` před F6b —
+  `DataSourceInfo::heldDataset()`), skončí 409 `DATASET_MISMATCH`
+  s `details.current` / `requested`; projde jen s `replaceDataset: true`
+  a úloha pak nese `params.previousDataset`. Pojistka třídy dat má přednost
+  (403). V UI je to akce **Nahrát datovou sadu** v seznamu zdrojů dat
+  (`DataSourcesPage` + `LoadDatasetDialog`, jen u `free` a jen s checkoutem
+  `tests/`): sady se zemí zdroje dat, dnešní sada, varování o resetu,
+  druhé potvrzení „Nahradit sadu X sadou Y“. `GET /_dev/api/data-sources`
+  k tomu nese `country`, `dataset`, `legacyDataset` a `job` (běžící
+  úloha). Panel sady se nemění.
+- **Sada při zakládání** (F6c D64, D65): formulář Nový zdroj dat posílá
+  `POST /_dev/api/ds-create` s `dataset` (název z katalogu; země formuláře
+  musí sedět se zemí sady, jinak 400) a průběh je `ds-create` →
+  `ds-upgrade` → `user-create --password-stdin` (heslo admina jde na stdin
+  podprocesu, ne do argv) → `dataset-seed <sada> --yes`. Selhání seedu je
+  chyba kroku; zdroj dat i admin zůstávají použitelné (`ds-reset` uvnitř
+  seedu uživatele zachová). Staré náhodné seedy `seed-persons` /
+  `seed-mail` zanikly (D67) — testovací data pro vývoj jsou datové sady.
 - **Editor variant** (`GET/PUT variants/{název}`, `GET variants/options?dataSource=`):
   `EvalVariantStore` nad `tests/eval/variants/` — identita varianty je název
   souboru bez `.jsonc`, nová varianta `[a-z0-9][a-z0-9-]{0,63}`, validace
