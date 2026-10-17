@@ -11,15 +11,13 @@
   import { router, onLinkClick } from './router.svelte.js';
   import { devInfo } from './info.svelte.js';
   import { versionLabel, formatDateTime } from './format.js';
+  import { DOCS_URL, COMMIT_URL } from './links.js';
   import DataSourcesPage from './pages/DataSourcesPage.svelte';
   import DsCreatePage from './pages/DsCreatePage.svelte';
   import LogsPage from './pages/LogsPage.svelte';
   import ActionPage from './pages/ActionPage.svelte';
   import TestingPage from './pages/testing/TestingPage.svelte';
   import NotFoundPage from './pages/NotFoundPage.svelte';
-
-  const DOCS_URL = 'https://shipard.dev/pro-vyvojare/';
-  const COMMIT_URL = 'https://github.com/shipard/shipard/commit/';
 
   const route = $derived(router.route);
 

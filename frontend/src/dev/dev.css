@@ -127,8 +127,9 @@ a.dev-stripe__version:hover {
 }
 
 .dev-page__head h1 {
-  font-size: 1.375rem;
+  font-size: 1.625rem;
   font-weight: 600;
+  color: var(--shpd-color-primary);
   margin-right: var(--shpd-space-sm);
 }
 
@@ -258,6 +259,7 @@ code, .dev-code {
 .dev-table tr.is-clickable { cursor: pointer; }
 .dev-table tr.is-dim td { color: var(--shpd-color-text-secondary); }
 .dev-table td.dev-num, .dev-table th.dev-num { text-align: right; }
+.dev-table code { border: 1px solid var(--shpd-color-border); }
 /* Buňka akcí řádku: bez flexu, aby se kebab menu nezalomilo pod odkaz (B2);
  * obsah v inline-flex obalu. Řada tlačítek mimo tabulku = .dev-btnrow. */
 .dev-table .dev-actions { white-space: nowrap; text-align: right; }
@@ -332,6 +334,59 @@ code, .dev-code {
 }
 
 .dev-input-group input { flex: 1; }
+
+/* ---- Štítky: třída dat, AI, „Začni tady“ (#129 D15) ---- */
+.dev-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: var(--shpd-font-size-xs);
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.dev-badge--free { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
+.dev-badge--real { background: var(--dev-class-real-bg); color: var(--dev-class-real-text); }
+.dev-badge--outline { border-color: var(--shpd-color-border); color: var(--shpd-color-text-secondary); }
+
+/* Odkaz jako tlačítko s modrým rámečkem a textem (Otevřít v řádku, Návod pro začátečníky) */
+.dev-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--shpd-space-sm);
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--shpd-color-primary);
+  border-radius: var(--shpd-radius-md);
+  background: var(--shpd-color-bg);
+  color: var(--shpd-color-primary);
+  font-size: var(--shpd-font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dev-btn-outline:hover { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-hover); }
+.dev-btn-outline--md { height: auto; padding: var(--shpd-space-sm) var(--shpd-space-lg); font-size: var(--shpd-font-size-base); }
+
+/* Prázdný stav přehledu zdrojů dat (D15): karta „Začni tady“ + panel vedle, na úzkém okně pod ní */
+.dev-start { display: flex; flex-wrap: wrap; gap: var(--shpd-space-lg); align-items: flex-start; }
+.dev-start__card { flex: 1 1 480px; max-width: 720px; }
+.dev-start__card .dev-badge { margin-bottom: var(--shpd-space-sm); }
+.dev-start__title { font-size: 1.25rem; font-weight: 600; color: var(--shpd-color-primary); margin-bottom: var(--shpd-space-sm); }
+.dev-start__card p { margin-bottom: var(--shpd-space-md); line-height: 1.5; }
+.dev-start__steps { list-style: decimal; margin: 0 0 var(--shpd-space-lg); padding-left: 1.25rem; line-height: 1.6; }
+.dev-start__aside { flex: 1 1 280px; max-width: 360px; padding: var(--shpd-space-lg); border-radius: var(--shpd-radius-lg); background: var(--shpd-color-bg-hover); }
+.dev-start__aside-title { font-size: var(--shpd-font-size-base); font-weight: 600; margin-bottom: var(--shpd-space-md); }
+.dev-start__list { display: grid; gap: var(--shpd-space-xs); margin: 0; }
+.dev-start__list dt { font-weight: 600; }
+.dev-start__list dt a { text-decoration: none; }
+.dev-start__list dd { margin: 0 0 var(--shpd-space-sm); color: var(--shpd-color-text-secondary); font-size: var(--shpd-font-size-sm); }
 
 /* ---- Čipy / přepínače ---- */
 .dev-chip {

@@ -194,7 +194,7 @@
                   <Button label="Přeseedovat" variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
                   <Button label="Ověřit zaúčtování" variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
                   <span title={row.blockers.join('\n')}>
-                    <Button label="Spustit evaluaci" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
+                    <Button label="Spustit evaluaci" variant="secondary" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
                   </span>
                 </div>
                 {#if row.blockers.length}

@@ -8,9 +8,13 @@
   // Smazat… (D70) otevře dialog s opsáním názvu a spustí úlohu `delete`.
   // Běžící úloha se ukazuje v řádku a seznam se při ní obnovuje po 5 s;
   // smazaný zdroj dat z něj po doběhnutí úlohy zmizí sám. Pojistku dělá server.
+  // Bez zdrojů dat (a bez chyby) místo tabulky karta „Začni tady“ pro nováčka
+  // (#129 D15); třída dat a AI jako štítky, cron slovy s ikonou u vypnutého.
   import { onMount } from 'svelte';
   import Button from '../../components/ui/Button.svelte';
-  import { iconAdd, iconRefresh, iconDocument, iconUpgrade, iconUpload, iconCopy, iconDelete } from '../../icons.js';
+  import Icon from '../../components/ui/Icon.svelte';
+  import { iconAdd, iconRefresh, iconDocument, iconUpgrade, iconUpload, iconCopy, iconDelete, iconOpenExternal, iconClock } from '../../icons.js';
+  import { DOCS_URL } from '../links.js';
   import { getJson } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
   import { devInfo } from '../info.svelte.js';
@@ -67,6 +71,12 @@
 
   function heldDataset(ds) {
     return ds.dataset?.name ?? ds.legacyDataset ?? null;
+  }
+
+  /** Štítek třídy dat: bez explicitní třídy jen rámeček (v main.json chybí → platí reálná kopie). */
+  function dataClassBadge(ds) {
+    if (!ds.dataClassExplicit) return 'outline';
+    return ds.dataClass === 'free' ? 'free' : 'real';
   }
 
   function onJobStarted(job) {
@@ -154,6 +164,37 @@
   </div>
 {/if}
 
+{#if !loading && items.length === 0 && !error}
+  <div class="dev-start">
+    <div class="dev-card dev-start__card">
+      <span class="dev-badge dev-badge--free">Začni tady</span>
+      <h2 class="dev-start__title">Na tomhle stroji zatím nejsou žádné zdroje dat</h2>
+      <p>Zdroj dat je jedna firma s vlastní databází. Nejrychleji začneš zdrojem dat s ukázkovou datovou sadou — dostaneš firmu s doklady, poštou a uživatelem, pod kterým se přihlásíš.</p>
+      <ol class="dev-start__steps">
+        <li>Založ zdroj dat a v poli Data vyber datovou sadu.</li>
+        <li>Počkej, až průběh doběhne.</li>
+        <li>Klikni na Otevřít a přihlas se zvoleným uživatelem.</li>
+      </ol>
+      <div class="dev-btnrow">
+        <a href={router.href('dsCreate')} onclick={onLinkClick} class="dev-btn-link">
+          <Button label="Nový zdroj dat s ukázkovými daty" icon={iconAdd} />
+        </a>
+        <a class="dev-btn-outline dev-btn-outline--md" href={DOCS_URL} target="_blank" rel="noopener">Návod pro začátečníky</a>
+      </div>
+    </div>
+    <aside class="dev-start__aside">
+      <h3 class="dev-start__aside-title">Co tu ještě najdeš</h3>
+      <dl class="dev-start__list">
+        <dt><a href={router.href('logs')} onclick={onLinkClick}>Logy</a></dt>
+        <dd>Chyby a varování aplikace, filtrované podle zdroje dat.</dd>
+        <dt><a href={router.href('doctor')} onclick={onLinkClick}>Doctor</a></dt>
+        <dd>Kontrola stroje — práva, služby, konfigurace.</dd>
+        <dt><a href={router.href('upgradeAll')} onclick={onLinkClick}>Upgrade všech</a></dt>
+        <dd>Po stažení nových změn převede všechny zdroje dat na nové tabulky a nastavení.</dd>
+      </dl>
+    </aside>
+  </div>
+{:else}
 <div class="dev-table-wrap">
   <table class="dev-table">
     <thead>
@@ -170,14 +211,6 @@
     <tbody>
       {#if loading}
         <tr><td colspan="7" class="dev-empty">Načítám…</td></tr>
-      {:else if items.length === 0 && !error}
-        <tr>
-          <td colspan="7" class="dev-empty">
-            Zatím žádné zdroje dat. Založ první přes
-            <a href={router.href('dsCreate')} onclick={onLinkClick}>Nový zdroj dat</a>
-            — s datovou sadou v poli Data dostaneš rovnou firmu s doklady a poštou.
-          </td>
-        </tr>
       {:else}
         {#each items as ds (ds.id)}
           <tr>
@@ -192,19 +225,19 @@
               {#if ds.job}
                 <div class="dev-small">
                   <a href={router.href('testingJob', { jobId: ds.job.id })} onclick={onLinkClick} title="Běžící úloha na zdroji dat">
-                    ⟳ {JOB_TYPE_LABELS[ds.job.type] ?? ds.job.type} · {JOB_STATUS_LABELS[ds.job.status] ?? ds.job.status}
+                    <Icon icon={iconRefresh} size="sm" /> {JOB_TYPE_LABELS[ds.job.type] ?? ds.job.type} · {JOB_STATUS_LABELS[ds.job.status] ?? ds.job.status}
                   </a>
                 </div>
               {/if}
             </td>
-            <!-- Třída dat (#126 D10): bez explicitní třídy šedě (v main.json chybí → reálná kopie);
-                 značka AI = zdroj používá serverové AI připojení. -->
+            <!-- Třída dat (#126 D10) jako štítek: volný modře, reálná kopie žlutě, bez explicitní
+                 třídy jen rámeček (v main.json chybí → reálná kopie); značka AI = serverové AI připojení. -->
             <td class="dev-nowrap">
-              <span class:dev-muted={!ds.dataClassExplicit} class:data-class-free={ds.dataClass === 'free'} title={dataClassTitle(ds)}>
+              <span class="dev-badge dev-badge--{dataClassBadge(ds)}" title={dataClassTitle(ds)}>
                 {dataClassLabel(ds.dataClass)}
               </span>
               {#if ds.serverAi}
-                <span class="dev-state dev-state--neutral" title="Používá serverové AI připojení (dev-ai-key)">AI</span>
+                <span class="dev-badge dev-badge--outline" title="Používá serverové AI připojení (dev-ai-key)">AI</span>
               {/if}
             </td>
             <td class="dev-muted purpose" title={ds.purpose ?? ''}>
@@ -218,9 +251,9 @@
             <td class="dev-nowrap dev-muted">{ds.created ? formatDateTime(ds.created) : '—'}</td>
             <td class="dev-nowrap">
               {#if ds.cron}
-                <span>zap</span>
+                <span>zapnutý</span>
               {:else}
-                <span class="cron-off" title="Periodické úlohy jsou pro tento zdroj dat vypnuté — zapnutí: shpd-ds ds-state cron --on">vyp</span>
+                <span class="cron-off" title="Periodické úlohy jsou pro tento zdroj dat vypnuté — zapnutí: shpd-ds ds-state cron --on"><Icon icon={iconClock} size="sm" /> vypnutý</span>
               {/if}
               {#if ds.state && ds.state !== 'active'}
                 <span class="dev-muted"> · {STATE_LABELS[ds.state] ?? ds.state}</span>
@@ -228,7 +261,7 @@
             </td>
             <td class="dev-actions">
               <span class="dev-actions__inner">
-                <a class="action" href={`/${ds.id}/app/`} target="_blank" rel="noopener">Otevřít</a>
+                <a class="dev-btn-outline" href={`/${ds.id}/app/`} target="_blank" rel="noopener">Otevřít <Icon icon={iconOpenExternal} size="sm" /></a>
                 <DevKebabMenu label={`Další akce: ${ds.name}`} items={menuItems(ds)} />
               </span>
             </td>
@@ -238,6 +271,7 @@
     </tbody>
   </table>
 </div>
+{/if}
 
 {#if loadFor}
   <LoadDatasetDialog open={true} ds={loadFor} onClose={() => (loadFor = null)} onStarted={onJobStarted} />
@@ -253,27 +287,13 @@
   .copied { margin-left: 6px; }
 
   .cron-off {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     color: var(--shpd-color-danger);
     font-weight: 600;
     cursor: help;
   }
 
-  .data-class-free { font-weight: 600; }
   .purpose { max-width: 18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  .action {
-    display: inline-block;
-    padding: 2px 8px;
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-sm);
-    text-decoration: none;
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
-    background: var(--shpd-color-bg);
-  }
-
-  .action:hover {
-    border-color: var(--shpd-color-primary);
-    color: var(--shpd-color-primary);
-  }
 </style>

@@ -130,7 +130,7 @@
 
   {#snippet footer()}
     <Button label="Zrušit" variant="secondary" size="sm" disabled={busy} onclick={() => onClose?.()} />
-    <Button label={isReplace ? 'Nahradit sadu…' : 'Nahrát'} variant="danger" size="sm" loading={busy && !confirmReplace} disabled={busy || !chosen} onclick={submit} />
+    <Button label={isReplace ? 'Nahradit sadu…' : 'Nahrát'} variant={isReplace ? 'secondary' : 'danger'} size="sm" loading={busy && !confirmReplace} disabled={busy || !chosen} onclick={submit} />
   {/snippet}
 </DevDialog>
 

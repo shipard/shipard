@@ -94,7 +94,7 @@
   <div class="dev-card">
     <p class="desc">Spustí <code>{config.command}</code>. {config.description}</p>
     <div class="actions">
-      <Button label={busy ? 'Běží…' : (result ? 'Spustit znovu' : config.button)} loading={busy} disabled={busy} onclick={run} />
+      <Button label={busy ? 'Běží…' : (result ? 'Spustit znovu' : config.button)} variant="primary" loading={busy} disabled={busy} onclick={run} />
       <a href={router.href('dataSources')} onclick={onLinkClick}>Zpět na dashboard</a>
     </div>
   </div>

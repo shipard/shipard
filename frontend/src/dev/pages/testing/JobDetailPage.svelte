@@ -95,10 +95,10 @@
     <span class="dev-page__spacer"></span>
     <Button label="Obnovit" icon={iconRefresh} variant="secondary" size="sm" disabled={busy} onclick={() => load()} />
     {#if active && job.status !== 'cancelling'}
-      <Button label="Zrušit" variant="danger" size="sm" disabled={busy || !job.pid} onclick={() => (confirm = { force: false })} />
+      <Button label="Zrušit" variant="secondary" size="sm" disabled={busy || !job.pid} onclick={() => (confirm = { force: false })} />
     {/if}
     {#if job.status === 'cancelling'}
-      <Button label="Vynutit ukončení" variant="danger" size="sm" disabled={busy} onclick={() => (confirm = { force: true })} />
+      <Button label="Vynutit ukončení" variant="secondary" size="sm" disabled={busy} onclick={() => (confirm = { force: true })} />
     {/if}
   </div>
 
