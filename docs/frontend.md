@@ -127,8 +127,8 @@ Druhý vstup Vite (`dev.html`, `vite.dev.config.js`, #103 D57): samostatná
 malá SPA pro vývojářský dashboard (`docs/dev/dev-daily.md` § 1), sestavená
 do `public/_dev/` s `base: '/_dev/'` a bez `publicDir`. S aplikací sdílí
 `styles/`, `icons.js`, `Button`, `Icon` a `Popover` (kebab menu) — a záměrně
-nic, co tahá `t()` nebo `api/client.js`; texty má jen česky přímo v komponentách (žádný
-slovník, `check:i18n` se jí netýká). Index servíruje `DevDashboardController`
+nic, co tahá `t()` aplikace nebo `api/client.js`; texty má ve vlastním slovníku
+`src/dev/i18n/` (cs + en, viz níže), který `check:i18n` kontroluje také. Index servíruje `DevDashboardController`
 (jen v módu development, bez buildu 503 s návodem), assety nginx.
 Zdroj `src/dev/`: `routes.js` (tabulka rout podle cesty — musí odpovídat
 `SPA_PAGES` v controlleru), `router.svelte.js` (History API, `onLinkClick`),
@@ -200,6 +200,36 @@ Nedefinované tokeny hlídá `scripts/check-css-tokens.py` v pre-commit hooku
 JS objektu, direktiva `style:--x=`, `setProperty('--x'`); `var(--x, y)`
 nevadí. Chybějící token prohlížeč tiše zahodí (karta dialogu bez pozadí) —
 proto kontrola, ne alias.
+
+**Čeština a angličtina (#129 D12, `tasks/dev-dashboard-i18n.md`).** Dashboard
+má vlastní slovníky `src/dev/i18n/cs.js` / `en.js` (ploché objekty, tečkové
+klíče podle obrazovky: `app.*`, `common.*`, `ds.*`, `dsCreate.*`, `logs.*`,
+`action.*`, `testing.*`, `jobs.*`, `metrics.*`, `format.*`) a helper
+`src/dev/i18n/index.js`: `t(key, params)` nad `IntlMessageFormat`
+(`ignoreTag: true` — `<id>` v textu je text) s cache a fallbackem jazyk →
+`en` → klíč, `has(key)`, `label(prefix, code)` pro kódy ze serveru (stav
+úlohy, stav pole, skupina metrik — bez klíče vrátí kód, ne klíč),
+`currentLanguage()`, čistá `resolveLanguage(stored, navigatorLanguage)`,
+`use(lang)` bez persistence (start, testy) a `setLanguage(lang)` =
+`localStorage` **`shpd_dev_language`** + `location.reload()`. Výchozí
+jazyk: uložená volba, jinak `navigator.language` (čeština → `cs`, jinak
+`en`); `main.js` nastaví `<html lang>` před mountem; přepínač **CS · EN**
+je v liště před Dokumentací (`.dev-topbar__lang`). Záměrně **ne** store
+aplikace (`stores/language.svelte.js` tahá `api/account.js`) a ne `t()`
+z `src/i18n/` — dashboard uživatele nemá; aplikace naopak nesmí importovat
+`src/dev/i18n`. `format.js` formátuje podle jazyka (`cs-CZ` / `en-GB`,
+procentní body `b.` / `pp`), `DevTable` řadí `localeCompare` aktuálním
+jazykem, prázdný `.dev-output` čte text z `data-empty`. Nepřekládá se:
+řádky streamu z CLI, `ApiError.message` a `problems` ze serveru, popisky
+skupin a tabulek v detailu dokladu evaluace (posílá server), názvy sad
+z manifestu, kódy a ID (`exit 1`, `pid`, `c.status`). `npm run check:i18n`
+(`scripts/check-i18n.mjs`) hlídá paritu cs ↔ en obou slovníků, že každý
+statický klíč `t('…')` v `src/dev` existuje, že každý klíč slovníku někdo
+používá (literál kdekoli v kódu, nebo prefix dynamického volání
+`t(\`jobs.status.${s}\`)` / `label('jobs.status', s)`) a že každou zprávu
+přeloží ICU MessageFormat. Testy `tests/Unit/dev/i18n.test.mjs`; ostatní
+testy dashboardu volají `use('cs')` (v Node je `navigator.language`
+`en-US`).
 
 ### Dev mód — DS ID v URL
 
@@ -1498,6 +1528,10 @@ přes `setMode/setCustom/setFollow/setDsDefault`. Stejný vzor v
 ---
 
 ## 12. Internacionalizace (i18n)
+
+> Vývojářský dashboard (`/_dev/`) má **vlastní** slovník a `t()`
+> v `src/dev/i18n/` a volbu v `localStorage` `shpd_dev_language` — viz
+> „Vývojářský dashboard“ výše; store aplikace se ho netýká.
 
 Aplikace podporuje češtinu a angličtinu, výběr per-zařízení (volba se ukládá
 do localStorage, ne na uživatele). Přihlášený uživatel přepíná v patce

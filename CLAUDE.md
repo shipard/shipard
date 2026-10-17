@@ -432,8 +432,8 @@ smí názvy nést — tam jsou potřeba k práci.
   `frontend/src/dev/`), sestavená do `public/_dev/`; index servíruje
   `DevDashboardController` jen v módu `development`, JSON API a streamy
   `/_dev/api/*` beze změny kontraktu, prohlížeč Testování čte jen soubory
-  (`DevTestingController`, `Eval/Browse/`). Texty jen česky přímo
-  v komponentách; sdílí jen `styles/`, `icons.js`, `Button`, `Icon`
+  (`DevTestingController`, `Eval/Browse/`). Texty ze slovníku dashboardu
+  (`src/dev/i18n/`, cs + en); sdílí jen `styles/`, `icons.js`, `Button`, `Icon`
   (dialogy dev-lokální `DevDialog` / `DevConfirm`, ne `Modal`).
   Nová stránka = routa v `frontend/src/dev/routes.js` **a** segment
   v `DevDashboardController::SPA_PAGES`. **Vzhled** (#129 fáze 1,
@@ -442,7 +442,9 @@ smí názvy nést — tam jsou potřeba k práci.
   nikdy) a definuje tokeny `--dev-*`; IBM Plex z `@fontsource` jen v
   `src/dev/main.js`; sdílený `Button` má u `secondary` tokeny
   `--shpd-btn-secondary-text` / `-border` s fallbackem (aplikace beze
-  změny); tlačítka `primary` = jediná hlavní akce, `secondary` = ostatní
+  změny); **texty česky a anglicky** (#129 D12) z vlastního slovníku
+  `src/dev/i18n/` přes `t()` / `label()`, `npm run check:i18n` hlídá
+  paritu, použité klíče i ICU; tlačítka `primary` = jediná hlavní akce, `secondary` = ostatní
   vč. akcí v řádcích a tlačítek, která jen otevřou potvrzení, `danger` =
   provede nevratnou akci; pruh + lišta = sticky `.dev-top` (z-index 100,
   lepicí prvky pod ní přes `--dev-top-height`); nedefinovaný token
@@ -536,7 +538,8 @@ smí názvy nést — tam jsou potřeba k práci.
 - Volba per-zařízení (localStorage `shpd_language`), `setMode()` reloadne stránku
 - Anti-flash bootstrap v `frontend/index.html` nastavuje `<html lang>` před prvním renderem
 - Backend dostává volbu přes `Accept-Language` header v `api/client.js`
-- Lint: `cd frontend && npm run check:i18n` — kontroluje paritu klíčů cs ↔ en
+- Lint: `cd frontend && npm run check:i18n` — kontroluje paritu klíčů cs ↔ en (aplikace i dashboard), u dashboardu navíc existenci staticky použitých klíčů, nepoužité klíče a ICU syntaxi zpráv
+- **Vývojářský dashboard** má vlastní slovník a `t()` v `frontend/src/dev/i18n/` (klíč `shpd_dev_language`, jazyk podle prohlížeče, přepínač CS · EN v liště, reload po přepnutí); nikdy neimportuje `i18n/index.js` ani `stores/language.svelte.js` aplikace a naopak. Kódy ze serveru přes `label(prefix, code)` (bez klíče kód, ne klíč). Viz `docs/frontend.md` → Vývojářský dashboard
 - Mapování chybových kódů: `frontend/src/i18n/errors.js` `translateError(error)` přeloží `error.code` přes klíče `error.<CODE>`, fallback na server `error.message`
 
 ### Backend — Vícejazyčnost server-driven labels

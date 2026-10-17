@@ -89,8 +89,11 @@ Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tí
 s produkčním; vpravo v něm je název serveru a verze s hashem commitu
 a větví (odkaz na commit na GitHubu — když PHP nemůže číst git, jen číslo
 verze). Pruh i modrá lišta s logem a sekcemi zůstávají při rolování
-nahoře; vpravo v liště je odkaz **Dokumentace** na
-[shipard.dev/pro-vyvojare](https://shipard.dev/pro-vyvojare/).
+nahoře; vpravo v liště je přepínač jazyka **CS · EN** (dashboard je česky
+a anglicky; bez volby podle jazyka prohlížeče, volba se pamatuje v tomto
+prohlížeči) a odkaz **Dokumentace** na
+[shipard.dev/pro-vyvojare](https://shipard.dev/pro-vyvojare/). Výstupy
+příkazů a chybové hlášky serveru zůstávají, jak je nástroje vypíšou.
 
 ### Úlohy na pozadí a pojistky (F6b)
 

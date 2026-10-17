@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 378 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 348.
+Celkem 379 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 349.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -447,6 +447,7 @@ Vývojářský nástroj v development módu (`/_dev/`).
 | `dev-dashboard-actions.md` | Server akce + per-DS upgrade |
 | `dev-dashboard-empty-state.md` | Prázdný seznam DS odkazuje na + New DS |
 | `dev-dashboard-look.md` | Vzhled podle shipard.dev — vrstva tokenů `theme.css`, IBM Plex, logo, ikony, významové barvy tlačítek, lepicí pruh DEVELOPMENT DASHBOARD s verzí, prázdný stav, kontrola CSS tokenů (#129 fáze 1) |
+| `dev-dashboard-i18n.md` | Čeština a angličtina dashboardu — vlastní slovníky a `t()`, jazyk podle prohlížeče, přepínač v liště, `shpd_dev_language`, `check:i18n` i pro dashboard (#129 D12, fáze 2) |
 
 ## Testování a datové sady
 
