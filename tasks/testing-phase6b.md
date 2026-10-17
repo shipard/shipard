@@ -1,6 +1,6 @@
 # Testování F6b: spouštění evaluací a evaluační zdroje dat z dashboardu
 
-**Stav:** částečně — implementace hotová 2026-10-16 (#103 D54–D56, D58–D63), zbývá ověření evaluace z dashboardu s útratou (po schválení v chatu)
+**Stav:** hotovo — 2026-10-17 (#103 D54–D56, D58–D63), ověřeno z dashboardu na volném zdroji dat vč. evaluace se stropem útraty a zrušení
 
 ## Kontext / Cíl
 
@@ -190,7 +190,7 @@ sadu drží (§ 2). Akce:
       události; SIGTERM ukončí běh bez dalšího volání
 - [x] API odmítne reseed, verify a eval na `realCopy` (403) i mimo `development`;
       druhá úloha na tomtéž zdroji dat 409
-- [ ] z dashboardu na volném zdroji dat: založení evaluačního zdroje dat,
+- [x] z dashboardu na volném zdroji dat: založení evaluačního zdroje dat,
       přeseedování, `dataset-verify` s tabulkou kontrol, evaluace `baseline`
       `--only` 2 dokladů (odhad, potvrzení, průběh, výsledek v prohlížeči),
       zrušení běžící evaluace. **Útrata ověřovacích běhů až po schválení
@@ -200,7 +200,7 @@ sadu drží (§ 2). Akce:
 - [x] `docs/dev/dev-daily.md` § 1 (spouštění, úlohy, pojistky),
       `docs/test-corpus.md` (`--estimate`, `--max-cost`, `--progress-file`,
       cena štítků, odhad), `docs/cli.md` (`ai-eval`, `dataset-seed`, `ds-list`)
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Implementace 2026-10-16 — co je jinak než v zadání
 
@@ -248,6 +248,24 @@ sadu drží (§ 2). Akce:
   (`DevDialog` / `DevConfirm`), ne sdílený `Modal`.
 - `EvalException` už není `final` (`EvalVariantExistsException`,
   `EvalCancelledException`).
+
+## Ověřeno 2026-10-16/17 na dev stroji
+
+Přes API dashboardu na novém volném zdroji dat `wb85-i…` (založený akcí
+**Založit evaluační zdroj dat**, 32 s): panel ho ukázal jako aktuální a čistý;
+`dataset-verify` s apply (5 kontrol ok, 14 dokladů) → blockers „použitý zdroj
+dat“ a `canEval: false`; druhá úloha na tomtéž zdroji dat 409 `JOB_RUNNING`
+s odkazem; zrušení běžícího přeseedování (`termSignal 15`) a plné přeseedování
+→ znovu čistý, `ds-list --json` nese `dataset`. Evaluace `baseline --only
+0101,0201`: odhad 0,1025 USD (`sameModel` podle posledního běhu Sonnet 5.5),
+strop 0,16 USD, 2 volání za 0,0912 USD vč. štítků (0,0029 / 0,0032 USD),
+soubor `tests/eval/cz-vat-payer/2026-10-17-baseline.json`. Zrušení druhé
+evaluace během prvního volání: volání doběhlo (13,6 s), druhé nezačalo,
+běh uložený se `stoppedBy: cancelled` (1 z 2), exit 130, úloha `cancelled`.
+Celková útrata ověření 0,14 USD. Oba soubory běhů s výběrem zůstávají
+v pracovním stromu necommitnuté (D52 — commit dělá člověk; neúplný
+`2026-10-17-baseline-2.json` lze smazat). Headless smoke stránek úloh,
+panelu, dialogu a detailů bez chyb; unit testy 9985 PHP + 192 node.
 
 ## Pasti
 
