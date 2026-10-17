@@ -299,6 +299,39 @@ final class DevEvalControllerTest extends TestCase
 		$this->assertCount(1, $this->spawns);
 	}
 
+	public function testReseedWithAnotherDatasetNeedsReplaceDataset(): void
+	{
+		// D66: ffff drží cz-non-payer jen z původu (před F6b), aaaa má pole `dataset` cz-vat-payer.
+		$r = $this->post('reseed', ['dataset' => self::SET, 'dataSource' => 'ffff-ffff-ffff-ffff']);
+		$this->assertSame(409, $this->statusOf($r), json_encode($r->getPayload()));
+		$this->assertSame('DATASET_MISMATCH', $this->error($r)['code']);
+		$this->assertSame(['current' => 'cz-non-payer', 'requested' => self::SET], $this->error($r)['details']);
+		$this->assertStringContainsString("holds dataset 'cz-non-payer'", $this->error($r)['message']);
+
+		$r = $this->post('reseed', ['dataset' => 'cz-non-payer', 'dataSource' => 'aaaa-aaaa-aaaa-aaaa', 'replaceDataset' => 'yes']);
+		$this->assertSame(409, $this->statusOf($r), 'příznak jen jako boolean true');
+		$this->assertSame(self::SET, $this->error($r)['details']['current']);
+		$this->assertSame([], $this->spawns, 'bez příznaku se nic nespustí');
+
+		$r = $this->post('reseed', ['dataset' => self::SET, 'dataSource' => 'ffff-ffff-ffff-ffff', 'replaceDataset' => true]);
+		$this->assertSame(201, $this->statusOf($r), json_encode($r->getPayload()));
+		$job = $this->data($r)['job'];
+		$this->assertSame(JobRecord::TYPE_RESEED, $job['type']);
+		$this->assertSame(['replaceDataset' => true, 'previousDataset' => 'cz-non-payer'], $job['params']);
+		$this->assertSame(['/usr/bin/php', '/repo/bin/shpd-ds', 'dataset-seed', $this->datasetDir, '--yes'], $job['steps'][0]['argv']);
+		$this->assertCount(1, $this->spawns);
+
+		// Stejná sada a zdroj dat bez sady: bez příznaku, params prázdné.
+		$job = $this->data($this->post('reseed', ['dataset' => self::SET, 'dataSource' => 'cccc-cccc-cccc-cccc']))['job'];
+		$this->assertSame([], $job['params']);
+
+		// Pojistka třídy dat má přednost: reálná kopie s příznakem je dál 403.
+		$r = $this->post('reseed', ['dataset' => 'cz-non-payer', 'dataSource' => 'bbbb-bbbb-bbbb-bbbb', 'replaceDataset' => true]);
+		$this->assertSame(403, $this->statusOf($r));
+		$this->assertSame('DS_NOT_FREE', $this->error($r)['code']);
+		$this->assertCount(2, $this->spawns);
+	}
+
 	public function testVerifyCapturesStdoutAndHonoursApply(): void
 	{
 		$job = $this->data($this->post('verify', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa', 'apply' => false]))['job'];

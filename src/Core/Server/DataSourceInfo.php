@@ -57,6 +57,23 @@ final readonly class DataSourceInfo
     }
 
     /**
+     * Sada, kterou zdroj dat drží (#103 D66): pole `dataset` z `main.json`,
+     * u zdrojů seedovaných před F6b název z původu `dataset-seed <sada>`;
+     * null = žádná.
+     */
+    public function heldDataset(): ?string
+    {
+        if ($this->dataset !== null) {
+            return $this->dataset['name'];
+        }
+        if (is_string($this->origin) && str_starts_with($this->origin, 'dataset-seed ')) {
+            $name = trim(substr($this->origin, strlen('dataset-seed ')));
+            return $name === '' ? null : $name;
+        }
+        return null;
+    }
+
+    /**
      * Kontrakt `shpd-server ds-list --json` (čte ho Claude a skripty) —
      * pořadí a názvy klíčů jsou stabilní. `dataset` = `{name, hash, seededAt}`
      * nebo null (#103 F6b D59).

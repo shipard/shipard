@@ -8,6 +8,9 @@ use Shipard\Api\Controller\DevDashboardController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Ai\ServerAiConnection;
+use Shipard\Core\DevJobs\JobRecord;
+use Shipard\Core\DevJobs\JobState;
+use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
@@ -18,6 +21,8 @@ class DevDashboardControllerTest extends TestCase
 	private string $tmpDir;
 	private string $modulesDir;
 	private string $spaIndex;
+	/** Úlohy na pozadí nad temp adresářem — seznam zdrojů dat nesmí číst skutečný /opt/shipard/run/dev-jobs. */
+	private JobStore $jobStore;
 	private DevDashboardController $ctrl;
 	/** @var list<string> */
 	private array $tmpFiles = [];
@@ -39,6 +44,7 @@ class DevDashboardControllerTest extends TestCase
 		$this->spaIndex = $this->tmpRoot . '/public/_dev/dev.html';
 		mkdir(dirname($this->spaIndex), 0700, true);
 		file_put_contents($this->spaIndex, self::SPA_INDEX);
+		$this->jobStore = new JobStore($this->tmpRoot . '/jobs', static fn (): bool => true);
 		$this->ctrl = $this->makeController(null);
 		// Seznam zdrojů dat zjišťuje serverové AI připojení — testy ho ze stroje nečtou (#126 D9).
 		ServerAiConnection::overrideForTesting(null);
@@ -53,6 +59,7 @@ class DevDashboardControllerTest extends TestCase
 			new ModulePathResolver([$this->modulesDir]),
 			$this->spaIndex,
 			$this->tmpRoot,
+			jobStore: $this->jobStore,
 		);
 	}
 
@@ -282,6 +289,49 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame('corrupted', $byName['Delta']['state']);
 	}
 
+	public function testListDataSourcesIncludesTheDatasetCountryAndRunningJob(): void
+	{
+		// #103 D66: akce „Nahrát datovou sadu“ potřebuje zemi, drženou sadu a běžící úlohu.
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Alpha', null, [
+			'dataClass' => 'free', 'country' => 'cz', 'origin' => 'dataset-seed cz-vat-payer',
+			'dataset' => ['name' => 'cz-vat-payer', 'hash' => 'h1', 'seededAt' => '2026-10-16T10:00:00Z'],
+		]);
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Bravo', null, ['dataClass' => 'free', 'country' => 'cz', 'origin' => 'dataset-seed cz-non-payer']);
+		$this->createDs('cccc-cccc-cccc-cccc', 'Charlie', null, ['dataClass' => 'free', 'origin' => 'ds-create']);
+
+		$now = new \DateTimeImmutable('2026-10-17T08:00:00Z');
+		$this->jobStore->create(new JobRecord(
+			JobRecord::newId($now), JobRecord::TYPE_RESEED, 'aaaa-aaaa-aaaa-aaaa', 'Alpha', 'cz-vat-payer', null, [],
+			[new JobStep('dataset-seed cz-vat-payer', ['/usr/bin/php', 'shpd-ds', 'dataset-seed'], '/tmp')],
+			JobStore::formatTime($now), '10.0.0.5', 60,
+		));
+		$jobId = $this->jobStore->list()[0]['id'];
+		$state = JobState::pending(1);
+		$state->pid = 4242;
+		$this->jobStore->writeState($jobId, $state);
+
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/data-sources'));
+		$this->assertSame(200, $this->getStatus($resp));
+		$byName = array_column($this->getPayloadRaw($resp)['data'], null, 'name');
+
+		$alpha = $byName['Alpha'];
+		$this->assertSame('cz', $alpha['country']);
+		$this->assertSame(['name' => 'cz-vat-payer', 'hash' => 'h1', 'seededAt' => '2026-10-16T10:00:00Z'], $alpha['dataset']);
+		$this->assertNull($alpha['legacyDataset']);
+		$this->assertSame(['id' => $jobId, 'type' => 'reseed', 'status' => 'running'], $alpha['job']);
+
+		$bravo = $byName['Bravo'];
+		$this->assertNull($bravo['dataset']);
+		$this->assertSame('cz-non-payer', $bravo['legacyDataset'], 'sada jen z původu (před F6b)');
+		$this->assertNull($bravo['job']);
+
+		$charlie = $byName['Charlie'];
+		$this->assertNull($charlie['country']);
+		$this->assertNull($charlie['dataset']);
+		$this->assertNull($charlie['legacyDataset']);
+		$this->assertNull($charlie['job']);
+	}
+
 	public function testListDataSourcesIncludesTheDataClassAndKeepsTheOldKeys(): void
 	{
 		// #126 D10: přes sdílený inventář — staré klíče zůstávají, přibývá třída, účel, původ a serverové AI.
@@ -304,7 +354,7 @@ class DevDashboardControllerTest extends TestCase
 		}
 		$alpha = $byName['Alpha'];
 		$this->assertSame(
-			['id', 'name', 'created', 'database_name', 'cron', 'state', 'dataClass', 'dataClassExplicit', 'purpose', 'origin', 'dataClassChanged', 'serverAi'],
+			['id', 'name', 'created', 'database_name', 'cron', 'state', 'dataClass', 'dataClassExplicit', 'purpose', 'origin', 'dataClassChanged', 'serverAi', 'country', 'dataset', 'legacyDataset', 'job'],
 			array_keys($alpha),
 		);
 		$this->assertSame('aaaa-aaaa-aaaa-aaaa', $alpha['id']);
@@ -845,7 +895,7 @@ class DevDashboardControllerTest extends TestCase
 	/** Repo root = temp root testu (bez `tests/`, dokud ho enableDatasets() nedoplní). */
 	private function makeTestableCtrl(): TestableDevDashboardController
 	{
-		return new TestableDevDashboardController($this->tmpDir, null, new ModulePathResolver([$this->modulesDir]), $this->spaIndex, $this->tmpRoot);
+		return new TestableDevDashboardController($this->tmpDir, null, new ModulePathResolver([$this->modulesDir]), $this->spaIndex, $this->tmpRoot, jobStore: $this->jobStore);
 	}
 
 	/** @return array<string, mixed> tělo požadavku ds-create s výchozími platnými poli */

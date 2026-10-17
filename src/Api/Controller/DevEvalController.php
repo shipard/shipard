@@ -54,7 +54,7 @@ use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
  * | metoda | cesta                          | odpověď                                               |
  * |--------|--------------------------------|-------------------------------------------------------|
  * | GET    | `data-sources?dataset=`        | zdroje dat se sadou + stav, kandidáti na přeseedování |
- * | POST   | `reseed` `{dataset, dataSource}` | úloha `reseed`                                       |
+ * | POST   | `reseed` `{dataset, dataSource, replaceDataset?}` | úloha `reseed`; jiná než držená sada jen s `replaceDataset: true`, jinak 409 `DATASET_MISMATCH` (D66) |
  * | POST   | `create` `{dataset}`           | úloha `create` (ds-create --no-cron + dataset-seed)   |
  * | POST   | `verify` `{dataset, dataSource, apply?}` | úloha `verify` (dataset-verify --json)      |
  * | POST   | `estimate` `{dataset, dataSource, variant, repeat?, only?}` | odhad; 422 `EVAL_PREFLIGHT` |
@@ -343,13 +343,25 @@ class DevEvalController
 			return $refused;
 		}
 		/** @var EvalDatasetInfo $dataset @var DataSourceInfo $info */
+		// Výměna sady jen výslovně (D66): zdroj dat s jinou sadou (pole `dataset`,
+		// nebo původ `dataset-seed <sada>` před F6b) přijme jen `replaceDataset: true`.
+		$held = $info->heldDataset();
+		$replace = $held !== null && $held !== $dataset->name;
+		if ($replace && ($body['replaceDataset'] ?? false) !== true) {
+			return Response::error(
+				'DATASET_MISMATCH',
+				"Data source {$info->id} holds dataset '{$held}' — send replaceDataset: true to replace it with '{$dataset->name}'",
+				409,
+				['current' => $held, 'requested' => $dataset->name],
+			);
+		}
 		return $this->launch($this->record(
 			JobRecord::TYPE_RESEED,
 			$info->id,
 			$info->name,
 			$dataset->name,
 			null,
-			[],
+			$replace ? ['replaceDataset' => true, 'previousDataset' => $held] : [],
 			[new JobStep('dataset-seed ' . $dataset->name, [...$this->dsCommand(), 'dataset-seed', $dataset->dir, '--yes'], $this->dsDir($info->id))],
 			self::DEFAULT_CANCEL_GRACE_SECONDS,
 			$request,

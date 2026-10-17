@@ -159,16 +159,21 @@ class DevDashboardController
 	 * D10) — allowlist polí, bez tajemství. Nečitelný `main.json` se v seznamu
 	 * neukazuje (jako dřív). Stávající klíče zůstávají, nové: `dataClass`,
 	 * `dataClassExplicit`, `purpose`, `origin`, `dataClassChanged`, `serverAi`
-	 * (efektivní serverové AI připojení: server ho nabízí a zdroj je `free`).
+	 * (efektivní serverové AI připojení: server ho nabízí a zdroj je `free`);
+	 * pro akci „Nahrát datovou sadu“ (#103 D66) `country`, `dataset` (pole
+	 * z `main.json`), `legacyDataset` (sada jen z původu `dataset-seed <sada>`,
+	 * před F6b) a `job` (běžící úloha na zdroji dat, `{id, type, status}`).
 	 */
 	private function listDataSources(): Response
 	{
 		$serverOffersAi = ServerAiConnection::detect() !== null;
+		$jobs = $this->jobStore();
 		$items = [];
 		foreach ((new DataSourceInventory($this->dataSourcesDir))->scan() as $info) {
 			if (!$info->readable) {
 				continue;
 			}
+			$job = $jobs->activeJobFor($info->id);
 			// #115 D11: přepínač periodických úloh + efektivní stav, jen zobrazení.
 			$items[] = [
 				'id'                => $info->id,
@@ -183,6 +188,10 @@ class DevDashboardController
 				'origin'            => $info->origin,
 				'dataClassChanged'  => $info->dataClassChanged,
 				'serverAi'          => $info->usesServerAi($serverOffersAi),
+				'country'           => $info->country,
+				'dataset'           => $info->dataset,
+				'legacyDataset'     => $info->dataset === null ? $info->heldDataset() : null,
+				'job'               => $job === null ? null : ['id' => $job['id'], 'type' => $job['type'], 'status' => $job['status']],
 			];
 		}
 
