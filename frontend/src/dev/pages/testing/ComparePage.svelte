@@ -9,6 +9,7 @@
   import Crumbs from '../../components/Crumbs.svelte';
   import DevTable from '../../components/DevTable.svelte';
   import RunSummaryLine from '../../components/RunSummaryLine.svelte';
+  import { t } from '../../i18n/index.js';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -26,7 +27,7 @@
     data = null;
     error = null;
     if (!a || !b) {
-      error = 'Chybí parametry a a b (soubory běhů). Vyber dva běhy v seznamu běhů sady.';
+      error = t('testing.compare.missingParams');
       return;
     }
     testingApi.compare(...args)
@@ -39,60 +40,60 @@
   const messages = $derived((data?.messages ?? []).filter((m) => !onlyDifferent || m.delta === null || Math.abs(m.delta) > 1e-9 || m.a.failed !== m.b.failed));
 
   const messageColumns = [
-    { id: 'messageId', label: 'Doklad' },
-    { id: 'aDev', label: 'Odchylek A', align: 'right', sortValue: (m) => m.a.deviations },
-    { id: 'bDev', label: 'Odchylek B', align: 'right', sortValue: (m) => m.b.deviations },
-    { id: 'delta', label: 'Rozdíl', align: 'right', sortValue: (m) => (m.delta === null ? null : Math.abs(m.delta)), defaultDir: 'desc' },
-    { id: 'failed', label: 'Selhání A / B', align: 'right', sortValue: (m) => m.a.failed + m.b.failed },
+    { id: 'messageId', label: t('testing.col.document') },
+    { id: 'aDev', label: t('testing.compare.col.devA'), align: 'right', sortValue: (m) => m.a.deviations },
+    { id: 'bDev', label: t('testing.compare.col.devB'), align: 'right', sortValue: (m) => m.b.deviations },
+    { id: 'delta', label: t('testing.compare.col.delta'), align: 'right', sortValue: (m) => (m.delta === null ? null : Math.abs(m.delta)), defaultDir: 'desc' },
+    { id: 'failed', label: t('testing.compare.col.failedAB'), align: 'right', sortValue: (m) => m.a.failed + m.b.failed },
     { id: 'open', label: '', sortable: false },
   ];
 </script>
 
-<Crumbs items={[{ label: 'Testování', href: router.href('testingDatasets') }, { label: set, href: router.href('testingRuns', { set }) }, { label: 'Porovnání' }]} />
+<Crumbs items={[{ label: t('app.nav.testing'), href: router.href('testingDatasets') }, { label: set, href: router.href('testingRuns', { set }) }, { label: t('testing.compare.crumb') }]} />
 <div class="dev-page__head">
-  <h1>Porovnání běhů</h1>
+  <h1>{t('testing.compare.title')}</h1>
 </div>
 
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
 {:else if !data}
-  <div class="dev-empty">Načítám…</div>
+  <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   <div class="dev-card">
     <div class="runline"><strong>A</strong> <a href={router.href('testingRun', { set, file: a })} onclick={onLinkClick}><code>{a}</code></a> <RunSummaryLine summary={data.summaries.a} showFile={false} /></div>
     <div class="runline"><strong>B</strong> <a href={router.href('testingRun', { set, file: b })} onclick={onLinkClick}><code>{b}</code></a> <RunSummaryLine summary={data.summaries.b} showFile={false} /></div>
     {#if !data.sameSelection}
-      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">Běhy mají jiný výběr zpráv (<code>--only</code> / <code>--limit</code>) — porovnávej s rezervou.</span></div>
+      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.compare.differentSelection')}</span></div>
     {/if}
     {#if Math.max(data.summaries.a.repeat, data.summaries.b.repeat) > 1}
-      <p class="dev-small dev-muted note">Součty (volání, tokeny, cena, čas, počty polí) jsou přepočtené na jedno opakování. „V rámci šumu“ = rozdíl nepřesahuje největší rozpětí opakování některého z běhů.</p>
+      <p class="dev-small dev-muted note">{t('testing.compare.perRepetitionNote')}</p>
     {/if}
   </div>
 
   <div class="dev-card">
-    <div class="dev-card__title">Metriky
-      <label class="dev-chip" class:is-on={allMetrics}><input type="checkbox" bind:checked={allMetrics} /> všechny ({data.metrics.length})</label>
+    <div class="dev-card__title">{t('testing.compare.metrics')}
+      <label class="dev-chip" class:is-on={allMetrics}><input type="checkbox" bind:checked={allMetrics} /> {t('testing.compare.all', { n: data.metrics.length })}</label>
     </div>
     <div class="dev-table-wrap">
       <table class="dev-table">
-        <thead><tr><th>Metrika</th><th class="dev-num">A</th><th class="dev-num">B</th><th class="dev-num">Rozdíl</th><th class="dev-num">Šum</th><th>Hodnocení</th></tr></thead>
+        <thead><tr><th>{t('testing.compare.col.metric')}</th><th class="dev-num">A</th><th class="dev-num">B</th><th class="dev-num">{t('testing.compare.col.delta')}</th><th class="dev-num">{t('testing.compare.col.noise')}</th><th>{t('testing.compare.col.verdict')}</th></tr></thead>
         <tbody>
           {#each metricRows as m (m.key)}
             <tr>
-              <td title={m.key}>{metricLabel(m.key)}{#if m.perRepetition}<span class="dev-muted dev-small"> /opak.</span>{/if}</td>
+              <td title={m.key}>{metricLabel(m.key)}{#if m.perRepetition}<span class="dev-muted dev-small"> {t('testing.compare.perRep')}</span>{/if}</td>
               <td class="dev-num">{formatMetric(m.key, m.a)}</td>
               <td class="dev-num">{formatMetric(m.key, m.b)}</td>
               <td class="dev-num">{formatMetricDelta(m.key, m.delta)}</td>
               <td class="dev-num dev-muted">{m.noise === null ? '—' : formatMetricDelta(m.key, m.noise).replace(/^[+−±]/, '')}</td>
               <td>
                 {#if m.delta === null || Math.abs(m.delta) < 1e-9}
-                  <span class="dev-muted">beze změny</span>
+                  <span class="dev-muted">{t('testing.compare.unchanged')}</span>
                 {:else if m.withinNoise}
-                  <span class="dev-state dev-state--neutral">v rámci šumu</span>
+                  <span class="dev-state dev-state--neutral">{t('testing.compare.withinNoise')}</span>
                 {:else if m.better}
-                  <span class="dev-state dev-state--match">lepší</span>
+                  <span class="dev-state dev-state--match">{t('testing.compare.better')}</span>
                 {:else}
-                  <span class="dev-state dev-state--wrong">horší</span>
+                  <span class="dev-state dev-state--wrong">{t('testing.compare.worse')}</span>
                 {/if}
               </td>
             </tr>
@@ -103,11 +104,11 @@
   </div>
 
   <div class="grid-2">
-    {#each [['Pole zlepšená', data.fields.improved, 'match'], ['Pole zhoršená', data.fields.worsened, 'wrong']] as [title, items, style] (title)}
+    {#each [['improved', data.fields.improved, 'match'], ['worsened', data.fields.worsened, 'wrong']] as [kind, items, style] (kind)}
       <div class="dev-card">
-        <div class="dev-card__title">{title} <span class="dev-muted dev-small">(volání s odchylkou na opakování A → B, změna pod {data.fields.threshold} se nepočítá)</span></div>
+        <div class="dev-card__title">{kind === 'improved' ? t('testing.compare.improved') : t('testing.compare.worsened')} <span class="dev-muted dev-small">{t('testing.compare.fieldsNote', { threshold: data.fields.threshold })}</span></div>
         {#if items.length === 0}
-          <div class="dev-muted dev-small">Žádné.</div>
+          <div class="dev-muted dev-small">{t('common.none')}</div>
         {:else}
           <table class="plain">
             <tbody>
@@ -122,11 +123,11 @@
   </div>
 
   <div class="dev-card">
-    <div class="dev-card__title">Doklady
-      <label class="dev-chip" class:is-on={onlyDifferent}><input type="checkbox" bind:checked={onlyDifferent} /> jen rozdílné</label>
-      <span class="dev-muted dev-small">odchylky = průměr na úspěšné volání</span>
+    <div class="dev-card__title">{t('testing.runDetail.documents')}
+      <label class="dev-chip" class:is-on={onlyDifferent}><input type="checkbox" bind:checked={onlyDifferent} /> {t('testing.compare.onlyDifferent')}</label>
+      <span class="dev-muted dev-small">{t('testing.compare.deviationsNote')}</span>
     </div>
-    <DevTable columns={messageColumns} rows={messages} rowKey={(m) => m.messageId} empty="Žádný doklad s rozdílem.">
+    <DevTable columns={messageColumns} rows={messages} rowKey={(m) => m.messageId} empty={t('testing.compare.noDifferent')}>
       {#snippet cell(m, col)}
         {#if col.id === 'messageId'}
           <a href={router.href('testingMessage', { set, file: a, messageId: m.messageId }, { b })} onclick={onLinkClick}><code>{m.messageId}</code></a>
@@ -141,7 +142,7 @@
         {:else if col.id === 'failed'}
           <span class:dev-lvl--bad={m.a.failed > 0}>{m.a.failed}</span> / <span class:dev-lvl--bad={m.b.failed > 0}>{m.b.failed}</span>
         {:else if col.id === 'open'}
-          <a class="dev-small" href={router.href('testingMessage', { set, file: a, messageId: m.messageId }, { b })} onclick={onLinkClick}>oba běhy vedle sebe</a>
+          <a class="dev-small" href={router.href('testingMessage', { set, file: a, messageId: m.messageId }, { b })} onclick={onLinkClick}>{t('testing.compare.sideBySide')}</a>
         {/if}
       {/snippet}
     </DevTable>

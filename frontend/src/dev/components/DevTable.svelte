@@ -2,6 +2,8 @@
   // Řaditelná tabulka dashboardu. Sloupec: {id, label, align?, sortable?
   // (výchozí true), sortValue?(row), defaultDir?}. Buňku vykreslí snippet
   // `cell(row, column)`, bez něj `row[id]`. Null hodnoty řadí nakonec.
+  import { t, currentLanguage } from '../i18n/index.js';
+
   let {
     columns = [],
     rows = [],
@@ -9,7 +11,7 @@
     initialSort = null,
     rowClass = () => '',
     onRowClick = null,
-    empty = 'Nic k zobrazení.',
+    empty = t('common.nothingToShow'),
     cell,
   } = $props();
 
@@ -22,7 +24,7 @@
     const nb = b === null || b === undefined;
     if (na || nb) return na === nb ? 0 : na ? 1 : -1;
     if (typeof a === 'number' && typeof b === 'number') return a - b;
-    return String(a).localeCompare(String(b), 'cs');
+    return String(a).localeCompare(String(b), currentLanguage());
   }
 
   const sorted = $derived.by(() => {

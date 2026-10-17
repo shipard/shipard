@@ -9,6 +9,7 @@
   import Crumbs from '../../components/Crumbs.svelte';
   import DevTable from '../../components/DevTable.svelte';
   import DataSourcesPanel from './DataSourcesPanel.svelte';
+  import { t } from '../../i18n/index.js';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -45,29 +46,29 @@
 
   const columns = [
     { id: 'sel', label: '', sortable: false },
-    { id: 'file', label: 'Soubor' },
-    { id: 'startedAt', label: 'Datum', defaultDir: 'desc' },
-    { id: 'variant', label: 'Varianta' },
+    { id: 'file', label: t('testing.runs.col.file') },
+    { id: 'startedAt', label: t('testing.col.date'), defaultDir: 'desc' },
+    { id: 'variant', label: t('testing.col.variant') },
     { id: 'model', label: 'Model' },
-    { id: 'tagsModel', label: 'Štítky' },
+    { id: 'tagsModel', label: t('testing.col.tags') },
     { id: 'promptVersion', label: 'Prompt' },
     { id: 'repeat', label: '×', align: 'right' },
-    { id: 'hit', label: 'Shoda polí', align: 'right', sortValue: (r) => r.hit?.avg ?? null, defaultDir: 'desc' },
-    { id: 'normalized', label: 'Po norm.', align: 'right', defaultDir: 'desc' },
-    { id: 'clean', label: 'Bez odchylky', align: 'right', sortValue: (r) => r.clean?.avg ?? null, defaultDir: 'desc' },
-    { id: 'amountsCorrect', label: 'Částky', align: 'right', sortValue: (r) => r.amountsCorrect?.avg ?? null, defaultDir: 'desc' },
-    { id: 'failed', label: 'Selhání', align: 'right' },
-    { id: 'costPerDocument', label: 'Cena / doklad', align: 'right', sortValue: (r) => r.costTotalPerDocument ?? r.costPerDocument ?? null },
-    { id: 'timePerDocumentMs', label: 'Čas / doklad', align: 'right' },
+    { id: 'hit', label: t('testing.runs.col.fieldMatch'), align: 'right', sortValue: (r) => r.hit?.avg ?? null, defaultDir: 'desc' },
+    { id: 'normalized', label: t('testing.col.normalized'), align: 'right', defaultDir: 'desc' },
+    { id: 'clean', label: t('testing.col.clean'), align: 'right', sortValue: (r) => r.clean?.avg ?? null, defaultDir: 'desc' },
+    { id: 'amountsCorrect', label: t('testing.col.amounts'), align: 'right', sortValue: (r) => r.amountsCorrect?.avg ?? null, defaultDir: 'desc' },
+    { id: 'failed', label: t('testing.col.failed'), align: 'right' },
+    { id: 'costPerDocument', label: t('testing.runs.col.costPerDoc'), align: 'right', sortValue: (r) => r.costTotalPerDocument ?? r.costPerDocument ?? null },
+    { id: 'timePerDocumentMs', label: t('testing.runs.col.timePerDoc'), align: 'right' },
     { id: 'commit', label: 'Commit' },
   ];
 </script>
 
-<Crumbs items={[{ label: 'Testování', href: router.href('testingDatasets') }, { label: set }]} />
+<Crumbs items={[{ label: t('app.nav.testing'), href: router.href('testingDatasets') }, { label: set }]} />
 <div class="dev-page__head">
-  <h1>Sada {set}{data?.dataset?.title ? ` — ${data.dataset.title}` : ''}</h1>
+  <h1>{t('testing.runs.title', { set })}{data?.dataset?.title ? ` — ${data.dataset.title}` : ''}</h1>
   <span class="dev-page__spacer"></span>
-  <a href={router.href('testingJobs', {}, { dataset: set })} onclick={onLinkClick} class="dev-small">úlohy sady</a>
+  <a href={router.href('testingJobs', {}, { dataset: set })} onclick={onLinkClick} class="dev-small">{t('testing.runs.jobsLink')}</a>
 </div>
 
 {#key set}
@@ -75,35 +76,32 @@
 {/key}
 
 <div class="dev-page__head">
-  <h2>Běhy sady</h2>
+  <h2>{t('testing.runs.heading')}</h2>
   <span class="dev-page__spacer"></span>
-  <span class="dev-small dev-muted">{selected.length} / 2 vybrané</span>
-  <Button label="Porovnat vybrané" size="sm" disabled={selected.length !== 2} onclick={compareSelected} />
+  <span class="dev-small dev-muted">{t('testing.runs.selected', { n: selected.length })}</span>
+  <Button label={t('testing.runs.compare')} size="sm" disabled={selected.length !== 2} onclick={compareSelected} />
 </div>
 
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
 {:else if !data}
-  <div class="dev-empty">Načítám…</div>
+  <div class="dev-empty">{t('common.loading')}</div>
 {:else}
-  <p class="dev-small dev-muted hint">
-    Shoda polí = průměr přes opakování, v závorce rozpětí. Běhy šedě vznikly nad starší verzí sady
-    (hash obsahu <code>{data.currentHash.slice(0, 12)}</code> se liší) — porovnání s aktuálními běhy není možné.
-  </p>
+  <p class="dev-small dev-muted hint">{t('testing.runs.hint', { hash: data.currentHash.slice(0, 12) })}</p>
   <DevTable
     {columns}
     rows={data.runs}
     rowKey={(r) => r.file}
     initialSort={{ id: 'startedAt', dir: 'desc' }}
     rowClass={(r) => (r.currentSet ? '' : 'is-dim')}
-    empty="Sada zatím nemá žádný běh v tests/eval."
+    empty={t('testing.runs.empty')}
   >
     {#snippet cell(row, col)}
       {#if col.id === 'sel'}
-        <input type="checkbox" checked={selected.includes(row.file)} onchange={() => toggleSelected(row.file)} aria-label="Vybrat k porovnání" />
+        <input type="checkbox" checked={selected.includes(row.file)} onchange={() => toggleSelected(row.file)} aria-label={t('testing.runs.selectForCompare')} />
       {:else if col.id === 'file'}
         <a href={router.href('testingRun', { set, file: row.file })} onclick={onLinkClick}><code>{row.file}</code></a>
-        {#if !row.currentSet}<span class="dev-state dev-state--missing" title="Běh nad starší verzí sady">jiná verze sady</span>{/if}
+        {#if !row.currentSet}<span class="dev-state dev-state--missing" title={t('testing.runs.otherSetTitle')}>{t('testing.run.otherSetVersion')}</span>{/if}
       {:else if col.id === 'startedAt'}
         <span class="dev-nowrap">{formatDateTime(row.startedAt)}</span>
       {:else if col.id === 'model' || col.id === 'tagsModel'}
@@ -117,11 +115,11 @@
       {:else if col.id === 'failed'}
         <span class:dev-lvl--bad={row.failed > 0} class="dev-lvl">{row.failed}</span>
       {:else if col.id === 'costPerDocument'}
-        <span title={row.tagsUsd === null || row.tagsUsd === undefined ? 'jen extrakce (starší běh bez ceny štítků)' : `extrakce ${formatUsd(row.costPerDocument)} + štítky ${formatUsd(row.tagsUsd / Math.max(1, row.callsTotal))} na doklad`}>{formatUsd(row.costTotalPerDocument ?? row.costPerDocument)}</span>
+        <span title={row.tagsUsd === null || row.tagsUsd === undefined ? t('testing.runs.costExtractionOnly') : t('testing.runs.costBreakdown', { extraction: formatUsd(row.costPerDocument), tags: formatUsd(row.tagsUsd / Math.max(1, row.callsTotal)) })}>{formatUsd(row.costTotalPerDocument ?? row.costPerDocument)}</span>
       {:else if col.id === 'timePerDocumentMs'}
         {formatMs(row.timePerDocumentMs)}
       {:else if col.id === 'commit'}
-        <span class="dev-muted" title={row.dirty ? 'neuložené změny' : ''}>{formatCommit(row.commit, row.dirty)}</span>
+        <span class="dev-muted" title={row.dirty ? t('testing.runs.dirty') : ''}>{formatCommit(row.commit, row.dirty)}</span>
       {:else}
         {row[col.id] ?? '—'}
       {/if}

@@ -12,6 +12,7 @@
   import { devInfo } from './info.svelte.js';
   import { versionLabel, formatDateTime } from './format.js';
   import { DOCS_URL, COMMIT_URL } from './links.js';
+  import { t, LANGUAGES, currentLanguage, setLanguage } from './i18n/index.js';
   import DataSourcesPage from './pages/DataSourcesPage.svelte';
   import DsCreatePage from './pages/DsCreatePage.svelte';
   import LogsPage from './pages/LogsPage.svelte';
@@ -34,11 +35,11 @@
   const isTesting = $derived(route.name.startsWith('testing'));
 
   const navItems = $derived([
-    { id: 'dataSources', label: 'Zdroje dat', icon: iconDatabase, href: router.href('dataSources') },
-    ...(devInfo.value?.testing ? [{ id: 'testing', label: 'Testování', icon: iconTesting, href: router.href('testingDatasets') }] : []),
-    { id: 'logs', label: 'Logy', icon: iconDocument, href: router.href('logs') },
-    { id: 'doctor', label: 'Doctor', icon: iconDoctor, href: router.href('doctor') },
-    { id: 'upgradeAll', label: 'Upgrade všech', icon: iconUpgrade, href: router.href('upgradeAll') },
+    { id: 'dataSources', label: t('app.nav.dataSources'), icon: iconDatabase, href: router.href('dataSources') },
+    ...(devInfo.value?.testing ? [{ id: 'testing', label: t('app.nav.testing'), icon: iconTesting, href: router.href('testingDatasets') }] : []),
+    { id: 'logs', label: t('app.nav.logs'), icon: iconDocument, href: router.href('logs') },
+    { id: 'doctor', label: t('app.nav.doctor'), icon: iconDoctor, href: router.href('doctor') },
+    { id: 'upgradeAll', label: t('app.nav.upgradeAll'), icon: iconUpgrade, href: router.href('upgradeAll') },
   ]);
 
   const activeNav = $derived(isTesting ? 'testing' : (NAV_OF_ROUTE[route.name] ?? null));
@@ -50,20 +51,21 @@
   // Výška pruhu + lišty — lepicí prvky pod lištou (PdfPane) ji čtou z --dev-top-height.
   let topHeight = $state(84);
 
-  const TITLES = {
-    dataSources: 'Zdroje dat',
-    dsCreate: 'Nový zdroj dat',
-    logs: 'Logy',
-    doctor: 'Doctor',
-    upgradeAll: 'Upgrade všech',
-    dsUpgrade: 'Upgrade zdroje dat',
-    notFound: 'Stránka nenalezena',
+  /** Titulek okna podle routy (slovník dashboardu); „Shipard dev“ je značka, nepřekládá se. */
+  const TITLE_KEYS = {
+    dataSources: 'app.nav.dataSources',
+    dsCreate: 'app.title.dsCreate',
+    logs: 'app.nav.logs',
+    doctor: 'app.nav.doctor',
+    upgradeAll: 'app.nav.upgradeAll',
+    dsUpgrade: 'app.title.dsUpgrade',
+    notFound: 'app.title.notFound',
   };
 
   $effect(() => {
     const title = isTesting
-      ? ['Testování', route.name === 'testingJobs' || route.name === 'testingJob' ? 'Úlohy' : null, route.name === 'testingVariants' || route.name === 'testingVariant' ? 'Varianty' : null, route.params.set, route.params.file, route.params.messageId, route.params.jobId, route.params.name].filter(Boolean).join(' · ')
-      : (TITLES[route.name] ?? 'Dashboard');
+      ? [t('app.nav.testing'), route.name === 'testingJobs' || route.name === 'testingJob' ? t('app.title.jobs') : null, route.name === 'testingVariants' || route.name === 'testingVariant' ? t('app.title.variants') : null, route.params.set, route.params.file, route.params.messageId, route.params.jobId, route.params.name].filter(Boolean).join(' · ')
+      : t(TITLE_KEYS[route.name] ?? 'app.title.dashboard');
     document.title = `${title} — Shipard dev`;
   });
 
@@ -77,7 +79,7 @@
     <div class="dev-stripe">
       <strong class="dev-stripe__title">DEVELOPMENT DASHBOARD</strong>
       <span class="dev-stripe__meta">
-        <span class="dev-stripe__item" title="Server">
+        <span class="dev-stripe__item" title={t('app.stripe.server')}>
           <Icon icon={iconServer} size="sm" />
           <span>{devInfo.value?.hostname ?? pending}</span>
         </span>
@@ -89,7 +91,7 @@
               href={COMMIT_URL + version.fullHash}
               target="_blank"
               rel="noopener"
-              title={version.commitDate ? `Commit z ${formatDateTime(version.commitDate)} — otevřít na GitHubu` : 'Otevřít commit na GitHubu'}
+              title={version.commitDate ? t('app.stripe.commitTitle', { date: formatDateTime(version.commitDate) }) : t('app.stripe.commitTitleNoDate')}
             >{versionLabel(version)}</a>
           {:else}
             <span class="dev-stripe__version">{version ? versionLabel(version) : pending}</span>
@@ -98,10 +100,10 @@
       </span>
     </div>
     <div class="dev-topbar">
-      <a class="dev-topbar__logo" href={router.href('dataSources')} onclick={onLinkClick} title="Zdroje dat">
+      <a class="dev-topbar__logo" href={router.href('dataSources')} onclick={onLinkClick} title={t('app.nav.dataSources')}>
         <img src={logoUrl} alt="Shipard" height="28" />
       </a>
-      <nav class="dev-topbar__nav" aria-label="Sekce dashboardu">
+      <nav class="dev-topbar__nav" aria-label={t('app.nav.ariaLabel')}>
         {#each navItems as item (item.id)}
           <a
             class="dev-topbar__link"
@@ -111,9 +113,19 @@
           ><Icon icon={item.icon} size="sm" />{item.label}</a>
         {/each}
       </nav>
-      <!-- Přepínač jazyka (fáze 2, D12) přijde sem, před Dokumentaci. -->
+      <!-- Přepínač jazyka (D12): CS · EN, aktuální zvýrazněný; přepnutí uloží volbu a načte dashboard znovu. -->
+      <div class="dev-topbar__lang" role="group" aria-label={t('app.lang.label')}>
+        {#each LANGUAGES as lang, i (lang)}
+          {#if i > 0}<span class="dev-topbar__lang-sep" aria-hidden="true">·</span>{/if}
+          {#if lang === currentLanguage()}
+            <span class="dev-topbar__lang-current" aria-current="true" {lang} title={t(`app.lang.${lang}`)}>{lang.toUpperCase()}</span>
+          {:else}
+            <button type="button" class="dev-topbar__lang-btn" {lang} title={t(`app.lang.${lang}`)} onclick={() => setLanguage(lang)}>{lang.toUpperCase()}</button>
+          {/if}
+        {/each}
+      </div>
       <a class="dev-topbar__link dev-topbar__docs" href={DOCS_URL} target="_blank" rel="noopener">
-        <Icon icon={iconBook} size="sm" />Dokumentace
+        <Icon icon={iconBook} size="sm" />{t('app.nav.docs')}
       </a>
     </div>
   </header>

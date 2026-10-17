@@ -5,9 +5,10 @@
   import { router, onLinkClick } from '../../router.svelte.js';
   import { testingApi } from '../../testing/api.js';
   import {
-    fieldMetricRows, metricRows, topDeviations, unstableNodes, rangeText, formatMetric, deviationLevel, sumOf,
+    fieldMetricRows, metricRows, topDeviations, unstableNodes, rangeText, formatMetric, deviationLevel, sumOf, stateLabel,
     DOCUMENT_METRICS, COST_METRICS,
   } from '../../testing/metrics.js';
+  import { t, label } from '../../i18n/index.js';
   import { formatNumber, formatPercent, formatUsd, formatDateTime } from '../../format.js';
   import Crumbs from '../../components/Crumbs.svelte';
   import DevTable from '../../components/DevTable.svelte';
@@ -45,13 +46,13 @@
   const repeatIds = $derived(Array.from({ length: repeatCount }, (_, i) => i + 1));
 
   const messageColumns = $derived([
-    { id: 'messageId', label: 'Doklad' },
-    { id: 'variant', label: 'Varianta' },
-    { id: 'form', label: 'Podoba' },
+    { id: 'messageId', label: t('testing.col.document') },
+    { id: 'variant', label: t('testing.col.variant') },
+    { id: 'form', label: t('testing.col.form') },
     ...repeatIds.map((n) => ({ id: `r${n}`, label: `×${n}`, align: 'right', sortValue: (m) => m.repeats.find((r) => r.repeat === n)?.deviations ?? null })),
-    { id: 'total', label: 'Odchylek Σ', align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => r.deviations)), defaultDir: 'desc' },
-    { id: 'failed', label: 'Selhání', align: 'right', sortValue: (m) => m.repeats.filter((r) => r.status !== 'ok').length },
-    { id: 'cost', label: 'Cena Σ', align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => callCost(r))) },
+    { id: 'total', label: t('testing.runDetail.col.deviationsSum'), align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => r.deviations)), defaultDir: 'desc' },
+    { id: 'failed', label: t('testing.col.failed'), align: 'right', sortValue: (m) => m.repeats.filter((r) => r.status !== 'ok').length },
+    { id: 'cost', label: t('testing.runDetail.col.costSum'), align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => callCost(r))) },
     { id: 'across', label: '', sortable: false },
   ]);
 
@@ -66,36 +67,36 @@
   }
 </script>
 
-<Crumbs items={[{ label: 'Testování', href: router.href('testingDatasets') }, { label: set, href: router.href('testingRuns', { set }) }, { label: file }]} />
+<Crumbs items={[{ label: t('app.nav.testing'), href: router.href('testingDatasets') }, { label: set, href: router.href('testingRuns', { set }) }, { label: file }]} />
 
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
 {:else if !data}
-  <div class="dev-empty">Načítám…</div>
+  <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   <div class="dev-page__head">
-    <h1>Běh <code>{file}</code></h1>
+    <h1>{t('testing.runDetail.title')} <code>{file}</code></h1>
   </div>
   <div class="dev-card">
     <RunSummaryLine summary={data.summary} showFile={false} />
     <div class="dev-small dev-muted meta">
-      {data.summary.messages} zpráv × {data.summary.repeat} = {data.summary.callsTotal} volání ·
-      připojení {data.summary.connection ?? '—'} ({data.summary.platform ?? '—'}) ·
-      dokončeno {formatDateTime(run.finishedAt)} ·
-      cena {formatUsd(data.summary.costTotalUsd ?? data.summary.costUsd)}{#if data.summary.tagsUsd !== null && data.summary.tagsUsd !== undefined} (extrakce {formatUsd(data.summary.costUsd)} + štítky {formatUsd(data.summary.tagsUsd)}){/if}
-      {#if run.stoppedBy}· <span class="dev-state dev-state--missing">{run.stoppedBy === 'maxCost' ? 'zastaveno stropem útraty' : 'zrušeno'} — {data.summary.callsTotal} z {run.plannedCalls ?? '?'} volání</span>{/if}
+      {t('testing.runDetail.callsLine', { messages: data.summary.messages, repeat: data.summary.repeat, calls: data.summary.callsTotal })} ·
+      {t('testing.runDetail.connection', { connection: data.summary.connection ?? '—', platform: data.summary.platform ?? '—' })} ·
+      {t('testing.runDetail.finished', { date: formatDateTime(run.finishedAt) })} ·
+      {t('testing.runDetail.cost', { cost: formatUsd(data.summary.costTotalUsd ?? data.summary.costUsd) })}{#if data.summary.tagsUsd !== null && data.summary.tagsUsd !== undefined} {t('testing.runDetail.costBreakdown', { extraction: formatUsd(data.summary.costUsd), tags: formatUsd(data.summary.tagsUsd) })}{/if}
+      {#if run.stoppedBy}· <span class="dev-state dev-state--missing">{label('jobs.stoppedBy', run.stoppedBy)} — {t('testing.runDetail.ofPlanned', { calls: data.summary.callsTotal, planned: run.plannedCalls ?? '?' })}</span>{/if}
     </div>
     {#if !data.summary.currentSet}
-      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">Běh vznikl nad starší verzí sady (hash <code>{String(data.summary.setHash).slice(0, 12)}</code>). Očekávání v detailu dokladu jsou z aktuální sady a mohou se lišit od těch, proti kterým běh vznikl.</span></div>
+      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.runDetail.olderSet', { hash: String(data.summary.setHash).slice(0, 12) })}</span></div>
     {/if}
   </div>
 
   <div class="grid-2">
     <div class="dev-card">
-      <div class="dev-card__title">Shoda polí po skupinách {repeatCount > 1 ? '(průměr a rozpětí opakování)' : ''}</div>
+      <div class="dev-card__title">{t('testing.runDetail.fieldsByGroup')} {repeatCount > 1 ? t('testing.runDetail.avgAndRange') : ''}</div>
       <div class="dev-table-wrap">
         <table class="dev-table">
-          <thead><tr><th>Skupina</th><th class="dev-num">Polí</th><th class="dev-num">Shoda</th><th class="dev-num">Po norm.</th><th class="dev-num">Chybí</th><th class="dev-num">Navíc</th><th class="dev-num">Špatně</th></tr></thead>
+          <thead><tr><th>{t('testing.col.group')}</th><th class="dev-num">{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
           <tbody>
             {#each fieldRows as r (r.id)}
               <tr class:total={r.id === 'all'}>
@@ -111,12 +112,12 @@
           </tbody>
         </table>
       </div>
-      <p class="dev-small dev-muted note">Počty chybí / navíc / špatně jsou součty přes všechna opakování.</p>
+      <p class="dev-small dev-muted note">{t('testing.runDetail.countsNote')}</p>
     </div>
 
     <div>
       <div class="dev-card">
-        <div class="dev-card__title">Doklady</div>
+        <div class="dev-card__title">{t('testing.runDetail.documents')}</div>
         <table class="plain">
           <tbody>
             {#each docRows as r (r.key)}
@@ -126,7 +127,7 @@
         </table>
       </div>
       <div class="dev-card">
-        <div class="dev-card__title">Volání, cena a čas</div>
+        <div class="dev-card__title">{t('testing.runDetail.callsCostTime')}</div>
         <table class="plain">
           <tbody>
             {#each costRows as r (r.key)}
@@ -139,12 +140,12 @@
   </div>
 
   <div class="grid-2">
-    {#each [['Varianty korpusu', run.byVariant], ['Podoby dokladu', run.byForm]] as [title, cells] (title)}
+    {#each [['variant', run.byVariant], ['form', run.byForm]] as [kind, cells] (kind)}
       <div class="dev-card">
-        <div class="dev-card__title">{title}</div>
+        <div class="dev-card__title">{kind === 'variant' ? t('testing.runDetail.byVariant') : t('testing.runDetail.byForm')}</div>
         <div class="dev-table-wrap">
           <table class="dev-table">
-            <thead><tr><th>{title === 'Varianty korpusu' ? 'Varianta' : 'Podoba'}</th><th class="dev-num">Volání</th><th class="dev-num">Shoda</th><th class="dev-num">Bez odchylky</th><th class="dev-num">Částky</th><th class="dev-num">Řádky</th><th class="dev-num">Cena</th></tr></thead>
+            <thead><tr><th>{kind === 'variant' ? t('testing.col.variant') : t('testing.col.form')}</th><th class="dev-num">{t('metrics.metric.calls.total')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.clean')}</th><th class="dev-num">{t('testing.col.amounts')}</th><th class="dev-num">{t('metrics.group.rows')}</th><th class="dev-num">{t('testing.col.cost')}</th></tr></thead>
             <tbody>
               {#each Object.keys(cells ?? {}) as key (key)}
                 {@const c = cellOf(cells, key)}
@@ -167,9 +168,9 @@
 
   <div class="grid-3">
     <div class="dev-card">
-      <div class="dev-card__title">Nejčastější odchylky</div>
+      <div class="dev-card__title">{t('testing.runDetail.topDeviations')}</div>
       {#if deviations.length === 0}
-        <div class="dev-muted dev-small">Žádné.</div>
+        <div class="dev-muted dev-small">{t('common.none')}</div>
       {:else}
         <table class="plain">
           <tbody>
@@ -178,15 +179,15 @@
             {/each}
           </tbody>
         </table>
-        <p class="dev-small dev-muted note">Počet úspěšných volání s odchylkou na uzlu a podíl z nich.</p>
+        <p class="dev-small dev-muted note">{t('testing.runDetail.topDeviationsNote')}</p>
       {/if}
     </div>
     <div class="dev-card">
-      <div class="dev-card__title">Věcná stabilita</div>
+      <div class="dev-card__title">{t('testing.runDetail.fieldStability')}</div>
       {#if fieldStability === null}
-        <div class="dev-muted dev-small">Jedno opakování — stabilita se neměří.</div>
+        <div class="dev-muted dev-small">{t('testing.runDetail.oneRepeat')}</div>
       {:else if fieldStability.length === 0}
-        <div class="dev-muted dev-small">Každé pole dopadlo ve všech opakováních stejně.</div>
+        <div class="dev-muted dev-small">{t('testing.runDetail.allStable')}</div>
       {:else}
         <table class="plain">
           <tbody>
@@ -195,15 +196,15 @@
             {/each}
           </tbody>
         </table>
-        <p class="dev-small dev-muted note">Podíl dokladů, kde pole dopadlo (shoda / neshoda) ve všech opakováních stejně.</p>
+        <p class="dev-small dev-muted note">{t('testing.runDetail.fieldStabilityNote')}</p>
       {/if}
     </div>
     <div class="dev-card">
-      <div class="dev-card__title">Formátová stabilita</div>
+      <div class="dev-card__title">{t('testing.runDetail.formatStability')}</div>
       {#if formatStability === null}
-        <div class="dev-muted dev-small">Jedno opakování nebo starší běh — neměří se.</div>
+        <div class="dev-muted dev-small">{t('testing.runDetail.oneRepeatOrOld')}</div>
       {:else if formatStability.length === 0}
-        <div class="dev-muted dev-small">Shodné hodnoty měly ve všech opakováních stejný tvar.</div>
+        <div class="dev-muted dev-small">{t('testing.runDetail.allSameShape')}</div>
       {:else}
         <table class="plain">
           <tbody>
@@ -212,18 +213,18 @@
             {/each}
           </tbody>
         </table>
-        <p class="dev-small dev-muted note">Jen u polí shodných ve všech opakováních: podíl se stejným tvarem (mezery v IBAN, PSČ…).</p>
+        <p class="dev-small dev-muted note">{t('testing.runDetail.formatStabilityNote')}</p>
       {/if}
     </div>
   </div>
 
   <div class="dev-card">
-    <div class="dev-card__title">Doklady ({data.messages.length})</div>
+    <div class="dev-card__title">{t('testing.runDetail.documentsCount', { n: data.messages.length })}</div>
     <DevTable
       columns={messageColumns}
       rows={data.messages}
       rowKey={(m) => m.messageId}
-      empty="Běh nemá žádná volání."
+      empty={t('testing.runDetail.noCalls')}
     >
       {#snippet cell(m, col)}
         {#if col.id === 'messageId'}
@@ -234,7 +235,7 @@
           {#if !rep}
             <span class="dev-muted">—</span>
           {:else if rep.status !== 'ok'}
-            <a class="dev-lvl dev-lvl--failed" href={router.href('testingMessage', { set, file, messageId: m.messageId }, { repeat: rep.repeat })} onclick={onLinkClick} title={rep.errorType ?? ''}>selhalo</a>
+            <a class="dev-lvl dev-lvl--failed" href={router.href('testingMessage', { set, file, messageId: m.messageId }, { repeat: rep.repeat })} onclick={onLinkClick} title={rep.errorType ?? ''}>{stateLabel('failed')}</a>
           {:else}
             <a class="dev-lvl dev-lvl--{deviationLevel(rep.deviations)}" href={router.href('testingMessage', { set, file, messageId: m.messageId }, { repeat: rep.repeat })} onclick={onLinkClick}>{rep.deviations}</a>
           {/if}
@@ -246,7 +247,7 @@
         {:else if col.id === 'cost'}
           {formatUsd(sumOf(m.repeats.map((r) => callCost(r))))}
         {:else if col.id === 'across'}
-          <a class="dev-small" href={router.href('testingMessageRuns', { set, messageId: m.messageId })} onclick={onLinkClick}>napříč běhy</a>
+          <a class="dev-small" href={router.href('testingMessageRuns', { set, messageId: m.messageId })} onclick={onLinkClick}>{t('testing.runDetail.acrossRuns')}</a>
         {:else}
           {m[col.id] ?? '—'}
         {/if}

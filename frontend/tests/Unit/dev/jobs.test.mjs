@@ -1,6 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { use } from '../../../src/dev/i18n/index.js';
 import { emptyProgress, reduceProgress, suggestedCap, isActiveStatus, jobStatusClass, stoppedByLabel } from '../../../src/dev/testing/jobs.js';
+
+// Popisky se testují česky; v Node je navigator.language en-US.
+use('cs');
 
 test('redukce událostí průběhu je append-only a drží posledních 5 volání', () => {
   let s = reduceProgress(emptyProgress(), [

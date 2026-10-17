@@ -1,6 +1,8 @@
 <script>
   // Hodnota pole projekce: prázdná (null) jako „∅“, objekt jako JSON,
   // ostatní jak jsou (čísla bez formátování — jde o syrový tvar výstupu).
+  import { t } from '../i18n/index.js';
+
   let { value, muted = false } = $props();
   const text = $derived.by(() => {
     if (value === null || value === undefined) return null;
@@ -11,7 +13,7 @@
 </script>
 
 {#if text === null}
-  <span class="empty" title="prázdné">∅</span>
+  <span class="empty" title={t('common.empty')}>∅</span>
 {:else}
   <span class="value" class:dev-muted={muted}>{text}</span>
 {/if}

@@ -13,6 +13,7 @@
   import { testingApi } from '../testing/api.js';
   import { ApiError } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
+  import { t } from '../i18n/index.js';
 
   let { open = false, ds, onClose, onStarted } = $props();
 
@@ -33,8 +34,8 @@
   }
 
   function label(d) {
-    const base = `${d.title} — ${d.name} · ${d.country ?? 'bez země'} · ${d.profile ?? 'bez profilu'}`;
-    return allowed(d) ? base : `${base} (země ${d.country} ≠ ${ds.country})`;
+    const base = `${d.title} — ${d.name} · ${d.country ?? t('dsLoad.noCountry')} · ${d.profile ?? t('dsLoad.noProfile')}`;
+    return allowed(d) ? base : `${base} ${t('dsLoad.countryMismatch', { dataset: d.country, dataSource: ds.country })}`;
   }
 
   onMount(async () => {
@@ -67,51 +68,51 @@
       confirmReplace = false;
       error = e instanceof ApiError
         ? { text: `${e.message} (${e.code})`, jobId: e.details?.jobId ?? null }
-        : { text: `Chyba sítě: ${e.message}` };
+        : { text: t('common.networkError', { message: e.message }) };
     } finally {
       busy = false;
     }
   }
 </script>
 
-<DevDialog title="Nahrát datovou sadu" {open} width="560px" onClose={() => { if (!busy && !confirmReplace) onClose?.(); }}>
+<DevDialog title={t('ds.menu.loadDataset')} {open} width="560px" onClose={() => { if (!busy && !confirmReplace) onClose?.(); }}>
   <div class="dev-form">
     <dl class="dev-kv dev-small">
-      <dt>Zdroj dat</dt>
-      <dd>{ds.name} <code>{ds.id}</code>{#if ds.country} · země <code>{ds.country}</code>{/if}</dd>
-      <dt>Dnešní sada</dt>
+      <dt>{t('common.dataSource')}</dt>
+      <dd>{ds.name} <code>{ds.id}</code>{#if ds.country} · {t('dsLoad.country')} <code>{ds.country}</code>{/if}</dd>
+      <dt>{t('dsLoad.currentDataset')}</dt>
       <dd>
         {#if held}
-          <code>{held}</code>{#if !ds.dataset} <span class="dev-muted">(jen z původu, seedováno před F6b)</span>{/if}
+          <code>{held}</code>{#if !ds.dataset} <span class="dev-muted">{t('dsLoad.legacyNote')}</span>{/if}
         {:else}
-          <span class="dev-muted">žádná</span>
+          <span class="dev-muted">{t('dsLoad.noneHeld')}</span>
         {/if}
       </dd>
     </dl>
 
     {#if loadError}
-      <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">Sady se nepodařilo načíst: {loadError}</span></div>
+      <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{t('dsLoad.loadError', { message: loadError })}</span></div>
     {:else if !datasets}
-      <div class="dev-empty">Načítám sady…</div>
+      <div class="dev-empty">{t('dsLoad.loading')}</div>
     {:else}
       <div class="dev-field">
-        <label for="load-dataset">Sada</label>
+        <label for="load-dataset">{t('common.dataset')}</label>
         <select id="load-dataset" bind:value={selected} disabled={busy}>
           {#each datasets as d (d.name)}
             <option value={d.name} disabled={!allowed(d)}>{label(d)}</option>
           {:else}
-            <option value="" disabled>Žádná sada v tests/datasets</option>
+            <option value="" disabled>{t('dsLoad.noDatasets')}</option>
           {/each}
         </select>
-        <div class="dev-field__hint">Nabízí se jen sady se zemí zdroje dat; ostatní jsou neaktivní.</div>
+        <div class="dev-field__hint">{t('dsLoad.hint')}</div>
       </div>
     {/if}
 
     <div class="dev-alert dev-alert--warning">
       <span class="dev-alert__text">
-        Reset smaže data zdroje dat. Uživatelé, nastavení a API klíče zůstanou.
+        {t('dsLoad.resetWarning')}
         {#if isReplace}
-          Sada <code>{held}</code> bude nahrazena sadou <code>{chosen.name}</code> — chce to druhé potvrzení.
+          {t('dsLoad.replaceNote', { held, chosen: chosen.name })}
         {/if}
       </span>
     </div>
@@ -121,7 +122,7 @@
         <span class="dev-alert__text">
           {error.text}
           {#if error.jobId}
-            — <a href={router.href('testingJob', { jobId: error.jobId })} onclick={onLinkClick}>běžící úloha {error.jobId}</a>
+            — <a href={router.href('testingJob', { jobId: error.jobId })} onclick={onLinkClick}>{t('common.runningJob', { id: error.jobId })}</a>
           {/if}
         </span>
       </div>
@@ -129,18 +130,18 @@
   </div>
 
   {#snippet footer()}
-    <Button label="Zrušit" variant="secondary" size="sm" disabled={busy} onclick={() => onClose?.()} />
-    <Button label={isReplace ? 'Nahradit sadu…' : 'Nahrát'} variant={isReplace ? 'secondary' : 'danger'} size="sm" loading={busy && !confirmReplace} disabled={busy || !chosen} onclick={submit} />
+    <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={busy} onclick={() => onClose?.()} />
+    <Button label={isReplace ? t('dsLoad.replace') : t('dsLoad.load')} variant={isReplace ? 'secondary' : 'danger'} size="sm" loading={busy && !confirmReplace} disabled={busy || !chosen} onclick={submit} />
   {/snippet}
 </DevDialog>
 
 <DevConfirm
   open={confirmReplace}
-  title="Nahradit sadu"
-  message={`Zdroj dat „${ds.name}“ (${ds.id}) drží sadu ${held}. RESETUJE se — její data zmizí — a naseeduje sadou ${chosen?.name ?? ''}. Uživatelé, nastavení a API klíče zůstanou.`}
+  title={t('dsLoad.replaceTitle')}
+  message={t('dsLoad.replaceMessage', { name: ds.name, id: ds.id, held, chosen: chosen?.name ?? '' })}
   variant="danger"
-  confirmLabel={`Nahradit sadu ${held} sadou ${chosen?.name ?? ''}`}
-  cancelLabel="Zpět"
+  confirmLabel={t('dsLoad.replaceConfirm', { held, chosen: chosen?.name ?? '' })}
+  cancelLabel={t('common.back')}
   busy={busy}
   onConfirm={() => launch(true)}
   onCancel={() => (confirmReplace = false)}

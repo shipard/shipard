@@ -8,6 +8,7 @@
   import { router, onLinkClick } from '../router.svelte.js';
   import { devInfo } from '../info.svelte.js';
   import StreamOutput from '../components/StreamOutput.svelte';
+  import { t } from '../i18n/index.js';
 
   const DS_ID_REGEX = /^[a-z0-9]{4}(-[a-z0-9]{4}){3}$/;
 
@@ -18,29 +19,29 @@
   const config = $derived.by(() => {
     if (route.name === 'doctor') {
       return {
-        title: 'Doctor serveru',
+        title: t('action.doctor.title'),
         command: 'shpd-server doctor',
-        description: 'Zkontroluje konfiguraci serveru, práva v souborovém systému, socket PHP-FPM, routování nginx a připojení k databázím. Jen čte — nic nemění.',
+        description: t('action.doctor.description'),
         endpoint: '/doctor',
-        button: 'Spustit Doctor',
+        button: t('action.doctor.button'),
       };
     }
     if (route.name === 'upgradeAll') {
       return {
-        title: 'Upgrade všech zdrojů dat',
+        title: t('action.upgradeAll.title'),
         command: 'shpd-server ds-upgrade-all',
-        description: 'Povýší schéma a konfiguraci na všech zdrojích dat. Idempotentní — zdroj dat, který je aktuální, projde beze změny.',
+        description: t('action.upgradeAll.description'),
         endpoint: '/upgrade-all',
-        button: 'Spustit upgrade všech',
+        button: t('action.upgradeAll.button'),
       };
     }
     const dir = devInfo.value?.dataSourcesDir ?? '/opt/shipard/data-sources';
     return {
-      title: `Upgrade zdroje dat — ${dsId || '?'}`,
+      title: t('action.dsUpgrade.title', { id: dsId || '?' }),
       command: 'shpd-ds ds-upgrade',
-      description: `Spustí upgrade v adresáři ${dir}/${dsId || '<id>'}. Idempotentní — bez změny, pokud je zdroj dat aktuální.`,
+      description: t('action.dsUpgrade.description', { dir: `${dir}/${dsId || '<id>'}` }),
       endpoint: `/ds-upgrade?ds=${encodeURIComponent(dsId ?? '')}`,
-      button: 'Spustit upgrade',
+      button: t('action.dsUpgrade.button'),
     };
   });
 
@@ -59,10 +60,10 @@
         },
       });
       if (summary.error) result = { kind: 'error', text: summary.error.text };
-      else if (summary.done) result = { kind: 'success', text: summary.done.payload?.message ?? 'Dokončeno.' };
-      else result = { kind: 'finished', text: 'Dokončeno.' };
+      else if (summary.done) result = { kind: 'success', text: summary.done.payload?.message ?? t('action.done') };
+      else result = { kind: 'finished', text: t('action.done') };
     } catch (e) {
-      result = { kind: 'error', text: e instanceof ApiError ? e.message : `Chyba sítě: ${e.message}` };
+      result = { kind: 'error', text: e instanceof ApiError ? e.message : t('common.networkError', { message: e.message }) };
     } finally {
       busy = false;
     }
@@ -78,7 +79,7 @@
 </script>
 
 <div class="dev-breadcrumb">
-  <a href={router.href('dataSources')} onclick={onLinkClick}>Zdroje dat</a> ›
+  <a href={router.href('dataSources')} onclick={onLinkClick}>{t('app.nav.dataSources')}</a> ›
   <span>{config.title}</span>
 </div>
 <div class="dev-page__head">
@@ -87,21 +88,21 @@
 
 {#if !dsIdValid}
   <div class="dev-alert dev-alert--danger">
-    <span class="dev-alert__text">Chybí nebo je neplatný parametr <code>?ds=&lt;id&gt;</code> (tvar <code>xxxx-xxxx-xxxx-xxxx</code>).</span>
-    <a href={router.href('dataSources')} onclick={onLinkClick}>Zpět na zdroje dat</a>
+    <span class="dev-alert__text">{t('action.invalidParam')}</span>
+    <a href={router.href('dataSources')} onclick={onLinkClick}>{t('common.backToDataSources')}</a>
   </div>
 {:else}
   <div class="dev-card">
-    <p class="desc">Spustí <code>{config.command}</code>. {config.description}</p>
+    <p class="desc">{t('action.runs')} <code>{config.command}</code>. {config.description}</p>
     <div class="actions">
-      <Button label={busy ? 'Běží…' : (result ? 'Spustit znovu' : config.button)} variant="primary" loading={busy} disabled={busy} onclick={run} />
-      <a href={router.href('dataSources')} onclick={onLinkClick}>Zpět na dashboard</a>
+      <Button label={busy ? t('action.running') : (result ? t('action.runAgain') : config.button)} variant="primary" loading={busy} disabled={busy} onclick={run} />
+      <a href={router.href('dataSources')} onclick={onLinkClick}>{t('common.backToDashboard')}</a>
     </div>
   </div>
 
   {#if lines.length > 0 || busy}
     <div class="dev-card">
-      <div class="dev-card__title">Výstup</div>
+      <div class="dev-card__title">{t('common.output')}</div>
       <StreamOutput {lines} />
     </div>
   {/if}

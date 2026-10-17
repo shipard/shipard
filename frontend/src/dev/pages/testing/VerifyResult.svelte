@@ -1,6 +1,8 @@
 <script>
   // Výsledek `dataset-verify --json` (F6b D63): souhrn, apply (aplikované,
   // selhané, přeskočené s důvodem) a tabulka kontrol s rozdíly.
+  import { t } from '../../i18n/index.js';
+
   let { report } = $props();
   let expanded = $state({});
 
@@ -10,21 +12,21 @@
 </script>
 
 {#if !report}
-  <div class="dev-empty">Bez výsledku (ověření neproběhlo, nebo stdout není JSON — viz výstup).</div>
+  <div class="dev-empty">{t('testing.verify.noResult')}</div>
 {:else}
   <dl class="dev-kv dev-small">
-    <dt>Souhrn</dt>
+    <dt>{t('testing.verify.summary')}</dt>
     <dd>
-      <span class="dev-lvl dev-lvl--ok">{report.summary?.ok ?? 0} ok</span> ·
-      <span class="dev-lvl" class:dev-lvl--bad={(report.summary?.diff ?? 0) > 0}>{report.summary?.diff ?? 0} rozdíly</span> ·
-      <span class="dev-muted">{report.summary?.skipped ?? 0} přeskočeno</span>
+      <span class="dev-lvl dev-lvl--ok">{t('testing.verify.ok', { n: report.summary?.ok ?? 0 })}</span> ·
+      <span class="dev-lvl" class:dev-lvl--bad={(report.summary?.diff ?? 0) > 0}>{t('testing.verify.diffs', { n: report.summary?.diff ?? 0 })}</span> ·
+      <span class="dev-muted">{t('testing.verify.skipped', { n: report.summary?.skipped ?? 0 })}</span>
       {#if report.exitCode !== undefined}<span class="dev-muted"> · exit {report.exitCode}</span>{/if}
     </dd>
     {#if apply}
       <dt>Apply</dt>
       <dd>
         {#if apply.ran}
-          aplikováno {apply.applied?.length ?? 0}, selhalo {apply.failed?.length ?? 0}, položek {apply.itemsBefore} → {apply.itemsAfter}
+          {t('testing.verify.applyLine', { applied: apply.applied?.length ?? 0, failed: apply.failed?.length ?? 0, before: apply.itemsBefore, after: apply.itemsAfter })}
           {#if apply.skipped && Object.keys(apply.skipped).length}
             <ul class="dev-blockers">
               {#each Object.entries(apply.skipped) as [id, reason] (id)}<li><code>{id}</code>: {reason}</li>{/each}
@@ -36,7 +38,7 @@
             </ul>
           {/if}
         {:else}
-          <span class="dev-muted">bez apply (--no-apply)</span>
+          <span class="dev-muted">{t('testing.verify.noApply')}</span>
         {/if}
       </dd>
     {/if}
@@ -44,7 +46,7 @@
 
   <div class="dev-table-wrap">
     <table class="dev-table">
-      <thead><tr><th>Kontrola</th><th>Stav</th><th>Důvod / poznámky</th><th class="dev-num">Rozdíly</th></tr></thead>
+      <thead><tr><th>{t('testing.verify.col.check')}</th><th>{t('testing.col.state')}</th><th>{t('testing.verify.col.reason')}</th><th class="dev-num">{t('testing.verify.col.differences')}</th></tr></thead>
       <tbody>
         {#each checks as c (c.id)}
           <tr>
@@ -66,7 +68,7 @@
             <tr><td colspan="4"><pre class="dev-output">{c.differences.map((d) => (typeof d === 'string' ? d : JSON.stringify(d))).join('\n')}</pre></td></tr>
           {/if}
         {:else}
-          <tr><td colspan="4" class="dev-empty">Žádná kontrola.</td></tr>
+          <tr><td colspan="4" class="dev-empty">{t('testing.verify.empty')}</td></tr>
         {/each}
       </tbody>
     </table>

@@ -1,9 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { use } from '../../../src/dev/i18n/index.js';
 import {
   metricLabel, metricKind, formatMetric, formatMetricDelta, rangeText, fieldMetricRows, metricRows,
   topDeviations, unstableNodes, deviationLevel, sumOf, maxRepeat, isHeadlineMetric, DOCUMENT_METRICS,
 } from '../../../src/dev/testing/metrics.js';
+
+// Popisky se testují česky; v Node je navigator.language en-US.
+use('cs');
 
 const norm = (s) => s.replace(/ | /g, ' ');
 

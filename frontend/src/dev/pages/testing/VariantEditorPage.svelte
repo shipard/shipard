@@ -12,6 +12,7 @@
   import { testingApi } from '../../testing/api.js';
   import { getJson, ApiError } from '../../api.js';
   import Crumbs from '../../components/Crumbs.svelte';
+  import { t } from '../../i18n/index.js';
 
   const NEW = '_new';
   const route = $derived(router.route);
@@ -147,7 +148,7 @@
       if (e instanceof ApiError && e.code === 'VARIANT_EXISTS') {
         confirmOverwrite = true;
       } else {
-        error = e instanceof ApiError ? `${e.message} (${e.code})` : `Chyba sítě: ${e.message}`;
+        error = e instanceof ApiError ? `${e.message} (${e.code})` : t('common.networkError', { message: e.message });
       }
     } finally {
       busy = false;
@@ -155,91 +156,91 @@
   }
 </script>
 
-<Crumbs items={[{ label: 'Testování', href: router.href('testingDatasets') }, { label: 'Varianty', href: router.href('testingVariants') }, { label: isNew ? 'Nová varianta' : routeName }]} />
+<Crumbs items={[{ label: t('app.nav.testing'), href: router.href('testingDatasets') }, { label: t('app.title.variants'), href: router.href('testingVariants') }, { label: isNew ? t('testing.variants.new') : routeName }]} />
 <div class="dev-page__head">
-  <h1>{isNew ? 'Nová varianta' : `Varianta ${routeName}`}</h1>
+  <h1>{isNew ? t('testing.variants.new') : t('testing.variantEditor.title', { name: routeName })}</h1>
   <span class="dev-page__spacer"></span>
-  {#if !isNew}<a href={router.href('testingVariant', { name: NEW })} onclick={onLinkClick} class="dev-small">založit další</a>{/if}
+  {#if !isNew}<a href={router.href('testingVariant', { name: NEW })} onclick={onLinkClick} class="dev-small">{t('testing.variantEditor.createAnother')}</a>{/if}
 </div>
 
 {#if loading}
-  <div class="dev-empty">Načítám…</div>
+  <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   {#if error}
     <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
   {/if}
   {#if saved}
-    <div class="dev-alert dev-alert--success"><span class="dev-alert__text">Uloženo: <code>tests/eval/variants/{saved.file}</code> — použitelné v <code>ai-eval --variant</code> i v dialogu evaluace.</span></div>
+    <div class="dev-alert dev-alert--success"><span class="dev-alert__text">{t('testing.variantEditor.saved', { file: saved.file })}</span></div>
   {/if}
 
   <div class="dev-split">
     <div class="dev-card">
       <form class="dev-form" onsubmit={(e) => { e.preventDefault(); save(false); }} novalidate>
         <div class="dev-field" class:has-error={isNew && form.name !== '' && !nameOk}>
-          <label for="v-name">Název <span class="dev-muted">(soubor <code>{form.name || '<název>'}.jsonc</code>)</span></label>
-          <input id="v-name" type="text" bind:value={form.name} disabled={!isNew || busy} placeholder="např. sonnet-5-5-effort-high" autocomplete="off" />
-          {#if isNew && form.name !== '' && !nameOk}<div class="dev-field__error">Jen <code>a-z</code>, <code>0-9</code> a pomlčka, max. 64 znaků.</div>{/if}
+          <label for="v-name">{t('dsCreate.name')} <span class="dev-muted">({t('testing.variantEditor.file')} <code>{form.name || t('testing.variantEditor.fileNamePlaceholder')}.jsonc</code>)</span></label>
+          <input id="v-name" type="text" bind:value={form.name} disabled={!isNew || busy} placeholder={t('testing.variantEditor.namePlaceholder')} autocomplete="off" />
+          {#if isNew && form.name !== '' && !nameOk}<div class="dev-field__error">{t('testing.variantEditor.nameRule')}</div>{/if}
         </div>
         <div class="dev-field">
-          <label for="v-desc">Popis</label>
+          <label for="v-desc">{t('testing.variants.col.description')}</label>
           <input id="v-desc" type="text" bind:value={form.description} disabled={busy} autocomplete="off" />
         </div>
         <div class="dev-form__row">
           <div class="dev-field">
-            <label for="v-profile">Profil pošty (kód)</label>
+            <label for="v-profile">{t('testing.variantEditor.profile')}</label>
             <input id="v-profile" type="text" list="v-profiles" bind:value={form.profile} disabled={busy} autocomplete="off" />
             <datalist id="v-profiles">{#each options?.profiles ?? [] as p (p.code)}<option value={p.code}>{p.name}</option>{/each}</datalist>
           </div>
           <div class="dev-field">
-            <label for="v-prompt">Šablona promptu ze souboru <span class="dev-muted">(volitelné)</span></label>
+            <label for="v-prompt">{t('testing.variantEditor.promptTemplate')} <span class="dev-muted">{t('common.optional')}</span></label>
             <select id="v-prompt" bind:value={form.promptTemplateFile} disabled={busy}>
-              <option value="">— z profilu ve zdroji dat —</option>
+              <option value="">{t('testing.variantEditor.fromProfile')}</option>
               {#each promptTemplates as f (f)}<option value={f}>{f}</option>{/each}
             </select>
-            <div class="dev-field__hint">Soubory mimo <code>.jsonc</code> v <code>tests/eval/variants/</code> a <code>variants/prompts/</code>.</div>
+            <div class="dev-field__hint">{t('testing.variantEditor.promptHint')}</div>
           </div>
         </div>
 
-        <h3 class="dev-card__title">Přepis volání <code>mail.extraction</code></h3>
+        <h3 class="dev-card__title">{t('testing.variantEditor.callOverride')} <code>mail.extraction</code></h3>
         <div class="dev-form__row">
           <div class="dev-field">
-            <label for="v-conn">Připojení</label>
+            <label for="v-conn">{t('testing.variantEditor.connection')}</label>
             <select id="v-conn" bind:value={form.call.connection} disabled={busy}>
-              <option value="">— dle zdroje dat —</option>
+              <option value="">{t('testing.variantEditor.perDataSourceOption')}</option>
               {#each options?.connections ?? [] as c (c.code)}<option value={c.code}>{c.name} ({c.code}, {c.platform})</option>{/each}
               {#if form.call.connection && !(options?.connections ?? []).some((c) => c.code === form.call.connection)}<option value={form.call.connection}>{form.call.connection}</option>{/if}
             </select>
           </div>
           <div class="dev-field">
-            <label for="v-model">Model (ID z katalogu)</label>
-            <input id="v-model" type="text" list="v-models" bind:value={form.call.model} disabled={busy} autocomplete="off" placeholder="dle zdroje dat" />
+            <label for="v-model">{t('testing.variantEditor.model')}</label>
+            <input id="v-model" type="text" list="v-models" bind:value={form.call.model} disabled={busy} autocomplete="off" placeholder={t('testing.variants.perDataSource')} />
             <datalist id="v-models">{#each options?.models ?? [] as m (m.id)}<option value={m.id}>{m.name}{m.tier ? ` · ${m.tier}` : ''}{m.status && m.status !== 'active' ? ` · ${m.status}` : ''}</option>{/each}</datalist>
           </div>
         </div>
         <div class="dev-form__row">
           <div class="dev-field">
             <label for="v-think">Thinking</label>
-            <input id="v-think" type="text" list="v-thinking" bind:value={form.call.thinking} disabled={busy} autocomplete="off" placeholder="dle deklarace funkce" />
+            <input id="v-think" type="text" list="v-thinking" bind:value={form.call.thinking} disabled={busy} autocomplete="off" placeholder={t('testing.variantEditor.perDeclarationFn')} />
             <datalist id="v-thinking">{#each options?.thinkingModes ?? [] as t (t)}<option value={t}></option>{/each}</datalist>
           </div>
           <div class="dev-field">
             <label for="v-effort">Effort</label>
             <select id="v-effort" bind:value={form.call.effort} disabled={busy}>
-              <option value="">— dle deklarace funkce —</option>
+              <option value="">{t('testing.variantEditor.perDeclarationFnOption')}</option>
               {#each options?.effortLevels ?? ['low', 'medium', 'high', 'xhigh', 'max'] as e (e)}<option value={e}>{e}</option>{/each}
             </select>
           </div>
           <div class="dev-field">
-            <label for="v-max">Strop tokenů výstupu</label>
-            <input id="v-max" type="number" min="1" step="1" bind:value={form.call.maxTokens} disabled={busy} placeholder="dle deklarace" />
+            <label for="v-max">{t('testing.variantEditor.maxTokens')}</label>
+            <input id="v-max" type="number" min="1" step="1" bind:value={form.call.maxTokens} disabled={busy} placeholder={t('testing.variantEditor.perDeclaration')} />
           </div>
         </div>
 
-        <h3 class="dev-card__title">Přepis funkce štítků <code>exchange.contentTags</code></h3>
+        <h3 class="dev-card__title">{t('testing.variantEditor.tagsOverride')} <code>exchange.contentTags</code></h3>
         <div class="dev-form__row">
           <div class="dev-field">
             <label for="t-model">Model</label>
-            <input id="t-model" type="text" list="v-models" bind:value={form.contentTags.model} disabled={busy} autocomplete="off" placeholder="dle zdroje dat" />
+            <input id="t-model" type="text" list="v-models" bind:value={form.contentTags.model} disabled={busy} autocomplete="off" placeholder={t('testing.variants.perDataSource')} />
           </div>
           <div class="dev-field">
             <label for="t-think">Thinking</label>
@@ -248,44 +249,44 @@
           <div class="dev-field">
             <label for="t-effort">Effort</label>
             <select id="t-effort" bind:value={form.contentTags.effort} disabled={busy}>
-              <option value="">— dle deklarace —</option>
+              <option value="">{t('testing.variantEditor.perDeclarationOption')}</option>
               {#each options?.effortLevels ?? ['low', 'medium', 'high', 'xhigh', 'max'] as e (e)}<option value={e}>{e}</option>{/each}
             </select>
           </div>
         </div>
 
         <div class="dev-btnrow">
-          <Button label={isNew ? 'Uložit variantu' : 'Uložit změny'} type="submit" size="sm" loading={busy} disabled={busy || (isNew && !nameOk) || form.profile.trim() === ''} onclick={() => save(false)} />
-          <span class="dev-small dev-muted">Validace stejná jako v <code>ai-eval</code>; existující soubor se přepíše jen s potvrzením.</span>
+          <Button label={isNew ? t('testing.variantEditor.saveNew') : t('testing.variantEditor.saveChanges')} type="submit" size="sm" loading={busy} disabled={busy || (isNew && !nameOk) || form.profile.trim() === ''} onclick={() => save(false)} />
+          <span class="dev-small dev-muted">{t('testing.variantEditor.saveNote')}</span>
         </div>
       </form>
     </div>
 
     <div class="dev-card">
-      <h2 class="dev-card__title">Nabídky</h2>
+      <h2 class="dev-card__title">{t('testing.variantEditor.options')}</h2>
       <div class="dev-field">
-        <label for="v-ds">Zdroj dat pro nabídky (připojení, modely, profily)</label>
+        <label for="v-ds">{t('testing.variantEditor.optionsDs')}</label>
         <select id="v-ds" bind:value={optionsDs} onchange={loadOptions} disabled={busy}>
-          <option value="">— vyber volný zdroj dat —</option>
+          <option value="">{t('testing.variantEditor.pickFreeDs')}</option>
           {#each dataSources as d (d.id)}<option value={d.id}>{d.name} ({d.id}){d.serverAi ? ' · AI' : ''}</option>{/each}
         </select>
         {#if optionsError}<div class="dev-field__error">{optionsError}</div>{/if}
         {#if options}
-          <div class="dev-field__hint">Platforma serverového připojení: <code>{options.platform ?? '—'}</code>; modelů {options.models.length}, připojení {options.connections.length}, profilů {options.profiles.length}.</div>
+          <div class="dev-field__hint">{t('testing.variantEditor.platform')} <code>{options.platform ?? '—'}</code>; {t('testing.variantEditor.counts', { models: options.models.length, connections: options.connections.length, profiles: options.profiles.length })}</div>
         {/if}
       </div>
-      <p class="dev-small dev-muted">Model se zapisuje jako ID z katalogu (<code>claude-sonnet-5-5</code>); platformové ID doplní resolver. Prázdné pole = <code>null</code> = jak je nastaveno ve zdroji dat.</p>
+      <p class="dev-small dev-muted">{t('testing.variantEditor.modelNote')}</p>
     </div>
   </div>
 {/if}
 
 <DevConfirm
   open={confirmOverwrite}
-  title="Přepsat variantu"
-  message={`Varianta ${form.name} už existuje. Přepsat soubor tests/eval/variants/${form.name}.jsonc?`}
+  title={t('testing.variantEditor.overwriteTitle')}
+  message={t('testing.variantEditor.overwriteMessage', { name: form.name })}
   variant="danger"
-  confirmLabel="Přepsat"
-  cancelLabel="Zpět"
+  confirmLabel={t('testing.variantEditor.overwrite')}
+  cancelLabel={t('common.back')}
   busy={busy}
   onConfirm={() => save(true)}
   onCancel={() => (confirmOverwrite = false)}

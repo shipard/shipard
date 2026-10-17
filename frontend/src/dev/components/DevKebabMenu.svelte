@@ -12,6 +12,7 @@
   import Icon from '../../components/ui/Icon.svelte';
   import { iconMore } from '../../icons.js';
   import { onLinkClick } from '../router.svelte.js';
+  import { t } from '../i18n/index.js';
 
   /**
    * items: {key, label, href?, onSelect?, danger?, icon?, separator?}[] —
@@ -19,7 +20,7 @@
    * s `onSelect`; `icon` z icons.js před textem (#129 D5), `separator`
    * vykreslí oddělovač nad položkou (Smazat…).
    */
-  let { items = [], label = 'Další akce' } = $props();
+  let { items = [], label = t('common.moreActions') } = $props();
 
   let open = $state(false);
   let buttonEl = $state(null);

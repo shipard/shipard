@@ -10,6 +10,7 @@
   import Button from '../../components/ui/Button.svelte';
   import { postJson, ApiError } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
+  import { t } from '../i18n/index.js';
 
   let { open = false, ds, onClose, onStarted } = $props();
 
@@ -35,35 +36,35 @@
     } catch (e) {
       error = e instanceof ApiError
         ? { text: `${e.message} (${e.code})`, jobId: e.details?.jobId ?? null }
-        : { text: `Chyba sítě: ${e.message}` };
+        : { text: t('common.networkError', { message: e.message }) };
     } finally {
       busy = false;
     }
   }
 </script>
 
-<DevDialog title="Smazat zdroj dat" {open} width="560px" onClose={() => { if (!busy) onClose?.(); }}>
+<DevDialog title={t('dsDelete.title')} {open} width="560px" onClose={() => { if (!busy) onClose?.(); }}>
   <div class="dev-form">
     <dl class="dev-kv dev-small">
-      <dt>Zdroj dat</dt>
+      <dt>{t('common.dataSource')}</dt>
       <dd>{ds.name} <code>{ds.id}</code></dd>
-      <dt>Smaže se</dt>
+      <dt>{t('dsDelete.willDelete')}</dt>
       <dd>
         <ul class="delete-list">
-          <li>databáze <code>{ds.database_name ?? '?'}</code></li>
-          <li>DB uživatel zdroje dat</li>
-          <li>adresář zdroje dat (<code>config/</code>, <code>secrets/</code>, přílohy, …)</li>
-          <li>přístupová práva ostatních DB účtů k databázi</li>
+          <li>{t('dsDelete.items.database')} <code>{ds.database_name ?? '?'}</code></li>
+          <li>{t('dsDelete.items.dbUser')}</li>
+          <li>{t('dsDelete.items.directory')} (<code>config/</code>, <code>secrets/</code>, {t('dsDelete.items.attachmentsEtc')})</li>
+          <li>{t('dsDelete.items.grants')}</li>
         </ul>
       </dd>
     </dl>
 
     <div class="dev-alert dev-alert--danger">
-      <span class="dev-alert__text">Nevratné — bez koše a bez zálohy. Logy a záznamy úloh zůstanou.</span>
+      <span class="dev-alert__text">{t('dsDelete.irreversible')}</span>
     </div>
 
     <div class="dev-field">
-      <label for={inputId}>Opiš název zdroje dat: <strong>{ds.name}</strong></label>
+      <label for={inputId}>{t('dsDelete.typeName')} <strong>{ds.name}</strong></label>
       <input
         id={inputId}
         type="text"
@@ -74,7 +75,7 @@
         spellcheck="false"
         onkeydown={(e) => { if (e.key === 'Enter') submit(); }}
       />
-      <div class="dev-field__hint">Tlačítko Smazat se odemkne až po přesném opsání názvu.</div>
+      <div class="dev-field__hint">{t('dsDelete.hint')}</div>
     </div>
 
     {#if error}
@@ -82,7 +83,7 @@
         <span class="dev-alert__text">
           {error.text}
           {#if error.jobId}
-            — <a href={router.href('testingJob', { jobId: error.jobId })} onclick={onLinkClick}>běžící úloha {error.jobId}</a>
+            — <a href={router.href('testingJob', { jobId: error.jobId })} onclick={onLinkClick}>{t('common.runningJob', { id: error.jobId })}</a>
           {/if}
         </span>
       </div>
@@ -90,8 +91,8 @@
   </div>
 
   {#snippet footer()}
-    <Button label="Zrušit" variant="secondary" size="sm" disabled={busy} onclick={() => onClose?.()} />
-    <Button label="Smazat" variant="danger" size="sm" loading={busy} disabled={busy || !matches} onclick={submit} />
+    <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={busy} onclick={() => onClose?.()} />
+    <Button label={t('dsDelete.confirm')} variant="danger" size="sm" loading={busy} disabled={busy || !matches} onclick={submit} />
   {/snippet}
 </DevDialog>
 

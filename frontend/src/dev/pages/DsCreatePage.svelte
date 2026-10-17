@@ -14,11 +14,12 @@
   import { devInfo } from '../info.svelte.js';
   import { testingApi } from '../testing/api.js';
   import StreamOutput from '../components/StreamOutput.svelte';
+  import { t } from '../i18n/index.js';
 
   const DEFAULT_MODULE = 'install.base';
   const COUNTRIES = [
-    { code: 'cz', label: 'Česko (cz)' },
-    { code: 'sk', label: 'Slovensko (sk)' },
+    { code: 'cz', label: t('dsCreate.country.cz') },
+    { code: 'sk', label: t('dsCreate.country.sk') },
   ];
 
   let form = $state({
@@ -80,7 +81,7 @@
   });
 
   function datasetLabel(d) {
-    return `${d.title} — ${d.name} · ${d.country ?? 'bez země'} · ${d.profile ?? 'bez profilu'}`;
+    return `${d.title} — ${d.name} · ${d.country ?? t('dsLoad.noCountry')} · ${d.profile ?? t('dsLoad.noProfile')}`;
   }
 
   /** Výběr sady: země podle sady, prázdný (nebo dřív automatický) účel = „datová sada <název>“. */
@@ -89,7 +90,7 @@
     if (d?.country) form.country = d.country;
     const purposeUntouched = form.purpose.trim() === '' || form.purpose === autoPurpose;
     if (d && purposeUntouched) {
-      autoPurpose = `datová sada ${d.name}`;
+      autoPurpose = t('dsCreate.autoPurpose', { name: d.name });
       form.purpose = autoPurpose;
     } else if (!d && purposeUntouched) {
       form.purpose = '';
@@ -100,35 +101,35 @@
   function validate() {
     const errors = {};
     const name = form.name.trim();
-    if (name === '') errors.name = 'Název je povinný.';
-    else if (name.length > 200) errors.name = 'Název je příliš dlouhý (max. 200 znaků).';
+    if (name === '') errors.name = t('dsCreate.err.nameRequired');
+    else if (name.length > 200) errors.name = t('dsCreate.err.nameTooLong');
 
     const login = form.login.trim();
-    if (login === '') errors.login = 'Login administrátora je povinný.';
-    else if (!/^[a-zA-Z0-9_]+$/.test(login)) errors.login = 'Login smí obsahovat jen písmena, číslice a podtržítko.';
-    else if (login.length > 64) errors.login = 'Login je příliš dlouhý (max. 64 znaků).';
+    if (login === '') errors.login = t('dsCreate.err.loginRequired');
+    else if (!/^[a-zA-Z0-9_]+$/.test(login)) errors.login = t('dsCreate.err.loginChars');
+    else if (login.length > 64) errors.login = t('dsCreate.err.loginTooLong');
 
-    if (form.password === '') errors.password = 'Heslo administrátora je povinné.';
-    else if (form.password.length < 4) errors.password = 'Heslo musí mít aspoň 4 znaky.';
+    if (form.password === '') errors.password = t('dsCreate.err.passwordRequired');
+    else if (form.password.length < 4) errors.password = t('dsCreate.err.passwordShort');
 
-    if (form.module.trim() === '') errors.module = 'Instalační modul je povinný.';
-    else if (!/^install\.[a-z][a-zA-Z0-9]*$/.test(form.module)) errors.module = 'Neplatné ID instalačního modulu.';
+    if (form.module.trim() === '') errors.module = t('dsCreate.err.moduleRequired');
+    else if (!/^install\.[a-z][a-zA-Z0-9]*$/.test(form.module)) errors.module = t('dsCreate.err.moduleInvalid');
 
-    if (!['cs', 'en'].includes(form.language)) errors.language = 'Vyber jazyk.';
-    if (!/^[a-z]{2}$/.test(form.country)) errors.country = 'Vyber zemi.';
+    if (!['cs', 'en'].includes(form.language)) errors.language = t('dsCreate.err.languageRequired');
+    if (!/^[a-z]{2}$/.test(form.country)) errors.country = t('dsCreate.err.countryRequired');
 
     // Sada jen ze seznamu; země musí sedět se zemí sady (server kontroluje znovu, dataset-seed potřetí).
     if (form.dataset !== '') {
-      if (!selectedDataset) errors.dataset = 'Vyber sadu ze seznamu.';
+      if (!selectedDataset) errors.dataset = t('dsCreate.err.datasetInvalid');
       else if (selectedDataset.country && selectedDataset.country !== form.country) {
-        errors.country = `Sada ${selectedDataset.name} je pro zemi ${selectedDataset.country}.`;
+        errors.country = t('dsCreate.err.datasetCountry', { name: selectedDataset.name, country: selectedDataset.country });
       }
     }
 
     // Účel (#126 D6) — zrcadlí MainConfigPatcher::normalizePurpose: jeden řádek, max. 200 znaků.
     const purpose = form.purpose.trim();
-    if (/[\p{Cc}]/u.test(purpose)) errors.purpose = 'Účel musí být jeden řádek bez řídicích znaků.';
-    else if (purpose.length > 200) errors.purpose = 'Účel je příliš dlouhý (max. 200 znaků).';
+    if (/[\p{Cc}]/u.test(purpose)) errors.purpose = t('dsCreate.err.purposeOneLine');
+    else if (purpose.length > 200) errors.purpose = t('dsCreate.err.purposeTooLong');
 
     fieldErrors = errors;
     return Object.keys(errors).length === 0;
@@ -174,7 +175,7 @@
       if (e instanceof ApiError) {
         formError = e.message;
       } else {
-        result = { kind: 'error', text: `Chyba sítě: ${e.message}` };
+        result = { kind: 'error', text: t('common.networkError', { message: e.message }) };
       }
     } finally {
       busy = false;
@@ -190,43 +191,43 @@
 </script>
 
 <div class="dev-breadcrumb">
-  <a href={router.href('dataSources')} onclick={onLinkClick}>Zdroje dat</a> ›
-  <span>Nový zdroj dat</span>
+  <a href={router.href('dataSources')} onclick={onLinkClick}>{t('app.nav.dataSources')}</a> ›
+  <span>{t('ds.new')}</span>
 </div>
 <div class="dev-page__head">
-  <h1>Nový zdroj dat</h1>
+  <h1>{t('ds.new')}</h1>
 </div>
 
 <div class="dev-card">
   <form class="dev-form" onsubmit={submit} novalidate>
     <div class="dev-field" class:has-error={fieldErrors.name}>
-      <label for="ds-name">Název</label>
+      <label for="ds-name">{t('dsCreate.name')}</label>
       <input id="ds-name" type="text" bind:value={form.name} maxlength="200" disabled={busy} autocomplete="off" />
       {#if fieldErrors.name}<div class="dev-field__error">{fieldErrors.name}</div>{/if}
     </div>
 
     <div class="dev-field" class:has-error={fieldErrors.purpose}>
-      <label for="ds-purpose">Účel <span class="dev-muted">(volitelné)</span></label>
+      <label for="ds-purpose">{t('dsCreate.purpose')} <span class="dev-muted">{t('common.optional')}</span></label>
       <input id="ds-purpose" type="text" bind:value={form.purpose} maxlength="200" disabled={busy} autocomplete="off"
-        placeholder="např. Ruční zkoušení UI" />
+        placeholder={t('dsCreate.purposePlaceholder')} />
       {#if fieldErrors.purpose}
         <div class="dev-field__error">{fieldErrors.purpose}</div>
       {:else}
-        <div class="dev-field__hint">Jeden řádek, max. 200 znaků. Ukáže se ve sloupci Účel a v <code>shpd-server ds-list</code>; zdroj dat založený tady je ve vývoji volný (třída dat <code>free</code>).</div>
+        <div class="dev-field__hint">{t('dsCreate.purposeHint')}</div>
       {/if}
     </div>
 
     <div class="dev-form__row">
       <div class="dev-field" class:has-error={fieldErrors.language}>
-        <label for="ds-language">Výchozí jazyk</label>
+        <label for="ds-language">{t('dsCreate.language')}</label>
         <select id="ds-language" bind:value={form.language} disabled={busy}>
-          <option value="cs">čeština (cs)</option>
-          <option value="en">angličtina (en)</option>
+          <option value="cs">{t('dsCreate.lang.cs')}</option>
+          <option value="en">{t('dsCreate.lang.en')}</option>
         </select>
         {#if fieldErrors.language}<div class="dev-field__error">{fieldErrors.language}</div>{/if}
       </div>
       <div class="dev-field" class:has-error={fieldErrors.country}>
-        <label for="ds-country">Země</label>
+        <label for="ds-country">{t('dsCreate.countryLabel')}</label>
         <select id="ds-country" bind:value={form.country} disabled={busy || countryLocked}>
           {#each countries as c (c.code)}
             <option value={c.code}>{c.label}</option>
@@ -235,20 +236,20 @@
         {#if fieldErrors.country}
           <div class="dev-field__error">{fieldErrors.country}</div>
         {:else if countryLocked}
-          <div class="dev-field__hint">Země podle sady {selectedDataset.name}.</div>
+          <div class="dev-field__hint">{t('dsCreate.countryFromDataset', { name: selectedDataset.name })}</div>
         {/if}
       </div>
     </div>
 
     {#if datasetsState !== 'hidden'}
       <div class="dev-field" class:has-error={fieldErrors.dataset}>
-        <label for="ds-dataset">Data</label>
+        <label for="ds-dataset">{t('dsCreate.data')}</label>
         <select id="ds-dataset" bind:value={form.dataset} onchange={onDatasetChange} disabled={busy || datasetsState !== 'ok'}>
-          <option value="">žádná (prázdný zdroj dat)</option>
+          <option value="">{t('dsCreate.noDataset')}</option>
           {#if datasetsState === 'loading'}
-            <option value="__loading" disabled>Načítám sady…</option>
+            <option value="__loading" disabled>{t('dsLoad.loading')}</option>
           {:else if datasetsState === 'error'}
-            <option value="__error" disabled>Sady se nepodařilo načíst</option>
+            <option value="__error" disabled>{t('dsCreate.datasetsError')}</option>
           {:else}
             {#each datasets as d (d.name)}
               <option value={d.name}>{datasetLabel(d)}</option>
@@ -258,23 +259,20 @@
         {#if fieldErrors.dataset}
           <div class="dev-field__error">{fieldErrors.dataset}</div>
         {:else}
-          <div class="dev-field__hint">
-            Datová sada z <code>tests/datasets</code> se nahraje hned po založení (<code>dataset-seed</code>);
-            zdroj dat je pak volný a sadu si pamatuje. Bez sady vznikne prázdný zdroj dat.
-          </div>
+          <div class="dev-field__hint">{t('dsCreate.datasetHint')}</div>
         {/if}
       </div>
     {/if}
 
     <div class="dev-field" class:has-error={fieldErrors.module}>
-      <label for="ds-module">Instalační modul</label>
+      <label for="ds-module">{t('dsCreate.module')}</label>
       <select id="ds-module" bind:value={form.module} disabled={busy || modulesState !== 'ok'}>
         {#if modulesState === 'loading'}
-          <option value={form.module}>Načítám…</option>
+          <option value={form.module}>{t('common.loading')}</option>
         {:else if modulesState === 'empty'}
-          <option value={form.module}>Žádný instalační modul nenalezen</option>
+          <option value={form.module}>{t('dsCreate.noModules')}</option>
         {:else if modulesState === 'error'}
-          <option value={form.module}>Moduly se nepodařilo načíst</option>
+          <option value={form.module}>{t('dsCreate.modulesError')}</option>
         {:else}
           {#each modules as m (m.id)}
             <option value={m.id}>{m.name} ({m.id})</option>
@@ -290,12 +288,12 @@
 
     <div class="dev-form__row">
       <div class="dev-field" class:has-error={fieldErrors.login}>
-        <label for="ds-login">Login administrátora</label>
+        <label for="ds-login">{t('dsCreate.login')}</label>
         <input id="ds-login" type="text" bind:value={form.login} maxlength="64" disabled={busy} autocomplete="off" />
         {#if fieldErrors.login}<div class="dev-field__error">{fieldErrors.login}</div>{/if}
       </div>
       <div class="dev-field" class:has-error={fieldErrors.password}>
-        <label for="ds-password">Heslo administrátora</label>
+        <label for="ds-password">{t('dsCreate.password')}</label>
         <div class="dev-input-group">
           <input
             id="ds-password"
@@ -305,7 +303,7 @@
             autocomplete="new-password"
           />
           <Button
-            label={showPassword ? 'Skrýt' : 'Zobrazit'}
+            label={showPassword ? t('dsCreate.hide') : t('dsCreate.show')}
             variant="secondary"
             size="sm"
             disabled={busy}
@@ -321,14 +319,14 @@
     {/if}
 
     <div>
-      <Button type="submit" label={busy ? 'Vytvářím…' : 'Vytvořit zdroj dat'} loading={busy} disabled={busy} />
+      <Button type="submit" label={busy ? t('dsCreate.creating') : t('dsCreate.create')} loading={busy} disabled={busy} />
     </div>
   </form>
 </div>
 
 {#if lines.length > 0 || busy}
   <div class="dev-card">
-    <div class="dev-card__title">Průběh</div>
+    <div class="dev-card__title">{t('common.progress')}</div>
     <StreamOutput {lines} />
   </div>
 {/if}
@@ -336,22 +334,22 @@
 {#if result?.kind === 'done'}
   <div class="dev-alert dev-alert--success">
     <span class="dev-alert__text">
-      Zdroj dat <code>{result.id}</code> je založený{#if result.dataset} se sadou <code>{result.dataset}</code>{/if}.
+      {result.dataset ? t('dsCreate.doneWithDataset', { id: result.id, dataset: result.dataset }) : t('dsCreate.done', { id: result.id })}
     </span>
     {#if result.url}
-      <a href={result.url} target="_blank" rel="noopener">Otevřít zdroj dat →</a>
+      <a href={result.url} target="_blank" rel="noopener">{t('dsCreate.openDataSource')}</a>
     {/if}
-    <Button label="Vytvořit další" variant="secondary" size="sm" onclick={reset} />
-    <a href={router.href('dataSources')} onclick={onLinkClick}>Zpět na dashboard</a>
+    <Button label={t('dsCreate.createAnother')} variant="secondary" size="sm" onclick={reset} />
+    <a href={router.href('dataSources')} onclick={onLinkClick}>{t('common.backToDashboard')}</a>
   </div>
 {:else if result?.kind === 'error'}
   <div class="dev-alert dev-alert--danger">
     <span class="dev-alert__text">{result.text}</span>
-    <Button label="Zkusit znovu" variant="secondary" size="sm" onclick={reset} />
+    <Button label={t('common.retry')} variant="secondary" size="sm" onclick={reset} />
   </div>
 {:else if result?.kind === 'finished'}
   <div class="dev-alert dev-alert--warning">
-    <span class="dev-alert__text">Průběh skončil bez závěrečné značky — zkontroluj výstup a seznam zdrojů dat.</span>
-    <a href={router.href('dataSources')} onclick={onLinkClick}>Zpět na dashboard</a>
+    <span class="dev-alert__text">{t('dsCreate.finishedWithoutMarker')}</span>
+    <a href={router.href('dataSources')} onclick={onLinkClick}>{t('common.backToDashboard')}</a>
   </div>
 {/if}

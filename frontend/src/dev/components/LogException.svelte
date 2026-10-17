@@ -2,6 +2,7 @@
   // Strom výjimky záznamu logu: třída, zpráva, místo, trace (sbalený),
   // rekurzivně „Způsobeno:“ pro `previous`.
   import LogException from './LogException.svelte';
+  import { t } from '../i18n/index.js';
 
   let { exception, depth = 0 } = $props();
 
@@ -10,7 +11,7 @@
 </script>
 
 <div class="exc" style:margin-left={depth > 0 ? '12px' : '0'}>
-  {#if depth > 0}<div class="exc__caused">Způsobeno:</div>{/if}
+  {#if depth > 0}<div class="exc__caused">{t('logs.exception.causedBy')}</div>{/if}
   <div class="exc__head">
     <code>{exception.class}</code>
     <span class="exc__msg">{exception.message}</span>
@@ -18,7 +19,7 @@
   {#if exception.at}<div class="exc__at dev-muted">{exception.at}</div>{/if}
   {#if frames.length > 0}
     <button type="button" class="exc__toggle" onclick={() => (showTrace = !showTrace)}>
-      {showTrace ? 'Skrýt trace' : `Zobrazit ${frames.length} rámců`}
+      {showTrace ? t('logs.exception.hideTrace') : t('logs.exception.showFrames', { n: frames.length })}
     </button>
     {#if showTrace}
       <pre class="exc__trace">{frames.join('\n')}</pre>

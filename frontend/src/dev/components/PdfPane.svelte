@@ -2,22 +2,24 @@
   // PDF zprávy v prohlížeči (vestavěný prohlížeč PDF přes <iframe>, jako
   // AttachmentGrid v aplikaci). Bez prohlížeče PDF (navigator.pdfViewerEnabled
   // false, headless) jen odkaz.
-  let { src = null, title = 'PDF zprávy' } = $props();
+  import { t } from '../i18n/index.js';
+
+  let { src = null, title = t('testing.pdf.title') } = $props();
   const canEmbed = typeof navigator === 'undefined' || navigator.pdfViewerEnabled !== false;
 </script>
 
 <div class="pane">
   {#if !src}
-    <div class="dev-empty">Zpráva nemá přílohu PDF.</div>
+    <div class="dev-empty">{t('testing.pdf.none')}</div>
   {:else}
     <div class="bar dev-small">
       <span class="dev-muted">{title}</span>
-      <a href={src} target="_blank" rel="noopener">otevřít v novém okně</a>
+      <a href={src} target="_blank" rel="noopener">{t('testing.pdf.openWindow')}</a>
     </div>
     {#if canEmbed}
       <iframe class="pdf" {src} {title}></iframe>
     {:else}
-      <div class="dev-empty">Prohlížeč neumí zobrazit PDF v rámu — použij odkaz výše.</div>
+      <div class="dev-empty">{t('testing.pdf.noViewer')}</div>
     {/if}
   {/if}
 </div>

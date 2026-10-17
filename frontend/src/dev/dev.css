@@ -107,8 +107,44 @@ a.dev-stripe__version:hover {
   border-bottom-color: var(--shpd-color-accent);
 }
 
-/* Přepínač jazyka (fáze 2, D12) přijde mezi navigaci a Dokumentaci. */
-.dev-topbar__docs { margin-left: auto; }
+/* Přepínač jazyka CS · EN (D12) — vzor .lang-switch webu; vpravo před Dokumentací. */
+.dev-topbar__lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: var(--shpd-font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.dev-topbar__lang-current,
+.dev-topbar__lang-btn {
+  padding: 3px 6px;
+  border: 0;
+  border-radius: var(--shpd-radius-sm);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.dev-topbar__lang-current {
+  color: var(--dev-toolbar-link-active);
+  background: rgb(255 255 255 / 0.18);
+}
+
+.dev-topbar__lang-btn {
+  color: var(--dev-toolbar-link);
+  background: none;
+  cursor: pointer;
+}
+
+.dev-topbar__lang-btn:hover {
+  color: var(--dev-toolbar-link-active);
+  background: rgb(255 255 255 / 0.12);
+}
+
+.dev-topbar__lang-sep { color: rgb(255 255 255 / 0.4); }
 
 .dev-main {
   flex: 1;
@@ -436,8 +472,9 @@ code, .dev-code {
   margin: 0;
 }
 
+/* Prázdný výstup — text dává komponenta přes data-empty (slovník dashboardu, D12). */
 .dev-output:empty::before {
-  content: 'Zatím žádný výstup.';
+  content: attr(data-empty);
   color: #64748b;
 }
 

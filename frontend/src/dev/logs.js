@@ -1,3 +1,5 @@
+import { t } from './i18n/index.js';
+
 /**
  * Čisté funkce stránky Logy — filtrování záznamů a nabídka zdrojů dat.
  * Záznam = řádek `shipard.log` (ErrorLogger): `{ts, level, ds, request, msg,
@@ -56,11 +58,11 @@ export function dsOptions(entries, selected) {
     if (e.ds) ids.add(e.ds);
     else hasNone = true;
   }
-  const options = [{ value: '', label: 'Vše' }];
-  if (hasNone || selected === DS_NONE) options.push({ value: DS_NONE, label: '(žádný)' });
+  const options = [{ value: '', label: t('logs.ds.all') }];
+  if (hasNone || selected === DS_NONE) options.push({ value: DS_NONE, label: t('logs.ds.none') });
   for (const id of [...ids].sort()) options.push({ value: id, label: id });
   if (selected && selected !== DS_NONE && !ids.has(selected)) {
-    options.push({ value: selected, label: `${selected} (bez záznamů)` });
+    options.push({ value: selected, label: t('logs.ds.noEntries', { id: selected }) });
   }
   return options;
 }

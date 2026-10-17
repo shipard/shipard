@@ -1,15 +1,22 @@
 /**
- * Formátování pro dev dashboard — česky (`cs-CZ`), bez závislosti na
- * i18n aplikace. Čisté funkce, testy v tests/Unit/dev/format.test.mjs.
+ * Formátování pro dev dashboard podle jeho jazyka (#129 D12): `cs-CZ`
+ * / `en-GB` pro čísla a data, popisky ze slovníku dashboardu
+ * (`i18n/index.js`), bez závislosti na i18n aplikace. Čisté funkce, testy
+ * v tests/Unit/dev/format.test.mjs (nastavují jazyk přes `use()`).
  */
+import { currentLanguage, t } from './i18n/index.js';
 
-const LOCALE = 'cs-CZ';
+const LOCALES = { cs: 'cs-CZ', en: 'en-GB' };
 const DASH = '—';
+
+function locale() {
+  return LOCALES[currentLanguage()] ?? LOCALES.en;
+}
 
 /** @param {number|null|undefined} value */
 export function formatNumber(value, digits = 0) {
   if (value === null || value === undefined || Number.isNaN(value)) return DASH;
-  return new Intl.NumberFormat(LOCALE, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+  return new Intl.NumberFormat(locale(), { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
 }
 
 /** Podíl 0–1 → `94,1 %`. */
@@ -18,11 +25,11 @@ export function formatPercent(ratio, digits = 1) {
   return `${formatNumber(ratio * 100, digits)} %`;
 }
 
-/** Rozdíl podílů v procentních bodech se znaménkem: `+0,4 b.`. */
+/** Rozdíl podílů v procentních bodech se znaménkem: `+0,4 b.` / `+0.4 pp`. */
 export function formatPercentDelta(delta, digits = 1) {
   if (delta === null || delta === undefined || Number.isNaN(delta)) return DASH;
   const sign = delta > 0 ? '+' : delta < 0 ? '−' : '±';
-  return `${sign}${formatNumber(Math.abs(delta) * 100, digits)} b.`;
+  return `${sign}${formatNumber(Math.abs(delta) * 100, digits)} ${t('format.pp')}`;
 }
 
 /** Rozdíl čísla se znaménkem. */
@@ -46,25 +53,25 @@ export function formatMs(ms) {
   return `${formatNumber(ms / 60_000, 1)} min`;
 }
 
-/** ISO → `16. 10. 2026 14:05`. */
+/** ISO → `16. 10. 2026 14:05` / `16/10/2026, 14:05`. */
 export function formatDateTime(iso) {
   const d = toDate(iso);
   if (!d) return iso ?? DASH;
-  return d.toLocaleString(LOCALE, { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleString(locale(), { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 /** ISO → `16. 10. 2026`. */
 export function formatDate(iso) {
   const d = toDate(iso);
   if (!d) return iso ?? DASH;
-  return d.toLocaleDateString(LOCALE, { day: 'numeric', month: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' });
 }
 
 /** ISO → `14:05:33` (řádky logu). */
 export function formatTime(iso) {
   const d = toDate(iso);
   if (!d) return iso ?? DASH;
-  return d.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 /**
@@ -94,7 +101,7 @@ export function formatCommit(commit, dirty = false) {
  * fail-safe jako server.
  */
 export function dataClassLabel(dataClass) {
-  return dataClass === 'free' ? 'volný' : 'reálná kopie';
+  return dataClass === 'free' ? t('format.dataClass.free') : t('format.dataClass.realCopy');
 }
 
 /**
@@ -105,10 +112,10 @@ export function dataClassLabel(dataClass) {
  */
 export function dataClassTitle(ds) {
   const parts = [];
-  if (!ds.dataClassExplicit) parts.push('v main.json chybí — platí reálná kopie');
-  if (ds.origin) parts.push(`nastavil: ${ds.origin}`);
-  if (ds.dataClassChanged) parts.push(`změněno: ${formatDateTime(ds.dataClassChanged)}`);
-  if (ds.serverAi) parts.push('používá serverové AI připojení');
+  if (!ds.dataClassExplicit) parts.push(t('format.dataClass.missing'));
+  if (ds.origin) parts.push(t('format.dataClass.setBy', { origin: ds.origin }));
+  if (ds.dataClassChanged) parts.push(t('format.dataClass.changed', { when: formatDateTime(ds.dataClassChanged) }));
+  if (ds.serverAi) parts.push(t('format.dataClass.serverAi'));
   return parts.join(' · ');
 }
 

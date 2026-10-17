@@ -3,13 +3,14 @@
   // `variant` danger pro destruktivní akce (reseed, zrušení úlohy).
   import Button from '../../components/ui/Button.svelte';
   import DevDialog from './DevDialog.svelte';
+  import { t } from '../i18n/index.js';
 
   let {
     open = false,
     title = '',
     message = '',
-    confirmLabel = 'Potvrdit',
-    cancelLabel = 'Zpět',
+    confirmLabel = t('common.confirm'),
+    cancelLabel = t('common.back'),
     variant = 'primary',
     busy = false,
     onConfirm,

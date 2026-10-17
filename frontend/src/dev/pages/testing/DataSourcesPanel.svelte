@@ -12,7 +12,8 @@
   import { router, onLinkClick } from '../../router.svelte.js';
   import { testingApi } from '../../testing/api.js';
   import { ApiError } from '../../api.js';
-  import { JOB_TYPE_LABELS, JOB_STATUS_LABELS } from '../../testing/jobs.js';
+  import { jobTypeLabel, jobStatusLabel } from '../../testing/jobs.js';
+  import { t } from '../../i18n/index.js';
   import { dataClassLabel, formatDateTime } from '../../format.js';
   import EvalRunDialog from './EvalRunDialog.svelte';
 
@@ -50,7 +51,7 @@
     if (e instanceof ApiError) {
       notice = { kind: 'danger', text: `${e.message} (${e.code})`, jobId: e.details?.jobId ?? null };
     } else {
-      notice = { kind: 'danger', text: `Chyba sítě: ${e.message}` };
+      notice = { kind: 'danger', text: t('common.networkError', { message: e.message }) };
     }
   }
 
@@ -70,10 +71,10 @@
 
   function askReseed(row) {
     confirm = {
-      title: 'Přeseedovat zdroj dat',
-      message: `Zdroj dat „${row.name}“ (${row.id}) se RESETUJE — všechna data zmizí — a naseeduje sadou ${set}.`,
+      title: t('testing.dsPanel.reseedTitle'),
+      message: t('testing.dsPanel.reseedMessage', { name: row.name, id: row.id, set }),
       variant: 'danger',
-      confirmLabel: 'Přeseedovat',
+      confirmLabel: t('testing.dsPanel.reseed'),
       run: () => launch(() => testingApi.reseed(set, row.id)),
     };
   }
@@ -82,60 +83,58 @@
     const row = (data?.reseedCandidates ?? []).find((c) => c.id === candidate);
     if (!row) return;
     confirm = {
-      title: 'Přeseedovat jiný volný zdroj dat',
-      message: `Zdroj dat „${row.name}“ (${row.id}${row.purpose ? `, účel: ${row.purpose}` : ''}) zatím žádnou sadu nedrží. RESETUJE se — všechna data zmizí — a naseeduje sadou ${set}.`,
+      title: t('testing.dsPanel.reseedOtherTitle'),
+      message: t('testing.dsPanel.reseedOtherMessage', { name: row.name, id: row.id, purpose: row.purpose ? t('testing.dsPanel.purposePart', { purpose: row.purpose }) : '', set }),
       variant: 'danger',
-      confirmLabel: 'Přeseedovat',
+      confirmLabel: t('testing.dsPanel.reseed'),
       run: () => launch(() => testingApi.reseed(set, row.id)),
     };
   }
 
   function askCreate() {
     confirm = {
-      title: 'Založit evaluační zdroj dat',
-      message: `Založí se nový volný zdroj dat „Evaluace — ${datasetTitle || set}“ (ds-create --no-cron, bez uživatele) a naseeduje sadou ${set}. Trvá to několik minut; průběh uvidíš v úloze.`,
+      title: t('testing.dsPanel.createTitle'),
+      message: t('testing.dsPanel.createMessage', { title: datasetTitle || set, set }),
       variant: 'primary',
-      confirmLabel: 'Založit',
+      confirmLabel: t('testing.dsPanel.create'),
       run: () => launch(() => testingApi.create(set)),
     };
   }
 
   function askVerify(row) {
     confirm = {
-      title: 'Ověřit zaúčtování',
-      message: verifyApply
-        ? `Spustí se dataset-verify nad „${row.name}“: návrhy sady se APLIKUJÍ (zdroj dat pak bude použitý — před evaluací ho přeseeduj) a zkontroluje se účetnictví, DPH a náklady.`
-        : `Spustí se dataset-verify --no-apply nad „${row.name}“: jen kontroly nad tím, co už ve zdroji dat je.`,
+      title: t('testing.dsPanel.verifyTitle'),
+      message: t(verifyApply ? 'testing.dsPanel.verifyApplyMessage' : 'testing.dsPanel.verifyNoApplyMessage', { name: row.name }),
       variant: 'primary',
-      confirmLabel: 'Ověřit',
+      confirmLabel: t('testing.dsPanel.verify'),
       run: () => launch(() => testingApi.verify(set, row.id, verifyApply)),
     };
   }
 
   function datasetCell(row) {
-    if (!row.dataset) return { cls: 'missing', text: row.legacyOrigin ? 'z původu — přeseedovat' : 'nezaznamenaná — přeseedovat' };
-    return row.dataset.current ? { cls: 'match', text: 'aktuální' } : { cls: 'wrong', text: 'zastaralá' };
+    if (!row.dataset) return { cls: 'missing', text: row.legacyOrigin ? t('testing.dsPanel.ds.legacy') : t('testing.dsPanel.ds.unrecorded') };
+    return row.dataset.current ? { cls: 'match', text: t('testing.dsPanel.ds.current') } : { cls: 'wrong', text: t('testing.dsPanel.ds.stale') };
   }
 
   function usageCell(row) {
     if (!row.readable || row.dataClass !== 'free') return { cls: 'neutral', text: '—' };
-    if (!row.usage) return { cls: 'failed', text: 'DB nedostupná' };
-    if (row.usage.clean) return { cls: 'match', text: 'čistý' };
+    if (!row.usage) return { cls: 'failed', text: t('testing.dsPanel.usage.dbDown') };
+    if (row.usage.clean) return { cls: 'match', text: t('testing.dsPanel.usage.clean') };
     const parts = [];
-    if (row.usage.documents > 0) parts.push(`${row.usage.documents} dokladů`);
-    if (row.usage.tagRules > 0) parts.push(`${row.usage.tagRules} pravidel`);
-    if (row.usage.missing?.length) parts.push(`chybí ${row.usage.missing.length} zpráv`);
-    if (row.usage.membership?.length) parts.push('cizí data');
-    return { cls: 'wrong', text: parts.join(', ') || 'použitý' };
+    if (row.usage.documents > 0) parts.push(t('testing.dsPanel.usage.documents', { n: row.usage.documents }));
+    if (row.usage.tagRules > 0) parts.push(t('testing.dsPanel.usage.rules', { n: row.usage.tagRules }));
+    if (row.usage.missing?.length) parts.push(t('testing.dsPanel.usage.missingMessages', { n: row.usage.missing.length }));
+    if (row.usage.membership?.length) parts.push(t('testing.dsPanel.usage.foreign'));
+    return { cls: 'wrong', text: parts.join(', ') || t('testing.dsPanel.usage.used') };
   }
 </script>
 
 <div class="dev-card">
   <div class="dev-page__head">
-    <h2 class="dev-card__title">Zdroje dat se sadou</h2>
+    <h2 class="dev-card__title">{t('testing.dsPanel.title')}</h2>
     <span class="dev-page__spacer"></span>
-    <Button label="Obnovit" icon={iconRefresh} variant="secondary" size="sm" disabled={busy} onclick={load} />
-    <Button label="Založit evaluační zdroj dat" icon={iconAdd} size="sm" disabled={busy} onclick={askCreate} />
+    <Button label={t('common.refresh')} icon={iconRefresh} variant="secondary" size="sm" disabled={busy} onclick={load} />
+    <Button label={t('testing.dsPanel.createButton')} icon={iconAdd} size="sm" disabled={busy} onclick={askCreate} />
   </div>
 
   {#if notice}
@@ -143,7 +142,7 @@
       <span class="dev-alert__text">
         {notice.text}
         {#if notice.jobId}
-          — <a href={router.href('testingJob', { jobId: notice.jobId })} onclick={onLinkClick}>běžící úloha {notice.jobId}</a>
+          — <a href={router.href('testingJob', { jobId: notice.jobId })} onclick={onLinkClick}>{t('common.runningJob', { id: notice.jobId })}</a>
         {/if}
       </span>
     </div>
@@ -152,13 +151,13 @@
   {#if error}
     <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
   {:else if !data}
-    <div class="dev-empty">Načítám…</div>
+    <div class="dev-empty">{t('common.loading')}</div>
   {:else}
     <div class="dev-table-wrap">
       <table class="dev-table">
         <thead>
           <tr>
-            <th>Zdroj dat</th><th>Třída</th><th>Sada</th><th>Použití</th><th>Stav</th><th>Úloha</th><th>Akce</th>
+            <th>{t('common.dataSource')}</th><th>{t('ds.col.class')}</th><th>{t('common.dataset')}</th><th>{t('testing.dsPanel.col.usage')}</th><th>{t('testing.col.state')}</th><th>{t('testing.dsPanel.col.job')}</th><th>{t('testing.dsPanel.col.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -168,11 +167,11 @@
             <tr>
               <td>
                 <div>{row.name}</div>
-                <div class="dev-small dev-muted"><code>{row.id}</code> · <a href="/{row.id}/app/" target="_blank" rel="noopener">Otevřít</a></div>
+                <div class="dev-small dev-muted"><code>{row.id}</code> · <a href="/{row.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a></div>
               </td>
               <td>
                 <span class="dev-nowrap">{dataClassLabel(row.dataClass)}</span>
-                {#if row.serverAi}<span class="dev-state dev-state--neutral" title="serverové AI připojení">AI</span>{/if}
+                {#if row.serverAi}<span class="dev-state dev-state--neutral" title={t('testing.dsPanel.aiTitle')}>AI</span>{/if}
               </td>
               <td>
                 <span class="dev-state dev-state--{ds.cls}">{ds.text}</span>
@@ -184,17 +183,17 @@
               <td>{row.state}</td>
               <td>
                 {#if row.job}
-                  <a href={router.href('testingJob', { jobId: row.job.id })} onclick={onLinkClick}>{JOB_TYPE_LABELS[row.job.type] ?? row.job.type} · {JOB_STATUS_LABELS[row.job.status] ?? row.job.status}</a>
+                  <a href={router.href('testingJob', { jobId: row.job.id })} onclick={onLinkClick}>{jobTypeLabel(row.job.type)} · {jobStatusLabel(row.job.status)}</a>
                 {:else}
                   <span class="dev-muted">—</span>
                 {/if}
               </td>
               <td>
                 <div class="dev-btnrow">
-                  <Button label="Přeseedovat" variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
-                  <Button label="Ověřit zaúčtování" variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
+                  <Button label={t('testing.dsPanel.reseed')} variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
+                  <Button label={t('testing.dsPanel.verifyButton')} variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
                   <span title={row.blockers.join('\n')}>
-                    <Button label="Spustit evaluaci" variant="secondary" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
+                    <Button label={t('testing.dsPanel.runEval')} variant="secondary" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
                   </span>
                 </div>
                 {#if row.blockers.length}
@@ -205,7 +204,7 @@
               </td>
             </tr>
           {:else}
-            <tr><td colspan="7" class="dev-empty">Žádný zdroj dat tuhle sadu nedrží — založ evaluační zdroj dat, nebo přeseeduj jiný volný.</td></tr>
+            <tr><td colspan="7" class="dev-empty">{t('testing.dsPanel.empty')}</td></tr>
           {/each}
         </tbody>
       </table>
@@ -214,17 +213,17 @@
     <div class="dev-toolbar">
       <label class="dev-field dev-field--inline">
         <input type="checkbox" bind:checked={verifyApply} />
-        <span>Ověření s aplikací návrhů (<code>apply</code>; po něm je zdroj dat použitý)</span>
+        <span>{t('testing.dsPanel.verifyApplyLabel')}</span>
       </label>
       <span class="dev-page__spacer"></span>
       {#if data.reseedCandidates.length}
         <select bind:value={candidate} disabled={busy}>
-          <option value="">Přeseedovat jiný volný zdroj dat…</option>
+          <option value="">{t('testing.dsPanel.reseedOtherOption')}</option>
           {#each data.reseedCandidates as c (c.id)}
             <option value={c.id}>{c.name} ({c.id}){c.purpose ? ` — ${c.purpose}` : ''}</option>
           {/each}
         </select>
-        <Button label="Přeseedovat" variant="secondary" size="sm" disabled={busy || candidate === ''} onclick={askReseedCandidate} />
+        <Button label={t('testing.dsPanel.reseed')} variant="secondary" size="sm" disabled={busy || candidate === ''} onclick={askReseedCandidate} />
       {/if}
     </div>
   {/if}
@@ -235,8 +234,8 @@
   title={confirm?.title ?? ''}
   message={confirm?.message ?? ''}
   variant={confirm?.variant ?? 'primary'}
-  confirmLabel={confirm?.confirmLabel ?? 'Potvrdit'}
-  cancelLabel="Zrušit"
+  confirmLabel={confirm?.confirmLabel ?? t('common.confirm')}
+  cancelLabel={t('common.cancel')}
   busy={busy}
   onConfirm={() => confirm?.run()}
   onCancel={() => (confirm = null)}

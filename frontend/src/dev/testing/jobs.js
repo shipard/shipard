@@ -1,42 +1,18 @@
 /**
  * Čisté funkce nad úlohami na pozadí (F6b D58, D61) — popisky stavů
- * a redukce událostí průběhu `ai-eval` (`progress.jsonl`: started / call /
- * finished / error) do souhrnu pro detail úlohy. Bez prohlížeče,
- * testovatelné v Node (tests/Unit/dev/jobs.test.mjs).
+ * (slovník dashboardu, klíče `jobs.*`; neznámý kód ze serveru se ukáže,
+ * jak přišel) a redukce událostí průběhu `ai-eval` (`progress.jsonl`:
+ * started / call / finished / error) do souhrnu pro detail úlohy. Bez
+ * prohlížeče, testovatelné v Node (tests/Unit/dev/jobs.test.mjs).
  */
+import { t, has, label } from '../i18n/index.js';
 
 export const ACTIVE_STATUSES = ['starting', 'running', 'cancelling'];
 
-export const JOB_STATUS_LABELS = {
-  starting: 'startuje',
-  running: 'běží',
-  cancelling: 'ruší se',
-  finished: 'hotovo',
-  failed: 'selhala',
-  cancelled: 'zrušena',
-};
-
-export const JOB_TYPE_LABELS = {
-  eval: 'Evaluace',
-  verify: 'Ověření zaúčtování',
-  reseed: 'Přeseedování',
-  create: 'Založení zdroje dat',
-  delete: 'Smazání zdroje dat',
-};
-
-export const STEP_STATUS_LABELS = {
-  pending: 'čeká',
-  running: 'běží',
-  finished: 'hotovo',
-  failed: 'selhal',
-  cancelled: 'zrušen',
-  skipped: 'přeskočen',
-};
-
-export const STATUS_REASON_LABELS = {
-  wrapper_not_started: 'obal úlohy se nespustil (viz výstup)',
-  wrapper_died: 'proces úlohy zmizel bez dokončení',
-};
+export const jobStatusLabel = (status) => label('jobs.status', status);
+export const jobTypeLabel = (type) => label('jobs.type', type);
+export const stepStatusLabel = (status) => label('jobs.step', status);
+export const statusReasonLabel = (reason) => label('jobs.reason', reason);
 
 export function isActiveStatus(status) {
   return ACTIVE_STATUSES.includes(status);
@@ -57,8 +33,9 @@ export function jobStatusClass(status) {
   }
 }
 
+/** Konec běhu `ai-eval` (`stoppedBy`): popisek, nebo null pro neznámý / žádný důvod. */
 export function stoppedByLabel(stoppedBy) {
-  return { maxCost: 'zastaveno stropem útraty', cancelled: 'zrušeno' }[stoppedBy] ?? null;
+  return has(`jobs.stoppedBy.${stoppedBy}`) ? t(`jobs.stoppedBy.${stoppedBy}`) : null;
 }
 
 /** Výchozí strop útraty = 1,5 × odhad, zaokrouhleno nahoru na cent, nejméně 0,01 USD (D61). */
@@ -99,7 +76,7 @@ export function reduceProgress(summary, events) {
         if (typeof ev.spentUsd === 'number') out.spentUsd = ev.spentUsd;
         break;
       case 'error':
-        out.error = ev.message ?? 'chyba';
+        out.error = ev.message ?? t('jobs.progress.error');
         break;
       default:
         break;

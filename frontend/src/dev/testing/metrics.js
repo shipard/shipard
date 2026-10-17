@@ -5,72 +5,34 @@
  * barva podle počtu odchylek. Testy: tests/Unit/dev/metrics.test.mjs.
  */
 import { formatNumber, formatPercent, formatUsd, formatMs } from '../format.js';
+import { t, has, label } from '../i18n/index.js';
 
-/** Skupiny polí v pořadí EvalFieldGroups + Celkem. */
-export const FIELD_GROUPS = [
-  ['header', 'Hlavička'],
-  ['supplier', 'Dodavatel'],
-  ['customer', 'Odběratel'],
-  ['vat', 'DPH'],
-  ['rows', 'Řádky'],
-  ['vatRecap', 'Rekapitulace'],
-  ['totals', 'Součty'],
-  ['tag', 'Štítek dokladu'],
-  ['rowExceptions', 'Výjimky štítků řádků'],
-  ['classification', 'Klasifikace zprávy'],
-  ['all', 'Celkem'],
-];
+/** Skupiny polí v pořadí EvalFieldGroups + Celkem; popisky `metrics.group.*`. */
+export const FIELD_GROUP_IDS = ['header', 'supplier', 'customer', 'vat', 'rows', 'vatRecap', 'totals', 'tag', 'rowExceptions', 'classification', 'all'];
 
-export const DOCUMENT_METRICS = [
-  ['documents.clean', 'Doklady bez odchylky'],
-  ['documents.amountsCorrect', 'Správné částky'],
-  ['documents.rowCountOk', 'Správný počet řádků'],
-  ['documents.classificationOk', 'Správná klasifikace'],
-  ['documents.tagOk', 'Správný štítek'],
-];
+/** Metriky dokladů a metriky volání / ceny / času v pořadí zobrazení; popisky `metrics.metric.*`. */
+export const DOCUMENT_METRICS = ['documents.clean', 'documents.amountsCorrect', 'documents.rowCountOk', 'documents.classificationOk', 'documents.tagOk'];
 
 export const COST_METRICS = [
-  ['calls.total', 'Volání'],
-  ['calls.ok', 'Úspěšná'],
-  ['calls.failed', 'Selhaná'],
-  ['cost.usd', 'Cena běhu (extrakce)'],
-  ['cost.perDocument', 'Cena na doklad (extrakce)'],
-  ['tags.calls', 'Volání štítků (LLM)'],
-  ['tags.usd', 'Cena štítků'],
-  ['cost.totalUsd', 'Cena běhu celkem'],
-  ['cost.totalPerDocument', 'Cena na doklad celkem'],
-  ['tokens.input', 'Tokeny vstup'],
-  ['tokens.output', 'Tokeny výstup'],
-  ['tokens.inputPerDocument', 'Vstup na doklad'],
-  ['tokens.outputPerDocument', 'Výstup na doklad'],
-  ['time.ms', 'Čas běhu'],
-  ['time.perDocumentMs', 'Čas na doklad'],
+  'calls.total', 'calls.ok', 'calls.failed',
+  'cost.usd', 'cost.perDocument', 'tags.calls', 'tags.usd', 'cost.totalUsd', 'cost.totalPerDocument',
+  'tokens.input', 'tokens.output', 'tokens.inputPerDocument', 'tokens.outputPerDocument',
+  'time.ms', 'time.perDocumentMs',
 ];
 
-export const STATE_LABELS = {
-  match: 'shoda',
-  matchNormalized: 'po normalizaci',
-  missing: 'chybí',
-  extra: 'navíc',
-  wrong: 'špatně',
-  notCompared: 'neporovnáno',
-  failed: 'selhalo',
-  ok: 'OK',
-};
+/** Popisek skupiny polí (neznámé id zůstane id). */
+export const fieldGroupLabel = (id) => label('metrics.group', id);
 
-const FIELD_LABELS = Object.fromEntries(FIELD_GROUPS);
+/** Stav pole / volání (`match`, `missing`, …) ze souboru běhu — popisek a zda ho známe. */
+export const stateLabel = (state) => label('metrics.state', state);
+export const isKnownState = (state) => has(`metrics.state.${state}`);
 
 /** Popisek metriky; neznámý klíč zůstane klíčem. */
 export function metricLabel(key) {
-  const fixed = Object.fromEntries([...DOCUMENT_METRICS, ...COST_METRICS]);
-  if (fixed[key]) return fixed[key];
+  if (has(`metrics.metric.${key}`)) return t(`metrics.metric.${key}`);
   const m = /^fields\.([a-zA-Z]+)\.(n|hit|normalized|missing|extra|wrong)$/.exec(key);
-  if (m) {
-    const group = FIELD_LABELS[m[1]] ?? m[1];
-    const part = { n: 'polí', hit: 'shoda', normalized: 'po normalizaci', missing: 'chybí', extra: 'navíc', wrong: 'špatně' }[m[2]];
-    return `${group} — ${part}`;
-  }
-  if (key.startsWith('calls.failed.')) return `Selhání: ${key.slice('calls.failed.'.length)}`;
+  if (m) return `${fieldGroupLabel(m[1])} — ${label('metrics.part', m[2])}`;
+  if (key.startsWith('calls.failed.')) return t('metrics.failedKind', { kind: key.slice('calls.failed.'.length) });
   return key;
 }
 
@@ -128,11 +90,11 @@ export function rangeText(avg, min, max, kind = 'percent') {
  */
 export function fieldMetricRows(metrics, range) {
   const r = range ?? {};
-  return FIELD_GROUPS
-    .filter(([id]) => metrics[`fields.${id}.n`] !== undefined || metrics[`fields.${id}.hit`] !== undefined)
-    .map(([id, label]) => ({
+  return FIELD_GROUP_IDS
+    .filter((id) => metrics[`fields.${id}.n`] !== undefined || metrics[`fields.${id}.hit`] !== undefined)
+    .map((id) => ({
       id,
-      label,
+      label: fieldGroupLabel(id),
       n: metrics[`fields.${id}.n`] ?? null,
       hit: { avg: metrics[`fields.${id}.hit`] ?? null, min: r[`fields.${id}.hit`]?.min ?? null, max: r[`fields.${id}.hit`]?.max ?? null },
       normalized: metrics[`fields.${id}.normalized`] ?? null,
@@ -146,8 +108,8 @@ export function fieldMetricRows(metrics, range) {
 export function metricRows(keys, metrics, range) {
   const r = range ?? {};
   return keys
-    .filter(([key]) => metrics[key] !== undefined)
-    .map(([key, label]) => ({ key, label, value: metrics[key], min: r[key]?.min ?? null, max: r[key]?.max ?? null }));
+    .filter((key) => metrics[key] !== undefined)
+    .map((key) => ({ key, label: metricLabel(key), value: metrics[key], min: r[key]?.min ?? null, max: r[key]?.max ?? null }));
 }
 
 /**

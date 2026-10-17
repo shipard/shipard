@@ -10,6 +10,7 @@
   import { formatTime } from '../format.js';
   import { LEVELS, DEFAULT_LEVELS, DS_NONE, MAX_LIMIT, filterEntries, dsOptions, shortDs } from '../logs.js';
   import LogException from '../components/LogException.svelte';
+  import { t } from '../i18n/index.js';
 
   const REFRESH_SECONDS = 5;
   const DOCS_LOGGING = 'https://github.com/shipard/shipard/blob/stable/docs/logging.md';
@@ -96,15 +97,15 @@
 </script>
 
 <div class="dev-page__head">
-  <h1>Logy</h1>
+  <h1>{t('app.nav.logs')}</h1>
   <span class="dev-page__spacer"></span>
   <Button
-    label={paused ? `Pokračovat` : `Pozastavit (${countdown} s)`}
+    label={paused ? t('logs.resume') : t('logs.pause', { s: countdown })}
     variant="secondary"
     size="sm"
     onclick={togglePaused}
   />
-  <span class="dot" class:dot--paused={paused} title={paused ? 'Obnovování pozastaveno' : 'Obnovuje se každých 5 s'}></span>
+  <span class="dot" class:dot--paused={paused} title={paused ? t('logs.pausedTitle') : t('logs.refreshingTitle')}></span>
 </div>
 
 <div class="dev-toolbar">
@@ -114,14 +115,14 @@
     </button>
   {/each}
   <span class="dev-field" style="min-width: 220px">
-    <select bind:value={ds} aria-label="Zdroj dat">
+    <select bind:value={ds} aria-label={t('common.dataSource')}>
       {#each options as o (o.value)}
         <option value={o.value}>{o.label}</option>
       {/each}
     </select>
   </span>
   <span class="dev-field" style="flex: 1; min-width: 200px">
-    <input type="search" placeholder="Hledat ve zprávě a výjimce…" bind:value={search} />
+    <input type="search" placeholder={t('logs.searchPlaceholder')} bind:value={search} />
   </span>
 </div>
 
@@ -129,22 +130,22 @@
   {#if loadError}
     <span class="status-error">{loadError}</span>
   {:else if !available}
-    log: <code>{logFile}</code> • není k dispozici
+    {t('logs.file')} <code>{logFile}</code> • {t('logs.unavailable')}
   {:else}
-    log: <code>{logFile ?? '—'}</code> • zobrazeno: {filtered.length} / {entries.length}
+    {t('logs.file')} <code>{logFile ?? '—'}</code> • {t('logs.shown', { shown: filtered.length, total: entries.length })}
   {/if}
 </div>
 
 <div class="dev-table-wrap">
   {#if !available && !loadError}
     <div class="dev-empty">
-      Soubor logu zatím neexistuje. Jak se logování zapíná a kam píše, popisuje
+      {t('logs.noFile')}
       <a href={DOCS_LOGGING} target="_blank" rel="noopener">docs/logging.md</a>.
     </div>
   {:else if entries.length === 0 && !loadError}
-    <div class="dev-empty">Zatím žádné záznamy.</div>
+    <div class="dev-empty">{t('logs.noEntries')}</div>
   {:else if filtered.length === 0}
-    <div class="dev-empty">Žádný záznam neodpovídá filtrům.</div>
+    <div class="dev-empty">{t('logs.noMatch')}</div>
   {:else}
     <div class="rows">
       {#each filtered as e, i (i)}
@@ -155,7 +156,7 @@
               class="badge badge--{e.level}"
               role="button"
               tabindex="-1"
-              title="Zobrazit jen tuto úroveň"
+              title={t('logs.onlyLevel')}
               onclick={(ev) => { ev.stopPropagation(); soloLevel(e.level); }}
               onkeydown={(ev) => { if (ev.key === 'Enter') { ev.stopPropagation(); soloLevel(e.level); } }}
             >{e.level}</span>
@@ -180,12 +181,12 @@
           {#if expanded.has(i)}
             <div class="row__detail">
               <dl>
-                <dt>Čas</dt><dd>{e.ts}</dd>
-                <dt>Zpráva</dt><dd>{e.msg}</dd>
-                {#if e.request}<dt>Request</dt><dd><code>{e.request}</code></dd>{/if}
-                <dt>Zdroj dat</dt><dd>{e.ds ? e.ds : '—'}</dd>
+                <dt>{t('logs.detail.time')}</dt><dd>{e.ts}</dd>
+                <dt>{t('logs.detail.message')}</dt><dd>{e.msg}</dd>
+                {#if e.request}<dt>{t('logs.detail.request')}</dt><dd><code>{e.request}</code></dd>{/if}
+                <dt>{t('common.dataSource')}</dt><dd>{e.ds ? e.ds : '—'}</dd>
                 {#if e.ctx && Object.keys(e.ctx).length > 0}
-                  <dt>Kontext</dt><dd><pre class="ctx">{JSON.stringify(e.ctx, null, 2)}</pre></dd>
+                  <dt>{t('logs.detail.context')}</dt><dd><pre class="ctx">{JSON.stringify(e.ctx, null, 2)}</pre></dd>
                 {/if}
               </dl>
               {#if e.exception}
@@ -201,7 +202,7 @@
 
 <div class="older">
   <Button
-    label={atMax ? `Zobrazeno nejvýš ${MAX_LIMIT} záznamů — starší přes grep` : `Načíst starší (limit ${limit} → ${Math.min(MAX_LIMIT, limit * 2)})`}
+    label={atMax ? t('logs.maxShown', { max: MAX_LIMIT }) : t('logs.loadOlder', { limit, next: Math.min(MAX_LIMIT, limit * 2) })}
     variant="secondary"
     size="sm"
     disabled={atMax}

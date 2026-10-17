@@ -14,6 +14,7 @@
   import RunSummaryLine from '../../components/RunSummaryLine.svelte';
   import FieldGroupTable from './FieldGroupTable.svelte';
   import RowsTable from './RowsTable.svelte';
+  import { t } from '../../i18n/index.js';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -68,14 +69,12 @@
 
   function arrayNote(a) {
     const more = a.actual > a.expected;
-    return more
-      ? `${a.label}: očekáváno ${a.expected}, výstup ${a.actual} prvků — prvky výstupu navíc se do souboru běhu neukládají, v tabulce nejsou.`
-      : `${a.label}: očekáváno ${a.expected}, výstup ${a.actual} prvků — prvky očekávání nad počet výstupu se neporovnávaly.`;
+    return t(more ? 'testing.message.arrayMore' : 'testing.message.arrayFewer', { label: a.label, expected: a.expected, actual: a.actual });
   }
 </script>
 
 <Crumbs items={[
-  { label: 'Testování', href: router.href('testingDatasets') },
+  { label: t('app.nav.testing'), href: router.href('testingDatasets') },
   { label: set, href: router.href('testingRuns', { set }) },
   { label: file, href: router.href('testingRun', { set, file }) },
   { label: messageId },
@@ -84,55 +83,55 @@
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
 {:else if !detail}
-  <div class="dev-empty">Načítám…</div>
+  <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   <div class="dev-page__head">
-    <h1>Doklad <code>{messageId}</code></h1>
-    <span class="dev-small dev-muted">{detail.cell.stem ?? ''} · varianta {detail.cell.variant ?? '—'} · podoba {detail.cell.form ?? '—'}</span>
+    <h1>{t('testing.col.document')} <code>{messageId}</code></h1>
+    <span class="dev-small dev-muted">{detail.cell.stem ?? ''} · {t('testing.message.variantForm', { variant: detail.cell.variant ?? '—', form: detail.cell.form ?? '—' })}</span>
     <span class="dev-page__spacer"></span>
     <span class="repeats">
-      <span class="dev-small dev-muted">opakování</span>
+      <span class="dev-small dev-muted">{t('testing.message.repeats')}</span>
       {#each detail.repeats as n (n)}
         <button type="button" class="dev-chip" class:is-on={n === repeat} onclick={() => setRepeat(n)}>×{n}</button>
       {/each}
     </span>
-    <label class="dev-chip" class:is-on={onlyDeviations}><input type="checkbox" bind:checked={onlyDeviations} /> jen odchylky</label>
+    <label class="dev-chip" class:is-on={onlyDeviations}><input type="checkbox" bind:checked={onlyDeviations} /> {t('testing.message.onlyDeviations')}</label>
     <label class="dev-chip" class:is-on={showPdf}><input type="checkbox" bind:checked={showPdf} /> PDF</label>
-    <a class="dev-small" href={router.href('testingMessageRuns', { set, messageId })} onclick={onLinkClick}>tentýž doklad v jiných bězích</a>
+    <a class="dev-small" href={router.href('testingMessageRuns', { set, messageId })} onclick={onLinkClick}>{t('testing.message.sameAcrossRuns')}</a>
   </div>
 
   <div class="dev-card head">
     <div class="runline"><strong>A</strong> <RunSummaryLine summary={detail.run} /></div>
     {#if compare}
       <div class="runline"><strong>B</strong>
-        {#if detailB}<RunSummaryLine summary={detailB.run} />{:else if errorB}<span class="dev-lvl--bad">{errorB}</span>{:else}<span class="dev-muted">načítám…</span>{/if}
-        <a class="dev-small" href={router.href('testingMessage', { set, file, messageId }, { repeat: repeat === 1 ? '' : repeat })} onclick={onLinkClick}>zrušit porovnání</a>
+        {#if detailB}<RunSummaryLine summary={detailB.run} />{:else if errorB}<span class="dev-lvl--bad">{errorB}</span>{:else}<span class="dev-muted">{t('common.loading')}</span>{/if}
+        <a class="dev-small" href={router.href('testingMessage', { set, file, messageId }, { repeat: repeat === 1 ? '' : repeat })} onclick={onLinkClick}>{t('testing.message.cancelCompare')}</a>
       </div>
     {/if}
     <div class="facts dev-small">
       {#each (compare && detailB ? [['A', detail], ['B', detailB]] : [['', detail]]) as [side, d] (side)}
         <div class="facts__row">
           {#if side}<strong>{side}</strong>{/if}
-          <StateBadge state={d.status === 'ok' ? 'ok' : 'failed'} label={d.status === 'ok' ? 'volání OK' : `selhalo: ${d.errorType ?? '?'}`} title={d.note ?? ''} />
+          <StateBadge state={d.status === 'ok' ? 'ok' : 'failed'} label={d.status === 'ok' ? t('testing.message.callOk') : t('testing.message.callFailed', { type: d.errorType ?? '?' })} title={d.note ?? ''} />
           <span><span class="dev-muted">model</span> <code>{d.model ?? '—'}</code></span>
-          <span><span class="dev-muted">cena</span> {formatUsd(d.costUsd)}</span>
-          <span><span class="dev-muted">tokeny</span> {formatNumber(d.tokensIn)} / {formatNumber(d.tokensOut)}</span>
+          <span><span class="dev-muted">{t('testing.message.facts.cost')}</span> {formatUsd(d.costUsd)}</span>
+          <span><span class="dev-muted">{t('testing.message.facts.tokens')}</span> {formatNumber(d.tokensIn)} / {formatNumber(d.tokensOut)}</span>
           {#if d.tags}
-            <span><span class="dev-muted">štítky</span> {formatUsd(d.tags.costUsd)} ({formatNumber(d.tags.tokensIn)} / {formatNumber(d.tags.tokensOut)}, <code>{d.tags.model ?? '—'}</code>)</span>
+            <span><span class="dev-muted">{t('testing.message.facts.tags')}</span> {formatUsd(d.tags.costUsd)} ({formatNumber(d.tags.tokensIn)} / {formatNumber(d.tags.tokensOut)}, <code>{d.tags.model ?? '—'}</code>)</span>
           {/if}
-          <span><span class="dev-muted">čas</span> {formatMs(d.durationMs)}</span>
-          <span><span class="dev-muted">klasifikace</span> <ValueCell value={d.classification?.expected} muted /> → <ValueCell value={d.classification?.actual} /> <StateBadge state={d.classification?.state} /></span>
-          <span><span class="dev-muted">stavy</span> {d.counts.match} shod · {d.counts.matchNormalized} po norm. · {d.counts.missing} chybí · {d.counts.extra} navíc · {d.counts.wrong} špatně</span>
+          <span><span class="dev-muted">{t('testing.message.facts.time')}</span> {formatMs(d.durationMs)}</span>
+          <span><span class="dev-muted">{t('testing.message.facts.classification')}</span> <ValueCell value={d.classification?.expected} muted /> → <ValueCell value={d.classification?.actual} /> <StateBadge state={d.classification?.state} /></span>
+          <span><span class="dev-muted">{t('testing.message.facts.states')}</span> {t('testing.message.counts', { match: d.counts.match, normalized: d.counts.matchNormalized, missing: d.counts.missing, extra: d.counts.extra, wrong: d.counts.wrong })}</span>
         </div>
       {/each}
     </div>
     {#if !detail.currentSet}
-      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">Běh vznikl nad starší verzí sady — očekávání níže jsou z aktuální sady a mohou se od tehdejších lišit (počty stavů pak nesedí se souborem běhu).</span></div>
+      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.message.olderSet')}</span></div>
     {:else if detail.countsMatch === false}
-      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">Počty stavů z rekonstrukce ({JSON.stringify(detail.counts)}) nesedí s počty v souboru běhu ({JSON.stringify(detail.fileCounts)}) — rekonstrukce tohoto volání není úplná, nahlas to.</span></div>
+      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.message.countsMismatch', { counts: JSON.stringify(detail.counts), fileCounts: JSON.stringify(detail.fileCounts) })}</span></div>
     {/if}
     {#if detail.status !== 'ok'}
-      <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">Volání selhalo ({detail.errorType ?? '?'}){detail.note ? `: ${detail.note}` : ''}. Výstup není — každé neprázdné pole očekávání chybí.</span></div>
+      <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{t('testing.message.callFailedAlert', { type: detail.errorType ?? '?', note: detail.note ? `: ${detail.note}` : '' })}</span></div>
     {/if}
     {#each detail.arrays as a (a.path)}
       <div class="dev-alert dev-alert--info"><span class="dev-alert__text">{arrayNote(a)}</span></div>

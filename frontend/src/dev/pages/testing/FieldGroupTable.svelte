@@ -6,6 +6,7 @@
   import StateBadge from '../../components/StateBadge.svelte';
   import ValueCell from '../../components/ValueCell.svelte';
   import { formatPercent } from '../../format.js';
+  import { t } from '../../i18n/index.js';
 
   let { group, fields = [], fieldsB = null, onlyDeviations = false } = $props();
 
@@ -30,24 +31,24 @@
     <h3 class="group__title">
       {group.label}
       <span class="group__counts dev-small">
-        {#if counts.missing}<span class="dev-state dev-state--missing">{counts.missing} chybí</span>{/if}
-        {#if counts.extra}<span class="dev-state dev-state--extra">{counts.extra} navíc</span>{/if}
-        {#if counts.wrong}<span class="dev-state dev-state--wrong">{counts.wrong} špatně</span>{/if}
-        {#if counts.matchNormalized}<span class="dev-state dev-state--matchNormalized">{counts.matchNormalized} po norm.</span>{/if}
+        {#if counts.missing}<span class="dev-state dev-state--missing">{t('testing.fields.countMissing', { n: counts.missing })}</span>{/if}
+        {#if counts.extra}<span class="dev-state dev-state--extra">{t('testing.fields.countExtra', { n: counts.extra })}</span>{/if}
+        {#if counts.wrong}<span class="dev-state dev-state--wrong">{t('testing.fields.countWrong', { n: counts.wrong })}</span>{/if}
+        {#if counts.matchNormalized}<span class="dev-state dev-state--matchNormalized">{t('testing.fields.countNormalized', { n: counts.matchNormalized })}</span>{/if}
       </span>
     </h3>
     {#if rows.length === 0}
-      <div class="dev-muted dev-small group__empty">Bez odchylek ({hidden} shod skryto).</div>
+      <div class="dev-muted dev-small group__empty">{t('testing.fields.noDeviations', { hidden })}</div>
     {:else}
       <div class="dev-table-wrap">
         <table class="dev-table fields">
           <thead>
             <tr>
-              <th>Pole</th>
-              <th>Očekáváno</th>
-              <th>{compare ? 'Výstup A' : 'Výstup'}</th>
-              <th>{compare ? 'Stav A' : 'Stav'}</th>
-              {#if compare}<th>Výstup B</th><th>Stav B</th>{/if}
+              <th>{t('testing.fields.col.field')}</th>
+              <th>{t('testing.fields.col.expected')}</th>
+              <th>{compare ? t('testing.fields.col.outputA') : t('testing.fields.col.output')}</th>
+              <th>{compare ? t('testing.fields.col.stateA') : t('testing.col.state')}</th>
+              {#if compare}<th>{t('testing.fields.col.outputB')}</th><th>{t('testing.fields.col.stateB')}</th>{/if}
             </tr>
           </thead>
           <tbody>
@@ -64,14 +65,14 @@
                       {:else}
                         <ValueCell value={side.actual} />
                         {#if side.state === 'matchNormalized' && !side.actualKnown}
-                          <span class="dev-small dev-muted" title="Starší běh ukládal u shody po normalizaci jen cestu — ukazuje se očekávání"> (tvar výstupu neuložen)</span>
+                          <span class="dev-small dev-muted" title={t('testing.fields.shapeNotStoredTitle')}> {t('testing.fields.shapeNotStored')}</span>
                         {/if}
                       {/if}
                     </td>
                     <td class="dev-nowrap">
                       <StateBadge state={side.state} />
                       {#if side.similarity !== null && side.similarity !== undefined}
-                        <span class="dev-small dev-muted" title="podobnost volného textu"> {formatPercent(side.similarity, 0)}</span>
+                        <span class="dev-small dev-muted" title={t('testing.fields.similarityTitle')}> {formatPercent(side.similarity, 0)}</span>
                       {/if}
                     </td>
                   {:else}
@@ -83,7 +84,7 @@
           </tbody>
         </table>
       </div>
-      {#if hidden > 0}<div class="dev-small dev-muted group__empty">{hidden} shod skryto.</div>{/if}
+      {#if hidden > 0}<div class="dev-small dev-muted group__empty">{t('testing.fields.matchesHidden', { hidden })}</div>{/if}
     {/if}
   </section>
 {/if}

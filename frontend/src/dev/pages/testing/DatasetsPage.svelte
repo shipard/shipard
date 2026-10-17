@@ -4,6 +4,7 @@
   import { testingApi } from '../../testing/api.js';
   import { formatDateTime } from '../../format.js';
   import Crumbs from '../../components/Crumbs.svelte';
+  import { t } from '../../i18n/index.js';
 
   let datasets = $state(null);
   let error = $state(null);
@@ -17,24 +18,24 @@
   });
 </script>
 
-<Crumbs items={[{ label: 'Testování' }]} />
+<Crumbs items={[{ label: t('app.nav.testing') }]} />
 <div class="dev-page__head">
-  <h1>Testovací sady</h1>
-  <span class="dev-muted dev-small">evaluace AI nad korpusem — <code>tests/datasets</code> a <code>tests/eval</code>; spouštění jen na volných zdrojích dat</span>
+  <h1>{t('testing.datasets.title')}</h1>
+  <span class="dev-muted dev-small">{t('testing.datasets.subtitle')}</span>
   <span class="dev-page__spacer"></span>
-  <a href={router.href('testingJobs')} onclick={onLinkClick}>Úlohy na pozadí</a>
-  <a href={router.href('testingVariants')} onclick={onLinkClick}>Varianty</a>
+  <a href={router.href('testingJobs')} onclick={onLinkClick}>{t('testing.jobs.title')}</a>
+  <a href={router.href('testingVariants')} onclick={onLinkClick}>{t('app.title.variants')}</a>
 </div>
 
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
 {:else if !datasets}
-  <div class="dev-empty">Načítám…</div>
+  <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   <div class="dev-table-wrap">
     <table class="dev-table">
       <thead>
-        <tr><th>Sada</th><th>Titulek</th><th>Země</th><th>Profil</th><th class="dev-num">Zpráv</th><th class="dev-num">Běhů</th><th>Poslední běh</th></tr>
+        <tr><th>{t('common.dataset')}</th><th>{t('testing.datasets.col.title')}</th><th>{t('dsCreate.countryLabel')}</th><th>{t('testing.col.profile')}</th><th class="dev-num">{t('testing.datasets.col.messages')}</th><th class="dev-num">{t('testing.datasets.col.runs')}</th><th>{t('testing.datasets.col.lastRun')}</th></tr>
       </thead>
       <tbody>
         {#each datasets as ds (ds.name)}
@@ -48,7 +49,7 @@
             <td class="dev-muted">{ds.lastRunAt ? formatDateTime(ds.lastRunAt) : '—'}</td>
           </tr>
         {:else}
-          <tr><td colspan="7" class="dev-empty">Žádná sada v <code>tests/datasets</code>.</td></tr>
+          <tr><td colspan="7" class="dev-empty">{t('dsLoad.noDatasets')}.</td></tr>
         {/each}
       </tbody>
     </table>

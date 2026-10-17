@@ -6,6 +6,8 @@
   // ukáže i výstup B.
   import StateBadge from '../../components/StateBadge.svelte';
   import ValueCell from '../../components/ValueCell.svelte';
+  import { stateLabel } from '../../testing/metrics.js';
+  import { t } from '../../i18n/index.js';
 
   let { table, tableB = null, onlyDeviations = false, label = null } = $props();
 
@@ -40,9 +42,9 @@
 <section class="group">
   <h3 class="group__title">{label ?? table.label} <span class="dev-muted dev-small">({table.rows.length}{compare && tableB.rows.length !== table.rows.length ? ` / B ${tableB.rows.length}` : ''})</span></h3>
   {#if table.rows.length === 0 && (tableB?.rows.length ?? 0) === 0}
-    <div class="dev-muted dev-small">Prázdné.</div>
+    <div class="dev-muted dev-small">{t('testing.rows.empty')}</div>
   {:else if rows.length === 0}
-    <div class="dev-muted dev-small">Bez odchylek ({hidden} řádků skryto).</div>
+    <div class="dev-muted dev-small">{t('testing.rows.noDeviations', { hidden })}</div>
   {:else}
     <div class="dev-table-wrap">
       <table class="dev-table rows">
@@ -65,8 +67,8 @@
                       <div class="node">
                         {#if side}<span class="dev-muted">{side}:</span>{/if}
                         <StateBadge state={node.state} />
-                        <span class="dev-cell-expected">oček. <ValueCell value={node.expected} /></span>
-                        <span class="dev-cell-actual">výstup <ValueCell value={node.actual} /></span>
+                        <span class="dev-cell-expected">{t('testing.rows.expectedShort')} <ValueCell value={node.expected} /></span>
+                        <span class="dev-cell-actual">{t('testing.rows.output')} <ValueCell value={node.actual} /></span>
                       </div>
                     {:else if side}
                       <div class="node"><span class="dev-muted">{side}: —</span></div>
@@ -88,10 +90,10 @@
                       <div class="cell">
                         <span class="dev-cell-expected"><ValueCell value={primary.expected} /></span>
                         {#if ca && ca.state !== 'match'}
-                          <span class="dev-cell-actual">{compare ? 'A: ' : ''}{#if ca.state === 'notCompared'}<span class="dev-muted">neporovnáno</span>{:else}<ValueCell value={ca.actual} />{/if}</span>
+                          <span class="dev-cell-actual">{compare ? 'A: ' : ''}{#if ca.state === 'notCompared'}<span class="dev-muted">{stateLabel('notCompared')}</span>{:else}<ValueCell value={ca.actual} />{/if}</span>
                         {/if}
                         {#if cb && cb.state !== 'match'}
-                          <span class="dev-cell-actual">B: {#if cb.state === 'notCompared'}<span class="dev-muted">neporovnáno</span>{:else}<ValueCell value={cb.actual} />{/if}</span>
+                          <span class="dev-cell-actual">B: {#if cb.state === 'notCompared'}<span class="dev-muted">{stateLabel('notCompared')}</span>{:else}<ValueCell value={cb.actual} />{/if}</span>
                         {/if}
                       </div>
                     {/if}
@@ -103,7 +105,7 @@
         </tbody>
       </table>
     </div>
-    {#if hidden > 0}<div class="dev-small dev-muted">{hidden} řádků bez odchylky skryto.</div>{/if}
+    {#if hidden > 0}<div class="dev-small dev-muted">{t('testing.rows.rowsHidden', { hidden })}</div>{/if}
   {/if}
 </section>
 

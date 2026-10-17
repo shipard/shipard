@@ -9,6 +9,7 @@
   import { ApiError } from '../../api.js';
   import { suggestedCap } from '../../testing/jobs.js';
   import { formatUsd } from '../../format.js';
+  import { t, label } from '../../i18n/index.js';
 
   let { open = false, set, dataSource, onClose, onStarted } = $props();
 
@@ -20,20 +21,13 @@
   let maxCost = $state('');
   let error = $state(null); // {text, problems?}
 
-  const BASIS_LABELS = {
-    sameModel: 'podle posledního běhu se stejným modelem',
-    series: 'z tokenů běhu s modelem téže řady × ceník',
-    catalog: 'z ceníku katalogu a typické velikosti dokladu',
-    unknown: 'neznámý (model mimo katalog)',
-  };
-
   onMount(async () => {
     try {
       const d = await testingApi.variants();
       variants = d.variants.filter((v) => v.valid);
       if (!variants.some((v) => v.name === form.variant) && variants.length) form.variant = variants[0].name;
     } catch (e) {
-      error = { text: `Varianty se nepodařilo načíst: ${e.message}` };
+      error = { text: t('testing.evalRun.variantsError', { message: e.message }) };
     }
   });
 
@@ -58,7 +52,7 @@
     } catch (e) {
       error = e instanceof ApiError
         ? { text: `${e.message} (${e.code})`, problems: e.details?.problems ?? null }
-        : { text: `Chyba sítě: ${e.message}` };
+        : { text: t('common.networkError', { message: e.message }) };
     } finally {
       estimating = false;
     }
@@ -75,23 +69,23 @@
       const { job } = await testingApi.startEval({ ...body(), maxCostUsd: capValue });
       onStarted?.(job);
     } catch (e) {
-      error = e instanceof ApiError ? { text: `${e.message} (${e.code})`, problems: e.details?.problems ?? null } : { text: `Chyba sítě: ${e.message}` };
+      error = e instanceof ApiError ? { text: `${e.message} (${e.code})`, problems: e.details?.problems ?? null } : { text: t('common.networkError', { message: e.message }) };
     } finally {
       starting = false;
     }
   }
 </script>
 
-<DevDialog title="Spustit evaluaci" {open} onClose={() => onClose?.()} width="640px">
+<DevDialog title={t('testing.dsPanel.runEval')} {open} onClose={() => onClose?.()} width="640px">
   <div class="dev-form">
     <dl class="dev-kv dev-small">
-      <dt>Sada</dt><dd><code>{set}</code></dd>
-      <dt>Zdroj dat</dt><dd>{dataSource.name} <code>{dataSource.id}</code></dd>
+      <dt>{t('common.dataset')}</dt><dd><code>{set}</code></dd>
+      <dt>{t('common.dataSource')}</dt><dd>{dataSource.name} <code>{dataSource.id}</code></dd>
     </dl>
 
     <div class="dev-form__row">
       <div class="dev-field">
-        <label for="eval-variant">Varianta</label>
+        <label for="eval-variant">{t('testing.col.variant')}</label>
         <select id="eval-variant" bind:value={form.variant} disabled={estimating || starting} onchange={() => (estimate = null)}>
           {#each variants as v (v.name)}
             <option value={v.name}>{v.name}{v.description ? ` — ${v.description}` : ''}</option>
@@ -99,18 +93,18 @@
         </select>
       </div>
       <div class="dev-field">
-        <label for="eval-repeat">Opakování (1–5)</label>
+        <label for="eval-repeat">{t('testing.evalRun.repeat')}</label>
         <input id="eval-repeat" type="number" min="1" max="5" bind:value={form.repeat} disabled={estimating || starting} onchange={() => (estimate = null)} />
       </div>
     </div>
     <div class="dev-field">
-      <label for="eval-only">Jen doklady <span class="dev-muted">(volitelné, <code>--only</code>: čísla buněk, stemy, varianty nebo messageId, čárkami)</span></label>
-      <input id="eval-only" type="text" bind:value={form.only} placeholder="např. 0101,0902" disabled={estimating || starting} onchange={() => (estimate = null)} />
+      <label for="eval-only">{t('testing.evalRun.only')} <span class="dev-muted">{t('testing.evalRun.onlyHint')}</span></label>
+      <input id="eval-only" type="text" bind:value={form.only} placeholder={t('testing.evalRun.onlyPlaceholder')} disabled={estimating || starting} onchange={() => (estimate = null)} />
     </div>
 
     <div class="dev-btnrow">
-      <Button label="Spočítat odhad" variant="secondary" size="sm" loading={estimating} disabled={starting || variants.length === 0} onclick={runEstimate} />
-      <span class="dev-small dev-muted">Odhad nic nespustí ani nezapíše (ai-eval --estimate).</span>
+      <Button label={t('testing.evalRun.estimate')} variant="secondary" size="sm" loading={estimating} disabled={starting || variants.length === 0} onclick={runEstimate} />
+      <span class="dev-small dev-muted">{t('testing.evalRun.estimateNote')}</span>
     </div>
 
     {#if error}
@@ -127,31 +121,31 @@
     {#if estimate}
       <div class="dev-card">
         <dl class="dev-kv">
-          <dt>Volání</dt><dd>{estimate.calls} ({estimate.set?.messages} zpráv × {estimate.repeat})</dd>
-          <dt>Model extrakce</dt><dd><code>{estimate.model}</code> (připojení {estimate.connection} — {estimate.connectionOrigin ?? '?'})</dd>
-          <dt>Model štítků</dt><dd><code>{estimate.tagsModel ?? '—'}</code></dd>
-          <dt>Odhad ceny</dt>
+          <dt>{t('metrics.metric.calls.total')}</dt><dd>{estimate.calls} {t('testing.evalRun.callsDetail', { messages: estimate.set?.messages, repeat: estimate.repeat })}</dd>
+          <dt>{t('testing.variants.col.extractionModel')}</dt><dd><code>{estimate.model}</code> {t('testing.evalRun.connection', { connection: estimate.connection, origin: estimate.connectionOrigin ?? '?' })}</dd>
+          <dt>{t('testing.variants.col.tagsModel')}</dt><dd><code>{estimate.tagsModel ?? '—'}</code></dd>
+          <dt>{t('testing.evalRun.estimatedCost')}</dt>
           <dd>
             {#if estimate.estimate?.total !== null && estimate.estimate?.total !== undefined}
-              <strong>{formatUsd(estimate.estimate.total)}</strong> ({formatUsd(estimate.estimate.perCall)} / volání)
+              <strong>{formatUsd(estimate.estimate.total)}</strong> {t('testing.evalRun.perCall', { cost: formatUsd(estimate.estimate.perCall) })}
             {:else}
-              <strong>neznámý</strong>
+              <strong>{t('testing.evalRun.unknown')}</strong>
             {/if}
-            <span class="dev-muted dev-small"> — {BASIS_LABELS[estimate.estimate?.basis] ?? estimate.estimate?.basis}{estimate.estimate?.source?.file ? ` (${estimate.estimate.source.file})` : ''}</span>
+            <span class="dev-muted dev-small"> — {label('testing.evalRun.basis', estimate.estimate?.basis)}{estimate.estimate?.source?.file ? ` (${estimate.estimate.source.file})` : ''}</span>
           </dd>
         </dl>
       </div>
       <div class="dev-field" class:has-error={!(capValue > 0)}>
-        <label for="eval-cap">Strop útraty (USD) — povinný; předvyplněn 1,5× odhad</label>
+        <label for="eval-cap">{t('testing.evalRun.cap')}</label>
         <input id="eval-cap" type="number" min="0.01" step="0.01" bind:value={maxCost} disabled={starting} />
-        {#if !(capValue > 0)}<div class="dev-field__error">Zadej kladný strop v USD.</div>{/if}
-        <div class="dev-field__hint">Po dosažení stropu další volání nezačne; běh se uloží jako neúplný. Výsledky jdou do <code>tests/eval/{set}/</code> v pracovním stromu — commit je na tobě.</div>
+        {#if !(capValue > 0)}<div class="dev-field__error">{t('testing.evalRun.capError')}</div>{/if}
+        <div class="dev-field__hint">{t('testing.evalRun.capHint', { set })}</div>
       </div>
     {/if}
   </div>
 
   {#snippet footer()}
-    <Button label="Zavřít" variant="secondary" size="sm" disabled={starting} onclick={() => onClose?.()} />
-    <Button label="Spustit evaluaci" size="sm" loading={starting} disabled={!canStart} onclick={start} />
+    <Button label={t('common.close')} variant="secondary" size="sm" disabled={starting} onclick={() => onClose?.()} />
+    <Button label={t('testing.dsPanel.runEval')} size="sm" loading={starting} disabled={!canStart} onclick={start} />
   {/snippet}
 </DevDialog>

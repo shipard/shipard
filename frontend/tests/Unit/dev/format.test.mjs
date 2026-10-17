@@ -1,9 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { use } from '../../../src/dev/i18n/index.js';
 import {
   formatNumber, formatPercent, formatPercentDelta, formatDelta, formatUsd, formatMs, formatCommit,
-  dataClassLabel, dataClassTitle, truncate, versionLabel,
+  dataClassLabel, dataClassTitle, truncate, versionLabel, formatDateTime,
 } from '../../../src/dev/format.js';
+
+// Popisky se testují česky; v Node je navigator.language en-US.
+use('cs');
 
 // Intl v Node odděluje tisíce i desetiny podle cs-CZ (nezlomitelná mezera, čárka);
 // testy porovnávají po normalizaci mezer, aby nezávisely na verzi ICU.
@@ -64,4 +68,19 @@ test('verze v pruhu: hash a větev jen když jsou', () => {
   assert.equal(versionLabel({ version: '0.1.1', hash: '02e2d3b7', branch: null }), 'v0.1.1 · 02e2d3b7');
   assert.equal(versionLabel({ version: '0.1.1', hash: null, branch: null }), 'v0.1.1');
   assert.equal(versionLabel({ version: '0.1.1' }), 'v0.1.1');
+});
+
+test('anglicky: en-GB formáty, pp a popisky třídy dat', () => {
+  use('en');
+  try {
+    assert.equal(norm(formatNumber(1234.5, 1)), '1,234.5');
+    assert.equal(norm(formatPercent(0.9412)), '94.1 %');
+    assert.equal(norm(formatPercentDelta(0.004)), '+0.4 pp');
+    assert.match(norm(formatDateTime('2026-10-16T14:05:00')), /^16\/10\/2026, 14:05$/);
+    assert.equal(dataClassLabel('free'), 'free');
+    assert.equal(dataClassLabel('realCopy'), 'real copy');
+    assert.equal(dataClassTitle({ dataClass: 'realCopy', dataClassExplicit: false }), 'missing in main.json — treated as a real copy');
+  } finally {
+    use('cs');
+  }
 });

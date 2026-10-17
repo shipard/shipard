@@ -1,6 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { use } from '../../../src/dev/i18n/index.js';
 import { filterEntries, dsOptions, shortDs, DEFAULT_LEVELS, DS_NONE } from '../../../src/dev/logs.js';
+
+// Popisky se testují česky; v Node je navigator.language en-US.
+use('cs');
 
 const DS_A = 'aaaa-aaaa-aaaa-aaaa';
 const DS_B = 'bbbb-bbbb-bbbb-bbbb';

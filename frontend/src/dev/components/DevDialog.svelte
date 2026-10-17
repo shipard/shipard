@@ -2,6 +2,8 @@
   // Dialog dev dashboardu: overlay + karta s titulkem, tělem a patičkou.
   // Záměrně bez sdíleného `Modal` (ten tahá `t()` a `api/client.js`,
   // docs/frontend.md → Vývojářský dashboard). Esc a klik mimo kartu zavírá.
+  import { t } from '../i18n/index.js';
+
   let { open = false, title = '', width = '640px', onClose, children, footer } = $props();
 
   function onKeydown(e) {
@@ -17,7 +19,7 @@
     <div class="dev-dialog__card" style="width: {width}">
       <div class="dev-dialog__header">
         <span class="dev-dialog__title">{title}</span>
-        <button type="button" class="dev-dialog__close" aria-label="Zavřít" onclick={() => onClose?.()}>×</button>
+        <button type="button" class="dev-dialog__close" aria-label={t('common.close')} onclick={() => onClose?.()}>×</button>
       </div>
       <div class="dev-dialog__body">
         {@render children?.()}
