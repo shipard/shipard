@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { use } from '../../../src/dev/i18n/index.js';
-import { chipKind, statusKind, headMatches, daysSince, minutesSince, isOlderThanDays, blockerText, checkErrorText, versionAriaLabel } from '../../../src/dev/updates.js';
+import { chipKind, statusKind, headMatches, daysSince, minutesSince, isOlderThanDays, blockerText, checkErrorText, versionAriaLabel, idlePollDue, IDLE_POLL_MS } from '../../../src/dev/updates.js';
 
 // Popisky se testují česky; v Node je navigator.language en-US.
 use('cs');
@@ -88,4 +88,13 @@ test('aria-label tlačítka verze s celým stavem (D23)', () => {
   assert.equal(versionAriaLabel({ ...v, branch: null }, null), 'Verze 0.1.1, 6aaa2a47', 'odpojená HEAD bez větve');
   assert.equal(versionAriaLabel({ version: '0.1.1', hash: null, branch: null }, null), 'Verze 0.1.1', 'bez gitu jen číslo verze');
   assert.equal(versionAriaLabel(null, null), 'Verze a stav aktualizace', 'před načtením /_dev/api/info');
+});
+
+test('obnovení otevřené karty: viditelná stránka po 10 minutách od posledního dotazu (D25)', () => {
+  assert.equal(IDLE_POLL_MS, 600_000);
+  assert.equal(idlePollDue(NOW - IDLE_POLL_MS, NOW, 'visible'), true, 'přesně 10 minut = na řadě');
+  assert.equal(idlePollDue(NOW - IDLE_POLL_MS + 1, NOW, 'visible'), false, 'o milisekundu dřív ještě ne');
+  assert.equal(idlePollDue(NOW - IDLE_POLL_MS, NOW, 'hidden'), false, 'skrytá karta se neptá');
+  assert.equal(idlePollDue(0, NOW, 'visible'), true, 'bez předchozího dotazu hned');
+  assert.equal(idlePollDue(NOW - 5000, NOW, 'visible', 1000), true, 'interval jde přepsat');
 });

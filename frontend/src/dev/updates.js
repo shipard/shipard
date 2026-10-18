@@ -1,8 +1,8 @@
 /**
- * Čisté funkce stavu aktualizací v pruhu dashboardu (#129 D19, D20, D23, D24):
+ * Čisté funkce stavu aktualizací v pruhu dashboardu (#129 D19, D20, D23–D25):
  * stav checkoutu vůči stable pro bublinu, štítek u verze, stáří, texty
- * pojistek a chyb kontroly ze slovníku (`updates.*`) a `aria-label` tlačítka
- * verze. Bez prohlížeče, testovatelné
+ * pojistek a chyb kontroly ze slovníku (`updates.*`), `aria-label` tlačítka
+ * verze a rozhodnutí o obnovení otevřené karty. Bez prohlížeče, testovatelné
  * v Node (tests/Unit/dev/updates.test.mjs).
  */
 import { t, has, label } from './i18n/index.js';
@@ -10,6 +10,9 @@ import { isActiveStatus } from './testing/jobs.js';
 
 /** Nejstarší chybějící změna starší než tolik dní = plný štítek. */
 export const OLD_AFTER_DAYS = 7;
+
+/** Viditelná stránka se zeptá na stav sama nejdřív po tolika ms od posledního dotazu (D25). */
+export const IDLE_POLL_MS = 600_000;
 
 /**
  * Stav checkoutu vůči stable pro řádek v bublině (D24): `current` = stav
@@ -51,6 +54,20 @@ export function headMatches(status) {
   const cached = status?.state?.head?.hash ?? null;
   const current = status?.head?.hash ?? null;
   return Boolean(cached && current && cached === current);
+}
+
+/**
+ * Má se otevřená karta zeptat na stav sama (D25)? Jen když je stránka vidět
+ * a od posledního dotazu (úspěšného i selhaného) uplynulo `interval`.
+ * Kontrolu na pozadí z toho spustí server jen při cache starší než hodina.
+ *
+ * @param {number} lastLoadAt čas posledního dotazu (ms), 0 = ještě žádný
+ * @param {number} now
+ * @param {string} visibilityState `document.visibilityState`
+ * @param {number} interval
+ */
+export function idlePollDue(lastLoadAt, now = Date.now(), visibilityState = 'visible', interval = IDLE_POLL_MS) {
+  return visibilityState === 'visible' && now - lastLoadAt >= interval;
 }
 
 /**

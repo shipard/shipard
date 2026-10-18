@@ -1,16 +1,19 @@
 /**
- * Stav aktualizací pro štítek v pruhu (#129 D18–D21, U3, U7): `GET
- * /_dev/api/updates` při startu, každých 5 s dokud běží kontrola nebo úloha
- * `update`, po návratu na kartu (focus) nejvýš jednou za minutu. Selhání
- * dotazu nechává poslední stav — během aktualizace se přepisuje PHP
- * i autoloader a chvilkové chyby jsou normální. Když běžící úloha zmizí
- * z odpovědi, doptá se na její konečný stav: hotovo → výzva **Obnovit
- * stránku** (build přepsal soubory dashboardu), jinak hlášení o selhání.
+ * Stav aktualizací pro tlačítko verze v pruhu (#129 D18–D21, D25, U3, U7):
+ * `GET /_dev/api/updates` při startu, každých 5 s dokud běží kontrola nebo
+ * úloha `update`, po návratu na kartu (focus) nejvýš jednou za minutu
+ * a na viditelné stránce samo každých 10 minut (`IDLE_POLL_MS`; kontrolu
+ * z toho spustí server jen při cache starší než hodina). Selhání dotazu
+ * nechává poslední stav — během aktualizace se přepisuje PHP i autoloader
+ * a chvilkové chyby jsou normální. Když běžící úloha zmizí z odpovědi,
+ * doptá se na její konečný stav: hotovo → výzva **Obnovit stránku** (build
+ * přepsal soubory dashboardu), jinak hlášení o selhání.
  */
 import { getJson, postJson, ApiError } from './api.js';
 import { isActiveStatus } from './testing/jobs.js';
+import { idlePollDue, IDLE_POLL_MS } from './updates.js';
 
-const POLL_MS = 5000;
+const POLL_MS = 5000; // tik: kontrola / úloha, a nad ním rozhodnutí o obnovení otevřené karty
 const FOCUS_MIN_MS = 60_000;
 
 let status = $state(null); // {state, stale, checking, head, blockers, canUpdate}
@@ -22,7 +25,7 @@ let actionError = $state(null); // {text, code, jobId} z posledního Aktualizova
 
 let intervalId = null;
 let onFocus = null;
-let lastLoadAt = 0;
+let lastLoadAt = 0; // poslední dotaz, i selhaný — focus a obnovení karty se řídí pokusem, ne úspěchem
 let loading = false;
 
 async function load() {
@@ -34,13 +37,13 @@ async function load() {
     const { job: current = null, ...rest } = d;
     status = rest;
     job = current;
-    lastLoadAt = Date.now();
     if (previous && isActiveStatus(previous.status) && !(current && current.id === previous.id)) {
       await settle(previous.id);
     }
   } catch {
     // poslední stav zůstává
   } finally {
+    lastLoadAt = Date.now();
     loading = false;
   }
 }
@@ -56,9 +59,14 @@ async function settle(jobId) {
   }
 }
 
+/** Tik každých POLL_MS: při kontrole / úloze vždy, jinak jen když je obnovení otevřené karty na řadě (D25). */
 function tick() {
   if (typeof document !== 'undefined' && document.hidden) return;
-  if (status?.checking || (job && isActiveStatus(job.status))) load();
+  if (status?.checking || (job && isActiveStatus(job.status))) {
+    load();
+    return;
+  }
+  if (idlePollDue(lastLoadAt, Date.now(), document.visibilityState, IDLE_POLL_MS)) load();
 }
 
 export const updates = {
