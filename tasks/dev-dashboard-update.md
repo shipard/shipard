@@ -1,6 +1,6 @@
 # Vývojářský dashboard — zastaralost a Aktualizovat (fáze 3)
 
-**Stav:** hotovo — 2026-10-17, #129 fáze 3 (D16–D22, U1–U8); testy nad dočasnými git repozitáři, živě na dev stroji (`ahead 1`, pojistky, kontrola na pozadí přes PHP-FPM) a 2026-10-18 celý průchod „pozadu → Aktualizovat“ na VM z bootstrapu
+**Stav:** částečně — § 1–5 hotové a živě ověřené (2026-10-17/18, D16–D22, U1–U8, průchod „pozadu → Aktualizovat“ na VM z bootstrapu); zbývá § 6 — doplnění D23–D25 (verze jako vstup do bubliny, bublina vždy, obnovování otevřené karty)
 
 ## Kontext / Cíl
 
@@ -194,6 +194,62 @@ false, null, [])` (jen `development`):
   dashboardu (U7).
 - Texty v obou slovnících (`cs.js`, `en.js`), `npm run check:i18n`.
 
+## 6. Doplnění 2026-10-18 — verze jako vstup do bubliny (D23–D25)
+
+Zjištěno při používání na VM: když cache tvrdí „aktuální“, štítek se
+neukazuje (D19) a není kde kliknout na **Zkontrolovat teď** — commit
+pushnutý po poslední kontrole se ukáže až za hodinu. Otevřená karta
+v popředí se navíc sama nepřekontroluje: dotaz na stav jde jen při
+načtení stránky, při návratu na kartu a během kontroly / úlohy.
+
+**Verze v pruhu = tlačítko (D23).** `UpdateChip` a dnešní položka verze
+v `DevApp.svelte` se sloučí do jedné komponenty (např.
+`components/VersionMenu.svelte`) na místě verze v pruhu:
+
+- Tlačítko: ikona commitu, `v0.1.1 · 6aaa2a47 · stable` (IBM Plex Mono,
+  `versionLabel()`), za ním šipka (▾). Před načtením `/_dev/api/info`
+  `…`, při chybě `?` — tlačítko i tak otevře bublinu. Bez hashe (git
+  nedostupný) jen `v0.1.1`.
+- Uvnitř tlačítka (neinteraktivní `span`) štítek stavu podle dnešního
+  `chipKind()`: **pozadu** = „N pozadu“ (světlý `--dev-stripe-chip-bg`,
+  plný nad 7 dní jako dnes), **nelze ověřit** = světlý s ikonou
+  varování; aktuální nebo neznámý stav = bez štítku. Běží-li kontrola,
+  šipku nahradí malý spinner.
+- **Aktualizuji…** (odkaz na průběh úlohy) a **Obnovit stránku**
+  zůstávají samostatné prvky vedle tlačítka jako dnes — interaktivní
+  prvek se do tlačítka nevkládá.
+- `aria-haspopup="dialog"`, `aria-expanded`, `aria-label` s celým
+  stavem („Verze 0.1.1, 6aaa2a47, stable — 1 commit pozadu“).
+
+**Bublina vždy (D24)** — otevře se v každém stavu; efekt, který ji
+dnes zavírá při `kind === null`, zaniká:
+
+1. Hlavička: „Verze 0.1.1“, hash jako odkaz na commit na GitHubu
+   (`COMMIT_URL` + `fullHash`, přesouvá se sem z pruhu), větev a datum
+   commitu (`/_dev/api/info` → `version`).
+2. Řádek stavu:
+   - aktuální (stav platí pro dnešní HEAD, `behind` 0): ikona ✓
+     a „Aktuální se stable · ověřeno před X min“;
+   - pozadu / nelze ověřit: dnešní obsah (nadpis, meta, commity,
+     „a M dalších“, chyba kontroly);
+   - stav neznámý nebo pro jiný HEAD: „Stav zatím neznámý“,
+     při kontrole „ověřuji…“;
+   - jiná větev než `stable`: poznámka z pojistky `notStable`
+     (porovnání je jen informativní), bez Aktualizovat.
+3. Vždy **Zkontrolovat teď** (neaktivní během kontroly).
+4. Při stavu pozadu na větvi `stable` navíc dnešní část s pojistkami,
+   Aktualizovat a Zobrazit na GitHubu — beze změny.
+
+**Obnovování otevřené karty (D25).** Store `updates.svelte.js` se navíc
+zeptá `GET /_dev/api/updates` každých 10 minut, dokud je stránka
+viditelná (`document.visibilityState === 'visible'`); konstanta
+`IDLE_POLL_MS = 600_000` vedle `POLL_MS` a `FOCUS_MIN_MS`. Dotaz je
+lokální a kontrolu spustí server jen při cache starší než hodina (D18).
+Rozhodnutí „zeptat se teď“ jako čistá funkce v `updates.js` s testem.
+
+Texty v obou slovnících; nepotřebné klíče `updates.chip.*` uklidit
+(`check:i18n` hlídá použité klíče).
+
 ## Kroky
 
 1. **Jádro a příkazy:** `src/Core/DevUpdate/`, `dev-update-check`,
@@ -248,6 +304,24 @@ false, null, [])` (jen `development`):
       `docs/roadmap.md` M6; `tasks/README.md` → sekce Dev dashboard beze
       změny
 - [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+**Doplnění § 6 (D23–D25):**
+
+- [ ] `cd frontend && npm test && npm run check:i18n && npm run build`,
+      `python3 scripts/check-css-tokens.py`; testy čistých funkcí (štítek
+      u verze, rozhodnutí o obnovení otevřené karty)
+- [ ] stav aktuální: verze bez štítku, bublina s verzí, hashem (odkaz),
+      větví a datem commitu a řádkem „Aktuální se stable · ověřeno
+      před X min“; **Zkontrolovat teď** po commitu pushnutém po poslední
+      kontrole ukáže „1 pozadu“ (živě na VM nebo dev stroji)
+- [ ] pozadu, nelze ověřit, aktualizuji, Obnovit stránku a jiná větev
+      se chovají jako před změnou
+- [ ] klávesnice: Enter otevře bublinu, Esc zavře a vrátí fokus na
+      tlačítko verze
+- [ ] dokumentace: `docs/dev/dev-daily.md` § 1 (verze v pruhu otevírá
+      bublinu, Zkontrolovat teď vždy, otevřená karta se překontroluje
+      sama), `docs/frontend.md` → Vývojářský dashboard
+- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Implementační poznámky (2026-10-17)
 
@@ -376,8 +450,9 @@ false, null, [])` (jen `development`):
 - ✓ **D18** — kontrola líně z dashboardu, cache v
   `/opt/shipard/run/dev-update/`, starší než hodina → kontrola na pozadí;
   „Zkontrolovat teď“.
-- ✓ **D19** — štítek jen když pozadu nebo „nelze ověřit“; bublina
-  s počtem, stářím, 10 commity a porovnáním; plný štítek nad 7 dní.
+- ✓ **D19** — štítek jen když pozadu nebo „nelze ověřit“ (nahrazeno
+  D23); bublina s počtem, stářím, 10 commity a porovnáním; plný štítek
+  nad 7 dní.
 - ✓ **D20** — Aktualizovat jen na `stable`, bez necommitnutých změn
   sledovaných souborů, fast-forward, bez běžící úlohy, s nástroji.
 - ✓ **D21** — stažení → `merge --ff-only` → `dev-update.sh` →
@@ -385,3 +460,11 @@ false, null, [])` (jen `development`):
   server; výzva k obnovení stránky.
 - ✓ **D22** — `shpd-server dev-update-check [--json]`
   a `shpd-server dev-update` (jen `development`).
+- ✓ **D23** (2026-10-18) — verze v pruhu je vždy tlačítko s bublinou;
+  samostatný štítek zaniká, stav (pozadu, nelze ověřit) se ukazuje
+  u verze.
+- ✓ **D24** (2026-10-18) — bublina vždy: verze, hash (odkaz na commit),
+  větev, datum commitu, řádek stavu, vždy Zkontrolovat teď; při stavu
+  pozadu navíc commity a Aktualizovat.
+- ✓ **D25** (2026-10-18) — viditelná stránka se každých 10 minut zeptá
+  na stav; kontrolu spustí server jen při cache starší než hodina.

@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 380 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 350.
+Celkem 380 tasků: **naplánováno** 4 · **částečně** 27 · **hotovo** 349.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -36,6 +36,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `ai-bedrock-eu.md` | částečně | kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); ověření 1–7 s reálným klíčem odloženo: přihlášení klíčem i tvar chyb ověřeny, ale testovací účet AWS nemá přístup k žádnému modelu Anthropicu (403 „not available for this account“ i přímo v konzoli AWS) — řeší se na straně AWS; po zpřístupnění stačí `shpd-ds ai-test` a body 2–5, 7, výsledek do #85 |
 | `cron-dev-install.md` | částečně | kód, testy, skripty a dokumentace hotové 2026-10-13 (4 commity podle PRD); ověřeno bez roota na vývojářském stroji (`cron-install --dry-run` vypsal dotčené zdroje dat, `--check` exit 1, `doctor` sekce Cron jako varování, `dev-update.sh` připomínka, `logrotate -d` nad pravidlem projde); zbývá člověk: čistá VM (bootstrap → zelený `doctor`, obnovující se heartbeat slotu `minute`), stroj se zdroji dat (první instalace všechny vypne a vypíše), `shellcheck` (na vývojářském stroji není) |
+| `dev-dashboard-update.md` | částečně | § 1–5 hotové a živě ověřené (2026-10-17/18, D16–D22, U1–U8, průchod „pozadu → Aktualizovat“ na VM z bootstrapu); zbývá § 6 — doplnění D23–D25 (verze jako vstup do bubliny, bublina vždy, obnovování otevřené karty) |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
