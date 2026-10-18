@@ -1,7 +1,8 @@
 /**
- * Čisté funkce štítku aktualizace v pruhu dashboardu (#129 D19, D20):
- * druh štítku podle stavu z `GET /_dev/api/updates`, stáří, texty pojistek
- * a chyb kontroly ze slovníku (`updates.*`). Bez prohlížeče, testovatelné
+ * Čisté funkce stavu aktualizací v pruhu dashboardu (#129 D19, D20, D23, D24):
+ * stav checkoutu vůči stable pro bublinu, štítek u verze, stáří, texty
+ * pojistek a chyb kontroly ze slovníku (`updates.*`) a `aria-label` tlačítka
+ * verze. Bez prohlížeče, testovatelné
  * v Node (tests/Unit/dev/updates.test.mjs).
  */
 import { t, has, label } from './i18n/index.js';
@@ -11,9 +12,26 @@ import { isActiveStatus } from './testing/jobs.js';
 export const OLD_AFTER_DAYS = 7;
 
 /**
- * Co štítek ukazuje: `reload` po úspěšné aktualizaci, `updating` při běžící
- * úloze, `behind` když je checkout pozadu (a stav platí pro dnešní HEAD),
- * `unverified` když kontrola selhala, jinak null = bez štítku (aktuální,
+ * Stav checkoutu vůči stable pro řádek v bublině (D24): `current` = stav
+ * platí pro dnešní HEAD a nic nechybí, `behind` = checkout je pozadu,
+ * `unverified` = kontrola selhala, `unknown` = bez stavu, nebo stav z cache
+ * pro jiný HEAD (po lokálním commitu nebo merge čísla neplatí).
+ *
+ * @param {{state?: object|null, head?: {hash?: string|null}|null}|null} status
+ * @returns {'current'|'behind'|'unverified'|'unknown'}
+ */
+export function statusKind(status) {
+  const state = status?.state ?? null;
+  if (!state) return 'unknown';
+  if (state.ok === false) return 'unverified';
+  if (!headMatches(status)) return 'unknown';
+  return (state.behind ?? 0) > 0 ? 'behind' : 'current';
+}
+
+/**
+ * Co se ukazuje v pruhu: `reload` po úspěšné aktualizaci a `updating` při
+ * běžící úloze (samostatné prvky vedle tlačítka verze), `behind` / `unverified`
+ * = štítek uvnitř tlačítka verze (D23), jinak null = bez štítku (aktuální,
  * nebo stav zatím neznámý).
  *
  * @param {{state?: object|null, head?: {hash?: string|null}|null}|null} status
@@ -24,11 +42,8 @@ export const OLD_AFTER_DAYS = 7;
 export function chipKind(status, job, reloadNeeded = false) {
   if (reloadNeeded) return 'reload';
   if (job && isActiveStatus(job.status)) return 'updating';
-  const state = status?.state ?? null;
-  if (!state) return null;
-  if (state.ok === false) return 'unverified';
-  if (!headMatches(status)) return null;
-  return (state.behind ?? 0) > 0 ? 'behind' : null;
+  const kind = statusKind(status);
+  return kind === 'behind' || kind === 'unverified' ? kind : null;
 }
 
 /** Stav z cache platí pro dnešní HEAD (po lokálním commitu nebo merge čísla neplatí). */
@@ -36,6 +51,22 @@ export function headMatches(status) {
   const cached = status?.state?.head?.hash ?? null;
   const current = status?.head?.hash ?? null;
   return Boolean(cached && current && cached === current);
+}
+
+/**
+ * `aria-label` tlačítka verze v pruhu (D23) s celým stavem: „Verze 0.1.1,
+ * 6aaa2a47, stable — 1 commit pozadu“. Bez hashe jen číslo verze, bez
+ * štítku bez pomlčky; před načtením údajů obecný popisek.
+ *
+ * @param {{version: string, hash?: string|null, branch?: string|null}|null} version z `/_dev/api/info`
+ * @param {'behind'|'unverified'|null} badge štítek uvnitř tlačítka
+ * @param {number} behind
+ */
+export function versionAriaLabel(version, badge, behind = 0) {
+  if (!version) return t('updates.version.ariaUnknown');
+  const parts = [version.version, version.hash, version.hash ? version.branch : null].filter(Boolean).join(', ');
+  const state = badge === 'behind' ? t('updates.version.ariaBehind', { n: behind }) : badge === 'unverified' ? t('updates.badge.unverified') : null;
+  return state === null ? t('updates.version.aria', { version: parts }) : t('updates.version.ariaStatus', { version: parts, state });
 }
 
 /** Celé dny od `iso` do `now` (záporné = v budoucnu → 0); null bez data. */

@@ -1,20 +1,18 @@
 <script>
   // Shell vývojářského dashboardu (#129 D6–D8): jeden lepicí blok z oranžového
-  // pruhu (DEVELOPMENT DASHBOARD, štítek zastaralosti — UpdateChip, D19 —,
-  // server, verze s hashem jako odkaz na commit)
-  // a modré lišty (logo → Zdroje dat, navigace s ikonami, Dokumentace), pod ním
-  // outlet routeru. Stránky v pages/. Výšku bloku měří a dává do
-  // --dev-top-height pro lepicí prvky pod lištou (PdfPane).
+  // pruhu (DEVELOPMENT DASHBOARD, server, verze jako tlačítko s bublinou stavu
+  // vůči stable — VersionMenu, D23) a modré lišty (logo → Zdroje dat, navigace
+  // s ikonami, Dokumentace), pod ním outlet routeru. Stránky v pages/. Výšku
+  // bloku měří a dává do --dev-top-height pro lepicí prvky pod lištou (PdfPane).
   import { onMount } from 'svelte';
   import Icon from '../components/ui/Icon.svelte';
-  import { iconDatabase, iconTesting, iconDocument, iconDoctor, iconUpgrade, iconBook, iconServer, iconCommit } from '../icons.js';
+  import { iconDatabase, iconTesting, iconDocument, iconDoctor, iconUpgrade, iconBook, iconServer } from '../icons.js';
   import logoUrl from './assets/shipard-logo.svg';
   import { router, onLinkClick } from './router.svelte.js';
   import { devInfo } from './info.svelte.js';
   import { updates } from './updates.svelte.js';
-  import UpdateChip from './components/UpdateChip.svelte';
-  import { versionLabel, formatDateTime } from './format.js';
-  import { docsUrl, COMMIT_URL } from './links.js';
+  import VersionMenu from './components/VersionMenu.svelte';
+  import { docsUrl } from './links.js';
   import { t, LANGUAGES, currentLanguage, setLanguage } from './i18n/index.js';
   import DataSourcesPage from './pages/DataSourcesPage.svelte';
   import DsCreatePage from './pages/DsCreatePage.svelte';
@@ -47,9 +45,8 @@
 
   const activeNav = $derived(isTesting ? 'testing' : (NAV_OF_ROUTE[route.name] ?? null));
 
-  // Server a verze v pruhu: při načítání „…“, při chybě „?“.
+  // Server v pruhu: při načítání „…“, při chybě „?“ (verzi kreslí VersionMenu).
   const pending = $derived(devInfo.error ? '?' : '…');
-  const version = $derived(devInfo.value?.version ?? null);
 
   // Výška pruhu + lišty — lepicí prvky pod lištou (PdfPane) ji čtou z --dev-top-height.
   let topHeight = $state(84);
@@ -74,7 +71,7 @@
 
   onMount(() => {
     devInfo.load();
-    // Štítek zastaralosti (#129 D18): načíst stav, dál se ptát jen při běžící kontrole / úloze a po focusu.
+    // Stav vůči stable (#129 D18, D25): načíst, dál se ptát při kontrole / úloze, po focusu a na viditelné stránce každých 10 minut.
     updates.startPolling();
     return () => updates.stopPolling();
   });
@@ -85,25 +82,11 @@
     <div class="dev-stripe">
       <strong class="dev-stripe__title">DEVELOPMENT DASHBOARD</strong>
       <span class="dev-stripe__meta">
-        <UpdateChip />
         <span class="dev-stripe__item" title={t('app.stripe.server')}>
           <Icon icon={iconServer} size="sm" />
           <span>{devInfo.value?.hostname ?? pending}</span>
         </span>
-        <span class="dev-stripe__item">
-          <Icon icon={iconCommit} size="sm" />
-          {#if version?.fullHash}
-            <a
-              class="dev-stripe__version"
-              href={COMMIT_URL + version.fullHash}
-              target="_blank"
-              rel="noopener"
-              title={version.commitDate ? t('app.stripe.commitTitle', { date: formatDateTime(version.commitDate) }) : t('app.stripe.commitTitleNoDate')}
-            >{versionLabel(version)}</a>
-          {:else}
-            <span class="dev-stripe__version">{version ? versionLabel(version) : pending}</span>
-          {/if}
-        </span>
+        <VersionMenu />
       </span>
     </div>
     <div class="dev-topbar">

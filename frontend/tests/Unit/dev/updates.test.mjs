@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { use } from '../../../src/dev/i18n/index.js';
-import { chipKind, headMatches, daysSince, minutesSince, isOlderThanDays, blockerText, checkErrorText } from '../../../src/dev/updates.js';
+import { chipKind, statusKind, headMatches, daysSince, minutesSince, isOlderThanDays, blockerText, checkErrorText, versionAriaLabel } from '../../../src/dev/updates.js';
 
 // Popisky se testují česky; v Node je navigator.language en-US.
 use('cs');
@@ -27,6 +27,16 @@ test('druh štítku: pozadu / aktuální / nelze ověřit / neznámý stav', () 
   assert.equal(chipKind(status({}, { ok: false, behind: null }), null), 'unverified');
   assert.equal(chipKind(null, null), null, 'před prvním načtením nic');
   assert.equal(chipKind({ state: null, stale: true, checking: true }, null), null, 'kontrola běží, stav neznámý');
+});
+
+test('stav pro bublinu: aktuální / pozadu / nelze ověřit / neznámý (D24)', () => {
+  assert.equal(statusKind(status({}, { behind: 0 })), 'current');
+  assert.equal(statusKind(status()), 'behind');
+  assert.equal(statusKind(status({}, { ok: false, behind: null })), 'unverified');
+  assert.equal(statusKind(null), 'unknown', 'před prvním načtením');
+  assert.equal(statusKind({ state: null, stale: true, checking: true }), 'unknown', 'kontrola běží, stav neznámý');
+  assert.equal(statusKind(status({ head: { hash: 'b'.repeat(40), branch: 'stable' } }, { behind: 0 })), 'unknown', 'stav z cache pro jiný HEAD není „aktuální“');
+  assert.equal(statusKind(status({}, { ahead: 2, behind: 0 })), 'current', 'napřed bez chybějících změn = aktuální (pojistka řeší tlačítko)');
 });
 
 test('po lokálním commitu čísla z cache neplatí — štítek se neukazuje', () => {
@@ -67,4 +77,15 @@ test('texty pojistek a chyb kontroly', () => {
   assert.equal(checkErrorText({ errorCode: 'fetchFailed', error: 'fatal: unable to access' }), 'GitHub nedostupný (fatal: unable to access)');
   assert.equal(checkErrorText({ errorCode: 'timeout' }), 'časový limit kontroly');
   assert.equal(checkErrorText(null), 'kontrola selhala');
+});
+
+test('aria-label tlačítka verze s celým stavem (D23)', () => {
+  const v = { version: '0.1.1', hash: '6aaa2a47', fullHash: '6aaa2a47' + 'f'.repeat(32), branch: 'stable', commitDate: '2026-10-17T10:00:00Z' };
+  assert.equal(versionAriaLabel(v, 'behind', 1), 'Verze 0.1.1, 6aaa2a47, stable — 1 commit pozadu');
+  assert.equal(versionAriaLabel(v, 'behind', 3), 'Verze 0.1.1, 6aaa2a47, stable — 3 commity pozadu');
+  assert.equal(versionAriaLabel(v, 'unverified'), 'Verze 0.1.1, 6aaa2a47, stable — nelze ověřit');
+  assert.equal(versionAriaLabel(v, null), 'Verze 0.1.1, 6aaa2a47, stable', 'aktuální nebo neznámý stav = bez pomlčky');
+  assert.equal(versionAriaLabel({ ...v, branch: null }, null), 'Verze 0.1.1, 6aaa2a47', 'odpojená HEAD bez větve');
+  assert.equal(versionAriaLabel({ version: '0.1.1', hash: null, branch: null }, null), 'Verze 0.1.1', 'bez gitu jen číslo verze');
+  assert.equal(versionAriaLabel(null, null), 'Verze a stav aktualizace', 'před načtením /_dev/api/info');
 });

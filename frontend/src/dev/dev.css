@@ -63,14 +63,55 @@
   text-decoration: none;
 }
 
-a.dev-stripe__version:hover {
+/* Verze jako tlačítko s bublinou (D23, VersionMenu): bez rámečku, při hoveru
+ * a otevřené bublině jemné pozadí; uvnitř neinteraktivní štítek stavu
+ * („N pozadu“ světlý, plný nad 7 dní; „nelze ověřit“) a šipka, při kontrole
+ * spinner. */
+.dev-stripe__version-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 8px;
+  border: 0;
+  border-radius: var(--shpd-radius-sm);
+  background: none;
   color: inherit;
-  text-decoration: underline;
+  font: inherit;
+  line-height: 1.5;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.dev-stripe__version-btn:hover,
+.dev-stripe__version-btn[aria-expanded='true'] {
+  color: inherit;
+  background: rgb(20 32 44 / 0.08);
+}
+.dev-stripe__version-btn:focus-visible {
+  outline: 2px solid var(--dev-stripe-ink);
+  outline-offset: 1px;
+}
+.dev-stripe__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--dev-stripe-chip-bg);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.dev-stripe__badge--strong {
+  background: var(--dev-stripe-ink);
+  color: #ffffff;
+}
+.dev-stripe__caret {
+  display: inline-flex;
+  font-size: 11px;
+  opacity: 0.85;
 }
 
-/* Štítek zastaralosti v pruhu (#129 D19, UpdateChip): světlý = pozadu nebo
- * „nelze ověřit“, plný (--strong) = nejstarší chybějící změna starší než
- * týden a výzva Obnovit stránku. Tlačítko i odkaz (běžící aktualizace). */
+/* Štítky v pruhu (#129 D19, D23, VersionMenu): „aktualizuji…“ jako odkaz na úlohu
+ * a plný (--strong) Obnovit stránku — samostatné prvky vedle tlačítka verze. */
 .dev-stripe__chip {
   display: inline-flex;
   align-items: center;
