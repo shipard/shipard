@@ -1,6 +1,6 @@
 # Vývojářský dashboard — zastaralost a Aktualizovat (fáze 3)
 
-**Stav:** hotovo — 2026-10-17, #129 fáze 3 (D16–D22, U1–U8); testy nad dočasnými git repozitáři, živě na dev stroji (`ahead 1`, pojistky, kontrola na pozadí přes PHP-FPM); průchod „pozadu → Aktualizovat“ na VM z bootstrapu zbývá člověku
+**Stav:** hotovo — 2026-10-17, #129 fáze 3 (D16–D22, U1–U8); testy nad dočasnými git repozitáři, živě na dev stroji (`ahead 1`, pojistky, kontrola na pozadí přes PHP-FPM) a 2026-10-18 celý průchod „pozadu → Aktualizovat“ na VM z bootstrapu
 
 ## Kontext / Cíl
 
@@ -213,11 +213,18 @@ false, null, [])` (jen `development`):
 - [x] `vendor/bin/phpunit --filter 'DevUpdate|DevUpdatesController|DevDashboardControllerTest|DevJobsControllerTest|JobLauncherTest|JobRecordTest|JobStoreTest|HelpDriftTest'`
       zelené, pak celá sada (10 081 testů); `cd frontend && npm test` (205)
       `&& npm run check:i18n && npm run build`; `scripts/check-css-tokens.py`
-- [ ] na VM z bootstrapu (pozadu, `origin` HTTPS): štítek se objeví po
+- [x] na VM z bootstrapu (pozadu, `origin` HTTPS): štítek se objeví po
       první kontrole, bublina ukáže commity, **Aktualizovat** doběhne,
       po obnovení stránky je štítek pryč a pruh ukazuje nový hash;
-      `git status` hlásí „up to date with origin/stable“ — **zbývá
-      člověku**; testem pokryto nad dočasnými repozitáři
+      `git status` hlásí „up to date with origin/stable“ — **živě
+      2026-10-18** (Ubuntu 26.04, Aktualizovat přes `POST
+      /_dev/api/updates/run`): všech pět kroků, `ds-upgrade-all`
+      1 upgraded / 0 failed, krok 5 upozornil na chybějící cron, štítek
+      pryč; zrušení odmítnuto (`JOB_NOT_CANCELLABLE`), druhá aktualizace
+      zablokovaná (`jobRunning`). První průchod 2026-10-17 skončil
+      `failed` v kroku 4 na převodu starých AI připojení (#85, oprava
+      6aaa2a47) — úloha selhání nahlásila s radou, checkout zůstal
+      konzistentní. Navíc testem pokryto nad dočasnými repozitáři
       (`UpdateCheckerTest`, `DevUpdateCommandTest`: fast-forward, hooky
       vypnuté, pořadí kroků) a v headless Chromiu s podvrženou odpovědí
       API (štítek, bublina, Aktualizovat → „aktualizuji…“ → Obnovit stránku)
