@@ -1,6 +1,6 @@
 # Vývojářský dashboard — zastaralost a Aktualizovat (fáze 3)
 
-**Stav:** částečně — § 1–5 hotové a živě ověřené (2026-10-17/18, D16–D22, U1–U8, průchod „pozadu → Aktualizovat“ na VM z bootstrapu); zbývá § 6 — doplnění D23–D25 (verze jako vstup do bubliny, bublina vždy, obnovování otevřené karty)
+**Stav:** hotovo — § 1–5 hotové a živě ověřené (2026-10-17/18, D16–D22, U1–U8, průchod „pozadu → Aktualizovat“ na VM z bootstrapu); § 6 — doplnění D23–D25 (verze jako tlačítko s bublinou, bublina vždy se Zkontrolovat teď, obnovování otevřené karty) hotové 2026-10-18
 
 ## Kontext / Cíl
 
@@ -307,21 +307,29 @@ Texty v obou slovnících; nepotřebné klíče `updates.chip.*` uklidit
 
 **Doplnění § 6 (D23–D25):**
 
-- [ ] `cd frontend && npm test && npm run check:i18n && npm run build`,
-      `python3 scripts/check-css-tokens.py`; testy čistých funkcí (štítek
-      u verze, rozhodnutí o obnovení otevřené karty)
-- [ ] stav aktuální: verze bez štítku, bublina s verzí, hashem (odkaz),
+- [x] `cd frontend && npm test && npm run check:i18n && npm run build`,
+      `python3 scripts/check-css-tokens.py` — 2026-10-18 (208 testů, 618
+      klíčů dashboardu); testy čistých funkcí (`statusKind`,
+      `versionAriaLabel` = štítek a popisek u verze, `idlePollDue`
+      = rozhodnutí o obnovení otevřené karty) v `updates.test.mjs`
+- [x] stav aktuální: verze bez štítku, bublina s verzí, hashem (odkaz),
       větví a datem commitu a řádkem „Aktuální se stable · ověřeno
-      před X min“; **Zkontrolovat teď** po commitu pushnutém po poslední
-      kontrole ukáže „1 pozadu“ (živě na VM nebo dev stroji)
-- [ ] pozadu, nelze ověřit, aktualizuji, Obnovit stránku a jiná větev
-      se chovají jako před změnou
-- [ ] klávesnice: Enter otevře bublinu, Esc zavře a vrátí fokus na
-      tlačítko verze
-- [ ] dokumentace: `docs/dev/dev-daily.md` § 1 (verze v pruhu otevírá
-      bublinu, Zkontrolovat teď vždy, otevřená karta se překontroluje
-      sama), `docs/frontend.md` → Vývojářský dashboard
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+      před X min“ — **živě na dev stroji** 2026-10-18 (headless Chromium
+      nad skutečným `/_dev/`, HEAD 1 napřed, `behind 0`); **Zkontrolovat
+      teď** spustilo skutečnou kontrolu (spinner místo šipky, po doběhnutí
+      „ověřeno právě teď“). „1 pozadu“ po pushi jen s podvrženou odpovědí
+      API (žádný commit se nepushoval) — po dalším pushi ze stroje člověka
+      stačí otevřít bublinu a kliknout Zkontrolovat teď
+- [x] pozadu (světlý i plný štítek, pojistky, Aktualizovat), nelze
+      ověřit, aktualizuji (chip vedle tlačítka, v bublině Průběh
+      aktualizace), Obnovit stránku po doběhnutí úlohy, jiná větev
+      (poznámka `notStable`, bez tlačítek) — headless s podvrženou
+      odpovědí, bez chyb v konzoli; i anglicky
+- [x] klávesnice: Enter otevře bublinu, Esc zavře a vrátí fokus na
+      tlačítko verze; klik mimo zavře (headless)
+- [x] dokumentace: `docs/dev/dev-daily.md` § 1 a § 3, `docs/dev/local-dev.md`
+      § 6, `docs/frontend.md` → Vývojářský dashboard, `CLAUDE.md`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Implementační poznámky (2026-10-17)
 
@@ -330,7 +338,8 @@ Texty v obou slovnících; nepotřebné klíče `updates.chip.*` uklidit
   `UpdateStepRunner`), `src/Command/Server/DevUpdateCheckCommand.php`,
   `DevUpdateCommand.php`, `src/Api/Controller/DevUpdatesController.php`,
   `frontend/src/dev/updates.js`, `updates.svelte.js`,
-  `components/UpdateChip.svelte`; úpravy `JobRecord`, `JobConflict`,
+  `components/VersionMenu.svelte` (do § 6 `UpdateChip.svelte`); úpravy
+  `JobRecord`, `JobConflict`,
   `JobLauncher`, `JobStore::activeJobs()`, `DevJobsController::cancel`,
   `DevJobRunCommand` (preload `JobLauncher`), `CapturedProcess::run(…, env)`,
   `DevApp.svelte`, `JobsPage`, `JobDetailPage`, `dev.css`, slovníky.
@@ -394,6 +403,39 @@ Texty v obou slovnících; nepotřebné klíče `updates.chip.*` uklidit
   úlohy `update` („celý server“, bez Zrušit, Obnovit stránku); bez chyb
   v konzoli. Skutečný běh `dev-update` s merge na tomto stroji neproběhl
   (HEAD napřed = pojistka) — zůstává na VM z bootstrapu.
+
+## Implementační poznámky k § 6 (2026-10-18)
+
+- **`VersionMenu.svelte` nahradil `UpdateChip.svelte` i položku verze
+  v `DevApp.svelte`** — jedna komponenta na místě verze v pruhu;
+  `aria-label` z čisté `versionAriaLabel()`, štítek uvnitř je `span`
+  (`.dev-stripe__badge`, `--strong` nad 7 dní), šipka `.dev-stripe__caret`
+  (při kontrole spinner). Odkaz na commit se přesunul do hlavičky bubliny
+  (titulek `app.stripe.commitTitle` zůstal). Stav bubliny dává
+  `statusKind()` (`current` / `behind` / `unverified` / `unknown`),
+  `chipKind()` ho jen zužuje na štítek a prvky vedle tlačítka.
+- **`IDLE_POLL_MS` žije v `updates.js`** vedle `OLD_AFTER_DAYS`, ne ve
+  store vedle `POLL_MS` / `FOCUS_MIN_MS` (odchylka od zadání): čistá
+  funkce `idlePollDue()` konstantu potřebuje a store si ji importuje.
+  Obnovení karty nemá vlastní časovač — rozhoduje se na stávajícím tiku
+  každých 5 s, takže přijde nejpozději 5 s po deseti minutách;
+  `lastLoadAt` je čas posledního **pokusu** (i selhaného), jinak by se
+  při nedostupném serveru dotaz opakoval každých 5 s.
+- **Zkontrolovat teď během úlohy `update`** je neaktivní a vedle něj je
+  odkaz **Průběh aktualizace** — kontrola nad právě mergovaným checkoutem
+  nemá smysl („vždy“ ze zadání platí pro stavy bez běžící úlohy). Bublina
+  při běžící úloze zůstává otevřená s dnešním obsahem; Aktualizovat drží
+  neaktivní pojistka `jobRunning`.
+- **Jiná větev mimo stav pozadu**: žlutá poznámka s textem pojistky
+  `notStable` pod řádkem stavu (ve stavu pozadu ji nese seznam pojistek
+  jako dosud, aby nebyla dvakrát). Hlášení selhané úlohy a chyba akce
+  se ukazují v každém stavu, ne jen při stavu pozadu (Zkontrolovat teď
+  může selhat i u aktuálního checkoutu).
+- **Ověřeno** 2026-10-18 na dev stroji v headless Chromiu: živě nad
+  skutečným API (tlačítko `v0.1.1 · 432f2af9 · stable`, bublina
+  s hashem jako odkazem a datem commitu, „Aktuální se stable“,
+  Zkontrolovat teď → skutečný fetch → „ověřeno právě teď“, Esc vrátí
+  fokus) a s podvrženou odpovědí pro ostatní stavy (viz Hotovo když).
 
 ## Pasti
 

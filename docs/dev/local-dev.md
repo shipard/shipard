@@ -225,7 +225,8 @@ Co dělat po `git pull`, kdy spustit `ds-upgrade-all` a kde je přehled
 příkazů, říká [`dev-daily.md`](dev-daily.md) — stejně pro Multipass, WSL
 i Linux server. Bootstrap zapnul git hooky, takže se závislosti a frontend
 po `git pull` aktualizují samy. Že je checkout pozadu, ukáže štítek
-v pruhu dashboardu — tlačítko **Aktualizovat** udělá stažení změn,
+**N pozadu** u verze v pruhu dashboardu — v její bublině tlačítko
+**Aktualizovat** udělá stažení změn,
 `dev-update.sh` i upgrade zdrojů dat najednou (v terminálu `shpd-server
 dev-update`). Nainstaloval i periodické úlohy (cron) —
 co běží, jak je per zdroj dat vypnout a co udělala první instalace, říká

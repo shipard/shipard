@@ -480,11 +480,17 @@ smí názvy nést — tam jsou potřeba k práci.
   úloha **bez zdroje dat** (`JobRecord::SERVER_TYPES`, `dataSource: null`,
   v `JobLauncher` vylučuje jakoukoli jinou úlohu a naopak přes
   `JobStore::activeJobs()`, zrušení 409 `JOB_NOT_CANCELLABLE`), UI
-  `dev/components/UpdateChip.svelte` + store `dev/updates.svelte.js`
-  (polling 5 s jen při kontrole / úloze, focus nejvýš 1× za minutu, chyba
-  dotazu nechává stav; po doběhnutí **Obnovit stránku**), čisté funkce
-  `dev/updates.js`, klíče `updates.*`. Viz `docs/frontend.md` → Vývojářský dashboard,
-  `docs/dev/dev-daily.md` § 1, `docs/test-corpus.md` § 18.
+  `dev/components/VersionMenu.svelte` (#129 D23–D24: verze v pruhu je
+  **vždy tlačítko s bublinou** — uvnitř štítek „N pozadu“ / „nelze ověřit“,
+  bublina s verzí, hashem jako odkazem, větví, datem commitu, řádkem stavu
+  a vždy **Zkontrolovat teď**; „aktualizuji…“ a **Obnovit stránku** jsou
+  samostatné prvky vedle) + store `dev/updates.svelte.js` (polling 5 s při
+  kontrole / úloze, focus nejvýš 1× za minutu, viditelná stránka sama každých
+  10 minut `IDLE_POLL_MS` — D25, chyba dotazu nechává stav; po doběhnutí
+  **Obnovit stránku**), čisté funkce `dev/updates.js` (`statusKind`,
+  `chipKind`, `idlePollDue`, `versionAriaLabel`), klíče `updates.*`.
+  Viz `docs/frontend.md` → Vývojářský dashboard, `docs/dev/dev-daily.md` § 1,
+  `docs/test-corpus.md` § 18.
 
 ### Frontend — Settings mód
 

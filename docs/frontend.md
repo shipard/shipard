@@ -198,28 +198,45 @@ Přehled zdrojů dat bez jediného zdroje (a bez chyby) kreslí místo tabulky
 kartu **Začni tady** + panel **Co tu ještě najdeš** (`.dev-start`, D15).
 
 **Zastaralost a Aktualizovat (#129 fáze 3, `tasks/dev-dashboard-update.md`).**
-V pruhu vlevo od serveru stojí `components/UpdateChip.svelte`: štítek
-`.dev-stripe__chip` (tlačítko s `aria-expanded`; `--strong` = nejstarší
-chybějící změna starší než 7 dní, nebo výzva **Obnovit stránku**; při běžící
-úloze odkaz na její detail) a bublina nad sdíleným `Popover` (Esc, klik
-mimo, fokus zpět na štítek jako u `DevKebabMenu`) s počtem a stářím změn,
-10 commity (`COMMIT_URL`), odkazem na porovnání (`compareUrl`),
-**Zkontrolovat teď**, žlutou poznámkou s radou k pojistce (`dev-alert
-dev-alert--warning`) a tlačítky **Aktualizovat** (`primary`, neaktivní při
-pojistce) / Zobrazit na GitHubu (`.dev-btn-outline`); na jiné větvi než
-`stable` jen poznámka. Data drží store `updates.svelte.js`: `GET
-/_dev/api/updates` → `{state, stale, checking, head, blockers, canUpdate,
-job}` při startu, každých 5 s jen dokud `checking` nebo běží úloha
-`update`, po `focus` nejvýš jednou za minutu; selhání dotazu nechává
+Verze v pruhu je `components/VersionMenu.svelte` (D23–D24, nahradil
+`UpdateChip`): tlačítko `.dev-stripe__version-btn` (`aria-haspopup="dialog"`,
+`aria-expanded`, `aria-label` s celým stavem z `versionAriaLabel()`) s ikonou
+commitu, `versionLabel()` v IBM Plex Mono, uvnitř neinteraktivní štítek
+`.dev-stripe__badge` podle `chipKind()` („N pozadu“ světlý, `--strong` =
+nejstarší chybějící změna starší než 7 dní; „nelze ověřit“ s ikonou
+varování; aktuální nebo neznámý stav bez štítku) a šipka, při běžící
+kontrole spinner; před načtením `/_dev/api/info` `…`, při chybě `?`.
+„aktualizuji…“ (odkaz `.dev-stripe__chip` na detail úlohy) a **Obnovit
+stránku** (`.dev-stripe__chip--strong`) jsou samostatné prvky vedle
+tlačítka. Bublina nad sdíleným `Popover` (Esc, klik mimo, fokus zpět na
+tlačítko jako u `DevKebabMenu`) se otevře **v každém stavu**: hlavička
+„Verze 0.1.1“, hash jako odkaz na commit (`COMMIT_URL`), větev a datum
+commitu z `/_dev/api/info`; řádek stavu podle `statusKind()` — `current`
+(✓ „Aktuální se stable · ověřeno před X min“), `behind` (počet a stáří
+změn, 10 commitů, odkaz na porovnání `compareUrl`), `unverified` (chyba
+kontroly), `unknown` („Stav zatím neznámý“, při kontrole „Ověřuji…“); na
+jiné větvi než `stable` žlutá poznámka z pojistky `notStable`; vždy
+**Zkontrolovat teď** (neaktivní při kontrole a během úlohy); při stavu
+pozadu navíc žlutá poznámka s radou k pojistce (`dev-alert
+dev-alert--warning`) a na `stable` tlačítka **Aktualizovat** (`primary`,
+neaktivní při pojistce) / Zobrazit na GitHubu (`.dev-btn-outline`); při
+běžící úloze odkaz **Průběh aktualizace**. Data drží store
+`updates.svelte.js`: `GET /_dev/api/updates` → `{state, stale, checking,
+head, blockers, canUpdate, job}` při startu, každých 5 s dokud `checking`
+nebo běží úloha `update`, po `focus` nejvýš jednou za minutu a na
+viditelné stránce (`document.visibilityState`) samo každých 10 minut
+(`IDLE_POLL_MS`, rozhodnutí `idlePollDue()`, D25 — kontrolu z toho spustí
+server jen při cache starší než hodina); selhání dotazu nechává
 poslední stav (aktualizace přepisuje PHP i soubory dashboardu); když
 běžící úloha z odpovědi zmizí, doptá se `GET /_dev/api/testing/jobs/<id>`
-— `finished` → štítek **Obnovit stránku** (`location.reload()` až na klik,
+— `finished` → **Obnovit stránku** (`location.reload()` až na klik,
 U7), jinak hlášení o selhání s odkazem na úlohu. `POST /_dev/api/updates/check`
 (202) a `POST /_dev/api/updates/run` (201 `{job}`; 409 `UPDATE_BLOCKED`
 s `details.blockers`, 409 `JOB_RUNNING` s `details.jobId` — bublina je
-ukáže s odkazem). Čisté funkce v `updates.js` (`chipKind` — stav z cache
-platí jen pro dnešní HEAD, `daysSince`, `blockerText`, `checkErrorText`;
-test `tests/Unit/dev/updates.test.mjs`). Úloha `update` nemá zdroj dat
+ukáže s odkazem). Čisté funkce v `updates.js` (`statusKind` / `chipKind`
+— stav z cache platí jen pro dnešní HEAD, `idlePollDue`, `versionAriaLabel`,
+`daysSince`, `blockerText`, `checkErrorText`; test
+`tests/Unit/dev/updates.test.mjs`). Úloha `update` nemá zdroj dat
 (`dataSource: null`): `JobsPage` i `JobDetailPage` píší „celý server“ bez
 odkazu Otevřít, detail nenabízí Zrušit ani Vynutit (API vrací 409
 `JOB_NOT_CANCELLABLE`), po `finished` ukáže **Obnovit stránku**; chyba
