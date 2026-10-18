@@ -252,9 +252,9 @@ class AiFunctionProvisioner
 
     /**
      * Značka hotového převodu (D46): u všech připojení vynuluje `model`
-     * a staré sloupce ladění (existují-li ještě v databázi — `ds-upgrade`
-     * sloupce nemaže, nový zdroj dat je nemá). Volat až po převodu profilů
-     * pošty. Po prvním běhu navždy nic.
+     * a staré sloupce ladění vrátí na výchozí hodnoty (existují-li ještě
+     * v databázi — `ds-upgrade` sloupce nemaže, nový zdroj dat je nemá).
+     * Volat až po převodu profilů pošty. Po prvním běhu navždy nic.
      *
      * @return list<string> kódy vyčištěných připojení
      */
@@ -266,7 +266,14 @@ class AiFunctionProvisioner
         }
         $columns = $this->db->getTableColumns(self::CONNECTIONS_TABLE);
         $set = ['model' => null, 'modified' => date('Y-m-d H:i:s')];
-        $defaults = ['max_tokens' => 0, 'temperature' => null, 'thinking' => 'auto', 'effort' => 'auto'];
+        // Hodnoty platné pro každou podobu sloupců, jakou ds-upgrade kdy
+        // vytvořil. `temperature` byla do F0-D1 `NOT NULL DEFAULT 0`; zdroj
+        // dat, který mezi F0-D1 a fází 1b neprošel ds-upgrade, ji tak má
+        // dodnes — sloupec mimo definici už ds-upgrade neuvolní a NULL by
+        // UPDATE shodil („Column 'temperature' cannot be null“). Sloupce nic
+        // nečte, proto stačí původní výchozí hodnoty bez zjišťování
+        // nullability.
+        $defaults = ['max_tokens' => 0, 'temperature' => 0, 'thinking' => 'auto', 'effort' => 'auto'];
         foreach (self::LEGACY_TUNING_COLUMNS as $column) {
             if (isset($columns[$column])) {
                 $set[$column] = $defaults[$column];

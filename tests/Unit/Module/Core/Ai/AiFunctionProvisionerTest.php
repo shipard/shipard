@@ -228,6 +228,36 @@ final class AiFunctionProvisionerTest extends TestCase
         $this->assertSame([], (new AiFunctionProvisioner($db, AiFunctionRegistry::fromArray(self::FUNCTIONS)))->finishLegacyConversion());
     }
 
+    public function testFinishLegacyConversionSurvivesTheOldNotNullTemperatureColumn(): void
+    {
+        // Zdroj dat založený před F0-D1: `temperature` je `numeric(3,2) NOT NULL
+        // DEFAULT 0` a mimo definici ji ds-upgrade neuvolní. Falešné připojení
+        // odmítne NULL stejně jako MariaDB.
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([['id' => 1, 'backend_id' => 'default']]);
+        $db->method('getTableColumns')->willReturn([
+            'model' => 'varchar(100)', 'max_tokens' => 'int(11)', 'temperature' => 'decimal(3,2)', 'thinking' => 'char(15)', 'effort' => 'char(10)',
+        ]);
+        $written = null;
+        $db->expects($this->once())->method('updateWhere')->willReturnCallback(
+            static function (string $table, array $data, string $where, mixed ...$params) use (&$written): void {
+                if (array_key_exists('temperature', $data) && $data['temperature'] === null) {
+                    throw new \RuntimeException("Column 'temperature' cannot be null");
+                }
+                $written = $data;
+            },
+        );
+
+        $cleared = (new AiFunctionProvisioner($db, AiFunctionRegistry::fromArray(self::FUNCTIONS)))->finishLegacyConversion();
+
+        $this->assertSame(['default'], $cleared);
+        $this->assertNull($written['model']);
+        $this->assertSame(0, $written['temperature']);
+        $this->assertSame(0, $written['max_tokens']);
+        $this->assertSame('auto', $written['thinking']);
+        $this->assertSame('auto', $written['effort']);
+    }
+
     public function testProvisionSkipsConversionWithoutRegistry(): void
     {
         $db = $this->createMock(DataSourceConnection::class);

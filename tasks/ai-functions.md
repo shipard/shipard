@@ -183,7 +183,10 @@ GitHub Issue: shipard/shipard#85 (D1, D3, D4, D27, D28, D36–D43; fáze 1b).
   `AIBackendDocument` proti cfgItemu `core.ai.platforms`; změna typu
   sloupce na `enumString` není bezpečný MODIFY.
 - ✓ **D46 — Značka převodu.** Převod D41 po dokončení vynuluje `model`
-  a ladění na řádku připojení; druhý běh tak nemá co převádět. Pravidlo 1
+  a ladění na řádku připojení vrátí na výchozí hodnoty (`temperature`
+  na 0, ne NULL: ve zdrojích dat založených před F0-D1 je sloupec
+  `NOT NULL` a mimo definici ho `ds-upgrade` neuvolní — oprava
+  2026-10-18); druhý běh tak nemá co převádět. Pravidlo 1
   (profily) žije v `MailAiProvisioner`, pravidla 2 a 3 v novém
   `AiFunctionProvisioner` (core.ai), který `ds-upgrade` volá před
   `provisionMailAi`. Hodnota `default` přibývá do `core.ai.thinkingModes`
