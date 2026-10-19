@@ -191,6 +191,24 @@ class DocDocumentDefaultsTest extends TestCase
         $this->assertSame('eur', $data['doc_currency']);
     }
 
+    /** #121 U4: doklad v domácí měně má kurz 1 — skrytý kurz z dřívější cizí měny nesmí násobit `_dom`. */
+    public function testApplyHomeCurrencyRateResetsRateForHomeCurrencyOnly(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+
+        $data = ['home_currency' => 'czk', 'doc_currency' => 'czk', 'exchange_rate' => 24.325];
+        $doc->applyHomeCurrencyRatePub($data);
+        $this->assertSame(1, $data['exchange_rate']);
+
+        $data = ['home_currency' => 'czk', 'doc_currency' => 'CZK'];
+        $doc->applyHomeCurrencyRatePub($data);
+        $this->assertSame(1, $data['exchange_rate'], 'chybějící kurz u domácí měny');
+
+        $data = ['home_currency' => 'czk', 'doc_currency' => 'eur', 'exchange_rate' => 24.325];
+        $doc->applyHomeCurrencyRatePub($data);
+        $this->assertSame(24.325, $data['exchange_rate'], 'cizí měna si kurz nechá');
+    }
+
     private function createSettingsWithHomeCurrency(?string $currency): SettingsStore
     {
         $settings = $this->createMock(SettingsStore::class);

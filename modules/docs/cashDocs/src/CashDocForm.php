@@ -58,8 +58,7 @@ class CashDocForm extends CashDeskFormBase
         $hasVat = $vatMode !== 0;
         $docCurrency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
         $homeCurrency = strtolower((string) ($data['home_currency'] ?? 'czk'));
-        $hasForeignCurrency = $docCurrency !== '' && $homeCurrency !== ''
-            && $docCurrency !== $homeCurrency;
+        $hasForeignCurrency = $this->hasForeignCurrency($data);
         $partnerId = (int) ($data['partner'] ?? 0);
         $hasRows = $this->hasRows($data);
         $isReceipt = CashDirection::tryFrom((int) ($data['cash_dir'] ?? 0)) === CashDirection::Receipt;
@@ -96,7 +95,7 @@ class CashDocForm extends CashDeskFormBase
                     )
 
                     ->date('issue_date', required: true, triggers: 'reload')
-                    ->date('accounting_date', required: true)
+                    ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('vat_duzp', hidden: !$hasVat)
                     ->date('vat_dppd', hidden: !$hasVat || !$isReceipt)
                     ->input('partner_doc_number')
@@ -115,7 +114,7 @@ class CashDocForm extends CashDeskFormBase
                     )
 
                     ->input('doc_currency', readOnly: true, hint: 'Měna pokladny')
-                    ->number('exchange_rate', hidden: !$hasForeignCurrency);
+                    ->number('exchange_rate', hidden: !$hasForeignCurrency, hint: $this->exchangeRateHint($data));
 
         $this->addCashDeskSection($tab, $data);
 

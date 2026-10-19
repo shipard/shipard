@@ -39,6 +39,11 @@ class TestableDocsHeadsDocument extends DocsHeadsDocument
         $this->applyHomeCurrency($data);
     }
 
+    public function applyHomeCurrencyRatePub(array &$data): void
+    {
+        $this->applyHomeCurrencyRate($data);
+    }
+
     public function resolveAccountingPeriodsPub(array &$data): void
     {
         $this->resolveAccountingPeriods($data);

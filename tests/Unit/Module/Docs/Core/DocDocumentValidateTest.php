@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Docs\Core;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Tests\Fixtures\Module\Docs\Core\TestableDocsHeadsDocument;
 
@@ -304,6 +305,44 @@ class DocDocumentValidateTest extends TestCase
             fn(array $e) => $e['column'] === 'exchange_rate' && $e['code'] === 'required',
         );
         $this->assertNotEmpty($matched);
+    }
+
+    /**
+     * `home_currency` je system sloupec — formulář ani applier ho neposílají.
+     * Kontrola kurzu musí vystřelit i bez něj (#121 U5): domácí měna
+     * z nastavení, bez nastavení czk.
+     */
+    public function testConfirmedRequiresExchangeRateWithoutHomeCurrencyInData(): void
+    {
+        $data = $this->confirmedData();
+        unset($data['home_currency']);
+        $data['doc_currency'] = 'eur';
+
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($this->dbWithOwn());
+        $this->assertNotEmpty($this->errorsFor($doc->validate($data)->toArray(), 'exchange_rate'), 'bez nastavení = czk');
+
+        $doc->setSettings($this->settingsWithHomeCurrency('czk'));
+        $this->assertNotEmpty($this->errorsFor($doc->validate($data)->toArray(), 'exchange_rate'));
+
+        $data['exchange_rate'] = '0';
+        $this->assertNotEmpty($this->errorsFor($doc->validate($data)->toArray(), 'exchange_rate'), 'nula není kurz');
+
+        $data['exchange_rate'] = 24.325;
+        $this->assertSame([], $this->errorsFor($doc->validate($data)->toArray(), 'exchange_rate'));
+
+        unset($data['exchange_rate']);
+        $doc->setSettings($this->settingsWithHomeCurrency('eur'));
+        $this->assertSame([], $this->errorsFor($doc->validate($data)->toArray(), 'exchange_rate'), 'EUR je domácí měna zdroje dat');
+    }
+
+    private function settingsWithHomeCurrency(?string $currency): SettingsStore
+    {
+        $settings = $this->createMock(SettingsStore::class);
+        $settings->method('get')->willReturnCallback(
+            static fn(string $key): mixed => $key === 'economy.homeCurrency' ? $currency : null,
+        );
+        return $settings;
     }
 
     public function testConfirmedRefusesWithoutOwnCompany(): void

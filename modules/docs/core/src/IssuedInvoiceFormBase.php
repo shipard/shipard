@@ -54,8 +54,7 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
         $taxDocument = $this->isTaxDocument($data);
         $docCurrency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
         $homeCurrency = strtolower((string) ($data['home_currency'] ?? 'czk'));
-        $hasForeignCurrency = $docCurrency !== '' && $homeCurrency !== ''
-            && $docCurrency !== $homeCurrency;
+        $hasForeignCurrency = $this->hasForeignCurrency($data);
         $partnerId = (int) ($data['partner'] ?? 0);
 
         $tab = $this->tab('basic', 'Hlavička')
@@ -106,7 +105,7 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
         $tab
             ->date('issue_date', required: true, triggers: 'reload')
             ->date('due_date')
-            ->date('accounting_date', required: true)
+            ->date('accounting_date', required: true, triggers: 'reload')
             // Nedaňový doklad DUZP nemá (DocDocument ho nuluje) — pole skryté.
             ->date('vat_duzp', hidden: !$hasVat || !$taxDocument);
         // Dimenze deníku (majetek) — jen u typu, který ji deklaruje (FV ano,
@@ -132,7 +131,7 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
                 options: $this->resolveCurrencyOptions(),
                 triggers: 'reload',
             )
-            ->number('exchange_rate', hidden: !$hasForeignCurrency)
+            ->number('exchange_rate', hidden: !$hasForeignCurrency, hint: $this->exchangeRateHint($data))
 
             ->input('payment_reference')
             ->input('specific_symbol')

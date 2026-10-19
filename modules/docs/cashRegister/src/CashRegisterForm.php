@@ -84,11 +84,13 @@ class CashRegisterForm extends CashDeskFormBase
         // protistrany prodejku nepustí (partner_balance_required).
         $this->addPaymentIntermediaryElements($tab, $data)
                     ->date('issue_date', required: true, triggers: 'reload')
-                    ->date('accounting_date', required: true)
+                    ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('vat_duzp', hidden: !$hasVat)
 
                 ->col()
-                    ->input('doc_currency', readOnly: true, hint: 'Měna pokladny');
+                    ->input('doc_currency', readOnly: true, hint: 'Měna pokladny')
+                    // Pokladna v cizí měně: kurz z lístku (#121 D6), ručně přepsatelný.
+                    ->number('exchange_rate', hidden: !$this->hasForeignCurrency($data), hint: $this->exchangeRateHint($data));
 
         $this->addCashDeskSection($tab, $data);
 

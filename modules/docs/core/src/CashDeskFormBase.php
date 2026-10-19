@@ -89,6 +89,8 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
             if ($desk !== null && $desk['currency'] !== '') {
                 $data['doc_currency'] = $desk['currency'];
             }
+            // Měna pokladny → kurz k účetnímu datu (#121 D6).
+            $this->applyExchangeRate($data);
         }
         $this->applyPartnerBalancePreview($data);
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';

@@ -156,9 +156,15 @@ abstract class DocDocument extends Document
             if (count($this->resolveRowsForCompute($data)) === 0) {
                 $result->addError('rows', 'Doklad musí mít alespoň jeden řádek', 'no_rows');
             }
-            if (!empty($data['doc_currency']) && !empty($data['home_currency'])
-                && $data['doc_currency'] !== $data['home_currency']
-                && empty($data['exchange_rate'])
+            // Domácí měna z dat, jinak z nastavení: `home_currency` je system
+            // sloupec, který formulář ani applier neposílají — bez fallbacku
+            // by kontrola vystřelila jen při změně stavu z načteného řádku
+            // a doklad v cizí měně bez kurzu by přes „Vystavit a uzavřít“
+            // prošel do V pořádku s částkami × 1 (#121 U5).
+            $rate = $data['exchange_rate'] ?? null;
+            if (!empty($data['doc_currency'])
+                && strtolower((string) $data['doc_currency']) !== $this->homeCurrencyFor($data)
+                && ($rate === null || $rate === '' || (float) $rate <= 0)
             ) {
                 $result->addError('exchange_rate', 'Kurz je povinný pro cizí měnu', 'required');
             }
@@ -474,6 +480,7 @@ abstract class DocDocument extends Document
         $this->resolvePartnerBalance($data);
         $this->applyDateDefaults($data);
         $this->applyHomeCurrency($data);
+        $this->applyHomeCurrencyRate($data);
         $this->resolveAccountingPeriods($data);
 
         $this->computeAmounts($data, $originalData);
@@ -816,6 +823,31 @@ abstract class DocDocument extends Document
         }
         $days = $row['payment_term_days'] ?? null;
         return $days !== null ? (int) $days : null;
+    }
+
+    /**
+     * Domácí měna pro validaci: z dat, jinak z nastavení `economy.homeCurrency`
+     * (stejně jako applyHomeCurrency, které běží až po validate).
+     */
+    protected function homeCurrencyFor(array $data): string
+    {
+        if (!empty($data['home_currency'])) {
+            return strtolower((string) $data['home_currency']);
+        }
+        $value = $this->settings?->get('economy.homeCurrency');
+        return is_string($value) && $value !== '' ? strtolower($value) : 'czk';
+    }
+
+    /**
+     * Doklad v domácí měně má vždy kurz 1 (#121 U4): přepnutí měny z cizí na
+     * domácí ve formuláři nechávalo skrytý kurz a částky `_dom` vycházely
+     * vynásobené. Běží hned za applyHomeCurrency, před computeAmounts.
+     */
+    protected function applyHomeCurrencyRate(array &$data): void
+    {
+        if (strtolower((string) ($data['doc_currency'] ?? '')) === strtolower((string) ($data['home_currency'] ?? ''))) {
+            $data['exchange_rate'] = 1;
+        }
     }
 
     protected function applyHomeCurrency(array &$data): void

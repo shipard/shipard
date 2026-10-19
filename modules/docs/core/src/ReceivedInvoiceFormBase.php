@@ -44,8 +44,7 @@ abstract class ReceivedInvoiceFormBase extends DocsHeadsFormBase
         $taxDocument = $this->isTaxDocument($data);
         $docCurrency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
         $homeCurrency = strtolower((string) ($data['home_currency'] ?? 'czk'));
-        $hasForeignCurrency = $docCurrency !== '' && $homeCurrency !== ''
-            && $docCurrency !== $homeCurrency;
+        $hasForeignCurrency = $this->hasForeignCurrency($data);
         $partnerId = (int) ($data['partner'] ?? 0);
         // #62: bankovní účet a IBAN partnera jen při platbě převodem
         // (hodnoty zůstávají, viz DocsHeadsFormBase::isBankTransferPayment).
@@ -109,7 +108,7 @@ abstract class ReceivedInvoiceFormBase extends DocsHeadsFormBase
 
             ->date('issue_date', required: true, triggers: 'reload')
             ->date('due_date')
-            ->date('accounting_date', required: true)
+            ->date('accounting_date', required: true, triggers: 'reload')
             // Nedaňový doklad DUZP ani DPPD nemá (DocDocument je nuluje) —
             // pole skrytá.
             ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
@@ -149,7 +148,7 @@ abstract class ReceivedInvoiceFormBase extends DocsHeadsFormBase
                 options: $this->resolveCurrencyOptions(),
                 triggers: 'reload',
             )
-            ->number('exchange_rate', hidden: !$hasForeignCurrency)
+            ->number('exchange_rate', hidden: !$hasForeignCurrency, hint: $this->exchangeRateHint($data))
 
             ->select(
                 'total_rounding_mode',

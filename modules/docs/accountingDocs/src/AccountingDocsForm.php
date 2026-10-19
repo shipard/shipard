@@ -140,7 +140,7 @@ class AccountingDocsForm extends DocsHeadsFormBase
                     )
 
                     ->separator('Datumy')
-                    ->date('accounting_date', required: true)
+                    ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('issue_date', required: true, triggers: 'reload')
                     ->date('due_date')
                     ->date('period_from', hint: 'Volitelné, např. mzdy za období')

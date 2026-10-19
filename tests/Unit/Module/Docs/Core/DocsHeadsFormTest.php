@@ -396,7 +396,7 @@ class DocsHeadsFormTest extends TestCase
         $def = $form->buildFormDefinition([], true);
 
         foreach (['partner', 'vat_mode', 'vat_place', 'vat_registration',
-                  'doc_currency', 'issue_date'] as $col) {
+                  'doc_currency', 'issue_date', 'accounting_date'] as $col) {
             $el = $this->findElement($def, 'basic', $col);
             $this->assertNotNull($el, "Column {$col} should exist");
             $this->assertSame('reload', $el->triggers,

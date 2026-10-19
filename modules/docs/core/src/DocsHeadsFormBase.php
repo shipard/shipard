@@ -14,6 +14,8 @@ use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TabBuilder;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateListTypes;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\System\ActiveUsersOptions;
 
 /**
@@ -74,6 +76,17 @@ abstract class DocsHeadsFormBase extends TableForm
     /** Per-instance cache — viz homeCurrency(). */
     private ?string $homeCurrency = null;
 
+    /** Resolver kurzu per instance (memoizuje sám); null bez databáze nebo bez tabulky lístků. */
+    private ?ExchangeRateResolver $exchangeRateResolver = null;
+
+    /**
+     * Přechodný klíč v datech formuláře (#121 U3): upozornění u pole Kurz,
+     * když lístek kurz nemá. Čte ho exchangeRateHint() při stavbě definice;
+     * do uložení se nedostane (FormController zapisuje jen sloupce tabulky),
+     * applyExchangeRate ho při každém volání nejdřív smaže.
+     */
+    public const string EXCHANGE_RATE_HINT_KEY = '_exchange_rate_hint';
+
     /**
      * True, když je DS vědomě nastavený jako neplátce
      * (`economy.vatAgenda === false`). Řídí JEN default nového dokladu
@@ -106,6 +119,90 @@ abstract class DocsHeadsFormBase extends TableForm
             $this->homeCurrency = is_string($value) && $value !== '' ? $value : 'czk';
         }
         return $this->homeCurrency;
+    }
+
+    /**
+     * Doklad v cizí měně = měna dokladu ≠ domácí měna. `home_currency` je
+     * system sloupec — v datech nového dokladu ani v payloadu recalculate
+     * není, proto fallback na nastavení zdroje dat.
+     */
+    protected function hasForeignCurrency(array $data): bool
+    {
+        $doc = strtolower((string) ($data['doc_currency'] ?? ''));
+        $home = strtolower((string) ($data['home_currency'] ?? ''));
+        if ($home === '') {
+            $home = strtolower($this->homeCurrency());
+        }
+        return $doc !== '' && $doc !== $home;
+    }
+
+    /**
+     * Kurz podle měny a účetního data (#121 D5, D6, U3): domácí měna → 1
+     * (§6.3); cizí měna → kurz z lístku k účetnímu datu (bez něj k datu
+     * vystavení), který přepíše i ručně zadaný; nenalezený kurz hodnotu
+     * nechá a pole dostane upozornění přes EXCHANGE_RATE_HINT_KEY. Volá se
+     * z applyNewRecordDefaults a z recalculate pro měnu, účetní datum, datum
+     * vystavení (když posunulo účetní datum) a řadu pokladny.
+     */
+    protected function applyExchangeRate(array &$data): void
+    {
+        unset($data[self::EXCHANGE_RATE_HINT_KEY]);
+        $home = strtolower((string) ($data['home_currency'] ?? ''));
+        if ($home === '') {
+            $home = strtolower($this->homeCurrency());
+        }
+        $currency = strtolower((string) ($data['doc_currency'] ?? ''));
+        if ($currency === '' || $currency === $home) {
+            $data['exchange_rate'] = 1;
+            return;
+        }
+        $date = (string) ($data['accounting_date'] ?? '');
+        if ($date === '') {
+            $date = (string) ($data['issue_date'] ?? '');
+        }
+        $resolver = $this->exchangeRateResolver();
+        if ($date === '' || $resolver === null) {
+            return;
+        }
+        $rate = $resolver->rateFor($currency, $date);
+        if ($rate !== null) {
+            $data['exchange_rate'] = $rate->rate;
+            return;
+        }
+        $data[self::EXCHANGE_RATE_HINT_KEY] = sprintf(
+            'Kurz %s k %s není v kurzovním lístku — zadej ho ručně.',
+            strtoupper($currency),
+            self::formatDateForHint($date),
+        );
+    }
+
+    /** Upozornění u pole Kurz z přechodného klíče (jen odpověď, ve které kurz nebyl nalezen). */
+    protected function exchangeRateHint(array $data): ?string
+    {
+        $hint = $data[self::EXCHANGE_RATE_HINT_KEY] ?? null;
+        return is_string($hint) && $hint !== '' ? $hint : null;
+    }
+
+    /** Resolver kurzu (přepsatelné v testech); bez databáze nebo bez tabulky lístků (DS před ds-upgrade) null. */
+    protected function exchangeRateResolver(): ?ExchangeRateResolver
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        if ($this->tables !== [] && !isset($this->tables[ExchangeRateResolver::TABLE_LISTS])) {
+            return null;
+        }
+        return $this->exchangeRateResolver ??= new ExchangeRateResolver(
+            $this->db->getDibiConnection(),
+            ExchangeRateListTypes::fromConfig($this->config, $this->dsConfig?->getCountry() ?? 'cz'),
+            strtolower($this->homeCurrency()),
+        );
+    }
+
+    private static function formatDateForHint(string $date): string
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+        return $parsed !== false ? $parsed->format('j. n. Y') : $date;
     }
 
     /**
@@ -168,6 +265,10 @@ abstract class DocsHeadsFormBase extends TableForm
                 $data['author'] = $author;
             }
         }
+        // 6. Kurz (#121 D6): doklad v cizí měně od začátku (prefill, pokladna
+        //    v cizí měně nastaví měnu před parent::) dostane kurz k účetnímu
+        //    datu; domácí měna kurz 1.
+        $this->applyExchangeRate($data);
     }
 
     /**
@@ -524,8 +625,7 @@ abstract class DocsHeadsFormBase extends TableForm
         $vatSectionHidden = !$hasVat && $this->vatAgendaDisabled();
         $docCurrency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
         $homeCurrency = strtolower((string) ($data['home_currency'] ?? 'czk'));
-        $hasForeignCurrency = $docCurrency !== '' && $homeCurrency !== ''
-            && $docCurrency !== $homeCurrency;
+        $hasForeignCurrency = $this->hasForeignCurrency($data);
         $partnerId = (int) ($data['partner'] ?? 0);
         $reportPeriodOptions = $hasVat && $taxDocument && !$isNew
             ? $this->resolveReportPeriodOptions((int) ($data['vat_registration'] ?? 0))
@@ -574,7 +674,7 @@ abstract class DocsHeadsFormBase extends TableForm
                     ->separator('Datumy')
                     ->date('issue_date', required: true, triggers: 'reload')
                     ->date('due_date')
-                    ->date('accounting_date', required: true)
+                    ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
                     ->date('vat_dppd', hidden: !$hasVat || !$taxDocument)
                     ->date('period_from', hint: 'Volitelné, např. pronájem za období')
@@ -632,7 +732,7 @@ abstract class DocsHeadsFormBase extends TableForm
                         triggers: 'reload',
                     )
                     ->input('home_currency', readOnly: true)
-                    ->number('exchange_rate', hidden: !$hasForeignCurrency)
+                    ->number('exchange_rate', hidden: !$hasForeignCurrency, hint: $this->exchangeRateHint($data))
 
                     ->separator('Zaokrouhlení')
                     ->select('total_rounding_mode',
@@ -1193,12 +1293,23 @@ abstract class DocsHeadsFormBase extends TableForm
             // nezměnilo a zpětně datovaná faktura by chtěla tři ruční přepisy
             // (#24 B, D7). U uloženého dokladu se doplňují jen prázdná pole.
             $followIssueDate = empty($data['id']);
+            $accountingDateMoved = false;
             if ($followIssueDate || empty($data['accounting_date'])) {
                 $data['accounting_date'] = $data['issue_date'];
+                $accountingDateMoved = true;
             }
             if (($followIssueDate || empty($data['vat_duzp'])) && $this->isTaxDocument($data)) {
                 $data['vat_duzp'] = $data['issue_date'];
             }
+            if ($accountingDateMoved) {
+                // Posunuté účetní datum = jiný kurz (#121 D5, D6).
+                $this->applyExchangeRate($data);
+            }
+        }
+
+        if ($changedColumn === 'doc_currency' || $changedColumn === 'accounting_date') {
+            // Kurz k účetnímu datu; přepnutí na domácí měnu dá kurz 1 (#121 D6, U3).
+            $this->applyExchangeRate($data);
         }
 
         if ($changedColumn === 'payment_method') {
