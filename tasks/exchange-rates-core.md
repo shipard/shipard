@@ -1,6 +1,6 @@
 # Kurzy cizích měn — kurzovní lístky, dohledání kurzu, doklady, banka a datové sady (#121, task A)
 
-**Stav:** naplánováno — PRD 2026-10-19 (#121 D1, D4–D7, D10), upřesnění U1–U7 a doplnění D7 (kurz ve formuláři transakce) potvrzené 2026-10-19
+**Stav:** hotovo — implementace 2026-10-19 v 7 commitech podle PRD (#121 D1, D4–D7, D10, U1–U7): `world.cz` typy + schéma, modul `economy.exchangeRates` (tabulky 464/465, importer, resolver, CLI, viewer), formuláře dokladů + kurz 1 u domácí měny, applier, banka, datové sady, dokumentace; viz „Implementační poznámky“ níže. Ověřeno na volném zdroji dat (`ds-upgrade`, import, CLI, integrační testy); zbývá nasazení na alfu (`ds-upgrade`) a komentář do #121
 
 > Task pro Claude Code (7 commitů). Design: issue #121, rozhodnutí D1–D10
 > (komentář 2026-10-18). Task B — stahování ze služby, slot `five-minutes`,
@@ -474,24 +474,100 @@ Na vývojářském stroji, **volný** zdroj dat:
 - ✓ **U7 — Dump sady** exportuje jen lístky, které resolver použije pro
   doklady a návrhy v cizí měně v sadě.
 
+## Implementační poznámky (2026-10-19)
+
+Odchylky a upřesnění proti PRD:
+
+- Upozornění u pole Kurz jde přes přechodný klíč `_exchange_rate_hint`
+  v datech formuláře (controller staví definici nového dokladu na jiné
+  instanci formu než `applyNewRecordDefaults`; klient klíč vrací,
+  `FormController` ho při uložení zahodí, helper ho smaže). `CashRegisterForm`
+  dostal element `exchange_rate` (skrytý u domácí měny) — jinak by hint
+  neměl kam. Domácí měna ve formuláři jde z nastavení
+  (`hasForeignCurrency()`), `home_currency` je system sloupec a v datech
+  nového dokladu ani v recalculate není.
+- `DocDocument::validate` bere domácí měnu z dat, jinak z nastavení —
+  bez toho by kontrola „Kurz je povinný pro cizí měnu“ na cestě apply
+  (Vystavit a uzavřít) nevystřelila a U5 by neplatilo (`home_currency`
+  v datech applieru není).
+- Resolver: starý nebo propadlý lístek typu = v tomto typu nenalezeno, jde
+  se na další typ (měsíční lístek je na denním nezávislý); důvody per typ
+  `no_list` / `list_stale` / `list_expired` / `currency_missing`
+  (`ExchangeRateLookup`, CLI `exchange-rate`).
+- `ExchangeRate` nese i `listId` — dump datové sady podle něj vybírá
+  lístky (U7). Dvojice (měna, datum) bez lístku dá při dumpu varování.
+- `StatementImportService` už není `final`, `loadBankAccount`
+  a `resolveExchangeRates` jsou protected (test seams). Integrační test
+  `testApplyCarriesExchangeRateIntoAmountDom` přepsán na účet v EUR (na
+  účtu v domácí měně je kurz vždy 1) + testy „domácí účet ignoruje kurz
+  z výpisu“ a „chybějící lístek zastaví celý výpis“.
+- Nápověda ve stejných commitech: `help/posta/kontrola-vytezeni.md`
+  (návrh kurz doplní), `help/co-dnes-nejde.md` (lístky se zatím
+  nestahují samy), `help/co-shipard-umi.md` (řádky Faktury přijaté
+  a Bankovní transakce — samostatný řádek Kurzovní lístky skript
+  `help-index.py` odmítá, agenda je jen v Nastavení).
+- Názvy typů v CLI jsou v jazyce `defaultLanguage` zdroje dat
+  (`ConfigRuntime::load` jako u ostatních příkazů) — bez něj anglicky.
+
+Ověření na volném zdroji dat `4l3j` (2026-10-19):
+
+1. `ds-upgrade`: tabulky 464 / 465 založeny, cfgItemy zkompilované,
+   viewer v Nastavení → Účetnictví.
+2. Import tří lístků (čt 15. 10., pá 16. 10., měsíční říjen) → založeno;
+   opakovaně → beze změny; změněný kurz → jiný obsah, exit 1; `--replace`
+   → nahrazen.
+3. `exchange-rate`: eur 17. 10. (sobota) → páteční 24,325; eur 19. 10.
+   (pondělí bez lístku) → páteční; eur 15. 10. → čtvrteční 24,4; gbp
+   17. 10. (jen ve čtvrtečním) → nenalezen, U2; eur 23. 10. (7 dní) →
+   páteční; eur 24. 10. (8 dní) → nenalezen „starší než 7 dní“; thb →
+   měsíční 0,695; idr → 0,0014; thb 2. 11. → „po validTo“; czk → 1; eur
+   1. 9. → „žádný lístek“; špatné datum → INVALID.
+4. Formulář přes HTTP (`/_ui/form/docs_core_heads/meta` + `recalculate`):
+   nová FP v EUR → kurz 24,325 k dnešku; účetní datum 24. 10. → hodnota
+   zůstala a hint „Kurz EUR k 24. 10. 2026 není v kurzovním lístku — zadej
+   ho ručně.“; 15. 10. → 24,4 a hint pryč; CZK → 1 a pole skryté; zpět
+   EUR → 24,4; datum vystavení posunulo účetní datum i kurz. Fokus a tab
+   po reloadu nebyly ověřovány v prohlížeči (stejný mechanismus jako
+   `issue_date`).
+5. Datová sada: integrační `ExchangeRatesRoundTripTest` — měsíční lístek
+   THB + koncept FP v THB bez kurzu → po seedu kurz 0,695 z lístku,
+   export sekce = sada, druhý seed idempotentní. Náhled návrhu z pošty
+   s `info` / `warning` pokrývá unit test applieru; proklik v UI neproběhl.
+6. Reálné kopie (jen čtení, agregát): doklady v domácí měně s kurzem ≠ 1
+   — 0 ve všech šesti zdrojích (`btpg-p` 0 z 76 500, `e8w1-i` 0 z 7 567,
+   `4dnh-5` 0 z 3 681, `ur4l-0` 0 z 19, `nelh-0` 0 z 351, `p4zq-s`
+   0 z 1 792); doklady v cizí měně bez kurzu nebo s kurzem ≤ 1: `e8w1-i`
+   1 z 191, `4dnh-5` 3 z 320, jinde 0 — kandidáti pro kontrolu dat (#130).
+7. Banka: integrační `BankStatementApplyTest` — kurz z výpisu na účtu
+   v EUR → `amount_dom`; účet v CZK kurz z výpisu ignoruje; výpis bez
+   lístku (rok 2001) → chyba se seznamem dat, nic nezapsáno (ani výpis).
+   Ruční proklik formuláře transakce (V opravě → změna kurzu → uložit →
+   Zaúčtovat) neproběhl — přepočet `amount_dom` při změně kurzu a pole
+   Kurz jen u cizí měny pokrývají unit testy.
+
+Integrační sada na `4l3j`: zbývající selhání jsou známá ze stavu dat
+(CashDocumentImportTest 5×, DocumentExchangeEndpointTest 2×,
+DatasetRoundTripTest 1×, StatementImportTest 1× — „Registrace DPH je
+povinná“, párování partnera), ne regrese.
+
 ## Hotovo když
 
-- [ ] `world.cz.exchangeRateLists` s typy `cz.cnb.daily` a `cz.cnb.other`
-- [ ] schéma `shpd.exchangeRates.list.v1` (`.jsonc` + `.json`)
-- [ ] modul `economy.exchangeRates` v závislostech `docs.core`
+- [x] `world.cz.exchangeRateLists` s typy `cz.cnb.daily` a `cz.cnb.other`
+- [x] schéma `shpd.exchangeRates.list.v1` (`.jsonc` + `.json`)
+- [x] modul `economy.exchangeRates` v závislostech `docs.core`
       a `install.base`, dvě tabulky, `ExchangeRateListImporter`,
       `ExchangeRateResolver`
-- [ ] `shpd-ds exchange-rates-import` a `shpd-ds exchange-rate`
-- [ ] formulář doplní kurz při novém dokladu, změně měny, účetního data
+- [x] `shpd-ds exchange-rates-import` a `shpd-ds exchange-rate`
+- [x] formulář doplní kurz při novém dokladu, změně měny, účetního data
       a řady pokladny; `accounting_date` s `reload` ve všech hlavičkových
       formulářích
-- [ ] applier doplní chybějící kurz mimo import mód, `info` / `warning`
-- [ ] doklad v domácí měně má vždy kurz 1
-- [ ] banka bez tichého kurzu 1; chybějící lístek zastaví celý výpis;
+- [x] applier doplní chybějící kurz mimo import mód, `info` / `warning`
+- [x] doklad v domácí měně má vždy kurz 1
+- [x] banka bez tichého kurzu 1; chybějící lístek zastaví celý výpis;
       pole Kurz ve formuláři transakce v cizí měně, změna přepočítá
       `amount_dom`
-- [ ] datové sady: sekce `exchangeRates/`, seeder, výběr lístků v dumpu
-- [ ] viewer Kurzovní lístky v Nastavení
-- [ ] testy z §11 zelené (úzké `--filter`)
-- [ ] dokumentace z §10; hlavička tasku aktualizovaná
-- [ ] ověření 1–7 na volném zdroji dat, výsledek bodu 6 v chatu
+- [x] datové sady: sekce `exchangeRates/`, seeder, výběr lístků v dumpu
+- [x] viewer Kurzovní lístky v Nastavení
+- [x] testy z §11 zelené (úzké `--filter`)
+- [x] dokumentace z §10; hlavička tasku aktualizovaná
+- [x] ověření 1–7 na volném zdroji dat, výsledek bodu 6 v chatu

@@ -208,7 +208,13 @@ Top-level struktura:
   // ── Currency & VAT ───────────────────────────────────────────────────────
   "currency":     "CZK",          // ISO 4217 uppercase v canonical;
                                    //   applier lowercases pro cfgItem
-  "exchangeRate": null,           // required if currency != home
+  "exchangeRate": null,           // kurz za jednotku; null u cizí měny → applier
+                                   //   ho mimo import mód doplní z kurzovního
+                                   //   lístku k accountingDate (bez něj issueDate),
+                                   //   kurz na dokladu vždy vyhrává; nenalezeno =
+                                   //   warning exchange_rate_missing a V pořádku
+                                   //   zastaví validace (#121 D6, U5,
+                                   //   docs/exchange-rates.md §5.2)
 
   "vat": {                        // celý objekt nullable — nelze-li určit,
                                    //   vynechat nebo null (ne prázdný objekt)
@@ -1689,6 +1695,15 @@ Resolver / Applier obdobně — propojí na `base_persons_persons` + child
 ### `shpd.items.item.v1`
 
 Použití: import katalogů od partnerů, B2B item mapping.
+
+### `shpd.exchangeRates.list.v1`
+
+Kurzovní lístek — jeden soubor = jeden lístek (`listType`, `homeCurrency`,
+`validFrom`, `validTo`, `listNumber`, `rates[] {currency, amount, rate}`).
+Čte ho CLI `exchange-rates-import`, sekce `exchangeRates/` datové sady
+a v tasku B služba; zapisuje jen `ExchangeRateListImporter`. Schéma
+`modules/core/exchange/schemas/shpd.exchangeRates.list.v1.jsonc`, popis
+`docs/exchange-rates.md` §2 (#121 D2).
 
 ### `shpd.docs.bankStatement.v1`
 
