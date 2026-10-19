@@ -39,6 +39,8 @@ use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
+use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesSeeder;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateListImporter;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
 use Shipard\Module\Economy\Items\Dataset\AccountingItemsSeeder;
 use Symfony\Component\Console\Command\Command;
@@ -273,6 +275,13 @@ class DatasetSeedCommand extends Command
         // #103 D22/D23 — hned po setup/ (nastavení už platí), před záznamy.
         if (isset($ctx->tables['economy_codebooks_fiscal_years'])) {
             $seeders[] = new FiscalYearsSeeder();
+        }
+        // #121 D10 — kurzovní lístky před doklady a zprávami: applier z nich
+        // doplňuje kurz dokladů a návrhů v cizí měně.
+        if (isset($ctx->tables[ExchangeRateListImporter::TABLE_LISTS])) {
+            $seeders[] = new ExchangeRatesSeeder(
+                ExchangeRateListImporter::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables),
+            );
         }
         // Podle manifestu, ne podle tabulky: DS bez účetnictví má skončit
         // chybou accounting_inactive, ne tichým přeskočením.

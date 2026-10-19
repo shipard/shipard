@@ -21,6 +21,8 @@ use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Export\ItemExporter;
 use Shipard\Module\Core\Exchange\Export\PersonExporter;
+use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesExporter;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
 use Symfony\Component\Console\Command\Command;
@@ -98,6 +100,17 @@ class DatasetDumpCommand extends Command
     ): array {
         $country = $dsConfig->hasCountry() ? strtolower($dsConfig->getCountry()) : 'cz';
         $records = [];
+        // Kurzovní lístky (#121 D10, U7) — jen ty, které resolver použije pro
+        // doklady a návrhy v cizí měně; bez kompilované konfigurace (typy
+        // lístků) se sekce nedumpne.
+        if (isset($tables[ExchangeRateResolver::TABLE_LISTS]) && $config !== null) {
+            $records[] = new ExchangeRatesExporter(
+                $db,
+                ExchangeRateResolver::create($db, $config, $dsConfig),
+                isset($tables['docs_core_heads']),
+                isset($tables['core_mail_incoming_messages']),
+            );
+        }
         if (isset($tables['base_persons_persons'])) {
             $records[] = new PersonExporter($db, $country);
         }

@@ -82,6 +82,21 @@ class DatasetPreflightTest extends TestCase
     }
 
     /**
+     * Kurzovní lístek (#121 D10) — denní lístek ČNB.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function exchangeRateList(array $override = []): array
+    {
+        return array_merge([
+            'format' => 'shpd.exchangeRates.list.v1', 'listType' => 'cz.cnb.daily', 'homeCurrency' => 'CZK',
+            'validFrom' => '2026-06-05', 'listNumber' => '110',
+            'rates' => [['currency' => 'EUR', 'amount' => 1, 'rate' => 24.325], ['currency' => 'JPY', 'amount' => 100, 'rate' => 15.871]],
+        ], $override);
+    }
+
+    /**
      * Sada v temp složce; `$mutate(DatasetWriter)` může přidat/přepsat soubory.
      */
     public function writeSet(?callable $mutate = null, array $counts = [], ?string $country = null): string
@@ -102,6 +117,30 @@ class DatasetPreflightTest extends TestCase
             $counts ?: ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1],
             country: $country));
         return $this->tmp . '/set';
+    }
+
+    // ── kurzovní lístky (#121 D10) ─────────────────────────────────────────
+
+    public function testExchangeRateListsAreValidatedAgainstSchema(): void
+    {
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('exchangeRates/0001-cz.cnb.daily-2026-06-05.jsonc', self::exchangeRateList());
+            $w->writeJsonc('exchangeRates/0002-cz.cnb.other-2026-06-01.jsonc', self::exchangeRateList(['listType' => 'cz.cnb.other', 'validFrom' => '2026-06-01', 'validTo' => '2026-06-30']));
+        }, ['setup' => 1, 'exchangeRates' => 2, 'persons' => 1, 'items' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1]);
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+        $this->assertSame([], $result['errors']);
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidExchangeRateListIsAnErrorAndCountsAreChecked(): void
+    {
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('exchangeRates/0001-bad.jsonc', self::exchangeRateList(['rates' => [['currency' => 'eur', 'amount' => 0, 'rate' => 24.3]]]));
+        }, ['setup' => 1, 'exchangeRates' => 2, 'persons' => 1, 'items' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1]);
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('exchangeRates/0001-bad.jsonc', $result['errors'][0]);
+        $this->assertContains('manifest counts.exchangeRates = 2, v sadě je souborů 1', $result['warnings']);
     }
 
     // ── země sady vs. DS (#103 D24) ────────────────────────────────────────

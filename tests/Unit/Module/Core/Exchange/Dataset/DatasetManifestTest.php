@@ -147,7 +147,7 @@ class DatasetManifestTest extends TestCase
     public function testSectionsOrderIsSeedOrder(): void
     {
         $this->assertSame(
-            ['setup', 'persons', 'items', 'docs', 'registry', 'mail'],
+            ['setup', 'exchangeRates', 'persons', 'items', 'docs', 'registry', 'mail'],
             DatasetManifest::SECTIONS,
         );
     }

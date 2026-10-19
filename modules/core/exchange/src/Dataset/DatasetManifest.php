@@ -28,7 +28,7 @@ final class DatasetManifest
     public const DATE_MODE_FIXED = 'fixed';
 
     /** Sekce sady v pořadí, v jakém se seedují. */
-    public const SECTIONS = ['setup', 'persons', 'items', 'docs', 'registry', 'mail'];
+    public const SECTIONS = ['setup', 'exchangeRates', 'persons', 'items', 'docs', 'registry', 'mail'];
 
     private const NAME_PATTERN = '/^[a-z0-9][a-z0-9._-]{0,63}$/';
 

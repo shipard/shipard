@@ -56,6 +56,8 @@ final class DatasetPreflight
 
         $sections = [
             'setup'    => [$this->exchange, 'shpd.dataset.setup', null],
+            // Kurzovní lístky (#121 D10) — sémantiku (typ, domácí měna) hlídá importer při seedu.
+            'exchangeRates' => [$this->exchange, 'shpd.exchangeRates.list', null],
             'persons'  => [$this->exchange, 'shpd.persons.person', new PersonValidator()],
             'items'    => [$this->exchange, 'shpd.items.item', new ItemValidator()],
             'docs'     => [$this->exchange, 'shpd.docs.document', new DocumentValidator()],

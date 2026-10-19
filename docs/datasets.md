@@ -14,6 +14,7 @@ došlé pošty (analýza se přenáší jako data — žádné volání AI).
 sada/
   manifest.jsonc                      # shpd.dataset.v1
   setup/<tabulka>.jsonc               # shpd.dataset.setup.v1 — číselníky + DS settings
+  exchangeRates/NNNN-<listType>-<validFrom>.jsonc  # shpd.exchangeRates.list.v1 — kurzovní lístky (#121 D10)
   persons/NNNN-<slug>.jsonc           # shpd.persons.person.v1
   items/NNNN-<slug>.jsonc             # shpd.items.item.v1
   docs/NNNN-<slug>.jsonc              # shpd.docs.document.v1
@@ -133,9 +134,19 @@ nebyla stabilní. `message_id` (`MSG-…`) se zachovává;
 `PersonExporter`, `ItemExporter`, `DocumentExporter`, `SetupExporter`
 (`modules/core/exchange/src/Export/`), `RegistryExporter`
 (`modules/base/registry/src/`), `MailExporter`
-(`modules/core/mail/src/Dataset/`). Každý má `exportAll()` a
+(`modules/core/mail/src/Dataset/`), `ExchangeRatesExporter`
+(`modules/economy/exchangeRates/src/Dataset/`). Každý má `exportAll()` a
 `exportByIds()` (R7 — integrační test) a `getWarnings()`; varování příkaz
 vypíše, exit code zůstává 0.
+
+**Kurzovní lístky** (#121 D10, U7): sekce `exchangeRates/` nese právě ty
+lístky, které `ExchangeRateResolver` použije pro účetní data dokladů
+(`accounting_date`) a návrhů z pošty (`canonicalJson.dates.accountingDate`,
+bez něj `issueDate`) v cizí měně — ne celou historii lístků zdroje dat.
+Soubor = formát `shpd.exchangeRates.list.v1` ([exchange-rates.md](exchange-rates.md)
+§2) bez zdroje a id, název `NNNN-<listType>-<validFrom>.jsonc`. Doklad
+v cizí měně bez lístku k datu dá varování („kurz EUR k … není v lístcích“)
+— po seedu kurz nedostane. Sada bez cizí měny sekci nemá.
 
 Exportery jsou zrcadlem applierů (`DocumentApplier::transform()`,
 `PersonApplier::transformHeaderForCreate`, …). Odvozené sloupce se
@@ -179,7 +190,13 @@ dimenze s počtem dokladů.
    obsahující datum; `provision()` by při existujícím roce založil
    následující). Existující i založený rok = `ok`; nerozhodnutý první
    měsíc / domácí měna při datech v sadě = chyba (jinak by doklady vznikly
-   s `fiscal_year = null`). **`AccountingItemsSeeder`** (#103 D22,
+   s `fiscal_year = null`). **`ExchangeRatesSeeder`** (#121 D10,
+   `modules/economy/exchangeRates/src/Dataset/`), jen když zdroj dat má
+   tabulku lístků: každý soubor `exchangeRates/` přes
+   `ExchangeRateListImporter` se zdrojem *datová sada* — `created`
+   i `skipped` (shodný lístek už je) = `ok`, lístek s jiným obsahem
+   (`conflict`) = chyba, seed nepřepisuje; běží před doklady a zprávami,
+   aby applier doplnil kurz dokladů a návrhů v cizí měně. **`AccountingItemsSeeder`** (#103 D22,
    `modules/economy/items/src/Dataset/`), jen když manifest nese
    `provision.accountingItems`: tatáž orchestrace jako průvodce nastavením
    (`AccountingItemsGenerator` — brána osnovy, prerekvizity, položky přes
@@ -228,5 +245,10 @@ Vědomé normalizace a limity fáze 1:
 - `app.icon` / `app.companyLogo` (soubory v `branding/`) se nepřenáší.
 - Fiskální roky po resetu zakládá provisioner jen pro aktuální rok; roky
   dat sady doplní `FiscalYearsSeeder` (§3).
+- Kurzovní lístky: dump nese jen lístky použité resolverem pro doklady
+  a návrhy v cizí měně (§2, U7); `source` lístku se nepřenáší (po seedu
+  *datová sada*), `rate` je číslo za `amount` jednotek a kurz za jednotku
+  se počítá až při dohledání — dump → seed → dump je shodný, kurz
+  dokladu po seedu je `round(rate / amount, 6)`.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI, banka a saldokonto.
