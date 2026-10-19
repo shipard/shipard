@@ -243,7 +243,11 @@ vůbec nezmiňuje (typicky software nebo předplatné z USA), je také
 samovyměření — Shipard ho dovodí sám. Když AI u řádku neurčila, zda jde
 o zboží, nebo službu, doplní to Shipard podle kategorie dokladu a v náhledu
 to ukáže upozorněním u řádku; zkontroluj, že kategorie sedí. Kurz cizí
-měny návrh nedoplní, zadáš ho v dokladu dřív, než mu dáš **V pořádku**.
+měny doplní Shipard z kurzovního lístku k účetnímu datu (bez něj k datu
+vystavení) a náhled to ukáže jako poznámku s kurzem a lístkem; kurz
+uvedený na faktuře má přednost. Když lístek pro to datum ve zdroji dat
+není, náhled to ohlásí upozorněním a kurz zadáš v dokladu dřív, než mu
+dáš **V pořádku** — v Konceptu se dá kdykoli přepsat i ručně.
 Co u samovyměření návrh zatím neumí, je v
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 

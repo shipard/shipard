@@ -35,6 +35,8 @@ use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRate;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\World\Trade\TradeUnionResolver;
 
 /**
@@ -214,6 +216,12 @@ class DocumentApplier
          * shodil), `effectiveAccount` z položky je null.
          */
         private readonly bool $itemsHaveAccountingAccount = false,
+        /**
+         * Kurz z lístku pro doklad v cizí měně bez kurzu (#121 D6) — náhled
+         * i apply. Null = DS bez modulu kurzů (tabulka chybí): nic se
+         * nedohledává, kurz zůstane, jak přišel.
+         */
+        private readonly ?ExchangeRateResolver $exchangeRateResolver = null,
     ) {}
 
     /**
@@ -257,6 +265,9 @@ class DocumentApplier
             contentTags: is_array($contentTags) ? $contentTags : [],
             dimensionResolver: new DimensionResolver($db, JournalDimensionSet::fromConfig($config), $tables),
             itemsHaveAccountingAccount: self::hasColumn($tables['economy_items'] ?? null, 'accounting_account'),
+            exchangeRateResolver: isset($tables[ExchangeRateResolver::TABLE_LISTS])
+                ? ExchangeRateResolver::create($db, $config, $dsConfig)
+                : null,
         );
     }
 
@@ -356,6 +367,7 @@ class DocumentApplier
         $this->appendVatModeIssue($canonical, $issues);
         $this->appendVatHeaderIssues($canonical, $issues);
         $this->appendRecapSourceIssue($canonical, $issues, $rowSkips);
+        $this->appendExchangeRateIssue($canonical, $issues);
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues));
         // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
         //     — čte uložené volby z klientského _resolve, ale nerozhoduje
@@ -598,6 +610,7 @@ class DocumentApplier
         $this->appendVatModeIssue($canonical, $validatorIssues);
         $this->appendVatHeaderIssues($canonical, $validatorIssues);
         $this->appendRecapSourceIssue($canonical, $validatorIssues, $rowSkips);
+        $this->appendExchangeRateIssue($canonical, $validatorIssues);
 
         // 3. Re-run resolve (fresh DB read; client's _resolve might be stale).
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $validatorIssues));
@@ -1681,7 +1694,9 @@ class DocumentApplier
             'doc_currency'         => isset($canonical['currency'])
                                        ? strtolower((string) $canonical['currency'])
                                        : null,
-            'exchange_rate'        => $canonical['exchangeRate'] ?? null,
+            // Kurz z dokladu vyhrává; bez něj kurz z lístku k účetnímu datu
+            // (#121 D6) — mimo import mód, viz exchangeRateDecision().
+            'exchange_rate'        => $canonical['exchangeRate'] ?? ($this->exchangeRateDecision($canonical)['rate'] ?? null)?->rate,
             // Odvozeno z čísel (computed vs declared), extrahovaný
             // totals.totalRounding je jen informativní. Null → klíč vypadne
             // přes array_filter níže a platí default 0 (bez zaokrouhlení).
@@ -2952,6 +2967,94 @@ class DocumentApplier
             'message'  => 'Rekapitulaci DPH nešlo převzít z dokladu ('
                 . $resolved['fallback'] . ') — spočítá se z řádků.',
         ];
+    }
+
+    // ── Kurz cizí měny (#121 D6, U5) ───────────────────────────────────────
+
+    /**
+     * Rozhodnutí o kurzu z lístku: doklad v cizí měně bez `exchangeRate`
+     * mimo import mód dostane kurz k účetnímu datu, bez něj k datu vystavení
+     * (D5). Kurz uvedený na dokladu (ISDOC, AI) má přednost; import ze
+     * starého Shipardu (`applyOptions.importNumber`) nedohledává — chybějící
+     * kurz zůstane chybějící a v cílovém stavu V pořádku ho zastaví validace
+     * dokladu. Náhled i apply jdou přes transform(), takže kurz vzniká na
+     * jednom místě; resolver memoizuje, dotaz do lístků je jeden.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array{currency: string, date: ?string, rate: ?ExchangeRate}|null null = nic nedohledávat
+     */
+    private function exchangeRateDecision(array $canonical): ?array
+    {
+        if ($this->exchangeRateResolver === null || ($canonical['exchangeRate'] ?? null) !== null) {
+            return null;
+        }
+        if (is_array($canonical['applyOptions']['importNumber'] ?? null)) {
+            return null;
+        }
+        $currency = strtolower((string) ($canonical['currency'] ?? ''));
+        if ($currency === '' || $currency === $this->exchangeRateResolver->homeCurrency()) {
+            return null;
+        }
+        $date = $canonical['dates']['accountingDate'] ?? $canonical['dates']['issueDate'] ?? null;
+        $date = is_string($date) && $date !== '' ? $date : null;
+        return [
+            'currency' => $currency,
+            'date'     => $date,
+            'rate'     => $date !== null ? $this->exchangeRateResolver->rateFor($currency, $date) : null,
+        ];
+    }
+
+    /**
+     * Náhled i apply (U5): doplněný kurz = info `exchange_rate_from_list`,
+     * nenalezený = warning `exchange_rate_missing` — doklad se uloží,
+     * potvrzení zastaví validace dokladu.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function appendExchangeRateIssue(array $canonical, array &$issues): void
+    {
+        $decision = $this->exchangeRateDecision($canonical);
+        if ($decision === null) {
+            return;
+        }
+        $rate = $decision['rate'];
+        if ($rate !== null) {
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => 'exchangeRate',
+                'code'     => 'exchange_rate_from_list',
+                'message'  => sprintf(
+                    'Kurz %s z lístku %s platného od %s.',
+                    self::exchangeRateText($rate->rate),
+                    $this->exchangeRateResolver?->types()->labelOf((string) $rate->listType) ?? (string) $rate->listType,
+                    self::exchangeRateDateText((string) $rate->validFrom),
+                ),
+            ];
+            return;
+        }
+        $issues[] = [
+            'severity' => 'warning',
+            'path'     => 'exchangeRate',
+            'code'     => 'exchange_rate_missing',
+            'message'  => sprintf(
+                'Kurz %s k %s není v kurzovním lístku — doklad nepůjde potvrdit bez ručního kurzu.',
+                strtoupper($decision['currency']),
+                $decision['date'] !== null ? self::exchangeRateDateText($decision['date']) : '(bez data)',
+            ),
+        ];
+    }
+
+    private static function exchangeRateText(float $rate): string
+    {
+        $text = rtrim(rtrim(number_format($rate, 6, ',', ''), '0'), ',');
+        return str_contains($text, ',') ? $text : $text . ',0';
+    }
+
+    private static function exchangeRateDateText(string $date): string
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+        return $parsed !== false ? $parsed->format('j. n. Y') : $date;
     }
 
     /**

@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
+keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, kurz, kurzovní lístek, kurz ČNB, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
 related: [slovnicek.md]
 ---
 
@@ -314,6 +314,13 @@ o ISDOC dodavatele požádat.
 - **Převod dat ze starého Shipardu neděláš sám.** Import existuje, ale
   spouštíme ho my a s tebou pak porovnáme kontrolní součty.
 - **Uživatele a přístupy zakládáme ručně.** Viz [TESTERS.md](../TESTERS.md).
+- **Kurzovní lístky se zatím nestahují samy.** Kurz cizí měny se do
+  dokladů a bankovních transakcí doplňuje z kurzovních lístků ČNB, které
+  najdeš v **Nastavení → Účetnictví → Kurzovní lístky** — ale do zdroje
+  dat je zatím nahráváme my (ze souboru nebo s datovou sadou). Automatické
+  stahování denních kurzů přijde. Dokud lístek pro dané datum chybí,
+  doklad to ohlásí u pole **Kurz** a kurz zadáš ručně; výpis z účtu v cizí
+  měně bez lístku Shipard nenahraje, dokud lístky nedoplníme.
 
 ---
 
