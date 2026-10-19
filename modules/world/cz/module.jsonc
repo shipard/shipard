@@ -3,9 +3,9 @@
     "name": "Czech Republic — registries",
     "name:cs": "Česko — číselníky",
     "name:en": "Czech Republic — registries",
-    "description": "Static Czech state registries shared across domains — tax offices and their branches, country names of the tax portal (filings), further lists as needed",
-    "description:cs": "Statické české státní číselníky společné pro víc domén — finanční úřady a jejich územní pracoviště, země podle daňového portálu (podání), další podle potřeby",
-    "description:en": "Static Czech state registries shared across domains — tax offices and their branches, country names of the tax portal (filings), further lists as needed",
+    "description": "Static Czech state registries shared across domains — tax offices and their branches, country names of the tax portal (filings), exchange rate list types of the CNB, further lists as needed",
+    "description:cs": "Statické české státní číselníky společné pro víc domén — finanční úřady a jejich územní pracoviště, země podle daňového portálu (podání), typy kurzovních lístků ČNB, další podle potřeby",
+    "description:en": "Static Czech state registries shared across domains — tax offices and their branches, country names of the tax portal (filings), exchange rate list types of the CNB, further lists as needed",
 
     // Bez vlastních tabulek: jsou to statická data mimo DS, čtou se z cfgItem.
     "dependencies": ["world.base"],
@@ -15,5 +15,7 @@
         {"id": "world.cz.taxOfficeBranches", "file": "config/taxOfficeBranches.jsonc"},
         // Generovaný z data/zeme.txt (scripts/epo-countries.py) — viz data/README.md.
         {"id": "world.cz.epoCountries", "file": "config/epoCountries.jsonc"},
+        // Typy kurzovních lístků ČNB (#121 D1) — čte economy.exchangeRates.
+        {"id": "world.cz.exchangeRateLists", "file": "config/exchangeRateLists.jsonc"},
     ],
 }

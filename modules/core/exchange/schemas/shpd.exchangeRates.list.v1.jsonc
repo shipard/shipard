@@ -1,0 +1,56 @@
+{
+    // shpd.exchangeRates.list.v1 — kurzovní lístek (#121 D2; docs/exchange-rates.md).
+    // Jeden soubor = jeden lístek. Čte ho CLI `exchange-rates-import`, datové
+    // sady (sekce `exchangeRates/`) a v tasku B ho bude vracet služba.
+    //
+    //   - `listType` je id typu z `world.<země>.exchangeRateLists`
+    //     (`cz.cnb.daily`, `cz.cnb.other`). Sémantiku hlídá
+    //     ExchangeRateListImporter: známý typ pro zemi zdroje dat,
+    //     `homeCurrency` = měna typu = domácí měna zdroje dat, měny
+    //     z world.base.currencies, žádná měna dvakrát, validTo ≥ validFrom,
+    //     typ bez maxAgeDays vyžaduje validTo.
+    //   - Měny velkými písmeny jako v shpd.docs.document.v1; v databázi malými.
+    //   - `rate` je kurz za `amount` jednotek tak, jak ho vydavatel vyhlásil
+    //     (JPY: amount 100, rate 15.871). Kurz za jednotku (rate / amount,
+    //     6 desetinných míst) se počítá až při dohledání.
+    //   - `validTo` nese jen lístek s omezenou platností (měsíční); denní null.
+    //   - Verzi nese přímo `format` (jako shpd.assets.asset.v1).
+
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.exchangeRates.list.v1.json",
+    "title": "Shipard exchange rate list v1",
+    "type": "object",
+    "additionalProperties": false,
+
+    "required": ["format", "listType", "homeCurrency", "validFrom", "rates"],
+
+    "properties": {
+        "format":       { "const": "shpd.exchangeRates.list.v1" },
+        "listType":     { "type": "string", "minLength": 1, "maxLength": 40, "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$" },
+        "homeCurrency": { "$ref": "#/$defs/currency" },
+        "validFrom":    { "$ref": "#/$defs/date" },
+        "validTo":      { "$ref": "#/$defs/dateOrNull" },
+        "listNumber":   { "type": ["string", "null"], "maxLength": 20 },
+
+        "rates": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["currency", "amount", "rate"],
+                "properties": {
+                    "currency": { "$ref": "#/$defs/currency" },
+                    "amount":   { "type": "integer", "minimum": 1 },
+                    "rate":     { "type": "number", "exclusiveMinimum": 0 }
+                }
+            }
+        }
+    },
+
+    "$defs": {
+        "currency":   { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "date":       { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "dateOrNull": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+    }
+}

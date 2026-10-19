@@ -1,0 +1,36 @@
+{
+    // =========================================================================
+    // world.cz.exchangeRateLists — typy kurzovních lístků pro Česko (#121 D1,
+    // docs/exchange-rates.md).
+    //
+    // Klíč = id typu (`listType` ve formátu shpd.exchangeRates.list.v1).
+    // Pořadí = priorita dohledání kurzu (ExchangeRateResolver): v každém typu
+    // se vezme poslední lístek platný k datu; chybí-li v něm měna nebo je
+    // lístek starý, zkusí se další typ — nikdy starší lístek téhož typu (U2).
+    //
+    //   - `homeCurrency` — měna, ve které lístek kurzy vyhlašuje (malými, jako
+    //     world.base.currencies). Typ se použije jen pro zdroj dat se stejnou
+    //     domácí měnou.
+    //   - `maxAgeDays` — nejvyšší stáří lístku bez `validTo`, do kterého se
+    //     ještě použije (U1). Denní lístek smí platit nejvýš 7 dní (pokryje
+    //     Velikonoce i Vánoce); starší = kurz nenalezen, aby výpadek stahování
+    //     nedával tiše starý kurz. Typ bez `maxAgeDays` musí mít platnost na
+    //     každém lístku (`validTo`) — importer lístek bez obojího odmítne.
+    // =========================================================================
+
+    "cz.cnb.daily": {
+        "name": "CNB — foreign exchange market rates",
+        "name:cs": "ČNB — kurzy devizového trhu",
+        "name:en": "CNB — foreign exchange market rates",
+        "homeCurrency": "czk",
+        "maxAgeDays": 7
+    },
+
+    // Měsíční lístek: platnost nese sám lístek (`validTo`), proto bez maxAgeDays.
+    "cz.cnb.other": {
+        "name": "CNB — rates of other currencies",
+        "name:cs": "ČNB — kurzy ostatních měn",
+        "name:en": "CNB — rates of other currencies",
+        "homeCurrency": "czk"
+    }
+}
