@@ -9,7 +9,10 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\TableGateway;
+use Shipard\Core\Settings\SettingsStore;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Economy\Bank\BankStatementDocument;
 
@@ -31,7 +34,7 @@ use Shipard\Module\Economy\Bank\BankStatementDocument;
  * Idempotentní: opětovný import/apply téhož vstupu → vše skipped. Per-výpis
  * transakce (jeden vadný výpis neshodí ostatní).
  */
-final class StatementImportService
+class StatementImportService
 {
     private const TABLE_TX = 'economy_bank_transactions';
     private const TABLE_STMT = 'economy_bank_statements';
@@ -46,11 +49,15 @@ final class StatementImportService
 
     private readonly PartnerResolver $partnerResolver;
 
+    private ?string $homeCurrency = null;
+
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ConfigRuntime $config,
         private readonly ?AttachmentService $attachments = null,
         private readonly ?TableGateway $txGateway = null,
+        /** Kurz k datu transakce pro účet v cizí měně (#121 D7); null = DS bez modulu kurzů. */
+        private readonly ?ExchangeRateResolver $exchangeRateResolver = null,
     ) {
         $this->partnerResolver = new PartnerResolver($db);
     }
@@ -82,7 +89,10 @@ final class StatementImportService
             $tables[self::TABLE_TX]?->docStates,
             $tables[self::TABLE_TX] ?? null,
         );
-        return new self($db, $config, $attachments, $txGateway);
+        $exchangeRates = isset($tables[ExchangeRateResolver::TABLE_LISTS])
+            ? ExchangeRateResolver::create($db, $config, $dsConfig)
+            : null;
+        return new self($db, $config, $attachments, $txGateway, $exchangeRates);
     }
 
     /**
@@ -189,6 +199,10 @@ final class StatementImportService
         $statesCfg = DocStateConfig::fromCfgItem($this->config->cfgItem('economy.bank.txStates'));
         $mainState = $statesCfg->getMainState($targetState);
 
+        // Kurzy pro celý výpis PŘED transakcí (#121 D7): chybí-li lístek pro
+        // kterékoli datum, výpis se nezapíše vůbec.
+        $rates = $this->resolveExchangeRates($stmt, $currency);
+
         $created = 0;
         $skipped = 0;
         $unmatchedPartner = 0;
@@ -199,10 +213,10 @@ final class StatementImportService
         try {
             $statementId = $this->findOrCreateStatement($stmt, $bankAccountId, $currency, $targetState);
 
-            foreach ($stmt->transactions as $tx) {
+            foreach ($stmt->transactions as $i => $tx) {
                 $direction = $tx->amount < 0 ? 2 : 1;
                 $amount = abs($tx->amount);
-                $rate = $tx->exchangeRate ?? 1.0;
+                $rate = $rates[$i];
                 $dateKey = $tx->dateTransaction->format('Y-m-d');
                 $seqInDay[$dateKey] = ($seqInDay[$dateKey] ?? -1) + 1;
 
@@ -284,6 +298,58 @@ final class StatementImportService
     }
 
     /**
+     * Kurz per transakce v pořadí `$stmt->transactions` (#121 D7): účet
+     * v domácí měně → 1 (kurz z výpisu se ignoruje); cizí měna → kurz
+     * z výpisu (migrace, kurz za jednotku), bez něj kurz z lístku k datu
+     * transakce. Nikdy tiché 1: chybí-li lístek, ImportException se
+     * seznamem dat a nic se nezapíše.
+     *
+     * @return array<int, float>
+     * @throws ImportException chybějící kurz
+     */
+    protected function resolveExchangeRates(ParsedStatement $stmt, string $currency): array
+    {
+        $currency = strtolower($currency);
+        $home = $this->homeCurrency();
+        $rates = [];
+        $missing = [];
+        foreach ($stmt->transactions as $i => $tx) {
+            if ($currency === '' || $currency === $home) {
+                $rates[$i] = 1.0;
+                continue;
+            }
+            if ($tx->exchangeRate !== null && $tx->exchangeRate > 0) {
+                $rates[$i] = (float) $tx->exchangeRate;
+                continue;
+            }
+            $rate = $this->exchangeRateResolver?->rateFor($currency, $tx->dateTransaction);
+            if ($rate === null) {
+                $missing[$tx->dateTransaction->format('Y-m-d')] = true;
+                $rates[$i] = 0.0;
+                continue;
+            }
+            $rates[$i] = $rate->rate;
+        }
+        if ($missing !== []) {
+            $dates = array_keys($missing);
+            sort($dates);
+            throw new ImportException(sprintf(
+                'Kurz %s chybí pro data: %s — nahraj kurzovní lístky (shpd-ds exchange-rates-import).',
+                strtoupper($currency),
+                implode(', ', $dates),
+            ));
+        }
+        return $rates;
+    }
+
+    /** Domácí měna zdroje dat (z resolveru, jinak z nastavení; nerozhodnuto = czk). */
+    protected function homeCurrency(): string
+    {
+        return $this->homeCurrency ??= $this->exchangeRateResolver?->homeCurrency()
+            ?? ExchangeRateResolver::homeCurrencyOf(new SettingsStore(new DataSourceConnection($this->db)));
+    }
+
+    /**
      * Načte vlastní bankovní účet dle id (exchange/migrace ho zná přímo).
      * Archivní účet (70) je odkazovatelný — výpis pro později archivovaný
      * účet je legitimní historické datum (poslední výpis chodí i po uzavření).
@@ -291,7 +357,7 @@ final class StatementImportService
      * @return array<string, mixed>
      * @throws ImportException nenalezen / smazán
      */
-    private function loadBankAccount(int $id): array
+    protected function loadBankAccount(int $id): array
     {
         $row = $this->db->query(
             'SELECT [id], [currency], [code] FROM %n WHERE [id] = %i AND [docState] IN %in',

@@ -45,7 +45,8 @@
     ],
 
     "forms": [
-        {"table": "economy_bank_transactions", "id": "economy.bank.transactions"},
+        // Třída: pole Kurz jen u transakce v cizí měně (#121 D7).
+        {"table": "economy_bank_transactions", "id": "economy.bank.transactions", "class": "Shipard\\Module\\Economy\\Bank\\BankTransactionForm"},
         {"table": "economy_bank_statements",   "id": "economy.bank.statements"}
     ],
 

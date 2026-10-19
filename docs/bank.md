@@ -102,7 +102,7 @@ tableId **414**. docStates: vlastní sada `economy.bank.txStates` (§5).
 | `amount` | numeric 15,2, not null | částka v měně účtu (vždy kladná; směr drží `direction`) |
 | `currency` | enumString 3, cfgItem `world.base.currencies` | měna transakce (= měna účtu) |
 | `amount_dom` | numeric 15,2, not null | částka v domácí měně |
-| `exchange_rate` | numeric 15,6, default 1 | kurz měna→domácí |
+| `exchange_rate` | numeric 15,6, default 1 | kurz měna→domácí za jednotku; účet v domácí měně vždy 1, cizí měna z výpisu (migrace) nebo z kurzovního lístku k datu transakce (`ExchangeRateResolver`, #121 D7); u cizí měny ručně opravitelný ve formuláři — uložení přepočítá `amount_dom` |
 | `date_transaction` | date, not null | datum zaúčtování bankou |
 | `date_value` | date, nullable | datum valuty |
 | `counterparty_account` | varchar 40, nullable | protiúčet (číslo/IBAN) |
@@ -127,6 +127,8 @@ Poznámky:
   systému — engine i UI mají jednoznačné znaménko.
 - Politika „každá částka v měně transakce i v domácí měně" (jako účtování,
   `accounting.md` §8). Kurzové rozdíly se neřeší (saldo/exch-diff, §8).
+  Kurz nikdy není tiché 1: účet v domácí měně má 1, účet v cizí měně kurz
+  z výpisu nebo z kurzovního lístku (§4.6, [exchange-rates.md](exchange-rates.md)).
 - `operation` je nepovinné; prázdné = engine použije default dle `direction`
   (clearing). Vyplněním (ručně nebo budoucí auto-klasifikací) se transakce
   zaúčtuje na reálný účet (poplatek, úrok…).
@@ -278,6 +280,31 @@ odloženo (§6 / §8).
 
 ---
 
+### 4.6 Kurz transakce (#121 D7)
+
+Transakce nese měnu účtu (`ParsedTransaction` vlastní měnu nemá). Kurz
+určuje `StatementImportService::resolveExchangeRates` pro **celý výpis
+před otevřením transakce**:
+
+- účet v domácí měně (`economy.homeCurrency`) → kurz 1, případný kurz
+  z výpisu se ignoruje;
+- účet v cizí měně → kurz z výpisu (migrace ze starého Shipardu nese kurz
+  za jednotku), bez něj `ExchangeRateResolver::rateFor(měna, date_transaction)`
+  — poslední lístek platný k datu transakce ([exchange-rates.md](exchange-rates.md) §4);
+- chybí-li lístek pro kterékoli datum, `ImportException` se seznamem dat
+  („Kurz EUR chybí pro data: … — nahraj kurzovní lístky
+  (`shpd-ds exchange-rates-import`)“) a **nic se nezapíše** — výpis
+  z eurového účtu nahraný ze souboru (CAMT, GPC, FIO kurz nenesou) už
+  neuloží částku v domácí měně rovnou částce v cizí měně.
+
+`BankTransactionDocument` totéž hlídá na úrovni záznamu: `validate`
+odmítne transakci v cizí měně bez kurzu (`exchange_rate` / `required`),
+`beforeSave` u domácí měny kurz vynutí na 1 a `amount_dom` přepočítá, když
+chybí **nebo** když se kurz proti uloženému řádku změnil (ruční oprava ve
+formuláři) — jinak ho nechá, migrované řádky nesou částku ze starého
+Shipardu. Migrace (`BankStatementApplier`) jde stejnou cestou: řádek
+s kurzem beze změny, bez kurzu dohledání.
+
 ## 5. Stavový model transakce
 
 Vlastní sada `economy.bank.txStates` (vzor `core.mail.docStatesIncoming`).
@@ -399,7 +426,11 @@ takovou transakci **nevidí** — kandidáty bere z ledgeru clearingu
 261200/261300 a 261100 v žádné saldo skupině není; dohledání předpisu
 engine dělá jen u `payment.*`. Formulář transakce nabízí všechny pohyby bez filtru;
 `BankTransactionDocument::validate` odmítne pohyb s jiným `direction`, než
-má transakce (`operation_direction_mismatch`). Automatická detekce převodu
+má transakce (`operation_direction_mismatch`). Formulář je třída
+`BankTransactionForm` (`forms[]` v `module.jsonc`): u transakce v cizí
+měně ukazuje editovatelné pole **Kurz** (u domácí měny skryté) — ve
+stavech Nová a V opravě jde kurz opravit, uložení přepočítá `amount_dom`
+a Zaúčtovat transakci znovu zaúčtuje; Zaúčtováno je jen ke čtení (#121 D7). Automatická detekce převodu
 z výpisu (protiúčet = náš účet) zůstává refinement (§11).
 
 ### 6.3 Dva clearing účty + nulová kontrola
@@ -490,8 +521,10 @@ níže). Nasadit **až po** nové straně (ta musí umět formát přijmout dř�
 Z hlavičky: `myBankAccount` → `bankAccountId`, perioda, `initBalance`/`balance`,
 `docOrderNumber` → výpis; PDF příloha → `core.attachments` (mimo exchange JSON).
 Z řádku: `debit/credit` → znaménková `amount`, `exchangeRate` (kurz za
-jednotku) → `exchange_rate`/`amount_dom`, `bankAccount` → `counterparty_account`,
-symboly, `text` → `message` → jedna transakce.
+jednotku) → `exchange_rate`/`amount_dom` (řádek bez kurzu na účtu v cizí
+měně dostane kurz z lístku k datu transakce, účet v domácí měně 1 — §4.6),
+`bankAccount` → `counterparty_account`, symboly, `text` → `message`
+→ jedna transakce.
 
 **Rozsah migrace (rozhodnuto):** migrujeme **jen výpisy a jejich transakce**.
 „Hotové" výpisy vznikají rovnou ve stavu **40** přes dokumentovou vrstvu →
@@ -616,8 +649,9 @@ Vyřešené (ponechané pro kontext):
   `accounts` + logika v enginu; samostatná `bankTransactions` sekce netřeba.
 - ✅ **Kurz u migrace** (`exchange_rate`) — nese se ze starého řádku (kurz za
   jednotku) celým řetězcem schéma `shpd.bank.statement.v1` → `ParsedTransaction`
-  → `applyParsedStatement` → runner; `amount_dom = amount × rate`, prázdný/CZK
-  → rate 1.
+  → `applyParsedStatement` → runner; `amount_dom = amount × rate`; účet
+  v domácí měně → rate 1, prázdný kurz na účtu v cizí měně → z kurzovního
+  lístku k datu transakce, bez lístku import výpisu selže (#121 D7, §4.6).
 
 Otevřené:
 

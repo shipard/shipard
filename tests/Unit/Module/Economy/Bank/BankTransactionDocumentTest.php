@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Economy\Bank;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\Bank\BankTransactionDocument;
 
 class BankTransactionDocumentTest extends TestCase
@@ -217,6 +218,58 @@ class BankTransactionDocumentTest extends TestCase
         $data = ['amount' => 100.0, 'exchange_rate' => 1.5, 'amount_dom' => 142.0];
         $this->doc()->beforeSave($data);
         $this->assertEqualsWithDelta(142.0, $data['amount_dom'], 0.001);
+    }
+
+    // --- kurz (#121 D7) -----------------------------------------------------
+
+    public function testValidateRequiresRateForForeignCurrency(): void
+    {
+        $doc = $this->doc();
+        $doc->setSettings($this->settings('czk'));
+
+        $data = array_merge($this->validData(), ['currency' => 'eur']);
+        $this->assertTrue($this->hasError($doc->validate($data)->toArray(), 'exchange_rate', 'required'));
+
+        $data['exchange_rate'] = '0';
+        $this->assertTrue($this->hasError($doc->validate($data)->toArray(), 'exchange_rate', 'required'), 'nula není kurz');
+
+        $data['exchange_rate'] = 24.325;
+        $this->assertFalse($this->hasError($doc->validate($data)->toArray(), 'exchange_rate'));
+
+        $home = array_merge($this->validData(), ['currency' => 'czk']);
+        $this->assertFalse($this->hasError($doc->validate($home)->toArray(), 'exchange_rate'), 'domácí měna kurz nepotřebuje');
+
+        $doc->setSettings($this->settings('eur'));
+        $foreignHome = array_merge($this->validData(), ['currency' => 'eur']);
+        $this->assertFalse($this->hasError($doc->validate($foreignHome)->toArray(), 'exchange_rate'), 'EUR jako domácí měna');
+    }
+
+    public function testBeforeSaveForcesRateOneForHomeCurrency(): void
+    {
+        $data = ['amount' => 100.0, 'currency' => 'CZK', 'exchange_rate' => 25.3];
+        $this->doc()->beforeSave($data);
+        $this->assertSame(1, $data['exchange_rate']);
+        $this->assertEqualsWithDelta(100.0, $data['amount_dom'], 0.001);
+    }
+
+    public function testBeforeSaveRecomputesAmountDomWhenRateChanged(): void
+    {
+        $original = ['id' => 5, 'amount' => 100.0, 'currency' => 'eur', 'exchange_rate' => '24.325000', 'amount_dom' => 2432.5];
+
+        $data = ['id' => 5, 'amount' => 100.0, 'currency' => 'eur', 'exchange_rate' => 24.5, 'amount_dom' => 2432.5];
+        $this->doc()->beforeSave($data, $original);
+        $this->assertEqualsWithDelta(2450.0, $data['amount_dom'], 0.001, 'změna kurzu přepočítá');
+
+        $data = ['id' => 5, 'amount' => 100.0, 'currency' => 'eur', 'exchange_rate' => '24.325', 'amount_dom' => 2432.51];
+        $this->doc()->beforeSave($data, $original);
+        $this->assertEqualsWithDelta(2432.51, $data['amount_dom'], 0.001, 'stejný kurz nechá migrovanou částku');
+    }
+
+    private function settings(?string $home): SettingsStore
+    {
+        $settings = $this->createMock(SettingsStore::class);
+        $settings->method('get')->willReturnCallback(static fn(string $key): mixed => $key === 'economy.homeCurrency' ? $home : null);
+        return $settings;
     }
 
     public function testBeforeSaveLowercasesCurrencyAndTrims(): void

@@ -34,6 +34,12 @@ class BankTransactionDocument extends Document
 
         if (empty($data['currency'])) {
             $r->addError('currency', 'Měna je povinná.', 'required');
+        } elseif (strtolower(trim((string) $data['currency'])) !== $this->homeCurrency()) {
+            // Cizí měna bez kurzu — nikdy tiché 1 (#121 D7).
+            $rate = $data['exchange_rate'] ?? null;
+            if ($rate === null || $rate === '' || (float) $rate <= 0) {
+                $r->addError('exchange_rate', 'Kurz je povinný pro cizí měnu.', 'required');
+            }
         }
 
         if (empty($data['date_transaction'])) {
@@ -94,17 +100,33 @@ class BankTransactionDocument extends Document
             $data['currency'] = strtolower(trim((string) $data['currency']));
         }
 
-        // amount_dom = amount × exchange_rate (u domácí měny je kurz 1).
-        // Dopočítáme jen když chybí — ingestion / UI ho může dodat přímo.
+        // Domácí měna má vždy kurz 1 (#121 D7).
+        $currency = (string) ($data['currency'] ?? '');
+        if ($currency !== '' && $currency === $this->homeCurrency()) {
+            $data['exchange_rate'] = 1;
+        }
+
+        // amount_dom = amount × exchange_rate. Dopočítá se, když chybí
+        // (ingestion / UI ho může dodat přímo) NEBO když se kurz proti
+        // uloženému řádku změnil (ruční oprava kurzu ve formuláři, #121 D7).
+        // Jinak zůstává — migrované řádky nesou částku ze starého Shipardu
+        // a přepočet by ji mohl posunout o haléř.
+        $hasRate = isset($data['exchange_rate']) && $data['exchange_rate'] !== '' && $data['exchange_rate'] !== null;
+        $rate = $hasRate ? (float) $data['exchange_rate'] : 1.0;
         $hasDom = isset($data['amount_dom']) && $data['amount_dom'] !== '' && $data['amount_dom'] !== null;
-        if (!$hasDom && isset($data['amount']) && $data['amount'] !== '') {
-            $rate = (isset($data['exchange_rate']) && $data['exchange_rate'] !== '' && $data['exchange_rate'] !== null)
-                ? (float) $data['exchange_rate']
-                : 1.0;
+        $rateChanged = $hasRate && $originalData !== null
+            && round((float) ($originalData['exchange_rate'] ?? 1.0), 6) !== round($rate, 6);
+        if ((!$hasDom || $rateChanged) && isset($data['amount']) && $data['amount'] !== '') {
             $data['amount_dom'] = round((float) $data['amount'] * $rate, 2);
         }
 
         $this->trackStateChange($data, $originalData);
     }
 
+    /** Domácí měna zdroje dat z nastavení (injektuje TableGateway); nerozhodnuto = czk. */
+    private function homeCurrency(): string
+    {
+        $value = $this->settings?->get('economy.homeCurrency');
+        return is_string($value) && $value !== '' ? strtolower($value) : 'czk';
+    }
 }

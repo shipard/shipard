@@ -25,6 +25,8 @@ class BankStatementApplyTest extends IntegrationTestCase
     private ?BankStatementApplier $applier = null;
 
     private int $bankAccountId = 0;
+    /** @var list<int> další účty založené testem (cizí měna) */
+    private array $extraBankAccounts = [];
     /** @var list<int> */
     private array $createdAccounts = [];
     /** @var list<int> */
@@ -76,8 +78,17 @@ class BankStatementApplyTest extends IntegrationTestCase
 
     protected function onTearDown(): void
     {
+        $dibi = $this->db->getDibiConnection();
+        foreach ($this->extraBankAccounts as $extraId) {
+            $txIds = $dibi->query('SELECT [id] FROM [economy_bank_transactions] WHERE [bank_account] = %i', $extraId)->fetchPairs(null, 'id');
+            foreach ($txIds as $tid) {
+                $dibi->delete('economy_accounting_journal')->where('bank_transaction = %i', (int) $tid)->execute();
+            }
+            $dibi->delete('economy_bank_transactions')->where('bank_account = %i', $extraId)->execute();
+            $dibi->delete('economy_bank_statements')->where('bank_account = %i', $extraId)->execute();
+            $dibi->delete('economy_codebooks_bank_accounts')->where('id = %i', $extraId)->execute();
+        }
         if ($this->bankAccountId > 0) {
-            $dibi = $this->db->getDibiConnection();
             $stmtIds = $dibi->query(
                 'SELECT [id] FROM [economy_bank_statements] WHERE [bank_account] = %i',
                 $this->bankAccountId,
@@ -608,13 +619,44 @@ class BankStatementApplyTest extends IntegrationTestCase
         $this->assertCount(0, $this->txRows(), 'preview nezapisuje');
     }
 
-    public function testApplyCarriesExchangeRateIntoAmountDom(): void
+    public function testApplyCarriesExchangeRateIntoAmountDomOnForeignAccount(): void
     {
-        // exchange_rate je nezávislý multiplikátor (kurz za jednotku); i na CZK
-        // účtu ověří celý řetězec schéma → DTO → service → DB (amount_dom = amount × rate).
+        // Kurz z výpisu (migrace, kurz za jednotku) na účtu v EUR projde
+        // řetězcem schéma → DTO → service → DB (amount_dom = amount × rate).
+        // Na účtu v domácí měně je kurz vždy 1 (#121 D7).
+        $eurAccount = $this->insertBankAccount('eur');
+        $result = $this->applier->apply($this->payload([
+            'bankAccountId' => $eurAccount,
+            'statement'     => [
+                'statementNumber' => 'FX-1',
+                'periodStart'     => '2026-06-01',
+                'periodEnd'       => '2026-06-30',
+                'openingBalance'  => 0.0,
+                'closingBalance'  => 100.0,
+                'currency'        => 'EUR',
+            ],
+            'transactions'  => [[
+                'externalId'      => 'fx-in-1',
+                'amount'          => 100.00,
+                'dateTransaction' => self::ACC_DATE,
+                'exchangeRate'    => 25.30,
+            ]],
+            'applyOptions'  => ['targetState' => 10],
+        ]));
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+
+        $rows = $this->txRows($eurAccount);
+        $this->assertCount(1, $rows);
+        $this->assertEqualsWithDelta(25.30, (float) $rows[0]['exchange_rate'], 0.0001);
+        $this->assertEqualsWithDelta(100.00, (float) $rows[0]['amount'], 0.001);
+        $this->assertEqualsWithDelta(2530.00, (float) $rows[0]['amount_dom'], 0.001);
+    }
+
+    public function testApplyOnHomeAccountIgnoresExchangeRate(): void
+    {
         $this->applier->apply($this->payload([
             'statement'    => [
-                'statementNumber' => 'FX-1',
+                'statementNumber' => 'FX-2',
                 'periodStart'     => '2026-06-01',
                 'periodEnd'       => '2026-06-30',
                 'openingBalance'  => 0.0,
@@ -622,28 +664,77 @@ class BankStatementApplyTest extends IntegrationTestCase
                 'currency'        => 'CZK',
             ],
             'transactions' => [[
-                'externalId'      => 'fx-in-1',
+                'externalId'      => 'fx-in-2',
                 'amount'          => 100.00,
                 'dateTransaction' => self::ACC_DATE,
                 'exchangeRate'    => 25.30,
             ]],
+            'applyOptions' => ['targetState' => 10],
         ]));
 
         $rows = $this->txRows();
         $this->assertCount(1, $rows);
-        $this->assertEqualsWithDelta(25.30, (float) $rows[0]['exchange_rate'], 0.0001);
-        $this->assertEqualsWithDelta(100.00, (float) $rows[0]['amount'], 0.001);
-        $this->assertEqualsWithDelta(2530.00, (float) $rows[0]['amount_dom'], 0.001);
+        $this->assertEqualsWithDelta(1.0, (float) $rows[0]['exchange_rate'], 0.0001);
+        $this->assertEqualsWithDelta(100.00, (float) $rows[0]['amount_dom'], 0.001);
+    }
+
+    public function testMissingExchangeRateListStopsTheWholeStatement(): void
+    {
+        // Účet v EUR, transakce bez kurzu k datu, pro které lístek jistě není
+        // (rok 2001) → ImportException se seznamem dat, nic se nezapíše (#121 D7).
+        $eurAccount = $this->insertBankAccount('eur');
+        $result = $this->applier->apply($this->payload([
+            'bankAccountId' => $eurAccount,
+            'statement'     => [
+                'statementNumber' => 'FX-3',
+                'periodStart'     => '2001-01-01',
+                'periodEnd'       => '2001-01-31',
+                'openingBalance'  => 0.0,
+                'closingBalance'  => 300.0,
+                'currency'        => 'EUR',
+            ],
+            'transactions'  => [
+                ['externalId' => 'fx-nr-1', 'amount' => 100.00, 'dateTransaction' => '2001-01-05'],
+                ['externalId' => 'fx-nr-2', 'amount' => 200.00, 'dateTransaction' => '2001-01-03'],
+            ],
+            'applyOptions'  => ['targetState' => 10],
+        ]));
+
+        $this->assertFalse($result->success);
+        $this->assertSame('apply_failed', $result->errorCode);
+        $this->assertStringContainsString('Kurz EUR chybí pro data: 2001-01-03, 2001-01-05', (string) $result->errorMessage);
+        $this->assertCount(0, $this->txRows($eurAccount));
+        $this->assertSame(
+            0,
+            (int) $this->db->fetchSingle('SELECT COUNT(*) FROM economy_bank_statements WHERE bank_account = %i', $eurAccount),
+            'ani výpis',
+        );
+    }
+
+    private function insertBankAccount(string $currency): int
+    {
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('economy_codebooks_bank_accounts', [
+            'code'               => 'ITY' . substr(uniqid(), -7),
+            'name'               => 'IT F4 účet ' . strtoupper($currency),
+            'currency'           => $currency,
+            'accounting_account' => $this->ensureAccountByMask('221'),
+            'docState'           => 40,
+            'docStateMain'       => 3,
+        ])->execute();
+        $id = (int) $dibi->getInsertId();
+        $this->extraBankAccounts[] = $id;
+        return $id;
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     /** @return list<array<string, mixed>> */
-    private function txRows(): array
+    private function txRows(?int $bankAccountId = null): array
     {
         $rows = $this->db->getDibiConnection()->fetchAll(
             'SELECT * FROM economy_bank_transactions WHERE bank_account = %i ORDER BY date_transaction, id',
-            $this->bankAccountId,
+            $bankAccountId ?? $this->bankAccountId,
         );
         return array_map(static fn($r) => $r->toArray(), $rows);
     }
