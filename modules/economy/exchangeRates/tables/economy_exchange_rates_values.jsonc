@@ -1,0 +1,77 @@
+{
+    // Hodnoty kurzovního lístku (docs/exchange-rates.md §3): měna × množství
+    // × kurz tak, jak ho vydavatel vyhlásil (JPY: amount 100, rate 15.871).
+    // Kurz za jednotku (rate / amount na 6 míst) se počítá až při dohledání
+    // (ExchangeRate::perUnit). Child tabulka lístku, jen ke čtení.
+    "tableId": 465,
+    "name": "Exchange rate values",
+    "name:cs": "Kurzy měn",
+    "name:en": "Exchange rate values",
+
+    "hideFromNavigation": true,
+    "systemManaged": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "list",
+            "name": "Exchange rate list",
+            "name:cs": "Kurzovní lístek",
+            "name:en": "Exchange rate list",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_exchange_rates_lists"
+        },
+        {
+            "id": "currency",
+            "name": "Currency",
+            "name:cs": "Měna",
+            "name:en": "Currency",
+            "type": "enumString",
+            "length": 3,
+            "cfgItem": "world.base.currencies",
+            "nullable": false
+        },
+        {
+            "id": "amount",
+            "name": "Amount",
+            "name:cs": "Množství",
+            "name:en": "Amount",
+            "type": "int",
+            "nullable": false,
+            "default": 1
+        },
+        {
+            "id": "rate",
+            "name": "Rate",
+            "name:cs": "Kurz",
+            "name:en": "Rate",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 6,
+            "nullable": false
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_list_currency",
+            "type": "unique",
+            "columns": [
+                {"column": "list"},
+                {"column": "currency"}
+            ]
+        },
+        {
+            "id": "idx_currency",
+            "type": "index",
+            "columns": [{"column": "currency"}]
+        }
+    ]
+}

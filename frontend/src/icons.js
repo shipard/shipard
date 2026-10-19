@@ -120,6 +120,7 @@ import {
   faArrowUpFromBracket,
   faCodeCommit,
   faClock,
+  faCoins,
 } from '@fortawesome/free-solid-svg-icons';
 
 // ── Akce (toolbary, tlačítka) ──────────────────────────────────
@@ -211,6 +212,7 @@ export const iconReceivable = faCircleArrowUp; // nav položka saldokonta pohled
 export const iconPayable = faCircleArrowDown; // nav položka saldokonta závazkového typu (DAL)
 export const iconChartPie = faChartPie; // Střediska
 export const iconHash = faHashtag;
+export const iconExchangeRates = faCoins; // Kurzovní lístky
 export const iconServer = faServer;
 export const iconDatabase = faDatabase;
 
@@ -315,6 +317,7 @@ export const iconMap = {
   'payable': iconPayable,
   'chart-pie': iconChartPie,
   'hash': iconHash,
+  'exchange-rates': iconExchangeRates,
   'server': iconServer,
   'database': iconDatabase,
   'logout': iconLogout,

@@ -1122,6 +1122,54 @@ datu nebo neznámém čísle zakázky.
 | `--work-order=<číslo>` | jen tato zakázka, bez pojistky dohánění |
 | `--dry-run` | jen výčet, nic se nezapíše (ani období se nezaloží) |
 
+#### `exchange-rates-import <soubor|složka> [--replace]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds exchange-rates-import kurzy/2026-10-16-cnb-daily.jsonc   # jeden lístek
+shpd-ds exchange-rates-import kurzy/                              # všechny .jsonc / .json ve složce, podle jména
+shpd-ds exchange-rates-import kurzy/ --replace                    # lístky s jiným obsahem přepsat
+```
+
+Nahraje kurzovní lístky ve formátu `shpd.exchangeRates.list.v1`
+([exchange-rates.md](exchange-rates.md) §2, #121 D2) — jeden soubor = jeden
+lístek — přes `ExchangeRateListImporter` se zdrojem *soubor*. Importer
+ověří schéma i sémantiku (typ lístku známý pro zemi zdroje dat
+z `world.<země>.exchangeRateLists`, domácí měna lístku = měna typu = domácí
+měna zdroje dat, měny z `world.base.currencies`, žádná měna dvakrát,
+`validTo` ≥ `validFrom`, typ bez `maxAgeDays` vyžaduje `validTo`) a uloží
+hlavičku s hodnotami v jedné transakci. Lístek téhož typu a data platnosti,
+který už existuje: shodný obsah = *beze změny*, jiný obsah = *jiný obsah*
+(chyba) — přepíše ho jen `--replace`. Výstup: řádek per soubor s výsledkem
+a chybami, souhrn založeno / beze změny / nahrazeno / selhalo. Bez sítě —
+stahování ze služby je task B (#121 D2, D3).
+
+Exit 0; 1 při jakémkoli selhání (neplatný lístek, jiný obsah bez
+`--replace`, chyba zápisu, chybějící modul `economy.exchangeRates`);
+INVALID při neexistující cestě nebo složce bez souborů.
+
+| Opce | Význam |
+|------|--------|
+| `--replace` | existující lístek s jiným obsahem nahradit (hodnoty v jedné transakci) |
+
+#### `exchange-rate <měna> [<datum>]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds exchange-rate eur               # kurz EUR k dnešku
+shpd-ds exchange-rate eur 2026-10-18    # kurz k datu (sobota → páteční lístek)
+```
+
+Vypíše kurz měny k datu tak, jak ho dohledá `ExchangeRateResolver`
+([exchange-rates.md](exchange-rates.md) §4, #121 D4): kurz za jednotku,
+typ lístku, platnost od a číslo lístku; domácí měna = kurz 1. Když kurz
+nenajde, vypíše důvod per typ lístku: žádný lístek k datu, poslední lístek
+starší než `maxAgeDays` typu (U1), lístek po `validTo`, měna v posledním
+lístku není (starší se nezkouší, U2). Slouží k ověření a podpoře.
+
+Exit 0 nalezen; 1 nenalezen nebo chybějící modul; INVALID při špatné měně
+nebo datu.
+
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 
 ```bash

@@ -1,0 +1,6 @@
+{
+    // Popisky tabů detailu vieweru Kurzovní lístky (TableViewer::detailTabLabel).
+    "tabs": {
+        "values": { "name": "Rates", "name:cs": "Kurzy", "name:en": "Rates" }
+    }
+}

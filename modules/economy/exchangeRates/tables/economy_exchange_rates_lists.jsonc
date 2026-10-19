@@ -1,0 +1,107 @@
+{
+    // Kurzovní lístek (docs/exchange-rates.md §3, #121 D1): hlavička lístku
+    // jednoho typu k datu platnosti. Hodnoty v economy_exchange_rates_values
+    // (childTables → hlavička a hodnoty v jedné transakci, mazání lístku maže
+    // hodnoty). Bez stavů dokladu — převzatá data, v UI jen ke čtení:
+    // systemManaged odmítne generické CRUD POST/DELETE, zápis jde jen přes
+    // ExchangeRateListImporter. Typ (`list_type`) je klíč
+    // z world.<země>.exchangeRateLists; platnost: denní lístek bez `valid_to`
+    // (stáří hlídá maxAgeDays typu, U1), měsíční s `valid_to`.
+    "tableId": 464,
+    "name": "Exchange rate lists",
+    "name:cs": "Kurzovní lístky",
+    "name:en": "Exchange rate lists",
+
+    "systemManaged": true,
+
+    "displayPattern": "{list_type} {valid_from}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "list_type",
+            "name": "List type",
+            "name:cs": "Typ lístku",
+            "name:en": "List type",
+            "type": "varchar",
+            "length": 40,
+            "nullable": false
+        },
+        {
+            "id": "home_currency",
+            "name": "Home currency",
+            "name:cs": "Domácí měna",
+            "name:en": "Home currency",
+            "type": "enumString",
+            "length": 3,
+            "cfgItem": "world.base.currencies",
+            "nullable": false
+        },
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "id": "list_number",
+            "name": "List number",
+            "name:cs": "Číslo lístku",
+            "name:en": "List number",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true
+        },
+        {
+            "id": "source",
+            "name": "Source",
+            "name:cs": "Zdroj",
+            "name:en": "Source",
+            "type": "enumInt",
+            "cfgItem": "economy.exchangeRates.listSources",
+            "nullable": false,
+            "default": 1
+        }
+    ],
+
+    "childTables": [
+        { "table": "economy_exchange_rates_values", "foreignKey": "list", "dataKey": "values" }
+    ],
+
+    "indexes": [
+        {
+            // Jeden lístek typu na datum platnosti — importer: shodný obsah
+            // skipped, jiný conflict / --replace.
+            "id": "unq_type_valid_from",
+            "type": "unique",
+            "columns": [
+                {"column": "list_type"},
+                {"column": "valid_from"}
+            ]
+        },
+        {
+            "id": "idx_home_valid_from",
+            "type": "index",
+            "columns": [
+                {"column": "home_currency"},
+                {"column": "valid_from"}
+            ]
+        }
+    ]
+}

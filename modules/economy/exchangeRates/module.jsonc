@@ -1,0 +1,52 @@
+{
+    // Kurzy cizích měn (docs/exchange-rates.md, #121 D1): kurzovní lístky
+    // a jejich hodnoty v tabulkách zdroje dat — převzatá data, v UI jen ke
+    // čtení. Typy lístků deklaruje modul země (world.cz.exchangeRateLists);
+    // jediná cesta zápisu je ExchangeRateListImporter (CLI
+    // exchange-rates-import, seeder datové sady, v tasku B služba).
+    // Kurz k datu dává ExchangeRateResolver (D4, D5, U1, U2) — volají ho
+    // formuláře dokladů, applier a import bankovního výpisu.
+    "id": "economy.exchangeRates",
+    "name": "Exchange rates",
+    "name:cs": "Kurzy cizích měn",
+    "name:en": "Exchange rates",
+    "description": "Exchange rate lists of the data source's country and the rate-for-date lookup used by documents, the applier and bank statement import",
+    "description:cs": "Kurzovní lístky země zdroje dat a dohledání kurzu k datu pro doklady, applier a import bankovního výpisu",
+    "description:en": "Exchange rate lists of the data source's country and the rate-for-date lookup used by documents, the applier and bank statement import",
+
+    "dependencies": ["core.system", "world.base"],
+
+    "tables": [
+        "economy_exchange_rates_lists",
+        "economy_exchange_rates_values"
+    ],
+
+    // Nastavení → Účetnictví → Kurzovní lístky: jen ke čtení (§9).
+    "settingsItems": [
+        { "viewer": "economy.exchangeRates.lists", "section": "accounting", "order": 60 }
+    ],
+
+    "viewers": [
+        {
+            "id": "economy.exchangeRates.lists",
+            "name": "Exchange rate lists",
+            "name:cs": "Kurzovní lístky",
+            "name:en": "Exchange rate lists",
+            "icon": "exchange-rates",
+            "table": "economy_exchange_rates_lists",
+            "class": "Shipard\\Module\\Economy\\ExchangeRates\\ExchangeRateListsViewer"
+        }
+    ],
+
+    "config": [
+        {
+            // Zdroj lístku (sloupec `source`): soubor / datová sada / služba.
+            "id": "economy.exchangeRates.listSources",
+            "file": "config/listSources.jsonc"
+        },
+        {
+            "id": "economy.exchangeRates.viewerDetailLabels",
+            "file": "config/viewerDetailLabels.jsonc"
+        }
+    ]
+}

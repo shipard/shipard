@@ -1,0 +1,8 @@
+{
+    // Zdroj kurzovního lístku (economy_exchange_rates_lists.source, #121):
+    // 1 = soubor přes CLI exchange-rates-import, 2 = datová sada (seeder),
+    // 3 = služba (task B). Konstanty ExchangeRateListImporter::SOURCE_*.
+    "1": { "name": "File", "name:cs": "Soubor", "name:en": "File" },
+    "2": { "name": "Dataset", "name:cs": "Datová sada", "name:en": "Dataset" },
+    "3": { "name": "Service", "name:cs": "Služba", "name:en": "Service" }
+}

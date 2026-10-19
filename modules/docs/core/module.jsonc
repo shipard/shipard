@@ -16,7 +16,9 @@
         "world.base",
         "world.vat",
         "economy.codebooks",
-        "economy.items"
+        "economy.items",
+        // Kurz k datu pro formuláře a applier (#121 D6); banka ho dostane přes docs.core.
+        "economy.exchangeRates"
     ],
 
     "tables": [
