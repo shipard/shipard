@@ -850,11 +850,16 @@ soubor commitne do `tests/corpus/cz/profiles/<profil>/approved/general-ledger.js
 přestaví sady (`build.py`) a další běh dá kontrolu 6 `ok`. Změna
 účtování = nový snímek se schválením, nikdy úprava snímku podle Shipardu.
 
-**Stav schválení (2026-10-15):** snímky všech tří profilů (`vat-payer`,
+**Stav schválení (2026-10-20):** snímky všech tří profilů (`vat-payer`,
 `non-payer`, `association`) jsou schválené **s výhradou účetní revize**
 (#123) — do ní hlídají regrese, ne věcnou správnost. Snímek spolku vznikl
 po opravě předpisů pro osnovu NNO (#122): zaokrouhlení jde na 549100 /
-649100, deník bez 548 / 648.
+649100, deník bez 548 / 648. Od 2026-10-20 nesou i doklady v cizí měně
+(#103 D74): plátce pololetí 7–12 (0502 a 0802 vystavené 1. 10.), účty
+343205 / 343207 / 343215 / 343217 (EU zboží a služby), 343407 / 343417
+(třetí země), 501201, 518206, haléřový zbytek přepočtu po řádcích na
+648100 (plátce) a 548100 / 549100 (neplátce / spolek); první schválení
+2026-10-15 bez cizí měny.
 
 ### Pasti
 

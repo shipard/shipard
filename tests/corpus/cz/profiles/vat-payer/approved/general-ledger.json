@@ -4,11 +4,11 @@
         "period": {
             "fiscalYear": "2026",
             "monthFrom": 7,
-            "monthTo": 9
+            "monthTo": 12
         },
         "detail": "analytic"
     },
-    "generatedAt": "2026-10-15T07:25:56+00:00",
+    "generatedAt": "2026-10-20T15:44:46+00:00",
     "dataSource": "ob9b-79rj-8ytg-45ii",
     "status": "ok",
     "messages": [],
@@ -138,13 +138,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 284276.22,
-                    "balance": -284276.22
+                    "d": 470012.6,
+                    "balance": -470012.6
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 284276.22,
-                    "balance": -284276.22
+                    "d": 470012.6,
+                    "balance": -470012.6
                 }
             }
         },
@@ -161,13 +161,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 284276.22,
-                    "balance": -284276.22
+                    "d": 470012.6,
+                    "balance": -470012.6
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 284276.22,
-                    "balance": -284276.22
+                    "d": 470012.6,
+                    "balance": -470012.6
                 }
             }
         },
@@ -184,13 +184,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 284276.22,
-                    "balance": -284276.22
+                    "d": 470012.6,
+                    "balance": -470012.6
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 284276.22,
-                    "balance": -284276.22
+                    "d": 470012.6,
+                    "balance": -470012.6
                 }
             }
         },
@@ -287,6 +287,144 @@
             }
         },
         {
+            "kind": "detail",
+            "level": 4,
+            "account": "343205",
+            "label": "Daň z přidané hodnoty (výstup - základní sazba - zboží EU)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 32315.34,
+                    "balance": -32315.34
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 32315.34,
+                    "balance": -32315.34
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343207",
+            "label": "Daň z přidané hodnoty (výstup - základní sazba - služby EU)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 4800.38,
+                    "balance": -4800.38
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 4800.38,
+                    "balance": -4800.38
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343215",
+            "label": "Daň z přidané hodnoty (vstup - základní sazba - zboží EU)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 32315.34,
+                    "d": 0.0,
+                    "balance": 32315.34
+                },
+                "closing": {
+                    "md": 32315.34,
+                    "d": 0.0,
+                    "balance": 32315.34
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343217",
+            "label": "Daň z přidané hodnoty (vstup - základní sazba - služby EU)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 4800.38,
+                    "d": 0.0,
+                    "balance": 4800.38
+                },
+                "closing": {
+                    "md": 4800.38,
+                    "d": 0.0,
+                    "balance": 4800.38
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343407",
+            "label": "Daň z přidané hodnoty (výstup - základní sazba - ostatní DOVOZ)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 1888.92,
+                    "balance": -1888.92
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 1888.92,
+                    "balance": -1888.92
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343417",
+            "label": "Daň z přidané hodnoty (vstup - základní sazba - ostatní DOVOZ)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 1888.92,
+                    "d": 0.0,
+                    "balance": 1888.92
+                },
+                "closing": {
+                    "md": 1888.92,
+                    "d": 0.0,
+                    "balance": 1888.92
+                }
+            }
+        },
+        {
             "kind": "subtotal",
             "level": 3,
             "account": "343",
@@ -298,13 +436,13 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 50419.55,
-                    "d": 28887.6,
+                    "md": 89424.19,
+                    "d": 67892.24,
                     "balance": 21531.95
                 },
                 "closing": {
-                    "md": 50419.55,
-                    "d": 28887.6,
+                    "md": 89424.19,
+                    "d": 67892.24,
                     "balance": 21531.95
                 }
             }
@@ -321,13 +459,13 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 50419.55,
-                    "d": 28887.6,
+                    "md": 89424.19,
+                    "d": 67892.24,
                     "balance": 21531.95
                 },
                 "closing": {
-                    "md": 50419.55,
-                    "d": 28887.6,
+                    "md": 89424.19,
+                    "d": 67892.24,
                     "balance": 21531.95
                 }
             }
@@ -344,14 +482,14 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 50419.55,
-                    "d": 313163.82,
-                    "balance": -262744.27
+                    "md": 89424.19,
+                    "d": 537904.84,
+                    "balance": -448480.65
                 },
                 "closing": {
-                    "md": 50419.55,
-                    "d": 313163.82,
-                    "balance": -262744.27
+                    "md": 89424.19,
+                    "d": 537904.84,
+                    "balance": -448480.65
                 }
             }
         },
@@ -379,6 +517,29 @@
             }
         },
         {
+            "kind": "detail",
+            "level": 4,
+            "account": "501201",
+            "label": "Evidovaný hmotný majetek",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 153882.58,
+                    "d": 0.0,
+                    "balance": 153882.58
+                },
+                "closing": {
+                    "md": 153882.58,
+                    "d": 0.0,
+                    "balance": 153882.58
+                }
+            }
+        },
+        {
             "kind": "subtotal",
             "level": 3,
             "account": "501",
@@ -390,14 +551,14 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 75201.95,
+                    "md": 229084.53,
                     "d": 0.0,
-                    "balance": 75201.95
+                    "balance": 229084.53
                 },
                 "closing": {
-                    "md": 75201.95,
+                    "md": 229084.53,
                     "d": 0.0,
-                    "balance": 75201.95
+                    "balance": 229084.53
                 }
             }
         },
@@ -505,14 +666,14 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 85161.78,
+                    "md": 239044.36,
                     "d": 0.0,
-                    "balance": 85161.78
+                    "balance": 239044.36
                 },
                 "closing": {
-                    "md": 85161.78,
+                    "md": 239044.36,
                     "d": 0.0,
-                    "balance": 85161.78
+                    "balance": 239044.36
                 }
             }
         },
@@ -666,14 +827,37 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 14462.0,
+                    "md": 15557.53,
                     "d": 0.0,
-                    "balance": 14462.0
+                    "balance": 15557.53
                 },
                 "closing": {
-                    "md": 14462.0,
+                    "md": 15557.53,
                     "d": 0.0,
-                    "balance": 14462.0
+                    "balance": 15557.53
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "518206",
+            "label": "Software a cloudové služby",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 30758.28,
+                    "d": 0.0,
+                    "balance": 30758.28
+                },
+                "closing": {
+                    "md": 30758.28,
+                    "d": 0.0,
+                    "balance": 30758.28
                 }
             }
         },
@@ -689,14 +873,14 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 14462.0,
+                    "md": 46315.81,
                     "d": 0.0,
-                    "balance": 14462.0
+                    "balance": 46315.81
                 },
                 "closing": {
-                    "md": 14462.0,
+                    "md": 46315.81,
                     "d": 0.0,
-                    "balance": 14462.0
+                    "balance": 46315.81
                 }
             }
         },
@@ -712,14 +896,14 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 179124.88,
+                    "md": 210978.69,
                     "d": 0.0,
-                    "balance": 179124.88
+                    "balance": 210978.69
                 },
                 "closing": {
-                    "md": 179124.88,
+                    "md": 210978.69,
                     "d": 0.0,
-                    "balance": 179124.88
+                    "balance": 210978.69
                 }
             }
         },
@@ -804,14 +988,14 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 264287.15,
+                    "md": 450023.54,
                     "d": 0.0,
-                    "balance": 264287.15
+                    "balance": 450023.54
                 },
                 "closing": {
-                    "md": 264287.15,
+                    "md": 450023.54,
                     "d": 0.0,
-                    "balance": 264287.15
+                    "balance": 450023.54
                 }
             }
         },
@@ -828,13 +1012,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 }
             }
         },
@@ -851,13 +1035,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 }
             }
         },
@@ -874,13 +1058,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 }
             }
         },
@@ -897,13 +1081,13 @@
                 },
                 "turnover": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 },
                 "closing": {
                     "md": 0.0,
-                    "d": 0.28,
-                    "balance": -0.28
+                    "d": 0.29,
+                    "balance": -0.29
                 }
             }
         },
@@ -919,13 +1103,13 @@
                     "balance": 0.0
                 },
                 "turnover": {
-                    "md": 314706.7,
-                    "d": 314706.7,
+                    "md": 539447.73,
+                    "d": 539447.73,
                     "balance": 0.0
                 },
                 "closing": {
-                    "md": 314706.7,
-                    "d": 314706.7,
+                    "md": 539447.73,
+                    "d": 539447.73,
                     "balance": 0.0
                 }
             }

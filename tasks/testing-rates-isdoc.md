@@ -251,3 +251,7 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
   floatem (součin 1 095,5249…). Oprava: `DocDocument::toHome()` (BCMath
   `bcmul` + `bcround`) na všech deseti místech přepočtu a `homeTax()` pro daň
   samovyměření ze základu v Kč (D80). Očekávání zůstalo (`docs/vat-calculation.md`).
+- ✓ **Snímky deníku schválené 2026-10-20** s výhradou #123 (třetí ověření:
+  kontroly 1–5 `ok` na všech třech profilech): plátce pololetí 7–12, nové
+  účty 343205 / 207 / 215 / 217 / 407 / 417, 501201, 518206, 648100 +0,01;
+  neplátce a spolek 501201, 518100 +1 303,67, 548100 / 549100 +0,01.
