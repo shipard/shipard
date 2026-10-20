@@ -61,6 +61,9 @@ final class DatasetPreflight
             'persons'  => [$this->exchange, 'shpd.persons.person', new PersonValidator()],
             'items'    => [$this->exchange, 'shpd.items.item', new ItemValidator()],
             'docs'     => [$this->exchange, 'shpd.docs.document', new DocumentValidator()],
+            // Bankovní výpisy (#131 fáze 2a) — obálka; sémantiku (účet kódem,
+            // kurz na cizí měně, pořadí období) hlídá applier při seedu.
+            'bank'     => [$this->exchange, 'shpd.dataset.bankStatement', null],
             'registry' => [$this->registry, 'shpd.dataset.registryDocument', null],
             'mail'     => [$this->mail, 'shpd.mail.incomingMessage', null],
         ];

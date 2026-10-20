@@ -21,6 +21,7 @@ use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Export\ItemExporter;
 use Shipard\Module\Core\Exchange\Export\PersonExporter;
+use Shipard\Module\Economy\Bank\Dataset\BankStatementExporter;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesExporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
@@ -152,6 +153,10 @@ class DatasetDumpCommand extends Command
         if (isset($tables['docs_core_heads'])) {
             // Konfigurace kvůli dimenzím deníku na dokladech (#110 T2).
             $records[] = new DocumentExporter($db, $config);
+        }
+        // Bankovní výpisy (#131 fáze 2a): pořadí za doklady = pořadí seedu i klíčů counts.
+        if (isset($tables['economy_bank_statements'])) {
+            $records[] = new BankStatementExporter($db);
         }
         if (isset($tables['base_registry_documents'])) {
             $records[] = new RegistryExporter($db, $dsDir);

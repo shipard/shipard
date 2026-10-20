@@ -18,6 +18,7 @@ sada/
   persons/NNNN-<slug>.jsonc           # shpd.persons.person.v1
   items/NNNN-<slug>.jsonc             # shpd.items.item.v1
   docs/NNNN-<slug>.jsonc              # shpd.docs.document.v1
+  bank/NNNN-<kód>-<RRRR-MM>.jsonc     # shpd.dataset.bankStatement.v1 (obálka výpisu, #131 fáze 2a)
   registry/NNNN-<slug>.jsonc          # shpd.dataset.registryDocument.v1 (obálka)
   registry/NNNN-<slug>.files/<soubor> # přílohy dokumentu spisovny
   mail/NNNN-<slug>.jsonc              # shpd.mail.incomingMessage.v1
@@ -92,7 +93,8 @@ data. Sada proto nese (`SetupExporter::TABLES`):
 | Soubor | Tabulka | Klíč | Poznámka |
 |--------|---------|------|----------|
 | `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou) |
-| `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují) |
+| `accounts.jsonc` | `economy_accounting_accounts` | `number` | jen **nesystémové** účty (`is_system = 0`) — analytiky založené nad seedem, např. 221200 pro bankovní účet v cizí měně (#131 fáze 2a); systémové obnoví `AccountChartProvisioner`. Seeduje se abecedně před `bank_accounts.jsonc`, takže `accounting_account` číslem se dohledá |
+| `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují); `accounting_account` = číslo analytiky 221 (bez něj bankovní engine hlásí `bank_account_not_found`) |
 | `cash_desks.jsonc` | `economy_codebooks_cash_desks` | `code` | pokladny; výchozí (`is_default`) dostane v apply doklad placený hotově bez `cashDesk` (#103 F3) |
 | `cost_centers.jsonc` | `economy_codebooks_cost_centers` | `code` | střediska — doklady v sadě na ně odkazují kódem v objektu `dimensions` (#110 T2) |
 | `vat_registrations.jsonc` | `economy_codebooks_vat_registrations` | `country`, `name` | `DocDocument` vyžaduje při `vat_mode != 0` |
@@ -114,6 +116,39 @@ přes `RegistryApplier::buildDocumentData()` a vkládá Document hooky
 (chybějící šanon založí). Dokumenty spisovny přílohy **vlastní** (kopie
 ze zprávy), doklady ne — ty je zobrazují ze zdrojové zprávy přes
 `source_message`, proto stačí obnovit lineage.
+
+### Obálka výpisu `shpd.dataset.bankStatement.v1` (#131 fáze 2a, D17)
+
+Jeden soubor = jeden výpis jednoho našeho účtu (typicky kalendářní měsíc)
+nad kanonickým `shpd.bank.statement.v1`: `{format, bankAccount (code
+číselníku), statement {statementNumber, externalId, periodStart, periodEnd,
+openingBalance, closingBalance, currency}, transactions[], docState}`.
+Schéma `modules/core/exchange/schemas/`, třídy
+`modules/economy/bank/src/Dataset/` (`BankStatementExporter`,
+`BankStatementSeeder`). Pravidla:
+
+- **Žádná interní id.** Účet kódem (`setup/bank_accounts.jsonc`), partner se
+  nepřenáší vůbec — po seedu ho dohledá applier z protiúčtu
+  (`StatementImportService::resolvePartner`, bankovní spojení osoby: číslo
+  účtu i IBAN) stejně jako při importu souboru.
+- **Transakce nese jen to, co dodá banka:** `externalId`, znaménkový
+  `amount` (− = výdaj), data, protiúčet a název, VS/SS/KS, zpráva. Dopočtené
+  `partner`, `amount_dom`, `accounting_state`, `fingerprint` v souboru
+  nejsou. `operation` jen výslovně nastavená (poplatek `fee.out`, úrok,
+  převod) — výchozí `payment.in` / `payment.out` dump vynechá a applier
+  doplní podle směru. `exchangeRate` jen u účtu v cizí měně (jinak by
+  applier hledal kurzovní lístky a výpis by se nezapsal); na účtu v domácí
+  měně se kurz ignoruje.
+- **`docState`** = cílový stav výpisu i transakcí (10 / 40); stav 40 přes
+  `BankTransactionEventHandler` zaúčtuje a mikroengine dohledá otevřený
+  předpis — proto se sekce seeduje **až za `docs/`**. Transakce v jiném
+  stavu než výpis dá při dumpu varování a po seedu má stav výpisu.
+- **Dedup** podle `externalId` per účet (unikátní index); bez něj fingerprint
+  s pořadím v rámci dne. Sada nese `externalId` stabilní a deterministické.
+- **Pořadí:** výpisy podle kódu účtu a `periodStart`, transakce podle
+  `date_transaction` a `id` (DB pořadový sloupec nemá — pořadí = vložení);
+  sada seřazená podle data tedy přežije seed beze změny. Slug souboru
+  `<kód>-<RRRR-MM>`.
 
 ### `shpd.mail.incomingMessage.v1` (D2, R4)
 
@@ -139,7 +174,8 @@ po seedu dá kartu „K vyřízení“ s lhůtou i bez volání AI.
 (reference `docs/cli.md`). Bere všechny záznamy s `docState != 90` (archiv
 80 ano, koš ne). `DatasetDumper` řídí exportery podle aktivních tabulek DS:
 `PersonExporter`, `ItemExporter`, `DocumentExporter`, `SetupExporter`
-(`modules/core/exchange/src/Export/`), `RegistryExporter`
+(`modules/core/exchange/src/Export/`), `BankStatementExporter`
+(`modules/economy/bank/src/Dataset/`, #131 fáze 2a), `RegistryExporter`
 (`modules/base/registry/src/`), `MailExporter`
 (`modules/core/mail/src/Dataset/`), `ExchangeRatesExporter`
 (`modules/economy/exchangeRates/src/Dataset/`). Každý má `exportAll()` a
@@ -229,6 +265,12 @@ dimenze s počtem dokladů.
    Oba kroky běží i s `--no-reset` (idempotentní). Pak `PersonSeeder`,
    `ItemSeeder`, `DocumentSeeder` (applieři; `DocumentApplier`
    s `DocumentEventDispatcher` → doklady ve 40 se zaúčtují),
+   **`BankStatementSeeder`** (#131 fáze 2a, `modules/economy/bank/src/Dataset/`,
+   jen když zdroj dat má tabulku transakcí): kód účtu → id, výpis přes
+   `BankStatementApplier` s dispatcherem — stav 40 zaúčtuje a dohledá
+   předpisy z právě naseedovaných dokladů; `_result.txErrors` = chyba,
+   přeskočené transakce (dedup) = varování. `FiscalYearsSeeder` bere
+   i období výpisů.
    `RegistrySeeder`, `MailSeeder` (zpráva + přílohy přes
    `AttachmentService` + analýzy + lineage `target_table_id/target_row` ↔
    `source_message`; jedna zpráva = jedna transakce).
@@ -283,8 +325,14 @@ Vědomé normalizace a limity fáze 1:
   obrat strany MD (`AccountingDocument`), kontrola součtů validátoru
   (`totals_mismatch`) to u `accountingDocument` respektuje.
 - Řádek bez `description` dostane popis = název položky.
+- Bankovní výpisy (#131 fáze 2a): partner transakce se nepřenáší — po seedu
+  ho určí protiúčet, ručně přiřazený partner bez shody v bankovních
+  spojeních se ztratí; výchozí pohyb `payment.*` a kurz na účtu v domácí
+  měně dump vynechá; transakce ve stavu jiném než výpis dostane po seedu
+  stav výpisu (dump varuje). Saldokonto je derivát deníku — sada ho
+  nenese, po seedu vzniká z párování.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
-  expected výsledky, live mode AI, banka a saldokonto.
+  expected výsledky, live mode AI.
 
 ## 5. Demo sady
 
@@ -297,4 +345,11 @@ bajtově shodná kromě `manifest.created` (D10), což hlídá postup
 v `demo/datasets/README.md`. Data příběhu jsou relativní ke kotvě
 (`--anchor`), identity fiktivní s ověřením v ARES / VIES, PDF přes
 Gotenberg jen při změně obsahu (cache `build-state.json`). První sada:
-`it-servis` (plátce DPH, leden–říjen 2026).
+`it-servis` (plátce DPH, leden–říjen 2026). Fáze 2a (#131 D17, D18, D22,
+`tasks/demo-dataset-phase2a-bank.md`) přidala sekci `bank/`: generátor
+(`invoicegen/bank.py`) promítne chování plateb z příběhu do měsíčních
+výpisů dvou účtů (CZK, EUR), mzdy a odvody bez partnera vyrovná interními
+doklady (MD závazek / DAL 261300 — zrcadlové řádky skupiny Nespárované
+platby je v saldokontu vynulují, `docs/accbal.md` § 4.4) a počáteční
+zůstatek nese otevírací doklad (`fiscalPeriodType: opening`); analytiku
+221 pro eurový účet zakládá `setup/accounts.jsonc`.

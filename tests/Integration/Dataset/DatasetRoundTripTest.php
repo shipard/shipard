@@ -22,6 +22,7 @@ use Shipard\Module\Core\Exchange\Dataset\Seed\DocumentSeeder;
 use Shipard\Module\Core\Exchange\Dataset\Seed\ItemSeeder;
 use Shipard\Module\Core\Exchange\Dataset\Seed\PersonSeeder;
 use Shipard\Module\Core\Exchange\Dataset\SeedContext;
+use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Export\ItemExporter;
@@ -32,22 +33,28 @@ use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Bank\Dataset\BankStatementExporter;
+use Shipard\Module\Economy\Bank\Dataset\BankStatementSeeder;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
  * Round-trip datové sady proti živému DS (`SHIPARD_INTEGRATION_DS_PATH`):
  * syntetická sada (osoba, položka, přijatá faktura ve 40, prodejka ve 40
- * na vlastní pokladně, dokument spisovny s přílohou, zpráva s přílohou +
+ * na vlastní pokladně, bankovní výpis s úhradou té faktury, nespárovaným
+ * příjmem a poplatkem, dokument spisovny s přílohou, zpráva s přílohou +
  * snapshotem analýzy a vazbou na doklad) → seed v merge režimu (bez resetu,
  * sdílený DS) → export jen vložených záznamů → porovnání s sadou +
  * invarianty (zaúčtování, lineage, `att:` remapa, přílohy na disku, pokladna
- * a vázaná řada prodejky). Uklízí po sobě podle přirozených klíčů s prefixem
- * `IT-DS`; number counters se nehnou (sequenceNumber = null) — jen řada
- * testovací pokladny dostane čítač, a ta se maže celá.
+ * a vázaná řada prodejky, partner a předpis dohledané z výpisu). Uklízí po
+ * sobě podle přirozených klíčů s prefixem `IT-DS`; number counters se nehnou
+ * (sequenceNumber = null) — jen řada testovací pokladny dostane čítač, a ta
+ * se maže celá.
  *
- * Pokladnu test vkládá přímo do číselníku (bez Document lifecycle, tedy bez
- * `CashDeskSeriesEventHandler`) — vázané řady `cash` / `cashreg` zakládá až
- * applier líně přes `BoundNumberSeriesProvisioner` (#59 D12).
+ * Pokladnu i bankovní účet test vkládá přímo do číselníku (bez Document
+ * lifecycle, tedy bez `CashDeskSeriesEventHandler`) — vázané řady `cash` /
+ * `cashreg` zakládá až applier líně přes `BoundNumberSeriesProvisioner`
+ * (#59 D12); účet nese analytiku 221100, jinak by bankovní engine hlásil
+ * `bank_account_not_found` (#131 fáze 2a).
  *
  * Mimo test: `dataset-seed` s resetem a byte-shodnost dump → seed → dump
  * se ověřovaly ručně na jednorázovém DS (tasks/dataset-phase1.md).
@@ -64,12 +71,18 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private const MESSAGE_ID = 'MSG-IT-DS-0001';
     private const BINDER = 'IT-DS Šanon';
     private const REGISTRY_TITLE = 'IT-DS Smlouva o dílo';
+    private const BANK_ACCOUNT_CODE = 'ITDSBU';
+    private const STATEMENT_EXTERNAL_ID = 'IT-DS-BU-2026-06';
+    private const BANK_FILE = 'bank/0001-itdsbu-2026-06.jsonc';
 
     private string $setDir;
     private ConfigRuntime $config;
     private SeedContext $ctx;
     private ?string $seriesCode = null;
     private int $cashDeskId = 0;
+    /** Sekce bank jen s modulem banky a analytikou 221100 na DS. */
+    private bool $hasBank = false;
+    private int $bankAccountId = 0;
 
     protected function setUp(): void
     {
@@ -111,6 +124,18 @@ class DatasetRoundTripTest extends IntegrationTestCase
         ]);
         $this->cashDeskId = (int) $dibi->getInsertId();
 
+        // Bankovní účet přímo do číselníku (#131 fáze 2a) — s analytikou 221100.
+        $bankChart = $dibi->fetch("SELECT id FROM economy_accounting_accounts WHERE number = '221100' AND docState <> 90");
+        $this->hasBank = isset($this->tables['economy_bank_statements'], $this->tables['economy_bank_transactions']) && $bankChart !== null;
+        if ($this->hasBank) {
+            $dibi->query('INSERT INTO [economy_codebooks_bank_accounts] %v', [
+                'code' => self::BANK_ACCOUNT_CODE, 'name' => self::P . ' Běžný účet', 'account_number' => '9999000002/0100',
+                'iban' => 'CZ0901000000009999000002', 'bic' => 'KOMBCZPP', 'currency' => 'czk', 'is_default' => 0, 'sort_order' => 0,
+                'docState' => 40, 'docStateMain' => 3, 'accounting_account' => (int) $bankChart['id'],
+            ]);
+            $this->bankAccountId = (int) $dibi->getInsertId();
+        }
+
         $this->setDir = $this->dsPath . '/set';
         $this->writeSet();
 
@@ -151,9 +176,15 @@ class DatasetRoundTripTest extends IntegrationTestCase
             new PersonSeeder($personApplier),
             new ItemSeeder(ItemApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $personApplier)),
             new DocumentSeeder(DocumentApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $this->ctx->dispatcher)),
-            new RegistrySeeder(new RegistryApplier($this->db, $this->ctx->registry, $this->ctx->attachments, $this->config, $party), $party),
-            new MailSeeder($party),
         ];
+        if ($this->hasBank) {
+            // Až za doklady: mikroengine dohledává předpis právě naseedované faktury.
+            $seeders[] = new BankStatementSeeder(
+                BankStatementApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $this->ctx->dispatcher),
+            );
+        }
+        $seeders[] = new RegistrySeeder(new RegistryApplier($this->db, $this->ctx->registry, $this->ctx->attachments, $this->config, $party), $party);
+        $seeders[] = new MailSeeder($party);
 
         $report = (new DatasetSeeder())->seed($this->ctx, $seeders);
 
@@ -164,6 +195,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame(2, $counts['docs']['ok'], 'faktura přijatá + prodejka');
         $this->assertSame(1, $counts['registry']['ok']);
         $this->assertSame(1, $counts['mail']['ok']);
+        if ($this->hasBank) {
+            $this->assertSame(1, $counts['bank']['ok'], 'výpis');
+        }
 
         // ── ids podle přirozených klíčů ───────────────────────────────────
         $personId = (int) $dibi->fetchSingle('SELECT id FROM base_persons_persons WHERE company_id = %s AND docState <> 90', self::COMPANY_ID);
@@ -212,6 +246,47 @@ class DatasetRoundTripTest extends IntegrationTestCase
         );
         if ($hasChart) {
             $this->assertSame(1, (int) $cashreg['accounting_state'], 'prodejka ve 40 se zaúčtovala (211100 / 604)');
+        }
+
+        // Bankovní výpis (#131 fáze 2a): partner z protiúčtu, výchozí pohyb,
+        // stav 40 zaúčtovaný; úhrada faktury našla předpis (321), ne clearing.
+        $statementId = 0;
+        if ($this->hasBank) {
+            $statementId = (int) $dibi->fetchSingle(
+                'SELECT id FROM economy_bank_statements WHERE bank_account = %i AND external_id = %s',
+                $this->bankAccountId, self::STATEMENT_EXTERNAL_ID,
+            );
+            $this->assertGreaterThan(0, $statementId);
+            $stmt = $dibi->fetch('SELECT * FROM economy_bank_statements WHERE id = %i', $statementId)->toArray();
+            $this->assertSame(40, (int) $stmt['docState']);
+            $this->assertSame('czk', $stmt['currency'], 'měna výpisu lowercase na hranici DB');
+            $this->assertSame('6/2026', $stmt['statement_number']);
+
+            $txs = [];
+            foreach ($dibi->fetchAll('SELECT * FROM economy_bank_transactions WHERE statement = %i ORDER BY date_transaction, id', $statementId) as $t) {
+                $txs[$t['external_id']] = $t->toArray();
+            }
+            $this->assertSame(['IT-DS-BU-202606-001', 'IT-DS-BU-202606-002', 'IT-DS-BU-202606-003'], array_keys($txs), 'pořadí vložení = pořadí v souboru');
+            $payment = $txs['IT-DS-BU-202606-001'];
+            $this->assertSame(40, (int) $payment['docState']);
+            $this->assertSame(2, (int) $payment['direction'], 'záporná částka = výdaj');
+            $this->assertSame(1210.0, (float) $payment['amount']);
+            $this->assertSame('payment.out', $payment['operation'], 'výchozí pohyb doplnil applier');
+            $this->assertSame($personId, (int) $payment['partner'], 'partner dohledaný z protiúčtu v bankovních spojeních osoby');
+            $this->assertNull($txs['IT-DS-BU-202606-002']['partner'], 'neznámý protiúčet → bez partnera');
+            $this->assertSame('payment.in', $txs['IT-DS-BU-202606-002']['operation']);
+            $this->assertSame('fee.out', $txs['IT-DS-BU-202606-003']['operation'], 'výslovný pohyb zůstal');
+            if ($hasChart) {
+                foreach ($txs as $ext => $t) {
+                    $this->assertSame(1, (int) $t['accounting_state'], "{$ext}: zaúčtována bez chyby");
+                }
+                $accounts = array_map('strval', $dibi->fetchPairs(
+                    'SELECT id, account_number FROM economy_accounting_journal WHERE bank_transaction = %i',
+                    (int) $payment['id'],
+                ));
+                $this->assertNotEmpty(array_filter($accounts, static fn(string $a): bool => str_starts_with($a, '321')), 'úhrada přijaté faktury našla předpis 321: ' . implode(', ', $accounts));
+                $this->assertSame([], array_filter($accounts, static fn(string $a): bool => str_starts_with($a, '2613')), 'úhrada nešla na clearing');
+            }
         }
 
         $msg = $dibi->fetch('SELECT * FROM core_mail_incoming_messages WHERE id = %i', $messageId)->toArray();
@@ -315,6 +390,18 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame(self::CASH_DESK_CODE, $cashregOut['applyOptions']['numberSeriesCode']);
         $this->assertSame(40, $cashregOut['applyOptions']['targetDocState']);
         $this->assertSame([], $docExporter->getWarnings());
+
+        if ($this->hasBank) {
+            $bankExporter = new BankStatementExporter($dibi, 'czk');
+            $bankOut = $bankExporter->exportByIds([$statementId])[0];
+            $this->assertSame(self::BANK_ACCOUNT_CODE . '-2026-06', $bankOut->slug);
+            $this->assertSame(
+                $reader->readJsonc(self::BANK_FILE),
+                $bankOut->data,
+                'výpis se vrátí beze změny — dopočtený partner, pohyb a účtování se nepřenáší',
+            );
+            $this->assertSame([], $bankExporter->getWarnings());
+        }
 
         $srcRegistry = $reader->readJsonc('registry/0001-it-ds-smlouva.jsonc');
         $this->assertSame($srcRegistry['document']['title'], $registryOut->data['document']['title']);
@@ -435,8 +522,32 @@ class DatasetRoundTripTest extends IntegrationTestCase
             ]],
         ]);
         $w->writeRaw('mail/0001-msg-it-ds-0001.files/faktura.pdf', '%PDF-IT-DS-faktura');
+        // Výpis (#131 fáze 2a): úhrada přijaté faktury (protiúčet osoby + VS
+        // faktury → partner i předpis dohledá aplikace), nespárovaný příjem
+        // z neznámého účtu, poplatek s výslovným pohybem. Klíče v pořadí
+        // schématu, aby export byl shodný se zdrojem.
+        if ($this->hasBank) {
+            $w->writeJsonc(self::BANK_FILE, [
+                'format'      => 'shpd.dataset.bankStatement.v1',
+                'bankAccount' => self::BANK_ACCOUNT_CODE,
+                'statement'   => [
+                    'statementNumber' => '6/2026', 'externalId' => self::STATEMENT_EXTERNAL_ID,
+                    'periodStart' => '2026-06-01', 'periodEnd' => '2026-06-30',
+                    'openingBalance' => 10000.0, 'closingBalance' => 9265.0, 'currency' => 'CZK',
+                ],
+                'transactions' => [
+                    ['externalId' => 'IT-DS-BU-202606-001', 'amount' => -1210.0, 'dateTransaction' => '2026-06-10',
+                     'counterpartyAccount' => '9999000001/0100', 'counterpartyName' => self::P . ' Dodavatel s.r.o.', 'paymentReference' => '20260601'],
+                    ['externalId' => 'IT-DS-BU-202606-002', 'amount' => 500.0, 'dateTransaction' => '2026-06-15',
+                     'counterpartyAccount' => '9999000003/0100', 'counterpartyName' => self::P . ' Neznámý plátce', 'paymentReference' => '777'],
+                    ['externalId' => 'IT-DS-BU-202606-003', 'amount' => -25.0, 'dateTransaction' => '2026-06-30',
+                     'message' => 'Poplatek za vedení účtu', 'operation' => 'fee.out'],
+                ],
+                'docState' => 40,
+            ]);
+        }
         $w->writeManifest(new DatasetManifest('it-ds', 'Integration round-trip', null, 'fixed', '2026-08-26T10:00:00Z',
-            ['persons' => 1, 'items' => 1, 'docs' => 2, 'registry' => 1, 'mail' => 1]));
+            ['persons' => 1, 'items' => 1, 'docs' => 2] + ($this->hasBank ? ['bank' => 1] : []) + ['registry' => 1, 'mail' => 1]));
     }
 
     // ── úklid ───────────────────────────────────────────────────────────────
@@ -455,6 +566,21 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $dibi->query('DELETE FROM base_registry_documents WHERE id = %i', $r['id']);
         }
         $dibi->query('DELETE FROM base_registry_binders WHERE name = %s', self::BINDER);
+        // Výpisy a transakce testovacího účtu vč. deníku a salda (#131 fáze 2a).
+        if (isset($this->tables['economy_bank_statements'], $this->tables['economy_bank_transactions'])) {
+            $accountIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_bank_accounts WHERE code = %s', self::BANK_ACCOUNT_CODE));
+            foreach ($accountIds as $accountId) {
+                foreach ($dibi->fetchAll('SELECT id FROM economy_bank_transactions WHERE bank_account = %i', $accountId) as $t) {
+                    if (isset($this->tables['economy_accbal_ledger'])) {
+                        $dibi->query('DELETE FROM economy_accbal_ledger WHERE bank_transaction = %i', $t['id']);
+                    }
+                    $dibi->query('DELETE FROM economy_accounting_journal WHERE bank_transaction = %i', $t['id']);
+                    $dibi->query('DELETE FROM economy_bank_transactions WHERE id = %i', $t['id']);
+                }
+                $dibi->query('DELETE FROM economy_bank_statements WHERE bank_account = %i', $accountId);
+                $dibi->query('DELETE FROM economy_codebooks_bank_accounts WHERE id = %i', $accountId);
+            }
+        }
         // Doklady podle čísla i podle testovací pokladny (pád s jiným číslem).
         $deskIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_cash_desks WHERE code = %s', self::CASH_DESK_CODE));
         $docs = $dibi->fetchAll(

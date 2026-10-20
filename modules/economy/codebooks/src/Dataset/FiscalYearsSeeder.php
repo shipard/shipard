@@ -81,7 +81,7 @@ class FiscalYearsSeeder implements SectionSeeder
     }
 
     /**
-     * Unikátní data (`Y-m-d`) z dokladů a zpráv sady, seřazená.
+     * Unikátní data (`Y-m-d`) z dokladů, bankovních výpisů a zpráv sady, seřazená.
      *
      * @return list<string>
      */
@@ -96,6 +96,19 @@ class FiscalYearsSeeder implements SectionSeeder
                 continue;
             }
             self::pushDates($dates, $doc['dates'] ?? null);
+        }
+        // Bankovní výpisy (#131 fáze 2a): období výpisu — transakce bez
+        // fiskálního roku by engine odmítl (fiscal_period_missing).
+        foreach ($reader->listFiles('bank') as $rel) {
+            try {
+                $statement = $reader->readJsonc($rel);
+            } catch (DatasetException $e) {
+                $report?->warning("fiscalYears: {$rel}: {$e->getMessage()}");
+                continue;
+            }
+            $head = is_array($statement['statement'] ?? null) ? $statement['statement'] : [];
+            self::pushDate($dates, is_string($head['periodStart'] ?? null) ? $head['periodStart'] : null);
+            self::pushDate($dates, is_string($head['periodEnd'] ?? null) ? $head['periodEnd'] : null);
         }
         foreach ($reader->listFiles('mail') as $rel) {
             try {

@@ -37,7 +37,9 @@ use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
+use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Bank\Dataset\BankStatementSeeder;
 use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesSeeder;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListImporter;
@@ -299,6 +301,13 @@ class DatasetSeedCommand extends Command
         }
         if (isset($ctx->tables['docs_core_heads'])) {
             $seeders[] = new DocumentSeeder(DocumentApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $ctx->dispatcher));
+        }
+        // Bankovní výpisy (#131 fáze 2a) až za doklady: mikroengine při stavu 40
+        // dohledává otevřené předpisy; dispatcher je nutný, jinak se nezaúčtuje nic.
+        if (isset($ctx->tables['economy_bank_transactions'])) {
+            $seeders[] = new BankStatementSeeder(
+                BankStatementApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $ctx->dispatcher),
+            );
         }
         if (isset($ctx->tables['base_registry_documents'])) {
             $seeders[] = new RegistrySeeder(

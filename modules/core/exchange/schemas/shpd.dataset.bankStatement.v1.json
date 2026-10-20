@@ -1,0 +1,154 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.dataset.bankStatement.v1.json",
+    "title": "Shipard dataset bank statement v1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "format",
+        "bankAccount",
+        "statement",
+        "transactions",
+        "docState"
+    ],
+    "properties": {
+        "format": {
+            "const": "shpd.dataset.bankStatement.v1"
+        },
+        "bankAccount": {
+            "type": "string",
+            "minLength": 1
+        },
+        "statement": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "periodStart",
+                "periodEnd"
+            ],
+            "properties": {
+                "statementNumber": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "externalId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "periodStart": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "periodEnd": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "openingBalance": {
+                    "type": "number"
+                },
+                "closingBalance": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^[A-Z]{3}$"
+                }
+            }
+        },
+        "transactions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "amount",
+                    "dateTransaction"
+                ],
+                "properties": {
+                    "externalId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "dateTransaction": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "dateValue": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "counterpartyAccount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "counterpartyName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentReference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "specificSymbol": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "constantSymbol": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "operation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "exchangeRate": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "exclusiveMinimum": 0
+                    }
+                }
+            }
+        },
+        "docState": {
+            "enum": [
+                10,
+                40
+            ]
+        }
+    }
+}

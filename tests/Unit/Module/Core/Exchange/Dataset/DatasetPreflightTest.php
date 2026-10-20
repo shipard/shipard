@@ -87,6 +87,34 @@ class DatasetPreflightTest extends TestCase
      * @param array<string, mixed> $override
      * @return array<string, mixed>
      */
+    /**
+     * Výpis sekce bank (#131 fáze 2a): příjem od odběratele, výplata mezd bez
+     * partnera a VS, poplatek s výslovným pohybem.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function bankStatement(array $override = []): array
+    {
+        return array_replace([
+            'format'      => 'shpd.dataset.bankStatement.v1',
+            'bankAccount' => 'BU1',
+            'statement'   => [
+                'statementNumber' => '1/2026', 'externalId' => 'BU1-2026-01', 'periodStart' => '2026-01-01', 'periodEnd' => '2026-01-31',
+                'openingBalance' => 480000.0, 'closingBalance' => 417647.0, 'currency' => 'CZK',
+            ],
+            'transactions' => [
+                ['externalId' => 'BU1-202601-001', 'amount' => -70896.0, 'dateTransaction' => '2026-01-12',
+                 'counterpartyAccount' => '1000000019/0800', 'counterpartyName' => 'Hromadný příkaz — mzdy', 'message' => 'Výplata mezd 12/2025'],
+                ['externalId' => 'BU1-202601-002', 'amount' => 8712.0, 'dateTransaction' => '2026-01-13',
+                 'counterpartyAccount' => '2440913574/0300', 'counterpartyName' => 'Autodoprava Kopretina s.r.o.', 'paymentReference' => '1260001'],
+                ['externalId' => 'BU1-202601-003', 'amount' => -169.0, 'dateTransaction' => '2026-01-31',
+                 'message' => 'Poplatek za vedení účtu', 'operation' => 'fee.out'],
+            ],
+            'docState' => 40,
+        ], $override);
+    }
+
     public static function exchangeRateList(array $override = []): array
     {
         return array_merge([
@@ -120,6 +148,36 @@ class DatasetPreflightTest extends TestCase
     }
 
     // ── kurzovní lístky (#121 D10) ─────────────────────────────────────────
+
+    public function testBankStatementsAreValidatedAgainstSchema(): void
+    {
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'bank' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('bank/0001-bu1-2026-01.jsonc', self::bankStatement());
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidBankStatementIsAnError(): void
+    {
+        // Partner se v sadě nepřenáší (partnerId), účet jde kódem, stav jen 10 / 40.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'bank' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('bank/0001-bad.jsonc', self::bankStatement([
+                'docState' => 80,
+                'transactions' => [['externalId' => 'x', 'amount' => 1.0, 'dateTransaction' => '2026-01-02', 'partnerId' => 5]],
+            ]));
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('bank/0001-bad.jsonc', $result['errors'][0]);
+    }
 
     public function testExchangeRateListsAreValidatedAgainstSchema(): void
     {
