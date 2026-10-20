@@ -1,6 +1,7 @@
 /**
- * `GET /_dev/api/info` — hostname, adresář zdrojů dat a dostupnost sekce
- * Testování. Načítá se jednou při startu, stránky čtou `devInfo.value`.
+ * `GET /_dev/api/info` — hostname, adresář zdrojů dat, dostupnost sekce
+ * Testování (`testing`) a sad k seedu (`datasets`: tests/datasets nebo
+ * demo/datasets, #131). Načítá se jednou při startu, stránky čtou `devInfo.value`.
  */
 import { getJson } from './api.js';
 

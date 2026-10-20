@@ -3,16 +3,17 @@
   // validace zrcadlí DevDashboardController::dsCreate, průběh
   // `ds-create → ds-upgrade → user-create → dataset-seed` čtený po kouscích
   // (api.js streamLines), na konci odkaz do nového zdroje dat. Pole Data
-  // (#103 D64) nabízí sady z tests/datasets — jen když server sekci
-  // Testování nabízí (`/_dev/api/info` → testing); se sadou se země zamkne
-  // na zemi sady a prázdný účel se předvyplní. Heslo admina jde na server
+  // (#103 D64) nabízí testovací sady z tests/datasets a demo sady
+  // z demo/datasets (#131) ve dvou skupinách — jen když je checkout má
+  // (`/_dev/api/info` → datasets); se sadou se země zamkne na zemi sady
+  // a prázdný účel se předvyplní. Heslo admina jde na server
   // v těle požadavku a dál na stdin `user-create` (D65), nikdy do argv.
   import { onMount } from 'svelte';
   import Button from '../../components/ui/Button.svelte';
   import { getJson, streamLines, ApiError } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
   import { devInfo } from '../info.svelte.js';
-  import { testingApi } from '../testing/api.js';
+  import { datasetsApi, groupDatasets, datasetLabel } from '../datasets.js';
   import StreamOutput from '../components/StreamOutput.svelte';
   import { t } from '../i18n/index.js';
 
@@ -69,20 +70,16 @@
       modulesState = 'error';
     }
     const info = await devInfo.load();
-    if (info?.testing) {
+    if (info?.datasets) {
       datasetsState = 'loading';
       try {
-        datasets = await testingApi.datasets();
+        datasets = await datasetsApi.list();
         datasetsState = datasets.length === 0 ? 'empty' : 'ok';
       } catch {
         datasetsState = 'error';
       }
     }
   });
-
-  function datasetLabel(d) {
-    return `${d.title} — ${d.name} · ${d.country ?? t('dsLoad.noCountry')} · ${d.profile ?? t('dsLoad.noProfile')}`;
-  }
 
   /** Výběr sady: země podle sady, prázdný (nebo dřív automatický) účel = „datová sada <název>“. */
   function onDatasetChange() {
@@ -251,8 +248,12 @@
           {:else if datasetsState === 'error'}
             <option value="__error" disabled>{t('dsCreate.datasetsError')}</option>
           {:else}
-            {#each datasets as d (d.name)}
-              <option value={d.name}>{datasetLabel(d)}</option>
+            {#each groupDatasets(datasets) as g (g.kind)}
+              <optgroup label={g.label}>
+                {#each g.items as d (d.name)}
+                  <option value={d.name}>{datasetLabel(d)}</option>
+                {/each}
+              </optgroup>
             {/each}
           {/if}
         </select>
@@ -260,6 +261,9 @@
           <div class="dev-field__error">{fieldErrors.dataset}</div>
         {:else}
           <div class="dev-field__hint">{t('dsCreate.datasetHint')}</div>
+          {#if selectedDataset?.description}
+            <div class="dev-field__hint">{selectedDataset.description}</div>
+          {/if}
         {/if}
       </div>
     {/if}

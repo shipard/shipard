@@ -41,7 +41,7 @@
   const hasActiveJob = $derived(items.some((ds) => ds.job));
 
   function canLoadDataset(ds) {
-    return Boolean(devInfo.value?.testing) && ds.dataClass === 'free' && ds.state === 'active';
+    return Boolean(devInfo.value?.datasets) && ds.dataClass === 'free' && ds.state === 'active';
   }
 
   function canDelete(ds) {
