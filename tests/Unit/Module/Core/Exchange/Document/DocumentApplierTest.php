@@ -16,6 +16,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\NumberSeriesNotFoundException;
 use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
 use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
@@ -3141,6 +3142,46 @@ class DocumentApplierTest extends TestCase
             'přenesení daňové povinnosti',
             (string) ($this->issueByCode($result, 'recap_source_computed_fallback')['message'] ?? ''),
         );
+    }
+
+    /**
+     * Přijatý ISDOC s tuzemským přenesením (kód 4) dojde přes IsdocReader
+     * a preview ke kódu DPH s přenesením u plátce — dřív signál přenesení
+     * z ISDOC chyběl (#119 krok 3, docs/exchange-format.md § 8.4).
+     */
+    public function testReceivedIsdocWithLocalReverseChargeDerivesPdpCode(): void
+    {
+        $xml = (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/isdoc/invoice_reverse_charge.isdoc');
+        $canonical = (new IsdocReader())->fromXmlString($xml);
+        $this->assertTrue($canonical['vat']['reverseCharge']);
+        $this->assertSame('4', $canonical['rows'][0]['vat']['reverseChargeCode']);
+
+        $result = $this->buildVatDerivingApplier()->preview($canonical);
+
+        $this->assertTrue($result->success);
+        foreach ([0, 1] as $i) {
+            $vatCode = $result->canonical['_resolve']['rows'][$i]['vatCode'];
+            $this->assertSame('cz-115', $vatCode['createPayload']['code'], "řádek {$i}");
+            $this->assertSame(21.0, $vatCode['createPayload']['pct']);
+        }
+        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
+    }
+
+    /** Totéž bez kódu na řádku — přenesení jen příznakem v rekapitulaci nestačí k určení kódu, ale hlásí se, ne mlčí. */
+    public function testReceivedIsdocWithoutLineCodeDoesNotGuessPdpCode(): void
+    {
+        $xml = (string) preg_replace(
+            '~\s*<LocalReverseCharge>.*?</LocalReverseCharge>~s',
+            '',
+            (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/isdoc/invoice_reverse_charge.isdoc'),
+        );
+        $canonical = (new IsdocReader())->fromXmlString($xml);
+        $this->assertTrue($canonical['vat']['reverseCharge']);
+
+        $result = $this->buildVatDerivingApplier()->preview($canonical);
+
+        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
+        $this->assertContains('vat_code_unknown', $this->issueCodes($result));
     }
 
     public function testReceivedUnsupportedCaseReportsReasonAndBlocksApply(): void

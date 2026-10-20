@@ -119,6 +119,13 @@ class IsdocReaderTest extends TestCase
         $this->assertSame(21.0, $canonical['totals']['totalVat']);
         $this->assertSame(121.0, $canonical['totals']['totalAmount']);
 
+        // #119 krok 3: režim z metody výpočtu, přenesení explicitně false,
+        // bez PaymentMeans žádný payment, bez Note žádné notes.
+        $this->assertSame(['mode' => 'fromBase', 'reverseCharge' => false], $canonical['vat']);
+        $this->assertArrayNotHasKey('payment', $canonical);
+        $this->assertArrayNotHasKey('notes', $canonical);
+        $this->assertArrayNotHasKey('docText', $canonical);
+
         $this->assertValidCanonical($canonical);
     }
 
@@ -145,6 +152,12 @@ class IsdocReaderTest extends TestCase
         $canonical = $this->readFixture('invoice_full.isdoc');
 
         $this->assertSame('Fakturujeme vám za dodané zboží a služby.', $canonical['docText']);
+        // Note jde i do notes.onDocument (text na dokladu) — #119 krok 3.
+        $this->assertSame('Fakturujeme vám za dodané zboží a služby.', $canonical['notes']['onDocument']);
+        $this->assertSame('fromBase', $canonical['vat']['mode']);
+        $this->assertFalse($canonical['vat']['reverseCharge']);
+        $this->assertArrayNotHasKey('discountAmount', $canonical['rows'][0]);
+        $this->assertArrayNotHasKey('reverseChargeCode', $canonical['rows'][0]['vat']);
         $this->assertSame('2026-07-01', $canonical['dates']['taxPointDate']);
         $this->assertSame('2026-07-15', $canonical['dates']['dueDate']);
 
@@ -294,6 +307,132 @@ class IsdocReaderTest extends TestCase
         $canonical = $this->reader->fromXmlString($xml);
 
         $this->assertArrayNotHasKey('computed', $canonical['rows'][0]);
+    }
+
+    // ── Co píše generátor (#119 krok 3) ─────────────────────────────────────
+
+    public function testLocalReverseChargeFromLineCode(): void
+    {
+        $canonical = $this->readFixture('invoice_reverse_charge.isdoc');
+
+        $this->assertTrue($canonical['vat']['reverseCharge']);
+        $this->assertSame('fromBase', $canonical['vat']['mode']);
+        $this->assertSame('4', $canonical['rows'][0]['vat']['reverseChargeCode']);
+        $this->assertSame('4', $canonical['rows'][1]['vat']['reverseChargeCode']);
+        $this->assertSame(0.0, $canonical['rows'][0]['vat']['pct']);
+        $this->assertSame(0.0, $canonical['vatRecap'][0]['tax']);
+        $this->assertValidCanonical($canonical);
+    }
+
+    public function testLocalReverseChargeFromRecapFlagOnly(): void
+    {
+        $xml = (string) preg_replace(
+            '~\s*<LocalReverseCharge>.*?</LocalReverseCharge>~s',
+            '',
+            $this->fixture('invoice_reverse_charge.isdoc'),
+        );
+        $canonical = $this->reader->fromXmlString($xml);
+
+        $this->assertTrue($canonical['vat']['reverseCharge'], 'příznak v rekapitulaci stačí');
+        $this->assertArrayNotHasKey('reverseChargeCode', $canonical['rows'][0]['vat']);
+    }
+
+    public function testVatApplicableFalseGivesNonPayerShape(): void
+    {
+        $canonical = $this->readFixture('invoice_non_payer.isdoc');
+
+        $this->assertSame('none', $canonical['vat']['mode']);
+        $this->assertFalse($canonical['vat']['reverseCharge']);
+        $this->assertArrayNotHasKey('taxPointDate', $canonical['dates']);
+        $this->assertArrayNotHasKey('pct', $canonical['rows'][0]['vat'] ?? []);
+        $this->assertArrayNotHasKey('vatRecap', $canonical);
+        $this->assertArrayNotHasKey('totalBase', $canonical['totals']);
+        $this->assertArrayNotHasKey('totalVat', $canonical['totals']);
+        $this->assertSame(6440.0, $canonical['totals']['totalAmount']);
+        // Částky řádku od dodavatele zůstávají (daň 0, cena s daní = cena).
+        $this->assertSame(['vatBase' => 5800.0, 'vatAmount' => 0.0, 'vatTotal' => 5800.0], $canonical['rows'][0]['computed']);
+        $this->assertSame('bankTransfer', $canonical['payment']['method']);
+        $this->assertSame('202607', $canonical['payment']['paymentReference']);
+        $this->assertSame('Nejsem plátce DPH.', $canonical['notes']['onDocument']);
+        $this->assertValidCanonical($canonical);
+    }
+
+    public function testPricesWithVatTakeTaxInclusiveLinePrices(): void
+    {
+        $canonical = $this->readFixture('invoice_prices_with_vat.isdoc');
+
+        $this->assertSame('fromTotal', $canonical['vat']['mode']);
+        $row = $canonical['rows'][0];
+        $this->assertSame(38.9, $row['unitPrice']);
+        $this->assertSame(1500.0, $row['totalPrice']);
+        $this->assertSame('fromUnitPrice', $row['priceCalcMode']);
+        $this->assertSame(['vatBase' => 1239.67, 'vatAmount' => 260.33, 'vatTotal' => 1500.0], $row['computed']);
+        $this->assertSame(-0.4, $canonical['totals']['totalRounding']);
+        $this->assertSame(1545.0, $canonical['totals']['totalAmount']);
+        $this->assertSame('card', $canonical['payment']['method']);
+        $this->assertValidCanonical($canonical);
+    }
+
+    public function testMixedCalculationMethodsLeaveModeToApplier(): void
+    {
+        $xml = (string) preg_replace(
+            '~<VATCalculationMethod>0</VATCalculationMethod>~',
+            '<VATCalculationMethod>1</VATCalculationMethod>',
+            $this->fixture('invoice_full.isdoc'),
+            1,
+        );
+        $canonical = $this->reader->fromXmlString($xml);
+
+        $this->assertArrayNotHasKey('mode', $canonical['vat']);
+        $this->assertFalse($canonical['vat']['reverseCharge']);
+        $this->assertSame(1000.0, $canonical['rows'][0]['unitPrice'], 'bez režimu ceny bez daně');
+    }
+
+    public function testMissingVatApplicableLeavesReverseChargeOut(): void
+    {
+        $xml = (string) preg_replace('~\s*<VATApplicable>true</VATApplicable>~', '', $this->fixture('invoice_min.isdoc'), 1);
+        $canonical = $this->reader->fromXmlString($xml);
+
+        $this->assertSame(['mode' => 'fromBase'], $canonical['vat']);
+    }
+
+    public function testDiscountAmountFromBeforeDiscount(): void
+    {
+        $canonical = $this->readFixture('invoice_discount.isdoc');
+
+        $this->assertSame(468.0, $canonical['rows'][0]['discountAmount'], '9360 před slevou − 8892 po slevě');
+        $this->assertSame(50.0, $canonical['rows'][1]['discountAmount']);
+        $this->assertArrayNotHasKey('discountAmount', $canonical['rows'][2]);
+        $this->assertArrayNotHasKey('discountPct', $canonical['rows'][0]);
+        $this->assertValidCanonical($canonical);
+    }
+
+    public function testPaymentMethodWithoutDetails(): void
+    {
+        $canonical = $this->readFixture('invoice_card.isdoc');
+
+        $this->assertSame(['method' => 'card'], $canonical['payment']);
+        $this->assertArrayNotHasKey('bankAccount', $canonical['supplier']);
+        $this->assertArrayNotHasKey('dueDate', $canonical['dates']);
+
+        $cash = $this->reader->fromXmlString(str_replace('<PaymentMeansCode>48<', '<PaymentMeansCode>10<', $this->fixture('invoice_card.isdoc')));
+        $this->assertSame('cash', $cash['payment']['method']);
+        $cheque = $this->reader->fromXmlString(str_replace('<PaymentMeansCode>48<', '<PaymentMeansCode>20<', $this->fixture('invoice_card.isdoc')));
+        $this->assertArrayNotHasKey('payment', $cheque, 'nemapovaný kód = žádný způsob úhrady');
+    }
+
+    public function testItemEanAndLineNote(): void
+    {
+        $canonical = $this->readFixture('invoice_two_rates.isdoc');
+
+        $this->assertSame('8594012345678', $canonical['rows'][1]['item']['ean']);
+        $this->assertSame('ZE-01', $canonical['rows'][1]['item']['supplierCode']);
+        $this->assertSame('Kniha, ISBN smyšlené', $canonical['rows'][2]['item']['description']);
+        $this->assertArrayNotHasKey('description', $canonical['rows'][0]['item']);
+        $this->assertSame('CZ7001000000000000123457', $canonical['supplier']['bankAccount']['iban']);
+        $this->assertSame('123457/0100', $canonical['supplier']['bankAccount']['accountNumber']);
+        $this->assertArrayNotHasKey('bic', $canonical['supplier']['bankAccount'], 'prázdný BIC = null');
+        $this->assertValidCanonical($canonical);
     }
 
     // ── .isdocx (ZIP obal) ──────────────────────────────────────────────────

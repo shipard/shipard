@@ -247,25 +247,36 @@ final class IsdocWriter implements EInvoiceWriter
                 $reverseChargePcts[] = $pct;
             }
 
+            // Sleva (informativní, D2): částka před slevou v základu řádku —
+            // bez daně u cen bez DPH, s daní u cen s DPH (a z ní bez daně).
             $discountPct = $this->optNumber($row, 'discountPct', $path);
             $discountAmount = $this->optNumber($row, 'discountAmount', $path);
+            $factor = 1 + $pct / 100;
             $beforeDiscount = null;
-            if ($vatBase !== null) {
+            $beforeDiscountTaxIncl = null;
+            $rowAmount = $mode === 'fromTotal' ? $vatTotal : $vatBase;
+            if ($rowAmount !== null) {
+                $before = null;
                 if ($discountAmount !== null && $discountAmount > 0) {
-                    $beforeDiscount = $vatBase + $discountAmount;
+                    $before = $rowAmount + $discountAmount;
                 } elseif ($discountPct !== null && $discountPct > 0 && $discountPct < 100) {
-                    $beforeDiscount = round($vatBase / (1 - $discountPct / 100), 2);
+                    $before = round($rowAmount / (1 - $discountPct / 100), 2);
+                }
+                if ($before !== null && $mode === 'fromTotal') {
+                    $beforeDiscountTaxIncl = $before;
+                    $beforeDiscount = round($before / $factor, 2);
+                } else {
+                    $beforeDiscount = $before;
                 }
             }
-
-            $factor = 1 + $pct / 100;
             $rows[] = [
                 'quantity'          => $quantity,
                 'unit'              => $this->optText($row, 'unit'),
                 'vatBase'           => $vatBase,
                 'vatAmount'         => $vatAmount,
                 'vatTotal'          => $vatTotal,
-                'beforeDiscount'    => $beforeDiscount,
+                'beforeDiscount'        => $beforeDiscount,
+                'beforeDiscountTaxIncl' => $beforeDiscountTaxIncl,
                 // Jedna jednotková cena z canonicalu, druhá dopočtená (informativní).
                 'unitPrice'         => $mode === 'fromTotal' && $unitPrice !== null
                     ? round($unitPrice / $factor, 2) : $unitPrice,
@@ -463,6 +474,9 @@ final class IsdocWriter implements EInvoiceWriter
                 $this->add($line, 'LineExtensionAmountBeforeDiscount', self::amount($row['beforeDiscount']));
             }
             $this->add($line, 'LineExtensionAmountTaxInclusive', self::amount($row['vatTotal']));
+            if ($row['beforeDiscountTaxIncl'] !== null) {
+                $this->add($line, 'LineExtensionAmountTaxInclusiveBeforeDiscount', self::amount($row['beforeDiscountTaxIncl']));
+            }
             $this->add($line, 'LineExtensionTaxAmount', self::amount($row['vatAmount']));
             $this->add($line, 'UnitPrice', self::amount($row['unitPrice']));
             $this->add($line, 'UnitPriceTaxInclusive', self::amount($row['unitPriceTaxIncl']));

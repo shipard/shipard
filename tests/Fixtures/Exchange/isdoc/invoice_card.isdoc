@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1">
+  <DocumentType>1</DocumentType>
+  <ID>FV-2026-0103</ID>
+  <UUID>e635b71d-1e86-53d7-bc0e-1f6ae8f70e84</UUID>
+  <IssuingSystem>Shipard test fixtures</IssuingSystem>
+  <IssueDate>2026-09-16</IssueDate>
+  <TaxPointDate>2026-09-16</TaxPointDate>
+  <VATApplicable>true</VATApplicable>
+  <ElectronicPossibilityAgreementReference/>
+  <LocalCurrencyCode>CZK</LocalCurrencyCode>
+  <CurrRate>1</CurrRate>
+  <RefCurrRate>1</RefCurrRate>
+  <AccountingSupplierParty>
+    <Party>
+      <PartyIdentification>
+        <ID>12345678</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Alfa Nábytek s.r.o.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Výrobní</StreetName>
+        <BuildingNumber>1230/5</BuildingNumber>
+        <CityName>Brno</CityName>
+        <PostalZone>61600</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+      <PartyTaxScheme>
+        <CompanyID>CZ12345678</CompanyID>
+        <TaxScheme>VAT</TaxScheme>
+      </PartyTaxScheme>
+      <RegisterIdentification>
+        <Preformatted>C 12345 vedená u Krajského soudu v Brně</Preformatted>
+      </RegisterIdentification>
+      <Contact>
+        <Telephone>+420511222333</Telephone>
+        <ElectronicMail>fakturace@alfa-nabytek.example</ElectronicMail>
+      </Contact>
+    </Party>
+  </AccountingSupplierParty>
+  <AccountingCustomerParty>
+    <Party>
+      <PartyIdentification>
+        <ID>87654321</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Beta Kanceláře a.s.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Kancelářská</StreetName>
+        <BuildingNumber>7</BuildingNumber>
+        <CityName>Praha 4</CityName>
+        <PostalZone>14000</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+      <PartyTaxScheme>
+        <CompanyID>CZ87654321</CompanyID>
+        <TaxScheme>VAT</TaxScheme>
+      </PartyTaxScheme>
+      <Contact>
+        <Name>Petr Odběratel</Name>
+      </Contact>
+    </Party>
+  </AccountingCustomerParty>
+  <InvoiceLines>
+    <InvoiceLine>
+      <ID>1</ID>
+      <InvoicedQuantity unitCode="h">1.5</InvoicedQuantity>
+      <LineExtensionAmount>1800.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>2178.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>378.00</LineExtensionTaxAmount>
+      <UnitPrice>1200.00</UnitPrice>
+      <UnitPriceTaxInclusive>1452.00</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Servisní zásah</Description>
+      </Item>
+    </InvoiceLine>
+  </InvoiceLines>
+  <TaxTotal>
+    <TaxSubTotal>
+      <TaxableAmount>1800.00</TaxableAmount>
+      <TaxAmount>378.00</TaxAmount>
+      <TaxInclusiveAmount>2178.00</TaxInclusiveAmount>
+      <AlreadyClaimedTaxableAmount>0.00</AlreadyClaimedTaxableAmount>
+      <AlreadyClaimedTaxAmount>0.00</AlreadyClaimedTaxAmount>
+      <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+      <DifferenceTaxableAmount>1800.00</DifferenceTaxableAmount>
+      <DifferenceTaxAmount>378.00</DifferenceTaxAmount>
+      <DifferenceTaxInclusiveAmount>2178.00</DifferenceTaxInclusiveAmount>
+      <TaxCategory>
+        <Percent>21</Percent>
+      </TaxCategory>
+    </TaxSubTotal>
+    <TaxAmount>378.00</TaxAmount>
+  </TaxTotal>
+  <LegalMonetaryTotal>
+    <TaxExclusiveAmount>1800.00</TaxExclusiveAmount>
+    <TaxInclusiveAmount>2178.00</TaxInclusiveAmount>
+    <AlreadyClaimedTaxExclusiveAmount>0.00</AlreadyClaimedTaxExclusiveAmount>
+    <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+    <DifferenceTaxExclusiveAmount>1800.00</DifferenceTaxExclusiveAmount>
+    <DifferenceTaxInclusiveAmount>2178.00</DifferenceTaxInclusiveAmount>
+    <PayableRoundingAmount>0.00</PayableRoundingAmount>
+    <PaidDepositsAmount>0.00</PaidDepositsAmount>
+    <PayableAmount>2178.00</PayableAmount>
+  </LegalMonetaryTotal>
+  <PaymentMeans>
+    <Payment>
+      <PaidAmount>2178.00</PaidAmount>
+      <PaymentMeansCode>48</PaymentMeansCode>
+    </Payment>
+  </PaymentMeans>
+</Invoice>

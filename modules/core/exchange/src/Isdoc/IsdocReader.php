@@ -24,7 +24,15 @@ namespace Shipard\Module\Core\Exchange\Isdoc;
  *   - řádky nesou `computed` (základ, daň, cena s daní), jak je spočítal
  *     dodavatel. Zdroj dat, který není plátcem DPH, bere daň dodavatele
  *     jako součást ceny pořízení — applier pak na řádek dosadí cenu s daní
- *     přímo z dokladu a nedopočítává ji ze sazby (#97 D6).
+ *     přímo z dokladu a nedopočítává ji ze sazby (#97 D6),
+ *   - co píše generátor {@see IsdocWriter}, čtečka čte zpět (#119 krok 3,
+ *     docs/einvoice.md): `VATApplicable` false = doklad neplátce (`vat.mode`
+ *     none, řádky bez sazby, bez rekapitulace, základ a daň null), jinak
+ *     `vat.mode` ze shodné `VATCalculationMethod` všech řádků (u cen s DPH
+ *     jsou ceny řádku s daní); tuzemské přenesení z `LocalReverseCharge`
+ *     řádku nebo `LocalReverseChargeFlag` rekapitulace → `vat.reverseCharge`
+ *     true, jinak false; sleva z `…BeforeDiscount`; `Note` → `docText`
+ *     i `notes.onDocument`; způsob úhrady i bez bankovních detailů.
  */
 final class IsdocReader
 {
@@ -41,9 +49,19 @@ final class IsdocReader
         2 => 'creditNote',
     ];
 
-    /** ISDOC PaymentMeansCode → canonical payment.method (jen mapované kódy). */
+    /** ISDOC PaymentMeansCode → canonical payment.method (jen mapované kódy; 20 šek, 31 převod, 49 inkaso nemají protějšek). */
     private const PAYMENT_METHOD_MAP = [
+        10 => 'cash',
         42 => 'bankTransfer',
+        48 => 'card',
+        50 => 'cashOnDelivery',
+        97 => 'setOff',
+    ];
+
+    /** ISDOC VATCalculationMethod → canonical vat.mode. */
+    private const VAT_MODE_MAP = [
+        0 => 'fromBase',
+        1 => 'fromTotal',
     ];
 
     /**
@@ -101,6 +119,16 @@ final class IsdocReader
         if ($supplier !== null && $paymentDetails !== null) {
             $supplier['bankAccount'] = $this->mapBankAccount($paymentDetails);
         }
+        $paymentCode = $this->text($root, 'PaymentMeans', 'Payment', 'PaymentMeansCode');
+
+        // Režim DPH: VATApplicable false = doklad neplátce (tvar podle
+        // docs/exchange-format.md § 8.4 — bez sazeb, rekapitulace, základu
+        // a daně); jinak podle metody výpočtu shodné na všech řádcích.
+        $vatApplicable = $this->bool($root, 'VATApplicable');
+        $noVat = $vatApplicable === false;
+        $mode = $noVat ? 'none' : $this->calculationMode($root);
+        $reverseCharge = $this->hasLocalReverseCharge($root) ? true : ($vatApplicable !== null ? false : null);
+        $note = $this->text($root, 'Note');
 
         $canonical = [
             'format'        => 'shpd.docs.document',
@@ -121,7 +149,9 @@ final class IsdocReader
 
             'docType'   => $docType,
             'docNumber' => $docNumber,
-            'docText'   => $this->text($root, 'Note'),
+            // Note = text dodavatele na dokladu: notes.onDocument (doc_notice)
+            // i docText (titulek seznamu a náhledu) — #119 krok 3.
+            'docText'   => $note,
             'selfParty' => 'customer',
 
             'supplier' => $supplier,
@@ -142,25 +172,32 @@ final class IsdocReader
             // dodavatele, což u přijatého dokladu ze zahraničí hledalo kód
             // v cizím číselníku. U přijatých dokladů ji odvozuje applier
             // z naší registrace (tasks/exchange-received-reverse-charge.md D2).
+            // Místo plnění ISDOC nemá — applier ho odvodí z prefixu DIČ.
             'vat' => [
+                'mode'                => $mode,
+                'reverseCharge'       => $reverseCharge,
                 'registrationCountry' => null,
             ],
 
-            'payment' => $paymentDetails !== null ? [
-                'method' => self::PAYMENT_METHOD_MAP[
-                    (int) ($this->text($root, 'PaymentMeans', 'Payment', 'PaymentMeansCode') ?? -1)
-                ] ?? null,
-                'paymentReference' => $this->text($paymentDetails, 'VariableSymbol'),
-                'constantSymbol'   => $this->text($paymentDetails, 'ConstantSymbol'),
-                'specificSymbol'   => $this->text($paymentDetails, 'SpecificSymbol'),
-            ] : null,
+            'notes' => [
+                'onDocument' => $note,
+            ],
 
-            'rows'     => $this->mapRows($root, $isForeign),
-            'vatRecap' => $this->mapVatRecap($root, $isForeign),
+            // Způsob úhrady nese PaymentMeansCode i bez Details (karta,
+            // hotově); symboly a splatnost jen s Details (převod).
+            'payment' => [
+                'method'           => $paymentCode !== null ? (self::PAYMENT_METHOD_MAP[(int) $paymentCode] ?? null) : null,
+                'paymentReference' => $paymentDetails !== null ? $this->text($paymentDetails, 'VariableSymbol') : null,
+                'constantSymbol'   => $paymentDetails !== null ? $this->text($paymentDetails, 'ConstantSymbol') : null,
+                'specificSymbol'   => $paymentDetails !== null ? $this->text($paymentDetails, 'SpecificSymbol') : null,
+            ],
+
+            'rows'     => $this->mapRows($root, $isForeign, $mode === 'fromTotal', $noVat),
+            'vatRecap' => $noVat ? [] : $this->mapVatRecap($root, $isForeign),
 
             'totals' => [
-                'totalBase'     => $this->num($root, 'LegalMonetaryTotal', $isForeign ? 'TaxExclusiveAmountCurr' : 'TaxExclusiveAmount'),
-                'totalVat'      => $this->num($root, 'TaxTotal', $isForeign ? 'TaxAmountCurr' : 'TaxAmount'),
+                'totalBase'     => $noVat ? null : $this->num($root, 'LegalMonetaryTotal', $isForeign ? 'TaxExclusiveAmountCurr' : 'TaxExclusiveAmount'),
+                'totalVat'      => $noVat ? null : $this->num($root, 'TaxTotal', $isForeign ? 'TaxAmountCurr' : 'TaxAmount'),
                 'totalAmount'   => $this->num($root, 'LegalMonetaryTotal', $isForeign ? 'PayableAmountCurr' : 'PayableAmount'),
                 'totalRounding' => $this->num($root, 'LegalMonetaryTotal', $isForeign ? 'PayableRoundingAmountCurr' : 'PayableRoundingAmount'),
             ],
@@ -305,12 +342,15 @@ final class IsdocReader
     }
 
     /**
+     * @param bool $pricesWithVat `vat.mode` fromTotal — ceny řádku (jednotková i celková) s daní
+     * @param bool $noVat doklad neplátce — řádky bez sazby
      * @return list<array<string, mixed>>
      */
-    private function mapRows(\DOMElement $root, bool $isForeign): array
+    private function mapRows(\DOMElement $root, bool $isForeign, bool $pricesWithVat, bool $noVat): array
     {
         $rows = [];
         $suffix = $isForeign ? 'Curr' : '';
+        $amountEl = $pricesWithVat ? 'LineExtensionAmountTaxInclusive' : 'LineExtensionAmount';
         foreach ($this->all($root, 'InvoiceLines', 'InvoiceLine') as $index => $line) {
             $quantityEl = $this->el($line, 'InvoicedQuantity');
 
@@ -319,14 +359,19 @@ final class IsdocReader
                 'orderPos' => $index + 1,
                 'item' => [
                     'name'         => $this->text($line, 'Item', 'Description'),
+                    'description'  => $this->text($line, 'Note'),
                     'supplierCode' => $this->text($line, 'Item', 'SellersItemIdentification', 'ID'),
+                    'ean'          => $this->text($line, 'Item', 'CatalogueItemIdentification', 'ID'),
                 ],
                 'unit'     => $quantityEl?->getAttribute('unitCode') ?: null,
                 'quantity' => $this->num($line, 'InvoicedQuantity'),
+                // Sleva: ISDOC nese jen částku před slevou, ne procento.
+                'discountAmount' => $this->discountAmount($line, $amountEl . $suffix),
                 'vat' => [
                     // vat.code se nemapuje — doplní RowHistoryEnricher
                     // z historie, případně uživatel při review.
-                    'pct' => $this->num($line, 'ClassifiedTaxCategory', 'Percent'),
+                    'pct'               => $noVat ? null : $this->num($line, 'ClassifiedTaxCategory', 'Percent'),
+                    'reverseChargeCode' => $this->text($line, 'ClassifiedTaxCategory', 'LocalReverseCharge', 'LocalReverseChargeCode'),
                 ],
                 // Částky řádku od dodavatele; chybějící element prune()
                 // vypustí, řádek bez jediné hodnoty blok nenese (#97 D6).
@@ -338,11 +383,11 @@ final class IsdocReader
             ];
 
             if ($isForeign) {
-                $row['totalPrice'] = $this->num($line, 'LineExtensionAmountCurr');
+                $row['totalPrice'] = $this->num($line, $amountEl . 'Curr');
                 $row['priceCalcMode'] = 'fromTotal';
             } else {
-                $row['unitPrice'] = $this->num($line, 'UnitPrice');
-                $row['totalPrice'] = $this->num($line, 'LineExtensionAmount');
+                $row['unitPrice'] = $this->num($line, $pricesWithVat ? 'UnitPriceTaxInclusive' : 'UnitPrice');
+                $row['totalPrice'] = $this->num($line, $amountEl);
                 $row['priceCalcMode'] = 'fromUnitPrice';
             }
 
@@ -350,6 +395,53 @@ final class IsdocReader
         }
 
         return $rows;
+    }
+
+    /** Kladný rozdíl částky před slevou a po slevě (ve stejném základu — bez daně, u cen s DPH s daní). */
+    private function discountAmount(\DOMElement $line, string $amountElement): ?float
+    {
+        $before = $this->num($line, str_replace('Curr', '', $amountElement) . 'BeforeDiscount' . (str_ends_with($amountElement, 'Curr') ? 'Curr' : ''));
+        $after = $this->num($line, $amountElement);
+        if ($before === null || $after === null) {
+            return null;
+        }
+        $discount = round($before - $after, 2);
+        return $discount > 0.005 ? $discount : null;
+    }
+
+    /**
+     * `vat.mode` z metody výpočtu DPH: shodná na všech řádcích → fromBase /
+     * fromTotal; rozdílná nebo žádná → null (odvodí applier).
+     */
+    private function calculationMode(\DOMElement $root): ?string
+    {
+        $methods = [];
+        foreach ($this->all($root, 'InvoiceLines', 'InvoiceLine') as $line) {
+            $method = $this->text($line, 'ClassifiedTaxCategory', 'VATCalculationMethod');
+            if ($method !== null) {
+                $methods[(int) $method] = true;
+            }
+        }
+        if (count($methods) !== 1) {
+            return null;
+        }
+        return self::VAT_MODE_MAP[(int) array_key_first($methods)] ?? null;
+    }
+
+    /** Tuzemské přenesení daňové povinnosti: kód na řádku nebo příznak v rekapitulaci. */
+    private function hasLocalReverseCharge(\DOMElement $root): bool
+    {
+        foreach ($this->all($root, 'InvoiceLines', 'InvoiceLine') as $line) {
+            if ($this->text($line, 'ClassifiedTaxCategory', 'LocalReverseCharge', 'LocalReverseChargeCode') !== null) {
+                return true;
+            }
+        }
+        foreach ($this->all($root, 'TaxTotal', 'TaxSubTotal') as $subTotal) {
+            if ($this->bool($subTotal, 'TaxCategory', 'LocalReverseChargeFlag') === true) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -457,6 +549,17 @@ final class IsdocReader
     {
         $value = trim($element->getAttribute($name));
         return $value !== '' ? $value : null;
+    }
+
+    /** XSD boolean (`true` / `false`, tolerantně i `1` / `0`); chybějící element = null. */
+    private function bool(\DOMElement $context, string ...$path): ?bool
+    {
+        $value = $this->text($context, ...$path);
+        return match (strtolower((string) $value)) {
+            'true', '1' => true,
+            'false', '0' => false,
+            default => null,
+        };
     }
 
     // ── Úklid ───────────────────────────────────────────────────────────────

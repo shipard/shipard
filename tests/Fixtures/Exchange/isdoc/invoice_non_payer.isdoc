@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1">
+  <DocumentType>1</DocumentType>
+  <ID>2026-07</ID>
+  <UUID>69cc31ec-c6e4-5cdf-b23d-3029ba5f80d9</UUID>
+  <IssuingSystem>Shipard test fixtures</IssuingSystem>
+  <IssueDate>2026-09-29</IssueDate>
+  <VATApplicable>false</VATApplicable>
+  <ElectronicPossibilityAgreementReference/>
+  <Note>Nejsem plátce DPH.</Note>
+  <LocalCurrencyCode>CZK</LocalCurrencyCode>
+  <CurrRate>1</CurrRate>
+  <RefCurrRate>1</RefCurrRate>
+  <AccountingSupplierParty>
+    <Party>
+      <PartyIdentification>
+        <ID>11223344</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Jana Lektorová</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Lektorská</StreetName>
+        <BuildingNumber>5</BuildingNumber>
+        <CityName>Olomouc</CityName>
+        <PostalZone>77900</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+      <Contact>
+        <ElectronicMail>jana@lektorova.example</ElectronicMail>
+      </Contact>
+    </Party>
+  </AccountingSupplierParty>
+  <AccountingCustomerParty>
+    <Party>
+      <PartyIdentification>
+        <ID>87654321</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Beta Kanceláře a.s.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Kancelářská</StreetName>
+        <BuildingNumber>7</BuildingNumber>
+        <CityName>Praha 4</CityName>
+        <PostalZone>14000</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+      <PartyTaxScheme>
+        <CompanyID>CZ87654321</CompanyID>
+        <TaxScheme>VAT</TaxScheme>
+      </PartyTaxScheme>
+      <Contact>
+        <Name>Petr Odběratel</Name>
+      </Contact>
+    </Party>
+  </AccountingCustomerParty>
+  <InvoiceLines>
+    <InvoiceLine>
+      <ID>1</ID>
+      <InvoicedQuantity unitCode="os">2</InvoicedQuantity>
+      <LineExtensionAmount>5800.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>5800.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>0.00</LineExtensionTaxAmount>
+      <UnitPrice>2900.00</UnitPrice>
+      <UnitPriceTaxInclusive>2900.00</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>0</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+        <VATApplicable>false</VATApplicable>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Kurz Excel pro pokročilé (2 dny)</Description>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>2</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>640.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>640.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>0.00</LineExtensionTaxAmount>
+      <UnitPrice>320.00</UnitPrice>
+      <UnitPriceTaxInclusive>320.00</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>0</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+        <VATApplicable>false</VATApplicable>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Studijní materiály</Description>
+      </Item>
+    </InvoiceLine>
+  </InvoiceLines>
+  <TaxTotal>
+    <TaxSubTotal>
+      <TaxableAmount>6440.00</TaxableAmount>
+      <TaxAmount>0.00</TaxAmount>
+      <TaxInclusiveAmount>6440.00</TaxInclusiveAmount>
+      <AlreadyClaimedTaxableAmount>0.00</AlreadyClaimedTaxableAmount>
+      <AlreadyClaimedTaxAmount>0.00</AlreadyClaimedTaxAmount>
+      <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+      <DifferenceTaxableAmount>6440.00</DifferenceTaxableAmount>
+      <DifferenceTaxAmount>0.00</DifferenceTaxAmount>
+      <DifferenceTaxInclusiveAmount>6440.00</DifferenceTaxInclusiveAmount>
+      <TaxCategory>
+        <Percent>0</Percent>
+        <VATApplicable>false</VATApplicable>
+      </TaxCategory>
+    </TaxSubTotal>
+    <TaxAmount>0.00</TaxAmount>
+  </TaxTotal>
+  <LegalMonetaryTotal>
+    <TaxExclusiveAmount>6440.00</TaxExclusiveAmount>
+    <TaxInclusiveAmount>6440.00</TaxInclusiveAmount>
+    <AlreadyClaimedTaxExclusiveAmount>0.00</AlreadyClaimedTaxExclusiveAmount>
+    <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+    <DifferenceTaxExclusiveAmount>6440.00</DifferenceTaxExclusiveAmount>
+    <DifferenceTaxInclusiveAmount>6440.00</DifferenceTaxInclusiveAmount>
+    <PayableRoundingAmount>0.00</PayableRoundingAmount>
+    <PaidDepositsAmount>0.00</PaidDepositsAmount>
+    <PayableAmount>6440.00</PayableAmount>
+  </LegalMonetaryTotal>
+  <PaymentMeans>
+    <Payment>
+      <PaidAmount>6440.00</PaidAmount>
+      <PaymentMeansCode>42</PaymentMeansCode>
+      <Details>
+        <PaymentDueDate>2026-10-13</PaymentDueDate>
+        <ID>5638829718</ID>
+        <BankCode>0300</BankCode>
+        <Name/>
+        <IBAN>CZ8503000000005638829718</IBAN>
+        <BIC/>
+        <VariableSymbol>202607</VariableSymbol>
+      </Details>
+    </Payment>
+  </PaymentMeans>
+</Invoice>
