@@ -34,7 +34,9 @@ final class EvalRunSummaryTest extends TestCase
         $this->assertSame(20, $summary['messages']);
         $this->assertSame(60, $summary['callsTotal']);
         $this->assertSame(0, $summary['failed']);
-        $this->assertTrue($summary['currentSet']);
+        $this->assertFalse($summary['currentSet'], 'běhy z 16. 10. jsou nad sadou před #119 krokem 1 (podoba druhých dokladů variant 5, 6, 8 a 9 je `pdf`, hash sady se změnil); nový běh nad aktuální sadou je věc člověka');
+        $run = $catalog->run($dataset, '2026-10-16-baseline.json');
+        $this->assertTrue(EvalRunSummary::fromRun($run, $run['set']['hash'])['currentSet'], 'shodný hash = aktuální sada');
         $this->assertIsFloat($summary['hit']['avg']);
         $this->assertLessThanOrEqual($summary['hit']['avg'], $summary['hit']['min']);
         $this->assertGreaterThanOrEqual($summary['hit']['avg'], $summary['hit']['max']);
@@ -67,8 +69,10 @@ final class EvalRunSummaryTest extends TestCase
         $this->assertSame([1, 2, 3], array_column($baseline['repeats'], 'repeat'));
         $this->assertSame(4, $baseline['repeats'][0]['deviations'], '0301 × 1: čtyři odchylky');
         $this->assertSame('ok', $baseline['repeats'][0]['status']);
-        $this->assertTrue($baseline['currentSet']);
+        $this->assertFalse($baseline['currentSet'], 'běhy z 16. 10. jsou nad sadou před #119 krokem 1 (podoba druhých dokladů variant 5, 6, 8 a 9 je `pdf`, hash sady se změnil); nový běh nad aktuální sadou je věc člověka');
         $this->assertFalse($byFile['2026-10-15-baseline.json']['currentSet']);
+        $current = array_column(EvalMessageAcrossRuns::build($catalog->runs($dataset), 'MSG-CORPUS-VP-0301', $baseline['setHash'] ?? $catalog->run($dataset, '2026-10-16-baseline.json')['set']['hash']), null, 'file');
+        $this->assertTrue($current['2026-10-16-baseline.json']['currentSet'], 'shodný hash = aktuální sada');
         $this->assertCount(1, $byFile['2026-10-15-baseline.json']['repeats']);
         $this->assertSame([], EvalMessageAcrossRuns::build($catalog->runs($dataset), 'MSG-NOPE', null)[0]['repeats'], 'doklad bez volání má prázdná opakování');
     }

@@ -82,7 +82,8 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertContains(self::RUN, $files);
 		$this->assertContains(self::OLD_RUN, $files);
 		$byFile = array_column($data['runs'], null, 'file');
-		$this->assertTrue($byFile[self::RUN]['currentSet']);
+		// běhy z 16. 10. jsou nad sadou před #119 krokem 1 (podoba druhých dokladů variant 5, 6, 8 a 9 je `pdf`, hash sady se změnil); nový běh nad aktuální sadou je věc člověka
+		$this->assertFalse($byFile[self::RUN]['currentSet']);
 		$this->assertFalse($byFile[self::OLD_RUN]['currentSet']);
 	}
 
@@ -108,7 +109,7 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertSame(2, $data['repeat']);
 		$this->assertSame([1, 2, 3], $data['repeats']);
 		$this->assertTrue($data['countsMatch']);
-		$this->assertTrue($data['currentSet']);
+		$this->assertFalse($data['currentSet'], 'běh z 16. 10. je nad sadou před #119 krokem 1');
 		$this->assertTrue($data['hasPdf']);
 		$this->assertSame(self::RUN, $data['run']['file']);
 		$this->assertCount(10, $data['groups']);

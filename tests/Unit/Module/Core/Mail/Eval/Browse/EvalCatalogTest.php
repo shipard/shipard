@@ -60,7 +60,8 @@ final class EvalCatalogTest extends TestCase
         $run = $catalog->run($dataset, '2026-10-16-baseline.json');
         $this->assertNotNull($run);
         $this->assertSame('baseline', $run['variant']['name']);
-        $this->assertSame($catalog->currentHash($dataset), $run['set']['hash'], 'běh ze 16. 10. je nad aktuálním obsahem sady');
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $run['set']['hash']);
+        $this->assertNotSame($catalog->currentHash($dataset), $run['set']['hash'], 'běhy z 16. 10. jsou nad sadou před #119 krokem 1 (podoba druhých dokladů variant 5, 6, 8 a 9 je `pdf`, hash sady se změnil); nový běh nad aktuální sadou je věc člověka');
     }
 
     /** @return list<array{string}> */
