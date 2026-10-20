@@ -18,7 +18,7 @@ use Shipard\Module\Economy\ExchangeRates\ExchangeRateListTypes;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 
 /**
- * Upozornění `economy.exchangeRates.list_missing` (#121 D9, task B §6):
+ * Upozornění `economy.exchangerates.list_missing` (#121 D9, task B §6):
  * lístek za pracovní den nepřibyl ani další den.
  *
  *   - denní typ (`workingDays`): pracovní dny kalendáře v posledních 30

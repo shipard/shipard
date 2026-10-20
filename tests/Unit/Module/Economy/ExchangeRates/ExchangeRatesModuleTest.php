@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Economy\ExchangeRates;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Alerts\AlertCheckRegistry;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Utils\JsoncParser;
@@ -117,7 +118,7 @@ class ExchangeRatesModuleTest extends TestCase
     public function testDeclaresListMissingAlertCheck(): void
     {
         $checks = array_column(self::module()['alertChecks'] ?? [], null, 'id');
-        $check = $checks['economy.exchangeRates.list_missing'] ?? null;
+        $check = $checks['economy.exchangerates.list_missing'] ?? null;
 
         $this->assertNotNull($check);
         $this->assertSame(['warning', '1h', 'accounting'], [$check['severity'], $check['interval'], $check['navSection']]);
@@ -125,6 +126,14 @@ class ExchangeRatesModuleTest extends TestCase
         $this->assertTrue(class_exists($check['class']));
         $this->assertArrayHasKey('name:cs', $check);
         $this->assertArrayHasKey('description:cs', $check);
+
+        // Id kontroly smí mít jen malá písmena (AlertCheckDefinition) — modul s camelCase id
+        // proto používá `economy.exchangerates.*` jako `economy.workorders.*`; neplatné id by
+        // shodilo celý registr upozornění zdroje dat.
+        $registry = new AlertCheckRegistry([ModuleDefinition::fromArray(self::module())], 'cs');
+        $definition = $registry->get('economy.exchangerates.list_missing');
+        $this->assertNotNull($definition);
+        $this->assertSame('Chybí kurzovní lístek', $definition->name);
     }
 
     public function testConfigItemsExist(): void

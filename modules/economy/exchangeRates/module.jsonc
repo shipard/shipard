@@ -55,7 +55,7 @@
     // lístku běžného měsíce od 2. dne. Jen u typu, který už nějaký lístek má.
     "alertChecks": [
         {
-            "id": "economy.exchangeRates.list_missing",
+            "id": "economy.exchangerates.list_missing",
             "name": "Exchange rate list missing",
             "name:cs": "Chybí kurzovní lístek",
             "name:en": "Exchange rate list missing",
