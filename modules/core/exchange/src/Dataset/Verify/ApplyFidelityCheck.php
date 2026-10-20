@@ -21,7 +21,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * {@see EXCEPTIONS_NO_PAYMENT_REFERENCE} u dokladu bez splatnosti / VS
  * (účtenka — výchozí hodnoty `DocDocument`), {@see EXCEPTIONS_NON_PAYER}
  * u zdroje dat bez agendy DPH (#97), {@see EXCEPTIONS_FOREIGN_CURRENCY}
- * u dokladu v cizí měně (#103 D79). Rovnocenné tvary, které adaptér
+ * u dokladu v cizí měně (#103 D79), {@see EXCEPTIONS_NO_VAT_THIRD_COUNTRY}
+ * u dokladu bez DPH ze třetí země (#103 nález F). Rovnocenné tvary, které adaptér
  * dopočítá ze zdroje dat (vlastní strana, text řádku, jednotka přes resolver
  * i jednotka mimo číselník, papírová podoba samovyměření a dokladu bez DPH),
  * nejsou výjimky — porovnávají se.
@@ -36,6 +37,12 @@ final class ApplyFidelityCheck implements VerifyCheck
     public const EXCEPTIONS = [
         'rows[].item.supplierCode' => 'kód dodavatele se učí per položka a dodavatel (`economy_items_supplier_codes`, DocumentApplier::learnSupplierCodes, INSERT IGNORE) — účetní položka sdílená více řádky nese jen první; export ho nenese (DocumentExporter::rows)',
         'rows[].vat.reverseChargeCode' => 'kód předmětu plnění nese kód DPH řádku (VatCodeDerivation: cz-115 ↔ kód 4), řádek ho neukládá; hlídá kontrola DPH přes KH B.1 (kodPredPl)',
+        'rows[].item.ean' => 'applier EAN neukládá — economy_items sloupec ean má, učení per položka (jako kód dodavatele) chybí; export ho nenese (#103 nález D, schváleno 2026-10-20)',
+    ];
+
+    /** @var array<string, string> doklad bez DPH ze třetí země (`vat.mode` none + `vat.place` thirdCountry) */
+    public const EXCEPTIONS_NO_VAT_THIRD_COUNTRY = [
+        'vat.mode' => 'službu ze třetí země bez DPH applier samovyměří (#103 F3 nález B: VatCodeDerivation foreign + services → cz-417) a „Bez DPH“ se samovyměřením přepne na fromBase (DocumentApplier::effectiveVatMode); řádky a rekapitulaci srovná adaptér, protože daň samovyměření se dodavateli neplatí (#103 nález F, schváleno 2026-10-20)',
     ];
 
     /** @var array<string, string> doklad bez DPH (`vat.mode` none — dodavatel neplátce) */
@@ -102,6 +109,9 @@ final class ApplyFidelityCheck implements VerifyCheck
         }
         if (($proposal['vat']['mode'] ?? null) === 'none') {
             $out += self::EXCEPTIONS_NO_VAT;
+            if (($proposal['vat']['place'] ?? null) === 'thirdCountry') {
+                $out += self::EXCEPTIONS_NO_VAT_THIRD_COUNTRY;
+            }
         }
         if (array_key_exists('dates', (array) $proposal) && ($proposal['dates']['dueDate'] ?? null) === null) {
             $out += self::EXCEPTIONS_NO_DUE_DATE;
@@ -128,6 +138,7 @@ final class ApplyFidelityCheck implements VerifyCheck
             $w->db,
             $w->config !== null ? new VatRateResolver($w->config) : null,
             $w->dsConfig->getCountry(),
+            $ctx->homeCurrency,
         );
         $comparator = new CanonicalComparator($ctx->expectations->projection);
         $vatAgenda = $ctx->expectations->vat !== [];

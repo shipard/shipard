@@ -317,11 +317,13 @@ class DatasetExpectationsTest extends TestCase
                 $rate = $found['rate'];
             }
 
-            // Náklad: plátce základ, neplátce základ + DPH, bez DPH celková částka; v domácí měně.
-            $cost = $totals['totalBase'] === null
-                ? (float) $totals['totalAmount']
-                : ($vatPayer ? (float) $totals['totalBase'] : (float) $totals['totalBase'] + (float) $totals['totalVat']);
-            $cost = round($cost * $rate, 2);
+            // Náklad v domácí měně, každá účtovaná částka přepočtená zvlášť (nález H):
+            // plátce položky rekapitulace (samovyměření po druzích plnění — nález G), bez DPH
+            // celková částka; neplátce řádky s DPH dodavatele dorovnané na rekapitulaci.
+            $cost = 0.0;
+            foreach ($vatPayer ? self::payerCostLines($doc) : self::nonPayerGrossRows($doc) as $line) {
+                $cost = round($cost + self::cents($line, $rate), 2);
+            }
             $record = $costs[$id] ?? [];
             if (($record['currency'] ?? null) !== $doc['currency'] || !self::near($cost, $record['cost'] ?? null)) {
                 $problems[] = "{$id}: costs.json čeká {$cost} ({$doc['currency']} × {$rate}), je " . json_encode($record);
@@ -342,29 +344,37 @@ class DatasetExpectationsTest extends TestCase
             $rates = [];
             if ($spec['regime'] !== 'none') {
                 $czRate = $spec['czRate'] ?? null;
-                $recap = $doc['vatRecap'];
-                if ($czRate !== null && $recap === []) {
-                    // Samovyměření bez rekapitulace (bez DPH, třetí země): základ = celková částka.
-                    $recap = [['vatPct' => 0, 'base' => $totals['totalAmount'], 'tax' => 0]];
-                }
-                foreach ($recap as $entry) {
-                    $pct = (int) $entry['vatPct'];
-                    $base = round((float) $entry['base'] * $rate, 2);
-                    if ($czRate === null) {
+                // (režim, sazba) → [základ, daň] v měně dokladu: tuzemský odpočet z rekapitulace,
+                // samovyměření z řádků po druzích plnění (nález G — zboží ř. 3, služba ř. 5).
+                $groups = [];
+                if ($czRate === null) {
+                    foreach ($doc['vatRecap'] as $entry) {
+                        $pct = (int) $entry['vatPct'];
                         if ($pct === 0) {
                             continue;
                         }
-                        $tax = round((float) $entry['tax'] * $rate, 2);
-                    } else {
-                        if ($pct !== 0) {
+                        $key = $spec['regime'] . '|' . $pct;
+                        $groups[$key] = [($groups[$key][0] ?? 0) + (float) $entry['base'], ($groups[$key][1] ?? 0) + (float) $entry['tax']];
+                    }
+                } else {
+                    foreach ($doc['vatRecap'] as $entry) {
+                        if ((int) $entry['vatPct'] !== 0) {
                             $problems[] = "{$id}: samovyměření s nenulovou sazbou na dokladu";
                             continue 2;
                         }
-                        $pct = (int) $czRate;
-                        $tax = round($base * $pct / 100, 2);
                     }
+                    foreach (self::itemRows($doc) as $row) {
+                        $key = self::rowRegime($spec['regime'], $row['vat']['supplyKind'] ?? null) . '|' . (int) $czRate;
+                        $groups[$key] = [($groups[$key][0] ?? 0) + (float) $row['totalPrice'], 0.0];
+                    }
+                }
+                foreach ($groups as $key => [$baseCur, $taxCur]) {
+                    [$regime, $pct] = explode('|', (string) $key);
+                    $pct = (int) $pct;
+                    $base = self::cents($baseCur, $rate);
+                    $tax = $czRate === null ? self::cents($taxCur, $rate) : self::cents($base, $pct / 100);
                     $rates[$pct] = [($rates[$pct][0] ?? 0) + $base, ($rates[$pct][1] ?? 0) + $tax];
-                    foreach ($mapping['regimes'][$spec['regime']][(string) $pct] ?? [] as $row) {
+                    foreach ($mapping['regimes'][$regime][(string) $pct] ?? [] as $row) {
                         $expectedReturn[(string) $row] = [
                             ($expectedReturn[(string) $row][0] ?? 0) + $base,
                             ($expectedReturn[(string) $row][1] ?? 0) + $tax,
@@ -479,6 +489,101 @@ class DatasetExpectationsTest extends TestCase
             }
         }
         $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
+    /** Režim per řádek (nález G): u plnění z EU rozhoduje druh plnění řádku. */
+    private static function rowRegime(string $regime, ?string $supplyKind): string
+    {
+        $intracom = ['goods' => 'intracomGoods', 'services' => 'intracomServices'];
+        return in_array($regime, $intracom, true) && isset($intracom[$supplyKind ?? '']) ? $intracom[$supplyKind] : $regime;
+    }
+
+    /** @return list<array<string, mixed>> položkové řádky dokladu */
+    private static function itemRows(array $doc): array
+    {
+        return array_values(array_filter((array) ($doc['rows'] ?? []), static fn (mixed $r): bool => is_array($r) && ($r['rowKind'] ?? 'item') === 'item'));
+    }
+
+    /**
+     * Účtované základy plátce v měně dokladu: rekapitulace per sazba, samovyměření (0 %)
+     * po druzích plnění řádků (nález G), bez rekapitulace celková částka.
+     *
+     * @return list<float>
+     */
+    private static function payerCostLines(array $doc): array
+    {
+        $recap = (array) ($doc['vatRecap'] ?? []);
+        if ($recap === []) {
+            return [(float) $doc['totals']['totalAmount']];
+        }
+        $lines = [];
+        foreach ($recap as $entry) {
+            $base = (float) $entry['base'];
+            if ((int) $entry['vatPct'] !== 0) {
+                $lines[] = $base;
+                continue;
+            }
+            $byKind = [];
+            foreach (self::itemRows($doc) as $row) {
+                if ((int) ($row['vat']['pct'] ?? 0) !== 0) {
+                    continue;
+                }
+                $kind = (string) ($row['vat']['supplyKind'] ?? '');
+                $byKind[$kind] = round(($byKind[$kind] ?? 0.0) + (float) $row['totalPrice'], 2);
+            }
+            $lines = abs(array_sum($byKind) - $base) < 0.005 ? [...$lines, ...array_values($byKind)] : [...$lines, $base];
+        }
+        return $lines;
+    }
+
+    /**
+     * Řádky neplátce s DPH dodavatele v ceně (#97), dorovnané na rekapitulaci per sazba
+     * (rozdíl na řádek s největší cenou) — každý se přepočítá zvlášť (nález H).
+     *
+     * @return list<float>
+     */
+    private static function nonPayerGrossRows(array $doc): array
+    {
+        $gross = [];
+        $pcts = [];
+        foreach (self::itemRows($doc) as $row) {
+            $pct = (int) ($row['vat']['pct'] ?? 0);
+            $gross[] = self::cents((float) $row['totalPrice'], 1 + $pct / 100);
+            $pcts[] = $pct;
+        }
+        foreach ((array) ($doc['vatRecap'] ?? []) as $entry) {
+            $idx = array_keys($pcts, (int) $entry['vatPct'], true);
+            if ($idx === []) {
+                continue;
+            }
+            $sum = 0.0;
+            $target = $idx[0];
+            foreach ($idx as $i) {
+                $sum += $gross[$i];
+                if (abs($gross[$i]) > abs($gross[$target])) {
+                    $target = $i;
+                }
+            }
+            $diff = round((float) $entry['total'] - $sum, 2);
+            if (abs($diff) >= 0.005) {
+                $gross[$target] = round($gross[$target] + $diff, 2);
+            }
+        }
+        return $gross;
+    }
+
+    /**
+     * Součin zaokrouhlený na haléře v desítkové aritmetice (ROUND_HALF_UP jako Decimal
+     * v generátoru) — float by přesnou půlku haléře (45 × 24,345 = 1 095,525) zaokrouhlil dolů.
+     */
+    private static function cents(float|int|string $a, float|int|string $b = 1): float
+    {
+        return (float) bcround(bcmul(self::dec($a), self::dec($b), 12), 2);
+    }
+
+    private static function dec(float|int|string $value): string
+    {
+        return is_string($value) ? $value : number_format((float) $value, 10, '.', '');
     }
 
     private static function near(float $expected, mixed $actual): bool

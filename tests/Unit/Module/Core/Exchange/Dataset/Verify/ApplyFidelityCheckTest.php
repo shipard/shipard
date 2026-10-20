@@ -49,9 +49,13 @@ class ApplyFidelityCheckTest extends TestCase
         $this->assertSame([...$always, 'exchangeRate'], array_keys($foreign));
         $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor(['currency' => 'czk', 'vat' => ['mode' => 'fromBase']], true, 'CZK')));
         $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor(['currency' => 'EUR', 'vat' => ['mode' => 'fromBase']], true)), 'bez domácí měny se kurz porovnává');
+        // Bez DPH ze třetí země (#103 nález F): applier samovyměří, režim DPH se nesrovnává.
+        $third = ApplyFidelityCheck::exceptionsFor(['vat' => ['mode' => 'none', 'place' => 'thirdCountry']], true);
+        $this->assertSame([...$always, 'dates.taxPointDate', 'vat.mode'], array_keys($third));
+        $this->assertContains('rows[].item.ean', $always, 'EAN applier neukládá (nález D)');
         foreach (ApplyFidelityCheck::EXCEPTIONS + ApplyFidelityCheck::EXCEPTIONS_NO_VAT + ApplyFidelityCheck::EXCEPTIONS_NON_PAYER
             + ApplyFidelityCheck::EXCEPTIONS_NO_DUE_DATE + ApplyFidelityCheck::EXCEPTIONS_NO_PAYMENT_REFERENCE
-            + ApplyFidelityCheck::EXCEPTIONS_FOREIGN_CURRENCY as $path => $reason) {
+            + ApplyFidelityCheck::EXCEPTIONS_FOREIGN_CURRENCY + ApplyFidelityCheck::EXCEPTIONS_NO_VAT_THIRD_COUNTRY as $path => $reason) {
             $this->assertNotSame('', trim($reason), "{$path}: výjimka bez důvodu");
         }
     }
@@ -109,6 +113,66 @@ class ApplyFidelityCheckTest extends TestCase
         $this->assertSame(['vatCode' => 'cz-115', 'vatPct' => 0, 'base' => 69840, 'tax' => 0, 'total' => 69840], $out['vatRecap'][0]);
         $this->assertSame(121, $out['vatRecap'][1]['total']);
         $this->assertNull($out['customer'] ?? null, 'bez odběratele v návrhu se vlastní firma nedoplňuje');
+    }
+
+    /** Pravidla adaptéru pro doklady v cizí měně (#103 nálezy A, B, C, E, G — schváleno 2026-10-20). */
+    public function testAdapterRulesForForeignCurrencyDocuments(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetchAll')->willReturn([new Row(['unit' => 7]), new Row(['unit' => 7]), new Row(['unit' => 7])]);
+        $db->method('fetch')->willReturnCallback(static fn (mixed ...$args): ?Row =>
+            str_contains((string) ($args[0] ?? ''), 'core_units') && ($args[1] ?? null) === 'pcs' ? new Row(['id' => 7]) : null);
+        $vatCz = JsoncParser::parseFile(dirname(__DIR__, 7) . '/modules/world/vat/config/vat-cz.jsonc');
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $id === 'world.vat.cz' ? $vatCz : null);
+        $adapter = new SavedDocumentProjection($db, new VatRateResolver($config), 'cz', 'CZK');
+
+        // Pořízení zboží z EU s dopravným (0602): Shipard vede zboží cz-215 a službu cz-217 (dvě položky + páry);
+        // papír má jednu položku 0 % a žádné „přenesení“ (čl. 138), druh plnění z kódu, text řádku = název — popis.
+        $export = [
+            'currency' => 'EUR', 'exchangeRate' => 24.345,
+            'rows' => [
+                ['item' => ['ourCode' => '501100', 'name' => 'Materiál'], 'description' => '27" 4K monitor — USB-C', 'unit' => 'pcs', 'vat' => ['code' => 'cz-215', 'pct' => 21]],
+                ['item' => ['ourCode' => '501100', 'name' => 'Materiál'], 'description' => 'Docking station', 'unit' => 'pcs', 'vat' => ['code' => 'cz-215', 'pct' => 21]],
+                ['item' => ['ourCode' => '518100', 'name' => 'Služby'], 'description' => 'Shipping', 'unit' => 'pcs', 'vat' => ['code' => 'cz-217', 'pct' => 21]],
+            ],
+            'vatRecap' => [
+                ['vatCode' => 'cz-215', 'vatPct' => 21, 'base' => 1882.2, 'tax' => 395.26, 'total' => 1882.2],
+                ['vatCode' => 'cz-205', 'vatPct' => 21, 'base' => 1882.2, 'tax' => 395.26, 'total' => 2277.46, 'isReversePair' => true],
+                ['vatCode' => 'cz-217', 'vatPct' => 21, 'base' => 45, 'tax' => 9.45, 'total' => 45],
+                ['vatCode' => 'cz-207', 'vatPct' => 21, 'base' => 45, 'tax' => 9.45, 'total' => 54.45, 'isReversePair' => true],
+            ],
+        ];
+        $proposal = [
+            'currency' => 'EUR', 'exchangeRate' => null, 'customer' => null,
+            'rows' => [
+                ['item' => ['name' => '27" 4K monitor', 'description' => 'USB-C'], 'unit' => 'pcs'],
+                ['item' => ['name' => 'Docking station', 'description' => null], 'unit' => 'pcs'],
+                ['item' => ['name' => 'Shipping', 'description' => null], 'unit' => 'pcs'],
+            ],
+        ];
+        $out = $adapter->build($export, $proposal, 42);
+        $this->assertSame(24.345, $out['exchangeRate'], 'kurz cizí měny zůstává (hlídá ho výjimka a kontrola Kurzy)');
+        $this->assertSame(['name' => '27" 4K monitor', 'description' => 'USB-C'], array_intersect_key($out['rows'][0]['item'], ['name' => 1, 'description' => 1]), 'název a popis z návrhu, když je text řádku jejich spojení');
+        $this->assertSame('Docking station', $out['rows'][1]['item']['name']);
+        $this->assertSame('goods', $out['rows'][0]['vat']['supplyKind']);
+        $this->assertSame('services', $out['rows'][2]['vat']['supplyKind'], 'druh plnění z definice kódu');
+        $this->assertSame(0, $out['rows'][2]['vat']['pct']);
+        $this->assertFalse($out['vat']['reverseCharge'], 'pořízení zboží z EU ani jeho dopravné není papírové přenesení');
+        $this->assertCount(1, $out['vatRecap'], 'položky samovyměření se stejnou sazbou sloučené');
+        $this->assertSame(['vatCode' => 'cz-215', 'vatPct' => 0, 'base' => 1927.2, 'tax' => 0, 'total' => 1927.2], $out['vatRecap'][0]);
+
+        // Služba z EU (čl. 196) je přenesení; služba ze třetí země ne; kurz 1 u domácí měny ≡ null.
+        $service = ['currency' => 'CZK', 'exchangeRate' => 1.0, 'rows' => [['item' => ['name' => 'X'], 'description' => 'X', 'vat' => ['code' => 'cz-217', 'pct' => 21]]], 'vatRecap' => []];
+        $out = $adapter->build($service, ['exchangeRate' => null, 'rows' => [['item' => ['name' => 'X']]]], 42);
+        $this->assertTrue($out['vat']['reverseCharge']);
+        $this->assertNull($out['exchangeRate']);
+        $third = ['currency' => 'USD', 'exchangeRate' => 20.844, 'rows' => [['item' => ['name' => 'X'], 'description' => 'X', 'vat' => ['code' => 'cz-417', 'pct' => 21]]], 'vatRecap' => []];
+        $out = $adapter->build($third, ['exchangeRate' => null, 'rows' => [['item' => ['name' => 'X']]]], 42);
+        $this->assertFalse($out['vat']['reverseCharge']);
+        $this->assertSame(20.844, $out['exchangeRate']);
+        $domesticNull = $adapter->build(['currency' => 'CZK', 'exchangeRate' => 1.0, 'rows' => []], ['exchangeRate' => 1.0, 'rows' => []], 42);
+        $this->assertSame(1.0, $domesticNull['exchangeRate'], 'kurz v návrhu se porovnává doslova');
     }
 
     public function testAdapterStripsZeroVatRepresentationOfDocumentWithoutVat(): void

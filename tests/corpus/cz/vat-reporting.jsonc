@@ -6,6 +6,8 @@
 // daně na výstupu i odpočtu (snížená sazba jde na sudé řádky 4, 6, 11, 13, 44 — v korpusu
 // první vlny se nevyskytuje). Doklad se samovyměřením tiskne 0 %, českou sazbu dává czRate.
 // Kontrolní hlášení: B2orB3 = B.2 nad práh (celková částka vč. DPH), jinak B.3; účtenka vždy B.3.
+// Plnění z EU (intracom*): režim platí per řádek podle druhu plnění (`supplyKind` — zboží ř. 3,
+// služba ř. 5), takže dopravné na faktuře za zboží jde na ř. 5 jako služba (#103 nález G, 2026-10-20).
 {
 	"format": "shpd.corpus.vatReporting",
 	"formatVersion": "1",

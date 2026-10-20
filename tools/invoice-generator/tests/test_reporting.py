@@ -146,6 +146,22 @@ class VatRecordTest(unittest.TestCase):
         self.assertEqual({"21": {"base": D("3689.39"), "tax": D("774.77")}}, cs["rates"])
         self.assertEqual("USD", record["currency"])
 
+    def test_eu_goods_with_shipping_service_splits_rows_by_supply_kind(self) -> None:
+        # Dopravné na faktuře za zboží z EU je služba (nález G): zboží ř. 3, služba ř. 5, každá skupina zvlášť.
+        doc = data(DATA_EU_SERVICES, variant="eu-goods", vatTreatment="exemptIntraCommunity", rows=[
+            {"text": "Monitor", "qty": 4, "unit": "ks", "unitPrice": D("329.00"), "vatPct": 0, "supplyKind": "goods"},
+            {"text": "Shipping", "qty": 1, "unit": "ks", "unitPrice": D("45.00"), "vatPct": 0, "supplyKind": "services"},
+        ])
+        expected = expected_for(doc)
+        rate = D("24.345000")
+        record = vat_record("MSG-6", "eu-goods", expected, REPORTING, rate=rate)
+        # zboží 1 316,00 × 24,345 = 32 038,02; služba 45,00 × 24,345 = 1 095,525 → 1 095,53 (půl haléře nahoru)
+        self.assertEqual({"3": {"base": D("32038.02"), "tax": D("6727.98")}, "5": {"base": D("1095.53"), "tax": D("230.06")},
+                          "43": {"base": D("33133.55"), "tax": D("6958.04")}}, record["return"])
+        self.assertEqual({"21": {"base": D("33133.55"), "tax": D("6958.04")}}, record["controlStatement"]["rates"])
+        self.assertEqual(D("33133.55"), cost_record("MSG-6", expected, vat_payer=True, rate=rate)["cost"],
+                         "náklad plátce = Σ skupin přepočtených zvlášť")
+
     def test_domestic_deduction_in_foreign_currency_converts_tax(self) -> None:
         expected = expected_for(data(DATA_DOMESTIC, currency="EUR"))
         record = vat_record("MSG-10", "domestic-goods", expected, REPORTING, rate=EUR)
@@ -196,6 +212,19 @@ class CostRecordTest(unittest.TestCase):
         expected = expected_for(data(DATA_NO_VAT))
         self.assertEqual(expected["totals"]["totalAmount"], cost_record("MSG-3", expected, vat_payer=True, rate=ONE)["cost"])
         self.assertEqual(expected["totals"]["totalAmount"], cost_record("MSG-3", expected, vat_payer=False, rate=ONE)["cost"])
+
+    def test_non_payer_foreign_currency_cost_sums_converted_rows(self) -> None:
+        # Neplátce: každý řádek s DPH dodavatele se přepočítá zvlášť (nález H).
+        doc = data(DATA_EU_SERVICES, variant="eu-goods", vatTreatment="standard", skipProfiles={}, rows=[
+            {"text": "Monitor", "qty": 4, "unit": "ks", "unitPrice": D("329.00"), "vatPct": 19, "supplyKind": "goods"},
+            {"text": "Dock", "qty": 4, "unit": "ks", "unitPrice": D("149.00"), "vatPct": 19, "supplyKind": "goods", "discountPct": 5},
+            {"text": "Shipping", "qty": 1, "unit": "ks", "unitPrice": D("45.00"), "vatPct": 19, "supplyKind": "services"},
+        ])
+        expected = expected_for(doc, "non-payer")
+        self.assertEqual(D("2293.37"), expected["totals"]["totalAmount"])
+        # řádky s DPH 1 566,04 + 673,78 + 53,55 = 2 293,37 = rekapitulace; × 24,345 zvlášť:
+        # 38 125,24 + 16 403,17 + 1 303,67 = 55 832,08 (celkem × kurz by dalo 55 832,09)
+        self.assertEqual(D("55832.08"), cost_record("MSG-7", expected, vat_payer=False, rate=D("24.345000"))["cost"])
 
     def test_foreign_currency_cost_in_czk(self) -> None:
         eu = cost_record("MSG-4", expected_for(data(DATA_EU_SERVICES)), vat_payer=True, rate=EUR)

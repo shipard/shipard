@@ -6,7 +6,11 @@ a `expected/costs.json` datové sady; čte je `shpd-ds dataset-verify`.
 
 Mapování: varianta → režim (řádky přiznání podle sazby) + oddíl kontrolního
 hlášení. Samovyměření (přenesení, EU, třetí země) má na dokladu 0 %, českou
-sazbu dává `czRate`, daň = základ × sazba (Decimal, ROUND_HALF_UP).
+sazbu dává `czRate`, daň = základ × sazba (Decimal, ROUND_HALF_UP). Základ
+samovyměření jde z řádků a u plnění z EU rozhoduje druh plnění řádku
+(`supplyKind`): zboží → intracomGoods (ř. 3), služba → intracomServices
+(ř. 5) — dopravné na faktuře za zboží je služba (#103 nález G, 2026-10-20);
+každá skupina se přepočítá a zdaní zvlášť, jako položka rekapitulace per kód.
 
 Částky jsou v Kč (#103 D73): doklad v cizí měně se přepočítá kurzem
 k účetnímu datu (DUZP, bez něj datum vystavení — `rates.py`), základ
@@ -17,8 +21,12 @@ třetí země bez DPH) bere základ z celkové částky. Období a datum
 v oddílu KH jdou z účetního data. Kurz per doklad nese
 `expected/exchange-rates.json` (`exchange_rate_record`).
 
-Náklad dokladu = Σ MD na účtech třídy 5 bez zaokrouhlení: plátce základ
-(bez DPH ⇒ celková částka), neplátce a spolek základ + DPH (#97), v Kč.
+Náklad dokladu = Σ MD na účtech třídy 5 bez zaokrouhlení, v Kč — každá
+účtovaná částka se přepočítá zvlášť (nález H): plátce Σ položek
+rekapitulace (základ per sazba, u samovyměření per druh plnění; bez DPH
+celková částka), neplátce a spolek Σ řádků s DPH dodavatele v ceně (#97),
+dorovnaných na rekapitulaci papíru per sazba; haléřový zbytek proti
+celkem × kurz jde v Shipardu na účet zaokrouhlení.
 """
 
 from __future__ import annotations
@@ -134,34 +142,50 @@ def accounting_date_of(expected: dict) -> str:
     return dates.get("taxPointDate") or dates["issueDate"]
 
 
-def _rates(expected: dict, spec: dict, label: str, rate: Decimal) -> dict[int, tuple[Decimal, Decimal]]:
-    """Základ a daň v Kč po českých sazbách z rekapitulace očekávání. Tuzemský
-    odpočet bere sazbu z dokladu (0 % = osvobozené, bez řádku) a daň dodavatele
-    přepočte kurzem; samovyměření vyžaduje na dokladu 0 % (bez rekapitulace
-    bere základ z celkové částky) a daň dopočítá z `czRate` ze základu v Kč."""
+INTRACOM_REGIMES = {"goods": "intracomGoods", "services": "intracomServices"}
+
+
+def _item_rows(expected: dict) -> list[dict]:
+    return [r for r in expected.get("rows") or [] if r.get("rowKind", "item") == "item"]
+
+
+def _row_regime(regime: str, supply_kind: str | None) -> str:
+    """Režim per řádek (nález G): u plnění z EU rozhoduje druh plnění řádku,
+    řádek bez druhu dědí režim varianty; ostatní režimy se per řádek nemění."""
+    if regime in INTRACOM_REGIMES.values() and supply_kind in INTRACOM_REGIMES:
+        return INTRACOM_REGIMES[supply_kind]
+    return regime
+
+
+def _groups(expected: dict, spec: dict, label: str, rate: Decimal) -> dict[tuple[str, int], tuple[Decimal, Decimal]]:
+    """(režim, sazba) → (základ, daň) v Kč. Tuzemský odpočet bere sazbu
+    z rekapitulace (0 % = osvobozené, bez řádku) a daň dodavatele přepočte
+    kurzem; samovyměření vyžaduje na dokladu 0 %, základ bere z řádků po
+    režimech (druh plnění) a daň dopočítá z `czRate` ze základu v Kč."""
     cz_rate = spec["czRate"]
-    sums: dict[int, tuple[Decimal, Decimal]] = {}   # sazba → (základ, daň) v měně dokladu
+    regime = spec["regime"]
+    sums: dict[tuple[str, int], tuple[Decimal, Decimal]] = {}   # (režim, sazba) → (základ, daň) v měně dokladu
     recap = expected.get("vatRecap") or []
-    if cz_rate is not None and not recap:
-        sums[cz_rate] = (Decimal(str(expected["totals"]["totalAmount"])), Decimal("0"))
-    for entry in recap:
-        pct = int(entry["vatPct"])
-        base = Decimal(str(entry["base"]))
-        if cz_rate is None:
+    if cz_rate is None:
+        for entry in recap:
+            pct = int(entry["vatPct"])
             if pct == 0:
                 continue
-            prev = sums.get(pct, (Decimal("0"), Decimal("0")))
-            sums[pct] = (prev[0] + base, prev[1] + Decimal(str(entry["tax"])))
-            continue
-        if pct != 0:
-            raise ReportingError(f"{label}: samovyměření čeká na dokladu 0 %, rekapitulace má {pct} %")
-        prev = sums.get(cz_rate, (Decimal("0"), Decimal("0")))
-        sums[cz_rate] = (prev[0] + base, Decimal("0"))
+            prev = sums.get((regime, pct), (Decimal("0"), Decimal("0")))
+            sums[(regime, pct)] = (prev[0] + Decimal(str(entry["base"])), prev[1] + Decimal(str(entry["tax"])))
+    else:
+        for entry in recap:
+            if int(entry["vatPct"]) != 0:
+                raise ReportingError(f"{label}: samovyměření čeká na dokladu 0 %, rekapitulace má {entry['vatPct']} %")
+        for row in _item_rows(expected):
+            key = (_row_regime(regime, (row.get("vat") or {}).get("supplyKind")), cz_rate)
+            prev = sums.get(key, (Decimal("0"), Decimal("0")))
+            sums[key] = (prev[0] + Decimal(str(row["totalPrice"])), Decimal("0"))
 
-    out: dict[int, tuple[Decimal, Decimal]] = {}
-    for pct, (base, tax) in sums.items():
+    out: dict[tuple[str, int], tuple[Decimal, Decimal]] = {}
+    for (reg, pct), (base, tax) in sums.items():
         base_czk = _cents(base * rate)
-        out[pct] = (base_czk, _cents(tax * rate) if cz_rate is None else _cents(base_czk * pct / 100))
+        out[(reg, pct)] = (base_czk, _cents(tax * rate) if cz_rate is None else _cents(base_czk * pct / 100))
     return out
 
 
@@ -186,16 +210,19 @@ def vat_record(message_id: str, variant: str, expected: dict, reporting: VatRepo
         record["period"] = None
         return record
 
-    rates = _rates(expected, spec, message_id, rate)
+    groups = _groups(expected, spec, message_id, rate)
     rows: dict[int, dict[str, Decimal]] = {}
-    for pct, (base, tax) in rates.items():
-        mapping = reporting.regimes[spec["regime"]].get(pct)
+    rates: dict[int, tuple[Decimal, Decimal]] = {}   # sazba → (základ, daň) přes režimy (oddíl KH)
+    for (regime, pct), (base, tax) in groups.items():
+        mapping = reporting.regimes.get(regime, {}).get(pct)
         if mapping is None:
-            raise ReportingError(f"{message_id}: režim {spec['regime']} nezná sazbu {pct} %")
+            raise ReportingError(f"{message_id}: režim {regime} nezná sazbu {pct} %")
         for row in mapping.values():
             cell = rows.setdefault(row, {"base": Decimal("0"), "tax": Decimal("0")})
             cell["base"] += base
             cell["tax"] += tax
+        prev = rates.get(pct, (Decimal("0"), Decimal("0")))
+        rates[pct] = (prev[0] + base, prev[1] + tax)
     record["return"] = {str(row): rows[row] for row in sorted(rows)}
 
     section_key = spec["controlStatement"]
@@ -218,18 +245,63 @@ def vat_record(message_id: str, variant: str, expected: dict, reporting: VatRepo
     return record
 
 
+def _payer_cost_lines(expected: dict) -> list[Decimal]:
+    """Účtované základy plátce v měně dokladu: položky rekapitulace per sazba;
+    samovyměření (0 %) po druzích plnění řádků, jak je vede Shipard per kód
+    (nález G); bez rekapitulace celková částka."""
+    recap = expected.get("vatRecap") or []
+    if not recap:
+        return [Decimal(str(expected["totals"]["totalAmount"]))]
+    lines: list[Decimal] = []
+    for entry in recap:
+        pct = int(entry["vatPct"])
+        base = Decimal(str(entry["base"]))
+        if pct != 0:
+            lines.append(base)
+            continue
+        by_kind: dict[str | None, Decimal] = {}
+        for row in _item_rows(expected):
+            vat = row.get("vat") or {}
+            if int(vat.get("pct") or 0) != 0:
+                continue
+            kind = vat.get("supplyKind")
+            by_kind[kind] = by_kind.get(kind, Decimal("0")) + Decimal(str(row["totalPrice"]))
+        lines.extend(by_kind.values() if sum(by_kind.values(), Decimal("0")) == base else [base])
+    return lines
+
+
+def _non_payer_cost(expected: dict, rate: Decimal) -> Decimal:
+    """Σ řádků s DPH dodavatele v ceně (#97), dorovnaných na rekapitulaci
+    papíru per sazba (rozdíl na řádek s největší cenou), každý přepočtený
+    zvlášť (nález H)."""
+    gross: list[Decimal] = []
+    pcts: list[int] = []
+    for row in _item_rows(expected):
+        pct = int((row.get("vat") or {}).get("pct") or 0)
+        gross.append(_cents(Decimal(str(row["totalPrice"])) * (1 + Decimal(pct) / 100)))
+        pcts.append(pct)
+    for entry in expected.get("vatRecap") or []:
+        pct = int(entry["vatPct"])
+        idx = [i for i, p in enumerate(pcts) if p == pct]
+        if not idx:
+            continue
+        diff = Decimal(str(entry["total"])) - sum((gross[i] for i in idx), Decimal("0"))
+        if diff:
+            target = max(idx, key=lambda i: abs(gross[i]))
+            gross[target] += diff
+    return sum((_cents(g * rate) for g in gross), Decimal("0"))
+
+
 def cost_record(message_id: str, expected: dict, *, vat_payer: bool, rate: Decimal) -> dict:
-    """Záznam `expected/costs.json`: náklad v Kč bez zaokrouhlení — plátce
-    základ, neplátce základ + DPH; doklad bez DPH celková částka; částka
-    v měně dokladu × kurz na haléře. `currency` zůstává měna dokladu."""
-    totals = expected["totals"]
-    if totals["totalBase"] is None:
-        cost = Decimal(str(totals["totalAmount"]))
-    elif vat_payer:
-        cost = Decimal(str(totals["totalBase"]))
+    """Záznam `expected/costs.json`: náklad v Kč bez zaokrouhlení, každá
+    účtovaná částka přepočtená zvlášť — plátce položky rekapitulace
+    (samovyměření po druzích plnění), bez DPH celková částka; neplátce
+    řádky s DPH dodavatele. `currency` zůstává měna dokladu."""
+    if vat_payer:
+        cost = sum((_cents(line * rate) for line in _payer_cost_lines(expected)), Decimal("0"))
     else:
-        cost = Decimal(str(totals["totalBase"])) + Decimal(str(totals["totalVat"]))
-    return {"messageId": message_id, "currency": expected["currency"], "cost": _cents(cost * rate)}
+        cost = _non_payer_cost(expected, rate)
+    return {"messageId": message_id, "currency": expected["currency"], "cost": _cents(cost)}
 
 
 def exchange_rate_record(message_id: str, expected: dict, rate: Rate) -> dict:
