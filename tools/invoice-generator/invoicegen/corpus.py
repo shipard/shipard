@@ -14,7 +14,10 @@ from .compute import PRICE_CALC_MODES, VAT_TREATMENTS
 from .expected import EU_COUNTRIES
 
 PROFILES = ("vat-payer", "non-payer", "association")
-FORMS = {"pdf": "01", "pdfIsdoc": "02"}
+# Podoba dokladu je jen pole `form`; název souboru nese číslo varianty a pořadí
+# dokladu (`01` / `02`), ne podobu (#119 krok 1).
+FORMS = ("pdf", "pdfIsdoc")
+STEM_RE = re.compile(r"^([0-9]{2})(0[12])-([a-z0-9-]+)$")
 VARIANTS = {
     "domestic-goods": 1,
     "domestic-two-rates": 2,
@@ -69,8 +72,17 @@ def deep_merge(base: dict, override: dict) -> dict:
     return result
 
 
-def expected_stem(doc: dict) -> str:
-    return f"{VARIANTS[doc['variant']]:02d}{FORMS[doc['form']]}-{doc['variant']}"
+def parse_stem(stem: str) -> tuple[int, str, str]:
+    """`NNNN-<slug>` → (číslo varianty, pořadí dokladu `01` / `02`, slug)."""
+    m = STEM_RE.fullmatch(stem)
+    if m is None:
+        raise DataFileError(f"{stem}: název neodpovídá NNNN-<slug> (dvojčíslí varianty, pořadí 01 / 02, slug varianty)")
+    return int(m.group(1)), m.group(2), m.group(3)
+
+
+def stem_for(doc: dict, ordinal: str) -> str:
+    """Název datového souboru pro variantu dokladu a pořadí (`01` / `02`)."""
+    return f"{VARIANTS[doc['variant']]:02d}{ordinal}-{doc['variant']}"
 
 
 def resolve_overrides(doc: dict) -> dict[str, dict]:
@@ -125,6 +137,10 @@ def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonom
         bad(f"neznámý vatTreatment {treatment!r}")
     country = supplier["country"]
     foreign = country != "cz"
+    # D10 (#119): ISDOC jen mezi dvěma českými subjekty s IČO — zahraničnímu
+    # dodavateli, dodavateli bez IČO ani účtence (bez odběratele) k ničemu není.
+    if doc.get("form") == "pdfIsdoc" and (foreign or not supplier.get("companyId") or receipt):
+        bad("podoba pdfIsdoc jen u českého dodavatele s IČO a dokladu s odběratelem (D10 #119)")
     if treatment == "noVat" and not foreign and supplier.get("vatPayer"):
         bad("noVat u tuzemského plátce")
     if treatment in ("standard", "pricesWithVat", "reverseCharge") and not supplier.get("vatPayer"):
@@ -233,8 +249,9 @@ def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonom
 
 def validate_data_file(doc: dict, stem: str, *, identities: dict, templates: set[str],
                        taxonomy: set[str]) -> None:
-    """Validace datového souboru: název, varianta a podoba, dodavatel,
-    `skipProfiles` / `overrides`, obsah pro každý profil matice."""
+    """Validace datového souboru: název (číslo varianty, pořadí dokladu, slug),
+    varianta a podoba, dodavatel, `skipProfiles` / `overrides`, obsah pro
+    každý profil matice."""
     problems: list[str] = []
     variant = doc.get("variant")
     form = doc.get("form")
@@ -242,8 +259,13 @@ def validate_data_file(doc: dict, stem: str, *, identities: dict, templates: set
         problems.append(f"{stem}: neznámá varianta {variant!r}")
     if form not in FORMS:
         problems.append(f"{stem}: neznámá podoba {form!r}")
-    if not problems and expected_stem(doc) != stem:
-        problems.append(f"{stem}: název souboru neodpovídá variantě a podobě ({expected_stem(doc)})")
+    try:
+        number, _ordinal, slug = parse_stem(stem)
+    except DataFileError as e:
+        problems.append(str(e))
+    else:
+        if variant in VARIANTS and (number != VARIANTS[variant] or slug != variant):
+            problems.append(f"{stem}: název souboru neodpovídá variantě ({stem_for(doc, _ordinal)})")
     supplier = identities["suppliers"].get(doc.get("supplier"))
     if supplier is None:
         problems.append(f"{stem}: neznámý dodavatel {doc.get('supplier')!r}")
@@ -277,13 +299,23 @@ def _without_matrix(doc: dict) -> dict:
 
 
 def validate_variant_pairs(docs: dict[str, dict]) -> None:
-    """Obě podoby varianty jsou dva doklady téhož dodavatele."""
+    """Oba doklady varianty (pořadí `01` a `02`) jsou téhož dodavatele a každé
+    pořadí je ve variantě nejvýš jednou. Klíče = názvy souborů (stačí `NNNN`)."""
     by_variant: dict[str, set[str]] = {}
-    for doc in docs.values():
+    ordinals: dict[str, list[str]] = {}
+    for stem, doc in docs.items():
         by_variant.setdefault(doc["variant"], set()).add(doc["supplier"])
+        ordinals.setdefault(doc["variant"], []).append(stem[2:4])
+    problems: list[str] = []
     wrong = {v: s for v, s in by_variant.items() if len(s) > 1}
     if wrong:
-        raise DataFileError("varianta má víc dodavatelů: " + ", ".join(f"{v} {sorted(s)}" for v, s in wrong.items()))
+        problems.append("varianta má víc dodavatelů: " + ", ".join(f"{v} {sorted(s)}" for v, s in wrong.items()))
+    for variant, seen in ordinals.items():
+        dupes = sorted({o for o in seen if seen.count(o) > 1})
+        if dupes:
+            problems.append(f"varianta {variant}: pořadí {', '.join(dupes)} víckrát")
+    if problems:
+        raise DataFileError("\n".join(problems))
 
 
 def cells_for(doc: dict, stem: str, identities: dict) -> list[Cell | SkippedCell]:

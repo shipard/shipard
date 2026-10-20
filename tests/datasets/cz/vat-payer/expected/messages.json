@@ -87,13 +87,13 @@
     "messageId": "MSG-CORPUS-VP-0902",
     "stem": "0902-receipt",
     "variant": "receipt",
-    "form": "pdfIsdoc"
+    "form": "pdf"
   },
   {
     "messageId": "MSG-CORPUS-VP-0602",
     "stem": "0602-eu-goods",
     "variant": "eu-goods",
-    "form": "pdfIsdoc"
+    "form": "pdf"
   },
   {
     "messageId": "MSG-CORPUS-VP-0702",
@@ -111,12 +111,12 @@
     "messageId": "MSG-CORPUS-VP-0502",
     "stem": "0502-eu-services",
     "variant": "eu-services",
-    "form": "pdfIsdoc"
+    "form": "pdf"
   },
   {
     "messageId": "MSG-CORPUS-VP-0802",
     "stem": "0802-third-country-services",
     "variant": "third-country-services",
-    "form": "pdfIsdoc"
+    "form": "pdf"
   }
 ]

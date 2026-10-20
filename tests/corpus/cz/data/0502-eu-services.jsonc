@@ -1,7 +1,7 @@
-// Varianta 5, podoba pdfIsdoc — služby z EU s reverse charge čl. 196 (en).
+// Varianta 5, podoba pdf (D10 #119: bez ISDOC) — služby z EU s reverse charge čl. 196 (en).
 {
 	"variant": "eu-services",
-	"form": "pdfIsdoc",
+	"form": "pdf",
 	"supplier": "wolkenkraft",
 	"docNumber": "INV-2026-0421",
 	"paymentReference": null,

@@ -692,11 +692,20 @@ final class CorpusExpectedTest extends TestCase
         if ($receipt !== ($customerNull && $dueNull)) {
             $problems[] = 'účtenka ⇔ customer null a dueDate null';
         }
-        preg_match('/^([0-9]{2})(0[12])-(.+)$/', $stem, $m);
-        $form = ($m[2] ?? '') === '02' ? 'pdfIsdoc' : 'pdf';
-        if (($merged['form'] ?? null) !== $form) {
-            $problems[] = "podoba {$form} z názvu ≠ datový soubor";
+        // Podoba je jen pole `form`; název nese číslo varianty a pořadí dokladu
+        // (01 / 02), ne podobu (#119 krok 1). D10: ISDOC jen mezi dvěma českými
+        // subjekty s IČO — účtenka (bez odběratele) ho nedostane.
+        $form = $merged['form'] ?? null;
+        if (!in_array($form, ['pdf', 'pdfIsdoc'], true)) {
+            $problems[] = 'neznámá podoba ' . var_export($form, true);
+        } elseif ($form === 'pdfIsdoc' && (
+            ($doc['supplier']['country'] ?? null) !== 'cz'
+            || ($doc['supplier']['companyId'] ?? null) === null
+            || $customerNull
+        )) {
+            $problems[] = 'podoba pdfIsdoc jen u českého dodavatele s IČO a dokladu s odběratelem (D10 #119)';
         }
+        preg_match('/^([0-9]{2})(0[12])-(.+)$/', $stem, $m);
         if (($merged['variant'] ?? null) !== ($m[3] ?? null)) {
             $problems[] = 'varianta z názvu ≠ datový soubor';
         }

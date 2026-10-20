@@ -75,13 +75,13 @@
     "messageId": "MSG-CORPUS-NP-0902",
     "stem": "0902-receipt",
     "variant": "receipt",
-    "form": "pdfIsdoc"
+    "form": "pdf"
   },
   {
     "messageId": "MSG-CORPUS-NP-0602",
     "stem": "0602-eu-goods",
     "variant": "eu-goods",
-    "form": "pdfIsdoc"
+    "form": "pdf"
   },
   {
     "messageId": "MSG-CORPUS-NP-0702",

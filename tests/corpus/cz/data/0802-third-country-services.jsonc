@@ -1,7 +1,7 @@
-// Varianta 8, podoba pdfIsdoc — software ze třetí země (en), USD, úhrada kartou.
+// Varianta 8, podoba pdf (D10 #119: bez ISDOC) — software ze třetí země (en), USD, úhrada kartou.
 {
 	"variant": "third-country-services",
-	"form": "pdfIsdoc",
+	"form": "pdf",
 	"supplier": "quillstack",
 	"docNumber": "QS-211378",
 	"paymentReference": null,

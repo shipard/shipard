@@ -300,7 +300,7 @@ class BuildDatasetTest(unittest.TestCase):
             self.assertTrue(first["expected/vat.json"].startswith(b"[\n  {\n    \"messageId\""), "zapisovač očekávání (2 mezery)")
             self.assertEqual([
                 {"messageId": "MSG-CORPUS-VP-0101", "stem": "0101-domestic-goods", "variant": "domestic-goods", "form": "pdf"},
-                {"messageId": "MSG-CORPUS-VP-0502", "stem": "0502-eu-services", "variant": "eu-services", "form": "pdfIsdoc"},
+                {"messageId": "MSG-CORPUS-VP-0502", "stem": "0502-eu-services", "variant": "eu-services", "form": "pdf"},
             ], json.loads(first["expected/messages.json"]), "messages.json: zpráva → buňka korpusu (F4)")
 
             (out / "mail" / "stale.jsonc").write_text("x", encoding="utf-8")

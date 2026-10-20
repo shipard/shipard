@@ -5,7 +5,7 @@ import unittest
 from decimal import Decimal
 
 from invoicegen.corpus import (
-    PROFILES, Cell, DataFileError, SkippedCell, cells_for, deep_merge, expected_stem, resolve_overrides,
+    PROFILES, Cell, DataFileError, SkippedCell, cells_for, deep_merge, parse_stem, resolve_overrides, stem_for,
     validate_data_file, validate_variant_pairs,
 )
 from invoicegen.jsonc import load_jsonc
@@ -18,7 +18,7 @@ TAXONOMY = set(load_jsonc(TAXONOMY_PATH))
 
 
 def validate(doc: dict, stem: str | None = None) -> None:
-    validate_data_file(doc, stem or expected_stem(doc), identities=IDENTITIES, templates=TEMPLATES, taxonomy=TAXONOMY)
+    validate_data_file(doc, stem or stem_for(doc, "01"), identities=IDENTITIES, templates=TEMPLATES, taxonomy=TAXONOMY)
 
 
 class DeepMergeTest(unittest.TestCase):
@@ -89,13 +89,27 @@ class ValidateDataFileTest(unittest.TestCase):
             validate(doc)
 
     def test_stem(self) -> None:
-        self.assertEqual("0101-domestic-goods", expected_stem(DATA_DOMESTIC))
-        self.assertEqual("0502-eu-services", expected_stem(DATA_EU_SERVICES))
-        self.assertEqual("1001-long-document", expected_stem(data(DATA_DOMESTIC, variant="long-document")))
-        with self.assertRaises(DataFileError):
-            validate(DATA_DOMESTIC, "0102-domestic-goods")
+        self.assertEqual((1, "01", "domestic-goods"), parse_stem("0101-domestic-goods"))
+        self.assertEqual((10, "02", "long-document"), parse_stem("1002-long-document"))
+        self.assertEqual("0502-eu-services", stem_for(DATA_EU_SERVICES, "02"))
+        self.assertEqual("1001-long-document", stem_for(data(DATA_DOMESTIC, variant="long-document"), "01"))
+        # Název nese pořadí dokladu, ne podobu: obě podoby jsou platné pod 01 i 02.
+        validate(DATA_DOMESTIC, "0102-domestic-goods")
+        validate(data(DATA_DOMESTIC, form="pdfIsdoc"), "0101-domestic-goods")
+        for stem in ("0201-domestic-goods", "0103-domestic-goods", "0101-domestic_goods", "101-domestic-goods"):
+            with self.assertRaises(DataFileError, msg=stem):
+                validate(DATA_DOMESTIC, stem)
         with self.assertRaises(DataFileError):
             validate(data(DATA_DOMESTIC, variant="mystery"), "0101-mystery")
+        with self.assertRaises(DataFileError):
+            parse_stem("x")
+
+    def test_isdoc_form_only_between_czech_subjects(self) -> None:
+        validate(data(DATA_DOMESTIC, form="pdfIsdoc"))
+        validate(data(DATA_NO_VAT, form="pdfIsdoc"))  # neplátce s IČO
+        self.rejects(data(DATA_EU_SERVICES, form="pdfIsdoc"), "D10")
+        self.rejects(data(DATA_RECEIPT, form="pdfIsdoc"), "D10")
+        self.rejects(data(DATA_DOMESTIC, form="xml"), "neznámá podoba")
 
     def rejects(self, doc: dict, fragment: str) -> None:
         with self.assertRaises(DataFileError) as ctx:
@@ -152,6 +166,9 @@ class ValidateDataFileTest(unittest.TestCase):
         validate_variant_pairs({"0101": DATA_DOMESTIC, "0102": data(DATA_DOMESTIC, form="pdfIsdoc")})
         with self.assertRaises(DataFileError):
             validate_variant_pairs({"0101": DATA_DOMESTIC, "0102": data(DATA_DOMESTIC, supplier="de")})
+        with self.assertRaises(DataFileError) as ctx:
+            validate_variant_pairs({"0101-domestic-goods": DATA_DOMESTIC, "0101-domestic-goods-b": data(DATA_DOMESTIC)})
+        self.assertIn("pořadí 01 víckrát", str(ctx.exception))
 
 
 if __name__ == "__main__":

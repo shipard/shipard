@@ -92,13 +92,14 @@ platné) identitu vyměnit a korpus přegenerovat.
 ## 4. Datový soubor dokladu (`data/NNNN-<slug>.jsonc`)
 
 Píše se ručně, stručně; všechno odvoditelné dopočítá generátor. Název:
-`NNNN` = dvojčíslí varianty + podoba (`01` = `pdf`, `02` = `pdfIsdoc`),
-slug = varianta (`0502-eu-services`).
+`NNNN` = dvojčíslí varianty + pořadí dokladu ve variantě (`01` = první,
+`02` = druhý), slug = varianta (`0502-eu-services`). Podobu (`pdf` /
+`pdfIsdoc`) určuje **jen pole `form`** — z názvu se nepozná (#119 krok 1).
 
 ```jsonc
 {
 	"variant": "eu-services",
-	"form": "pdfIsdoc",                  // "pdf" | "pdfIsdoc"
+	"form": "pdf",                       // "pdf" | "pdfIsdoc" (pdfIsdoc jen podle D10, viz níže)
 	"supplier": "<klíč dodavatele>",
 	"docNumber": "INV-2026-0388",
 	"paymentReference": null,            // VS (jen číslice, max 10); null = na dokladu není
@@ -143,7 +144,11 @@ Sloučený doklad každého profilu se validuje zvlášť: šablona, dodavatel,
 `pricesWithVat` / `reverseCharge` jen s DIČ, `exemptIntraCommunity` jen
 z jiného státu EU), sazby podle země dodavatele (`cz`: 21, 12, 0; `de`:
 19, 7, 0), štítky z taxonomie `modules/core/exchange/config/contentTags.jsonc`.
-Obě podoby varianty jsou dva doklady téhož dodavatele.
+Oba doklady varianty jsou téhož dodavatele a každé pořadí (`01`, `02`) je
+ve variantě jednou. **Podoba `pdfIsdoc` jen podle D10 (#119):** dodavatel
+z ČR s IČO a doklad s odběratelem (ne účtenka) — ISDOC je výměna mezi
+dvěma českými subjekty, jinam nepatří. Porušení = chyba buildu i PHP
+strážce.
 
 ## 5. `vatTreatment`
 
@@ -163,20 +168,25 @@ země o DPH nemluví vůbec.
 
 ## 6. Varianty a matice
 
-Deset variant první vlny (D16), každá ve dvou podobách (`pdf`, `pdfIsdoc`):
+Deset variant první vlny (D16), každá se dvěma doklady (`01`, `02`). Podobu
+`pdfIsdoc` má podle D10 (#119) jen druhý doklad variant 1–4, 7 a 10; druhé
+doklady variant 5, 6, 8 (zahraniční dodavatel) a 9 (účtenka) zůstávají
+`pdf`:
 
-| V | Slug | Dodavatel | Měna | Šablona | `vatTreatment` | Štítek | Prověří |
-|---|------|-----------|------|---------|----------------|--------|---------|
-| 1 | `domestic-goods` | CZ | CZK | `cs-a` | `standard` 21 % | `goods.stock` | řádky, jednotky m2 / ks / bm, sleva na řádku |
-| 2 | `domestic-two-rates` | CZ | CZK | `cs-b` | `standard` 21 % + 12 % | `office.supplies`, řádky 12 % `admin.memberships` | rekapitulace po sazbách, `rowExceptions` |
-| 3 | `domestic-rounding` | CZ | CZK | `cs-c` | `standard`, zaokrouhlení na Kč | `premises.electricity` | `totalRounding` (dolů i nahoru), období plnění |
-| 4 | `domestic-reverse-charge` | CZ | CZK | `cs-a` | `reverseCharge` | `premises.maintenance` | `reverseCharge`, `reverseChargeCode: "4"` |
-| 5 | `eu-services` | DE | EUR | `en` | `reverseCharge` (čl. 196) | `it.hosting` | `intracom`, `supplyKind: services` |
-| 6 | `eu-goods` | DE | EUR | `en` | `exemptIntraCommunity` (čl. 138) | `it.hardware` | `intracom`, `supplyKind: goods`, `reverseCharge: false`, EAN |
-| 7 | `domestic-non-payer-supplier` | CZ neplátce | CZK | `cs-b` | `noVat` | `services.training` | `vat.mode: none`, bez rekapitulace |
-| 8 | `third-country-services` | US | USD | `en` | `noVat` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou |
-| 9 | `receipt` | CZ | CZK | `receipt` | `pricesWithVat` 21 % (+ 12 %) | `vehicle.fuel` | účtenka bez odběratele a splatnosti, `fromTotal` u PHM |
-| 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `goods.stock`, potraviny `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků |
+| V | Slug | Dodavatel | Měna | Šablona | `vatTreatment` | Podoba `02` | Štítek | Prověří |
+|---|------|-----------|------|---------|----------------|-------------|--------|---------|
+| 1 | `domestic-goods` | CZ | CZK | `cs-a` | `standard` 21 % | `pdfIsdoc` | `goods.stock` | řádky, jednotky m2 / ks / bm, sleva na řádku |
+| 2 | `domestic-two-rates` | CZ | CZK | `cs-b` | `standard` 21 % + 12 % | `pdfIsdoc` | `office.supplies`, řádky 12 % `admin.memberships` | rekapitulace po sazbách, `rowExceptions` |
+| 3 | `domestic-rounding` | CZ | CZK | `cs-c` | `standard`, zaokrouhlení na Kč | `pdfIsdoc` | `premises.electricity` | `totalRounding` (dolů i nahoru), období plnění |
+| 4 | `domestic-reverse-charge` | CZ | CZK | `cs-a` | `reverseCharge` | `pdfIsdoc` | `premises.maintenance` | `reverseCharge`, `reverseChargeCode: "4"` |
+| 5 | `eu-services` | DE | EUR | `en` | `reverseCharge` (čl. 196) | `pdf` | `it.hosting` | `intracom`, `supplyKind: services` |
+| 6 | `eu-goods` | DE | EUR | `en` | `exemptIntraCommunity` (čl. 138) | `pdf` | `it.hardware` | `intracom`, `supplyKind: goods`, `reverseCharge: false`, EAN |
+| 7 | `domestic-non-payer-supplier` | CZ neplátce | CZK | `cs-b` | `noVat` | `pdfIsdoc` | `services.training` | `vat.mode: none`, bez rekapitulace |
+| 8 | `third-country-services` | US | USD | `en` | `noVat` | `pdf` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou |
+| 9 | `receipt` | CZ | CZK | `receipt` | `pricesWithVat` 21 % (+ 12 %) | `pdf` | `vehicle.fuel` | účtenka bez odběratele a splatnosti, `fromTotal` u PHM |
+| 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `pdfIsdoc` | `goods.stock`, potraviny `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků |
+
+První doklad (`01`) každé varianty je `pdf`.
 
 Matice variant × profil (D17). Identifikovaná osoba se v první vlně neřeší:
 
@@ -413,7 +423,7 @@ tiskový tvar hodnot. Demo šablony a data se nemění.
   rekapitulaci podle `vat.mode`, Σ rekapitulace = součty, `totalBase +
   totalVat + totalRounding = totalAmount`, `rowExceptions` v rozsahu
   a bez duplicit; shoda s datovým souborem po sloučení přepisu profilu
-  (číslo, měna, počet řádků, štítek, účtenka, podoba a varianta z názvu).
+  (číslo, měna, počet řádků, štítek, účtenka, varianta z názvu, podoba z datového souboru a pravidlo D10 pro `pdfIsdoc`).
 
 - datové sady odpovídají korpusu (`testDatasetsMatchCorpus`, § 16): ke
   každé buňce zpráva v `tests/datasets/cz/<profil>/mail/`, žádná navíc,
@@ -454,8 +464,9 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
 - **`exemptIntraCommunity` ≠ `reverseCharge`**: čl. 138 `reverseCharge`
   nezapíná; samovyměření u zboží z EU zapne místo plnění
   (`docs/exchange-format.md` § 8.4).
-- **Účtenka v podobě `pdfIsdoc`** je v pořádku — ISDOC zná zjednodušený
-  daňový doklad jako samostatný typ.
+- **Účtenka v podobě `pdfIsdoc` neprojde** (D10 #119): ISDOC je výměna
+  mezi dvěma českými subjekty s IČO, účtenka nemá odběratele. Totéž platí
+  pro zahraničního dodavatele.
 - **Žádný `float` ve výpočtu ani v zápisu JSON.**
 - **DS ID** (`xxxx-xxxx-xxxx-xxxx`) nesmí v datech vzniknout —
   `scripts/check-sensitive.py`.

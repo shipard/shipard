@@ -96,7 +96,7 @@ DATA_DOMESTIC = {
 
 DATA_EU_SERVICES = {
     "variant": "eu-services",
-    "form": "pdfIsdoc",
+    "form": "pdf",  # D10: zahraniční dodavatel ISDOC nedostane
     "supplier": "de",
     "docNumber": "INV-2026-0388",
     "paymentReference": None,

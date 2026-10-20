@@ -1,8 +1,8 @@
-// Varianta 9, podoba pdfIsdoc — účtenka z čerpací stanice (receipt), platba hotově,
+// Varianta 9, podoba pdf (D10 #119: bez ISDOC) — účtenka z čerpací stanice (receipt), platba hotově,
 // občerstvení 12 % jako výjimka štítku.
 {
 	"variant": "receipt",
-	"form": "pdfIsdoc",
+	"form": "pdf",
 	"supplier": "jetelka",
 	"docNumber": "0005108",
 	"paymentReference": null,

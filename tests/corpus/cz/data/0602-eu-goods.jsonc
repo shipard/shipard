@@ -1,7 +1,7 @@
-// Varianta 6, podoba pdfIsdoc — zboží z EU, osvobozené dodání čl. 138 (en), sleva a doprava.
+// Varianta 6, podoba pdf (D10 #119: bez ISDOC) — zboží z EU, osvobozené dodání čl. 138 (en), sleva a doprava.
 {
 	"variant": "eu-goods",
-	"form": "pdfIsdoc",
+	"form": "pdf",
 	"supplier": "nordlicht",
 	"docNumber": "RE-2026-08102",
 	"paymentReference": null,
