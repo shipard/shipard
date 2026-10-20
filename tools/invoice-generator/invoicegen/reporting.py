@@ -6,12 +6,19 @@ a `expected/costs.json` datové sady; čte je `shpd-ds dataset-verify`.
 
 Mapování: varianta → režim (řádky přiznání podle sazby) + oddíl kontrolního
 hlášení. Samovyměření (přenesení, EU, třetí země) má na dokladu 0 %, českou
-sazbu dává `czRate`, daň = základ × sazba (Decimal, ROUND_HALF_UP). Doklady
-v cizí měně dostanou záznam v měně dokladu (`currency`) — mapování je úplné,
-kurz doplní až #121; verifikátor je do té doby vynechá (D30).
+sazbu dává `czRate`, daň = základ × sazba (Decimal, ROUND_HALF_UP).
+
+Částky jsou v Kč (#103 D73): doklad v cizí měně se přepočítá kurzem
+k účetnímu datu (DUZP, bez něj datum vystavení — `rates.py`), základ
+v Kč = základ v měně × kurz na haléře per sazba, daň samovyměření
+= základ v Kč × sazba, daň dodavatele = daň v měně × kurz; `currency`
+záznamu zůstává měna dokladu. Samovyměření bez rekapitulace (služba ze
+třetí země bez DPH) bere základ z celkové částky. Období a datum
+v oddílu KH jdou z účetního data. Kurz per doklad nese
+`expected/exchange-rates.json` (`exchange_rate_record`).
 
 Náklad dokladu = Σ MD na účtech třídy 5 bez zaokrouhlení: plátce základ
-(bez DPH ⇒ celková částka), neplátce a spolek základ + DPH (#97).
+(bez DPH ⇒ celková částka), neplátce a spolek základ + DPH (#97), v Kč.
 """
 
 from __future__ import annotations
@@ -22,6 +29,7 @@ from pathlib import Path
 
 from .compute import CENTS
 from .jsonc import load_jsonc
+from .rates import Rate
 
 VAT_REPORTING_FORMAT = "shpd.corpus.vatReporting"
 VAT_REPORTING_VERSION = "1"
@@ -119,41 +127,58 @@ def _cents(value: Decimal) -> Decimal:
     return value.quantize(CENTS, rounding=ROUND_HALF_UP)
 
 
-def _rates(expected: dict, spec: dict, label: str) -> dict[int, tuple[Decimal, Decimal]]:
-    """Základ a daň po českých sazbách z rekapitulace očekávání. Tuzemský
-    odpočet bere sazbu z dokladu (0 % = osvobozené, bez řádku); samovyměření
-    vyžaduje na dokladu 0 % a daň dopočítá z `czRate`."""
-    rate = spec["czRate"]
-    out: dict[int, tuple[Decimal, Decimal]] = {}
-    for entry in expected.get("vatRecap") or []:
+def accounting_date_of(expected: dict) -> str:
+    """Účetní datum z očekávaného canonicalu (D73): DUZP, bez něj datum
+    vystavení — totéž co `rates.accounting_date` nad datovým souborem."""
+    dates = expected["dates"]
+    return dates.get("taxPointDate") or dates["issueDate"]
+
+
+def _rates(expected: dict, spec: dict, label: str, rate: Decimal) -> dict[int, tuple[Decimal, Decimal]]:
+    """Základ a daň v Kč po českých sazbách z rekapitulace očekávání. Tuzemský
+    odpočet bere sazbu z dokladu (0 % = osvobozené, bez řádku) a daň dodavatele
+    přepočte kurzem; samovyměření vyžaduje na dokladu 0 % (bez rekapitulace
+    bere základ z celkové částky) a daň dopočítá z `czRate` ze základu v Kč."""
+    cz_rate = spec["czRate"]
+    sums: dict[int, tuple[Decimal, Decimal]] = {}   # sazba → (základ, daň) v měně dokladu
+    recap = expected.get("vatRecap") or []
+    if cz_rate is not None and not recap:
+        sums[cz_rate] = (Decimal(str(expected["totals"]["totalAmount"])), Decimal("0"))
+    for entry in recap:
         pct = int(entry["vatPct"])
         base = Decimal(str(entry["base"]))
-        if rate is None:
+        if cz_rate is None:
             if pct == 0:
                 continue
-            out[pct] = (base + out.get(pct, (Decimal("0"), Decimal("0")))[0],
-                        Decimal(str(entry["tax"])) + out.get(pct, (Decimal("0"), Decimal("0")))[1])
+            prev = sums.get(pct, (Decimal("0"), Decimal("0")))
+            sums[pct] = (prev[0] + base, prev[1] + Decimal(str(entry["tax"])))
             continue
         if pct != 0:
             raise ReportingError(f"{label}: samovyměření čeká na dokladu 0 %, rekapitulace má {pct} %")
-        prev = out.get(rate, (Decimal("0"), Decimal("0")))
-        out[rate] = (prev[0] + base, prev[1] + _cents(base * rate / 100))
+        prev = sums.get(cz_rate, (Decimal("0"), Decimal("0")))
+        sums[cz_rate] = (prev[0] + base, Decimal("0"))
+
+    out: dict[int, tuple[Decimal, Decimal]] = {}
+    for pct, (base, tax) in sums.items():
+        base_czk = _cents(base * rate)
+        out[pct] = (base_czk, _cents(tax * rate) if cz_rate is None else _cents(base_czk * pct / 100))
     return out
 
 
-def vat_record(message_id: str, variant: str, expected: dict, reporting: VatReporting) -> dict:
-    """Záznam `expected/vat.json`: období podle DUZP, řádky přiznání
-    `{řádek: {base, tax}}` a oddíl KH s údaji dokladu (u B.3 jen informativně —
-    hlášení nese součty)."""
+def vat_record(message_id: str, variant: str, expected: dict, reporting: VatReporting, *, rate: Decimal) -> dict:
+    """Záznam `expected/vat.json`: období podle účetního data, řádky přiznání
+    `{řádek: {base, tax}}` v Kč a oddíl KH s údaji dokladu (u B.3 jen
+    informativně — hlášení nese součty). `rate` = kurz za jednotku měny
+    dokladu k účetnímu datu (1 u domácí měny)."""
     spec = reporting.variants.get(variant)
     if spec is None:
         raise ReportingError(f"{message_id}: varianta {variant!r} nemá mapování DPH")
-    duzp = expected["dates"]["taxPointDate"]
+    acc_date = accounting_date_of(expected)
     record = {
         "messageId": message_id,
         "variant": variant,
         "currency": expected["currency"],
-        "period": duzp[:7] if duzp else None,
+        "period": acc_date[:7],
         "return": {},
         "controlStatement": None,
     }
@@ -161,7 +186,7 @@ def vat_record(message_id: str, variant: str, expected: dict, reporting: VatRepo
         record["period"] = None
         return record
 
-    rates = _rates(expected, spec, message_id)
+    rates = _rates(expected, spec, message_id, rate)
     rows: dict[int, dict[str, Decimal]] = {}
     for pct, (base, tax) in rates.items():
         mapping = reporting.regimes[spec["regime"]].get(pct)
@@ -186,16 +211,17 @@ def vat_record(message_id: str, variant: str, expected: dict, reporting: VatRepo
             "section": section,
             "supplierVatId": expected["supplier"]["vatId"],
             "documentNumber": expected["docNumber"],
-            "taxPointDate": duzp,
+            "taxPointDate": acc_date,
             "rates": {str(pct): {"base": base, "tax": tax} for pct, (base, tax) in sorted(rates.items(), reverse=True)},
             "reverseChargeCode": next(iter(codes)) if codes else None,
         }
     return record
 
 
-def cost_record(message_id: str, expected: dict, *, vat_payer: bool) -> dict:
-    """Záznam `expected/costs.json`: náklad bez zaokrouhlení — plátce základ,
-    neplátce základ + DPH; doklad bez DPH celková částka."""
+def cost_record(message_id: str, expected: dict, *, vat_payer: bool, rate: Decimal) -> dict:
+    """Záznam `expected/costs.json`: náklad v Kč bez zaokrouhlení — plátce
+    základ, neplátce základ + DPH; doklad bez DPH celková částka; částka
+    v měně dokladu × kurz na haléře. `currency` zůstává měna dokladu."""
     totals = expected["totals"]
     if totals["totalBase"] is None:
         cost = Decimal(str(totals["totalAmount"]))
@@ -203,4 +229,20 @@ def cost_record(message_id: str, expected: dict, *, vat_payer: bool) -> dict:
         cost = Decimal(str(totals["totalBase"]))
     else:
         cost = Decimal(str(totals["totalBase"])) + Decimal(str(totals["totalVat"]))
-    return {"messageId": message_id, "currency": expected["currency"], "cost": _cents(cost)}
+    return {"messageId": message_id, "currency": expected["currency"], "cost": _cents(cost * rate)}
+
+
+def exchange_rate_record(message_id: str, expected: dict, rate: Rate) -> dict:
+    """Záznam `expected/exchange-rates.json` — jen doklad v cizí měně: datum
+    kurzu (účetní datum), lístek, který generátor použil, a kurz za
+    jednotku. `dataset-verify` ho srovná s kurzem, který doplnil Shipard."""
+    if rate.list_type is None:
+        raise ReportingError(f"{message_id}: záznam kurzu jen pro doklad v cizí měně")
+    return {
+        "messageId": message_id,
+        "currency": expected["currency"],
+        "rateDate": accounting_date_of(expected),
+        "listType": rate.list_type,
+        "validFrom": rate.valid_from,
+        "rate": rate.rate,
+    }

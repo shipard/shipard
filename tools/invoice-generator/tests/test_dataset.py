@@ -274,6 +274,7 @@ class BuildDatasetTest(unittest.TestCase):
                 "exchangeRates/0001-cz-cnb-daily-2026-08-28.jsonc",
                 "exchangeRates/0002-cz-cnb-daily-2026-08-31.jsonc",
                 "expected/costs.json",
+                "expected/exchange-rates.json",
                 "expected/general-ledger.json",
                 "expected/messages.json",
                 "expected/projection.jsonc",
@@ -304,7 +305,12 @@ class BuildDatasetTest(unittest.TestCase):
             self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502"], [r["messageId"] for r in costs])
             self.assertEqual(["40"], list(vat[0]["return"]))
             self.assertEqual("EUR", vat[1]["currency"])
+            self.assertEqual({"base": D("10438.89"), "tax": D("2192.17")}, vat[1]["return"]["5"], "v Kč kurzem 24,125 k DUZP 2026-08-31")
             self.assertEqual(expected_for(info["docs"]["0101-domestic-goods"])["totals"]["totalBase"], costs[0]["cost"])
+            self.assertEqual(D("10438.89"), costs[1]["cost"])
+            self.assertEqual([{"messageId": "MSG-CORPUS-VP-0502", "currency": "EUR", "rateDate": "2026-08-31", "listType": "cz.cnb.daily",
+                               "validFrom": "2026-08-31", "rate": D("24.125000")}],
+                             json.loads(first["expected/exchange-rates.json"], parse_float=Decimal), "jen doklad v cizí měně")
             self.assertTrue(first["expected/vat.json"].startswith(b"[\n  {\n    \"messageId\""), "zapisovač očekávání (2 mezery)")
             self.assertEqual([
                 {"messageId": "MSG-CORPUS-VP-0101", "stem": "0101-domestic-goods", "variant": "domestic-goods", "form": "pdf"},
@@ -336,6 +342,7 @@ class BuildDatasetTest(unittest.TestCase):
                           reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=RATE_LISTS, currencies=CURRENCIES)
             self.assertEqual(b"[]\n", (out / "expected" / "vat.json").read_bytes())
             self.assertFalse((out / "exchangeRates").exists(), "sada bez cizí měny sekci nemá")
+            self.assertEqual(b"[]\n", (out / "expected" / "exchange-rates.json").read_bytes())
             self.assertNotIn("exchangeRates", json.loads((out / "manifest.jsonc").read_text(encoding="utf-8"))["counts"])
             self.assertFalse((out / "expected" / "general-ledger.json").exists(), "bez schváleného snímku se nic nekopíruje")
             costs = json.loads((out / "expected" / "costs.json").read_text(encoding="utf-8"), parse_float=Decimal)

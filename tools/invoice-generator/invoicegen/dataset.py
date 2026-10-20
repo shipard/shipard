@@ -30,9 +30,9 @@ from .checks import account_valid, iban_matches_account
 from .corpus import PROFILES, TEMPLATE_LOCALE, Cell, SkippedCell, cells_for
 from .expected import dumps_expected
 from .jsonc import load_jsonc
-from .rates import HOME_CURRENCY, LIST_FORMAT, RATE_PLACES, accounting_date, select_lists
+from .rates import HOME_CURRENCY, LIST_FORMAT, RATE_PLACES, Rate, accounting_date, select_lists
 from .render import NNBSP, fmt_date, fmt_money
-from .reporting import VatReporting, cost_record, vat_record
+from .reporting import VatReporting, cost_record, exchange_rate_record, vat_record
 
 DATASET_FORMAT = "shpd.dataset.v1"
 SETUP_FORMAT = "shpd.dataset.setup.v1"
@@ -503,6 +503,7 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     files: dict[str, Path] = {}
     vat_records: dict[str, dict] = {}
     cost_records: dict[str, dict] = {}
+    rate_records: dict[str, dict] = {}      # kurz per doklad v cizí měně (D73)
     message_records: dict[str, dict] = {}   # zpráva → buňka korpusu (F4: metriky po variantách, `--only`)
     vat_payer = profile.vat_agenda()
     home = profile.home_currency()
@@ -545,9 +546,13 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
         msg_id = message["messageId"]
         files[msg_id] = pdf_path
         message_records[msg_id] = {"messageId": msg_id, "stem": stem, "variant": cell.data["variant"], "form": cell.form}
+        currency = cell.data["currency"]
+        rate = Rate.home() if currency == home else selection.rates[(currency, accounting_date(cell.data))]
         if vat_payer:
-            vat_records[msg_id] = vat_record(msg_id, cell.data["variant"], expected, reporting)
-        cost_records[msg_id] = cost_record(msg_id, expected, vat_payer=vat_payer)
+            vat_records[msg_id] = vat_record(msg_id, cell.data["variant"], expected, reporting, rate=rate.rate)
+        cost_records[msg_id] = cost_record(msg_id, expected, vat_payer=vat_payer, rate=rate.rate)
+        if currency != home:
+            rate_records[msg_id] = exchange_rate_record(msg_id, expected, rate)
 
     messages.sort(key=lambda m: (m["receivedAt"], m["messageId"]))
     ids = [m["messageId"] for m in messages]
@@ -580,8 +585,9 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
         shutil.copyfile(files[message["messageId"]], sidecar / message["attachments"][0]["file"])
 
     # Očekávání pro dataset-verify (tasks/testing-phase3.md): záznamy v pořadí
-    # zpráv; neplátce a spolek mají vat.json prázdné (D28). Zapisovač
-    # očekávání (2 mezery, Decimal) — nejsou to soubory sady pro seed.
+    # zpráv; neplátce a spolek mají vat.json prázdné (D28), sada bez cizí
+    # měny exchange-rates.json prázdné (D73). Zapisovač očekávání (2 mezery,
+    # Decimal) — nejsou to soubory sady pro seed.
     # messages.json = zpráva → buňka korpusu pro evaluaci AI (F4, tasks/testing-phase4.md).
     expected_dir = out_dir / "expected"
     expected_dir.mkdir()
@@ -589,6 +595,7 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     (expected_dir / "messages.json").write_text(dumps_expected([message_records[m] for m in ids]), encoding="utf-8")
     (expected_dir / "vat.json").write_text(dumps_expected([vat_records[m] for m in ids if m in vat_records]), encoding="utf-8")
     (expected_dir / "costs.json").write_text(dumps_expected([cost_records[m] for m in ids]), encoding="utf-8")
+    (expected_dir / "exchange-rates.json").write_text(dumps_expected([rate_records[m] for m in ids if m in rate_records]), encoding="utf-8")
     if profile.ledger_snapshot is not None:
         shutil.copyfile(profile.ledger_snapshot, expected_dir / LEDGER_SNAPSHOT)
 

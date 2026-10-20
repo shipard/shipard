@@ -1,0 +1,50 @@
+[
+  {
+    "messageId": "MSG-CORPUS-VP-0601",
+    "currency": "EUR",
+    "rateDate": "2026-08-18",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-08-18",
+    "rate": 24.180000
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0801",
+    "currency": "USD",
+    "rateDate": "2026-09-01",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-09-01",
+    "rate": 20.844000
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0501",
+    "currency": "EUR",
+    "rateDate": "2026-08-31",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-08-31",
+    "rate": 24.125000
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0602",
+    "currency": "EUR",
+    "rateDate": "2026-09-22",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-09-22",
+    "rate": 24.345000
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0502",
+    "currency": "EUR",
+    "rateDate": "2026-09-30",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-09-30",
+    "rate": 24.440000
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0802",
+    "currency": "USD",
+    "rateDate": "2026-10-01",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-10-01",
+    "rate": 21.655000
+  }
+]

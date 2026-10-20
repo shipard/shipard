@@ -160,6 +160,30 @@ DATA_NO_VAT = {
     "notes": {"onDocument": "Nejsem plátce DPH."},
 }
 
+DATA_THIRD_COUNTRY = {
+    "variant": "third-country-services",
+    "form": "pdf",
+    "supplier": "us",
+    "docNumber": "CB-204611",
+    "paymentReference": None,
+    "dates": {"issue": "2026-09-01", "tax": None, "due": "2026-09-01"},
+    "currency": "USD",
+    "vatTreatment": "noVat",
+    "payment": {"method": "card", "specificSymbol": None, "constantSymbol": None},
+    "contentTag": "it.software",
+    "rows": [
+        {"text": "Team plan", "description": "12 seats", "qty": 12, "unit": "seat", "unitPrice": Decimal("14.00"),
+         "vatPct": None, "supplyKind": "services"},
+        {"text": "Additional storage 100 GB", "qty": 1, "unit": "mo", "unitPrice": Decimal("9.00"), "vatPct": None,
+         "supplyKind": "services"},
+    ],
+    "rounding": "none",
+    "template": "en",
+    "notes": {"onDocument": "Paid by card."},
+    "skipProfiles": {"non-payer": "identifikovaná osoba — druhá vlna",
+                     "association": "identifikovaná osoba — druhá vlna"},
+}
+
 TEMPLATES = {"cs-a", "cs-b", "cs-c", "en", "receipt"}
 
 

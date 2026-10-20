@@ -31,12 +31,12 @@
     "period": "2026-08",
     "return": {
       "3": {
-        "base": 4469.00,
-        "tax": 938.49
+        "base": 108060.42,
+        "tax": 22692.69
       },
       "43": {
-        "base": 4469.00,
-        "tax": 938.49
+        "base": 108060.42,
+        "tax": 22692.69
       }
     },
     "controlStatement": {
@@ -46,8 +46,8 @@
       "taxPointDate": "2026-08-18",
       "rates": {
         "21": {
-          "base": 4469.00,
-          "tax": 938.49
+          "base": 108060.42,
+          "tax": 22692.69
         }
       },
       "reverseChargeCode": null
@@ -144,14 +144,28 @@
     "messageId": "MSG-CORPUS-VP-0801",
     "variant": "third-country-services",
     "currency": "USD",
-    "period": null,
-    "return": {},
+    "period": "2026-09",
+    "return": {
+      "12": {
+        "base": 3689.39,
+        "tax": 774.77
+      },
+      "43": {
+        "base": 3689.39,
+        "tax": 774.77
+      }
+    },
     "controlStatement": {
       "section": "A.2",
       "supplierVatId": null,
       "documentNumber": "QS-204611",
-      "taxPointDate": null,
-      "rates": {},
+      "taxPointDate": "2026-09-01",
+      "rates": {
+        "21": {
+          "base": 3689.39,
+          "tax": 774.77
+        }
+      },
       "reverseChargeCode": null
     }
   },
@@ -162,12 +176,12 @@
     "period": "2026-08",
     "return": {
       "5": {
-        "base": 432.70,
-        "tax": 90.87
+        "base": 10438.89,
+        "tax": 2192.17
       },
       "43": {
-        "base": 432.70,
-        "tax": 90.87
+        "base": 10438.89,
+        "tax": 2192.17
       }
     },
     "controlStatement": {
@@ -177,8 +191,8 @@
       "taxPointDate": "2026-08-31",
       "rates": {
         "21": {
-          "base": 432.70,
-          "tax": 90.87
+          "base": 10438.89,
+          "tax": 2192.17
         }
       },
       "reverseChargeCode": null
@@ -402,12 +416,12 @@
     "period": "2026-09",
     "return": {
       "3": {
-        "base": 1927.20,
-        "tax": 404.71
+        "base": 46917.68,
+        "tax": 9852.71
       },
       "43": {
-        "base": 1927.20,
-        "tax": 404.71
+        "base": 46917.68,
+        "tax": 9852.71
       }
     },
     "controlStatement": {
@@ -417,8 +431,8 @@
       "taxPointDate": "2026-09-22",
       "rates": {
         "21": {
-          "base": 1927.20,
-          "tax": 404.71
+          "base": 46917.68,
+          "tax": 9852.71
         }
       },
       "reverseChargeCode": null
@@ -472,12 +486,12 @@
     "period": "2026-09",
     "return": {
       "5": {
-        "base": 463.36,
-        "tax": 97.31
+        "base": 11324.52,
+        "tax": 2378.15
       },
       "43": {
-        "base": 463.36,
-        "tax": 97.31
+        "base": 11324.52,
+        "tax": 2378.15
       }
     },
     "controlStatement": {
@@ -487,8 +501,8 @@
       "taxPointDate": "2026-09-30",
       "rates": {
         "21": {
-          "base": 463.36,
-          "tax": 97.31
+          "base": 11324.52,
+          "tax": 2378.15
         }
       },
       "reverseChargeCode": null
@@ -498,14 +512,28 @@
     "messageId": "MSG-CORPUS-VP-0802",
     "variant": "third-country-services",
     "currency": "USD",
-    "period": null,
-    "return": {},
+    "period": "2026-10",
+    "return": {
+      "12": {
+        "base": 5305.48,
+        "tax": 1114.15
+      },
+      "43": {
+        "base": 5305.48,
+        "tax": 1114.15
+      }
+    },
     "controlStatement": {
       "section": "A.2",
       "supplierVatId": null,
       "documentNumber": "QS-211378",
-      "taxPointDate": null,
-      "rates": {},
+      "taxPointDate": "2026-10-01",
+      "rates": {
+        "21": {
+          "base": 5305.48,
+          "tax": 1114.15
+        }
+      },
       "reverseChargeCode": null
     }
   }
