@@ -4,6 +4,7 @@ import { use } from '../../../src/dev/i18n/index.js';
 import {
   metricLabel, metricKind, formatMetric, formatMetricDelta, rangeText, fieldMetricRows, metricRows,
   topDeviations, unstableNodes, deviationLevel, sumOf, maxRepeat, isHeadlineMetric, DOCUMENT_METRICS,
+  stateLabel, isKnownState, pathLabel, isBlankState,
 } from '../../../src/dev/testing/metrics.js';
 
 // Popisky se testují česky; v Node je navigator.language en-US.
@@ -22,6 +23,23 @@ test('popisky a druhy metrik', () => {
   assert.equal(metricKind('cost.perDocument'), 'usd');
   assert.equal(metricKind('time.perDocumentMs'), 'ms');
   assert.equal(metricKind('tokens.input'), 'int');
+  // #103 D76: pole, která ISDOC nenese — počet, ne podíl.
+  assert.equal(metricLabel('fields.vat.notCarried'), 'DPH — nenese');
+  assert.equal(metricKind('fields.vat.notCarried'), 'int');
+  assert.equal(formatMetric('fields.vat.notCarried', 4), '4');
+});
+
+test('stavy a cesty výpočtu', () => {
+  assert.equal(stateLabel('notCarried'), 'nenese');
+  assert.equal(isKnownState('notCarried'), true);
+  assert.equal(isKnownState('weird'), false);
+  assert.equal(isBlankState('notCarried'), true);
+  assert.equal(isBlankState('notCompared'), true);
+  assert.equal(isBlankState('missing'), false);
+  assert.equal(pathLabel('isdoc'), 'import ISDOC');
+  assert.equal(pathLabel('ai'), 'AI extrakce');
+  assert.equal(pathLabel(undefined), 'AI extrakce', 'běh bez cesty = AI');
+  assert.equal(pathLabel('other'), 'other');
 });
 
 test('formát metrik a rozdílů', () => {

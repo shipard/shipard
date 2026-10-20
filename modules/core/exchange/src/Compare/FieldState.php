@@ -9,7 +9,9 @@ namespace Shipard\Module\Core\Exchange\Compare;
  * tasks/testing-phase4.md § 5): shoda beze změny, shoda až po normalizaci
  * tvaru (D15 — podklad pro #118) nebo podobnosti textu, očekávaná hodnota
  * chybí („model nenašel“), hodnota navíc („na dokladu není“), nebo obě
- * strany mají hodnotu a liší se.
+ * strany mají hodnotu a liší se. `notCarried` (#103 D76): pole, které
+ * zdroj výstupu z principu nenese (ISDOC — `IsdocFieldCoverage`) — ani
+ * shoda, ani odchylka, do počtů polí nejde.
  */
 enum FieldState: string
 {
@@ -18,10 +20,17 @@ enum FieldState: string
     case Missing = 'missing';
     case Extra = 'extra';
     case Wrong = 'wrong';
+    case NotCarried = 'notCarried';
 
     /** Shoda (beze změny nebo po normalizaci). */
     public function isHit(): bool
     {
         return $this === self::Match || $this === self::MatchNormalized;
+    }
+
+    /** Počítá se do polí (`n`, shoda, odchylky) — vše kromě `notCarried`. */
+    public function isCounted(): bool
+    {
+        return $this !== self::NotCarried;
     }
 }

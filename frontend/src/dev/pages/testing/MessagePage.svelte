@@ -7,6 +7,7 @@
   import { router, onLinkClick } from '../../router.svelte.js';
   import { testingApi } from '../../testing/api.js';
   import { formatUsd, formatMs, formatNumber } from '../../format.js';
+  import { pathLabel } from '../../testing/metrics.js';
   import Crumbs from '../../components/Crumbs.svelte';
   import PdfPane from '../../components/PdfPane.svelte';
   import StateBadge from '../../components/StateBadge.svelte';
@@ -87,7 +88,7 @@
 {:else}
   <div class="dev-page__head">
     <h1>{t('testing.col.document')} <code>{messageId}</code></h1>
-    <span class="dev-small dev-muted">{detail.cell.stem ?? ''} · {t('testing.message.variantForm', { variant: detail.cell.variant ?? '—', form: detail.cell.form ?? '—' })}</span>
+    <span class="dev-small dev-muted">{detail.cell.stem ?? ''} · {t('testing.message.variantForm', { variant: detail.cell.variant ?? '—', form: detail.cell.form ?? '—' })} · {t('testing.message.path', { path: pathLabel(detail.path) })}</span>
     <span class="dev-page__spacer"></span>
     <span class="repeats">
       <span class="dev-small dev-muted">{t('testing.message.repeats')}</span>
@@ -114,6 +115,7 @@
           {#if side}<strong>{side}</strong>{/if}
           <StateBadge state={d.status === 'ok' ? 'ok' : 'failed'} label={d.status === 'ok' ? t('testing.message.callOk') : t('testing.message.callFailed', { type: d.errorType ?? '?' })} title={d.note ?? ''} />
           <span><span class="dev-muted">model</span> <code>{d.model ?? '—'}</code></span>
+          <span><span class="dev-muted">{t('testing.col.path')}</span> <StateBadge state="neutral" label={pathLabel(d.path)} /></span>
           <span><span class="dev-muted">{t('testing.message.facts.cost')}</span> {formatUsd(d.costUsd)}</span>
           <span><span class="dev-muted">{t('testing.message.facts.tokens')}</span> {formatNumber(d.tokensIn)} / {formatNumber(d.tokensOut)}</span>
           {#if d.tags}
@@ -121,7 +123,7 @@
           {/if}
           <span><span class="dev-muted">{t('testing.message.facts.time')}</span> {formatMs(d.durationMs)}</span>
           <span><span class="dev-muted">{t('testing.message.facts.classification')}</span> <ValueCell value={d.classification?.expected} muted /> → <ValueCell value={d.classification?.actual} /> <StateBadge state={d.classification?.state} /></span>
-          <span><span class="dev-muted">{t('testing.message.facts.states')}</span> {t('testing.message.counts', { match: d.counts.match, normalized: d.counts.matchNormalized, missing: d.counts.missing, extra: d.counts.extra, wrong: d.counts.wrong })}</span>
+          <span><span class="dev-muted">{t('testing.message.facts.states')}</span> {t('testing.message.counts', { match: d.counts.match, normalized: d.counts.matchNormalized, missing: d.counts.missing, extra: d.counts.extra, wrong: d.counts.wrong })}{#if d.counts.notCarried}{t('testing.message.countsNotCarried', { n: d.counts.notCarried })}{/if}</span>
         </div>
       {/each}
     </div>

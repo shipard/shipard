@@ -27,10 +27,16 @@ export const fieldGroupLabel = (id) => label('metrics.group', id);
 export const stateLabel = (state) => label('metrics.state', state);
 export const isKnownState = (state) => has(`metrics.state.${state}`);
 
+/** Cesta výpočtu volání (`ai` / `isdoc`, #103 D76; běh bez klíče = `ai`) — popisek `testing.path.*`. */
+export const pathLabel = (path) => label('testing.path', path ?? 'ai');
+
+/** Stavy, které nejsou odchylka ani shoda k zobrazení výstupu (neporovnáno, pole, které zdroj nenese). */
+export const isBlankState = (state) => state === 'notCompared' || state === 'notCarried';
+
 /** Popisek metriky; neznámý klíč zůstane klíčem. */
 export function metricLabel(key) {
   if (has(`metrics.metric.${key}`)) return t(`metrics.metric.${key}`);
-  const m = /^fields\.([a-zA-Z]+)\.(n|hit|normalized|missing|extra|wrong)$/.exec(key);
+  const m = /^fields\.([a-zA-Z]+)\.(n|hit|normalized|missing|extra|wrong|notCarried)$/.exec(key);
   if (m) return `${fieldGroupLabel(m[1])} — ${label('metrics.part', m[2])}`;
   if (key.startsWith('calls.failed.')) return t('metrics.failedKind', { kind: key.slice('calls.failed.'.length) });
   return key;
@@ -41,7 +47,7 @@ export function metricKind(key) {
   if (key.startsWith('cost.')) return 'usd';
   if (key.startsWith('time.')) return 'ms';
   if (key.startsWith('documents.')) return 'percent';
-  if (key.startsWith('fields.')) return /\.(n|missing|extra|wrong)$/.test(key) ? 'int' : 'percent';
+  if (key.startsWith('fields.')) return /\.(n|missing|extra|wrong|notCarried)$/.test(key) ? 'int' : 'percent';
   if (key.startsWith('calls.') || key.startsWith('tokens.')) return 'int';
   return 'number';
 }

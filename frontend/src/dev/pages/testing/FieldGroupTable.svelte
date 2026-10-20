@@ -2,10 +2,11 @@
   // Skupina polí projekce: Pole · Očekáváno · Výstup · Stav (+ podobnost
   // u volného textu). V režimu dvou běhů (`fieldsB`) přibude Výstup B
   // a Stav B; řádky se párují podle cesty. Filtr „jen odchylky“ skryje
-  // čisté shody.
+  // čisté shody i pole, která zdroj nenese (cesta ISDOC, #103 D76).
   import StateBadge from '../../components/StateBadge.svelte';
   import ValueCell from '../../components/ValueCell.svelte';
   import { formatPercent } from '../../format.js';
+  import { isBlankState } from '../../testing/metrics.js';
   import { t } from '../../i18n/index.js';
 
   let { group, fields = [], fieldsB = null, onlyDeviations = false } = $props();
@@ -18,7 +19,8 @@
       if (!seen.has(b.path)) out.push({ path: b.path, a: null, b });
     }
     if (!onlyDeviations) return out;
-    return out.filter((r) => (r.a && r.a.state !== 'match') || (r.b && r.b.state !== 'match'));
+    const shown = (f) => f && f.state !== 'match' && f.state !== 'notCarried';
+    return out.filter((r) => shown(r.a) || shown(r.b));
   });
 
   const hidden = $derived(fields.length + (fieldsB?.length ?? 0) - rows.length);
@@ -35,6 +37,7 @@
         {#if counts.extra}<span class="dev-state dev-state--extra">{t('testing.fields.countExtra', { n: counts.extra })}</span>{/if}
         {#if counts.wrong}<span class="dev-state dev-state--wrong">{t('testing.fields.countWrong', { n: counts.wrong })}</span>{/if}
         {#if counts.matchNormalized}<span class="dev-state dev-state--matchNormalized">{t('testing.fields.countNormalized', { n: counts.matchNormalized })}</span>{/if}
+        {#if counts.notCarried}<span class="dev-state dev-state--notCarried">{t('testing.fields.countNotCarried', { n: counts.notCarried })}</span>{/if}
       </span>
     </h3>
     {#if rows.length === 0}
@@ -60,7 +63,7 @@
                 {#each (compare ? [row.a, row.b] : [row.a]) as side, i (i)}
                   {#if side}
                     <td class="dev-cell-actual dev-cellstate--{side.state}">
-                      {#if side.state === 'notCompared'}
+                      {#if isBlankState(side.state)}
                         <span class="dev-muted">—</span>
                       {:else}
                         <ValueCell value={side.actual} />
@@ -70,7 +73,7 @@
                       {/if}
                     </td>
                     <td class="dev-nowrap">
-                      <StateBadge state={side.state} />
+                      <StateBadge state={side.state} title={side.reason ?? null} />
                       {#if side.similarity !== null && side.similarity !== undefined}
                         <span class="dev-small dev-muted" title={t('testing.fields.similarityTitle')}> {formatPercent(side.similarity, 0)}</span>
                       {/if}

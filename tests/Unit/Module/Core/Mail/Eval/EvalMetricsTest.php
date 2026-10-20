@@ -102,6 +102,9 @@ final class EvalMetricsTest extends TestCase
         $this->assertSame(0.5, $out['byVariant']['domestic-goods']['documents.clean']);
         $this->assertSame(0.0, $out['byVariant']['eu-goods']['documents.clean']);
         $this->assertSame(['pdf', 'pdfIsdoc'], array_keys($out['byForm']));
+        $this->assertSame(['ai'], array_keys($out['byPath']), 'výsledky bez cesty jsou ai');
+        $this->assertSame(4, $out['byPath']['ai']['calls.total']);
+        $this->assertSame(0.0, $out['byPath']['ai']['tags.usd']);
         $this->assertSame(['_resolve.contentTag.tag' => 1, 'docNumber' => 1, 'message_classification.primary_type' => 1, 'rows' => 1, 'totals.totalAmount' => 1], $out['deviationsByField']);
     }
 
@@ -185,6 +188,53 @@ final class EvalMetricsTest extends TestCase
         );
     }
 
+    /**
+     * #103 D76: `notCarried` mimo `n`, shodu i odchylky (jen vlastní počet),
+     * mimo stabilitu a `deviationsByField`; `byPath` kyblíkuje podle cesty
+     * volání a buňka `isdoc` nese jen cenu štítků.
+     */
+    public function testNotCarriedIsOutsideCountsAndByPathSplitsByCallPath(): void
+    {
+        $tags = ['tokensIn' => 100, 'tokensOut' => 20, 'model' => 'claude-haiku-5-5', 'costUsd' => 0.0005];
+        $isdoc = static fn (string $id, int $repeat, array $states): EvalCallResult => new EvalCallResult(
+            $id, $repeat, EvalCallResult::STATUS_OK, null, null, 0.0, 0, 0, 10, 'isdoc', 'invoiceReceived', 'it.hosting',
+            array_map(static fn (string $path, string $state): FieldOutcome => new FieldOutcome($path, FieldState::from($state), 'e', 'a', null, $state === 'notCarried' ? 'důvod' : null), array_keys($states), $states),
+            $tags, EvalCallResult::PATH_ISDOC,
+        );
+        $states = ['docNumber' => 'match', 'vat.place' => 'notCarried', 'rows[0].priceCalcMode' => 'notCarried', 'rows[0].totalPrice' => 'match', 'totals.totalAmount' => 'match', '_resolve.contentTag.tag' => 'match', EvalFieldGroups::CLASSIFICATION_PATH => 'match'];
+        $results = [
+            self::callResult('A', 1, ['docNumber' => 'match', 'vat.place' => 'match', 'totals.totalAmount' => 'wrong', EvalFieldGroups::CLASSIFICATION_PATH => 'match'], 0.02),
+            $isdoc('B', 1, $states),
+            self::callResult('A', 2, ['docNumber' => 'match', 'vat.place' => 'match', 'totals.totalAmount' => 'wrong', EvalFieldGroups::CLASSIFICATION_PATH => 'match'], 0.02),
+            $isdoc('B', 2, ['vat.place' => 'match'] + $states),   // jiná třída na vat.place u notCarried se do stability nepočítá
+        ];
+        $out = EvalMetrics::compute($results, [self::message('A', 'x'), self::message('B', 'y', 'pdfIsdoc')], 2);
+        $m = $out['metrics'];
+
+        // DPH: A má vat.place match v obou opakováních, B ho má notCarried v prvním a match ve druhém → n = 3, notCarried = 1.
+        $this->assertSame(3, $m['fields.vat.n']);
+        $this->assertSame(1.0, $m['fields.vat.hit']);
+        $this->assertSame(1, $m['fields.vat.notCarried']);
+        $this->assertSame(0, $m['fields.vat.missing'] + $m['fields.vat.extra'] + $m['fields.vat.wrong']);
+        $this->assertSame(2, $m['fields.rows.notCarried'], 'priceCalcMode je skupina řádků, v obou opakováních');
+        $this->assertSame(2, $m['fields.rows.n'], 'jen totalPrice');
+        $this->assertSame(3, $m['fields.all.notCarried']);
+        $this->assertSame(['min' => 0, 'max' => 1], $out['range']['fields.vat.notCarried'], 'počet za opakování, ne průměr');
+        $this->assertSame(0.5, $m['documents.clean'], 'B čistý i s notCarried, A špatná částka');
+        $this->assertSame(0.5, $m['documents.amountsCorrect']);
+        $this->assertSame(['totals.totalAmount' => 2], $out['deviationsByField']);
+        $this->assertArrayNotHasKey('rows[].priceCalcMode', $out['fieldStability'], 'uzel jen s notCarried se neměří');
+        $this->assertSame(1.0, $out['fieldStability']['vat.place'], 'notCarried opakování se nepočítá — B má jen jedno měřené');
+
+        $this->assertSame(['ai', 'isdoc'], array_keys($out['byPath']));
+        $this->assertSame(2, $out['byPath']['isdoc']['calls.total']);
+        $this->assertSame(0.0, $out['byPath']['isdoc']['cost.usd']);
+        $this->assertSame(0.001, $out['byPath']['isdoc']['tags.usd']);
+        $this->assertSame(1.0, $out['byPath']['isdoc']['documents.clean']);
+        $this->assertSame(0.04, $out['byPath']['ai']['cost.usd']);
+        $this->assertSame(['pdf', 'pdfIsdoc'], array_keys($out['byForm']));
+    }
+
     public function testFailedCallCountsItsExpectedFieldsAsMissing(): void
     {
         // D44: selhané volání = missing všech neprázdných polí očekávání ve fields.*;
@@ -209,7 +259,7 @@ final class EvalMetricsTest extends TestCase
         $this->assertSame(0.5, $m['metrics']['documents.classificationOk']);
         $this->assertSame([], $m['deviationsByField'], 'selhání není odchylka pole — je v calls.failed');
         $this->assertSame(0.0, $m['byVariant']['y']['fields.all.hit']);
-        $this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 3, 'extra' => 0, 'wrong' => 0], $results[1]->toArray()['counts']);
+        $this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 3, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0], $results[1]->toArray()['counts']);
         $this->assertArrayNotHasKey('deviations', $results[1]->toArray(), 'seznam by jen opisoval očekávání');
     }
 }

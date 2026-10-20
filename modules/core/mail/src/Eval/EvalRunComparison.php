@@ -13,7 +13,7 @@ namespace Shipard\Module\Core\Mail\Eval;
  *
  * Běhy s různým počtem opakování (D41, × 1 proti × 3) jsou souměřitelné jen
  * na jedno opakování: součty přes volání (`calls.*`, `tokens.input`
- * / `.output`, `cost.usd`, `time.ms`, počty polí `fields.*.n|missing|extra|wrong`)
+ * / `.output`, `cost.usd`, `time.ms`, počty polí `fields.*.n|missing|extra|wrong|notCarried`)
  * se dělí `repeat` — pak sedí i k `range`, které je per opakování; podíly
  * (`fields.*.hit`, `documents.*`) a hodnoty na doklad (`cost.perDocument`,
  * `tokens.*PerDocument`, `time.perDocumentMs`) už průměr jsou. Počet volání
@@ -24,6 +24,8 @@ namespace Shipard\Module\Core\Mail\Eval;
  *
  * `messages` (D53): doklady vedle sebe — průměr odchylek na úspěšné volání
  * a počet selhání v A a B, pro prohlížeč výsledků; CLI výpis je nevypisuje.
+ * Počty `fields.*.notCarried` (#103 D76) jsou jen informace — nemají
+ * lepší / horší směr.
  */
 final class EvalRunComparison
 {
@@ -111,7 +113,7 @@ final class EvalRunComparison
             $delta = is_numeric($va) && is_numeric($vb) ? round($vb - $va, 6) : null;
             $noise = self::noise($rangeA[$key] ?? null, $rangeB[$key] ?? null);
             $better = null;
-            if ($delta !== null && abs($delta) > 1e-9) {
+            if ($delta !== null && abs($delta) > 1e-9 && !str_ends_with($key, '.notCarried')) {
                 $better = self::higherIsBetter($key) ? $delta > 0 : $delta < 0;
             }
             $rows[] = [
@@ -305,7 +307,7 @@ final class EvalRunComparison
             return false;
         }
         if (str_starts_with($key, 'fields.')) {
-            return (bool) preg_match('/\.(n|missing|extra|wrong)$/', $key);
+            return (bool) preg_match('/\.(n|missing|extra|wrong|notCarried)$/', $key);
         }
         return !str_contains(strtolower($key), 'perdocument');
     }
@@ -358,7 +360,7 @@ final class EvalRunComparison
         if (str_starts_with($key, 'cost.') || $key === 'tags.usd') {
             return number_format((float) $value, 4, '.', '');
         }
-        if ((str_starts_with($key, 'fields.') && !preg_match('/\.(n|missing|extra|wrong)$/', $key)) || str_starts_with($key, 'documents.')) {
+        if ((str_starts_with($key, 'fields.') && !preg_match('/\.(n|missing|extra|wrong|notCarried)$/', $key)) || str_starts_with($key, 'documents.')) {
             return number_format((float) $value * 100, 1, ',', ' ') . ' %';
         }
         if (str_starts_with($key, 'tokens.') || str_starts_with($key, 'time.')) {

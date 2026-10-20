@@ -134,9 +134,12 @@ final class DevTestingController
 				continue;
 			}
 			$id = $call['messageId'];
-			$messages[$id] ??= ($cells[$id] ?? ['messageId' => $id, 'stem' => null, 'variant' => null, 'form' => null]) + ['repeats' => []];
+			$messages[$id] ??= ($cells[$id] ?? ['messageId' => $id, 'stem' => null, 'variant' => null, 'form' => null]) + ['path' => null, 'repeats' => []];
+			// Cesta výpočtu (#103 D76) — běhy před ní jsou celé `ai`; v rámci zprávy je stejná pro každé opakování.
+			$messages[$id]['path'] = \Shipard\Module\Core\Mail\Eval\EvalCallResult::pathOf($call);
 			$messages[$id]['repeats'][] = [
 				'repeat' => (int) ($call['repeat'] ?? 1),
+				'path' => \Shipard\Module\Core\Mail\Eval\EvalCallResult::pathOf($call),
 				'status' => $call['status'] ?? null,
 				'errorType' => $call['errorType'] ?? null,
 				'deviations' => \Shipard\Module\Core\Mail\Eval\EvalCallResult::deviationCount($call),

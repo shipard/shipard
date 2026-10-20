@@ -468,6 +468,59 @@ final class AiEvalCommandTest extends TestCase
         $this->assertFileExists($this->tmp . '/runs/cz-vat-payer/2026-10-15-baseline-2.json');
     }
 
+    /**
+     * #103 D76: zpráva podoby PDF + ISDOC jde cestou `isdoc` — odhad ji počítá
+     * jen za štítky, volání nese `path`, pole, která ISDOC nenese, jsou
+     * `notCarried`, běh má rozpad `byPath` a souhrn řádek po cestách.
+     */
+    public function testIsdocPathInEstimateRunFileAndReport(): void
+    {
+        $messages = EvalMessages::filter(EvalMessages::fromDataset(DatasetReader::open(self::datasetDir())), ['0101', '0102'], null);
+        usort($messages, static fn ($a, $b): int => strcmp($a->messageId, $b->messageId));
+        [$m0101, $m0102] = $messages;
+        $this->assertSame('pdfIsdoc', $m0102->form);
+        $isdoc = AnalysisOutcome::success(
+            ['message_classification' => ['primary_type' => 'invoiceReceived'], 'document' => $m0102->expectedCanonical],
+            [],
+            new \Shipard\Module\Core\Mail\Analysis\ValidatedCanonical((string) json_encode($m0102->expectedCanonical), true, EvalRunnerTest::tags(0.001)),
+            0, 0, 12, 0.0, '', 'isdoc', null,
+        );
+
+        $command = $this->command(self::ndxByCode());
+        $command->computation = new ScriptedComputation([EvalRunnerTest::okOutcome($m0101->expectedCanonical), $isdoc], ['ai', 'isdoc']);
+        $tester = self::execute($command, ['--only' => '0101,0102', '--yes' => true]);
+
+        $display = $tester->getDisplay();
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $display);
+        $this->assertStringContainsString('Z toho 1 volání cestou ISDOC', $display);
+        $this->assertStringContainsString('Po cestách (ai = extrakce modelem, isdoc = import ISDOC + štítky): ai 1 volání', $display);
+        $this->assertStringContainsString('isdoc 1 volání, shoda 100,0 %, bez odchylky 100,0 %, cena 0.0010 USD', $display);
+
+        $run = json_decode((string) file_get_contents($this->tmp . '/runs/cz-vat-payer/2026-10-15-baseline.json'), true);
+        $calls = array_column($run['calls'], null, 'messageId');
+        $this->assertSame('ai', $calls['MSG-CORPUS-VP-0101']['path']);
+        $this->assertSame('isdoc', $calls['MSG-CORPUS-VP-0102']['path']);
+        $this->assertSame('isdoc', $calls['MSG-CORPUS-VP-0102']['model']);
+        $this->assertSame(0.0, $calls['MSG-CORPUS-VP-0102']['costUsd']);
+        $this->assertGreaterThan(0, $calls['MSG-CORPUS-VP-0102']['counts']['notCarried']);
+        $this->assertSame(0, $calls['MSG-CORPUS-VP-0101']['counts']['notCarried']);
+        $this->assertSame([], $calls['MSG-CORPUS-VP-0102']['deviations']);
+        $this->assertSame(['ai', 'isdoc'], array_keys($run['byPath']));
+        $this->assertSame(0.0, $run['byPath']['isdoc']['cost.usd']);
+        $this->assertSame(0.001, $run['byPath']['isdoc']['tags.usd']);
+        $this->assertSame(1, $run['byPath']['ai']['calls.total']);
+        $this->assertGreaterThan(0, $run['metrics']['fields.all.notCarried']);
+        $this->assertSame(1.0, $run['metrics']['documents.clean']);
+
+        // Odhad: ISDOC volání za štítky; `--estimate --json` nese aiCalls / isdocCalls.
+        $command = $this->command(self::ndxByCode());
+        $tester = self::execute($command, ['--only' => '0101,0102', '--repeat' => '2', '--estimate' => true, '--json' => true]);
+        $lines = array_values(array_filter(explode("\n", $tester->getDisplay()), static fn (string $l): bool => str_starts_with($l, '{"ok":true')));
+        $estimate = json_decode($lines[0], true)['estimate'];
+        $this->assertSame([4, 2, 2], [$estimate['calls'], $estimate['aiCalls'], $estimate['isdocCalls']]);
+        $this->assertSame('sameModel', $estimate['basis']);
+    }
+
     /** F6b D61: strop útraty zastaví další volání, běh je neúplný; průběh v JSON řádcích vč. ceny štítků. */
     public function testMaxCostStopsTheRunAndProgressFileCarriesTheEvents(): void
     {

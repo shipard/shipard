@@ -1817,9 +1817,14 @@ Evaluace AI analýzy nad datovou sadou (#103 F4, `docs/test-corpus.md`
 bez claimu, zápisu a změny stavu zprávy) a výstup se porovná po polích
 s `canonicalJson` ideální analýzy ze souborů sady (porovnávač v režimu
 evaluace: `match` / `matchNormalized` / `missing` / `extra` / `wrong`,
-řádky po pozicích, výjimky štítků řádků podle `rowIndex`). Výsledek jde do `tests/eval/<název sady>/<datum>-<varianta>[-n].json`
+řádky po pozicích, výjimky štítků řádků podle `rowIndex`). Zpráva s ISDOC
+(jak ji rozpozná produkce) jde jako v produkci cestou **`isdoc`** —
+import ISDOC → canonical + obohacení štítků **bez AI extrakce** (cena jen
+štítky, model `isdoc`), pole, která ISDOC nenese, mají stav `notCarried`
+mimo shodu i odchylky; ostatní zprávy cestou `ai` (#103 D76). Výsledek jde do `tests/eval/<název sady>/<datum>-<varianta>[-n].json`
 (`shpd.eval.run.v1`: sada s hashem obsahu, git commit, varianta
-rozepsaná na skutečné hodnoty, metriky, per zpráva jen odchylky).
+rozepsaná na skutečné hodnoty, metriky vč. rozpadu po cestách `byPath`,
+per zpráva cesta `path` a jen odchylky).
 
 **Preflight** (exit 2, nic se nemění): server jen v režimu `development`;
 země sady = země zdroje dat a schémata; zprávy zdroje dat jsou přesně
@@ -1833,7 +1838,9 @@ model, připojení a odhad ceny (z posledního běhu nad sadou se **stejným
 skutečným modelem** extrakce, bez ohledu na variantu a hash, vč. ceny
 štítků — F6b D56; jinak z tokenů na doklad posledního běhu nad sadou
 s modelem téže řady — první číslo v ID katalogu — × ceník plánovaného
-modelu; jinak z ceníku katalogu a typické velikosti dokladu). S `--estimate`
+modelu; jinak z ceníku katalogu a typické velikosti dokladu; zprávy podoby
+PDF + ISDOC se počítají jen za štítky — řádek „Z toho N volání cestou
+ISDOC“, v JSON `estimate.aiCalls` / `isdocCalls` / `isdocPerCall`). S `--estimate`
 příkaz po odhadu skončí (exit 0, s `--json` objekt `{ok, set, variant, calls,
 model, tagsModel, estimate, …}` na stdout) — nic nespustí ani nezapíše;
 s `--json` jde při odmítnutí preflightem na stdout i `{ok: false, problems}`.

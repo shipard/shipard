@@ -11,6 +11,7 @@ use Shipard\Module\Core\Exchange\Compare\Projection;
 use Shipard\Module\Core\Exchange\EInvoice\CountryNames;
 use Shipard\Module\Core\Exchange\EInvoice\EInvoiceOptions;
 use Shipard\Module\Core\Exchange\EInvoice\EInvoiceUuid;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocWriter;
 use Shipard\Module\Docs\Core\Prints\PaymentQr\CzIbanCalculator;
@@ -19,7 +20,8 @@ use Shipard\Module\Docs\Core\Prints\PaymentQr\CzIbanCalculator;
  * Round-trip generátor → čtečka (#119 D8): každý `.isdoc` korpusu
  * (vyrobený buildem z očekávaného výsledku + `rows[].computed`) přečtený
  * `IsdocReader` se od očekávaného výsledku liší jen v polích, která
- * ISDOC nenese ({@see IGNORE}, stejný seznam v docs/einvoice.md). Totéž
+ * ISDOC nenese ({@see IGNORE} = `IsdocFieldCoverage::NOT_CARRIED` + `_resolve`;
+ * opis v docs/einvoice.md § 8). Totéž
  * nad fixturami generátoru (vydané doklady — role se prohodí).
  */
 class IsdocCorpusRoundTripTest extends TestCase
@@ -29,23 +31,15 @@ class IsdocCorpusRoundTripTest extends TestCase
     private const COUNTRIES = __DIR__ . '/../../../../../../modules/world/base/config/countries.jsonc';
 
     /**
-     * Cesty projekce, které ISDOC nenese — ověřeno proti XSD 6.0.1 / 6.0.2.
-     * Pole, které ISDOC nese a čtečka ho nevrací, sem nepatří (patří do
-     * čtečky).
+     * Cesty projekce, které se neporovnávají: pole, která ISDOC nenese
+     * ({@see IsdocFieldCoverage::NOT_CARRIED} — jediný zdroj sdílený
+     * s evaluací, #103 D76), plus `_resolve` jen tady — štítek obsahu je
+     * výsledek obohacení, ne pole dokladu, a v evaluaci se měří.
      *
      * @var array<string, string> cesta uzlu → důvod
      */
-    public const IGNORE = [
-        'vat.place'               => 'ISDOC nemá místo plnění; applier ho odvodí z prefixu DIČ dodavatele (docs/exchange-format.md § 8.4)',
-        'rows[].vat.supplyKind'   => 'ISDOC nemá druh plnění (zboží / služba)',
-        'rows[].priceCalcMode'    => 'ISDOC neříká, zda je autoritativní jednotková, nebo celková cena — čtečka dává fromUnitPrice',
-        'supplier.contact.web'    => 'Contact má jen Name / Telephone / ElectronicMail',
-        'customer.contact.web'    => 'Contact má jen Name / Telephone / ElectronicMail',
-        'dates.periodFrom'        => 'hlavička ISDOC nemá období plnění',
-        'dates.periodTo'          => 'hlavička ISDOC nemá období plnění',
-        'rows[].discountPct'      => 'ISDOC nese jen částku před slevou (LineExtensionAmountBeforeDiscount), ne procento — částku hlídá testDiscountSurvivesAsAmount',
-        'rows[].discountAmount'   => 'korpus vyjadřuje slevu procentem (discountAmount null), čtečka vrací částku z LineExtensionAmountBeforeDiscount — hlídá testDiscountSurvivesAsAmount',
-        '_resolve'                => 'štítek obsahu je výsledek obohacení, ne pole dokladu',
+    public const IGNORE = IsdocFieldCoverage::NOT_CARRIED + [
+        '_resolve' => 'štítek obsahu je výsledek obohacení, ne pole dokladu',
     ];
 
     private static ?CanonicalComparator $comparator = null;

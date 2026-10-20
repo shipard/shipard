@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Core\Mail\Isdoc\IsdocDocumentCollector;
 use Shipard\Module\Core\Mail\IsdocImportService;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
 use Shipard\Module\Core\Mail\MessageTitleComposer;
@@ -24,7 +25,8 @@ use Shipard\Module\Core\Mail\MessageTitleComposer;
  * IsdocReader + SchemaValidator nad fixtures, mockovaná DB — ověřuje se
  * orchestrace: co se insertne/updatne a kdy se větev vzdá. Canonical
  * návrhu žije přímo na řádku analýzy (`canonical_json`), žádná extracted
- * tabulka.
+ * tabulka. Čistý sběr ISDOC → canonical (kandidáti, dedup, embedded)
+ * kryje IsdocDocumentCollectorTest; tady se podstrkuje přes konstruktor.
  */
 class IsdocImportServiceTest extends TestCase
 {
@@ -604,31 +606,20 @@ class IsdocImportServiceTest extends TestCase
 
     /**
      * Service s podvrženými embedded canonicaly — seam přes protected
-     * extractEmbeddedCandidates (reálná extrakce vyžaduje pdfdetach + PDF
-     * s /EmbeddedFiles; extrakční vrstvu kryje degradační test níže).
+     * extractEmbeddedCandidates collectoru (reálná extrakce vyžaduje
+     * pdfdetach + PDF s /EmbeddedFiles; extrakční vrstvu kryje degradační
+     * test níže).
      *
      * @param list<array<string, mixed>> $embedded canonicaly per PDF příloha
      */
     private function serviceWithEmbedded(DataSourceConnection $db, array $embedded): IsdocImportService
     {
-        return new class(
-            $db,
-            new SchemaValidator(SchemaLoader::default()),
-            null,
-            $this->tmpDir,
-            null,
-            $embedded,
-        ) extends IsdocImportService {
+        $validator = new SchemaValidator(SchemaLoader::default());
+        $collector = new class($validator, $this->tmpDir, $embedded) extends IsdocDocumentCollector {
             /** @param list<array<string, mixed>> $embeddedCanonicals */
-            public function __construct(
-                DataSourceConnection $db,
-                SchemaValidator $schemaValidator,
-                ?RowEnrichmentPipeline $enricher,
-                string $dsPath,
-                ?\Shipard\Module\Core\Exchange\Isdoc\IsdocReader $reader,
-                private readonly array $embeddedCanonicals,
-            ) {
-                parent::__construct($db, $schemaValidator, $enricher, $dsPath, $reader);
+            public function __construct(SchemaValidator $schemaValidator, string $dsPath, private readonly array $embeddedCanonicals)
+            {
+                parent::__construct($schemaValidator, $dsPath);
             }
 
             protected function extractEmbeddedCandidates(int $messageNdx, array $file): array
@@ -636,6 +627,7 @@ class IsdocImportServiceTest extends TestCase
                 return $this->embeddedCanonicals;
             }
         };
+        return new IsdocImportService($db, $validator, null, $this->tmpDir, collector: $collector);
     }
 
     /** @return array<string, mixed> */
@@ -745,14 +737,11 @@ class IsdocImportServiceTest extends TestCase
         $dibi = $this->makeDibi($this->messageRow());
         $dibi->expects($this->never())->method('begin');
 
-        $service = new class(
-            $this->makeDb($dibi),
-            new SchemaValidator(SchemaLoader::default()),
-            null,
-            $this->tmpDir,
-        ) extends IsdocImportService {
+        $validator = new SchemaValidator(SchemaLoader::default());
+        $collector = new class($validator, $this->tmpDir) extends IsdocDocumentCollector {
             protected string $pdfdetachBin = 'shpd-nonexistent-pdfdetach';
         };
+        $service = new IsdocImportService($this->makeDb($dibi), $validator, null, $this->tmpDir, collector: $collector);
 
         $this->assertFalse($service->tryImport(self::MESSAGE_NDX, $files));
         $this->assertSame([], $this->inserts);
@@ -761,8 +750,9 @@ class IsdocImportServiceTest extends TestCase
     // ── detect() — detekce bez zápisu (#81 D4) ───────────────────────────────
     //
     // MailController po commitu volá jen detect(); import běží až v runneru.
-    // Stejná rozhodovací logika jako tryImport (sdílené collectDocument),
-    // ale nikdy nesmí sáhnout do DB ani spustit enrichment.
+    // Rozhodovací logika žije v IsdocDocumentCollector (vlastní test); tady
+    // jen to, že detect() nikdy nesáhne do DB, nespustí enrichment a polyká
+    // výjimky.
 
     public function testDetectTrueForValidStandaloneIsdocWithoutWriting(): void
     {
@@ -777,66 +767,9 @@ class IsdocImportServiceTest extends TestCase
         $this->assertTrue($this->service($this->makeDb($dibi))->detect(self::MESSAGE_NDX, $files));
         $this->assertSame([], $this->inserts);
         $this->assertSame([], $this->updates);
-    }
-
-    public function testDetectTrueForEmbeddedIsdoc(): void
-    {
-        $files = [
-            $this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf'),
-        ];
-
-        $dibi = $this->makeDibi($this->messageRow());
-        $dibi->expects($this->never())->method('begin');
-        $service = $this->serviceWithEmbedded($this->makeDb($dibi), [$this->parsedCanonical('invoice_min.isdoc')]);
-
-        $this->assertTrue($service->detect(self::MESSAGE_NDX, $files));
-        $this->assertSame([], $this->inserts);
-    }
-
-    public function testDetectFalseForPdfWithoutEmbeddedIsdoc(): void
-    {
-        // Běžné PDF (sken, AI faktura) → false → zpráva jde do AI fronty jako dřív.
-        $files = [
-            $this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf'),
-        ];
-        $service = $this->serviceWithEmbedded($this->makeDb($this->makeDibi($this->messageRow())), []);
-
-        $this->assertFalse($service->detect(self::MESSAGE_NDX, $files));
-    }
-
-    public function testDetectFalseForMalformedStandaloneIsdoc(): void
-    {
-        $files = [
-            $this->storedAttachment(501, 'ok.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
-            $this->storedAttachment(502, 'vadna.isdoc', '<Invoice xmlns="http://isdoc.cz/n"><ID>1', 'application/xml'),
-        ];
-
-        $this->assertFalse(
-            $this->service($this->makeDb($this->makeDibi($this->messageRow())))->detect(self::MESSAGE_NDX, $files),
-        );
-    }
-
-    public function testDetectFalseForTwoDistinctIdentities(): void
-    {
-        $files = [
-            $this->storedAttachment(501, 'faktura.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
-            $this->storedAttachment(502, 'dobropis.isdoc', $this->fixture('credit_note.isdoc'), 'application/xml'),
-        ];
-
-        $this->assertFalse(
-            $this->service($this->makeDb($this->makeDibi($this->messageRow())))->detect(self::MESSAGE_NDX, $files),
-        );
-    }
-
-    public function testDetectFalseWithoutCandidate(): void
-    {
-        $files = [
+        $this->assertFalse($this->service($this->makeDb($dibi))->detect(self::MESSAGE_NDX, [
             $this->storedAttachment(503, 'scan.jpg', 'JFIF', 'image/jpeg'),
-        ];
-
-        $this->assertFalse(
-            $this->service($this->makeDb($this->makeDibi($this->messageRow())))->detect(self::MESSAGE_NDX, $files),
-        );
+        ]));
     }
 
     public function testDetectSwallowsExceptions(): void
@@ -846,19 +779,18 @@ class IsdocImportServiceTest extends TestCase
         $files = [
             $this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf'),
         ];
-        $service = new class(
-            $this->makeDb($this->makeDibi($this->messageRow())),
-            new SchemaValidator(SchemaLoader::default()),
-            null,
-            $this->tmpDir,
-        ) extends IsdocImportService {
+        $validator = new SchemaValidator(SchemaLoader::default());
+        $collector = new class($validator, $this->tmpDir) extends IsdocDocumentCollector {
             protected function extractEmbeddedCandidates(int $messageNdx, array $file): array
             {
                 throw new \RuntimeException('pdfdetach exploded');
             }
         };
+        $service = new IsdocImportService($this->makeDb($this->makeDibi($this->messageRow())), $validator, null, $this->tmpDir, collector: $collector);
 
         $this->assertFalse($service->detect(self::MESSAGE_NDX, $files));
+        $this->assertFalse($service->tryImport(self::MESSAGE_NDX, $files));
+        $this->assertSame([], $this->inserts);
     }
 
     public function testPdfDetectionPositiveAndCandidateUnion(): void

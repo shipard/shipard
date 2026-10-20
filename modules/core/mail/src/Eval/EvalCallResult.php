@@ -14,12 +14,18 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * výsledků jdou jen odchylky, shody jako počty (D36) a shody po normalizaci
  * s výstupní hodnotou (`normalized`, D53); selhané volání nese
  * neprázdné listy očekávání jako `missing` (D44) a do souboru jdou jen
- * jejich počty — seznam by jen opisoval očekávání.
+ * jejich počty — seznam by jen opisoval očekávání. `path` = cesta výpočtu
+ * (#103 D76): `ai` extrakce modelem, `isdoc` deterministický import ISDOC
+ * + štítky; listy `notCarried` (pole, která ISDOC nenese) nejsou shoda ani
+ * odchylka — do souboru jde jen jejich počet, prohlížeč je odvodí
+ * z `IsdocFieldCoverage`.
  */
 final readonly class EvalCallResult
 {
     public const string STATUS_OK = 'ok';
     public const string STATUS_FAILED = 'failed';
+    public const string PATH_AI = 'ai';
+    public const string PATH_ISDOC = 'isdoc';
     /** Selhání, za kterými je infrastruktura nebo nastavení — exit 1 příkazu. */
     public const array INFRASTRUCTURE_ERRORS = ['ai_error', 'config_error', 'internal'];
 
@@ -42,6 +48,7 @@ final readonly class EvalCallResult
         public ?string $tag,
         public array $outcomes = [],
         public ?array $tags = null,
+        public string $path = self::PATH_AI,
     ) {}
 
     /** Cena volání štítků; 0 bez LLM volání nebo bez ceny (model mimo katalog). */
@@ -60,10 +67,10 @@ final readonly class EvalCallResult
         return !$this->isOk() && in_array($this->errorType, self::INFRASTRUCTURE_ERRORS, true);
     }
 
-    /** @return list<FieldOutcome> missing / extra / wrong */
+    /** @return list<FieldOutcome> missing / extra / wrong (`notCarried` není odchylka) */
     public function deviations(): array
     {
-        return array_values(array_filter($this->outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit()));
+        return array_values(array_filter($this->outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit() && $o->state->isCounted()));
     }
 
     /** Úspěšné volání bez jediné odchylky. */
@@ -72,10 +79,10 @@ final readonly class EvalCallResult
         return $this->isOk() && $this->deviations() === [];
     }
 
-    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int} */
+    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int, notCarried: int} */
     public function counts(): array
     {
-        $counts = ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
+        $counts = ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
         foreach ($this->outcomes as $o) {
             $counts[$o->state->value]++;
         }
@@ -100,6 +107,7 @@ final readonly class EvalCallResult
             'tokensOut' => $this->tokensOut,
             'durationMs' => $this->durationMs,
             'model' => $this->model,
+            'path' => $this->path,
             'primaryType' => $this->primaryType,
             'tag' => $this->tag,
             'tags' => $this->tags,
@@ -146,6 +154,12 @@ final readonly class EvalCallResult
             }
         }
         return $out;
+    }
+
+    /** Cesta výpočtu z volání v souboru výsledků; běhy před D76 (bez klíče) jsou `ai`. */
+    public static function pathOf(array $call): string
+    {
+        return ($call['path'] ?? null) === self::PATH_ISDOC ? self::PATH_ISDOC : self::PATH_AI;
     }
 
     /**

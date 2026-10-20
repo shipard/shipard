@@ -6,7 +6,7 @@
   // ukáže i výstup B.
   import StateBadge from '../../components/StateBadge.svelte';
   import ValueCell from '../../components/ValueCell.svelte';
-  import { stateLabel } from '../../testing/metrics.js';
+  import { stateLabel, isBlankState } from '../../testing/metrics.js';
   import { t } from '../../i18n/index.js';
 
   let { table, tableB = null, onlyDeviations = false, label = null } = $props();
@@ -24,7 +24,8 @@
     for (const b of tableB?.rows ?? []) if (!seen.has(b.key)) out.push({ key: b.key, a: null, b });
     out.sort((x, y) => x.key - y.key);
     if (!onlyDeviations) return out;
-    const dev = (r) => (r?.node && r.node.state !== 'match') || Object.values(r?.cells ?? {}).some((c) => c.state !== 'match');
+    const shown = (c) => c.state !== 'match' && c.state !== 'notCarried';
+    const dev = (r) => (r?.node && shown(r.node)) || Object.values(r?.cells ?? {}).some(shown);
     return out.filter((r) => dev(r.a) || dev(r.b));
   });
 
@@ -33,7 +34,7 @@
   const keyLabel = $derived(table.path.endsWith('rowExceptions') ? 'rowIndex' : '#');
 
   function worst(a, b) {
-    const order = ['wrong', 'missing', 'extra', 'matchNormalized', 'notCompared', 'match'];
+    const order = ['wrong', 'missing', 'extra', 'matchNormalized', 'notCompared', 'notCarried', 'match'];
     const states = [a?.state, b?.state].filter(Boolean);
     return order.find((s) => states.includes(s)) ?? 'match';
   }
@@ -83,17 +84,17 @@
                   {@const ca = row.a?.cells?.[c]}
                   {@const cb = row.b?.cells?.[c]}
                   {@const primary = ca ?? cb}
-                  <td class="dev-cellstate--{worst(ca, cb)}" title={primary ? `${primary.path}: ${primary.state}` : ''}>
+                  <td class="dev-cellstate--{worst(ca, cb)}" title={primary ? `${primary.path}: ${primary.state}${primary.reason ? ` — ${primary.reason}` : ''}` : ''}>
                     {#if !primary}
                       <span class="dev-muted">—</span>
                     {:else}
                       <div class="cell">
                         <span class="dev-cell-expected"><ValueCell value={primary.expected} /></span>
                         {#if ca && ca.state !== 'match'}
-                          <span class="dev-cell-actual">{compare ? 'A: ' : ''}{#if ca.state === 'notCompared'}<span class="dev-muted">{stateLabel('notCompared')}</span>{:else}<ValueCell value={ca.actual} />{/if}</span>
+                          <span class="dev-cell-actual">{compare ? 'A: ' : ''}{#if isBlankState(ca.state)}<span class="dev-muted">{stateLabel(ca.state)}</span>{:else}<ValueCell value={ca.actual} />{/if}</span>
                         {/if}
                         {#if cb && cb.state !== 'match'}
-                          <span class="dev-cell-actual">B: {#if cb.state === 'notCompared'}<span class="dev-muted">{stateLabel('notCompared')}</span>{:else}<ValueCell value={cb.actual} />{/if}</span>
+                          <span class="dev-cell-actual">B: {#if isBlankState(cb.state)}<span class="dev-muted">{stateLabel(cb.state)}</span>{:else}<ValueCell value={cb.actual} />{/if}</span>
                         {/if}
                       </div>
                     {/if}

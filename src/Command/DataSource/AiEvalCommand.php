@@ -27,6 +27,7 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetPreflight;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyExpectations;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Mail\Analysis\AnalysisComputation;
@@ -36,6 +37,7 @@ use Shipard\Module\Core\Mail\Analysis\AttachmentPreparer;
 use Shipard\Module\Core\Mail\Analysis\OutputParser;
 use Shipard\Module\Core\Mail\Analysis\PromptRenderer;
 use Shipard\Module\Core\Mail\Eval\EvalCallResult;
+use Shipard\Module\Core\Mail\Eval\EvalComputationRouter;
 use Shipard\Module\Core\Mail\Eval\EvalCostEstimator;
 use Shipard\Module\Core\Mail\Eval\EvalDataSource;
 use Shipard\Module\Core\Mail\Eval\EvalException;
@@ -49,6 +51,7 @@ use Shipard\Module\Core\Mail\Eval\EvalRun;
 use Shipard\Module\Core\Mail\Eval\EvalRunner;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 use Shipard\Module\Core\Mail\Eval\EvalVariant;
+use Shipard\Module\Core\Mail\Isdoc\IsdocDocumentCollector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -206,7 +209,11 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
         return new AnthropicLlmClient($catalog);
     }
 
-    /** Výpočet nanečisto se stejným wiringem jako ostrý runner, bez zápisu. */
+    /**
+     * Výpočet nanečisto se stejným wiringem jako ostrý runner, bez zápisu;
+     * router podle produkce (#103 D76): zpráva s ISDOC jde importem ISDOC
+     * + štítky touž pipeline, ostatní AI extrakcí.
+     */
     protected function createComputation(
         DataSourceConnection $db,
         DataSourceConfig $dsConfig,
@@ -219,8 +226,10 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
         $tables = TableLoader::load($dsConfig, $this->buildResolver(), $dsConfig->getDefaultLanguage());
         $attachments = new AttachmentService($db, $dsDir, $tables);
         $enricher = RowEnrichmentPipeline::create($db, $config, $dsConfig, $variant->contentTagsOverride(), $llm);
-        $validator = new AnalysisResultWriter($db, $dsConfig, new SchemaValidator(SchemaLoader::default()), $enricher, $config);
-        return new AnalysisComputation(new AttachmentPreparer($attachments), new PromptRenderer(), new OutputParser(), $llm, $validator, $catalog);
+        $schema = new SchemaValidator(SchemaLoader::default());
+        $validator = new AnalysisResultWriter($db, $dsConfig, $schema, $enricher, $config);
+        $ai = new AnalysisComputation(new AttachmentPreparer($attachments), new PromptRenderer(), new OutputParser(), $llm, $validator, $catalog);
+        return new EvalComputationRouter($ai, new IsdocDocumentCollector($schema, $dsDir, new IsdocReader()), $attachments, $enricher);
     }
 
     /** @return array{commit: ?string, dirty: ?bool} */
@@ -345,7 +354,8 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
         $sameModelRun = EvalCostEstimator::sameModelRun($runs, $plan->catalogModel);
         $seriesRun = $sameModelRun === null ? EvalCostEstimator::seriesRun($runs, $plan->catalogModel) : null;
         $calls = count($selected) * $repeat;
-        $estimate = EvalCostEstimator::estimate($calls, $sameModelRun, $seriesRun, $plan, $tagPlan, $catalog);
+        $isdocCalls = count(array_filter($selected, static fn (EvalMessage $m): bool => $m->hasIsdoc())) * $repeat;
+        $estimate = EvalCostEstimator::estimate($calls, $sameModelRun, $seriesRun, $plan, $tagPlan, $catalog, $isdocCalls);
 
         $human->writeln(sprintf(
             '<info>Evaluace AI</info> — sada %s: %d zpráv × %d opakování = %d volání, model %s (připojení %s — %s), profil %s',
@@ -357,6 +367,12 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
             'catalog' => sprintf('Odhad ceny: ~%s USD (%s USD / volání z ceníku katalogu a typické velikosti dokladu)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', '')),
             default => 'Odhad ceny: neznámý (model mimo katalog)',
         });
+        if ($isdocCalls > 0) {
+            $human->writeln(sprintf(
+                'Z toho %d volání cestou ISDOC (zprávy podoby PDF + ISDOC — import bez AI extrakce, jen štítky ~%s USD / volání).',
+                $isdocCalls, number_format((float) $estimate['isdocPerCall'], 4, '.', ''),
+            ));
+        }
         if ($maxCost !== null) {
             $human->writeln(sprintf('Strop útraty: %s USD', number_format($maxCost, 4, '.', '')));
         }
@@ -433,6 +449,7 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
                     'messageId' => $r->messageId,
                     'stem' => $m->stem,
                     'repeat' => $r->repeat,
+                    'path' => $r->path,
                     'status' => $r->status,
                     'errorType' => $r->errorType,
                     'costUsd' => $r->costUsd,
@@ -453,6 +470,7 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
             'set' => $manifest->name,
             'variant' => $variant->name,
             'calls' => $calls,
+            'isdocCalls' => $isdocCalls,
             'messages' => count($selected),
             'repeat' => $repeat,
             'model' => $plan->model,

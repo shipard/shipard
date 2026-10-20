@@ -75,6 +75,27 @@ final class AttachmentPreparerTest extends TestCase
         $this->assertSame('image/png', $out[0]->mimeType);
     }
 
+    /** #103 D76: ISDOC se modelu nikdy neposílá — zpráva s ISDOC jde cestou ISDOC; cizí XML zůstává text. */
+    public function testIsdocIsNeverSentToTheModel(): void
+    {
+        $isdoc = '<?xml version="1.0" encoding="utf-8"?><Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1"><DocumentType>1</DocumentType></Invoice>';
+        $foreign = '<?xml version="1.0"?><Order xmlns="urn:example:orders"><Id>1</Id></Order>';
+        $out = $this->preparer()->prepareRaw([
+            new RawAttachment(1, 'faktura.pdf', 'application/pdf', '%PDF-1.4 fake'),
+            new RawAttachment(2, 'faktura.isdoc', 'text/xml', $isdoc),          // jak ji ukládá MailSeeder (finfo → text/xml)
+            new RawAttachment(3, 'FAKTURA.ISDOCX', 'application/octet-stream', 'PK zip'),
+            new RawAttachment(4, 'data.xml', 'application/xml', $isdoc),       // ISDOC s příponou .xml
+            new RawAttachment(5, 'order.xml', 'text/xml', $foreign),
+            new RawAttachment(6, 'broken.xml', 'text/xml', '<Invoice xmlns="http://isdoc.cz/namespace/2013"><ID>'),
+        ]);
+
+        $this->assertSame([1, 5, 6], array_map(static fn (PreparedAttachment $a): int => $a->ndx, $out));
+        $this->assertSame(PreparedAttachment::KIND_TEXT, $out[1]->kind);
+        $this->assertTrue(AttachmentPreparer::isIsdoc(new RawAttachment(7, 'x.isdoc', '', '')));
+        $this->assertFalse(AttachmentPreparer::isIsdoc(new RawAttachment(8, 'x.txt', 'text/plain', $isdoc)), 'jen XML mime nebo přípona');
+        $this->assertFalse(AttachmentPreparer::isIsdoc(new RawAttachment(9, 'x.xml', 'text/xml', '')));
+    }
+
     public function testTextAttachmentIsDecoded(): void
     {
         $out = $this->preparer()->prepareRaw([new RawAttachment(3, 'notes.txt', 'text/plain', 'Pozn: faktura')]);

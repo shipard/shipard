@@ -26,6 +26,11 @@ use Shipard\Core\Ai\ModelCatalog;
  *
  * K 2 a 3 se přičítá volání klasifikace štítků (typická velikost). Vlastní
  * ID modelu mimo katalog cenu nemá.
+ *
+ * Zprávy podoby PDF + ISDOC jdou v evaluaci cestou `isdoc` bez AI extrakce
+ * (#103 D76): v odhadu se počítají jen za štítky (`isdocCalls` ×
+ * `isdocPerCall`); u 1 se cena na volání bere z kyblíku `byPath.ai`
+ * posledního běhu, má-li ho, aby ji volání ISDOC za 0 nestahovala dolů.
  */
 final class EvalCostEstimator
 {
@@ -41,17 +46,26 @@ final class EvalCostEstimator
     /**
      * @param array<string, mixed>|null $sameModelRun soubor výsledků posledního běhu se stejným modelem ({@see sameModelRun()})
      * @param array<string, mixed>|null $seriesRun    soubor výsledků běhu s modelem téže řady ({@see seriesRun()})
-     * @return array{calls: int, perCall: ?float, total: ?float, basis: 'sameModel'|'series'|'catalog'|'unknown', source: ?array{file: string, model: ?string}}
+     * @param int $isdocCalls volání cestou ISDOC (zprávy podoby PDF + ISDOC × opakování) z `$calls` — jen štítky
+     * @return array{calls: int, aiCalls: int, isdocCalls: int, perCall: ?float, isdocPerCall: float, total: ?float, basis: 'sameModel'|'series'|'catalog'|'unknown', source: ?array{file: string, model: ?string}}
      */
-    public static function estimate(int $calls, ?array $sameModelRun, ?array $seriesRun, AiCallPlan $plan, ?AiCallPlan $tagPlan, ModelCatalog $catalog): array
+    public static function estimate(int $calls, ?array $sameModelRun, ?array $seriesRun, AiCallPlan $plan, ?AiCallPlan $tagPlan, ModelCatalog $catalog, int $isdocCalls = 0): array
     {
-        $lastTotal = $sameModelRun['metrics']['cost.usd'] ?? null;
-        $lastCalls = (int) ($sameModelRun['metrics']['calls.total'] ?? 0);
-        if ($sameModelRun !== null && is_numeric($lastTotal) && $lastCalls > 0) {
-            $lastTags = $sameModelRun['metrics']['tags.usd'] ?? null;
-            $tagsTotal = is_numeric($lastTags) ? (float) $lastTags : self::tagCost($tagPlan, $catalog) * $lastCalls;
-            $perCall = round(((float) $lastTotal + $tagsTotal) / $lastCalls, 6);
-            return ['calls' => $calls, 'perCall' => $perCall, 'total' => round($perCall * $calls, 4), 'basis' => 'sameModel', 'source' => self::source($sameModelRun)];
+        $isdocCalls = max(0, min($calls, $isdocCalls));
+        $tagCost = self::tagCost($tagPlan, $catalog);
+
+        if ($sameModelRun !== null) {
+            // Kyblík cesty `ai` (běhy od D76), jinak metriky celku (starší běhy jsou celé `ai`).
+            $bucket = $sameModelRun['byPath']['ai'] ?? null;
+            $basis = is_array($bucket) && (int) ($bucket['calls.total'] ?? 0) > 0 ? $bucket : (array) ($sameModelRun['metrics'] ?? []);
+            $lastTotal = $basis['cost.usd'] ?? null;
+            $lastCalls = (int) ($basis['calls.total'] ?? 0);
+            if (is_numeric($lastTotal) && $lastCalls > 0) {
+                $lastTags = $basis['tags.usd'] ?? null;
+                $tagsTotal = is_numeric($lastTags) ? (float) $lastTags : $tagCost * $lastCalls;
+                $perCall = round(((float) $lastTotal + $tagsTotal) / $lastCalls, 6);
+                return self::result($calls, $isdocCalls, $perCall, $tagCost, 'sameModel', self::source($sameModelRun));
+            }
         }
 
         if ($seriesRun !== null) {
@@ -62,17 +76,35 @@ final class EvalCostEstimator
                 (int) ($seriesRun['metrics']['tokens.outputPerDocument'] ?? 0),
             );
             if ($perCall !== null) {
-                $perCall = round($perCall + self::tagCost($tagPlan, $catalog), 6);
-                return ['calls' => $calls, 'perCall' => $perCall, 'total' => round($perCall * $calls, 4), 'basis' => 'series', 'source' => self::source($seriesRun)];
+                return self::result($calls, $isdocCalls, round($perCall + $tagCost, 6), $tagCost, 'series', self::source($seriesRun));
             }
         }
 
         $perCall = self::planCost($plan, $catalog, self::TYPICAL_INPUT_TOKENS, self::TYPICAL_OUTPUT_TOKENS);
         if ($perCall === null) {
-            return ['calls' => $calls, 'perCall' => null, 'total' => null, 'basis' => 'unknown', 'source' => null];
+            return self::result($calls, $isdocCalls, null, $tagCost, 'unknown', null);
         }
-        $perCall = round($perCall + self::tagCost($tagPlan, $catalog), 6);
-        return ['calls' => $calls, 'perCall' => $perCall, 'total' => round($perCall * $calls, 4), 'basis' => 'catalog', 'source' => null];
+        return self::result($calls, $isdocCalls, round($perCall + $tagCost, 6), $tagCost, 'catalog', null);
+    }
+
+    /**
+     * @param array{file: string, model: ?string}|null $source
+     * @return array{calls: int, aiCalls: int, isdocCalls: int, perCall: ?float, isdocPerCall: float, total: ?float, basis: 'sameModel'|'series'|'catalog'|'unknown', source: ?array{file: string, model: ?string}}
+     */
+    private static function result(int $calls, int $isdocCalls, ?float $perCall, float $tagCost, string $basis, ?array $source): array
+    {
+        $aiCalls = $calls - $isdocCalls;
+        $isdocPerCall = round($tagCost, 6);
+        return [
+            'calls' => $calls,
+            'aiCalls' => $aiCalls,
+            'isdocCalls' => $isdocCalls,
+            'perCall' => $perCall,
+            'isdocPerCall' => $isdocPerCall,
+            'total' => $perCall === null ? null : round($perCall * $aiCalls + $isdocPerCall * $isdocCalls, 4),
+            'basis' => $basis,
+            'source' => $source,
+        ];
     }
 
     /**

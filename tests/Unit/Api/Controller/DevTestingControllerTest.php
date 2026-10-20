@@ -101,6 +101,9 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertSame('pdf', $first['form']);
 		$this->assertSame([1, 2, 3], array_column($first['repeats'], 'repeat'));
 		$this->assertSame(4, $first['repeats'][0]['deviations']);
+		$this->assertSame('ai', $first['path'], 'běh před D76 bez klíče path = cesta ai');
+		$this->assertSame(['ai', 'ai', 'ai'], array_column($first['repeats'], 'path'));
+		$this->assertArrayNotHasKey('byPath', $data['run'], 'starší běh rozpad po cestách nemá — prohlížeč to unese');
 	}
 
 	public function testMessageDetailAndRepeatValidation(): void
@@ -109,6 +112,8 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertSame(2, $data['repeat']);
 		$this->assertSame([1, 2, 3], $data['repeats']);
 		$this->assertTrue($data['countsMatch']);
+		$this->assertSame('ai', $data['path']);
+		$this->assertSame(0, $data['counts']['notCarried']);
 		$this->assertFalse($data['currentSet'], 'běh z 16. 10. je nad sadou před #119 krokem 1');
 		$this->assertTrue($data['hasPdf']);
 		$this->assertSame(self::RUN, $data['run']['file']);

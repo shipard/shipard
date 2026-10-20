@@ -382,7 +382,14 @@ a příznak přechodné chyby). Ostrý runner jede přes ni a sám dělá claim,
 lease (hook), strop opakování a zápis — `storeResult` dostává validaci
 hotovou a neopakuje ji (LLM štítky by běžely dvakrát); REST `/result`
 validuje v zápisu jako dřív. `shpd-ds ai-eval` nad touž službou porovnává
-výstup s očekáváním korpusu, nic nezapisuje (`docs/test-corpus.md` § 18).
+výstup s očekáváním korpusu, nic nezapisuje (`docs/test-corpus.md` § 18)
+— přes `Eval\EvalComputationRouter` (#103 D76): zpráva, kterou by
+produkce rozpoznala jako ISDOC (`Isdoc\IsdocDocumentCollector::collect()`,
+čistá část `IsdocImportService` bez DB — tatáž, kterou volá `detect()`
+i import v runneru), jde cestou `isdoc` (ISDOC → canonical + obohacení
+touž pipeline, bez modelu), ostatní cestou `ai`. `AttachmentPreparer`
+ISDOC (přípona, nebo XML s kořenem v namespace ISDOC) modelu nikdy
+neposílá.
 
 **Třídy:** `modules/core/mail/src/Analysis/` — `AnalysisStates`,
 `AnalysisQueue`, `AnalysisClaimService` (+ `AnalysisClaim`,
@@ -392,7 +399,9 @@ výstup s očekáváním korpusu, nic nezapisuje (`docs/test-corpus.md` § 18).
 `PreparedAttachment`), `PromptRenderer` (+ `AnalysisPromptPolicy`,
 `PromptRenderException`), `OutputParser` (+ `SchemaValidationException`),
 `AnalysisSlots` (+ `AnalysisSlot`), `AnalysisRunner`, `AnalysisSpawner`,
-`AnalysisRunnerFactory`; reaper `modules/core/mail/src/AnalysisClaimReaper.php`;
+`AnalysisRunnerFactory`; `modules/core/mail/src/Isdoc/IsdocDocumentCollector.php`
+(sběr ISDOC → canonical pro `IsdocImportService` a evaluaci);
+reaper `modules/core/mail/src/AnalysisClaimReaper.php`;
 CLI `src/Command/DataSource/MailAnalyzeCommand.php` a `MailAnalysisReapCommand.php`
 ([docs/cli.md](../../../../docs/cli.md) § `mail-analyze`, § `mail-analysis-reap`).
 

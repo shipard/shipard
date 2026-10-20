@@ -91,6 +91,17 @@ final class EvalReport
             }
             $lines[] = 'Po podobách: ' . implode(' · ', $parts);
         }
+        if (!empty($run['byPath'])) {
+            $parts = [];
+            foreach ($run['byPath'] as $path => $v) {
+                $parts[] = sprintf(
+                    '%s %d volání, shoda %s, bez odchylky %s, cena %s USD',
+                    $path, $v['calls.total'], self::pct($v['fields.all.hit']), self::pct($v['documents.clean']),
+                    number_format((float) $v['cost.usd'] + (float) ($v['tags.usd'] ?? 0), 4, '.', ''),
+                );
+            }
+            $lines[] = 'Po cestách (ai = extrakce modelem, isdoc = import ISDOC + štítky): ' . implode(' · ', $parts);
+        }
         if ($repeat > 1 && !empty($run['fieldStability'])) {
             $unstable = array_filter($run['fieldStability'], static fn (float $v): bool => $v < 1.0);
             asort($unstable);
@@ -131,7 +142,7 @@ final class EvalReport
             return sprintf('<comment>✗</comment> %-32s%s %s: %s', $label, $suffix, $r->errorType, mb_substr((string) $r->note, 0, 120));
         }
         $counts = $r->counts();
-        $n = array_sum($counts);
+        $n = array_sum($counts) - $counts['notCarried'];
         $hit = $n > 0 ? ($counts['match'] + $counts['matchNormalized']) / $n : 0.0;
         $deviations = $counts['missing'] + $counts['extra'] + $counts['wrong'];
         return sprintf(

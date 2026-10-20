@@ -207,7 +207,11 @@ zatím není (O1 — co má evaluace u zpráv s ISDOC měřit, je otázka #103).
 `IsdocReader` → `CanonicalComparator` proti očekávanému výsledku bez
 rozdílu mimo `IGNORE`; totéž nad fixturami generátoru
 (`tests/Fixtures/Exchange/einvoice/`, vydané doklady s prohozenou rolí).
-Výjimky (pole, která ISDOC nenese — ověřeno proti XSD):
+Výjimky (pole, která ISDOC nenese — ověřeno proti XSD) žijí v jediném
+zdroji `Isdoc\IsdocFieldCoverage::NOT_CARRIED` (`modules/core/exchange/src/Isdoc/`):
+round-trip test z něj čte (`IGNORE` = `NOT_CARRIED` + `_resolve`)
+a evaluace AI (`docs/test-corpus.md` § 18, #103 D76) dává těmto listům
+u zpráv s ISDOC stav `notCarried` s důvodem. Tabulka je opis:
 
 | Cesta | Důvod |
 |---|---|
@@ -217,7 +221,7 @@ Výjimky (pole, která ISDOC nenese — ověřeno proti XSD):
 | `supplier.contact.web`, `customer.contact.web` | `Contact` má jen jméno, telefon a e-mail |
 | `dates.periodFrom`, `dates.periodTo` | hlavička nemá období plnění |
 | `rows[].discountPct`, `rows[].discountAmount` | ISDOC nese jen částku před slevou; korpus má procento — částku z čtečky test ověřuje zvlášť |
-| `_resolve` | štítek obsahu je výsledek obohacení, ne pole dokladu |
+| `_resolve` | jen v testu: štítek obsahu je výsledek obohacení, ne pole dokladu — v evaluaci se měří |
 
 Známé ztráty mimo korpus: textové řádky a sekce (do ISDOC nejdou), splatnost
 u jiné úhrady než převodem (`PaymentDueDate` je jen v bankovních

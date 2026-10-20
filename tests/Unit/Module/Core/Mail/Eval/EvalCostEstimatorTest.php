@@ -52,7 +52,7 @@ final class EvalCostEstimatorTest extends TestCase
 
         $estimate = EvalCostEstimator::estimate(10, $last, $series, self::plan(), self::tagPlan(), self::catalog());
         $this->assertSame(
-            ['calls' => 10, 'perCall' => 0.0271, 'total' => 0.271, 'basis' => 'sameModel', 'source' => ['file' => '2026-10-15-baseline.json', 'model' => 'claude-sonnet-4-6']],
+            ['calls' => 10, 'aiCalls' => 10, 'isdocCalls' => 0, 'perCall' => 0.0271, 'isdocPerCall' => 0.0021, 'total' => 0.271, 'basis' => 'sameModel', 'source' => ['file' => '2026-10-15-baseline.json', 'model' => 'claude-sonnet-4-6']],
             $estimate,
             'řada se nepoužije, štítky typickou velikostí',
         );
@@ -109,6 +109,38 @@ final class EvalCostEstimatorTest extends TestCase
         $this->assertSame(0.08085, $estimate['perCall'], 'běh bez metrik = jako žádný');
 
         $this->assertSame('unknown', EvalCostEstimator::estimate(3, null, null, self::plan(null), null, self::catalog())['basis']);
+    }
+
+    /** #103 D76: zprávy s ISDOC se počítají jen za štítky; cena na volání `ai` z kyblíku `byPath.ai` posledního běhu. */
+    public function testIsdocCallsCountOnlyTagsAndSameModelUsesTheAiBucket(): void
+    {
+        // 10 volání, 4 cestou ISDOC: 6 × 0,0271 + 4 × 0,0021 = 0,1626 + 0,0084.
+        $last = self::runFile('2026-10-15-baseline.json', 'claude-sonnet-4-6');
+        $last['metrics'] = ['cost.usd' => 0.5, 'calls.total' => 20];
+        $estimate = EvalCostEstimator::estimate(10, $last, null, self::plan(), self::tagPlan(), self::catalog(), 4);
+        $this->assertSame(['aiCalls' => 6, 'isdocCalls' => 4, 'perCall' => 0.0271, 'isdocPerCall' => 0.0021, 'total' => 0.171], array_intersect_key($estimate, array_flip(['aiCalls', 'isdocCalls', 'perCall', 'isdocPerCall', 'total'])));
+
+        // Běh s rozpadem po cestách: volání ISDOC za 0 nestahují průměr — bere se kyblík ai (0,6 + 0,06) / 12 = 0,055.
+        $last['metrics'] = ['cost.usd' => 0.6, 'calls.total' => 20, 'tags.usd' => 0.1];
+        $last['byPath'] = [
+            'ai' => ['calls.total' => 12, 'calls.ok' => 12, 'cost.usd' => 0.6, 'tags.usd' => 0.06],
+            'isdoc' => ['calls.total' => 8, 'calls.ok' => 8, 'cost.usd' => 0.0, 'tags.usd' => 0.04],
+        ];
+        $estimate = EvalCostEstimator::estimate(10, $last, null, self::plan(), self::tagPlan(), self::catalog(), 4);
+        $this->assertSame(0.055, $estimate['perCall']);
+        $this->assertSame(0.3384, $estimate['total'], '6 × 0,055 + 4 × 0,0021');
+        $this->assertSame('sameModel', $estimate['basis']);
+
+        // Prázdný kyblík ai (celý běh ISDOC) → metriky celku; strop isdocCalls na calls.
+        $last['byPath']['ai'] = ['calls.total' => 0, 'calls.ok' => 0, 'cost.usd' => 0.0, 'tags.usd' => 0.0];
+        $estimate = EvalCostEstimator::estimate(3, $last, null, self::plan(), self::tagPlan(), self::catalog(), 9);
+        $this->assertSame([0, 3, 0.035], [$estimate['aiCalls'], $estimate['isdocCalls'], $estimate['perCall']]);
+        $this->assertSame(0.0063, $estimate['total']);
+
+        // Katalog a neznámý model.
+        $this->assertSame(0.3024 - 2 * 0.0756 + 2 * 0.0021, EvalCostEstimator::estimate(4, null, null, self::plan(), self::tagPlan(), self::catalog(), 2)['total']);
+        $unknown = EvalCostEstimator::estimate(4, null, null, self::plan(null), self::tagPlan(), self::catalog(), 2);
+        $this->assertSame(['unknown', null, 0.0021], [$unknown['basis'], $unknown['total'], $unknown['isdocPerCall']]);
     }
 
     public function testModelSeriesIsTheFirstNumberOfTheCatalogId(): void

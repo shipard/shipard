@@ -7,6 +7,7 @@ namespace Shipard\Module\Core\Mail\Eval\Browse;
 use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\FieldState;
 use Shipard\Module\Core\Exchange\Compare\Projection;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
 use Shipard\Module\Core\Mail\Eval\EvalCallResult;
 use Shipard\Module\Core\Mail\Eval\EvalFieldGroups;
 use Shipard\Module\Core\Mail\Eval\EvalMessage;
@@ -35,7 +36,12 @@ use Shipard\Module\Core\Mail\Eval\EvalRunner;
  * - selhané volání (D44): každý neprázdný list očekávání je `missing`,
  *   ostatní listy `notCompared`;
  * - shoda po normalizaci ze staršího běhu (jen cesta) nemá výstup
- *   (`actualKnown` false) — ukáže se očekávání se štítkem.
+ *   (`actualKnown` false) — ukáže se očekávání se štítkem;
+ * - volání cesty `isdoc` (#103 D76): listy, které ISDOC nenese
+ *   ({@see IsdocFieldCoverage}), jsou `notCarried` s důvodem — soubor je
+ *   nenese, odvodí se z téhož zdroje jako v běhu; výstup se neukazuje,
+ *   do počtů jdou jako `notCarried` (ne jako `notCompared`, které je mimo
+ *   počty).
  */
 final class EvalOutputReconstruction
 {
@@ -48,7 +54,7 @@ final class EvalOutputReconstruction
         '_resolve.contentTag.rowExceptions' => 'Výjimky štítků řádků',
     ];
 
-    private const array COUNTED_STATES = ['match', 'matchNormalized', 'missing', 'extra', 'wrong'];
+    private const array COUNTED_STATES = ['match', 'matchNormalized', 'missing', 'extra', 'wrong', 'notCarried'];
 
     private function __construct()
     {
@@ -86,6 +92,9 @@ final class EvalOutputReconstruction
                 }
                 $similarity = isset($deviation['similarity']) && is_numeric($deviation['similarity']) ? (float) $deviation['similarity'] : null;
                 self::apply($leaves, $path, $state, $expected, $actual, true, $similarity, keepExpected: false);
+            }
+            if (EvalCallResult::pathOf($call) === EvalCallResult::PATH_ISDOC) {
+                self::markNotCarried($leaves);
             }
         } else {
             foreach ($leaves as &$leaf) {
@@ -232,6 +241,33 @@ final class EvalOutputReconstruction
         ));
     }
 
+    /**
+     * Cesta `isdoc`: list, který ISDOC nenese, je `notCarried` s důvodem
+     * (stejné pravidlo jako `IsdocFieldCoverage::markNotCarried()` v běhu —
+     * podle uzlu listu, který porovnávač skutečně vydal); neporovnané
+     * listy zůstávají neporovnané.
+     *
+     * @param list<array<string, mixed>> $leaves
+     */
+    private static function markNotCarried(array &$leaves): void
+    {
+        foreach ($leaves as &$leaf) {
+            if (!$leaf['counted']) {
+                continue;
+            }
+            $reason = IsdocFieldCoverage::reasonFor($leaf['nodePath']);
+            if ($reason === null) {
+                continue;
+            }
+            $leaf['state'] = FieldState::NotCarried->value;
+            $leaf['actual'] = null;
+            $leaf['actualKnown'] = true;
+            $leaf['similarity'] = null;
+            $leaf['reason'] = $reason;
+        }
+        unset($leaf);
+    }
+
     /** Prvky pole od pozice `$from` se neporovnávaly (výstup má méně prvků). */
     private static function markNotCompared(array &$leaves, string $arrayPath, int $from): void
     {
@@ -271,6 +307,7 @@ final class EvalOutputReconstruction
             'actualKnown' => true,
             'state' => $state,
             'similarity' => null,
+            'reason' => null,
             'counted' => true,
         ];
     }
@@ -363,6 +400,7 @@ final class EvalOutputReconstruction
             'tokensOut' => $call['tokensOut'] ?? null,
             'durationMs' => $call['durationMs'] ?? null,
             'model' => $call['model'] ?? null,
+            'path' => EvalCallResult::pathOf($call),
             'tag' => $call['tag'] ?? null,
             'tags' => is_array($call['tags'] ?? null) ? $call['tags'] : null,
             'currentSet' => $currentSet,
@@ -387,10 +425,10 @@ final class EvalOutputReconstruction
         return null;
     }
 
-    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int} */
+    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int, notCarried: int} */
     private static function emptyCounts(): array
     {
-        return ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
+        return ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
     }
 
     /** @param array<string, int> $a @param array<string, mixed> $b */
