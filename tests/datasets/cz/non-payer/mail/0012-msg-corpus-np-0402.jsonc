@@ -24,6 +24,14 @@
             "size": 33061,
             "sha256": "1f7c74497e9f7ba00f20dfb47fec1720fea0f3747d3f7f4da6f8422d1207dc2b",
             "order": 1
+        },
+        {
+            "file": "0402-domestic-reverse-charge.isdoc",
+            "name": "0402-domestic-reverse-charge.isdoc",
+            "mimeType": "text/xml",
+            "size": 5991,
+            "sha256": "aac6123cda8777591c7d9335dd86701b0a070eee0dae34905c6e1742bccdf74a",
+            "order": 2
         }
     ],
     "analyses": [

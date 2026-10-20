@@ -10,15 +10,20 @@ from pathlib import Path
 
 from invoicegen.corpus import PROFILES, cells_for
 from invoicegen.dataset import (
-    DatasetBuildError, Profile, analysis_json, build_dataset, dataset_canonical, dumps_dataset, load_profile,
+    DatasetBuildError, Profile, analysis_json, build_dataset, dataset_canonical, dataset_list, dumps_dataset, load_profile,
     message_for_cell, message_id, own_person, php_json_numbers, prune, slug, strip_dataset_additions,
 )
-from tests.fixtures import DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, PROJECTION_PATH, data
+from tests.fixtures import (
+    CURRENCIES, DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, PROJECTION_PATH, RATE_LISTS, data, rate_list,
+)
 from tests.test_expected import expected_for
 from tests.test_reporting import REPORTING
 
 D = Decimal
 PDF = b"%PDF-1.7\n%test\n"
+ISDOC = b'<?xml version="1.0" encoding="utf-8"?>\n<Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1"/>\n'
+DATA_DOMESTIC_ISDOC = data(DATA_DOMESTIC, form="pdfIsdoc", docNumber="FV-2026-0102",
+                           dates={"issue": "2026-09-10", "tax": "2026-09-09", "due": "2026-09-24"})
 
 
 def self_expected_strip(canonical: dict) -> dict:
@@ -143,6 +148,27 @@ class MessageTest(unittest.TestCase):
                           "contentTag", "tokensInput", "tokensOutput", "durationMs", "costUsd", "created", "analysisJson",
                           "canonicalJson"], list(a))
 
+    def test_pdf_isdoc_message_has_isdoc_as_second_attachment(self) -> None:
+        cell = cell_for(DATA_DOMESTIC_ISDOC, "0102-domestic-goods")
+        m = message_for_cell(cell, expected_for(DATA_DOMESTIC_ISDOC), PDF, ISDOC)
+
+        self.assertEqual([
+            {"file": "0102-domestic-goods.pdf", "name": "0102-domestic-goods.pdf", "mimeType": "application/pdf",
+             "size": len(PDF), "sha256": hashlib.sha256(PDF).hexdigest(), "order": 1},
+            {"file": "0102-domestic-goods.isdoc", "name": "0102-domestic-goods.isdoc", "mimeType": "text/xml",
+             "size": len(ISDOC), "sha256": hashlib.sha256(ISDOC).hexdigest(), "order": 2},
+        ], m["attachments"])
+        canonical = m["analyses"][0]["canonicalJson"]
+        self.assertEqual([{"filename": "0102-domestic-goods.pdf", "mimeType": "application/pdf", "kind": "original", "ref": "att:1"}],
+                         canonical["attachments"], "ideální analýza beze změny — jen PDF")
+        self.assertEqual(expected_for(DATA_DOMESTIC_ISDOC), self_expected_strip(canonical))
+
+    def test_isdoc_only_with_pdf_isdoc_form(self) -> None:
+        with self.assertRaises(DatasetBuildError):
+            message_for_cell(cell_for(DATA_DOMESTIC_ISDOC, "0102-domestic-goods"), expected_for(DATA_DOMESTIC_ISDOC), PDF)
+        with self.assertRaises(DatasetBuildError):
+            message_for_cell(cell_for(data(DATA_DOMESTIC), "0101-domestic-goods"), expected_for(data(DATA_DOMESTIC)), PDF, ISDOC)
+
     def test_english_template_and_foreign_currency(self) -> None:
         cell = cell_for(data(DATA_EU_SERVICES), "0502-eu-services")
         m = message_for_cell(cell, expected_for(data(DATA_EU_SERVICES)), PDF)
@@ -231,8 +257,9 @@ class BuildDatasetTest(unittest.TestCase):
     """Miniaturní korpus v temp složce: dva datové soubory, očekávání
     a PDF z fixtur → sada profilu vat-payer; druhý build = stejné bajty."""
 
-    def build(self, root: Path) -> tuple[Path, dict]:
-        docs = {"0101-domestic-goods": data(DATA_DOMESTIC), "0502-eu-services": data(DATA_EU_SERVICES)}
+    def build(self, root: Path, rate_lists: list[dict] = RATE_LISTS) -> tuple[Path, dict]:
+        docs = {"0101-domestic-goods": data(DATA_DOMESTIC), "0502-eu-services": data(DATA_EU_SERVICES),
+                "0102-domestic-goods": data(DATA_DOMESTIC_ISDOC)}
         corpus = root / "corpus"
         for stem, doc in docs.items():
             for profile in PROFILES:
@@ -244,6 +271,8 @@ class BuildDatasetTest(unittest.TestCase):
                 from invoicegen.expected import dumps_expected
                 (corpus / "expected" / profile / f"{stem}.json").write_text(dumps_expected(expected_for(doc, profile)), encoding="utf-8")
                 (corpus / "out" / profile / f"{stem}.pdf").write_bytes(PDF + stem.encode())
+                if doc["form"] == "pdfIsdoc":
+                    (corpus / "out" / profile / f"{stem}.isdoc").write_bytes(ISDOC + profile.encode())
         snapshot = root / "approved" / "general-ledger.json"
         snapshot.parent.mkdir(exist_ok=True)
         snapshot.write_text('{"reportId": "economy.accounting.generalLedger"}\n', encoding="utf-8")
@@ -254,7 +283,7 @@ class BuildDatasetTest(unittest.TestCase):
                           ledger_snapshot=snapshot)
         out = root / "datasets" / "vat-payer"
         summary = build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], docs, IDENTITIES, corpus, out,
-                                reporting=REPORTING, projection_path=PROJECTION_PATH)
+                                reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=rate_lists, currencies=CURRENCIES)
         return out, {"summary": summary, "docs": docs}
 
     @staticmethod
@@ -265,10 +294,14 @@ class BuildDatasetTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out, info = self.build(Path(tmp))
             first = self.snapshot(out)
-            self.assertEqual(2, info["summary"].messages)
+            self.assertEqual(3, info["summary"].messages)
             self.assertEqual(0, info["summary"].skipped)
+            self.assertEqual(2, info["summary"].exchange_rate_lists)
             self.assertEqual([
+                "exchangeRates/0001-cz-cnb-daily-2026-08-28.jsonc",
+                "exchangeRates/0002-cz-cnb-daily-2026-08-31.jsonc",
                 "expected/costs.json",
+                "expected/exchange-rates.json",
                 "expected/general-ledger.json",
                 "expected/messages.json",
                 "expected/projection.jsonc",
@@ -277,13 +310,22 @@ class BuildDatasetTest(unittest.TestCase):
                 "mail/0001-msg-corpus-vp-0101.jsonc",
                 "mail/0002-msg-corpus-vp-0502.files/0502-eu-services.pdf",
                 "mail/0002-msg-corpus-vp-0502.jsonc",
+                "mail/0003-msg-corpus-vp-0102.files/0102-domestic-goods.isdoc",
+                "mail/0003-msg-corpus-vp-0102.files/0102-domestic-goods.pdf",
+                "mail/0003-msg-corpus-vp-0102.jsonc",
                 "manifest.jsonc",
                 "persons/0001-testovna-s-r-o.jsonc",
                 "setup/settings.jsonc",
             ], sorted(first))
             manifest = json.loads(first["manifest.jsonc"])
             self.assertEqual(["format", "name", "title", "dateMode", "created", "country", "profile", "provision", "counts"], list(manifest))
-            self.assertEqual({"setup": 1, "persons": 1, "mail": 2}, manifest["counts"], "expected/ není sekce sady")
+            self.assertEqual({"setup": 1, "exchangeRates": 2, "persons": 1, "mail": 3}, manifest["counts"], "expected/ není sekce sady")
+            self.assertEqual(ISDOC + b"vat-payer", first["mail/0003-msg-corpus-vp-0102.files/0102-domestic-goods.isdoc"], "ISDOC korpusu v sidecaru")
+            self.assertEqual(2, len(json.loads(first["mail/0003-msg-corpus-vp-0102.jsonc"])["attachments"]))
+            self.assertEqual(1, len(json.loads(first["mail/0001-msg-corpus-vp-0101.jsonc"])["attachments"]))
+            rates = json.loads(first["exchangeRates/0002-cz-cnb-daily-2026-08-31.jsonc"])
+            self.assertEqual(["format", "listType", "homeCurrency", "validFrom", "listNumber", "rates"], list(rates))
+            self.assertEqual(["EUR", "JPY", "USD"], [r["currency"] for r in rates["rates"]], "podle měny, bez XDR")
             self.assertEqual("cz", manifest["country"])
             self.assertEqual({"accountingItems": ["568201"]}, manifest["provision"])
             self.assertTrue(first["manifest.jsonc"].endswith(b"}\n"))
@@ -292,15 +334,21 @@ class BuildDatasetTest(unittest.TestCase):
             self.assertEqual(b'{"reportId": "economy.accounting.generalLedger"}\n', first["expected/general-ledger.json"])
             vat = json.loads(first["expected/vat.json"], parse_float=Decimal)
             costs = json.loads(first["expected/costs.json"], parse_float=Decimal)
-            self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502"], [r["messageId"] for r in vat], "pořadí zpráv")
-            self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502"], [r["messageId"] for r in costs])
+            self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502", "MSG-CORPUS-VP-0102"], [r["messageId"] for r in vat], "pořadí zpráv")
+            self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502", "MSG-CORPUS-VP-0102"], [r["messageId"] for r in costs])
             self.assertEqual(["40"], list(vat[0]["return"]))
             self.assertEqual("EUR", vat[1]["currency"])
+            self.assertEqual({"base": D("10438.89"), "tax": D("2192.17")}, vat[1]["return"]["5"], "v Kč kurzem 24,125 k DUZP 2026-08-31")
             self.assertEqual(expected_for(info["docs"]["0101-domestic-goods"])["totals"]["totalBase"], costs[0]["cost"])
+            self.assertEqual(D("10438.89"), costs[1]["cost"])
+            self.assertEqual([{"messageId": "MSG-CORPUS-VP-0502", "currency": "EUR", "rateDate": "2026-08-31", "listType": "cz.cnb.daily",
+                               "validFrom": "2026-08-31", "rate": D("24.125000")}],
+                             json.loads(first["expected/exchange-rates.json"], parse_float=Decimal), "jen doklad v cizí měně")
             self.assertTrue(first["expected/vat.json"].startswith(b"[\n  {\n    \"messageId\""), "zapisovač očekávání (2 mezery)")
             self.assertEqual([
                 {"messageId": "MSG-CORPUS-VP-0101", "stem": "0101-domestic-goods", "variant": "domestic-goods", "form": "pdf"},
                 {"messageId": "MSG-CORPUS-VP-0502", "stem": "0502-eu-services", "variant": "eu-services", "form": "pdf"},
+                {"messageId": "MSG-CORPUS-VP-0102", "stem": "0102-domestic-goods", "variant": "domestic-goods", "form": "pdfIsdoc"},
             ], json.loads(first["expected/messages.json"]), "messages.json: zpráva → buňka korpusu (F4)")
 
             (out / "mail" / "stale.jsonc").write_text("x", encoding="utf-8")
@@ -325,8 +373,11 @@ class BuildDatasetTest(unittest.TestCase):
                                                                 "rows": [{"key": "economy.vatAgenda", "value": False}]}})
             out = root / "datasets" / "non-payer"
             build_dataset(profile, IDENTITIES["profiles"]["non-payer"], docs, IDENTITIES, corpus, out,
-                          reporting=REPORTING, projection_path=PROJECTION_PATH)
+                          reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=RATE_LISTS, currencies=CURRENCIES)
             self.assertEqual(b"[]\n", (out / "expected" / "vat.json").read_bytes())
+            self.assertFalse((out / "exchangeRates").exists(), "sada bez cizí měny sekci nemá")
+            self.assertEqual(b"[]\n", (out / "expected" / "exchange-rates.json").read_bytes())
+            self.assertNotIn("exchangeRates", json.loads((out / "manifest.jsonc").read_text(encoding="utf-8"))["counts"])
             self.assertFalse((out / "expected" / "general-ledger.json").exists(), "bez schváleného snímku se nic nekopíruje")
             costs = json.loads((out / "expected" / "costs.json").read_text(encoding="utf-8"), parse_float=Decimal)
             self.assertEqual(expected["totals"]["totalBase"] + expected["totals"]["totalVat"], costs[0]["cost"])
@@ -339,4 +390,48 @@ class BuildDatasetTest(unittest.TestCase):
                               provision={}, setup={})
             with self.assertRaises(DatasetBuildError):
                 build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out,
-                              reporting=REPORTING, projection_path=PROJECTION_PATH)
+                              reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=RATE_LISTS, currencies=CURRENCIES)
+
+    def test_isdoc_must_match_form(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out, info = self.build(Path(tmp))
+            corpus = Path(tmp) / "corpus"
+            profile = Profile(key="vat-payer", name="cz-vat-payer", title="T", description=None, created="2026-10-14T00:00:00Z",
+                              provision={}, setup={})
+
+            def rebuild() -> None:
+                build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, corpus, out,
+                              reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=RATE_LISTS, currencies=CURRENCIES)
+
+            rebuild()
+            isdoc = corpus / "out" / "vat-payer" / "0102-domestic-goods.isdoc"
+            isdoc.unlink()
+            with self.assertRaises(DatasetBuildError, msg="podoba pdfIsdoc bez .isdoc"):
+                rebuild()
+            isdoc.write_bytes(ISDOC)
+            orphan = corpus / "out" / "vat-payer" / "0101-domestic-goods.isdoc"
+            orphan.write_bytes(ISDOC)
+            with self.assertRaises(DatasetBuildError, msg="sirotek .isdoc u podoby pdf"):
+                rebuild()
+            orphan.unlink()
+            rebuild()
+
+    def test_missing_rate_list_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(DatasetBuildError) as ctx:
+                self.build(Path(tmp), rate_lists=[RATE_LISTS[0]] and [rate_list("2026-08-20", "1", EUR="24.1")])
+            self.assertIn("EUR k 2026-08-31", str(ctx.exception))
+            self.assertIn("--fetch-rates", str(ctx.exception))
+
+
+class DatasetListTest(unittest.TestCase):
+    def test_exporter_shape(self) -> None:
+        lst = dict(rate_list("2026-08-31", "26167", XDR="28.171", USD="20.698", EUR="24", JPY="13.9501234"), validTo="2026-09-30")
+        out = dataset_list(lst, CURRENCIES)
+        self.assertEqual(["format", "listType", "homeCurrency", "validFrom", "validTo", "listNumber", "rates"], list(out))
+        self.assertEqual([("EUR", 1, D("24.0")), ("JPY", 100, D("13.950123")), ("USD", 1, D("20.698"))],
+                         [(r["currency"], r["amount"], r["rate"]) for r in out["rates"]], "bez XDR, podle měny, kurz na 6 míst, celý jako float")
+        self.assertIn('"rate": 24.0\n', dumps_dataset(out), "PHP round() dá float — PRESERVE_ZERO_FRACTION")
+        self.assertNotIn("validTo", dataset_list(rate_list("2026-08-31", "26167", EUR="24.1"), CURRENCIES), "null vynechané")
+        with self.assertRaises(DatasetBuildError):
+            dataset_list(rate_list("2026-08-31", "26167", XDR="28.171"), CURRENCIES)

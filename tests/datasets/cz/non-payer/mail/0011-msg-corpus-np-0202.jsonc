@@ -24,6 +24,14 @@
             "size": 29131,
             "sha256": "b2bb3abac645b66e12cc6971ae4b3e7b46d62630d6c5f8316302317a18130fdd",
             "order": 1
+        },
+        {
+            "file": "0202-domestic-two-rates.isdoc",
+            "name": "0202-domestic-two-rates.isdoc",
+            "mimeType": "text/xml",
+            "size": 7503,
+            "sha256": "8effcc58f87d3e8383d45d1c1ca186b98bacd96fe11201fe3be8e332309ec403",
+            "order": 2
         }
     ],
     "analyses": [

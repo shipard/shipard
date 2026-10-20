@@ -7,7 +7,7 @@
   {
     "messageId": "MSG-CORPUS-VP-0601",
     "currency": "EUR",
-    "cost": 4469.00
+    "cost": 108060.42
   },
   {
     "messageId": "MSG-CORPUS-VP-0201",
@@ -27,12 +27,12 @@
   {
     "messageId": "MSG-CORPUS-VP-0801",
     "currency": "USD",
-    "cost": 177.00
+    "cost": 3689.39
   },
   {
     "messageId": "MSG-CORPUS-VP-0501",
     "currency": "EUR",
-    "cost": 432.70
+    "cost": 10438.89
   },
   {
     "messageId": "MSG-CORPUS-VP-0901",
@@ -77,7 +77,7 @@
   {
     "messageId": "MSG-CORPUS-VP-0602",
     "currency": "EUR",
-    "cost": 1927.20
+    "cost": 46917.68
   },
   {
     "messageId": "MSG-CORPUS-VP-0702",
@@ -92,11 +92,11 @@
   {
     "messageId": "MSG-CORPUS-VP-0502",
     "currency": "EUR",
-    "cost": 463.36
+    "cost": 11324.52
   },
   {
     "messageId": "MSG-CORPUS-VP-0802",
     "currency": "USD",
-    "cost": 245.00
+    "cost": 5305.48
   }
 ]

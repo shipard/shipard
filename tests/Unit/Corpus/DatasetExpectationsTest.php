@@ -15,10 +15,21 @@ use Shipard\Core\Utils\JsoncParser;
  * všechny varianty. Částky záznamů se přepočítají z očekávaného canonicalu
  * dokladu nezávisle na generátoru (Σ rekapitulace po sazbách, daň
  * samovyměření = základ × sazba, pravidlo nákladu per profil, práh B.2).
+ * Doklad v cizí měně (#103 D73, tasks/testing-rates-isdoc.md) se přepočítá
+ * do domácí měny kurzem k účetnímu datu (DUZP, bez něj datum vystavení)
+ * z lístků korpusu `tests/corpus/<země>/exchange-rates/` malým resolverem
+ * přímo tady (poslední lístek ≤ D, nejvýš 7 dní, měna v něm) — nezávisle
+ * na generátoru i na Shipardu; `expected/exchange-rates.json` nese kurz
+ * per doklad v cizí měně.
  */
 class DatasetExpectationsTest extends TestCase
 {
     private const TOLERANCE = 0.005;
+    private const RATE_TOLERANCE = 0.0000005;
+    private const LIST_TYPE = 'cz.cnb.daily';
+    private const MAX_AGE_DAYS = 7;
+    /** @var array<string, list<array<string, mixed>>> lístky per země */
+    private static array $rateLists = [];
     private const DP3_ROWS = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 20, 21, 22, 23, 24, 25, 26, 30, 31, 32, 33,
         40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 60, 61, 62, 63, 64, 65, 66,
@@ -100,6 +111,79 @@ class DatasetExpectationsTest extends TestCase
         $file = self::repoRoot() . "/tests/corpus/{$country}/expected/{$profile}/{$stem}.json";
         self::assertFileExists($file);
         return json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private static function homeCurrency(string $dir): string
+    {
+        $file = $dir . '/setup/settings.jsonc';
+        if (is_file($file)) {
+            foreach (JsoncParser::parseFile($file)['rows'] ?? [] as $row) {
+                if (($row['key'] ?? null) === 'economy.homeCurrency' && is_string($row['value']) && $row['value'] !== '') {
+                    return strtoupper($row['value']);
+                }
+            }
+        }
+        return 'CZK';
+    }
+
+    /** Účetní datum dokladu korpusu (D73): DUZP, bez něj datum vystavení. */
+    private static function accountingDate(array $doc): string
+    {
+        return (string) ($doc['dates']['taxPointDate'] ?? $doc['dates']['issueDate']);
+    }
+
+    /** @return list<array<string, mixed>> denní lístky korpusu podle validFrom */
+    private static function rateLists(string $country): array
+    {
+        if (!isset(self::$rateLists[$country])) {
+            $lists = [];
+            foreach (glob(self::repoRoot() . "/tests/corpus/{$country}/exchange-rates/*.json") ?: [] as $file) {
+                $list = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+                if (($list['listType'] ?? null) === self::LIST_TYPE) {
+                    $lists[] = $list;
+                }
+            }
+            usort($lists, static fn (array $a, array $b): int => strcmp($a['validFrom'], $b['validFrom']));
+            self::$rateLists[$country] = $lists;
+        }
+        return self::$rateLists[$country];
+    }
+
+    /**
+     * Malý resolver nad lístky korpusu (docs/exchange-rates.md § 4): poslední
+     * lístek s validFrom ≤ D, nejvýš 7 dní starý (nebo do validTo), měna
+     * v něm; kurz za jednotku = rate / amount na 6 míst.
+     *
+     * @return array{rate: float, listType: string, validFrom: string}|null
+     */
+    private static function rateFor(string $country, string $currency, string $date): ?array
+    {
+        $latest = null;
+        foreach (self::rateLists($country) as $list) {
+            if ($list['validFrom'] <= $date && ($latest === null || $list['validFrom'] > $latest['validFrom'])) {
+                $latest = $list;
+            }
+        }
+        if ($latest === null) {
+            return null;
+        }
+        if (($latest['validTo'] ?? null) !== null) {
+            if ($date > $latest['validTo']) {
+                return null;
+            }
+        } elseif ((new \DateTimeImmutable($latest['validFrom']))->diff(new \DateTimeImmutable($date))->days > self::MAX_AGE_DAYS) {
+            return null;
+        }
+        foreach ($latest['rates'] as $entry) {
+            if ($entry['currency'] === $currency) {
+                return [
+                    'rate' => round((float) $entry['rate'] / max(1, (int) $entry['amount']), 6),
+                    'listType' => (string) $latest['listType'],
+                    'validFrom' => (string) $latest['validFrom'],
+                ];
+            }
+        }
+        return null;
     }
 
     // ── Mapování ────────────────────────────────────────────────────────────
@@ -211,6 +295,7 @@ class DatasetExpectationsTest extends TestCase
     {
         $dir = self::datasetDir($country, $profile);
         $vatPayer = self::vatAgenda($dir);
+        $home = self::homeCurrency($dir);
         $mapping = self::mapping($country);
         $costs = array_column(self::readList($dir . '/expected/costs.json'), null, 'messageId');
         $vat = array_column(self::readList($dir . '/expected/vat.json'), null, 'messageId');
@@ -219,14 +304,27 @@ class DatasetExpectationsTest extends TestCase
         foreach (self::messages($dir) as ['messageId' => $id, 'stem' => $stem]) {
             $doc = self::expectedDoc($country, $profile, $stem);
             $totals = $doc['totals'];
+            $accDate = self::accountingDate($doc);
 
-            // Náklad: plátce základ, neplátce základ + DPH, bez DPH celková částka.
+            // Kurz k účetnímu datu (D73): domácí měna 1, jinak z lístků korpusu.
+            $rate = 1.0;
+            if ($doc['currency'] !== $home) {
+                $found = self::rateFor($country, $doc['currency'], $accDate);
+                if ($found === null) {
+                    $problems[] = "{$id}: bez lístku pro {$doc['currency']} k {$accDate} v tests/corpus/{$country}/exchange-rates";
+                    continue;
+                }
+                $rate = $found['rate'];
+            }
+
+            // Náklad: plátce základ, neplátce základ + DPH, bez DPH celková částka; v domácí měně.
             $cost = $totals['totalBase'] === null
                 ? (float) $totals['totalAmount']
                 : ($vatPayer ? (float) $totals['totalBase'] : (float) $totals['totalBase'] + (float) $totals['totalVat']);
+            $cost = round($cost * $rate, 2);
             $record = $costs[$id] ?? [];
             if (($record['currency'] ?? null) !== $doc['currency'] || !self::near($cost, $record['cost'] ?? null)) {
-                $problems[] = "{$id}: costs.json čeká {$cost} {$doc['currency']}, je " . json_encode($record);
+                $problems[] = "{$id}: costs.json čeká {$cost} ({$doc['currency']} × {$rate}), je " . json_encode($record);
             }
             if (!$vatPayer) {
                 continue;
@@ -239,20 +337,24 @@ class DatasetExpectationsTest extends TestCase
                 $problems[] = "{$id}: varianta {$variant} bez mapování nebo jiná v záznamu";
                 continue;
             }
-            $duzp = $doc['dates']['taxPointDate'];
             $expectedReturn = [];
             $expectedSection = null;
             $rates = [];
             if ($spec['regime'] !== 'none') {
                 $czRate = $spec['czRate'] ?? null;
-                foreach ($doc['vatRecap'] as $entry) {
+                $recap = $doc['vatRecap'];
+                if ($czRate !== null && $recap === []) {
+                    // Samovyměření bez rekapitulace (bez DPH, třetí země): základ = celková částka.
+                    $recap = [['vatPct' => 0, 'base' => $totals['totalAmount'], 'tax' => 0]];
+                }
+                foreach ($recap as $entry) {
                     $pct = (int) $entry['vatPct'];
-                    $base = (float) $entry['base'];
+                    $base = round((float) $entry['base'] * $rate, 2);
                     if ($czRate === null) {
                         if ($pct === 0) {
                             continue;
                         }
-                        $tax = (float) $entry['tax'];
+                        $tax = round((float) $entry['tax'] * $rate, 2);
                     } else {
                         if ($pct !== 0) {
                             $problems[] = "{$id}: samovyměření s nenulovou sazbou na dokladu";
@@ -275,9 +377,9 @@ class DatasetExpectationsTest extends TestCase
                 }
             }
 
-            $period = $spec['regime'] === 'none' || $duzp === null ? null : substr($duzp, 0, 7);
+            $period = $spec['regime'] === 'none' ? null : substr($accDate, 0, 7);
             if (self::field($record, 'period') !== $period || ($record['currency'] ?? null) !== $doc['currency']) {
-                $problems[] = "{$id}: období / měna záznamu neodpovídá DUZP " . json_encode($duzp);
+                $problems[] = "{$id}: období / měna záznamu neodpovídá účetnímu datu {$accDate}";
             }
             // Číselné klíče (řádky, sazby) dělá json_decode z int — srovnat obě strany.
             $actualReturn = $record['return'] ?? [];
@@ -308,7 +410,7 @@ class DatasetExpectationsTest extends TestCase
                 'section' => $expectedSection,
                 'supplierVatId' => $doc['supplier']['vatId'],
                 'documentNumber' => $doc['docNumber'],
-                'taxPointDate' => $duzp,
+                'taxPointDate' => $accDate,
                 'reverseChargeCode' => $codes[0] ?? null,
             ];
             foreach ($want as $key => $value) {
@@ -328,6 +430,54 @@ class DatasetExpectationsTest extends TestCase
             }
         }
 
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
+    /**
+     * `expected/exchange-rates.json` (D73): právě doklady v cizí měně
+     * v pořadí zpráv, datum kurzu = účetní datum (DUZP, bez něj vystavení),
+     * lístek a kurz podle lístků korpusu.
+     */
+    #[DataProvider('datasets')]
+    public function testExchangeRateRecordsMatchCorpus(string $country, string $profile): void
+    {
+        $dir = self::datasetDir($country, $profile);
+        $home = self::homeCurrency($dir);
+        $records = self::readList($dir . '/expected/exchange-rates.json');
+        $problems = [];
+        $foreign = [];
+        foreach (self::messages($dir) as ['messageId' => $id, 'stem' => $stem]) {
+            $doc = self::expectedDoc($country, $profile, $stem);
+            if ($doc['currency'] === $home) {
+                continue;
+            }
+            $foreign[$id] = $doc;
+        }
+        $this->assertSame(array_keys($foreign), array_column($records, 'messageId'), 'exchange-rates.json: právě doklady v cizí měně, v pořadí zpráv');
+
+        foreach ($records as $record) {
+            $id = (string) $record['messageId'];
+            $doc = $foreign[$id];
+            if (array_keys($record) !== ['messageId', 'currency', 'rateDate', 'listType', 'validFrom', 'rate']) {
+                $problems[] = "{$id}: klíče " . implode(',', array_keys($record));
+                continue;
+            }
+            $accDate = self::accountingDate($doc);
+            $found = self::rateFor($country, $doc['currency'], $accDate);
+            if ($found === null) {
+                $problems[] = "{$id}: bez lístku pro {$doc['currency']} k {$accDate}";
+                continue;
+            }
+            $want = ['currency' => $doc['currency'], 'rateDate' => $accDate, 'listType' => $found['listType'], 'validFrom' => $found['validFrom']];
+            foreach ($want as $key => $value) {
+                if ($record[$key] !== $value) {
+                    $problems[] = "{$id}: {$key} čeká " . json_encode($value) . ', je ' . json_encode($record[$key]);
+                }
+            }
+            if (!is_numeric($record['rate']) || abs((float) $record['rate'] - $found['rate']) > self::RATE_TOLERANCE) {
+                $problems[] = "{$id}: kurz čeká {$found['rate']}, je " . json_encode($record['rate']);
+            }
+        }
         $this->assertSame([], $problems, implode("\n", $problems));
     }
 

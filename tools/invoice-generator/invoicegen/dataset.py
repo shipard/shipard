@@ -23,15 +23,16 @@ import re
 import shutil
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 from .checks import account_valid, iban_matches_account
 from .corpus import PROFILES, TEMPLATE_LOCALE, Cell, SkippedCell, cells_for
 from .expected import dumps_expected
 from .jsonc import load_jsonc
+from .rates import HOME_CURRENCY, LIST_FORMAT, RATE_PLACES, Rate, accounting_date, select_lists
 from .render import NNBSP, fmt_date, fmt_money
-from .reporting import VatReporting, cost_record, vat_record
+from .reporting import VatReporting, cost_record, exchange_rate_record, vat_record
 
 DATASET_FORMAT = "shpd.dataset.v1"
 SETUP_FORMAT = "shpd.dataset.setup.v1"
@@ -49,7 +50,7 @@ NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 CREATED_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SETUP_TABLES = ("settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes")
 PROVISION_KEYS = ("accountingItems",)   # serverAi zaniklo (#126 D9) — serverové AI plyne z třídy dat
-MANAGED = ("manifest.jsonc", "setup", "persons", "mail", "expected")   # co build v cílové složce spravuje
+MANAGED = ("manifest.jsonc", "setup", "exchangeRates", "persons", "mail", "expected")   # co build v cílové složce spravuje
 LEDGER_SNAPSHOT = "general-ledger.json"   # profiles/<profil>/approved/ → expected/ (F3 D29)
 
 # Port Shipard\Core\Utils\Slug::make — stejná tabulka, stejný regex.
@@ -162,6 +163,14 @@ class Profile:
                 return bool(row.get("value"))
         return False
 
+    def home_currency(self) -> str:
+        """Domácí měna zdroje dat (`economy.homeCurrency` v setup/settings.jsonc,
+        malými jako v nastavení) velkými jako v dokladech; chybí = CZK."""
+        for row in (self.setup.get("settings") or {}).get("rows", []):
+            if row.get("key") == "economy.homeCurrency" and isinstance(row.get("value"), str) and row["value"]:
+                return row["value"].upper()
+        return HOME_CURRENCY
+
 
 def load_profile(profile_dir: Path, key: str) -> Profile:
     meta_path = profile_dir / "profile.jsonc"
@@ -273,6 +282,42 @@ def prune(value):
     return value
 
 
+# ── Kurzovní lístky ──────────────────────────────────────────────────────────
+
+def _rate_number(value) -> Decimal:
+    """Kurz jako po PHP `round((float) rate, 6)` a `DatasetWriter`
+    (`PRESERVE_ZERO_FRACTION`): nejvýš 6 míst, celá hodnota s `.0`."""
+    rate = Decimal(str(value))
+    if rate.as_tuple().exponent < -6:
+        rate = rate.quantize(RATE_PLACES, rounding=ROUND_HALF_UP)
+    if rate.as_tuple().exponent >= 0:
+        rate = rate.quantize(Decimal("0.0"))
+    return rate
+
+
+def dataset_list(lst: dict, currencies: frozenset[str]) -> dict:
+    """Lístek sekce `exchangeRates/` ve tvaru `ExchangeRatesExporteru`
+    (#121 D10): klíče `format, listType, homeCurrency, validFrom, [validTo],
+    [listNumber], rates` (null vynechané), kurzy seřazené podle měny a jen
+    měny z `world.base.currencies` — ČNB vyhlašuje i XDR, které seed vyřadí
+    s varováním; sada ho proto nenese."""
+    rates = sorted((r for r in lst["rates"] if r["currency"] in currencies), key=lambda r: r["currency"])
+    if not rates:
+        raise DatasetBuildError(f"lístek {lst['listType']} {lst['validFrom']}: žádná známá měna")
+    out: dict = {
+        "format": LIST_FORMAT,
+        "listType": lst["listType"],
+        "homeCurrency": lst["homeCurrency"],
+        "validFrom": lst["validFrom"],
+    }
+    if lst.get("validTo") is not None:
+        out["validTo"] = lst["validTo"]
+    if lst.get("listNumber") is not None:
+        out["listNumber"] = str(lst["listNumber"])
+    out["rates"] = [{"currency": r["currency"], "amount": int(r["amount"]), "rate": _rate_number(r["rate"])} for r in rates]
+    return out
+
+
 # ── Ideální analýza ──────────────────────────────────────────────────────────
 
 ADDED_TAG_KEYS = ("tagSource", "tagConfidence")
@@ -346,9 +391,17 @@ def ai_title(expected: dict, supplier_name: str, receipt: bool) -> str:
     return f"{kind} {expected['docNumber']} — {supplier_name}, {money}"
 
 
-def message_for_cell(cell: Cell, expected: dict, pdf: bytes) -> dict:
-    """Zpráva `shpd.mail.incomingMessage` 1.0 s jednou přílohou a jednou
-    analýzou v pořadí klíčů MailExporteru (D20)."""
+ISDOC_MIME = "text/xml"   # po seedu ho dá finfo (MailSeeder MIME nepředává); IsdocImportService bere příponu i text/xml
+
+
+def message_for_cell(cell: Cell, expected: dict, pdf: bytes, isdoc: bytes | None = None) -> dict:
+    """Zpráva `shpd.mail.incomingMessage` 1.0 s PDF jako první přílohou,
+    u podoby `pdfIsdoc` s ISDOC jako druhou (#103 D75; `isdoc` je pak
+    povinný, u podoby `pdf` zakázaný), a jednou analýzou v pořadí klíčů
+    MailExporteru (D20). Ideální analýza nese jen PDF (`att:1`)."""
+    if (cell.form == "pdfIsdoc") != (isdoc is not None):
+        raise DatasetBuildError(f"{cell.stem} [{cell.profile}]: podoba {cell.form} — ISDOC "
+                                + ("chybí" if isdoc is None else "nepatří ke zprávě"))
     locale = TEMPLATE_LOCALE[cell.template]
     doc_number = expected["docNumber"]
     issue = expected["dates"]["issueDate"]
@@ -398,14 +451,24 @@ def message_for_cell(cell: Cell, expected: dict, pdf: bytes) -> dict:
         "analysisState": 30,
         "aiTitle": title,
         "created": received_at,
-        "attachments": [{
-            "file": filename,
-            "name": filename,
-            "mimeType": "application/pdf",
-            "size": len(pdf),
-            "sha256": hashlib.sha256(pdf).hexdigest(),
-            "order": 1,
-        }],
+        "attachments": [
+            {
+                "file": filename,
+                "name": filename,
+                "mimeType": "application/pdf",
+                "size": len(pdf),
+                "sha256": hashlib.sha256(pdf).hexdigest(),
+                "order": 1,
+            },
+            *([{
+                "file": f"{cell.stem}.isdoc",
+                "name": f"{cell.stem}.isdoc",
+                "mimeType": ISDOC_MIME,
+                "size": len(isdoc),
+                "sha256": hashlib.sha256(isdoc).hexdigest(),
+                "order": 2,
+            }] if isdoc is not None else []),
+        ],
         "analyses": [{
             "analyzedAt": analyzed_at,
             "status": 2,
@@ -434,6 +497,7 @@ class DatasetSummary:
     name: str
     messages: int
     skipped: int
+    exchange_rate_lists: int
     out_dir: Path
 
 
@@ -447,17 +511,21 @@ def _clear_managed(out_dir: Path) -> None:
 
 
 def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], identities: dict,
-                  corpus_dir: Path, out_dir: Path, *, reporting: VatReporting, projection_path: Path) -> DatasetSummary:
-    """Jedna sada: setup/ ze základu, vlastní firma z identity, zpráva per
-    buňka matice profilu a očekávání pro `dataset-verify` (F3: projekce,
-    DPH, náklady, schválený snímek deníku). Deterministické — stejný korpus
-    = stejné bajty."""
+                  corpus_dir: Path, out_dir: Path, *, reporting: VatReporting, projection_path: Path,
+                  rate_lists: list[dict], currencies: frozenset[str]) -> DatasetSummary:
+    """Jedna sada: setup/ ze základu, kurzovní lístky pro doklady v cizí
+    měně, vlastní firma z identity, zpráva per buňka matice profilu
+    a očekávání pro `dataset-verify` (F3: projekce, DPH, náklady, schválený
+    snímek deníku). Deterministické — stejný korpus = stejné bajty."""
     messages: list[dict] = []
-    files: dict[str, Path] = {}
+    files: dict[str, list[Path]] = {}   # přílohy zprávy v pořadí attachments[]
     vat_records: dict[str, dict] = {}
     cost_records: dict[str, dict] = {}
+    rate_records: dict[str, dict] = {}      # kurz per doklad v cizí měně (D73)
     message_records: dict[str, dict] = {}   # zpráva → buňka korpusu (F4: metriky po variantách, `--only`)
     vat_payer = profile.vat_agenda()
+    home = profile.home_currency()
+    cells: list[tuple[Cell, Path]] = []
     skipped = 0
     for stem, doc in docs.items():
         for cell in cells_for(doc, stem, identities):
@@ -467,23 +535,48 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
             if cell.profile != profile.key:
                 continue
             expected_path = corpus_dir / "expected" / profile.key / f"{stem}.json"
-            pdf_path = corpus_dir / "out" / profile.key / f"{stem}.pdf"
             if not expected_path.is_file():
                 raise DatasetBuildError(f"{stem} [{profile.key}]: chybí očekávaný výsledek {expected_path}")
-            if not pdf_path.is_file():
-                raise DatasetBuildError(f"{stem} [{profile.key}]: chybí PDF {pdf_path}")
-            expected = load_jsonc(expected_path)
-            message = message_for_cell(cell, expected, pdf_path.read_bytes())
-            canonical = message["analyses"][0]["canonicalJson"]
-            if strip_dataset_additions(canonical) != expected:
-                raise DatasetBuildError(f"{stem} [{profile.key}]: canonicalJson po odebrání doplněných polí neodpovídá očekávání")
-            messages.append(message)
-            msg_id = message["messageId"]
-            files[msg_id] = pdf_path
-            message_records[msg_id] = {"messageId": msg_id, "stem": stem, "variant": cell.data["variant"], "form": cell.form}
-            if vat_payer:
-                vat_records[msg_id] = vat_record(msg_id, cell.data["variant"], expected, reporting)
-            cost_records[msg_id] = cost_record(msg_id, expected, vat_payer=vat_payer)
+            cells.append((cell, expected_path))
+
+    # Kurzy k účetním datům dokladů v cizí měně (D72, D73): lístek použitý
+    # resolverem + rezerva z předchozího pracovního dne jdou do sekce exchangeRates/.
+    pairs = {(cell.data["currency"], accounting_date(cell.data)) for cell, _ in cells if cell.data["currency"] != home}
+    selection = select_lists(rate_lists, pairs, home=home)
+    if selection.missing:
+        raise DatasetBuildError(
+            f"{profile.key}: chybí kurzovní lístek pro "
+            + ", ".join(f"{currency} k {day}" for currency, day in selection.missing)
+            + " — spusť build.py --fetch-rates"
+        )
+
+    for cell, expected_path in cells:
+        stem = cell.stem
+        pdf_path = corpus_dir / "out" / profile.key / f"{stem}.pdf"
+        if not pdf_path.is_file():
+            raise DatasetBuildError(f"{stem} [{profile.key}]: chybí PDF {pdf_path}")
+        # ISDOC právě u podoby pdfIsdoc (D75) — sirotek i chybějící soubor jsou chyba korpusu.
+        isdoc_path = corpus_dir / "out" / profile.key / f"{stem}.isdoc"
+        if isdoc_path.is_file() != (cell.form == "pdfIsdoc"):
+            raise DatasetBuildError(f"{stem} [{profile.key}]: podoba {cell.form}, ale {isdoc_path} "
+                                    + ("chybí" if cell.form == "pdfIsdoc" else "existuje"))
+        expected = load_jsonc(expected_path)
+        message = message_for_cell(cell, expected, pdf_path.read_bytes(),
+                                   isdoc_path.read_bytes() if cell.form == "pdfIsdoc" else None)
+        canonical = message["analyses"][0]["canonicalJson"]
+        if strip_dataset_additions(canonical) != expected:
+            raise DatasetBuildError(f"{stem} [{profile.key}]: canonicalJson po odebrání doplněných polí neodpovídá očekávání")
+        messages.append(message)
+        msg_id = message["messageId"]
+        files[msg_id] = [pdf_path] + ([isdoc_path] if cell.form == "pdfIsdoc" else [])
+        message_records[msg_id] = {"messageId": msg_id, "stem": stem, "variant": cell.data["variant"], "form": cell.form}
+        currency = cell.data["currency"]
+        rate = Rate.home() if currency == home else selection.rates[(currency, accounting_date(cell.data))]
+        if vat_payer:
+            vat_records[msg_id] = vat_record(msg_id, cell.data["variant"], expected, reporting, rate=rate.rate)
+        cost_records[msg_id] = cost_record(msg_id, expected, vat_payer=vat_payer, rate=rate.rate)
+        if currency != home:
+            rate_records[msg_id] = exchange_rate_record(msg_id, expected, rate)
 
     messages.sort(key=lambda m: (m["receivedAt"], m["messageId"]))
     ids = [m["messageId"] for m in messages]
@@ -495,6 +588,14 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     for table, file in profile.setup.items():
         (out_dir / "setup" / f"{table}.jsonc").write_text(dumps_dataset(file), encoding="utf-8")
 
+    # Sekce exchangeRates/ jen u sady s dokladem v cizí měně (docs/exchange-rates.md § 7):
+    # název NNNN-<slug(listType-validFrom)>.jsonc v pořadí (listType, validFrom) jako z dumpu.
+    if selection.lists:
+        (out_dir / "exchangeRates").mkdir()
+        for ordinal, lst in enumerate(selection.lists, start=1):
+            name = f"{ordinal:04d}-{slug(lst['listType'] + '-' + lst['validFrom'])}.jsonc"
+            (out_dir / "exchangeRates" / name).write_text(dumps_dataset(dataset_list(lst, currencies)), encoding="utf-8")
+
     (out_dir / "persons").mkdir(exist_ok=True)
     person = own_person(identity)
     (out_dir / "persons" / f"0001-{slug(identity['name'])}.jsonc").write_text(dumps_dataset(person), encoding="utf-8")
@@ -505,11 +606,13 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
         (out_dir / "mail" / f"{base}.jsonc").write_text(dumps_dataset(message), encoding="utf-8")
         sidecar = out_dir / "mail" / f"{base}.files"
         sidecar.mkdir()
-        shutil.copyfile(files[message["messageId"]], sidecar / message["attachments"][0]["file"])
+        for source, attachment in zip(files[message["messageId"]], message["attachments"], strict=True):
+            shutil.copyfile(source, sidecar / attachment["file"])
 
     # Očekávání pro dataset-verify (tasks/testing-phase3.md): záznamy v pořadí
-    # zpráv; neplátce a spolek mají vat.json prázdné (D28). Zapisovač
-    # očekávání (2 mezery, Decimal) — nejsou to soubory sady pro seed.
+    # zpráv; neplátce a spolek mají vat.json prázdné (D28), sada bez cizí
+    # měny exchange-rates.json prázdné (D73). Zapisovač očekávání (2 mezery,
+    # Decimal) — nejsou to soubory sady pro seed.
     # messages.json = zpráva → buňka korpusu pro evaluaci AI (F4, tasks/testing-phase4.md).
     expected_dir = out_dir / "expected"
     expected_dir.mkdir()
@@ -517,6 +620,7 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     (expected_dir / "messages.json").write_text(dumps_expected([message_records[m] for m in ids]), encoding="utf-8")
     (expected_dir / "vat.json").write_text(dumps_expected([vat_records[m] for m in ids if m in vat_records]), encoding="utf-8")
     (expected_dir / "costs.json").write_text(dumps_expected([cost_records[m] for m in ids]), encoding="utf-8")
+    (expected_dir / "exchange-rates.json").write_text(dumps_expected([rate_records[m] for m in ids if m in rate_records]), encoding="utf-8")
     if profile.ledger_snapshot is not None:
         shutil.copyfile(profile.ledger_snapshot, expected_dir / LEDGER_SNAPSHOT)
 
@@ -533,18 +637,25 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     manifest["profile"] = profile.key
     if profile.provision:
         manifest["provision"] = profile.provision
-    manifest["counts"] = {"setup": len(profile.setup), "persons": 1, "mail": len(messages)}
+    counts = {"setup": len(profile.setup)}
+    if selection.lists:
+        counts["exchangeRates"] = len(selection.lists)
+    counts.update({"persons": 1, "mail": len(messages)})
+    manifest["counts"] = counts
     (out_dir / "manifest.jsonc").write_text(dumps_dataset(manifest), encoding="utf-8")
 
-    return DatasetSummary(profile=profile.key, name=profile.name, messages=len(messages), skipped=skipped, out_dir=out_dir)
+    return DatasetSummary(profile=profile.key, name=profile.name, messages=len(messages), skipped=skipped,
+                          exchange_rate_lists=len(selection.lists), out_dir=out_dir)
 
 
 def build_datasets(corpus_dir: Path, out_root: Path, identities: dict, docs: dict[str, dict], *,
-                   reporting: VatReporting, projection_path: Path) -> list[DatasetSummary]:
+                   reporting: VatReporting, projection_path: Path, rate_lists: list[dict],
+                   currencies: frozenset[str]) -> list[DatasetSummary]:
     """Všechny profily: `corpus_dir/profiles/<profil>/` → `out_root/<profil>/`."""
     summaries = []
     for key in PROFILES:
         profile = load_profile(corpus_dir / "profiles" / key, key)
         summaries.append(build_dataset(profile, identities["profiles"][key], docs, identities, corpus_dir, out_root / key,
-                                       reporting=reporting, projection_path=projection_path))
+                                       reporting=reporting, projection_path=projection_path,
+                                       rate_lists=rate_lists, currencies=currencies))
     return summaries

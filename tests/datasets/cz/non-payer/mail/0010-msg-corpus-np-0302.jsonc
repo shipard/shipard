@@ -24,6 +24,14 @@
             "size": 54551,
             "sha256": "f778eb842bb7d82bd08868247beda833d356c04305900f9a7182f44aa82fba90",
             "order": 1
+        },
+        {
+            "file": "0302-domestic-rounding.isdoc",
+            "name": "0302-domestic-rounding.isdoc",
+            "mimeType": "text/xml",
+            "size": 6101,
+            "sha256": "921ac8515ef4999bf29130aafe655a05f228be1dddee8b6718f40d7a8aca1a14",
+            "order": 2
         }
     ],
     "analyses": [

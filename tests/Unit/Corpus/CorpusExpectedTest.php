@@ -343,7 +343,9 @@ final class CorpusExpectedTest extends TestCase
     /**
      * Sady jsou generované z korpusu (build.py) — tenhle test chytí
      * zapomenutý rebuild: každá buňka má zprávu, žádná zpráva není navíc,
-     * ideální analýza = očekávání + doplněná pole, PDF stejné.
+     * ideální analýza = očekávání + doplněná pole, PDF stejné; podoba
+     * `pdfIsdoc` má ISDOC korpusu jako druhou přílohu (`order` 2, text/xml),
+     * podoba `pdf` jen PDF (#103 D75).
      */
     public function testDatasetsMatchCorpus(): void
     {
@@ -355,10 +357,11 @@ final class CorpusExpectedTest extends TestCase
             $country = basename(dirname($file, 3));
             $label = "{$country}/{$profile}/" . basename($file);
             $message = JsoncParser::parseFile($file);
-            $pdfName = (string) ($message['attachments'][0]['file'] ?? '');
+            $attachments = $message['attachments'] ?? [];
+            $pdfName = (string) ($attachments[0]['file'] ?? '');
             $stem = basename($pdfName, '.pdf');
-            if ($pdfName === '' || count($message['attachments'] ?? []) !== 1) {
-                $problems[] = "{$label}: zpráva musí mít právě jednu přílohu";
+            if ($pdfName === '' || !str_ends_with($pdfName, '.pdf') || count($attachments) < 1 || count($attachments) > 2) {
+                $problems[] = "{$label}: zpráva musí mít PDF jako první přílohu a nejvýš jednu další";
                 continue;
             }
             $key = "{$country}/{$profile}/{$stem}";
@@ -370,18 +373,37 @@ final class CorpusExpectedTest extends TestCase
                 $problems[] = "{$label}: zpráva bez buňky matice {$key}";
                 continue;
             }
+            $dataFile = self::corpusDir() . "/{$country}/data/{$stem}.jsonc";
+            $form = is_file($dataFile) ? (JsoncParser::parseFile($dataFile)['form'] ?? null) : null;
+            $sidecarDir = substr($file, 0, -strlen('.jsonc')) . '.files/';
+            if ($form === 'pdfIsdoc') {
+                $isdoc = $attachments[1] ?? null;
+                $corpusIsdoc = self::corpusDir() . "/{$country}/out/{$profile}/{$stem}.isdoc";
+                if ($isdoc === null || ($isdoc['file'] ?? null) !== "{$stem}.isdoc" || ($isdoc['name'] ?? null) !== "{$stem}.isdoc"
+                    || ($isdoc['mimeType'] ?? null) !== 'text/xml' || ($isdoc['order'] ?? null) !== 2) {
+                    $problems[] = "{$label}: podoba pdfIsdoc čeká druhou přílohu {$stem}.isdoc (text/xml, order 2)";
+                } elseif (!is_file($sidecarDir . $isdoc['file']) || !is_file($corpusIsdoc)
+                    || sha1_file($sidecarDir . $isdoc['file']) !== sha1_file($corpusIsdoc)) {
+                    $problems[] = "{$label}: ISDOC v sidecaru ≠ out/{$profile}/{$stem}.isdoc";
+                }
+            } elseif (count($attachments) !== 1) {
+                $problems[] = "{$label}: podoba {$form} má mít jen PDF, zpráva má " . count($attachments) . ' přílohy';
+            }
             $canonical = $message['analyses'][0]['canonicalJson'] ?? null;
             if (!is_array($canonical) || ($message['analyses'][0]['status'] ?? null) !== 2
                 || array_key_exists('resolution', $message['analyses'][0])) {
                 $problems[] = "{$label}: chybí otevřený úspěšný návrh (analyses[0])";
                 continue;
             }
+            if (count($canonical['attachments'] ?? []) !== 1 || ($canonical['attachments'][0]['ref'] ?? null) !== 'att:1') {
+                $problems[] = "{$label}: ideální analýza nese jen PDF (att:1) — ISDOC se do ní nepřidává";
+            }
             unset($canonical['source'], $canonical['attachments']);
             unset($canonical['_resolve']['contentTag']['tagSource'], $canonical['_resolve']['contentTag']['tagConfidence']);
             if ($canonical != self::expectedDoc($country, $profile, $stem)) {
                 $problems[] = "{$label}: canonicalJson po odebrání doplněných polí ≠ expected/{$profile}/{$stem}.json";
             }
-            $sidecar = substr($file, 0, -strlen('.jsonc')) . '.files/' . $pdfName;
+            $sidecar = $sidecarDir . $pdfName;
             $corpusPdf = self::corpusDir() . "/{$country}/out/{$profile}/{$stem}.pdf";
             if (!is_file($sidecar) || !is_file($corpusPdf) || sha1_file($sidecar) !== sha1_file($corpusPdf)) {
                 $problems[] = "{$label}: PDF v sidecaru ≠ out/{$profile}/{$stem}.pdf";

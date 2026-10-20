@@ -1,0 +1,1044 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1">
+  <DocumentType>1</DocumentType>
+  <ID>2026-FV-03402</ID>
+  <UUID>a6e84b04-92ec-51c8-a7fb-e5ef45dfdbcc</UUID>
+  <IssuingSystem>Shipard</IssuingSystem>
+  <IssueDate>2026-09-30</IssueDate>
+  <TaxPointDate>2026-09-29</TaxPointDate>
+  <VATApplicable>true</VATApplicable>
+  <ElectronicPossibilityAgreementReference/>
+  <Note>Dodávka provozních potřeb dle rámcové smlouvy RS-2026-14.</Note>
+  <LocalCurrencyCode>CZK</LocalCurrencyCode>
+  <CurrRate>1</CurrRate>
+  <RefCurrRate>1</RefCurrRate>
+  <AccountingSupplierParty>
+    <Party>
+      <PartyIdentification>
+        <ID>13113879</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Velkoobchod Matice s.r.o.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Skladištní</StreetName>
+        <BuildingNumber>17</BuildingNumber>
+        <CityName>Hradec Králové</CityName>
+        <PostalZone>50002</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+      <PartyTaxScheme>
+        <CompanyID>CZ13113879</CompanyID>
+        <TaxScheme>VAT</TaxScheme>
+      </PartyTaxScheme>
+      <RegisterIdentification>
+        <Preformatted>Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové</Preformatted>
+      </RegisterIdentification>
+      <Contact>
+        <Telephone>+420495512780</Telephone>
+        <ElectronicMail>objednavky@matice-velkoobchod.example</ElectronicMail>
+      </Contact>
+    </Party>
+  </AccountingSupplierParty>
+  <AccountingCustomerParty>
+    <Party>
+      <PartyIdentification>
+        <ID>28647645</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Spolek Zelený kopec, z. s.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Pod Strání</StreetName>
+        <BuildingNumber>92</BuildingNumber>
+        <CityName>Říčany</CityName>
+        <PostalZone>25101</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+    </Party>
+  </AccountingCustomerParty>
+  <InvoiceLines>
+    <InvoiceLine>
+      <ID>1</ID>
+      <InvoicedQuantity unitCode="bal">12</InvoicedQuantity>
+      <LineExtensionAmount>3468.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>4196.28</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>728.28</LineExtensionTaxAmount>
+      <UnitPrice>289.00</UnitPrice>
+      <UnitPriceTaxInclusive>349.69</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Toaletní papír 2vrstvý, 64 rolí</Description>
+        <SellersItemIdentification>
+          <ID>TP-64</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>2</ID>
+      <InvoicedQuantity unitCode="bal">4</InvoicedQuantity>
+      <LineExtensionAmount>756.20</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>796.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>915.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>158.80</LineExtensionTaxAmount>
+      <UnitPrice>199.00</UnitPrice>
+      <UnitPriceTaxInclusive>240.79</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Papírové utěrky v roli, 2vrstvé, 6 ks</Description>
+        <SellersItemIdentification>
+          <ID>PU-6</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>3</ID>
+      <InvoicedQuantity unitCode="krt">5</InvoicedQuantity>
+      <LineExtensionAmount>2295.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>2776.95</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>481.95</LineExtensionTaxAmount>
+      <UnitPrice>459.00</UnitPrice>
+      <UnitPriceTaxInclusive>555.39</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Skládané ručníky Z-Z, 4000 ks</Description>
+        <SellersItemIdentification>
+          <ID>RZ-4000</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>4</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>378.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>457.38</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>79.38</LineExtensionTaxAmount>
+      <UnitPrice>189.00</UnitPrice>
+      <UnitPriceTaxInclusive>228.69</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Tekuté mýdlo 5 l, antibakteriální</Description>
+        <SellersItemIdentification>
+          <ID>MY-5</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>5</ID>
+      <InvoicedQuantity unitCode="ks">8</InvoicedQuantity>
+      <LineExtensionAmount>632.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>764.72</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>132.72</LineExtensionTaxAmount>
+      <UnitPrice>79.00</UnitPrice>
+      <UnitPriceTaxInclusive>95.59</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Dezinfekce na ruce 500 ml s pumpičkou</Description>
+        <SellersItemIdentification>
+          <ID>DEZ-500</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>6</ID>
+      <InvoicedQuantity unitCode="ks">4</InvoicedQuantity>
+      <LineExtensionAmount>1316.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>1592.36</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>276.36</LineExtensionTaxAmount>
+      <UnitPrice>329.00</UnitPrice>
+      <UnitPriceTaxInclusive>398.09</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Dezinfekční prostředek na povrchy 5 l</Description>
+        <SellersItemIdentification>
+          <ID>DEZP-5</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>7</ID>
+      <InvoicedQuantity unitCode="role">1</InvoicedQuantity>
+      <LineExtensionAmount>69.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>83.49</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>14.49</LineExtensionTaxAmount>
+      <UnitPrice>69.00</UnitPrice>
+      <UnitPriceTaxInclusive>83.49</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Pytle na odpad 120 l, 25 ks, černé</Description>
+        <SellersItemIdentification>
+          <ID>PO-120</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>8</ID>
+      <InvoicedQuantity unitCode="role">12</InvoicedQuantity>
+      <LineExtensionAmount>708.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>856.68</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>148.68</LineExtensionTaxAmount>
+      <UnitPrice>59.00</UnitPrice>
+      <UnitPriceTaxInclusive>71.39</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Pytle na odpad 60 l, 50 ks</Description>
+        <SellersItemIdentification>
+          <ID>PO-60</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>9</ID>
+      <InvoicedQuantity unitCode="role">3</InvoicedQuantity>
+      <LineExtensionAmount>96.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>116.16</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>20.16</LineExtensionTaxAmount>
+      <UnitPrice>32.00</UnitPrice>
+      <UnitPriceTaxInclusive>38.72</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Sáčky do koše 30 l, 50 ks</Description>
+        <SellersItemIdentification>
+          <ID>SK-30</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>10</ID>
+      <InvoicedQuantity unitCode="bal">5</InvoicedQuantity>
+      <LineExtensionAmount>185.25</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>195.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>224.15</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>38.90</LineExtensionTaxAmount>
+      <UnitPrice>39.00</UnitPrice>
+      <UnitPriceTaxInclusive>47.19</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Houbičky na nádobí, 10 ks</Description>
+        <SellersItemIdentification>
+          <ID>HO-10</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>11</ID>
+      <InvoicedQuantity unitCode="ks">12</InvoicedQuantity>
+      <LineExtensionAmount>648.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>784.08</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>136.08</LineExtensionTaxAmount>
+      <UnitPrice>54.00</UnitPrice>
+      <UnitPriceTaxInclusive>65.34</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Prostředek na nádobí 1 l</Description>
+        <SellersItemIdentification>
+          <ID>JA-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>12</ID>
+      <InvoicedQuantity unitCode="bal">10</InvoicedQuantity>
+      <LineExtensionAmount>1190.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>1439.90</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>249.90</LineExtensionTaxAmount>
+      <UnitPrice>119.00</UnitPrice>
+      <UnitPriceTaxInclusive>143.99</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Utěrky z mikrovlákna 40×40 cm, 5 ks</Description>
+        <SellersItemIdentification>
+          <ID>UM-5</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>13</ID>
+      <InvoicedQuantity unitCode="krt">2</InvoicedQuantity>
+      <LineExtensionAmount>321.10</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>338.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>388.53</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>67.43</LineExtensionTaxAmount>
+      <UnitPrice>169.00</UnitPrice>
+      <UnitPriceTaxInclusive>204.49</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Rukavice nitrilové M, 100 ks</Description>
+        <SellersItemIdentification>
+          <ID>RN-M</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>14</ID>
+      <InvoicedQuantity unitCode="krt">2</InvoicedQuantity>
+      <LineExtensionAmount>338.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>408.98</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>70.98</LineExtensionTaxAmount>
+      <UnitPrice>169.00</UnitPrice>
+      <UnitPriceTaxInclusive>204.49</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Rukavice nitrilové L, 100 ks</Description>
+        <SellersItemIdentification>
+          <ID>RN-L</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>15</ID>
+      <InvoicedQuantity unitCode="ks">8</InvoicedQuantity>
+      <LineExtensionAmount>496.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>600.16</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>104.16</LineExtensionTaxAmount>
+      <UnitPrice>62.00</UnitPrice>
+      <UnitPriceTaxInclusive>75.02</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Čistič skel 750 ml s rozprašovačem</Description>
+        <SellersItemIdentification>
+          <ID>CS-750</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>16</ID>
+      <InvoicedQuantity unitCode="ks">3</InvoicedQuantity>
+      <LineExtensionAmount>645.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>780.45</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>135.45</LineExtensionTaxAmount>
+      <UnitPrice>215.00</UnitPrice>
+      <UnitPriceTaxInclusive>260.15</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Univerzální čistič 5 l</Description>
+        <SellersItemIdentification>
+          <ID>UC-5</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>17</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>96.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>116.16</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>20.16</LineExtensionTaxAmount>
+      <UnitPrice>48.00</UnitPrice>
+      <UnitPriceTaxInclusive>58.08</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Čistič WC gel 750 ml</Description>
+        <SellersItemIdentification>
+          <ID>WC-750</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>18</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>144.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>174.24</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>30.24</LineExtensionTaxAmount>
+      <UnitPrice>72.00</UnitPrice>
+      <UnitPriceTaxInclusive>87.12</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Osvěžovač vzduchu sprej 300 ml</Description>
+        <SellersItemIdentification>
+          <ID>OV-300</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>19</ID>
+      <InvoicedQuantity unitCode="ks">12</InvoicedQuantity>
+      <LineExtensionAmount>4188.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>5067.48</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>879.48</LineExtensionTaxAmount>
+      <UnitPrice>349.00</UnitPrice>
+      <UnitPriceTaxInclusive>422.29</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Mop plochý s násadou</Description>
+        <SellersItemIdentification>
+          <ID>MP-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>20</ID>
+      <InvoicedQuantity unitCode="ks">1</InvoicedQuantity>
+      <LineExtensionAmount>89.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>107.69</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>18.69</LineExtensionTaxAmount>
+      <UnitPrice>89.00</UnitPrice>
+      <UnitPriceTaxInclusive>107.69</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Náhradní návlek na mop</Description>
+        <SellersItemIdentification>
+          <ID>MN-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>21</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>518.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>626.78</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>108.78</LineExtensionTaxAmount>
+      <UnitPrice>259.00</UnitPrice>
+      <UnitPriceTaxInclusive>313.39</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Kbelík 12 l s ždímačem</Description>
+        <SellersItemIdentification>
+          <ID>KB-12</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>22</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>258.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>312.18</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>54.18</LineExtensionTaxAmount>
+      <UnitPrice>129.00</UnitPrice>
+      <UnitPriceTaxInclusive>156.09</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Smeták s lopatkou</Description>
+        <SellersItemIdentification>
+          <ID>SL-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>23</ID>
+      <InvoicedQuantity unitCode="ks">10</InvoicedQuantity>
+      <LineExtensionAmount>6900.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>8349.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>1449.00</LineExtensionTaxAmount>
+      <UnitPrice>690.00</UnitPrice>
+      <UnitPriceTaxInclusive>834.90</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Odpadkový koš 25 l, nerez</Description>
+        <SellersItemIdentification>
+          <ID>OK-25</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>24</ID>
+      <InvoicedQuantity unitCode="bal">1</InvoicedQuantity>
+      <LineExtensionAmount>33.25</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>35.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>40.23</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>6.98</LineExtensionTaxAmount>
+      <UnitPrice>35.00</UnitPrice>
+      <UnitPriceTaxInclusive>42.35</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Papírové kapesníky 10×10 ks</Description>
+        <SellersItemIdentification>
+          <ID>PK-100</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>25</ID>
+      <InvoicedQuantity unitCode="bal">3</InvoicedQuantity>
+      <LineExtensionAmount>135.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>163.35</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>28.35</LineExtensionTaxAmount>
+      <UnitPrice>45.00</UnitPrice>
+      <UnitPriceTaxInclusive>54.45</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Vlhčené ubrousky 72 ks</Description>
+        <SellersItemIdentification>
+          <ID>VU-72</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>26</ID>
+      <InvoicedQuantity unitCode="bal">2</InvoicedQuantity>
+      <LineExtensionAmount>98.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>118.58</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>20.58</LineExtensionTaxAmount>
+      <UnitPrice>49.00</UnitPrice>
+      <UnitPriceTaxInclusive>59.29</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Kávové filtry č. 4, 100 ks</Description>
+        <SellersItemIdentification>
+          <ID>KF-4</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>27</ID>
+      <InvoicedQuantity unitCode="bal">2</InvoicedQuantity>
+      <LineExtensionAmount>264.10</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>278.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>319.56</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>55.46</LineExtensionTaxAmount>
+      <UnitPrice>139.00</UnitPrice>
+      <UnitPriceTaxInclusive>168.19</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Kelímky papírové 200 ml, 100 ks</Description>
+        <SellersItemIdentification>
+          <ID>KP-200</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>28</ID>
+      <InvoicedQuantity unitCode="bal">4</InvoicedQuantity>
+      <LineExtensionAmount>376.20</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>396.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>455.20</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>79.00</LineExtensionTaxAmount>
+      <UnitPrice>99.00</UnitPrice>
+      <UnitPriceTaxInclusive>119.79</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Míchátka dřevěná, 1000 ks</Description>
+        <SellersItemIdentification>
+          <ID>MD-1000</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>29</ID>
+      <InvoicedQuantity unitCode="bal">1</InvoicedQuantity>
+      <LineExtensionAmount>42.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>50.82</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>8.82</LineExtensionTaxAmount>
+      <UnitPrice>42.00</UnitPrice>
+      <UnitPriceTaxInclusive>50.82</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Ubrousky papírové 33×33, 100 ks</Description>
+        <SellersItemIdentification>
+          <ID>UB-33</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>30</ID>
+      <InvoicedQuantity unitCode="ks">6</InvoicedQuantity>
+      <LineExtensionAmount>954.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>1154.34</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>200.34</LineExtensionTaxAmount>
+      <UnitPrice>159.00</UnitPrice>
+      <UnitPriceTaxInclusive>192.39</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Odvápňovač kávovaru 1 l</Description>
+        <SellersItemIdentification>
+          <ID>OD-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>31</ID>
+      <InvoicedQuantity unitCode="ks">24</InvoicedQuantity>
+      <LineExtensionAmount>9336.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>10456.32</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>1120.32</LineExtensionTaxAmount>
+      <UnitPrice>389.00</UnitPrice>
+      <UnitPriceTaxInclusive>435.68</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Káva zrnková 1 kg, 100% arabica</Description>
+        <SellersItemIdentification>
+          <ID>KZ-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>32</ID>
+      <InvoicedQuantity unitCode="ks">3</InvoicedQuantity>
+      <LineExtensionAmount>267.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>299.04</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>32.04</LineExtensionTaxAmount>
+      <UnitPrice>89.00</UnitPrice>
+      <UnitPriceTaxInclusive>99.68</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Káva mletá 250 g</Description>
+        <SellersItemIdentification>
+          <ID>KM-250</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>33</ID>
+      <InvoicedQuantity unitCode="bal">6</InvoicedQuantity>
+      <LineExtensionAmount>570.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>638.40</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>68.40</LineExtensionTaxAmount>
+      <UnitPrice>95.00</UnitPrice>
+      <UnitPriceTaxInclusive>106.40</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Čaj černý porcovaný, 100 ks</Description>
+        <SellersItemIdentification>
+          <ID>CC-100</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>34</ID>
+      <InvoicedQuantity unitCode="bal">4</InvoicedQuantity>
+      <LineExtensionAmount>276.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>309.12</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>33.12</LineExtensionTaxAmount>
+      <UnitPrice>69.00</UnitPrice>
+      <UnitPriceTaxInclusive>77.28</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Čaj zelený porcovaný, 50 ks</Description>
+        <SellersItemIdentification>
+          <ID>CZ-50</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>35</ID>
+      <InvoicedQuantity unitCode="bal">12</InvoicedQuantity>
+      <LineExtensionAmount>708.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>792.96</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>84.96</LineExtensionTaxAmount>
+      <UnitPrice>59.00</UnitPrice>
+      <UnitPriceTaxInclusive>66.08</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Čaj ovocný porcovaný, 50 ks</Description>
+        <SellersItemIdentification>
+          <ID>CO-50</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>36</ID>
+      <InvoicedQuantity unitCode="ks">1</InvoicedQuantity>
+      <LineExtensionAmount>24.90</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>27.89</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>2.99</LineExtensionTaxAmount>
+      <UnitPrice>24.90</UnitPrice>
+      <UnitPriceTaxInclusive>27.89</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Cukr krystal 1 kg</Description>
+        <SellersItemIdentification>
+          <ID>CU-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>37</ID>
+      <InvoicedQuantity unitCode="bal">12</InvoicedQuantity>
+      <LineExtensionAmount>1428.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>1599.36</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>171.36</LineExtensionTaxAmount>
+      <UnitPrice>119.00</UnitPrice>
+      <UnitPriceTaxInclusive>133.28</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Cukr porcovaný 500 ks</Description>
+        <SellersItemIdentification>
+          <ID>CP-500</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>38</ID>
+      <InvoicedQuantity unitCode="ks">3</InvoicedQuantity>
+      <LineExtensionAmount>65.70</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>73.58</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>7.88</LineExtensionTaxAmount>
+      <UnitPrice>21.90</UnitPrice>
+      <UnitPriceTaxInclusive>24.53</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Mléko trvanlivé 1,5 % 1 l</Description>
+        <SellersItemIdentification>
+          <ID>ML-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>39</ID>
+      <InvoicedQuantity unitCode="bal">1</InvoicedQuantity>
+      <LineExtensionAmount>169.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>189.28</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>20.28</LineExtensionTaxAmount>
+      <UnitPrice>169.00</UnitPrice>
+      <UnitPriceTaxInclusive>189.28</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Smetana do kávy 10 g, 240 ks</Description>
+        <SellersItemIdentification>
+          <ID>SM-240</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>40</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>33.80</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>37.86</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>4.06</LineExtensionTaxAmount>
+      <UnitPrice>16.90</UnitPrice>
+      <UnitPriceTaxInclusive>18.93</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Minerální voda neperlivá 1,5 l</Description>
+        <SellersItemIdentification>
+          <ID>MV-15</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>41</ID>
+      <InvoicedQuantity unitCode="ks">6</InvoicedQuantity>
+      <LineExtensionAmount>101.40</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>113.57</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>12.17</LineExtensionTaxAmount>
+      <UnitPrice>16.90</UnitPrice>
+      <UnitPriceTaxInclusive>18.93</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Minerální voda perlivá 1,5 l</Description>
+        <SellersItemIdentification>
+          <ID>MVP-15</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>42</ID>
+      <InvoicedQuantity unitCode="ks">10</InvoicedQuantity>
+      <LineExtensionAmount>399.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>446.88</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>47.88</LineExtensionTaxAmount>
+      <UnitPrice>39.90</UnitPrice>
+      <UnitPriceTaxInclusive>44.69</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Džus pomerančový 1 l</Description>
+        <SellersItemIdentification>
+          <ID>DP-1</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>43</ID>
+      <InvoicedQuantity unitCode="ks">12</InvoicedQuantity>
+      <LineExtensionAmount>828.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>927.36</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>99.36</LineExtensionTaxAmount>
+      <UnitPrice>69.00</UnitPrice>
+      <UnitPriceTaxInclusive>77.28</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Sušenky máslové 300 g</Description>
+        <SellersItemIdentification>
+          <ID>SU-300</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>44</ID>
+      <InvoicedQuantity unitCode="bal">1</InvoicedQuantity>
+      <LineExtensionAmount>89.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>99.68</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>10.68</LineExtensionTaxAmount>
+      <UnitPrice>89.00</UnitPrice>
+      <UnitPriceTaxInclusive>99.68</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Oplatky mix 500 g</Description>
+        <SellersItemIdentification>
+          <ID>OP-500</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>45</ID>
+      <InvoicedQuantity unitCode="bal">12</InvoicedQuantity>
+      <LineExtensionAmount>1788.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>2002.56</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>214.56</LineExtensionTaxAmount>
+      <UnitPrice>149.00</UnitPrice>
+      <UnitPriceTaxInclusive>166.88</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Ořechy mix 500 g</Description>
+        <SellersItemIdentification>
+          <ID>OR-500</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>46</ID>
+      <InvoicedQuantity unitCode="ks">10</InvoicedQuantity>
+      <LineExtensionAmount>1290.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>1444.80</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>154.80</LineExtensionTaxAmount>
+      <UnitPrice>129.00</UnitPrice>
+      <UnitPriceTaxInclusive>144.48</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Med květový 500 g</Description>
+        <SellersItemIdentification>
+          <ID>ME-500</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>47</ID>
+      <InvoicedQuantity unitCode="ks">1</InvoicedQuantity>
+      <LineExtensionAmount>79.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>88.48</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>9.48</LineExtensionTaxAmount>
+      <UnitPrice>79.00</UnitPrice>
+      <UnitPriceTaxInclusive>88.48</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Kakao instantní 400 g</Description>
+        <SellersItemIdentification>
+          <ID>KA-400</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>48</ID>
+      <InvoicedQuantity unitCode="ks">2</InvoicedQuantity>
+      <LineExtensionAmount>90.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>100.80</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>10.80</LineExtensionTaxAmount>
+      <UnitPrice>45.00</UnitPrice>
+      <UnitPriceTaxInclusive>50.40</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>12</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Medové perníčky 200 g</Description>
+        <SellersItemIdentification>
+          <ID>PE-200</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+  </InvoiceLines>
+  <TaxTotal>
+    <TaxSubTotal>
+      <TaxableAmount>27637.10</TaxableAmount>
+      <TaxAmount>5803.79</TaxAmount>
+      <TaxInclusiveAmount>33440.89</TaxInclusiveAmount>
+      <AlreadyClaimedTaxableAmount>0.00</AlreadyClaimedTaxableAmount>
+      <AlreadyClaimedTaxAmount>0.00</AlreadyClaimedTaxAmount>
+      <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+      <DifferenceTaxableAmount>27637.10</DifferenceTaxableAmount>
+      <DifferenceTaxAmount>5803.79</DifferenceTaxAmount>
+      <DifferenceTaxInclusiveAmount>33440.89</DifferenceTaxInclusiveAmount>
+      <TaxCategory>
+        <Percent>21</Percent>
+      </TaxCategory>
+    </TaxSubTotal>
+    <TaxSubTotal>
+      <TaxableAmount>17542.80</TaxableAmount>
+      <TaxAmount>2105.14</TaxAmount>
+      <TaxInclusiveAmount>19647.94</TaxInclusiveAmount>
+      <AlreadyClaimedTaxableAmount>0.00</AlreadyClaimedTaxableAmount>
+      <AlreadyClaimedTaxAmount>0.00</AlreadyClaimedTaxAmount>
+      <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+      <DifferenceTaxableAmount>17542.80</DifferenceTaxableAmount>
+      <DifferenceTaxAmount>2105.14</DifferenceTaxAmount>
+      <DifferenceTaxInclusiveAmount>19647.94</DifferenceTaxInclusiveAmount>
+      <TaxCategory>
+        <Percent>12</Percent>
+      </TaxCategory>
+    </TaxSubTotal>
+    <TaxAmount>7908.93</TaxAmount>
+  </TaxTotal>
+  <LegalMonetaryTotal>
+    <TaxExclusiveAmount>45179.90</TaxExclusiveAmount>
+    <TaxInclusiveAmount>53088.83</TaxInclusiveAmount>
+    <AlreadyClaimedTaxExclusiveAmount>0.00</AlreadyClaimedTaxExclusiveAmount>
+    <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+    <DifferenceTaxExclusiveAmount>45179.90</DifferenceTaxExclusiveAmount>
+    <DifferenceTaxInclusiveAmount>53088.83</DifferenceTaxInclusiveAmount>
+    <PayableRoundingAmount>0.00</PayableRoundingAmount>
+    <PaidDepositsAmount>0.00</PaidDepositsAmount>
+    <PayableAmount>53088.83</PayableAmount>
+  </LegalMonetaryTotal>
+  <PaymentMeans>
+    <Payment>
+      <PaidAmount>53088.83</PaidAmount>
+      <PaymentMeansCode>42</PaymentMeansCode>
+      <Details>
+        <PaymentDueDate>2026-10-14</PaymentDueDate>
+        <ID>6427159018</ID>
+        <BankCode>0800</BankCode>
+        <Name/>
+        <IBAN>CZ9708000000006427159018</IBAN>
+        <BIC>GIBACZPX</BIC>
+        <VariableSymbol>26034020</VariableSymbol>
+        <ConstantSymbol>0008</ConstantSymbol>
+      </Details>
+    </Payment>
+  </PaymentMeans>
+</Invoice>
