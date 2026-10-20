@@ -32,6 +32,32 @@ final class EvalCallResultTest extends TestCase
         $this->assertSame(0.0, (new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', null, null, [], ['costUsd' => null] + $tags))->tagsCostUsd(), 'bez ceny (model mimo katalog)');
     }
 
+    /** #103 D76: cesta výpočtu v souboru (`path`), starší běh bez klíče = `ai`; `notCarried` mimo odchylky, jen v počtech. */
+    public function testPathRoundTripAndNotCarriedIsNeitherHitNorDeviation(): void
+    {
+        $outcomes = [
+            new FieldOutcome('docNumber', FieldState::Match, 'FV-1', 'FV-1'),
+            new FieldOutcome('vat.place', FieldState::NotCarried, 'cz', null, null, 'ISDOC nemá místo plnění'),
+            new FieldOutcome('rows[0].discountPct', FieldState::NotCarried, null, 2.0, null, 'jen částka'),
+        ];
+        $isdoc = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.0, 0, 0, 5, 'isdoc', 'invoiceReceived', 'it.hosting', $outcomes, null, EvalCallResult::PATH_ISDOC);
+        $out = $isdoc->toArray();
+        $this->assertSame('isdoc', $out['path']);
+        $this->assertSame(array_search('model', array_keys($out), true) + 1, array_search('path', array_keys($out), true), 'path hned za model');
+        $this->assertSame(['match' => 1, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 2], $out['counts']);
+        $this->assertSame([], $out['deviations']);
+        $this->assertSame([], $out['normalized']);
+        $this->assertTrue($isdoc->isClean(), 'notCarried doklad nešpiní');
+        $this->assertSame([], $isdoc->deviations());
+
+        $default = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', null, null);
+        $this->assertSame('ai', $default->path);
+        $this->assertSame('ai', $default->toArray()['path']);
+        $this->assertSame('ai', EvalCallResult::pathOf(['status' => 'ok']), 'běh před D76');
+        $this->assertSame('ai', EvalCallResult::pathOf(['path' => 'nonsense']));
+        $this->assertSame('isdoc', EvalCallResult::pathOf(['path' => 'isdoc']));
+    }
+
     public function testNormalizedCarriesActualValueAndSimilarity(): void
     {
         $result = new EvalCallResult(
@@ -49,7 +75,7 @@ final class EvalCallResultTest extends TestCase
             ['path' => 'supplier.bankAccount.iban', 'actual' => 'CZ65 0800 0000 1920 0014 5399'],
             ['path' => 'supplier.name', 'actual' => 'Vetrnik Energie s.r.o.', 'similarity' => 0.9286],
         ], $out['normalized'], 'shoda po normalizaci nese skutečný tvar výstupu, podobnost jen u textu');
-        $this->assertSame(['match' => 1, 'matchNormalized' => 2, 'missing' => 1, 'extra' => 0, 'wrong' => 0], $out['counts']);
+        $this->assertSame(['match' => 1, 'matchNormalized' => 2, 'missing' => 1, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0], $out['counts']);
         $this->assertCount(1, $out['deviations']);
     }
 

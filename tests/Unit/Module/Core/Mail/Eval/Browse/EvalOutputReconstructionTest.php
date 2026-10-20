@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Mail\Eval\Browse;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\Projection;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetMessages;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalOutputReconstruction;
+use Shipard\Module\Core\Mail\Eval\EvalCallResult;
 use Shipard\Module\Core\Mail\Eval\EvalMessage;
+use Shipard\Module\Core\Mail\Eval\EvalRunner;
 
 /**
  * Rekonstrukce výstupu modelu z očekávání a odchylek (#103 D53) nad
@@ -107,7 +111,8 @@ final class EvalOutputReconstructionTest extends TestCase
         $this->assertSame('ok', $detail['status']);
         $this->assertSame(1, $detail['repeat']);
         $this->assertSame('domestic-rounding', $detail['cell']['variant']);
-        $this->assertSame(['match' => 106, 'matchNormalized' => 1, 'missing' => 3, 'extra' => 0, 'wrong' => 1], $detail['counts']);
+        $this->assertSame(['match' => 106, 'matchNormalized' => 1, 'missing' => 3, 'extra' => 0, 'wrong' => 1, 'notCarried' => 0], $detail['counts']);
+        $this->assertSame('ai', $detail['path'], 'běh před D76 bez klíče path = cesta ai');
 
         $court = self::field($detail, 'supplier.courtRegistration');
         $this->assertSame('wrong', $court['state']);
@@ -216,12 +221,53 @@ final class EvalOutputReconstructionTest extends TestCase
         $customerGroup = array_values(array_filter($detail['groups'], static fn (array $g): bool => $g['id'] === 'customer'))[0];
         $this->assertCount(1, $customerGroup['fields'], 'odchylka na uzlu nahradila listy odběratele');
         $this->assertSame(['customer', 'missing', null], [$customerGroup['fields'][0]['path'], $customerGroup['fields'][0]['state'], $customerGroup['fields'][0]['actual']]);
-        $this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 1, 'extra' => 0, 'wrong' => 0], $customerGroup['counts']);
+        $this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 1, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0], $customerGroup['counts']);
 
         $this->assertSame(['expected' => $message->expectedPrimaryType, 'actual' => 'receipt', 'state' => 'wrong'], $detail['classification']);
         $this->assertSame(1, $detail['counts']['wrong']);
         $this->assertSame(2, $detail['counts']['missing'], 'uzel pole + odběratel');
         $this->assertNull($detail['countsMatch'], 'syntetické volání bez counts');
+    }
+
+    /**
+     * Cesta `isdoc` (#103 D76): listy, které ISDOC nenese, jsou `notCarried`
+     * s důvodem a bez výstupu; počty sedí s voláním, které by vydal
+     * `EvalRunner` (týž zdroj `IsdocFieldCoverage`).
+     */
+    public function testIsdocPathMarksNotCarriedLeavesAndCountsMatchTheRunner(): void
+    {
+        $message = self::messages()->find('MSG-CORPUS-VP-0102');
+        $comparator = new CanonicalComparator(self::projection());
+        $outcomes = EvalRunner::forPath($comparator->evaluate($message->expectedCanonical, $message->expectedCanonical), EvalCallResult::PATH_ISDOC);
+        $outcomes[] = EvalRunner::classificationOutcome($message->expectedPrimaryType, 'invoiceReceived');
+        $result = new EvalCallResult($message->messageId, 1, EvalCallResult::STATUS_OK, null, null, 0.0, 0, 0, 12, 'isdoc', 'invoiceReceived', 'goods.stock', $outcomes, null, EvalCallResult::PATH_ISDOC);
+        $call = $result->toArray();
+        $this->assertSame('isdoc', $call['path']);
+        $this->assertGreaterThan(0, $call['counts']['notCarried']);
+        $this->assertSame([], $call['deviations'], 'notCarried není odchylka');
+
+        $detail = EvalOutputReconstruction::build(self::projection(), $message, $call);
+
+        $this->assertSame('isdoc', $detail['path']);
+        $this->assertTrue($detail['countsMatch'], json_encode($detail['counts']) . ' vs ' . json_encode($detail['fileCounts']));
+        $this->assertSame($call['counts'], $detail['counts']);
+        $place = self::field($detail, 'vat.place');
+        $this->assertSame('notCarried', $place['state']);
+        $this->assertSame($message->expectedCanonical['vat']['place'], $place['expected']);
+        $this->assertNull($place['actual']);
+        $this->assertSame(IsdocFieldCoverage::NOT_CARRIED['vat.place'], $place['reason']);
+        $this->assertTrue($place['counted']);
+        $mode = self::field($detail, 'rows[0].priceCalcMode');
+        $this->assertSame(['notCarried', IsdocFieldCoverage::NOT_CARRIED['rows[].priceCalcMode']], [$mode['state'], $mode['reason']]);
+        $this->assertSame('match', self::field($detail, 'docNumber')['state']);
+        $this->assertNull(self::field($detail, 'docNumber')['reason']);
+        $vatGroup = array_values(array_filter($detail['groups'], static fn (array $g): bool => $g['id'] === 'vat'))[0];
+        $this->assertGreaterThan(0, $vatGroup['counts']['notCarried']);
+
+        // Totéž volání bez klíče path (nebo s `ai`) notCarried nemá.
+        unset($call['path']);
+        $call['counts']['notCarried'] = 0;
+        $this->assertSame('match', self::field(EvalOutputReconstruction::build(self::projection(), $message, $call), 'vat.place')['state']);
     }
 
     public function testEmptyNullableCustomerIsASingleLeaf(): void

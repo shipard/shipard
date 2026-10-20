@@ -13,8 +13,9 @@ use Shipard\Core\Ai\AiCallPlan;
  * a hash promptu, platforma a původ připojení, model, ladění, strop,
  * ladění štítků), začátek a konec, opakování, plánovaný počet volání
  * a důvod předčasného konce (`stoppedBy`: `maxCost` strop útraty,
- * `cancelled` SIGTERM; null = doběhlo, D61), metriky a per zpráva
- * × opakování jen odchylky.
+ * `cancelled` SIGTERM; null = doběhlo, D61), metriky (vč. rozpadu
+ * `byPath` podle cesty výpočtu, #103 D76) a per zpráva × opakování jen
+ * odchylky.
  */
 final class EvalRun
 {
@@ -26,7 +27,7 @@ final class EvalRun
      * @param array<string, mixed>  $set
      * @param array{commit: ?string, dirty: ?bool} $git
      * @param array<string, mixed>  $profile řádek profilu pošty
-     * @param array{metrics: array<string, int|float>, range?: array<string, mixed>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, mixed>, byForm: array<string, mixed>, deviationsByField: array<string, int>} $metrics
+     * @param array{metrics: array<string, int|float>, range?: array<string, mixed>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, mixed>, byForm: array<string, mixed>, byPath: array<string, mixed>, deviationsByField: array<string, int>} $metrics
      * @param list<EvalCallResult>  $results
      * @return array<string, mixed>
      */
@@ -90,6 +91,7 @@ final class EvalRun
             'formatStability' => $metrics['formatStability'] ?? null,
             'byVariant' => $metrics['byVariant'],
             'byForm' => $metrics['byForm'],
+            'byPath' => $metrics['byPath'],
             'deviationsByField' => $metrics['deviationsByField'],
             'calls' => array_map(static fn (EvalCallResult $r): array => $r->toArray(), $results),
         ];

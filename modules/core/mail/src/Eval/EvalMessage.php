@@ -11,6 +11,9 @@ namespace Shipard\Module\Core\Mail\Eval;
  */
 final readonly class EvalMessage
 {
+    /** Podoba buňky korpusu s ISDOC jako druhou přílohou (#119 D10) — v evaluaci jde cestou `isdoc` (D76). */
+    public const string FORM_PDF_ISDOC = 'pdfIsdoc';
+
     /** @param array<string, mixed> $expectedCanonical */
     public function __construct(
         public string $messageId,
@@ -23,4 +26,10 @@ final readonly class EvalMessage
         /** Relativní cesta záznamu v sadě (`mail/0001-….jsonc`) — pro přílohy v sidecar složce. */
         public ?string $file = null,
     ) {}
+
+    /** Zpráva podoby PDF + ISDOC — odhad ceny ji počítá jen za štítky. */
+    public function hasIsdoc(): bool
+    {
+        return $this->form === self::FORM_PDF_ISDOC;
+    }
 }

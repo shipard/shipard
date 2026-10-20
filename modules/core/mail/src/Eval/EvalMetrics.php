@@ -15,7 +15,9 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  *     počty `n` / `missing` / `extra` / `wrong`; `fields.all.*`. Selhané
  *     volání nese každý neprázdný list očekávání jako `missing` (D44,
  *     {@see EvalRunner}) — běh se selháním u nejhoršího dokladu tak
- *     nevychází lichotivěji;
+ *     nevychází lichotivěji; listy `notCarried` (cesta `isdoc`, pole, která
+ *     ISDOC nenese — #103 D76) jsou mimo `n` i odchylky, jen
+ *     `fields.<skupina>.notCarried`;
  *   - `documents.clean` podíl volání bez jediné odchylky (selhané volání =
  *     ne), `.amountsCorrect` (řádky `totalPrice`, rekapitulace, součty bez
  *     odchylky), `.rowCountOk`, `.classificationOk`, `.tagOk`;
@@ -33,7 +35,9 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * `formatStability` = zvlášť podíl zpráv se shodou ve všech opakováních,
  * která je i stejného tvaru (žádný mix `match` / `matchNormalized`), jen
  * uzly s takovou zprávou. `byVariant` / `byForm` podle mapování zpráva →
- * buňka korpusu. `deviationsByField` = počet volání s odchylkou per uzel
+ * buňka korpusu, `byPath` podle cesty výpočtu volání (`ai` / `isdoc`,
+ * D76 — buňka `isdoc` má `cost.usd` 0 a nese jen `tags.usd`).
+ * `deviationsByField` = počet volání s odchylkou per uzel
  * projekce (nejčastější odchylky, porovnání běhů). Stabilita
  * i `deviationsByField` jen z úspěšných volání — selhání by zhoršilo každý
  * uzel o 1 / opakování a je vidět v `calls.failed`.
@@ -50,7 +54,7 @@ final class EvalMetrics
     /**
      * @param list<EvalCallResult> $results
      * @param list<EvalMessage>    $messages
-     * @return array{metrics: array<string, int|float>, range?: array<string, array{min: int|float, max: int|float}>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, array<string, int|float>>, byForm: array<string, array<string, int|float>>, deviationsByField: array<string, int>}
+     * @return array{metrics: array<string, int|float>, range?: array<string, array{min: int|float, max: int|float}>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, array<string, int|float>>, byForm: array<string, array<string, int|float>>, byPath: array<string, array<string, int|float>>, deviationsByField: array<string, int>}
      */
     public static function compute(array $results, array $messages, int $repeat): array
     {
@@ -72,8 +76,9 @@ final class EvalMetrics
         foreach ($messages as $m) {
             $cells[$m->messageId] = $m;
         }
-        $out['byVariant'] = self::byCell($results, $cells, 'variant');
-        $out['byForm'] = self::byCell($results, $cells, 'form');
+        $out['byVariant'] = self::byBucket($results, static fn (EvalCallResult $r): ?string => $cells[$r->messageId]->variant ?? null);
+        $out['byForm'] = self::byBucket($results, static fn (EvalCallResult $r): ?string => $cells[$r->messageId]->form ?? null);
+        $out['byPath'] = self::byBucket($results, static fn (EvalCallResult $r): ?string => $r->path);
         $out['deviationsByField'] = self::deviationsByField($results);
         return $out;
     }
@@ -89,9 +94,9 @@ final class EvalMetrics
         $m = ['calls.total' => count($results), 'calls.ok' => 0, 'calls.failed' => 0];
         $groups = [];
         foreach (EvalFieldGroups::GROUPS as $g) {
-            $groups[$g] = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
+            $groups[$g] = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
         }
-        $all = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
+        $all = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
         $clean = 0;
         $amounts = 0;
         $rowCount = 0;
@@ -118,7 +123,8 @@ final class EvalMetrics
                 $tagsIn += (int) ($r->tags['tokensIn'] ?? 0);
                 $tagsOut += (int) ($r->tags['tokensOut'] ?? 0);
             }
-            // Pole: i selhané volání (jeho outcomes = missing neprázdných polí očekávání, D44).
+            // Pole: i selhané volání (jeho outcomes = missing neprázdných polí očekávání, D44);
+            // notCarried mimo n (D76).
             foreach ($r->outcomes as $o) {
                 $group = EvalFieldGroups::groupOf($o->nodePath());
                 $key = match ($o->state) {
@@ -127,11 +133,14 @@ final class EvalMetrics
                     FieldState::Missing => 'missing',
                     FieldState::Extra => 'extra',
                     FieldState::Wrong => 'wrong',
+                    FieldState::NotCarried => 'notCarried',
                 };
-                $groups[$group]['n']++;
                 $groups[$group][$key]++;
-                $all['n']++;
                 $all[$key]++;
+                if ($o->state->isCounted()) {
+                    $groups[$group]['n']++;
+                    $all['n']++;
+                }
             }
             if (!$r->isOk()) {
                 $m['calls.failed']++;
@@ -144,7 +153,7 @@ final class EvalMetrics
             $rowCountOk = true;
             foreach ($r->outcomes as $o) {
                 $node = $o->nodePath();
-                if (!$o->state->isHit()) {
+                if (!$o->state->isHit() && $o->state->isCounted()) {
                     if (EvalFieldGroups::isAmountNode($node)) {
                         $amountsOk = false;
                     }
@@ -174,6 +183,7 @@ final class EvalMetrics
             $m["fields.{$g}.missing"] = $c['missing'];
             $m["fields.{$g}.extra"] = $c['extra'];
             $m["fields.{$g}.wrong"] = $c['wrong'];
+            $m["fields.{$g}.notCarried"] = $c['notCarried'];
         }
         $total = max(1, count($results));
         $m['documents.clean'] = round($clean / $total, 4);
@@ -202,8 +212,8 @@ final class EvalMetrics
     {
         foreach (self::RATIO_PREFIXES as $prefix) {
             if (str_starts_with($key, $prefix)) {
-                // počty polí (n, missing, extra, wrong) jsou součty
-                return !preg_match('/\.(n|missing|extra|wrong)$/', $key);
+                // počty polí (n, missing, extra, wrong, notCarried) jsou součty
+                return !preg_match('/\.(n|missing|extra|wrong|notCarried)$/', $key);
             }
         }
         return false;
@@ -316,7 +326,7 @@ final class EvalMetrics
 
     /**
      * @param list<EvalCallResult> $results
-     * @return array<string, array<string, array<int, FieldState>>> uzel → zpráva → opakování → stav (jen úspěšná volání)
+     * @return array<string, array<string, array<int, FieldState>>> uzel → zpráva → opakování → stav (jen úspěšná volání, bez `notCarried`)
      */
     private static function statesByNode(array $results): array
     {
@@ -326,6 +336,9 @@ final class EvalMetrics
                 continue;
             }
             foreach ($r->outcomes as $o) {
+                if (!$o->state->isCounted()) {
+                    continue;
+                }
                 $states[$o->nodePath()][$r->messageId][$r->repeat] = $o->state;
             }
         }
@@ -333,15 +346,18 @@ final class EvalMetrics
     }
 
     /**
-     * @param list<EvalCallResult>       $results
-     * @param array<string, EvalMessage> $cells
+     * Kyblíky podle klíče volání (varianta a podoba z buňky korpusu, cesta
+     * výpočtu); volání bez klíče se vynechá.
+     *
+     * @param list<EvalCallResult>              $results
+     * @param \Closure(EvalCallResult): ?string $keyOf
      * @return array<string, array<string, int|float>>
      */
-    private static function byCell(array $results, array $cells, string $property): array
+    private static function byBucket(array $results, \Closure $keyOf): array
     {
         $buckets = [];
         foreach ($results as $r) {
-            $value = $cells[$r->messageId]->$property ?? null;
+            $value = $keyOf($r);
             if ($value === null) {
                 continue;
             }
@@ -360,6 +376,7 @@ final class EvalMetrics
                 'documents.amountsCorrect' => $m['documents.amountsCorrect'],
                 'documents.rowCountOk' => $m['documents.rowCountOk'],
                 'cost.usd' => $m['cost.usd'],
+                'tags.usd' => $m['tags.usd'],
             ];
         }
         return $out;
@@ -393,7 +410,7 @@ final class EvalMetrics
     {
         return array_values(array_map(
             static fn (FieldOutcome $o): string => $o->path,
-            array_filter($outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit()),
+            array_filter($outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit() && $o->state->isCounted()),
         ));
     }
 }

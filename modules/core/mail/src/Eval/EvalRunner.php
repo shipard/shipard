@@ -8,6 +8,7 @@ use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\FieldOutcome;
 use Shipard\Module\Core\Exchange\Compare\FieldState;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
 use Shipard\Module\Core\Mail\Analysis\AnalysisComputing;
 use Shipard\Module\Core\Mail\Analysis\AnalysisOutcome;
 use Shipard\Module\Core\Mail\Analysis\AnalysisRequest;
@@ -20,7 +21,10 @@ use Shipard\Module\Core\Mail\Analysis\AnalysisRequest;
  * nevalidní canonical) je výsledek zprávy, ne pád běhu; neočekávaná
  * výjimka výpočtu = `internal`. Selhané volání nese každý neprázdný list
  * očekávání jako `missing` (D44, {@see failed()}). Syrový text modelu jde
- * volitelně do složky mimo repo (`--save-raw`).
+ * volitelně do složky mimo repo (`--save-raw`). Cesta výpočtu (#103 D76):
+ * výpočet s {@see PathReporting} ji hlásí po každém volání (`ai` /
+ * `isdoc`), jinak `ai`; u cesty `isdoc` dostanou listy, které ISDOC nenese,
+ * stav `notCarried` ({@see IsdocFieldCoverage::markNotCarried()}).
  */
 final class EvalRunner
 {
@@ -133,12 +137,13 @@ final class EvalRunner
         } catch (EvalCancelledException) {
             return null;
         } catch (\Throwable $e) {
-            return $this->failed($message, $repeat, 'internal', get_class($e) . ': ' . $e->getMessage(), null, null);
+            return $this->failed($message, $repeat, 'internal', get_class($e) . ': ' . $e->getMessage(), null, null, $this->lastPath());
         }
+        $path = $this->lastPath();
         $this->saveRaw($message, $repeat, $outcome->rawText);
 
         if (!$outcome->ok) {
-            return $this->failed($message, $repeat, $outcome->errorType, $outcome->note, $outcome, null);
+            return $this->failed($message, $repeat, $outcome->errorType, $outcome->note, $outcome, null, $path);
         }
 
         $classification = $outcome->body['message_classification'] ?? null;
@@ -148,17 +153,34 @@ final class EvalRunner
             $note = $outcome->validated === null
                 ? 'result without a document (document is null)'
                 : 'canonical failed schema validation: ' . self::validationIssues($outcome->validated->json);
-            return $this->failed($message, $repeat, 'invalid_canonical', $note, $outcome, $primaryType);
+            return $this->failed($message, $repeat, 'invalid_canonical', $note, $outcome, $primaryType, $path);
         }
 
-        $outcomes = $this->comparator->evaluate($message->expectedCanonical, $canonical);
+        $outcomes = self::forPath($this->comparator->evaluate($message->expectedCanonical, $canonical), $path);
         $outcomes[] = self::classificationOutcome($message->expectedPrimaryType, $primaryType);
         $tag = $canonical['_resolve']['contentTag']['tag'] ?? null;
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_OK, null, null,
             $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName,
-            $primaryType, is_string($tag) ? $tag : null, $outcomes, $outcome->validated?->tagsUsage,
+            $primaryType, is_string($tag) ? $tag : null, $outcomes, $outcome->validated?->tagsUsage, $path,
         );
+    }
+
+    private function lastPath(): string
+    {
+        return $this->computation instanceof PathReporting ? $this->computation->lastPath() : EvalCallResult::PATH_AI;
+    }
+
+    /**
+     * Výsledky porovnání podle cesty: u `isdoc` listy, které ISDOC nenese,
+     * jako `notCarried` (D76); `ai` beze změny.
+     *
+     * @param list<FieldOutcome> $outcomes
+     * @return list<FieldOutcome>
+     */
+    public static function forPath(array $outcomes, string $path): array
+    {
+        return $path === EvalCallResult::PATH_ISDOC ? IsdocFieldCoverage::markNotCarried($outcomes) : $outcomes;
     }
 
     /**
@@ -168,14 +190,14 @@ final class EvalRunner
      * místo aby ho vynechaly. Cena a tokeny podle výsledku výpočtu, u pádu
      * výpočtu (`internal`) nic.
      */
-    private function failed(EvalMessage $message, int $repeat, ?string $errorType, ?string $note, ?AnalysisOutcome $outcome, ?string $primaryType): EvalCallResult
+    private function failed(EvalMessage $message, int $repeat, ?string $errorType, ?string $note, ?AnalysisOutcome $outcome, ?string $primaryType, string $path): EvalCallResult
     {
-        $outcomes = $this->comparator->evaluateAgainstNothing($message->expectedCanonical);
+        $outcomes = self::forPath($this->comparator->evaluateAgainstNothing($message->expectedCanonical), $path);
         $outcomes[] = self::classificationOutcome($message->expectedPrimaryType, $primaryType);
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_FAILED, $errorType, $note,
             $outcome?->costUsd, $outcome?->tokensIn, $outcome?->tokensOut, $outcome?->durationMs, $outcome?->modelName,
-            $primaryType, null, $outcomes, $outcome?->validated?->tagsUsage,
+            $primaryType, null, $outcomes, $outcome?->validated?->tagsUsage, $path,
         );
     }
 
