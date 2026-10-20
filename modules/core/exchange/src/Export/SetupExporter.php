@@ -13,8 +13,8 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
 /**
  * Sekce `setup/` sady — číselníky, které `ds-reset` + provisionery
  * neobnoví, ale sada na nich stojí (R1 v tasks/dataset-phase1.md):
- * vlastní bankovní účty, střediska (dimenze dokladů, #110), registrace DPH,
- * šanony spisovny, mailboxy.
+ * nesystémové účty osnovy, vlastní bankovní účty, střediska (dimenze
+ * dokladů, #110), registrace DPH, šanony spisovny, mailboxy.
  *
  * Jeden soubor per tabulka (`shpd.dataset.setup.v1`), řádky s přirozeným
  * klíčem, bez interních id a auditních sloupců. Hodnoty se typují podle
@@ -38,9 +38,19 @@ final class SetupExporter
     // app.icon / app.companyLogo odkazují na soubory v branding/ — nepřenosné.
     public const SETTINGS_KEYS = ['app.name', 'app.shortName', 'app.theme', 'app.shell'];
 
-    /** @var array<string, array{table: string, key: list<string>}> */
+    /**
+     * `where` = pevný filtr řádků (sloupec → int), jen pro tabulky, z nichž
+     * sada nese podmnožinu.
+     *
+     * @var array<string, array{table: string, key: list<string>, where?: array<string, int>}>
+     */
     public const TABLES = [
         'settings'          => ['table' => 'core_system_settings',                'key' => ['key']],
+        // Nesystémové účty osnovy (#131 fáze 2a): analytiky založené nad seedem
+        // (bankovní účet v cizí měně potřebuje vlastní 221xxx). Systémové účty
+        // obnoví AccountChartProvisioner. Seed jde abecedně, takže
+        // `accounts.jsonc` předchází `bank_accounts.jsonc` a účet číslem se dohledá.
+        'accounts'          => ['table' => 'economy_accounting_accounts',          'key' => ['number'], 'where' => ['is_system' => 0]],
         'bank_accounts'     => ['table' => 'economy_codebooks_bank_accounts',     'key' => ['code']],
         // Pokladny (#103 F3 nález E) — výchozí pokladna pro hotově hrazené
         // přijaté doklady; účet se přenáší číslem jako u ostatních FK na rozvrh.
@@ -92,7 +102,7 @@ final class SetupExporter
                 'table'  => $key,
                 'rows'   => $key === self::SETTINGS_TABLE
                     ? $this->exportSettings()
-                    : $this->exportTable($spec['table'], $def, $spec['key']),
+                    : $this->exportTable($spec['table'], $def, $spec['key'], $spec['where'] ?? []),
             ]);
         }
         return $out;
@@ -106,9 +116,10 @@ final class SetupExporter
 
     /**
      * @param list<string> $keyColumns
+     * @param array<string, int> $filter pevné podmínky z TABLES (`where`)
      * @return list<array<string, mixed>>
      */
-    private function exportTable(string $tableName, TableDefinition $def, array $keyColumns): array
+    private function exportTable(string $tableName, TableDefinition $def, array $keyColumns, array $filter = []): array
     {
         /** @var array<string, ColumnDefinition> $columns */
         $columns = [];
@@ -130,7 +141,11 @@ final class SetupExporter
         }
 
         $order = implode(', ', array_map(static fn(string $c): string => "[{$c}]", [...$keyColumns, 'id']));
-        $where = $hasDocState ? ' WHERE [docState] <> 90' : '';
+        $conditions = $hasDocState ? ['[docState] <> 90'] : [];
+        foreach ($filter as $colId => $value) {
+            $conditions[] = "[{$colId}] = " . (int) $value;
+        }
+        $where = $conditions !== [] ? ' WHERE ' . implode(' AND ', $conditions) : '';
         $rows = $this->db->fetchAll("SELECT * FROM [{$tableName}]{$where} ORDER BY {$order}");
 
         $out = [];

@@ -2,8 +2,9 @@
     // shpd.dataset.setup.v1 — sekce `setup/` datové sady (tasks/dataset-phase1.md R1).
     //
     // Číselníky, které `ds-reset` + provisionery neobnoví, ale sada na nich
-    // stojí: rozhodovací parametry DS (settings), vlastní bankovní účty,
-    // střediska (dimenze dokladů, #110), registrace DPH, šanony spisovny,
+    // stojí: rozhodovací parametry DS (settings), nesystémové účty osnovy
+    // (accounts, #131 fáze 2a), vlastní bankovní účty, střediska (dimenze
+    // dokladů, #110), registrace DPH, šanony spisovny,
     // mailboxy. Jeden soubor per tabulka, řádky = sloupce tabulky bez
     // interních id a auditních sloupců; FK sloupce se nepřenáší (účet
     // z rozvrhu jako číslo účtu). Klíče řádků jsou sloupce tabulky, proto
@@ -18,7 +19,7 @@
     "properties": {
         "format": { "const": "shpd.dataset.setup.v1" },
         // settings = klíč/hodnota z core_system_settings (rows: [{key, value}]), aplikuje se před resetem
-        "table":  { "enum": ["settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes"] },
+        "table":  { "enum": ["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes"] },
         "rows": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": true }

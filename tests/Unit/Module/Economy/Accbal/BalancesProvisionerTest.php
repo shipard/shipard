@@ -221,12 +221,20 @@ class BalancesProvisionerTest extends TestCase
 
     public function testSeedMarksCreditNoteRulesExactlyOnModifySignRows(): void
     {
+        // modify_sign nesou dvě rodiny řádků: sign-pravidla dobropisů
+        // (`creditNoteRule`, legacy je vynechá) a zrcadlové řádky clearingu
+        // (#131 fáze 2a — platí i pro legacy, zakládá je i
+        // ClearingInfrastructureProvisioner). Nic třetího.
         $marked = [];
+        $mirrors = [];
         foreach ($this->seedGroups() as $g) {
             foreach ($g['accounts'] as $a) {
-                $this->assertSame(!empty($a['modify_sign']), BalancesProvisioner::isCreditNoteRule($a), "{$g['code']} {$a['account_number']}");
+                $key = $g['code'] . ':' . $a['account_number'] . '/' . $a['acc_side'] . '/' . $a['bal_side'];
                 if (BalancesProvisioner::isCreditNoteRule($a)) {
-                    $marked[] = $g['code'] . ':' . $a['account_number'] . '/' . $a['acc_side'] . '/' . $a['bal_side'];
+                    $this->assertTrue(!empty($a['modify_sign']), "{$key}: creditNoteRule bez modify_sign");
+                    $marked[] = $key;
+                } elseif (!empty($a['modify_sign'])) {
+                    $mirrors[] = $key;
                 }
             }
         }
@@ -234,6 +242,11 @@ class BalancesProvisionerTest extends TestCase
             ['receivables:321/1/0', 'receivables:321/0/1', 'payables:311/0/0', 'payables:311/1/1'],
             $marked,
             'sign-pravidla dobropisů zrcadlově v obou hlavních skupinách',
+        );
+        $this->assertSame(
+            ['unmatched_payments:261200/0/1', 'unmatched_payments:261300/1/1'],
+            $mirrors,
+            'jediné modify_sign řádky mimo dobropisy jsou zrcadla clearingu',
         );
     }
 
@@ -249,7 +262,12 @@ class BalancesProvisionerTest extends TestCase
             $expected += count(array_filter($g['accounts'], fn(array $a) => empty($a['creditNoteRule'])));
         }
         $this->assertCount($expected, $store->accounts, 'creditNoteRule řádky se nezaložily');
-        $this->assertSame([0], array_values(array_unique(array_column($store->accounts, 'modify_sign'))));
+        $modifySign = array_values(array_filter($store->accounts, static fn(array $a) => (int) $a['modify_sign'] === 1));
+        $this->assertSame(
+            ['261200', '261300'],
+            array_column($modifySign, 'account_number'),
+            'legacy: modify_sign jen zrcadla clearingu (#131 fáze 2a), sign-pravidla dobropisů ne',
+        );
         $this->assertSame([0], array_values(array_unique(array_column($store->accounts, 'amounts_sign'))), 'legacy = částky Všechny');
         $this->assertSame(['legacy'], array_values(array_unique(array_column($store->balances, 'provisioning_variant'))));
     }

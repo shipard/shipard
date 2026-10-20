@@ -30,6 +30,44 @@ class SetupExporterTest extends TestCase
         $this->assertSame(array_keys(SetupExporter::TABLES), $schema['properties']['table']['enum']);
     }
 
+    public function testAccountsCarryOnlyNonSystemRows(): void
+    {
+        // #131 fáze 2a: analytiky založené nad seedem (221xxx pro účet v cizí
+        // měně); systémové účty obnoví provisioner, sada je nenese.
+        $this->assertSame(
+            ['table' => 'economy_accounting_accounts', 'key' => ['number'], 'where' => ['is_system' => 0]],
+            SetupExporter::TABLES['accounts'],
+        );
+
+        $def = $this->tableDef('economy/accounting/tables/economy_accounting_accounts.jsonc');
+        $db = $this->createMock(Connection::class);
+        $db->expects($this->once())->method('fetchAll')->willReturnCallback(function (string $sql): array {
+            $this->assertStringContainsString(
+                'FROM [economy_accounting_accounts] WHERE [docState] <> 90 AND [is_system] = 0 ORDER BY [number], [id]',
+                $sql,
+            );
+            return [new Row([
+                'id' => 310, 'number' => '221200', 'name' => 'Bankovní účet EUR', 'short_name' => 'BÚ EUR',
+                'account_level' => 4, 'g1' => '2', 'g2' => '22', 'g3' => '221', 'account_kind' => 0,
+                'costs_type' => null, 'results_type' => null, 'valid_from' => null, 'valid_to' => null,
+                'is_system' => 0, 'note' => null, 'docState' => 40, 'docStateMain' => 3,
+            ])];
+        });
+
+        $records = (new SetupExporter($db, ['economy_accounting_accounts' => $def]))->exportAll();
+
+        $this->assertCount(1, $records);
+        $this->assertSame('accounts', $records[0]->slug);
+        $row = $records[0]->data['rows'][0];
+        $this->assertArrayNotHasKey('id', $row);
+        $this->assertSame('221200', $row['number']);
+        $this->assertSame(4, $row['account_level']);
+        $this->assertSame('221', $row['g3']);
+        $this->assertFalse($row['is_system']);
+        $this->assertSame(40, $row['docState']);
+        $this->assertSame([], (new SetupExporter($db, []))->getWarnings());
+    }
+
     public function testExportsOnlyActiveTablesWithTypedRowsAndNaturalOrder(): void
     {
         $tables = [

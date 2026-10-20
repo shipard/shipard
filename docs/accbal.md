@@ -206,6 +206,8 @@ Předpis ×−1`, `311 DAL Záporné → Úhrada ×−1`) a zrcadlově v Pohled�
 řádky pro 321 (přijatý dobropis = pohledávka za dodavatelem). Tyto řádky
 nesou v seedu `creditNoteRule: true`; běžné řádky mají částky Kladné, aby
 záporné nechaly sign-pravidlu. To je výchozí chování nového Shipardu.
+Druhá rodina řádků s `modify_sign` jsou **zrcadla clearingu** (§4.4,
+#131 fáze 2a) — ta `creditNoteRule` nenesou a dostává je i legacy DS.
 
 **Varianta legacy (importovaný DS).** Starý modul `balance` sign-pravidla
 neměl — dobropis zůstával záporně ve své skupině a uzavíral se zápornou
@@ -650,6 +652,8 @@ skupina **„Nespárované platby"**:
 ```
 261200 DAL Kladné Úhrada   (nespárovaný příjem)
 261300 MD  Kladné Úhrada   (nespárovaný výdaj)
+261200 MD  Kladné Úhrada   modify_sign   (přeúčtování nespárovaného příjmu)
+261300 DAL Kladné Úhrada   modify_sign   (přeúčtování nespárovaného výdaje)
 ```
 
 Důsledky:
@@ -657,6 +661,19 @@ Důsledky:
 - Nespárovaná úhrada je **normální saldo pohyb** na skupině „Nespárované
   platby" (bal_side = Úhrada); ve vieweru případů je to případ typu „úhrada
   bez předpisu". `ClearingRouter` má tím **jediný zdroj kandidátů** — ledger.
+- **Přeúčtování z clearingu interním dokladem** (#131 fáze 2a, D22 demo
+  sady): platba bez partnera a VS (výplata mezd, odvody) zůstane na clearingu
+  natrvalo — router nemá podle čeho hledat. Interní doklad MD 331 / DAL
+  261300 (resp. MD 261200 / DAL předpis u příjmu) ji přeúčtuje; zrcadlové
+  řádky skupiny s `modify_sign` z něj udělají **zápornou úhradu v témže
+  případu**, takže případ s prázdným klíčem se vynuluje. Skupina dál nemá
+  řádek předpisu → lookup ji neprohledá (§5.1) a `paymentGroup()`
+  (`LedgerGenerator`) řádky s `modify_sign` přeskakuje → pohyb bankovní
+  transakce (`payment.*`) se nemění. Router filtruje `source_kind =
+  bankTransaction`, interní doklad kandidátem není. DS vzniklé dřív dostanou
+  zrcadlové řádky při `ds-upgrade` (`ClearingInfrastructureProvisioner`
+  doplní chybějící řádky existující skupině); pohyby přepočítá
+  `accbal-regenerate --all`.
 - Po přeúčtování bankovní engine položí transakci na účet předpisu, vyšle
   `journalWritten`, saldo re-derivuje: clearing pohyb (na „Nespárovaných")
   **zmizí**, vznikne úhrada na skupině Pohledávky/Závazky a případ klíče se

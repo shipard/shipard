@@ -20,18 +20,30 @@ class ClearingInfrastructureProvisionerTest extends TestCase
      *
      * @param list<array{id: int, number: string}> $existingAccounts
      * @param list<array{id: int, code: string}> $existingBalances
+     * @param list<array<string, mixed>> $existingBalanceAccounts řádky skupin (`balance`, klíč, `sort_order`)
      */
-    private function recordingDb(array $existingAccounts = [], array $existingBalances = []): object
+    private function recordingDb(array $existingAccounts = [], array $existingBalances = [], array $existingBalanceAccounts = []): object
     {
         $store = new \stdClass();
         $store->tables = [
             'economy_accounting_accounts'    => $existingAccounts,
             'economy_accbal_balances'        => $existingBalances,
-            'economy_accbal_balance_accounts' => [],
+            'economy_accbal_balance_accounts' => $existingBalanceAccounts,
         ];
-        $store->autoIncrement = count($existingAccounts) + count($existingBalances);
+        $store->autoIncrement = count($existingAccounts) + count($existingBalances) + count($existingBalanceAccounts);
 
         $db = $this->createMock(DataSourceConnection::class);
+
+        $db->method('fetchAll')->willReturnCallback(
+            function (string $sql, mixed ...$params) use ($store): array {
+                $this->assertStringContainsString('economy_accbal_balance_accounts', $sql);
+                $balanceId = (int) ($params[0] ?? 0);
+                return array_values(array_filter(
+                    $store->tables['economy_accbal_balance_accounts'],
+                    static fn(array $row) => (int) ($row['balance'] ?? 0) === $balanceId,
+                ));
+            }
+        );
 
         $db->method('fetchRow')->willReturnCallback(
             function (string $sql, mixed ...$params) use ($store): ?array {
@@ -81,6 +93,7 @@ class ClearingInfrastructureProvisionerTest extends TestCase
         $this->assertSame(0, $result['accounts']['existing']);
         $this->assertSame(1, $result['group']['created']);
         $this->assertSame(0, $result['group']['existing']);
+        $this->assertSame(4, $result['group']['accountsAdded']);
 
         $accounts = $store->tables['economy_accounting_accounts'];
         $this->assertCount(2, $accounts);
@@ -98,12 +111,35 @@ class ClearingInfrastructureProvisionerTest extends TestCase
         $this->assertSame(40, $balances[0]['docState']);
 
         $balAccounts = $store->tables['economy_accbal_balance_accounts'];
-        $this->assertCount(2, $balAccounts);
+        $this->assertCount(4, $balAccounts);
         $this->assertSame($balances[0]['id'], $balAccounts[0]['balance']);
         $this->assertSame('261200', $balAccounts[0]['account_number']);
         $this->assertSame(10, $balAccounts[0]['sort_order']);
         $this->assertSame('261300', $balAccounts[1]['account_number']);
         $this->assertSame(20, $balAccounts[1]['sort_order']);
+        // Zrcadlové řádky (#131 fáze 2a): opačná strana, úhrada, modify_sign.
+        $this->assertSame(['261200', 0, 1, 1, 30], [
+            $balAccounts[2]['account_number'], $balAccounts[2]['acc_side'], $balAccounts[2]['bal_side'],
+            $balAccounts[2]['modify_sign'], $balAccounts[2]['sort_order'],
+        ]);
+        $this->assertSame(['261300', 1, 1, 1, 40], [
+            $balAccounts[3]['account_number'], $balAccounts[3]['acc_side'], $balAccounts[3]['bal_side'],
+            $balAccounts[3]['modify_sign'], $balAccounts[3]['sort_order'],
+        ]);
+    }
+
+    /** @return list<array<string, mixed>> řádky skupiny 3 ve tvaru z DB */
+    private static function groupRows(int $count): array
+    {
+        $rows = [];
+        foreach (array_slice(ClearingInfrastructureProvisioner::GROUP['accounts'], 0, $count) as $i => $acc) {
+            $rows[] = [
+                'id' => 10 + $i, 'balance' => 3, 'account_number' => $acc['account_number'],
+                'acc_side' => $acc['acc_side'], 'bal_side' => $acc['bal_side'],
+                'modify_sign' => $acc['modify_sign'] ? 1 : 0, 'sort_order' => ($i + 1) * 10,
+            ];
+        }
+        return $rows;
     }
 
     public function testSecondRunIsIdempotent(): void
@@ -116,6 +152,7 @@ class ClearingInfrastructureProvisionerTest extends TestCase
             [
                 ['id' => 3, 'code' => 'unmatched_payments'],
             ],
+            self::groupRows(4),
         );
 
         $provisioner = new ClearingInfrastructureProvisioner($store->db);
@@ -125,9 +162,33 @@ class ClearingInfrastructureProvisionerTest extends TestCase
         $this->assertSame(2, $result['accounts']['existing']);
         $this->assertSame(0, $result['group']['created']);
         $this->assertSame(1, $result['group']['existing']);
+        $this->assertSame(0, $result['group']['accountsAdded']);
         $this->assertCount(2, $store->tables['economy_accounting_accounts']);
         $this->assertCount(1, $store->tables['economy_accbal_balances']);
-        $this->assertCount(0, $store->tables['economy_accbal_balance_accounts']);
+        $this->assertCount(4, $store->tables['economy_accbal_balance_accounts']);
+    }
+
+    public function testExistingGroupGetsMissingMirrorRows(): void
+    {
+        // DS vzniklý před #131 fází 2a: skupina má jen dva původní řádky.
+        $store = $this->recordingDb(
+            [['id' => 1, 'number' => '261200'], ['id' => 2, 'number' => '261300']],
+            [['id' => 3, 'code' => 'unmatched_payments']],
+            self::groupRows(2),
+        );
+
+        $result = (new ClearingInfrastructureProvisioner($store->db))->provision();
+
+        $this->assertSame(['created' => 0, 'existing' => 1, 'accountsAdded' => 2], $result['group']);
+        $rows = $store->tables['economy_accbal_balance_accounts'];
+        $this->assertCount(4, $rows);
+        $this->assertSame([3, '261200', 0, 1, 1, 30], [
+            $rows[2]['balance'], $rows[2]['account_number'], $rows[2]['acc_side'], $rows[2]['bal_side'],
+            $rows[2]['modify_sign'], $rows[2]['sort_order'],
+        ], 'sort_order navazuje na nejvyšší existující');
+        $this->assertSame(['261300', 1, 1, 1, 40], [
+            $rows[3]['account_number'], $rows[3]['acc_side'], $rows[3]['bal_side'], $rows[3]['modify_sign'], $rows[3]['sort_order'],
+        ]);
     }
 
     public function testDriftAccountsMatchChartSeed(): void

@@ -16,6 +16,7 @@
         "table": {
             "enum": [
                 "settings",
+                "accounts",
                 "bank_accounts",
                 "cash_desks",
                 "cost_centers",
