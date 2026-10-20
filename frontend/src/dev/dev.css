@@ -607,6 +607,8 @@ code, .dev-code {
 .dev-state--wrong { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
 .dev-state--failed { background: var(--shpd-color-state-error-bg); color: var(--shpd-color-state-error-text); }
 .dev-state--neutral { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
+/* Pole, které zdroj výstupu nenese (cesta ISDOC, #103 D76) — ani shoda, ani odchylka. */
+.dev-state--notCarried { background: var(--shpd-color-state-archive-bg); color: var(--shpd-color-state-archive-text); font-style: italic; }
 
 /* Dvousloupcový detail (PDF | pole) */
 .dev-split {
@@ -635,9 +637,11 @@ tr.dev-row--match td { background: transparent; }
 tr.dev-row--missing td, tr.dev-row--extra td, tr.dev-row--wrong td { background: color-mix(in srgb, var(--shpd-color-state-cancelled-bg) 55%, transparent); }
 tr.dev-row--matchNormalized td { background: color-mix(in srgb, var(--shpd-color-primary-soft) 55%, transparent); }
 tr.dev-row--notCompared td { color: var(--shpd-color-text-secondary); font-style: italic; }
+tr.dev-row--notCarried td { color: var(--shpd-color-text-secondary); font-style: italic; }
 td.dev-cellstate--missing, td.dev-cellstate--extra, td.dev-cellstate--wrong { background: color-mix(in srgb, var(--shpd-color-state-cancelled-bg) 70%, transparent) !important; }
 td.dev-cellstate--matchNormalized { background: color-mix(in srgb, var(--shpd-color-primary-soft) 70%, transparent) !important; }
 td.dev-cellstate--notCompared { color: var(--shpd-color-text-secondary); font-style: italic; }
+td.dev-cellstate--notCarried { color: var(--shpd-color-text-secondary); font-style: italic; }
 
 /* ── F6b: úlohy, panel zdrojů dat, editor variant ─────────────────────────── */
 .dev-field input[type="number"],

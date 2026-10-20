@@ -1,11 +1,12 @@
 <script>
   // Detail běhu: metriky po skupinách s rozpětím opakování, doklady,
-  // rozpad po variantách a podobách, nejčastější odchylky, stabilita
-  // a seznam dokladů s odchylkami per opakování.
+  // rozpad po variantách, podobách a cestách výpočtu (ai / isdoc, #103
+  // D76), nejčastější odchylky, stabilita a seznam dokladů s odchylkami
+  // per opakování.
   import { router, onLinkClick } from '../../router.svelte.js';
   import { testingApi } from '../../testing/api.js';
   import {
-    fieldMetricRows, metricRows, topDeviations, unstableNodes, rangeText, formatMetric, deviationLevel, sumOf, stateLabel,
+    fieldMetricRows, metricRows, topDeviations, unstableNodes, rangeText, formatMetric, deviationLevel, sumOf, stateLabel, pathLabel,
     DOCUMENT_METRICS, COST_METRICS,
   } from '../../testing/metrics.js';
   import { t, label } from '../../i18n/index.js';
@@ -49,6 +50,7 @@
     { id: 'messageId', label: t('testing.col.document') },
     { id: 'variant', label: t('testing.col.variant') },
     { id: 'form', label: t('testing.col.form') },
+    { id: 'path', label: t('testing.col.path'), sortValue: (m) => pathLabel(m.path) },
     ...repeatIds.map((n) => ({ id: `r${n}`, label: `×${n}`, align: 'right', sortValue: (m) => m.repeats.find((r) => r.repeat === n)?.deviations ?? null })),
     { id: 'total', label: t('testing.runDetail.col.deviationsSum'), align: 'right', sortValue: (m) => sumOf(m.repeats.map((r) => r.deviations)), defaultDir: 'desc' },
     { id: 'failed', label: t('testing.col.failed'), align: 'right', sortValue: (m) => m.repeats.filter((r) => r.status !== 'ok').length },
@@ -58,6 +60,12 @@
 
   function cellOf(byVariant, key) {
     return byVariant?.[key] ?? {};
+  }
+
+  /** Cena kyblíku rozpadu = extrakce + štítky, kde jsou (`tags.usd` od D76; starší běh jen extrakce). */
+  function bucketCost(c) {
+    if (c['cost.usd'] === null || c['cost.usd'] === undefined) return null;
+    return c['cost.usd'] + (c['tags.usd'] ?? 0);
   }
 
   /** Cena volání = extrakce + LLM štítky (F6b D56); null bez obojího. */
@@ -139,31 +147,48 @@
     </div>
   </div>
 
+  {#snippet cellTable(kind, cells)}
+    <div class="dev-table-wrap">
+      <table class="dev-table">
+        <thead><tr><th>{kind === 'variant' ? t('testing.col.variant') : kind === 'form' ? t('testing.col.form') : t('testing.col.path')}</th><th class="dev-num">{t('metrics.metric.calls.total')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.clean')}</th><th class="dev-num">{t('testing.col.amounts')}</th><th class="dev-num">{t('metrics.group.rows')}</th><th class="dev-num">{t('testing.col.cost')}</th></tr></thead>
+        <tbody>
+          {#each Object.keys(cells ?? {}) as key (key)}
+            {@const c = cellOf(cells, key)}
+            <tr>
+              <td>{kind === 'path' ? pathLabel(key) : key}</td>
+              <td class="dev-num dev-nowrap">{c['calls.ok'] ?? 0} / {c['calls.total'] ?? 0}</td>
+              <td class="dev-num dev-nowrap">{formatPercent(c['fields.all.hit'])}</td>
+              <td class="dev-num dev-nowrap">{formatPercent(c['documents.clean'])}</td>
+              <td class="dev-num dev-nowrap">{formatPercent(c['documents.amountsCorrect'])}</td>
+              <td class="dev-num dev-nowrap">{formatPercent(c['documents.rowCountOk'])}</td>
+              <td class="dev-num dev-nowrap">{formatUsd(bucketCost(c))}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {/snippet}
+
   <div class="grid-2">
-    {#each [['variant', run.byVariant], ['form', run.byForm]] as [kind, cells] (kind)}
+    <div class="dev-card">
+      <div class="dev-card__title">{t('testing.runDetail.byVariant')}</div>
+      {@render cellTable('variant', run.byVariant)}
+    </div>
+    <div>
       <div class="dev-card">
-        <div class="dev-card__title">{kind === 'variant' ? t('testing.runDetail.byVariant') : t('testing.runDetail.byForm')}</div>
-        <div class="dev-table-wrap">
-          <table class="dev-table">
-            <thead><tr><th>{kind === 'variant' ? t('testing.col.variant') : t('testing.col.form')}</th><th class="dev-num">{t('metrics.metric.calls.total')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.clean')}</th><th class="dev-num">{t('testing.col.amounts')}</th><th class="dev-num">{t('metrics.group.rows')}</th><th class="dev-num">{t('testing.col.cost')}</th></tr></thead>
-            <tbody>
-              {#each Object.keys(cells ?? {}) as key (key)}
-                {@const c = cellOf(cells, key)}
-                <tr>
-                  <td>{key}</td>
-                  <td class="dev-num dev-nowrap">{c['calls.ok'] ?? 0} / {c['calls.total'] ?? 0}</td>
-                  <td class="dev-num dev-nowrap">{formatPercent(c['fields.all.hit'])}</td>
-                  <td class="dev-num dev-nowrap">{formatPercent(c['documents.clean'])}</td>
-                  <td class="dev-num dev-nowrap">{formatPercent(c['documents.amountsCorrect'])}</td>
-                  <td class="dev-num dev-nowrap">{formatPercent(c['documents.rowCountOk'])}</td>
-                  <td class="dev-num dev-nowrap">{formatUsd(c['cost.usd'])}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
+        <div class="dev-card__title">{t('testing.runDetail.byForm')}</div>
+        {@render cellTable('form', run.byForm)}
       </div>
-    {/each}
+      <div class="dev-card">
+        <div class="dev-card__title">{t('testing.runDetail.byPath')}</div>
+        {#if run.byPath}
+          {@render cellTable('path', run.byPath)}
+          <p class="dev-small dev-muted note">{t('testing.runDetail.byPathNote')}</p>
+        {:else}
+          <div class="dev-muted dev-small">{t('testing.runDetail.noByPath')}</div>
+        {/if}
+      </div>
+    </div>
   </div>
 
   <div class="grid-3">
@@ -246,6 +271,8 @@
           {#if n > 0}<StateBadge state="failed" label={`${n}×`} />{:else}<span class="dev-muted">0</span>{/if}
         {:else if col.id === 'cost'}
           {formatUsd(sumOf(m.repeats.map((r) => callCost(r))))}
+        {:else if col.id === 'path'}
+          <span class="dev-state dev-state--neutral">{pathLabel(m.path)}</span>
         {:else if col.id === 'across'}
           <a class="dev-small" href={router.href('testingMessageRuns', { set, messageId: m.messageId })} onclick={onLinkClick}>{t('testing.runDetail.acrossRuns')}</a>
         {:else}
