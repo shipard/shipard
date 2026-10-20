@@ -13,6 +13,9 @@ class ServerConfig
 {
     public const DEFAULT_AI_ANALYSIS_MAX_CONCURRENT = 2;
 
+    /** Veřejná služba kurzovních lístků (#121 task B, U3). */
+    public const DEFAULT_EXCHANGE_RATES_SERVICE_URL = 'https://data.shipard.app/feed/money-exchange-rates';
+
     private array $data = [];
 
     public function __construct(private readonly string $configPath = '/etc/shipard/server.json')
@@ -137,6 +140,36 @@ class ServerConfig
         if (!preg_match('#^https?://#', $url)) {
             throw new \RuntimeException(
                 "Server config 'registry.persons.baseUrl' must start with http:// or https://, got '{$url}'",
+            );
+        }
+        return rtrim($url, '/');
+    }
+
+    /**
+     * Adresa služby kurzovních lístků — `exchangeRates.serviceUrl`
+     * (#121 task B, U3, docs/exchange-rates.md §9): klíč chybí → veřejná
+     * služba; prázdný řetězec → null = stahování vypnuté (úloha
+     * `exchange-rates-download` skončí hned); jiná hodnota musí být http(s).
+     * Čte ji `ExchangeRatesDownloadCommand` (modul economy.exchangeRates).
+     */
+    public function getExchangeRatesServiceUrl(): ?string
+    {
+        $section = $this->data['exchangeRates'] ?? null;
+        if (!is_array($section) || !array_key_exists('serviceUrl', $section)) {
+            return self::DEFAULT_EXCHANGE_RATES_SERVICE_URL;
+        }
+        $url = $section['serviceUrl'];
+        if ($url === '') {
+            return null;
+        }
+        if (!is_string($url)) {
+            throw new \RuntimeException(
+                "Server config 'exchangeRates.serviceUrl' must be a string (empty string disables downloading)",
+            );
+        }
+        if (!preg_match('#^https?://#', $url)) {
+            throw new \RuntimeException(
+                "Server config 'exchangeRates.serviceUrl' must start with http:// or https://, got '{$url}'",
             );
         }
         return rtrim($url, '/');

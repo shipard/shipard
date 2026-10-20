@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\ExchangeRates;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Module\Economy\ExchangeRates\Download\ListDownloadConfig;
 
 /**
  * Typy kurzovních lístků země zdroje dat (#121 D1): jediné čtení cfgItem
  * `world.<země>.exchangeRateLists`. Pořadí v konfiguraci = priorita
  * dohledání (U2). Chybějící cfgItem (jiná země, nezkompilovaná konfigurace)
  * = žádné typy: importer odmítne každý lístek, resolver kurz nenajde.
+ * Klíč `download` (task B) se parsuje shovívavě: neplatný = typ zůstává,
+ * jen se nestahuje (`downloadIssue`).
  */
 final class ExchangeRateListTypes
 {
@@ -38,15 +41,34 @@ final class ExchangeRateListTypes
                     continue;
                 }
                 $maxAge = $entry['maxAgeDays'] ?? null;
+                [$download, $issue] = self::parseDownload($entry['download'] ?? null);
                 $types[] = new ExchangeRateListType(
                     id: $id,
                     name: (string) ($entry['name'] ?? $id),
                     homeCurrency: $home,
                     maxAgeDays: is_int($maxAge) && $maxAge > 0 ? $maxAge : null,
+                    download: $download,
+                    downloadIssue: $issue,
                 );
             }
         }
         return new self($types);
+    }
+
+    /** @return array{0: ?ListDownloadConfig, 1: ?string} */
+    private static function parseDownload(mixed $raw): array
+    {
+        if ($raw === null) {
+            return [null, null];
+        }
+        if (!is_array($raw)) {
+            return [null, 'download musí být objekt'];
+        }
+        try {
+            return [ListDownloadConfig::fromArray($raw), null];
+        } catch (\InvalidArgumentException $e) {
+            return [null, $e->getMessage()];
+        }
     }
 
     /** @return list<ExchangeRateListType> */

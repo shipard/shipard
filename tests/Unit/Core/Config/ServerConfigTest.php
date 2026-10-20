@@ -359,6 +359,56 @@ class ServerConfigTest extends TestCase
         $this->assertSame('https://example.org/persons', $config->getRegistryPersonsBaseUrl());
     }
 
+    public function testExchangeRatesServiceUrlDefaultsToPublicService(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig()));
+        $config->load();
+
+        $this->assertSame('https://data.shipard.app/feed/money-exchange-rates', $config->getExchangeRatesServiceUrl());
+        $this->assertSame(ServerConfig::DEFAULT_EXCHANGE_RATES_SERVICE_URL, $config->getExchangeRatesServiceUrl());
+    }
+
+    public function testExchangeRatesServiceUrlEmptyStringDisablesDownloading(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => '']]));
+        $config->load();
+
+        $this->assertNull($config->getExchangeRatesServiceUrl());
+    }
+
+    public function testExchangeRatesServiceUrlCustomStripsTrailingSlash(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => 'http://127.0.0.1:8099/feed/']]));
+        $config->load();
+
+        $this->assertSame('http://127.0.0.1:8099/feed', $config->getExchangeRatesServiceUrl());
+    }
+
+    public function testExchangeRatesServiceUrlRejectsNonHttpScheme(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => 'ftp://example.org/feed']]));
+        $config->load();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('exchangeRates.serviceUrl');
+        $config->getExchangeRatesServiceUrl();
+    }
+
+    public function testExchangeRatesServiceUrlRejectsNonString(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => 42]]));
+        $config->load();
+
+        $this->expectException(\RuntimeException::class);
+        $config->getExchangeRatesServiceUrl();
+    }
+
+    /** @return array<string, mixed> */
+    private function baseConfig(): array
+    {
+        return ['host' => '127.0.0.1', 'port' => 3306, 'admin_user' => 'root', 'admin_password' => 'secret', 'mode' => 'production'];
+    }
+
     public function testGetRegistryPersonsBaseUrlRejectsNonHttpScheme(): void
     {
         $path = $this->createConfig([

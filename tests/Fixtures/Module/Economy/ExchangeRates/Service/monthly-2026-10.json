@@ -1,0 +1,625 @@
+{
+    "valid": 1,
+    "data": [
+        {
+            "format": "shpd.exchangeRates.list.v1",
+            "listType": "cz.cnb.other",
+            "homeCurrency": "CZK",
+            "listNumber": "26009",
+            "validFrom": "2026-10-01",
+            "validTo": "2026-10-31",
+            "rates": [
+                {
+                    "currency": "AFN",
+                    "amount": 100,
+                    "rate": 33.035
+                },
+                {
+                    "currency": "ALL",
+                    "amount": 100,
+                    "rate": 26.653
+                },
+                {
+                    "currency": "DZD",
+                    "amount": 100,
+                    "rate": 16.167
+                },
+                {
+                    "currency": "AOA",
+                    "amount": 100,
+                    "rate": 2.357
+                },
+                {
+                    "currency": "ARS",
+                    "amount": 100,
+                    "rate": 1.412
+                },
+                {
+                    "currency": "AMD",
+                    "amount": 100,
+                    "rate": 5.942
+                },
+                {
+                    "currency": "AWG",
+                    "amount": 1,
+                    "rate": 12.091
+                },
+                {
+                    "currency": "AZN",
+                    "amount": 1,
+                    "rate": 12.697
+                },
+                {
+                    "currency": "BSD",
+                    "amount": 1,
+                    "rate": 21.522
+                },
+                {
+                    "currency": "BHD",
+                    "amount": 1,
+                    "rate": 57.091
+                },
+                {
+                    "currency": "BDT",
+                    "amount": 100,
+                    "rate": 17.591
+                },
+                {
+                    "currency": "BBD",
+                    "amount": 1,
+                    "rate": 10.771
+                },
+                {
+                    "currency": "BZD",
+                    "amount": 1,
+                    "rate": 10.76
+                },
+                {
+                    "currency": "BYN",
+                    "amount": 1,
+                    "rate": 7.235
+                },
+                {
+                    "currency": "BMD",
+                    "amount": 1,
+                    "rate": 21.522
+                },
+                {
+                    "currency": "BTN",
+                    "amount": 100,
+                    "rate": 22.459
+                },
+                {
+                    "currency": "BOB",
+                    "amount": 1,
+                    "rate": 1.799
+                },
+                {
+                    "currency": "BAM",
+                    "amount": 1,
+                    "rate": 12.496
+                },
+                {
+                    "currency": "BWP",
+                    "amount": 1,
+                    "rate": 1.507
+                },
+                {
+                    "currency": "BND",
+                    "amount": 1,
+                    "rate": 16.855
+                },
+                {
+                    "currency": "BIF",
+                    "amount": 1000,
+                    "rate": 7.208
+                },
+                {
+                    "currency": "CDF",
+                    "amount": 1000,
+                    "rate": 9.345
+                },
+                {
+                    "currency": "DOP",
+                    "amount": 100,
+                    "rate": 36.312
+                },
+                {
+                    "currency": "DJF",
+                    "amount": 100,
+                    "rate": 12.118
+                },
+                {
+                    "currency": "EGP",
+                    "amount": 100,
+                    "rate": 41.468
+                },
+                {
+                    "currency": "ERN",
+                    "amount": 1,
+                    "rate": 1.435
+                },
+                {
+                    "currency": "ETB",
+                    "amount": 100,
+                    "rate": 13.308
+                },
+                {
+                    "currency": "FKP",
+                    "amount": 1,
+                    "rate": 28.596
+                },
+                {
+                    "currency": "FJD",
+                    "amount": 1,
+                    "rate": 9.47
+                },
+                {
+                    "currency": "XPF",
+                    "amount": 100,
+                    "rate": 20.542
+                },
+                {
+                    "currency": "GMD",
+                    "amount": 100,
+                    "rate": 29.143
+                },
+                {
+                    "currency": "GHS",
+                    "amount": 1,
+                    "rate": 1.841
+                },
+                {
+                    "currency": "GIP",
+                    "amount": 1,
+                    "rate": 28.596
+                },
+                {
+                    "currency": "GEL",
+                    "amount": 1,
+                    "rate": 8.384
+                },
+                {
+                    "currency": "GTQ",
+                    "amount": 1,
+                    "rate": 2.819
+                },
+                {
+                    "currency": "GNF",
+                    "amount": 1000,
+                    "rate": 2.447
+                },
+                {
+                    "currency": "GYD",
+                    "amount": 100,
+                    "rate": 10.348
+                },
+                {
+                    "currency": "HTG",
+                    "amount": 100,
+                    "rate": 16.504
+                },
+                {
+                    "currency": "HNL",
+                    "amount": 100,
+                    "rate": 80.187
+                },
+                {
+                    "currency": "CLP",
+                    "amount": 100,
+                    "rate": 2.213
+                },
+                {
+                    "currency": "IQD",
+                    "amount": 1000,
+                    "rate": 16.435
+                },
+                {
+                    "currency": "IRR",
+                    "amount": 10000,
+                    "rate": 0.157
+                },
+                {
+                    "currency": "JMD",
+                    "amount": 100,
+                    "rate": 13.673
+                },
+                {
+                    "currency": "YER",
+                    "amount": 100,
+                    "rate": 9.107
+                },
+                {
+                    "currency": "SSP",
+                    "amount": 100,
+                    "rate": 0.382
+                },
+                {
+                    "currency": "JOD",
+                    "amount": 1,
+                    "rate": 30.398
+                },
+                {
+                    "currency": "KYD",
+                    "amount": 1,
+                    "rate": 26.008
+                },
+                {
+                    "currency": "KHR",
+                    "amount": 1000,
+                    "rate": 5.313
+                },
+                {
+                    "currency": "CVE",
+                    "amount": 100,
+                    "rate": 22.165
+                },
+                {
+                    "currency": "QAR",
+                    "amount": 1,
+                    "rate": 5.905
+                },
+                {
+                    "currency": "KZT",
+                    "amount": 100,
+                    "rate": 4.892
+                },
+                {
+                    "currency": "KES",
+                    "amount": 100,
+                    "rate": 16.619
+                },
+                {
+                    "currency": "KPW",
+                    "amount": 100,
+                    "rate": 16.555
+                },
+                {
+                    "currency": "COP",
+                    "amount": 1000,
+                    "rate": 6.473
+                },
+                {
+                    "currency": "KMF",
+                    "amount": 100,
+                    "rate": 4.966
+                },
+                {
+                    "currency": "CRC",
+                    "amount": 100,
+                    "rate": 4.745
+                },
+                {
+                    "currency": "CUP",
+                    "amount": 100,
+                    "rate": 89.675
+                },
+                {
+                    "currency": "KWD",
+                    "amount": 1,
+                    "rate": 69.922
+                },
+                {
+                    "currency": "KGS",
+                    "amount": 100,
+                    "rate": 24.611
+                },
+                {
+                    "currency": "LAK",
+                    "amount": 1000,
+                    "rate": 0.964
+                },
+                {
+                    "currency": "LSL",
+                    "amount": 1,
+                    "rate": 1.313
+                },
+                {
+                    "currency": "LBP",
+                    "amount": 1000,
+                    "rate": 0.24
+                },
+                {
+                    "currency": "LRD",
+                    "amount": 100,
+                    "rate": 12.586
+                },
+                {
+                    "currency": "LYD",
+                    "amount": 1,
+                    "rate": 3.373
+                },
+                {
+                    "currency": "MOP",
+                    "amount": 1,
+                    "rate": 2.663
+                },
+                {
+                    "currency": "MGA",
+                    "amount": 1000,
+                    "rate": 4.946
+                },
+                {
+                    "currency": "MWK",
+                    "amount": 100,
+                    "rate": 1.253
+                },
+                {
+                    "currency": "MVR",
+                    "amount": 1,
+                    "rate": 1.396
+                },
+                {
+                    "currency": "MAD",
+                    "amount": 1,
+                    "rate": 2.221
+                },
+                {
+                    "currency": "MUR",
+                    "amount": 100,
+                    "rate": 45.205
+                },
+                {
+                    "currency": "MRU",
+                    "amount": 100,
+                    "rate": 53.818
+                },
+                {
+                    "currency": "MDL",
+                    "amount": 1,
+                    "rate": 1.222
+                },
+                {
+                    "currency": "MNT",
+                    "amount": 1000,
+                    "rate": 5.985
+                },
+                {
+                    "currency": "MZN",
+                    "amount": 100,
+                    "rate": 34.027
+                },
+                {
+                    "currency": "MMK",
+                    "amount": 1000,
+                    "rate": 10.279
+                },
+                {
+                    "currency": "NAD",
+                    "amount": 1,
+                    "rate": 1.313
+                },
+                {
+                    "currency": "NPR",
+                    "amount": 100,
+                    "rate": 14.036
+                },
+                {
+                    "currency": "NGN",
+                    "amount": 100,
+                    "rate": 1.622
+                },
+                {
+                    "currency": "NIO",
+                    "amount": 100,
+                    "rate": 58.803
+                },
+                {
+                    "currency": "OMR",
+                    "amount": 1,
+                    "rate": 55.906
+                },
+                {
+                    "currency": "PKR",
+                    "amount": 100,
+                    "rate": 7.772
+                },
+                {
+                    "currency": "PAB",
+                    "amount": 1,
+                    "rate": 21.522
+                },
+                {
+                    "currency": "PGK",
+                    "amount": 1,
+                    "rate": 4.67
+                },
+                {
+                    "currency": "PYG",
+                    "amount": 1000,
+                    "rate": 3.687
+                },
+                {
+                    "currency": "PEN",
+                    "amount": 1,
+                    "rate": 6.253
+                },
+                {
+                    "currency": "RUB",
+                    "amount": 100,
+                    "rate": 25.491
+                },
+                {
+                    "currency": "RWF",
+                    "amount": 100,
+                    "rate": 1.465
+                },
+                {
+                    "currency": "SVC",
+                    "amount": 1,
+                    "rate": 2.46
+                },
+                {
+                    "currency": "WST",
+                    "amount": 1,
+                    "rate": 7.602
+                },
+                {
+                    "currency": "SAR",
+                    "amount": 1,
+                    "rate": 5.732
+                },
+                {
+                    "currency": "MKD",
+                    "amount": 100,
+                    "rate": 39.819
+                },
+                {
+                    "currency": "SCR",
+                    "amount": 1,
+                    "rate": 1.564
+                },
+                {
+                    "currency": "SOS",
+                    "amount": 1000,
+                    "rate": 37.891
+                },
+                {
+                    "currency": "AED",
+                    "amount": 1,
+                    "rate": 5.86
+                },
+                {
+                    "currency": "RSD",
+                    "amount": 100,
+                    "rate": 20.798
+                },
+                {
+                    "currency": "XAF",
+                    "amount": 100,
+                    "rate": 3.744
+                },
+                {
+                    "currency": "XOF",
+                    "amount": 100,
+                    "rate": 3.751
+                },
+                {
+                    "currency": "SDG",
+                    "amount": 1000,
+                    "rate": 35.96
+                },
+                {
+                    "currency": "SRD",
+                    "amount": 100,
+                    "rate": 57.564
+                },
+                {
+                    "currency": "SHP",
+                    "amount": 1,
+                    "rate": 28.596
+                },
+                {
+                    "currency": "STN",
+                    "amount": 100,
+                    "rate": 99.757
+                },
+                {
+                    "currency": "SZL",
+                    "amount": 1,
+                    "rate": 1.313
+                },
+                {
+                    "currency": "SYP",
+                    "amount": 10000,
+                    "rate": 1771.066
+                },
+                {
+                    "currency": "SBD",
+                    "amount": 1,
+                    "rate": 2.624
+                },
+                {
+                    "currency": "LKR",
+                    "amount": 100,
+                    "rate": 6.514
+                },
+                {
+                    "currency": "TJS",
+                    "amount": 1,
+                    "rate": 2.35
+                },
+                {
+                    "currency": "TZS",
+                    "amount": 1000,
+                    "rate": 8.246
+                },
+                {
+                    "currency": "TWD",
+                    "amount": 100,
+                    "rate": 67.526
+                },
+                {
+                    "currency": "TOP",
+                    "amount": 1,
+                    "rate": 8.796
+                },
+                {
+                    "currency": "TTD",
+                    "amount": 1,
+                    "rate": 3.192
+                },
+                {
+                    "currency": "TND",
+                    "amount": 1,
+                    "rate": 7.235
+                },
+                {
+                    "currency": "TMT",
+                    "amount": 1,
+                    "rate": 6.158
+                },
+                {
+                    "currency": "UGX",
+                    "amount": 1000,
+                    "rate": 5.497
+                },
+                {
+                    "currency": "UAH",
+                    "amount": 100,
+                    "rate": 48.185
+                },
+                {
+                    "currency": "UYU",
+                    "amount": 100,
+                    "rate": 53.444
+                },
+                {
+                    "currency": "UZS",
+                    "amount": 1000,
+                    "rate": 1.821
+                },
+                {
+                    "currency": "VUV",
+                    "amount": 100,
+                    "rate": 18.379
+                },
+                {
+                    "currency": "VEF",
+                    "amount": 1,
+                    "rate": 1
+                },
+                {
+                    "currency": "VND",
+                    "amount": 10000,
+                    "rate": 8.291
+                },
+                {
+                    "currency": "XCD",
+                    "amount": 1,
+                    "rate": 8.001
+                },
+                {
+                    "currency": "ZMW",
+                    "amount": 1,
+                    "rate": 1.1
+                },
+                {
+                    "currency": "ZWL",
+                    "amount": 1000,
+                    "rate": 1
+                }
+            ]
+        }
+    ]
+}

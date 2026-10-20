@@ -51,6 +51,47 @@ class ExchangeRateListTypesTest extends TestCase
         $this->assertSame([], $types->forHomeCurrency('usd'));
     }
 
+    /** Task B U2: `download` se parsuje shovívavě — neplatná hodnota typ nezruší, jen se nestahuje. */
+    public function testParsesDownloadAndKeepsTypeWithInvalidDownload(): void
+    {
+        $types = ExchangeRateListTypes::fromConfig($this->config([
+            'cz.cnb.daily' => ['name' => 'a', 'homeCurrency' => 'czk', 'maxAgeDays' => 7, 'download' => ['serviceListType' => 1, 'frequency' => 'workingDays', 'calendar' => 'cz', 'publishAfter' => '14:35', 'timezone' => 'Europe/Prague']],
+            'cz.cnb.other' => ['name' => 'b', 'homeCurrency' => 'czk', 'download' => ['serviceListType' => 2, 'frequency' => 'monthly']],
+            'cz.manual'    => ['name' => 'c', 'homeCurrency' => 'czk', 'maxAgeDays' => 7],
+            'cz.badTime'   => ['name' => 'd', 'homeCurrency' => 'czk', 'maxAgeDays' => 7, 'download' => ['serviceListType' => 3, 'frequency' => 'workingDays', 'calendar' => 'cz', 'publishAfter' => '25:00']],
+            'cz.badZone'   => ['name' => 'e', 'homeCurrency' => 'czk', 'maxAgeDays' => 7, 'download' => ['serviceListType' => 4, 'frequency' => 'monthly', 'timezone' => 'Mars/Olympus']],
+            'cz.badFreq'   => ['name' => 'f', 'homeCurrency' => 'czk', 'maxAgeDays' => 7, 'download' => ['serviceListType' => 5, 'frequency' => 'weekly']],
+            'cz.noCal'     => ['name' => 'g', 'homeCurrency' => 'czk', 'maxAgeDays' => 7, 'download' => ['serviceListType' => 6, 'frequency' => 'workingDays', 'publishAfter' => '14:35']],
+            'cz.notObject' => ['name' => 'h', 'homeCurrency' => 'czk', 'maxAgeDays' => 7, 'download' => 'yes'],
+        ]), 'cz');
+
+        $daily = $types->get('cz.cnb.daily');
+        $this->assertTrue($daily->isDownloadable());
+        $this->assertSame(1, $daily->download->serviceListType);
+        $this->assertTrue($daily->download->isWorkingDays());
+        $this->assertSame('cz', $daily->download->calendar);
+        $this->assertSame('14:35', $daily->download->publishAfter);
+        $this->assertSame('Europe/Prague', $daily->download->timezone);
+        $this->assertNull($daily->downloadIssue);
+
+        $other = $types->get('cz.cnb.other');
+        $this->assertTrue($other->download->isMonthly());
+        $this->assertNull($other->download->calendar);
+        $this->assertNull($other->download->publishAfter);
+        $this->assertSame('Europe/Prague', $other->download->timezone, 'výchozí zóna');
+
+        $this->assertFalse($types->get('cz.manual')->isDownloadable());
+        $this->assertNull($types->get('cz.manual')->downloadIssue, 'bez download = bez problému');
+
+        foreach (['cz.badTime' => 'publishAfter', 'cz.badZone' => 'timezone', 'cz.badFreq' => 'frequency', 'cz.noCal' => 'calendar', 'cz.notObject' => 'objekt'] as $id => $needle) {
+            $type = $types->get($id);
+            $this->assertNotNull($type, "{$id}: typ zůstává pro resolver");
+            $this->assertFalse($type->isDownloadable(), $id);
+            $this->assertStringContainsString($needle, (string) $type->downloadIssue, $id);
+        }
+        $this->assertCount(8, $types->all());
+    }
+
     public function testMissingConfigMeansNoTypes(): void
     {
         $this->assertTrue(ExchangeRateListTypes::fromConfig($this->config(null), 'cz')->isEmpty());

@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\World\Cz;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Economy\ExchangeRates\Download\ListDownloadConfig;
 
 /**
  * Typy kurzovních lístků (`world.cz.exchangeRateLists`, #121 D1). Na klíčích
@@ -58,6 +59,31 @@ class ExchangeRateListsTest extends TestCase
     public function testMonthlyListCarriesValidityOnTheListItself(): void
     {
         $this->assertArrayNotHasKey('maxAgeDays', $this->types()['cz.cnb.other'], 'měsíční lístek nese validTo sám');
+    }
+
+    /** Task B U2: každý typ ČNB se stahuje; konfigurace projde parserem a typy služby se neopakují. */
+    public function testEveryTypeDeclaresValidDownload(): void
+    {
+        $serviceTypes = [];
+        foreach ($this->types() as $id => $type) {
+            $this->assertIsArray($type['download'] ?? null, "{$id}: chybí download");
+            $config = ListDownloadConfig::fromArray($type['download']);
+            $serviceTypes[] = $config->serviceListType;
+        }
+        $this->assertSame($serviceTypes, array_unique($serviceTypes), 'serviceListType je per typ jedinečný');
+    }
+
+    public function testDailyListIsDownloadedEveryCzechWorkingDayAfterPublication(): void
+    {
+        $this->assertSame(
+            ['serviceListType' => 1, 'frequency' => 'workingDays', 'calendar' => 'cz', 'publishAfter' => '14:35', 'timezone' => 'Europe/Prague'],
+            $this->types()['cz.cnb.daily']['download'],
+        );
+    }
+
+    public function testMonthlyListIsDownloadedMonthly(): void
+    {
+        $this->assertSame(['serviceListType' => 2, 'frequency' => 'monthly'], $this->types()['cz.cnb.other']['download']);
     }
 
     /** @return array<string, array<string, mixed>> */

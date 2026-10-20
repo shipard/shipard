@@ -16,6 +16,13 @@
     //     Velikonoce i Vánoce); starší = kurz nenalezen, aby výpadek stahování
     //     nedával tiše starý kurz. Typ bez `maxAgeDays` musí mít platnost na
     //     každém lístku (`validTo`) — importer lístek bez obojího odmítne.
+    //   - `download` — stahování ze služby (task B, U2; ListDownloadConfig).
+    //     Typ bez něj se nestahuje a upozornění na chybějící lístek ho
+    //     nehlídá. `serviceListType` = `listType` služby; `frequency`
+    //     `workingDays` (lístek každý pracovní den kalendáře `calendar`,
+    //     dnešní se čeká až po `publishAfter` v zóně `timezone`, výchozí
+    //     Europe/Prague) nebo `monthly` (lístek s validFrom = 1. den měsíce).
+    //     Neplatná hodnota = typ se nestahuje a stahovač to vypíše.
     // =========================================================================
 
     "cz.cnb.daily": {
@@ -23,7 +30,14 @@
         "name:cs": "ČNB — kurzy devizového trhu",
         "name:en": "CNB — foreign exchange market rates",
         "homeCurrency": "czk",
-        "maxAgeDays": 7
+        "maxAgeDays": 7,
+        "download": {
+            "serviceListType": 1,
+            "frequency": "workingDays",
+            "calendar": "cz",
+            "publishAfter": "14:35",
+            "timezone": "Europe/Prague"
+        }
     },
 
     // Měsíční lístek: platnost nese sám lístek (`validTo`), proto bez maxAgeDays.
@@ -31,6 +45,10 @@
         "name": "CNB — rates of other currencies",
         "name:cs": "ČNB — kurzy ostatních měn",
         "name:en": "CNB — rates of other currencies",
-        "homeCurrency": "czk"
+        "homeCurrency": "czk",
+        "download": {
+            "serviceListType": 2,
+            "frequency": "monthly"
+        }
     }
 }

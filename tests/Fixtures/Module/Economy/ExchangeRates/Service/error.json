@@ -1,0 +1,4 @@
+{
+    "valid": 0,
+    "error": "missing `date` / `dateFrom` / `dateTo` param"
+}
