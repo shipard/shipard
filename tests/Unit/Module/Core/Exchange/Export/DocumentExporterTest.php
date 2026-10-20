@@ -348,6 +348,125 @@ class DocumentExporterTest extends TestCase
         $this->assertStringContainsString('řádek 1 má partnera', $exporter->getWarnings()[0]);
     }
 
+    // ── pokladna na dokladu (#59 D12, #131 krok 0a) ─────────────────────────
+
+    /** Pozice klíče v canonicalu — pořadí musí odpovídat schématu (cashDesk, cashDirection hned za selfParty). */
+    private function keyIndex(array $canonical, string $key): int
+    {
+        $index = array_search($key, array_keys($canonical), true);
+        $this->assertNotFalse($index, "klíč {$key} v canonicalu chybí");
+        return (int) $index;
+    }
+
+    /** Prodejka: kód pokladny, bez směru, my dodavatel; applier `numberSeriesCode` u vázaných typů ignoruje. */
+    public function testCashRegisterDocumentCarriesCashDeskWithoutDirection(): void
+    {
+        $exporter = new DocumentExporter($this->db(rows: [$this->itemRowRow()]));
+        $c = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'cashreg', 'doc_number' => '14POK2600001', 'sequence_number' => 1, 'doc_number_code' => 'POK',
+            'cash_desk' => 2, 'cash_dir' => 0, 'cash_desk_code' => 'POK', 'payment_method' => 0,
+            'bank_account' => null, 'own_bank_code' => null,
+        ]))->data;
+
+        $this->assertSame('cashRegisterDocument', $c['docType']);
+        $this->assertSame('POK', $c['cashDesk']);
+        $this->assertArrayNotHasKey('cashDirection', $c, 'prodejka má směr pevně — klíč nenese');
+        $this->assertSame('supplier', $c['selfParty']);
+        $this->assertArrayNotHasKey('supplier', $c);
+        $this->assertSame('Dodavatel a.s.', $c['customer']['name']);
+        $this->assertSame('cash', $c['payment']['method']);
+        $this->assertSame($this->keyIndex($c, 'selfParty') + 1, $this->keyIndex($c, 'cashDesk'), 'cashDesk hned za selfParty');
+        $this->assertSame([
+            'targetDocState'   => 40,
+            'importNumber'     => ['docNumber' => '14POK2600001', 'sequenceNumber' => 1],
+            'numberSeriesCode' => 'POK',
+        ], $c['applyOptions']);
+        $this->assertSame([], $exporter->getWarnings());
+
+        $this->assertSame([], (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1'));
+        $errors = array_filter((new DocumentValidator())->validate($c), static fn(array $i): bool => $i['severity'] === 'error');
+        $this->assertSame([], array_values($errors), 'prodejka s pokladnou musí projít DocumentValidator');
+    }
+
+    /** Výdajový pokladní doklad: směr 2, my odběratel, partner dodavatel vč. bankovního spojení (jako FPB). */
+    public function testOutgoingCashDocumentPutsPartnerOnSupplierSide(): void
+    {
+        $exporter = new DocumentExporter($this->db(rows: [$this->itemRowRow()]));
+        $c = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'cash', 'doc_number' => '31POK2600002', 'sequence_number' => 2, 'doc_number_code' => 'POK',
+            'cash_desk' => 2, 'cash_dir' => 2, 'cash_desk_code' => 'POK', 'payment_method' => 0,
+            'bank_account' => null, 'own_bank_code' => null,
+        ]))->data;
+
+        $this->assertSame('cashDocument', $c['docType']);
+        $this->assertSame('POK', $c['cashDesk']);
+        $this->assertSame(2, $c['cashDirection']);
+        $this->assertSame('customer', $c['selfParty']);
+        $this->assertArrayNotHasKey('customer', $c);
+        $this->assertSame('Dodavatel a.s.', $c['supplier']['name']);
+        $this->assertSame('123456789/0100', $c['supplier']['bankAccount']['accountNumber']);
+        $this->assertSame($this->keyIndex($c, 'selfParty') + 1, $this->keyIndex($c, 'cashDesk'));
+        $this->assertSame($this->keyIndex($c, 'cashDesk') + 1, $this->keyIndex($c, 'cashDirection'), 'cashDirection hned za cashDesk');
+        $this->assertSame([], $exporter->getWarnings());
+
+        $this->assertSame([], (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1'));
+        $errors = array_filter((new DocumentValidator())->validate($c), static fn(array $i): bool => $i['severity'] === 'error');
+        $this->assertSame([], array_values($errors));
+    }
+
+    /** Příjmový pokladní doklad: směr 1, my dodavatel, partner odběratel bez bankovního spojení. */
+    public function testIncomingCashDocumentPutsPartnerOnCustomerSide(): void
+    {
+        $c = (new DocumentExporter($this->db()))->exportDocument($this->headRow([
+            'doc_type' => 'cash', 'doc_number' => '31POK2600001', 'sequence_number' => 1, 'doc_number_code' => 'POK',
+            'cash_desk' => 2, 'cash_dir' => 1, 'cash_desk_code' => 'POK', 'payment_method' => 0,
+        ]))->data;
+
+        $this->assertSame('cashDocument', $c['docType']);
+        $this->assertSame(1, $c['cashDirection']);
+        $this->assertSame('supplier', $c['selfParty']);
+        $this->assertArrayNotHasKey('supplier', $c);
+        $this->assertSame('Dodavatel a.s.', $c['customer']['name']);
+        $this->assertArrayNotHasKey('bankAccount', $c['customer']);
+    }
+
+    /** Vydaná faktura placená hotově: pokladna se přenáší, směr ne (faktura ho nemá). */
+    public function testCashPaidInvoiceCarriesCashDeskButNoDirection(): void
+    {
+        $c = (new DocumentExporter($this->db()))->exportDocument($this->headRow([
+            'doc_type' => 'invno', 'doc_number' => 'FV-2026-0002', 'sequence_number' => 2,
+            'payment_method' => 0, 'cash_desk' => 2, 'cash_dir' => 0, 'cash_desk_code' => 'POK',
+        ]))->data;
+
+        $this->assertSame('invoiceIssued', $c['docType']);
+        $this->assertSame('POK', $c['cashDesk']);
+        $this->assertArrayNotHasKey('cashDirection', $c);
+        $this->assertSame('cash', $c['payment']['method']);
+        $this->assertSame($this->keyIndex($c, 'selfParty') + 1, $this->keyIndex($c, 'cashDesk'));
+        $this->assertSame([], (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1'));
+    }
+
+    public function testDocumentWithoutCashDeskHasNeitherCashKey(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+        $c = $exporter->exportDocument($this->headRow(['cash_desk' => null, 'cash_dir' => 0, 'cash_desk_code' => null]))->data;
+
+        $this->assertArrayNotHasKey('cashDesk', $c);
+        $this->assertArrayNotHasKey('cashDirection', $c);
+        $this->assertSame([], $exporter->getWarnings());
+    }
+
+    /** Osiřelá vazba na pokladnu (řádek číselníku chybí) — jako u vlastního bankovního účtu bez kódu. */
+    public function testCashDeskWithoutCodeProducesWarning(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+        $c = $exporter->exportDocument($this->headRow(['payment_method' => 0, 'cash_desk' => 7, 'cash_desk_code' => null]))->data;
+
+        $this->assertArrayNotHasKey('cashDesk', $c);
+        $this->assertCount(1, $exporter->getWarnings());
+        $this->assertStringContainsString('pokladna #7 není v číselníku', $exporter->getWarnings()[0]);
+    }
+
     public function testOwnBankWithoutCodeProducesWarning(): void
     {
         $exporter = new DocumentExporter($this->db());
@@ -365,6 +484,8 @@ class DocumentExporterTest extends TestCase
         $db->expects($this->atLeastOnce())->method('fetchAll')->willReturnCallback(function (string $sql) {
             if (str_contains($sql, 'FROM [docs_core_heads] AS [h]')) {
                 $this->assertStringContainsString('[h.docState] <> 90', $sql);
+                $this->assertStringContainsString('[cd.code] AS [cash_desk_code]', $sql, 'kód pokladny jde z číselníku (#59 D12)');
+                $this->assertStringContainsString('LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]', $sql);
                 $this->assertStringContainsString(
                     'ORDER BY [h.doc_type], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]',
                     $sql,

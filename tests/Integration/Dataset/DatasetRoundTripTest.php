@@ -36,12 +36,18 @@ use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
  * Round-trip datové sady proti živému DS (`SHIPARD_INTEGRATION_DS_PATH`):
- * syntetická sada (osoba, položka, přijatá faktura ve 40, dokument spisovny
- * s přílohou, zpráva s přílohou + snapshotem analýzy a vazbou na doklad)
- * → seed v merge režimu (bez resetu, sdílený DS) → export jen vložených
- * záznamů → porovnání s sadou + invarianty (zaúčtování, lineage, `att:`
- * remapa, přílohy na disku). Uklízí po sobě podle přirozených klíčů
- * s prefixem `IT-DS`; number counters se nehnou (sequenceNumber = null).
+ * syntetická sada (osoba, položka, přijatá faktura ve 40, prodejka ve 40
+ * na vlastní pokladně, dokument spisovny s přílohou, zpráva s přílohou +
+ * snapshotem analýzy a vazbou na doklad) → seed v merge režimu (bez resetu,
+ * sdílený DS) → export jen vložených záznamů → porovnání s sadou +
+ * invarianty (zaúčtování, lineage, `att:` remapa, přílohy na disku, pokladna
+ * a vázaná řada prodejky). Uklízí po sobě podle přirozených klíčů s prefixem
+ * `IT-DS`; number counters se nehnou (sequenceNumber = null) — jen řada
+ * testovací pokladny dostane čítač, a ta se maže celá.
+ *
+ * Pokladnu test vkládá přímo do číselníku (bez Document lifecycle, tedy bez
+ * `CashDeskSeriesEventHandler`) — vázané řady `cash` / `cashreg` zakládá až
+ * applier líně přes `BoundNumberSeriesProvisioner` (#59 D12).
  *
  * Mimo test: `dataset-seed` s resetem a byte-shodnost dump → seed → dump
  * se ověřovaly ručně na jednorázovém DS (tasks/dataset-phase1.md).
@@ -52,6 +58,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private const COMPANY_ID = '99990001';
     private const ITEM_CODE = 'IT-DS-001';
     private const DOC_NUMBER = 'IT-DS-0001';
+    private const CASH_DESK_CODE = 'ITDS';
+    /** `%D%C%y%5` řady prodejky (doc_id_code 14, kód pokladny, rok 2026, pořadí 1). */
+    private const CASHREG_NUMBER = '14ITDS2600001';
     private const MESSAGE_ID = 'MSG-IT-DS-0001';
     private const BINDER = 'IT-DS Šanon';
     private const REGISTRY_TITLE = 'IT-DS Smlouva o dílo';
@@ -60,6 +69,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private ConfigRuntime $config;
     private SeedContext $ctx;
     private ?string $seriesCode = null;
+    private int $cashDeskId = 0;
 
     protected function setUp(): void
     {
@@ -80,14 +90,31 @@ class DatasetRoundTripTest extends IntegrationTestCase
         if ($dibi->fetch('SELECT id FROM base_persons_persons WHERE is_own = 1 AND docState IN (10, 40, 80) LIMIT 1') === null) {
             $this->markTestSkipped('DS nemá vlastní firmu (is_own) — selfParty resolve by selhal.');
         }
+        $this->config = ConfigRuntime::load($this->realDsPath, 'cs');
+        $docTypes = $this->config->cfgItem('docs.core.docTypes');
+        if (!isset($this->tables['economy_codebooks_cash_desks']) || !is_array($docTypes) || !isset($docTypes['cashreg'])) {
+            $this->markTestSkipped('DS nemá číselník pokladen nebo typ dokladu cashreg (docs.cashRegister).');
+        }
+        $cashAccount = $dibi->fetch("SELECT id FROM economy_accounting_accounts WHERE number = '211100' AND docState <> 90");
+        if ($cashAccount === null) {
+            $this->markTestSkipped('DS nemá účet 211100 v osnově — pokladna by se nezaúčtovala.');
+        }
 
         $this->cleanup(); // orphan data z předchozího pádu
+
+        // Pokladna přímo do číselníku: řady `cash` / `cashreg` si applier
+        // založí sám (líně, BoundNumberSeriesProvisioner), až ji doklad použije.
+        $dibi->query('INSERT INTO [economy_codebooks_cash_desks] %v', [
+            'code' => self::CASH_DESK_CODE, 'name' => self::P . ' Pokladna', 'currency' => 'czk',
+            'is_default' => 0, 'sort_order' => 0, 'docState' => 40, 'docStateMain' => 3,
+            'accounting_account' => (int) $cashAccount['id'],
+        ]);
+        $this->cashDeskId = (int) $dibi->getInsertId();
 
         $this->setDir = $this->dsPath . '/set';
         $this->writeSet();
 
         $resolver = new ModulePathResolver([dirname(__DIR__, 3) . '/modules']);
-        $this->config = ConfigRuntime::load($this->realDsPath, 'cs');
         $registry = DocumentLoader::load($this->dsConfig, $resolver);
         $journal = JournalEventHandlerLoader::load($this->dsConfig, $resolver, $dibi, $this->config);
         $dispatcher = DocumentEventHandlerLoader::load($this->dsConfig, $resolver, $dibi, $this->config, $journal);
@@ -134,7 +161,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $counts = $report->counts();
         $this->assertSame(1, $counts['persons']['ok']);
         $this->assertSame(1, $counts['items']['ok']);
-        $this->assertSame(1, $counts['docs']['ok']);
+        $this->assertSame(2, $counts['docs']['ok'], 'faktura přijatá + prodejka');
         $this->assertSame(1, $counts['registry']['ok']);
         $this->assertSame(1, $counts['mail']['ok']);
 
@@ -142,11 +169,13 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $personId = (int) $dibi->fetchSingle('SELECT id FROM base_persons_persons WHERE company_id = %s AND docState <> 90', self::COMPANY_ID);
         $itemId = (int) $dibi->fetchSingle('SELECT id FROM economy_items WHERE code = %s', self::ITEM_CODE);
         $docId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::DOC_NUMBER);
+        $cashregId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::CASHREG_NUMBER);
         $registryId = (int) $dibi->fetchSingle('SELECT id FROM base_registry_documents WHERE title = %s', self::REGISTRY_TITLE);
         $messageId = (int) $dibi->fetchSingle('SELECT id FROM core_mail_incoming_messages WHERE message_id = %s', self::MESSAGE_ID);
         $this->assertGreaterThan(0, $personId);
         $this->assertGreaterThan(0, $itemId);
         $this->assertGreaterThan(0, $docId);
+        $this->assertGreaterThan(0, $cashregId);
         $this->assertGreaterThan(0, $registryId);
         $this->assertGreaterThan(0, $messageId);
 
@@ -160,6 +189,29 @@ class DatasetRoundTripTest extends IntegrationTestCase
         if ($hasChart) {
             $this->assertSame(1, (int) $doc['accounting_state'], 'doklad ve 40 se přes dispatcher zaúčtoval');
             $this->assertGreaterThan(0, (int) $dibi->fetchSingle('SELECT COUNT(*) FROM economy_accounting_journal WHERE doc_head = %i', $docId));
+        }
+
+        // Prodejka (#59 D12): řada vázaná na pokladnu vznikla líně, pokladna
+        // hlavičky je denormalizovaná z řady, číslo i pořadí převzaté.
+        $cashreg = $dibi->fetch('SELECT * FROM docs_core_heads WHERE id = %i', $cashregId)->toArray();
+        $this->assertSame('cashreg', $cashreg['doc_type']);
+        $this->assertSame(40, (int) $cashreg['docState']);
+        $this->assertSame($this->cashDeskId, (int) $cashreg['cash_desk'], 'pokladna hlavičky podle kódu ze sady');
+        $this->assertSame(0, (int) $cashreg['cash_dir'], 'prodejka má směr pevně — cash_dir zůstává 0');
+        $this->assertSame(0, (int) $cashreg['payment_method'], 'hotově');
+        $this->assertSame(1, (int) $cashreg['sequence_number']);
+        $this->assertNull($cashreg['partner'], 'anonymní prodejka bez partnera');
+        $series = $dibi->fetch('SELECT * FROM docs_core_number_series WHERE id = %i', (int) $cashreg['number_series'])->toArray();
+        $this->assertSame('cashreg', $series['doc_type']);
+        $this->assertSame($this->cashDeskId, (int) $series['cash_desk'], 'řada založená provisionerem pro testovací pokladnu');
+        $this->assertSame(self::CASH_DESK_CODE, $series['doc_number_code'], 'kód vázané řady = kód pokladny');
+        $this->assertSame(
+            1,
+            (int) $dibi->fetchSingle('SELECT MAX(last_assigned) FROM docs_core_number_counters WHERE number_series = %i', (int) $series['id']),
+            'převzaté pořadí srovnalo čítač řady',
+        );
+        if ($hasChart) {
+            $this->assertSame(1, (int) $cashreg['accounting_state'], 'prodejka ve 40 se zaúčtovala (211100 / 604)');
         }
 
         $msg = $dibi->fetch('SELECT * FROM core_mail_incoming_messages WHERE id = %i', $messageId)->toArray();
@@ -189,7 +241,13 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $person = (new PersonExporter($dibi))->exportByIds([$personId])[0]->data;
         $item = (new ItemExporter($dibi))->exportByIds([$itemId])[0]->data;
         $docExporter = new DocumentExporter($dibi);
-        $docOut = $docExporter->exportByIds([$docId])[0]->data;
+        $docsOut = [];
+        foreach ($docExporter->exportByIds([$docId, $cashregId]) as $record) {
+            $docsOut[$record->id] = $record->data;
+        }
+        $this->assertSame([$cashregId, $docId], array_keys($docsOut), 'dump řadí podle doc_type (cashreg < invni)');
+        $docOut = $docsOut[$docId];
+        $cashregOut = $docsOut[$cashregId];
         $registryOut = (new RegistryExporter($dibi, $this->dsPath))->exportByIds([$registryId])[0];
         $mailOut = (new MailExporter($dibi, $this->dsPath))->exportByIds([$messageId])[0];
 
@@ -226,6 +284,36 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame(['docNumber' => self::DOC_NUMBER, 'sequenceNumber' => null], $docOut['applyOptions']['importNumber']);
         $this->assertSame($this->seriesCode, $docOut['applyOptions']['numberSeriesCode'] ?? null);
         $this->assertSame(40, $docOut['applyOptions']['targetDocState']);
+        $this->assertArrayNotHasKey('cashDesk', $docOut, 'faktura na převod pokladnu nenese');
+        $this->assertArrayNotHasKey('cashDirection', $docOut);
+
+        $srcCashreg = $reader->readJsonc('docs/0002-14itds2600001.jsonc');
+        $this->assertSame('cashRegisterDocument', $cashregOut['docType']);
+        $this->assertSame(self::CASH_DESK_CODE, $cashregOut['cashDesk'], 'pokladna kódem — seed ji podle něj zase najde');
+        $this->assertArrayNotHasKey('cashDirection', $cashregOut, 'prodejka směr nenese');
+        $this->assertSame('supplier', $cashregOut['selfParty']);
+        $this->assertArrayNotHasKey('supplier', $cashregOut);
+        $this->assertArrayNotHasKey('customer', $cashregOut, 'anonymní prodejka: žádná strana');
+        $keys = array_keys($cashregOut);
+        $this->assertSame(
+            array_search('selfParty', $keys, true) + 1,
+            array_search('cashDesk', $keys, true),
+            'cashDesk hned za selfParty jako ve schématu',
+        );
+        $this->assertSame($srcCashreg['docText'], $cashregOut['docText']);
+        $this->assertSame($srcCashreg['dates']['issueDate'], $cashregOut['dates']['issueDate']);
+        $this->assertSame($srcCashreg['dates']['issueDate'], $cashregOut['dates']['dueDate'], 'hotovostní doklad: splatnost = vystavení');
+        $this->assertSame('CZK', $cashregOut['currency']);
+        $this->assertSame('cash', $cashregOut['payment']['method']);
+        $this->assertSame('sale.goods', $cashregOut['rows'][0]['operation']);
+        $this->assertSame(self::ITEM_CODE, $cashregOut['rows'][0]['item']['ourCode']);
+        $this->assertSame(500.0, $cashregOut['rows'][0]['unitPrice']);
+        $this->assertSame(['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0], $cashregOut['totals']);
+        $this->assertSame(['docNumber' => self::CASHREG_NUMBER, 'sequenceNumber' => 1], $cashregOut['applyOptions']['importNumber']);
+        // Kód vázané řady = kód pokladny; applier ho u vázaných typů ignoruje
+        // (řadu určuje pokladna), v dumpu je ale přítomný.
+        $this->assertSame(self::CASH_DESK_CODE, $cashregOut['applyOptions']['numberSeriesCode']);
+        $this->assertSame(40, $cashregOut['applyOptions']['targetDocState']);
         $this->assertSame([], $docExporter->getWarnings());
 
         $srcRegistry = $reader->readJsonc('registry/0001-it-ds-smlouva.jsonc');
@@ -294,6 +382,29 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'numberSeriesCode' => $this->seriesCode,
             ], static fn($v) => $v !== null),
         ]);
+        // Prodejka na testovací pokladně (#59 D12): anonymní, hotově, číslo ve
+        // tvaru vázané řady `%D%C%y%5`. `numberSeriesCode` sada nenese — řadu
+        // určuje pokladna (applier kód u vázaných typů ignoruje).
+        $w->writeJsonc('docs/0002-14itds2600001.jsonc', [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+            'docType' => 'cashRegisterDocument', 'docText' => self::P . ' prodejka', 'selfParty' => 'supplier',
+            'cashDesk' => self::CASH_DESK_CODE,
+            'dates' => ['issueDate' => '2026-06-02', 'accountingDate' => '2026-06-02', 'taxPointDate' => '2026-06-02'],
+            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+            'payment' => ['method' => 'cash'],
+            'rows' => [[
+                'rowKind' => 'item', 'operation' => 'sale.goods', 'orderPos' => 1,
+                'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                'quantity' => 1.0, 'unitPrice' => 500.0, 'totalPrice' => 500.0, 'priceCalcMode' => 'fromUnitPrice',
+                'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => 'Prodej IT-DS',
+            ]],
+            'vatRecap' => [['vatCode' => 'cz-110', 'vatPct' => 21.0, 'base' => 500.0, 'tax' => 105.0, 'total' => 605.0]],
+            'totals' => ['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0],
+            'applyOptions' => [
+                'targetDocState' => 40,
+                'importNumber' => ['docNumber' => self::CASHREG_NUMBER, 'sequenceNumber' => 1],
+            ],
+        ]);
         $w->writeJsonc('registry/0001-it-ds-smlouva.jsonc', [
             'format' => 'shpd.dataset.registryDocument.v1',
             'document' => [
@@ -325,7 +436,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         ]);
         $w->writeRaw('mail/0001-msg-it-ds-0001.files/faktura.pdf', '%PDF-IT-DS-faktura');
         $w->writeManifest(new DatasetManifest('it-ds', 'Integration round-trip', null, 'fixed', '2026-08-26T10:00:00Z',
-            ['persons' => 1, 'items' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1]));
+            ['persons' => 1, 'items' => 1, 'docs' => 2, 'registry' => 1, 'mail' => 1]));
     }
 
     // ── úklid ───────────────────────────────────────────────────────────────
@@ -344,11 +455,26 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $dibi->query('DELETE FROM base_registry_documents WHERE id = %i', $r['id']);
         }
         $dibi->query('DELETE FROM base_registry_binders WHERE name = %s', self::BINDER);
-        foreach ($dibi->fetchAll('SELECT id FROM docs_core_heads WHERE doc_number = %s', self::DOC_NUMBER) as $r) {
+        // Doklady podle čísla i podle testovací pokladny (pád s jiným číslem).
+        $deskIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_cash_desks WHERE code = %s', self::CASH_DESK_CODE));
+        $docs = $dibi->fetchAll(
+            'SELECT id FROM docs_core_heads WHERE doc_number IN %in' . ($deskIds !== [] ? ' OR cash_desk IN %in' : ''),
+            [self::DOC_NUMBER, self::CASHREG_NUMBER],
+            ...($deskIds !== [] ? [$deskIds] : []),
+        );
+        foreach ($docs as $r) {
             $dibi->query('DELETE FROM economy_accounting_journal WHERE doc_head = %i', $r['id']);
             $dibi->query('DELETE FROM docs_core_rows WHERE doc_head = %i', $r['id']);
             $dibi->query('DELETE FROM docs_core_vat_recap WHERE doc_head = %i', $r['id']);
             $dibi->query('DELETE FROM docs_core_heads WHERE id = %i', $r['id']);
+        }
+        // Pokladna + vázané řady (založil je applier) + jejich čítače.
+        foreach ($deskIds as $deskId) {
+            foreach ($dibi->fetchAll('SELECT id FROM docs_core_number_series WHERE cash_desk = %i', $deskId) as $s) {
+                $dibi->query('DELETE FROM docs_core_number_counters WHERE number_series = %i', $s['id']);
+                $dibi->query('DELETE FROM docs_core_number_series WHERE id = %i', $s['id']);
+            }
+            $dibi->query('DELETE FROM economy_codebooks_cash_desks WHERE id = %i', $deskId);
         }
         foreach ($dibi->fetchAll('SELECT id FROM economy_items WHERE code = %s', self::ITEM_CODE) as $r) {
             $dibi->query('DELETE FROM economy_items_supplier_codes WHERE item = %i', $r['id']);

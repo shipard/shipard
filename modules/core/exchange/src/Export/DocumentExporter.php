@@ -20,7 +20,9 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
  * banka z denormalizovaných `partner_bank_*`), položky řádků přes
  * `ourCode`, účty přes číslo, jednotky přes `system_code`, řada přes
  * `numberSeriesCode`, vlastní bankovní účet přes kód číselníku
- * (`applyOptions.importOwnBankAccount` jako string).
+ * (`applyOptions.importOwnBankAccount` jako string), pokladna přes kód
+ * číselníku (`cashDesk`, #59 D12 — u pokladního dokladu a prodejky určuje
+ * řadu, u faktury placené hotově jde do `cash_desk` hlavičky).
  *
  * Číslo dokladu se zachovává režimem `applyOptions.importNumber`;
  * koncepty bez čísla ho nemají a číslo dostanou až při potvrzení.
@@ -34,11 +36,13 @@ final class DocumentExporter implements RecordExporter
     private const ACTIVE_STATES = [10, 40, 80];
 
     private const DOC_TYPE_NAMES = [
-        'invni'  => 'invoiceReceived',
-        'invno'  => 'invoiceIssued',
-        'invpo'  => 'proformaIssued',
-        'invpi'  => 'proformaReceived',
-        'cmnbkp' => 'accountingDocument',
+        'invni'   => 'invoiceReceived',
+        'invno'   => 'invoiceIssued',
+        'invpo'   => 'proformaIssued',
+        'invpi'   => 'proformaReceived',
+        'cmnbkp'  => 'accountingDocument',
+        'cash'    => 'cashDocument',
+        'cashreg' => 'cashRegisterDocument',
     ];
 
     private const VAT_MODE_NAMES = [0 => 'none', 1 => 'fromBase', 2 => 'fromTotal'];
@@ -146,11 +150,13 @@ final class DocumentExporter implements RecordExporter
 
     private function selectSql(): string
     {
-        return 'SELECT [h.*], [ns.doc_number_code], [vr.country] AS [vat_reg_country], [ba.code] AS [own_bank_code]'
+        return 'SELECT [h.*], [ns.doc_number_code], [vr.country] AS [vat_reg_country], [ba.code] AS [own_bank_code],'
+            . ' [cd.code] AS [cash_desk_code]'
             . ' FROM [docs_core_heads] AS [h]'
             . ' LEFT JOIN [docs_core_number_series] AS [ns] ON [ns.id] = [h.number_series]'
             . ' LEFT JOIN [economy_codebooks_vat_registrations] AS [vr] ON [vr.id] = [h.vat_registration]'
-            . ' LEFT JOIN [economy_codebooks_bank_accounts] AS [ba] ON [ba.id] = [h.bank_account]';
+            . ' LEFT JOIN [economy_codebooks_bank_accounts] AS [ba] ON [ba.id] = [h.bank_account]'
+            . ' LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]';
     }
 
     private function orderSql(): string
@@ -193,10 +199,15 @@ final class DocumentExporter implements RecordExporter
         $label = $docNumber ?? "#{$id}";
 
         // Strana partnera: přijatá faktura (i zálohová) → my jsme odběratel,
-        // partner dodavatel; vydaná (i zálohová) → naopak; účetní doklad
-        // partnera v hlavičce nemá povinně.
+        // partner dodavatel; vydaná (i zálohová) a prodejka → naopak;
+        // pokladní doklad podle směru (`cash_dir` 1 příjem → jako vydaná,
+        // 2 výdej → jako přijatá vč. bankovního spojení dodavatele; zrcadlí
+        // `DocDocument::resolveTradeDir`); účetní doklad partnera v hlavičce
+        // nemá povinně.
+        $cashDir = V::int($h['cash_dir'] ?? null);
         [$selfParty, $partnerSide] = match ($docTypeCode) {
-            'invno', 'invpo' => ['supplier', 'customer'],
+            'invno', 'invpo', 'cashreg' => ['supplier', 'customer'],
+            'cash'   => $cashDir === 2 ? ['customer', 'supplier'] : ['supplier', 'customer'],
             'cmnbkp' => [null, null],
             default  => ['customer', 'supplier'],
         };
@@ -236,6 +247,12 @@ final class DocumentExporter implements RecordExporter
         } elseif (V::int($h['bank_account'] ?? null) !== null) {
             $this->warnings[] = "docs {$label}: vlastní bankovní účet #{$h['bank_account']} nemá kód v číselníku — nelze přenést";
         }
+        $cashDeskCode = V::str($h['cash_desk_code'] ?? null);
+        if ($cashDeskCode === null && V::int($h['cash_desk'] ?? null) !== null) {
+            // Kód je v číselníku povinný — chybí jen u osiřelé vazby; u
+            // pokladního dokladu / prodejky by seed skončil validační chybou.
+            $this->warnings[] = "docs {$label}: pokladna #{$h['cash_desk']} není v číselníku — nelze přenést";
+        }
 
         $canonical = [
             'format'        => 'shpd.docs.document',
@@ -248,6 +265,13 @@ final class DocumentExporter implements RecordExporter
             'docNumber'     => V::str($h['partner_doc_number'] ?? null),
             'docText'       => V::str($h['doc_text'] ?? null),
             'selfParty'     => $selfParty,
+            // Pokladna kódem (#59 D12): u pokladního dokladu a prodejky
+            // povinná (určuje vázanou řadu), u faktury placené hotově jde do
+            // `cash_desk` hlavičky. Doklad bez pokladny klíč nenese (prune).
+            'cashDesk'      => $cashDeskCode,
+            // Směr jen u pokladního dokladu (1 příjem / 2 výdej); prodejka
+            // má směr pevně a faktura žádný — tam `cash_dir` zůstává 0.
+            'cashDirection' => $docTypeCode === 'cash' ? ($cashDir ?: null) : null,
             'supplier'      => $partnerSide === 'supplier' ? $partner : null,
             'customer'      => $partnerSide === 'customer' ? $partner : null,
             // Jen ruční plátce (#72): odvozený (terminál / dopravce / partner)

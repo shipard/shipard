@@ -518,7 +518,10 @@ proti 69,99). Platí pro AI extrakci i ISDOC
   položkový řádek s DPH jako na faktuře (záporný základ). Stejné klíče platí i pro
   `operation` bankovní transakce (`shpd.bank.statement.v1`).
 - **`cashRegisterDocument`** (`cashreg`, prodejka) — povinný `cashDesk`,
-  bez `cashDirection` (pevně výstup); vratka = záporné řádky.
+  bez `cashDirection` (pevně výstup); vratka = záporné řádky. `dataset-dump`
+  oba pokladní typy vypisuje včetně `cashDesk` / `cashDirection`
+  (`DocumentExporter`, #131 krok 0a); `applyOptions.numberSeriesCode`
+  u nich nese kód pokladny (vázaná řada), applier ho ignoruje.
 - **`invoiceIssued` / `proformaIssued` / `invoiceReceived` / `proformaReceived` + `cashDesk`** —
   volitelný kód pokladny platí jen s `payment.method: "cash"` (faktura placená hotově →
   `cash_desk` hlavičky, účtuje se na pokladnu místo 311/321); s jinou
