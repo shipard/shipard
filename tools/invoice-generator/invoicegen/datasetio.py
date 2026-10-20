@@ -27,8 +27,9 @@ PERSON_FORMAT = "shpd.persons.person"
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 CREATED_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 # Pořadí sekcí jako `DatasetManifest::SECTIONS` / `DatasetDumper` (counts v dumpu).
-SECTIONS = ("setup", "exchangeRates", "persons", "items", "docs", "registry", "mail")
-SETUP_TABLES = ("settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes")
+SECTIONS = ("setup", "exchangeRates", "persons", "items", "docs", "bank", "registry", "mail")
+# Pořadí jako `SetupExporter::TABLES`; `accounts` = nesystémové účty osnovy (#131 fáze 2a).
+SETUP_TABLES = ("settings", "accounts", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes")
 PROVISION_KEYS = ("accountingItems",)   # serverAi zaniklo (#126 D9) — serverové AI plyne z třídy dat
 
 # Port Shipard\Core\Utils\Slug::make — stejná tabulka, stejný regex.

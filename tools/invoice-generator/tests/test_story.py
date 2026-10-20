@@ -34,12 +34,19 @@ class StoryLoadTest(unittest.TestCase):
         self.assertEqual(3, sum(1 for c in story.customers.values() if c.currency == "EUR"))
         self.assertTrue(all(c.send_purposes == ("invoices",) for c in story.customers.values()))
         self.assertEqual("BU1", story.bank_account_code)
+        self.assertEqual({"CZK": "BU1", "EUR": "BU2"}, story.bank_accounts, "účet per měnu (U1)")
+        self.assertEqual("BU2", story.bank_account_for("EUR"))
         self.assertEqual("POK", story.cash_desk_code)
         self.assertEqual(("Nájem", "Pojištění", "Smlouvy"), story.binders)
         self.assertEqual(Decimal("24.47"), story.rates["EUR"][0])
         self.assertEqual("2026-01-01", story.setup["bank_accounts"]["rows"][0]["valid_from"], "@period.start doplněno")
-        self.assertEqual(sorted(story.setup), sorted(["settings", "bank_accounts", "cash_desks", "cost_centers",
+        self.assertEqual(sorted(story.setup), sorted(["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers",
                                                       "vat_registrations", "binders", "mailboxes"]))
+        self.assertEqual("221200", story.setup["accounts"]["rows"][0]["number"], "analytika pro BU2 (fáze 2a)")
+        self.assertEqual(169, story.bank["accounts"]["BU1"]["fee"]["amount"])
+        self.assertEqual(["net", "insurance", "tax"], [r["amount"] for r in story.bank["payroll"]])
+        self.assertEqual({"behaviour": "late", "days": 6}, story.suppliers["klicek"].payment)
+        self.assertEqual({}, story.suppliers["mrak"].payment, "bez payment = včas")
         self.assertEqual("Zelený Terminál s.r.o.", story.own.name)
 
     def test_anchor_override_shifts_period(self) -> None:
@@ -123,8 +130,30 @@ class StoryValidationTest(unittest.TestCase):
         self.assert_problem("korpusu")
 
     def test_setup_bank_account_code_must_exist(self) -> None:
-        self.edit("story.jsonc", '"bankAccountCode": "BU1"', '"bankAccountCode": "BU9"')
+        self.edit("story.jsonc", '"EUR": "BU2"', '"EUR": "BU9"')
         self.assert_problem("není v setup/bank_accounts.jsonc")
+
+    def test_bank_account_currency_must_match(self) -> None:
+        self.edit("story.jsonc", '"EUR": "BU2"', '"EUR": "BU1"')
+        self.assert_problem("účet BU1 je v měně CZK, ne EUR")
+
+    def test_foreign_currency_account_opens_at_zero(self) -> None:
+        self.edit("story.jsonc", '"BU2": { "openingBalance": 0 }', '"BU2": { "openingBalance": 100 }')
+        self.assert_problem("začíná na nule")
+
+    def test_payroll_counterparty_must_not_belong_to_anyone(self) -> None:
+        self.edit("story.jsonc", '"1000000013/0800"', '"2440913574/0300"')
+        self.assert_problem("patří osobě nebo vlastnímu účtu")
+
+    def test_supplier_payment_behaviour_is_limited(self) -> None:
+        self.edit("partners.jsonc", '"payment": { "behaviour": "late", "days": 6 }', '"payment": { "behaviour": "partial", "pct": 50 }')
+        self.assert_problem("payment musí být {behaviour z onTime, late")
+
+    def test_unmatched_needs_paying_customer_and_remainder_needs_partial(self) -> None:
+        self.edit("partners.jsonc", '"payment": { "behaviour": "never" }',
+                  '"payment": { "behaviour": "never", "unmatched": [ { "month": -1, "reference": "missing" } ], "remainderDays": 5 }')
+        self.assert_problem("payment.unmatched")
+        self.assert_problem("payment.remainderDays jen u partial")
 
     def test_all_problems_are_reported_together(self) -> None:
         self.edit("story.jsonc", '"net": 70896', '"net": 70000')

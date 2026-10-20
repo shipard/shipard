@@ -5,8 +5,8 @@ zprávy k řešení a dokumenty spisovny. Deterministicky — rozmanitost jen
 ze `timeline.spread` nad (měsíc, pořadí partnera, pořadí pravidla).
 
 Model plateb (D8) je oddělený: `payment_events()` vrací události
-úhrad podle chování odběratelů; fáze 1 z nich do sady promítá jen
-hotovost (faktura s pokladnou), zbytek si vezmou bankovní výpisy fáze 2.
+úhrad podle chování odběratelů a dodavatelů; hotovost je na dokladu
+(pokladna), zbytek promítá `bank.py` do bankovních výpisů (fáze 2a).
 """
 
 from __future__ import annotations
@@ -15,11 +15,13 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 
+from .bank import build_statements, expand_bank_docs
 from .catalogs import Catalogs
 from .collation import czech_key
 from .compute import compute
 from .demoprint import flat_party, invoice_values, registry_values
 from .doccalc import calc_document
+from .errors import ExpandError
 from .model import DocRec, MailRec, PersonRec, Records, RegistryRec, RowRec
 from .render import render_html
 from .snapshot import ai_title
@@ -28,6 +30,8 @@ from .timeline import (
     clamp_day, days_before, fiscal_year, in_period, month_date, month_end, period_label, quarter_label,
     quarter_offsets, spread, spread_decimal, ts,
 )
+
+__all__ = ["DOC_ID_CODES", "ExpandError", "PaymentEvent", "assign_numbers", "expand", "format_number", "payment_events"]
 
 # Číslování (modules/docs/core/config/docTypes.jsonc): %D kód typu, %y dva
 # znaky fiskálního roku, %C kód řady (pokladna), %4 / %5 pořadí.
@@ -40,10 +44,6 @@ VAT_EU_SERVICES = "cz-202"
 
 MODEL_NAME = "demo-ideal"
 PROMPT_VERSION = "demo"
-
-
-class ExpandError(ValueError):
-    pass
 
 
 def format_number(doc_type: str, fiscal_label: str, sequence: int, series_code: str | None) -> str:
@@ -502,32 +502,85 @@ def expand_registry(story: Story, catalogs: Catalogs, templates: dict[str, str])
 @dataclass(frozen=True)
 class PaymentEvent:
     doc_key: str
-    kind: str              # cash | onTime | late | partial | never
+    kind: str              # cash | onTime | late | partial | remainder | never
     paid_on: date | None
     amount: Decimal | None
+    direction: int = 1     # 1 příjem (vydaný doklad), 2 výdaj (přijatá faktura)
+    reference: str | None = None   # VS platby; None = bez VS
+    fault: str | None = None       # missing | typo = záměrně nespárovaná platba (D18)
+
+
+def _doc_offset(story: Story, doc: DocRec) -> int | None:
+    """Měsíc (posun od kotvy), ke kterému vydaný doklad patří."""
+    kind, _, rest = doc.key.partition(":")
+    if kind == "billing":
+        return int(rest.split(":")[1])
+    if kind == "adhoc":
+        return int(story.adhoc[int(rest)]["month"])
+    return None
+
+
+def typo_reference(reference: str, taken: frozenset[str] = frozenset()) -> str:
+    """Deterministický překlep VS: první prohození dvou různých sousedních
+    číslic od konce, které nedá číslo jiného dokladu (`taken`); bez takové
+    dvojice nula navíc."""
+    chars = list(reference)
+    for i in range(len(chars) - 2, -1, -1):
+        if chars[i] != chars[i + 1]:
+            candidate = chars[:]
+            candidate[i], candidate[i + 1] = candidate[i + 1], candidate[i]
+            text = "".join(candidate)
+            if text not in taken:
+                return text
+    return reference + "0"
 
 
 def payment_events(story: Story, docs: list[DocRec]) -> list[PaymentEvent]:
-    """Události úhrad podle chování odběratelů — fáze 1 použije jen
-    `cash` (už promítnuté na dokladu), zbytek čeká na bankovní výpisy."""
+    """Události úhrad podle chování odběratelů (vydané doklady, příjem)
+    a dodavatelů (přijaté faktury, výdaj): `cash` je už na dokladu,
+    zbytek promítne `bank.build_statements`. Odběratel může platbu
+    konkrétního měsíce poslat bez VS nebo s překlepem (`payment.unmatched`,
+    D18) a částečnou úhradu doplatit (`remainderDays`)."""
     events: list[PaymentEvent] = []
+    taken = frozenset({d.number for d in docs if d.number} | {d.payment_reference for d in docs if d.payment_reference})
     for doc in docs:
-        if doc.doc_type not in ("invno", "invpo") or doc.partner_key is None or doc.due is None:
+        if doc.partner_key is None or doc.due is None:
             continue
-        if doc.payment_method == "cash":
-            events.append(PaymentEvent(doc.key, "cash", doc.issue, doc.total_amount))
+        if doc.doc_type in ("invno", "invpo"):
+            if doc.payment_method == "cash":
+                events.append(PaymentEvent(doc.key, "cash", doc.issue, doc.total_amount, reference=doc.payment_reference))
+                continue
+            party, direction, on_time_shift = story.customers[doc.partner_key], 1, -2
+        elif doc.doc_type == "invni":
+            party, direction, on_time_shift = story.suppliers[doc.partner_key], 2, -1
+        else:
             continue
-        behaviour = story.customers[doc.partner_key].payment
+        behaviour = party.payment
         kind = behaviour.get("behaviour", "onTime")
+        reference = doc.payment_reference
+        fault = None
+        if direction == 1:
+            offset = _doc_offset(story, doc)
+            fault = next((u["reference"] for u in behaviour.get("unmatched") or [] if u["month"] == offset), None)
+            if fault == "missing":
+                reference = None
+            elif fault == "typo" and reference is not None:
+                reference = typo_reference(reference, taken)
         if kind == "onTime":
-            events.append(PaymentEvent(doc.key, kind, doc.due - timedelta(days=2), doc.total_amount))
+            events.append(PaymentEvent(doc.key, kind, doc.due + timedelta(days=on_time_shift), doc.total_amount,
+                                       direction, reference, fault))
         elif kind == "late":
-            events.append(PaymentEvent(doc.key, kind, doc.due + timedelta(days=int(behaviour["days"])), doc.total_amount))
+            events.append(PaymentEvent(doc.key, kind, doc.due + timedelta(days=int(behaviour["days"])), doc.total_amount,
+                                       direction, reference, fault))
         elif kind == "partial":
             pct = Decimal(behaviour["pct"]) / Decimal("100")
-            events.append(PaymentEvent(doc.key, kind, doc.due, (doc.total_amount * pct).quantize(Decimal("0.01"))))
+            first = (doc.total_amount * pct).quantize(Decimal("0.01"))
+            events.append(PaymentEvent(doc.key, kind, doc.due, first, direction, reference, fault))
+            if "remainderDays" in behaviour:
+                events.append(PaymentEvent(doc.key, "remainder", doc.due + timedelta(days=int(behaviour["remainderDays"])),
+                                           doc.total_amount - first, direction, reference, fault))
         else:
-            events.append(PaymentEvent(doc.key, kind, None, None))
+            events.append(PaymentEvent(doc.key, kind, None, None, direction, reference, fault))
     return events
 
 
@@ -540,10 +593,14 @@ def expand(story: Story, catalogs: Catalogs, *, invoice_templates: dict[str, str
     received, received_mails, ordinal = expand_received(story, catalogs, invoice_templates, ordinal)
     cash, ordinal = expand_cash(story, catalogs, ordinal)
     payroll, ordinal = expand_payroll(story, ordinal)
-    docs = issued + received + cash + payroll
+    # Otevírací a vyrovnávací doklady (fáze 2a) před číslováním — čísla
+    # `cmnbkp` se prolnou s mzdami podle data.
+    bank_docs, ordinal = expand_bank_docs(story, payroll, ordinal)
+    docs = issued + received + cash + payroll + bank_docs
     assign_numbers(docs)
     for doc in docs:
         calc_document(doc)
+    statements = build_statements(story, docs, payment_events(story, docs))
     mails = received_mails + expand_other_mail(story)
     ids = [m.message_id for m in mails]
     if len(set(ids)) != len(ids):
@@ -555,4 +612,5 @@ def expand(story: Story, catalogs: Catalogs, *, invoice_templates: dict[str, str
         mails=mails,
         registry=expand_registry(story, catalogs, registry_templates),
         setup=story.setup,
+        bank=statements,
     )

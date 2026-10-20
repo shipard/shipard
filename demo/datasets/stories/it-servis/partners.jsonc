@@ -20,13 +20,17 @@
 // Odběratel: `language` jazyk dokladů (cs / sk / de), `currency` měna faktur
 // (EUR s kurzem z story.jsonc), `vatTreatment` standard | reverseCharge
 // (přenesení daňové povinnosti u služeb do EU), kontakt s účelem odeslání
-// faktur (`sendPurposes`), `payment` = chování plateb (D8; fáze 1 do sady
-// nepromítá, bankovní výpisy přijdou ve fázi 2).
+// faktur (`sendPurposes`), `payment` = chování plateb (D8, D18): onTime
+// (2 dny před splatností) | late + days | partial + pct (+ remainderDays =
+// doplatek N dní po splatnosti, jinak nikdy) | never; `unmatched` =
+// platba faktury měsíce `month` bez VS (missing) nebo s překlepem (typo) —
+// záměrně nespárovaná platba se známým protiúčtem.
 // Dodavatel: `template` a `accent` šablony PDF (demo/invoices/templates/),
 // `docNumber` vzor čísla dodavatele ({yyyy}, {yy}, {seq:04d}, čítač od
 // `seqStart`), `invoices` pravidlo faktur (every month | quarter, nebo
 // `months`), `anchorMonth` co s fakturou měsíce kotvy: processed (zpracovaná
-// zpráva + doklad), open (zpráva k řešení s návrhem), skip.
+// zpráva + doklad), open (zpráva k řešení s návrhem), skip; `payment` = jak
+// platíme my (onTime = den před splatností, late + days; bez pole = včas).
 {
 	"verifiedAt": "2026-10-20",
 
@@ -40,7 +44,7 @@
 			"bankAccount": { "accountNumber": "2440913574/0300", "iban": "CZ9403000000002440913574", "bic": "CEKOCZPP" },
 			"language": "cs", "currency": "CZK", "vatTreatment": "standard",
 			"sendPurposes": ["invoices"],
-			"payment": { "behaviour": "onTime" },
+			"payment": { "behaviour": "onTime", "unmatched": [ { "month": -3, "reference": "missing" } ] },
 		},
 		"medvidek": {
 			"vatPayer": true,
@@ -84,7 +88,7 @@
 			"bankAccount": { "accountNumber": "2087561431/0100", "iban": "CZ6401000000002087561431", "bic": "KOMBCZPP" },
 			"language": "cs", "currency": "CZK", "vatTreatment": "standard",
 			"sendPurposes": ["invoices"],
-			"payment": { "behaviour": "partial", "pct": 50 },
+			"payment": { "behaviour": "partial", "pct": 50, "remainderDays": 25 },
 		},
 		"jelen": {
 			"vatPayer": true,
@@ -128,7 +132,7 @@
 			"bankAccount": { "accountNumber": "2238170965/0300", "iban": "CZ6703000000002238170965", "bic": "CEKOCZPP" },
 			"language": "cs", "currency": "CZK", "vatTreatment": "standard",
 			"sendPurposes": ["invoices"],
-			"payment": { "behaviour": "onTime" },
+			"payment": { "behaviour": "onTime", "unmatched": [ { "month": -5, "reference": "typo" } ] },
 		},
 		"domovnik": {
 			"vatPayer": true,
@@ -150,7 +154,7 @@
 			"bankAccount": { "accountNumber": "1705384627/0800", "iban": "CZ6208000000001705384627", "bic": "GIBACZPX" },
 			"language": "cs", "currency": "CZK", "vatTreatment": "standard",
 			"sendPurposes": ["invoices"],
-			"payment": { "behaviour": "onTime" },
+			"payment": { "behaviour": "onTime", "unmatched": [ { "month": -1, "reference": "missing" } ] },
 		},
 		"nitra": {
 			"vatPayer": true,
@@ -212,6 +216,7 @@
 			"contact": { "name": null, "email": "obchod@licencni-dum-klicek.example", "phone": "+420000210560", "web": "www.licencni-dum-klicek.example" },
 			"bankAccount": { "accountNumber": "1382659074/0100", "iban": "CZ0801000000001382659074", "bic": "KOMBCZPP" },
 			"template": "b", "accent": null,
+			"payment": { "behaviour": "late", "days": 6 },
 			"docNumber": { "pattern": "{yyyy}{seq:05d}", "seqStart": 20417 },
 			"invoices": {
 				"every": "quarter", "day": 8, "dueDays": 21, "anchorMonth": "processed",
@@ -263,6 +268,7 @@
 			"contact": { "name": null, "email": "zakaznici@energie-jiskra.example", "phone": "+420000610100", "web": "www.energie-jiskra.example" },
 			"bankAccount": { "accountNumber": "2190463856/0800", "iban": "CZ2008000000002190463856", "bic": "GIBACZPX" },
 			"template": "c", "accent": null,
+			"payment": { "behaviour": "late", "days": 15 },
 			"docNumber": { "pattern": "{yyyy}0{seq:05d}", "seqStart": 71245 },
 			"invoices": {
 				"every": "month", "day": 12, "dueDays": 14, "anchorMonth": "open", "period": "previousMonth", "rounding": "czk",

@@ -33,8 +33,8 @@ class BuildDemoDatasetTest(unittest.TestCase):
             (out / "expected" / "keep.json").write_text("[]\n")
 
             first = build_demo_dataset(STORY_DIR, out, repo_root=REPO_ROOT, state_path=state, render=fake_render)
-            self.assertEqual({"setup": 7, "exchangeRates": 0, "persons": 24, "items": 12, "docs": 240, "registry": 6, "mail": 52},
-                             first.counts)
+            self.assertEqual({"setup": 8, "exchangeRates": 0, "persons": 24, "items": 12, "docs": 268, "bank": 20,
+                              "registry": 6, "mail": 52}, first.counts)
             self.assertEqual(57, first.rendered)
             self.assertIn("docs/9999-stale.jsonc", first.sync.removed)
             self.assertTrue((out / "expected" / "keep.json").is_file(), "nespravované soubory zůstávají")
@@ -48,8 +48,12 @@ class BuildDemoDatasetTest(unittest.TestCase):
             self.assertIn("persons/0001-autodoprava-kopretina-s-r-o.jsonc", files)
             self.assertIn("persons/0024-zeleny-terminal-s-r-o.jsonc", files)
             self.assertIn("docs/0001-31pok2600001.jsonc", files)
-            self.assertIn("docs/0117-0000000117.jsonc", files, "koncept se zástupným číslem podle pořadí vložení")
-            self.assertIn("docs/0240-12260001.jsonc", files)
+            self.assertIn("docs/0145-0000000145.jsonc", files, "koncept se zástupným číslem podle pořadí vložení")
+            self.assertIn("docs/0268-12260001.jsonc", files)
+            self.assertIn("setup/accounts.jsonc", files, "analytika 221200 pro BU2")
+            self.assertIn("bank/0001-bu1-2026-01.jsonc", files)
+            self.assertIn("bank/0010-bu1-2026-10.jsonc", files)
+            self.assertIn("bank/0011-bu2-2026-01.jsonc", files)
             self.assertIn("mail/0001-msg-demo-patro-2601.files/NP-26-031.pdf", files)
             self.assertTrue(any(k.startswith("registry/0001-") and k.endswith(".pdf") for k in files))
             for name in MANAGED:
@@ -66,10 +70,11 @@ class BuildDemoDatasetTest(unittest.TestCase):
             out = Path(tmp) / "shift"
             summary = build_demo_dataset(STORY_DIR, out, repo_root=REPO_ROOT, anchor=date(2027, 1, 20),
                                          state_path=Path(tmp) / "state.json", render=fake_render)
-            self.assertEqual({"setup": 7, "exchangeRates": 0, "persons": 24, "items": 12, "docs": 240, "registry": 6, "mail": 52},
-                             summary.counts)
+            self.assertEqual({"setup": 8, "exchangeRates": 0, "persons": 24, "items": 12, "docs": 268, "bank": 20,
+                              "registry": 6, "mail": 52}, summary.counts)
             manifest = load_jsonc(out / "manifest.jsonc")
             self.assertEqual("2027-01-20T00:00:00Z", manifest["created"])
+            self.assertTrue((out / "bank" / "0010-bu1-2027-01.jsonc").is_file(), "poslední výpis v měsíci kotvy")
             self.assertEqual("2026-04-01", load_jsonc(out / "setup" / "vat_registrations.jsonc")["rows"][0]["valid_from"])
             self.assertTrue((out / "docs").glob("*-1270001.jsonc"), "číslování nového fiskálního roku")
 

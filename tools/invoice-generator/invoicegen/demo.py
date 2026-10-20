@@ -16,8 +16,9 @@ from .datasetio import (
     SECTIONS, SETUP_TABLES, SyncResult, dumps_dataset, file_name, manifest, sync_tree,
 )
 from .dumpshape import (
-    doc_record, doc_slug, doc_sort_key, item_record, item_slug, item_sort_key, mail_record, mail_slug, mail_sort_key,
-    person_record, person_slug, person_sort_key, registry_record, registry_slug, registry_sort_key,
+    bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, item_record, item_slug, item_sort_key,
+    mail_record, mail_slug, mail_sort_key, person_record, person_slug, person_sort_key, registry_record,
+    registry_slug, registry_sort_key,
 )
 from .expand import expand
 from .expected import load_projection
@@ -27,7 +28,7 @@ from .pdfcache import PdfCache
 from .story import Story, load_story
 from .timeline import manifest_created
 
-MANAGED = ("manifest.jsonc", "setup", "persons", "items", "docs", "registry", "mail")
+MANAGED = ("manifest.jsonc", "setup", "persons", "items", "docs", "bank", "registry", "mail")
 DEMO_IDENTITIES = "demo/invoices/suppliers.jsonc"
 CORPUS_IDENTITIES = "tests/corpus/cz/identities.jsonc"
 PROJECTION = "tests/corpus/projection.jsonc"
@@ -87,6 +88,11 @@ def build_files(story: Story, records: Records, catalogs: Catalogs, *, projectio
     for i, doc in enumerate(docs, start=1):
         files[f"docs/{file_name(i, doc_slug(doc))}"] = _encode(doc_record(doc, story))
     counts["docs"] = len(docs)
+
+    statements = sorted(records.bank, key=bank_sort_key)
+    for i, statement in enumerate(statements, start=1):
+        files[f"bank/{file_name(i, bank_slug(statement))}"] = _encode(bank_record(statement))
+    counts["bank"] = len(statements)
 
     registry = sorted(records.registry, key=registry_sort_key)
     for i, rec in enumerate(registry, start=1):

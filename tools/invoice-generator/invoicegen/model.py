@@ -97,6 +97,7 @@ class DocRec:
     doc_text: str | None = None
     note_on_document: str | None = None
     vat_registration: bool = True          # doklad nese registraci DPH (registrationCountry)
+    fiscal_period_type: str | None = None  # "opening" = otevírací doklad (exchange fiscalPeriodType, #69 D20)
     number: str | None = None              # přidělí assign_numbers
     sequence: int | None = None
     series_code: str | None = None
@@ -136,6 +137,40 @@ class PersonRec:
 
 
 @dataclass
+class TxRec:
+    """Bankovní transakce — jen to, co dodá banka (#131 D17); partnera
+    a účtování dopočítá aplikace po seedu."""
+    key: str
+    account_code: str                      # kód našeho účtu (setup/bank_accounts)
+    date: date
+    amount: Decimal                        # se znaménkem: + příjem, − výdaj
+    ordinal: int                           # pořadí vzniku (řazení v rámci dne)
+    counterparty_account: str | None = None
+    counterparty_name: str | None = None
+    payment_reference: str | None = None   # VS; None = bez VS
+    message: str | None = None
+    operation: str | None = None           # None = výchozí podle směru; "fee.out"
+    exchange_rate: Decimal | None = None   # jen účet v cizí měně (kurz hrazené faktury, U1)
+    doc_key: str | None = None             # hrazený doklad / vyrovnávací doklad mezd
+    fault: str | None = None               # missing | typo = záměrně nespárovaná platba (D18)
+    external_id: str | None = None         # doplní build_statements
+
+
+@dataclass
+class StatementRec:
+    """Výpis jednoho účtu za kalendářní měsíc (poslední končí kotvou)."""
+    account_code: str
+    currency: str                          # velkými (jako canonical)
+    period_start: date
+    period_end: date
+    number: str                            # "M/RRRR"
+    external_id: str                       # "<kód>-RRRR-MM"
+    opening: Decimal
+    closing: Decimal
+    transactions: list[TxRec]              # seřazené (datum, pořadí vzniku)
+
+
+@dataclass
 class Records:
     persons: list[PersonRec]
     items: list[Item]
@@ -143,3 +178,4 @@ class Records:
     mails: list[MailRec]                    # všechny zprávy (zpracované i k řešení)
     registry: list[RegistryRec]
     setup: dict[str, dict]
+    bank: list[StatementRec] = field(default_factory=list)

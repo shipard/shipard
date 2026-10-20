@@ -1,0 +1,27 @@
+// Nesystémové účty osnovy (#131 fáze 2a): analytika 221200 pro eurový účet
+// BU2 — výchozí osnova má jen 221100. Všechny sloupce jako v dumpu
+// (`account_level` a `g1`–`g3` odvozuje aplikace z čísla, sada je nese
+// stejně, aby dump vyšel shodně).
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "accounts",
+	"rows": [
+		{
+			"number": "221200",
+			"name": "Bankovní účet EUR",
+			"short_name": "Bankovní účet EUR",
+			"account_level": 4,
+			"g1": "2",
+			"g2": "22",
+			"g3": "221",
+			"account_kind": 0,
+			"costs_type": null,
+			"results_type": null,
+			"valid_from": null,
+			"valid_to": null,
+			"is_system": false,
+			"note": null,
+			"docState": 40,
+		},
+	],
+}

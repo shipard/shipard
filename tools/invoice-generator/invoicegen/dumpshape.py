@@ -1,6 +1,7 @@
 """Záznamy sady ve tvaru, který vypíše `dataset-dump` (D10) — jediné místo
 s konstantami odvozenými z PHP exportérů (`PersonExporter`, `ItemExporter`,
-`DocumentExporter`, `RegistryExporter`, `MailExporter`): pořadí klíčů,
+`DocumentExporter`, `BankStatementExporter`, `RegistryExporter`,
+`MailExporter`): pořadí klíčů,
 které hodnoty jsou float (`1.0`) a které int, co prune vynechá, řazení
 souborů podle `ORDER BY` exportérů a slugy. Když se sada liší od dumpu,
 opravuje se tady, ne v `expand.py`.
@@ -14,9 +15,11 @@ from .catalogs import Catalogs
 from .collation import czech_key
 from .datasetio import PERSON_FORMAT, attachment_entry, prune
 from .expected import apply_projection, build_expected
-from .model import DocRec, MailRec, PersonRec, RegistryRec, RowRec
+from .model import DocRec, MailRec, PersonRec, RegistryRec, RowRec, StatementRec
 from .snapshot import analysis_json, analysis_record, classification_json, dataset_canonical, message_record
 from .story import Item, Story
+
+BANK_FORMAT = "shpd.dataset.bankStatement.v1"
 
 DOC_TYPE_NAMES = {
     "invni": "invoiceReceived", "invno": "invoiceIssued", "invpo": "proformaIssued", "invpi": "proformaReceived",
@@ -206,7 +209,7 @@ def doc_record(doc: DocRec, story: Story) -> dict:
     if doc.series_code is not None:
         apply_options["numberSeriesCode"] = doc.series_code
     if doc.doc_type in ("invno", "invpo"):
-        apply_options["importOwnBankAccount"] = story.bank_account_code
+        apply_options["importOwnBankAccount"] = story.bank_account_for(doc.currency)
     canonical = {
         "format": "shpd.docs.document",
         "formatVersion": "1.0",
@@ -227,6 +230,8 @@ def doc_record(doc: DocRec, story: Story) -> dict:
             "periodFrom": _iso(doc.period_from),
             "periodTo": _iso(doc.period_to),
         },
+        # Otevírací doklad (#69 D20) — `DocumentExporter` ho vypisuje za `dates`.
+        "fiscalPeriodType": doc.fiscal_period_type,
         "currency": doc.currency,
         "exchangeRate": php_float(doc.rate),
         "vat": {
@@ -276,6 +281,52 @@ def doc_sort_key(doc: DocRec) -> tuple:
 
 def doc_slug(doc: DocRec) -> str:
     return doc.number if doc.number is not None else f"koncept {doc.doc_type}"
+
+
+# ── Bankovní výpisy ──────────────────────────────────────────────────────────
+
+def bank_record(statement: StatementRec) -> dict:
+    """`BankStatementExporter`: top-level klíče pevně (prázdný výpis má
+    `transactions: []`), prune jen uvnitř; částky float, výchozí pohyb
+    a kurz na účtu v domácí měně se nevypisují."""
+    transactions = [prune({
+        "externalId": tx.external_id,
+        "amount": php_float(tx.amount),
+        "dateTransaction": tx.date.isoformat(),
+        "dateValue": None,
+        "counterpartyAccount": tx.counterparty_account,
+        "counterpartyName": tx.counterparty_name,
+        "paymentReference": tx.payment_reference,
+        "specificSymbol": None,
+        "constantSymbol": None,
+        "message": tx.message,
+        "operation": tx.operation,
+        "exchangeRate": php_float(tx.exchange_rate) if tx.exchange_rate is not None else None,
+    }) for tx in statement.transactions]
+    return {
+        "format": BANK_FORMAT,
+        "bankAccount": statement.account_code,
+        "statement": prune({
+            "statementNumber": statement.number,
+            "externalId": statement.external_id,
+            "periodStart": statement.period_start.isoformat(),
+            "periodEnd": statement.period_end.isoformat(),
+            "openingBalance": php_float(statement.opening),
+            "closingBalance": php_float(statement.closing),
+            "currency": statement.currency,
+        }),
+        "transactions": transactions,
+        "docState": 40,
+    }
+
+
+def bank_sort_key(statement: StatementRec) -> tuple:
+    """`ORDER BY a.code, s.period_start, s.statement_number, s.id`."""
+    return (statement.account_code, statement.period_start, statement.number)
+
+
+def bank_slug(statement: StatementRec) -> str:
+    return f"{statement.account_code}-{statement.period_start:%Y-%m}"
 
 
 # ── Zprávy ───────────────────────────────────────────────────────────────────

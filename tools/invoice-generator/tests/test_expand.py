@@ -57,7 +57,7 @@ class ExpandTest(unittest.TestCase):
         self.assertEqual(48, by_type[("invni", 40)])
         self.assertEqual(39, by_type[("cashreg", 40)])
         self.assertEqual(20, by_type[("cash", 40)])
-        self.assertEqual(9, by_type[("cmnbkp", 40)])
+        self.assertEqual(37, by_type[("cmnbkp", 40)], "9 mezd + otevírací doklad + 27 vyrovnávacích (fáze 2a)")
         self.assertEqual(24, len(self.records.persons))
         self.assertEqual(["F%05d" % i for i in range(1, 25)], [p.person_id for p in self.records.persons])
         self.assertEqual(52, len(self.records.mails))
@@ -122,8 +122,9 @@ class ExpandTest(unittest.TestCase):
         self.assertIn("late", kinds)
         self.assertIn("partial", kinds)
         self.assertIn("never", kinds)
-        issued = [d for d in self.records.docs if d.doc_type in ("invno", "invpo")]
-        self.assertEqual(len(issued), sum(kinds.values()), "událost per vydaný doklad (i koncept)")
+        invoices = [d for d in self.records.docs if d.doc_type in ("invno", "invpo", "invni")]
+        self.assertEqual(len(invoices) + kinds["remainder"], sum(kinds.values()),
+                         "událost per fakturu (i koncept, i přijatou) + doplatky částečných úhrad")
 
     def test_registry_dates_relative_to_anchor(self) -> None:
         by_ref = {r.ref_number: r for r in self.records.registry}

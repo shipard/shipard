@@ -26,8 +26,10 @@
 		"address": { "street": "Serverová", "houseNumber": "1024/8", "city": "Brno", "zip": "60200", "country": "cz" },
 		"contact": { "name": null, "email": "fakturace@zeleny-terminal.example", "phone": "+420000230190", "web": "www.zeleny-terminal.example" },
 		"language": "cs",
-		// Kódy musí odpovídat setup/bank_accounts.jsonc a setup/cash_desks.jsonc.
-		"bankAccountCode": "BU1",
+		// Kódy musí odpovídat setup/bank_accounts.jsonc (účet per měnu faktur,
+		// CZK povinná; EUR faktury nesou BU2 a platby za ně chodí na něj — U1)
+		// a setup/cash_desks.jsonc.
+		"bankAccounts": { "CZK": "BU1", "EUR": "BU2" },
 		"cashDeskCode": "POK",
 	},
 
@@ -113,6 +115,33 @@
 			{ "account": "331100", "side": "credit", "amount": "net",       "text": "Čisté mzdy k výplatě" },
 			{ "account": "336100", "side": "credit", "amount": "insurance", "text": "Odvody sociálního a zdravotního pojištění" },
 			{ "account": "342100", "side": "credit", "amount": "tax",       "text": "Záloha na daň z příjmů" },
+		],
+	},
+
+	// Banka (fáze 2a, #131 D17, D18, D22, U1). Výpis per účet a měsíc vzniká
+	// z chování plateb odběratelů (`payment` v partners.jsonc) a dodavatelů,
+	// z mezd a odvodů a z poplatků; partnera a párování dopočítá aplikace.
+	// `accounts`: počáteční zůstatek (účet v cizí měně začíná na nule) a
+	// měsíční poplatek (poslední den dokončeného měsíce). Otevírací doklad
+	// MD 221xxx / DAL openingAccount k prvnímu dni dat. Příběh je na bance
+	// ztrátový (mzdy a dodavatelé > tržby, cca −1,03 mil. za období), zůstatek
+	// nesmí klesnout pod nulu (generátor hlídá) — proto rezerva 1,25 mil.
+	// `payroll`: platba částky mezd (`amount` z payroll.figures s řádkem na
+	// straně D) za měsíc M v měsíci M+1, bez partnera a VS — protiúčet nesmí
+	// patřit nikomu v sadě; ke každé vznikne vyrovnávací interní doklad
+	// MD účet závazku / DAL clearingAccount téhož dne (D22).
+	"bank": {
+		"accounts": {
+			"BU1": { "openingBalance": 1250000, "fee": { "amount": 169, "text": "Poplatek za vedení účtu" } },
+			"BU2": { "openingBalance": 0 },
+		},
+		"openingAccount": "701100",
+		"clearingAccount": "261300",
+		"settlementText": "Přeúčtování z nespárovaných plateb: {text}",
+		"payroll": [
+			{ "amount": "net",       "day": 10, "text": "Výplata mezd {period}",  "counterparty": { "account": "1000000013/0800", "name": "Hromadný příkaz — mzdy" } },
+			{ "amount": "insurance", "day": 20, "text": "Pojistné {period}",      "counterparty": { "account": "1000000021/0800", "name": "Pojišťovny — odvody" } },
+			{ "amount": "tax",       "day": 20, "text": "Záloha na daň {period}", "counterparty": { "account": "1000000048/0800", "name": "Finanční úřad — záloha na daň" } },
 		],
 	},
 }
