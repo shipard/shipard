@@ -14,7 +14,8 @@ došlé pošty (analýza se přenáší jako data — žádné volání AI).
 sada/
   manifest.jsonc                      # shpd.dataset.v1
   setup/<tabulka>.jsonc               # shpd.dataset.setup.v1 — číselníky + DS settings
-  exchangeRates/NNNN-<listType>-<validFrom>.jsonc  # shpd.exchangeRates.list.v1 — kurzovní lístky (#121 D10)
+  exchangeRates/NNNN-<slug(listType-validFrom)>.jsonc  # shpd.exchangeRates.list.v1 — kurzovní lístky (#121 D10),
+                                      #   např. 0001-cz-cnb-daily-2026-08-19.jsonc (tečky jdou přes Slug na pomlčky)
   persons/NNNN-<slug>.jsonc           # shpd.persons.person.v1
   items/NNNN-<slug>.jsonc             # shpd.items.item.v1
   docs/NNNN-<slug>.jsonc              # shpd.docs.document.v1
@@ -213,7 +214,8 @@ dimenze s počtem dokladů.
    nenulový exit code při jakékoli chybě záznamu.
 8. Záznam sady v `config/main.json` (#103 F6b D59): po úspěšném seedu
    s resetem `dataset: {name, hash, seededAt}` (`hash` =
-   `EvalRunStore::datasetHash()` nad `mail/` + `expected/`), smazaný už na
+   `EvalRunStore::datasetHash()` nad `mail/` + `expected/` + `exchangeRates/`,
+   #103 D81), smazaný už na
    začátku resetu a odebraný při `--no-reset`. Čte ho `shpd-server ds-list
    --json` a panel Zdroje dat vývojářského dashboardu (aktuální /
    zastaralá sada).

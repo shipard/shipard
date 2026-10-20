@@ -204,3 +204,18 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
   haléřů víc než D73. Jen oddaňovací páry a jen při kurzu ≠ 1
   (`DocDocument::buildVatRecapitulation`, `takeOverVatRecapitulation`);
   dodavatelská DPH v cizí měně beze změny (`docs/vat-calculation.md`).
+- ✓ **D79 — Výjimka věrnosti `exchangeRate` + kontrola Kurzy.** Projekce
+  porovnání nese `exchangeRate`, papír ho neuvádí (`null`), applier ho doplní
+  z lístku — výjimka `ApplyFidelityCheck::EXCEPTIONS_FOREIGN_CURRENCY` jen
+  u dokladu v cizí měně; hodnotu i účetní datum hlídá nová kontrola 5
+  `ExchangeRateCheck` (economy.exchangeRates) proti
+  `expected/exchange-rates.json` (`{messageId, currency, rateDate, listType,
+  validFrom, rate}` z generátoru) a proti `ExchangeRateResolver` k témuž datu.
+  Kurz do očekávání korpusu nejde (applier by ho převzal a resolver by se
+  neověřil; evaluace AI by čekala kurz, který na papíře není).
+- ✓ **D81 — Lístky v sadách a hash.** Sada nese použité i rezervní lístky
+  svých dokladů v tvaru exporteru (měny seřazené, jen měny
+  z `world.base.currencies`, bez `validTo` null); dump naseedovaného zdroje
+  dat dá jen použité lístky — byte-shoda s dumpem se pro `exchangeRates/`
+  neslibuje. `EvalRunStore::HASHED_DIRS` zahrnuje `exchangeRates/`, takže
+  zdroj dat seedovaný bez lístků je zastaralá sada.

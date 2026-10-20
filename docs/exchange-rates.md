@@ -225,8 +225,11 @@ importer se zdrojem *datová sada*: `created` i `skipped` = ok, `conflict`
 = chyba (seed nepřepisuje). Dump (`ExchangeRatesExporter`) vypíše právě ty
 lístky, které resolver použije pro účetní data dokladů a návrhů z analýz
 zpráv v cizí měně (U7); sada bez cizí měny sekci nemá; dvojice bez lístku
-= varování. Kurzy v sadách `tests/datasets/` a zrušení přeskočení dokladů
-v cizí měně v `dataset-verify` (#103 D30) jsou samostatný task (U6).
+= varování. Kurzy v sadách z korpusu `tests/datasets/cz/` (skutečné denní
+lístky ČNB pro účetní data dokladů v cizí měně + rezerva z předchozího
+pracovního dne, `docs/test-corpus.md` § 16) a konec přeskakování dokladů
+v cizí měně v `dataset-verify` (#103 D30 → D74, kontrola Kurzy D79):
+`tasks/testing-rates-isdoc.md` (U6 hotové 2026-10-20).
 
 ## 8. Nastavení — Kurzovní lístky (§9)
 
