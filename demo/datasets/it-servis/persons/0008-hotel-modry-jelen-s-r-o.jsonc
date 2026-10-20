@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "ekonom@hotel-modry-jelen.example",
-        "phone": "+420577130444",
+        "phone": "+420000130444",
         "web": "www.hotel-modry-jelen.example"
     },
     "status": {
@@ -47,7 +47,7 @@
         {
             "name": "Ekonomické oddělení",
             "email": "ekonom@hotel-modry-jelen.example",
-            "phone": "+420577130444",
+            "phone": "+420000130444",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

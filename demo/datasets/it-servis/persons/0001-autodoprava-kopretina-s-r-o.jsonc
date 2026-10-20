@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "uctarna@kopretina-doprava.example",
-        "phone": "+420577204411"
+        "phone": "+420000204411"
     },
     "status": {
         "docState": 40
@@ -46,7 +46,7 @@
         {
             "name": "Účtárna",
             "email": "uctarna@kopretina-doprava.example",
-            "phone": "+420577204411",
+            "phone": "+420000204411",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

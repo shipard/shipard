@@ -3,7 +3,7 @@
     "formatVersion": "1.2",
     "personType": "company",
     "country": "cz",
-    "personId": "F00019",
+    "personId": "F00018",
     "companyId": "81973501",
     "taxId": "CZ81973501",
     "vatId": "CZ81973501",
@@ -13,7 +13,7 @@
     },
     "contact": {
         "email": "najmy@patro-sprava.example",
-        "phone": "+420545112900"
+        "phone": "+420000112900"
     },
     "status": {
         "docState": 40

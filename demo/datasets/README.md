@@ -76,7 +76,7 @@ záporné = minulost), `day` = den v měsíci (delší než měsíc se ořízne)
 | `setup/*.jsonc` | číselníky ve tvaru dumpu (všechny sloupce vč. `null`): nastavení, bankovní účet, pokladna, registrace DPH, šanony, střediska (prázdné), schránka. `@period.start` v datu = první den dat |
 
 Pravidla, která loader vynucuje: kontrolní součty IČO / účtů / IBAN / DE
-DIČ, domény jen `.example` (D15), žádný překryv s identitami dema
+DIČ, domény jen `.example` (D15), telefony s nepřidělitelným předčíslím 000 za kódem země, žádný překryv s identitami dema
 (`demo/invoices/suppliers.jsonc`) ani korpusu (`tests/corpus/cz/identities.jsonc`),
 odkazy partner ↔ položka ↔ nabídka osnovy, měsíce v období, vyvážené
 mzdy, a **jednoznačné české řazení jmen** — o pořadí souborů osob

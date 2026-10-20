@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "jana@cukrarna-medvidek.example",
-        "phone": "+420585330217"
+        "phone": "+420000330217"
     },
     "status": {
         "docState": 40
@@ -46,7 +46,7 @@
         {
             "name": "Jana Perníčková",
             "email": "jana@cukrarna-medvidek.example",
-            "phone": "+420585330217",
+            "phone": "+420000330217",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

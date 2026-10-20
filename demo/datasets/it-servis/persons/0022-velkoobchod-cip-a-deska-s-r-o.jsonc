@@ -3,7 +3,7 @@
     "formatVersion": "1.2",
     "personType": "company",
     "country": "cz",
-    "personId": "F00023",
+    "personId": "F00022",
     "companyId": "88462137",
     "taxId": "CZ88462137",
     "vatId": "CZ88462137",
@@ -13,7 +13,7 @@
     },
     "contact": {
         "email": "objednavky@cip-deska.example",
-        "phone": "+420495770310",
+        "phone": "+420000770310",
         "web": "www.cip-deska.example"
     },
     "status": {

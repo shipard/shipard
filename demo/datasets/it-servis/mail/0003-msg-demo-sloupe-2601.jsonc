@@ -98,7 +98,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "kancelar@uk-sloupec.example",
-                                "phone": "+420548530770",
+                                "phone": "+420000530770",
                                 "web": null
                             },
                             "bankAccount": {
@@ -124,7 +124,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@zeleny-terminal.example",
-                                "phone": "+420541230190",
+                                "phone": "+420000230190",
                                 "web": "www.zeleny-terminal.example"
                             },
                             "bankAccount": {
@@ -233,7 +233,7 @@
                     "contact": {
                         "name": null,
                         "email": "kancelar@uk-sloupec.example",
-                        "phone": "+420548530770",
+                        "phone": "+420000530770",
                         "web": null
                     },
                     "bankAccount": {
@@ -259,7 +259,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@zeleny-terminal.example",
-                        "phone": "+420541230190",
+                        "phone": "+420000230190",
                         "web": "www.zeleny-terminal.example"
                     },
                     "bankAccount": {

@@ -92,7 +92,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "zakaznici@energie-jiskra.example",
-                                "phone": "+420596610100",
+                                "phone": "+420000610100",
                                 "web": "www.energie-jiskra.example"
                             },
                             "bankAccount": {
@@ -118,7 +118,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@zeleny-terminal.example",
-                                "phone": "+420541230190",
+                                "phone": "+420000230190",
                                 "web": "www.zeleny-terminal.example"
                             },
                             "bankAccount": {
@@ -269,7 +269,7 @@
                     "contact": {
                         "name": null,
                         "email": "zakaznici@energie-jiskra.example",
-                        "phone": "+420596610100",
+                        "phone": "+420000610100",
                         "web": "www.energie-jiskra.example"
                     },
                     "bankAccount": {
@@ -295,7 +295,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@zeleny-terminal.example",
-                        "phone": "+420541230190",
+                        "phone": "+420000230190",
                         "web": "www.zeleny-terminal.example"
                     },
                     "bankAccount": {

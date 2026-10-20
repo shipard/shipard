@@ -3,7 +3,7 @@
     "formatVersion": "1.2",
     "personType": "company",
     "country": "cz",
-    "personId": "F00018",
+    "personId": "F00017",
     "companyId": "90157389",
     "taxId": "CZ90157389",
     "vatId": "CZ90157389",
@@ -13,7 +13,7 @@
     },
     "contact": {
         "email": "fakturace@serverovna-mrak.example",
-        "phone": "+420241090330",
+        "phone": "+420000090330",
         "web": "www.serverovna-mrak.example"
     },
     "status": {

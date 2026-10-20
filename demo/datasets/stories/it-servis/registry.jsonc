@@ -37,7 +37,7 @@
 	},
 	{
 		"docType": "contract", "template": "contract", "binder": "Smlouvy",
-		"title": "Servisní smlouva — Rheinwerk Logistik GmbH", "partner": "rheinwerk",
+		"title": "Servisní smlouva — Wolkenschiff Logistik GmbH", "partner": "wolkenschiff",
 		"refNumber": "SML-2026-003",
 		"created": { "month": -9, "day": 20, "time": "11:40" },
 		"validFrom": { "month": -9, "day": 1 }, "validTo": { "years": 2 },

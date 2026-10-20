@@ -3,7 +3,7 @@
     "formatVersion": "1.2",
     "personType": "company",
     "country": "cz",
-    "personId": "F00022",
+    "personId": "F00021",
     "companyId": "52073963",
     "taxId": "CZ52073963",
     "vatId": "CZ52073963",
@@ -13,7 +13,7 @@
     },
     "contact": {
         "email": "kancelar@uk-sloupec.example",
-        "phone": "+420548530770"
+        "phone": "+420000530770"
     },
     "status": {
         "docState": 40

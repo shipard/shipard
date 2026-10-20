@@ -3,7 +3,7 @@
     "formatVersion": "1.2",
     "personType": "company",
     "country": "cz",
-    "personId": "F00020",
+    "personId": "F00019",
     "companyId": "95278141",
     "taxId": "CZ95278141",
     "vatId": "CZ95278141",
@@ -13,7 +13,7 @@
     },
     "contact": {
         "email": "vyuctovani@telekom-vlnka.example",
-        "phone": "+420800404040",
+        "phone": "+420000404040",
         "web": "www.telekom-vlnka.example"
     },
     "status": {

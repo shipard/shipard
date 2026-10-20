@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "kancelar@skola-mluvka.example",
-        "phone": "+420577215660",
+        "phone": "+420000215660",
         "web": "www.skola-mluvka.example"
     },
     "status": {
@@ -47,7 +47,7 @@
         {
             "name": "Kancelář školy",
             "email": "kancelar@skola-mluvka.example",
-            "phone": "+420577215660",
+            "phone": "+420000215660",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

@@ -3,11 +3,11 @@
     "document": {
         "schema": "shpd.registry.document.v1",
         "docType": "contract",
-        "title": "Servisní smlouva — Rheinwerk Logistik GmbH",
+        "title": "Servisní smlouva — Wolkenschiff Logistik GmbH",
         "summary": "Rámcová servisní smlouva na vzdálenou správu IT pobočky v Brně, fakturace v EUR.",
         "party": {
-            "name": "Rheinwerk Logistik GmbH",
-            "email": "buchhaltung@rheinwerk-logistik.example"
+            "name": "Wolkenschiff Logistik GmbH",
+            "email": "buchhaltung@wolkenschiff-logistik.example"
         },
         "kindFields": {
             "subject": "Vzdálená správa IT pobočky Brno",
@@ -30,8 +30,8 @@
             "file": "SML-2026-003.pdf",
             "name": "SML-2026-003.pdf",
             "mimeType": "application/pdf",
-            "size": 34299,
-            "sha256": "f67aa96950581abede0a878b80ade7ecc2ab4ad2265054e5d4f098d60b462046"
+            "size": 34808,
+            "sha256": "88ada44724573df9bc91176f3cc64514b94bcb4d06c19db4775bc09df7ccaa17"
         }
     ]
 }

@@ -4,7 +4,7 @@
     "docType": "invoiceIssued",
     "selfParty": "supplier",
     "customer": {
-        "name": "Rheinwerk Logistik GmbH",
+        "name": "Wolkenschiff Logistik GmbH",
         "country": "de",
         "taxId": "DE314670256",
         "vatId": "DE314670256",
@@ -16,9 +16,9 @@
             "country": "de"
         },
         "contact": {
-            "email": "buchhaltung@rheinwerk-logistik.example",
-            "phone": "+492212094410",
-            "web": "www.rheinwerk-logistik.example"
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "web": "www.wolkenschiff-logistik.example"
         }
     },
     "dates": {

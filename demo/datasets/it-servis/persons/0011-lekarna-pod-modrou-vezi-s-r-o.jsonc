@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "lekarna@podvezi.example",
-        "phone": "+420572550128"
+        "phone": "+420000550128"
     },
     "status": {
         "docState": 40
@@ -46,7 +46,7 @@
         {
             "name": "Vedoucí lékárny",
             "email": "lekarna@podvezi.example",
-            "phone": "+420572550128",
+            "phone": "+420000550128",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

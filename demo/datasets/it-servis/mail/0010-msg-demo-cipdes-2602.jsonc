@@ -98,7 +98,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "objednavky@cip-deska.example",
-                                "phone": "+420495770310",
+                                "phone": "+420000770310",
                                 "web": "www.cip-deska.example"
                             },
                             "bankAccount": {
@@ -124,7 +124,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@zeleny-terminal.example",
-                                "phone": "+420541230190",
+                                "phone": "+420000230190",
                                 "web": "www.zeleny-terminal.example"
                             },
                             "bankAccount": {
@@ -275,7 +275,7 @@
                     "contact": {
                         "name": null,
                         "email": "objednavky@cip-deska.example",
-                        "phone": "+420495770310",
+                        "phone": "+420000770310",
                         "web": "www.cip-deska.example"
                     },
                     "bankAccount": {
@@ -301,7 +301,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@zeleny-terminal.example",
-                        "phone": "+420541230190",
+                        "phone": "+420000230190",
                         "web": "www.zeleny-terminal.example"
                     },
                     "bankAccount": {

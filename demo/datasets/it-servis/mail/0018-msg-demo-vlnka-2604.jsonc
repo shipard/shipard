@@ -98,7 +98,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "vyuctovani@telekom-vlnka.example",
-                                "phone": "+420800404040",
+                                "phone": "+420000404040",
                                 "web": "www.telekom-vlnka.example"
                             },
                             "bankAccount": {
@@ -124,7 +124,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@zeleny-terminal.example",
-                                "phone": "+420541230190",
+                                "phone": "+420000230190",
                                 "web": "www.zeleny-terminal.example"
                             },
                             "bankAccount": {
@@ -254,7 +254,7 @@
                     "contact": {
                         "name": null,
                         "email": "vyuctovani@telekom-vlnka.example",
-                        "phone": "+420800404040",
+                        "phone": "+420000404040",
                         "web": "www.telekom-vlnka.example"
                     },
                     "bankAccount": {
@@ -280,7 +280,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@zeleny-terminal.example",
-                        "phone": "+420541230190",
+                        "phone": "+420000230190",
                         "web": "www.zeleny-terminal.example"
                     },
                     "bankAccount": {

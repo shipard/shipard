@@ -24,7 +24,7 @@
 		"vatId": "CZ61204579",
 		"courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
 		"address": { "street": "Serverová", "houseNumber": "1024/8", "city": "Brno", "zip": "60200", "country": "cz" },
-		"contact": { "name": null, "email": "fakturace@zeleny-terminal.example", "phone": "+420541230190", "web": "www.zeleny-terminal.example" },
+		"contact": { "name": null, "email": "fakturace@zeleny-terminal.example", "phone": "+420000230190", "web": "www.zeleny-terminal.example" },
 		"language": "cs",
 		// Kódy musí odpovídat setup/bank_accounts.jsonc a setup/cash_desks.jsonc.
 		"bankAccountCode": "BU1",
@@ -63,7 +63,7 @@
 		{ "customer": "dubovylist","every": "month",   "item": "SPRAVA-IT", "price": 4100 },
 		{ "customer": "nitra",     "every": "month",   "item": "SPRAVA-IT", "price": 480 },
 		{ "customer": "tatranka",  "every": "quarter", "item": "SPRAVA-IT", "price": 130, "qty": 3 },
-		{ "customer": "rheinwerk", "every": "month",   "item": "SPRAVA-IT", "price": 1250 },
+		{ "customer": "wolkenschiff", "every": "month",   "item": "SPRAVA-IT", "price": 1250 },
 	],
 
 	// Jednorázové faktury per měsíc (hardware, práce navíc). `hours: [lo, hi]`
@@ -74,7 +74,7 @@
 		{ "month": -8, "day": 17, "customer": "usmevov",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [3, 6] } ] },
 		{ "month": -7, "day": 9,  "customer": "dubovylist", "rows": [ { "item": "NTB-14", "qty": 1 }, { "item": "PRACE-H", "hours": [2, 4] } ], "payment": "cash" },
 		{ "month": -6, "day": 22, "customer": "galvanovna", "rows": [ { "item": "ROUTER", "qty": 1 }, { "item": "SWITCH-24", "qty": 2 }, { "item": "PRACE-H", "hours": [4, 8] } ] },
-		{ "month": -6, "day": 26, "customer": "rheinwerk",  "rows": [ { "item": "PRACE-H", "hours": [6, 12] } ] },
+		{ "month": -6, "day": 26, "customer": "wolkenschiff",  "rows": [ { "item": "PRACE-H", "hours": [6, 12] } ] },
 		{ "month": -5, "day": 13, "customer": "kopretina",  "rows": [ { "item": "ROUTER", "qty": 1 } ], "payment": "cash" },
 		{ "month": -4, "day": 3,  "customer": "jelen",      "rows": [ { "item": "AP-WIFI", "qty": 4 }, { "item": "PRACE-H", "hours": [5, 9] } ] },
 		{ "month": -3, "day": 18, "customer": "lekarna",    "rows": [ { "item": "PRACE-H", "hours": [2, 5] } ] },

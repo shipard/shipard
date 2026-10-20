@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "fakturace@pohybna.example",
-        "phone": "+420582341890"
+        "phone": "+420000341890"
     },
     "status": {
         "docState": 40
@@ -46,7 +46,7 @@
         {
             "name": "Fakturace",
             "email": "fakturace@pohybna.example",
-            "phone": "+420582341890",
+            "phone": "+420000341890",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

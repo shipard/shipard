@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "info@knihy-stranka.example",
-        "phone": "+420573339012"
+        "phone": "+420000339012"
     },
     "status": {
         "docState": 40
@@ -46,7 +46,7 @@
         {
             "name": "Knihkupectví Stránka",
             "email": "info@knihy-stranka.example",
-            "phone": "+420573339012",
+            "phone": "+420000339012",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

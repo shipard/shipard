@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "uctaren@nitrianske-stroje.example",
-        "phone": "+421376512300",
+        "phone": "+421000512300",
         "web": "www.nitrianske-stroje.example"
     },
     "status": {
@@ -46,7 +46,7 @@
         {
             "name": "Učtáreň",
             "email": "uctaren@nitrianske-stroje.example",
-            "phone": "+421376512300",
+            "phone": "+421000512300",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

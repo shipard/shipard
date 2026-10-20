@@ -3,7 +3,7 @@
     "formatVersion": "1.2",
     "personType": "company",
     "country": "cz",
-    "personId": "F00021",
+    "personId": "F00020",
     "companyId": "86341928",
     "taxId": "CZ86341928",
     "vatId": "CZ86341928",
@@ -12,7 +12,7 @@
     },
     "contact": {
         "email": "petr@truhlarna-dubovy-list.example",
-        "phone": "+420573398022"
+        "phone": "+420000398022"
     },
     "status": {
         "docState": 40
@@ -46,7 +46,7 @@
         {
             "name": "Petr Dubový",
             "email": "petr@truhlarna-dubovy-list.example",
-            "phone": "+420573398022",
+            "phone": "+420000398022",
             "orderPos": 0,
             "sendPurposes": [
                 "invoices"

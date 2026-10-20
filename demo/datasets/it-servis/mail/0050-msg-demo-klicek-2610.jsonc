@@ -98,7 +98,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "obchod@licencni-dum-klicek.example",
-                                "phone": "+420543210560",
+                                "phone": "+420000210560",
                                 "web": "www.licencni-dum-klicek.example"
                             },
                             "bankAccount": {
@@ -124,7 +124,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@zeleny-terminal.example",
-                                "phone": "+420541230190",
+                                "phone": "+420000230190",
                                 "web": "www.zeleny-terminal.example"
                             },
                             "bankAccount": {
@@ -233,7 +233,7 @@
                     "contact": {
                         "name": null,
                         "email": "obchod@licencni-dum-klicek.example",
-                        "phone": "+420543210560",
+                        "phone": "+420000210560",
                         "web": "www.licencni-dum-klicek.example"
                     },
                     "bankAccount": {
@@ -259,7 +259,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@zeleny-terminal.example",
-                        "phone": "+420541230190",
+                        "phone": "+420000230190",
                         "web": "www.zeleny-terminal.example"
                     },
                     "bankAccount": {
