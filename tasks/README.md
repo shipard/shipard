@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 381 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 351.
+Celkem 382 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 351.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `exchange-rates-download.md` | naplánováno | PRD 2026-10-20 (#121 D2, D3, D9), upřesnění U1–U7 potvrzená 2026-10-20 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -213,6 +214,7 @@ Polymorfní jádro `docs.core` + per-typ faktury. Řídící dokument
 | `doc-author-users.md` | Autor dokladu („Vystavil“), `created_by` v gateway, uživatel ↔ Osoba, import uživatelů (#93 D1–D13) |
 | `number-series-engine.md` | Společný engine čísel (`src/Core/Numbering/`) vytažený z číselných řad dokladů — vzorec, čítač, import, uvolnění; předpoklad číselných řad zakázek (#110 D17, N1–N3) |
 | `exchange-rates-core.md` | Kurzy cizích měn, task A: typy lístků `world.cz`, formát `shpd.exchangeRates.list.v1`, modul `economy.exchangeRates` (lístky, importer, resolver), CLI, kurz v dokladech, applieru a bance, datové sady (#121 D1, D4–D7, D10) |
+| `exchange-rates-download.md` | Kurzy cizích měn, task B: stahování lístků ze služby (`server.json`, okno od předchozího fiskálního roku, `five-minutes`, limit a pauza), CLI `exchange-rates-download`, upozornění na chybějící lístek, neznámá měna při importu přeskočena (#121 D2, D3, D9, U1–U7) |
 
 ## Tisky (doména print)
 
