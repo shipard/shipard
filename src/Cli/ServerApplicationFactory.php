@@ -24,6 +24,7 @@ final class ServerApplicationFactory
         $app->add(new \Shipard\Command\Server\DsUpgradeAllCommand());
         $app->add(new \Shipard\Command\Server\UpgradeCommand());
         $app->add(new \Shipard\Command\Server\NextTableIdCommand());
+        $app->add(new \Shipard\Command\Server\EInvoiceRenderCommand());
         $app->add(new \Shipard\Command\Server\DomainAddCommand());
         $app->add(new \Shipard\Command\Server\DomainListCommand());
         $app->add(new \Shipard\Command\Server\DomainRemoveCommand());

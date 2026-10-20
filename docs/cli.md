@@ -473,6 +473,27 @@ Vrátí další volné `tableId` napříč všemi moduly (čte `*.jsonc` definic
 v `modules/*/*/tables/`). Pomocný příkaz při tvorbě nové tabulky —
 hodnotu se vepíše do `tableId` v JSONC definici.
 
+### `einvoice-render --format=isdoc --input=<canonical.json> --output=<soubor> --uuid-name=<text> [--issuing-system=<text>]`
+
+```bash
+shpd-server einvoice-render --format=isdoc --input=doc.json --output=doc.isdoc \
+    --uuid-name=corpus/cz/vat-payer/0102-domestic-goods
+```
+
+Strukturovaná e-faktura (ISDOC 6.0.1) z canonicalu `shpd.docs.document.v1`
+v JSON souboru — papírová projekce dokladu + `rows[].computed`
+(#119 D9, [einvoice.md](einvoice.md)). Vstupní bod buildu korpusu
+testovacích dokladů (`tests/corpus/cz/build.py`); nepotřebuje zdroj dat
+ani `server.json`, názvy zemí bere z `modules/world/base/config/countries.jsonc`.
+UUID dokladu je UUIDv5 z `--uuid-name` (stejné jméno = stejný soubor),
+`--issuing-system` výchozí `Shipard` (bez verze a commitu — stejný vstup
+dává stejné bajty). Výstup se před zápisem ověří proti XSD 6.0.1 i 6.0.2
+a uloží atomicky (dočasný soubor vedle cíle + `rename`).
+
+Exit 0 zapsáno; 1 vstup — neznámý `--format`, nečitelný JSON, chybějící
+nebo nepodporovaná hodnota (cesty v canonicalu na stderr, nic se nezapíše);
+2 výstup neprošel schématem (chyba generátoru, nic se nezapíše).
+
 ### `domain-add`, `domain-list`, `domain-remove`
 
 ```bash

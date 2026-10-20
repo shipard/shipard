@@ -52,6 +52,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>ds-upgrade-all</info> Run ds-upgrade on all data sources');
         $output->writeln('  <info>upgrade</info>        Deploy a new version (git pull, composer, frontend, ds-upgrade-all, doctor)');
         $output->writeln('  <info>next-table-id</info>  Print the next available table ID');
+        $output->writeln('  <info>einvoice-render</info> Render a structured e-invoice (ISDOC) from a canonical JSON document (no data source)');
         $output->writeln('  <info>domain-add</info>      Add a host → data source mapping');
         $output->writeln('  <info>domain-list</info>     List all host → data source mappings');
         $output->writeln('  <info>domain-remove</info>   Remove a host → data source mapping');
@@ -83,6 +84,9 @@ class HelpCommand extends Command
         $output->writeln('                                           Upgrade all data sources');
         $output->writeln('  upgrade [--dry-run] [--full] [--skip-ds-upgrade]');
         $output->writeln('                                           Deploy a new version from git');
+        $output->writeln('  einvoice-render --format=isdoc --input=<canonical.json> --output=<file> --uuid-name=<text> [--issuing-system=<text>]');
+        $output->writeln('                                           Write an ISDOC file from a canonical document (validated against XSD 6.0.1 and 6.0.2);');
+        $output->writeln('                                           exit 1 = input problem (paths on stderr), 2 = output failed the schema; nothing written on error');
         $output->writeln('  domain-add --host <host> --ds <ds-id>    Map a hostname to a data source');
         $output->writeln('  cron --slot=<slot> [--ds=<id>]           Run slot jobs (--ds: one data source, ignores its cron switch)');
         $output->writeln('  cron-install [--dry-run | --check] [--keep-ds-cron]');
