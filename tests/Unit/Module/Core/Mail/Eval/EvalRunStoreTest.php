@@ -79,12 +79,20 @@ final class EvalRunStoreTest extends TestCase
         mkdir($copy . '/mail', 0750, true);
         mkdir($copy . '/expected', 0750, true);
         copy($reader->getRootDir() . '/manifest.jsonc', $copy . '/manifest.jsonc');
-        foreach (['mail', 'expected'] as $dir) {
-            self::copyTree($reader->getRootDir() . '/' . $dir, $copy . '/' . $dir);
+        foreach (['mail', 'expected', 'exchangeRates'] as $dir) {
+            if (is_dir($reader->getRootDir() . '/' . $dir)) {
+                self::copyTree($reader->getRootDir() . '/' . $dir, $copy . '/' . $dir);
+            }
         }
         $this->assertSame($hash, EvalRunStore::datasetHash(DatasetReader::open($copy)));
         mkdir($copy . '/setup');
         file_put_contents($copy . '/setup/x.jsonc', '{}');
+        $this->assertSame($hash, EvalRunStore::datasetHash(DatasetReader::open($copy)));
+        // Kurzovní lístky sady jsou v hashi (#103 D81) — zdroj dat bez nich je zastaralý.
+        @mkdir($copy . '/exchangeRates');
+        file_put_contents($copy . '/exchangeRates/9999-cz-cnb-daily-2099-01-01.jsonc', '{}');
+        $this->assertNotSame($hash, EvalRunStore::datasetHash(DatasetReader::open($copy)));
+        unlink($copy . '/exchangeRates/9999-cz-cnb-daily-2099-01-01.jsonc');
         $this->assertSame($hash, EvalRunStore::datasetHash(DatasetReader::open($copy)));
         $pdf = glob($copy . '/mail/*.files/*.pdf')[0];
         file_put_contents($pdf, 'x', FILE_APPEND);

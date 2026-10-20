@@ -13,8 +13,8 @@ use Shipard\Module\Core\Mail\MessageProposalApplier;
  * D21). Zadání jmenuje i `createMissingEntities` a `rejectOnIssues`;
  * ty `DocumentApplier` nečte (chyba blokuje vždy, varování nikdy), applier
  * zpráv je nepředává — nic dalšího se neposílá. Zprávy jdou v pořadí
- * `received_at`; přeskočené (cizí měna, D30) se vynechají; selhání apply
- * je výsledek, ne pád.
+ * `received_at`; doklad v cizí měně dostane kurz z lístků sady (#121 D6,
+ * konec přeskakování D30 — #103 D74); selhání apply je výsledek, ne pád.
  */
 final class ProposalApplyStep
 {
@@ -22,16 +22,13 @@ final class ProposalApplyStep
 
     public function __construct(private readonly MessageProposalApplier $applier) {}
 
-    /**
-     * @param list<SetDocument>     $documents v pořadí received_at
-     * @param array<string, string> $skipped   messageId → důvod
-     */
-    public function run(array $documents, array $skipped): ApplyReport
+    /** @param list<SetDocument> $documents v pořadí received_at */
+    public function run(array $documents): ApplyReport
     {
         $applied = [];
         $failed = [];
         foreach ($documents as $doc) {
-            if (!$doc->hasOpenProposal() || isset($skipped[$doc->messageId])) {
+            if (!$doc->hasOpenProposal()) {
                 continue;
             }
             try {

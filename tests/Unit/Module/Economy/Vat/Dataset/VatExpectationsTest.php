@@ -49,14 +49,14 @@ class VatExpectationsTest extends TestCase
 
     public function testAggregatesOnlyAppliedByPeriod(): void
     {
-        $agg = VatExpectations::aggregate(self::records(), ['A', 'B', 'C', 'D', 'F']);   // E (EUR) přeskočeno
+        $agg = VatExpectations::aggregate(self::records(), ['A', 'B', 'C', 'D', 'F']);   // E není mezi použitými
         $this->assertSame(['2026-08', '2026-09'], array_keys($agg));
 
         $aug = $agg['2026-08'];
         $this->assertEqualsWithDelta(16530.45 + 3670 + 1313.97, $aug['return']['40']['base'], 0.001);
         $this->assertEqualsWithDelta(3471.39 + 770.7 + 275.93, $aug['return']['40']['tax'], 0.001);
         $this->assertEqualsWithDelta(1212.0, $aug['return']['41']['base'], 0.001);
-        $this->assertArrayNotHasKey('5', $aug['return'], 'přeskočený doklad v cizí měně do očekávání nejde');
+        $this->assertArrayNotHasKey('5', $aug['return'], 'nepoužitý doklad do očekávání nejde');
         $this->assertSame(['B2'], array_keys($aug['items']));
         $item = $aug['items']['B2']['CZ43075894|FV-1'];
         $this->assertSame('CZ43075894', $item['vatId'], 'DIČ bez mezer velkými');

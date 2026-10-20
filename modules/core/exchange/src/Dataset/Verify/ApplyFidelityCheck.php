@@ -20,7 +20,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * (`vat.mode` none), {@see EXCEPTIONS_NO_DUE_DATE} a
  * {@see EXCEPTIONS_NO_PAYMENT_REFERENCE} u dokladu bez splatnosti / VS
  * (účtenka — výchozí hodnoty `DocDocument`), {@see EXCEPTIONS_NON_PAYER}
- * u zdroje dat bez agendy DPH (#97). Rovnocenné tvary, které adaptér
+ * u zdroje dat bez agendy DPH (#97), {@see EXCEPTIONS_FOREIGN_CURRENCY}
+ * u dokladu v cizí měně (#103 D79). Rovnocenné tvary, které adaptér
  * dopočítá ze zdroje dat (vlastní strana, text řádku, jednotka přes resolver
  * i jednotka mimo číselník, papírová podoba samovyměření a dokladu bez DPH),
  * nejsou výjimky — porovnávají se.
@@ -65,6 +66,11 @@ final class ApplyFidelityCheck implements VerifyCheck
         'totals.totalVat'      => 'neplátce DPH neeviduje (#97)',
     ];
 
+    /** @var array<string, string> doklad v cizí měně (#103 D79, schváleno 2026-10-20) */
+    public const EXCEPTIONS_FOREIGN_CURRENCY = [
+        'exchangeRate' => 'papír kurz nenese, applier ho doplní z kurzovního lístku k účetnímu datu (#121 D6, DocumentApplier::exchangeRateDecision); hodnotu i datum hlídá kontrola Kurzy (ExchangeRateCheck) proti expected/exchange-rates.json',
+    ];
+
     /** @var array<string, string> podstromy, které export z principu nenese (ne výjimky apply) */
     public const STRUCTURAL = [
         '_resolve' => 'export doklad nenese `_resolve` — štítek per řádek hlídá kontrola položek a účtů přes položku',
@@ -81,14 +87,19 @@ final class ApplyFidelityCheck implements VerifyCheck
     }
 
     /**
-     * Výjimky platné pro doklad: vždy + bez DPH + zdroj dat bez agendy DPH.
+     * Výjimky platné pro doklad: vždy + bez DPH + bez splatnosti / VS
+     * + zdroj dat bez agendy DPH + cizí měna (jen když je známa domácí měna).
      *
      * @param array<string, mixed>|null $proposal canonical návrhu
      * @return array<string, string> cesta uzlu projekce → důvod
      */
-    public static function exceptionsFor(?array $proposal, bool $vatAgenda): array
+    public static function exceptionsFor(?array $proposal, bool $vatAgenda, ?string $homeCurrency = null): array
     {
         $out = self::EXCEPTIONS;
+        $currency = strtoupper(trim((string) ($proposal['currency'] ?? '')));
+        if ($homeCurrency !== null && $currency !== '' && $currency !== strtoupper(trim($homeCurrency))) {
+            $out += self::EXCEPTIONS_FOREIGN_CURRENCY;
+        }
         if (($proposal['vat']['mode'] ?? null) === 'none') {
             $out += self::EXCEPTIONS_NO_VAT;
         }
@@ -129,7 +140,7 @@ final class ApplyFidelityCheck implements VerifyCheck
                 $differences[] = "{$doc->messageId}: doklad #{$doc->docId} nejde exportovat";
                 continue;
             }
-            $exceptions = self::exceptionsFor($doc->canonical, $vatAgenda);
+            $exceptions = self::exceptionsFor($doc->canonical, $vatAgenda, $ctx->homeCurrency);
             $used += $exceptions;
             $actual = $adapter->build($records[0]->data, (array) $doc->canonical, (int) $doc->docId);
             $ignore = array_keys($exceptions + self::STRUCTURAL);

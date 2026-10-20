@@ -13,8 +13,6 @@ use Dibi\Connection;
  */
 final class SetDocuments
 {
-    public const SKIP_FOREIGN_CURRENCY = 'kurz — #121';
-
     /**
      * @param list<string> $messageIds `messageId` zpráv sady
      * @return list<SetDocument>
@@ -68,29 +66,6 @@ final class SetDocuments
                 docState: $doc !== null ? (int) $doc['docState'] : null,
                 docNumber: $doc !== null && $doc['doc_number'] !== null ? (string) $doc['doc_number'] : null,
             );
-        }
-        return $out;
-    }
-
-    /**
-     * Zprávy, které se nepoužijí: návrh v jiné než domácí měně bez kurzu
-     * (#103 D30, do #121). Doklad, který už existuje, přeskočený není.
-     *
-     * @param list<SetDocument> $documents
-     * @return array<string, string> messageId → důvod
-     */
-    public static function skippedForCurrency(array $documents, string $homeCurrency): array
-    {
-        $home = strtoupper(trim($homeCurrency));
-        $out = [];
-        foreach ($documents as $doc) {
-            if ($doc->isApplied()) {
-                continue;
-            }
-            $currency = $doc->currency();
-            if ($currency !== null && $currency !== $home) {
-                $out[$doc->messageId] = self::SKIP_FOREIGN_CURRENCY;
-            }
         }
         return $out;
     }

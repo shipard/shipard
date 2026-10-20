@@ -13,7 +13,9 @@ use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyContext;
  * Kontrola 4 — náklady dokladů (tasks/testing-phase3.md, #97): per použitý
  * doklad součet MD na účtech třídy 5 z deníku bez řádků zaokrouhlení
  * ≟ `expected/costs.json` (plátce základ, neplátce vč. DPH; spočteno
- * generátorem nezávisle na Shipardu).
+ * generátorem nezávisle na Shipardu, u dokladu v cizí měně přepočteno do
+ * domácí měny kurzem generátoru — #103 D73; `currency` záznamu je měna
+ * dokladu, jen informativní).
  *
  * Zaokrouhlení se pozná podle původu řádku, ne podle účtu (#122 D5): řádek
  * vzniká z hlavičkového kroku předpisu kategorie `rounding.cost` /
@@ -48,7 +50,6 @@ final class CostsCheck implements VerifyCheck
         if (!$ctx->wiring->hasTable('economy_accounting_journal')) {
             return CheckResult::fromDifferences(self::ID, $this->label(), ['zdroj dat nemá účetní deník (economy.accounting)']);
         }
-        $home = strtoupper($ctx->homeCurrency);
         $costs = $ctx->expectations->costsByMessage();
         $differences = [];
         $notes = [];
@@ -57,11 +58,6 @@ final class CostsCheck implements VerifyCheck
             $record = $costs[$doc->messageId] ?? null;
             if ($record === null) {
                 $differences[] = "{$doc->messageId} ({$doc->docNumber}): bez očekávaného nákladu v costs.json";
-                continue;
-            }
-            $currency = strtoupper((string) ($record['currency'] ?? ''));
-            if ($currency !== $home) {
-                $notes[] = "{$doc->messageId}: náklad v {$currency} — porovnání čeká na kurzy (#121)";
                 continue;
             }
             $expected = (float) ($record['cost'] ?? 0);

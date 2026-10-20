@@ -10,19 +10,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Report `dataset-verify`: sada, apply, výsledky kontrol, souhrn; text pro
  * člověka a `--json` se stejným obsahem. Exit 0 = vše v pořádku (přeskočené
- * nevadí), 1 = rozdíl nebo selhání apply.
+ * kontroly nevadí), 1 = rozdíl nebo selhání apply.
  */
 final class VerifyReport
 {
-    /**
-     * @param array<string, string> $skipped messageId → důvod
-     * @param list<CheckResult>     $results
-     */
+    /** @param list<CheckResult> $results */
     public function __construct(
         public readonly DatasetManifest $manifest,
         public readonly string $dataSourceId,
         public readonly ApplyReport $apply,
-        public readonly array $skipped,
         public readonly array $results,
     ) {}
 
@@ -59,7 +55,7 @@ final class VerifyReport
                 'country' => $this->manifest->country,
             ],
             'dataSource' => $this->dataSourceId,
-            'apply'      => $this->apply->toArray() + ['skipped' => (object) $this->skipped],
+            'apply'      => $this->apply->toArray(),
             'checks'     => array_map(static fn (CheckResult $r): array => $r->toArray(), $this->results),
             'summary'    => $this->summary(),
             'exitCode'   => $this->exitCode(),
@@ -77,16 +73,12 @@ final class VerifyReport
         ));
         if ($this->apply->ran) {
             $output->writeln(sprintf(
-                'Apply: použito %d, přeskočeno %d, selhalo %d',
+                'Apply: použito %d, selhalo %d',
                 count($this->apply->applied),
-                count($this->skipped),
                 count($this->apply->failed),
             ));
         } else {
-            $output->writeln(sprintf('Apply: vynecháno (--no-apply); přeskočeno %d', count($this->skipped)));
-        }
-        foreach ($this->skipped as $messageId => $reason) {
-            $output->writeln("   přeskočeno {$messageId}: {$reason}");
+            $output->writeln('Apply: vynecháno (--no-apply)');
         }
         foreach ($this->apply->failed as $failure) {
             $output->writeln("   <error>selhalo {$failure['messageId']}: {$failure['code']} {$failure['message']}</error>");

@@ -9,13 +9,13 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 /**
  * Soubory výsledků evaluace (D36): `tests/eval/<název sady>/<YYYY-MM-DD>-<varianta>[-<n>].json`
  * mimo generovanou sadu, formát `shpd.eval.run.v1`. Hash obsahu sady
- * (`mail/` včetně příloh a `expected/`) váže běhy na stejná data — jiný
- * hash = jiná sada (porovnání běhů ho odmítne).
+ * (`mail/` včetně příloh, `expected/` a `exchangeRates/` — #103 D81) váže
+ * běhy na stejná data — jiný hash = jiná sada (porovnání běhů ho odmítne).
  */
 final class EvalRunStore
 {
     public const string FORMAT = 'shpd.eval.run.v1';
-    private const array HASHED_DIRS = ['mail', 'expected'];
+    private const array HASHED_DIRS = ['mail', 'expected', 'exchangeRates'];
 
     public function __construct(private readonly string $dir) {}
 

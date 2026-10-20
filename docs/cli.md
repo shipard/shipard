@@ -2256,13 +2256,16 @@ shpd-ds dataset-verify /cesta/k/repu/tests/datasets/cz/vat-payer --no-apply --wr
 Ověření zaúčtování a DPH nad zdrojem dat naseedovaným datovou sadou
 s očekáváními (`expected/`, #103 F3, `docs/test-corpus.md` § 17): použije
 všechny otevřené návrhy zpráv sady jako doklady **V pořádku** (jádro
-Použít, `MessageProposalApplier`; doklady v cizí měně se do #121 přeskočí)
-a spustí pět kontrol nad všemi doklady sady, i z dřívějšího běhu — druhý
-běh dá stejný výsledek: věrnost apply (export dokladu ≟ návrh na polích
-papírové projekce), položky a účty (Použít nezaložilo položku, řádky mají
-položku s účtem a štítkem, deník bez chyb), přiznání DPH a kontrolní
-hlášení proti nezávislému očekávání per období, náklady dokladů (deník
-třída 5 bez zaokrouhlení) a hlavní kniha proti schválenému snímku.
+Použít, `MessageProposalApplier`; doklad v cizí měně dostane kurz
+z lístků sady — sekce `exchangeRates/`, #121 D6) a spustí šest kontrol
+nad všemi doklady sady, i z dřívějšího běhu — druhý běh dá stejný
+výsledek: věrnost apply (export dokladu ≟ návrh na polích papírové
+projekce), položky a účty (Použít nezaložilo položku, řádky mají položku
+s účtem a štítkem, deník bez chyb), přiznání DPH a kontrolní hlášení
+proti nezávislému očekávání per období, náklady dokladů (deník třída 5
+bez zaokrouhlení, v domácí měně), kurzy dokladů v cizí měně (účetní datum
+a kurz ≟ `expected/exchange-rates.json`, kurz resolveru k témuž datu
+≟ totéž; #103 D79) a hlavní kniha proti schválenému snímku.
 
 **Preflight** (nic se nemění, exit 2): server mimo `production`, země sady
 = země zdroje dat a schémata sady (`DatasetPreflight`), každá zpráva ve

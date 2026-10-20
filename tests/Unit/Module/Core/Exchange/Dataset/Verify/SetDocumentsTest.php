@@ -38,16 +38,4 @@ class SetDocumentsTest extends TestCase
         $this->assertFalse($noProposal->hasOpenProposal());
         $this->assertNull($noProposal->currency());
     }
-
-    public function testSkippedForCurrency(): void
-    {
-        $docs = [
-            self::doc('CZ', 'CZK'),
-            self::doc('EUR', 'EUR'),
-            self::doc('USD-APPLIED', 'USD', 7),
-            self::doc('NONE', null),
-        ];
-        $this->assertSame(['EUR' => SetDocuments::SKIP_FOREIGN_CURRENCY], SetDocuments::skippedForCurrency($docs, 'czk'));
-        $this->assertSame(['CZ' => SetDocuments::SKIP_FOREIGN_CURRENCY], SetDocuments::skippedForCurrency($docs, 'EUR'));
-    }
 }

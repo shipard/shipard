@@ -12,8 +12,10 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 /**
  * Očekávání sady z `expected/` (docs/test-corpus.md § 17): papírová
  * projekce, záznamy DPH a nákladů per zpráva (generátor korpusu), volitelný
- * schválený snímek deníku. Chybějící projekce, `vat.json` nebo
- * `costs.json` = sada bez očekávání — vstupní chyba, ne přeskočená kontrola.
+ * schválený snímek deníku a volitelné kurzy dokladů v cizí měně
+ * (`exchange-rates.json`, #103 D79 — sada před ním ho nemá). Chybějící
+ * projekce, `vat.json` nebo `costs.json` = sada bez očekávání — vstupní
+ * chyba, ne přeskočená kontrola.
  */
 final class VerifyExpectations
 {
@@ -21,17 +23,20 @@ final class VerifyExpectations
     public const VAT = 'expected/vat.json';
     public const COSTS = 'expected/costs.json';
     public const LEDGER = 'expected/general-ledger.json';
+    public const EXCHANGE_RATES = 'expected/exchange-rates.json';
 
     /**
-     * @param list<array<string, mixed>> $vat
-     * @param list<array<string, mixed>> $costs
-     * @param array<string, mixed>|null  $ledgerSnapshot
+     * @param list<array<string, mixed>>      $vat
+     * @param list<array<string, mixed>>      $costs
+     * @param array<string, mixed>|null       $ledgerSnapshot
+     * @param list<array<string, mixed>>|null $exchangeRates null = sada bez souboru
      */
     public function __construct(
         public readonly Projection $projection,
         public readonly array $vat,
         public readonly array $costs,
         public readonly ?array $ledgerSnapshot,
+        public readonly ?array $exchangeRates = null,
     ) {}
 
     public static function load(DatasetReader $reader): self
@@ -51,6 +56,7 @@ final class VerifyExpectations
             self::records($reader, self::VAT),
             self::records($reader, self::COSTS),
             $reader->fileExists(self::LEDGER) ? $reader->readJsonc(self::LEDGER) : null,
+            $reader->fileExists(self::EXCHANGE_RATES) ? self::records($reader, self::EXCHANGE_RATES) : null,
         );
     }
 
@@ -80,5 +86,11 @@ final class VerifyExpectations
     public function costsByMessage(): array
     {
         return array_column($this->costs, null, 'messageId');
+    }
+
+    /** @return array<string, array<string, mixed>>|null messageId → záznam; null = sada bez exchange-rates.json */
+    public function exchangeRatesByMessage(): ?array
+    {
+        return $this->exchangeRates === null ? null : array_column($this->exchangeRates, null, 'messageId');
     }
 }

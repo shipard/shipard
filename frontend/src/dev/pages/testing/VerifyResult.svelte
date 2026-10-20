@@ -27,11 +27,6 @@
       <dd>
         {#if apply.ran}
           {t('testing.verify.applyLine', { applied: apply.applied?.length ?? 0, failed: apply.failed?.length ?? 0, before: apply.itemsBefore, after: apply.itemsAfter })}
-          {#if apply.skipped && Object.keys(apply.skipped).length}
-            <ul class="dev-blockers">
-              {#each Object.entries(apply.skipped) as [id, reason] (id)}<li><code>{id}</code>: {reason}</li>{/each}
-            </ul>
-          {/if}
           {#if apply.failed?.length}
             <ul class="dev-blockers">
               {#each apply.failed as f (f.messageId)}<li><code>{f.messageId}</code>: {f.code} — {f.message}</li>{/each}

@@ -74,7 +74,8 @@ shpd-ds dataset-verify … --write-ledger-snapshot=deník.json   # zapsat aktuá
 `targetDocState` 40, `autoCreateMode` `liberal`, `createMissingEntities`
 `true`, `rejectOnIssues` `["error"]`. Zprávy v pořadí `receivedAt`
 (`0V01` založí dodavatele, `0V02` ho najde). Doklad v cizí měně se
-přeskočí s důvodem „kurz — #121“ (D30). Selhání apply = výsledek kontroly,
+přeskočí s důvodem „kurz — #121“ (D30; zrušeno 2026-10-20 — #103 D74,
+`tasks/testing-rates-isdoc.md`). Selhání apply = výsledek kontroly,
 ne pád příkazu.
 
 **Kontroly** běží nad všemi doklady ze sady (i z dřívějšího běhu), takže

@@ -8,21 +8,17 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 
 /**
  * Vstup kontrol: wiring zdroje dat, sada a její očekávání, zprávy sady
- * s doklady (po apply), přeskočené zprávy, výsledek apply, domácí měna
- * a cíl zápisu snímku deníku (`--write-ledger-snapshot`).
+ * s doklady (po apply), výsledek apply, domácí měna a cíl zápisu snímku
+ * deníku (`--write-ledger-snapshot`).
  */
 final class VerifyContext
 {
-    /**
-     * @param list<SetDocument>     $documents
-     * @param array<string, string> $skipped messageId → důvod
-     */
+    /** @param list<SetDocument> $documents */
     public function __construct(
         public readonly VerifyWiring $wiring,
         public readonly DatasetReader $reader,
         public readonly VerifyExpectations $expectations,
         public readonly array $documents,
-        public readonly array $skipped,
         public readonly ApplyReport $apply,
         public readonly string $homeCurrency,
         public readonly ?string $ledgerSnapshotOut = null,

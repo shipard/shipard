@@ -44,8 +44,14 @@ class ApplyFidelityCheckTest extends TestCase
         $this->assertContains('totals.totalVat', array_keys($nonPayer));
         $this->assertNotContains('dates.taxPointDate', array_keys($nonPayer));
         $this->assertNotContains('totals.totalAmount', array_keys($nonPayer), 'celková částka se u neplátce porovnává');
+        // Cizí měna (#103 D79): výjimka jen se známou domácí měnou a jinou měnou dokladu.
+        $foreign = ApplyFidelityCheck::exceptionsFor(['currency' => 'EUR', 'vat' => ['mode' => 'fromBase']], true, 'CZK');
+        $this->assertSame([...$always, 'exchangeRate'], array_keys($foreign));
+        $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor(['currency' => 'czk', 'vat' => ['mode' => 'fromBase']], true, 'CZK')));
+        $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor(['currency' => 'EUR', 'vat' => ['mode' => 'fromBase']], true)), 'bez domácí měny se kurz porovnává');
         foreach (ApplyFidelityCheck::EXCEPTIONS + ApplyFidelityCheck::EXCEPTIONS_NO_VAT + ApplyFidelityCheck::EXCEPTIONS_NON_PAYER
-            + ApplyFidelityCheck::EXCEPTIONS_NO_DUE_DATE + ApplyFidelityCheck::EXCEPTIONS_NO_PAYMENT_REFERENCE as $path => $reason) {
+            + ApplyFidelityCheck::EXCEPTIONS_NO_DUE_DATE + ApplyFidelityCheck::EXCEPTIONS_NO_PAYMENT_REFERENCE
+            + ApplyFidelityCheck::EXCEPTIONS_FOREIGN_CURRENCY as $path => $reason) {
             $this->assertNotSame('', trim($reason), "{$path}: výjimka bez důvodu");
         }
     }

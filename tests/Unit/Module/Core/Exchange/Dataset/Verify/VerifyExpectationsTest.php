@@ -54,6 +54,25 @@ class VerifyExpectationsTest extends TestCase
         $e = VerifyExpectations::load(DatasetReader::open($this->tmp));
         $this->assertSame([], $e->vat);
         $this->assertSame('economy.accounting.generalLedger', $e->ledgerSnapshot['reportId'] ?? null);
+        $this->assertNull($e->exchangeRates, 'sada bez exchange-rates.json (před #103 D79)');
+        $this->assertNull($e->exchangeRatesByMessage());
+    }
+
+    /** `exchange-rates.json` je volitelný (#103 D79): záznamy per zpráva jako u DPH a nákladů. */
+    public function testLoadsOptionalExchangeRates(): void
+    {
+        $w = DatasetWriter::create($this->tmp);
+        $w->copyFile(dirname(__DIR__, 7) . '/tests/corpus/projection.jsonc', 'expected/projection.jsonc');
+        $w->writeRaw('expected/vat.json', "[]\n");
+        $w->writeRaw('expected/costs.json', "[]\n");
+        $w->writeRaw('expected/exchange-rates.json', "[{\"messageId\": \"M\", \"currency\": \"EUR\", \"rateDate\": \"2026-08-31\", \"listType\": \"cz.cnb.daily\", \"validFrom\": \"2026-08-31\", \"rate\": 24.325}]\n");
+        $w->writeManifest(new DatasetManifest('x', 'X', null, 'fixed', '2026-10-14T00:00:00Z', []));
+        $e = VerifyExpectations::load(DatasetReader::open($this->tmp));
+        $this->assertSame(24.325, $e->exchangeRatesByMessage()['M']['rate'] ?? null);
+
+        $w->writeRaw('expected/exchange-rates.json', "[{\"currency\": \"EUR\"}]\n");
+        $this->expectException(DatasetException::class);
+        VerifyExpectations::load(DatasetReader::open($this->tmp));
     }
 
     public function testMissingFilesAreAnError(): void

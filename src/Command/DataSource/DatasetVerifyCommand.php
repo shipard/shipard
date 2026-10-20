@@ -34,6 +34,8 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
 use Shipard\Module\Economy\Accounting\Dataset\CostsCheck;
+use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRateCheck;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Economy\Accounting\Dataset\LedgerSnapshotCheck;
 use Shipard\Module\Economy\Items\Dataset\ItemsAndAccountsCheck;
 use Shipard\Module\Economy\Vat\Dataset\VatReportingCheck;
@@ -179,11 +181,8 @@ class DatasetVerifyCommand extends Command
         return (int) $w->db->fetchSingle('SELECT COUNT(*) FROM [economy_items] WHERE [docState] <> 90');
     }
 
-    /**
-     * @param list<\Shipard\Module\Core\Exchange\Dataset\Verify\SetDocument> $documents
-     * @param array<string, string> $skipped
-     */
-    protected function applyProposals(VerifyWiring $w, array $documents, array $skipped): ApplyReport
+    /** @param list<\Shipard\Module\Core\Exchange\Dataset\Verify\SetDocument> $documents */
+    protected function applyProposals(VerifyWiring $w, array $documents): ApplyReport
     {
         if ($w->config === null || $w->registry === null) {
             throw new \RuntimeException('Wiring bez konfigurace nebo registru Document tříd.');
@@ -191,7 +190,7 @@ class DatasetVerifyCommand extends Command
         $applier = DocumentApplier::create($w->db, $w->config, $w->dsConfig, $w->registry, $w->tables, $w->dispatcher);
         $enricher = RowEnrichmentPipeline::create($w->dsConnection, $w->config, $w->dsConfig);
         $proposals = new MessageProposalApplier($w->dsConnection, $applier, $enricher, $w->config);
-        return (new ProposalApplyStep($proposals))->run($documents, $skipped);
+        return (new ProposalApplyStep($proposals))->run($documents);
     }
 
     protected function createReportRunner(VerifyWiring $w): ?ReportRunner
@@ -225,9 +224,13 @@ class DatasetVerifyCommand extends Command
         }
         if ($w->hasTable('economy_accounting_journal')) {
             $checks[] = new CostsCheck();
-            if ($runner !== null) {
-                $checks[] = new LedgerSnapshotCheck($runner);
-            }
+        }
+        // Kurzy dokladů v cizí měně (#103 D79) — resolver chce kompilovanou konfiguraci (typy lístků).
+        if ($w->hasTable(ExchangeRateResolver::TABLE_LISTS) && $w->config !== null) {
+            $checks[] = new ExchangeRateCheck(ExchangeRateResolver::create($w->db, $w->config, $w->dsConfig));
+        }
+        if ($w->hasTable('economy_accounting_journal') && $runner !== null) {
+            $checks[] = new LedgerSnapshotCheck($runner);
         }
         return $checks;
     }
@@ -282,14 +285,12 @@ class DatasetVerifyCommand extends Command
 
         $home = $this->homeCurrency($wiring);
         $documents = $this->loadDocuments($wiring, $setMessageIds);
-        $skipped = SetDocuments::skippedForCurrency($documents, $home);
         $apply = ApplyReport::notRun();
         if (!(bool) $input->getOption('no-apply')) {
             $before = $this->countItems($wiring);
-            $apply = $this->applyProposals($wiring, $documents, $skipped);
+            $apply = $this->applyProposals($wiring, $documents);
             $apply = $apply->withItemCounts($before, $this->countItems($wiring));
             $documents = $this->loadDocuments($wiring, $setMessageIds);
-            $skipped = SetDocuments::skippedForCurrency($documents, $home);
         }
 
         $snapshotOut = $input->getOption('write-ledger-snapshot');
@@ -298,7 +299,6 @@ class DatasetVerifyCommand extends Command
             $reader,
             $expectations,
             $documents,
-            $skipped,
             $apply,
             $home,
             is_string($snapshotOut) && $snapshotOut !== '' ? $snapshotOut : null,
@@ -313,7 +313,7 @@ class DatasetVerifyCommand extends Command
             }
         }
 
-        $report = new VerifyReport($reader->getManifest(), $dsConfig->getId(), $apply, $skipped, $results);
+        $report = new VerifyReport($reader->getManifest(), $dsConfig->getId(), $apply, $results);
         if ($json) {
             $output->writeln((string) json_encode($report->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_PRESERVE_ZERO_FRACTION));
         } else {

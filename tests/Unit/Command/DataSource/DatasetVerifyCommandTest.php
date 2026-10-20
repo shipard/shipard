@@ -55,8 +55,8 @@ class TestableDatasetVerifyCommand extends DatasetVerifyCommand
     public array $documents = [];
     public ?ApplyReport $applyResult = null;
     public int $applyCalls = 0;
-    /** @var array<string, string> */
-    public array $skippedAtApply = [];
+    /** @var list<string> messageId zpráv předaných apply */
+    public array $documentsAtApply = [];
     /** @var list<VerifyCheck> */
     public array $checks = [];
     public ?VerifyContext $ctx = null;
@@ -103,10 +103,10 @@ class TestableDatasetVerifyCommand extends DatasetVerifyCommand
         return array_shift($this->itemCounts);
     }
 
-    protected function applyProposals(VerifyWiring $w, array $documents, array $skipped): ApplyReport
+    protected function applyProposals(VerifyWiring $w, array $documents): ApplyReport
     {
         $this->applyCalls++;
-        $this->skippedAtApply = $skipped;
+        $this->documentsAtApply = array_map(static fn (SetDocument $d): string => $d->messageId, $documents);
         return $this->applyResult ?? new ApplyReport(true, ['MSG-1']);
     }
 
@@ -239,13 +239,13 @@ class DatasetVerifyCommandTest extends TestCase
 
         $this->assertSame(0, $tester->getStatusCode(), $tester->getDisplay());
         $this->assertSame(1, $command->applyCalls);
-        $this->assertSame(['MSG-EUR' => 'kurz — #121'], $command->skippedAtApply, 'cizí měna se přeskočí, hotový doklad ne');
+        $this->assertSame(['MSG-20260601-0001', 'MSG-EUR', 'MSG-DONE'], $command->documentsAtApply, 'apply dostane všechny zprávy sady, i v cizí měně (#103 D74)');
         $report = json_decode($tester->getDisplay(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame(['name' => 'cz-test', 'profile' => 'vat-payer', 'country' => 'cz'], $report['dataset']);
         $this->assertSame('test-ds-id', $report['dataSource']);
         $this->assertTrue($report['apply']['ran']);
         $this->assertSame(['MSG-1'], $report['apply']['applied']);
-        $this->assertSame(['MSG-EUR' => 'kurz — #121'], $report['apply']['skipped']);
+        $this->assertArrayNotHasKey('skipped', $report['apply'], 'přeskakování cizí měny skončilo (D74)');
         $this->assertSame(3, $report['apply']['itemsBefore']);
         $this->assertSame(['ok', 'skipped'], array_column($report['checks'], 'status'));
         $this->assertSame('nic k ověření', $report['checks'][1]['reason']);

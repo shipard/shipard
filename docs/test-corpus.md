@@ -630,8 +630,10 @@ odpovídá návrhu, Použít nezaložilo položku, přiznání DPH a kontrolní
 hlášení i náklady odpovídají očekávání spočtenému nezávisle na Shipardu
 a deník odpovídá schválenému snímku. Kontroly jedou nad všemi doklady
 sady, i z dřívějšího běhu — druhý běh (i `--no-apply`) dá totéž.
-Doklady v cizí měně se do #121 přeskočí (D30; 6 u plátce, 2 u neplátce
-i spolku) a do očekávání DPH a nákladů nejdou.
+Doklady v cizí měně (6 u plátce, 2 u neplátce i spolku) dostanou při
+apply kurz z lístků sady (`exchangeRates/`, #121 D6) a jejich očekávání
+DPH i nákladů jsou v domácí měně (§ 16, #103 D73); přeskakování D30
+skončilo 2026-10-20 (D74).
 
 ### Očekávání v sadě (`expected/`)
 
@@ -644,11 +646,17 @@ stejných hodnot jako očekávaný canonical (D5), v `Decimal`:
   `currency`, `period` (`YYYY-MM` podle DUZP; `null` u dokladu bez DPH),
   `return` `{řádek: {base, tax}}` a `controlStatement` `{section, supplierVatId,
   documentNumber, taxPointDate, rates {sazba: {base, tax}}, reverseChargeCode}`
-  (`null` bez oddílu). Doklad v cizí měně má záznam v měně dokladu —
-  mapování je úplné, kurz doplní až #121.
+  (`null` bez oddílu). Částky jsou v **domácí měně**: doklad v cizí měně
+  přepočítá generátor kurzem k účetnímu datu (D73, D78 — § 7), `currency`
+  zůstává měna dokladu.
 - `costs.json` — `{messageId, currency, cost}`: náklad = Σ MD třídy 5 bez
   zaokrouhlení; plátce základ (doklad bez DPH celková částka), neplátce
-  a spolek základ + DPH (#97).
+  a spolek základ + DPH (#97); v domácí měně (`currency` = měna dokladu).
+- `exchange-rates.json` — jen doklady v cizí měně (D79): `{messageId,
+  currency, rateDate, listType, validFrom, rate}` — datum kurzu (DUZP, bez
+  něj datum vystavení), lístek podle pravidla platnosti a kurz za jednotku
+  z lístků korpusu; `[]` bez cizí měny. Čte kontrola 5; sada bez souboru
+  ji přeskočí.
 - `general-ledger.json` — schválený snímek hlavní knihy, kopie
   `profiles/<profil>/approved/general-ledger.json` (jen když existuje).
 
@@ -707,7 +715,16 @@ varování nikdy), neposílají se. Selhání apply jedné zprávy je výsledek
    předpisu `rounding.*` dává řádek bez operace s textem „Zaokrouhlení
    dokladu“ (`CostsCheck::ROUNDING_TEXT`, strážce `CostsCheckTest`) — na
    548 / 549 jsou i pojištění a bankovní poplatky, které do nákladu patří.
-5. **Deník** (D29, `LedgerSnapshotCheck`): `economy.accounting.generalLedger`
+   Doklad v cizí měně: náklad v domácí měně kurzem generátoru (`currency`
+   záznamu je měna dokladu, jen informativní).
+5. **Kurzy** (D79, `ExchangeRateCheck`, economy.exchangeRates): per
+   použitý doklad v cizí měně uložené účetní datum a kurz ≟
+   `expected/exchange-rates.json` (DUZP, bez něj datum vystavení — D78;
+   lístek podle pravidla platnosti, spočteno generátorem) a kurz, který
+   k témuž datu dohledá `ExchangeRateResolver` nad lístky zdroje dat,
+   ≟ totéž včetně lístku (`listType`, `validFrom`). Sada bez souboru
+   = přeskočeno.
+6. **Deník** (D29, `LedgerSnapshotCheck`): `economy.accounting.generalLedger`
    analyticky za nejmenší povolenou granularitu pokrývající měsíce
    použitých dokladů (měsíc → čtvrtletí → pololetí → rok) ≟ snímek přes
    `ReportDiff`; chybějící snímek = přeskočeno.
@@ -725,6 +742,7 @@ z běhu se sepíší a člověk rozhodne.
 | `dates.taxPointDate` | doklad bez DPH (`vat.mode` none) | `DocDocument::applyDateDefaults` doplní datum vystavení |
 | `dates.dueDate` | návrh bez splatnosti (účtenka) | tatáž metoda doplní vystavení + lhůtu |
 | `payment.paymentReference` | návrh bez VS (účtenka) | `applyPaymentReferenceDefault` doplní pořadové číslo řady |
+| `exchangeRate` | doklad v cizí měně (schváleno 2026-10-20, D79) | papír kurz nenese, applier ho doplní z lístku k účetnímu datu (#121 D6); hodnotu i datum hlídá kontrola 5 |
 | `rows[].unitPrice`, `rows[].totalPrice`, `rows[].priceCalcMode`, `rows[].discountPct`, `rows[].vat`, `vat.mode`, `vatRecap`, `totals.totalBase`, `totals.totalVat` | zdroj dat bez agendy DPH | neplátce ukládá ceny s DPH, bez kódů a rekapitulace (#97); celková částka, data, strany a texty se porovnávají dál |
 
 Podstrom `_resolve` export nenese — štítky řádků hlídá kontrola 2.
@@ -741,7 +759,7 @@ rekapitulace, jen při nulové dani), `vat.reverseCharge` z kódů.
 Postup: `dataset-verify … --no-apply --write-ledger-snapshot=<soubor>`
 vypíše obraty po účtech a skončí přeskočením; člověk je odsouhlasí,
 soubor commitne do `tests/corpus/cz/profiles/<profil>/approved/general-ledger.json`,
-přestaví sady (`build.py`) a další běh dá kontrolu 5 `ok`. Změna
+přestaví sady (`build.py`) a další běh dá kontrolu 6 `ok`. Změna
 účtování = nový snímek se schválením, nikdy úprava snímku podle Shipardu.
 
 **Stav schválení (2026-10-15):** snímky všech tří profilů (`vat-payer`,
