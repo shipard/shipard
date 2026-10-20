@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 382 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 352.
+Celkem 383 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 352.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `demo-dataset-phase2a-bank.md` | naplánováno | zadání podle #131 D16–D18, D21, D22, čeká na implementaci |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -473,6 +474,7 @@ zaúčtování a evaluace AI.
 | `testing-phase6c.md` | F6 | Datová sada při zakládání zdroje dat a akce „Nahrát datovou sadu“ v seznamu, heslo admina přes stdin, zrušení starých `seed-*` (#103 D64–D67) |
 | `ds-delete.md` | M5 | `shpd-server ds-delete` pro volné zdroje dat mimo produkci, mazání z dashboardu, přehled zdrojů dat bez sloupce Databáze a s kebab menu (#103 D68–D71) |
 | `demo-dataset-phase1.md` | — | Demo sada „IT servis“: generátor fiktivních sad z příběhu firmy (`demo/datasets/build.py`), kotevní datum, vydané a přijaté faktury, pokladna, mzdy, spisovna (#131 D1–D15) |
+| `demo-dataset-phase2a-bank.md` | — | Demo sada „IT servis“, fáze 2a: sekce bankovních výpisů v sadě (exportér, seeder, účet kódem, partner a párování dopočítá aplikace), platby v příběhu, vyrovnání mezd a odvodů interním dokladem, eurový účet (#131 D16–D18, D21, D22) |
 
 ## Drobné
 
