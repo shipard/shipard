@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocSchemaValidator;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 
@@ -270,6 +271,7 @@ final class CorpusExpectedTest extends TestCase
                 $problems[] = "{$country}/data/{$stem}.jsonc: název neodpovídá NNNN-<slug>";
             }
             $doc = JsoncParser::parseFile($file);
+            $form = $doc['form'] ?? null;
             $skip = $doc['skipProfiles'] ?? [];
             foreach ($skip as $profile => $reason) {
                 if (!in_array($profile, self::PROFILES, true)) {
@@ -294,6 +296,17 @@ final class CorpusExpectedTest extends TestCase
                 } elseif (!str_starts_with((string) file_get_contents($pdf, false, null, 0, 5), '%PDF-')) {
                     $problems[] = "{$country}/{$profile}/{$stem}: out/*.pdf není PDF";
                 }
+                // Podoba pdfIsdoc má .isdoc (#119 krok 5), podoba pdf nikdy.
+                $isdoc = "{$countryDir}/out/{$profile}/{$stem}.isdoc";
+                if ($form === 'pdfIsdoc') {
+                    if (!is_file($isdoc)) {
+                        $problems[] = "{$country}/{$profile}/{$stem}: chybí ISDOC (podoba pdfIsdoc)";
+                    } elseif (!str_starts_with((string) file_get_contents($isdoc, false, null, 0, 5), '<?xml')) {
+                        $problems[] = "{$country}/{$profile}/{$stem}: out/*.isdoc není XML";
+                    }
+                } elseif (is_file($isdoc)) {
+                    $problems[] = "{$country}/{$profile}/{$stem}: ISDOC u podoby {$form}";
+                }
             }
         }
 
@@ -309,7 +322,7 @@ final class CorpusExpectedTest extends TestCase
             }
         }
 
-        foreach (['expected' => '*.json', 'out' => '*.pdf'] as $dir => $pattern) {
+        foreach ([['expected', '*.json'], ['out', '*.pdf'], ['out', '*.isdoc']] as [$dir, $pattern]) {
             foreach (glob(self::corpusDir() . "/*/{$dir}/*/{$pattern}") ?: [] as $file) {
                 $key = basename(dirname($file, 3)) . '/' . basename(dirname($file)) . '/' . pathinfo($file, PATHINFO_FILENAME);
                 if (!isset($cells[$key])) {
@@ -388,6 +401,23 @@ final class CorpusExpectedTest extends TestCase
     }
 
     // ── Per soubor ──────────────────────────────────────────────────────────
+
+    /** @return iterable<string, array{string}> */
+    public static function isdocFiles(): iterable
+    {
+        foreach (glob(self::corpusDir() . '/*/out/*/*.isdoc') ?: [] as $file) {
+            $key = basename(dirname($file, 3)) . '/' . basename(dirname($file)) . '/' . basename($file, '.isdoc');
+            yield $key => [$file];
+        }
+    }
+
+    /** Každý .isdoc korpusu projde XSD 6.0.1 i 6.0.2 (#119 D6). */
+    #[DataProvider('isdocFiles')]
+    public function testIsdocFilePassesBothSchemas(string $file): void
+    {
+        $errors = (new IsdocSchemaValidator())->validateAll((string) file_get_contents($file));
+        $this->assertSame([], $errors, basename($file));
+    }
 
     #[DataProvider('expectedFiles')]
     public function testExpectedFileIsValidCanonical(string $country, string $profile, string $stem): void

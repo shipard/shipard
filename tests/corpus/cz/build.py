@@ -7,6 +7,12 @@ očekávaný výsledek expected/<profil>/NNNN-<slug>.json (vždy — je
 deterministický) a vyrenderuje out/<profil>/NNNN-<slug>.pdf přes Gotenberg
 jen tehdy, když PDF chybí, hash HTML + voleb papíru se liší od
 build-state.json, nebo s --force (PDF z Chromia není bajtově deterministické).
+U buňky podoby pdfIsdoc navíc vždy vyrobí out/<profil>/NNNN-<slug>.isdoc
+přes `php bin/shpd-server einvoice-render` (#119 krok 5): vstup je
+očekávaný výsledek + rows[].computed z compute(), UUID z cesty buňky,
+takže je výstup deterministický — výpis říká „ISDOC zapsán / beze změny"
+podle obsahu, build-state.json se ho netýká. Buňce podoby pdf se .isdoc
+smaže; plný běh smaže i sirotky. Vyžaduje `composer install` (vendor/).
 
     python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--no-datasets]
 
@@ -22,8 +28,12 @@ Env: GOTENBERG_URL (default http://10.199.6.210:3000). Exit != 0 = chyba.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
+import os
+import subprocess
 import sys
+import tempfile
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -52,6 +62,9 @@ from invoicegen.render import (  # noqa: E402
 )
 
 STATE_FILE = BASE_DIR / "build-state.json"
+SHPD_SERVER = REPO_ROOT / "bin" / "shpd-server"
+VENDOR_AUTOLOAD = REPO_ROOT / "vendor" / "autoload.php"
+COUNTRY = BASE_DIR.name
 PROJECTION_FILE = CORPUS_DIR / "projection.jsonc"
 VAT_REPORTING_FILE = BASE_DIR / "vat-reporting.jsonc"
 TAXONOMY_FILE = REPO_ROOT / "modules" / "core" / "exchange" / "config" / "contentTags.jsonc"
@@ -292,6 +305,45 @@ def verify(identities: dict) -> int:
     return 0
 
 
+class IsdocBuildError(RuntimeError):
+    pass
+
+
+def isdoc_payload(expected: dict, computed: dict) -> dict:
+    """Canonical pro e-fakturu (#119 D2): očekávaný výsledek + rows[].computed."""
+    payload = copy.deepcopy(expected)
+    assert len(payload["rows"]) == len(computed["rows"]), "řádky očekávání × výpočtu"
+    for row, calc in zip(payload["rows"], computed["rows"]):
+        row["computed"] = {"vatBase": calc["vatBase"], "vatAmount": calc["vatAmount"], "vatTotal": calc["vatTotal"]}
+    return payload
+
+
+def write_isdoc(cell: Cell, expected: dict, computed: dict, path: Path) -> str:
+    """Vyrobí .isdoc buňky přes shpd-server einvoice-render; vrací stav podle obsahu."""
+    if not VENDOR_AUTOLOAD.exists():
+        raise IsdocBuildError(f"chybí {VENDOR_AUTOLOAD.relative_to(REPO_ROOT)} — spusť `composer install`")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    before = path.read_bytes() if path.exists() else None
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, prefix=f".{cell.stem}.",
+                                     suffix=".json", delete=False) as tmp:
+        tmp.write(dumps_expected(isdoc_payload(expected, computed)))
+        payload_path = Path(tmp.name)
+    try:
+        result = subprocess.run(
+            [os.environ.get("PHP", "php"), str(SHPD_SERVER), "einvoice-render", "--format=isdoc",
+             f"--input={payload_path}", f"--output={path}", f"--uuid-name=corpus/{COUNTRY}/{cell.profile}/{cell.stem}"],
+            capture_output=True, text=True, cwd=REPO_ROOT, check=False,
+        )
+    finally:
+        payload_path.unlink(missing_ok=True)
+    if result.returncode != 0:
+        raise IsdocBuildError(
+            f"{cell.stem} [{cell.profile}]: einvoice-render skončil s kódem {result.returncode}\n"
+            + (result.stderr or result.stdout).rstrip()
+        )
+    return "ISDOC beze změny" if path.read_bytes() == before else "ISDOC zapsán"
+
+
 def summary_line(cell: Cell, computed: dict, status: str) -> str:
     locale = TEMPLATE_LOCALE[cell.template]
     currency = cell.data["currency"]
@@ -360,7 +412,8 @@ def main(argv: list[str] | None = None) -> int:
     state = load_state()
     new_state = dict(state)
     produced: set[str] = set()
-    counts = {"cells": 0, "rendered": 0, "unchanged": 0, "skipped": 0}
+    isdoc_files: set[Path] = set()
+    counts = {"cells": 0, "rendered": 0, "unchanged": 0, "skipped": 0, "isdoc": 0, "isdocUnchanged": 0}
     try:
         for stem in selected:
             for cell in cells_for(docs[stem], stem, identities):
@@ -396,16 +449,33 @@ def main(argv: list[str] | None = None) -> int:
                     counts["unchanged"] += 1
                 new_state[key] = digest
                 produced.add(key)
-                print(summary_line(cell, computed, status))
+                isdoc_path = BASE_DIR / "out" / cell.profile / f"{stem}.isdoc"
                 if cell.form == "pdfIsdoc":
-                    print("  ISDOC: čeká na generátor (#119)")
+                    try:
+                        isdoc_status = write_isdoc(cell, expected, computed, isdoc_path)
+                    except IsdocBuildError as e:
+                        print(summary_line(cell, computed, status))
+                        print(f"ISDOC: {e}", file=sys.stderr)
+                        return 1
+                    counts["isdocUnchanged" if isdoc_status.endswith("beze změny") else "isdoc"] += 1
+                    isdoc_files.add(isdoc_path)
+                    status = f"{status}, {isdoc_status}"
+                elif isdoc_path.exists():
+                    isdoc_path.unlink()
+                    status = f"{status}, ISDOC smazán (podoba {cell.form})"
+                print(summary_line(cell, computed, status))
         if not only:
             new_state = {k: v for k, v in new_state.items() if k in produced}
+            for orphan in sorted((BASE_DIR / "out").glob("*/*.isdoc")):
+                if orphan not in isdoc_files:
+                    orphan.unlink()
+                    print(f"{orphan.relative_to(BASE_DIR)}: sirotek bez buňky pdfIsdoc smazán")
     finally:
         save_state(new_state)
 
     print(f"OK: {counts['cells']} buněk ({counts['rendered']} PDF přegenerováno, "
-          f"{counts['unchanged']} beze změny), {counts['skipped']} vynecháno")
+          f"{counts['unchanged']} beze změny; {counts['isdoc']} ISDOC zapsáno, "
+          f"{counts['isdocUnchanged']} beze změny), {counts['skipped']} vynecháno")
 
     if not args.no_datasets:
         try:

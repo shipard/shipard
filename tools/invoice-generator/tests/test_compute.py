@@ -118,6 +118,27 @@ class ComputeRulesTest(unittest.TestCase):
         c = compute(doc([row("0.125", qty=1, pct=0)]))
         self.assertEqual(D("0.13"), c["rows"][0]["total"])
 
+    def test_row_vat_amounts(self) -> None:
+        """DPH per řádek pro ISDOC (#119 krok 5): základ × sazba, u cen s DPH z celkem, bez DPH nula."""
+        r = compute(doc([row("486.50", qty=D("12.5"))]))["rows"][0]
+        self.assertEqual((D("6081.25"), D("1277.06"), D("7358.31")), (r["vatBase"], r["vatAmount"], r["vatTotal"]))
+        r = compute(doc([row("38.90", qty=D("38.56"), priceCalcMode="fromTotal", totalPrice=D("1500.00"))]),
+                    vat_treatment="pricesWithVat")["rows"][0]
+        self.assertEqual((D("1239.67"), D("260.33"), D("1500.00")), (r["vatBase"], r["vatAmount"], r["vatTotal"]))
+        r = compute(doc([row("4800.00", pct=None)]), vat_treatment="noVat")["rows"][0]
+        self.assertEqual((D("4800.00"), D("0"), D("4800.00")), (r["vatBase"], r["vatAmount"], r["vatTotal"]))
+        r = compute(doc([row("850.00", qty=48, pct=0, reverseChargeCode="4")]), vat_treatment="reverseCharge")["rows"][0]
+        self.assertEqual((D("40800.00"), D("0.00"), D("40800.00")), (r["vatBase"], r["vatAmount"], r["vatTotal"]))
+        r = compute(doc([row("0.50", pct=21)]))["rows"][0]
+        self.assertEqual(D("0.11"), r["vatAmount"], "0,105 → 0,11 (half up)")
+        r = compute(doc([row("2340.00", qty=4, discountPct=5)]))["rows"][0]
+        self.assertEqual(D("8892.00"), r["vatBase"], "základ řádku po slevě")
+
+    def test_row_vat_may_differ_from_recap_by_cents(self) -> None:
+        c = compute(doc([row("0.30"), row("0.30"), row("0.30")]))
+        self.assertEqual(D("0.18"), sum(r["vatAmount"] for r in c["rows"]), "3 × 0,063 → 3 × 0,06")
+        self.assertEqual(D("0.19"), c["recap"][21]["tax"], "0,90 × 21 % = 0,189 → 0,19")
+
     def test_float_rejected(self) -> None:
         with self.assertRaises(AssertionError):
             compute(doc([{"text": "x", "unit": "ks", "qty": 1, "unitPrice": 486.5, "vatPct": 21}]))

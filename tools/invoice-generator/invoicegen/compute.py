@@ -9,6 +9,13 @@ nemůže souhlasit sama se sebou.
   reverseCharge         0 % + přenesení daňové povinnosti / reverse charge
   exemptIntraCommunity  0 % + osvobozené dodání do EU (čl. 138)
   noVat                 DPH vůbec (neplátce, třetí země); bez rekapitulace
+
+Každý řádek nese i vlastní DPH (`vatBase`, `vatAmount`, `vatTotal`) pro
+ISDOC v korpusu (#119 krok 5, D2): daň řádku = základ × sazba / 100
+(u cen s DPH celkem × sazba / (100 + sazba)), ROUND_HALF_UP na haléře,
+druhá částka rozdílem; bez DPH daň 0. Součet řádkových daní se od
+rekapitulace smí lišit o haléře — ta se počítá ze součtu v sazbě, jak to
+na dokladech je.
 """
 
 from __future__ import annotations
@@ -82,6 +89,21 @@ def _row(row: dict, vat_treatment: str, allowed_pcts: frozenset[int]) -> dict:
     }
 
 
+def _row_vat(row: dict, vat_treatment: str) -> None:
+    """DPH řádku (`vatBase`, `vatAmount`, `vatTotal`) — nezávisle na rekapitulaci."""
+    pct = row["vatPct"]
+    total = row["total"]
+    if pct is None:
+        base, tax, incl = total, Decimal("0"), total
+    elif vat_treatment == "pricesWithVat":
+        tax = (total * pct / (100 + pct)).quantize(CENTS, rounding=ROUND_HALF_UP)
+        base, incl = total - tax, total
+    else:
+        tax = (total * pct / 100).quantize(CENTS, rounding=ROUND_HALF_UP)
+        base, incl = total, total + tax
+    row["vatBase"], row["vatAmount"], row["vatTotal"] = base, tax, incl
+
+
 def compute(invoice: dict, *, vat_treatment: str = "standard",
             allowed_pcts: frozenset[int] = VALID_VAT_PCTS) -> dict:
     """Per-řádek totály, rekapitulace po sazbách, celkové součty.
@@ -92,6 +114,8 @@ def compute(invoice: dict, *, vat_treatment: str = "standard",
     assert vat_treatment in VAT_TREATMENTS, f"neznámý vatTreatment {vat_treatment}"
     rows = [_row(row, vat_treatment, allowed_pcts) for row in invoice["rows"]]
     assert rows, "doklad bez řádků"
+    for row in rows:
+        _row_vat(row, vat_treatment)
     rows_sum = sum(r["total"] for r in rows)
 
     recap: dict[int, dict] = {}
