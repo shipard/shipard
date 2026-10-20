@@ -1,0 +1,62 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00008",
+    "companyId": "33958173",
+    "taxId": "CZ33958173",
+    "vatId": "CZ33958173",
+    "name": {
+        "fullName": "Hotel Modrý Jelen s.r.o."
+    },
+    "contact": {
+        "email": "ekonom@hotel-modry-jelen.example",
+        "phone": "+420577130444",
+        "web": "www.hotel-modry-jelen.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Lázeňská",
+            "houseNumber": "5",
+            "city": "Luhačovice",
+            "zip": "76326",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1572946306/0600",
+            "iban": "CZ1006000000001572946306",
+            "bic": "AGBACZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Ekonomické oddělení",
+            "email": "ekonom@hotel-modry-jelen.example",
+            "phone": "+420577130444",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

@@ -1,0 +1,78 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashDocument",
+    "selfParty": "customer",
+    "cashDesk": "POK",
+    "cashDirection": 2,
+    "dates": {
+        "issueDate": "2026-02-19",
+        "dueDate": "2026-02-19",
+        "accountingDate": "2026-02-19",
+        "taxPointDate": "2026-02-19",
+        "vatObligationDate": "2026-02-19"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "4"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "501100S",
+                "name": "Kancelářské potřeby"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 1010.0,
+            "totalPrice": 1010.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 1010.0,
+                "vatAmount": 212.1,
+                "vatTotal": 1222.1
+            },
+            "description": "Kancelářské potřeby"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 1010.0,
+            "tax": 212.1,
+            "total": 1222.1
+        }
+    ],
+    "totals": {
+        "totalBase": 1010.0,
+        "totalVat": 212.1,
+        "totalAmount": 1222.1,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "31POK2600004",
+            "sequenceNumber": 4
+        },
+        "numberSeriesCode": "POK"
+    }
+}

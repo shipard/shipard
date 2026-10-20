@@ -1,0 +1,51 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00018",
+    "companyId": "90157389",
+    "taxId": "CZ90157389",
+    "vatId": "CZ90157389",
+    "courtRegistration": "Spisová značka C 301144 vedená u Městského soudu v Praze",
+    "name": {
+        "fullName": "Serverovna Mrak s.r.o."
+    },
+    "contact": {
+        "email": "fakturace@serverovna-mrak.example",
+        "phone": "+420241090330",
+        "web": "www.serverovna-mrak.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Datová",
+            "houseNumber": "2048/1",
+            "city": "Praha 4",
+            "zip": "14000",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2519046733/2010",
+            "iban": "CZ1620100000002519046733",
+            "bic": "FIOBCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

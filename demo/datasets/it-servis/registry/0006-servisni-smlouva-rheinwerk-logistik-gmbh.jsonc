@@ -1,0 +1,37 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "contract",
+        "title": "Servisní smlouva — Rheinwerk Logistik GmbH",
+        "summary": "Rámcová servisní smlouva na vzdálenou správu IT pobočky v Brně, fakturace v EUR.",
+        "party": {
+            "name": "Rheinwerk Logistik GmbH",
+            "email": "buchhaltung@rheinwerk-logistik.example"
+        },
+        "kindFields": {
+            "subject": "Vzdálená správa IT pobočky Brno",
+            "noticePeriod": "3 měsíce",
+            "signedDate": "2026-01-19",
+            "contractNumber": "SML-2026-003",
+            "validFrom": "2026-01-01",
+            "validTo": "2027-12-31"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Smlouvy",
+    "refNumber": "SML-2026-003",
+    "validFrom": "2026-01-01",
+    "validTo": "2027-12-31",
+    "created": "2026-01-20T11:40:00",
+    "attachments": [
+        {
+            "file": "SML-2026-003.pdf",
+            "name": "SML-2026-003.pdf",
+            "mimeType": "application/pdf",
+            "size": 34299,
+            "sha256": "f67aa96950581abede0a878b80ade7ecc2ab4ad2265054e5d4f098d60b462046"
+        }
+    ]
+}

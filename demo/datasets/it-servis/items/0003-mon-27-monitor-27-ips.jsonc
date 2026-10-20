@@ -1,0 +1,22 @@
+{
+    "format": "shpd.items.item",
+    "formatVersion": "1.0",
+    "code": "MON-27",
+    "name": "Monitor 27\" IPS",
+    "kind": {
+        "code": "stock",
+        "name": "Zásoba",
+        "itemType": 1
+    },
+    "salesPriceNoVat": 7490.0,
+    "unit": "pcs",
+    "accountingAccount": "604100",
+    "status": {
+        "docState": 40
+    },
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

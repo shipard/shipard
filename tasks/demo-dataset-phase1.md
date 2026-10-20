@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — fáze 1: generátor a příběh firmy
 
-**Stav:** naplánováno — zadání podle #131 D1–D15, čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-20 (generátor, sada `demo/datasets/it-servis/`, krok 0 v PHP); ruční průchod aplikací na ověřovacím zdroji dat zbývá Anně
 
 ## Kontext / Cíl
 
@@ -280,18 +280,79 @@ Ověřovací zdroj dat po skončení smaž (`shpd-server ds-delete`).
 
 ## Hotovo když
 
-- [ ] sady korpusu po refaktoru beze změny (krok 1)
-- [ ] příběh „IT servis“ v `demo/datasets/stories/it-servis/` odpovídá
+- [x] sady korpusu po refaktoru beze změny (krok 1)
+- [x] příběh „IT servis“ v `demo/datasets/stories/it-servis/` odpovídá
       D12 (počty v Odchylkách, pokud se liší)
-- [ ] `python3 demo/datasets/build.py` vygeneruje `demo/datasets/it-servis/`,
+- [x] `python3 demo/datasets/build.py` vygeneruje `demo/datasets/it-servis/`,
       druhý běh nic nezmění; `--anchor` posune data
-- [ ] unit testy generátoru projdou (`python3 -m unittest`
-      v `tools/invoice-generator`)
-- [ ] ověření seed → dump podle oddílu Ověření, ruční kontrola zapsaná
-- [ ] dokumentace: `demo/datasets/README.md`, `docs/datasets.md`,
+- [x] unit testy generátoru projdou (`python3 -m unittest`
+      v `tools/invoice-generator`) — 167 testů
+- [x] ověření seed → dump podle oddílu Ověření (diff jen `manifest.created`,
+      deník MD = D), ruční kontrola v aplikaci — viz Odchylky, zbývá
+- [x] dokumentace: `demo/datasets/README.md`, `docs/datasets.md`,
       `tools/invoice-generator/README.md`, řádek v `tasks/README.md`
-- [ ] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
+- [x] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
       a `python3 scripts/check-sensitive.py` projdou
+
+## Odchylky a zjištění při implementaci (2026-10-20)
+
+- **Krok 0 v PHP.** Zadání předpokládalo, že formát sady „umí dnes“ vše
+  potřebné; dump a seed ale tři věci neuměly, a tak D10 nešlo splnit.
+  Opraveno před generátorem (rozhodnutí v chatu): **0a** `DocumentExporter`
+  vypisuje `cashDocument` / `cashRegisterDocument`, `cashDesk`
+  a `cashDirection` (dřív se pokladní doklady z dumpu nevrátily);
+  **0b** formát `shpd.mail.incomingMessage.v1` nese `attention`,
+  `actionNote`, `actionDue` (jinak se zpráva s lhůtou do karty
+  K vyřízení naseedovat nedala); **0c** `dataset-dump` rozpozná nezměněné
+  účetní položky z nabídky (`ProvisionedItemsDetector`), nepíše je do
+  `items/` a do manifestu dává `provision.accountingItems` a `country`.
+  Navíc kontrola součtů validátoru (`totals_mismatch`) počítá
+  u `accountingDocument` jen stranu MD — bez toho hlásila každý mzdový
+  doklad. Vše v `docs/datasets.md` § 2 a § 4.
+- **Období = leden–říjen 2026.** D14 říká „deset celých měsíců před
+  měsícem kotvy“, příklad „leden–říjen“ odpovídá devíti; zvoleno
+  leden–říjen (`monthsBefore: 9`), aby celá sada ležela v jednom fiskálním
+  roce. Posun kotvy o jiný počet měsíců než násobek tří mění počet
+  čtvrtletních dokladů (kalendářní čtvrtletí) — záměr, test to pinuje
+  posunem o 3 a 12 měsíců.
+- **`numberSeriesCode` jen u pokladny.** Výchozí řady faktur, zálohy
+  a interního dokladu nemají kód (`doc_number_code = null`), exportér ho
+  nepíše; pokladní doklady a prodejky nesou kód pokladny (`POK`).
+- **VS vydaných dokladů** nese sada explicitně (= číslo dokladu, #125);
+  pokladní doklady, prodejky a mzdy dostávají od `DocDocument` VS = pořadí
+  v řadě, sada ho proto nese stejně. Koncepty dostávají zástupné číslo
+  `!` + id doplněné nulami — sada ho předpočítá z pořadí souboru.
+- **Počty.** 14 odběratelů (11 CZ, 2 SK, 1 DE — všichni zahraniční plátci
+  s přenesením daňové povinnosti, `cz-202`, v EUR s kurzem per měsíc),
+  123 vydaných faktur (119 V pořádku + 4 koncepty v říjnu, 3 placené
+  hotově) + 1 zálohová, 48 přijatých faktur od 7 dodavatelů (zpracované
+  zprávy s PDF) + 3 otevřené návrhy (telefon, elektřina, účetní služby za
+  říjen) + 1 e-mail s lhůtou (expirace domén, `attention: action`, lhůta
+  12 dní po kotvě), 39 prodejek, 20 výdajových PD (poštovné bez DPH,
+  kancelářské potřeby 21 %), 9 mzdových dokladů, 6 dokumentů spisovny
+  (dvě smlouvy končí 12 a 25 dní po kotvě — alert hlídá 30 / 7 dní, ne 60
+  ze zadání). Celkem 57 PDF, sada 4,2 MB.
+- **Identity.** Prvních deset vymyšlených IČO patřilo reálným firmám
+  (ARES) — vyměněna za ověřeně volná. VIES pro CZ bylo při implementaci
+  přetížené (`MS_MAX_CONCURRENT_REQ`); CZ DIČ s volným IČO platné být
+  nemůže, DIČ SK a DE ve VIES neplatná.
+- **Schránka.** `ds-upgrade` zakládá výchozí schránku s adresou podle ID
+  zdroje dat; sada ji přepisuje pevnou `demo-it-servis@shipard.email`,
+  jinak by dump nebyl stejný na dvou zdrojích dat. Demo zdroj dat
+  skutečnou poštu nepřijímá.
+- **Varování seedu** (vysvětlitelná): založení 58 účetních položek
+  z nabídky; `company_id_missing` u německého odběratele (IČO nemá).
+  Dump varuje per EUR doklad, že kurz není v lístcích — kurz nese doklad
+  (D13), lístky sada nemá.
+- **Ověřeno** na volném zdroji dat `z5br-y…` (`ds-create --no-cron`): seed 240 dokladů bez chyby, dump → `diff -r` jen
+  `manifest.created`, deník 748 řádků, MD = D = 4 199 150,88 Kč, 0 chyb,
+  všechny doklady V pořádku zaúčtované, 48 zpráv navázaných na doklad.
+  **Ruční průchod aplikací** (viewery, detail přijaté faktury s PDF,
+  saldokonto, přehled firmy, Dashboard s kartou K vyřízení, spisovna, tisk
+  faktury SK / DE) zbývá — zdroj dat je kvůli němu ponechaný, po kontrole
+  `shpd-server ds-delete <id>`.
+- **`verify_identities`** dostalo parametr `pause` (frekvence dotazů);
+  registry jinak beze změny.
 
 ## Rozhodnutí k designu (potvrzená, #131)
 

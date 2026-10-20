@@ -1,0 +1,77 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashRegisterDocument",
+    "selfParty": "supplier",
+    "cashDesk": "POK",
+    "dates": {
+        "issueDate": "2026-04-04",
+        "dueDate": "2026-04-04",
+        "accountingDate": "2026-04-04",
+        "taxPointDate": "2026-04-04",
+        "vatObligationDate": "2026-04-04"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "13"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SLUCHATKA",
+                "name": "Náhlavní souprava s mikrofonem"
+            },
+            "unit": "pcs",
+            "quantity": 3.0,
+            "unitPrice": 690.0,
+            "totalPrice": 2070.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 2070.0,
+                "vatAmount": 434.7,
+                "vatTotal": 2504.7
+            },
+            "description": "Náhlavní souprava s mikrofonem"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 2070.0,
+            "tax": 434.7,
+            "total": 2504.7
+        }
+    ],
+    "totals": {
+        "totalBase": 2070.0,
+        "totalVat": 434.7,
+        "totalAmount": 2505.0,
+        "totalRounding": 0.3
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "14POK2600013",
+            "sequenceNumber": 13
+        },
+        "numberSeriesCode": "POK"
+    }
+}

@@ -1,0 +1,62 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00003",
+    "companyId": "85297135",
+    "taxId": "CZ85297135",
+    "vatId": "CZ85297135",
+    "name": {
+        "fullName": "Dentální klinika Úsměvov s.r.o."
+    },
+    "contact": {
+        "email": "recepce@usmevov.example",
+        "phone": "+420541150933",
+        "web": "www.usmevov.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Zubařská",
+            "houseNumber": "208/4",
+            "city": "Brno",
+            "zip": "61600",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2753109843/2010",
+            "iban": "CZ8220100000002753109843",
+            "bic": "FIOBCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Recepce kliniky",
+            "email": "recepce@usmevov.example",
+            "phone": "+420541150933",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

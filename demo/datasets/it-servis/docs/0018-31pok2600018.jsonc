@@ -1,0 +1,78 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashDocument",
+    "selfParty": "customer",
+    "cashDesk": "POK",
+    "cashDirection": 2,
+    "dates": {
+        "issueDate": "2026-09-19",
+        "dueDate": "2026-09-19",
+        "accountingDate": "2026-09-19",
+        "taxPointDate": "2026-09-19",
+        "vatObligationDate": "2026-09-19"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "18"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "501100S",
+                "name": "Kancelářské potřeby"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 520.0,
+            "totalPrice": 520.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 520.0,
+                "vatAmount": 109.2,
+                "vatTotal": 629.2
+            },
+            "description": "Kancelářské potřeby"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 520.0,
+            "tax": 109.2,
+            "total": 629.2
+        }
+    ],
+    "totals": {
+        "totalBase": 520.0,
+        "totalVat": 109.2,
+        "totalAmount": 629.2,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "31POK2600018",
+            "sequenceNumber": 18
+        },
+        "numberSeriesCode": "POK"
+    }
+}

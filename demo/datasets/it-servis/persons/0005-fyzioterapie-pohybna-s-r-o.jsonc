@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00005",
+    "companyId": "55839207",
+    "taxId": "CZ55839207",
+    "vatId": "CZ55839207",
+    "name": {
+        "fullName": "Fyzioterapie Pohybna s.r.o."
+    },
+    "contact": {
+        "email": "fakturace@pohybna.example",
+        "phone": "+420582341890"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Rehabilitační",
+            "houseNumber": "77",
+            "city": "Prostějov",
+            "zip": "79601",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1334802761/5500",
+            "iban": "CZ7055000000001334802761",
+            "bic": "RZBCCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Fakturace",
+            "email": "fakturace@pohybna.example",
+            "phone": "+420582341890",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

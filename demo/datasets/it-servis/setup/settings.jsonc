@@ -1,0 +1,30 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "settings",
+    "rows": [
+        {
+            "key": "economy.accountChart",
+            "value": "default"
+        },
+        {
+            "key": "economy.assets.accountingSeries",
+            "value": "6"
+        },
+        {
+            "key": "economy.fiscalYearStartMonth",
+            "value": 1
+        },
+        {
+            "key": "economy.homeCurrency",
+            "value": "czk"
+        },
+        {
+            "key": "economy.vat.filingAccountingSeries",
+            "value": "5"
+        },
+        {
+            "key": "economy.vatAgenda",
+            "value": true
+        }
+    ]
+}

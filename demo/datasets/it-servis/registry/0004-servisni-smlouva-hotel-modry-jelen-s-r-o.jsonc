@@ -1,0 +1,38 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "contract",
+        "title": "Servisní smlouva — Hotel Modrý Jelen s.r.o.",
+        "summary": "Servisní smlouva na správu hotelové sítě, Wi-Fi pro hosty a rezervačního systému.",
+        "party": {
+            "name": "Hotel Modrý Jelen s.r.o.",
+            "companyId": "33958173",
+            "email": "ekonom@hotel-modry-jelen.example"
+        },
+        "kindFields": {
+            "subject": "Správa hotelové sítě a rezervačního systému",
+            "noticePeriod": "3 měsíce",
+            "signedDate": "2026-01-07",
+            "contractNumber": "SML-2026-002",
+            "validFrom": "2026-01-01",
+            "validTo": "2027-03-29"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Smlouvy",
+    "refNumber": "SML-2026-002",
+    "validFrom": "2026-01-01",
+    "validTo": "2027-03-29",
+    "created": "2026-01-08T10:15:00",
+    "attachments": [
+        {
+            "file": "SML-2026-002.pdf",
+            "name": "SML-2026-002.pdf",
+            "mimeType": "application/pdf",
+            "size": 31636,
+            "sha256": "b4782d397102de0d72b1150cd47453611d4cd29ef0d4e487ef9ff1890df86bbf"
+        }
+    ]
+}

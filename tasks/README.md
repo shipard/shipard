@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 382 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 351.
+Celkem 382 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 352.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,7 +28,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `demo-dataset-phase1.md` | naplánováno | zadání podle #131 D1–D15, čeká na implementaci |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -462,6 +461,7 @@ zaúčtování a evaluace AI.
 |------|------|---------|
 | `dataset-phase1.md` | — | Datové sady: `dataset-dump` / `dataset-seed`, snapshot mode došlé pošty (#40 D1–D5) |
 | `demo-invoices.md` | — | Generátor fiktivních přijatých faktur (PDF) pro demo video |
+| `demo-dataset-phase1.md` | — | Demo sada „IT servis“: generátor sad z příběhu firmy nad `invoicegen`, sada `demo/datasets/it-servis/` bajtově shodná s dumpem, dump umí pokladní doklady, `provision` a pozornost zpráv (#131 D1–D15) |
 | `testing-phase1.md` | F1 | Korpus testovacích dokladů: sdílený generátor, 10 variant × 2 podoby (PDF, PDF + ISDOC), tři profily vlastní firmy, očekávaný výsledek jako papírová projekce canonicalu, tvary hodnot (#103 D12–D18) |
 | `testing-phase2.md` | F2 | Profily a datové sady z korpusu: základ profilu, sady `tests/datasets/cz/` s ideální analýzou (snapshot), manifest `country` / `profile` / `provision`, seed zakládá fiskální roky a účetní položky z nabídky (#103 D19–D25) |
 | `testing-phase3.md` | F3 | Ověření zaúčtování a DPH: `dataset-verify` (apply + kontroly), porovnávač canonicalu v PHP, očekávání DPH a nákladů nezávisle na Shipardu, schválený snímek deníku (#103 D26–D30) |

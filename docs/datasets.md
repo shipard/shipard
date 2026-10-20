@@ -126,6 +126,13 @@ nová id — jinak by apply návrhu ze seedované zprávy nesedělo a sada by
 nebyla stabilní. `message_id` (`MSG-…`) se zachovává;
 `IncomingMessageDocument` generuje jen prázdný.
 
+Pozornost u zprávy bez dokladu (#105, #131 krok 0b): volitelná pole
+`attention` (`action` / `info` / `promo`), `actionNote` a `actionDue`
+(datum) za `aiTitle` — AI-vlastněné sloupce, které jinak plní jen živá
+analýza (`AnalysisResultWriter`). Seed je zapíše jen když klíč v obálce je,
+dump je vypisuje; zpráva `other` ve stavu Nová s `attention: action` tak
+po seedu dá kartu „K vyřízení“ s lhůtou i bez volání AI.
+
 ## 2. `dataset-dump`
 
 `shpd-ds dataset-dump <dir> [--zip[=cesta]] [--force] [--name] [--title] [--description]`
@@ -147,6 +154,23 @@ Soubor = formát `shpd.exchangeRates.list.v1` ([exchange-rates.md](exchange-rate
 §2) bez zdroje a id, název `NNNN-<listType>-<validFrom>.jsonc`. Doklad
 v cizí měně bez lístku k datu dá varování („kurz EUR k … není v lístcích“)
 — po seedu kurz nedostane. Sada bez cizí měny sekci nemá.
+
+**Účetní položky z nabídky osnovy** (#131 krok 0c): nezměněné položky
+se `source_kind = setup.accountingItems` (kód v nabídce aktivní varianty,
+název = lokalizovaný název nabídky v jazyce DS, účet a štítky podle
+nabídky) `ItemExporter` do `items/` nepíše — manifest je nese jako
+`provision.accountingItems` (`"all"`, když pokrývá celou nabídku s účty
+v osnově, jinak seznam kódů) a seed je založí znovu z nabídky
+(`ProvisionedItemsDetector`, `modules/economy/items/src/Dataset/`).
+Přejmenovaná nebo přeúčtovaná položka se exportuje jako každá jiná.
+Manifest dumpu nese i `country` zdroje dat (pojistka seedu, D24).
+
+**Pokladní doklady** (#131 krok 0a): `DocumentExporter` vypisuje
+`cashDocument` (`cash`) a `cashRegisterDocument` (`cashreg`) s `cashDesk`
+(kód pokladny) a u pokladního dokladu `cashDirection`; faktura placená
+hotově nese `cashDesk` také. Strany: prodejka jako vydaná faktura,
+pokladní doklad podle směru (příjem jako vydaná, výdej jako přijatá vč.
+bankovního spojení dodavatele).
 
 Exportery jsou zrcadlem applierů (`DocumentApplier::transform()`,
 `PersonApplier::transformHeaderForCreate`, …). Odvozené sloupce se
@@ -250,5 +274,27 @@ Vědomé normalizace a limity fáze 1:
   *datová sada*), `rate` je číslo za `amount` jednotek a kurz za jednotku
   se počítá až při dohledání — dump → seed → dump je shodný, kurz
   dokladu po seedu je `round(rate / amount, 6)`.
+- Koncept bez čísla dostane po seedu zástupné číslo `!` + id doplněné
+  nulami (`DocDocument`); dump ho vypíše v `importNumber.docNumber`
+  (`sequenceNumber: null`) a slug souboru je z něj — na čerstvém zdroji
+  dat je id = pořadí vložení, takže sada psaná mimo PHP ho předpočítá.
+- Kontační řádek bez množství (`acc.record`) vyjde z dumpu s `unitPrice:
+  0.0` a `priceCalcMode: fromTotal`; celková částka účetního dokladu je
+  obrat strany MD (`AccountingDocument`), kontrola součtů validátoru
+  (`totals_mismatch`) to u `accountingDocument` respektuje.
+- Řádek bez `description` dostane popis = název položky.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI, banka a saldokonto.
+
+## 5. Demo sady
+
+Sady pro ukázku aplikace a web (`demo/datasets/`, `tasks/demo-dataset-phase1.md`,
+#131) vznikají **generátorem z ručně psaného příběhu firmy**
+(`demo/datasets/stories/<název>/` → `demo/datasets/<název>/`, vstupní bod
+`demo/datasets/build.py` nad balíkem `invoicegen`). Generátor vyrábí
+soubory ve tvaru dumpu — sada je s `dataset-dump` naseedovaného zdroje dat
+bajtově shodná kromě `manifest.created` (D10), což hlídá postup
+v `demo/datasets/README.md`. Data příběhu jsou relativní ke kotvě
+(`--anchor`), identity fiktivní s ověřením v ARES / VIES, PDF přes
+Gotenberg jen při změně obsahu (cache `build-state.json`). První sada:
+`it-servis` (plátce DPH, leden–říjen 2026).

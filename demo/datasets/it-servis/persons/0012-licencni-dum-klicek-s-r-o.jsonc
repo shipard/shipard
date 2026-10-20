@@ -1,0 +1,51 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00012",
+    "companyId": "48360210",
+    "taxId": "CZ48360210",
+    "vatId": "CZ48360210",
+    "courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
+    "name": {
+        "fullName": "Licenční dům Klíček s.r.o."
+    },
+    "contact": {
+        "email": "obchod@licencni-dum-klicek.example",
+        "phone": "+420543210560",
+        "web": "www.licencni-dum-klicek.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Softwarová",
+            "houseNumber": "9",
+            "city": "Brno",
+            "zip": "63900",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1382659074/0100",
+            "iban": "CZ0801000000001382659074",
+            "bic": "KOMBCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

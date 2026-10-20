@@ -1,0 +1,38 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "contract",
+        "title": "Servisní smlouva — Autodoprava Kopretina s.r.o.",
+        "summary": "Servisní smlouva na správu IT infrastruktury: měsíční paušál, reakční doba do 8 hodin, výpovědní doba 3 měsíce.",
+        "party": {
+            "name": "Autodoprava Kopretina s.r.o.",
+            "companyId": "83715266",
+            "email": "uctarna@kopretina-doprava.example"
+        },
+        "kindFields": {
+            "subject": "Správa IT infrastruktury, 12 pracovních stanic a server",
+            "noticePeriod": "3 měsíce",
+            "signedDate": "2026-01-01",
+            "contractNumber": "SML-2026-001",
+            "validFrom": "2026-01-01",
+            "validTo": "2026-11-14"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Smlouvy",
+    "refNumber": "SML-2026-001",
+    "validFrom": "2026-01-01",
+    "validTo": "2026-11-14",
+    "created": "2026-01-02T09:30:00",
+    "attachments": [
+        {
+            "file": "SML-2026-001.pdf",
+            "name": "SML-2026-001.pdf",
+            "mimeType": "application/pdf",
+            "size": 31580,
+            "sha256": "6d5802b19e798bac4e0e363f7d2d61df744cdcedd87869000ac68d0d31aae31f"
+        }
+    ]
+}

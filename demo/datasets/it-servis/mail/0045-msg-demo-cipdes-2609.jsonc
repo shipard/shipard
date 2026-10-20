@@ -1,0 +1,434 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-CIPDES-2609",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura FV-2026-2213",
+    "senderEmail": "objednavky@cip-deska.example",
+    "senderName": "Velkoobchod Čip a Deska s.r.o.",
+    "senderPerson": {
+        "name": "Velkoobchod Čip a Deska s.r.o.",
+        "companyId": "88462137",
+        "taxId": "CZ88462137",
+        "vatId": "CZ88462137"
+    },
+    "partnerPerson": {
+        "name": "Velkoobchod Čip a Deska s.r.o.",
+        "companyId": "88462137",
+        "taxId": "CZ88462137",
+        "vatId": "CZ88462137"
+    },
+    "partnerName": "Velkoobchod Čip a Deska s.r.o.",
+    "receivedAt": "2026-09-16T08:07:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu FV-2026-2213.\n\nVelkoobchod Čip a Deska s.r.o.",
+    "sourceType": 2,
+    "docState": 40,
+    "analysisState": 30,
+    "aiTitle": "Faktura FV-2026-2213 — Velkoobchod Čip a Deska s.r.o., 65 629,19 Kč",
+    "created": "2026-09-16T08:07:00",
+    "target": {
+        "table": "docs_core_heads",
+        "docNumber": "2260045"
+    },
+    "attachments": [
+        {
+            "file": "FV-2026-2213.pdf",
+            "name": "FV-2026-2213.pdf",
+            "mimeType": "application/pdf",
+            "size": 33529,
+            "sha256": "a0cba42e2a8b13885a9d8c7b6c468b416342ea944d53e9dbbef8b5ca0c365c73",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-16T08:08:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "vehicle.consumables",
+            "resolution": 40,
+            "resolvedAt": "2026-09-16T09:07:00",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-16T08:08:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura FV-2026-2213 — Velkoobchod Čip a Deska s.r.o., 65 629,19 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-16T08:08:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "demo"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "FV-2026-2213",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Velkoobchod Čip a Deska s.r.o.",
+                            "country": "cz",
+                            "companyId": "88462137",
+                            "taxId": "CZ88462137",
+                            "vatId": "CZ88462137",
+                            "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
+                            "address": {
+                                "street": "Součástková",
+                                "houseNumber": "560/14",
+                                "city": "Hradec Králové",
+                                "zip": "50002",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "objednavky@cip-deska.example",
+                                "phone": "+420495770310",
+                                "web": "www.cip-deska.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "1746290598/6210",
+                                "iban": "CZ1962100000001746290598",
+                                "bic": "BREXCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Zelený Terminál s.r.o.",
+                            "country": "cz",
+                            "companyId": "61204579",
+                            "taxId": "CZ61204579",
+                            "vatId": "CZ61204579",
+                            "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Serverová",
+                                "houseNumber": "1024/8",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@zeleny-terminal.example",
+                                "phone": "+420541230190",
+                                "web": "www.zeleny-terminal.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-15",
+                            "dueDate": "2026-09-25",
+                            "taxPointDate": "2026-09-15",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "20262213",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Notebook 14\" business, 16 GB RAM",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 2,
+                                "unitPrice": 19900,
+                                "totalPrice": 39800,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Síťový switch 24 portů, PoE",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 2,
+                                "unitPrice": 6400,
+                                "totalPrice": 12800,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Kabel HDMI 2.1, 2 m",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 11,
+                                "unitPrice": 149,
+                                "totalPrice": 1639,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 54239,
+                                "tax": 11390.19,
+                                "total": 65629.19
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 54239,
+                            "totalVat": 11390.19,
+                            "totalAmount": 65629.19,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "FV-2026-2213.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-16T08:08:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "demo"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "FV-2026-2213",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Velkoobchod Čip a Deska s.r.o.",
+                    "country": "cz",
+                    "companyId": "88462137",
+                    "taxId": "CZ88462137",
+                    "vatId": "CZ88462137",
+                    "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
+                    "address": {
+                        "street": "Součástková",
+                        "houseNumber": "560/14",
+                        "city": "Hradec Králové",
+                        "zip": "50002",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "objednavky@cip-deska.example",
+                        "phone": "+420495770310",
+                        "web": "www.cip-deska.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "1746290598/6210",
+                        "iban": "CZ1962100000001746290598",
+                        "bic": "BREXCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Zelený Terminál s.r.o.",
+                    "country": "cz",
+                    "companyId": "61204579",
+                    "taxId": "CZ61204579",
+                    "vatId": "CZ61204579",
+                    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Serverová",
+                        "houseNumber": "1024/8",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@zeleny-terminal.example",
+                        "phone": "+420541230190",
+                        "web": "www.zeleny-terminal.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-15",
+                    "dueDate": "2026-09-25",
+                    "taxPointDate": "2026-09-15",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "20262213",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Notebook 14\" business, 16 GB RAM",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 2,
+                        "unitPrice": 19900,
+                        "totalPrice": 39800,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Síťový switch 24 portů, PoE",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 2,
+                        "unitPrice": 6400,
+                        "totalPrice": 12800,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Kabel HDMI 2.1, 2 m",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 11,
+                        "unitPrice": 149,
+                        "totalPrice": 1639,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 54239,
+                        "tax": 11390.19,
+                        "total": 65629.19
+                    }
+                ],
+                "totals": {
+                    "totalBase": 54239,
+                    "totalVat": 11390.19,
+                    "totalAmount": 65629.19,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "FV-2026-2213.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "vehicle.consumables",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

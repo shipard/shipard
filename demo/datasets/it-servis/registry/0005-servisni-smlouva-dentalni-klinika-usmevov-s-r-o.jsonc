@@ -1,0 +1,38 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "contract",
+        "title": "Servisní smlouva — Dentální klinika Úsměvov s.r.o.",
+        "summary": "Servisní smlouva na správu IT kliniky včetně zálohování ordinačního softwaru; reakční doba do 4 hodin.",
+        "party": {
+            "name": "Dentální klinika Úsměvov s.r.o.",
+            "companyId": "85297135",
+            "email": "recepce@usmevov.example"
+        },
+        "kindFields": {
+            "subject": "Správa IT kliniky, zálohování a dohled",
+            "noticePeriod": "2 měsíce",
+            "signedDate": "2026-01-14",
+            "contractNumber": "SML-2026-004",
+            "validFrom": "2026-01-15",
+            "validTo": "2026-11-01"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Smlouvy",
+    "refNumber": "SML-2026-004",
+    "validFrom": "2026-01-15",
+    "validTo": "2026-11-01",
+    "created": "2026-01-15T14:05:00",
+    "attachments": [
+        {
+            "file": "SML-2026-004.pdf",
+            "name": "SML-2026-004.pdf",
+            "mimeType": "application/pdf",
+            "size": 31971,
+            "sha256": "5e19593a3557b89899e782992f5f603883234737da95d2b45ff25ea9079e2d41"
+        }
+    ]
+}

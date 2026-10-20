@@ -1,0 +1,67 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-DOMENY",
+    "mailbox": "default",
+    "primaryType": "other",
+    "primaryTypeSource": "ai",
+    "subject": "Blížící se expirace domén",
+    "senderEmail": "podpora@registr-tecka.example",
+    "senderName": "Registr Domén Tečka s.r.o.",
+    "senderPerson": {
+        "name": "Registr Domén Tečka s.r.o.",
+        "companyId": "16730488",
+        "taxId": "CZ16730488",
+        "vatId": "CZ16730488"
+    },
+    "partnerPerson": {
+        "name": "Registr Domén Tečka s.r.o.",
+        "companyId": "16730488",
+        "taxId": "CZ16730488",
+        "vatId": "CZ16730488"
+    },
+    "partnerName": "Registr Domén Tečka s.r.o.",
+    "receivedAt": "2026-10-18T10:40:00",
+    "bodyPlain": "Dobrý den,\n\nupozorňujeme, že platnost domén zeleny-terminal.example, zelenyterminal.example a zeleny-terminal-servis.example skončí za 14 dní. Pro prodloužení se přihlaste do zákaznického centra a uhraďte výzvu k platbě. Po uplynutí ochranné lhůty budou domény uvolněny.\n\nS pozdravem\nRegistr Domén Tečka s.r.o.",
+    "sourceType": 2,
+    "docState": 10,
+    "analysisState": 30,
+    "aiTitle": "Expirace tří domén — prodloužit do 1. 11. 2026",
+    "attention": "action",
+    "actionNote": "Prodloužit domény zeleny-terminal.example a 2 další v zákaznickém centru.",
+    "actionDue": "2026-11-01",
+    "created": "2026-10-18T10:40:00",
+    "analyses": [
+        {
+            "analyzedAt": "2026-10-18T10:41:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "other",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-10-18T10:41:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "other",
+                    "confidence": 1,
+                    "title": "Expirace tří domén — prodloužit do 1. 11. 2026",
+                    "attention": "action",
+                    "action_note": "Prodloužit domény zeleny-terminal.example a 2 další v zákaznickém centru.",
+                    "due_date": "2026-11-01",
+                    "party": {
+                        "name": "Registr Domén Tečka s.r.o.",
+                        "companyId": "16730488",
+                        "email": "podpora@registr-tecka.example"
+                    }
+                },
+                "document": null
+            }
+        }
+    ]
+}

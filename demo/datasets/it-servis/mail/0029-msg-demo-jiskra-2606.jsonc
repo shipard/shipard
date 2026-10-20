@@ -1,0 +1,434 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-JISKRA-2606",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 2026071249",
+    "senderEmail": "zakaznici@energie-jiskra.example",
+    "senderName": "Energie Jiskra a.s.",
+    "senderPerson": {
+        "name": "Energie Jiskra a.s.",
+        "companyId": "31647090",
+        "taxId": "CZ31647090",
+        "vatId": "CZ31647090"
+    },
+    "partnerPerson": {
+        "name": "Energie Jiskra a.s.",
+        "companyId": "31647090",
+        "taxId": "CZ31647090",
+        "vatId": "CZ31647090"
+    },
+    "partnerName": "Energie Jiskra a.s.",
+    "receivedAt": "2026-06-13T08:15:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026071249.\n\nEnergie Jiskra a.s.",
+    "sourceType": 2,
+    "docState": 40,
+    "analysisState": 30,
+    "aiTitle": "Faktura 2026071249 — Energie Jiskra a.s., 4 612,00 Kč",
+    "created": "2026-06-13T08:15:00",
+    "target": {
+        "table": "docs_core_heads",
+        "docNumber": "2260029"
+    },
+    "attachments": [
+        {
+            "file": "2026071249.pdf",
+            "name": "2026071249.pdf",
+            "mimeType": "application/pdf",
+            "size": 52642,
+            "sha256": "6fb5e45ca2581de4ed789fab004614b4b10749b37546c13f3a2941344f15ed71",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-06-13T08:16:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "premises.electricity",
+            "resolution": 40,
+            "resolvedAt": "2026-06-13T09:15:00",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-06-13T08:16:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura 2026071249 — Energie Jiskra a.s., 4 612,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-06-13T08:16:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "demo"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "2026071249",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Energie Jiskra a.s.",
+                            "country": "cz",
+                            "companyId": "31647090",
+                            "taxId": "CZ31647090",
+                            "vatId": "CZ31647090",
+                            "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
+                            "address": {
+                                "street": "Elektrárenská",
+                                "houseNumber": "1",
+                                "city": "Ostrava",
+                                "zip": "70200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "zakaznici@energie-jiskra.example",
+                                "phone": "+420596610100",
+                                "web": "www.energie-jiskra.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "2190463856/0800",
+                                "iban": "CZ2008000000002190463856",
+                                "bic": "GIBACZPX"
+                            }
+                        },
+                        "customer": {
+                            "name": "Zelený Terminál s.r.o.",
+                            "country": "cz",
+                            "companyId": "61204579",
+                            "taxId": "CZ61204579",
+                            "vatId": "CZ61204579",
+                            "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Serverová",
+                                "houseNumber": "1024/8",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@zeleny-terminal.example",
+                                "phone": "+420541230190",
+                                "web": "www.zeleny-terminal.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-06-12",
+                            "dueDate": "2026-06-26",
+                            "taxPointDate": "2026-05-31",
+                            "periodFrom": "2026-05-01",
+                            "periodTo": "2026-05-31"
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "2026071249",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Silová elektřina — produkt STANDARD",
+                                    "description": null
+                                },
+                                "unit": "MWh",
+                                "quantity": 0.7,
+                                "unitPrice": 3190,
+                                "totalPrice": 2233,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Distribuce elektřiny vč. systémových služeb",
+                                    "description": null
+                                },
+                                "unit": "MWh",
+                                "quantity": 0.7,
+                                "unitPrice": 2015,
+                                "totalPrice": 1410.5,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Stálý plat za jistič 3×25 A",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 168,
+                                "totalPrice": 168,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 3811.5,
+                                "tax": 800.42,
+                                "total": 4611.92
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 3811.5,
+                            "totalVat": 800.42,
+                            "totalAmount": 4612,
+                            "totalRounding": 0.08
+                        },
+                        "attachments": [
+                            {
+                                "filename": "2026071249.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-06-13T08:16:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "demo"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "2026071249",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Energie Jiskra a.s.",
+                    "country": "cz",
+                    "companyId": "31647090",
+                    "taxId": "CZ31647090",
+                    "vatId": "CZ31647090",
+                    "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
+                    "address": {
+                        "street": "Elektrárenská",
+                        "houseNumber": "1",
+                        "city": "Ostrava",
+                        "zip": "70200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "zakaznici@energie-jiskra.example",
+                        "phone": "+420596610100",
+                        "web": "www.energie-jiskra.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "2190463856/0800",
+                        "iban": "CZ2008000000002190463856",
+                        "bic": "GIBACZPX"
+                    }
+                },
+                "customer": {
+                    "name": "Zelený Terminál s.r.o.",
+                    "country": "cz",
+                    "companyId": "61204579",
+                    "taxId": "CZ61204579",
+                    "vatId": "CZ61204579",
+                    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Serverová",
+                        "houseNumber": "1024/8",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@zeleny-terminal.example",
+                        "phone": "+420541230190",
+                        "web": "www.zeleny-terminal.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-06-12",
+                    "dueDate": "2026-06-26",
+                    "taxPointDate": "2026-05-31",
+                    "periodFrom": "2026-05-01",
+                    "periodTo": "2026-05-31"
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "2026071249",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Silová elektřina — produkt STANDARD",
+                            "description": null
+                        },
+                        "unit": "MWh",
+                        "quantity": 0.7,
+                        "unitPrice": 3190,
+                        "totalPrice": 2233,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Distribuce elektřiny vč. systémových služeb",
+                            "description": null
+                        },
+                        "unit": "MWh",
+                        "quantity": 0.7,
+                        "unitPrice": 2015,
+                        "totalPrice": 1410.5,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Stálý plat za jistič 3×25 A",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 168,
+                        "totalPrice": 168,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 3811.5,
+                        "tax": 800.42,
+                        "total": 4611.92
+                    }
+                ],
+                "totals": {
+                    "totalBase": 3811.5,
+                    "totalVat": 800.42,
+                    "totalAmount": 4612,
+                    "totalRounding": 0.08
+                },
+                "attachments": [
+                    {
+                        "filename": "2026071249.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "premises.electricity",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

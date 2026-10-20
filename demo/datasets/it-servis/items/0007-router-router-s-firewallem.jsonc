@@ -1,0 +1,22 @@
+{
+    "format": "shpd.items.item",
+    "formatVersion": "1.0",
+    "code": "ROUTER",
+    "name": "Router s firewallem",
+    "kind": {
+        "code": "stock",
+        "name": "Zásoba",
+        "itemType": 1
+    },
+    "salesPriceNoVat": 5990.0,
+    "unit": "pcs",
+    "accountingAccount": "604100",
+    "status": {
+        "docState": 40
+    },
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

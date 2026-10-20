@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00010",
+    "companyId": "90462718",
+    "taxId": "CZ90462718",
+    "vatId": "CZ90462718",
+    "name": {
+        "fullName": "Knihkupectví Stránka s.r.o."
+    },
+    "contact": {
+        "email": "info@knihy-stranka.example",
+        "phone": "+420573339012"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Záložková",
+            "houseNumber": "640/11",
+            "city": "Kroměříž",
+            "zip": "76701",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1819362506/3030",
+            "iban": "CZ5130300000001819362506",
+            "bic": "AIRACZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Knihkupectví Stránka",
+            "email": "info@knihy-stranka.example",
+            "phone": "+420573339012",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

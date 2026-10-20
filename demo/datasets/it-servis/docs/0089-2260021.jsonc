@@ -1,0 +1,149 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "FV-2026-2211",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Velkoobchod Čip a Deska s.r.o.",
+        "country": "cz",
+        "companyId": "88462137",
+        "taxId": "CZ88462137",
+        "vatId": "CZ88462137",
+        "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
+        "address": {
+            "street": "Součástková",
+            "houseNumber": "560/14",
+            "city": "Hradec Králové",
+            "zip": "50002",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "objednavky@cip-deska.example",
+            "phone": "+420495770310",
+            "web": "www.cip-deska.example"
+        },
+        "bankAccount": {
+            "accountNumber": "1746290598/6210",
+            "iban": "CZ1962100000001746290598",
+            "bic": "BREXCZPP"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-04-15",
+        "dueDate": "2026-04-25",
+        "accountingDate": "2026-04-15",
+        "taxPointDate": "2026-04-15",
+        "vatObligationDate": "2026-04-15"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "20262211"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 19900.0,
+            "totalPrice": 39800.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 39800.0,
+                "vatAmount": 8358.0,
+                "vatTotal": 48158.0
+            },
+            "description": "Notebook 14\" business, 16 GB RAM"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 6400.0,
+            "totalPrice": 6400.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 6400.0,
+                "vatAmount": 1344.0,
+                "vatTotal": 7744.0
+            },
+            "description": "Síťový switch 24 portů, PoE"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 3,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 14.0,
+            "unitPrice": 149.0,
+            "totalPrice": 2086.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 2086.0,
+                "vatAmount": 438.06,
+                "vatTotal": 2524.06
+            },
+            "description": "Kabel HDMI 2.1, 2 m"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 48286.0,
+            "tax": 10140.06,
+            "total": 58426.06
+        }
+    ],
+    "totals": {
+        "totalBase": 48286.0,
+        "totalVat": 10140.06,
+        "totalAmount": 58426.06,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260021",
+            "sequenceNumber": 21
+        }
+    }
+}

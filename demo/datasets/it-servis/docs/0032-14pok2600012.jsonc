@@ -1,0 +1,77 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashRegisterDocument",
+    "selfParty": "supplier",
+    "cashDesk": "POK",
+    "dates": {
+        "issueDate": "2026-03-25",
+        "dueDate": "2026-03-25",
+        "accountingDate": "2026-03-25",
+        "taxPointDate": "2026-03-25",
+        "vatObligationDate": "2026-03-25"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "12"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "MYS-USB",
+                "name": "Myš bezdrátová"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 390.0,
+            "totalPrice": 390.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 390.0,
+                "vatAmount": 81.9,
+                "vatTotal": 471.9
+            },
+            "description": "Myš bezdrátová"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 390.0,
+            "tax": 81.9,
+            "total": 471.9
+        }
+    ],
+    "totals": {
+        "totalBase": 390.0,
+        "totalVat": 81.9,
+        "totalAmount": 472.0,
+        "totalRounding": 0.1
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "14POK2600012",
+            "sequenceNumber": 12
+        },
+        "numberSeriesCode": "POK"
+    }
+}

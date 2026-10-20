@@ -1,0 +1,77 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashRegisterDocument",
+    "selfParty": "supplier",
+    "cashDesk": "POK",
+    "dates": {
+        "issueDate": "2026-02-11",
+        "dueDate": "2026-02-11",
+        "accountingDate": "2026-02-11",
+        "taxPointDate": "2026-02-11",
+        "vatObligationDate": "2026-02-11"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "6"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "USB-64",
+                "name": "USB flash disk 64 GB"
+            },
+            "unit": "pcs",
+            "quantity": 3.0,
+            "unitPrice": 219.0,
+            "totalPrice": 657.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 657.0,
+                "vatAmount": 137.97,
+                "vatTotal": 794.97
+            },
+            "description": "USB flash disk 64 GB"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 657.0,
+            "tax": 137.97,
+            "total": 794.97
+        }
+    ],
+    "totals": {
+        "totalBase": 657.0,
+        "totalVat": 137.97,
+        "totalAmount": 795.0,
+        "totalRounding": 0.03
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "14POK2600006",
+            "sequenceNumber": 6
+        },
+        "numberSeriesCode": "POK"
+    }
+}

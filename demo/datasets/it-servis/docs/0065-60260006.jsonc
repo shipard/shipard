@@ -1,0 +1,121 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "accountingDocument",
+    "docText": "Mzdy 06/2026",
+    "dates": {
+        "issueDate": "2026-06-30",
+        "dueDate": "2026-07-14",
+        "accountingDate": "2026-06-30",
+        "taxPointDate": "2026-06-30",
+        "vatObligationDate": "2026-06-30"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "none",
+        "place": "domestic",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "6"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 1,
+            "unitPrice": 0.0,
+            "totalPrice": 107000.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 107000.0,
+                "vatAmount": 0.0,
+                "vatTotal": 107000.0
+            },
+            "description": "Hrubé mzdy",
+            "account": "521100",
+            "accSide": "debit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 2,
+            "unitPrice": 0.0,
+            "totalPrice": 36166.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 36166.0,
+                "vatAmount": 0.0,
+                "vatTotal": 36166.0
+            },
+            "description": "Pojistné hrazené zaměstnavatelem",
+            "account": "524100",
+            "accSide": "debit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 3,
+            "unitPrice": 0.0,
+            "totalPrice": 82244.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 82244.0,
+                "vatAmount": 0.0,
+                "vatTotal": 82244.0
+            },
+            "description": "Čisté mzdy k výplatě",
+            "account": "331100",
+            "accSide": "credit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 4,
+            "unitPrice": 0.0,
+            "totalPrice": 47936.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 47936.0,
+                "vatAmount": 0.0,
+                "vatTotal": 47936.0
+            },
+            "description": "Odvody sociálního a zdravotního pojištění",
+            "account": "336100",
+            "accSide": "credit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 5,
+            "unitPrice": 0.0,
+            "totalPrice": 12986.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 12986.0,
+                "vatAmount": 0.0,
+                "vatTotal": 12986.0
+            },
+            "description": "Záloha na daň z příjmů",
+            "account": "342100",
+            "accSide": "credit"
+        }
+    ],
+    "totals": {
+        "totalBase": 143166.0,
+        "totalVat": 0.0,
+        "totalAmount": 143166.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "60260006",
+            "sequenceNumber": 6
+        }
+    }
+}

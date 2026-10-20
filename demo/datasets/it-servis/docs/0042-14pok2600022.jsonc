@@ -1,0 +1,77 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashRegisterDocument",
+    "selfParty": "supplier",
+    "cashDesk": "POK",
+    "dates": {
+        "issueDate": "2026-06-11",
+        "dueDate": "2026-06-11",
+        "accountingDate": "2026-06-11",
+        "taxPointDate": "2026-06-11",
+        "vatObligationDate": "2026-06-11"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "22"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "USB-64",
+                "name": "USB flash disk 64 GB"
+            },
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 219.0,
+            "totalPrice": 438.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 438.0,
+                "vatAmount": 91.98,
+                "vatTotal": 529.98
+            },
+            "description": "USB flash disk 64 GB"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 438.0,
+            "tax": 91.98,
+            "total": 529.98
+        }
+    ],
+    "totals": {
+        "totalBase": 438.0,
+        "totalVat": 91.98,
+        "totalAmount": 530.0,
+        "totalRounding": 0.02
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "14POK2600022",
+            "sequenceNumber": 22
+        },
+        "numberSeriesCode": "POK"
+    }
+}

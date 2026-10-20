@@ -1,0 +1,350 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-KLICEK-2610",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 202620420",
+    "senderEmail": "obchod@licencni-dum-klicek.example",
+    "senderName": "Licenční dům Klíček s.r.o.",
+    "senderPerson": {
+        "name": "Licenční dům Klíček s.r.o.",
+        "companyId": "48360210",
+        "taxId": "CZ48360210",
+        "vatId": "CZ48360210"
+    },
+    "partnerPerson": {
+        "name": "Licenční dům Klíček s.r.o.",
+        "companyId": "48360210",
+        "taxId": "CZ48360210",
+        "vatId": "CZ48360210"
+    },
+    "partnerName": "Licenční dům Klíček s.r.o.",
+    "receivedAt": "2026-10-09T08:46:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 202620420.\n\nLicenční dům Klíček s.r.o.",
+    "sourceType": 2,
+    "docState": 40,
+    "analysisState": 30,
+    "aiTitle": "Faktura 202620420 — Licenční dům Klíček s.r.o., 14 157,00 Kč",
+    "created": "2026-10-09T08:46:00",
+    "target": {
+        "table": "docs_core_heads",
+        "docNumber": "2260048"
+    },
+    "attachments": [
+        {
+            "file": "202620420.pdf",
+            "name": "202620420.pdf",
+            "mimeType": "application/pdf",
+            "size": 28056,
+            "sha256": "c32a36726ac3d6cb7ca04a90f2262f73e68ef2fdb18c677e8d70f55909bbb8dd",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-10-09T08:47:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.software",
+            "resolution": 40,
+            "resolvedAt": "2026-10-09T09:46:00",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-10-09T08:47:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura 202620420 — Licenční dům Klíček s.r.o., 14 157,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-10-09T08:47:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "demo"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "202620420",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Licenční dům Klíček s.r.o.",
+                            "country": "cz",
+                            "companyId": "48360210",
+                            "taxId": "CZ48360210",
+                            "vatId": "CZ48360210",
+                            "courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Softwarová",
+                                "houseNumber": "9",
+                                "city": "Brno",
+                                "zip": "63900",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "obchod@licencni-dum-klicek.example",
+                                "phone": "+420543210560",
+                                "web": "www.licencni-dum-klicek.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "1382659074/0100",
+                                "iban": "CZ0801000000001382659074",
+                                "bic": "KOMBCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Zelený Terminál s.r.o.",
+                            "country": "cz",
+                            "companyId": "61204579",
+                            "taxId": "CZ61204579",
+                            "vatId": "CZ61204579",
+                            "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Serverová",
+                                "houseNumber": "1024/8",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@zeleny-terminal.example",
+                                "phone": "+420541230190",
+                                "web": "www.zeleny-terminal.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-10-08",
+                            "dueDate": "2026-10-29",
+                            "taxPointDate": "2026-10-08",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "202620420",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Licence kancelářského balíku, 25 uživatelů — Q4/2026",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 11700,
+                                "totalPrice": 11700,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 11700,
+                                "tax": 2457,
+                                "total": 14157
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 11700,
+                            "totalVat": 2457,
+                            "totalAmount": 14157,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "202620420.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-10-09T08:47:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "demo"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "202620420",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Licenční dům Klíček s.r.o.",
+                    "country": "cz",
+                    "companyId": "48360210",
+                    "taxId": "CZ48360210",
+                    "vatId": "CZ48360210",
+                    "courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Softwarová",
+                        "houseNumber": "9",
+                        "city": "Brno",
+                        "zip": "63900",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "obchod@licencni-dum-klicek.example",
+                        "phone": "+420543210560",
+                        "web": "www.licencni-dum-klicek.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "1382659074/0100",
+                        "iban": "CZ0801000000001382659074",
+                        "bic": "KOMBCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Zelený Terminál s.r.o.",
+                    "country": "cz",
+                    "companyId": "61204579",
+                    "taxId": "CZ61204579",
+                    "vatId": "CZ61204579",
+                    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Serverová",
+                        "houseNumber": "1024/8",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@zeleny-terminal.example",
+                        "phone": "+420541230190",
+                        "web": "www.zeleny-terminal.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-10-08",
+                    "dueDate": "2026-10-29",
+                    "taxPointDate": "2026-10-08",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "202620420",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Licence kancelářského balíku, 25 uživatelů — Q4/2026",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 11700,
+                        "totalPrice": 11700,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 11700,
+                        "tax": 2457,
+                        "total": 14157
+                    }
+                ],
+                "totals": {
+                    "totalBase": 11700,
+                    "totalVat": 2457,
+                    "totalAmount": 14157,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "202620420.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.software",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

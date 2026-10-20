@@ -1,0 +1,38 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "contract",
+        "title": "Nájemní smlouva — kancelář Serverová 1024/8",
+        "summary": "Nájemní smlouva na kancelářské prostory 86 m² včetně serverovny; nájemné 18 000 Kč měsíčně, služby 2 400 Kč.",
+        "party": {
+            "name": "Správa nemovitostí Patro s.r.o.",
+            "companyId": "81973501",
+            "email": "najmy@patro-sprava.example"
+        },
+        "kindFields": {
+            "subject": "Nájem kancelářských prostor 86 m² vč. serverovny",
+            "noticePeriod": "6 měsíců",
+            "signedDate": "2026-01-01",
+            "contractNumber": "NS-2024-118",
+            "validFrom": "2026-01-01",
+            "validTo": "2026-12-29"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Nájem",
+    "refNumber": "NS-2024-118",
+    "validFrom": "2026-01-01",
+    "validTo": "2026-12-29",
+    "created": "2026-01-03T16:20:00",
+    "attachments": [
+        {
+            "file": "NS-2024-118.pdf",
+            "name": "NS-2024-118.pdf",
+            "mimeType": "application/pdf",
+            "size": 28621,
+            "sha256": "51e55ce978c50f5d054ab419de4cefe1467c2f75bee4cddca336445970086334"
+        }
+    ]
+}

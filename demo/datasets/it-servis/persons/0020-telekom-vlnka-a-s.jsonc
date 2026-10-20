@@ -1,0 +1,51 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00020",
+    "companyId": "95278141",
+    "taxId": "CZ95278141",
+    "vatId": "CZ95278141",
+    "courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
+    "name": {
+        "fullName": "Telekom Vlnka a.s."
+    },
+    "contact": {
+        "email": "vyuctovani@telekom-vlnka.example",
+        "phone": "+420800404040",
+        "web": "www.telekom-vlnka.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Anténní",
+            "houseNumber": "400/22",
+            "city": "Praha 10",
+            "zip": "10000",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2874190350/0300",
+            "iban": "CZ0303000000002874190350",
+            "bic": "CEKOCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

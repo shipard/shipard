@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Knihkupectví Stránka s.r.o.",
+        "country": "cz",
+        "companyId": "90462718",
+        "taxId": "CZ90462718",
+        "vatId": "CZ90462718",
+        "address": {
+            "street": "Záložková",
+            "houseNumber": "640/11",
+            "city": "Kroměříž",
+            "zip": "76701",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "info@knihy-stranka.example",
+            "phone": "+420573339012"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-01-01",
+        "dueDate": "2026-01-15",
+        "accountingDate": "2026-01-01",
+        "taxPointDate": "2026-01-01",
+        "vatObligationDate": "2026-01-01"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260007"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
+            },
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 3400.0,
+            "totalPrice": 3400.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 3400.0,
+                "vatAmount": 714.0,
+                "vatTotal": 4114.0
+            },
+            "description": "Správa IT — paušál 01/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 3400.0,
+            "tax": 714.0,
+            "total": 4114.0
+        }
+    ],
+    "totals": {
+        "totalBase": 3400.0,
+        "totalVat": 714.0,
+        "totalAmount": 4114.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260007",
+            "sequenceNumber": 7
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

@@ -1,0 +1,62 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00006",
+    "companyId": "18493068",
+    "taxId": "CZ18493068",
+    "vatId": "CZ18493068",
+    "name": {
+        "fullName": "Galvanovna Pokorný a syn s.r.o."
+    },
+    "contact": {
+        "email": "uctarna@galvanovna-pokorny.example",
+        "phone": "+420517348120",
+        "web": "www.galvanovna-pokorny.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Pokovovací",
+            "houseNumber": "3301/2",
+            "city": "Vyškov",
+            "zip": "68201",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2087561431/0100",
+            "iban": "CZ6401000000002087561431",
+            "bic": "KOMBCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Účtárna",
+            "email": "uctarna@galvanovna-pokorny.example",
+            "phone": "+420517348120",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

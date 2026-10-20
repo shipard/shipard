@@ -1,0 +1,230 @@
+{
+  "mail:MSG-DEMO-CIPDES-2602": {
+    "hash": "aa0338a9c141004445957d8bd6c95a269e2863e602b99aa0a7d546178915a8d6",
+    "file": "mail/0010-msg-demo-cipdes-2602.files/FV-2026-2210.pdf"
+  },
+  "mail:MSG-DEMO-CIPDES-2604": {
+    "hash": "7227319bcc6f1b9f290efcdbb2ca73dd2c891333744d1ae41f874d4d1d1ff0bd",
+    "file": "mail/0021-msg-demo-cipdes-2604.files/FV-2026-2211.pdf"
+  },
+  "mail:MSG-DEMO-CIPDES-2606": {
+    "hash": "488e92d9125861ffc56dfc59d825bdbade92467a8957c731e4004264ae1ec378",
+    "file": "mail/0030-msg-demo-cipdes-2606.files/FV-2026-2212.pdf"
+  },
+  "mail:MSG-DEMO-CIPDES-2609": {
+    "hash": "d742a0771407639ccc582e25abaa907452fcdfec64daebb8addf8bd895832092",
+    "file": "mail/0045-msg-demo-cipdes-2609.files/FV-2026-2213.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2602": {
+    "hash": "431c577ec045aa94c5eb842c74cb1d866576661d51402e69965d44ea4f9b518e",
+    "file": "mail/0009-msg-demo-jiskra-2602.files/2026071245.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2603": {
+    "hash": "2dcaac2a0449e6f8158b2e8a8a4fa13bd147dd770079cbd525c937e21b880163",
+    "file": "mail/0014-msg-demo-jiskra-2603.files/2026071246.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2604": {
+    "hash": "6f761f4190b45aac9df5ab2a07316422b778b4fb922ee01f778d31d4e667adf4",
+    "file": "mail/0020-msg-demo-jiskra-2604.files/2026071247.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2605": {
+    "hash": "37fe01ba6bb2715d79267658a83eb04ec960b6f7f6117efaaaaeb766ba132327",
+    "file": "mail/0025-msg-demo-jiskra-2605.files/2026071248.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2606": {
+    "hash": "f3e298d1e581cdef7bbdb8381185ec088851db5553f89fd09e313d8d7a1dded0",
+    "file": "mail/0029-msg-demo-jiskra-2606.files/2026071249.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2607": {
+    "hash": "c5a2f2fccdcaddb3b58aa919b6737586d4e5bfb258c89bdc5a87a950f8955119",
+    "file": "mail/0036-msg-demo-jiskra-2607.files/2026071250.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2608": {
+    "hash": "48b30024cadcc96a36afc04ac933b82e55eedb16fc78f5b28e0ab8dc555f60ec",
+    "file": "mail/0040-msg-demo-jiskra-2608.files/2026071251.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2609": {
+    "hash": "55f0005ab32eb71f360aef62f09c2d25a6d5650432819bbbe977595cc12591f1",
+    "file": "mail/0044-msg-demo-jiskra-2609.files/2026071252.pdf"
+  },
+  "mail:MSG-DEMO-JISKRA-2610": {
+    "hash": "b6d70284f49672b2a6964810ccbaf0e0b161725f77db73dcb4049c67dbeb103d",
+    "file": "mail/0051-msg-demo-jiskra-2610.files/2026071253.pdf"
+  },
+  "mail:MSG-DEMO-KLICEK-2601": {
+    "hash": "00926881c9f5da18593dc50914e67baecfe5e487630c99919ce0d68e025e4a4e",
+    "file": "mail/0005-msg-demo-klicek-2601.files/202620417.pdf"
+  },
+  "mail:MSG-DEMO-KLICEK-2604": {
+    "hash": "90c653bfc8c0e96f57333a7239f5a42a93e059bd6d682cc0db3f5319cba07eed",
+    "file": "mail/0019-msg-demo-klicek-2604.files/202620418.pdf"
+  },
+  "mail:MSG-DEMO-KLICEK-2607": {
+    "hash": "eea91cdad378ec921315afaf914c2cbada8f84cb367d03da9fbc41cd83da15b1",
+    "file": "mail/0035-msg-demo-klicek-2607.files/202620419.pdf"
+  },
+  "mail:MSG-DEMO-KLICEK-2610": {
+    "hash": "bd4a110b080f984c2125818ab916ba6307abac61ee2a47ef2155da0e77d46bc2",
+    "file": "mail/0050-msg-demo-klicek-2610.files/202620420.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2601": {
+    "hash": "97d377b26349347aab55c8e24270dc9bc994cd90f23288280efe7ed9385586df",
+    "file": "mail/0002-msg-demo-mrak-2601.files/SM-2026-1183.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2602": {
+    "hash": "3f8f92c075e8433f5e90152d6895ee9538a95496a2feb02bce443d64fde68220",
+    "file": "mail/0007-msg-demo-mrak-2602.files/SM-2026-1184.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2603": {
+    "hash": "fbbd8af7c4fe057c62b90fe0116b12309a654f0c9dc972c3d2e3e0067396c429",
+    "file": "mail/0012-msg-demo-mrak-2603.files/SM-2026-1185.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2604": {
+    "hash": "af0d333e19bc2685cab5c1169488a99e305f9a81a5389bf4e0c103b7f4bc88a1",
+    "file": "mail/0016-msg-demo-mrak-2604.files/SM-2026-1186.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2605": {
+    "hash": "a0245765736e67ce6c66facdceb6e97ab33229a3b355347bd6ec7c8ecfebaaaa",
+    "file": "mail/0023-msg-demo-mrak-2605.files/SM-2026-1187.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2606": {
+    "hash": "eea5f77c8ebc440a1126b4103fe076cea3e64ba911f092e29d7df396c4158fee",
+    "file": "mail/0027-msg-demo-mrak-2606.files/SM-2026-1188.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2607": {
+    "hash": "ad7871de2bf1354dcaab9efd3115813503a83c9f499fda2881692593a215e746",
+    "file": "mail/0032-msg-demo-mrak-2607.files/SM-2026-1189.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2608": {
+    "hash": "9882754ef7dde2b721feee2ba032d1a3a4f7ad900c627009df71abbf9dbf4b95",
+    "file": "mail/0038-msg-demo-mrak-2608.files/SM-2026-1190.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2609": {
+    "hash": "38e6be9e20bf41b011a06f18e649b1980d52240008ba743ce0985f176656b135",
+    "file": "mail/0042-msg-demo-mrak-2609.files/SM-2026-1191.pdf"
+  },
+  "mail:MSG-DEMO-MRAK-2610": {
+    "hash": "394700b69c77a8b62be3710a6da08646145f66d1d61842e97df4a2249a49cc73",
+    "file": "mail/0047-msg-demo-mrak-2610.files/SM-2026-1192.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2601": {
+    "hash": "c58eff9c99678581f52b84a63b92f00e43ff5f8e481258480bcad3ecc89aaf85",
+    "file": "mail/0001-msg-demo-patro-2601.files/NP-26-031.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2602": {
+    "hash": "09e8b83ceca88209bd7491516a1ea1e8b5b69f056c6eed09ab093cbb7ba10eee",
+    "file": "mail/0006-msg-demo-patro-2602.files/NP-26-032.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2603": {
+    "hash": "99f9686c9dd1ba2202223f5e5e65f3a3d661a668b709cf7bd0da811649b14453",
+    "file": "mail/0011-msg-demo-patro-2603.files/NP-26-033.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2604": {
+    "hash": "f17394f90953f8a1e2c5521eb745a75181c042fcd02b9b5178a8841411b0bc29",
+    "file": "mail/0015-msg-demo-patro-2604.files/NP-26-034.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2605": {
+    "hash": "d32041cc03222701c12d745ceceb3e7b0c2577bfbcdd07427b765bd21574d62a",
+    "file": "mail/0022-msg-demo-patro-2605.files/NP-26-035.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2606": {
+    "hash": "78c27a58a73acb518a1c69fcaeec7d73253a0019cad4d3fc80f2ca8b893f4d15",
+    "file": "mail/0026-msg-demo-patro-2606.files/NP-26-036.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2607": {
+    "hash": "956cc20ca51d54c752a23c7f9f1c4f2c066dec0f5ec2c761ab40c509cc555512",
+    "file": "mail/0031-msg-demo-patro-2607.files/NP-26-037.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2608": {
+    "hash": "9173f882509a7e0badb49766bd19bee6b8295cca4248f05870e334fa10849ce2",
+    "file": "mail/0037-msg-demo-patro-2608.files/NP-26-038.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2609": {
+    "hash": "d24fa868ac51fdaca4f14a62c2686c06015175df52573a4ed552562ea06df8bb",
+    "file": "mail/0041-msg-demo-patro-2609.files/NP-26-039.pdf"
+  },
+  "mail:MSG-DEMO-PATRO-2610": {
+    "hash": "dfe4891b7d35d4f1caed3d6b1817afacb99a472100cb726f5357b4b9074cbe52",
+    "file": "mail/0046-msg-demo-patro-2610.files/NP-26-040.pdf"
+  },
+  "mail:MSG-DEMO-SLOUPE-2601": {
+    "hash": "697a325b74165bd923abdeec6c2cf0c78fa2449ac3e7b8ae8b49da4bc7d4d082",
+    "file": "mail/0003-msg-demo-sloupe-2601.files/260118.pdf"
+  },
+  "mail:MSG-DEMO-SLOUPE-2604": {
+    "hash": "5d85523c7bff48fb558b4693f6763a0604156ca58e2d415d0face81260233029",
+    "file": "mail/0017-msg-demo-sloupe-2604.files/260119.pdf"
+  },
+  "mail:MSG-DEMO-SLOUPE-2607": {
+    "hash": "5496632c354af92c78103162887f5109887822150f83aa4b8e164321cc4ff9b7",
+    "file": "mail/0033-msg-demo-sloupe-2607.files/260120.pdf"
+  },
+  "mail:MSG-DEMO-SLOUPE-2610": {
+    "hash": "50008a4579aa1428b9278deca7da64ace827fd147b1bc0dd245fe8b5bc207b1d",
+    "file": "mail/0048-msg-demo-sloupe-2610.files/260121.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2601": {
+    "hash": "b9ff73371c6aaf2a1fc6d25eabcf3850f6143a214f87913715eea5d41b85a30f",
+    "file": "mail/0004-msg-demo-vlnka-2601.files/2026448201.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2602": {
+    "hash": "0a871071f7dcd0abf3319e2a1ceb087f4ff90b0fc4021586bd6f6ebaa5af0648",
+    "file": "mail/0008-msg-demo-vlnka-2602.files/2026448202.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2603": {
+    "hash": "d019df0b0f9cda0f2dfa342698797c4bd7407b0c293f73906400527d600cc3ab",
+    "file": "mail/0013-msg-demo-vlnka-2603.files/2026448203.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2604": {
+    "hash": "4d0e631603de75481b0e89c8e443d57bfced2d7af10053b24c9c626ac38301aa",
+    "file": "mail/0018-msg-demo-vlnka-2604.files/2026448204.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2605": {
+    "hash": "fa5b095d5e2f0ddfd5a4755ecdce4bb3ce2816aae6617886c7793b34329a0ad2",
+    "file": "mail/0024-msg-demo-vlnka-2605.files/2026448205.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2606": {
+    "hash": "3ea72cfbdbcb299377578d61ca0f0da76b38f7c12fd7c963f26db18ea75bc868",
+    "file": "mail/0028-msg-demo-vlnka-2606.files/2026448206.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2607": {
+    "hash": "44e0f2dab9a26567df4415a2cc9242ecf5368b001ddcb950329ddc14d4311756",
+    "file": "mail/0034-msg-demo-vlnka-2607.files/2026448207.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2608": {
+    "hash": "d6a9f340f618ec51a1f8bc9ca53a804a9b5af60f94fa8e17c90222fb8d9fe786",
+    "file": "mail/0039-msg-demo-vlnka-2608.files/2026448208.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2609": {
+    "hash": "b90e7fb2b0e364677fdd2744d3081849b5991de44233ffc9fe22f68b17e80762",
+    "file": "mail/0043-msg-demo-vlnka-2609.files/2026448209.pdf"
+  },
+  "mail:MSG-DEMO-VLNKA-2610": {
+    "hash": "0ccbe643ec84b43e33866ed4c678cc1184fc96becb37f1ea088f03723ae11c34",
+    "file": "mail/0049-msg-demo-vlnka-2610.files/2026448210.pdf"
+  },
+  "registry:0": {
+    "hash": "f8f4cd4dd4eddfc718726fbdd3861610ee257508e78c930db3b343fe6fe14267",
+    "file": "registry/0001-servisni-smlouva-autodoprava-kopretina-s-r-o.files/SML-2026-001.pdf"
+  },
+  "registry:1": {
+    "hash": "77814359d93d28adc59b269761d6a6d717f0fc065cf603c48860d94ec4218c7a",
+    "file": "registry/0005-servisni-smlouva-dentalni-klinika-usmevov-s-r-o.files/SML-2026-004.pdf"
+  },
+  "registry:2": {
+    "hash": "4a15e02add2b167d81149e2f62c8a4e55c2e992c5c7037b653929c99a2b08342",
+    "file": "registry/0004-servisni-smlouva-hotel-modry-jelen-s-r-o.files/SML-2026-002.pdf"
+  },
+  "registry:3": {
+    "hash": "4a8c5ed24da5bafa1ad2f9d454e53059a74948911077bfa0327648bf0d0e2529",
+    "file": "registry/0006-servisni-smlouva-rheinwerk-logistik-gmbh.files/SML-2026-003.pdf"
+  },
+  "registry:4": {
+    "hash": "cfd3a22d5b05a2093ef061e4329ad6bdf3ee130c663c3a4a108126255c4e7f75",
+    "file": "registry/0003-pojisteni-odpovednosti-za-skodu-pojistovna-destnik-a-s.files/POJ-884512.pdf"
+  },
+  "registry:5": {
+    "hash": "a2fb96f383a51dc8e8429e549d216ddf0378c6bca755bd1681503cd806658899",
+    "file": "registry/0002-najemni-smlouva-kancelar-serverova-1024-8.files/NS-2024-118.pdf"
+  }
+}
