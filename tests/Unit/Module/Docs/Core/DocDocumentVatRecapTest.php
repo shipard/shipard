@@ -643,6 +643,35 @@ class DocDocumentVatRecapTest extends TestCase
         $this->assertSame(12735.77, $recap[1]['total_dom']);
     }
 
+    /**
+     * Přesná půlka haléře (#103 nález I): 45 EUR × 24,345 = 1 095,525 → 1 095,53;
+     * float by dal 1 095,52 (součin je binárně 1 095,5249…). Daň 9,45 × 24,345
+     * = 230,06025 → 230,06.
+     */
+    public function testHalfHalerConversionRoundsUpInDecimalArithmetic(): void
+    {
+        $doc = $this->buildDoc();
+        $data = [
+            'rows' => [
+                ['row_kind' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 21, 'total_price' => 45],
+            ],
+            'vat_registration' => 1,
+            'vat_duzp' => '2026-09-22',
+            'exchange_rate' => 24.345,
+        ];
+        $recap = $doc->buildVatRecapitulationPub($data);
+        $this->assertSame(1095.53, $recap[0]['base_dom']);
+        $this->assertSame(230.06, $recap[0]['tax_dom']);
+        $this->assertSame(1325.59, $recap[0]['total_dom'], '54,45 × 24,345 = 1 325,58525 → 1 325,59');
+
+        // Samovyměření: daň ze základu v domácí měně také desítkově — 100,50 × 24,345 = 2 446,6725 → 2 446,67;
+        // 2 446,67 × 21 % = 513,8007 → 513,80.
+        $data['rows'] = [['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 100.50]];
+        $recap = $doc->buildVatRecapitulationPub($data);
+        $this->assertSame(2446.67, $recap[0]['base_dom']);
+        $this->assertSame(513.80, $recap[0]['tax_dom']);
+    }
+
     /** Při kurzu 1 zůstává daň v domácí měně kopií daně dokladu (D80 jen pro cizí měnu). */
     public function testSelfAssessedHomeCurrencyKeepsTaxDomEqualToTax(): void
     {

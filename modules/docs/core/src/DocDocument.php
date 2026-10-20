@@ -1030,14 +1030,14 @@ abstract class DocDocument extends Document
                 'is_reverse_pair' => 0,
                 'order_pos'       => $sortOrder++,
             ];
-            $primary['base_dom']  = round($primary['base']  * $exchRate, 2);
-            $primary['tax_dom']   = round($primary['tax']   * $exchRate, 2);
-            $primary['total_dom'] = round($primary['total'] * $exchRate, 2);
+            $primary['base_dom']  = self::toHome($primary['base'], $exchRate);
+            $primary['tax_dom']   = self::toHome($primary['tax'], $exchRate);
+            $primary['total_dom'] = self::toHome($primary['total'], $exchRate);
             if ($selfAssessed && $exchRate !== 1.0) {
                 // Samovyměření v cizí měně (#103 D80, docs/vat-calculation.md):
                 // daň v domácí měně = základ v domácí měně × sazba, ne přepočet
                 // daně spočtené v měně dokladu — ten se liší o haléře.
-                $primary['tax_dom']   = $this->applyRounding($primary['base_dom'] * (float) $entry['vat_pct'] / 100.0, $vatRoundingMode);
+                $primary['tax_dom']   = $this->homeTax($primary['base_dom'], (float) $entry['vat_pct'], $vatRoundingMode);
                 $primary['total_dom'] = round($primary['base_dom'] + (empty($codeDef['noPayTax']) ? $primary['tax_dom'] : 0.0), 2);
             }
             $recap[] = $primary;
@@ -1351,12 +1351,12 @@ abstract class DocDocument extends Document
             if (!empty($r['id'])) {
                 $line['id'] = (int) $r['id'];
             }
-            $line['base_dom']  = round($base  * $exchRate, 2);
-            $line['tax_dom']   = round($tax   * $exchRate, 2);
-            $line['total_dom'] = round($total * $exchRate, 2);
+            $line['base_dom']  = self::toHome($base, $exchRate);
+            $line['tax_dom']   = self::toHome($tax, $exchRate);
+            $line['total_dom'] = self::toHome($total, $exchRate);
             if ($exchRate !== 1.0 && (!empty($codeDef['reverseVatCode']) || !empty($r['is_reverse_pair']))) {
                 // Samovyměření v cizí měně: daň v domácí měně ze základu v domácí měně (D80).
-                $line['tax_dom'] = $this->applyRounding($line['base_dom'] * $line['vat_pct'] / 100.0, $vatRoundingMode);
+                $line['tax_dom'] = $this->homeTax($line['base_dom'], (float) $line['vat_pct'], $vatRoundingMode);
             }
 
             $recap[] = $line;
@@ -1524,6 +1524,25 @@ abstract class DocDocument extends Document
     }
 
     /**
+     * Přepočet do domácí měny na haléře v desítkové aritmetice (#103 nález I):
+     * `round(x * kurz, 2)` nad floatem zaokrouhlí součin padající na přesnou
+     * půlku haléře dolů (45 × 24,345 = 1 095,525 je binárně 1 095,5249…).
+     * Částky mají nejvýš 2 a kurz 6 desetinných míst, `bcmul` je tedy přesný;
+     * `bcround` zaokrouhluje půlku od nuly jako `round()`.
+     */
+    protected static function toHome(float $amount, float $rate): float
+    {
+        return (float) bcround(bcmul(number_format($amount, 6, '.', ''), number_format($rate, 6, '.', ''), 12), 2);
+    }
+
+    /** Daň samovyměření v domácí měně ze základu v domácí měně (D80), součin v desítkové aritmetice jako {@see toHome()}. */
+    private function homeTax(float $baseDom, float $pct, int $mode): float
+    {
+        $product = bcmul(number_format($baseDom, 6, '.', ''), number_format($pct / 100.0, 6, '.', ''), 12);
+        return $mode === RoundingModes::ON_CENT ? (float) bcround($product, 2) : $this->applyRounding((float) $product, $mode);
+    }
+
+    /**
      * Domácí měna pro řádky, rekapitulaci a hlavičku + dorovnání řádků
      * v domácí měně.
      *
@@ -1569,8 +1588,8 @@ abstract class DocDocument extends Document
                 $row['vat_total_dom']  = null;
                 continue;
             }
-            $row['vat_base_dom']   = round((float) ($row['vat_base'] ?? 0)   * $exchRate, 2);
-            $row['vat_amount_dom'] = round((float) ($row['vat_amount'] ?? 0) * $exchRate, 2);
+            $row['vat_base_dom']   = self::toHome((float) ($row['vat_base'] ?? 0), $exchRate);
+            $row['vat_amount_dom'] = self::toHome((float) ($row['vat_amount'] ?? 0), $exchRate);
         }
         unset($row);
 
@@ -1591,7 +1610,7 @@ abstract class DocDocument extends Document
         }
         $data['total_base_dom']     = round($baseDom, 2);
         $data['total_vat_dom']      = round($vatDom, 2);
-        $data['total_amount_dom']   = round((float) ($data['total_amount'] ?? 0) * $exchRate, 2);
+        $data['total_amount_dom']   = self::toHome((float) ($data['total_amount'] ?? 0), $exchRate);
         $data['total_rounding_dom'] = round(
             (float) $data['total_amount_dom']
             - (float) $data['total_base_dom']
@@ -1721,7 +1740,7 @@ abstract class DocDocument extends Document
                 );
             }
             $row['vat_total_dom'] = $noPayTax
-                ? round((float) ($row['vat_total'] ?? 0) * $exchRate, 2)
+                ? self::toHome((float) ($row['vat_total'] ?? 0), $exchRate)
                 : round(
                     (float) ($row['vat_base_dom'] ?? 0) + (float) ($row['vat_amount_dom'] ?? 0),
                     2,

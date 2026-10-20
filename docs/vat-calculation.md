@@ -188,7 +188,11 @@ applyRounding(base_dom × sazba)`), ne přepočtem daně spočtené v měně dok
 přepočet 90,87 EUR by dal 2 210,41). Oddaňovací pár nese `base_dom` a `tax_dom`
 primární skupiny, `total_dom` = jejich součet. Platí i pro deklarovanou
 rekapitulaci (`takeOverVatRecapitulation`); při kurzu 1 zůstává `tax_dom`
-kopií `tax`.
+kopií `tax`. **Přepočet jde v desítkové aritmetice** (`DocDocument::toHome`,
+BCMath `bcmul` + `bcround`, #103 nález I): `round(x × kurz, 2)` nad floatem
+zaokrouhlí součin na přesné půlce haléře dolů (45 × 24,345 = 1 095,525 je
+binárně 1 095,5249…), správně je 1 095,53; daň samovyměření ze základu
+v domácí měně (`homeTax`) totéž.
 
 Implementace: `DocDocument::reconcileRowsToRecap($rows, $recap, $suffix, $tolerance)`
 — jedna metoda, volaná dvakrát (`''` pro měnu dokladu z `beforeSave`, `'_dom'`

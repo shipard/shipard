@@ -244,3 +244,10 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
   rekapitulace se stejnou sazbou; **H** náklad = Σ účtovaných částek
   přepočtených zvlášť (neplátce po řádcích; zbytek na 548 / 549).
   Snímky deníku se dělají až po vyřešení nálezů.
+- ✓ **D84 — Nález I: přepočet do domácí měny v desítkové aritmetice.** Druhé
+  ověření nechalo jediný rozdíl: 0602 u plátce o 0,01 Kč (ř. 5, ř. 43, KH A.2,
+  náklad) — dopravné 45 EUR × 24,345 = 1 095,525, Shipard dával 1 095,52,
+  protože `DocDocument` přepočítával `round(x * $exchRate, 2)` nad binárním
+  floatem (součin 1 095,5249…). Oprava: `DocDocument::toHome()` (BCMath
+  `bcmul` + `bcround`) na všech deseti místech přepočtu a `homeTax()` pro daň
+  samovyměření ze základu v Kč (D80). Očekávání zůstalo (`docs/vat-calculation.md`).
