@@ -230,3 +230,17 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
   `counts.notCarried`, `byPath` (staré běhy = cesta `ai`); odhad ceny počítá
   u `pdfIsdoc` jen štítky; `AttachmentPreparer` ISDOC (přípona nebo XML
   s kořenem ISDOC) modelu neposílá.
+- ✓ **D83 — Nálezy prvního ověření bez přeskakování (2026-10-20, schváleno
+  v chatu).** Apply prošel u všech dokladů, kontrola Kurzy `ok`; rozdíly
+  věrnosti a DPH vyřešené takto: **A** kurz 1 u domácí měny ≡ null
+  (pravidlo adaptéru, #121 U4 — ověření od října neběželo); **B** druh
+  plnění řádku z definice kódu DPH; **C** text řádku složený z názvu
+  a popisu (`CanonicalRowText`) → obojí z návrhu; **D** výjimka
+  `rows[].item.ean` (applier EAN neukládá); **E** papírové přenesení jen
+  u PDP a dokladu jen se službami z EU; **F** výjimka `vat.mode` u služby
+  ze třetí země bez DPH (applier ji samovyměří); **G** dopravné na faktuře
+  za zboží z EU je služba — generátor mapuje samovyměření per řádek podle
+  `supplyKind` (ř. 3 / ř. 5, skupiny zvlášť), adaptér sloučí položky
+  rekapitulace se stejnou sazbou; **H** náklad = Σ účtovaných částek
+  přepočtených zvlášť (neplátce po řádcích; zbytek na 548 / 549).
+  Snímky deníku se dělají až po vyřešení nálezů.

@@ -720,7 +720,11 @@ stejných hodnot jako očekávaný canonical (D5), v `Decimal`:
   zůstává měna dokladu.
 - `costs.json` — `{messageId, currency, cost}`: náklad = Σ MD třídy 5 bez
   zaokrouhlení; plátce základ (doklad bez DPH celková částka), neplátce
-  a spolek základ + DPH (#97); v domácí měně (`currency` = měna dokladu).
+  a spolek základ + DPH (#97); v domácí měně, každá účtovaná částka
+  přepočtená zvlášť — plátce položky rekapitulace (samovyměření po
+  druzích plnění), neplátce řádky s DPH dodavatele dorovnané na
+  rekapitulaci papíru; haléřový zbytek proti celkem × kurz jde na účet
+  zaokrouhlení (nález H); `currency` = měna dokladu.
 - `exchange-rates.json` — jen doklady v cizí měně (D79): `{messageId,
   currency, rateDate, listType, validFrom, rate}` — datum kurzu (DUZP, bez
   něj datum vystavení), lístek podle pravidla platnosti a kurz za jednotku
@@ -737,6 +741,10 @@ daně na výstupu i odpočtu, snížená sazba na sudých řádcích 4, 6, 11, 1
 českou sazbu dává `czRate` a daň = základ × sazba. `B2orB3` = B.2 nad
 práh `controlStatementThreshold` (celková částka vč. DPH), jinak B.3;
 účtenka vždy B.3; `none` = bez řádků i oddílu (dodavatel neplátce).
+U plnění z EU platí režim **per řádek** podle druhu plnění (`supplyKind`:
+zboží → ř. 3, služba → ř. 5 — dopravné na faktuře za zboží je služba,
+jak ho vede Shipard; nález G 2026-10-20); každá skupina se přepočítá
+a zdaní zvlášť, jako položka rekapitulace per kód.
 
 Strážce `tests/Unit/Corpus/DatasetExpectationsTest.php`: projekce v sadě
 = korpus, právě jeden záznam per zpráva, mapování pokrývá všechny varianty
@@ -808,19 +816,30 @@ z běhu se sepíší a člověk rozhodne.
 |-------|-----|------|
 | `rows[].item.supplierCode` | vždy | kód dodavatele se učí per položka a dodavatel, účetní položka sdílená více řádky nese jen první; export ho nenese |
 | `rows[].vat.reverseChargeCode` | vždy | nese ho kód DPH řádku (cz-115 ↔ 4); hlídá KH B.1 |
+| `rows[].item.ean` | vždy (schváleno 2026-10-20, nález D) | applier EAN neukládá (`economy_items` sloupec má, učení per položka chybí); export ho nenese |
 | `dates.taxPointDate` | doklad bez DPH (`vat.mode` none) | `DocDocument::applyDateDefaults` doplní datum vystavení |
 | `dates.dueDate` | návrh bez splatnosti (účtenka) | tatáž metoda doplní vystavení + lhůtu |
 | `payment.paymentReference` | návrh bez VS (účtenka) | `applyPaymentReferenceDefault` doplní pořadové číslo řady |
 | `exchangeRate` | doklad v cizí měně (schváleno 2026-10-20, D79) | papír kurz nenese, applier ho doplní z lístku k účetnímu datu (#121 D6); hodnotu i datum hlídá kontrola 5 |
+| `vat.mode` | doklad bez DPH ze třetí země (`vat.mode` none + `vat.place` thirdCountry; schváleno 2026-10-20, nález F) | applier službu ze třetí země samovyměří (F3 nález B) a „Bez DPH“ se samovyměřením přepne na fromBase; řádky a rekapitulaci srovná adaptér |
 | `rows[].unitPrice`, `rows[].totalPrice`, `rows[].priceCalcMode`, `rows[].discountPct`, `rows[].vat`, `vat.mode`, `vatRecap`, `totals.totalBase`, `totals.totalVat` | zdroj dat bez agendy DPH | neplátce ukládá ceny s DPH, bez kódů a rekapitulace (#97); celková částka, data, strany a texty se porovnávají dál |
 
 Podstrom `_resolve` export nenese — štítky řádků hlídá kontrola 2.
 **Pravidla adaptéru** (rovnocenné tvary doplněné ze zdroje dat, ne
-výjimky): vlastní strana (`customer`) z vlastní firmy, text řádku místo
-názvu účetní položky, jednotka přes `UnitResolver` (a jednotka mimo
+výjimky; `SavedDocumentProjection`): vlastní strana (`customer`) z vlastní
+firmy, text řádku místo názvu účetní položky — a když je text složený
+z názvu a popisu návrhu (`CanonicalRowText::compose`, pomlčka), obojí
+z návrhu (nález C), jednotka přes `UnitResolver` (a jednotka mimo
 číselník, kterou řádek nenese — `bal`, `krt`, `role`), papírová podoba
-samovyměření (0 %, bez oddaňovacího páru) a dokladu bez DPH (bez nulové
-rekapitulace, jen při nulové dani), `vat.reverseCharge` z kódů.
+samovyměření (0 %, bez oddaňovacího páru; položky se stejnou sazbou
+sloučené do jedné — Shipard vede zboží a službu z EU per kód, nález G)
+a dokladu bez DPH (bez nulové rekapitulace, jen při nulové dani),
+kurz 1 u dokladu v domácí měně ≡ papír bez kurzu (#121 U4, nález A),
+`rows[].vat.supplyKind` z definice kódu DPH (nález B), `vat.reverseCharge`
+z kódů — true jen u tuzemského přenesení a u dokladu jen se službami z EU
+(čl. 196); pořízení zboží z EU (čl. 138, i s dopravným) ani plnění ze
+třetí země papírové přenesení nemají (nález E). Nálezy A–H z ověření
+2026-10-20: `tasks/testing-rates-isdoc.md`.
 
 ### Schvalování snímku deníku
 
