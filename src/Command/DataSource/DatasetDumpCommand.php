@@ -23,6 +23,9 @@ use Shipard\Module\Core\Exchange\Export\ItemExporter;
 use Shipard\Module\Core\Exchange\Export\PersonExporter;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesExporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
+use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\Economy\Items\Dataset\ProvisionedItemsDetector;
+use Shipard\Module\Economy\Items\Dataset\ProvisionedItemsResult;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
 use Symfony\Component\Console\Command\Command;
@@ -37,8 +40,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * Bere všechny nearchivované záznamy (`docState != 90`) sekcí setup,
  * persons, items, docs, registry, mail; exportery pro moduly, které na DS
- * nejsou aktivní, se vynechají. Testovatelné přes podtřídu (seamy
- * getDataSourceDir / buildResolver / loadTables / createExporters).
+ * nejsou aktivní, se vynechají. Nezměněné účetní položky z nabídky osnovy
+ * do `items/` nejdou — manifest je nese jako `provision.accountingItems`
+ * a `country` zdroje dat, aby dump naseedované sady vrátil tytéž soubory
+ * ({@see ProvisionedItemsDetector}, #131 krok 0c). Testovatelné přes
+ * podtřídu (seamy getDataSourceDir / buildResolver / loadTables /
+ * createDetector / createExporters).
  */
 class DatasetDumpCommand extends Command
 {
@@ -86,9 +93,33 @@ class DatasetDumpCommand extends Command
     }
 
     /**
+     * Detektor nezměněných položek z nabídky osnovy; null = DS položky nemá.
+     *
+     * @param array<string, TableDefinition> $tables
+     */
+    protected function createDetector(
+        DataSourceConnection $dsConnection,
+        array $tables,
+        string $lang,
+        ModulePathResolver $resolver,
+    ): ?ProvisionedItemsDetector {
+        if (!isset($tables['economy_items'])) {
+            return null;
+        }
+        return new ProvisionedItemsDetector(
+            $dsConnection,
+            new AccountingItemsOffer($dsConnection, $resolver),
+            $lang,
+            $tables,
+        );
+    }
+
+    /**
      * Exportery podle aktivních tabulek DS, v pořadí sekcí sady.
      *
      * @param array<string, TableDefinition> $tables
+     * @param list<int> $excludedItemIds položky, které manifest pokrývá
+     *        přes `provision.accountingItems` — `ItemExporter` je vynechá
      * @return array{setup: ?SetupExporter, records: list<RecordExporter>}
      */
     protected function createExporters(
@@ -97,6 +128,7 @@ class DatasetDumpCommand extends Command
         DataSourceConfig $dsConfig,
         string $dsDir,
         ?ConfigRuntime $config = null,
+        array $excludedItemIds = [],
     ): array {
         $country = $dsConfig->hasCountry() ? strtolower($dsConfig->getCountry()) : 'cz';
         $records = [];
@@ -115,7 +147,7 @@ class DatasetDumpCommand extends Command
             $records[] = new PersonExporter($db, $country);
         }
         if (isset($tables['economy_items'])) {
-            $records[] = new ItemExporter($db);
+            $records[] = new ItemExporter($db, $excludedItemIds);
         }
         if (isset($tables['docs_core_heads'])) {
             // Konfigurace kvůli dimenzím deníku na dokladech (#110 T2).
@@ -147,7 +179,8 @@ class DatasetDumpCommand extends Command
         $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
         $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);
         $lang = $dsConfig->getDefaultLanguage();
-        $tables = $this->loadTables($dsConfig, $this->buildResolver(), $lang);
+        $resolver = $this->buildResolver();
+        $tables = $this->loadTables($dsConfig, $resolver, $lang);
         $db = $dsConnection->getDibiConnection();
 
         $name = (string) ($input->getOption('name') ?? '');
@@ -157,12 +190,19 @@ class DatasetDumpCommand extends Command
         $description = $input->getOption('description');
 
         try {
+            // Nezměněné položky z nabídky osnovy nese manifest, ne `items/`
+            // (#131 krok 0c); `country` kvůli pojistce seedu proti DS jiné země.
+            $provisioned = $this->createDetector($dsConnection, $tables, $lang, $resolver)?->detect()
+                ?? ProvisionedItemsResult::none();
+
             $manifest = new DatasetManifest(
                 name: $name,
                 title: $title,
                 description: is_string($description) && $description !== '' ? $description : null,
                 dateMode: DatasetManifest::DATE_MODE_FIXED,
                 created: gmdate('Y-m-d\TH:i:s\Z'),
+                country: $dsConfig->hasCountry() ? strtolower($dsConfig->getCountry()) : null,
+                provision: $provisioned->manifestProvision(),
             );
 
             $writer = DatasetWriter::create($targetDir, overwrite: (bool) $input->getOption('force'));
@@ -171,13 +211,21 @@ class DatasetDumpCommand extends Command
             $config = is_file($dsDir . '/config/configuration/compiled.' . $lang . '.json')
                 ? ConfigRuntime::load($dsDir, $lang)
                 : null;
-            $exporters = $this->createExporters($db, $tables, $dsConfig, $dsDir, $config);
+            $exporters = $this->createExporters($db, $tables, $dsConfig, $dsDir, $config, $provisioned->itemIds);
 
             $output->writeln("<info>Dataset dump</info> → {$writer->getRootDir()}");
             $result = (new DatasetDumper($writer))->dump($manifest, $exporters['setup'], $exporters['records']);
 
             foreach ($result->counts as $section => $count) {
                 $output->writeln(sprintf('  %-10s %d', $section . ':', $count));
+            }
+            if ($provisioned->accountingItems !== null) {
+                $output->writeln(sprintf(
+                    '  %-10s accountingItems=%s (%d items not written to items/)',
+                    'provision:',
+                    $provisioned->isAll() ? 'all' : count($provisioned->accountingItems) . ' codes',
+                    count($provisioned->itemIds),
+                ));
             }
             foreach ($result->warnings as $w) {
                 $output->writeln("  <comment>warning:</comment> {$w}");

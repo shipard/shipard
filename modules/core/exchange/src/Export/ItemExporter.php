@@ -28,8 +28,15 @@ final class ItemExporter implements RecordExporter
     /** @var list<string> */
     private array $warnings = [];
 
+    /**
+     * @param list<int> $excludedIds položky, které `exportAll()` vynechá —
+     *        nezměněné položky z nabídky osnovy, které sada místo souborů
+     *        v `items/` nese jako `provision.accountingItems` v manifestu
+     *        ({@see \Shipard\Module\Economy\Items\Dataset\ProvisionedItemsDetector}, #131)
+     */
     public function __construct(
         private readonly Connection $db,
+        private readonly array $excludedIds = [],
     ) {}
 
     public function section(): string
@@ -39,9 +46,15 @@ final class ItemExporter implements RecordExporter
 
     public function exportAll(): array
     {
-        return $this->exportRows($this->db->fetchAll(
-            $this->selectSql() . ' WHERE [i.docState] <> 90 ORDER BY [i.code], [i.name], [i.id]',
-        ));
+        $where = ' WHERE [i.docState] <> 90';
+        $order = ' ORDER BY [i.code], [i.name], [i.id]';
+        if ($this->excludedIds !== []) {
+            return $this->exportRows($this->db->fetchAll(
+                $this->selectSql() . $where . ' AND [i.id] NOT IN %in' . $order,
+                $this->excludedIds,
+            ));
+        }
+        return $this->exportRows($this->db->fetchAll($this->selectSql() . $where . $order));
     }
 
     public function exportByIds(array $ids): array

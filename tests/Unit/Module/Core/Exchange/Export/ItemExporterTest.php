@@ -141,4 +141,59 @@ class ItemExporterTest extends TestCase
 
         $this->assertSame([], (new ItemExporter($db))->exportAll());
     }
+
+    public function testExportAllLeavesOutExcludedIds(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['Field' => 'accounting_account']));
+        $db->expects($this->atLeastOnce())->method('fetchAll')->willReturnCallback(function (string $sql, mixed ...$args) {
+            if (str_contains($sql, 'FROM [economy_items] AS [i]')) {
+                $this->assertStringContainsString(
+                    ' WHERE [i.docState] <> 90 AND [i.id] NOT IN %in ORDER BY [i.code], [i.name], [i.id]',
+                    $sql,
+                );
+                $this->assertSame([[11, 12]], $args, 'excluded ids are the only modifier argument');
+                $row = $this->itemRow();
+                $row['id'] = 13;
+                return [new Row($row)];
+            }
+            return [];
+        });
+
+        $records = (new ItemExporter($db, [11, 12]))->exportAll();
+        $this->assertSame([13], array_map(static fn($r) => $r->id, $records));
+    }
+
+    public function testWithoutExclusionsExportAllHasNoNotIn(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['Field' => 'accounting_account']));
+        $db->expects($this->atLeastOnce())->method('fetchAll')->willReturnCallback(function (string $sql, mixed ...$args) {
+            if (str_contains($sql, 'FROM [economy_items] AS [i]')) {
+                $this->assertStringNotContainsString('NOT IN', $sql);
+                $this->assertSame([], $args);
+            }
+            return [];
+        });
+
+        $this->assertSame([], (new ItemExporter($db, []))->exportAll());
+    }
+
+    public function testExportByIdsIgnoresExclusions(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['Field' => 'accounting_account']));
+        $db->expects($this->atLeastOnce())->method('fetchAll')->willReturnCallback(function (string $sql, mixed ...$args) {
+            if (str_contains($sql, 'FROM [economy_items] AS [i]')) {
+                $this->assertStringContainsString(' WHERE [i.id] IN %in AND [i.docState] <> 90 ', $sql);
+                $this->assertStringNotContainsString('NOT IN', $sql);
+                $this->assertSame([[11]], $args);
+                return [new Row($this->itemRow())];
+            }
+            return [];
+        });
+
+        $records = (new ItemExporter($db, [11]))->exportByIds([11]);
+        $this->assertSame([11], array_map(static fn($r) => $r->id, $records), 'explicit ids win over the exclusion list');
+    }
 }
