@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 384 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 354.
+Celkem 385 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 354.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `testing-rates-isdoc.md` | naplánováno | design schválen 2026-10-20 (#103 D72–D77), čeká na implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -474,6 +475,7 @@ zaúčtování a evaluace AI.
 | `testing-phase6b.md` | F6 | Spouštění z dashboardu: úlohy na pozadí, evaluační zdroje dat (pole `dataset`), evaluace s odhadem a stropem útraty, `dataset-verify`, editor variant, cena štítků (#103 D54–D56, D58–D63) |
 | `testing-phase6c.md` | F6 | Datová sada při zakládání zdroje dat a akce „Nahrát datovou sadu“ v seznamu, heslo admina přes stdin, zrušení starých `seed-*` (#103 D64–D67) |
 | `ds-delete.md` | M5 | `shpd-server ds-delete` pro volné zdroje dat mimo produkci, mazání z dashboardu, přehled zdrojů dat bez sloupce Databáze a s kebab menu (#103 D68–D71) |
+| `testing-rates-isdoc.md` | F3/F4 | Kurzy a ISDOC v datových sadách: lístky ČNB v korpusu, očekávání v Kč, `dataset-verify` bez přeskakování cizí měny, ISDOC jako příloha, evaluace zpráv s ISDOC produkční cestou (#103 D72–D77) |
 
 ## Drobné
 
