@@ -274,11 +274,16 @@ final class DocumentValidator
 
         $declaredF = round((float) $declared, 2);
 
+        // Účetní doklad (cmnbkp): celková částka je obrat jedné strany
+        // (`AccountingDocument` sčítá řádky MD), ne součet obou stran kontace.
+        $debitOnly = ($canonical['docType'] ?? null) === 'accountingDocument';
+
         // (1) base, (2) base × (1 + vat.pct/100)
         $sumBase = 0.0;
         $sumWithVat = 0.0;
         foreach ($rows as $row) {
             if (!is_array($row)) continue;
+            if ($debitOnly && ($row['accSide'] ?? null) === 'credit') continue;
             $rowBase = $row['totalPrice'] ?? null;
             if ($rowBase === null || !is_numeric($rowBase)) continue;
             $rowBaseF = (float) $rowBase;

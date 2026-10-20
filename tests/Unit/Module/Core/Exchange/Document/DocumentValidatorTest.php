@@ -204,6 +204,24 @@ class DocumentValidatorTest extends TestCase
         $this->assertStringContainsString('1815', $mismatch['message']); // sumWithVat = 1500 * 1.21
     }
 
+    public function testTotalsOfAccountingDocumentCountDebitSideOnly(): void
+    {
+        // Kontace: MD 1 000 + 300 proti D 1 300 — celková částka dokladu je
+        // obrat strany MD (AccountingDocument), ne součet obou stran (2 600).
+        $issues = $this->v->validate([
+            'docType' => 'accountingDocument',
+            'dates' => ['issueDate' => '2026-04-30'],
+            'vat' => ['mode' => 'none'],
+            'rows' => [
+                ['operation' => 'acc.record', 'account' => '521100', 'accSide' => 'debit', 'totalPrice' => 1000.00],
+                ['operation' => 'acc.record', 'account' => '524100', 'accSide' => 'debit', 'totalPrice' => 300.00],
+                ['operation' => 'acc.record', 'account' => '331100', 'accSide' => 'credit', 'totalPrice' => 1300.00],
+            ],
+            'totals' => ['totalAmount' => 1300.00],
+        ]);
+        $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
+    }
+
     public function testTotalsBaseSumWithinToleranceProducesNoWarning(): void
     {
         // Doc without VAT — declared total matches the sum of base prices.
