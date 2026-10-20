@@ -28,6 +28,38 @@ class DocDocumentDefaultsTest extends TestCase
         $this->assertSame('2026-05-20', $data['due_date']);
     }
 
+    /** Přijatá faktura: výchozí účetní datum = DUZP (#103 D78, AccountingDateRule). */
+    public function testReceivedInvoiceAccountingDateDefaultsToDuzp(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $data = ['doc_type' => 'invni', 'issue_date' => '2026-09-02', 'vat_duzp' => '2026-08-31'];
+        $doc->applyDateDefaultsPub($data);
+        $this->assertSame('2026-08-31', $data['accounting_date']);
+        $this->assertSame('2026-08-31', $data['vat_dppd']);
+
+        // Bez DUZP (služba ze třetí země) se DUZP doplní datem vystavení a účetní datum ho převezme.
+        $data = ['doc_type' => 'invni', 'issue_date' => '2026-09-01', 'vat_duzp' => null];
+        $doc->applyDateDefaultsPub($data);
+        $this->assertSame('2026-09-01', $data['vat_duzp']);
+        $this->assertSame('2026-09-01', $data['accounting_date']);
+
+        // Explicitní účetní datum se nepřepisuje.
+        $data = ['doc_type' => 'invni', 'issue_date' => '2026-09-02', 'vat_duzp' => '2026-08-31', 'accounting_date' => '2026-09-10'];
+        $doc->applyDateDefaultsPub($data);
+        $this->assertSame('2026-09-10', $data['accounting_date']);
+    }
+
+    /** Ostatní typy (vydaná faktura, pokladna) zůstávají u data vystavení. */
+    public function testOtherDocTypesKeepIssueDateAsAccountingDate(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        foreach (['invno', 'cash', 'cmnbkp'] as $type) {
+            $data = ['doc_type' => $type, 'issue_date' => '2026-09-02', 'vat_duzp' => '2026-08-31'];
+            $doc->applyDateDefaultsPub($data);
+            $this->assertSame('2026-09-02', $data['accounting_date'], $type);
+        }
+    }
+
     public function testApplyDateDefaultsUsesPartnerPaymentTerm(): void
     {
         $db = $this->createMock(Connection::class);

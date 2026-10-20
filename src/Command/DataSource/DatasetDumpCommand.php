@@ -25,6 +25,7 @@ use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesExporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
+use Shipard\Module\Docs\Core\AccountingDateRule;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -109,6 +110,7 @@ class DatasetDumpCommand extends Command
                 ExchangeRateResolver::create($db, $config, $dsConfig),
                 isset($tables['docs_core_heads']),
                 isset($tables['core_mail_incoming_messages']),
+                AccountingDateRule::fromCanonical(...),
             );
         }
         if (isset($tables['base_persons_persons'])) {

@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Economy\ExchangeRates\Dataset;
 
 use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
+use Shipard\Module\Docs\Core\AccountingDateRule;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesExporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRate;
 use Shipard\Tests\Fixtures\Module\Economy\ExchangeRates\FakeExchangeRateResolver;
@@ -111,6 +112,25 @@ class ExchangeRatesExporterTest extends TestCase
         $this->assertSame(['exchangeRates: kurz CHF k 2026-06-20 není v lístcích — doklad po seedu kurz nedostane'], $exporter->getWarnings());
         $this->assertStringContainsString("[docState] <> 90", $sql[0]);
         $this->assertStringContainsString('[m.docState] <> 90', $sql[1]);
+    }
+
+    /** Účetní datum návrhu dává injektované pravidlo (#103 D78: přijatá faktura DUZP). */
+    public function testProposalAccountingDateComesFromInjectedRule(): void
+    {
+        $sql = [];
+        $analyses = [
+            ['canonical_json' => json_encode(['docType' => 'invoiceReceived', 'currency' => 'EUR', 'dates' => ['taxPointDate' => '2026-06-10', 'issueDate' => '2026-06-12']])],
+        ];
+        $resolver = $this->resolver();
+        $exporter = new ExchangeRatesExporter($this->db([], $analyses, $sql), $resolver, true, true, AccountingDateRule::fromCanonical(...));
+        $exporter->exportAll();
+        $this->assertSame([['eur', '2026-06-10']], array_values(array_unique($resolver->lookups, SORT_REGULAR)));
+
+        // Bez pravidla platí accountingDate ?? issueDate.
+        $resolver = $this->resolver();
+        $exporter = new ExchangeRatesExporter($this->db([], $analyses, $sql), $resolver);
+        $exporter->exportAll();
+        $this->assertSame([['eur', '2026-06-12']], array_values(array_unique($resolver->lookups, SORT_REGULAR)));
     }
 
     public function testNoForeignCurrencyMeansEmptySection(): void

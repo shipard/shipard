@@ -20,6 +20,11 @@ use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
  * kurz za `amount` jednotek, bez zdroje a id), název
  * `NNNN-<listType>-<validFrom>.jsonc`. Dvojice (měna, datum) bez lístku
  * dá varování — takový doklad po seedu kurz nedostane.
+ *
+ * Účetní datum návrhu určuje `$accountingDateOf` (canonical → datum) —
+ * `DatasetDumpCommand` předává `AccountingDateRule::fromCanonical()`
+ * z docs.core (#103 D78: přijatá faktura DUZP, jinak datum vystavení);
+ * bez closure platí `accountingDate ?? issueDate`.
  */
 class ExchangeRatesExporter implements RecordExporter
 {
@@ -28,11 +33,13 @@ class ExchangeRatesExporter implements RecordExporter
     /** @var list<string> */
     private array $warnings = [];
 
+    /** @param (\Closure(array<string, mixed>): ?string)|null $accountingDateOf */
     public function __construct(
         private readonly Connection $db,
         private readonly ExchangeRateResolver $resolver,
         private readonly bool $hasDocuments = true,
         private readonly bool $hasMail = true,
+        private readonly ?\Closure $accountingDateOf = null,
     ) {
     }
 
@@ -132,7 +139,9 @@ class ExchangeRatesExporter implements RecordExporter
                     continue;
                 }
                 $currency = strtolower((string) ($canonical['currency'] ?? ''));
-                $date = $canonical['dates']['accountingDate'] ?? $canonical['dates']['issueDate'] ?? null;
+                $date = $this->accountingDateOf !== null
+                    ? ($this->accountingDateOf)($canonical)
+                    : ($canonical['dates']['accountingDate'] ?? $canonical['dates']['issueDate'] ?? null);
                 if ($currency !== '' && $currency !== $home && is_string($date)) {
                     self::addPair($pairs, $currency, $date);
                 }

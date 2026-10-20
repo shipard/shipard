@@ -222,7 +222,9 @@ Top-level struktura:
                                    //   applier lowercases pro cfgItem
   "exchangeRate": null,           // kurz za jednotku; null u cizí měny → applier
                                    //   ho mimo import mód doplní z kurzovního
-                                   //   lístku k accountingDate (bez něj issueDate),
+                                   //   lístku k účetnímu datu: accountingDate, jinak
+                                   //   u invoiceReceived taxPointDate, jinak issueDate
+                                   //   (AccountingDateRule, #103 D78),
                                    //   kurz na dokladu vždy vyhrává; nenalezeno =
                                    //   warning exchange_rate_missing a V pořádku
                                    //   zastaví validace (#121 D6, U5,

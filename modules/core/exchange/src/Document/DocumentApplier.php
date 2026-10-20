@@ -18,6 +18,7 @@ use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Module\Docs\Core\AccountingDateRule;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocRowCalculator;
@@ -1617,14 +1618,14 @@ class DocumentApplier
 
         // AI extractors sometimes omit accountingDate even when issueDate
         // is present. DocDocument::beforeSave (applyDateDefaults) would
-        // backfill accounting_date from issue_date, but its validate() runs
-        // first and rejects an empty accounting_date — so default it here,
-        // matching the same Czech accounting practice as the beforeSave
-        // hook. The form-based flow still requires accounting_date
+        // backfill it, but its validate() runs first and rejects an empty
+        // accounting_date — so default it here by the same rule
+        // (AccountingDateRule, #103 D78: přijatá faktura DUZP, jinak datum
+        // vystavení). The form-based flow still requires accounting_date
         // explicitly (DocsHeadsForm marks it required); this fallback
         // applies only to the Exchange apply path.
         $issueDate = $canonical['dates']['issueDate'] ?? null;
-        $accountingDate = $canonical['dates']['accountingDate'] ?? $issueDate;
+        $accountingDate = AccountingDateRule::fromCanonical($canonical);
 
         // Import mode (legacy migration): the client supplies the document's own
         // number + sequence and (for issued invoices) our own bank account.
@@ -2995,8 +2996,7 @@ class DocumentApplier
         if ($currency === '' || $currency === $this->exchangeRateResolver->homeCurrency()) {
             return null;
         }
-        $date = $canonical['dates']['accountingDate'] ?? $canonical['dates']['issueDate'] ?? null;
-        $date = is_string($date) && $date !== '' ? $date : null;
+        $date = AccountingDateRule::fromCanonical($canonical); // účetní datum (D5, D78)
         return [
             'currency' => $currency,
             'date'     => $date,

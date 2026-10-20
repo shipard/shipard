@@ -28,6 +28,9 @@ Kroky 1–2 se dějí v **editačním formuláři** — tom, který se ti otevř
 1. **Dokonči Koncept.** Tady je editovatelné všechno: řádky, částky, sazby,
    datumy, dodavatel. Zkontroluj především **Účetní datum**,
    **DUZP** a **Datum splatnosti** — od nich se odvíjí období a saldokonto.
+   U přijaté faktury se **Účetní datum** předvyplní podle **DUZP** (bez
+   DUZP datem vystavení); k účetnímu datu se u dokladu v cizí měně
+   dohledá i **Kurz**.
    Doklad z pošty už má nastavenou **číselnou řadu**, takže na ni myslet
    nemusíš. Rozdělaný doklad ulož tlačítkem **Uložit** — číslo ani
    zaúčtování se tím nespustí.

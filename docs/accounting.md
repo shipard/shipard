@@ -1305,7 +1305,8 @@ provádí jednou (při uložení dokladu) a deník už jen čte hotové hodnoty.
 
 1. `doc_currency == home_currency` → `_dom` = kopie, `exchange_rate = 1`.
 2. Jinak `_dom = round(cur × exchange_rate, 2)` + **haléřové dorovnání**, aby
-   platily invarianty:
+   platily invarianty (výjimka: daň samovyměření se v domácí měně počítá ze
+   základu v domácí měně, #103 D80 — `docs/vat-calculation.md`):
 
 ```
 Σ rows.vat_base_dom   (per vat_code) == vat_recap.base_dom   (daného kódu)

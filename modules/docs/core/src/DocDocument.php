@@ -790,11 +790,15 @@ abstract class DocDocument extends Document
             $data['vat_dppd'] = null;
         }
         if (!empty($data['issue_date'])) {
-            if (empty($data['accounting_date'])) {
-                $data['accounting_date'] = $data['issue_date'];
-            }
             if ($taxDocument && empty($data['vat_duzp'])) {
                 $data['vat_duzp'] = $data['issue_date'];
+            }
+            // Přijatá faktura patří do období DUZP (#103 D78, AccountingDateRule),
+            // ostatní typy k datu vystavení — DUZP se proto doplňuje první.
+            if (empty($data['accounting_date'])) {
+                $data['accounting_date'] = AccountingDateRule::usesDuzp((string) ($data['doc_type'] ?? '')) && !empty($data['vat_duzp'])
+                    ? $data['vat_duzp']
+                    : $data['issue_date'];
             }
         }
         if ($taxDocument && !empty($data['vat_duzp']) && empty($data['vat_dppd'])) {
@@ -1029,6 +1033,13 @@ abstract class DocDocument extends Document
             $primary['base_dom']  = round($primary['base']  * $exchRate, 2);
             $primary['tax_dom']   = round($primary['tax']   * $exchRate, 2);
             $primary['total_dom'] = round($primary['total'] * $exchRate, 2);
+            if ($selfAssessed && $exchRate !== 1.0) {
+                // Samovyměření v cizí měně (#103 D80, docs/vat-calculation.md):
+                // daň v domácí měně = základ v domácí měně × sazba, ne přepočet
+                // daně spočtené v měně dokladu — ten se liší o haléře.
+                $primary['tax_dom']   = $this->applyRounding($primary['base_dom'] * (float) $entry['vat_pct'] / 100.0, $vatRoundingMode);
+                $primary['total_dom'] = round($primary['base_dom'] + (empty($codeDef['noPayTax']) ? $primary['tax_dom'] : 0.0), 2);
+            }
             $recap[] = $primary;
 
             // Reverse charge — generate paired (oddanění) row. Samovyměření je
@@ -1050,9 +1061,11 @@ abstract class DocDocument extends Document
                     'is_reverse_pair' => 1,
                     'order_pos'       => $sortOrder++,
                 ];
-                $paired['base_dom']  = round($paired['base']  * $exchRate, 2);
-                $paired['tax_dom']   = round($paired['tax']   * $exchRate, 2);
-                $paired['total_dom'] = round($paired['total'] * $exchRate, 2);
+                // Oddaňovací pár nese tytéž částky v domácí měně jako primární
+                // skupina (vč. daně ze základu v domácí měně, D80).
+                $paired['base_dom']  = $primary['base_dom'];
+                $paired['tax_dom']   = $primary['tax_dom'];
+                $paired['total_dom'] = round($paired['base_dom'] + $paired['tax_dom'], 2);
                 $recap[] = $paired;
             }
         }
@@ -1297,6 +1310,7 @@ abstract class DocDocument extends Document
         if ($exchRate <= 0) {
             $exchRate = 1.0;
         }
+        $vatRoundingMode = (int) ($data['vat_rounding_mode'] ?? 0);
 
         $recap = [];
         $sortOrder = 0;
@@ -1340,6 +1354,10 @@ abstract class DocDocument extends Document
             $line['base_dom']  = round($base  * $exchRate, 2);
             $line['tax_dom']   = round($tax   * $exchRate, 2);
             $line['total_dom'] = round($total * $exchRate, 2);
+            if ($exchRate !== 1.0 && (!empty($codeDef['reverseVatCode']) || !empty($r['is_reverse_pair']))) {
+                // Samovyměření v cizí měně: daň v domácí měně ze základu v domácí měně (D80).
+                $line['tax_dom'] = $this->applyRounding($line['base_dom'] * $line['vat_pct'] / 100.0, $vatRoundingMode);
+            }
 
             $recap[] = $line;
         }

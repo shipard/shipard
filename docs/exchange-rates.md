@@ -130,7 +130,11 @@ $lookup = $resolver->lookup('EUR', '2026-10-17');  // + důvody per typ (CLI exc
 
 Memoizace per instance (měna, datum) — formulář i applier se ptají
 opakovaně. Datum = **účetní datum** dokladu (D5), u banky datum transakce
-(D7). DB přístup přes dvě chráněné metody (`latestList`, `listValue`) kvůli
+(D7). Výchozí účetní datum určuje `AccountingDateRule` (docs.core, #103
+D78): **přijatá faktura** (`invni` / `invoiceReceived`) má účetní datum
+= DUZP, bez DUZP datum vystavení; ostatní typy datum vystavení. Pravidlo
+sdílí `DocDocument::applyDateDefaults`, applier (účetní datum i datum
+kurzu) a exporter lístků datových sad (návrhy z analýz zpráv). DB přístup přes dvě chráněné metody (`latestList`, `listValue`) kvůli
 testům v paměti; testy formulářů, applieru a banky používají
 `tests/Fixtures/Module/Economy/ExchangeRates/FakeExchangeRateResolver`.
 
@@ -169,7 +173,9 @@ z dat, jinak z nastavení — vystřelí i na cestě apply (U5), kde
 
 `DocumentApplier::transform()` (jediné místo pro náhled i apply): měna ≠
 domácí, `exchangeRate` null a není import mód (`applyOptions.importNumber`)
-→ `rateFor(měna, accountingDate ?? issueDate)`. **Kurz z canonicalu
+→ `rateFor(měna, AccountingDateRule::fromCanonical())` — explicitní
+`accountingDate`, jinak u přijaté faktury `taxPointDate`, jinak `issueDate`
+(D78); totéž datum applier zapíše jako účetní datum. **Kurz z canonicalu
 (ISDOC, AI analýza) vždy vyhrává.** Import ze starého Shipardu nedohledává:
 kurz ze starého Shipardu je fakt, ne návrh; chybějící kurz zůstane
 chybějící a v cílovém stavu V pořádku ho zastaví validace dokladu.

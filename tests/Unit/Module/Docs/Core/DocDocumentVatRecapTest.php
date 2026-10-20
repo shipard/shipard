@@ -614,6 +614,53 @@ class DocDocumentVatRecapTest extends TestCase
         $this->assertSame(3025.0, $recap[0]['total_dom']);
     }
 
+    /**
+     * Samovyměření v cizí měně (#103 D80): daň v domácí měně ze základu
+     * v domácí měně — 432,70 EUR × 24,325 = 10 525,43 Kč, 21 % = 2 210,34 Kč.
+     * Přepočet daně v EUR (90,87 × 24,325 = 2 210,41) by dal o 7 haléřů víc.
+     */
+    public function testSelfAssessedForeignCurrencyTaxDomFromBaseDom(): void
+    {
+        $doc = $this->buildDoc();
+        $data = [
+            'rows' => [
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 432.70],
+            ],
+            'vat_registration' => 1,
+            'vat_duzp' => '2026-08-31',
+            'exchange_rate' => 24.325,
+        ];
+        $recap = $doc->buildVatRecapitulationPub($data);
+
+        $this->assertCount(2, $recap);
+        $this->assertSame(432.70, $recap[0]['base']);
+        $this->assertSame(90.87, $recap[0]['tax']);
+        $this->assertSame(10525.43, $recap[0]['base_dom']);
+        $this->assertSame(2210.34, $recap[0]['tax_dom']);
+        $this->assertSame(10525.43, $recap[0]['total_dom'], 'noPayTax: celkem v domácí měně jen základ');
+        $this->assertSame(10525.43, $recap[1]['base_dom']);
+        $this->assertSame(2210.34, $recap[1]['tax_dom']);
+        $this->assertSame(12735.77, $recap[1]['total_dom']);
+    }
+
+    /** Při kurzu 1 zůstává daň v domácí měně kopií daně dokladu (D80 jen pro cizí měnu). */
+    public function testSelfAssessedHomeCurrencyKeepsTaxDomEqualToTax(): void
+    {
+        $doc = $this->buildDoc();
+        $data = [
+            'rows' => [
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 200],
+            ],
+            'vat_registration' => 1,
+            'vat_duzp' => '2026-05-06',
+            'exchange_rate' => 1.0,
+        ];
+        $recap = $doc->buildVatRecapitulationPub($data);
+        $this->assertSame(42.0, $recap[0]['tax_dom']);
+        $this->assertSame(42.0, $recap[1]['tax_dom']);
+        $this->assertSame(242.0, $recap[1]['total_dom']);
+    }
+
     public function testUnknownVatCodeThrows(): void
     {
         $doc = $this->buildDoc();

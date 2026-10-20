@@ -214,16 +214,36 @@ class DocumentApplierExchangeRateTest extends TestCase
         $this->assertArrayNotHasKey('exchange_rate_missing', $issues);
     }
 
-    public function testWithoutAccountingDateIssueDateIsUsed(): void
+    /** Přijatá faktura bez účetního data: kurz i účetní datum podle DUZP (#103 D78). */
+    public function testWithoutAccountingDateReceivedInvoiceUsesTaxPointDate(): void
     {
         $resolver = new FakeExchangeRateResolver(self::RATES);
         $payload = self::payload();
         unset($payload['dates']['accountingDate']);
+        $payload['dates']['taxPointDate'] = '2026-10-16';
+        $payload['dates']['issueDate'] = '2026-10-20';
+
+        $this->applier($resolver)->apply($payload);
+
+        $this->assertSame(24.325, $this->saved['exchange_rate']);
+        $this->assertSame('2026-10-16', $this->saved['accounting_date']);
+        $this->assertSame('2026-10-16', $this->saved['vat_duzp']);
+        $this->assertSame([['eur', '2026-10-16']], array_unique($resolver->lookups, SORT_REGULAR));
+    }
+
+    /** Bez DUZP (služba ze třetí země bez DPH) zůstává datum vystavení. */
+    public function testWithoutAccountingDateAndTaxPointDateIssueDateIsUsed(): void
+    {
+        $resolver = new FakeExchangeRateResolver(self::RATES);
+        $payload = self::payload();
+        unset($payload['dates']['accountingDate']);
+        $payload['dates']['taxPointDate'] = null;
         $payload['dates']['issueDate'] = '2026-10-20';
 
         $this->applier($resolver)->apply($payload);
 
         $this->assertSame(24.5, $this->saved['exchange_rate']);
+        $this->assertSame('2026-10-20', $this->saved['accounting_date']);
         $this->assertSame([['eur', '2026-10-20']], array_unique($resolver->lookups, SORT_REGULAR));
     }
 }

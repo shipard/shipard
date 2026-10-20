@@ -190,3 +190,17 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
   jako `notCarried`; metriky po cestách.
 - ✓ **D77 — Nový běh `baseline` × 3** nad novými sadami po schválení útraty;
   dosavadní běhy zůstávají historií.
+
+### Doplněná při implementaci (2026-10-20)
+
+- ✓ **D78 — Účetní datum přijaté faktury = DUZP**, bez DUZP datum vystavení
+  (ostatní typy datum vystavení). Shipard i starý Shipard dávaly datum
+  vystavení — s D73 by u 0501/0502/0601/0602 vyšel jiný lístek. Jedno
+  pravidlo `AccountingDateRule` (docs.core) pro `DocDocument::applyDateDefaults`,
+  `DocumentApplier` (účetní datum i datum kurzu) a `ExchangeRatesExporter`
+  (návrhy, wiring closure v `DatasetDumpCommand`).
+- ✓ **D80 — Samovyměřená daň v domácí měně = základ v domácí měně × sazba.**
+  Shipard počítal daň v měně dokladu, zaokrouhlil a přepočetl — na 0501 o 7
+  haléřů víc než D73. Jen oddaňovací páry a jen při kurzu ≠ 1
+  (`DocDocument::buildVatRecapitulation`, `takeOverVatRecapitulation`);
+  dodavatelská DPH v cizí měně beze změny (`docs/vat-calculation.md`).

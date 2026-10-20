@@ -1227,7 +1227,7 @@ serveru v `Document::beforeSave`** podle povahy:
 | Sloupec | Default |
 |---|---|
 | `issue_date` | dnes (klient) |
-| `accounting_date` | = `issue_date` (klient i recalculate) |
+| `accounting_date` | = `issue_date` (klient i recalculate); `beforeSave` u přijaté faktury (`invni`) = `vat_duzp` (`AccountingDateRule`, #103 D78) |
 | `vat_duzp` | = `issue_date` (klient i recalculate) |
 | `vat_dppd` | = `vat_duzp` (klient i recalculate) |
 | `due_date` | = `issue_date` + (payment_term_days z partnera, fallback 14) — recalculate při změně partnera |
