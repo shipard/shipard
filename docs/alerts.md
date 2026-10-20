@@ -162,6 +162,12 @@ final class MissingOwnPersonCheck extends AlertCheck
 }
 ```
 
+Konstruktor báze bere `DataSourceConnection $db`, `ConfigRuntime $config`,
+`string $language` a volitelně `?DataSourceConfig $dsConfig` (konfigurace
+zdroje dat — země pro cfgItemy `world.<země>.*`, #121 task B; v testech smí
+chybět, check pak počítá s `null`). Reconciler ho dostává od `alerts-run`
+a `AlertsController`; konkrétní check konstruktor nepřepisuje.
+
 ### Per-row check
 
 Druhý reálný check, `docs.core.stale_in_repair`, vrací jeden `AlertFinding`

@@ -365,7 +365,7 @@ function dispatch(
 		'analysis' => dispatchAnalysis($route, $request, $auth, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'exchange' => dispatchExchange($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $auth, $journalEventDispatcher, $journalContributors),
 		'contentTags' => dispatchContentTags($route, $request, $auth, $db, $configRuntime, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
-		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config)),
+		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config), $resolved->config),
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
 		'prints' => dispatchPrints($route, $request, $auth, $tables, $db, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config), $serverConfig, $configRuntime),
 		'sentMessages' => dispatchSentMessages($route, $auth, $tables, $db, $resolved, $configRuntime, $serverConfig),
@@ -755,6 +755,7 @@ function dispatchAlerts(
 	?\Shipard\Core\Alerts\AlertCheckRegistry $registry,
 	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
 	string $language,
+	?\Shipard\Core\Config\DataSourceConfig $dsConfig = null,
 ): Response {
 	if ($registry === null) {
 		return Response::error('INTERNAL_ERROR', 'AlertCheckRegistry is required for /_alerts endpoints', 500);
@@ -763,7 +764,7 @@ function dispatchAlerts(
 		return Response::error('INTERNAL_ERROR', 'ConfigRuntime is required for /_alerts endpoints', 500);
 	}
 
-	$ctrl = new AlertsController($db, $registry, $configRuntime, $language);
+	$ctrl = new AlertsController($db, $registry, $configRuntime, $language, $dsConfig);
 	return match ($route->action) {
 		'registry'  => $ctrl->registry(),
 		'runDue'    => $ctrl->runDue(),

@@ -48,5 +48,25 @@
             "id": "economy.exchangeRates.viewerDetailLabels",
             "file": "config/viewerDetailLabels.jsonc"
         }
+    ],
+
+    // Upozornění na chybějící lístek (task B U6, D9): denní typ bez lístku za
+    // pracovní den v posledních 30 dnech (dnešek se nehlídá), měsíční typ bez
+    // lístku běžného měsíce od 2. dne. Jen u typu, který už nějaký lístek má.
+    "alertChecks": [
+        {
+            "id": "economy.exchangeRates.list_missing",
+            "name": "Exchange rate list missing",
+            "name:cs": "Chybí kurzovní lístek",
+            "name:en": "Exchange rate list missing",
+            "description": "Working days of the last 30 days without a daily list, or the monthly list missing from the 2nd day of the month — no rate is filled in for those dates.",
+            "description:cs": "Pracovní dny posledních 30 dnů bez denního lístku, nebo měsíční lístek chybějící od 2. dne měsíce — k těmto datům se kurz nedoplní.",
+            "description:en": "Working days of the last 30 days without a daily list, or the monthly list missing from the 2nd day of the month — no rate is filled in for those dates.",
+            "class": "Shipard\\Module\\Economy\\ExchangeRates\\Checks\\ListMissingCheck",
+            "severity": "warning",
+            "interval": "1h",
+            "navSection": "accounting",
+            "tags": ["exchangeRates"]
+        }
     ]
 }

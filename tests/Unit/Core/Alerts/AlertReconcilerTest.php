@@ -11,6 +11,7 @@ use Shipard\Core\Alerts\AlertFinding;
 use Shipard\Core\Alerts\AlertReconciler;
 use Shipard\Core\Alerts\AlertRunResult;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModuleDefinition;
 
@@ -47,6 +48,15 @@ class ReconcilerTestThrowingCheck extends AlertCheck
     public function run(): array
     {
         throw new \RuntimeException('DB exploded');
+    }
+}
+
+/** Titulek = země ze čtvrtého parametru (#121 task B) — bez konfigurace zdroje dat „none“. */
+class ReconcilerTestCountryCheck extends AlertCheck
+{
+    public function run(): array
+    {
+        return [new AlertFinding(findingKey: '', title: 'country:' . ($this->dsConfig?->getCountry() ?? 'none'))];
     }
 }
 
@@ -133,6 +143,29 @@ class AlertReconcilerTest extends TestCase
         $this->assertSame(1, $result->newCount);
         $this->assertSame(0, $result->updatedCount);
         $this->assertSame(0, $result->resolvedCount);
+    }
+
+    public function testCheckReceivesDataSourceConfig(): void
+    {
+        $registry = $this->makeRegistry(ReconcilerTestCountryCheck::class);
+        $config   = $this->createMock(ConfigRuntime::class);
+        $dsConfig = $this->createMock(DataSourceConfig::class);
+        $dsConfig->method('getCountry')->willReturn('sk');
+        $stateRow = ['check_id' => 'test.alerts.fixture', 'enabled' => 1, 'is_running' => 0, 'running_since' => null, 'next_run_at' => null];
+
+        $db = $this->mockDb([$stateRow], [[]]);
+        $db->expects($this->once())->method('insertRow')->with(
+            AlertReconciler::ALERTS_TABLE,
+            $this->callback(static fn(array $data): bool => $data['title'] === 'country:sk'),
+        );
+        (new AlertReconciler($db, $registry, $config, 'en', $dsConfig))->runCheck('test.alerts.fixture');
+
+        $db = $this->mockDb([$stateRow], [[]]);
+        $db->expects($this->once())->method('insertRow')->with(
+            AlertReconciler::ALERTS_TABLE,
+            $this->callback(static fn(array $data): bool => $data['title'] === 'country:none'),
+        );
+        (new AlertReconciler($db, $registry, $config, 'en'))->runCheck('test.alerts.fixture');
     }
 
     public function testEmptyFindingsResolvesExisting(): void

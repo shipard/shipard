@@ -72,7 +72,7 @@ class AlertsRunCommand extends Command
             return Command::FAILURE;
         }
 
-        $reconciler = new AlertReconciler($dsConnection, $registry, $configRuntime, $language);
+        $reconciler = new AlertReconciler($dsConnection, $registry, $configRuntime, $language, $dsConfig);
 
         $singleCheck = $input->getOption('check');
         $runAll      = (bool) $input->getOption('all');

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Economy\ExchangeRates\Checks\ListMissingCheck;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListImporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListsViewer;
 
@@ -110,6 +111,20 @@ class ExchangeRatesModuleTest extends TestCase
 
         $docsCore = JsoncParser::parseFile(self::MODULES . '/docs/core/module.jsonc');
         $this->assertContains('economy.exchangeRates', $docsCore['dependencies'], 'formuláře a applier volají resolver');
+    }
+
+    /** Task B U6: upozornění na chybějící lístek — warning, 1 h, sekce Účetnictví, třída existuje. */
+    public function testDeclaresListMissingAlertCheck(): void
+    {
+        $checks = array_column(self::module()['alertChecks'] ?? [], null, 'id');
+        $check = $checks['economy.exchangeRates.list_missing'] ?? null;
+
+        $this->assertNotNull($check);
+        $this->assertSame(['warning', '1h', 'accounting'], [$check['severity'], $check['interval'], $check['navSection']]);
+        $this->assertSame(ListMissingCheck::class, $check['class']);
+        $this->assertTrue(class_exists($check['class']));
+        $this->assertArrayHasKey('name:cs', $check);
+        $this->assertArrayHasKey('description:cs', $check);
     }
 
     public function testConfigItemsExist(): void

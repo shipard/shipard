@@ -9,6 +9,7 @@ use Shipard\Api\Response;
 use Shipard\Core\Alerts\AlertCheckRegistry;
 use Shipard\Core\Alerts\AlertReconciler;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 
 /**
@@ -34,6 +35,7 @@ class AlertsController
         private readonly AlertCheckRegistry $registry,
         private readonly ConfigRuntime $config,
         private readonly string $language,
+        private readonly ?DataSourceConfig $dsConfig = null,
     ) {}
 
     /** GET /_alerts/registry */
@@ -82,7 +84,7 @@ class AlertsController
     /** POST /_alerts/run-due — spustí všechny due (a dosud nikdy nespuštěné) enabled checky */
     public function runDue(): Response
     {
-        $reconciler = new AlertReconciler($this->db, $this->registry, $this->config, $this->language);
+        $reconciler = new AlertReconciler($this->db, $this->registry, $this->config, $this->language, $this->dsConfig);
         $checkIds   = $reconciler->getDueCheckIds();
 
         $results = [];
@@ -117,7 +119,7 @@ class AlertsController
             return Response::error('NOT_FOUND', "Check '{$checkId}' is not registered", 404);
         }
 
-        $reconciler = new AlertReconciler($this->db, $this->registry, $this->config, $this->language);
+        $reconciler = new AlertReconciler($this->db, $this->registry, $this->config, $this->language, $this->dsConfig);
         $result     = $reconciler->runCheck($checkId);
 
         // Plus aktuální seznam open alertů z tohoto checku.

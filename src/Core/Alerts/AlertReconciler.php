@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Alerts;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 
@@ -44,6 +45,7 @@ final class AlertReconciler
         private readonly AlertCheckRegistry $registry,
         private readonly ConfigRuntime $config,
         private readonly string $language,
+        private readonly ?DataSourceConfig $dsConfig = null,
     ) {}
 
     /**
@@ -235,7 +237,7 @@ final class AlertReconciler
         if (!class_exists($fqcn)) {
             throw new \RuntimeException("AlertCheck class not found: {$fqcn}");
         }
-        $instance = new $fqcn($this->db, $this->config, $this->language);
+        $instance = new $fqcn($this->db, $this->config, $this->language, $this->dsConfig);
         if (!$instance instanceof AlertCheck) {
             throw new \RuntimeException("Class {$fqcn} does not extend AlertCheck");
         }
