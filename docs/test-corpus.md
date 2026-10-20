@@ -30,8 +30,9 @@ hodnot v produkční cestě převezme #118.
 
 ```
 tools/invoice-generator/            # sdílený generátor (balík invoicegen, jen stdlib)
-  invoicegen/{jsonc,checks,compute,render,expected,corpus,dataset,reporting,registries}.py
-                                    # compute dává i DPH per řádek (rows[].computed pro ISDOC)
+  invoicegen/{jsonc,checks,compute,render,expected,corpus,dataset,reporting,registries,rates}.py
+                                    # compute dává i DPH per řádek (rows[].computed pro ISDOC);
+                                    # rates = lístky ČNB, pravidlo platnosti, přepočet do Kč (§ 7)
   tests/                            # python3 -m unittest
 demo/invoices/                      # demo kolekce — jen importuje generátor, výstup beze změny
 tests/corpus/
@@ -42,6 +43,8 @@ tests/corpus/
     templates/*.html                # šablony korpusu (vlastní kopie, demo se nemění)
     data/NNNN-<slug>.jsonc          # zdroj dokladu — píše se ručně
     profiles/<profil>/              # základ datové sady profilu — píše se ručně (§ 16)
+    exchange-rates/<validFrom>-cz.cnb.daily.json  # skutečné lístky ČNB pro účetní data dokladů
+                                    # v cizí měně + rezerva (build.py --fetch-rates, § 12), commitované
     out/<profil>/NNNN-<slug>.pdf    # generované, commitované
     out/<profil>/NNNN-<slug>.isdoc  # jen podoba pdfIsdoc — generované (shpd-server einvoice-render), commitované
     expected/<profil>/NNNN-<slug>.json  # generované, commitované, ručně se NEEDITUJÍ
@@ -985,7 +988,8 @@ a je vidět v `calls.failed`).
 ### Soubor výsledků (`tests/eval/<název sady>/<YYYY-MM-DD>-<varianta>[-<n>].json`, D36)
 
 `shpd.eval.run.v1` (`EvalRun`, `EvalRunStore`): `set` (název, země,
-profil, cesta, **hash obsahu** `mail/` včetně příloh a `expected/`, počet
+profil, cesta, **hash obsahu** `mail/` včetně příloh, `expected/`
+a `exchangeRates/` (#103 D81), počet
 zpráv a výběr), `git` (commit, neuložené změny), `variant` (deklarace
 a `effective`: profil, verze a hash promptu, platforma, připojení s původem,
 model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,

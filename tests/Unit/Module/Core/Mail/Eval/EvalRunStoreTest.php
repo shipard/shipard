@@ -76,11 +76,11 @@ final class EvalRunStoreTest extends TestCase
 
         // Kopie sady se změněnou přílohou má jiný hash; setup/ do hashe nejde.
         $copy = $this->tmp . '/copy';
-        mkdir($copy . '/mail', 0750, true);
-        mkdir($copy . '/expected', 0750, true);
+        mkdir($copy, 0750, true);
         copy($reader->getRootDir() . '/manifest.jsonc', $copy . '/manifest.jsonc');
         foreach (['mail', 'expected', 'exchangeRates'] as $dir) {
             if (is_dir($reader->getRootDir() . '/' . $dir)) {
+                mkdir($copy . '/' . $dir, 0750, true);
                 self::copyTree($reader->getRootDir() . '/' . $dir, $copy . '/' . $dir);
             }
         }

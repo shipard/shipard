@@ -200,8 +200,11 @@ nezapíše, zápis je atomický.
 Build korpusu (`tests/corpus/cz/build.py`, `docs/test-corpus.md` § 12)
 u buňky `pdfIsdoc` předá očekávaný výsledek + `rows[].computed`
 (řádkové DPH z `compute.py`) a vyrobí `out/<profil>/NNNN-<slug>.isdoc`;
-18 souborů (varianty 1–4, 7, 10 × 3 profily). V datových sadách ISDOC
-zatím není (O1 — co má evaluace u zpráv s ISDOC měřit, je otázka #103).
+18 souborů (varianty 1–4, 7, 10 × 3 profily). V datových sadách je
+`.isdoc` **druhou přílohou** zpráv podoby `pdfIsdoc` (`order` 2, MIME
+`text/xml`, ideální analýza nese dál jen PDF — #103 D75,
+`docs/test-corpus.md` § 16) a evaluace AI je zpracuje produkční cestou
+ISDOC bez AI extrakce (§ 18 tamtéž, D76); O1 vyřešeno 2026-10-20.
 
 **Round-trip** `IsdocCorpusRoundTripTest`: každý `.isdoc` korpusu →
 `IsdocReader` → `CanonicalComparator` proti očekávanému výsledku bez

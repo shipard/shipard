@@ -219,3 +219,14 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
   dat dá jen použité lístky — byte-shoda s dumpem se pro `exchangeRates/`
   neslibuje. `EvalRunStore::HASHED_DIRS` zahrnuje `exchangeRates/`, takže
   zdroj dat seedovaný bez lístků je zastaralá sada.
+- ✓ **D82 — Evaluace cestou ISDOC.** `IsdocDocumentCollector` (čistý sběr
+  ISDOC → canonical vyjmutý z `IsdocImportService`, ostrý import beze změny),
+  `EvalComputationRouter` (`AnalysisComputing` + `PathReporting::lastPath()`)
+  nad `AnalysisComputation` s touž instancí `RowEnrichmentPipeline`;
+  `IsdocFieldCoverage::NOT_CARRIED` jako jediný zdroj polí, která ISDOC
+  nenese (round-trip test přidává jen `_resolve`); `FieldState::NotCarried`
+  (`isCounted()` false — mimo `n` i odchylky), `FieldOutcome::$reason`;
+  soubor běhu zůstává `shpd.eval.run.v1` s volitelnými `calls[].path`,
+  `counts.notCarried`, `byPath` (staré běhy = cesta `ai`); odhad ceny počítá
+  u `pdfIsdoc` jen štítky; `AttachmentPreparer` ISDOC (přípona nebo XML
+  s kořenem ISDOC) modelu neposílá.

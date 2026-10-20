@@ -359,3 +359,6 @@ Datové sady se v tomto kroku nemění (O1).
   než dnes. Produkce přitom zprávu s ISDOC zpracuje deterministicky
   (`IsdocImportService`), bez AI extrakce. Co má evaluace u zpráv s ISDOC
   měřit, je otázka #103; do té doby zůstávají soubory jen v `out/`.
+  **Vyřešeno 2026-10-20** (#103 D75–D76, `tasks/testing-rates-isdoc.md`):
+  ISDOC je druhou přílohou zpráv v sadách a evaluace ho zpracuje produkční
+  cestou bez AI extrakce; `AttachmentPreparer` ISDOC modelu neposílá.
