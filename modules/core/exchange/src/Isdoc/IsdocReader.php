@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Isdoc;
 
+use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
+
 /**
  * Deterministická konverze ISDOC 6.x (český standard e-fakturace, XML) na
  * canonical `shpd.docs.document.v1`. Čistá funkce soubor/XML → array, žádné
@@ -31,8 +33,14 @@ namespace Shipard\Module\Core\Exchange\Isdoc;
  *     `vat.mode` ze shodné `VATCalculationMethod` všech řádků (u cen s DPH
  *     jsou ceny řádku s daní); tuzemské přenesení z `LocalReverseCharge`
  *     řádku nebo `LocalReverseChargeFlag` rekapitulace → `vat.reverseCharge`
- *     true, jinak false; sleva z `…BeforeDiscount`; `Note` → `docText`
- *     i `notes.onDocument`; způsob úhrady i bez bankovních detailů.
+ *     true; sleva z `…BeforeDiscount`; `Note` → `docText`
+ *     i `notes.onDocument`; způsob úhrady i bez bankovních detailů,
+ *   - ISDOC umí vyjádřit jen tuzemské přenesení; přenesení u plnění
+ *     z jiného členského státu (čl. 196 směrnice) prvek nemá, takže
+ *     chybějící prvek ho nevyvrací. `vat.reverseCharge: false` proto jen
+ *     u plnění podle stran zjevně tuzemského — země dodavatele (prefix DIČ,
+ *     bez DIČ země adresy) = země odběratele (adresa); jinak null a kód
+ *     DPH určí historie nebo uživatel (tasks/einvoice-reader-reverse-charge.md).
  */
 final class IsdocReader
 {
@@ -127,7 +135,11 @@ final class IsdocReader
         $vatApplicable = $this->bool($root, 'VATApplicable');
         $noVat = $vatApplicable === false;
         $mode = $noVat ? 'none' : $this->calculationMode($root);
-        $reverseCharge = $this->hasLocalReverseCharge($root) ? true : ($vatApplicable !== null ? false : null);
+        // Přenesení: tuzemské z prvků ISDOC; false jen u zjevně tuzemského
+        // plnění (ISDOC přenesení z jiného členského státu vyjádřit neumí).
+        $reverseCharge = $this->hasLocalReverseCharge($root)
+            ? true
+            : ($vatApplicable !== null && $this->isDomesticSupply($supplier, $customer) ? false : null);
         $note = $this->text($root, 'Note');
 
         $canonical = [
@@ -442,6 +454,39 @@ final class IsdocReader
             }
         }
         return false;
+    }
+
+    /**
+     * Plnění podle stran zjevně tuzemské: země dodavatele = země odběratele.
+     * Země dodavatele je prefix jeho DIČ (normalizace jako
+     * {@see VatPlaceDerivation::normalize()}, první dva znaky, jen písmena),
+     * bez DIČ země jeho adresy; země odběratele je země jeho adresy.
+     * Chybí-li kterákoli, nebo prefix DIČ není písmenný, false — čtečka
+     * pak přenesení neurčí (null). Zvláštní prefix (řecké `EL`) dá
+     * nerovnost a tedy null, což je bezpečné.
+     *
+     * @param array<string, mixed>|null $supplier mapovaná strana ({@see mapParty()})
+     * @param array<string, mixed>|null $customer mapovaná strana ({@see mapParty()})
+     */
+    private function isDomesticSupply(?array $supplier, ?array $customer): bool
+    {
+        if ($supplier === null || $customer === null) {
+            return false;
+        }
+
+        $vatId = VatPlaceDerivation::normalize(is_string($supplier['vatId'] ?? null) ? $supplier['vatId'] : null);
+        if ($vatId !== '') {
+            $prefix = substr($vatId, 0, 2);
+            if (strlen($prefix) !== 2 || !ctype_alpha($prefix)) {
+                return false;
+            }
+            $supplierCountry = strtolower($prefix);
+        } else {
+            $supplierCountry = is_string($supplier['country'] ?? null) ? $supplier['country'] : null;
+        }
+        $customerCountry = is_string($customer['country'] ?? null) ? $customer['country'] : null;
+
+        return $supplierCountry !== null && $supplierCountry !== '' && $supplierCountry === $customerCountry;
     }
 
     /**

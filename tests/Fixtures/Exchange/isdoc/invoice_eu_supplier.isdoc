@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fiktivní dodavatel ze Slovenska (smyšlené IČO, DIČ i IBAN): služby
+     v režimu přenesení daňové povinnosti podle čl. 196 směrnice — ISDOC pro
+     to prvek nemá, řádky 0 %, bez LocalReverseCharge. Čtečka přenesení
+     neurčí (tasks/einvoice-reader-reverse-charge.md). -->
+<Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1">
+    <DocumentType>1</DocumentType>
+    <ID>SK-2026-0311</ID>
+    <UUID>c4d5e6f7-5555-4666-a777-888899990000</UUID>
+    <IssuingSystem>Shipard test fixtures</IssuingSystem>
+    <IssueDate>2026-07-03</IssueDate>
+    <TaxPointDate>2026-07-03</TaxPointDate>
+    <VATApplicable>true</VATApplicable>
+    <ElectronicPossibilityAgreementReference/>
+    <Note>Prenesenie daňovej povinnosti — daň odvedie odberateľ (čl. 196 smernice 2006/112/ES).</Note>
+    <LocalCurrencyCode>EUR</LocalCurrencyCode>
+    <ForeignCurrencyCode>EUR</ForeignCurrencyCode>
+    <CurrRate>1</CurrRate>
+    <RefCurrRate>1</RefCurrRate>
+    <AccountingSupplierParty>
+        <Party>
+            <PartyIdentification>
+                <ID>36000001</ID>
+            </PartyIdentification>
+            <PartyName>
+                <Name>Testovací dodávateľ s.r.o.</Name>
+            </PartyName>
+            <PostalAddress>
+                <StreetName>Vymyslená</StreetName>
+                <BuildingNumber>7</BuildingNumber>
+                <CityName>Bratislava</CityName>
+                <PostalZone>81101</PostalZone>
+                <Country>
+                    <IdentificationCode>SK</IdentificationCode>
+                    <Name>Slovenská republika</Name>
+                </Country>
+            </PostalAddress>
+            <PartyTaxScheme>
+                <CompanyID>SK2020000001</CompanyID>
+                <TaxScheme>VAT</TaxScheme>
+            </PartyTaxScheme>
+        </Party>
+    </AccountingSupplierParty>
+    <AccountingCustomerParty>
+        <Party>
+            <PartyIdentification>
+                <ID>87654321</ID>
+            </PartyIdentification>
+            <PartyName>
+                <Name>Testovací odběratel a.s.</Name>
+            </PartyName>
+            <PostalAddress>
+                <StreetName>Vymyšlená</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <CityName>Fiktivín</CityName>
+                <PostalZone>20000</PostalZone>
+                <Country>
+                    <IdentificationCode>CZ</IdentificationCode>
+                    <Name>Česká republika</Name>
+                </Country>
+            </PostalAddress>
+            <PartyTaxScheme>
+                <CompanyID>CZ87654321</CompanyID>
+                <TaxScheme>VAT</TaxScheme>
+            </PartyTaxScheme>
+        </Party>
+    </AccountingCustomerParty>
+    <InvoiceLines>
+        <InvoiceLine>
+            <ID>1</ID>
+            <InvoicedQuantity unitCode="hod">8</InvoicedQuantity>
+            <LineExtensionAmountCurr>400.00</LineExtensionAmountCurr>
+            <LineExtensionAmount>400.00</LineExtensionAmount>
+            <LineExtensionAmountTaxInclusiveCurr>400.00</LineExtensionAmountTaxInclusiveCurr>
+            <LineExtensionAmountTaxInclusive>400.00</LineExtensionAmountTaxInclusive>
+            <LineExtensionTaxAmountCurr>0.00</LineExtensionTaxAmountCurr>
+            <LineExtensionTaxAmount>0.00</LineExtensionTaxAmount>
+            <UnitPrice>50.00</UnitPrice>
+            <UnitPriceTaxInclusive>50.00</UnitPriceTaxInclusive>
+            <ClassifiedTaxCategory>
+                <Percent>0</Percent>
+                <VATCalculationMethod>0</VATCalculationMethod>
+            </ClassifiedTaxCategory>
+            <Item>
+                <Description>Konzultačné služby</Description>
+                <SellersItemIdentification>
+                    <ID>KONZ-SK</ID>
+                </SellersItemIdentification>
+            </Item>
+        </InvoiceLine>
+    </InvoiceLines>
+    <TaxTotal>
+        <TaxSubTotal>
+            <TaxableAmountCurr>400.00</TaxableAmountCurr>
+            <TaxableAmount>400.00</TaxableAmount>
+            <TaxAmountCurr>0.00</TaxAmountCurr>
+            <TaxAmount>0.00</TaxAmount>
+            <TaxInclusiveAmountCurr>400.00</TaxInclusiveAmountCurr>
+            <TaxInclusiveAmount>400.00</TaxInclusiveAmount>
+            <TaxCategory>
+                <Percent>0</Percent>
+            </TaxCategory>
+        </TaxSubTotal>
+        <TaxAmountCurr>0.00</TaxAmountCurr>
+        <TaxAmount>0.00</TaxAmount>
+    </TaxTotal>
+    <LegalMonetaryTotal>
+        <TaxExclusiveAmountCurr>400.00</TaxExclusiveAmountCurr>
+        <TaxExclusiveAmount>400.00</TaxExclusiveAmount>
+        <TaxInclusiveAmountCurr>400.00</TaxInclusiveAmountCurr>
+        <TaxInclusiveAmount>400.00</TaxInclusiveAmount>
+        <PayableRoundingAmountCurr>0</PayableRoundingAmountCurr>
+        <PayableRoundingAmount>0</PayableRoundingAmount>
+        <PaidDepositsAmount>0</PaidDepositsAmount>
+        <PayableAmountCurr>400.00</PayableAmountCurr>
+        <PayableAmount>400.00</PayableAmount>
+    </LegalMonetaryTotal>
+    <PaymentMeans>
+        <Payment>
+            <PaidAmount>400.00</PaidAmount>
+            <PaymentMeansCode>42</PaymentMeansCode>
+            <Details>
+                <PaymentDueDate>2026-07-17</PaymentDueDate>
+                <IBAN>SK0000000000000000000001</IBAN>
+                <BIC>TESTSKBX</BIC>
+                <VariableSymbol>20260311</VariableSymbol>
+            </Details>
+        </Payment>
+    </PaymentMeans>
+</Invoice>

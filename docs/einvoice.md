@@ -146,7 +146,7 @@ Mapuje se jen to, co v ISDOC opravdu je, chybějící pole se vynechávají.
 | `currency` | `ForeignCurrencyCode` ?? `LocalCurrencyCode` | u cizí měny částky z `*Curr` |
 | `exchangeRate` | `CurrRate` / `RefCurrRate` | jen u cizí měny |
 | `vat.mode` | `VATApplicable` `false` → `none`; jinak `VATCalculationMethod` shodná na všech řádcích (0 → `fromBase`, 1 → `fromTotal`), rozdílná → nic | u `fromTotal` jsou ceny řádku s daní |
-| `vat.reverseCharge` | `LocalReverseChargeCode` na řádku nebo `LocalReverseChargeFlag` `true` v rekapitulaci → `true`; jinak při `VATApplicable true` `false`; bez `VATApplicable` nic | místo plnění ISDOC nemá, applier ho odvodí z DIČ |
+| `vat.reverseCharge` | `LocalReverseChargeCode` na řádku nebo `LocalReverseChargeFlag` `true` v rekapitulaci → `true`; jinak `false` jen při `VATApplicable` a zjevně tuzemském plnění — země dodavatele (prefix DIČ `PartyTaxScheme` VAT, bez DIČ země adresy) = země odběratele (adresa); jinak nic (chybí-li země, prefix není písmenný, země se liší, bez `VATApplicable`) | ISDOC umí jen tuzemské přenesení; přenesení z jiného členského státu (čl. 196 směrnice) prvek nemá, chybějící prvek ho nevyvrací. Místo plnění ISDOC nemá, applier ho odvodí z DIČ |
 | `payment.method` | `PaymentMeansCode` i bez `Details` | 10 cash, 42 bankTransfer, 48 card, 50 cashOnDelivery, 97 setOff; jiné null |
 | `payment.paymentReference` / `constantSymbol` / `specificSymbol` | `Details/VariableSymbol` / `ConstantSymbol` / `SpecificSymbol` | |
 | `supplier`, `customer` | `AccountingSupplierParty/Party`, `AccountingCustomerParty/Party` | `name`, `companyId`, `taxId` + `vatId` (`PartyTaxScheme` s `TaxScheme` VAT), `courtRegistration` (`Preformatted`), `country` + `address.*`, `contact.{name, email, phone}` |
@@ -159,6 +159,12 @@ Doklad bez DPH (`VATApplicable false`) tak dostane tvar dokladu neplátce
 podle `docs/exchange-format.md` § 8.4 — applier mu dá kód bez daně místo
 hledání sazby 0 %. Signál tuzemského přenesení dojde přes náhled
 k `cz-115` (`DocumentApplierTest::testReceivedIsdocWithLocalReverseChargeDerivesPdpCode`).
+U dodavatele z jiného členského státu (fixtura `invoice_eu_supplier.isdoc`,
+řádky 0 % bez `LocalReverseCharge`) čtečka přenesení neurčí, místo plnění
+odvodí applier z prefixu DIČ a kód z historie řádků (`cz-217`) projde bez
+konfliktu (`testReceivedIsdocFromEuSupplierKeepsHistoryIntracomCode`,
+`tasks/einvoice-reader-reverse-charge.md`) — s `false` by ho kontrola
+odmítla jako samovyměření a doklad skončil `vat_code_unknown`.
 
 ## 6. UUID (D7)
 

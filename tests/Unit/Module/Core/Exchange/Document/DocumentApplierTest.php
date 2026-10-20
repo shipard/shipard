@@ -3167,6 +3167,37 @@ class DocumentApplierTest extends TestCase
         $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
     }
 
+    /**
+     * Přijatý ISDOC od dodavatele z jiného členského státu za služby
+     * v přenesení (čl. 196 směrnice): ISDOC pro to prvek nemá, čtečka
+     * přenesení neurčí a kód z historie řádků (`cz-217`) projde bez
+     * konfliktu — dřív čtečka dala `reverseCharge: false`, kontrola kód
+     * odmítla jako samovyměření a doklad skončil vat_code_unknown
+     * (tasks/einvoice-reader-reverse-charge.md).
+     */
+    public function testReceivedIsdocFromEuSupplierKeepsHistoryIntracomCode(): void
+    {
+        $xml = (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/isdoc/invoice_eu_supplier.isdoc');
+        $canonical = (new IsdocReader())->fromXmlString($xml);
+        $this->assertArrayNotHasKey('reverseCharge', $canonical['vat']);
+        $this->assertArrayNotHasKey('place', $canonical['vat']);
+        $canonical['rows'][0]['vat']['code'] = 'cz-217';
+
+        $applier = $this->buildVatDerivingApplier();
+        $result = $applier->preview($canonical);
+
+        $this->assertTrue($result->success);
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-217', $vatCode['createPayload']['code']);
+        $this->assertSame('cfgItem', $vatCode['matchedBy']);
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertNotContains('vat_code_derived', $codes);
+        $this->assertNotContains('vat_code_pin_conflict', $codes);
+        // Místo plnění z prefixu SK: intracom.
+        $this->assertSame(1, $this->invokeTransform($applier, $canonical)['vat_place']);
+    }
+
     /** Totéž bez kódu na řádku — přenesení jen příznakem v rekapitulaci nestačí k určení kódu, ale hlásí se, ne mlčí. */
     public function testReceivedIsdocWithoutLineCodeDoesNotGuessPdpCode(): void
     {

@@ -119,9 +119,10 @@ class IsdocReaderTest extends TestCase
         $this->assertSame(21.0, $canonical['totals']['totalVat']);
         $this->assertSame(121.0, $canonical['totals']['totalAmount']);
 
-        // #119 krok 3: režim z metody výpočtu, přenesení explicitně false,
+        // #119 krok 3: režim z metody výpočtu; bez odběratele čtečka
+        // přenesení neurčí (tasks/einvoice-reader-reverse-charge.md);
         // bez PaymentMeans žádný payment, bez Note žádné notes.
-        $this->assertSame(['mode' => 'fromBase', 'reverseCharge' => false], $canonical['vat']);
+        $this->assertSame(['mode' => 'fromBase'], $canonical['vat']);
         $this->assertArrayNotHasKey('payment', $canonical);
         $this->assertArrayNotHasKey('notes', $canonical);
         $this->assertArrayNotHasKey('docText', $canonical);
@@ -141,6 +142,8 @@ class IsdocReaderTest extends TestCase
         $this->assertSame(-200.0, $canonical['totals']['totalBase']);
         $this->assertSame(-224.0, $canonical['totals']['totalAmount']);
         $this->assertSame(-1.0, $canonical['rows'][0]['quantity']);
+        // Bez odběratele čtečka přenesení neurčí.
+        $this->assertArrayNotHasKey('reverseCharge', $canonical['vat']);
 
         $this->assertValidCanonical($canonical);
     }
@@ -237,6 +240,8 @@ class IsdocReaderTest extends TestCase
         // IBAN bez čísla účtu — accountNumber se nevymýšlí
         $this->assertArrayNotHasKey('accountNumber', $canonical['supplier']['bankAccount']);
         $this->assertSame('CZ0001000000000123456789', $canonical['supplier']['bankAccount']['iban']);
+        // Bez odběratele čtečka přenesení neurčí.
+        $this->assertArrayNotHasKey('reverseCharge', $canonical['vat']);
 
         $this->assertValidCanonical($canonical);
     }
@@ -390,10 +395,74 @@ class IsdocReaderTest extends TestCase
 
     public function testMissingVatApplicableLeavesReverseChargeOut(): void
     {
-        $xml = (string) preg_replace('~\s*<VATApplicable>true</VATApplicable>~', '', $this->fixture('invoice_min.isdoc'), 1);
+        // Obě strany v ČR — bez VATApplicable přesto nic (pojistka drží i u tuzemského plnění).
+        $xml = (string) preg_replace('~\s*<VATApplicable>true</VATApplicable>~', '', $this->fixture('invoice_full.isdoc'), 1);
         $canonical = $this->reader->fromXmlString($xml);
 
         $this->assertSame(['mode' => 'fromBase'], $canonical['vat']);
+    }
+
+    // ── Přenesení jen u tuzemského plnění (tasks/einvoice-reader-reverse-charge.md) ──
+
+    /**
+     * Dodavatel z jiného členského státu bez prvku tuzemského přenesení:
+     * ISDOC přenesení podle čl. 196 směrnice vyjádřit neumí, čtečka ho
+     * neurčí — kód DPH pak dá historie nebo uživatel, ne falešné false.
+     */
+    public function testEuSupplierWithoutLocalReverseChargeLeavesReverseChargeOut(): void
+    {
+        $canonical = $this->readFixture('invoice_eu_supplier.isdoc');
+
+        $this->assertSame(['mode' => 'fromBase'], $canonical['vat']);
+        $this->assertSame('SK2020000001', $canonical['supplier']['vatId']);
+        $this->assertSame('sk', $canonical['supplier']['country']);
+        $this->assertSame('cz', $canonical['customer']['country']);
+        $this->assertSame('EUR', $canonical['currency']);
+        $this->assertSame(0.0, $canonical['rows'][0]['vat']['pct']);
+        $this->assertArrayNotHasKey('reverseChargeCode', $canonical['rows'][0]['vat']);
+        $this->assertSame(0.0, $canonical['totals']['totalVat']);
+
+        $this->assertValidCanonical($canonical);
+    }
+
+    /**
+     * Zjevně tuzemské plnění = země dodavatele (prefix DIČ, bez DIČ adresa)
+     * shodná se zemí odběratele (adresa); jinak čtečka přenesení neurčí.
+     *
+     * @return iterable<string, array{string, string, ?bool}>
+     */
+    public static function partyCountryCases(): iterable
+    {
+        yield 'obě strany CZ' => ['', '', false];
+        yield 'dodavatel bez DIČ, adresa CZ' => [
+            '~\s*<PartyTaxScheme>\s*<CompanyID>CZ12345678</CompanyID>\s*<TaxScheme>VAT</TaxScheme>\s*</PartyTaxScheme>~',
+            '',
+            false,
+        ];
+        yield 'DIČ dodavatele SK, adresa CZ' => ['~<CompanyID>CZ12345678</CompanyID>~', '<CompanyID>SK2020000001</CompanyID>', null];
+        yield 'DIČ dodavatele bez písmenného prefixu' => ['~<CompanyID>CZ12345678</CompanyID>~', '<CompanyID>12345678</CompanyID>', null];
+        yield 'DIČ dodavatele s mezerami a malými písmeny' => ['~<CompanyID>CZ12345678</CompanyID>~', '<CompanyID>cz 123 456 78</CompanyID>', false];
+        yield 'odběratel bez země' => [
+            '~(<ID>87654321</ID>.*?)<Country>\s*<IdentificationCode>CZ</IdentificationCode>\s*<Name>Česká republika</Name>\s*</Country>~s',
+            '$1',
+            null,
+        ];
+        yield 'bez odběratele' => ['~<AccountingCustomerParty>.*?</AccountingCustomerParty>~s', '', null];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('partyCountryCases')]
+    public function testDomesticSupplyDecidedByPartyCountries(string $pattern, string $replacement, ?bool $expected): void
+    {
+        $xml = $this->fixture('invoice_full.isdoc');
+        if ($pattern !== '') {
+            $mutated = (string) preg_replace($pattern, $replacement, $xml, 1);
+            $this->assertNotSame($xml, $mutated, 'mutace se musí uplatnit');
+            $xml = $mutated;
+        }
+        $canonical = $this->reader->fromXmlString($xml);
+
+        $this->assertSame($expected, $canonical['vat']['reverseCharge'] ?? null);
+        $this->assertArrayNotHasKey('reverseChargeCode', $canonical['rows'][0]['vat']);
     }
 
     public function testDiscountAmountFromBeforeDiscount(): void

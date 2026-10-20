@@ -1,6 +1,6 @@
 # Čtečka ISDOC: `vat.reverseCharge: false` jen u tuzemského plnění (#119)
 
-**Stav:** naplánováno — oprava z ověření fáze 1 (2026-10-20)
+**Stav:** hotovo — implementace 2026-10-20 (1 commit); pojistka `VATApplicable` ponechána, fixtury bez odběratele (`invoice_min`, `invoice_eur`, `credit_note`) nově bez `reverseCharge`
 
 > Task pro Claude Code (1 commit). Oprava kroku 3 z
 > `tasks/einvoice-phase1.md`; ten task se nemění.
@@ -78,9 +78,9 @@ vendor/bin/phpunit --filter 'IsdocReaderTest|IsdocCorpusRoundTripTest|IsdocWrite
 
 ## Hotovo když
 
-- [ ] Čtečka vrací `false` jen u plnění se stejnou zemí dodavatele
+- [x] Čtečka vrací `false` jen u plnění se stejnou zemí dodavatele
       a odběratele, jinak `null`; `true` beze změny
-- [ ] Fixtura dodavatele z EU, testy čtečky a test přes applier
-- [ ] `IsdocCorpusRoundTripTest` beze změny výjimek
-- [ ] Docblock čtečky a `docs/einvoice.md` § 5
-- [ ] `**Stav:**` + `python3 scripts/tasks-index.py`
+- [x] Fixtura dodavatele z EU, testy čtečky a test přes applier
+- [x] `IsdocCorpusRoundTripTest` beze změny výjimek
+- [x] Docblock čtečky a `docs/einvoice.md` § 5
+- [x] `**Stav:**` + `python3 scripts/tasks-index.py`
