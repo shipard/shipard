@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 383 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 353.
+Celkem 384 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 353.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `einvoice-reader-reverse-charge.md` | naplánováno | oprava z ověření fáze 1 (2026-10-20) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -254,6 +255,7 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `mail-phase4-import-endpoint.md` | Import endpoint pro importer ze starého Shipardu |
 | `mail-sent-import.md` | Import Odeslané pošty — `POST /_mail/sent/import` (zpráva a přílohy atomicky), `send_trigger = import`, `import_ref`, stav transportu Nezjištěno, bez Odeslat znovu (#104 D1–D5) |
 | `einvoice-phase1.md` | Strukturovaná e-faktura, fáze 1: generátor ISDOC z canonicalu (`IsdocWriter`), XSD 6.0.1 / 6.0.2 a validace, UUIDv5, rozšíření čtečky o přenesení daňové povinnosti, CLI `shpd-server einvoice-render`, soubory ISDOC a round-trip v korpusu, ISDOC jen mezi českými subjekty s IČO (#119 D1–D10) |
+| `einvoice-reader-reverse-charge.md` | Čtečka ISDOC: `vat.reverseCharge: false` jen u plnění se stejnou zemí dodavatele a odběratele, jinak `null` — došlý ISDOC od dodavatele z EU nesmí zablokovat kód DPH z historie (#119, oprava fáze 1) |
 
 ## Účetnictví
 
