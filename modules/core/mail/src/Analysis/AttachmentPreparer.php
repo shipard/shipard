@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Mail\Analysis;
 
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Core\Attachments\AttachmentService;
+use Shipard\Module\Core\Exchange\Isdoc\IsdocWriter;
 
 /**
  * Příprava příloh zprávy pro model (tasks/mail-analysis-inprocess.md D16):
@@ -15,7 +16,11 @@ use Shipard\Module\Core\Attachments\AttachmentService;
  *   2. třídění na PDF / obrázek (`jpeg`, `png`, `gif`, `webp`) / text
  *      (`text/*`); u `application/octet-stream` odhad podle přípony,
  *      ostatní typy se přeskočí (i `.eml` / `message/rfc822` — rozbalení
- *      přeposlané zprávy se nepřenáší),
+ *      přeposlané zprávy se nepřenáší). **ISDOC** (přípona `.isdoc` /
+ *      `.isdocx`, nebo XML s kořenem v namespace ISDOC) se modelu
+ *      neposílá nikdy — zpráva s ISDOC jde cestou ISDOC
+ *      (`IsdocImportService`, v evaluaci `EvalComputationRouter`; #103
+ *      D76) a jako text by model jen mátl,
  *   3. dekódování textu (`utf-8`, `utf-16` s BOM, `windows-1250`,
  *      `latin-1`), binární obsah do base64,
  *   4. limity: nejvýš {@see MAX_ATTACHMENTS} příloh a {@see MAX_TOTAL_BYTES}
@@ -36,6 +41,7 @@ class AttachmentPreparer
     public const MAIL_TABLE_ID = 303;
 
     private const PDF_MIME = 'application/pdf';
+    private const XML_MIMES = ['text/xml', 'application/xml'];
     private const IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     private const ZIP_MIMES = ['application/zip', 'application/x-zip-compressed'];
     private const EML_MIMES = ['message/rfc822', 'application/eml'];
@@ -115,6 +121,13 @@ class AttachmentPreparer
 
         $prepared = [];
         foreach ($expanded as $raw) {
+            if (self::isIsdoc($raw)) {
+                ErrorLogger::info('AttachmentPreparer: ISDOC attachment is not sent to the model — ISDOC goes the ISDOC path', [
+                    'ndx' => $raw->ndx,
+                    'filename' => $raw->filename,
+                ]);
+                continue;
+            }
             [$kind, $mime] = self::classify($raw);
             if ($kind === null) {
                 ErrorLogger::warn('AttachmentPreparer: unsupported attachment type — skipped', [
@@ -274,6 +287,53 @@ class AttachmentPreparer
             }
         }
         return [null, $mime];
+    }
+
+    /**
+     * ISDOC: přípona `.isdoc` / `.isdocx`, nebo XML (`text/xml`,
+     * `application/xml`, nebo odhad podle přípony `.xml`) s kořenovým
+     * elementem v namespace {@see IsdocWriter::NAMESPACE}. Nevalidní XML
+     * není ISDOC (propadne k běžnému třídění).
+     */
+    public static function isIsdoc(RawAttachment $att): bool
+    {
+        $ext = strtolower(pathinfo($att->filename, PATHINFO_EXTENSION));
+        if ($ext === 'isdoc' || $ext === 'isdocx') {
+            return true;
+        }
+        $mime = self::baseMime($att->mimeType);
+        if (!in_array($mime, self::XML_MIMES, true) && !($ext === 'xml' && ($mime === '' || $mime === 'application/octet-stream'))) {
+            return false;
+        }
+        return self::rootNamespace($att->content) === IsdocWriter::NAMESPACE;
+    }
+
+    /** Namespace kořenového elementu XML; null u nevalidního XML nebo bez namespace. */
+    private static function rootNamespace(string $xml): ?string
+    {
+        if (trim($xml) === '') {
+            return null;
+        }
+        $previous = libxml_use_internal_errors(true);
+        try {
+            $reader = new \XMLReader();
+            if (!$reader->XML($xml, null, LIBXML_NONET)) {
+                return null;
+            }
+            try {
+                while (@$reader->read()) {
+                    if ($reader->nodeType === \XMLReader::ELEMENT) {
+                        return $reader->namespaceURI !== '' ? $reader->namespaceURI : null;
+                    }
+                }
+                return null;
+            } finally {
+                $reader->close();
+            }
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
     }
 
     private static function kindOfMime(string $mime): ?string
