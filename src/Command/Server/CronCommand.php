@@ -58,7 +58,7 @@ class CronCommand extends Command
     public const SLOT_JOBS = [
         'minute'       => ['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'],
         'two-minutes'  => [],
-        'five-minutes' => ['alerts-run'],
+        'five-minutes' => ['exchange-rates-download', 'alerts-run'],
         'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
         'weekly'       => ['alerts-prune'],
     ];
@@ -74,6 +74,7 @@ class CronCommand extends Command
         'mail-analysis-reap'      => [DataSourceState::ACTIVE],
         'mail-preprocess --sweep' => [DataSourceState::ACTIVE],
         'mail-analyze --sweep'    => [DataSourceState::ACTIVE],
+        'exchange-rates-download' => [DataSourceState::ACTIVE],
         'alerts-run'              => [DataSourceState::ACTIVE],
         'mail-idempotency-prune'  => [DataSourceState::ACTIVE, DataSourceState::READ_ONLY],
         'vat-periods-ensure'      => [DataSourceState::ACTIVE],
@@ -95,6 +96,7 @@ class CronCommand extends Command
         'mail-preprocess --sweep' => 'core.mail',
         'mail-analyze --sweep'    => 'core.mail',
         'mail-idempotency-prune'  => 'core.mail',
+        'exchange-rates-download' => 'economy.exchangeRates',
         'alerts-run'              => 'core.alerts',
         'alerts-prune'            => 'core.alerts',
         'vat-periods-ensure'      => 'economy.vat',

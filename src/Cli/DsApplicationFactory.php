@@ -69,6 +69,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\WorkOrdersInvoiceRunCommand());
         $app->add(new \Shipard\Command\DataSource\ExchangeRatesImportCommand());
         $app->add(new \Shipard\Command\DataSource\ExchangeRateCommand());
+        $app->add(new \Shipard\Command\DataSource\ExchangeRatesDownloadCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsHealthCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsRotateCommand());

@@ -184,8 +184,9 @@ class CronCommandTest extends TestCase
             'core/mail'          => ['core.mail', ['core.system']],
             'economy/vat'        => ['economy.vat', ['core.system']],
             'economy/workOrders' => ['economy.workOrders', ['core.system']],
+            'economy/exchangeRates' => ['economy.exchangeRates', ['core.system']],
             'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts']],
-            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders']],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates']],
         ];
         foreach ($defs as $path => [$id, $deps]) {
             mkdir($root . '/' . $path, 0755, true);
@@ -312,7 +313,7 @@ class CronCommandTest extends TestCase
     public function testSlotJobsMapping(): void
     {
         $this->assertSame(['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'], CronCommand::SLOT_JOBS['minute']);
-        $this->assertSame(['alerts-run'], CronCommand::SLOT_JOBS['five-minutes']);
+        $this->assertSame(['exchange-rates-download', 'alerts-run'], CronCommand::SLOT_JOBS['five-minutes'], 'stahování před upozorněními — čerstvý zdroj dat nedostane nález dřív, než poprvé stáhne');
         $this->assertSame(['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'], CronCommand::SLOT_JOBS['daily']);
         $this->assertSame(['alerts-prune'], CronCommand::SLOT_JOBS['weekly']);
     }
@@ -788,7 +789,7 @@ class CronCommandTest extends TestCase
         fclose($lock);
 
         $this->assertSame(0, $exit);
-        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-run']], $cmd->callLog);
+        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'exchange-rates-download'], ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-run']], $cmd->callLog);
         $this->assertSame('{"old":true}', file_get_contents($heartbeatPath));
     }
 

@@ -118,6 +118,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>work-orders-invoice-run</info> Vystaví koncepty faktur periodických zakázek za splatná období — denní cron; --date=YYYY-MM-DD simuluje datum běhu, --work-order=<číslo> jen jedna zakázka bez pojistky dohánění, --dry-run jen vypíše');
         $output->writeln('  <info>exchange-rates-import</info>   Nahraje kurzovní lístky (shpd.exchangeRates.list.v1) ze souboru nebo složky; shodný lístek beze změny, jiný obsah = konflikt, --replace přepíše');
         $output->writeln('  <info>exchange-rate</info>           Kurz měny k datu podle resolveru (kurz za jednotku, typ lístku, platnost od, číslo), nebo důvod, proč nenalezen; <měna> [<datum>]');
+        $output->writeln('  <info>exchange-rates-download</info> Stáhne chybějící kurzovní lístky ze služby (five-minutes cron: okno od předchozího fiskálního roku, nejvýš 6 dotazů, pauza 1 h); --from/--to = ruční okno bez limitu, --type = jeden typ, --dry-run jen vypíše');
         $output->writeln('');
         $output->writeln('<comment>Registry (Spisovna):</comment>');
         $output->writeln('  <info>registry-extract-texts</info>  Fill registry documents extracted_text from attachments (default: missing only)');
