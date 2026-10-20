@@ -1,0 +1,176 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "docNumber": "FV-2026-0104",
+  "selfParty": "supplier",
+  "supplier": {
+    "name": "Alfa Nábytek s.r.o.",
+    "country": "cz",
+    "companyId": "12345678",
+    "taxId": "CZ12345678",
+    "vatId": "CZ12345678",
+    "courtRegistration": "C 12345 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Výrobní",
+      "houseNumber": "1230/5",
+      "city": "Brno",
+      "zip": "61600",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@alfa-nabytek.example",
+      "phone": "+420511222333",
+      "web": "www.alfa-nabytek.example"
+    },
+    "bankAccount": {
+      "accountNumber": "123457/0100",
+      "iban": null,
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Beta Kanceláře a.s.",
+    "country": "cz",
+    "companyId": "87654321",
+    "taxId": "CZ87654321",
+    "vatId": "CZ87654321",
+    "courtRegistration": null,
+    "address": {
+      "street": "Kancelářská",
+      "houseNumber": "7",
+      "city": "Praha 4",
+      "zip": "14000",
+      "country": "cz"
+    },
+    "contact": {
+      "name": "Petr Odběratel",
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-18",
+    "dueDate": "2026-10-02",
+    "taxPointDate": "2026-09-18",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20260104",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": null
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "DD-AB-25",
+        "ean": null,
+        "name": "Deska dubová A/B 25 mm",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 4,
+      "unitPrice": 2340,
+      "totalPrice": 8892,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 8892,
+        "vatAmount": 1867.32,
+        "vatTotal": 10759.32
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Hrana ABS dub 22×0,8 mm",
+        "description": null
+      },
+      "unit": "bm",
+      "quantity": 48,
+      "unitPrice": 18.9,
+      "totalPrice": 857.2,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": 50,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 857.2,
+        "vatAmount": 180.01,
+        "vatTotal": 1037.21
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Doprava a manipulace",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 650,
+      "totalPrice": 650,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 650,
+        "vatAmount": 136.5,
+        "vatTotal": 786.5
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 10399.2,
+      "tax": 2183.83,
+      "total": 12583.03
+    }
+  ],
+  "totals": {
+    "totalBase": 10399.2,
+    "totalVat": 2183.83,
+    "totalAmount": 12583.03,
+    "totalRounding": 0
+  }
+}

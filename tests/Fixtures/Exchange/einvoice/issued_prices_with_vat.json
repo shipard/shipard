@@ -1,0 +1,156 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "docNumber": "FV-2026-0106",
+  "selfParty": "supplier",
+  "supplier": {
+    "name": "Alfa Nábytek s.r.o.",
+    "country": "cz",
+    "companyId": "12345678",
+    "taxId": "CZ12345678",
+    "vatId": "CZ12345678",
+    "courtRegistration": "C 12345 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Výrobní",
+      "houseNumber": "1230/5",
+      "city": "Brno",
+      "zip": "61600",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@alfa-nabytek.example",
+      "phone": "+420511222333",
+      "web": "www.alfa-nabytek.example"
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Beta Kanceláře a.s.",
+    "country": "cz",
+    "companyId": "87654321",
+    "taxId": "CZ87654321",
+    "vatId": "CZ87654321",
+    "courtRegistration": null,
+    "address": {
+      "street": "Kancelářská",
+      "houseNumber": "7",
+      "city": "Praha 4",
+      "zip": "14000",
+      "country": "cz"
+    },
+    "contact": {
+      "name": "Petr Odběratel",
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-21",
+    "dueDate": "2026-09-21",
+    "taxPointDate": "2026-09-21",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromTotal",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "card",
+    "paymentReference": null,
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": null
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Natural 95",
+        "description": null
+      },
+      "unit": "l",
+      "quantity": 38.56,
+      "unitPrice": 38.9,
+      "totalPrice": 1500,
+      "priceCalcMode": "fromTotal",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 1239.67,
+        "vatAmount": 260.33,
+        "vatTotal": 1500
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Káva s sebou 0,3 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 45.4,
+      "totalPrice": 45.4,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 40.54,
+        "vatAmount": 4.86,
+        "vatTotal": 45.4
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 1239.67,
+      "tax": 260.33,
+      "total": 1500
+    },
+    {
+      "vatPct": 12,
+      "base": 40.54,
+      "tax": 4.86,
+      "total": 45.4
+    }
+  ],
+  "totals": {
+    "totalBase": 1280.21,
+    "totalVat": 265.19,
+    "totalAmount": 1545,
+    "totalRounding": -0.4
+  }
+}

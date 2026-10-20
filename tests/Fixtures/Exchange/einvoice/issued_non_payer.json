@@ -1,0 +1,143 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "docNumber": "2026-07",
+  "selfParty": "supplier",
+  "supplier": {
+    "name": "Jana Lektorová",
+    "country": "cz",
+    "companyId": "11223344",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Lektorská",
+      "houseNumber": "5",
+      "city": "Olomouc",
+      "zip": "77900",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "jana@lektorova.example",
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": "5638829718/0300",
+      "iban": "CZ8503000000005638829718",
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Beta Kanceláře a.s.",
+    "country": "cz",
+    "companyId": "87654321",
+    "taxId": "CZ87654321",
+    "vatId": "CZ87654321",
+    "courtRegistration": null,
+    "address": {
+      "street": "Kancelářská",
+      "houseNumber": "7",
+      "city": "Praha 4",
+      "zip": "14000",
+      "country": "cz"
+    },
+    "contact": {
+      "name": "Petr Odběratel",
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-29",
+    "dueDate": "2026-10-13",
+    "taxPointDate": null,
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "none",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "202607",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Nejsem plátce DPH."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Kurz Excel pro pokročilé (2 dny)",
+        "description": null
+      },
+      "unit": "os",
+      "quantity": 2,
+      "unitPrice": 2900,
+      "totalPrice": 5800,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": null,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 5800,
+        "vatAmount": 0,
+        "vatTotal": 5800
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Studijní materiály",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 320,
+      "totalPrice": 640,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": null,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 640,
+        "vatAmount": 0,
+        "vatTotal": 640
+      }
+    }
+  ],
+  "vatRecap": [],
+  "totals": {
+    "totalBase": null,
+    "totalVat": null,
+    "totalAmount": 6440,
+    "totalRounding": 0
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "docNumber": "FV-2026-0101",
+  "selfParty": "supplier",
+  "supplier": {
+    "name": "Alfa Nábytek s.r.o.",
+    "country": "cz",
+    "companyId": "12345678",
+    "taxId": "CZ12345678",
+    "vatId": "CZ12345678",
+    "courtRegistration": "C 12345 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Výrobní",
+      "houseNumber": "1230/5",
+      "city": "Brno",
+      "zip": "61600",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@alfa-nabytek.example",
+      "phone": "+420511222333",
+      "web": "www.alfa-nabytek.example"
+    },
+    "bankAccount": {
+      "accountNumber": "123457/0100",
+      "iban": null,
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Beta Kanceláře a.s.",
+    "country": "cz",
+    "companyId": "87654321",
+    "taxId": "CZ87654321",
+    "vatId": "CZ87654321",
+    "courtRegistration": null,
+    "address": {
+      "street": "Kancelářská",
+      "houseNumber": "7",
+      "city": "Praha 4",
+      "zip": "14000",
+      "country": "cz"
+    },
+    "contact": {
+      "name": "Petr Odběratel",
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-10",
+    "dueDate": "2026-09-24",
+    "taxPointDate": "2026-09-10",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20260101",
+    "specificSymbol": null,
+    "constantSymbol": "0308"
+  },
+  "notes": {
+    "onDocument": "Zboží zůstává do úplného zaplacení majetkem dodavatele."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KS-180",
+        "ean": null,
+        "name": "Konferenční stůl dub 180×90",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 12400,
+      "totalPrice": 24800,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 24800,
+        "vatAmount": 5208,
+        "vatTotal": 30008
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "ZE-01",
+        "ean": "8594012345678",
+        "name": "Židle Ergo",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 2150,
+      "totalPrice": 12900,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 12900,
+        "vatAmount": 2709,
+        "vatTotal": 15609
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Odborná literatura — Ergonomie kanceláře",
+        "description": "Kniha, ISBN smyšlené"
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 890,
+      "totalPrice": 890,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 890,
+        "vatAmount": 106.8,
+        "vatTotal": 996.8
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 37700,
+      "tax": 7917,
+      "total": 45617
+    },
+    {
+      "vatPct": 12,
+      "base": 890,
+      "tax": 106.8,
+      "total": 996.8
+    }
+  ],
+  "totals": {
+    "totalBase": 38590,
+    "totalVat": 8023.8,
+    "totalAmount": 46613.8,
+    "totalRounding": 0
+  }
+}

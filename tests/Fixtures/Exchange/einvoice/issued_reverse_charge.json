@@ -1,0 +1,150 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "docNumber": "FV-2026-0102",
+  "selfParty": "supplier",
+  "supplier": {
+    "name": "Alfa Nábytek s.r.o.",
+    "country": "cz",
+    "companyId": "12345678",
+    "taxId": "CZ12345678",
+    "vatId": "CZ12345678",
+    "courtRegistration": "C 12345 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Výrobní",
+      "houseNumber": "1230/5",
+      "city": "Brno",
+      "zip": "61600",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@alfa-nabytek.example",
+      "phone": "+420511222333",
+      "web": "www.alfa-nabytek.example"
+    },
+    "bankAccount": {
+      "accountNumber": "123457/0100",
+      "iban": "CZ7001000000000000123457",
+      "bic": "KOMBCZPP"
+    }
+  },
+  "customer": {
+    "name": "Beta Kanceláře a.s.",
+    "country": "cz",
+    "companyId": "87654321",
+    "taxId": "CZ87654321",
+    "vatId": "CZ87654321",
+    "courtRegistration": null,
+    "address": {
+      "street": "Kancelářská",
+      "houseNumber": "7",
+      "city": "Praha 4",
+      "zip": "14000",
+      "country": "cz"
+    },
+    "contact": {
+      "name": "Petr Odběratel",
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-12",
+    "dueDate": "2026-09-26",
+    "taxPointDate": "2026-09-11",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": true
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20260102",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Daň odvede zákazník (§ 92a zákona o DPH)."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Montáž příček SDK",
+        "description": null
+      },
+      "unit": "m2",
+      "quantity": 48,
+      "unitPrice": 850,
+      "totalPrice": 40800,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 0,
+        "supplyKind": null,
+        "reverseChargeCode": "4"
+      },
+      "computed": {
+        "vatBase": 40800,
+        "vatAmount": 0,
+        "vatTotal": 40800
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Výmalba",
+        "description": null
+      },
+      "unit": "m2",
+      "quantity": 120,
+      "unitPrice": 95,
+      "totalPrice": 11400,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 0,
+        "supplyKind": null,
+        "reverseChargeCode": "4"
+      },
+      "computed": {
+        "vatBase": 11400,
+        "vatAmount": 0,
+        "vatTotal": 11400
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 0,
+      "base": 52200,
+      "tax": 0,
+      "total": 52200
+    }
+  ],
+  "totals": {
+    "totalBase": 52200,
+    "totalVat": 0,
+    "totalAmount": 52200,
+    "totalRounding": 0
+  }
+}
