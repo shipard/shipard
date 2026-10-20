@@ -10,10 +10,12 @@ from pathlib import Path
 
 from invoicegen.corpus import PROFILES, cells_for
 from invoicegen.dataset import (
-    DatasetBuildError, Profile, analysis_json, build_dataset, dataset_canonical, dumps_dataset, load_profile,
+    DatasetBuildError, Profile, analysis_json, build_dataset, dataset_canonical, dataset_list, dumps_dataset, load_profile,
     message_for_cell, message_id, own_person, php_json_numbers, prune, slug, strip_dataset_additions,
 )
-from tests.fixtures import DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, PROJECTION_PATH, data
+from tests.fixtures import (
+    CURRENCIES, DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, PROJECTION_PATH, RATE_LISTS, data, rate_list,
+)
 from tests.test_expected import expected_for
 from tests.test_reporting import REPORTING
 
@@ -231,7 +233,7 @@ class BuildDatasetTest(unittest.TestCase):
     """Miniaturní korpus v temp složce: dva datové soubory, očekávání
     a PDF z fixtur → sada profilu vat-payer; druhý build = stejné bajty."""
 
-    def build(self, root: Path) -> tuple[Path, dict]:
+    def build(self, root: Path, rate_lists: list[dict] = RATE_LISTS) -> tuple[Path, dict]:
         docs = {"0101-domestic-goods": data(DATA_DOMESTIC), "0502-eu-services": data(DATA_EU_SERVICES)}
         corpus = root / "corpus"
         for stem, doc in docs.items():
@@ -254,7 +256,7 @@ class BuildDatasetTest(unittest.TestCase):
                           ledger_snapshot=snapshot)
         out = root / "datasets" / "vat-payer"
         summary = build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], docs, IDENTITIES, corpus, out,
-                                reporting=REPORTING, projection_path=PROJECTION_PATH)
+                                reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=rate_lists, currencies=CURRENCIES)
         return out, {"summary": summary, "docs": docs}
 
     @staticmethod
@@ -267,7 +269,10 @@ class BuildDatasetTest(unittest.TestCase):
             first = self.snapshot(out)
             self.assertEqual(2, info["summary"].messages)
             self.assertEqual(0, info["summary"].skipped)
+            self.assertEqual(2, info["summary"].exchange_rate_lists)
             self.assertEqual([
+                "exchangeRates/0001-cz-cnb-daily-2026-08-28.jsonc",
+                "exchangeRates/0002-cz-cnb-daily-2026-08-31.jsonc",
                 "expected/costs.json",
                 "expected/general-ledger.json",
                 "expected/messages.json",
@@ -283,7 +288,10 @@ class BuildDatasetTest(unittest.TestCase):
             ], sorted(first))
             manifest = json.loads(first["manifest.jsonc"])
             self.assertEqual(["format", "name", "title", "dateMode", "created", "country", "profile", "provision", "counts"], list(manifest))
-            self.assertEqual({"setup": 1, "persons": 1, "mail": 2}, manifest["counts"], "expected/ není sekce sady")
+            self.assertEqual({"setup": 1, "exchangeRates": 2, "persons": 1, "mail": 2}, manifest["counts"], "expected/ není sekce sady")
+            rates = json.loads(first["exchangeRates/0002-cz-cnb-daily-2026-08-31.jsonc"])
+            self.assertEqual(["format", "listType", "homeCurrency", "validFrom", "listNumber", "rates"], list(rates))
+            self.assertEqual(["EUR", "JPY", "USD"], [r["currency"] for r in rates["rates"]], "podle měny, bez XDR")
             self.assertEqual("cz", manifest["country"])
             self.assertEqual({"accountingItems": ["568201"]}, manifest["provision"])
             self.assertTrue(first["manifest.jsonc"].endswith(b"}\n"))
@@ -325,8 +333,10 @@ class BuildDatasetTest(unittest.TestCase):
                                                                 "rows": [{"key": "economy.vatAgenda", "value": False}]}})
             out = root / "datasets" / "non-payer"
             build_dataset(profile, IDENTITIES["profiles"]["non-payer"], docs, IDENTITIES, corpus, out,
-                          reporting=REPORTING, projection_path=PROJECTION_PATH)
+                          reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=RATE_LISTS, currencies=CURRENCIES)
             self.assertEqual(b"[]\n", (out / "expected" / "vat.json").read_bytes())
+            self.assertFalse((out / "exchangeRates").exists(), "sada bez cizí měny sekci nemá")
+            self.assertNotIn("exchangeRates", json.loads((out / "manifest.jsonc").read_text(encoding="utf-8"))["counts"])
             self.assertFalse((out / "expected" / "general-ledger.json").exists(), "bez schváleného snímku se nic nekopíruje")
             costs = json.loads((out / "expected" / "costs.json").read_text(encoding="utf-8"), parse_float=Decimal)
             self.assertEqual(expected["totals"]["totalBase"] + expected["totals"]["totalVat"], costs[0]["cost"])
@@ -339,4 +349,24 @@ class BuildDatasetTest(unittest.TestCase):
                               provision={}, setup={})
             with self.assertRaises(DatasetBuildError):
                 build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out,
-                              reporting=REPORTING, projection_path=PROJECTION_PATH)
+                              reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=RATE_LISTS, currencies=CURRENCIES)
+
+    def test_missing_rate_list_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(DatasetBuildError) as ctx:
+                self.build(Path(tmp), rate_lists=[RATE_LISTS[0]] and [rate_list("2026-08-20", "1", EUR="24.1")])
+            self.assertIn("EUR k 2026-08-31", str(ctx.exception))
+            self.assertIn("--fetch-rates", str(ctx.exception))
+
+
+class DatasetListTest(unittest.TestCase):
+    def test_exporter_shape(self) -> None:
+        lst = dict(rate_list("2026-08-31", "26167", XDR="28.171", USD="20.698", EUR="24", JPY="13.9501234"), validTo="2026-09-30")
+        out = dataset_list(lst, CURRENCIES)
+        self.assertEqual(["format", "listType", "homeCurrency", "validFrom", "validTo", "listNumber", "rates"], list(out))
+        self.assertEqual([("EUR", 1, D("24.0")), ("JPY", 100, D("13.950123")), ("USD", 1, D("20.698"))],
+                         [(r["currency"], r["amount"], r["rate"]) for r in out["rates"]], "bez XDR, podle měny, kurz na 6 míst, celý jako float")
+        self.assertIn('"rate": 24.0\n', dumps_dataset(out), "PHP round() dá float — PRESERVE_ZERO_FRACTION")
+        self.assertNotIn("validTo", dataset_list(rate_list("2026-08-31", "26167", EUR="24.1"), CURRENCIES), "null vynechané")
+        with self.assertRaises(DatasetBuildError):
+            dataset_list(rate_list("2026-08-31", "26167", XDR="28.171"), CURRENCIES)

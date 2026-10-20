@@ -14,11 +14,17 @@ takže je výstup deterministický — výpis říká „ISDOC zapsán / beze zm
 podle obsahu, build-state.json se ho netýká. Buňce podoby pdf se .isdoc
 smaže; plný běh smaže i sirotky. Vyžaduje `composer install` (vendor/).
 
-    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--no-datasets]
+    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets]
 
 --verify-identities ověří identity v ARES a VIES (síť; po změně identit),
 při úspěchu zapíše dnešní datum do verifiedAt a pokračuje buildem; selhání
 = exit 1, nedostupný registr = exit 2 (identity se neoznačí jako ověřené).
+Kurzovní lístky (#103 D72, tasks/testing-rates-isdoc.md): doklad v cizí
+měně potřebuje v exchange-rates/ lístek ČNB k účetnímu datu (DUZP, bez něj
+datum vystavení) a rezervu z předchozího pracovního dne; --fetch-rates je
+jednorázově stáhne ze služby kurzů (síť), jinak build jen čte a chybějící
+lístek je chyba. Plný běh (bez --only) smaže lístky, které žádný doklad
+nepotřebuje.
 Po korpusu sestaví datové sady tests/datasets/cz/<profil>/ ze základů
 profilů profiles/<profil>/ (tasks/testing-phase2.md; --no-datasets přeskočí;
 sady se stavějí vždy ze všech datových souborů, i s --only).
@@ -52,6 +58,7 @@ from invoicegen.corpus import (  # noqa: E402
 from invoicegen.dataset import DatasetBuildError, build_datasets  # noqa: E402
 from invoicegen.expected import apply_projection, build_expected, dumps_expected, load_projection  # noqa: E402
 from invoicegen.jsonc import load_jsonc  # noqa: E402
+from invoicegen.rates import RatesError, fetch_missing, load_lists, needed_dates, select_lists  # noqa: E402
 from invoicegen.registries import (  # noqa: E402
     RegistryUnavailable, format_check, update_verified_at, verify_identities,
 )
@@ -62,6 +69,8 @@ from invoicegen.render import (  # noqa: E402
 )
 
 STATE_FILE = BASE_DIR / "build-state.json"
+RATES_DIR = BASE_DIR / "exchange-rates"
+CURRENCIES_FILE = REPO_ROOT / "modules" / "world" / "base" / "config" / "currencies.jsonc"
 SHPD_SERVER = REPO_ROOT / "bin" / "shpd-server"
 VENDOR_AUTOLOAD = REPO_ROOT / "vendor" / "autoload.php"
 COUNTRY = BASE_DIR.name
@@ -364,6 +373,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--force", action="store_true", help="přegenerovat všechna PDF")
     parser.add_argument("--verify-identities", action="store_true",
                         help="ověřit identity v ARES a VIES (síť) a zapsat verifiedAt")
+    parser.add_argument("--fetch-rates", action="store_true",
+                        help="stáhnout chybějící kurzovní lístky ČNB ze služby kurzů (síť) do exchange-rates/")
     parser.add_argument("--no-datasets", action="store_true", help="nesestavovat datové sady tests/datasets/cz/")
     args = parser.parse_args(argv)
 
@@ -408,6 +419,36 @@ def main(argv: list[str] | None = None) -> int:
     if unknown:
         print(f"--only: neznámá čísla {', '.join(sorted(unknown))}", file=sys.stderr)
         return 1
+
+    # Kurzovní lístky pro doklady v cizí měně (D72): stažení jen s --fetch-rates,
+    # jinak jen čtení; chybějící lístek k účetnímu datu je chyba.
+    needed = needed_dates(docs, identities)
+    try:
+        if args.fetch_rates:
+            for name, status in fetch_missing(RATES_DIR, needed):
+                print(f"exchange-rates/{name}: {status}")
+        rate_lists = load_lists(RATES_DIR)
+    except RatesError as e:
+        print(f"kurzy: {e}", file=sys.stderr)
+        return 2 if args.fetch_rates else 1
+    except OSError as e:
+        print(f"kurzy: služba nedostupná: {e}", file=sys.stderr)
+        return 2
+    selection = select_lists(rate_lists, [(c, day) for day, currencies in needed.items() for c in currencies])
+    if selection.missing:
+        print("kurzy: chybí lístek pro " + ", ".join(f"{c} k {day}" for c, day in selection.missing)
+              + " — spusť build.py --fetch-rates", file=sys.stderr)
+        return 1
+    for (currency, day), rate in selection.rates.items():
+        print(f"kurz {currency} k {day}: lístek {rate.valid_from} (č. {rate.list_number}) → {rate.rate}")
+    if not only:
+        kept = {lst["validFrom"] for lst in selection.lists}
+        for orphan in sorted(RATES_DIR.glob("*.json")) if RATES_DIR.is_dir() else []:
+            if orphan.stem[:10] not in kept:
+                orphan.unlink()
+                print(f"exchange-rates/{orphan.name}: lístek bez dokladu smazán")
+        rate_lists = [lst for lst in rate_lists if lst["validFrom"] in kept]
+    currencies = frozenset(code.upper() for code in load_jsonc(CURRENCIES_FILE))
 
     state = load_state()
     new_state = dict(state)
@@ -480,13 +521,14 @@ def main(argv: list[str] | None = None) -> int:
     if not args.no_datasets:
         try:
             summaries = build_datasets(BASE_DIR, DATASETS_DIR, identities, docs,
-                                       reporting=reporting, projection_path=PROJECTION_FILE)
+                                       reporting=reporting, projection_path=PROJECTION_FILE,
+                                       rate_lists=rate_lists, currencies=currencies)
         except (DatasetBuildError, ReportingError) as e:
             print(f"datová sada: {e}", file=sys.stderr)
             return 1
         for s in summaries:
-            print(f"{s.name}: {s.messages} zpráv, {s.skipped} vynechaných buněk matice → "
-                  f"{s.out_dir.relative_to(REPO_ROOT)}")
+            print(f"{s.name}: {s.messages} zpráv, {s.exchange_rate_lists} kurzovních lístků, "
+                  f"{s.skipped} vynechaných buněk matice → {s.out_dir.relative_to(REPO_ROOT)}")
     return 0
 
 

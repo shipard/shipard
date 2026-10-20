@@ -168,3 +168,25 @@ def data(doc: dict, **changes) -> dict:
     out = copy.deepcopy(doc)
     out.update(changes)
     return out
+
+
+def rate_list(valid_from: str, number: str, **rates: str) -> dict:
+    """Denní lístek ČNB ve formátu shpd.exchangeRates.list.v1 (JPY za 100 jednotek)."""
+    amounts = {"JPY": 100, "HUF": 100}
+    return {
+        "format": "shpd.exchangeRates.list.v1",
+        "listType": "cz.cnb.daily",
+        "homeCurrency": "CZK",
+        "listNumber": number,
+        "validFrom": valid_from,
+        "validTo": None,
+        "rates": [{"currency": c, "amount": amounts.get(c, 1), "rate": Decimal(r)} for c, r in rates.items()],
+    }
+
+
+# Lístek použitý pro DATA_EU_SERVICES (DUZP 2026-08-31, pondělí) a rezerva z pátku.
+RATE_LISTS = [
+    rate_list("2026-08-28", "26166", EUR="24.15", USD="20.701", XDR="28.244", JPY="13.98"),
+    rate_list("2026-08-31", "26167", EUR="24.125", USD="20.698", XDR="28.171", JPY="13.95"),
+]
+CURRENCIES = frozenset({"CZK", "EUR", "USD", "JPY"})   # XDR mimo world.base.currencies

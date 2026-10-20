@@ -1,0 +1,160 @@
+{
+  "format": "shpd.exchangeRates.list.v1",
+  "listType": "cz.cnb.daily",
+  "homeCurrency": "CZK",
+  "listNumber": "26188",
+  "validFrom": "2026-09-30",
+  "validTo": null,
+  "rates": [
+    {
+      "currency": "AUD",
+      "amount": 1,
+      "rate": 15
+    },
+    {
+      "currency": "BRL",
+      "amount": 1,
+      "rate": 4.144
+    },
+    {
+      "currency": "CNY",
+      "amount": 1,
+      "rate": 3.21
+    },
+    {
+      "currency": "DKK",
+      "amount": 1,
+      "rate": 3.269
+    },
+    {
+      "currency": "EUR",
+      "amount": 1,
+      "rate": 24.44
+    },
+    {
+      "currency": "PHP",
+      "amount": 100,
+      "rate": 34.324
+    },
+    {
+      "currency": "HKD",
+      "amount": 1,
+      "rate": 2.743
+    },
+    {
+      "currency": "INR",
+      "amount": 100,
+      "rate": 22.457
+    },
+    {
+      "currency": "IDR",
+      "amount": 1000,
+      "rate": 1.204
+    },
+    {
+      "currency": "ISK",
+      "amount": 100,
+      "rate": 17.839
+    },
+    {
+      "currency": "ILS",
+      "amount": 1,
+      "rate": 7.002
+    },
+    {
+      "currency": "JPY",
+      "amount": 100,
+      "rate": 13.707
+    },
+    {
+      "currency": "ZAR",
+      "amount": 1,
+      "rate": 1.313
+    },
+    {
+      "currency": "CAD",
+      "amount": 1,
+      "rate": 15.172
+    },
+    {
+      "currency": "KRW",
+      "amount": 100,
+      "rate": 1.588
+    },
+    {
+      "currency": "HUF",
+      "amount": 100,
+      "rate": 6.674
+    },
+    {
+      "currency": "MYR",
+      "amount": 1,
+      "rate": 5.278
+    },
+    {
+      "currency": "MXN",
+      "amount": 1,
+      "rate": 1.189
+    },
+    {
+      "currency": "XDR",
+      "amount": 1,
+      "rate": 29.245
+    },
+    {
+      "currency": "NOK",
+      "amount": 1,
+      "rate": 2.242
+    },
+    {
+      "currency": "NZD",
+      "amount": 1,
+      "rate": 12.154
+    },
+    {
+      "currency": "PLN",
+      "amount": 1,
+      "rate": 5.593
+    },
+    {
+      "currency": "RON",
+      "amount": 1,
+      "rate": 4.629
+    },
+    {
+      "currency": "SGD",
+      "amount": 1,
+      "rate": 16.857
+    },
+    {
+      "currency": "SEK",
+      "amount": 1,
+      "rate": 2.157
+    },
+    {
+      "currency": "CHF",
+      "amount": 1,
+      "rate": 25.79
+    },
+    {
+      "currency": "THB",
+      "amount": 100,
+      "rate": 64.117
+    },
+    {
+      "currency": "TRY",
+      "amount": 100,
+      "rate": 43.908
+    },
+    {
+      "currency": "USD",
+      "amount": 1,
+      "rate": 21.522
+    },
+    {
+      "currency": "GBP",
+      "amount": 1,
+      "rate": 28.596
+    }
+  ]
+}

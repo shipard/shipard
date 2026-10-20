@@ -12,6 +12,7 @@
     },
     "counts": {
         "setup": 3,
+        "exchangeRates": 4,
         "persons": 1,
         "mail": 16
     }
