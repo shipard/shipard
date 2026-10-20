@@ -262,6 +262,9 @@ je v [TESTERS.md](../TESTERS.md).
   firmy) AI přečte a náhled návrhu ho ukáže jako **Kontakt**. Na doklad
   ani k dodavateli do **Osob** se nepřenáší; potřebuješ-li ho evidovat,
   doplň ho u dodavatele ručně.
+- **EAN z faktury se neukládá.** Čárový kód zboží na řádku faktury AI
+  přečte, ale na doklad ani na položku se nepřenese — u položky ho
+  doplníš ručně.
 - **Samovyměření (reverse charge) má v návrhu své meze.** Fakturu za
   služby nebo zboží z EU, služby ze třetí země a tuzemské přenesení
   daňové povinnosti (stavební práce, odpad a šrot) návrh zpracuje sám:

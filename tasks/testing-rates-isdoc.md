@@ -1,6 +1,6 @@
 # Testování: kurzy a ISDOC v datových sadách, evaluace zpráv s ISDOC
 
-**Stav:** naplánováno — design schválen 2026-10-20 (#103 D72–D77), čeká na implementaci
+**Stav:** hotovo — 2026-10-20 (#103 D72–D84; design schválen 2026-10-20); zbývá push a komentář do #103
 
 ## Kontext / Cíl
 
@@ -154,17 +154,47 @@ mimo štítky. Každá věcná odchylka čtečky je nález pro #119.
 
 ## Hotovo když
 
-- [ ] lístky v `tests/corpus/cz/exchange-rates/`, sady mají `exchangeRates/`;
+- [x] lístky v `tests/corpus/cz/exchange-rates/`, sady mají `exchangeRates/`;
       build idempotentní
-- [ ] `vat.json` a `costs.json` v Kč; kurz generátoru = výsledek
-      `shpd-ds exchange-rate` pro každý doklad v cizí měně
-- [ ] `dataset-verify` na třech profilech: kontroly 1–4 `ok`, nic
-      nepřeskočeno; nové snímky schválené a commitnuté
-- [ ] sady: šest zpráv na profil s ISDOC jako druhou přílohou
-- [ ] evaluace: zprávy s ISDOC cestou ISDOC (bez AI extrakce), `notCarried`,
+- [x] `vat.json` a `costs.json` v Kč; kurz generátoru = výsledek
+      `shpd-ds exchange-rate` pro každý doklad v cizí měně (kontrola 5 Kurzy
+      ověřuje i resolver na naseedovaném zdroji dat)
+- [x] `dataset-verify` na třech profilech: kontroly 1–5 `ok`, nic
+      nepřeskočeno; nové snímky schválené a commitnuté (2026-10-20)
+- [x] sady: šest zpráv na profil s ISDOC jako druhou přílohou
+- [x] evaluace: zprávy s ISDOC cestou ISDOC (bez AI extrakce), `notCarried`,
       `byPath`; ISDOC se modelu jako text neposílá (test)
-- [ ] `baseline` × 3 nad novou sadou plátce, vyhodnocení v tasku
-- [ ] dokumentace, hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] `baseline` × 3 nad novou sadou plátce, vyhodnocení v tasku
+- [x] dokumentace, hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Vyhodnocení běhu `baseline` × 3 (2026-10-20, D77)
+
+`tests/eval/cz-vat-payer/2026-10-20-baseline.json` nad sadou s hashem
+`81a1c220…` (ISDOC jako druhá příloha, lístky, očekávání v Kč), model
+`claude-sonnet-5-5` přes serverové připojení, 60 volání, žádné selhání,
+cena 2,08 USD celkem (extrakce 1,84 + štítky 0,24; odhad byl 2,23, strop 3).
+
+| Metrika | Celkem | Cesta `ai` (42) | Cesta `isdoc` (18) |
+|---|---|---|---|
+| shoda polí (`fields.all.hit`) | 96,1 % | 94,9 % | 98,4 % |
+| doklady bez odchylky | 30,0 % | 14,3 % | 66,7 % |
+| částky, počet řádků, klasifikace | 100 % | 100 % | 100 % |
+| štítek dokladu | 98,3 % | — | 1 odchylka (1002, jednou ze tří) |
+| cena | 2,08 USD | 1,98 USD | 0,10 USD (jen štítky) |
+| `notCarried` | 870 listů | — | 13–197 na volání podle podoby dokladu |
+
+- **Cesta ISDOC: žádná věcná odchylka čtečky.** Všech 54 odchylek 18 volání
+  je ve štítcích (`_resolve.contentTag.rowExceptions` 34× navíc, 20× chybí;
+  `tag` jednou `people.catering` místo `office.cleaning` u 1002) — tedy
+  LLM klasifikace štítků, ne pole dokladu. Pole, která ISDOC nenese, jsou
+  `notCarried` a do shody se nepočítají. Pro #119 žádný nález.
+- **Cesta AI** odpovídá dosavadním běhům (10-16 baseline 94,9 % shoda,
+  10 % bez odchylky — jiný hash sady, porovnání jen orientační): nejčastěji
+  chybí `rows[].item.supplierCode` (42) a `supplier.contact.web` (33),
+  špatně `supplier.courtRegistration` (18) a `notes.onDocument` (18), chybí
+  období plnění (9 + 9) a popis řádku (9).
+- Celková shoda 96,1 % je vyšší než dřív jen proto, že šest dokladů jde
+  deterministicky — srovnávat napříč sadami je třeba po cestách (`byPath`).
 
 ## Pasti
 
