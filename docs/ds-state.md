@@ -296,7 +296,8 @@ přežije cyklus reset → reimport.
 
 **Co při vypnutí neběží** — všechny per-DS úlohy dispatcheru
 (`CronCommand::SLOT_JOBS`) včetně úklidových: fronta odchozí pošty
-(`mail-outbox-run`), reaper a sweepy analýzy pošty, upozornění
+(`mail-outbox-run`), reaper a sweepy analýzy pošty, stahování kurzovních
+lístků (`exchange-rates-download`), upozornění
 (`alerts-run`, `alerts-prune`), úklid idempotence pošty, instance tvrzení
 DPH (`vat-periods-ensure`), periodická fakturace
 (`work-orders-invoice-run`). Server-level joby (`hosting-sync`,

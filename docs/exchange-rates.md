@@ -3,9 +3,9 @@
 Modul `economy.exchangeRates` (#121, task A — `tasks/exchange-rates-core.md`):
 kurzovní lístky země zdroje dat v tabulkách, kurz k datu pro doklady,
 applier a bankovní výpisy, nahrání lístků ze souboru a z datové sady. Task B
-(#121 D2, D3, D9) doplní stahování ze služby přes periodické úlohy,
-doplnění historie a upozornění na chybějící lístek — tento dokument u toho
-říká, co z něj už platí.
+(`tasks/exchange-rates-download.md`, #121 D2, D3, D9, U1–U7) přidal
+stahování ze služby v periodických úlohách, ruční doplnění z CLI
+a upozornění na chybějící lístek (§9).
 
 ## 1. Typy lístků — `world.<země>.exchangeRateLists` (D1)
 
@@ -28,12 +28,21 @@ resolver kurz nenajde, nic dalšího se nerozbije. Typ musí mít
 obojího odmítne. Další typ (celní kurz, ECB) = další záznam v konfiguraci
 země.
 
+**Stahování (`download`, task B U2).** Typ, který se má stahovat ze služby
+(§9), nese klíč `download` → `Download\ListDownloadConfig`:
+`serviceListType` (`listType` služby: 1 denní, 2 ostatní měny),
+`frequency` `workingDays` (lístek každý pracovní den kalendáře `calendar`
+— dnes jen `cz` → `CzechHolidays`; dnešní lístek se čeká až po
+`publishAfter` v zóně `timezone`, výchozí Europe/Prague) nebo `monthly`
+(lístek s `validFrom` = 1. den měsíce). Typ bez `download` se nestahuje
+a upozornění ho nehlídá; neplatná hodnota typ pro resolver nezruší, jen
+se nestahuje (`ExchangeRateListType::$downloadIssue`, stahovač to vypíše).
+
 ## 2. Formát `shpd.exchangeRates.list.v1` (D2)
 
 Schéma `modules/core/exchange/schemas/shpd.exchangeRates.list.v1.jsonc`
 (+ `.json`, drift hlídá `SchemaDriftTest`). Jeden soubor = jeden lístek;
-stejný formát čte CLI (§6), datové sady (§7) a v tasku B ho bude vracet
-služba.
+stejný formát čte CLI (§6), datové sady (§7) a vrací ho služba (§9).
 
 ```jsonc
 {
@@ -75,17 +84,22 @@ child tabulka lístku (`childTables`, dataKey `values`) — hlavička
 a hodnoty v jedné transakci, mazání lístku maže hodnoty. Bez stavů dokladu;
 obě tabulky `systemManaged` (generické CRUD POST/DELETE odmítne).
 
-**`ExchangeRateListImporter`** je jediná cesta zápisu (CLI, seeder, v tasku
-B služba): `import(array $list, int $source, bool $replace = false)`
+**`ExchangeRateListImporter`** je jediná cesta zápisu (CLI, seeder,
+služba): `import(array $list, int $source, bool $replace = false)`
 → `ExchangeRateListImportResult`. Schéma → sémantika (známý typ pro zemi
-zdroje dat, `homeCurrency` = měna typu = domácí měna zdroje dat, měny
-z `world.base.currencies`, žádná měna dvakrát, `validTo` ≥ `validFrom`,
-typ bez `maxAgeDays` vyžaduje `validTo`) → zápis přes `TableGateway`.
-Výsledek per lístek: nový (`list_type`, `valid_from`) → `created`;
-existující se shodným obsahem (otisk bez zdroje a id) → `skipped`; s jiným
-obsahem → `conflict`, s volbou `replace` se hodnoty nahradí (`replaced`:
-hodnoty téže měny přes id existujícího řádku, nové vložené, chybějící
-smazané — bez kolize unikátního klíče); `invalid` / `failed` s chybami.
+zdroje dat, `homeCurrency` = měna typu = domácí měna zdroje dat, žádná
+měna dvakrát, `validTo` ≥ `validFrom`, typ bez `maxAgeDays` vyžaduje
+`validTo`) → **neznámá měna** (mimo `world.base.currencies`, např. XDR
+v denním lístku ČNB) se z lístku vyřadí a vrátí v `skippedCurrencies`
+(task B U1; CLI ji vypíše jako varování u souboru, seeder jako varování
+sady, stav zůstává ok; lístek bez jediné známé měny je `invalid`) → zápis
+přes `TableGateway`. Výsledek per lístek: nový (`list_type`, `valid_from`)
+→ `created`; existující se shodným obsahem (otisk bez zdroje a id,
+**počítaný až po vyřazení neznámých měn** — jinak by každé další stažení
+hlásilo konflikt) → `skipped`; s jiným obsahem → `conflict`, s volbou
+`replace` se hodnoty nahradí (`replaced`: hodnoty téže měny přes id
+existujícího řádku, nové vložené, chybějící smazané — bez kolize
+unikátního klíče); `invalid` / `failed` s chybami.
 
 ## 4. Dohledání kurzu — `ExchangeRateResolver` (D4, D5)
 
@@ -189,8 +203,12 @@ a V opravě).
 - `shpd-ds exchange-rate <měna> [<datum>]` — výsledek resolveru (kurz za
   jednotku, typ, platnost od, číslo lístku) nebo „nenalezen“ s důvody per
   typ. Ověření a podpora.
+- `shpd-ds exchange-rates-download [--from] [--to] [--type] [--dry-run]`
+  — stažení chybějících lístků ze služby (§9): bez voleb běh jako z cronu,
+  `--from` / `--to` ruční okno bez limitu a pauzy, `--dry-run` jen plán.
 
-Oba vyžadují tabulku lístků (`ds-upgrade`). Žádné volání sítě.
+Všechny vyžadují tabulku lístků (`ds-upgrade`); síť volá jen
+`exchange-rates-download`.
 
 ## 7. Datové sady (D10)
 
@@ -213,14 +231,104 @@ v cizí měně v `dataset-verify` (#103 D30) jsou samostatný task (U6).
 Přehled + tab Kurzy (měna, množství, kurz, kurz za jednotku). Ikona
 `exchange-rates`.
 
-## 9. Co přinese task B (D2, D3, D9)
+## 9. Stahování ze služby (task B — D2, D3, D9, U2–U7)
 
-Stahování lístků ze služby (adresa v `server.json`) v periodických úlohách
-(slot `five-minutes`, jen pracovní den po 14:35 Europe/Prague, dokud lístek
-pro ten den chybí), doplnění chybějících lístků od začátku předchozího
-fiskálního roku s omezeným počtem dotazů, upozornění, když lístek za
-pracovní den nepřibude ani další den. Zapisuje přes týž importer se zdrojem
-*služba* (3). Kontrola kurzů na dokladech (D8) je mimo #121 → #130.
+**Služba** (D2): vlastní feed, ne přímo ČNB —
+`GET <serviceUrl>?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD&listType=1|2`,
+vždy HTTP 200 a JSON `{"valid": 1, "data": [lístky §2]}`, bez lístku
+`{"valid": 0}`, chybné parametry `{"valid": 0, "error": "…"}`. Adresa =
+`exchangeRates.serviceUrl` v `server.json`
+(`ServerConfig::getExchangeRatesServiceUrl`, U3): klíč chybí →
+`https://data.shipard.app/feed/money-exchange-rates`, prázdný řetězec →
+`null` = stahování vypnuté, jiná hodnota musí být http(s). Vývojářské
+servery stahují taky. Každý zdroj dat stahuje sám (žádná sdílená cache).
+
+**Třídy** (`modules/economy/exchangeRates/src/Download/`):
+
+- `ExchangeRateServiceClient` nad rozhraním `ExchangeRateServiceTransport`
+  (produkce `CurlExchangeRateServiceTransport`: timeout 15 s, připojení
+  5 s, bez přesměrování, jen http(s); testy
+  `tests/Fixtures/Module/Economy/ExchangeRates/Service/` s uloženými
+  odpověďmi, U7) → `ExchangeRateServiceResponse` `lists` / `none` /
+  `error` (síť, HTTP ≠ 200, nevalidní JSON, `valid: 0` s `error`, bez
+  `data`; do logu jde zpráva, nikdy tělo).
+- `DownloadWindow::start(dnes, fiskální roky)` — začátek okna = začátek
+  předchozího fiskálního roku: rok končící den před začátkem roku
+  s dneškem → jeho `date_begin`; jinak `date_begin` roku s dneškem minus
+  rok; bez fiskálních let (tabulka `economy_codebooks_fiscal_years` nemusí
+  existovat — `FiscalYears::load`) nebo bez roku s dneškem 1. 1.
+  předchozího kalendářního roku. Konec = dnešek v Europe/Prague.
+- `DownloadSchedule::expectedDates` — co typ v okně očekává: `workingDays`
+  = pracovní dny kalendáře po dnešek typu (datum v jeho `timezone`),
+  dnešek jen po `publishAfter`; `monthly` = 1. den každého měsíce od
+  měsíce začátku okna (i když okno začíná uprostřed měsíce). Sdílí ho
+  stahovač i upozornění, aby se nerozešly v tom, co je pracovní den.
+- `ExchangeRateListPresence` — přítomná data typu jedním dotazem přes
+  rozsah očekávaných dat; `hasAny` pro upozornění.
+- `DownloadState` — stav pokusů v nastavení zdroje dat
+  `economy.exchangeRates.downloadState`:
+  `{"lastError": <unix>|null, "attempts": {"<typ>|<YYYY-MM>": <unix>}}`.
+  Jen cron mód; zápis jen po odeslaném dotazu; měsíce mimo okno se při
+  zápisu zahodí (jen podle měsíce, nikdy podle typu).
+- `ExchangeRateDownloader::plan()` / `run()` nad `DownloadOptions` →
+  `DownloadPlan` (okno, per typ `TypeDownloadPlan`, `DownloadQuery`,
+  varování konfigurace) / `DownloadReport`.
+
+**Běh** (U4, `ExchangeRateDownloader`): typy = `forHomeCurrency(domácí
+měna)` s platným `download` (typ bez `download` tiše, neplatný nebo
+neznámý kalendář = varování). Chybějící = očekávané − přítomné; **nic
+nechybí → žádná síť, žádný zápis, žádný log** (úloha běží každých 5 minut
+na každém zdroji dat). Chybějící data se seskupí po kalendářních měsících
+per typ, dotaz = první..poslední chybějící datum měsíce, pořadí měsíc
+sestupně → pořadí typů (běžný měsíc je nejdůležitější). Cron mód (bez
+`--from` / `--to`): nejvýš **6 dotazů** za běh; měsíc s pokusem mladším
+než hodinu se přeskočí (`attempts`); jen **dnešní** chybějící lístek
+denního typu po `publishAfter` se zkouší každý běh samostatným dotazem
+`dnes..dnes` bez zápisu pokusu (odpověď `valid: 0` je pár bajtů; měsíční
+typ výjimku nemá); **chyba služby nebo sítě** (`lastError`) ukončí běh
+a pozastaví celý následující běh na hodinu — jinak by výjimka pro dnešek
+bušila do nedostupné služby každých 5 minut. Ruční mód (`--from` / `--to`)
+bez limitu, bez pauzy, stav nečte ani nepíše; `--type` sám o sobě zůstává
+v cron módu a dotýká se jen pokusů svého typu.
+
+**Zápis** (§4.4): lístek k datu, které typ **už má, se ignoruje bez
+porovnání** (`ignored`; dotaz na měsíc vrací i přítomné dny — ruční
+lístky s jinými hodnotami nesmí každou hodinu hlásit konflikt a shazovat
+úlohu; změnu obsahu lístku ve službě tedy úloha nezjistí); lístek
+s budoucím datem se přeskočí s jedním varováním; ostatní vrácené lístky
+jdou do importeru se zdrojem *služba* (3), i mimo očekávaná data (svátek,
+který služba má). `created` / `skipped` ok, `conflict` (jen souběh dvou
+běhů) → varování, nepřepisuje se; `failed` se jednou opakuje (souběh na
+unikátním klíči), pak varování; přeskočené měny (U1) do logu jen u nově
+založeného lístku. Stahovač sám neloguje — varování, poznámky a chybu
+nese `DownloadReport`, do `ErrorLogger` je píše CLI, a jen v běhu, který
+poslal dotaz.
+
+**CLI** `shpd-ds exchange-rates-download [--from] [--to] [--type]
+[--dry-run]` (U5, `docs/cli.md`): modul neaktivní nebo stahování vypnuté
+= zpráva a exit 0 (cron); `--dry-run` vypíše okno, per typ očekáváno /
+přítomno / chybí, varování a dotazy s pauzou / limitem — bez sítě
+a zápisu; exit 1 při chybě služby, konfliktu nebo selhání zápisu; INVALID
+při špatném datu (`--to` nejvýš dnešek, `--from` ≤ `--to`) nebo neznámém
+`--type`. **Cron**: `CronCommand::SLOT_JOBS['five-minutes']` =
+`exchange-rates-download` (před `alerts-run`, aby čerstvý zdroj dat
+nedostal nález dřív, než poprvé stáhne), stav `active`, modul
+`economy.exchangeRates`; přepínač cronu a stav zdroje dat řeší dispatcher.
+
+**Upozornění `economy.exchangerates.list_missing`** (D9, U6; warning,
+1 h, sekce Účetnictví, `Checks\ListMissingCheck`): denní typ bez lístku za
+pracovní den v [dnes − 30 dní, včera] (Europe/Prague), ne před začátkem
+okna → jeden nález na typ s počtem a nejvýš 5 nejnovějšími daty („Lístek
+chybí za 3 pracovní dny (19. 10., 16. 10., 15. 10.). K těmto datům se kurz
+nedoplní.“); měsíční typ od 2. dne měsíce bez lístku s `valid_from` = 1.
+den. Dnešek se nehlídá (stahovač ho ještě zkouší). Běží i se stahováním
+vypnutým, ale **jen u typu, který už nějaký lístek má** — zdroj dat bez
+kurzů by jinak nesl trvalé varování. Akce otevře viewer Kurzovní lístky.
+Země zdroje dat pro typy: `AlertCheck` dostává volitelný čtvrtý parametr
+`?DataSourceConfig` (`docs/alerts.md` §4).
+
+Kontrola kurzů na dokladech (D8) je mimo #121 → #130; celní kurz a ECB
+a měny, které služba vynechává, jsou mimo task B.
 
 ## 10. Pasti
 
@@ -235,3 +343,14 @@ pracovní den nepřibude ani další den. Zapisuje přes týž importer se zdroj
   u ostatních reload polí.
 - Resolver bez typů (jiná země, konfigurace před `ds-upgrade`) tiše
   nenachází — CLI `exchange-rate` to vypíše jako důvod `no_types`.
+- Otisk obsahu lístku až po vyřazení neznámých měn (§3) — jinak konflikt
+  při každém stažení.
+- Čas vyhlášení i „dnešek“ se počítají v Europe/Prague (zóna typu), ne
+  v zóně serveru (UTC): nikde `date('Y-m-d')`.
+- Kalendář se může se službou rozejít (pracovní den bez lístku): měsíc se
+  zkouší každou hodinu a upozornění to drží viditelné — bez pauzy by úloha
+  zkoušela každých 5 minut donekonečna.
+- Lístek k přítomnému datu stahovač neimportuje — konflikt vzniká jen při
+  souběhu; `--replace` má jen `exchange-rates-import`.
+- Stahovač nikdy nepřepisuje (lístek mohly použít doklady) a neloguje sám
+  — bez odeslaného dotazu nesmí vzniknout žádný záznam v logu.

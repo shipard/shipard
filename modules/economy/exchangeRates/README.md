@@ -5,7 +5,9 @@ Kurzovní lístky země zdroje dat a dohledání kurzu k datu (#121, task A —
 (Nastavení → Účetnictví → Kurzovní lístky), zapisuje je výhradně
 `ExchangeRateListImporter` — z CLI `shpd-ds exchange-rates-import`
 (soubor nebo složka ve formátu `shpd.exchangeRates.list.v1`), ze seederu
-datové sady (sekce `exchangeRates/`) a v tasku B ze služby.
+datové sady (sekce `exchangeRates/`) a ze služby (task B,
+`tasks/exchange-rates-download.md`: `shpd-ds exchange-rates-download`
+ve slotu `five-minutes`, `docs/exchange-rates.md` §9).
 
 Typy lístků nedeklaruje tento modul, ale modul země
 (`world.cz.exchangeRateLists`: ČNB denní devizový trh, ČNB měsíční ostatní
@@ -34,3 +36,7 @@ banka ho dostává přes `docs.core`.
 - `ExchangeRate`, `ExchangeRateLookup` — výsledek dohledání (kurz za jednotku + důvody)
 - `ExchangeRateListsViewer` — viewer v Nastavení
 - `Dataset/ExchangeRatesSeeder`, `Dataset/ExchangeRatesExporter` — datové sady (D10)
+- `Download/ListDownloadConfig` — klíč `download` typu (typ služby, pracovní dny / měsíčně, vyhlášení, zóna)
+- `Download/ExchangeRateServiceClient` + `ExchangeRateServiceTransport` (`Curl…`) — klient služby, odpověď `lists` / `none` / `error`
+- `Download/ExchangeRateDownloader` — okno (`DownloadWindow`, `FiscalYears`), očekávaná data (`DownloadSchedule`, `WorkingDayCalendars`), přítomná data (`ExchangeRateListPresence`), stav pokusů (`DownloadState`), plán a výsledek (`DownloadPlan`, `DownloadReport`)
+- `Checks/ListMissingCheck` — upozornění `economy.exchangerates.list_missing`

@@ -335,7 +335,7 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 |------|---------|---------|-----------------|-------|
 | `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep` | `active` | `core.mail` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) | — |
-| `five-minutes` | à 5 min | `alerts-run` (self-throttling přes `next_run_at`) | `active` | `core.alerts` |
+| `five-minutes` | à 5 min | `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `economy.exchangeRates`, `core.alerts` |
 | `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `economy.vat`, `economy.workOrders`; server-level — |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
@@ -1136,13 +1136,16 @@ Nahraje kurzovní lístky ve formátu `shpd.exchangeRates.list.v1`
 lístek — přes `ExchangeRateListImporter` se zdrojem *soubor*. Importer
 ověří schéma i sémantiku (typ lístku známý pro zemi zdroje dat
 z `world.<země>.exchangeRateLists`, domácí měna lístku = měna typu = domácí
-měna zdroje dat, měny z `world.base.currencies`, žádná měna dvakrát,
-`validTo` ≥ `validFrom`, typ bez `maxAgeDays` vyžaduje `validTo`) a uloží
-hlavičku s hodnotami v jedné transakci. Lístek téhož typu a data platnosti,
-který už existuje: shodný obsah = *beze změny*, jiný obsah = *jiný obsah*
-(chyba) — přepíše ho jen `--replace`. Výstup: řádek per soubor s výsledkem
+měna zdroje dat, žádná měna dvakrát, `validTo` ≥ `validFrom`, typ bez
+`maxAgeDays` vyžaduje `validTo`) a uloží hlavičku s hodnotami v jedné
+transakci. Měnu mimo `world.base.currencies` (např. XDR v denním lístku
+ČNB) z lístku vyřadí a vypíše jako *přeskočené měny* u souboru — výsledek
+zůstává ok (task B U1); lístek bez jediné známé měny je neplatný. Lístek
+téhož typu a data platnosti, který už existuje: shodný obsah (porovnaný po
+vyřazení neznámých měn) = *beze změny*, jiný obsah = *jiný obsah* (chyba)
+— přepíše ho jen `--replace`. Výstup: řádek per soubor s výsledkem
 a chybami, souhrn založeno / beze změny / nahrazeno / selhalo. Bez sítě —
-stahování ze služby je task B (#121 D2, D3).
+stahování ze služby dělá `exchange-rates-download`.
 
 Exit 0; 1 při jakémkoli selhání (neplatný lístek, jiný obsah bez
 `--replace`, chyba zápisu, chybějící modul `economy.exchangeRates`);
@@ -1169,6 +1172,43 @@ lístku není (starší se nezkouší, U2). Slouží k ověření a podpoře.
 
 Exit 0 nalezen; 1 nenalezen nebo chybějící modul; INVALID při špatné měně
 nebo datu.
+
+#### `exchange-rates-download [--from=YYYY-MM-DD] [--to=YYYY-MM-DD] [--type=<id>] [--dry-run]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds exchange-rates-download --dry-run                       # okno, chybějící data a dotazy; bez sítě a zápisu
+shpd-ds exchange-rates-download                                 # běh jako z cronu: nejvýš 6 dotazů, pauza 1 h na měsíc
+shpd-ds exchange-rates-download --from=2026-01-01               # ruční doplnění od data po dnešek, bez limitu a pauzy
+shpd-ds exchange-rates-download --type=cz.cnb.other --dry-run   # jen jeden typ
+```
+
+Stáhne chybějící kurzovní lístky ze služby
+([exchange-rates.md](exchange-rates.md) §9, #121 D2, D3): per typ
+s `download` spočítá očekávaná data (pracovní dny kalendáře po dnešek
+v Europe/Prague — dnešní lístek až po 14:35; měsíční 1. den měsíce)
+v okně od začátku předchozího fiskálního roku, srovná je s přítomnými
+lístky a chybějící stáhne po kalendářních měsících od nejnovějšího.
+**Nic nechybí = žádná síť, žádný zápis, žádný log** — proto smí běžet
+každých 5 minut (slot `five-minutes`, před `alerts-run`). Lístky zapisuje
+přes `ExchangeRateListImporter` se zdrojem *služba*; lístek k datu, které
+typ už má, ignoruje bez porovnání, konflikt (jen při souběhu) nepřepisuje.
+Adresa služby = `exchangeRates.serviceUrl` v `server.json`; prázdný
+řetězec stahování vypne (zpráva, exit 0). Neaktivní modul = zpráva, exit 0.
+Stav pokusů (pauza 1 h na měsíc, hodina po chybě služby) žije v nastavení
+`economy.exchangeRates.downloadState`; ruční okno (`--from` / `--to`) ho
+nečte ani nepíše.
+
+Exit 0; 1 při chybě služby nebo sítě (běh skončí, další běhy hodinu
+čekají), při konfliktu nebo selhání zápisu; INVALID při špatném datu
+(`--to` nejvýš dnešek, `--from` ≤ `--to`) nebo neznámém `--type`.
+
+| Opce | Význam |
+|------|--------|
+| `--from=YYYY-MM-DD` | začátek okna místo předchozího fiskálního roku; ruční mód bez limitu, pauzy a stavu |
+| `--to=YYYY-MM-DD` | konec okna (výchozí a nejvýš dnešek); ruční mód jako `--from` |
+| `--type=<id>` | jen jeden typ lístku (`cz.cnb.daily`, `cz.cnb.other`) |
+| `--dry-run` | vypíše okno, per typ očekáváno / přítomno / chybí, varování a dotazy (pozastavené, nad limit, jen dnešek); žádná síť ani zápis |
 
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 

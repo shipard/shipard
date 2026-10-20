@@ -314,13 +314,16 @@ o ISDOC dodavatele požádat.
 - **Převod dat ze starého Shipardu neděláš sám.** Import existuje, ale
   spouštíme ho my a s tebou pak porovnáme kontrolní součty.
 - **Uživatele a přístupy zakládáme ručně.** Viz [TESTERS.md](../TESTERS.md).
-- **Kurzovní lístky se zatím nestahují samy.** Kurz cizí měny se do
-  dokladů a bankovních transakcí doplňuje z kurzovních lístků ČNB, které
-  najdeš v **Nastavení → Účetnictví → Kurzovní lístky** — ale do zdroje
-  dat je zatím nahráváme my (ze souboru nebo s datovou sadou). Automatické
-  stahování denních kurzů přijde. Dokud lístek pro dané datum chybí,
-  doklad to ohlásí u pole **Kurz** a kurz zadáš ručně; výpis z účtu v cizí
-  měně bez lístku Shipard nenahraje, dokud lístky nedoplníme.
+- **Kurzovní lístky jen od ČNB.** Denní kurzy devizového trhu a měsíční
+  kurzy ostatních měn ČNB se stahují samy (denní každý pracovní den
+  odpoledne po vyhlášení, měsíční na začátku měsíce) a najdeš je
+  v **Nastavení → Účetnictví → Kurzovní lístky**. Celní kurz ani kurzy
+  ECB Shipard nestahuje a měny mimo jeho číselník (například XDR) z lístku
+  vynechá. Když lístek za pracovní den nepřibude ani další den, objeví se
+  upozornění; dokud lístek pro dané datum chybí, doklad to ohlásí u pole
+  **Kurz** a kurz zadáš ručně a výpis z účtu v cizí měně bez lístku
+  Shipard nenahraje. Starší lístek než z minulého účetního roku se sám
+  nedoplní — to uděláme my.
 
 ---
 

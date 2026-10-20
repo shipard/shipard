@@ -1,6 +1,6 @@
 # Kurzy cizích měn — stahování lístků ze služby (#121, task B)
 
-**Stav:** naplánováno — PRD 2026-10-20 (#121 D2, D3, D9), upřesnění U1–U7 potvrzená 2026-10-20
+**Stav:** hotovo — implementace 2026-10-20 (5 commitů, #121 D2, D3, D9, U1–U7), ověřeno na volném zdroji dat `4l3j`; id upozornění je `economy.exchangerates.list_missing` (malá písmena), lístky k přítomným datům se ignorují, nález jen u typu s lístkem — viz Implementační poznámky
 
 > Task pro Claude Code (5 commitů). Navazuje na task A
 > (`tasks/exchange-rates-core.md`, hotový): lístky, importer, resolver,
@@ -364,16 +364,96 @@ nestahují, protože jsou přítomná):
 
 ## Hotovo když
 
-- [ ] importer přeskočí neznámou měnu, hlásí ji a porovnává obsah po
+- [x] importer přeskočí neznámou měnu, hlásí ji a porovnává obsah po
       vyřazení
-- [ ] `download` u typů v `world.cz`, `ServerConfig::getExchangeRatesServiceUrl`
-- [ ] `ExchangeRateServiceClient` s vyměnitelným transportem
-- [ ] `ExchangeRateDownloader`: okno, chybějící data, měsíční dotazy od
+- [x] `download` u typů v `world.cz`, `ServerConfig::getExchangeRatesServiceUrl`
+- [x] `ExchangeRateServiceClient` s vyměnitelným transportem
+- [x] `ExchangeRateDownloader`: okno, chybějící data, měsíční dotazy od
       nejnovějšího, limit 6, pauza 1 h, chyba ukončí běh, konflikt
       nepřepisuje
-- [ ] `shpd-ds exchange-rates-download` s `--from` / `--to` / `--type` /
+- [x] `shpd-ds exchange-rates-download` s `--from` / `--to` / `--type` /
       `--dry-run`; úloha v `five-minutes` s vazbou na modul
-- [ ] upozornění `economy.exchangeRates.list_missing`
-- [ ] testy z §8 zelené (úzké `--filter`)
-- [ ] dokumentace a nápověda z §7; hlavička tasku aktualizovaná
-- [ ] ověření 1–6 na volném zdroji dat
+- [x] upozornění `economy.exchangeRates.list_missing`
+- [x] testy z §8 zelené (úzké `--filter`)
+- [x] dokumentace a nápověda z §7; hlavička tasku aktualizovaná
+- [x] ověření 1–6 na volném zdroji dat
+
+## Implementační poznámky (2026-10-20)
+
+Odchylky a upřesnění proti PRD (potvrzené v chatu 2026-10-20):
+
+- **Id upozornění je `economy.exchangerates.list_missing`** (malá
+  písmena): `AlertCheckDefinition` povoluje jen `[a-z][a-z0-9_.]*`,
+  camelCase id by shodilo celý registr upozornění zdroje dat (odhalilo
+  ověření krokem 6; konvence jako `economy.workorders.*`). Test modulu
+  registr z `module.jsonc` staví.
+- **`AlertCheck` dostává volitelný 4. parametr `?DataSourceConfig`**
+  (reconciler, `alerts-run`, `AlertsController`): typy lístků žijí
+  v `world.<země>.exchangeRateLists` a kontrola potřebuje zemi; existující
+  kontroly beze změny (`docs/alerts.md` §4).
+- **Lístky k datům, která typ už má, stahovač ignoruje bez porovnání**
+  (`ignored`): dotaz na měsíc vrací i přítomné dny a ruční lístky s jinými
+  hodnotami by jinak každou hodinu hlásily konflikt a shazovaly úlohu.
+  Konflikt tak vzniká jen při souběhu dvou běhů; změnu obsahu lístku ve
+  službě úloha nezjistí (odchylka od U4 „jiný obsah jen do logu“).
+- **Nález upozornění jen u typu, který už nějaký lístek má**: zdroj dat
+  bez kurzů by jinak nesl trvalé varování (odchylka od U6; kontrola dál
+  běží i se stahováním vypnutým).
+- **Chyba služby pozastaví celý následující běh na hodinu** (`lastError`
+  ve stavu), jinak by výjimka pro dnešní lístek bušila do nedostupné
+  služby každých 5 minut s varováním do logu. Výjimka pro dnešek platí jen
+  u denního typu a jde samostatným dotazem `dnes..dnes` bez zápisu pokusu;
+  měsíční lístek 1. dne čeká jako každý měsíc.
+- **Ruční mód** (`--from` / `--to`) stav pokusů nečte ani nepíše; `--type`
+  sám zůstává v cron módu a prořezání stavu jde jen podle měsíce. Stav se
+  zapisuje jen v běhu, který poslal dotaz; `--dry-run` nikdy.
+- Měsíční typ očekává 1. den měsíců od měsíce začátku okna (okno
+  z fiskálního roku začínajícího uprostřed měsíce), dotaz na přítomná data
+  jde přes rozsah očekávaných dat. Bez tabulky fiskálních let
+  (`economy.codebooks` není závislost) nebo bez roku s dneškem platí
+  větev 3 (1. 1. předchozího kalendářního roku).
+- „Dnešek“ a vyhlášení se počítají v zóně typu (`ListDownloadConfig`,
+  výchozí Europe/Prague), konec okna v Europe/Prague; `timezone` není
+  u `monthly` povinná, u `workingDays` jsou `calendar` a `publishAfter`
+  povinné.
+- `failed` z importeru se jednou opakuje (souběh dvou běhů na unikátním
+  klíči `list_type` + `valid_from`); lístek s budoucím datem se přeskočí
+  s jedním varováním; lístek mimo očekávaná data (svátek, který služba má)
+  se uloží.
+- Stahovač sám neloguje; `DownloadReport` nese varování, poznámky a chybu
+  a CLI je píše do `ErrorLogger` jen v běhu, který poslal dotaz (bez
+  chybějícího lístku žádný záznam). Přeskočené měny jdou jako `info` per
+  nově založený lístek — při prvním dohnání historie to je jeden řádek
+  na lístek.
+- Modul neaktivní = exit 0 s hláškou (cron), jako `vat-periods-ensure`;
+  `exchange-rates-download` běží ve slotu před `alerts-run`, aby čerstvý
+  zdroj dat nedostal nález dřív, než poprvé stáhne.
+- Fixtury v `tests/Fixtures/Module/Economy/ExchangeRates/Service/`
+  (konvence repa, ne `tests/fixtures/`): uložené odpovědi služby
+  z 20. 10. 2026 (denní 1.–20. 10. = 13 lístků, měsíční říjen, `valid: 0`,
+  `error`) + `FakeExchangeRateServiceTransport`; stahovač se testuje
+  s `FakeExchangeRateListImporter`, `ArrayExchangeRateListPresence`
+  a `tests/Fixtures/Core/Settings/InMemoryKeyValueStore`.
+
+Ověření na volném zdroji dat `4l3j` (2026-10-20, fiskální roky 2026
+a 2027 → okno od 1. 1. 2025, tři ruční lístky z tasku A):
+
+1. `ds-upgrade` → cfgItem s `download`, `alerts-run` kontrolu zná.
+2. `--dry-run`: okno 2025-01-01 – 2026-10-20, denní očekáváno 452 /
+   přítomno 2 / chybí 450 (dopoledne „dnešní lístek se očekává až po
+   vyhlášení“), měsíční 22 / 1 / 21, 44 dotazů od října 2026 dolů,
+   6 označených k odeslání.
+3. Osm běhů bez parametrů po nejvýš 6 dotazech (77 / 64 / 66 / 64 / 69 /
+   64 / 66 / 1 založeno, 2 ignorovány = ruční lístky z tasku A, 0 konfliktů,
+   XDR a SVC / VEF jako přeskočené měny), devátý „Nic nechybí.“ bez sítě;
+   v DB 450 denních a 21 měsíčních lístků se zdrojem *služba*, stav
+   `downloadState` s pokusy per měsíc.
+4. `exchange-rate eur 2026-10-19` → kurz ČNB z lístku č. 26201;
+   `eur 2026-10-16` → ruční lístek č. 201 beze změny; `xdr` → nenalezen
+   (měna přeskočená).
+5. `shpd-server cron --slot five-minutes --ds 4l3j…` → obě úlohy ok,
+   stahování bez sítě za 200 ms.
+6. `alerts-run --check=economy.exchangerates.list_missing` → 0 nálezů.
+7. Reálné kopie: nic. Chování po 14:35 (dotaz jen na dnešek každý běh)
+   pokrývají jednotkové testy, živě neověřeno (ověření proběhlo
+   dopoledne).
