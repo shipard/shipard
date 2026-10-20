@@ -801,18 +801,31 @@ varianty jako celek. Výchozí varianta `baseline` je v repu.
 ### Běh (`shpd-ds ai-eval`, D34)
 
 `docs/cli.md` § `ai-eval`. Preflight → odhad ceny (z posledního běhu téže
-varianty nad touž sadou; jinak z tokenů na doklad posledního běhu nad sadou
+varianty nad touž sadou — od D76 z jeho kyblíku `byPath.ai`, má-li ho;
+jinak z tokenů na doklad posledního běhu nad sadou
 s modelem **téže řady** — první číslo v ID katalogu, tokenizace je per
 generace — × ceník plánovaného modelu; jinak z ceníku a typické velikosti
-dokladu, D44) a potvrzení (bez `--yes` jen na terminálu, neinteraktivně
+dokladu, D44; zprávy podoby PDF + ISDOC — `form` `pdfIsdoc`
+v `expected/messages.json` — se počítají jen za štítky, `isdocCalls` ×
+`isdocPerCall`) a potvrzení (bez `--yes` jen na terminálu, neinteraktivně
 exit 2) → zprávy postupně, každá
-`--repeat`krát: `EvalRunner` nad `AnalysisComputation`
-(`modules/core/mail/docs/ai-analysis.md` → Analýza nanečisto; přílohy,
-prompt, model, parser, validace canonicalu včetně LLM klasifikace štítků
-— bez claimu, zápisu a změny stavu zprávy), porovnání
-`CanonicalComparator::evaluate()` nad projekcí sady, k tomu virtuální list
-`message_classification.primary_type` proti `primaryType` zprávy. Selhání
-volání (síť, parser, nevalidní canonical) je výsledek zprávy. `--only`
+`--repeat`krát: `EvalRunner` nad `EvalComputationRouter` (D76, D82 —
+tasks/testing-rates-isdoc.md § 5): zpráva, kterou by produkční
+předzpracování rozpoznalo jako ISDOC (`IsdocDocumentCollector::collect()`,
+totéž co `IsdocImportService::detect()`), jde cestou **`isdoc`** —
+deterministický import ISDOC → canonical a obohacení touž
+`RowEnrichmentPipeline` jako u AI (Vrstva 0, pravidlo IČO → štítek, jinak
+LLM klasifikace štítků), **bez AI extrakce** (0 tokenů, 0 USD, model
+`isdoc`, cena jen štítky); ostatní zprávy jdou cestou **`ai`** přes
+`AnalysisComputation` (`modules/core/mail/docs/ai-analysis.md` → Analýza
+nanečisto; přílohy, prompt, model, parser, validace canonicalu včetně LLM
+klasifikace štítků — bez claimu, zápisu a změny stavu zprávy; ISDOC se
+modelu jako text nikdy neposílá — `AttachmentPreparer` ho přeskočí).
+Výjimka sběru ISDOC (I/O, nástroj) = jako v produkci cesta `ai`.
+Porovnání `CanonicalComparator::evaluate()` nad projekcí sady, k tomu
+virtuální list `message_classification.primary_type` proti `primaryType`
+zprávy. Selhání volání (síť, parser, nevalidní canonical) je výsledek
+zprávy. `--only`
 (čísla buněk, stemy, varianty korpusu, messageId) a `--limit` na ladění;
 celá sada s `--repeat` jen vědomě. Syrové výstupy modelu jen lokálně
 (`--save-raw`), do repa nejdou.
@@ -829,6 +842,7 @@ dává stav **každého listu** projekce (`FieldOutcome`, `FieldState`):
 | `missing` | očekávaná hodnota, výstup `null` / chybí („model nenašel“) |
 | `extra` | očekáván `null` („na dokladu není“), výstup má hodnotu |
 | `wrong` | obě strany mají hodnotu, liší se |
+| `notCarried` | jen cesta `isdoc` (D76): pole, které ISDOC z principu nenese (`IsdocFieldCoverage::NOT_CARRIED` — jediný zdroj sdílený s round-trip testem čtečky, `docs/einvoice.md` § 8), s důvodem; `EvalRunner` ho přemapuje po porovnání podle uzlu (`CanonicalComparator::isIgnored()` — i potomci uzlu). Ani shoda, ani odchylka: mimo `n`, stabilitu i `deviationsByField` |
 
 Podobnost (Levenshtein nad znaky, `TextSimilarity`) se měří jen u uzlů
 volného textu (`CanonicalComparator::FREE_TEXT_NODES`: názvy stran
@@ -857,7 +871,12 @@ doklad podíl bez jediné odchylky (`documents.clean`), správné částky
 (`rows[].totalPrice`, rekapitulace, součty), počet řádků sedí,
 klasifikace, štítek; selhání po typech; cena, tokeny, čas (součet
 a průměr na doklad); totéž po variantách a podobách korpusu
-(`expected/messages.json`); cena a tokeny jsou **jen extrakce** —
+(`expected/messages.json`) a **po cestách výpočtu** (`byPath`: `ai` /
+`isdoc`, D76 — buňka `isdoc` má `cost.usd` 0 a nese jen `tags.usd`;
+kyblíky nesou i `tags.usd`); listy `notCarried` jen jako počet
+`fields.<skupina>.notCarried` / `fields.all.notCarried` (součet přes
+opakování jako `missing` / `extra` / `wrong`, v porovnání běhů bez směru
+lepší / horší); cena a tokeny jsou **jen extrakce** —
 LLM klasifikace štítků má vlastní `tags.calls` / `tags.usd` /
 `tags.tokens.input` / `tags.tokens.output` (#103 F6b D56) a celek dává
 `cost.totalUsd` / `cost.totalPerDocument` = extrakce + štítky (starší
@@ -888,12 +907,15 @@ a `effective`: profil, verze a hash promptu, platforma, připojení s původem,
 model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,
 `repeat`, `plannedCalls` a `stoppedBy` (`maxCost` / `cancelled` / null,
 F6b D61), `metrics`, `range`, `fieldStability`, `formatStability`,
-`byVariant`, `byForm`, `deviationsByField` a `calls` — per zpráva
-a opakování stav, cena, tokeny, čas, klasifikace, štítek, `tags`
+`byVariant`, `byForm`, `byPath` (od 20. 10. 2026, D76; starší běhy ho
+nemají) a `calls` — per zpráva a opakování stav, **cesta výpočtu**
+`path` (`ai` / `isdoc`; běhy před D76 klíč nemají a čtou se jako `ai`,
+`EvalCallResult::pathOf()`), cena, tokeny, čas, klasifikace, štítek, `tags`
 (spotřeba LLM klasifikace štítků `{tokensIn, tokensOut, costUsd, model}`,
 `null` = LLM se nevolalo: pravidlo IČO, persistnutý štítek, bez nepokrytých
-řádků; F6b D56), počty stavů polí
-(u selhaného volání jen počet chybějících), shody po normalizaci
+řádků; F6b D56), počty stavů polí `counts` (`match`, `matchNormalized`,
+`missing`, `extra`, `wrong`, od D76 i `notCarried` — chybí = 0;
+u selhaného volání jen počet chybějících), shody po normalizaci
 `normalized` jako `{path, actual, similarity?}` — od 16. 10. 2026 (D53)
 i s tvarem výstupu, aby prohlížeč výsledků ukázal IBAN s mezerami nebo
 PSČ s mezerou; běhy před tím mají jen cestu a čtení
@@ -933,8 +955,14 @@ s hodnotou očekávání, `normalized` dává shodu po normalizaci (u starších
 běhů bez výstupní hodnoty), odchylky stav a obě strany; pole po pozicích
 (jiný počet prvků = jedna odchylka na uzlu, prvky výstupu navíc v souboru
 nejsou), výjimky štítků podle `rowIndex`, odchylka na uzlu objektu
-nahrazuje listy pod ním, selhané volání podle D44. Počty stavů
-z rekonstrukce sedí s `counts` volání (test přes celý běh). Běh nad jinou
+nahrazuje listy pod ním, selhané volání podle D44; u volání cesty
+`isdoc` jsou listy, které ISDOC nenese, `notCarried` s důvodem a bez
+výstupu — soubor je nenese, odvodí se z téhož `IsdocFieldCoverage` jako
+v běhu (D76). Počty stavů z rekonstrukce sedí s `counts` volání (test
+přes celý běh). Detail běhu má vedle variant a podob kartu **Cesty
+výpočtu** (`byPath`; starší běh bez něj = poznámka, všechna volání AI)
+a u dokladu štítek cesty; detail dokladu ukazuje cestu, počet polí
+„nenese“ a filtr *jen odchylky* je skrývá. Běh nad jinou
 verzí sady (jiný hash) je označený — očekávání v detailu jsou z aktuální
 sady. API `/_dev/api/testing/…` (`DevTestingController`) vybírá sadu, běh
 i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Spouštění
