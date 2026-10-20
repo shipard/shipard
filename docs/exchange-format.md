@@ -52,10 +52,11 @@ najednou:
    se rozparsují na canonical, ten se uloží. Stejný flow pro AI extrakci
    i strukturovaná data. Příchozí ISDOC je implementován — viz `IsdocReader`
    v sekci Adaptéry (kapitola 4).
-7. **Export pro elektronickou výměnu** — opačný směr: applier (resp. exporter)
-   vyrobí canonical z DB záznamu, ten lze serializovat do ISDOC, e-mailem
-   přeposlat partnerovi, který má taky Shipard, atd. Spolehlivější než AI
-   extrakce z PDF na obou stranách.
+7. **Export pro elektronickou výměnu** — opačný směr: canonical dokladu
+   (papírová projekce + `rows[].computed`) se serializuje do ISDOC
+   (`IsdocWriter`, #119 fáze 1, `docs/einvoice.md`); ve fázi 2 ho tisk
+   vloží do PDF faktury vydané a přiloží k e-mailu partnerovi, který má
+   taky Shipard. Spolehlivější než AI extrakce z PDF na obou stranách.
 8. **Datové sady** — přenosný obraz celého DS (`shpd-ds dataset-dump` /
    `dataset-seed`): exportery vyrobí canonical z DB, seed ho vrátí přes
    appliery. Demo sady, testovací fixtury, školicí DS. Viz
@@ -135,12 +136,23 @@ a confidence 1.0. Mapuje se jen to, co v ISDOC opravdu je (chybějící pole
 se vynechávají); podporované `DocumentType`: 1 → `invoiceReceived`,
 2 → `creditNote`. Řádky nesou i `computed` (základ, daň a cenu s daní, jak
 je spočítal dodavatel) — cenu s daní z nich bere applier u přijatého
-dokladu neplátce DPH (§ 8.4). Kompletní mapovací tabulka ISDOC → canonical:
-[tasks/mail-isdoc-import.md](../tasks/mail-isdoc-import.md). Použití
+dokladu neplátce DPH (§ 8.4). Čtečka čte i tuzemské přenesení daňové
+povinnosti (`vat.reverseCharge`, `rows[].vat.reverseChargeCode`), režim
+DPH (`vat.mode`, doklad bez DPH jako doklad neplátce), slevu, poznámku
+a způsob úhrady (#119 krok 3). Kompletní mapovací tabulka v obou směrech:
+[docs/einvoice.md](einvoice.md) § 4–5. Použití
 v příjmu pošty (deterministický import místo AI analýzy):
 `modules/core/mail/docs/ai-analysis.md`, sekce „Deterministický ISDOC
-import". Ostatní adaptéry (Peppol UBL, Pohoda, Flexibee, …) zůstávají
-future work.
+import".
+
+Výstupní adaptér je **`IsdocWriter`** (#119 fáze 1): canonical pro
+e-fakturu (papírová projekce + `rows[].computed`) → ISDOC 6.0.1, čistá
+funkce bez databáze, nad rozhraním formátu `EInvoice\EInvoiceWriter`
+(registr `EInvoiceFormats`). Chybějící povinná hodnota je
+`EInvoiceInputException` s cestami, ne prázdný element; výstup musí projít
+XSD 6.0.1 i 6.0.2. Round-trip generátor → čtečka hlídá
+`IsdocCorpusRoundTripTest` nad korpusem. Vše v [docs/einvoice.md](einvoice.md).
+Ostatní adaptéry (Peppol UBL, Pohoda, Flexibee, …) zůstávají future work.
 
 ## 5. Specifikace `shpd.docs.document.v1`
 

@@ -22,15 +22,16 @@ Fáze F1 je obsah korpusu. F2 (§ 16, `tasks/testing-phase2.md`) z něj
 sestavuje datové sady `tests/datasets/cz/<profil>/` — zdroj dat se
 seedne s každým dokladem jako došlou zprávou s PDF a ideální analýzou.
 Ověření zaúčtování je F3, porovnávač a evaluace AI F4 — obě čtou
-`expected/` a `projection.jsonc`. Soubory ISDOC u podoby `pdfIsdoc` dodá
-generátor ISDOC (#119 fáze 1); normalizaci hodnot v produkční cestě
-převezme #118.
+`expected/` a `projection.jsonc`. Soubory ISDOC u podoby `pdfIsdoc` vyrábí
+build generátorem ISDOC (#119 fáze 1, `docs/einvoice.md`; § 12); normalizaci
+hodnot v produkční cestě převezme #118.
 
 ## 2. Struktura
 
 ```
 tools/invoice-generator/            # sdílený generátor (balík invoicegen, jen stdlib)
-  invoicegen/{jsonc,checks,compute,render,expected,corpus,registries}.py
+  invoicegen/{jsonc,checks,compute,render,expected,corpus,dataset,reporting,registries}.py
+                                    # compute dává i DPH per řádek (rows[].computed pro ISDOC)
   tests/                            # python3 -m unittest
 demo/invoices/                      # demo kolekce — jen importuje generátor, výstup beze změny
 tests/corpus/
@@ -42,6 +43,7 @@ tests/corpus/
     data/NNNN-<slug>.jsonc          # zdroj dokladu — píše se ručně
     profiles/<profil>/              # základ datové sady profilu — píše se ručně (§ 16)
     out/<profil>/NNNN-<slug>.pdf    # generované, commitované
+    out/<profil>/NNNN-<slug>.isdoc  # jen podoba pdfIsdoc — generované (shpd-server einvoice-render), commitované
     expected/<profil>/NNNN-<slug>.json  # generované, commitované, ručně se NEEDITUJÍ
     build-state.json                # sha256 renderu per výstup
 tests/datasets/cz/<profil>/         # datové sady z korpusu — generované, commitované (§ 16)
@@ -382,12 +384,21 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
    `build-state.json`, nebo s `--force` — PDF z Chromia není bajtově
    deterministické a přegenerování všeho by dělalo šum v diffech. Klíč
    stavu je `<profil>/NNNN-<slug>`; plný běh zastaralé klíče prořeže.
-4. Výpis per buňka: součty, „PDF beze změny / přegenerováno“, u podoby
-   `pdfIsdoc` řádek „ISDOC: čeká na generátor (#119)“, vynechané buňky
-   s důvodem.
-5. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
+4. U podoby `pdfIsdoc` soubor `out/<profil>/NNNN-<slug>.isdoc` přes
+   `php bin/shpd-server einvoice-render` (#119, `docs/einvoice.md` § 8):
+   vstup = očekávaný výsledek + `rows[].computed` (DPH per řádek
+   z `compute.py`), UUID z cesty buňky `corpus/cz/<profil>/NNNN-<slug>` —
+   výstup je deterministický, generuje se **vždy** a výpis říká „ISDOC
+   zapsán / beze změny" podle obsahu; `build-state.json` se ho netýká.
+   Buňce podoby `pdf` se `.isdoc` smaže, plný běh maže i sirotky. Selhání
+   příkazu = build končí chybou s jeho výstupem; bez `vendor/` poradí
+   `composer install`.
+5. Výpis per buňka: součty, „PDF beze změny / přegenerováno“, stav ISDOC,
+   vynechané buňky s důvodem.
+6. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
    všech datových souborů, i s `--only`; `--no-datasets` přeskočí) a řádek
-   per sada s počtem zpráv a vynechaných buněk.
+   per sada s počtem zpráv a vynechaných buněk. ISDOC do sad zatím nejde
+   (O1 #119 — co má evaluace u zpráv s ISDOC měřit, je otázka #103).
 
 Gotenberg jako demo (`GOTENBERG_URL`, `docs/render.md`); volby papíru per
 šablona v hlavičce `<!-- pdf: paperWidth=80mm … -->` (účtenka). Šablona
@@ -412,8 +423,11 @@ tiskový tvar hodnot. Demo šablony a data se nemění.
 - projekce je dobře utvořená (tvary, `$ref`, `byCountry`) a je podmnožinou
   schématu formátu ve stejném pořadí;
 - matice `data/*.jsonc` × profily bez `skipProfiles` je úplná: ke každé
-  buňce existuje očekávání i PDF, žádné sirotky v `expected/` a `out/`,
+  buňce existuje očekávání i PDF, buňka podoby `pdfIsdoc` má `.isdoc`
+  a buňka `pdf` nemá, žádné sirotky v `expected/` a `out/` (ani `.isdoc`),
   profily v `identities.jsonc` odpovídají;
+- každý `out/**/*.isdoc` projde XSD 6.0.1 i 6.0.2; round-trip čtečkou
+  proti očekávání hlídá `IsdocCorpusRoundTripTest` (`docs/einvoice.md` § 8);
 - každý `expected/**/*.json` (data provider per soubor): projde
   `SchemaValidator` proti `shpd.docs.document.v1`; má přesně klíče
   projekce v jejím pořadí a tvary hodnot (regexy, `byCountry`, štítky
@@ -470,9 +484,14 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
 - **Žádný `float` ve výpočtu ani v zápisu JSON.**
 - **DS ID** (`xxxx-xxxx-xxxx-xxxx`) nesmí v datech vzniknout —
   `scripts/check-sensitive.py`.
+- **Změna podoby mění hash datové sady** (`expected/messages.json` nese
+  `form`): běhy evaluací před 20. 10. 2026 (#119 krok 1) nejsou „nad
+  aktuální sadou" a jejich `byForm` nejde 1:1 srovnat s novými.
+- **Build volá PHP** (`bin/shpd-server einvoice-render`) — potřebuje
+  `composer install`.
 
-Mimo rozsah F1 a F2: soubory ISDOC (#119), ISDOC vložený do PDF,
-evaluace AI (F4; porovnávač vznikl ve F3, § 17), normalizace v produkci
+Mimo rozsah F1 a F2: ISDOC v datových sadách (O1 #119), ISDOC vložený do PDF
+(#119 fáze 2), evaluace AI (F4; porovnávač vznikl ve F3, § 17), normalizace v produkci
 (#118), kurzy (#121), druhá vlna variant (dobropis, zálohová faktura
 s odpočtem zálohy, slovenské profily, identifikovaná osoba), soukromé
 sady s reálnými doklady. Apply návrhů a porovnání s očekáváním je F3

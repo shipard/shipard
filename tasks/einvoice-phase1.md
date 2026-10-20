@@ -1,6 +1,11 @@
 # Strukturovaná e-faktura — generátor ISDOC, fáze 1 (#119)
 
-**Stav:** naplánováno — PRD 2026-10-20 (#119 D1–D10), čeká na implementaci
+**Stav:** hotovo — implementace 2026-10-20 (6 commitů + dovětek k testům
+evaluací); odchylky od zadání (doklad bez DPH bez DUZP a sazby, `Note` →
+`notes.onDocument` i `docText`, sleva v round-tripu, explicitní
+`vat.reverseCharge: false`, úhrada / EAN / poznámka řádku / ceny s DPH
+v čtečce, konzistence přenesení jako chyba vstupu) v `docs/einvoice.md`
+§ 3, 5 a 8
 
 > Task pro Claude Code (6 commitů). První fáze #119: generátor ISDOC
 > z canonicalu, schémata a validace, rozšíření čtečky, CLI a soubory ISDOC
@@ -325,24 +330,25 @@ Datové sady se v tomto kroku nemění (O1).
 
 ## Hotovo když
 
-- [ ] Korpus: podoba nezávislá na čísle dokladu, pravidlo D10 v Pythonu
+- [x] Korpus: podoba nezávislá na čísle dokladu, pravidlo D10 v Pythonu
       i v PHP strážci, čtyři datové soubory `pdf`, `expected/` a PDF beze
-      změny
-- [ ] `IsdocWriter` + rozhraní, volby, výjimka, UUIDv5, validátor a XSD
+      změny (hash datových sad se změnil — běhy evaluací z 16. 10. nejsou
+      nad aktuální sadou, testy to říkají)
+- [x] `IsdocWriter` + rozhraní, volby, výjimka, UUIDv5, validátor a XSD
       6.0.1 / 6.0.2 v repozitáři s licenční hlavičkou
-- [ ] Testy generátoru: platnost proti oběma XSD, determinismus, chyby
+- [x] Testy generátoru: platnost proti oběma XSD, determinismus, chyby
       vstupu se všemi cestami
-- [ ] Čtečka mapuje přenesení daňové povinnosti, režim DPH a slevu; test
+- [x] Čtečka mapuje přenesení daňové povinnosti, režim DPH a slevu; test
       dopadu na kód DPH přes applier; změny výsledků stávajících fixtur
       vyjmenované v commitu
-- [ ] `shpd-server einvoice-render` s exit kódy 0 / 1 / 2 a testy
-- [ ] Build korpusu vyrábí 18 `.isdoc`, strážce je hlídá, round-trip test
+- [x] `shpd-server einvoice-render` s exit kódy 0 / 1 / 2 a testy
+- [x] Build korpusu vyrábí 18 `.isdoc`, strážce je hlídá, round-trip test
       bez rozdílů s vyjmenovanými výjimkami
-- [ ] `docs/einvoice.md`, `CLAUDE.md`, `docs/exchange-format.md`,
+- [x] `docs/einvoice.md`, `CLAUDE.md`, `docs/exchange-format.md`,
       `docs/test-corpus.md`, `docs/cli.md` aktualizované
-- [ ] `php -l`, cílené PHPUnit, celá sada, `python3 -m unittest`
+- [x] `php -l`, cílené PHPUnit, celá sada, `python3 -m unittest`
       v `tools/invoice-generator`
-- [ ] `**Stav:**` + `python3 scripts/tasks-index.py`
+- [x] `**Stav:**` + `python3 scripts/tasks-index.py`
 
 ## Otevřené otázky
 
