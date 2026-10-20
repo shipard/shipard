@@ -1,0 +1,73 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "accountingDocument",
+    "docText": "Přeúčtování z nespárovaných plateb: Pojistné 06/2026",
+    "dates": {
+        "issueDate": "2026-07-20",
+        "dueDate": "2026-08-03",
+        "accountingDate": "2026-07-20",
+        "taxPointDate": "2026-07-20",
+        "vatObligationDate": "2026-07-20"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "none",
+        "place": "domestic",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "24"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 1,
+            "unitPrice": 0.0,
+            "totalPrice": 47936.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 47936.0,
+                "vatAmount": 0.0,
+                "vatTotal": 47936.0
+            },
+            "description": "Odvody sociálního a zdravotního pojištění",
+            "account": "336100",
+            "accSide": "debit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 2,
+            "unitPrice": 0.0,
+            "totalPrice": 47936.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 47936.0,
+                "vatAmount": 0.0,
+                "vatTotal": 47936.0
+            },
+            "description": "Přeúčtování z nespárovaných plateb",
+            "account": "261300",
+            "accSide": "credit"
+        }
+    ],
+    "totals": {
+        "totalBase": 47936.0,
+        "totalVat": 0.0,
+        "totalAmount": 47936.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "60260024",
+            "sequenceNumber": 24
+        }
+    }
+}

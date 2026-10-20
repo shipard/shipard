@@ -1,0 +1,166 @@
+{
+    "format": "shpd.dataset.bankStatement.v1",
+    "bankAccount": "BU1",
+    "statement": {
+        "statementNumber": "7/2026",
+        "externalId": "BU1-2026-07",
+        "periodStart": "2026-07-01",
+        "periodEnd": "2026-07-31",
+        "openingBalance": 715667.51,
+        "closingBalance": 587165.21,
+        "currency": "CZK"
+    },
+    "transactions": [
+        {
+            "externalId": "BU1-202607-001",
+            "amount": 4356.0,
+            "dateTransaction": "2026-07-10",
+            "counterpartyAccount": "2087561431/0100",
+            "counterpartyName": "Galvanovna Pokorný a syn s.r.o.",
+            "paymentReference": "1260065"
+        },
+        {
+            "externalId": "BU1-202607-002",
+            "amount": -24684.0,
+            "dateTransaction": "2026-07-10",
+            "counterpartyAccount": "1628735058/5500",
+            "counterpartyName": "Správa nemovitostí Patro s.r.o.",
+            "paymentReference": "26037"
+        },
+        {
+            "externalId": "BU1-202607-003",
+            "amount": -82244.0,
+            "dateTransaction": "2026-07-10",
+            "counterpartyAccount": "1000000013/0800",
+            "counterpartyName": "Hromadný příkaz — mzdy",
+            "message": "Výplata mezd 06/2026"
+        },
+        {
+            "externalId": "BU1-202607-004",
+            "amount": -4612.0,
+            "dateTransaction": "2026-07-11",
+            "counterpartyAccount": "2190463856/0800",
+            "counterpartyName": "Energie Jiskra a.s.",
+            "paymentReference": "2026071249"
+        },
+        {
+            "externalId": "BU1-202607-005",
+            "amount": 7865.0,
+            "dateTransaction": "2026-07-13",
+            "counterpartyAccount": "2440913574/0300",
+            "counterpartyName": "Autodoprava Kopretina s.r.o."
+        },
+        {
+            "externalId": "BU1-202607-006",
+            "amount": 11858.0,
+            "dateTransaction": "2026-07-13",
+            "counterpartyAccount": "2753109843/2010",
+            "counterpartyName": "Dentální klinika Úsměvov s.r.o.",
+            "paymentReference": "1260075"
+        },
+        {
+            "externalId": "BU1-202607-007",
+            "amount": 9075.0,
+            "dateTransaction": "2026-07-13",
+            "counterpartyAccount": "1334802761/5500",
+            "counterpartyName": "Fyzioterapie Pohybna s.r.o.",
+            "paymentReference": "1260076"
+        },
+        {
+            "externalId": "BU1-202607-008",
+            "amount": 6776.0,
+            "dateTransaction": "2026-07-13",
+            "counterpartyAccount": "2238170965/0300",
+            "counterpartyName": "Lékárna Pod Modrou Věží s.r.o.",
+            "paymentReference": "1260080"
+        },
+        {
+            "externalId": "BU1-202607-009",
+            "amount": 4961.0,
+            "dateTransaction": "2026-07-13",
+            "counterpartyAccount": "1705384627/0800",
+            "counterpartyName": "Truhlárna Dubový list s.r.o.",
+            "paymentReference": "1260082"
+        },
+        {
+            "externalId": "BU1-202607-010",
+            "amount": 4356.0,
+            "dateTransaction": "2026-07-15",
+            "counterpartyAccount": "2087561431/0100",
+            "counterpartyName": "Galvanovna Pokorný a syn s.r.o.",
+            "paymentReference": "1260077"
+        },
+        {
+            "externalId": "BU1-202607-011",
+            "amount": -5929.0,
+            "dateTransaction": "2026-07-16",
+            "counterpartyAccount": "2519046733/2010",
+            "counterpartyName": "Serverovna Mrak s.r.o.",
+            "paymentReference": "20261189"
+        },
+        {
+            "externalId": "BU1-202607-012",
+            "amount": -23595.0,
+            "dateTransaction": "2026-07-18",
+            "counterpartyAccount": "2035918478/2010",
+            "counterpartyName": "Účetní kancelář Sloupec s.r.o.",
+            "paymentReference": "260120"
+        },
+        {
+            "externalId": "BU1-202607-013",
+            "amount": -3484.8,
+            "dateTransaction": "2026-07-19",
+            "counterpartyAccount": "2874190350/0300",
+            "counterpartyName": "Telekom Vlnka a.s.",
+            "paymentReference": "2026448207"
+        },
+        {
+            "externalId": "BU1-202607-014",
+            "amount": 16819.0,
+            "dateTransaction": "2026-07-20",
+            "counterpartyAccount": "1572946306/0600",
+            "counterpartyName": "Hotel Modrý Jelen s.r.o.",
+            "paymentReference": "1260078"
+        },
+        {
+            "externalId": "BU1-202607-015",
+            "amount": -47936.0,
+            "dateTransaction": "2026-07-20",
+            "counterpartyAccount": "1000000021/0800",
+            "counterpartyName": "Pojišťovny — odvody",
+            "message": "Pojistné 06/2026"
+        },
+        {
+            "externalId": "BU1-202607-016",
+            "amount": -12986.0,
+            "dateTransaction": "2026-07-20",
+            "counterpartyAccount": "1000000048/0800",
+            "counterpartyName": "Finanční úřad — záloha na daň",
+            "message": "Záloha na daň 06/2026"
+        },
+        {
+            "externalId": "BU1-202607-017",
+            "amount": 3509.0,
+            "dateTransaction": "2026-07-27",
+            "counterpartyAccount": "1908274639/0800",
+            "counterpartyName": "Cukrárna U Medvídka s.r.o.",
+            "paymentReference": "1260074"
+        },
+        {
+            "externalId": "BU1-202607-018",
+            "amount": 7562.5,
+            "dateTransaction": "2026-07-30",
+            "counterpartyAccount": "2238170965/0300",
+            "counterpartyName": "Lékárna Pod Modrou Věží s.r.o.",
+            "paymentReference": "1260086"
+        },
+        {
+            "externalId": "BU1-202607-019",
+            "amount": -169.0,
+            "dateTransaction": "2026-07-31",
+            "message": "Poplatek za vedení účtu",
+            "operation": "fee.out"
+        }
+    ],
+    "docState": 40
+}

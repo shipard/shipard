@@ -1,0 +1,43 @@
+{
+    "format": "shpd.dataset.bankStatement.v1",
+    "bankAccount": "BU2",
+    "statement": {
+        "statementNumber": "1/2026",
+        "externalId": "BU2-2026-01",
+        "periodStart": "2026-01-01",
+        "periodEnd": "2026-01-31",
+        "openingBalance": 0.0,
+        "closingBalance": 2120.0,
+        "currency": "EUR"
+    },
+    "transactions": [
+        {
+            "externalId": "BU2-202601-001",
+            "amount": 390.0,
+            "dateTransaction": "2026-01-13",
+            "counterpartyAccount": "SK0511000000002618439075",
+            "counterpartyName": "Horský Penzión Tatranka s.r.o.",
+            "paymentReference": "1260012",
+            "exchangeRate": 25.12
+        },
+        {
+            "externalId": "BU2-202601-002",
+            "amount": 1250.0,
+            "dateTransaction": "2026-01-13",
+            "counterpartyAccount": "DE18370400440532014860",
+            "counterpartyName": "Wolkenschiff Logistik GmbH",
+            "paymentReference": "1260013",
+            "exchangeRate": 25.12
+        },
+        {
+            "externalId": "BU2-202601-003",
+            "amount": 480.0,
+            "dateTransaction": "2026-01-24",
+            "counterpartyAccount": "SK6709000000003914726058",
+            "counterpartyName": "Nitrianske Stroje s.r.o.",
+            "paymentReference": "1260011",
+            "exchangeRate": 25.12
+        }
+    ],
+    "docState": 40
+}

@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — fáze 2a: banka
 
-**Stav:** naplánováno — zadání podle #131 D16–D18, D21, D22, čeká na implementaci
+**Stav:** hotovo — 2026-10-20 (#131 D16–D18, D21, D22, U1); odchylky a výsledky ověření níže
 
 ## Kontext / Cíl
 
@@ -248,17 +248,90 @@ necháš Anně k ručnímu průchodu, zapiš jeho prefix do Odchylek.
 
 ## Hotovo když
 
-- [ ] sekce `bank/` v PHP s testy, round-trip test projde
-- [ ] příběh nese účty BU1 + BU2, počáteční zůstatek a platby podle D18, D22
-- [ ] `python3 demo/datasets/build.py` vygeneruje sadu s výpisy, druhý běh
+- [x] sekce `bank/` v PHP s testy, round-trip test projde
+- [x] příběh nese účty BU1 + BU2, počáteční zůstatek a platby podle D18, D22
+- [x] `python3 demo/datasets/build.py` vygeneruje sadu s výpisy, druhý běh
       nic nezmění; `--anchor` posune i platby
-- [ ] unit testy generátoru a dotčené PHPUnit testy projdou
-- [ ] ověření podle oddílu Ověření, výsledky v Odchylkách
-- [ ] dokumentace: `docs/datasets.md`, `docs/bank.md`,
+- [x] unit testy generátoru a dotčené PHPUnit testy projdou
+- [x] ověření podle oddílu Ověření, výsledky v Odchylkách
+- [x] dokumentace: `docs/datasets.md`, `docs/bank.md`,
       `demo/datasets/README.md`, `tools/invoice-generator/README.md`,
       řádek v `tasks/README.md`
-- [ ] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
+- [x] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
       a `python3 scripts/check-sensitive.py` projdou
+
+## Odchylky a zjištění při implementaci (2026-10-20)
+
+- **Krok 0 v PHP (rozhodnuto v chatu).** Dvě věci, na kterých zadání stálo,
+  aplikace neuměla:
+  - **0a `setup/accounts.jsonc`** — sada neuměla zakládat účty osnovy,
+    výchozí osnova má jen 221100 a BU1 měl `accounting_account: null`
+    (mikroengine by dal `bank_account_not_found`). Nová setup tabulka
+    `accounts` (`SetupExporter::TABLES`, jen nesystémové účty `is_system = 0`,
+    klíč `number`, seeduje se abecedně před `bank_accounts`); BU1 → 221100,
+    BU2 → 221200 ze sady. `docs/datasets.md` § 1.
+  - **0b dvoustranná skupina Nespárované platby** — skupina sledovala jen
+    MD 261300 / DAL 261200, takže vyrovnávací doklad D22 (DAL 261300) by
+    saldokontní případ nevynuloval (`LedgerGenerator::settingsCandidates`
+    bere jen sledovanou stranu, deník by seděl, saldo ne). Přidány zrcadlové
+    řádky s `modify_sign` (záporná úhrada v témže případu) do
+    `balancesDefault.cz.jsonc` i `ClearingInfrastructureProvisioner`, který
+    je doplní i existující skupině při `ds-upgrade` (pohyby pak
+    `accbal-regenerate --all`). `paymentGroup()` řádky s `modify_sign`
+    přeskakuje, pohyb bankovní transakce se nemění; `ClearingRouter`
+    filtruje `source_kind = bankTransaction`. Invariant seedu „modify_sign
+    = creditNoteRule“ se rozšířil o zrcadla clearingu (legacy DS je
+    dostává také). `docs/accbal.md` § 3 a § 4.4, `docs/bank.md` § 6.3.
+- **Obálka** nese `docState` (jako spisovna), ne `targetState`;
+  `transactions` je povinné pole (prázdný výpis `[]`), top-level klíče se
+  nepruhují. Schéma v `modules/core/exchange/schemas/`, třídy
+  v `modules/economy/bank/src/Dataset/`.
+- **Výpis za měsíc kotvy** končí kotvou (`periodEnd` = kotva), aby Přehled
+  firmy měl čerstvý zůstatek; poplatek za nedokončený měsíc ještě není.
+- **BU2 (EUR)** začíná na nule (otevírací doklad jen v domácí měně — loader
+  nenulový zůstatek v cizí měně odmítne), bez poplatků, jen příjmy; prázdný
+  měsíc by výpis neměl (v sadě má BU2 všech deset měsíců).
+- **Vyrovnávací doklad per platba** (3 za měsíc, 27 celkem), ne jeden za
+  měsíc; čísla `cmnbkp` se prolnula s mzdami podle data (otevírací doklad
+  60260001, mzdy se posunuly). Otevírací doklad jde přes
+  `fiscalPeriodType: "opening"` (import mód) do měsíce Otevření;
+  `doc_record` ho vypisuje za `dates` jako `DocumentExporter`.
+- **Počáteční zůstatek BU1 1 250 000.** Příběh je na bance ztrátový (mzdy
+  a dodavatelé převyšují tržby zhruba o 100 tisíc měsíčně, kumulativně
+  −1,03 mil. za období) — ekonomika příběhu z fáze 1; validace zůstatku
+  ≥ 0 to odhalila, rezerva ji kryje. Jiná ekonomika = změna příběhu.
+- **Překlep VS**: prohození sousedních číslic od konce, první bez kolize
+  s číslem dokladu (prosté prohození posledních dvou kolidovalo:
+  1260057 ↔ 1260075).
+- **`importOwnBankAccount`** EUR faktur = BU2 (změna stávajících souborů
+  sady); `own.bankAccountCode` nahradil `own.bankAccounts` měna → kód.
+  Dodavatelé dostali `payment` (onTime = den před splatností, late + days;
+  bez pole včas), odběratel `partial` volitelný `remainderDays`
+  a `unmatched[]` {month, reference missing / typo}.
+- **Posun kotvy**: aritmetika dnů může platbu přesunout přes hranici
+  měsíce (test porovnává obsah za období, ne per výpis); přes hranici
+  fiskálního roku zůstanou platby za faktury minulého roku v aplikaci
+  nespárované (lookup běží v období transakce) — omezení
+  v `demo/datasets/README.md`.
+- **Ověření** (čerstvý volný DS `i1wo-2…`, ponechán k ručnímu průchodu):
+  `diff -r` jen `manifest.created`; deník 1 204 řádků, MD = D, 0 chybových;
+  199 transakcí ve stavu účtování 1, 0 chyb; partner dohledaný u všech 163
+  plateb faktur (SK / DE podle IBAN), null jen u 27 plateb mezd a 9
+  poplatků; protistrany v deníku: 311 (112), 324 + 756 / 799 (záloha),
+  321 (47), 261 (27 mezd + 3 záměrně nespárované), 568 (9); 261300
+  a 331 / 336 / 342 na nule (září placeno do kotvy, říjnové mzdy ještě
+  nejsou); saldokonto Pohledávky 116 případů — 101 uzavřených, 1 částečně,
+  14 neuhrazených (15 po splatnosti vč. částečného); Závazky 48 uzavřených,
+  1 neuhrazený se splatností za kotvou; Nespárované platby 3 příjmy
+  s partnerem (překlep VS, 2× bez VS) + případ s prázdným klíčem 0 z 54
+  pohybů; Přijaté zálohy 1 otevřená (záloha čeká na vyúčtování);
+  221100 = 224 780,42 = closing BU1 10/2026, 221200 = 52 100 EUR = closing
+  BU2; EUR případy bez rezidua v CZK. Round-trip integrační test
+  (`DatasetRoundTripTest`) kryje výpis s úhradou přijaté faktury
+  (partner i předpis 321 dohledané), nespárovaným příjmem a poplatkem.
+- Ruční průchod v aplikaci (viewer výpisů a transakcí, detail transakce
+  s partnerem, saldokonto odběratele, Nespárované platby, Přehled firmy)
+  — Anna na DS `i1wo-2…`; po kontrole `shpd-server ds-delete`.
 
 ## Rozhodnutí k designu (potvrzená, #131)
 

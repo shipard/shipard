@@ -16,7 +16,24 @@
             "valid_to": null,
             "sort_order": 1,
             "docState": 40,
-            "accounting_account": null,
+            "accounting_account": "221100",
+            "ebanking_id": null
+        },
+        {
+            "code": "BU2",
+            "name": "Eurový účet",
+            "notice": null,
+            "bank_name": null,
+            "account_number": "3178429617/0100",
+            "iban": "CZ7601000000003178429617",
+            "bic": "KOMBCZPP",
+            "currency": "eur",
+            "is_default": false,
+            "valid_from": "2026-01-01",
+            "valid_to": null,
+            "sort_order": 2,
+            "docState": 40,
+            "accounting_account": "221200",
             "ebanking_id": null
         }
     ]

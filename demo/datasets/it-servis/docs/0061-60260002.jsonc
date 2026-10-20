@@ -2,13 +2,13 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "accountingDocument",
-    "docText": "Mzdy 02/2026",
+    "docText": "Mzdy 01/2026",
     "dates": {
-        "issueDate": "2026-02-28",
-        "dueDate": "2026-03-14",
-        "accountingDate": "2026-02-28",
-        "taxPointDate": "2026-02-28",
-        "vatObligationDate": "2026-02-28"
+        "issueDate": "2026-01-31",
+        "dueDate": "2026-02-14",
+        "accountingDate": "2026-01-31",
+        "taxPointDate": "2026-01-31",
+        "vatObligationDate": "2026-01-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,

@@ -1,0 +1,95 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Horský Penzión Tatranka s.r.o.",
+        "country": "sk",
+        "companyId": "47150823",
+        "taxId": "SK2020471508",
+        "vatId": "SK2020471508",
+        "address": {
+            "street": "Pod Gerlachom",
+            "houseNumber": "231",
+            "city": "Poprad",
+            "zip": "05801",
+            "country": "sk"
+        },
+        "contact": {
+            "email": "recepcia@penzion-tatranka.example",
+            "phone": "+421000721144",
+            "web": "www.penzion-tatranka.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-01-01",
+        "dueDate": "2026-01-15",
+        "accountingDate": "2026-01-01",
+        "taxPointDate": "2026-01-01",
+        "vatObligationDate": "2026-01-01"
+    },
+    "currency": "EUR",
+    "exchangeRate": 25.12,
+    "vat": {
+        "mode": "fromBase",
+        "place": "intracom",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260012"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
+            },
+            "unit": "mnth",
+            "quantity": 3.0,
+            "unitPrice": 130.0,
+            "totalPrice": 390.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-202",
+                "pct": 0.0
+            },
+            "computed": {
+                "vatBase": 390.0,
+                "vatAmount": 0.0,
+                "vatTotal": 390.0
+            },
+            "description": "Správa IT — paušál Q1/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 390.0,
+            "tax": 0.0,
+            "total": 390.0
+        }
+    ],
+    "totals": {
+        "totalBase": 390.0,
+        "totalVat": 0.0,
+        "totalAmount": 390.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260012",
+            "sequenceNumber": 12
+        },
+        "importOwnBankAccount": "BU2"
+    }
+}

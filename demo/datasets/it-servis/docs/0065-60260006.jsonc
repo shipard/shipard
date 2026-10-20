@@ -2,13 +2,13 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "accountingDocument",
-    "docText": "Mzdy 06/2026",
+    "docText": "Mzdy 02/2026",
     "dates": {
-        "issueDate": "2026-06-30",
-        "dueDate": "2026-07-14",
-        "accountingDate": "2026-06-30",
-        "taxPointDate": "2026-06-30",
-        "vatObligationDate": "2026-06-30"
+        "issueDate": "2026-02-28",
+        "dueDate": "2026-03-14",
+        "accountingDate": "2026-02-28",
+        "taxPointDate": "2026-02-28",
+        "vatObligationDate": "2026-02-28"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -29,12 +29,12 @@
             "operation": "acc.record",
             "orderPos": 1,
             "unitPrice": 0.0,
-            "totalPrice": 107000.0,
+            "totalPrice": 92000.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 107000.0,
+                "vatBase": 92000.0,
                 "vatAmount": 0.0,
-                "vatTotal": 107000.0
+                "vatTotal": 92000.0
             },
             "description": "Hrubé mzdy",
             "account": "521100",
@@ -45,12 +45,12 @@
             "operation": "acc.record",
             "orderPos": 2,
             "unitPrice": 0.0,
-            "totalPrice": 36166.0,
+            "totalPrice": 31096.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 36166.0,
+                "vatBase": 31096.0,
                 "vatAmount": 0.0,
-                "vatTotal": 36166.0
+                "vatTotal": 31096.0
             },
             "description": "Pojistné hrazené zaměstnavatelem",
             "account": "524100",
@@ -61,12 +61,12 @@
             "operation": "acc.record",
             "orderPos": 3,
             "unitPrice": 0.0,
-            "totalPrice": 82244.0,
+            "totalPrice": 70896.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 82244.0,
+                "vatBase": 70896.0,
                 "vatAmount": 0.0,
-                "vatTotal": 82244.0
+                "vatTotal": 70896.0
             },
             "description": "Čisté mzdy k výplatě",
             "account": "331100",
@@ -77,12 +77,12 @@
             "operation": "acc.record",
             "orderPos": 4,
             "unitPrice": 0.0,
-            "totalPrice": 47936.0,
+            "totalPrice": 41216.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 47936.0,
+                "vatBase": 41216.0,
                 "vatAmount": 0.0,
-                "vatTotal": 47936.0
+                "vatTotal": 41216.0
             },
             "description": "Odvody sociálního a zdravotního pojištění",
             "account": "336100",
@@ -93,12 +93,12 @@
             "operation": "acc.record",
             "orderPos": 5,
             "unitPrice": 0.0,
-            "totalPrice": 12986.0,
+            "totalPrice": 10984.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 12986.0,
+                "vatBase": 10984.0,
                 "vatAmount": 0.0,
-                "vatTotal": 12986.0
+                "vatTotal": 10984.0
             },
             "description": "Záloha na daň z příjmů",
             "account": "342100",
@@ -106,9 +106,9 @@
         }
     ],
     "totals": {
-        "totalBase": 143166.0,
+        "totalBase": 123096.0,
         "totalVat": 0.0,
-        "totalAmount": 143166.0,
+        "totalAmount": 123096.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
