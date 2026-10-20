@@ -17,13 +17,17 @@ final readonly class ExchangeRateListImportResult
     /** Zápis selhal (gateway). */
     public const string FAILED = 'failed';
 
-    /** @param list<string> $errors */
+    /**
+     * @param list<string> $errors
+     * @param list<string> $skippedCurrencies měny mimo world.base.currencies vyřazené z lístku (velkými, U1)
+     */
     public function __construct(
         public string $outcome,
         public string $listType,
         public string $validFrom,
         public ?int $listId = null,
         public array $errors = [],
+        public array $skippedCurrencies = [],
     ) {
     }
 

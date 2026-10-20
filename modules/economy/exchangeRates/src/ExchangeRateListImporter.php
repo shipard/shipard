@@ -19,14 +19,18 @@ use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
  * Jediná cesta zápisu kurzovních lístků (#121 §3): CLI exchange-rates-import,
  * seeder datové sady, v tasku B služba. Vstup = dekódovaný lístek ve formátu
  * shpd.exchangeRates.list.v1 + zdroj. Schéma → sémantika (známý typ pro zemi
- * zdroje dat, domácí měna lístku = měna typu = domácí měna zdroje dat, měny
- * z world.base.currencies, žádná měna dvakrát, validTo ≥ validFrom, typ bez
- * maxAgeDays vyžaduje validTo) → zápis hlavičky a hodnot v jedné transakci
- * přes TableGateway (childTables `values`).
+ * zdroje dat, domácí měna lístku = měna typu = domácí měna zdroje dat, žádná
+ * měna dvakrát, validTo ≥ validFrom, typ bez maxAgeDays vyžaduje validTo)
+ * → měny mimo world.base.currencies se z lístku vyřadí a vrátí jako
+ * `skippedCurrencies` (task B U1; lístek bez jediné známé měny je neplatný)
+ * → zápis hlavičky a hodnot v jedné transakci přes TableGateway (childTables
+ * `values`).
  *
  * Výsledek per lístek: nový (list_type, valid_from) → created; existující
  * se shodným obsahem → skipped; s jiným obsahem → conflict, s volbou replace
- * se hodnoty nahradí → replaced. DB přístup přes chráněné metody (testy).
+ * se hodnoty nahradí → replaced. Obsah se porovnává až po vyřazení neznámých
+ * měn — jinak by každé další stažení téhož lístku hlásilo konflikt.
+ * DB přístup přes chráněné metody (testy).
  */
 class ExchangeRateListImporter
 {
@@ -122,20 +126,25 @@ class ExchangeRateListImporter
             return new ExchangeRateListImportResult(ExchangeRateListImportResult::INVALID, $listType, $validFrom, null, $errors);
         }
 
-        $head = $this->normalize($list, $source);
+        [$rates, $skipped] = $this->partitionRates($list['rates']);
+        if ($rates === []) {
+            return new ExchangeRateListImportResult(ExchangeRateListImportResult::INVALID, $listType, $validFrom, null, ['Lístek nemá žádnou známou měnu.'], $skipped);
+        }
+
+        $head = $this->normalize($list, $source, $rates);
         $existingId = $this->findListId($head['list_type'], $head['valid_from']);
 
         if ($existingId === null) {
             $result = $this->save($head);
             if (!$result->isSuccess()) {
-                return $this->failed($head, null, $result);
+                return $this->failed($head, null, $result, $skipped);
             }
-            return new ExchangeRateListImportResult(ExchangeRateListImportResult::CREATED, $head['list_type'], $head['valid_from'], (int) ($result->getData()['id'] ?? 0));
+            return new ExchangeRateListImportResult(ExchangeRateListImportResult::CREATED, $head['list_type'], $head['valid_from'], (int) ($result->getData()['id'] ?? 0), [], $skipped);
         }
 
         $existing = $this->loadList($existingId);
         if ($existing !== null && self::fingerprint($existing) === self::fingerprint($head)) {
-            return new ExchangeRateListImportResult(ExchangeRateListImportResult::SKIPPED, $head['list_type'], $head['valid_from'], $existingId);
+            return new ExchangeRateListImportResult(ExchangeRateListImportResult::SKIPPED, $head['list_type'], $head['valid_from'], $existingId, [], $skipped);
         }
         if (!$replace) {
             return new ExchangeRateListImportResult(
@@ -144,6 +153,7 @@ class ExchangeRateListImporter
                 $head['valid_from'],
                 $existingId,
                 ['Lístek už existuje s jiným obsahem — nahradí ho jen volba replace.'],
+                $skipped,
             );
         }
 
@@ -166,9 +176,9 @@ class ExchangeRateListImporter
 
         $result = $this->save($head);
         if (!$result->isSuccess()) {
-            return $this->failed($head, $existingId, $result);
+            return $this->failed($head, $existingId, $result, $skipped);
         }
-        return new ExchangeRateListImportResult(ExchangeRateListImportResult::REPLACED, $head['list_type'], $head['valid_from'], $existingId);
+        return new ExchangeRateListImportResult(ExchangeRateListImportResult::REPLACED, $head['list_type'], $head['valid_from'], $existingId, [], $skipped);
     }
 
     /** @return list<string> */
@@ -213,9 +223,6 @@ class ExchangeRateListImporter
         $seen = [];
         foreach ($list['rates'] as $rate) {
             $currency = strtolower((string) $rate['currency']);
-            if ($this->currencies !== [] && !isset($this->currencies[$currency])) {
-                $errors[] = 'Neznámá měna ' . strtoupper($currency) . '.';
-            }
             if (isset($seen[$currency])) {
                 $errors[] = 'Měna ' . strtoupper($currency) . ' je v lístku dvakrát.';
             }
@@ -225,14 +232,36 @@ class ExchangeRateListImporter
     }
 
     /**
+     * Řádky známých měn a kódy vyřazených (U1). Bez katalogu měn se nehlídá nic.
+     *
+     * @param list<array<string, mixed>> $rates
+     * @return array{0: list<array<string, mixed>>, 1: list<string>}
+     */
+    private function partitionRates(array $rates): array
+    {
+        $known = [];
+        $skipped = [];
+        foreach ($rates as $rate) {
+            $currency = strtolower((string) $rate['currency']);
+            if ($this->currencies !== [] && !isset($this->currencies[$currency])) {
+                $skipped[] = strtoupper($currency);
+                continue;
+            }
+            $known[] = $rate;
+        }
+        return [$known, $skipped];
+    }
+
+    /**
      * Lístek v tvaru pro gateway: měny malými, hodnoty pod klíčem `values`.
      *
+     * @param list<array<string, mixed>> $rates řádky známých měn
      * @return array<string, mixed>
      */
-    private function normalize(array $list, int $source): array
+    private function normalize(array $list, int $source, array $rates): array
     {
         $values = [];
-        foreach ($list['rates'] as $rate) {
+        foreach ($rates as $rate) {
             $values[] = [
                 'currency' => strtolower((string) $rate['currency']),
                 'amount'   => (int) $rate['amount'],
@@ -274,7 +303,8 @@ class ExchangeRateListImporter
         ], JSON_THROW_ON_ERROR);
     }
 
-    private function failed(array $head, ?int $id, DocumentResult $result): ExchangeRateListImportResult
+    /** @param list<string> $skipped */
+    private function failed(array $head, ?int $id, DocumentResult $result, array $skipped): ExchangeRateListImportResult
     {
         $message = $result->getErrorMessage();
         if ($message === null && $result->getValidation() !== null) {
@@ -286,6 +316,7 @@ class ExchangeRateListImporter
             $head['valid_from'],
             $id,
             ['Zápis selhal: ' . ($message ?? 'neznámá chyba')],
+            $skipped,
         );
     }
 

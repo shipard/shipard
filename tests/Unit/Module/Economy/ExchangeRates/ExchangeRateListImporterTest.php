@@ -18,7 +18,8 @@ use Shipard\Module\Economy\ExchangeRates\ExchangeRateListTypes;
 /**
  * Importer (tasks/exchange-rates-core.md §3, §11): chyba schématu, neznámý
  * typ, nesoulad domácí měny, shodný obsah → skipped, jiný obsah → conflict
- * / replaced (hodnoty téže měny s id existujícího řádku).
+ * / replaced (hodnoty téže měny s id existujícího řádku); neznámá měna se
+ * vyřadí a hlásí, obsah se porovnává po vyřazení (task B U1).
  */
 class ExchangeRateListImporterTest extends TestCase
 {
@@ -142,14 +143,82 @@ class ExchangeRateListImporterTest extends TestCase
         $r = $importer->import(self::list(['validFrom' => '2026-02-30']), 1);
         $this->assertSame(['Neplatné datum validFrom „2026-02-30“.'], $r->errors);
 
-        $r = $importer->import(self::list(['rates' => [['currency' => 'XXX', 'amount' => 1, 'rate' => 1.0]]]), 1);
-        $this->assertSame(['Neznámá měna XXX.'], $r->errors);
         $r = $importer->import(self::list(['rates' => [['currency' => 'eur', 'amount' => 1, 'rate' => 24.3]]]), 1);
         $this->assertStringContainsString('rates.0.currency', $r->errors[0], 'malá písmena odmítá už schéma');
         $r = $importer->import(self::list(['rates' => [['currency' => 'EUR', 'amount' => 1, 'rate' => 24.3], ['currency' => 'EUR', 'amount' => 1, 'rate' => 24.4]]]), 1);
         $this->assertSame(['Měna EUR je v lístku dvakrát.'], $r->errors);
 
         $this->assertSame([], $importer->saved);
+    }
+
+    public function testUnknownCurrencyIsSkippedAndReportedRestIsSaved(): void
+    {
+        $importer = $this->importer();
+        $result = $importer->import(self::list(['rates' => [
+            ['currency' => 'EUR', 'amount' => 1, 'rate' => 24.325],
+            ['currency' => 'XDR', 'amount' => 1, 'rate' => 28.5],
+            ['currency' => 'JPY', 'amount' => 100, 'rate' => 15.871],
+            ['currency' => 'VEF', 'amount' => 1000, 'rate' => 0.001],
+        ]]), 1);
+
+        $this->assertSame(ExchangeRateListImportResult::CREATED, $result->outcome);
+        $this->assertTrue($result->ok());
+        $this->assertSame([], $result->errors);
+        $this->assertSame(['XDR', 'VEF'], $result->skippedCurrencies, 'velkými, v pořadí lístku');
+        $this->assertSame(['eur', 'jpy'], array_column($importer->saved[0]['values'], 'currency'));
+    }
+
+    public function testListWithoutKnownCurrencyIsInvalid(): void
+    {
+        $importer = $this->importer();
+        $result = $importer->import(self::list(['rates' => [['currency' => 'XXX', 'amount' => 1, 'rate' => 1.0]]]), 1);
+
+        $this->assertSame(ExchangeRateListImportResult::INVALID, $result->outcome);
+        $this->assertSame(['Lístek nemá žádnou známou měnu.'], $result->errors);
+        $this->assertSame(['XXX'], $result->skippedCurrencies);
+        $this->assertSame([], $importer->saved);
+    }
+
+    public function testRepeatedImportWithUnknownCurrencyIsSkippedNotConflict(): void
+    {
+        $importer = $this->importer(self::EXISTING);
+        $list = self::list();
+        $list['rates'][] = ['currency' => 'XDR', 'amount' => 1, 'rate' => 28.5];
+        $result = $importer->import($list, ExchangeRateListImporter::SOURCE_SERVICE);
+
+        $this->assertSame(ExchangeRateListImportResult::SKIPPED, $result->outcome, 'obsah se porovnává po vyřazení neznámé měny');
+        $this->assertSame(['XDR'], $result->skippedCurrencies);
+        $this->assertSame([], $importer->saved);
+    }
+
+    public function testWithoutCurrencyCatalogNothingIsSkipped(): void
+    {
+        $importer = new class(
+            $this->createMock(Connection::class),
+            $this->createMock(TableGateway::class),
+            new SchemaValidator(SchemaLoader::default()),
+            new ExchangeRateListTypes([new ExchangeRateListType('cz.cnb.daily', 'ČNB denní', 'czk', 7)]),
+            [],
+            'czk',
+        ) extends ExchangeRateListImporter {
+            public array $saved = [];
+
+            protected function findListId(string $listType, string $validFrom): ?int
+            {
+                return null;
+            }
+
+            protected function save(array $data): DocumentResult
+            {
+                $this->saved[] = $data;
+                return DocumentResult::ok(['id' => 1]);
+            }
+        };
+        $result = $importer->import(self::list(['rates' => [['currency' => 'XXX', 'amount' => 1, 'rate' => 1.0]]]), 1);
+
+        $this->assertSame(ExchangeRateListImportResult::CREATED, $result->outcome);
+        $this->assertSame([], $result->skippedCurrencies);
+        $this->assertSame(['xxx'], array_column($importer->saved[0]['values'], 'currency'));
     }
 
     public function testCreatesNormalizedListWithValuesAndSource(): void

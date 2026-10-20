@@ -25,7 +25,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * docs/exchange-rates.md): každý `.jsonc` / `.json` ve formátu
  * shpd.exchangeRates.list.v1 projde ExchangeRateListImporter se zdrojem
  * „soubor“. Existující lístek se shodným obsahem = beze změny; s jiným
- * obsahem = konflikt, který přepíše jen --replace.
+ * obsahem = konflikt, který přepíše jen --replace. Měny mimo
+ * world.base.currencies importer vyřadí a příkaz je vypíše jako varování
+ * u souboru (U1) — výsledek zůstává ok.
  *
  * Exit 0; 1 při jakémkoli selhání (neplatný lístek, konflikt, chyba
  * zápisu, chybějící modul); INVALID při neexistující cestě.
@@ -114,6 +116,9 @@ class ExchangeRatesImportCommand extends Command
             $output->writeln(sprintf('  <%s>%s</%s> %s — %s', $tag, self::pad($label), $tag, $name, $result->label() !== '' ? $result->label() : '(bez typu)'));
             foreach ($result->errors as $error) {
                 $output->writeln('    - ' . $error);
+            }
+            if ($result->skippedCurrencies !== []) {
+                $output->writeln('    <comment>přeskočené měny: ' . implode(', ', $result->skippedCurrencies) . '</comment>');
             }
             if (!$result->ok()) {
                 $failed++;

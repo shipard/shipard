@@ -38,16 +38,19 @@ class ExchangeRatesImportCommandTest extends TestCase
         rmdir($this->dir);
     }
 
-    /** @param array<string, string> $outcomes listType → outcome */
-    private function tester(bool $moduleActive = true, array $outcomes = []): CommandTester
+    /**
+     * @param array<string, string> $outcomes listType → outcome
+     * @param array<string, list<string>> $skipped listType → přeskočené měny
+     */
+    private function tester(bool $moduleActive = true, array $outcomes = [], array $skipped = []): CommandTester
     {
         $dsConfig = $this->createMock(DataSourceConfig::class);
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('getAllTableNames')->willReturn($moduleActive ? ['economy_exchange_rates_lists'] : ['docs_core_heads']);
 
         $imports = &$this->imports;
-        $importer = new class($outcomes, $imports) extends ExchangeRateListImporter {
-            public function __construct(private readonly array $outcomes, private array &$imports)
+        $importer = new class($outcomes, $skipped, $imports) extends ExchangeRateListImporter {
+            public function __construct(private readonly array $outcomes, private readonly array $skipped, private array &$imports)
             {
             }
 
@@ -57,7 +60,7 @@ class ExchangeRatesImportCommandTest extends TestCase
                 $type = (string) ($list['listType'] ?? '');
                 $outcome = $this->outcomes[$type] ?? ExchangeRateListImportResult::CREATED;
                 $errors = $outcome === ExchangeRateListImportResult::CONFLICT ? ['jiný obsah'] : [];
-                return new ExchangeRateListImportResult($outcome, $type, (string) ($list['validFrom'] ?? ''), 1, $errors);
+                return new ExchangeRateListImportResult($outcome, $type, (string) ($list['validFrom'] ?? ''), 1, $errors, $this->skipped[$type] ?? []);
             }
         };
 
@@ -142,6 +145,18 @@ class ExchangeRatesImportCommandTest extends TestCase
         $this->assertStringContainsString('Lístky: 0 založeno, 1 beze změny, 0 nahrazeno, 2 selhalo (1 jiný obsah, 1 neplatných)', $display);
         $this->assertStringContainsString('--replace', $display);
         $this->assertCount(2, $this->imports, 'neparsovatelný soubor se importeru nepředá');
+    }
+
+    public function testSkippedCurrenciesAreWarningsNotFailures(): void
+    {
+        $this->write('1.jsonc', '{"listType": "cz.cnb.daily", "validFrom": "2026-10-16"}');
+        $tester = $this->tester(skipped: ['cz.cnb.daily' => ['XDR', 'VEF']]);
+
+        $this->assertSame(0, $tester->execute(['path' => $this->dir]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('založen     1.jsonc', $display);
+        $this->assertStringContainsString('přeskočené měny: XDR, VEF', $display);
+        $this->assertStringContainsString('Lístky: 1 založeno, 0 beze změny, 0 nahrazeno, 0 selhalo', $display);
     }
 
     public function testSingleFileImport(): void

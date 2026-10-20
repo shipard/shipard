@@ -64,14 +64,17 @@ class ExchangeRatesSeederTest extends TestCase
         );
     }
 
-    /** @return ExchangeRateListImporter&object{calls: list<array{0: string, 1: int, 2: bool}>} */
-    private function importer(array $outcomes): ExchangeRateListImporter
+    /**
+     * @param array<string, list<string>> $skipped klíč lístku → přeskočené měny
+     * @return ExchangeRateListImporter&object{calls: list<array{0: string, 1: int, 2: bool}>}
+     */
+    private function importer(array $outcomes, array $skipped = []): ExchangeRateListImporter
     {
-        return new class($outcomes) extends ExchangeRateListImporter {
+        return new class($outcomes, $skipped) extends ExchangeRateListImporter {
             /** @var list<array{0: string, 1: int, 2: bool}> */
             public array $calls = [];
 
-            public function __construct(private readonly array $outcomes)
+            public function __construct(private readonly array $outcomes, private readonly array $skipped)
             {
             }
 
@@ -80,8 +83,8 @@ class ExchangeRatesSeederTest extends TestCase
                 $key = $list['listType'] . ' ' . $list['validFrom'];
                 $this->calls[] = [$key, $source, $replace];
                 $outcome = $this->outcomes[$key] ?? ExchangeRateListImportResult::CREATED;
-                $errors = $outcome === ExchangeRateListImportResult::INVALID ? ['Neznámá měna XXX.'] : [];
-                return new ExchangeRateListImportResult($outcome, (string) $list['listType'], (string) $list['validFrom'], 1, $errors);
+                $errors = $outcome === ExchangeRateListImportResult::INVALID ? ['Lístek nemá žádnou známou měnu.'] : [];
+                return new ExchangeRateListImportResult($outcome, (string) $list['listType'], (string) $list['validFrom'], 1, $errors, $this->skipped[$key] ?? []);
             }
         };
     }
@@ -116,6 +119,16 @@ class ExchangeRatesSeederTest extends TestCase
         (new ExchangeRatesSeeder($this->importer(['cz.cnb.daily 2026-06-05' => ExchangeRateListImportResult::INVALID])))
             ->seed($this->context($this->writeSet()), $report);
 
-        $this->assertStringContainsString('0001-cz.cnb.daily-2026-06-05.jsonc: Neznámá měna XXX.', $report->errors()[0]);
+        $this->assertStringContainsString('0001-cz.cnb.daily-2026-06-05.jsonc: Lístek nemá žádnou známou měnu.', $report->errors()[0]);
+    }
+
+    public function testSkippedCurrenciesAreWarningsAndStateStaysOk(): void
+    {
+        $report = new SeedReport();
+        (new ExchangeRatesSeeder($this->importer([], ['cz.cnb.daily 2026-06-05' => ['XDR']])))
+            ->seed($this->context($this->writeSet()), $report);
+
+        $this->assertSame(['ok' => 3, 'failed' => 1, 'skipped' => 0], $report->counts()['exchangeRates'], 'jen rozbitý soubor selhal');
+        $this->assertSame(['exchangeRates: exchangeRates/0001-cz.cnb.daily-2026-06-05.jsonc: přeskočené měny XDR'], $report->warnings());
     }
 }

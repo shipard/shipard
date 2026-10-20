@@ -42,6 +42,10 @@ class ExchangeRatesSeeder implements SectionSeeder
                 continue;
             }
             $result = $this->importer->import($list, ExchangeRateListImporter::SOURCE_DATASET);
+            if ($result->skippedCurrencies !== []) {
+                // Měny mimo world.base.currencies (U1): lístek se uloží bez nich, stav zůstává ok.
+                $report->warning(self::SECTION . ": {$rel}: přeskočené měny " . implode(', ', $result->skippedCurrencies));
+            }
             if ($result->ok()) {
                 $report->ok(self::SECTION);
                 continue;
