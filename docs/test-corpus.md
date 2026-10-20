@@ -219,7 +219,28 @@ Celkem 20 + 16 + 16 = **52 buněk** (PDF + očekávaný výsledek), 8 vynechaný
   znaménkem, build assertuje pásmo 0,01–1,00 (jinak derivace režimu
   zaokrouhlení v Shipardu nezabere);
 - integritní asserty: Σ řádků = Σ rekapitulace = součty;
-- cizí měna: vše v měně dokladu; kurz na dokladech korpusu není.
+- cizí měna: na papíře i v očekávaném výsledku vše v měně dokladu, kurz
+  na dokladech korpusu není (`exchangeRate` null).
+
+**Kurz a přepočet do Kč** (#103 D72, D73; `tasks/testing-rates-isdoc.md`):
+očekávání DPH a nákladů pro `dataset-verify` (§ 17) jsou v domácí měně.
+Kurz dává `invoicegen/rates.py` nezávisle na Shipardu: datum kurzu
+= **účetní datum** dokladu (DUZP, bez něj datum vystavení — zrcadlí
+výjimku věrnosti pro doklad bez DPH), lístek podle pravidla resolveru
+(`docs/exchange-rates.md` § 4: v typu `cz.cnb.daily` poslední lístek
+s `validFrom` ≤ datum, nejvýš 7 dní starý, měna v něm — starší lístek se
+nezkouší), kurz za jednotku = `rate / amount` na 6 míst `ROUND_HALF_UP`.
+Lístky jsou skutečné denní lístky ČNB v `tests/corpus/cz/exchange-rates/
+<validFrom>-cz.cnb.daily.json`: pro každé účetní datum dokladu v cizí
+měně lístek, který se použije, a lístek z předchozího pracovního dne jako
+rezerva (D81) — stažené jednou (`build.py --fetch-rates`, § 12) a
+commitované. Přepočet (`reporting.py`, `Decimal` na haléře): základ v Kč
+= základ v měně × kurz per sazba; daň samovyměření = základ v Kč × sazba
+(ne daň v měně × kurz); daň dodavatele = daň v měně × kurz; náklad
+= částka v měně × kurz. Samovyměření bez rekapitulace (varianta 8, bez
+DPH) bere základ z celkové částky. Pokud Shipard zařadí doklad do jiného
+účetního data nebo vezme jiný lístek, je to nález — **očekávání se podle
+Shipardu neupravuje.**
 
 Demo kolekce je referenční výpočet — `tools/invoice-generator/tests/`
 hlídá její součty i bajtově shodné HTML.
@@ -373,18 +394,25 @@ co má zachytit normalizace (#118).
 ## 12. Build
 
 ```bash
-python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--no-datasets]
+python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets]
 ```
 
 1. Validace identit (součty, disjunkce s demem), datových souborů
    (§ 4) a párů podob.
-2. Pro každou buňku matice: výpočet, očekávaný výsledek (zapisuje se vždy —
+2. Kurzovní lístky (§ 7): z buněk matice se odvodí účetní data dokladů
+   v cizí měně; s `--fetch-rates` se ze služby kurzů stáhnou chybějící
+   lístky (síť), jinak build lístky jen čte z `exchange-rates/` —
+   chybějící lístek k účetnímu datu je chyba s radou spustit
+   `--fetch-rates`. Výpis per měna a datum: použitý lístek a kurz. Plný
+   běh (bez `--only`) smaže lístky, které žádný doklad nepotřebuje
+   (použité a jejich rezervy zůstávají).
+3. Pro každou buňku matice: výpočet, očekávaný výsledek (zapisuje se vždy —
    je deterministický), HTML a jeho hash (sha256 HTML + voleb papíru).
-3. PDF se renderuje jen tehdy, když chybí, hash se liší od
+4. PDF se renderuje jen tehdy, když chybí, hash se liší od
    `build-state.json`, nebo s `--force` — PDF z Chromia není bajtově
    deterministické a přegenerování všeho by dělalo šum v diffech. Klíč
    stavu je `<profil>/NNNN-<slug>`; plný běh zastaralé klíče prořeže.
-4. U podoby `pdfIsdoc` soubor `out/<profil>/NNNN-<slug>.isdoc` přes
+5. U podoby `pdfIsdoc` soubor `out/<profil>/NNNN-<slug>.isdoc` přes
    `php bin/shpd-server einvoice-render` (#119, `docs/einvoice.md` § 8):
    vstup = očekávaný výsledek + `rows[].computed` (DPH per řádek
    z `compute.py`), UUID z cesty buňky `corpus/cz/<profil>/NNNN-<slug>` —
@@ -393,12 +421,23 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
    Buňce podoby `pdf` se `.isdoc` smaže, plný běh maže i sirotky. Selhání
    příkazu = build končí chybou s jeho výstupem; bez `vendor/` poradí
    `composer install`.
-5. Výpis per buňka: součty, „PDF beze změny / přegenerováno“, stav ISDOC,
+6. Výpis per buňka: součty, „PDF beze změny / přegenerováno“, stav ISDOC,
    vynechané buňky s důvodem.
-6. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
+7. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
    všech datových souborů, i s `--only`; `--no-datasets` přeskočí) a řádek
-   per sada s počtem zpráv a vynechaných buněk. ISDOC do sad zatím nejde
-   (O1 #119 — co má evaluace u zpráv s ISDOC měřit, je otázka #103).
+   per sada s počtem zpráv, kurzovních lístků a vynechaných buněk. Zpráva
+   buňky podoby `pdfIsdoc` dostane `.isdoc` z `out/<profil>/` jako druhou
+   přílohu (#103 D75; řeší O1 #119) — build kontroluje, že `.isdoc`
+   existuje právě u podoby `pdfIsdoc`.
+
+`--fetch-rates` (síť, jednorázově po přidání dokladu v cizí měně nebo
+změně jeho data): pro každé účetní datum D dotaz na službu kurzů
+(`docs/exchange-rates.md` § 9, `listType` 1, okno D − 7 … D) a uložení
+posledních **dvou** lístků s `validFrom` ≤ D — použitého a předchozího
+pracovního dne — jako `exchange-rates/<validFrom>-cz.cnb.daily.json`
+(lístek služby doslova, 2 mezery, `\n` na konci; existující soubor se
+nepřepisuje). Bez lístku pro D končí chybou (exit 2 = síť nebo služba).
+Bez přepínače build na síť nesahá.
 
 Gotenberg jako demo (`GOTENBERG_URL`, `docs/render.md`); volby papíru per
 šablona v hlavičce `<!-- pdf: paperWidth=80mm … -->` (účtenka). Šablona
@@ -541,20 +580,39 @@ Spouští ho build korpusu po očekáváních a PDF; výsledek je deterministick
 (stejný korpus = bajtově stejné soubory). Sada obsahuje:
 
 - `manifest.jsonc` — `country: cz`, `profile`, `provision`, `counts`
-  jen pro `setup` / `persons` / `mail`;
+  jen pro `setup` / `exchangeRates` (jen když sekce je) / `persons` / `mail`;
 - `setup/` — kopie základu profilu v konvenci sad;
+- `exchangeRates/NNNN-<slug(listType-validFrom)>.jsonc` — kurzovní lístky
+  (#103 D72, `docs/exchange-rates.md` § 7) jen u sady s dokladem v cizí
+  měně (plátce 6 dokladů, neplátce a spolek jen varianta 6): pro každý
+  takový doklad lístek, který resolver použije k účetnímu datu, a rezerva
+  z předchozího pracovního dne (§ 7); pořadí (`listType`, `validFrom`),
+  obsah ve tvaru `ExchangeRatesExporteru` (`format, listType, homeCurrency,
+  validFrom, [validTo], [listNumber], rates` podle měny, kurz jako float
+  po PHP — `24.0`) a bez měn mimo `world.base.currencies` (ČNB vyhlašuje
+  i XDR, seed by ho vyřadil s varováním);
 - `persons/0001-<slug>.jsonc` — vlastní firma (`isOwn`, V pořádku,
   sídlo z identity; banku nese číselník); dodavatelé v sadě **nejsou**
   (D21), založí je Použít návrhu — `0V01` dodavatele založí, `0V02` ho najde;
 - `mail/NNNN-<slug(messageId)>.jsonc` + `.files/<doklad>.pdf` — zpráva
   per buňka, `messageId` `MSG-CORPUS-<VP|NP|AS>-<NNNN>`, pořadí a názvy
-  souborů jako z `dataset-dump` (podle `receivedAt`, `messageId`);
+  souborů jako z `dataset-dump` (podle `receivedAt`, `messageId`); zpráva
+  buňky podoby `pdfIsdoc` má v sidecaru i `<doklad>.isdoc` z `out/<profil>/`
+  jako **druhou přílohu** (`order` 2, MIME `text/xml` — tak ho po seedu
+  určí `finfo` a dump zapíše; `IsdocImportService` bere příponu i tento
+  MIME; #103 D75). Ideální analýza zůstává beze změny: `canonicalJson.
+  attachments` nese jen PDF (`att:1`);
 - `expected/` — očekávání pro `dataset-verify` (F3, § 17): kopie
-  `projection.jsonc`, `vat.json` a `costs.json` z generátoru, schválený
-  snímek deníku `general-ledger.json` z `profiles/<profil>/approved/`;
-  pro evaluaci AI (F4, § 18) `messages.json` = zpráva → buňka korpusu
-  (`{messageId, stem, variant, form}` v pořadí zpráv). Není to sekce
-  sady — seed ji ignoruje, do `counts` nejde.
+  `projection.jsonc`, `vat.json` a `costs.json` z generátoru (částky
+  v domácí měně — doklad v cizí měně přepočtený kurzem k účetnímu datu,
+  § 7; `currency` záznamu je měna dokladu) a `exchange-rates.json`
+  (`{messageId, currency, rateDate, listType, validFrom, rate}` jen pro
+  doklady v cizí měně v pořadí zpráv, `[]` bez nich — `rateDate` = účetní
+  datum, `rate` za jednotku na 6 míst), schválený snímek deníku
+  `general-ledger.json` z `profiles/<profil>/approved/`; pro evaluaci AI
+  (F4, § 18) `messages.json` = zpráva → buňka korpusu (`{messageId, stem,
+  variant, form}` v pořadí zpráv). Není to sekce sady — seed ji ignoruje,
+  do `counts` nejde.
 
 Zpráva: předmět podle jazyka šablony („Faktura <číslo>“ / „Invoice
 <číslo>“ / „Účtenka <datum>“), odesílatel = dodavatel; doklad bez e-mailu
@@ -603,16 +661,24 @@ sadu** u volného zdroje dat v seznamu (§ 18, F6c).
 `dataset-seed` si na čerstvém DS doplní schéma (`ds-upgrade`), zapíše
 nastavení, resetuje DS, založí fiskální rok 2026 a účetní položky
 z nabídky (57 / 57 / 31) a naseeduje vlastní firmu a zprávy
-(20 / 16 / 16). Zdroj dat jiné země odmítne v preflightu. Doklady v cizí
-měně jdou v návrhu otevřít, ale bez kurzu se nepotvrdí (#121) — není to
-chyba sady. Po Použít tuzemského návrhu se naučí pravidlo IČO → štítek
-(`tagSource: llm`), stejně jako po skutečné analýze.
+(20 / 16 / 16); před zprávami nahraje kurzovní lístky sekce
+`exchangeRates/`, takže návrh v cizí měně dostane při Použít kurz
+z lístku sady (#121 D6). Zdroj dat jiné země odmítne v preflightu. Po
+Použít tuzemského návrhu se naučí pravidlo IČO → štítek (`tagSource:
+llm`), stejně jako po skutečné analýze. Seed nespouští předzpracování —
+zpráva s ISDOC je už Analyzovaná, druhá příloha jen leží u zprávy (D75).
 
 ### Pasti
 
 - **Sady se needitují ručně** — změna = základ profilu, korpus nebo
   generátor a nový build; strážce `CorpusExpectedTest::testDatasetsMatchCorpus`
-  hlídá soulad s korpusem.
+  hlídá soulad s korpusem (vč. ISDOC jako druhé přílohy právě u podoby
+  `pdfIsdoc`), `DatasetExpectationsTest` přepočítává `vat.json`
+  a `costs.json` do Kč vlastním resolverem nad lístky korpusu a hlídá
+  `exchange-rates.json`.
+- **Lístky se needitují ručně** — `exchange-rates/` plní jen `--fetch-rates`
+  (skutečné lístky ČNB); změna účetního data dokladu v cizí měně = nový
+  `--fetch-rates`, plný build staré lístky uklidí.
 - **`created` v manifestu je pevné** — razítko buildu by měnilo sadu při
   každém běhu.
 - **Účetní položky nejsou provisioner.** Seed je vytvoří, protože o to

@@ -24,6 +24,14 @@
             "size": 33280,
             "sha256": "2804fd325defe12afe0eeb67abd14fc0f2341d794beec2506a64e4d57b219056",
             "order": 1
+        },
+        {
+            "file": "0102-domestic-goods.isdoc",
+            "name": "0102-domestic-goods.isdoc",
+            "mimeType": "text/xml",
+            "size": 7880,
+            "sha256": "bbe6aa9f46203fd408f8f6b832083273ce511836198ed3f8387aeea49c6e4e86",
+            "order": 2
         }
     ],
     "analyses": [

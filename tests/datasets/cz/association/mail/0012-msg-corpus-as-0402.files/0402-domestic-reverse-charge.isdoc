@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="http://isdoc.cz/namespace/2013" version="6.0.1">
+  <DocumentType>1</DocumentType>
+  <ID>2026-0163</ID>
+  <UUID>f52c855f-9e36-5ecd-b0ef-443f98961591</UUID>
+  <IssuingSystem>Shipard</IssuingSystem>
+  <IssueDate>2026-09-18</IssueDate>
+  <TaxPointDate>2026-09-17</TaxPointDate>
+  <VATApplicable>true</VATApplicable>
+  <ElectronicPossibilityAgreementReference/>
+  <Note>Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.</Note>
+  <LocalCurrencyCode>CZK</LocalCurrencyCode>
+  <CurrRate>1</CurrRate>
+  <RefCurrRate>1</RefCurrRate>
+  <AccountingSupplierParty>
+    <Party>
+      <PartyIdentification>
+        <ID>16612248</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Stavby Klenba s.r.o.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Cihlová</StreetName>
+        <BuildingNumber>980/12</BuildingNumber>
+        <CityName>Ústí nad Labem</CityName>
+        <PostalZone>40001</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+      <PartyTaxScheme>
+        <CompanyID>CZ16612248</CompanyID>
+        <TaxScheme>VAT</TaxScheme>
+      </PartyTaxScheme>
+      <RegisterIdentification>
+        <Preformatted>Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem</Preformatted>
+      </RegisterIdentification>
+      <Contact>
+        <Telephone>+420475602318</Telephone>
+        <ElectronicMail>fakturace@stavby-klenba.example</ElectronicMail>
+      </Contact>
+    </Party>
+  </AccountingSupplierParty>
+  <AccountingCustomerParty>
+    <Party>
+      <PartyIdentification>
+        <ID>28647645</ID>
+      </PartyIdentification>
+      <PartyName>
+        <Name>Spolek Zelený kopec, z. s.</Name>
+      </PartyName>
+      <PostalAddress>
+        <StreetName>Pod Strání</StreetName>
+        <BuildingNumber>92</BuildingNumber>
+        <CityName>Říčany</CityName>
+        <PostalZone>25101</PostalZone>
+        <Country>
+          <IdentificationCode>CZ</IdentificationCode>
+          <Name>Česko</Name>
+        </Country>
+      </PostalAddress>
+    </Party>
+  </AccountingCustomerParty>
+  <InvoiceLines>
+    <InvoiceLine>
+      <ID>1</ID>
+      <InvoicedQuantity unitCode="h">36</InvoicedQuantity>
+      <LineExtensionAmount>18720.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>22651.20</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>3931.20</LineExtensionTaxAmount>
+      <UnitPrice>520.00</UnitPrice>
+      <UnitPriceTaxInclusive>629.20</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Výměna oken dílny — montážní práce</Description>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>2</ID>
+      <InvoicedQuantity unitCode="ks">6</InvoicedQuantity>
+      <LineExtensionAmount>47100.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>56991.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>9891.00</LineExtensionTaxAmount>
+      <UnitPrice>7850.00</UnitPrice>
+      <UnitPriceTaxInclusive>9498.50</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Okno plastové 1200×1500 mm, trojsklo</Description>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>3</ID>
+      <InvoicedQuantity unitCode="ks">1</InvoicedQuantity>
+      <LineExtensionAmount>1900.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>2299.00</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>399.00</LineExtensionTaxAmount>
+      <UnitPrice>1900.00</UnitPrice>
+      <UnitPriceTaxInclusive>2299.00</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Likvidace původních výplní</Description>
+      </Item>
+    </InvoiceLine>
+  </InvoiceLines>
+  <TaxTotal>
+    <TaxSubTotal>
+      <TaxableAmount>67720.00</TaxableAmount>
+      <TaxAmount>14221.20</TaxAmount>
+      <TaxInclusiveAmount>81941.20</TaxInclusiveAmount>
+      <AlreadyClaimedTaxableAmount>0.00</AlreadyClaimedTaxableAmount>
+      <AlreadyClaimedTaxAmount>0.00</AlreadyClaimedTaxAmount>
+      <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+      <DifferenceTaxableAmount>67720.00</DifferenceTaxableAmount>
+      <DifferenceTaxAmount>14221.20</DifferenceTaxAmount>
+      <DifferenceTaxInclusiveAmount>81941.20</DifferenceTaxInclusiveAmount>
+      <TaxCategory>
+        <Percent>21</Percent>
+      </TaxCategory>
+    </TaxSubTotal>
+    <TaxAmount>14221.20</TaxAmount>
+  </TaxTotal>
+  <LegalMonetaryTotal>
+    <TaxExclusiveAmount>67720.00</TaxExclusiveAmount>
+    <TaxInclusiveAmount>81941.20</TaxInclusiveAmount>
+    <AlreadyClaimedTaxExclusiveAmount>0.00</AlreadyClaimedTaxExclusiveAmount>
+    <AlreadyClaimedTaxInclusiveAmount>0.00</AlreadyClaimedTaxInclusiveAmount>
+    <DifferenceTaxExclusiveAmount>67720.00</DifferenceTaxExclusiveAmount>
+    <DifferenceTaxInclusiveAmount>81941.20</DifferenceTaxInclusiveAmount>
+    <PayableRoundingAmount>0.00</PayableRoundingAmount>
+    <PaidDepositsAmount>0.00</PaidDepositsAmount>
+    <PayableAmount>81941.20</PayableAmount>
+  </LegalMonetaryTotal>
+  <PaymentMeans>
+    <Payment>
+      <PaidAmount>81941.20</PaidAmount>
+      <PaymentMeansCode>42</PaymentMeansCode>
+      <Details>
+        <PaymentDueDate>2026-10-02</PaymentDueDate>
+        <ID>8108947067</ID>
+        <BankCode>2010</BankCode>
+        <Name/>
+        <IBAN>CZ7820100000008108947067</IBAN>
+        <BIC>FIOBCZPP</BIC>
+        <VariableSymbol>20260163</VariableSymbol>
+      </Details>
+    </Payment>
+  </PaymentMeans>
+</Invoice>

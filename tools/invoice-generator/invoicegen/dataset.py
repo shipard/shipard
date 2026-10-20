@@ -391,9 +391,17 @@ def ai_title(expected: dict, supplier_name: str, receipt: bool) -> str:
     return f"{kind} {expected['docNumber']} — {supplier_name}, {money}"
 
 
-def message_for_cell(cell: Cell, expected: dict, pdf: bytes) -> dict:
-    """Zpráva `shpd.mail.incomingMessage` 1.0 s jednou přílohou a jednou
-    analýzou v pořadí klíčů MailExporteru (D20)."""
+ISDOC_MIME = "text/xml"   # po seedu ho dá finfo (MailSeeder MIME nepředává); IsdocImportService bere příponu i text/xml
+
+
+def message_for_cell(cell: Cell, expected: dict, pdf: bytes, isdoc: bytes | None = None) -> dict:
+    """Zpráva `shpd.mail.incomingMessage` 1.0 s PDF jako první přílohou,
+    u podoby `pdfIsdoc` s ISDOC jako druhou (#103 D75; `isdoc` je pak
+    povinný, u podoby `pdf` zakázaný), a jednou analýzou v pořadí klíčů
+    MailExporteru (D20). Ideální analýza nese jen PDF (`att:1`)."""
+    if (cell.form == "pdfIsdoc") != (isdoc is not None):
+        raise DatasetBuildError(f"{cell.stem} [{cell.profile}]: podoba {cell.form} — ISDOC "
+                                + ("chybí" if isdoc is None else "nepatří ke zprávě"))
     locale = TEMPLATE_LOCALE[cell.template]
     doc_number = expected["docNumber"]
     issue = expected["dates"]["issueDate"]
@@ -443,14 +451,24 @@ def message_for_cell(cell: Cell, expected: dict, pdf: bytes) -> dict:
         "analysisState": 30,
         "aiTitle": title,
         "created": received_at,
-        "attachments": [{
-            "file": filename,
-            "name": filename,
-            "mimeType": "application/pdf",
-            "size": len(pdf),
-            "sha256": hashlib.sha256(pdf).hexdigest(),
-            "order": 1,
-        }],
+        "attachments": [
+            {
+                "file": filename,
+                "name": filename,
+                "mimeType": "application/pdf",
+                "size": len(pdf),
+                "sha256": hashlib.sha256(pdf).hexdigest(),
+                "order": 1,
+            },
+            *([{
+                "file": f"{cell.stem}.isdoc",
+                "name": f"{cell.stem}.isdoc",
+                "mimeType": ISDOC_MIME,
+                "size": len(isdoc),
+                "sha256": hashlib.sha256(isdoc).hexdigest(),
+                "order": 2,
+            }] if isdoc is not None else []),
+        ],
         "analyses": [{
             "analyzedAt": analyzed_at,
             "status": 2,
@@ -500,7 +518,7 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     a očekávání pro `dataset-verify` (F3: projekce, DPH, náklady, schválený
     snímek deníku). Deterministické — stejný korpus = stejné bajty."""
     messages: list[dict] = []
-    files: dict[str, Path] = {}
+    files: dict[str, list[Path]] = {}   # přílohy zprávy v pořadí attachments[]
     vat_records: dict[str, dict] = {}
     cost_records: dict[str, dict] = {}
     rate_records: dict[str, dict] = {}      # kurz per doklad v cizí měně (D73)
@@ -537,14 +555,20 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
         pdf_path = corpus_dir / "out" / profile.key / f"{stem}.pdf"
         if not pdf_path.is_file():
             raise DatasetBuildError(f"{stem} [{profile.key}]: chybí PDF {pdf_path}")
+        # ISDOC právě u podoby pdfIsdoc (D75) — sirotek i chybějící soubor jsou chyba korpusu.
+        isdoc_path = corpus_dir / "out" / profile.key / f"{stem}.isdoc"
+        if isdoc_path.is_file() != (cell.form == "pdfIsdoc"):
+            raise DatasetBuildError(f"{stem} [{profile.key}]: podoba {cell.form}, ale {isdoc_path} "
+                                    + ("chybí" if cell.form == "pdfIsdoc" else "existuje"))
         expected = load_jsonc(expected_path)
-        message = message_for_cell(cell, expected, pdf_path.read_bytes())
+        message = message_for_cell(cell, expected, pdf_path.read_bytes(),
+                                   isdoc_path.read_bytes() if cell.form == "pdfIsdoc" else None)
         canonical = message["analyses"][0]["canonicalJson"]
         if strip_dataset_additions(canonical) != expected:
             raise DatasetBuildError(f"{stem} [{profile.key}]: canonicalJson po odebrání doplněných polí neodpovídá očekávání")
         messages.append(message)
         msg_id = message["messageId"]
-        files[msg_id] = pdf_path
+        files[msg_id] = [pdf_path] + ([isdoc_path] if cell.form == "pdfIsdoc" else [])
         message_records[msg_id] = {"messageId": msg_id, "stem": stem, "variant": cell.data["variant"], "form": cell.form}
         currency = cell.data["currency"]
         rate = Rate.home() if currency == home else selection.rates[(currency, accounting_date(cell.data))]
@@ -582,7 +606,8 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
         (out_dir / "mail" / f"{base}.jsonc").write_text(dumps_dataset(message), encoding="utf-8")
         sidecar = out_dir / "mail" / f"{base}.files"
         sidecar.mkdir()
-        shutil.copyfile(files[message["messageId"]], sidecar / message["attachments"][0]["file"])
+        for source, attachment in zip(files[message["messageId"]], message["attachments"], strict=True):
+            shutil.copyfile(source, sidecar / attachment["file"])
 
     # Očekávání pro dataset-verify (tasks/testing-phase3.md): záznamy v pořadí
     # zpráv; neplátce a spolek mají vat.json prázdné (D28), sada bez cizí

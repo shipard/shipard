@@ -24,6 +24,14 @@
             "size": 96359,
             "sha256": "1394b1bb63177ab6cb53f89b3987c5110e76ac51cf5b2bad9927348f9a1dea5d",
             "order": 1
+        },
+        {
+            "file": "1002-long-document.isdoc",
+            "name": "1002-long-document.isdoc",
+            "mimeType": "text/xml",
+            "size": 40980,
+            "sha256": "092a791b91b83b73df839d2618801e114ed84e4ddeea83965f07c523c47b9144",
+            "order": 2
         }
     ],
     "analyses": [

@@ -24,6 +24,14 @@
             "size": 26886,
             "sha256": "8f18ed66af0ba31ef20402f2352777a3455cbddbb864d98cbc1c153b2f8d86e4",
             "order": 1
+        },
+        {
+            "file": "0702-domestic-non-payer-supplier.isdoc",
+            "name": "0702-domestic-non-payer-supplier.isdoc",
+            "mimeType": "text/xml",
+            "size": 5189,
+            "sha256": "b160e14be18351f05bf30112af7ba68c2e0507a82b98efeac2fbb75671aee2f6",
+            "order": 2
         }
     ],
     "analyses": [
