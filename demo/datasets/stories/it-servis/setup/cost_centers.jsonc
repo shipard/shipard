@@ -1,0 +1,6 @@
+// Střediska sada nemá; dump soubor přesto vypíše (tabulka je aktivní).
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "cost_centers",
+	"rows": [],
+}

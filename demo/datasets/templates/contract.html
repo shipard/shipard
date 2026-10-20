@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>{{title}}</title>
+<style>
+  @page { size: A4; margin: 22mm 20mm; }
+  body { font-family: "Liberation Serif", "DejaVu Serif", Georgia, serif; font-size: 11pt; color: #1b1b1b; line-height: 1.45; }
+  h1 { font-size: 17pt; text-align: center; margin: 0 0 2mm; letter-spacing: .02em; }
+  .ref { text-align: center; color: #555; margin-bottom: 10mm; font-size: 10pt; }
+  h2 { font-size: 11.5pt; margin: 7mm 0 2mm; text-transform: uppercase; letter-spacing: .04em; }
+  .parties { display: flex; gap: 10mm; margin-bottom: 4mm; }
+  .party { flex: 1; border: 1px solid #c9c9c9; padding: 3mm 4mm; }
+  .party .role { font-size: 9pt; color: #666; text-transform: uppercase; letter-spacing: .05em; }
+  .party .name { font-weight: bold; margin: 1mm 0; }
+  table.facts { border-collapse: collapse; width: 100%; margin: 2mm 0 4mm; }
+  table.facts th { text-align: left; width: 38%; padding: 1.2mm 2mm; color: #444; font-weight: normal; border-bottom: 1px solid #e3e3e3; }
+  table.facts td { padding: 1.2mm 2mm; border-bottom: 1px solid #e3e3e3; }
+  p { margin: 0 0 2.5mm; text-align: justify; }
+  .sign { display: flex; gap: 10mm; margin-top: 16mm; }
+  .sign div { flex: 1; border-top: 1px solid #333; padding-top: 2mm; font-size: 9.5pt; color: #444; }
+</style>
+</head>
+<body>
+<h1>{{title}}</h1>
+<div class="ref">číslo smlouvy {{refNumber}} · uzavřená podle § 1746 odst. 2 zákona č. 89/2012 Sb., občanský zákoník</div>
+
+<div class="parties">
+  <div class="party">
+    <div class="role">Poskytovatel</div>
+    <div class="name">{{ownName}}</div>
+    <div>{{ownAddress}}</div>
+    <div>IČO {{ownIco}} · DIČ {{ownDic}}</div>
+  </div>
+  <div class="party">
+    <div class="role">Objednatel</div>
+    <div class="name">{{partnerName}}</div>
+    <div>{{partnerAddress}}</div>
+    <div>{{partnerIds}}</div>
+  </div>
+</div>
+
+<h2>I. Předmět smlouvy</h2>
+<p>{{subject}}. {{summary}}</p>
+
+<h2>II. Doba trvání a výpověď</h2>
+<table class="facts">
+  <tr><th>Smlouva nabývá účinnosti</th><td>{{validFrom}}</td></tr>
+  <tr><th>Sjednána na dobu určitou do</th><td>{{validTo}}</td></tr>
+  <tr><th>Výpovědní doba</th><td>{{noticePeriod}}</td></tr>
+  {{extraRows}}
+</table>
+<p>Nebude-li smlouva nejpozději 30 dnů před koncem sjednané doby některou ze stran písemně vypovězena, prodlužuje se vždy o dalších dvanáct měsíců za stejných podmínek.</p>
+
+<h2>III. Cena a platební podmínky</h2>
+<p>Cena za poskytované služby je sjednána jako měsíční paušál podle aktuálního ceníku poskytovatele a je splatná na základě daňového dokladu se splatností 14 dnů od vystavení. Práce nad rámec paušálu se účtují hodinovou sazbou dle ceníku.</p>
+
+<h2>IV. Závěrečná ujednání</h2>
+<p>Smlouva je vyhotovena ve dvou stejnopisech, z nichž každá strana obdrží jeden. Strany prohlašují, že si smlouvu přečetly, souhlasí s jejím obsahem a na důkaz toho připojují své podpisy.</p>
+
+<div class="sign">
+  <div>V Brně dne {{signedDate}}<br>{{ownName}}</div>
+  <div>Dne {{signedDate}}<br>{{partnerName}}</div>
+</div>
+</body>
+</html>

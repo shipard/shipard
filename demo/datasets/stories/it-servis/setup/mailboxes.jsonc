@@ -1,0 +1,20 @@
+// Výchozí schránka: `ds-upgrade` ji zakládá s adresou podle ID zdroje dat,
+// sada ji přepíše pevnou demo adresou, aby dump vyšel stejně na každém
+// zdroji dat. Demo zdroj dat nemá přijímat skutečnou poštu — kdo to chce,
+// upraví adresu v Nastavení (viz demo/datasets/README.md).
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "mailboxes",
+	"rows": [
+		{
+			"mailbox_id": "default",
+			"name": "Hlavní schránka",
+			"email_address": "demo-it-servis@shipard.email",
+			"description": "Výchozí schránka DS pro příjem došlé pošty (auto-provisioned).",
+			"default_primary_type": "other",
+			"ai_analysis_disabled": false,
+			"is_default": true,
+			"docState": 40,
+		},
+	],
+}

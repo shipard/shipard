@@ -1,0 +1,16 @@
+// Nastavení zdroje dat sady (jen economy.* a app.*; aplikuje se před resetem).
+// Řádky kopírují dump čerstvého zdroje dat po seedu: řady pro zaúčtování
+// odpisů a podání DPH jsou id výchozích řad, které `ds-upgrade` zakládá
+// vždy ve stejném pořadí (5 = interní doklad, 6 = Majetek).
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "settings",
+	"rows": [
+		{ "key": "economy.accountChart", "value": "default" },
+		{ "key": "economy.assets.accountingSeries", "value": "6" },
+		{ "key": "economy.fiscalYearStartMonth", "value": 1 },
+		{ "key": "economy.homeCurrency", "value": "czk" },
+		{ "key": "economy.vat.filingAccountingSeries", "value": "5" },
+		{ "key": "economy.vatAgenda", "value": true },
+	],
+}

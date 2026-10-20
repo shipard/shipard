@@ -1,0 +1,25 @@
+// Bankovní účet vlastní firmy — všechny sloupce jako v dumpu (setup/ se
+// nepruhuje); `@period.start` = první den dat (doplní generátor).
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "bank_accounts",
+	"rows": [
+		{
+			"code": "BU1",
+			"name": "Běžný účet",
+			"notice": null,
+			"bank_name": null,
+			"account_number": "3178429609/0100",
+			"iban": "CZ9801000000003178429609",
+			"bic": "KOMBCZPP",
+			"currency": "czk",
+			"is_default": true,
+			"valid_from": "@period.start",
+			"valid_to": null,
+			"sort_order": 1,
+			"docState": 40,
+			"accounting_account": null,
+			"ebanking_id": null,
+		},
+	],
+}

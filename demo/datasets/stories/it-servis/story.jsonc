@@ -1,0 +1,118 @@
+// Příběh firmy „IT servis“ — pravidla, ze kterých generátor rozvine demo sadu
+// (tasks/demo-dataset-phase1.md, #131 D6, D12). Žádné vygenerované seznamy
+// dokladů: tady jsou jen pravidla a ručně zvolené výjimky.
+//
+// Data jsou relativní ke kotvě (D7): `month` = posun od měsíce kotvy
+// (0 = měsíc kotvy, -9 = nejstarší), `day` = den v měsíci (delší než měsíc
+// se ořízne na poslední den), splatnost ve dnech. S výchozí kotvou je to
+// leden–říjen 2026 — celá sada v jednom fiskálním roce.
+//
+// Čísla jen celá nebo s desetinnou tečkou (loader je čte jako Decimal).
+{
+	"name": "it-servis",
+	"title": "Demo — IT servis",
+	"description": "Fiktivní IT firma Zelený Terminál s.r.o., měsíční plátce DPH, deset měsíců provozu: vydané a přijaté faktury, pokladna, mzdy, spisovna a pár zpráv k řešení (#131).",
+	"anchor": "2026-10-20",
+	"monthsBefore": 9,
+
+	// Vlastní firma — identita v kanonickém tvaru (jako identities.jsonc korpusu).
+	"own": {
+		"name": "Zelený Terminál s.r.o.",
+		"country": "cz",
+		"companyId": "61204579",
+		"taxId": "CZ61204579",
+		"vatId": "CZ61204579",
+		"courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+		"address": { "street": "Serverová", "houseNumber": "1024/8", "city": "Brno", "zip": "60200", "country": "cz" },
+		"contact": { "name": null, "email": "fakturace@zeleny-terminal.example", "phone": "+420541230190", "web": "www.zeleny-terminal.example" },
+		"language": "cs",
+		// Kódy musí odpovídat setup/bank_accounts.jsonc a setup/cash_desks.jsonc.
+		"bankAccountCode": "BU1",
+		"cashDeskCode": "POK",
+	},
+
+	// Kurz EUR per měsíc (D13) — pevný, bez kurzovních lístků v sadě.
+	"rates": {
+		"EUR": { "-9": 25.12, "-8": 25.08, "-7": 24.96, "-6": 24.91, "-5": 24.87, "-4": 24.79, "-3": 24.73, "-2": 24.68, "-1": 24.55, "0": 24.47 },
+	},
+
+	// Vydané faktury z pravidel: paušál se vystavuje 1. dne měsíce (čtvrtletní
+	// 1. dne prvního měsíce čtvrtletí), splatnost 14 dní, DUZP = den vystavení.
+	"invoicing": {
+		"issueDay": 1,
+		"dueDays": 14,
+		"flatFeeText": "Správa IT — paušál {period}",
+		"quarterlyText": "Správa IT — paušál {period}",
+	},
+
+	// Opakovaná fakturace per odběratel: `every` month | quarter | once;
+	// `item` z items.jsonc, `price` za jednotku (měsíc), `qty` výchozí 1
+	// (čtvrtletní paušál = 3 měsíce); `priceFrom` změna ceny od měsíce;
+	// `conceptInAnchorMonth` nechá fakturu měsíce kotvy v Konceptu bez čísla.
+	"billing": [
+		{ "customer": "kopretina", "every": "month",   "item": "SPRAVA-IT", "price": 6500 },
+		{ "customer": "medvidek",  "every": "month",   "item": "SPRAVA-IT", "price": 2900, "conceptInAnchorMonth": true },
+		{ "customer": "usmevov",   "every": "month",   "item": "SPRAVA-IT", "price": 9800 },
+		{ "customer": "pohybna",   "every": "quarter", "item": "SPRAVA-IT", "price": 2500, "qty": 3 },
+		{ "customer": "galvanovna","every": "month",   "item": "SPRAVA-IT", "price": 7200 },
+		{ "customer": "jelen",     "every": "month",   "item": "SPRAVA-IT", "price": 12500, "priceFrom": { "month": -4, "price": 13900 } },
+		{ "customer": "mluvka",    "every": "once",    "item": "ZALOHA-IT", "price": 42000, "month": -8, "day": 5, "dueDays": 30, "docType": "proformaIssued" },
+		{ "customer": "stranka",   "every": "month",   "item": "SPRAVA-IT", "price": 3400, "conceptInAnchorMonth": true },
+		{ "customer": "lekarna",   "every": "month",   "item": "SPRAVA-IT", "price": 5600 },
+		{ "customer": "domovnik",  "every": "quarter", "item": "SPRAVA-IT", "price": 3400, "qty": 3 },
+		{ "customer": "dubovylist","every": "month",   "item": "SPRAVA-IT", "price": 4100 },
+		{ "customer": "nitra",     "every": "month",   "item": "SPRAVA-IT", "price": 480 },
+		{ "customer": "tatranka",  "every": "quarter", "item": "SPRAVA-IT", "price": 130, "qty": 3 },
+		{ "customer": "rheinwerk", "every": "month",   "item": "SPRAVA-IT", "price": 1250 },
+	],
+
+	// Jednorázové faktury per měsíc (hardware, práce navíc). `hours: [lo, hi]`
+	// = počet hodin odvozený deterministicky z měsíce a pořadí (bez RNG);
+	// `payment: "cash"` = faktura placená hotově na pokladně (D8, fáze 1);
+	// `state: "concept"` jen v měsíci kotvy (rozpracované faktury).
+	"adhoc": [
+		{ "month": -8, "day": 17, "customer": "usmevov",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [3, 6] } ] },
+		{ "month": -7, "day": 9,  "customer": "dubovylist", "rows": [ { "item": "NTB-14", "qty": 1 }, { "item": "PRACE-H", "hours": [2, 4] } ], "payment": "cash" },
+		{ "month": -6, "day": 22, "customer": "galvanovna", "rows": [ { "item": "ROUTER", "qty": 1 }, { "item": "SWITCH-24", "qty": 2 }, { "item": "PRACE-H", "hours": [4, 8] } ] },
+		{ "month": -6, "day": 26, "customer": "rheinwerk",  "rows": [ { "item": "PRACE-H", "hours": [6, 12] } ] },
+		{ "month": -5, "day": 13, "customer": "kopretina",  "rows": [ { "item": "ROUTER", "qty": 1 } ], "payment": "cash" },
+		{ "month": -4, "day": 3,  "customer": "jelen",      "rows": [ { "item": "AP-WIFI", "qty": 4 }, { "item": "PRACE-H", "hours": [5, 9] } ] },
+		{ "month": -3, "day": 18, "customer": "lekarna",    "rows": [ { "item": "PRACE-H", "hours": [2, 5] } ] },
+		{ "month": -2, "day": 11, "customer": "medvidek",   "rows": [ { "item": "PRACE-H", "hours": [1, 3] } ], "payment": "cash" },
+		{ "month": -1, "day": 24, "customer": "nitra",      "rows": [ { "item": "MON-27", "qty": 3 } ] },
+		{ "month": 0,  "day": 7,  "customer": "usmevov",    "rows": [ { "item": "PRACE-H", "hours": [2, 6] } ], "state": "concept" },
+		{ "month": 0,  "day": 14, "customer": "galvanovna", "rows": [ { "item": "NTB-14", "qty": 1 }, { "item": "PRACE-H", "hours": [1, 3] } ], "state": "concept" },
+	],
+
+	// Pokladna: prodejky drobného zboží v uvedené dny měsíce (zboží rotuje,
+	// kusy v rozsahu), celková částka zaokrouhlená na koruny; výdajové
+	// pokladní doklady bez partnera na položky z nabídky osnovy.
+	"cashRegister": {
+		"days": [4, 11, 18, 25],
+		"items": ["KABEL-HDMI", "MYS-USB", "USB-64", "SLUCHATKA"],
+		"qty": [1, 3],
+	},
+	"cashExpenses": [
+		{ "day": 8,  "item": "518203",  "text": "Poštovné — doporučené zásilky", "amount": [120, 480], "step": 10, "vat": "none" },
+		{ "day": 19, "item": "501100S", "text": "Kancelářské potřeby",           "amount": [300, 1200], "step": 10, "vatPct": 21 },
+	],
+
+	// Mzdy: interní doklad poslední den měsíce, kontační řádky bez partnera.
+	// Částky per měsíc musí dát MD = D (loader kontroluje); `months` přepíše
+	// výchozí částky (odměna v červnu).
+	"payroll": {
+		"day": 31,
+		"text": "Mzdy {period}",
+		"figures": { "gross": 92000, "employer": 31096, "net": 70896, "insurance": 41216, "tax": 10984 },
+		"months": {
+			"-4": { "gross": 107000, "employer": 36166, "net": 82244, "insurance": 47936, "tax": 12986 },
+		},
+		"rows": [
+			{ "account": "521100", "side": "debit",  "amount": "gross",     "text": "Hrubé mzdy" },
+			{ "account": "524100", "side": "debit",  "amount": "employer",  "text": "Pojistné hrazené zaměstnavatelem" },
+			{ "account": "331100", "side": "credit", "amount": "net",       "text": "Čisté mzdy k výplatě" },
+			{ "account": "336100", "side": "credit", "amount": "insurance", "text": "Odvody sociálního a zdravotního pojištění" },
+			{ "account": "342100", "side": "credit", "amount": "tax",       "text": "Záloha na daň z příjmů" },
+		],
+	},
+}
