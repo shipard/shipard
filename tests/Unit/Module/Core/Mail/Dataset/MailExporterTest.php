@@ -26,7 +26,8 @@ class MailExporterTest extends TestCase
             'is_bulk' => 0, 'body_plain' => "Dobrý den,\nv příloze faktura.", 'body_html' => '<p>Dobrý den</p>',
             'raw_source_attachment' => 91, 'target_table_id' => 'docs_core_heads', 'target_row' => 100,
             'source_type' => 2, 'analysis_state' => 30, 'ai_analysis_enabled' => null, 'needs_reanalysis' => 0,
-            'profile_override' => null, 'created' => new \DateTimeImmutable('2026-06-01 07:55:11'), 'created_by' => null,
+            'profile_override' => null, 'ai_title' => null, 'attention' => null, 'action_note' => null, 'action_due' => null,
+            'created' => new \DateTimeImmutable('2026-06-01 07:55:11'), 'created_by' => null,
             'auto_disposed_by' => null, 'auto_disposed_at' => null, 'docState' => 40, 'docStateMain' => 3,
             'mailbox_code' => 'default', 'profile_override_code' => null,
         ], $overrides);
@@ -206,6 +207,89 @@ class MailExporterTest extends TestCase
 
         $this->assertSame('default', $d['mailbox']);
         $this->assertCount(1, $exporter->getWarnings());
+    }
+
+    // ── pozornost u zprávy bez dokladu (#105, demo sada #131) ──────────────
+
+    private function mailSchemaValidator(): SchemaValidator
+    {
+        return new SchemaValidator(new SchemaLoader(dirname(__DIR__, 6) . '/modules/core/mail/schemas'));
+    }
+
+    public function testAttentionFieldsFollowAiTitleAndValidate(): void
+    {
+        $exporter = new MailExporter($this->db([], []), '/opt/ds');
+        $d = $exporter->exportMessage($this->messageRow([
+            'primary_type' => 'other', 'ai_title' => 'Expirace domény firma.example',
+            'attention' => 'action', 'action_note' => 'Prodloužit doménu u registrátora.',
+            'action_due' => new \DateTimeImmutable('2026-07-15 00:00:00'),
+            'target_table_id' => null, 'target_row' => null, 'raw_source_attachment' => null,
+        ]))->data;
+
+        $this->assertSame('action', $d['attention']);
+        $this->assertSame('Prodloužit doménu u registrátora.', $d['actionNote']);
+        $this->assertSame('2026-07-15', $d['actionDue'], 'date column → Y-m-d, no time part');
+
+        $keys = array_keys($d);
+        $at = array_search('aiTitle', $keys, true);
+        $this->assertIsInt($at);
+        $this->assertSame(
+            ['aiTitle', 'attention', 'actionNote', 'actionDue', 'created'],
+            array_slice($keys, $at, 5),
+            'attention keys sit right after aiTitle and before created',
+        );
+
+        $decoded = json_decode(DatasetWriter::encode($d), true);
+        $this->assertSame([], $this->mailSchemaValidator()->validate($decoded, 'shpd.mail.incomingMessage', '1'));
+    }
+
+    public function testActionDueAsDbStringIsExportedAsDate(): void
+    {
+        $d = (new MailExporter($this->db([], []), '/opt/ds'))->exportMessage($this->messageRow([
+            'attention' => 'action', 'action_due' => '2026-07-15',
+            'target_table_id' => null, 'target_row' => null, 'raw_source_attachment' => null,
+        ]))->data;
+
+        $this->assertSame('2026-07-15', $d['actionDue']);
+        $this->assertArrayNotHasKey('actionNote', $d);
+    }
+
+    public function testMessageWithoutAttentionHasNoAttentionKeys(): void
+    {
+        $d = (new MailExporter($this->db([], []), '/opt/ds'))->exportMessage($this->messageRow([
+            'target_table_id' => null, 'target_row' => null, 'raw_source_attachment' => null,
+        ]))->data;
+
+        $this->assertArrayNotHasKey('attention', $d);
+        $this->assertArrayNotHasKey('actionNote', $d);
+        $this->assertArrayNotHasKey('actionDue', $d);
+        $this->assertArrayNotHasKey('aiTitle', $d);
+    }
+
+    public function testSchemaRejectsUnknownAttentionAndInvalidDue(): void
+    {
+        $base = (new MailExporter($this->db([], []), '/opt/ds'))->exportMessage($this->messageRow([
+            'target_table_id' => null, 'target_row' => null, 'raw_source_attachment' => null,
+        ]))->data;
+        $validator = $this->mailSchemaValidator();
+
+        $bad = json_decode(DatasetWriter::encode($base + ['attention' => 'urgent']), true);
+        $issues = $validator->validate($bad, 'shpd.mail.incomingMessage', '1');
+        $this->assertCount(1, $issues);
+        $this->assertSame('attention', $issues[0]['path']);
+        $this->assertSame('enum', $issues[0]['code']);
+
+        $bad = json_decode(DatasetWriter::encode($base + ['attention' => 'action', 'actionDue' => '2026-02-30']), true);
+        $issues = $validator->validate($bad, 'shpd.mail.incomingMessage', '1');
+        $this->assertCount(1, $issues);
+        $this->assertSame('actionDue', $issues[0]['path']);
+        $this->assertSame('format', $issues[0]['code']);
+
+        $bad = json_decode(DatasetWriter::encode($base + ['attention' => 'action', 'actionNote' => str_repeat('x', 201)]), true);
+        $issues = $validator->validate($bad, 'shpd.mail.incomingMessage', '1');
+        $this->assertCount(1, $issues);
+        $this->assertSame('actionNote', $issues[0]['path']);
+        $this->assertSame('maxLength', $issues[0]['code']);
     }
 
     public function testExportAllSkipsTrashAndOrdersByReceivedAt(): void

@@ -214,6 +214,32 @@
                 "null"
             ]
         },
+        "attention": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "enum": [
+                "action",
+                "info",
+                "promo",
+                null
+            ]
+        },
+        "actionNote": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "maxLength": 200
+        },
+        "actionDue": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date"
+        },
         "created": {
             "$ref": "#/$defs/LocalDateTimeOrNull"
         },

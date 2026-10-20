@@ -89,6 +89,13 @@
         "profileOverride":   { "type": ["string", "null"] },
         // Titulek z AI analýzy / serverový fallback (AI-vlastněný sloupec ai_title).
         "aiTitle":           { "type": ["string", "null"] },
+        // Pozornost u zprávy bez dokladu (#105) — AI-vlastněné sloupce
+        // attention / action_note / action_due, jen u primary_type `other`
+        // (jinak NULL). Poznámka a lhůta jen u `action`; karta „K vyřízení“
+        // na Dashboardu z nich vzniká i bez živé analýzy.
+        "attention":         { "type": ["string", "null"], "enum": ["action", "info", "promo", null] },
+        "actionNote":        { "type": ["string", "null"], "maxLength": 200 },
+        "actionDue":         { "type": ["string", "null"], "format": "date" },
         "created":           { "$ref": "#/$defs/LocalDateTimeOrNull" },
 
         // ── Lineage na vytvořený záznam (target_table_id / target_row) ──
