@@ -40,6 +40,10 @@ use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Assets\AssetDocument;
+use Shipard\Module\Economy\Assets\AssetEventDocument;
+use Shipard\Module\Economy\Assets\Dataset\AssetEventsSeeder;
+use Shipard\Module\Economy\Assets\Dataset\AssetSeeder;
 use Shipard\Module\Economy\Bank\Dataset\BankStatementSeeder;
 use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesSeeder;
@@ -67,7 +71,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * schématu `ds-upgrade` → nastavení ze sady → `ds-reset` (delegace,
  * respektuje `enableReset`; `--no-reset` přeskočí a doplňuje do
  * existujícího DS) → setup → fiskální roky → účetní položky → persons →
- * items → docs → registry → mail. Nenulový exit code při jakékoli chybě
+ * items → zakázky → karty majetku → docs → evidence období → události
+ * majetku → banka → registry → mail. Nenulový exit code při jakékoli chybě
  * záznamu. Testovatelné přes podtřídu (seamy getDataSourceDir /
  * buildResolver / runReset / runUpgrade / hasSettingsTable /
  * applySettingsBeforeReset / createContext / createSeeders / createPreflight /
@@ -314,11 +319,20 @@ class DatasetSeedCommand extends Command
                 new ItemResolver($db),
             );
         }
+        // Majetek (#131 fáze 2c): karty před doklady — řádky pořízení je odkazují
+        // inventárním číslem (dimenze); události až za doklady, bez importního módu.
+        $hasAssets = isset($ctx->tables[AssetDocument::TABLE], $ctx->tables[AssetEventDocument::TABLE]);
+        if ($hasAssets) {
+            $seeders[] = new AssetSeeder($party);
+        }
         if (isset($ctx->tables['docs_core_heads'])) {
             $seeders[] = new DocumentSeeder(DocumentApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $ctx->dispatcher));
         }
         if ($hasWorkOrders && isset($ctx->tables['docs_core_heads'])) {
             $seeders[] = new WorkOrderPeriodsSeeder();
+        }
+        if ($hasAssets) {
+            $seeders[] = new AssetEventsSeeder();
         }
         // Bankovní výpisy (#131 fáze 2a) až za doklady: mikroengine při stavu 40
         // dohledává otevřené předpisy; dispatcher je nutný, jinak se nezaúčtuje nic.

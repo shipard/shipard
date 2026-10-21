@@ -1841,6 +1841,12 @@ s `details.issues`. Doklad se mění celý, nebo vůbec; ve stavu 40 se
 přegeneruje deník s pojistkou shodných obratů. Pravidla párování
 a uvolněné validace importu: `docs/assets.md` §5.7.
 
+**Datová sada** (#131 fáze 2c, D38, D40) nese karty v sekci `assets/`
+v obálce `shpd.dataset.asset.v1` — stejná struktura, místo id přirozené
+klíče (typ názvem, účetní skupina kódem, vlastník identifikátory) a původ
+události; seed jde přes `AssetDocument` / `AssetEventDocument` bez
+importního módu, applier importu se nepoužívá. Viz `docs/datasets.md` §1.
+
 ---
 
 ### Zakázky — `shpd.workOrders.workOrder.v1`

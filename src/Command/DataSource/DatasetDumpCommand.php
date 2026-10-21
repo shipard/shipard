@@ -21,6 +21,8 @@ use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Export\ItemExporter;
 use Shipard\Module\Core\Exchange\Export\PersonExporter;
+use Shipard\Module\Economy\Assets\AssetDocument;
+use Shipard\Module\Economy\Assets\Dataset\AssetExporter;
 use Shipard\Module\Economy\Bank\Dataset\BankStatementExporter;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesExporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
@@ -42,7 +44,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * (`shpd.dataset.v1`, tasks/dataset-phase1.md, #40).
  *
  * Bere všechny nearchivované záznamy (`docState != 90`) sekcí setup,
- * persons, items, docs, registry, mail; exportery pro moduly, které na DS
+ * persons, items, workOrders, assets, docs, bank, registry, mail; exportery pro moduly, které na DS
  * nejsou aktivní, se vynechají. Nezměněné účetní položky z nabídky osnovy
  * do `items/` nejdou — manifest je nese jako `provision.accountingItems`
  * a `country` zdroje dat, aby dump naseedované sady vrátil tytéž soubory
@@ -158,9 +160,23 @@ class DatasetDumpCommand extends Command
         if ($hasWorkOrders) {
             $records[] = new WorkOrderExporter($db, $config, $tables);
         }
+        // Majetek (#131 fáze 2c) před doklady: řádky pořízení odkazují kartu
+        // inventárním číslem v `dimensions`, dimenze je přenosná jen s touto sekcí.
+        $hasAssets = isset($tables[AssetDocument::TABLE]);
+        if ($hasAssets) {
+            $records[] = new AssetExporter($db, $config, $tables);
+        }
         if (isset($tables['docs_core_heads'])) {
-            // Konfigurace kvůli dimenzím deníku na dokladech (#110 T2).
-            $records[] = new DocumentExporter($db, $config, $hasWorkOrders ? [WorkOrderDocument::TABLE] : []);
+            // Konfigurace kvůli dimenzím deníku na dokladech (#110 T2); přenosné
+            // dimenze s vlastní sekcí (zakázky, majetek) podle aktivních tabulek.
+            $sectionTables = [];
+            if ($hasWorkOrders) {
+                $sectionTables[] = WorkOrderDocument::TABLE;
+            }
+            if ($hasAssets) {
+                $sectionTables[] = AssetDocument::TABLE;
+            }
+            $records[] = new DocumentExporter($db, $config, $sectionTables);
         }
         // Bankovní výpisy (#131 fáze 2a): pořadí za doklady = pořadí seedu i klíčů counts.
         if (isset($tables['economy_bank_statements'])) {

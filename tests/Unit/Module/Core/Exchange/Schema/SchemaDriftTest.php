@@ -37,6 +37,7 @@ class SchemaDriftTest extends TestCase
             'shpd.dataset.setup.v1'         => ['modules/core/exchange/schemas', 'shpd.dataset.setup.v1'],
             'shpd.dataset.bankStatement.v1' => ['modules/core/exchange/schemas', 'shpd.dataset.bankStatement.v1'],
             'shpd.dataset.workOrder.v1'     => ['modules/core/exchange/schemas', 'shpd.dataset.workOrder.v1'],
+            'shpd.dataset.asset.v1'         => ['modules/core/exchange/schemas', 'shpd.dataset.asset.v1'],
             'shpd.dataset.registryDocument.v1' => ['modules/base/registry/schemas', 'shpd.dataset.registryDocument.v1'],
         ];
     }

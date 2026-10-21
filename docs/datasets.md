@@ -18,6 +18,7 @@ sada/
   persons/NNNN-<slug>.jsonc           # shpd.persons.person.v1
   items/NNNN-<slug>.jsonc             # shpd.items.item.v1
   workOrders/NNNN-<číslo>.jsonc       # shpd.dataset.workOrder.v1 (obálka zakázky, #131 fáze 2b)
+  assets/NNNN-<inventární číslo>.jsonc # shpd.dataset.asset.v1 (obálka karty majetku, #131 fáze 2c)
   docs/NNNN-<slug>.jsonc              # shpd.docs.document.v1
   bank/NNNN-<kód>-<RRRR-MM>.jsonc     # shpd.dataset.bankStatement.v1 (obálka výpisu, #131 fáze 2a)
   registry/NNNN-<slug>.jsonc          # shpd.dataset.registryDocument.v1 (obálka)
@@ -46,7 +47,8 @@ sada/
   `numberSeriesCode`, vlastní bankovní účet přes `code` číselníku, mailbox a
   AI profil kódem, vazby zpráva ↔ doklad přes číslo dokladu (spisovna:
   titulek + `created`), zakázka číslem (dimenze dokladů, řada zakázek
-  kódem, druh zakázky názvem).
+  kódem, druh zakázky názvem), karta majetku inventárním číslem (dimenze
+  dokladů; typ majetku názvem, účetní skupina kódem).
 
 ### `manifest.jsonc`
 
@@ -206,6 +208,74 @@ Jeden soubor = jedna zakázka nad importním formátem
   se slugem `koncept`, opakovaný seed ho založí znovu); řádky přispěvatelů
   (`contributor`) formát nemá.
 
+### Obálka karty majetku `shpd.dataset.asset.v1` (#131 fáze 2c, D38, D40)
+
+Jeden soubor = jedna karta majetku nad importním formátem
+`shpd.assets.asset.v1` ([exchange-format.md](exchange-format.md) § Majetek,
+[assets.md](assets.md) §5.7): stejná struktura (`asset`, `events`), místo
+id přirozené klíče a navíc původ události. Schéma
+`modules/core/exchange/schemas/`, třídy `modules/economy/assets/src/Dataset/`
+(`AssetExporter`, `AssetSeeder`, `AssetEventsSeeder`).
+
+```jsonc
+{
+  "format": "shpd.dataset.asset.v1",
+  "asset": {
+    "assetNumber": "MA0001",             // klíč párování, převezme se beze změny
+    "name": "Server 1U, 2× CPU, 64 GB RAM",
+    "type": "Výpočetní technika",        // název typu (setup/asset_types.jsonc)
+    "category": "tangible", "tracking": "single",
+    "accountingGroup": "022",            // kód účetní skupiny (setup/asset_accounting_groups.jsonc)
+    "taxMethod": "straight", "taxRule": "cz-1", "accMethod": "as_tax",
+    "state": "confirmed"                 // draft | confirmed (i V opravě) | archived
+  },
+  "events": [                            // potvrzené události chronologicky
+    { "kind": "activation", "scope": "both", "date": "2026-02-14", "amount": 150000.0, "origin": "manual" }
+  ]
+}
+```
+
+- **Evidence, ne zaúčtování (D38).** Sada nese kartu a potvrzené události
+  s původem, jaký mají v databázi. `AssetSeeder` zakládá kartu přes
+  `AssetDocument` a `AssetEventsSeeder` události přes `AssetEventDocument`
+  stejně jako uživatel — **bez importního módu**: událost s `origin:
+  manual` dostane původ `manual`; jen `origin: import` (zdroj dat po
+  migraci) se ukládá s markerem `_import` a původ `import` zůstává.
+  `AssetImportApplier` seed nepoužívá — jeho importní mód by dal
+  zařazení původ `import` a kontrola evidence × deník by ho brala jako
+  zaúčtované ve starém systému (D76).
+- **Co dump nepřenáší:** systémové odpisy (původ `system` — odvozené,
+  po seedu je založí znovu Odpisy za období; jedno varování per karta),
+  nepotvrzené události (varování), vazbu události na účetní doklad
+  (`doc_head`), kartu bez inventárního čísla (koncept bez identity,
+  varování) a **doklady zaúčtování majetku** — doklad s řádky `asset.*`
+  `DocumentExporter` vynechá s varováním per doklad (§2). Dlouhodobý
+  majetek datum pořízení, vyřazení ani cenu nenese (nesou je události,
+  D13); `acquiredDate`, `disposedDate` a `price` platí jen drobnému
+  majetku. Booleany (`foreign`, `halfYear`, `claimUnrecorded`,
+  `priceIncreased`) jsou v souboru jen jako `true`.
+- **Překlad klíčů při seedu:** typ názvem a účetní skupina kódem přes
+  `SetupReferences` (nenalezený = chyba), vlastník cizího majetku jen
+  identifikátory (`PartyResolver`, nenalezený = chyba — osoba musí být
+  v `persons/`). Dlouhodobá karta se ukládá ve stavu V pořádku; do archivu
+  ji přesune až potvrzené vyřazení (D38), drobný majetek dostane cílový
+  stav přímo. Karta se stejným číslem (libovolný stav) = `skipped`; karta,
+  která už nějakou událost má (`--no-reset`), události nedostane
+  (`skipped`). Všechny události jedné karty jdou v jedné transakci,
+  odmítnutá událost = chyba záznamu s cestou do obálky (`events[2].amount`).
+- **Pořadí seedu:** karty za zakázkami, **před doklady** — řádky pořízení
+  (`purchase.asset`, účet 042xxx přímo na řádku) je odkazují inventárním
+  číslem v `dimensions.asset`; události až **za doklady** (sekce
+  `assetEvents` bez souborů a `counts`, jako evidence období zakázek).
+  `FiscalYearsSeeder` bere i data událostí — ruční událost mimo založený
+  účetní rok by dokument odmítl (`outsideFiscalYear`).
+- **Pořadí souborů** podle inventárního čísla; slug = inventární číslo.
+  Stav V opravě se přenáší jako V pořádku.
+- **Dimenze majetku na dokladech** je přenosná jen s touto sekcí
+  (`$sectionTables` exportéru dokladů): hodnota = inventární číslo na
+  hlavičce i řádcích; řádek pořízení kartu z hlavičky nedědí (vlajka
+  `rowAsset`, `docs/assets.md` §5.5).
+
 ### Obálka spisovny `shpd.dataset.registryDocument.v1` (R3)
 
 `shpd.registry.document.v1` nenese stav, původ, šanon ani přílohy —
@@ -276,7 +346,8 @@ po seedu dá kartu „K vyřízení“ s lhůtou i bez volání AI.
 `PersonExporter`, `ItemExporter`, `DocumentExporter`, `SetupExporter`
 (`modules/core/exchange/src/Export/`), `WorkOrderExporter`
 (`modules/economy/workOrders/src/Dataset/`, #131 fáze 2b — před doklady),
-`BankStatementExporter`
+`AssetExporter` (`modules/economy/assets/src/Dataset/`, #131 fáze 2c —
+před doklady), `BankStatementExporter`
 (`modules/economy/bank/src/Dataset/`, #131 fáze 2a), `RegistryExporter`
 (`modules/base/registry/src/`), `MailExporter`
 (`modules/core/mail/src/Dataset/`), `ExchangeRatesExporter`
@@ -320,10 +391,17 @@ neexportují (fiskální rok, DPH období, domácí měna, snapshoty partnera,
 objekt `dimensions` na hlavičce i řádcích s přirozeným klíčem
 (`exchangeKey` dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
 nese v `setup/` — středisko (`cost_centers.jsonc`) — nebo ve vlastní sekci
-(`$sectionTables`: zakázka číslem se sekcí `workOrders/`, #131 fáze 2b).
-Majetek na dokladech se do sady nepřenáší (karty majetku nejsou součást
-sady a seed by doklad odmítl `dimension_not_found`); dump to ohlásí jedním
-varováním per dimenze s počtem dokladů.
+(`$sectionTables`: zakázka číslem se sekcí `workOrders/`, #131 fáze 2b;
+karta majetku inventárním číslem se sekcí `assets/`, fáze 2c). Dimenzi
+na záznamy mimo sadu (zdroj dat bez příslušné sekce) dump vynechá — seed
+by doklad odmítl `dimension_not_found` — a ohlásí to jedním varováním per
+dimenze s počtem dokladů.
+
+**Zaúčtování majetku** (#131 fáze 2c, D38): doklad s řádky `asset.*`
+(dávka Odpisy za období — zařazení, odpisy, vyřazení) `DocumentExporter`
+vynechá s varováním per doklad. Je odvozený z evidence majetku, kterou
+sada nese v `assets/`; po seedu ho založí znovu Odpisy za období
+(applier by řádky systémových operací stejně odmítl).
 
 ## 3. `dataset-seed`
 
@@ -369,12 +447,17 @@ varováním per dimenze s počtem dokladů.
    `ItemSeeder`, **`WorkOrderSeeder`** (#131 fáze 2b,
    `modules/economy/workOrders/src/Dataset/`, jen s tabulkami zakázek:
    obálka → payload importu s id → `WorkOrderImportApplier`; před doklady,
-   protože ty zakázku odkazují číslem), `DocumentSeeder` (applieři;
+   protože ty zakázku odkazují číslem), **`AssetSeeder`** (#131 fáze 2c,
+   `modules/economy/assets/src/Dataset/`, jen s tabulkami majetku: karta
+   přes `AssetDocument` bez importního módu; před doklady — řádky pořízení
+   odkazují kartu inventárním číslem), `DocumentSeeder` (applieři;
    `DocumentApplier` s `DocumentEventDispatcher` → doklady ve 40 se
    zaúčtují), **`WorkOrderPeriodsSeeder`** (evidence vystavených období
    z `periods[]` — doklad číslem mezi vydanými doklady, `content_hash`
    z uloženého dokladu; sekce `workOrderPeriods` bez souborů),
-   **`BankStatementSeeder`** (#131 fáze 2a, `modules/economy/bank/src/Dataset/`,
+   **`AssetEventsSeeder`** (události karet z `events[]` přes
+   `AssetEventDocument`, potvrzené, chronologicky, jedna transakce per
+   karta; sekce `assetEvents` bez souborů), **`BankStatementSeeder`** (#131 fáze 2a, `modules/economy/bank/src/Dataset/`,
    jen když zdroj dat má tabulku transakcí): kód účtu → id, výpis přes
    `BankStatementApplier` s dispatcherem — stav 40 zaúčtuje a dohledá
    předpisy z právě naseedovaných dokladů; `_result.txErrors` = chyba,
@@ -384,7 +467,8 @@ varováním per dimenze s počtem dokladů.
    `AttachmentService` + analýzy + lineage `target_table_id/target_row` ↔
    `source_message`; jedna zpráva = jedna transakce).
 7. Souhrn ok / failed / skipped per sekce (sekce `fiscalYears`,
-   `accountingItems` a `workOrderPeriods` nemají soubory ani `counts`),
+   `accountingItems`, `workOrderPeriods` a `assetEvents` nemají soubory
+   ani `counts`),
    varování, chyby;
    nenulový exit code při jakékoli chybě záznamu.
 8. Záznam sady v `config/main.json` (#103 F6b D59): po úspěšném seedu
@@ -445,6 +529,12 @@ Vědomé normalizace a limity fáze 1:
   čekající, zastavené) a výsledky běhů se nepřenáší, `content_hash` vzniká
   při seedu znovu; stav V opravě se vrátí jako V pořádku; zakázka řady bez
   kódu a koncept bez čísla identitu v sadě nemají.
+- Majetek (#131 fáze 2c, D38): systémové odpisy (původ `system`),
+  nepotvrzené události, vazba události na doklad (`doc_head`) a doklady
+  zaúčtování majetku (řádky `asset.*`) se nepřenáší — po seedu je založí
+  znovu Odpisy za období; karta bez inventárního čísla identitu v sadě
+  nemá; stav V opravě se vrátí jako V pořádku; dlouhodobá vyřazená karta
+  skončí v archivu jen přes potvrzené vyřazení.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI.
 

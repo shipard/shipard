@@ -36,6 +36,10 @@ use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Assets\AssetAcquisitionService;
+use Shipard\Module\Economy\Assets\Dataset\AssetEventsSeeder;
+use Shipard\Module\Economy\Assets\Dataset\AssetExporter;
+use Shipard\Module\Economy\Assets\Dataset\AssetSeeder;
 use Shipard\Module\Economy\Bank\Dataset\BankStatementExporter;
 use Shipard\Module\Economy\Bank\Dataset\BankStatementSeeder;
 use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderExporter;
@@ -64,6 +68,12 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * (#59 D12); účet nese analytiku 221100, jinak by bankovní engine hlásil
  * `bank_account_not_found` (#131 fáze 2a).
  *
+ * Majetek (#131 fáze 2c, D38, D40): skupina typů a typ v setup/, karta
+ * serveru se zařazením v assets/ (seed bez importního módu → původ
+ * `manual`), přijatá faktura s řádkem pořízení `purchase.asset` s kartou
+ * v `dimensions`, a účetní doklad, kterému test po seedu přepíše řádek na
+ * `asset.activation` — exportér dokladů ho má vynechat s varováním.
+ *
  * Mimo test: `dataset-seed` s resetem a byte-shodnost dump → seed → dump
  * se ověřovaly ručně na jednorázovém DS (tasks/dataset-phase1.md).
  */
@@ -88,6 +98,13 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private const WO_NUMBER = 'ITDSS0001';
     private const WO_FILE = 'workOrders/0001-itdss0001.jsonc';
     private const INVNO_NUMBER = 'IT-DS-1001';
+    /** Majetek (#131 fáze 2c): typ v setup/, karta v assets/, faktura s pořízením, doklad zaúčtování. */
+    private const ASSET_TYPE_GROUP = 'IT-DS Hmotný majetek';
+    private const ASSET_TYPE = 'IT-DS Výpočetní technika';
+    private const ASSET_NUMBER = 'ITDSMA0001';
+    private const ASSET_FILE = 'assets/0001-itdsma0001.jsonc';
+    private const ASSET_DOC_NUMBER = 'IT-DS-0002';
+    private const POSTING_DOC_NUMBER = 'IT-DS-6001';
 
     private string $setDir;
     private ConfigRuntime $config;
@@ -102,6 +119,8 @@ class DatasetRoundTripTest extends IntegrationTestCase
     /** @var array{docType: string, code?: string} reference řady invno pro setup (D37) */
     private array $invnoSeries = ['docType' => 'invno'];
     private ?string $invnoCode = null;
+    /** Sekce assets jen s modulem majetku, úplnou účetní skupinou 022, účtem 042100 a účetním rokem data zařazení. */
+    private bool $hasAssets = false;
 
     protected function setUp(): void
     {
@@ -169,6 +188,17 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->invnoSeries = ['docType' => 'invno'] + ($this->invnoCode !== null ? ['code' => $this->invnoCode] : []);
         }
 
+        // Majetek (#131 fáze 2c): dlouhodobá karta jde potvrdit jen s úplnou
+        // účetní skupinou (D57), řádek pořízení nese účet 042100 přímo, ruční
+        // zařazení musí ležet v založeném účetním roce (D58).
+        $this->hasAssets = isset($this->tables['economy_assets_assets'], $this->tables['economy_assets_events'],
+                $this->tables['economy_assets_types'], $this->tables['economy_assets_type_groups'],
+                $this->tables['economy_assets_accounting_groups'])
+            && $dibi->fetch("SELECT id FROM economy_assets_accounting_groups WHERE code = '022' AND docState <> 90
+                 AND account_depreciation IS NOT NULL AND account_accumulated IS NOT NULL") !== null
+            && $dibi->fetch("SELECT id FROM economy_accounting_accounts WHERE number = '042100' AND docState <> 90") !== null
+            && $dibi->fetch("SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= '2026-02-14' AND date_end >= '2026-02-14' AND docState <> 90") !== null;
+
         $this->setDir = $this->dsPath . '/set';
         $this->writeSet();
 
@@ -218,10 +248,18 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 new ItemResolver($dibi),
             );
         }
+        if ($this->hasAssets) {
+            // Karty před doklady: řádek pořízení odkazuje kartu inventárním číslem.
+            $seeders[] = new AssetSeeder($party);
+        }
         $seeders[] = new DocumentSeeder(DocumentApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $this->ctx->dispatcher));
         if ($this->hasWorkOrders) {
             // Evidence období až za doklady: odkazuje číslo vydané faktury.
             $seeders[] = new WorkOrderPeriodsSeeder();
+        }
+        if ($this->hasAssets) {
+            // Události až za doklady (D40), bez importního módu.
+            $seeders[] = new AssetEventsSeeder();
         }
         if ($this->hasBank) {
             // Až za doklady: mikroengine dohledává předpis právě naseedované faktury.
@@ -238,16 +276,27 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $counts = $report->counts();
         $this->assertSame(1, $counts['persons']['ok']);
         $this->assertSame(1, $counts['items']['ok']);
-        $this->assertSame($this->hasWorkOrders ? 3 : 2, $counts['docs']['ok'], 'faktura přijatá + prodejka (+ vydaná ze zakázky)');
+        $this->assertSame(
+            2 + ($this->hasWorkOrders ? 1 : 0) + ($this->hasAssets ? 2 : 0),
+            $counts['docs']['ok'],
+            'faktura přijatá + prodejka (+ vydaná ze zakázky) (+ pořízení majetku + účetní doklad)',
+        );
         $this->assertSame(1, $counts['registry']['ok']);
         $this->assertSame(1, $counts['mail']['ok']);
         if ($this->hasBank) {
             $this->assertSame(1, $counts['bank']['ok'], 'výpis');
         }
+        $setupFiles = ($this->hasWorkOrders ? 2 : 0) + ($this->hasAssets ? 2 : 0);
+        if ($setupFiles > 0) {
+            $this->assertSame($setupFiles, $counts['setup']['ok'], 'druhy a řady zakázek, skupina typů a typ majetku');
+        }
         if ($this->hasWorkOrders) {
-            $this->assertSame(2, $counts['setup']['ok'], 'druhy a řady zakázek');
             $this->assertSame(1, $counts['workOrders']['ok']);
             $this->assertSame(1, $counts['workOrderPeriods']['ok']);
+        }
+        if ($this->hasAssets) {
+            $this->assertSame(1, $counts['assets']['ok']);
+            $this->assertSame(1, $counts['assetEvents']['ok']);
         }
 
         // ── ids podle přirozených klíčů ───────────────────────────────────
@@ -392,6 +441,68 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame(ContentHash::ofStoredDocument($dibi, $invnoId), $period['content_hash'], 'otisk jako po běhu');
         }
 
+        // Majetek (#131 fáze 2c): typ ze setup/ s FK přirozeným klíčem, karta
+        // V pořádku s převzatým číslem, zařazení potvrzené s původem manual
+        // (žádný importní mód) a bez dokladu, datum pořízení karty ze zařazení,
+        // řádek pořízení s kartou a účtem 042100 → sekce Pořízení = zařazení.
+        $assetId = 0;
+        $assetDocId = 0;
+        $postingId = 0;
+        if ($this->hasAssets) {
+            $typeGroup = $dibi->fetch('SELECT * FROM economy_assets_type_groups WHERE name = %s AND docState <> 90', self::ASSET_TYPE_GROUP);
+            $this->assertNotNull($typeGroup, 'skupina typů ze setup/asset_type_groups.jsonc');
+            $type = $dibi->fetch('SELECT * FROM economy_assets_types WHERE name = %s AND docState <> 90', self::ASSET_TYPE);
+            $this->assertNotNull($type, 'typ ze setup/asset_types.jsonc');
+            $groupId = (int) $dibi->fetchSingle("SELECT id FROM economy_assets_accounting_groups WHERE code = '022' AND docState <> 90");
+            $this->assertSame((int) $typeGroup['id'], (int) $type['type_group'], 'skupina typů názvem');
+            $this->assertSame($groupId, (int) $type['default_accounting_group'], 'výchozí účetní skupina kódem');
+
+            $card = $dibi->fetch('SELECT * FROM economy_assets_assets WHERE asset_number = %s', self::ASSET_NUMBER);
+            $this->assertNotNull($card, 'karta přes AssetDocument');
+            $card = $card->toArray();
+            $assetId = (int) $card['id'];
+            $this->assertSame(40, (int) $card['docState'], 'karta V pořádku');
+            $this->assertSame((int) $type['id'], (int) $card['asset_type'], 'typ názvem');
+            $this->assertSame($groupId, (int) $card['accounting_group'], 'účetní skupina kódem');
+            $this->assertSame('2026-02-14', substr((string) $card['acquired_date'], 0, 10), 'datum pořízení dosadilo potvrzené zařazení (D38)');
+            $this->assertNull($card['price'], 'dlouhodobá karta cenu nenese (D13)');
+
+            $events = $dibi->fetchAll('SELECT * FROM economy_assets_events WHERE asset = %i AND docState <> 90', $assetId);
+            $this->assertCount(1, $events, 'jediná událost: zařazení');
+            $event = $events[0]->toArray();
+            $this->assertSame('activation', $event['event_kind']);
+            $this->assertSame(40, (int) $event['docState'], 'potvrzená');
+            $this->assertSame('manual', $event['origin'], 'původ manual — seed nejede importním módem (D38)');
+            $this->assertNull($event['doc_head'], 'nezaúčtovaná');
+            $this->assertSame(150000.0, (float) $event['amount']);
+
+            $assetDocId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::ASSET_DOC_NUMBER);
+            $this->assertGreaterThan(0, $assetDocId);
+            $assetRow = $dibi->fetch('SELECT * FROM docs_core_rows WHERE doc_head = %i ORDER BY order_pos LIMIT 1', $assetDocId)->toArray();
+            $this->assertSame('purchase.asset', $assetRow['operation']);
+            $this->assertSame($assetId, (int) $assetRow['asset'], 'karta na řádku podle inventárního čísla (dimenze asset)');
+            $this->assertSame(
+                (int) $dibi->fetchSingle("SELECT id FROM economy_accounting_accounts WHERE number = '042100' AND docState <> 90"),
+                (int) $assetRow['account'],
+                'účet pořízení přímo na řádku (rowAccount direct)',
+            );
+            if ($hasChart) {
+                $journal = $dibi->fetchAll('SELECT account_number, asset FROM economy_accounting_journal WHERE doc_head = %i', $assetDocId);
+                $withCard = array_values(array_filter($journal, static fn($j): bool => (int) $j['asset'] === $assetId));
+                $this->assertNotEmpty($withCard, 'deník nese kartu z řádku pořízení');
+                $this->assertSame(['042100'], array_values(array_unique(array_map(static fn($j): string => (string) $j['account_number'], $withCard))));
+            }
+            $acquisition = (new AssetAcquisitionService($dibi))->acquisition($assetId);
+            $this->assertSame(150000.0, $acquisition['activation']['amount'], 'sekce Pořízení = částka zařazení');
+            $this->assertSame('2026-02-10', $acquisition['activation']['date']);
+
+            // Účetní doklad zaúčtování majetku: řádek `asset.*` (po seedu přepsaný
+            // přímo v DB — zaúčtování majetku přes applier nejde) exportér vynechá.
+            $postingId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::POSTING_DOC_NUMBER);
+            $this->assertGreaterThan(0, $postingId);
+            $dibi->query('UPDATE docs_core_rows SET operation = %s, asset = %i WHERE doc_head = %i', 'asset.activation', $assetId, $postingId);
+        }
+
         $msg = $dibi->fetch('SELECT * FROM core_mail_incoming_messages WHERE id = %i', $messageId)->toArray();
         $this->assertSame('docs_core_heads', $msg['target_table_id']);
         $this->assertSame($docId, (int) $msg['target_row']);
@@ -533,6 +644,36 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame(['kind' => 'workOrder'], $invnoOut['source']);
             $this->assertSame(['workOrder' => self::WO_NUMBER], $invnoOut['dimensions'], 'dimenze zakázky přežije round-trip');
             $this->assertArrayNotHasKey('dimensions', $invnoOut['rows'][0], 'řádek dimenzi nenese (deník ji dědí z hlavičky)');
+        }
+
+        if ($this->hasAssets) {
+            // Setup: skupina typů a typ se vrátí beze změny (FK přirozeným klíčem).
+            $setupOut = [];
+            foreach ((new SetupExporter($dibi, $this->tables))->exportAll() as $record) {
+                $setupOut[$record->slug] = $record->data;
+            }
+            $groupRows = array_values(array_filter($setupOut['asset_type_groups']['rows'], static fn(array $r): bool => $r['name'] === self::ASSET_TYPE_GROUP));
+            $this->assertSame($reader->readJsonc('setup/asset_type_groups.jsonc')['rows'], $groupRows);
+            $typeRows = array_values(array_filter($setupOut['asset_types']['rows'], static fn(array $r): bool => $r['name'] === self::ASSET_TYPE));
+            $this->assertSame($reader->readJsonc('setup/asset_types.jsonc')['rows'], $typeRows, 'typ: skupina typů názvem, výchozí účetní skupina kódem');
+
+            $assetExporter = new AssetExporter($dibi, $this->config, $this->tables);
+            $assetOut = $assetExporter->exportByIds([$assetId])[0];
+            $this->assertSame(self::ASSET_NUMBER, $assetOut->slug);
+            $this->assertSame($reader->readJsonc(self::ASSET_FILE), $assetOut->data, 'karta se vrátí beze změny — typ názvem, skupina kódem, zařazení s původem manual');
+            $this->assertSame([], $assetExporter->getWarnings());
+
+            $withAssets = new DocumentExporter($dibi, $this->config, ['economy_assets_assets']);
+            $assetDocs = $withAssets->exportByIds([$assetDocId, $postingId]);
+            $this->assertSame([$assetDocId], array_map(static fn($r) => $r->id, $assetDocs), 'doklad zaúčtování majetku (řádky asset.*) se nepřenáší');
+            $row = $assetDocs[0]->data['rows'][0];
+            $this->assertSame('purchase.asset', $row['operation']);
+            $this->assertSame('042100', $row['account']);
+            $this->assertSame(['asset' => self::ASSET_NUMBER], $row['dimensions'], 'dimenze majetku přežije round-trip');
+            $this->assertArrayNotHasKey('dimensions', $assetDocs[0]->data, 'hlavička kartu nenese');
+            $warnings = $withAssets->getWarnings();
+            $this->assertCount(1, $warnings, implode("\n", $warnings));
+            $this->assertStringContainsString('docs ' . self::POSTING_DOC_NUMBER . ': doklad zaúčtování majetku', $warnings[0]);
         }
 
         $srcRegistry = $reader->readJsonc('registry/0001-it-ds-smlouva.jsonc');
@@ -743,9 +884,79 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 ], static fn($v) => $v !== null),
             ]);
         }
+        // Majetek (#131 fáze 2c): skupina typů a typ v setup/ (klíče v pořadí
+        // sloupců tabulky), karta serveru se zařazením (klíče v pořadí
+        // exportéru), faktura s řádkem pořízení `purchase.asset` (účet přímo,
+        // karta v dimensions) a účetní doklad, ze kterého test udělá
+        // zaúčtování majetku přepsáním řádku na asset.activation.
+        if ($this->hasAssets) {
+            $w->writeJsonc('setup/asset_type_groups.jsonc', [
+                'format' => 'shpd.dataset.setup.v1', 'table' => 'asset_type_groups',
+                'rows' => [['name' => self::ASSET_TYPE_GROUP, 'note' => null, 'sort_order' => 0, 'docState' => 40]],
+            ]);
+            $w->writeJsonc('setup/asset_types.jsonc', [
+                'format' => 'shpd.dataset.setup.v1', 'table' => 'asset_types',
+                'rows' => [[
+                    'name' => self::ASSET_TYPE, 'short_name' => null, 'type_group' => self::ASSET_TYPE_GROUP, 'note' => null, 'sort_order' => 0,
+                    'default_category' => 'tangible', 'default_accounting_group' => '022', 'docState' => 40,
+                ]],
+            ]);
+            $w->writeJsonc(self::ASSET_FILE, [
+                'format' => 'shpd.dataset.asset.v1',
+                'asset'  => [
+                    'assetNumber' => self::ASSET_NUMBER, 'name' => self::P . ' Server', 'type' => self::ASSET_TYPE,
+                    'category' => 'tangible', 'tracking' => 'single', 'accountingGroup' => '022',
+                    'taxMethod' => 'straight', 'taxRule' => 'cz-1', 'accMethod' => 'as_tax', 'state' => 'confirmed',
+                ],
+                'events' => [
+                    ['kind' => 'activation', 'scope' => 'both', 'date' => '2026-02-14', 'amount' => 150000.0, 'origin' => 'manual'],
+                ],
+            ]);
+            $w->writeJsonc('docs/0004-it-ds-0002.jsonc', [
+                'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+                'docType' => 'invoiceReceived', 'docNumber' => '2026-IT-DS-78', 'docText' => self::P . ' server', 'selfParty' => 'customer',
+                'supplier' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
+                               'bankAccount' => ['accountNumber' => '9999000001/0100', 'iban' => 'CZ0901000000009999000001']],
+                'dates' => ['issueDate' => '2026-02-10', 'dueDate' => '2026-02-20', 'accountingDate' => '2026-02-10', 'taxPointDate' => '2026-02-10'],
+                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+                'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260210'],
+                'rows' => [[
+                    'rowKind' => 'item', 'operation' => 'purchase.asset', 'orderPos' => 1, 'unit' => 'pcs',
+                    'quantity' => 1.0, 'unitPrice' => 150000.0, 'totalPrice' => 150000.0, 'priceCalcMode' => 'fromUnitPrice',
+                    'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => self::P . ' Server 1U', 'account' => '042100',
+                    'dimensions' => ['asset' => self::ASSET_NUMBER],
+                ]],
+                'vatRecap' => [['vatCode' => 'cz-110', 'vatPct' => 21.0, 'base' => 150000.0, 'tax' => 31500.0, 'total' => 181500.0]],
+                'totals' => ['totalBase' => 150000.0, 'totalVat' => 31500.0, 'totalAmount' => 181500.0, 'totalRounding' => 0.0],
+                'applyOptions' => array_filter([
+                    'targetDocState' => 40,
+                    'importNumber' => ['docNumber' => self::ASSET_DOC_NUMBER, 'sequenceNumber' => null],
+                    'numberSeriesCode' => $this->seriesCode,
+                ], static fn($v) => $v !== null),
+            ]);
+            $w->writeJsonc('docs/0005-it-ds-6001.jsonc', [
+                'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+                'docType' => 'accountingDocument', 'docText' => self::P . ' zaúčtování majetku',
+                'dates' => ['issueDate' => '2026-02-28', 'accountingDate' => '2026-02-28'],
+                'currency' => 'CZK', 'vat' => ['mode' => 'none', 'place' => 'domestic'],
+                'payment' => ['method' => 'bankTransfer'],
+                'rows' => [
+                    ['rowKind' => 'item', 'operation' => 'acc.record', 'orderPos' => 1, 'unitPrice' => 0.0, 'totalPrice' => 150000.0,
+                     'priceCalcMode' => 'fromTotal', 'description' => self::P . ' zařazení serveru', 'account' => '022100', 'accSide' => 'debit'],
+                    ['rowKind' => 'item', 'operation' => 'acc.record', 'orderPos' => 2, 'unitPrice' => 0.0, 'totalPrice' => 150000.0,
+                     'priceCalcMode' => 'fromTotal', 'description' => self::P . ' pořízení serveru', 'account' => '042100', 'accSide' => 'credit'],
+                ],
+                'totals' => ['totalBase' => 150000.0, 'totalVat' => 0.0, 'totalAmount' => 150000.0, 'totalRounding' => 0.0],
+                'applyOptions' => [
+                    'targetDocState' => 40,
+                    'importNumber' => ['docNumber' => self::POSTING_DOC_NUMBER, 'sequenceNumber' => null],
+                ],
+            ]);
+        }
         $w->writeManifest(new DatasetManifest('it-ds', 'Integration round-trip', null, 'fixed', '2026-08-26T10:00:00Z',
-            ($this->hasWorkOrders ? ['setup' => 2] : []) + ['persons' => 1, 'items' => 1]
-            + ($this->hasWorkOrders ? ['workOrders' => 1, 'docs' => 3] : ['docs' => 2])
+            ['setup' => ($this->hasWorkOrders ? 2 : 0) + ($this->hasAssets ? 2 : 0), 'persons' => 1, 'items' => 1]
+            + ($this->hasWorkOrders ? ['workOrders' => 1] : []) + ($this->hasAssets ? ['assets' => 1] : [])
+            + ['docs' => 2 + ($this->hasWorkOrders ? 1 : 0) + ($this->hasAssets ? 2 : 0)]
             + ($this->hasBank ? ['bank' => 1] : []) + ['registry' => 1, 'mail' => 1]));
     }
 
@@ -795,11 +1006,20 @@ class DatasetRoundTripTest extends IntegrationTestCase
             }
             $dibi->query('DELETE FROM economy_work_orders_kinds WHERE name = %s', self::WO_KIND);
         }
+        // Majetek (#131 fáze 2c): události → karta → typ → skupina typů (účetní skupina 022 je DS).
+        if (isset($this->tables['economy_assets_assets'], $this->tables['economy_assets_events'])) {
+            foreach ($dibi->fetchAll('SELECT id FROM economy_assets_assets WHERE asset_number = %s', self::ASSET_NUMBER) as $r) {
+                $dibi->query('DELETE FROM economy_assets_events WHERE asset = %i', $r['id']);
+                $dibi->query('DELETE FROM economy_assets_assets WHERE id = %i', $r['id']);
+            }
+            $dibi->query('DELETE FROM economy_assets_types WHERE name = %s', self::ASSET_TYPE);
+            $dibi->query('DELETE FROM economy_assets_type_groups WHERE name = %s', self::ASSET_TYPE_GROUP);
+        }
         // Doklady podle čísla i podle testovací pokladny (pád s jiným číslem).
         $deskIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_cash_desks WHERE code = %s', self::CASH_DESK_CODE));
         $docs = $dibi->fetchAll(
             'SELECT id FROM docs_core_heads WHERE doc_number IN %in' . ($deskIds !== [] ? ' OR cash_desk IN %in' : ''),
-            [self::DOC_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER],
+            [self::DOC_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER, self::ASSET_DOC_NUMBER, self::POSTING_DOC_NUMBER],
             ...($deskIds !== [] ? [$deskIds] : []),
         );
         foreach ($docs as $r) {

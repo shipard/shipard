@@ -173,6 +173,53 @@ class DocumentExporterTest extends TestCase
         $this->assertSame([], $with->getWarnings());
     }
 
+    public function testAssetDimensionIsPortableWithItsSectionAndPostingDocumentsAreSkipped(): void
+    {
+        // #131 fáze 2c (D38, D40): karty v sekci assets/ dělají dimenzi majetku
+        // přenosnou (inventární číslo na řádku pořízení); doklad zaúčtování
+        // majetku (řádky asset.*) se nepřenáší — po seedu ho založí Odpisy za období.
+        $rows = [['asset' => 7, 'operation' => 'purchase.asset', 'account' => 42, 'account_number' => '042100', 'item' => null, 'item_code' => null, 'item_name' => null] + $this->itemRowRow()];
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static function (string $sql, mixed ...$args): ?Row {
+            if (str_contains($sql, 'FROM [economy_assets_assets]')) {
+                return (int) ($args[0] ?? 0) === 7 ? new Row(['k' => 'MA0001']) : null;
+            }
+            if (str_contains($sql, 'SHOW TABLES')) {
+                return new Row(['t' => 'economy_accounting_accounts']);
+            }
+            return null;
+        });
+        $db->method('fetchAll')->willReturnCallback(function (string $sql, mixed ...$args) use ($rows): array {
+            if (str_contains($sql, 'SELECT DISTINCT [doc_head] FROM [docs_core_rows] WHERE [operation] LIKE %like~')) {
+                $this->assertSame('asset.', $args[0]);
+                return [new Row(['doc_head' => 200])];
+            }
+            if (str_contains($sql, 'FROM [docs_core_heads] AS [h]')) {
+                return [
+                    new Row($this->headRow(['partner' => null, 'asset' => null])),
+                    new Row($this->headRow(['id' => 200, 'doc_type' => 'cmnbkp', 'doc_number' => 'MA260001', 'partner' => null, 'asset' => null])),
+                ];
+            }
+            if (str_contains($sql, 'FROM [docs_core_rows]')) {
+                return array_map(static fn(array $r) => new Row($r), $rows);
+            }
+            return [];
+        });
+
+        $exporter = new DocumentExporter($db, $this->configWithDimensions(), ['economy_assets_assets']);
+        $records = $exporter->exportByIds([100, 200]);
+
+        $this->assertSame([100], array_map(static fn($r) => $r->id, $records), 'doklad zaúčtování majetku vynechán');
+        $row = $records[0]->data['rows'][0];
+        $this->assertSame('purchase.asset', $row['operation']);
+        $this->assertSame('042100', $row['account'], 'řádek pořízení nese účet přímo');
+        $this->assertSame(['asset' => 'MA0001'], $row['dimensions'], 'karta inventárním číslem');
+        $this->assertArrayNotHasKey('dimensions', $records[0]->data, 'hlavička bez karty');
+        $warnings = $exporter->getWarnings();
+        $this->assertCount(1, $warnings, implode("\n", $warnings));
+        $this->assertStringContainsString('docs MA260001: doklad zaúčtování majetku (řádky asset.*) se nepřenáší', $warnings[0]);
+    }
+
     public function testWithoutConfigNoDimensionsAreExported(): void
     {
         $c = (new DocumentExporter($this->db(rows: [['cost_center' => 5] + $this->itemRowRow()])))

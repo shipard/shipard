@@ -18,9 +18,12 @@ use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
  * a návrhy z jiných let by se uložily s `fiscal_year = null` — tiše.
  *
  * Data: `docs/*.jsonc` `dates.{issueDate, accountingDate, taxPointDate,
- * vatObligationDate}`, `mail/*.jsonc` `receivedAt` a tatáž pole
- * v `analyses[].canonicalJson.dates`. Splatnost a období plnění rok
- * neurčují. Každý zajištěný rok (založený i už existující) = `ok`.
+ * vatObligationDate}`, `bank/*.jsonc` období výpisu, `assets/*.jsonc`
+ * `events[].date` (ruční událost majetku mimo založený účetní rok by
+ * dokument odmítl, `outsideFiscalYear` — #131 fáze 2c), `mail/*.jsonc`
+ * `receivedAt` a tatáž pole v `analyses[].canonicalJson.dates`. Splatnost
+ * a období plnění rok neurčují. Každý zajištěný rok (založený i už
+ * existující) = `ok`.
  * Nerozhodnutý první měsíc / domácí měna při datech v sadě = chyba
  * (stejná brána jako ds-upgrade; bez nich by roky vznikly s odhadem).
  */
@@ -81,7 +84,8 @@ class FiscalYearsSeeder implements SectionSeeder
     }
 
     /**
-     * Unikátní data (`Y-m-d`) z dokladů, bankovních výpisů a zpráv sady, seřazená.
+     * Unikátní data (`Y-m-d`) z dokladů, bankovních výpisů, událostí majetku
+     * a zpráv sady, seřazená.
      *
      * @return list<string>
      */
@@ -109,6 +113,19 @@ class FiscalYearsSeeder implements SectionSeeder
             $head = is_array($statement['statement'] ?? null) ? $statement['statement'] : [];
             self::pushDate($dates, is_string($head['periodStart'] ?? null) ? $head['periodStart'] : null);
             self::pushDate($dates, is_string($head['periodEnd'] ?? null) ? $head['periodEnd'] : null);
+        }
+        // Události majetku (#131 fáze 2c): datum potvrzené ruční události musí
+        // ležet v založeném účetním roce (AssetEventDocument, D58).
+        foreach ($reader->listFiles('assets') as $rel) {
+            try {
+                $asset = $reader->readJsonc($rel);
+            } catch (DatasetException $e) {
+                $report?->warning("fiscalYears: {$rel}: {$e->getMessage()}");
+                continue;
+            }
+            foreach ((array) ($asset['events'] ?? []) as $event) {
+                self::pushDate($dates, is_array($event) && is_string($event['date'] ?? null) ? $event['date'] : null);
+            }
         }
         foreach ($reader->listFiles('mail') as $rel) {
             try {

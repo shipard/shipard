@@ -146,6 +146,28 @@ class DatasetPreflightTest extends TestCase
         ], $override);
     }
 
+    /**
+     * Obálka karty majetku (#131 fáze 2c, D40) — server zařazený ručně,
+     * typ názvem, účetní skupina kódem.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function asset(array $override = []): array
+    {
+        return array_replace([
+            'format' => 'shpd.dataset.asset.v1',
+            'asset'  => [
+                'assetNumber' => 'MA0001', 'name' => 'Server 1U, 2× CPU, 64 GB RAM', 'type' => 'Výpočetní technika',
+                'category' => 'tangible', 'tracking' => 'single', 'accountingGroup' => '022',
+                'taxMethod' => 'straight', 'taxRule' => 'cz-1', 'accMethod' => 'as_tax', 'state' => 'confirmed',
+            ],
+            'events' => [
+                ['kind' => 'activation', 'scope' => 'both', 'date' => '2026-02-14', 'amount' => 150000.0, 'origin' => 'manual'],
+            ],
+        ], $override);
+    }
+
     public static function exchangeRateList(array $override = []): array
     {
         return array_merge([
@@ -244,6 +266,46 @@ class DatasetPreflightTest extends TestCase
 
         $this->assertCount(1, $result['errors']);
         $this->assertStringContainsString('workOrders/0001-bad.jsonc', $result['errors'][0]);
+    }
+
+    public function testAssetsAreValidatedAgainstSchema(): void
+    {
+        // #131 fáze 2c: obálka karty s přirozenými klíči; události s původem,
+        // drobný majetek s daty a cenou na kartě, cizí majetek s vlastníkem.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'assets' => 2, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('assets/0001-ma0001.jsonc', self::asset());
+            $w->writeJsonc('assets/0002-ma0002.jsonc', [
+                'format' => 'shpd.dataset.asset.v1',
+                'asset'  => [
+                    'assetNumber' => 'MA0002', 'name' => 'Vrtačka', 'category' => 'small', 'tracking' => 'single',
+                    'foreign' => true, 'owner' => ['name' => 'Půjčovna s.r.o.', 'country' => 'cz', 'companyId' => '12345678'],
+                    'acquiredDate' => '2025-03-01', 'disposedDate' => '2026-01-31', 'price' => 4990.0, 'state' => 'archived',
+                ],
+            ]);
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidAssetIsAnError(): void
+    {
+        // Reference jsou přirozené klíče (typ názvem, ne id), události nesou původ jen manual / import.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'assets' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('assets/0001-bad.jsonc', self::asset([
+                'asset'  => ['type' => 5] + self::asset()['asset'],
+                'events' => [['kind' => 'depreciation', 'scope' => 'acc', 'date' => '2026-03-31', 'amount' => 3000.0, 'origin' => 'system']],
+            ]));
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('assets/0001-bad.jsonc', $result['errors'][0]);
     }
 
     public function testExchangeRateListsAreValidatedAgainstSchema(): void

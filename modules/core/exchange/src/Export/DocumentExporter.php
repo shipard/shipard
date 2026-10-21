@@ -66,10 +66,10 @@ final class DocumentExporter implements RecordExporter
     /**
      * Dimenze deníku s `exchangeKey` (#110 T2) — jen ty, jejichž cílovou
      * tabulku sada nese v sekci setup (středisko) nebo ve vlastní sekci
-     * (`$sectionTables`: zakázky v `workOrders/`, #131 fáze 2b). Dimenze
-     * mířící na záznamy mimo sadu (karty majetku) se nepřenáší: seed by
-     * jinak doklad odmítl (`dimension_not_found`), i když je zbytek dat
-     * v pořádku.
+     * (`$sectionTables`: zakázky v `workOrders/`, #131 fáze 2b; karty
+     * majetku v `assets/`, fáze 2c). Dimenze mířící na záznamy mimo sadu
+     * se nepřenáší: seed by jinak doklad odmítl (`dimension_not_found`),
+     * i když je zbytek dat v pořádku.
      *
      * @var list<JournalDimension>
      */
@@ -83,6 +83,9 @@ final class DocumentExporter implements RecordExporter
 
     /** @var array<string, array<string, true>> id dimenze → doklady, kde se hodnota zahodila */
     private array $droppedDimensions = [];
+
+    /** @var array<int, true>|null doklady zaúčtování majetku (řádky `asset.*`) — líně jedním dotazem */
+    private ?array $assetPostingDocs = null;
 
     /**
      * @param list<string> $sectionTables cílové tabulky dimenzí, které sada
@@ -188,9 +191,33 @@ final class DocumentExporter implements RecordExporter
     {
         $out = [];
         foreach ($rows as $row) {
-            $out[] = $this->exportDocument(is_array($row) ? $row : $row->toArray());
+            $row = is_array($row) ? $row : $row->toArray();
+            // Zaúčtování majetku (#131 fáze 2c, D38): doklad s řádky `asset.*`
+            // je odvozený z evidence — po seedu ho založí znovu Odpisy za
+            // období; applier by řádky systémových operací stejně odmítl.
+            if ($this->isAssetPosting((int) $row['id'])) {
+                $label = V::str($row['doc_number'] ?? null) ?? '#' . (int) $row['id'];
+                $this->warnings[] = "docs {$label}: doklad zaúčtování majetku (řádky asset.*) se nepřenáší — po seedu ho založí znovu Odpisy za období";
+                continue;
+            }
+            $out[] = $this->exportDocument($row);
         }
         return $out;
+    }
+
+    private function isAssetPosting(int $headId): bool
+    {
+        if ($this->assetPostingDocs === null) {
+            $this->assetPostingDocs = [];
+            foreach ($this->db->fetchAll(
+                'SELECT DISTINCT [doc_head] FROM [docs_core_rows] WHERE [operation] LIKE %like~',
+                'asset.',
+            ) as $r) {
+                $r = is_array($r) ? $r : $r->toArray();
+                $this->assetPostingDocs[(int) $r['doc_head']] = true;
+            }
+        }
+        return isset($this->assetPostingDocs[$headId]);
     }
 
     /**

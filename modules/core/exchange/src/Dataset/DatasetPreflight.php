@@ -63,6 +63,9 @@ final class DatasetPreflight
             // Zakázky (#131 fáze 2b) — obálka; reference (řada, zákazník, položky,
             // řada dokladů) a pravidla typu hlídá applier při seedu.
             'workOrders' => [$this->exchange, 'shpd.dataset.workOrder', null],
+            // Majetek (#131 fáze 2c) — obálka; reference (typ, účetní skupina,
+            // vlastník) a pravidla událostí hlídají dokumenty při seedu.
+            'assets'   => [$this->exchange, 'shpd.dataset.asset', null],
             'docs'     => [$this->exchange, 'shpd.docs.document', new DocumentValidator()],
             // Bankovní výpisy (#131 fáze 2a) — obálka; sémantiku (účet kódem,
             // kurz na cizí měně, pořadí období) hlídá applier při seedu.

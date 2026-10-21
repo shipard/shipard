@@ -52,6 +52,10 @@ class FiscalYearsSeederTest extends TestCase
             $mail['analyses'][] = $mail['analyses'][0];
             $mail['analyses'][1]['canonicalJson']['dates'] = ['issueDate' => '2023-12-31'];
             $w->writeJsonc('mail/0001-msg.jsonc', $mail);
+            // Událost majetku (#131 fáze 2c): zařazení v roce 2022 založí rok 2022.
+            $asset = DatasetPreflightTest::asset();
+            $asset['events'][0]['date'] = '2022-05-14';
+            $w->writeJsonc('assets/0001-ma0001.jsonc', $asset);
         }
         $w->writeManifest(new DatasetManifest('demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z'));
         return DatasetReader::open($this->tmp . '/set');
@@ -119,7 +123,7 @@ class FiscalYearsSeederTest extends TestCase
     {
         $dates = (new FiscalYearsSeeder())->collectDates($this->writeSet());
 
-        $this->assertSame(['2023-12-31', '2024-03-10', '2026-08-25', '2026-08-26'], $dates);
+        $this->assertSame(['2022-05-14', '2023-12-31', '2024-03-10', '2026-08-25', '2026-08-26'], $dates);
     }
 
     public function testEnsuresOneYearPerFiscalYearAndCountsExistingAsOk(): void
@@ -128,10 +132,10 @@ class FiscalYearsSeederTest extends TestCase
         $report = new SeedReport();
         $seeder->seed($this->context($this->writeSet(), ['economy.fiscalYearStartMonth' => 1, 'economy.homeCurrency' => 'czk']), $report);
 
-        $this->assertSame(3, $report->counts()['fiscalYears']['ok'], '2023, 2024, 2026 — 2026 dvakrát jen jednou');
+        $this->assertSame(4, $report->counts()['fiscalYears']['ok'], '2022, 2023, 2024, 2026 — 2026 dvakrát jen jednou');
         $this->assertSame([], $report->errors());
         $this->assertSame([[1, 'czk']], $seeder->provisionerArgs);
-        $this->assertCount(2, $report->warnings(), 'založené roky 2023 a 2024 se hlásí');
+        $this->assertCount(3, $report->warnings(), 'založené roky 2022, 2023 a 2024 se hlásí');
     }
 
     public function testStartMonthStoredAsStringIsCast(): void
@@ -149,7 +153,7 @@ class FiscalYearsSeederTest extends TestCase
 
         $this->assertSame(1, $report->counts()['fiscalYears']['failed']);
         $this->assertStringContainsString('economy.homeCurrency', $report->errors()[0]);
-        $this->assertStringContainsString('2023, 2024, 2026', $report->errors()[0]);
+        $this->assertStringContainsString('2022, 2023, 2024, 2026', $report->errors()[0]);
     }
 
     public function testNoDatesMeansNoSettingsLookupAndNoErrors(): void
@@ -169,7 +173,7 @@ class FiscalYearsSeederTest extends TestCase
             ->seed($this->context($this->writeSet(), ['economy.fiscalYearStartMonth' => 1, 'economy.homeCurrency' => 'czk']), $report);
 
         $this->assertSame(1, $report->counts()['fiscalYears']['failed']);
-        $this->assertSame(2, $report->counts()['fiscalYears']['ok']);
+        $this->assertSame(3, $report->counts()['fiscalYears']['ok']);
         $this->assertStringContainsString('rok pro datum 2023-12-31: db down', $report->errors()[0]);
     }
 }
