@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — fáze 2b: zakázky
 
-**Stav:** naplánováno — #131 D19, D29–D36
+**Stav:** naplánováno — #131 D19, D29–D37
 
 ## Kontext / Cíl
 
@@ -83,6 +83,16 @@ zobecnit v `SetupExporter` / `SetupSeeder` na jeden mechanismus:
 Řada zakázek bez `number_code` se nepřenese (dump varuje). Seed jde
 abecedně: `work_order_kinds` před `work_order_series`, obě za
 `bank_accounts`.
+
+**D37 — řada dokladů složeným klíčem typ + kód.** Výchozí řady dokladů
+z provisioneru (`NumberSeriesProvisioner`) mají `doc_number_code = NULL`
+(číslo 1260001 má prázdné `%C`), takže samotný kód řadu nedohledá. Reference
+na `docs_core_number_series` (`inv_number_series` druhu a zakázky) se proto
+přenáší jako objekt `{"docType": "invno", "code": null}` — `null` se
+v souboru vynechá (`{"docType": "invno"}`). Seed hledá jako
+`DocumentApplier::resolveNumberSeriesFor`, ale přísně: s kódem přesná shoda
+`(doc_type, doc_number_code)`, bez kódu řada typu s prázdným kódem; žádná
+nebo víc než jedna = chyba seedu. Provisioner ani existující sady se nemění.
 
 ### D30 — Sekce `workOrders/`, obálka `shpd.dataset.workOrder.v1`
 
@@ -308,3 +318,6 @@ Ověřovací zdroj dat po kontrole smaž, nebo ho nech Anně a zapiš prefix.
 - ✓ **D34** — zahájení před oknem, řady bez ročního restartu
 - ✓ **D35** — cron po seedu jen dokumentovat
 - ✓ **D36** — dva projekty (výměna sítě, Wi-Fi) s výnosy i náklady
+- ✓ **D37** — řada dokladů v `setup/` složeným klíčem `{docType, code}`
+  (výchozí řady z provisioneru jsou bez kódu); nejednoznačná nebo chybějící
+  řada = chyba seedu

@@ -22,7 +22,9 @@
                 "cost_centers",
                 "vat_registrations",
                 "binders",
-                "mailboxes"
+                "mailboxes",
+                "work_order_kinds",
+                "work_order_series"
             ]
         },
         "rows": {

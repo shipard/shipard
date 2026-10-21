@@ -148,6 +148,74 @@ class SetupExporterTest extends TestCase
         $this->assertStringContainsString("'owner' (FK na base_persons_persons)", $exporter->getWarnings()[0]);
     }
 
+    public function testWorkOrderKindsAndSeriesCarryReferencesByNaturalKey(): void
+    {
+        // #131 fáze 2b (D29, D37): druh nese řadu dokladů jako {docType, code}
+        // a účet kódem, řada zakázek nese druh názvem; řada bez kódu se nepřenese.
+        $tables = [
+            'economy_work_orders_kinds'         => $this->tableDef('economy/workOrders/tables/economy_work_orders_kinds.jsonc'),
+            'economy_work_orders_number_series' => $this->tableDef('economy/workOrders/tables/economy_work_orders_number_series.jsonc'),
+        ];
+        $db = $this->createMock(Connection::class);
+        $db->method('fetchAll')->willReturnCallback(function (string $sql): array {
+            if (str_contains($sql, '[economy_work_orders_kinds]')) {
+                $this->assertStringContainsString('WHERE [docState] <> 90 ORDER BY [name], [id]', $sql);
+                return [new Row([
+                    'id' => 3, 'name' => 'Správa IT — paušál', 'type' => 'periodic', 'notice' => null,
+                    'inv_doc_type' => 'invno', 'inv_number_series' => 7, 'inv_due_days' => 14, 'inv_timing' => 'start',
+                    'inv_vat_mode' => 1, 'inv_payment_method' => 1, 'inv_bank_account' => 4,
+                    'docState' => 40, 'docStateMain' => 3,
+                ])];
+            }
+            if (str_contains($sql, '[economy_work_orders_number_series]')) {
+                $this->assertStringContainsString('ORDER BY [number_code], [id]', $sql);
+                return [
+                    new Row([
+                        'id' => 11, 'kind' => 3, 'name' => 'Bez kódu', 'notice' => null, 'number_code' => null,
+                        'number_pattern' => '%4', 'reset_scope' => 'fiscal_year', 'valid_from' => null, 'valid_to' => null,
+                        'docState' => 40, 'docStateMain' => 3,
+                    ]),
+                    new Row([
+                        'id' => 12, 'kind' => 3, 'name' => 'Paušály', 'notice' => null, 'number_code' => 'S',
+                        'number_pattern' => '%C%4', 'reset_scope' => 'none', 'valid_from' => null, 'valid_to' => null,
+                        'docState' => 40, 'docStateMain' => 3,
+                    ]),
+                ];
+            }
+            $this->fail("unexpected query: {$sql}");
+        });
+        $db->method('fetch')->willReturnCallback(static function (string $sql, int $id): ?Row {
+            if (str_contains($sql, '[docs_core_number_series]')) {
+                return $id === 7 ? new Row(['doc_type' => 'invno', 'doc_number_code' => null]) : null;
+            }
+            if (str_contains($sql, '[economy_codebooks_bank_accounts]')) {
+                return $id === 4 ? new Row(['code' => 'BU1']) : null;
+            }
+            if (str_contains($sql, '[economy_work_orders_kinds]')) {
+                return $id === 3 ? new Row(['name' => 'Správa IT — paušál']) : null;
+            }
+            return null;
+        });
+
+        $exporter = new SetupExporter($db, $tables);
+        $records = $exporter->exportAll();
+
+        $this->assertSame(['work_order_kinds', 'work_order_series'], array_map(static fn($r) => $r->slug, $records));
+        $kind = $records[0]->data['rows'][0];
+        $this->assertSame(['docType' => 'invno'], $kind['inv_number_series'], 'řada dokladů bez kódu (D37)');
+        $this->assertSame('BU1', $kind['inv_bank_account']);
+        $this->assertSame(14, $kind['inv_due_days']);
+        $this->assertSame(40, $kind['docState']);
+
+        $series = $records[1]->data['rows'];
+        $this->assertCount(1, $series, 'řada bez number_code se nepřenáší');
+        $this->assertSame('S', $series[0]['number_code']);
+        $this->assertSame('Správa IT — paušál', $series[0]['kind'], 'druh názvem');
+        $this->assertSame('none', $series[0]['reset_scope']);
+        $this->assertSame(1, count($exporter->getWarnings()));
+        $this->assertStringContainsString("záznam #11 nemá klíč 'number_code'", $exporter->getWarnings()[0]);
+    }
+
     public function testSettingsExportKeepsOnlyPortableKeys(): void
     {
         $def = $this->tableDef('core/system/tables/core_system_settings.jsonc');
