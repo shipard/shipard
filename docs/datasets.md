@@ -17,6 +17,7 @@ sada/
   exchangeRates/NNNN-<listType>-<validFrom>.jsonc  # shpd.exchangeRates.list.v1 — kurzovní lístky (#121 D10)
   persons/NNNN-<slug>.jsonc           # shpd.persons.person.v1
   items/NNNN-<slug>.jsonc             # shpd.items.item.v1
+  workOrders/NNNN-<číslo>.jsonc       # shpd.dataset.workOrder.v1 (obálka zakázky, #131 fáze 2b)
   docs/NNNN-<slug>.jsonc              # shpd.docs.document.v1
   bank/NNNN-<kód>-<RRRR-MM>.jsonc     # shpd.dataset.bankStatement.v1 (obálka výpisu, #131 fáze 2a)
   registry/NNNN-<slug>.jsonc          # shpd.dataset.registryDocument.v1 (obálka)
@@ -44,7 +45,8 @@ sada/
   položky přes `ourCode`, účty číslem, jednotky `system_code`, řada přes
   `numberSeriesCode`, vlastní bankovní účet přes `code` číselníku, mailbox a
   AI profil kódem, vazby zpráva ↔ doklad přes číslo dokladu (spisovna:
-  titulek + `created`).
+  titulek + `created`), zakázka číslem (dimenze dokladů, řada zakázek
+  kódem, druh zakázky názvem).
 
 ### `manifest.jsonc`
 
@@ -100,11 +102,105 @@ data. Sada proto nese (`SetupExporter::TABLES`):
 | `vat_registrations.jsonc` | `economy_codebooks_vat_registrations` | `country`, `name` | `DocDocument` vyžaduje při `vat_mode != 0` |
 | `binders.jsonc` | `base_registry_binders` | `name` | šanony spisovny |
 | `mailboxes.jsonc` | `core_mail_mailboxes` | `mailbox_id` | `default` po resetu existuje, jen se aktualizuje |
+| `work_order_kinds.jsonc` | `economy_work_orders_kinds` | `name` | druhy zakázek (#131 fáze 2b, D29): periodický druh nese řadu dokladů `{docType, code}` (D37) a účet kódem |
+| `work_order_series.jsonc` | `economy_work_orders_number_series` | `number_code` | číselné řady zakázek — druh názvem; řada bez kódu se nepřenese (dump varuje); sekce `workOrders/` odkazuje řadu kódem |
 
-Řádky = sloupce tabulky bez `id`, `docStateMain`, auditních sloupců a FK
-(účet z rozvrhu se přenáší číslem, ostatní FK se s varováním vynechají).
-Seed = upsert přes `TableGateway` podle klíče. Soubory pro tabulky, které na
+Řádky = sloupce tabulky bez `id`, `docStateMain` a auditních sloupců. Seed =
+upsert přes `TableGateway` podle klíče. Soubory pro tabulky, které na
 cílovém DS nejsou (jiná sada modulů), se přeskočí.
+
+**Cizí klíče přes přirozený klíč** (`SetupReferences`, #131 fáze 2b D29,
+D37) — jediné místo, které říká, kam FK sloupec sady ukáže a jak se hodnota
+překládá tam (dump) a zpět (seed):
+
+- tabulka ze `SetupExporter::TABLES` s jednosloupcovým klíčem → hodnota
+  klíče (druh zakázky názvem, bankovní účet kódem, středisko kódem, …);
+- `docs_core_number_series` → objekt `{"docType": "invno", "code": null}`,
+  `null` se v souboru vynechá (`{"docType": "invno"}`). Výchozí řady
+  z provisioneru kód nemají, samotný kód by je nedohledal (D37). Seed hledá
+  jako `DocumentApplier::resolveNumberSeriesFor`, ale přísně: s kódem přesná
+  shoda `(doc_type, doc_number_code)`, bez kódu řada typu s prázdným kódem;
+  žádná nebo víc než jedna = chyba řádku;
+- `economy_accounting_accounts` → číslo účtu jako dřív (chybějící
+  analytika = `null`, ohlásí ji až engine);
+- ostatní reference (osoby, uživatelé) se s varováním vynechají.
+
+Nenalezený nebo nejednoznačný klíč je chyba řádku (soubor `failed`) — nikdy
+tiché vynechání ani první nalezený. Záznam v koši se nepočítá, archivovaný
+ano.
+
+### Obálka zakázky `shpd.dataset.workOrder.v1` (#131 fáze 2b, D30)
+
+Jeden soubor = jedna zakázka nad importním formátem
+`shpd.workOrders.workOrder.v1` ([exchange-format.md](exchange-format.md)
+§ Zakázky, `tasks/work-orders-import.md`): stejná struktura (`workOrder`,
+`rows`, `periods`), místo id přirozené klíče. Schéma
+`modules/core/exchange/schemas/`, třídy `modules/economy/workOrders/src/Dataset/`
+(`WorkOrderExporter`, `WorkOrderSeeder`, `WorkOrderPeriodsSeeder`).
+
+```jsonc
+{
+  "format": "shpd.dataset.workOrder.v1",
+  "workOrder": {
+    "number": "S0001", "sequenceNumber": 1,
+    "numberSeries": "S",                 // kód řady zakázek (setup/work_order_series.jsonc)
+    "title": "Správa IT — Autodoprava Kopretina s.r.o.", "state": "confirmed",
+    "dateStart": "2024-04-01",           // dateEnd jen u ukončené
+    "costCenter": null,                  // kód střediska
+    "customer": { "name": "…", "country": "cz", "companyId": "…", "taxId": "…", "vatId": "…" },
+    "currency": "czk", "paymentReference": null, "parent": null,   // parent = číslo nadřazené
+    "invoicing": {                       // jen periodický typ; chybějící přepis = hodnota druhu
+      "periodicity": "month", "invoiceFrom": "2026-01-01",
+      "docText": "Správa IT — paušál {období}",
+      "numberSeries": { "docType": "invno" },   // řada dokladů {docType, code} (D37)
+      "bankAccount": "BU2"               // kód vlastního účtu
+    }
+  },
+  "rows": [                              // předpis — jen periodický typ
+    { "item": "SPRAVA-IT", "description": "Správa IT — měsíční paušál", "quantity": 1.0, "unit": "mnth",
+      "unitPrice": 16000.0, "vatCode": "cz-120", "validTo": "2026-05-31" }
+  ],
+  "periods": [                           // jen vystavená období s dokladem
+    { "from": "2026-01-01", "to": "2026-01-31", "state": "issued", "docNumber": "1260001" }
+  ]
+}
+```
+
+- **Zápis jen přes `WorkOrderImportApplier`** (hlavička v Konceptu → řádky
+  → cílový stav přes V pořádku; existující číslo = `skipped`). Seeder
+  přeloží klíče na id: řada zakázek kódem a středisko kódem
+  (`SetupReferences`), zákazník jen podle identifikátorů (`PartyResolver`,
+  nenalezený = chyba — osoba musí být v `persons/`), řada dokladů
+  `{docType, code}` a účet kódem, položka `ourCode` (`ItemResolver`,
+  nenalezená = chyba); jednotka kódem dohledá verifier importu. Hlavičku ani
+  řádky seeder nepíše mimo applier.
+- **Strana** je štíhlá identita (název, země, IČO, DIČ, VAT ID) — osoba sama
+  je v `persons/`.
+- **`periods[]`** nese jen vystavená období (`issued` s dokladem mimo koš,
+  `docNumber` = číslo dokladu mezi vydanými doklady; koncept zástupným
+  `!` + id). Naplánovaná, čekající a zastavená období dump vynechá s jedním
+  varováním per zakázka; `result`, `message`, `waiting_since`
+  a `content_hash` v souboru nejsou. `content_hash` spočítá seeder
+  z uloženého dokladu (`ContentHash::ofStoredDocument`) stejně jako běh po
+  apply — shoda otisku pak znamená „koncept nikdo ručně neupravil“.
+- **Pořadí seedu:** zakázky za osobami a položkami, **před doklady** (doklady
+  je odkazují číslem v `dimensions`); evidence období až **za doklady**
+  (`WorkOrderPeriodsSeeder`, sekce `workOrderPeriods` bez souborů a `counts`
+  jako `fiscalYears`). Periodický běh se při seedu nespouští (D19).
+- **Pořadí souborů:** nadřazené před podřízenými (hloubka v řetězci), pak
+  bez čísla, pak podle čísla; slug = číslo zakázky. Zakázka řady bez kódu se
+  nepřenese (varování), stav V opravě se přenáší jako V pořádku.
+- **Dimenze zakázky na dokladech** je přenosná jen s touto sekcí (dump ji
+  `DocumentExporter` dostane jako `$sectionTables`): hodnota = číslo
+  zakázky na hlavičce i řádcích. `DimensionResolver` najde i ukončenou
+  zakázku (jen koš se vylučuje), deník dědí dimenzi hlavičky do řádků bez
+  vlastní — faktury z periodické fakturace ji nesou jen na hlavičce, jako je
+  skládá `InvoiceBuilder`.
+- **Meze:** řada zakázek s ročním restartem potřebuje fiskální rok data
+  zahájení (`FiscalYearsSeeder` data zakázek nečte — demo sada používá
+  průběžné řady, D34); koncept zakázky bez čísla klíč nemá (dump ho vypíše
+  se slugem `koncept`, opakovaný seed ho založí znovu); řádky přispěvatelů
+  (`contributor`) formát nemá.
 
 ### Obálka spisovny `shpd.dataset.registryDocument.v1` (R3)
 
@@ -174,7 +270,9 @@ po seedu dá kartu „K vyřízení“ s lhůtou i bez volání AI.
 (reference `docs/cli.md`). Bere všechny záznamy s `docState != 90` (archiv
 80 ano, koš ne). `DatasetDumper` řídí exportery podle aktivních tabulek DS:
 `PersonExporter`, `ItemExporter`, `DocumentExporter`, `SetupExporter`
-(`modules/core/exchange/src/Export/`), `BankStatementExporter`
+(`modules/core/exchange/src/Export/`), `WorkOrderExporter`
+(`modules/economy/workOrders/src/Dataset/`, #131 fáze 2b — před doklady),
+`BankStatementExporter`
 (`modules/economy/bank/src/Dataset/`, #131 fáze 2a), `RegistryExporter`
 (`modules/base/registry/src/`), `MailExporter`
 (`modules/core/mail/src/Dataset/`), `ExchangeRatesExporter`
@@ -217,10 +315,11 @@ neexportují (fiskální rok, DPH období, domácí měna, snapshoty partnera,
 **Dimenze deníku na dokladech** (#110 T2): `DocumentExporter` vypisuje
 objekt `dimensions` na hlavičce i řádcích s přirozeným klíčem
 (`exchangeKey` dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
-nese v `setup/` — dnes středisko (`cost_centers.jsonc`). Majetek na
-dokladech se do sady nepřenáší (karty majetku nejsou součást sady a seed by
-doklad odmítl `dimension_not_found`); dump to ohlásí jedním varováním per
-dimenze s počtem dokladů.
+nese v `setup/` — středisko (`cost_centers.jsonc`) — nebo ve vlastní sekci
+(`$sectionTables`: zakázka číslem se sekcí `workOrders/`, #131 fáze 2b).
+Majetek na dokladech se do sady nepřenáší (karty majetku nejsou součást
+sady a seed by doklad odmítl `dimension_not_found`); dump to ohlásí jedním
+varováním per dimenze s počtem dokladů.
 
 ## 3. `dataset-seed`
 
@@ -263,8 +362,14 @@ dimenze s počtem dokladů.
    `ItemDocument`); založená i existující položka = `ok`, účet mimo osnovu =
    `skipped` s varováním, neznámý kód nebo nedostupná nabídka = chyba.
    Oba kroky běží i s `--no-reset` (idempotentní). Pak `PersonSeeder`,
-   `ItemSeeder`, `DocumentSeeder` (applieři; `DocumentApplier`
-   s `DocumentEventDispatcher` → doklady ve 40 se zaúčtují),
+   `ItemSeeder`, **`WorkOrderSeeder`** (#131 fáze 2b,
+   `modules/economy/workOrders/src/Dataset/`, jen s tabulkami zakázek:
+   obálka → payload importu s id → `WorkOrderImportApplier`; před doklady,
+   protože ty zakázku odkazují číslem), `DocumentSeeder` (applieři;
+   `DocumentApplier` s `DocumentEventDispatcher` → doklady ve 40 se
+   zaúčtují), **`WorkOrderPeriodsSeeder`** (evidence vystavených období
+   z `periods[]` — doklad číslem mezi vydanými doklady, `content_hash`
+   z uloženého dokladu; sekce `workOrderPeriods` bez souborů),
    **`BankStatementSeeder`** (#131 fáze 2a, `modules/economy/bank/src/Dataset/`,
    jen když zdroj dat má tabulku transakcí): kód účtu → id, výpis přes
    `BankStatementApplier` s dispatcherem — stav 40 zaúčtuje a dohledá
@@ -274,8 +379,9 @@ dimenze s počtem dokladů.
    `RegistrySeeder`, `MailSeeder` (zpráva + přílohy přes
    `AttachmentService` + analýzy + lineage `target_table_id/target_row` ↔
    `source_message`; jedna zpráva = jedna transakce).
-7. Souhrn ok / failed / skipped per sekce (sekce `fiscalYears`
-   a `accountingItems` nemají soubory ani `counts`), varování, chyby;
+7. Souhrn ok / failed / skipped per sekce (sekce `fiscalYears`,
+   `accountingItems` a `workOrderPeriods` nemají soubory ani `counts`),
+   varování, chyby;
    nenulový exit code při jakékoli chybě záznamu.
 8. Záznam sady v `config/main.json` (#103 F6b D59): po úspěšném seedu
    s resetem `dataset: {name, hash, seededAt}` (`hash` =
@@ -331,6 +437,10 @@ Vědomé normalizace a limity fáze 1:
   měně dump vynechá; transakce ve stavu jiném než výpis dostane po seedu
   stav výpisu (dump varuje). Saldokonto je derivát deníku — sada ho
   nenese, po seedu vzniká z párování.
+- Zakázky (#131 fáze 2b): období bez vystaveného dokladu (naplánované,
+  čekající, zastavené) a výsledky běhů se nepřenáší, `content_hash` vzniká
+  při seedu znovu; stav V opravě se vrátí jako V pořádku; zakázka řady bez
+  kódu a koncept bez čísla identitu v sadě nemají.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI.
 

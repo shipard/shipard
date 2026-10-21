@@ -84,20 +84,23 @@
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
-            "quantity": 1.0,
+            "quantity": 2.0,
             "unitPrice": 6400.0,
-            "totalPrice": 6400.0,
+            "totalPrice": 12800.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 6400.0,
-                "vatAmount": 1344.0,
-                "vatTotal": 7744.0
+                "vatBase": 12800.0,
+                "vatAmount": 2688.0,
+                "vatTotal": 15488.0
             },
-            "description": "Síťový switch 24 portů, PoE"
+            "description": "Síťový switch 24 portů, PoE",
+            "dimensions": {
+                "workOrder": "P0001"
+            }
         },
         {
             "rowKind": "item",
@@ -170,21 +173,48 @@
                 "vatTotal": 2163.48
             },
             "description": "Kabel HDMI 2.1, 2 m"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 6,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 4490.0,
+            "totalPrice": 4490.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 4490.0,
+                "vatAmount": 942.9,
+                "vatTotal": 5432.9
+            },
+            "description": "Router Wi-Fi 6, 4× GbE",
+            "dimensions": {
+                "workOrder": "P0001"
+            }
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 70148.0,
-            "tax": 14731.08,
-            "total": 84879.08
+            "base": 81038.0,
+            "tax": 17017.98,
+            "total": 98055.98
         }
     ],
     "totals": {
-        "totalBase": 70148.0,
-        "totalVat": 14731.08,
-        "totalAmount": 84879.08,
+        "totalBase": 81038.0,
+        "totalVat": 17017.98,
+        "totalAmount": 98055.98,
         "totalRounding": 0.0
     },
     "applyOptions": {

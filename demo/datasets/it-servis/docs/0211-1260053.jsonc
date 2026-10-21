@@ -43,6 +43,9 @@
         "method": "bankTransfer",
         "paymentReference": "1260053"
     },
+    "dimensions": {
+        "workOrder": "P0001"
+    },
     "rows": [
         {
             "rowKind": "item",
@@ -114,7 +117,7 @@
                 "vatAmount": 1312.5,
                 "vatTotal": 7562.5
             },
-            "description": "Servisní práce technika — 04/2026"
+            "description": "Instalace a zprovoznění sítě"
         }
     ],
     "vatRecap": [

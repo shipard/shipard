@@ -43,6 +43,9 @@
         "method": "bankTransfer",
         "paymentReference": "1260038"
     },
+    "dimensions": {
+        "workOrder": "P0001"
+    },
     "rows": [
         {
             "rowKind": "item",
@@ -66,7 +69,7 @@
                 "vatAmount": 2100.0,
                 "vatTotal": 12100.0
             },
-            "description": "Servisní práce technika — 03/2026"
+            "description": "Zaměření a návrh nové sítě"
         }
     ],
     "vatRecap": [

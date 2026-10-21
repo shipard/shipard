@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — fáze 2b: zakázky
 
-**Stav:** naplánováno — #131 D19, D29–D37
+**Stav:** hotovo — 2026-10-21, #131 D19, D29–D37
 
 ## Kontext / Cíl
 
@@ -287,19 +287,116 @@ Ověřovací zdroj dat po kontrole smaž, nebo ho nech Anně a zapiš prefix.
 
 ## Hotovo když
 
-- [ ] druhy a řady zakázek v `setup/`, FK přes přirozený klíč, testy
-- [ ] sekce `workOrders/` s evidencí období, dump → seed → dump shodný
-- [ ] dimenze zakázky na dokladech přežije round-trip
-- [ ] 13 periodických zakázek, faktury shodné s `InvoiceBuilder`, běh
+- [x] druhy a řady zakázek v `setup/`, FK přes přirozený klíč, testy
+- [x] sekce `workOrders/` s evidencí období, dump → seed → dump shodný
+- [x] dimenze zakázky na dokladech přežije round-trip
+- [x] 13 periodických zakázek, faktury shodné s `InvoiceBuilder`, běh
       `--dry-run` ke kotvě nevystaví nic
-- [ ] dva projekty Ukončeno s výnosy i náklady v Deníku, kladná marže
-- [ ] souhrn ekonomiky splňuje D25, test cílů projde
-- [ ] druhý běh `build.py` nic nezmění; unit testy generátoru a dotčené
+- [x] dva projekty Ukončeno s výnosy i náklady v Deníku, kladná marže
+- [x] souhrn ekonomiky splňuje D25, test cílů projde
+- [x] druhý běh `build.py` nic nezmění; unit testy generátoru a dotčené
       PHPUnit testy projdou
-- [ ] ověření podle oddílu Ověření, výsledky v Odchylkách
-- [ ] dokumentace aktualizovaná (D35 v `demo/datasets/README.md`)
-- [ ] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
+- [x] ověření podle oddílu Ověření, výsledky v Odchylkách
+- [x] dokumentace aktualizovaná (D35 v `demo/datasets/README.md`)
+- [x] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
       a `python3 scripts/check-sensitive.py` projdou
+
+## Odchylky a zjištění při implementaci (2026-10-21)
+
+- **D37 — řada dokladů složeným klíčem.** Výchozí řady z provisioneru mají
+  `doc_number_code = NULL`, kódem by je setup nedohledal; `inv_number_series`
+  druhu a zakázky se přenáší jako `{docType, code}` (viz D29). Překlad všech
+  FK v `setup/` i v sekci `workOrders/` dělá jedna třída
+  `SetupReferences` (`modules/core/exchange/src/Dataset/`): tabulka ze
+  `SetupExporter::TABLES` s jednosloupcovým klíčem → hodnota klíče, řada
+  dokladů → objekt, účet osnovy číslem jako dřív (chybějící = `null`,
+  beze změny chování), ostatní FK se dál vynechávají; nenalezený nebo
+  nejednoznačný klíč = chyba řádku.
+- **Verifier importu zakázek omezoval kódy DPH na místo plnění
+  `domestic`** (`WorkOrderImportVerifier::vatCodes`, `getVatCodes(…,
+  'domestic')`), takže předpis zahraničního odběratele s kódem EU služeb
+  `cz-202` — který formulář řádků podle zákazníka i applier dokladů
+  přijímají — odmítl (`vat_code_unknown`); první seed tak zahodil tři
+  zakázky a 24 jejich faktur (`dimension_not_found`). Opraveno na kódy
+  země registrace pro směr dokladu bez ohledu na místo plnění (import
+  nenabízí, ověřuje); zapsáno v `docs/exchange-format.md` § Zakázky. Je to
+  chyba importu, ne změna periodické fakturace.
+- **Evidence období = samostatný seeder** `WorkOrderPeriodsSeeder` (sekce
+  `workOrderPeriods` bez souborů a `counts`, jako `fiscalYears`) za
+  `docs/`; `content_hash` počítá nová `ContentHash::ofStoredDocument`
+  (přesun těla `InvoicingRunService::contentHashOf`, seam zůstal).
+- **Dimenze zakázky na dokladech:** `DocumentExporter` dostal parametr
+  `$sectionTables` (dump předá `economy_work_orders_heads`, když DS tabulku
+  má) — přenosné jsou dimenze s cílovou tabulkou v `setup/` nebo ve vlastní
+  sekci. `DimensionResolver` najde i ukončený projekt (vylučuje jen koš),
+  takže past „ukončená zakázka a dimenze“ nenastala; deník dědí dimenzi
+  hlavičky do řádků bez vlastní, proto faktury (paušály i projekty) nesou
+  dimenzi jen na hlavičce — přesně jako `InvoiceBuilder` — a nákup jen na
+  řádcích (switch, router, přístupové body).
+- **Strana zakázky v obálce** je štíhlá identita (název, země, IČO, DIČ,
+  VAT ID) — osoba je v `persons/`; seed ji dohledá jen identifikátory.
+- **Texty paušálů:** popis řádku předpisu je statický v jazyce dokladu
+  (cs „Správa IT — měsíční paušál“, sk, de z příběhu
+  `invoicing.workOrders.rowText`), období nese `docText` z šablony
+  (`docText` s `{období}`, štítek jako `PeriodLabel`). Tím se změnil popis
+  řádku a přibyl `docText`, `periodFrom` / `periodTo`, `source` a
+  `dimensions` na všech 136 paušálových fakturách sady; částky beze změny.
+  Štítky měsíců pro cs / sk / de / en ověřené proti PHP 8.5 / ICU 74.2 (test
+  `test_workorders.py` je nese jako pevné řetězce).
+- **Zahájení zakázky** v příběhu jako posun měsíce (`since: -30`), ne
+  absolutní datum — posun kotvy ho posune s sebou; u čtvrtletní zakázky se
+  zarovná na začátek čtvrtletí. Řady `S` a `P` průběžné (`reset_scope
+  none`), takže zahájení v letech 2022–2025 nepotřebuje fiskální roky
+  (`FiscalYearsSeeder` beze změny).
+- **Projekty (D36)** v příběhu jako blok `projects {kind, series, items[]}`
+  s odkazem `project` u ad hoc faktur a `purchases {supplier, month,
+  rows[]}`: množství nákupu = kusy prodané na fakturách projektu, běžný
+  řádek dodavatele se stejným textem se v tom měsíci nahradí (switch 1 → 2,
+  AP → 4), router přibyl (4 490 Kč); `row_index` ostatních řádků zůstává,
+  takže determinismus množství (`spread_decimal`) se nezměnil. Dodávka
+  Wi-Fi posunuta z 3. na 18. 6. (za nákup 15. 6.) — tím se přečíslovaly
+  červnové vydané faktury a posunuly jejich úhrady; řádky hodin projektů
+  dostaly vlastní text (`text` u řádku `hours`). Zakázky Ukončeno:
+  „Výměna sítě“ 2026-03-17 → 2026-04-22, „Wi-Fi síť hotelu“ 2026-05-17 →
+  2026-06-18.
+- **Nastavení** `economy.accounting.dimension.workOrder: yes` v `setup/`,
+  aby pole Zakázka bylo na formulářích dokladů vidět.
+- **Ekonomika (D25 dál platí):** výnosy 2 089 121, náklady 1 835 345
+  (dodavatelé +16 070 za router, switch a dva přístupové body), zisk
+  +253 776 = **12,1 %**, zahraničí 17,0 %, zboží prodej 317 801 / nákup
+  233 808 (1,36×); projekty: Výměna sítě výnosy 38 040 / náklady 17 290
+  (54,5 %), Wi-Fi 35 660 / 10 360 (70,9 %). BU1 300 000 → minimum
+  275 316 → 580 868.
+- **Ověření** (čerstvý volný DS `joqf-v…`, ponechán Anně k ručnímu
+  průchodu v aplikaci): seed bez nových varování (jen účetní položky
+  z nabídky a dvě chybějící IČO zahraničních firem), `diff -r` jen
+  `manifest.created`; `work-orders-invoice-run --dry-run --date=2026-10-20`
+  = 0 k vystavení, 0 zablokováno pojistkou; skript nad `InvoiceBuilder`
+  pro 13 zakázek × 112 vystavených období: text dokladu, data, období,
+  měna, dimenze, zdroj i řádky (popis, množství, cena, kód DPH, položka)
+  shodné, 0 neshod; 15 zakázek (13 V pořádku periodických, 2 projekty
+  Ukončeno), čítače S = 13, P = 2, 112 období `issued` s dokladem i otiskem
+  (2 koncepty měsíce kotvy), 112 dokladů se zdrojem *periodická
+  fakturace*, 116 s dimenzí na hlavičce + 3 řádky nákupu; deník 1 358
+  řádků, MD = D, 0 chybových, 322 řádků se zakázkou (15 zakázek), deník
+  projektů: P0001 výnosy 6xx 38 040 / náklady 5xx 17 290, P0002 35 660 /
+  10 360; 234 transakcí zaúčtovaných bez chyby; 261100, 261300, 331 / 336 /
+  342 na nule, 343217 MD = 343207 D (9 797,37); 221100 = 580 868,11 =
+  closing BU1, 221200 = 2 867,25 EUR = closing BU2; saldokonto Pohledávky
+  129 případů — 112 uzavřených, 17 otevřených (16 po splatnosti, 1 před
+  splatností v EUR), Závazky 58 uzavřených + 1 se splatností za kotvou,
+  Přijaté zálohy 1 otevřená, Nespárované platby 3 záměrné + případ
+  s prázdným klíčem uzavřený; Výsledovka Od počátku roku: náklady
+  1 835 346,56, výnosy 2 089 127,49 → +253 780,93 (haléřová zaokrouhlení
+  prodejek jako dřív); upozornění `economy.workorders.invoices_to_review`
+  1 nález (koncepty ke kontrole), `period_failed` / `catchup_blocked` /
+  `period_waiting` 0. Round-trip integrační test (`DatasetRoundTripTest`)
+  kryje setup druhu a řady, periodickou zakázku s řádky s platností
+  a obdobím na vydanou fakturu s dimenzí a `content_hash`.
+- Ruční průchod v aplikaci (Zakázky 13 + 2, tab Fakturace s koncepty
+  měsíce kotvy, Deník paušálu i projektů, filtr Zdroj ve vydaných
+  fakturách, upozornění na koncepty) — Anna na DS `joqf-v…`; po kontrole
+  `shpd-server ds-delete`.
 
 ## Rozhodnutí k designu (potvrzená, #131)
 

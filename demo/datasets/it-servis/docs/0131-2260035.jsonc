@@ -132,20 +132,23 @@
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
-            "quantity": 2.0,
+            "quantity": 4.0,
             "unitPrice": 2590.0,
-            "totalPrice": 5180.0,
+            "totalPrice": 10360.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 5180.0,
-                "vatAmount": 1087.8,
-                "vatTotal": 6267.8
+                "vatBase": 10360.0,
+                "vatAmount": 2175.6,
+                "vatTotal": 12535.6
             },
-            "description": "Přístupový bod Wi-Fi 6"
+            "description": "Přístupový bod Wi-Fi 6",
+            "dimensions": {
+                "workOrder": "P0002"
+            }
         },
         {
             "rowKind": "item",
@@ -176,15 +179,15 @@
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 65266.0,
-            "tax": 13705.86,
-            "total": 78971.86
+            "base": 70446.0,
+            "tax": 14793.66,
+            "total": 85239.66
         }
     ],
     "totals": {
-        "totalBase": 65266.0,
-        "totalVat": 13705.86,
-        "totalAmount": 78971.86,
+        "totalBase": 70446.0,
+        "totalVat": 14793.66,
+        "totalAmount": 85239.66,
         "totalRounding": 0.0
     },
     "applyOptions": {

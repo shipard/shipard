@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "IT-Betreuung — Pauschale August 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Wolkenschiff Logistik GmbH",
@@ -26,7 +30,9 @@
         "dueDate": "2026-08-15",
         "accountingDate": "2026-08-01",
         "taxPointDate": "2026-08-01",
-        "vatObligationDate": "2026-08-01"
+        "vatObligationDate": "2026-08-01",
+        "periodFrom": "2026-08-01",
+        "periodTo": "2026-08-31"
     },
     "currency": "EUR",
     "exchangeRate": 24.68,
@@ -41,6 +47,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260105"
+    },
+    "dimensions": {
+        "workOrder": "S0013"
     },
     "rows": [
         {
@@ -65,7 +74,7 @@
                 "vatAmount": 0.0,
                 "vatTotal": 650.0
             },
-            "description": "Správa IT — paušál 08/2026"
+            "description": "IT-Betreuung — Monatspauschale"
         }
     ],
     "vatRecap": [

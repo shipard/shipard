@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál september 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Nitrianske Stroje s.r.o.",
@@ -27,7 +31,9 @@
         "dueDate": "2026-09-15",
         "accountingDate": "2026-09-01",
         "taxPointDate": "2026-09-01",
-        "vatObligationDate": "2026-09-01"
+        "vatObligationDate": "2026-09-01",
+        "periodFrom": "2026-09-01",
+        "periodTo": "2026-09-30"
     },
     "currency": "EUR",
     "exchangeRate": 24.55,
@@ -42,6 +48,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260116"
+    },
+    "dimensions": {
+        "workOrder": "S0011"
     },
     "rows": [
         {
@@ -66,7 +75,7 @@
                 "vatAmount": 0.0,
                 "vatTotal": 480.0
             },
-            "description": "Správa IT — paušál 09/2026"
+            "description": "Správa IT — mesačný paušál"
         }
     ],
     "vatRecap": [

@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál únor 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Dentální klinika Úsměvov s.r.o.",
@@ -27,7 +31,9 @@
         "dueDate": "2026-02-15",
         "accountingDate": "2026-02-01",
         "taxPointDate": "2026-02-01",
-        "vatObligationDate": "2026-02-01"
+        "vatObligationDate": "2026-02-01",
+        "periodFrom": "2026-02-01",
+        "periodTo": "2026-02-28"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -42,6 +48,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260017"
+    },
+    "dimensions": {
+        "workOrder": "S0003"
     },
     "rows": [
         {
@@ -66,7 +75,7 @@
                 "vatAmount": 4410.0,
                 "vatTotal": 25410.0
             },
-            "description": "Správa IT — paušál 02/2026"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [

@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál 3. čtvrtletí 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Fyzioterapie Pohybna s.r.o.",
@@ -26,7 +30,9 @@
         "dueDate": "2026-07-15",
         "accountingDate": "2026-07-01",
         "taxPointDate": "2026-07-01",
-        "vatObligationDate": "2026-07-01"
+        "vatObligationDate": "2026-07-01",
+        "periodFrom": "2026-07-01",
+        "periodTo": "2026-09-30"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -41,6 +47,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260083"
+    },
+    "dimensions": {
+        "workOrder": "S0004"
     },
     "rows": [
         {
@@ -65,7 +74,7 @@
                 "vatAmount": 3150.0,
                 "vatTotal": 18150.0
             },
-            "description": "Správa IT — paušál Q3/2026"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [

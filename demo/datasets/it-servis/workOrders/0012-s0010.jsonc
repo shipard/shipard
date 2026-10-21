@@ -1,0 +1,96 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0010",
+        "sequenceNumber": 10,
+        "numberSeries": "S",
+        "title": "Správa IT — Truhlárna Dubový list s.r.o.",
+        "state": "confirmed",
+        "dateStart": "2025-11-01",
+        "customer": {
+            "name": "Truhlárna Dubový list s.r.o.",
+            "country": "cz",
+            "companyId": "86341928",
+            "taxId": "CZ86341928",
+            "vatId": "CZ86341928"
+        },
+        "currency": "czk",
+        "invoicing": {
+            "periodicity": "month",
+            "invoiceFrom": "2026-01-01",
+            "docText": "Správa IT — paušál {období}"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "Správa IT — měsíční paušál",
+            "quantity": 1.0,
+            "unit": "mnth",
+            "unitPrice": 9000.0,
+            "vatCode": "cz-120"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "state": "issued",
+            "docNumber": "1260010"
+        },
+        {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "state": "issued",
+            "docNumber": "1260022"
+        },
+        {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "state": "issued",
+            "docNumber": "1260034"
+        },
+        {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "state": "issued",
+            "docNumber": "1260048"
+        },
+        {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "state": "issued",
+            "docNumber": "1260063"
+        },
+        {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260075"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "state": "issued",
+            "docNumber": "1260089"
+        },
+        {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "state": "issued",
+            "docNumber": "1260103"
+        },
+        {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "state": "issued",
+            "docNumber": "1260115"
+        },
+        {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "state": "issued",
+            "docNumber": "1260128"
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "P0001",
+        "sequenceNumber": 1,
+        "numberSeries": "P",
+        "title": "Výměna sítě",
+        "state": "finished",
+        "dateStart": "2026-03-17",
+        "dateEnd": "2026-04-22",
+        "customer": {
+            "name": "Galvanovna Pokorný a syn s.r.o.",
+            "country": "cz",
+            "companyId": "18493068",
+            "taxId": "CZ18493068",
+            "vatId": "CZ18493068"
+        },
+        "currency": "czk"
+    }
+}

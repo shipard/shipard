@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál květen 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Hotel Modrý Jelen s.r.o.",
@@ -27,7 +31,9 @@
         "dueDate": "2026-05-15",
         "accountingDate": "2026-05-01",
         "taxPointDate": "2026-05-01",
-        "vatObligationDate": "2026-05-01"
+        "vatObligationDate": "2026-05-01",
+        "periodFrom": "2026-05-01",
+        "periodTo": "2026-05-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -42,6 +48,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260060"
+    },
+    "dimensions": {
+        "workOrder": "S0006"
     },
     "rows": [
         {
@@ -66,7 +75,7 @@
                 "vatAmount": 5250.0,
                 "vatTotal": 30250.0
             },
-            "description": "Správa IT — paušál 05/2026"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [

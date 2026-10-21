@@ -26,7 +26,7 @@
     "sourceType": 2,
     "docState": 40,
     "analysisState": 30,
-    "aiTitle": "Faktura FV-2026-2211 — Velkoobchod Čip a Deska s.r.o., 78 971,86 Kč",
+    "aiTitle": "Faktura FV-2026-2211 — Velkoobchod Čip a Deska s.r.o., 85 239,66 Kč",
     "created": "2026-06-16T08:28:00",
     "target": {
         "table": "docs_core_heads",
@@ -37,8 +37,8 @@
             "file": "FV-2026-2211.pdf",
             "name": "FV-2026-2211.pdf",
             "mimeType": "application/pdf",
-            "size": 34163,
-            "sha256": "a5f9d3ccc8bcade3986696e3925fda15f58acecec48b788a5dc1c84826c3e2ac",
+            "size": 34071,
+            "sha256": "2a6686067db392e8b4c3a4979f620bef342197de168416b464eadff8018a396a",
             "order": 1
         }
     ],
@@ -64,7 +64,7 @@
                 "message_classification": {
                     "primary_type": "invoiceReceived",
                     "confidence": 1,
-                    "title": "Faktura FV-2026-2211 — Velkoobchod Čip a Deska s.r.o., 78 971,86 Kč"
+                    "title": "Faktura FV-2026-2211 — Velkoobchod Čip a Deska s.r.o., 85 239,66 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
@@ -229,9 +229,9 @@
                                     "description": null
                                 },
                                 "unit": "ks",
-                                "quantity": 2,
+                                "quantity": 4,
                                 "unitPrice": 2590,
-                                "totalPrice": 5180,
+                                "totalPrice": 10360,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -266,15 +266,15 @@
                         "vatRecap": [
                             {
                                 "vatPct": 21,
-                                "base": 65266,
-                                "tax": 13705.86,
-                                "total": 78971.86
+                                "base": 70446,
+                                "tax": 14793.66,
+                                "total": 85239.66
                             }
                         ],
                         "totals": {
-                            "totalBase": 65266,
-                            "totalVat": 13705.86,
-                            "totalAmount": 78971.86,
+                            "totalBase": 70446,
+                            "totalVat": 14793.66,
+                            "totalAmount": 85239.66,
                             "totalRounding": 0
                         },
                         "attachments": [
@@ -448,9 +448,9 @@
                             "description": null
                         },
                         "unit": "ks",
-                        "quantity": 2,
+                        "quantity": 4,
                         "unitPrice": 2590,
-                        "totalPrice": 5180,
+                        "totalPrice": 10360,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -485,15 +485,15 @@
                 "vatRecap": [
                     {
                         "vatPct": 21,
-                        "base": 65266,
-                        "tax": 13705.86,
-                        "total": 78971.86
+                        "base": 70446,
+                        "tax": 14793.66,
+                        "total": 85239.66
                     }
                 ],
                 "totals": {
-                    "totalBase": 65266,
-                    "totalVat": 13705.86,
-                    "totalAmount": 78971.86,
+                    "totalBase": 70446,
+                    "totalVat": 14793.66,
+                    "totalAmount": 85239.66,
                     "totalRounding": 0
                 },
                 "attachments": [

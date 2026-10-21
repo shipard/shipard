@@ -10,10 +10,11 @@
         "accountingItems": "all"
     },
     "counts": {
-        "setup": 8,
+        "setup": 10,
         "exchangeRates": 0,
         "persons": 25,
         "items": 12,
+        "workOrders": 15,
         "docs": 291,
         "bank": 20,
         "registry": 6,

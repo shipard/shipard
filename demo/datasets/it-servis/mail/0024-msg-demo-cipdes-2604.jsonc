@@ -26,7 +26,7 @@
     "sourceType": 2,
     "docState": 40,
     "analysisState": 30,
-    "aiTitle": "Faktura FV-2026-2210 — Velkoobchod Čip a Deska s.r.o., 84 879,08 Kč",
+    "aiTitle": "Faktura FV-2026-2210 — Velkoobchod Čip a Deska s.r.o., 98 055,98 Kč",
     "created": "2026-04-16T08:42:00",
     "target": {
         "table": "docs_core_heads",
@@ -37,8 +37,8 @@
             "file": "FV-2026-2210.pdf",
             "name": "FV-2026-2210.pdf",
             "mimeType": "application/pdf",
-            "size": 34166,
-            "sha256": "08c1b1d7745cabd33758f88c73daf53b82c52745c4d206095206c8126a4ff477",
+            "size": 34352,
+            "sha256": "2258d8f96415e22b34d8acb1590926ad2099afb23cd411d27a22b44ec8475e1c",
             "order": 1
         }
     ],
@@ -64,7 +64,7 @@
                 "message_classification": {
                     "primary_type": "invoiceReceived",
                     "confidence": 1,
-                    "title": "Faktura FV-2026-2210 — Velkoobchod Čip a Deska s.r.o., 84 879,08 Kč"
+                    "title": "Faktura FV-2026-2210 — Velkoobchod Čip a Deska s.r.o., 98 055,98 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
@@ -187,9 +187,9 @@
                                     "description": null
                                 },
                                 "unit": "ks",
-                                "quantity": 1,
+                                "quantity": 2,
                                 "unitPrice": 6400,
-                                "totalPrice": 6400,
+                                "totalPrice": 12800,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -261,20 +261,41 @@
                                     "supplyKind": null,
                                     "reverseChargeCode": null
                                 }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Router Wi-Fi 6, 4× GbE",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 4490,
+                                "totalPrice": 4490,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
                             }
                         ],
                         "vatRecap": [
                             {
                                 "vatPct": 21,
-                                "base": 70148,
-                                "tax": 14731.08,
-                                "total": 84879.08
+                                "base": 81038,
+                                "tax": 17017.98,
+                                "total": 98055.98
                             }
                         ],
                         "totals": {
-                            "totalBase": 70148,
-                            "totalVat": 14731.08,
-                            "totalAmount": 84879.08,
+                            "totalBase": 81038,
+                            "totalVat": 17017.98,
+                            "totalAmount": 98055.98,
                             "totalRounding": 0
                         },
                         "attachments": [
@@ -406,9 +427,9 @@
                             "description": null
                         },
                         "unit": "ks",
-                        "quantity": 1,
+                        "quantity": 2,
                         "unitPrice": 6400,
-                        "totalPrice": 6400,
+                        "totalPrice": 12800,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -480,20 +501,41 @@
                             "supplyKind": null,
                             "reverseChargeCode": null
                         }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Router Wi-Fi 6, 4× GbE",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 4490,
+                        "totalPrice": 4490,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
                     }
                 ],
                 "vatRecap": [
                     {
                         "vatPct": 21,
-                        "base": 70148,
-                        "tax": 14731.08,
-                        "total": 84879.08
+                        "base": 81038,
+                        "tax": 17017.98,
+                        "total": 98055.98
                     }
                 ],
                 "totals": {
-                    "totalBase": 70148,
-                    "totalVat": 14731.08,
-                    "totalAmount": 84879.08,
+                    "totalBase": 81038,
+                    "totalVat": 17017.98,
+                    "totalAmount": 98055.98,
                     "totalRounding": 0
                 },
                 "attachments": [

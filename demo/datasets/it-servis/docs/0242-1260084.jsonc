@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál červenec 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Galvanovna Pokorný a syn s.r.o.",
@@ -27,7 +31,9 @@
         "dueDate": "2026-07-15",
         "accountingDate": "2026-07-01",
         "taxPointDate": "2026-07-01",
-        "vatObligationDate": "2026-07-01"
+        "vatObligationDate": "2026-07-01",
+        "periodFrom": "2026-07-01",
+        "periodTo": "2026-07-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -42,6 +48,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260084"
+    },
+    "dimensions": {
+        "workOrder": "S0005"
     },
     "rows": [
         {
@@ -66,7 +75,7 @@
                 "vatAmount": 3675.0,
                 "vatTotal": 21175.0
             },
-            "description": "Správa IT — paušál 07/2026"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [

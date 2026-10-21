@@ -1,7 +1,11 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál červenec 2026",
     "selfParty": "supplier",
     "customer": {
         "name": "Cukrárna U Medvídka s.r.o.",
@@ -26,7 +30,9 @@
         "dueDate": "2026-07-15",
         "accountingDate": "2026-07-01",
         "taxPointDate": "2026-07-01",
-        "vatObligationDate": "2026-07-01"
+        "vatObligationDate": "2026-07-01",
+        "periodFrom": "2026-07-01",
+        "periodTo": "2026-07-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -41,6 +47,9 @@
     "payment": {
         "method": "bankTransfer",
         "paymentReference": "1260081"
+    },
+    "dimensions": {
+        "workOrder": "S0002"
     },
     "rows": [
         {
@@ -65,7 +74,7 @@
                 "vatAmount": 1155.0,
                 "vatTotal": 6655.0
             },
-            "description": "Správa IT — paušál 07/2026"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [

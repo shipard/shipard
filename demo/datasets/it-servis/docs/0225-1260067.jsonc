@@ -43,6 +43,9 @@
         "method": "bankTransfer",
         "paymentReference": "1260067"
     },
+    "dimensions": {
+        "workOrder": "P0002"
+    },
     "rows": [
         {
             "rowKind": "item",
@@ -66,7 +69,7 @@
                 "vatAmount": 3412.5,
                 "vatTotal": 19662.5
             },
-            "description": "Servisní práce technika — 05/2026"
+            "description": "Průzkum lokality a návrh Wi-Fi sítě"
         }
     ],
     "vatRecap": [

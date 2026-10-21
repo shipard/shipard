@@ -64,9 +64,10 @@ python3 demo/datasets/build.py --verify-identities               # ARES / VIES (
 
 Generátor žije v balíku `invoicegen` (`tools/invoice-generator/`,
 `README.md` tamtéž): `story.py` (loader a validace), `expand.py`
-(rozvinutí, model plateb), `bank.py` (výpisy, otevírací a vyrovnávací
-doklady), `doccalc.py` (výpočet jako `DocDocument`), `dumpshape.py`
-(tvar dumpu), `demo.py` (sestavení). Testy: `cd tools/invoice-generator &&
+(rozvinutí, model plateb, zakázky), `workorders.py` (porty `PeriodLabel`,
+`DocTextTemplate` a `PeriodCalendar` periodické fakturace), `bank.py`
+(výpisy, otevírací a vyrovnávací doklady), `doccalc.py` (výpočet jako
+`DocDocument`), `dumpshape.py` (tvar dumpu), `demo.py` (sestavení). Testy: `cd tools/invoice-generator &&
 python3 -m unittest`.
 
 ## Formát příběhu (`stories/<název>/`)
@@ -78,12 +79,12 @@ záporné = minulost), `day` = den v měsíci (delší než měsíc se ořízne)
 
 | Soubor | Obsah |
 |---|---|
-| `story.jsonc` | `name`, `title`, `description`, `anchor`, `monthsBefore`; `own` — identita vlastní firmy (kanonický tvar jako `tests/corpus/cz/identities.jsonc`) + `language`, `bankAccounts` (měna → kód účtu ze `setup/`, CZK povinná; faktura v EUR nese eurový účet a platby za ni chodí na něj — U1), `cashDeskCode`; `rates` — kurz cizí měny per měsíc (D13); `invoicing` — den vystavení, splatnost, texty paušálů; `billing[]` — opakovaná fakturace per odběratel (`every` month / quarter / once, `item`, `price`, `qty`, `priceFrom`, `docType: proformaIssued`, `conceptInAnchorMonth`); `adhoc[]` — jednorázové faktury (řádky s `qty` nebo `hours: [lo, hi]`, `payment: cash`, `state: concept` jen v měsíci 0); `cashRegister` — dny prodejek, zboží, rozsah kusů; `cashExpenses[]` — výdajové pokladní doklady na položky z nabídky osnovy; `payroll` — den, částky (`figures`, přepisy per měsíc), kontační řádky (loader hlídá MD = D); `bank` (fáze 2a) — `accounts` per kód účtu (`openingBalance` — účet v cizí měně jen 0; `fee` {amount, text} = poplatek poslední den dokončeného měsíce), `openingAccount` (701) a `clearingAccount` (261300), `settlementText`, `payroll[]` = platby mezd a odvodů (`amount` = částka z `payroll.figures` s řádkem na straně D, `day` v měsíci následujícím po mzdách, `text`, `counterparty` {account, name} — protiúčet nesmí patřit nikomu v sadě, D22), `transfers[]` = převody mezi vlastními účty (D26: `from` účet v cizí měně, `to` účet v CZK, `day` v každém měsíci, převede se zůstatek nad `reserve` zaokrouhlený dolů na `step`, jen když dělá aspoň `minAmount`; `text` s `{period}`; CZK strana = částka × kurz měsíce, pohyby `transfer.out` / `transfer.in`). Cena položky z `items.jsonc` (CZK) se na faktuře v cizí měně přepočítá kurzem měsíce vystavení (D27); vlastní `price` v `billing[]` je cena v měně faktury |
+| `story.jsonc` | `name`, `title`, `description`, `anchor`, `monthsBefore`; `own` — identita vlastní firmy (kanonický tvar jako `tests/corpus/cz/identities.jsonc`) + `language`, `bankAccounts` (měna → kód účtu ze `setup/`, CZK povinná; faktura v EUR nese eurový účet a platby za ni chodí na něj — U1), `cashDeskCode`; `rates` — kurz cizí měny per měsíc (D13); `invoicing` — den vystavení, splatnost a `workOrders` (fáze 2b, D32–D34: `kind` a `series` paušálů ze `setup/`, `title` zakázky s `{customer}`, `docText` s `{období}` a `rowText` předpisu per jazyk odběratelů); `billing[]` — opakovaná fakturace per odběratel (`every` month / quarter / once, `item`, `price`, `qty`, `priceFrom`, `docType: proformaIssued`, `conceptInAnchorMonth`, `since` = měsíc zahájení zakázky před oknem — `month` a `quarter` jsou periodické zakázky, `once` zůstává mimo); `projects` (D36) — `kind`, `series` a `items[]` projektů (`key`, `customer`, `title`, `startDaysBefore`, `purchases` {supplier, month, rows [{item zboží, text, unitPrice, offerItem}]}); `adhoc[]` — jednorázové faktury (řádky s `qty` nebo `hours: [lo, hi]`, volitelný `text`, `project` = klíč projektu, `payment: cash`, `state: concept` jen v měsíci 0); `cashRegister` — dny prodejek, zboží, rozsah kusů; `cashExpenses[]` — výdajové pokladní doklady na položky z nabídky osnovy; `payroll` — den, částky (`figures`, přepisy per měsíc), kontační řádky (loader hlídá MD = D); `bank` (fáze 2a) — `accounts` per kód účtu (`openingBalance` — účet v cizí měně jen 0; `fee` {amount, text} = poplatek poslední den dokončeného měsíce), `openingAccount` (701) a `clearingAccount` (261300), `settlementText`, `payroll[]` = platby mezd a odvodů (`amount` = částka z `payroll.figures` s řádkem na straně D, `day` v měsíci následujícím po mzdách, `text`, `counterparty` {account, name} — protiúčet nesmí patřit nikomu v sadě, D22), `transfers[]` = převody mezi vlastními účty (D26: `from` účet v cizí měně, `to` účet v CZK, `day` v každém měsíci, převede se zůstatek nad `reserve` zaokrouhlený dolů na `step`, jen když dělá aspoň `minAmount`; `text` s `{period}`; CZK strana = částka × kurz měsíce, pohyby `transfer.out` / `transfer.in`). Cena položky z `items.jsonc` (CZK) se na faktuře v cizí měně přepočítá kurzem měsíce vystavení (D27); vlastní `price` v `billing[]` je cena v měně faktury |
 | `partners.jsonc` | `verifiedAt`; `customers` (identita + `language`, `currency`, `vatTreatment` standard / reverseCharge, kontakt s `sendPurposes`, `payment` = chování plateb D8/D18: `onTime` 2 dny před splatností, `late` + `days`, `partial` + `pct` (+ `remainderDays` = doplatek, jinak nikdy), `never`; `unmatched[]` {month, reference missing / typo} = platba faktury toho měsíce bez VS nebo s překlepem — záměrně nespárovaná se známým protiúčtem); `suppliers` (identita + `template` a `accent` šablony `demo/invoices/templates/` (`en` = anglická šablona korpusu), `docNumber` vzor čísla dodavatele, `invoices` pravidlo faktur: `every` / `months`, `day`, `dueDays`, `anchorMonth` processed / open / skip, `period: previousMonth`, `rounding: czk`, řádky s kódem nabídky účetních položek; `payment` = jak platíme my: `onTime` den před splatností, `late` + `days`, bez pole včas; zahraniční dodavatel (D28): `language` en, `currency` EUR (kurz z `story.jsonc`, úhrada z eurového účtu kurzem faktury), `vatTreatment` reverseCharge — řádky se `supplyKind: services` a `vatPct` 21 = sazba samovyměření, doklad dostane kód cz-217 s párem cz-207, papír tiskne 0 % a klauzuli reverse charge; bez polí = česky, CZK, standard) |
 | `items.jsonc` | vlastní prodejní položky: kód, název, druh (`service` / `stock`), jednotka (`core.units`), cena, sazba, výnosový účet. Účetní položky pro přijaté faktury přidá seed z nabídky osnovy (`provision.accountingItems: "all"`) |
 | `registry.jsonc` | dokumenty spisovny: druh, šablona z `templates/`, šanon, partner, `refNumber`, `created` {month, day, time}, `validFrom`, `validTo` ({afterAnchorDays} / {years} / {month, day}), `summary`, `kindFields` podle druhu (promote klíče doplní generátor) |
 | `mail.jsonc` | zprávy k řešení bez dokladu (`kind: other`) s pozorností (`attention`, `actionNote`, `dueInDays` od kotvy); návrhy faktur vznikají z `anchorMonth: open` u dodavatelů |
-| `setup/*.jsonc` | číselníky ve tvaru dumpu (všechny sloupce vč. `null`): nastavení, nesystémové účty osnovy (`accounts` — analytika 221200 pro eurový účet, výchozí osnova má jen 221100), bankovní účty (BU1 CZK, BU2 EUR, každý s `accounting_account` = analytika 221), pokladna, registrace DPH, šanony, střediska (prázdné), schránka. `@period.start` v datu = první den dat |
+| `setup/*.jsonc` | číselníky ve tvaru dumpu (všechny sloupce vč. `null`): nastavení (vč. `economy.accounting.dimension.workOrder: yes` — pole Zakázka na dokladech), nesystémové účty osnovy (`accounts` — analytika 221200 pro eurový účet, výchozí osnova má jen 221100), bankovní účty (BU1 CZK, BU2 EUR, každý s `accounting_account` = analytika 221), pokladna, registrace DPH, šanony, střediska (prázdné), schránka, druhy a řady zakázek (`work_order_kinds` — periodický druh s řadou dokladů `{docType, code}` D37 a účtem kódem, druh projektů; `work_order_series` — řady `S` a `P` průběžné, druh názvem). `@period.start` v datu = první den dat |
 
 Pravidla, která loader vynucuje: kontrolní součty IČO / účtů / IBAN / DE
 DIČ, domény jen `.example` (D15), telefony s nepřidělitelným předčíslím 000 za kódem země, žádný překryv s identitami dema
@@ -101,7 +102,11 @@ velikost písmen ani interpunkce; takové jméno autor přejmenuje. Rozvinutí
 vyrovnávací doklad, že překlep VS nekoliduje s číslem dokladu, že kurz
 nese jen transakce na účtu v cizí měně a že obě strany převodu jsou téhož
 dne s CZK částkou přesně EUR × kurz (peníze na cestě nulové); doklad
-v cizí měně bez kurzu je chyba, ne tichý kurz 1.
+v cizí měně bez kurzu je chyba, ne tichý kurz 1. Zakázky: druh a řada
+paušálů i projektů jsou v `setup/` (řada průběžná), `since` leží před
+oknem, texty pokrývají jazyky odběratelů, každý projekt má fakturu
+s `project`, nakupované položky se na nich prodávají a nákup předchází
+dodávce.
 
 ## Jak sadu naseedovat a ověřit
 
@@ -124,21 +129,27 @@ Očekávaná varování seedu: založení účetních položek z nabídky a chyb
 IČO německého odběratele. Dump varuje per EUR doklad, že kurz není
 v lístcích — kurz nese doklad sám (D13), lístky sada nemá.
 
-Co má po seedu sedět (fáze 2a + ekonomika D25–D28, ověřeno 2026-10-21):
-deník MD = D bez chybových řádků, všech 234 transakcí zaúčtovaných bez
-chyby, partner dohledaný u každé platby faktury (SK / DE odběratelé a NL
-dodavatel podle IBAN), bez partnera jen mzdy, odvody, poplatky a převody
-mezi vlastními účty; 261100 Peníze na cestě po 6 převodech nulový
-(obrat MD = D), 261300 nulový, 343217 MD = 343207 D (samovyměření 10
-faktur dodavatele z EU, DPH na vstupu i výstupu v CZK kurzem faktury);
-saldokonto Pohledávky 129 případů (112 uzavřených, 2 částečně uhrazené,
-14 po splatnosti, 1 před splatností v EUR), Závazky 58 uzavřených (vč.
-10 v EUR bez rezidua v CZK) a 1 se splatností za kotvou, Nespárované
-platby jen 3 záměrné příjmy (případ mezd s prázdným klíčem na nule),
-Přijaté zálohy 1 otevřená (záloha čeká na vyúčtování), zůstatek 221100 =
-konečný zůstatek posledního výpisu BU1 a 221200 v EUR = konečný zůstatek
-BU2; Výsledovka „Od počátku roku“ = souhrn generátoru (výnosy 6xx a náklady
-5xx se liší jen o haléřová zaokrouhlení prodejek na 548 / 648). Zdroj dat
+Co má po seedu sedět (fáze 2a + ekonomika D25–D28 + zakázky 2b, ověřeno
+2026-10-21): deník MD = D bez chybových řádků, všech 234 transakcí
+zaúčtovaných bez chyby, partner dohledaný u každé platby faktury (SK / DE
+odběratelé a NL dodavatel podle IBAN), bez partnera jen mzdy, odvody,
+poplatky a převody mezi vlastními účty; 261100 Peníze na cestě po 6
+převodech nulový (obrat MD = D), 261300 nulový, 343217 MD = 343207 D
+(samovyměření 10 faktur dodavatele z EU, DPH na vstupu i výstupu v CZK
+kurzem faktury); saldokonto Pohledávky 129 případů (112 uzavřených, 17
+otevřených — 16 po splatnosti vč. částečně uhrazených, 1 před splatností
+v EUR), Závazky 58 uzavřených (vč. 10 v EUR bez rezidua v CZK) a 1 se
+splatností za kotvou, Nespárované platby jen 3 záměrné příjmy (případ mezd
+s prázdným klíčem uzavřený), Přijaté zálohy 1 otevřená (záloha čeká na
+vyúčtování), zůstatek 221100 = konečný zůstatek posledního výpisu BU1
+a 221200 v EUR = konečný zůstatek BU2; Výsledovka „Od počátku roku“ =
+souhrn generátoru (výnosy 6xx a náklady 5xx se liší jen o haléřová
+zaokrouhlení prodejek na 548 / 648). Zakázky: 15 (13 periodických
+V pořádku, 2 projekty Ukončeno), 112 vystavených období s dokladem
+a otiskem, 112 vydaných faktur se zdrojem *periodická fakturace*,
+`work-orders-invoice-run --dry-run --date=<kotva>` nic nevystaví, deník
+projektů nese výnosy i náklady, upozornění *Faktury z periodické
+fakturace ke kontrole* ukazuje koncepty měsíce kotvy. Zdroj dat
 vzniklý před fází 2a potřebuje `ds-upgrade` (zrcadlové řádky skupiny
 Nespárované platby, `docs/accbal.md` § 4.4) a `accbal-regenerate --all`.
 
@@ -182,7 +193,42 @@ po zaúčtování vyjde nulový; protiúčet je náš druhý účet, partnera ne
   pokladního dokladu sada nemá (řádkový partner se do formátu nepřenáší,
   D21, `docs/datasets.md` § 4).
 
-## Fáze 2b, 2c
+## Zakázky (fáze 2b) a cron po seedu
 
-Zakázky (dimenze na fakturách, evidence období) a majetek (karta serveru
-z přijaté faktury) přidají samostatné tasky (#131 D16, D19, D20).
+Paušály jsou **periodické zakázky** (#131 D19, D32–D34,
+`tasks/demo-dataset-phase2b-work-orders.md`): 13 zakázek V pořádku druhu
+„Správa IT — paušál“ řady `S` (10 měsíčních, 3 čtvrtletní), zahájené
+různě před oknem (`since`), „fakturovat od“ = první období v okně.
+Faktury paušálů vypadají jako z periodické fakturace: vystavení = DUZP =
+začátek období, splatnost 14 dní, `periodFrom` / `periodTo`, text dokladu
+„Správa IT — paušál leden 2026“ (štítek období jako `PeriodLabel`
+v jazyce odběratele — sk „január 2026“, de „Januar 2026“, čtvrtletí
+„1. čtvrtletí 2026“), popis řádku z předpisu („Správa IT — měsíční
+paušál“), zdroj *periodická fakturace* a dimenze zakázky na hlavičce.
+Změna ceny hotelu = dva řádky předpisu s platností. Zahraniční zakázky
+jsou v EUR s účtem BU2. Evidence období (`workOrders/*.jsonc` `periods[]`)
+je úplná: každé období od „fakturovat od“ do kotvy má doklad, koncepty
+v měsíci kotvy jsou vystavená období s dokladem v Konceptu, takže
+`shpd-ds work-orders-invoice-run --dry-run --date=<kotva>` nic nevystaví.
+Zálohová faktura (`once`) a jednorázové faktury zakázku nemají.
+
+**Projekty** (D36): dvě zakázky Ukončeno druhu „Projekty“ řady `P` —
+„Výměna sítě“ (galvanovna, faktury v březnu a dubnu, nákup routeru a switchů
+u velkoobchodu v dubnu) a „Wi-Fi síť hotelu“ (jelen, faktury v květnu a
+červnu, nákup přístupových bodů v červnu, dodávka až po nákupu). Faktury
+projektu nesou dimenzi zakázky na hlavičce, nákupní řádky na faktuře
+velkoobchodu na řádku; množství nákupu = prodané kusy. Deník zakázky tak
+ukazuje výnosy i náklady, souhrn `build.py` vypisuje marži projektů (obě
+kladné).
+
+**Cron po seedu (D35).** Zakázky jsou V pořádku, takže zdroj dat se zapnutým
+cronem (`shpd-ds ds-state cron --on`) vystavuje po kotvě další období jako
+koncepty (denní běh periodické fakturace) a po třech zmeškaných obdobích
+zastaví pojistka dohánění s upozorněním *Dohánění zastaveno*. Pro web proto
+platí: čerstvý build s posunutou kotvou (`build.py --anchor <datum>`),
+ne sada s kotvou v minulosti.
+
+## Fáze 2c
+
+Majetek (karta serveru z přijaté faktury) přidá samostatný task (#131 D16,
+D20).

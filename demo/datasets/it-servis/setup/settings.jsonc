@@ -7,6 +7,10 @@
             "value": "default"
         },
         {
+            "key": "economy.accounting.dimension.workOrder",
+            "value": "yes"
+        },
+        {
             "key": "economy.assets.accountingSeries",
             "value": "6"
         },
