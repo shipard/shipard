@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — fáze 2a: banka
 
-**Stav:** hotovo — 2026-10-20 (#131 D16–D18, D21, D22, U1); odchylky a výsledky ověření níže
+**Stav:** hotovo — 2026-10-20 (#131 D16–D18, D21–D24, U1); odchylky a výsledky ověření níže
 
 ## Kontext / Cíl
 
@@ -262,7 +262,7 @@ necháš Anně k ručnímu průchodu, zapiš jeho prefix do Odchylek.
 
 ## Odchylky a zjištění při implementaci (2026-10-20)
 
-- **Krok 0 v PHP (rozhodnuto v chatu).** Dvě věci, na kterých zadání stálo,
+- **Krok 0 v PHP (#131 D23, D24).** Dvě věci, na kterých zadání stálo,
   aplikace neuměla:
   - **0a `setup/accounts.jsonc`** — sada neuměla zakládat účty osnovy,
     výchozí osnova má jen 221100 a BU1 měl `accounting_account: null`
@@ -346,5 +346,13 @@ necháš Anně k ručnímu průchodu, zapiš jeho prefix do Odchylek.
 - ✓ **D22** — mzdy a odvody bez partnera a VS + vyrovnávací interní doklad;
   DPH se do výpisu nedává
 
+- ✓ **D23** — účty osnovy jako tabulka `setup/accounts` (jen nesystémové,
+  klíč `number`), seed před `bank_accounts`
+- ✓ **D24** — skupina Nespárované platby se zrcadlovými řádky
+  `261300 DAL` / `261200 MD` (`modify_sign`), doplní je i
+  `ClearingInfrastructureProvisioner` při `ds-upgrade`; předpoklad D22.
+  Kontrola při review (2026-10-20): na dev zdrojích dat ani na alfě nejsou
+  pohyby `261300 DAL` / `261200 MD` — upgrade nezmění žádné existující
+  saldo, regenerace není potřeba
 - ✓ **U1** — eurový účet BU2 pro platby EUR faktur, kurz transakce = kurz
   hrazené faktury (upřesnění při psaní zadání, potvrzeno v chatu)
