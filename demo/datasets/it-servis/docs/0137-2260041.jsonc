@@ -2,38 +2,39 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "NP-26-039",
+    "docNumber": "202620419",
     "selfParty": "customer",
     "supplier": {
-        "name": "Správa nemovitostí Patro s.r.o.",
+        "name": "Licenční dům Klíček s.r.o.",
         "country": "cz",
-        "companyId": "81973501",
-        "taxId": "CZ81973501",
-        "vatId": "CZ81973501",
-        "courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
+        "companyId": "48360210",
+        "taxId": "CZ48360210",
+        "vatId": "CZ48360210",
+        "courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
         "address": {
-            "street": "Schodišťová",
-            "houseNumber": "3",
+            "street": "Softwarová",
+            "houseNumber": "9",
             "city": "Brno",
-            "zip": "60200",
+            "zip": "63900",
             "country": "cz"
         },
         "contact": {
-            "email": "najmy@patro-sprava.example",
-            "phone": "+420000112900"
+            "email": "obchod@licencni-dum-klicek.example",
+            "phone": "+420000210560",
+            "web": "www.licencni-dum-klicek.example"
         },
         "bankAccount": {
-            "accountNumber": "1628735058/5500",
-            "iban": "CZ3355000000001628735058",
-            "bic": "RZBCCZPP"
+            "accountNumber": "1382659074/0100",
+            "iban": "CZ0801000000001382659074",
+            "bic": "KOMBCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-09-01",
-        "dueDate": "2026-09-11",
-        "accountingDate": "2026-09-01",
-        "taxPointDate": "2026-09-01",
-        "vatObligationDate": "2026-09-01"
+        "issueDate": "2026-07-08",
+        "dueDate": "2026-07-29",
+        "accountingDate": "2026-07-08",
+        "taxPointDate": "2026-07-08",
+        "vatObligationDate": "2026-07-08"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -47,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "26039"
+        "paymentReference": "202620419"
     },
     "rows": [
         {
@@ -55,63 +56,39 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 18000.0,
-            "totalPrice": 18000.0,
+            "unitPrice": 11700.0,
+            "totalPrice": 11700.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 18000.0,
-                "vatAmount": 3780.0,
-                "vatTotal": 21780.0
+                "vatBase": 11700.0,
+                "vatAmount": 2457.0,
+                "vatTotal": 14157.0
             },
-            "description": "Nájem kanceláře Serverová 1024/8 — 09/2026"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 2,
-            "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
-            },
-            "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 2400.0,
-            "totalPrice": 2400.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 2400.0,
-                "vatAmount": 504.0,
-                "vatTotal": 2904.0
-            },
-            "description": "Služby spojené s nájmem — 09/2026"
+            "description": "Licence kancelářského balíku, 25 uživatelů — Q3/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 20400.0,
-            "tax": 4284.0,
-            "total": 24684.0
+            "base": 11700.0,
+            "tax": 2457.0,
+            "total": 14157.0
         }
     ],
     "totals": {
-        "totalBase": 20400.0,
-        "totalVat": 4284.0,
-        "totalAmount": 24684.0,
+        "totalBase": 11700.0,
+        "totalVat": 2457.0,
+        "totalAmount": 14157.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

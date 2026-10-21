@@ -6,27 +6,46 @@
         "externalId": "BU2-2026-03",
         "periodStart": "2026-03-01",
         "periodEnd": "2026-03-31",
-        "openingBalance": 3850.0,
-        "closingBalance": 5580.0,
+        "openingBalance": 1074.0,
+        "closingBalance": 1016.0,
         "currency": "EUR"
     },
     "transactions": [
         {
             "externalId": "BU2-202603-001",
-            "amount": 1250.0,
+            "amount": 650.0,
             "dateTransaction": "2026-03-13",
             "counterpartyAccount": "DE18370400440532014860",
             "counterpartyName": "Wolkenschiff Logistik GmbH",
-            "paymentReference": "1260034",
+            "paymentReference": "1260036",
             "exchangeRate": 24.96
         },
         {
             "externalId": "BU2-202603-002",
+            "amount": -188.0,
+            "dateTransaction": "2026-03-18",
+            "counterpartyAccount": "NL69NWBK0481570693",
+            "counterpartyName": "Noordwolk Backup B.V.",
+            "paymentReference": "202618409",
+            "exchangeRate": 24.96
+        },
+        {
+            "externalId": "BU2-202603-003",
             "amount": 480.0,
             "dateTransaction": "2026-03-24",
             "counterpartyAccount": "SK6709000000003914726058",
             "counterpartyName": "Nitrianske Stroje s.r.o.",
-            "paymentReference": "1260033",
+            "paymentReference": "1260035",
+            "exchangeRate": 24.96
+        },
+        {
+            "externalId": "BU2-202603-004",
+            "amount": -1000.0,
+            "dateTransaction": "2026-03-25",
+            "counterpartyAccount": "3178429609/0100",
+            "counterpartyName": "Zelený Terminál s.r.o.",
+            "message": "Převod z eurového účtu 03/2026",
+            "operation": "transfer.out",
             "exchangeRate": 24.96
         }
     ],

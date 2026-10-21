@@ -2,7 +2,7 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "2026071249",
+    "docNumber": "2026071248",
     "selfParty": "customer",
     "supplier": {
         "name": "Energie Jiskra a.s.",
@@ -30,13 +30,13 @@
         }
     },
     "dates": {
-        "issueDate": "2026-06-12",
-        "dueDate": "2026-06-26",
-        "accountingDate": "2026-06-12",
-        "taxPointDate": "2026-05-31",
-        "vatObligationDate": "2026-05-31",
-        "periodFrom": "2026-05-01",
-        "periodTo": "2026-05-31"
+        "issueDate": "2026-05-12",
+        "dueDate": "2026-05-26",
+        "accountingDate": "2026-05-12",
+        "taxPointDate": "2026-04-30",
+        "vatObligationDate": "2026-04-30",
+        "periodFrom": "2026-04-01",
+        "periodTo": "2026-04-30"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -50,7 +50,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "2026071249"
+        "paymentReference": "2026071248"
     },
     "rows": [
         {
@@ -62,18 +62,18 @@
                 "name": "Spotřeba energie (elektřina)"
             },
             "unit": "mwh",
-            "quantity": 0.7,
+            "quantity": 0.707,
             "unitPrice": 3190.0,
-            "totalPrice": 2233.0,
+            "totalPrice": 2255.33,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 2233.0,
-                "vatAmount": 468.93,
-                "vatTotal": 2701.93
+                "vatBase": 2255.33,
+                "vatAmount": 473.62,
+                "vatTotal": 2728.95
             },
             "description": "Silová elektřina — produkt STANDARD"
         },
@@ -86,18 +86,18 @@
                 "name": "Spotřeba energie (elektřina)"
             },
             "unit": "mwh",
-            "quantity": 0.7,
+            "quantity": 0.707,
             "unitPrice": 2015.0,
-            "totalPrice": 1410.5,
+            "totalPrice": 1424.61,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 1410.5,
-                "vatAmount": 296.21,
-                "vatTotal": 1706.71
+                "vatBase": 1424.61,
+                "vatAmount": 299.17,
+                "vatTotal": 1723.78
             },
             "description": "Distribuce elektřiny vč. systémových služeb"
         },
@@ -130,16 +130,16 @@
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 3811.5,
-            "tax": 800.42,
-            "total": 4611.92
+            "base": 3847.94,
+            "tax": 808.07,
+            "total": 4656.01
         }
     ],
     "totals": {
-        "totalBase": 3811.5,
-        "totalVat": 800.42,
-        "totalAmount": 4612.0,
-        "totalRounding": 0.08
+        "totalBase": 3847.94,
+        "totalVat": 808.07,
+        "totalAmount": 4656.01,
+        "totalRounding": 0.0
     },
     "applyOptions": {
         "targetDocState": 40,

@@ -6,21 +6,29 @@
         "externalId": "BU1-2026-09",
         "periodStart": "2026-09-01",
         "periodEnd": "2026-09-30",
-        "openingBalance": 483919.41,
-        "closingBalance": 316903.42,
+        "openingBalance": 563015.52,
+        "closingBalance": 543363.81,
         "currency": "CZK"
     },
     "transactions": [
         {
             "externalId": "BU1-202609-001",
-            "amount": 4356.0,
-            "dateTransaction": "2026-09-09",
-            "counterpartyAccount": "2087561431/0100",
-            "counterpartyName": "Galvanovna Pokorný a syn s.r.o.",
-            "paymentReference": "1260090"
+            "amount": 13612.5,
+            "dateTransaction": "2026-09-01",
+            "counterpartyAccount": "2440913574/0300",
+            "counterpartyName": "Autodoprava Kopretina s.r.o.",
+            "paymentReference": "1260107"
         },
         {
             "externalId": "BU1-202609-002",
+            "amount": 10587.5,
+            "dateTransaction": "2026-09-09",
+            "counterpartyAccount": "2087561431/0100",
+            "counterpartyName": "Galvanovna Pokorný a syn s.r.o.",
+            "paymentReference": "1260099"
+        },
+        {
+            "externalId": "BU1-202609-003",
             "amount": -24684.0,
             "dateTransaction": "2026-09-10",
             "counterpartyAccount": "1628735058/5500",
@@ -28,7 +36,7 @@
             "paymentReference": "26039"
         },
         {
-            "externalId": "BU1-202609-003",
+            "externalId": "BU1-202609-004",
             "amount": -4524.0,
             "dateTransaction": "2026-09-10",
             "counterpartyAccount": "2190463856/0800",
@@ -36,7 +44,7 @@
             "paymentReference": "2026071251"
         },
         {
-            "externalId": "BU1-202609-004",
+            "externalId": "BU1-202609-005",
             "amount": -70896.0,
             "dateTransaction": "2026-09-10",
             "counterpartyAccount": "1000000013/0800",
@@ -44,46 +52,46 @@
             "message": "Výplata mezd 08/2026"
         },
         {
-            "externalId": "BU1-202609-005",
-            "amount": 7865.0,
+            "externalId": "BU1-202609-006",
+            "amount": 19360.0,
             "dateTransaction": "2026-09-13",
             "counterpartyAccount": "2440913574/0300",
             "counterpartyName": "Autodoprava Kopretina s.r.o.",
-            "paymentReference": "1260098"
-        },
-        {
-            "externalId": "BU1-202609-006",
-            "amount": 11858.0,
-            "dateTransaction": "2026-09-13",
-            "counterpartyAccount": "2753109843/2010",
-            "counterpartyName": "Dentální klinika Úsměvov s.r.o.",
-            "paymentReference": "1260100"
+            "paymentReference": "1260108"
         },
         {
             "externalId": "BU1-202609-007",
-            "amount": 6776.0,
+            "amount": 25410.0,
             "dateTransaction": "2026-09-13",
-            "counterpartyAccount": "2238170965/0300",
-            "counterpartyName": "Lékárna Pod Modrou Věží s.r.o.",
-            "paymentReference": "1260104"
+            "counterpartyAccount": "2753109843/2010",
+            "counterpartyName": "Dentální klinika Úsměvov s.r.o.",
+            "paymentReference": "1260110"
         },
         {
             "externalId": "BU1-202609-008",
-            "amount": 4961.0,
+            "amount": 14520.0,
+            "dateTransaction": "2026-09-13",
+            "counterpartyAccount": "2238170965/0300",
+            "counterpartyName": "Lékárna Pod Modrou Věží s.r.o.",
+            "paymentReference": "1260114"
+        },
+        {
+            "externalId": "BU1-202609-009",
+            "amount": 10890.0,
             "dateTransaction": "2026-09-13",
             "counterpartyAccount": "1705384627/0800",
             "counterpartyName": "Truhlárna Dubový list s.r.o."
         },
         {
-            "externalId": "BU1-202609-009",
-            "amount": 4356.0,
+            "externalId": "BU1-202609-010",
+            "amount": 10587.5,
             "dateTransaction": "2026-09-15",
             "counterpartyAccount": "2087561431/0100",
             "counterpartyName": "Galvanovna Pokorný a syn s.r.o.",
-            "paymentReference": "1260101"
+            "paymentReference": "1260111"
         },
         {
-            "externalId": "BU1-202609-010",
+            "externalId": "BU1-202609-011",
             "amount": -5929.0,
             "dateTransaction": "2026-09-16",
             "counterpartyAccount": "2519046733/2010",
@@ -91,7 +99,7 @@
             "paymentReference": "20261191"
         },
         {
-            "externalId": "BU1-202609-011",
+            "externalId": "BU1-202609-012",
             "amount": -3484.8,
             "dateTransaction": "2026-09-19",
             "counterpartyAccount": "2874190350/0300",
@@ -99,15 +107,15 @@
             "paymentReference": "2026448209"
         },
         {
-            "externalId": "BU1-202609-012",
-            "amount": 16819.0,
+            "externalId": "BU1-202609-013",
+            "amount": 33275.0,
             "dateTransaction": "2026-09-20",
             "counterpartyAccount": "1572946306/0600",
             "counterpartyName": "Hotel Modrý Jelen s.r.o.",
-            "paymentReference": "1260102"
+            "paymentReference": "1260112"
         },
         {
-            "externalId": "BU1-202609-013",
+            "externalId": "BU1-202609-014",
             "amount": -41216.0,
             "dateTransaction": "2026-09-20",
             "counterpartyAccount": "1000000021/0800",
@@ -115,7 +123,7 @@
             "message": "Pojistné 08/2026"
         },
         {
-            "externalId": "BU1-202609-014",
+            "externalId": "BU1-202609-015",
             "amount": -10984.0,
             "dateTransaction": "2026-09-20",
             "counterpartyAccount": "1000000048/0800",
@@ -123,23 +131,32 @@
             "message": "Záloha na daň 08/2026"
         },
         {
-            "externalId": "BU1-202609-015",
-            "amount": -65629.19,
+            "externalId": "BU1-202609-016",
+            "amount": -46852.41,
             "dateTransaction": "2026-09-24",
             "counterpartyAccount": "1746290598/6210",
             "counterpartyName": "Velkoobchod Čip a Deska s.r.o.",
             "paymentReference": "20262213"
         },
         {
-            "externalId": "BU1-202609-016",
-            "amount": 3509.0,
+            "externalId": "BU1-202609-017",
+            "amount": 44190.0,
+            "dateTransaction": "2026-09-25",
+            "counterpartyAccount": "3178429617/0100",
+            "counterpartyName": "Zelený Terminál s.r.o.",
+            "message": "Převod z eurového účtu 09/2026",
+            "operation": "transfer.in"
+        },
+        {
+            "externalId": "BU1-202609-018",
+            "amount": 6655.0,
             "dateTransaction": "2026-09-27",
             "counterpartyAccount": "1908274639/0800",
             "counterpartyName": "Cukrárna U Medvídka s.r.o.",
-            "paymentReference": "1260099"
+            "paymentReference": "1260109"
         },
         {
-            "externalId": "BU1-202609-017",
+            "externalId": "BU1-202609-019",
             "amount": -169.0,
             "dateTransaction": "2026-09-30",
             "message": "Poplatek za vedení účtu",

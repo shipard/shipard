@@ -28,8 +28,11 @@ from .timeline import Period, period_for
 IDENTITY_KEYS = ("name", "country", "companyId", "taxId", "vatId", "courtRegistration", "address", "contact",
                  "bankAccount", "vatPayer")
 LANGUAGES = ("cs", "sk", "de", "en")
+SUPPLIER_LANGUAGES = ("cs", "en")                     # jazyk papíru dodavatele = locale šablony (#131 D28)
 CURRENCIES = ("CZK", "EUR")
 VAT_TREATMENTS = ("standard", "reverseCharge")
+SUPPLY_KINDS = ("services",)                          # samovyměření jen u služeb z EU (cz-217); zboží sada neumí
+SELF_ASSESSED_VAT_PCT = 21                            # sazba samovyměření služeb (cz-217)
 PAYMENT_BEHAVIOURS = ("onTime", "late", "partial", "never")
 SUPPLIER_PAYMENT_BEHAVIOURS = ("onTime", "late")      # jak platíme my (fáze 2a)
 PAYMENT_REFERENCE_FAULTS = ("missing", "typo")        # záměrně nespárovaná platba (D18)
@@ -45,6 +48,12 @@ VAT_PCTS = (0, 12, 21)
 
 class StoryError(ValueError):
     pass
+
+
+def template_locale(template: str) -> str:
+    """Locale šablony faktur dodavatele (`demo/invoices/templates/`): `en`
+    je kopie korpusové anglické šablony, ostatní jsou české."""
+    return "en" if template == "en" else "cs"
 
 
 @dataclass(frozen=True)
@@ -337,13 +346,34 @@ def _party(key: str, kind: str, raw: dict, problems: _Problems, catalogs: Catalo
                                     or (payment.get("behaviour") == "late"
                                         and not (_is_int(payment.get("days")) and payment["days"] > 0))):
             problems.add(where, f"payment musí být {{behaviour z {', '.join(SUPPLIER_PAYMENT_BEHAVIOURS)}, days u late}}")
+        # Zahraniční dodavatel (#131 D28): jazyk papíru, měna faktur a
+        # samovyměření; bez polí = česky, CZK, standard.
+        language = language or "cs"
+        currency = currency or "CZK"
+        treatment = treatment or "standard"
+        if language not in SUPPLIER_LANGUAGES:
+            problems.add(where, f"language musí být jeden z {', '.join(SUPPLIER_LANGUAGES)}")
+        if currency not in CURRENCIES:
+            problems.add(where, f"currency musí být jedna z {', '.join(CURRENCIES)}")
+        elif currency != "CZK":
+            missing = [m for m in period.offsets if m not in rates.get(currency, {})]
+            if missing:
+                problems.add(where, f"chybí kurz {currency} pro měsíce {missing}")
+        if treatment not in VAT_TREATMENTS:
+            problems.add(where, f"vatTreatment musí být jeden z {', '.join(VAT_TREATMENTS)}")
+        elif treatment == "reverseCharge" and (raw.get("country") == "cz" or not raw.get("vatId")):
+            problems.add(where, "reverseCharge jen pro zahraničního plátce s vatId")
+        elif treatment == "standard" and raw.get("country") != "cz" and invoices is not None:
+            problems.add(where, "zahraniční dodavatel s fakturami jen s reverseCharge (služby z EU, samovyměření)")
         if invoices is not None:
             if template not in catalogs.invoice_templates:
                 problems.add(where, f"template musí být z {', '.join(sorted(catalogs.invoice_templates))}")
+            elif template_locale(template) != language:
+                problems.add(where, f"template {template} je {template_locale(template)}, language je {language}")
             if not isinstance(doc_number, dict) or not _is_text(doc_number.get("pattern")) \
                     or "{seq" not in doc_number["pattern"] or not _is_int(doc_number.get("seqStart")):
                 problems.add(where, "docNumber musí být {pattern s {seq…}, seqStart}")
-            _supplier_invoices(where, invoices, problems, catalogs, period)
+            _supplier_invoices(where, invoices, problems, catalogs, period, reverse_charge=treatment == "reverseCharge")
             if not raw.get("bankAccount") or not (raw["bankAccount"].get("accountNumber") or raw["bankAccount"].get("iban")):
                 problems.add(where, "dodavatel s fakturami potřebuje bankovní účet")
 
@@ -355,7 +385,8 @@ def _party(key: str, kind: str, raw: dict, problems: _Problems, catalogs: Catalo
     )
 
 
-def _supplier_invoices(where: str, rule: dict, problems: _Problems, catalogs: Catalogs, period: Period) -> None:
+def _supplier_invoices(where: str, rule: dict, problems: _Problems, catalogs: Catalogs, period: Period,
+                       *, reverse_charge: bool = False) -> None:
     every = rule.get("every")
     months = rule.get("months")
     if (every is None) == (months is None):
@@ -401,6 +432,16 @@ def _supplier_invoices(where: str, rule: dict, problems: _Problems, catalogs: Ca
                 problems.add(rw, f"unit musí být kód jednotky z {', '.join(sorted(catalogs.units))}")
         if row.get("vatPct") not in VAT_PCTS:
             problems.add(rw, f"vatPct musí být z {VAT_PCTS}")
+        # Samovyměření (D28): `vatPct` je sazba, kterou přiznává příjemce
+        # (doklad cz-217 / 21 %); papír dodavatele tiskne 0 % a klauzuli.
+        supply_kind = row.get("supplyKind")
+        if reverse_charge:
+            if supply_kind not in SUPPLY_KINDS:
+                problems.add(rw, f"u dodavatele s reverseCharge musí mít řádek supplyKind z {', '.join(SUPPLY_KINDS)}")
+            if row.get("vatPct") != SELF_ASSESSED_VAT_PCT:
+                problems.add(rw, f"samovyměření služeb z EU: vatPct {SELF_ASSESSED_VAT_PCT} (kód cz-217)")
+        elif supply_kind is not None:
+            problems.add(rw, "supplyKind jen u dodavatele s reverseCharge")
 
 
 def _items(raw, problems: _Problems, catalogs: Catalogs) -> dict[str, Item]:
@@ -635,10 +676,12 @@ def _own_bank_accounts(own_raw: dict, setup: dict[str, dict], problems: _Problem
 
 
 def _bank(raw, problems: _Problems, setup: dict[str, dict], payroll: dict, catalogs: Catalogs,
-          parties_raw: dict[str, dict]) -> dict:
+          parties_raw: dict[str, dict], rates: dict[str, dict[int, Decimal]], period: Period) -> dict:
     """`story.bank` (fáze 2a): počáteční zůstatek a poplatek per účet, účty
     otevíracího dokladu a clearingu, platby mezd a odvodů (D22) — protiúčet
-    nesmí patřit nikomu v sadě, jinak by platba dostala partnera."""
+    nesmí patřit nikomu v sadě, jinak by platba dostala partnera; převody
+    mezi vlastními účty (`transfers`, #131 D26) z účtu v cizí měně s kurzy
+    na účet v domácí měně."""
     where = "story.bank"
     if not isinstance(raw, dict):
         problems.add(where, "musí být objekt {accounts, openingAccount, clearingAccount, settlementText, payroll}")
@@ -666,6 +709,40 @@ def _bank(raw, problems: _Problems, setup: dict[str, dict], payroll: dict, catal
             problems.add(where, f"{key} {raw.get(key)!r} není v osnově")
     if not _is_text(raw.get("settlementText")) or "{text}" not in raw["settlementText"]:
         problems.add(where, "settlementText musí být text s {text}")
+
+    # Převody mezi vlastními účty (D26): k `day` každého měsíce se z `from`
+    # (cizí měna) převede zůstatek nad `reserve` zaokrouhlený dolů na `step`,
+    # když dělá aspoň `minAmount`; `to` je účet v domácí měně.
+    transfers = raw.get("transfers")
+    if transfers is not None:
+        if not isinstance(transfers, list):
+            problems.add(where, "transfers musí být pole pravidel {from, to, day, reserve, minAmount, step, text}")
+            transfers = []
+        for i, rule in enumerate(transfers):
+            tw = f"{where}.transfers[{i}]"
+            if not isinstance(rule, dict):
+                problems.add(tw, "musí být objekt {from, to, day, reserve, minAmount, step, text}")
+                continue
+            src, dst = rule.get("from"), rule.get("to")
+            if src not in rows or dst not in rows or src == dst:
+                problems.add(tw, f"from a to musí být dva různé účty ze setup/bank_accounts.jsonc ({', '.join(str(c) for c in rows)})")
+            else:
+                src_currency = str(rows[src].get("currency") or "czk").upper()
+                dst_currency = str(rows[dst].get("currency") or "czk").upper()
+                if src_currency == "CZK" or dst_currency != "CZK":
+                    problems.add(tw, "převod jde z účtu v cizí měně na účet v CZK")
+                elif any(m not in rates.get(src_currency, {}) for m in period.offsets):
+                    problems.add(tw, f"chybí kurz {src_currency} pro některý měsíc období")
+            if not _is_int(rule.get("day")) or not 1 <= rule["day"] <= 31:
+                problems.add(tw, "day musí být 1..31")
+            if not _is_amount(rule.get("reserve"), positive=False) or Decimal(rule["reserve"]) < 0:
+                problems.add(tw, "reserve musí být částka >= 0")
+            if not _is_amount(rule.get("minAmount")):
+                problems.add(tw, "minAmount musí být kladná částka")
+            if not _is_amount(rule.get("step")):
+                problems.add(tw, "step musí být kladná částka")
+            if not _is_text(rule.get("text")):
+                problems.add(tw, "text chybí")
 
     figures = payroll.get("figures") if isinstance(payroll.get("figures"), dict) else {}
     liabilities = {r.get("amount") for r in (payroll.get("rows") or []) if isinstance(r, dict) and r.get("side") == "credit"}
@@ -919,9 +996,9 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
     names = [own.name] + [p.name for p in customers.values()] + [p.name for p in suppliers.values()]
     for problem in robust_order(names):
         problems.add("řazení osob", problem)
-    for key, customer in customers.items():
-        if customer.currency in CURRENCIES and customer.currency not in bank_accounts:
-            problems.add(f"customer {key}", f"měna {customer.currency} nemá účet v story.own.bankAccounts")
+    for party in list(customers.values()) + list(suppliers.values()):
+        if party.currency in CURRENCIES and party.currency not in bank_accounts:
+            problems.add(f"{party.kind} {party.key}", f"měna {party.currency} nemá účet v story.own.bankAccounts")
 
     # ── položky, pravidla ──
     items = _items(items_raw, problems, catalogs)
@@ -935,7 +1012,7 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
     adhoc = _adhoc(story_raw.get("adhoc"), problems, customers, items, period)
     cash_register, cash_expenses = _cash(story_raw.get("cashRegister"), story_raw.get("cashExpenses"), problems, items, catalogs)
     payroll = _payroll(story_raw.get("payroll"), problems, catalogs, period)
-    bank = _bank(story_raw.get("bank"), problems, setup, payroll, catalogs, {"own": own_raw, **all_partners})
+    bank = _bank(story_raw.get("bank"), problems, setup, payroll, catalogs, {"own": own_raw, **all_partners}, rates, period)
     parties = {"own": own, **customers, **suppliers}
     registry = _registry(registry_raw, problems, parties, binders, catalogs, period)
     mail = _mail(mail_raw, problems, parties)

@@ -2,47 +2,43 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "2026071247",
+    "docNumber": "INV-2026-18410",
     "selfParty": "customer",
     "supplier": {
-        "name": "Energie Jiskra a.s.",
-        "country": "cz",
-        "companyId": "31647090",
-        "taxId": "CZ31647090",
-        "vatId": "CZ31647090",
-        "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
+        "name": "Noordwolk Backup B.V.",
+        "country": "nl",
+        "taxId": "NL854721039B01",
+        "vatId": "NL854721039B01",
+        "courtRegistration": "KvK 87654321",
         "address": {
-            "street": "Elektrárenská",
-            "houseNumber": "1",
-            "city": "Ostrava",
-            "zip": "70200",
-            "country": "cz"
+            "street": "Datahaven",
+            "houseNumber": "42",
+            "city": "Rotterdam",
+            "zip": "3011 AB",
+            "country": "nl"
         },
         "contact": {
-            "email": "zakaznici@energie-jiskra.example",
-            "phone": "+420000610100",
-            "web": "www.energie-jiskra.example"
+            "email": "billing@noordwolk-backup.example",
+            "phone": "+310002004410",
+            "web": "www.noordwolk-backup.example"
         },
         "bankAccount": {
-            "accountNumber": "2190463856/0800",
-            "iban": "CZ2008000000002190463856",
-            "bic": "GIBACZPX"
+            "iban": "NL69NWBK0481570693",
+            "bic": "NWBKNL2AXXX"
         }
     },
     "dates": {
-        "issueDate": "2026-04-12",
-        "dueDate": "2026-04-26",
-        "accountingDate": "2026-04-12",
-        "taxPointDate": "2026-03-31",
-        "vatObligationDate": "2026-03-31",
-        "periodFrom": "2026-03-01",
-        "periodTo": "2026-03-31"
+        "issueDate": "2026-04-05",
+        "dueDate": "2026-04-19",
+        "accountingDate": "2026-04-05",
+        "taxPointDate": "2026-04-05",
+        "vatObligationDate": "2026-04-05"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.91,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -50,7 +46,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "2026071247"
+        "paymentReference": "202618410"
     },
     "rows": [
         {
@@ -58,88 +54,72 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "502100",
-                "name": "Spotřeba energie (elektřina)"
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
             },
-            "unit": "mwh",
-            "quantity": 0.714,
-            "unitPrice": 3190.0,
-            "totalPrice": 2277.66,
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 149.0,
+            "totalPrice": 149.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-110",
+                "code": "cz-217",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 2277.66,
-                "vatAmount": 478.31,
-                "vatTotal": 2755.97
+                "vatBase": 149.0,
+                "vatAmount": 31.29,
+                "vatTotal": 149.0
             },
-            "description": "Silová elektřina — produkt STANDARD"
+            "description": "Managed cloud backup, 2 TB — 04/2026"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "502100",
-                "name": "Spotřeba energie (elektřina)"
-            },
-            "unit": "mwh",
-            "quantity": 0.714,
-            "unitPrice": 2015.0,
-            "totalPrice": 1438.71,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 1438.71,
-                "vatAmount": 302.13,
-                "vatTotal": 1740.84
-            },
-            "description": "Distribuce elektřiny vč. systémových služeb"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 3,
-            "item": {
-                "ourCode": "502100",
-                "name": "Spotřeba energie (elektřina)"
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 168.0,
-            "totalPrice": 168.0,
+            "unitPrice": 39.0,
+            "totalPrice": 39.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-110",
+                "code": "cz-217",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 168.0,
-                "vatAmount": 35.28,
-                "vatTotal": 203.28
+                "vatBase": 39.0,
+                "vatAmount": 8.19,
+                "vatTotal": 39.0
             },
-            "description": "Stálý plat za jistič 3×25 A"
+            "description": "Uptime monitoring, 25 hosts — 04/2026"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-110",
+            "vatCode": "cz-217",
             "vatPct": 21.0,
-            "base": 3884.37,
-            "tax": 815.72,
-            "total": 4700.09
+            "base": 188.0,
+            "tax": 39.48,
+            "total": 188.0
+        },
+        {
+            "vatCode": "cz-207",
+            "vatPct": 21.0,
+            "base": 188.0,
+            "tax": 39.48,
+            "total": 227.48,
+            "isReversePair": true
         }
     ],
     "totals": {
-        "totalBase": 3884.37,
-        "totalVat": 815.72,
-        "totalAmount": 4700.0,
-        "totalRounding": -0.09
+        "totalBase": 188.0,
+        "totalVat": 0.0,
+        "totalAmount": 188.0,
+        "totalRounding": 0.0
     },
     "applyOptions": {
         "targetDocState": 40,

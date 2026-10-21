@@ -2,7 +2,7 @@
     "format": "shpd.dataset.v1",
     "name": "it-servis",
     "title": "Demo — IT servis",
-    "description": "Fiktivní IT firma Zelený Terminál s.r.o., měsíční plátce DPH, deset měsíců provozu: vydané a přijaté faktury, pokladna, mzdy, spisovna a pár zpráv k řešení (#131).",
+    "description": "Fiktivní IT firma Zelený Terminál s.r.o., měsíční plátce DPH, deset měsíců provozu: vydané a přijaté faktury (i od dodavatele z EU v eurech), pokladna, mzdy, banka s převody mezi účty, spisovna a pár zpráv k řešení (#131).",
     "dateMode": "fixed",
     "created": "2026-10-20T00:00:00Z",
     "country": "cz",
@@ -12,11 +12,11 @@
     "counts": {
         "setup": 8,
         "exchangeRates": 0,
-        "persons": 24,
+        "persons": 25,
         "items": 12,
-        "docs": 268,
+        "docs": 291,
         "bank": 20,
         "registry": 6,
-        "mail": 52
+        "mail": 62
     }
 }

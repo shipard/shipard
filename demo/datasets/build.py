@@ -25,6 +25,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools" / "invoice-generator"))
 
 from invoicegen.datasetio import DatasetBuildError  # noqa: E402
 from invoicegen.demo import build_demo_dataset  # noqa: E402
+from invoicegen.economy import format_summary  # noqa: E402
 from invoicegen.expand import ExpandError  # noqa: E402
 from invoicegen.jsonc import load_jsonc  # noqa: E402
 from invoicegen.registries import RegistryUnavailable, format_check, update_verified_at, verify_identities  # noqa: E402
@@ -88,6 +89,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  PDF: {summary.rendered} renderováno, {summary.reused} beze změny")
     print(f"  soubory: {len(summary.sync.written)} zapsáno, {len(summary.sync.unchanged)} beze změny, "
           f"{len(summary.sync.removed)} smazáno → {summary.out_dir}")
+    print("  ekonomika příběhu (D25):")
+    for line in format_summary(summary.economy):
+        print(f"    {line}")
     return 0
 
 

@@ -30,12 +30,12 @@
             "operation": "acc.record",
             "orderPos": 1,
             "unitPrice": 0.0,
-            "totalPrice": 1250000.0,
+            "totalPrice": 300000.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 1250000.0,
+                "vatBase": 300000.0,
                 "vatAmount": 0.0,
-                "vatTotal": 1250000.0
+                "vatTotal": 300000.0
             },
             "description": "Počáteční stav účtu BU1",
             "account": "221100",
@@ -46,12 +46,12 @@
             "operation": "acc.record",
             "orderPos": 2,
             "unitPrice": 0.0,
-            "totalPrice": 1250000.0,
+            "totalPrice": 300000.0,
             "priceCalcMode": "fromTotal",
             "computed": {
-                "vatBase": 1250000.0,
+                "vatBase": 300000.0,
                 "vatAmount": 0.0,
-                "vatTotal": 1250000.0
+                "vatTotal": 300000.0
             },
             "description": "Počáteční účet rozvažný",
             "account": "701100",
@@ -59,9 +59,9 @@
         }
     ],
     "totals": {
-        "totalBase": 1250000.0,
+        "totalBase": 300000.0,
         "totalVat": 0.0,
-        "totalAmount": 1250000.0,
+        "totalAmount": 300000.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

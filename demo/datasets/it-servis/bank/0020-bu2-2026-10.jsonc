@@ -6,8 +6,8 @@
         "externalId": "BU2-2026-10",
         "periodStart": "2026-10-01",
         "periodEnd": "2026-10-20",
-        "openingBalance": 27990.0,
-        "closingBalance": 52100.0,
+        "openingBalance": 1099.98,
+        "closingBalance": 2867.25,
         "currency": "EUR"
     },
     "transactions": [
@@ -17,26 +17,35 @@
             "dateTransaction": "2026-10-13",
             "counterpartyAccount": "SK0511000000002618439075",
             "counterpartyName": "Horský Penzión Tatranka s.r.o.",
-            "paymentReference": "1260118",
+            "paymentReference": "1260130",
             "exchangeRate": 24.47
         },
         {
             "externalId": "BU2-202610-002",
-            "amount": 1250.0,
+            "amount": 650.0,
             "dateTransaction": "2026-10-13",
             "counterpartyAccount": "DE18370400440532014860",
             "counterpartyName": "Wolkenschiff Logistik GmbH",
-            "paymentReference": "1260119",
+            "paymentReference": "1260131",
             "exchangeRate": 24.47
         },
         {
             "externalId": "BU2-202610-003",
-            "amount": 22470.0,
+            "amount": 915.27,
             "dateTransaction": "2026-10-17",
             "counterpartyAccount": "SK6709000000003914726058",
             "counterpartyName": "Nitrianske Stroje s.r.o.",
-            "paymentReference": "1260108",
+            "paymentReference": "1260120",
             "exchangeRate": 24.55
+        },
+        {
+            "externalId": "BU2-202610-004",
+            "amount": -188.0,
+            "dateTransaction": "2026-10-18",
+            "counterpartyAccount": "NL69NWBK0481570693",
+            "counterpartyName": "Noordwolk Backup B.V.",
+            "paymentReference": "202618416",
+            "exchangeRate": 24.47
         }
     ],
     "docState": 40

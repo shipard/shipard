@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — ekonomika příběhu a převody EUR → CZK
 
-**Stav:** naplánováno — zadání podle #131 D25–D28, čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-21 (D25–D28), ověřeno na čerstvém zdroji dat, ruční průchod v aplikaci dělá Anna
 
 ## Kontext / Cíl
 
@@ -182,17 +182,83 @@ Ověřovací zdroj dat po kontrole smaž, nebo ho nech Anně a zapiš prefix.
 
 ## Hotovo když
 
-- [ ] faktury v EUR mají ceny katalogových položek přepočtené kurzem
-- [ ] souhrn ekonomiky z `build.py` splňuje D25, test cílů projde
-- [ ] převody EUR → CZK ve výpisech obou účtů, peníze na cestě nulové
-- [ ] faktury zahraničního dodavatele v EUR s přenesením daňové povinnosti,
+- [x] faktury v EUR mají ceny katalogových položek přepočtené kurzem
+- [x] souhrn ekonomiky z `build.py` splňuje D25, test cílů projde
+- [x] převody EUR → CZK ve výpisech obou účtů, peníze na cestě nulové
+- [x] faktury zahraničního dodavatele v EUR s přenesením daňové povinnosti,
       uhrazené z BU2, saldo bez rezidua
-- [ ] počáteční zůstatek BU1 ≤ 300 tisíc, zůstatky nikdy pod nulou
-- [ ] druhý běh `build.py` nic nezmění; unit testy generátoru a dotčené
+- [x] počáteční zůstatek BU1 ≤ 300 tisíc, zůstatky nikdy pod nulou
+- [x] druhý běh `build.py` nic nezmění; unit testy generátoru a dotčené
       PHPUnit testy projdou
-- [ ] ověření podle oddílu Ověření, výsledky v Odchylkách
-- [ ] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
+- [x] ověření podle oddílu Ověření, výsledky v Odchylkách
+- [x] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
       a `python3 scripts/check-sensitive.py` projdou
+
+## Odchylky a zjištění při implementaci (2026-10-21)
+
+- **Jen generátor a příběh, PHP beze změny.** Vše, co sada potřebuje
+  (`transfer.in` / `transfer.out` → 261100, samovyměření cz-217 s párem
+  cz-207, kurz na transakci), aplikace už uměla; generátor se jen naučil
+  tvar dumpu: `RecapLine.is_reverse_pair` → `vatRecap[].isReversePair`,
+  `doccalc.SELF_ASSESSED_CODES` (daň na řádku i v rekapitulaci
+  informativně, celkem = základ, pár mimo součty hlavičky).
+- **Převody (D26)** jako pravidlo `bank.transfers` s měsíční kontrolou
+  a hranicí, ne pevné čtvrtletí: k 25. dni se z BU2 převede zůstatek nad
+  rezervou 1 000 EUR dolů na stovky, nejméně 1 000 EUR → 6 převodů
+  (únor–květen, červenec, září; 1 000–2 300 EUR). CZK strana =
+  `round(EUR × kurz, 2)` jako `amount_dom` v PHP; protiúčet = náš druhý
+  účet, partner po seedu null (vlastní osoba v sadě bankovní spojení nemá).
+- **Dodavatel z EU (D28)** nizozemský (`noordwolk`, cloudová záloha
+  + monitoring 188 EUR měsíčně, 5. den, splatnost 14 dní, placeno včas
+  z BU2 kurzem faktury) — angličtina místo němčiny, aby šla použít
+  korpusová šablona `en.html` (kopie v `demo/invoices/templates/`);
+  její hodnoty (`build_values`, `LABELS`, `COUNTRY_NAMES`) se přesunuly
+  ze skriptu `tests/corpus/cz/build.py` do `invoicegen/corpusprint.py`
+  (HTML korpusu beze změny — 52 buněk se stejným hashem). Formát příběhu:
+  dodavatel `language` / `currency` / `vatTreatment`, řádky
+  `supplyKind: services` a `vatPct` 21 = sazba samovyměření (papír tiskne
+  0 % + klauzuli). Jen služby (cz-217); zboží z EU sada neumí.
+- **Částky (D25)** se mzdami beze změny: paušály domácích odběratelů
+  zhruba dvojnásobné (4 800 – 27 500 Kč, „Hotel Modrý Jelen“ 25 000 →
+  27 500 od června), německý paušál 650 EUR, každý měsíc faktura za
+  8–16 h práce v rotaci odběratelů, prodeje 2 × NTB v dubnu, červenci
+  a září, velkoobchod nakupuje v dubnu, červnu, červenci a září (NTB 1–2,
+  switch, monitory, Wi-Fi AP, kabely). Souhrn: výnosy 2 089 121, náklady
+  1 819 275 (mzdy 1 127 934, dodavatelé 679 250, pokladna 10 570, poplatky
+  1 521), zisk +269 846 = **12,9 %**; ztrátový červen (odměny, −72 tis.)
+  a srpen (−3 tis.); zahraničí **17,0 %**; zboží prodej 317 801 / nákup
+  217 738 (1,46×); BU1 300 000 → minimum 275 316 → 600 313; BU2 0 → 2 867
+  EUR. Cíle hlídá `tests/test_economy.py`; posun kotvy jen validace
+  zůstatků (převody závisí na zůstatku k datu).
+- **Souhrn ekonomiky** = `invoicegen/economy.py` ze `Records` (doklady
+  stav 40 kurzem dokladu, mzdy strana MD, poplatky z výpisů); Výsledovka
+  v aplikaci se liší jen o haléřová zaokrouhlení prodejek (548 / 648),
+  která souhrn nemodeluje.
+- **Seed varuje** u 10 faktur dodavatele z EU `rows_recap_mismatch`
+  a `vat_recap_inconsistent` — kontrola `DocumentApplier` sčítá i párový
+  řádek samovyměření a u `noPayTax` čeká základ + daň = celkem; doklad se
+  uloží správně (DocDocument rekapitulaci přepočítá), dump je bajtově
+  shodný. Kandidát na drobnou opravu kontroly v PHP (mimo tento task).
+- **Ověření** (čerstvý volný DS `lsx3-g…`, ponechán k ručnímu průchodu):
+  `diff -r` jen `manifest.created`; deník 1 356 řádků, MD = D, 0 chybových;
+  234 transakcí ve stavu účtování 1; partner null jen u 27 mezd, 9
+  poplatků a 12 stran převodů; 261100 obrat MD = D = 225 813 (zůstatek 0),
+  261300 a 331 / 336 / 342 na nule, 261200 −44 770 = 3 záměrně nespárované
+  příjmy; samovyměření 343217 MD 9 797,37 = 343207 D (10 dokladů, deník
+  `518206 MD / 343217 MD / 343207 D / 321100 D` v CZK kurzem faktury);
+  saldokonto Pohledávky 129 případů — 112 uzavřených, 2 částečně, 14 po
+  splatnosti, 1 před splatností (EUR, platí se pozdě až po kotvě);
+  Závazky 58 uzavřených (10 v EUR bez rezidua) + 1 se splatností za kotvou;
+  Nespárované platby 3 s partnerem, případ s prázdným klíčem 0 z 54 pohybů;
+  Přijaté zálohy 1 otevřená; 221100 = 600 312,81 = closing BU1 10/2026,
+  221200 = 2 867,25 EUR = closing BU2. Výsledovka `report-run
+  economy.accounting.profitLoss --fiscal-year 2026 --month-from 10
+  --month-to 10`, sloupec Od počátku roku: náklady 1 819 276,56, výnosy
+  2 089 127,49 → +269 850,93. Přiznání DPH živě 10/2026 (`report-run
+  economy.vat.returnLive --period 19`): ř. 5 základ 4 600,36 / daň 966,08
+  (přijetí služby z EU), ř. 43 totéž jako odpočet, ř. 21 služby do EU
+  37 194,40, „Součty daně souhlasí s účetním deníkem“, vlastní daň
+  24 951,99 — přiznání se nepodává.
 
 ## Rozhodnutí k designu (potvrzená, #131)
 

@@ -4,9 +4,12 @@ import unittest
 from datetime import date
 from decimal import Decimal
 
+from invoicegen.catalogs import load_catalogs
 from invoicegen.datasetio import dumps_dataset
-from invoicegen.dumpshape import bank_record, bank_slug, bank_sort_key, doc_slug, doc_sort_key, php_float
-from invoicegen.model import DocRec, StatementRec, TxRec
+from invoicegen.dumpshape import bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, php_float
+from invoicegen.model import DocRec, RecapLine, StatementRec, TxRec
+from invoicegen.story import load_story
+from tests.fixtures import REPO_ROOT
 
 
 def doc(doc_type: str, **kwargs) -> DocRec:
@@ -44,6 +47,19 @@ class DocOrderTest(unittest.TestCase):
     def test_slug_of_concept_and_placeholder(self) -> None:
         self.assertEqual("koncept invno", doc_slug(doc("invno", state=10)))
         self.assertEqual("!0000000117", doc_slug(doc("invno", state=10, number="!0000000117")))
+
+    def test_reverse_pair_recap_line_mirrors_exporter(self) -> None:
+        """`DocumentExporter::vatRecap`: `isReversePair` jen true, jinak klíč vynechaný."""
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        record = doc_record(doc("invni", currency="EUR", rate=Decimal("25.12"), vat_place="intracom", self_party="customer",
+                                recap=[RecapLine("cz-217", 21, Decimal("188.00"), Decimal("39.48"), Decimal("188.00")),
+                                       RecapLine("cz-207", 21, Decimal("188.00"), Decimal("39.48"), Decimal("227.48"), True)]),
+                            story)
+        self.assertEqual([{"vatCode": "cz-217", "vatPct": php_float(21), "base": Decimal("188.00"), "tax": Decimal("39.48"),
+                           "total": Decimal("188.00")},
+                          {"vatCode": "cz-207", "vatPct": php_float(21), "base": Decimal("188.00"), "tax": Decimal("39.48"),
+                           "total": Decimal("227.48"), "isReversePair": True}], record["vatRecap"])
+        self.assertEqual(("EUR", "intracom"), (record["currency"], record["vat"]["place"]))
 
 
 class BankRecordTest(unittest.TestCase):

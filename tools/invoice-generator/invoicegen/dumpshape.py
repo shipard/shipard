@@ -251,6 +251,8 @@ def doc_record(doc: DocRec, story: Story) -> dict:
             "base": php_float(line.base),
             "tax": php_float(line.tax),
             "total": php_float(line.total),
+            # `DocumentExporter::vatRecap`: `isReversePair` jen true, jinak prune.
+            "isReversePair": True if line.is_reverse_pair else None,
         } for line in doc.recap],
         "totals": {
             "totalBase": php_float(doc.total_base),

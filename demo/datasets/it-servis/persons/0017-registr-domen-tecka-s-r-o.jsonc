@@ -1,0 +1,51 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00017",
+    "companyId": "16730488",
+    "taxId": "CZ16730488",
+    "vatId": "CZ16730488",
+    "name": {
+        "fullName": "Registr Domén Tečka s.r.o."
+    },
+    "contact": {
+        "email": "podpora@registr-tecka.example",
+        "phone": "+420000999404",
+        "web": "www.registr-tecka.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Doménová",
+            "houseNumber": "404",
+            "city": "Praha 7",
+            "zip": "17000",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2467189301/0100",
+            "iban": "CZ3501000000002467189301",
+            "bic": "KOMBCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

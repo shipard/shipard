@@ -1,0 +1,119 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Dentální klinika Úsměvov s.r.o.",
+        "country": "cz",
+        "companyId": "85297135",
+        "taxId": "CZ85297135",
+        "vatId": "CZ85297135",
+        "address": {
+            "street": "Zubařská",
+            "houseNumber": "208/4",
+            "city": "Brno",
+            "zip": "61600",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "recepce@usmevov.example",
+            "phone": "+420000150933",
+            "web": "www.usmevov.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-09-22",
+        "dueDate": "2026-10-06",
+        "accountingDate": "2026-09-22",
+        "taxPointDate": "2026-09-22",
+        "vatObligationDate": "2026-09-22"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260119"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "NTB-14",
+                "name": "Notebook 14\" business, 16 GB RAM"
+            },
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 24900.0,
+            "totalPrice": 49800.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 49800.0,
+                "vatAmount": 10458.0,
+                "vatTotal": 60258.0
+            },
+            "description": "Notebook 14\" business, 16 GB RAM"
+        },
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 4.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 5000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 5000.0,
+                "vatAmount": 1050.0,
+                "vatTotal": 6050.0
+            },
+            "description": "Servisní práce technika — 09/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 54800.0,
+            "tax": 11508.0,
+            "total": 66308.0
+        }
+    ],
+    "totals": {
+        "totalBase": 54800.0,
+        "totalVat": 11508.0,
+        "totalAmount": 66308.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260119",
+            "sequenceNumber": 119
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

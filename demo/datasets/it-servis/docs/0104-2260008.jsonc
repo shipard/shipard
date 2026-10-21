@@ -2,39 +2,39 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "2026448202",
+    "docNumber": "SM-2026-1184",
     "selfParty": "customer",
     "supplier": {
-        "name": "Telekom Vlnka a.s.",
+        "name": "Serverovna Mrak s.r.o.",
         "country": "cz",
-        "companyId": "95278141",
-        "taxId": "CZ95278141",
-        "vatId": "CZ95278141",
-        "courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
+        "companyId": "90157389",
+        "taxId": "CZ90157389",
+        "vatId": "CZ90157389",
+        "courtRegistration": "Spisová značka C 301144 vedená u Městského soudu v Praze",
         "address": {
-            "street": "Anténní",
-            "houseNumber": "400/22",
-            "city": "Praha 10",
-            "zip": "10000",
+            "street": "Datová",
+            "houseNumber": "2048/1",
+            "city": "Praha 4",
+            "zip": "14000",
             "country": "cz"
         },
         "contact": {
-            "email": "vyuctovani@telekom-vlnka.example",
-            "phone": "+420000404040",
-            "web": "www.telekom-vlnka.example"
+            "email": "fakturace@serverovna-mrak.example",
+            "phone": "+420000090330",
+            "web": "www.serverovna-mrak.example"
         },
         "bankAccount": {
-            "accountNumber": "2874190350/0300",
-            "iban": "CZ0303000000002874190350",
-            "bic": "CEKOCZPP"
+            "accountNumber": "2519046733/2010",
+            "iban": "CZ1620100000002519046733",
+            "bic": "FIOBCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-02-06",
-        "dueDate": "2026-02-20",
-        "accountingDate": "2026-02-06",
-        "taxPointDate": "2026-02-06",
-        "vatObligationDate": "2026-02-06"
+        "issueDate": "2026-02-03",
+        "dueDate": "2026-02-17",
+        "accountingDate": "2026-02-03",
+        "taxPointDate": "2026-02-03",
+        "vatObligationDate": "2026-02-03"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -48,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "2026448202"
+        "paymentReference": "20261184"
     },
     "rows": [
         {
@@ -56,63 +56,39 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518201",
-                "name": "Telefonní poplatky"
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 1890.0,
-            "totalPrice": 1890.0,
+            "unitPrice": 4900.0,
+            "totalPrice": 4900.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 1890.0,
-                "vatAmount": 396.9,
-                "vatTotal": 2286.9
+                "vatBase": 4900.0,
+                "vatAmount": 1029.0,
+                "vatTotal": 5929.0
             },
-            "description": "Hlasové služby a mobilní tarify — 02/2026"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 2,
-            "item": {
-                "ourCode": "518202",
-                "name": "Internetové služby"
-            },
-            "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 990.0,
-            "totalPrice": 990.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 990.0,
-                "vatAmount": 207.9,
-                "vatTotal": 1197.9
-            },
-            "description": "Internetové připojení 500/50 Mb/s — 02/2026"
+            "description": "Hosting a správa serverů — 02/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 2880.0,
-            "tax": 604.8,
-            "total": 3484.8
+            "base": 4900.0,
+            "tax": 1029.0,
+            "total": 5929.0
         }
     ],
     "totals": {
-        "totalBase": 2880.0,
-        "totalVat": 604.8,
-        "totalAmount": 3484.8,
+        "totalBase": 4900.0,
+        "totalVat": 1029.0,
+        "totalAmount": 5929.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

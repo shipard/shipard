@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Wolkenschiff Logistik GmbH",
+        "country": "de",
+        "taxId": "DE314670256",
+        "vatId": "DE314670256",
+        "address": {
+            "street": "Hafenstraße",
+            "houseNumber": "118",
+            "city": "Köln",
+            "zip": "50678",
+            "country": "de"
+        },
+        "contact": {
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "web": "www.wolkenschiff-logistik.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-09-01",
+        "dueDate": "2026-09-15",
+        "accountingDate": "2026-09-01",
+        "taxPointDate": "2026-09-01",
+        "vatObligationDate": "2026-09-01"
+    },
+    "currency": "EUR",
+    "exchangeRate": 24.55,
+    "vat": {
+        "mode": "fromBase",
+        "place": "intracom",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260117"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
+            },
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 650.0,
+            "totalPrice": 650.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-202",
+                "pct": 0.0
+            },
+            "computed": {
+                "vatBase": 650.0,
+                "vatAmount": 0.0,
+                "vatTotal": 650.0
+            },
+            "description": "Správa IT — paušál 09/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 650.0,
+            "tax": 0.0,
+            "total": 650.0
+        }
+    ],
+    "totals": {
+        "totalBase": 650.0,
+        "totalVat": 0.0,
+        "totalAmount": 650.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260117",
+            "sequenceNumber": 117
+        },
+        "importOwnBankAccount": "BU2"
+    }
+}

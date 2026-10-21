@@ -11,7 +11,7 @@ from collections import Counter
 from datetime import date, timedelta
 from decimal import Decimal
 
-from invoicegen.bank import normalize_account, payroll_payment_date
+from invoicegen.bank import TRANSFER_IN, TRANSFER_OUT, normalize_account, payroll_payment_date, transfer_amount_dom
 from invoicegen.catalogs import load_catalogs
 from invoicegen.dumpshape import bank_record
 from invoicegen.expand import expand, payment_events, typo_reference
@@ -75,20 +75,109 @@ class StatementsTest(unittest.TestCase):
                 self.assertGreaterEqual(running, 0, tx.key)
 
     def test_currency_split_and_invoice_rate(self) -> None:
+        accounts = {r["code"]: r for r in self.story.setup["bank_accounts"]["rows"]}
         for statement in self.records.bank:
             for tx in statement.transactions:
                 if statement.account_code == "BU2":
                     self.assertEqual("EUR", statement.currency)
+                    self.assertIsNotNone(tx.exchange_rate, "na účtu v cizí měně má kurz každá transakce")
+                    if tx.operation == TRANSFER_OUT:
+                        self.assertLess(tx.amount, 0)
+                        self.assertEqual(accounts["BU1"]["account_number"], tx.counterparty_account, "protiúčet = náš korunový účet")
+                        continue
                     doc = self.docs[tx.doc_key]
                     self.assertEqual("EUR", doc.currency)
                     self.assertEqual(doc.rate, tx.exchange_rate, "kurz platby = kurz hrazené faktury (U1)")
-                    self.assertGreater(tx.amount, 0, "na eurový účet jen příjmy")
-                    self.assertTrue(tx.counterparty_account.startswith(("SK", "DE")), "IBAN zahraničního odběratele")
+                    if doc.doc_type == "invni":
+                        self.assertLess(tx.amount, 0, "úhrada faktury dodavatele v EUR odchází z BU2 (D28)")
+                        self.assertTrue(tx.counterparty_account.startswith("NL"), "IBAN zahraničního dodavatele")
+                    else:
+                        self.assertGreater(tx.amount, 0)
+                        self.assertTrue(tx.counterparty_account.startswith(("SK", "DE")), "IBAN zahraničního odběratele")
                 else:
                     self.assertEqual("CZK", statement.currency)
                     self.assertIsNone(tx.exchange_rate)
+                    if tx.operation == TRANSFER_IN:
+                        self.assertGreater(tx.amount, 0)
+                        self.assertEqual(accounts["BU2"]["account_number"], tx.counterparty_account, "protiúčet = náš eurový účet")
                     if tx.key.startswith("pay:"):
                         self.assertEqual("CZK", self.docs[tx.doc_key].currency)
+
+    def test_transfers_pair_up_and_keep_cash_in_transit_zero(self) -> None:
+        """D26: převod z BU2 na BU1 k 25. dni, zůstatek nad rezervou dolů na
+        stovky EUR, CZK strana = EUR × kurz měsíce (peníze na cestě nulové)."""
+        rule = self.story.bank["transfers"][0]
+        rates = self.story.rates["EUR"]
+        outs = {t.key: t for t in transactions(self.records) if t.operation == TRANSFER_OUT}
+        ins = {t.key: t for t in transactions(self.records) if t.operation == TRANSFER_IN}
+        self.assertGreaterEqual(len(outs), 5, "převod skoro každý měsíc")
+        self.assertEqual(len(outs), len(ins))
+        transit_out = transit_in = Decimal("0")
+        for key, out in outs.items():
+            pair = ins[key[:-4] + ":in"]
+            self.assertEqual("BU2", out.account_code)
+            self.assertEqual("BU1", pair.account_code)
+            self.assertEqual(out.date, pair.date, "obě strany téhož dne")
+            self.assertEqual(int(rule["day"]), out.date.day)
+            offset = out.date.month - self.story.anchor.month
+            self.assertEqual(rates[offset], out.exchange_rate, "kurz měsíce z příběhu")
+            self.assertIsNone(pair.exchange_rate)
+            self.assertEqual(transfer_amount_dom(-out.amount, out.exchange_rate), pair.amount)
+            self.assertEqual(0, (-out.amount) % Decimal(rule["step"]), "dolů na stovky EUR")
+            self.assertGreaterEqual(-out.amount, Decimal(rule["minAmount"]))
+            self.assertIsNone(out.payment_reference)
+            self.assertIsNone(out.doc_key)
+            self.assertIsNone(out.fault)
+            self.assertEqual(self.story.own.name, out.counterparty_name)
+            self.assertEqual(self.story.own.name, pair.counterparty_name)
+            self.assertEqual(out.message, pair.message)
+            self.assertTrue(out.message.startswith("Převod z eurového účtu"))
+            transit_out += transfer_amount_dom(-out.amount, out.exchange_rate)
+            transit_in += pair.amount
+        self.assertEqual(transit_out, transit_in, "261100 MD = DAL")
+        # Po převodu zůstane na BU2 rezerva, nikdy ne nula.
+        reserve = Decimal(rule["reserve"])
+        for statement in self.records.bank:
+            if statement.account_code != "BU2":
+                continue
+            running = statement.opening
+            for tx in statement.transactions:
+                running += tx.amount
+                if tx.operation == TRANSFER_OUT:
+                    self.assertGreaterEqual(running, reserve, tx.key)
+                    self.assertLess(running, reserve + Decimal(rule["step"]), "převedlo se vše nad rezervu")
+        # Protiúčty převodů nepatří žádné osobě v sadě — partner zůstane prázdný.
+        taken: set[str] = set()
+        for party in self.story.parties().values():
+            bank = party.identity.get("bankAccount") or {}
+            for value in (bank.get("accountNumber"), bank.get("iban")):
+                if value:
+                    taken |= set(normalize_account(value))
+        for tx in list(outs.values()) + list(ins.values()):
+            self.assertFalse(set(normalize_account(tx.counterparty_account)) & taken, tx.key)
+        records = [bank_record(s) for s in self.records.bank]
+        dumped = [t for r in records for t in r["transactions"] if t.get("operation", "").startswith("transfer.")]
+        self.assertEqual(2 * len(outs), len(dumped))
+        self.assertTrue(all(("exchangeRate" in t) == (t["operation"] == TRANSFER_OUT) for t in dumped),
+                        "kurz v sadě jen na straně v cizí měně")
+
+    def test_eu_supplier_invoices_are_paid_from_the_eur_account(self) -> None:
+        """D28: úhrada faktury zahraničního dodavatele z BU2 kurzem faktury
+        (bez rezidua v CZK), VS = číslice čísla dodavatele, protiúčet IBAN."""
+        docs = [d for d in self.records.docs if d.doc_type == "invni" and d.currency == "EUR"]
+        self.assertGreaterEqual(len(docs), 9)
+        paid = {t.doc_key: t for t in transactions(self.records) if t.key.startswith("pay:")}
+        supplier = self.story.suppliers[docs[0].partner_key]
+        for doc in docs:
+            self.assertEqual("reverseCharge", supplier.vat_treatment)
+            tx = paid[doc.key]
+            self.assertEqual("BU2", tx.account_code)
+            self.assertEqual(-doc.total_amount, tx.amount)
+            self.assertEqual(doc.rate, tx.exchange_rate)
+            self.assertEqual(doc.due - timedelta(days=1), tx.date, "bez payment = včas, den před splatností")
+            self.assertEqual(supplier.identity["bankAccount"]["iban"], tx.counterparty_account)
+            self.assertEqual(doc.payment_reference, tx.payment_reference)
+            self.assertTrue(doc.payment_reference.isdigit())
 
     def test_payments_follow_behaviour(self) -> None:
         paid: dict[str, list] = {}
@@ -118,7 +207,8 @@ class StatementsTest(unittest.TestCase):
                 self.assertEqual(-doc.total_amount, tx.amount, "přijatá faktura = výdaj")
                 self.assertEqual(doc.payment_reference, tx.payment_reference, "VS přijaté faktury")
                 supplier = self.story.suppliers[doc.partner_key]
-                self.assertEqual(supplier.identity["bankAccount"]["accountNumber"], tx.counterparty_account)
+                bank = supplier.identity["bankAccount"]
+                self.assertEqual(bank["accountNumber"] or bank["iban"], tx.counterparty_account)
                 days = {"klicek": 6, "jiskra": 15}.get(doc.partner_key, -1)
                 self.assertEqual(doc.due + timedelta(days=days), tx.date, doc.key)
         galvanovna = [k for k in paid if self.docs[k].partner_key == "galvanovna"]
@@ -181,7 +271,7 @@ class StatementsTest(unittest.TestCase):
             self.assertEqual(month_end(tx.date), tx.date)
             self.assertIsNone(tx.counterparty_account)
             self.assertIsNone(tx.payment_reference)
-        self.assertTrue(all(t.operation in (None, "fee.out") for t in transactions(self.records)))
+        self.assertTrue(all(t.operation in (None, "fee.out", TRANSFER_IN, TRANSFER_OUT) for t in transactions(self.records)))
         opening = self.docs["opening"]
         self.assertEqual("opening", opening.fiscal_period_type)
         self.assertEqual(self.story.period.start, opening.issue)

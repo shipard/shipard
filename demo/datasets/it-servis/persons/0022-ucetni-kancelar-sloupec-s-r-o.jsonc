@@ -1,0 +1,51 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00022",
+    "companyId": "52073963",
+    "taxId": "CZ52073963",
+    "vatId": "CZ52073963",
+    "courtRegistration": "Spisová značka C 88235 vedená u Krajského soudu v Brně",
+    "name": {
+        "fullName": "Účetní kancelář Sloupec s.r.o."
+    },
+    "contact": {
+        "email": "kancelar@uk-sloupec.example",
+        "phone": "+420000530770"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Rozvahová",
+            "houseNumber": "6",
+            "city": "Brno",
+            "zip": "61300",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2035918478/2010",
+            "iban": "CZ9520100000002035918478",
+            "bic": "FIOBCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

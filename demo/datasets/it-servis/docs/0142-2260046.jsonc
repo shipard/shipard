@@ -2,44 +2,43 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "NP-26-040",
+    "docNumber": "INV-2026-18414",
     "selfParty": "customer",
     "supplier": {
-        "name": "Správa nemovitostí Patro s.r.o.",
-        "country": "cz",
-        "companyId": "81973501",
-        "taxId": "CZ81973501",
-        "vatId": "CZ81973501",
-        "courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
+        "name": "Noordwolk Backup B.V.",
+        "country": "nl",
+        "taxId": "NL854721039B01",
+        "vatId": "NL854721039B01",
+        "courtRegistration": "KvK 87654321",
         "address": {
-            "street": "Schodišťová",
-            "houseNumber": "3",
-            "city": "Brno",
-            "zip": "60200",
-            "country": "cz"
+            "street": "Datahaven",
+            "houseNumber": "42",
+            "city": "Rotterdam",
+            "zip": "3011 AB",
+            "country": "nl"
         },
         "contact": {
-            "email": "najmy@patro-sprava.example",
-            "phone": "+420000112900"
+            "email": "billing@noordwolk-backup.example",
+            "phone": "+310002004410",
+            "web": "www.noordwolk-backup.example"
         },
         "bankAccount": {
-            "accountNumber": "1628735058/5500",
-            "iban": "CZ3355000000001628735058",
-            "bic": "RZBCCZPP"
+            "iban": "NL69NWBK0481570693",
+            "bic": "NWBKNL2AXXX"
         }
     },
     "dates": {
-        "issueDate": "2026-10-01",
-        "dueDate": "2026-10-11",
-        "accountingDate": "2026-10-01",
-        "taxPointDate": "2026-10-01",
-        "vatObligationDate": "2026-10-01"
+        "issueDate": "2026-08-05",
+        "dueDate": "2026-08-19",
+        "accountingDate": "2026-08-05",
+        "taxPointDate": "2026-08-05",
+        "vatObligationDate": "2026-08-05"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.68,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -47,7 +46,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "26040"
+        "paymentReference": "202618414"
     },
     "rows": [
         {
@@ -55,63 +54,71 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 18000.0,
-            "totalPrice": 18000.0,
+            "unitPrice": 149.0,
+            "totalPrice": 149.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-110",
+                "code": "cz-217",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 18000.0,
-                "vatAmount": 3780.0,
-                "vatTotal": 21780.0
+                "vatBase": 149.0,
+                "vatAmount": 31.29,
+                "vatTotal": 149.0
             },
-            "description": "Nájem kanceláře Serverová 1024/8 — 10/2026"
+            "description": "Managed cloud backup, 2 TB — 08/2026"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 2400.0,
-            "totalPrice": 2400.0,
+            "unitPrice": 39.0,
+            "totalPrice": 39.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-110",
+                "code": "cz-217",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 2400.0,
-                "vatAmount": 504.0,
-                "vatTotal": 2904.0
+                "vatBase": 39.0,
+                "vatAmount": 8.19,
+                "vatTotal": 39.0
             },
-            "description": "Služby spojené s nájmem — 10/2026"
+            "description": "Uptime monitoring, 25 hosts — 08/2026"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-110",
+            "vatCode": "cz-217",
             "vatPct": 21.0,
-            "base": 20400.0,
-            "tax": 4284.0,
-            "total": 24684.0
+            "base": 188.0,
+            "tax": 39.48,
+            "total": 188.0
+        },
+        {
+            "vatCode": "cz-207",
+            "vatPct": 21.0,
+            "base": 188.0,
+            "tax": 39.48,
+            "total": 227.48,
+            "isReversePair": true
         }
     ],
     "totals": {
-        "totalBase": 20400.0,
-        "totalVat": 4284.0,
-        "totalAmount": 24684.0,
+        "totalBase": 188.0,
+        "totalVat": 0.0,
+        "totalAmount": 188.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

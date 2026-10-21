@@ -94,7 +94,7 @@ class StoryValidationTest(unittest.TestCase):
         self.assert_problem("doména .example")
 
     def test_unknown_item_in_billing(self) -> None:
-        self.edit("story.jsonc", '"item": "SPRAVA-IT", "price": 6500 }', '"item": "NEEXISTUJE", "price": 6500 }')
+        self.edit("story.jsonc", '"item": "SPRAVA-IT", "price": 16000 }', '"item": "NEEXISTUJE", "price": 16000 }')
         self.assert_problem("není v items.jsonc")
 
     def test_concept_outside_anchor_month(self) -> None:
@@ -154,6 +154,43 @@ class StoryValidationTest(unittest.TestCase):
                   '"payment": { "behaviour": "never", "unmatched": [ { "month": -1, "reference": "missing" } ], "remainderDays": 5 }')
         self.assert_problem("payment.unmatched")
         self.assert_problem("payment.remainderDays jen u partial")
+
+    def test_transfers_go_from_foreign_to_home_currency_account(self) -> None:
+        self.edit("story.jsonc", '{ "from": "BU2", "to": "BU1", "day": 25', '{ "from": "BU1", "to": "BU2", "day": 25')
+        self.assert_problem("převod jde z účtu v cizí měně na účet v CZK")
+
+    def test_transfer_rule_fields(self) -> None:
+        self.edit("story.jsonc", '"reserve": 1000, "minAmount": 1000, "step": 100', '"reserve": -1, "minAmount": 0, "step": 100')
+        self.assert_problem("reserve musí být částka >= 0")
+        self.assert_problem("minAmount musí být kladná částka")
+
+    def test_reverse_charge_supplier_rows_need_supply_kind(self) -> None:
+        self.edit("partners.jsonc", '"amount": 39, "vatPct": 21, "supplyKind": "services"', '"amount": 39, "vatPct": 12')
+        self.assert_problem("supplyKind z services")
+        self.assert_problem("vatPct 21 (kód cz-217)")
+
+    def test_reverse_charge_only_for_foreign_supplier_with_vat_id(self) -> None:
+        self.edit("partners.jsonc", '"template": "a", "accent": "#0e7490",',
+                  '"vatTreatment": "reverseCharge", "template": "a", "accent": "#0e7490",')
+        self.assert_problem("reverseCharge jen pro zahraničního plátce s vatId")
+
+    def test_supply_kind_only_with_reverse_charge(self) -> None:
+        self.edit("partners.jsonc", '"text": "Hosting a správa serverů — {period}", "amount": 4900, "vatPct": 21 }',
+                  '"text": "Hosting a správa serverů — {period}", "amount": 4900, "vatPct": 21, "supplyKind": "services" }')
+        self.assert_problem("supplyKind jen u dodavatele s reverseCharge")
+
+    def test_supplier_template_locale_matches_language(self) -> None:
+        self.edit("partners.jsonc", '"template": "en", "accent": null', '"template": "b", "accent": null')
+        self.assert_problem("template b je cs, language je en")
+
+    def test_foreign_supplier_with_invoices_needs_reverse_charge(self) -> None:
+        self.edit("partners.jsonc", '"language": "en", "currency": "EUR", "vatTreatment": "reverseCharge"',
+                  '"language": "en", "currency": "EUR", "vatTreatment": "standard"')
+        self.assert_problem("zahraniční dodavatel s fakturami jen s reverseCharge")
+
+    def test_supplier_currency_needs_own_account(self) -> None:
+        self.edit("story.jsonc", '"bankAccounts": { "CZK": "BU1", "EUR": "BU2" }', '"bankAccounts": { "CZK": "BU1" }')
+        self.assert_problem("supplier noordwolk: měna EUR nemá účet")
 
     def test_all_problems_are_reported_together(self) -> None:
         self.edit("story.jsonc", '"net": 70896', '"net": 70000')

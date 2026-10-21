@@ -2,39 +2,39 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "FV-2026-2211",
+    "docNumber": "2026448204",
     "selfParty": "customer",
     "supplier": {
-        "name": "Velkoobchod Čip a Deska s.r.o.",
+        "name": "Telekom Vlnka a.s.",
         "country": "cz",
-        "companyId": "88462137",
-        "taxId": "CZ88462137",
-        "vatId": "CZ88462137",
-        "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
+        "companyId": "95278141",
+        "taxId": "CZ95278141",
+        "vatId": "CZ95278141",
+        "courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
         "address": {
-            "street": "Součástková",
-            "houseNumber": "560/14",
-            "city": "Hradec Králové",
-            "zip": "50002",
+            "street": "Anténní",
+            "houseNumber": "400/22",
+            "city": "Praha 10",
+            "zip": "10000",
             "country": "cz"
         },
         "contact": {
-            "email": "objednavky@cip-deska.example",
-            "phone": "+420000770310",
-            "web": "www.cip-deska.example"
+            "email": "vyuctovani@telekom-vlnka.example",
+            "phone": "+420000404040",
+            "web": "www.telekom-vlnka.example"
         },
         "bankAccount": {
-            "accountNumber": "1746290598/6210",
-            "iban": "CZ1962100000001746290598",
-            "bic": "BREXCZPP"
+            "accountNumber": "2874190350/0300",
+            "iban": "CZ0303000000002874190350",
+            "bic": "CEKOCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-04-15",
-        "dueDate": "2026-04-25",
-        "accountingDate": "2026-04-15",
-        "taxPointDate": "2026-04-15",
-        "vatObligationDate": "2026-04-15"
+        "issueDate": "2026-04-06",
+        "dueDate": "2026-04-20",
+        "accountingDate": "2026-04-06",
+        "taxPointDate": "2026-04-06",
+        "vatObligationDate": "2026-04-06"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -48,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "20262211"
+        "paymentReference": "2026448204"
     },
     "rows": [
         {
@@ -56,87 +56,63 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
+                "ourCode": "518201",
+                "name": "Telefonní poplatky"
             },
             "unit": "pcs",
-            "quantity": 2.0,
-            "unitPrice": 19900.0,
-            "totalPrice": 39800.0,
+            "quantity": 1.0,
+            "unitPrice": 1890.0,
+            "totalPrice": 1890.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 39800.0,
-                "vatAmount": 8358.0,
-                "vatTotal": 48158.0
+                "vatBase": 1890.0,
+                "vatAmount": 396.9,
+                "vatTotal": 2286.9
             },
-            "description": "Notebook 14\" business, 16 GB RAM"
+            "description": "Hlasové služby a mobilní tarify — 04/2026"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
+                "ourCode": "518202",
+                "name": "Internetové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 6400.0,
-            "totalPrice": 6400.0,
+            "unitPrice": 990.0,
+            "totalPrice": 990.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 6400.0,
-                "vatAmount": 1344.0,
-                "vatTotal": 7744.0
+                "vatBase": 990.0,
+                "vatAmount": 207.9,
+                "vatTotal": 1197.9
             },
-            "description": "Síťový switch 24 portů, PoE"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 3,
-            "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
-            },
-            "unit": "pcs",
-            "quantity": 14.0,
-            "unitPrice": 149.0,
-            "totalPrice": 2086.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 2086.0,
-                "vatAmount": 438.06,
-                "vatTotal": 2524.06
-            },
-            "description": "Kabel HDMI 2.1, 2 m"
+            "description": "Internetové připojení 500/50 Mb/s — 04/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 48286.0,
-            "tax": 10140.06,
-            "total": 58426.06
+            "base": 2880.0,
+            "tax": 604.8,
+            "total": 3484.8
         }
     ],
     "totals": {
-        "totalBase": 48286.0,
-        "totalVat": 10140.06,
-        "totalAmount": 58426.06,
+        "totalBase": 2880.0,
+        "totalVat": 604.8,
+        "totalAmount": 3484.8,
         "totalRounding": 0.0
     },
     "applyOptions": {

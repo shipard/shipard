@@ -20,8 +20,17 @@ WHOLE = Decimal("1")
 HUNDRED = Decimal("100")
 
 # DPH kódy bez placené daně (výstup do EU, osvobozené, nulové) — daň 0,
-# celkem = základ. Tuzemské samovyměření (cz-115/117, vstupní RC) sada nemá.
+# celkem = základ. Tuzemské samovyměření (cz-115/117) sada nemá.
 NO_TAX_CODES = frozenset({"cz-112", "cz-122", "cz-123", "cz-201", "cz-202"})
+
+# Samovyměření při přijetí služby z EU (#131 D28): kód s `noPayTax` +
+# `reverseVatCode` — řádek i rekapitulace nesou spočtenou daň (nárok na
+# odpočet, ř. 43), ale dodavateli se neplatí: celkem řádku = základ, do
+# `total_vat` hlavičky daň nevstupuje (`sumTax: 0`). Rekapitulace dostane
+# párový řádek s kódem odběratele (`is_reverse_pair`, `total = base + tax`,
+# `sumBase/sumTax/sumTotal 0` — mimo součty hlavičky), jako
+# `DocDocument::buildVatRecapitulation`. Kód → párový kód z vat-cz.jsonc.
+SELF_ASSESSED_CODES = {"cz-217": "cz-207"}
 
 
 def r2(value: Decimal) -> Decimal:
@@ -50,6 +59,11 @@ def row_vat(row: RowRec, vat_mode: str) -> None:
         row.vat_base, row.vat_amount, row.vat_total = net, Decimal("0.00"), net
         return
     rate = Decimal(pct) / HUNDRED
+    if row.vat_code in SELF_ASSESSED_CODES:
+        # `DocRowCalculator::computeVat` u noPayTax + reverseVatCode: daň
+        # informativně (nárok na odpočet), celkem = základ.
+        row.vat_base, row.vat_amount, row.vat_total = net, r2(net * rate), net
+        return
     if vat_mode == "fromBase":
         amount = r2(net * rate)
         row.vat_base, row.vat_amount, row.vat_total = net, amount, r2(net + amount)
@@ -78,8 +92,11 @@ def _recap(rows: list[RowRec], vat_mode: str) -> list[RecapLine]:
             tax = r2(price - base)
         else:
             base, tax = price, r2(price * rate)
-        payable = Decimal("0.00") if code in NO_TAX_CODES else tax
+        payable = Decimal("0.00") if code in NO_TAX_CODES or code in SELF_ASSESSED_CODES else tax
         recap.append(RecapLine(vat_code=code, vat_pct=pct, base=base, tax=tax, total=r2(base + payable)))
+        if code in SELF_ASSESSED_CODES:
+            recap.append(RecapLine(vat_code=SELF_ASSESSED_CODES[code], vat_pct=pct, base=base, tax=tax,
+                                   total=r2(base + tax), is_reverse_pair=True))
     return recap
 
 
@@ -88,6 +105,8 @@ def _reconcile(rows: list[RowRec], recap: list[RecapLine], vat_mode: str) -> Non
     řádků proti rekapitulaci nese poslední řádek skupiny s nenulovou
     hodnotou; celkem řádku = základ + daň jen tam, kde se daň platí."""
     for line in recap:
+        if line.is_reverse_pair:
+            continue
         members = [r for r in rows if r.vat_code == line.vat_code and (r.vat_pct or 0) == line.vat_pct]
         if not members:
             continue
@@ -102,7 +121,8 @@ def _reconcile(rows: list[RowRec], recap: list[RecapLine], vat_mode: str) -> Non
             target = next((r for r in reversed(members) if r.vat_amount), members[-1])
             target.vat_amount = r2((target.vat_amount or Decimal("0")) + diff_amount)
     for row in rows:
-        if vat_mode != "fromTotal" and row.vat_code not in NO_TAX_CODES and row.vat_code:
+        if vat_mode != "fromTotal" and row.vat_code and row.vat_code not in NO_TAX_CODES \
+                and row.vat_code not in SELF_ASSESSED_CODES:
             row.vat_total = r2((row.vat_base or Decimal("0")) + (row.vat_amount or Decimal("0")))
 
 
@@ -113,9 +133,13 @@ def calc_document(doc: DocRec) -> None:
         row_price(row)
         row_vat(row, doc.vat_mode)
     recap = _recap(doc.rows, doc.vat_mode)
-    base = r2(sum((line.base for line in recap), Decimal("0")))
-    vat = r2(sum((line.tax for line in recap if line.vat_code not in NO_TAX_CODES), Decimal("0")))
-    total = r2(sum((line.total for line in recap), Decimal("0")))
+    # Součty hlavičky podle `sumBase / sumTax / sumTotal` kódu: párový řádek
+    # samovyměření nikam, daň samovyměření do `total_vat` ne (`sumTax: 0`).
+    primary = [line for line in recap if not line.is_reverse_pair]
+    base = r2(sum((line.base for line in primary), Decimal("0")))
+    vat = r2(sum((line.tax for line in primary if line.vat_code not in NO_TAX_CODES
+                  and line.vat_code not in SELF_ASSESSED_CODES), Decimal("0")))
+    total = r2(sum((line.total for line in primary), Decimal("0")))
     if not recap:
         # Doklad bez DPH kódů: součty z řádků mimo rekapitulaci
         # (`sumRowsOutsideRecap`); účetní doklad (`AccountingDocument`)

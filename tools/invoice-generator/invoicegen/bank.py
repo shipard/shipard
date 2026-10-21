@@ -2,18 +2,23 @@
 D18, D22, U1): události úhrad (`expand.payment_events`) → transakce na
 našich účtech → měsíční výpisy per účet; k tomu otevírací doklad
 (počáteční zůstatek 221 / 701) a vyrovnávací interní doklady mezd a odvodů
-(MD závazek / DAL clearing — D22).
+(MD závazek / DAL clearing — D22). Převody mezi vlastními účty
+(`story.bank.transfers`, tasks/demo-dataset-economy.md D26): z účtu v cizí
+měně odejde `transfer.out` s kurzem měsíce, na korunový účet přijde
+`transfer.in` v CZK = EUR × kurz téhož dne, takže peníze na cestě (261100)
+vyjdou po obou stranách nulové.
 
 Transakce nese jen to, co dodá banka: partnera i párování s fakturou
 dopočítá aplikace po seedu (D17). Určitost: pořadí vzniku transakcí je
-pořadí dokladů, pak mzdy, pak poplatky; v rámci dne rozhoduje toto pořadí.
+pořadí dokladů, pak mzdy, pak poplatky, pak převody; v rámci dne rozhoduje
+toto pořadí.
 """
 
 from __future__ import annotations
 
 import re
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_UP
 
 from .errors import ExpandError
 from .model import DocRec, RowRec, StatementRec, TxRec
@@ -23,6 +28,15 @@ from .timeline import in_period, month_date, month_end, period_label
 OPENING_DOC_TEXT = "Počáteční stav bankovních účtů"
 OPENING_ROW_TEXT = "Počáteční účet rozvažný"
 CLEARING_ROW_TEXT = "Přeúčtování z nespárovaných plateb"
+TRANSFER_OUT = "transfer.out"      # economy.bank.txOperations, kategorie cash.transit → 261100
+TRANSFER_IN = "transfer.in"
+CENTS = Decimal("0.01")
+
+
+def transfer_amount_dom(amount: Decimal, rate: Decimal) -> Decimal:
+    """CZK strana převodu = EUR × kurz na haléře jako `amount_dom`
+    bankovní transakce (`StatementImportService`: PHP `round(amount × rate, 2)`)."""
+    return (amount * rate).quantize(CENTS, rounding=ROUND_HALF_UP)
 
 
 def normalize_account(text: str) -> tuple[str, str]:
@@ -180,6 +194,8 @@ def build_statements(story: Story, docs: list[DocRec], events) -> list[Statement
             txs.append(TxRec(key=f"fee:{code}:{offset}", account_code=code, date=end, amount=-Decimal(fee["amount"]),
                              ordinal=ordinal, message=fee["text"], operation="fee.out"))
 
+    ordinal = _transfers(story, txs, ordinal)
+
     statements: list[StatementRec] = []
     for code, spec in story.bank["accounts"].items():
         currency = account_currency(story, code)
@@ -211,15 +227,78 @@ def build_statements(story: Story, docs: list[DocRec], events) -> list[Statement
     return statements
 
 
+def _balance_through(story: Story, txs: list[TxRec], code: str, day: date) -> Decimal:
+    """Zůstatek účtu po všech transakcích do dne `day` včetně."""
+    balance = Decimal(story.bank["accounts"][code]["openingBalance"])
+    return balance + sum((t.amount for t in txs if t.account_code == code and t.date <= day), Decimal("0"))
+
+
+def _transfers(story: Story, txs: list[TxRec], ordinal: int) -> int:
+    """Převody mezi vlastními účty (D26) podle `story.bank.transfers`: každý
+    měsíc období k `day` se z účtu `from` převede zůstatek nad `reserve`
+    (vč. dřívějších převodů) zaokrouhlený dolů na `step`, jen když dělá aspoň
+    `minAmount`. Strana `from` = `transfer.out` v cizí měně s kurzem měsíce,
+    strana `to` = `transfer.in` v CZK = částka × kurz; protiúčet je náš
+    druhý účet, partner žádný (vlastní firma v sadě bankovní spojení nemá)."""
+    period = story.period
+    for rule_index, rule in enumerate(story.bank.get("transfers") or []):
+        src, dst = rule["from"], rule["to"]
+        currency = account_currency(story, src)
+        src_row, dst_row = _bank_account_row(story, src), _bank_account_row(story, dst)
+        reserve, minimum, step = Decimal(rule["reserve"]), Decimal(rule["minAmount"]), Decimal(rule["step"])
+        for offset in period.offsets:
+            day = month_date(period, offset, int(rule["day"]))
+            if not in_period(period, day):
+                continue
+            available = _balance_through(story, txs, src, day) - reserve
+            amount = ((available / step).to_integral_value(rounding=ROUND_FLOOR) * step).quantize(CENTS)
+            if amount < minimum:
+                continue
+            rate = (story.rates.get(currency) or {}).get(offset)
+            if rate is None:
+                raise ExpandError(f"převod {src} → {dst} v měsíci {offset}: chybí kurz {currency} v story.rates")
+            text = rule["text"].format(period=period_label(period.month_start(offset)))
+            key = f"transfer:{rule_index}:{offset}"
+            ordinal += 1
+            txs.append(TxRec(
+                key=f"{key}:out", account_code=src, date=day, amount=-amount, ordinal=ordinal,
+                counterparty_account=dst_row.get("account_number"), counterparty_name=story.own.name, message=text,
+                operation=TRANSFER_OUT, exchange_rate=rate,
+            ))
+            ordinal += 1
+            txs.append(TxRec(
+                key=f"{key}:in", account_code=dst, date=day, amount=transfer_amount_dom(amount, rate), ordinal=ordinal,
+                counterparty_account=src_row.get("account_number"), counterparty_name=story.own.name, message=text,
+                operation=TRANSFER_IN,
+            ))
+    return ordinal
+
+
 def _validate(story: Story, statements: list[StatementRec], docs: list[DocRec]) -> None:
     """Pasti ze zadání: nespárovaná platba má protiúčet osoby, každá platba
     mezd má vyrovnávací doklad téhož dne a částky (a naopak), překlep VS
-    nekoliduje s číslem dokladu, kurz jen a právě na účtu v cizí měně."""
+    nekoliduje s číslem dokladu, kurz jen a právě na účtu v cizí měně,
+    převod má obě strany téhož dne a CZK strana = cizí měna × kurz (peníze
+    na cestě nulové, D26)."""
     problems: list[str] = []
     by_key = {doc.key: doc for doc in docs}
     numbers = {doc.number for doc in docs if doc.number} | {doc.payment_reference for doc in docs if doc.payment_reference}
     settlements = {doc.key for doc in docs if doc.key.startswith("settlement:")}
     seen_settlements: set[str] = set()
+    transfers = {tx.key: tx for s in statements for tx in s.transactions if tx.operation in (TRANSFER_IN, TRANSFER_OUT)}
+    for key, tx in transfers.items():
+        base, _, side = key.rpartition(":")
+        pair = transfers.get(f"{base}:{'in' if side == 'out' else 'out'}")
+        if pair is None:
+            problems.append(f"{key}: převod bez druhé strany")
+        elif side == "out":
+            if pair.date != tx.date:
+                problems.append(f"{key}: druhá strana převodu má jiný den ({pair.date} ≠ {tx.date})")
+            if tx.exchange_rate is not None and pair.amount != transfer_amount_dom(-tx.amount, tx.exchange_rate):
+                problems.append(f"{key}: CZK strana {pair.amount} ≠ {-tx.amount} × {tx.exchange_rate} — "
+                                "peníze na cestě by nebyly nulové")
+            if tx.amount >= 0 or pair.amount <= 0:
+                problems.append(f"{key}: transfer.out je výdaj a transfer.in příjem")
     for statement in statements:
         foreign = statement.currency != "CZK"
         for tx in statement.transactions:

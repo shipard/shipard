@@ -1,0 +1,43 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00025",
+    "companyId": "61204579",
+    "taxId": "CZ61204579",
+    "vatId": "CZ61204579",
+    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+    "name": {
+        "fullName": "Zelený Terminál s.r.o."
+    },
+    "contact": {
+        "email": "fakturace@zeleny-terminal.example",
+        "phone": "+420000230190",
+        "web": "www.zeleny-terminal.example"
+    },
+    "status": {
+        "isOwn": true,
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Serverová",
+            "houseNumber": "1024/8",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

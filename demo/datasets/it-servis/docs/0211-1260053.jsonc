@@ -1,0 +1,143 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Galvanovna Pokorný a syn s.r.o.",
+        "country": "cz",
+        "companyId": "18493068",
+        "taxId": "CZ18493068",
+        "vatId": "CZ18493068",
+        "address": {
+            "street": "Pokovovací",
+            "houseNumber": "3301/2",
+            "city": "Vyškov",
+            "zip": "68201",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "uctarna@galvanovna-pokorny.example",
+            "phone": "+420000348120",
+            "web": "www.galvanovna-pokorny.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-04-22",
+        "dueDate": "2026-05-06",
+        "accountingDate": "2026-04-22",
+        "taxPointDate": "2026-04-22",
+        "vatObligationDate": "2026-04-22"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260053"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "ROUTER",
+                "name": "Router s firewallem"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 5990.0,
+            "totalPrice": 5990.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 5990.0,
+                "vatAmount": 1257.9,
+                "vatTotal": 7247.9
+            },
+            "description": "Router s firewallem"
+        },
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "SWITCH-24",
+                "name": "Síťový switch 24 portů, PoE"
+            },
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 7900.0,
+            "totalPrice": 15800.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 15800.0,
+                "vatAmount": 3318.0,
+                "vatTotal": 19118.0
+            },
+            "description": "Síťový switch 24 portů, PoE"
+        },
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 3,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 5.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 6250.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 6250.0,
+                "vatAmount": 1312.5,
+                "vatTotal": 7562.5
+            },
+            "description": "Servisní práce technika — 04/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 28040.0,
+            "tax": 5888.4,
+            "total": 33928.4
+        }
+    ],
+    "totals": {
+        "totalBase": 28040.0,
+        "totalVat": 5888.4,
+        "totalAmount": 33928.4,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260053",
+            "sequenceNumber": 53
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

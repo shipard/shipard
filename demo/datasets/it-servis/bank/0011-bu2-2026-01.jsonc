@@ -7,7 +7,7 @@
         "periodStart": "2026-01-01",
         "periodEnd": "2026-01-31",
         "openingBalance": 0.0,
-        "closingBalance": 2120.0,
+        "closingBalance": 1332.0,
         "currency": "EUR"
     },
     "transactions": [
@@ -22,7 +22,7 @@
         },
         {
             "externalId": "BU2-202601-002",
-            "amount": 1250.0,
+            "amount": 650.0,
             "dateTransaction": "2026-01-13",
             "counterpartyAccount": "DE18370400440532014860",
             "counterpartyName": "Wolkenschiff Logistik GmbH",
@@ -31,6 +31,15 @@
         },
         {
             "externalId": "BU2-202601-003",
+            "amount": -188.0,
+            "dateTransaction": "2026-01-18",
+            "counterpartyAccount": "NL69NWBK0481570693",
+            "counterpartyName": "Noordwolk Backup B.V.",
+            "paymentReference": "202618407",
+            "exchangeRate": 25.12
+        },
+        {
+            "externalId": "BU2-202601-004",
             "amount": 480.0,
             "dateTransaction": "2026-01-24",
             "counterpartyAccount": "SK6709000000003914726058",

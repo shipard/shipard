@@ -352,4 +352,10 @@ výpisů dvou účtů (CZK, EUR), mzdy a odvody bez partnera vyrovná interními
 doklady (MD závazek / DAL 261300 — zrcadlové řádky skupiny Nespárované
 platby je v saldokontu vynulují, `docs/accbal.md` § 4.4) a počáteční
 zůstatek nese otevírací doklad (`fiscalPeriodType: opening`); analytiku
-221 pro eurový účet zakládá `setup/accounts.jsonc`.
+221 pro eurový účet zakládá `setup/accounts.jsonc`. Ekonomika příběhu
+(#131 D25–D28, `tasks/demo-dataset-economy.md`): cena katalogové položky
+na faktuře v cizí měně se přepočítává kurzem měsíce, přebytek eurového
+účtu odchází převody `transfer.out` / `transfer.in` (261100 nulový),
+dodavatel z EU fakturuje v EUR se samovyměřením (cz-217 / cz-207, PDF
+anglicky, úhrada z eurového účtu) a `build.py` vypisuje souhrn ekonomiky,
+jehož cíle (zisk 8–15 %, zahraničí 10–20 %, …) hlídá unit test generátoru.

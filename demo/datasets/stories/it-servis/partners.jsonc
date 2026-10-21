@@ -1,7 +1,7 @@
 // Odběratelé a dodavatelé příběhu „IT servis“ — identity v kanonickém tvaru
 // (jako tests/corpus/cz/identities.jsonc), VŠECHNY fiktivní (#131 D15):
 //   - CZ IČO mají validní kontrolní součet a v ARES neexistují, názvy 0 zásahů,
-//   - DIČ SK/DE mají tvar (DE i kontrolní číslici) a ve VIES jsou neplatná,
+//   - DIČ SK/DE/NL mají tvar (DE i kontrolní číslici) a ve VIES jsou neplatná,
 //   - čísla účtů mají mod 11 a IBAN jim odpovídá; kódy bank jsou reálné,
 //   - domény jen v TLD .example — nikdy nikomu nebudou patřit.
 //   - telefony s předčíslím 000 za kódem země (+420 000 …, +421 000 …,
@@ -25,12 +25,16 @@
 // doplatek N dní po splatnosti, jinak nikdy) | never; `unmatched` =
 // platba faktury měsíce `month` bez VS (missing) nebo s překlepem (typo) —
 // záměrně nespárovaná platba se známým protiúčtem.
-// Dodavatel: `template` a `accent` šablony PDF (demo/invoices/templates/),
-// `docNumber` vzor čísla dodavatele ({yyyy}, {yy}, {seq:04d}, čítač od
-// `seqStart`), `invoices` pravidlo faktur (every month | quarter, nebo
-// `months`), `anchorMonth` co s fakturou měsíce kotvy: processed (zpracovaná
-// zpráva + doklad), open (zpráva k řešení s návrhem), skip; `payment` = jak
-// platíme my (onTime = den před splatností, late + days; bez pole = včas).
+// Dodavatel: `template` a `accent` šablony PDF (demo/invoices/templates/;
+// `en` = anglická šablona korpusu), `docNumber` vzor čísla dodavatele
+// ({yyyy}, {yy}, {seq:04d}, čítač od `seqStart`), `invoices` pravidlo faktur
+// (every month | quarter, nebo `months`), `anchorMonth` co s fakturou měsíce
+// kotvy: processed (zpracovaná zpráva + doklad), open (zpráva k řešení
+// s návrhem), skip; `payment` = jak platíme my (onTime = den před splatností,
+// late + days; bez pole = včas). Zahraniční dodavatel (D28): `language` en,
+// `currency` EUR (kurz z story.jsonc, úhrada z eurového účtu), `vatTreatment`
+// reverseCharge — řádky s `supplyKind: services` a `vatPct` 21 = sazba
+// samovyměření (papír tiskne 0 %); bez polí = česky, CZK, standard.
 {
 	"verifiedAt": "2026-10-20",
 
@@ -290,10 +294,12 @@
 			"template": "a", "accent": "#7c2d5a",
 			"docNumber": { "pattern": "FV-{yyyy}-{seq:04d}", "seqStart": 2210 },
 			"invoices": {
-				"months": [-8, -6, -4, -1], "day": 15, "dueDays": 10, "anchorMonth": "skip",
+				"months": [-6, -4, -3, -1], "day": 15, "dueDays": 10, "anchorMonth": "skip",
 				"rows": [
-					{ "item": "501100", "text": "Notebook 14\" business, 16 GB RAM", "qty": 2, "unit": "pcs", "unitPrice": 19900, "vatPct": 21 },
-					{ "item": "501100", "text": "Síťový switch 24 portů, PoE",       "qty": [1, 3], "unit": "pcs", "unitPrice": 6400, "vatPct": 21 },
+					{ "item": "501100", "text": "Notebook 14\" business, 16 GB RAM", "qty": [1, 2], "unit": "pcs", "unitPrice": 19900, "vatPct": 21 },
+					{ "item": "501100", "text": "Síťový switch 24 portů, PoE",       "qty": 1, "unit": "pcs", "unitPrice": 6400, "vatPct": 21 },
+					{ "item": "501100", "text": "Monitor 27\" IPS",                  "qty": [1, 2], "unit": "pcs", "unitPrice": 5900, "vatPct": 21 },
+					{ "item": "501100", "text": "Přístupový bod Wi-Fi 6",            "qty": [2, 4], "unit": "pcs", "unitPrice": 2590, "vatPct": 21 },
 					{ "item": "501100", "text": "Kabel HDMI 2.1, 2 m",               "qty": [5, 20], "unit": "pcs", "unitPrice": 149, "vatPct": 21 },
 				],
 			},
@@ -311,6 +317,29 @@
 			"invoices": {
 				"every": "quarter", "day": 5, "dueDays": 14, "anchorMonth": "open",
 				"rows": [ { "item": "518211", "text": "Vedení účetnictví a mzdová agenda — {quarter}", "amount": 19500, "vatPct": 21 } ],
+			},
+		},
+		// Zahraniční dodavatel služby z EU (#131 D28): měsíční předplatné v EUR
+		// s přenesením daňové povinnosti (doklad cz-217 / 21 %, papír 0 % s klauzulí
+		// reverse charge, anglická šablona `en`), úhrada z eurového účtu BU2 kurzem
+		// faktury. DIČ NL ve VIES neplatné, IBAN s platnými kontrolními číslicemi.
+		"noordwolk": {
+			"vatPayer": true,
+			"name": "Noordwolk Backup B.V.",
+			"country": "nl", "companyId": null, "taxId": "NL854721039B01", "vatId": "NL854721039B01",
+			"courtRegistration": "KvK 87654321",
+			"address": { "street": "Datahaven", "houseNumber": "42", "city": "Rotterdam", "zip": "3011 AB", "country": "nl" },
+			"contact": { "name": null, "email": "billing@noordwolk-backup.example", "phone": "+310002004410", "web": "www.noordwolk-backup.example" },
+			"bankAccount": { "accountNumber": null, "iban": "NL69NWBK0481570693", "bic": "NWBKNL2AXXX" },
+			"language": "en", "currency": "EUR", "vatTreatment": "reverseCharge",
+			"template": "en", "accent": null,
+			"docNumber": { "pattern": "INV-{yyyy}-{seq:05d}", "seqStart": 18407 },
+			"invoices": {
+				"every": "month", "day": 5, "dueDays": 14, "anchorMonth": "processed",
+				"rows": [
+					{ "item": "518206", "text": "Managed cloud backup, 2 TB — {period}", "amount": 149, "vatPct": 21, "supplyKind": "services" },
+					{ "item": "518206", "text": "Uptime monitoring, 25 hosts — {period}", "amount": 39, "vatPct": 21, "supplyKind": "services" },
+				],
 			},
 		},
 		// Jen odesílatel e-mailu s lhůtou (mail.jsonc) a osoba v adresáři — faktury nevystavuje.

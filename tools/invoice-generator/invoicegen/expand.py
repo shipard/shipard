@@ -19,19 +19,21 @@ from .bank import build_statements, expand_bank_docs
 from .catalogs import Catalogs
 from .collation import czech_key
 from .compute import compute
+from .corpusprint import template_values
 from .demoprint import flat_party, invoice_values, registry_values
 from .doccalc import calc_document
 from .errors import ExpandError
 from .model import DocRec, MailRec, PersonRec, Records, RegistryRec, RowRec
 from .render import render_html
 from .snapshot import ai_title
-from .story import Party, Story
+from .story import Party, Story, template_locale
 from .timeline import (
     clamp_day, days_before, fiscal_year, in_period, month_date, month_end, period_label, quarter_label,
     quarter_offsets, spread, spread_decimal, ts,
 )
 
-__all__ = ["DOC_ID_CODES", "ExpandError", "PaymentEvent", "assign_numbers", "expand", "format_number", "payment_events"]
+__all__ = ["DOC_ID_CODES", "ExpandError", "PaymentEvent", "assign_numbers", "expand", "foreign_unit_price", "format_number",
+           "payment_events"]
 
 # Číslování (modules/docs/core/config/docTypes.jsonc): %D kód typu, %y dva
 # znaky fiskálního roku, %C kód řady (pokladna), %4 / %5 pořadí.
@@ -41,6 +43,16 @@ BOUND_TYPES = frozenset({"cash", "cashreg"})   # series_binding cash_desk → %D
 VAT_OUTPUT = {21: "cz-120", 12: "cz-121", 0: "cz-122"}
 VAT_INPUT = {21: "cz-110", 12: "cz-111", 0: "cz-112"}
 VAT_EU_SERVICES = "cz-202"
+VAT_EU_SERVICES_INPUT = "cz-217"   # přijetí služby z EU, samovyměření (pár cz-207 skládá doccalc), #131 D28
+
+MAIL_TEXTS = {
+    "cs": {"subject": "Faktura {number}", "body": "Dobrý den,\n\nv příloze zasíláme fakturu {number}.\n\n{supplier}",
+           "note": "Děkujeme za včasnou úhradu.",
+           "period_note": "Vyúčtování za období {from_} – {to}."},
+    "en": {"subject": "Invoice {number}", "body": "Hello,\n\nplease find attached invoice {number}.\n\n{supplier}",
+           "note": "Thank you for your prompt payment.",
+           "period_note": "Billing period {from_} – {to}."},
+}
 
 MODEL_NAME = "demo-ideal"
 PROMPT_VERSION = "demo"
@@ -92,7 +104,20 @@ def _customer_vat(customer: Party, pct: int) -> tuple[str, str]:
 
 
 def _rate(story: Story, currency: str, offset: int) -> Decimal:
-    return Decimal("1") if currency == "CZK" else story.rates[currency][offset]
+    """Kurz měsíce vystavení (D13); doklad v cizí měně bez kurzu je chyba —
+    žádný tichý fallback na 1 (D27)."""
+    if currency == "CZK":
+        return Decimal("1")
+    rate = (story.rates.get(currency) or {}).get(offset)
+    if rate is None:
+        raise ExpandError(f"doklad v {currency} v měsíci {offset} nemá kurz v story.rates")
+    return rate
+
+
+def foreign_unit_price(price_czk: Decimal, rate: Decimal) -> Decimal:
+    """Cena katalogové položky na dokladu v cizí měně = cena v CZK ÷ kurz
+    měsíce vystavení, na celé centy (D27)."""
+    return (price_czk / rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 def _issued_doc(story: Story, *, key: str, ordinal: int, doc_type: str, customer: Party, offset: int,
@@ -111,15 +136,20 @@ def _issued_doc(story: Story, *, key: str, ordinal: int, doc_type: str, customer
 
 
 def _item_row(story: Story, customer: Party, code: str, qty: Decimal, text: str | None,
-              price: Decimal | None = None, catalogs: Catalogs | None = None) -> RowRec:
+              price: Decimal | None = None, catalogs: Catalogs | None = None, *, rate: Decimal) -> RowRec:
+    """Řádek vydaného dokladu z položky. Vlastní `price` pravidla je cena
+    v měně faktury; cena z katalogu (CZK) se na doklad v cizí měně
+    přepočte kurzem měsíce vystavení (D27)."""
     item = story.items[code]
     vat_code, _ = _customer_vat(customer, item.vat_pct)
+    if price is None:
+        price = item.price if (customer.currency or "CZK") == "CZK" else foreign_unit_price(item.price, rate)
     # Řádek bez textu dostane po seedu popis = název položky (DocDocument).
     return RowRec(
         operation="sale.services" if item.kind == "service" else "sale.goods",
         item_code=item.code, item_name=item.name, description=text if text is not None else item.name, unit=item.unit,
         unit_print=catalogs.unit_shortcuts.get(item.unit, item.unit) if catalogs else item.unit,
-        quantity=qty, unit_price=price if price is not None else item.price,
+        quantity=qty, unit_price=price,
         vat_pct=0 if vat_code == VAT_EU_SERVICES else item.vat_pct, vat_code=vat_code,
     )
 
@@ -156,10 +186,12 @@ def expand_issued(story: Story, catalogs: Catalogs, ordinal: int) -> tuple[list[
             state = 10 if (offset == 0 and rule.get("conceptInAnchorMonth")) else 40
             doc_type = "invpo" if rule.get("docType") == "proformaIssued" else "invno"
             ordinal += 1
+            rate = _rate(story, customer.currency or "CZK", offset)
             docs.append(_issued_doc(
                 story, key=f"billing:{rule_index}:{offset}", ordinal=ordinal, doc_type=doc_type, customer=customer,
                 offset=offset, issue=issue, due_days=int(rule.get("dueDays", inv["dueDays"])),
-                rows=[_item_row(story, customer, rule["item"], qty, text, price, catalogs)], state=state, cash=False,
+                rows=[_item_row(story, customer, rule["item"], qty, text, price, catalogs, rate=rate)], state=state,
+                cash=False,
             ))
     customer_order = {key: i for i, key in enumerate(story.customers)}
     for entry_index, entry in enumerate(story.adhoc):
@@ -169,6 +201,7 @@ def expand_issued(story: Story, catalogs: Catalogs, ordinal: int) -> tuple[list[
         if not in_period(period, issue):
             continue
         rows: list[RowRec] = []
+        rate = _rate(story, customer.currency or "CZK", offset)
         for row_index, row in enumerate(entry["rows"]):
             if "hours" in row:
                 lo, hi = row["hours"]
@@ -177,7 +210,7 @@ def expand_issued(story: Story, catalogs: Catalogs, ordinal: int) -> tuple[list[
             else:
                 qty = Decimal(row["qty"])
                 text = None
-            rows.append(_item_row(story, customer, row["item"], qty, text, catalogs=catalogs))
+            rows.append(_item_row(story, customer, row["item"], qty, text, catalogs=catalogs, rate=rate))
         ordinal += 1
         docs.append(_issued_doc(
             story, key=f"adhoc:{entry_index}", ordinal=ordinal, doc_type="invno", customer=customer, offset=offset,
@@ -201,8 +234,12 @@ def _digits(text: str, limit: int = 10) -> str:
 
 def _received_rows(story: Story, supplier: Party, rule: dict, offset: int, supplier_order: int,
                    catalogs: Catalogs, labels: dict[str, str]) -> list[RowRec]:
+    """Řádky přijaté faktury z pravidla dodavatele. Dodavatel se
+    samovyměřením (služby z EU, D28) dostane kód cz-217 se sazbou
+    samovyměření — papír tiskne 0 % (`_invoice_mail`)."""
     rows: list[RowRec] = []
     previous_qty: Decimal | None = None
+    reverse_charge = supplier.vat_treatment == "reverseCharge"
     for row_index, row in enumerate(rule["rows"]):
         offer = catalogs.offer[row["item"]]
         pct = int(row["vatPct"])
@@ -223,8 +260,12 @@ def _received_rows(story: Story, supplier: Party, rule: dict, offset: int, suppl
         previous_qty = qty
         rows.append(RowRec(
             operation="acc.entry", item_code=offer.code, item_name=offer.name_cs, description=text, unit=unit,
-            unit_print=catalogs.unit_shortcuts.get(unit, unit), quantity=qty, unit_price=price, vat_pct=pct,
-            vat_code=VAT_INPUT[pct], content_tag=offer.content_tags[0] if offer.content_tags else None,
+            # Anglický papír tiskne kód jednotky (pcs), český zkratku (ks).
+            unit_print=unit if supplier.language == "en" else catalogs.unit_shortcuts.get(unit, unit),
+            quantity=qty, unit_price=price, vat_pct=pct,
+            vat_code=VAT_EU_SERVICES_INPUT if reverse_charge else VAT_INPUT[pct],
+            content_tag=offer.content_tags[0] if offer.content_tags else None,
+            supply_kind=row.get("supplyKind"),
         ))
     return rows
 
@@ -277,11 +318,13 @@ def expand_received(story: Story, catalogs: Catalogs, templates: dict[str, str],
             rows = _received_rows(story, supplier, rule, offset, supplier_order, catalogs, labels)
             rounding = rule.get("rounding", "none")
             doc_key = f"received:{key}:{offset}"
+            currency = supplier.currency or "CZK"
             ordinal += 1
             doc = DocRec(
                 key=doc_key, doc_type="invni", ordinal=ordinal, issue=issue, accounting=issue, due=due,
                 tax_point=tax_point, vat_obligation=tax_point, period_from=period_from, period_to=period_to,
-                currency="CZK", rate=Decimal("1"), vat_mode="fromBase", vat_place="domestic",
+                currency=currency, rate=_rate(story, currency, offset), vat_mode="fromBase",
+                vat_place="intracom" if supplier.vat_treatment == "reverseCharge" else "domestic",
                 payment_method="bankTransfer", payment_reference=_digits(number), partner_key=key,
                 self_party="customer", rows=rows, state=40, rounding=rounding, supplier_doc_number=number,
             )
@@ -303,6 +346,12 @@ def _invoice_mail(story: Story, supplier: Party, supplier_order: int, doc: DocRe
     analyzed_at = ts(received_day, 8, minute + 1)
     period_tag = f"{doc.issue.year % 100:02d}{doc.issue.month:02d}"
     message_id = f"MSG-DEMO-{supplier.key.upper()[:6]}-{period_tag}"
+    language = supplier.language or "cs"
+    texts = MAIL_TEXTS[language]
+    treatment = supplier.vat_treatment or "standard"
+    reverse_charge = treatment == "reverseCharge"
+    # Papír dodavatele se samovyměřením tiskne 0 % a druh plnění (D28);
+    # doklad nese cz-217 / 21 % — obě hodnoty plynou z téhož pravidla.
     data = {
         "docNumber": number,
         "paymentReference": doc.payment_reference,
@@ -312,11 +361,13 @@ def _invoice_mail(story: Story, supplier: Party, supplier_order: int, doc: DocRe
             "periodFrom": doc.period_from.isoformat() if doc.period_from else None,
             "periodTo": doc.period_to.isoformat() if doc.period_to else None,
         },
-        "currency": "CZK",
-        "vatTreatment": "standard",
+        "currency": doc.currency,
+        "vatTreatment": treatment,
         "payment": {"method": "bankTransfer", "specificSymbol": None, "constantSymbol": None},
         "contentTag": next((r.content_tag for r in doc.rows if r.content_tag), None),
-        "rows": [{"text": r.description, "qty": r.quantity, "unit": r.unit_print, "unitPrice": r.unit_price, "vatPct": r.vat_pct}
+        "rows": [{"text": r.description, "qty": r.quantity, "unit": r.unit_print, "unitPrice": r.unit_price,
+                  "vatPct": 0 if reverse_charge else r.vat_pct,
+                  **({"supplyKind": r.supply_kind} if reverse_charge else {})}
                  for r in doc.rows],
         "rounding": doc.rounding,
         "notes": {"onDocument": None},
@@ -324,22 +375,32 @@ def _invoice_mail(story: Story, supplier: Party, supplier_order: int, doc: DocRe
     if doc.rounding == "czk":
         # Zaokrouhlení na koruny jen tam, kde ho Shipard umí odvodit z částky
         # (|rozdíl| v pásmu 0,01–1,00); jinak doklad bez zaokrouhlení.
-        plain = compute({**data, "rounding": "none"})
+        plain = compute({**data, "rounding": "none"}, vat_treatment=treatment)
         difference = abs(plain["totalAmount"].quantize(Decimal("1"), rounding=ROUND_HALF_UP) - plain["totalAmount"])
         if not Decimal("0.01") < difference < Decimal("1"):
             data["rounding"] = "none"
             doc.rounding = "none"
-    computed = compute(data)
-    invoice = {
-        "docNumber": number, "variableSymbol": doc.payment_reference or "0",
-        "dates": {"issue": data["dates"]["issue"], "tax": data["dates"]["tax"], "due": data["dates"]["due"]},
-        "notes": {"onDocument": _invoice_note(doc)},
-    }
-    html = render_html(templates[supplier.template or "a"], invoice_values(invoice, flat_party(supplier.identity, supplier.accent), own_flat, computed))
-    expected_like = {"totals": {"totalAmount": computed["totalAmount"]}, "currency": "CZK", "docNumber": number}
+    computed = compute(data, vat_treatment=treatment)
+    note = _invoice_note(doc, language)
+    template = supplier.template or "a"
+    if template_locale(template) == "en":
+        # Anglická šablona korpusu: hodnoty z kanonických identit (měna,
+        # země v adrese, klauzule reverse charge).
+        values = template_values({**data, "notes": {"onDocument": note}}, supplier.identity, story.own.identity,
+                                 computed, locale="en")
+    else:
+        invoice = {
+            "docNumber": number, "variableSymbol": doc.payment_reference or "0",
+            "dates": {"issue": data["dates"]["issue"], "tax": data["dates"]["tax"], "due": data["dates"]["due"]},
+            "notes": {"onDocument": note},
+        }
+        values = invoice_values(invoice, flat_party(supplier.identity, supplier.accent), own_flat, computed)
+    html = render_html(templates[template], values)
+    expected_like = {"totals": {"totalAmount": computed["totalAmount"]}, "currency": doc.currency, "docNumber": number}
     return MailRec(
-        key=f"mail:{message_id}", message_id=message_id, sender=supplier, subject=f"Faktura {number}",
-        body=f"Dobrý den,\n\nv příloze zasíláme fakturu {number}.\n\n{supplier.name}",
+        key=f"mail:{message_id}", message_id=message_id, sender=supplier,
+        subject=texts["subject"].format(number=number),
+        body=texts["body"].format(number=number, supplier=supplier.name),
         received_at=received_at, analyzed_at=analyzed_at, primary_type="invoiceReceived",
         doc_state=20 if open_proposal else 40, ai_title=ai_title(expected_like, supplier.name, False),
         pdf_name=f"{number}.pdf".replace("/", "-"), html=html, canonical_data=data, computed=computed,
@@ -348,11 +409,14 @@ def _invoice_mail(story: Story, supplier: Party, supplier_order: int, doc: DocRe
     )
 
 
-def _invoice_note(doc: DocRec) -> str:
+def _invoice_note(doc: DocRec, language: str = "cs") -> str:
+    texts = MAIL_TEXTS[language]
     if doc.period_from and doc.period_to:
-        return (f"Vyúčtování za období {doc.period_from.day}. {doc.period_from.month}. {doc.period_from.year} – "
-                f"{doc.period_to.day}. {doc.period_to.month}. {doc.period_to.year}.")
-    return "Děkujeme za včasnou úhradu."
+        return texts["period_note"].format(
+            from_=f"{doc.period_from.day}. {doc.period_from.month}. {doc.period_from.year}",
+            to=f"{doc.period_to.day}. {doc.period_to.month}. {doc.period_to.year}",
+        )
+    return texts["note"]
 
 
 def expand_other_mail(story: Story) -> list[MailRec]:

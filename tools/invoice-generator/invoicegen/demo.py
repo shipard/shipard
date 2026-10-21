@@ -20,6 +20,7 @@ from .dumpshape import (
     mail_record, mail_slug, mail_sort_key, person_record, person_slug, person_sort_key, registry_record,
     registry_slug, registry_sort_key,
 )
+from .economy import EconomySummary, summarize
 from .expand import expand
 from .expected import load_projection
 from .jsonc import load_jsonc
@@ -44,6 +45,7 @@ class DemoSummary:
     reused: int
     sync: SyncResult
     out_dir: Path
+    economy: EconomySummary    # souhrn ekonomiky příběhu (D25) ze stejných záznamů jako soubory
 
 
 def _templates(directory: Path) -> dict[str, str]:
@@ -148,4 +150,4 @@ def build_demo_dataset(story_dir: Path, out_dir: Path, *, repo_root: Path, ancho
     sync = sync_tree(out_dir, files, managed=MANAGED)
     cache.save()
     return DemoSummary(story=story, counts=counts, rendered=len(cache.rendered), reused=len(cache.reused),
-                       sync=sync, out_dir=out_dir)
+                       sync=sync, out_dir=out_dir, economy=summarize(story, records))

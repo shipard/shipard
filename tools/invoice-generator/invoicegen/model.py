@@ -28,6 +28,7 @@ class RowRec:
     account: str | None = None             # kontační řádek
     acc_side: str | None = None            # debit | credit
     content_tag: str | None = None
+    supply_kind: str | None = None         # druh plnění na papíru zahraničního dodavatele (services), jen pro zprávu
     # výsledek výpočtu (doccalc):
     vat_base: Decimal | None = None
     vat_amount: Decimal | None = None
@@ -41,6 +42,7 @@ class RecapLine:
     base: Decimal
     tax: Decimal
     total: Decimal
+    is_reverse_pair: bool = False          # párový řádek samovyměření (kód odběratele, mimo součty hlavičky)
 
 
 @dataclass

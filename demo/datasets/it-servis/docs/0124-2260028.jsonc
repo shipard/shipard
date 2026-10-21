@@ -2,7 +2,7 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "2026448206",
+    "docNumber": "2026448205",
     "selfParty": "customer",
     "supplier": {
         "name": "Telekom Vlnka a.s.",
@@ -30,11 +30,11 @@
         }
     },
     "dates": {
-        "issueDate": "2026-06-06",
-        "dueDate": "2026-06-20",
-        "accountingDate": "2026-06-06",
-        "taxPointDate": "2026-06-06",
-        "vatObligationDate": "2026-06-06"
+        "issueDate": "2026-05-06",
+        "dueDate": "2026-05-20",
+        "accountingDate": "2026-05-06",
+        "taxPointDate": "2026-05-06",
+        "vatObligationDate": "2026-05-06"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -48,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "2026448206"
+        "paymentReference": "2026448205"
     },
     "rows": [
         {
@@ -73,7 +73,7 @@
                 "vatAmount": 396.9,
                 "vatTotal": 2286.9
             },
-            "description": "Hlasové služby a mobilní tarify — 06/2026"
+            "description": "Hlasové služby a mobilní tarify — 05/2026"
         },
         {
             "rowKind": "item",
@@ -97,7 +97,7 @@
                 "vatAmount": 207.9,
                 "vatTotal": 1197.9
             },
-            "description": "Internetové připojení 500/50 Mb/s — 06/2026"
+            "description": "Internetové připojení 500/50 Mb/s — 05/2026"
         }
     ],
     "vatRecap": [
