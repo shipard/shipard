@@ -886,6 +886,19 @@ Vše ostatní se dropuje, **včetně osiřelých tabulek** po odebraných module
 `core_attachments_files`, vyčistí se i obsah `att/` a `cache/thumbnails/`
 (prázdné adresáře `ds-upgrade` následně znovu zajistí).
 
+**Nastavení s id dropnutých řádků** (`clearSettingsOnReset` v `module.jsonc`,
+#131 D42): `core_system_settings` reset přežije, ale klíč, jehož hodnota je
+id řádku dropované tabulky, by po `ds-upgrade` ukazoval na cizí řádek —
+provisionery vyplněný klíč nepřepisují (řada „Majetek“ by nevznikla
+a `economy.assets.accountingSeries` by mířilo na první řadu založenou
+později). Reset proto takové klíče smaže hned po DROP a před delegací na
+`ds-upgrade`, který je nastaví znovu; v reportu a v `--dry-run` je vypíše
+jako `[clear] <klíč> (id in <tabulka>)`. Klíč, jehož tabulku drží `--keep`,
+zůstává. Dnes: `economy.assets.accountingSeries` (economy.assets)
+a `economy.vat.filingAccountingSeries` (economy.vat), obě
+`docs_core_number_series`. Viz [docs/modules.md](modules.md) →
+`clearSettingsOnReset`.
+
 **Produkční pojistka (`enableReset`):** v `production` módu příkaz tvrdě
 odmítne (`FAILURE`) bez jakéhokoliv dropu i DB spojení — je to záměrně
 destruktivní vývojový/testovací nástroj. Výjimku má jen zdroj dat vědomě

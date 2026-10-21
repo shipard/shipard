@@ -45,6 +45,12 @@ a co data. Funguje to i pro third-party moduly z `extraModulesPath`.
 4. Po potvrzení: `DROP TABLE IF EXISTS …` na `dropSet`, vyčištění obsahu
    `att/` a `cache/thumbnails/` (jen pokud se dropuje `core_attachments_files`),
    a delegace na `ds-upgrade`.
+5. Doplněno 2026-10-21 (#131 D42): `clearSettingsOnReset` v `module.jsonc`
+   = objekty `{key, table}` — nastavení v `core_system_settings` s id řádku
+   tabulky `table`. Reset klíč smaže hned po DROP (jen když `table` dropuje),
+   `ds-upgrade` ho nastaví znovu. Důvod: provisionery vyplněný klíč
+   nepřepisují, takže řada „Majetek“ po resetu nevznikala a klíč mířil na
+   cizí řadu. Viz `docs/modules.md` → `clearSettingsOnReset`.
 
 ## Co je potřeba udělat
 

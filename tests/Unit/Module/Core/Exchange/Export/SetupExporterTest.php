@@ -8,6 +8,8 @@ use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Module\ModuleLoader;
+use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
 
@@ -331,6 +333,25 @@ class SetupExporterTest extends TestCase
             ['key' => 'economy.vatAgenda', 'value' => true],
         ], $records[0]->data['rows'], 'id řad dokladů se nepřenáší (D42)');
         $this->assertFalse(SetupExporter::isPortableSetting('economy.assets.accountingSeries'));
+    }
+
+    public function testExcludedSettingsMatchTheClearSettingsOnResetDeclarationsOfModules(): void
+    {
+        // Jedno místo pravdy = deklarace `clearSettingsOnReset` v module.jsonc
+        // (ds-reset je maže s dropnutou tabulkou, #131 D42); exportér moduly
+        // v ruce nemá, takže nese kopii — tenhle test ji hlídá.
+        $declared = [];
+        foreach (ModuleLoader::loadAllModules(new ModulePathResolver([dirname(__DIR__, 6) . '/modules'])) as $module) {
+            foreach ($module->clearSettingsOnReset as $item) {
+                $declared[$item['key']] = true;
+            }
+        }
+        $declared = array_keys($declared);
+        sort($declared);
+        $excluded = SetupExporter::SETTINGS_EXCLUDED;
+        sort($excluded);
+
+        $this->assertSame($declared, $excluded, 'SetupExporter::SETTINGS_EXCLUDED musí odpovídat clearSettingsOnReset modulů');
     }
 
     public function testNoActiveTablesYieldsNothing(): void

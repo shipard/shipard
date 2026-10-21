@@ -260,9 +260,20 @@ Ověřovací zdroj dat (bez zaúčtování) nech Anně a zapiš prefix.
   obě nastavení nevypisuje (`SETTINGS_EXCLUDED`), `SetupSeeder` je ve
   starší sadě přeskočí a před resetem je smaže, provisionery `ds-upgrade`
   je po resetu nastaví znovu (řada Majetek id 6, DPH řada 5). Samotný
-  `ds-reset` bez `dataset-seed` má tutéž vlastnost dál — zdroj dat, kde
-  `ds-upgrade` běžel před resetem, skončí bez řady „Majetek“; kandidát na
-  opravu v jádru (`DsResetCommand` nebo provisioner), rozhodnout v #131.
+  `ds-reset` bez `dataset-seed` měl tutéž vlastnost dál — zdroj dat, kde
+  `ds-upgrade` běžel před resetem, skončil bez řady „Majetek“.
+  **Oprava v jádru (2026-10-21):** deklarace `clearSettingsOnReset:
+  [{key, table}]` v `module.jsonc` (`economy.assets` a `economy.vat`, obě
+  `docs_core_number_series`), `DsResetCommand` klíče s id řádku dropované
+  tabulky smaže po DROP a před delegací na `ds-upgrade` (vypíše je i v
+  `--dry-run`, s `--keep` tabulky klíč zůstává); provisionery a D54 beze
+  změny, `SetupExporter::SETTINGS_EXCLUDED` zůstává jako kopie hlídaná
+  testem parity. Zamítnutá varianta: provisioner přepíše neplatné id —
+  mění D54, řadu pro DPH neřeší a opravuje jen důsledek. Ověřeno na
+  čerstvém volném zdroji dat (`ds-create --no-cron` → `ds-upgrade` →
+  `ds-reset --yes`): řada `MA` id 6 existuje, `accountingSeries = 6`,
+  `filingAccountingSeries = 5`. Viz `docs/modules.md` →
+  `clearSettingsOnReset`, `docs/cli.md` → `ds-reset`.
 - **Hosting s kartou od první faktury po datu zařazení** (březen), ne od
   měsíce zařazení: únorová faktura serverovny má datum 3. 2., před
   zařazením 14. 2. Blok `costs {supplier}` u karty; `story.py` to tak
@@ -351,4 +362,5 @@ Ověřovací zdroj dat (bez zaúčtování) nech Anně a zapiš prefix.
 - ✓ **D42** — nastavení s id řad dokladů (`economy.assets.accountingSeries`,
   `economy.vat.filingAccountingSeries`) sada nenese; seed je před resetem
   smaže a provisionery je po resetu nastaví (rozhodnuto při
-  implementaci, zapsat do #131)
+  implementaci, zapsat do #131); jádro: `ds-reset` je maže podle
+  `clearSettingsOnReset` modulů (viz Odchylky)

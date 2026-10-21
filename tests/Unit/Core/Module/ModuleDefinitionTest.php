@@ -559,6 +559,77 @@ class ModuleDefinitionTest extends TestCase
         $this->assertSame([], $def->keepOnReset);
     }
 
+    public function testClearSettingsOnResetParsed(): void
+    {
+        // #131 D42: nastavení s id řádku cizí tabulky — ds-reset ho smaže s ní.
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'clearSettingsOnReset' => [
+                ['key' => 'economy.assets.accountingSeries', 'table' => 'docs_core_number_series', 'note' => 'ignored'],
+            ],
+        ]);
+
+        $this->assertSame(
+            [['key' => 'economy.assets.accountingSeries', 'table' => 'docs_core_number_series']],
+            $def->clearSettingsOnReset,
+        );
+    }
+
+    public function testClearSettingsOnResetAbsentDefaultsToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons']);
+
+        $this->assertSame([], $def->clearSettingsOnReset);
+    }
+
+    public function testClearSettingsOnResetNotListThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('clearSettingsOnReset must be a JSON array of {key, table} objects');
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'clearSettingsOnReset' => ['key' => 'economy.assets.accountingSeries', 'table' => 'docs_core_number_series'],
+        ]);
+    }
+
+    public function testClearSettingsOnResetItemWithoutTableThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("clearSettingsOnReset[0] requires non-empty 'key' and 'table'");
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'clearSettingsOnReset' => [['key' => 'economy.assets.accountingSeries']],
+        ]);
+    }
+
+    public function testClearSettingsOnResetItemWithEmptyKeyThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("clearSettingsOnReset[1] requires non-empty 'key' and 'table'");
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'clearSettingsOnReset' => [
+                ['key' => 'economy.assets.accountingSeries', 'table' => 'docs_core_number_series'],
+                ['key' => '', 'table' => 'docs_core_number_series'],
+            ],
+        ]);
+    }
+
+    public function testClearSettingsOnResetStringItemThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("clearSettingsOnReset[0] requires non-empty 'key' and 'table'");
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'clearSettingsOnReset' => ['economy.assets.accountingSeries'],
+        ]);
+    }
+
     public function testKeepOnResetForeignTableThrows(): void
     {
         $this->expectException(\InvalidArgumentException::class);

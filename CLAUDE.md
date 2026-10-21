@@ -192,6 +192,10 @@ smí názvy nést — tam jsou potřeba k práci.
 - Fallback: požadovaný jazyk → `en` → holé pole
 - Závislosti: jednoduché (bez verzí), tranzitivní, cyklické = chyba
 - Extensions: jen přidávání sloupců/indexů do cizích tabulek
+- Nastavení v `core_system_settings`, které drží id řádku tabulky zahazované
+  resetem (např. id řady dokladů), se deklaruje v `clearSettingsOnReset`
+  v `module.jsonc` — `ds-reset` ho smaže spolu s tabulkou a provisioner ho
+  nastaví znovu (viz `docs/modules.md`, #131 D42)
 
 ### Databázové tabulky
 - Pojmenování: `{skupina}_{modul}_{tabulka}` (snake_case)

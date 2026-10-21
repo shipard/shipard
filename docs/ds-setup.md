@@ -512,6 +512,15 @@ Právě tohle je důvod, proč stav průvodce **nesmí** být příznak v settin
 (D3): takový příznak by po resetu tvrdil „hotovo“, i když data zmizela.
 Dopočítávaný stav se nemůže rozejít s realitou.
 
+Výjimka: nastavení, jehož hodnota je **id řádku dropované tabulky**
+(`economy.vat.filingAccountingSeries`, `economy.assets.accountingSeries` —
+řady `docs_core_number_series`), reset smaže spolu s tabulkou, protože
+provisionery vyplněný klíč nepřepisují a id by po `ds-upgrade` mířilo na
+cizí řádek (#131 D42). Které klíče to jsou, deklarují moduly polem
+`clearSettingsOnReset` v `module.jsonc` ([docs/modules.md](modules.md));
+`ds-upgrade` je po resetu nastaví znovu (řada „Majetek“, zafixování řady
+pro přiznání DPH).
+
 ### 7.2 Import ze starého Shipardu
 
 Bez backfillu (D9) jsou settings klíče jediným zdrojem pravdy, takže **import
