@@ -340,7 +340,7 @@ Ověřovací zdroj dat po kontrole smaž, nebo ho nech Anně a zapiš prefix.
   `invoicing.workOrders.rowText`), období nese `docText` z šablony
   (`docText` s `{období}`, štítek jako `PeriodLabel`). Tím se změnil popis
   řádku a přibyl `docText`, `periodFrom` / `periodTo`, `source` a
-  `dimensions` na všech 136 paušálových fakturách sady; částky beze změny.
+  `dimensions` na všech 112 paušálových fakturách sady; částky beze změny.
   Štítky měsíců pro cs / sk / de / en ověřené proti PHP 8.5 / ICU 74.2 (test
   `test_workorders.py` je nese jako pevné řetězce).
 - **Zahájení zakázky** v příběhu jako posun měsíce (`since: -30`), ne
