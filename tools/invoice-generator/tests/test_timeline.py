@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from invoicegen.timeline import (
     clamp_day, fiscal_year, in_period, manifest_created, month_date, month_end, period_for, period_label,
-    quarter_label, quarter_offsets, spread, spread_decimal, ts,
+    quarter_label, quarter_offsets, quarter_start, spread, spread_decimal, ts,
 )
 
 
@@ -20,6 +20,10 @@ class PeriodTest(unittest.TestCase):
         self.assertEqual(date(2026, 1, 1), period.month_start(-9))
         with self.assertRaises(ValueError):
             period.month_start(-10)
+        self.assertEqual((-9, -5, 0), (period.offset_of(date(2026, 1, 1)), period.offset_of(date(2026, 5, 1)), period.offset_of(date(2026, 10, 1))))
+        with self.assertRaises(ValueError):
+            period.offset_of(date(2025, 12, 1))
+        self.assertEqual((date(2026, 4, 1), date(2026, 10, 1)), (quarter_start(date(2026, 5, 1)), quarter_start(date(2026, 12, 1))))
 
     def test_period_crossing_a_year_boundary(self) -> None:
         period = period_for(date(2027, 3, 15), 9)

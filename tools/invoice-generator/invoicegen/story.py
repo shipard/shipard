@@ -23,7 +23,7 @@ from .checks import account_valid, iban_matches_account, validate_identities
 from .collation import robust_order
 from .datasetio import NAME_PATTERN, SETUP_FORMAT, SETUP_TABLES
 from .jsonc import load_jsonc
-from .timeline import Period, month_date, period_for
+from .timeline import Period, invoice_from, month_date, period_for
 
 IDENTITY_KEYS = ("name", "country", "companyId", "taxId", "vatId", "courtRegistration", "address", "contact",
                  "bankAccount", "vatPayer")
@@ -537,13 +537,34 @@ def _billing(raw, problems: _Problems, customers: dict[str, Party], items: dict[
         if rule.get("item") not in items:
             problems.add(where, f"item {rule.get('item')!r} není v items.jsonc")
         every = rule.get("every")
+        first_offset = None   # posun prvního fakturovaného období periodické zakázky
+        until = rule.get("until")
         if every not in ("month", "quarter", "once"):
             problems.add(where, "every musí být month | quarter | once")
         elif every != "once":
-            # Zahájení zakázky před oknem (D34): posun měsíce od měsíce kotvy.
+            # Zahájení zakázky (D34, fáze 2d): posun měsíce od měsíce kotvy —
+            # před oknem (smlouva běží roky), nebo v okně (zahájení i první
+            # fakturované období v tom měsíci).
             since = rule.get("since")
-            if not _is_int(since) or since >= period.offsets.start:
-                problems.add(where, f"since musí být posun měsíce před oknem (< {period.offsets.start}, D34)")
+            if not _is_int(since) or since > 0:
+                problems.add(where, "since musí být posun měsíce zahájení zakázky (<= 0, D34)")
+            else:
+                try:
+                    first_offset = period.offset_of(invoice_from(period, every, since))
+                except ValueError as e:
+                    problems.add(where, str(e))
+            # Ukončení (fáze 2d, D43): posun měsíce v okně, ukončení poslední
+            # den měsíce; ukončení před kotvou = Ukončeno, faktury jen za
+            # období začínající nejpozději v tom měsíci.
+            if until is not None:
+                if not _is_int(until) or until not in period.offsets:
+                    problems.add(where, f"until musí být posun měsíce ukončení v okně ({period.offsets.start}..0)")
+                elif first_offset is not None and until < first_offset:
+                    problems.add(where, f"until {until} je před prvním fakturovaným obdobím ({first_offset})")
+                elif until < 0 and rule.get("conceptInAnchorMonth"):
+                    problems.add(where, "conceptInAnchorMonth jen u zakázky, která v měsíci kotvy ještě fakturuje (until < 0 ne)")
+        elif "since" in rule or "until" in rule:
+            problems.add(where, "since a until jen u periodické zakázky (every month | quarter)")
         if not _is_amount(rule.get("price")):
             problems.add(where, "price musí být kladné číslo")
         if "qty" in rule and not (_is_int(rule["qty"]) and rule["qty"] >= 1):
@@ -562,6 +583,8 @@ def _billing(raw, problems: _Problems, customers: dict[str, Party], items: dict[
             if not isinstance(pf, dict) or not _is_int(pf.get("month")) or pf["month"] not in period.offsets \
                     or not _is_amount(pf.get("price")):
                 problems.add(where, "priceFrom musí být {month v období, price kladné}")
+            elif first_offset is not None and not (first_offset < pf["month"] <= (until if _is_int(until) else 0)):
+                problems.add(where, "priceFrom.month musí být po prvním fakturovaném období a nejpozději v měsíci ukončení")
         if "dueDays" in rule and not (_is_int(rule["dueDays"]) and rule["dueDays"] >= 0):
             problems.add(where, "dueDays musí být celé číslo >= 0")
         if "conceptInAnchorMonth" in rule and not isinstance(rule["conceptInAnchorMonth"], bool):

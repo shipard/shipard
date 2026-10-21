@@ -11,7 +11,7 @@ from decimal import Decimal
 from invoicegen.catalogs import load_catalogs
 from invoicegen.expand import expand, expand_work_orders
 from invoicegen.story import load_story
-from invoicegen.timeline import add_months, period_for
+from invoicegen.timeline import add_months, month_end, period_for
 from invoicegen.workorders import (
     MONTH_NAMES, date_start_for, doc_text, due_periods, invoice_from, period_bounds, period_label, rows_valid_at,
 )
@@ -87,6 +87,14 @@ class PeriodCalendarTest(unittest.TestCase):
         self.assertEqual(date(2024, 4, 1), date_start_for(default, -30, "month"))
         self.assertEqual(date(2024, 1, 1), date_start_for(default, -33, "quarter"))
         self.assertEqual(date(2024, 1, 1), date_start_for(shifted, -33, "quarter"), "zarovnání na začátek čtvrtletí")
+        # Fáze 2d: `since` uvnitř okna = zahájení i první fakturované období.
+        self.assertEqual(date(2026, 1, 1), invoice_from(default, "month", -30), "zahájení před oknem → začátek okna")
+        self.assertEqual((date(2026, 5, 1), date(2026, 5, 1)), (date_start_for(default, -5, "month"), invoice_from(default, "month", -5)))
+        self.assertEqual(date(2026, 10, 1), invoice_from(default, "month", 0), "zahájení v měsíci kotvy")
+        self.assertEqual((date(2026, 4, 1), date(2026, 4, 1)), (date_start_for(default, -5, "quarter"), invoice_from(default, "quarter", -5)),
+                         "čtvrtletní v okně: čtvrtletí, do kterého měsíc spadá")
+        self.assertEqual((date(2026, 1, 1), date(2026, 4, 1)), (date_start_for(shifted, -8, "quarter"), invoice_from(shifted, "quarter", -8)),
+                         "čtvrtletí začínající před oknem → první čtvrtletí v okně")
 
     def test_rows_valid_at(self) -> None:
         story, _ = records()
@@ -106,14 +114,17 @@ class WorkOrdersExpandTest(unittest.TestCase):
 
     def test_periodic_work_orders_from_billing(self) -> None:
         work_orders = [wo for wo in self.records.work_orders if wo.periodicity is not None]
-        self.assertEqual(13, len(work_orders), "10 měsíčních + 3 čtvrtletní; zálohová faktura mimo zakázky")
-        self.assertEqual(15, len(self.records.work_orders), "+ dva projekty (D36)")
-        self.assertEqual([f"S{i:04d}" for i in range(1, 14)], [wo.number for wo in work_orders])
-        self.assertEqual(list(range(1, 14)), [wo.sequence for wo in work_orders])
-        self.assertTrue(all(wo.series_code == "S" and wo.state == "confirmed" and wo.date_end is None for wo in work_orders))
-        self.assertTrue(all(wo.date_start < self.story.period.start for wo in work_orders), "zahájení před oknem (D34)")
-        self.assertTrue(all(wo.invoice_from == date(2026, 1, 1) for wo in work_orders), "fakturovat od = začátek okna")
-        self.assertEqual({"month": 10, "quarter": 3}, {p: sum(1 for wo in work_orders if wo.periodicity == p) for p in ("month", "quarter")})
+        self.assertEqual(14, len(work_orders), "11 měsíčních + 3 čtvrtletní; zálohová faktura mimo zakázky")
+        self.assertEqual(16, len(self.records.work_orders), "+ dva projekty (D36)")
+        self.assertEqual([f"S{i:04d}" for i in range(1, 15)], [wo.number for wo in work_orders])
+        self.assertEqual(list(range(1, 15)), [wo.sequence for wo in work_orders])
+        self.assertTrue(all(wo.series_code == "S" for wo in work_orders))
+        whole_window = [wo for wo in work_orders if wo.customer_key not in ("stranka", "tlapka")]
+        self.assertEqual(12, len(whole_window))
+        self.assertTrue(all(wo.state == "confirmed" and wo.date_end is None for wo in whole_window))
+        self.assertTrue(all(wo.date_start < self.story.period.start for wo in whole_window), "zahájení před oknem (D34)")
+        self.assertTrue(all(wo.invoice_from == date(2026, 1, 1) for wo in whole_window), "fakturovat od = začátek okna")
+        self.assertEqual({"month": 11, "quarter": 3}, {p: sum(1 for wo in work_orders if wo.periodicity == p) for p in ("month", "quarter")})
         kopretina = work_orders[0]
         self.assertEqual("Správa IT — Autodoprava Kopretina s.r.o.", kopretina.title)
         self.assertEqual(("kopretina", "CZK", None), (kopretina.customer_key, kopretina.currency, kopretina.bank_account))
@@ -160,19 +171,50 @@ class WorkOrdersExpandTest(unittest.TestCase):
                 if wo.periodicity is None:
                     self.assertEqual(([], []), (wo.rows, wo.periods), f"{wo.number}: projekt bez předpisu a období")
                     continue
-                expected = due_periods(wo.invoice_from, story.anchor, wo.periodicity)
+                expected = due_periods(wo.invoice_from, story.anchor, wo.periodicity, date_end=wo.date_end)
                 self.assertEqual(expected, [(p.start, p.end) for p in wo.periods], f"{anchor}: {wo.number} evidence úplná")
                 self.assertTrue(all(by_key[p.doc_key].work_order == wo.number for p in wo.periods))
                 self.assertTrue(all(rows_valid_at(wo.rows, by_key[p.doc_key].issue) for p in wo.periods), "každé období má platný řádek")
             concept = next(d for d in recs.docs if d.key == "billing:1:0")
             self.assertEqual(10, concept.state, "koncept v měsíci kotvy je vystavené období s dokladem v Konceptu")
             self.assertIn(concept.key, [p.doc_key for p in recs.work_orders[1].periods])
+            new_concept = next(d for d in recs.docs if d.key == "billing:14:0")
+            self.assertEqual(10, new_concept.state, "druhý koncept převzal nový odběratel (fáze 2d, D44)")
+            self.assertIn(new_concept.key, [p.doc_key for p in recs.work_orders[13].periods])
+            self.assertEqual(2, sum(1 for d in recs.docs if d.state == 10 and d.source_kind == "workOrder"), "dva koncepty ke kontrole")
+
+    def test_finished_and_new_work_orders(self) -> None:
+        # Fáze 2d (D43, D44): paušál ukončený ke konci měsíce −3 a nový paušál od měsíce −5 — i nad posunutou kotvou.
+        for anchor in (None, date(2026, 11, 20), date(2027, 1, 20), date(2027, 10, 20)):
+            story, recs = records(anchor)
+            period = story.period
+            stranka = next(wo for wo in recs.work_orders if wo.customer_key == "stranka")
+            self.assertEqual("finished", stranka.state, f"{anchor}")
+            self.assertEqual(month_end(period.month_start(-3)), stranka.date_end)
+            self.assertLess(stranka.date_end, period.anchor, "ukončení před kotvou")
+            self.assertLess(stranka.date_start, period.start, "zahájení před oknem")
+            self.assertEqual([period.month_start(o) for o in range(-9, -2)], [p.start for p in stranka.periods], "evidence do měsíce −3")
+            self.assertEqual([], [d.key for d in recs.docs if d.partner_key == "stranka" and d.issue > stranka.date_end],
+                             "žádná faktura po ukončení")
+            tlapka = next(wo for wo in recs.work_orders if wo.customer_key == "tlapka")
+            self.assertEqual(("confirmed", None, "S0014", 14), (tlapka.state, tlapka.date_end, tlapka.number, tlapka.sequence))
+            self.assertEqual((period.month_start(-5), period.month_start(-5)), (tlapka.date_start, tlapka.invoice_from), "zahájení v okně")
+            self.assertEqual([period.month_start(o) for o in range(-5, 1)], [p.start for p in tlapka.periods], "evidence od měsíce −5")
+            self.assertEqual(10, next(d for d in recs.docs if d.key == "billing:14:0").state, "koncept v měsíci kotvy")
+            self.assertEqual("Správa IT — Veterinární klinika Tlapka s.r.o.", tlapka.title)
+            self.assertEqual(Decimal("8000"), tlapka.rows[0].unit_price)
+        _, recs = records()
+        by_key = {d.key: d for d in recs.docs}
+        self.assertEqual("Správa IT — paušál červenec 2026", by_key["billing:7:-3"].doc_text)
+        self.assertNotIn("billing:7:-2", by_key)
+        self.assertEqual(("Správa IT — paušál květen 2026", date(2026, 5, 1), 40), (by_key["billing:14:-5"].doc_text, by_key["billing:14:-5"].issue, by_key["billing:14:-5"].state))
 
     def test_quarterly_work_orders_align_with_shifted_anchor(self) -> None:
         _, recs = records(date(2026, 11, 20))
         quarterly = [wo for wo in recs.work_orders if wo.periodicity == "quarter"]
         self.assertEqual({date(2026, 4, 1)}, {wo.invoice_from for wo in quarterly}, "okno únor–listopad: první čtvrtletí v okně od dubna")
-        self.assertEqual({date(2026, 2, 1)}, {wo.invoice_from for wo in recs.work_orders if wo.periodicity == "month"})
+        self.assertEqual({date(2026, 2, 1), date(2026, 6, 1)}, {wo.invoice_from for wo in recs.work_orders if wo.periodicity == "month"},
+                         "nový paušál od měsíce −5 = červen (fáze 2d)")
         self.assertTrue(all(wo.date_start.month in (1, 4, 7, 10) for wo in quarterly))
         self.assertEqual([date(2026, 4, 1), date(2026, 7, 1), date(2026, 10, 1)], [p.start for p in quarterly[0].periods])
 

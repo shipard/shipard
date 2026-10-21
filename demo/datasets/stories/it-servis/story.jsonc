@@ -75,8 +75,13 @@
 	// `qty` výchozí 1
 	// (čtvrtletní paušál = 3 měsíce); `priceFrom` změna ceny od měsíce;
 	// `conceptInAnchorMonth` nechá fakturu měsíce kotvy v Konceptu bez čísla;
-	// `since` = měsíc zahájení zakázky jako posun od měsíce kotvy před oknem
-	// (smlouvy běží roky, D34; u čtvrtletní se zarovná na začátek čtvrtletí).
+	// `since` = měsíc zahájení zakázky jako posun od měsíce kotvy — před oknem
+	// (smlouvy běží roky, D34; u čtvrtletní se zarovná na začátek čtvrtletí),
+	// nebo v okně = zahájení i první fakturované období v tom měsíci (nový
+	// paušál, fáze 2d D44); `until` = měsíc ukončení v okně, ukončení poslední
+	// den měsíce: faktury jen za období do něj, ukončení před kotvou = zakázka
+	// Ukončeno (D43). Nové pravidlo patří na konec — řada S je průběžná
+	// a stávající zakázky nesmí změnit číslo.
 	"billing": [
 		{ "customer": "kopretina", "every": "month",   "item": "SPRAVA-IT", "price": 16000, "since": -30 },
 		{ "customer": "medvidek",  "every": "month",   "item": "SPRAVA-IT", "price": 5500, "conceptInAnchorMonth": true, "since": -17 },
@@ -85,13 +90,16 @@
 		{ "customer": "galvanovna","every": "month",   "item": "SPRAVA-IT", "price": 17500, "since": -26 },
 		{ "customer": "jelen",     "every": "month",   "item": "SPRAVA-IT", "price": 25000, "priceFrom": { "month": -4, "price": 27500 }, "since": -38 },
 		{ "customer": "mluvka",    "every": "once",    "item": "ZALOHA-IT", "price": 42000, "month": -8, "day": 5, "dueDays": 30, "docType": "proformaIssued" },
-		{ "customer": "stranka",   "every": "month",   "item": "SPRAVA-IT", "price": 4800, "conceptInAnchorMonth": true, "since": -13 },
+		// Neplatí (payment never) — smlouva ukončena pro neplacení ke konci měsíce −3 (D43).
+		{ "customer": "stranka",   "every": "month",   "item": "SPRAVA-IT", "price": 4800, "since": -13, "until": -3 },
 		{ "customer": "lekarna",   "every": "month",   "item": "SPRAVA-IT", "price": 12000, "since": -22 },
 		{ "customer": "domovnik",  "every": "quarter", "item": "SPRAVA-IT", "price": 8500, "qty": 3, "since": -15 },
 		{ "customer": "dubovylist","every": "month",   "item": "SPRAVA-IT", "price": 9000, "since": -11 },
 		{ "customer": "nitra",     "every": "month",   "item": "SPRAVA-IT", "price": 480, "since": -19 },
 		{ "customer": "tatranka",  "every": "quarter", "item": "SPRAVA-IT", "price": 130, "qty": 3, "since": -24 },
 		{ "customer": "wolkenschiff", "every": "month",   "item": "SPRAVA-IT", "price": 650, "since": -16 },
+		// Nový odběratel od měsíce −5 (D44), převzal koncept v měsíci kotvy.
+		{ "customer": "tlapka",    "every": "month",   "item": "SPRAVA-IT", "price": 8000, "conceptInAnchorMonth": true, "since": -5 },
 	],
 
 	// Projekty (#131 fáze 2b, D36): externí jednorázové zakázky druhu a řady
@@ -217,10 +225,10 @@
 	// měsíční poplatek (poslední den dokončeného měsíce). Otevírací doklad
 	// MD 221xxx / DAL openingAccount k prvnímu dni dat.
 	// Ekonomika příběhu (D25; souhrn vypisuje build.py, cíle hlídá
-	// tests/test_economy.py): výnosy ≈ 2,09 mil., náklady ≈ 1,82 mil. (mzdy
-	// 1,13 mil., dodavatelé 0,68 mil.), zisk ≈ 270 tis. = 13 % výnosů; ve
-	// ztrátě jen červen (odměny) a srpen (slabší měsíc); zahraniční odběratelé
-	// 17 % tržeb; zboží se prodává s maržou (prodej ≈ 1,5× nákup). Počáteční
+	// tests/test_economy.py): výnosy ≈ 2,12 mil., náklady ≈ 1,84 mil. (mzdy
+	// 1,13 mil., dodavatelé 0,70 mil.), zisk ≈ 283 tis. = 13 % výnosů (po
+	// odpisech serveru 12 %); ve ztrátě jen červen (odměny); zahraniční
+	// odběratelé 17 % tržeb; zboží se prodává s maržou (prodej ≈ 1,35× nákup). Počáteční
 	// zůstatek BU1 300 tis., zůstatek nesmí klesnout pod nulu (generátor hlídá).
 	// `payroll`: platba částky mezd (`amount` z payroll.figures s řádkem na
 	// straně D) za měsíc M v měsíci M+1, bez partnera a VS — protiúčet nesmí

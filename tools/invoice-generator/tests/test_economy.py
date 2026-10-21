@@ -7,6 +7,7 @@ a zůstatky nikdy pod nulou — a vnitřní konzistence souhrnu."""
 from __future__ import annotations
 
 import unittest
+from collections import Counter
 from datetime import date
 from decimal import Decimal
 
@@ -29,7 +30,7 @@ class EconomyTargetsTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.story = load_story(STORY_DIR, CATALOGS)
         cls.records = expand(cls.story, CATALOGS, invoice_templates=TEMPLATES, registry_templates=REGISTRY_TEMPLATES)
-        cls.summary = summarize(cls.story, cls.records)
+        cls.summary = summarize(cls.story, cls.records, CATALOGS.period_texts)
 
     def test_profit_between_8_and_15_percent_of_revenue(self) -> None:
         self.assertGreater(self.summary.revenue, 0)
@@ -89,7 +90,7 @@ class EconomySummaryTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.story = load_story(STORY_DIR, CATALOGS)
         cls.records = expand(cls.story, CATALOGS, invoice_templates=TEMPLATES, registry_templates=REGISTRY_TEMPLATES)
-        cls.summary = summarize(cls.story, cls.records)
+        cls.summary = summarize(cls.story, cls.records, CATALOGS.period_texts)
 
     def test_months_add_up_to_totals(self) -> None:
         s = self.summary
@@ -132,9 +133,16 @@ class EconomySummaryTest(unittest.TestCase):
         self.assertIn("% výnosů", lines[0])
         self.assertTrue(lines[1].startswith("měsíce ve ztrátě: "))
         self.assertIn("zahraniční odběratelé", lines[2])
-        self.assertEqual(2 + len(self.summary.balances) + len(self.summary.projects) + len(self.summary.assets) + 1, len(lines) - 1)
+        notable = [wo for wo in self.summary.periodic if wo.notable]
+        self.assertEqual(2 + len(self.summary.balances) + len(self.summary.projects) + 1 + len(notable) + len(self.summary.assets) + 1,
+                         len(lines) - 1)
         self.assertTrue(any(line.startswith("účet BU1: počátek") for line in lines))
         self.assertTrue(any(line.startswith("projekt P0001 Výměna sítě: výnosy") for line in lines))
+        self.assertIn("periodické zakázky: 13 V pořádku, 1 Ukončeno", lines, "fáze 2d (D45)")
+        self.assertIn("zakázka S0007 Správa IT — Knihkupectví Stránka s.r.o.: Ukončeno, zahájena před oknem, ukončena 31. 7. 2026, "
+                      "vystavená období leden 2026 – červenec 2026 (7)", lines)
+        self.assertIn("zakázka S0014 Správa IT — Veterinární klinika Tlapka s.r.o.: V pořádku, zahájena 1. 5. 2026, "
+                      "vystavená období květen 2026 – říjen 2026 (6)", lines)
         self.assertTrue(any(line.startswith("majetek MA0001 ") and "8 × 3 000 Kč od 03/2026 = 24 000 Kč" in line for line in lines), lines[-2])
         self.assertTrue(lines[-1].startswith("pořízení majetku 150 000 Kč mimo náklady; po zaúčtování odpisů výsledek"), lines[-1])
 
@@ -154,6 +162,23 @@ class EconomySummaryTest(unittest.TestCase):
         self.assertEqual(Decimal("24000"), s.depreciation)
         self.assertEqual(s.result - Decimal("24000"), s.result_after_depreciation)
         self.assertTrue(all(month in self.story.period.months for month, _ in asset.plan), "jen měsíce okna")
+
+    def test_periodic_work_orders_by_state(self) -> None:
+        # Fáze 2d (D43–D45): ukončený paušál a nový paušál zahájený v okně; ostatní celým oknem.
+        by_number = {wo.number: wo for wo in self.summary.periodic}
+        self.assertEqual(14, len(by_number))
+        self.assertEqual({"confirmed": 13, "finished": 1}, dict(Counter(wo.state for wo in by_number.values())))
+        stranka = by_number["S0007"]
+        self.assertEqual(("finished", date(2026, 7, 31), False, 7, "leden 2026", "červenec 2026"),
+                         (stranka.state, stranka.date_end, stranka.starts_in_window, stranka.periods, stranka.first_period, stranka.last_period))
+        tlapka = by_number["S0014"]
+        self.assertEqual(("confirmed", None, True, date(2026, 5, 1), 6, "květen 2026", "říjen 2026"),
+                         (tlapka.state, tlapka.date_end, tlapka.starts_in_window, tlapka.invoice_from, tlapka.periods,
+                          tlapka.first_period, tlapka.last_period))
+        self.assertEqual(["S0007", "S0014"], [wo.number for wo in self.summary.periodic if wo.notable])
+        quarterly = next(wo for wo in by_number.values() if wo.periodicity == "quarter")
+        self.assertEqual(("1. čtvrtletí 2026", "4. čtvrtletí 2026", 4), (quarterly.first_period, quarterly.last_period, quarterly.periods),
+                         "štítek čtvrtletí z katalogu periodTexts")
 
     def test_projects_from_dimensions(self) -> None:
         # D36: výnosy = faktury s dimenzí zakázky, náklady = řádky nákupu s dimenzí.

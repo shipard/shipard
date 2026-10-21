@@ -52,15 +52,15 @@ class ExpandTest(unittest.TestCase):
 
     def test_counts_and_states(self) -> None:
         by_type = Counter((d.doc_type, d.state) for d in self.records.docs)
-        self.assertEqual(132, by_type[("invno", 40)], "paušály + jednorázové faktury (práce každý měsíc, hardware)")
+        self.assertEqual(135, by_type[("invno", 40)], "paušály (ukončený do července, nový od května — fáze 2d) + jednorázové faktury")
         self.assertEqual(4, by_type[("invno", 10)])
         self.assertEqual(1, by_type[("invpo", 40)])
         self.assertEqual(59, by_type[("invni", 40)], "48 tuzemských + nákup serveru (fáze 2c) + 10 od dodavatele v EUR (D28)")
         self.assertEqual(39, by_type[("cashreg", 40)])
         self.assertEqual(20, by_type[("cash", 40)])
         self.assertEqual(37, by_type[("cmnbkp", 40)], "9 mezd + otevírací doklad + 27 vyrovnávacích (fáze 2a)")
-        self.assertEqual(25, len(self.records.persons))
-        self.assertEqual(["F%05d" % i for i in range(1, 26)], [p.person_id for p in self.records.persons])
+        self.assertEqual(26, len(self.records.persons))
+        self.assertEqual(["F%05d" % i for i in range(1, 27)], [p.person_id for p in self.records.persons])
         self.assertEqual(63, len(self.records.mails))
         self.assertEqual(59, sum(1 for m in self.records.mails if m.doc_state == 40))
         self.assertEqual(3, sum(1 for m in self.records.mails if m.doc_state == 20))

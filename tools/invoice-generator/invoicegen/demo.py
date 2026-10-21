@@ -164,4 +164,4 @@ def build_demo_dataset(story_dir: Path, out_dir: Path, *, repo_root: Path, ancho
     sync = sync_tree(out_dir, files, managed=MANAGED)
     cache.save()
     return DemoSummary(story=story, counts=counts, rendered=len(cache.rendered), reused=len(cache.reused),
-                       sync=sync, out_dir=out_dir, economy=summarize(story, records))
+                       sync=sync, out_dir=out_dir, economy=summarize(story, records, catalogs.period_texts))

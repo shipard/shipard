@@ -36,7 +36,7 @@
 // reverseCharge — řádky s `supplyKind: services` a `vatPct` 21 = sazba
 // samovyměření (papír tiskne 0 %); bez polí = česky, CZK, standard.
 {
-	"verifiedAt": "2026-10-20",
+	"verifiedAt": "2026-10-21",
 
 	"customers": {
 		"kopretina": {
@@ -190,6 +190,20 @@
 			"contact": { "name": "Buchhaltung", "email": "buchhaltung@wolkenschiff-logistik.example", "phone": "+490002094410", "web": "www.wolkenschiff-logistik.example" },
 			"bankAccount": { "accountNumber": null, "iban": "DE18370400440532014860", "bic": "COBADEFFXXX" },
 			"language": "de", "currency": "EUR", "vatTreatment": "reverseCharge",
+			"sendPurposes": ["invoices"],
+			"payment": { "behaviour": "onTime" },
+		},
+		// Nový odběratel s paušálem zahájeným uvnitř okna (#131 fáze 2d, D44) —
+		// na konci, aby pořadí odběratelů (deterministické hodiny ad hoc faktur)
+		// zůstalo.
+		"tlapka": {
+			"vatPayer": true,
+			"name": "Veterinární klinika Tlapka s.r.o.",
+			"country": "cz", "companyId": "89310021", "taxId": "CZ89310021", "vatId": "CZ89310021",
+			"address": { "street": "Kočičí", "houseNumber": "315/9", "city": "Přerov", "zip": "75002", "country": "cz" },
+			"contact": { "name": "Recepce kliniky", "email": "recepce@veterina-tlapka.example", "phone": "+420000271455", "web": "www.veterina-tlapka.example" },
+			"bankAccount": { "accountNumber": "2713450019/0600", "iban": "CZ6806000000002713450019", "bic": "AGBACZPP" },
+			"language": "cs", "currency": "CZK", "vatTreatment": "standard",
 			"sendPurposes": ["invoices"],
 			"payment": { "behaviour": "onTime" },
 		},

@@ -38,6 +38,12 @@ class Period:
             raise ValueError(f"měsíc {offset} je mimo období {self.offsets.start}..0")
         return self.months[offset + len(self.months) - 1]
 
+    def offset_of(self, first_day: date) -> int:
+        """Posun měsíce od kotvy pro první den měsíce v období (opak `month_start`)."""
+        if first_day not in self.months:
+            raise ValueError(f"měsíc {first_day} je mimo období {self.start}..{self.months[-1]}")
+        return self.months.index(first_day) - (len(self.months) - 1)
+
 
 def add_months(first_day: date, n: int) -> date:
     """První den měsíce posunutého o `n` měsíců."""
@@ -77,6 +83,36 @@ def in_period(period: Period, d: date) -> bool:
 def quarter_offsets(period: Period) -> list[int]:
     """Posuny měsíců, které začínají kalendářní čtvrtletí (leden, duben, …)."""
     return [offset for offset in period.offsets if period.month_start(offset).month in (1, 4, 7, 10)]
+
+
+def quarter_start(first_day: date) -> date:
+    """První den kalendářního čtvrtletí, do kterého měsíc spadá."""
+    return date(first_day.year, (first_day.month - 1) // 3 * 3 + 1, 1)
+
+
+def date_start_for(period: Period, since: int, every: str) -> date:
+    """Zahájení periodické zakázky (D34, fáze 2d): `since` = posun měsíce od
+    měsíce kotvy — před oknem (smlouvy běží roky) i uvnitř okna (nový
+    paušál); u čtvrtletní zakázky začátek čtvrtletí, do kterého měsíc spadá."""
+    start = add_months(period.months[-1], since)
+    return quarter_start(start) if every == "quarter" else start
+
+
+def invoice_from(period: Period, every: str, since: int | None = None) -> date:
+    """„Fakturovat od“ (D34, fáze 2d): začátek prvního období, které okno
+    obsahuje (u čtvrtletí první čtvrtletí v okně) — nebo zahájení zakázky,
+    začíná-li uvnitř okna (`since` v okně = zahájení i první fakturované
+    období v tom měsíci)."""
+    if every == "quarter":
+        starts = quarter_offsets(period)
+        if not starts:
+            raise ValueError("okno příběhu neobsahuje začátek čtvrtletí")
+        first = period.month_start(starts[0])
+    else:
+        first = period.start
+    if since is None:
+        return first
+    return max(first, date_start_for(period, since, every))
 
 
 def fiscal_year(d: date, start_month: int = 1) -> int:

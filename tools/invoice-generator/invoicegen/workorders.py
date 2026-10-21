@@ -12,7 +12,8 @@ jak by je složil `InvoiceBuilder` nad naseedovanou zakázkou:
 - `rows_valid_at` = `InvoiceBuilder::rowsValidAt` (platnost řádku předpisu
   k datu vystavení);
 - `invoice_from` / `date_start_for` = „fakturovat od“ a zahájení zakázky
-  relativně ke kotvě (D34).
+  relativně ke kotvě (D34, fáze 2d: zahájení i uvnitř okna) — žijí
+  v `timeline.py`, aby je mohla použít validace příběhu; tady re-export.
 
 Jazyk dokladu je jazyk osoby (`DocumentLanguageResolver`: jazyk na osobě,
 je-li mezi jazyky dokumentů; odběratelé příběhu ho mají vždy).
@@ -24,7 +25,7 @@ from datetime import date, timedelta
 
 from .model import WorkOrderRowRec
 from .story import Party
-from .timeline import Period, add_months, quarter_offsets
+from .timeline import add_months, date_start_for, invoice_from
 
 __all__ = ["MONTH_NAMES", "PERIODIC_RULES", "date_start_for", "doc_text", "document_language", "due_periods",
            "invoice_from", "ordinal_in_year", "period_bounds", "period_label", "rows_valid_at"]
@@ -115,24 +116,6 @@ def rows_valid_at(rows: list[WorkOrderRowRec], day: date) -> list[WorkOrderRowRe
     neomezeno; pořadí zůstává."""
     return [r for r in rows
             if (r.valid_from is None or r.valid_from <= day) and (r.valid_to is None or r.valid_to >= day)]
-
-
-def invoice_from(period: Period, every: str) -> date:
-    """„Fakturovat od“ (D34) = začátek prvního období, které okno obsahuje
-    (u čtvrtletí začátek prvního čtvrtletí v okně)."""
-    if every == "quarter":
-        starts = quarter_offsets(period)
-        if not starts:
-            raise ValueError("okno příběhu neobsahuje začátek čtvrtletí")
-        return period.month_start(starts[0])
-    return period.start
-
-
-def date_start_for(period: Period, since: int, every: str) -> date:
-    """Zahájení zakázky (D34): `since` = posun měsíce od měsíce kotvy před
-    oknem; u čtvrtletní zakázky začátek čtvrtletí, do kterého měsíc spadá."""
-    start = add_months(period.months[-1], since)
-    return period_bounds(start, "quarter")[0] if every == "quarter" else start
 
 
 def document_language(party: Party) -> str:

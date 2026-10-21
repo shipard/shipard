@@ -2,9 +2,11 @@
 výnosy, náklady, výsledek a zisk v % za období, měsíce ve ztrátě, podíl
 zahraničních tržeb, nákup a prodej zboží, nejnižší a konečný zůstatek účtů,
 výnosy, náklady a marže projektů (fáze 2b, D36 — doklady s dimenzí
-zakázky), karty majetku s plánem účetních odpisů v okně a výsledek po
-jejich zaúčtování (fáze 2c, D41) — ze stejných záznamů, ze kterých vznikají
-soubory sady (ne čtením výstupu).
+zakázky), periodické zakázky podle stavu s první a posledním vystaveným
+obdobím u zakázek zahájených v okně nebo ukončených (fáze 2d, D45), karty
+majetku s plánem účetních odpisů v okně a výsledek po jejich zaúčtování
+(fáze 2c, D41) — ze stejných záznamů, ze kterých vznikají soubory sady (ne
+čtením výstupu).
 
 Výpočet zrcadlí Výsledovku „Od počátku roku k měsíci kotvy“: jen doklady
 ve stavu V pořádku (koncepty se neúčtují), částky v domácí měně kurzem
@@ -18,14 +20,17 @@ až odpisy, které sada nenese (D38).
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
-from .model import AssetRec, DocRec, Records, StatementRec
+from .model import AssetRec, DocRec, Records, StatementRec, WorkOrderRec
 from .story import Story
+from .workorders import period_label
 
-__all__ = ["AccountBalance", "AssetFigures", "EconomySummary", "MonthFigures", "ProjectFigures", "format_summary", "summarize"]
+__all__ = ["AccountBalance", "AssetFigures", "EconomySummary", "MonthFigures", "PeriodicFigures", "ProjectFigures",
+           "format_summary", "summarize"]
 
 REVENUE_TYPES = frozenset({"invno", "cashreg"})      # vydané faktury, prodejky (602 / 604)
 SUPPLIER_TYPES = frozenset({"invni"})                 # přijaté faktury (5xx)
@@ -79,6 +84,28 @@ class ProjectFigures:
         return self.result / self.revenue if self.revenue else Decimal("0")
 
 
+@dataclass(frozen=True)
+class PeriodicFigures:
+    """Periodická zakázka (fáze 2d, D45): stav, zahájení a ukončení, první
+    a poslední vystavené období z evidence (štítek jako `PeriodLabel`, cs)."""
+    number: str
+    title: str
+    state: str                     # confirmed | finished
+    periodicity: str
+    date_start: date
+    date_end: date | None
+    invoice_from: date
+    starts_in_window: bool         # zahájení uvnitř okna příběhu (nový paušál)
+    first_period: str | None       # štítek prvního vystaveného období
+    last_period: str | None        # štítek posledního vystaveného období
+    periods: int
+
+    @property
+    def notable(self) -> bool:
+        """Souhrn ji vypíše zvlášť: začala v okně, nebo má datum ukončení."""
+        return self.starts_in_window or self.date_end is not None
+
+
 @dataclass
 class AssetFigures:
     """Karta majetku (fáze 2c, D41): vstupní cena, zařazení a plán účetních
@@ -108,6 +135,7 @@ class EconomySummary:
     months: list[MonthFigures] = field(default_factory=list)
     balances: list[AccountBalance] = field(default_factory=list)
     projects: list[ProjectFigures] = field(default_factory=list)
+    periodic: list[PeriodicFigures] = field(default_factory=list)
     assets: list[AssetFigures] = field(default_factory=list)
 
     @property
@@ -174,7 +202,9 @@ def _balances(statements: list[StatementRec]) -> list[AccountBalance]:
     return out
 
 
-def summarize(story: Story, records: Records) -> EconomySummary:
+def summarize(story: Story, records: Records, period_texts: dict[str, dict[str, str]] | None = None) -> EconomySummary:
+    """`period_texts` = katalog `periodTexts` pro štítky čtvrtletí / pololetí
+    (bez něj anglický fallback jako `PeriodLabel`)."""
     summary = EconomySummary()
     months: dict[date, MonthFigures] = {offset_start: MonthFigures(offset_start) for offset_start in story.period.months}
 
@@ -224,8 +254,21 @@ def summarize(story: Story, records: Records) -> EconomySummary:
     summary.months = [months[key] for key in sorted(months)]
     summary.balances = _balances(records.bank)
     summary.projects = _projects(records)
+    summary.periodic = [_periodic(wo, story, period_texts or {}) for wo in records.work_orders if wo.periodicity is not None]
     summary.assets = [_asset(asset, story) for asset in records.assets]
     return summary
+
+
+def _periodic(wo: WorkOrderRec, story: Story, texts: dict[str, dict[str, str]]) -> PeriodicFigures:
+    starts = sorted(p.start for p in wo.periods)
+    return PeriodicFigures(
+        number=wo.number, title=wo.title, state=wo.state, periodicity=wo.periodicity or "month",
+        date_start=wo.date_start, date_end=wo.date_end, invoice_from=wo.invoice_from or wo.date_start,
+        starts_in_window=wo.date_start >= story.period.start,
+        first_period=period_label(starts[0], wo.periodicity or "month", "cs", texts) if starts else None,
+        last_period=period_label(starts[-1], wo.periodicity or "month", "cs", texts) if starts else None,
+        periods=len(starts),
+    )
 
 
 def _asset(asset: AssetRec, story: Story) -> AssetFigures:
@@ -266,6 +309,10 @@ def _pct(value: Decimal) -> str:
     return f"{(value * 100).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)}".replace(".", ",") + " %"
 
 
+def _day(value: date) -> str:
+    return f"{value.day}. {value.month}. {value.year}"
+
+
 def format_summary(summary: EconomySummary) -> list[str]:
     """Řádky souhrnu pro výstup `build.py` (bez odsazení)."""
     sign = "+" if summary.result >= 0 else ""
@@ -297,6 +344,19 @@ def format_summary(summary: EconomySummary) -> list[str]:
             f"projekt {project.number} {project.title}: výnosy {_amount(project.revenue)}, náklady {_amount(project.costs)}, "
             f"marže {sign}{_amount(project.result)} = {_pct(project.margin)}"
         )
+    if summary.periodic:
+        # Fáze 2d (D45): zakázky podle stavu; zvlášť ty zahájené v okně nebo ukončené.
+        states = Counter(wo.state for wo in summary.periodic)
+        lines.append(f"periodické zakázky: {states.get('confirmed', 0)} V pořádku, {states.get('finished', 0)} Ukončeno")
+        for wo in summary.periodic:
+            if not wo.notable:
+                continue
+            state = "Ukončeno" if wo.state == "finished" else "V pořádku"
+            span = f"zahájena {_day(wo.date_start)}" if wo.starts_in_window else "zahájena před oknem"
+            if wo.date_end is not None:
+                span += f", {'ukončena' if wo.state == 'finished' else 'ukončení'} {_day(wo.date_end)}"
+            periods = f"{wo.first_period} – {wo.last_period} ({wo.periods})" if wo.periods else "žádné"
+            lines.append(f"zakázka {wo.number} {wo.title}: {state}, {span}, vystavená období {periods}")
     for asset in summary.assets:
         amounts = sorted({amount for _, amount in asset.plan})
         if not asset.plan:

@@ -171,12 +171,14 @@ def _item_row(story: Story, customer: Party, code: str, qty: Decimal, text: str 
 
 def expand_work_orders(story: Story) -> list[WorkOrderRec]:
     """Periodické zakázky z pravidel billing `month` / `quarter` (D32–D34):
-    jedna zakázka V pořádku per pravidlo v pořadí pravidel (čísla řady
-    `S`), zahájení před oknem (`since`), „fakturovat od“ = první období
-    v okně, předpis = položka, popis v jazyce dokladu, množství (čtvrtletí
-    3), cena pravidla a kód DPH; změna ceny (`priceFrom`) = dva řádky
-    s platností. Zahraniční odběratel: měna EUR a přepis účtu (BU2).
-    Zálohová faktura (`once`) zůstává mimo zakázky."""
+    jedna zakázka per pravidlo v pořadí pravidel (čísla řady `S`), zahájení
+    před oknem nebo v něm (`since`), „fakturovat od“ = první období v okně
+    (zahájení v okně = to období), předpis = položka, popis v jazyce
+    dokladu, množství (čtvrtletí 3), cena pravidla a kód DPH; změna ceny
+    (`priceFrom`) = dva řádky s platností. Zahraniční odběratel: měna EUR
+    a přepis účtu (BU2). Ukončení (`until`, fáze 2d D43) = poslední den
+    měsíce; ukončená před kotvou = Ukončeno, jinak V pořádku s plánovaným
+    ukončením. Zálohová faktura (`once`) zůstává mimo zakázky."""
     spec = story.invoicing["workOrders"]
     kind_row = next(r for r in story.setup["work_order_kinds"]["rows"] if r.get("name") == spec["kind"])
     default_account = kind_row.get("inv_bank_account")
@@ -200,12 +202,15 @@ def expand_work_orders(story: Story) -> list[WorkOrderRec]:
             rows[0].valid_to = change - timedelta(days=1)
             rows.append(replace(rows[0], unit_price=Decimal(rule["priceFrom"]["price"]), valid_from=change, valid_to=None))
         account = story.bank_account_for(currency)
+        since = int(rule["since"])
+        date_end = month_end(story.period.month_start(int(rule["until"]))) if "until" in rule else None
         out.append(WorkOrderRec(
             key=f"billing:{rule_index}", ordinal=rule_index, series_code=spec["series"], sequence=sequence,
             number=f"{spec['series']}{sequence:04d}", title=spec["title"].format(customer=customer.name),
-            state="confirmed", date_start=date_start_for(story.period, int(rule["since"]), every),
+            state="finished" if date_end is not None and date_end < story.period.anchor else "confirmed",
+            date_start=date_start_for(story.period, since, every), date_end=date_end,
             customer_key=customer.key, currency=currency, periodicity=every,
-            invoice_from=invoice_from(story.period, every), doc_text=spec["docText"][language],
+            invoice_from=invoice_from(story.period, every, since), doc_text=spec["docText"][language],
             bank_account=account if account != default_account else None, rows=rows,
         ))
     return out + expand_projects(story)
@@ -381,6 +386,13 @@ def expand_issued(story: Story, catalogs: Catalogs, ordinal: int,
             issue = month_date(period, offset, day)
             if not in_period(period, issue):
                 continue
+            if work_order is not None:
+                # Jen období v evidenci zakázky (fáze 2d, jako `duePeriods`): od
+                # „fakturovat od“ (zahájení v okně) po období začínající
+                # nejpozději v den ukončení.
+                start = period.month_start(offset)
+                if start < work_order.invoice_from or (work_order.date_end is not None and start > work_order.date_end):
+                    continue
             state = 10 if (offset == 0 and rule.get("conceptInAnchorMonth")) else 40
             doc_type = "invpo" if rule.get("docType") == "proformaIssued" else "invno"
             ordinal += 1

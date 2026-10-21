@@ -29,7 +29,7 @@ class StoryLoadTest(unittest.TestCase):
         self.assertEqual("it-servis", story.name)
         self.assertEqual(date(2026, 10, 20), story.anchor)
         self.assertEqual(date(2026, 1, 1), story.period.start)
-        self.assertEqual(14, len(story.customers))
+        self.assertEqual(15, len(story.customers))
         self.assertEqual({"cs", "sk", "de"}, {c.language for c in story.customers.values()})
         self.assertEqual(3, sum(1 for c in story.customers.values() if c.currency == "EUR"))
         self.assertTrue(all(c.send_purposes == ("invoices",) for c in story.customers.values()))
@@ -46,6 +46,9 @@ class StoryLoadTest(unittest.TestCase):
                                                       "asset_accounting_groups", "asset_type_groups", "asset_types"]))
         self.assertEqual("S", story.invoicing["workOrders"]["series"], "paušály jako periodické zakázky (fáze 2b)")
         self.assertEqual(-30, story.billing[0]["since"])
+        self.assertEqual((-13, -3), (story.billing[7]["since"], story.billing[7]["until"]), "ukončený paušál (fáze 2d, D43)")
+        self.assertEqual(("tlapka", -5, True), (story.billing[14]["customer"], story.billing[14]["since"],
+                                                story.billing[14]["conceptInAnchorMonth"]), "nový paušál v okně (D44)")
         self.assertEqual(["sit", "wifi"], [p["key"] for p in story.projects["items"]], "projekty (D36)")
         self.assertEqual(["server"], [a["key"] for a in story.assets["items"]], "majetek (fáze 2c, D41)")
         self.assertEqual(("Hmotný majetek", "Výpočetní technika"), (story.assets["typeGroup"], story.assets["type"]))
@@ -104,6 +107,30 @@ class StoryValidationTest(unittest.TestCase):
     def test_unknown_item_in_billing(self) -> None:
         self.edit("story.jsonc", '"item": "SPRAVA-IT", "price": 16000,', '"item": "NEEXISTUJE", "price": 16000,')
         self.assert_problem("není v items.jsonc")
+
+    def test_until_outside_window(self) -> None:
+        self.edit("story.jsonc", '"since": -13, "until": -3 }', '"since": -13, "until": -12 }')
+        self.assert_problem("until musí být posun měsíce ukončení v okně")
+
+    def test_until_before_first_billed_period(self) -> None:
+        self.edit("story.jsonc", '"conceptInAnchorMonth": true, "since": -5 }', '"conceptInAnchorMonth": true, "since": -5, "until": -6 }')
+        self.assert_problem("until -6 je před prvním fakturovaným obdobím (-5)")
+
+    def test_until_only_for_periodic_rules(self) -> None:
+        self.edit("story.jsonc", '"dueDays": 30, "docType": "proformaIssued" }', '"dueDays": 30, "docType": "proformaIssued", "until": -3 }')
+        self.assert_problem("since a until jen u periodické zakázky")
+
+    def test_concept_in_anchor_month_needs_billing_until_anchor(self) -> None:
+        self.edit("story.jsonc", '"since": -13, "until": -3 }', '"conceptInAnchorMonth": true, "since": -13, "until": -3 }')
+        self.assert_problem("conceptInAnchorMonth jen u zakázky, která v měsíci kotvy ještě fakturuje")
+
+    def test_since_after_anchor_month(self) -> None:
+        self.edit("story.jsonc", '"conceptInAnchorMonth": true, "since": -5 }', '"conceptInAnchorMonth": true, "since": 1 }')
+        self.assert_problem("since musí být posun měsíce zahájení zakázky")
+
+    def test_price_change_inside_billed_periods(self) -> None:
+        self.edit("story.jsonc", '"priceFrom": { "month": -4, "price": 27500 }', '"priceFrom": { "month": -9, "price": 27500 }')
+        self.assert_problem("priceFrom.month musí být po prvním fakturovaném období")
 
     def test_purchase_must_precede_delivery(self) -> None:
         # D36: dodávka Wi-Fi (18. 6.) až po nákupu u velkoobchodu (15. 6.).
