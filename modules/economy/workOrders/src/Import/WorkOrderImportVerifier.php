@@ -27,7 +27,7 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *    položka, řada dokladů, bankovní účet) — nová id drží runner (I1);
  *  - kódy: měna (`world.base.currencies`), jednotka (`UnitResolver`:
  *    system_code / zkratka / název), kód DPH (kódy země výchozí registrace
- *    pro směr cílového dokladu, včetně skrytých), pohyb (`docs.core.rowOperations`
+ *    pro směr cílového dokladu, všech míst plnění, včetně skrytých), pohyb (`docs.core.rowOperations`
  *    pro efektivní typ dokladu, ne systémový);
  *  - pravidla typu z `WorkOrderTypes` podle řady: strana jen u externích,
  *    nadřazená jen u jednorázových, `invoicing` a `rows` jen u periodického
@@ -339,9 +339,11 @@ class WorkOrderImportVerifier
     }
 
     /**
-     * Kódy DPH země výchozí registrace pro směr cílového dokladu (včetně
-     * skrytých — import nenabízí, ověřuje). Prázdné = kontext neznámý
-     * (bez registrace, bez typu dokladu), kontrola se přeskočí.
+     * Kódy DPH země výchozí registrace pro směr cílového dokladu — všech
+     * míst plnění (předpis zakázky zahraničního odběratele nese kód EU
+     * služeb, jako formulář řádků podle zákazníka) a včetně skrytých
+     * (import nenabízí, ověřuje). Prázdné = kontext neznámý (bez
+     * registrace, bez typu dokladu), kontrola se přeskočí.
      *
      * @return list<string>
      */
@@ -363,7 +365,7 @@ class WorkOrderImportVerifier
             return [];
         }
         try {
-            $codes = (new VatRateResolver($this->config))->getVatCodes($country, $direction, 'domestic', includeHidden: true);
+            $codes = (new VatRateResolver($this->config))->getVatCodes($country, $direction, null, includeHidden: true);
         } catch (\LogicException) {
             return [];
         }

@@ -1898,7 +1898,10 @@ kódy, pravidla typu z `WorkOrderTypes` podle řady (strana jen u externích,
 `parent` jen u jednorázových, `invoicing` a `rows` jen u periodického typu;
 periodická mimo Koncept potřebuje periodicitu a aspoň jeden řádek),
 `invoicing.numberSeries` typu efektivního dokladu (zakázka → druh), nadřazená
-podle čísla (`parent_not_found` — runner posílá nadřazené dřív). Co verifier
+podle čísla (`parent_not_found` — runner posílá nadřazené dřív). Kódy DPH
+se ověřují proti kódům země výchozí registrace pro směr cílového dokladu
+bez ohledu na místo plnění (předpis zahraničního odběratele nese kód EU
+služeb, jako formulář řádků podle zákazníka). Co verifier
 nehlídá, hlídá `WorkOrderDocument` při zápisu (zákazník povinný při
 potvrzení, nadřazená ne periodická, cyklus, duplicitní číslo…) a applier
 odmítnutí překládá na cestu payloadu (`inv_periodicity` →
