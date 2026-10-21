@@ -5,24 +5,25 @@
         "kind": "workOrder"
     },
     "docType": "invoiceIssued",
-    "docText": "IT-Betreuung — Pauschale Juni 2026",
+    "docText": "Správa IT — paušál jún 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Wolkenschiff Logistik GmbH",
-        "country": "de",
-        "taxId": "DE314670256",
-        "vatId": "DE314670256",
+        "name": "Nitrianske Stroje s.r.o.",
+        "country": "sk",
+        "companyId": "52398417",
+        "taxId": "SK2023845117",
+        "vatId": "SK2023845117",
         "address": {
-            "street": "Hafenstraße",
-            "houseNumber": "118",
-            "city": "Köln",
-            "zip": "50678",
-            "country": "de"
+            "street": "Strojárenská",
+            "houseNumber": "14",
+            "city": "Nitra",
+            "zip": "94901",
+            "country": "sk"
         },
         "contact": {
-            "email": "buchhaltung@wolkenschiff-logistik.example",
-            "phone": "+490002094410",
-            "web": "www.wolkenschiff-logistik.example"
+            "email": "uctaren@nitrianske-stroje.example",
+            "phone": "+421000512300",
+            "web": "www.nitrianske-stroje.example"
         }
     },
     "dates": {
@@ -49,7 +50,7 @@
         "paymentReference": "1260077"
     },
     "dimensions": {
-        "workOrder": "S0013"
+        "workOrder": "S0011"
     },
     "rows": [
         {
@@ -62,34 +63,34 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 650.0,
-            "totalPrice": 650.0,
+            "unitPrice": 480.0,
+            "totalPrice": 480.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-202",
                 "pct": 0.0
             },
             "computed": {
-                "vatBase": 650.0,
+                "vatBase": 480.0,
                 "vatAmount": 0.0,
-                "vatTotal": 650.0
+                "vatTotal": 480.0
             },
-            "description": "IT-Betreuung — Monatspauschale"
+            "description": "Správa IT — mesačný paušál"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-202",
             "vatPct": 0.0,
-            "base": 650.0,
+            "base": 480.0,
             "tax": 0.0,
-            "total": 650.0
+            "total": 480.0
         }
     ],
     "totals": {
-        "totalBase": 650.0,
+        "totalBase": 480.0,
         "totalVat": 0.0,
-        "totalAmount": 650.0,
+        "totalAmount": 480.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

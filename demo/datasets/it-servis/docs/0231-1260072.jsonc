@@ -8,22 +8,22 @@
     "docText": "Správa IT — paušál červen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Hotel Modrý Jelen s.r.o.",
+        "name": "Galvanovna Pokorný a syn s.r.o.",
         "country": "cz",
-        "companyId": "33958173",
-        "taxId": "CZ33958173",
-        "vatId": "CZ33958173",
+        "companyId": "18493068",
+        "taxId": "CZ18493068",
+        "vatId": "CZ18493068",
         "address": {
-            "street": "Lázeňská",
-            "houseNumber": "5",
-            "city": "Luhačovice",
-            "zip": "76326",
+            "street": "Pokovovací",
+            "houseNumber": "3301/2",
+            "city": "Vyškov",
+            "zip": "68201",
             "country": "cz"
         },
         "contact": {
-            "email": "ekonom@hotel-modry-jelen.example",
-            "phone": "+420000130444",
-            "web": "www.hotel-modry-jelen.example"
+            "email": "uctarna@galvanovna-pokorny.example",
+            "phone": "+420000348120",
+            "web": "www.galvanovna-pokorny.example"
         }
     },
     "dates": {
@@ -50,7 +50,7 @@
         "paymentReference": "1260072"
     },
     "dimensions": {
-        "workOrder": "S0006"
+        "workOrder": "S0005"
     },
     "rows": [
         {
@@ -63,17 +63,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 27500.0,
-            "totalPrice": 27500.0,
+            "unitPrice": 17500.0,
+            "totalPrice": 17500.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 27500.0,
-                "vatAmount": 5775.0,
-                "vatTotal": 33275.0
+                "vatBase": 17500.0,
+                "vatAmount": 3675.0,
+                "vatTotal": 21175.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -82,15 +82,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 27500.0,
-            "tax": 5775.0,
-            "total": 33275.0
+            "base": 17500.0,
+            "tax": 3675.0,
+            "total": 21175.0
         }
     ],
     "totals": {
-        "totalBase": 27500.0,
-        "totalVat": 5775.0,
-        "totalAmount": 33275.0,
+        "totalBase": 17500.0,
+        "totalVat": 3675.0,
+        "totalAmount": 21175.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

@@ -8,21 +8,21 @@
     "docText": "Správa IT — paušál červen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Lékárna Pod Modrou Věží s.r.o.",
+        "name": "Knihkupectví Stránka s.r.o.",
         "country": "cz",
-        "companyId": "81374623",
-        "taxId": "CZ81374623",
-        "vatId": "CZ81374623",
+        "companyId": "90462718",
+        "taxId": "CZ90462718",
+        "vatId": "CZ90462718",
         "address": {
-            "street": "Věžní",
-            "houseNumber": "2",
-            "city": "Uherské Hradiště",
-            "zip": "68601",
+            "street": "Záložková",
+            "houseNumber": "640/11",
+            "city": "Kroměříž",
+            "zip": "76701",
             "country": "cz"
         },
         "contact": {
-            "email": "lekarna@podvezi.example",
-            "phone": "+420000550128"
+            "email": "info@knihy-stranka.example",
+            "phone": "+420000339012"
         }
     },
     "dates": {
@@ -49,7 +49,7 @@
         "paymentReference": "1260074"
     },
     "dimensions": {
-        "workOrder": "S0008"
+        "workOrder": "S0007"
     },
     "rows": [
         {
@@ -62,17 +62,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 12000.0,
-            "totalPrice": 12000.0,
+            "unitPrice": 4800.0,
+            "totalPrice": 4800.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 12000.0,
-                "vatAmount": 2520.0,
-                "vatTotal": 14520.0
+                "vatBase": 4800.0,
+                "vatAmount": 1008.0,
+                "vatTotal": 5808.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -81,15 +81,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 12000.0,
-            "tax": 2520.0,
-            "total": 14520.0
+            "base": 4800.0,
+            "tax": 1008.0,
+            "total": 5808.0
         }
     ],
     "totals": {
-        "totalBase": 12000.0,
-        "totalVat": 2520.0,
-        "totalAmount": 14520.0,
+        "totalBase": 4800.0,
+        "totalVat": 1008.0,
+        "totalAmount": 5808.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

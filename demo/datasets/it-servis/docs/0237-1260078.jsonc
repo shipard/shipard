@@ -1,39 +1,44 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "IT-Betreuung — Pauschale Juni 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Hotel Modrý Jelen s.r.o.",
-        "country": "cz",
-        "companyId": "33958173",
-        "taxId": "CZ33958173",
-        "vatId": "CZ33958173",
+        "name": "Wolkenschiff Logistik GmbH",
+        "country": "de",
+        "taxId": "DE314670256",
+        "vatId": "DE314670256",
         "address": {
-            "street": "Lázeňská",
-            "houseNumber": "5",
-            "city": "Luhačovice",
-            "zip": "76326",
-            "country": "cz"
+            "street": "Hafenstraße",
+            "houseNumber": "118",
+            "city": "Köln",
+            "zip": "50678",
+            "country": "de"
         },
         "contact": {
-            "email": "ekonom@hotel-modry-jelen.example",
-            "phone": "+420000130444",
-            "web": "www.hotel-modry-jelen.example"
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "web": "www.wolkenschiff-logistik.example"
         }
     },
     "dates": {
-        "issueDate": "2026-06-18",
-        "dueDate": "2026-07-02",
-        "accountingDate": "2026-06-18",
-        "taxPointDate": "2026-06-18",
-        "vatObligationDate": "2026-06-18"
+        "issueDate": "2026-06-01",
+        "dueDate": "2026-06-15",
+        "accountingDate": "2026-06-01",
+        "taxPointDate": "2026-06-01",
+        "vatObligationDate": "2026-06-01",
+        "periodFrom": "2026-06-01",
+        "periodTo": "2026-06-30"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.79,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -44,71 +49,47 @@
         "paymentReference": "1260078"
     },
     "dimensions": {
-        "workOrder": "P0002"
+        "workOrder": "S0013"
     },
     "rows": [
         {
             "rowKind": "item",
-            "operation": "sale.goods",
+            "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "AP-WIFI",
-                "name": "Přístupový bod Wi-Fi 6"
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
             },
-            "unit": "pcs",
-            "quantity": 4.0,
-            "unitPrice": 3290.0,
-            "totalPrice": 13160.0,
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 650.0,
+            "totalPrice": 650.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-120",
-                "pct": 21.0
+                "code": "cz-202",
+                "pct": 0.0
             },
             "computed": {
-                "vatBase": 13160.0,
-                "vatAmount": 2763.6,
-                "vatTotal": 15923.6
+                "vatBase": 650.0,
+                "vatAmount": 0.0,
+                "vatTotal": 650.0
             },
-            "description": "Přístupový bod Wi-Fi 6"
-        },
-        {
-            "rowKind": "item",
-            "operation": "sale.services",
-            "orderPos": 2,
-            "item": {
-                "ourCode": "PRACE-H",
-                "name": "Servisní práce technika"
-            },
-            "unit": "hr",
-            "quantity": 5.0,
-            "unitPrice": 1250.0,
-            "totalPrice": 6250.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-120",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 6250.0,
-                "vatAmount": 1312.5,
-                "vatTotal": 7562.5
-            },
-            "description": "Montáž a nastavení Wi-Fi sítě"
+            "description": "IT-Betreuung — Monatspauschale"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-120",
-            "vatPct": 21.0,
-            "base": 19410.0,
-            "tax": 4076.1,
-            "total": 23486.1
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 650.0,
+            "tax": 0.0,
+            "total": 650.0
         }
     ],
     "totals": {
-        "totalBase": 19410.0,
-        "totalVat": 4076.1,
-        "totalAmount": 23486.1,
+        "totalBase": 650.0,
+        "totalVat": 0.0,
+        "totalAmount": 650.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -117,6 +98,6 @@
             "docNumber": "1260078",
             "sequenceNumber": 78
         },
-        "importOwnBankAccount": "BU1"
+        "importOwnBankAccount": "BU2"
     }
 }

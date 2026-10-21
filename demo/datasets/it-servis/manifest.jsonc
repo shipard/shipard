@@ -12,11 +12,11 @@
     "counts": {
         "setup": 13,
         "exchangeRates": 0,
-        "persons": 25,
+        "persons": 26,
         "items": 12,
-        "workOrders": 15,
+        "workOrders": 16,
         "assets": 1,
-        "docs": 292,
+        "docs": 295,
         "bank": 20,
         "registry": 6,
         "mail": 63

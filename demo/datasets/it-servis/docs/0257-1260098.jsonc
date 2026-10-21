@@ -1,39 +1,33 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
-    "source": {
-        "kind": "workOrder"
-    },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál srpen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Dentální klinika Úsměvov s.r.o.",
+        "name": "Realitní kancelář Domovník s.r.o.",
         "country": "cz",
-        "companyId": "85297135",
-        "taxId": "CZ85297135",
-        "vatId": "CZ85297135",
+        "companyId": "66902452",
+        "taxId": "CZ66902452",
+        "vatId": "CZ66902452",
         "address": {
-            "street": "Zubařská",
-            "houseNumber": "208/4",
+            "street": "Makléřská",
+            "houseNumber": "1500/7",
             "city": "Brno",
-            "zip": "61600",
+            "zip": "60200",
             "country": "cz"
         },
         "contact": {
-            "email": "recepce@usmevov.example",
-            "phone": "+420000150933",
-            "web": "www.usmevov.example"
+            "email": "fakturace@rk-domovnik.example",
+            "phone": "+420000218745",
+            "web": "www.rk-domovnik.example"
         }
     },
     "dates": {
-        "issueDate": "2026-08-01",
-        "dueDate": "2026-08-15",
-        "accountingDate": "2026-08-01",
-        "taxPointDate": "2026-08-01",
-        "vatObligationDate": "2026-08-01",
-        "periodFrom": "2026-08-01",
-        "periodTo": "2026-08-31"
+        "issueDate": "2026-07-22",
+        "dueDate": "2026-08-05",
+        "accountingDate": "2026-07-22",
+        "taxPointDate": "2026-07-22",
+        "vatObligationDate": "2026-07-22"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -49,48 +43,69 @@
         "method": "bankTransfer",
         "paymentReference": "1260098"
     },
-    "dimensions": {
-        "workOrder": "S0003"
-    },
     "rows": [
         {
             "rowKind": "item",
-            "operation": "sale.services",
+            "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
-                "name": "Správa IT — měsíční paušál"
+                "ourCode": "NTB-14",
+                "name": "Notebook 14\" business, 16 GB RAM"
             },
-            "unit": "mnth",
-            "quantity": 1.0,
-            "unitPrice": 21000.0,
-            "totalPrice": 21000.0,
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 24900.0,
+            "totalPrice": 49800.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 21000.0,
-                "vatAmount": 4410.0,
-                "vatTotal": 25410.0
+                "vatBase": 49800.0,
+                "vatAmount": 10458.0,
+                "vatTotal": 60258.0
             },
-            "description": "Správa IT — měsíční paušál"
+            "description": "Notebook 14\" business, 16 GB RAM"
+        },
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 2.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 2500.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 2500.0,
+                "vatAmount": 525.0,
+                "vatTotal": 3025.0
+            },
+            "description": "Servisní práce technika — 07/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 21000.0,
-            "tax": 4410.0,
-            "total": 25410.0
+            "base": 52300.0,
+            "tax": 10983.0,
+            "total": 63283.0
         }
     ],
     "totals": {
-        "totalBase": 21000.0,
-        "totalVat": 4410.0,
-        "totalAmount": 25410.0,
+        "totalBase": 52300.0,
+        "totalVat": 10983.0,
+        "totalAmount": 63283.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

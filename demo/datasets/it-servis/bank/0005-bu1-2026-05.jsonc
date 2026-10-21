@@ -7,7 +7,7 @@
         "periodStart": "2026-05-01",
         "periodEnd": "2026-05-31",
         "openingBalance": 258173.42,
-        "closingBalance": 398272.52,
+        "closingBalance": 407952.52,
         "currency": "CZK"
     },
     "transactions": [
@@ -117,6 +117,14 @@
         },
         {
             "externalId": "BU1-202605-014",
+            "amount": 9680.0,
+            "dateTransaction": "2026-05-13",
+            "counterpartyAccount": "2713450019/0600",
+            "counterpartyName": "Veterinární klinika Tlapka s.r.o.",
+            "paymentReference": "1260066"
+        },
+        {
+            "externalId": "BU1-202605-015",
             "amount": 10587.5,
             "dateTransaction": "2026-05-15",
             "counterpartyAccount": "2087561431/0100",
@@ -124,7 +132,7 @@
             "paymentReference": "1260059"
         },
         {
-            "externalId": "BU1-202605-015",
+            "externalId": "BU1-202605-016",
             "amount": -5929.0,
             "dateTransaction": "2026-05-16",
             "counterpartyAccount": "2519046733/2010",
@@ -132,7 +140,7 @@
             "paymentReference": "20261187"
         },
         {
-            "externalId": "BU1-202605-016",
+            "externalId": "BU1-202605-017",
             "amount": -3484.8,
             "dateTransaction": "2026-05-19",
             "counterpartyAccount": "2874190350/0300",
@@ -140,7 +148,7 @@
             "paymentReference": "2026448205"
         },
         {
-            "externalId": "BU1-202605-017",
+            "externalId": "BU1-202605-018",
             "amount": 30250.0,
             "dateTransaction": "2026-05-20",
             "counterpartyAccount": "1572946306/0600",
@@ -148,7 +156,7 @@
             "paymentReference": "1260060"
         },
         {
-            "externalId": "BU1-202605-018",
+            "externalId": "BU1-202605-019",
             "amount": -41216.0,
             "dateTransaction": "2026-05-20",
             "counterpartyAccount": "1000000021/0800",
@@ -156,7 +164,7 @@
             "message": "Pojistné 04/2026"
         },
         {
-            "externalId": "BU1-202605-019",
+            "externalId": "BU1-202605-020",
             "amount": -10984.0,
             "dateTransaction": "2026-05-20",
             "counterpartyAccount": "1000000048/0800",
@@ -164,7 +172,7 @@
             "message": "Záloha na daň 04/2026"
         },
         {
-            "externalId": "BU1-202605-020",
+            "externalId": "BU1-202605-021",
             "amount": 37305.0,
             "dateTransaction": "2026-05-25",
             "counterpartyAccount": "3178429617/0100",
@@ -173,7 +181,7 @@
             "operation": "transfer.in"
         },
         {
-            "externalId": "BU1-202605-021",
+            "externalId": "BU1-202605-022",
             "amount": 6655.0,
             "dateTransaction": "2026-05-27",
             "counterpartyAccount": "1908274639/0800",
@@ -181,7 +189,7 @@
             "paymentReference": "1260057"
         },
         {
-            "externalId": "BU1-202605-022",
+            "externalId": "BU1-202605-023",
             "amount": 16964.2,
             "dateTransaction": "2026-05-31",
             "counterpartyAccount": "2087561431/0100",
@@ -189,7 +197,7 @@
             "paymentReference": "1260053"
         },
         {
-            "externalId": "BU1-202605-023",
+            "externalId": "BU1-202605-024",
             "amount": -169.0,
             "dateTransaction": "2026-05-31",
             "message": "Poplatek za vedení účtu",

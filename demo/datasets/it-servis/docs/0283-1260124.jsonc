@@ -8,22 +8,21 @@
     "docText": "Správa IT — paušál říjen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Galvanovna Pokorný a syn s.r.o.",
+        "name": "Autodoprava Kopretina s.r.o.",
         "country": "cz",
-        "companyId": "18493068",
-        "taxId": "CZ18493068",
-        "vatId": "CZ18493068",
+        "companyId": "83715266",
+        "taxId": "CZ83715266",
+        "vatId": "CZ83715266",
         "address": {
-            "street": "Pokovovací",
-            "houseNumber": "3301/2",
-            "city": "Vyškov",
-            "zip": "68201",
+            "street": "Kamionová",
+            "houseNumber": "1412",
+            "city": "Zlín",
+            "zip": "76001",
             "country": "cz"
         },
         "contact": {
-            "email": "uctarna@galvanovna-pokorny.example",
-            "phone": "+420000348120",
-            "web": "www.galvanovna-pokorny.example"
+            "email": "uctarna@kopretina-doprava.example",
+            "phone": "+420000204411"
         }
     },
     "dates": {
@@ -50,7 +49,7 @@
         "paymentReference": "1260124"
     },
     "dimensions": {
-        "workOrder": "S0005"
+        "workOrder": "S0001"
     },
     "rows": [
         {
@@ -63,17 +62,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 17500.0,
-            "totalPrice": 17500.0,
+            "unitPrice": 16000.0,
+            "totalPrice": 16000.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 17500.0,
-                "vatAmount": 3675.0,
-                "vatTotal": 21175.0
+                "vatBase": 16000.0,
+                "vatAmount": 3360.0,
+                "vatTotal": 19360.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -82,15 +81,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 17500.0,
-            "tax": 3675.0,
-            "total": 21175.0
+            "base": 16000.0,
+            "tax": 3360.0,
+            "total": 19360.0
         }
     ],
     "totals": {
-        "totalBase": 17500.0,
-        "totalVat": 3675.0,
-        "totalAmount": 21175.0,
+        "totalBase": 16000.0,
+        "totalVat": 3360.0,
+        "totalAmount": 19360.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

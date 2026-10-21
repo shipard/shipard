@@ -5,25 +5,24 @@
         "kind": "workOrder"
     },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál august 2026",
+    "docText": "Správa IT — paušál srpen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Nitrianske Stroje s.r.o.",
-        "country": "sk",
-        "companyId": "52398417",
-        "taxId": "SK2023845117",
-        "vatId": "SK2023845117",
+        "name": "Lékárna Pod Modrou Věží s.r.o.",
+        "country": "cz",
+        "companyId": "81374623",
+        "taxId": "CZ81374623",
+        "vatId": "CZ81374623",
         "address": {
-            "street": "Strojárenská",
-            "houseNumber": "14",
-            "city": "Nitra",
-            "zip": "94901",
-            "country": "sk"
+            "street": "Věžní",
+            "houseNumber": "2",
+            "city": "Uherské Hradiště",
+            "zip": "68601",
+            "country": "cz"
         },
         "contact": {
-            "email": "uctaren@nitrianske-stroje.example",
-            "phone": "+421000512300",
-            "web": "www.nitrianske-stroje.example"
+            "email": "lekarna@podvezi.example",
+            "phone": "+420000550128"
         }
     },
     "dates": {
@@ -35,11 +34,11 @@
         "periodFrom": "2026-08-01",
         "periodTo": "2026-08-31"
     },
-    "currency": "EUR",
-    "exchangeRate": 24.68,
+    "currency": "CZK",
+    "exchangeRate": 1.0,
     "vat": {
         "mode": "fromBase",
-        "place": "intracom",
+        "place": "domestic",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -50,7 +49,7 @@
         "paymentReference": "1260104"
     },
     "dimensions": {
-        "workOrder": "S0011"
+        "workOrder": "S0008"
     },
     "rows": [
         {
@@ -63,34 +62,34 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 480.0,
-            "totalPrice": 480.0,
+            "unitPrice": 12000.0,
+            "totalPrice": 12000.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-202",
-                "pct": 0.0
+                "code": "cz-120",
+                "pct": 21.0
             },
             "computed": {
-                "vatBase": 480.0,
-                "vatAmount": 0.0,
-                "vatTotal": 480.0
+                "vatBase": 12000.0,
+                "vatAmount": 2520.0,
+                "vatTotal": 14520.0
             },
-            "description": "Správa IT — mesačný paušál"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-202",
-            "vatPct": 0.0,
-            "base": 480.0,
-            "tax": 0.0,
-            "total": 480.0
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 12000.0,
+            "tax": 2520.0,
+            "total": 14520.0
         }
     ],
     "totals": {
-        "totalBase": 480.0,
-        "totalVat": 0.0,
-        "totalAmount": 480.0,
+        "totalBase": 12000.0,
+        "totalVat": 2520.0,
+        "totalAmount": 14520.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -99,6 +98,6 @@
             "docNumber": "1260104",
             "sequenceNumber": 104
         },
-        "importOwnBankAccount": "BU2"
+        "importOwnBankAccount": "BU1"
     }
 }

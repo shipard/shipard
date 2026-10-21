@@ -1,12 +1,9 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
-    "source": {
-        "kind": "workOrder"
-    },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál září 2026",
     "selfParty": "supplier",
+    "cashDesk": "POK",
     "customer": {
         "name": "Cukrárna U Medvídka s.r.o.",
         "country": "cz",
@@ -26,13 +23,11 @@
         }
     },
     "dates": {
-        "issueDate": "2026-09-01",
-        "dueDate": "2026-09-15",
-        "accountingDate": "2026-09-01",
-        "taxPointDate": "2026-09-01",
-        "vatObligationDate": "2026-09-01",
-        "periodFrom": "2026-09-01",
-        "periodTo": "2026-09-30"
+        "issueDate": "2026-08-11",
+        "dueDate": "2026-08-25",
+        "accountingDate": "2026-08-11",
+        "taxPointDate": "2026-08-11",
+        "vatObligationDate": "2026-08-11"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -45,11 +40,8 @@
         "controlStatementMode": "auto"
     },
     "payment": {
-        "method": "bankTransfer",
+        "method": "cash",
         "paymentReference": "1260109"
-    },
-    "dimensions": {
-        "workOrder": "S0002"
     },
     "rows": [
         {
@@ -57,39 +49,39 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
-                "name": "Správa IT — měsíční paušál"
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
             },
-            "unit": "mnth",
-            "quantity": 1.0,
-            "unitPrice": 5500.0,
-            "totalPrice": 5500.0,
+            "unit": "hr",
+            "quantity": 2.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 2500.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 5500.0,
-                "vatAmount": 1155.0,
-                "vatTotal": 6655.0
+                "vatBase": 2500.0,
+                "vatAmount": 525.0,
+                "vatTotal": 3025.0
             },
-            "description": "Správa IT — měsíční paušál"
+            "description": "Servisní práce technika — 08/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 5500.0,
-            "tax": 1155.0,
-            "total": 6655.0
+            "base": 2500.0,
+            "tax": 525.0,
+            "total": 3025.0
         }
     ],
     "totals": {
-        "totalBase": 5500.0,
-        "totalVat": 1155.0,
-        "totalAmount": 6655.0,
+        "totalBase": 2500.0,
+        "totalVat": 525.0,
+        "totalAmount": 3025.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

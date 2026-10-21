@@ -8,21 +8,22 @@
     "docText": "Správa IT — paušál červen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Knihkupectví Stránka s.r.o.",
+        "name": "Hotel Modrý Jelen s.r.o.",
         "country": "cz",
-        "companyId": "90462718",
-        "taxId": "CZ90462718",
-        "vatId": "CZ90462718",
+        "companyId": "33958173",
+        "taxId": "CZ33958173",
+        "vatId": "CZ33958173",
         "address": {
-            "street": "Záložková",
-            "houseNumber": "640/11",
-            "city": "Kroměříž",
-            "zip": "76701",
+            "street": "Lázeňská",
+            "houseNumber": "5",
+            "city": "Luhačovice",
+            "zip": "76326",
             "country": "cz"
         },
         "contact": {
-            "email": "info@knihy-stranka.example",
-            "phone": "+420000339012"
+            "email": "ekonom@hotel-modry-jelen.example",
+            "phone": "+420000130444",
+            "web": "www.hotel-modry-jelen.example"
         }
     },
     "dates": {
@@ -49,7 +50,7 @@
         "paymentReference": "1260073"
     },
     "dimensions": {
-        "workOrder": "S0007"
+        "workOrder": "S0006"
     },
     "rows": [
         {
@@ -62,17 +63,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 4800.0,
-            "totalPrice": 4800.0,
+            "unitPrice": 27500.0,
+            "totalPrice": 27500.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 4800.0,
-                "vatAmount": 1008.0,
-                "vatTotal": 5808.0
+                "vatBase": 27500.0,
+                "vatAmount": 5775.0,
+                "vatTotal": 33275.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -81,15 +82,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 4800.0,
-            "tax": 1008.0,
-            "total": 5808.0
+            "base": 27500.0,
+            "tax": 5775.0,
+            "total": 33275.0
         }
     ],
     "totals": {
-        "totalBase": 4800.0,
-        "totalVat": 1008.0,
-        "totalAmount": 5808.0,
+        "totalBase": 27500.0,
+        "totalVat": 5775.0,
+        "totalAmount": 33275.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

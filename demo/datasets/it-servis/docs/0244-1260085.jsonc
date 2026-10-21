@@ -5,25 +5,24 @@
         "kind": "workOrder"
     },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál červenec 2026",
+    "docText": "Správa IT — paušál 3. čtvrtletí 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Hotel Modrý Jelen s.r.o.",
+        "name": "Fyzioterapie Pohybna s.r.o.",
         "country": "cz",
-        "companyId": "33958173",
-        "taxId": "CZ33958173",
-        "vatId": "CZ33958173",
+        "companyId": "55839207",
+        "taxId": "CZ55839207",
+        "vatId": "CZ55839207",
         "address": {
-            "street": "Lázeňská",
-            "houseNumber": "5",
-            "city": "Luhačovice",
-            "zip": "76326",
+            "street": "Rehabilitační",
+            "houseNumber": "77",
+            "city": "Prostějov",
+            "zip": "79601",
             "country": "cz"
         },
         "contact": {
-            "email": "ekonom@hotel-modry-jelen.example",
-            "phone": "+420000130444",
-            "web": "www.hotel-modry-jelen.example"
+            "email": "fakturace@pohybna.example",
+            "phone": "+420000341890"
         }
     },
     "dates": {
@@ -33,7 +32,7 @@
         "taxPointDate": "2026-07-01",
         "vatObligationDate": "2026-07-01",
         "periodFrom": "2026-07-01",
-        "periodTo": "2026-07-31"
+        "periodTo": "2026-09-30"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -50,7 +49,7 @@
         "paymentReference": "1260085"
     },
     "dimensions": {
-        "workOrder": "S0006"
+        "workOrder": "S0004"
     },
     "rows": [
         {
@@ -62,18 +61,18 @@
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
-            "quantity": 1.0,
-            "unitPrice": 27500.0,
-            "totalPrice": 27500.0,
+            "quantity": 3.0,
+            "unitPrice": 5000.0,
+            "totalPrice": 15000.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 27500.0,
-                "vatAmount": 5775.0,
-                "vatTotal": 33275.0
+                "vatBase": 15000.0,
+                "vatAmount": 3150.0,
+                "vatTotal": 18150.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -82,15 +81,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 27500.0,
-            "tax": 5775.0,
-            "total": 33275.0
+            "base": 15000.0,
+            "tax": 3150.0,
+            "total": 18150.0
         }
     ],
     "totals": {
-        "totalBase": 27500.0,
-        "totalVat": 5775.0,
-        "totalAmount": 33275.0,
+        "totalBase": 15000.0,
+        "totalVat": 3150.0,
+        "totalAmount": 18150.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

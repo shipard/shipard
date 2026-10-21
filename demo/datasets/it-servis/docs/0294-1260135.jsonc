@@ -1,0 +1,95 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Hotel Modrý Jelen s.r.o.",
+        "country": "cz",
+        "companyId": "33958173",
+        "taxId": "CZ33958173",
+        "vatId": "CZ33958173",
+        "address": {
+            "street": "Lázeňská",
+            "houseNumber": "5",
+            "city": "Luhačovice",
+            "zip": "76326",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "ekonom@hotel-modry-jelen.example",
+            "phone": "+420000130444",
+            "web": "www.hotel-modry-jelen.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-10-09",
+        "dueDate": "2026-10-23",
+        "accountingDate": "2026-10-09",
+        "taxPointDate": "2026-10-09",
+        "vatObligationDate": "2026-10-09"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260135"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 8.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 10000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 10000.0,
+                "vatAmount": 2100.0,
+                "vatTotal": 12100.0
+            },
+            "description": "Servisní práce technika — 10/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 10000.0,
+            "tax": 2100.0,
+            "total": 12100.0
+        }
+    ],
+    "totals": {
+        "totalBase": 10000.0,
+        "totalVat": 2100.0,
+        "totalAmount": 12100.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260135",
+            "sequenceNumber": 135
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

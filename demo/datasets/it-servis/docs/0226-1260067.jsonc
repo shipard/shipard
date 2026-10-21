@@ -3,31 +3,31 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "cashDesk": "POK",
     "customer": {
-        "name": "Hotel Modrý Jelen s.r.o.",
+        "name": "Autodoprava Kopretina s.r.o.",
         "country": "cz",
-        "companyId": "33958173",
-        "taxId": "CZ33958173",
-        "vatId": "CZ33958173",
+        "companyId": "83715266",
+        "taxId": "CZ83715266",
+        "vatId": "CZ83715266",
         "address": {
-            "street": "Lázeňská",
-            "houseNumber": "5",
-            "city": "Luhačovice",
-            "zip": "76326",
+            "street": "Kamionová",
+            "houseNumber": "1412",
+            "city": "Zlín",
+            "zip": "76001",
             "country": "cz"
         },
         "contact": {
-            "email": "ekonom@hotel-modry-jelen.example",
-            "phone": "+420000130444",
-            "web": "www.hotel-modry-jelen.example"
+            "email": "uctarna@kopretina-doprava.example",
+            "phone": "+420000204411"
         }
     },
     "dates": {
-        "issueDate": "2026-05-20",
-        "dueDate": "2026-06-03",
-        "accountingDate": "2026-05-20",
-        "taxPointDate": "2026-05-20",
-        "vatObligationDate": "2026-05-20"
+        "issueDate": "2026-05-13",
+        "dueDate": "2026-05-27",
+        "accountingDate": "2026-05-13",
+        "taxPointDate": "2026-05-13",
+        "vatObligationDate": "2026-05-13"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -40,51 +40,48 @@
         "controlStatementMode": "auto"
     },
     "payment": {
-        "method": "bankTransfer",
+        "method": "cash",
         "paymentReference": "1260067"
-    },
-    "dimensions": {
-        "workOrder": "P0002"
     },
     "rows": [
         {
             "rowKind": "item",
-            "operation": "sale.services",
+            "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
-                "name": "Servisní práce technika"
+                "ourCode": "ROUTER",
+                "name": "Router s firewallem"
             },
-            "unit": "hr",
-            "quantity": 13.0,
-            "unitPrice": 1250.0,
-            "totalPrice": 16250.0,
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 5990.0,
+            "totalPrice": 5990.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 16250.0,
-                "vatAmount": 3412.5,
-                "vatTotal": 19662.5
+                "vatBase": 5990.0,
+                "vatAmount": 1257.9,
+                "vatTotal": 7247.9
             },
-            "description": "Průzkum lokality a návrh Wi-Fi sítě"
+            "description": "Router s firewallem"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 16250.0,
-            "tax": 3412.5,
-            "total": 19662.5
+            "base": 5990.0,
+            "tax": 1257.9,
+            "total": 7247.9
         }
     ],
     "totals": {
-        "totalBase": 16250.0,
-        "totalVat": 3412.5,
-        "totalAmount": 19662.5,
+        "totalBase": 5990.0,
+        "totalVat": 1257.9,
+        "totalAmount": 7247.9,
         "totalRounding": 0.0
     },
     "applyOptions": {

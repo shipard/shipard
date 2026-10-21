@@ -5,25 +5,25 @@
         "kind": "workOrder"
     },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál 4. štvrťrok 2026",
+    "docText": "Správa IT — paušál 4. čtvrtletí 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Horský Penzión Tatranka s.r.o.",
-        "country": "sk",
-        "companyId": "47150823",
-        "taxId": "SK2020471508",
-        "vatId": "SK2020471508",
+        "name": "Realitní kancelář Domovník s.r.o.",
+        "country": "cz",
+        "companyId": "66902452",
+        "taxId": "CZ66902452",
+        "vatId": "CZ66902452",
         "address": {
-            "street": "Pod Gerlachom",
-            "houseNumber": "231",
-            "city": "Poprad",
-            "zip": "05801",
-            "country": "sk"
+            "street": "Makléřská",
+            "houseNumber": "1500/7",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz"
         },
         "contact": {
-            "email": "recepcia@penzion-tatranka.example",
-            "phone": "+421000721144",
-            "web": "www.penzion-tatranka.example"
+            "email": "fakturace@rk-domovnik.example",
+            "phone": "+420000218745",
+            "web": "www.rk-domovnik.example"
         }
     },
     "dates": {
@@ -35,11 +35,11 @@
         "periodFrom": "2026-10-01",
         "periodTo": "2026-12-31"
     },
-    "currency": "EUR",
-    "exchangeRate": 24.47,
+    "currency": "CZK",
+    "exchangeRate": 1.0,
     "vat": {
         "mode": "fromBase",
-        "place": "intracom",
+        "place": "domestic",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -50,7 +50,7 @@
         "paymentReference": "1260130"
     },
     "dimensions": {
-        "workOrder": "S0012"
+        "workOrder": "S0009"
     },
     "rows": [
         {
@@ -63,34 +63,34 @@
             },
             "unit": "mnth",
             "quantity": 3.0,
-            "unitPrice": 130.0,
-            "totalPrice": 390.0,
+            "unitPrice": 8500.0,
+            "totalPrice": 25500.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-202",
-                "pct": 0.0
+                "code": "cz-120",
+                "pct": 21.0
             },
             "computed": {
-                "vatBase": 390.0,
-                "vatAmount": 0.0,
-                "vatTotal": 390.0
+                "vatBase": 25500.0,
+                "vatAmount": 5355.0,
+                "vatTotal": 30855.0
             },
-            "description": "Správa IT — mesačný paušál"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-202",
-            "vatPct": 0.0,
-            "base": 390.0,
-            "tax": 0.0,
-            "total": 390.0
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 25500.0,
+            "tax": 5355.0,
+            "total": 30855.0
         }
     ],
     "totals": {
-        "totalBase": 390.0,
-        "totalVat": 0.0,
-        "totalAmount": 390.0,
+        "totalBase": 25500.0,
+        "totalVat": 5355.0,
+        "totalAmount": 30855.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -99,6 +99,6 @@
             "docNumber": "1260130",
             "sequenceNumber": 130
         },
-        "importOwnBankAccount": "BU2"
+        "importOwnBankAccount": "BU1"
     }
 }

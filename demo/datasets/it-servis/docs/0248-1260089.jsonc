@@ -8,21 +8,21 @@
     "docText": "Správa IT — paušál červenec 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Truhlárna Dubový list s.r.o.",
+        "name": "Lékárna Pod Modrou Věží s.r.o.",
         "country": "cz",
-        "companyId": "86341928",
-        "taxId": "CZ86341928",
-        "vatId": "CZ86341928",
+        "companyId": "81374623",
+        "taxId": "CZ81374623",
+        "vatId": "CZ81374623",
         "address": {
-            "street": "Hoblovaná",
-            "houseNumber": "88",
-            "city": "Holešov",
-            "zip": "76901",
+            "street": "Věžní",
+            "houseNumber": "2",
+            "city": "Uherské Hradiště",
+            "zip": "68601",
             "country": "cz"
         },
         "contact": {
-            "email": "petr@truhlarna-dubovy-list.example",
-            "phone": "+420000398022"
+            "email": "lekarna@podvezi.example",
+            "phone": "+420000550128"
         }
     },
     "dates": {
@@ -49,7 +49,7 @@
         "paymentReference": "1260089"
     },
     "dimensions": {
-        "workOrder": "S0010"
+        "workOrder": "S0008"
     },
     "rows": [
         {
@@ -62,17 +62,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 9000.0,
-            "totalPrice": 9000.0,
+            "unitPrice": 12000.0,
+            "totalPrice": 12000.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 9000.0,
-                "vatAmount": 1890.0,
-                "vatTotal": 10890.0
+                "vatBase": 12000.0,
+                "vatAmount": 2520.0,
+                "vatTotal": 14520.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -81,15 +81,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 9000.0,
-            "tax": 1890.0,
-            "total": 10890.0
+            "base": 12000.0,
+            "tax": 2520.0,
+            "total": 14520.0
         }
     ],
     "totals": {
-        "totalBase": 9000.0,
-        "totalVat": 1890.0,
-        "totalAmount": 10890.0,
+        "totalBase": 12000.0,
+        "totalVat": 2520.0,
+        "totalAmount": 14520.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

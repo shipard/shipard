@@ -8,21 +8,22 @@
     "docText": "Správa IT — paušál červenec 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Lékárna Pod Modrou Věží s.r.o.",
+        "name": "Hotel Modrý Jelen s.r.o.",
         "country": "cz",
-        "companyId": "81374623",
-        "taxId": "CZ81374623",
-        "vatId": "CZ81374623",
+        "companyId": "33958173",
+        "taxId": "CZ33958173",
+        "vatId": "CZ33958173",
         "address": {
-            "street": "Věžní",
-            "houseNumber": "2",
-            "city": "Uherské Hradiště",
-            "zip": "68601",
+            "street": "Lázeňská",
+            "houseNumber": "5",
+            "city": "Luhačovice",
+            "zip": "76326",
             "country": "cz"
         },
         "contact": {
-            "email": "lekarna@podvezi.example",
-            "phone": "+420000550128"
+            "email": "ekonom@hotel-modry-jelen.example",
+            "phone": "+420000130444",
+            "web": "www.hotel-modry-jelen.example"
         }
     },
     "dates": {
@@ -49,7 +50,7 @@
         "paymentReference": "1260087"
     },
     "dimensions": {
-        "workOrder": "S0008"
+        "workOrder": "S0006"
     },
     "rows": [
         {
@@ -62,17 +63,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 12000.0,
-            "totalPrice": 12000.0,
+            "unitPrice": 27500.0,
+            "totalPrice": 27500.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 12000.0,
-                "vatAmount": 2520.0,
-                "vatTotal": 14520.0
+                "vatBase": 27500.0,
+                "vatAmount": 5775.0,
+                "vatTotal": 33275.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -81,15 +82,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 12000.0,
-            "tax": 2520.0,
-            "total": 14520.0
+            "base": 27500.0,
+            "tax": 5775.0,
+            "total": 33275.0
         }
     ],
     "totals": {
-        "totalBase": 12000.0,
-        "totalVat": 2520.0,
-        "totalAmount": 14520.0,
+        "totalBase": 27500.0,
+        "totalVat": 5775.0,
+        "totalAmount": 33275.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

@@ -1,0 +1,62 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00024",
+    "companyId": "89310021",
+    "taxId": "CZ89310021",
+    "vatId": "CZ89310021",
+    "name": {
+        "fullName": "Veterinární klinika Tlapka s.r.o."
+    },
+    "contact": {
+        "email": "recepce@veterina-tlapka.example",
+        "phone": "+420000271455",
+        "web": "www.veterina-tlapka.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Kočičí",
+            "houseNumber": "315/9",
+            "city": "Přerov",
+            "zip": "75002",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2713450019/0600",
+            "iban": "CZ6806000000002713450019",
+            "bic": "AGBACZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Recepce kliniky",
+            "email": "recepce@veterina-tlapka.example",
+            "phone": "+420000271455",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

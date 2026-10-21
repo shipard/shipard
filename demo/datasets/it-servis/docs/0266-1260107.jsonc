@@ -1,38 +1,44 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "IT-Betreuung — Pauschale August 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Autodoprava Kopretina s.r.o.",
-        "country": "cz",
-        "companyId": "83715266",
-        "taxId": "CZ83715266",
-        "vatId": "CZ83715266",
+        "name": "Wolkenschiff Logistik GmbH",
+        "country": "de",
+        "taxId": "DE314670256",
+        "vatId": "DE314670256",
         "address": {
-            "street": "Kamionová",
-            "houseNumber": "1412",
-            "city": "Zlín",
-            "zip": "76001",
-            "country": "cz"
+            "street": "Hafenstraße",
+            "houseNumber": "118",
+            "city": "Köln",
+            "zip": "50678",
+            "country": "de"
         },
         "contact": {
-            "email": "uctarna@kopretina-doprava.example",
-            "phone": "+420000204411"
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "web": "www.wolkenschiff-logistik.example"
         }
     },
     "dates": {
-        "issueDate": "2026-08-20",
-        "dueDate": "2026-09-03",
-        "accountingDate": "2026-08-20",
-        "taxPointDate": "2026-08-20",
-        "vatObligationDate": "2026-08-20"
+        "issueDate": "2026-08-01",
+        "dueDate": "2026-08-15",
+        "accountingDate": "2026-08-01",
+        "taxPointDate": "2026-08-01",
+        "vatObligationDate": "2026-08-01",
+        "periodFrom": "2026-08-01",
+        "periodTo": "2026-08-31"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.68,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -42,45 +48,48 @@
         "method": "bankTransfer",
         "paymentReference": "1260107"
     },
+    "dimensions": {
+        "workOrder": "S0013"
+    },
     "rows": [
         {
             "rowKind": "item",
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
-                "name": "Servisní práce technika"
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
             },
-            "unit": "hr",
-            "quantity": 9.0,
-            "unitPrice": 1250.0,
-            "totalPrice": 11250.0,
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 650.0,
+            "totalPrice": 650.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-120",
-                "pct": 21.0
+                "code": "cz-202",
+                "pct": 0.0
             },
             "computed": {
-                "vatBase": 11250.0,
-                "vatAmount": 2362.5,
-                "vatTotal": 13612.5
+                "vatBase": 650.0,
+                "vatAmount": 0.0,
+                "vatTotal": 650.0
             },
-            "description": "Servisní práce technika — 08/2026"
+            "description": "IT-Betreuung — Monatspauschale"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-120",
-            "vatPct": 21.0,
-            "base": 11250.0,
-            "tax": 2362.5,
-            "total": 13612.5
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 650.0,
+            "tax": 0.0,
+            "total": 650.0
         }
     ],
     "totals": {
-        "totalBase": 11250.0,
-        "totalVat": 2362.5,
-        "totalAmount": 13612.5,
+        "totalBase": 650.0,
+        "totalVat": 0.0,
+        "totalAmount": 650.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -89,6 +98,6 @@
             "docNumber": "1260107",
             "sequenceNumber": 107
         },
-        "importOwnBankAccount": "BU1"
+        "importOwnBankAccount": "BU2"
     }
 }

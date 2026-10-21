@@ -8,21 +8,22 @@
     "docText": "Správa IT — paušál říjen 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Knihkupectví Stránka s.r.o.",
+        "name": "Veterinární klinika Tlapka s.r.o.",
         "country": "cz",
-        "companyId": "90462718",
-        "taxId": "CZ90462718",
-        "vatId": "CZ90462718",
+        "companyId": "89310021",
+        "taxId": "CZ89310021",
+        "vatId": "CZ89310021",
         "address": {
-            "street": "Záložková",
-            "houseNumber": "640/11",
-            "city": "Kroměříž",
-            "zip": "76701",
+            "street": "Kočičí",
+            "houseNumber": "315/9",
+            "city": "Přerov",
+            "zip": "75002",
             "country": "cz"
         },
         "contact": {
-            "email": "info@knihy-stranka.example",
-            "phone": "+420000339012"
+            "email": "recepce@veterina-tlapka.example",
+            "phone": "+420000271455",
+            "web": "www.veterina-tlapka.example"
         }
     },
     "dates": {
@@ -48,7 +49,7 @@
         "method": "bankTransfer"
     },
     "dimensions": {
-        "workOrder": "S0007"
+        "workOrder": "S0014"
     },
     "rows": [
         {
@@ -61,17 +62,17 @@
             },
             "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 4800.0,
-            "totalPrice": 4800.0,
+            "unitPrice": 8000.0,
+            "totalPrice": 8000.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 4800.0,
-                "vatAmount": 1008.0,
-                "vatTotal": 5808.0
+                "vatBase": 8000.0,
+                "vatAmount": 1680.0,
+                "vatTotal": 9680.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -80,15 +81,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 4800.0,
-            "tax": 1008.0,
-            "total": 5808.0
+            "base": 8000.0,
+            "tax": 1680.0,
+            "total": 9680.0
         }
     ],
     "totals": {
-        "totalBase": 4800.0,
-        "totalVat": 1008.0,
-        "totalAmount": 5808.0,
+        "totalBase": 8000.0,
+        "totalVat": 1680.0,
+        "totalAmount": 9680.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

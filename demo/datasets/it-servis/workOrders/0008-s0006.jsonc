@@ -76,31 +76,31 @@
             "from": "2026-06-01",
             "to": "2026-06-30",
             "state": "issued",
-            "docNumber": "1260072"
+            "docNumber": "1260073"
         },
         {
             "from": "2026-07-01",
             "to": "2026-07-31",
             "state": "issued",
-            "docNumber": "1260085"
+            "docNumber": "1260087"
         },
         {
             "from": "2026-08-01",
             "to": "2026-08-31",
             "state": "issued",
-            "docNumber": "1260100"
+            "docNumber": "1260103"
         },
         {
             "from": "2026-09-01",
             "to": "2026-09-30",
             "state": "issued",
-            "docNumber": "1260112"
+            "docNumber": "1260115"
         },
         {
             "from": "2026-10-01",
             "to": "2026-10-31",
             "state": "issued",
-            "docNumber": "1260125"
+            "docNumber": "1260128"
         }
     ]
 }

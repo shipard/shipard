@@ -17,7 +17,7 @@
             "dateTransaction": "2026-07-13",
             "counterpartyAccount": "SK0511000000002618439075",
             "counterpartyName": "Horský Penzión Tatranka s.r.o.",
-            "paymentReference": "1260091",
+            "paymentReference": "1260093",
             "exchangeRate": 24.73
         },
         {
@@ -26,7 +26,7 @@
             "dateTransaction": "2026-07-13",
             "counterpartyAccount": "DE18370400440532014860",
             "counterpartyName": "Wolkenschiff Logistik GmbH",
-            "paymentReference": "1260092",
+            "paymentReference": "1260094",
             "exchangeRate": 24.73
         },
         {
@@ -44,7 +44,7 @@
             "dateTransaction": "2026-07-24",
             "counterpartyAccount": "SK6709000000003914726058",
             "counterpartyName": "Nitrianske Stroje s.r.o.",
-            "paymentReference": "1260090",
+            "paymentReference": "1260092",
             "exchangeRate": 24.73
         },
         {

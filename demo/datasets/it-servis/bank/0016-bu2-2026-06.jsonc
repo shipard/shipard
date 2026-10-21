@@ -17,7 +17,7 @@
             "dateTransaction": "2026-06-13",
             "counterpartyAccount": "DE18370400440532014860",
             "counterpartyName": "Wolkenschiff Logistik GmbH",
-            "paymentReference": "1260077",
+            "paymentReference": "1260078",
             "exchangeRate": 24.79
         },
         {
@@ -35,7 +35,7 @@
             "dateTransaction": "2026-06-24",
             "counterpartyAccount": "SK6709000000003914726058",
             "counterpartyName": "Nitrianske Stroje s.r.o.",
-            "paymentReference": "1260076",
+            "paymentReference": "1260077",
             "exchangeRate": 24.79
         }
     ],

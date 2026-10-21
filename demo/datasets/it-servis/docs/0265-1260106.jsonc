@@ -1,47 +1,56 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál august 2026",
     "selfParty": "supplier",
-    "cashDesk": "POK",
     "customer": {
-        "name": "Cukrárna U Medvídka s.r.o.",
-        "country": "cz",
-        "companyId": "91740380",
-        "taxId": "CZ91740380",
-        "vatId": "CZ91740380",
+        "name": "Nitrianske Stroje s.r.o.",
+        "country": "sk",
+        "companyId": "52398417",
+        "taxId": "SK2023845117",
+        "vatId": "SK2023845117",
         "address": {
-            "street": "Perníková",
-            "houseNumber": "12",
-            "city": "Olomouc",
-            "zip": "77900",
-            "country": "cz"
+            "street": "Strojárenská",
+            "houseNumber": "14",
+            "city": "Nitra",
+            "zip": "94901",
+            "country": "sk"
         },
         "contact": {
-            "email": "jana@cukrarna-medvidek.example",
-            "phone": "+420000330217"
+            "email": "uctaren@nitrianske-stroje.example",
+            "phone": "+421000512300",
+            "web": "www.nitrianske-stroje.example"
         }
     },
     "dates": {
-        "issueDate": "2026-08-11",
-        "dueDate": "2026-08-25",
-        "accountingDate": "2026-08-11",
-        "taxPointDate": "2026-08-11",
-        "vatObligationDate": "2026-08-11"
+        "issueDate": "2026-08-01",
+        "dueDate": "2026-08-15",
+        "accountingDate": "2026-08-01",
+        "taxPointDate": "2026-08-01",
+        "vatObligationDate": "2026-08-01",
+        "periodFrom": "2026-08-01",
+        "periodTo": "2026-08-31"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.68,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
-        "method": "cash",
+        "method": "bankTransfer",
         "paymentReference": "1260106"
+    },
+    "dimensions": {
+        "workOrder": "S0011"
     },
     "rows": [
         {
@@ -49,39 +58,39 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
-                "name": "Servisní práce technika"
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
             },
-            "unit": "hr",
-            "quantity": 2.0,
-            "unitPrice": 1250.0,
-            "totalPrice": 2500.0,
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 480.0,
+            "totalPrice": 480.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-120",
-                "pct": 21.0
+                "code": "cz-202",
+                "pct": 0.0
             },
             "computed": {
-                "vatBase": 2500.0,
-                "vatAmount": 525.0,
-                "vatTotal": 3025.0
+                "vatBase": 480.0,
+                "vatAmount": 0.0,
+                "vatTotal": 480.0
             },
-            "description": "Servisní práce technika — 08/2026"
+            "description": "Správa IT — mesačný paušál"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-120",
-            "vatPct": 21.0,
-            "base": 2500.0,
-            "tax": 525.0,
-            "total": 3025.0
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 480.0,
+            "tax": 0.0,
+            "total": 480.0
         }
     ],
     "totals": {
-        "totalBase": 2500.0,
-        "totalVat": 525.0,
-        "totalAmount": 3025.0,
+        "totalBase": 480.0,
+        "totalVat": 0.0,
+        "totalAmount": 480.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -90,6 +99,6 @@
             "docNumber": "1260106",
             "sequenceNumber": 106
         },
-        "importOwnBankAccount": "BU1"
+        "importOwnBankAccount": "BU2"
     }
 }

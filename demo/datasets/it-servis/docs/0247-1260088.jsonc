@@ -5,25 +5,24 @@
         "kind": "workOrder"
     },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál 3. čtvrtletí 2026",
+    "docText": "Správa IT — paušál červenec 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Realitní kancelář Domovník s.r.o.",
+        "name": "Knihkupectví Stránka s.r.o.",
         "country": "cz",
-        "companyId": "66902452",
-        "taxId": "CZ66902452",
-        "vatId": "CZ66902452",
+        "companyId": "90462718",
+        "taxId": "CZ90462718",
+        "vatId": "CZ90462718",
         "address": {
-            "street": "Makléřská",
-            "houseNumber": "1500/7",
-            "city": "Brno",
-            "zip": "60200",
+            "street": "Záložková",
+            "houseNumber": "640/11",
+            "city": "Kroměříž",
+            "zip": "76701",
             "country": "cz"
         },
         "contact": {
-            "email": "fakturace@rk-domovnik.example",
-            "phone": "+420000218745",
-            "web": "www.rk-domovnik.example"
+            "email": "info@knihy-stranka.example",
+            "phone": "+420000339012"
         }
     },
     "dates": {
@@ -33,7 +32,7 @@
         "taxPointDate": "2026-07-01",
         "vatObligationDate": "2026-07-01",
         "periodFrom": "2026-07-01",
-        "periodTo": "2026-09-30"
+        "periodTo": "2026-07-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -50,7 +49,7 @@
         "paymentReference": "1260088"
     },
     "dimensions": {
-        "workOrder": "S0009"
+        "workOrder": "S0007"
     },
     "rows": [
         {
@@ -62,18 +61,18 @@
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
-            "quantity": 3.0,
-            "unitPrice": 8500.0,
-            "totalPrice": 25500.0,
+            "quantity": 1.0,
+            "unitPrice": 4800.0,
+            "totalPrice": 4800.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 25500.0,
-                "vatAmount": 5355.0,
-                "vatTotal": 30855.0
+                "vatBase": 4800.0,
+                "vatAmount": 1008.0,
+                "vatTotal": 5808.0
             },
             "description": "Správa IT — měsíční paušál"
         }
@@ -82,15 +81,15 @@
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 25500.0,
-            "tax": 5355.0,
-            "total": 30855.0
+            "base": 4800.0,
+            "tax": 1008.0,
+            "total": 5808.0
         }
     ],
     "totals": {
-        "totalBase": 25500.0,
-        "totalVat": 5355.0,
-        "totalAmount": 30855.0,
+        "totalBase": 4800.0,
+        "totalVat": 1008.0,
+        "totalAmount": 5808.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

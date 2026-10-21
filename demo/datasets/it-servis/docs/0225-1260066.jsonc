@@ -1,33 +1,39 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál květen 2026",
     "selfParty": "supplier",
-    "cashDesk": "POK",
     "customer": {
-        "name": "Autodoprava Kopretina s.r.o.",
+        "name": "Veterinární klinika Tlapka s.r.o.",
         "country": "cz",
-        "companyId": "83715266",
-        "taxId": "CZ83715266",
-        "vatId": "CZ83715266",
+        "companyId": "89310021",
+        "taxId": "CZ89310021",
+        "vatId": "CZ89310021",
         "address": {
-            "street": "Kamionová",
-            "houseNumber": "1412",
-            "city": "Zlín",
-            "zip": "76001",
+            "street": "Kočičí",
+            "houseNumber": "315/9",
+            "city": "Přerov",
+            "zip": "75002",
             "country": "cz"
         },
         "contact": {
-            "email": "uctarna@kopretina-doprava.example",
-            "phone": "+420000204411"
+            "email": "recepce@veterina-tlapka.example",
+            "phone": "+420000271455",
+            "web": "www.veterina-tlapka.example"
         }
     },
     "dates": {
-        "issueDate": "2026-05-13",
-        "dueDate": "2026-05-27",
-        "accountingDate": "2026-05-13",
-        "taxPointDate": "2026-05-13",
-        "vatObligationDate": "2026-05-13"
+        "issueDate": "2026-05-01",
+        "dueDate": "2026-05-15",
+        "accountingDate": "2026-05-01",
+        "taxPointDate": "2026-05-01",
+        "vatObligationDate": "2026-05-01",
+        "periodFrom": "2026-05-01",
+        "periodTo": "2026-05-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -40,48 +46,51 @@
         "controlStatementMode": "auto"
     },
     "payment": {
-        "method": "cash",
+        "method": "bankTransfer",
         "paymentReference": "1260066"
+    },
+    "dimensions": {
+        "workOrder": "S0014"
     },
     "rows": [
         {
             "rowKind": "item",
-            "operation": "sale.goods",
+            "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "ROUTER",
-                "name": "Router s firewallem"
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
             },
-            "unit": "pcs",
+            "unit": "mnth",
             "quantity": 1.0,
-            "unitPrice": 5990.0,
-            "totalPrice": 5990.0,
+            "unitPrice": 8000.0,
+            "totalPrice": 8000.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 5990.0,
-                "vatAmount": 1257.9,
-                "vatTotal": 7247.9
+                "vatBase": 8000.0,
+                "vatAmount": 1680.0,
+                "vatTotal": 9680.0
             },
-            "description": "Router s firewallem"
+            "description": "Správa IT — měsíční paušál"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 5990.0,
-            "tax": 1257.9,
-            "total": 7247.9
+            "base": 8000.0,
+            "tax": 1680.0,
+            "total": 9680.0
         }
     ],
     "totals": {
-        "totalBase": 5990.0,
-        "totalVat": 1257.9,
-        "totalAmount": 7247.9,
+        "totalBase": 8000.0,
+        "totalVat": 1680.0,
+        "totalAmount": 9680.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

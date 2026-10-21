@@ -1,38 +1,45 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál 3. štvrťrok 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Lékárna Pod Modrou Věží s.r.o.",
-        "country": "cz",
-        "companyId": "81374623",
-        "taxId": "CZ81374623",
-        "vatId": "CZ81374623",
+        "name": "Horský Penzión Tatranka s.r.o.",
+        "country": "sk",
+        "companyId": "47150823",
+        "taxId": "SK2020471508",
+        "vatId": "SK2020471508",
         "address": {
-            "street": "Věžní",
-            "houseNumber": "2",
-            "city": "Uherské Hradiště",
-            "zip": "68601",
-            "country": "cz"
+            "street": "Pod Gerlachom",
+            "houseNumber": "231",
+            "city": "Poprad",
+            "zip": "05801",
+            "country": "sk"
         },
         "contact": {
-            "email": "lekarna@podvezi.example",
-            "phone": "+420000550128"
+            "email": "recepcia@penzion-tatranka.example",
+            "phone": "+421000721144",
+            "web": "www.penzion-tatranka.example"
         }
     },
     "dates": {
-        "issueDate": "2026-07-18",
-        "dueDate": "2026-08-01",
-        "accountingDate": "2026-07-18",
-        "taxPointDate": "2026-07-18",
-        "vatObligationDate": "2026-07-18"
+        "issueDate": "2026-07-01",
+        "dueDate": "2026-07-15",
+        "accountingDate": "2026-07-01",
+        "taxPointDate": "2026-07-01",
+        "vatObligationDate": "2026-07-01",
+        "periodFrom": "2026-07-01",
+        "periodTo": "2026-09-30"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.73,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -42,45 +49,48 @@
         "method": "bankTransfer",
         "paymentReference": "1260093"
     },
+    "dimensions": {
+        "workOrder": "S0012"
+    },
     "rows": [
         {
             "rowKind": "item",
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
-                "name": "Servisní práce technika"
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
             },
-            "unit": "hr",
-            "quantity": 5.0,
-            "unitPrice": 1250.0,
-            "totalPrice": 6250.0,
+            "unit": "mnth",
+            "quantity": 3.0,
+            "unitPrice": 130.0,
+            "totalPrice": 390.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-120",
-                "pct": 21.0
+                "code": "cz-202",
+                "pct": 0.0
             },
             "computed": {
-                "vatBase": 6250.0,
-                "vatAmount": 1312.5,
-                "vatTotal": 7562.5
+                "vatBase": 390.0,
+                "vatAmount": 0.0,
+                "vatTotal": 390.0
             },
-            "description": "Servisní práce technika — 07/2026"
+            "description": "Správa IT — mesačný paušál"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-120",
-            "vatPct": 21.0,
-            "base": 6250.0,
-            "tax": 1312.5,
-            "total": 7562.5
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 390.0,
+            "tax": 0.0,
+            "total": 390.0
         }
     ],
     "totals": {
-        "totalBase": 6250.0,
-        "totalVat": 1312.5,
-        "totalAmount": 7562.5,
+        "totalBase": 390.0,
+        "totalVat": 0.0,
+        "totalAmount": 390.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -89,6 +99,6 @@
             "docNumber": "1260093",
             "sequenceNumber": 93
         },
-        "importOwnBankAccount": "BU1"
+        "importOwnBankAccount": "BU2"
     }
 }

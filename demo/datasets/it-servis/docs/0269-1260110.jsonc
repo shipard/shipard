@@ -1,39 +1,32 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
-    "source": {
-        "kind": "workOrder"
-    },
     "docType": "invoiceIssued",
-    "docText": "Správa IT — paušál září 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Dentální klinika Úsměvov s.r.o.",
+        "name": "Autodoprava Kopretina s.r.o.",
         "country": "cz",
-        "companyId": "85297135",
-        "taxId": "CZ85297135",
-        "vatId": "CZ85297135",
+        "companyId": "83715266",
+        "taxId": "CZ83715266",
+        "vatId": "CZ83715266",
         "address": {
-            "street": "Zubařská",
-            "houseNumber": "208/4",
-            "city": "Brno",
-            "zip": "61600",
+            "street": "Kamionová",
+            "houseNumber": "1412",
+            "city": "Zlín",
+            "zip": "76001",
             "country": "cz"
         },
         "contact": {
-            "email": "recepce@usmevov.example",
-            "phone": "+420000150933",
-            "web": "www.usmevov.example"
+            "email": "uctarna@kopretina-doprava.example",
+            "phone": "+420000204411"
         }
     },
     "dates": {
-        "issueDate": "2026-09-01",
-        "dueDate": "2026-09-15",
-        "accountingDate": "2026-09-01",
-        "taxPointDate": "2026-09-01",
-        "vatObligationDate": "2026-09-01",
-        "periodFrom": "2026-09-01",
-        "periodTo": "2026-09-30"
+        "issueDate": "2026-08-20",
+        "dueDate": "2026-09-03",
+        "accountingDate": "2026-08-20",
+        "taxPointDate": "2026-08-20",
+        "vatObligationDate": "2026-08-20"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -49,48 +42,45 @@
         "method": "bankTransfer",
         "paymentReference": "1260110"
     },
-    "dimensions": {
-        "workOrder": "S0003"
-    },
     "rows": [
         {
             "rowKind": "item",
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
-                "name": "Správa IT — měsíční paušál"
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
             },
-            "unit": "mnth",
-            "quantity": 1.0,
-            "unitPrice": 21000.0,
-            "totalPrice": 21000.0,
+            "unit": "hr",
+            "quantity": 9.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 11250.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-120",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 21000.0,
-                "vatAmount": 4410.0,
-                "vatTotal": 25410.0
+                "vatBase": 11250.0,
+                "vatAmount": 2362.5,
+                "vatTotal": 13612.5
             },
-            "description": "Správa IT — měsíční paušál"
+            "description": "Servisní práce technika — 08/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-120",
             "vatPct": 21.0,
-            "base": 21000.0,
-            "tax": 4410.0,
-            "total": 25410.0
+            "base": 11250.0,
+            "tax": 2362.5,
+            "total": 13612.5
         }
     ],
     "totals": {
-        "totalBase": 21000.0,
-        "totalVat": 4410.0,
-        "totalAmount": 25410.0,
+        "totalBase": 11250.0,
+        "totalVat": 2362.5,
+        "totalAmount": 13612.5,
         "totalRounding": 0.0
     },
     "applyOptions": {

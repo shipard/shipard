@@ -1,38 +1,44 @@
 {
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
     "docType": "invoiceIssued",
+    "docText": "IT-Betreuung — Pauschale Juli 2026",
     "selfParty": "supplier",
     "customer": {
-        "name": "Truhlárna Dubový list s.r.o.",
-        "country": "cz",
-        "companyId": "86341928",
-        "taxId": "CZ86341928",
-        "vatId": "CZ86341928",
+        "name": "Wolkenschiff Logistik GmbH",
+        "country": "de",
+        "taxId": "DE314670256",
+        "vatId": "DE314670256",
         "address": {
-            "street": "Hoblovaná",
-            "houseNumber": "88",
-            "city": "Holešov",
-            "zip": "76901",
-            "country": "cz"
+            "street": "Hafenstraße",
+            "houseNumber": "118",
+            "city": "Köln",
+            "zip": "50678",
+            "country": "de"
         },
         "contact": {
-            "email": "petr@truhlarna-dubovy-list.example",
-            "phone": "+420000398022"
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "web": "www.wolkenschiff-logistik.example"
         }
     },
     "dates": {
-        "issueDate": "2026-07-20",
-        "dueDate": "2026-08-03",
-        "accountingDate": "2026-07-20",
-        "taxPointDate": "2026-07-20",
-        "vatObligationDate": "2026-07-20"
+        "issueDate": "2026-07-01",
+        "dueDate": "2026-07-15",
+        "accountingDate": "2026-07-01",
+        "taxPointDate": "2026-07-01",
+        "vatObligationDate": "2026-07-01",
+        "periodFrom": "2026-07-01",
+        "periodTo": "2026-07-31"
     },
-    "currency": "CZK",
-    "exchangeRate": 1.0,
+    "currency": "EUR",
+    "exchangeRate": 24.73,
     "vat": {
         "mode": "fromBase",
-        "place": "domestic",
+        "place": "intracom",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -42,45 +48,48 @@
         "method": "bankTransfer",
         "paymentReference": "1260094"
     },
+    "dimensions": {
+        "workOrder": "S0013"
+    },
     "rows": [
         {
             "rowKind": "item",
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
-                "name": "Servisní práce technika"
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
             },
-            "unit": "hr",
-            "quantity": 12.0,
-            "unitPrice": 1250.0,
-            "totalPrice": 15000.0,
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 650.0,
+            "totalPrice": 650.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-120",
-                "pct": 21.0
+                "code": "cz-202",
+                "pct": 0.0
             },
             "computed": {
-                "vatBase": 15000.0,
-                "vatAmount": 3150.0,
-                "vatTotal": 18150.0
+                "vatBase": 650.0,
+                "vatAmount": 0.0,
+                "vatTotal": 650.0
             },
-            "description": "Servisní práce technika — 07/2026"
+            "description": "IT-Betreuung — Monatspauschale"
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-120",
-            "vatPct": 21.0,
-            "base": 15000.0,
-            "tax": 3150.0,
-            "total": 18150.0
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 650.0,
+            "tax": 0.0,
+            "total": 650.0
         }
     ],
     "totals": {
-        "totalBase": 15000.0,
-        "totalVat": 3150.0,
-        "totalAmount": 18150.0,
+        "totalBase": 650.0,
+        "totalVat": 0.0,
+        "totalAmount": 650.0,
         "totalRounding": 0.0
     },
     "applyOptions": {
@@ -89,6 +98,6 @@
             "docNumber": "1260094",
             "sequenceNumber": 94
         },
-        "importOwnBankAccount": "BU1"
+        "importOwnBankAccount": "BU2"
     }
 }
