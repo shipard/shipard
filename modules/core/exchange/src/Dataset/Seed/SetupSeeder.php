@@ -17,7 +17,9 @@ use Shipard\Module\Core\Exchange\Export\SetupExporter;
 
 /**
  * `setup/<tabulka>.jsonc` → číselníky přes `TableGateway` (Document hooky,
- * `docStateMain` odvozený z cfgItemu). Upsert podle přirozeného klíče
+ * `docStateMain` odvozený z cfgItemu). Nastavení s id řady dokladů
+ * (`SetupExporter::SETTINGS_EXCLUDED`) seed přeskočí — nastaví je
+ * provisionery po resetu (D42). Upsert podle přirozeného klíče
  * tabulky (`SetupExporter::TABLES`) — default mailbox po resetu existuje
  * a jen se aktualizuje. FK přichází přirozeným klíčem (`SetupReferences`):
  * účet z rozvrhu číslem → id jako dosud (chybějící = null), ostatní
@@ -102,11 +104,19 @@ final class SetupSeeder implements SectionSeeder
     /**
      * `setup/settings.jsonc` → `core_system_settings`. Volá se před `ds-reset`
      * (tabulka je keepOnReset, provisionery v ds-upgrade hodnoty čtou).
+     * Nastavení s id řad dokladů (`SetupExporter::SETTINGS_EXCLUDED`, D42)
+     * přitom smaže: z provozu před resetem by přežila reset, ukazovala by na
+     * řady, které reset založí znovu s jinými id, a `AssetPostingSeriesProvisioner`
+     * by řadu „Majetek“ nezaložil — po resetu je nastaví provisionery znovu.
      *
      * @return int počet zapsaných klíčů (0 = soubor v sadě není)
      */
     public static function applySettings(DatasetReader $reader, DataSourceConnection $dsConnection): int
     {
+        $store = new SettingsStore($dsConnection);
+        foreach (SetupExporter::SETTINGS_EXCLUDED as $key) {
+            $store->delete($key);
+        }
         $rel = 'setup/' . SetupExporter::SETTINGS_TABLE . '.jsonc';
         if (!$reader->fileExists($rel)) {
             return 0;
@@ -124,6 +134,11 @@ final class SetupSeeder implements SectionSeeder
         $n = 0;
         foreach ($rows as $row) {
             if (!is_array($row) || !is_string($row['key'] ?? null) || $row['key'] === '') {
+                continue;
+            }
+            // Id řad dokladů ze starší sady (D42): na tomto zdroji dat neplatí,
+            // po resetu je nastaví provisionery — tiše se přeskočí.
+            if (in_array($row['key'], SetupExporter::SETTINGS_EXCLUDED, true)) {
                 continue;
             }
             if (!SetupExporter::isPortableSetting($row['key'])) {

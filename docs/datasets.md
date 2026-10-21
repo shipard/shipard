@@ -96,7 +96,7 @@ které jsou uživatelská data. Sada proto nese (`SetupExporter::TABLES`):
 
 | Soubor | Tabulka | Klíč | Poznámka |
 |--------|---------|------|----------|
-| `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou) |
+| `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou). **Bez** `economy.assets.accountingSeries` a `economy.vat.filingAccountingSeries` (`SetupExporter::SETTINGS_EXCLUDED`, #131 fáze 2c D42): jsou to id řad dokladů, která na jiném zdroji dat neplatí a která by po resetu zablokovala provisioner řady „Majetek“ — po resetu je nastaví `ds-upgrade`; seed je ve starší sadě přeskočí |
 | `accounts.jsonc` | `economy_accounting_accounts` | `number` | jen **nesystémové** účty (`is_system = 0`) — analytiky založené nad seedem, např. 221200 pro bankovní účet v cizí měně (#131 fáze 2a); systémové obnoví `AccountChartProvisioner`. Seeduje se abecedně před `bank_accounts.jsonc`, takže `accounting_account` číslem se dohledá |
 | `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují); `accounting_account` = číslo analytiky 221 (bez něj bankovní engine hlásí `bank_account_not_found`) |
 | `cash_desks.jsonc` | `economy_codebooks_cash_desks` | `code` | pokladny; výchozí (`is_default`) dostane v apply doklad placený hotově bez `cashDesk` (#103 F3) |
@@ -563,3 +563,9 @@ na faktuře v cizí měně se přepočítává kurzem měsíce, přebytek eurov�
 dodavatel z EU fakturuje v EUR se samovyměřením (cz-217 / cz-207, PDF
 anglicky, úhrada z eurového účtu) a `build.py` vypisuje souhrn ekonomiky,
 jehož cíle (zisk 8–15 %, zahraničí 10–20 %, …) hlídá unit test generátoru.
+Fáze 2b (`tasks/demo-dataset-phase2b-work-orders.md`) přidala sekci
+`workOrders/` (paušály jako periodické zakázky, dva projekty), fáze 2c
+(`tasks/demo-dataset-phase2c-assets.md`) sekci `assets/` — server
+pořízený fakturou velkoobchodu s řádkem `purchase.asset`, zařazený, bez
+zaúčtování (D38); `invoicegen/assets.py` portuje měsíční plán účetních
+odpisů jen pro souhrn ekonomiky.

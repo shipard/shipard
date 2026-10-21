@@ -311,7 +311,10 @@ class SetupExporterTest extends TestCase
                 new Row(['key' => 'app.icon', 'value' => '{"storedAs":"icon.svg"}']),
                 new Row(['key' => 'app.name', 'value' => '"Demo firma"']),
                 new Row(['key' => 'economy.accountChart', 'value' => '"default"']),
+                // Id řad dokladů (D42): na jiném zdroji dat neplatí, nastaví je provisionery.
+                new Row(['key' => 'economy.assets.accountingSeries', 'value' => '"6"']),
                 new Row(['key' => 'economy.fiscalYearStartMonth', 'value' => '1']),
+                new Row(['key' => 'economy.vat.filingAccountingSeries', 'value' => '"5"']),
                 new Row(['key' => 'economy.vatAgenda', 'value' => 'true']),
                 new Row(['key' => 'test.jedna.b', 'value' => '"x"']),
             ];
@@ -326,7 +329,8 @@ class SetupExporterTest extends TestCase
             ['key' => 'economy.accountChart', 'value' => 'default'],
             ['key' => 'economy.fiscalYearStartMonth', 'value' => 1],
             ['key' => 'economy.vatAgenda', 'value' => true],
-        ], $records[0]->data['rows']);
+        ], $records[0]->data['rows'], 'id řad dokladů se nepřenáší (D42)');
+        $this->assertFalse(SetupExporter::isPortableSetting('economy.assets.accountingSeries'));
     }
 
     public function testNoActiveTablesYieldsNothing(): void

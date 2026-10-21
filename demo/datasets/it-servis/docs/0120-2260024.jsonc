@@ -2,39 +2,41 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "FV-2026-2210",
+    "docNumber": "2026071247",
     "selfParty": "customer",
     "supplier": {
-        "name": "Velkoobchod Čip a Deska s.r.o.",
+        "name": "Energie Jiskra a.s.",
         "country": "cz",
-        "companyId": "88462137",
-        "taxId": "CZ88462137",
-        "vatId": "CZ88462137",
-        "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
+        "companyId": "31647090",
+        "taxId": "CZ31647090",
+        "vatId": "CZ31647090",
+        "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
         "address": {
-            "street": "Součástková",
-            "houseNumber": "560/14",
-            "city": "Hradec Králové",
-            "zip": "50002",
+            "street": "Elektrárenská",
+            "houseNumber": "1",
+            "city": "Ostrava",
+            "zip": "70200",
             "country": "cz"
         },
         "contact": {
-            "email": "objednavky@cip-deska.example",
-            "phone": "+420000770310",
-            "web": "www.cip-deska.example"
+            "email": "zakaznici@energie-jiskra.example",
+            "phone": "+420000610100",
+            "web": "www.energie-jiskra.example"
         },
         "bankAccount": {
-            "accountNumber": "1746290598/6210",
-            "iban": "CZ1962100000001746290598",
-            "bic": "BREXCZPP"
+            "accountNumber": "2190463856/0800",
+            "iban": "CZ2008000000002190463856",
+            "bic": "GIBACZPX"
         }
     },
     "dates": {
-        "issueDate": "2026-04-15",
-        "dueDate": "2026-04-25",
-        "accountingDate": "2026-04-15",
-        "taxPointDate": "2026-04-15",
-        "vatObligationDate": "2026-04-15"
+        "issueDate": "2026-04-12",
+        "dueDate": "2026-04-26",
+        "accountingDate": "2026-04-12",
+        "taxPointDate": "2026-03-31",
+        "vatObligationDate": "2026-03-31",
+        "periodFrom": "2026-03-01",
+        "periodTo": "2026-03-31"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -48,7 +50,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "20262210"
+        "paymentReference": "2026071247"
     },
     "rows": [
         {
@@ -56,166 +58,88 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
             },
-            "unit": "pcs",
-            "quantity": 2.0,
-            "unitPrice": 19900.0,
-            "totalPrice": 39800.0,
+            "unit": "mwh",
+            "quantity": 0.714,
+            "unitPrice": 3190.0,
+            "totalPrice": 2277.66,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 39800.0,
-                "vatAmount": 8358.0,
-                "vatTotal": 48158.0
+                "vatBase": 2277.66,
+                "vatAmount": 478.31,
+                "vatTotal": 2755.97
             },
-            "description": "Notebook 14\" business, 16 GB RAM"
+            "description": "Silová elektřina — produkt STANDARD"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
             },
-            "unit": "pcs",
-            "quantity": 2.0,
-            "unitPrice": 6400.0,
-            "totalPrice": 12800.0,
+            "unit": "mwh",
+            "quantity": 0.714,
+            "unitPrice": 2015.0,
+            "totalPrice": 1438.71,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 12800.0,
-                "vatAmount": 2688.0,
-                "vatTotal": 15488.0
+                "vatBase": 1438.71,
+                "vatAmount": 302.13,
+                "vatTotal": 1740.84
             },
-            "description": "Síťový switch 24 portů, PoE",
-            "dimensions": {
-                "workOrder": "P0001"
-            }
+            "description": "Distribuce elektřiny vč. systémových služeb"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 3,
             "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
-            },
-            "unit": "pcs",
-            "quantity": 2.0,
-            "unitPrice": 5900.0,
-            "totalPrice": 11800.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 11800.0,
-                "vatAmount": 2478.0,
-                "vatTotal": 14278.0
-            },
-            "description": "Monitor 27\" IPS"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 4,
-            "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
-            },
-            "unit": "pcs",
-            "quantity": 4.0,
-            "unitPrice": 2590.0,
-            "totalPrice": 10360.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 10360.0,
-                "vatAmount": 2175.6,
-                "vatTotal": 12535.6
-            },
-            "description": "Přístupový bod Wi-Fi 6"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 5,
-            "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
-            },
-            "unit": "pcs",
-            "quantity": 12.0,
-            "unitPrice": 149.0,
-            "totalPrice": 1788.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 1788.0,
-                "vatAmount": 375.48,
-                "vatTotal": 2163.48
-            },
-            "description": "Kabel HDMI 2.1, 2 m"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 6,
-            "item": {
-                "ourCode": "501100",
-                "name": "Spotřeba materiálu"
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 4490.0,
-            "totalPrice": 4490.0,
+            "unitPrice": 168.0,
+            "totalPrice": 168.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 4490.0,
-                "vatAmount": 942.9,
-                "vatTotal": 5432.9
+                "vatBase": 168.0,
+                "vatAmount": 35.28,
+                "vatTotal": 203.28
             },
-            "description": "Router Wi-Fi 6, 4× GbE",
-            "dimensions": {
-                "workOrder": "P0001"
-            }
+            "description": "Stálý plat za jistič 3×25 A"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 81038.0,
-            "tax": 17017.98,
-            "total": 98055.98
+            "base": 3884.37,
+            "tax": 815.72,
+            "total": 4700.09
         }
     ],
     "totals": {
-        "totalBase": 81038.0,
-        "totalVat": 17017.98,
-        "totalAmount": 98055.98,
-        "totalRounding": 0.0
+        "totalBase": 3884.37,
+        "totalVat": 815.72,
+        "totalAmount": 4700.0,
+        "totalRounding": -0.09
     },
     "applyOptions": {
         "targetDocState": 40,

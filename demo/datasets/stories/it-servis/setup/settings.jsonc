@@ -1,8 +1,11 @@
 // Nastavení zdroje dat sady (jen economy.* a app.*; aplikuje se před resetem).
-// Řádky kopírují dump čerstvého zdroje dat po seedu: řady pro zaúčtování
-// odpisů a podání DPH jsou id výchozích řad, které `ds-upgrade` zakládá
-// vždy ve stejném pořadí (5 = interní doklad, 6 = Majetek). Majetek (#131
-// fáze 2c): pole Majetek na dokladech a měsíční účetní odpisy.
+// Řádky kopírují dump čerstvého zdroje dat po seedu. Řady pro zaúčtování
+// odpisů a podání DPH (`economy.assets.accountingSeries`,
+// `economy.vat.filingAccountingSeries`) sada nenese — jsou to id řad, které
+// na jiném zdroji dat neplatí; po resetu je nastaví provisionery
+// `ds-upgrade` (#131 fáze 2c, D42). Majetek: pole Majetek na dokladech
+// a měsíční účetní odpisy. Pořadí řádků = řazení dumpu (`ORDER BY key`
+// v utf8mb4_czech_ci, bez ohledu na velikost písmen).
 {
 	"format": "shpd.dataset.setup.v1",
 	"table": "settings",
@@ -11,10 +14,8 @@
 		{ "key": "economy.accounting.dimension.asset", "value": "yes" },
 		{ "key": "economy.accounting.dimension.workOrder", "value": "yes" },
 		{ "key": "economy.assets.accPeriodicity", "value": "month" },
-		{ "key": "economy.assets.accountingSeries", "value": "6" },
 		{ "key": "economy.fiscalYearStartMonth", "value": 1 },
 		{ "key": "economy.homeCurrency", "value": "czk" },
-		{ "key": "economy.vat.filingAccountingSeries", "value": "5" },
 		{ "key": "economy.vatAgenda", "value": true },
 	],
 }

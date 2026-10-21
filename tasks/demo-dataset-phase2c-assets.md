@@ -1,6 +1,6 @@
 # Demo sada „IT servis“ — fáze 2c: majetek
 
-**Stav:** naplánováno — #131 D20, D38–D41
+**Stav:** hotovo — 2026-10-21, #131 D20, D38–D42
 
 ## Kontext / Cíl
 
@@ -230,21 +230,110 @@ Ověřovací zdroj dat (bez zaúčtování) nech Anně a zapiš prefix.
 
 ## Hotovo když
 
-- [ ] číselníky majetku v `setup/`, FK přes přirozený klíč, testy
-- [ ] sekce `assets/`, dump → seed → dump shodný, původ `manual`
+- [x] číselníky majetku v `setup/`, FK přes přirozený klíč, testy
+- [x] sekce `assets/`, dump → seed → dump shodný, původ `manual`
       zachovaný, zaúčtování a systémové odpisy dump vynechá s varováním
-- [ ] dimenze majetku na dokladech přežije round-trip
-- [ ] karta serveru zařazená, nic nezaúčtované, upozornění majetku 0,
+- [x] dimenze majetku na dokladech přežije round-trip
+- [x] karta serveru zařazená, nic nezaúčtované, upozornění majetku 0,
       kontrola evidence × deník bez nesouladu
-- [ ] Odpisy za období na ověřovacím zdroji nabídnou měsíční odpisy;
+- [x] Odpisy za období na ověřovacím zdroji nabídnou měsíční odpisy;
       zaúčtování prvního období na druhém zdroji dat bez nesouladu
-- [ ] souhrn ekonomiky splňuje D25, test cílů projde
-- [ ] druhý běh `build.py` nic nezmění; unit testy generátoru a dotčené
+- [x] souhrn ekonomiky splňuje D25, test cílů projde
+- [x] druhý běh `build.py` nic nezmění; unit testy generátoru a dotčené
       PHPUnit testy projdou
-- [ ] ověření podle oddílu Ověření, výsledky v Odchylkách
-- [ ] dokumentace aktualizovaná
-- [ ] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
+- [x] ověření podle oddílu Ověření, výsledky v Odchylkách
+- [x] dokumentace aktualizovaná
+- [x] `**Stav:**` aktualizovaný, `python3 scripts/tasks-index.py --check`
       a `python3 scripts/check-sensitive.py` projdou
+
+## Odchylky a zjištění při implementaci (2026-10-21)
+
+- **D42 — id řad dokladů v nastavení sada nenese.** Ověření zaúčtování
+  odhalilo, že `economy.assets.accountingSeries` (a stejně
+  `economy.vat.filingAccountingSeries`) z provozu před resetem přežije
+  reset (`core_system_settings` je `keepOnReset`): `AssetPostingSeriesProvisioner`
+  vyplněné nastavení nepřepisuje, řadu „Majetek“ po resetu nezaloží
+  a hodnota `6` ukáže na pokladní řadu, kterou při seedu založí applier —
+  zaúčtování majetku skončí `series_missing`. Platilo to i pro sady fáze
+  2a / 2b (nastavení `"6"` bylo v `setup/settings.jsonc` s chybným
+  komentářem „6 = Majetek“). Oprava v datové vrstvě: `SetupExporter`
+  obě nastavení nevypisuje (`SETTINGS_EXCLUDED`), `SetupSeeder` je ve
+  starší sadě přeskočí a před resetem je smaže, provisionery `ds-upgrade`
+  je po resetu nastaví znovu (řada Majetek id 6, DPH řada 5). Samotný
+  `ds-reset` bez `dataset-seed` má tutéž vlastnost dál — zdroj dat, kde
+  `ds-upgrade` běžel před resetem, skončí bez řady „Majetek“; kandidát na
+  opravu v jádru (`DsResetCommand` nebo provisioner), rozhodnout v #131.
+- **Hosting s kartou od první faktury po datu zařazení** (březen), ne od
+  měsíce zařazení: únorová faktura serverovny má datum 3. 2., před
+  zařazením 14. 2. Blok `costs {supplier}` u karty; `story.py` to tak
+  validuje i dokumentuje.
+- **Rozhodnutí implementace (plán 2026-10-21):** server 150 000 Kč bez
+  DPH, faktura velkoobchodu `cipdeska` v měsíci −8 (10. 2. 2026,
+  splatnost 10 dní, úhrada 19. 2.), na faktuře i montážní sada 1 290 Kč
+  jako běžný nákup; zařazení 4 dny po dodání (14. 2.); nákup je
+  samostatná faktura v měsíci, kdy dodavatel podle pravidla nefakturuje
+  (loader to vynucuje), číslo dodavatele FV-2026-2210, běžné faktury se
+  posunuly o jedna. Události původu `import` dump přenáší a seeder je
+  ukládá markerem `_import` (preferovaná varianta D38). Seeder nepoužívá
+  `AssetImportApplier` ani ho nemění — mapy sloupců obálky se liší
+  (původ, počáteční stav), chronologii řadí přes `AssetEvent::kindOrder`.
+  Mimo nové třídy jen dvě malé změny: `DocumentExporter` vynechá doklad
+  s řádky `asset.*` (jeden dotaz na začátku, varování per doklad)
+  a `FiscalYearsSeeder` bere i data událostí majetku (`outsideFiscalYear`
+  při posunu kotvy).
+- **Řazení nastavení v dumpu** je `ORDER BY key` v `utf8mb4_czech_ci`
+  (bez ohledu na velikost písmen) — `economy.assets.accPeriodicity` by
+  bylo až za `accountingSeries`; po D42 už v sadě jen jedno z nich.
+- **Účetní skupiny v `setup/`** nese sada všech sedm, jak je založí
+  provisioner (dump by je jinak vrátil navíc); typ „Výpočetní technika“
+  má výchozí skupinu `022`.
+- **Obálka** `shpd.dataset.asset.v1` oproti importnímu formátu: `type`
+  názvem, `accountingGroup` kódem, `owner` štíhlá identita, stav
+  `draft | confirmed | archived` (V opravě jako V pořádku; dlouhodobá
+  vyřazená karta se ukládá V pořádku a do archivu ji přesune až
+  potvrzené vyřazení), druhy událostí včetně `opening`, povinný `origin`
+  (`manual | import`), booleany jen `true`; karta bez inventárního čísla
+  se nepřenáší (koncept bez identity), systémové odpisy a nepotvrzené
+  události vynechá dump s varováním per karta, `doc_head` nikdy. Karta,
+  která už má události (`--no-reset`), je nedostane znovu (`skipped`).
+- **Ekonomika (D25 dál platí):** výnosy 2 089 121, náklady 1 836 635
+  (dodavatelé 696 610 = +1 290 za montážní sadu; server 150 000 na 042
+  mimo náklady), zisk +252 486 = **12,1 %**, po zaúčtování účetních
+  odpisů v okně (8 × 3 000 = 24 000) +228 486 = 10,9 %; BU1 300 000 →
+  minimum 191 134 (19. 2. po úhradě serveru 183 060,90) → 397 807;
+  plán: daňový odpis 2026 30 000, účetně 3 000 měsíčně březen–prosinec
+  2026, od 2027 5 000 měsíčně (port ověřen i nad kotvou 2027-01-20:
+  zařazení 14. 5., 4 286 / 4 285 Kč červen–prosinec = 30 000).
+- **Ověření** (čerstvé volné zdroje dat, 2026-10-21): `twul-4…` (ponechán
+  Anně) — seed bez nových varování (jen účetní položky z nabídky a dvě
+  chybějící IČO zahraničních firem), `diff -r` jen `manifest.created`
+  (i po opravě D42); setup 13, assets 1, assetEvents 1, docs 292,
+  mail 63; řada „Majetek“ id 6 založená provisionerem; karta MA0001
+  V pořádku, zařazení 14. 2. 2026 potvrzené s původem `manual` bez
+  dokladu, datum pořízení karty dosazené ze zařazení; sekce Pořízení:
+  jeden řádek faktury 2260011 (FV-2026-2210) 150 000 na 042100 =
+  částka zařazení; 4 upozornění majetku 0 nálezů (`alerts-run --all`);
+  report Kontrola evidence × deník 2026: stav `warnings` jen
+  „Zařazení z 14. 2. 2026 (150 000,00) není zaúčtované“, 042100
+  evidence 150 000 = deník 150 000; Odpisy za období (účetní okruh,
+  měsíc): únor nic, březen MA0001 3 000, říjen vyloučen
+  `earlierPeriodMissing`; náhled zaúčtování: únor `canPost` zařazení
+  MD 022100 / D 042100 150 000, březen vyloučen `earlierPeriodUnposted`;
+  daňový okruh 2026: 30 000; tab Náklady a výnosy: 8 řádků 518206
+  hosting = 39 200; deník 1 364 řádků, 9 s kartou (042100 150 000,
+  518206 39 200), hlavičky s kartou 0, 0 chybových dokladů, 221100 =
+  397 807,21 = closing BU1; Výsledovka 2026: náklady 1 836 636,56,
+  výnosy 2 089 127,49 → +252 490,93 (haléřová zaokrouhlení prodejek jako
+  dřív); saldokonto ledger 485 řádků. **Druhý zdroj `68lo-f…`:**
+  `AssetPostingService::post` únor → doklad `6026MA0001` (řada Majetek)
+  s řádky `asset.activation` 022100 / 042100, zařazení s `doc_head`;
+  Kontrola evidence × deník 2026 `ok` bez zpráv (022100 150 000 =
+  150 000, 042100 0 = 0); `dataset-dump` doklad vynechal s varováním
+  „docs 6026MA0001: doklad zaúčtování majetku (řádky asset.*) se
+  nepřenáší“ a dump je dál shodný se sadou kromě `manifest.created`;
+  zdroj smazán `ds-delete`. Ruční průchod v aplikaci (karta, Pořízení,
+  štítek Nezaúčtováno, dialog Odpisy za období, tab Náklady a výnosy) —
+  Anna na `twul-4…`.
 
 ## Rozhodnutí k designu (potvrzená, #131)
 
@@ -259,3 +348,7 @@ Ověřovací zdroj dat (bez zaúčtování) nech Anně a zapiš prefix.
 - ✓ **D41** — server od velkoobchodu kolem měsíce −8, `cz-1`
   rovnoměrně, účetně jako daňově, měsíční účetní odpisy, hosting
   s dimenzí karty
+- ✓ **D42** — nastavení s id řad dokladů (`economy.assets.accountingSeries`,
+  `economy.vat.filingAccountingSeries`) sada nenese; seed je před resetem
+  smaže a provisionery je po resetu nastaví (rozhodnuto při
+  implementaci, zapsat do #131)

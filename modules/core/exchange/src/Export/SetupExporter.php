@@ -43,6 +43,15 @@ final class SetupExporter
     public const SETTINGS_PREFIXES = ['economy.'];
     // app.icon / app.companyLogo odkazují na soubory v branding/ — nepřenosné.
     public const SETTINGS_KEYS = ['app.name', 'app.shortName', 'app.theme', 'app.shell'];
+    /**
+     * Nastavení s id číselné řady dokladů (#131 fáze 2c, D42): id na jiném
+     * zdroji dat neplatí a hodnota přežije reset (`keepOnReset`), takže by
+     * `AssetPostingSeriesProvisioner` řadu „Majetek“ nezaložil a nastavení by
+     * mířilo na řadu vzniklou při seedu (pokladna). Sada je nenese; po resetu
+     * je nastaví provisionery `ds-upgrade` (řada Majetek, zafixování řady pro
+     * zaúčtování přiznání DPH). Seed je v sadě ignoruje.
+     */
+    public const SETTINGS_EXCLUDED = ['economy.assets.accountingSeries', 'economy.vat.filingAccountingSeries'];
 
     /**
      * `where` = pevný filtr řádků (sloupec → int), jen pro tabulky, z nichž
@@ -225,6 +234,9 @@ final class SetupExporter
 
     public static function isPortableSetting(string $key): bool
     {
+        if (in_array($key, self::SETTINGS_EXCLUDED, true)) {
+            return false;
+        }
         if (in_array($key, self::SETTINGS_KEYS, true)) {
             return true;
         }

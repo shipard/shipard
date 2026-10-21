@@ -1,0 +1,390 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-NOORDW-2610",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Invoice INV-2026-18416",
+    "senderEmail": "billing@noordwolk-backup.example",
+    "senderName": "Noordwolk Backup B.V.",
+    "senderPerson": {
+        "name": "Noordwolk Backup B.V.",
+        "taxId": "NL854721039B01",
+        "vatId": "NL854721039B01"
+    },
+    "partnerPerson": {
+        "name": "Noordwolk Backup B.V.",
+        "taxId": "NL854721039B01",
+        "vatId": "NL854721039B01"
+    },
+    "partnerName": "Noordwolk Backup B.V.",
+    "receivedAt": "2026-10-06T08:26:00",
+    "bodyPlain": "Hello,\n\nplease find attached invoice INV-2026-18416.\n\nNoordwolk Backup B.V.",
+    "sourceType": 2,
+    "docState": 40,
+    "analysisState": 30,
+    "aiTitle": "Faktura INV-2026-18416 — Noordwolk Backup B.V., 188,00 EUR",
+    "created": "2026-10-06T08:26:00",
+    "target": {
+        "table": "docs_core_heads",
+        "docNumber": "2260058"
+    },
+    "attachments": [
+        {
+            "file": "INV-2026-18416.pdf",
+            "name": "INV-2026-18416.pdf",
+            "mimeType": "application/pdf",
+            "size": 33607,
+            "sha256": "4d60e13736f1be78ff7669e8dd5996ddb92f6693a849fae2ba135e13897ca6a6",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-10-06T08:27:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.software",
+            "resolution": 40,
+            "resolvedAt": "2026-10-06T09:26:00",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-10-06T08:27:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura INV-2026-18416 — Noordwolk Backup B.V., 188,00 EUR"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-10-06T08:27:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "demo"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "INV-2026-18416",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Noordwolk Backup B.V.",
+                            "country": "nl",
+                            "companyId": null,
+                            "taxId": "NL854721039B01",
+                            "vatId": "NL854721039B01",
+                            "courtRegistration": "KvK 87654321",
+                            "address": {
+                                "street": "Datahaven",
+                                "houseNumber": "42",
+                                "city": "Rotterdam",
+                                "zip": "3011 AB",
+                                "country": "nl"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "billing@noordwolk-backup.example",
+                                "phone": "+310002004410",
+                                "web": "www.noordwolk-backup.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": "NL69NWBK0481570693",
+                                "bic": "NWBKNL2AXXX"
+                            }
+                        },
+                        "customer": {
+                            "name": "Zelený Terminál s.r.o.",
+                            "country": "cz",
+                            "companyId": "61204579",
+                            "taxId": "CZ61204579",
+                            "vatId": "CZ61204579",
+                            "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Serverová",
+                                "houseNumber": "1024/8",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@zeleny-terminal.example",
+                                "phone": "+420000230190",
+                                "web": "www.zeleny-terminal.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-10-05",
+                            "dueDate": "2026-10-19",
+                            "taxPointDate": "2026-10-05",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "EUR",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "intracom",
+                            "reverseCharge": true
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "202618416",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Managed cloud backup, 2 TB — 10/2026",
+                                    "description": null
+                                },
+                                "unit": "pcs",
+                                "quantity": 1,
+                                "unitPrice": 149,
+                                "totalPrice": 149,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Uptime monitoring, 25 hosts — 10/2026",
+                                    "description": null
+                                },
+                                "unit": "pcs",
+                                "quantity": 1,
+                                "unitPrice": 39,
+                                "totalPrice": 39,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 0,
+                                "base": 188,
+                                "tax": 0,
+                                "total": 188
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 188,
+                            "totalVat": 0,
+                            "totalAmount": 188,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "INV-2026-18416.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-10-06T08:27:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "demo"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "INV-2026-18416",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Noordwolk Backup B.V.",
+                    "country": "nl",
+                    "companyId": null,
+                    "taxId": "NL854721039B01",
+                    "vatId": "NL854721039B01",
+                    "courtRegistration": "KvK 87654321",
+                    "address": {
+                        "street": "Datahaven",
+                        "houseNumber": "42",
+                        "city": "Rotterdam",
+                        "zip": "3011 AB",
+                        "country": "nl"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "billing@noordwolk-backup.example",
+                        "phone": "+310002004410",
+                        "web": "www.noordwolk-backup.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": "NL69NWBK0481570693",
+                        "bic": "NWBKNL2AXXX"
+                    }
+                },
+                "customer": {
+                    "name": "Zelený Terminál s.r.o.",
+                    "country": "cz",
+                    "companyId": "61204579",
+                    "taxId": "CZ61204579",
+                    "vatId": "CZ61204579",
+                    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Serverová",
+                        "houseNumber": "1024/8",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@zeleny-terminal.example",
+                        "phone": "+420000230190",
+                        "web": "www.zeleny-terminal.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-10-05",
+                    "dueDate": "2026-10-19",
+                    "taxPointDate": "2026-10-05",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "EUR",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "intracom",
+                    "reverseCharge": true
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "202618416",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Managed cloud backup, 2 TB — 10/2026",
+                            "description": null
+                        },
+                        "unit": "pcs",
+                        "quantity": 1,
+                        "unitPrice": 149,
+                        "totalPrice": 149,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Uptime monitoring, 25 hosts — 10/2026",
+                            "description": null
+                        },
+                        "unit": "pcs",
+                        "quantity": 1,
+                        "unitPrice": 39,
+                        "totalPrice": 39,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 0,
+                        "base": 188,
+                        "tax": 0,
+                        "total": 188
+                    }
+                ],
+                "totals": {
+                    "totalBase": 188,
+                    "totalVat": 0,
+                    "totalAmount": 188,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "INV-2026-18416.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.software",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

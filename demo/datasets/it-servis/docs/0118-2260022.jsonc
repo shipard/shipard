@@ -2,39 +2,39 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "202620418",
+    "docNumber": "2026448204",
     "selfParty": "customer",
     "supplier": {
-        "name": "Licenční dům Klíček s.r.o.",
+        "name": "Telekom Vlnka a.s.",
         "country": "cz",
-        "companyId": "48360210",
-        "taxId": "CZ48360210",
-        "vatId": "CZ48360210",
-        "courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
+        "companyId": "95278141",
+        "taxId": "CZ95278141",
+        "vatId": "CZ95278141",
+        "courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
         "address": {
-            "street": "Softwarová",
-            "houseNumber": "9",
-            "city": "Brno",
-            "zip": "63900",
+            "street": "Anténní",
+            "houseNumber": "400/22",
+            "city": "Praha 10",
+            "zip": "10000",
             "country": "cz"
         },
         "contact": {
-            "email": "obchod@licencni-dum-klicek.example",
-            "phone": "+420000210560",
-            "web": "www.licencni-dum-klicek.example"
+            "email": "vyuctovani@telekom-vlnka.example",
+            "phone": "+420000404040",
+            "web": "www.telekom-vlnka.example"
         },
         "bankAccount": {
-            "accountNumber": "1382659074/0100",
-            "iban": "CZ0801000000001382659074",
-            "bic": "KOMBCZPP"
+            "accountNumber": "2874190350/0300",
+            "iban": "CZ0303000000002874190350",
+            "bic": "CEKOCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-04-08",
-        "dueDate": "2026-04-29",
-        "accountingDate": "2026-04-08",
-        "taxPointDate": "2026-04-08",
-        "vatObligationDate": "2026-04-08"
+        "issueDate": "2026-04-06",
+        "dueDate": "2026-04-20",
+        "accountingDate": "2026-04-06",
+        "taxPointDate": "2026-04-06",
+        "vatObligationDate": "2026-04-06"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -48,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "202620418"
+        "paymentReference": "2026448204"
     },
     "rows": [
         {
@@ -56,39 +56,63 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518206",
-                "name": "Software a cloudové služby"
+                "ourCode": "518201",
+                "name": "Telefonní poplatky"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 11700.0,
-            "totalPrice": 11700.0,
+            "unitPrice": 1890.0,
+            "totalPrice": 1890.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 11700.0,
-                "vatAmount": 2457.0,
-                "vatTotal": 14157.0
+                "vatBase": 1890.0,
+                "vatAmount": 396.9,
+                "vatTotal": 2286.9
             },
-            "description": "Licence kancelářského balíku, 25 uživatelů — Q2/2026"
+            "description": "Hlasové služby a mobilní tarify — 04/2026"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "518202",
+                "name": "Internetové služby"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 990.0,
+            "totalPrice": 990.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 990.0,
+                "vatAmount": 207.9,
+                "vatTotal": 1197.9
+            },
+            "description": "Internetové připojení 500/50 Mb/s — 04/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 11700.0,
-            "tax": 2457.0,
-            "total": 14157.0
+            "base": 2880.0,
+            "tax": 604.8,
+            "total": 3484.8
         }
     ],
     "totals": {
-        "totalBase": 11700.0,
-        "totalVat": 2457.0,
-        "totalAmount": 14157.0,
+        "totalBase": 2880.0,
+        "totalVat": 604.8,
+        "totalAmount": 3484.8,
         "totalRounding": 0.0
     },
     "applyOptions": {

@@ -2,41 +2,39 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "2026071246",
+    "docNumber": "2026448203",
     "selfParty": "customer",
     "supplier": {
-        "name": "Energie Jiskra a.s.",
+        "name": "Telekom Vlnka a.s.",
         "country": "cz",
-        "companyId": "31647090",
-        "taxId": "CZ31647090",
-        "vatId": "CZ31647090",
-        "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
+        "companyId": "95278141",
+        "taxId": "CZ95278141",
+        "vatId": "CZ95278141",
+        "courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
         "address": {
-            "street": "Elektrárenská",
-            "houseNumber": "1",
-            "city": "Ostrava",
-            "zip": "70200",
+            "street": "Anténní",
+            "houseNumber": "400/22",
+            "city": "Praha 10",
+            "zip": "10000",
             "country": "cz"
         },
         "contact": {
-            "email": "zakaznici@energie-jiskra.example",
-            "phone": "+420000610100",
-            "web": "www.energie-jiskra.example"
+            "email": "vyuctovani@telekom-vlnka.example",
+            "phone": "+420000404040",
+            "web": "www.telekom-vlnka.example"
         },
         "bankAccount": {
-            "accountNumber": "2190463856/0800",
-            "iban": "CZ2008000000002190463856",
-            "bic": "GIBACZPX"
+            "accountNumber": "2874190350/0300",
+            "iban": "CZ0303000000002874190350",
+            "bic": "CEKOCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-03-12",
-        "dueDate": "2026-03-26",
-        "accountingDate": "2026-03-12",
-        "taxPointDate": "2026-02-28",
-        "vatObligationDate": "2026-02-28",
-        "periodFrom": "2026-02-01",
-        "periodTo": "2026-02-28"
+        "issueDate": "2026-03-06",
+        "dueDate": "2026-03-20",
+        "accountingDate": "2026-03-06",
+        "taxPointDate": "2026-03-06",
+        "vatObligationDate": "2026-03-06"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -50,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "2026071246"
+        "paymentReference": "2026448203"
     },
     "rows": [
         {
@@ -58,88 +56,64 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "502100",
-                "name": "Spotřeba energie (elektřina)"
+                "ourCode": "518201",
+                "name": "Telefonní poplatky"
             },
-            "unit": "mwh",
-            "quantity": 0.721,
-            "unitPrice": 3190.0,
-            "totalPrice": 2299.99,
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 1890.0,
+            "totalPrice": 1890.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 2299.99,
-                "vatAmount": 483.0,
-                "vatTotal": 2782.99
+                "vatBase": 1890.0,
+                "vatAmount": 396.9,
+                "vatTotal": 2286.9
             },
-            "description": "Silová elektřina — produkt STANDARD"
+            "description": "Hlasové služby a mobilní tarify — 03/2026"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "502100",
-                "name": "Spotřeba energie (elektřina)"
-            },
-            "unit": "mwh",
-            "quantity": 0.721,
-            "unitPrice": 2015.0,
-            "totalPrice": 1452.82,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-110",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 1452.82,
-                "vatAmount": 305.09,
-                "vatTotal": 1757.91
-            },
-            "description": "Distribuce elektřiny vč. systémových služeb"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 3,
-            "item": {
-                "ourCode": "502100",
-                "name": "Spotřeba energie (elektřina)"
+                "ourCode": "518202",
+                "name": "Internetové služby"
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 168.0,
-            "totalPrice": 168.0,
+            "unitPrice": 990.0,
+            "totalPrice": 990.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 168.0,
-                "vatAmount": 35.28,
-                "vatTotal": 203.28
+                "vatBase": 990.0,
+                "vatAmount": 207.9,
+                "vatTotal": 1197.9
             },
-            "description": "Stálý plat za jistič 3×25 A"
+            "description": "Internetové připojení 500/50 Mb/s — 03/2026"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 3920.81,
-            "tax": 823.37,
-            "total": 4744.18
+            "base": 2880.0,
+            "tax": 604.8,
+            "total": 3484.8
         }
     ],
     "totals": {
-        "totalBase": 3920.81,
-        "totalVat": 823.37,
-        "totalAmount": 4744.0,
-        "totalRounding": -0.18
+        "totalBase": 2880.0,
+        "totalVat": 604.8,
+        "totalAmount": 3484.8,
+        "totalRounding": 0.0
     },
     "applyOptions": {
         "targetDocState": 40,

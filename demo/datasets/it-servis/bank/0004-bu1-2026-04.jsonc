@@ -6,8 +6,8 @@
         "externalId": "BU1-2026-04",
         "periodStart": "2026-04-01",
         "periodEnd": "2026-04-30",
-        "openingBalance": 534099.1,
-        "closingBalance": 441234.32,
+        "openingBalance": 351038.2,
+        "closingBalance": 258173.42,
         "currency": "CZK"
     },
     "transactions": [
@@ -153,7 +153,7 @@
             "dateTransaction": "2026-04-24",
             "counterpartyAccount": "1746290598/6210",
             "counterpartyName": "Velkoobchod Čip a Deska s.r.o.",
-            "paymentReference": "20262210"
+            "paymentReference": "20262211"
         },
         {
             "externalId": "BU1-202604-019",

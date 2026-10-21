@@ -7,7 +7,7 @@
         "periodStart": "2026-02-01",
         "periodEnd": "2026-02-28",
         "openingBalance": 377960.7,
-        "closingBalance": 410776.9,
+        "closingBalance": 227716.0,
         "currency": "CZK"
     },
     "transactions": [
@@ -117,6 +117,14 @@
         },
         {
             "externalId": "BU1-202602-014",
+            "amount": -183060.9,
+            "dateTransaction": "2026-02-19",
+            "counterpartyAccount": "1746290598/6210",
+            "counterpartyName": "Velkoobchod Čip a Deska s.r.o.",
+            "paymentReference": "20262210"
+        },
+        {
+            "externalId": "BU1-202602-015",
             "amount": 30250.0,
             "dateTransaction": "2026-02-20",
             "counterpartyAccount": "1572946306/0600",
@@ -124,7 +132,7 @@
             "paymentReference": "1260019"
         },
         {
-            "externalId": "BU1-202602-015",
+            "externalId": "BU1-202602-016",
             "amount": -41216.0,
             "dateTransaction": "2026-02-20",
             "counterpartyAccount": "1000000021/0800",
@@ -132,7 +140,7 @@
             "message": "Pojistné 01/2026"
         },
         {
-            "externalId": "BU1-202602-016",
+            "externalId": "BU1-202602-017",
             "amount": -10984.0,
             "dateTransaction": "2026-02-20",
             "counterpartyAccount": "1000000048/0800",
@@ -140,7 +148,7 @@
             "message": "Záloha na daň 01/2026"
         },
         {
-            "externalId": "BU1-202602-017",
+            "externalId": "BU1-202602-018",
             "amount": 30096.0,
             "dateTransaction": "2026-02-25",
             "counterpartyAccount": "3178429617/0100",
@@ -149,7 +157,7 @@
             "operation": "transfer.in"
         },
         {
-            "externalId": "BU1-202602-018",
+            "externalId": "BU1-202602-019",
             "amount": 6655.0,
             "dateTransaction": "2026-02-27",
             "counterpartyAccount": "1908274639/0800",
@@ -157,7 +165,7 @@
             "paymentReference": "1260016"
         },
         {
-            "externalId": "BU1-202602-019",
+            "externalId": "BU1-202602-020",
             "amount": -169.0,
             "dateTransaction": "2026-02-28",
             "message": "Poplatek za vedení účtu",

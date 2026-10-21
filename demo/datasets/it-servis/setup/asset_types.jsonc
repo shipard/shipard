@@ -1,0 +1,16 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "asset_types",
+    "rows": [
+        {
+            "name": "Výpočetní technika",
+            "short_name": null,
+            "type_group": "Hmotný majetek",
+            "note": null,
+            "sort_order": 0,
+            "default_category": "tangible",
+            "default_accounting_group": "022",
+            "docState": 40
+        }
+    ]
+}

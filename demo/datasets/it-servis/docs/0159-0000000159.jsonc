@@ -1,0 +1,118 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Galvanovna Pokorný a syn s.r.o.",
+        "country": "cz",
+        "companyId": "18493068",
+        "taxId": "CZ18493068",
+        "vatId": "CZ18493068",
+        "address": {
+            "street": "Pokovovací",
+            "houseNumber": "3301/2",
+            "city": "Vyškov",
+            "zip": "68201",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "uctarna@galvanovna-pokorny.example",
+            "phone": "+420000348120",
+            "web": "www.galvanovna-pokorny.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-10-14",
+        "dueDate": "2026-10-28",
+        "accountingDate": "2026-10-14",
+        "taxPointDate": "2026-10-14",
+        "vatObligationDate": "2026-10-14"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "NTB-14",
+                "name": "Notebook 14\" business, 16 GB RAM"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 24900.0,
+            "totalPrice": 24900.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 24900.0,
+                "vatAmount": 5229.0,
+                "vatTotal": 30129.0
+            },
+            "description": "Notebook 14\" business, 16 GB RAM"
+        },
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 3.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 3750.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 3750.0,
+                "vatAmount": 787.5,
+                "vatTotal": 4537.5
+            },
+            "description": "Servisní práce technika — 10/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 28650.0,
+            "tax": 6016.5,
+            "total": 34666.5
+        }
+    ],
+    "totals": {
+        "totalBase": 28650.0,
+        "totalVat": 6016.5,
+        "totalAmount": 34666.5,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 10,
+        "importNumber": {
+            "docNumber": "!0000000159",
+            "sequenceNumber": null
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

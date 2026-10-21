@@ -2,43 +2,45 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "INV-2026-18416",
+    "docNumber": "SM-2026-1192",
     "selfParty": "customer",
     "supplier": {
-        "name": "Noordwolk Backup B.V.",
-        "country": "nl",
-        "taxId": "NL854721039B01",
-        "vatId": "NL854721039B01",
-        "courtRegistration": "KvK 87654321",
+        "name": "Serverovna Mrak s.r.o.",
+        "country": "cz",
+        "companyId": "90157389",
+        "taxId": "CZ90157389",
+        "vatId": "CZ90157389",
+        "courtRegistration": "Spisová značka C 301144 vedená u Městského soudu v Praze",
         "address": {
-            "street": "Datahaven",
-            "houseNumber": "42",
-            "city": "Rotterdam",
-            "zip": "3011 AB",
-            "country": "nl"
+            "street": "Datová",
+            "houseNumber": "2048/1",
+            "city": "Praha 4",
+            "zip": "14000",
+            "country": "cz"
         },
         "contact": {
-            "email": "billing@noordwolk-backup.example",
-            "phone": "+310002004410",
-            "web": "www.noordwolk-backup.example"
+            "email": "fakturace@serverovna-mrak.example",
+            "phone": "+420000090330",
+            "web": "www.serverovna-mrak.example"
         },
         "bankAccount": {
-            "iban": "NL69NWBK0481570693",
-            "bic": "NWBKNL2AXXX"
+            "accountNumber": "2519046733/2010",
+            "iban": "CZ1620100000002519046733",
+            "bic": "FIOBCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-10-05",
-        "dueDate": "2026-10-19",
-        "accountingDate": "2026-10-05",
-        "taxPointDate": "2026-10-05",
-        "vatObligationDate": "2026-10-05"
+        "issueDate": "2026-10-03",
+        "dueDate": "2026-10-17",
+        "accountingDate": "2026-10-03",
+        "taxPointDate": "2026-10-03",
+        "vatObligationDate": "2026-10-03"
     },
-    "currency": "EUR",
-    "exchangeRate": 24.47,
+    "currency": "CZK",
+    "exchangeRate": 1.0,
     "vat": {
         "mode": "fromBase",
-        "place": "intracom",
+        "place": "domestic",
         "registrationCountry": "cz",
         "recapSource": "computed",
         "calcSource": "header",
@@ -46,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "202618416"
+        "paymentReference": "20261192"
     },
     "rows": [
         {
@@ -59,66 +61,37 @@
             },
             "unit": "pcs",
             "quantity": 1.0,
-            "unitPrice": 149.0,
-            "totalPrice": 149.0,
+            "unitPrice": 4900.0,
+            "totalPrice": 4900.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
-                "code": "cz-217",
+                "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 149.0,
-                "vatAmount": 31.29,
-                "vatTotal": 149.0
+                "vatBase": 4900.0,
+                "vatAmount": 1029.0,
+                "vatTotal": 5929.0
             },
-            "description": "Managed cloud backup, 2 TB — 10/2026"
-        },
-        {
-            "rowKind": "item",
-            "operation": "acc.entry",
-            "orderPos": 2,
-            "item": {
-                "ourCode": "518206",
-                "name": "Software a cloudové služby"
-            },
-            "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 39.0,
-            "totalPrice": 39.0,
-            "priceCalcMode": "fromUnitPrice",
-            "vat": {
-                "code": "cz-217",
-                "pct": 21.0
-            },
-            "computed": {
-                "vatBase": 39.0,
-                "vatAmount": 8.19,
-                "vatTotal": 39.0
-            },
-            "description": "Uptime monitoring, 25 hosts — 10/2026"
+            "description": "Hosting a správa serverů — 10/2026",
+            "dimensions": {
+                "asset": "MA0001"
+            }
         }
     ],
     "vatRecap": [
         {
-            "vatCode": "cz-217",
+            "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 188.0,
-            "tax": 39.48,
-            "total": 188.0
-        },
-        {
-            "vatCode": "cz-207",
-            "vatPct": 21.0,
-            "base": 188.0,
-            "tax": 39.48,
-            "total": 227.48,
-            "isReversePair": true
+            "base": 4900.0,
+            "tax": 1029.0,
+            "total": 5929.0
         }
     ],
     "totals": {
-        "totalBase": 188.0,
-        "totalVat": 0.0,
-        "totalAmount": 188.0,
+        "totalBase": 4900.0,
+        "totalVat": 1029.0,
+        "totalAmount": 5929.0,
         "totalRounding": 0.0
     },
     "applyOptions": {

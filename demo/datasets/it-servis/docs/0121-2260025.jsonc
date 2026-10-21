@@ -2,38 +2,39 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "NP-26-035",
+    "docNumber": "FV-2026-2211",
     "selfParty": "customer",
     "supplier": {
-        "name": "Správa nemovitostí Patro s.r.o.",
+        "name": "Velkoobchod Čip a Deska s.r.o.",
         "country": "cz",
-        "companyId": "81973501",
-        "taxId": "CZ81973501",
-        "vatId": "CZ81973501",
-        "courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
+        "companyId": "88462137",
+        "taxId": "CZ88462137",
+        "vatId": "CZ88462137",
+        "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
         "address": {
-            "street": "Schodišťová",
-            "houseNumber": "3",
-            "city": "Brno",
-            "zip": "60200",
+            "street": "Součástková",
+            "houseNumber": "560/14",
+            "city": "Hradec Králové",
+            "zip": "50002",
             "country": "cz"
         },
         "contact": {
-            "email": "najmy@patro-sprava.example",
-            "phone": "+420000112900"
+            "email": "objednavky@cip-deska.example",
+            "phone": "+420000770310",
+            "web": "www.cip-deska.example"
         },
         "bankAccount": {
-            "accountNumber": "1628735058/5500",
-            "iban": "CZ3355000000001628735058",
-            "bic": "RZBCCZPP"
+            "accountNumber": "1746290598/6210",
+            "iban": "CZ1962100000001746290598",
+            "bic": "BREXCZPP"
         }
     },
     "dates": {
-        "issueDate": "2026-05-01",
-        "dueDate": "2026-05-11",
-        "accountingDate": "2026-05-01",
-        "taxPointDate": "2026-05-01",
-        "vatObligationDate": "2026-05-01"
+        "issueDate": "2026-04-15",
+        "dueDate": "2026-04-25",
+        "accountingDate": "2026-04-15",
+        "taxPointDate": "2026-04-15",
+        "vatObligationDate": "2026-04-15"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -47,7 +48,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "26035"
+        "paymentReference": "20262211"
     },
     "rows": [
         {
@@ -55,63 +56,165 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 18000.0,
-            "totalPrice": 18000.0,
+            "quantity": 2.0,
+            "unitPrice": 19900.0,
+            "totalPrice": 39800.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 18000.0,
-                "vatAmount": 3780.0,
-                "vatTotal": 21780.0
+                "vatBase": 39800.0,
+                "vatAmount": 8358.0,
+                "vatTotal": 48158.0
             },
-            "description": "Nájem kanceláře Serverová 1024/8 — 05/2026"
+            "description": "Notebook 14\" business, 16 GB RAM"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 2400.0,
-            "totalPrice": 2400.0,
+            "quantity": 2.0,
+            "unitPrice": 6400.0,
+            "totalPrice": 12800.0,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 2400.0,
-                "vatAmount": 504.0,
-                "vatTotal": 2904.0
+                "vatBase": 12800.0,
+                "vatAmount": 2688.0,
+                "vatTotal": 15488.0
             },
-            "description": "Služby spojené s nájmem — 05/2026"
+            "description": "Síťový switch 24 portů, PoE",
+            "dimensions": {
+                "workOrder": "P0001"
+            }
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 3,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 5900.0,
+            "totalPrice": 11800.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 11800.0,
+                "vatAmount": 2478.0,
+                "vatTotal": 14278.0
+            },
+            "description": "Monitor 27\" IPS"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 4,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 4.0,
+            "unitPrice": 2590.0,
+            "totalPrice": 10360.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 10360.0,
+                "vatAmount": 2175.6,
+                "vatTotal": 12535.6
+            },
+            "description": "Přístupový bod Wi-Fi 6"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 5,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 12.0,
+            "unitPrice": 149.0,
+            "totalPrice": 1788.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 1788.0,
+                "vatAmount": 375.48,
+                "vatTotal": 2163.48
+            },
+            "description": "Kabel HDMI 2.1, 2 m"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 6,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 4490.0,
+            "totalPrice": 4490.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 4490.0,
+                "vatAmount": 942.9,
+                "vatTotal": 5432.9
+            },
+            "description": "Router Wi-Fi 6, 4× GbE",
+            "dimensions": {
+                "workOrder": "P0001"
+            }
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 20400.0,
-            "tax": 4284.0,
-            "total": 24684.0
+            "base": 81038.0,
+            "tax": 17017.98,
+            "total": 98055.98
         }
     ],
     "totals": {
-        "totalBase": 20400.0,
-        "totalVat": 4284.0,
-        "totalAmount": 24684.0,
+        "totalBase": 81038.0,
+        "totalVat": 17017.98,
+        "totalAmount": 98055.98,
         "totalRounding": 0.0
     },
     "applyOptions": {

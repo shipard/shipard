@@ -2,38 +2,41 @@
     "format": "shpd.docs.document",
     "formatVersion": "1.0",
     "docType": "invoiceReceived",
-    "docNumber": "NP-26-034",
+    "docNumber": "2026071246",
     "selfParty": "customer",
     "supplier": {
-        "name": "Správa nemovitostí Patro s.r.o.",
+        "name": "Energie Jiskra a.s.",
         "country": "cz",
-        "companyId": "81973501",
-        "taxId": "CZ81973501",
-        "vatId": "CZ81973501",
-        "courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
+        "companyId": "31647090",
+        "taxId": "CZ31647090",
+        "vatId": "CZ31647090",
+        "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
         "address": {
-            "street": "Schodišťová",
-            "houseNumber": "3",
-            "city": "Brno",
-            "zip": "60200",
+            "street": "Elektrárenská",
+            "houseNumber": "1",
+            "city": "Ostrava",
+            "zip": "70200",
             "country": "cz"
         },
         "contact": {
-            "email": "najmy@patro-sprava.example",
-            "phone": "+420000112900"
+            "email": "zakaznici@energie-jiskra.example",
+            "phone": "+420000610100",
+            "web": "www.energie-jiskra.example"
         },
         "bankAccount": {
-            "accountNumber": "1628735058/5500",
-            "iban": "CZ3355000000001628735058",
-            "bic": "RZBCCZPP"
+            "accountNumber": "2190463856/0800",
+            "iban": "CZ2008000000002190463856",
+            "bic": "GIBACZPX"
         }
     },
     "dates": {
-        "issueDate": "2026-04-01",
-        "dueDate": "2026-04-11",
-        "accountingDate": "2026-04-01",
-        "taxPointDate": "2026-04-01",
-        "vatObligationDate": "2026-04-01"
+        "issueDate": "2026-03-12",
+        "dueDate": "2026-03-26",
+        "accountingDate": "2026-03-12",
+        "taxPointDate": "2026-02-28",
+        "vatObligationDate": "2026-02-28",
+        "periodFrom": "2026-02-01",
+        "periodTo": "2026-02-28"
     },
     "currency": "CZK",
     "exchangeRate": 1.0,
@@ -47,7 +50,7 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "26034"
+        "paymentReference": "2026071246"
     },
     "rows": [
         {
@@ -55,64 +58,88 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
             },
-            "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 18000.0,
-            "totalPrice": 18000.0,
+            "unit": "mwh",
+            "quantity": 0.721,
+            "unitPrice": 3190.0,
+            "totalPrice": 2299.99,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 18000.0,
-                "vatAmount": 3780.0,
-                "vatTotal": 21780.0
+                "vatBase": 2299.99,
+                "vatAmount": 483.0,
+                "vatTotal": 2782.99
             },
-            "description": "Nájem kanceláře Serverová 1024/8 — 04/2026"
+            "description": "Silová elektřina — produkt STANDARD"
         },
         {
             "rowKind": "item",
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "518205",
-                "name": "Nájemné"
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
             },
-            "unit": "pcs",
-            "quantity": 1.0,
-            "unitPrice": 2400.0,
-            "totalPrice": 2400.0,
+            "unit": "mwh",
+            "quantity": 0.721,
+            "unitPrice": 2015.0,
+            "totalPrice": 1452.82,
             "priceCalcMode": "fromUnitPrice",
             "vat": {
                 "code": "cz-110",
                 "pct": 21.0
             },
             "computed": {
-                "vatBase": 2400.0,
-                "vatAmount": 504.0,
-                "vatTotal": 2904.0
+                "vatBase": 1452.82,
+                "vatAmount": 305.09,
+                "vatTotal": 1757.91
             },
-            "description": "Služby spojené s nájmem — 04/2026"
+            "description": "Distribuce elektřiny vč. systémových služeb"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 3,
+            "item": {
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 168.0,
+            "totalPrice": 168.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 168.0,
+                "vatAmount": 35.28,
+                "vatTotal": 203.28
+            },
+            "description": "Stálý plat za jistič 3×25 A"
         }
     ],
     "vatRecap": [
         {
             "vatCode": "cz-110",
             "vatPct": 21.0,
-            "base": 20400.0,
-            "tax": 4284.0,
-            "total": 24684.0
+            "base": 3920.81,
+            "tax": 823.37,
+            "total": 4744.18
         }
     ],
     "totals": {
-        "totalBase": 20400.0,
-        "totalVat": 4284.0,
-        "totalAmount": 24684.0,
-        "totalRounding": 0.0
+        "totalBase": 3920.81,
+        "totalVat": 823.37,
+        "totalAmount": 4744.0,
+        "totalRounding": -0.18
     },
     "applyOptions": {
         "targetDocState": 40,

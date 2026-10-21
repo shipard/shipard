@@ -1,0 +1,24 @@
+{
+    "format": "shpd.dataset.asset.v1",
+    "asset": {
+        "assetNumber": "MA0001",
+        "name": "Server 1U, 2× CPU, 64 GB RAM, 2× 960 GB SSD",
+        "type": "Výpočetní technika",
+        "category": "tangible",
+        "tracking": "single",
+        "accountingGroup": "022",
+        "taxMethod": "straight",
+        "taxRule": "cz-1",
+        "accMethod": "as_tax",
+        "state": "confirmed"
+    },
+    "events": [
+        {
+            "kind": "activation",
+            "scope": "both",
+            "date": "2026-02-14",
+            "amount": 150000.0,
+            "origin": "manual"
+        }
+    ]
+}
