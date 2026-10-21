@@ -19,8 +19,8 @@ class TestableWorkOrderImportVerifier extends WorkOrderImportVerifier
     public array $references = [];
     /** @var array<string, int> kód jednotky → id */
     public array $units = [];
-    /** @var list<string> */
-    public array $vatCodes = [];
+    /** @var list<string>|null kódy DPH; null = skutečná implementace nad konfigurací a DB */
+    public ?array $vatCodes = [];
     /** @var array<string, array<string, mixed>> číslo → zakázka */
     public array $workOrders = [];
     public ?int $fiscalYearId = 26;
@@ -55,7 +55,7 @@ class TestableWorkOrderImportVerifier extends WorkOrderImportVerifier
     protected function vatCodes(?string $docType): array
     {
         $this->vatCodeQueries[] = $docType;
-        return $this->vatCodes;
+        return $this->vatCodes ?? parent::vatCodes($docType);
     }
 
     protected function findWorkOrder(string $number): ?array

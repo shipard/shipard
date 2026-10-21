@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Economy\WorkOrders\Import;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportCheck;
 use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportVerifier;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
@@ -42,7 +43,10 @@ class WorkOrderImportVerifierTest extends TestCase
         8 => ['id' => 8, 'kind' => 18, 'type' => 'weird', 'reset_scope' => 'none', 'docState' => 40],
     ];
 
-    private function verifier(bool $withConfig = true): TestableWorkOrderImportVerifier
+    /**
+     * @param list<array{0: string, 1: mixed}> $extraCfg další cfgItemy (id, hodnota)
+     */
+    private function verifier(bool $withConfig = true, array $extraCfg = [], ?\Dibi\Connection $db = null): TestableWorkOrderImportVerifier
     {
         $config = null;
         if ($withConfig) {
@@ -51,9 +55,10 @@ class WorkOrderImportVerifierTest extends TestCase
                 [WorkOrderTypes::CFG_ITEM, self::TYPES],
                 [WorkOrderImportVerifier::CURRENCIES_CFG_ITEM, self::CURRENCIES],
                 [WorkOrderImportVerifier::ROW_OPERATIONS_CFG_ITEM, self::OPERATIONS],
+                ...$extraCfg,
             ]);
         }
-        $v = new TestableWorkOrderImportVerifier($this->createMock(\Dibi\Connection::class), $config);
+        $v = new TestableWorkOrderImportVerifier($db ?? $this->createMock(\Dibi\Connection::class), $config);
         $v->series = self::SERIES;
         $v->kinds = [
             13 => ['id' => 13, 'type' => 'periodic', 'inv_doc_type' => 'invno', 'inv_number_series' => 5, 'inv_due_days' => 14],
@@ -286,6 +291,34 @@ class WorkOrderImportVerifierTest extends TestCase
         );
         $this->assertSame([1 => 8], $check->unitIds);
         // Kódy DPH se načtou jednou, pro efektivní typ dokladu z druhu.
+        $this->assertSame(['invno'], $v->vatCodeQueries);
+    }
+
+    public function testVatCodesOfAllPlacesAreAcceptedUnknownStillRejected(): void
+    {
+        // #131 fáze 2b: předpis zahraničního odběratele nese kód EU služeb
+        // (cz-202, místo plnění intracom) — skutečná vatCodes() bere kódy
+        // země registrace pro směr dokladu bez ohledu na místo plnění;
+        // neznámý kód a kód druhého směru dál končí vat_code_unknown.
+        $root = dirname(__DIR__, 6);
+        $db = $this->createMock(\Dibi\Connection::class);
+        $db->method('fetchSingle')->willReturnCallback(function (string $sql): string {
+            $this->assertStringContainsString('FROM [economy_codebooks_vat_registrations]', $sql);
+            return 'cz';
+        });
+        $v = $this->verifier(extraCfg: [
+            ['docs.core.docTypes', JsoncParser::parseFile($root . '/modules/docs/core/config/docTypes.jsonc')],
+            ['world.vat.cz', JsoncParser::parseFile($root . '/modules/world/vat/config/vat-cz.jsonc')],
+        ], db: $db);
+        $v->vatCodes = null;
+        $row = static fn(string $code): array => ['item' => 15, 'description' => $code, 'quantity' => 1, 'unit' => 'pcs', 'unitPrice' => 1, 'vatCode' => $code];
+        $check = $v->verify($this->periodic([], [$row('cz-202'), $row('cz-120'), $row('cz-999'), $row('cz-110')]));
+
+        $this->assertSame(
+            ['rows.2.vatCode:vat_code_unknown', 'rows.3.vatCode:vat_code_unknown'],
+            $this->codes($check),
+            'EU služby i tuzemský kód projdou; neznámý kód a kód vstupu (cz-110) u vydané faktury ne',
+        );
         $this->assertSame(['invno'], $v->vatCodeQueries);
     }
 
