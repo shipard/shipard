@@ -55,14 +55,14 @@ class ExpandTest(unittest.TestCase):
         self.assertEqual(132, by_type[("invno", 40)], "paušály + jednorázové faktury (práce každý měsíc, hardware)")
         self.assertEqual(4, by_type[("invno", 10)])
         self.assertEqual(1, by_type[("invpo", 40)])
-        self.assertEqual(58, by_type[("invni", 40)], "48 tuzemských + 10 od dodavatele v EUR (D28)")
+        self.assertEqual(59, by_type[("invni", 40)], "48 tuzemských + nákup serveru (fáze 2c) + 10 od dodavatele v EUR (D28)")
         self.assertEqual(39, by_type[("cashreg", 40)])
         self.assertEqual(20, by_type[("cash", 40)])
         self.assertEqual(37, by_type[("cmnbkp", 40)], "9 mezd + otevírací doklad + 27 vyrovnávacích (fáze 2a)")
         self.assertEqual(25, len(self.records.persons))
         self.assertEqual(["F%05d" % i for i in range(1, 26)], [p.person_id for p in self.records.persons])
-        self.assertEqual(62, len(self.records.mails))
-        self.assertEqual(58, sum(1 for m in self.records.mails if m.doc_state == 40))
+        self.assertEqual(63, len(self.records.mails))
+        self.assertEqual(59, sum(1 for m in self.records.mails if m.doc_state == 40))
         self.assertEqual(3, sum(1 for m in self.records.mails if m.doc_state == 20))
         self.assertEqual(1, sum(1 for m in self.records.mails if m.primary_type == "other"))
         self.assertEqual(6, len(self.records.registry))
@@ -311,6 +311,75 @@ class CalcTest(unittest.TestCase):
         calc_document(doc)
         self.assertEqual((Decimal("747.00"), Decimal("156.87"), Decimal("904"), Decimal("0.13")),
                          (doc.total_base, doc.total_vat, doc.total_amount, doc.total_rounding))
+
+
+class AssetsExpandTest(unittest.TestCase):
+    """Majetek (#131 fáze 2c, D41): server z vlastní faktury velkoobchodu
+    s řádkem pořízení, zařazení pár dní po dodání, hosting s kartou na
+    řádcích od první faktury po zařazení, plán odpisů jen pro souhrn."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.story, cls.records = records()
+        cls.by_key = {d.key: d for d in cls.records.docs}
+
+    def test_asset_card_from_story(self) -> None:
+        self.assertEqual(1, len(self.records.assets))
+        asset = self.records.assets[0]
+        self.assertEqual(("asset:server", "MA0001", "Výpočetní technika", "022", "042100"),
+                         (asset.key, asset.number, asset.type_name, asset.accounting_group, asset.acquisition_account),
+                         "typ a skupina ze setup/, účet pořízení z účetní skupiny")
+        self.assertEqual(("straight", "cz-1", "as_tax", "tangible", "single"),
+                         (asset.tax_method, asset.tax_rule, asset.acc_method, asset.category, asset.tracking))
+        self.assertEqual((date(2026, 2, 14), Decimal("150000"), "received:cipdeska:-8"),
+                         (asset.activation, asset.amount, asset.purchase_doc_key), "zařazení 4 dny po dodání 10. 2.")
+        self.assertEqual([(date(2026, m, 1), Decimal("3000")) for m in range(3, 11)], list(asset.acc_plan),
+                         "měsíční účetní odpisy v okně od března: 150 000 × 20 % / 10 měsíců")
+
+    def test_purchase_invoice_is_separate_with_asset_row(self) -> None:
+        doc = self.by_key["received:cipdeska:-8"]
+        self.assertEqual((date(2026, 2, 10), date(2026, 2, 20), 40, "cipdeska", "FV-2026-2210"),
+                         (doc.issue, doc.due, doc.state, doc.partner_key, doc.supplier_doc_number),
+                         "samostatná faktura v měsíci mimo pravidlo, první číslo dodavatele v roce")
+        self.assertEqual("FV-2026-2211", self.by_key["received:cipdeska:-6"].supplier_doc_number, "běžné faktury se posunuly o jedna")
+        server, kit = doc.rows
+        self.assertEqual(("purchase.asset", None, "042100", "MA0001", Decimal("1"), Decimal("150000"), "cz-110"),
+                         (server.operation, server.item_code, server.account, server.asset, server.quantity, server.unit_price, server.vat_code),
+                         "řádek pořízení: účet přímo, karta na řádku, bez položky")
+        self.assertEqual(self.records.assets[0].name, server.description, "text řádku = název karty")
+        self.assertEqual(("acc.entry", "501100", None, None, Decimal("1290"), "Montážní sada do racku, lišty"),
+                         (kit.operation, kit.item_code, kit.account, kit.asset, kit.unit_price, kit.description), "běžný nákup na téže faktuře")
+        self.assertEqual((Decimal("151290.00"), Decimal("183060.90")), (doc.total_base, doc.total_amount))
+        self.assertIsNotNone(doc.mail, "zpracovaná zpráva s PDF jako u ostatních přijatých faktur")
+        self.assertEqual("MSG-DEMO-CIPDES-2602", doc.mail.message_id)
+        self.assertEqual([r.description for r in doc.rows], [r["text"] for r in doc.mail.canonical_data["rows"]])
+        events = [e for e in payment_events(self.story, self.records.docs) if e.doc_key == doc.key]
+        self.assertEqual([("onTime", date(2026, 2, 19), doc.total_amount, 2)],
+                         [(e.kind, e.paid_on, e.amount, e.direction) for e in events], "úhrada podle chování dodavatele")
+        self.assertTrue(all(not any(r.operation == "purchase.asset" for r in d.rows)
+                            for d in self.records.docs if d.key != doc.key), "jediný řádek pořízení v sadě")
+
+    def test_hosting_rows_carry_the_card_from_the_first_invoice_after_activation(self) -> None:
+        february = self.by_key["received:mrak:-8"]
+        self.assertLess(february.issue, self.records.assets[0].activation)
+        self.assertTrue(all(r.asset is None for r in february.rows), "faktura před zařazením bez karty")
+        for offset in range(-7, 1):
+            doc = self.by_key[f"received:mrak:{offset}"]
+            self.assertTrue(all(r.asset == "MA0001" for r in doc.rows), f"{doc.key}: hosting s kartou na řádku")
+            self.assertIsNone(doc.work_order)
+        others = [d for d in self.records.docs if d.doc_type == "invni" and not d.key.startswith(("received:mrak:", "received:cipdeska:-8"))]
+        self.assertTrue(all(r.asset is None for d in others for r in d.rows), "ostatní dodavatelé bez karty")
+
+    def test_anchor_shift_moves_purchase_activation_and_plan(self) -> None:
+        story, recs = records(date(2027, 1, 20))
+        asset = recs.assets[0]
+        doc = next(d for d in recs.docs if d.key == asset.purchase_doc_key)
+        self.assertEqual((date(2026, 5, 10), date(2026, 5, 14)), (doc.issue, asset.activation))
+        months = [m for m, _ in asset.acc_plan]
+        self.assertEqual([date(2026, m, 1) for m in range(6, 13)] + [date(2027, 1, 1)], months, "od měsíce po zařazení do měsíce kotvy")
+        self.assertEqual(Decimal("30000"), sum(a for m, a in asset.acc_plan if m.year == 2026), "roční odpis 1. roku celý v roce zařazení")
+        self.assertEqual(Decimal("5000"), dict(asset.acc_plan)[date(2027, 1, 1)], "2. rok 40 % / 12")
+        self.assertTrue(all(r.asset == "MA0001" for d in recs.docs if d.key.startswith("received:mrak:") and d.issue >= asset.activation for r in d.rows))
 
 
 if __name__ == "__main__":

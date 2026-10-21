@@ -120,6 +120,31 @@
 		],
 	},
 
+	// Majetek (#131 fáze 2c, D41): jedna karta dlouhodobého hmotného majetku —
+	// server koupený samostatnou fakturou velkoobchodu (`purchase`: dodavatel
+	// s pravidlem faktur, měsíc mimo jeho běžné měsíce, den; řádek serveru má
+	// pohyb purchase.asset s účtem pořízení účetní skupiny a kartou na řádku,
+	// `rows` jsou běžný nákup na téže faktuře), zařazený `daysAfterDelivery`
+	// dní po dodání ve výši základu řádku pořízení. `typeGroup` / `type` ze
+	// setup/ (typ s výchozí účetní skupinou 022), odpisy rovnoměrně v odpisové
+	// skupině `taxRule`, účetně jako daňově (jediná kombinace, kterou generátor
+	// umí spočítat — invoicegen/assets.py). `costs.supplier` = faktury
+	// dodavatele od první vystavené po zařazení nesou kartu na řádcích
+	// (hosting serveru → tab Náklady a výnosy). Nic se nezaúčtuje (D38);
+	// měsíční účetní odpisy a pole Majetek na dokladech zapíná setup/settings.
+	"assets": {
+		"typeGroup": "Hmotný majetek",
+		"type": "Výpočetní technika",
+		"items": [
+			{ "key": "server", "number": "MA0001", "name": "Server 1U, 2× CPU, 64 GB RAM, 2× 960 GB SSD",
+			  "taxMethod": "straight", "taxRule": "cz-1", "accMethod": "as_tax",
+			  "purchase": { "supplier": "cipdeska", "month": -8, "day": 10, "unitPrice": 150000,
+			                "rows": [ { "text": "Montážní sada do racku, lišty", "unitPrice": 1290 } ] },
+			  "activation": { "daysAfterDelivery": 4 },
+			  "costs": { "supplier": "mrak" } },
+		],
+	},
+
 	// Jednorázové faktury per měsíc (hardware, práce navíc). `hours: [lo, hi]`
 	// = počet hodin odvozený deterministicky z měsíce a pořadí (bez RNG);
 	// `text` přepíše popis řádku; `project` = klíč projektu (dimenze zakázky);

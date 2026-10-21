@@ -2,15 +2,18 @@
 výnosy, náklady, výsledek a zisk v % za období, měsíce ve ztrátě, podíl
 zahraničních tržeb, nákup a prodej zboží, nejnižší a konečný zůstatek účtů,
 výnosy, náklady a marže projektů (fáze 2b, D36 — doklady s dimenzí
-zakázky) — ze stejných záznamů, ze kterých vznikají soubory sady (ne
-čtením výstupu).
+zakázky), karty majetku s plánem účetních odpisů v okně a výsledek po
+jejich zaúčtování (fáze 2c, D41) — ze stejných záznamů, ze kterých vznikají
+soubory sady (ne čtením výstupu).
 
 Výpočet zrcadlí Výsledovku „Od počátku roku k měsíci kotvy“: jen doklady
 ve stavu V pořádku (koncepty se neúčtují), částky v domácí měně kurzem
 dokladu (`total_base × rate` ≈ `total_base_dom`), měsíc = datum vystavení
 (= účetní datum všech dokladů sady). Mzdy = řádky na straně MD mzdového
 dokladu (521 + 524), poplatky z výpisů (`fee.out` → 568). Zálohová faktura
-výnos není, převody mezi vlastními účty se výsledku netýkají.
+výnos není, převody mezi vlastními účty se výsledku netýkají; řádek
+pořízení majetku (`purchase.asset`, účet 04x) náklad není — do nákladů jde
+až odpisy, které sada nenese (D38).
 """
 
 from __future__ import annotations
@@ -19,15 +22,16 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
-from .model import DocRec, Records, StatementRec
+from .model import AssetRec, DocRec, Records, StatementRec
 from .story import Story
 
-__all__ = ["AccountBalance", "EconomySummary", "MonthFigures", "ProjectFigures", "format_summary", "summarize"]
+__all__ = ["AccountBalance", "AssetFigures", "EconomySummary", "MonthFigures", "ProjectFigures", "format_summary", "summarize"]
 
 REVENUE_TYPES = frozenset({"invno", "cashreg"})      # vydané faktury, prodejky (602 / 604)
 SUPPLIER_TYPES = frozenset({"invni"})                 # přijaté faktury (5xx)
 CASH_EXPENSE_TYPES = frozenset({"cash"})              # výdajové pokladní doklady
 GOODS_PURCHASE_PREFIX = "501"                         # nákup zboží (metoda B: rovnou do nákladů)
+ASSET_PURCHASE = "purchase.asset"                     # pořízení dlouhodobého majetku (04x — rozvaha, ne náklad)
 FEE_OPERATION = "fee.out"
 ZERO = Decimal("0.00")
 
@@ -76,6 +80,21 @@ class ProjectFigures:
 
 
 @dataclass
+class AssetFigures:
+    """Karta majetku (fáze 2c, D41): vstupní cena, zařazení a plán účetních
+    odpisů v okně příběhu — kolik by Odpisy za období zaúčtovaly."""
+    number: str
+    name: str
+    entry_price: Decimal
+    activation: date
+    plan: tuple[tuple[date, Decimal], ...]     # (první den měsíce, odpis) v okně, od měsíce po zařazení
+
+    @property
+    def acc_total(self) -> Decimal:
+        return sum((amount for _, amount in self.plan), Decimal("0"))
+
+
+@dataclass
 class EconomySummary:
     revenue: Decimal = ZERO
     foreign_revenue: Decimal = ZERO        # tržby odběratelům mimo zemi vlastní firmy
@@ -85,9 +104,11 @@ class EconomySummary:
     fees: Decimal = ZERO                   # bankovní poplatky
     goods_sold: Decimal = ZERO             # prodej zboží (řádky sale.goods)
     goods_bought: Decimal = ZERO           # nákup zboží (položky 501xxx na přijatých fakturách)
+    assets_acquired: Decimal = ZERO        # pořízení majetku (řádky purchase.asset — rozvaha, mimo náklady)
     months: list[MonthFigures] = field(default_factory=list)
     balances: list[AccountBalance] = field(default_factory=list)
     projects: list[ProjectFigures] = field(default_factory=list)
+    assets: list[AssetFigures] = field(default_factory=list)
 
     @property
     def costs(self) -> Decimal:
@@ -109,6 +130,19 @@ class EconomySummary:
     @property
     def loss_months(self) -> list[MonthFigures]:
         return [m for m in self.months if m.result < 0]
+
+    @property
+    def depreciation(self) -> Decimal:
+        """Účetní odpisy majetku v okně, které sada nenese (D38) — zaúčtovaly by je Odpisy za období."""
+        return sum((asset.acc_total for asset in self.assets), Decimal("0"))
+
+    @property
+    def result_after_depreciation(self) -> Decimal:
+        return self.result - self.depreciation
+
+    @property
+    def margin_after_depreciation(self) -> Decimal:
+        return self.result_after_depreciation / self.revenue if self.revenue else Decimal("0")
 
     def balance(self, code: str) -> AccountBalance:
         return next(b for b in self.balances if b.code == code)
@@ -160,8 +194,12 @@ def summarize(story: Story, records: Records) -> EconomySummary:
                 if row.operation == "sale.goods":
                     summary.goods_sold += _dom(doc, row.vat_base if row.vat_base is not None else row.total_price)
         elif doc.doc_type in SUPPLIER_TYPES:
-            base = _dom(doc, doc.total_base)
+            # Pořízení majetku jde na účet pořízení (04x), ne do nákladů (D41).
+            acquired = sum((_dom(doc, row.vat_base if row.vat_base is not None else row.total_price)
+                            for row in doc.rows if row.operation == ASSET_PURCHASE), ZERO)
+            base = _dom(doc, doc.total_base) - acquired
             summary.suppliers += base
+            summary.assets_acquired += acquired
             month(doc).costs += base
             for row in doc.rows:
                 if (row.item_code or "").startswith(GOODS_PURCHASE_PREFIX):
@@ -186,7 +224,15 @@ def summarize(story: Story, records: Records) -> EconomySummary:
     summary.months = [months[key] for key in sorted(months)]
     summary.balances = _balances(records.bank)
     summary.projects = _projects(records)
+    summary.assets = [_asset(asset, story) for asset in records.assets]
     return summary
+
+
+def _asset(asset: AssetRec, story: Story) -> AssetFigures:
+    """Plán účetních odpisů karty jen v okně příběhu (měsíce období)."""
+    window = set(story.period.months)
+    return AssetFigures(number=asset.number, name=asset.name, entry_price=asset.amount, activation=asset.activation,
+                        plan=tuple((month, amount) for month, amount in asset.acc_plan if month in window))
 
 
 def _projects(records: Records) -> list[ProjectFigures]:
@@ -250,5 +296,24 @@ def format_summary(summary: EconomySummary) -> list[str]:
         lines.append(
             f"projekt {project.number} {project.title}: výnosy {_amount(project.revenue)}, náklady {_amount(project.costs)}, "
             f"marže {sign}{_amount(project.result)} = {_pct(project.margin)}"
+        )
+    for asset in summary.assets:
+        amounts = sorted({amount for _, amount in asset.plan})
+        if not asset.plan:
+            plan = "žádný účetní odpis v okně"
+        elif len(amounts) == 1:
+            plan = f"{len(asset.plan)} × {_amount(amounts[0])} od {asset.plan[0][0]:%m/%Y}"
+        else:
+            plan = f"{len(asset.plan)} měsíců od {asset.plan[0][0]:%m/%Y} ({_amount(amounts[0])}–{_amount(amounts[-1])})"
+        lines.append(
+            f"majetek {asset.number} {asset.name}: vstupní cena {_amount(asset.entry_price)}, "
+            f"zařazeno {asset.activation.day}. {asset.activation.month}. {asset.activation.year}, "
+            f"účetní odpisy v okně {plan} = {_amount(asset.acc_total)} (nezaúčtované)"
+        )
+    if summary.assets:
+        sign = "+" if summary.result_after_depreciation >= 0 else ""
+        lines.append(
+            f"pořízení majetku {_amount(summary.assets_acquired)} mimo náklady; po zaúčtování odpisů výsledek "
+            f"{sign}{_amount(summary.result_after_depreciation)} = {_pct(summary.margin_after_depreciation)} výnosů"
         )
     return lines

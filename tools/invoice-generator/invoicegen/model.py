@@ -30,6 +30,7 @@ class RowRec:
     content_tag: str | None = None
     supply_kind: str | None = None         # druh plnění na papíru zahraničního dodavatele (services), jen pro zprávu
     work_order: str | None = None          # dimenze zakázky na řádku (číslo zakázky, #131 fáze 2b)
+    asset: str | None = None               # dimenze majetku na řádku (inventární číslo karty, #131 fáze 2c)
     # výsledek výpočtu (doccalc):
     vat_base: Decimal | None = None
     vat_amount: Decimal | None = None
@@ -157,6 +158,29 @@ class WorkOrderRec:
 
 
 @dataclass
+class AssetRec:
+    """Karta dlouhodobého majetku (#131 fáze 2c, D41): pořízená řádkem
+    `purchase.asset` na faktuře dodavatele, zařazená ručně ve výši základu
+    řádku; `acc_plan` = měsíční účetní odpisy v okně příběhu (invoicegen/assets.py)
+    jen pro souhrn ekonomiky — sada odpisy nenese (D38)."""
+    key: str                               # asset:<klíč>
+    number: str                            # inventární číslo (převezme se beze změny)
+    name: str
+    type_name: str                         # název typu (setup/asset_types)
+    accounting_group: str                  # kód účetní skupiny (setup/asset_accounting_groups)
+    acquisition_account: str               # účet pořízení skupiny (04x) na řádku purchase.asset
+    tax_method: str
+    tax_rule: str
+    acc_method: str
+    activation: date                       # datum zařazení
+    amount: Decimal                        # vstupní cena = základ řádku pořízení
+    purchase_doc_key: str                  # klíč faktury dodavatele s řádkem pořízení
+    acc_plan: tuple[tuple[date, Decimal], ...] = ()   # (první den měsíce, účetní odpis) v okně příběhu
+    category: str = "tangible"
+    tracking: str = "single"
+
+
+@dataclass
 class RegistryRec:
     key: str
     doc_type: str
@@ -227,3 +251,4 @@ class Records:
     setup: dict[str, dict]
     bank: list[StatementRec] = field(default_factory=list)
     work_orders: list[WorkOrderRec] = field(default_factory=list)   # zakázky (#131 fáze 2b)
+    assets: list[AssetRec] = field(default_factory=list)            # karty majetku (#131 fáze 2c)

@@ -1,9 +1,10 @@
 """Rozvinutí příběhu na záznamy sady (tasks/demo-dataset-phase1.md D6):
-pravidla + kotva → osoby, položky, zakázky (#131 fáze 2b), doklady
-(vydané faktury z předpisu zakázek, zálohová, přijaté faktury se
-zprávami, prodejky, výdajové pokladní doklady, mzdy), zprávy k řešení
-a dokumenty spisovny. Deterministicky — rozmanitost jen
-ze `timeline.spread` nad (měsíc, pořadí partnera, pořadí pravidla).
+pravidla + kotva → osoby, položky, zakázky (#131 fáze 2b), karty majetku
+(fáze 2c), doklady (vydané faktury z předpisu zakázek, zálohová, přijaté
+faktury se zprávami vč. samostatné faktury s pořízením majetku, prodejky,
+výdajové pokladní doklady, mzdy), zprávy k řešení a dokumenty spisovny.
+Deterministicky — rozmanitost jen ze `timeline.spread` nad (měsíc, pořadí
+partnera, pořadí pravidla).
 
 Model plateb (D8) je oddělený: `payment_events()` vrací události
 úhrad podle chování odběratelů a dodavatelů; hotovost je na dokladu
@@ -16,6 +17,7 @@ from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 
+from .assets import acc_monthly_plan
 from .bank import build_statements, expand_bank_docs
 from .catalogs import Catalogs
 from .collation import czech_key
@@ -24,7 +26,7 @@ from .corpusprint import template_values
 from .demoprint import flat_party, invoice_values, registry_values
 from .doccalc import calc_document
 from .errors import ExpandError
-from .model import DocRec, MailRec, PeriodRec, PersonRec, Records, RegistryRec, RowRec, WorkOrderRec, WorkOrderRowRec
+from .model import AssetRec, DocRec, MailRec, PeriodRec, PersonRec, Records, RegistryRec, RowRec, WorkOrderRec, WorkOrderRowRec
 from .render import render_html
 from .snapshot import ai_title
 from .story import Party, Story, template_locale
@@ -37,11 +39,14 @@ from .workorders import (
     rows_valid_at,
 )
 
-__all__ = ["DOC_ID_CODES", "ExpandError", "PaymentEvent", "PurchaseRow", "assign_numbers", "expand", "expand_projects",
-           "expand_work_orders", "foreign_unit_price", "format_number", "payment_events", "project_purchases"]
+__all__ = ["DOC_ID_CODES", "ExpandError", "ExtraInvoice", "PaymentEvent", "PurchaseRow", "asset_cost_links", "asset_purchases",
+           "assign_numbers", "expand", "expand_assets", "expand_projects", "expand_work_orders", "foreign_unit_price",
+           "format_number", "payment_events", "project_purchases"]
 
 # `source.kind` faktur z periodické fakturace (InvoiceBuilder::SOURCE_KIND).
 SOURCE_WORK_ORDER = "workOrder"
+# Pohyb řádku pořízení dlouhodobého majetku (rowAccount direct, rowAsset optional — assets D61).
+PURCHASE_ASSET = "purchase.asset"
 
 # Číslování (modules/docs/core/config/docTypes.jsonc): %D kód typu, %y dva
 # znaky fiskálního roku, %C kód řady (pokladna), %4 / %5 pořadí.
@@ -232,13 +237,26 @@ def expand_projects(story: Story) -> list[WorkOrderRec]:
 
 @dataclass(frozen=True)
 class PurchaseRow:
-    """Nákupní řádek projektu na faktuře dodavatele (D36): kód nabídky,
-    text, množství = prodané kusy, cena, číslo zakázky."""
-    offer_code: str
+    """Řádek doplněný na fakturu dodavatele: nákup projektu (D36 — kód
+    nabídky, text, množství = prodané kusy, cena, číslo zakázky) nebo
+    pořízení majetku (D41 — pohyb purchase.asset s účtem pořízení přímo
+    a kartou na řádku, bez položky)."""
+    offer_code: str | None
     text: str
     quantity: Decimal
     unit_price: Decimal
-    work_order: str
+    work_order: str | None = None
+    operation: str = "acc.entry"
+    account: str | None = None
+    asset: str | None = None
+
+
+@dataclass(frozen=True)
+class ExtraInvoice:
+    """Samostatná faktura dodavatele mimo jeho pravidlo (nákup majetku, D41):
+    den vystavení a řádky."""
+    day: int
+    rows: tuple[PurchaseRow, ...]
 
 
 def project_purchases(story: Story, work_orders: list[WorkOrderRec], issued: list[DocRec]) -> dict[tuple[str, int], list[PurchaseRow]]:
@@ -266,6 +284,78 @@ def project_purchases(story: Story, work_orders: list[WorkOrderRec], issued: lis
                 unit_price=Decimal(prow["unitPrice"]), work_order=number,
             ))
     return out
+
+
+# ── Majetek ──────────────────────────────────────────────────────────────────
+
+def expand_assets(story: Story, catalogs: Catalogs) -> list[AssetRec]:
+    """Karty majetku (D41): typ a účetní skupina ze setup/, zařazení
+    `daysAfterDelivery` po dni nákupu ve výši základu řádku pořízení
+    (qty × unitPrice), účet pořízení z účetní skupiny; plán měsíčních
+    účetních odpisů v okně příběhu jen pro souhrn ekonomiky."""
+    spec = story.assets
+    out: list[AssetRec] = []
+    if not spec:
+        return out
+    type_row = next(r for r in story.setup["asset_types"]["rows"] if r.get("name") == spec["type"])
+    group_code = str(type_row["default_accounting_group"])
+    group = next(r for r in story.setup["asset_accounting_groups"]["rows"] if r.get("code") == group_code)
+    for item in spec["items"]:
+        purchase = item["purchase"]
+        delivered = month_date(story.period, int(purchase["month"]), int(purchase["day"]))
+        activation = delivered + timedelta(days=int(item["activation"]["daysAfterDelivery"]))
+        amount = Decimal(purchase.get("qty", 1)) * Decimal(purchase["unitPrice"])
+        plan = acc_monthly_plan(catalogs.asset_rules, item["taxRule"], amount, activation, story.period.months)
+        out.append(AssetRec(
+            key=f"asset:{item['key']}", number=item["number"], name=item["name"], type_name=spec["type"],
+            accounting_group=group_code, acquisition_account=str(group["account_acquisition"]),
+            tax_method=item["taxMethod"], tax_rule=item["taxRule"], acc_method=item["accMethod"],
+            activation=activation, amount=amount, purchase_doc_key=f"received:{purchase['supplier']}:{int(purchase['month'])}",
+            acc_plan=tuple(sorted(plan.items())),
+        ))
+    return out
+
+
+def asset_purchases(story: Story, assets: list[AssetRec]) -> dict[tuple[str, int], ExtraInvoice]:
+    """(dodavatel, měsíc) → samostatná faktura s pořízením majetku (D41):
+    řádek serveru `purchase.asset` (účet pořízení skupiny, karta na řádku,
+    bez položky) a běžné řádky nákupu (`offerItem` výchozí z prvního řádku
+    pravidla dodavatele)."""
+    out: dict[tuple[str, int], ExtraInvoice] = {}
+    for asset, item in zip(assets, story.assets.get("items") or []):
+        purchase = item["purchase"]
+        supplier = story.suppliers[purchase["supplier"]]
+        default_offer = str((supplier.invoices or {})["rows"][0]["item"])
+        rows = [PurchaseRow(
+            offer_code=None, text=str(purchase.get("text", asset.name)), quantity=Decimal(purchase.get("qty", 1)),
+            unit_price=Decimal(purchase["unitPrice"]), operation=PURCHASE_ASSET, account=asset.acquisition_account,
+            asset=asset.number,
+        )]
+        for prow in purchase.get("rows") or []:
+            rows.append(PurchaseRow(
+                offer_code=str(prow.get("offerItem", default_offer)), text=prow["text"], quantity=Decimal(prow.get("qty", 1)),
+                unit_price=Decimal(prow["unitPrice"]),
+            ))
+        key = (purchase["supplier"], int(purchase["month"]))
+        day = int(purchase["day"])
+        if key in out:
+            if out[key].day != day:
+                raise ExpandError(f"dva nákupy majetku u {key[0]} v měsíci {key[1]} v různé dny")
+            rows = list(out[key].rows) + rows
+        out[key] = ExtraInvoice(day=day, rows=tuple(rows))
+    return out
+
+
+def asset_cost_links(story: Story, assets: list[AssetRec]) -> dict[str, list[AssetRec]]:
+    """Dodavatel → karty, jejichž náklady nese (`costs.supplier`, D41):
+    faktury dodavatele od první vystavené po zařazení dostanou kartu na
+    řádcích (tab Náklady a výnosy)."""
+    links: dict[str, list[AssetRec]] = {}
+    for asset, item in zip(assets, story.assets.get("items") or []):
+        costs = item.get("costs")
+        if costs:
+            links.setdefault(str(costs["supplier"]), []).append(asset)
+    return links
 
 
 # ── Vydané doklady ───────────────────────────────────────────────────────────
@@ -368,16 +458,19 @@ def _digits(text: str, limit: int = 10) -> str:
 
 
 def _received_rows(story: Story, supplier: Party, rule: dict, offset: int, supplier_order: int,
-                   catalogs: Catalogs, labels: dict[str, str], purchases: list[PurchaseRow] = ()) -> list[RowRec]:
-    """Řádky přijaté faktury z pravidla dodavatele. Dodavatel se
-    samovyměřením (služby z EU, D28) dostane kód cz-217 se sazbou
-    samovyměření — papír tiskne 0 % (`_invoice_mail`). Nákupní řádky
-    projektů (D36) nahradí běžný řádek se stejným textem (na jeho místě,
-    `row_index` ostatních zůstává), jinak se přidají; nesou dimenzi zakázky."""
+                   catalogs: Catalogs, labels: dict[str, str], purchases: list[PurchaseRow] = (), *,
+                   regular: bool = True) -> list[RowRec]:
+    """Řádky přijaté faktury z pravidla dodavatele (`regular`; samostatná
+    faktura s pořízením majetku je bez nich). Dodavatel se samovyměřením
+    (služby z EU, D28) dostane kód cz-217 se sazbou samovyměření — papír
+    tiskne 0 % (`_invoice_mail`). Nákupní řádky projektů (D36) nahradí
+    běžný řádek se stejným textem (na jeho místě, `row_index` ostatních
+    zůstává), jinak se přidají; nesou dimenzi zakázky. Řádek pořízení
+    majetku (D41) má pohyb purchase.asset, účet přímo a kartu na řádku."""
     rows: list[RowRec] = []
     previous_qty: Decimal | None = None
     reverse_charge = supplier.vat_treatment == "reverseCharge"
-    for row_index, row in enumerate(rule["rows"]):
+    for row_index, row in enumerate(rule["rows"] if regular else []):
         offer = catalogs.offer[row["item"]]
         pct = int(row["vatPct"])
         text = row["text"].format(**labels)
@@ -405,12 +498,13 @@ def _received_rows(story: Story, supplier: Party, rule: dict, offset: int, suppl
             supply_kind=row.get("supplyKind"),
         ))
     for purchase in purchases:
-        offer = catalogs.offer[purchase.offer_code]
+        offer = catalogs.offer[purchase.offer_code] if purchase.offer_code is not None else None
         project_row = RowRec(
-            operation="acc.entry", item_code=offer.code, item_name=offer.name_cs, description=purchase.text, unit="pcs",
+            operation=purchase.operation, item_code=offer.code if offer else None, item_name=offer.name_cs if offer else None,
+            description=purchase.text, unit="pcs",
             unit_print=catalogs.unit_shortcuts.get("pcs", "pcs"), quantity=purchase.quantity, unit_price=purchase.unit_price,
-            vat_pct=21, vat_code=VAT_INPUT[21], content_tag=offer.content_tags[0] if offer.content_tags else None,
-            work_order=purchase.work_order,
+            vat_pct=21, vat_code=VAT_INPUT[21], content_tag=offer.content_tags[0] if offer and offer.content_tags else None,
+            account=purchase.account, work_order=purchase.work_order, asset=purchase.asset,
         )
         position = next((i for i, r in enumerate(rows) if r.description == purchase.text), None)
         if position is None:
@@ -425,13 +519,22 @@ def _pattern_label(doc_number_pattern: str, issue: date) -> dict[str, str]:
 
 
 def expand_received(story: Story, catalogs: Catalogs, templates: dict[str, str], ordinal: int,
-                    purchases: dict[tuple[str, int], list[PurchaseRow]] | None = None
+                    purchases: dict[tuple[str, int], list[PurchaseRow]] | None = None,
+                    extras: dict[tuple[str, int], ExtraInvoice] | None = None,
+                    cost_links: dict[str, list[AssetRec]] | None = None,
                     ) -> tuple[list[DocRec], list[MailRec], int]:
+    """Přijaté faktury se zprávami: měsíce podle pravidla dodavatele plus
+    samostatné faktury (`extras`: nákup majetku, D41 — měsíc mimo pravidlo,
+    vlastní den, jen jejich řádky; číslo dodavatele jde z jednoho čítače
+    v pořadí měsíců). Faktury dodavatele z `cost_links` od první vystavené
+    po zařazení karty nesou kartu na řádcích (náklady na majetek)."""
     docs: list[DocRec] = []
     mails: list[MailRec] = []
     period = story.period
     own_flat = flat_party(story.own.identity)
     purchases = purchases or {}
+    extras = extras or {}
+    cost_links = cost_links or {}
     for supplier_order, (key, supplier) in enumerate(story.suppliers.items()):
         rule = supplier.invoices
         if rule is None:
@@ -442,9 +545,13 @@ def expand_received(story: Story, catalogs: Catalogs, templates: dict[str, str],
             offsets = quarter_offsets(period)
         else:
             offsets = list(period.offsets)
+        regular_offsets = set(offsets)
+        extra_offsets = {o for (k, o) in extras if k == key}
         counter = 0
-        for offset in sorted(offsets):
-            issue = month_date(period, offset, rule["day"])
+        for offset in sorted(regular_offsets | extra_offsets):
+            regular = offset in regular_offsets
+            extra = extras.get((key, offset))
+            issue = month_date(period, offset, int(rule["day"]) if regular else extra.day)
             if not in_period(period, issue):
                 continue
             mode = rule["anchorMonth"] if offset == 0 else "processed"
@@ -467,7 +574,14 @@ def expand_received(story: Story, catalogs: Catalogs, templates: dict[str, str],
             number = pattern.format(seq=int(spec["seqStart"]) + counter, **_pattern_label(pattern, issue))
             counter += 1
             due = issue + timedelta(days=int(rule["dueDays"]))
-            rows = _received_rows(story, supplier, rule, offset, supplier_order, catalogs, labels, purchases.get((key, offset), ()))
+            added = list(purchases.get((key, offset), ())) + list(extra.rows if extra is not None else ())
+            rows = _received_rows(story, supplier, rule, offset, supplier_order, catalogs, labels, added, regular=regular)
+            # Náklady na majetek (D41): od první faktury vystavené po zařazení karty.
+            for asset in cost_links.get(key, ()):
+                if issue >= asset.activation:
+                    for row in rows:
+                        if row.asset is None:
+                            row.asset = asset.number
             rounding = rule.get("rounding", "none")
             doc_key = f"received:{key}:{offset}"
             currency = supplier.currency or "CZK"
@@ -802,14 +916,31 @@ def payment_events(story: Story, docs: list[DocRec]) -> list[PaymentEvent]:
 
 # ── Celek ────────────────────────────────────────────────────────────────────
 
+def _check_assets(assets: list[AssetRec], received: list[DocRec]) -> None:
+    """Každá karta má fakturu s řádkem pořízení ve stavu V pořádku a zařazení
+    není před dodáním."""
+    by_key = {d.key: d for d in received}
+    for asset in assets:
+        doc = by_key.get(asset.purchase_doc_key)
+        if doc is None or doc.state != 40:
+            raise ExpandError(f"majetek {asset.number}: faktura {asset.purchase_doc_key} s pořízením v sadě není (anchorMonth open / skip?)")
+        if not any(r.operation == PURCHASE_ASSET and r.asset == asset.number for r in doc.rows):
+            raise ExpandError(f"majetek {asset.number}: faktura {doc.key} nemá řádek pořízení s kartou")
+        if asset.activation < doc.issue:
+            raise ExpandError(f"majetek {asset.number}: zařazení {asset.activation} před dodáním {doc.issue}")
+
+
 def expand(story: Story, catalogs: Catalogs, *, invoice_templates: dict[str, str],
            registry_templates: dict[str, str]) -> Records:
     ordinal = 0
     work_orders = expand_work_orders(story)
+    assets = expand_assets(story, catalogs)
     issued, ordinal = expand_issued(story, catalogs, ordinal, work_orders)
     received, received_mails, ordinal = expand_received(
         story, catalogs, invoice_templates, ordinal, project_purchases(story, work_orders, issued),
+        asset_purchases(story, assets), asset_cost_links(story, assets),
     )
+    _check_assets(assets, received)
     cash, ordinal = expand_cash(story, catalogs, ordinal)
     payroll, ordinal = expand_payroll(story, ordinal)
     # Otevírací a vyrovnávací doklady (fáze 2a) před číslováním — čísla
@@ -833,4 +964,5 @@ def expand(story: Story, catalogs: Catalogs, *, invoice_templates: dict[str, str
         setup=story.setup,
         bank=statements,
         work_orders=work_orders,
+        assets=assets,
     )

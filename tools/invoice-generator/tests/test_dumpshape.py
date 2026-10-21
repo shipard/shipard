@@ -7,10 +7,10 @@ from decimal import Decimal
 from invoicegen.catalogs import load_catalogs
 from invoicegen.datasetio import dumps_dataset
 from invoicegen.dumpshape import (
-    bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, php_float, work_order_record, work_order_slug,
-    work_order_sort_key,
+    asset_record, asset_slug, asset_sort_key, bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key,
+    php_float, work_order_record, work_order_slug, work_order_sort_key,
 )
-from invoicegen.model import DocRec, PeriodRec, RecapLine, RowRec, StatementRec, TxRec, WorkOrderRec, WorkOrderRowRec
+from invoicegen.model import AssetRec, DocRec, PeriodRec, RecapLine, RowRec, StatementRec, TxRec, WorkOrderRec, WorkOrderRowRec
 from invoicegen.story import load_story
 from tests.fixtures import REPO_ROOT
 
@@ -61,6 +61,25 @@ class DocDimensionsTest(unittest.TestCase):
         self.assertEqual({"workOrder": "S0001"}, record["dimensions"])
         self.assertEqual(("2026-01-01", "2026-01-31"), (record["dates"]["periodFrom"], record["dates"]["periodTo"]))
 
+    def test_asset_purchase_row_carries_account_and_card(self) -> None:
+        # #131 fáze 2c: řádek pořízení bez položky, účet přímo, karta jako dimenze
+        # za zakázkou (pořadí deklarace dimenzí); řádek nákladu jen s kartou.
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        server = RowRec(operation="purchase.asset", description="Server", unit="pcs", quantity=Decimal("1"),
+                        unit_price=Decimal("150000"), total_price=Decimal("150000"), vat_pct=21, vat_code="cz-110",
+                        account="042100", work_order="P0001", asset="MA0001")
+        hosting = RowRec(operation="acc.entry", item_code="518206", item_name="Hosting", description="Hosting", unit="pcs",
+                         quantity=Decimal("1"), unit_price=Decimal("4900"), total_price=Decimal("4900"), vat_pct=21, vat_code="cz-110",
+                         asset="MA0001")
+        record = doc_record(doc("invni", partner_key="cipdeska", self_party="customer", number="2260011", sequence=11, rows=[server, hosting]), story)
+        row = record["rows"][0]
+        self.assertNotIn("item", row, "řádek pořízení bez položky")
+        self.assertEqual(("purchase.asset", "042100"), (row["operation"], row["account"]))
+        self.assertEqual(["workOrder", "asset"], list(row["dimensions"]))
+        self.assertEqual({"asset": "MA0001"}, record["rows"][1]["dimensions"])
+        self.assertEqual("dimensions", list(row)[-1])
+        self.assertEqual(["description", "account", "dimensions"], list(row)[-3:])
+
 
 class WorkOrderRecordTest(unittest.TestCase):
     def test_key_order_and_pruning_mirror_exporter(self) -> None:
@@ -97,6 +116,29 @@ class WorkOrderRecordTest(unittest.TestCase):
         self.assertEqual("2026-04-22", record["workOrder"]["dateEnd"])
         self.assertEqual("P0001", work_order_slug(project))
         self.assertLess(work_order_sort_key(project), work_order_sort_key(rec), "P před S — podle čísla")
+
+
+class AssetRecordTest(unittest.TestCase):
+    def test_key_order_and_pruning_mirror_exporter(self) -> None:
+        rec = AssetRec(key="asset:server", number="MA0001", name="Server 1U", type_name="Výpočetní technika", accounting_group="022",
+                       acquisition_account="042100", tax_method="straight", tax_rule="cz-1", acc_method="as_tax",
+                       activation=date(2026, 2, 14), amount=Decimal("150000"), purchase_doc_key="received:cipdeska:-8",
+                       acc_plan=((date(2026, 3, 1), Decimal("3000")),))
+        record = asset_record(rec)
+        self.assertEqual(["format", "asset", "events"], list(record))
+        self.assertEqual("shpd.dataset.asset.v1", record["format"])
+        self.assertEqual(["assetNumber", "name", "type", "category", "tracking", "accountingGroup", "taxMethod", "taxRule", "accMethod", "state"],
+                         list(record["asset"]), "null hodnoty pryč: shortName, note, foreign, owner, data a cena dlouhodobé karty, accMonths")
+        self.assertEqual("confirmed", record["asset"]["state"])
+        self.assertEqual([{"kind": "activation", "scope": "both", "date": "2026-02-14", "amount": Decimal("150000.0"), "origin": "manual"}],
+                         record["events"], "jediná událost: zařazení s původem manual, plán odpisů se nepřenáší")
+        self.assertEqual('{\n    "kind": "activation",\n    "scope": "both",\n    "date": "2026-02-14",\n    "amount": 150000.0,\n'
+                         '    "origin": "manual"\n}\n', dumps_dataset(record["events"][0]), "částka float jako V::float")
+        self.assertEqual("MA0001", asset_slug(rec))
+        other = AssetRec(key="asset:x", number="MA0002", name="X", type_name="T", accounting_group="022", acquisition_account="042100",
+                         tax_method="straight", tax_rule="cz-1", acc_method="as_tax", activation=date(2026, 1, 1),
+                         amount=Decimal("1"), purchase_doc_key="k")
+        self.assertLess(asset_sort_key(rec), asset_sort_key(other), "podle inventárního čísla")
 
 
 class DocOrderTest(unittest.TestCase):

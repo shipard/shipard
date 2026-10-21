@@ -1,11 +1,14 @@
 """Číselníky Shipardu, proti kterým se validuje příběh demo sady: účtová
 osnova, nabídka účetních položek, jednotky, druhy dokumentů spisovny,
-účely odeslání kontaktů a dostupné šablony PDF. Čte se přímo z repozitáře
-(konfigurace modulů), žádná databáze."""
+účely odeslání kontaktů, dostupné šablony PDF a pravidla daňových odpisů
+země (#131 fáze 2c). Čte se přímo z repozitáře (konfigurace modulů),
+žádná databáze."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 from .jsonc import load_jsonc
@@ -18,6 +21,7 @@ TAXONOMY_FILE = "modules/core/exchange/config/contentTags.jsonc"
 REGISTRY_KINDS_FILE = "modules/base/registry/config/docKinds.jsonc"
 PERSONS_MODULE_FILE = "modules/base/persons/module.jsonc"
 PERIOD_TEXTS_FILE = "modules/economy/workOrders/config/periodTexts.jsonc"
+ASSET_RULES_FILE = "modules/world/assets/config/assets-cz.jsonc"
 INVOICE_TEMPLATES_DIR = "demo/invoices/templates"
 REGISTRY_TEMPLATES_DIR = "demo/datasets/templates"
 
@@ -38,6 +42,33 @@ class ItemKind:
 
 
 @dataclass(frozen=True)
+class StraightRate:
+    """Roční sazby rovnoměrné metody (§ 31 odst. 1) odpisové skupiny s platností
+    podle data zařazení (`straightRates` v assets-cz.jsonc)."""
+    code: str
+    valid_from: date | None
+    valid_to: date | None
+    first: Decimal
+    next: Decimal
+    increased: Decimal
+
+    def valid_at(self, acquired: date) -> bool:
+        return (self.valid_from is None or self.valid_from <= acquired) and (self.valid_to is None or acquired <= self.valid_to)
+
+
+@dataclass(frozen=True)
+class AssetRules:
+    """Pravidla daňových odpisů země (world.assets, D6) — jen to, co generátor
+    umí spočítat: odpisové skupiny, metody a sazby rovnoměrné metody,
+    zaokrouhlení (CZ: na celé koruny nahoru)."""
+    groups: frozenset[str]
+    methods: frozenset[str]
+    straight_rates: tuple[StraightRate, ...]
+    rounding_mode: str                           # ceil | round
+    rounding_precision: int
+
+
+@dataclass(frozen=True)
 class Catalogs:
     chart_accounts: frozenset[str]
     offer: dict[str, OfferItem]
@@ -50,6 +81,28 @@ class Catalogs:
     invoice_templates: frozenset[str]
     registry_templates: frozenset[str]
     period_texts: dict[str, dict[str, str]]      # periodicita → jazyk → text {období} (cfgItem periodTexts, #131 fáze 2b)
+    asset_rules: AssetRules                      # pravidla daňových odpisů CZ (world.assets, #131 fáze 2c)
+
+
+def _date_or_none(value) -> date | None:
+    return date.fromisoformat(str(value)) if value is not None else None
+
+
+def load_asset_rules(path: Path) -> AssetRules:
+    raw = load_jsonc(path)
+    rates = tuple(
+        StraightRate(code=str(r["code"]), valid_from=_date_or_none(r.get("from")), valid_to=_date_or_none(r.get("to")),
+                     first=Decimal(r["first"]), next=Decimal(r["next"]), increased=Decimal(r["increased"]))
+        for r in raw.get("straightRates") or []
+    )
+    rounding = raw.get("rounding") or {}
+    return AssetRules(
+        groups=frozenset(str(code) for code in (raw.get("groups") or {})),
+        methods=frozenset(str(code) for code in (raw.get("methods") or {})),
+        straight_rates=rates,
+        rounding_mode=str(rounding.get("mode") or "ceil"),
+        rounding_precision=int(rounding.get("precision") or 0),
+    )
 
 
 def load_catalogs(repo_root: Path) -> Catalogs:
@@ -102,4 +155,5 @@ def load_catalogs(repo_root: Path) -> Catalogs:
         invoice_templates=frozenset(p.stem for p in (repo_root / INVOICE_TEMPLATES_DIR).glob("*.html")),
         registry_templates=frozenset(p.stem for p in (repo_root / REGISTRY_TEMPLATES_DIR).glob("*.html")),
         period_texts=period_texts,
+        asset_rules=load_asset_rules(repo_root / ASSET_RULES_FILE),
     )

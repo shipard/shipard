@@ -1,11 +1,13 @@
 """Ekonomika příběhu „IT servis“ (tasks/demo-dataset-economy.md, #131 D25):
-cíle nad výchozí kotvou — zisk 8–15 % výnosů, ztrátové nejvýš tři měsíce,
-zahraniční odběratelé 10–20 % tržeb, zboží s maržou, počáteční zůstatek BU1
-nejvýš 300 tisíc a zůstatky nikdy pod nulou — a vnitřní konzistence souhrnu."""
+cíle nad výchozí kotvou — zisk 8–15 % výnosů (i po zaúčtování účetních
+odpisů serveru, fáze 2c), ztrátové nejvýš tři měsíce, zahraniční odběratelé
+10–20 % tržeb, zboží s maržou, počáteční zůstatek BU1 nejvýš 300 tisíc
+a zůstatky nikdy pod nulou — a vnitřní konzistence souhrnu."""
 
 from __future__ import annotations
 
 import unittest
+from datetime import date
 from decimal import Decimal
 
 from invoicegen.catalogs import load_catalogs
@@ -56,6 +58,14 @@ class EconomyTargetsTest(unittest.TestCase):
             self.assertGreaterEqual(balance.lowest, 0, balance.code)
             self.assertLessEqual(balance.lowest, balance.opening, balance.code)
             self.assertLessEqual(balance.lowest, balance.closing, balance.code)
+
+    def test_profit_after_depreciation_stays_in_target(self) -> None:
+        # Fáze 2c (D41): odpisy serveru sada nenese, Výsledovka je beze změny;
+        # po jejich zaúčtování Odpisy za období musí cíl D25 dál platit.
+        self.assertEqual(1, len(self.summary.assets))
+        self.assertGreater(self.summary.depreciation, 0)
+        self.assertGreaterEqual(self.summary.margin_after_depreciation, Decimal("0.08"), format_summary(self.summary)[-1])
+        self.assertLessEqual(self.summary.margin_after_depreciation, Decimal("0.15"), format_summary(self.summary)[-1])
 
     def test_projects_have_positive_margin(self) -> None:
         self.assertEqual(2, len(self.summary.projects), "dva projekty (D36)")
@@ -122,9 +132,28 @@ class EconomySummaryTest(unittest.TestCase):
         self.assertIn("% výnosů", lines[0])
         self.assertTrue(lines[1].startswith("měsíce ve ztrátě: "))
         self.assertIn("zahraniční odběratelé", lines[2])
-        self.assertEqual(2 + len(self.summary.balances) + len(self.summary.projects), len(lines) - 1)
+        self.assertEqual(2 + len(self.summary.balances) + len(self.summary.projects) + len(self.summary.assets) + 1, len(lines) - 1)
         self.assertTrue(any(line.startswith("účet BU1: počátek") for line in lines))
         self.assertTrue(any(line.startswith("projekt P0001 Výměna sítě: výnosy") for line in lines))
+        self.assertTrue(any(line.startswith("majetek MA0001 ") and "8 × 3 000 Kč od 03/2026 = 24 000 Kč" in line for line in lines), lines[-2])
+        self.assertTrue(lines[-1].startswith("pořízení majetku 150 000 Kč mimo náklady; po zaúčtování odpisů výsledek"), lines[-1])
+
+    def test_asset_acquisition_is_not_a_cost(self) -> None:
+        # D41: řádek pořízení (04x) jde do rozvahy; náklady dodavatelů ho nenesou,
+        # montážní sada na téže faktuře ano; plán odpisů jen v okně příběhu.
+        s = self.summary
+        self.assertEqual(Decimal("150000.00"), s.assets_acquired)
+        purchase = next(d for d in self.records.docs if d.key == self.records.assets[0].purchase_doc_key)
+        suppliers = sum(((d.total_base * d.rate).quantize(Decimal("0.01")) for d in self.records.docs
+                         if d.state == 40 and d.doc_type == "invni"), Decimal("0")) - s.assets_acquired
+        self.assertEqual(suppliers, s.suppliers)
+        self.assertEqual(purchase.total_base - Decimal("150000"), Decimal("1290.00"), "montážní sada zůstává v nákladech")
+        asset = s.assets[0]
+        self.assertEqual(("MA0001", Decimal("150000"), date(2026, 2, 14)), (asset.number, asset.entry_price, asset.activation))
+        self.assertEqual([(date(2026, m, 1), Decimal("3000")) for m in range(3, 11)], list(asset.plan))
+        self.assertEqual(Decimal("24000"), s.depreciation)
+        self.assertEqual(s.result - Decimal("24000"), s.result_after_depreciation)
+        self.assertTrue(all(month in self.story.period.months for month, _ in asset.plan), "jen měsíce okna")
 
     def test_projects_from_dimensions(self) -> None:
         # D36: výnosy = faktury s dimenzí zakázky, náklady = řádky nákupu s dimenzí.

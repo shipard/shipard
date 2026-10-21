@@ -16,9 +16,10 @@ from .datasetio import (
     SECTIONS, SETUP_TABLES, SyncResult, dumps_dataset, file_name, manifest, sync_tree,
 )
 from .dumpshape import (
-    bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, item_record, item_slug, item_sort_key,
-    mail_record, mail_slug, mail_sort_key, person_record, person_slug, person_sort_key, registry_record,
-    registry_slug, registry_sort_key, work_order_record, work_order_slug, work_order_sort_key,
+    asset_record, asset_slug, asset_sort_key, bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key,
+    item_record, item_slug, item_sort_key, mail_record, mail_slug, mail_sort_key, person_record, person_slug,
+    person_sort_key, registry_record, registry_slug, registry_sort_key, work_order_record, work_order_slug,
+    work_order_sort_key,
 )
 from .economy import EconomySummary, summarize
 from .expand import expand
@@ -29,7 +30,7 @@ from .pdfcache import PdfCache
 from .story import Story, load_story
 from .timeline import manifest_created
 
-MANAGED = ("manifest.jsonc", "setup", "persons", "items", "workOrders", "docs", "bank", "registry", "mail")
+MANAGED = ("manifest.jsonc", "setup", "persons", "items", "workOrders", "assets", "docs", "bank", "registry", "mail")
 DEMO_IDENTITIES = "demo/invoices/suppliers.jsonc"
 CORPUS_IDENTITIES = "tests/corpus/cz/identities.jsonc"
 PROJECTION = "tests/corpus/projection.jsonc"
@@ -97,6 +98,12 @@ def build_files(story: Story, records: Records, catalogs: Catalogs, *, projectio
     for i, rec in enumerate(work_orders, start=1):
         files[f"workOrders/{file_name(i, work_order_slug(rec))}"] = _encode(work_order_record(rec, story, number_by_key))
     counts["workOrders"] = len(work_orders)
+
+    # Karty majetku (#131 fáze 2c) — před doklady v pořadí seedu; soubor = inventární číslo.
+    assets = sorted(records.assets, key=asset_sort_key)
+    for i, rec in enumerate(assets, start=1):
+        files[f"assets/{file_name(i, asset_slug(rec))}"] = _encode(asset_record(rec))
+    counts["assets"] = len(assets)
 
     statements = sorted(records.bank, key=bank_sort_key)
     for i, statement in enumerate(statements, start=1):

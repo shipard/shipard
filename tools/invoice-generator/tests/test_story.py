@@ -42,10 +42,14 @@ class StoryLoadTest(unittest.TestCase):
         self.assertEqual("2026-01-01", story.setup["bank_accounts"]["rows"][0]["valid_from"], "@period.start doplněno")
         self.assertEqual(sorted(story.setup), sorted(["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers",
                                                       "vat_registrations", "binders", "mailboxes",
-                                                      "work_order_kinds", "work_order_series"]))
+                                                      "work_order_kinds", "work_order_series",
+                                                      "asset_accounting_groups", "asset_type_groups", "asset_types"]))
         self.assertEqual("S", story.invoicing["workOrders"]["series"], "paušály jako periodické zakázky (fáze 2b)")
         self.assertEqual(-30, story.billing[0]["since"])
         self.assertEqual(["sit", "wifi"], [p["key"] for p in story.projects["items"]], "projekty (D36)")
+        self.assertEqual(["server"], [a["key"] for a in story.assets["items"]], "majetek (fáze 2c, D41)")
+        self.assertEqual(("Hmotný majetek", "Výpočetní technika"), (story.assets["typeGroup"], story.assets["type"]))
+        self.assertEqual(7, len(story.setup["asset_accounting_groups"]["rows"]), "všech sedm skupin provisioneru")
         self.assertEqual("221200", story.setup["accounts"]["rows"][0]["number"], "analytika pro BU2 (fáze 2a)")
         self.assertEqual(169, story.bank["accounts"]["BU1"]["fee"]["amount"])
         self.assertEqual(["net", "insurance", "tax"], [r["amount"] for r in story.bank["payroll"]])
@@ -114,6 +118,26 @@ class StoryValidationTest(unittest.TestCase):
         self.edit("story.jsonc", '{ "item": "AP-WIFI", "text": "Přístupový bod Wi-Fi 6", "unitPrice": 2590 }',
                   '{ "item": "NTB-14", "text": "Notebook", "unitPrice": 2590 }')
         self.assert_problem("se na fakturách projektu neprodává")
+
+    def test_asset_tax_method_must_be_straight(self) -> None:
+        self.edit("story.jsonc", '"taxMethod": "straight", "taxRule": "cz-1"', '"taxMethod": "accelerated", "taxRule": "cz-1"')
+        self.assert_problem("taxMethod umí generátor jen straight")
+
+    def test_asset_purchase_must_be_outside_supplier_months(self) -> None:
+        self.edit("story.jsonc", '"purchase": { "supplier": "cipdeska", "month": -8,', '"purchase": { "supplier": "cipdeska", "month": -6,')
+        self.assert_problem("nákup majetku je samostatná faktura v jiném měsíci")
+
+    def test_asset_activation_before_anchor(self) -> None:
+        self.edit("story.jsonc", '"activation": { "daysAfterDelivery": 4 }', '"activation": { "daysAfterDelivery": 400 }')
+        self.assert_problem("je za kotvou")
+
+    def test_asset_settings_required(self) -> None:
+        self.edit("setup/settings.jsonc", '{ "key": "economy.assets.accPeriodicity", "value": "month" },', "")
+        self.assert_problem("economy.assets.accPeriodicity musí být 'month'")
+
+    def test_asset_type_group_must_match(self) -> None:
+        self.edit("story.jsonc", '"typeGroup": "Hmotný majetek",', '"typeGroup": "Nehmotný majetek",')
+        self.assert_problem("není v setup/asset_type_groups.jsonc")
 
     def test_concept_outside_anchor_month(self) -> None:
         self.edit("story.jsonc", '"month": 0,  "day": 7,  "customer": "usmevov"', '"month": -1,  "day": 7,  "customer": "usmevov"')

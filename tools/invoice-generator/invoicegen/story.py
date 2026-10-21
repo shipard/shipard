@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -44,6 +44,15 @@ ANCHOR_MONTH_MODES = ("processed", "open", "skip")
 ATTENTION_KINDS = ("action", "info", "promo")
 PERIOD_START_PLACEHOLDER = "@period.start"
 VAT_PCTS = (0, 12, 21)
+# Majetek (#131 fáze 2c): číselníky v setup/, nastavení, inventární číslo,
+# jediná kombinace odpisů, kterou generátor umí spočítat (invoicegen/assets.py).
+ASSET_SETUP_TABLES = ("asset_accounting_groups", "asset_type_groups", "asset_types")
+ASSET_SETTINGS = {"economy.assets.accPeriodicity": "month", "economy.accounting.dimension.asset": "yes"}
+ASSET_NUMBER_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9-]{1,19}$")
+ASSET_TAX_METHOD = "straight"
+ASSET_ACC_METHOD = "as_tax"
+ASSET_CATEGORY = "tangible"
+ASSET_GROUP_ACCOUNTS = ("account_asset", "account_acquisition", "account_accumulated", "account_depreciation")
 
 
 class StoryError(ValueError):
@@ -121,6 +130,7 @@ class Story:
     billing: tuple[dict, ...]
     adhoc: tuple[dict, ...]
     projects: dict                  # story.projects — druh, řada a projekty (#131 fáze 2b, D36); {} = žádné
+    assets: dict                    # story.assets — skupina typů, typ a karty majetku (#131 fáze 2c, D41); {} = žádné
     cash_register: dict
     cash_expenses: tuple[dict, ...]
     payroll: dict
@@ -699,6 +709,138 @@ def _projects(raw, problems: _Problems, setup: dict[str, dict], customers: dict[
     return raw
 
 
+def _assets(raw, problems: _Problems, setup: dict[str, dict], suppliers: dict[str, Party], catalogs: Catalogs,
+            period: Period) -> dict:
+    """`story.assets` (#131 fáze 2c, D41): skupina typů a typ ze setup/ (typ
+    dlouhodobý hmotný s úplnou účetní skupinou — odepisovaný majetek jde
+    potvrdit jen s účtem odpisů a oprávek, D57), nastavení měsíčních odpisů
+    a pole Majetek na dokladech, karty s jedinečným inventárním číslem,
+    rovnoměrnou metodou v odpisové skupině ze world.assets a účetně jako
+    daňově; nákup = samostatná faktura tuzemského dodavatele v měsíci, kdy
+    podle svého pravidla nefakturuje; zařazení pár dní po dodání, nejpozději
+    v den kotvy; náklady = dodavatel s pravidlem faktur."""
+    if raw is None:
+        return {}
+    where = "story.assets"
+    if not isinstance(raw, dict) or not isinstance(raw.get("items"), list) or not raw["items"]:
+        problems.add(where, "musí být objekt {typeGroup, type, items[]}")
+        return {}
+    for table in ASSET_SETUP_TABLES:
+        if table not in setup:
+            problems.add(f"setup/{table}.jsonc", "chybí (příběh má majetek)")
+    groups = {r.get("code"): r for r in (setup.get("asset_accounting_groups") or {}).get("rows") or [] if isinstance(r, dict)}
+    type_groups = [r.get("name") for r in (setup.get("asset_type_groups") or {}).get("rows") or [] if isinstance(r, dict)]
+    types = {r.get("name"): r for r in (setup.get("asset_types") or {}).get("rows") or [] if isinstance(r, dict)}
+    if raw.get("typeGroup") not in type_groups:
+        problems.add(where, f"typeGroup {raw.get('typeGroup')!r} není v setup/asset_type_groups.jsonc")
+    type_row = types.get(raw.get("type"))
+    if type_row is None:
+        problems.add(where, f"type {raw.get('type')!r} není v setup/asset_types.jsonc")
+    else:
+        if type_row.get("type_group") != raw.get("typeGroup"):
+            problems.add(where, f"typ {raw['type']!r} musí patřit do skupiny typů {raw.get('typeGroup')!r}")
+        if type_row.get("default_category") != ASSET_CATEGORY:
+            problems.add(where, f"typ {raw['type']!r} musí mít výchozí druh {ASSET_CATEGORY} (dlouhodobý hmotný)")
+        group_code = type_row.get("default_accounting_group")
+        group = groups.get(group_code)
+        if group is None:
+            problems.add(where, f"výchozí účetní skupina typu {group_code!r} není v setup/asset_accounting_groups.jsonc")
+        elif not all(_is_text(group.get(column)) for column in ASSET_GROUP_ACCOUNTS):
+            problems.add(where, f"účetní skupina {group_code!r} musí mít účet majetku, pořízení, oprávek a odpisů (odepisovaný majetek, D57)")
+    settings = {r.get("key"): r.get("value") for r in (setup.get("settings") or {}).get("rows") or [] if isinstance(r, dict)}
+    for key, value in ASSET_SETTINGS.items():
+        if settings.get(key) != value:
+            problems.add("setup/settings.jsonc", f"{key} musí být {value!r} (měsíční účetní odpisy, pole Majetek na dokladech)")
+
+    keys: set[str] = set()
+    numbers: set[str] = set()
+    straight_rules = {rate.code for rate in catalogs.asset_rules.straight_rates}
+    for i, item in enumerate(raw["items"]):
+        iw = f"{where}.items[{i}]"
+        if not isinstance(item, dict):
+            problems.add(iw, "musí být objekt")
+            continue
+        key = item.get("key")
+        if not isinstance(key, str) or not PARTNER_KEY_PATTERN.fullmatch(key) or key in keys:
+            problems.add(iw, "key musí být [a-z][a-z0-9]{1,11} a unikátní")
+            continue
+        keys.add(key)
+        number = item.get("number")
+        if not isinstance(number, str) or not ASSET_NUMBER_PATTERN.fullmatch(number) or number in numbers:
+            problems.add(iw, "number musí být inventární číslo [A-Z0-9][A-Z0-9-]{1,19} a unikátní")
+        else:
+            numbers.add(number)
+        if not _is_text(item.get("name")):
+            problems.add(iw, "name chybí")
+        if item.get("taxMethod") != ASSET_TAX_METHOD:
+            problems.add(iw, f"taxMethod umí generátor jen {ASSET_TAX_METHOD} (rovnoměrný)")
+        if item.get("taxRule") not in straight_rules:
+            problems.add(iw, f"taxRule {item.get('taxRule')!r} není odpisová skupina rovnoměrné metody ze world.assets")
+        if item.get("accMethod") != ASSET_ACC_METHOD:
+            problems.add(iw, f"accMethod umí generátor jen {ASSET_ACC_METHOD} (účetně jako daňově)")
+
+        purchase = item.get("purchase")
+        if not isinstance(purchase, dict):
+            problems.add(iw, "purchase musí být objekt {supplier, month, day, unitPrice, text?, qty?, rows?}")
+            continue
+        pw = f"{iw}.purchase"
+        supplier = suppliers.get(purchase.get("supplier"))
+        rule = supplier.invoices if supplier is not None else None
+        month = purchase.get("month")
+        day = purchase.get("day")
+        if rule is None:
+            problems.add(pw, f"supplier {purchase.get('supplier')!r} není dodavatel s pravidlem invoices")
+        elif supplier.vat_treatment == "reverseCharge" or (supplier.currency or "CZK") != "CZK":
+            problems.add(pw, "nákup majetku jen od tuzemského dodavatele v CZK")
+        if not _is_int(month) or month not in period.offsets:
+            problems.add(pw, f"month musí být v rozsahu {period.offsets.start}..0")
+        elif rule is not None:
+            regular = rule.get("every") is not None or (isinstance(rule.get("months"), list) and month in rule["months"])
+            if regular:
+                problems.add(pw, f"dodavatel {purchase['supplier']!r} v měsíci {month} fakturuje podle pravidla — nákup majetku je samostatná faktura v jiném měsíci")
+            if month == 0 and rule.get("anchorMonth") == "skip":
+                problems.add(pw, "v měsíci kotvy dodavatel fakturu nemá (anchorMonth skip)")
+        if not _is_int(day) or not 1 <= day <= 31:
+            problems.add(pw, "day musí být 1..31")
+        if not _is_amount(purchase.get("unitPrice")):
+            problems.add(pw, "unitPrice musí být kladné číslo")
+        if "qty" in purchase and not (_is_int(purchase["qty"]) and purchase["qty"] >= 1):
+            problems.add(pw, "qty musí být celé číslo >= 1")
+        if "text" in purchase and not _is_text(purchase["text"]):
+            problems.add(pw, "text musí být neprázdný text")
+        rows = purchase.get("rows", [])
+        if not isinstance(rows, list):
+            problems.add(pw, "rows musí být pole")
+            rows = []
+        for j, prow in enumerate(rows):
+            rw = f"{pw}.rows[{j}]"
+            if not isinstance(prow, dict):
+                problems.add(rw, "musí být objekt")
+                continue
+            if not _is_text(prow.get("text")):
+                problems.add(rw, "text chybí")
+            if not _is_amount(prow.get("unitPrice")):
+                problems.add(rw, "unitPrice musí být kladné číslo")
+            if "qty" in prow and not (_is_int(prow["qty"]) and prow["qty"] >= 1):
+                problems.add(rw, "qty musí být celé číslo >= 1")
+            if "offerItem" in prow and prow["offerItem"] not in catalogs.offer:
+                problems.add(rw, f"offerItem {prow['offerItem']!r} není kód nabídky účetních položek")
+
+        activation = item.get("activation")
+        if not isinstance(activation, dict) or not _is_int(activation.get("daysAfterDelivery")) or activation["daysAfterDelivery"] < 0:
+            problems.add(iw, "activation musí být {daysAfterDelivery >= 0}")
+        elif _is_int(month) and month in period.offsets and _is_int(day) and 1 <= day <= 31:
+            activated = month_date(period, month, day) + timedelta(days=int(activation["daysAfterDelivery"]))
+            if activated > period.anchor:
+                problems.add(iw, f"zařazení {activated} je za kotvou {period.anchor}")
+        costs = item.get("costs")
+        if costs is not None:
+            cost_supplier = suppliers.get(costs.get("supplier")) if isinstance(costs, dict) else None
+            if cost_supplier is None or cost_supplier.invoices is None:
+                problems.add(f"{iw}.costs", "supplier musí být dodavatel s pravidlem invoices")
+    return raw
+
+
 def _cash(raw_register, raw_expenses, problems: _Problems, items: dict[str, Item], catalogs: Catalogs) -> tuple[dict, tuple[dict, ...]]:
     register = raw_register if isinstance(raw_register, dict) else {}
     where = "story.cashRegister"
@@ -1153,6 +1295,7 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
     billing = _billing(story_raw.get("billing"), problems, customers, items, period)
     adhoc = _adhoc(story_raw.get("adhoc"), problems, customers, items, period)
     projects = _projects(story_raw.get("projects"), problems, setup, customers, suppliers, items, adhoc, catalogs, period)
+    assets = _assets(story_raw.get("assets"), problems, setup, suppliers, catalogs, period)
     cash_register, cash_expenses = _cash(story_raw.get("cashRegister"), story_raw.get("cashExpenses"), problems, items, catalogs)
     payroll = _payroll(story_raw.get("payroll"), problems, catalogs, period)
     bank = _bank(story_raw.get("bank"), problems, setup, payroll, catalogs, {"own": own_raw, **all_partners}, rates, period)
@@ -1167,7 +1310,8 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
         dir=story_dir, name=name, title=title, description=description, anchor=effective_anchor, period=period,
         own=own, bank_account_code=bank_accounts["CZK"], bank_accounts=bank_accounts,
         cash_desk_code=own_raw["cashDeskCode"], bank=bank, rates=rates,
-        invoicing=invoicing, billing=billing, adhoc=adhoc, projects=projects, cash_register=cash_register, cash_expenses=cash_expenses,
+        invoicing=invoicing, billing=billing, adhoc=adhoc, projects=projects, assets=assets, cash_register=cash_register,
+        cash_expenses=cash_expenses,
         payroll=payroll, customers=customers, suppliers=suppliers, items=items, registry=registry, mail=mail,
         setup=setup, binders=binders, verified_at=verified_at,
     )

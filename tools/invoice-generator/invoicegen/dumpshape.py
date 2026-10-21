@@ -1,7 +1,7 @@
 """Záznamy sady ve tvaru, který vypíše `dataset-dump` (D10) — jediné místo
 s konstantami odvozenými z PHP exportérů (`PersonExporter`, `ItemExporter`,
 `DocumentExporter`, `BankStatementExporter`, `WorkOrderExporter`,
-`RegistryExporter`, `MailExporter`): pořadí klíčů,
+`AssetExporter`, `RegistryExporter`, `MailExporter`): pořadí klíčů,
 které hodnoty jsou float (`1.0`) a které int, co prune vynechá, řazení
 souborů podle `ORDER BY` exportérů a slugy. Když se sada liší od dumpu,
 opravuje se tady, ne v `expand.py`.
@@ -15,12 +15,13 @@ from .catalogs import Catalogs
 from .collation import czech_key
 from .datasetio import PERSON_FORMAT, attachment_entry, prune
 from .expected import apply_projection, build_expected
-from .model import DocRec, MailRec, PersonRec, RegistryRec, RowRec, StatementRec, WorkOrderRec
+from .model import AssetRec, DocRec, MailRec, PersonRec, RegistryRec, RowRec, StatementRec, WorkOrderRec
 from .snapshot import analysis_json, analysis_record, classification_json, dataset_canonical, message_record
 from .story import Item, Story
 
 BANK_FORMAT = "shpd.dataset.bankStatement.v1"
 WORK_ORDER_FORMAT = "shpd.dataset.workOrder.v1"
+ASSET_FORMAT = "shpd.dataset.asset.v1"
 
 DOC_TYPE_NAMES = {
     "invni": "invoiceReceived", "invno": "invoiceIssued", "invpo": "proformaIssued", "invpi": "proformaReceived",
@@ -186,8 +187,9 @@ def _row_block(row: RowRec, position: int) -> dict:
         "description": row.description,
         "account": row.account,
         "accSide": row.acc_side,
-        # Dimenze řádku (#131 fáze 2b) — poslední klíč bloku jako v exportéru.
-        "dimensions": {"workOrder": row.work_order} if row.work_order else None,
+        # Dimenze řádku (#131 fáze 2b, 2c) — poslední klíč bloku jako v exportéru,
+        # v pořadí deklarace dimenzí (zakázka, majetek); prázdné pryč.
+        "dimensions": {"workOrder": row.work_order, "asset": row.asset},
     }
     return block
 
@@ -366,6 +368,64 @@ def work_order_sort_key(rec: WorkOrderRec) -> tuple:
 
 
 def work_order_slug(rec: WorkOrderRec) -> str:
+    return rec.number
+
+
+# ── Majetek ──────────────────────────────────────────────────────────────────
+
+def asset_record(rec: AssetRec) -> dict:
+    """`AssetExporter` (shpd.dataset.asset.v1): hlavička s přirozenými klíči
+    (typ názvem, účetní skupina kódem), dlouhodobá karta bez data pořízení
+    a ceny (D13), zařazení jako jediná potvrzená událost s původem manual;
+    null pryč, booleany jen jako true (tady žádné)."""
+    record = {
+        "format": ASSET_FORMAT,
+        "asset": {
+            "assetNumber": rec.number,
+            "name": rec.name,
+            "shortName": None,
+            "note": None,
+            "type": rec.type_name,
+            "category": rec.category,
+            "tracking": rec.tracking,
+            "accountingGroup": rec.accounting_group,
+            "foreign": None,
+            "owner": None,
+            "acquiredDate": None,
+            "disposedDate": None,
+            "price": None,
+            "taxMethod": rec.tax_method,
+            "taxRule": rec.tax_rule,
+            "accMethod": rec.acc_method,
+            "accMonths": None,
+            "state": "confirmed",
+        },
+        "events": [{
+            "kind": "activation",
+            "scope": "both",
+            "date": _iso(rec.activation),
+            "periodBegin": None,
+            "periodEnd": None,
+            "amount": php_float(rec.amount),
+            "accumulated": None,
+            "unitsDone": None,
+            "priceIncreased": None,
+            "originalDate": None,
+            "claimUnrecorded": None,
+            "halfYear": None,
+            "note": None,
+            "origin": "manual",
+        }],
+    }
+    return prune(record)
+
+
+def asset_sort_key(rec: AssetRec) -> tuple:
+    """`ORDER BY asset_number, id`."""
+    return (rec.number, rec.key)
+
+
+def asset_slug(rec: AssetRec) -> str:
     return rec.number
 
 
