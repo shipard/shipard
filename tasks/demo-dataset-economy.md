@@ -234,11 +234,14 @@ Ověřovací zdroj dat po kontrole smaž, nebo ho nech Anně a zapiš prefix.
   stav 40 kurzem dokladu, mzdy strana MD, poplatky z výpisů); Výsledovka
   v aplikaci se liší jen o haléřová zaokrouhlení prodejek (548 / 648),
   která souhrn nemodeluje.
-- **Seed varuje** u 10 faktur dodavatele z EU `rows_recap_mismatch`
-  a `vat_recap_inconsistent` — kontrola `DocumentApplier` sčítá i párový
-  řádek samovyměření a u `noPayTax` čeká základ + daň = celkem; doklad se
-  uloží správně (DocDocument rekapitulaci přepočítá), dump je bajtově
-  shodný. Kandidát na drobnou opravu kontroly v PHP (mimo tento task).
+- **Kontrola rekapitulace v applieru** (samostatný commit): seed původně
+  u 10 faktur dodavatele z EU varoval `rows_recap_mismatch`
+  a `vat_recap_inconsistent` — `DocumentValidator` sčítal i párový řádek
+  samovyměření a u primárního řádku čekal základ + daň = celkem. Opraveno
+  jako v `DocDocument::validateDeclaredRecap` (pár se přeskakuje, řádek
+  s párem má celkem = základ), info issue
+  `recap_source_computed_fallback` u přenesení daňové povinnosti nese
+  vlastní vysvětlení místo „nešlo převzít“; seed sady už nevaruje.
 - **Ověření** (čerstvý volný DS `lsx3-g…`, ponechán k ručnímu průchodu):
   `diff -r` jen `manifest.created`; deník 1 356 řádků, MD = D, 0 chybových;
   234 transakcí ve stavu účtování 1; partner null jen u 27 mezd, 9

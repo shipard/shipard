@@ -2812,7 +2812,7 @@ class DocumentApplier
             return [
                 'source'   => 0,
                 'recap'    => [],
-                'fallback' => 'přenesení daňové povinnosti — rekapitulace dodavatele se nepřebírá',
+                'fallback' => self::RECAP_FALLBACK_REVERSE_CHARGE,
             ];
         }
         $codesByPct = $this->recapCodesFromRows($canonical, $vatCtx);
@@ -2945,10 +2945,15 @@ class DocumentApplier
         return abs($tax - round($base * $pct / 100.0, 2)) <= max(0.05, abs($base) * 0.001);
     }
 
+    /** Důvod přepočtu rekapitulace u samovyměření (`recapFallback`, D3). */
+    private const RECAP_FALLBACK_REVERSE_CHARGE = 'přenesení daňové povinnosti — rekapitulace dodavatele se nepřebírá';
+
     /**
      * Info issue, když rekapitulace nešla převzít a spočítá se z řádků —
      * bez něj by uživatel nepoznal, proč je na dokladu jiná rekapitulace
-     * než na předloze.
+     * než na předloze. Přenesení daňové povinnosti není chyba předlohy
+     * („nešlo převzít“ by mátlo): dodavatel správně uvádí 0 %, daň
+     * přiznáváme my, proto vlastní text; ostatní důvody šablonou.
      *
      * @param array<string, mixed> $canonical
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
@@ -2960,12 +2965,15 @@ class DocumentApplier
         if ($resolved['fallback'] === null) {
             return;
         }
+        $message = $resolved['fallback'] === self::RECAP_FALLBACK_REVERSE_CHARGE
+            ? 'Faktura s přenesením daňové povinnosti: dodavatel uvádí 0 % DPH, daň přiznáváte vy'
+                . ' — rekapitulace se proto sestaví z řádků (daň na výstupu a nárok na odpočet).'
+            : 'Rekapitulaci DPH nešlo převzít z dokladu (' . $resolved['fallback'] . ') — spočítá se z řádků.';
         $issues[] = [
             'severity' => 'info',
             'path'     => 'vat.recapSource',
             'code'     => 'recap_source_computed_fallback',
-            'message'  => 'Rekapitulaci DPH nešlo převzít z dokladu ('
-                . $resolved['fallback'] . ') — spočítá se z řádků.',
+            'message'  => $message,
         ];
     }
 

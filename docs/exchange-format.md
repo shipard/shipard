@@ -383,7 +383,9 @@ předloze. U vystavených dokladů je odvození vždy `computed`.
 
 **Samovyměření (D3):** má-li kterýkoli položkový řádek — po odvození kódu
 (§ 8.4) — kód s `reverseVatCode`, je rekapitulace přijatého dokladu vždy
-`computed` + info issue s důvodem „přenesení daňové povinnosti“.
+`computed` + info issue, které místo šablony „nešlo převzít“ vysvětlí
+situaci: dodavatel uvádí 0 % DPH, daň přiznává příjemce, rekapitulace se
+sestaví z řádků (daň na výstupu a nárok na odpočet).
 Rekapitulace dodavatele je z jeho pohledu (0 %, daň 0); naše nese nárok na
 odpočet a oddaňovací pár. Explicitní `recapSource: "declared"` (import ze
 starého Shipardu, s páry) zůstává beze změny.
@@ -432,17 +434,21 @@ slouží jen k dorovnání řádků a zůstává v canonicalu analýzy. Import
   (fromBase → Σ `base`, fromTotal → Σ `total`; fallback `totals`,
   tolerance per-řádkového zaokrouhlení) → warning **`rows_recap_mismatch`**
   na `rows`. Rekapitulace z dokladu je autoritativní — mismatch znamená
-  neúplné či chybně extrahované řádky. Stejnou kontrolu dělá při uložení
+  neúplné či chybně extrahované řádky. Párové řádky samovyměření
+  (`isReversePair: true`, dump dokladu se samovyměřením) nesou tentýž
+  základ podruhé a do součtu nepatří. Stejnou kontrolu dělá při uložení
   i `DocDocument` nad převzatou rekapitulací.
 - **Vnitřní aritmetika rekapitulace** — pro každý řádek recapu musí
   platit `base + tax = total` (±0,02) a `tax = base × pct/100`
   (±max(0,05; |base| × 0,001) — kryje haléře i výpočet koeficientem);
-  reverse-charge páry a 0% řádky se přeskakují. Porušení → warning
-  **`vat_recap_inconsistent`** na `vatRecap[i]`. Chytá rekapitulaci,
-  kterou model dopočítal pozpátku (typicky po chybně určeném režimu DPH)
-  místo opsání z dokladu. **Pozor:** u explicitního `declared` je to jen
-  warning, ne důvod k přepočtu — u přenesení daňové povinnosti `base + tax
-  ≠ total` platí a je správně.
+  reverse-charge páry a 0% řádky se přeskakují. Primární řádek
+  samovyměření (hned za ním jde jeho pár `isReversePair` v téže sazbě —
+  tak ho skládá `DocDocument::buildVatRecapitulation` a vypisuje dump) má
+  celkem = základ, daň se dodavateli neplatí; kontrola sazby platí dál.
+  Porušení → warning **`vat_recap_inconsistent`** na `vatRecap[i]`. Chytá
+  rekapitulaci, kterou model dopočítal pozpátku (typicky po chybně určeném
+  režimu DPH) místo opsání z dokladu. **Pozor:** u explicitního `declared`
+  je to jen warning, ne důvod k přepočtu.
 
 `totals.totalRounding` nese zaokrouhlení celkové částky se znaménkem
 (zaokrouhleno dolů = záporné, např. `-0.05`). I ono je informativní —
@@ -1322,7 +1328,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `rows_recap_mismatch` | warning | Součet položkových řádků neodpovídá rekapitulaci/totals dle efektivního režimu DPH — řádky nejspíš neúplné. |
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
 | `vat_mode_derived` | warning | `DocumentApplier` koriguje `vat_mode` podle `VatModeDerivation` (Σ řádků sedí na total, ne na base — nebo zrcadlově); nebo deklarované `none` u dokladu, jehož řádky mají kód se samovyměřením → `fromBase` (Bez DPH by rekapitulaci nestavěl). |
-| `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, nebo samovyměření — D3) — spočítá se z řádků. Zpráva nese důvod. |
+| `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, vynechaný řádek) — spočítá se z řádků; zpráva nese důvod. U samovyměření (D3) vlastní text: dodavatel uvádí 0 % DPH, daň přiznáváte vy, rekapitulace se sestaví z řádků (daň na výstupu a nárok na odpočet). |
 | `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |

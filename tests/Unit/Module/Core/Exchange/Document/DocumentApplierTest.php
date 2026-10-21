@@ -3020,10 +3020,11 @@ class DocumentApplierTest extends TestCase
         $this->assertNotContains('vat_code_unknown', $codes);
         // Prázdný kód → derivace bez issue (jinak šum u každé faktury).
         $this->assertNotContains('vat_code_derived', $codes);
-        // D3: rekapitulace dodavatele (0 %) se nepřebírá.
+        // D3: rekapitulace dodavatele (0 %) se nepřebírá — issue vysvětlí samovyměření.
         $recap = $this->issueByCode($result, 'recap_source_computed_fallback');
         $this->assertNotNull($recap);
-        $this->assertStringContainsString('přenesení daňové povinnosti', $recap['message']);
+        $this->assertStringContainsString('přenesením daňové povinnosti', $recap['message']);
+        $this->assertStringContainsString('daň přiznáváte vy', $recap['message']);
     }
 
     public function testReceivedEuServicesTransformUsesOwnRegistrationAndComputedRecap(): void
@@ -3138,7 +3139,7 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(21.0, $vatCode['createPayload']['pct']);
         $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
         $this->assertStringContainsString(
-            'přenesení daňové povinnosti',
+            'přenesením daňové povinnosti',
             (string) ($this->issueByCode($result, 'recap_source_computed_fallback')['message'] ?? ''),
         );
     }

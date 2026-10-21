@@ -138,12 +138,9 @@ platby jen 3 záměrné příjmy (případ mezd s prázdným klíčem na nule),
 Přijaté zálohy 1 otevřená (záloha čeká na vyúčtování), zůstatek 221100 =
 konečný zůstatek posledního výpisu BU1 a 221200 v EUR = konečný zůstatek
 BU2; Výsledovka „Od počátku roku“ = souhrn generátoru (výnosy 6xx a náklady
-5xx se liší jen o haléřová zaokrouhlení prodejek na 548 / 648). Seed hlásí
-u faktur dodavatele z EU varování `rows_recap_mismatch` /
-`vat_recap_inconsistent` — kontrola applieru nerozumí párovému řádku
-samovyměření; doklad se uloží správně a dump je shodný. Zdroj dat vzniklý
-před fází 2a potřebuje `ds-upgrade` (zrcadlové řádky skupiny Nespárované
-platby, `docs/accbal.md` § 4.4) a `accbal-regenerate --all`.
+5xx se liší jen o haléřová zaokrouhlení prodejek na 548 / 648). Zdroj dat
+vzniklý před fází 2a potřebuje `ds-upgrade` (zrcadlové řádky skupiny
+Nespárované platby, `docs/accbal.md` § 4.4) a `accbal-regenerate --all`.
 
 Výchozí schránka: `ds-upgrade` ji zakládá s adresou podle ID zdroje dat,
 sada ji přepíše pevnou `demo-it-servis@shipard.email`, aby dump vyšel
