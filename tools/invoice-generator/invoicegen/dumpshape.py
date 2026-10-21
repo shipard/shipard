@@ -1,7 +1,7 @@
 """Záznamy sady ve tvaru, který vypíše `dataset-dump` (D10) — jediné místo
 s konstantami odvozenými z PHP exportérů (`PersonExporter`, `ItemExporter`,
-`DocumentExporter`, `BankStatementExporter`, `RegistryExporter`,
-`MailExporter`): pořadí klíčů,
+`DocumentExporter`, `BankStatementExporter`, `WorkOrderExporter`,
+`RegistryExporter`, `MailExporter`): pořadí klíčů,
 které hodnoty jsou float (`1.0`) a které int, co prune vynechá, řazení
 souborů podle `ORDER BY` exportérů a slugy. Když se sada liší od dumpu,
 opravuje se tady, ne v `expand.py`.
@@ -15,11 +15,12 @@ from .catalogs import Catalogs
 from .collation import czech_key
 from .datasetio import PERSON_FORMAT, attachment_entry, prune
 from .expected import apply_projection, build_expected
-from .model import DocRec, MailRec, PersonRec, RegistryRec, RowRec, StatementRec
+from .model import DocRec, MailRec, PersonRec, RegistryRec, RowRec, StatementRec, WorkOrderRec
 from .snapshot import analysis_json, analysis_record, classification_json, dataset_canonical, message_record
 from .story import Item, Story
 
 BANK_FORMAT = "shpd.dataset.bankStatement.v1"
+WORK_ORDER_FORMAT = "shpd.dataset.workOrder.v1"
 
 DOC_TYPE_NAMES = {
     "invni": "invoiceReceived", "invno": "invoiceIssued", "invpo": "proformaIssued", "invpi": "proformaReceived",
@@ -185,6 +186,8 @@ def _row_block(row: RowRec, position: int) -> dict:
         "description": row.description,
         "account": row.account,
         "accSide": row.acc_side,
+        # Dimenze řádku (#131 fáze 2b) — poslední klíč bloku jako v exportéru.
+        "dimensions": {"workOrder": row.work_order} if row.work_order else None,
     }
     return block
 
@@ -213,6 +216,8 @@ def doc_record(doc: DocRec, story: Story) -> dict:
     canonical = {
         "format": "shpd.docs.document",
         "formatVersion": "1.0",
+        # Zdroj dokladu (`source_kind`): faktury z periodické fakturace (#131 fáze 2b).
+        "source": {"kind": doc.source_kind} if doc.source_kind else None,
         "docType": DOC_TYPE_NAMES[doc.doc_type],
         "docNumber": doc.supplier_doc_number,
         "docText": doc.doc_text,
@@ -244,6 +249,8 @@ def doc_record(doc: DocRec, story: Story) -> dict:
         },
         "payment": {"method": doc.payment_method, "paymentReference": doc.payment_reference},
         "notes": {"onDocument": doc.note_on_document},
+        # Dimenze hlavičky přirozeným klíčem (zakázka číslem, #131 fáze 2b).
+        "dimensions": {"workOrder": doc.work_order} if doc.work_order else None,
         "rows": [_row_block(row, i) for i, row in enumerate(doc.rows, start=1)],
         "vatRecap": [{
             "vatCode": line.vat_code,
@@ -283,6 +290,83 @@ def doc_sort_key(doc: DocRec) -> tuple:
 
 def doc_slug(doc: DocRec) -> str:
     return doc.number if doc.number is not None else f"koncept {doc.doc_type}"
+
+
+# ── Zakázky ──────────────────────────────────────────────────────────────────
+
+def work_order_record(rec: WorkOrderRec, story: Story, number_by_key: dict[str, str | None]) -> dict:
+    """`WorkOrderExporter` (shpd.dataset.workOrder.v1): hlavička s přirozenými
+    klíči (řada kódem, štíhlá strana, řada dokladů a účet jen jako přepis
+    druhu), řádky předpisu s platností, vystavená období s číslem dokladu
+    (koncept zástupným `!` + id); null a prázdné pryč."""
+    identity = story.party(rec.customer_key).identity
+    invoicing = None
+    if rec.periodicity is not None:
+        invoicing = {
+            "periodicity": rec.periodicity,
+            "invoiceFrom": _iso(rec.invoice_from),
+            "docText": rec.doc_text,
+            "docType": None,
+            "numberSeries": None,
+            "dueDays": None,
+            "timing": None,
+            "vatMode": None,
+            "paymentMethod": None,
+            "bankAccount": rec.bank_account,
+        }
+    record = {
+        "format": WORK_ORDER_FORMAT,
+        "workOrder": {
+            "number": rec.number,
+            "sequenceNumber": rec.sequence,
+            "numberSeries": rec.series_code,
+            "title": rec.title,
+            "state": rec.state,
+            "dateStart": _iso(rec.date_start),
+            "dateEnd": _iso(rec.date_end),
+            "costCenter": None,
+            "internalNote": None,
+            "customer": {
+                "name": identity["name"],
+                "country": identity.get("country"),
+                "companyId": identity.get("companyId"),
+                "taxId": identity.get("taxId"),
+                "vatId": identity.get("vatId"),
+            },
+            "currency": rec.currency.lower(),
+            "paymentReference": None,
+            "parent": None,
+            "invoicing": invoicing,
+        },
+        "rows": [{
+            "item": r.item_code,
+            "description": r.description,
+            "quantity": php_float(r.quantity),
+            "unit": r.unit,
+            "unitPrice": php_float(r.unit_price),
+            "vatCode": r.vat_code,
+            "operation": None,
+            "validFrom": _iso(r.valid_from),
+            "validTo": _iso(r.valid_to),
+        } for r in rec.rows],
+        "periods": [{
+            "from": _iso(p.start),
+            "to": _iso(p.end),
+            "state": "issued",
+            "docNumber": number_by_key.get(p.doc_key),
+        } for p in rec.periods],
+    }
+    return prune(record)
+
+
+def work_order_sort_key(rec: WorkOrderRec) -> tuple:
+    """`WorkOrderExporter::ordered`: nadřazené před podřízenými (sada
+    nadřazené nemá → hloubka 0), bez čísla první, pak číslo, pak pořadí."""
+    return (0, rec.number is not None, rec.number or "", rec.ordinal)
+
+
+def work_order_slug(rec: WorkOrderRec) -> str:
+    return rec.number
 
 
 # ── Bankovní výpisy ──────────────────────────────────────────────────────────

@@ -1,7 +1,9 @@
 """Souhrn ekonomiky příběhu (tasks/demo-dataset-economy.md, #131 D25):
 výnosy, náklady, výsledek a zisk v % za období, měsíce ve ztrátě, podíl
-zahraničních tržeb, nákup a prodej zboží, nejnižší a konečný zůstatek účtů
-— ze stejných záznamů, ze kterých vznikají soubory sady (ne čtením výstupu).
+zahraničních tržeb, nákup a prodej zboží, nejnižší a konečný zůstatek účtů,
+výnosy, náklady a marže projektů (fáze 2b, D36 — doklady s dimenzí
+zakázky) — ze stejných záznamů, ze kterých vznikají soubory sady (ne
+čtením výstupu).
 
 Výpočet zrcadlí Výsledovku „Od počátku roku k měsíci kotvy“: jen doklady
 ve stavu V pořádku (koncepty se neúčtují), částky v domácí měně kurzem
@@ -20,7 +22,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from .model import DocRec, Records, StatementRec
 from .story import Story
 
-__all__ = ["AccountBalance", "EconomySummary", "MonthFigures", "format_summary", "summarize"]
+__all__ = ["AccountBalance", "EconomySummary", "MonthFigures", "ProjectFigures", "format_summary", "summarize"]
 
 REVENUE_TYPES = frozenset({"invno", "cashreg"})      # vydané faktury, prodejky (602 / 604)
 SUPPLIER_TYPES = frozenset({"invni"})                 # přijaté faktury (5xx)
@@ -55,6 +57,25 @@ class AccountBalance:
 
 
 @dataclass
+class ProjectFigures:
+    """Projekt (zakázka typu project): výnosy = faktury s dimenzí zakázky
+    na hlavičce, náklady = řádky přijatých faktur s dimenzí zakázky."""
+    key: str
+    number: str
+    title: str
+    revenue: Decimal = ZERO
+    costs: Decimal = ZERO
+
+    @property
+    def result(self) -> Decimal:
+        return self.revenue - self.costs
+
+    @property
+    def margin(self) -> Decimal:
+        return self.result / self.revenue if self.revenue else Decimal("0")
+
+
+@dataclass
 class EconomySummary:
     revenue: Decimal = ZERO
     foreign_revenue: Decimal = ZERO        # tržby odběratelům mimo zemi vlastní firmy
@@ -66,6 +87,7 @@ class EconomySummary:
     goods_bought: Decimal = ZERO           # nákup zboží (položky 501xxx na přijatých fakturách)
     months: list[MonthFigures] = field(default_factory=list)
     balances: list[AccountBalance] = field(default_factory=list)
+    projects: list[ProjectFigures] = field(default_factory=list)
 
     @property
     def costs(self) -> Decimal:
@@ -163,7 +185,27 @@ def summarize(story: Story, records: Records) -> EconomySummary:
 
     summary.months = [months[key] for key in sorted(months)]
     summary.balances = _balances(records.bank)
+    summary.projects = _projects(records)
     return summary
+
+
+def _projects(records: Records) -> list[ProjectFigures]:
+    out: list[ProjectFigures] = []
+    for work_order in records.work_orders:
+        if not work_order.key.startswith("project:"):
+            continue
+        figures = ProjectFigures(key=work_order.key.removeprefix("project:"), number=work_order.number, title=work_order.title)
+        for doc in records.docs:
+            if doc.state != 40:
+                continue
+            if doc.doc_type in REVENUE_TYPES and doc.work_order == work_order.number:
+                figures.revenue += _dom(doc, doc.total_base)
+            elif doc.doc_type in SUPPLIER_TYPES:
+                for row in doc.rows:
+                    if row.work_order == work_order.number:
+                        figures.costs += _dom(doc, row.vat_base if row.vat_base is not None else row.total_price)
+        out.append(figures)
+    return out
 
 
 # ── Výpis pro build.py ───────────────────────────────────────────────────────
@@ -202,5 +244,11 @@ def format_summary(summary: EconomySummary) -> list[str]:
         lines.append(
             f"účet {balance.code}: počátek {_amount(balance.opening, balance.currency)}, "
             f"minimum {_amount(balance.lowest, balance.currency)}, konec {_amount(balance.closing, balance.currency)}"
+        )
+    for project in summary.projects:
+        sign = "+" if project.result >= 0 else ""
+        lines.append(
+            f"projekt {project.number} {project.title}: výnosy {_amount(project.revenue)}, náklady {_amount(project.costs)}, "
+            f"marže {sign}{_amount(project.result)} = {_pct(project.margin)}"
         )
     return lines

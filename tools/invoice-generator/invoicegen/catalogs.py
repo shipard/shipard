@@ -17,6 +17,7 @@ ITEM_KINDS_FILE = "modules/economy/items/config/itemKindsSeed.jsonc"
 TAXONOMY_FILE = "modules/core/exchange/config/contentTags.jsonc"
 REGISTRY_KINDS_FILE = "modules/base/registry/config/docKinds.jsonc"
 PERSONS_MODULE_FILE = "modules/base/persons/module.jsonc"
+PERIOD_TEXTS_FILE = "modules/economy/workOrders/config/periodTexts.jsonc"
 INVOICE_TEMPLATES_DIR = "demo/invoices/templates"
 REGISTRY_TEMPLATES_DIR = "demo/datasets/templates"
 
@@ -48,6 +49,7 @@ class Catalogs:
     send_purposes: frozenset[str]
     invoice_templates: frozenset[str]
     registry_templates: frozenset[str]
+    period_texts: dict[str, dict[str, str]]      # periodicita → jazyk → text {období} (cfgItem periodTexts, #131 fáze 2b)
 
 
 def load_catalogs(repo_root: Path) -> Catalogs:
@@ -81,6 +83,13 @@ def load_catalogs(repo_root: Path) -> Catalogs:
     persons_module = load_jsonc(repo_root / PERSONS_MODULE_FILE)
     send_purposes = frozenset(str(p["id"]) for p in persons_module.get("sendPurposes", []))
 
+    period_texts: dict[str, dict[str, str]] = {}
+    for periodicity, spec in load_jsonc(repo_root / PERIOD_TEXTS_FILE).items():
+        texts = {key.split(":", 1)[1]: str(value) for key, value in spec.items() if key.startswith("text:")}
+        if "text" in spec:
+            texts.setdefault("en", str(spec["text"]))
+        period_texts[str(periodicity)] = texts
+
     return Catalogs(
         chart_accounts=accounts,
         offer=offer,
@@ -92,4 +101,5 @@ def load_catalogs(repo_root: Path) -> Catalogs:
         send_purposes=send_purposes,
         invoice_templates=frozenset(p.stem for p in (repo_root / INVOICE_TEMPLATES_DIR).glob("*.html")),
         registry_templates=frozenset(p.stem for p in (repo_root / REGISTRY_TEMPLATES_DIR).glob("*.html")),
+        period_texts=period_texts,
     )

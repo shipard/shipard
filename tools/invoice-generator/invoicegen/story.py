@@ -23,7 +23,7 @@ from .checks import account_valid, iban_matches_account, validate_identities
 from .collation import robust_order
 from .datasetio import NAME_PATTERN, SETUP_FORMAT, SETUP_TABLES
 from .jsonc import load_jsonc
-from .timeline import Period, period_for
+from .timeline import Period, month_date, period_for
 
 IDENTITY_KEYS = ("name", "country", "companyId", "taxId", "vatId", "courtRegistration", "address", "contact",
                  "bankAccount", "vatPayer")
@@ -120,6 +120,7 @@ class Story:
     invoicing: dict
     billing: tuple[dict, ...]
     adhoc: tuple[dict, ...]
+    projects: dict                  # story.projects — druh, řada a projekty (#131 fáze 2b, D36); {} = žádné
     cash_register: dict
     cash_expenses: tuple[dict, ...]
     payroll: dict
@@ -477,6 +478,41 @@ def _items(raw, problems: _Problems, catalogs: Catalogs) -> dict[str, Item]:
     return items
 
 
+def _work_orders_spec(raw, problems: _Problems, setup: dict[str, dict], customers: dict[str, Party]) -> None:
+    """`story.invoicing.workOrders` (#131 fáze 2b, D32–D34): druh a řada
+    paušálů ze setup/ (řada průběžná), název zakázky s {customer}, text
+    dokladu s {období} a popis řádku předpisu v jazycích odběratelů."""
+    where = "story.invoicing.workOrders"
+    if not isinstance(raw, dict):
+        problems.add(where, "musí být objekt {kind, series, title, docText, rowText}")
+        return
+    kinds = (setup.get("work_order_kinds") or {}).get("rows") or []
+    series = (setup.get("work_order_series") or {}).get("rows") or []
+    kind = next((r for r in kinds if isinstance(r, dict) and r.get("name") == raw.get("kind")), None)
+    if kind is None:
+        problems.add(where, f"kind {raw.get('kind')!r} není v setup/work_order_kinds.jsonc")
+    elif kind.get("type") != "periodic":
+        problems.add(where, f"druh {raw.get('kind')!r} musí mít typ periodic")
+    row = next((r for r in series if isinstance(r, dict) and r.get("number_code") == raw.get("series")), None)
+    if row is None:
+        problems.add(where, f"series {raw.get('series')!r} není v setup/work_order_series.jsonc")
+    else:
+        if row.get("kind") != raw.get("kind"):
+            problems.add(where, f"řada {raw.get('series')!r} musí patřit druhu {raw.get('kind')!r}")
+        if row.get("reset_scope") != "none":
+            problems.add(where, "řada zakázek musí být průběžná (reset_scope none, D34)")
+    if not _is_text(raw.get("title")) or "{customer}" not in raw["title"]:
+        problems.add(where, "title musí být text s {customer}")
+    languages = sorted({c.language for c in customers.values() if c.language})
+    for key in ("docText", "rowText"):
+        texts = raw.get(key)
+        if not isinstance(texts, dict) or not all(_is_text(texts.get(lang)) for lang in languages):
+            problems.add(where, f"{key} musí nést text pro jazyky odběratelů: {', '.join(languages)}")
+            continue
+        if key == "docText" and not all(("{období}" in texts[lang] or "{period}" in texts[lang]) for lang in languages):
+            problems.add(where, "docText musí obsahovat {období} nebo {period}")
+
+
 def _billing(raw, problems: _Problems, customers: dict[str, Party], items: dict[str, Item], period: Period) -> tuple[dict, ...]:
     if not isinstance(raw, list) or not raw:
         problems.add("story.billing", "musí být neprázdné pole pravidel")
@@ -493,6 +529,11 @@ def _billing(raw, problems: _Problems, customers: dict[str, Party], items: dict[
         every = rule.get("every")
         if every not in ("month", "quarter", "once"):
             problems.add(where, "every musí být month | quarter | once")
+        elif every != "once":
+            # Zahájení zakázky před oknem (D34): posun měsíce od měsíce kotvy.
+            since = rule.get("since")
+            if not _is_int(since) or since >= period.offsets.start:
+                problems.add(where, f"since musí být posun měsíce před oknem (< {period.offsets.start}, D34)")
         if not _is_amount(rule.get("price")):
             problems.add(where, "price musí být kladné číslo")
         if "qty" in rule and not (_is_int(rule["qty"]) and rule["qty"] >= 1):
@@ -535,6 +576,8 @@ def _adhoc(raw, problems: _Problems, customers: dict[str, Party], items: dict[st
             problems.add(where, "day musí být 1..31")
         if entry.get("customer") not in customers:
             problems.add(where, f"customer {entry.get('customer')!r} není v partners.jsonc")
+        if "project" in entry and not _is_text(entry["project"]):
+            problems.add(where, "project musí být klíč projektu")
         rows = entry.get("rows")
         if not isinstance(rows, list) or not rows:
             problems.add(where, "rows musí být neprázdné pole")
@@ -549,6 +592,8 @@ def _adhoc(raw, problems: _Problems, customers: dict[str, Party], items: dict[st
                     problems.add(rw, "qty musí být celé číslo >= 1")
                 elif "hours" in row and not (_is_range(row["hours"]) and row["hours"][0] >= 1):
                     problems.add(rw, "hours musí být rozsah [lo, hi] celých hodin >= 1")
+                if "text" in row and not _is_text(row["text"]):
+                    problems.add(rw, "text musí být neprázdný text")
         if entry.get("payment") not in (None, "cash"):
             problems.add(where, "payment může být jen cash")
         if entry.get("state") not in (None, "concept"):
@@ -556,6 +601,102 @@ def _adhoc(raw, problems: _Problems, customers: dict[str, Party], items: dict[st
         if entry.get("state") == "concept" and entry.get("month") != 0:
             problems.add(where, "koncept jen v měsíci kotvy (month 0)")
     return tuple(raw)
+
+
+def _projects(raw, problems: _Problems, setup: dict[str, dict], customers: dict[str, Party], suppliers: dict[str, Party],
+              items: dict[str, Item], adhoc: tuple[dict, ...], catalogs: Catalogs, period: Period) -> dict:
+    """`story.projects` (#131 fáze 2b, D36): druh typu project a průběžná
+    řada ze setup/, projekty s klíčem, zákazníkem, názvem, zahájením před
+    první fakturou a nákupem u dodavatele v měsíci, kdy fakturuje; nákupní
+    řádky = prodávané položky zboží s textem a cenou; každý projekt má
+    aspoň jednu ad hoc fakturu, nákup předchází poslední faktuře (dodávce)
+    a každá nakupovaná položka se na fakturách projektu prodává."""
+    if raw is None:
+        return {}
+    where = "story.projects"
+    if not isinstance(raw, dict) or not isinstance(raw.get("items"), list):
+        problems.add(where, "musí být objekt {kind, series, items[]}")
+        return {}
+    kinds = (setup.get("work_order_kinds") or {}).get("rows") or []
+    series = (setup.get("work_order_series") or {}).get("rows") or []
+    kind = next((r for r in kinds if isinstance(r, dict) and r.get("name") == raw.get("kind")), None)
+    if kind is None:
+        problems.add(where, f"kind {raw.get('kind')!r} není v setup/work_order_kinds.jsonc")
+    elif kind.get("type") != "project":
+        problems.add(where, f"druh {raw.get('kind')!r} musí mít typ project")
+    row = next((r for r in series if isinstance(r, dict) and r.get("number_code") == raw.get("series")), None)
+    if row is None:
+        problems.add(where, f"series {raw.get('series')!r} není v setup/work_order_series.jsonc")
+    elif row.get("kind") != raw.get("kind") or row.get("reset_scope") != "none":
+        problems.add(where, f"řada {raw.get('series')!r} musí patřit druhu {raw.get('kind')!r} a být průběžná (D34)")
+
+    keys: set[str] = set()
+    for i, project in enumerate(raw["items"]):
+        pw = f"{where}.items[{i}]"
+        if not isinstance(project, dict):
+            problems.add(pw, "musí být objekt")
+            continue
+        key = project.get("key")
+        if not isinstance(key, str) or not PARTNER_KEY_PATTERN.fullmatch(key) or key in keys:
+            problems.add(pw, "key musí být [a-z][a-z0-9]{1,11} a unikátní")
+            continue
+        keys.add(key)
+        if project.get("customer") not in customers:
+            problems.add(pw, f"customer {project.get('customer')!r} není v partners.jsonc")
+        if not _is_text(project.get("title")):
+            problems.add(pw, "title chybí")
+        if not _is_int(project.get("startDaysBefore")) or project["startDaysBefore"] < 0:
+            problems.add(pw, "startDaysBefore musí být celé číslo >= 0")
+        invoices = [e for e in adhoc if isinstance(e, dict) and e.get("project") == key]
+        if not invoices:
+            problems.add(pw, "projekt nemá žádnou ad hoc fakturu s project")
+        if any(e.get("customer") != project.get("customer") for e in invoices):
+            problems.add(pw, "faktury projektu musí být na zákazníka projektu")
+        sold = {row.get("item") for e in invoices for row in (e.get("rows") or []) if "qty" in row}
+        delivery = max((month_date(period, e["month"], e["day"]) for e in invoices
+                        if _is_int(e.get("month")) and e["month"] in period.offsets and _is_int(e.get("day"))), default=None)
+
+        purchases = project.get("purchases")
+        if not isinstance(purchases, dict):
+            problems.add(pw, "purchases musí být objekt {supplier, month, rows}")
+            continue
+        supplier = suppliers.get(purchases.get("supplier"))
+        rule = supplier.invoices if supplier is not None else None
+        if rule is None:
+            problems.add(pw, f"purchases.supplier {purchases.get('supplier')!r} není dodavatel s pravidlem invoices")
+            continue
+        month = purchases.get("month")
+        if not _is_int(month) or month not in period.offsets:
+            problems.add(pw, f"purchases.month musí být v rozsahu {period.offsets.start}..0")
+            continue
+        months = rule.get("months")
+        if (months is not None and month not in months) or (month == 0 and rule.get("anchorMonth") == "skip") \
+                or (rule.get("every") == "quarter" and period.month_start(month).month not in (1, 4, 7, 10)):
+            problems.add(pw, f"dodavatel {purchases['supplier']!r} v měsíci {month} nefakturuje")
+        purchase_day = month_date(period, month, int(rule["day"])) if _is_int(rule.get("day")) else None
+        if purchase_day is not None and delivery is not None and purchase_day >= delivery:
+            problems.add(pw, f"nákup {purchase_day} musí předcházet dodávce {delivery}")
+        rows = purchases.get("rows")
+        if not isinstance(rows, list) or not rows:
+            problems.add(pw, "purchases.rows musí být neprázdné pole")
+            continue
+        for j, prow in enumerate(rows):
+            rw = f"{pw}.purchases.rows[{j}]"
+            item = items.get(prow.get("item"))
+            if item is None or item.kind != "stock":
+                problems.add(rw, f"item {prow.get('item')!r} musí být zboží z items.jsonc")
+            elif item.code not in sold:
+                problems.add(rw, f"položka {item.code} se na fakturách projektu neprodává — množství nákupu nemá odkud vzít")
+            if not _is_text(prow.get("text")):
+                problems.add(rw, "text chybí")
+            if not _is_amount(prow.get("unitPrice")):
+                problems.add(rw, "unitPrice musí být kladné číslo")
+            if "offerItem" in prow and prow["offerItem"] not in catalogs.offer:
+                problems.add(rw, f"offerItem {prow['offerItem']!r} není kód nabídky účetních položek")
+    for i, entry in enumerate(adhoc):
+        if isinstance(entry, dict) and "project" in entry and entry["project"] not in keys:
+            problems.add(f"story.adhoc[{i}]", f"project {entry['project']!r} není v story.projects")
+    return raw
 
 
 def _cash(raw_register, raw_expenses, problems: _Problems, items: dict[str, Item], catalogs: Catalogs) -> tuple[dict, tuple[dict, ...]]:
@@ -1004,12 +1145,14 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
     items = _items(items_raw, problems, catalogs)
     invoicing = story_raw.get("invoicing")
     if not isinstance(invoicing, dict) or not _is_int(invoicing.get("issueDay")) or not 1 <= invoicing["issueDay"] <= 28 \
-            or not _is_int(invoicing.get("dueDays")) or invoicing["dueDays"] < 0 \
-            or not _is_text(invoicing.get("flatFeeText")) or not _is_text(invoicing.get("quarterlyText")):
-        problems.add("story.invoicing", "musí být {issueDay 1..28, dueDays >= 0, flatFeeText, quarterlyText}")
+            or not _is_int(invoicing.get("dueDays")) or invoicing["dueDays"] < 0:
+        problems.add("story.invoicing", "musí být {issueDay 1..28, dueDays >= 0, workOrders}")
         invoicing = {}
+    else:
+        _work_orders_spec(invoicing.get("workOrders"), problems, setup, customers)
     billing = _billing(story_raw.get("billing"), problems, customers, items, period)
     adhoc = _adhoc(story_raw.get("adhoc"), problems, customers, items, period)
+    projects = _projects(story_raw.get("projects"), problems, setup, customers, suppliers, items, adhoc, catalogs, period)
     cash_register, cash_expenses = _cash(story_raw.get("cashRegister"), story_raw.get("cashExpenses"), problems, items, catalogs)
     payroll = _payroll(story_raw.get("payroll"), problems, catalogs, period)
     bank = _bank(story_raw.get("bank"), problems, setup, payroll, catalogs, {"own": own_raw, **all_partners}, rates, period)
@@ -1024,7 +1167,7 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
         dir=story_dir, name=name, title=title, description=description, anchor=effective_anchor, period=period,
         own=own, bank_account_code=bank_accounts["CZK"], bank_accounts=bank_accounts,
         cash_desk_code=own_raw["cashDeskCode"], bank=bank, rates=rates,
-        invoicing=invoicing, billing=billing, adhoc=adhoc, cash_register=cash_register, cash_expenses=cash_expenses,
+        invoicing=invoicing, billing=billing, adhoc=adhoc, projects=projects, cash_register=cash_register, cash_expenses=cash_expenses,
         payroll=payroll, customers=customers, suppliers=suppliers, items=items, registry=registry, mail=mail,
         setup=setup, binders=binders, verified_at=verified_at,
     )

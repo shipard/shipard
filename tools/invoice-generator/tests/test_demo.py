@@ -34,8 +34,8 @@ class BuildDemoDatasetTest(unittest.TestCase):
             (out / "expected" / "keep.json").write_text("[]\n")
 
             first = build_demo_dataset(STORY_DIR, out, repo_root=REPO_ROOT, state_path=state, render=fake_render)
-            self.assertEqual({"setup": 8, "exchangeRates": 0, "persons": 25, "items": 12, "docs": 291, "bank": 20,
-                              "registry": 6, "mail": 62}, first.counts)
+            self.assertEqual({"setup": 10, "exchangeRates": 0, "persons": 25, "items": 12, "workOrders": 15, "docs": 291,
+                              "bank": 20, "registry": 6, "mail": 62}, first.counts)
             self.assertEqual(67, first.rendered, "61 faktur dodavatelů (vč. 10 v angličtině) + 6 dokumentů spisovny")
             self.assertGreaterEqual(first.economy.margin, Decimal("0.08"), "souhrn ekonomiky je součástí sestavení")
             self.assertIn("docs/9999-stale.jsonc", first.sync.removed)
@@ -55,6 +55,23 @@ class BuildDemoDatasetTest(unittest.TestCase):
             self.assertTrue(any(k.startswith("mail/") and k.endswith("/INV-2026-18407.pdf") for k in files),
                             "PDF faktury dodavatele v EUR")
             self.assertIn("setup/accounts.jsonc", files, "analytika 221200 pro BU2")
+            self.assertIn("setup/work_order_kinds.jsonc", files, "druhy zakázek (fáze 2b)")
+            self.assertIn("workOrders/0001-p0001.jsonc", files, "zakázky podle čísla: projekty P před paušály S")
+            self.assertIn("workOrders/0003-s0001.jsonc", files)
+            self.assertIn("workOrders/0015-s0013.jsonc", files)
+            work_order = load_jsonc(out / "workOrders" / "0003-s0001.jsonc")
+            self.assertEqual("shpd.dataset.workOrder.v1", work_order["format"])
+            self.assertEqual(["format", "workOrder", "rows", "periods"], list(work_order))
+            self.assertEqual(10, len(work_order["periods"]), "evidence úplná: leden–říjen")
+            self.assertEqual("1260001", work_order["periods"][0]["docNumber"])
+            medvidek = load_jsonc(out / "workOrders" / "0004-s0002.jsonc")
+            self.assertEqual("!0000000155", medvidek["periods"][-1]["docNumber"], "koncept měsíce kotvy zástupným číslem")
+            concept = load_jsonc(out / "docs" / "0155-0000000155.jsonc")
+            self.assertEqual({"kind": "workOrder"}, concept["source"])
+            self.assertEqual({"workOrder": "S0002"}, concept["dimensions"])
+            project = load_jsonc(out / "workOrders" / "0001-p0001.jsonc")
+            self.assertEqual(["format", "workOrder"], list(project), "projekt bez předpisu a období")
+            self.assertEqual(("finished", "2026-04-22"), (project["workOrder"]["state"], project["workOrder"]["dateEnd"]))
             self.assertIn("bank/0001-bu1-2026-01.jsonc", files)
             self.assertIn("bank/0010-bu1-2026-10.jsonc", files)
             self.assertIn("bank/0011-bu2-2026-01.jsonc", files)
@@ -74,8 +91,8 @@ class BuildDemoDatasetTest(unittest.TestCase):
             out = Path(tmp) / "shift"
             summary = build_demo_dataset(STORY_DIR, out, repo_root=REPO_ROOT, anchor=date(2027, 1, 20),
                                          state_path=Path(tmp) / "state.json", render=fake_render)
-            self.assertEqual({"setup": 8, "exchangeRates": 0, "persons": 25, "items": 12, "docs": 291, "bank": 20,
-                              "registry": 6, "mail": 62}, summary.counts)
+            self.assertEqual({"setup": 10, "exchangeRates": 0, "persons": 25, "items": 12, "workOrders": 15, "docs": 291,
+                              "bank": 20, "registry": 6, "mail": 62}, summary.counts)
             manifest = load_jsonc(out / "manifest.jsonc")
             self.assertEqual("2027-01-20T00:00:00Z", manifest["created"])
             self.assertTrue((out / "bank" / "0010-bu1-2027-01.jsonc").is_file(), "poslední výpis v měsíci kotvy")

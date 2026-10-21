@@ -41,11 +41,31 @@
 
 	// Vydané faktury z pravidel: paušál se vystavuje 1. dne měsíce (čtvrtletní
 	// 1. dne prvního měsíce čtvrtletí), splatnost 14 dní, DUZP = den vystavení.
+	// Paušály jsou periodické zakázky (#131 fáze 2b, D32): `workOrders` říká
+	// druh a průběžnou řadu ze setup/ (D34), název zakázky s {customer},
+	// text dokladu s {období} a popis řádku předpisu v jazycích odběratelů —
+	// faktury vypadají jako z periodické fakturace (štítek období jako
+	// PeriodLabel: „leden 2026“, „1. čtvrtletí 2026“, sk / de obdobně).
 	"invoicing": {
 		"issueDay": 1,
 		"dueDays": 14,
-		"flatFeeText": "Správa IT — paušál {period}",
-		"quarterlyText": "Správa IT — paušál {period}",
+		"workOrders": {
+			"kind": "Správa IT — paušál",
+			"series": "S",
+			"title": "Správa IT — {customer}",
+			"docText": {
+				"cs": "Správa IT — paušál {období}",
+				"sk": "Správa IT — paušál {období}",
+				"de": "IT-Betreuung — Pauschale {období}",
+				"en": "IT management — flat fee {období}",
+			},
+			"rowText": {
+				"cs": "Správa IT — měsíční paušál",
+				"sk": "Správa IT — mesačný paušál",
+				"de": "IT-Betreuung — Monatspauschale",
+				"en": "IT management — monthly flat fee",
+			},
+		},
 	},
 
 	// Opakovaná fakturace per odběratel: `every` month | quarter | once;
@@ -54,26 +74,55 @@
 	// CZK) se na fakturu v cizí měně přepočítá kurzem měsíce vystavení (D27);
 	// `qty` výchozí 1
 	// (čtvrtletní paušál = 3 měsíce); `priceFrom` změna ceny od měsíce;
-	// `conceptInAnchorMonth` nechá fakturu měsíce kotvy v Konceptu bez čísla.
+	// `conceptInAnchorMonth` nechá fakturu měsíce kotvy v Konceptu bez čísla;
+	// `since` = měsíc zahájení zakázky jako posun od měsíce kotvy před oknem
+	// (smlouvy běží roky, D34; u čtvrtletní se zarovná na začátek čtvrtletí).
 	"billing": [
-		{ "customer": "kopretina", "every": "month",   "item": "SPRAVA-IT", "price": 16000 },
-		{ "customer": "medvidek",  "every": "month",   "item": "SPRAVA-IT", "price": 5500, "conceptInAnchorMonth": true },
-		{ "customer": "usmevov",   "every": "month",   "item": "SPRAVA-IT", "price": 21000 },
-		{ "customer": "pohybna",   "every": "quarter", "item": "SPRAVA-IT", "price": 5000, "qty": 3 },
-		{ "customer": "galvanovna","every": "month",   "item": "SPRAVA-IT", "price": 17500 },
-		{ "customer": "jelen",     "every": "month",   "item": "SPRAVA-IT", "price": 25000, "priceFrom": { "month": -4, "price": 27500 } },
+		{ "customer": "kopretina", "every": "month",   "item": "SPRAVA-IT", "price": 16000, "since": -30 },
+		{ "customer": "medvidek",  "every": "month",   "item": "SPRAVA-IT", "price": 5500, "conceptInAnchorMonth": true, "since": -17 },
+		{ "customer": "usmevov",   "every": "month",   "item": "SPRAVA-IT", "price": 21000, "since": -44 },
+		{ "customer": "pohybna",   "every": "quarter", "item": "SPRAVA-IT", "price": 5000, "qty": 3, "since": -33 },
+		{ "customer": "galvanovna","every": "month",   "item": "SPRAVA-IT", "price": 17500, "since": -26 },
+		{ "customer": "jelen",     "every": "month",   "item": "SPRAVA-IT", "price": 25000, "priceFrom": { "month": -4, "price": 27500 }, "since": -38 },
 		{ "customer": "mluvka",    "every": "once",    "item": "ZALOHA-IT", "price": 42000, "month": -8, "day": 5, "dueDays": 30, "docType": "proformaIssued" },
-		{ "customer": "stranka",   "every": "month",   "item": "SPRAVA-IT", "price": 4800, "conceptInAnchorMonth": true },
-		{ "customer": "lekarna",   "every": "month",   "item": "SPRAVA-IT", "price": 12000 },
-		{ "customer": "domovnik",  "every": "quarter", "item": "SPRAVA-IT", "price": 8500, "qty": 3 },
-		{ "customer": "dubovylist","every": "month",   "item": "SPRAVA-IT", "price": 9000 },
-		{ "customer": "nitra",     "every": "month",   "item": "SPRAVA-IT", "price": 480 },
-		{ "customer": "tatranka",  "every": "quarter", "item": "SPRAVA-IT", "price": 130, "qty": 3 },
-		{ "customer": "wolkenschiff", "every": "month",   "item": "SPRAVA-IT", "price": 650 },
+		{ "customer": "stranka",   "every": "month",   "item": "SPRAVA-IT", "price": 4800, "conceptInAnchorMonth": true, "since": -13 },
+		{ "customer": "lekarna",   "every": "month",   "item": "SPRAVA-IT", "price": 12000, "since": -22 },
+		{ "customer": "domovnik",  "every": "quarter", "item": "SPRAVA-IT", "price": 8500, "qty": 3, "since": -15 },
+		{ "customer": "dubovylist","every": "month",   "item": "SPRAVA-IT", "price": 9000, "since": -11 },
+		{ "customer": "nitra",     "every": "month",   "item": "SPRAVA-IT", "price": 480, "since": -19 },
+		{ "customer": "tatranka",  "every": "quarter", "item": "SPRAVA-IT", "price": 130, "qty": 3, "since": -24 },
+		{ "customer": "wolkenschiff", "every": "month",   "item": "SPRAVA-IT", "price": 650, "since": -16 },
 	],
+
+	// Projekty (#131 fáze 2b, D36): externí jednorázové zakázky druhu a řady
+	// ze setup/ s výnosy i náklady. Faktury projektu jsou ad hoc faktury
+	// s `project` (dimenze zakázky na hlavičce); náklady = nákup u dodavatele
+	// v měsíci `purchases.month`: řádky s dimenzí zakázky na řádku, množství
+	// = kusy prodané na fakturách projektu, `offerItem` = kód nabídky osnovy
+	// (výchozí = první řádek pravidla dodavatele); běžný řádek dodavatele se
+	// stejným textem ten měsíc nahradí (switch 1 → 2 ks, AP → 4 ks), ostatní
+	// se přidají (router). Zahájení = první faktura projektu minus
+	// `startDaysBefore`, ukončení = datum poslední faktury (dodávka); nákup
+	// musí dodávce předcházet. Zakázky jsou Ukončeno.
+	"projects": {
+		"kind": "Projekty",
+		"series": "P",
+		"items": [
+			{ "key": "sit",  "customer": "galvanovna", "title": "Výměna sítě",     "startDaysBefore": 3,
+			  "purchases": { "supplier": "cipdeska", "month": -6, "rows": [
+				{ "item": "ROUTER",    "text": "Router Wi-Fi 6, 4× GbE",      "unitPrice": 4490 },
+				{ "item": "SWITCH-24", "text": "Síťový switch 24 portů, PoE", "unitPrice": 6400 },
+			  ] } },
+			{ "key": "wifi", "customer": "jelen",      "title": "Wi-Fi síť hotelu", "startDaysBefore": 3,
+			  "purchases": { "supplier": "cipdeska", "month": -4, "rows": [
+				{ "item": "AP-WIFI", "text": "Přístupový bod Wi-Fi 6", "unitPrice": 2590 },
+			  ] } },
+		],
+	},
 
 	// Jednorázové faktury per měsíc (hardware, práce navíc). `hours: [lo, hi]`
 	// = počet hodin odvozený deterministicky z měsíce a pořadí (bez RNG);
+	// `text` přepíše popis řádku; `project` = klíč projektu (dimenze zakázky);
 	// `payment: "cash"` = faktura placená hotově na pokladně (D8, fáze 1);
 	// `state: "concept"` jen v měsíci kotvy (rozpracované faktury).
 	"adhoc": [
@@ -81,14 +130,15 @@
 		{ "month": -8, "day": 17, "customer": "usmevov",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [3, 6] } ] },
 		{ "month": -8, "day": 20, "customer": "kopretina",  "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
 		{ "month": -7, "day": 9,  "customer": "dubovylist", "rows": [ { "item": "NTB-14", "qty": 1 }, { "item": "PRACE-H", "hours": [2, 4] } ], "payment": "cash" },
-		{ "month": -7, "day": 20, "customer": "galvanovna", "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
-		{ "month": -6, "day": 22, "customer": "galvanovna", "rows": [ { "item": "ROUTER", "qty": 1 }, { "item": "SWITCH-24", "qty": 2 }, { "item": "PRACE-H", "hours": [4, 8] } ] },
+		{ "month": -7, "day": 20, "customer": "galvanovna", "rows": [ { "item": "PRACE-H", "hours": [8, 16], "text": "Zaměření a návrh nové sítě" } ], "project": "sit" },
+		{ "month": -6, "day": 22, "customer": "galvanovna", "rows": [ { "item": "ROUTER", "qty": 1 }, { "item": "SWITCH-24", "qty": 2 }, { "item": "PRACE-H", "hours": [4, 8], "text": "Instalace a zprovoznění sítě" } ], "project": "sit" },
 		{ "month": -6, "day": 26, "customer": "wolkenschiff",  "rows": [ { "item": "PRACE-H", "hours": [6, 12] } ] },
 		{ "month": -6, "day": 20, "customer": "usmevov",    "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
 		{ "month": -5, "day": 13, "customer": "kopretina",  "rows": [ { "item": "ROUTER", "qty": 1 } ], "payment": "cash" },
 		{ "month": -6, "day": 22, "customer": "lekarna",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [2, 4] } ] },
-		{ "month": -5, "day": 20, "customer": "jelen",      "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
-		{ "month": -4, "day": 3,  "customer": "jelen",      "rows": [ { "item": "AP-WIFI", "qty": 4 }, { "item": "PRACE-H", "hours": [5, 9] } ] },
+		{ "month": -5, "day": 20, "customer": "jelen",      "rows": [ { "item": "PRACE-H", "hours": [8, 16], "text": "Průzkum lokality a návrh Wi-Fi sítě" } ], "project": "wifi" },
+		// Dodávka přístupových bodů až po nákupu u velkoobchodu (15. den).
+		{ "month": -4, "day": 18, "customer": "jelen",      "rows": [ { "item": "AP-WIFI", "qty": 4 }, { "item": "PRACE-H", "hours": [5, 9], "text": "Montáž a nastavení Wi-Fi sítě" } ], "project": "wifi" },
 		{ "month": -4, "day": 20, "customer": "lekarna",    "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
 		{ "month": -3, "day": 22, "customer": "domovnik",   "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [2, 4] } ] },
 		{ "month": -3, "day": 18, "customer": "lekarna",    "rows": [ { "item": "PRACE-H", "hours": [2, 5] } ] },

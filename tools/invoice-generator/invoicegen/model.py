@@ -29,6 +29,7 @@ class RowRec:
     acc_side: str | None = None            # debit | credit
     content_tag: str | None = None
     supply_kind: str | None = None         # druh plnění na papíru zahraničního dodavatele (services), jen pro zprávu
+    work_order: str | None = None          # dimenze zakázky na řádku (číslo zakázky, #131 fáze 2b)
     # výsledek výpočtu (doccalc):
     vat_base: Decimal | None = None
     vat_amount: Decimal | None = None
@@ -100,6 +101,8 @@ class DocRec:
     note_on_document: str | None = None
     vat_registration: bool = True          # doklad nese registraci DPH (registrationCountry)
     fiscal_period_type: str | None = None  # "opening" = otevírací doklad (exchange fiscalPeriodType, #69 D20)
+    source_kind: str | None = None         # exchange source.kind ("workOrder" = z periodické fakturace, #131 fáze 2b)
+    work_order: str | None = None          # dimenze zakázky na hlavičce (číslo zakázky)
     number: str | None = None              # přidělí assign_numbers
     sequence: int | None = None
     series_code: str | None = None
@@ -109,6 +112,48 @@ class DocRec:
     total_amount: Decimal = Decimal("0")
     total_rounding: Decimal = Decimal("0")
     mail: MailRec | None = None            # zpracovaná zpráva s PDF, ze které doklad vznikl
+
+
+@dataclass
+class WorkOrderRowRec:
+    """Řádek fakturačního předpisu periodické zakázky (platnost od/do)."""
+    item_code: str
+    description: str
+    quantity: Decimal
+    unit: str                              # system_code jednotky
+    unit_price: Decimal
+    vat_code: str
+    valid_from: date | None = None
+    valid_to: date | None = None
+
+
+@dataclass(frozen=True)
+class PeriodRec:
+    """Vystavené období periodické zakázky — doklad klíčem (číslo až po `assign_numbers`)."""
+    start: date
+    end: date
+    doc_key: str
+
+
+@dataclass
+class WorkOrderRec:
+    key: str                               # billing:<index pravidla> | project:<klíč>
+    ordinal: int                           # pořadí vzniku v příběhu (poslední klíč řazení)
+    series_code: str                       # kód řady zakázek (setup/work_order_series)
+    sequence: int
+    number: str
+    title: str
+    state: str                             # confirmed | finished
+    date_start: date
+    customer_key: str
+    currency: str
+    date_end: date | None = None
+    periodicity: str | None = None         # month | quarter — jen periodická
+    invoice_from: date | None = None
+    doc_text: str | None = None            # šablona textu dokladu s {období}, v jazyce dokladu
+    bank_account: str | None = None        # přepis účtu z druhu (EUR → BU2), None = z druhu
+    rows: list[WorkOrderRowRec] = field(default_factory=list)
+    periods: list[PeriodRec] = field(default_factory=list)
 
 
 @dataclass
@@ -181,3 +226,4 @@ class Records:
     registry: list[RegistryRec]
     setup: dict[str, dict]
     bank: list[StatementRec] = field(default_factory=list)
+    work_orders: list[WorkOrderRec] = field(default_factory=list)   # zakázky (#131 fáze 2b)

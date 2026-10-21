@@ -57,6 +57,11 @@ class EconomyTargetsTest(unittest.TestCase):
             self.assertLessEqual(balance.lowest, balance.opening, balance.code)
             self.assertLessEqual(balance.lowest, balance.closing, balance.code)
 
+    def test_projects_have_positive_margin(self) -> None:
+        self.assertEqual(2, len(self.summary.projects), "dva projekty (D36)")
+        for project in self.summary.projects:
+            self.assertGreater(project.margin, 0, format_summary(self.summary)[-1])
+
     def test_wages_unchanged(self) -> None:
         figures = self.story.payroll["figures"]
         months = self.story.payroll.get("months") or {}
@@ -117,8 +122,22 @@ class EconomySummaryTest(unittest.TestCase):
         self.assertIn("% výnosů", lines[0])
         self.assertTrue(lines[1].startswith("měsíce ve ztrátě: "))
         self.assertIn("zahraniční odběratelé", lines[2])
-        self.assertEqual(2 + len(self.summary.balances), len(lines) - 1)
+        self.assertEqual(2 + len(self.summary.balances) + len(self.summary.projects), len(lines) - 1)
         self.assertTrue(any(line.startswith("účet BU1: počátek") for line in lines))
+        self.assertTrue(any(line.startswith("projekt P0001 Výměna sítě: výnosy") for line in lines))
+
+    def test_projects_from_dimensions(self) -> None:
+        # D36: výnosy = faktury s dimenzí zakázky, náklady = řádky nákupu s dimenzí.
+        projects = {p.number: p for p in self.summary.projects}
+        self.assertEqual(["P0001", "P0002"], sorted(projects))
+        for number, figures in projects.items():
+            revenue = sum(((d.total_base * d.rate).quantize(Decimal("0.01")) for d in self.records.docs
+                           if d.state == 40 and d.doc_type == "invno" and d.work_order == number), Decimal("0"))
+            costs = sum(((r.vat_base * d.rate).quantize(Decimal("0.01")) for d in self.records.docs if d.doc_type == "invni"
+                         for r in d.rows if r.work_order == number), Decimal("0"))
+            self.assertEqual((revenue, costs), (figures.revenue, figures.costs), number)
+            self.assertGreater(figures.revenue, 0)
+            self.assertGreater(figures.costs, 0)
 
 
 if __name__ == "__main__":

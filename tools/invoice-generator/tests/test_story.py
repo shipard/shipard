@@ -41,7 +41,11 @@ class StoryLoadTest(unittest.TestCase):
         self.assertEqual(Decimal("24.47"), story.rates["EUR"][0])
         self.assertEqual("2026-01-01", story.setup["bank_accounts"]["rows"][0]["valid_from"], "@period.start doplněno")
         self.assertEqual(sorted(story.setup), sorted(["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers",
-                                                      "vat_registrations", "binders", "mailboxes"]))
+                                                      "vat_registrations", "binders", "mailboxes",
+                                                      "work_order_kinds", "work_order_series"]))
+        self.assertEqual("S", story.invoicing["workOrders"]["series"], "paušály jako periodické zakázky (fáze 2b)")
+        self.assertEqual(-30, story.billing[0]["since"])
+        self.assertEqual(["sit", "wifi"], [p["key"] for p in story.projects["items"]], "projekty (D36)")
         self.assertEqual("221200", story.setup["accounts"]["rows"][0]["number"], "analytika pro BU2 (fáze 2a)")
         self.assertEqual(169, story.bank["accounts"]["BU1"]["fee"]["amount"])
         self.assertEqual(["net", "insurance", "tax"], [r["amount"] for r in story.bank["payroll"]])
@@ -94,8 +98,22 @@ class StoryValidationTest(unittest.TestCase):
         self.assert_problem("doména .example")
 
     def test_unknown_item_in_billing(self) -> None:
-        self.edit("story.jsonc", '"item": "SPRAVA-IT", "price": 16000 }', '"item": "NEEXISTUJE", "price": 16000 }')
+        self.edit("story.jsonc", '"item": "SPRAVA-IT", "price": 16000,', '"item": "NEEXISTUJE", "price": 16000,')
         self.assert_problem("není v items.jsonc")
+
+    def test_purchase_must_precede_delivery(self) -> None:
+        # D36: dodávka Wi-Fi (18. 6.) až po nákupu u velkoobchodu (15. 6.).
+        self.edit("story.jsonc", '{ "month": -4, "day": 18, "customer": "jelen"', '{ "month": -4, "day": 3, "customer": "jelen"')
+        self.assert_problem("musí předcházet dodávce")
+
+    def test_unknown_project_on_adhoc_invoice(self) -> None:
+        self.edit("story.jsonc", '"project": "sit" },', '"project": "neni" },', 1)
+        self.assert_problem("není v story.projects")
+
+    def test_purchased_item_must_be_sold_on_project(self) -> None:
+        self.edit("story.jsonc", '{ "item": "AP-WIFI", "text": "Přístupový bod Wi-Fi 6", "unitPrice": 2590 }',
+                  '{ "item": "NTB-14", "text": "Notebook", "unitPrice": 2590 }')
+        self.assert_problem("se na fakturách projektu neprodává")
 
     def test_concept_outside_anchor_month(self) -> None:
         self.edit("story.jsonc", '"month": 0,  "day": 7,  "customer": "usmevov"', '"month": -1,  "day": 7,  "customer": "usmevov"')

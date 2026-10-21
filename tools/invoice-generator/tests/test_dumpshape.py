@@ -6,8 +6,11 @@ from decimal import Decimal
 
 from invoicegen.catalogs import load_catalogs
 from invoicegen.datasetio import dumps_dataset
-from invoicegen.dumpshape import bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, php_float
-from invoicegen.model import DocRec, RecapLine, StatementRec, TxRec
+from invoicegen.dumpshape import (
+    bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, php_float, work_order_record, work_order_slug,
+    work_order_sort_key,
+)
+from invoicegen.model import DocRec, PeriodRec, RecapLine, RowRec, StatementRec, TxRec, WorkOrderRec, WorkOrderRowRec
 from invoicegen.story import load_story
 from tests.fixtures import REPO_ROOT
 
@@ -26,6 +29,74 @@ class PhpFloatTest(unittest.TestCase):
                  "d": php_float(Decimal("2340.00")), "e": php_float(Decimal("0.718")), "f": php_float(0)}
         self.assertEqual('{\n    "a": 1.0,\n    "b": 21.0,\n    "c": 486.5,\n    "d": 2340.0,\n    "e": 0.718,\n    "f": 0.0\n}\n',
                          dumps_dataset(value))
+
+
+class DocDimensionsTest(unittest.TestCase):
+    def test_source_and_dimensions_sit_where_the_exporter_puts_them(self) -> None:
+        # #131 fáze 2b: `source` hned za formatVersion, `dimensions` hlavičky
+        # za notes před rows, `dimensions` řádku jako poslední klíč bloku.
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        row = RowRec(operation="sale.services", item_code="SPRAVA-IT", item_name="Správa IT", description="paušál", unit="mnth",
+                     quantity=Decimal("1"), unit_price=Decimal("100"), total_price=Decimal("100"), vat_pct=21, vat_code="cz-120",
+                     work_order="P0001")
+        plain = doc("invno", partner_key="kopretina", self_party="supplier", number="1260001", sequence=1, rows=[row])
+        record = doc_record(plain, story)
+        self.assertNotIn("source", record)
+        self.assertNotIn("dimensions", record)
+        self.assertEqual("dimensions", list(record["rows"][0])[-1])
+        self.assertEqual({"workOrder": "P0001"}, record["rows"][0]["dimensions"])
+
+        plain_row = RowRec(operation="sale.services", item_code="SPRAVA-IT", item_name="Správa IT", description="paušál", unit="mnth",
+                           quantity=Decimal("1"), unit_price=Decimal("100"), total_price=Decimal("100"), vat_pct=21, vat_code="cz-120")
+        periodic = doc("invno", partner_key="kopretina", self_party="supplier", number="1260002", sequence=2, rows=[plain_row],
+                       source_kind="workOrder", work_order="S0001", doc_text="Správa IT — paušál leden 2026",
+                       period_from=date(2026, 1, 1), period_to=date(2026, 1, 31))
+        record = doc_record(periodic, story)
+        keys = list(record)
+        self.assertEqual(keys.index("formatVersion") + 1, keys.index("source"))
+        self.assertEqual({"kind": "workOrder"}, record["source"])
+        self.assertEqual(keys.index("payment") + 1, keys.index("dimensions"), "za payment (notes prázdné → pryč), před rows")
+        self.assertEqual(keys.index("dimensions") + 1, keys.index("rows"))
+        self.assertNotIn("dimensions", record["rows"][0], "řádek bez dimenze ji nenese")
+        self.assertEqual({"workOrder": "S0001"}, record["dimensions"])
+        self.assertEqual(("2026-01-01", "2026-01-31"), (record["dates"]["periodFrom"], record["dates"]["periodTo"]))
+
+
+class WorkOrderRecordTest(unittest.TestCase):
+    def test_key_order_and_pruning_mirror_exporter(self) -> None:
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        rec = WorkOrderRec(
+            key="billing:0", ordinal=0, series_code="S", sequence=1, number="S0001", title="Správa IT — Kopretina",
+            state="confirmed", date_start=date(2024, 4, 1), customer_key="kopretina", currency="CZK", periodicity="month",
+            invoice_from=date(2026, 1, 1), doc_text="Správa IT — paušál {období}", bank_account=None,
+            rows=[WorkOrderRowRec(item_code="SPRAVA-IT", description="Správa IT — měsíční paušál", quantity=Decimal("1"),
+                                  unit="mnth", unit_price=Decimal("16000"), vat_code="cz-120", valid_to=date(2026, 5, 31))],
+            periods=[PeriodRec(date(2026, 1, 1), date(2026, 1, 31), "billing:0:-9"), PeriodRec(date(2026, 10, 1), date(2026, 10, 31), "billing:0:0")],
+        )
+        record = work_order_record(rec, story, {"billing:0:-9": "1260001", "billing:0:0": "!0000000155"})
+        self.assertEqual(["format", "workOrder", "rows", "periods"], list(record))
+        self.assertEqual("shpd.dataset.workOrder.v1", record["format"])
+        self.assertEqual(["number", "sequenceNumber", "numberSeries", "title", "state", "dateStart", "customer", "currency", "invoicing"],
+                         list(record["workOrder"]), "null hodnoty pryč (dateEnd, costCenter, paymentReference, parent)")
+        self.assertEqual({"name": "Autodoprava Kopretina s.r.o.", "country": "cz", "companyId": "83715266", "taxId": "CZ83715266",
+                          "vatId": "CZ83715266"}, record["workOrder"]["customer"], "štíhlá strana")
+        self.assertEqual("czk", record["workOrder"]["currency"])
+        self.assertEqual({"periodicity": "month", "invoiceFrom": "2026-01-01", "docText": "Správa IT — paušál {období}"},
+                         record["workOrder"]["invoicing"], "přepisy druhu jen vyplněné")
+        self.assertEqual('{\n    "item": "SPRAVA-IT",\n    "description": "Správa IT — měsíční paušál",\n    "quantity": 1.0,\n'
+                         '    "unit": "mnth",\n    "unitPrice": 16000.0,\n    "vatCode": "cz-120",\n    "validTo": "2026-05-31"\n}\n',
+                         dumps_dataset(record["rows"][0]), "čísla float jako V::float")
+        self.assertEqual([{"from": "2026-01-01", "to": "2026-01-31", "state": "issued", "docNumber": "1260001"},
+                          {"from": "2026-10-01", "to": "2026-10-31", "state": "issued", "docNumber": "!0000000155"}], record["periods"])
+
+        project = WorkOrderRec(key="project:sit", ordinal=0, series_code="P", sequence=1, number="P0001", title="Výměna sítě",
+                               state="finished", date_start=date(2026, 3, 17), date_end=date(2026, 4, 22),
+                               customer_key="galvanovna", currency="CZK")
+        record = work_order_record(project, story, {})
+        self.assertEqual(["format", "workOrder"], list(record), "projekt bez předpisu, řádků a období")
+        self.assertEqual("2026-04-22", record["workOrder"]["dateEnd"])
+        self.assertEqual("P0001", work_order_slug(project))
+        self.assertLess(work_order_sort_key(project), work_order_sort_key(rec), "P před S — podle čísla")
 
 
 class DocOrderTest(unittest.TestCase):

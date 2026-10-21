@@ -18,7 +18,7 @@ from .datasetio import (
 from .dumpshape import (
     bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, item_record, item_slug, item_sort_key,
     mail_record, mail_slug, mail_sort_key, person_record, person_slug, person_sort_key, registry_record,
-    registry_slug, registry_sort_key,
+    registry_slug, registry_sort_key, work_order_record, work_order_slug, work_order_sort_key,
 )
 from .economy import EconomySummary, summarize
 from .expand import expand
@@ -29,7 +29,7 @@ from .pdfcache import PdfCache
 from .story import Story, load_story
 from .timeline import manifest_created
 
-MANAGED = ("manifest.jsonc", "setup", "persons", "items", "docs", "bank", "registry", "mail")
+MANAGED = ("manifest.jsonc", "setup", "persons", "items", "workOrders", "docs", "bank", "registry", "mail")
 DEMO_IDENTITIES = "demo/invoices/suppliers.jsonc"
 CORPUS_IDENTITIES = "tests/corpus/cz/identities.jsonc"
 PROJECTION = "tests/corpus/projection.jsonc"
@@ -90,6 +90,13 @@ def build_files(story: Story, records: Records, catalogs: Catalogs, *, projectio
     for i, doc in enumerate(docs, start=1):
         files[f"docs/{file_name(i, doc_slug(doc))}"] = _encode(doc_record(doc, story))
     counts["docs"] = len(docs)
+
+    # Zakázky (#131 fáze 2b) — evidence období odkazuje čísla dokladů
+    # včetně zástupných čísel konceptů, proto až po přidělení výše.
+    work_orders = sorted(records.work_orders, key=work_order_sort_key)
+    for i, rec in enumerate(work_orders, start=1):
+        files[f"workOrders/{file_name(i, work_order_slug(rec))}"] = _encode(work_order_record(rec, story, number_by_key))
+    counts["workOrders"] = len(work_orders)
 
     statements = sorted(records.bank, key=bank_sort_key)
     for i, statement in enumerate(statements, start=1):

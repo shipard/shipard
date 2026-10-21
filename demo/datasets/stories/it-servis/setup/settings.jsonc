@@ -7,6 +7,7 @@
 	"table": "settings",
 	"rows": [
 		{ "key": "economy.accountChart", "value": "default" },
+		{ "key": "economy.accounting.dimension.workOrder", "value": "yes" },
 		{ "key": "economy.assets.accountingSeries", "value": "6" },
 		{ "key": "economy.fiscalYearStartMonth", "value": 1 },
 		{ "key": "economy.homeCurrency", "value": "czk" },
