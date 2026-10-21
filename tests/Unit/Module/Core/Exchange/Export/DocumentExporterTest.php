@@ -51,6 +51,9 @@ class DocumentExporterTest extends TestCase
                 $codes = [3 => 'S01', 5 => 'V01'];
                 return isset($codes[(int) ($args[0] ?? 0)]) ? new Row(['k' => $codes[(int) $args[0]]]) : null;
             }
+            if (str_contains($sql, 'FROM [economy_work_orders_heads]')) {
+                return (int) ($args[0] ?? 0) === 8 ? new Row(['k' => 'S0001']) : null;
+            }
             if (str_contains($sql, 'SHOW TABLES')) {
                 return $hasAccounting ? new Row(['t' => 'economy_accounting_accounts']) : null;
             }
@@ -139,6 +142,35 @@ class DocumentExporterTest extends TestCase
         $warnings = array_values(array_filter($exporter->getWarnings(), static fn(string $w): bool => str_contains($w, 'Majetek')));
         $this->assertCount(1, $warnings, 'jedno varování per dimenze, ne per doklad');
         $this->assertStringContainsString('2 dokladů', $warnings[0]);
+    }
+
+    public function testWorkOrderDimensionIsPortableOnlyWithItsSection(): void
+    {
+        // #131 fáze 2b (D31): zakázky nejsou v setup/, ale ve vlastní sekci
+        // workOrders/ — dump ji ohlásí jako přenosnou tabulku jen tehdy.
+        $dimensions = [
+            'workOrder' => [
+                'id' => 'workOrder', 'rowColumn' => 'work_order', 'headColumn' => 'work_order', 'journalColumn' => 'work_order',
+                'table' => 'economy_work_orders_heads', 'name' => 'Zakázka', 'exchangeKey' => 'number',
+            ],
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === JournalDimensionSet::CFG_ITEM ? $dimensions : null,
+        );
+        $rows = [['work_order' => 8] + $this->itemRowRow()];
+
+        $without = new DocumentExporter($this->db(rows: $rows), $config);
+        $c = $without->exportDocument($this->headRow(['work_order' => 8]))->data;
+        $this->assertArrayNotHasKey('dimensions', $c);
+        $this->assertArrayNotHasKey('dimensions', $c['rows'][0]);
+        $this->assertCount(1, array_filter($without->getWarnings(), static fn(string $w): bool => str_contains($w, 'Zakázka')));
+
+        $with = new DocumentExporter($this->db(rows: $rows), $config, ['economy_work_orders_heads']);
+        $c = $with->exportDocument($this->headRow(['work_order' => 8]))->data;
+        $this->assertSame(['workOrder' => 'S0001'], $c['dimensions'], 'hlavička číslem zakázky');
+        $this->assertSame(['workOrder' => 'S0001'], $c['rows'][0]['dimensions'], 'řádek číslem zakázky');
+        $this->assertSame([], $with->getWarnings());
     }
 
     public function testWithoutConfigNoDimensionsAreExported(): void

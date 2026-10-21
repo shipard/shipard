@@ -27,6 +27,8 @@ use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
 use Shipard\Module\Economy\Items\Dataset\ProvisionedItemsDetector;
 use Shipard\Module\Economy\Items\Dataset\ProvisionedItemsResult;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderExporter;
+use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
 use Symfony\Component\Console\Command\Command;
@@ -150,9 +152,15 @@ class DatasetDumpCommand extends Command
         if (isset($tables['economy_items'])) {
             $records[] = new ItemExporter($db, $excludedItemIds);
         }
+        // Zakázky (#131 fáze 2b) před doklady: doklady je odkazují číslem
+        // v `dimensions`, proto je dimenze zakázky přenosná jen s touto sekcí.
+        $hasWorkOrders = isset($tables[WorkOrderDocument::TABLE]);
+        if ($hasWorkOrders) {
+            $records[] = new WorkOrderExporter($db, $config, $tables);
+        }
         if (isset($tables['docs_core_heads'])) {
             // Konfigurace kvůli dimenzím deníku na dokladech (#110 T2).
-            $records[] = new DocumentExporter($db, $config);
+            $records[] = new DocumentExporter($db, $config, $hasWorkOrders ? [WorkOrderDocument::TABLE] : []);
         }
         // Bankovní výpisy (#131 fáze 2a): pořadí za doklady = pořadí seedu i klíčů counts.
         if (isset($tables['economy_bank_statements'])) {

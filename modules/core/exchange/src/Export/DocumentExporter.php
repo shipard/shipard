@@ -65,9 +65,11 @@ final class DocumentExporter implements RecordExporter
 
     /**
      * Dimenze deníku s `exchangeKey` (#110 T2) — jen ty, jejichž cílovou
-     * tabulku sada nese v sekci setup (středisko). Dimenze mířící na záznamy
-     * mimo sadu (karty majetku) se nepřenáší: seed by jinak doklad odmítl
-     * (`dimension_not_found`), i když je zbytek dat v pořádku.
+     * tabulku sada nese v sekci setup (středisko) nebo ve vlastní sekci
+     * (`$sectionTables`: zakázky v `workOrders/`, #131 fáze 2b). Dimenze
+     * mířící na záznamy mimo sadu (karty majetku) se nepřenáší: seed by
+     * jinak doklad odmítl (`dimension_not_found`), i když je zbytek dat
+     * v pořádku.
      *
      * @var list<JournalDimension>
      */
@@ -82,11 +84,16 @@ final class DocumentExporter implements RecordExporter
     /** @var array<string, array<string, true>> id dimenze → doklady, kde se hodnota zahodila */
     private array $droppedDimensions = [];
 
+    /**
+     * @param list<string> $sectionTables cílové tabulky dimenzí, které sada
+     *        nese ve vlastní sekci (dump je předá jen při aktivní tabulce)
+     */
     public function __construct(
         private readonly Connection $db,
         ?ConfigRuntime $config = null,
+        array $sectionTables = [],
     ) {
-        $portableTables = array_column(SetupExporter::TABLES, 'table');
+        $portableTables = [...array_column(SetupExporter::TABLES, 'table'), ...$sectionTables];
         $portable = [];
         $unportable = [];
         foreach (JournalDimensionSet::fromConfig($config) as $dimension) {

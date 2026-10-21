@@ -115,6 +115,37 @@ class DatasetPreflightTest extends TestCase
         ], $override);
     }
 
+    /**
+     * Obálka zakázky (#131 fáze 2b, D30) — periodická s předpisem a dvěma
+     * vystavenými obdobími (jedno koncept měsíce kotvy).
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function workOrder(array $override = []): array
+    {
+        return array_replace([
+            'format'    => 'shpd.dataset.workOrder.v1',
+            'workOrder' => [
+                'number' => 'S0001', 'sequenceNumber' => 1, 'numberSeries' => 'S', 'title' => 'Správa IT — Kopretina',
+                'state' => 'confirmed', 'dateStart' => '2023-04-01',
+                'customer' => ['name' => 'Autodoprava Kopretina s.r.o.', 'country' => 'cz', 'companyId' => '12345678', 'taxId' => 'CZ12345678', 'vatId' => 'CZ12345678'],
+                'currency' => 'czk',
+                'invoicing' => [
+                    'periodicity' => 'month', 'invoiceFrom' => '2026-01-01', 'docText' => 'Správa IT — paušál {období}',
+                    'numberSeries' => ['docType' => 'invno'], 'bankAccount' => 'BU2',
+                ],
+            ],
+            'rows' => [
+                ['item' => 'SPRAVA-IT', 'description' => 'Správa IT — měsíční paušál', 'quantity' => 1.0, 'unit' => 'mnth', 'unitPrice' => 16000.0, 'vatCode' => 'cz-120'],
+            ],
+            'periods' => [
+                ['from' => '2026-01-01', 'to' => '2026-01-31', 'state' => 'issued', 'docNumber' => '1260001'],
+                ['from' => '2026-10-01', 'to' => '2026-10-31', 'state' => 'issued', 'docNumber' => '!0000000155'],
+            ],
+        ], $override);
+    }
+
     public static function exchangeRateList(array $override = []): array
     {
         return array_merge([
@@ -177,6 +208,42 @@ class DatasetPreflightTest extends TestCase
 
         $this->assertCount(1, $result['errors']);
         $this->assertStringContainsString('bank/0001-bad.jsonc', $result['errors'][0]);
+    }
+
+    public function testWorkOrdersAreValidatedAgainstSchema(): void
+    {
+        // #131 fáze 2b: obálka zakázky s přirozenými klíči; období jen vystavená.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'workOrders' => 2, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('workOrders/0001-s0001.jsonc', self::workOrder());
+            $w->writeJsonc('workOrders/0002-p0001.jsonc', [
+                'format'    => 'shpd.dataset.workOrder.v1',
+                'workOrder' => ['number' => 'P0001', 'numberSeries' => 'P', 'title' => 'Výměna sítě', 'state' => 'finished',
+                                'dateStart' => '2026-03-17', 'dateEnd' => '2026-04-22', 'customer' => ['name' => 'X', 'companyId' => '1']],
+            ]);
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidWorkOrderIsAnError(): void
+    {
+        // Reference jsou přirozené klíče (řada kódem, ne id), období jen `issued` s dokladem.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'workOrders' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('workOrders/0001-bad.jsonc', self::workOrder([
+                'workOrder' => ['numberSeries' => 3] + self::workOrder()['workOrder'],
+                'periods'   => [['from' => '2026-03-01', 'to' => '2026-03-31', 'state' => 'planned']],
+            ]));
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('workOrders/0001-bad.jsonc', $result['errors'][0]);
     }
 
     public function testExchangeRateListsAreValidatedAgainstSchema(): void

@@ -1936,7 +1936,10 @@ totožný s `apply`, nic se nezapíše. V read-only stavu zdroje projde
 **Pořadí importu (D26):** druhy a číselné řady zakázek (formát je nenese —
 runner je založí předem, I3) → osoby, položky, střediska → **zakázky**
 (nadřazené před podřízenými) → doklady s `dimensions.workOrder` = číslo
-zakázky. **Fakturovat od:** evidence vyfakturovaných období po importu
+zakázky. Datová sada (`dataset-dump` / `dataset-seed`) nese zakázky
+v obálce `shpd.dataset.workOrder.v1` se stejnou strukturou a přirozenými
+klíči místo id, druhy a řady v `setup/` — viz `docs/datasets.md`
+§ Obálka zakázky (#131 fáze 2b). **Fakturovat od:** evidence vyfakturovaných období po importu
 začíná prázdná, takže `invoicing.invoiceFrom` musí být první dosud
 nevyfakturované období (pravidlo runneru v `docs/work-orders.md` §6) —
 jinak by periodická fakturace vystavila období, která starý Shipard už

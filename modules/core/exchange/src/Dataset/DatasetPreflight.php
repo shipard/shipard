@@ -60,6 +60,9 @@ final class DatasetPreflight
             'exchangeRates' => [$this->exchange, 'shpd.exchangeRates.list', null],
             'persons'  => [$this->exchange, 'shpd.persons.person', new PersonValidator()],
             'items'    => [$this->exchange, 'shpd.items.item', new ItemValidator()],
+            // Zakázky (#131 fáze 2b) — obálka; reference (řada, zákazník, položky,
+            // řada dokladů) a pravidla typu hlídá applier při seedu.
+            'workOrders' => [$this->exchange, 'shpd.dataset.workOrder', null],
             'docs'     => [$this->exchange, 'shpd.docs.document', new DocumentValidator()],
             // Bankovní výpisy (#131 fáze 2a) — obálka; sémantiku (účet kódem,
             // kurz na cizí měně, pořadí období) hlídá applier při seedu.

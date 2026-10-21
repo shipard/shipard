@@ -34,6 +34,7 @@ use Shipard\Module\Core\Exchange\Dataset\SeedContext;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
+use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
@@ -44,6 +45,10 @@ use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesSeeder;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListImporter;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderPeriodsSeeder;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderSeeder;
+use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
+use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 use Shipard\Module\Economy\Items\Dataset\AccountingItemsSeeder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -299,8 +304,21 @@ class DatasetSeedCommand extends Command
         if (isset($ctx->tables['economy_items'])) {
             $seeders[] = new ItemSeeder(ItemApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $personApplier));
         }
+        // Zakázky (#131 fáze 2b) za osobami a položkami, před doklady — doklady
+        // je odkazují číslem (dimenze); evidence období až za doklady.
+        $hasWorkOrders = isset($ctx->tables[WorkOrderDocument::TABLE], $ctx->tables[WorkOrderDocument::ROWS_TABLE]);
+        if ($hasWorkOrders) {
+            $seeders[] = new WorkOrderSeeder(
+                WorkOrderImportApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables),
+                $party,
+                new ItemResolver($db),
+            );
+        }
         if (isset($ctx->tables['docs_core_heads'])) {
             $seeders[] = new DocumentSeeder(DocumentApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $ctx->dispatcher));
+        }
+        if ($hasWorkOrders && isset($ctx->tables['docs_core_heads'])) {
+            $seeders[] = new WorkOrderPeriodsSeeder();
         }
         // Bankovní výpisy (#131 fáze 2a) až za doklady: mikroengine při stavu 40
         // dohledává otevřené předpisy; dispatcher je nutný, jinak se nezaúčtuje nic.

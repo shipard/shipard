@@ -1,0 +1,347 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.dataset.workOrder.v1.json",
+    "title": "Shipard dataset work order v1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "format",
+        "workOrder"
+    ],
+    "properties": {
+        "format": {
+            "const": "shpd.dataset.workOrder.v1"
+        },
+        "workOrder": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "numberSeries",
+                "title",
+                "state"
+            ],
+            "properties": {
+                "number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "pattern": "\\S"
+                },
+                "sequenceNumber": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 1
+                },
+                "numberSeries": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "\\S"
+                },
+                "state": {
+                    "enum": [
+                        "draft",
+                        "confirmed",
+                        "finished",
+                        "cancelled"
+                    ]
+                },
+                "dateStart": {
+                    "$ref": "#/$defs/dateOrNull"
+                },
+                "dateEnd": {
+                    "$ref": "#/$defs/dateOrNull"
+                },
+                "costCenter": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1
+                },
+                "internalNote": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "customer": {
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "name": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "country": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "pattern": "^[a-z]{2}$"
+                        },
+                        "companyId": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "taxId": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "vatId": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                },
+                "currency": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 3,
+                    "maxLength": 3
+                },
+                "paymentReference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "maxLength": 35
+                },
+                "parent": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "invoicing": {
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "periodicity": {
+                            "enum": [
+                                "month",
+                                "quarter",
+                                "halfyear",
+                                "year",
+                                null
+                            ]
+                        },
+                        "invoiceFrom": {
+                            "$ref": "#/$defs/dateOrNull"
+                        },
+                        "docText": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 200
+                        },
+                        "docType": {
+                            "enum": [
+                                "invno",
+                                "invpo",
+                                null
+                            ]
+                        },
+                        "numberSeries": {
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "additionalProperties": false,
+                            "required": [
+                                "docType"
+                            ],
+                            "properties": {
+                                "docType": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "code": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 10
+                                }
+                            }
+                        },
+                        "dueDays": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 0,
+                            "maximum": 999
+                        },
+                        "timing": {
+                            "enum": [
+                                "start",
+                                "end",
+                                null
+                            ]
+                        },
+                        "vatMode": {
+                            "enum": [
+                                "none",
+                                "fromBase",
+                                "fromTotal",
+                                null
+                            ]
+                        },
+                        "paymentMethod": {
+                            "enum": [
+                                "cash",
+                                "bankTransfer",
+                                "card",
+                                "cashOnDelivery",
+                                "setOff",
+                                "paymentGateway",
+                                null
+                            ]
+                        },
+                        "bankAccount": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "minLength": 1
+                        }
+                    }
+                }
+            }
+        },
+        "rows": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "item": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minLength": 1
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500
+                    },
+                    "quantity": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "unit": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 20
+                    },
+                    "unitPrice": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "vatCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 20
+                    },
+                    "operation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 40
+                    },
+                    "validFrom": {
+                        "$ref": "#/$defs/dateOrNull"
+                    },
+                    "validTo": {
+                        "$ref": "#/$defs/dateOrNull"
+                    }
+                }
+            }
+        },
+        "periods": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "from",
+                    "to",
+                    "state",
+                    "docNumber"
+                ],
+                "properties": {
+                    "from": {
+                        "$ref": "#/$defs/date"
+                    },
+                    "to": {
+                        "$ref": "#/$defs/date"
+                    },
+                    "state": {
+                        "const": "issued"
+                    },
+                    "docNumber": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50
+                    }
+                }
+            }
+        }
+    },
+    "$defs": {
+        "date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "dateOrNull": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+    }
+}

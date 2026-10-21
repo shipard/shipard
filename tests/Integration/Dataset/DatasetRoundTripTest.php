@@ -21,20 +21,28 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetWriter;
 use Shipard\Module\Core\Exchange\Dataset\Seed\DocumentSeeder;
 use Shipard\Module\Core\Exchange\Dataset\Seed\ItemSeeder;
 use Shipard\Module\Core\Exchange\Dataset\Seed\PersonSeeder;
+use Shipard\Module\Core\Exchange\Dataset\Seed\SetupSeeder;
 use Shipard\Module\Core\Exchange\Dataset\SeedContext;
 use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Export\ItemExporter;
 use Shipard\Module\Core\Exchange\Export\PersonExporter;
+use Shipard\Module\Core\Exchange\Export\SetupExporter;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
+use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailExporter;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Economy\Bank\Dataset\BankStatementExporter;
 use Shipard\Module\Economy\Bank\Dataset\BankStatementSeeder;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderExporter;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderPeriodsSeeder;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderSeeder;
+use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
+use Shipard\Module\Economy\WorkOrders\Invoicing\ContentHash;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
@@ -74,6 +82,12 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private const BANK_ACCOUNT_CODE = 'ITDSBU';
     private const STATEMENT_EXTERNAL_ID = 'IT-DS-BU-2026-06';
     private const BANK_FILE = 'bank/0001-itdsbu-2026-06.jsonc';
+    /** Zakázky (#131 fáze 2b): druh a řada v setup/, periodická zakázka s obdobím na vydanou fakturu. */
+    private const WO_KIND = 'IT-DS Paušál';
+    private const WO_SERIES_CODE = 'ITDSS';
+    private const WO_NUMBER = 'ITDSS0001';
+    private const WO_FILE = 'workOrders/0001-itdss0001.jsonc';
+    private const INVNO_NUMBER = 'IT-DS-1001';
 
     private string $setDir;
     private ConfigRuntime $config;
@@ -83,6 +97,11 @@ class DatasetRoundTripTest extends IntegrationTestCase
     /** Sekce bank jen s modulem banky a analytikou 221100 na DS. */
     private bool $hasBank = false;
     private int $bankAccountId = 0;
+    /** Sekce workOrders jen s modulem zakázek, vlastním účtem (faktura ve 40) a jedinou aktivní řadou invno. */
+    private bool $hasWorkOrders = false;
+    /** @var array{docType: string, code?: string} reference řady invno pro setup (D37) */
+    private array $invnoSeries = ['docType' => 'invno'];
+    private ?string $invnoCode = null;
 
     protected function setUp(): void
     {
@@ -136,6 +155,20 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->bankAccountId = (int) $dibi->getInsertId();
         }
 
+        // Zakázky (#131 fáze 2b): vydaná faktura ve 40 potřebuje vlastní účet,
+        // druh zakázky odkazuje řadu invno složeným klíčem {docType, code} (D37).
+        $invnoSeries = $dibi->fetchAll("SELECT id, doc_number_code FROM docs_core_number_series WHERE doc_type = 'invno' AND docState IN (10, 40, 80)");
+        $this->hasWorkOrders = $this->hasBank
+            && isset($this->tables['economy_work_orders_heads'], $this->tables['economy_work_orders_rows'],
+                $this->tables['economy_work_orders_periods'], $this->tables['economy_work_orders_kinds'],
+                $this->tables['economy_work_orders_number_series'])
+            && count($invnoSeries) === 1;
+        if ($this->hasWorkOrders) {
+            $code = trim((string) $invnoSeries[0]['doc_number_code']);
+            $this->invnoCode = $code !== '' ? $code : null;
+            $this->invnoSeries = ['docType' => 'invno'] + ($this->invnoCode !== null ? ['code' => $this->invnoCode] : []);
+        }
+
         $this->setDir = $this->dsPath . '/set';
         $this->writeSet();
 
@@ -173,10 +206,23 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $party = new PartyResolver($dibi, new OwnCompanyResolver($dibi));
         $personApplier = PersonApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables);
         $seeders = [
+            new SetupSeeder(),
             new PersonSeeder($personApplier),
             new ItemSeeder(ItemApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $personApplier)),
-            new DocumentSeeder(DocumentApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $this->ctx->dispatcher)),
         ];
+        if ($this->hasWorkOrders) {
+            // Zakázky před doklady: faktura je odkazuje číslem (dimenze workOrder).
+            $seeders[] = new WorkOrderSeeder(
+                WorkOrderImportApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables),
+                $party,
+                new ItemResolver($dibi),
+            );
+        }
+        $seeders[] = new DocumentSeeder(DocumentApplier::create($dibi, $this->config, $this->dsConfig, $this->ctx->registry, $this->tables, $this->ctx->dispatcher));
+        if ($this->hasWorkOrders) {
+            // Evidence období až za doklady: odkazuje číslo vydané faktury.
+            $seeders[] = new WorkOrderPeriodsSeeder();
+        }
         if ($this->hasBank) {
             // Až za doklady: mikroengine dohledává předpis právě naseedované faktury.
             $seeders[] = new BankStatementSeeder(
@@ -192,11 +238,16 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $counts = $report->counts();
         $this->assertSame(1, $counts['persons']['ok']);
         $this->assertSame(1, $counts['items']['ok']);
-        $this->assertSame(2, $counts['docs']['ok'], 'faktura přijatá + prodejka');
+        $this->assertSame($this->hasWorkOrders ? 3 : 2, $counts['docs']['ok'], 'faktura přijatá + prodejka (+ vydaná ze zakázky)');
         $this->assertSame(1, $counts['registry']['ok']);
         $this->assertSame(1, $counts['mail']['ok']);
         if ($this->hasBank) {
             $this->assertSame(1, $counts['bank']['ok'], 'výpis');
+        }
+        if ($this->hasWorkOrders) {
+            $this->assertSame(2, $counts['setup']['ok'], 'druhy a řady zakázek');
+            $this->assertSame(1, $counts['workOrders']['ok']);
+            $this->assertSame(1, $counts['workOrderPeriods']['ok']);
         }
 
         // ── ids podle přirozených klíčů ───────────────────────────────────
@@ -287,6 +338,58 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 $this->assertNotEmpty(array_filter($accounts, static fn(string $a): bool => str_starts_with($a, '321')), 'úhrada přijaté faktury našla předpis 321: ' . implode(', ', $accounts));
                 $this->assertSame([], array_filter($accounts, static fn(string $a): bool => str_starts_with($a, '2613')), 'úhrada nešla na clearing');
             }
+        }
+
+        // Zakázky (#131 fáze 2b): setup → druh a řada, applier → zakázka V pořádku
+        // s předpisem, evidence období na vydanou fakturu s otiskem uloženého
+        // dokladu, faktura nese zdroj i dimenzi zakázky (deník ji dědí z hlavičky).
+        $workOrderId = 0;
+        $invnoId = 0;
+        if ($this->hasWorkOrders) {
+            $kind = $dibi->fetch('SELECT * FROM economy_work_orders_kinds WHERE name = %s AND docState <> 90', self::WO_KIND);
+            $this->assertNotNull($kind, 'druh ze setup/work_order_kinds.jsonc');
+            $invnoSeriesId = (int) $dibi->fetchSingle("SELECT id FROM docs_core_number_series WHERE doc_type = 'invno' AND docState IN (10, 40, 80)");
+            $this->assertSame($invnoSeriesId, (int) $kind['inv_number_series'], 'řada dokladů přes {docType, code} (D37)');
+            $this->assertSame($this->bankAccountId, (int) $kind['inv_bank_account'], 'účet kódem');
+            $series = $dibi->fetch('SELECT * FROM economy_work_orders_number_series WHERE number_code = %s AND docState <> 90', self::WO_SERIES_CODE);
+            $this->assertNotNull($series);
+            $this->assertSame((int) $kind['id'], (int) $series['kind'], 'druh názvem');
+
+            $workOrder = $dibi->fetch('SELECT * FROM economy_work_orders_heads WHERE number = %s AND docState <> 90', self::WO_NUMBER);
+            $this->assertNotNull($workOrder, 'zakázka přes WorkOrderImportApplier');
+            $workOrder = $workOrder->toArray();
+            $workOrderId = (int) $workOrder['id'];
+            $this->assertSame(40, (int) $workOrder['docState'], 'cílový stav V pořádku');
+            $this->assertSame((int) $series['id'], (int) $workOrder['number_series']);
+            $this->assertSame('periodic', $workOrder['type'], 'typ denormalizovaný z řady');
+            $this->assertSame($personId, (int) $workOrder['customer'], 'zákazník podle identifikátorů');
+            $this->assertSame(1, (int) $workOrder['sequence_number'], 'převzaté pořadí');
+            $this->assertSame(
+                1,
+                (int) $dibi->fetchSingle('SELECT MAX(last_assigned) FROM economy_work_orders_number_counters WHERE number_series = %i', (int) $series['id']),
+                'čítač řady zakázek srovnaný',
+            );
+            $woRows = $dibi->fetchAll('SELECT * FROM economy_work_orders_rows WHERE work_order = %i ORDER BY order_pos', $workOrderId);
+            $this->assertCount(2, $woRows, 'řádky předpisu s platností');
+            $this->assertSame($itemId, (int) $woRows[0]['item']);
+
+            $invnoId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::INVNO_NUMBER);
+            $this->assertGreaterThan(0, $invnoId);
+            $invno = $dibi->fetch('SELECT * FROM docs_core_heads WHERE id = %i', $invnoId)->toArray();
+            $this->assertSame('workOrder', $invno['source_kind'], 'zdroj dokladu = periodická fakturace');
+            $this->assertSame($workOrderId, (int) $invno['work_order'], 'dimenze zakázky na hlavičce podle čísla');
+            if ($hasChart) {
+                $journalWo = array_map('intval', $dibi->fetchPairs('SELECT id, work_order FROM economy_accounting_journal WHERE doc_head = %i', $invnoId));
+                $this->assertNotEmpty($journalWo);
+                $this->assertSame([$workOrderId], array_values(array_unique($journalWo)), 'deník dědí zakázku z hlavičky dokladu');
+            }
+
+            $period = $dibi->fetch('SELECT * FROM economy_work_orders_periods WHERE work_order = %i', $workOrderId);
+            $this->assertNotNull($period, 'evidence období z periods[]');
+            $period = $period->toArray();
+            $this->assertSame('issued', $period['state']);
+            $this->assertSame($invnoId, (int) $period['doc'], 'doklad číslem mezi vydanými');
+            $this->assertSame(ContentHash::ofStoredDocument($dibi, $invnoId), $period['content_hash'], 'otisk jako po běhu');
         }
 
         $msg = $dibi->fetch('SELECT * FROM core_mail_incoming_messages WHERE id = %i', $messageId)->toArray();
@@ -401,6 +504,35 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'výpis se vrátí beze změny — dopočtený partner, pohyb a účtování se nepřenáší',
             );
             $this->assertSame([], $bankExporter->getWarnings());
+        }
+
+        if ($this->hasWorkOrders) {
+            // Setup: druh a řada zakázek se vrátí beze změny (FK přirozeným klíčem).
+            $setupOut = [];
+            foreach ((new SetupExporter($dibi, $this->tables))->exportAll() as $record) {
+                $setupOut[$record->slug] = $record->data;
+            }
+            $kindRows = array_values(array_filter($setupOut['work_order_kinds']['rows'], static fn(array $r): bool => $r['name'] === self::WO_KIND));
+            $this->assertSame($reader->readJsonc('setup/work_order_kinds.jsonc')['rows'], $kindRows, 'druh: řada dokladů {docType, code}, účet kódem');
+            $seriesRows = array_values(array_filter($setupOut['work_order_series']['rows'], static fn(array $r): bool => $r['number_code'] === self::WO_SERIES_CODE));
+            $this->assertSame($reader->readJsonc('setup/work_order_series.jsonc')['rows'], $seriesRows, 'řada: druh názvem');
+
+            $woExporter = new WorkOrderExporter($dibi, $this->config, $this->tables);
+            $woOut = $woExporter->exportByIds([$workOrderId])[0];
+            $this->assertSame(self::WO_NUMBER, $woOut->slug);
+            $srcWo = $reader->readJsonc(self::WO_FILE);
+            $this->assertSame(self::COMPANY_ID, $woOut->data['workOrder']['customer']['companyId']);
+            $this->assertSame($srcWo['workOrder']['customer']['name'], $woOut->data['workOrder']['customer']['name']);
+            $srcWoLoose = $srcWo;
+            $outWoLoose = $woOut->data;
+            unset($srcWoLoose['workOrder']['customer'], $outWoLoose['workOrder']['customer']);
+            $this->assertSame($srcWoLoose, $outWoLoose, 'zakázka se vrátí beze změny — předpis s platností, období s číslem dokladu');
+            $this->assertSame([], $woExporter->getWarnings());
+
+            $invnoOut = (new DocumentExporter($dibi, $this->config, ['economy_work_orders_heads']))->exportByIds([$invnoId])[0]->data;
+            $this->assertSame(['kind' => 'workOrder'], $invnoOut['source']);
+            $this->assertSame(['workOrder' => self::WO_NUMBER], $invnoOut['dimensions'], 'dimenze zakázky přežije round-trip');
+            $this->assertArrayNotHasKey('dimensions', $invnoOut['rows'][0], 'řádek dimenzi nenese (deník ji dědí z hlavičky)');
         }
 
         $srcRegistry = $reader->readJsonc('registry/0001-it-ds-smlouva.jsonc');
@@ -546,8 +678,75 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'docState' => 40,
             ]);
         }
+        // Zakázky (#131 fáze 2b): druh a řada v setup/ (FK přirozeným klíčem,
+        // řada dokladů složeným klíčem D37), periodická zakázka s předpisem
+        // s platností a vystaveným obdobím na vydanou fakturu, která nese
+        // zdroj i dimenzi zakázky. Klíče v pořadí exportérů (round-trip).
+        if ($this->hasWorkOrders) {
+            $w->writeJsonc('setup/work_order_kinds.jsonc', [
+                'format' => 'shpd.dataset.setup.v1', 'table' => 'work_order_kinds',
+                'rows' => [[
+                    'name' => self::WO_KIND, 'type' => 'periodic', 'notice' => null,
+                    'inv_doc_type' => 'invno', 'inv_number_series' => $this->invnoSeries, 'inv_due_days' => 14, 'inv_timing' => 'start',
+                    'inv_vat_mode' => 1, 'inv_payment_method' => 1, 'inv_bank_account' => self::BANK_ACCOUNT_CODE, 'docState' => 40,
+                ]],
+            ]);
+            $w->writeJsonc('setup/work_order_series.jsonc', [
+                'format' => 'shpd.dataset.setup.v1', 'table' => 'work_order_series',
+                'rows' => [[
+                    'kind' => self::WO_KIND, 'name' => self::P . ' Paušály', 'notice' => null, 'number_code' => self::WO_SERIES_CODE,
+                    'number_pattern' => '%C%4', 'reset_scope' => 'none', 'valid_from' => null, 'valid_to' => null, 'docState' => 40,
+                ]],
+            ]);
+            $w->writeJsonc(self::WO_FILE, [
+                'format'    => 'shpd.dataset.workOrder.v1',
+                'workOrder' => [
+                    'number' => self::WO_NUMBER, 'sequenceNumber' => 1, 'numberSeries' => self::WO_SERIES_CODE,
+                    'title' => self::P . ' Správa IT', 'state' => 'confirmed', 'dateStart' => '2025-01-01',
+                    'customer' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
+                    'currency' => 'czk',
+                    'invoicing' => [
+                        'periodicity' => 'month', 'invoiceFrom' => '2026-06-01', 'docText' => self::P . ' paušál {období}',
+                        'numberSeries' => $this->invnoSeries, 'bankAccount' => self::BANK_ACCOUNT_CODE,
+                    ],
+                ],
+                'rows' => [
+                    ['item' => self::ITEM_CODE, 'description' => self::P . ' paušál', 'quantity' => 1.0, 'unit' => 'hr', 'unitPrice' => 500.0, 'vatCode' => 'cz-120', 'validTo' => '2026-05-31'],
+                    ['item' => self::ITEM_CODE, 'description' => self::P . ' paušál', 'quantity' => 1.0, 'unit' => 'hr', 'unitPrice' => 600.0, 'vatCode' => 'cz-120', 'validFrom' => '2026-06-01'],
+                ],
+                'periods' => [
+                    ['from' => '2026-06-01', 'to' => '2026-06-30', 'state' => 'issued', 'docNumber' => self::INVNO_NUMBER],
+                ],
+            ]);
+            $w->writeJsonc('docs/0003-it-ds-1001.jsonc', [
+                'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'source' => ['kind' => 'workOrder'],
+                'docType' => 'invoiceIssued', 'docText' => self::P . ' paušál červen 2026', 'selfParty' => 'supplier',
+                'customer' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
+                'dates' => ['issueDate' => '2026-06-01', 'dueDate' => '2026-06-15', 'accountingDate' => '2026-06-01', 'taxPointDate' => '2026-06-01',
+                            'periodFrom' => '2026-06-01', 'periodTo' => '2026-06-30'],
+                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+                'payment' => ['method' => 'bankTransfer', 'paymentReference' => '1001'],
+                'dimensions' => ['workOrder' => self::WO_NUMBER],
+                'rows' => [[
+                    'rowKind' => 'item', 'operation' => 'sale.services', 'orderPos' => 1,
+                    'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                    'quantity' => 1.0, 'unitPrice' => 600.0, 'totalPrice' => 600.0, 'priceCalcMode' => 'fromUnitPrice',
+                    'vat' => ['code' => 'cz-120', 'pct' => 21.0], 'description' => self::P . ' paušál',
+                ]],
+                'vatRecap' => [['vatCode' => 'cz-120', 'vatPct' => 21.0, 'base' => 600.0, 'tax' => 126.0, 'total' => 726.0]],
+                'totals' => ['totalBase' => 600.0, 'totalVat' => 126.0, 'totalAmount' => 726.0, 'totalRounding' => 0.0],
+                'applyOptions' => array_filter([
+                    'targetDocState' => 40,
+                    'importNumber' => ['docNumber' => self::INVNO_NUMBER, 'sequenceNumber' => null],
+                    'numberSeriesCode' => $this->invnoCode,
+                    'importOwnBankAccount' => self::BANK_ACCOUNT_CODE,
+                ], static fn($v) => $v !== null),
+            ]);
+        }
         $w->writeManifest(new DatasetManifest('it-ds', 'Integration round-trip', null, 'fixed', '2026-08-26T10:00:00Z',
-            ['persons' => 1, 'items' => 1, 'docs' => 2] + ($this->hasBank ? ['bank' => 1] : []) + ['registry' => 1, 'mail' => 1]));
+            ($this->hasWorkOrders ? ['setup' => 2] : []) + ['persons' => 1, 'items' => 1]
+            + ($this->hasWorkOrders ? ['workOrders' => 1, 'docs' => 3] : ['docs' => 2])
+            + ($this->hasBank ? ['bank' => 1] : []) + ['registry' => 1, 'mail' => 1]));
     }
 
     // ── úklid ───────────────────────────────────────────────────────────────
@@ -581,14 +780,32 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 $dibi->query('DELETE FROM economy_codebooks_bank_accounts WHERE id = %i', $accountId);
             }
         }
+        // Zakázky (#131 fáze 2b): období → řádky → hlavičky → čítače → řady → druhy.
+        if (isset($this->tables['economy_work_orders_heads'], $this->tables['economy_work_orders_number_series'], $this->tables['economy_work_orders_kinds'])) {
+            foreach ($dibi->fetchAll('SELECT id FROM economy_work_orders_heads WHERE number = %s', self::WO_NUMBER) as $r) {
+                if (isset($this->tables['economy_work_orders_periods'])) {
+                    $dibi->query('DELETE FROM economy_work_orders_periods WHERE work_order = %i', $r['id']);
+                }
+                $dibi->query('DELETE FROM economy_work_orders_rows WHERE work_order = %i', $r['id']);
+                $dibi->query('DELETE FROM economy_work_orders_heads WHERE id = %i', $r['id']);
+            }
+            foreach ($dibi->fetchAll('SELECT id FROM economy_work_orders_number_series WHERE number_code = %s', self::WO_SERIES_CODE) as $s) {
+                $dibi->query('DELETE FROM economy_work_orders_number_counters WHERE number_series = %i', $s['id']);
+                $dibi->query('DELETE FROM economy_work_orders_number_series WHERE id = %i', $s['id']);
+            }
+            $dibi->query('DELETE FROM economy_work_orders_kinds WHERE name = %s', self::WO_KIND);
+        }
         // Doklady podle čísla i podle testovací pokladny (pád s jiným číslem).
         $deskIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_cash_desks WHERE code = %s', self::CASH_DESK_CODE));
         $docs = $dibi->fetchAll(
             'SELECT id FROM docs_core_heads WHERE doc_number IN %in' . ($deskIds !== [] ? ' OR cash_desk IN %in' : ''),
-            [self::DOC_NUMBER, self::CASHREG_NUMBER],
+            [self::DOC_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER],
             ...($deskIds !== [] ? [$deskIds] : []),
         );
         foreach ($docs as $r) {
+            if (isset($this->tables['economy_accbal_ledger'])) {
+                $dibi->query('DELETE FROM economy_accbal_ledger WHERE doc_head = %i', $r['id']);
+            }
             $dibi->query('DELETE FROM economy_accounting_journal WHERE doc_head = %i', $r['id']);
             $dibi->query('DELETE FROM docs_core_rows WHERE doc_head = %i', $r['id']);
             $dibi->query('DELETE FROM docs_core_vat_recap WHERE doc_head = %i', $r['id']);

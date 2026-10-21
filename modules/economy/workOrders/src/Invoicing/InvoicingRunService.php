@@ -559,13 +559,7 @@ class InvoicingRunService
     /** Otisk obsahu uloženého dokladu (hlavička + řádky z DB). */
     protected function contentHashOf(int $docId): string
     {
-        $head = $this->db->fetch('SELECT * FROM [docs_core_heads] WHERE [id] = %i', $docId);
-        $head = $head === null ? [] : (is_array($head) ? $head : $head->toArray());
-        $rows = array_map(
-            static fn($r): array => is_array($r) ? $r : $r->toArray(),
-            $this->db->fetchAll('SELECT * FROM [docs_core_rows] WHERE [doc_head] = %i ORDER BY [order_pos], [id]', $docId),
-        );
-        return ContentHash::ofDocument($head, $rows);
+        return ContentHash::ofStoredDocument($this->db, $docId);
     }
 
     private static function isoDate(mixed $value): ?string
