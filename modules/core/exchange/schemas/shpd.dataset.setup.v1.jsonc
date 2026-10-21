@@ -6,7 +6,9 @@
     // (accounts, #131 fáze 2a), vlastní bankovní účty, střediska (dimenze
     // dokladů, #110), registrace DPH, šanony spisovny, mailboxy, druhy
     // a číselné řady zakázek (work_order_kinds, work_order_series — #131
-    // fáze 2b, D29). Jeden soubor per tabulka, řádky = sloupce tabulky bez
+    // fáze 2b, D29), účetní skupiny, skupiny typů a typy majetku
+    // (asset_accounting_groups, asset_type_groups, asset_types — #131
+    // fáze 2c, D39). Jeden soubor per tabulka, řádky = sloupce tabulky bez
     // interních id a auditních sloupců; FK sloupce nesou přirozený klíč
     // cílové tabulky, pokud ho sada umí přeložit (SetupReferences: účet
     // z rozvrhu číslem, druh zakázky názvem, bankovní účet kódem, řada
@@ -23,7 +25,7 @@
     "properties": {
         "format": { "const": "shpd.dataset.setup.v1" },
         // settings = klíč/hodnota z core_system_settings (rows: [{key, value}]), aplikuje se před resetem
-        "table":  { "enum": ["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes", "work_order_kinds", "work_order_series"] },
+        "table":  { "enum": ["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes", "work_order_kinds", "work_order_series", "asset_accounting_groups", "asset_type_groups", "asset_types"] },
         "rows": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": true }

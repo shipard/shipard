@@ -216,6 +216,90 @@ class SetupExporterTest extends TestCase
         $this->assertStringContainsString("záznam #11 nemá klíč 'number_code'", $exporter->getWarnings()[0]);
     }
 
+    public function testAssetCodebooksCarryReferencesByNaturalKey(): void
+    {
+        // #131 fáze 2c (D39): účetní skupina nese účty osnovy číslem, typ
+        // majetku skupinu typů názvem a výchozí účetní skupinu kódem.
+        $tables = [
+            'economy_assets_accounting_groups' => $this->tableDef('economy/assets/tables/economy_assets_accounting_groups.jsonc'),
+            'economy_assets_type_groups'       => $this->tableDef('economy/assets/tables/economy_assets_type_groups.jsonc'),
+            'economy_assets_types'             => $this->tableDef('economy/assets/tables/economy_assets_types.jsonc'),
+        ];
+        $db = $this->createMock(Connection::class);
+        $db->method('fetchAll')->willReturnCallback(function (string $sql): array {
+            if (str_contains($sql, '[economy_assets_accounting_groups]')) {
+                $this->assertStringContainsString('WHERE [docState] <> 90 ORDER BY [code], [id]', $sql);
+                return [
+                    new Row([
+                        'id' => 2, 'code' => '022', 'name' => 'Samostatné movité věci', 'note' => null, 'sort_order' => 20,
+                        'account_asset' => 101, 'account_acquisition' => 102, 'account_accumulated' => 103,
+                        'account_depreciation' => 104, 'account_disposal' => 105, 'docState' => 40, 'docStateMain' => 3,
+                    ]),
+                    new Row([
+                        'id' => 6, 'code' => '031', 'name' => 'Pozemky', 'note' => null, 'sort_order' => 60,
+                        'account_asset' => 106, 'account_acquisition' => 102, 'account_accumulated' => null,
+                        'account_depreciation' => null, 'account_disposal' => 105, 'docState' => 40, 'docStateMain' => 3,
+                    ]),
+                ];
+            }
+            if (str_contains($sql, '[economy_assets_type_groups]')) {
+                $this->assertStringContainsString('WHERE [docState] <> 90 ORDER BY [name], [id]', $sql);
+                return [new Row(['id' => 1, 'name' => 'Hmotný majetek', 'note' => null, 'sort_order' => 10, 'docState' => 40, 'docStateMain' => 3])];
+            }
+            if (str_contains($sql, '[economy_assets_types]')) {
+                $this->assertStringContainsString('WHERE [docState] <> 90 ORDER BY [name], [id]', $sql);
+                return [new Row([
+                    'id' => 5, 'name' => 'Výpočetní technika', 'short_name' => null, 'type_group' => 1, 'note' => null,
+                    'sort_order' => 10, 'default_category' => 'tangible', 'default_accounting_group' => 2,
+                    'docState' => 40, 'docStateMain' => 3,
+                ])];
+            }
+            $this->fail("unexpected query: {$sql}");
+        });
+        $db->method('fetch')->willReturnCallback(static function (string $sql, int $id): ?Row {
+            if (str_contains($sql, '[economy_accounting_accounts]')) {
+                $numbers = [101 => '022100', 102 => '042100', 103 => '082100', 104 => '551100', 105 => '541100', 106 => '031100'];
+                return isset($numbers[$id]) ? new Row(['number' => $numbers[$id]]) : null;
+            }
+            if (str_contains($sql, '[economy_assets_type_groups]')) {
+                return $id === 1 ? new Row(['name' => 'Hmotný majetek']) : null;
+            }
+            if (str_contains($sql, '[economy_assets_accounting_groups]')) {
+                return $id === 2 ? new Row(['code' => '022']) : null;
+            }
+            return null;
+        });
+
+        $exporter = new SetupExporter($db, $tables);
+        $records = $exporter->exportAll();
+
+        $this->assertSame(
+            ['asset_accounting_groups', 'asset_type_groups', 'asset_types'],
+            array_map(static fn($r) => $r->slug, $records),
+            'pořadí souborů podle SetupExporter::TABLES',
+        );
+        [$movable, $land] = $records[0]->data['rows'];
+        $this->assertSame('022', $movable['code']);
+        $this->assertSame(
+            ['022100', '042100', '082100', '551100', '541100'],
+            [$movable['account_asset'], $movable['account_acquisition'], $movable['account_accumulated'], $movable['account_depreciation'], $movable['account_disposal']],
+            'účty osnovy číslem',
+        );
+        $this->assertSame(20, $movable['sort_order']);
+        $this->assertSame(40, $movable['docState']);
+        $this->assertNull($land['account_accumulated'], 'pozemky bez oprávek a odpisů zůstávají null');
+        $this->assertNull($land['account_depreciation']);
+
+        $this->assertSame('Hmotný majetek', $records[1]->data['rows'][0]['name']);
+
+        $type = $records[2]->data['rows'][0];
+        $this->assertSame('Výpočetní technika', $type['name']);
+        $this->assertSame('Hmotný majetek', $type['type_group'], 'skupina typů názvem');
+        $this->assertSame('022', $type['default_accounting_group'], 'výchozí účetní skupina kódem');
+        $this->assertSame('tangible', $type['default_category']);
+        $this->assertSame([], $exporter->getWarnings());
+    }
+
     public function testSettingsExportKeepsOnlyPortableKeys(): void
     {
         $def = $this->tableDef('core/system/tables/core_system_settings.jsonc');

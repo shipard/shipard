@@ -88,9 +88,9 @@ Volitelná pole z #103 F2 (`tasks/testing-phase2.md`):
 ### Sekce `setup/` (R1)
 
 `ds-reset` + provisionery obnoví jednotky, druhy položek, účtový rozvrh,
-fiskální roky, DPH období, číselné řady a default mailbox — ale jen když
-znají rozhodovací parametry DS, a neobnoví číselníky, které jsou uživatelská
-data. Sada proto nese (`SetupExporter::TABLES`):
+fiskální roky, DPH období, číselné řady, default mailbox a účetní skupiny
+majetku — ale jen když znají rozhodovací parametry DS, a neobnoví číselníky,
+které jsou uživatelská data. Sada proto nese (`SetupExporter::TABLES`):
 
 | Soubor | Tabulka | Klíč | Poznámka |
 |--------|---------|------|----------|
@@ -104,6 +104,9 @@ data. Sada proto nese (`SetupExporter::TABLES`):
 | `mailboxes.jsonc` | `core_mail_mailboxes` | `mailbox_id` | `default` po resetu existuje, jen se aktualizuje |
 | `work_order_kinds.jsonc` | `economy_work_orders_kinds` | `name` | druhy zakázek (#131 fáze 2b, D29): periodický druh nese řadu dokladů `{docType, code}` (D37) a účet kódem |
 | `work_order_series.jsonc` | `economy_work_orders_number_series` | `number_code` | číselné řady zakázek — druh názvem; řada bez kódu se nepřenese (dump varuje); sekce `workOrders/` odkazuje řadu kódem |
+| `asset_accounting_groups.jsonc` | `economy_assets_accounting_groups` | `code` | účetní skupiny majetku (#131 fáze 2c, D39): účty osnovy číslem; skupiny zakládá i `AccountingGroupsProvisioner` (jen ty s úplnými účty v osnově), upsert podle kódu je jen srovná — dump proto nese všechny, které na zdroji dat jsou |
+| `asset_type_groups.jsonc` | `economy_assets_type_groups` | `name` | skupiny typů majetku |
+| `asset_types.jsonc` | `economy_assets_types` | `name` | typy majetku: skupina typů názvem, výchozí účetní skupina kódem; sekce `assets/` odkazuje typ názvem a účetní skupinu kódem |
 
 Řádky = sloupce tabulky bez `id`, `docStateMain` a auditních sloupců. Seed =
 upsert přes `TableGateway` podle klíče. Soubory pro tabulky, které na
@@ -114,7 +117,8 @@ D37) — jediné místo, které říká, kam FK sloupec sady ukáže a jak se ho
 překládá tam (dump) a zpět (seed):
 
 - tabulka ze `SetupExporter::TABLES` s jednosloupcovým klíčem → hodnota
-  klíče (druh zakázky názvem, bankovní účet kódem, středisko kódem, …);
+  klíče (druh zakázky názvem, bankovní účet kódem, středisko kódem, typ
+  majetku a skupina typů názvem, účetní skupina majetku kódem, …);
 - `docs_core_number_series` → objekt `{"docType": "invno", "code": null}`,
   `null` se v souboru vynechá (`{"docType": "invno"}`). Výchozí řady
   z provisioneru kód nemají, samotný kód by je nedohledal (D37). Seed hledá

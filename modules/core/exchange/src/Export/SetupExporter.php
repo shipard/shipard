@@ -16,7 +16,8 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
  * neobnoví, ale sada na nich stojí (R1 v tasks/dataset-phase1.md):
  * nesystémové účty osnovy, vlastní bankovní účty, střediska (dimenze
  * dokladů, #110), registrace DPH, šanony spisovny, mailboxy, druhy
- * a číselné řady zakázek (#131 fáze 2b, D29).
+ * a číselné řady zakázek (#131 fáze 2b, D29), účetní skupiny, skupiny typů
+ * a typy majetku (#131 fáze 2c, D39).
  *
  * Jeden soubor per tabulka (`shpd.dataset.setup.v1`), řádky s přirozeným
  * klíčem, bez interních id a auditních sloupců. Hodnoty se typují podle
@@ -71,6 +72,14 @@ final class SetupExporter
         // za bank_accounts. Řada bez kódu se nepřenese (warning).
         'work_order_kinds'  => ['table' => 'economy_work_orders_kinds',           'key' => ['name']],
         'work_order_series' => ['table' => 'economy_work_orders_number_series',   'key' => ['number_code']],
+        // Číselníky majetku (#131 fáze 2c, D39): sekce assets/ odkazuje typ
+        // názvem a účetní skupinu kódem, typ nese skupinu typů názvem a výchozí
+        // účetní skupinu kódem, účetní skupina účty osnovy číslem. Seed jde
+        // abecedně — za `accounts`, před `bank_accounts`; účetní skupiny
+        // zakládá i provisioner, upsert podle kódu je jen srovná.
+        'asset_accounting_groups' => ['table' => 'economy_assets_accounting_groups', 'key' => ['code']],
+        'asset_type_groups'       => ['table' => 'economy_assets_type_groups',       'key' => ['name']],
+        'asset_types'             => ['table' => 'economy_assets_types',             'key' => ['name']],
     ];
 
     private const SKIP_COLUMNS = ['id', 'docStateMain', 'created', 'modified', 'created_by'];

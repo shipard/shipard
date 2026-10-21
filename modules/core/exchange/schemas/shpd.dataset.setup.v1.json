@@ -24,7 +24,10 @@
                 "binders",
                 "mailboxes",
                 "work_order_kinds",
-                "work_order_series"
+                "work_order_series",
+                "asset_accounting_groups",
+                "asset_type_groups",
+                "asset_types"
             ]
         },
         "rows": {
