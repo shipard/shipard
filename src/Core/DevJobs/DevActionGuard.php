@@ -14,7 +14,8 @@ use Shipard\Core\Server\DataSourceInfo;
  * (`realCopy`, chybějící nebo rozbitá třída = odmítnout — nikdy reseed
  * reálné kopie, nikdy její smazání) a sada ze seznamu sad. Ochrana je tady, ne v UI; žádný
  * parametr požadavku ji neobchází. Seznam sad dodává volající (controller
- * z `EvalCatalog`), aby `Core\DevJobs` nezáviselo na modulech.
+ * z `DatasetCatalog` — testovací i demo sady, #131 — nebo z `EvalCatalog`
+ * jen pro sekci Testování), aby `Core\DevJobs` nezáviselo na modulech.
  */
 final class DevActionGuard
 {

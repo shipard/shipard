@@ -1,0 +1,77 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashRegisterDocument",
+    "selfParty": "supplier",
+    "cashDesk": "POK",
+    "dates": {
+        "issueDate": "2026-08-11",
+        "dueDate": "2026-08-11",
+        "accountingDate": "2026-08-11",
+        "taxPointDate": "2026-08-11",
+        "vatObligationDate": "2026-08-11"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "30"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "KABEL-HDMI",
+                "name": "Kabel HDMI 2.1, 2 m"
+            },
+            "unit": "pcs",
+            "quantity": 3.0,
+            "unitPrice": 249.0,
+            "totalPrice": 747.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 747.0,
+                "vatAmount": 156.87,
+                "vatTotal": 903.87
+            },
+            "description": "Kabel HDMI 2.1, 2 m"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 747.0,
+            "tax": 156.87,
+            "total": 903.87
+        }
+    ],
+    "totals": {
+        "totalBase": 747.0,
+        "totalVat": 156.87,
+        "totalAmount": 904.0,
+        "totalRounding": 0.13
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "14POK2600030",
+            "sequenceNumber": 30
+        },
+        "numberSeriesCode": "POK"
+    }
+}

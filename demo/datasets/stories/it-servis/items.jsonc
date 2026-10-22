@@ -1,0 +1,22 @@
+// Vlastní položky příběhu „IT servis“ (prodejní služby, hardware, drobné
+// zboží pro prodejky). Účetní položky pro přijaté faktury a výdajové
+// pokladní doklady (kódy 518206, 502100, …) do sady přidá seed z nabídky
+// osnovy (`provision.accountingItems: "all"` v manifestu) — tady nejsou.
+//
+// `kind` service | stock (druh položky, system_code druhu), `unit` kód
+// jednotky (core.units: pcs, hr, mnth, …), `price` prodejní cena bez DPH
+// v CZK, `vatPct` sazba, `account` výnosový účet.
+{
+	"SPRAVA-IT":  { "name": "Správa IT — měsíční paušál",      "kind": "service", "unit": "mnth", "price": 6500,  "vatPct": 21, "account": "602100" },
+	"PRACE-H":    { "name": "Servisní práce technika",          "kind": "service", "unit": "hr",   "price": 1250,  "vatPct": 21, "account": "602100" },
+	"ZALOHA-IT":  { "name": "Záloha na roční správu IT",        "kind": "service", "unit": "pcs",  "price": 42000, "vatPct": 21, "account": "602100" },
+	"NTB-14":     { "name": "Notebook 14\" business, 16 GB RAM", "kind": "stock",   "unit": "pcs",  "price": 24900, "vatPct": 21, "account": "604100" },
+	"MON-27":     { "name": "Monitor 27\" IPS",                  "kind": "stock",   "unit": "pcs",  "price": 7490,  "vatPct": 21, "account": "604100" },
+	"ROUTER":     { "name": "Router s firewallem",               "kind": "stock",   "unit": "pcs",  "price": 5990,  "vatPct": 21, "account": "604100" },
+	"SWITCH-24":  { "name": "Síťový switch 24 portů, PoE",       "kind": "stock",   "unit": "pcs",  "price": 7900,  "vatPct": 21, "account": "604100" },
+	"AP-WIFI":    { "name": "Přístupový bod Wi-Fi 6",            "kind": "stock",   "unit": "pcs",  "price": 3290,  "vatPct": 21, "account": "604100" },
+	"KABEL-HDMI": { "name": "Kabel HDMI 2.1, 2 m",               "kind": "stock",   "unit": "pcs",  "price": 249,   "vatPct": 21, "account": "604100" },
+	"MYS-USB":    { "name": "Myš bezdrátová",                    "kind": "stock",   "unit": "pcs",  "price": 390,   "vatPct": 21, "account": "604100" },
+	"USB-64":     { "name": "USB flash disk 64 GB",              "kind": "stock",   "unit": "pcs",  "price": 219,   "vatPct": 21, "account": "604100" },
+	"SLUCHATKA":  { "name": "Náhlavní souprava s mikrofonem",    "kind": "stock",   "unit": "pcs",  "price": 690,   "vatPct": 21, "account": "604100" },
+}

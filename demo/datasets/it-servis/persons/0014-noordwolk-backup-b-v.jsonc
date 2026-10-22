@@ -1,0 +1,50 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "nl",
+    "personId": "F00014",
+    "taxId": "NL854721039B01",
+    "vatId": "NL854721039B01",
+    "courtRegistration": "KvK 87654321",
+    "name": {
+        "fullName": "Noordwolk Backup B.V."
+    },
+    "contact": {
+        "email": "billing@noordwolk-backup.example",
+        "phone": "+310002004410",
+        "web": "www.noordwolk-backup.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "en",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Datahaven",
+            "houseNumber": "42",
+            "city": "Rotterdam",
+            "zip": "3011 AB",
+            "country": "nl",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "iban": "NL69NWBK0481570693",
+            "bic": "NWBKNL2AXXX",
+            "currency": "EUR",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

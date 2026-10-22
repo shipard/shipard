@@ -1,0 +1,28 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "work_order_series",
+    "rows": [
+        {
+            "kind": "Projekty",
+            "name": "Projekty",
+            "notice": null,
+            "number_code": "P",
+            "number_pattern": "%C%4",
+            "reset_scope": "none",
+            "valid_from": null,
+            "valid_to": null,
+            "docState": 40
+        },
+        {
+            "kind": "Správa IT — paušál",
+            "name": "Paušály",
+            "notice": null,
+            "number_code": "S",
+            "number_pattern": "%C%4",
+            "reset_scope": "none",
+            "valid_from": null,
+            "valid_to": null,
+            "docState": 40
+        }
+    ]
+}

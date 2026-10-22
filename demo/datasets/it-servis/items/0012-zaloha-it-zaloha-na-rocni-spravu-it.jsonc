@@ -1,0 +1,22 @@
+{
+    "format": "shpd.items.item",
+    "formatVersion": "1.0",
+    "code": "ZALOHA-IT",
+    "name": "Záloha na roční správu IT",
+    "kind": {
+        "code": "service",
+        "name": "Služba",
+        "itemType": 0
+    },
+    "salesPriceNoVat": 42000.0,
+    "unit": "pcs",
+    "accountingAccount": "602100",
+    "status": {
+        "docState": 40
+    },
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

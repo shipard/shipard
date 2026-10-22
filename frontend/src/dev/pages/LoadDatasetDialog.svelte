@@ -1,16 +1,18 @@
 <script>
-  // Dialog „Nahrát datovou sadu“ ze seznamu zdrojů dat (#103 D66): sady
-  // z tests/datasets se zemí zdroje dat (ostatní neaktivní s důvodem),
-  // dnešní sada zdroje dat (pole `dataset`, nebo jen z původu před F6b),
-  // varování o resetu. Výměna držené sady za jinou chce druhé potvrzení
-  // a posílá `replaceDataset: true` — bez něj server vrátí 409. Pojistku
-  // (jen free, jen development) dělá server; u reálné kopie se dialog
-  // v seznamu ani nenabízí.
+  // Dialog „Nahrát datovou sadu“ ze seznamu zdrojů dat (#103 D66): testovací
+  // sady z tests/datasets a demo sady z demo/datasets (#131) ve dvou
+  // skupinách, se zemí zdroje dat (ostatní neaktivní s důvodem), dnešní
+  // sada zdroje dat (pole `dataset`, nebo jen z původu před F6b), varování
+  // o resetu. Běží jako úloha `reseed` přes `POST /_dev/api/data-sources/{id}/reseed`
+  // — nezávisle na sekci Testování. Výměna držené sady za jinou chce druhé
+  // potvrzení a posílá `replaceDataset: true` — bez něj server vrátí 409.
+  // Pojistku (jen free, jen development) dělá server; u reálné kopie se
+  // dialog v seznamu ani nenabízí.
   import { onMount } from 'svelte';
   import DevDialog from '../components/DevDialog.svelte';
   import DevConfirm from '../components/DevConfirm.svelte';
   import Button from '../../components/ui/Button.svelte';
-  import { testingApi } from '../testing/api.js';
+  import { datasetsApi, groupDatasets, datasetLabel } from '../datasets.js';
   import { ApiError } from '../api.js';
   import { router, onLinkClick } from '../router.svelte.js';
   import { t } from '../i18n/index.js';
@@ -34,13 +36,13 @@
   }
 
   function label(d) {
-    const base = `${d.title} — ${d.name} · ${d.country ?? t('dsLoad.noCountry')} · ${d.profile ?? t('dsLoad.noProfile')}`;
+    const base = datasetLabel(d);
     return allowed(d) ? base : `${base} ${t('dsLoad.countryMismatch', { dataset: d.country, dataSource: ds.country })}`;
   }
 
   onMount(async () => {
     try {
-      datasets = await testingApi.datasets();
+      datasets = await datasetsApi.list();
       const first = datasets.find((d) => allowed(d) && d.name === held) ?? datasets.find(allowed);
       selected = first?.name ?? '';
     } catch (e) {
@@ -61,7 +63,7 @@
     busy = true;
     error = null;
     try {
-      const { job } = await testingApi.reseed(chosen.name, ds.id, { replaceDataset: replace });
+      const { job } = await datasetsApi.reseed(ds.id, chosen.name, { replaceDataset: replace });
       confirmReplace = false;
       onStarted?.(job);
     } catch (e) {
@@ -98,8 +100,12 @@
       <div class="dev-field">
         <label for="load-dataset">{t('common.dataset')}</label>
         <select id="load-dataset" bind:value={selected} disabled={busy}>
-          {#each datasets as d (d.name)}
-            <option value={d.name} disabled={!allowed(d)}>{label(d)}</option>
+          {#each groupDatasets(datasets) as g (g.kind)}
+            <optgroup label={g.label}>
+              {#each g.items as d (d.name)}
+                <option value={d.name} disabled={!allowed(d)}>{label(d)}</option>
+              {/each}
+            </optgroup>
           {:else}
             <option value="" disabled>{t('dsLoad.noDatasets')}</option>
           {/each}

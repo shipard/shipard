@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00002",
+    "companyId": "91740380",
+    "taxId": "CZ91740380",
+    "vatId": "CZ91740380",
+    "name": {
+        "fullName": "Cukrárna U Medvídka s.r.o."
+    },
+    "contact": {
+        "email": "jana@cukrarna-medvidek.example",
+        "phone": "+420000330217"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Perníková",
+            "houseNumber": "12",
+            "city": "Olomouc",
+            "zip": "77900",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1908274639/0800",
+            "iban": "CZ2108000000001908274639",
+            "bic": "GIBACZPX",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Jana Perníčková",
+            "email": "jana@cukrarna-medvidek.example",
+            "phone": "+420000330217",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

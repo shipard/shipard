@@ -38,6 +38,14 @@
         { "page":   "assetsDepreciation",              "section": "assets", "order": 50 }
     ],
 
+    // Řada účetních dokladů majetku je id řádku docs_core_number_series —
+    // ds-reset tabulku řad dropuje, takže klíč smaže s ní (#131 D42);
+    // AssetPostingSeriesProvisioner ho v ds-upgrade nastaví znovu
+    // (vyplněný klíč nikdy nepřepisuje, D54).
+    "clearSettingsOnReset": [
+        { "key": "economy.assets.accountingSeries", "table": "docs_core_number_series" }
+    ],
+
     // Prefixy inventárních čísel per druh (D22). Klíče musí sedět na klíče
     // cfgItem economy.assets.categories; čte je AssetDocument přes
     // AssetCategories::PREFIX_SETTING, fallback numberPrefix v cfgItem.

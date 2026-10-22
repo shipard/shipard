@@ -1,0 +1,72 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0014",
+        "sequenceNumber": 14,
+        "numberSeries": "S",
+        "title": "Správa IT — Veterinární klinika Tlapka s.r.o.",
+        "state": "confirmed",
+        "dateStart": "2026-05-01",
+        "customer": {
+            "name": "Veterinární klinika Tlapka s.r.o.",
+            "country": "cz",
+            "companyId": "89310021",
+            "taxId": "CZ89310021",
+            "vatId": "CZ89310021"
+        },
+        "currency": "czk",
+        "invoicing": {
+            "periodicity": "month",
+            "invoiceFrom": "2026-05-01",
+            "docText": "Správa IT — paušál {období}"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "Správa IT — měsíční paušál",
+            "quantity": 1.0,
+            "unit": "mnth",
+            "unitPrice": 8000.0,
+            "vatCode": "cz-120"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "state": "issued",
+            "docNumber": "1260066"
+        },
+        {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260079"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "state": "issued",
+            "docNumber": "1260095"
+        },
+        {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "state": "issued",
+            "docNumber": "1260108"
+        },
+        {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "state": "issued",
+            "docNumber": "1260120"
+        },
+        {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "state": "issued",
+            "docNumber": "!0000000157"
+        }
+    ]
+}

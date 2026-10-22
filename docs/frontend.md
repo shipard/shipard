@@ -133,12 +133,16 @@ nic, co tahá `t()` aplikace nebo `api/client.js`; texty má ve vlastním slovn�
 Zdroj `src/dev/`: `routes.js` (tabulka rout podle cesty — musí odpovídat
 `SPA_PAGES` v controlleru), `router.svelte.js` (History API, `onLinkClick`),
 `api.js` + `stream.js` (JSON obálka a řádkový stream `[STEP]` / `[ERROR]`
-/ `[DONE]`), `format.js` (čeština), `pages/` (Zdroje dat: Otevřít + kebab menu řádku
+/ `[DONE]`), `format.js` (čeština), `datasets.js` (sady k seedu: `GET
+/_dev/api/datasets` = `DatasetCatalog` nad `tests/datasets` i `demo/datasets`
+s druhem `test` / `demo` (#131), seskupení pro `<optgroup>`, úloha `reseed`
+přes `POST /_dev/api/data-sources/{id}/reseed` — nezávisle na sekci
+Testování, která zůstává jen nad testovacími sadami), `pages/` (Zdroje dat: Otevřít + kebab menu řádku
 `components/DevKebabMenu.svelte` nad sdíleným `Popover` — Logy, Upgrade,
-Nahrát datovou sadu — `LoadDatasetDialog.svelte`, Kopírovat ID, Smazat… —
+Nahrát datovou sadu — `LoadDatasetDialog.svelte` nad `datasets.js`, Kopírovat ID, Smazat… —
 `DeleteDataSourceDialog.svelte` s opsáním názvu → `POST
 /_dev/api/data-sources/{id}/delete` = úloha `delete` nad `ds-delete <id>
---yes` (#103 D70–D71); Nový zdroj dat s výběrem sady, Logy, akce), `pages/testing/` + `testing/metrics.js` (prohlížeč výsledků
+--yes` (#103 D70–D71); Nový zdroj dat s výběrem sady ve skupinách Testovací / Demo, Logy, akce), `pages/testing/` + `testing/metrics.js` (prohlížeč výsledků
 evaluací, #103 D53, `docs/test-corpus.md` § 18) a od F6b spouštění
 (`testing/api.js` volá `/_dev/api/testing/eval/*` a `/_dev/api/testing/jobs*`,
 `testing/jobs.js` = popisky stavů a redukce událostí průběhu;

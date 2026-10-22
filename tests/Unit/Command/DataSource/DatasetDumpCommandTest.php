@@ -14,6 +14,8 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Exchange\Dataset\ExportedRecord;
 use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
+use Shipard\Module\Economy\Items\Dataset\ProvisionedItemsDetector;
+use Shipard\Module\Economy\Items\Dataset\ProvisionedItemsResult;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -21,6 +23,11 @@ class TestableDatasetDumpCommand extends DatasetDumpCommand
 {
     /** @var list<RecordExporter> */
     public array $exporters = [];
+
+    public ?ProvisionedItemsDetector $detector = null;
+
+    /** @var list<int>|null id vyloučených položek, jak je dostal createExporters */
+    public ?array $excludedItemIds = null;
 
     public function __construct(
         DataSourceConfig $dsConfig,
@@ -45,8 +52,14 @@ class TestableDatasetDumpCommand extends DatasetDumpCommand
         return [];
     }
 
-    protected function createExporters(Connection $db, array $tables, DataSourceConfig $dsConfig, string $dsDir, ?ConfigRuntime $config = null): array
+    protected function createDetector(DataSourceConnection $dsConnection, array $tables, string $lang, ModulePathResolver $resolver): ?ProvisionedItemsDetector
     {
+        return $this->detector;
+    }
+
+    protected function createExporters(Connection $db, array $tables, DataSourceConfig $dsConfig, string $dsDir, ?ConfigRuntime $config = null, array $excludedItemIds = []): array
+    {
+        $this->excludedItemIds = $excludedItemIds;
         return ['setup' => null, 'records' => $this->exporters];
     }
 }
@@ -69,15 +82,23 @@ class DatasetDumpCommandTest extends TestCase
         DatasetReader::removeTree($this->tmp);
     }
 
-    private function command(bool $withMainJson = true): TestableDatasetDumpCommand
-    {
+    /**
+     * @param string|null $country země v main.json (null = DS před zavedením klíče)
+     * @param ProvisionedItemsResult|null $provisioned výsledek detektoru; null = DS bez economy_items
+     */
+    private function command(
+        bool $withMainJson = true,
+        ?string $country = null,
+        ?ProvisionedItemsResult $provisioned = null,
+    ): TestableDatasetDumpCommand {
         if (!$withMainJson) {
             unlink($this->dsDir . '/config/main.json');
         }
         $dsConfig = $this->createMock(DataSourceConfig::class);
         $dsConfig->method('getName')->willReturn('Demo firma s.r.o.');
         $dsConfig->method('getDefaultLanguage')->willReturn('cs');
-        $dsConfig->method('hasCountry')->willReturn(false);
+        $dsConfig->method('hasCountry')->willReturn($country !== null);
+        $dsConfig->method('getCountry')->willReturn((string) $country);
         $dsConnection = $this->createMock(DataSourceConnection::class);
         $dsConnection->method('getDibiConnection')->willReturn($this->createMock(Connection::class));
 
@@ -88,6 +109,11 @@ class DatasetDumpCommandTest extends TestCase
             public function exportByIds(array $ids): array { return $this->exportAll(); }
             public function getWarnings(): array { return ['persons Acme: test warning']; }
         }];
+        if ($provisioned !== null) {
+            $detector = $this->createMock(ProvisionedItemsDetector::class);
+            $detector->method('detect')->willReturn($provisioned);
+            $cmd->detector = $detector;
+        }
         return $cmd;
     }
 
@@ -141,5 +167,64 @@ class DatasetDumpCommandTest extends TestCase
         $tester = new CommandTester($this->command(withMainJson: false));
         $this->assertSame(Command::FAILURE, $tester->execute(['dir' => $this->tmp . '/x']));
         $this->assertStringContainsString('config/main.json', $tester->getDisplay());
+    }
+
+    public function testManifestCarriesCountryAndProvisionInOrder(): void
+    {
+        $cmd = $this->command(country: 'CZ', provisioned: new ProvisionedItemsResult([3, 4], 'all'));
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['dir' => $this->tmp . '/demo', '--description' => 'Popis']);
+
+        $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
+        $this->assertSame([3, 4], $cmd->excludedItemIds, 'detected items are kept out of the items exporter');
+        $this->assertStringContainsString('provision: accountingItems=all (2 items not written to items/)', $tester->getDisplay());
+
+        $reader = DatasetReader::open($this->tmp . '/demo');
+        $this->assertSame(
+            ['format', 'name', 'title', 'description', 'dateMode', 'created', 'country', 'provision', 'counts'],
+            array_keys($reader->readJsonc('manifest.jsonc')),
+        );
+        $m = $reader->getManifest();
+        $this->assertSame('cz', $m->country, 'country is written lower-case');
+        $this->assertSame('all', $m->accountingItemsRequest());
+    }
+
+    public function testProvisionCodeListIsWrittenAndCounted(): void
+    {
+        $cmd = $this->command(provisioned: new ProvisionedItemsResult([7, 8], ['568201', '562100']));
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['dir' => $this->tmp . '/partial']);
+
+        $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
+        $this->assertSame([7, 8], $cmd->excludedItemIds);
+        $this->assertStringContainsString('provision: accountingItems=2 codes (2 items not written to items/)', $tester->getDisplay());
+
+        $reader = DatasetReader::open($this->tmp . '/partial');
+        $this->assertSame(
+            ['format', 'name', 'title', 'dateMode', 'created', 'provision', 'counts'],
+            array_keys($reader->readJsonc('manifest.jsonc')),
+            'no country on a data source without one',
+        );
+        $this->assertSame(['568201', '562100'], $reader->getManifest()->accountingItemsRequest());
+    }
+
+    public function testEmptyDetectionLeavesManifestWithoutProvision(): void
+    {
+        foreach ([null, ProvisionedItemsResult::none()] as $i => $provisioned) {
+            $cmd = $this->command(provisioned: $provisioned);
+            $tester = new CommandTester($cmd);
+            $exit = $tester->execute(['dir' => $this->tmp . '/plain' . $i]);
+
+            $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
+            $this->assertSame([], $cmd->excludedItemIds, 'nothing excluded');
+            $this->assertStringNotContainsString('provision:', $tester->getDisplay());
+
+            $reader = DatasetReader::open($this->tmp . '/plain' . $i);
+            $this->assertSame(
+                ['format', 'name', 'title', 'dateMode', 'created', 'counts'],
+                array_keys($reader->readJsonc('manifest.jsonc')),
+            );
+            $this->assertNull($reader->getManifest()->accountingItemsRequest());
+        }
     }
 }

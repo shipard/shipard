@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00001",
+    "companyId": "83715266",
+    "taxId": "CZ83715266",
+    "vatId": "CZ83715266",
+    "name": {
+        "fullName": "Autodoprava Kopretina s.r.o."
+    },
+    "contact": {
+        "email": "uctarna@kopretina-doprava.example",
+        "phone": "+420000204411"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Kamionová",
+            "houseNumber": "1412",
+            "city": "Zlín",
+            "zip": "76001",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2440913574/0300",
+            "iban": "CZ9403000000002440913574",
+            "bic": "CEKOCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Účtárna",
+            "email": "uctarna@kopretina-doprava.example",
+            "phone": "+420000204411",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

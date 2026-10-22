@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Autodoprava Kopretina s.r.o.",
+        "country": "cz",
+        "companyId": "83715266",
+        "taxId": "CZ83715266",
+        "vatId": "CZ83715266",
+        "address": {
+            "street": "Kamionová",
+            "houseNumber": "1412",
+            "city": "Zlín",
+            "zip": "76001",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "uctarna@kopretina-doprava.example",
+            "phone": "+420000204411"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-08-20",
+        "dueDate": "2026-09-03",
+        "accountingDate": "2026-08-20",
+        "taxPointDate": "2026-08-20",
+        "vatObligationDate": "2026-08-20"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260110"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 9.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 11250.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 11250.0,
+                "vatAmount": 2362.5,
+                "vatTotal": 13612.5
+            },
+            "description": "Servisní práce technika — 08/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 11250.0,
+            "tax": 2362.5,
+            "total": 13612.5
+        }
+    ],
+    "totals": {
+        "totalBase": 11250.0,
+        "totalVat": 2362.5,
+        "totalAmount": 13612.5,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260110",
+            "sequenceNumber": 110
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

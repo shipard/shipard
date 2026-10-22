@@ -1,0 +1,52 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00004",
+    "companyId": "31647090",
+    "taxId": "CZ31647090",
+    "vatId": "CZ31647090",
+    "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
+    "name": {
+        "fullName": "Energie Jiskra a.s."
+    },
+    "contact": {
+        "email": "zakaznici@energie-jiskra.example",
+        "phone": "+420000610100",
+        "web": "www.energie-jiskra.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Elektrárenská",
+            "houseNumber": "1",
+            "city": "Ostrava",
+            "zip": "70200",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2190463856/0800",
+            "iban": "CZ2008000000002190463856",
+            "bic": "GIBACZPX",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

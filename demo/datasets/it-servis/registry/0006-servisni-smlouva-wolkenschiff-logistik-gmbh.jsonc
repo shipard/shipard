@@ -1,0 +1,37 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "contract",
+        "title": "Servisní smlouva — Wolkenschiff Logistik GmbH",
+        "summary": "Rámcová servisní smlouva na vzdálenou správu IT pobočky v Brně, fakturace v EUR.",
+        "party": {
+            "name": "Wolkenschiff Logistik GmbH",
+            "email": "buchhaltung@wolkenschiff-logistik.example"
+        },
+        "kindFields": {
+            "subject": "Vzdálená správa IT pobočky Brno",
+            "noticePeriod": "3 měsíce",
+            "signedDate": "2026-01-19",
+            "contractNumber": "SML-2026-003",
+            "validFrom": "2026-01-01",
+            "validTo": "2027-12-31"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Smlouvy",
+    "refNumber": "SML-2026-003",
+    "validFrom": "2026-01-01",
+    "validTo": "2027-12-31",
+    "created": "2026-01-20T11:40:00",
+    "attachments": [
+        {
+            "file": "SML-2026-003.pdf",
+            "name": "SML-2026-003.pdf",
+            "mimeType": "application/pdf",
+            "size": 34808,
+            "sha256": "88ada44724573df9bc91176f3cc64514b94bcb4d06c19db4775bc09df7ccaa17"
+        }
+    ]
+}

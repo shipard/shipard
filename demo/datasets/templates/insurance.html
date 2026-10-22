@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>{{title}}</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  body { font-family: "Liberation Sans", "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; color: #202020; line-height: 1.4; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1d4f91; padding-bottom: 3mm; margin-bottom: 6mm; }
+  .head .insurer { font-size: 15pt; font-weight: bold; color: #1d4f91; }
+  .head .meta { text-align: right; font-size: 9.5pt; color: #555; }
+  h1 { font-size: 15pt; margin: 0 0 1mm; }
+  .policy { font-size: 10pt; color: #555; margin-bottom: 6mm; }
+  h2 { font-size: 10.5pt; margin: 6mm 0 2mm; color: #1d4f91; text-transform: uppercase; letter-spacing: .05em; }
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; width: 36%; padding: 1.5mm 2mm; background: #f1f5fb; font-weight: normal; color: #333; border-bottom: 1px solid #fff; }
+  td { padding: 1.5mm 2mm; border-bottom: 1px solid #e6e6e6; }
+  p { margin: 0 0 2.5mm; text-align: justify; }
+  .foot { margin-top: 12mm; font-size: 9pt; color: #666; border-top: 1px solid #ccc; padding-top: 2mm; }
+</style>
+</head>
+<body>
+<div class="head">
+  <div class="insurer">{{partnerName}}</div>
+  <div class="meta">{{partnerAddress}}<br>{{partnerIds}}</div>
+</div>
+<h1>{{title}}</h1>
+<div class="policy">Pojistná smlouva č. {{refNumber}} · pojistka vystavena dne {{signedDate}}</div>
+
+<h2>Pojistník a pojištěný</h2>
+<table>
+  <tr><th>Obchodní firma</th><td>{{ownName}}</td></tr>
+  <tr><th>Sídlo</th><td>{{ownAddress}}</td></tr>
+  <tr><th>IČO / DIČ</th><td>{{ownIco}} / {{ownDic}}</td></tr>
+</table>
+
+<h2>Rozsah pojištění</h2>
+<table>
+  <tr><th>Předmět pojištění</th><td>{{subject}}</td></tr>
+  <tr><th>Počátek pojištění</th><td>{{validFrom}}</td></tr>
+  <tr><th>Konec pojistného období</th><td>{{validTo}}</td></tr>
+  {{extraRows}}
+</table>
+<p>{{summary}}</p>
+
+<h2>Pojistné</h2>
+<p>Roční pojistné je splatné jednorázově do 30 dnů od počátku pojistného období na účet pojistitele. Pojištění se sjednává na dobu určitou s automatickým prodloužením o další pojistný rok, není-li nejpozději šest týdnů před koncem pojistného období doručena výpověď.</p>
+
+<div class="foot">Výpis z pojistné smlouvy. Úplné znění pojistných podmínek je přílohou smlouvy. {{noticePeriod}}</div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00019",
+    "companyId": "81973501",
+    "taxId": "CZ81973501",
+    "vatId": "CZ81973501",
+    "courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
+    "name": {
+        "fullName": "Správa nemovitostí Patro s.r.o."
+    },
+    "contact": {
+        "email": "najmy@patro-sprava.example",
+        "phone": "+420000112900"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Schodišťová",
+            "houseNumber": "3",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1628735058/5500",
+            "iban": "CZ3355000000001628735058",
+            "bic": "RZBCCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

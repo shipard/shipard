@@ -1,0 +1,100 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "260120",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Účetní kancelář Sloupec s.r.o.",
+        "country": "cz",
+        "companyId": "52073963",
+        "taxId": "CZ52073963",
+        "vatId": "CZ52073963",
+        "courtRegistration": "Spisová značka C 88235 vedená u Krajského soudu v Brně",
+        "address": {
+            "street": "Rozvahová",
+            "houseNumber": "6",
+            "city": "Brno",
+            "zip": "61300",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "kancelar@uk-sloupec.example",
+            "phone": "+420000530770"
+        },
+        "bankAccount": {
+            "accountNumber": "2035918478/2010",
+            "iban": "CZ9520100000002035918478",
+            "bic": "FIOBCZPP"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-07-05",
+        "dueDate": "2026-07-19",
+        "accountingDate": "2026-07-05",
+        "taxPointDate": "2026-07-05",
+        "vatObligationDate": "2026-07-05"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "260120"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "518211",
+                "name": "Účetní a daňové služby"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 19500.0,
+            "totalPrice": 19500.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 19500.0,
+                "vatAmount": 4095.0,
+                "vatTotal": 23595.0
+            },
+            "description": "Vedení účetnictví a mzdová agenda — Q3/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 19500.0,
+            "tax": 4095.0,
+            "total": 23595.0
+        }
+    ],
+    "totals": {
+        "totalBase": 19500.0,
+        "totalVat": 4095.0,
+        "totalAmount": 23595.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260039",
+            "sequenceNumber": 39
+        }
+    }
+}

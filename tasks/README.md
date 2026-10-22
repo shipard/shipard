@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 385 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 355.
+Celkem 391 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 361.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -464,6 +464,7 @@ zaúčtování a evaluace AI.
 |------|------|---------|
 | `dataset-phase1.md` | — | Datové sady: `dataset-dump` / `dataset-seed`, snapshot mode došlé pošty (#40 D1–D5) |
 | `demo-invoices.md` | — | Generátor fiktivních přijatých faktur (PDF) pro demo video |
+| `demo-dataset-phase1.md` | — | Demo sada „IT servis“: generátor sad z příběhu firmy nad `invoicegen`, sada `demo/datasets/it-servis/` bajtově shodná s dumpem, dump umí pokladní doklady, `provision` a pozornost zpráv (#131 D1–D15) |
 | `testing-phase1.md` | F1 | Korpus testovacích dokladů: sdílený generátor, 10 variant × 2 podoby (PDF, PDF + ISDOC), tři profily vlastní firmy, očekávaný výsledek jako papírová projekce canonicalu, tvary hodnot (#103 D12–D18) |
 | `testing-phase2.md` | F2 | Profily a datové sady z korpusu: základ profilu, sady `tests/datasets/cz/` s ideální analýzou (snapshot), manifest `country` / `profile` / `provision`, seed zakládá fiskální roky a účetní položky z nabídky (#103 D19–D25) |
 | `testing-phase3.md` | F3 | Ověření zaúčtování a DPH: `dataset-verify` (apply + kontroly), porovnávač canonicalu v PHP, očekávání DPH a nákladů nezávisle na Shipardu, schválený snímek deníku (#103 D26–D30) |
@@ -474,7 +475,13 @@ zaúčtování a evaluace AI.
 | `testing-phase6b.md` | F6 | Spouštění z dashboardu: úlohy na pozadí, evaluační zdroje dat (pole `dataset`), evaluace s odhadem a stropem útraty, `dataset-verify`, editor variant, cena štítků (#103 D54–D56, D58–D63) |
 | `testing-phase6c.md` | F6 | Datová sada při zakládání zdroje dat a akce „Nahrát datovou sadu“ v seznamu, heslo admina přes stdin, zrušení starých `seed-*` (#103 D64–D67) |
 | `ds-delete.md` | M5 | `shpd-server ds-delete` pro volné zdroje dat mimo produkci, mazání z dashboardu, přehled zdrojů dat bez sloupce Databáze a s kebab menu (#103 D68–D71) |
+<<<<<<< HEAD
 | `testing-rates-isdoc.md` | F3/F4 | Kurzy a ISDOC v datových sadách: lístky ČNB v korpusu, očekávání v Kč, `dataset-verify` bez přeskakování cizí měny, ISDOC jako příloha, evaluace zpráv s ISDOC produkční cestou (#103 D72–D77) |
+=======
+| `demo-dataset-phase1.md` | — | Demo sada „IT servis“: generátor fiktivních sad z příběhu firmy (`demo/datasets/build.py`), kotevní datum, vydané a přijaté faktury, pokladna, mzdy, spisovna (#131 D1–D15) |
+| `demo-dataset-phase2a-bank.md` | — | Demo sada „IT servis“, fáze 2a: sekce bankovních výpisů v sadě (exportér, seeder, účet kódem, partner a párování dopočítá aplikace), platby v příběhu, vyrovnání mezd a odvodů interním dokladem, eurový účet (#131 D16–D18, D21, D22) |
+| `demo-dataset-economy.md` | — | Demo sada „IT servis“: ekonomika příběhu (zisk, podíl zahraničí, marže hardwaru), oprava přepočtu ceny položky na faktuře v EUR, převody EUR → CZK mezi vlastními účty, dodavatel v EUR (#131 D25–D28) |
+>>>>>>> origin/stable
 
 ## Drobné
 

@@ -104,6 +104,38 @@ class DsResetCommandTest extends TestCase
     }
 
     /**
+     * Modul fixture s nastaveními, která nesou id řádků (#131 D42): jedno
+     * míří do tabulky, kterou reset dropuje, druhé do tabulky, kterou drží.
+     */
+    private function declareClearSettings(bool $keepSettingsTable = true): void
+    {
+        file_put_contents($this->modulesPath . '/test/unit/module.jsonc', json_encode([
+            'id'           => 'test.unit',
+            'name'         => 'Test Unit Module',
+            'dependencies' => [],
+            'tables'       => ['keep_me', 'drop_me', 'core_system_settings'],
+            'extensions'   => [],
+            'config'       => [],
+            'keepOnReset'  => $keepSettingsTable ? ['keep_me', 'core_system_settings'] : ['keep_me'],
+            'clearSettingsOnReset' => [
+                ['key' => 'test.unit.seriesId', 'table' => 'drop_me'],
+                ['key' => 'test.unit.keptRef',  'table' => 'keep_me'],
+            ],
+        ]));
+    }
+
+    /**
+     * @param list<string> $events pořadí DROP a mazání klíčů
+     */
+    private function recordDeletes(array &$events): void
+    {
+        $this->dsConnection->method('deleteWhere')
+            ->willReturnCallback(function (string $table, string $where, mixed ...$params) use (&$events): void {
+                $events[] = 'delete ' . $table . ' ' . $where . ' ' . implode(',', array_map('strval', $params));
+            });
+    }
+
+    /**
      * @param string[] $tables names returned by getAllTableNames()
      */
     private function createCommandTester(
@@ -339,6 +371,86 @@ class DsResetCommandTest extends TestCase
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $this->assertFileExists($this->dsDir . '/att/x.bin');
+    }
+
+    public function testClearsSettingsHoldingIdsOfRowsInDroppedTables(): void
+    {
+        // #131 D42: klíč s id řádku dropnuté tabulky zmizí po DROP a před
+        // ds-upgrade (provisioner prázdný klíč naplní, vyplněný nechá);
+        // klíč mířící do držené tabulky zůstává.
+        $this->declareClearSettings();
+        $events = [];
+        $this->recordDeletes($events);
+        $tester = $this->createCommandTester(['keep_me', 'drop_me', 'core_system_settings'], $events);
+        $exitCode = $tester->execute(['--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame([
+            'DROP TABLE IF EXISTS `drop_me`',
+            'delete core_system_settings `key` = %s test.unit.seriesId',
+        ], $events);
+        $this->assertTrue($this->command->upgradeRan);
+
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Clearing 1 setting(s) holding ids of rows in dropped tables:', $display);
+        $this->assertStringContainsString('[clear] test.unit.seriesId (id in drop_me)', $display);
+        $this->assertStringNotContainsString('test.unit.keptRef', $display);
+        $this->assertStringContainsString('Cleared 1 setting(s).', $display);
+    }
+
+    public function testDryRunListsSettingsToClearWithoutDeleting(): void
+    {
+        $this->declareClearSettings();
+        $events = [];
+        $this->recordDeletes($events);
+        $tester = $this->createCommandTester(['keep_me', 'drop_me', 'core_system_settings'], $events);
+        $exitCode = $tester->execute(['--dry-run' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame([], $events);
+        $this->assertStringContainsString('[clear] test.unit.seriesId (id in drop_me)', $tester->getDisplay());
+    }
+
+    public function testKeptTableKeepsItsSetting(): void
+    {
+        // --keep drží tabulku řádku, takže id platí dál — klíč se nemaže.
+        $this->declareClearSettings();
+        $events = [];
+        $this->recordDeletes($events);
+        $tester = $this->createCommandTester(['keep_me', 'drop_me', 'core_system_settings', 'orphan_table'], $events);
+        $exitCode = $tester->execute(['--yes' => true, '--keep' => ['drop_me']]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame(['DROP TABLE IF EXISTS `orphan_table`'], $events);
+        $this->assertStringNotContainsString('[clear]', $tester->getDisplay());
+        $this->assertStringNotContainsString('Clearing', $tester->getDisplay());
+    }
+
+    public function testNoClearingWithoutSettingsTable(): void
+    {
+        // Čerstvý DS bez schématu (core_system_settings chybí): není co mazat.
+        $this->declareClearSettings();
+        $events = [];
+        $this->recordDeletes($events);
+        $tester = $this->createCommandTester(['keep_me', 'drop_me'], $events);
+        $exitCode = $tester->execute(['--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame(['DROP TABLE IF EXISTS `drop_me`'], $events);
+        $this->assertStringNotContainsString('Clearing', $tester->getDisplay());
+    }
+
+    public function testNoClearingWhenSettingsTableItselfIsDropped(): void
+    {
+        $this->declareClearSettings(keepSettingsTable: false);
+        $events = [];
+        $this->recordDeletes($events);
+        $tester = $this->createCommandTester(['keep_me', 'drop_me', 'core_system_settings'], $events);
+        $exitCode = $tester->execute(['--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame(['DROP TABLE IF EXISTS `core_system_settings`, `drop_me`'], $events);
+        $this->assertStringNotContainsString('Clearing', $tester->getDisplay());
     }
 
     public function testResetKeepsStateJson(): void

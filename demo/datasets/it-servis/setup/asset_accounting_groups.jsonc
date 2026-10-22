@@ -1,0 +1,90 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "asset_accounting_groups",
+    "rows": [
+        {
+            "code": "013",
+            "name": "Software",
+            "note": null,
+            "sort_order": 30,
+            "account_asset": "013100",
+            "account_acquisition": "041100",
+            "account_accumulated": "073100",
+            "account_depreciation": "551100",
+            "account_disposal": "541100",
+            "docState": 40
+        },
+        {
+            "code": "014",
+            "name": "Ocenitelná práva",
+            "note": null,
+            "sort_order": 40,
+            "account_asset": "014100",
+            "account_acquisition": "041100",
+            "account_accumulated": "074100",
+            "account_depreciation": "551100",
+            "account_disposal": "541100",
+            "docState": 40
+        },
+        {
+            "code": "019",
+            "name": "Ostatní dlouhodobý nehmotný majetek",
+            "note": null,
+            "sort_order": 50,
+            "account_asset": "019100",
+            "account_acquisition": "041100",
+            "account_accumulated": "079100",
+            "account_depreciation": "551100",
+            "account_disposal": "541100",
+            "docState": 40
+        },
+        {
+            "code": "021",
+            "name": "Stavby",
+            "note": null,
+            "sort_order": 10,
+            "account_asset": "021100",
+            "account_acquisition": "042100",
+            "account_accumulated": "081100",
+            "account_depreciation": "551100",
+            "account_disposal": "541100",
+            "docState": 40
+        },
+        {
+            "code": "022",
+            "name": "Samostatné movité věci",
+            "note": null,
+            "sort_order": 20,
+            "account_asset": "022100",
+            "account_acquisition": "042100",
+            "account_accumulated": "082100",
+            "account_depreciation": "551100",
+            "account_disposal": "541100",
+            "docState": 40
+        },
+        {
+            "code": "031",
+            "name": "Pozemky",
+            "note": null,
+            "sort_order": 60,
+            "account_asset": "031100",
+            "account_acquisition": "042100",
+            "account_accumulated": null,
+            "account_depreciation": null,
+            "account_disposal": "541100",
+            "docState": 40
+        },
+        {
+            "code": "032",
+            "name": "Umělecká díla a sbírky",
+            "note": null,
+            "sort_order": 70,
+            "account_asset": "032100",
+            "account_acquisition": "042100",
+            "account_accumulated": null,
+            "account_depreciation": null,
+            "account_disposal": "541100",
+            "docState": 40
+        }
+    ]
+}

@@ -1,0 +1,259 @@
+// Příběh firmy „IT servis“ — pravidla, ze kterých generátor rozvine demo sadu
+// (tasks/demo-dataset-phase1.md, #131 D6, D12). Žádné vygenerované seznamy
+// dokladů: tady jsou jen pravidla a ručně zvolené výjimky.
+//
+// Data jsou relativní ke kotvě (D7): `month` = posun od měsíce kotvy
+// (0 = měsíc kotvy, -9 = nejstarší), `day` = den v měsíci (delší než měsíc
+// se ořízne na poslední den), splatnost ve dnech. S výchozí kotvou je to
+// leden–říjen 2026 — celá sada v jednom fiskálním roce.
+//
+// Čísla jen celá nebo s desetinnou tečkou (loader je čte jako Decimal).
+{
+	"name": "it-servis",
+	"title": "Demo — IT servis",
+	"description": "Fiktivní IT firma Zelený Terminál s.r.o., měsíční plátce DPH, deset měsíců provozu: vydané a přijaté faktury (i od dodavatele z EU v eurech), pokladna, mzdy, banka s převody mezi účty, spisovna a pár zpráv k řešení (#131).",
+	"anchor": "2026-10-20",
+	"monthsBefore": 9,
+
+	// Vlastní firma — identita v kanonickém tvaru (jako identities.jsonc korpusu).
+	"own": {
+		"name": "Zelený Terminál s.r.o.",
+		"country": "cz",
+		"companyId": "61204579",
+		"taxId": "CZ61204579",
+		"vatId": "CZ61204579",
+		"courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+		"address": { "street": "Serverová", "houseNumber": "1024/8", "city": "Brno", "zip": "60200", "country": "cz" },
+		"contact": { "name": null, "email": "fakturace@zeleny-terminal.example", "phone": "+420000230190", "web": "www.zeleny-terminal.example" },
+		"language": "cs",
+		// Kódy musí odpovídat setup/bank_accounts.jsonc (účet per měnu faktur,
+		// CZK povinná; EUR faktury nesou BU2, platby za ně chodí na něj — U1 —
+		// a úhrady faktur dodavatele v EUR z něj odcházejí — D28)
+		// a setup/cash_desks.jsonc.
+		"bankAccounts": { "CZK": "BU1", "EUR": "BU2" },
+		"cashDeskCode": "POK",
+	},
+
+	// Kurz EUR per měsíc (D13) — pevný, bez kurzovních lístků v sadě.
+	"rates": {
+		"EUR": { "-9": 25.12, "-8": 25.08, "-7": 24.96, "-6": 24.91, "-5": 24.87, "-4": 24.79, "-3": 24.73, "-2": 24.68, "-1": 24.55, "0": 24.47 },
+	},
+
+	// Vydané faktury z pravidel: paušál se vystavuje 1. dne měsíce (čtvrtletní
+	// 1. dne prvního měsíce čtvrtletí), splatnost 14 dní, DUZP = den vystavení.
+	// Paušály jsou periodické zakázky (#131 fáze 2b, D32): `workOrders` říká
+	// druh a průběžnou řadu ze setup/ (D34), název zakázky s {customer},
+	// text dokladu s {období} a popis řádku předpisu v jazycích odběratelů —
+	// faktury vypadají jako z periodické fakturace (štítek období jako
+	// PeriodLabel: „leden 2026“, „1. čtvrtletí 2026“, sk / de obdobně).
+	"invoicing": {
+		"issueDay": 1,
+		"dueDays": 14,
+		"workOrders": {
+			"kind": "Správa IT — paušál",
+			"series": "S",
+			"title": "Správa IT — {customer}",
+			"docText": {
+				"cs": "Správa IT — paušál {období}",
+				"sk": "Správa IT — paušál {období}",
+				"de": "IT-Betreuung — Pauschale {období}",
+				"en": "IT management — flat fee {období}",
+			},
+			"rowText": {
+				"cs": "Správa IT — měsíční paušál",
+				"sk": "Správa IT — mesačný paušál",
+				"de": "IT-Betreuung — Monatspauschale",
+				"en": "IT management — monthly flat fee",
+			},
+		},
+	},
+
+	// Opakovaná fakturace per odběratel: `every` month | quarter | once;
+	// `item` z items.jsonc, `price` za jednotku (měsíc) — u odběratele v cizí
+	// měně je to cena v měně faktury (EUR), zatímco cena z katalogu (items.jsonc,
+	// CZK) se na fakturu v cizí měně přepočítá kurzem měsíce vystavení (D27);
+	// `qty` výchozí 1
+	// (čtvrtletní paušál = 3 měsíce); `priceFrom` změna ceny od měsíce;
+	// `conceptInAnchorMonth` nechá fakturu měsíce kotvy v Konceptu bez čísla;
+	// `since` = měsíc zahájení zakázky jako posun od měsíce kotvy — před oknem
+	// (smlouvy běží roky, D34; u čtvrtletní se zarovná na začátek čtvrtletí),
+	// nebo v okně = zahájení i první fakturované období v tom měsíci (nový
+	// paušál, fáze 2d D44); `until` = měsíc ukončení v okně, ukončení poslední
+	// den měsíce: faktury jen za období do něj, ukončení před kotvou = zakázka
+	// Ukončeno (D43). Nové pravidlo patří na konec — řada S je průběžná
+	// a stávající zakázky nesmí změnit číslo.
+	"billing": [
+		{ "customer": "kopretina", "every": "month",   "item": "SPRAVA-IT", "price": 16000, "since": -30 },
+		{ "customer": "medvidek",  "every": "month",   "item": "SPRAVA-IT", "price": 5500, "conceptInAnchorMonth": true, "since": -17 },
+		{ "customer": "usmevov",   "every": "month",   "item": "SPRAVA-IT", "price": 21000, "since": -44 },
+		{ "customer": "pohybna",   "every": "quarter", "item": "SPRAVA-IT", "price": 5000, "qty": 3, "since": -33 },
+		{ "customer": "galvanovna","every": "month",   "item": "SPRAVA-IT", "price": 17500, "since": -26 },
+		{ "customer": "jelen",     "every": "month",   "item": "SPRAVA-IT", "price": 25000, "priceFrom": { "month": -4, "price": 27500 }, "since": -38 },
+		{ "customer": "mluvka",    "every": "once",    "item": "ZALOHA-IT", "price": 42000, "month": -8, "day": 5, "dueDays": 30, "docType": "proformaIssued" },
+		// Neplatí (payment never) — smlouva ukončena pro neplacení ke konci měsíce −3 (D43).
+		{ "customer": "stranka",   "every": "month",   "item": "SPRAVA-IT", "price": 4800, "since": -13, "until": -3 },
+		{ "customer": "lekarna",   "every": "month",   "item": "SPRAVA-IT", "price": 12000, "since": -22 },
+		{ "customer": "domovnik",  "every": "quarter", "item": "SPRAVA-IT", "price": 8500, "qty": 3, "since": -15 },
+		{ "customer": "dubovylist","every": "month",   "item": "SPRAVA-IT", "price": 9000, "since": -11 },
+		{ "customer": "nitra",     "every": "month",   "item": "SPRAVA-IT", "price": 480, "since": -19 },
+		{ "customer": "tatranka",  "every": "quarter", "item": "SPRAVA-IT", "price": 130, "qty": 3, "since": -24 },
+		{ "customer": "wolkenschiff", "every": "month",   "item": "SPRAVA-IT", "price": 650, "since": -16 },
+		// Nový odběratel od měsíce −5 (D44), převzal koncept v měsíci kotvy.
+		{ "customer": "tlapka",    "every": "month",   "item": "SPRAVA-IT", "price": 8000, "conceptInAnchorMonth": true, "since": -5 },
+	],
+
+	// Projekty (#131 fáze 2b, D36): externí jednorázové zakázky druhu a řady
+	// ze setup/ s výnosy i náklady. Faktury projektu jsou ad hoc faktury
+	// s `project` (dimenze zakázky na hlavičce); náklady = nákup u dodavatele
+	// v měsíci `purchases.month`: řádky s dimenzí zakázky na řádku, množství
+	// = kusy prodané na fakturách projektu, `offerItem` = kód nabídky osnovy
+	// (výchozí = první řádek pravidla dodavatele); běžný řádek dodavatele se
+	// stejným textem ten měsíc nahradí (switch 1 → 2 ks, AP → 4 ks), ostatní
+	// se přidají (router). Zahájení = první faktura projektu minus
+	// `startDaysBefore`, ukončení = datum poslední faktury (dodávka); nákup
+	// musí dodávce předcházet. Zakázky jsou Ukončeno.
+	"projects": {
+		"kind": "Projekty",
+		"series": "P",
+		"items": [
+			{ "key": "sit",  "customer": "galvanovna", "title": "Výměna sítě",     "startDaysBefore": 3,
+			  "purchases": { "supplier": "cipdeska", "month": -6, "rows": [
+				{ "item": "ROUTER",    "text": "Router Wi-Fi 6, 4× GbE",      "unitPrice": 4490 },
+				{ "item": "SWITCH-24", "text": "Síťový switch 24 portů, PoE", "unitPrice": 6400 },
+			  ] } },
+			{ "key": "wifi", "customer": "jelen",      "title": "Wi-Fi síť hotelu", "startDaysBefore": 3,
+			  "purchases": { "supplier": "cipdeska", "month": -4, "rows": [
+				{ "item": "AP-WIFI", "text": "Přístupový bod Wi-Fi 6", "unitPrice": 2590 },
+			  ] } },
+		],
+	},
+
+	// Majetek (#131 fáze 2c, D41): jedna karta dlouhodobého hmotného majetku —
+	// server koupený samostatnou fakturou velkoobchodu (`purchase`: dodavatel
+	// s pravidlem faktur, měsíc mimo jeho běžné měsíce, den; řádek serveru má
+	// pohyb purchase.asset s účtem pořízení účetní skupiny a kartou na řádku,
+	// `rows` jsou běžný nákup na téže faktuře), zařazený `daysAfterDelivery`
+	// dní po dodání ve výši základu řádku pořízení. `typeGroup` / `type` ze
+	// setup/ (typ s výchozí účetní skupinou 022), odpisy rovnoměrně v odpisové
+	// skupině `taxRule`, účetně jako daňově (jediná kombinace, kterou generátor
+	// umí spočítat — invoicegen/assets.py). `costs.supplier` = faktury
+	// dodavatele od první vystavené po zařazení nesou kartu na řádcích
+	// (hosting serveru → tab Náklady a výnosy). Nic se nezaúčtuje (D38);
+	// měsíční účetní odpisy a pole Majetek na dokladech zapíná setup/settings.
+	"assets": {
+		"typeGroup": "Hmotný majetek",
+		"type": "Výpočetní technika",
+		"items": [
+			{ "key": "server", "number": "MA0001", "name": "Server 1U, 2× CPU, 64 GB RAM, 2× 960 GB SSD",
+			  "taxMethod": "straight", "taxRule": "cz-1", "accMethod": "as_tax",
+			  "purchase": { "supplier": "cipdeska", "month": -8, "day": 10, "unitPrice": 150000,
+			                "rows": [ { "text": "Montážní sada do racku, lišty", "unitPrice": 1290 } ] },
+			  "activation": { "daysAfterDelivery": 4 },
+			  "costs": { "supplier": "mrak" } },
+		],
+	},
+
+	// Jednorázové faktury per měsíc (hardware, práce navíc). `hours: [lo, hi]`
+	// = počet hodin odvozený deterministicky z měsíce a pořadí (bez RNG);
+	// `text` přepíše popis řádku; `project` = klíč projektu (dimenze zakázky);
+	// `payment: "cash"` = faktura placená hotově na pokladně (D8, fáze 1);
+	// `state: "concept"` jen v měsíci kotvy (rozpracované faktury).
+	"adhoc": [
+		{ "month": -9, "day": 20, "customer": "jelen",      "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -8, "day": 17, "customer": "usmevov",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [3, 6] } ] },
+		{ "month": -8, "day": 20, "customer": "kopretina",  "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -7, "day": 9,  "customer": "dubovylist", "rows": [ { "item": "NTB-14", "qty": 1 }, { "item": "PRACE-H", "hours": [2, 4] } ], "payment": "cash" },
+		{ "month": -7, "day": 20, "customer": "galvanovna", "rows": [ { "item": "PRACE-H", "hours": [8, 16], "text": "Zaměření a návrh nové sítě" } ], "project": "sit" },
+		{ "month": -6, "day": 22, "customer": "galvanovna", "rows": [ { "item": "ROUTER", "qty": 1 }, { "item": "SWITCH-24", "qty": 2 }, { "item": "PRACE-H", "hours": [4, 8], "text": "Instalace a zprovoznění sítě" } ], "project": "sit" },
+		{ "month": -6, "day": 26, "customer": "wolkenschiff",  "rows": [ { "item": "PRACE-H", "hours": [6, 12] } ] },
+		{ "month": -6, "day": 20, "customer": "usmevov",    "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -5, "day": 13, "customer": "kopretina",  "rows": [ { "item": "ROUTER", "qty": 1 } ], "payment": "cash" },
+		{ "month": -6, "day": 22, "customer": "lekarna",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [2, 4] } ] },
+		{ "month": -5, "day": 20, "customer": "jelen",      "rows": [ { "item": "PRACE-H", "hours": [8, 16], "text": "Průzkum lokality a návrh Wi-Fi sítě" } ], "project": "wifi" },
+		// Dodávka přístupových bodů až po nákupu u velkoobchodu (15. den).
+		{ "month": -4, "day": 18, "customer": "jelen",      "rows": [ { "item": "AP-WIFI", "qty": 4 }, { "item": "PRACE-H", "hours": [5, 9], "text": "Montáž a nastavení Wi-Fi sítě" } ], "project": "wifi" },
+		{ "month": -4, "day": 20, "customer": "lekarna",    "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -3, "day": 22, "customer": "domovnik",   "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [2, 4] } ] },
+		{ "month": -3, "day": 18, "customer": "lekarna",    "rows": [ { "item": "PRACE-H", "hours": [2, 5] } ] },
+		{ "month": -3, "day": 20, "customer": "dubovylist", "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -2, "day": 11, "customer": "medvidek",   "rows": [ { "item": "PRACE-H", "hours": [1, 3] } ], "payment": "cash" },
+		{ "month": -2, "day": 20, "customer": "kopretina",  "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -1, "day": 22, "customer": "usmevov",    "rows": [ { "item": "NTB-14", "qty": 2 }, { "item": "PRACE-H", "hours": [2, 4] } ] },
+		{ "month": -1, "day": 20, "customer": "galvanovna", "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": -1, "day": 24, "customer": "nitra",      "rows": [ { "item": "MON-27", "qty": 3 } ] },
+		{ "month": 0,  "day": 7,  "customer": "usmevov",    "rows": [ { "item": "PRACE-H", "hours": [2, 6] } ], "state": "concept" },
+		{ "month": 0,  "day": 9,  "customer": "jelen",      "rows": [ { "item": "PRACE-H", "hours": [8, 16] } ] },
+		{ "month": 0,  "day": 14, "customer": "galvanovna", "rows": [ { "item": "NTB-14", "qty": 1 }, { "item": "PRACE-H", "hours": [1, 3] } ], "state": "concept" },
+	],
+
+	// Pokladna: prodejky drobného zboží v uvedené dny měsíce (zboží rotuje,
+	// kusy v rozsahu), celková částka zaokrouhlená na koruny; výdajové
+	// pokladní doklady bez partnera na položky z nabídky osnovy.
+	"cashRegister": {
+		"days": [4, 11, 18, 25],
+		"items": ["KABEL-HDMI", "MYS-USB", "USB-64", "SLUCHATKA"],
+		"qty": [1, 3],
+	},
+	"cashExpenses": [
+		{ "day": 8,  "item": "518203",  "text": "Poštovné — doporučené zásilky", "amount": [120, 480], "step": 10, "vat": "none" },
+		{ "day": 19, "item": "501100S", "text": "Kancelářské potřeby",           "amount": [300, 1200], "step": 10, "vatPct": 21 },
+	],
+
+	// Mzdy: interní doklad poslední den měsíce, kontační řádky bez partnera.
+	// Částky per měsíc musí dát MD = D (loader kontroluje); `months` přepíše
+	// výchozí částky (odměna v červnu).
+	"payroll": {
+		"day": 31,
+		"text": "Mzdy {period}",
+		"figures": { "gross": 92000, "employer": 31096, "net": 70896, "insurance": 41216, "tax": 10984 },
+		"months": {
+			"-4": { "gross": 107000, "employer": 36166, "net": 82244, "insurance": 47936, "tax": 12986 },
+		},
+		"rows": [
+			{ "account": "521100", "side": "debit",  "amount": "gross",     "text": "Hrubé mzdy" },
+			{ "account": "524100", "side": "debit",  "amount": "employer",  "text": "Pojistné hrazené zaměstnavatelem" },
+			{ "account": "331100", "side": "credit", "amount": "net",       "text": "Čisté mzdy k výplatě" },
+			{ "account": "336100", "side": "credit", "amount": "insurance", "text": "Odvody sociálního a zdravotního pojištění" },
+			{ "account": "342100", "side": "credit", "amount": "tax",       "text": "Záloha na daň z příjmů" },
+		],
+	},
+
+	// Banka (fáze 2a, #131 D17, D18, D22, U1). Výpis per účet a měsíc vzniká
+	// z chování plateb odběratelů (`payment` v partners.jsonc) a dodavatelů,
+	// z mezd a odvodů a z poplatků; partnera a párování dopočítá aplikace.
+	// `accounts`: počáteční zůstatek (účet v cizí měně začíná na nule) a
+	// měsíční poplatek (poslední den dokončeného měsíce). Otevírací doklad
+	// MD 221xxx / DAL openingAccount k prvnímu dni dat.
+	// Ekonomika příběhu (D25; souhrn vypisuje build.py, cíle hlídá
+	// tests/test_economy.py): výnosy ≈ 2,12 mil., náklady ≈ 1,84 mil. (mzdy
+	// 1,13 mil., dodavatelé 0,70 mil.), zisk ≈ 283 tis. = 13 % výnosů (po
+	// odpisech serveru 12 %); ve ztrátě jen červen (odměny); zahraniční
+	// odběratelé 17 % tržeb; zboží se prodává s maržou (prodej ≈ 1,35× nákup). Počáteční
+	// zůstatek BU1 300 tis., zůstatek nesmí klesnout pod nulu (generátor hlídá).
+	// `payroll`: platba částky mezd (`amount` z payroll.figures s řádkem na
+	// straně D) za měsíc M v měsíci M+1, bez partnera a VS — protiúčet nesmí
+	// patřit nikomu v sadě; ke každé vznikne vyrovnávací interní doklad
+	// MD účet závazku / DAL clearingAccount téhož dne (D22).
+	"bank": {
+		"accounts": {
+			"BU1": { "openingBalance": 300000, "fee": { "amount": 169, "text": "Poplatek za vedení účtu" } },
+			"BU2": { "openingBalance": 0 },
+		},
+		"openingAccount": "701100",
+		"clearingAccount": "261300",
+		"settlementText": "Přeúčtování z nespárovaných plateb: {text}",
+		// Převody mezi vlastními účty (D26): k `day` každého měsíce se z účtu
+		// `from` (cizí měna) převede zůstatek nad `reserve`, zaokrouhlený dolů
+		// na `step`, když dělá aspoň `minAmount`; na `to` (CZK) přijde EUR × kurz
+		// měsíce (`rates`) téhož dne, takže peníze na cestě vyjdou nulové.
+		// Protiúčet je náš druhý účet, pohyby transfer.out / transfer.in výslovně.
+		"transfers": [
+			{ "from": "BU2", "to": "BU1", "day": 25, "reserve": 1000, "minAmount": 1000, "step": 100, "text": "Převod z eurového účtu {period}" },
+		],
+		"payroll": [
+			{ "amount": "net",       "day": 10, "text": "Výplata mezd {period}",  "counterparty": { "account": "1000000013/0800", "name": "Hromadný příkaz — mzdy" } },
+			{ "amount": "insurance", "day": 20, "text": "Pojistné {period}",      "counterparty": { "account": "1000000021/0800", "name": "Pojišťovny — odvody" } },
+			{ "amount": "tax",       "day": 20, "text": "Záloha na daň {period}", "counterparty": { "account": "1000000048/0800", "name": "Finanční úřad — záloha na daň" } },
+		],
+	},
+}

@@ -1,0 +1,62 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00016",
+    "companyId": "66902452",
+    "taxId": "CZ66902452",
+    "vatId": "CZ66902452",
+    "name": {
+        "fullName": "Realitní kancelář Domovník s.r.o."
+    },
+    "contact": {
+        "email": "fakturace@rk-domovnik.example",
+        "phone": "+420000218745",
+        "web": "www.rk-domovnik.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Makléřská",
+            "houseNumber": "1500/7",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2641058391/2700",
+            "iban": "CZ4227000000002641058391",
+            "bic": "BACXCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Fakturace",
+            "email": "fakturace@rk-domovnik.example",
+            "phone": "+420000218745",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

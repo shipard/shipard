@@ -59,6 +59,10 @@ class LedgerGeneratorTest extends TestCase
             self::rule(self::PAYABLES, '311', 1, 2, 1, true),
             self::rule(self::UNMATCHED, '261200', 1, 1, 1),
             self::rule(self::UNMATCHED, '261300', 0, 1, 1),
+            // Zrcadlové řádky clearingu (#131 fáze 2a): přeúčtování interním
+            // dokladem = záporná úhrada v témže případu.
+            self::rule(self::UNMATCHED, '261200', 0, 1, 1, true),
+            self::rule(self::UNMATCHED, '261300', 1, 1, 1, true),
         ];
     }
 
@@ -250,6 +254,39 @@ class LedgerGeneratorTest extends TestCase
             ['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => 100.0, 'account' => '311100'],
             ['balance' => self::UNMATCHED, 'bal_side' => 1, 'amount' => 50.0, 'account' => '261200'],
         ], $moves, 'clearing skupina má jen řádky úhrady — předpisová strana je k nim opačná, platba zůstává úhradou');
+    }
+
+    // ── #131 fáze 2a: přeúčtování z clearingu interním dokladem ─────────────
+
+    public function testRebookingFromClearingIsNegativePaymentInSameCase(): void
+    {
+        $noKey = ['partner' => null, 'payment_reference' => null];
+
+        // Výplata mezd bez partnera a VS: bankovní engine → 261300 MD, úhrada.
+        $this->assertSame(
+            [['balance' => self::UNMATCHED, 'bal_side' => 1, 'amount' => 70896.0, 'account' => '261300']],
+            $this->desired(self::seedRules(), [self::journal('261300', 0, 70896.0, 'payment.out', $noKey)]),
+            'zrcadlový řádek s modify_sign pohyb bankovní transakce nemění (paymentGroup ho přeskočí)',
+        );
+        // Interní doklad MD 331100 / DAL 261300 (D22): záporná úhrada téhož
+        // prázdného klíče → případ se vynuluje; 331100 není v nastavení.
+        $this->assertSame(
+            [['balance' => self::UNMATCHED, 'bal_side' => 1, 'amount' => -70896.0, 'account' => '261300']],
+            $this->desired(self::seedRules(), [
+                self::journal('331100', 0, 70896.0, 'acc.record', $noKey),
+                self::journal('261300', 1, 70896.0, 'acc.record', $noKey),
+            ]),
+        );
+        // Zrcadlo pro příjmy: přeúčtování nespárovaného příjmu 261200 MD.
+        $this->assertSame(
+            [['balance' => self::UNMATCHED, 'bal_side' => 1, 'amount' => -50.0, 'account' => '261200']],
+            $this->desired(self::seedRules(), [self::journal('261200', 0, 50.0, 'acc.record')]),
+        );
+        // Legacy seed bez zrcadel: DAL 261300 bez operace nedá nic (stav před 2a).
+        $this->assertSame(
+            [],
+            $this->desired(self::legacyRules(), [self::journal('261300', 1, 70896.0, 'acc.record', $noKey)]),
+        );
     }
 
     public function testPaymentIgnoresCreditNoteRulesOfOtherGroup(): void

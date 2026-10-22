@@ -17,6 +17,7 @@ use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Version;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
+use Shipard\Module\Core\Exchange\Dataset\DatasetCatalog;
 
 class DevDashboardControllerTest extends TestCase
 {
@@ -117,6 +118,26 @@ class DevDashboardControllerTest extends TestCase
 	{
 		mkdir($this->tmpRoot . '/tests/eval', 0700, true);
 		symlink(dirname(__DIR__, 4) . '/tests/datasets', $this->tmpRoot . '/tests/datasets');
+	}
+
+	/**
+	 * Demo sada v „repo rootu“ testu (#131): `demo/datasets/it-servis/manifest.jsonc`
+	 * psaný testem (ne symlink na checkout — sada vzniká generátorem a může
+	 * se měnit), vedle kořenového README, které katalog ignoruje.
+	 *
+	 * @return string absolutní adresář demo sady
+	 */
+	private function enableDemoDataset(string $country = 'cz'): string
+	{
+		$dir = $this->tmpRoot . '/demo/datasets/it-servis';
+		mkdir($dir, 0700, true);
+		file_put_contents($dir . '/manifest.jsonc', json_encode([
+			'format' => 'shpd.dataset.v1', 'name' => 'it-servis', 'title' => 'Demo — IT servis',
+			'description' => 'Fiktivní IT firma', 'dateMode' => 'fixed', 'created' => '2026-10-20T00:00:00Z',
+			'country' => $country, 'counts' => ['docs' => 240, 'mail' => 52],
+		], JSON_UNESCAPED_UNICODE));
+		file_put_contents($this->tmpRoot . '/demo/datasets/README.md', '# Demo datové sady');
+		return $dir;
 	}
 
 	/** @param array<string, mixed> $extra další klíče main.json (třída dat, účel, …) */
@@ -236,6 +257,38 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame(gethostname() ?: 'unknown', $data['hostname']);
 		$this->assertSame($this->tmpDir, $data['dataSourcesDir']);
 		$this->assertFalse($data['testing'], 'repo root bez tests/datasets a tests/eval → sekce Testování se nenabízí');
+	}
+
+	public function testApiInfoDatasetsFlagFollowsTheSeedCatalog(): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info'));
+		$this->assertFalse($this->getPayloadRaw($resp)['data']['datasets'], 'bez tests/datasets i demo/datasets žádné sady k seedu');
+
+		$this->enableDemoDataset();
+		$data = $this->getPayloadRaw($this->makeTestableCtrl()->dispatch($this->makeRequest('GET', '/_dev/api/info')))['data'];
+		$this->assertTrue($data['datasets'], 'demo sady stačí (#131)');
+		$this->assertFalse($data['testing'], 'sekce Testování dál chce tests/datasets + tests/eval');
+	}
+
+	public function testApiDatasetsListsTestAndDemoDatasetsWithTheirKind(): void
+	{
+		$this->enableDemoDataset();
+		$data = $this->getPayloadRaw($this->makeTestableCtrl()->dispatch($this->makeRequest('GET', '/_dev/api/datasets')))['data'];
+		$this->assertSame([[
+			'name' => 'it-servis', 'title' => 'Demo — IT servis', 'kind' => 'demo', 'country' => 'cz', 'profile' => null, 'description' => 'Fiktivní IT firma',
+		]], $data, 'jen demo sada bez checkoutu tests/');
+
+		$this->enableDatasets();
+		$data = $this->getPayloadRaw($this->makeTestableCtrl()->dispatch($this->makeRequest('GET', '/_dev/api/datasets')))['data'];
+		$byName = array_column($data, null, 'name');
+		$this->assertSame('test', $byName['cz-vat-payer']['kind'] ?? null);
+		$this->assertSame('vat-payer', $byName['cz-vat-payer']['profile'] ?? null);
+		$this->assertSame('demo', $byName['it-servis']['kind'] ?? null);
+		$this->assertSame('it-servis', end($data)['name'], 'testovací sady první, demo za nimi');
+		$this->assertSame(['name', 'title', 'kind', 'country', 'profile', 'description'], array_keys($data[0]));
+
+		$resp = $this->makeTestableCtrl()->dispatch($this->makeRequest('POST', '/_dev/api/datasets'));
+		$this->assertSame(404, $this->getStatus($resp));
 	}
 
 	public function testApiInfoTestingAvailableWithDatasetsAndEvalDirs(): void
@@ -1101,6 +1154,30 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertStringNotContainsString('seed-persons', $out . implode(' ', $ctrl->commandsRun));
 	}
 
+	public function testDsCreatePipelineSeedsADemoDatasetFromItsCatalogDir(): void
+	{
+		// Demo sada bez checkoutu tests/ (#131): adresář z katalogu, země podle manifestu.
+		$demoDir = $this->enableDemoDataset();
+		$this->assertSame($demoDir, (new DatasetCatalog($this->tmpRoot))->dataset('it-servis')?->dir);
+
+		$resp = $this->makeTestableCtrl()->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => 'it-servis', 'country' => 'sk'])));
+		$this->assertSame(400, $this->getStatus($resp));
+		$this->assertStringContainsString('Country must match the dataset (cz)', $this->getPayloadRaw($resp)['error']['message']);
+
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->commandResults = [
+			[0, "  Directory:     /tmp/x/abc123\n"],
+			[0, ""],
+			[0, ""],
+			[0, "Dataset it-servis — …\n"],
+		];
+		$out = $this->streamToString($ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', $this->dsCreateBody(['dataset' => 'it-servis']))));
+		$this->assertStringContainsString('[STEP] Seeding dataset it-servis...', $out);
+		$this->assertStringContainsString('[DONE] {"id":"abc123","url":"/abc123/app/","dataset":"it-servis"}', $out);
+		$this->assertCount(3, $ctrl->commandsRun);
+		$this->assertStringContainsString(' dataset-seed ' . escapeshellarg($demoDir) . ' --yes --no-ansi', $ctrl->commandsRun[2], 'adresář demo sady z katalogu');
+	}
+
 	public function testDsCreatePipelineReportsAFailedSeedWithAUsableDataSource(): void
 	{
 		$this->enableDatasets();
@@ -1326,7 +1403,7 @@ class DevDashboardControllerTest extends TestCase
 	// ── Smazání zdroje dat jako úloha (tasks/ds-delete.md § 2, D70) ────────
 
 	/** Controller se spouštěčem, který místo spawnu jen zaznamená argv; čas pevný, aby byla nová úloha `starting`. */
-	private function deleteController(?string $mode = 'development'): TestableDevDashboardController
+	private function jobController(?string $mode = 'development'): TestableDevDashboardController
 	{
 		$store = new JobStore(
 			$this->tmpRoot . '/jobs',
@@ -1350,9 +1427,148 @@ class DevDashboardControllerTest extends TestCase
 		return Request::fromArray('POST', '/_dev/api/data-sources/' . $id . '/delete', [], '', []);
 	}
 
+	/** @param array<string, mixed> $body */
+	private function reseedRequest(string $id, array $body): Request
+	{
+		return $this->makeJsonRequest('POST', '/_dev/api/data-sources/' . $id . '/reseed', $body);
+	}
+
+	// ── Nahrát datovou sadu (#103 D66, #131 i demo sady) ──────────────────
+
+	public function testReseedDataSourceLaunchesTheJobWithTheDatasetDirFromTheCatalog(): void
+	{
+		$demoDir = $this->enableDemoDataset();
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free', 'origin' => 'ds-create']);
+		$ctrl = $this->jobController();
+
+		$resp = $ctrl->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', ['dataset' => 'it-servis']));
+
+		$this->assertSame(201, $this->getStatus($resp));
+		$job = $this->getPayloadRaw($resp)['data']['job'];
+		$this->assertSame(JobRecord::TYPE_RESEED, $job['type']);
+		$this->assertSame(['id' => 'aaaa-aaaa-aaaa-aaaa', 'name' => 'Volný zdroj'], $job['dataSource']);
+		$this->assertSame('it-servis', $job['dataset']);
+		$this->assertSame([], $job['params']);
+		$this->assertCount(1, $job['steps']);
+		$this->assertSame('dataset-seed it-servis', $job['steps'][0]['label']);
+		$this->assertSame(['/usr/bin/php', '/repo/bin/shpd-ds', 'dataset-seed', $demoDir, '--yes'], $job['steps'][0]['argv'], 'adresář sady z katalogu, nikdy z požadavku');
+		$this->assertSame($this->tmpDir . '/aaaa-aaaa-aaaa-aaaa', $job['steps'][0]['cwd'], 'dataset-seed běží v adresáři zdroje dat');
+		$this->assertSame(60, $job['cancelGraceSeconds']);
+		$this->assertCount(1, $this->spawns);
+		$this->assertSame(JobRecord::TYPE_RESEED, (new JobStore($this->tmpRoot . '/jobs'))->read($job['id'])?->type);
+	}
+
+	public function testReseedDataSourceAcceptsATestDatasetToo(): void
+	{
+		$this->enableDatasets();
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
+
+		$resp = $this->jobController()->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', ['dataset' => 'cz-non-payer']));
+
+		$this->assertSame(201, $this->getStatus($resp));
+		$job = $this->getPayloadRaw($resp)['data']['job'];
+		$this->assertSame('cz-non-payer', $job['dataset']);
+		$this->assertSame((new EvalCatalog($this->tmpRoot))->dataset('cz-non-payer')?->dir, $job['steps'][0]['argv'][3]);
+	}
+
+	public function testReseedDataSourceWithAnotherHeldDatasetNeedsReplaceDataset(): void
+	{
+		$this->enableDemoDataset();
+		$this->enableDatasets();
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Drží sadu', null, [
+			'dataClass' => 'free', 'origin' => 'dataset-seed cz-vat-payer',
+			'dataset' => ['name' => 'cz-vat-payer', 'hash' => 'h1', 'seededAt' => '2026-10-16T10:00:00Z'],
+		]);
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Jen z původu', null, ['dataClass' => 'free', 'origin' => 'dataset-seed cz-non-payer']);
+		$ctrl = $this->jobController();
+
+		$resp = $ctrl->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', ['dataset' => 'it-servis']));
+		$this->assertSame(409, $this->getStatus($resp));
+		$error = $this->getPayloadRaw($resp)['error'];
+		$this->assertSame('DATASET_MISMATCH', $error['code']);
+		$this->assertSame(['current' => 'cz-vat-payer', 'requested' => 'it-servis'], $error['details']);
+
+		$resp = $ctrl->dispatch($this->reseedRequest('bbbb-bbbb-bbbb-bbbb', ['dataset' => 'it-servis', 'replaceDataset' => 'yes']));
+		$this->assertSame(409, $this->getStatus($resp), 'jen výslovné true');
+		$this->assertSame([], $this->spawns);
+
+		$resp = $ctrl->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', ['dataset' => 'cz-vat-payer']));
+		$this->assertSame(201, $this->getStatus($resp), 'tatáž sada = obyčejné přeseedování');
+		$this->assertSame([], $this->getPayloadRaw($resp)['data']['job']['params']);
+
+		$resp = $ctrl->dispatch($this->reseedRequest('bbbb-bbbb-bbbb-bbbb', ['dataset' => 'it-servis', 'replaceDataset' => true]));
+		$this->assertSame(201, $this->getStatus($resp));
+		$this->assertSame(['replaceDataset' => true, 'previousDataset' => 'cz-non-payer'], $this->getPayloadRaw($resp)['data']['job']['params']);
+	}
+
+	public function testReseedDataSourceRefusesUnknownDatasetRealCopyOtherModesAndBadIds(): void
+	{
+		$this->enableDemoDataset();
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Reálná kopie', null, ['dataClass' => 'realCopy', 'purpose' => 'účtárna']);
+		$ctrl = $this->jobController();
+
+		foreach ([['dataset' => '../etc'], ['dataset' => 'demo/it-servis'], ['dataset' => ''], [], ['dataset' => ['it-servis']]] as $body) {
+			$resp = $ctrl->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', $body));
+			$this->assertSame(400, $this->getStatus($resp), json_encode($body));
+			$this->assertSame('UNKNOWN_DATASET', $this->getPayloadRaw($resp)['error']['code']);
+		}
+
+		$resp = $ctrl->dispatch($this->reseedRequest('bbbb-bbbb-bbbb-bbbb', ['dataset' => 'it-servis']));
+		$this->assertSame(403, $this->getStatus($resp));
+		$this->assertSame('DS_NOT_FREE', $this->getPayloadRaw($resp)['error']['code']);
+
+		foreach ([null, 'production'] as $mode) {
+			$resp = $this->jobController($mode)->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', ['dataset' => 'it-servis']));
+			$this->assertSame(403, $this->getStatus($resp), var_export($mode, true));
+			$this->assertSame('FORBIDDEN', $this->getPayloadRaw($resp)['error']['code']);
+		}
+
+		$resp = $ctrl->dispatch($this->reseedRequest('zzzz-zzzz-zzzz-zzzz', ['dataset' => 'it-servis']));
+		$this->assertSame(404, $this->getStatus($resp));
+		$this->assertSame('DS_NOT_FOUND', $this->getPayloadRaw($resp)['error']['code']);
+
+		$resp = $ctrl->dispatch($this->reseedRequest('abc', ['dataset' => 'it-servis']));
+		$this->assertSame(404, $this->getStatus($resp));
+		$this->assertSame('NOT_FOUND', $this->getPayloadRaw($resp)['error']['code']);
+
+		$resp = $ctrl->dispatch($this->makeRequest('GET', '/_dev/api/data-sources/aaaa-aaaa-aaaa-aaaa/reseed'));
+		$this->assertSame(404, $this->getStatus($resp));
+
+		$this->assertSame([], $this->spawns, 'nic se nespustilo');
+	}
+
+	public function testReseedDataSourceConflictsWithRunningJob(): void
+	{
+		$this->enableDemoDataset();
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
+		$ctrl = $this->jobController();
+		$store = new JobStore($this->tmpRoot . '/jobs', static fn (): bool => true);
+		$store->ensureDir();
+		$runningId = JobRecord::newId(new \DateTimeImmutable('2026-10-16T11:59:00Z'));
+		$store->create(new JobRecord(
+			$runningId, JobRecord::TYPE_DELETE, 'aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, null, [],
+			[new JobStep('ds-delete', ['/usr/bin/php', '/repo/bin/shpd-server', 'ds-delete'], $this->tmpRoot)],
+			'2026-10-16T11:59:00Z', null, 60,
+		));
+		$state = JobState::pending(1);
+		$state->status = JobStatus::RUNNING;
+		$state->pid = 4242;
+		$state->startedAt = '2026-10-16T11:59:01Z';
+		$store->writeState($runningId, $state);
+
+		$resp = $ctrl->dispatch($this->reseedRequest('aaaa-aaaa-aaaa-aaaa', ['dataset' => 'it-servis']));
+
+		$this->assertSame(409, $this->getStatus($resp));
+		$error = $this->getPayloadRaw($resp)['error'];
+		$this->assertSame('JOB_RUNNING', $error['code']);
+		$this->assertSame($runningId, $error['details']['jobId']);
+		$this->assertSame([], $this->spawns);
+	}
+
 	public function testUpdatesRoutesAreDispatchedToTheUpdatesController(): void
 	{
-		$ctrl = $this->deleteController();
+		$ctrl = $this->jobController();
 
 		$resp = $ctrl->dispatch($this->makeRequest('GET', '/_dev/api/updates'));
 
@@ -1374,7 +1590,7 @@ class DevDashboardControllerTest extends TestCase
 	public function testDeleteDataSourceLaunchesDeleteJob(): void
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', '2026-10-01T00:00:00Z', ['dataClass' => 'free']);
-		$ctrl = $this->deleteController();
+		$ctrl = $this->jobController();
 
 		$resp = $ctrl->dispatch($this->deleteRequest('aaaa-aaaa-aaaa-aaaa'));
 
@@ -1400,7 +1616,7 @@ class DevDashboardControllerTest extends TestCase
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
 		foreach ([null, 'production'] as $mode) {
-			$resp = $this->deleteController($mode)->dispatch($this->deleteRequest('aaaa-aaaa-aaaa-aaaa'));
+			$resp = $this->jobController($mode)->dispatch($this->deleteRequest('aaaa-aaaa-aaaa-aaaa'));
 			$this->assertSame(403, $this->getStatus($resp), var_export($mode, true));
 			$this->assertSame('FORBIDDEN', $this->getPayloadRaw($resp)['error']['code']);
 		}
@@ -1412,7 +1628,7 @@ class DevDashboardControllerTest extends TestCase
 	{
 		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Reálná kopie', null, ['dataClass' => 'realCopy', 'purpose' => 'účtárna']);
 		$this->createDs('cccc-cccc-cccc-cccc', 'Bez třídy');
-		$ctrl = $this->deleteController();
+		$ctrl = $this->jobController();
 		foreach (['bbbb-bbbb-bbbb-bbbb', 'cccc-cccc-cccc-cccc'] as $id) {
 			$resp = $ctrl->dispatch($this->deleteRequest($id));
 			$this->assertSame(403, $this->getStatus($resp), $id);
@@ -1426,7 +1642,7 @@ class DevDashboardControllerTest extends TestCase
 
 	public function testDeleteDataSourceUnknownOrInvalidIdIs404(): void
 	{
-		$ctrl = $this->deleteController();
+		$ctrl = $this->jobController();
 
 		$resp = $ctrl->dispatch($this->deleteRequest('zzzz-zzzz-zzzz-zzzz'));
 		$this->assertSame(404, $this->getStatus($resp));
@@ -1442,7 +1658,7 @@ class DevDashboardControllerTest extends TestCase
 	public function testDeleteDataSourceConflictsWithRunningJob(): void
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
-		$ctrl = $this->deleteController();
+		$ctrl = $this->jobController();
 		$store = new JobStore($this->tmpRoot . '/jobs', static fn (): bool => true);
 		$store->ensureDir();
 		$runningId = JobRecord::newId(new \DateTimeImmutable('2026-10-16T11:59:00Z'));
@@ -1480,7 +1696,7 @@ class DevDashboardControllerTest extends TestCase
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Volný zdroj', null, ['dataClass' => 'free']);
 
-		$resp = $this->deleteController()->dispatch($this->makeRequest('GET', '/_dev/api/data-sources/aaaa-aaaa-aaaa-aaaa/delete'));
+		$resp = $this->jobController()->dispatch($this->makeRequest('GET', '/_dev/api/data-sources/aaaa-aaaa-aaaa-aaaa/delete'));
 
 		$this->assertSame(404, $this->getStatus($resp));
 		$this->assertSame([], $this->spawns);
@@ -1502,6 +1718,12 @@ class TestableDevDashboardController extends DevDashboardController
 	protected function serverCommand(): array
 	{
 		return ['/usr/bin/php', '/repo/bin/shpd-server'];
+	}
+
+	/** @return list<string> */
+	protected function dsCommand(): array
+	{
+		return ['/usr/bin/php', '/repo/bin/shpd-ds'];
 	}
 
 	protected function now(): \DateTimeImmutable

@@ -1,0 +1,19 @@
+// Výchozí pokladna; řady prodejek a pokladních dokladů jsou na ni vázané.
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "cash_desks",
+	"rows": [
+		{
+			"code": "POK",
+			"name": "Pokladna",
+			"notice": null,
+			"currency": "czk",
+			"is_default": true,
+			"valid_from": "@period.start",
+			"valid_to": null,
+			"sort_order": 1,
+			"docState": 40,
+			"accounting_account": "211100",
+		},
+	],
+}

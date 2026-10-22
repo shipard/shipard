@@ -22,8 +22,8 @@ use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Utils\IdGenerator;
 use Shipard\Core\Version;
-use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
-use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
+use Shipard\Module\Core\Exchange\Dataset\DatasetCatalog;
+use Shipard\Module\Core\Exchange\Dataset\DatasetCatalogEntry;
 
 class DevDashboardController
 {
@@ -100,6 +100,13 @@ class DevDashboardController
 		if ($method === 'POST' && preg_match('#^/_dev/api/data-sources/([^/]+)/delete$#', $path, $m) === 1) {
 			return $this->deleteDataSource(rawurldecode($m[1]), $request);
 		}
+		// Nahrát datovou sadu do volného zdroje dat jako úloha na pozadí (#103 D66, #131 i demo sady).
+		if ($method === 'POST' && preg_match('#^/_dev/api/data-sources/([^/]+)/reseed$#', $path, $m) === 1) {
+			return $this->reseedDataSource(rawurldecode($m[1]), $request);
+		}
+		if ($path === '/_dev/api/datasets' && $method === 'GET') {
+			return $this->listDatasets();
+		}
 		if ($path === '/_dev/api/install-modules' && $method === 'GET') {
 			return $this->getInstallModules();
 		}
@@ -167,7 +174,9 @@ class DevDashboardController
 
 	/**
 	 * Údaje, které dřív vkládalo PHP do HTML: server, adresář zdrojů dat,
-	 * dostupnost sekce Testování; od #129 D9 i `version` — číslo verze a HEAD
+	 * dostupnost sekce Testování (`testing`: `tests/datasets` + `tests/eval`)
+	 * a sad k seedu (`datasets`: {@see DatasetCatalog} — `tests/datasets`
+	 * nebo `demo/datasets`, #131); od #129 D9 i `version` — číslo verze a HEAD
 	 * gitu pro pruh dashboardu. Bez gitu nebo s jeho odmítnutím (PHP-FPM pod
 	 * jiným uživatelem než vlastník checkoutu) jsou `hash`, `fullHash`,
 	 * `branch` a `commitDate` null a pruh ukáže jen číslo verze.
@@ -179,6 +188,7 @@ class DevDashboardController
 			'hostname'       => gethostname() ?: 'unknown',
 			'dataSourcesDir' => $this->dataSourcesDir,
 			'testing'        => is_dir($this->repoRoot . '/tests/datasets') && is_dir($this->repoRoot . '/tests/eval'),
+			'datasets'       => (new DatasetCatalog($this->repoRoot))->isAvailable(),
 			'version'        => [
 				'version'    => Version::VERSION,
 				'hash'       => $git['hash'] ?? null,
@@ -300,8 +310,23 @@ class DevDashboardController
 	}
 
 	/**
+	 * Sady k seedu z checkoutu (#131): testovací z `tests/datasets` i demo
+	 * z `demo/datasets` ({@see DatasetCatalog}) — pro pole Data formuláře
+	 * Nový zdroj dat a dialog Nahrát datovou sadu. Bez obou adresářů prázdný
+	 * seznam (formulář pole nenabízí podle `datasets` v `/_dev/api/info`).
+	 */
+	private function listDatasets(): Response
+	{
+		return Response::success(array_map(
+			static fn (DatasetCatalogEntry $dataset): array => $dataset->toArray(),
+			(new DatasetCatalog($this->repoRoot))->datasets(),
+		));
+	}
+
+	/**
 	 * Založení zdroje dat z formuláře (tasks/testing-phase6c.md D64, D65):
-	 * `dataset` = název sady z katalogu (`tests/datasets`), prázdný / chybějící
+	 * `dataset` = název sady z katalogu ({@see DatasetCatalog} — testovací
+	 * z `tests/datasets` i demo z `demo/datasets`, #131), prázdný / chybějící
 	 * = bez dat; se sadou musí země formuláře sedět se zemí sady (`dataset-seed`
 	 * to v preflightu kontroluje znovu). Staré `seed` (náhodné osoby a pošta)
 	 * zaniklo (D67) a ignoruje se.
@@ -332,9 +357,9 @@ class DevDashboardController
 		// Sada jen z katalogu — do příkazu jde její adresář z výpisu, nikdy text z požadavku.
 		$dataset = null;
 		if ($datasetName !== '') {
-			$catalog = new EvalCatalog($this->repoRoot);
+			$catalog = new DatasetCatalog($this->repoRoot);
 			if (!$catalog->isAvailable()) {
-				$errors[] = 'Datasets are not available on this server (no tests/datasets and tests/eval checkout).';
+				$errors[] = 'Datasets are not available on this server (no tests/datasets or demo/datasets checkout).';
 			} else {
 				$dataset = $catalog->dataset($datasetName);
 				if ($dataset === null) {
@@ -453,6 +478,71 @@ class DevDashboardController
 			$request->getClientIp(),
 			self::DELETE_CANCEL_GRACE_SECONDS,
 		);
+		return $this->launchJob($record);
+	}
+
+	/**
+	 * Nahrát datovou sadu do existujícího volného zdroje dat (#103 D66, od
+	 * #131 i demo sady): úloha `reseed` = `dataset-seed <adresář sady
+	 * z katalogu> --yes` v adresáři zdroje dat. Pojistka {@see DevActionGuard}
+	 * (jen development, jen třída free, sada ze seznamu {@see DatasetCatalog});
+	 * zdroj dat, který drží jinou sadu ({@see DataSourceInfo::heldDataset()}),
+	 * přijme jen `replaceDataset: true`, jinak 409 `DATASET_MISMATCH`
+	 * s `details.current` / `requested`. Sekce Testování má vlastní `reseed`
+	 * ({@see DevEvalController}) jen nad testovacími sadami.
+	 */
+	private function reseedDataSource(string $id, Request $request): Response
+	{
+		if (preg_match(IdGenerator::ID_PATTERN, $id) !== 1) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		$body = $request->getBody() ?? [];
+		$name = $body['dataset'] ?? null;
+		if (!is_string($name) || $name === '') {
+			return Response::error(DevActionGuard::CODE_UNKNOWN_DATASET, 'dataset (set name from the listing) is required', 400);
+		}
+		$catalog = new DatasetCatalog($this->repoRoot);
+		$info = (new DataSourceInventory($this->dataSourcesDir))->read(rtrim($this->dataSourcesDir, '/') . '/' . $id);
+		$problem = DevActionGuard::check($this->serverMode(), $info, true, $name, $catalog->datasetNames());
+		if ($problem !== null) {
+			return Response::error($problem['code'], $problem['message'], $problem['status']);
+		}
+		/** @var DataSourceInfo $info @var DatasetCatalogEntry $dataset pojistka prošla — zdroj dat čitelný, sada z výpisu */
+		$dataset = $catalog->dataset($name);
+		$held = $info->heldDataset();
+		$replace = $held !== null && $held !== $dataset->name;
+		if ($replace && ($body['replaceDataset'] ?? false) !== true) {
+			return Response::error(
+				'DATASET_MISMATCH',
+				"Data source {$info->id} holds dataset '{$held}' — send replaceDataset: true to replace it with '{$dataset->name}'",
+				409,
+				['current' => $held, 'requested' => $dataset->name],
+			);
+		}
+		$now = $this->now();
+		$record = new JobRecord(
+			JobRecord::newId($now),
+			JobRecord::TYPE_RESEED,
+			$info->id,
+			$info->name,
+			$dataset->name,
+			null,
+			$replace ? ['replaceDataset' => true, 'previousDataset' => $held] : [],
+			[new JobStep(
+				'dataset-seed ' . $dataset->name,
+				[...$this->dsCommand(), 'dataset-seed', $dataset->dir, '--yes'],
+				rtrim($this->dataSourcesDir, '/') . '/' . $info->id,
+			)],
+			JobStore::formatTime($now),
+			$request->getClientIp(),
+			DevEvalController::DEFAULT_CANCEL_GRACE_SECONDS,
+		);
+		return $this->launchJob($record);
+	}
+
+	/** Spuštění úlohy jako odpověď: 201 se záznamem, 409 `JOB_RUNNING` při jiné aktivní úloze na zdroji dat. */
+	private function launchJob(JobRecord $record): Response
+	{
 		try {
 			return Response::success(['job' => $this->jobLauncher()->launch($record)], 201);
 		} catch (JobConflict $e) {
@@ -466,6 +556,12 @@ class DevDashboardController
 	protected function serverCommand(): array
 	{
 		return BinPaths::shpdServerCommand();
+	}
+
+	/** Argv prefix `shpd-ds` pro kroky úloh (seam pro testy). @return list<string> */
+	protected function dsCommand(): array
+	{
+		return BinPaths::shpdDsCommand();
 	}
 
 	protected function now(): \DateTimeImmutable
@@ -516,7 +612,7 @@ class DevDashboardController
 		string $name,
 		string $login,
 		string $password,
-		?EvalDatasetInfo $dataset,
+		?DatasetCatalogEntry $dataset,
 		string $module,
 		string $language,
 		string $country,

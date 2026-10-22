@@ -1,0 +1,119 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Realitní kancelář Domovník s.r.o.",
+        "country": "cz",
+        "companyId": "66902452",
+        "taxId": "CZ66902452",
+        "vatId": "CZ66902452",
+        "address": {
+            "street": "Makléřská",
+            "houseNumber": "1500/7",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "fakturace@rk-domovnik.example",
+            "phone": "+420000218745",
+            "web": "www.rk-domovnik.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-07-22",
+        "dueDate": "2026-08-05",
+        "accountingDate": "2026-07-22",
+        "taxPointDate": "2026-07-22",
+        "vatObligationDate": "2026-07-22"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260098"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "NTB-14",
+                "name": "Notebook 14\" business, 16 GB RAM"
+            },
+            "unit": "pcs",
+            "quantity": 2.0,
+            "unitPrice": 24900.0,
+            "totalPrice": 49800.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 49800.0,
+                "vatAmount": 10458.0,
+                "vatTotal": 60258.0
+            },
+            "description": "Notebook 14\" business, 16 GB RAM"
+        },
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 2.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 2500.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 2500.0,
+                "vatAmount": 525.0,
+                "vatTotal": 3025.0
+            },
+            "description": "Servisní práce technika — 07/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 52300.0,
+            "tax": 10983.0,
+            "total": 63283.0
+        }
+    ],
+    "totals": {
+        "totalBase": 52300.0,
+        "totalVat": 10983.0,
+        "totalAmount": 63283.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260098",
+            "sequenceNumber": 98
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

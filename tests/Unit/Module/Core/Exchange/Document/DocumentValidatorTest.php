@@ -204,6 +204,24 @@ class DocumentValidatorTest extends TestCase
         $this->assertStringContainsString('1815', $mismatch['message']); // sumWithVat = 1500 * 1.21
     }
 
+    public function testTotalsOfAccountingDocumentCountDebitSideOnly(): void
+    {
+        // Kontace: MD 1 000 + 300 proti D 1 300 — celková částka dokladu je
+        // obrat strany MD (AccountingDocument), ne součet obou stran (2 600).
+        $issues = $this->v->validate([
+            'docType' => 'accountingDocument',
+            'dates' => ['issueDate' => '2026-04-30'],
+            'vat' => ['mode' => 'none'],
+            'rows' => [
+                ['operation' => 'acc.record', 'account' => '521100', 'accSide' => 'debit', 'totalPrice' => 1000.00],
+                ['operation' => 'acc.record', 'account' => '524100', 'accSide' => 'debit', 'totalPrice' => 300.00],
+                ['operation' => 'acc.record', 'account' => '331100', 'accSide' => 'credit', 'totalPrice' => 1300.00],
+            ],
+            'totals' => ['totalAmount' => 1300.00],
+        ]);
+        $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
+    }
+
     public function testTotalsBaseSumWithinToleranceProducesNoWarning(): void
     {
         // Doc without VAT — declared total matches the sum of base prices.
@@ -804,6 +822,75 @@ class DocumentValidatorTest extends TestCase
             ],
         ]);
         $this->assertNull($this->findByCode($issues, 'vat_recap_inconsistent'));
+    }
+
+    /**
+     * Faktura za služby z EU ve tvaru dumpu (samovyměření cz-217 s párem
+     * cz-207 `isReversePair`): pár nese tentýž základ podruhé a primární
+     * řádek má celkem = základ (daň se dodavateli neplatí) — ani jedna
+     * kontrola nesmí varovat, stejně jako `DocDocument::validateDeclaredRecap`.
+     */
+    public function testSelfAssessedRecapPairIsSkippedInBothChecks(): void
+    {
+        $issues = $this->v->validate($this->euServicesDumpDocument());
+        $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'), 'párový řádek do součtu základů nepatří');
+        $this->assertNull($this->findByCode($issues, 'vat_recap_inconsistent'), 'samovyměření: celkem = základ');
+        $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
+    }
+
+    /** Pár kryje jen „celkem = základ“ — špatná daň primárního řádku varuje dál, pár sám nikdy. */
+    public function testSelfAssessedRecapStillChecksTaxAgainstRate(): void
+    {
+        $doc = $this->euServicesDumpDocument();
+        $doc['vatRecap'][0]['tax'] = 12.00;
+        $doc['vatRecap'][1]['tax'] = 12.00;
+        $doc['vatRecap'][1]['total'] = 200.00;
+        $issues = $this->v->validate($doc);
+        $w = $this->findByCode($issues, 'vat_recap_inconsistent');
+        $this->assertNotNull($w);
+        $this->assertSame('vatRecap[0]', $w['path']);
+        $this->assertStringContainsString('neodpovídá sazbě 21', $w['message']);
+        $this->assertStringNotContainsString('≠ celkem', $w['message'], 'celkem = základ je u samovyměření v pořádku');
+        $this->assertNull($this->findByPath($issues, 'vatRecap[1]'), 'párový řádek se nekontroluje');
+        // Bez páru je týž řádek obyčejný: základ + daň ≠ celkem varuje.
+        $plain = $this->euServicesDumpDocument();
+        unset($plain['vatRecap'][1]);
+        $w = $this->findByCode($this->v->validate($plain), 'vat_recap_inconsistent');
+        $this->assertNotNull($w);
+        $this->assertStringContainsString('≠ celkem 188', $w['message']);
+    }
+
+    /**
+     * Doklad `invoiceReceived` v EUR tak, jak ho vypisuje `DocumentExporter`
+     * (demo sada „IT servis“, dodavatel z EU): řádky s cz-217 / 21 %,
+     * rekapitulace primární řádek + pár cz-207, součty základ / 0 / základ.
+     *
+     * @return array<string, mixed>
+     */
+    private function euServicesDumpDocument(): array
+    {
+        return [
+            'docType' => 'invoiceReceived',
+            'docNumber' => 'INV-2026-18407',
+            'selfParty' => 'customer',
+            'supplier' => ['name' => 'Noordwolk Backup B.V.', 'country' => 'nl', 'vatId' => 'NL854721039B01'],
+            'dates' => ['issueDate' => '2026-01-05', 'taxPointDate' => '2026-01-05'],
+            'currency' => 'EUR',
+            'exchangeRate' => 25.12,
+            'vat' => ['mode' => 'fromBase', 'place' => 'intracom', 'registrationCountry' => 'cz', 'recapSource' => 'computed'],
+            'rows' => [
+                ['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 149.00, 'totalPrice' => 149.00,
+                 'vat' => ['code' => 'cz-217', 'pct' => 21], 'computed' => ['vatBase' => 149.00, 'vatAmount' => 31.29, 'vatTotal' => 149.00]],
+                ['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 39.00, 'totalPrice' => 39.00,
+                 'vat' => ['code' => 'cz-217', 'pct' => 21], 'computed' => ['vatBase' => 39.00, 'vatAmount' => 8.19, 'vatTotal' => 39.00]],
+            ],
+            'vatRecap' => [
+                ['vatCode' => 'cz-217', 'vatPct' => 21, 'base' => 188.00, 'tax' => 39.48, 'total' => 188.00],
+                ['vatCode' => 'cz-207', 'vatPct' => 21, 'base' => 188.00, 'tax' => 39.48, 'total' => 227.48, 'isReversePair' => true],
+            ],
+            'totals' => ['totalBase' => 188.00, 'totalVat' => 0.00, 'totalAmount' => 188.00, 'totalRounding' => 0.0],
+            'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => '2260004', 'sequenceNumber' => 4]],
+        ];
     }
 
     public function testVatRecapInconsistentWarnsOnTaxVsPct(): void

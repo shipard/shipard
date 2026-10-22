@@ -10,6 +10,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
+use Shipard\Core\Settings\SettingsStore;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,6 +25,12 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * while keeping "system" tables declared via `keepOnReset` in module.jsonc
  * (users, API keys, AI backend with its encrypted key), then delegates to
  * `ds-upgrade` to recreate the schema and re-run all idempotent provisioners.
+ *
+ * Settings that hold the id of a row of a dropped table (`clearSettingsOnReset`
+ * in module.jsonc, e.g. the number series of asset accounting documents) are
+ * deleted together with the table (#131 D42): `core_system_settings` survives
+ * the reset, but the row is gone and the provisioners of `ds-upgrade` refill
+ * the key only when it is empty.
  *
  * Shipard uses no database foreign keys, so tables can be dropped in any
  * order with a single DROP TABLE IF EXISTS.
@@ -160,6 +167,22 @@ class DsResetCommand extends Command
         $dropList = array_values(array_filter($existing, fn(string $t) => !isset($keepSet[$t])));
         $keptList = array_values(array_filter($existing, fn(string $t) =>  isset($keepSet[$t])));
 
+        // 5b. Settings holding the id of a row of a dropped table
+        //     (clearSettingsOnReset, #131 D42) — only when the settings table
+        //     is there and survives; a key whose table is kept (--keep) stays.
+        $dropSet = array_fill_keys($dropList, true);
+        $clearList = [];
+        if (in_array(SettingsStore::TABLE, $existing, true) && !isset($dropSet[SettingsStore::TABLE])) {
+            foreach ($resolvedModules as $module) {
+                foreach ($module->clearSettingsOnReset as $item) {
+                    if (isset($dropSet[$item['table']]) && !isset($clearList[$item['key']])) {
+                        $clearList[$item['key']] = $item['table'];
+                    }
+                }
+            }
+            ksort($clearList);
+        }
+
         // 6. Report. Třída dat (#126 D11) i s --yes a --dry-run — u kopie
         // reálných dat ji zopakuje dotaz; chování --yes se nemění.
         $output->writeln('<info>Data source: ' . $dsConfig->getName() . ' (' . $dsConfig->getId() . ')</info>');
@@ -175,6 +198,12 @@ class DsResetCommand extends Command
         $output->writeln('Dropping ' . count($dropList) . ' table(s):');
         foreach ($dropList as $t) {
             $output->writeln('  [drop] ' . $t);
+        }
+        if ($clearList !== []) {
+            $output->writeln('Clearing ' . count($clearList) . ' setting(s) holding ids of rows in dropped tables:');
+            foreach ($clearList as $key => $table) {
+                $output->writeln('  [clear] ' . $key . ' (id in ' . $table . ')');
+            }
         }
 
         $cleansAttachments = in_array('core_attachments_files', $dropList, true);
@@ -212,6 +241,16 @@ class DsResetCommand extends Command
         $quoted = array_map(fn(string $t) => '`' . $t . '`', $dropList);
         $dsConnection->executeSQL('DROP TABLE IF EXISTS ' . implode(', ', $quoted));
         $output->writeln('<info>Dropped ' . count($dropList) . ' table(s).</info>');
+
+        // 10b. Delete the settings whose rows are gone — before ds-upgrade,
+        //      whose provisioners refill an empty key (and leave a filled one).
+        if ($clearList !== []) {
+            $settings = new SettingsStore($dsConnection);
+            foreach (array_keys($clearList) as $key) {
+                $settings->delete($key);
+            }
+            $output->writeln('<info>Cleared ' . count($clearList) . ' setting(s).</info>');
+        }
 
         // 11. Clean attachment folders (only when core_attachments_files was dropped).
         if ($cleansAttachments) {

@@ -37,10 +37,11 @@ Sekce v horní liště:
   `/{ds-id}/app/` v novém tabu) a kebab menu **⋮** — jde ovládat
   i klávesnicí (Enter otevře, šipky přepínají, Esc zavře) — s položkami
   **Logy**, **Upgrade**, **Nahrát datovou sadu** (jen volný zdroj dat, a jen
-  když je k dispozici sekce Testování), **Kopírovat ID** a **Smazat…** (jen
-  volný zdroj dat). Položky, které zrovna nejdou, se v menu neukazují —
-  třeba při běžící úloze. **Nahrát datovou sadu**: dialog nabídne sady se
-  zemí zdroje dat, ukáže dnešní sadu a upozorní, že reset smaže data —
+  když checkout nějaké sady má — `tests/datasets` nebo `demo/datasets`),
+  **Kopírovat ID** a **Smazat…** (jen volný zdroj dat). Položky, které
+  zrovna nejdou, se v menu neukazují — třeba při běžící úloze. **Nahrát
+  datovou sadu**: dialog nabídne testovací i demo sady (skupiny **Testovací
+  sady** / **Demo sady**) se zemí zdroje dat, ukáže dnešní sadu a upozorní, že reset smaže data —
   uživatelé, nastavení a API klíče zůstanou; jiná než dnešní sada chce
   druhé potvrzení „Nahradit sadu X sadou Y“. **Smazat…**: dialog vypíše,
   co zmizí (databáze, DB uživatel, adresář zdroje dat, přístupová práva
@@ -55,7 +56,9 @@ Sekce v horní liště:
   dat s ukázkovými daty** a odkazem na návod pro začátečníky.
 - **Nový zdroj dat** — založení zdroje dat z formuláře (jazyk, země,
   instalační modul, volitelný účel, login a heslo administrátora, v poli
-  **Data** volitelně datová sada z `tests/datasets` — země se pak zamkne
+  **Data** volitelně datová sada — testovací z `tests/datasets`, nebo demo
+  sada z `demo/datasets` (skupiny **Testovací sady** / **Demo sady**,
+  např. `it-servis`, #131) — země se pak zamkne
   podle sady a prázdný účel se předvyplní „datová sada <název>“); takto
   založený zdroj je ve vývoji **volný** (třída dat `free`). Průběh
   (`ds-create` → `ds-upgrade` → `user-create` s heslem přes stdin → se
@@ -173,8 +176,9 @@ v dashboardu:
 1. Klikni na **Nový zdroj dat**.
 2. Vyplň **Název**, **Login administrátora** a **Heslo administrátora**;
    jazyk, zemi a instalační modul můžeš nechat, jak jsou.
-3. V poli **Data** vyber datovou sadu (např. `cz-non-payer`) — dostaneš
-   firmu s doklady a došlou poštou; země se nastaví podle sady. Bez sady
+3. V poli **Data** vyber datovou sadu (testovací `cz-non-payer`, nebo
+   demo sadu `it-servis` ze skupiny **Demo sady**) — dostaneš firmu
+   s doklady a došlou poštou; země se nastaví podle sady. Bez sady
    vznikne prázdný zdroj dat.
 4. **Vytvořit zdroj dat**. Průběh se vypisuje do stránky; na konci je odkaz
    **Otevřít zdroj dat →**.

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invoice {{docNumber}}</title>
+<style>
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+	body {
+		font-family: 'Noto Sans', sans-serif;
+		font-size: 10px;
+		color: #222;
+		line-height: 1.45;
+		padding: 16mm 18mm;
+	}
+	.num { font-variant-numeric: tabular-nums; }
+	.nw { white-space: nowrap; }
+
+	.head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10mm; }
+	.head .doc-title { font-size: 26px; font-weight: 300; letter-spacing: 0.2em; color: #111; }
+	.head .doc-no { font-size: 12px; margin-top: 1mm; }
+	.head .supplier { text-align: right; }
+	.head .supplier .s-name { font-size: 13px; font-weight: 700; margin-bottom: 1mm; }
+	.head .supplier p { color: #555; }
+
+	.cols { display: flex; gap: 7mm; margin-bottom: 8mm; }
+	.col { flex: 1; }
+	.col.payment { flex: 1.3; }
+	.col.dates { flex: 1.15; }
+	.col h2 { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.15em; color: #777; border-bottom: 1px solid #ccc; padding-bottom: 1mm; margin-bottom: 2mm; }
+	.col .b-name { font-weight: 700; font-size: 11px; }
+	table.meta { border-collapse: collapse; }
+	table.meta td { padding: 0.5mm 0; vertical-align: top; }
+	table.meta td.l { color: #777; padding-right: 4mm; white-space: nowrap; }
+	table.meta td.v { white-space: nowrap; }
+
+	table.items { width: 100%; border-collapse: collapse; margin-bottom: 6mm; }
+	table.items thead th {
+		font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.1em; color: #777;
+		text-align: right; padding: 0 2mm 1.5mm 2mm; border-bottom: 1px solid #111;
+	}
+	table.items thead th.h-text { text-align: left; padding-left: 0; }
+	table.items thead th.h-unit { text-align: left; }
+	table.items td { padding: 2mm; border-bottom: 1px solid #e5e5e5; text-align: right; }
+	table.items td.c-text { text-align: left; padding-left: 0; }
+	table.items td.c-unit { text-align: left; color: #777; }
+
+	.sum { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-bottom: 8mm; }
+	table.vat-recap { border-collapse: collapse; }
+	table.vat-recap th { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.1em; color: #777; text-align: right; padding: 0 3mm 1mm 3mm; border-bottom: 1px solid #ccc; }
+	table.vat-recap td { text-align: right; padding: 1.2mm 3mm; border-bottom: 1px solid #e5e5e5; }
+	table.totals { border-collapse: collapse; min-width: 64mm; margin-left: auto; }
+	table.totals th { text-align: left; font-weight: 400; color: #555; padding: 1.2mm 6mm 1.2mm 0; }
+	table.totals td { text-align: right; padding: 1.2mm 0; }
+	table.totals tr.grand th, table.totals tr.grand td { font-size: 13px; font-weight: 700; color: #111; border-top: 2px solid #111; padding-top: 2mm; }
+
+	.clause { border-left: 3px solid #111; padding: 1.5mm 3mm; margin-bottom: 5mm; font-weight: 700; }
+	.note { color: #555; margin-bottom: 8mm; }
+	.foot { border-top: 1px solid #e5e5e5; padding-top: 2.5mm; color: #888; font-size: 8.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+	<div class="head">
+		<div class="doc">
+			<div class="doc-title">{{docTitle}}</div>
+			<div class="doc-no">No. <span class="num">{{docNumber}}</span></div>
+		</div>
+		<div class="supplier">
+			<div class="s-name">{{supplierName}}</div>
+			<p>{{supplierAddress}}</p>
+			<p>{{supplierIds}}</p>
+			<p>{{supplierContact}}</p>
+		</div>
+	</div>
+
+	<div class="cols">
+		<div class="col">
+			<h2>{{customerLabel}}</h2>
+			<div class="b-name">{{customerName}}</div>
+			<p>{{customerAddress}}</p>
+			<p>{{customerIds}}</p>
+		</div>
+		<div class="col payment">
+			<h2>Payment details</h2>
+			<table class="meta">
+{{paymentRows}}
+			</table>
+		</div>
+		<div class="col dates">
+			<h2>Dates</h2>
+			<table class="meta">
+{{dateRows}}
+			</table>
+		</div>
+	</div>
+
+	<table class="items">
+		<thead>
+			{{itemsHead}}
+		</thead>
+		<tbody>
+{{rows}}
+		</tbody>
+	</table>
+
+	<div class="sum">
+		{{vatRecapBlock}}
+		<table class="totals">
+			{{totalsRows}}
+		</table>
+	</div>
+
+	{{vatClause}}
+
+	{{noteBlock}}
+
+	<div class="foot">{{supplierCourtReg}}</div>
+
+</body>
+</html>

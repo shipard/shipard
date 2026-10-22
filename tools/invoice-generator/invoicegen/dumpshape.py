@@ -1,0 +1,572 @@
+"""Záznamy sady ve tvaru, který vypíše `dataset-dump` (D10) — jediné místo
+s konstantami odvozenými z PHP exportérů (`PersonExporter`, `ItemExporter`,
+`DocumentExporter`, `BankStatementExporter`, `WorkOrderExporter`,
+`AssetExporter`, `RegistryExporter`, `MailExporter`): pořadí klíčů,
+které hodnoty jsou float (`1.0`) a které int, co prune vynechá, řazení
+souborů podle `ORDER BY` exportérů a slugy. Když se sada liší od dumpu,
+opravuje se tady, ne v `expand.py`.
+"""
+
+from __future__ import annotations
+
+from decimal import Decimal
+
+from .catalogs import Catalogs
+from .collation import czech_key
+from .datasetio import PERSON_FORMAT, attachment_entry, prune
+from .expected import apply_projection, build_expected
+from .model import AssetRec, DocRec, MailRec, PersonRec, RegistryRec, RowRec, StatementRec, WorkOrderRec
+from .snapshot import analysis_json, analysis_record, classification_json, dataset_canonical, message_record
+from .story import Item, Story
+
+BANK_FORMAT = "shpd.dataset.bankStatement.v1"
+WORK_ORDER_FORMAT = "shpd.dataset.workOrder.v1"
+ASSET_FORMAT = "shpd.dataset.asset.v1"
+
+DOC_TYPE_NAMES = {
+    "invni": "invoiceReceived", "invno": "invoiceIssued", "invpo": "proformaIssued", "invpi": "proformaReceived",
+    "cmnbkp": "accountingDocument", "cash": "cashDocument", "cashreg": "cashRegisterDocument",
+}
+# Pořadí typů v dumpu = řazení MariaDB podle kódu typu (ORDER BY h.doc_type).
+DOC_TYPE_ORDER = sorted(DOC_TYPE_NAMES)
+
+APPLY_PERSON = {"mergeStrategy": "createOnly", "matchStrategy": "identifiersOnly", "targetDocState": 40}
+
+MODEL_NAME = "demo-ideal"
+PROMPT_VERSION = "demo"
+
+
+def php_float(value: Decimal | int) -> Decimal:
+    """Hodnota sloupce, kterou PHP vypíše jako float (`V::float` +
+    `PRESERVE_ZERO_FRACTION`): celé číslo dostane `.0`, desetinné zůstává."""
+    d = Decimal(value)
+    return d if d.as_tuple().exponent < 0 else d.quantize(Decimal("0.1"))
+
+
+def _iso(d) -> str | None:
+    return d.isoformat() if d is not None else None
+
+
+# ── Osoby ────────────────────────────────────────────────────────────────────
+
+def person_record(rec: PersonRec) -> dict:
+    party = rec.party
+    identity = party.identity
+    address = identity.get("address") or {}
+    contact = identity.get("contact") or {}
+    bank = identity.get("bankAccount") or {}
+    currency = (party.currency or "CZK").upper()
+    contacts = []
+    if party.kind == "customer" and contact.get("name"):
+        contacts.append({
+            "name": contact.get("name"),
+            "email": contact.get("email"),
+            "phone": contact.get("phone"),
+            "orderPos": 0,
+            "sendPurposes": list(party.send_purposes),
+        })
+    record = {
+        "format": PERSON_FORMAT,
+        "formatVersion": "1.2",
+        "personType": "company",
+        "country": identity["country"],
+        "personId": rec.person_id,
+        "companyId": identity.get("companyId"),
+        "taxId": identity.get("taxId"),
+        "vatId": identity.get("vatId"),
+        "courtRegistration": identity.get("courtRegistration"),
+        "name": {"fullName": identity["name"]},
+        "contact": {"email": contact.get("email"), "phone": contact.get("phone"), "web": contact.get("web")},
+        "status": {"isOwn": True if rec.is_own else None, "docState": 40},
+        "documents": {"language": party.language, "sendAttachmentsMerged": False},
+        "addresses": [{
+            "addressType": 1,
+            "street": address.get("street"),
+            "houseNumber": address.get("houseNumber"),
+            "city": address.get("city"),
+            "zip": address.get("zip"),
+            "country": address.get("country"),
+            "orderPos": 0,
+        }],
+        "bankAccounts": [{
+            "accountNumber": bank.get("accountNumber"),
+            "iban": bank.get("iban"),
+            "bic": bank.get("bic"),
+            "currency": currency,
+            "source": 0,
+            "orderPos": 0,
+        }] if bank.get("iban") or bank.get("accountNumber") else [],
+        "contacts": contacts,
+        "applyOptions": dict(APPLY_PERSON),
+    }
+    return prune(record)
+
+
+def person_sort_key(rec: PersonRec) -> tuple:
+    return (czech_key(rec.party.name), rec.party.company_id or "", rec.person_id)
+
+
+def person_slug(rec: PersonRec) -> str:
+    return rec.party.name
+
+
+# ── Položky ──────────────────────────────────────────────────────────────────
+
+def item_record(item: Item, catalogs: Catalogs) -> dict:
+    kind = catalogs.item_kinds[item.kind]
+    record = {
+        "format": "shpd.items.item",
+        "formatVersion": "1.0",
+        "code": item.code,
+        "name": item.name,
+        "kind": {"code": kind.code, "name": kind.name_cs, "itemType": kind.item_type},
+        "salesPriceNoVat": php_float(item.price),
+        "unit": item.unit,
+        "accountingAccount": item.account,
+        "status": {"docState": 40},
+        "applyOptions": dict(APPLY_PERSON),
+    }
+    return prune(record)
+
+
+def item_sort_key(item: Item) -> tuple:
+    return (item.code.lower(), item.name.lower())
+
+
+def item_slug(item: Item) -> str:
+    return f"{item.code} {item.name}"
+
+
+# ── Doklady ──────────────────────────────────────────────────────────────────
+
+def party_block(identity: dict, *, with_bank: bool) -> dict:
+    """`CanonicalParty::fromPerson` — strana dokladu z osoby v DS."""
+    address = identity.get("address") or {}
+    contact = identity.get("contact") or {}
+    bank = identity.get("bankAccount") or {}
+    block = {
+        "name": identity["name"],
+        "country": identity["country"],
+        "companyId": identity.get("companyId"),
+        "taxId": identity.get("taxId"),
+        "vatId": identity.get("vatId"),
+        "courtRegistration": identity.get("courtRegistration"),
+        "address": {
+            "street": address.get("street"),
+            "houseNumber": address.get("houseNumber"),
+            "city": address.get("city"),
+            "zip": address.get("zip"),
+            "country": address.get("country"),
+        },
+        "contact": {"email": contact.get("email"), "phone": contact.get("phone"), "web": contact.get("web")},
+    }
+    if with_bank:
+        block["bankAccount"] = {"accountNumber": bank.get("accountNumber"), "iban": bank.get("iban"), "bic": bank.get("bic")}
+    return block
+
+
+def _row_block(row: RowRec, position: int) -> dict:
+    block: dict = {
+        "rowKind": "item",
+        "operation": row.operation,
+        "orderPos": position,
+        "item": {"ourCode": row.item_code, "name": row.item_name} if row.item_code else None,
+        "unit": row.unit,
+        "quantity": php_float(row.quantity) if row.quantity is not None else None,
+        # Kontační řádek (částka bez množství): applier uloží fromTotal a
+        # `DocRowCalculator::computePrice` dá jednotkovou cenu 0.
+        "unitPrice": php_float(row.unit_price) if row.unit_price is not None else php_float(0),
+        "totalPrice": php_float(row.total_price) if row.total_price is not None else None,
+        "priceCalcMode": "fromUnitPrice" if row.quantity is not None else "fromTotal",
+        "vat": {"code": row.vat_code, "pct": php_float(row.vat_pct if row.vat_pct is not None else 0)} if row.vat_code else None,
+        "computed": {
+            "vatBase": php_float(row.vat_base) if row.vat_base is not None else None,
+            "vatAmount": php_float(row.vat_amount) if row.vat_amount is not None else None,
+            "vatTotal": php_float(row.vat_total) if row.vat_total is not None else None,
+        },
+        "description": row.description,
+        "account": row.account,
+        "accSide": row.acc_side,
+        # Dimenze řádku (#131 fáze 2b, 2c) — poslední klíč bloku jako v exportéru,
+        # v pořadí deklarace dimenzí (zakázka, majetek); prázdné pryč.
+        "dimensions": {"workOrder": row.work_order, "asset": row.asset},
+    }
+    return block
+
+
+def partner_side(doc: DocRec) -> str | None:
+    """Na které straně dokladu je partner (druhá než `selfParty`)."""
+    if doc.self_party == "supplier":
+        return "customer"
+    if doc.self_party == "customer":
+        return "supplier"
+    return None
+
+
+def doc_record(doc: DocRec, story: Story) -> dict:
+    side = partner_side(doc)
+    party = None
+    if doc.partner_key is not None and side is not None:
+        party = party_block(story.party(doc.partner_key).identity, with_bank=side == "supplier")
+    apply_options: dict = {"targetDocState": doc.state}
+    if doc.number is not None:
+        apply_options["importNumber"] = {"docNumber": doc.number, "sequenceNumber": doc.sequence}
+    if doc.series_code is not None:
+        apply_options["numberSeriesCode"] = doc.series_code
+    if doc.doc_type in ("invno", "invpo"):
+        apply_options["importOwnBankAccount"] = story.bank_account_for(doc.currency)
+    canonical = {
+        "format": "shpd.docs.document",
+        "formatVersion": "1.0",
+        # Zdroj dokladu (`source_kind`): faktury z periodické fakturace (#131 fáze 2b).
+        "source": {"kind": doc.source_kind} if doc.source_kind else None,
+        "docType": DOC_TYPE_NAMES[doc.doc_type],
+        "docNumber": doc.supplier_doc_number,
+        "docText": doc.doc_text,
+        "selfParty": doc.self_party,
+        "cashDesk": doc.cash_desk,
+        "cashDirection": doc.cash_direction,
+        "supplier": party if side == "supplier" else None,
+        "customer": party if side == "customer" else None,
+        "dates": {
+            "issueDate": _iso(doc.issue),
+            "dueDate": _iso(doc.due),
+            "accountingDate": _iso(doc.accounting),
+            "taxPointDate": _iso(doc.tax_point),
+            "vatObligationDate": _iso(doc.vat_obligation),
+            "periodFrom": _iso(doc.period_from),
+            "periodTo": _iso(doc.period_to),
+        },
+        # Otevírací doklad (#69 D20) — `DocumentExporter` ho vypisuje za `dates`.
+        "fiscalPeriodType": doc.fiscal_period_type,
+        "currency": doc.currency,
+        "exchangeRate": php_float(doc.rate),
+        "vat": {
+            "mode": doc.vat_mode,
+            "place": doc.vat_place,
+            "registrationCountry": "cz" if doc.vat_registration else None,
+            "recapSource": "computed",
+            "calcSource": "header",
+            "controlStatementMode": "auto",
+        },
+        "payment": {"method": doc.payment_method, "paymentReference": doc.payment_reference},
+        "notes": {"onDocument": doc.note_on_document},
+        # Dimenze hlavičky přirozeným klíčem (zakázka číslem, #131 fáze 2b).
+        "dimensions": {"workOrder": doc.work_order} if doc.work_order else None,
+        "rows": [_row_block(row, i) for i, row in enumerate(doc.rows, start=1)],
+        "vatRecap": [{
+            "vatCode": line.vat_code,
+            "vatPct": php_float(line.vat_pct),
+            "base": php_float(line.base),
+            "tax": php_float(line.tax),
+            "total": php_float(line.total),
+            # `DocumentExporter::vatRecap`: `isReversePair` jen true, jinak prune.
+            "isReversePair": True if line.is_reverse_pair else None,
+        } for line in doc.recap],
+        "totals": {
+            "totalBase": php_float(doc.total_base),
+            "totalVat": php_float(doc.total_vat),
+            "totalAmount": php_float(doc.total_amount),
+            "totalRounding": php_float(doc.total_rounding),
+        },
+        "applyOptions": apply_options,
+    }
+    pruned = prune(canonical)
+    if "importNumber" in pruned.get("applyOptions", {}) and "sequenceNumber" not in pruned["applyOptions"]["importNumber"]:
+        pruned["applyOptions"]["importNumber"]["sequenceNumber"] = None
+    return pruned
+
+
+def doc_sort_key(doc: DocRec) -> tuple:
+    """`ORDER BY h.doc_type, ns.doc_number_code, h.sequence_number, h.doc_number, h.issue_date, h.id`
+    — NULL řadí první, koncepty tedy před číslované doklady téhož typu."""
+    return (
+        doc.doc_type,
+        (doc.series_code is not None, doc.series_code or ""),
+        (doc.sequence is not None, doc.sequence or 0),
+        (doc.number is not None, doc.number or ""),
+        doc.issue,
+        doc.ordinal,
+    )
+
+
+def doc_slug(doc: DocRec) -> str:
+    return doc.number if doc.number is not None else f"koncept {doc.doc_type}"
+
+
+# ── Zakázky ──────────────────────────────────────────────────────────────────
+
+def work_order_record(rec: WorkOrderRec, story: Story, number_by_key: dict[str, str | None]) -> dict:
+    """`WorkOrderExporter` (shpd.dataset.workOrder.v1): hlavička s přirozenými
+    klíči (řada kódem, štíhlá strana, řada dokladů a účet jen jako přepis
+    druhu), řádky předpisu s platností, vystavená období s číslem dokladu
+    (koncept zástupným `!` + id); null a prázdné pryč."""
+    identity = story.party(rec.customer_key).identity
+    invoicing = None
+    if rec.periodicity is not None:
+        invoicing = {
+            "periodicity": rec.periodicity,
+            "invoiceFrom": _iso(rec.invoice_from),
+            "docText": rec.doc_text,
+            "docType": None,
+            "numberSeries": None,
+            "dueDays": None,
+            "timing": None,
+            "vatMode": None,
+            "paymentMethod": None,
+            "bankAccount": rec.bank_account,
+        }
+    record = {
+        "format": WORK_ORDER_FORMAT,
+        "workOrder": {
+            "number": rec.number,
+            "sequenceNumber": rec.sequence,
+            "numberSeries": rec.series_code,
+            "title": rec.title,
+            "state": rec.state,
+            "dateStart": _iso(rec.date_start),
+            "dateEnd": _iso(rec.date_end),
+            "costCenter": None,
+            "internalNote": None,
+            "customer": {
+                "name": identity["name"],
+                "country": identity.get("country"),
+                "companyId": identity.get("companyId"),
+                "taxId": identity.get("taxId"),
+                "vatId": identity.get("vatId"),
+            },
+            "currency": rec.currency.lower(),
+            "paymentReference": None,
+            "parent": None,
+            "invoicing": invoicing,
+        },
+        "rows": [{
+            "item": r.item_code,
+            "description": r.description,
+            "quantity": php_float(r.quantity),
+            "unit": r.unit,
+            "unitPrice": php_float(r.unit_price),
+            "vatCode": r.vat_code,
+            "operation": None,
+            "validFrom": _iso(r.valid_from),
+            "validTo": _iso(r.valid_to),
+        } for r in rec.rows],
+        "periods": [{
+            "from": _iso(p.start),
+            "to": _iso(p.end),
+            "state": "issued",
+            "docNumber": number_by_key.get(p.doc_key),
+        } for p in rec.periods],
+    }
+    return prune(record)
+
+
+def work_order_sort_key(rec: WorkOrderRec) -> tuple:
+    """`WorkOrderExporter::ordered`: nadřazené před podřízenými (sada
+    nadřazené nemá → hloubka 0), bez čísla první, pak číslo, pak pořadí."""
+    return (0, rec.number is not None, rec.number or "", rec.ordinal)
+
+
+def work_order_slug(rec: WorkOrderRec) -> str:
+    return rec.number
+
+
+# ── Majetek ──────────────────────────────────────────────────────────────────
+
+def asset_record(rec: AssetRec) -> dict:
+    """`AssetExporter` (shpd.dataset.asset.v1): hlavička s přirozenými klíči
+    (typ názvem, účetní skupina kódem), dlouhodobá karta bez data pořízení
+    a ceny (D13), zařazení jako jediná potvrzená událost s původem manual;
+    null pryč, booleany jen jako true (tady žádné)."""
+    record = {
+        "format": ASSET_FORMAT,
+        "asset": {
+            "assetNumber": rec.number,
+            "name": rec.name,
+            "shortName": None,
+            "note": None,
+            "type": rec.type_name,
+            "category": rec.category,
+            "tracking": rec.tracking,
+            "accountingGroup": rec.accounting_group,
+            "foreign": None,
+            "owner": None,
+            "acquiredDate": None,
+            "disposedDate": None,
+            "price": None,
+            "taxMethod": rec.tax_method,
+            "taxRule": rec.tax_rule,
+            "accMethod": rec.acc_method,
+            "accMonths": None,
+            "state": "confirmed",
+        },
+        "events": [{
+            "kind": "activation",
+            "scope": "both",
+            "date": _iso(rec.activation),
+            "periodBegin": None,
+            "periodEnd": None,
+            "amount": php_float(rec.amount),
+            "accumulated": None,
+            "unitsDone": None,
+            "priceIncreased": None,
+            "originalDate": None,
+            "claimUnrecorded": None,
+            "halfYear": None,
+            "note": None,
+            "origin": "manual",
+        }],
+    }
+    return prune(record)
+
+
+def asset_sort_key(rec: AssetRec) -> tuple:
+    """`ORDER BY asset_number, id`."""
+    return (rec.number, rec.key)
+
+
+def asset_slug(rec: AssetRec) -> str:
+    return rec.number
+
+
+# ── Bankovní výpisy ──────────────────────────────────────────────────────────
+
+def bank_record(statement: StatementRec) -> dict:
+    """`BankStatementExporter`: top-level klíče pevně (prázdný výpis má
+    `transactions: []`), prune jen uvnitř; částky float, výchozí pohyb
+    a kurz na účtu v domácí měně se nevypisují."""
+    transactions = [prune({
+        "externalId": tx.external_id,
+        "amount": php_float(tx.amount),
+        "dateTransaction": tx.date.isoformat(),
+        "dateValue": None,
+        "counterpartyAccount": tx.counterparty_account,
+        "counterpartyName": tx.counterparty_name,
+        "paymentReference": tx.payment_reference,
+        "specificSymbol": None,
+        "constantSymbol": None,
+        "message": tx.message,
+        "operation": tx.operation,
+        "exchangeRate": php_float(tx.exchange_rate) if tx.exchange_rate is not None else None,
+    }) for tx in statement.transactions]
+    return {
+        "format": BANK_FORMAT,
+        "bankAccount": statement.account_code,
+        "statement": prune({
+            "statementNumber": statement.number,
+            "externalId": statement.external_id,
+            "periodStart": statement.period_start.isoformat(),
+            "periodEnd": statement.period_end.isoformat(),
+            "openingBalance": php_float(statement.opening),
+            "closingBalance": php_float(statement.closing),
+            "currency": statement.currency,
+        }),
+        "transactions": transactions,
+        "docState": 40,
+    }
+
+
+def bank_sort_key(statement: StatementRec) -> tuple:
+    """`ORDER BY a.code, s.period_start, s.statement_number, s.id`."""
+    return (statement.account_code, statement.period_start, statement.number)
+
+
+def bank_slug(statement: StatementRec) -> str:
+    return f"{statement.account_code}-{statement.period_start:%Y-%m}"
+
+
+# ── Zprávy ───────────────────────────────────────────────────────────────────
+
+def _person_ref(identity: dict) -> dict:
+    return prune({
+        "name": identity["name"],
+        "companyId": identity.get("companyId"),
+        "taxId": identity.get("taxId"),
+        "vatId": identity.get("vatId"),
+    })
+
+
+def mail_record(mail: MailRec, pdf: bytes | None, story: Story, *, projection, taxonomy: set[str],
+                target_number: str | None) -> dict:
+    sender = mail.sender.identity
+    if mail.primary_type == "invoiceReceived":
+        assert mail.canonical_data is not None and mail.computed is not None and pdf is not None and mail.pdf_name
+        expected = apply_projection(
+            build_expected(mail.canonical_data, sender, story.own.identity, mail.computed, receipt=False),
+            projection, taxonomy=taxonomy,
+        )
+        canonical = dataset_canonical(expected, mail.pdf_name, mail.analyzed_at, prompt_version=PROMPT_VERSION)
+        analysis = analysis_record(
+            analyzed_at=mail.analyzed_at, proposed_type="invoiceReceived", content_tag=mail.content_tag,
+            analysis_json=analysis_json(canonical, mail.ai_title), canonical_json=canonical,
+            model_name=MODEL_NAME, prompt_version=PROMPT_VERSION,
+            resolution=mail.resolution, resolved_at=mail.resolved_at,
+        )
+        attachments = [attachment_entry(mail.pdf_name, pdf, 1)]
+        target = {"table": "docs_core_heads", "docNumber": target_number} if target_number else None
+    else:
+        analysis = analysis_record(
+            analyzed_at=mail.analyzed_at, proposed_type=mail.primary_type,
+            analysis_json=classification_json(
+                mail.ai_title, primary_type=mail.primary_type, attention=mail.attention, action_note=mail.action_note,
+                due_date=_iso(mail.action_due),
+                party={"name": sender["name"], "companyId": sender.get("companyId"), "email": (sender.get("contact") or {}).get("email")},
+            ),
+            model_name=MODEL_NAME, prompt_version=PROMPT_VERSION,
+        )
+        attachments = None
+        target = None
+    return message_record(
+        message_id=mail.message_id, subject=mail.subject, sender_email=(mail.sender.email or "").lower(),
+        sender_name=mail.sender.name, sender_person=_person_ref(sender), partner_person=_person_ref(sender),
+        partner_name=mail.sender.name, received_at=mail.received_at, body=mail.body,
+        primary_type=mail.primary_type, doc_state=mail.doc_state, ai_title=mail.ai_title,
+        attention=mail.attention, action_note=mail.action_note, action_due=_iso(mail.action_due),
+        target=target, attachments=attachments, analyses=[analysis],
+    )
+
+
+def mail_sort_key(mail: MailRec) -> tuple:
+    return (mail.received_at, mail.message_id)
+
+
+def mail_slug(mail: MailRec) -> str:
+    return mail.message_id
+
+
+# ── Spisovna ─────────────────────────────────────────────────────────────────
+
+def registry_record(rec: RegistryRec, pdf: bytes, story: Story) -> dict:
+    partner = story.party(rec.partner_key).identity
+    record = {
+        "format": "shpd.dataset.registryDocument.v1",
+        "document": {
+            "schema": "shpd.registry.document.v1",
+            "docType": rec.doc_type,
+            "title": rec.title,
+            "summary": rec.summary,
+            "party": {
+                "name": partner["name"],
+                "companyId": partner.get("companyId"),
+                "email": (partner.get("contact") or {}).get("email"),
+            },
+            "kindFields": dict(rec.kind_fields),
+        },
+        "docState": 40,
+        "sourceKind": rec.source_kind,
+        "binder": rec.binder,
+        "refNumber": rec.ref_number,
+        "validFrom": _iso(rec.valid_from),
+        "validTo": _iso(rec.valid_to),
+        "created": rec.created_at,
+        "attachments": [attachment_entry(rec.pdf_name, pdf)],
+    }
+    return prune(record)
+
+
+def registry_sort_key(rec: RegistryRec) -> tuple:
+    return (rec.created_at, czech_key(rec.title))
+
+
+def registry_slug(rec: RegistryRec) -> str:
+    return rec.title

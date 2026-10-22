@@ -1,0 +1,21 @@
+// Zprávy k řešení příběhu „IT servis“ — nad rámec zpracovaných faktur
+// dodavatelů (ty vznikají z pravidel v partners.jsonc, `anchorMonth: "open"`
+// nechá fakturu měsíce kotvy jako otevřený návrh).
+//
+// `kind: "other"` = zpráva bez dokladu s pozorností (#105): `attention`
+// action → Dashboard „K vyřízení“ s lhůtou `dueInDays` od kotvy;
+// `received` {daysBeforeAnchor, time}; `party` = odesílatel z partners.jsonc.
+[
+	{
+		"kind": "other",
+		"messageId": "MSG-DEMO-DOMENY",
+		"party": "tecka",
+		"subject": "Blížící se expirace domén",
+		"body": "Dobrý den,\n\nupozorňujeme, že platnost domén zeleny-terminal.example, zelenyterminal.example a zeleny-terminal-servis.example skončí za 14 dní. Pro prodloužení se přihlaste do zákaznického centra a uhraďte výzvu k platbě. Po uplynutí ochranné lhůty budou domény uvolněny.\n\nS pozdravem\nRegistr Domén Tečka s.r.o.",
+		"received": { "daysBeforeAnchor": 2, "time": "10:40" },
+		"title": "Expirace tří domén — prodloužit do {dueDate}",
+		"attention": "action",
+		"actionNote": "Prodloužit domény zeleny-terminal.example a 2 další v zákaznickém centru.",
+		"dueInDays": 12,
+	},
+]

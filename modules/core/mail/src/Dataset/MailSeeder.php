@@ -119,6 +119,18 @@ final class MailSeeder implements SectionSeeder
         if (isset($m['primaryTypeSource'])) {
             $data['primary_type_source'] = (string) $m['primaryTypeSource'];
         }
+        // Pozornost u zprávy bez dokladu (#105): jen co obálka nese, chybějící
+        // klíč nechá DB default NULL. Hodnotu `attention` hlídá enum schématu
+        // v preflightu — Document enumString proti cfgItem nekontroluje.
+        if (isset($m['attention'])) {
+            $data['attention'] = (string) $m['attention'];
+        }
+        if (isset($m['actionNote'])) {
+            $data['action_note'] = (string) $m['actionNote'];
+        }
+        if (isset($m['actionDue'])) {
+            $data['action_due'] = (string) $m['actionDue'];
+        }
         if (array_key_exists('aiAnalysisEnabled', $m) && is_bool($m['aiAnalysisEnabled'])) {
             $data['ai_analysis_enabled'] = $m['aiAnalysisEnabled'] ? 1 : 0;
         }

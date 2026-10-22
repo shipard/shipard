@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00011",
+    "companyId": "81374623",
+    "taxId": "CZ81374623",
+    "vatId": "CZ81374623",
+    "name": {
+        "fullName": "Lékárna Pod Modrou Věží s.r.o."
+    },
+    "contact": {
+        "email": "lekarna@podvezi.example",
+        "phone": "+420000550128"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Věžní",
+            "houseNumber": "2",
+            "city": "Uherské Hradiště",
+            "zip": "68601",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2238170965/0300",
+            "iban": "CZ6703000000002238170965",
+            "bic": "CEKOCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Vedoucí lékárny",
+            "email": "lekarna@podvezi.example",
+            "phone": "+420000550128",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

@@ -1,0 +1,95 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Nitrianske Stroje s.r.o.",
+        "country": "sk",
+        "companyId": "52398417",
+        "taxId": "SK2023845117",
+        "vatId": "SK2023845117",
+        "address": {
+            "street": "Strojárenská",
+            "houseNumber": "14",
+            "city": "Nitra",
+            "zip": "94901",
+            "country": "sk"
+        },
+        "contact": {
+            "email": "uctaren@nitrianske-stroje.example",
+            "phone": "+421000512300",
+            "web": "www.nitrianske-stroje.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-09-24",
+        "dueDate": "2026-10-08",
+        "accountingDate": "2026-09-24",
+        "taxPointDate": "2026-09-24",
+        "vatObligationDate": "2026-09-24"
+    },
+    "currency": "EUR",
+    "exchangeRate": 24.55,
+    "vat": {
+        "mode": "fromBase",
+        "place": "intracom",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260123"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "MON-27",
+                "name": "Monitor 27\" IPS"
+            },
+            "unit": "pcs",
+            "quantity": 3.0,
+            "unitPrice": 305.09,
+            "totalPrice": 915.27,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-202",
+                "pct": 0.0
+            },
+            "computed": {
+                "vatBase": 915.27,
+                "vatAmount": 0.0,
+                "vatTotal": 915.27
+            },
+            "description": "Monitor 27\" IPS"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 915.27,
+            "tax": 0.0,
+            "total": 915.27
+        }
+    ],
+    "totals": {
+        "totalBase": 915.27,
+        "totalVat": 0.0,
+        "totalAmount": 915.27,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260123",
+            "sequenceNumber": 123
+        },
+        "importOwnBankAccount": "BU2"
+    }
+}

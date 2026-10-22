@@ -1,0 +1,62 @@
+{
+    "format": "shpd.dataset.bankStatement.v1",
+    "bankAccount": "BU2",
+    "statement": {
+        "statementNumber": "4/2026",
+        "externalId": "BU2-2026-04",
+        "periodStart": "2026-04-01",
+        "periodEnd": "2026-04-30",
+        "openingBalance": 1016.0,
+        "closingBalance": 1048.0,
+        "currency": "EUR"
+    },
+    "transactions": [
+        {
+            "externalId": "BU2-202604-001",
+            "amount": 390.0,
+            "dateTransaction": "2026-04-13",
+            "counterpartyAccount": "SK0511000000002618439075",
+            "counterpartyName": "Horský Penzión Tatranka s.r.o.",
+            "paymentReference": "1260050",
+            "exchangeRate": 24.91
+        },
+        {
+            "externalId": "BU2-202604-002",
+            "amount": 650.0,
+            "dateTransaction": "2026-04-13",
+            "counterpartyAccount": "DE18370400440532014860",
+            "counterpartyName": "Wolkenschiff Logistik GmbH",
+            "paymentReference": "1260051",
+            "exchangeRate": 24.91
+        },
+        {
+            "externalId": "BU2-202604-003",
+            "amount": -188.0,
+            "dateTransaction": "2026-04-18",
+            "counterpartyAccount": "NL69NWBK0481570693",
+            "counterpartyName": "Noordwolk Backup B.V.",
+            "paymentReference": "202618410",
+            "exchangeRate": 24.91
+        },
+        {
+            "externalId": "BU2-202604-004",
+            "amount": 480.0,
+            "dateTransaction": "2026-04-24",
+            "counterpartyAccount": "SK6709000000003914726058",
+            "counterpartyName": "Nitrianske Stroje s.r.o.",
+            "paymentReference": "1260049",
+            "exchangeRate": 24.91
+        },
+        {
+            "externalId": "BU2-202604-005",
+            "amount": -1300.0,
+            "dateTransaction": "2026-04-25",
+            "counterpartyAccount": "3178429609/0100",
+            "counterpartyName": "Zelený Terminál s.r.o.",
+            "message": "Převod z eurového účtu 04/2026",
+            "operation": "transfer.out",
+            "exchangeRate": 24.91
+        }
+    ],
+    "docState": 40
+}

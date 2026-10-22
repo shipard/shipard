@@ -1,0 +1,27 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "binders",
+    "rows": [
+        {
+            "name": "Nájem",
+            "icon": null,
+            "order_pos": 3,
+            "notice": null,
+            "docState": 40
+        },
+        {
+            "name": "Pojištění",
+            "icon": null,
+            "order_pos": 2,
+            "notice": null,
+            "docState": 40
+        },
+        {
+            "name": "Smlouvy",
+            "icon": null,
+            "order_pos": 1,
+            "notice": null,
+            "docState": 40
+        }
+    ]
+}

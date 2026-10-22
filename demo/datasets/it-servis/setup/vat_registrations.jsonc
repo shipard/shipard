@@ -1,0 +1,20 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "vat_registrations",
+    "rows": [
+        {
+            "name": "Zelený Terminál s.r.o.",
+            "region": "eu",
+            "country": "cz",
+            "taxpayer_kind": 0,
+            "vat_id": "CZ61204579",
+            "tax_period_kind": 1,
+            "cs_period_kind": 1,
+            "rs_period_kind": 1,
+            "valid_from": "2026-01-01",
+            "valid_to": null,
+            "docState": 40,
+            "filing_profile": null
+        }
+    ]
+}

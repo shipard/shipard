@@ -1,0 +1,61 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0012",
+        "sequenceNumber": 12,
+        "numberSeries": "S",
+        "title": "Správa IT — Horský Penzión Tatranka s.r.o.",
+        "state": "confirmed",
+        "dateStart": "2024-10-01",
+        "customer": {
+            "name": "Horský Penzión Tatranka s.r.o.",
+            "country": "sk",
+            "companyId": "47150823",
+            "taxId": "SK2020471508",
+            "vatId": "SK2020471508"
+        },
+        "currency": "eur",
+        "invoicing": {
+            "periodicity": "quarter",
+            "invoiceFrom": "2026-01-01",
+            "docText": "Správa IT — paušál {období}",
+            "bankAccount": "BU2"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "Správa IT — mesačný paušál",
+            "quantity": 3.0,
+            "unit": "mnth",
+            "unitPrice": 130.0,
+            "vatCode": "cz-202"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-01-01",
+            "to": "2026-03-31",
+            "state": "issued",
+            "docNumber": "1260012"
+        },
+        {
+            "from": "2026-04-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260050"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-09-30",
+            "state": "issued",
+            "docNumber": "1260093"
+        },
+        {
+            "from": "2026-10-01",
+            "to": "2026-12-31",
+            "state": "issued",
+            "docNumber": "1260133"
+        }
+    ]
+}

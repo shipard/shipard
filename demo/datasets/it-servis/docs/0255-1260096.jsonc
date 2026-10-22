@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Lékárna Pod Modrou Věží s.r.o.",
+        "country": "cz",
+        "companyId": "81374623",
+        "taxId": "CZ81374623",
+        "vatId": "CZ81374623",
+        "address": {
+            "street": "Věžní",
+            "houseNumber": "2",
+            "city": "Uherské Hradiště",
+            "zip": "68601",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "lekarna@podvezi.example",
+            "phone": "+420000550128"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-07-18",
+        "dueDate": "2026-08-01",
+        "accountingDate": "2026-07-18",
+        "taxPointDate": "2026-07-18",
+        "vatObligationDate": "2026-07-18"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260096"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 5.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 6250.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 6250.0,
+                "vatAmount": 1312.5,
+                "vatTotal": 7562.5
+            },
+            "description": "Servisní práce technika — 07/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 6250.0,
+            "tax": 1312.5,
+            "total": 7562.5
+        }
+    ],
+    "totals": {
+        "totalBase": 6250.0,
+        "totalVat": 1312.5,
+        "totalAmount": 7562.5,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260096",
+            "sequenceNumber": 96
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

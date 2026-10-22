@@ -1122,12 +1122,17 @@ tokeny `[A-Za-z0-9._-]`.
   a úloha pak nese `params.previousDataset`. Pojistka třídy dat má přednost
   (403). V UI je to akce **Nahrát datovou sadu** v seznamu zdrojů dat
   (`DataSourcesPage` + `LoadDatasetDialog`, jen u `free` a jen s checkoutem
-  `tests/`): sady se zemí zdroje dat, dnešní sada, varování o resetu,
+  sad; od #131 jde přes vlastní `POST /_dev/api/data-sources/{id}/reseed`
+  v `DevDashboardController` nad `DatasetCatalog` — testovací i demo sady
+  z `demo/datasets`, táž pojistka, táž výměna sady s 409 — a na sekci
+  Testování nezávisí): sady ve skupinách Testovací / Demo se zemí zdroje
+  dat, dnešní sada, varování o resetu,
   druhé potvrzení „Nahradit sadu X sadou Y“. `GET /_dev/api/data-sources`
   k tomu nese `country`, `dataset`, `legacyDataset` a `job` (běžící
   úloha). Panel sady se nemění.
 - **Sada při zakládání** (F6c D64, D65): formulář Nový zdroj dat posílá
-  `POST /_dev/api/ds-create` s `dataset` (název z katalogu; země formuláře
+  `POST /_dev/api/ds-create` s `dataset` (název z katalogu `DatasetCatalog`
+  — testovací i demo sada, #131; země formuláře
   musí sedět se zemí sady, jinak 400) a průběh je `ds-create` →
   `ds-upgrade` → `user-create --password-stdin` (heslo admina jde na stdin
   podprocesu, ne do argv) → `dataset-seed <sada> --yes`. Selhání seedu je

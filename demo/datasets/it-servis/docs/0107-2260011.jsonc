@@ -1,0 +1,125 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "FV-2026-2210",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Velkoobchod Čip a Deska s.r.o.",
+        "country": "cz",
+        "companyId": "88462137",
+        "taxId": "CZ88462137",
+        "vatId": "CZ88462137",
+        "courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
+        "address": {
+            "street": "Součástková",
+            "houseNumber": "560/14",
+            "city": "Hradec Králové",
+            "zip": "50002",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "objednavky@cip-deska.example",
+            "phone": "+420000770310",
+            "web": "www.cip-deska.example"
+        },
+        "bankAccount": {
+            "accountNumber": "1746290598/6210",
+            "iban": "CZ1962100000001746290598",
+            "bic": "BREXCZPP"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-02-10",
+        "dueDate": "2026-02-20",
+        "accountingDate": "2026-02-10",
+        "taxPointDate": "2026-02-10",
+        "vatObligationDate": "2026-02-10"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "20262210"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "purchase.asset",
+            "orderPos": 1,
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 150000.0,
+            "totalPrice": 150000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 150000.0,
+                "vatAmount": 31500.0,
+                "vatTotal": 181500.0
+            },
+            "description": "Server 1U, 2× CPU, 64 GB RAM, 2× 960 GB SSD",
+            "account": "042100",
+            "dimensions": {
+                "asset": "MA0001"
+            }
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "501100",
+                "name": "Spotřeba materiálu"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 1290.0,
+            "totalPrice": 1290.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 1290.0,
+                "vatAmount": 270.9,
+                "vatTotal": 1560.9
+            },
+            "description": "Montážní sada do racku, lišty"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 151290.0,
+            "tax": 31770.9,
+            "total": 183060.9
+        }
+    ],
+    "totals": {
+        "totalBase": 151290.0,
+        "totalVat": 31770.9,
+        "totalAmount": 183060.9,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260011",
+            "sequenceNumber": 11
+        }
+    }
+}

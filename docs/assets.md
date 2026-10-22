@@ -1292,6 +1292,18 @@ roce s vazbou.
 varování `assets.journalCheck.acquisitionAccountDifference` s textem,
 že jde o pořízení bez karty nebo zařazení bez navázaného pořízení.
 
+**Datová sada** (#131 fáze 2c, `tasks/demo-dataset-phase2c-assets.md`,
+`docs/datasets.md` §1): sekce `assets/` v obálce `shpd.dataset.asset.v1`
+nese kartu s přirozenými klíči (typ názvem, účetní skupina kódem) a
+potvrzené události s původem; číselníky majetku jsou v `setup/`. Seed
+zakládá kartu a události přes `AssetDocument` / `AssetEventDocument`
+**bez importního módu** (`modules/economy/assets/src/Dataset/`) — ruční
+zařazení dostane původ `manual`, applier importu se nepoužívá (D38). Dump
+nepřenáší systémové odpisy, `doc_head` ani doklady zaúčtování (řádky
+`asset.*`); po seedu je založí znovu Odpisy za období. Demo sada
+„IT servis“ má jednu kartu (server pořízený fakturou, zařazený,
+nezaúčtovaný); `demo/datasets/README.md` § Majetek.
+
 **Ověřeno na `4l3j-z0bz-kz39-echj`** (2026-10-06): dvě karty přes
 applier (dlouhodobá s historií od 2015 a vyřazená s polovinou odpisu),
 opakovaný `apply` = `updated`, doplnění karty na fakturu ve stavu 40

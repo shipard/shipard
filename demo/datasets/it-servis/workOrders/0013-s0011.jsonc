@@ -1,0 +1,97 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0011",
+        "sequenceNumber": 11,
+        "numberSeries": "S",
+        "title": "Správa IT — Nitrianske Stroje s.r.o.",
+        "state": "confirmed",
+        "dateStart": "2025-03-01",
+        "customer": {
+            "name": "Nitrianske Stroje s.r.o.",
+            "country": "sk",
+            "companyId": "52398417",
+            "taxId": "SK2023845117",
+            "vatId": "SK2023845117"
+        },
+        "currency": "eur",
+        "invoicing": {
+            "periodicity": "month",
+            "invoiceFrom": "2026-01-01",
+            "docText": "Správa IT — paušál {období}",
+            "bankAccount": "BU2"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "Správa IT — mesačný paušál",
+            "quantity": 1.0,
+            "unit": "mnth",
+            "unitPrice": 480.0,
+            "vatCode": "cz-202"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "state": "issued",
+            "docNumber": "1260011"
+        },
+        {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "state": "issued",
+            "docNumber": "1260023"
+        },
+        {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "state": "issued",
+            "docNumber": "1260035"
+        },
+        {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "state": "issued",
+            "docNumber": "1260049"
+        },
+        {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "state": "issued",
+            "docNumber": "1260064"
+        },
+        {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260077"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "state": "issued",
+            "docNumber": "1260092"
+        },
+        {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "state": "issued",
+            "docNumber": "1260106"
+        },
+        {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "state": "issued",
+            "docNumber": "1260118"
+        },
+        {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "state": "issued",
+            "docNumber": "1260132"
+        }
+    ]
+}

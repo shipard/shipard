@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail\Eval\Browse;
 
-use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
+use Shipard\Module\Core\Exchange\Dataset\DatasetCatalog;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
 
@@ -17,6 +17,11 @@ use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
  * Bezpečnost cest: sada, běh i zpráva se vybírají **jen z výpisu** — název
  * sady se hledá mezi manifesty, soubor běhu mezi `basename` souborů
  * z `EvalRunStore::runs()`. Z parametru URL se nikdy neskládá cesta.
+ *
+ * Sady **k seedu** (formulář Nový zdroj dat, dialog Nahrát datovou sadu)
+ * dodává {@see DatasetCatalog} — ten přibírá i demo sady z `demo/datasets`
+ * (#131); tenhle katalog zůstává jen nad `tests/datasets`, protože demo
+ * sady nemají `expected/` ani běhy.
  */
 final class EvalCatalog
 {
@@ -44,13 +49,7 @@ final class EvalCatalog
             return $this->datasets;
         }
         $byName = [];
-        foreach (glob($this->repoRoot . '/' . self::DATASETS_DIR . '/*/*/' . DatasetReader::MANIFEST_FILE) ?: [] as $manifestPath) {
-            $dir = dirname($manifestPath);
-            try {
-                $manifest = DatasetReader::open($dir)->getManifest();
-            } catch (\Throwable) {
-                continue;
-            }
+        foreach (DatasetCatalog::scanManifests($this->repoRoot . '/' . self::DATASETS_DIR . '/*/*') as [$manifest, $dir]) {
             $byName[$manifest->name] = new EvalDatasetInfo(
                 name: $manifest->name,
                 title: $manifest->title,

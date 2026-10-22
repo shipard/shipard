@@ -1,0 +1,9 @@
+// Skupiny typů majetku (#131 fáze 2c, D39) — všechny sloupce jako v dumpu;
+// typ odkazuje skupinu názvem.
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "asset_type_groups",
+	"rows": [
+		{ "name": "Hmotný majetek", "note": null, "sort_order": 0, "docState": 40 },
+	],
+}

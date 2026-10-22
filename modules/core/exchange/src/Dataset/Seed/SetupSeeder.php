@@ -12,13 +12,20 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetException;
 use Shipard\Module\Core\Exchange\Dataset\SectionSeeder;
 use Shipard\Module\Core\Exchange\Dataset\SeedContext;
 use Shipard\Module\Core\Exchange\Dataset\SeedReport;
+use Shipard\Module\Core\Exchange\Dataset\SetupReferences;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
 
 /**
  * `setup/<tabulka>.jsonc` → číselníky přes `TableGateway` (Document hooky,
- * `docStateMain` odvozený z cfgItemu). Upsert podle přirozeného klíče
+ * `docStateMain` odvozený z cfgItemu). Nastavení s id řady dokladů
+ * (`SetupExporter::SETTINGS_EXCLUDED`) seed přeskočí — nastaví je
+ * provisionery po resetu (D42). Upsert podle přirozeného klíče
  * tabulky (`SetupExporter::TABLES`) — default mailbox po resetu existuje
- * a jen se aktualizuje. Účet z rozvrhu přichází číslem → id.
+ * a jen se aktualizuje. FK přichází přirozeným klíčem (`SetupReferences`):
+ * účet z rozvrhu číslem → id jako dosud (chybějící = null), ostatní
+ * přenosné reference (druh názvem, účet kódem, řada dokladů
+ * `{docType, code}` — D37) přísně: nenalezená nebo nejednoznačná = chyba
+ * řádku.
  */
 final class SetupSeeder implements SectionSeeder
 {
@@ -29,6 +36,7 @@ final class SetupSeeder implements SectionSeeder
 
     public function seed(SeedContext $ctx, SeedReport $report): void
     {
+        $references = new SetupReferences($ctx->db, $ctx->tables);
         foreach ($ctx->reader->listFiles('setup') as $rel) {
             try {
                 $file = $ctx->reader->readJsonc($rel);
@@ -78,7 +86,7 @@ final class SetupSeeder implements SectionSeeder
                     continue;
                 }
                 try {
-                    $this->upsertRow($ctx, $gateway, $spec, $columns, $row);
+                    $this->upsertRow($ctx, $gateway, $references, $spec, $columns, $row);
                 } catch (\Throwable $e) {
                     $label = implode('/', array_map(static fn(string $k) => (string) ($row[$k] ?? '?'), $spec['key']));
                     $report->warning("setup {$rel} [{$label}]: {$e->getMessage()}");
@@ -96,11 +104,19 @@ final class SetupSeeder implements SectionSeeder
     /**
      * `setup/settings.jsonc` → `core_system_settings`. Volá se před `ds-reset`
      * (tabulka je keepOnReset, provisionery v ds-upgrade hodnoty čtou).
+     * Nastavení s id řad dokladů (`SetupExporter::SETTINGS_EXCLUDED`, D42)
+     * přitom smaže: z provozu před resetem by přežila reset, ukazovala by na
+     * řady, které reset založí znovu s jinými id, a `AssetPostingSeriesProvisioner`
+     * by řadu „Majetek“ nezaložil — po resetu je nastaví provisionery znovu.
      *
      * @return int počet zapsaných klíčů (0 = soubor v sadě není)
      */
     public static function applySettings(DatasetReader $reader, DataSourceConnection $dsConnection): int
     {
+        $store = new SettingsStore($dsConnection);
+        foreach (SetupExporter::SETTINGS_EXCLUDED as $key) {
+            $store->delete($key);
+        }
         $rel = 'setup/' . SetupExporter::SETTINGS_TABLE . '.jsonc';
         if (!$reader->fileExists($rel)) {
             return 0;
@@ -120,6 +136,11 @@ final class SetupSeeder implements SectionSeeder
             if (!is_array($row) || !is_string($row['key'] ?? null) || $row['key'] === '') {
                 continue;
             }
+            // Id řad dokladů ze starší sady (D42): na tomto zdroji dat neplatí,
+            // po resetu je nastaví provisionery — tiše se přeskočí.
+            if (in_array($row['key'], SetupExporter::SETTINGS_EXCLUDED, true)) {
+                continue;
+            }
             if (!SetupExporter::isPortableSetting($row['key'])) {
                 throw new DatasetException("nastavení '{$row['key']}' sada nesmí nést");
             }
@@ -134,20 +155,30 @@ final class SetupSeeder implements SectionSeeder
      * @param array<string, \Shipard\Core\Database\ColumnDefinition> $columns
      * @param array<string, mixed> $row
      */
-    private function upsertRow(SeedContext $ctx, TableGateway $gateway, array $spec, array $columns, array $row): void
-    {
+    private function upsertRow(
+        SeedContext $ctx,
+        TableGateway $gateway,
+        SetupReferences $references,
+        array $spec,
+        array $columns,
+        array $row,
+    ): void {
         $data = [];
         foreach ($row as $colId => $value) {
             $col = $columns[$colId] ?? null;
             if ($col === null || $colId === 'id') {
                 continue; // sloupec na tomto DS není (jiná sada modulů) — vynechat
             }
-            if ($col->reference === 'economy_accounting_accounts' && is_string($value)) {
+            if ($col->reference === SetupReferences::ACCOUNTS_TABLE && is_string($value)) {
+                // Účet osnovy jako dosud: chybějící analytika = null, ohlásí ji
+                // až engine (bank_account_not_found), ne seed.
                 $acc = $ctx->db->fetch(
                     'SELECT [id] FROM [economy_accounting_accounts] WHERE [number] = %s AND [docState] <> 90 ORDER BY [docState] = 70, [id] LIMIT 1',
                     $value,
                 );
                 $value = $acc !== null ? (int) $acc['id'] : null;
+            } elseif ($col->reference !== null && $value !== null && SetupReferences::isPortable($col->reference)) {
+                $value = $references->resolve($col->reference, $value);
             } elseif ($col->type === 'json' && is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             } elseif ($col->type === 'boolean' && is_bool($value)) {

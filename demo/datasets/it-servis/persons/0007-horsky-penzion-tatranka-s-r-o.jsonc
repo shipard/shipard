@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "sk",
+    "personId": "F00007",
+    "companyId": "47150823",
+    "taxId": "SK2020471508",
+    "vatId": "SK2020471508",
+    "name": {
+        "fullName": "Horský Penzión Tatranka s.r.o."
+    },
+    "contact": {
+        "email": "recepcia@penzion-tatranka.example",
+        "phone": "+421000721144",
+        "web": "www.penzion-tatranka.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "sk",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Pod Gerlachom",
+            "houseNumber": "231",
+            "city": "Poprad",
+            "zip": "05801",
+            "country": "sk",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "iban": "SK0511000000002618439075",
+            "bic": "TATRSKBX",
+            "currency": "EUR",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Recepcia",
+            "email": "recepcia@penzion-tatranka.example",
+            "phone": "+421000721144",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

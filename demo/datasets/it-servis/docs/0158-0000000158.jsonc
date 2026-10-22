@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Dentální klinika Úsměvov s.r.o.",
+        "country": "cz",
+        "companyId": "85297135",
+        "taxId": "CZ85297135",
+        "vatId": "CZ85297135",
+        "address": {
+            "street": "Zubařská",
+            "houseNumber": "208/4",
+            "city": "Brno",
+            "zip": "61600",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "recepce@usmevov.example",
+            "phone": "+420000150933",
+            "web": "www.usmevov.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-10-07",
+        "dueDate": "2026-10-21",
+        "accountingDate": "2026-10-07",
+        "taxPointDate": "2026-10-07",
+        "vatObligationDate": "2026-10-07"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 4.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 5000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 5000.0,
+                "vatAmount": 1050.0,
+                "vatTotal": 6050.0
+            },
+            "description": "Servisní práce technika — 10/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 5000.0,
+            "tax": 1050.0,
+            "total": 6050.0
+        }
+    ],
+    "totals": {
+        "totalBase": 5000.0,
+        "totalVat": 1050.0,
+        "totalAmount": 6050.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 10,
+        "importNumber": {
+            "docNumber": "!0000000158",
+            "sequenceNumber": null
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

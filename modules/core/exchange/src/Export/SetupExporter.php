@@ -8,18 +8,24 @@ use Dibi\Connection;
 use Shipard\Core\Database\ColumnDefinition;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Module\Core\Exchange\Dataset\ExportedRecord;
+use Shipard\Module\Core\Exchange\Dataset\SetupReferences;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
 
 /**
  * Sekce `setup/` sady — číselníky, které `ds-reset` + provisionery
  * neobnoví, ale sada na nich stojí (R1 v tasks/dataset-phase1.md):
- * vlastní bankovní účty, střediska (dimenze dokladů, #110), registrace DPH,
- * šanony spisovny, mailboxy.
+ * nesystémové účty osnovy, vlastní bankovní účty, střediska (dimenze
+ * dokladů, #110), registrace DPH, šanony spisovny, mailboxy, druhy
+ * a číselné řady zakázek (#131 fáze 2b, D29), účetní skupiny, skupiny typů
+ * a typy majetku (#131 fáze 2c, D39).
  *
  * Jeden soubor per tabulka (`shpd.dataset.setup.v1`), řádky s přirozeným
  * klíčem, bez interních id a auditních sloupců. Hodnoty se typují podle
  * `TableDefinition`, aby JSON nesl int/float/bool místo řetězců z MySQL.
- * Tabulky modulů, které na DS nejsou aktivní, se přeskočí.
+ * FK sloupce nesou přirozený klíč cílové tabulky, pokud ho sada umí
+ * přeložit zpět (`SetupReferences`: účet číslem, druh názvem, účet
+ * kódem, řada dokladů `{docType, code}` — D37); ostatní se s varováním
+ * vynechají. Tabulky modulů, které na DS nejsou aktivní, se přeskočí.
  */
 final class SetupExporter
 {
@@ -37,10 +43,29 @@ final class SetupExporter
     public const SETTINGS_PREFIXES = ['economy.'];
     // app.icon / app.companyLogo odkazují na soubory v branding/ — nepřenosné.
     public const SETTINGS_KEYS = ['app.name', 'app.shortName', 'app.theme', 'app.shell'];
+    /**
+     * Nastavení s id číselné řady dokladů (#131 fáze 2c, D42): id na jiném
+     * zdroji dat neplatí a hodnota přežije reset (`keepOnReset`), takže by
+     * `AssetPostingSeriesProvisioner` řadu „Majetek“ nezaložil a nastavení by
+     * mířilo na řadu vzniklou při seedu (pokladna). Sada je nenese; po resetu
+     * je nastaví provisionery `ds-upgrade` (řada Majetek, zafixování řady pro
+     * zaúčtování přiznání DPH). Seed je v sadě ignoruje.
+     */
+    public const SETTINGS_EXCLUDED = ['economy.assets.accountingSeries', 'economy.vat.filingAccountingSeries'];
 
-    /** @var array<string, array{table: string, key: list<string>}> */
+    /**
+     * `where` = pevný filtr řádků (sloupec → int), jen pro tabulky, z nichž
+     * sada nese podmnožinu.
+     *
+     * @var array<string, array{table: string, key: list<string>, where?: array<string, int>}>
+     */
     public const TABLES = [
         'settings'          => ['table' => 'core_system_settings',                'key' => ['key']],
+        // Nesystémové účty osnovy (#131 fáze 2a): analytiky založené nad seedem
+        // (bankovní účet v cizí měně potřebuje vlastní 221xxx). Systémové účty
+        // obnoví AccountChartProvisioner. Seed jde abecedně, takže
+        // `accounts.jsonc` předchází `bank_accounts.jsonc` a účet číslem se dohledá.
+        'accounts'          => ['table' => 'economy_accounting_accounts',          'key' => ['number'], 'where' => ['is_system' => 0]],
         'bank_accounts'     => ['table' => 'economy_codebooks_bank_accounts',     'key' => ['code']],
         // Pokladny (#103 F3 nález E) — výchozí pokladna pro hotově hrazené
         // přijaté doklady; účet se přenáší číslem jako u ostatních FK na rozvrh.
@@ -50,6 +75,20 @@ final class SetupExporter
         'vat_registrations' => ['table' => 'economy_codebooks_vat_registrations', 'key' => ['country', 'name']],
         'binders'           => ['table' => 'base_registry_binders',               'key' => ['name']],
         'mailboxes'         => ['table' => 'core_mail_mailboxes',                 'key' => ['mailbox_id']],
+        // Druhy a číselné řady zakázek (#131 fáze 2b, D29): sekce workOrders/
+        // odkazuje řadu kódem, řada druh názvem, druh řadu dokladů (D37)
+        // a bankovní účet kódem. Seed jde abecedně — druhy před řadami, obě
+        // za bank_accounts. Řada bez kódu se nepřenese (warning).
+        'work_order_kinds'  => ['table' => 'economy_work_orders_kinds',           'key' => ['name']],
+        'work_order_series' => ['table' => 'economy_work_orders_number_series',   'key' => ['number_code']],
+        // Číselníky majetku (#131 fáze 2c, D39): sekce assets/ odkazuje typ
+        // názvem a účetní skupinu kódem, typ nese skupinu typů názvem a výchozí
+        // účetní skupinu kódem, účetní skupina účty osnovy číslem. Seed jde
+        // abecedně — za `accounts`, před `bank_accounts`; účetní skupiny
+        // zakládá i provisioner, upsert podle kódu je jen srovná.
+        'asset_accounting_groups' => ['table' => 'economy_assets_accounting_groups', 'key' => ['code']],
+        'asset_type_groups'       => ['table' => 'economy_assets_type_groups',       'key' => ['name']],
+        'asset_types'             => ['table' => 'economy_assets_types',             'key' => ['name']],
     ];
 
     private const SKIP_COLUMNS = ['id', 'docStateMain', 'created', 'modified', 'created_by'];
@@ -65,8 +104,7 @@ final class SetupExporter
     /** @var list<string> */
     private array $warnings = [];
 
-    /** @var array<int, ?string> */
-    private array $accountNumberCache = [];
+    private readonly SetupReferences $references;
 
     /**
      * @param array<string, TableDefinition> $tables aktivní tabulky DS (TableLoader::load)
@@ -74,7 +112,9 @@ final class SetupExporter
     public function __construct(
         private readonly Connection $db,
         private readonly array $tables,
-    ) {}
+    ) {
+        $this->references = new SetupReferences($db, $tables);
+    }
 
     /**
      * @return list<ExportedRecord> jeden záznam per tabulka (id = 0, slug = klíč sekce)
@@ -92,7 +132,7 @@ final class SetupExporter
                 'table'  => $key,
                 'rows'   => $key === self::SETTINGS_TABLE
                     ? $this->exportSettings()
-                    : $this->exportTable($spec['table'], $def, $spec['key']),
+                    : $this->exportTable($spec['table'], $def, $spec['key'], $spec['where'] ?? []),
             ]);
         }
         return $out;
@@ -106,9 +146,10 @@ final class SetupExporter
 
     /**
      * @param list<string> $keyColumns
+     * @param array<string, int> $filter pevné podmínky z TABLES (`where`)
      * @return list<array<string, mixed>>
      */
-    private function exportTable(string $tableName, TableDefinition $def, array $keyColumns): array
+    private function exportTable(string $tableName, TableDefinition $def, array $keyColumns, array $filter = []): array
     {
         /** @var array<string, ColumnDefinition> $columns */
         $columns = [];
@@ -117,11 +158,12 @@ final class SetupExporter
         }
         $hasDocState = isset($columns['docState']);
 
-        // FK sloupce: interní id na jiném DS neplatí. Účet z rozvrhu se přenese
-        // číslem (seed ho resolvuje zpět), ostatní reference se vynechají.
+        // FK sloupce: interní id na jiném DS neplatí. Přenosné reference nesou
+        // přirozený klíč cílového řádku (seed ho resolvuje zpět, SetupReferences),
+        // ostatní se vynechají.
         foreach ($columns as $colId => $col) {
             if ($col->reference !== null && !in_array($colId, self::SKIP_COLUMNS, true)
-                && $col->reference !== 'economy_accounting_accounts') {
+                && !SetupReferences::isPortable($col->reference)) {
                 if (!in_array($colId, self::SILENT_FK_COLUMNS, true)) {
                     $this->warnings[] = "setup {$tableName}: sloupec '{$colId}' (FK na {$col->reference}) se nepřenáší";
                 }
@@ -130,7 +172,11 @@ final class SetupExporter
         }
 
         $order = implode(', ', array_map(static fn(string $c): string => "[{$c}]", [...$keyColumns, 'id']));
-        $where = $hasDocState ? ' WHERE [docState] <> 90' : '';
+        $conditions = $hasDocState ? ['[docState] <> 90'] : [];
+        foreach ($filter as $colId => $value) {
+            $conditions[] = "[{$colId}] = " . (int) $value;
+        }
+        $where = $conditions !== [] ? ' WHERE ' . implode(' AND ', $conditions) : '';
         $rows = $this->db->fetchAll("SELECT * FROM [{$tableName}]{$where} ORDER BY {$order}");
 
         $out = [];
@@ -141,9 +187,23 @@ final class SetupExporter
                 if (in_array($colId, self::SKIP_COLUMNS, true) || !array_key_exists($colId, $row)) {
                     continue;
                 }
-                $record[$colId] = $col->reference === 'economy_accounting_accounts'
-                    ? $this->accountNumber($row[$colId])
+                $record[$colId] = $col->reference !== null
+                    ? $this->references->export($col->reference, $row[$colId])
                     : self::typedValue($col, $row[$colId]);
+            }
+            // Řádek bez přirozeného klíče (řada zakázek bez kódu) nemá v sadě
+            // identitu — nepřenáší se.
+            $missingKey = null;
+            foreach ($keyColumns as $keyColumn) {
+                if (($record[$keyColumn] ?? null) === null || $record[$keyColumn] === '') {
+                    $missingKey = $keyColumn;
+                    break;
+                }
+            }
+            if ($missingKey !== null) {
+                $this->warnings[] = "setup {$tableName}: záznam #" . (int) ($row['id'] ?? 0)
+                    . " nemá klíč '{$missingKey}' — nepřenáší se";
+                continue;
             }
             $out[] = $record;
         }
@@ -174,6 +234,9 @@ final class SetupExporter
 
     public static function isPortableSetting(string $key): bool
     {
+        if (in_array($key, self::SETTINGS_EXCLUDED, true)) {
+            return false;
+        }
         if (in_array($key, self::SETTINGS_KEYS, true)) {
             return true;
         }
@@ -183,19 +246,6 @@ final class SetupExporter
             }
         }
         return false;
-    }
-
-    private function accountNumber(mixed $id): ?string
-    {
-        $id = V::int($id);
-        if ($id === null || $id <= 0) {
-            return null;
-        }
-        if (!array_key_exists($id, $this->accountNumberCache)) {
-            $row = $this->db->fetch('SELECT [number] FROM [economy_accounting_accounts] WHERE [id] = %i', $id);
-            $this->accountNumberCache[$id] = $row !== null ? V::str($row['number']) : null;
-        }
-        return $this->accountNumberCache[$id];
     }
 
     public static function typedValue(ColumnDefinition $col, mixed $value): mixed

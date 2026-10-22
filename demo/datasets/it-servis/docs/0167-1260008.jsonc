@@ -1,0 +1,103 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
+    "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál leden 2026",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Lékárna Pod Modrou Věží s.r.o.",
+        "country": "cz",
+        "companyId": "81374623",
+        "taxId": "CZ81374623",
+        "vatId": "CZ81374623",
+        "address": {
+            "street": "Věžní",
+            "houseNumber": "2",
+            "city": "Uherské Hradiště",
+            "zip": "68601",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "lekarna@podvezi.example",
+            "phone": "+420000550128"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-01-01",
+        "dueDate": "2026-01-15",
+        "accountingDate": "2026-01-01",
+        "taxPointDate": "2026-01-01",
+        "vatObligationDate": "2026-01-01",
+        "periodFrom": "2026-01-01",
+        "periodTo": "2026-01-31"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260008"
+    },
+    "dimensions": {
+        "workOrder": "S0008"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
+            },
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 12000.0,
+            "totalPrice": 12000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 12000.0,
+                "vatAmount": 2520.0,
+                "vatTotal": 14520.0
+            },
+            "description": "Správa IT — měsíční paušál"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 12000.0,
+            "tax": 2520.0,
+            "total": 14520.0
+        }
+    ],
+    "totals": {
+        "totalBase": 12000.0,
+        "totalVat": 2520.0,
+        "totalAmount": 14520.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260008",
+            "sequenceNumber": 8
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

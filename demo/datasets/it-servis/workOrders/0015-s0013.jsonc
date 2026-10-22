@@ -1,0 +1,96 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0013",
+        "sequenceNumber": 13,
+        "numberSeries": "S",
+        "title": "Správa IT — Wolkenschiff Logistik GmbH",
+        "state": "confirmed",
+        "dateStart": "2025-06-01",
+        "customer": {
+            "name": "Wolkenschiff Logistik GmbH",
+            "country": "de",
+            "taxId": "DE314670256",
+            "vatId": "DE314670256"
+        },
+        "currency": "eur",
+        "invoicing": {
+            "periodicity": "month",
+            "invoiceFrom": "2026-01-01",
+            "docText": "IT-Betreuung — Pauschale {období}",
+            "bankAccount": "BU2"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "IT-Betreuung — Monatspauschale",
+            "quantity": 1.0,
+            "unit": "mnth",
+            "unitPrice": 650.0,
+            "vatCode": "cz-202"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "state": "issued",
+            "docNumber": "1260013"
+        },
+        {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "state": "issued",
+            "docNumber": "1260024"
+        },
+        {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "state": "issued",
+            "docNumber": "1260036"
+        },
+        {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "state": "issued",
+            "docNumber": "1260051"
+        },
+        {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "state": "issued",
+            "docNumber": "1260065"
+        },
+        {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260078"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "state": "issued",
+            "docNumber": "1260094"
+        },
+        {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "state": "issued",
+            "docNumber": "1260107"
+        },
+        {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "state": "issued",
+            "docNumber": "1260119"
+        },
+        {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "state": "issued",
+            "docNumber": "1260134"
+        }
+    ]
+}

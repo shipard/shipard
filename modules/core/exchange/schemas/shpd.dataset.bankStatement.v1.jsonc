@@ -1,0 +1,82 @@
+{
+    // shpd.dataset.bankStatement.v1 — sekce `bank/` datové sady (#131 fáze 2a, D17).
+    //
+    // Obálka nad kanonickým formátem shpd.bank.statement.v1: jeden soubor =
+    // jeden výpis jednoho našeho účtu (typicky kalendářní měsíc). Náš účet
+    // je kódem číselníku (`bankAccount`), partner se nepřenáší vůbec — po
+    // seedu ho dohledá aplikace z protiúčtu (bankovní spojení osoby) stejně
+    // jako při importu souboru, a stejnou cestou zaúčtuje a dohledá otevřený
+    // předpis (cílový stav `docState`). Dopočtené hodnoty (partner,
+    // amount_dom, accounting_state, fingerprint) v souboru nejsou.
+    //
+    //   - `transactions[].amount` je ZNAMÉNKOVÁ (− = výdaj), jako v canonicalu.
+    //   - `operation` jen výslovně nastavená (poplatek `fee.out`); výchozí
+    //     `payment.in` / `payment.out` se nevypisuje, applier ji doplní.
+    //   - `exchangeRate` jen u účtu v cizí měně (kurz hrazené faktury, U1);
+    //     bez něj by applier hledal kurzovní lístky a výpis by se nezapsal.
+    //   - `externalId` výpisu i transakcí: stabilní, unikátní per účet —
+    //     dedup při seedu bez závislosti na pořadí v rámci dne.
+    //   - Pořadí transakcí v souboru = pořadí vložení (DB jiné nemá); dump
+    //     řadí podle data transakce a id.
+    //
+    // Seed deleguje na BankStatementApplier (modules/economy/bank/src/Dataset/).
+
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.dataset.bankStatement.v1.json",
+    "title": "Shipard dataset bank statement v1",
+    "type": "object",
+    "additionalProperties": false,
+
+    "required": ["format", "bankAccount", "statement", "transactions", "docState"],
+
+    "properties": {
+        "format": { "const": "shpd.dataset.bankStatement.v1" },
+
+        // Kód našeho účtu v číselníku economy_codebooks_bank_accounts (setup/bank_accounts.jsonc).
+        "bankAccount": { "type": "string", "minLength": 1 },
+
+        // Hlavička výpisu — jako shpd.bank.statement.v1 `statement`.
+        "statement": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["periodStart", "periodEnd"],
+            "properties": {
+                "statementNumber": { "type": ["string", "null"] },
+                "externalId":      { "type": ["string", "null"] },
+                "periodStart":     { "type": "string", "format": "date" },
+                "periodEnd":       { "type": "string", "format": "date" },
+                "openingBalance":  { "type": "number" },
+                "closingBalance":  { "type": "number" },
+                "currency":        { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" }
+            }
+        },
+
+        // Transakce — jako shpd.bank.statement.v1 `transactions`, BEZ partnerId.
+        "transactions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["amount", "dateTransaction"],
+                "properties": {
+                    "externalId":          { "type": ["string", "null"] },
+                    "amount":              { "type": "number" },
+                    "dateTransaction":     { "type": "string", "format": "date" },
+                    "dateValue":           { "type": ["string", "null"], "format": "date" },
+                    "counterpartyAccount": { "type": ["string", "null"] },
+                    "counterpartyName":    { "type": ["string", "null"] },
+                    "paymentReference":    { "type": ["string", "null"] },
+                    "specificSymbol":      { "type": ["string", "null"] },
+                    "constantSymbol":      { "type": ["string", "null"] },
+                    "message":             { "type": ["string", "null"] },
+                    "operation":           { "type": ["string", "null"] },
+                    "exchangeRate":        { "type": ["number", "null"], "exclusiveMinimum": 0 }
+                }
+            }
+        },
+
+        // Cílový stav výpisu i transakcí: 10 = Nový, 40 = Zaúčtováno (engine
+        // zaúčtuje a dohledá předpis).
+        "docState": { "enum": [10, 40] }
+    }
+}

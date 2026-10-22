@@ -6,7 +6,9 @@ namespace Shipard\Tests\Unit\Module\Economy\Assets;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Settings\KeyValueStore;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\Assets\Posting\AssetPostingSeries;
 use Shipard\Module\Economy\Assets\Posting\AssetPostingSeriesProvisioner;
 
@@ -77,6 +79,18 @@ class AssetPostingSeriesProvisionerTest extends TestCase
 
         $this->assertSame(['created' => 0, 'existing' => 1, 'seriesId' => 55], $result);
         $this->assertSame('55', $settings->get(AssetPostingSeries::SETTING));
+    }
+
+    public function testModuleDeclaresTheSettingForClearingOnReset(): void
+    {
+        // #131 D42: ds-reset dropuje řady a vyplněný klíč by provisioner
+        // nepřepsal — modul proto deklaruje, že klíč nese id řádku řad.
+        $module = ModuleDefinition::fromArray(JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/economy/assets/module.jsonc'));
+
+        $this->assertSame(
+            [['key' => AssetPostingSeries::SETTING, 'table' => AssetPostingSeries::TABLE]],
+            $module->clearSettingsOnReset,
+        );
     }
 
     public function testFilledSettingIsNeverOverwritten(): void

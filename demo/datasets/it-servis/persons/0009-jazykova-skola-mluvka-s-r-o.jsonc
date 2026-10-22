@@ -1,0 +1,62 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00009",
+    "companyId": "93820461",
+    "taxId": "CZ93820461",
+    "vatId": "CZ93820461",
+    "name": {
+        "fullName": "Jazyková škola Mluvka s.r.o."
+    },
+    "contact": {
+        "email": "kancelar@skola-mluvka.example",
+        "phone": "+420000215660",
+        "web": "www.skola-mluvka.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Slovníková",
+            "houseNumber": "19",
+            "city": "Zlín",
+            "zip": "76001",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "2960438172/6210",
+            "iban": "CZ1262100000002960438172",
+            "bic": "BREXCZPP",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Kancelář školy",
+            "email": "kancelar@skola-mluvka.example",
+            "phone": "+420000215660",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

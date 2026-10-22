@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Mail\Eval\Browse;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Module\Core\Exchange\Dataset\DatasetCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 
@@ -85,6 +86,35 @@ final class EvalCatalogTest extends TestCase
         $catalog = new EvalCatalog(self::repoRoot());
         $this->assertNull($catalog->dataset($name), "sada '{$name}'");
         $this->assertNull($catalog->run($catalog->dataset('cz-vat-payer'), $name), "běh '{$name}'");
+    }
+
+    public function testIgnoresDemoDatasetsOfTheSeedCatalog(): void
+    {
+        // Sekce Testování zůstává jen nad tests/datasets (#131): demo sada
+        // z demo/datasets nemá expected/ ani běhy — nabízí ji jen DatasetCatalog.
+        $root = sys_get_temp_dir() . '/shpd-evalcat-' . bin2hex(random_bytes(4));
+        $manifest = static fn (string $name, string $title): string => json_encode([
+            'format' => 'shpd.dataset.v1', 'name' => $name, 'title' => $title, 'dateMode' => 'fixed',
+            'created' => '2026-10-20T00:00:00Z', 'country' => 'cz', 'counts' => ['mail' => 3],
+        ]);
+        mkdir($root . '/tests/datasets/cz/payer', 0700, true);
+        mkdir($root . '/tests/eval', 0700, true);
+        mkdir($root . '/demo/datasets/it-servis', 0700, true);
+        file_put_contents($root . '/tests/datasets/cz/payer/manifest.jsonc', $manifest('cz-payer', 'Plátce'));
+        file_put_contents($root . '/demo/datasets/it-servis/manifest.jsonc', $manifest('it-servis', 'Demo — IT servis'));
+        try {
+            $catalog = new EvalCatalog($root);
+            $this->assertTrue($catalog->isAvailable());
+            $this->assertSame(['cz-payer'], $catalog->datasetNames());
+            $this->assertNull($catalog->dataset('it-servis'));
+            $this->assertSame(['cz-payer', 'it-servis'], (new DatasetCatalog($root))->datasetNames(), 'katalog k seedu nabízí obě');
+        } finally {
+            unlink($root . '/tests/datasets/cz/payer/manifest.jsonc');
+            unlink($root . '/demo/datasets/it-servis/manifest.jsonc');
+            foreach (['/tests/datasets/cz/payer', '/tests/datasets/cz', '/tests/datasets', '/tests/eval', '/tests', '/demo/datasets/it-servis', '/demo/datasets', '/demo', ''] as $dir) {
+                rmdir($root . $dir);
+            }
+        }
     }
 
     public function testUnavailableWithoutTestsDirectories(): void

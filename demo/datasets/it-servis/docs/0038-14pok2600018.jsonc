@@ -1,0 +1,77 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashRegisterDocument",
+    "selfParty": "supplier",
+    "cashDesk": "POK",
+    "dates": {
+        "issueDate": "2026-05-11",
+        "dueDate": "2026-05-11",
+        "accountingDate": "2026-05-11",
+        "taxPointDate": "2026-05-11",
+        "vatObligationDate": "2026-05-11"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "18"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.goods",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "MYS-USB",
+                "name": "Myš bezdrátová"
+            },
+            "unit": "pcs",
+            "quantity": 3.0,
+            "unitPrice": 390.0,
+            "totalPrice": 1170.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 1170.0,
+                "vatAmount": 245.7,
+                "vatTotal": 1415.7
+            },
+            "description": "Myš bezdrátová"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 1170.0,
+            "tax": 245.7,
+            "total": 1415.7
+        }
+    ],
+    "totals": {
+        "totalBase": 1170.0,
+        "totalVat": 245.7,
+        "totalAmount": 1416.0,
+        "totalRounding": 0.3
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "14POK2600018",
+            "sequenceNumber": 18
+        },
+        "numberSeriesCode": "POK"
+    }
+}

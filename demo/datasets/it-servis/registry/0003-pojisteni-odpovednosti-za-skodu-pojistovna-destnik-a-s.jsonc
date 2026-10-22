@@ -1,0 +1,39 @@
+{
+    "format": "shpd.dataset.registryDocument.v1",
+    "document": {
+        "schema": "shpd.registry.document.v1",
+        "docType": "insurance",
+        "title": "Pojištění odpovědnosti za škodu — Pojišťovna Deštník a.s.",
+        "summary": "Pojištění profesní odpovědnosti za škodu způsobenou při poskytování IT služeb, limit plnění 5 000 000 Kč.",
+        "party": {
+            "name": "Pojišťovna Deštník a.s.",
+            "companyId": "92614833",
+            "email": "klienti@pojistovna-destnik.example"
+        },
+        "kindFields": {
+            "insurer": "Pojišťovna Deštník a.s.",
+            "insuredSubject": "Profesní odpovědnost při poskytování IT služeb",
+            "annualPremium": 28400,
+            "currency": "CZK",
+            "policyNumber": "POJ-884512",
+            "validFrom": "2026-01-01",
+            "validTo": "2026-12-31"
+        }
+    },
+    "docState": 40,
+    "sourceKind": "manual",
+    "binder": "Pojištění",
+    "refNumber": "POJ-884512",
+    "validFrom": "2026-01-01",
+    "validTo": "2026-12-31",
+    "created": "2026-01-05T08:50:00",
+    "attachments": [
+        {
+            "file": "POJ-884512.pdf",
+            "name": "POJ-884512.pdf",
+            "mimeType": "application/pdf",
+            "size": 26532,
+            "sha256": "d474ba66a3f04fd96e097560520395744ae8cc225a2f5fa4e0f8d3eecd1fdc2d"
+        }
+    ]
+}

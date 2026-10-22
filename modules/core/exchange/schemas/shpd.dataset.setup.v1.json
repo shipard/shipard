@@ -16,12 +16,18 @@
         "table": {
             "enum": [
                 "settings",
+                "accounts",
                 "bank_accounts",
                 "cash_desks",
                 "cost_centers",
                 "vat_registrations",
                 "binders",
-                "mailboxes"
+                "mailboxes",
+                "work_order_kinds",
+                "work_order_series",
+                "asset_accounting_groups",
+                "asset_type_groups",
+                "asset_types"
             ]
         },
         "rows": {

@@ -1,0 +1,60 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "de",
+    "personId": "F00025",
+    "taxId": "DE314670256",
+    "vatId": "DE314670256",
+    "name": {
+        "fullName": "Wolkenschiff Logistik GmbH"
+    },
+    "contact": {
+        "email": "buchhaltung@wolkenschiff-logistik.example",
+        "phone": "+490002094410",
+        "web": "www.wolkenschiff-logistik.example"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "de",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Hafenstraße",
+            "houseNumber": "118",
+            "city": "Köln",
+            "zip": "50678",
+            "country": "de",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "iban": "DE18370400440532014860",
+            "bic": "COBADEFFXXX",
+            "currency": "EUR",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Buchhaltung",
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

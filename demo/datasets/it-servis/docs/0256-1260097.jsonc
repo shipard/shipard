@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Truhlárna Dubový list s.r.o.",
+        "country": "cz",
+        "companyId": "86341928",
+        "taxId": "CZ86341928",
+        "vatId": "CZ86341928",
+        "address": {
+            "street": "Hoblovaná",
+            "houseNumber": "88",
+            "city": "Holešov",
+            "zip": "76901",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "petr@truhlarna-dubovy-list.example",
+            "phone": "+420000398022"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-07-20",
+        "dueDate": "2026-08-03",
+        "accountingDate": "2026-07-20",
+        "taxPointDate": "2026-07-20",
+        "vatObligationDate": "2026-07-20"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260097"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 12.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 15000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 15000.0,
+                "vatAmount": 3150.0,
+                "vatTotal": 18150.0
+            },
+            "description": "Servisní práce technika — 07/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 15000.0,
+            "tax": 3150.0,
+            "total": 18150.0
+        }
+    ],
+    "totals": {
+        "totalBase": 15000.0,
+        "totalVat": 3150.0,
+        "totalAmount": 18150.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260097",
+            "sequenceNumber": 97
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

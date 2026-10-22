@@ -1,0 +1,20 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "P0002",
+        "sequenceNumber": 2,
+        "numberSeries": "P",
+        "title": "Wi-Fi síť hotelu",
+        "state": "finished",
+        "dateStart": "2026-05-17",
+        "dateEnd": "2026-06-18",
+        "customer": {
+            "name": "Hotel Modrý Jelen s.r.o.",
+            "country": "cz",
+            "companyId": "33958173",
+            "taxId": "CZ33958173",
+            "vatId": "CZ33958173"
+        },
+        "currency": "czk"
+    }
+}

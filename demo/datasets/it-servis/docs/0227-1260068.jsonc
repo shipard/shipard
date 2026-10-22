@@ -1,0 +1,98 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Hotel Modrý Jelen s.r.o.",
+        "country": "cz",
+        "companyId": "33958173",
+        "taxId": "CZ33958173",
+        "vatId": "CZ33958173",
+        "address": {
+            "street": "Lázeňská",
+            "houseNumber": "5",
+            "city": "Luhačovice",
+            "zip": "76326",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "ekonom@hotel-modry-jelen.example",
+            "phone": "+420000130444",
+            "web": "www.hotel-modry-jelen.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-05-20",
+        "dueDate": "2026-06-03",
+        "accountingDate": "2026-05-20",
+        "taxPointDate": "2026-05-20",
+        "vatObligationDate": "2026-05-20"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260068"
+    },
+    "dimensions": {
+        "workOrder": "P0002"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 13.0,
+            "unitPrice": 1250.0,
+            "totalPrice": 16250.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 16250.0,
+                "vatAmount": 3412.5,
+                "vatTotal": 19662.5
+            },
+            "description": "Průzkum lokality a návrh Wi-Fi sítě"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 16250.0,
+            "tax": 3412.5,
+            "total": 19662.5
+        }
+    ],
+    "totals": {
+        "totalBase": 16250.0,
+        "totalVat": 3412.5,
+        "totalAmount": 19662.5,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260068",
+            "sequenceNumber": 68
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

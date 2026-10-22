@@ -7,9 +7,10 @@ ověří kontrolní součty identifikátorů, vyrenderuje HTML ze šablony
 (templates/{a,b,c}.html, placeholdery {{key}}) a přes Gotenberg
 (Chromium, docs/render.md) uloží out/NNNN-<slug>.pdf.
 
-Výpočty, kontrolní součty, JSONC i render jsou ve sdíleném balíku
-`invoicegen` (tools/invoice-generator/, jen stdlib) — tady zůstává jen
-skládání hodnot pro demo šablony a smyčka přes data. Použití:
+Výpočty, kontrolní součty, JSONC, render i skládání hodnot pro demo
+šablony (`invoicegen.demoprint`) jsou ve sdíleném balíku `invoicegen`
+(tools/invoice-generator/, jen stdlib) — tady zůstává jen smyčka přes
+data. Použití:
 
     python3 demo/invoices/build.py
 
@@ -19,9 +20,7 @@ Exit != 0 = kterýkoli assert nebo render selhal.
 
 from __future__ import annotations
 
-import re
 import sys
-from datetime import date
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -29,58 +28,9 @@ sys.path.insert(0, str(BASE_DIR.parents[1] / "tools" / "invoice-generator"))
 
 from invoicegen.checks import validate_party  # noqa: E402
 from invoicegen.compute import compute  # noqa: E402
+from invoicegen.demoprint import invoice_values as build_values, validate_header  # noqa: E402, F401
 from invoicegen.jsonc import load_jsonc  # noqa: E402
-from invoicegen.render import (  # noqa: E402
-    NNBSP, esc, fmt_date, fmt_iban, fmt_money, render_html, render_pdf,
-    render_rows, render_vat_recap,
-)
-
-
-def validate_header(invoice: dict) -> None:
-    vs = invoice["variableSymbol"]
-    assert re.fullmatch(r"\d{1,10}", vs), f"VS '{vs}' — jen číslice, max 10"
-    assert invoice["docNumber"], "chybí docNumber"
-    assert invoice["currency"] == "CZK", "sada je CZK-only"
-    for key in ("issue", "tax", "due"):
-        date.fromisoformat(invoice["dates"][key])  # ValueError = nevalidní
-
-
-def build_values(invoice: dict, supplier: dict, own: dict, computed: dict) -> dict[str, str]:
-    rounding_row = ""
-    if computed["totalRounding"] != 0:
-        rounding_row = (
-            f"<tr><th>Zaokrouhlení</th><td>{fmt_money(computed['totalRounding'])}"
-            f"{NNBSP}Kč</td></tr>"
-        )
-    return {
-        "supplierName": esc(supplier["name"]),
-        "supplierStreet": esc(supplier["street"]),
-        "supplierZipCity": esc(f"{supplier['zip']} {supplier['city']}"),
-        "supplierIco": supplier["ico"],
-        "supplierDic": supplier["dic"],
-        "supplierEmail": esc(supplier["email"]),
-        "supplierCourtReg": esc(supplier["courtReg"]),
-        "supplierAccount": supplier["account"],
-        "supplierIban": fmt_iban(supplier["iban"]),
-        "customerName": esc(own["name"]),
-        "customerStreet": esc(own["street"]),
-        "customerZipCity": esc(f"{own['zip']} {own['city']}"),
-        "customerIco": own["ico"],
-        "customerDic": own["dic"],
-        "docNumber": esc(invoice["docNumber"]),
-        "vs": invoice["variableSymbol"],
-        "issueDate": fmt_date(invoice["dates"]["issue"]),
-        "taxDate": fmt_date(invoice["dates"]["tax"]),
-        "dueDate": fmt_date(invoice["dates"]["due"]),
-        "rows": render_rows(computed),
-        "vatRecap": render_vat_recap(computed),
-        "totalBase": fmt_money(computed["totalBase"]),
-        "totalVat": fmt_money(computed["totalVat"]),
-        "roundingRow": rounding_row,
-        "totalAmount": fmt_money(computed["totalAmount"]),
-        "note": esc(invoice["notes"]["onDocument"]),
-        "accent": supplier.get("accent", "#0e7490"),
-    }
+from invoicegen.render import fmt_money, render_html, render_pdf  # noqa: E402
 
 
 def main() -> int:

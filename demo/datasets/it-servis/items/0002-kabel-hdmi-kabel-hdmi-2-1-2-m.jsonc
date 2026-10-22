@@ -1,0 +1,22 @@
+{
+    "format": "shpd.items.item",
+    "formatVersion": "1.0",
+    "code": "KABEL-HDMI",
+    "name": "Kabel HDMI 2.1, 2 m",
+    "kind": {
+        "code": "stock",
+        "name": "Zásoba",
+        "itemType": 1
+    },
+    "salesPriceNoVat": 249.0,
+    "unit": "pcs",
+    "accountingAccount": "604100",
+    "status": {
+        "docState": 40
+    },
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

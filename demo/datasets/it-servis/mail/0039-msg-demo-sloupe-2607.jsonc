@@ -1,0 +1,350 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-SLOUPE-2607",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 260120",
+    "senderEmail": "kancelar@uk-sloupec.example",
+    "senderName": "Účetní kancelář Sloupec s.r.o.",
+    "senderPerson": {
+        "name": "Účetní kancelář Sloupec s.r.o.",
+        "companyId": "52073963",
+        "taxId": "CZ52073963",
+        "vatId": "CZ52073963"
+    },
+    "partnerPerson": {
+        "name": "Účetní kancelář Sloupec s.r.o.",
+        "companyId": "52073963",
+        "taxId": "CZ52073963",
+        "vatId": "CZ52073963"
+    },
+    "partnerName": "Účetní kancelář Sloupec s.r.o.",
+    "receivedAt": "2026-07-06T08:34:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 260120.\n\nÚčetní kancelář Sloupec s.r.o.",
+    "sourceType": 2,
+    "docState": 40,
+    "analysisState": 30,
+    "aiTitle": "Faktura 260120 — Účetní kancelář Sloupec s.r.o., 23 595,00 Kč",
+    "created": "2026-07-06T08:34:00",
+    "target": {
+        "table": "docs_core_heads",
+        "docNumber": "2260039"
+    },
+    "attachments": [
+        {
+            "file": "260120.pdf",
+            "name": "260120.pdf",
+            "mimeType": "application/pdf",
+            "size": 27922,
+            "sha256": "f42247f94eb06a3bafcb3a916733de947385bd5899fe5443d3b729380b23b502",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-07-06T08:35:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "services.accounting",
+            "resolution": 40,
+            "resolvedAt": "2026-07-06T09:34:00",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-07-06T08:35:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura 260120 — Účetní kancelář Sloupec s.r.o., 23 595,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-07-06T08:35:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "demo"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "260120",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Účetní kancelář Sloupec s.r.o.",
+                            "country": "cz",
+                            "companyId": "52073963",
+                            "taxId": "CZ52073963",
+                            "vatId": "CZ52073963",
+                            "courtRegistration": "Spisová značka C 88235 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Rozvahová",
+                                "houseNumber": "6",
+                                "city": "Brno",
+                                "zip": "61300",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "kancelar@uk-sloupec.example",
+                                "phone": "+420000530770",
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": "2035918478/2010",
+                                "iban": "CZ9520100000002035918478",
+                                "bic": "FIOBCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Zelený Terminál s.r.o.",
+                            "country": "cz",
+                            "companyId": "61204579",
+                            "taxId": "CZ61204579",
+                            "vatId": "CZ61204579",
+                            "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Serverová",
+                                "houseNumber": "1024/8",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@zeleny-terminal.example",
+                                "phone": "+420000230190",
+                                "web": "www.zeleny-terminal.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-07-05",
+                            "dueDate": "2026-07-19",
+                            "taxPointDate": "2026-07-05",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "260120",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Vedení účetnictví a mzdová agenda — Q3/2026",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 19500,
+                                "totalPrice": 19500,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 19500,
+                                "tax": 4095,
+                                "total": 23595
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 19500,
+                            "totalVat": 4095,
+                            "totalAmount": 23595,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "260120.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-07-06T08:35:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "demo"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "260120",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Účetní kancelář Sloupec s.r.o.",
+                    "country": "cz",
+                    "companyId": "52073963",
+                    "taxId": "CZ52073963",
+                    "vatId": "CZ52073963",
+                    "courtRegistration": "Spisová značka C 88235 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Rozvahová",
+                        "houseNumber": "6",
+                        "city": "Brno",
+                        "zip": "61300",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "kancelar@uk-sloupec.example",
+                        "phone": "+420000530770",
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": "2035918478/2010",
+                        "iban": "CZ9520100000002035918478",
+                        "bic": "FIOBCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Zelený Terminál s.r.o.",
+                    "country": "cz",
+                    "companyId": "61204579",
+                    "taxId": "CZ61204579",
+                    "vatId": "CZ61204579",
+                    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Serverová",
+                        "houseNumber": "1024/8",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@zeleny-terminal.example",
+                        "phone": "+420000230190",
+                        "web": "www.zeleny-terminal.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-07-05",
+                    "dueDate": "2026-07-19",
+                    "taxPointDate": "2026-07-05",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "260120",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Vedení účetnictví a mzdová agenda — Q3/2026",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 19500,
+                        "totalPrice": 19500,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 19500,
+                        "tax": 4095,
+                        "total": 23595
+                    }
+                ],
+                "totals": {
+                    "totalBase": 19500,
+                    "totalVat": 4095,
+                    "totalAmount": 23595,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "260120.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "services.accounting",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

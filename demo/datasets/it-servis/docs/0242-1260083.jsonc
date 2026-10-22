@@ -1,0 +1,103 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
+    "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál červenec 2026",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Cukrárna U Medvídka s.r.o.",
+        "country": "cz",
+        "companyId": "91740380",
+        "taxId": "CZ91740380",
+        "vatId": "CZ91740380",
+        "address": {
+            "street": "Perníková",
+            "houseNumber": "12",
+            "city": "Olomouc",
+            "zip": "77900",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "jana@cukrarna-medvidek.example",
+            "phone": "+420000330217"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-07-01",
+        "dueDate": "2026-07-15",
+        "accountingDate": "2026-07-01",
+        "taxPointDate": "2026-07-01",
+        "vatObligationDate": "2026-07-01",
+        "periodFrom": "2026-07-01",
+        "periodTo": "2026-07-31"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260083"
+    },
+    "dimensions": {
+        "workOrder": "S0002"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
+            },
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 5500.0,
+            "totalPrice": 5500.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 5500.0,
+                "vatAmount": 1155.0,
+                "vatTotal": 6655.0
+            },
+            "description": "Správa IT — měsíční paušál"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 5500.0,
+            "tax": 1155.0,
+            "total": 6655.0
+        }
+    ],
+    "totals": {
+        "totalBase": 5500.0,
+        "totalVat": 1155.0,
+        "totalAmount": 6655.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260083",
+            "sequenceNumber": 83
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

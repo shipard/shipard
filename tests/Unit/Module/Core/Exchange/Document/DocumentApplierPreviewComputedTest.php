@@ -350,7 +350,38 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $this->assertSame(21.0, $resolve['rows'][0]['vatCode']['createPayload']['pct']);
     }
 
+    /** Samovyměření není chyba předlohy — info issue vysvětlí, proč je rekapitulace jiná než na faktuře. */
+    public function testReverseChargeFallbackIssueExplainsSelfAssessment(): void
+    {
+        $result = $this->buildApplier()->preview($this->euServicesPayload());
+
+        $computed = $result->canonical['_resolve']['computed'];
+        $this->assertSame('computed', $computed['recapSource']);
+        $this->assertSame('přenesení daňové povinnosti — rekapitulace dodavatele se nepřebírá', $computed['recapFallback']);
+        $issue = $this->issue($result->canonical, 'recap_source_computed_fallback');
+        $this->assertNotNull($issue);
+        $this->assertSame('info', $issue['severity']);
+        $this->assertSame('vat.recapSource', $issue['path']);
+        $this->assertSame(
+            'Faktura s přenesením daňové povinnosti: dodavatel uvádí 0 % DPH, daň přiznáváte vy'
+            . ' — rekapitulace se proto sestaví z řádků (daň na výstupu a nárok na odpočet).',
+            $issue['message'],
+        );
+        $this->assertStringNotContainsString('nešlo převzít', $issue['message']);
+    }
+
     public function testInconsistentRecapFallsBackToComputedWithReason(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['vatRecap'][0]['tax'] = 12.00;
+
+        $result = $this->buildApplier()->preview($payload);
+        $issue = $this->issue($result->canonical, 'recap_source_computed_fallback');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('nešlo převzít', $issue['message'], 'ostatní důvody šablonou beze změny');
+    }
+
+    public function testInconsistentRecapFallsBackToComputedWithReasonAmounts(): void
     {
         $payload = $this->happyPayload();
         $payload['vatRecap'][0]['tax'] = 12.00;

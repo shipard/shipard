@@ -1,0 +1,124 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "NP-26-032",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Správa nemovitostí Patro s.r.o.",
+        "country": "cz",
+        "companyId": "81973501",
+        "taxId": "CZ81973501",
+        "vatId": "CZ81973501",
+        "courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
+        "address": {
+            "street": "Schodišťová",
+            "houseNumber": "3",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "najmy@patro-sprava.example",
+            "phone": "+420000112900"
+        },
+        "bankAccount": {
+            "accountNumber": "1628735058/5500",
+            "iban": "CZ3355000000001628735058",
+            "bic": "RZBCCZPP"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-02-01",
+        "dueDate": "2026-02-11",
+        "accountingDate": "2026-02-01",
+        "taxPointDate": "2026-02-01",
+        "vatObligationDate": "2026-02-01"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "26032"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "518205",
+                "name": "Nájemné"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 18000.0,
+            "totalPrice": 18000.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 18000.0,
+                "vatAmount": 3780.0,
+                "vatTotal": 21780.0
+            },
+            "description": "Nájem kanceláře Serverová 1024/8 — 02/2026"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "518205",
+                "name": "Nájemné"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 2400.0,
+            "totalPrice": 2400.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 2400.0,
+                "vatAmount": 504.0,
+                "vatTotal": 2904.0
+            },
+            "description": "Služby spojené s nájmem — 02/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 20400.0,
+            "tax": 4284.0,
+            "total": 24684.0
+        }
+    ],
+    "totals": {
+        "totalBase": 20400.0,
+        "totalVat": 4284.0,
+        "totalAmount": 24684.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260007",
+            "sequenceNumber": 7
+        }
+    }
+}

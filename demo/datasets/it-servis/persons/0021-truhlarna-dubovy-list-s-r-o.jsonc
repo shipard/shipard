@@ -1,0 +1,61 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "personId": "F00021",
+    "companyId": "86341928",
+    "taxId": "CZ86341928",
+    "vatId": "CZ86341928",
+    "name": {
+        "fullName": "Truhlárna Dubový list s.r.o."
+    },
+    "contact": {
+        "email": "petr@truhlarna-dubovy-list.example",
+        "phone": "+420000398022"
+    },
+    "status": {
+        "docState": 40
+    },
+    "documents": {
+        "language": "cs",
+        "sendAttachmentsMerged": false
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Hoblovaná",
+            "houseNumber": "88",
+            "city": "Holešov",
+            "zip": "76901",
+            "country": "cz",
+            "orderPos": 0
+        }
+    ],
+    "bankAccounts": [
+        {
+            "accountNumber": "1705384627/0800",
+            "iban": "CZ6208000000001705384627",
+            "bic": "GIBACZPX",
+            "currency": "CZK",
+            "source": 0,
+            "orderPos": 0
+        }
+    ],
+    "contacts": [
+        {
+            "name": "Petr Dubový",
+            "email": "petr@truhlarna-dubovy-list.example",
+            "phone": "+420000398022",
+            "orderPos": 0,
+            "sendPurposes": [
+                "invoices"
+            ]
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

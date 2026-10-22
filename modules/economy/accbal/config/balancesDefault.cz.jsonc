@@ -136,7 +136,13 @@
         "sort_order": 50,
         "accounts": [
             {"account_number": "261200", "acc_side": 1, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Nespárovaný příjem (clearing)"},
-            {"account_number": "261300", "acc_side": 0, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Nespárovaný výdaj (clearing)"}
+            {"account_number": "261300", "acc_side": 0, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Nespárovaný výdaj (clearing)"},
+            // Zrcadlové řádky (#131 fáze 2a): přeúčtování z clearingu interním
+            // dokladem (MD 331 / DAL 261300 u mezd bez partnera) je záporná úhrada
+            // v témže případu — případ se vynuluje. Bez řádku předpisu, lookup
+            // skupinu dál nevidí; `paymentGroup` řádky s modify_sign přeskakuje.
+            {"account_number": "261200", "acc_side": 0, "amounts_sign": 1, "bal_side": 1, "modify_sign": true, "note": "Přeúčtování nespárovaného příjmu (záporná úhrada)"},
+            {"account_number": "261300", "acc_side": 1, "amounts_sign": 1, "bal_side": 1, "modify_sign": true, "note": "Přeúčtování nespárovaného výdaje (záporná úhrada)"}
         ]
     },
     {

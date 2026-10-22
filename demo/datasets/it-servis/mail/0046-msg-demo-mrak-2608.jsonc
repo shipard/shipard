@@ -1,0 +1,350 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-DEMO-MRAK-2608",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura SM-2026-1190",
+    "senderEmail": "fakturace@serverovna-mrak.example",
+    "senderName": "Serverovna Mrak s.r.o.",
+    "senderPerson": {
+        "name": "Serverovna Mrak s.r.o.",
+        "companyId": "90157389",
+        "taxId": "CZ90157389",
+        "vatId": "CZ90157389"
+    },
+    "partnerPerson": {
+        "name": "Serverovna Mrak s.r.o.",
+        "companyId": "90157389",
+        "taxId": "CZ90157389",
+        "vatId": "CZ90157389"
+    },
+    "partnerName": "Serverovna Mrak s.r.o.",
+    "receivedAt": "2026-08-04T08:47:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu SM-2026-1190.\n\nServerovna Mrak s.r.o.",
+    "sourceType": 2,
+    "docState": 40,
+    "analysisState": 30,
+    "aiTitle": "Faktura SM-2026-1190 — Serverovna Mrak s.r.o., 5 929,00 Kč",
+    "created": "2026-08-04T08:47:00",
+    "target": {
+        "table": "docs_core_heads",
+        "docNumber": "2260046"
+    },
+    "attachments": [
+        {
+            "file": "SM-2026-1190.pdf",
+            "name": "SM-2026-1190.pdf",
+            "mimeType": "application/pdf",
+            "size": 33166,
+            "sha256": "1407ba500071aaace787048a5364a3c48d1058e74fabd6fd6cf5b29d5b9c5dee",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-08-04T08:48:00",
+            "status": 2,
+            "modelName": "demo-ideal",
+            "promptVersion": "demo",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.software",
+            "resolution": 40,
+            "resolvedAt": "2026-08-04T09:47:00",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-08-04T08:48:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura SM-2026-1190 — Serverovna Mrak s.r.o., 5 929,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-08-04T08:48:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "demo"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "SM-2026-1190",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Serverovna Mrak s.r.o.",
+                            "country": "cz",
+                            "companyId": "90157389",
+                            "taxId": "CZ90157389",
+                            "vatId": "CZ90157389",
+                            "courtRegistration": "Spisová značka C 301144 vedená u Městského soudu v Praze",
+                            "address": {
+                                "street": "Datová",
+                                "houseNumber": "2048/1",
+                                "city": "Praha 4",
+                                "zip": "14000",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@serverovna-mrak.example",
+                                "phone": "+420000090330",
+                                "web": "www.serverovna-mrak.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "2519046733/2010",
+                                "iban": "CZ1620100000002519046733",
+                                "bic": "FIOBCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Zelený Terminál s.r.o.",
+                            "country": "cz",
+                            "companyId": "61204579",
+                            "taxId": "CZ61204579",
+                            "vatId": "CZ61204579",
+                            "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Serverová",
+                                "houseNumber": "1024/8",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@zeleny-terminal.example",
+                                "phone": "+420000230190",
+                                "web": "www.zeleny-terminal.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-08-03",
+                            "dueDate": "2026-08-17",
+                            "taxPointDate": "2026-08-03",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "20261190",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Hosting a správa serverů — 08/2026",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 4900,
+                                "totalPrice": 4900,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 4900,
+                                "tax": 1029,
+                                "total": 5929
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 4900,
+                            "totalVat": 1029,
+                            "totalAmount": 5929,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "SM-2026-1190.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-08-04T08:48:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "demo"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "SM-2026-1190",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Serverovna Mrak s.r.o.",
+                    "country": "cz",
+                    "companyId": "90157389",
+                    "taxId": "CZ90157389",
+                    "vatId": "CZ90157389",
+                    "courtRegistration": "Spisová značka C 301144 vedená u Městského soudu v Praze",
+                    "address": {
+                        "street": "Datová",
+                        "houseNumber": "2048/1",
+                        "city": "Praha 4",
+                        "zip": "14000",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@serverovna-mrak.example",
+                        "phone": "+420000090330",
+                        "web": "www.serverovna-mrak.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "2519046733/2010",
+                        "iban": "CZ1620100000002519046733",
+                        "bic": "FIOBCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Zelený Terminál s.r.o.",
+                    "country": "cz",
+                    "companyId": "61204579",
+                    "taxId": "CZ61204579",
+                    "vatId": "CZ61204579",
+                    "courtRegistration": "Spisová značka C 118845 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Serverová",
+                        "houseNumber": "1024/8",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@zeleny-terminal.example",
+                        "phone": "+420000230190",
+                        "web": "www.zeleny-terminal.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-08-03",
+                    "dueDate": "2026-08-17",
+                    "taxPointDate": "2026-08-03",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "20261190",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Hosting a správa serverů — 08/2026",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 4900,
+                        "totalPrice": 4900,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 4900,
+                        "tax": 1029,
+                        "total": 5929
+                    }
+                ],
+                "totals": {
+                    "totalBase": 4900,
+                    "totalVat": 1029,
+                    "totalAmount": 5929,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "SM-2026-1190.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.software",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

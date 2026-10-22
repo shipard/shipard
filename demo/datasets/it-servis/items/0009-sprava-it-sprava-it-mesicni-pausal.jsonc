@@ -1,0 +1,22 @@
+{
+    "format": "shpd.items.item",
+    "formatVersion": "1.0",
+    "code": "SPRAVA-IT",
+    "name": "Správa IT — měsíční paušál",
+    "kind": {
+        "code": "service",
+        "name": "Služba",
+        "itemType": 0
+    },
+    "salesPriceNoVat": 6500.0,
+    "unit": "mnth",
+    "accountingAccount": "602100",
+    "status": {
+        "docState": 40
+    },
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

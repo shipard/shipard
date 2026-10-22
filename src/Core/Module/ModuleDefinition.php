@@ -28,6 +28,8 @@ class ModuleDefinition
         public readonly array $lookups = [],
         public readonly array $alertChecks = [],
         public readonly array $keepOnReset = [],
+        /** @var list<array{key: string, table: string}> nastavení s id řádku tabulky, které `ds-reset` smaže spolu s ní */
+        public readonly array $clearSettingsOnReset = [],
         public readonly array $documentEventHandlers = [],
         public readonly array $accountItems = [],
         public readonly array $journalEventHandlers = [],
@@ -745,6 +747,32 @@ class ModuleDefinition
             }
         }
 
+        // clearSettingsOnReset — keys in `core_system_settings` (a keepOnReset
+        // table) that hold the id of a row of `table`. `ds-reset` deletes the
+        // key whenever it drops that table: the row is gone and the id would
+        // otherwise point at whatever row gets the same id next (#131 D42).
+        // Declared by the module that owns the key; `table` may belong to
+        // another module (it names where the id points).
+        $clearSettingsOnReset = [];
+        if (isset($data['clearSettingsOnReset'])) {
+            if (!is_array($data['clearSettingsOnReset']) || !array_is_list($data['clearSettingsOnReset'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': clearSettingsOnReset must be a JSON array of {key, table} objects",
+                );
+            }
+            foreach ($data['clearSettingsOnReset'] as $i => $item) {
+                if (!is_array($item)
+                    || !isset($item['key']) || !is_string($item['key']) || $item['key'] === ''
+                    || !isset($item['table']) || !is_string($item['table']) || $item['table'] === ''
+                ) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': clearSettingsOnReset[{$i}] requires non-empty 'key' and 'table'",
+                    );
+                }
+                $clearSettingsOnReset[] = ['key' => $item['key'], 'table' => $item['table']];
+            }
+        }
+
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -761,6 +789,7 @@ class ModuleDefinition
             lookups: $lookups,
             alertChecks: $alertChecks,
             keepOnReset: $keepOnReset,
+            clearSettingsOnReset: $clearSettingsOnReset,
             documentEventHandlers: $documentEventHandlers,
             accountItems: $accountItems,
             journalEventHandlers: $journalEventHandlers,

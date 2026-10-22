@@ -1,0 +1,125 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "2026448209",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Telekom Vlnka a.s.",
+        "country": "cz",
+        "companyId": "95278141",
+        "taxId": "CZ95278141",
+        "vatId": "CZ95278141",
+        "courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
+        "address": {
+            "street": "Anténní",
+            "houseNumber": "400/22",
+            "city": "Praha 10",
+            "zip": "10000",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "vyuctovani@telekom-vlnka.example",
+            "phone": "+420000404040",
+            "web": "www.telekom-vlnka.example"
+        },
+        "bankAccount": {
+            "accountNumber": "2874190350/0300",
+            "iban": "CZ0303000000002874190350",
+            "bic": "CEKOCZPP"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-09-06",
+        "dueDate": "2026-09-20",
+        "accountingDate": "2026-09-06",
+        "taxPointDate": "2026-09-06",
+        "vatObligationDate": "2026-09-06"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "2026448209"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "518201",
+                "name": "Telefonní poplatky"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 1890.0,
+            "totalPrice": 1890.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 1890.0,
+                "vatAmount": 396.9,
+                "vatTotal": 2286.9
+            },
+            "description": "Hlasové služby a mobilní tarify — 09/2026"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "518202",
+                "name": "Internetové služby"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 990.0,
+            "totalPrice": 990.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 990.0,
+                "vatAmount": 207.9,
+                "vatTotal": 1197.9
+            },
+            "description": "Internetové připojení 500/50 Mb/s — 09/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 2880.0,
+            "tax": 604.8,
+            "total": 3484.8
+        }
+    ],
+    "totals": {
+        "totalBase": 2880.0,
+        "totalVat": 604.8,
+        "totalAmount": 3484.8,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260053",
+            "sequenceNumber": 53
+        }
+    }
+}

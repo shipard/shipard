@@ -34,14 +34,25 @@ use Shipard\Module\Core\Exchange\Dataset\SeedContext;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
+use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
+use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Assets\AssetDocument;
+use Shipard\Module\Economy\Assets\AssetEventDocument;
+use Shipard\Module\Economy\Assets\Dataset\AssetEventsSeeder;
+use Shipard\Module\Economy\Assets\Dataset\AssetSeeder;
+use Shipard\Module\Economy\Bank\Dataset\BankStatementSeeder;
 use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
 use Shipard\Module\Economy\ExchangeRates\Dataset\ExchangeRatesSeeder;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListImporter;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderPeriodsSeeder;
+use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderSeeder;
+use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
+use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 use Shipard\Module\Economy\Items\Dataset\AccountingItemsSeeder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -60,7 +71,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * schématu `ds-upgrade` → nastavení ze sady → `ds-reset` (delegace,
  * respektuje `enableReset`; `--no-reset` přeskočí a doplňuje do
  * existujícího DS) → setup → fiskální roky → účetní položky → persons →
- * items → docs → registry → mail. Nenulový exit code při jakékoli chybě
+ * items → zakázky → karty majetku → docs → evidence období → události
+ * majetku → banka → registry → mail. Nenulový exit code při jakékoli chybě
  * záznamu. Testovatelné přes podtřídu (seamy getDataSourceDir /
  * buildResolver / runReset / runUpgrade / hasSettingsTable /
  * applySettingsBeforeReset / createContext / createSeeders / createPreflight /
@@ -297,8 +309,37 @@ class DatasetSeedCommand extends Command
         if (isset($ctx->tables['economy_items'])) {
             $seeders[] = new ItemSeeder(ItemApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $personApplier));
         }
+        // Zakázky (#131 fáze 2b) za osobami a položkami, před doklady — doklady
+        // je odkazují číslem (dimenze); evidence období až za doklady.
+        $hasWorkOrders = isset($ctx->tables[WorkOrderDocument::TABLE], $ctx->tables[WorkOrderDocument::ROWS_TABLE]);
+        if ($hasWorkOrders) {
+            $seeders[] = new WorkOrderSeeder(
+                WorkOrderImportApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables),
+                $party,
+                new ItemResolver($db),
+            );
+        }
+        // Majetek (#131 fáze 2c): karty před doklady — řádky pořízení je odkazují
+        // inventárním číslem (dimenze); události až za doklady, bez importního módu.
+        $hasAssets = isset($ctx->tables[AssetDocument::TABLE], $ctx->tables[AssetEventDocument::TABLE]);
+        if ($hasAssets) {
+            $seeders[] = new AssetSeeder($party);
+        }
         if (isset($ctx->tables['docs_core_heads'])) {
             $seeders[] = new DocumentSeeder(DocumentApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $ctx->dispatcher));
+        }
+        if ($hasWorkOrders && isset($ctx->tables['docs_core_heads'])) {
+            $seeders[] = new WorkOrderPeriodsSeeder();
+        }
+        if ($hasAssets) {
+            $seeders[] = new AssetEventsSeeder();
+        }
+        // Bankovní výpisy (#131 fáze 2a) až za doklady: mikroengine při stavu 40
+        // dohledává otevřené předpisy; dispatcher je nutný, jinak se nezaúčtuje nic.
+        if (isset($ctx->tables['economy_bank_transactions'])) {
+            $seeders[] = new BankStatementSeeder(
+                BankStatementApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables, $ctx->dispatcher),
+            );
         }
         if (isset($ctx->tables['base_registry_documents'])) {
             $seeders[] = new RegistrySeeder(

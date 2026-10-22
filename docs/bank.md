@@ -457,7 +457,10 @@ trigger `ClearingRerouteHandler` / dávka `accbal-match` (`docs/accbal.md`
 clearing řádek **zmizí** — není to storno protizápisem. Proto na clearing
 účtech v každém okamžiku sedí přesně jen **aktuálně nespárované** transakce;
 nenulový zůstatek/obrat = existují nespárované platby (= signál k akci, ne
-chyba účtování).
+chyba účtování). Výjimka: platbu bez partnera a VS (výplata mezd, odvody)
+engine nikdy nedohledá — přeúčtuje ji **interní doklad** MD 331 / DAL 261300,
+který zůstatek vynuluje a v saldokontu je zápornou úhradou téhož případu
+(`docs/accbal.md` §4.4, #131 fáze 2a).
 
 ### 6.4 Kontrolní příklady
 
@@ -504,6 +507,11 @@ v detailu transakce (vzor `accounting.md` §9).
 Stará a nová instance běží na oddělených hostech — migrace jede přes
 **výměnný formát** posílaný HTTP (vzor docs/persons/items), ne přes sdílený
 filesystem.
+
+Tentýž applier pohání i **sekci `bank/` datové sady** (#131 fáze 2a):
+obálka `shpd.dataset.bankStatement.v1` nese účet kódem a transakce jen
+s tím, co dodá banka — partnera dohledá `resolvePartner`, zaúčtování
+a předpis engine; viz `docs/datasets.md` § 1 → Obálka výpisu.
 
 **Nová strana — hotová.** Formát `shpd.bank.statement.v1` (hlavička výpisu +
 pole transakcí, schéma v `modules/core/exchange/schemas/`) + `BankStatementApplier`

@@ -1,0 +1,151 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "2026071245",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Energie Jiskra a.s.",
+        "country": "cz",
+        "companyId": "31647090",
+        "taxId": "CZ31647090",
+        "vatId": "CZ31647090",
+        "courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
+        "address": {
+            "street": "Elektrárenská",
+            "houseNumber": "1",
+            "city": "Ostrava",
+            "zip": "70200",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "zakaznici@energie-jiskra.example",
+            "phone": "+420000610100",
+            "web": "www.energie-jiskra.example"
+        },
+        "bankAccount": {
+            "accountNumber": "2190463856/0800",
+            "iban": "CZ2008000000002190463856",
+            "bic": "GIBACZPX"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-02-12",
+        "dueDate": "2026-02-26",
+        "accountingDate": "2026-02-12",
+        "taxPointDate": "2026-01-31",
+        "vatObligationDate": "2026-01-31",
+        "periodFrom": "2026-01-01",
+        "periodTo": "2026-01-31"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "2026071245"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
+            },
+            "unit": "mwh",
+            "quantity": 0.728,
+            "unitPrice": 3190.0,
+            "totalPrice": 2322.32,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 2322.32,
+                "vatAmount": 487.69,
+                "vatTotal": 2810.01
+            },
+            "description": "Silová elektřina — produkt STANDARD"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 2,
+            "item": {
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
+            },
+            "unit": "mwh",
+            "quantity": 0.728,
+            "unitPrice": 2015.0,
+            "totalPrice": 1466.92,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 1466.92,
+                "vatAmount": 308.05,
+                "vatTotal": 1774.97
+            },
+            "description": "Distribuce elektřiny vč. systémových služeb"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 3,
+            "item": {
+                "ourCode": "502100",
+                "name": "Spotřeba energie (elektřina)"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 168.0,
+            "totalPrice": 168.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 168.0,
+                "vatAmount": 35.28,
+                "vatTotal": 203.28
+            },
+            "description": "Stálý plat za jistič 3×25 A"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 3957.24,
+            "tax": 831.02,
+            "total": 4788.26
+        }
+    ],
+    "totals": {
+        "totalBase": 3957.24,
+        "totalVat": 831.02,
+        "totalAmount": 4788.0,
+        "totalRounding": -0.26
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260012",
+            "sequenceNumber": 12
+        }
+    }
+}

@@ -1,0 +1,74 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "accountingDocument",
+    "docText": "Počáteční stav bankovních účtů",
+    "dates": {
+        "issueDate": "2026-01-01",
+        "dueDate": "2026-01-15",
+        "accountingDate": "2026-01-01",
+        "taxPointDate": "2026-01-01",
+        "vatObligationDate": "2026-01-01"
+    },
+    "fiscalPeriodType": "opening",
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "none",
+        "place": "domestic",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 1,
+            "unitPrice": 0.0,
+            "totalPrice": 300000.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 300000.0,
+                "vatAmount": 0.0,
+                "vatTotal": 300000.0
+            },
+            "description": "Počáteční stav účtu BU1",
+            "account": "221100",
+            "accSide": "debit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 2,
+            "unitPrice": 0.0,
+            "totalPrice": 300000.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 300000.0,
+                "vatAmount": 0.0,
+                "vatTotal": 300000.0
+            },
+            "description": "Počáteční účet rozvažný",
+            "account": "701100",
+            "accSide": "credit"
+        }
+    ],
+    "totals": {
+        "totalBase": 300000.0,
+        "totalVat": 0.0,
+        "totalAmount": 300000.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "60260001",
+            "sequenceNumber": 1
+        }
+    }
+}

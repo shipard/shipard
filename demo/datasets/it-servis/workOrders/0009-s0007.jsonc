@@ -1,0 +1,79 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0007",
+        "sequenceNumber": 7,
+        "numberSeries": "S",
+        "title": "Správa IT — Knihkupectví Stránka s.r.o.",
+        "state": "finished",
+        "dateStart": "2025-09-01",
+        "dateEnd": "2026-07-31",
+        "customer": {
+            "name": "Knihkupectví Stránka s.r.o.",
+            "country": "cz",
+            "companyId": "90462718",
+            "taxId": "CZ90462718",
+            "vatId": "CZ90462718"
+        },
+        "currency": "czk",
+        "invoicing": {
+            "periodicity": "month",
+            "invoiceFrom": "2026-01-01",
+            "docText": "Správa IT — paušál {období}"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "Správa IT — měsíční paušál",
+            "quantity": 1.0,
+            "unit": "mnth",
+            "unitPrice": 4800.0,
+            "vatCode": "cz-120"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "state": "issued",
+            "docNumber": "1260007"
+        },
+        {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "state": "issued",
+            "docNumber": "1260020"
+        },
+        {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "state": "issued",
+            "docNumber": "1260032"
+        },
+        {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "state": "issued",
+            "docNumber": "1260045"
+        },
+        {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "state": "issued",
+            "docNumber": "1260061"
+        },
+        {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260074"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "state": "issued",
+            "docNumber": "1260088"
+        }
+    ]
+}

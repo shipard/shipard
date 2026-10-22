@@ -18,7 +18,7 @@ use Shipard\Core\Database\DataSourceConnection;
  */
 class SettingsStore implements KeyValueStore
 {
-    private const string TABLE = 'core_system_settings';
+    public const string TABLE = 'core_system_settings';
 
     /** @var array<string, mixed> cache klíč → dekódovaná hodnota (vč. null pro "neexistuje") */
     private array $cache = [];

@@ -1,0 +1,104 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "source": {
+        "kind": "workOrder"
+    },
+    "docType": "invoiceIssued",
+    "docText": "Správa IT — paušál říjen 2026",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Galvanovna Pokorný a syn s.r.o.",
+        "country": "cz",
+        "companyId": "18493068",
+        "taxId": "CZ18493068",
+        "vatId": "CZ18493068",
+        "address": {
+            "street": "Pokovovací",
+            "houseNumber": "3301/2",
+            "city": "Vyškov",
+            "zip": "68201",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "uctarna@galvanovna-pokorny.example",
+            "phone": "+420000348120",
+            "web": "www.galvanovna-pokorny.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-10-01",
+        "dueDate": "2026-10-15",
+        "accountingDate": "2026-10-01",
+        "taxPointDate": "2026-10-01",
+        "vatObligationDate": "2026-10-01",
+        "periodFrom": "2026-10-01",
+        "periodTo": "2026-10-31"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260127"
+    },
+    "dimensions": {
+        "workOrder": "S0005"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "SPRAVA-IT",
+                "name": "Správa IT — měsíční paušál"
+            },
+            "unit": "mnth",
+            "quantity": 1.0,
+            "unitPrice": 17500.0,
+            "totalPrice": 17500.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-120",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 17500.0,
+                "vatAmount": 3675.0,
+                "vatTotal": 21175.0
+            },
+            "description": "Správa IT — měsíční paušál"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-120",
+            "vatPct": 21.0,
+            "base": 17500.0,
+            "tax": 3675.0,
+            "total": 21175.0
+        }
+    ],
+    "totals": {
+        "totalBase": 17500.0,
+        "totalVat": 3675.0,
+        "totalAmount": 21175.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260127",
+            "sequenceNumber": 127
+        },
+        "importOwnBankAccount": "BU1"
+    }
+}

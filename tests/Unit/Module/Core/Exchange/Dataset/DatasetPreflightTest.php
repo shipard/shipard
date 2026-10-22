@@ -87,6 +87,87 @@ class DatasetPreflightTest extends TestCase
      * @param array<string, mixed> $override
      * @return array<string, mixed>
      */
+    /**
+     * Výpis sekce bank (#131 fáze 2a): příjem od odběratele, výplata mezd bez
+     * partnera a VS, poplatek s výslovným pohybem.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function bankStatement(array $override = []): array
+    {
+        return array_replace([
+            'format'      => 'shpd.dataset.bankStatement.v1',
+            'bankAccount' => 'BU1',
+            'statement'   => [
+                'statementNumber' => '1/2026', 'externalId' => 'BU1-2026-01', 'periodStart' => '2026-01-01', 'periodEnd' => '2026-01-31',
+                'openingBalance' => 480000.0, 'closingBalance' => 417647.0, 'currency' => 'CZK',
+            ],
+            'transactions' => [
+                ['externalId' => 'BU1-202601-001', 'amount' => -70896.0, 'dateTransaction' => '2026-01-12',
+                 'counterpartyAccount' => '1000000019/0800', 'counterpartyName' => 'Hromadný příkaz — mzdy', 'message' => 'Výplata mezd 12/2025'],
+                ['externalId' => 'BU1-202601-002', 'amount' => 8712.0, 'dateTransaction' => '2026-01-13',
+                 'counterpartyAccount' => '2440913574/0300', 'counterpartyName' => 'Autodoprava Kopretina s.r.o.', 'paymentReference' => '1260001'],
+                ['externalId' => 'BU1-202601-003', 'amount' => -169.0, 'dateTransaction' => '2026-01-31',
+                 'message' => 'Poplatek za vedení účtu', 'operation' => 'fee.out'],
+            ],
+            'docState' => 40,
+        ], $override);
+    }
+
+    /**
+     * Obálka zakázky (#131 fáze 2b, D30) — periodická s předpisem a dvěma
+     * vystavenými obdobími (jedno koncept měsíce kotvy).
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function workOrder(array $override = []): array
+    {
+        return array_replace([
+            'format'    => 'shpd.dataset.workOrder.v1',
+            'workOrder' => [
+                'number' => 'S0001', 'sequenceNumber' => 1, 'numberSeries' => 'S', 'title' => 'Správa IT — Kopretina',
+                'state' => 'confirmed', 'dateStart' => '2023-04-01',
+                'customer' => ['name' => 'Autodoprava Kopretina s.r.o.', 'country' => 'cz', 'companyId' => '12345678', 'taxId' => 'CZ12345678', 'vatId' => 'CZ12345678'],
+                'currency' => 'czk',
+                'invoicing' => [
+                    'periodicity' => 'month', 'invoiceFrom' => '2026-01-01', 'docText' => 'Správa IT — paušál {období}',
+                    'numberSeries' => ['docType' => 'invno'], 'bankAccount' => 'BU2',
+                ],
+            ],
+            'rows' => [
+                ['item' => 'SPRAVA-IT', 'description' => 'Správa IT — měsíční paušál', 'quantity' => 1.0, 'unit' => 'mnth', 'unitPrice' => 16000.0, 'vatCode' => 'cz-120'],
+            ],
+            'periods' => [
+                ['from' => '2026-01-01', 'to' => '2026-01-31', 'state' => 'issued', 'docNumber' => '1260001'],
+                ['from' => '2026-10-01', 'to' => '2026-10-31', 'state' => 'issued', 'docNumber' => '!0000000155'],
+            ],
+        ], $override);
+    }
+
+    /**
+     * Obálka karty majetku (#131 fáze 2c, D40) — server zařazený ručně,
+     * typ názvem, účetní skupina kódem.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    public static function asset(array $override = []): array
+    {
+        return array_replace([
+            'format' => 'shpd.dataset.asset.v1',
+            'asset'  => [
+                'assetNumber' => 'MA0001', 'name' => 'Server 1U, 2× CPU, 64 GB RAM', 'type' => 'Výpočetní technika',
+                'category' => 'tangible', 'tracking' => 'single', 'accountingGroup' => '022',
+                'taxMethod' => 'straight', 'taxRule' => 'cz-1', 'accMethod' => 'as_tax', 'state' => 'confirmed',
+            ],
+            'events' => [
+                ['kind' => 'activation', 'scope' => 'both', 'date' => '2026-02-14', 'amount' => 150000.0, 'origin' => 'manual'],
+            ],
+        ], $override);
+    }
+
     public static function exchangeRateList(array $override = []): array
     {
         return array_merge([
@@ -120,6 +201,112 @@ class DatasetPreflightTest extends TestCase
     }
 
     // ── kurzovní lístky (#121 D10) ─────────────────────────────────────────
+
+    public function testBankStatementsAreValidatedAgainstSchema(): void
+    {
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'bank' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('bank/0001-bu1-2026-01.jsonc', self::bankStatement());
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidBankStatementIsAnError(): void
+    {
+        // Partner se v sadě nepřenáší (partnerId), účet jde kódem, stav jen 10 / 40.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'bank' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('bank/0001-bad.jsonc', self::bankStatement([
+                'docState' => 80,
+                'transactions' => [['externalId' => 'x', 'amount' => 1.0, 'dateTransaction' => '2026-01-02', 'partnerId' => 5]],
+            ]));
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('bank/0001-bad.jsonc', $result['errors'][0]);
+    }
+
+    public function testWorkOrdersAreValidatedAgainstSchema(): void
+    {
+        // #131 fáze 2b: obálka zakázky s přirozenými klíči; období jen vystavená.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'workOrders' => 2, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('workOrders/0001-s0001.jsonc', self::workOrder());
+            $w->writeJsonc('workOrders/0002-p0001.jsonc', [
+                'format'    => 'shpd.dataset.workOrder.v1',
+                'workOrder' => ['number' => 'P0001', 'numberSeries' => 'P', 'title' => 'Výměna sítě', 'state' => 'finished',
+                                'dateStart' => '2026-03-17', 'dateEnd' => '2026-04-22', 'customer' => ['name' => 'X', 'companyId' => '1']],
+            ]);
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidWorkOrderIsAnError(): void
+    {
+        // Reference jsou přirozené klíče (řada kódem, ne id), období jen `issued` s dokladem.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'workOrders' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('workOrders/0001-bad.jsonc', self::workOrder([
+                'workOrder' => ['numberSeries' => 3] + self::workOrder()['workOrder'],
+                'periods'   => [['from' => '2026-03-01', 'to' => '2026-03-31', 'state' => 'planned']],
+            ]));
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('workOrders/0001-bad.jsonc', $result['errors'][0]);
+    }
+
+    public function testAssetsAreValidatedAgainstSchema(): void
+    {
+        // #131 fáze 2c: obálka karty s přirozenými klíči; události s původem,
+        // drobný majetek s daty a cenou na kartě, cizí majetek s vlastníkem.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'assets' => 2, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('assets/0001-ma0001.jsonc', self::asset());
+            $w->writeJsonc('assets/0002-ma0002.jsonc', [
+                'format' => 'shpd.dataset.asset.v1',
+                'asset'  => [
+                    'assetNumber' => 'MA0002', 'name' => 'Vrtačka', 'category' => 'small', 'tracking' => 'single',
+                    'foreign' => true, 'owner' => ['name' => 'Půjčovna s.r.o.', 'country' => 'cz', 'companyId' => '12345678'],
+                    'acquiredDate' => '2025-03-01', 'disposedDate' => '2026-01-31', 'price' => 4990.0, 'state' => 'archived',
+                ],
+            ]);
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
+        $this->assertSame([], $result['warnings']);
+    }
+
+    public function testInvalidAssetIsAnError(): void
+    {
+        // Reference jsou přirozené klíče (typ názvem, ne id), události nesou původ jen manual / import.
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'assets' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $w->writeJsonc('assets/0001-bad.jsonc', self::asset([
+                'asset'  => ['type' => 5] + self::asset()['asset'],
+                'events' => [['kind' => 'depreciation', 'scope' => 'acc', 'date' => '2026-03-31', 'amount' => 3000.0, 'origin' => 'system']],
+            ]));
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString('assets/0001-bad.jsonc', $result['errors'][0]);
+    }
 
     public function testExchangeRateListsAreValidatedAgainstSchema(): void
     {

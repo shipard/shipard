@@ -1,0 +1,73 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "accountingDocument",
+    "docText": "Přeúčtování z nespárovaných plateb: Záloha na daň 06/2026",
+    "dates": {
+        "issueDate": "2026-07-20",
+        "dueDate": "2026-08-03",
+        "accountingDate": "2026-07-20",
+        "taxPointDate": "2026-07-20",
+        "vatObligationDate": "2026-07-20"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "none",
+        "place": "domestic",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "25"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 1,
+            "unitPrice": 0.0,
+            "totalPrice": 12986.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 12986.0,
+                "vatAmount": 0.0,
+                "vatTotal": 12986.0
+            },
+            "description": "Záloha na daň z příjmů",
+            "account": "342100",
+            "accSide": "debit"
+        },
+        {
+            "rowKind": "item",
+            "operation": "acc.record",
+            "orderPos": 2,
+            "unitPrice": 0.0,
+            "totalPrice": 12986.0,
+            "priceCalcMode": "fromTotal",
+            "computed": {
+                "vatBase": 12986.0,
+                "vatAmount": 0.0,
+                "vatTotal": 12986.0
+            },
+            "description": "Přeúčtování z nespárovaných plateb",
+            "account": "261300",
+            "accSide": "credit"
+        }
+    ],
+    "totals": {
+        "totalBase": 12986.0,
+        "totalVat": 0.0,
+        "totalAmount": 12986.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "60260025",
+            "sequenceNumber": 25
+        }
+    }
+}

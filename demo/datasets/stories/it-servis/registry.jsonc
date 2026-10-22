@@ -1,0 +1,65 @@
+// Spisovna příběhu „IT servis“: servisní smlouvy s odběrateli, pojistka,
+// nájemní smlouva. Platnosti relativně ke kotvě — část smluv končí do
+// 30 dnů, aby se ukázalo upozornění na blížící se konec platnosti
+// (RegistryExpirationAlertCheck hlídá 30 / 7 dní).
+//
+// `partner` = klíč z partners.jsonc, `created` {month, day, time} okamžik
+// založení v sadě, `validFrom` {month, day}, `validTo` {afterAnchorDays}
+// | {month, day} | {years} (od validFrom), `kindFields` dle druhu
+// (docKinds.jsonc) — contractNumber / validFrom / validTo doplní generátor.
+[
+	{
+		"docType": "contract", "template": "contract", "binder": "Smlouvy",
+		"title": "Servisní smlouva — Autodoprava Kopretina s.r.o.", "partner": "kopretina",
+		"refNumber": "SML-2026-001",
+		"created": { "month": -9, "day": 2, "time": "09:30" },
+		"validFrom": { "month": -9, "day": 1 }, "validTo": { "afterAnchorDays": 25 },
+		"summary": "Servisní smlouva na správu IT infrastruktury: měsíční paušál, reakční doba do 8 hodin, výpovědní doba 3 měsíce.",
+		"kindFields": { "subject": "Správa IT infrastruktury, 12 pracovních stanic a server", "noticePeriod": "3 měsíce", "signedDate": { "month": -9, "day": 1 } },
+	},
+	{
+		"docType": "contract", "template": "contract", "binder": "Smlouvy",
+		"title": "Servisní smlouva — Dentální klinika Úsměvov s.r.o.", "partner": "usmevov",
+		"refNumber": "SML-2026-004",
+		"created": { "month": -9, "day": 15, "time": "14:05" },
+		"validFrom": { "month": -9, "day": 15 }, "validTo": { "afterAnchorDays": 12 },
+		"summary": "Servisní smlouva na správu IT kliniky včetně zálohování ordinačního softwaru; reakční doba do 4 hodin.",
+		"kindFields": { "subject": "Správa IT kliniky, zálohování a dohled", "noticePeriod": "2 měsíce", "signedDate": { "month": -9, "day": 14 } },
+	},
+	{
+		"docType": "contract", "template": "contract", "binder": "Smlouvy",
+		"title": "Servisní smlouva — Hotel Modrý Jelen s.r.o.", "partner": "jelen",
+		"refNumber": "SML-2026-002",
+		"created": { "month": -9, "day": 8, "time": "10:15" },
+		"validFrom": { "month": -9, "day": 1 }, "validTo": { "afterAnchorDays": 160 },
+		"summary": "Servisní smlouva na správu hotelové sítě, Wi-Fi pro hosty a rezervačního systému.",
+		"kindFields": { "subject": "Správa hotelové sítě a rezervačního systému", "noticePeriod": "3 měsíce", "signedDate": { "month": -9, "day": 7 } },
+	},
+	{
+		"docType": "contract", "template": "contract", "binder": "Smlouvy",
+		"title": "Servisní smlouva — Wolkenschiff Logistik GmbH", "partner": "wolkenschiff",
+		"refNumber": "SML-2026-003",
+		"created": { "month": -9, "day": 20, "time": "11:40" },
+		"validFrom": { "month": -9, "day": 1 }, "validTo": { "years": 2 },
+		"summary": "Rámcová servisní smlouva na vzdálenou správu IT pobočky v Brně, fakturace v EUR.",
+		"kindFields": { "subject": "Vzdálená správa IT pobočky Brno", "noticePeriod": "3 měsíce", "signedDate": { "month": -9, "day": 19 } },
+	},
+	{
+		"docType": "insurance", "template": "insurance", "binder": "Pojištění",
+		"title": "Pojištění odpovědnosti za škodu — Pojišťovna Deštník a.s.", "partner": "destnik",
+		"refNumber": "POJ-884512",
+		"created": { "month": -9, "day": 5, "time": "08:50" },
+		"validFrom": { "month": -9, "day": 1 }, "validTo": { "years": 1 },
+		"summary": "Pojištění profesní odpovědnosti za škodu způsobenou při poskytování IT služeb, limit plnění 5 000 000 Kč.",
+		"kindFields": { "insurer": "Pojišťovna Deštník a.s.", "insuredSubject": "Profesní odpovědnost při poskytování IT služeb", "annualPremium": 28400, "currency": "CZK" },
+	},
+	{
+		"docType": "contract", "template": "lease", "binder": "Nájem",
+		"title": "Nájemní smlouva — kancelář Serverová 1024/8", "partner": "patro",
+		"refNumber": "NS-2024-118",
+		"created": { "month": -9, "day": 3, "time": "16:20" },
+		"validFrom": { "month": -9, "day": 1 }, "validTo": { "afterAnchorDays": 70 },
+		"summary": "Nájemní smlouva na kancelářské prostory 86 m² včetně serverovny; nájemné 18 000 Kč měsíčně, služby 2 400 Kč.",
+		"kindFields": { "subject": "Nájem kancelářských prostor 86 m² vč. serverovny", "noticePeriod": "6 měsíců", "signedDate": { "month": -9, "day": 1 } },
+	},
+]

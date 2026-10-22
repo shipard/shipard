@@ -1,0 +1,65 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "cashDocument",
+    "selfParty": "customer",
+    "cashDesk": "POK",
+    "cashDirection": 2,
+    "dates": {
+        "issueDate": "2026-02-08",
+        "dueDate": "2026-02-08",
+        "accountingDate": "2026-02-08",
+        "taxPointDate": "2026-02-08",
+        "vatObligationDate": "2026-02-08"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "none",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "cash",
+        "paymentReference": "3"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "518203",
+                "name": "Poštovné"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 130.0,
+            "totalPrice": 130.0,
+            "priceCalcMode": "fromUnitPrice",
+            "computed": {
+                "vatBase": 130.0,
+                "vatAmount": 0.0,
+                "vatTotal": 130.0
+            },
+            "description": "Poštovné — doporučené zásilky"
+        }
+    ],
+    "totals": {
+        "totalBase": 130.0,
+        "totalVat": 0.0,
+        "totalAmount": 130.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "31POK2600003",
+            "sequenceNumber": 3
+        },
+        "numberSeriesCode": "POK"
+    }
+}

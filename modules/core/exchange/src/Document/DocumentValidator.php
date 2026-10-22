@@ -274,11 +274,16 @@ final class DocumentValidator
 
         $declaredF = round((float) $declared, 2);
 
+        // Účetní doklad (cmnbkp): celková částka je obrat jedné strany
+        // (`AccountingDocument` sčítá řádky MD), ne součet obou stran kontace.
+        $debitOnly = ($canonical['docType'] ?? null) === 'accountingDocument';
+
         // (1) base, (2) base × (1 + vat.pct/100)
         $sumBase = 0.0;
         $sumWithVat = 0.0;
         foreach ($rows as $row) {
             if (!is_array($row)) continue;
+            if ($debitOnly && ($row['accSide'] ?? null) === 'credit') continue;
             $rowBase = $row['totalPrice'] ?? null;
             if ($rowBase === null || !is_numeric($rowBase)) continue;
             $rowBaseF = (float) $rowBase;
@@ -474,7 +479,9 @@ final class DocumentValidator
      * `[].total` (jen z kompletního recapu — zrcadlí sémantiku
      * {@see VatModeDerivation}), fallback `totals.totalBase` resp.
      * `totals.totalAmount − totalRounding` (zaokrouhlení celkové částky
-     * se řádků netýká).
+     * se řádků netýká). Párové řádky samovyměření (`isReversePair`, dump
+     * dokladu se samovyměřením) nesou tentýž základ podruhé — do součtu
+     * nepatří, stejně jako v `DocDocument::validateDeclaredRecap`.
      */
     private function rowsRecapReference(array $canonical, bool $fromTotal): ?float
     {
@@ -484,6 +491,9 @@ final class DocumentValidator
             $sum = 0.0;
             $complete = true;
             foreach ($vatRecap as $r) {
+                if (is_array($r) && ($r['isReversePair'] ?? null) === true) {
+                    continue;
+                }
                 if (!is_array($r) || !isset($r[$key]) || !is_numeric($r[$key])) {
                     $complete = false;
                     break;
@@ -520,7 +530,10 @@ final class DocumentValidator
      * výpočtu) bývá nekonzistentní a je tak aritmeticky odhalitelná.
      * Tolerance daně kryje haléřové zaokrouhlení i výpočet koeficientem
      * u dokladů s cenami s DPH. Reverse-charge páry a 0% řádky se
-     * přeskakují.
+     * přeskakují; řádek samovyměření (primární řádek, za kterým jde jeho
+     * pár `isReversePair` — tak ho skládá `DocDocument::buildVatRecapitulation`
+     * a vypisuje dump) má celkem = základ, daň se dodavateli neplatí
+     * (jako `noPayTax` v `DocDocument::validateDeclaredRecap`).
      *
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
@@ -530,7 +543,8 @@ final class DocumentValidator
         if (!is_array($vatRecap)) {
             return;
         }
-        foreach ($vatRecap as $i => $r) {
+        $entries = array_values($vatRecap);
+        foreach ($entries as $i => $r) {
             if (!is_array($r) || ($r['isReversePair'] ?? null) === true) {
                 continue;
             }
@@ -548,10 +562,14 @@ final class DocumentValidator
             $baseF = (float) $base;
             $taxF = (float) $tax;
             $totalF = (float) $total;
+            $selfAssessed = self::hasReversePair($entries, $i, $pctF);
 
             $problems = [];
-            if (abs($baseF + $taxF - $totalF) > 0.02) {
-                $problems[] = "základ {$baseF} + DPH {$taxF} ≠ celkem {$totalF}";
+            $expectedTotal = $selfAssessed ? $baseF : $baseF + $taxF;
+            if (abs($expectedTotal - $totalF) > 0.02) {
+                $problems[] = $selfAssessed
+                    ? "celkem {$totalF} ≠ základ {$baseF} (samovyměření, daň se dodavateli neplatí)"
+                    : "základ {$baseF} + DPH {$taxF} ≠ celkem {$totalF}";
             }
             $expectedTax = round($baseF * $pctF / 100.0, 2);
             if (abs($taxF - $expectedTax) > max(0.05, abs($baseF) * 0.001)) {
@@ -567,6 +585,24 @@ final class DocumentValidator
                 'message'  => 'Řádek rekapitulace DPH je vnitřně nekonzistentní: ' . implode('; ', $problems) . '.',
             ];
         }
+    }
+
+    /**
+     * Řádek `$index` je primární řádek samovyměření: hned za ním jde jeho
+     * oddaňovací pár (`isReversePair`) v téže sazbě. Pár dědí sazbu i daň
+     * primárního řádku (`DocDocument::buildVatRecapitulation`), exportér
+     * drží pořadí `order_pos`.
+     *
+     * @param list<mixed> $entries
+     */
+    private static function hasReversePair(array $entries, int $index, float $pct): bool
+    {
+        $next = $entries[$index + 1] ?? null;
+        if (!is_array($next) || ($next['isReversePair'] ?? null) !== true) {
+            return false;
+        }
+        $nextPct = $next['vatPct'] ?? null;
+        return !is_numeric($nextPct) || abs((float) $nextPct - $pct) < 0.001;
     }
 
     /**

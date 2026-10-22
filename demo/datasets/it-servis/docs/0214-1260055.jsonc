@@ -1,0 +1,94 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceIssued",
+    "selfParty": "supplier",
+    "customer": {
+        "name": "Wolkenschiff Logistik GmbH",
+        "country": "de",
+        "taxId": "DE314670256",
+        "vatId": "DE314670256",
+        "address": {
+            "street": "Hafenstraße",
+            "houseNumber": "118",
+            "city": "Köln",
+            "zip": "50678",
+            "country": "de"
+        },
+        "contact": {
+            "email": "buchhaltung@wolkenschiff-logistik.example",
+            "phone": "+490002094410",
+            "web": "www.wolkenschiff-logistik.example"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-04-26",
+        "dueDate": "2026-05-10",
+        "accountingDate": "2026-04-26",
+        "taxPointDate": "2026-04-26",
+        "vatObligationDate": "2026-04-26"
+    },
+    "currency": "EUR",
+    "exchangeRate": 24.91,
+    "vat": {
+        "mode": "fromBase",
+        "place": "intracom",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "1260055"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "sale.services",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "PRACE-H",
+                "name": "Servisní práce technika"
+            },
+            "unit": "hr",
+            "quantity": 11.0,
+            "unitPrice": 50.18,
+            "totalPrice": 551.98,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-202",
+                "pct": 0.0
+            },
+            "computed": {
+                "vatBase": 551.98,
+                "vatAmount": 0.0,
+                "vatTotal": 551.98
+            },
+            "description": "Servisní práce technika — 04/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-202",
+            "vatPct": 0.0,
+            "base": 551.98,
+            "tax": 0.0,
+            "total": 551.98
+        }
+    ],
+    "totals": {
+        "totalBase": 551.98,
+        "totalVat": 0.0,
+        "totalAmount": 551.98,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "1260055",
+            "sequenceNumber": 55
+        },
+        "importOwnBankAccount": "BU2"
+    }
+}

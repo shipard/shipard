@@ -1,0 +1,43 @@
+{
+    "format": "shpd.dataset.bankStatement.v1",
+    "bankAccount": "BU2",
+    "statement": {
+        "statementNumber": "8/2026",
+        "externalId": "BU2-2026-08",
+        "periodStart": "2026-08-01",
+        "periodEnd": "2026-08-31",
+        "openingBalance": 1015.98,
+        "closingBalance": 1957.98,
+        "currency": "EUR"
+    },
+    "transactions": [
+        {
+            "externalId": "BU2-202608-001",
+            "amount": 650.0,
+            "dateTransaction": "2026-08-13",
+            "counterpartyAccount": "DE18370400440532014860",
+            "counterpartyName": "Wolkenschiff Logistik GmbH",
+            "paymentReference": "1260107",
+            "exchangeRate": 24.68
+        },
+        {
+            "externalId": "BU2-202608-002",
+            "amount": -188.0,
+            "dateTransaction": "2026-08-18",
+            "counterpartyAccount": "NL69NWBK0481570693",
+            "counterpartyName": "Noordwolk Backup B.V.",
+            "paymentReference": "202618414",
+            "exchangeRate": 24.68
+        },
+        {
+            "externalId": "BU2-202608-003",
+            "amount": 480.0,
+            "dateTransaction": "2026-08-24",
+            "counterpartyAccount": "SK6709000000003914726058",
+            "counterpartyName": "Nitrianske Stroje s.r.o.",
+            "paymentReference": "1260106",
+            "exchangeRate": 24.68
+        }
+    ],
+    "docState": 40
+}

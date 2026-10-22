@@ -397,7 +397,9 @@ předloze. U vystavených dokladů je odvození vždy `computed`.
 
 **Samovyměření (D3):** má-li kterýkoli položkový řádek — po odvození kódu
 (§ 8.4) — kód s `reverseVatCode`, je rekapitulace přijatého dokladu vždy
-`computed` + info issue s důvodem „přenesení daňové povinnosti“.
+`computed` + info issue, které místo šablony „nešlo převzít“ vysvětlí
+situaci: dodavatel uvádí 0 % DPH, daň přiznává příjemce, rekapitulace se
+sestaví z řádků (daň na výstupu a nárok na odpočet).
 Rekapitulace dodavatele je z jeho pohledu (0 %, daň 0); naše nese nárok na
 odpočet a oddaňovací pár. Explicitní `recapSource: "declared"` (import ze
 starého Shipardu, s páry) zůstává beze změny.
@@ -446,17 +448,21 @@ slouží jen k dorovnání řádků a zůstává v canonicalu analýzy. Import
   (fromBase → Σ `base`, fromTotal → Σ `total`; fallback `totals`,
   tolerance per-řádkového zaokrouhlení) → warning **`rows_recap_mismatch`**
   na `rows`. Rekapitulace z dokladu je autoritativní — mismatch znamená
-  neúplné či chybně extrahované řádky. Stejnou kontrolu dělá při uložení
+  neúplné či chybně extrahované řádky. Párové řádky samovyměření
+  (`isReversePair: true`, dump dokladu se samovyměřením) nesou tentýž
+  základ podruhé a do součtu nepatří. Stejnou kontrolu dělá při uložení
   i `DocDocument` nad převzatou rekapitulací.
 - **Vnitřní aritmetika rekapitulace** — pro každý řádek recapu musí
   platit `base + tax = total` (±0,02) a `tax = base × pct/100`
   (±max(0,05; |base| × 0,001) — kryje haléře i výpočet koeficientem);
-  reverse-charge páry a 0% řádky se přeskakují. Porušení → warning
-  **`vat_recap_inconsistent`** na `vatRecap[i]`. Chytá rekapitulaci,
-  kterou model dopočítal pozpátku (typicky po chybně určeném režimu DPH)
-  místo opsání z dokladu. **Pozor:** u explicitního `declared` je to jen
-  warning, ne důvod k přepočtu — u přenesení daňové povinnosti `base + tax
-  ≠ total` platí a je správně.
+  reverse-charge páry a 0% řádky se přeskakují. Primární řádek
+  samovyměření (hned za ním jde jeho pár `isReversePair` v téže sazbě —
+  tak ho skládá `DocDocument::buildVatRecapitulation` a vypisuje dump) má
+  celkem = základ, daň se dodavateli neplatí; kontrola sazby platí dál.
+  Porušení → warning **`vat_recap_inconsistent`** na `vatRecap[i]`. Chytá
+  rekapitulaci, kterou model dopočítal pozpátku (typicky po chybně určeném
+  režimu DPH) místo opsání z dokladu. **Pozor:** u explicitního `declared`
+  je to jen warning, ne důvod k přepočtu.
 
 `totals.totalRounding` nese zaokrouhlení celkové částky se znaménkem
 (zaokrouhleno dolů = záporné, např. `-0.05`). I ono je informativní —
@@ -532,7 +538,10 @@ proti 69,99). Platí pro AI extrakci i ISDOC
   položkový řádek s DPH jako na faktuře (záporný základ). Stejné klíče platí i pro
   `operation` bankovní transakce (`shpd.bank.statement.v1`).
 - **`cashRegisterDocument`** (`cashreg`, prodejka) — povinný `cashDesk`,
-  bez `cashDirection` (pevně výstup); vratka = záporné řádky.
+  bez `cashDirection` (pevně výstup); vratka = záporné řádky. `dataset-dump`
+  oba pokladní typy vypisuje včetně `cashDesk` / `cashDirection`
+  (`DocumentExporter`, #131 krok 0a); `applyOptions.numberSeriesCode`
+  u nich nese kód pokladny (vázaná řada), applier ho ignoruje.
 - **`invoiceIssued` / `proformaIssued` / `invoiceReceived` / `proformaReceived` + `cashDesk`** —
   volitelný kód pokladny platí jen s `payment.method: "cash"` (faktura placená hotově →
   `cash_desk` hlavičky, účtuje se na pokladnu místo 311/321); s jinou
@@ -1333,7 +1342,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `rows_recap_mismatch` | warning | Součet položkových řádků neodpovídá rekapitulaci/totals dle efektivního režimu DPH — řádky nejspíš neúplné. |
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
 | `vat_mode_derived` | warning | `DocumentApplier` koriguje `vat_mode` podle `VatModeDerivation` (Σ řádků sedí na total, ne na base — nebo zrcadlově); nebo deklarované `none` u dokladu, jehož řádky mají kód se samovyměřením → `fromBase` (Bez DPH by rekapitulaci nestavěl). |
-| `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, nebo samovyměření — D3) — spočítá se z řádků. Zpráva nese důvod. |
+| `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, vynechaný řádek) — spočítá se z řádků; zpráva nese důvod. U samovyměření (D3) vlastní text: dodavatel uvádí 0 % DPH, daň přiznáváte vy, rekapitulace se sestaví z řádků (daň na výstupu a nárok na odpočet). |
 | `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |
@@ -1846,6 +1855,12 @@ s `details.issues`. Doklad se mění celý, nebo vůbec; ve stavu 40 se
 přegeneruje deník s pojistkou shodných obratů. Pravidla párování
 a uvolněné validace importu: `docs/assets.md` §5.7.
 
+**Datová sada** (#131 fáze 2c, D38, D40) nese karty v sekci `assets/`
+v obálce `shpd.dataset.asset.v1` — stejná struktura, místo id přirozené
+klíče (typ názvem, účetní skupina kódem, vlastník identifikátory) a původ
+události; seed jde přes `AssetDocument` / `AssetEventDocument` bez
+importního módu, applier importu se nepoužívá. Viz `docs/datasets.md` §1.
+
 ---
 
 ### Zakázky — `shpd.workOrders.workOrder.v1`
@@ -1903,7 +1918,10 @@ kódy, pravidla typu z `WorkOrderTypes` podle řady (strana jen u externích,
 `parent` jen u jednorázových, `invoicing` a `rows` jen u periodického typu;
 periodická mimo Koncept potřebuje periodicitu a aspoň jeden řádek),
 `invoicing.numberSeries` typu efektivního dokladu (zakázka → druh), nadřazená
-podle čísla (`parent_not_found` — runner posílá nadřazené dřív). Co verifier
+podle čísla (`parent_not_found` — runner posílá nadřazené dřív). Kódy DPH
+se ověřují proti kódům země výchozí registrace pro směr cílového dokladu
+bez ohledu na místo plnění (předpis zahraničního odběratele nese kód EU
+služeb, jako formulář řádků podle zákazníka). Co verifier
 nehlídá, hlídá `WorkOrderDocument` při zápisu (zákazník povinný při
 potvrzení, nadřazená ne periodická, cyklus, duplicitní číslo…) a applier
 odmítnutí překládá na cestu payloadu (`inv_periodicity` →
@@ -1941,7 +1959,10 @@ totožný s `apply`, nic se nezapíše. V read-only stavu zdroje projde
 **Pořadí importu (D26):** druhy a číselné řady zakázek (formát je nenese —
 runner je založí předem, I3) → osoby, položky, střediska → **zakázky**
 (nadřazené před podřízenými) → doklady s `dimensions.workOrder` = číslo
-zakázky. **Fakturovat od:** evidence vyfakturovaných období po importu
+zakázky. Datová sada (`dataset-dump` / `dataset-seed`) nese zakázky
+v obálce `shpd.dataset.workOrder.v1` se stejnou strukturou a přirozenými
+klíči místo id, druhy a řady v `setup/` — viz `docs/datasets.md`
+§ Obálka zakázky (#131 fáze 2b). **Fakturovat od:** evidence vyfakturovaných období po importu
 začíná prázdná, takže `invoicing.invoiceFrom` musí být první dosud
 nevyfakturované období (pravidlo runneru v `docs/work-orders.md` §6) —
 jinak by periodická fakturace vystavila období, která starý Shipard už

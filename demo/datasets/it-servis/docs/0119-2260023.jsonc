@@ -1,0 +1,101 @@
+{
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "docType": "invoiceReceived",
+    "docNumber": "202620418",
+    "selfParty": "customer",
+    "supplier": {
+        "name": "Licenční dům Klíček s.r.o.",
+        "country": "cz",
+        "companyId": "48360210",
+        "taxId": "CZ48360210",
+        "vatId": "CZ48360210",
+        "courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
+        "address": {
+            "street": "Softwarová",
+            "houseNumber": "9",
+            "city": "Brno",
+            "zip": "63900",
+            "country": "cz"
+        },
+        "contact": {
+            "email": "obchod@licencni-dum-klicek.example",
+            "phone": "+420000210560",
+            "web": "www.licencni-dum-klicek.example"
+        },
+        "bankAccount": {
+            "accountNumber": "1382659074/0100",
+            "iban": "CZ0801000000001382659074",
+            "bic": "KOMBCZPP"
+        }
+    },
+    "dates": {
+        "issueDate": "2026-04-08",
+        "dueDate": "2026-04-29",
+        "accountingDate": "2026-04-08",
+        "taxPointDate": "2026-04-08",
+        "vatObligationDate": "2026-04-08"
+    },
+    "currency": "CZK",
+    "exchangeRate": 1.0,
+    "vat": {
+        "mode": "fromBase",
+        "place": "domestic",
+        "registrationCountry": "cz",
+        "recapSource": "computed",
+        "calcSource": "header",
+        "controlStatementMode": "auto"
+    },
+    "payment": {
+        "method": "bankTransfer",
+        "paymentReference": "202620418"
+    },
+    "rows": [
+        {
+            "rowKind": "item",
+            "operation": "acc.entry",
+            "orderPos": 1,
+            "item": {
+                "ourCode": "518206",
+                "name": "Software a cloudové služby"
+            },
+            "unit": "pcs",
+            "quantity": 1.0,
+            "unitPrice": 11700.0,
+            "totalPrice": 11700.0,
+            "priceCalcMode": "fromUnitPrice",
+            "vat": {
+                "code": "cz-110",
+                "pct": 21.0
+            },
+            "computed": {
+                "vatBase": 11700.0,
+                "vatAmount": 2457.0,
+                "vatTotal": 14157.0
+            },
+            "description": "Licence kancelářského balíku, 25 uživatelů — Q2/2026"
+        }
+    ],
+    "vatRecap": [
+        {
+            "vatCode": "cz-110",
+            "vatPct": 21.0,
+            "base": 11700.0,
+            "tax": 2457.0,
+            "total": 14157.0
+        }
+    ],
+    "totals": {
+        "totalBase": 11700.0,
+        "totalVat": 2457.0,
+        "totalAmount": 14157.0,
+        "totalRounding": 0.0
+    },
+    "applyOptions": {
+        "targetDocState": 40,
+        "importNumber": {
+            "docNumber": "2260023",
+            "sequenceNumber": 23
+        }
+    }
+}

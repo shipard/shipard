@@ -1,0 +1,60 @@
+{
+    "format": "shpd.dataset.workOrder.v1",
+    "workOrder": {
+        "number": "S0009",
+        "sequenceNumber": 9,
+        "numberSeries": "S",
+        "title": "Správa IT — Realitní kancelář Domovník s.r.o.",
+        "state": "confirmed",
+        "dateStart": "2025-07-01",
+        "customer": {
+            "name": "Realitní kancelář Domovník s.r.o.",
+            "country": "cz",
+            "companyId": "66902452",
+            "taxId": "CZ66902452",
+            "vatId": "CZ66902452"
+        },
+        "currency": "czk",
+        "invoicing": {
+            "periodicity": "quarter",
+            "invoiceFrom": "2026-01-01",
+            "docText": "Správa IT — paušál {období}"
+        }
+    },
+    "rows": [
+        {
+            "item": "SPRAVA-IT",
+            "description": "Správa IT — měsíční paušál",
+            "quantity": 3.0,
+            "unit": "mnth",
+            "unitPrice": 8500.0,
+            "vatCode": "cz-120"
+        }
+    ],
+    "periods": [
+        {
+            "from": "2026-01-01",
+            "to": "2026-03-31",
+            "state": "issued",
+            "docNumber": "1260009"
+        },
+        {
+            "from": "2026-04-01",
+            "to": "2026-06-30",
+            "state": "issued",
+            "docNumber": "1260047"
+        },
+        {
+            "from": "2026-07-01",
+            "to": "2026-09-30",
+            "state": "issued",
+            "docNumber": "1260090"
+        },
+        {
+            "from": "2026-10-01",
+            "to": "2026-12-31",
+            "state": "issued",
+            "docNumber": "1260130"
+        }
+    ]
+}

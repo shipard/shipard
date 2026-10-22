@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\WorkOrders\Invoicing;
 
+use Dibi\Connection;
+
 /**
  * Otisk obsahu konceptu (`economy_work_orders_periods.content_hash`, D10):
  * sha256 normalizovaného JSON vybraných sloupců hlavičky a řádků
@@ -24,6 +26,21 @@ final class ContentHash
         'order_pos', 'row_kind', 'operation', 'item', 'description', 'quantity', 'unit', 'unit_price',
         'vat_code', 'cost_center', 'work_order',
     ];
+
+    /**
+     * Otisk uloženého dokladu (hlavička + řádky z databáze) — běh
+     * periodické fakturace po apply i seed datové sady (evidence období).
+     */
+    public static function ofStoredDocument(Connection $db, int $docId): string
+    {
+        $head = $db->fetch('SELECT * FROM [docs_core_heads] WHERE [id] = %i', $docId);
+        $head = $head === null ? [] : (is_array($head) ? $head : $head->toArray());
+        $rows = array_map(
+            static fn($r): array => is_array($r) ? $r : $r->toArray(),
+            $db->fetchAll('SELECT * FROM [docs_core_rows] WHERE [doc_head] = %i ORDER BY [order_pos], [id]', $docId),
+        );
+        return self::ofDocument($head, $rows);
+    }
 
     /**
      * @param array<string, mixed> $head

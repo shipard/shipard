@@ -1,0 +1,22 @@
+{
+    "format": "shpd.items.item",
+    "formatVersion": "1.0",
+    "code": "PRACE-H",
+    "name": "Servisní práce technika",
+    "kind": {
+        "code": "service",
+        "name": "Služba",
+        "itemType": 0
+    },
+    "salesPriceNoVat": 1250.0,
+    "unit": "hr",
+    "accountingAccount": "602100",
+    "status": {
+        "docState": 40
+    },
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

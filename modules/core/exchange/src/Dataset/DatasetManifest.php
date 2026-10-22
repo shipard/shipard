@@ -27,8 +27,12 @@ final class DatasetManifest
 
     public const DATE_MODE_FIXED = 'fixed';
 
-    /** Sekce sady v pořadí, v jakém se seedují. */
-    public const SECTIONS = ['setup', 'exchangeRates', 'persons', 'items', 'docs', 'registry', 'mail'];
+    /**
+     * Sekce sady v pořadí, v jakém se seedují (`bank` až za `docs` — předpisy
+     * musí existovat, #131 fáze 2a; `assets` před `docs` — řádky pořízení
+     * odkazují kartu inventárním číslem, #131 fáze 2c).
+     */
+    public const SECTIONS = ['setup', 'exchangeRates', 'persons', 'items', 'workOrders', 'assets', 'docs', 'bank', 'registry', 'mail'];
 
     private const NAME_PATTERN = '/^[a-z0-9][a-z0-9._-]{0,63}$/';
 

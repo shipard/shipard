@@ -32,6 +32,15 @@
         "economy_codebooks_vat_registrations"
     ],
 
+    // Řada účetních dokladů pro zaúčtování přiznání (#55 F4b, parametr
+    // vrstvy C economy.vat.filingAccountingSeries) je id řádku
+    // docs_core_number_series — ds-reset tabulku dropuje, takže klíč smaže
+    // s ní (#131 D42); ds-upgrade ho při založení řady „Majetek“ zafixuje
+    // na zbývající jedinou řadu cmnbkp.
+    "clearSettingsOnReset": [
+        { "key": "economy.vat.filingAccountingSeries", "table": "docs_core_number_series" }
+    ],
+
     "documentEventHandlers": [
         {
             // Save-time přiřazení instancí (D8) + on-demand koncept (D9).

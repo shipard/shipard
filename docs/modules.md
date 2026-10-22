@@ -402,6 +402,9 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `config[].id` | string | Ano | Ne | Globální identifikátor konfigurace |
 | `config[].file` | string | Ano | Ne | Relativní cesta ke konfiguračnímu JSONC souboru |
 | `keepOnReset` | string[] | Ne | Ne | Vlastní tabulky modulu, které `shpd-ds ds-reset` nesmaže |
+| `clearSettingsOnReset` | object[] | Ne | Ne | Nastavení v `core_system_settings` s id řádku tabulky, které `ds-reset` smaže spolu s ní (viz níže) |
+| `clearSettingsOnReset[].key` | string | Ano | Ne | Klíč nastavení (vlastní klíč modulu) |
+| `clearSettingsOnReset[].table` | string | Ano | Ne | Tabulka, jejíž id řádku klíč nese (smí být cizí) |
 | `settingsItems` | object[] | Ne | Ne | Položky v navigaci režimu Nastavení (viz níže) |
 | `settingsPages` | object[] | Ne | Ano | Server-driven stránky vlastností v Nastavení (viz níže) |
 | `documentEventHandlers` | object[] | Ne | Ne | Hooky na události dokumentů cizích tabulek (viz níže) |
@@ -731,6 +734,34 @@ deklaruje, co je systém a co data.
 ```
 
 Viz [docs/cli.md](cli.md) → `ds-reset`.
+
+### Pole `clearSettingsOnReset`
+
+Volitelné pole objektů `{key, table}`: nastavení v `core_system_settings`
+(tabulka je `keepOnReset`, reset ji nemaže), jehož hodnota je **id řádku**
+tabulky `table`. `ds-reset` takový klíč smaže, **jen když tabulku `table`
+skutečně dropuje** — řádek je pryč a id by po `ds-upgrade` ukázalo na
+cokoli, co stejné id dostane příště (#131 D42: řada „Majetek“ se po resetu
+nezaložila, protože provisioner vyplněné nastavení nepřepisuje, a klíč pak
+mířil na pokladní řadu). Po smazání klíč znovu nastaví provisionery
+`ds-upgrade`. S `--keep=<table>` klíč zůstává (id dál platí); na zdroji dat
+bez `core_system_settings` se nic nemaže. `--dry-run` klíče vypíše jako
+`[clear] <key> (id in <table>)`.
+
+Deklaruje modul, který klíč **vlastní**; `table` smí patřit jinému modulu
+(říká, kam id míří). Oba řetězce jsou povinné a neprázdné, jinak načtení
+modulu skončí chybou.
+
+```jsonc
+// modules/economy/assets/module.jsonc — řada účetních dokladů majetku
+"clearSettingsOnReset": [
+    { "key": "economy.assets.accountingSeries", "table": "docs_core_number_series" }
+]
+```
+
+Datové sady tytéž klíče nenesou (`SetupExporter::SETTINGS_EXCLUDED`,
+[docs/datasets.md](datasets.md)); test parity hlídá, že konstanta odpovídá
+deklaracím modulů.
 
 ### Pole `settingsItems`
 
