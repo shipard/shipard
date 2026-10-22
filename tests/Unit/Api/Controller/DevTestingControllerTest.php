@@ -69,7 +69,7 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertArrayHasKey(self::SET, $byName);
 		$this->assertSame(['name', 'title', 'country', 'profile', 'messages', 'runs', 'lastRunAt'], array_keys($byName[self::SET]));
 		$this->assertGreaterThanOrEqual(13, $byName[self::SET]['runs']);
-		$this->assertStringStartsWith('2026-10-16', (string) $byName[self::SET]['lastRunAt']);
+		$this->assertStringStartsWith('2026-10-20', (string) $byName[self::SET]['lastRunAt']);
 		$this->assertSame(0, $byName['cz-association']['runs'] ?? 0, 'sada bez složky výsledků má nula běhů');
 	}
 

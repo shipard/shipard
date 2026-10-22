@@ -52,7 +52,7 @@ final class EvalCatalogTest extends TestCase
         $sorted = $started;
         rsort($sorted, SORT_STRING);
         $this->assertSame($sorted, $started, 'nejnovější první');
-        $this->assertStringStartsWith('2026-10-16-', $runs[0]['_basename']);
+        $this->assertStringStartsWith('2026-10-20-', $runs[0]['_basename']);
         foreach ($runs as $run) {
             $this->assertSame(basename((string) $run['_file']), $run['_basename']);
             $this->assertSame(EvalRunStore::FORMAT, $run['format']);
