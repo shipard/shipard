@@ -242,6 +242,10 @@ def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonom
         for key in ("description", "supplierCode", "ean"):
             if row.get(key) is not None and not _text(row[key]):
                 bad(f"{where}: {key} není text")
+            # D102 (#103): účtenka kódy netiskne, takže je nesmí ani nést —
+            # ne-null hodnota mimo PDF by byla chyba sady (D14, kontrola D105).
+            if receipt and key != "description" and row.get(key) is not None:
+                bad(f"{where}: {key} na účtence (účtenka kódy netiskne)")
 
     if problems:
         raise DataFileError("\n".join(problems))

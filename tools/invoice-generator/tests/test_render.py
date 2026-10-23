@@ -8,6 +8,7 @@ from invoicegen.render import (
     GOTENBERG_FIELDS, NNBSP, fmt_date, fmt_iban, fmt_money, fmt_pct, fmt_phone, fmt_qty, fmt_zip,
     pdf_options_from_html, render_hash, render_html, render_kv_rows, render_rows, render_vat_recap,
 )
+from tests.fixtures import DATA_DOMESTIC, data
 
 D = Decimal
 
@@ -65,6 +66,25 @@ class RenderTest(unittest.TestCase):
         self.assertIn('<td class="c-disc">10%</td>', lines[1])
         self.assertNotIn("c-vat", html)
         self.assertIn('<td class="c-total">585.00</td>', lines[1])
+
+    def test_rows_code_column_and_item_details(self) -> None:
+        # D102 (#103): kód položky v prvním sloupci, popis a EAN pod názvem — jen když je řádek nese.
+        doc = data(DATA_DOMESTIC)
+        doc["rows"] = [
+            {"text": "Deska <dub>", "supplierCode": "DS-25", "ean": "4260999100013", "description": "Lamela A/B",
+             "qty": 1, "unit": "ks", "unitPrice": D("10.00"), "vatPct": 21},
+            {"text": "Doprava", "qty": 1, "unit": "ks", "unitPrice": D("5.00"), "vatPct": 21},
+        ]
+        computed = compute(doc, vat_treatment="standard")
+        lines = render_rows(computed, unit_display=None, code_column=True).split("\n")
+        self.assertTrue(lines[0].startswith(
+            '\t\t\t<tr class="row"><td class="c-code">DS-25</td><td class="c-text">Deska &lt;dub&gt;'
+            '<span class="item-detail">Lamela A/B</span><span class="item-detail">EAN 4260999100013</span></td>'
+        ), lines[0])
+        self.assertIn('<td class="c-code"></td><td class="c-text">Doprava</td>', lines[1])
+        plain = render_rows(computed, unit_display=None)
+        self.assertNotIn("c-code", plain)
+        self.assertIn("EAN 4260999100013", plain)  # detaily nezávisí na sloupci kódu
 
     def test_vat_recap_and_kv(self) -> None:
         html = render_vat_recap(self.computed)

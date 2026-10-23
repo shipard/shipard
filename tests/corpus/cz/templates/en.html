@@ -42,6 +42,9 @@
 	table.items thead th.h-unit { text-align: left; }
 	table.items td { padding: 2mm; border-bottom: 1px solid #e5e5e5; text-align: right; }
 	table.items td.c-text { text-align: left; padding-left: 0; }
+	table.items thead th.h-code, table.items td.c-code { text-align: left; padding-left: 0; white-space: nowrap; width: 1%; color: #777; }
+	table.items thead th.h-code + th.h-text, table.items td.c-code + td.c-text { padding-left: 2mm; }
+	table.items .item-detail { display: block; font-size: 8.5px; color: #777; }
 	table.items td.c-unit { text-align: left; color: #777; }
 
 	.sum { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-bottom: 8mm; }

@@ -57,6 +57,9 @@
 	table.items thead th.h-text { text-align: left; padding-left: 0; }
 	table.items td { padding: 1mm 1.5mm; text-align: right; border-bottom: 1px dotted #888; }
 	table.items td.c-text { text-align: left; padding-left: 0; }
+	table.items thead th.h-code, table.items td.c-code { text-align: left; padding-left: 0; white-space: nowrap; width: 1%; }
+	table.items thead th.h-code + th.h-text, table.items td.c-code + td.c-text { padding-left: 1.5mm; }
+	table.items .item-detail { display: block; font-size: 8px; color: #444; }
 	table.items td.c-unit { text-align: center; }
 
 	.sum { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3mm; break-inside: avoid; }

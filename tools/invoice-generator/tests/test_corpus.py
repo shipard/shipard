@@ -136,6 +136,10 @@ class ValidateDataFileTest(unittest.TestCase):
         self.rejects(with_row(DATA_RECEIPT, totalPrice=None, priceCalcMode="fromUnitPrice"), "totalPrice právě s")
         self.rejects(with_row(DATA_DOMESTIC, discountPct=D("100.5")), "discountPct")
         self.rejects(with_row(DATA_DOMESTIC, text=" x"), "chybí text")
+        # D102 (#103): účtenka kódy netiskne, data je nesmí nést
+        self.rejects(with_row(DATA_RECEIPT, supplierCode="PHM-95"), "na účtence")
+        self.rejects(with_row(DATA_RECEIPT, ean="4260999100013"), "na účtence")
+        validate(with_row(DATA_DOMESTIC, supplierCode="SP-18", ean="4260999100013"))
 
     def test_header_rules(self) -> None:
         self.rejects(data(DATA_DOMESTIC, template="z"), "neznámá šablona")

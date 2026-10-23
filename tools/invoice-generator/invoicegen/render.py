@@ -87,19 +87,31 @@ def esc(value: str) -> str:
 
 def render_rows(computed: dict, *, locale: str = "cs",
                 unit_display: dict[str, str] | None = UNIT_DISPLAY,
-                discount_column: bool = False, vat_column: bool = True) -> str:
+                discount_column: bool = False, vat_column: bool = True,
+                code_column: bool = False) -> str:
     """Řádky položek `<tr class="row">`. Výchozí volání = demo (bajtově shodné).
 
     `unit_display=None` tiskne jednotku doslova; `discount_column` přidá
     `<td class="c-disc">` za cenu/MJ; `vat_column=False` vynechá sloupec DPH
-    (doklad bez DPH).
+    (doklad bez DPH); `code_column` přidá `<td class="c-code">` s kódem
+    položky (`supplierCode`) před text. Popis řádku (`description`) a EAN
+    (`ean`) jdou drobně pod název (`<span class="item-detail">`), jen když
+    je řádek nese (#103 D102 — co je v očekávání, je na PDF).
     """
     units = unit_display or {}
     parts = []
     for row in computed["rows"]:
         unit = units.get(row["unit"], row["unit"])
-        cells = [
-            f'<td class="c-text">{esc(row["text"])}</td>',
+        text = esc(row["text"])
+        if row.get("description"):
+            text += f'<span class="item-detail">{esc(row["description"])}</span>'
+        if row.get("ean"):
+            text += f'<span class="item-detail">EAN {esc(row["ean"])}</span>'
+        cells = []
+        if code_column:
+            cells.append(f'<td class="c-code">{esc(row["supplierCode"]) if row.get("supplierCode") else ""}</td>')
+        cells += [
+            f'<td class="c-text">{text}</td>',
             f'<td class="c-qty">{fmt_qty(row["qty"], locale)}</td>',
             f'<td class="c-unit">{esc(unit)}</td>',
             f'<td class="c-price">{fmt_money(row["unitPrice"], locale)}</td>',

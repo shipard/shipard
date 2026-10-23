@@ -37,7 +37,7 @@ LABELS = {
         "bankTransfer": "Převodem", "card": "Platební kartou", "cash": "Hotově",
         "issue": "Datum vystavení", "tax": "Datum usk. zdan. plnění", "due": "Datum splatnosti",
         "period": "Období plnění", "saleDate": "Datum prodeje",
-        "hText": "Označení dodávky", "hQty": "Množství", "hUnit": "MJ", "hPrice": "Cena/MJ",
+        "hCode": "Kód", "hText": "Označení dodávky", "hQty": "Množství", "hUnit": "MJ", "hPrice": "Cena/MJ",
         "hDisc": "Sleva", "hVat": "DPH", "hTotalNet": "Celkem bez DPH", "hTotalGross": "Celkem s DPH",
         "hTotal": "Celkem",
         "rPct": "Sazba", "rBase": "Základ", "rTax": "DPH", "rTotal": "Celkem",
@@ -56,7 +56,7 @@ LABELS = {
         "bankTransfer": "Bank transfer", "card": "Paid by card", "cash": "Cash",
         "issue": "Invoice date", "tax": "Date of supply", "due": "Due date",
         "period": "Service period", "saleDate": "Date",
-        "hText": "Description", "hQty": "Qty", "hUnit": "Unit", "hPrice": "Unit price",
+        "hCode": "Code", "hText": "Description", "hQty": "Qty", "hUnit": "Unit", "hPrice": "Unit price",
         "hDisc": "Discount", "hVat": "VAT", "hTotalNet": "Amount (net)", "hTotalGross": "Amount (gross)",
         "hTotal": "Amount",
         "rPct": "VAT rate", "rBase": "Net", "rTax": "VAT", "rTotal": "Gross",
@@ -157,8 +157,13 @@ def template_values(data: dict, supplier: dict, profile: dict, computed: dict, *
             date_rows.append((labels["period"], f'<span class="num">{fmt_date(dates["periodFrom"], locale)} – '
                                                 f'{fmt_date(dates["periodTo"], locale)}</span>'))
 
+    # Sloupec kódu položky jen u dokladu, kde kód má aspoň jeden řádek (D102);
+    # doklad bez kódů vypadá jako dřív. Účtenka kódy nemá (validace dat).
+    code_column = any(row.get("supplierCode") for row in computed["rows"])
     head = [f'<th class="h-text">{labels["hText"]}</th>', f'<th class="h-qty">{labels["hQty"]}</th>',
             f'<th class="h-unit">{labels["hUnit"]}</th>', f'<th class="h-price">{labels["hPrice"]}</th>']
+    if code_column:
+        head.insert(0, f'<th class="h-code">{labels["hCode"]}</th>')
     if computed["hasDiscount"]:
         head.append(f'<th class="h-disc">{labels["hDisc"]}</th>')
     if vat_column:
@@ -212,7 +217,8 @@ def template_values(data: dict, supplier: dict, profile: dict, computed: dict, *
         "dateRows": render_kv_rows(date_rows),
         "itemsHead": "<tr>" + "".join(head) + "</tr>",
         "rows": render_rows(computed, locale=locale, unit_display=None,
-                            discount_column=computed["hasDiscount"], vat_column=vat_column),
+                            discount_column=computed["hasDiscount"], vat_column=vat_column,
+                            code_column=code_column),
         "vatRecapBlock": recap_block,
         "totalsRows": "\n\t\t\t".join(totals),
         "vatClause": f'<div class="clause">{esc(clause)}</div>' if clause else "",
