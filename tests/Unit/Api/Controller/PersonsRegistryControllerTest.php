@@ -111,6 +111,21 @@ class PersonsRegistryControllerTest extends TestCase
         $this->assertSame(['results' => []], $response->getPayload()['data']);
     }
 
+    public function testSearchUnknownCompanyIsAnEmptyResult(): void
+    {
+        // #103 D100: neznámé IČO = prázdný výsledek klienta → 200 {results: []}, žádné 5xx.
+        $client = $this->createMock(PersonsRegistryClient::class);
+        $client->expects($this->once())->method('search')->with('99999999')->willReturn([]);
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->expects($this->never())->method('fetchSingle');
+
+        $ctrl = $this->makeController($client, $this->createMock(PersonApplier::class), $db);
+        $response = $ctrl->search($this->buildRequest('GET', '/api/v1/persons/registry', null, ['q' => '99999999']));
+
+        $this->assertSame(200, $this->getStatus($response));
+        $this->assertSame(['results' => []], $response->getPayload()['data']);
+    }
+
     public function testSearchDecoratesResultsWithExistsInDb(): void
     {
         $rows = [

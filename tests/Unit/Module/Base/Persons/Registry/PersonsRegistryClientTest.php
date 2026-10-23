@@ -125,6 +125,22 @@ class PersonsRegistryClientTest extends TestCase
         $this->assertSame('12345678', $rows[0]->companyId);
     }
 
+    // ── search() not found (#103 D100) ──────────────────────────────────────
+
+    public function testSearchStatusZeroWithoutErrorsIsAnEmptyResult(): void
+    {
+        // Ověřený tvar registru pro neznámé IČO / text bez shody: 200 + {status: 0, errors: []}.
+        $client = new FakeRegistryClient('https://example.org/persons');
+        $client->scriptResponse(json_encode(['status' => 0, 'errors' => []]));
+        $this->assertSame([], $client->search('99999999'));
+
+        $client->scriptResponse(json_encode(['status' => 0]));
+        $this->assertSame([], $client->search('Fiktivní název'), 'bez klíče errors totéž');
+
+        $client->scriptResponse(json_encode(['status' => 0, 'errors' => null]));
+        $this->assertSame([], $client->search('x'));
+    }
+
     // ── search() error paths ────────────────────────────────────────────────
 
     public function testSearchRejectsStatusZeroResponse(): void

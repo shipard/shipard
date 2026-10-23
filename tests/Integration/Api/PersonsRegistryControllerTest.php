@@ -171,6 +171,17 @@ class PersonsRegistryControllerTest extends IntegrationTestCase
         $this->assertContains($code, ['REGISTRY_NOT_FOUND', 'REGISTRY_INVALID_RESPONSE']);
     }
 
+    public function testSearchUnknownCompanyReturnsEmptyResults(): void
+    {
+        // #103 D100: IČO, které registr nezná, je prázdný výsledek (200),
+        // ne 502 — kontrola návrhu ho zkouší automaticky u každé nenapárované
+        // strany; fiktivní IČO korpusu dřív shazovala proklikání (N3).
+        $response = $this->ctrl->search($this->buildRequest('GET', [], ['q' => '99999999']));
+
+        $this->assertSame(200, $this->getStatus($response));
+        $this->assertSame(['results' => []], $response->getPayload()['data']);
+    }
+
     public function testSearchReturnsResults(): void
     {
         $request = $this->buildRequest('GET', [], ['q' => self::PROBE_COMPANY_ID]);

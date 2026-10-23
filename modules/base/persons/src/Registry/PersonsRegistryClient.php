@@ -34,6 +34,8 @@ use Shipard\Core\Config\ServerConfig;
  *   | HTTP 5xx                                 | RegistryUnavailableException       |
  *   | HTTP 404                                 | RegistryNotFoundException          |
  *   | HTTP 200 + body `{"status": 0, ...}`     | RegistryNotFoundException (fetch)  |
+ *   | HTTP 200 + `{"status": 0, "errors": []}` | empty result (search — not found)  |
+ *   | HTTP 200 + `{"status": 0, "errors": […]}`| RegistryInvalidResponseException (search — rejected query) |
  *   | HTTP 200 + body is non-JSON              | RegistryInvalidResponseException   |
  *   | HTTP 200 + body missing required keys    | RegistryInvalidResponseException   |
  *   | HTTP 4xx (other)                         | RegistryInvalidResponseException   |
@@ -99,10 +101,18 @@ class PersonsRegistryClient
 
         $data = $this->fetchJson($url, "search:{$query}");
 
-        // Registry returns {status: 0, errors: [...]} for malformed query.
-        // Treat as invalid response — the client should not silently
-        // produce empty results when the registry signaled an error.
+        // "Not found" is `{"status": 0, "errors": []}` (HTTP 200) — verified
+        // against data.shipard.org on 2026-10-23 for unknown IČO, text
+        // without a match and IČO never assigned; that is an empty result,
+        // not an error (#103 D100, walkthrough finding N3). `status: 0`
+        // with a non-empty `errors` list is a rejected query and stays an
+        // invalid response — the client must not silently produce empty
+        // results when the registry signalled an error.
         if (($data['status'] ?? null) === 0) {
+            $errors = $data['errors'] ?? null;
+            if (!is_array($errors) || $errors === []) {
+                return [];
+            }
             throw new RegistryInvalidResponseException(
                 "Registry search rejected query '{$query}': "
                 . $this->summarizeErrors($data),
