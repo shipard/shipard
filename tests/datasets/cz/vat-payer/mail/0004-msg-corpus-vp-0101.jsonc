@@ -21,8 +21,8 @@
             "file": "0101-domestic-goods.pdf",
             "name": "0101-domestic-goods.pdf",
             "mimeType": "application/pdf",
-            "size": 32970,
-            "sha256": "258cddf342e7152a472ab3af4d3f6aad1dcd82ebd4c3f9410f8eb09925228421",
+            "size": 33101,
+            "sha256": "47768e2528ee8b5b1352460cf4378e21f5010e1b2b5186cc9a804031d8c8b732",
             "order": 1
         }
     ],
@@ -69,7 +69,7 @@
                             "companyId": "43075894",
                             "taxId": "CZ43075894",
                             "vatId": "CZ43075894",
-                            "courtRegistration": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                            "courtRegistration": "C 990321 vedená u Krajského soudu v Ostravě",
                             "address": {
                                 "street": "Pilařská",
                                 "houseNumber": "1204/7",
@@ -267,7 +267,7 @@
                     "companyId": "43075894",
                     "taxId": "CZ43075894",
                     "vatId": "CZ43075894",
-                    "courtRegistration": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "courtRegistration": "C 990321 vedená u Krajského soudu v Ostravě",
                     "address": {
                         "street": "Pilařská",
                         "houseNumber": "1204/7",

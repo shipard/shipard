@@ -21,8 +21,8 @@
             "file": "0701-domestic-non-payer-supplier.pdf",
             "name": "0701-domestic-non-payer-supplier.pdf",
             "mimeType": "application/pdf",
-            "size": 26719,
-            "sha256": "f4e65ba243fc2e31a48c737afe067ed1404f6f1aaaf4b06083efff8dbf0b152f",
+            "size": 26728,
+            "sha256": "2f8260cd2536d6f754584ac0e5743f93c0ecde13256d74e6c5ef7d243d4b395b",
             "order": 1
         }
     ],
@@ -69,7 +69,7 @@
                             "companyId": "25052039",
                             "taxId": null,
                             "vatId": null,
-                            "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                            "courtRegistration": "C 990512 vedená u Krajského soudu v Brně",
                             "address": {
                                 "street": "Lektorská",
                                 "houseNumber": "21",
@@ -218,7 +218,7 @@
                     "companyId": "25052039",
                     "taxId": null,
                     "vatId": null,
-                    "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "courtRegistration": "C 990512 vedená u Krajského soudu v Brně",
                     "address": {
                         "street": "Lektorská",
                         "houseNumber": "21",

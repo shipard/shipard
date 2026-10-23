@@ -21,16 +21,16 @@
             "file": "0202-domestic-two-rates.pdf",
             "name": "0202-domestic-two-rates.pdf",
             "mimeType": "application/pdf",
-            "size": 29095,
-            "sha256": "f41b86282395f55042ea20c70b74824c1e869f21d362c2bd82eab537f964bc26",
+            "size": 29254,
+            "sha256": "c9781466c7e12d1bf510e86a1aecfce3afaa8db10d20878926e52f98b3d87722",
             "order": 1
         },
         {
             "file": "0202-domestic-two-rates.isdoc",
             "name": "0202-domestic-two-rates.isdoc",
             "mimeType": "text/xml",
-            "size": 7619,
-            "sha256": "20284ff1bad0d86d38c0cf2324968391b6d785b5389e47c6ae2cb6eba7b8409a",
+            "size": 7602,
+            "sha256": "feb6e997dd3ead934e478a0c681a4604ef1226d226b4d61701f2ba750694c27c",
             "order": 2
         }
     ],
@@ -77,7 +77,7 @@
                             "companyId": "56546939",
                             "taxId": "CZ56546939",
                             "vatId": "CZ56546939",
-                            "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                            "courtRegistration": "C 991877 vedená u Městského soudu v Praze",
                             "address": {
                                 "street": "Sešitová",
                                 "houseNumber": "3",
@@ -281,7 +281,7 @@
                     "companyId": "56546939",
                     "taxId": "CZ56546939",
                     "vatId": "CZ56546939",
-                    "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "courtRegistration": "C 991877 vedená u Městského soudu v Praze",
                     "address": {
                         "street": "Sešitová",
                         "houseNumber": "3",

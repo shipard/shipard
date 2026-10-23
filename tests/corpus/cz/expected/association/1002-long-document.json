@@ -10,7 +10,7 @@
     "companyId": "13113879",
     "taxId": "CZ13113879",
     "vatId": "CZ13113879",
-    "courtRegistration": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+    "courtRegistration": "C 991177 vedená u Krajského soudu v Hradci Králové",
     "address": {
       "street": "Skladištní",
       "houseNumber": "17",
@@ -608,6 +608,69 @@
     {
       "rowKind": "item",
       "item": {
+        "supplierCode": "HP-10",
+        "ean": null,
+        "name": "Hadry na podlahu, 10 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 4,
+      "unitPrice": 99.00,
+      "totalPrice": 376.20,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "DK-10",
+        "ean": null,
+        "name": "Drátěnky kovové, 10 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 1,
+      "unitPrice": 42.00,
+      "totalPrice": 42.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "LN-400",
+        "ean": null,
+        "name": "Leštěnka na nábytek 400 ml",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 159.00,
+      "totalPrice": 954.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
         "supplierCode": "KF-4",
         "ean": null,
         "name": "Kávové filtry č. 4, 100 ks",
@@ -640,69 +703,6 @@
       "totalPrice": 264.10,
       "priceCalcMode": "fromUnitPrice",
       "discountPct": 5,
-      "discountAmount": null,
-      "vat": {
-        "pct": 21,
-        "supplyKind": null,
-        "reverseChargeCode": null
-      }
-    },
-    {
-      "rowKind": "item",
-      "item": {
-        "supplierCode": "MD-1000",
-        "ean": null,
-        "name": "Míchátka dřevěná, 1000 ks",
-        "description": null
-      },
-      "unit": "bal",
-      "quantity": 4,
-      "unitPrice": 99.00,
-      "totalPrice": 376.20,
-      "priceCalcMode": "fromUnitPrice",
-      "discountPct": 5,
-      "discountAmount": null,
-      "vat": {
-        "pct": 21,
-        "supplyKind": null,
-        "reverseChargeCode": null
-      }
-    },
-    {
-      "rowKind": "item",
-      "item": {
-        "supplierCode": "UB-33",
-        "ean": null,
-        "name": "Ubrousky papírové 33×33, 100 ks",
-        "description": null
-      },
-      "unit": "bal",
-      "quantity": 1,
-      "unitPrice": 42.00,
-      "totalPrice": 42.00,
-      "priceCalcMode": "fromUnitPrice",
-      "discountPct": null,
-      "discountAmount": null,
-      "vat": {
-        "pct": 21,
-        "supplyKind": null,
-        "reverseChargeCode": null
-      }
-    },
-    {
-      "rowKind": "item",
-      "item": {
-        "supplierCode": "OD-1",
-        "ean": null,
-        "name": "Odvápňovač kávovaru 1 l",
-        "description": null
-      },
-      "unit": "ks",
-      "quantity": 6,
-      "unitPrice": 159.00,
-      "totalPrice": 954.00,
-      "priceCalcMode": "fromUnitPrice",
-      "discountPct": null,
       "discountAmount": null,
       "vat": {
         "pct": 21,
@@ -1113,6 +1113,14 @@
     "contentTag": {
       "tag": "office.cleaning",
       "rowExceptions": [
+        {
+          "rowIndex": 28,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 29,
+          "tag": "people.catering"
+        },
         {
           "rowIndex": 30,
           "tag": "people.catering"

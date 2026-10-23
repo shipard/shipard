@@ -35,7 +35,7 @@
         <TaxScheme>VAT</TaxScheme>
       </PartyTaxScheme>
       <RegisterIdentification>
-        <Preformatted>Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové</Preformatted>
+        <Preformatted>C 991177 vedená u Krajského soudu v Hradci Králové</Preformatted>
       </RegisterIdentification>
       <Contact>
         <Telephone>+420000512780</Telephone>
@@ -549,6 +549,64 @@
     </InvoiceLine>
     <InvoiceLine>
       <ID>26</ID>
+      <InvoicedQuantity unitCode="bal">4</InvoicedQuantity>
+      <LineExtensionAmount>376.20</LineExtensionAmount>
+      <LineExtensionAmountBeforeDiscount>396.00</LineExtensionAmountBeforeDiscount>
+      <LineExtensionAmountTaxInclusive>455.20</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>79.00</LineExtensionTaxAmount>
+      <UnitPrice>99.00</UnitPrice>
+      <UnitPriceTaxInclusive>119.79</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Hadry na podlahu, 10 ks</Description>
+        <SellersItemIdentification>
+          <ID>HP-10</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>27</ID>
+      <InvoicedQuantity unitCode="bal">1</InvoicedQuantity>
+      <LineExtensionAmount>42.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>50.82</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>8.82</LineExtensionTaxAmount>
+      <UnitPrice>42.00</UnitPrice>
+      <UnitPriceTaxInclusive>50.82</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Drátěnky kovové, 10 ks</Description>
+        <SellersItemIdentification>
+          <ID>DK-10</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>28</ID>
+      <InvoicedQuantity unitCode="ks">6</InvoicedQuantity>
+      <LineExtensionAmount>954.00</LineExtensionAmount>
+      <LineExtensionAmountTaxInclusive>1154.34</LineExtensionAmountTaxInclusive>
+      <LineExtensionTaxAmount>200.34</LineExtensionTaxAmount>
+      <UnitPrice>159.00</UnitPrice>
+      <UnitPriceTaxInclusive>192.39</UnitPriceTaxInclusive>
+      <ClassifiedTaxCategory>
+        <Percent>21</Percent>
+        <VATCalculationMethod>0</VATCalculationMethod>
+      </ClassifiedTaxCategory>
+      <Item>
+        <Description>Leštěnka na nábytek 400 ml</Description>
+        <SellersItemIdentification>
+          <ID>LN-400</ID>
+        </SellersItemIdentification>
+      </Item>
+    </InvoiceLine>
+    <InvoiceLine>
+      <ID>29</ID>
       <InvoicedQuantity unitCode="bal">2</InvoicedQuantity>
       <LineExtensionAmount>98.00</LineExtensionAmount>
       <LineExtensionAmountTaxInclusive>118.58</LineExtensionAmountTaxInclusive>
@@ -567,7 +625,7 @@
       </Item>
     </InvoiceLine>
     <InvoiceLine>
-      <ID>27</ID>
+      <ID>30</ID>
       <InvoicedQuantity unitCode="bal">2</InvoicedQuantity>
       <LineExtensionAmount>264.10</LineExtensionAmount>
       <LineExtensionAmountBeforeDiscount>278.00</LineExtensionAmountBeforeDiscount>
@@ -583,64 +641,6 @@
         <Description>Kelímky papírové 200 ml, 100 ks</Description>
         <SellersItemIdentification>
           <ID>KP-200</ID>
-        </SellersItemIdentification>
-      </Item>
-    </InvoiceLine>
-    <InvoiceLine>
-      <ID>28</ID>
-      <InvoicedQuantity unitCode="bal">4</InvoicedQuantity>
-      <LineExtensionAmount>376.20</LineExtensionAmount>
-      <LineExtensionAmountBeforeDiscount>396.00</LineExtensionAmountBeforeDiscount>
-      <LineExtensionAmountTaxInclusive>455.20</LineExtensionAmountTaxInclusive>
-      <LineExtensionTaxAmount>79.00</LineExtensionTaxAmount>
-      <UnitPrice>99.00</UnitPrice>
-      <UnitPriceTaxInclusive>119.79</UnitPriceTaxInclusive>
-      <ClassifiedTaxCategory>
-        <Percent>21</Percent>
-        <VATCalculationMethod>0</VATCalculationMethod>
-      </ClassifiedTaxCategory>
-      <Item>
-        <Description>Míchátka dřevěná, 1000 ks</Description>
-        <SellersItemIdentification>
-          <ID>MD-1000</ID>
-        </SellersItemIdentification>
-      </Item>
-    </InvoiceLine>
-    <InvoiceLine>
-      <ID>29</ID>
-      <InvoicedQuantity unitCode="bal">1</InvoicedQuantity>
-      <LineExtensionAmount>42.00</LineExtensionAmount>
-      <LineExtensionAmountTaxInclusive>50.82</LineExtensionAmountTaxInclusive>
-      <LineExtensionTaxAmount>8.82</LineExtensionTaxAmount>
-      <UnitPrice>42.00</UnitPrice>
-      <UnitPriceTaxInclusive>50.82</UnitPriceTaxInclusive>
-      <ClassifiedTaxCategory>
-        <Percent>21</Percent>
-        <VATCalculationMethod>0</VATCalculationMethod>
-      </ClassifiedTaxCategory>
-      <Item>
-        <Description>Ubrousky papírové 33×33, 100 ks</Description>
-        <SellersItemIdentification>
-          <ID>UB-33</ID>
-        </SellersItemIdentification>
-      </Item>
-    </InvoiceLine>
-    <InvoiceLine>
-      <ID>30</ID>
-      <InvoicedQuantity unitCode="ks">6</InvoicedQuantity>
-      <LineExtensionAmount>954.00</LineExtensionAmount>
-      <LineExtensionAmountTaxInclusive>1154.34</LineExtensionAmountTaxInclusive>
-      <LineExtensionTaxAmount>200.34</LineExtensionTaxAmount>
-      <UnitPrice>159.00</UnitPrice>
-      <UnitPriceTaxInclusive>192.39</UnitPriceTaxInclusive>
-      <ClassifiedTaxCategory>
-        <Percent>21</Percent>
-        <VATCalculationMethod>0</VATCalculationMethod>
-      </ClassifiedTaxCategory>
-      <Item>
-        <Description>Odvápňovač kávovaru 1 l</Description>
-        <SellersItemIdentification>
-          <ID>OD-1</ID>
         </SellersItemIdentification>
       </Item>
     </InvoiceLine>

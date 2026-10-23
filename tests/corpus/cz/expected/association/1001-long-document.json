@@ -10,7 +10,7 @@
     "companyId": "13113879",
     "taxId": "CZ13113879",
     "vatId": "CZ13113879",
-    "courtRegistration": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+    "courtRegistration": "C 991177 vedená u Krajského soudu v Hradci Králové",
     "address": {
       "street": "Skladištní",
       "houseNumber": "17",
@@ -608,6 +608,27 @@
     {
       "rowKind": "item",
       "item": {
+        "supplierCode": "HP-10",
+        "ean": null,
+        "name": "Hadry na podlahu, 10 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 12,
+      "unitPrice": 99.00,
+      "totalPrice": 1188.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
         "supplierCode": "KF-4",
         "ean": null,
         "name": "Kávové filtry č. 4, 100 ks",
@@ -638,27 +659,6 @@
       "quantity": 2,
       "unitPrice": 139.00,
       "totalPrice": 278.00,
-      "priceCalcMode": "fromUnitPrice",
-      "discountPct": null,
-      "discountAmount": null,
-      "vat": {
-        "pct": 21,
-        "supplyKind": null,
-        "reverseChargeCode": null
-      }
-    },
-    {
-      "rowKind": "item",
-      "item": {
-        "supplierCode": "MD-1000",
-        "ean": null,
-        "name": "Míchátka dřevěná, 1000 ks",
-        "description": null
-      },
-      "unit": "bal",
-      "quantity": 12,
-      "unitPrice": 99.00,
-      "totalPrice": 1188.00,
       "priceCalcMode": "fromUnitPrice",
       "discountPct": null,
       "discountAmount": null,
@@ -1029,6 +1029,14 @@
     "contentTag": {
       "tag": "office.cleaning",
       "rowExceptions": [
+        {
+          "rowIndex": 26,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 27,
+          "tag": "people.catering"
+        },
         {
           "rowIndex": 28,
           "tag": "people.catering"

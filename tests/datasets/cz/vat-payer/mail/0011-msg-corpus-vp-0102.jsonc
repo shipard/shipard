@@ -21,16 +21,16 @@
             "file": "0102-domestic-goods.pdf",
             "name": "0102-domestic-goods.pdf",
             "mimeType": "application/pdf",
-            "size": 33277,
-            "sha256": "fe5fe404a1b345782573f98eb34b28cec0552be0b1302f36108929211eb51026",
+            "size": 33540,
+            "sha256": "cf4e5fb48d661fb10c7f3aceee60e74992345aaabfd47abc71d535585e3f5ac9",
             "order": 1
         },
         {
             "file": "0102-domestic-goods.isdoc",
             "name": "0102-domestic-goods.isdoc",
             "mimeType": "text/xml",
-            "size": 7880,
-            "sha256": "5a88723f3b5cfd67abb59dd3394c2e16842ba4dfbb0f44f4c93d8cad74848adc",
+            "size": 7863,
+            "sha256": "f84b5e6559cd4edf7670cde06102a42cb249dadf7a04f5936c83eb3bb3a80be6",
             "order": 2
         }
     ],
@@ -77,7 +77,7 @@
                             "companyId": "43075894",
                             "taxId": "CZ43075894",
                             "vatId": "CZ43075894",
-                            "courtRegistration": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                            "courtRegistration": "C 990321 vedená u Krajského soudu v Ostravě",
                             "address": {
                                 "street": "Pilařská",
                                 "houseNumber": "1204/7",
@@ -296,7 +296,7 @@
                     "companyId": "43075894",
                     "taxId": "CZ43075894",
                     "vatId": "CZ43075894",
-                    "courtRegistration": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "courtRegistration": "C 990321 vedená u Krajského soudu v Ostravě",
                     "address": {
                         "street": "Pilařská",
                         "houseNumber": "1204/7",

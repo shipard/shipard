@@ -21,8 +21,8 @@
             "file": "0201-domestic-two-rates.pdf",
             "name": "0201-domestic-two-rates.pdf",
             "mimeType": "application/pdf",
-            "size": 30061,
-            "sha256": "6e42b3faa654d56d19f74121104d4589bb1c2c94fa6a2d7f49ad93411c273e3b",
+            "size": 30302,
+            "sha256": "4a0acb704a3b9e1e9191e237d2ff1ad4a055f4670ccb40340337d877fff7471e",
             "order": 1
         }
     ],
@@ -69,7 +69,7 @@
                             "companyId": "56546939",
                             "taxId": "CZ56546939",
                             "vatId": "CZ56546939",
-                            "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                            "courtRegistration": "C 991877 vedená u Městského soudu v Praze",
                             "address": {
                                 "street": "Sešitová",
                                 "houseNumber": "3",
@@ -273,7 +273,7 @@
                     "companyId": "56546939",
                     "taxId": "CZ56546939",
                     "vatId": "CZ56546939",
-                    "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "courtRegistration": "C 991877 vedená u Městského soudu v Praze",
                     "address": {
                         "street": "Sešitová",
                         "houseNumber": "3",

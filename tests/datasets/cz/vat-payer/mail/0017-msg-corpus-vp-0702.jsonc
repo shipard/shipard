@@ -21,16 +21,16 @@
             "file": "0702-domestic-non-payer-supplier.pdf",
             "name": "0702-domestic-non-payer-supplier.pdf",
             "mimeType": "application/pdf",
-            "size": 26649,
-            "sha256": "bc8a67342c8831eff24eb9468b23b9694696862669bbaea22398547b5317151a",
+            "size": 26658,
+            "sha256": "c2aa26aea61811af24cb5e9c88ae8807f6f5534086433e030a6b6dc6b3a144c1",
             "order": 1
         },
         {
             "file": "0702-domestic-non-payer-supplier.isdoc",
             "name": "0702-domestic-non-payer-supplier.isdoc",
             "mimeType": "text/xml",
-            "size": 5297,
-            "sha256": "cc4758fbb159fc9e512b48eaec832b2cdf23e4aebeea3041a4eecbcbdaf95008",
+            "size": 5280,
+            "sha256": "10a07810f6b370dc2f4784ecdf4db6f9d80f375554feac44f47752a5d3d59129",
             "order": 2
         }
     ],
@@ -77,7 +77,7 @@
                             "companyId": "25052039",
                             "taxId": null,
                             "vatId": null,
-                            "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                            "courtRegistration": "C 990512 vedená u Krajského soudu v Brně",
                             "address": {
                                 "street": "Lektorská",
                                 "houseNumber": "21",
@@ -226,7 +226,7 @@
                     "companyId": "25052039",
                     "taxId": null,
                     "vatId": null,
-                    "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "courtRegistration": "C 990512 vedená u Krajského soudu v Brně",
                     "address": {
                         "street": "Lektorská",
                         "houseNumber": "21",

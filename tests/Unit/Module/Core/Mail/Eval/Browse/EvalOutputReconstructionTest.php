@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Core\Mail\Eval\Browse;
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\Projection;
+use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetMessages;
@@ -17,10 +18,18 @@ use Shipard\Module\Core\Mail\Eval\EvalRunner;
 
 /**
  * Rekonstrukce výstupu modelu z očekávání a odchylek (#103 D53) nad
- * skutečnými běhy v repu (stálá fixtura) i syntetickými voláními.
+ * skutečným během v repu i syntetickými voláními. Běh 2026-10-16 je
+ * pojmenovaný (jen ke čtení, D106); očekávání, proti kterému vznikl, je
+ * zmrazené ve fixtuře `tests/Fixtures/Eval/cz-vat-payer-2026-10-16/`
+ * (štíhlé zprávy sady bez `analysisJson`, projekce, seznam zpráv) — živá
+ * sada `tests/datasets/cz/vat-payer/` se s korpusem mění (D102–D105
+ * posunuly výjimky řádků dlouhého dokladu) a invariant D53 platí jen
+ * pro dvojici běh × očekávání z téže doby.
  */
 final class EvalOutputReconstructionTest extends TestCase
 {
+    private const string FROZEN_DATASET = '/tests/Fixtures/Eval/cz-vat-payer-2026-10-16';
+
     private static ?EvalCatalog $catalog = null;
     private static ?EvalDatasetMessages $messages = null;
     private static ?Projection $projection = null;
@@ -32,7 +41,7 @@ final class EvalOutputReconstructionTest extends TestCase
 
     private static function messages(): EvalDatasetMessages
     {
-        return self::$messages ??= new EvalDatasetMessages(self::catalog()->dataset('cz-vat-payer')->reader());
+        return self::$messages ??= new EvalDatasetMessages(DatasetReader::open(dirname(__DIR__, 7) . self::FROZEN_DATASET));
     }
 
     private static function projection(): Projection
@@ -86,9 +95,9 @@ final class EvalOutputReconstructionTest extends TestCase
 
     /**
      * Invariant D53: stavy z rekonstrukce dávají tytéž počty jako volání
-     * v souboru — pro každé volání běhu. Běh z 16. 10. je nad sadou před
-     * #119 krokem 1 (jiný hash kvůli podobě čtyř dokladů), obsah zpráv
-     * a očekávání je ale týž, takže invariant platí dál.
+     * v souboru — pro každé volání běhu. Očekávání bere ze zmrazené fixtury
+     * (viz hlavička třídy): proti živé sadě by 1002 po D104 měl o dvě
+     * výjimky řádků víc a počty by neseděly.
      */
     public function testCountsMatchTheFileForEveryCallOfARun(): void
     {

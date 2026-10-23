@@ -21,16 +21,16 @@
             "file": "1002-long-document.pdf",
             "name": "1002-long-document.pdf",
             "mimeType": "application/pdf",
-            "size": 96990,
-            "sha256": "b6a79172e165d56a3d369510d3f81caa1b37d01feb9acaf769f3c5bafdc4c351",
+            "size": 96159,
+            "sha256": "59056b624368323d10dc76e7bbe25ca2eee34f6bb7db97261dc58c0146399656",
             "order": 1
         },
         {
             "file": "1002-long-document.isdoc",
             "name": "1002-long-document.isdoc",
             "mimeType": "text/xml",
-            "size": 40872,
-            "sha256": "8aa1183f16bf9a5c5d52d9f9008da11c7d2c91b5497544d573982e4f9c231523",
+            "size": 40841,
+            "sha256": "2c6fb33b6bc2196bc858884e2487bc5cd5e544d38ef3680b7cb8510791a048b6",
             "order": 2
         }
     ],
@@ -77,7 +77,7 @@
                             "companyId": "13113879",
                             "taxId": "CZ13113879",
                             "vatId": "CZ13113879",
-                            "courtRegistration": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                            "courtRegistration": "C 991177 vedená u Krajského soudu v Hradci Králové",
                             "address": {
                                 "street": "Skladištní",
                                 "houseNumber": "17",
@@ -675,6 +675,69 @@
                             {
                                 "rowKind": "item",
                                 "item": {
+                                    "supplierCode": "HP-10",
+                                    "ean": null,
+                                    "name": "Hadry na podlahu, 10 ks",
+                                    "description": null
+                                },
+                                "unit": "bal",
+                                "quantity": 4,
+                                "unitPrice": 99,
+                                "totalPrice": 376.2,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": 5,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "DK-10",
+                                    "ean": null,
+                                    "name": "Drátěnky kovové, 10 ks",
+                                    "description": null
+                                },
+                                "unit": "bal",
+                                "quantity": 1,
+                                "unitPrice": 42,
+                                "totalPrice": 42,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "LN-400",
+                                    "ean": null,
+                                    "name": "Leštěnka na nábytek 400 ml",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 6,
+                                "unitPrice": 159,
+                                "totalPrice": 954,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
                                     "supplierCode": "KF-4",
                                     "ean": null,
                                     "name": "Kávové filtry č. 4, 100 ks",
@@ -707,69 +770,6 @@
                                 "totalPrice": 264.1,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": 5,
-                                "discountAmount": null,
-                                "vat": {
-                                    "pct": 21,
-                                    "supplyKind": null,
-                                    "reverseChargeCode": null
-                                }
-                            },
-                            {
-                                "rowKind": "item",
-                                "item": {
-                                    "supplierCode": "MD-1000",
-                                    "ean": null,
-                                    "name": "Míchátka dřevěná, 1000 ks",
-                                    "description": null
-                                },
-                                "unit": "bal",
-                                "quantity": 4,
-                                "unitPrice": 99,
-                                "totalPrice": 376.2,
-                                "priceCalcMode": "fromUnitPrice",
-                                "discountPct": 5,
-                                "discountAmount": null,
-                                "vat": {
-                                    "pct": 21,
-                                    "supplyKind": null,
-                                    "reverseChargeCode": null
-                                }
-                            },
-                            {
-                                "rowKind": "item",
-                                "item": {
-                                    "supplierCode": "UB-33",
-                                    "ean": null,
-                                    "name": "Ubrousky papírové 33×33, 100 ks",
-                                    "description": null
-                                },
-                                "unit": "bal",
-                                "quantity": 1,
-                                "unitPrice": 42,
-                                "totalPrice": 42,
-                                "priceCalcMode": "fromUnitPrice",
-                                "discountPct": null,
-                                "discountAmount": null,
-                                "vat": {
-                                    "pct": 21,
-                                    "supplyKind": null,
-                                    "reverseChargeCode": null
-                                }
-                            },
-                            {
-                                "rowKind": "item",
-                                "item": {
-                                    "supplierCode": "OD-1",
-                                    "ean": null,
-                                    "name": "Odvápňovač kávovaru 1 l",
-                                    "description": null
-                                },
-                                "unit": "ks",
-                                "quantity": 6,
-                                "unitPrice": 159,
-                                "totalPrice": 954,
-                                "priceCalcMode": "fromUnitPrice",
-                                "discountPct": null,
                                 "discountAmount": null,
                                 "vat": {
                                     "pct": 21,
@@ -1205,7 +1205,7 @@
                     "companyId": "13113879",
                     "taxId": "CZ13113879",
                     "vatId": "CZ13113879",
-                    "courtRegistration": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "courtRegistration": "C 991177 vedená u Krajského soudu v Hradci Králové",
                     "address": {
                         "street": "Skladištní",
                         "houseNumber": "17",
@@ -1803,6 +1803,69 @@
                     {
                         "rowKind": "item",
                         "item": {
+                            "supplierCode": "HP-10",
+                            "ean": null,
+                            "name": "Hadry na podlahu, 10 ks",
+                            "description": null
+                        },
+                        "unit": "bal",
+                        "quantity": 4,
+                        "unitPrice": 99,
+                        "totalPrice": 376.2,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": 5,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "DK-10",
+                            "ean": null,
+                            "name": "Drátěnky kovové, 10 ks",
+                            "description": null
+                        },
+                        "unit": "bal",
+                        "quantity": 1,
+                        "unitPrice": 42,
+                        "totalPrice": 42,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "LN-400",
+                            "ean": null,
+                            "name": "Leštěnka na nábytek 400 ml",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 6,
+                        "unitPrice": 159,
+                        "totalPrice": 954,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
                             "supplierCode": "KF-4",
                             "ean": null,
                             "name": "Kávové filtry č. 4, 100 ks",
@@ -1835,69 +1898,6 @@
                         "totalPrice": 264.1,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": 5,
-                        "discountAmount": null,
-                        "vat": {
-                            "pct": 21,
-                            "supplyKind": null,
-                            "reverseChargeCode": null
-                        }
-                    },
-                    {
-                        "rowKind": "item",
-                        "item": {
-                            "supplierCode": "MD-1000",
-                            "ean": null,
-                            "name": "Míchátka dřevěná, 1000 ks",
-                            "description": null
-                        },
-                        "unit": "bal",
-                        "quantity": 4,
-                        "unitPrice": 99,
-                        "totalPrice": 376.2,
-                        "priceCalcMode": "fromUnitPrice",
-                        "discountPct": 5,
-                        "discountAmount": null,
-                        "vat": {
-                            "pct": 21,
-                            "supplyKind": null,
-                            "reverseChargeCode": null
-                        }
-                    },
-                    {
-                        "rowKind": "item",
-                        "item": {
-                            "supplierCode": "UB-33",
-                            "ean": null,
-                            "name": "Ubrousky papírové 33×33, 100 ks",
-                            "description": null
-                        },
-                        "unit": "bal",
-                        "quantity": 1,
-                        "unitPrice": 42,
-                        "totalPrice": 42,
-                        "priceCalcMode": "fromUnitPrice",
-                        "discountPct": null,
-                        "discountAmount": null,
-                        "vat": {
-                            "pct": 21,
-                            "supplyKind": null,
-                            "reverseChargeCode": null
-                        }
-                    },
-                    {
-                        "rowKind": "item",
-                        "item": {
-                            "supplierCode": "OD-1",
-                            "ean": null,
-                            "name": "Odvápňovač kávovaru 1 l",
-                            "description": null
-                        },
-                        "unit": "ks",
-                        "quantity": 6,
-                        "unitPrice": 159,
-                        "totalPrice": 954,
-                        "priceCalcMode": "fromUnitPrice",
-                        "discountPct": null,
                         "discountAmount": null,
                         "vat": {
                             "pct": 21,
@@ -2318,6 +2318,14 @@
                         "tagSource": "llm",
                         "tagConfidence": 1,
                         "rowExceptions": [
+                            {
+                                "rowIndex": 28,
+                                "tag": "people.catering"
+                            },
+                            {
+                                "rowIndex": 29,
+                                "tag": "people.catering"
+                            },
                             {
                                 "rowIndex": 30,
                                 "tag": "people.catering"

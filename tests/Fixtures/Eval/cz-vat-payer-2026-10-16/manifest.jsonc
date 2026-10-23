@@ -1,0 +1,10 @@
+{
+  "format": "shpd.dataset.v1",
+  "name": "cz-vat-payer",
+  "title": "Testovací sada — plátce DPH (očekávání zmrazené k běhu 2026-10-16, fixtura)",
+  "dateMode": "fixed",
+  "created": "2026-10-16T00:00:00Z",
+  "country": "cz",
+  "profile": "vat-payer",
+  "counts": { "mail": 20 }
+}

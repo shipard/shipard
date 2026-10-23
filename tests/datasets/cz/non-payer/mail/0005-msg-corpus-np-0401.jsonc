@@ -21,8 +21,8 @@
             "file": "0401-domestic-reverse-charge.pdf",
             "name": "0401-domestic-reverse-charge.pdf",
             "mimeType": "application/pdf",
-            "size": 33002,
-            "sha256": "6573d53eed5bb75f6b9aa8238d45be6154f5cb65876ba51586f01218c83e08ad",
+            "size": 33008,
+            "sha256": "4e4b5bd5ef325b1e1f985fb9b79f667a22508cbccd09c6b3ecb9f5b188521cc7",
             "order": 1
         }
     ],
@@ -69,7 +69,7 @@
                             "companyId": "16612248",
                             "taxId": "CZ16612248",
                             "vatId": "CZ16612248",
-                            "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                            "courtRegistration": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
                             "address": {
                                 "street": "Cihlová",
                                 "houseNumber": "980/12",
@@ -225,7 +225,7 @@
                     "companyId": "16612248",
                     "taxId": "CZ16612248",
                     "vatId": "CZ16612248",
-                    "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "courtRegistration": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
                     "address": {
                         "street": "Cihlová",
                         "houseNumber": "980/12",

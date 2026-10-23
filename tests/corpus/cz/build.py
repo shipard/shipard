@@ -21,7 +21,8 @@ Věrnost tisku (#103 D105, invoicegen/fidelity.py): po PDF každé buňky
 (číslo dokladu, IČO, DIČ, účet, IBAN, BIC, symboly, kontakty, spisová
 značka, kódy, EAN a popisy řádků) jsou v textu PDF (`pdftotext`, bez bílých
 znaků). Ne-`null` hodnota mimo PDF je chyba sady (D14): --fidelity=error
-ji hlásí a build končí 1 před sestavením sad, --fidelity=warn jen vypíše.
+(výchozí) ji hlásí a build končí 1 před sestavením sad, --fidelity=warn
+jen vypíše (diagnostika při úpravě šablon).
 --verify-identities ověří identity v ARES a VIES (síť; po změně identit),
 při úspěchu zapíše dnešní datum do verifiedAt a pokračuje buildem; selhání
 = exit 1, nedostupný registr = exit 2 (identity se neoznačí jako ověřené).
@@ -186,8 +187,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fetch-rates", action="store_true",
                         help="stáhnout chybějící kurzovní lístky ČNB ze služby kurzů (síť) do exchange-rates/")
     parser.add_argument("--no-datasets", action="store_true", help="nesestavovat datové sady tests/datasets/cz/")
-    parser.add_argument("--fidelity", choices=("warn", "error"), default="warn",
-                        help="identifikátor z očekávání mimo text PDF: jen vypsat (warn), nebo chyba buildu (error)")
+    parser.add_argument("--fidelity", choices=("warn", "error"), default="error",
+                        help="identifikátor z očekávání mimo text PDF: chyba buildu (error, výchozí), nebo jen vypsat (warn)")
     args = parser.parse_args(argv)
 
     identities = load_jsonc(BASE_DIR / "identities.jsonc")

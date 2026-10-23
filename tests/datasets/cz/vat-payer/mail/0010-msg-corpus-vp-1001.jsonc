@@ -21,8 +21,8 @@
             "file": "1001-long-document.pdf",
             "name": "1001-long-document.pdf",
             "mimeType": "application/pdf",
-            "size": 92887,
-            "sha256": "a071af1d4a9bd3b2a7416927ecd71b9db65cb21eb38a0bdf5fd764d293167caf",
+            "size": 92149,
+            "sha256": "e8ca385eb204a4b8474f8c24a840a62106ef401f3ba3a1bc2be7c24ebb6c8fbf",
             "order": 1
         }
     ],
@@ -69,7 +69,7 @@
                             "companyId": "13113879",
                             "taxId": "CZ13113879",
                             "vatId": "CZ13113879",
-                            "courtRegistration": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                            "courtRegistration": "C 991177 vedená u Krajského soudu v Hradci Králové",
                             "address": {
                                 "street": "Skladištní",
                                 "houseNumber": "17",
@@ -667,6 +667,27 @@
                             {
                                 "rowKind": "item",
                                 "item": {
+                                    "supplierCode": "HP-10",
+                                    "ean": null,
+                                    "name": "Hadry na podlahu, 10 ks",
+                                    "description": null
+                                },
+                                "unit": "bal",
+                                "quantity": 12,
+                                "unitPrice": 99,
+                                "totalPrice": 1188,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
                                     "supplierCode": "KF-4",
                                     "ean": null,
                                     "name": "Kávové filtry č. 4, 100 ks",
@@ -697,27 +718,6 @@
                                 "quantity": 2,
                                 "unitPrice": 139,
                                 "totalPrice": 278,
-                                "priceCalcMode": "fromUnitPrice",
-                                "discountPct": null,
-                                "discountAmount": null,
-                                "vat": {
-                                    "pct": 21,
-                                    "supplyKind": null,
-                                    "reverseChargeCode": null
-                                }
-                            },
-                            {
-                                "rowKind": "item",
-                                "item": {
-                                    "supplierCode": "MD-1000",
-                                    "ean": null,
-                                    "name": "Míchátka dřevěná, 1000 ks",
-                                    "description": null
-                                },
-                                "unit": "bal",
-                                "quantity": 12,
-                                "unitPrice": 99,
-                                "totalPrice": 1188,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -1113,7 +1113,7 @@
                     "companyId": "13113879",
                     "taxId": "CZ13113879",
                     "vatId": "CZ13113879",
-                    "courtRegistration": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "courtRegistration": "C 991177 vedená u Krajského soudu v Hradci Králové",
                     "address": {
                         "street": "Skladištní",
                         "houseNumber": "17",
@@ -1711,6 +1711,27 @@
                     {
                         "rowKind": "item",
                         "item": {
+                            "supplierCode": "HP-10",
+                            "ean": null,
+                            "name": "Hadry na podlahu, 10 ks",
+                            "description": null
+                        },
+                        "unit": "bal",
+                        "quantity": 12,
+                        "unitPrice": 99,
+                        "totalPrice": 1188,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
                             "supplierCode": "KF-4",
                             "ean": null,
                             "name": "Kávové filtry č. 4, 100 ks",
@@ -1741,27 +1762,6 @@
                         "quantity": 2,
                         "unitPrice": 139,
                         "totalPrice": 278,
-                        "priceCalcMode": "fromUnitPrice",
-                        "discountPct": null,
-                        "discountAmount": null,
-                        "vat": {
-                            "pct": 21,
-                            "supplyKind": null,
-                            "reverseChargeCode": null
-                        }
-                    },
-                    {
-                        "rowKind": "item",
-                        "item": {
-                            "supplierCode": "MD-1000",
-                            "ean": null,
-                            "name": "Míchátka dřevěná, 1000 ks",
-                            "description": null
-                        },
-                        "unit": "bal",
-                        "quantity": 12,
-                        "unitPrice": 99,
-                        "totalPrice": 1188,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -2142,6 +2142,14 @@
                         "tagSource": "llm",
                         "tagConfidence": 1,
                         "rowExceptions": [
+                            {
+                                "rowIndex": 26,
+                                "tag": "people.catering"
+                            },
+                            {
+                                "rowIndex": 27,
+                                "tag": "people.catering"
+                            },
                             {
                                 "rowIndex": 28,
                                 "tag": "people.catering"

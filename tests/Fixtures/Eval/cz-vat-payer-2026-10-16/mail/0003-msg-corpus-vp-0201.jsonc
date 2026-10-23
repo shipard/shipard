@@ -1,0 +1,265 @@
+{
+  "format": "shpd.mail.incomingMessage",
+  "formatVersion": "1.0",
+  "messageId": "MSG-CORPUS-VP-0201",
+  "mailbox": "default",
+  "primaryType": "invoiceReceived",
+  "primaryTypeSource": "ai",
+  "subject": "Faktura 2026/0882",
+  "senderEmail": "objednavky@kvadrat-papir.example",
+  "senderName": "Papírnictví Kvadrát s.r.o.",
+  "partnerName": "Papírnictví Kvadrát s.r.o.",
+  "receivedAt": "2026-08-21T08:00:00",
+  "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026/0882.\n\nPapírnictví Kvadrát s.r.o.",
+  "sourceType": 2,
+  "docState": 20,
+  "analysisState": 30,
+  "aiTitle": "Faktura 2026/0882 — Papírnictví Kvadrát s.r.o., 5 798,14 Kč",
+  "created": "2026-08-21T08:00:00",
+  "attachments": [
+    {
+      "file": "0201-domestic-two-rates.pdf",
+      "name": "0201-domestic-two-rates.pdf",
+      "mimeType": "application/pdf",
+      "size": 30043,
+      "sha256": "8e0e84b953c158f6be6a054bc09cc01f0bb332336908856aa2e254b83416df7f",
+      "order": 1
+    }
+  ],
+  "analyses": [
+    {
+      "analyzedAt": "2026-08-21T08:01:00",
+      "status": 2,
+      "modelName": "corpus-ideal",
+      "promptVersion": "corpus",
+      "profile": "czech_general",
+      "confidence": 1.0,
+      "proposedType": "invoiceReceived",
+      "contentTag": "office.supplies",
+      "tokensInput": 0,
+      "tokensOutput": 0,
+      "durationMs": 0,
+      "costUsd": 0.0,
+      "created": "2026-08-21T08:01:00",
+      "canonicalJson": {
+        "format": "shpd.docs.document",
+        "formatVersion": "1.0",
+        "source": {
+          "kind": "aiExtraction",
+          "extractedAt": "2026-08-21T08:01:00+00:00",
+          "confidence": 1,
+          "promptVersion": "corpus"
+        },
+        "docType": "invoiceReceived",
+        "docNumber": "2026/0882",
+        "selfParty": "customer",
+        "supplier": {
+          "name": "Papírnictví Kvadrát s.r.o.",
+          "country": "cz",
+          "companyId": "56546939",
+          "taxId": "CZ56546939",
+          "vatId": "CZ56546939",
+          "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+          "address": {
+            "street": "Sešitová",
+            "houseNumber": "3",
+            "city": "Praha 1",
+            "zip": "11000",
+            "country": "cz"
+          },
+          "contact": {
+            "name": null,
+            "email": "objednavky@kvadrat-papir.example",
+            "phone": "+420000815770",
+            "web": "www.kvadrat-papir.example"
+          },
+          "bankAccount": {
+            "accountNumber": "9092871663/5500",
+            "iban": "CZ8255000000009092871663",
+            "bic": "RZBCCZPP"
+          }
+        },
+        "customer": {
+          "name": "Tvarokov s.r.o.",
+          "country": "cz",
+          "companyId": "27893286",
+          "taxId": "CZ27893286",
+          "vatId": "CZ27893286",
+          "courtRegistration": null,
+          "address": {
+            "street": "Lisovací",
+            "houseNumber": "418/2",
+            "city": "Zlín",
+            "zip": "76001",
+            "country": "cz"
+          },
+          "contact": {
+            "name": null,
+            "email": null,
+            "phone": null,
+            "web": null
+          },
+          "bankAccount": {
+            "accountNumber": null,
+            "iban": null,
+            "bic": null
+          }
+        },
+        "dates": {
+          "issueDate": "2026-08-20",
+          "dueDate": "2026-09-03",
+          "taxPointDate": "2026-08-20",
+          "periodFrom": null,
+          "periodTo": null
+        },
+        "currency": "CZK",
+        "exchangeRate": null,
+        "vat": {
+          "mode": "fromBase",
+          "place": "domestic",
+          "reverseCharge": false
+        },
+        "payment": {
+          "method": "bankTransfer",
+          "paymentReference": "20260882",
+          "specificSymbol": null,
+          "constantSymbol": null
+        },
+        "notes": {
+          "onDocument": "Děkujeme za objednávku. Při platbě uvádějte variabilní symbol."
+        },
+        "rows": [
+          {
+            "rowKind": "item",
+            "item": {
+              "supplierCode": "PAP-A4-80",
+              "ean": null,
+              "name": "Kancelářský papír A4 80 g, 5× 500 listů",
+              "description": null
+            },
+            "unit": "bal",
+            "quantity": 10,
+            "unitPrice": 129,
+            "totalPrice": 1290,
+            "priceCalcMode": "fromUnitPrice",
+            "discountPct": null,
+            "discountAmount": null,
+            "vat": {
+              "pct": 21,
+              "supplyKind": null,
+              "reverseChargeCode": null
+            }
+          },
+          {
+            "rowKind": "item",
+            "item": {
+              "supplierCode": "TON-85A",
+              "ean": null,
+              "name": "Toner černý, kompatibilní s HP 85A",
+              "description": null
+            },
+            "unit": "ks",
+            "quantity": 2,
+            "unitPrice": 1190,
+            "totalPrice": 2380,
+            "priceCalcMode": "fromUnitPrice",
+            "discountPct": null,
+            "discountAmount": null,
+            "vat": {
+              "pct": 21,
+              "supplyKind": null,
+              "reverseChargeCode": null
+            }
+          },
+          {
+            "rowKind": "item",
+            "item": {
+              "supplierCode": null,
+              "ean": null,
+              "name": "Předplatné časopisu Daně a účetnictví 9–12/2026",
+              "description": null
+            },
+            "unit": "ks",
+            "quantity": 1,
+            "unitPrice": 822,
+            "totalPrice": 822,
+            "priceCalcMode": "fromUnitPrice",
+            "discountPct": null,
+            "discountAmount": null,
+            "vat": {
+              "pct": 12,
+              "supplyKind": null,
+              "reverseChargeCode": null
+            }
+          },
+          {
+            "rowKind": "item",
+            "item": {
+              "supplierCode": null,
+              "ean": null,
+              "name": "Odborný čtvrtletník Mzdová praxe — předplatné 4 čísla",
+              "description": null
+            },
+            "unit": "ks",
+            "quantity": 1,
+            "unitPrice": 390,
+            "totalPrice": 390,
+            "priceCalcMode": "fromUnitPrice",
+            "discountPct": null,
+            "discountAmount": null,
+            "vat": {
+              "pct": 12,
+              "supplyKind": null,
+              "reverseChargeCode": null
+            }
+          }
+        ],
+        "vatRecap": [
+          {
+            "vatPct": 21,
+            "base": 3670,
+            "tax": 770.7,
+            "total": 4440.7
+          },
+          {
+            "vatPct": 12,
+            "base": 1212,
+            "tax": 145.44,
+            "total": 1357.44
+          }
+        ],
+        "totals": {
+          "totalBase": 4882,
+          "totalVat": 916.14,
+          "totalAmount": 5798.14,
+          "totalRounding": 0
+        },
+        "attachments": [
+          {
+            "filename": "0201-domestic-two-rates.pdf",
+            "mimeType": "application/pdf",
+            "kind": "original",
+            "ref": "att:1"
+          }
+        ],
+        "_resolve": {
+          "contentTag": {
+            "tag": "office.supplies",
+            "tagSource": "llm",
+            "tagConfidence": 1,
+            "rowExceptions": [
+              {
+                "rowIndex": 2,
+                "tag": "admin.memberships"
+              },
+              {
+                "rowIndex": 3,
+                "tag": "admin.memberships"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

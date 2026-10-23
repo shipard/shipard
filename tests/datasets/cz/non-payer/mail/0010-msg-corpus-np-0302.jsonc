@@ -21,16 +21,16 @@
             "file": "0302-domestic-rounding.pdf",
             "name": "0302-domestic-rounding.pdf",
             "mimeType": "application/pdf",
-            "size": 54548,
-            "sha256": "1ae798a7b53d9bc919e36b687d3f4ac7e0d6e15943470fc506fd595af2691daf",
+            "size": 54557,
+            "sha256": "f84ac39b28b64b61f0b3d1f129eebe5c6dabe4cdbb79e9ad7e5ef99373db5292",
             "order": 1
         },
         {
             "file": "0302-domestic-rounding.isdoc",
             "name": "0302-domestic-rounding.isdoc",
             "mimeType": "text/xml",
-            "size": 6101,
-            "sha256": "5f60b7eb3b31110972d1c485070d9649769196da23bde51dfb3b13df1c66080e",
+            "size": 6084,
+            "sha256": "1d11c90abbd7152516d1ae71f242bb1b12ce1e98506790b5926f055d6e5bde02",
             "order": 2
         }
     ],
@@ -77,7 +77,7 @@
                             "companyId": "01848739",
                             "taxId": "CZ01848739",
                             "vatId": "CZ01848739",
-                            "courtRegistration": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                            "courtRegistration": "B 994209 vedená u Krajského soudu v Ostravě",
                             "address": {
                                 "street": "Rozvodná",
                                 "houseNumber": "55/1",
@@ -254,7 +254,7 @@
                     "companyId": "01848739",
                     "taxId": "CZ01848739",
                     "vatId": "CZ01848739",
-                    "courtRegistration": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "courtRegistration": "B 994209 vedená u Krajského soudu v Ostravě",
                     "address": {
                         "street": "Rozvodná",
                         "houseNumber": "55/1",

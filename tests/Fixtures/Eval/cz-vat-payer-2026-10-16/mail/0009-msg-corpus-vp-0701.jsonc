@@ -1,0 +1,201 @@
+{
+  "format": "shpd.mail.incomingMessage",
+  "formatVersion": "1.0",
+  "messageId": "MSG-CORPUS-VP-0701",
+  "mailbox": "default",
+  "primaryType": "invoiceReceived",
+  "primaryTypeSource": "ai",
+  "subject": "Faktura 2026-07",
+  "senderEmail": "kurzy@studio-hraz.example",
+  "senderName": "Vzdělávací studio Hráz s.r.o.",
+  "partnerName": "Vzdělávací studio Hráz s.r.o.",
+  "receivedAt": "2026-09-05T08:00:00",
+  "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026-07.\n\nVzdělávací studio Hráz s.r.o.",
+  "sourceType": 2,
+  "docState": 20,
+  "analysisState": 30,
+  "aiTitle": "Faktura 2026-07 — Vzdělávací studio Hráz s.r.o., 5 700,00 Kč",
+  "created": "2026-09-05T08:00:00",
+  "attachments": [
+    {
+      "file": "0701-domestic-non-payer-supplier.pdf",
+      "name": "0701-domestic-non-payer-supplier.pdf",
+      "mimeType": "application/pdf",
+      "size": 26519,
+      "sha256": "0629e84c2b8631161c09b81408d722da1307cf20c9263c6f143b31c75ca529e8",
+      "order": 1
+    }
+  ],
+  "analyses": [
+    {
+      "analyzedAt": "2026-09-05T08:01:00",
+      "status": 2,
+      "modelName": "corpus-ideal",
+      "promptVersion": "corpus",
+      "profile": "czech_general",
+      "confidence": 1.0,
+      "proposedType": "invoiceReceived",
+      "contentTag": "services.training",
+      "tokensInput": 0,
+      "tokensOutput": 0,
+      "durationMs": 0,
+      "costUsd": 0.0,
+      "created": "2026-09-05T08:01:00",
+      "canonicalJson": {
+        "format": "shpd.docs.document",
+        "formatVersion": "1.0",
+        "source": {
+          "kind": "aiExtraction",
+          "extractedAt": "2026-09-05T08:01:00+00:00",
+          "confidence": 1,
+          "promptVersion": "corpus"
+        },
+        "docType": "invoiceReceived",
+        "docNumber": "2026-07",
+        "selfParty": "customer",
+        "supplier": {
+          "name": "Vzdělávací studio Hráz s.r.o.",
+          "country": "cz",
+          "companyId": "25052039",
+          "taxId": null,
+          "vatId": null,
+          "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+          "address": {
+            "street": "Lektorská",
+            "houseNumber": "21",
+            "city": "Jihlava",
+            "zip": "58601",
+            "country": "cz"
+          },
+          "contact": {
+            "name": null,
+            "email": "kurzy@studio-hraz.example",
+            "phone": "+420000309842",
+            "web": null
+          },
+          "bankAccount": {
+            "accountNumber": "8360405366/0600",
+            "iban": "CZ0606000000008360405366",
+            "bic": null
+          }
+        },
+        "customer": {
+          "name": "Tvarokov s.r.o.",
+          "country": "cz",
+          "companyId": "27893286",
+          "taxId": "CZ27893286",
+          "vatId": "CZ27893286",
+          "courtRegistration": null,
+          "address": {
+            "street": "Lisovací",
+            "houseNumber": "418/2",
+            "city": "Zlín",
+            "zip": "76001",
+            "country": "cz"
+          },
+          "contact": {
+            "name": null,
+            "email": null,
+            "phone": null,
+            "web": null
+          },
+          "bankAccount": {
+            "accountNumber": null,
+            "iban": null,
+            "bic": null
+          }
+        },
+        "dates": {
+          "issueDate": "2026-09-04",
+          "dueDate": "2026-09-18",
+          "taxPointDate": null,
+          "periodFrom": null,
+          "periodTo": null
+        },
+        "currency": "CZK",
+        "exchangeRate": null,
+        "vat": {
+          "mode": "none",
+          "place": "domestic",
+          "reverseCharge": false
+        },
+        "payment": {
+          "method": "bankTransfer",
+          "paymentReference": "202607",
+          "specificSymbol": null,
+          "constantSymbol": null
+        },
+        "notes": {
+          "onDocument": "Školení proběhlo 2. 9. 2026 v sídle odběratele."
+        },
+        "rows": [
+          {
+            "rowKind": "item",
+            "item": {
+              "supplierCode": null,
+              "ean": null,
+              "name": "Školení první pomoci pro zaměstnance (8 hodin)",
+              "description": null
+            },
+            "unit": "ks",
+            "quantity": 1,
+            "unitPrice": 4800,
+            "totalPrice": 4800,
+            "priceCalcMode": "fromUnitPrice",
+            "discountPct": null,
+            "discountAmount": null,
+            "vat": {
+              "pct": null,
+              "supplyKind": null,
+              "reverseChargeCode": null
+            }
+          },
+          {
+            "rowKind": "item",
+            "item": {
+              "supplierCode": null,
+              "ean": null,
+              "name": "Studijní materiály pro účastníky",
+              "description": null
+            },
+            "unit": "ks",
+            "quantity": 6,
+            "unitPrice": 150,
+            "totalPrice": 900,
+            "priceCalcMode": "fromUnitPrice",
+            "discountPct": null,
+            "discountAmount": null,
+            "vat": {
+              "pct": null,
+              "supplyKind": null,
+              "reverseChargeCode": null
+            }
+          }
+        ],
+        "vatRecap": [],
+        "totals": {
+          "totalBase": null,
+          "totalVat": null,
+          "totalAmount": 5700,
+          "totalRounding": 0
+        },
+        "attachments": [
+          {
+            "filename": "0701-domestic-non-payer-supplier.pdf",
+            "mimeType": "application/pdf",
+            "kind": "original",
+            "ref": "att:1"
+          }
+        ],
+        "_resolve": {
+          "contentTag": {
+            "tag": "services.training",
+            "tagSource": "llm",
+            "tagConfidence": 1,
+            "rowExceptions": []
+          }
+        }
+      }
+    }
+  ]
+}

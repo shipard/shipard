@@ -21,8 +21,8 @@
             "file": "0301-domestic-rounding.pdf",
             "name": "0301-domestic-rounding.pdf",
             "mimeType": "application/pdf",
-            "size": 53981,
-            "sha256": "cd77c1d0ae73649960b5be91ca9f6da42696cefabb4baec271aa34389ea08171",
+            "size": 53991,
+            "sha256": "7ce359feb33e32a0f1f17320a048878551ecc0e2be26109a49e3c0efa5472fef",
             "order": 1
         }
     ],
@@ -69,7 +69,7 @@
                             "companyId": "01848739",
                             "taxId": "CZ01848739",
                             "vatId": "CZ01848739",
-                            "courtRegistration": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                            "courtRegistration": "B 994209 vedená u Krajského soudu v Ostravě",
                             "address": {
                                 "street": "Rozvodná",
                                 "houseNumber": "55/1",
@@ -246,7 +246,7 @@
                     "companyId": "01848739",
                     "taxId": "CZ01848739",
                     "vatId": "CZ01848739",
-                    "courtRegistration": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "courtRegistration": "B 994209 vedená u Krajského soudu v Ostravě",
                     "address": {
                         "street": "Rozvodná",
                         "houseNumber": "55/1",

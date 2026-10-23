@@ -214,34 +214,36 @@ class CanonicalComparatorTest extends TestCase
 
     public function testEvaluateRowExceptionsByRowIndexNotByPosition(): void
     {
-        // Baseline 2026-10-15 (tasks/testing-phase4.md § 8): očekávání má výjimky
-        // na řádcích 28–43, model označil navíc 25–27 (kávové filtry, kelímky,
+        // Baseline 2026-10-15 (tasks/testing-phase4.md § 8): model označil jako
+        // výjimky navíc tři řádky před blokem občerstvení (kávové filtry, kelímky,
         // míchátka). Po pozicích to dalo 16× wrong rowIndex „posunutý o −3“;
-        // výjimku ale identifikuje rowIndex, správně jsou to 3× extra.
+        // výjimku ale identifikuje rowIndex, správně jsou to 3× extra. Od #103
+        // D104 má očekávání výjimky na řádcích 26–43 (filtry a kelímky jsou
+        // v bloku občerstvení), scénář „tři navíc před blokem“ = 23–25.
         $a = self::longDocument();
-        $this->assertSame(self::exceptions(range(28, 43)), $a['_resolve']['contentTag']['rowExceptions']);
+        $this->assertSame(self::exceptions(range(26, 43)), $a['_resolve']['contentTag']['rowExceptions']);
         $b = $a;
-        $b['_resolve']['contentTag']['rowExceptions'] = self::exceptions(range(25, 43));
+        $b['_resolve']['contentTag']['rowExceptions'] = self::exceptions(range(23, 43));
 
         $outcomes = $this->cmp->evaluate($a, $b);
         $this->assertSame([
+            '_resolve.contentTag.rowExceptions[23]' => 'extra',
+            '_resolve.contentTag.rowExceptions[24]' => 'extra',
             '_resolve.contentTag.rowExceptions[25]' => 'extra',
-            '_resolve.contentTag.rowExceptions[26]' => 'extra',
-            '_resolve.contentTag.rowExceptions[27]' => 'extra',
         ], self::deviations($outcomes));
         $byPath = self::byPath($outcomes);
         $this->assertArrayNotHasKey('_resolve.contentTag.rowExceptions', $byPath, 'žádný výsledek s počty — rozdíl nesou prvky');
-        $this->assertSame(FieldState::Match, $byPath['_resolve.contentTag.rowExceptions[28].tag']->state);
+        $this->assertSame(FieldState::Match, $byPath['_resolve.contentTag.rowExceptions[26].tag']->state);
         $this->assertSame(FieldState::Match, $byPath['_resolve.contentTag.rowExceptions[43].rowIndex']->state);
-        $this->assertNull($byPath['_resolve.contentTag.rowExceptions[25]']->expected);
-        $this->assertSame(['rowIndex' => 25, 'tag' => 'people.catering'], $byPath['_resolve.contentTag.rowExceptions[25]']->actual);
-        $this->assertSame('_resolve.contentTag.rowExceptions[]', $byPath['_resolve.contentTag.rowExceptions[25]']->nodePath());
+        $this->assertNull($byPath['_resolve.contentTag.rowExceptions[23]']->expected);
+        $this->assertSame(['rowIndex' => 23, 'tag' => 'people.catering'], $byPath['_resolve.contentTag.rowExceptions[23]']->actual);
+        $this->assertSame('_resolve.contentTag.rowExceptions[]', $byPath['_resolve.contentTag.rowExceptions[23]']->nodePath());
 
         // Chybějící výjimka a jiný štítek u téhož řádku — pořadí v poli nehraje roli.
-        $b['_resolve']['contentTag']['rowExceptions'] = array_reverse(self::exceptions(range(29, 43)));
+        $b['_resolve']['contentTag']['rowExceptions'] = array_reverse(self::exceptions(range(27, 43)));
         $b['_resolve']['contentTag']['rowExceptions'][0]['tag'] = 'office.supplies';   // řádek 43
         $this->assertSame([
-            '_resolve.contentTag.rowExceptions[28]' => 'missing',
+            '_resolve.contentTag.rowExceptions[26]' => 'missing',
             '_resolve.contentTag.rowExceptions[43].tag' => 'wrong',
         ], self::deviations($this->cmp->evaluate($a, $b)));
 
@@ -337,18 +339,18 @@ class CanonicalComparatorTest extends TestCase
     {
         $a = self::longDocument();
         $b = $a;
-        $b['_resolve']['contentTag']['rowExceptions'] = self::exceptions(range(25, 43));
+        $b['_resolve']['contentTag']['rowExceptions'] = self::exceptions(range(23, 43));   // očekávání 26–43 (D104)
         $diffs = $this->cmp->compare($a, $b);
         $this->assertSame([
+            '_resolve.contentTag.rowExceptions[23]',
+            '_resolve.contentTag.rowExceptions[24]',
             '_resolve.contentTag.rowExceptions[25]',
-            '_resolve.contentTag.rowExceptions[26]',
-            '_resolve.contentTag.rowExceptions[27]',
         ], self::paths($diffs));
         $this->assertNull($diffs[0]->expected);
-        $this->assertSame(['rowIndex' => 25, 'tag' => 'people.catering'], $diffs[0]->actual);
+        $this->assertSame(['rowIndex' => 23, 'tag' => 'people.catering'], $diffs[0]->actual);
         $this->assertSame('_resolve.contentTag.rowExceptions[]', $diffs[0]->nodePath());
 
-        $b['_resolve']['contentTag']['rowExceptions'] = array_reverse(self::exceptions(range(28, 43)));
+        $b['_resolve']['contentTag']['rowExceptions'] = array_reverse(self::exceptions(range(26, 43)));
         $this->assertSame([], $this->cmp->compare($a, $b), 'pořadí výjimek nehraje roli');
         $b['_resolve']['contentTag']['rowExceptions'][0]['tag'] = 'office.supplies';   // řádek 43
         $this->assertSame(['_resolve.contentTag.rowExceptions[43].tag'], self::paths($this->cmp->compare($a, $b)));

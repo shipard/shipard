@@ -21,16 +21,16 @@
             "file": "0402-domestic-reverse-charge.pdf",
             "name": "0402-domestic-reverse-charge.pdf",
             "mimeType": "application/pdf",
-            "size": 33054,
-            "sha256": "c661b0a6da008f4a83da553dfdd7e54d4212beb50ee7f6de6f4de9e0d106babd",
+            "size": 33059,
+            "sha256": "d6a173cee4e4f05b5facd6b779fc14ac65dab33d2c37586be435cdfce3e3db8d",
             "order": 1
         },
         {
             "file": "0402-domestic-reverse-charge.isdoc",
             "name": "0402-domestic-reverse-charge.isdoc",
             "mimeType": "text/xml",
-            "size": 5991,
-            "sha256": "33999bfb601dd4b76a2b58bae5e5cb48cef766b09aff58a298a87e713a36e446",
+            "size": 5974,
+            "sha256": "87c831423721029ae8a9928414f7590623c84b571b74e6a438a5811ebd845ea4",
             "order": 2
         }
     ],
@@ -77,7 +77,7 @@
                             "companyId": "16612248",
                             "taxId": "CZ16612248",
                             "vatId": "CZ16612248",
-                            "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                            "courtRegistration": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
                             "address": {
                                 "street": "Cihlová",
                                 "houseNumber": "980/12",
@@ -254,7 +254,7 @@
                     "companyId": "16612248",
                     "taxId": "CZ16612248",
                     "vatId": "CZ16612248",
-                    "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "courtRegistration": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
                     "address": {
                         "street": "Cihlová",
                         "houseNumber": "980/12",
