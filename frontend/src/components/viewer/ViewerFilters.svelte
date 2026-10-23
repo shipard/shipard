@@ -91,16 +91,16 @@
   .shpd-viewer-filters__item {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     min-width: 0;
   }
 
   .shpd-viewer-filters__item--checkbox {
     flex-direction: row;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
     /* Zarovnat checkbox na účaří inputů vedle (label nad polem je vynechán). */
-    padding-bottom: 6px;
+    padding-bottom: 0.375rem;
   }
 
   .shpd-viewer-filters__label {
@@ -116,7 +116,7 @@
 
   .shpd-viewer-filters__select,
   .shpd-viewer-filters__input {
-    padding: 3px 6px;
+    padding: 0.1875rem 0.375rem;
     font-family: inherit;
     font-size: var(--shpd-font-size-sm);
     border: 1px solid var(--shpd-color-border);

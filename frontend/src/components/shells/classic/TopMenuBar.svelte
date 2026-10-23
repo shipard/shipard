@@ -155,7 +155,7 @@
   .shpd-topmenu__nav {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 0.125rem;
     flex: 1;
     min-width: 0;
     overflow-x: auto;
@@ -199,7 +199,7 @@
     right: 4px;
     bottom: 0;
     height: 3px;
-    border-radius: 2px 2px 0 0;
+    border-radius: 0.125rem 0.125rem 0 0;
     background-color: var(--shpd-color-accent);
   }
 
@@ -207,7 +207,7 @@
   .shpd-topmenu__badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
     font-size: 0.7rem;
     font-weight: 600;
   }

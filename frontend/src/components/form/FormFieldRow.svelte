@@ -35,7 +35,7 @@
   }
   :global(.shpd-form-field-row__required) {
     color: var(--shpd-color-danger);
-    margin-left: 2px;
+    margin-left: 0.125rem;
   }
   .shpd-form-field-row__input {
     min-width: 0;

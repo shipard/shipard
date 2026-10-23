@@ -11,7 +11,7 @@
 <style>
   .shpd-form-state-badge {
     display: inline-block;
-    padding: 2px var(--shpd-space-sm);
+    padding: 0.125rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-sm);
     font-weight: 600;

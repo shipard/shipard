@@ -538,7 +538,7 @@
   }
 
   .shpd-form-subtable__td {
-    padding: 4px var(--shpd-space-sm);
+    padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border-bottom: 1px solid var(--shpd-color-border);
     vertical-align: middle;
   }
@@ -568,7 +568,7 @@
   /* Styled span variants — stejný slovník jako ViewerGrid; `muted` navíc
      kurzívou (textový řádek dokladu). */
   /* Štítky v buňce (účely kontaktu) — mezera mezi pilulkami. */
-  .shpd-form-subtable__badge { display: inline-block; margin: 1px var(--shpd-space-xs) 1px 0; }
+  .shpd-form-subtable__badge { display: inline-block; margin: 0.0625rem var(--shpd-space-xs) 0.0625rem 0; }
   .shpd-form-subtable__span--amount  { font-variant-numeric: tabular-nums; font-weight: 600; }
   .shpd-form-subtable__span--muted   { opacity: 0.7; font-style: italic; }
   .shpd-form-subtable__span--bold    { font-weight: 600; }

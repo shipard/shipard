@@ -229,7 +229,7 @@
   }
 
   .shpd-grid__sort-arrow {
-    margin-left: 2px;
+    margin-left: 0.125rem;
     color: var(--shpd-color-primary);
   }
 
@@ -243,7 +243,7 @@
   }
 
   .shpd-grid__td {
-    padding: 6px var(--shpd-space-sm);
+    padding: 0.375rem var(--shpd-space-sm);
     border-bottom: 1px solid var(--shpd-color-border);
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
@@ -297,7 +297,7 @@
 
   .shpd-grid__td--index {
     color: var(--shpd-color-text-secondary);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-variant-numeric: tabular-nums;
   }
 
@@ -317,7 +317,7 @@
     position: sticky;
     bottom: 0;
     z-index: 2;
-    padding: 6px var(--shpd-space-sm);
+    padding: 0.375rem var(--shpd-space-sm);
     font-weight: 600;
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);

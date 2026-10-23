@@ -26,8 +26,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 2px var(--shpd-space-sm);
-    border-radius: 999px;
+    padding: 0.125rem var(--shpd-space-sm);
+    border-radius: var(--shpd-radius-full);
     font-size: var(--shpd-font-size-sm);
     background-color: var(--shpd-color-accent-soft);
     color: var(--shpd-color-accent);

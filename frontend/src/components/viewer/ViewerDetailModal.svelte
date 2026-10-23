@@ -98,7 +98,7 @@
     justify-content: center;
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-danger);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     min-height: 200px;
   }
 </style>

@@ -70,7 +70,7 @@
     gap: var(--shpd-space-sm);
     padding: var(--shpd-space-sm) var(--shpd-space-sm) var(--shpd-space-sm) var(--shpd-space-lg);
     border: 1px solid var(--shpd-color-border);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
     background: color-mix(in srgb, var(--shpd-color-bg) 82%, transparent);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);

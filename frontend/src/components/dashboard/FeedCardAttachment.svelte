@@ -225,7 +225,7 @@
   }
 
   .shpd-feed-att__preview-size {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
     flex-shrink: 0;
   }

@@ -1313,7 +1313,7 @@
     flex-direction: column;
     gap: var(--shpd-space-md);
     padding: var(--shpd-space-md);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-exchange__header {
@@ -1327,11 +1327,11 @@
 
   .shpd-exchange__type-badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 0.125rem var(--shpd-space-sm);
     background: var(--shpd-color-primary-soft);
     color: var(--shpd-color-primary);
-    border-radius: 4px;
-    font-size: 0.75rem;
+    border-radius: var(--shpd-radius-sm);
+    font-size: var(--shpd-font-size-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: var(--shpd-space-xs);
@@ -1339,7 +1339,7 @@
 
   .shpd-exchange__title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: var(--shpd-font-size-xl);
     font-weight: 600;
   }
 
@@ -1349,9 +1349,9 @@
   }
 
   .shpd-exchange__summary-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: var(--shpd-space-xs) 0.625rem;
+    border-radius: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     white-space: nowrap;
   }
@@ -1382,7 +1382,7 @@
 
   .shpd-exchange__party {
     border: 1px solid var(--shpd-color-border);
-    border-radius: 6px;
+    border-radius: var(--shpd-radius-md);
     padding: var(--shpd-space-sm);
     background: var(--shpd-color-bg);
   }
@@ -1396,7 +1396,7 @@
 
   .shpd-exchange__party-label {
     margin: 0;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--shpd-color-text-secondary);
@@ -1404,7 +1404,7 @@
 
   .shpd-exchange__party-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
     margin-bottom: var(--shpd-space-xs);
   }
 
@@ -1465,7 +1465,7 @@
   }
 
   .shpd-exchange__party-registry-error {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-danger);
   }
 
@@ -1490,12 +1490,12 @@
   }
 
   .shpd-exchange__field-value {
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-exchange__field-hint {
-    margin-left: 4px;
-    font-size: 0.75rem;
+    margin-left: var(--shpd-space-xs);
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -1509,10 +1509,10 @@
 
   .shpd-exchange__vat-select {
     font: inherit;
-    font-size: 0.875rem;
-    padding: 2px 4px;
+    font-size: var(--shpd-font-size-sm);
+    padding: 0.125rem var(--shpd-space-xs);
     border: 1px solid var(--shpd-color-border);
-    border-radius: 4px;
+    border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-bg);
     color: inherit;
     max-width: 100%;
@@ -1618,7 +1618,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    margin-left: 2px;
+    margin-left: 0.125rem;
     font-size: 0.6875rem;
     line-height: 1;
     vertical-align: middle;
@@ -1645,7 +1645,7 @@
   .shpd-exchange__enrich-summary {
     text-transform: none;
     letter-spacing: normal;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -1660,7 +1660,7 @@
 
   .shpd-exchange__section-heading {
     margin: 0 0 var(--shpd-space-xs);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--shpd-color-text-secondary);
@@ -1707,8 +1707,8 @@
      vzhled). Interaktivní varianta je <button> vzhledu textu. */
   .shpd-exchange__row-match {
     display: block;
-    margin-top: 2px;
-    font-size: 0.75rem;
+    margin-top: 0.125rem;
+    font-size: var(--shpd-font-size-xs);
     line-height: 1.3;
     color: var(--shpd-color-text-secondary);
     text-align: left;
@@ -1737,15 +1737,15 @@
   .shpd-exchange__row-match--interactive:focus-visible {
     outline: 2px solid var(--shpd-color-primary);
     outline-offset: 1px;
-    border-radius: 2px;
+    border-radius: 0.125rem;
   }
 
   .shpd-exchange__row-code {
     display: inline-block;
     margin-left: var(--shpd-space-xs);
-    padding: 0 4px;
+    padding: 0 var(--shpd-space-xs);
     background: var(--shpd-color-bg-secondary);
-    border-radius: 3px;
+    border-radius: 0.1875rem;
     font-family: var(--shpd-font-mono, monospace);
     font-size: 0.6875rem;
     color: var(--shpd-color-text-secondary);
@@ -1808,7 +1808,7 @@
   .shpd-exchange__total {
     border-top: 1px solid var(--shpd-color-border);
     padding-top: var(--shpd-space-xs);
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
   }
 
   /* ── Issues ──────────────────────────────────────────────────────────── */
@@ -1826,7 +1826,7 @@
     display: flex;
     gap: var(--shpd-space-xs);
     padding: var(--shpd-space-xs);
-    border-radius: 4px;
+    border-radius: var(--shpd-radius-sm);
     font-size: 0.8125rem;
   }
 
@@ -1873,9 +1873,9 @@
   .shpd-exchange__ai-failed-raw pre {
     background: var(--shpd-color-bg-secondary);
     padding: var(--shpd-space-sm);
-    border-radius: 4px;
+    border-radius: var(--shpd-radius-sm);
     overflow: auto;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     max-height: 320px;
   }
 </style>

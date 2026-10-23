@@ -148,7 +148,7 @@
     flex-wrap: wrap;
     gap: var(--shpd-space-sm) var(--shpd-space-md);
     padding: var(--shpd-space-md);
-    padding-left: calc(var(--shpd-space-md) + 4px);
+    padding-left: calc(var(--shpd-space-md) + var(--shpd-space-xs));
   }
 
   .shpd-ready__summary {
@@ -162,7 +162,7 @@
   }
 
   .shpd-ready__totals {
-    margin-top: 2px;
+    margin-top: 0.125rem;
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
   }
@@ -195,7 +195,7 @@
 
   .shpd-ready__rows {
     border-top: 1px solid var(--shpd-color-border);
-    padding-left: 4px;
+    padding-left: var(--shpd-space-xs);
   }
 
   /* Vlasová linka mezi sousedními řádky — kreslí ji rodič, uvnitř
@@ -208,7 +208,7 @@
   .shpd-ready__footer {
     border-top: 1px solid var(--shpd-color-border);
     padding: var(--shpd-space-sm) var(--shpd-space-md);
-    padding-left: calc(var(--shpd-space-md) + 4px);
+    padding-left: calc(var(--shpd-space-md) + var(--shpd-space-xs));
   }
 
   .shpd-ready__walkthrough {

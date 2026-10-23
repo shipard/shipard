@@ -425,7 +425,7 @@
     padding: var(--shpd-space-sm);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     min-width: 0;
   }
 
@@ -439,14 +439,14 @@
   }
 
   .shpd-attachments__size {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
   .shpd-attachments__rename-input {
     font-size: var(--shpd-font-size-sm);
     font-family: var(--shpd-font-family);
-    padding: 2px var(--shpd-space-xs);
+    padding: 0.125rem var(--shpd-space-xs);
     border: 1px solid var(--shpd-color-border-focus);
     border-radius: var(--shpd-radius-sm);
     outline: none;
@@ -472,7 +472,7 @@
     border-top: 1px solid var(--shpd-color-border);
     background: none;
     font: inherit;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
     cursor: pointer;
     text-align: left;

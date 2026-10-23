@@ -205,7 +205,7 @@
 
   .shpd-palette__group-title {
     padding: var(--shpd-space-xs) var(--shpd-space-md);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -246,7 +246,7 @@
   }
 
   .shpd-palette__item-group {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
     white-space: nowrap;
     overflow: hidden;

@@ -34,7 +34,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 0.125rem;
     list-style: none;
   }
 
@@ -84,7 +84,7 @@
     top: 4px;
     bottom: 4px;
     width: 3px;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }
 </style>

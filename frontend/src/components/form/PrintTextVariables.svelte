@@ -116,7 +116,7 @@
     display: inline-flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
+    gap: 0.125rem;
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     font: inherit;
     text-align: left;

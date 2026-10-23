@@ -1525,7 +1525,7 @@
   .shpd-viewer__search-input {
     width: 100%;
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    padding-right: 28px;
+    padding-right: 1.75rem;
     font-family: inherit;
     font-size: var(--shpd-font-size-sm);
     border: 1px solid var(--shpd-color-border);
@@ -1554,7 +1554,7 @@
     padding: 0;
     border: none;
     background: none;
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
     color: var(--shpd-color-text-secondary);
     cursor: pointer;
     border-radius: var(--shpd-radius-sm);
@@ -1612,8 +1612,8 @@
 
   .shpd-reanalyze__input {
     display: block;
-    margin-top: 6px;
-    padding: 6px 10px;
+    margin-top: 0.375rem;
+    padding: 0.375rem 0.625rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     min-width: 280px;

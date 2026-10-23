@@ -167,7 +167,7 @@
    * Tabular-nums = monospace číslice, aby šířka Č=99 a Č=10 byla stejná. */
   .shpd-viewer-row__index {
     flex-shrink: 0;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
     font-variant-numeric: tabular-nums;
   }
@@ -184,7 +184,7 @@
     height: 32px;
     flex-shrink: 0;
     border-radius: 50%;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.02em;
@@ -198,7 +198,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-viewer-row__line {

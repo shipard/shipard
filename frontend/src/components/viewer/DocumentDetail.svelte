@@ -343,7 +343,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-md);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   /* ── Header ──────────────────────────────────────────────────────────── */
@@ -359,11 +359,11 @@
 
   .shpd-docdetail__type-badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 0.125rem var(--shpd-space-sm);
     background: var(--shpd-color-primary-soft);
     color: var(--shpd-color-primary);
-    border-radius: 4px;
-    font-size: 0.75rem;
+    border-radius: var(--shpd-radius-sm);
+    font-size: var(--shpd-font-size-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: var(--shpd-space-xs);
@@ -371,7 +371,7 @@
 
   .shpd-docdetail__title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: var(--shpd-font-size-xl);
     font-weight: 600;
   }
 
@@ -381,9 +381,9 @@
   }
 
   .shpd-docdetail__state-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: var(--shpd-space-xs) 0.625rem;
+    border-radius: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     white-space: nowrap;
   }
@@ -404,14 +404,14 @@
 
   .shpd-docdetail__party {
     border: 1px solid var(--shpd-color-border);
-    border-radius: 6px;
+    border-radius: var(--shpd-radius-md);
     padding: var(--shpd-space-sm);
     background: var(--shpd-color-bg);
   }
 
   .shpd-docdetail__party-label {
     margin: 0 0 var(--shpd-space-xs);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--shpd-color-text-secondary);
@@ -419,7 +419,7 @@
 
   .shpd-docdetail__party-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
     margin-bottom: var(--shpd-space-xs);
   }
 
@@ -453,7 +453,7 @@
     padding: 0;
     font: inherit;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
     text-align: left;
     color: var(--shpd-color-primary);
     cursor: pointer;
@@ -484,7 +484,7 @@
   }
 
   .shpd-docdetail__field-value {
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   /* Na mobilu (≤ 768px, MOBILE_BREAKPOINT) má meta mřížka dva pevné
@@ -511,7 +511,7 @@
 
   .shpd-docdetail__section-heading {
     margin: 0 0 var(--shpd-space-xs);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--shpd-color-text-secondary);
@@ -568,8 +568,8 @@
   .shpd-docdetail__row-badge {
     display: inline-block;
     margin-left: var(--shpd-space-xs);
-    padding: 1px 6px;
-    border-radius: 999px;
+    padding: 0.0625rem 0.375rem;
+    border-radius: var(--shpd-radius-full);
     font-size: 0.6875rem;
     font-weight: 500;
     line-height: 1.4;
@@ -608,11 +608,11 @@
   .shpd-docdetail__total {
     border-top: 1px solid var(--shpd-color-border);
     padding-top: var(--shpd-space-xs);
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
   }
 
   .shpd-docdetail__total-dom {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -660,9 +660,9 @@
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     border-radius: var(--shpd-radius-md);
-    padding: 2px 10px;
+    padding: 0.125rem 0.625rem;
     font: inherit;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     cursor: pointer;
   }
 

@@ -141,7 +141,7 @@
   .shpd-attgrid__badge {
     display: inline-block;
     margin-left: var(--shpd-space-xs);
-    padding: 0 6px;
+    padding: 0 0.375rem;
     border-radius: var(--shpd-radius-sm);
     font-size: 0.75em;
     line-height: 1.5;
@@ -197,7 +197,7 @@
     padding: var(--shpd-space-sm);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     min-width: 0;
   }
 
@@ -211,7 +211,7 @@
   }
 
   .shpd-attgrid__size {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 

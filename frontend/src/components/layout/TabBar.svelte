@@ -30,7 +30,7 @@
   .shpd-tabbar {
     display: flex;
     align-items: flex-end;
-    gap: 2px;
+    gap: 0.125rem;
     padding: 0 var(--shpd-space-md);
     padding-top: var(--shpd-space-xs);
     background-color: var(--shpd-color-bg);
@@ -45,7 +45,7 @@
   }
   .shpd-tabbar::-webkit-scrollbar-thumb {
     background: var(--shpd-color-border);
-    border-radius: 2px;
+    border-radius: 0.125rem;
   }
 
   .shpd-tabbar__tab {
@@ -89,7 +89,7 @@
     justify-content: center;
     width: 16px;
     height: 16px;
-    font-size: 14px;
+    font-size: var(--shpd-font-size-sm);
     line-height: 1;
     color: var(--shpd-color-text-secondary);
     border-radius: var(--shpd-radius-sm);

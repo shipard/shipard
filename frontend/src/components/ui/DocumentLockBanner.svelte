@@ -64,7 +64,7 @@
 
   .shpd-lock-banner__icon {
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-lock-banner__title {

@@ -306,7 +306,7 @@
   .shpd-theme-swatches__color-input {
     width: 100%;
     height: 36px;
-    padding: 2px;
+    padding: 0.125rem;
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);

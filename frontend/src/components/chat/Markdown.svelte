@@ -96,7 +96,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.9em;
     background-color: var(--shpd-color-bg-secondary);
-    padding: 1px 4px;
+    padding: 0.0625rem var(--shpd-space-xs);
     border-radius: var(--shpd-radius-sm);
   }
   .shpd-md :global(pre) {

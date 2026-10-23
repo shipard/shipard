@@ -839,7 +839,7 @@
     border: 1px solid var(--shpd-color-primary);
     border-radius: var(--shpd-radius-md);
     color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-md, 1rem);
+    font-size: var(--shpd-font-size-base);
     box-shadow: var(--shpd-shadow-lg, 0 4px 16px rgba(0, 0, 0, 0.25));
   }
 

@@ -145,7 +145,7 @@
 
   .shpd-failure-card__tech {
     margin-top: var(--shpd-space-sm);
-    font-size: 12px;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -157,7 +157,7 @@
   .shpd-failure-card__dl {
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: 2px var(--shpd-space-md);
+    gap: 0.125rem var(--shpd-space-md);
     margin: var(--shpd-space-sm) 0 0;
   }
 
@@ -174,6 +174,6 @@
     display: block;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 </style>

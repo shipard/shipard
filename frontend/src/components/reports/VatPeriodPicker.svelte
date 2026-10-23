@@ -221,7 +221,7 @@
   .shpd-period__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     max-height: 60vh;
     overflow-y: auto;
   }

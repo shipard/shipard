@@ -495,9 +495,9 @@
 
   /* Počítadlo pozice ve frontě („3 / 8") — nenápadný badge v hlavičce. */
   .shpd-exchange-modal__queue-pos {
-    padding: 2px var(--shpd-space-sm);
+    padding: 0.125rem var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
@@ -521,7 +521,7 @@
     justify-content: center;
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-text-secondary);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     min-height: 200px;
   }
 
@@ -546,8 +546,8 @@
     cursor: pointer;
     color: var(--shpd-color-text-secondary);
     border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    font-size: 0.875rem;
+    margin-bottom: -0.0625rem;
+    font-size: var(--shpd-font-size-sm);
     font-weight: 500;
   }
 
@@ -571,7 +571,7 @@
     overflow-y: auto;
     min-height: 0;
     border: 1px solid var(--shpd-color-border);
-    border-radius: 6px;
+    border-radius: var(--shpd-radius-md);
     background: var(--shpd-color-bg);
   }
 

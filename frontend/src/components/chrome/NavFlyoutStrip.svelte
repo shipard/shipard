@@ -126,7 +126,7 @@
   .shpd-flyoutstrip {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     padding: var(--shpd-space-sm) var(--shpd-space-xs);
     list-style: none;
     overflow-y: auto;
@@ -141,9 +141,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
     width: 100%;
-    padding: var(--shpd-space-sm) 2px;
+    padding: var(--shpd-space-sm) 0.125rem;
     color: var(--shpd-color-text-sidebar);
     border-radius: var(--shpd-radius-sm);
     transition: background-color 0.15s, opacity 0.15s;
@@ -183,7 +183,7 @@
     top: 4px;
     bottom: 4px;
     width: 3px;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }
 
@@ -192,7 +192,7 @@
   .shpd-flyoutstrip__flyout {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 0.0625rem;
   }
 
   .shpd-flyoutstrip__flyout-item {

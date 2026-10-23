@@ -337,7 +337,7 @@
     list-style: none;
     /* Odsazení pod název skupiny: checkbox hlavičky (18px) + gap. */
     margin: 0;
-    padding: 0 var(--shpd-space-sm) var(--shpd-space-sm) calc(18px + 2 * var(--shpd-space-sm));
+    padding: 0 var(--shpd-space-sm) var(--shpd-space-sm) calc(1.125rem + 2 * var(--shpd-space-sm));
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
@@ -364,7 +364,7 @@
   }
 
   .shpd-items-offer__badge {
-    padding: 1px var(--shpd-space-sm);
+    padding: 0.0625rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-xs);
     background: var(--shpd-color-bg-hover);

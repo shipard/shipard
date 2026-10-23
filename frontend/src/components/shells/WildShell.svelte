@@ -232,7 +232,7 @@
   .shpd-wild__tabs {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 0.125rem;
     height: 44px;
     padding: 0 var(--shpd-space-sm);
     background: var(--shpd-sidebar-bg-image, var(--shpd-color-bg-sidebar));
@@ -246,10 +246,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 0.375rem;
     min-width: 36px;
     height: 36px;
-    padding: 0 8px;
+    padding: 0 var(--shpd-space-sm);
     color: var(--shpd-color-text-sidebar);
     border-radius: var(--shpd-radius-sm);
     transition: background-color 0.15s, opacity 0.15s;
@@ -282,7 +282,7 @@
     right: 4px;
     bottom: 0;
     height: 3px;
-    border-radius: 2px 2px 0 0;
+    border-radius: 0.125rem 0.125rem 0 0;
     background-color: var(--shpd-color-accent);
   }
 

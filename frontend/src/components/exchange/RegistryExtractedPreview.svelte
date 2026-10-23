@@ -110,11 +110,11 @@
 
   .shpd-registry-preview__kind-badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 0.125rem var(--shpd-space-sm);
+    border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-primary-soft, rgba(59, 130, 246, 0.12));
     color: var(--shpd-color-primary);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -122,7 +122,7 @@
 
   .shpd-registry-preview__title {
     margin: 0;
-    font-size: 1.125rem;
+    font-size: var(--shpd-font-size-lg);
     font-weight: 600;
   }
 
@@ -136,14 +136,14 @@
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     border-left: 3px solid var(--shpd-color-primary);
     background: var(--shpd-color-bg);
-    border-radius: 0 6px 6px 0;
-    font-size: 0.875rem;
+    border-radius: 0 var(--shpd-radius-md) var(--shpd-radius-md) 0;
+    font-size: var(--shpd-font-size-sm);
     line-height: 1.5;
   }
 
   .shpd-registry-preview__section-heading {
     margin: 0 0 var(--shpd-space-xs);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -153,7 +153,7 @@
   .shpd-registry-preview__fields {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-registry-preview__fields tr {
@@ -179,7 +179,7 @@
   }
 
   .shpd-registry-preview__binder {
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-registry-preview__binder-label {

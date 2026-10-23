@@ -145,12 +145,12 @@
     flex-direction: column;
     align-items: stretch;
     width: 100%;
-    gap: 2px;
+    gap: 0.125rem;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     /* Badge přesahuje tlačítko — bez rezervy by ho overflow ořízl. */
-    padding: 2px var(--shpd-space-xs);
+    padding: 0.125rem var(--shpd-space-xs);
   }
 
   /* Ikona s popiskem pod sebou (Issue #51, jazyk NavFlyoutStrip) —
@@ -161,9 +161,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
     width: 100%;
-    padding: var(--shpd-space-sm) 2px;
+    padding: var(--shpd-space-sm) 0.125rem;
     color: var(--shpd-color-text-sidebar);
     border-radius: var(--shpd-radius-sm);
     transition: background-color 0.15s, opacity 0.15s;
@@ -203,7 +203,7 @@
     top: 4px;
     bottom: 4px;
     width: 3px;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }
 
@@ -215,8 +215,8 @@
     right: 12px;
     min-width: 14px;
     height: 14px;
-    padding: 0 3px;
-    border-radius: 7px;
+    padding: 0 0.1875rem;
+    border-radius: 0.4375rem;
     font-size: 0.6rem;
     font-weight: 700;
     line-height: 14px;
