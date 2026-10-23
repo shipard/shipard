@@ -2304,6 +2304,50 @@ nebo odmítnutý preflight. Selhání apply jedné zprávy je výsledek, ne pád
 | `--json` | Report jako JSON na stdout |
 | `--write-ledger-snapshot=<soubor>` | Zapsat aktuální hlavní knihu (`ReportResult` JSON) a vypsat obraty po účtech; kontrola deníku pak končí „přeskočeno“ — snímek schvaluje člověk a commituje do `tests/corpus/<země>/profiles/<profil>/approved/` |
 
+#### `dataset-e2e`
+
+```bash
+shpd-ds dataset-e2e /cesta/k/repu/tests/datasets/cz/non-payer
+shpd-ds dataset-e2e /cesta/k/repu/tests/datasets/cz/non-payer --json
+shpd-ds dataset-e2e /cesta/k/repu/tests/datasets/cz/non-payer --no-reseed --output-dir /tmp/e2e-non-payer
+shpd-ds dataset-e2e /cesta/k/repu/tests/datasets/cz/non-payer --base-url http://10.0.0.5
+```
+
+Proklikání datové sady v prohlížeči jako účetní (#103 F7a, D91–D96,
+`docs/test-corpus.md` § 19): zdroj dat přeseeduje (`dataset-seed --yes`),
+založí vyhrazeného uživatele `e2e` (administrátor, systémový, bez hesla;
+přeseedování ho zachová) a krátkodobou session, token zapíše jen do
+souboru `storageState` (0600) v adresáři běhu, spustí Playwright Test
+(`tests/e2e/`: dashboard → Zkontrolovat → nerozhodnuté reference
+Vytvořit → Vystavit a uzavřít → toast, karty v pořadí serveru), session
+zneplatní a soubor smaže (i při chybě a SIGTERM), spustí `dataset-verify
+--no-apply` a vydá report. Stejný příkaz spouští úloha vývojářského
+dashboardu (**Proklikat** v panelu sady).
+
+**Preflight** (nic se nemění, exit 2): režim `development`, třída zdroje
+dat `free`, sada ze seznamu sad v checkoutu, `node` v systémovém `PATH`,
+`tests/e2e/node_modules`, Chromium Playwrightu pod uživatelem, který
+příkaz spouští, a dosažitelnost `<base-url>/<ds-id>/app/`. Chybějící
+Node, závislosti nebo prohlížeč: `cd tests/e2e && npm ci && npx
+playwright install chromium`.
+
+Výstup: karty použité / selhané (id karty, krok, důvod, cesta reference,
+trace), chyby prohlížeče, odpovědi API ≥ 400, souhrn kontrol
+`dataset-verify`, cesty k HTML reportu a trace souborům, stav `ok` /
+`failed`; `--json` tentýž obsah jako jeden JSON na stdout (lidské řádky
+na stderr). Exit `0` jen při `ok`, `1` nálezy (selhaná karta, chyba
+prohlížeče, 5xx, kontrola jiná než `ok`), `2` odmítnutý preflight, `130`
+zrušeno (SIGTERM: Playwright dostane SIGINT, session se uklidí).
+
+| Opce | Význam |
+|------|--------|
+| `<path>` | Složka sady (s `expected/`) nebo `.zip` — musí být sada z checkoutu |
+| `--no-reseed` | Bez přeseedování (jen ladění; zdroj dat musí tutéž sadu držet) — druhý běh bez karet skončí nesouladem počtu |
+| `--base-url <url>` | Origin aplikace, výchozí `http://127.0.0.1`; adresa aplikace = `<url>/<ds-id>/app/` |
+| `--output-dir <adresář>` | Adresář běhu (`walkthrough.json`, `report.json`, `playwright-report/`, `traces/`, `storageState` jen po dobu běhu); výchozí nový adresář v systémovém temp, cesta je ve výstupu |
+| `--json` | Report jako JSON na stdout |
+| `--progress-file <soubor>` | JSON řádky průběhu `started` / `step` / `card` / `finished` / `error` (úloha dashboardu) |
+
 ---
 
 ## Pomocné skripty

@@ -1196,3 +1196,177 @@ konstant `SIGTERM`.
   chyba očekávání se opravuje v generátoru se schválením.
 - **Nedeterminismus.** Jeden běh nestačí na závěr „lepší / horší“ u malých
   rozdílů — proto `--repeat` a rozpětí.
+
+## 19. Proklikání datových sad (F7a)
+
+F3 (§ 17) používá návrhy sady přímo přes `MessageProposalApplier`
+s `autoCreateMode` liberal. Cestu účetní — karta na dashboardu →
+Zkontrolovat → rozhodnutí referencí → Vystavit a uzavřít — tak nepokrývá:
+frontend, `POST /_mail/messages/{ndx}/apply` ani strict mód s `_resolve`
+od klienta. Proklikání (tasks/testing-phase7a.md, #103 D86–D96) ji projde
+v prohlížeči nad čerstvě naseedovaným zdrojem dat sady a výsledek ověří
+týmiž kontrolami jako F3 (`dataset-verify --no-apply`). **Rozdíl proti F3
+je nález** v Shipardu nebo v sadě (D85) — zapisuje se do oddílu Nálezy
+tasku a opravuje jen se schválením (D-číslo v #103), ne v rámci
+proklikání.
+
+### Jeden příkaz, úloha dashboardu je jeho obal (D91)
+
+```bash
+cd /opt/shipard/data-sources/<ds-id>
+shpd-ds dataset-e2e /cesta/k/repu/tests/datasets/cz/non-payer --json
+```
+
+Kroky: **preflight** (exit 2) → **přeseedování** (`dataset-seed --yes`
+ve stejném procesu; `--no-reseed` jen pro ladění a jen když zdroj dat
+tutéž sadu už drží) → **uživatel a session** (D92) → **Playwright Test**
+(`tests/e2e/`, podproces) → úklid session → **`dataset-verify --no-apply`**
+(ve stejném procesu) → **report**. Z vývojářského dashboardu je to akce
+**Proklikat** v panelu sady (Testování → sada → Zdroje dat se sadou),
+úloha typu `e2e` se stejným příkazem (`--json --progress-file
+<úloha>/progress.jsonl --output-dir <úloha>/e2e --base-url <origin
+požadavku>`), `docs/dev/dev-daily.md` § 1.
+
+- **Preflight** (`E2ePreflight`): režim serveru přesně `development`
+  (fail-closed — chybějící `server.json` = odmítnutí), třída zdroje dat
+  `free`, sada ze seznamu sad v checkoutu (`DevActionGuard` jako u úloh
+  dashboardu), `node` v pevném `PATH` (`UpdateEnvironment::DEFAULT_PATH`
+  — Node z nvm neinteraktivní shell ani php-fpm nevidí),
+  `tests/e2e/node_modules/@playwright/test/cli.js`, Chromium Playwrightu
+  (revize z `playwright-core/browsers.json` →
+  `<home>/.cache/ms-playwright/chromium-<rev>/INSTALLATION_COMPLETE`,
+  domovský adresář **uživatele, pod kterým příkaz běží** — z dashboardu
+  je to uživatel php-fpm) a dosažitelnost `<base-url>/<ds-id>/app/`.
+  Chybějící Node, závislosti nebo prohlížeč odmítne s přesnou větou:
+  `cd tests/e2e && npm ci && npx playwright install chromium`.
+- **Přihlášení bez hesla (D92).** Vyhrazený uživatel `e2e` (administrátor,
+  `is_system = 1` — neukazuje se v „Vystavil“, nejde mu resetovat heslo,
+  `password_hash` NULL; `keepOnReset` ho přes přeseedování zachová).
+  Příkaz mu před během založí session s krátkou platností
+  (`SessionService::createSession(…, ttlSeconds)`), token zapíše **jen**
+  do souboru Playwright `storageState` (0600 v adresáři běhu —
+  `origins[].localStorage` `shpd_token` + `shpd_user`, žádné cookies) a po
+  běhu — i při výjimce a SIGTERM — zneplatní všechny sessions uživatele
+  `e2e` (`invalidateAllForUser`: klient na 401 token rotuje) a soubor
+  smaže. Token není na stdout, v argumentech, v logu ani v reportu.
+  **Trace selhané karty ale hlavičky požadavků nese** (`Authorization:
+  Bearer …`) — přijatelné jen proto, že session je v tu chvíli mrtvá.
+- **Playwright jako podproces**: `node <repo>/tests/e2e/node_modules/@playwright/test/cli.js
+  test --config <repo>/tests/e2e/playwright.config.mjs` s cwd
+  `tests/e2e` (ne `npx` — chce zapisovatelný HOME, sahá na síť
+  a nespolehlivě předává signály). Prostředí = `UpdateEnvironment::env()`
+  + `HOME` (php-fpm ho nepředává) + `SHPD_E2E_*` + `CI=1`. Oba výstupy
+  podprocesu jdou na stderr příkazu (rourami, ne zděděnými deskriptory —
+  stdout příkazu s `--json` je **jeden** JSON dokument, který úloha
+  dashboardu ukládá jako `result.json`).
+- **Zrušení**: SIGTERM příkazu → Playwright dostane **SIGINT** (zavře
+  prohlížeč, dopíše reportéry, exit 130), po grace SIGKILL; session se
+  uklidí, exit 130. Z dashboardu jde SIGTERM celé skupině procesů — node
+  padne hned, příkaz uvidí konec potomka a uklidí stejně.
+
+### Co spec dělá (D87, D93–D95)
+
+`tests/e2e/dataset-walkthrough.spec.mjs` (Playwright Test 1.62, stejná
+verze jako `playwright` ve video-runneru; jeden projekt, Chromium kanál
+`chromium`, locale `cs-CZ`, jeden worker, `retries: 0`) dostává vstupy
+**jen z prostředí**: `SHPD_E2E_APP_URL` (`<base-url>/<ds-id>/app/`),
+`SHPD_E2E_STORAGE_STATE`, `SHPD_E2E_OUTPUT_DIR`, `SHPD_E2E_EXPECTED_CARDS`
+(počet zpráv sady s otevřeným návrhem — příkaz ho po přeseedování spočítá
+týmž predikátem, kterým feed vybírá karty návrhů,
+`MailSuggestionsSource::openProposalWhere()`) a volitelně
+`SHPD_E2E_PROGRESS_FILE`. Chybějící proměnná shodí už sběr testů s jejím
+jménem. Texty UI se nepoužívají, jen testidy (`docs/frontend.md` § 9).
+
+Průchod: dashboard → dokud je ve feedu karta `mail_suggestion:*`
+(v pořadí serveru, D94 — nejnovější první, F3 jde `received_at`
+vzestupně): **Zkontrolovat** (`card-action-review`) → náhled načtený
+(`review-state[data-loaded]`) → dokud je Vystavit a uzavřít neaktivní:
+odznak čekající reference (`review-ref:{path}` se stavem `canCreate` /
+`ambiguous` / `notFound`, jen cesty z `data-pending-paths`) → popover →
+**Vytvořit** (`review-ref-create:{path}` → vnořený formulář → Uložit →
+rozhodnutí `useExisting:<id>` → uložené `POST …/decisions`); když
+Vytvořit není (kód DPH, cesta bez odznaku), karta selže s cestou (D93) →
+**Vystavit a uzavřít** (`review-apply-final`; Spisovna
+`review-apply-registry`) → odpověď apply → znovu načtený feed → toast →
+karta zmizela. Každá karta je `test.step` s id karty; selhání se sbírá
+a test pokračuje další kartou, vyhodnocení je na konci (použité =
+očekávané, žádná neprošlá karta, žádné selhání, chyby prohlížeče ani
+5xx). Jiné hodnoty návrhu spec nemění.
+
+- **Selhání (D95)**: selhaná karta (`open_review/…`, `preview/load_error
+  | ai_failed`, `decide/no_create_offered | create_failed |
+  decision_timeout`, `apply/disabled | rejected:<kód>`,
+  `after_apply/modal_open | feed_reload_timeout | toast_timeout |
+  card_not_removed`), `pageerror`, `console.error` (kromě ozvěn
+  „Failed to load resource“ — tu odpověď už eviduje posluchač odpovědí),
+  odpověď API 5xx, a jakákoli kontrola `dataset-verify`, která není `ok`
+  (i `skipped` — věrnost apply a kurzy přeskakují jen bez použitého
+  dokladu, tedy když selhaly karty; všechny tři sady doklad v cizí měně
+  mají). 4xx se jen zapisují. Chyba apply z modalu je nativní `alert()` — spec ho
+  zavře a text přidá k důvodu.
+- **Trace jen selhaných karet**: config má `trace: 'off'`, spec volá
+  `tracing.start()` jednou a `startChunk` / `stopChunk` per karta;
+  `stopChunk({path})` jen při selhání (`<out>/traces/trace-<id karty>.zip`,
+  též jako příloha testu v HTML reportu). `retain-on-failure` by dal
+  jeden trace na celý test.
+- **Výstupy v adresáři běhu**: `walkthrough.json` (po každé kartě —
+  při pádu testu zůstane `complete: false` a `current` s rozpracovanou
+  kartou), `report.json` (JSON reportér Playwrightu), `playwright-report/`
+  (HTML, jen na serveru), `traces/`, `test-results/`. `card` události
+  průběhu píše spec sám (`{event: card, cardId, status, step?, reason?,
+  path?, done, total}`), `started` / `step` / `finished` / `error` příkaz
+  (tvar jako `ai-eval`, § 18).
+
+### Report (D96)
+
+`--json` = jeden objekt na stdout (lidské řádky na stderr), bez něj
+čitelný výpis. Obsah: `status` (`ok` / `failed` / `cancelled`), `exitCode`,
+`problems[]` (věty nálezů, tytéž jako v lidském výpisu), sada
+a zdroj dat, `appUrl`, `outputDir`, kroky s exit kódy a časy
+(`steps.reseed` / `walkthrough` / `verify`), `cards` (`expected`,
+`applied[]` s id dokladu, `failed[]` s krokem, důvodem, cestou, textem
+a názvem trace), `browserErrors[]`, `apiResponses[]` (≥ 400), `verify`
+(celý JSON `dataset-verify`, nebo důvod odmítnutí) a `artifacts`
+(`traces[] {cardId, file}`, HTML report, `walkthrough.json`). Exit `0`
+jen při `ok`, `1` nálezy, `2` preflight, `130` zrušeno. Výsledky zůstávají
+v adresáři běhu (výchozí nový adresář v systémovém temp, úloha dashboardu
+dává `<úloha>/e2e`) — do repozitáře se nic nezapisuje: proklikání je
+deterministické, není co porovnávat v čase. Detail úlohy ukáže souhrn,
+selhané karty s **trace ke stažení** (`GET /_dev/api/testing/jobs/{id}/files/{soubor}`
+vydá jen soubory, které report jmenuje v `artifacts.traces`, jen
+z `<úloha>/e2e/traces/`) a tabulku kontrol `dataset-verify`.
+
+Jak číst trace: `npx playwright show-trace <soubor.zip>` (v `tests/e2e/`),
+krok karty je pojmenovaný id karty, síť ukazuje `POST …/apply` s tělem
+`_resolve` a odpovědí; `walkthrough.json` u selhané karty nese
+`pendingPaths` (co ještě čekalo na rozhodnutí) a `alert`.
+
+### Odchylky od zadání
+
+- Akce karty je `review_message` / `card-action-review` („Zkontrolovat“);
+  všechny karty sad jsou v pásmu *review* (řádky bez `item.ourCode`),
+  pásmo *ready* má testidy jen pro úplnost.
+- Stav kontroly: `disabled` tlačítek Použít je přesně `!canApply`; marker
+  `review-state` nese navíc `data-pending-paths`, protože bankovní účet
+  strany odznak nemá (nález N1).
+- Playwright přes `node …/cli.js`, ne `npx`; `trace: 'off'` + chunky per
+  karta; zrušení = SIGINT Playwrightu.
+- „Vytvořit“ v kontrole založí záznam hned (formulář → `useExisting`),
+  F3 liberal až při apply — proto se liší i to, co obě cesty založí.
+- `skipped` kontrola = selhání (D95 doslova).
+
+### Pasti
+
+- **Proklikání zprávy spotřebuje** — bez přeseedování je druhý běh
+  s 0 kartami nesoulad počtu (`--no-reseed` jen pro ladění).
+- **Prohlížeč patří uživateli** (`~/.cache/ms-playwright`): instalovat pod
+  tím, pod kým běží php-fpm, jinak z terminálu projde a z dashboardu ne —
+  preflight to pozná a řekne.
+- **`http://127.0.0.1` musí mířit na Shipard** (výchozí `server_name`
+  nginx); jinak `--base-url`. Úloha dashboardu bere origin požadavku.
+- **Předkontrola registru** (`GET /persons/registry?q=<IČO>`) běží při
+  otevření kontroly automaticky; fiktivní IČO korpusu dnes dávají 502
+  (nález N3) — každý běh je tak `failed`, dokud se to nevyřeší.
+- **strict × liberal** (D93): rozdíl v tom, co jde založit, je smysl
+  proklikání, ne důvod přepnout UI na liberal.
+

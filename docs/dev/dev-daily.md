@@ -120,14 +120,15 @@ Výstupy příkazů a chybové hlášky serveru zůstávají, jak je nástroje v
 
 ### Úlohy na pozadí a pojistky (F6b)
 
-Delší operace z Testování (přeseedování, ověření, evaluace, založení
-zdroje dat) a smazání zdroje dat ze seznamu zdrojů dat neběží v HTTP
+Delší operace z Testování (přeseedování, ověření, proklikání, evaluace,
+založení zdroje dat) a smazání zdroje dat ze seznamu zdrojů dat neběží v HTTP
 požadavku, ale jako **úloha na pozadí**: API
 zapíše zadání do `/opt/shipard/run/dev-jobs/<id>/` a spustí obal
 `shpd-server dev-job-run` (skrytý příkaz, `setsid`), který kroky provede
 a průběh ukládá do téhož adresáře (`job.json` zadání, `state.json` stav
-a výsledky kroků, `progress.jsonl` průběh `ai-eval`, `output.log` výstup,
-`result.json` výsledek `dataset-verify` / `ai-eval --json`). Úloha přežije
+a výsledky kroků, `progress.jsonl` průběh `ai-eval` / `dataset-e2e`,
+`output.log` výstup, `result.json` výsledek `dataset-verify` / `ai-eval
+--json` / `dataset-e2e --json`). Úloha přežije
 zavření prohlížeče; detail se obnovuje sám. Na jednom zdroji dat běží
 nejvýš jedna úloha (druhou API odmítne 409 s odkazem na běžící). Úloha
 **Aktualizace checkoutu** (tlačítko Aktualizovat v bublině verze v pruhu) zdroj
@@ -161,10 +162,27 @@ než 14 dní se při výpisu mažou.
   `DATASET_MISMATCH`) — v seznamu zdrojů dat je to druhé potvrzení
   „Nahradit sadu X sadou Y“. Panel sady nabízí jen zdroje dat s touž
   sadou nebo bez sady, takže se ho to netýká.
+- **Proklikat** (F7a): v panelu sady vedle Přeseedovat / Ověřit. Zdroj
+  dat se **přeseeduje** a pak se v prohlížeči na serveru (headless
+  Chromium) jako účetní prokliknou všechny karty návrhů — Zkontrolovat,
+  nerozhodnuté reference Vytvořit, Vystavit a uzavřít — a nakonec proběhne
+  `dataset-verify --no-apply`. Detail úlohy ukazuje kroky, počet karet
+  a nakonec report: selhané karty s krokem, důvodem a **trace ke
+  stažení** (`trace.zip`, otevřeš `cd tests/e2e && npx playwright
+  show-trace <soubor>`), chyby prohlížeče, odpovědi API ≥ 400 a tabulku
+  kontrol. Každý rozdíl proti F3 je nález do tasku, ne důvod měnit UI.
+  Tlačítko je neaktivní s nápovědou, když na serveru chybí Node,
+  závislosti `tests/e2e/` nebo Chromium Playwrightu — nainstaluj je **pod
+  uživatelem, pod kterým běží php-fpm** (prohlížeč sedí v jeho
+  `~/.cache/ms-playwright`): `cd tests/e2e && npm ci && npx playwright
+  install chromium`; Node musí být v systémovém `PATH`, ne jen z nvm.
+  Zrušení pošle SIGTERM: Playwright zavře prohlížeč, session uživatele
+  `e2e` se zneplatní, zdroj dat zůstane s použitými doklady (další běh ho
+  přeseeduje). Podrobně `docs/test-corpus.md` § 19.
 - Totéž z terminálu: `shpd-ds dataset-seed <cesta> -y`, `shpd-ds
-  dataset-verify <cesta> --json`, `shpd-ds ai-eval <cesta> --variant
-  <soubor> --estimate --json` / `--yes --max-cost <USD>`
-  (`docs/cli.md`).
+  dataset-verify <cesta> --json`, `shpd-ds dataset-e2e <cesta> --json`,
+  `shpd-ds ai-eval <cesta> --variant <soubor> --estimate --json` /
+  `--yes --max-cost <USD>` (`docs/cli.md`).
 
 ---
 

@@ -1,6 +1,6 @@
 # F7a — proklikání datových sad (E2E průchod UI)
 
-**Stav:** naplánováno — zadání 2026-10-23 (#103 D86–D89, D91–D96)
+**Stav:** částečně — implementace hotová 2026-10-23 (kroky 1–5, 5 commitů): proklikání nad `cz-vat-payer`, `cz-non-payer` i `cz-association` dává `failed` kvůli nálezům N1–N3 a N6 (oddíl Nálezy, neopravují se bez schválení); zbývá schválení oprav v #103 (D-čísla) a poté běh se stavem `ok`
 
 ## Kontext / Cíl
 
@@ -203,23 +203,25 @@ výstupu neobjeví (test).
 
 ## Hotovo když
 
-- [ ] `shpd-ds dataset-e2e` doběhne nad `cz-vat-payer`, `cz-non-payer`
+- [x] `shpd-ds dataset-e2e` doběhne nad `cz-vat-payer`, `cz-non-payer`
       a `cz-association` na jejich zdrojích dat sady a vydá report.
-- [ ] Nálezy z prvních běhů jsou sepsané v oddílu **Nálezy** tohoto tasku
+- [x] Nálezy z prvních běhů jsou sepsané v oddílu **Nálezy** tohoto tasku
       (karta, krok, příčina) — **neopravují se v tomto tasku** bez
       schválení v chatu; opravy dostanou D-čísla v #103 (jako D78–D84).
 - [ ] Bez nálezů (nebo po schválených opravách) dává proklikání u všech
-      tří sad stav `ok` a `dataset-verify --no-apply` kontroly 1–6 `ok`.
-- [ ] Token session se neobjeví ve výstupu, reportu, logu úlohy ani
+      tří sad stav `ok` a `dataset-verify --no-apply` kontroly 1–6 `ok`
+      — **čeká na schválení oprav N1–N3 a N6** (2026-10-23 všechny tři
+      sady `failed`, viz tabulka v Nálezech).
+- [x] Token session se neobjeví ve výstupu, reportu, logu úlohy ani
       v `ps` (ověřeno testem a ručně při běhu z dashboardu).
-- [ ] Proklikání jde spustit z dashboardu, zrušit, a selhaná karta má
+- [x] Proklikání jde spustit z dashboardu, zrušit, a selhaná karta má
       trace ke stažení.
-- [ ] Preflight bez Node / bez `node_modules` odmítne s přesnou větou;
+- [x] Preflight bez Node / bez `node_modules` odmítne s přesnou větou;
       akce v dashboardu je neaktivní s nápovědou.
-- [ ] `vendor/bin/phpunit --filter` na nové testy, `npm test`
+- [x] `vendor/bin/phpunit --filter` na nové testy, `npm test`
       a `npm run build` ve `frontend/`, `npm run check:i18n`,
       `python3 scripts/check-css-tokens.py`.
-- [ ] Dokumentace podle § 5, `**Stav:**`, index tasků.
+- [x] Dokumentace podle § 5, `**Stav:**`, index tasků.
 
 ## Pasti
 
@@ -247,6 +249,89 @@ výstupu neobjeví (test).
 - Demo sada „IT servis“ — nemá karty návrhů k proklikání; přijde s F7b.
 - Spouštění v CI.
 
+## Odchylky od zadání (implementace 2026-10-23)
+
+Podrobně `docs/test-corpus.md` § 19 → Odchylky od zadání.
+
+- Akce karty je `review_message` („Zkontrolovat“, `card-action-review`),
+  ne `review_extracted`; karty sad jsou všechny v pásmu review.
+- Stav kontroly (§ 1): `disabled` na `review-apply-final` je přesně
+  `!canApply`; navíc skrytý marker `review-state` s `data-loaded`,
+  `data-ai-failed`, `data-pending-save` a `data-pending-paths` — test
+  tak ohlásí blokující cestu i bez odznaku (N1). `review-ref-create:{path}`
+  je v panelu popoveru (`ResolveDecisionPanel` dostává `path`).
+- § 2: `trace: 'off'` v configu a ruční `startChunk` / `stopChunk` per
+  karta (jinak jeden trace na celý test); spec navíc čte volitelný
+  `SHPD_E2E_PROGRESS_FILE` a `card` události píše sám.
+- § 3: Playwright se spouští `node …/@playwright/test/cli.js`, ne `npx`
+  (preflight chce `node`, `cli.js` a prohlížeč; `npx` jen v nápovědě);
+  zrušení = SIGINT Playwrightu, po grace SIGKILL; přeseedování
+  a `dataset-verify` ve stejném procesu, jen Playwright je podproces;
+  uživatel `e2e` je `is_system = 1`; `createSession` dostal volitelný
+  `ttlSeconds`; kontrola `skipped` = selhání (D95 doslova).
+- § 4: `canE2e` nesdílí `blockers` panelu (ty gatují evaluaci — použitý
+  zdroj dat proklikání nevadí, přeseedování je jeho první krok);
+  `e2eBlocker` je věta z téhož preflightu. Origin požadavku nově
+  `Request::getOrigin()`.
+
 ## Nálezy
 
-_(doplní implementace po prvních bězích)_
+První běh specu (krok 2) nad `r1lf` (`cz-non-payer`, 16 karet, ručně
+připravený `storageState`) 2026-10-23 — 2 karty použité, 14 selhaných.
+**Neopravuje se v tomto tasku** (D85 — opravy dostanou D-čísla v #103):
+
+- **N1 — bankovní účet dodavatele bez odznaku.** Po založení dodavatele
+  z kontroly („+ Vytvořit novou osobu“ → formulář → Uložit →
+  `useExisting:<id>`) nemá nová osoba bankovní účet (formulář ho
+  z `createPayload` nenese) a `_resolve.supplierBank` zůstane `canCreate`
+  s `createPayload {person: <nová osoba>, iban, account_number, bic}`.
+  Náhled pro bankovní účet strany **žádný odznak nekreslí**, ale
+  `canApply` rozhodnutí vyžaduje → Vystavit a uzavřít i Použít zůstanou
+  neaktivní bez cesty, jak to v UI změnit. Padlo na tom 14 z 16 karet
+  (všechny s bankovním účtem dodavatele; prošly jen 0901 a 0902 bez
+  účtu). Totéž potká účetní u každé faktury nového dodavatele
+  s účtem. F3 (liberal) účet založí při apply — rozdíl strict × liberal
+  přesně podle D93. Krok: `apply/disabled`, cesta `supplierBank`.
+- **N2 — JS chyba po rozhodnutí z popoveru.** `TypeError: Cannot read
+  properties of null (reading 'table')` v `DocumentExchangePreview.svelte`
+  (`entityTable={decisionOpen.table}` u `ResolveDecisionPanel`):
+  `handleDecide` nastaví `decisionOpen = null` a getter propu se ještě
+  vyhodnotí. Uživatel nic nevidí, pro proklikání je to `pageerror`
+  (D95). 7× za běh.
+- **N3 — předkontrola registru vrací 502.** Při otevření kontroly
+  s nenapárovanou stranou s IČO běží `GET /persons/registry?q=<IČO>`;
+  pro fiktivní IČO identit korpusu (ARES odpoví 404) vrátí endpoint
+  `502 REGISTRY_INVALID_RESPONSE` „Registry search rejected query …: no
+  error details provided“ místo 404 / prázdného výsledku. 6× za běh,
+  podle D95 selhání (5xx). ARES je z vývojového stroje dosažitelný.
+- **N4 — šum, vyřešeno ve specu.** `GET /_app/avatar` → 404 u uživatele
+  bez avataru; prohlížeč to loguje jako `console.error` „Failed to load
+  resource“. Spec tyto ozvěny odpovědí nepočítá jako chybu prohlížeče
+  (odpověď už eviduje posluchač `response`; 4xx se jen zapisuje).
+- **N5 — pořadí (D94).** Server řadí karty nejnovější první, takže
+  dvojice jedné identity jde `0V02` → `0V01`: dodavatel vzniká z dat
+  varianty 02 a varianta 01 ho pak najde. F3 jde opačně. Zatím bez
+  dopadu na výsledek (kvůli N1 se k ověření většina karet nedostala).
+
+Běhy `shpd-ds dataset-e2e` (celý příkaz, krok 3) nad třemi sadami
+2026-10-23 — všechny `failed`, exit 1, stejné N1–N3 a nově N6:
+
+| Sada | Zdroj dat | Karty použité / očekávané | N1 | N2 | N3 | Kontroly `dataset-verify` |
+|------|-----------|---------------------------|----|----|----|---------------------------|
+| `cz-non-payer` | `r1lf` | 2 / 16 | 14 | 8 | 6 | věrnost apply rozdíl (4, N6), kurzy přeskočeno (bez dokladu v cizí měně), deník rozdíl (23), ostatní ok |
+| `cz-vat-payer` | `ob9b` | 4 / 20 | 16 | 10 | 6 | věrnost apply rozdíl (8, N6), deník rozdíl (41), kurzy ok, ostatní ok |
+| `cz-association` | `wp66` | 2 / 16 | 14 | 8 | 6 | věrnost apply rozdíl (4, N6), kurzy přeskočeno, deník rozdíl (23), ostatní ok |
+
+Prošly jen zprávy bez bankovního účtu dodavatele (`0901` / `0902`,
+u plátce i `0801` / `0802`); rozdíly deníku jsou důsledek nepoužitých
+karet, ne nález.
+
+- **N6 — založení osoby z kontroly nepřenese adresu.** „+ Vytvořit novou
+  osobu“ otevře formulář s předvyplněním z `createPayload`, ale vnořené
+  `addresses` odejdou v dotazu na metadata formuláře jako
+  `defaults[addresses]=[object Object]` (`GET /_ui/form/base_persons_persons/meta`),
+  takže nová osoba vznikne bez adresy a země. Doklad vystavený přes
+  kontrolu pak má `supplier.address` i `supplier.country` null —
+  kontrola **Věrnost apply** hlásí rozdíl u každého takového dokladu
+  (2 pole × doklad). F3 (liberal) osobu založí z celého payloadu
+  i s adresou. Krok: `verify`, kontrola `applyFidelity`.
