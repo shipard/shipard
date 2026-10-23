@@ -1,6 +1,6 @@
 # Korpus: co je v očekávání, je na PDF — kódy položek, spisová značka, dlouhý doklad
 
-**Stav:** naplánováno — zadání 2026-10-23 (#103 D102–D105)
+**Stav:** hotovo — 2026-10-23 (#103 D102–D105); zbývá přeseedování evaluačních zdrojů dat z dashboardu, úprava promptu a nové evaluace
 
 ## Kontext / Cíl
 
@@ -129,21 +129,21 @@ vyjádření účetních v #123.
 
 ## Hotovo když
 
-- [ ] Build selže, když je ne-`null` identifikátor z očekávání mimo text
+- [x] Build selže, když je ne-`null` identifikátor z očekávání mimo text
       PDF (unit test); nad finálním korpusem projde bez nálezů.
-- [ ] Výsledek kontroly nad korpusem před opravou je v závěrečné zprávě
+- [x] Výsledek kontroly nad korpusem před opravou je v závěrečné zprávě
       (počty podle pole).
-- [ ] PDF faktur s kódy mají sloupec kódu, EAN u řádku; vizuální
+- [x] PDF faktur s kódy mají sloupec kódu, EAN u řádku; vizuální
       kontrola čtyř dokladů bez přetečení.
-- [ ] `courtRegistration` v identitách bez popisku, šablony `cs-*` popisek
+- [x] `courtRegistration` v identitách bez popisku, šablony `cs-*` popisek
       tisknou.
-- [ ] Dlouhý doklad: filtry a kelímky v bloku občerstvení, seznam změn
+- [x] Dlouhý doklad: filtry a kelímky v bloku občerstvení, seznam změn
       v závěrečné zprávě.
-- [ ] `vendor/bin/phpunit --filter 'CorpusExpectedTest|ProjectionTest|IsdocCorpusRoundTripTest'`,
+- [x] `vendor/bin/phpunit --filter 'CorpusExpectedTest|ProjectionTest|IsdocCorpusRoundTripTest'`,
       testy generátoru.
-- [ ] `dataset-verify` nad třemi sadami (zdroje dat „korpus“): kontroly
+- [x] `dataset-verify` nad třemi sadami (zdroje dat „korpus“): kontroly
       1–6 `ok`.
-- [ ] Dokumentace, `**Stav:**`, index tasků.
+- [x] Dokumentace, `**Stav:**`, index tasků.
 
 ## Pasti
 
@@ -159,4 +159,48 @@ vyjádření účetních v #123.
 
 ## Nálezy
 
-_(doplní implementace)_
+Implementace 2026-10-23 (pět commitů na `stable`).
+
+- **Kontrola D105 nad korpusem před opravou** (52 buněk, `pdftotext` bez
+  `-layout`, porovnání bez bílých znaků): 342 hodnot mimo text PDF —
+  `rows[].item.supplierCode` 332, `rows[].item.ean` 6,
+  `rows[].item.description` 4; **nic jiného**. Číslo dokladu, IČO, DIČ,
+  účet, IBAN, BIC, VS / KS, e-mail, telefon, web i spisová značka na PDF
+  seděly (IBAN po čtveřicích a telefon s mezerami řeší odstranění bílých
+  znaků, ligatury ani dělení slov nevadily). Nad finálním korpusem 0 nálezů.
+- **D105 E2 najít nemůže:** „Spisová značka C …“ byla v identitách i na PDF
+  doslova, substring seděl. E2 hlídá nové pravidlo `validate_identities`
+  (hodnota nesmí popiskem začínat). Pole tvaru „popisek + hodnota“ chce
+  vlastní pravidlo, ne D105 (zapsáno v `docs/test-corpus.md` § 15).
+- **`rows[].item.description` je čtvrté pole stejného druhu jako E1**
+  (0501 / 0502 „Billing period …“, 0801 / 0802 „12 seats, …“ — netisklo
+  se; baseline plátce 2× missing, 2× wrong). Schváleno v chatu: zahrnuto
+  do kontroly D105 a tiskne se pod názvem položky jako EAN.
+- **Dlouhý doklad (D104):** přesun do bloku občerstvení s `people.catering`
+  (množství, cena, 21 % beze změny) — „Kávové filtry č. 4, 100 ks“ (KF-4)
+  a „Kelímky papírové 200 ml, 100 ks“ (KP-200) v 1001 i 1002. Nahrazení
+  úklidovými položkami (jen text a kód, množství / cena / sleva zůstaly,
+  součty dokladů se nezměnily; schváleno v chatu): „Míchátka dřevěná,
+  1000 ks“ MD-1000 → „Hadry na podlahu, 10 ks“ HP-10 (1001 i 1002);
+  „Ubrousky papírové 33×33, 100 ks“ UB-33 → „Drátěnky kovové, 10 ks“ DK-10
+  a „Odvápňovač kávovaru 1 l“ OD-1 → „Leštěnka na nábytek 400 ml“ LN-400
+  (1002). Poměr úklid : občerstvení 26 : 18 (1001), 28 : 20 (1002); výjimky
+  řádků 26–43 (1001), 28–47 (1002).
+- **Snímek hlavní knihy** (`dataset-verify` kontrola 6) se přesunem filtrů
+  a kelímků změnil přesně o jejich hodnotu: 501100 Spotřeba materiálu
+  −787,10 Kč a 513900 Náklady na reprezentaci +787,10 Kč u plátce; u neplátce
+  a spolku −952,39 / +952,39 Kč (vč. DPH; spolek 513100). Nové snímky
+  zapsány z `--write-ledger-snapshot` po přeseedování zdrojů „korpus“
+  (`ob9b`, `r1lf`, `wp66`); kontroly 1–6 `ok`.
+- **Test rekonstrukce evaluace** (`EvalOutputReconstructionTest`) porovnával
+  běh 2026-10-16 s *živým* očekáváním sady — po D104 má 1002 o dvě výjimky
+  řádků víc a počty neseděly. Očekávání k běhu je teď zmrazené ve fixtuře
+  `tests/Fixtures/Eval/cz-vat-payer-2026-10-16/` (štíhlé zprávy bez
+  `analysisJson`); dva testy `CanonicalComparatorTest` nad dlouhým dokladem
+  přepsány na nové indexy výjimek.
+- **Nález modelu, ne sady:** `supplier.contact.web` v baseline chybí 11 / 7 /
+  7× — web na PDF je (kontrola D105 to potvrzuje). Patří k úpravě promptu.
+- Přegenerováno 46 PDF (6 účtenek beze změny), 18 ISDOC (spisová značka
+  v `RegisterIdentification`), tři sady; hash sad se změnil — evaluační
+  zdroje dat přeseeduje člověk z dashboardu, běhy z 23. 10. nejsou „nad
+  aktuální sadou“.

@@ -79,6 +79,13 @@ Všechny subjekty jsou fiktivní a odlišné od demo identit
   rozsahem, který rejstříkové soudy dnes přidělují, takže nepatří žádné
   skutečné firmě; podle spisové značky ARES vyhledávat neumí, ověřit je
   nejde;
+- `courtRegistration` je **jen značka a soud** („C 990321 vedená
+  u Krajského soudu v Ostravě“) bez popisku — popisek „Spisová značka:“
+  přidává tisk podle jazyka šablony (`corpusprint.template_values`;
+  anglická šablona nechává německý zápis „Amtsgericht …, HRB …“ beze
+  změny). Hodnotu s popiskem build odmítne (`validate_identities`, #103
+  D103): model vrací značku bez popisku, popisek v očekávání byl chyba
+  sady (E2 z evaluací 23. 10. 2026);
 - telefony s národním číslem (za kódem země) začínajícím `000` — rozsah,
   který se nepřiděluje, stejné pravidlo jako demo sada „IT servis“
   (`demo/datasets/README.md`); jediná výjimka je americký vyhrazený rozsah
@@ -90,7 +97,9 @@ Hodnoty jsou v **kanonickém tvaru** (§ 11); šablony je na PDF tisknou jako
 skutečné doklady (PSČ s mezerou, IBAN po čtveřicích, telefon s mezerami).
 Záznam dodavatele obsahuje přesně to, co dodavatel tiskne (`null` =
 netiskne; účtenka tak nemá bankovní účet, americký dodavatel placený
-kartou žádné DIČ ani banku). Profil je vlastní firma jako odběratel —
+kartou žádné DIČ ani banku) — a naopak každá ne-`null` hodnota musí být
+v textu PDF, což hlídá kontrola věrnosti tisku při každém buildu (§ 12,
+#103 D105). Profil je vlastní firma jako odběratel —
 kontakt a banku nenese. `vatPayer: false` = na dokladu „Nejsem plátce
 DPH“, bez DIČ. Klíče jen pro generátor (`accent` šablony, `print.state`
 pro tisk americké adresy) do očekávání nejdou.
@@ -129,7 +138,9 @@ Píše se ručně, stručně; všechno odvoditelné dopočítá generátor. Náz
 ```
 
 Pole řádku: `text`, `description` (volitelné), `supplierCode`, `ean`
-(volitelné, 8 nebo 13 číslic), `qty` (nejvýš 3 desetinná místa), `unit`
+(volitelné, 8 nebo 13 číslic) — kód se tiskne ve sloupci Kód / Code, popis
+a EAN drobně pod názvem položky (D102); účtenka kódy mít nesmí (netiskne
+je, validace dat je odmítne) —, `qty` (nejvýš 3 desetinná místa), `unit`
 (tiskne se doslova), `unitPrice` (nejvýš 2 desetinná místa), `vatPct`
 (`null` u `noVat`), `discountPct` (volitelné, sleva v %), `supplyKind`
 (`goods` | `services`, u dodavatele mimo ČR povinné, u tuzemského
@@ -195,7 +206,7 @@ doklady variant 5, 6, 8 (zahraniční dodavatel) a 9 (účtenka) zůstávají
 | 7 | `domestic-non-payer-supplier` | CZ neplátce | CZK | `cs-b` | `noVat` | `pdfIsdoc` | `services.training` | `vat.mode: none`, bez rekapitulace |
 | 8 | `third-country-services` | US | USD | `en` | `noVat` | `pdf` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou |
 | 9 | `receipt` | CZ | CZK | `receipt` | `pricesWithVat` 21 % (+ 12 %) | `pdf` | `vehicle.fuel` | účtenka bez odběratele a splatnosti, `fromTotal` u PHM |
-| 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `pdfIsdoc` | `goods.stock`, potraviny `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků |
+| 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `pdfIsdoc` | `office.cleaning`, potraviny a potřeby ke kávě `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků; žádná nejednoznačná položka (D104) |
 
 První doklad (`01`) každé varianty je `pdf`.
 
@@ -263,6 +274,12 @@ canonicalu:
 - obsahuje **vždy všechna pole projekce**; `null` = na dokladu není;
   pole mimo projekci chybí (chybějící klíč = neporovnávat, u generovaného
   korpusu vždy chyba — hlídá PHPUnit);
+- platí to i obráceně: ne-`null` identifikátor (číslo dokladu, IČO, DIČ,
+  účet, IBAN, BIC, symboly, kontakty, spisová značka, kódy, EAN a popisy
+  řádků) **musí být v textu PDF** — jinak by model byl trestán za to, co
+  na dokladu nevidí. Hlídá kontrola věrnosti tisku v buildu (§ 12, #103
+  D105); její první běh 23. 10. 2026 našel 342 hodnot (kódy položek, EAN
+  a popisy řádků, které šablony netiskly — E1 z evaluací);
 - klíče v pořadí projekce, JSON s odsazením 2 mezery, UTF-8 bez
   escapování, `\n` na konci; čísla jako JSON number (částky na setiny,
   množství bez koncových nul), zapisovač nikdy nejde přes `float`;
@@ -403,7 +420,7 @@ co má zachytit normalizace (#118).
 ## 12. Build
 
 ```bash
-python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets]
+python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error]
 ```
 
 1. Validace identit (součty, disjunkce s demem), datových souborů
@@ -432,7 +449,17 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
    `composer install`.
 6. Výpis per buňka: součty, „PDF beze změny / přegenerováno“, stav ISDOC,
    vynechané buňky s důvodem.
-7. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
+7. **Věrnost tisku** (#103 D105, `invoicegen/fidelity.py`): text PDF
+   každé buňky (`pdftotext` bez `-layout`, poppler-utils; i u PDF beze
+   změny — čte se z disku) musí obsahovat každou ne-`null` hodnotu
+   identifikátorů očekávání (`IDENTIFIER_PATHS`: číslo dokladu, IČO, DIČ,
+   účet, IBAN, BIC, VS / KS / SS, e-mail, telefon, web, spisová značka,
+   `rows[].item.supplierCode` / `ean` / `description`), porovnání bez
+   bílých znaků (IBAN po čtveřicích, telefon s mezerami, zalomení přes
+   řádek). Nález = řádek `chybí na PDF: <cesta> = <hodnota>` pod buňkou
+   a souhrn po poli; `--fidelity=error` (výchozí) končí 1 před sestavením
+   sad, `--fidelity=warn` jen vypíše (diagnostika při úpravě šablon).
+8. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
    všech datových souborů, i s `--only`; `--no-datasets` přeskočí) a řádek
    per sada s počtem zpráv, kurzovních lístků a vynechaných buněk. Zpráva
    buňky podoby `pdfIsdoc` dostane `.isdoc` z `out/<profil>/` jako druhou
@@ -459,10 +486,14 @@ přepíše řádek `verifiedAt` dnešním datem a pokračuje buildem; selhání 
 exit 1 a identity vyměnit; nedostupný registr (429, 5xx, síť) → exit 2,
 identity se neoznačí jako ověřené. Bez přepínače build na síť nesahá.
 
-Šablony korpusu v `templates/` skládá `build.py` (`build_values`):
-odběratel bez DIČ u neplátce, sloupec slevy jen když ji některý řádek má,
-měna podle dokladu, texty k DPH podle `vatTreatment`, období plnění,
-tiskový tvar hodnot. Demo šablony a data se nemění.
+Šablony korpusu v `templates/` skládá `invoicegen/corpusprint.py`
+(`template_values`; `build.py` jen předává buňku): odběratel bez DIČ
+u neplátce, sloupec slevy jen když ji některý řádek má, **sloupec Kód /
+Code jen když kód má některý řádek, EAN a popis řádku drobně pod názvem
+položky** (`render_rows`, #103 D102 — účtenka kódy netiskne, proto je
+validace dat na účtence odmítne), spisová značka s popiskem podle jazyka
+(D103), měna podle dokladu, texty k DPH podle `vatTreatment`, období
+plnění, tiskový tvar hodnot. Demo šablony a data se nemění.
 
 ## 13. Strážce korpusu (PHPUnit)
 
@@ -542,6 +573,18 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
   aktuální sadou" a jejich `byForm` nejde 1:1 srovnat s novými.
 - **Build volá PHP** (`bin/shpd-server einvoice-render`) — potřebuje
   `composer install`.
+- **Build volá `pdftotext`** (poppler-utils) kvůli věrnosti tisku (§ 12,
+  D105) — bez něj končí chybou, nic se nepřeskakuje. Nesedí-li hodnota
+  kvůli tisku (dělení slov, ligatura), řeší se šablona, ne výjimka
+  v kontrole.
+- **Kontrola věrnosti tisku nenajde popisek v hodnotě** (E2 z 23. 10.
+  2026): „Spisová značka C …“ v identitách byla na PDF doslova, substring
+  seděl. Hodnotu s popiskem hlídá `validate_identities` (§ 3); nové pole
+  tvaru „popisek + hodnota“ potřebuje vlastní pravidlo, ne D105.
+- **Změna štítků řádků mění obraty po účtech**: schválený snímek hlavní
+  knihy (`profiles/<profil>/approved/general-ledger.json`, § 17) je pak
+  třeba přepsat (`dataset-verify --write-ledger-snapshot`) a rozdíl
+  zkontrolovat, jinak kontrola 6 selže.
 
 Mimo rozsah F1 a F2: ISDOC v datových sadách (O1 #119), ISDOC vložený do PDF
 (#119 fáze 2), evaluace AI (F4; porovnávač vznikl ve F3, § 17), normalizace v produkci
@@ -1092,7 +1135,12 @@ i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Testy katalogu
 a tohoto API (`EvalCatalogTest`, `DevTestingControllerTest`) tvrdí počty
 a pořadí běhů nad vlastním dočasným kořenem (`EvalFixtureRoot`, D106);
 ze skutečného `tests/eval/` čtou testy jen pojmenované běhy, takže commit
-nového běhu žádný test nerozbije. Spouštění evaluací z dashboardu je F6b
+nového běhu žádný test nerozbije. Rekonstrukce výstupu
+(`EvalOutputReconstructionTest`) čte pojmenovaný běh 2026-10-16 proti
+očekávání **zmrazenému** ve fixtuře `tests/Fixtures/Eval/cz-vat-payer-2026-10-16/`
+(štíhlé zprávy sady bez `analysisJson`, projekce, seznam zpráv) — živá sada
+se s korpusem mění (D102–D105) a invariant D53 platí jen pro běh
+a očekávání z téže doby. Spouštění evaluací z dashboardu je F6b
 (D54–D56).
 
 ### Spouštění z dashboardu (F6b — D54–D56, D58–D63; F6c — D64–D67)

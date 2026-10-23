@@ -5,8 +5,12 @@ formátu `shpd.docs.document.v1` (#103 F1). Popis, pravidla a postup „jak
 přidat doklad“: [`docs/test-corpus.md`](../../../docs/test-corpus.md).
 
 ```bash
-python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets]
+python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error]
 ```
+
+Build potřebuje Gotenberg (PDF), `composer install` (ISDOC) a `pdftotext`
+z poppler-utils — kontrola věrnosti tisku ověří, že každý ne-`null`
+identifikátor z očekávání je v textu PDF (#103 D105, `docs/test-corpus.md` § 12).
 
 - `identities.jsonc` — profily vlastní firmy a dodavatelé (fiktivní, ověřené v ARES a VIES),
 - `data/NNNN-<slug>.jsonc` — datový soubor dokladu, **jediný ručně psaný vstup**,
