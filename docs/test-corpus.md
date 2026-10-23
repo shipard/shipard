@@ -78,7 +78,13 @@ Všechny subjekty jsou fiktivní a odlišné od demo identit
 - spisové značky (CZ) a čísla HRB (DE) s číslem 99xxxx — daleko nad
   rozsahem, který rejstříkové soudy dnes přidělují, takže nepatří žádné
   skutečné firmě; podle spisové značky ARES vyhledávat neumí, ověřit je
-  nejde.
+  nejde;
+- telefony s národním číslem (za kódem země) začínajícím `000` — rozsah,
+  který se nepřiděluje, stejné pravidlo jako demo sada „IT servis“
+  (`demo/datasets/README.md`); jediná výjimka je americký vyhrazený rozsah
+  555-01xx (`+1 NXX 555 01XX`). Hlídá to `checks.validate_identities` při
+  každém buildu (#132); délku kódu země určuje `checks.phone_parts`, kterou
+  používá i tisk (`render.fmt_phone`) — tabulka kódů je jen jedna.
 
 Hodnoty jsou v **kanonickém tvaru** (§ 11); šablony je na PDF tisknou jako
 skutečné doklady (PSČ s mezerou, IBAN po čtveřicích, telefon s mezerami).
@@ -515,6 +521,11 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
   datového souboru nebo generátoru a nový build.
 - **Demo se nemění.** Šablony a data dema jsou vázané na video; korpus má
   vlastní kopie šablon. Identity se nesmí překrývat (build kontroluje).
+- **Telefon mimo pravidlo `000` build odmítne** (`validate_identities`,
+  § 3): nový dodavatel dostane číslo rovnou s `000` za kódem země (americký
+  jen z rozsahu 555-01xx). Číslo, které vypadá skutečně, může patřit někomu
+  živému a tiskne se do veřejného PDF; model může `000` v analýze
+  „opravovat“ — to je nález evaluace, ne důvod pravidlo obejít.
 - **Pole projekce nechybí** — chybějící klíč by znamenal „neporovnávat“.
 - **Pravidla odvozených polí sledují prompt** (§ 9).
 - **`exemptIntraCommunity` ≠ `reverseCharge`**: čl. 138 `reverseCharge`

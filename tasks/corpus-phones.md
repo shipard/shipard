@@ -1,6 +1,6 @@
 # Korpus: telefonní čísla fiktivních identit z nepřidělitelného rozsahu
 
-**Stav:** naplánováno — zadání 2026-10-23 (#132, #103 D90)
+**Stav:** hotovo — 2026-10-23 (#132, #103 D90); zadání 2026-10-23
 
 ## Kontext / Cíl
 
@@ -90,18 +90,18 @@ evaluacemi neplátce a spolku (#103 D90).
 
 ## Hotovo když
 
-- [ ] Všechny telefony v `identities.jsonc` splňují pravidlo, kromě
+- [x] Všechny telefony v `identities.jsonc` splňují pravidlo, kromě
       čísla 555-01xx.
-- [ ] Build telefon mimo pravidlo odmítne (unit test).
-- [ ] Korpus a sady přegenerované; v textových souborech se změnily jen
+- [x] Build telefon mimo pravidlo odmítne (unit test).
+- [x] Korpus a sady přegenerované; v textových souborech se změnily jen
       telefony, hashe a otisky (výpis z kontroly v kroku 2 v závěrečné
       zprávě).
-- [ ] `vendor/bin/phpunit --filter 'CorpusExpectedTest|ValueShapesTest|CanonicalComparatorTest|ProjectionTest|IsdocCorpusRoundTripTest'` projde.
-- [ ] Testy generátoru (`tools/invoice-generator`) projdou.
-- [ ] `grep` na národní části starých čísel v `tests/` nic nenajde.
-- [ ] `shpd-ds dataset-verify` nad všemi třemi sadami na čerstvě
+- [x] `vendor/bin/phpunit --filter 'CorpusExpectedTest|ValueShapesTest|CanonicalComparatorTest|ProjectionTest|IsdocCorpusRoundTripTest'` projde.
+- [x] Testy generátoru (`tools/invoice-generator`) projdou.
+- [x] `grep` na národní části starých čísel v `tests/` nic nenajde.
+- [x] `shpd-ds dataset-verify` nad všemi třemi sadami na čerstvě
       naseedovaném volném zdroji dat: kontroly 1–6 `ok`.
-- [ ] `docs/test-corpus.md` § 3 a § 15 aktualizované, `**Stav:**`
+- [x] `docs/test-corpus.md` § 3 a § 15 aktualizované, `**Stav:**`
       a index tasků.
 
 ## Pasti
