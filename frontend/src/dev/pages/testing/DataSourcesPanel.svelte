@@ -1,10 +1,12 @@
 <script>
   // Panel „Zdroje dat“ sady (F6b D55, D59): které zdroje dat sadu drží
   // a v jakém jsou stavu (sada aktuální / zastaralá, čistý / použitý, třída,
-  // AI, běžící úloha), akce Přeseedovat / Ověřit zaúčtování / Spustit
-  // evaluaci, založení evaluačního zdroje dat a přeseedování jiného volného
-  // zdroje dat. Pojistku (jen free, jen development) dělá server — tlačítka
-  // u reálných kopií se jen nenabízejí.
+  // AI, běžící úloha), akce Přeseedovat / Ověřit zaúčtování / Proklikat
+  // (F7a D88: přeseedování + průchod prohlížečem + dataset-verify jako jedna
+  // úloha) / Spustit evaluaci, založení evaluačního zdroje dat a přeseedování
+  // jiného volného zdroje dat. Pojistku (jen free, jen development) dělá
+  // server — tlačítka u reálných kopií se jen nenabízejí; chybějící Node
+  // nebo závislosti E2E přijdou jako `e2eBlocker` a tlačítko je neaktivní.
   import { onMount } from 'svelte';
   import Button from '../../../components/ui/Button.svelte';
   import DevConfirm from '../../components/DevConfirm.svelte';
@@ -111,6 +113,16 @@
     };
   }
 
+  function askE2e(row) {
+    confirm = {
+      title: t('testing.dsPanel.e2eTitle'),
+      message: t('testing.dsPanel.e2eMessage', { name: row.name, id: row.id, set }),
+      variant: 'danger',
+      confirmLabel: t('testing.dsPanel.e2e'),
+      run: () => launch(() => testingApi.startE2e(set, row.id)),
+    };
+  }
+
   function datasetCell(row) {
     if (!row.dataset) return { cls: 'missing', text: row.legacyOrigin ? t('testing.dsPanel.ds.legacy') : t('testing.dsPanel.ds.unrecorded') };
     return row.dataset.current ? { cls: 'match', text: t('testing.dsPanel.ds.current') } : { cls: 'wrong', text: t('testing.dsPanel.ds.stale') };
@@ -192,6 +204,9 @@
                 <div class="dev-btnrow">
                   <Button label={t('testing.dsPanel.reseed')} variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
                   <Button label={t('testing.dsPanel.verifyButton')} variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
+                  <span title={row.e2eBlocker ?? ''}>
+                    <Button label={t('testing.dsPanel.e2e')} variant="secondary" size="sm" disabled={busy || !row.canE2e} onclick={() => askE2e(row)} />
+                  </span>
                   <span title={row.blockers.join('\n')}>
                     <Button label={t('testing.dsPanel.runEval')} variant="secondary" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
                   </span>
@@ -200,6 +215,9 @@
                   <ul class="dev-blockers">
                     {#each row.blockers as b (b)}<li>{b}</li>{/each}
                   </ul>
+                {/if}
+                {#if row.e2eBlocker}
+                  <div class="dev-small dev-muted">{t('testing.dsPanel.e2eBlocked', { reason: row.e2eBlocker })}</div>
                 {/if}
               </td>
             </tr>

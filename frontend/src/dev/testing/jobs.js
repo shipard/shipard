@@ -2,7 +2,8 @@
  * Čisté funkce nad úlohami na pozadí (F6b D58, D61) — popisky stavů
  * (slovník dashboardu, klíče `jobs.*`; neznámý kód ze serveru se ukáže,
  * jak přišel) a redukce událostí průběhu `ai-eval` (`progress.jsonl`:
- * started / call / finished / error) do souhrnu pro detail úlohy. Bez
+ * started / call / finished / error) a `dataset-e2e` (started / step /
+ * card / finished / error, F7a) do souhrnu pro detail úlohy. Bez
  * prohlížeče, testovatelné v Node (tests/Unit/dev/jobs.test.mjs).
  */
 import { t, has, label } from '../i18n/index.js';
@@ -45,8 +46,15 @@ export function suggestedCap(total) {
   return Math.max(0.01, Math.ceil(Number((total * 150).toFixed(6))) / 100);
 }
 
+/** Popisek kroku proklikání sady (`step` události: reseed / walkthrough / verify). */
+export const e2eStepLabel = (step) => label('jobs.e2eStep', step);
+
 export function emptyProgress() {
-  return { started: null, done: 0, total: null, spentUsd: 0, maxCostUsd: null, lastCalls: [], finished: null, error: null };
+  return {
+    started: null, done: 0, total: null, spentUsd: 0, maxCostUsd: null, lastCalls: [], finished: null, error: null,
+    // Proklikání sady (F7a): běžící krok, stavy kroků a karty (`step` / `card` události).
+    step: null, steps: [], cards: { applied: 0, failed: 0, total: null }, lastCards: [],
+  };
 }
 
 /**
@@ -57,13 +65,35 @@ export function emptyProgress() {
  * @param {Array<object>} events
  */
 export function reduceProgress(summary, events) {
-  const out = { ...summary, lastCalls: [...summary.lastCalls] };
+  const out = {
+    ...summary,
+    lastCalls: [...summary.lastCalls],
+    steps: [...(summary.steps ?? [])],
+    cards: { ...(summary.cards ?? { applied: 0, failed: 0, total: null }) },
+    lastCards: [...(summary.lastCards ?? [])],
+  };
   for (const ev of events ?? []) {
     switch (ev?.event) {
       case 'started':
         out.started = ev;
         if (typeof ev.calls === 'number') out.total = ev.calls;
         if (typeof ev.maxCostUsd === 'number') out.maxCostUsd = ev.maxCostUsd;
+        if (typeof ev.expected === 'number') out.cards.total = ev.expected;
+        break;
+      case 'step': {
+        const entry = { step: ev.step ?? null, status: ev.status ?? null, exitCode: typeof ev.exitCode === 'number' ? ev.exitCode : null };
+        out.steps = [...out.steps.filter((s) => s.step !== entry.step), entry];
+        // Počet karet je znám až po přeseedování — nese ho start kroku proklikání.
+        if (typeof ev.expected === 'number') out.cards.total = ev.expected;
+        if (entry.status === 'started') out.step = entry.step;
+        else if (out.step === entry.step) out.step = null;
+        break;
+      }
+      case 'card':
+        if (ev.status === 'applied') out.cards.applied += 1;
+        else if (ev.status === 'failed') out.cards.failed += 1;
+        if (typeof ev.total === 'number') out.cards.total = ev.total;
+        out.lastCards = [...out.lastCards, ev].slice(-5);
         break;
       case 'call':
         out.done = typeof ev.done === 'number' ? ev.done : out.done + 1;

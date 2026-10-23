@@ -59,7 +59,54 @@ final class DevJobsController
 		if (count($segments) === 2 && $segments[1] === 'cancel' && $method === 'POST') {
 			return $this->cancel($id, $request);
 		}
+		if (count($segments) === 3 && $segments[1] === 'files' && $method === 'GET') {
+			return $this->file($id, $segments[2]);
+		}
 		return $this->notFound('Not found');
+	}
+
+	/** Podadresář úlohy s výstupem `dataset-e2e --output-dir` a jeho trace soubory (D96). */
+	public const string E2E_DIR = 'e2e';
+	public const string E2E_TRACES_DIR = 'traces';
+
+	/**
+	 * Stažení trace selhané karty proklikání (D96): jen úloha typu `e2e`,
+	 * jen název souboru, který `result.json` jmenuje v `artifacts.traces[].file`,
+	 * jen z `<úloha>/e2e/traces/` — žádné libovolné cesty.
+	 */
+	private function file(string $id, string $name): Response
+	{
+		$record = $this->store->read($id);
+		if ($record === null || $record->type !== JobRecord::TYPE_E2E) {
+			return $this->notFound('Job not found');
+		}
+		if (preg_match('/^[A-Za-z0-9._-]+\.zip$/', $name) !== 1 || str_contains($name, '..')) {
+			return $this->notFound('File not found');
+		}
+		$result = $this->store->result($id);
+		$traces = is_array($result['artifacts']['traces'] ?? null) ? $result['artifacts']['traces'] : [];
+		$listed = false;
+		foreach ($traces as $trace) {
+			if (is_array($trace) && isset($trace['file']) && is_string($trace['file']) && basename($trace['file']) === $name) {
+				$listed = true;
+				break;
+			}
+		}
+		if (!$listed) {
+			return $this->notFound('File not found');
+		}
+		$dir = realpath($this->store->jobDir($id) . '/' . self::E2E_DIR . '/' . self::E2E_TRACES_DIR);
+		$path = $dir === false ? false : realpath($dir . '/' . $name);
+		if ($dir === false || $path === false || !str_starts_with($path, $dir . '/') || !is_file($path)) {
+			return $this->notFound('File not found');
+		}
+		$bytes = @file_get_contents($path);
+		if ($bytes === false) {
+			return $this->notFound('File not found');
+		}
+		return Response::binary($bytes, 'application/zip')
+			->withHeader('Content-Disposition', 'attachment; filename="' . $name . '"')
+			->withHeader('Cache-Control', 'no-store');
 	}
 
 	private function list(Request $request): Response

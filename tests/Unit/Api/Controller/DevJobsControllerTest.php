@@ -167,6 +167,41 @@ final class DevJobsControllerTest extends TestCase
 		$this->assertSame('', $data['outputTail']);
 	}
 
+	public function testFileServesOnlyTracesNamedByTheReportOfAnE2eJob(): void
+	{
+		$id = '20261016-115900-aaaaaa';
+		$this->job($id, JobRecord::TYPE_E2E);
+		$dir = $this->store->jobDir($id) . '/' . DevJobsController::E2E_DIR . '/' . DevJobsController::E2E_TRACES_DIR;
+		mkdir($dir, 0777, true);
+		file_put_contents($dir . '/trace-mail_suggestion_16.zip', 'PK-zip');
+		file_put_contents($dir . '/other.zip', 'PK-other');
+		file_put_contents($this->store->path($id, JobStore::RESULT_FILE), json_encode([
+			'status' => 'failed',
+			'artifacts' => ['traces' => [['cardId' => 'mail_suggestion:16', 'file' => 'trace-mail_suggestion_16.zip']]],
+		]));
+
+		$r = $this->ctrl->dispatch($this->request('GET', "/_dev/api/testing/jobs/{$id}/files/trace-mail_suggestion_16.zip"));
+		$this->assertSame(200, $this->statusOf($r));
+		$this->assertSame('PK-zip', $r->getPayload());
+		$headers = $r->getHeaders();
+		$this->assertSame('application/zip', $headers['Content-Type']);
+		$this->assertSame('attachment; filename="trace-mail_suggestion_16.zip"', $headers['Content-Disposition']);
+		$this->assertSame('no-store', $headers['Cache-Control']);
+
+		$this->assertSame(404, $this->statusOf($this->ctrl->dispatch($this->request('GET', "/_dev/api/testing/jobs/{$id}/files/other.zip"))), 'soubor, který report nejmenuje');
+		$this->assertSame(404, $this->statusOf($this->ctrl->dispatch($this->request('GET', "/_dev/api/testing/jobs/{$id}/files/..%2Fjob.json"))));
+		$this->assertSame(404, $this->statusOf($this->ctrl->dispatch($this->request('GET', "/_dev/api/testing/jobs/{$id}/files/job.json"))));
+		$this->assertSame(404, $this->statusOf($this->ctrl->dispatch($this->request('POST', "/_dev/api/testing/jobs/{$id}/files/trace-mail_suggestion_16.zip"))));
+
+		$other = '20261016-115901-bbbbbb';
+		$this->job($other, JobRecord::TYPE_VERIFY);
+		$otherDir = $this->store->jobDir($other) . '/e2e/traces';
+		mkdir($otherDir, 0777, true);
+		file_put_contents($otherDir . '/t.zip', 'x');
+		file_put_contents($this->store->path($other, JobStore::RESULT_FILE), json_encode(['artifacts' => ['traces' => [['file' => 't.zip']]]]));
+		$this->assertSame(404, $this->statusOf($this->ctrl->dispatch($this->request('GET', "/_dev/api/testing/jobs/{$other}/files/t.zip"))), 'soubory jen u úlohy e2e');
+	}
+
 	public function testCancelRequiresActiveJobWithPid(): void
 	{
 		$this->job('20261016-115900-aaaaaa');

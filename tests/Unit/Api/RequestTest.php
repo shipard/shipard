@@ -42,6 +42,30 @@ class RequestTest extends TestCase
 		$this->assertSame('/api/v1/users', $req->getPath());
 	}
 
+	public function testSchemeFollowsProxyHeaderTlsAndRequestScheme(): void
+	{
+		$this->assertSame('http', $this->make()->getScheme());
+		$this->assertSame('https', $this->make(server: ['HTTPS' => 'on'])->getScheme());
+		$this->assertSame('http', $this->make(server: ['HTTPS' => 'off'])->getScheme());
+		$this->assertSame('https', $this->make(server: ['REQUEST_SCHEME' => 'https'])->getScheme());
+		$this->assertSame('https', $this->make(server: ['HTTP_X_FORWARDED_PROTO' => 'https, http', 'HTTPS' => 'off'])->getScheme());
+		$this->assertSame('http', $this->make(server: ['HTTP_X_FORWARDED_PROTO' => 'gopher'])->getScheme());
+	}
+
+	public function testOriginPrefersValidOriginHeader(): void
+	{
+		$this->assertSame('http://127.0.0.1', $this->make(server: ['HTTP_HOST' => '127.0.0.1'])->getOrigin());
+		$this->assertSame('https://app.example:8443', $this->make(server: ['HTTP_HOST' => 'app.example:8443', 'HTTPS' => 'on'])->getOrigin());
+		$this->assertSame('http://10.0.0.5', $this->make(server: ['HTTP_HOST' => 'other', 'HTTP_ORIGIN' => 'http://10.0.0.5'])->getOrigin());
+		$this->assertSame('http://other', $this->make(server: ['HTTP_HOST' => 'other', 'HTTP_ORIGIN' => 'null'])->getOrigin());
+		$this->assertSame('http://other', $this->make(server: ['HTTP_HOST' => 'other', 'HTTP_ORIGIN' => 'http://evil/path'])->getOrigin());
+		$this->assertSame('http://', $this->make()->getOrigin());
+		$this->assertTrue(Request::isOrigin('http://[::1]:8080'));
+		$this->assertFalse(Request::isOrigin('ftp://x'));
+		$this->assertFalse(Request::isOrigin('http://'));
+		$this->assertFalse(Request::isOrigin('http://user@host'));
+	}
+
 	public function testGetQueryParams(): void
 	{
 		$req = $this->make(queryParams: ['limit' => '10', 'offset' => '20']);

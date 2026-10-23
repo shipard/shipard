@@ -1,7 +1,8 @@
 <script>
   // Detail úlohy (F6b D58, D61): hlavička, kroky, průběh evaluace (hotová
-  // volání, útrata vs. strop, poslední doklady), výsledek (odkaz na běh
-  // v prohlížeči / tabulka ověření / nový zdroj dat), výstup, zrušení.
+  // volání, útrata vs. strop, poslední doklady) nebo proklikání sady (kroky
+  // běhu, karty, F7a), výsledek (odkaz na běh v prohlížeči / tabulka ověření
+  // / report proklikání s trace / nový zdroj dat), výstup, zrušení.
   // Polling každé 2 s přes offset průběhu, dokud je úloha aktivní.
   import { onMount } from 'svelte';
   import Button from '../../../components/ui/Button.svelte';
@@ -10,11 +11,12 @@
   import { router, onLinkClick } from '../../router.svelte.js';
   import { testingApi } from '../../testing/api.js';
   import { ApiError } from '../../api.js';
-  import { jobTypeLabel, jobStatusLabel, stepStatusLabel, statusReasonLabel, jobStatusClass, isActiveStatus, emptyProgress, reduceProgress, stoppedByLabel } from '../../testing/jobs.js';
+  import { jobTypeLabel, jobStatusLabel, stepStatusLabel, statusReasonLabel, jobStatusClass, isActiveStatus, emptyProgress, reduceProgress, stoppedByLabel, e2eStepLabel } from '../../testing/jobs.js';
   import { t } from '../../i18n/index.js';
   import { formatDateTime, formatUsd, formatMs, formatPercent } from '../../format.js';
   import Crumbs from '../../components/Crumbs.svelte';
   import VerifyResult from './VerifyResult.svelte';
+  import E2eResult from './E2eResult.svelte';
 
   const route = $derived(router.route);
   const jobId = $derived(route.params.jobId);
@@ -32,6 +34,8 @@
   const active = $derived(job ? isActiveStatus(job.status) : false);
   const pct = $derived(progress.total ? Math.min(100, Math.round((progress.done / progress.total) * 100)) : 0);
   const spentPct = $derived(progress.maxCostUsd ? Math.min(100, Math.round((progress.spentUsd / progress.maxCostUsd) * 100)) : null);
+  const cardsDone = $derived(progress.cards.applied + progress.cards.failed);
+  const cardsPct = $derived(progress.cards.total ? Math.min(100, Math.round((cardsDone / progress.cards.total) * 100)) : 0);
 
   async function load(reset = false) {
     try {
@@ -197,6 +201,47 @@
     </div>
   {/if}
 
+  {#if job.type === 'e2e'}
+    <div class="dev-card">
+      <h2 class="dev-card__title">{t('testing.job.e2eProgress')}</h2>
+      {#if progress.started || progress.steps.length}
+        <dl class="dev-kv">
+          <dt>{t('testing.job.e2eStep')}</dt>
+          <dd>
+            {#each progress.steps as s (s.step)}
+              <span class="dev-state dev-state--{s.status === 'finished' ? 'match' : s.status === 'failed' ? 'wrong' : 'neutral'}">{e2eStepLabel(s.step)}{#if s.exitCode !== null} · exit {s.exitCode}{/if}</span>
+            {/each}
+          </dd>
+          <dt>{t('testing.job.e2eCards')}</dt>
+          <dd>
+            {cardsDone} / {progress.cards.total ?? '?'} — {t('testing.job.e2eCardsLine', { applied: progress.cards.applied, failed: progress.cards.failed })}
+            {#if progress.cards.total}<div class="dev-progress"><div class="dev-progress__bar" class:dev-progress__bar--warn={progress.cards.failed > 0} style="width: {cardsPct}%"></div></div>{/if}
+          </dd>
+          {#if progress.error}
+            <dt>{t('testing.job.error')}</dt><dd class="dev-lvl dev-lvl--bad">{progress.error}</dd>
+          {/if}
+        </dl>
+        {#if progress.lastCards.length}
+          <table class="dev-table">
+            <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.col.state')}</th><th>{t('testing.e2e.col.reason')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
+            <tbody>
+              {#each [...progress.lastCards].reverse() as c, i (i)}
+                <tr>
+                  <td><code>{c.cardId}</code></td>
+                  <td><span class="dev-state dev-state--{c.status === 'applied' ? 'match' : 'wrong'}">{c.status}</span></td>
+                  <td>{c.status === 'failed' ? `${c.step ?? '?'}/${c.reason ?? '?'}${c.path ? ` (${c.path})` : ''}` : (c.savedDocId ? `#${c.savedDocId}` : '')}</td>
+                  <td class="dev-num">{formatMs(c.durationMs)}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
+      {:else}
+        <div class="dev-empty">{t('testing.job.noProgress')}</div>
+      {/if}
+    </div>
+  {/if}
+
   {#if !active}
     <div class="dev-card">
       <h2 class="dev-card__title">{t('testing.jobs.col.result')}</h2>
@@ -225,6 +270,8 @@
         {/if}
       {:else if job.type === 'verify'}
         <VerifyResult report={result} />
+      {:else if job.type === 'e2e'}
+        <E2eResult report={result} jobId={job.id} />
       {:else if job.type === 'create'}
         {#if job.status === 'finished'}
           <p>{t('testing.job.created', { id: job.dataSource?.id })} — <a href="/{job.dataSource?.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a> {t('testing.job.createdNote')}</p>
@@ -255,7 +302,7 @@
 <DevConfirm
   open={confirm !== null}
   title={confirm?.force ? t('testing.job.forceKill') : t('testing.job.cancelJob')}
-  message={confirm?.force ? t('testing.job.forceMessage') : t('testing.job.cancelMessage')}
+  message={confirm?.force ? t('testing.job.forceMessage') : job?.type === 'e2e' ? t('testing.job.cancelMessageE2e') : t('testing.job.cancelMessage')}
   variant="danger"
   confirmLabel={confirm?.force ? t('testing.job.force') : t('testing.job.cancelJob')}
   cancelLabel={t('common.back')}

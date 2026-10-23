@@ -27,6 +27,7 @@ use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Utils\IdGenerator;
+use Shipard\Module\Core\Exchange\Dataset\E2e\E2ePreflight;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
 use Shipard\Module\Core\Mail\Eval\EvalDataSource;
@@ -53,10 +54,11 @@ use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
  *
  * | metoda | cesta                          | odpověď                                               |
  * |--------|--------------------------------|-------------------------------------------------------|
- * | GET    | `data-sources?dataset=`        | zdroje dat se sadou + stav, kandidáti na přeseedování |
+ * | GET    | `data-sources?dataset=`        | zdroje dat se sadou + stav (`canEval` / `canReseed` / `canVerify` / `canE2e` + `e2eBlocker`), kandidáti na přeseedování |
  * | POST   | `reseed` `{dataset, dataSource, replaceDataset?}` | úloha `reseed`; jiná než držená sada jen s `replaceDataset: true`, jinak 409 `DATASET_MISMATCH` (D66) |
  * | POST   | `create` `{dataset}`           | úloha `create` (ds-create --no-cron + dataset-seed)   |
  * | POST   | `verify` `{dataset, dataSource, apply?}` | úloha `verify` (dataset-verify --json)      |
+ * | POST   | `e2e` `{dataset, dataSource}`  | úloha `e2e` (dataset-e2e --json --progress-file --output-dir --base-url <origin požadavku>, F7a D88); 422 `E2E_UNAVAILABLE` bez Node / závislostí / prohlížeče, 400 `VALIDATION` bez použitelného originu |
  * | POST   | `estimate` `{dataset, dataSource, variant, repeat?, only?}` | odhad; 422 `EVAL_PREFLIGHT` |
  * | POST   | `run` `{…, maxCostUsd}`        | úloha `eval` (ai-eval --yes --max-cost --progress-file) |
  * | GET    | `variants`, `variants/{název}`, `variants/options?dataSource=` | editor variant        |
@@ -71,6 +73,8 @@ class DevEvalController
 	/** Zrušení evaluace čeká na dobíhající volání modelu (AnalysisComputation::CALL_TIMEOUT_SECONDS 840 + rezerva). */
 	public const int EVAL_CANCEL_GRACE_SECONDS = 900;
 	public const int DEFAULT_CANCEL_GRACE_SECONDS = 60;
+	/** Zrušení proklikání: Playwright po SIGINT zavře prohlížeč a dopíše reportery, příkaz uklidí session. */
+	public const int E2E_CANCEL_GRACE_SECONDS = 120;
 	public const float ESTIMATE_TIMEOUT_SECONDS = 60.0;
 	public const int MAX_REPEAT = 5;
 	private const string ONLY_TOKEN = '/^[A-Za-z0-9._-]+$/';
@@ -107,6 +111,18 @@ class DevEvalController
 	protected function serverOffersAi(): bool
 	{
 		return ServerAiConnection::detect() !== null;
+	}
+
+	/**
+	 * Co na stroji chybí pro proklikání sady (Node v pevném PATH, závislosti
+	 * `tests/e2e`, Chromium Playwrightu pod uživatelem php-fpm) — týž zdroj
+	 * jako preflight `dataset-e2e` (F7a § 4); prázdné = lze spustit.
+	 *
+	 * @return list<string>
+	 */
+	protected function e2eToolProblems(): array
+	{
+		return (new E2ePreflight($this->repoRoot))->toolProblems();
 	}
 
 	/** @return list<string> */
@@ -212,6 +228,7 @@ class DevEvalController
 				$segments === ['reseed'] && $method === 'POST' => $this->reseed($catalog, $body, $request),
 				$segments === ['create'] && $method === 'POST' => $this->create($catalog, $body, $request),
 				$segments === ['verify'] && $method === 'POST' => $this->verify($catalog, $body, $request),
+				$segments === ['e2e'] && $method === 'POST' => $this->e2e($catalog, $body, $request),
 				$segments === ['estimate'] && $method === 'POST' => $this->estimate($catalog, $body),
 				$segments === ['run'] && $method === 'POST' => $this->run($catalog, $body, $request),
 				$segments === ['variants'] && $method === 'GET' => $this->variants($catalog),
@@ -237,6 +254,7 @@ class DevEvalController
 		$hash = $catalog->currentHash($dataset);
 		$setIds = array_map(static fn (EvalMessage $m): string => $m->messageId, EvalMessages::fromDataset($dataset->reader()));
 		$serverAi = $this->serverOffersAi();
+		$e2eProblems = $this->e2eToolProblems();
 		$legacyOrigin = 'dataset-seed ' . $dataset->name;
 
 		$rows = [];
@@ -246,7 +264,7 @@ class DevEvalController
 			$dsName = is_array($ds) && is_string($ds['name'] ?? null) ? $ds['name'] : null;
 			$legacy = $dsName === null && $info->origin === $legacyOrigin;
 			if ($dsName === $dataset->name || $legacy) {
-				$rows[] = $this->dataSourceRow($info, is_array($ds) ? $ds : null, $legacy, $hash, $setIds, $serverAi);
+				$rows[] = $this->dataSourceRow($info, is_array($ds) ? $ds : null, $legacy, $hash, $setIds, $serverAi, $e2eProblems);
 				continue;
 			}
 			if ($info->readable && $info->dataClass === DataClass::Free && $dsName === null
@@ -267,9 +285,10 @@ class DevEvalController
 	/**
 	 * @param array<string, mixed>|null $ds     pole `dataset` z main.json
 	 * @param list<string>              $setIds
+	 * @param list<string>              $e2eProblems chybějící nástroje proklikání (stejné pro všechny řádky)
 	 * @return array<string, mixed>
 	 */
-	private function dataSourceRow(DataSourceInfo $info, ?array $ds, bool $legacy, string $hash, array $setIds, bool $serverAi): array
+	private function dataSourceRow(DataSourceInfo $info, ?array $ds, bool $legacy, string $hash, array $setIds, bool $serverAi, array $e2eProblems = []): array
 	{
 		$row = $info->toArray($serverAi);
 		$free = $info->readable && $info->dataClass === DataClass::Free;
@@ -328,6 +347,10 @@ class DevEvalController
 		$row['canEval'] = $blockers === [];
 		$row['canReseed'] = $free && $job === null && $info->state === DataSourceState::ACTIVE;
 		$row['canVerify'] = $free && $job === null && $ds !== null && $info->state === DataSourceState::ACTIVE;
+		// Proklikání (F7a I14) nesdílí `blockers`: použitý zdroj dat mu nevadí —
+		// přeseedování je jeho první krok; blokují ho jen chybějící nástroje.
+		$row['canE2e'] = $row['canReseed'] && $e2eProblems === [];
+		$row['e2eBlocker'] = $e2eProblems === [] ? null : implode(' ', $e2eProblems);
 		return $row;
 	}
 
@@ -426,6 +449,55 @@ class DevEvalController
 			self::DEFAULT_CANCEL_GRACE_SECONDS,
 			$request,
 		));
+	}
+
+	/**
+	 * Proklikání sady (F7a D88, D91): jedna úloha `e2e` = `dataset-e2e <sada>
+	 * --json --progress-file <úloha>/progress.jsonl --output-dir <úloha>/e2e
+	 * --base-url <origin požadavku>`; id úlohy vzniká předem, aby cesty mířily
+	 * do jejího adresáře. Origin bere aplikaci tak, jak ji vidí prohlížeč
+	 * uživatele ({@see Request::getOrigin()}); nepoužitelný = 400.
+	 *
+	 * @param array<string, mixed> $body
+	 */
+	private function e2e(EvalCatalog $catalog, array $body, Request $request): Response
+	{
+		$dataset = $this->datasetFromBody($catalog, $body);
+		$info = $this->dataSourceFromBody($body);
+		$refused = $this->guard($catalog, $info, true, $body['dataset'] ?? null);
+		if ($refused !== null) {
+			return $refused;
+		}
+		/** @var EvalDatasetInfo $dataset @var DataSourceInfo $info */
+		$problems = $this->e2eToolProblems();
+		if ($problems !== []) {
+			return Response::error('E2E_UNAVAILABLE', implode(' ', $problems), 422, ['problems' => $problems]);
+		}
+		$origin = $request->getOrigin();
+		if (!Request::isOrigin($origin)) {
+			return Response::error('VALIDATION', "Request origin '{$origin}' is not a usable base URL for the walkthrough", 400);
+		}
+		$id = JobRecord::newId($this->now());
+		$argv = [
+			...$this->dsCommand(), 'dataset-e2e', $dataset->dir, '--json',
+			'--progress-file', $this->jobs->path($id, JobStore::PROGRESS_FILE),
+			'--output-dir', $this->jobs->jobDir($id) . '/' . DevJobsController::E2E_DIR,
+			'--base-url', $origin,
+		];
+		$record = new JobRecord(
+			$id,
+			JobRecord::TYPE_E2E,
+			$info->id,
+			$info->name,
+			$dataset->name,
+			null,
+			['baseUrl' => $origin],
+			[new JobStep('dataset-e2e ' . $dataset->name, $argv, $this->dsDir($info->id), captureStdout: true)],
+			JobStore::formatTime($this->now()),
+			$request->getClientIp(),
+			self::E2E_CANCEL_GRACE_SECONDS,
+		);
+		return $this->launch($record);
 	}
 
 	/** @param array<string, mixed> $body */

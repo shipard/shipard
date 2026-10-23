@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { use } from '../../../src/dev/i18n/index.js';
-import { emptyProgress, reduceProgress, suggestedCap, isActiveStatus, jobStatusClass, stoppedByLabel } from '../../../src/dev/testing/jobs.js';
+import { emptyProgress, reduceProgress, suggestedCap, isActiveStatus, jobStatusClass, stoppedByLabel, e2eStepLabel } from '../../../src/dev/testing/jobs.js';
 
 // Popisky se testují česky; v Node je navigator.language en-US.
 use('cs');
@@ -31,6 +31,31 @@ test('redukce událostí průběhu je append-only a drží posledních 5 volán�
 
   s = reduceProgress(s, [{ event: 'error', message: 'boom' }, { event: 'unknown' }, null]);
   assert.equal(s.error, 'boom');
+});
+
+test('proklikání sady: kroky a karty z událostí step / card', () => {
+  let s = reduceProgress(emptyProgress(), [
+    { event: 'started', expected: null },
+    { event: 'step', step: 'reseed', status: 'started' },
+    { event: 'step', step: 'reseed', status: 'finished', exitCode: 0 },
+    { event: 'step', step: 'walkthrough', status: 'started', expected: 16 },
+    { event: 'card', cardId: 'mail_suggestion:16', status: 'failed', step: 'apply', reason: 'disabled', done: 1, total: 16 },
+    { event: 'card', cardId: 'mail_suggestion:13', status: 'applied', savedDocId: 1, done: 2, total: 16 },
+  ]);
+  assert.equal(s.cards.total, 16);
+  assert.equal(s.cards.applied, 1);
+  assert.equal(s.cards.failed, 1);
+  assert.equal(s.step, 'walkthrough');
+  assert.deepEqual(s.steps.map((x) => [x.step, x.status, x.exitCode]), [['reseed', 'finished', 0], ['walkthrough', 'started', null]]);
+  assert.deepEqual(s.lastCards.map((c) => c.cardId), ['mail_suggestion:16', 'mail_suggestion:13']);
+  assert.equal(e2eStepLabel('walkthrough'), 'proklikání');
+  assert.equal(e2eStepLabel('neznamy'), 'neznamy');
+
+  s = reduceProgress(s, [{ event: 'step', step: 'walkthrough', status: 'failed', exitCode: 1 }, { event: 'finished', status: 'failed', applied: 1, failed: 1, exitCode: 1 }]);
+  assert.equal(s.step, null);
+  assert.equal(s.finished.status, 'failed');
+  // původní souhrn se nemění (append-only kopie)
+  assert.equal(emptyProgress().cards.applied, 0);
 });
 
 test('bez `done` v události se počítá průběžně', () => {

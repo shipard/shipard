@@ -22,6 +22,8 @@ class TestableDevEvalController extends DevEvalController
 	/** @var array{exitCode: ?int, termSignal: ?int, timedOut: bool, stdout: string, stderr: string} */
 	public array $captureResult = ['exitCode' => 0, 'termSignal' => null, 'timedOut' => false, 'stdout' => '', 'stderr' => ''];
 	public string $nextId = 'zzzz-zzzz-zzzz-zzzz';
+	/** @var list<string> chybějící nástroje proklikání (výchozí = vše na místě) */
+	public array $e2eProblems = [];
 
 	protected function inspectDataSource(string $dsDir, array $setMessageIds): array
 	{
@@ -41,6 +43,11 @@ class TestableDevEvalController extends DevEvalController
 	protected function serverOffersAi(): bool
 	{
 		return true;
+	}
+
+	protected function e2eToolProblems(): array
+	{
+		return $this->e2eProblems;
 	}
 
 	protected function dsCommand(): array
@@ -177,6 +184,13 @@ final class DevEvalControllerTest extends TestCase
 	private function post(string $action, array $body, ?TestableDevEvalController $ctrl = null): Response
 	{
 		return ($ctrl ?? $this->ctrl)->dispatch($this->request('POST', '/_dev/api/testing/eval/' . $action, $body));
+	}
+
+	/** POST s vlastními položkami `$_SERVER` (origin / host požadavku). */
+	private function postFrom(string $action, array $body, array $server): Response
+	{
+		$request = Request::fromArray('POST', '/_dev/api/testing/eval/' . $action, [], (string) json_encode($body), ['REMOTE_ADDR' => '10.0.0.5'] + $server);
+		return $this->ctrl->dispatch($request);
 	}
 
 	// ── Zdroje dat sady ──────────────────────────────────────────────────
@@ -342,6 +356,66 @@ final class DevEvalControllerTest extends TestCase
 
 		$job = $this->data($this->post('verify', ['dataset' => self::SET, 'dataSource' => 'dddd-dddd-dddd-dddd']))['job'];
 		$this->assertSame(['/usr/bin/php', '/repo/bin/shpd-ds', 'dataset-verify', $this->datasetDir, '--json'], $job['steps'][0]['argv']);
+	}
+
+	public function testDataSourcesReportWalkthroughAvailability(): void
+	{
+		$rows = array_column($this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/eval/data-sources?dataset=' . self::SET)))['dataSources'], null, 'id');
+		$this->assertTrue($rows['aaaa-aaaa-aaaa-aaaa']['canE2e']);
+		$this->assertNull($rows['aaaa-aaaa-aaaa-aaaa']['e2eBlocker']);
+		$this->assertTrue($rows['eeee-eeee-eeee-eeee']['canE2e'], 'použitý / zastaralý zdroj dat proklikání nevadí — přeseeduje se');
+		$this->assertFalse($rows['bbbb-bbbb-bbbb-bbbb']['canE2e'], 'reálná kopie');
+
+		$this->ctrl->e2eProblems = ['chybí node v PATH', 'spusťte: cd tests/e2e && npm ci && npx playwright install chromium'];
+		$rows = array_column($this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/eval/data-sources?dataset=' . self::SET)))['dataSources'], null, 'id');
+		$this->assertFalse($rows['aaaa-aaaa-aaaa-aaaa']['canE2e']);
+		$this->assertSame('chybí node v PATH spusťte: cd tests/e2e && npm ci && npx playwright install chromium', $rows['aaaa-aaaa-aaaa-aaaa']['e2eBlocker']);
+		$this->assertTrue($rows['aaaa-aaaa-aaaa-aaaa']['canReseed'], 'ostatní akce chybějící Node neblokuje');
+	}
+
+	public function testE2eLaunchesTheWalkthroughJobWithTheRequestOrigin(): void
+	{
+		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'eeee-eeee-eeee-eeee'], ['HTTP_HOST' => '10.0.0.7', 'HTTP_ORIGIN' => 'http://10.0.0.7']);
+		$this->assertSame(201, $this->statusOf($r), json_encode($r->getPayload()));
+		$job = $this->data($r)['job'];
+		$this->assertSame(JobRecord::TYPE_E2E, $job['type']);
+		$this->assertSame('eeee-eeee-eeee-eeee', $job['dataSource']['id']);
+		$this->assertSame(self::SET, $job['dataset']);
+		$this->assertSame(['baseUrl' => 'http://10.0.0.7'], $job['params']);
+		$this->assertSame(DevEvalController::E2E_CANCEL_GRACE_SECONDS, $job['cancelGraceSeconds']);
+		$step = $job['steps'][0];
+		$this->assertTrue($step['captureStdout']);
+		$this->assertSame($this->dsDir . '/eeee-eeee-eeee-eeee', $step['cwd']);
+		$this->assertSame([
+			'/usr/bin/php', '/repo/bin/shpd-ds', 'dataset-e2e', $this->datasetDir, '--json',
+			'--progress-file', $this->jobsDir . '/' . $job['id'] . '/progress.jsonl',
+			'--output-dir', $this->jobsDir . '/' . $job['id'] . '/e2e',
+			'--base-url', 'http://10.0.0.7',
+		], $step['argv']);
+		$this->assertCount(1, $this->spawns);
+
+		// Bez hlavičky Origin stačí schéma + host (jiný zdroj dat — první úloha ještě běží).
+		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], ['HTTP_HOST' => 'dev.example:8080', 'HTTPS' => 'on']);
+		$this->assertSame(201, $this->statusOf($r), json_encode($r->getPayload()));
+		$this->assertSame('https://dev.example:8080', $this->data($r)['job']['params']['baseUrl']);
+	}
+
+	public function testE2eRefusesMissingToolsBadOriginAndTheUsualGuards(): void
+	{
+		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], []);
+		$this->assertSame(400, $this->statusOf($r), 'bez hostu není origin');
+		$this->assertSame('VALIDATION', $this->error($r)['code']);
+
+		$this->ctrl->e2eProblems = ['chybí tests/e2e/node_modules — spusťte: cd tests/e2e && npm ci && npx playwright install chromium'];
+		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], ['HTTP_HOST' => '10.0.0.7']);
+		$this->assertSame(422, $this->statusOf($r));
+		$this->assertSame('E2E_UNAVAILABLE', $this->error($r)['code']);
+		$this->assertSame($this->ctrl->e2eProblems, $this->error($r)['details']['problems']);
+		$this->ctrl->e2eProblems = [];
+
+		$this->assertSame('DS_NOT_FREE', $this->error($this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'bbbb-bbbb-bbbb-bbbb'], ['HTTP_HOST' => '10.0.0.7']))['code']);
+		$this->assertSame('UNKNOWN_DATASET', $this->error($this->postFrom('e2e', ['dataset' => 'nope', 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], ['HTTP_HOST' => '10.0.0.7']))['code']);
+		$this->assertSame([], $this->spawns);
 	}
 
 	public function testCreateGeneratesTheIdAndSeedsInTwoSteps(): void

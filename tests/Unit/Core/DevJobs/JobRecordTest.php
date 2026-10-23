@@ -52,6 +52,16 @@ final class JobRecordTest extends TestCase
         new JobRecord('bad id', JobRecord::TYPE_EVAL, 'ds', 'n', null, null, [], [$step], '2026-01-01T00:00:00Z', null, 0);
     }
 
+    public function testAcceptsWalkthroughType(): void
+    {
+        $step = new JobStep('dataset-e2e cz-vat-payer', ['/usr/bin/php', 'shpd-ds', 'dataset-e2e', '/repo/tests/datasets/cz/vat-payer', '--json'], '/opt/ds', true);
+        $record = new JobRecord('20261016-123456-abc123', JobRecord::TYPE_E2E, 'aaaa-bbbb-cccc-dddd', 'DS', 'cz-vat-payer', null, [], [$step], '2026-10-23T09:00:00Z', null, 120);
+
+        $this->assertFalse($record->isServerWide());
+        $this->assertTrue($record->isCancellable());
+        $this->assertSame('e2e', JobRecord::fromArray($record->toArray())->type);
+    }
+
     public function testRejectsUnknownType(): void
     {
         $step = new JobStep('x', ['true'], '/tmp');

@@ -35,6 +35,8 @@ export const testingApi = {
     postJson('/testing/eval/reseed', { dataset: set, dataSource, ...(replaceDataset ? { replaceDataset: true } : {}) }),
   create: (set) => postJson('/testing/eval/create', { dataset: set }),
   verify: (set, dataSource, apply = true) => postJson('/testing/eval/verify', { dataset: set, dataSource, apply }),
+  // Proklikání sady v prohlížeči (F7a D88): přeseedování + Playwright + dataset-verify jako úloha `e2e`
+  startE2e: (set, dataSource) => postJson('/testing/eval/e2e', { dataset: set, dataSource }),
   estimate: (body) => postJson('/testing/eval/estimate', body),
   startEval: (body) => postJson('/testing/eval/run', body), // ne `run` — ten je detail běhu výše
 
@@ -42,6 +44,8 @@ export const testingApi = {
   jobs: ({ dataset, ds, days } = {}) => getJson(`/testing/jobs${query({ dataset, ds, days })}`),
   job: (id, offset = 0, tail = undefined) => getJson(`/testing/jobs/${enc(id)}${query({ offset, tail })}`),
   cancelJob: (id, force = false) => postJson(`/testing/jobs/${enc(id)}/cancel${force ? '?force=1' : ''}`, { force }),
+  // Trace selhané karty proklikání (D96) — server vydá jen soubory, které jmenuje report úlohy
+  jobFileUrl: (id, name) => apiUrl(`/testing/jobs/${enc(id)}/files/${enc(name)}`),
 
   // Editor variant (D62)
   variants: () => getJson('/testing/eval/variants'),
