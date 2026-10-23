@@ -60,23 +60,8 @@ class DetailContractTest extends TestCase
         'core.system.users',
         // core.units
         'core.units',
-        // docs.accountingDocs
-        'docs.accountingDocs.heads',
-        // docs.cashDocs
-        'docs.cashDocs.heads',
-        // docs.cashRegister
-        'docs.cashRegister.heads',
         // docs.core
         'docs.core.numberSeries',
-        'docs.core.heads',
-        // docs.invoicesIn
-        'docs.invoicesIn.heads',
-        // docs.invoicesOut
-        'docs.invoicesOut.heads',
-        // docs.proformasIn
-        'docs.proformasIn.heads',
-        // docs.proformasOut
-        'docs.proformasOut.heads',
         // economy.accbal
         'economy.accbal.balances',
         'economy.accbal.balanceAccounts',
