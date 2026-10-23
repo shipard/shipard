@@ -135,6 +135,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>dataset-dump</info>            Export the whole DS into a portable dataset folder (--zip, --force)');
         $output->writeln('  <info>dataset-seed</info>            Reset the DS and import a dataset folder/zip (--no-reset to merge, -y)');
         $output->writeln('  <info>dataset-verify</info>          Apply the proposals of a seeded dataset and verify accounting, VAT and costs against expected/ (--no-apply, --json, --write-ledger-snapshot)');
+        $output->writeln('  <info>dataset-e2e</info>             Reseed the free DS with a dataset, click through every proposal card in the browser (Playwright Test) and run dataset-verify --no-apply (--no-reseed, --base-url, --output-dir, --json, --progress-file; development only, exit 0/1/2/130)');
         $output->writeln('');
         $output->writeln('<comment>Usage:</comment>');
         $output->writeln('  shpd-ds <command> [options]');
@@ -159,6 +160,7 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');
         $output->writeln('  shpd-ds dataset-seed /tmp/web-demo.zip -y');
         $output->writeln('  shpd-ds dataset-verify /path/to/repo/tests/datasets/cz/vat-payer');
+        $output->writeln('  shpd-ds dataset-e2e /path/to/repo/tests/datasets/cz/vat-payer --json');
         $output->writeln('');
         $output->writeln('<comment>Note:</comment>');
         $output->writeln('  Run from within a data source directory (must contain config/main.json)');

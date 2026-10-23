@@ -1334,4 +1334,35 @@ final class MailSuggestionsSourceTest extends TestCase
             );
         }
     }
+
+    // ── Predikát karty návrhu sdílený s proklikáním (#103 F7a I9) ──────────
+
+    public function testOpenProposalWhereIsTheFeedConditionWithoutParameters(): void
+    {
+        $where = MailSuggestionsSource::openProposalWhere();
+        $this->assertSame(
+            '`m`.`docState` IN (10, 20) AND `m`.`analysis_state` = 30 AND `a`.`canonical_json` IS NOT NULL'
+            . ' AND `a`.`resolution` IS NULL AND COALESCE(`a`.`proposed_type`, \'other\') != \'other\'',
+            $where,
+        );
+        $this->assertStringNotContainsString('%', $where, 'bez dibi placeholderů — připojitelná k libovolnému dotazu');
+        $join = MailSuggestionsSource::latestAnalysisJoin();
+        $this->assertStringContainsString('JOIN `core_mail_message_analyses` `a` ON `a`.`id` = (', $join);
+        $this->assertStringContainsString('`a2`.`status` = 2', $join);
+        $this->assertStringContainsString('ORDER BY `a2`.`analyzed_at` DESC, `a2`.`id` DESC LIMIT 1', $join);
+
+        // Dotaz feedu používá přesně tuto podmínku a tento JOIN.
+        $captured = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(static function (mixed ...$args) use (&$captured): array {
+            $captured[] = $args;
+            return [];
+        });
+        $db->method('fetchRow')->willReturn(null);
+        (new MailSuggestionsSource())->collectCards(new FeedContext($db, null, 'cs', 30));
+        $suggestionQueries = array_values(array_filter($captured, static fn (array $q): bool => str_contains((string) $q[0], 'JOIN `core_mail_message_analyses`')));
+        $this->assertCount(1, $suggestionQueries);
+        $this->assertStringContainsString($join . ' WHERE ' . $where . ' ORDER BY `m`.`received_at` DESC', (string) $suggestionQueries[0][0]);
+        $this->assertSame([30], array_slice($suggestionQueries[0], 1), 'jediný parametr zůstává LIMIT');
+    }
 }

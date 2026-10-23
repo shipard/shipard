@@ -15,18 +15,27 @@ class SessionService
 {
 	public const int SESSION_TTL_SECONDS = 86400; // 24 hours
 
-	/** @return array{0: string, 1: string} [token, expires_at ISO-8601] */
-	public function createSession(int $userId, DataSourceConnection $db, ?string $clientIp = null): array
+	/**
+	 * @param ?int $ttlSeconds platnost session; null = {@see SESSION_TTL_SECONDS}
+	 *        (24 h). Kratší nebo delší TTL dává jen volající s vlastním důvodem
+	 *        — proklikání datové sady (`dataset-e2e`, #103 F7a I7).
+	 * @return array{0: string, 1: string} [token, expires_at ISO-8601]
+	 */
+	public function createSession(int $userId, DataSourceConnection $db, ?string $clientIp = null, ?int $ttlSeconds = null): array
 	{
+		$ttl = $ttlSeconds ?? self::SESSION_TTL_SECONDS;
+		if ($ttl <= 0) {
+			throw new \InvalidArgumentException('Session TTL must be a positive number of seconds');
+		}
 		$token = 'shpd_st_' . $this->generateToken(48);
-		$expiresAt = date('c', time() + self::SESSION_TTL_SECONDS);
+		$expiresAt = date('c', time() + $ttl);
 
 		$db->insertRow('core_system_sessions', [
 			'user_id'    => $userId,
 			'token'      => $token,
 			'ip_address' => $clientIp,
 			'created'    => date('Y-m-d H:i:s'),
-			'expires'    => date('Y-m-d H:i:s', time() + self::SESSION_TTL_SECONDS),
+			'expires'    => date('Y-m-d H:i:s', time() + $ttl),
 		]);
 
 		return [$token, $expiresAt];

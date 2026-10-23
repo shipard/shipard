@@ -1,0 +1,18 @@
+{
+  "expected": 2,
+  "applied": [
+    {"cardId": "mail_suggestion:11", "messageNdx": 11, "savedDocId": 101, "durationMs": 4200},
+    {"cardId": "mail_suggestion:12", "messageNdx": 12, "savedDocId": 102, "durationMs": 3900}
+  ],
+  "failed": [],
+  "browserErrors": [],
+  "apiResponses": [
+    {"status": 404, "method": "GET", "url": "http://127.0.0.1/abcd-abcd-abcd-abcd/api/v1/_app/avatar", "cardId": null, "at": "2026-10-23T08:00:01.000Z"}
+  ],
+  "dialogs": [],
+  "current": null,
+  "remainingCards": 0,
+  "startedAt": "2026-10-23T08:00:00.000Z",
+  "finishedAt": "2026-10-23T08:00:09.000Z",
+  "complete": true
+}

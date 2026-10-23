@@ -1,0 +1,12 @@
+{
+  "dataset": {"name": "cz-test", "profile": "vat-payer", "country": "cz"},
+  "dataSource": "abcd-abcd-abcd-abcd",
+  "apply": {"ran": false, "applied": [], "failed": []},
+  "checks": [
+    {"id": "applyFidelity", "label": "Věrnost apply", "status": "ok", "reason": null, "differences": [], "notes": []},
+    {"id": "itemsAndAccounts", "label": "Položky a účty", "status": "ok", "reason": null, "differences": [], "notes": ["12 položek"]},
+    {"id": "vat", "label": "DPH", "status": "ok", "reason": null, "differences": [], "notes": []}
+  ],
+  "summary": {"ok": 3, "diff": 0, "skipped": 0},
+  "exitCode": 0
+}

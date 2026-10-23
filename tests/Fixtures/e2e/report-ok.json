@@ -1,0 +1,18 @@
+{
+  "config": {"rootDir": "/repo/tests/e2e", "workers": 1, "projects": [{"name": ""}]},
+  "suites": [
+    {
+      "title": "dataset-walkthrough.spec.mjs",
+      "file": "dataset-walkthrough.spec.mjs",
+      "specs": [
+        {
+          "title": "proklikání karet návrhů datové sady",
+          "ok": true,
+          "tests": [{"status": "expected", "expectedStatus": "passed", "results": [{"status": "passed", "duration": 9000}]}]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {"startTime": "2026-10-23T08:00:00.000Z", "duration": 9500, "expected": 1, "skipped": 0, "unexpected": 0, "flaky": 0}
+}

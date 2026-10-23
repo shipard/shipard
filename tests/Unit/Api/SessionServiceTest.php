@@ -66,6 +66,21 @@ class SessionServiceTest extends TestCase
 		$this->assertNull($this->db->insertedRows[0]['data']['ip_address']);
 	}
 
+	/** Proklikání datové sady dává session jen na dobu běhu (#103 F7a I7). */
+	public function testCreateSessionHonoursACustomTtl(): void
+	{
+		[, $expiresAt] = $this->service->createSession(7, $this->db, null, 5400);
+
+		$this->assertEqualsWithDelta(time() + 5400, strtotime($expiresAt), 5);
+		$this->assertEqualsWithDelta(time() + 5400, strtotime($this->db->insertedRows[0]['data']['expires']), 5);
+
+		[, $defaultExpiresAt] = $this->service->createSession(7, $this->db, null, null);
+		$this->assertEqualsWithDelta(time() + SessionService::SESSION_TTL_SECONDS, strtotime($defaultExpiresAt), 5, 'null = výchozích 24 h');
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->service->createSession(7, $this->db, null, 0);
+	}
+
 	public function testInvalidateSessionDeletesByToken(): void
 	{
 		$this->service->invalidateSession('shpd_st_sometoken', $this->db);

@@ -1,0 +1,78 @@
+{
+  "expected": 3,
+  "applied": [
+    {
+      "cardId": "mail_suggestion:21",
+      "messageNdx": 21,
+      "savedDocId": 201,
+      "durationMs": 4100
+    }
+  ],
+  "failed": [
+    {
+      "cardId": "mail_suggestion:22",
+      "messageNdx": 22,
+      "step": "decide",
+      "reason": "no_create_offered",
+      "path": "supplier",
+      "trace": "trace-mail_suggestion_22.zip",
+      "durationMs": 6100
+    },
+    {
+      "cardId": "mail_suggestion:23",
+      "messageNdx": 23,
+      "step": "apply",
+      "reason": "disabled",
+      "path": "supplierBank",
+      "trace": "trace-mail_suggestion_23.zip",
+      "durationMs": 2500,
+      "pendingPaths": [
+        "supplierBank"
+      ],
+      "message": "reference čeká na rozhodnutí, ale náhled pro ni nemá odznak"
+    }
+  ],
+  "browserErrors": [
+    {
+      "type": "pageerror",
+      "message": "TypeError: Cannot read properties of undefined (reading 'id')\n    at Preview.svelte:12",
+      "cardId": "mail_suggestion:22",
+      "at": "2026-10-23T08:00:05.000Z"
+    },
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)",
+      "cardId": "mail_suggestion:23",
+      "at": "2026-10-23T08:00:08.100Z"
+    }
+  ],
+  "apiResponses": [
+    {
+      "status": 422,
+      "method": "POST",
+      "url": "http://127.0.0.1/abcd-abcd-abcd-abcd/api/v1/_mail/messages/22/apply",
+      "cardId": "mail_suggestion:22",
+      "at": "2026-10-23T08:00:06.000Z"
+    },
+    {
+      "status": 500,
+      "method": "GET",
+      "url": "http://127.0.0.1/abcd-abcd-abcd-abcd/api/v1/_ui/dashboard",
+      "cardId": "mail_suggestion:23",
+      "at": "2026-10-23T08:00:08.000Z"
+    }
+  ],
+  "dialogs": [
+    {
+      "type": "alert",
+      "message": "Použití selhalo",
+      "cardId": "mail_suggestion:22",
+      "at": "2026-10-23T08:00:06.500Z"
+    }
+  ],
+  "current": null,
+  "remainingCards": 1,
+  "startedAt": "2026-10-23T08:00:00.000Z",
+  "finishedAt": "2026-10-23T08:00:20.000Z",
+  "complete": true
+}

@@ -224,22 +224,48 @@ final class MailSuggestionsSource implements FeedSource
             . ' `a`.`id` AS `analysis_ndx`, `a`.`proposed_type`, `a`.`canonical_json`,'
             . ' `a`.`analysis_json`, `a`.`confidence`, `a`.`profile`, `a`.`prompt_version`'
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
-            . ' JOIN `' . self::ANALYSES_TABLE . '` `a` ON `a`.`id` = ('
+            . self::latestAnalysisJoin()
+            . ' WHERE ' . self::openProposalWhere()
+            . ' ORDER BY `m`.`received_at` DESC, `m`.`id` DESC'
+            . ' LIMIT %i',
+            $ctx->sourceLimit,
+        );
+    }
+
+    /**
+     * Jediný zdroj pravdy „co je karta návrhu“ (#103 F7a I9): podmínka WHERE
+     * nad zprávou `m` a její poslední úspěšnou analýzou `a`
+     * ({@see latestAnalysisJoin()}) — zpráva Nová / Otevřená po analýze,
+     * analýza s kanonickým dokladem, bez rozhodnutí a s typem jiným než
+     * `other`. Hodnoty jsou vepsané (žádné parametry), aby šla podmínka
+     * připojit k libovolnému dotazu — počet očekávaných karet proklikání
+     * (`E2eExpectedCards`) ji sdílí s feedem.
+     */
+    public static function openProposalWhere(): string
+    {
+        return sprintf(
+            '`m`.`docState` IN (%d, %d)'
+            . ' AND `m`.`analysis_state` = %d'
+            . ' AND `a`.`canonical_json` IS NOT NULL'
+            . ' AND `a`.`resolution` IS NULL'
+            . ' AND COALESCE(`a`.`proposed_type`, \'other\') != \'other\'',
+            IncomingMessageDocument::DOC_STATE_NEW,
+            IncomingMessageDocument::DOC_STATE_OPEN,
+            IncomingMessageDocument::ANALYSIS_ANALYZED,
+        );
+    }
+
+    /**
+     * JOIN poslední úspěšné analýzy zprávy `m` jako `a` — protějšek
+     * {@see openProposalWhere()} pro dotazy mimo feed.
+     */
+    public static function latestAnalysisJoin(): string
+    {
+        return ' JOIN `' . self::ANALYSES_TABLE . '` `a` ON `a`.`id` = ('
             . '     SELECT `a2`.`id` FROM `' . self::ANALYSES_TABLE . '` `a2`'
             . '     WHERE `a2`.`message` = `m`.`id` AND `a2`.`status` = 2'
             . '     ORDER BY `a2`.`analyzed_at` DESC, `a2`.`id` DESC LIMIT 1'
-            . ' )'
-            . ' WHERE `m`.`docState` IN %in'
-            . ' AND `m`.`analysis_state` = %i'
-            . ' AND `a`.`canonical_json` IS NOT NULL'
-            . ' AND `a`.`resolution` IS NULL'
-            . ' AND COALESCE(`a`.`proposed_type`, \'other\') != \'other\''
-            . ' ORDER BY `m`.`received_at` DESC, `m`.`id` DESC'
-            . ' LIMIT %i',
-            [IncomingMessageDocument::DOC_STATE_NEW, IncomingMessageDocument::DOC_STATE_OPEN],
-            IncomingMessageDocument::ANALYSIS_ANALYZED,
-            $ctx->sourceLimit,
-        );
+            . ' )';
     }
 
     /**
