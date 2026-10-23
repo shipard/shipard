@@ -12,7 +12,7 @@ vstupními body:
 | Modul | Obsah |
 |---|---|
 | `invoicegen/jsonc.py` | `load_jsonc` — komentáře `//`, trailing čárky, čísla jako `Decimal` |
-| `invoicegen/checks.py` | kontrolní součty IČO, mod 11 čísel účtů, IBAN; validace identit |
+| `invoicegen/checks.py` | kontrolní součty IČO, mod 11 čísel účtů, IBAN; validace identit vč. telefonů z nepřidělitelného rozsahu (`000` za kódem země, výjimka +1 555-01xx; `phone_parts` = jediná tabulka délek kódů zemí, sdílená s `render.fmt_phone`) |
 | `invoicegen/compute.py` | výpočet řádků, rekapitulace DPH a součtů v `Decimal` (ROUND_HALF_UP) |
 | `invoicegen/render.py` | formátování pro tisk, HTML ze šablony `{{key}}`, PDF přes Gotenberg |
 | `invoicegen/expected.py` | očekávaný výsledek = papírová projekce canonicalu (`tests/corpus/projection.jsonc`), odvozená pole podle promptu, zapisovač JSON bez float |

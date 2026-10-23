@@ -37,7 +37,7 @@ IDENTITIES = {
             "taxId": "CZ06388451", "vatId": "CZ06388451",
             "courtRegistration": "Spisová značka C 99999 vedená u Krajského soudu v Brně",
             "address": {"street": "Skladová", "houseNumber": "1128/6", "city": "Brno", "zip": "61600", "country": "cz"},
-            "contact": {"name": None, "email": "fakturace@dodavatelna.example", "phone": "+420577123456", "web": "www.dodavatelna.example"},
+            "contact": {"name": None, "email": "fakturace@dodavatelna.example", "phone": "+420000123456", "web": "www.dodavatelna.example"},
             "bankAccount": {"accountNumber": "1803729684/0100", "iban": "CZ7201000000001803729684", "bic": "KOMBCZPP"},
         },
         "cz-nonpayer": {
@@ -45,7 +45,7 @@ IDENTITIES = {
             "name": "Jan Fiktivní", "country": "cz", "companyId": "17930278",
             "taxId": None, "vatId": None, "courtRegistration": None,
             "address": {"street": "Lektorská", "houseNumber": "5", "city": "Olomouc", "zip": "77900", "country": "cz"},
-            "contact": {"name": None, "email": "jan@fiktivni.example", "phone": "+420603111222", "web": None},
+            "contact": {"name": None, "email": "jan@fiktivni.example", "phone": "+420000111222", "web": None},
             "bankAccount": {"accountNumber": "5638829718/0300", "iban": "CZ8503000000005638829718", "bic": None},
         },
         "de": {
@@ -54,7 +54,7 @@ IDENTITIES = {
             "taxId": "DE293847560", "vatId": "DE293847560",
             "courtRegistration": "Amtsgericht Berlin-Charlottenburg, HRB 999999",
             "address": {"street": "Serverstraße", "houseNumber": "14", "city": "Berlin", "zip": "10115", "country": "de"},
-            "contact": {"name": None, "email": "billing@hostaro.example", "phone": "+493012345678", "web": "www.hostaro.example"},
+            "contact": {"name": None, "email": "billing@hostaro.example", "phone": "+490002345678", "web": "www.hostaro.example"},
             "bankAccount": {"accountNumber": None, "iban": "DE72100700000532013000", "bic": "TESTDEBBXXX"},
         },
         "us": {

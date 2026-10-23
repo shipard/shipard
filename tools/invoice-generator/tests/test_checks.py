@@ -6,7 +6,7 @@ import unittest
 from invoicegen.checks import (
     account_valid, bic_valid, de_vat_check_digit, de_vat_valid, example_domain,
     iban_check_digits, iban_from_account, iban_matches_account, iban_valid, ico_valid,
-    phone_canonical, validate_identities, vat_id_format_valid,
+    phone_canonical, phone_parts, phone_unassigned, validate_identities, vat_id_format_valid,
 )
 from tests.fixtures import DEMO_RESERVED, IDENTITIES
 
@@ -64,6 +64,19 @@ class ChecksumTest(unittest.TestCase):
         self.assertFalse(phone_canonical("+420 577 123 456"))
         self.assertFalse(phone_canonical("577123456"))
 
+    def test_phone_parts_and_unassigned(self) -> None:
+        self.assertEqual(("420", "585201304"), phone_parts("+420585201304"))
+        self.assertEqual(("49", "3028874410"), phone_parts("+493028874410"))
+        self.assertEqual(("1", "4155550199"), phone_parts("+14155550199"))
+        self.assertIsNone(phone_parts("+420 585 201 304"))
+        self.assertTrue(phone_unassigned("+420000201304"))
+        self.assertTrue(phone_unassigned("+490008874410"))
+        self.assertFalse(phone_unassigned("+420585201304"))   # skutečná krajská předvolba
+        self.assertFalse(phone_unassigned("+493028874410"))   # skutečná berlínská linka
+        self.assertTrue(phone_unassigned("+14155550199"))     # vyhrazený rozsah 555-01xx
+        self.assertFalse(phone_unassigned("+14155551234"))    # 555-12xx může být přidělené
+        self.assertFalse(phone_unassigned("585201304"))
+
 
 class ValidateIdentitiesTest(unittest.TestCase):
     def test_fixture_is_clean(self) -> None:
@@ -87,6 +100,8 @@ class ValidateIdentitiesTest(unittest.TestCase):
             "suppliers.cz-payer.address.zip": "616 00",
             "suppliers.cz-payer.contact.email": "fakturace@dodavatelna.cz",
             "suppliers.cz-payer.contact.phone": "+420 577 123 456",
+            "suppliers.cz-nonpayer.contact.phone": "+420603111222",
+            "suppliers.us.contact.phone": "+14155551234",
             "suppliers.cz-payer.contact.web": "https://www.dodavatelna.example/",
             "suppliers.cz-nonpayer.vatPayer": True,
             "suppliers.de.vatId": "DE293847561",

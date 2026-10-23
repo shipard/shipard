@@ -119,6 +119,35 @@ def phone_canonical(phone: str) -> bool:
     return re.fullmatch(r"\+[1-9][0-9]{6,14}", phone) is not None
 
 
+# Kódy zemí o dvou číslicích; `1` má jednu, ostatní (420, 421, …) tři.
+TWO_DIGIT_COUNTRY_CODES = ("49", "43", "44", "33", "39", "31")
+
+
+def phone_parts(phone: str) -> tuple[str, str] | None:
+    """Kód země a národní číslo kanonického telefonu (`+420585201304` →
+    `("420", "585201304")`); jiný tvar → None. Jediná tabulka délek kódů
+    zemí — sdílí ji tisk (`render.fmt_phone`) i kontrola identit."""
+    m = re.fullmatch(r"\+([0-9]+)", phone)
+    if not m:
+        return None
+    digits = m.group(1)
+    cc_len = 1 if digits.startswith("1") else 2 if digits[:2] in TWO_DIGIT_COUNTRY_CODES else 3
+    return digits[:cc_len], digits[cc_len:]
+
+
+def phone_unassigned(phone: str) -> bool:
+    """Telefon fiktivní identity z nepřidělitelného rozsahu: národní číslo
+    začíná `000` (stejné pravidlo jako demo sada), nebo americké číslo
+    z vyhrazeného rozsahu 555-01xx (`+1 NXX 555 01XX`)."""
+    parts = phone_parts(phone)
+    if parts is None:
+        return False
+    cc, national = parts
+    if national.startswith("000"):
+        return True
+    return cc == "1" and re.fullmatch(r"[2-9][0-9]{2}55501[0-9]{2}", national) is not None
+
+
 # ── Identity dema ────────────────────────────────────────────────────────────
 
 def validate_party(name: str, party: dict, with_bank: bool) -> None:
@@ -216,6 +245,8 @@ def _validate_corpus_party(key: str, party: dict, problems: list[str]) -> None:
             phone = contact.get("phone")
             if phone is not None and not phone_canonical(phone):
                 bad(f"telefon {phone!r} — jen + a číslice")
+            elif phone is not None and not phone_unassigned(phone):
+                bad(f"telefon {phone!r} — národní číslo musí začínat 000 (výjimka +1 …555 01xx)")
             if contact.get("name") is not None and not _text(contact["name"]):
                 bad("contact.name není text")
 

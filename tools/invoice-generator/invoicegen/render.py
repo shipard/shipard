@@ -19,6 +19,7 @@ import uuid
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
+from .checks import phone_parts
 from .compute import CENTS
 
 GOTENBERG_URL = os.environ.get("GOTENBERG_URL", "http://10.199.6.210:3000")
@@ -68,12 +69,10 @@ def fmt_zip(zip_code: str, country: str) -> str:
 
 def fmt_phone(phone: str) -> str:
     """`+420577123456` → `+420 577 123 456`; `+49…` → `+49 …`; `+1…` → `+1 …`."""
-    m = re.fullmatch(r"\+([0-9]+)", phone)
-    if not m:
+    parts = phone_parts(phone)
+    if parts is None:
         return phone
-    digits = m.group(1)
-    cc_len = 1 if digits.startswith("1") else 2 if digits[:2] in ("49", "43", "44", "33", "39", "31") else 3
-    cc, rest = digits[:cc_len], digits[cc_len:]
+    cc, rest = parts
     groups = [rest[i:i + 3] for i in range(0, len(rest), 3)]
     if len(groups) > 1 and len(groups[-1]) == 1:
         groups[-2:] = [groups[-2] + groups[-1]]
