@@ -1,6 +1,6 @@
 # Design system — základy: jednotky, tokeny, lint CSS
 
-**Stav:** naplánováno — #134, rozhodnutí D9–D12 potvrzená
+**Stav:** hotovo — #134, D9–D12, 2026-10-23; poznámky k implementaci na konci
 
 ## Kontext / Cíl
 
@@ -177,13 +177,13 @@ Po každém commitu `cd frontend && npm run build`.
 
 ## Hotovo když
 
-- [ ] tokeny mezer a zaoblení v rem, `--shpd-radius-full` zaveden
-- [ ] v `padding*`, `margin*`, `gap`, `font-size`, `border-radius*` nikde
+- [x] tokeny mezer a zaoblení v rem, `--shpd-radius-full` zaveden
+- [x] v `padding*`, `margin*`, `gap`, `font-size`, `border-radius*` nikde
       px (mimo zdůvodněné výjimky)
-- [ ] `scripts/check-css-units.py` v pre-commitu
-- [ ] aplikace i vývojářský dashboard vizuálně beze změny
-- [ ] kapitola Jednotky a mezery v `docs/design-system.md`, `CLAUDE.md`
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] `scripts/check-css-units.py` v pre-commitu
+- [x] aplikace i vývojářský dashboard vizuálně beze změny
+- [x] kapitola Jednotky a mezery v `docs/design-system.md`, `CLAUDE.md`
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Pasti
 
@@ -219,3 +219,22 @@ Po každém commitu `cd frontend && npm run build`.
 - ✓ **D12** Rozsah včetně vývojářského dashboardu (`frontend/src/dev/`) —
   jedno pravidlo pro celý frontend, kontrola bez výjimek po adresářích.
 
+## Poznámky k implementaci (2026-10-23)
+
+- Převedeno 339 deklarací (aplikace 255 v 74 souborech vč. 65 rem literálů
+  písma → token, dashboard 84 ve 14) jednorázovým převodníkem mimo
+  repozitář; neutralita ověřena mechanicky nad `git diff` (každá změněná
+  složka po dosazení tokenů dává stejné px; `999px` → `--shpd-radius-full`
+  je jediná záměrná změna čísla — obě hodnoty znamenají „maximum“).
+- Fallbacky `var(--shpd-radius-sm, 4px)` (2×) a `var(--shpd-radius-md, 8px)`
+  (1×, hodnota ani neodpovídala tokenu) odstraněny — token je v obou bundlech
+  definovaný, efektivní hodnota se nemění. `var(--shpd-radius-pill, 9999px)`
+  a `var(--shpd-font-size-md, 1rem)` (nedefinované tokeny) → `--shpd-radius-full`
+  / `--shpd-font-size-base`.
+- Svelte direktivy `style:padding-left` (`ReportView`, `{row.level * 16}px`
+  → `{row.level}rem`) a `style:margin-left` (`LogException`, `'12px'` →
+  `'0.75rem'`) převedeny; kontrola direktivy `style:vlastnost=` hlídá taky.
+- Základní CSS iframe e-mailu v `SandboxedHtml.svelte` (řetězec v JS)
+  ponecháno v px — vlastní dokument mimo rozvržení aplikace.
+- Výjimek `px-ok` nula. Věta o kontrole doplněna i do `docs/frontend.md`
+  a `docs/dev/dev-daily.md`.

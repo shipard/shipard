@@ -257,6 +257,10 @@ hlavička přeskočí (graceful fallback — backend nemusí být upraven).
 3. **Tlačítka řeš přes `<Button>`** komponentu, ne přes vlastní hardcoded
    styly s `!important`. `Button` má varianty `primary | secondary |
    danger | success | ghost`.
+4. **Mezery, odsazení, zaoblení a písmo bez px.** Token (`--shpd-space-*`,
+   `--shpd-radius-*`, `--shpd-font-size-*`) nebo rem; px jen okrajům,
+   stínům a stavovému proužku. Hlídá `scripts/check-css-units.py` —
+   viz §10 Jednotky a mezery.
 
 ### Anti-patterny
 
@@ -557,7 +561,93 @@ synchronizovaná místa** v [`frontend.md`](frontend.md)
 
 ---
 
-## 10. Soubory
+## 10. Jednotky a mezery
+
+Pravidlo D1 z #133: **mezery, odsazení, zaoblení a velikost písma se píší
+v rem** — tokenem, nebo rem literálem; **px zůstávají jen okrajům, obrysům,
+stínům a stavovému proužku** (linka má být 1 px bez ohledu na písmo).
+Breakpointy `@media`, pevné šířky a výšky a layout tokeny
+(`--shpd-sidebar-width`, `--shpd-header-height`, šířky pásů shellu) řeší
+responzivita #138 — do té doby zůstávají v px (D11).
+
+### Proč rem a proč se kořenové písmo nenastavuje
+
+`rem` se odvíjí od velikosti písma kořene `<html>`. Aplikace ji **nenastavuje**
+— respektuje volbu uživatele v prohlížeči (výchozí 16 px). Kdo si písmo
+zvětší, dostane úměrně větší i mezery a zaoblení; s px by text narostl, ale
+rozvržení zůstalo těsné. Převod základů (#134, D9) byl vizuálně neutrální:
+hodnoty se přepočetly 1 : 1 (px / 16), při 16 px vypadá aplikace stejně jako
+před ním. Vizuální změny (základní text 16 px, typografické role) přináší
+pilot #135.
+
+### Tokeny mezer, zaoblení a písma
+
+Hodnoty tokenů jsou v rem; sloupec px je ekvivalent při 16 px.
+
+| Token | Hodnota | px | Použití |
+|---|---|---|---|
+| `--shpd-space-xs` | `0.25rem` | 4 | mezera ikona ↔ text, drobné odsazení |
+| `--shpd-space-sm` | `0.5rem` | 8 | vodorovné odsazení inputů a tlačítek |
+| `--shpd-space-md` | `1rem` | 16 | mezera mezi bloky, odsazení obsahu |
+| `--shpd-space-lg` | `1.5rem` | 24 | tělo dialogu, strany sekce formuláře |
+| `--shpd-space-xl` | `2rem` | 32 | velké odsazení stránky |
+| `--shpd-input-padding-y` | `0.25rem` | 4 | svislé odsazení inputů |
+| `--shpd-form-section-gap` | `0.5rem` | 8 | mezera mezi sekcemi formuláře |
+| `--shpd-form-section-padding-y` | `0.5rem` | 8 | svislé odsazení sekce formuláře |
+| `--shpd-radius-sm` | `0.25rem` | 4 | inputy, štítky, drobné prvky |
+| `--shpd-radius-md` | `0.375rem` | 6 | tlačítka, karty |
+| `--shpd-radius-lg` | `0.5rem` | 8 | dialogy, panely |
+| `--shpd-radius-full` | `9999px` | — | pilulka: čipy, štítky stavů |
+| `--shpd-font-size-xs` … `-xl` | `0.75` / `0.875` / `1` / `1.125` / `1.25rem` | 12 / 14 / 16 / 18 / 20 | velikosti písma |
+
+`--shpd-radius-full` je jediná px hodnota zaoblení: znamená „maximum“, ne
+velikost (prohlížeč ji sám ořízne na polovinu kratší strany), v rem by
+nedávala smysl. Kruh je `border-radius: 50%`. Stíny `--shpd-shadow-*`
+zůstávají v px.
+
+### Jak psát hodnoty
+
+- Hodnota rovná tokenu → token: `gap: var(--shpd-space-xs)`,
+  `border-radius: var(--shpd-radius-md)`, `font-size: var(--shpd-font-size-sm)`.
+- Jiná hodnota → rem jako px / 16, bez zaokrouhlování k tokenu:
+  `padding: 0.125rem 0.625rem` (2 a 10 px), `margin-bottom: -0.0625rem`.
+  Zkratky po složkách (`padding: 0.125rem var(--shpd-space-sm)`), totéž
+  uvnitř `calc()`. Nula bez jednotky (`0`, ne `0px`).
+- Nové tokeny mezer (2 px, 12 px…) se nezavádějí mimochodem — rozhodne
+  pilot #135 spolu s typografickými rolemi; do té doby rem literál.
+- **`em`** jen tam, kde se prvek řídí okolním textem, ne stránkou: ikona
+  vedle textu (`width: 1em`), vnitřní odsazení štítku, který má růst se
+  svým písmem. Mezery mezi bloky a odsazení sekcí nikdy v em — násobí se
+  s každým vnořením.
+- **V px zůstává:** `border`, `outline`, `box-shadow`, stavový proužek
+  (`::before` 3 px / 6 px), `@media`, `width` / `height` / `min-*` /
+  `max-*` (do #138), polohování (`top`, `left`, `inset`), `letter-spacing`,
+  `transform`; `line-height` bez jednotky.
+
+### Kontrola v pre-commitu
+
+`scripts/check-css-units.py` (#134 D10) projde celý `frontend/src` včetně
+vývojářského dashboardu (D12) — soubory `.css` a `.svelte`: blok `<style>`,
+atribut `style=""` i direktiva `style:vlastnost=` — a zastaví commit, když má
+`padding*`, `margin*`, `gap`, `row-gap`, `column-gap`, `font-size` nebo
+`border-radius*` nenulovou hodnotu v px, i uvnitř `calc()` nebo fallbacku
+`var()`. Custom properties (definice tokenů), komentáře a JavaScript
+nehlídá. Výjimka jen značkou s důvodem na stejném řádku:
+
+```css
+padding: 1px; /* px-ok: optické zarovnání ikony na základní čáru */
+```
+
+Značka bez důvodu je chyba. Každou výjimku uveď v popisu commitu; po
+převodu základů je výjimek nula. Ruční spuštění:
+`python3 scripts/check-css-units.py` (exit 1, výpis `soubor:řádek:
+deklarace` na stderr). Styly vkládané z JavaScriptu kontrola nevidí —
+jediný takový případ je základní CSS iframe e-mailu v `SandboxedHtml.svelte`,
+což je vlastní dokument, kde px nevadí.
+
+---
+
+## 11. Soubory
 
 | Soubor | Obsah |
 |---|---|
@@ -571,4 +661,4 @@ synchronizovaná místa** v [`frontend.md`](frontend.md)
 
 ---
 
-## 11. Plánovaná rozšíření
+## 12. Plánovaná rozšíření

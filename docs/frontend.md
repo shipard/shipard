@@ -253,6 +253,13 @@ JS objektu, direktiva `style:--x=`, `setProperty('--x'`); `var(--x, y)`
 nevadí. Chybějící token prohlížeč tiše zahodí (karta dialogu bez pozadí) —
 proto kontrola, ne alias.
 
+Px v mezerách, odsazení, zaoblení a písmu hlídá `scripts/check-css-units.py`
+(#134 D10, pravidlo D1 z #133): tytéž soubory, vlastnosti `padding*`,
+`margin*`, `gap`, `font-size`, `border-radius*` v `<style>`, `style=""`
+i direktivě `style:…=`; `0px`, custom properties a komentáře nevadí, výjimka
+jen `/* px-ok: důvod */` na stejném řádku. Tokeny a pravidla psaní:
+[`design-system.md`](design-system.md) → Jednotky a mezery.
+
 **Čeština a angličtina (#129 D12, `tasks/dev-dashboard-i18n.md`).** Dashboard
 má vlastní slovníky `src/dev/i18n/cs.js` / `en.js` (ploché objekty, tečkové
 klíče podle obrazovky: `app.*`, `common.*`, `ds.*`, `dsCreate.*`, `logs.*`,
