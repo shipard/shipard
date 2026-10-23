@@ -1,0 +1,17 @@
+{
+  "name": "shipard-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Proklikání datových sad v prohlížeči (Playwright Test, #103 F7a) — spouští `shpd-ds dataset-e2e`",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:unit": "node --test 'lib/*.test.mjs'",
+    "install:browser": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}
