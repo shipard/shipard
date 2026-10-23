@@ -1,6 +1,6 @@
 # Korpus: co je v očekávání, je na PDF — kódy položek, spisová značka, dlouhý doklad
 
-**Stav:** naplánováno — zadání 2026-10-23 (#103 D102–D104, D105 k potvrzení)
+**Stav:** naplánováno — zadání 2026-10-23 (#103 D102–D105)
 
 ## Kontext / Cíl
 

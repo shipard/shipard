@@ -27,7 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
-| `corpus-print-fidelity.md` | naplánováno | zadání 2026-10-23 (#103 D102–D104, D105 k potvrzení) |
+| `corpus-print-fidelity.md` | naplánováno | zadání 2026-10-23 (#103 D102–D105) |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `testing-phase7a-fixes.md` | naplánováno | zadání 2026-10-23 (#103 D97–D101) |
