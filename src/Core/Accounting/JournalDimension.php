@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Accounting;
 
+use Shipard\Core\Database\RecordPattern;
+
 /**
  * Analytická dimenze deníku (`journalDimensions` v module.jsonc, assets
  * D47): hodnota řádku dokladu (`rowColumn`, prázdná → `headColumn`
@@ -104,44 +106,37 @@ final class JournalDimension
 
     /**
      * Sloupce cílové tabulky, ze kterých se skládá popisek hodnoty
-     * (`{sloupec}` ve vzoru); bez vzoru jen `id`.
+     * (`{sloupec}` ve vzoru, `RecordPattern`); bez vzoru jen `id`.
      *
      * @return list<string>
      */
     public function labelColumns(): array
     {
-        if ($this->displayPattern === null
-            || !preg_match_all('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', $this->displayPattern, $m)
-        ) {
-            return ['id'];
-        }
-        return array_values(array_unique($m[1]));
+        $columns = $this->pattern()?->columns() ?? [];
+        return $columns === [] ? ['id'] : $columns;
     }
 
     /**
      * Popisek hodnoty z řádku cílové tabulky; `$prefix` = prefix aliasů
-     * sloupců ve výsledku dotazu. Null, když řádek žádný sloupec vzoru nemá.
+     * sloupců ve výsledku dotazu. Se vzorem `RecordPattern::render()`
+     * (prázdné hodnoty i s oddělovačem vynechá), bez vzoru `#id`. Null,
+     * když řádek žádný sloupec vzoru nemá.
      *
      * @param array<string, mixed> $record
      */
     public function label(array $record, string $prefix = ''): ?string
     {
-        $values = [];
-        $any = false;
-        foreach ($this->labelColumns() as $column) {
-            $value = $record[$prefix . $column] ?? null;
-            if ($value instanceof \DateTimeInterface) {
-                $value = $value->format('j. n. Y');
-            }
-            $any = $any || ($value !== null && $value !== '');
-            $values['{' . $column . '}'] = (string) ($value ?? '');
+        $pattern = $this->pattern();
+        if ($pattern !== null) {
+            return $pattern->render($record, $prefix);
         }
-        if (!$any) {
-            return null;
-        }
-        return $this->displayPattern !== null
-            ? trim(strtr($this->displayPattern, $values))
-            : '#' . $values['{id}'];
+        $id = $record[$prefix . 'id'] ?? null;
+        return $id === null || $id === '' ? null : '#' . $id;
+    }
+
+    private function pattern(): ?RecordPattern
+    {
+        return $this->displayPattern !== null ? new RecordPattern($this->displayPattern) : null;
     }
 
     /**
