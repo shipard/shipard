@@ -593,10 +593,16 @@ class DocsHeadsViewer extends TableViewer
 
     /**
      * Hlavička detailu nad taby (generický header ViewerDetail, sjednocené
-     * s Osobami, Položkami a Došlou poštou) — číslo dokladu jako title,
-     * doc_text jako subtitle, badges s typem dokladu a stavem, ikona podle
-     * doc_type. Nahrazuje dřívější hlavičku uvnitř content typu `document`;
-     * DocumentDetail ji bez klíče `header` nevykresluje.
+     * s Osobami, Položkami a Došlou poštou). Titulkem je protistrana —
+     * propisuje se i do horní lišty na mobilu; číslo dokladu a doc_text
+     * jdou do podtitulku jako `číslo · text` (chybí-li jedno, jen druhé).
+     * Doklad bez partnera — i s visící FK, kdy `partner_name` z LEFT JOIN
+     * v renderDetail je null — má titulkem číslo dokladu a podtitulkem
+     * doc_text. Badges nesou jen stav dokladu; štítek typu se neposílá,
+     * typ nese ikona podle doc_type — hlavička neopakuje kontext, ze
+     * kterého uživatel detail otevřel (#133 D13, D14). Nahrazuje dřívější
+     * hlavičku uvnitř content typu `document`; DocumentDetail ji bez
+     * klíče `header` nevykresluje.
      *
      * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>, icon: string}
      */
@@ -606,12 +612,20 @@ class DocsHeadsViewer extends TableViewer
         $stateData = $cfg->getState((int) ($record['docState'] ?? 10));
         $docText = trim((string) ($record['doc_text'] ?? ''));
         $docNumber = trim((string) ($record['doc_number'] ?? ''));
+        // partner_name z LEFT JOIN v renderDetail — null = doklad bez partnera
+        // nebo visící FK (stejná konvence jako attachPartnerPersonId).
+        $partnerName = trim((string) ($record['partner_name'] ?? ''));
+
+        if ($partnerName !== '') {
+            $title = $partnerName;
+            $subtitleParts = array_filter([$docNumber, $docText], static fn (string $s): bool => $s !== '');
+            $subtitle = $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null;
+        } else {
+            $title = $docNumber !== '' ? $docNumber : '—';
+            $subtitle = $docText !== '' ? $docText : null;
+        }
 
         $badges = [];
-        $typeLabel = $this->resolveDocTypeLabel((string) ($record['doc_type'] ?? ''));
-        if ($typeLabel !== '') {
-            $badges[] = ['label' => $typeLabel, 'style' => 'neutral'];
-        }
         $stateName = (string) ($stateData['stateName'] ?? '');
         if ($stateName !== '') {
             $badges[] = [
@@ -621,8 +635,8 @@ class DocsHeadsViewer extends TableViewer
         }
 
         return [
-            'title'    => $docNumber !== '' ? $docNumber : '—',
-            'subtitle' => $docText !== '' ? $docText : null,
+            'title'    => $title,
+            'subtitle' => $subtitle,
             'badges'   => $badges,
             'icon'     => $this->detailIconForDocType((string) ($record['doc_type'] ?? '')),
         ];

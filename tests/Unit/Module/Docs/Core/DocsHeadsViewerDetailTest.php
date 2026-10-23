@@ -13,9 +13,10 @@ use Shipard\Module\Docs\Core\DocsHeadsViewer;
 
 /**
  * Detail dokladu jako "textová faktura" (content type `document`):
- * hlavička se state badge, strany ze snapshotů / živě, řádky, DPH
- * rekapitulace, součty (zaokrouhlení, cizí měna) a skupiny příloh
- * (mailové zdrojové + vlastní přílohy dokladu) na konci.
+ * hlavička s protistranou jako titulkem, číslem dokladu v podtitulku
+ * a jen štítkem stavu (#133 D13, D14), strany ze snapshotů / živě,
+ * řádky, DPH rekapitulace, součty (zaokrouhlení, cizí měna) a skupiny
+ * příloh (mailové zdrojové + vlastní přílohy dokladu) na konci.
  */
 class DocsHeadsViewerDetailTest extends TestCase
 {
@@ -161,23 +162,69 @@ class DocsHeadsViewerDetailTest extends TestCase
 
     // ── Hlavička ────────────────────────────────────────────────────────────
 
-    public function testHeaderCarriesTypeNumberTextAndStateBadge(): void
+    public function testHeaderWithPartnerUsesPartnerAsTitleAndNumberInSubtitle(): void
     {
-        $viewer = $this->makeViewer($this->baseRecord(['docState' => 40]));
+        $viewer = $this->makeViewer($this->baseRecord([
+            'partner'      => 5,
+            'partner_name' => 'Dodavatel s.r.o.',
+            'docState'     => 40,
+        ]));
         $detail = $viewer->renderDetail(7);
 
-        // Hlavička je nově nad taby (generický header ViewerDetail)
-        $this->assertSame('!0000000016', $detail['title']);
-        $this->assertSame('testtest', $detail['subtitle']);
-        $this->assertSame([
-            ['label' => 'Faktura přijatá', 'style' => 'neutral'],
-            ['label' => 'V pořádku', 'style' => 'done'],
-        ], $detail['badges']);
+        // Hlavička je nad taby (generický header ViewerDetail): titulkem
+        // protistrana, číslo a text v podtitulku, štítek jen stav — typ
+        // nese ikona, ne badge (#133 D13, D14).
+        $this->assertSame('Dodavatel s.r.o.', $detail['title']);
+        $this->assertSame('!0000000016 · testtest', $detail['subtitle']);
+        $this->assertSame([['label' => 'V pořádku', 'style' => 'done']], $detail['badges']);
         $this->assertSame('invoice-in', $detail['icon']);
 
         $content = $detail['tabs'][0]['content'];
         $this->assertSame('document', $content['type']);
-        $this->assertArrayNotHasKey('header', $content, 'Hlavička už není v contentu dokumentu');
+        $this->assertArrayNotHasKey('header', $content, 'Hlavička není v contentu dokumentu');
+    }
+
+    public function testHeaderWithoutPartnerUsesNumberAsTitle(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord());
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('!0000000016', $detail['title']);
+        $this->assertSame('testtest', $detail['subtitle']);
+    }
+
+    public function testHeaderWithDanglingPartnerFkBehavesLikeNoPartner(): void
+    {
+        // partner_name z LEFT JOIN je null → visící FK, stejná konvence
+        // jako v attachPartnerPersonId.
+        $viewer = $this->makeViewer($this->baseRecord(['partner' => 5, 'partner_name' => null]));
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('!0000000016', $detail['title']);
+        $this->assertSame('testtest', $detail['subtitle']);
+    }
+
+    public function testHeaderWithPartnerSubtitleOmitsMissingParts(): void
+    {
+        $withPartner = ['partner' => 5, 'partner_name' => 'Dodavatel s.r.o.'];
+
+        $viewer = $this->makeViewer($this->baseRecord($withPartner + ['doc_text' => '']));
+        $this->assertSame('!0000000016', $viewer->renderDetail(7)['subtitle']);
+
+        $viewer = $this->makeViewer($this->baseRecord($withPartner + ['doc_number' => '']));
+        $this->assertSame('testtest', $viewer->renderDetail(7)['subtitle']);
+
+        $viewer = $this->makeViewer($this->baseRecord($withPartner + ['doc_number' => '', 'doc_text' => '']));
+        $this->assertNull($viewer->renderDetail(7)['subtitle']);
+    }
+
+    public function testHeaderWithoutPartnerNumberAndTextFallsBackToDash(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord(['doc_number' => '', 'doc_text' => '']));
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('—', $detail['title']);
+        $this->assertNull($detail['subtitle']);
     }
 
     // ── Strany ──────────────────────────────────────────────────────────────
