@@ -95,7 +95,7 @@
 <style>
   .group { margin-bottom: var(--shpd-space-lg); }
   .group__title { font-size: var(--shpd-font-size-base); font-weight: 600; margin-bottom: var(--shpd-space-xs); display: flex; gap: var(--shpd-space-sm); align-items: center; flex-wrap: wrap; }
-  .group__counts { display: inline-flex; gap: 4px; }
-  .group__empty { padding: 2px 0 0; }
+  .group__counts { display: inline-flex; gap: var(--shpd-space-xs); }
+  .group__empty { padding: 0.125rem 0 0; }
   .fields td:first-child { white-space: nowrap; }
 </style>

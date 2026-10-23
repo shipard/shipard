@@ -238,7 +238,7 @@
     gap: var(--shpd-space-sm);
     align-items: baseline;
     width: 100%;
-    padding: 5px 12px;
+    padding: 0.3125rem 0.75rem;
     background: none;
     border: 0;
     text-align: left;
@@ -249,15 +249,15 @@
   .row__main:hover { background: var(--shpd-color-bg-hover); }
 
   .row__time { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--shpd-color-text-secondary); }
-  .row__request { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.75rem; }
+  .row__request { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: var(--shpd-font-size-xs); }
   .row__msg { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row.is-open .row__msg { white-space: normal; }
   .row__exc { color: var(--shpd-color-danger); }
 
   .badge {
     display: inline-block;
-    padding: 0 6px;
-    border-radius: 999px;
+    padding: 0 0.375rem;
+    border-radius: var(--shpd-radius-full);
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -271,17 +271,17 @@
 
   .ds-chip {
     display: inline-block;
-    padding: 0 6px;
+    padding: 0 0.375rem;
     border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-bg-secondary);
     font-family: ui-monospace, Menlo, Consolas, monospace;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     cursor: pointer;
   }
   .ds-chip--none { color: var(--shpd-color-text-secondary); cursor: default; }
 
-  .row__detail { padding: var(--shpd-space-sm) 12px var(--shpd-space-md) 82px; }
-  .row__detail dl { display: grid; grid-template-columns: 90px 1fr; gap: 2px var(--shpd-space-md); }
+  .row__detail { padding: var(--shpd-space-sm) 0.75rem var(--shpd-space-md) 5.125rem; }
+  .row__detail dl { display: grid; grid-template-columns: 90px 1fr; gap: 0.125rem var(--shpd-space-md); }
   .row__detail dt { color: var(--shpd-color-text-secondary); }
   .row__detail dd { margin: 0; word-break: break-word; }
   .ctx {
@@ -290,7 +290,7 @@
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border-subtle);
     border-radius: var(--shpd-radius-sm);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     max-height: 320px;
     overflow: auto;
   }

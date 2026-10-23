@@ -247,13 +247,13 @@
   .bubble__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
   }
   .bubble__strong { font-weight: 600; }
   .bubble__status {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
   }
   .bubble__status--ok { color: var(--shpd-color-success); }
   .bubble__commits {
@@ -262,7 +262,7 @@
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
   .bubble__commits li {
     display: flex;
@@ -289,7 +289,7 @@
   .bubble__link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
     padding: 0;
     border: 0;
     background: none;
@@ -303,6 +303,6 @@
   /* Alerty v bublině bez vnějších okrajů karty. */
   .bubble :global(.bubble__alert) { margin: 0; padding: var(--shpd-space-sm) var(--shpd-space-md); }
   .bubble__blocker { display: block; }
-  .bubble__blocker + .bubble__blocker { margin-top: 4px; }
+  .bubble__blocker + .bubble__blocker { margin-top: var(--shpd-space-xs); }
   .bubble__note { padding-top: var(--shpd-space-xs); border-top: 1px solid var(--shpd-color-border-subtle); }
 </style>

@@ -265,7 +265,7 @@
 />
 
 <style>
-  .steps { margin: 0; padding-left: 20px; }
-  .steps li { margin-bottom: 6px; }
-  .steps li > * { margin-right: 6px; }
+  .steps { margin: 0; padding-left: 1.25rem; }
+  .steps li { margin-bottom: 0.375rem; }
+  .steps li > * { margin-right: 0.375rem; }
 </style>

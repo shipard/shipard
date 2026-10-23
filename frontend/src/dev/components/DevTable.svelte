@@ -96,5 +96,5 @@
     white-space: nowrap;
   }
   .th-btn:hover { color: var(--shpd-color-text); }
-  .arrow { margin-left: 4px; font-size: 0.7em; }
+  .arrow { margin-left: var(--shpd-space-xs); font-size: 0.7em; }
 </style>

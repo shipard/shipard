@@ -176,7 +176,7 @@
     display: flex;
     flex-direction: column;
     min-width: 180px;
-    padding: 4px 0;
+    padding: var(--shpd-space-xs) 0;
     outline: none;
   }
   .dev-kebab__item {
@@ -184,7 +184,7 @@
     align-items: center;
     gap: var(--shpd-space-sm);
     text-align: left;
-    padding: 8px 14px;
+    padding: var(--shpd-space-sm) 0.875rem;
     border: none;
     background: none;
     font-family: inherit;
@@ -200,7 +200,7 @@
   }
   .dev-kebab__sep {
     height: 1px;
-    margin: 4px 0;
+    margin: var(--shpd-space-xs) 0;
     background: var(--shpd-color-border);
   }
   /* Destruktivní akce (Smazat…) červeně včetně ikony, jako ve formuláři. */

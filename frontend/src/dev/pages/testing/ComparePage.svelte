@@ -150,7 +150,7 @@
 {/if}
 
 <style>
-  .runline { display: flex; gap: var(--shpd-space-sm); align-items: baseline; flex-wrap: wrap; margin-bottom: 4px; }
+  .runline { display: flex; gap: var(--shpd-space-sm); align-items: baseline; flex-wrap: wrap; margin-bottom: var(--shpd-space-xs); }
   .note { margin: var(--shpd-space-sm) 0 0; }
   .dev-card__title { display: flex; gap: var(--shpd-space-md); align-items: center; flex-wrap: wrap; }
   .dev-chip input { margin: 0; }
@@ -158,6 +158,6 @@
   .grid-2 > .dev-card { margin-top: 0; }
   .grid-2 + .dev-card { margin-top: var(--shpd-space-lg); }
   table.plain { width: 100%; border-collapse: collapse; font-size: var(--shpd-font-size-sm); }
-  table.plain td { padding: 3px 0; border-bottom: 1px solid var(--shpd-color-border-subtle); }
+  table.plain td { padding: 0.1875rem 0; border-bottom: 1px solid var(--shpd-color-border-subtle); }
   table.plain tr:last-child td { border-bottom: 0; }
 </style>

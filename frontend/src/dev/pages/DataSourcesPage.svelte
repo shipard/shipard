@@ -273,12 +273,12 @@
 {/if}
 
 <style>
-  .copied { margin-left: 6px; }
+  .copied { margin-left: 0.375rem; }
 
   .cron-off {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
     color: var(--shpd-color-danger);
     font-weight: 600;
     cursor: help;
