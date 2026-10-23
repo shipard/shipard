@@ -1,6 +1,6 @@
 # F7a — opravy nálezů proklikání a lokální adresa běhu
 
-**Stav:** naplánováno — zadání 2026-10-23 (#103 D97–D101)
+**Stav:** hotovo — 2026-10-23 (#103 D97–D101, 6 commitů): proklikání `cz-non-payer`, `cz-vat-payer` i `cz-association` dává `ok`; nálezy N1–N3 a N6 zmizely, nové k opravě žádné (oddíl Nálezy); zbývá komentář v #103
 
 ## Kontext / Cíl
 
@@ -128,21 +128,26 @@ stav `ok`, nebo zbyly jen nové nálezy, které se sepíšou (neopravují).
 
 ## Hotovo když
 
-- [ ] `dataset-e2e` s `--base-url` na cizí adresu odmítne před založením
-      session (exit 2); akce v dashboardu s cizím `Origin` vrátí 400.
-- [ ] Běh přes jméno serveru i přes IP projde, Chromium má připíchnutou
-      adresu.
-- [ ] Bankovní účet strany má v kontrole odznak a rozhodnutí; test
+- [x] `dataset-e2e` s `--base-url` na cizí adresu odmítne před založením
+      session (exit 2); akce v dashboardu s cizím `Origin` vrátí 400
+      (ověřeno `--base-url http://203.0.113.5` → exit 2 bez dotazu na
+      dosažitelnost, `curl … -H 'Origin: http://203.0.113.5'` → 400
+      `VALIDATION`).
+- [x] Běh přes jméno serveru i přes IP projde, Chromium má připíchnutou
+      adresu (přes IP rozhraní `ok`; přes jméno připíchnutí funguje, ale
+      bez záznamu v `domains.json` aplikace jméno nezná — preflight to teď
+      odmítne hned, viz Nálezy → D97).
+- [x] Bankovní účet strany má v kontrole odznak a rozhodnutí; test
       pravidla „blokující cesta má ovládání“.
-- [ ] Osoba založená z kontroly má adresu a zemi z dokladu.
-- [ ] Neznámé IČO vrací prázdný výsledek, skutečná chyba registru dál 502.
-- [ ] Proklikání `cz-vat-payer`, `cz-non-payer` a `cz-association`: N1,
+- [x] Osoba založená z kontroly má adresu a zemi z dokladu.
+- [x] Neznámé IČO vrací prázdný výsledek, skutečná chyba registru dál 502.
+- [x] Proklikání `cz-vat-payer`, `cz-non-payer` a `cz-association`: N1,
       N2, N3 a N6 se neobjeví. Stav `ok`, nebo zbylé nálezy sepsané
       v oddílu Nálezy (neopravovat bez schválení v chatu).
-- [ ] `vendor/bin/phpunit --filter` na dotčené testy, `npm test`
+- [x] `vendor/bin/phpunit --filter` na dotčené testy, `npm test`
       a `npm run build` ve `frontend/`, `npm run check:i18n`,
       `python3 scripts/check-css-tokens.py`.
-- [ ] Dokumentace, `**Stav:**` obou tasků, index tasků.
+- [x] Dokumentace, `**Stav:**` obou tasků, index tasků.
 
 ## Pasti
 
@@ -158,4 +163,52 @@ stav `ok`, nebo zbyly jen nové nálezy, které se sepíšou (neopravují).
 
 ## Nálezy
 
-_(doplní implementace po bězích v kroku 5)_
+Běhy `shpd-ds dataset-e2e` po opravách D97–D101 (2026-10-23, výchozí
+`--base-url http://127.0.0.1`, zdroje dat s účelem korpus):
+
+| Sada | Zdroj dat | Karty použité / očekávané | Chyby prohlížeče | Kontroly `dataset-verify` | Stav |
+|------|-----------|---------------------------|------------------|---------------------------|------|
+| `cz-non-payer` | `r1lf` | 16 / 16 | 0 | 6 × `ok` (věrnost apply, položky a účty, DPH, náklady, kurzy, deník) | `ok` |
+| `cz-vat-payer` | `ob9b` | 20 / 20 | 0 | 6 × `ok` | `ok` |
+| `cz-association` | `wp66` | 16 / 16 | 0 | 6 × `ok` | `ok` |
+
+- **N1, N2, N3 ani N6 se neobjevily.** Každá karta prošla přes dodavatele
+  i jeho bankovní účet (odznak účtu → Vytvořit → formulář účtu
+  s předvyplněným `person`), bez `pageerror`, bez 5xx z registru; osoby
+  založené z kontroly mají adresu a zemi — kontrola **Věrnost apply** je
+  `ok` u všech tří sad.
+- **N5 (pořadí karet) bez dopadu na výsledek:** dodavatel vzniká z dat
+  varianty 02 a varianta 01 ho pak najde, kontroly vč. deníku jsou přesto
+  shodné s F3. Zůstává jen jako popsaná odchylka (D94).
+- **Rozdíl strict × liberal** se v kontrolách neprojevil — co proklikání
+  založilo přes formuláře (osoba s adresou, bankovní účet), dává totéž,
+  co liberal apply při F3; položky ani jednotky další rozhodnutí nechtěly.
+- **N4 dál jen šum:** jediná odpověď ≥ 400 za běh je `GET /_app/avatar`
+  → 404 (uživatel `e2e` bez avataru); spec ji nepočítá.
+- **Mimo rozsah (při D100):** `PersonsRegistryClient::fetchPerson` pro
+  neznámé IČO dostává od registru HTML se stavem 200 → 502
+  `REGISTRY_INVALID_RESPONSE` místo 404 `REGISTRY_NOT_FOUND`; integrační
+  test obě možnosti připouští. Kontrola návrhu `fetchPerson` nevolá
+  (jen `search`), proklikání to netrápí. Neopravovat bez D-čísla.
+- **D97 — adresa běhu.** `--base-url http://203.0.113.5` → exit 2 před
+  dosažitelností i session; `curl … -H 'Origin: http://203.0.113.5'` na
+  akci dashboardu → 400 `VALIDATION` s touž větou. Běh přes **IP
+  rozhraní** (`--base-url http://<IP rozhraní>`, sada spolku) → `ok`,
+  16 / 16. Běh přes **jméno serveru** (`--base-url http://<jméno-serveru>`
+  → `127.0.1.1` z `/etc/hosts`) připíchnutí ověřil — preflight dostal
+  odpověď přes `CURLOPT_RESOLVE` a Chromium přes `--host-resolver-rules`
+  aplikaci načetl — ale skončil `failed` s nulou karet: `DataSourceResolver`
+  bere cestu `/<ds-id>/` jen u IPv4 hostu, jméno překládá přes
+  `/etc/shipard/domains.json`, který na vývojovém stroji není, a API
+  odpovědělo `404 UNKNOWN_HOST` (statickou stránku `/app/` nginx dal, takže
+  původní preflight nic nepoznal). **Oprava v tomto tasku:** preflight
+  zkouší API `/<ds-id>/api/v1/_app/info` a `UNKNOWN_HOST` hlásí hned
+  (exit 2) s návodem — druhý běh přes jméno tak skončil za vteřinu větou
+  „Aplikace host '<jméno-serveru>' nezná“. Jméno projde jen se záznamem
+  v mapě domén; na tomto stroji se proklikání jmenuje IP.
+- **Mimo tento task (celá sada PHPUnit):** `DevTestingControllerTest::
+  testDatasetsListIncludesRunCounts` a `EvalCatalogTest::
+  testRunsAreListedNewestFirstWithBasename` padají od commitu baseline
+  běhů z 2026-10-23 (`f5a3b022`, #103 D90) — čekají poslední běh
+  z `2026-10-20` a nulu běhů u `cz-association`. Drift fixtury, ne
+  regrese těchto oprav.

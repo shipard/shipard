@@ -1,6 +1,6 @@
 # F7a — proklikání datových sad (E2E průchod UI)
 
-**Stav:** částečně — implementace hotová 2026-10-23 (kroky 1–5, 5 commitů): proklikání nad `cz-vat-payer`, `cz-non-payer` i `cz-association` dává `failed` kvůli nálezům N1–N3 a N6 (oddíl Nálezy, neopravují se bez schválení); zbývá schválení oprav v #103 (D-čísla) a poté běh se stavem `ok`
+**Stav:** hotovo — implementace 2026-10-23 (kroky 1–5, 5 commitů); nálezy N1–N3 a N6 opravené týž den podle `tasks/testing-phase7a-fixes.md` (#103 D97–D101) a proklikání nad `cz-vat-payer`, `cz-non-payer` i `cz-association` dává `ok`; zbývá komentář v #103
 
 ## Kontext / Cíl
 

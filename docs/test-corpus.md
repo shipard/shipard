@@ -1238,8 +1238,10 @@ a úlohu nezaloží.
   (revize z `playwright-core/browsers.json` →
   `<home>/.cache/ms-playwright/chromium-<rev>/INSTALLATION_COMPLETE`,
   domovský adresář **uživatele, pod kterým příkaz běží** — z dashboardu
-  je to uživatel php-fpm) a dosažitelnost `<base-url>/<ds-id>/app/`.
-  Chybějící Node, závislosti nebo prohlížeč odmítne s přesnou větou:
+  je to uživatel php-fpm) a dosažitelnost **API** zdroje dat
+  `<base-url>/<ds-id>/api/v1/_app/info` (bez přihlášení; statickou stránku
+  `/app/` dá nginx i pro host, který aplikace nezná). Chybějící Node,
+  závislosti nebo prohlížeč odmítne s přesnou větou:
   `cd tests/e2e && npm ci && npx playwright install chromium`.
 - **Lokální adresa běhu (D97, `LocalBaseUrl`).** Host z `--base-url`
   (z CLI i z dashboardu) musí být IP literál, nebo jméno, jehož **všechny**
@@ -1252,7 +1254,12 @@ a úlohu nezaloží.
   `--host-resolver-rules=MAP <host> <ip>` (`SHPD_E2E_HOST_RESOLVER_RULES`,
   jen u jména — literál není co mapovat), takže jméno mezi ověřením
   a během nejde přesměrovat. Jedno pravidlo pro příkaz i akci dashboardu
-  (`DevEvalController::e2e` s cizím originem → 400).
+  (`DevEvalController::e2e` s cizím originem → 400). **Jméno serveru musí
+  aplikace znát:** `DataSourceResolver` bere cestu `/<ds-id>/` jen u IP
+  hostu, jméno překládá přes `/etc/shipard/domains.json` — bez záznamu
+  odpoví API `404 UNKNOWN_HOST` a preflight to ohlásí větou „Aplikace host
+  '…' nezná“ (vývojový stroj bez mapy domén = jen IP: `127.0.0.1` nebo
+  adresa rozhraní).
 - **Přihlášení bez hesla (D92).** Vyhrazený uživatel `e2e` (administrátor,
   `is_system = 1` — neukazuje se v „Vystavil“, nejde mu resetovat heslo,
   `password_hash` NULL; `keepOnReset` ho přes přeseedování zachová).
@@ -1388,8 +1395,10 @@ krok karty je pojmenovaný id karty, síť ukazuje `POST …/apply` s tělem
   (exit 2) i akce dashboardu (400). Dashboard otevřený přes tunel nebo
   proxy na jiném stroji proklikání nespustí; otevři ho adresou serveru.
 - **Předkontrola registru** (`GET /persons/registry?q=<IČO>`) běží při
-  otevření kontroly automaticky; fiktivní IČO korpusu dnes dávají 502
-  (nález N3) — každý běh je tak `failed`, dokud se to nevyřeší.
+  otevření kontroly automaticky a jde na skutečný registr
+  (`data.shipard.org`) — proklikání tedy potřebuje síť k němu. Neznámé IČO
+  je prázdný výsledek (D100; dřív 502, nález N3), nedostupný registr dá
+  503 a karta selže na 5xx (D95).
 - **strict × liberal** (D93): rozdíl v tom, co jde založit, je smysl
   proklikání, ne důvod přepnout UI na liberal.
 
