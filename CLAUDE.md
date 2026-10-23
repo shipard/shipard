@@ -339,6 +339,23 @@ smí názvy nést — tam jsou potřeba k práci.
   Do hlavní navigace nejde — patří do `settingsItems`. Tabulkové viewery
   `loadRecord()` nepřepisují. Viz `docs/frontend.md` → Registrace vieweru.
 
+### Viewery — detail přes builder
+
+- Detail záznamu skládá `TableViewer::renderDetail()` (builder, #136 D18);
+  viewer dodává háčky `loadDetailRecord()`, `detailHeader()` (výchozí
+  z deklarace `detailHeader` ve `viewers[]` nebo z `displayPattern` tabulky
+  přes `RecordPattern`, D19), `detailBadges()`, `detailTabs()`
+  (`propertiesTab()` = Přehled nad vlastnostmi), `detailActions()`,
+  `detailAttachmentGroups()`. Štítek stavu přidává builder sám — stav
+  s `detailBadge: false` („V pořádku“) ho nemá (D20). Přílohy záznamu
+  načítá builder (`RecordAttachments`) jako `detail.attachments`: konec
+  Přehledu (výchozí), tab Přílohy (`detailAttachments: "tab"`) nebo nic
+  (`content`, D21); frontend je kreslí sdílenou `DetailAttachments.svelte`,
+  Odeslaná pošta jen pod prvním tabem (D22). **Nový viewer `renderDetail()`
+  nepřepisuje** — `DetailContractTest` to hlídá, výjimky jen
+  v `NOT_CONVERTED` (seznam jen ubývá, task B #136 ho vyprázdní).
+  Viz `docs/frontend.md` → Formát detail panelu.
+
 ### Frontend — Navigace (sidebar)
 
 - Sekce hlavního sidebaru pocházejí z cfgItem **`global.navSections`**

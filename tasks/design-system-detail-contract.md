@@ -1,6 +1,6 @@
 # Design system — kontrakt detailu, task A: builder, štítek stavu, přílohy
 
-**Stav:** naplánováno — #136 task A (D18–D24); převod zbývajících viewerů je task B
+**Stav:** hotovo — 2026-10-23, #136 task A (D18–D24): builder, štítek stavu, přílohy, doklady, Majetek, Zakázky; převod zbývajících 49 viewerů (`DetailContractTest::NOT_CONVERTED`) je task B
 
 ## Kontext / Cíl
 
@@ -452,15 +452,35 @@ V prohlížeči (dev zdroj dat s třídou `free`):
 
 ## Hotovo když
 
-- [ ] `RecordPattern` + `JournalDimension` na něm, testy dimenzí beze změny
-- [ ] `ViewerDefinition` s `detailHeader` / `detailAttachments`, definice předaná vieweru
-- [ ] příznak `detailBadge: false` u „V pořádku“ ve třech sadách stavů
-- [ ] builder v `TableViewer` s háčky, `DetailHeader`, `RecordAttachments`, popisek tabu Přílohy
-- [ ] `DetailAttachments.svelte`, Odeslaná pošta jen pod prvním tabem, `DocumentDetail` bez příloh
-- [ ] doklady, `economy.assets` a `economy.workOrders` přes builder; `overviewDetail()` a `detailAttachmentGroups()` s vlastními přílohami zanikly
-- [ ] `DetailContractTest` zelený, `NOT_CONVERTED` bez převedených viewerů; integrační test zelený na dev zdroji dat
-- [ ] dokumentace (`frontend.md`, `design-system.md`, `doc-states.md`, `CLAUDE.md`)
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] `RecordPattern` + `JournalDimension` na něm, testy dimenzí beze změny
+- [x] `ViewerDefinition` s `detailHeader` / `detailAttachments`, definice předaná vieweru
+- [x] příznak `detailBadge: false` u „V pořádku“ ve třech sadách stavů
+- [x] builder v `TableViewer` s háčky, `DetailHeader`, `RecordAttachments`, popisek tabu Přílohy
+- [x] `DetailAttachments.svelte`, Odeslaná pošta jen pod prvním tabem, `DocumentDetail` bez příloh
+- [x] doklady, `economy.assets` a `economy.workOrders` přes builder; `overviewDetail()` a `detailAttachmentGroups()` s vlastními přílohami zanikly
+- [x] `DetailContractTest` zelený, `NOT_CONVERTED` bez převedených viewerů; integrační test zelený na dev zdroji dat
+- [x] dokumentace (`frontend.md`, `design-system.md`, `doc-states.md`, `CLAUDE.md`)
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
+
+## Odchylky při implementaci
+
+- Viewerů je 64 (ne 65); `NOT_CONVERTED` začínal na 64 a po převodech
+  drží 49.
+- Soukromé metody kolidující s háčky (`protected` v `TableViewer` ×
+  `private` v potomkovi = fatal) přejmenovány už v commitu builderu:
+  `AssetsViewer::detailActions()` → `eventActions()`,
+  `DocsHeadsViewer::detailAttachmentGroups(int)` → dočasně
+  `documentAttachmentGroups()`, při převodu zaniklo.
+- Majetek a Zakázky drží výpočty sdílené taby a akcemi (plán, události,
+  pořízení; Fakturace, Deník) v memu per id záznamu — builder volá
+  `detailTabs()` a `detailActions()` zvlášť.
+- Prázdné akce už klíč `actions` nenesou (karta majetku dřív `[]`).
+- `ViewerDetailModal` s `tabId` jiného než prvního tabu zahodí
+  `attachments` i `sentMessages`, aby D22 platilo i v modalu.
+- `JournalDimension` přes `RecordPattern`: částečně prázdný vzor dá
+  „Soustruh“ místo „— Soustruh“ (jediná změna chování, testy beze změny).
+- Integrační test se spouští `--testsuite Integration` (výchozí sada
+  v `phpunit.xml` je Unit).
 
 ## Pasti
 

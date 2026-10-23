@@ -150,7 +150,9 @@ takže změna barvy stavu v jednom místě se projeví všude.
 
 - **`confirmed` / `done` nemá pruh.** Záměrné. Většina záznamů je v tomto stavu;
   proužek by jen šuměl. Badge ve formuláři má smysl (uživatel chce vidět,
-  že je vše OK), ale tichou šedou — ne zelenou, ne modrou.
+  že je vše OK), ale tichou šedou — ne zelenou, ne modrou. V **hlavičce
+  detailu** záznamu se štítek „V pořádku“ nekreslí vůbec (`detailBadge:
+  false` u stavu, #136 D20) — formulář ho ukazuje dál.
 - **Když přidáváš nový stav**, drž se palety. Žádné nové barvy nezavádět
   bez aktualizace tohoto dokumentu.
 - **`edit` ≠ oranžová.** Oranžová je rezervovaná pro brand accent. `edit`
@@ -722,6 +724,14 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
      protistrana, číslo a text dokladu v podtitulku
      (`FP-2026-0142 · Kancelářské potřeby`); doklad bez partnera má
      titulkem číslo. Titulek jde i do horní lišty na mobilu.
+   - **Výchozí titulek a podtitul** (#136 D19) dává builder z deklarace
+     `detailHeader` vieweru (`{name}` / `{asset_number}`), bez ní
+     z `displayPattern` tabulky; název je titulek, kód nebo číslo jde do
+     podtitulku. Prázdná hodnota se vynechá i s oddělovačem.
+   - **Štítek stavu** přidává builder sám ze sady stavů; „V pořádku“ se
+     v hlavičce neukazuje (`detailBadge: false`, D20) — K řešení, V práci,
+     Hotovo, Odeslaná, Podáno zůstávají. Další štítky (Chyba účtování,
+     Po termínu) až za ním.
 3. **Taby** — body, aktivní strong s modrou linkou.
 4. **Obsah** — sekce oddělené `--shpd-space-lg`, každá s nadpisem
    (heading, `margin-bottom: var(--shpd-space-xs)`).
@@ -745,10 +755,16 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
 - **Součty**: vpravo pod tabulkou, hodnoty strong (token), řádek Celkem
   title s čarou nad; přepočet v domácí měně meta šedě. Rekapitulace DPH
   vlevo se nezvýrazňuje.
-- **Přílohy**: na konci Přehledu (D8), skupiny s nadpisem heading (kód
-  zprávy jako odkaz, datum normální tloušťkou); přepínač Miniatury /
-  Velké náhledy v řádku s nadpisem první skupiny vpravo, velikost meta.
-  Dlaždice kreslí `AttachmentGrid.svelte`.
+- **Přílohy**: na konci Přehledu (D8, #136 D21), sdílená
+  `DetailAttachments.svelte` nad `detail.attachments.groups` u každého
+  převedeného vieweru: skupiny s nadpisem heading (kód zprávy jako odkaz,
+  datum normální tloušťkou; vlastní přílohy záznamu s nadpisem „Přílohy“);
+  přepínač Miniatury / Velké náhledy v řádku s nadpisem první skupiny
+  vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Výjimka:
+  viewer s `detailAttachments: "tab"` (karta majetku — fotky, smlouvy) má
+  přílohy ve vlastním tabu Přílohy, který bez přílohy chybí.
+- **Odeslaná pošta**: jen na konci Přehledu, za přílohami (D22) — pod
+  ostatními taby se nekreslí.
 - **Obecné typy** (`properties`, `table`, `heading`, Odeslaná pošta) ve
   `ViewerDetail.svelte` používají tytéž role — každý detail má stejné písmo
   bez ohledu na to, zda už prošel převodem na kontrakt #136.

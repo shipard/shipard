@@ -959,7 +959,27 @@ konfiguraci, jazyk a `DataSourceConfig` (`setDsConfig()`, nastavuje
 (`getCountry()`, pravidla odpisů majetku) ho čtou z `$this->dsConfig`;
 v testech může chybět.
 
-Vrací volitelnou hlavičku (`title`, `subtitle`, `badges`) a taby s obsahem:
+Detail skládá **builder** `TableViewer::renderDetail()` (#136 D18) —
+viewer `renderDetail()` nepřepisuje, dodává části přes chráněné háčky:
+
+| Háček | Výchozí | Kdy přepsat |
+|---|---|---|
+| `loadDetailRecord(int $id): ?array` | `loadRecord()` | záznam potřebuje JOINy (jména partnerů, číselníky) |
+| `detailHeader(array $record): DetailHeader` | titulek z deklarace `detailHeader.title` ve `viewers[]`, jinak z `displayPattern` tabulky, jinak `#id`; podtitul jen z `detailHeader.subtitle`; ikona `viewers[].icon` — vzory `{sloupec}` vyplňuje `RecordPattern` (prázdná hodnota se vynechá i s oddělovačem, D19) | hlavička mimo vzor (doklad: protistrana, ikona podle typu) |
+| `detailBadges(array $record): array` | `[]` | štítky za štítkem stavu (`{label, style}`) |
+| `detailTabs(array $record): array` | `[]` | vždy — první tab je Přehled (`propertiesTab($groups)` nad skupinami vlastností, nebo vlastní obsah) |
+| `detailActions(array $record): array` | `[]` | per-record akce (viz Akce detailu); prázdné = klíč `actions` chybí |
+| `detailAttachmentGroups(array $record): array` | `[]` | vlastní skupiny příloh před přílohami záznamu (doklad: zdrojová pošta) |
+
+Builder sám přidá **štítek stavu** ze sady stavů tabulky
+(`docStates.cfgItem`, fallback `$docStatesCfgItem`) — stav s `detailBadge:
+false` („V pořádku“, D20) štítek nemá; štítek stavu je vždy první, pak
+`detailBadges()`. Přílohy záznamu načte `RecordAttachments` (viz níže).
+Nenalezený záznam → `{tabs: []}`. Nepřevedené viewery (49, task B #136)
+`renderDetail()` zatím přepisují celé — jejich seznam drží
+`DetailContractTest::NOT_CONVERTED` a smí jen ubývat.
+
+Výsledek — hlavička (`title`, `subtitle`, `badges`, `icon`) a taby s obsahem:
 
 ```json
 {
@@ -967,6 +987,7 @@ Vrací volitelnou hlavičku (`title`, `subtitle`, `badges`) a taby s obsahem:
     "subtitle": "Jan Novák <jan@example.com> · Fakturace (FAKT) · 9. 6. 2026 14:32",
     "badges": [{"label": "Nová", "style": "concept"}],
     "icon": "mail",
+    "attachments": {"groups": [{"kind": "record", "attachments": [{"id": 12, "name": "scan.pdf", "mime_type": "application/pdf", "file_size": 20480}]}]},
     "tabs": [
         {"id": "overview", "label": "Přehled", "content": {
             "type": "properties",
@@ -984,15 +1005,14 @@ Vrací volitelnou hlavičku (`title`, `subtitle`, `badges`) a taby s obsahem:
 }
 ```
 
-Hlavička je volitelná (bez `title` se nerenderuje) a zůstává viditelná
-při přepínání tabů. Volitelný `icon` (klíč z `icons.js`, typicky shodný
-s `viewers[].icon` v `module.jsonc` daného modulu) se vykreslí ve 40×40
-boxu vlevo od title — stejný vizuál jako ikona ve formulářovém modalu
-(`shpd-modal__header-icon`). Badge `style` přijímá obecné varianty (`neutral`,
-`primary`, `accent`, `success`, `warning`, `danger`) i doc-state styly
-(`concept`, `edit`, `confirmed`, `done`, `archive`, `trash`, `cancelled`,
-`error`) — viz `docs/design-system.md`. Hlavičku používají všechny hlavní
-detaily: došlá pošta, Osoby, Položky, Úkoly i doklady (`DocsHeadsViewer`).
+Hlavička zůstává viditelná při přepínání tabů; převedený viewer ji má
+vždy (builder), u nepřevedeného je volitelná (bez `title` se nerenderuje).
+`icon` (klíč z `icons.js`, typicky `viewers[].icon` daného modulu) se
+vykreslí ve 40×40 boxu vlevo od title — stejný vizuál jako ikona ve
+formulářovém modalu (`shpd-modal__header-icon`). Badge `style` přijímá
+obecné varianty (`neutral`, `primary`, `accent`, `success`, `warning`,
+`danger`) i doc-state styly (`concept`, `edit`, `confirmed`, `done`,
+`archive`, `trash`, `cancelled`, `error`) — viz `docs/design-system.md`.
 
 Typy obsahu:
 
@@ -1005,7 +1025,41 @@ Typy obsahu:
 | `heading` | mezititulek sekce (`text`) |
 | `attachment-grid` | plochý grid příloh (`attachments`: `id`, `name`, `mime_type`, `file_size` v bajtech); přepínání miniatury/velké náhledy přes sdílený store `attachmentView.svelte.js` |
 | `composite` | seznam `blocks[]` — každý blok je libovolný z ostatních typů, renderuje se rekurzivně týmž snippetem |
-| `proposal`, `attachments`, `document` | doménové typy: dokumentový návrh zprávy (tab „Návrh" — jedna karta s typem, pásmem/verdiktem a akcemi Použít/Zamítnout/Zobrazit detail), přílohy seskupené po zprávách, textový detail dokladu (`DocumentDetail`; hlavička dokladu je nad taby — titulek protistrana, číslo · text dokladu v podtitulku, štítek jen stav, typ nese ikona, #135 D13–D14; klíč `header` se v contentu neposílá). Písmo detailu podle typografických rolí: `design-system.md` §11–§12. V `document` contentu je jméno partnera klikatelné (klíč `person_id` přidává backend jen na partnerské straně podle `trade_dir` — vlastní firma ho nedostane) a popis řádku s vazbou na Položku též (`item_id` se posílá jen když položka v DB existuje, včetně archivu a koše; tehdy má řádek i badge `item_state: {label, style}`). Klik volá `onAction` s generickou akcí `kind: open_form` — otevře `FormDialog` osoby (`base_persons_persons`) / položky (`economy_items`), po uložení se detail i seznam refreshnou |
+| `attachments` | tab Přílohy záznamu (`{type: "attachments"}`, bez dalších polí) — frontend kreslí `detail.attachments.groups` sdílenou `DetailAttachments.svelte`; přidává ho builder u vieweru s `detailAttachments: "tab"`, jen má-li záznam přílohu |
+| `proposal`, `document` | doménové typy: dokumentový návrh zprávy (tab „Návrh" — jedna karta s typem, pásmem/verdiktem a akcemi Použít/Zamítnout/Zobrazit detail), textový detail dokladu (`DocumentDetail`; hlavička dokladu je nad taby — titulek protistrana, číslo · text dokladu v podtitulku, štítek jen stav mimo V pořádku, typ nese ikona, #135 D13–D14, #136 D20; klíč `header` se v contentu neposílá, přílohy dokladu nese `detail.attachments`, ne content). Písmo detailu podle typografických rolí: `design-system.md` §11–§12. V `document` contentu je jméno partnera klikatelné (klíč `person_id` přidává backend jen na partnerské straně podle `trade_dir` — vlastní firma ho nedostane) a popis řádku s vazbou na Položku též (`item_id` se posílá jen když položka v DB existuje, včetně archivu a koše; tehdy má řádek i badge `item_state: {label, style}`). Klik volá `onAction` s generickou akcí `kind: open_form` — otevře `FormDialog` osoby (`base_persons_persons`) / položky (`economy_items`), po uložení se detail i seznam refreshnou |
+
+### Přílohy záznamu (`detail.attachments`)
+
+Přílohy záznamu dodává builder obecně podle `tableId` tabulky vieweru
+(`Core\Viewer\Detail\RecordAttachments`: `core_attachments_files`,
+`is_deleted = 0`, pořadí `att_order`; #136 D21). Tvar:
+
+```json
+{"groups": [
+    {"kind": "mail", "sourceViewerId": "core.mail.incoming", "message_id": "MSG-20260601-0007",
+     "message_code_short": "260601-0007", "received_at": "1. 6. 2026", "message_ndx": 11,
+     "attachments": [{"id": 101, "name": "faktura.pdf", "mime_type": "application/pdf", "file_size": 2048}]},
+    {"kind": "record", "attachments": [{"id": 301, "name": "smlouva.pdf", "mime_type": "application/pdf",
+     "file_size": 4096, "send_with_record": true}]}
+]}
+```
+
+Skupiny vieweru (`detailAttachmentGroups()`, dnes zdrojová pošta dokladu,
+`kind: "mail"`) jdou před skupinou `record` s přílohami záznamu;
+`send_with_record: true` jen u přílohy se značkou „Odeslat s dokladem“
+(#94 D6). Bez příloh klíč chybí. Umístění řídí `detailAttachments`
+v deklaraci vieweru:
+
+- `overview` (výchozí) — `ViewerDetail.svelte` kreslí `DetailAttachments`
+  na konci **prvního tabu** (Přehled), pod ním sekci Odeslaná pošta
+  (`detail.sentMessages` od controlleru; D22 — pod ostatními taby se
+  nekreslí). `ViewerDetailModal` s `tabId` jiného než prvního tabu obojí
+  zahodí;
+- `tab` — navíc tab `{id: "attachments", content: {type: "attachments"}}`
+  na konci (popisek `core.system.viewerDetailLabels.tabs.attachments`);
+  karta majetku. Bez příloh tab není;
+- `content` — builder přílohy nenačítá, viewer si je kreslí ve svém obsahu
+  (`attachment-grid` u pošty, spisovny, položek, bankovních výpisů).
 
 ### Akce detailu (`detail.actions`)
 
@@ -1053,25 +1107,42 @@ V `module.jsonc`:
 ```jsonc
 "viewers": [
     {
-        "id": "base.persons",
-        "name:cs": "Osoby",
-        "icon": "user",
-        "table": "base_persons_persons",
-        "class": "Shipard\\Module\\Base\\Persons\\PersonsViewer"
+        "id": "economy.assets.types",
+        "name:cs": "Typy majetku",
+        "icon": "tags",
+        "table": "economy_assets_types",
+        "class": "Shipard\\Module\\Economy\\Assets\\AssetTypesViewer",
+        // Volitelné: hlavička detailu se vzory {sloupec}; bez deklarace je
+        // titulkem displayPattern tabulky (#136 D19).
+        "detailHeader": {"title": "{name}", "subtitle": "{code}"},
+        // Volitelné: kde se kreslí přílohy záznamu — overview (výchozí) / tab / content (D21).
+        "detailAttachments": "overview"
     }
 ]
 ```
 
-PHP třída vieweru žije v `modules/{skupina}/{modul}/src/` a dědí `TableViewer`. Pro podporu stavů dokumentů nastaví `$docStatesCfgItem`:
+PHP třída vieweru žije v `modules/{skupina}/{modul}/src/` a dědí
+`TableViewer`. Pro podporu stavů dokumentů nastaví `$docStatesCfgItem`;
+detail skládá builder, viewer dodá jen taby (a případně záznam s JOINy,
+akce, vlastní hlavičku) — `renderDetail()` nepřepisuje, `DetailContractTest`
+to hlídá:
 
 ```php
-class PersonsViewer extends TableViewer
+class AssetTypesViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array { /* ... */ }
     public function renderRow(array $rowData): array { /* ... */ }
-    public function renderDetail(int $recordId): array { /* ... */ }
+
+    protected function loadDetailRecord(int $recordId): ?array { /* SELECT s JOINy */ }
+
+    protected function detailTabs(array $record): array
+    {
+        return [$this->propertiesTab([
+            ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
+        ])];
+    }
 }
 ```
 

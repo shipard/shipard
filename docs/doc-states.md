@@ -130,6 +130,8 @@ Každý stav je objekt s klíčem = číselná hodnota docState (jako string).
         "actionName:cs": "V pořádku",
         "actionName:en": "Confirm",
         "stateStyle": "done",
+        // Štítek stavu v hlavičce detailu záznamu se nekreslí (#136 D20)
+        "detailBadge": false,
         "mainState": 3,
         "viewGroup": "active",
         "readOnly": 1,
@@ -153,6 +155,7 @@ Každý stav je objekt s klíčem = číselná hodnota docState (jako string).
 | `goto` | int[] | Ano | Stavy, do kterých lze přejít z tohoto stavu |
 | `readOnly` | 0/1 | Ne | Dokument nelze editovat — musí se nejdřív přepnout do V opravě (default: 0) |
 | `enablePrint` | 0/1 | Ne | Dokument lze tisknout/exportovat (default: 0) |
+| `detailBadge` | bool | Ne | Štítek stavu v hlavičce detailu záznamu (builder `TableViewer`); `false` ho skryje — u „V pořádku“ ve všech třech sadách (#136 D20). Formulář (`FormStateBadge`) štítek ukazuje vždy (default: true) |
 
 ---
 
@@ -266,6 +269,7 @@ Wrapper nad načteným cfgItem. Klíčové metody:
 - `isReadOnly(int $docState): bool` — zjistí zda stav zakazuje editaci
 - `isTransitionAllowed(int $from, int $to): bool` — ověří přechod přes `goto`
 - `getViewGroupStates(string $viewGroup): int[]` — vrátí docState hodnoty pro daný viewGroup
+- `showsDetailBadge(int $docState): bool` — má stav štítek v hlavičce detailu záznamu (`detailBadge`, chybí = true)
 - `getAvailableTransitions(int $currentState): array` — vrátí přechody pro API odpověď
 
 ### `Document::filterStateTransitions` — per-dokumentové filtrování nabídky
