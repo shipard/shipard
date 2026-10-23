@@ -337,7 +337,7 @@ class AssetsViewer extends AssetsViewerBase
                 'content' => $this->planContent($plans['acc'], $card, $service->postingOf($recordId)),
             ];
         }
-        $detail['actions'] = $this->detailActions($card, $events, $depreciable, $acquisition['activation']);
+        $detail['actions'] = $this->eventActions($card, $events, $depreciable, $acquisition['activation']);
         if ($expensesTab !== null) {
             $detail['tabs'][] = $expensesTab;
             $detail['actions'][] = $this->journalAction($recordId);
@@ -834,7 +834,7 @@ class AssetsViewer extends AssetsViewerBase
      * @param array{amount: float, date: ?string} $acquired pořízení k zařazení
      * @return list<array<string, mixed>>
      */
-    private function detailActions(array $card, array $events, bool $depreciable, array $acquired): array
+    private function eventActions(array $card, array $events, bool $depreciable, array $acquired): array
     {
         if ((int) ($card['docState'] ?? 0) !== AssetDocument::STATE_CONFIRMED) {
             return [];

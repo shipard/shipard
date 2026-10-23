@@ -213,4 +213,15 @@ class DocStateConfigTest extends TestCase
         $this->assertSame([], $cfg->getViewGroupStates('active'));
         $this->assertSame([], $cfg->getAvailableTransitions(10));
     }
+
+    public function testShowsDetailBadgeDefaultsTrueAndHonoursFlag(): void
+    {
+        $states = $this->archiveStates();
+        $states['40']['detailBadge'] = false;
+        $cfg = DocStateConfig::fromCfgItem($states);
+
+        $this->assertTrue($cfg->showsDetailBadge(10), 'bez klíče = štítek');
+        $this->assertFalse($cfg->showsDetailBadge(40), 'detailBadge: false skryje (#136 D20)');
+        $this->assertTrue($cfg->showsDetailBadge(99), 'neznámý stav = štítek');
+    }
 }

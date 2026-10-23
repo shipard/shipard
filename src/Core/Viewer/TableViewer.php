@@ -7,11 +7,14 @@ namespace Shipard\Core\Viewer;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\RecordPattern;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
+use Shipard\Core\Viewer\Detail\DetailHeader;
+use Shipard\Core\Viewer\Detail\RecordAttachments;
 
 abstract class TableViewer
 {
@@ -60,6 +63,14 @@ abstract class TableViewer
      */
     protected ?array $sort = null;
 
+    /**
+     * Deklarace vieweru z `module.jsonc` (ikona, `detailHeader`,
+     * `detailAttachments`) — injektuje ViewerRegistry; v testech může
+     * chybět (výchozí hlavička z `displayPattern`, přílohy v Přehledu,
+     * bez ikony).
+     */
+    protected ?ViewerDefinition $definition = null;
+
     public function __construct(
         protected DataSourceConnection $db,
         protected string $table,
@@ -97,6 +108,12 @@ abstract class TableViewer
     public function setTables(array $tables): void
     {
         $this->tables = $tables;
+    }
+
+    /** Inject the viewer declaration — called by ViewerRegistry after construction. */
+    public function setDefinition(ViewerDefinition $definition): void
+    {
+        $this->definition = $definition;
     }
 
     /**
@@ -308,20 +325,244 @@ abstract class TableViewer
     }
 
     /**
-     * Render the detail panel for a selected row.
-     * Returns tabs with content.
+     * Detail záznamu pro pravý panel vieweru — builder (#136 D18): viewer
+     * dodá části přes háčky (`loadDetailRecord()`, `detailHeader()`,
+     * `detailBadges()`, `detailTabs()`, `detailActions()`,
+     * `detailAttachmentGroups()`), celek skládá tahle metoda: hlavička →
+     * štítky (stav z konfigurace stavů, pak `detailBadges()`) → taby →
+     * přílohy záznamu podle `detailAttachments` deklarace → akce.
+     *
+     * Tvar výsledku: `title`, `subtitle`, `badges`, `icon`, `tabs`,
+     * volitelně `attachments {groups}` a `actions` (jen neprázdné);
+     * nenalezený záznam → `{tabs: []}`. Zámek, tisky, odeslání a Odeslanou
+     * poštu doplňuje `ViewerController::detail()`.
+     *
+     * V tasku A kontraktu detailu zůstává přepsatelná — nepřevedené
+     * viewery (`DetailContractTest::NOT_CONVERTED`) ji přepisují celou;
+     * nový viewer ji nepřepisuje, dodává háčky. Task B ji udělá `final`.
      *
      * Content types:
      * - "properties": {type: "properties", groups: [{title, items: [{label, value}]}]}
      * - "table": {type: "table", columns: [{id, label}], rows: [{col: val}]}
      * - "html": {type: "html", html: "<div>..."}
+     * - "attachments": {type: "attachments"} — tab Přílohy nad `detail.attachments`
      *
-     * @param int $recordId
-     * @return array {tabs: [{id: string, label: string, content: array}]}
+     * @return array<string, mixed>
      */
     public function renderDetail(int $recordId): array
     {
-        return ['tabs' => []];
+        $record = $this->loadDetailRecord($recordId);
+        if ($record === null) {
+            return ['tabs' => []];
+        }
+
+        $header = $this->detailHeader($record);
+
+        $badges = [];
+        $stateBadge = $this->detailStateBadge($record);
+        if ($stateBadge !== null) {
+            $badges[] = $stateBadge;
+        }
+        $badges = [...$badges, ...$this->detailBadges($record)];
+
+        $detail = [
+            'title'    => $header->title,
+            'subtitle' => $header->subtitle,
+            'badges'   => $badges,
+            'icon'     => $header->icon,
+            'tabs'     => $this->detailTabs($record),
+        ];
+
+        $placement = $this->definition?->detailAttachments ?? ViewerDefinition::ATTACHMENTS_OVERVIEW;
+        if ($placement !== ViewerDefinition::ATTACHMENTS_CONTENT) {
+            $groups = $this->detailAttachmentSection($record);
+            if ($groups !== []) {
+                $detail['attachments'] = ['groups' => $groups];
+                if ($placement === ViewerDefinition::ATTACHMENTS_TAB) {
+                    $detail['tabs'][] = [
+                        'id'      => 'attachments',
+                        'label'   => $this->detailTabLabel('core.system.viewerDetailLabels', 'attachments', 'Attachments'),
+                        'content' => ['type' => 'attachments'],
+                    ];
+                }
+            }
+        }
+
+        $actions = $this->detailActions($record);
+        if ($actions !== []) {
+            $detail['actions'] = $actions;
+        }
+
+        return $detail;
+    }
+
+    /**
+     * Záznam pro detail; výchozí `loadRecord()`. Viewer, který v detailu
+     * potřebuje JOINy (jména partnerů, číselníky), přepisuje. Null = detail
+     * bez tabů (controller vrací 404 už podle `loadRecord()`).
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function loadDetailRecord(int $recordId): ?array
+    {
+        return $this->loadRecord($recordId);
+    }
+
+    /**
+     * Hlavička detailu (#136 D19). Výchozí: titulek z deklarace
+     * `detailHeader.title`, jinak z `displayPattern` tabulky, jinak `#id`;
+     * podtitul jen z deklarace `detailHeader.subtitle`; ikona z deklarace
+     * vieweru. Vzory vyplňuje `RecordPattern` (prázdné hodnoty i
+     * s oddělovačem vynechá). Viewer s hlavičkou mimo vzor (protistrana
+     * dokladu, ikona podle typu) přepisuje.
+     *
+     * @param array<string, mixed> $record
+     */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $declared = $this->definition?->detailHeader ?? [];
+
+        $titlePattern = $declared['title'] ?? ($this->tables[$this->table] ?? null)?->displayPattern;
+        $title = is_string($titlePattern) && $titlePattern !== ''
+            ? (new RecordPattern($titlePattern))->render($record)
+            : null;
+
+        $subtitlePattern = $declared['subtitle'] ?? null;
+        $subtitle = is_string($subtitlePattern) && $subtitlePattern !== ''
+            ? (new RecordPattern($subtitlePattern))->render($record)
+            : null;
+
+        return new DetailHeader($title ?? '#' . (int) ($record['id'] ?? 0), $subtitle, $this->definition?->icon);
+    }
+
+    /**
+     * Štítky za štítkem stavu (Chyba účtování, Po termínu…) ve tvaru
+     * `{label, style}`; výchozí žádné.
+     *
+     * @param array<string, mixed> $record
+     * @return list<array{label: string, style: string}>
+     */
+    protected function detailBadges(array $record): array
+    {
+        return [];
+    }
+
+    /**
+     * Taby detailu `{id, label, content}`; první je Přehled
+     * (`propertiesTab()` nad skupinami vlastností, nebo vlastní obsah).
+     *
+     * @param array<string, mixed> $record
+     * @return list<array<string, mixed>>
+     */
+    protected function detailTabs(array $record): array
+    {
+        return [];
+    }
+
+    /**
+     * Akce detailu (`detail.actions`, viz docs/frontend.md → Akce detailu);
+     * výchozí žádné — builder klíč při prázdném seznamu vynechá.
+     *
+     * @param array<string, mixed> $record
+     * @return list<array<string, mixed>>
+     */
+    protected function detailActions(array $record): array
+    {
+        return [];
+    }
+
+    /**
+     * Vlastní skupiny příloh vieweru (přílohy zdrojové pošty dokladu),
+     * kreslí se před skupinou `record` s přílohami záznamu. Tvar skupiny
+     * viz docs/frontend.md → `detail.attachments`.
+     *
+     * @param array<string, mixed> $record
+     * @return list<array<string, mixed>>
+     */
+    protected function detailAttachmentGroups(array $record): array
+    {
+        return [];
+    }
+
+    /**
+     * Tab Přehled nad skupinami vlastností (`properties`); prázdné skupiny
+     * vynechá. Nahrazuje dřívější `overviewDetail()` viewerů.
+     *
+     * @param list<array{title: string, items: list<array{label: string, value: string}>}> $groups
+     * @return array{id: string, label: string, content: array<string, mixed>}
+     */
+    protected function propertiesTab(array $groups): array
+    {
+        $groups = array_values(array_filter($groups, static fn(array $g): bool => ($g['items'] ?? []) !== []));
+        return [
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => ['type' => 'properties', 'groups' => $groups],
+        ];
+    }
+
+    /**
+     * Štítek stavu pro hlavičku (#136 D20): sada stavů z definice tabulky
+     * (`docStates.cfgItem`, fallback `$docStatesCfgItem`), sloupec
+     * `stateColumn` (výchozí `docState`); jen když stav `detailBadge`
+     * nevypíná. Tabulka bez stavů nebo bez konfigurace = bez štítku.
+     *
+     * @param array<string, mixed> $record
+     * @return array{label: string, style: string}|null
+     */
+    private function detailStateBadge(array $record): ?array
+    {
+        if ($this->config === null) {
+            return null;
+        }
+        $states = ($this->tables[$this->table] ?? null)?->docStates;
+        $cfgItemId = $states?->cfgItem ?? $this->docStatesCfgItem;
+        if ($cfgItemId === null) {
+            return null;
+        }
+        $column = $states?->stateColumn ?? 'docState';
+        if (!isset($record[$column])) {
+            return null;
+        }
+
+        $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($cfgItemId));
+        $docState = (int) $record[$column];
+        if (!$cfg->showsDetailBadge($docState)) {
+            return null;
+        }
+        $state = $cfg->getState($docState);
+        $name = (string) ($state['stateName'] ?? '');
+        if ($name === '') {
+            return null;
+        }
+        return ['label' => $name, 'style' => (string) ($state['stateStyle'] ?? 'concept')];
+    }
+
+    /**
+     * Skupiny příloh detailu: vlastní skupiny vieweru, pak přílohy záznamu
+     * (`RecordAttachments` podle `tableId` definice tabulky — bez definic
+     * tabulek se nenačítají). Prázdné skupiny se nevracejí.
+     *
+     * @param array<string, mixed> $record
+     * @return list<array<string, mixed>>
+     */
+    private function detailAttachmentSection(array $record): array
+    {
+        $groups = array_values(array_filter(
+            $this->detailAttachmentGroups($record),
+            static fn(array $g): bool => ($g['attachments'] ?? []) !== [],
+        ));
+
+        $tableId = ($this->tables[$this->table] ?? null)?->tableId;
+        $recordId = (int) ($record['id'] ?? 0);
+        if ($tableId !== null && $recordId > 0) {
+            $attachments = (new RecordAttachments($this->db))->forRecord($tableId, $recordId);
+            if ($attachments !== []) {
+                $groups[] = ['kind' => 'record', 'attachments' => $attachments];
+            }
+        }
+
+        return $groups;
     }
 
     /**

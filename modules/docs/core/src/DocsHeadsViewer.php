@@ -329,7 +329,7 @@ class DocsHeadsViewer extends TableViewer
             'totals'    => $this->buildDetailTotals($record),
         ];
 
-        $attachmentGroups = $this->detailAttachmentGroups($recordId);
+        $attachmentGroups = $this->documentAttachmentGroups($recordId);
         if ($attachmentGroups !== []) {
             $content['attachments'] = ['groups' => $attachmentGroups];
         }
@@ -904,7 +904,7 @@ class DocsHeadsViewer extends TableViewer
      *
      * @return list<array<string, mixed>>
      */
-    private function detailAttachmentGroups(int $recordId): array
+    private function documentAttachmentGroups(int $recordId): array
     {
         $groups = $this->sourceAttachmentGroups($recordId);
 

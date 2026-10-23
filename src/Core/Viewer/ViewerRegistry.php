@@ -60,6 +60,10 @@ class ViewerRegistry
                     class: $viewer['class'] ?? null,
                     moduleId: $module->id,
                     icon: $viewer['icon'] ?? null,
+                    detailHeader: is_array($viewer['detailHeader'] ?? null) ? $viewer['detailHeader'] : null,
+                    detailAttachments: is_string($viewer['detailAttachments'] ?? null)
+                        ? $viewer['detailAttachments']
+                        : ViewerDefinition::ATTACHMENTS_OVERVIEW,
                 );
 
                 $this->viewers[$def->id] = $def;
@@ -113,6 +117,7 @@ class ViewerRegistry
 
         // Viewer bez tabulky dostane '' — SQL nad tabulkou nikdy nevolá.
         $viewer = new $class($db, $def->table ?? '');
+        $viewer->setDefinition($def);
         if ($config !== null) {
             $viewer->setConfig($config);
         }

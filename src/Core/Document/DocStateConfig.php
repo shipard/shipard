@@ -39,6 +39,17 @@ class DocStateConfig
         return (bool) ($this->states[(string) $docState]['readOnly'] ?? false);
     }
 
+    /**
+     * Ukazuje se štítek stavu v hlavičce detailu záznamu (#136 D20)?
+     * `detailBadge: false` u stavu ho skryje — „V pořádku“ je běžný stav
+     * bez proužku v seznamu a štítek by jen šuměl; chybějící klíč = true.
+     * Formulář (`FormStateBadge`) štítek ukazuje vždy.
+     */
+    public function showsDetailBadge(int $docState): bool
+    {
+        return (bool) ($this->states[(string) $docState]['detailBadge'] ?? true);
+    }
+
     /** Returns true if the transition from $from to $to is listed in goto. */
     public function isTransitionAllowed(int $from, int $to): bool
     {
