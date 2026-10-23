@@ -318,11 +318,15 @@
 
   async function handleSave() {
     saving = true;
+    // Props po `onSaved()` nečíst: rodič v callbacku může dialog zavřít
+    // (kontrola návrhu → `useExisting`) a gettery props už nemají nad čím
+    // běžet (#103 D101, TypeError „reading 'table'“).
+    const tbl = table;
     const record = await saveRecord();
     if (record !== null) {
       onSaved?.(record);
       currentId = record.id ?? currentId;
-      await loadForm(table, currentId);  // Reload bez zavření
+      await loadForm(tbl, currentId);  // Reload bez zavření
     }
     saving = false;
   }
@@ -374,11 +378,12 @@
     saving = true;
     clearValidationErrors();
     loadError = null;
+    const tbl = table; // po `onSaved()` props nečíst (#103 D101, viz handleSave)
 
     if (currentId == null) {
       // Nový záznam: ulož celý formulář s požadovaným stavem
       const data = { ...sanitizeFormData(formData), docState: targetState };
-      const res = await post(`/_ui/form/${table}/save`, data);
+      const res = await post(`/_ui/form/${tbl}/save`, data);
       if (res?.success) {
         captureWarnings(res.data);
         onSaved?.(res.data);
@@ -389,7 +394,7 @@
           onClose?.({ force: true });
         } else {
           currentId = res.data?.id ?? null;
-          await loadForm(table, currentId);
+          await loadForm(tbl, currentId);
         }
       } else if (res?.error?.code === 'VALIDATION_ERROR' && res?.error?.details) {
         applyValidationErrors(res.error.details);

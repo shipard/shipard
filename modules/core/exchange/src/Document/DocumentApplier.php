@@ -1426,9 +1426,12 @@ class DocumentApplier
 
         if (is_array($plan['bankCreate'] ?? null)) {
             $bankPayload = $plan['bankCreate'];
-            // Re-link bank to a freshly-created supplier if needed.
-            if (empty($bankPayload['person']) && $ids['supplier'] !== null) {
-                $bankPayload['person'] = $ids['supplier'];
+            // Re-link bank to the supplier: freshly created one, or the one
+            // the client decided (`useExisting:<id>` → resolvedSupplier,
+            // #103 D98) — otherwise `create` on the account would be silently
+            // skipped. `person` in the payload (matched supplier) wins.
+            if (empty($bankPayload['person'])) {
+                $bankPayload['person'] = $ids['supplier'] ?? $plan['resolvedSupplier'] ?? null;
             }
             if (!empty($bankPayload['person'])) {
                 // base_persons_bank_accounts has no docState — bypass.

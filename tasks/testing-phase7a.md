@@ -258,8 +258,10 @@ Podrobně `docs/test-corpus.md` § 19 → Odchylky od zadání.
 - Stav kontroly (§ 1): `disabled` na `review-apply-final` je přesně
   `!canApply`; navíc skrytý marker `review-state` s `data-loaded`,
   `data-ai-failed`, `data-pending-save` a `data-pending-paths` — test
-  tak ohlásí blokující cestu i bez odznaku (N1). `review-ref-create:{path}`
-  je v panelu popoveru (`ResolveDecisionPanel` dostává `path`).
+  tak ohlásí blokující cestu i bez odznaku (původně N1; od D98 má odznak
+  každá blokující cesta, marker zůstává jako pojistka pravidla).
+  `review-ref-create:{path}` je v panelu popoveru (`ResolveDecisionPanel`
+  dostává `path`).
 - § 2: `trace: 'off'` v configu a ruční `startChunk` / `stopChunk` per
   karta (jinak jeden trace na celý test); spec navíc čte volitelný
   `SHPD_E2E_PROGRESS_FILE` a `card` události píše sám.

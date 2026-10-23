@@ -25,6 +25,7 @@
   import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import { enrichedRowCount, matchKindKey, suggestedFieldKeys } from './enrichBadge.js';
+  import { REFERENCE_TABLES, bankParentPath, hasControl } from './reviewGate.js';
   import {
     itemDecision,
     matchSourceKey,
@@ -419,28 +420,22 @@
     };
   }
 
+  // Tabulka entity per druh reference — jeden zdroj s reviewGate.js (D98).
   function entityConfigForKind(kind) {
-    if (kind === 'party')       return { table: 'base_persons_persons' };
-    if (kind === 'item')        return { table: 'economy_items' };
-    if (kind === 'bankAccount') return { table: 'base_persons_bank_accounts' };
-    return null;
+    const table = REFERENCE_TABLES[kind];
+    return table ? { table } : null;
   }
 
   // For a bank-account decision we need the resolved supplier person id, so
   // the panel can filter the lookup search and pre-fill the create form.
-  // `path` for supplier bank is e.g. `supplier.bankAccount` — derive the
-  // owning party path by stripping the last segment and read its matched id.
+  // Bank paths are `supplierBank` / `customerBank` (server `_resolve`), the
+  // owning party is `supplier` / `customer` (reviewGate.bankParentPath).
   function parentMatchedIdForPath(path, kind) {
-    if (kind !== 'bankAccount' || !path) return null;
-    const parentPath = path.replace(/\.[^.]+$/, '');
-    if (parentPath === path) return null;
-    // Walk _resolve via the parent path. Only the supplier/customer slots
-    // currently carry bankAccount, so a 2-level lookup is enough.
-    const parentBlock = parentPath
-      .split('.')
-      .reduce((acc, seg) => (acc && typeof acc === 'object' ? acc[seg] : undefined), resolve);
-    if (!parentBlock) return null;
-    if (parentBlock.status === 'matched' && parentBlock.matchedId != null) {
+    if (kind !== 'bankAccount') return null;
+    const parentPath = bankParentPath(path);
+    if (parentPath === null) return null;
+    const parentBlock = resolve?.[parentPath] ?? null;
+    if (parentBlock?.status === 'matched' && parentBlock.matchedId != null) {
       return parentBlock.matchedId;
     }
     // Also accept a user-side decision to use an existing party.
@@ -478,7 +473,9 @@
   // Badge kódu DPH je klikací i u napárovaného kódu (D16) — uživatel smí
   // přebít i správně odvozený kód; vlastní panel, ne ResolveDecisionPanel.
   function openVatCodeDecision(event, path, block) {
-    if (!vatChoiceEnabled) return;
+    // I bez nabídky (prázdné vatCodeOptions) — blokující cesta musí mít
+    // ovládání (D98); panel pak řekne, proč není z čeho vybrat.
+    if (onUserActionsChange === null) return;
     event.preventDefault();
     event.stopPropagation();
     decisionOpen = { anchor: event.currentTarget, path, resolveBlock: block, kind: 'vatCode', parentMatchedId: null };
@@ -743,13 +740,12 @@
   {#if resolveBlock && statusKey(resolveBlock.status)}
     {@const modifier = effectiveStatusKey(path, resolveBlock)}
     {@const label = effectiveStatusLabel(path, resolveBlock)}
-    <!-- Napárovaná položka je klikací (změna napárování, #111 D4); strany
-         a bankovní účet u matched ne. -->
+    <!-- Klikatelnost = pravidlo reviewGate.hasControl (D98): napárovaná
+         položka ano (změna napárování, #111 D4), strany a bankovní účet
+         u matched ne; read-only náhled nic. -->
     {@const interactive
-      = onUserActionsChange !== null
-      && (resolveBlock.status !== 'matched' || kind === 'item')
-      && path !== null
-      && kind !== null}
+      = path !== null
+      && hasControl({ kind, block: resolveBlock }, { interactive: onUserActionsChange !== null })}
     {#if interactive}
       <!-- `review-ref:{path}` + `data-status` = stav reference pro proklikání
            sady (#103 F7a): test rozhoduje jen odznaky canCreate / ambiguous /
@@ -817,6 +813,10 @@
       {@render statusBadge(partyResolve, path, 'party')}
     </div>
     {#if party}
+      <!-- Bankovní účet strany je reference s vlastním rozhodnutím
+           (`supplierBank` / `customerBank`, D98): odznak i bez textu účtu. -->
+      {@const bankPath = `${path}Bank`}
+      {@const bankResolve = resolve?.[bankPath] ?? null}
       <div class="shpd-exchange__party-body">
         {#if party.name}
           <div class="shpd-exchange__party-name">{party.name}</div>
@@ -846,10 +846,13 @@
             {#if party.contact?.phone}<span>{party.contact.phone}</span>{/if}
           </div>
         {/if}
-        {#if party.bankAccount?.iban || party.bankAccount?.accountNumber}
+        {#if party.bankAccount?.iban || party.bankAccount?.accountNumber || bankResolve}
           <div class="shpd-exchange__party-bank">
-            {t('exchange.preview.field.bankAccount')}:
-            <strong>{party.bankAccount.iban ?? party.bankAccount.accountNumber}</strong>
+            <span>
+              {t('exchange.preview.field.bankAccount')}:
+              <strong>{party.bankAccount?.iban ?? party.bankAccount?.accountNumber ?? '—'}</strong>
+            </span>
+            {@render statusBadge(bankResolve, bankPath, 'bankAccount')}
           </div>
         {/if}
       </div>
@@ -927,13 +930,14 @@
 {/snippet}
 
 <!-- Badge kódu DPH řádku — na rozdíl od statusBadge klikací i u matched
-     (D16) a bez entity: popover s VatCodeDecisionPanel. -->
+     (D16) a bez entity: popover s VatCodeDecisionPanel. Klikací i bez
+     nabídky (D98 — blokující cesta má ovládání; panel řekne, že není z čeho). -->
 {#snippet vatCodeBadge(i, block)}
   {#if block && statusKey(block.status)}
     {@const path = `rows[${i}].vatCode`}
     {@const modifier = vatCodeStatusKey(path, block)}
     {@const label = vatCodeStatusLabel(path, block)}
-    {#if vatChoiceEnabled}
+    {#if hasControl({ kind: 'vatCode', block }, { interactive: onUserActionsChange !== null })}
       <button
         type="button"
         class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
@@ -1246,59 +1250,66 @@
   </div>
 {/if}
 
+<!-- Props panelu čtou `decisionOpen?.…` (#103 D101): `handleDecide` ho
+     vynuluje synchronně uvnitř callbacku potomka (FormEditor → FormDialog →
+     panel → onDecide) a gettery props se ještě vyhodnotí, než Svelte blok
+     strhne — bez `?.` padá TypeError „reading 'table'“. -->
 {#if decisionOpen !== null}
   <Popover
     open={true}
-    anchor={decisionOpen.anchor}
+    anchor={decisionOpen?.anchor ?? null}
     placement="bottom"
     width="400px"
     testid="review-ref-dialog"
     onClose={closeDecision}
   >
-    {#if decisionOpen.kind === 'vatCode'}
+    {#if decisionOpen?.kind === 'vatCode'}
       <VatCodeDecisionPanel
         options={vatCodeOptions}
-        currentUserAction={decisionOpen.path !== null ? userActions[decisionOpen.path] ?? null : null}
-        bulkCount={decisionOpen.bulkPaths?.length ?? 0}
-        bulkDecidedCount={decisionOpen.bulkPaths
+        currentUserAction={decisionOpen?.path != null ? userActions[decisionOpen.path] ?? null : null}
+        bulkCount={decisionOpen?.bulkPaths?.length ?? 0}
+        bulkDecidedCount={decisionOpen?.bulkPaths
           ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
           : 0}
         onDecide={handleDecide}
       />
     {:else}
       <ResolveDecisionPanel
-        path={decisionOpen.bulkPaths ? null : decisionOpen.path}
-        resolveBlock={decisionOpen.resolveBlock}
-        referenceKind={decisionOpen.kind}
-        entityTable={decisionOpen.table}
-        createPayload={decisionOpen.resolveBlock?.createPayload ?? null}
-        parentMatchedId={decisionOpen.parentMatchedId}
-        currentUserAction={decisionOpen.path !== null ? userActions[decisionOpen.path] ?? null : null}
-        allowNoItem={decisionOpen.allowNoItem ?? false}
-        automaticLabel={decisionOpen.kind === 'item' && decisionOpen.path !== null
+        path={decisionOpen?.bulkPaths ? null : decisionOpen?.path ?? null}
+        resolveBlock={decisionOpen?.resolveBlock ?? null}
+        referenceKind={decisionOpen?.kind ?? 'party'}
+        entityTable={decisionOpen?.table ?? null}
+        createPayload={decisionOpen?.resolveBlock?.createPayload ?? null}
+        parentMatchedId={decisionOpen?.parentMatchedId ?? null}
+        currentUserAction={decisionOpen?.path != null ? userActions[decisionOpen.path] ?? null : null}
+        allowNoItem={decisionOpen?.allowNoItem ?? false}
+        automaticLabel={decisionOpen?.kind === 'item' && decisionOpen?.path != null
           ? automaticMatchLabel(decisionOpen.path)
           : null}
-        currentLabel={decisionOpen.kind === 'item' && decisionOpen.path !== null
+        currentLabel={decisionOpen?.kind === 'item' && decisionOpen?.path != null
           ? currentChoiceLabel(decisionOpen.path)
           : null}
-        bulkCount={decisionOpen.bulkPaths?.length ?? 0}
-        bulkDecidedCount={decisionOpen.bulkPaths
+        bulkCount={decisionOpen?.bulkPaths?.length ?? 0}
+        bulkDecidedCount={decisionOpen?.bulkPaths
           ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
           : 0}
         onDecide={handleDecide}
-        registryHit={decisionOpen.kind === 'party' ? registryHits[decisionOpen.path] ?? null : null}
-        registryBusy={quickAddBusy[decisionOpen.path] ?? false}
-        registryError={decisionOpen.kind === 'party' ? quickAddError[decisionOpen.path] ?? null : null}
-        onRegistryQuickAdd={decisionOpen.kind === 'party'
+        registryHit={decisionOpen?.kind === 'party' ? registryHits[decisionOpen.path] ?? null : null}
+        registryBusy={decisionOpen?.kind === 'party' ? quickAddBusy[decisionOpen.path] ?? false : false}
+        registryError={decisionOpen?.kind === 'party' ? quickAddError[decisionOpen.path] ?? null : null}
+        onRegistryQuickAdd={decisionOpen?.kind === 'party'
           ? () => {
-              const path = decisionOpen.path;
+              const path = decisionOpen?.path ?? null;
+              if (path === null) return;
               void handleRegistryQuickAdd(path).then((ok) => {
                 if (ok) closeDecision();
               });
             }
           : null}
-        onOpenRegistrySearch={decisionOpen.kind === 'party'
-          ? () => openRegistrySearch(decisionOpen.path)
+        onOpenRegistrySearch={decisionOpen?.kind === 'party'
+          ? () => {
+              if (decisionOpen?.path != null) openRegistrySearch(decisionOpen.path);
+            }
           : null}
       />
     {/if}
@@ -1430,6 +1441,9 @@
 
   .shpd-exchange__party-address,
   .shpd-exchange__party-bank {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 0.8125rem;
     margin-bottom: var(--shpd-space-xs);
   }

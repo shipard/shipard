@@ -567,6 +567,7 @@ export default {
   'exchange.preview.vatCode.current': 'Zvoleno: {code}',
   'exchange.preview.vatCode.bulkTitle': 'Kód DPH pro všechny řádky ({count})',
   'exchange.preview.vatCode.bulkHint': 'Zvolený kód se použije pro {count} řádků dokladu.',
+  'exchange.preview.vatCode.noOptions': 'Pro toto místo plnění a datum není v nabídce žádný kód DPH — doplňte kódy DPH v Nastavení, nebo změňte místo plnění.',
   'exchange.preview.vatCode.reverseCharge': 'samovyměření',
   'exchange.preview.vatCode.reducedDeduction': 'krácený odpočet',
   'exchange.preview.vatChoice.auto': 'Automaticky ({value})',

@@ -554,6 +554,7 @@ export default {
   'exchange.preview.vatCode.current': 'Chosen: {code}',
   'exchange.preview.vatCode.bulkTitle': 'VAT code for all rows ({count})',
   'exchange.preview.vatCode.bulkHint': 'The chosen code will be used for {count} document rows.',
+  'exchange.preview.vatCode.noOptions': 'No VAT code is available for this place of supply and date — add VAT codes in Settings or change the place of supply.',
   'exchange.preview.vatCode.reverseCharge': 'reverse charge',
   'exchange.preview.vatCode.reducedDeduction': 'reduced deduction',
   'exchange.preview.vatChoice.auto': 'Automatic ({value})',

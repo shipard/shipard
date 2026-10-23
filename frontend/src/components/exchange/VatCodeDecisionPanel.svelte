@@ -60,6 +60,11 @@
   {/if}
 
   <div class="shpd-vatcode__heading">{t('exchange.preview.vatCode.heading')}</div>
+  {#if options.length === 0}
+    <!-- Prázdná nabídka (D98): odznak je klikací i tak — uživatel se musí
+         dozvědět, proč nemá z čeho vybrat a co s tím. -->
+    <p class="shpd-vatcode__hint">{t('exchange.preview.vatCode.noOptions')}</p>
+  {/if}
   <div class="shpd-vatcode__list" role="listbox" aria-label={t('exchange.preview.vatCode.heading')}>
     {#each options as option (option.code)}
       <button

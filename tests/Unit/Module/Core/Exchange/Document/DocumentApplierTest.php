@@ -1561,6 +1561,43 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('unresolved_required', $result->errorCode);
     }
 
+    // ── runSideCreates(): bankovní účet dodavatele ──────────────────────────
+
+    /**
+     * #103 D98: `create` u `supplierBank`, když dodavatele rozhodl klient
+     * (`useExisting:<id>` → resolvedSupplier) — účet patří jemu. Bez
+     * dodavatele (čerstvě založeného ani rozhodnutého) se účet nezaloží.
+     */
+    public function testSideCreateBankAccountLinksToTheSupplierTheClientDecided(): void
+    {
+        $inserted = [];
+        $fluent = $this->createMock(\Dibi\Fluent::class);
+        $db = $this->createMock(Connection::class);
+        $db->method('insert')->willReturnCallback(static function (string $table, iterable $args) use (&$inserted, $fluent): \Dibi\Fluent {
+            $inserted[] = [$table, is_array($args) ? $args : iterator_to_array($args)];
+            return $fluent;
+        });
+        $db->method('getInsertId')->willReturn(77);
+        $applier = $this->buildApplier($db);
+        $ref = new \ReflectionMethod($applier, 'runSideCreates');
+        $bank = ['account_number' => '123456789/0100', 'iban' => '', 'bic' => '', 'currency' => 'CZK'];
+
+        $ids = $ref->invoke($applier, ['partyCreates' => [], 'bankCreate' => $bank, 'resolvedSupplier' => 42, 'rowItemCreates' => []], []);
+        $this->assertSame(77, $ids['supplierBank']);
+        $this->assertSame([['base_persons_bank_accounts', $bank + ['person' => 42]]], $inserted);
+
+        // Napárovaný dodavatel v payloadu má přednost před rozhodnutím.
+        $inserted = [];
+        $ref->invoke($applier, ['partyCreates' => [], 'bankCreate' => $bank + ['person' => 5], 'resolvedSupplier' => 42, 'rowItemCreates' => []], []);
+        $this->assertSame(5, $inserted[0][1]['person']);
+
+        // Bez dodavatele se účet nezaloží — jako dřív.
+        $inserted = [];
+        $ids = $ref->invoke($applier, ['partyCreates' => [], 'bankCreate' => $bank, 'resolvedSupplier' => null, 'rowItemCreates' => []], []);
+        $this->assertNull($ids['supplierBank']);
+        $this->assertSame([], $inserted);
+    }
+
     // ── transform(): import-mode virtual fields ─────────────────────────────
 
     /**

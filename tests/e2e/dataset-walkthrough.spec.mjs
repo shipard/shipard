@@ -178,7 +178,7 @@ async function decidePending(page) {
     }
     const target = await findUndecidedBadge(page, pending);
     if (!target) {
-      throw new CardFailure('apply', 'disabled', { path: pending[0], pendingPaths: pending, message: 'reference čeká na rozhodnutí, ale náhled pro ni nemá odznak' });
+      throw new CardFailure('apply', 'disabled', { path: pending[0], pendingPaths: pending, message: 'cesta bez ovládání: reference čeká na rozhodnutí, ale náhled pro ni nemá odznak (pravidlo D98)' });
     }
     await decideByCreate(page, target);
   }

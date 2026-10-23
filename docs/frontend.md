@@ -1294,21 +1294,27 @@ Rozhodnutí D11–D14 z #48:
     `feed-card` atribut `data-card-id` = id karty ze serveru
     (`mail_suggestion:<ndx>`); přepínač pásma ready `feed-ready-toggle`;
   - v kontrole návrhu klikací odznak reference `review-ref:{path}`
-    (`supplier`, `customer`, `rows[3].item`, `rows[3].vatCode`) s
-    `data-status` = stav (`canCreate` / `ambiguous` / `notFound` /
-    `matchedDecided` / …), hromadný odznak položek `review-ref-bulk:item`;
-    popover rozhodnutí `review-ref-dialog`, jeho panel `review-ref-panel`
-    a tlačítko Vytvořit `review-ref-create:{path}` (hromadně bez cesty
-    `review-ref-create`);
+    (`supplier`, `customer`, `supplierBank`, `customerBank`, `rows[3].item`,
+    `rows[3].vatCode`) s `data-status` = stav (`canCreate` / `ambiguous` /
+    `notFound` / `matchedDecided` / …), hromadný odznak položek
+    `review-ref-bulk:item`; popover rozhodnutí `review-ref-dialog`, jeho
+    panel `review-ref-panel` a tlačítko Vytvořit `review-ref-create:{path}`
+    (hromadně bez cesty `review-ref-create`);
   - stav kontroly bez textu: `disabled` na `review-apply-draft` /
     `review-apply-final` je přesně `!canApply`; skrytý marker
     `review-state` navíc nese `data-loaded`, `data-ai-failed`,
     `data-pending-save` a `data-pending-paths` (JSON pole cest, které
-    čekají na rozhodnutí — i těch bez odznaku, např. `supplierBank`);
-    `review-preview` = načtený náhled, `review-error` = chyba načtení;
-    Spisovna má `review-apply-registry`.
-  Brána `canApply` je čistá funkce `pendingPaths()` v
-  `components/exchange/reviewGate.js` (test `tests/Unit/reviewGate.test.mjs`).
+    čekají na rozhodnutí); `review-preview` = načtený náhled,
+    `review-error` = chyba načtení; Spisovna má `review-apply-registry`.
+  Brána `canApply` i klikatelnost odznaků stojí na jednom výčtu
+  rozhodovaných referencí v `components/exchange/reviewGate.js`
+  (`reviewReferences` → `pendingPaths`, `hasControl`, `REFERENCE_TABLES`).
+  **Pravidlo D98 (#103): každá cesta z `pendingPaths` má v náhledu
+  ovládání.** Test `tests/Unit/reviewGate.test.mjs` to dokazuje nad
+  čistými funkcemi (blokující ⇒ `hasControl` říká klikací, druh má tabulku
+  entity) — nová blokující cesta bez ovládání tam padne; že šablona odznak
+  pro každou cestu skutečně **vykreslí**, hlídá spec proklikání
+  (`apply/disabled` „cesta bez ovládání“), komponentové testy frontend nemá.
 
 ---
 

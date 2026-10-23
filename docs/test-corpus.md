@@ -1300,7 +1300,8 @@ odznak čekající reference (`review-ref:{path}` se stavem `canCreate` /
 `ambiguous` / `notFound`, jen cesty z `data-pending-paths`) → popover →
 **Vytvořit** (`review-ref-create:{path}` → vnořený formulář → Uložit →
 rozhodnutí `useExisting:<id>` → uložené `POST …/decisions`); když
-Vytvořit není (kód DPH, cesta bez odznaku), karta selže s cestou (D93) →
+Vytvořit není (kód DPH bez nabídky, cesta bez ovládání — pravidlo D98
+ji má vyloučit), karta selže s cestou (D93) →
 **Vystavit a uzavřít** (`review-apply-final`; Spisovna
 `review-apply-registry`) → odpověď apply → znovu načtený feed → toast →
 karta zmizela. Každá karta je `test.step` s id karty; selhání se sbírá
@@ -1362,8 +1363,11 @@ krok karty je pojmenovaný id karty, síť ukazuje `POST …/apply` s tělem
   všechny karty sad jsou v pásmu *review* (řádky bez `item.ourCode`),
   pásmo *ready* má testidy jen pro úplnost.
 - Stav kontroly: `disabled` tlačítek Použít je přesně `!canApply`; marker
-  `review-state` nese navíc `data-pending-paths`, protože bankovní účet
-  strany odznak nemá (nález N1).
+  `review-state` nese navíc `data-pending-paths` (původně kvůli účtu
+  strany bez odznaku, N1; od D98 má odznak každá blokující cesta —
+  `reviewGate.js` `reviewReferences` × `hasControl`, `docs/frontend.md`
+  § 9 — a marker je pojistka pravidla: cesta bez odznaku = selhání
+  `apply/disabled` „cesta bez ovládání“).
 - Playwright přes `node …/cli.js`, ne `npx`; `trace: 'off'` + chunky per
   karta; zrušení = SIGINT Playwrightu.
 - „Vytvořit“ v kontrole založí záznam hned (formulář → `useExisting`),
