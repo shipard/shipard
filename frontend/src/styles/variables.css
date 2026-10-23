@@ -184,6 +184,19 @@
   --shpd-font-size-lg: 1.125rem;
   --shpd-font-size-xl: 1.25rem;
 
+  /* Typografické role (#135, docs/design-system.md → Typografie). Tři
+     velikosti, dvě tloušťky, žádné verzálky: komponenty používají role,
+     ne škálu, tam kde role sedí. Základní text je 14 px (D6 upřesněno při
+     ověření pilotu — 16 px bylo přestřelené). heading a body mají stejnou
+     velikost a liší se tloušťkou — jsou to dvě role, aby šly rozdělit
+     jedním místem. */
+  --shpd-font-size-title:   var(--shpd-font-size-lg);  /* 18 px — titulek detailu, Celkem */
+  --shpd-font-size-heading: var(--shpd-font-size-sm);  /* 14 px — nadpis sekce, název entity, hlavička sloupce */
+  --shpd-font-size-body:    var(--shpd-font-size-sm);  /* 14 px — popisky i hodnoty, řádky tabulek */
+  --shpd-font-size-meta:    var(--shpd-font-size-xs);  /* 12 px — doplňky, podtitul, štítek */
+  --shpd-font-weight-normal: 400;
+  --shpd-font-weight-strong: 600;
+
   /* Border radius. Mezery, zaoblení a písmo jsou v rem (#133 D1,
      docs/design-system.md → Jednotky a mezery); px zůstávají jen okrajům,
      stínům a stavovému proužku. */
