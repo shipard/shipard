@@ -261,6 +261,8 @@ export default {
   'viewer.document.section.customer': 'Odběratel',
   'viewer.document.section.rows': 'Řádky dokladu',
   'viewer.document.section.recap': 'DPH',
+  'viewer.document.section.dates': 'Data',
+  'viewer.document.section.payment': 'Platba',
   'viewer.document.attachments.doc': 'Přílohy dokladu',
   'viewer.document.attachments.viewGrid': 'Miniatury',
   'viewer.document.attachments.viewFull': 'Velké náhledy',

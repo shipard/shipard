@@ -252,6 +252,8 @@ export default {
   'viewer.document.section.customer': 'Customer',
   'viewer.document.section.rows': 'Document rows',
   'viewer.document.section.recap': 'VAT',
+  'viewer.document.section.dates': 'Dates',
+  'viewer.document.section.payment': 'Payment',
   'viewer.document.attachments.doc': 'Document attachments',
   'viewer.document.attachments.viewGrid': 'Thumbnails',
   'viewer.document.attachments.viewFull': 'Large previews',
