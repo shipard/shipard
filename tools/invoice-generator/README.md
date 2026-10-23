@@ -16,6 +16,7 @@ vstupními body:
 | `invoicegen/compute.py` | výpočet řádků, rekapitulace DPH a součtů v `Decimal` (ROUND_HALF_UP) |
 | `invoicegen/render.py` | formátování pro tisk, HTML ze šablony `{{key}}`, PDF přes Gotenberg |
 | `invoicegen/expected.py` | očekávaný výsledek = papírová projekce canonicalu (`tests/corpus/projection.jsonc`), odvozená pole podle promptu, zapisovač JSON bez float |
+| `invoicegen/fidelity.py` | věrnost tisku korpusu (#103 D105): identifikátory z očekávaného výsledku (`IDENTIFIER_PATHS` — číslo dokladu, IČO, DIČ, účet, IBAN, BIC, symboly, kontakty, spisová značka, kódy, EAN a popisy řádků) musí být v textu PDF z `pdftotext` (porovnání bez bílých znaků); `missing_identifiers` → `Finding(path, value)`, `summarize` po poli, `pdf_text` (`FidelityError` bez poppler-utils) — build korpusu `--fidelity=warn|error` |
 | `invoicegen/registries.py` | ověření identit v ARES a VIES (síť, jen `build.py --verify-identities`), přepis `verifiedAt` |
 | `invoicegen/corpus.py` | datový soubor korpusu: validace, přepisy per profil (`overrides`, alias), vynechané buňky, matice doklad × profil, jazyk šablon (`TEMPLATE_LOCALE`) |
 | `invoicegen/datasetio.py` | zápis sady jako PHP: `dumps_dataset` (JSON jako `DatasetWriter`), `slug` jako `Slug::make`, `file_name`, `prune`, `php_json_numbers` (bloby analýz), `manifest` (pořadí klíčů `DatasetManifest`), `attachment_entry`, `sync_tree` (zápis jen změněných bajtů, úklid spravovaných sekcí) |

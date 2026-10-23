@@ -14,8 +14,14 @@ takže je výstup deterministický — výpis říká „ISDOC zapsán / beze zm
 podle obsahu, build-state.json se ho netýká. Buňce podoby pdf se .isdoc
 smaže; plný běh smaže i sirotky. Vyžaduje `composer install` (vendor/).
 
-    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets]
+    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error]
 
+Věrnost tisku (#103 D105, invoicegen/fidelity.py): po PDF každé buňky
+(i beze změny — čte se z disku) build ověří, že identifikátory z očekávání
+(číslo dokladu, IČO, DIČ, účet, IBAN, BIC, symboly, kontakty, spisová
+značka, kódy, EAN a popisy řádků) jsou v textu PDF (`pdftotext`, bez bílých
+znaků). Ne-`null` hodnota mimo PDF je chyba sady (D14): --fidelity=error
+ji hlásí a build končí 1 před sestavením sad, --fidelity=warn jen vypíše.
 --verify-identities ověří identity v ARES a VIES (síť; po změně identit),
 při úspěchu zapíše dnešní datum do verifiedAt a pokračuje buildem; selhání
 = exit 1, nedostupný registr = exit 2 (identity se neoznačí jako ověřené).
@@ -57,6 +63,7 @@ from invoicegen.corpus import (  # noqa: E402
 from invoicegen.corpusprint import template_values  # noqa: E402
 from invoicegen.dataset import DatasetBuildError, build_datasets  # noqa: E402
 from invoicegen.expected import apply_projection, build_expected, dumps_expected, load_projection  # noqa: E402
+from invoicegen.fidelity import FidelityError, Finding, missing_identifiers, pdf_text, summarize  # noqa: E402
 from invoicegen.jsonc import load_jsonc  # noqa: E402
 from invoicegen.rates import RatesError, fetch_missing, load_lists, needed_dates, select_lists  # noqa: E402
 from invoicegen.registries import (  # noqa: E402
@@ -179,6 +186,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fetch-rates", action="store_true",
                         help="stáhnout chybějící kurzovní lístky ČNB ze služby kurzů (síť) do exchange-rates/")
     parser.add_argument("--no-datasets", action="store_true", help="nesestavovat datové sady tests/datasets/cz/")
+    parser.add_argument("--fidelity", choices=("warn", "error"), default="warn",
+                        help="identifikátor z očekávání mimo text PDF: jen vypsat (warn), nebo chyba buildu (error)")
     args = parser.parse_args(argv)
 
     identities = load_jsonc(BASE_DIR / "identities.jsonc")
@@ -258,6 +267,7 @@ def main(argv: list[str] | None = None) -> int:
     produced: set[str] = set()
     isdoc_files: set[Path] = set()
     counts = {"cells": 0, "rendered": 0, "unchanged": 0, "skipped": 0, "isdoc": 0, "isdocUnchanged": 0}
+    findings: list[Finding] = []
     try:
         for stem in selected:
             for cell in cells_for(docs[stem], stem, identities):
@@ -308,6 +318,15 @@ def main(argv: list[str] | None = None) -> int:
                     isdoc_path.unlink()
                     status = f"{status}, ISDOC smazán (podoba {cell.form})"
                 print(summary_line(cell, computed, status))
+                # Věrnost tisku (D105): identifikátory očekávání musí být v textu PDF.
+                try:
+                    cell_findings = missing_identifiers(expected, pdf_text(pdf_path))
+                except FidelityError as e:
+                    print(f"věrnost tisku: {e}", file=sys.stderr)
+                    return 1
+                for finding in cell_findings:
+                    print(f"  chybí na PDF: {finding.path} = {finding.value!r}")
+                findings.extend(cell_findings)
         if not only:
             new_state = {k: v for k, v in new_state.items() if k in produced}
             for orphan in sorted((BASE_DIR / "out").glob("*/*.isdoc")):
@@ -320,6 +339,17 @@ def main(argv: list[str] | None = None) -> int:
     print(f"OK: {counts['cells']} buněk ({counts['rendered']} PDF přegenerováno, "
           f"{counts['unchanged']} beze změny; {counts['isdoc']} ISDOC zapsáno, "
           f"{counts['isdocUnchanged']} beze změny), {counts['skipped']} vynecháno")
+
+    if findings:
+        by_node = ", ".join(f"{node} {n}" for node, n in summarize(findings).most_common())
+        message = (f"věrnost tisku: {len(findings)} hodnot z očekávání není v textu PDF ({by_node}) — "
+                   "ne-null hodnota mimo doklad je chyba sady (D14, docs/test-corpus.md § 8)")
+        if args.fidelity == "error":
+            print(message, file=sys.stderr)
+            return 1
+        print(f"varování — {message}")
+    else:
+        print("věrnost tisku: všechny identifikátory z očekávání jsou v textu PDF")
 
     if not args.no_datasets:
         try:
