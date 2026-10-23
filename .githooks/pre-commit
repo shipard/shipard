@@ -2,8 +2,9 @@
 #
 # pre-commit: ověří citlivé údaje ve staged souborech, soulad generovaných
 # souhrnů (tasks/README.md, help/README.md) se zdroji pravdy, metadata
-# stránek uživatelské dokumentace a CSS tokeny frontendu (nedefinovaný
-# token použitý bez fallbacku, #129 D14).
+# stránek uživatelské dokumentace, CSS tokeny frontendu (nedefinovaný
+# token použitý bez fallbacku, #129 D14) a jednotky v CSS frontendu (px
+# v mezerách, zaoblení a písmu, #134 D10).
 #
 # Zdroj pravdy je hlavička v task filu. Když se rozejde s indexem, commit
 # se zastaví a stačí spustit generátor.
@@ -39,6 +40,17 @@ if ! python3 "$REPO_ROOT/scripts/check-css-tokens.py"; then
     echo "    Nahraď ho tokenem ze styles/variables.css (nebo dev/theme.css),"
     echo "    nebo dej fallback var(--x, hodnota). Kontrola jde celým stromem:"
     echo "    python3 scripts/check-css-tokens.py"
+    echo ""
+    exit 1
+fi
+
+if ! python3 "$REPO_ROOT/scripts/check-css-units.py"; then
+    echo ""
+    echo "==> Commit zastaven: v CSS frontendu jsou px v mezerách, zaoblení"
+    echo "    nebo písmu. Převeď na rem (px / 16) nebo token --shpd-space-* /"
+    echo "    --shpd-radius-* / --shpd-font-size-*; výjimka jen se značkou"
+    echo "    /* px-ok: důvod */ na stejném řádku. Kontrola jde celým stromem:"
+    echo "    python3 scripts/check-css-units.py"
     echo ""
     exit 1
 fi
