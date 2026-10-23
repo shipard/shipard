@@ -952,7 +952,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 596 730 111"
+                    "actual": "+420 000 730 111"
                 }
             ],
             "deviations": [
@@ -1012,7 +1012,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 596 730 111"
+                    "actual": "+420 000 730 111"
                 }
             ],
             "deviations": [
@@ -1072,7 +1072,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 596 730 111"
+                    "actual": "+420 000 730 111"
                 }
             ],
             "deviations": [
@@ -1132,7 +1132,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 403 700 5120"
+                    "actual": "+49 000 700 5120"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -1212,7 +1212,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 403 700 5120"
+                    "actual": "+49 000 700 5120"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -1310,7 +1310,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 403 700 5120"
+                    "actual": "+49 000 700 5120"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -1390,7 +1390,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 224 815 770"
+                    "actual": "+420 000 815 770"
                 }
             ],
             "deviations": [
@@ -1456,7 +1456,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 224 815 770"
+                    "actual": "+420 000 815 770"
                 }
             ],
             "deviations": [
@@ -1522,7 +1522,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 224 815 770"
+                    "actual": "+420 000 815 770"
                 }
             ],
             "deviations": [
@@ -1588,7 +1588,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 585 201 304"
+                    "actual": "+420 000 201 304"
                 }
             ],
             "deviations": [
@@ -1660,7 +1660,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 585 201 304"
+                    "actual": "+420 000 201 304"
                 }
             ],
             "deviations": [
@@ -1726,7 +1726,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 585 201 304"
+                    "actual": "+420 000 201 304"
                 }
             ],
             "deviations": [
@@ -1792,7 +1792,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 475 602 318"
+                    "actual": "+420 000 602 318"
                 }
             ],
             "deviations": [
@@ -1847,7 +1847,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 475 602 318"
+                    "actual": "+420 000 602 318"
                 }
             ],
             "deviations": [
@@ -1902,7 +1902,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 475 602 318"
+                    "actual": "+420 000 602 318"
                 }
             ],
             "deviations": [
@@ -2122,7 +2122,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 302 887 4410"
+                    "actual": "+49 000 887 4410"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -2214,7 +2214,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 302 887 4410"
+                    "actual": "+49 000 887 4410"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -2321,7 +2321,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 302 887 4410"
+                    "actual": "+49 000 887 4410"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -2409,7 +2409,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 577 911 206"
+                    "actual": "+420 000 911 206"
                 }
             ],
             "deviations": []
@@ -2443,7 +2443,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 577 911 206"
+                    "actual": "+420 000 911 206"
                 }
             ],
             "deviations": []
@@ -2481,7 +2481,7 @@
                 },
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 577 911 206"
+                    "actual": "+420 000 911 206"
                 }
             ],
             "deviations": []
@@ -2515,7 +2515,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 567 309 842"
+                    "actual": "+420 000 309 842"
                 },
                 {
                     "path": "totals.totalRounding",
@@ -2574,7 +2574,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 567 309 842"
+                    "actual": "+420 000 309 842"
                 },
                 {
                     "path": "totals.totalRounding",
@@ -2633,7 +2633,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 567 309 842"
+                    "actual": "+420 000 309 842"
                 },
                 {
                     "path": "totals.totalRounding",
@@ -2692,7 +2692,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 495 512 780"
+                    "actual": "+420 000 512 780"
                 }
             ],
             "deviations": [
@@ -3031,7 +3031,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 495 512 780"
+                    "actual": "+420 000 512 780"
                 }
             ],
             "deviations": [
@@ -3370,7 +3370,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 495 512 780"
+                    "actual": "+420 000 512 780"
                 }
             ],
             "deviations": [
@@ -4067,7 +4067,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 577 911 206"
+                    "actual": "+420 000 911 206"
                 }
             ],
             "deviations": []
@@ -4101,7 +4101,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 577 911 206"
+                    "actual": "+420 000 911 206"
                 }
             ],
             "deviations": []
@@ -4135,7 +4135,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+420 577 911 206"
+                    "actual": "+420 000 911 206"
                 }
             ],
             "deviations": []
@@ -4169,7 +4169,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 403 700 5120"
+                    "actual": "+49 000 700 5120"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -4245,7 +4245,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 403 700 5120"
+                    "actual": "+49 000 700 5120"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -4321,7 +4321,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 403 700 5120"
+                    "actual": "+49 000 700 5120"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -5069,7 +5069,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 302 887 4410"
+                    "actual": "+49 000 887 4410"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -5188,7 +5188,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 302 887 4410"
+                    "actual": "+49 000 887 4410"
                 },
                 {
                     "path": "supplier.bankAccount.iban",
@@ -5295,7 +5295,7 @@
             "normalized": [
                 {
                     "path": "supplier.contact.phone",
-                    "actual": "+49 302 887 4410"
+                    "actual": "+49 000 887 4410"
                 },
                 {
                     "path": "supplier.bankAccount.iban",

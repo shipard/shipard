@@ -2236,7 +2236,7 @@
                 {
                     "path": "supplier.contact.phone",
                     "state": "missing",
-                    "expected": "+420577911206",
+                    "expected": "+420000911206",
                     "actual": null
                 }
             ]
