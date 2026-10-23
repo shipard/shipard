@@ -1,6 +1,6 @@
 # Testy katalogu evaluací nezávislé na `tests/eval/`
 
-**Stav:** naplánováno — zadání 2026-10-23 (#103 D106)
+**Stav:** hotovo — 2026-10-23 (#103 D106)
 
 ## Kontext / Cíl
 
@@ -73,14 +73,51 @@ a jakých běhů v `tests/eval/` je. Přidání nového běhu žádný test nero
 
 ## Hotovo když
 
-- [ ] `vendor/bin/phpunit --filter 'EvalCatalogTest|DevTestingControllerTest|EvalRunComparisonTest|EvalCostEstimatorTest|EvalRunStoreTest|DevJobsControllerTest|DatasetE2eCommandTest|E2ePreflightTest'` projde.
-- [ ] **Zkouška nezávislosti:** dočasně zkopírovat libovolný běh do
+- [x] `vendor/bin/phpunit --filter 'EvalCatalogTest|DevTestingControllerTest|EvalRunComparisonTest|EvalCostEstimatorTest|EvalRunStoreTest|DevJobsControllerTest|DatasetE2eCommandTest|E2ePreflightTest'` projde.
+- [x] **Zkouška nezávislosti:** dočasně zkopírovat libovolný běh do
       `tests/eval/cz-vat-payer/2099-01-01-probe.json`
       a `tests/eval/cz-association/2099-01-01-probe.json`, pustit stejný
       filtr → projde; kopie smazat (necommitovat). Výsledek v závěrečné
       zprávě.
-- [ ] Tabulka převedených testů v závěrečné zprávě.
-- [ ] `**Stav:**`, index tasků.
+- [x] Tabulka převedených testů v závěrečné zprávě.
+- [x] `**Stav:**`, index tasků.
+
+## Výsledek (2026-10-23)
+
+- **Fixtura** `tests/Unit/Module/Core/Mail/Eval/Browse/EvalFixtureRoot.php`:
+  dočasný kořen s `tests/datasets` + `tests/eval`, `manifest(relDir, name,
+  title, extra)` (jediné místo, které tvar manifestu píše — slouží i demo
+  sadě), `run(set, basename, startedAt, variant, hash, extra)` v minimálním
+  tvaru `shpd.eval.run.v1`, `currentHash(dir)` (sada jen s manifestem má
+  deterministický hash — `DatasetReader::open` chce jen `manifest.jsonc`,
+  `datasetHash` chybějící složky přeskočí), sestava
+  `seedPayerAndAssociation()` (dvě sady, tři běhy plátce — `alpha` začal
+  dřív než `baseline` téhož dne, takže se hlídá řazení podle `startedAt`,
+  ne podle názvu souboru; dva běhy nad aktuálním hashem, jeden nad starším),
+  úklid `remove()` přes `DatasetReader::removeTree`.
+- **Zkouška nezávislosti:** s kopiemi `2099-01-01-probe.json` v obou
+  složkách prošel filtr (rozšířený o `EvalRunSummaryTest`
+  a `EvalOutputReconstructionTest`) stejně jako bez nich — 79 testů,
+  830 tvrzení; kopie smazané, `git status tests/eval` prázdný, žádný
+  dočasný kořen nezůstal.
+- **Převedené testy:**
+
+| Test | Co předpokládal o `tests/eval/` | Změna |
+|------|--------------------------------|-------|
+| `EvalCatalogTest::testRunsAreListedNewestFirstWithBasename` | ≥ 13 běhů plátce, nejnovější `2026-10-20-*`, pojmenovaný `2026-10-16-baseline.json` není nad aktuální sadou | nad fixturou: přesně 3 běhy v pořadí podle `startedAt`, `_basename`, `format`, `run()` jen přesná shoda, `currentHash()` = hash fixtury a shoda s `set.hash`, sada bez složky výsledků `[]` |
+| `EvalCatalogTest::testUnknownOrTraversalNamesResolveToNothing` | sada `cz-vat-payer` v checkoutu | nad fixturou (provider beze změny, běh `2026-10-16-baseline.json` ve fixtuře) |
+| `EvalCatalogTest::testIgnoresDemoDatasetsOfTheSeedCatalog` | vlastní kořen s inline manifestem a ručním `rmdir` | manifesty i úklid přes fixturu, tvrzení beze změny |
+| `DevTestingControllerTest::testDatasetsListIncludesRunCounts` | ≥ 13 běhů, `lastRunAt` od `2026-10-20`, spolek 0 běhů | nad fixturou: přesně 3 / `2026-10-16T10:00:00+00:00` / 0 a `lastRunAt null`, pořadí sad, navíc `datasets/{sada}/runs` s `currentHash` a `currentSet` true / true / false |
+| `DevTestingControllerTest::testMessageAcrossRunsAndCompare` | ≥ 13 řádků dokladu napříč běhy | oba pojmenované běhy jsou v seznamu; zbytek (pojmenované soubory) beze změny |
+| `EvalRunSummaryTest::testMessageAcrossRuns` | ≥ 13 řádků napříč běhy | oba pojmenované běhy jsou v seznamu; zbytek beze změny |
+| `EvalCatalogTest::testListsDatasetsByManifestName` | nic o `tests/eval` (čte `tests/datasets`) | beze změny |
+| `EvalRunComparisonTest`, `EvalOutputReconstructionTest` | jen pojmenované běhy `2026-10-15-baseline`, `2026-10-15-sonnet-5-5`, `2026-10-16-baseline` | beze změny (D106 to dovoluje) |
+| `EvalCostEstimatorTest`, `DevJobsControllerTest` | řetězec cesty v syntetických datech, nic nečtou | beze změny |
+| `EvalRunStoreTest`, `DatasetE2eCommandTest`, `E2ePreflightTest`, `DevDashboardControllerTest`, `DevEvalControllerTest`, `DatasetCatalogTest` | vlastní dočasné kořeny (`tests/eval` prázdný nebo kopie `variants/baseline.jsonc`) | beze změny |
+| `AiEvalCommandTest`, `EvalVariantTest` | pojmenovaná varianta `variants/baseline.jsonc` | beze změny |
+
+- `docs/test-corpus.md` § 18 „Prohlížeč výsledků“: věta o testech nad
+  vlastním kořenem a pojmenovaných bězích.
 
 ## Pasti
 
