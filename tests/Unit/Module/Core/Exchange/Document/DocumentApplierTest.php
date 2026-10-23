@@ -1427,14 +1427,14 @@ class DocumentApplierTest extends TestCase
         $result = $applier->apply($this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'liberal']));
         $this->assertTrue($result->success, (string) $result->errorMessage);
 
-        $this->assertArrayNotHasKey('addresses', $saved, 'adresa není sloupec osoby');
-        $inserts = array_values(array_filter($applier->sqlCalls, static fn (array $c): bool => ($c[1] ?? null) === 'base_persons_addresses'));
-        $this->assertCount(1, $inserts);
+        // Adresy jdou s osobou do gateway — zapíše je PersonDocument::afterPersist
+        // uvnitř transakce (#103 D99); applier sám nic nevkládá.
         $this->assertSame(
-            ['address_type' => 1, 'street' => 'Pilařská', 'house_number' => '1204/7', 'city' => 'Olomouc', 'zip' => '77900', 'country' => 'cz',
-                'person' => 99, 'order_pos' => 1, 'docState' => 40, 'docStateMain' => 2],
-            $inserts[0][3],
+            [['address_type' => 1, 'street' => 'Pilařská', 'house_number' => '1204/7', 'city' => 'Olomouc', 'zip' => '77900', 'country' => 'cz']],
+            $saved['addresses'],
         );
+        $this->assertSame([40, 3], [$saved['docState'], $saved['docStateMain']]);
+        $this->assertSame([], array_values(array_filter($applier->sqlCalls, static fn (array $c): bool => ($c[1] ?? null) === 'base_persons_addresses')));
     }
 
     public function testCashPaymentWithoutCashDeskGetsDefaultCashDesk(): void

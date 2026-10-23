@@ -1400,10 +1400,10 @@ class DocumentApplier
             if (!is_array($payload) || $payload === []) {
                 continue;
             }
-            // Adresy nejsou child tabulka osoby — zapisují se zvlášť po
-            // uložení (vzor PersonApplier::insertSubRecord, #103 F3 nález C).
-            $addresses = is_array($payload['addresses'] ?? null) ? $payload['addresses'] : [];
-            unset($payload['addresses']);
+            // Adresy (`addresses`, #103 F3 nález C) nejsou child tabulka osoby —
+            // zůstávají v payloadu a zapíše je PersonDocument::afterPersist
+            // uvnitř téže transakce (jeden zápis adres pro formulář i applier,
+            // #103 D99); stav řádku adresy = stav osoby.
             $payload['docState'] = 40;
             $payload['docStateMain'] = 3;
             if (!isset($payload['person_type'])) {
@@ -1414,14 +1414,6 @@ class DocumentApplier
                 throw new \RuntimeException("Side-create person ({$partyKey}) failed: " . ($result->getErrorMessage() ?? ''));
             }
             $ids[$partyKey] = (int) $result->getData()['id'];
-            foreach (array_values($addresses) as $n => $address) {
-                if (!is_array($address) || $address === []) {
-                    continue;
-                }
-                $row = array_filter($address, static fn (mixed $v): bool => $v !== null)
-                    + ['person' => $ids[$partyKey], 'order_pos' => $n + 1, 'docState' => 40, 'docStateMain' => 2];
-                $this->executeSql('INSERT INTO %n', 'base_persons_addresses', '%v', $row);
-            }
         }
 
         if (is_array($plan['bankCreate'] ?? null)) {

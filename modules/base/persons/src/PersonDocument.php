@@ -9,11 +9,35 @@ use Shipard\Core\Document\ValidationResult;
 
 class PersonDocument extends Document
 {
+    /**
+     * Adresy k založení s novou osobou (#103 D99): klíč `addresses` (seznam
+     * řádků `base_persons_addresses` bez `person`) přichází z formuláře
+     * (`PersonsForm::getNestedRowKeys`, osoba z kontroly návrhu) i z applieru
+     * (side-create dodavatele). Adresy nejsou child tabulka osoby — `beforeSave`
+     * je z dat vyjme (gateway by je poslala do INSERTu), `afterPersist` zapíše
+     * uvnitř transakce gateway, takže osoba bez adresy nevznikne.
+     *
+     * @var list<array<string, mixed>>|null
+     */
+    private ?array $pendingAddresses = null;
+
     public function validate(array &$data): ValidationResult
     {
         $result = new ValidationResult();
 
         $personType = PersonType::tryFrom((int) ($data['person_type'] ?? 0));
+
+        if (array_key_exists('addresses', $data) && $data['addresses'] !== null) {
+            if (!is_array($data['addresses']) || !array_is_list($data['addresses'])) {
+                $result->addError('addresses', 'Adresy musí být seznam řádků', 'invalid');
+            } else {
+                foreach ($data['addresses'] as $n => $row) {
+                    if (!is_array($row)) {
+                        $result->addError("addresses.{$n}", 'Adresa musí být objekt', 'invalid');
+                    }
+                }
+            }
+        }
 
         if ($personType === null || $personType === PersonType::Undefined) {
             $result->addError('person_type', 'Typ osoby je povinný', 'required');
@@ -79,6 +103,17 @@ class PersonDocument extends Document
     {
         $personType = PersonType::tryFrom((int) ($data['person_type'] ?? 0));
 
+        // Adresy (#103 D99) nejsou sloupec osoby — vyjmout, zapíše je
+        // afterPersist. Jen při vzniku záznamu; úprava osoby řádky adres
+        // neřeší (spravují je jejich dialogy).
+        $this->pendingAddresses = null;
+        if (array_key_exists('addresses', $data)) {
+            if (empty($data['id']) && is_array($data['addresses'])) {
+                $this->pendingAddresses = array_values(array_filter($data['addresses'], 'is_array'));
+            }
+            unset($data['addresses']);
+        }
+
         // Auto-generate person_id if empty
         if (empty($data['person_id']) && $this->db !== null) {
             $data['person_id'] = $this->generatePersonId($personType);
@@ -94,6 +129,49 @@ class PersonDocument extends Document
                 ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')
             );
         }
+    }
+
+    /**
+     * Řádky adres vyjmuté v `beforeSave` zapíše k nové osobě — uvnitř
+     * transakce gateway (i applieru přes TransactionlessTableGateway).
+     * Řádek adresy přebírá stav rodiče (osoba i adresa sdílejí
+     * `core.system.docStatesArchive`), `order_pos` podle pořadí; `person`
+     * a `id` z řádku se nepoužijí.
+     */
+    public function afterPersist(array $data): void
+    {
+        $addresses = $this->pendingAddresses;
+        $this->pendingAddresses = null;
+        if ($addresses === null || $addresses === [] || empty($data['id'])) {
+            return;
+        }
+        $fixed = [
+            'person'       => (int) $data['id'],
+            'docState'     => (int) ($data['docState'] ?? 40),
+            'docStateMain' => (int) ($data['docStateMain'] ?? 3),
+        ];
+        $position = 0;
+        foreach ($addresses as $address) {
+            unset($address['id'], $address['person'], $address['docState'], $address['docStateMain']);
+            $address = array_filter($address, static fn (mixed $value): bool => $value !== null);
+            if ($address === []) {
+                continue;
+            }
+            $this->insertAddress($address + ['order_pos' => ++$position] + $fixed);
+        }
+    }
+
+    /**
+     * Zápis jednoho řádku adresy — šev pro testy (Dibi\Connection je final).
+     *
+     * @param array<string, mixed> $row
+     */
+    protected function insertAddress(array $row): void
+    {
+        if ($this->db === null) {
+            throw new \LogicException('PersonDocument: adresy nejde zapsat bez databáze');
+        }
+        $this->db->insert('base_persons_addresses', $row)->execute();
     }
 
     /**

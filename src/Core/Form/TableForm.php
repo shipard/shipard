@@ -205,6 +205,23 @@ abstract class TableForm
         return [];
     }
 
+    /**
+     * Opt-in whitelist klíčů vnořených řádků, které smí přijít v těle `save`
+     * **při vzniku záznamu** (#103 D99): klíč = id sub-tabulky formu, hodnota
+     * = seznam řádků dětské tabulky bez cizího klíče. FormController je pustí
+     * do dat gateway jen pro nový záznam; zapsat je musí Document rodiče —
+     * `beforeSave` je z dat vyjme (nejsou sloupec), `afterPersist` uloží
+     * uvnitř transakce (vzor `PersonDocument` / `addresses`). Klient je
+     * dostane jako vnořené `defaultData` (osoba z kontroly návrhu
+     * s adresou z dokladu); do `GET /meta` jdou jen skaláry.
+     *
+     * @return list<string>
+     */
+    public function getNestedRowKeys(): array
+    {
+        return [];
+    }
+
     public function recalculate(string $changedColumn, array $data): RecalculateResult
     {
         $isNew = !isset($data['id']) || $data['id'] === null;

@@ -14,6 +14,18 @@ use Shipard\Module\Base\Persons\Send\SendPurposes;
 
 class PersonsForm extends TableForm
 {
+    /**
+     * Nová osoba smí přijít s adresami (#103 D99): osoba založená z kontroly
+     * návrhu nese adresu a zemi z dokladu jako vnořené `defaultData.addresses`,
+     * FormEditor je pošle v těle `save`, zapíše `PersonDocument::afterPersist`.
+     *
+     * @return list<string>
+     */
+    public function getNestedRowKeys(): array
+    {
+        return ['addresses'];
+    }
+
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition
     {
         $personType  = PersonType::tryFrom((int) ($data['person_type'] ?? 0));

@@ -715,7 +715,7 @@ Modal komponenta (Esc, klik na overlay, `×`) volá `onClose()` bez parametru �
 |----------|--------|-------|
 | `/_ui/form/{table}/meta` | GET | FormDefinition pro nový záznam |
 | `/_ui/form/{table}/meta/{id}` | GET | FormDefinition + data pro existující záznam |
-| `/_ui/form/{table}/save` | POST | Uložení nového záznamu |
+| `/_ui/form/{table}/save` | POST | Uložení nového záznamu; smí nést vnořené řádky sub-tabulek z whitelistu `getNestedRowKeys()` — kap. 15.7 |
 | `/_ui/form/{table}/save/{id}` | PUT | Uložení existujícího záznamu |
 | `/_ui/form/{table}/recalculate` | POST | Přepočítání bez uložení |
 | `/_ui/form/{table}/subtable/{tabId}/{parentId}` | GET | Sloupce + vyrenderované řádky sub-tabulky (tab typu `subtable`) — kap. 15 |
@@ -1340,6 +1340,44 @@ Frontend (`FormSubTable.confirmDelete`): po úspěchu `fetchRows()` +
 `onChanged` → `FormEditor.handleSubtableChanged()` načte rodiče už
 s přepočtenou hlavičkou (jen bez neuložených změn, kap. 15.3). Chyby přes
 `translateError` (`error.DOCUMENT_LOCKED`, jinak hláška serveru).
+
+### 15.7 Vnořené řádky při vzniku záznamu — `defaultData.<tabId>` (#103 D99)
+
+Sub-tabulka se běžně plní až po uložení rodiče (kap. 15.3 „nejdřív
+uložit“). Když má nový záznam vzniknout **i s řádky** — osoba založená
+z kontroly návrhu nese adresu a zemi z dokladu (`createPayload.addresses`
+z `PartyResolver`) — jdou řádky touto cestou:
+
+1. **Klient:** `FormEditor` dostane vnořené `defaultData` (`addresses:
+   [{street, city, zip, country, …}]`). Do `GET /meta?defaults[…]` jdou
+   **jen skaláry** (objekt by `String()` dal `[object Object]`, nález N6);
+   vnořené hodnoty zůstávají ve `formData` (`buildDefaultData` začíná
+   `{...defaultData}`, odpověď meta klíč nenese) a `savePayload` je pošle
+   v těle `POST /save` beze změny (neznámé klíče propouští).
+2. **Server:** `FormController::save` pro **nový** záznam (`$id === null`)
+   přidá k `filterWritableFields` klíče z opt-in whitelistu
+   `TableForm::getNestedRowKeys()` (vzor `getEditableSensitiveColumns`),
+   jen jako seznam objektů — jiný tvar → 400 `BAD_REQUEST`. Při úpravě
+   (`PUT /save/{id}`) se ignorují: řádky spravují jejich dialogy.
+3. **Document rodiče** řádky zapíše — gateway neznámé klíče nestrhává
+   (šly by do INSERTu) a `childTables` (kap. 6 `document-system.md`,
+   „chybějící = DELETE“) se pro sub-tabulky s vlastními dokumenty nehodí:
+   `beforeSave` klíč z dat vyjme do vlastnosti (jen při vzniku —
+   bez `id`), `afterPersist` řádky uloží s cizím klíčem = nové id
+   **uvnitř transakce gateway** (i applieru přes
+   `TransactionlessTableGateway`) — rodič bez řádků nevznikne. Vzor
+   `PersonDocument` / `addresses`: řádek přebírá `docState` /
+   `docStateMain` rodiče (stejná sada stavů), `order_pos` podle pořadí,
+   `id` / `person` / stav z payloadu se nepoužijí, null hodnoty pryč;
+   zápis přes šev `insertAddress()` (test bez Dibi).
+   Chyby tvaru hlásí `validate()` jako `addresses` / `addresses.N`
+   (`invalid`) — bez vazby na pole formuláře, klient je ukáže v banneru.
+
+Tentýž zápis používá `DocumentApplier::runSideCreates` (dodavatel založený
+při apply): `addresses` nechává v payloadu pro gateway osoby, vlastní
+INSERT adres už nemá — jeden zápis adres pro formulář i applier. Jiná
+sub-tabulka = vlastní `getNestedRowKeys()` + `beforeSave` / `afterPersist`
+v Document rodiče; `FormController` o tabulkách řádků nic neví.
 
 ---
 
@@ -2112,7 +2150,9 @@ Když má „+ Vytvořit nový“ záznam předvyplnit podle toho, odkud se zakl
   `defaults[…]` do `GET /meta`, takže projde stejnou cestou jako každý
   prefill (koerce typů, `applyNewRecordDefaults` cílového formuláře). Je to
   návrh: uživatel ho může přepsat a validuje se až uložení. Chyba endpointu
-  založení neblokuje — formulář se otevře prázdný.
+  založení neblokuje — formulář se otevře prázdný. Vnořené hodnoty
+  `defaultData` (řádky sub-tabulek) do `/meta` nejdou — zůstávají na
+  klientovi a odcházejí až v těle `save` (kap. 15.7).
 - Data rodičů bere `LookupInput` ze Svelte contextu
   (`form/formContext.js`, klíč `FORM_DATA_CONTEXT`): každý `FormEditor`
   nastaví `{data: () => formData, parent: <context nadřazeného

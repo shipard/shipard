@@ -166,6 +166,10 @@
       const qs = new URLSearchParams();
       for (const [k, v] of Object.entries(defaultData)) {
         if (v == null) continue;
+        // Vnořené hodnoty (řádky sub-tabulek — adresy osoby z kontroly
+        // návrhu) zůstávají jen na klientovi ve formData a server je dostane
+        // až v těle save (#103 D99); String(objekt) by dal "[object Object]".
+        if (typeof v === 'object') continue;
         qs.append(`defaults[${k}]`, String(v));
       }
       const query = qs.toString();

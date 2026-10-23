@@ -116,6 +116,12 @@ abstract class Document
 - `validate()` a `beforeSave()` dostávají data referencí (`&$data`) — mohou modifikovat
 - `validate()` se volá PŘED `beforeSave()` — pokud validace selže, `beforeSave` se nevolá
 - `afterSave()` a `onLoad()` dostávají data bez reference (jen čtení) / s referencí (může doplnit)
+- `afterPersist()` běží po zápisu řádku, ale **před commitem** — místo pro
+  vedlejší zápisy, které mají být atomické s dokumentem; mj. řádky
+  sub-tabulek, které přišly s novým záznamem (`TableForm::getNestedRowKeys()`,
+  `beforeSave` je z dat vyjme, `afterPersist` uloží — vzor `PersonDocument`
+  / `addresses`, `docs/edit-forms.md` kap. 15.7). Gateway neznámé klíče
+  dat **nestrhává** — co v datech zůstane, jde do SQL
 
 ---
 
@@ -632,6 +638,15 @@ class PersonDocument extends Document
     }
 }
 ```
+
+Skutečná třída navíc zakládá **adresy s novou osobou** (#103 D99): klíč
+`addresses` (seznam řádků `base_persons_addresses`) přichází z formuláře
+osoby (`PersonsForm::getNestedRowKeys()`, osoba z kontroly návrhu) i z
+applieru (side-create dodavatele). Adresy nejsou child tabulka osoby —
+`beforeSave` je z dat vyjme, `afterPersist` zapíše uvnitř transakce
+(řádek přebírá `docState` / `docStateMain` osoby, `order_pos` podle
+pořadí; šev `insertAddress()` pro testy). Viz `docs/edit-forms.md`
+kap. 15.7.
 
 ---
 

@@ -226,6 +226,15 @@ class FormController
         $inputData = $this->filterWritableFields($body, $def);
         if ($id !== null) {
             $inputData['id'] = $id;
+        } else {
+            // Vnořené řádky sub-tabulek při vzniku záznamu (#103 D99): jen
+            // klíče z whitelistu formu, jen seznam objektů. Zapíše je Document
+            // rodiče (beforeSave vyjme, afterPersist uloží v transakci).
+            $nested = $this->nestedRows($body, $form?->getNestedRowKeys() ?? []);
+            if ($nested instanceof Response) {
+                return $nested;
+            }
+            $inputData += $nested;
         }
 
         // Auto-manage timestamps — only add if column exists in table definition
@@ -263,17 +272,7 @@ class FormController
         }
 
         $registry = $documentRegistry ?? new DocumentRegistry();
-        $gateway  = new TableGateway(
-            $table,
-            $db->getDibiConnection(),
-            $registry,
-            $def->childTables,
-            $config,
-            $dsConfig,
-            $eventDispatcher,
-            $def->docStates,
-            $def,
-        );
+        $gateway  = $this->buildGateway($table, $def, $db, $registry, $config, $dsConfig, $eventDispatcher);
         $result   = $gateway->saveDocument($inputData);
 
         if (!$result->isSuccess()) {
@@ -589,10 +588,35 @@ class FormController
     }
 
     /**
+     * Gateway tabulky pro uložení záznamu (`save`). Seam pro testy
+     * (Dibi\Connection je final, reálný TableGateway se v unit testu
+     * postavit nedá — vzor `HostingPortalController::buildGateway`).
+     */
+    protected function buildGateway(
+        string $table,
+        TableDefinition $def,
+        DataSourceConnection $db,
+        DocumentRegistry $documentRegistry,
+        ?ConfigRuntime $config,
+        ?\Shipard\Core\Config\DataSourceConfig $dsConfig,
+        ?\Shipard\Core\Document\DocumentEventDispatcher $eventDispatcher,
+    ): TableGateway {
+        return new TableGateway(
+            $table,
+            $db->getDibiConnection(),
+            $documentRegistry,
+            $def->childTables,
+            $config,
+            $dsConfig,
+            $eventDispatcher,
+            $def->docStates,
+            $def,
+        );
+    }
+
+    /**
      * Gateway dětské tabulky pro mazání řádku sub-tabulky — stejná konstrukce
-     * jako u `save`. Seam pro testy (Dibi\Connection je final, reálný
-     * TableGateway se v unit testu postavit nedá — vzor
-     * `HostingPortalController::buildGateway`).
+     * jako u `save`; vlastní seam, aby test mazání viděl jen dítě.
      */
     protected function buildChildGateway(
         string $childTable,
@@ -603,17 +627,33 @@ class FormController
         ?\Shipard\Core\Config\DataSourceConfig $dsConfig,
         ?\Shipard\Core\Document\DocumentEventDispatcher $eventDispatcher,
     ): TableGateway {
-        return new TableGateway(
-            $childTable,
-            $db->getDibiConnection(),
-            $documentRegistry,
-            $childDef->childTables,
-            $config,
-            $dsConfig,
-            $eventDispatcher,
-            $childDef->docStates,
-            $childDef,
-        );
+        return $this->buildGateway($childTable, $childDef, $db, $documentRegistry, $config, $dsConfig, $eventDispatcher);
+    }
+
+    /**
+     * Vnořené řádky sub-tabulek z těla `save` při vzniku záznamu (#103 D99):
+     * jen klíče z whitelistu formu ({@see TableForm::getNestedRowKeys()}),
+     * hodnota musí být seznam objektů (jinak 400). Zápis je věc Document
+     * třídy rodiče.
+     *
+     * @param array<string, mixed> $body
+     * @param list<string> $keys
+     * @return array<string, list<array<string, mixed>>>|Response
+     */
+    private function nestedRows(array $body, array $keys): array|Response
+    {
+        $out = [];
+        foreach ($keys as $key) {
+            if (!array_key_exists($key, $body) || $body[$key] === null) {
+                continue;
+            }
+            $rows = $body[$key];
+            if (!is_array($rows) || !array_is_list($rows) || array_filter($rows, static fn (mixed $row): bool => !is_array($row)) !== []) {
+                return Response::error('BAD_REQUEST', "Field '{$key}' must be a list of row objects", 400);
+            }
+            $out[$key] = $rows;
+        }
+        return $out;
     }
 
     /**
