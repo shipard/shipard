@@ -751,10 +751,15 @@
       && path !== null
       && kind !== null}
     {#if interactive}
+      <!-- `review-ref:{path}` + `data-status` = stav reference pro proklikání
+           sady (#103 F7a): test rozhoduje jen odznaky canCreate / ambiguous /
+           notFound a čeká na jejich překlopení. -->
       <button
         type="button"
         class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
         title={label}
+        data-testid="review-ref:{path}"
+        data-status={modifier}
         onclick={(e) => openDecision(e, path, resolveBlock, kind)}
       >
         <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
@@ -933,6 +938,8 @@
         type="button"
         class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
         title={label}
+        data-testid="review-ref:{path}"
+        data-status={modifier}
         onclick={(e) => openVatCodeDecision(e, path, block)}
       >
         <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
@@ -1050,6 +1057,7 @@
                     type="button"
                     class="shpd-exchange__status shpd-exchange__status--canCreate shpd-exchange__status--interactive"
                     title={t('exchange.preview.bulk.itemTitle', { count: bulkItemIndices.length })}
+                    data-testid="review-ref-bulk:item"
                     onclick={openBulkItemDecision}
                   >
                     <span class="shpd-exchange__status-glyph">+</span>
@@ -1244,6 +1252,7 @@
     anchor={decisionOpen.anchor}
     placement="bottom"
     width="400px"
+    testid="review-ref-dialog"
     onClose={closeDecision}
   >
     {#if decisionOpen.kind === 'vatCode'}
@@ -1258,6 +1267,7 @@
       />
     {:else}
       <ResolveDecisionPanel
+        path={decisionOpen.bulkPaths ? null : decisionOpen.path}
         resolveBlock={decisionOpen.resolveBlock}
         referenceKind={decisionOpen.kind}
         entityTable={decisionOpen.table}

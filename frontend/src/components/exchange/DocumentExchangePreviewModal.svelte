@@ -76,6 +76,7 @@
   import RegistryExtractedPreview from './RegistryExtractedPreview.svelte';
   import PdfViewerPanel from './PdfViewerPanel.svelte';
   import { previewMessage, saveDecisions } from '../../api/exchange.js';
+  import { pendingPaths } from './reviewGate.js';
   import { t } from '../../i18n/index.js';
 
   let {
@@ -240,49 +241,19 @@
   const handleClose = () => guardClose(onClose);
   const handleSkip = () => guardClose(onSkip);
 
-  // Walk `_resolve` and verify every non-matched reference has a decision.
-  // Unit badges are excluded (applier default). A row whose VAT code is
-  // notFound needs a `useCode:` choice from vatCodeOptions (D17) — a stale
-  // choice outside the offer would end in validation_failed on apply.
-  function allDecided(resolve, ua) {
-    if (!resolve) return true;
-    const vatCodes = new Set((resolve.vatCodeOptions ?? []).map((o) => o.code));
-    for (const key of ['supplier', 'customer', 'supplierBank', 'customerBank']) {
-      const block = resolve[key];
-      if (!block) continue;
-      if (block.status === 'matched') continue;
-      if (ua[key] !== undefined && ua[key] !== null) continue;
-      return false;
-    }
-    const rows = resolve.rows ?? [];
-    for (let i = 0; i < rows.length; i++) {
-      const itemBlock = rows[i]?.item;
-      if (!itemBlock) continue;
-      if (itemBlock.status === 'matched') continue;
-      const p = `rows[${i}].item`;
-      if (ua[p] !== undefined && ua[p] !== null) continue;
-      return false;
-    }
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i]?.vatCode?.status !== 'notFound') continue;
-      const chosen = ua[`rows[${i}].vatCode`];
-      if (typeof chosen === 'string' && chosen.startsWith('useCode:')
-          && vatCodes.has(chosen.slice('useCode:'.length))) continue;
-      return false;
-    }
-    return true;
-  }
+  // Reference, které ještě čekají na rozhodnutí — brána obou tlačítek
+  // Použít (čistá funkce `pendingPaths`, reviewGate.js). Prázdný seznam =
+  // lze použít; neprázdný se ukazuje i v markeru `review-state`, aby
+  // proklikání sady (#103 F7a) umělo říct, která cesta blokuje, i když pro
+  // ni náhled nekreslí odznak (bankovní účet strany).
+  let pending = $derived(pendingPaths(data?.canonical?._resolve ?? null, userActions));
 
   // Registry target (Spisovna) — server posílá `target: 'registry'`;
   // preview je kompaktní bez resolve panelu, apply se negatuje jen ai_failed
   // (registry canonical žádné `_resolve` nenese).
   let isRegistry = $derived(data?.target === 'registry');
 
-  let canApply = $derived(
-    data !== null
-      && !data.aiFailed
-      && allDecided(data.canonical?._resolve ?? null, userActions),
-  );
+  let canApply = $derived(data !== null && !data.aiFailed && pending.length === 0);
 
   function handleApplyClick(applyOptions = null) {
     onApply(messageNdx, userActions, data?.target ?? 'docs', applyOptions);
@@ -343,7 +314,7 @@
       {t('exchange.preview.loading')}
     </div>
   {:else if error}
-    <div class="shpd-exchange-modal__error">{error}</div>
+    <div class="shpd-exchange-modal__error" data-testid="review-error">{error}</div>
   {:else if data}
     <div class="shpd-exchange-modal__mobile-tabs" role="tablist">
       <button
@@ -373,7 +344,7 @@
       <div class="shpd-exchange-modal__pdf">
         <PdfViewerPanel attachments={data.attachments ?? []} />
       </div>
-      <div class="shpd-exchange-modal__preview">
+      <div class="shpd-exchange-modal__preview" data-testid="review-preview">
         {#if isRegistry && !data.aiFailed}
           <RegistryExtractedPreview canonical={data.canonical} />
         {:else}
@@ -390,6 +361,18 @@
   {/if}
 
   {#snippet footer()}
+    <!-- Stav kontroly pro automatizaci (#103 F7a, docs/frontend.md § 9):
+         `disabled` tlačítek Použít je přesně `!canApply`; marker navíc
+         rozlišuje „náhled se načítá" od „čeká na rozhodnutí" a nese cesty,
+         které čekají. Skrytý, žádný vizuální dopad. -->
+    <span
+      hidden
+      data-testid="review-state"
+      data-loaded={data !== null}
+      data-ai-failed={data?.aiFailed === true}
+      data-pending-save={pendingSave}
+      data-pending-paths={JSON.stringify(pending)}
+    ></span>
     {#if saveError}
       <!-- Záchranná síť (#76): autosave selhal — klient mapu drží, další
            změna uložení zopakuje; apply funguje nezávisle. -->
@@ -425,6 +408,7 @@
       <Button
         label={t('exchange.preview.actions.applyRegistry')}
         variant="success"
+        testid="review-apply-registry"
         disabled={!canApply}
         onclick={() => handleApplyClick()}
       />

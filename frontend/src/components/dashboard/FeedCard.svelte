@@ -62,7 +62,9 @@
   }
 </script>
 
-<div class="shpd-feed-card {stateClass}" data-testid="feed-card">
+<!-- `data-card-id` = id karty ze serveru (`mail_suggestion:<ndx>`…) — proklikání
+     sady (#103 F7a) podle něj pozná, která karta po použití zmizela. -->
+<div class="shpd-feed-card {stateClass}" data-testid="feed-card" data-card-id={card.id}>
   <span class="shpd-feed-card__bar"></span>
   {#if card.icon}
     <span class="shpd-feed-card__icon">

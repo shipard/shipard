@@ -8,6 +8,7 @@
   //   anchor     HTMLElement | null — element to position relative to
   //   placement  'bottom' | 'top' | 'right' | 'left' (default 'bottom')
   //   onClose    () => void  — fires on Escape or outside click
+  //   testid     volitelný `data-testid` kořene panelu (vzor Button / Modal)
   //   children   Svelte 5 children snippet
   //
   // Click-outside is portal-aware: if the outside target is inside a
@@ -22,6 +23,7 @@
     placement = 'bottom',
     width = null,
     onClose = () => {},
+    testid = null,
     children,
   } = $props();
 
@@ -169,6 +171,7 @@
     style:width={width}
     style:max-width={width}
     role="dialog"
+    data-testid={testid}
   >
     {@render children?.()}
   </div>

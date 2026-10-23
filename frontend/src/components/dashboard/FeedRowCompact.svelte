@@ -39,7 +39,9 @@
   const donutArc = $derived(((card.confidencePct ?? 0) / 100) * DONUT_C);
 </script>
 
-<div class="shpd-feed-row shpd-feed-row--{mode}">
+<!-- Stejný typový marker a id karty jako FeedCard (#103 F7a) — konzument
+     bere karty bez ohledu na pásmo. -->
+<div class="shpd-feed-row shpd-feed-row--{mode}" data-testid="feed-card" data-card-id={card.id}>
   {#if mode === 'ready' && card.confidencePct != null}
     <svg
       class="shpd-feed-row__donut"
@@ -86,6 +88,7 @@
           variant="primary"
           size="sm"
           disabled={busy}
+          testid={`card-action-${applyAction.id}`}
           onclick={() => onAction(applyAction)}
         />
       {/if}
@@ -97,6 +100,7 @@
           variant="secondary"
           size="sm"
           disabled={busy}
+          testid={`card-action-${reviewAction.id}`}
           onclick={() => onAction(reviewAction)}
         />
       {/if}
@@ -107,6 +111,7 @@
           variant={action.primary ? 'secondary' : 'ghost'}
           size="sm"
           disabled={busy}
+          testid={`card-action-${action.id}`}
           onclick={() => onAction(action)}
         />
       {/each}

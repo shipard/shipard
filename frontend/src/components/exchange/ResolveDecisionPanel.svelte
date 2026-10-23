@@ -52,6 +52,10 @@
     // položky místo „Použít #id"; null = výchozí popis akce.
     currentLabel = null,
     onDecide = () => {},
+    // Cesta rozhodované reference (`supplier`, `rows[3].item`) jen pro
+    // testid tlačítka Vytvořit (`review-ref-create:{path}`, #103 F7a);
+    // null = hromadný režim (`review-ref-create`). Logiku neřídí.
+    path = null,
     // Quick-add z registru (Issue #28) — jen referenceKind === 'party'.
     // Stav i logika žijí v DocumentExchangePreview (sdílené s kartou strany),
     // panel jen renderuje.
@@ -252,7 +256,7 @@
   });
 </script>
 
-<div class="shpd-resolve">
+<div class="shpd-resolve" data-testid="review-ref-panel">
   {#if bulkCount > 0}
     <p class="shpd-resolve__hint">{t('exchange.preview.bulk.hint', { count: bulkCount })}</p>
   {/if}
@@ -369,6 +373,7 @@
       <button
         type="button"
         class="shpd-resolve__create"
+        data-testid={path ? `review-ref-create:${path}` : 'review-ref-create'}
         onclick={openCreateDialog}
       >
         + {createLabel}

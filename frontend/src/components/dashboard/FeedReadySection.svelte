@@ -91,6 +91,7 @@
         type="button"
         class="shpd-ready__toggle"
         aria-expanded={expanded}
+        data-testid="feed-ready-toggle"
         onclick={() => (expanded = !expanded)}
       >
         {t(expanded ? 'dashboard.feed.readyStrip.hide' : 'dashboard.feed.readyStrip.show')}
