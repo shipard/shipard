@@ -124,8 +124,8 @@ TWO_DIGIT_COUNTRY_CODES = ("49", "43", "44", "33", "39", "31")
 
 
 def phone_parts(phone: str) -> tuple[str, str] | None:
-    """Kód země a národní číslo kanonického telefonu (`+420585201304` →
-    `("420", "585201304")`); jiný tvar → None. Jediná tabulka délek kódů
+    """Kód země a národní číslo kanonického telefonu (`+420000201304` →
+    `("420", "000201304")`); jiný tvar → None. Jediná tabulka délek kódů
     zemí — sdílí ji tisk (`render.fmt_phone`) i kontrola identit."""
     m = re.fullmatch(r"\+([0-9]+)", phone)
     if not m:

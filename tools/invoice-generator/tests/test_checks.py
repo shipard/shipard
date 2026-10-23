@@ -65,17 +65,17 @@ class ChecksumTest(unittest.TestCase):
         self.assertFalse(phone_canonical("577123456"))
 
     def test_phone_parts_and_unassigned(self) -> None:
-        self.assertEqual(("420", "585201304"), phone_parts("+420585201304"))
-        self.assertEqual(("49", "3028874410"), phone_parts("+493028874410"))
+        self.assertEqual(("420", "577123456"), phone_parts("+420577123456"))
+        self.assertEqual(("49", "30123456"), phone_parts("+4930123456"))
         self.assertEqual(("1", "4155550199"), phone_parts("+14155550199"))
-        self.assertIsNone(phone_parts("+420 585 201 304"))
+        self.assertIsNone(phone_parts("+420 577 123 456"))
         self.assertTrue(phone_unassigned("+420000201304"))
         self.assertTrue(phone_unassigned("+490008874410"))
-        self.assertFalse(phone_unassigned("+420585201304"))   # skutečná krajská předvolba
-        self.assertFalse(phone_unassigned("+493028874410"))   # skutečná berlínská linka
+        self.assertFalse(phone_unassigned("+420577123456"))   # národní číslo bez 000
+        self.assertFalse(phone_unassigned("+4930123456"))     # národní číslo bez 000
         self.assertTrue(phone_unassigned("+14155550199"))     # vyhrazený rozsah 555-01xx
         self.assertFalse(phone_unassigned("+14155551234"))    # 555-12xx může být přidělené
-        self.assertFalse(phone_unassigned("585201304"))
+        self.assertFalse(phone_unassigned("577123456"))
 
 
 class ValidateIdentitiesTest(unittest.TestCase):

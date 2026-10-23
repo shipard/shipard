@@ -1,6 +1,6 @@
 # F7a — proklikání datových sad (E2E průchod UI)
 
-**Stav:** naplánováno — zadání 2026-10-23 (#103 D86–D89, D91–D96 k potvrzení)
+**Stav:** naplánováno — zadání 2026-10-23 (#103 D86–D89, D91–D96)
 
 ## Kontext / Cíl
 
@@ -54,7 +54,8 @@ a jeho `check` zůstávají beze změny.
 ## Rozhodnutí
 
 Zamčená v #103: D86 (F7a / F7b), D87 (co proklikání ověří), D88
-(spouštění), D89 (Playwright Test). K potvrzení v tomto PRD:
+(spouštění), D89 (Playwright Test). Potvrzená 2026-10-23 a zapsaná
+v #103:
 
 - **D91 — Jeden příkaz `shpd-ds dataset-e2e`,** úloha dashboardu je jeho
   obal (vzor `ai-eval` + `--progress-file`). Žádná orchestrace kroků
