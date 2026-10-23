@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 392 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 362.
+Celkem 393 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 363.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -176,6 +176,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | Task | Co řeší |
 |------|---------|
 | `design-system-foundations.md` | Mezery, odsazení, zaoblení a písmo v rem, `--shpd-radius-full`, kontrola px v pre-commitu (`check-css-units.py`) — vizuálně neutrální převod (#134) |
+| `design-system-detail-pilot.md` | Typografické role v tokenech, detail dokladu podle návrhu, hlavička s partnerem bez štítku typu, sdílená hlavička a obecný obsah detailu, kapitoly Typografie a Detail záznamu (#135, D13–D16) |
 
 ## Mobilní (responzivní) UI
 
