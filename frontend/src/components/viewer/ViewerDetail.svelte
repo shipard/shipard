@@ -8,6 +8,7 @@
   import FailureCard from './FailureCard.svelte';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
+  import DetailAttachments from './DetailAttachments.svelte';
   import Icon from '../ui/Icon.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
@@ -69,6 +70,28 @@
 
   let activeContent = $derived(
     detail?.tabs?.find(t => t.id === activeTabId)?.content ?? null
+  );
+
+  // Sdílená sekce příloh (#136 D21) a Odeslaná pošta (D22) se kreslí jen
+  // pod prvním tabem (Přehled); detail bez tabů je nemá kam jinam dát.
+  let isOverviewTab = $derived(
+    !(detail?.tabs?.length > 0) || activeTabId === detail.tabs[0].id
+  );
+
+  // Viewer, který přílohy deklaruje ve vlastním tabu (obsah typu
+  // `attachments`, i jako blok composite), je v Přehledu nedostane podruhé.
+  function contentHasAttachments(content) {
+    if (!content) return false;
+    if (content.type === 'attachments') return true;
+    return content.type === 'composite' && (content.blocks ?? []).some(contentHasAttachments);
+  }
+
+  let hasAttachmentsTab = $derived(
+    (detail?.tabs ?? []).some(tab => contentHasAttachments(tab.content))
+  );
+
+  let overviewAttachmentGroups = $derived(
+    hasAttachmentsTab ? [] : (detail?.attachments?.groups ?? [])
   );
 
   // --- Návrh (message-centric) — Exchange preview modal ---
@@ -471,11 +494,16 @@
             onclick={() => attachmentViewStore.toggle()}
           >
             {attachmentViewStore.mode === 'full'
-              ? t('viewer.document.attachments.viewGrid')
-              : t('viewer.document.attachments.viewFull')}
+              ? t('viewer.attachments.viewGrid')
+              : t('viewer.attachments.viewFull')}
           </button>
         </div>
         <AttachmentGrid attachments={content.attachments ?? []} mode={attachmentViewStore.mode} />
+
+      {:else if content?.type === 'attachments'}
+        <!-- Vlastní tab Přílohy (#136 D21) — sdílená sekce příloh nad
+             detail.attachments.groups; v Přehledu se pak nekreslí. -->
+        <DetailAttachments groups={detail?.attachments?.groups ?? []} onAction={onAction} />
 
       {:else if content?.type === 'document'}
         <DocumentDetail content={content} onAction={onAction} />
@@ -496,33 +524,43 @@
     <div class="shpd-detail__content">
       {@render renderContent(activeContent)}
 
-      <!-- Odeslaná pošta u záznamu (#90 D45) — zprávy, které na záznam
-           ukazují, pod obsahem každého tabu (roluje s ním). Server je
-           posílá u libovolné tabulky. -->
-      {#if (detail.sentMessages ?? []).length > 0}
-        <section class="shpd-detail__sent" data-testid="detail-sent-messages">
-          <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
-          {#each detail.sentMessages as message (message.id)}
-            <div class="shpd-detail__sent-message">
-              <button
-                type="button"
-                class="shpd-detail__sent-head"
-                title={t('sentMessage.open')}
-                onclick={() => openSentMessage(message.id)}
-              >
-                <span class="shpd-detail__sent-date">{message.createdAt}</span>
-                <span class="shpd-detail__sent-to">{(message.to ?? []).length > 0 ? message.to.join(', ') : '—'}</span>
-                <SpanBadge style={message.transport?.stateStyle ?? 'neutral'} text={message.transport?.stateLabel ?? ''} />
-                {#if message.transport?.safety}
-                  <SpanBadge style={message.transport.safety.style} text={message.transport.safety.label} />
+      {#if isOverviewTab}
+        <!-- Přílohy záznamu (#136 D21) — sdílená sekce na konci Přehledu
+             (roluje s obsahem), pokud je viewer nedal do vlastního tabu. -->
+        {#if overviewAttachmentGroups.length > 0}
+          <div class="shpd-detail__attachments">
+            <DetailAttachments groups={overviewAttachmentGroups} onAction={onAction} />
+          </div>
+        {/if}
+
+        <!-- Odeslaná pošta u záznamu (#90 D45) — zprávy, které na záznam
+             ukazují; jen na konci Přehledu, za přílohami (#136 D22). Server
+             je posílá u libovolné tabulky. -->
+        {#if (detail.sentMessages ?? []).length > 0}
+          <section class="shpd-detail__sent" data-testid="detail-sent-messages">
+            <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
+            {#each detail.sentMessages as message (message.id)}
+              <div class="shpd-detail__sent-message">
+                <button
+                  type="button"
+                  class="shpd-detail__sent-head"
+                  title={t('sentMessage.open')}
+                  onclick={() => openSentMessage(message.id)}
+                >
+                  <span class="shpd-detail__sent-date">{message.createdAt}</span>
+                  <span class="shpd-detail__sent-to">{(message.to ?? []).length > 0 ? message.to.join(', ') : '—'}</span>
+                  <SpanBadge style={message.transport?.stateStyle ?? 'neutral'} text={message.transport?.stateLabel ?? ''} />
+                  {#if message.transport?.safety}
+                    <SpanBadge style={message.transport.safety.style} text={message.transport.safety.label} />
+                  {/if}
+                </button>
+                {#if (message.attachments ?? []).length > 0}
+                  <AttachmentGrid attachments={message.attachments} />
                 {/if}
-              </button>
-              {#if (message.attachments ?? []).length > 0}
-                <AttachmentGrid attachments={message.attachments} />
-              {/if}
-            </div>
-          {/each}
-        </section>
+              </div>
+            {/each}
+          </section>
+        {/if}
       {/if}
     </div>
 
@@ -703,7 +741,11 @@
   /* Actions bar — řádek per-record akcí nad taby (snooze/dismiss/recheck +
      custom akce alertů). Stejná vizuální logika jako header: padding sm/md,
      border-bottom, wrap při velkém počtu tlačítek. */
-  /* Sekce Odeslaná pošta pod obsahem detailu — uvnitř rolovací plochy. */
+  /* Sekce Přílohy (#136 D21) a Odeslaná pošta (D22) na konci Přehledu —
+     uvnitř rolovací plochy, obě stejně oddělené od obsahu nad sebou. Čáru
+     a odsazení dává hostitel, ne DetailAttachments — ve vlastním tabu
+     Přílohy by čára nahoře neměla co oddělovat. */
+  .shpd-detail__attachments,
   .shpd-detail__sent {
     margin-top: var(--shpd-space-lg);
     padding-top: var(--shpd-space-md);

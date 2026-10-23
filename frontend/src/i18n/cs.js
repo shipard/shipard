@@ -256,6 +256,11 @@ export default {
   'viewer.detail.deleteTagRuleConfirm': 'Opravdu smazat toto pravidlo? Smazání je trvalé; pravidlo může znovu vzniknout učením.',
   'viewer.detail.mailBody': 'Tělo zprávy',
 
+  // ── Sdílená sekce příloh detailu záznamu (DetailAttachments) ────────────
+  'viewer.attachments.record': 'Přílohy',
+  'viewer.attachments.viewGrid': 'Miniatury',
+  'viewer.attachments.viewFull': 'Velké náhledy',
+
   // ── Viewer detail dokladu (content type `document`) ─────────────────────
   'viewer.document.section.supplier': 'Dodavatel',
   'viewer.document.section.customer': 'Odběratel',
@@ -263,9 +268,6 @@ export default {
   'viewer.document.section.recap': 'DPH',
   'viewer.document.section.dates': 'Data',
   'viewer.document.section.payment': 'Platba',
-  'viewer.document.attachments.doc': 'Přílohy dokladu',
-  'viewer.document.attachments.viewGrid': 'Miniatury',
-  'viewer.document.attachments.viewFull': 'Velké náhledy',
   'viewer.document.party.companyId': 'IČO',
   'viewer.document.party.taxId': 'DIČ',
   'viewer.document.party.vatId': 'VAT ID',

@@ -9,11 +9,10 @@
   // / body / meta, --shpd-font-weight-normal / strong; #135 D15, D16) —
   // referenční implementace kapitoly Detail záznamu v docs/design-system.md.
   // Hlavičku (titulek, podtitul, štítek stavu) kreslí ViewerDetail nad taby;
-  // content klíč `header` nenese.
+  // content klíč `header` nenese. Přílohy (vlastní i ze zdrojové zprávy)
+  // obsah `document` nenese také — kreslí je sdílená sekce DetailAttachments
+  // na konci Přehledu z `detail.attachments` (#136 D21).
   import { t } from '../../i18n/index.js';
-  import { navigationStore } from '../../stores/navigation.svelte.js';
-  import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
-  import AttachmentGrid from './AttachmentGrid.svelte';
 
   let { content = null, onAction = null } = $props();
 
@@ -21,7 +20,6 @@
   let rows = $derived(content?.rows ?? []);
   let vatRecap = $derived(content?.vat_recap ?? []);
   let totals = $derived(content?.totals ?? null);
-  let attachmentGroups = $derived(content?.attachments?.groups ?? []);
 
   // Údaje dokladu ve dvou skupinách vedle sebe (#135): data a platební
   // údaje. Pole s null / prázdnou hodnotou se nevykreslí, prázdná skupina
@@ -72,25 +70,6 @@
     return [street, city].filter(Boolean).join(', ') || null;
   }
 
-  // Klik na kód zdrojové zprávy (tasks/mail-source-message-link.md D6, D10):
-  // s hostitelem, který obsluhuje akce (Viewer.svelte), otevře read-only
-  // detail zprávy v modalu a viewer se nepřepne. Akční id 'openSourceMessage'
-  // není ve sdíleném slovníku vestavěných akcí, propadne na obsluhu podle
-  // kind. Bez onAction (DocumentDetail uvnitř read-only ViewerDetailModal)
-  // zůstává dnešní přechod do vieweru Došlá pošta.
-  function openSourceMessage(group) {
-    if (!group.sourceViewerId) return;
-    if (onAction) {
-      onAction('openSourceMessage', {
-        id: 'openSourceMessage',
-        kind: 'open_detail',
-        target: { viewerId: group.sourceViewerId, recordId: group.message_ndx, tabId: 'content' },
-      });
-      return;
-    }
-    navigationStore.navigateToViewer(group.sourceViewerId, group.message_ndx);
-  }
-
   // Klik na partnera / položku řádku — otevře FormDialog přes generický
   // handler detail akcí ve Viewer.svelte (kind: open_form). Akční id
   // 'open_record' není ve sdíleném slovníku vestavěných akcí (snooze,
@@ -101,9 +80,6 @@
       target: { table, mode: 'edit', id },
     });
   }
-
-  // Rezim zobrazeni priloh ('full'/'grid') je sdileny store — stejna volba
-  // plati i v detailu dosle posty (ViewerDetail). Detaily v attachmentView.svelte.js.
 </script>
 
 {#snippet partyCard(labelKey, party)}
@@ -300,53 +276,6 @@
             {/if}
           </div>
         {/if}
-      </section>
-    {/if}
-
-    {#if attachmentGroups.length > 0}
-      <section class="shpd-docdetail__section shpd-docdetail__attachments">
-        {#each attachmentGroups as group, i (group.kind === 'mail' ? `mail-${group.message_ndx}` : `doc-${i}`)}
-          <div class="shpd-docdetail__att-group">
-            <div class="shpd-docdetail__att-head">
-              <h3 class="shpd-docdetail__section-heading">
-                {#if group.kind === 'mail'}
-                  <!-- Krátký kód zprávy, plný v tooltipu (D9). -->
-                  {#if group.sourceViewerId}
-                    <button
-                      type="button"
-                      class="shpd-docdetail__att-msglink"
-                      title={group.message_id}
-                      onclick={() => openSourceMessage(group)}
-                    >
-                      #{group.message_code_short ?? group.message_id}
-                    </button>
-                  {:else}
-                    <span title={group.message_id}>#{group.message_code_short ?? group.message_id}</span>
-                  {/if}
-                  {#if group.received_at}
-                    <span class="shpd-docdetail__att-msgdate">· {group.received_at}</span>
-                  {/if}
-                {:else}
-                  {t('viewer.document.attachments.doc')}
-                {/if}
-              </h3>
-              {#if i === 0}
-                <!-- Přepínač režimu náhledů sedí v řádku s nadpisem první
-                     skupiny vpravo; platí pro všechny skupiny (sdílený store). -->
-                <button
-                  type="button"
-                  class="shpd-docdetail__att-toggle"
-                  onclick={() => attachmentViewStore.toggle()}
-                >
-                  {attachmentViewStore.mode === 'full'
-                    ? t('viewer.document.attachments.viewGrid')
-                    : t('viewer.document.attachments.viewFull')}
-                </button>
-              {/if}
-            </div>
-            <AttachmentGrid attachments={group.attachments} mode={attachmentViewStore.mode} />
-          </div>
-        {/each}
       </section>
     {/if}
   </div>
@@ -574,69 +503,6 @@
   .shpd-docdetail__total-dom {
     font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
-  }
-
-  /* ── Přílohy ─────────────────────────────────────────────────────────── */
-
-  .shpd-docdetail__attachments {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-lg);
-    border-top: 1px solid var(--shpd-color-border);
-    padding-top: var(--shpd-space-md);
-  }
-
-  .shpd-docdetail__att-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
-  }
-
-  /* Řádek s nadpisem skupiny; u první skupiny vpravo přepínač náhledů. */
-  .shpd-docdetail__att-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--shpd-space-sm);
-  }
-
-  .shpd-docdetail__att-head .shpd-docdetail__section-heading {
-    margin: 0;
-  }
-
-  .shpd-docdetail__att-msglink {
-    border: none;
-    background: none;
-    padding: 0;
-    font: inherit;
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-primary);
-    cursor: pointer;
-  }
-
-  .shpd-docdetail__att-msglink:hover {
-    text-decoration: underline;
-  }
-
-  .shpd-docdetail__att-msgdate {
-    font-weight: var(--shpd-font-weight-normal);
-  }
-
-  .shpd-docdetail__att-toggle {
-    border: 1px solid var(--shpd-color-border);
-    background: var(--shpd-color-bg);
-    color: var(--shpd-color-text-secondary);
-    border-radius: var(--shpd-radius-md);
-    padding: 0.125rem 0.625rem;
-    font: inherit;
-    font-size: var(--shpd-font-size-meta);
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .shpd-docdetail__att-toggle:hover {
-    color: var(--shpd-color-text);
-    border-color: var(--shpd-color-text-secondary);
   }
 
   /* ── Úzká šířka (D3) ─────────────────────────────────────────────────── */

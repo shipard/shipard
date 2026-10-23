@@ -54,13 +54,32 @@
       // Akce detailu (Tisk, Přeúčtovat…) do čtecího modalu nepatří — bez
       // `onAction` by to byla mrtvá tlačítka.
       const { actions: _actions, ...d } = result.data?.detail ?? {};
-      detail = tId
-        ? { ...d, tabs: (d.tabs ?? []).filter(tab => tab.id === tId) }
-        : d;
+      detail = tId ? restrictToTab(d, tId) : d;
     } else {
       error = t('viewer.detailModal.loadFailed', { msg: translateError(result?.error) });
     }
     loading = false;
+  }
+
+  // Ořez na jediný tab (D2). Sdílená sekce příloh a Odeslaná pošta patří
+  // jen pod Přehled (první tab, #136 D21–D22) — ořezaný detail by je
+  // ViewerDetail nakreslil pod cizím tabem, protože ten je teď první.
+  // `attachments` zůstávají, když je ořezaný tab sám tabem Přílohy
+  // (obsah typu `attachments`), jinak by neměl co ukázat.
+  function restrictToTab(d, tId) {
+    const allTabs = d.tabs ?? [];
+    const tabs = allTabs.filter(tab => tab.id === tId);
+    if (tId === allTabs[0]?.id) return { ...d, tabs };
+    const { attachments, sentMessages: _sent, ...rest } = d;
+    return tabs.some(tab => contentHasAttachments(tab.content))
+      ? { ...rest, attachments, tabs }
+      : { ...rest, tabs };
+  }
+
+  function contentHasAttachments(content) {
+    if (!content) return false;
+    if (content.type === 'attachments') return true;
+    return content.type === 'composite' && (content.blocks ?? []).some(contentHasAttachments);
   }
 </script>
 
