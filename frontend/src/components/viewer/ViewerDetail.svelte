@@ -594,7 +594,7 @@
     gap: var(--shpd-space-sm);
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
   }
 
   .shpd-detail__spinner {
@@ -612,12 +612,14 @@
   }
 
   /* Header (title + badges) — zobrazuje se jen když backend
-     pošle detail.title. Drobný panel nad taby. */
+     pošle detail.title. Drobný panel nad taby. Písmo podle typografických
+     rolí (#135, docs/design-system.md → Detail záznamu): titulek title,
+     podtitul meta barvou textu, štítky meta normální tloušťkou. */
   .shpd-detail__header {
     display: flex;
     align-items: center;
-    gap: var(--shpd-space-sm);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
+    gap: 0.75rem;
+    padding: 0.75rem var(--shpd-space-md);
     border-bottom: 1px solid var(--shpd-color-border);
     background-color: var(--shpd-color-bg);
     flex-shrink: 0;
@@ -651,24 +653,24 @@
 
   .shpd-detail__title {
     margin: 0;
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
+    font-size: var(--shpd-font-size-title);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     line-height: 1.3;
   }
 
   .shpd-detail__subtitle {
     margin-top: 0.125rem;
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
+    font-size: var(--shpd-font-size-meta);
+    color: var(--shpd-color-text);
   }
 
   .shpd-detail__badge {
     display: inline-block;
-    padding: 0.125rem var(--shpd-space-sm);
+    padding: 0.125rem 0.625rem;
     border-radius: var(--shpd-radius-full);
-    font-size: var(--shpd-font-size-xs);
-    font-weight: 500;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
     line-height: 1.4;
     white-space: nowrap;
   }
@@ -723,7 +725,7 @@
     border: 0;
     background: none;
     font: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
     text-align: left;
     cursor: pointer;
@@ -734,6 +736,7 @@
   }
 
   .shpd-detail__sent-date {
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -839,7 +842,7 @@
     border-bottom: 2px solid transparent;
     background: none;
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text-secondary);
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
@@ -852,7 +855,7 @@
   .shpd-detail__tab--active {
     color: var(--shpd-color-primary);
     border-bottom-color: var(--shpd-color-primary);
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   /* Content area */
@@ -868,7 +871,7 @@
     justify-content: center;
     height: 100%;
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
   }
 
   /* Properties content */
@@ -877,8 +880,8 @@
   }
 
   .shpd-detail__group-title {
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     padding-bottom: var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
@@ -895,14 +898,15 @@
     display: contents;
   }
 
+  /* Popisek i hodnota body, stejnou barvou — liší se umístěním (D15). */
   .shpd-detail__prop-label {
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
+    font-size: var(--shpd-font-size-body);
+    color: var(--shpd-color-text);
     white-space: nowrap;
   }
 
   .shpd-detail__prop-value {
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
   }
 
@@ -914,13 +918,14 @@
   .shpd-detail__table {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-detail__th {
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     text-align: left;
-    font-weight: 600;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     border-bottom: 2px solid var(--shpd-color-border);
     white-space: nowrap;
@@ -971,7 +976,7 @@
   }
 
   .shpd-detail__tr--total > .shpd-detail__td {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     border-top: 2px solid var(--shpd-color-border);
     border-bottom: none;
   }
@@ -983,8 +988,8 @@
   /* Heading blok (composite) - vizualne sjednoceno s group-title */
   .shpd-detail__content-heading {
     margin: var(--shpd-space-lg) 0 var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     padding-bottom: var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
@@ -996,7 +1001,7 @@
 
   /* HTML content */
   .shpd-detail__html {
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     line-height: 1.5;
   }
 
@@ -1009,7 +1014,7 @@
 
   .shpd-extracted__empty {
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
     font-style: italic;
     text-align: center;
     padding: var(--shpd-space-md);
@@ -1030,7 +1035,7 @@
   }
 
   .shpd-extracted__type {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
   }
 
@@ -1038,8 +1043,8 @@
     display: inline-block;
     padding: 0.125rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs);
-    font-weight: 500;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
   }
 
   /* Stejné tokeny jako shpd-detail__badge — stejný stav, stejná barva.
@@ -1055,17 +1060,17 @@
   .shpd-extracted__confidence {
     margin-left: auto;
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
   }
 
   .shpd-extracted__summary {
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
     margin-bottom: var(--shpd-space-sm);
   }
 
   .shpd-extracted__meta {
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
     margin-top: var(--shpd-space-xs);
   }
@@ -1100,7 +1105,7 @@
     border-radius: var(--shpd-radius-md);
     padding: 0.125rem 0.625rem;
     font: inherit;
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     cursor: pointer;
   }
 
