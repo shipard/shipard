@@ -1292,7 +1292,10 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
     for key in all_partners:
         if not PARTNER_KEY_PATTERN.fullmatch(str(key)):
             problems.add(f"partners.{key}", "klíč musí být [a-z][a-z0-9]{1,11}")
-    for problem in validate_identities(identities_for_checks(own_raw, all_partners, verified_at), reserved=reserved_demo):
+    # Demo se nemění: spisové značky příběhu nesou popisek a demo šablony je
+    # tisknou doslova — pravidlo D103 (#103) platí jen pro korpus.
+    for problem in validate_identities(identities_for_checks(own_raw, all_partners, verified_at), reserved=reserved_demo,
+                                       plain_court_registration=False):
         problems.add("identity", problem)
     _overlap_with_corpus({"own": own_raw, **all_partners}, reserved_corpus, problems)
 

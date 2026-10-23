@@ -1,5 +1,6 @@
 // Varianta 10, podoba pdf — dlouhý doklad velkoobchodu přes víc stran (cs-c): úklid
-// a hygiena 21 %, potraviny do kuchyňky 12 % jako výjimky štítku people.catering.
+// a hygiena 21 %; výjimky štítku people.catering = potraviny do kuchyňky 12 % a drobné
+// potřeby ke kávě 21 % (filtry, kelímky). Žádná položka nesmí být nejednoznačná (#103 D104).
 // Řádky vygenerované jednorázovým skriptem; soubor je zdroj pravdy, upravuje se ručně.
 {
 	"variant": "long-document",
@@ -38,9 +39,9 @@
 		{ "text": "Odpadkový koš 25 l, nerez", "supplierCode": "OK-25", "qty": 3, "unit": "ks", "unitPrice": 690.00, "vatPct": 21 },
 		{ "text": "Papírové kapesníky 10×10 ks", "supplierCode": "PK-100", "qty": 4, "unit": "bal", "unitPrice": 35.00, "vatPct": 21 },
 		{ "text": "Vlhčené ubrousky 72 ks", "supplierCode": "VU-72", "qty": 1, "unit": "bal", "unitPrice": 45.00, "vatPct": 21 },
-		{ "text": "Kávové filtry č. 4, 100 ks", "supplierCode": "KF-4", "qty": 3, "unit": "bal", "unitPrice": 49.00, "vatPct": 21 },
-		{ "text": "Kelímky papírové 200 ml, 100 ks", "supplierCode": "KP-200", "qty": 2, "unit": "bal", "unitPrice": 139.00, "vatPct": 21 },
-		{ "text": "Míchátka dřevěná, 1000 ks", "supplierCode": "MD-1000", "qty": 12, "unit": "bal", "unitPrice": 99.00, "vatPct": 21 },
+		{ "text": "Hadry na podlahu, 10 ks", "supplierCode": "HP-10", "qty": 12, "unit": "bal", "unitPrice": 99.00, "vatPct": 21 },
+		{ "text": "Kávové filtry č. 4, 100 ks", "supplierCode": "KF-4", "qty": 3, "unit": "bal", "unitPrice": 49.00, "vatPct": 21, "tag": "people.catering" },
+		{ "text": "Kelímky papírové 200 ml, 100 ks", "supplierCode": "KP-200", "qty": 2, "unit": "bal", "unitPrice": 139.00, "vatPct": 21, "tag": "people.catering" },
 		{ "text": "Káva zrnková 1 kg, 100% arabica", "supplierCode": "KZ-1", "qty": 1, "unit": "ks", "unitPrice": 389.00, "vatPct": 12, "tag": "people.catering" },
 		{ "text": "Káva mletá 250 g", "supplierCode": "KM-250", "qty": 2, "unit": "ks", "unitPrice": 89.00, "vatPct": 12, "tag": "people.catering" },
 		{ "text": "Čaj černý porcovaný, 100 ks", "supplierCode": "CC-100", "qty": 4, "unit": "bal", "unitPrice": 95.00, "vatPct": 12, "tag": "people.catering" },

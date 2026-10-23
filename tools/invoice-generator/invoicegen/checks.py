@@ -19,6 +19,10 @@ VAT_ID_FORMATS = {
     "PL": r"[0-9]{10}",
 }
 
+# Spisová značka v identitách je jen značka a soud („C 990321 vedená u
+# Krajského soudu v Ostravě“); popisek tiskne šablona (#103 D103).
+COURT_REG_LABEL = re.compile(r"spisov[áa]\s+zna[čc]ka", re.IGNORECASE)
+
 
 # ── Kontrolní součty ─────────────────────────────────────────────────────────
 
@@ -168,7 +172,8 @@ def _text(value) -> bool:
     return isinstance(value, str) and value == value.strip() and value != ""
 
 
-def _validate_corpus_party(key: str, party: dict, problems: list[str]) -> None:
+def _validate_corpus_party(key: str, party: dict, problems: list[str], *,
+                           plain_court_registration: bool = True) -> None:
     def bad(msg: str) -> None:
         problems.append(f"{key}: {msg}")
 
@@ -203,8 +208,11 @@ def _validate_corpus_party(key: str, party: dict, problems: list[str]) -> None:
         bad(f"taxId {tax_id!r} ≠ vatId {vat_id!r} (u EU DIČ = VAT ID)")
     if "vatPayer" in party and bool(party["vatPayer"]) != (vat_id is not None):
         bad("vatPayer neodpovídá přítomnosti vatId")
-    if party.get("courtRegistration") is not None and not _text(party["courtRegistration"]):
+    court_reg = party.get("courtRegistration")
+    if court_reg is not None and not _text(court_reg):
         bad("courtRegistration není text")
+    elif plain_court_registration and court_reg is not None and COURT_REG_LABEL.match(court_reg):
+        bad("courtRegistration nese popisek „Spisová značka“ — jen značka a soud, popisek tiskne šablona (D103)")
 
     address = party.get("address")
     if not isinstance(address, dict):
@@ -272,10 +280,13 @@ def _validate_corpus_party(key: str, party: dict, problems: list[str]) -> None:
                 bad(f"BIC {bic} nemá tvar")
 
 
-def validate_identities(identities: dict, *, reserved: dict | None = None) -> list[str]:
+def validate_identities(identities: dict, *, reserved: dict | None = None,
+                        plain_court_registration: bool = True) -> list[str]:
     """Identity korpusu (`tests/corpus/cz/identities.jsonc`): vrací seznam
     problémů (prázdný = v pořádku). `reserved` = identity dema
-    (`suppliers.jsonc`), se kterými se korpus nesmí překrývat."""
+    (`suppliers.jsonc`), se kterými se korpus nesmí překrývat.
+    `plain_court_registration` = spisová značka bez popisku (D103, korpus);
+    demo příběh ho vypíná — jeho šablony tisknou hodnotu doslova a demo se nemění."""
     problems: list[str] = []
     verified = identities.get("verifiedAt")
     try:
@@ -296,7 +307,8 @@ def validate_identities(identities: dict, *, reserved: dict | None = None) -> li
             if section == "suppliers" and not isinstance(party.get("vatPayer"), bool):
                 problems.append(f"{section}.{key}: chybí vatPayer")
             parties.append((f"{section}.{key}", party))
-            _validate_corpus_party(f"{section}.{key}", party, problems)
+            _validate_corpus_party(f"{section}.{key}", party, problems,
+                                   plain_court_registration=plain_court_registration)
 
     seen: dict[tuple[str, str], str] = {}
     for key, party in parties:

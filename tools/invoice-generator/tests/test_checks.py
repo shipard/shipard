@@ -103,6 +103,7 @@ class ValidateIdentitiesTest(unittest.TestCase):
             "suppliers.cz-nonpayer.contact.phone": "+420603111222",
             "suppliers.us.contact.phone": "+14155551234",
             "suppliers.cz-payer.contact.web": "https://www.dodavatelna.example/",
+            "suppliers.cz-payer.courtRegistration": "Spisová značka C 99999 vedená u Krajského soudu v Brně",
             "suppliers.cz-nonpayer.vatPayer": True,
             "suppliers.de.vatId": "DE293847561",
             "suppliers.de.taxId": "DE293847561",

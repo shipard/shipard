@@ -35,7 +35,7 @@ IDENTITIES = {
             "vatPayer": True,
             "name": "Dodavatelna s.r.o.", "country": "cz", "companyId": "06388451",
             "taxId": "CZ06388451", "vatId": "CZ06388451",
-            "courtRegistration": "Spisová značka C 99999 vedená u Krajského soudu v Brně",
+            "courtRegistration": "C 99999 vedená u Krajského soudu v Brně",
             "address": {"street": "Skladová", "houseNumber": "1128/6", "city": "Brno", "zip": "61600", "country": "cz"},
             "contact": {"name": None, "email": "fakturace@dodavatelna.example", "phone": "+420000123456", "web": "www.dodavatelna.example"},
             "bankAccount": {"accountNumber": "1803729684/0100", "iban": "CZ7201000000001803729684", "bic": "KOMBCZPP"},

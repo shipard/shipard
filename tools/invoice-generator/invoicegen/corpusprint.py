@@ -45,6 +45,7 @@ LABELS = {
         "tGrand": "K úhradě celkem", "tGrandReceipt": "Celkem k úhradě",
         "clauseReverseCharge": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti).",
         "clauseNoVat": "Nejsem plátce DPH.",
+        "courtReg": "Spisová značka: ",
     },
     "en": {
         "titleTax": "INVOICE", "titlePlain": "INVOICE", "titleReceipt": "RECEIPT",
@@ -208,7 +209,10 @@ def template_values(data: dict, supplier: dict, profile: dict, computed: dict, *
         "supplierAddress": address_html(supplier, locale, with_country=foreign or locale == "en"),
         "supplierIds": ids_html(supplier, labels),
         "supplierContact": contact_html(supplier),
-        "supplierCourtReg": esc(supplier["courtRegistration"]) if supplier.get("courtRegistration") else "",
+        # Hodnota v identitách je jen značka a soud; popisek přidává tisk podle
+        # jazyka (D103). Německý zápis („Amtsgericht …, HRB …“) popisek nese sám.
+        "supplierCourtReg": (labels.get("courtReg", "") + esc(supplier["courtRegistration"])
+                             if supplier.get("courtRegistration") else ""),
         "customerLabel": labels["customer"],
         "customerName": esc(profile["name"]),
         "customerAddress": address_html(profile, locale, with_country=locale == "en"),
