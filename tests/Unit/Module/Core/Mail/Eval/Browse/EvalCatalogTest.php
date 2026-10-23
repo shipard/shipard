@@ -12,10 +12,24 @@ use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 /**
  * Katalog prohlížeče výsledků nad checkoutem repa (#103 D52): sady
  * z manifestů, běhy z `tests/eval/<sada>/`, výběr jen z výpisu — parametr
- * URL nikdy nevede mimo `tests/datasets` a `tests/eval`.
+ * URL nikdy nevede mimo `tests/datasets` a `tests/eval`. Počty, pořadí
+ * a výběr běhů se tvrdí nad vlastním kořenem {@see EvalFixtureRoot} (D106),
+ * skutečný checkout slouží jen seznamu sad.
  */
 final class EvalCatalogTest extends TestCase
 {
+    private EvalFixtureRoot $fixture;
+
+    protected function setUp(): void
+    {
+        $this->fixture = EvalFixtureRoot::create();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->fixture->remove();
+    }
+
     private static function repoRoot(): string
     {
         return dirname(__DIR__, 7);
@@ -43,26 +57,34 @@ final class EvalCatalogTest extends TestCase
 
     public function testRunsAreListedNewestFirstWithBasename(): void
     {
-        $catalog = new EvalCatalog(self::repoRoot());
-        $dataset = $catalog->dataset('cz-vat-payer');
+        $hash = $this->fixture->seedPayerAndAssociation();
+        $catalog = new EvalCatalog($this->fixture->root);
+        $dataset = $catalog->dataset(EvalFixtureRoot::PAYER);
+        $this->assertNotNull($dataset);
         $runs = $catalog->runs($dataset);
 
-        $this->assertGreaterThanOrEqual(13, count($runs), 'běhy z tests/eval/cz-vat-payer/ jsou stálá fixtura');
-        $started = array_map(static fn (array $r): string => (string) $r['startedAt'], $runs);
-        $sorted = $started;
-        rsort($sorted, SORT_STRING);
-        $this->assertSame($sorted, $started, 'nejnovější první');
-        $this->assertStringStartsWith('2026-10-20-', $runs[0]['_basename']);
+        $this->assertSame(
+            ['2026-10-16-baseline.json', '2026-10-16-alpha.json', '2026-10-15-baseline.json'],
+            array_column($runs, '_basename'),
+            'nejnovější první podle startedAt, ne podle názvu souboru — alpha je abecedně dřív, ale začala dřív',
+        );
         foreach ($runs as $run) {
             $this->assertSame(basename((string) $run['_file']), $run['_basename']);
+            $this->assertStringStartsWith(EvalRunStore::defaultDir($this->fixture->root, EvalFixtureRoot::PAYER) . '/', (string) $run['_file']);
             $this->assertSame(EvalRunStore::FORMAT, $run['format']);
         }
 
-        $run = $catalog->run($dataset, '2026-10-16-baseline.json');
+        $run = $catalog->run($dataset, '2026-10-16-alpha.json');
         $this->assertNotNull($run);
-        $this->assertSame('baseline', $run['variant']['name']);
-        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $run['set']['hash']);
-        $this->assertNotSame($catalog->currentHash($dataset), $run['set']['hash'], 'běhy z 16. 10. jsou nad sadou před #119 krokem 1 (podoba druhých dokladů variant 5, 6, 8 a 9 je `pdf`, hash sady se změnil); nový běh nad aktuální sadou je věc člověka');
+        $this->assertSame('alpha', $run['variant']['name']);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $hash);
+        $this->assertSame($hash, $catalog->currentHash($dataset), 'hash sady jde spočítat i nad sadou jen s manifestem');
+        $this->assertSame($hash, $run['set']['hash'], 'běh nad aktuální sadou');
+        $this->assertNotSame($hash, $catalog->run($dataset, '2026-10-15-baseline.json')['set']['hash'], 'starší běh nad jinou verzí sady');
+
+        $association = $catalog->dataset(EvalFixtureRoot::ASSOCIATION);
+        $this->assertNotNull($association);
+        $this->assertSame([], $catalog->runs($association), 'sada bez složky výsledků');
     }
 
     /** @return list<array{string}> */
@@ -83,38 +105,24 @@ final class EvalCatalogTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('traversalNames')]
     public function testUnknownOrTraversalNamesResolveToNothing(string $name): void
     {
-        $catalog = new EvalCatalog(self::repoRoot());
+        $this->fixture->seedPayerAndAssociation();
+        $catalog = new EvalCatalog($this->fixture->root);
         $this->assertNull($catalog->dataset($name), "sada '{$name}'");
-        $this->assertNull($catalog->run($catalog->dataset('cz-vat-payer'), $name), "běh '{$name}'");
+        $this->assertNull($catalog->run($catalog->dataset(EvalFixtureRoot::PAYER), $name), "běh '{$name}'");
     }
 
     public function testIgnoresDemoDatasetsOfTheSeedCatalog(): void
     {
         // Sekce Testování zůstává jen nad tests/datasets (#131): demo sada
         // z demo/datasets nemá expected/ ani běhy — nabízí ji jen DatasetCatalog.
-        $root = sys_get_temp_dir() . '/shpd-evalcat-' . bin2hex(random_bytes(4));
-        $manifest = static fn (string $name, string $title): string => json_encode([
-            'format' => 'shpd.dataset.v1', 'name' => $name, 'title' => $title, 'dateMode' => 'fixed',
-            'created' => '2026-10-20T00:00:00Z', 'country' => 'cz', 'counts' => ['mail' => 3],
-        ]);
-        mkdir($root . '/tests/datasets/cz/payer', 0700, true);
-        mkdir($root . '/tests/eval', 0700, true);
-        mkdir($root . '/demo/datasets/it-servis', 0700, true);
-        file_put_contents($root . '/tests/datasets/cz/payer/manifest.jsonc', $manifest('cz-payer', 'Plátce'));
-        file_put_contents($root . '/demo/datasets/it-servis/manifest.jsonc', $manifest('it-servis', 'Demo — IT servis'));
-        try {
-            $catalog = new EvalCatalog($root);
-            $this->assertTrue($catalog->isAvailable());
-            $this->assertSame(['cz-payer'], $catalog->datasetNames());
-            $this->assertNull($catalog->dataset('it-servis'));
-            $this->assertSame(['cz-payer', 'it-servis'], (new DatasetCatalog($root))->datasetNames(), 'katalog k seedu nabízí obě');
-        } finally {
-            unlink($root . '/tests/datasets/cz/payer/manifest.jsonc');
-            unlink($root . '/demo/datasets/it-servis/manifest.jsonc');
-            foreach (['/tests/datasets/cz/payer', '/tests/datasets/cz', '/tests/datasets', '/tests/eval', '/tests', '/demo/datasets/it-servis', '/demo/datasets', '/demo', ''] as $dir) {
-                rmdir($root . $dir);
-            }
-        }
+        $this->fixture->manifest('tests/datasets/cz/payer', EvalFixtureRoot::PAYER, 'Plátce');
+        $this->fixture->manifest('demo/datasets/it-servis', 'it-servis', 'Demo — IT servis');
+
+        $catalog = new EvalCatalog($this->fixture->root);
+        $this->assertTrue($catalog->isAvailable());
+        $this->assertSame([EvalFixtureRoot::PAYER], $catalog->datasetNames());
+        $this->assertNull($catalog->dataset('it-servis'));
+        $this->assertSame([EvalFixtureRoot::PAYER, 'it-servis'], (new DatasetCatalog($this->fixture->root))->datasetNames(), 'katalog k seedu nabízí obě');
     }
 
     public function testUnavailableWithoutTestsDirectories(): void

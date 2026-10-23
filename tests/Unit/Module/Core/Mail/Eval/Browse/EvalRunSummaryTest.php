@@ -10,7 +10,7 @@ use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetMessages;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalMessageAcrossRuns;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalRunSummary;
 
-/** Řádek tabulky běhů, doklad napříč běhy a PDF zprávy nad stálými fixturami v repu (#103 D53). */
+/** Řádek tabulky běhů, doklad napříč běhy a PDF zprávy nad pojmenovanými běhy v repu (#103 D53); o `tests/eval/` jako celku nic netvrdí (D106). */
 final class EvalRunSummaryTest extends TestCase
 {
     private static function catalog(): EvalCatalog
@@ -63,8 +63,9 @@ final class EvalRunSummaryTest extends TestCase
         $dataset = $catalog->dataset('cz-vat-payer');
         $rows = EvalMessageAcrossRuns::build($catalog->runs($dataset), 'MSG-CORPUS-VP-0301', $catalog->currentHash($dataset));
 
-        $this->assertGreaterThanOrEqual(13, count($rows));
         $byFile = array_column($rows, null, 'file');
+        $this->assertArrayHasKey('2026-10-16-baseline.json', $byFile);
+        $this->assertArrayHasKey('2026-10-15-baseline.json', $byFile);
         $baseline = $byFile['2026-10-16-baseline.json'];
         $this->assertSame([1, 2, 3], array_column($baseline['repeats'], 'repeat'));
         $this->assertSame(4, $baseline['repeats'][0]['deviations'], '0301 × 1: čtyři odchylky');

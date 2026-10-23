@@ -1088,8 +1088,12 @@ a u dokladu štítek cesty; detail dokladu ukazuje cestu, počet polí
 „nenese“ a filtr *jen odchylky* je skrývá. Běh nad jinou
 verzí sady (jiný hash) je označený — očekávání v detailu jsou z aktuální
 sady. API `/_dev/api/testing/…` (`DevTestingController`) vybírá sadu, běh
-i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Spouštění
-evaluací z dashboardu je F6b (D54–D56).
+i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Testy katalogu
+a tohoto API (`EvalCatalogTest`, `DevTestingControllerTest`) tvrdí počty
+a pořadí běhů nad vlastním dočasným kořenem (`EvalFixtureRoot`, D106);
+ze skutečného `tests/eval/` čtou testy jen pojmenované běhy, takže commit
+nového běhu žádný test nerozbije. Spouštění evaluací z dashboardu je F6b
+(D54–D56).
 
 ### Spouštění z dashboardu (F6b — D54–D56, D58–D63; F6c — D64–D67)
 

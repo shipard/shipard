@@ -8,12 +8,15 @@ use Shipard\Api\Controller\DevDashboardController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Tests\Unit\Module\Core\Mail\Eval\Browse\EvalFixtureRoot;
 
 /**
- * API sekce Testování (#103 D51–D53) přes dispatch dashboardu nad
- * skutečným checkoutem (stálé fixtury `tests/datasets`, `tests/eval`):
- * tvary odpovědí, 404 pro neznámé a podvržené cesty, PDF jen ze sidecar
- * složky zprávy, porovnání (400 / 409), server bez `tests/`.
+ * API sekce Testování (#103 D51–D53) přes dispatch dashboardu: seznam sad
+ * a běhů nad vlastním kořenem {@see EvalFixtureRoot} (D106 — o skutečném
+ * `tests/eval/` se jako celku nic netvrdí), detaily nad skutečným checkoutem
+ * (sada `tests/datasets`, jen **pojmenované** běhy z `tests/eval`): tvary
+ * odpovědí, 404 pro neznámé a podvržené cesty, PDF jen ze sidecar složky
+ * zprávy, porovnání (400 / 409), server bez `tests/`.
  */
 final class DevTestingControllerTest extends TestCase
 {
@@ -30,14 +33,14 @@ final class DevTestingControllerTest extends TestCase
 		$this->ctrl = new DevDashboardController('/nonexistent/data-sources', null, new ModulePathResolver([$repoRoot . '/modules']), $repoRoot . '/nope.html', $repoRoot);
 	}
 
-	private function get(string $uri): Response
+	private function get(string $uri, ?DevDashboardController $ctrl = null): Response
 	{
 		$queryParams = [];
 		$queryString = parse_url($uri, PHP_URL_QUERY);
 		if (is_string($queryString) && $queryString !== '') {
 			parse_str($queryString, $queryParams);
 		}
-		return $this->ctrl->dispatch(Request::fromArray('GET', $uri, $queryParams, '', []));
+		return ($ctrl ?? $this->ctrl)->dispatch(Request::fromArray('GET', $uri, $queryParams, '', []));
 	}
 
 	private function statusOf(Response $r): int
@@ -55,22 +58,40 @@ final class DevTestingControllerTest extends TestCase
 		return (array) (new \ReflectionClass($r))->getProperty('headers')->getValue($r);
 	}
 
-	private function data(string $uri, int $expectedStatus = 200): mixed
+	private function data(string $uri, int $expectedStatus = 200, ?DevDashboardController $ctrl = null): mixed
 	{
-		$resp = $this->get($uri);
+		$resp = $this->get($uri, $ctrl);
 		$this->assertSame($expectedStatus, $this->statusOf($resp), $uri . ' → ' . json_encode($this->payload($resp)));
 		return $this->payload($resp)['data'];
 	}
 
+	/** Seznam sad a běhy nad vlastním kořenem (D106): počty, poslední běh podle `startedAt`, sada bez složky výsledků, `currentSet` podle hashe. */
 	public function testDatasetsListIncludesRunCounts(): void
 	{
-		$data = $this->data('/_dev/api/testing/datasets');
-		$byName = array_column($data, null, 'name');
-		$this->assertArrayHasKey(self::SET, $byName);
-		$this->assertSame(['name', 'title', 'country', 'profile', 'messages', 'runs', 'lastRunAt'], array_keys($byName[self::SET]));
-		$this->assertGreaterThanOrEqual(13, $byName[self::SET]['runs']);
-		$this->assertStringStartsWith('2026-10-20', (string) $byName[self::SET]['lastRunAt']);
-		$this->assertSame(0, $byName['cz-association']['runs'] ?? 0, 'sada bez složky výsledků má nula běhů');
+		$fixture = EvalFixtureRoot::create();
+		try {
+			$hash = $fixture->seedPayerAndAssociation();
+			$ctrl = new DevDashboardController('/nonexistent/data-sources', null, null, $fixture->root . '/nope.html', $fixture->root);
+
+			$data = $this->data('/_dev/api/testing/datasets', ctrl: $ctrl);
+			$byName = array_column($data, null, 'name');
+			$this->assertSame([EvalFixtureRoot::ASSOCIATION, EvalFixtureRoot::PAYER], array_keys($byName), 'podle názvu');
+			$this->assertSame(['name', 'title', 'country', 'profile', 'messages', 'runs', 'lastRunAt'], array_keys($byName[EvalFixtureRoot::PAYER]));
+			$this->assertSame(3, $byName[EvalFixtureRoot::PAYER]['runs']);
+			$this->assertSame('2026-10-16T10:00:00+00:00', $byName[EvalFixtureRoot::PAYER]['lastRunAt'], 'poslední podle startedAt, ne podle názvu souboru');
+			$this->assertSame(0, $byName[EvalFixtureRoot::ASSOCIATION]['runs'], 'sada bez složky výsledků má nula běhů');
+			$this->assertNull($byName[EvalFixtureRoot::ASSOCIATION]['lastRunAt']);
+
+			$runs = $this->data('/_dev/api/testing/datasets/' . EvalFixtureRoot::PAYER . '/runs', ctrl: $ctrl);
+			$this->assertSame($hash, $runs['currentHash']);
+			$this->assertSame(
+				['2026-10-16-baseline.json' => true, '2026-10-16-alpha.json' => true, '2026-10-15-baseline.json' => false],
+				array_column($runs['runs'], 'currentSet', 'file'),
+				'nejnovější první; běh s jiným hashem není nad aktuální sadou',
+			);
+		} finally {
+			$fixture->remove();
+		}
 	}
 
 	public function testRunsOfADataset(): void
@@ -145,7 +166,9 @@ final class DevTestingControllerTest extends TestCase
 	{
 		$data = $this->data('/_dev/api/testing/datasets/' . self::SET . '/messages/' . self::MSG . '/runs');
 		$this->assertSame(self::MSG, $data['message']['messageId']);
-		$this->assertGreaterThanOrEqual(13, count($data['runs']));
+		$acrossRuns = array_column($data['runs'], 'file');
+		$this->assertContains(self::RUN, $acrossRuns);
+		$this->assertContains(self::OLD_RUN, $acrossRuns);
 
 		$cmp = $this->data('/_dev/api/testing/compare/' . self::SET . '?a=' . self::RUN . '&b=2026-10-16-sonnet-5-5-haiku-tags.json');
 		$this->assertSame(self::RUN, $cmp['runs']['a']['file']);
