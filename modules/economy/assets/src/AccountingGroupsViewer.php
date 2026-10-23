@@ -72,17 +72,17 @@ class AccountingGroupsViewer extends AssetsViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT g.*' . $this->accountSelects() . ' FROM `' . $this->table . '` g' . $this->accountJoins()
             . ' WHERE g.`id` = %i',
             $recordId,
         );
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+    }
 
+    protected function detailTabs(array $record): array
+    {
         $identity = [];
         $this->addItem($identity, $this->text('label.code', 'Code'), $record['code'] ?? null);
         $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
@@ -102,10 +102,10 @@ class AccountingGroupsViewer extends AssetsViewerBase
             $this->addItem($accounts, $labels[$column], trim($number . ' ' . $name));
         }
 
-        return $this->overviewDetail([
+        return [$this->propertiesTab([
             ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
             ['title' => $this->text('group.accounts', 'Accounts'), 'items' => $accounts],
-        ]);
+        ])];
     }
 
     private function accountSelects(): string

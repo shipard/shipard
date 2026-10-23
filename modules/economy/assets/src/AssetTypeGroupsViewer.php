@@ -59,19 +59,15 @@ class AssetTypeGroupsViewer extends AssetsViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
         $items = [];
         $this->addItem($items, $this->text('label.name', 'Name'), $record['name'] ?? null);
         $this->addItem($items, $this->text('label.order', 'Order'), (string) ($record['sort_order'] ?? 0));
         $this->addItem($items, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
-        return $this->overviewDetail([
+        return [$this->propertiesTab([
             ['title' => $this->text('group.identity', 'Identity'), 'items' => $items],
-        ]);
+        ])];
     }
 }

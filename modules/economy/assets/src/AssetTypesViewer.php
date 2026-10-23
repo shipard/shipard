@@ -71,9 +71,9 @@ class AssetTypesViewer extends AssetsViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT t.*, tg.`name` AS `group_name`, g.`code` AS `acc_group_code`, g.`name` AS `acc_group_name`'
             . ' FROM `' . $this->table . '` t'
             . ' LEFT JOIN `economy_assets_type_groups` tg ON tg.`id` = t.`type_group`'
@@ -81,9 +81,10 @@ class AssetTypesViewer extends AssetsViewerBase
             . ' WHERE t.`id` = %i',
             $recordId,
         );
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+    }
+
+    protected function detailTabs(array $record): array
+    {
         $categories = new AssetCategories($this->config);
 
         $identity = [];
@@ -98,9 +99,9 @@ class AssetTypesViewer extends AssetsViewerBase
         $group = trim(((string) ($record['acc_group_code'] ?? '')) . ' — ' . ((string) ($record['acc_group_name'] ?? '')), ' —');
         $this->addItem($defaults, $this->text('label.defaultAccountingGroup', 'Default accounting group'), $group);
 
-        return $this->overviewDetail([
+        return [$this->propertiesTab([
             ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
             ['title' => $this->text('group.defaults', 'Defaults'), 'items' => $defaults],
-        ]);
+        ])];
     }
 }

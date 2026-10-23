@@ -70,11 +70,6 @@ class DetailContractTest extends TestCase
         // economy.accounting
         'economy.accounting.accounts',
         'economy.accounting.journal',
-        // economy.assets
-        'economy.assets.assets',
-        'economy.assets.types',
-        'economy.assets.typeGroups',
-        'economy.assets.accountingGroups',
         // economy.bank
         'economy.bank.transactions',
         'economy.bank.statements',

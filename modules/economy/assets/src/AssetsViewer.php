@@ -218,9 +218,19 @@ class AssetsViewer extends AssetsViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /**
+     * Výpočty detailu sdílené Přehledem, plánem odpisů a akcemi (kategorie,
+     * pořízení z dokladů, potvrzené události, tab Náklady a výnosy) —
+     * builder volá `detailTabs()` a `detailActions()` zvlášť, proto memo
+     * per id karty místo dvojích dotazů.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    private array $detailMemo = [];
+
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT a.*, t.`name` AS `type_name`, g.`code` AS `group_code`, g.`name` AS `group_name`,'
             . ' p.`full_name` AS `owner_name`'
             . ' FROM `' . $this->table . '` a'
@@ -230,14 +240,59 @@ class AssetsViewer extends AssetsViewerBase
             . ' WHERE a.`id` = %i',
             $recordId,
         );
-        if ($record === null) {
-            return ['tabs' => []];
+    }
+
+    /**
+     * @param array<string, mixed> $record
+     * @return array<string, mixed> categories, category, longTerm, depreciable, acquisition, expensesTab, card, events
+     */
+    private function detailData(array $record): array
+    {
+        $assetId = (int) $record['id'];
+        if (isset($this->detailMemo[$assetId])) {
+            return $this->detailMemo[$assetId];
         }
 
         $categories = $this->categories();
         $category   = (string) ($record['category'] ?? '');
         $longTerm   = $category !== '' && $categories->isLongTerm($category);
-        $tracking   = $this->config?->cfgItem('economy.assets.trackingKinds') ?? [];
+
+        $data = [
+            'categories'  => $categories,
+            'category'    => $category,
+            'longTerm'    => $longTerm,
+            'depreciable' => $category !== '' && $categories->isDepreciable($category),
+            // Pořízení z dokladů (D63) — i u drobného majetku pořízeného do nákladů.
+            'acquisition' => $this->acquisitionService()->acquisition($assetId),
+            // Náklady a výnosy z deníku (D64) — tab jen když karta nějaké má.
+            'expensesTab' => $this->expensesTab($assetId),
+            'card'        => null,
+            'events'      => [],
+        ];
+        if ($longTerm) {
+            $data['card']   = AssetPlanService::plain($record);
+            $data['events'] = $this->planService()->confirmedEvents($assetId);
+        }
+
+        return $this->detailMemo[$assetId] = $data;
+    }
+
+    /**
+     * Přehled (identita, zařazení, vlastnictví, pořízení a vyřazení,
+     * odpisy, poznámka; s kontrolou proti deníku a pořízením z dokladů jako
+     * composite), u odpisovaného majetku taby Daňové / Účetní odpisy
+     * a tab Náklady a výnosy, když karta nějaké má. Tab Přílohy přidává
+     * builder (`detailAttachments: "tab"`, #136 D21).
+     */
+    protected function detailTabs(array $record): array
+    {
+        $recordId    = (int) $record['id'];
+        $data        = $this->detailData($record);
+        $categories  = $data['categories'];
+        $category    = $data['category'];
+        $longTerm    = $data['longTerm'];
+        $depreciable = $data['depreciable'];
+        $tracking    = $this->config?->cfgItem('economy.assets.trackingKinds') ?? [];
 
         $identity = [];
         $this->addItem($identity, $this->text('label.assetNumber', 'Inventory number'), $record['asset_number'] ?? null);
@@ -269,7 +324,6 @@ class AssetsViewer extends AssetsViewerBase
             $this->addItem($lifecycle, $this->text('label.price', 'Price'), $this->formatAmount($record['price'] ?? null));
         }
 
-        $depreciable = $category !== '' && $categories->isDepreciable($category);
         $depreciation = [];
         if ($depreciable) {
             $rules = $this->planService()->rules();
@@ -282,7 +336,7 @@ class AssetsViewer extends AssetsViewerBase
         $note = [];
         $this->addItem($note, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
-        $detail = $this->overviewDetail([
+        $overview = $this->propertiesTab([
             ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
             ['title' => $this->text('group.classification', 'Classification'), 'items' => $classification],
             ['title' => $this->text('group.ownership', 'Ownership'), 'items' => $ownership],
@@ -291,8 +345,7 @@ class AssetsViewer extends AssetsViewerBase
             ['title' => $this->text('label.note', 'Note'), 'items' => $note],
         ]);
 
-        // Pořízení z dokladů (D63) — i u drobného majetku pořízeného do nákladů.
-        $acquisition = $this->acquisitionService()->acquisition($recordId);
+        $acquisition = $data['acquisition'];
         // Kontrola proti deníku (D67) — varování nahoře, ať se nepřehlédne.
         $warnings = $this->journalCheckTable($recordId);
         if ($acquisition['rows'] !== [] || $warnings !== null) {
@@ -301,49 +354,48 @@ class AssetsViewer extends AssetsViewerBase
                 $blocks[] = ['type' => 'heading', 'text' => $this->text('heading.journalCheck', 'Journal check')];
                 $blocks[] = $warnings;
             }
-            $blocks[] = $detail['tabs'][0]['content'];
+            $blocks[] = $overview['content'];
             if ($acquisition['rows'] !== []) {
                 $blocks[] = ['type' => 'heading', 'text' => $this->text('heading.acquisition', 'Acquisition')];
                 $blocks[] = $this->acquisitionTable($acquisition);
             }
-            $detail['tabs'][0]['content'] = ['type' => 'composite', 'blocks' => $blocks];
+            $overview['content'] = ['type' => 'composite', 'blocks' => $blocks];
         }
 
-        // Náklady a výnosy z deníku (D64) — tab jen když karta nějaké má.
-        $expensesTab = $this->expensesTab($recordId);
-
-        if (!$longTerm) {
-            if ($expensesTab !== null) {
-                $detail['tabs'][] = $expensesTab;
-                $detail['actions'] = [$this->journalAction($recordId)];
-            }
-            return $detail;
-        }
-
-        $service = $this->planService();
-        $card = AssetPlanService::plain($record);
-        $events = $service->confirmedEvents($recordId);
-        if ($depreciable) {
-            $plans = $service->plan($card, $events);
-            $detail['tabs'][] = [
+        $tabs = [$overview];
+        if ($longTerm && $depreciable) {
+            $service = $this->planService();
+            $plans = $service->plan($data['card'], $data['events']);
+            $tabs[] = [
                 'id'      => 'taxPlan',
                 'label'   => $this->text('tab.taxPlan', 'Tax depreciation'),
-                'content' => $this->planContent($plans['tax'], $card),
+                'content' => $this->planContent($plans['tax'], $data['card']),
             ];
-            $detail['tabs'][] = [
+            $tabs[] = [
                 'id'      => 'accPlan',
                 'label'   => $this->text('tab.accPlan', 'Accounting depreciation'),
                 // Účetní okruh se účtuje — potvrzené řádky nesou stav zaúčtování.
-                'content' => $this->planContent($plans['acc'], $card, $service->postingOf($recordId)),
+                'content' => $this->planContent($plans['acc'], $data['card'], $service->postingOf($recordId)),
             ];
         }
-        $detail['actions'] = $this->eventActions($card, $events, $depreciable, $acquisition['activation']);
-        if ($expensesTab !== null) {
-            $detail['tabs'][] = $expensesTab;
-            $detail['actions'][] = $this->journalAction($recordId);
+        if ($data['expensesTab'] !== null) {
+            $tabs[] = $data['expensesTab'];
         }
 
-        return $detail;
+        return $tabs;
+    }
+
+    /** Akce událostí podle stavu karty (dlouhodobý majetek) + Otevřít v deníku, má-li karta tab Náklady a výnosy. */
+    protected function detailActions(array $record): array
+    {
+        $data = $this->detailData($record);
+        $actions = $data['longTerm']
+            ? $this->eventActions($data['card'], $data['events'], $data['depreciable'], $data['acquisition']['activation'])
+            : [];
+        if ($data['expensesTab'] !== null) {
+            $actions[] = $this->journalAction((int) $record['id']);
+        }
+        return $actions;
     }
 
     // ── Náklady a výnosy v detailu ──────────────────────────────────────────
