@@ -21,8 +21,8 @@
             "file": "1001-long-document.pdf",
             "name": "1001-long-document.pdf",
             "mimeType": "application/pdf",
-            "size": 93529,
-            "sha256": "a95affaae25a1ebb19db2379823d22c48c907b1fd6c5bb54da1b23f3d5f8d1b7",
+            "size": 93519,
+            "sha256": "b7a4c9660273f6fc7e173ca0e7aee0a04c8918fd1b6e472bf6498401b1fd6e92",
             "order": 1
         }
     ],
@@ -80,7 +80,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "objednavky@matice-velkoobchod.example",
-                                "phone": "+420495512780",
+                                "phone": "+420000512780",
                                 "web": "www.matice-velkoobchod.example"
                             },
                             "bankAccount": {
@@ -1124,7 +1124,7 @@
                     "contact": {
                         "name": null,
                         "email": "objednavky@matice-velkoobchod.example",
-                        "phone": "+420495512780",
+                        "phone": "+420000512780",
                         "web": "www.matice-velkoobchod.example"
                     },
                     "bankAccount": {

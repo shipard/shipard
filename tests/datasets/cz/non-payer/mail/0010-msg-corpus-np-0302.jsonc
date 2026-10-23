@@ -21,8 +21,8 @@
             "file": "0302-domestic-rounding.pdf",
             "name": "0302-domestic-rounding.pdf",
             "mimeType": "application/pdf",
-            "size": 54551,
-            "sha256": "f778eb842bb7d82bd08868247beda833d356c04305900f9a7182f44aa82fba90",
+            "size": 54548,
+            "sha256": "1ae798a7b53d9bc919e36b687d3f4ac7e0d6e15943470fc506fd595af2691daf",
             "order": 1
         },
         {
@@ -30,7 +30,7 @@
             "name": "0302-domestic-rounding.isdoc",
             "mimeType": "text/xml",
             "size": 6101,
-            "sha256": "921ac8515ef4999bf29130aafe655a05f228be1dddee8b6718f40d7a8aca1a14",
+            "sha256": "5f60b7eb3b31110972d1c485070d9649769196da23bde51dfb3b13df1c66080e",
             "order": 2
         }
     ],
@@ -88,7 +88,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "zakaznici@vetrnik-energie.example",
-                                "phone": "+420596730111",
+                                "phone": "+420000730111",
                                 "web": "www.vetrnik-energie.example"
                             },
                             "bankAccount": {
@@ -265,7 +265,7 @@
                     "contact": {
                         "name": null,
                         "email": "zakaznici@vetrnik-energie.example",
-                        "phone": "+420596730111",
+                        "phone": "+420000730111",
                         "web": "www.vetrnik-energie.example"
                     },
                     "bankAccount": {

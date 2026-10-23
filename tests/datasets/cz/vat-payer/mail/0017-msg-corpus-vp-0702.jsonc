@@ -21,8 +21,8 @@
             "file": "0702-domestic-non-payer-supplier.pdf",
             "name": "0702-domestic-non-payer-supplier.pdf",
             "mimeType": "application/pdf",
-            "size": 26657,
-            "sha256": "273b992a80972ea97ff31fd7aecc798134e0ca6d2a702bdd4c62f2e8de63735b",
+            "size": 26649,
+            "sha256": "bc8a67342c8831eff24eb9468b23b9694696862669bbaea22398547b5317151a",
             "order": 1
         },
         {
@@ -30,7 +30,7 @@
             "name": "0702-domestic-non-payer-supplier.isdoc",
             "mimeType": "text/xml",
             "size": 5297,
-            "sha256": "5dfa9c2e767b7c19aacd16ea2a70079a45c79d2a2c92cc78e2cf146cf45474da",
+            "sha256": "cc4758fbb159fc9e512b48eaec832b2cdf23e4aebeea3041a4eecbcbdaf95008",
             "order": 2
         }
     ],
@@ -88,7 +88,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "kurzy@studio-hraz.example",
-                                "phone": "+420567309842",
+                                "phone": "+420000309842",
                                 "web": null
                             },
                             "bankAccount": {
@@ -237,7 +237,7 @@
                     "contact": {
                         "name": null,
                         "email": "kurzy@studio-hraz.example",
-                        "phone": "+420567309842",
+                        "phone": "+420000309842",
                         "web": null
                     },
                     "bankAccount": {

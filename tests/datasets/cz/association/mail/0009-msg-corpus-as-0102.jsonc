@@ -21,8 +21,8 @@
             "file": "0102-domestic-goods.pdf",
             "name": "0102-domestic-goods.pdf",
             "mimeType": "application/pdf",
-            "size": 33758,
-            "sha256": "fc691d2462be50dfdd59bbdad09a538a5c727d5d0f74686e47b390bda1c45478",
+            "size": 33756,
+            "sha256": "a1e11ef3a1b9db79af05825df106d0fa7a92d0f6a13dee8b0afa42e1a3fac85c",
             "order": 1
         },
         {
@@ -30,7 +30,7 @@
             "name": "0102-domestic-goods.isdoc",
             "mimeType": "text/xml",
             "size": 7772,
-            "sha256": "9a07011cdf521c574a42caa94731eeaafbc6caba3770c6f90dc2d09d1cdfa4fe",
+            "sha256": "829ad9d3682001d03ceee09e3fc7e6fabfed326f6168f0c9a820f770bf1008de",
             "order": 2
         }
     ],
@@ -88,7 +88,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "odbyt@drevomat-hana.example",
-                                "phone": "+420585201304",
+                                "phone": "+420000201304",
                                 "web": "www.drevomat-hana.example"
                             },
                             "bankAccount": {
@@ -307,7 +307,7 @@
                     "contact": {
                         "name": null,
                         "email": "odbyt@drevomat-hana.example",
-                        "phone": "+420585201304",
+                        "phone": "+420000201304",
                         "web": "www.drevomat-hana.example"
                     },
                     "bankAccount": {

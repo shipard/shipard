@@ -21,8 +21,8 @@
             "file": "0401-domestic-reverse-charge.pdf",
             "name": "0401-domestic-reverse-charge.pdf",
             "mimeType": "application/pdf",
-            "size": 34022,
-            "sha256": "f2edec95c824da61f4dfd044ade0385444353c1bb15eb5807813fbba0c341492",
+            "size": 34018,
+            "sha256": "ad16b7a0d1597a8351d6cb4d539e7aba3b0d9dc4aa3ca96e3c3879c89f3be9f3",
             "order": 1
         }
     ],
@@ -80,7 +80,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@stavby-klenba.example",
-                                "phone": "+420475602318",
+                                "phone": "+420000602318",
                                 "web": "www.stavby-klenba.example"
                             },
                             "bankAccount": {
@@ -236,7 +236,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@stavby-klenba.example",
-                        "phone": "+420475602318",
+                        "phone": "+420000602318",
                         "web": "www.stavby-klenba.example"
                     },
                     "bankAccount": {

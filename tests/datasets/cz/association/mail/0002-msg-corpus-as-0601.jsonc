@@ -21,8 +21,8 @@
             "file": "0601-eu-goods.pdf",
             "name": "0601-eu-goods.pdf",
             "mimeType": "application/pdf",
-            "size": 33058,
-            "sha256": "e4c6c8718177db6b9646f702e7110b2c31fba173de38f9459c08b74b24972adb",
+            "size": 33053,
+            "sha256": "9d547271bf3870dc2f760959179859382393d2da430e85ba981d6617697bdbce",
             "order": 1
         }
     ],
@@ -80,7 +80,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "sales@nordlicht-hardware.example",
-                                "phone": "+494037005120",
+                                "phone": "+490007005120",
                                 "web": "www.nordlicht-hardware.example"
                             },
                             "bankAccount": {
@@ -257,7 +257,7 @@
                     "contact": {
                         "name": null,
                         "email": "sales@nordlicht-hardware.example",
-                        "phone": "+494037005120",
+                        "phone": "+490007005120",
                         "web": "www.nordlicht-hardware.example"
                     },
                     "bankAccount": {

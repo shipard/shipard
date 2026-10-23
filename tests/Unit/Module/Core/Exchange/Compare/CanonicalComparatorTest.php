@@ -360,7 +360,7 @@ class CanonicalComparatorTest extends TestCase
         $b = $a;
         $b['supplier']['vatId'] = 'cz 43075894';
         $b['supplier']['address']['zip'] = '779 00';
-        $b['supplier']['contact']['phone'] = '+420 585 201 304';
+        $b['supplier']['contact']['phone'] = '+420 000 201 304';
         $b['supplier']['bankAccount']['accountNumber'] = '000101968643/0100';
         $b['currency'] = 'czk';
         $b['rows'][0]['unitPrice'] = '486.5';

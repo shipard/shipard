@@ -22,7 +22,7 @@
             "name": "0501-eu-services.pdf",
             "mimeType": "application/pdf",
             "size": 34419,
-            "sha256": "63a5b6f01e013eb5524118b9e3148b04d5d9bb7d508c723cb608c02babda2a31",
+            "sha256": "677e47ce08bd60a1f8852148a3df58285edc3cd242e4fd8a432897817969e859",
             "order": 1
         }
     ],
@@ -80,7 +80,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "billing@wolkenkraft.example",
-                                "phone": "+493028874410",
+                                "phone": "+490008874410",
                                 "web": "www.wolkenkraft.example"
                             },
                             "bankAccount": {
@@ -236,7 +236,7 @@
                     "contact": {
                         "name": null,
                         "email": "billing@wolkenkraft.example",
-                        "phone": "+493028874410",
+                        "phone": "+490008874410",
                         "web": "www.wolkenkraft.example"
                     },
                     "bankAccount": {

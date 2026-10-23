@@ -21,8 +21,8 @@
             "file": "0402-domestic-reverse-charge.pdf",
             "name": "0402-domestic-reverse-charge.pdf",
             "mimeType": "application/pdf",
-            "size": 33325,
-            "sha256": "6a63696416683c5bbe98052c2a58e4c1ae95fff2bf73e4e13a45d7f4d7fd7d22",
+            "size": 33319,
+            "sha256": "21c9ed876a17a9006a97b7471c054b23552c5e2c6352215a493846339a08a5f3",
             "order": 1
         },
         {
@@ -30,7 +30,7 @@
             "name": "0402-domestic-reverse-charge.isdoc",
             "mimeType": "text/xml",
             "size": 5999,
-            "sha256": "efcf8bf54173d14079e33d4297c73fd42cbffb1285c3f43a9b590986a0de207b",
+            "sha256": "fea5e18391ea1fce84ccb9f81f79b80d4537f7f059b28521fa98ee2c85f5a2ab",
             "order": 2
         }
     ],
@@ -88,7 +88,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "fakturace@stavby-klenba.example",
-                                "phone": "+420475602318",
+                                "phone": "+420000602318",
                                 "web": "www.stavby-klenba.example"
                             },
                             "bankAccount": {
@@ -265,7 +265,7 @@
                     "contact": {
                         "name": null,
                         "email": "fakturace@stavby-klenba.example",
-                        "phone": "+420475602318",
+                        "phone": "+420000602318",
                         "web": "www.stavby-klenba.example"
                     },
                     "bankAccount": {

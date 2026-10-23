@@ -21,8 +21,8 @@
             "file": "0202-domestic-two-rates.pdf",
             "name": "0202-domestic-two-rates.pdf",
             "mimeType": "application/pdf",
-            "size": 29223,
-            "sha256": "92808c4b06455ffd903fe0f33c2ce4db76f931f3f1d4685ab65c59fea406a93e",
+            "size": 29220,
+            "sha256": "c65d5d75edc4c35b7318ad4adc358d0ddf001a87786d004051e87793fae4c0a3",
             "order": 1
         },
         {
@@ -30,7 +30,7 @@
             "name": "0202-domestic-two-rates.isdoc",
             "mimeType": "text/xml",
             "size": 7511,
-            "sha256": "5485c8f5fa4ce27066769188a9a5fd460a146758f333b6b38a09bc02533d4d93",
+            "sha256": "6730b8418a57644e3967e848ac494f26cde51cc18bb450057283693c6c6afc7e",
             "order": 2
         }
     ],
@@ -88,7 +88,7 @@
                             "contact": {
                                 "name": null,
                                 "email": "objednavky@kvadrat-papir.example",
-                                "phone": "+420224815770",
+                                "phone": "+420000815770",
                                 "web": "www.kvadrat-papir.example"
                             },
                             "bankAccount": {
@@ -292,7 +292,7 @@
                     "contact": {
                         "name": null,
                         "email": "objednavky@kvadrat-papir.example",
-                        "phone": "+420224815770",
+                        "phone": "+420000815770",
                         "web": "www.kvadrat-papir.example"
                     },
                     "bankAccount": {
