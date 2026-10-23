@@ -193,22 +193,42 @@ class E2ePreflight
         return [...$problems, ...$this->toolProblems()];
     }
 
+    /** Veřejný endpoint API zdroje dat (bez přihlášení), kterým se zkouší dosažitelnost. */
+    public const string APP_INFO_PATH = '/api/v1/_app/info';
+
     /**
-     * Dosažitelnost aplikace zdroje dat (I13): HTTP GET, odpověď < 400 = ok
-     * (null); jinak věta s důvodem. Přesměrování se nenásleduje — `/app/`
+     * Adresa, kterou preflight zkouší: API zdroje dat (`/<ds-id>/api/v1/_app/info`,
+     * bez přihlášení), ne statická stránka `/app/` — ta ji dá nginx i pro host,
+     * který aplikace nezná (`UNKNOWN_HOST`, D97: jméno mimo `domains.json`
+     * pak padlo až v prohlížeči po 30 s bez karet).
+     */
+    public static function probeUrl(string $origin, string $dsId): string
+    {
+        return rtrim($origin, '/') . '/' . $dsId . self::APP_INFO_PATH;
+    }
+
+    /**
+     * Dosažitelnost aplikace zdroje dat (I13): HTTP GET na API, odpověď < 400
+     * = ok (null); jinak věta s důvodem. Přesměrování se nenásleduje — API
      * má odpovídat přímo, jinak je `--base-url` špatně. S `$pin` (D97) jde
      * dotaz na ověřenou adresu hostu (`CURLOPT_RESOLVE`), ne na to, co by
-     * jméno přeložilo teď.
+     * jméno přeložilo teď; 404 `UNKNOWN_HOST` = aplikace host nezná.
      */
     public function appReachable(string $url, float $timeout = self::APP_TIMEOUT_SECONDS, ?PinnedBaseUrl $pin = null): ?string
     {
-        ['status' => $status, 'error' => $error] = $this->httpStatus($url, $timeout, $pin?->curlResolve());
+        ['status' => $status, 'error' => $error, 'code' => $code] = $this->httpStatus($url, $timeout, $pin?->curlResolve());
         if ($status === null) {
             return "Aplikace na {$url} není dosažitelná" . ($error !== null ? " ({$error})" : '')
                 . ' — zkontroluj --base-url (výchozí http://127.0.0.1; nginx musí mít Shipard jako výchozí server_name)';
         }
+        if ($status >= 400 && $code === 'UNKNOWN_HOST') {
+            $host = $pin?->host ?? (string) (parse_url($url, PHP_URL_HOST) ?? '');
+            return "Aplikace host '{$host}' nezná (HTTP {$status} UNKNOWN_HOST) — jméno musí být v mapě domén serveru"
+                . ' (/etc/shipard/domains.json), nebo použij IP adresu serveru (--base-url http://127.0.0.1)';
+        }
         if ($status >= 400) {
-            return "Aplikace na {$url} odpověděla HTTP {$status} — zkontroluj --base-url a zdroj dat";
+            return "Aplikace na {$url} odpověděla HTTP {$status}" . ($code !== null ? " ({$code})" : '')
+                . ' — zkontroluj --base-url a zdroj dat (nginx musí mít Shipard jako výchozí server_name)';
         }
         return null;
     }
@@ -216,15 +236,15 @@ class E2ePreflight
     /**
      * Jeden HTTP GET bez přesměrování (curl, jen http/https); `$resolve` =
      * záznam `host:port:ip` pro `CURLOPT_RESOLVE` ({@see PinnedBaseUrl::curlResolve()}).
-     * Šev pro testy.
+     * `code` = `error.code` z JSON těla chybové odpovědi API, je-li. Šev pro testy.
      *
-     * @return array{status: ?int, error: ?string}
+     * @return array{status: ?int, error: ?string, code: ?string}
      */
     protected function httpStatus(string $url, float $timeout, ?string $resolve = null): array
     {
         $ch = curl_init($url);
         if ($ch === false) {
-            return ['status' => null, 'error' => 'curl_init selhalo'];
+            return ['status' => null, 'error' => 'curl_init selhalo', 'code' => null];
         }
         $millis = max(1, (int) ceil($timeout * 1000));
         $options = [
@@ -233,19 +253,24 @@ class E2ePreflight
             CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
             CURLOPT_CONNECTTIMEOUT_MS => $millis,
             CURLOPT_TIMEOUT_MS => $millis,
-            CURLOPT_HTTPHEADER => ['Accept: text/html'],
+            CURLOPT_HTTPHEADER => ['Accept: application/json, text/html'],
             CURLOPT_USERAGENT => 'shpd-dataset-e2e',
         ];
         if ($resolve !== null) {
             $options[CURLOPT_RESOLVE] = [$resolve];
         }
         curl_setopt_array($ch, $options);
-        $ok = curl_exec($ch);
+        $body = curl_exec($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        $error = $ok === false ? (curl_error($ch) ?: 'neznámá chyba curl') : null;
+        $error = $body === false ? (curl_error($ch) ?: 'neznámá chyba curl') : null;
         if ($status === 0) {
-            return ['status' => null, 'error' => $error ?? 'odpověď bez stavového řádku'];
+            return ['status' => null, 'error' => $error ?? 'odpověď bez stavového řádku', 'code' => null];
         }
-        return ['status' => $status, 'error' => null];
+        $code = null;
+        if (is_string($body) && $status >= 400) {
+            $json = json_decode($body, true);
+            $code = is_array($json) && is_string($json['error']['code'] ?? null) ? $json['error']['code'] : null;
+        }
+        return ['status' => $status, 'error' => null, 'code' => $code];
     }
 }

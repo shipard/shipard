@@ -14,15 +14,15 @@ use Shipard\Module\Core\Exchange\Dataset\E2e\PinnedBaseUrl;
 /** Preflight s podvrženým HTTP stavem (síť se v unit testu nevolá). */
 final class StubbedPreflight extends E2ePreflight
 {
-    /** @var array{status: ?int, error: ?string} */
-    public array $http = ['status' => 200, 'error' => null];
+    /** @var array{status: ?int, error: ?string, code: ?string} */
+    public array $http = ['status' => 200, 'error' => null, 'code' => null];
     /** @var list<array{0: string, 1: float, 2: ?string}> */
     public array $requests = [];
 
     protected function httpStatus(string $url, float $timeout, ?string $resolve = null): array
     {
         $this->requests[] = [$url, $timeout, $resolve];
-        return $this->http;
+        return $this->http + ['code' => null];
     }
 }
 
@@ -199,42 +199,50 @@ final class E2ePreflightTest extends TestCase
     public function testAppReachabilityAcceptsAnythingBelow400(): void
     {
         $p = $this->preflight();
-        $url = 'http://127.0.0.1/abcd-abcd-abcd-abcd/app/';
+        $url = E2ePreflight::probeUrl('http://127.0.0.1/', 'abcd-abcd-abcd-abcd');
+        $this->assertSame('http://127.0.0.1/abcd-abcd-abcd-abcd/api/v1/_app/info', $url, 'zkouší se API, ne statická stránka');
 
         $this->assertNull($p->appReachable($url));
         $this->assertSame([[$url, E2ePreflight::APP_TIMEOUT_SECONDS, null]], $p->requests);
 
-        $p->http = ['status' => 302, 'error' => null];
+        $p->http = ['status' => 302, 'error' => null, 'code' => null];
         $this->assertNull($p->appReachable($url, 2.5), 'přesměrování je odpověď serveru, ne nedostupnost');
         $this->assertSame(2.5, $p->requests[1][1]);
 
-        $p->http = ['status' => 404, 'error' => null];
+        $p->http = ['status' => 404, 'error' => null, 'code' => 'UNKNOWN_DATASOURCE'];
         $problem = $p->appReachable($url);
-        $this->assertStringContainsString("Aplikace na {$url} odpověděla HTTP 404", (string) $problem);
+        $this->assertStringContainsString("Aplikace na {$url} odpověděla HTTP 404 (UNKNOWN_DATASOURCE)", (string) $problem);
         $this->assertStringContainsString('--base-url', (string) $problem);
 
-        $p->http = ['status' => 502, 'error' => null];
+        $p->http = ['status' => 502, 'error' => null, 'code' => null];
         $this->assertStringContainsString('HTTP 502', (string) $p->appReachable($url));
 
-        $p->http = ['status' => null, 'error' => 'Connection refused'];
+        $p->http = ['status' => null, 'error' => 'Connection refused', 'code' => null];
         $problem = $p->appReachable($url);
         $this->assertStringContainsString("Aplikace na {$url} není dosažitelná (Connection refused)", (string) $problem);
         $this->assertStringContainsString('server_name', (string) $problem);
     }
 
-    public function testAppReachabilityPinsTheVerifiedAddress(): void
+    public function testAppReachabilityPinsTheVerifiedAddressAndNamesAnUnknownHost(): void
     {
         $p = $this->preflight();
-        $named = 'http://dev.example/abcd-abcd-abcd-abcd/app/';
+        $named = E2ePreflight::probeUrl('http://dev.example', 'abcd-abcd-abcd-abcd');
         $this->assertNull($p->appReachable($named, 1.0, new PinnedBaseUrl('http://dev.example', 'dev.example', 80, '127.0.1.1', false)));
         $this->assertSame([$named, 1.0, 'dev.example:80:127.0.1.1'], $p->requests[0], 'jméno jde přes CURLOPT_RESOLVE na ověřenou adresu (D97)');
 
         $this->assertNull($p->appReachable($named, 1.0, new PinnedBaseUrl('https://dev.example:8443', 'dev.example', 8443, '::1', false)));
         $this->assertSame('dev.example:8443:[::1]', $p->requests[1][2]);
 
-        $literal = 'http://127.0.0.1/abcd-abcd-abcd-abcd/app/';
+        $literal = E2ePreflight::probeUrl('http://127.0.0.1', 'abcd-abcd-abcd-abcd');
         $this->assertNull($p->appReachable($literal, 1.0, new PinnedBaseUrl('http://127.0.0.1', '127.0.0.1', 80, '127.0.0.1', true)));
         $this->assertNull($p->requests[2][2], 'IP literál se nepřipichuje');
+
+        // Jméno mimo domains.json: nginx stránku dá, API odmítne UNKNOWN_HOST — věta říká, co s tím.
+        $p->http = ['status' => 404, 'error' => null, 'code' => 'UNKNOWN_HOST'];
+        $problem = (string) $p->appReachable($named, 1.0, new PinnedBaseUrl('http://dev.example', 'dev.example', 80, '127.0.1.1', false));
+        $this->assertStringContainsString("Aplikace host 'dev.example' nezná (HTTP 404 UNKNOWN_HOST)", $problem);
+        $this->assertStringContainsString('domains.json', $problem);
+        $this->assertStringContainsString('http://127.0.0.1', $problem);
     }
 
     public function testRealHttpStatusReportsAClosedPortAsUnreachable(): void
@@ -243,7 +251,7 @@ final class E2ePreflightTest extends TestCase
         $this->assertNotFalse($socket, "socket: {$errstr}");
         $name = (string) stream_socket_get_name($socket, false);
         fclose($socket); // port je teď zavřený — spojení skončí odmítnutím hned
-        $url = "http://{$name}/x/app/";
+        $url = E2ePreflight::probeUrl("http://{$name}", 'x');
 
         $preflight = new E2ePreflight($this->dir . '/repo', $this->dir . '/bin', null, $this->dir . '/home');
         $problem = $preflight->appReachable($url, 2.0);
@@ -253,8 +261,42 @@ final class E2ePreflightTest extends TestCase
         // Připíchnuté jméno: curl jde na 127.0.0.1 bez překladu — zavřený port odmítne stejně.
         $port = (int) substr($name, (int) strrpos($name, ':') + 1);
         $pinned = new PinnedBaseUrl("http://localhost:{$port}", 'localhost', $port, '127.0.0.1', false);
-        $problem = $preflight->appReachable("http://localhost:{$port}/x/app/", 2.0, $pinned);
+        $problem = $preflight->appReachable(E2ePreflight::probeUrl("http://localhost:{$port}", 'x'), 2.0, $pinned);
         $this->assertNotNull($problem);
         $this->assertStringContainsString('není dosažitelná', $problem);
+    }
+
+    public function testRealHttpStatusReadsTheErrorCodeFromTheApiBody(): void
+    {
+        // Jednorázový HTTP server v podprocesu odpoví 404 s JSON chybou jako
+        // API — preflight z těla přečte kód a jméno hostu vezme z pinu.
+        $server = <<<'PHP'
+            $s = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
+            if ($s === false) { fwrite(STDERR, $errstr); exit(1); }
+            echo substr(stream_socket_get_name($s, false), strrpos(stream_socket_get_name($s, false), ':') + 1), "\n";
+            fflush(STDOUT);
+            $c = @stream_socket_accept($s, 5);
+            if ($c !== false) {
+                fread($c, 4096);
+                $body = '{"success":false,"error":{"code":"UNKNOWN_HOST","message":"Unknown host"}}';
+                fwrite($c, "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: " . strlen($body) . "\r\nConnection: close\r\n\r\n" . $body);
+                fclose($c);
+            }
+            PHP;
+        $proc = proc_open([PHP_BINARY, '-r', $server], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        $this->assertIsResource($proc);
+        try {
+            $port = (int) trim((string) fgets($pipes[1]));
+            $this->assertGreaterThan(0, $port, 'podproces vypíše port');
+            $preflight = new E2ePreflight($this->dir . '/repo', $this->dir . '/bin', null, $this->dir . '/home');
+            $pinned = new PinnedBaseUrl("http://dev.example:{$port}", 'dev.example', $port, '127.0.0.1', false);
+            $problem = (string) $preflight->appReachable(E2ePreflight::probeUrl("http://dev.example:{$port}", 'x'), 3.0, $pinned);
+            $this->assertStringContainsString("Aplikace host 'dev.example' nezná (HTTP 404 UNKNOWN_HOST)", $problem);
+            $this->assertStringContainsString('domains.json', $problem);
+        } finally {
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($proc);
+        }
     }
 }

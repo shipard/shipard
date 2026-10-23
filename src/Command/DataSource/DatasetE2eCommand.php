@@ -47,7 +47,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * v checkoutu, Node v pevném PATH, závislosti `tests/e2e/node_modules`,
  * Chromium Playwrightu, **lokální host** `--base-url` (D97, {@see LocalBaseUrl}:
  * IP literál nebo jméno jen s loopback / vlastními adresami; ověřená adresa
- * se připíchne curl i Chromiu), dosažitelnost `<base-url>/<ds-id>/app/`; s
+ * se připíchne curl i Chromiu), dosažitelnost API
+ * `<base-url>/<ds-id>/api/v1/_app/info` (jméno mimo `domains.json` =
+ * `UNKNOWN_HOST`, {@see E2ePreflight::probeUrl()}); s
  * `--no-reseed` navíc `dataset.name` v `main.json` = název sady. Exit 0 jen
  * při stavu `ok`, 1 při nálezech (D95), 2 preflight, 130 zrušeno. S `--json`
  * jde na stdout přesně jeden JSON dokument (report, nebo
@@ -289,7 +291,8 @@ class DatasetE2eCommand extends Command implements SignalableCommandInterface
             }
         }
         if ($problems === [] && $pinned instanceof PinnedBaseUrl) {
-            $reach = $preflight->appReachable($appUrl, pin: $pinned);
+            // API, ne statická stránka — neznámý host (UNKNOWN_HOST) se pozná tady.
+            $reach = $preflight->appReachable(E2ePreflight::probeUrl($origin, $dsConfig->getId()), pin: $pinned);
             if ($reach !== null) {
                 $problems[] = $reach;
             }

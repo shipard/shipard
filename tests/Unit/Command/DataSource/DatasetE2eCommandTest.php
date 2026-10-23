@@ -359,13 +359,13 @@ final class DatasetE2eCommandTest extends TestCase
         $this->assertStringContainsString(E2ePreflight::REMEDY, $tester->getDisplay());
         file_put_contents($this->tmp . '/repo/tests/e2e/node_modules/@playwright/test/cli.js', '');
 
-        // nedosažitelná aplikace
+        // nedosažitelná aplikace (zkouší se API zdroje dat, ne statická stránka)
         $command = $this->command($db);
-        $command->createPreflightForTest()->reach = 'Aplikace na http://127.0.0.1/abcd-abcd-abcd-abcd/app/ není dosažitelná (Connection refused)';
+        $command->createPreflightForTest()->reach = 'Aplikace na http://127.0.0.1/abcd-abcd-abcd-abcd/api/v1/_app/info není dosažitelná (Connection refused)';
         $tester = $this->execute($command);
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $this->assertStringContainsString('není dosažitelná', $tester->getDisplay());
-        $this->assertSame(['http://127.0.0.1/' . self::DS_ID . '/app/'], $command->preflight->checked);
+        $this->assertSame(['http://127.0.0.1/' . self::DS_ID . '/api/v1/_app/info'], $command->preflight->checked);
 
         // špatný --base-url
         $tester = $this->execute($this->command($db), ['--base-url' => 'ftp://x']);
@@ -524,7 +524,7 @@ final class DatasetE2eCommandTest extends TestCase
         $this->assertStringContainsString('Výsledek: v pořádku.', $display);
         $this->assertStringNotContainsString('"status"', $display, 'bez --json žádný JSON');
         $this->assertSame('https://dev.example:8443', $command->runner?->stateSeen['origins'][0]['origin'], 'origin storageState = origin --base-url');
-        $this->assertSame(['https://dev.example:8443/' . self::DS_ID . '/app/'], $command->preflight->checked);
+        $this->assertSame(['https://dev.example:8443/' . self::DS_ID . '/api/v1/_app/info'], $command->preflight->checked);
         // Jméno serveru (D97): dosažitelnost přes připíchnutou adresu, Chromium dostane mapování.
         $this->assertSame(['dev.example:8443:127.0.0.1'], $command->preflight->pins);
         $this->assertSame('MAP dev.example 127.0.0.1', $command->runner?->env['SHPD_E2E_HOST_RESOLVER_RULES'] ?? null);
