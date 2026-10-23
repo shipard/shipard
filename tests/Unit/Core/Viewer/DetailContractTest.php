@@ -91,10 +91,6 @@ class DetailContractTest extends TestCase
         'economy.vat.reportPeriods',
         'economy.vat.filings',
         'economy.vat.deductionCoefficients',
-        // economy.workOrders
-        'economy.workOrders.heads',
-        'economy.workOrders.kinds',
-        'economy.workOrders.numberSeries',
         // hosting.core
         'hosting.core.servers',
         'hosting.core.dataSources',

@@ -121,24 +121,6 @@ abstract class WorkOrdersViewerBase extends TableViewer
         }
     }
 
-    /**
-     * Detail s jediným tabem Přehled nad skupinami vlastností.
-     *
-     * @param list<array{title: string, items: list<array{label: string, value: string}>}> $groups
-     * @return array{tabs: list<array<string, mixed>>}
-     */
-    protected function overviewDetail(array $groups): array
-    {
-        $groups = array_values(array_filter($groups, static fn(array $g): bool => $g['items'] !== []));
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => ['type' => 'properties', 'groups' => $groups],
-            ]],
-        ];
-    }
-
     /** Název hodnoty cfgItem tvaru `{klíč: {name}}`, bez konfigurace klíč. */
     protected function cfgLabel(string $cfgItemId, string $key): string
     {

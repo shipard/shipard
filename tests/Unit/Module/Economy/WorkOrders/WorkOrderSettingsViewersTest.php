@@ -7,6 +7,11 @@ namespace Shipard\Tests\Unit\Module\Economy\WorkOrders;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Module\ModuleLoader;
+use Shipard\Core\Utils\JsoncParser;
+use Shipard\Core\Viewer\TableViewer;
+use Shipard\Core\Viewer\ViewerRegistry;
 use Shipard\Module\Economy\WorkOrders\KindsViewer;
 use Shipard\Module\Economy\WorkOrders\WorkOrderSeriesViewer;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
@@ -19,9 +24,20 @@ class WorkOrderSettingsViewersTest extends TestCase
 {
     private const STATES = [
         '10' => ['stateName' => 'Koncept', 'stateStyle' => 'concept', 'mainState' => 1, 'viewGroup' => 'active', 'goto' => [40]],
-        '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'viewGroup' => 'active', 'goto' => [70]],
+        '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'viewGroup' => 'active', 'goto' => [70], 'detailBadge' => false],
         '70' => ['stateName' => 'V archívu', 'stateStyle' => 'archive', 'mainState' => 4, 'viewGroup' => 'archive', 'goto' => []],
     ];
+
+    private const MODULE = __DIR__ . '/../../../../../modules/economy/workOrders';
+
+    /** Deklarace vieweru z module.jsonc a reálná definice jeho tabulky (hlavička z displayPattern, #136 D19). */
+    private function declare(TableViewer $viewer, string $viewerId, string $table): void
+    {
+        $registry = new ViewerRegistry();
+        $registry->loadFromModules([ModuleLoader::loadModule(self::MODULE)], 'cs');
+        $viewer->setDefinition($registry->get($viewerId) ?? throw new \RuntimeException($viewerId));
+        $viewer->setTables([$table => TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE . '/tables/' . $table . '.jsonc'))]);
+    }
 
     private function config(): ConfigRuntime
     {
@@ -58,6 +74,23 @@ class WorkOrderSettingsViewersTest extends TestCase
         $this->assertStringContainsString('k.`name`', $captured[0]);
         $this->assertSame(70, $captured[1]);
         $this->assertSame(['active', 'archive'], $viewer->getViewGroups());
+    }
+
+    public function testKindsViewerDetailHasNameAsTitleWithIconAndNoBadgeWhenConfirmed(): void
+    {
+        $record = ['id' => 3, 'name' => 'Servis', 'type' => 'project', 'notice' => 'Servisní zakázky', 'docState' => 40];
+        $viewer = new KindsViewer($this->db($captured, $record), 'economy_work_orders_kinds');
+        $viewer->setConfig($this->config());
+        $this->declare($viewer, 'economy.workOrders.kinds', 'economy_work_orders_kinds');
+
+        $detail = $viewer->renderDetail(3);
+
+        $this->assertSame('Servis', $detail['title'], 'titulek z displayPattern {name}');
+        $this->assertNull($detail['subtitle']);
+        $this->assertSame('kinds', $detail['icon']);
+        $this->assertSame([], $detail['badges'], 'V pořádku bez štítku (D20)');
+        $this->assertSame(['overview'], array_column($detail['tabs'], 'id'));
+        $this->assertSame(['Identity'], array_column($detail['tabs'][0]['content']['groups'], 'title'));
 
         $row = $viewer->renderRow(['id' => 3, 'name' => 'Servis', 'type' => 'project', 'notice' => 'pozn.', 'docState' => 40]);
         $this->assertSame('Servis', $row['t1']);
@@ -78,6 +111,7 @@ class WorkOrderSettingsViewersTest extends TestCase
         ];
         $viewer = new WorkOrderSeriesViewer($this->db($captured, $record), 'economy_work_orders_number_series');
         $viewer->setConfig($this->config());
+        $this->declare($viewer, 'economy.workOrders.numberSeries', 'economy_work_orders_number_series');
 
         $viewer->selectRows(null, [], 1);
         $this->assertStringContainsString('LEFT JOIN `economy_work_orders_kinds` k ON k.`id` = s.`kind`', $captured[0]);
@@ -98,6 +132,9 @@ class WorkOrderSettingsViewersTest extends TestCase
         );
 
         $detail = $viewer->renderDetail(9);
+        $this->assertSame('Zakázky servisu', $detail['title'], 'titulek z displayPattern {name}');
+        $this->assertSame('hash', $detail['icon']);
+        $this->assertSame([['label' => 'Koncept', 'style' => 'concept']], $detail['badges']);
         $groups = $detail['tabs'][0]['content']['groups'];
         $this->assertSame(['Identity', 'Číslování', 'Validity'], array_column($groups, 'title'));
         $this->assertSame(['label' => 'Druh', 'value' => 'Servis (Externí jednorázová)'], $groups[0]['items'][1]);

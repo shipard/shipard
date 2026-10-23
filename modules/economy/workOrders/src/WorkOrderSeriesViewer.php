@@ -76,19 +76,19 @@ class WorkOrderSeriesViewer extends WorkOrdersViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT s.*, k.`name` AS `kind_name`, k.`type` AS `kind_type`'
             . ' FROM `' . $this->table . '` s'
             . ' LEFT JOIN `' . KindDocument::TABLE . '` k ON k.`id` = s.`kind`'
             . ' WHERE s.`id` = %i',
             $recordId,
         );
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+    }
 
+    protected function detailTabs(array $record): array
+    {
         $identity = [];
         $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
         $kind = (string) ($record['kind_name'] ?? '');
@@ -112,11 +112,11 @@ class WorkOrderSeriesViewer extends WorkOrdersViewerBase
         $this->addItem($validity, $this->text('label.validFrom', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem($validity, $this->text('label.validTo', 'Valid to'), $this->formatDate($record['valid_to'] ?? null));
 
-        return $this->overviewDetail([
+        return [$this->propertiesTab([
             ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
             ['title' => $this->text('group.numbering', 'Numbering'), 'items' => $numbering],
             ['title' => $this->text('group.validity', 'Validity'), 'items' => $validity],
-        ]);
+        ])];
     }
 
     /** `od – do` z platnosti řady; null bez platnosti. */

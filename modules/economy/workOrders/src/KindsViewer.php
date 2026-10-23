@@ -58,21 +58,16 @@ class KindsViewer extends WorkOrdersViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
         $identity = [];
         $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
         $type = (string) ($record['type'] ?? '');
         $this->addItem($identity, $this->text('label.type', 'Type'), $type !== '' ? $this->types()->label($type) : null);
         $this->addItem($identity, $this->text('label.notice', 'Notice'), $record['notice'] ?? null);
 
-        return $this->overviewDetail([
+        return [$this->propertiesTab([
             ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
-        ]);
+        ])];
     }
 }
