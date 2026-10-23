@@ -27,7 +27,9 @@ use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Utils\IdGenerator;
+use Shipard\Module\Core\Exchange\Dataset\E2e\E2eException;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2ePreflight;
+use Shipard\Module\Core\Exchange\Dataset\E2e\LocalBaseUrl;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
 use Shipard\Module\Core\Mail\Eval\EvalDataSource;
@@ -58,7 +60,7 @@ use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
  * | POST   | `reseed` `{dataset, dataSource, replaceDataset?}` | úloha `reseed`; jiná než držená sada jen s `replaceDataset: true`, jinak 409 `DATASET_MISMATCH` (D66) |
  * | POST   | `create` `{dataset}`           | úloha `create` (ds-create --no-cron + dataset-seed)   |
  * | POST   | `verify` `{dataset, dataSource, apply?}` | úloha `verify` (dataset-verify --json)      |
- * | POST   | `e2e` `{dataset, dataSource}`  | úloha `e2e` (dataset-e2e --json --progress-file --output-dir --base-url <origin požadavku>, F7a D88); 422 `E2E_UNAVAILABLE` bez Node / závislostí / prohlížeče, 400 `VALIDATION` bez použitelného originu |
+ * | POST   | `e2e` `{dataset, dataSource}`  | úloha `e2e` (dataset-e2e --json --progress-file --output-dir --base-url <origin požadavku>, F7a D88); 422 `E2E_UNAVAILABLE` bez Node / závislostí / prohlížeče, 400 `VALIDATION` bez použitelného originu nebo s hostem mimo tento server (D97, {@see LocalBaseUrl}) |
  * | POST   | `estimate` `{dataset, dataSource, variant, repeat?, only?}` | odhad; 422 `EVAL_PREFLIGHT` |
  * | POST   | `run` `{…, maxCostUsd}`        | úloha `eval` (ai-eval --yes --max-cost --progress-file) |
  * | GET    | `variants`, `variants/{název}`, `variants/options?dataSource=` | editor variant        |
@@ -123,6 +125,12 @@ class DevEvalController
 	protected function e2eToolProblems(): array
 	{
 		return (new E2ePreflight($this->repoRoot))->toolProblems();
+	}
+
+	/** Pravidlo lokální adresy běhu proklikání (D97) — totéž, co ověří a připíchne příkaz. */
+	protected function localBaseUrl(): LocalBaseUrl
+	{
+		return new LocalBaseUrl();
 	}
 
 	/** @return list<string> */
@@ -476,6 +484,14 @@ class DevEvalController
 		$origin = $request->getOrigin();
 		if (!Request::isOrigin($origin)) {
 			return Response::error('VALIDATION', "Request origin '{$origin}' is not a usable base URL for the walkthrough", 400);
+		}
+		// Origin musí být tento server (D97) — jinak by Playwright odnesl token
+		// session `e2e` jinam. Příkaz pravidlo ověří znovu a adresu připíchne;
+		// tady jen 400 místo spadlé úlohy.
+		try {
+			$this->localBaseUrl()->verify($origin);
+		} catch (E2eException $e) {
+			return Response::error('VALIDATION', $e->getMessage(), 400);
 		}
 		$id = JobRecord::newId($this->now());
 		$argv = [

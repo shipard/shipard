@@ -11,10 +11,15 @@ use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
 use Shipard\Core\DevJobs\JobState;
 use Shipard\Core\DevJobs\JobStore;
+use Shipard\Module\Core\Exchange\Dataset\E2e\LocalBaseUrl;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 
 class TestableDevEvalController extends DevEvalController
 {
+	/** @var array<string, list<string>> falešný DNS pro pravidlo lokální adresy (D97) */
+	public array $dns = ['dev.example' => ['127.0.0.1']];
+	/** @var list<string> adresy rozhraní serveru v testu */
+	public array $localAddresses = ['127.0.0.1', '::1', '10.0.0.7'];
 	/** @var array<string, array<string, mixed>|\Throwable> stav zdroje dat podle ID (výchozí = čistý) */
 	public array $statuses = [];
 	/** @var list<array{argv: list<string>, cwd: string, timeout: float}> */
@@ -48,6 +53,14 @@ class TestableDevEvalController extends DevEvalController
 	protected function e2eToolProblems(): array
 	{
 		return $this->e2eProblems;
+	}
+
+	protected function localBaseUrl(): LocalBaseUrl
+	{
+		return new LocalBaseUrl(
+			fn (string $host): array => $this->dns[$host] ?? [],
+			fn (): array => $this->localAddresses,
+		);
 	}
 
 	protected function dsCommand(): array
@@ -405,6 +418,17 @@ final class DevEvalControllerTest extends TestCase
 		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], []);
 		$this->assertSame(400, $this->statusOf($r), 'bez hostu není origin');
 		$this->assertSame('VALIDATION', $this->error($r)['code']);
+
+		// Origin mimo tento server (D97): cizí IP i jméno bez lokální adresy → 400, žádná úloha.
+		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], ['HTTP_HOST' => '203.0.113.5', 'HTTP_ORIGIN' => 'http://203.0.113.5']);
+		$this->assertSame(400, $this->statusOf($r), json_encode($r->getPayload()));
+		$this->assertSame('VALIDATION', $this->error($r)['code']);
+		$this->assertStringContainsString('203.0.113.5', $this->error($r)['message']);
+		$this->assertStringContainsString('není loopback ani adresa rozhraní', $this->error($r)['message']);
+
+		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], ['HTTP_HOST' => 'dev.example', 'HTTP_ORIGIN' => 'http://evil.example']);
+		$this->assertSame(400, $this->statusOf($r), 'hlavička Origin má přednost a musí být lokální');
+		$this->assertStringContainsString("Jméno 'evil.example'", $this->error($r)['message']);
 
 		$this->ctrl->e2eProblems = ['chybí tests/e2e/node_modules — spusťte: cd tests/e2e && npm ci && npx playwright install chromium'];
 		$r = $this->postFrom('e2e', ['dataset' => self::SET, 'dataSource' => 'aaaa-aaaa-aaaa-aaaa'], ['HTTP_HOST' => '10.0.0.7']);

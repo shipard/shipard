@@ -21,6 +21,10 @@ test('readEnv: povinné proměnné a lomítko na konci adresy', () => {
   assert.equal(env.expectedCards, 16);
   assert.equal(env.progressFile, null);
   assert.equal(readEnv({ ...okEnv, SHPD_E2E_PROGRESS_FILE: ' /p.jsonl ' }).progressFile, '/p.jsonl');
+  // Připíchnutá adresa hostu (D97): bez proměnné null, jinak ořezaná hodnota pro --host-resolver-rules.
+  assert.equal(env.hostResolverRules, null);
+  assert.equal(readEnv({ ...okEnv, SHPD_E2E_HOST_RESOLVER_RULES: ' MAP dev.example 127.0.1.1 ' }).hostResolverRules, 'MAP dev.example 127.0.1.1');
+  assert.equal(readEnv({ ...okEnv, SHPD_E2E_HOST_RESOLVER_RULES: '  ' }).hostResolverRules, null);
 });
 
 test('readEnv: chybějící proměnná jmenuje, co chybí', () => {

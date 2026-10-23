@@ -18,6 +18,8 @@ use Shipard\Module\Core\Exchange\Dataset\E2e\E2ePreflight;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2eProgress;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2eReport;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2eSession;
+use Shipard\Module\Core\Exchange\Dataset\E2e\LocalBaseUrl;
+use Shipard\Module\Core\Exchange\Dataset\E2e\PinnedBaseUrl;
 use Shipard\Module\Core\Exchange\Dataset\E2e\PlaywrightRunner;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Symfony\Component\Console\Command\Command;
@@ -43,7 +45,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Preflight (exit 2, nic se nemění): režim serveru přesně `development`
  * (nejde-li určit → odmítnout), zdroj dat třídy `free`, sada ze seznamu sad
  * v checkoutu, Node v pevném PATH, závislosti `tests/e2e/node_modules`,
- * Chromium Playwrightu, dosažitelnost `<base-url>/<ds-id>/app/`; s
+ * Chromium Playwrightu, **lokální host** `--base-url` (D97, {@see LocalBaseUrl}:
+ * IP literál nebo jméno jen s loopback / vlastními adresami; ověřená adresa
+ * se připíchne curl i Chromiu), dosažitelnost `<base-url>/<ds-id>/app/`; s
  * `--no-reseed` navíc `dataset.name` v `main.json` = název sady. Exit 0 jen
  * při stavu `ok`, 1 při nálezech (D95), 2 preflight, 130 zrušeno. S `--json`
  * jde na stdout přesně jeden JSON dokument (report, nebo
@@ -133,6 +137,12 @@ class DatasetE2eCommand extends Command implements SignalableCommandInterface
     protected function repoRoot(): string
     {
         return dirname(__DIR__, 3);
+    }
+
+    /** Pravidlo lokální adresy běhu (D97) — šev pro testy (falešný resolver a rozhraní). */
+    protected function createLocalBaseUrl(): LocalBaseUrl
+    {
+        return new LocalBaseUrl();
     }
 
     protected function createPreflight(): E2ePreflight
@@ -253,9 +263,18 @@ class DatasetE2eCommand extends Command implements SignalableCommandInterface
             }
         }
 
-        // 2. Preflight (exit 2).
+        // 2. Preflight (exit 2). Lokální host (D97) před dosažitelností
+        // i před session — ověřená adresa se připíchne curl i Chromiu.
         $preflight = $this->createPreflight();
         $problems = $preflight->problems($this->getServerMode(), $this->dataSourceInfo($dsDir), $manifest->name, $this->knownDatasets());
+        $pinned = null;
+        try {
+            $pinned = $this->createLocalBaseUrl()->verify($baseUrl);
+            $origin = $pinned->origin;
+            $appUrl = $origin . '/' . $dsConfig->getId() . '/app/';
+        } catch (E2eException $e) {
+            $problems[] = $e->getMessage();
+        }
         if ($setMessageIds === []) {
             $problems[] = 'sada nemá žádnou zprávu v mail/ — není co proklikat';
         }
@@ -269,13 +288,13 @@ class DatasetE2eCommand extends Command implements SignalableCommandInterface
                 );
             }
         }
-        if ($problems === []) {
-            $reach = $preflight->appReachable($appUrl);
+        if ($problems === [] && $pinned instanceof PinnedBaseUrl) {
+            $reach = $preflight->appReachable($appUrl, pin: $pinned);
             if ($reach !== null) {
                 $problems[] = $reach;
             }
         }
-        if ($problems !== []) {
+        if ($problems !== [] || !$pinned instanceof PinnedBaseUrl) {
             $reader->close();
             return $this->refuse($err, $problems);
         }
@@ -367,6 +386,10 @@ class DatasetE2eCommand extends Command implements SignalableCommandInterface
                     ];
                     if ($progress->path() !== null) {
                         $e2eEnv['SHPD_E2E_PROGRESS_FILE'] = $progress->path();
+                    }
+                    // Připíchnutá adresa hostu pro Chromium (D97) — jen u jména, literál není co mapovat.
+                    if ($pinned->chromiumRule() !== null) {
+                        $e2eEnv['SHPD_E2E_HOST_RESOLVER_RULES'] = $pinned->chromiumRule();
                     }
                     $env = PlaywrightRunner::environment($e2eEnv, $preflight->home());
 

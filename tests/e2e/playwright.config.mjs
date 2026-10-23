@@ -6,6 +6,8 @@
 //                           walkthrough.json); ručně výchozí tests/e2e/.out
 //   SHPD_E2E_EXPECTED_CARDS počet zpráv sady s otevřeným návrhem
 //   SHPD_E2E_PROGRESS_FILE  volitelně JSON řádky průběhu (`card` události)
+//   SHPD_E2E_HOST_RESOLVER_RULES  volitelně připíchnutá adresa hostu
+//                           (`MAP <host> <ip>`, D97) → Chromium --host-resolver-rules
 // Chybějící povinná proměnná shodí už sběr testů s jejím jménem (D95 —
 // selhání je nález, ne tichý běh nad ničím).
 import { defineConfig } from '@playwright/test';
@@ -47,5 +49,10 @@ export default defineConfig({
     trace: 'off',
     screenshot: 'off',
     video: 'off',
+    // Ověřená adresa hostu od `dataset-e2e` (D97): jméno serveru se v prohlížeči
+    // nepřekládá znovu, aby ho mezi ověřením a během nešlo přesměrovat.
+    launchOptions: env.hostResolverRules === null
+      ? {}
+      : { args: [`--host-resolver-rules=${env.hostResolverRules}`] },
   },
 });

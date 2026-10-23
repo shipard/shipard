@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Command\DataSource;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Api\SessionService;
 use Shipard\Command\DataSource\DatasetE2eCommand;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -13,6 +14,9 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetManifest;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Exchange\Dataset\DatasetWriter;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2ePreflight;
+use Shipard\Module\Core\Exchange\Dataset\E2e\E2eSession;
+use Shipard\Module\Core\Exchange\Dataset\E2e\LocalBaseUrl;
+use Shipard\Module\Core\Exchange\Dataset\E2e\PinnedBaseUrl;
 use Shipard\Module\Core\Exchange\Dataset\E2e\PlaywrightRunner;
 use Shipard\Tests\Unit\Module\Core\Exchange\Dataset\DatasetPreflightTest;
 use Shipard\Tests\Unit\Module\Core\Exchange\Dataset\E2e\E2eFakeConnection;
@@ -28,11 +32,26 @@ final class StubE2ePreflight extends E2ePreflight
     public ?string $reach = null;
     /** @var list<string> */
     public array $checked = [];
+    /** @var list<?string> záznam CURLOPT_RESOLVE per kontrola (null = IP literál) */
+    public array $pins = [];
 
-    public function appReachable(string $url, float $timeout = self::APP_TIMEOUT_SECONDS): ?string
+    public function appReachable(string $url, float $timeout = self::APP_TIMEOUT_SECONDS, ?PinnedBaseUrl $pin = null): ?string
     {
         $this->checked[] = $url;
+        $this->pins[] = $pin?->curlResolve();
         return $this->reach;
+    }
+}
+
+/** SessionService, který session založit nesmí — preflight odmítl (D97). */
+final class ForbiddenSessionService extends SessionService
+{
+    public int $attempts = 0;
+
+    public function createSession(int $userId, DataSourceConnection $db, ?string $clientIp = null, ?int $ttlSeconds = null): array
+    {
+        $this->attempts++;
+        throw new \LogicException('session se po odmítnutém preflightu nesmí založit');
     }
 }
 
@@ -99,6 +118,12 @@ class TestableDatasetE2eCommand extends DatasetE2eCommand
     /** @var list<string> */
     public array $messageIdsAsked = [];
     public ?string $outDir = null;
+    /** @var array<string, list<string>> falešný DNS pro pravidlo lokální adresy (D97) */
+    public array $dns = ['dev.example' => ['127.0.0.1']];
+    /** @var list<string> adresy rozhraní serveru v testu */
+    public array $localAddresses = ['127.0.0.1', '::1'];
+    /** Podvržený SessionService (null = skutečný nad falešným spojením). */
+    public ?SessionService $sessions = null;
 
     public function __construct(
         DataSourceConfig $dsConfig,
@@ -135,6 +160,19 @@ class TestableDatasetE2eCommand extends DatasetE2eCommand
     {
         $this->createPreflight();
         return $this->preflight ?? throw new \LogicException('preflight');
+    }
+
+    protected function createLocalBaseUrl(): LocalBaseUrl
+    {
+        return new LocalBaseUrl(
+            fn (string $host): array => $this->dns[$host] ?? [],
+            fn (): array => $this->localAddresses,
+        );
+    }
+
+    protected function createSession(DataSourceConnection $db): E2eSession
+    {
+        return new E2eSession($db, $this->sessions ?? new SessionService());
     }
 
     protected function createRunner(E2ePreflight $preflight, \Closure $shouldCancel): PlaywrightRunner
@@ -334,6 +372,34 @@ final class DatasetE2eCommandTest extends TestCase
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $this->assertStringContainsString('--base-url', $tester->getDisplay());
 
+        // Cizí host (D97): odmítnuto před dosažitelností i před session — i když
+        // by SessionService session založil, nikdo ho nezavolá.
+        $command = $this->command($db);
+        $sessions = new ForbiddenSessionService();
+        $command->sessions = $sessions;
+        $tester = $this->execute($command, ['--base-url' => 'http://203.0.113.5', '--json' => true], separateStderr: true);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $json = json_decode(trim($tester->getDisplay()), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertFalse($json['ok']);
+        $this->assertCount(1, $json['problems']);
+        $this->assertStringContainsString('203.0.113.5', $json['problems'][0]);
+        $this->assertStringContainsString('není loopback ani adresa rozhraní', $json['problems'][0]);
+        $this->assertSame([], $command->preflight->checked, 'dosažitelnost se u cizího hostu nezkouší');
+        $this->assertSame(0, $sessions->attempts);
+        $this->assertSame([], $db->inserted);
+        $this->assertSame([], $command->subCalls);
+        $this->assertNull($command->runner);
+
+        // Jméno s jednou cizí adresou mezi lokálními a nepřeložitelné jméno.
+        $command = $this->command($db);
+        $command->dns['mixed.example'] = ['127.0.0.1', '203.0.113.5'];
+        $tester = $this->execute($command, ['--base-url' => 'http://mixed.example']);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertStringContainsString('203.0.113.5', $tester->getDisplay());
+        $tester = $this->execute($this->command($db), ['--base-url' => 'http://nowhere.invalid']);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertStringContainsString('nejde přeložit', $tester->getDisplay());
+
         // neznámá sada (manifest mimo seznam) — jiný název než v katalogu
         $other = $this->tmp . '/elsewhere';
         $w = DatasetWriter::create($other);
@@ -405,6 +471,7 @@ final class DatasetE2eCommandTest extends TestCase
         $this->assertSame('1', $runner->env['CI']);
         $this->assertSame(UpdateEnvironment::DEFAULT_PATH, $runner->env['PATH']);
         $this->assertArrayHasKey('HOME', $runner->env);
+        $this->assertSame([null], $command->preflight->pins, 'IP literál se nepřipichuje (D97)');
         $this->assertDirectoryExists($this->tmp . '/out/traces');
 
         // Session: uživatel e2e založen, úklid z minula, session s TTL max(3600, 180 × 2), storageState 0600 jen po dobu běhu.
@@ -458,6 +525,17 @@ final class DatasetE2eCommandTest extends TestCase
         $this->assertStringNotContainsString('"status"', $display, 'bez --json žádný JSON');
         $this->assertSame('https://dev.example:8443', $command->runner?->stateSeen['origins'][0]['origin'], 'origin storageState = origin --base-url');
         $this->assertSame(['https://dev.example:8443/' . self::DS_ID . '/app/'], $command->preflight->checked);
+        // Jméno serveru (D97): dosažitelnost přes připíchnutou adresu, Chromium dostane mapování.
+        $this->assertSame(['dev.example:8443:127.0.0.1'], $command->preflight->pins);
+        $this->assertSame('MAP dev.example 127.0.0.1', $command->runner?->env['SHPD_E2E_HOST_RESOLVER_RULES'] ?? null);
+
+        // Adresa vlastního rozhraní: literál, bez pinu.
+        $command = $this->command($db);
+        $command->localAddresses[] = '10.0.0.7';
+        $tester = $this->execute($command, ['--base-url' => 'http://10.0.0.7']);
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame([null], $command->preflight->pins);
+        $this->assertArrayNotHasKey('SHPD_E2E_HOST_RESOLVER_RULES', $command->runner?->env ?? []);
     }
 
     // ── Nálezy ─────────────────────────────────────────────────────────────

@@ -41,12 +41,16 @@ export function readEnv(env, options = {}) {
     throw new Error('Chybí proměnná prostředí SHPD_E2E_OUTPUT_DIR.');
   }
   const progressFile = (env.SHPD_E2E_PROGRESS_FILE ?? '').trim();
+  // Připíchnutá adresa hostu (`MAP <host> <ip>`, D97) — Chromium pak jméno
+  // z adresy aplikace nepřekládá, dostane ověřenou IP od příkazu.
+  const hostResolverRules = (env.SHPD_E2E_HOST_RESOLVER_RULES ?? '').trim();
   return {
     appUrl: appUrl.endsWith('/') ? appUrl : `${appUrl}/`,
     storageState: required('SHPD_E2E_STORAGE_STATE'),
     outputDir,
     expectedCards: Number(expectedRaw),
     progressFile: progressFile === '' ? null : progressFile,
+    hostResolverRules: hostResolverRules === '' ? null : hostResolverRules,
   };
 }
 

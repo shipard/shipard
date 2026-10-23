@@ -176,6 +176,9 @@ než 14 dní se při výpisu mažou.
   uživatelem, pod kterým běží php-fpm** (prohlížeč sedí v jeho
   `~/.cache/ms-playwright`): `cd tests/e2e && npm ci && npx playwright
   install chromium`; Node musí být v systémovém `PATH`, ne jen z nvm.
+  Prohlížeč na serveru otevře aplikaci **adresou, kterou máš v dashboardu
+  ty** (origin požadavku) — musí to být jméno nebo IP tohoto serveru;
+  přes tunel či proxy z jiného stroje akce vrátí 400 (#103 D97).
   Zrušení pošle SIGTERM: Playwright zavře prohlížeč, session uživatele
   `e2e` se zneplatní, zdroj dat zůstane s použitými doklady (další běh ho
   přeseeduje). Podrobně `docs/test-corpus.md` § 19.

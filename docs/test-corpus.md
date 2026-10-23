@@ -1225,7 +1225,9 @@ tutéž sadu už drží) → **uživatel a session** (D92) → **Playwright Test
 **Proklikat** v panelu sady (Testování → sada → Zdroje dat se sadou),
 úloha typu `e2e` se stejným příkazem (`--json --progress-file
 <úloha>/progress.jsonl --output-dir <úloha>/e2e --base-url <origin
-požadavku>`), `docs/dev/dev-daily.md` § 1.
+požadavku>`), `docs/dev/dev-daily.md` § 1. Origin musí být tento server
+(D97, lokální adresa níže) — s cizím hostem akce vrátí 400 `VALIDATION`
+a úlohu nezaloží.
 
 - **Preflight** (`E2ePreflight`): režim serveru přesně `development`
   (fail-closed — chybějící `server.json` = odmítnutí), třída zdroje dat
@@ -1239,6 +1241,18 @@ požadavku>`), `docs/dev/dev-daily.md` § 1.
   je to uživatel php-fpm) a dosažitelnost `<base-url>/<ds-id>/app/`.
   Chybějící Node, závislosti nebo prohlížeč odmítne s přesnou větou:
   `cd tests/e2e && npm ci && npx playwright install chromium`.
+- **Lokální adresa běhu (D97, `LocalBaseUrl`).** Host z `--base-url`
+  (z CLI i z dashboardu) musí být IP literál, nebo jméno, jehož **všechny**
+  adresy (A i AAAA, systémový resolver vč. `/etc/hosts` —
+  `socket_addrinfo_lookup`) jsou loopback (`127.0.0.0/8`, `::1`) nebo
+  adresa vlastního rozhraní (`net_get_interfaces()`, IPv6 bez `%scope`);
+  jinak odmítnutí (exit 2) **před** založením session — token by jinak
+  odešel na cizí host. Ověřená adresa se **připíchne**: kontrola
+  dosažitelnosti jde přes curl `CURLOPT_RESOLVE` a Chromium dostane
+  `--host-resolver-rules=MAP <host> <ip>` (`SHPD_E2E_HOST_RESOLVER_RULES`,
+  jen u jména — literál není co mapovat), takže jméno mezi ověřením
+  a během nejde přesměrovat. Jedno pravidlo pro příkaz i akci dashboardu
+  (`DevEvalController::e2e` s cizím originem → 400).
 - **Přihlášení bez hesla (D92).** Vyhrazený uživatel `e2e` (administrátor,
   `is_system = 1` — neukazuje se v „Vystavil“, nejde mu resetovat heslo,
   `password_hash` NULL; `keepOnReset` ho přes přeseedování zachová).
@@ -1274,8 +1288,9 @@ verze jako `playwright` ve video-runneru; jeden projekt, Chromium kanál
 (počet zpráv sady s otevřeným návrhem — příkaz ho po přeseedování spočítá
 týmž predikátem, kterým feed vybírá karty návrhů,
 `MailSuggestionsSource::openProposalWhere()`) a volitelně
-`SHPD_E2E_PROGRESS_FILE`. Chybějící proměnná shodí už sběr testů s jejím
-jménem. Texty UI se nepoužívají, jen testidy (`docs/frontend.md` § 9).
+`SHPD_E2E_PROGRESS_FILE` a `SHPD_E2E_HOST_RESOLVER_RULES` (připíchnutá
+adresa hostu `MAP <host> <ip>` → `launchOptions.args` Chromia, D97).
+Chybějící povinná proměnná shodí už sběr testů s jejím jménem. Texty UI se nepoužívají, jen testidy (`docs/frontend.md` § 9).
 
 Průchod: dashboard → dokud je ve feedu karta `mail_suggestion:*`
 (v pořadí serveru, D94 — nejnovější první, F3 jde `received_at`
@@ -1364,6 +1379,10 @@ krok karty je pojmenovaný id karty, síť ukazuje `POST …/apply` s tělem
   preflight to pozná a řekne.
 - **`http://127.0.0.1` musí mířit na Shipard** (výchozí `server_name`
   nginx); jinak `--base-url`. Úloha dashboardu bere origin požadavku.
+  Obojí smí být jen IP nebo jméno **tohoto** serveru (všechny adresy
+  loopback nebo vlastní rozhraní, D97) — cizí host odmítne preflight
+  (exit 2) i akce dashboardu (400). Dashboard otevřený přes tunel nebo
+  proxy na jiném stroji proklikání nespustí; otevři ho adresou serveru.
 - **Předkontrola registru** (`GET /persons/registry?q=<IČO>`) běží při
   otevření kontroly automaticky; fiktivní IČO korpusu dnes dávají 502
   (nález N3) — každý běh je tak `failed`, dokud se to nevyřeší.

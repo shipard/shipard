@@ -2327,7 +2327,10 @@ dashboardu (**Proklikat** v panelu sady).
 **Preflight** (nic se nemění, exit 2): režim `development`, třída zdroje
 dat `free`, sada ze seznamu sad v checkoutu, `node` v systémovém `PATH`,
 `tests/e2e/node_modules`, Chromium Playwrightu pod uživatelem, který
-příkaz spouští, a dosažitelnost `<base-url>/<ds-id>/app/`. Chybějící
+příkaz spouští, **lokální host** `--base-url` (IP literál nebo jméno,
+jehož všechny adresy jsou loopback či vlastní rozhraní serveru — token
+session nesmí odejít jinam, #103 D97; ověřená adresa se připíchne curl
+i Chromiu) a dosažitelnost `<base-url>/<ds-id>/app/`. Chybějící
 Node, závislosti nebo prohlížeč: `cd tests/e2e && npm ci && npx
 playwright install chromium`.
 
@@ -2343,7 +2346,7 @@ zrušeno (SIGTERM: Playwright dostane SIGINT, session se uklidí).
 |------|--------|
 | `<path>` | Složka sady (s `expected/`) nebo `.zip` — musí být sada z checkoutu |
 | `--no-reseed` | Bez přeseedování (jen ladění; zdroj dat musí tutéž sadu držet) — druhý běh bez karet skončí nesouladem počtu |
-| `--base-url <url>` | Origin aplikace, výchozí `http://127.0.0.1`; adresa aplikace = `<url>/<ds-id>/app/` |
+| `--base-url <url>` | Origin aplikace, výchozí `http://127.0.0.1`; jen IP nebo jméno tohoto serveru (D97), jinak exit 2; adresa aplikace = `<url>/<ds-id>/app/` |
 | `--output-dir <adresář>` | Adresář běhu (`walkthrough.json`, `report.json`, `playwright-report/`, `traces/`, `storageState` jen po dobu běhu); výchozí nový adresář v systémovém temp, cesta je ve výstupu |
 | `--json` | Report jako JSON na stdout |
 | `--progress-file <soubor>` | JSON řádky průběhu `started` / `step` / `card` / `finished` / `error` (úloha dashboardu) |

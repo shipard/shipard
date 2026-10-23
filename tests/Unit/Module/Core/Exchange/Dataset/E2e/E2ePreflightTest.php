@@ -9,18 +9,19 @@ use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2ePreflight;
+use Shipard\Module\Core\Exchange\Dataset\E2e\PinnedBaseUrl;
 
 /** Preflight s podvrženým HTTP stavem (síť se v unit testu nevolá). */
 final class StubbedPreflight extends E2ePreflight
 {
     /** @var array{status: ?int, error: ?string} */
     public array $http = ['status' => 200, 'error' => null];
-    /** @var list<array{0: string, 1: float}> */
+    /** @var list<array{0: string, 1: float, 2: ?string}> */
     public array $requests = [];
 
-    protected function httpStatus(string $url, float $timeout): array
+    protected function httpStatus(string $url, float $timeout, ?string $resolve = null): array
     {
-        $this->requests[] = [$url, $timeout];
+        $this->requests[] = [$url, $timeout, $resolve];
         return $this->http;
     }
 }
@@ -201,7 +202,7 @@ final class E2ePreflightTest extends TestCase
         $url = 'http://127.0.0.1/abcd-abcd-abcd-abcd/app/';
 
         $this->assertNull($p->appReachable($url));
-        $this->assertSame([[$url, E2ePreflight::APP_TIMEOUT_SECONDS]], $p->requests);
+        $this->assertSame([[$url, E2ePreflight::APP_TIMEOUT_SECONDS, null]], $p->requests);
 
         $p->http = ['status' => 302, 'error' => null];
         $this->assertNull($p->appReachable($url, 2.5), 'přesměrování je odpověď serveru, ne nedostupnost');
@@ -221,6 +222,21 @@ final class E2ePreflightTest extends TestCase
         $this->assertStringContainsString('server_name', (string) $problem);
     }
 
+    public function testAppReachabilityPinsTheVerifiedAddress(): void
+    {
+        $p = $this->preflight();
+        $named = 'http://dev.example/abcd-abcd-abcd-abcd/app/';
+        $this->assertNull($p->appReachable($named, 1.0, new PinnedBaseUrl('http://dev.example', 'dev.example', 80, '127.0.1.1', false)));
+        $this->assertSame([$named, 1.0, 'dev.example:80:127.0.1.1'], $p->requests[0], 'jméno jde přes CURLOPT_RESOLVE na ověřenou adresu (D97)');
+
+        $this->assertNull($p->appReachable($named, 1.0, new PinnedBaseUrl('https://dev.example:8443', 'dev.example', 8443, '::1', false)));
+        $this->assertSame('dev.example:8443:[::1]', $p->requests[1][2]);
+
+        $literal = 'http://127.0.0.1/abcd-abcd-abcd-abcd/app/';
+        $this->assertNull($p->appReachable($literal, 1.0, new PinnedBaseUrl('http://127.0.0.1', '127.0.0.1', 80, '127.0.0.1', true)));
+        $this->assertNull($p->requests[2][2], 'IP literál se nepřipichuje');
+    }
+
     public function testRealHttpStatusReportsAClosedPortAsUnreachable(): void
     {
         $socket = @stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr);
@@ -229,8 +245,16 @@ final class E2ePreflightTest extends TestCase
         fclose($socket); // port je teď zavřený — spojení skončí odmítnutím hned
         $url = "http://{$name}/x/app/";
 
-        $problem = (new E2ePreflight($this->dir . '/repo', $this->dir . '/bin', null, $this->dir . '/home'))->appReachable($url, 2.0);
+        $preflight = new E2ePreflight($this->dir . '/repo', $this->dir . '/bin', null, $this->dir . '/home');
+        $problem = $preflight->appReachable($url, 2.0);
         $this->assertNotNull($problem);
         $this->assertStringContainsString("Aplikace na {$url} není dosažitelná", $problem);
+
+        // Připíchnuté jméno: curl jde na 127.0.0.1 bez překladu — zavřený port odmítne stejně.
+        $port = (int) substr($name, (int) strrpos($name, ':') + 1);
+        $pinned = new PinnedBaseUrl("http://localhost:{$port}", 'localhost', $port, '127.0.0.1', false);
+        $problem = $preflight->appReachable("http://localhost:{$port}/x/app/", 2.0, $pinned);
+        $this->assertNotNull($problem);
+        $this->assertStringContainsString('není dosažitelná', $problem);
     }
 }

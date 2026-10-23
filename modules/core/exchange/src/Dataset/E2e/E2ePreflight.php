@@ -15,7 +15,7 @@ use Shipard\Core\Server\DataSourceInfo;
  * pojistka spouštěcích akcí ({@see problems()} přes {@see DevActionGuard}:
  * režim serveru přesně `development`, zdroj dat třídy `free`, sada ze seznamu
  * sad) a dosažitelnost aplikace ({@see appReachable()}, I13 — past
- * `server_name` nginx).
+ * `server_name` nginx; s připíchnutou adresou z {@see LocalBaseUrl}, D97).
  *
  * Nástroje: Node v **pevném** `PATH` ({@see UpdateEnvironment::DEFAULT_PATH},
  * stejný v terminálu i v úloze dashboardu — nvm v neinteraktivním shellu
@@ -196,11 +196,13 @@ class E2ePreflight
     /**
      * Dosažitelnost aplikace zdroje dat (I13): HTTP GET, odpověď < 400 = ok
      * (null); jinak věta s důvodem. Přesměrování se nenásleduje — `/app/`
-     * má odpovídat přímo, jinak je `--base-url` špatně.
+     * má odpovídat přímo, jinak je `--base-url` špatně. S `$pin` (D97) jde
+     * dotaz na ověřenou adresu hostu (`CURLOPT_RESOLVE`), ne na to, co by
+     * jméno přeložilo teď.
      */
-    public function appReachable(string $url, float $timeout = self::APP_TIMEOUT_SECONDS): ?string
+    public function appReachable(string $url, float $timeout = self::APP_TIMEOUT_SECONDS, ?PinnedBaseUrl $pin = null): ?string
     {
-        ['status' => $status, 'error' => $error] = $this->httpStatus($url, $timeout);
+        ['status' => $status, 'error' => $error] = $this->httpStatus($url, $timeout, $pin?->curlResolve());
         if ($status === null) {
             return "Aplikace na {$url} není dosažitelná" . ($error !== null ? " ({$error})" : '')
                 . ' — zkontroluj --base-url (výchozí http://127.0.0.1; nginx musí mít Shipard jako výchozí server_name)';
@@ -212,39 +214,38 @@ class E2ePreflight
     }
 
     /**
-     * Jeden HTTP GET bez přesměrování. Šev pro testy.
+     * Jeden HTTP GET bez přesměrování (curl, jen http/https); `$resolve` =
+     * záznam `host:port:ip` pro `CURLOPT_RESOLVE` ({@see PinnedBaseUrl::curlResolve()}).
+     * Šev pro testy.
      *
      * @return array{status: ?int, error: ?string}
      */
-    protected function httpStatus(string $url, float $timeout): array
+    protected function httpStatus(string $url, float $timeout, ?string $resolve = null): array
     {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'timeout' => $timeout,
-                'ignore_errors' => true,
-                'follow_location' => 0,
-                'header' => "Accept: text/html\r\nUser-Agent: shpd-dataset-e2e\r\n",
-            ],
-        ]);
-        $error = null;
-        set_error_handler(static function (int $no, string $message) use (&$error): bool {
-            $error = trim((string) preg_replace('/^file_get_contents\([^)]*\): /', '', $message));
-            return true;
-        });
-        try {
-            $body = file_get_contents($url, false, $context);
-        } finally {
-            restore_error_handler();
+        $ch = curl_init($url);
+        if ($ch === false) {
+            return ['status' => null, 'error' => 'curl_init selhalo'];
         }
-        $headers = $http_response_header ?? [];
-        $statusLine = is_array($headers) && isset($headers[0]) ? (string) $headers[0] : '';
-        if ($body === false && !preg_match('#^HTTP/\S+\s+(\d{3})#', $statusLine)) {
-            return ['status' => null, 'error' => $error];
+        $millis = max(1, (int) ceil($timeout * 1000));
+        $options = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_CONNECTTIMEOUT_MS => $millis,
+            CURLOPT_TIMEOUT_MS => $millis,
+            CURLOPT_HTTPHEADER => ['Accept: text/html'],
+            CURLOPT_USERAGENT => 'shpd-dataset-e2e',
+        ];
+        if ($resolve !== null) {
+            $options[CURLOPT_RESOLVE] = [$resolve];
         }
-        if (!preg_match('#^HTTP/\S+\s+(\d{3})#', $statusLine, $m)) {
-            return ['status' => null, 'error' => 'odpověď bez stavového řádku'];
+        curl_setopt_array($ch, $options);
+        $ok = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error = $ok === false ? (curl_error($ch) ?: 'neznámá chyba curl') : null;
+        if ($status === 0) {
+            return ['status' => null, 'error' => $error ?? 'odpověď bez stavového řádku'];
         }
-        return ['status' => (int) $m[1], 'error' => null];
+        return ['status' => $status, 'error' => null];
     }
 }
