@@ -136,6 +136,41 @@ final class Projection
         return (string) preg_replace('/\[[0-9]+\]/', '[]', $path);
     }
 
+    /**
+     * Cesty všech uzlů projekce v jejím pořadí — objekty (`supplier.address`),
+     * pole (`rows[]`) i listy (`rows[].item.ean`), `$ref` rozpuštěné. Jediný
+     * zdroj cest pro strážce nad projekcí (`IsdocFieldCoverage`, pokrytí
+     * ukázky promptu `PromptProjectionCoverageTest`) — žádný druhý parser.
+     *
+     * @return list<string>
+     */
+    public function nodePaths(): array
+    {
+        $out = [];
+        $this->collectNodePaths($this->document, '', $out);
+        return $out;
+    }
+
+    /** @param list<string> $out */
+    private function collectNodePaths(mixed $spec, string $path, array &$out): void
+    {
+        $spec = $this->resolve($spec);
+        if ($path !== '') {
+            $out[] = $path;
+        }
+        if (is_array($spec) && array_is_list($spec)) {
+            if (array_key_exists(0, $spec)) {
+                $this->collectNodePaths($spec[0], $path . '[]', $out);
+            }
+            return;
+        }
+        if (is_array($spec)) {
+            foreach ($spec as $key => $sub) {
+                $this->collectNodePaths($sub, $path === '' ? (string) $key : "{$path}.{$key}", $out);
+            }
+        }
+    }
+
     /** Rozpustí `$ref`; cokoli jiného vrací beze změny. */
     public function resolve(mixed $spec): mixed
     {

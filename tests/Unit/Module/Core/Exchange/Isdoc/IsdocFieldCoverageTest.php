@@ -20,32 +20,9 @@ final class IsdocFieldCoverageTest extends TestCase
 {
     private const PROJECTION = __DIR__ . '/../../../../../corpus/projection.jsonc';
 
-    /** @return list<string> cesty uzlů projekce (`rows[].vat.pct`), listy i objekty */
-    private static function nodePaths(Projection $projection): array
-    {
-        $out = [];
-        $walk = static function (mixed $spec, string $path) use (&$walk, &$out, $projection): void {
-            $spec = $projection->resolve($spec);
-            if ($path !== '') {
-                $out[] = $path;
-            }
-            if (is_array($spec) && array_is_list($spec)) {
-                $walk($spec[0], $path . '[]');
-                return;
-            }
-            if (is_array($spec)) {
-                foreach ($spec as $key => $sub) {
-                    $walk($sub, $path === '' ? (string) $key : "{$path}.{$key}");
-                }
-            }
-        };
-        $walk($projection->document(), '');
-        return $out;
-    }
-
     public function testEveryPathExistsInTheProjectionWithAReason(): void
     {
-        $paths = self::nodePaths(Projection::load(self::PROJECTION));
+        $paths = Projection::load(self::PROJECTION)->nodePaths();
         $this->assertCount(9, IsdocFieldCoverage::NOT_CARRIED);
         foreach (IsdocFieldCoverage::NOT_CARRIED as $path => $reason) {
             $this->assertContains($path, $paths, "{$path} v projekci není");

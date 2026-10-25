@@ -23,7 +23,7 @@ from pathlib import Path
 from .compute import CENTS
 from .jsonc import load_jsonc
 
-PROMPT_VERSION = "v4.8.0"
+PROMPT_VERSION = "v4.9.0"
 
 PROJECTION_FORMAT = "shpd.corpus.projection"
 PROJECTION_VERSION = "1"

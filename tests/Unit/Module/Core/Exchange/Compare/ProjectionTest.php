@@ -144,6 +144,25 @@ class ProjectionTest extends TestCase
         Projection::fromArray(['format' => Projection::FORMAT, 'formatVersion' => '1', 'document' => [], '$defs' => [], 'shapes' => $shapes]);
     }
 
+    public function testNodePathsListEveryNodeInProjectionOrder(): void
+    {
+        // Jediný zdroj cest pro strážce nad projekcí (IsdocFieldCoverage,
+        // pokrytí ukázky promptu): objekty, pole i listy, $ref rozpuštěné.
+        $paths = Projection::load(self::projectionPath())->nodePaths();
+
+        $this->assertCount(105, $paths);
+        $this->assertSame('format', $paths[0]);
+        $this->assertSame(array_values(array_unique($paths)), $paths, 'žádná cesta dvakrát');
+        foreach (['supplier', 'supplier.address', 'supplier.contact.web', 'customer.contact.web', 'dates.periodFrom',
+                  'rows', 'rows[]', 'rows[].item', 'rows[].item.ean', 'rows[].vat.pct', 'vatRecap[].total',
+                  '_resolve.contentTag.rowExceptions[].tag'] as $path) {
+            $this->assertContains($path, $paths);
+        }
+        $this->assertNotContains('rows[0]', $paths);
+        $this->assertNotContains('Party', $paths, '$ref se rozpouští, jméno definice není cesta');
+        $this->assertLessThan(array_search('rows[].item.ean', $paths, true), array_search('rows[].item.supplierCode', $paths, true), 'pořadí projekce');
+    }
+
     public function testUnknownRefFails(): void
     {
         $p = Projection::fromArray(['format' => Projection::FORMAT, 'formatVersion' => '1', 'document' => ['a' => ['$ref' => 'Nope']], '$defs' => [], 'shapes' => []]);
