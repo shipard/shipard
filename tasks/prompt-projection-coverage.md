@@ -1,6 +1,6 @@
 # Prompt: ukázka dokladu pokryje celou papírovou projekci (v4.9.0)
 
-**Stav:** naplánováno — zadání 2026-10-25 (#103 D107, D108)
+**Stav:** hotovo — 2026-10-25 (#103 D107, D108)
 
 ## Kontext / Cíl
 
@@ -86,14 +86,14 @@ straně korpusu.
 
 ## Hotovo když
 
-- [ ] Test D107 nad v4.8.0 hlásí přesně `supplier.contact.web`,
+- [x] Test D107 nad v4.8.0 hlásí přesně `supplier.contact.web`,
       `customer.contact.web`, `dates.periodFrom`, `dates.periodTo`,
       `rows[].item.ean` (v závěrečné zprávě); nad v4.9.0 projde.
-- [ ] `vendor/bin/phpunit --filter 'PromptProjectionCoverageTest|AIProfileDocumentTest|AiProfileReloadCommandTest|ProjectionTest'` projde (název nového testu podle implementace).
-- [ ] `shpd-ds ai-profile-reload --dry-run` na volném zdroji dat s účelem
+- [x] `vendor/bin/phpunit --filter 'PromptProjectionCoverageTest|AIProfileDocumentTest|AiProfileReloadCommandTest|ProjectionTest'` projde (název nového testu podle implementace).
+- [x] `shpd-ds ai-profile-reload --dry-run` na volném zdroji dat s účelem
       „korpus“ ukáže v4.8.0 → v4.9.0.
-- [ ] Dokumentace a changelog promptu, `**Stav:**`, index tasků.
-- [ ] **Žádná evaluace v tomto tasku** — pouští ji člověk z dashboardu.
+- [x] Dokumentace a changelog promptu, `**Stav:**`, index tasků.
+- [x] **Žádná evaluace v tomto tasku** — pouští ji člověk z dashboardu.
 
 ## Pasti
 
@@ -104,3 +104,40 @@ straně korpusu.
   součty ukázky (`vatRecap`, `totals` musí dál sedět s řádky); EAN
   doplnit k existujícímu řádku zboží, nebo upravit ukázku tak, aby
   součty dál souhlasily.
+
+## Výsledek (2026-10-25)
+
+- Test `tests/Unit/Module/Core/Mail/PromptProjectionCoverageTest` nad
+  v4.8.0 hlásil přesně:
+  ```
+  supplier.contact.web
+  customer.contact.web
+  dates.periodFrom
+  dates.periodTo
+  rows[].item.ean
+  ```
+  Nad v4.9.0 prochází. `ai-profile-reload --dry-run` na korpusovém zdroji
+  `ob9b-7`: `prompt_version: v4.8.0 → v4.9.0`.
+- Ukázka: `contact.web` u dodavatele, `periodFrom` / `periodTo` 1.–31. 3.
+  (měsíc před vystavením), druhý řádek „Doprava“ nahrazen zbožím se stejnou
+  cenou (1 × 500,00) s EAN-13 — rekapitulace a součty beze změny.
+
+### Odchylky od zadání
+
+- **Seznam výjimek není prázdný** (D107): podstrom `_resolve` (štítek
+  a výjimky řádků, 7 uzlů) v ukázce není a být nemá — doplňuje ho server,
+  model ho nevrací. Test ho vede jako jedinou výjimku s důvodem; výjimka
+  musí být cestou projekce, jinak test selže.
+- **Zástupné řetězce** `"<…>"` v ukázce jsou platné JSON řetězce — ukázka
+  parsuje beze změn, nahrazování (§ 1) nebylo potřeba. Extraktor hledá
+  první objekt za značkou párováním závorek s respektem k řetězcům.
+- Cesty projekce dává nová veřejná metoda `Projection::nodePaths()`
+  (přesun walkeru z `IsdocFieldCoverageTest`, který ji teď také používá) —
+  jeden zdroj cest pro oba strážce.
+- `PROMPT_VERSION` v `tools/invoice-generator/invoicegen/expected.py`
+  bumpnuta na v4.9.0 bez přegenerování korpusu: konstanta je jen
+  dokumentační (do souborů sad neteče), pravidla odvození se nemění.
+- Nález mimo zadání, ponechán: první řádek ukázky má od dřívějška
+  10 × 1 033,06 = 10 330,60, ale `totalPrice` 10 330,58 (2 haléře);
+  řádky → rekapitulace → součty sedí, test hlídá právě tenhle řetězec.
+  Oprava patří do příští verze promptu, ne do srovnávacího kola s v4.8.0.

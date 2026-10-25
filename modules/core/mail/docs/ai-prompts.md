@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.8.0)
+## Default prompt (v4.9.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -64,7 +64,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.8.0`).
+  shodná s `prompt_version` profilu (`v4.9.0`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -98,6 +98,16 @@ Klíčové pokyny v promptu:
   u adres s číslem před ulicí (US, UK) celý řádek do `street`,
   `houseNumber` null — tvar hodnot korpusu
   ([`docs/test-corpus.md`](../../../../docs/test-corpus.md) § 11).
+- **Ukázka dokladu pokrývá celou papírovou projekci** (od v4.9.0,
+  [tasks/prompt-projection-coverage.md](../../../../tasks/prompt-projection-coverage.md)
+  D107, D108): prompt zakazuje klíče mimo ukázku, takže pole, které
+  v ukázce chybí, model vynechává i z dokladu, kde ho vidí (web
+  dodavatele, období plnění). Ukázka má proto `contact.web`,
+  `dates.periodFrom` / `periodTo` a `item.ean` u řádku zboží; soulad
+  s `tests/corpus/projection.jsonc` hlídá
+  `tests/Unit/Module/Core/Mail/PromptProjectionCoverageTest` (cesty
+  z `Projection::nodePaths()`, výjimky jen výslovně s důvodem — dnes jen
+  `_resolve`, které doplňuje server).
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
   (dolů = záporné); zaokrouhlení nikdy nepatří jako položkový řádek
   do `rows`.
@@ -276,6 +286,29 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.9.0 (2026-10-25)
+
+Evaluace tří sad (2026-10-23) ukázaly, že model systematicky vynechává
+web dodavatele a období plnění, i když jsou na PDF
+([tasks/prompt-projection-coverage.md](../../../../tasks/prompt-projection-coverage.md),
+#103 D107, D108). Příčina není v pravidlech, ale v ukázce: pravidlo „Do
+struktury nikdy nepřidávej klíče, které nejsou v ukázce níže“ a ukázka
+dokladu bez pěti polí papírové projekce (`supplier.contact.web`,
+`customer.contact.web`, `dates.periodFrom`, `dates.periodTo`,
+`rows[].item.ean`). Schéma všech pět polí znalo.
+
+- Ukázka: `supplier.contact.web` (`www.dodavatel.cz`), `dates.periodFrom`
+  / `periodTo` (dvojice dat jednoho měsíce před vystavením), druhý řádek
+  „Doprava“ nahrazen zbožím se stejnou cenou a s `item.ean` (EAN-13);
+  `vatRecap` a `totals` beze změny. Strana `customer` zůstává `null`
+  (sdílí tvar se `supplier`).
+- Pravidla a schéma beze změny (minor) — evaluace má ukázat jen vliv pěti
+  polí.
+- Nový strážce `tests/Unit/Module/Core/Mail/PromptProjectionCoverageTest`:
+  každá cesta projekce (`Projection::nodePaths()`) musí být v ukázce;
+  jediná výjimka `_resolve` (štítek a výjimky řádků doplňuje server).
+  Nad v4.8.0 hlásil přesně pět cest výše.
 
 ### v4.8.0 (2026-10-15)
 
