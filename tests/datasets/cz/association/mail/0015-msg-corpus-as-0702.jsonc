@@ -21,16 +21,16 @@
             "file": "0702-domestic-non-payer-supplier.pdf",
             "name": "0702-domestic-non-payer-supplier.pdf",
             "mimeType": "application/pdf",
-            "size": 26887,
-            "sha256": "568703f14b43e595500633007fb236585ae796f6b349bc31b03c2432a66a9bb3",
+            "size": 26926,
+            "sha256": "74767801867d95218591c71f375a60a67159c0d6fa1df2df904046c297ac4719",
             "order": 1
         },
         {
             "file": "0702-domestic-non-payer-supplier.isdoc",
             "name": "0702-domestic-non-payer-supplier.isdoc",
             "mimeType": "text/xml",
-            "size": 5172,
-            "sha256": "da505af8b1ed83d98cb405d793c2930e06c4d82897a324139ddc244c828a1d48",
+            "size": 5192,
+            "sha256": "0e668235dad26324c52915fefe7d405de62ba36629f0120ca92c26ec662da769",
             "order": 2
         }
     ],
@@ -173,7 +173,7 @@
                                 "item": {
                                     "supplierCode": null,
                                     "ean": null,
-                                    "name": "Cestovné lektora",
+                                    "name": "Jízdenky lektora vlakem, zpáteční",
                                     "description": null
                                 },
                                 "unit": "ks",
@@ -322,7 +322,7 @@
                         "item": {
                             "supplierCode": null,
                             "ean": null,
-                            "name": "Cestovné lektora",
+                            "name": "Jízdenky lektora vlakem, zpáteční",
                             "description": null
                         },
                         "unit": "ks",

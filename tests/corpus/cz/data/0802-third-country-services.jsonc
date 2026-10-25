@@ -1,11 +1,13 @@
 // Varianta 8, podoba pdf (D10 #119: bez ISDOC) — software ze třetí země (en), USD, úhrada kartou.
+// Období nese jen text prvního řádku („10/01/2026 – 10/31/2026“), hlavička ho netiskne (#103 D112).
 {
 	"variant": "third-country-services",
 	"form": "pdf",
 	"supplier": "quillstack",
 	"docNumber": "QS-211378",
 	"paymentReference": null,
-	"dates": { "issue": "2026-10-01", "tax": null, "due": "2026-10-01" },
+	"dates": { "issue": "2026-10-01", "tax": null, "due": "2026-10-01", "periodFrom": "2026-10-01", "periodTo": "2026-10-31" },
+	"unprinted": { "period": "rows" },
 	"currency": "USD",
 	"vatTreatment": "noVat",
 	"payment": { "method": "card", "specificSymbol": null, "constantSymbol": null },

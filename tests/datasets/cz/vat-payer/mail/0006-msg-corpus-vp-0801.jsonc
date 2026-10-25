@@ -119,8 +119,8 @@
                             "issueDate": "2026-09-01",
                             "dueDate": "2026-09-01",
                             "taxPointDate": null,
-                            "periodFrom": null,
-                            "periodTo": null
+                            "periodFrom": "2026-09-01",
+                            "periodTo": "2026-09-30"
                         },
                         "currency": "USD",
                         "exchangeRate": null,
@@ -268,8 +268,8 @@
                     "issueDate": "2026-09-01",
                     "dueDate": "2026-09-01",
                     "taxPointDate": null,
-                    "periodFrom": null,
-                    "periodTo": null
+                    "periodFrom": "2026-09-01",
+                    "periodTo": "2026-09-30"
                 },
                 "currency": "USD",
                 "exchangeRate": null,

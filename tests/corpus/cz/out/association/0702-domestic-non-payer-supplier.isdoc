@@ -90,7 +90,7 @@
         <VATApplicable>false</VATApplicable>
       </ClassifiedTaxCategory>
       <Item>
-        <Description>Cestovné lektora</Description>
+        <Description>Jízdenky lektora vlakem, zpáteční</Description>
       </Item>
     </InvoiceLine>
   </InvoiceLines>

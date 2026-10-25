@@ -12,7 +12,7 @@
 	"contentTag": "services.training",
 	"rows": [
 		{ "text": "Kurz Excel pro pokročilé (2 dny)", "qty": 2, "unit": "os", "unitPrice": 2900.00, "vatPct": null },
-		{ "text": "Cestovné lektora", "qty": 1, "unit": "ks", "unitPrice": 640.00, "vatPct": null, "tag": "travel.fares" },
+		{ "text": "Jízdenky lektora vlakem, zpáteční", "qty": 1, "unit": "ks", "unitPrice": 640.00, "vatPct": null, "tag": "travel.fares" },
 	],
 	"rounding": "none",
 	"template": "cs-b",

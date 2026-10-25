@@ -21,16 +21,16 @@
             "file": "0402-domestic-reverse-charge.pdf",
             "name": "0402-domestic-reverse-charge.pdf",
             "mimeType": "application/pdf",
-            "size": 34122,
-            "sha256": "391893f4bdf1ea024d5a4e3f2d0c28eb95268fd620234f33d59272f7bab084ab",
+            "size": 34113,
+            "sha256": "4348c6c050494d6c79e723307cad98eca10b14b5f6546f8427f4abf993a93f86",
             "order": 1
         },
         {
             "file": "0402-domestic-reverse-charge.isdoc",
             "name": "0402-domestic-reverse-charge.isdoc",
             "mimeType": "text/xml",
-            "size": 6488,
-            "sha256": "bdec1536b8f327cee9d946b5c3771b1405efd79eeb0012da438afd426844ffd1",
+            "size": 6489,
+            "sha256": "f869ef365e19092243307eabab5407f3941cf257675c077d70c87ef15ac62887",
             "order": 2
         }
     ],
@@ -194,7 +194,7 @@
                                 "item": {
                                     "supplierCode": null,
                                     "ean": null,
-                                    "name": "Likvidace původních výplní",
+                                    "name": "Demontáž původních výplní",
                                     "description": null
                                 },
                                 "unit": "ks",
@@ -371,7 +371,7 @@
                         "item": {
                             "supplierCode": null,
                             "ean": null,
-                            "name": "Likvidace původních výplní",
+                            "name": "Demontáž původních výplní",
                             "description": null
                         },
                         "unit": "ks",

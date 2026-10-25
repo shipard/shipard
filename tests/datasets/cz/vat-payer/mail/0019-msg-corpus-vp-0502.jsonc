@@ -131,7 +131,7 @@
                         },
                         "payment": {
                             "method": "bankTransfer",
-                            "paymentReference": null,
+                            "paymentReference": "INV-2026-0421",
                             "specificSymbol": null,
                             "constantSymbol": null
                         },
@@ -308,7 +308,7 @@
                 },
                 "payment": {
                     "method": "bankTransfer",
-                    "paymentReference": null,
+                    "paymentReference": "INV-2026-0421",
                     "specificSymbol": null,
                     "constantSymbol": null
                 },

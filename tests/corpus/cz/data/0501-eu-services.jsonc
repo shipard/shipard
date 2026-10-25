@@ -1,4 +1,5 @@
 // Varianta 5, podoba pdf — služby z EU s reverse charge čl. 196 (en), EUR, období plnění.
+// Platební referencí je číslo dokladu — doklad o ni žádá v poznámce, řádek VS netiskne (#103 D110).
 // Jen pro plátce: neplátce by byl identifikovanou osobou (druhá vlna).
 {
 	"variant": "eu-services",
@@ -6,6 +7,7 @@
 	"supplier": "wolkenkraft",
 	"docNumber": "INV-2026-0388",
 	"paymentReference": null,
+	"unprinted": { "paymentReference": "docNumber" },
 	"dates": { "issue": "2026-09-02", "tax": "2026-08-31", "due": "2026-09-16", "periodFrom": "2026-08-01", "periodTo": "2026-08-31" },
 	"currency": "EUR",
 	"vatTreatment": "reverseCharge",

@@ -1,4 +1,5 @@
 // Varianta 8, podoba pdf — software ze třetí země (en), USD, bez zmínky o DPH, úhrada kartou.
+// Období nese jen text prvního řádku („09/01/2026 – 09/30/2026“), hlavička ho netiskne (#103 D112).
 // Jen pro plátce: neplátce by byl identifikovanou osobou (druhá vlna).
 {
 	"variant": "third-country-services",
@@ -6,7 +7,8 @@
 	"supplier": "quillstack",
 	"docNumber": "QS-204611",
 	"paymentReference": null,
-	"dates": { "issue": "2026-09-01", "tax": null, "due": "2026-09-01" },
+	"dates": { "issue": "2026-09-01", "tax": null, "due": "2026-09-01", "periodFrom": "2026-09-01", "periodTo": "2026-09-30" },
+	"unprinted": { "period": "rows" },
 	"currency": "USD",
 	"vatTreatment": "noVat",
 	"payment": { "method": "card", "specificSymbol": null, "constantSymbol": null },

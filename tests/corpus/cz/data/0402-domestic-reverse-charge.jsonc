@@ -13,7 +13,7 @@
 	"rows": [
 		{ "text": "Výměna oken dílny — montážní práce", "qty": 36, "unit": "h", "unitPrice": 520.00, "vatPct": 0, "reverseChargeCode": "4" },
 		{ "text": "Okno plastové 1200×1500 mm, trojsklo", "qty": 6, "unit": "ks", "unitPrice": 7850.00, "vatPct": 0, "reverseChargeCode": "4" },
-		{ "text": "Likvidace původních výplní", "qty": 1, "unit": "ks", "unitPrice": 1900.00, "vatPct": 0, "reverseChargeCode": "4" },
+		{ "text": "Demontáž původních výplní", "qty": 1, "unit": "ks", "unitPrice": 1900.00, "vatPct": 0, "reverseChargeCode": "4" },
 	],
 	"rounding": "none",
 	"template": "cs-a",
@@ -24,7 +24,7 @@
 			"rows": [
 				{ "text": "Výměna oken dílny — montážní práce", "qty": 36, "unit": "h", "unitPrice": 520.00, "vatPct": 21 },
 				{ "text": "Okno plastové 1200×1500 mm, trojsklo", "qty": 6, "unit": "ks", "unitPrice": 7850.00, "vatPct": 21 },
-				{ "text": "Likvidace původních výplní", "qty": 1, "unit": "ks", "unitPrice": 1900.00, "vatPct": 21 },
+				{ "text": "Demontáž původních výplní", "qty": 1, "unit": "ks", "unitPrice": 1900.00, "vatPct": 21 },
 			],
 		},
 		"association": "non-payer",
