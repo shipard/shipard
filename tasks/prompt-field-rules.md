@@ -1,6 +1,6 @@
 # Prompt v4.10.0: poznámka bez doložek DPH, platební reference, DUZP jen z dokladu
 
-**Stav:** naplánováno — zadání 2026-10-25 (#103 D109–D111)
+**Stav:** hotovo — 2026-10-25 (#103 D109–D111)
 
 ## Kontext / Cíl
 
@@ -88,13 +88,13 @@ Navíc oprava ukázky: první řádek má `10 × 1 033,06`, ale `totalPrice`
 
 ## Hotovo když
 
-- [ ] Nová kontrola aritmetiky ukázky nad v4.9.0 selže na řádku 1, nad
+- [x] Nová kontrola aritmetiky ukázky nad v4.9.0 selže na řádku 1, nad
       v4.10.0 projde (v závěrečné zprávě).
-- [ ] `vendor/bin/phpunit --filter 'PromptProjectionCoverageTest|ProfileSchemaDriftTest|MailAiProvisionerTest|AIProfileDocumentTest|AiProfileReloadCommandTest'` projde.
-- [ ] `shpd-ds ai-profile-reload --dry-run` na zdroji dat s účelem „korpus“:
+- [x] `vendor/bin/phpunit --filter 'PromptProjectionCoverageTest|ProfileSchemaDriftTest|MailAiProvisionerTest|AIProfileDocumentTest|AiProfileReloadCommandTest'` projde.
+- [x] `shpd-ds ai-profile-reload --dry-run` na zdroji dat s účelem „korpus“:
       v4.9.0 → v4.10.0.
-- [ ] Changelog promptu, `**Stav:**`, index tasků.
-- [ ] **Žádná evaluace v tomto tasku.**
+- [x] Changelog promptu, `**Stav:**`, index tasků.
+- [x] **Žádná evaluace v tomto tasku.**
 
 ## Pasti
 
@@ -102,3 +102,24 @@ Navíc oprava ukázky: první řádek má `10 × 1 033,06`, ale `totalPrice`
   přepnulo prompt).
 - **Jiná pravidla neměnit** — kolo evaluací má ukázat jen D109–D111
   a změnu sady z `corpus-field-semantics`.
+
+## Výsledek (2026-10-25)
+
+- Nová kontrola `testSampleRowsFromUnitPriceAreArithmeticallyConsistent`
+  v `PromptProjectionCoverageTest` nad v4.9.0 hlásila přesně:
+  ```
+  řádek 1 (orderPos 1): 10 × 1033.06 = 10330.60, ale totalPrice je 10330.58
+  ```
+  Nad v4.10.0 prochází. `ai-profile-reload --dry-run` na korpusovém
+  zdroji `ob9b-7`: `prompt_version: v4.9.0 → v4.10.0`.
+- Ukázka: řádek 1 `totalPrice` 10 330,60, základ 10 830,60, DPH 2 274,43,
+  k úhradě 13 105,03. Titulek „…, 13 105,03 Kč“ na obou místech (vzor
+  titulku v TRIAGE i ukázka) — `MessageTitleComposer` haléře zobrazuje,
+  jen `,00` vynechává.
+- Pravidla v oddílu PRAVIDLA u příbuzných pravidel: D110 za bankovním
+  spojením dodavatele, D111 za formátem dat, D109 za `"vat".reverseCharge`
+  (jmenuje tytéž doložky). Pravidlo účtenek beze změny; D111 na něj
+  odkazuje („U účtenky platí pravidlo níže: DUZP = datum prodeje“).
+- `PROMPT_VERSION` generátoru v4.10.0 bez přegenerování korpusu
+  (dokumentační, jako u v4.9.0); § 9 `docs/test-corpus.md` podle toho.
+- Evaluace neproběhla — pouští ji člověk z dashboardu.

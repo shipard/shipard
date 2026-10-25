@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.9.0)
+## Default prompt (v4.10.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -64,7 +64,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.9.0`).
+  shodná s `prompt_version` profilu (`v4.10.0`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -108,6 +108,18 @@ Klíčové pokyny v promptu:
   `tests/Unit/Module/Core/Mail/PromptProjectionCoverageTest` (cesty
   z `Projection::nodePaths()`, výjimky jen výslovně s důvodem — dnes jen
   `_resolve`, které doplňuje server).
+- **Poznámka bez doložek DPH, platební reference a DUZP jen z dokladu**
+  (od v4.10.0, [tasks/prompt-field-rules.md](../../../../tasks/prompt-field-rules.md)
+  D109–D111; jediné znění významu polí je
+  [`docs/test-corpus.md`](../../../../docs/test-corpus.md) § 8 → Význam
+  sporných polí): `notes.onDocument` je volný text poznámky z dokladu —
+  zákonné doložky k DPH (osvobozené dodání, přenesení daňové povinnosti,
+  „Nejsem plátce DPH“) do něj nepatří, plynou z polí `vat`;
+  `payment.paymentReference` jen reference uvedená na dokladu (VS,
+  „Reference“, „Verwendungszweck“), číslo faktury jen když o ně doklad
+  s platbou výslovně žádá; `dates.taxPointDate` jen výslovně uvedené
+  DUZP — nikdy z data vystavení, platby ani z textu, neplátce DUZP nemá
+  (účtenka dál DUZP = datum prodeje).
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
   (dolů = záporné); zaokrouhlení nikdy nepatří jako položkový řádek
   do `rows`.
@@ -286,6 +298,41 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.10.0 (2026-10-25)
+
+Evaluace v4.9.0 (2026-10-25) ukázaly tři pole, kde model odvozuje místo
+opisu ([tasks/prompt-field-rules.md](../../../../tasks/prompt-field-rules.md),
+#103 D109–D111): do `notes.onDocument` vrací zákonné doložky DPH
+(„Intra-Community supply … exempt“, „Daň odvede zákazník“, „Nejsem plátce
+DPH“), do `payment.paymentReference` doplňuje číslo faktury, které doklad
+jako referenci neuvádí, a `dates.taxPointDate` dopočítává z textu nebo
+z data vystavení. Doložky systém odvozuje z polí `vat`; reference a DUZP
+mají být opisem. Znění pravidel přebírá
+[`docs/test-corpus.md`](../../../../docs/test-corpus.md) § 8 → Význam
+sporných polí (jediný zdroj; korpus totéž kóduje v `unprinted`,
+[tasks/corpus-field-semantics.md](../../../../tasks/corpus-field-semantics.md)).
+
+- PRAVIDLA: `"notes".onDocument` = volný text poznámky z dokladu (dodací
+  podmínky, poděkování, pokyn k platbě); doložky k DPH nikdy — ani
+  samostatně, ani připojené k poznámce; bez jiné poznámky pole vynechat
+  (D109).
+- PRAVIDLA: `"payment".paymentReference` = VS nebo reference uvedená na
+  dokladu („Reference“, „Payment reference“, „Verwendungszweck“); číslo
+  dokladu jen když o ně doklad s platbou výslovně žádá; jinak vynechat,
+  číslo faktury se samo nedoplňuje (D110).
+- PRAVIDLA: `"dates".taxPointDate` jen výslovně uvedené DUZP („DUZP“,
+  „Datum zdan. plnění“, „Date of supply“, „Tax point“, „Leistungsdatum“);
+  nikdy z data vystavení, platby ani z textu („Školení proběhlo …“);
+  neplátce DUZP nemá; pravidlo účtenek DUZP = datum prodeje zůstává
+  (D111).
+- Ukázka: první řádek aritmeticky správně — 10 × 1 033,06 = 10 330,60
+  (do v4.9.0 10 330,58), základ 10 830,60, DPH 2 274,43, k úhradě
+  13 105,03 (i v titulku klasifikace). Ostatní pravidla a schéma beze
+  změny (minor).
+- `PromptProjectionCoverageTest`: u řádků ukázky s `priceCalcMode`
+  `fromUnitPrice` platí `round(quantity × unitPrice, 2) = totalPrice`;
+  nad v4.9.0 hlásil řádek 1.
 
 ### v4.9.0 (2026-10-25)
 

@@ -374,7 +374,7 @@ VatRecapEntry `vatPct`, `base`, `tax`, `total`. Pořadí odpovídá schématu
 
 Pravidla kóduje `invoicegen/expected.py` a sledují prompt analýzy pošty
 `modules/core/mail/profiles/czech_general.jsonc` (konstanta
-`PROMPT_VERSION`, dnes v4.9.0). Když se prompt změní, změní se modul
+`PROMPT_VERSION`, dnes v4.10.0). Když se prompt změní, změní se modul
 a korpus se přegeneruje — jinak evaluace měří proti zastaralé pravdě.
 
 - `docType`: `invoiceReceived` (i účtenka); `selfParty`: `customer`.
