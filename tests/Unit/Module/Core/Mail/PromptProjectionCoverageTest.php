@@ -202,6 +202,41 @@ final class PromptProjectionCoverageTest extends TestCase
         );
     }
 
+    public function testSampleRowsFromUnitPriceAreArithmeticallyConsistent(): void
+    {
+        // Ukázka je vzor i pro aritmetiku řádku: u priceCalcMode fromUnitPrice
+        // musí quantity × unitPrice zaokrouhlené na haléře dát totalPrice
+        // (tasks/prompt-field-rules.md § 2). Řádek 1 měl do v4.9.0
+        // 10 × 1 033,06 = 10 330,60, ale totalPrice 10 330,58 — řetězec
+        // řádky → rekapitulace → součty seděl, jednotková cena ne.
+        $profile = JsoncParser::parseFile(self::profilePath());
+        $sample = self::extractSample((string) $profile['prompt_template']);
+
+        $checked = 0;
+        foreach ($sample['rows'] as $i => $row) {
+            if (($row['priceCalcMode'] ?? null) !== 'fromUnitPrice') {
+                continue;
+            }
+            $checked++;
+            $expected = round((float) $row['quantity'] * (float) $row['unitPrice'], 2);
+            $this->assertEqualsWithDelta(
+                $expected,
+                (float) $row['totalPrice'],
+                0.001,
+                sprintf(
+                    'řádek %d (orderPos %s): %s × %s = %.2f, ale totalPrice je %s',
+                    $i + 1,
+                    $row['orderPos'] ?? '?',
+                    $row['quantity'],
+                    $row['unitPrice'],
+                    $expected,
+                    $row['totalPrice'],
+                ),
+            );
+        }
+        $this->assertGreaterThan(0, $checked, 'ukázka nemá žádný řádek s priceCalcMode fromUnitPrice');
+    }
+
     public function testExtractorFailsWithoutMarker(): void
     {
         $this->expectException(AssertionFailedError::class);
