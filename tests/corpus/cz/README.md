@@ -13,7 +13,9 @@ z poppler-utils — kontrola věrnosti tisku ověří, že každý ne-`null`
 identifikátor z očekávání je v textu PDF (#103 D105, `docs/test-corpus.md` § 12).
 
 - `identities.jsonc` — profily vlastní firmy a dodavatelé (fiktivní, ověřené v ARES a VIES),
-- `data/NNNN-<slug>.jsonc` — datový soubor dokladu, **jediný ručně psaný vstup**,
+- `data/NNNN-<slug>.jsonc` — datový soubor dokladu, **jediný ručně psaný vstup** (vč. bloku
+  `unprinted` pro hodnoty, které očekávání nese, ale šablona je netiskne samostatně — platební
+  reference = číslo dokladu, období jen v textu řádků; #103 D110, D112, `docs/test-corpus.md` § 4),
 - `exchange-rates/<validFrom>-cz.cnb.daily.json` — skutečné denní lístky ČNB pro účetní
   data dokladů v cizí měně a rezervy z předchozího pracovního dne (`tasks/testing-rates-isdoc.md`
   D72); plní je jen `build.py --fetch-rates` (síť), build je jinak jen čte a z nich počítá

@@ -132,6 +132,7 @@ Píše se ručně, stručně; všechno odvoditelné dopočítá generátor. Náz
 	"rounding": "none",                  // "none" | "czk" (jen CZK)
 	"template": "en",
 	"notes": { "onDocument": "…" },      // volná poznámka; null = bez poznámky
+	"unprinted": { "paymentReference": "docNumber", "period": "rows" },  // hodnoty netištěné samostatně (níže)
 	"skipProfiles": { "non-payer": "identifikovaná osoba — druhá vlna" },
 	"overrides": { "non-payer": { … }, "association": "non-payer" },
 }
@@ -153,6 +154,23 @@ Pravidla hlavičky: `dates.tax` povinné mimo `noVat`; `dates.due` povinné
 mimo účtenku, účtenka ho nemá; `periodFrom` a `periodTo` jen spolu;
 účtenka bez variabilního symbolu, platba `card` nebo `cash`; `payment.method`
 bez uvedení = `bankTransfer`. Účtenka = `template: "receipt"`.
+
+**`unprinted`** = hodnoty očekávání, které šablona netiskne jako samostatný
+údaj (#103 D110, D112); volitelné, povolené jen tyto klíče a hodnoty:
+
+- `"paymentReference": "docNumber"` — doklad výslovně žádá uvést číslo
+  faktury s platbou (věta v poznámce), referencí je tedy číslo dokladu:
+  očekávání má `payment.paymentReference` = `docNumber`, řádek VS se
+  netiskne (`paymentReference` v datech musí být `null`; účtenka to mít
+  nesmí). Na PDF je hodnota jako číslo dokladu — hlídá kontrola věrnosti
+  tisku (§ 12).
+- `"period": "rows"` — doklad nemá období v hlavičce, nese ho text řádku
+  („12 seats, 09/01/2026 – 09/30/2026“): `dates.periodFrom` / `periodTo`
+  jsou v datech i očekávání jako obvykle, šablona řádek „Období plnění“
+  vynechá. Validace žádá, aby aspoň jeden řádek nesl **obě** data
+  v tištěném tvaru (`text` + `description`, bez bílých znaků; tvary ISO,
+  `1. 9. 2026`, `01.09.2026`, `09/01/2026`, `01/09/2026`) — proti textu
+  PDF by kontrola byla prázdná, datum vystavení se s počátkem období kryje.
 
 **`overrides`** = částečný datový soubor per profil: objekty se slučují do
 hloubky, pole a skaláry nahrazují, `null` nastavuje `null` (řádky se tedy
@@ -201,10 +219,10 @@ doklady variant 5, 6, 8 (zahraniční dodavatel) a 9 (účtenka) zůstávají
 | 2 | `domestic-two-rates` | CZ | CZK | `cs-b` | `standard` 21 % + 12 % | `pdfIsdoc` | `office.supplies`, řádky 12 % `admin.memberships` | rekapitulace po sazbách, `rowExceptions` |
 | 3 | `domestic-rounding` | CZ | CZK | `cs-c` | `standard`, zaokrouhlení na Kč | `pdfIsdoc` | `premises.electricity` | `totalRounding` (dolů i nahoru), období plnění |
 | 4 | `domestic-reverse-charge` | CZ | CZK | `cs-a` | `reverseCharge` | `pdfIsdoc` | `premises.maintenance` | `reverseCharge`, `reverseChargeCode: "4"` |
-| 5 | `eu-services` | DE | EUR | `en` | `reverseCharge` (čl. 196) | `pdf` | `it.hosting` | `intracom`, `supplyKind: services` |
+| 5 | `eu-services` | DE | EUR | `en` | `reverseCharge` (čl. 196) | `pdf` | `it.hosting` | `intracom`, `supplyKind: services`, platební reference = číslo dokladu (D110, `unprinted`) |
 | 6 | `eu-goods` | DE | EUR | `en` | `exemptIntraCommunity` (čl. 138) | `pdf` | `it.hardware` | `intracom`, `supplyKind: goods`, `reverseCharge: false`, EAN |
 | 7 | `domestic-non-payer-supplier` | CZ neplátce | CZK | `cs-b` | `noVat` | `pdfIsdoc` | `services.training` | `vat.mode: none`, bez rekapitulace |
-| 8 | `third-country-services` | US | USD | `en` | `noVat` | `pdf` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou |
+| 8 | `third-country-services` | US | USD | `en` | `noVat` | `pdf` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou, období jen v textu řádku (D112, `unprinted`) |
 | 9 | `receipt` | CZ | CZK | `receipt` | `pricesWithVat` 21 % (+ 12 %) | `pdf` | `vehicle.fuel` | účtenka bez odběratele a splatnosti, `fromTotal` u PHM |
 | 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `pdfIsdoc` | `office.cleaning`, potraviny a potřeby ke kávě `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků; žádná nejednoznačná položka (D104) |
 
@@ -286,6 +304,19 @@ canonicalu:
 - liší se od konvence datových sad (`docs/datasets.md` — tam se `null`
   vynechává): očekávání **není** soubor sady.
 
+### Význam sporných polí (#103 D109–D112)
+
+Jediné znění významu polí, u kterých se model a očekávání rozcházely
+(evaluace 2026-10-25). Prompt analýzy pošty (`tasks/prompt-field-rules.md`)
+na něj odkazuje, korpus ho kóduje v datech (`unprinted`, § 4) a generátoru:
+
+| Pole | Význam |
+|------|--------|
+| `notes.onDocument` | Volný text poznámky z dokladu — dodací podmínky, poděkování, pokyn k platbě. Zákonné doložky k DPH (osvobozené dodání, přenesení daňové povinnosti, „Nejsem plátce DPH“) sem nepatří ani samostatně, ani připojené k poznámce — plynou z polí `vat`. Doklad bez jiné poznámky má `null` (D109). |
+| `payment.paymentReference` | Platební reference, kterou doklad uvádí: variabilní symbol, nebo pole „Reference“ / „Payment reference“ / „Verwendungszweck“. Když doklad výslovně žádá uvést číslo faktury s platbou, je referencí číslo dokladu. Jinak `null` — číslo faktury se samo od sebe nedoplňuje (D110; v datech `unprinted.paymentReference`). |
+| `dates.taxPointDate` | Jen datum uskutečnění zdanitelného plnění uvedené na dokladu („DUZP“, „Datum zdan. plnění“, „Date of supply“, „Tax point“, „Leistungsdatum“). Neodvozuje se z data vystavení, platby ani z textu; doklad od neplátce DPH DUZP nemá. Účtenka: DUZP = datum prodeje (D111). |
+| `dates.periodFrom` / `periodTo` | Období plnění z hlavičky dokladu. Nemá-li ho hlavička a všechny řádky nesou totéž období (v textu nebo popisu řádku), je to období dokladu. Řádky s různými obdobími nebo bez období → `null` (D112; v datech `unprinted.period`). |
+
 ### Projekce (`tests/corpus/projection.jsonc`)
 
 Jediný zdroj pravdy pro generátor (`invoicegen/expected.py`), PHPUnit
@@ -355,8 +386,11 @@ a korpus se přegeneruje — jinak evaluace měří proti zastaralé pravdě.
   EU vč. `EL` → `intracom`); bez DIČ podle sídla (`cz` → `domestic`, EU →
   `intracom`, jinak `thirdCountry`).
 - `dates`: `issueDate`, `dueDate` (účtenka `null`), `taxPointDate`
-  (`dates.tax`, u `noVat` `null`), `periodFrom` / `periodTo`.
-- `payment.method` z dat (účtenka `card` / `cash`), `paymentReference` = VS.
+  (`dates.tax`, u `noVat` `null`), `periodFrom` / `periodTo` — i když je
+  období jen v textu řádků a hlavička ho netiskne (`unprinted.period`, D112).
+- `payment.method` z dat (účtenka `card` / `cash`), `paymentReference` = VS,
+  nebo číslo dokladu, když doklad žádá uvést ho s platbou
+  (`unprinted.paymentReference`, D110).
 - `notes.onDocument` = jen volná poznámka z dat; zákonná věta k DPH
   (přenesení, čl. 196 / 138, „Nejsem plátce DPH“) je samostatný blok
   šablony a do očekávání nejde — AI ji nejspíš do poznámky opíše,
@@ -412,7 +446,8 @@ jméno ze `shapes`.
 | částka | číslo zaokrouhlené na setiny | `10330.58` | `amount` |
 | množství, procenta | číslo bez koncových nul | `0.643`, `12.5`, `5` | `number` |
 | EAN | 8 nebo 13 číslic | `4260999100013` | `ean` |
-| symboly (VS, KS, SS) | jen číslice, nejvýš 10 | `20261180`, `0308` | `symbol` |
+| platební reference (VS) | číslice, velká písmena, pomlčka, lomítko; bez mezer, nejvýš 35 — VS, nebo číslo dokladu, když o něj doklad žádá (D110) | `20261180`, `INV-2026-0388` | `reference` |
+| symboly (KS, SS) | jen číslice, nejvýš 10 | `0308` | `symbol` |
 | jednotka, názvy, texty | jak na dokladu, bez okrajových mezer | `m2`, `ks` | `text` |
 
 Na PDF se hodnoty tisknou tak, jak je tisknou skutečné doklady (PSČ
@@ -427,7 +462,8 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
 ```
 
 1. Validace identit (součty, disjunkce s demem), datových souborů
-   (§ 4) a párů podob.
+   (§ 4 — vč. bloku `unprinted`: období „jen v řádcích“ musí nést text
+   některého řádku v tištěném tvaru) a párů podob.
 2. Kurzovní lístky (§ 7): z buněk matice se odvodí účetní data dokladů
    v cizí měně; s `--fetch-rates` se ze služby kurzů stáhnou chybějící
    lístky (síť), jinak build lístky jen čte z `exchange-rates/` —
@@ -459,7 +495,8 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
    účet, IBAN, BIC, VS / KS / SS, e-mail, telefon, web, spisová značka,
    `rows[].item.supplierCode` / `ean` / `description`), porovnání bez
    bílých znaků (IBAN po čtveřicích, telefon s mezerami, zalomení přes
-   řádek). Nález = řádek `chybí na PDF: <cesta> = <hodnota>` pod buňkou
+   řádek); platební reference rovná číslu dokladu (`unprinted`, D110) se
+   tak najde jako číslo dokladu. Nález = řádek `chybí na PDF: <cesta> = <hodnota>` pod buňkou
    a souhrn po poli; `--fidelity=error` (výchozí) končí 1 před sestavením
    sad, `--fidelity=warn` jen vypíše (diagnostika při úpravě šablon).
 8. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
@@ -584,6 +621,11 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
   2026): „Spisová značka C …“ v identitách byla na PDF doslova, substring
   seděl. Hodnotu s popiskem hlídá `validate_identities` (§ 3); nové pole
   tvaru „popisek + hodnota“ potřebuje vlastní pravidlo, ne D105.
+- **Období „jen v řádcích“ se nehlídá proti textu PDF** (`unprinted.period`,
+  D112): počátek období se často kryje s datem vystavení (0801: 1. 9.),
+  kontrola by našla datum hlavičky, ne období. Validace dat proto žádá obě
+  data v textu některého řádku; že je text řádku na PDF, hlídá D105 u popisu
+  a tisk názvu položky u textu.
 - **Změna štítků řádků mění obraty po účtech**: schválený snímek hlavní
   knihy (`profiles/<profil>/approved/general-ledger.json`, § 17) je pak
   třeba přepsat (`dataset-verify --write-ledger-snapshot`) a rozdíl
