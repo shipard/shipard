@@ -90,6 +90,17 @@ class MissingIdentifiersTest(unittest.TestCase):
         self.assertEqual({"supplier.bankAccount.iban": 1, "rows[].item.supplierCode": 1, "rows[].item.ean": 1},
                          dict(summarize(findings)))
 
+    def test_reference_equal_to_doc_number_is_found_as_doc_number(self) -> None:
+        # D110 (#103): referencí je číslo dokladu — na PDF je jen jako číslo dokladu, řádek VS není.
+        expected = {"docNumber": "INV-2026-0388", "payment": {"paymentReference": "INV-2026-0388"}}
+        text = "INVOICE\nNo. INV-2026-0388\nPayment details\nIBAN\nDE92 1005 0000 6681 2300 67\n" \
+               "Please quote the invoice number with your payment.\n"
+        self.assertEqual([], missing_identifiers(expected, text))
+        self.assertEqual(
+            [Finding("docNumber", "INV-2026-0388"), Finding("payment.paymentReference", "INV-2026-0388")],
+            missing_identifiers(expected, text.replace("INV-2026-0388", "INV-2026-0399")),
+        )
+
     def test_summary_counts_rows_together(self) -> None:
         findings = [Finding("rows[0].item.supplierCode", "A"), Finding("rows[7].item.supplierCode", "B")]
         self.assertEqual([("rows[].item.supplierCode", 2)], summarize(findings).most_common())

@@ -8,7 +8,8 @@ Výstup korpusu je pinnutý hashem HTML v `tests/corpus/cz/build-state.json`
 — tady se nic nemění, jen přidává.
 
 Vstup: datový soubor korpusu (`data`: docNumber, dates, currency,
-vatTreatment, payment, paymentReference, notes), identita dodavatele
+vatTreatment, payment, paymentReference, notes, `unprinted` — hodnoty, které
+se netisknou jako samostatný údaj, #103 D110 / D112), identita dodavatele
 a vlastní firmy v kanonickém tvaru (`identities.jsonc`), `compute.compute`.
 """
 
@@ -116,6 +117,7 @@ def template_values(data: dict, supplier: dict, profile: dict, computed: dict, *
     payment = data.get("payment") or {}
     method = payment.get("method", "bankTransfer")
     dates = data["dates"]
+    unprinted = data.get("unprinted") or {}
     bank = supplier.get("bankAccount") or {}
     vat_column = treatment != "noVat"
     gross_rows = treatment == "pricesWithVat"
@@ -154,7 +156,9 @@ def template_values(data: dict, supplier: dict, profile: dict, computed: dict, *
             date_rows.append((labels["tax"], f'<span class="num">{fmt_date(dates["tax"], locale)}</span>'))
         if dates.get("due"):
             date_rows.append((labels["due"], f'<span class="num">{fmt_date(dates["due"], locale)}</span>'))
-        if dates.get("periodFrom"):
+        # D112 (#103): `unprinted.period = rows` — období nese jen text řádků,
+        # hlavička ho netiskne (očekávání ho má z `dates`).
+        if dates.get("periodFrom") and unprinted.get("period") != "rows":
             date_rows.append((labels["period"], f'<span class="num">{fmt_date(dates["periodFrom"], locale)} – '
                                                 f'{fmt_date(dates["periodTo"], locale)}</span>'))
 

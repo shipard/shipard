@@ -5,12 +5,13 @@ import unittest
 from decimal import Decimal
 
 from invoicegen.corpus import (
-    PROFILES, Cell, DataFileError, SkippedCell, cells_for, deep_merge, parse_stem, resolve_overrides, stem_for,
-    validate_data_file, validate_variant_pairs,
+    PROFILES, Cell, DataFileError, SkippedCell, cells_for, deep_merge, parse_stem, printed_date_forms,
+    resolve_overrides, row_carries_dates, stem_for, validate_data_file, validate_variant_pairs,
 )
 from invoicegen.jsonc import load_jsonc
 from tests.fixtures import (
-    DATA_DOMESTIC, DATA_EU_SERVICES, DATA_NO_VAT, DATA_RECEIPT, IDENTITIES, TAXONOMY_PATH, TEMPLATES, data,
+    DATA_DOMESTIC, DATA_EU_SERVICES, DATA_EU_SERVICES_REFERENCE, DATA_NO_VAT, DATA_RECEIPT, DATA_THIRD_COUNTRY,
+    DATA_THIRD_COUNTRY_PERIOD, IDENTITIES, TAXONOMY_PATH, TEMPLATES, data,
 )
 
 D = Decimal
@@ -85,7 +86,8 @@ class CellsTest(unittest.TestCase):
 
 class ValidateDataFileTest(unittest.TestCase):
     def test_fixtures_valid(self) -> None:
-        for doc in (DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, DATA_NO_VAT):
+        for doc in (DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, DATA_NO_VAT, DATA_THIRD_COUNTRY,
+                    DATA_EU_SERVICES_REFERENCE, DATA_THIRD_COUNTRY_PERIOD):
             validate(doc)
 
     def test_stem(self) -> None:
@@ -159,6 +161,54 @@ class ValidateDataFileTest(unittest.TestCase):
         self.rejects(data(DATA_DOMESTIC, dates={**DATA_DOMESTIC["dates"], "periodFrom": "2026-08-01"}), "jen spolu")
         self.rejects(data(DATA_DOMESTIC, supplier="ghost"), "neznámý dodavatel")
         self.rejects(data(DATA_DOMESTIC, rows=[]), "chybí rows")
+
+    # Hodnoty netištěné samostatně (#103 D110, D112)
+    def test_unprinted_keys_and_values(self) -> None:
+        self.rejects(data(DATA_EU_SERVICES, unprinted={"docNumber": "x"}), "unprinted.docNumber: neznámý klíč")
+        self.rejects(data(DATA_EU_SERVICES, unprinted={"paymentReference": "note"}), "unprinted.paymentReference: hodnota 'note'")
+        self.rejects(data(DATA_THIRD_COUNTRY_PERIOD, unprinted={"period": "header"}), "unprinted.period: hodnota 'header'")
+        self.rejects(data(DATA_EU_SERVICES, unprinted="docNumber"), "unprinted není objekt")
+        validate(data(DATA_EU_SERVICES, unprinted={}))
+        validate(data(DATA_EU_SERVICES, unprinted=None))
+
+    def test_unprinted_reference_rules(self) -> None:
+        # D110: referencí je číslo dokladu — doklad pak nemá VS a není účtenka
+        self.rejects(data(DATA_DOMESTIC, unprinted={"paymentReference": "docNumber"}), "VS i referenci")
+        validate(data(DATA_DOMESTIC, paymentReference=None, unprinted={"paymentReference": "docNumber"}))
+        self.rejects(data(DATA_RECEIPT, unprinted={"paymentReference": "docNumber"}), "účtenka referenci nemá")
+
+    def test_unprinted_period_needs_dates_and_a_row_with_both(self) -> None:
+        # D112: období jen v řádcích — hlavička ho má v datech, text řádku ho nese v tištěném tvaru
+        self.rejects(data(DATA_THIRD_COUNTRY, unprinted={"period": "rows"}), "chybí dates.periodFrom / periodTo")
+        without = copy.deepcopy(DATA_THIRD_COUNTRY_PERIOD)
+        without["rows"][0]["description"] = "12 seats"
+        with self.assertRaises(DataFileError) as ctx:
+            validate(without)
+        self.assertIn("žádný řádek nenese obě data období", str(ctx.exception))
+        self.assertIn("2026-09-01 / 1. 9. 2026 / 01.09.2026 / 09/01/2026 / 01/09/2026", str(ctx.exception))
+        only_from = copy.deepcopy(DATA_THIRD_COUNTRY_PERIOD)
+        only_from["rows"][0]["description"] = "12 seats, from 09/01/2026"
+        self.rejects(only_from, "obě data období")
+        # přijaté tvary: český, ISO, tečkový bez mezer; data smí být v textu i popisu téhož řádku
+        for text, description in (
+            ("Předplatné 1. 9. 2026 – 30. 9. 2026", None),
+            ("Team plan", "2026-09-01 – 2026-09-30"),
+            ("Team plan", "01.09.2026-30.09.2026"),
+            ("Team plan od 1.9.2026", "do 30. 9. 2026"),
+        ):
+            doc = copy.deepcopy(DATA_THIRD_COUNTRY_PERIOD)
+            doc["rows"][0]["text"] = text
+            doc["rows"][0]["description"] = description
+            validate(doc)
+
+    def test_printed_date_forms(self) -> None:
+        self.assertEqual(("2026-09-01", "1. 9. 2026", "01.09.2026", "09/01/2026", "01/09/2026"),
+                         printed_date_forms("2026-09-01"))
+        self.assertEqual(("2026-10-31", "31. 10. 2026", "31.10.2026", "10/31/2026", "31/10/2026"),
+                         printed_date_forms("2026-10-31"))
+        self.assertTrue(row_carries_dates({"text": "Období 1. 9. 2026 – 30. 9. 2026"}, ("2026-09-01", "2026-09-30")))
+        self.assertFalse(row_carries_dates({"text": "Období 1. 9. 2026", "description": None}, ("2026-09-01", "2026-09-30")))
+        self.assertFalse(row_carries_dates({"text": "x"}, ("2026-09-01",)))
 
     def test_override_validated_per_profile(self) -> None:
         doc = data(DATA_DOMESTIC, overrides={"non-payer": {"currency": "czk"}})

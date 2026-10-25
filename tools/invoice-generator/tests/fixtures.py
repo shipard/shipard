@@ -194,6 +194,22 @@ def data(doc: dict, **changes) -> dict:
     return out
 
 
+# Hodnoty netištěné samostatně (#103 D110, D112): doklad žádá uvést číslo
+# faktury s platbou (referencí je číslo dokladu, řádek VS netiskne); období
+# jen v popisu řádku (hlavička ho netiskne).
+DATA_EU_SERVICES_REFERENCE = data(
+    DATA_EU_SERVICES,
+    notes={"onDocument": "Please quote the invoice number with your payment."},
+    unprinted={"paymentReference": "docNumber"},
+)
+DATA_THIRD_COUNTRY_PERIOD = data(
+    DATA_THIRD_COUNTRY,
+    dates={**DATA_THIRD_COUNTRY["dates"], "periodFrom": "2026-09-01", "periodTo": "2026-09-30"},
+    unprinted={"period": "rows"},
+)
+DATA_THIRD_COUNTRY_PERIOD["rows"][0]["description"] = "12 seats, 09/01/2026 – 09/30/2026"
+
+
 def rate_list(valid_from: str, number: str, **rates: str) -> dict:
     """Denní lístek ČNB ve formátu shpd.exchangeRates.list.v1 (JPY za 100 jednotek)."""
     amounts = {"JPY": 100, "HUF": 100}

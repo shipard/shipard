@@ -10,6 +10,12 @@ reverse charge (čl. 138 ho nezapíná), `supplyKind` na každém řádku
 dodavatele mimo ČR, `reverseChargeCode` jen u tuzemského přenesení,
 účtenka bez odběratele a splatnosti. Když se prompt změní, změní se tento
 modul a korpus se přegeneruje.
+
+Hodnoty netištěné samostatně (`unprinted` v datovém souboru, #103 D110,
+D112): `paymentReference: docNumber` dává do očekávání číslo dokladu jako
+platební referenci (doklad o ni žádá v poznámce, řádek VS netiskne); období
+`period: rows` zůstává v `dates` a očekávání ho nese jako dnes — jen ho
+šablona netiskne v hlavičce (`corpusprint.template_values`).
 """
 
 from __future__ import annotations
@@ -132,6 +138,9 @@ def build_expected(data: dict, supplier: dict, profile: dict | None, computed: d
     domestic_rc = treatment == "reverseCharge" and not foreign
     dates = data.get("dates", {})
     payment = data.get("payment") or {}
+    unprinted = data.get("unprinted") or {}
+    # D110: doklad žádá uvést číslo faktury s platbou → referencí je číslo dokladu.
+    reference = data["docNumber"] if unprinted.get("paymentReference") == "docNumber" else data.get("paymentReference")
 
     rows = []
     exceptions = []
@@ -188,7 +197,7 @@ def build_expected(data: dict, supplier: dict, profile: dict | None, computed: d
         "vat": {"mode": mode, "place": vat_place(supplier), "reverseCharge": reverse_charge},
         "payment": {
             "method": payment.get("method", "bankTransfer"),
-            "paymentReference": data.get("paymentReference"),
+            "paymentReference": reference,
             "specificSymbol": payment.get("specificSymbol"),
             "constantSymbol": payment.get("constantSymbol"),
         },

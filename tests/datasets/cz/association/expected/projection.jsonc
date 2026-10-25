@@ -53,7 +53,7 @@
 		},
 		"payment": {
 			"method": "paymentMethod",
-			"paymentReference": "symbol",
+			"paymentReference": "reference",
 			"specificSymbol": "symbol",
 			"constantSymbol": "symbol",
 		},
@@ -156,6 +156,8 @@
 		"web":               { "regex": "^[a-z0-9.-]+(?:/[^\\s/A-Z]+)*$" },
 		"ean":               { "regex": "^(?:[0-9]{8}|[0-9]{13})$" },
 		"symbol":            { "regex": "^[0-9]{1,10}$" },
+		// platební reference: VS, nebo číslo dokladu, když o něj doklad žádá (#103 D110) — bez mezer, ≤ 35 jako schéma
+		"reference":         { "regex": "^[0-9A-Z][0-9A-Z/-]{0,34}$" },
 		"vatMode":           { "regex": "^(?:fromBase|fromTotal|none)$" },
 		"vatPlace":          { "regex": "^(?:domestic|intracom|thirdCountry)$" },
 		"paymentMethod":     { "regex": "^(?:cash|bankTransfer|card)$" },

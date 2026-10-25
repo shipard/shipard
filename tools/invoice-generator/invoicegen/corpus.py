@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import copy
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -35,6 +36,12 @@ RECEIPT_TEMPLATES = frozenset({"receipt"})
 TEMPLATE_LOCALE = {"cs-a": "cs", "cs-b": "cs", "cs-c": "cs", "receipt": "cs", "en": "en"}
 PAYMENT_METHODS = ("bankTransfer", "card", "cash")
 ROUNDINGS = ("none", "czk")
+# Hodnoty očekávání, které šablona netiskne jako samostatný údaj (#103 D110,
+# D112): `paymentReference: docNumber` = doklad žádá uvést číslo faktury
+# s platbou, referencí je číslo dokladu (řádek VS na PDF není);
+# `period: rows` = období nese jen text řádků, hlavička ho netiskne.
+UNPRINTED_VALUES: dict[str, tuple[str, ...]] = {"paymentReference": ("docNumber",), "period": ("rows",)}
+_WHITESPACE = re.compile(r"\s+")
 
 
 class DataFileError(ValueError):
@@ -120,6 +127,30 @@ def _text(value) -> bool:
     return isinstance(value, str) and value == value.strip() and value != ""
 
 
+def printed_date_forms(iso: str) -> tuple[str, ...]:
+    """Tvary, v jakých doklad tiskne datum: ISO, český „1. 9. 2026“,
+    „01.09.2026“, americký „09/01/2026“ a „01/09/2026“. Porovnává se bez
+    bílých znaků (`row_carries_dates`), takže „1.9.2026“ ≡ „1. 9. 2026“."""
+    d = date.fromisoformat(iso)
+    return (
+        d.isoformat(),
+        f"{d.day}. {d.month}. {d.year}",
+        f"{d.day:02d}.{d.month:02d}.{d.year}",
+        f"{d.month:02d}/{d.day:02d}/{d.year}",
+        f"{d.day:02d}/{d.month:02d}/{d.year}",
+    )
+
+
+def row_carries_dates(row: dict, isos: Iterable[str]) -> bool:
+    """Text nebo popis řádku nese každé z dat v některém tištěném tvaru
+    (bez bílých znaků) — období dokladu „jen v řádcích“ (#103 D112)."""
+    haystack = _WHITESPACE.sub("", f"{row.get('text') or ''} {row.get('description') or ''}")
+    return all(
+        any(_WHITESPACE.sub("", form) in haystack for form in printed_date_forms(iso))
+        for iso in isos
+    )
+
+
 def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonomy: set[str],
                       label: str) -> None:
     """Obsahová validace dokladu (po sloučení přepisu profilu)."""
@@ -194,6 +225,32 @@ def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonom
         if value is not None and not (isinstance(value, str) and re.fullmatch(r"[0-9]{1,10}", value)):
             bad(f"payment.{key} {value!r} — jen číslice")
 
+    # Hodnoty netištěné samostatně (#103 D110, D112): očekávání je nese,
+    # šablona je netiskne jako vlastní řádek — build hlídá, že na PDF jsou
+    # v jiné podobě (reference = číslo dokladu je na PDF vždy, D105; období
+    # musí nést text řádku — proti textu PDF by kontrola byla prázdná, datum
+    # vystavení se s počátkem období kryje).
+    unprinted = doc.get("unprinted") or {}
+    if not isinstance(unprinted, dict):
+        bad("unprinted není objekt")
+        unprinted = {}
+    for key, value in unprinted.items():
+        allowed = UNPRINTED_VALUES.get(key)
+        if allowed is None:
+            bad(f"unprinted.{key}: neznámý klíč (povolené: {', '.join(UNPRINTED_VALUES)})")
+        elif value not in allowed:
+            bad(f"unprinted.{key}: hodnota {value!r} (povolené: {', '.join(allowed)})")
+    if unprinted.get("paymentReference") == "docNumber":
+        if reference is not None:
+            bad("unprinted.paymentReference: doklad má VS i referenci = číslo dokladu — jen jedno")
+        if receipt:
+            bad("unprinted.paymentReference: účtenka referenci nemá")
+    period_in_rows = unprinted.get("period") == "rows"
+    period = (dates.get("periodFrom"), dates.get("periodTo"))
+    if period_in_rows and not all(_is_date(value) for value in period):
+        bad("unprinted.period: chybí dates.periodFrom / periodTo")
+        period_in_rows = False
+
     tag = doc.get("contentTag")
     if tag not in taxonomy:
         bad(f"contentTag {tag!r} není v taxonomii")
@@ -246,6 +303,9 @@ def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonom
             # ne-null hodnota mimo PDF by byla chyba sady (D14, kontrola D105).
             if receipt and key != "description" and row.get(key) is not None:
                 bad(f"{where}: {key} na účtence (účtenka kódy netiskne)")
+    if period_in_rows and not any(isinstance(row, dict) and row_carries_dates(row, period) for row in rows):
+        forms = " a ".join(" / ".join(printed_date_forms(value)) for value in period)
+        bad(f"unprinted.period: žádný řádek nenese obě data období v tištěném tvaru ({forms})")
 
     if problems:
         raise DataFileError("\n".join(problems))

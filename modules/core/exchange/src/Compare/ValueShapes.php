@@ -56,7 +56,7 @@ final class ValueShapes
             'email' => strtolower($s),
             'phone' => self::phone($s),
             'web' => self::web($s),
-            'digits5', 'digits8', 'symbol', 'ean' => self::noSpaces($s),
+            'digits5', 'digits8', 'symbol', 'reference', 'ean' => self::noSpaces($s),
             'accountNumber' => self::accountNumber($s),
             default => $s,
         };

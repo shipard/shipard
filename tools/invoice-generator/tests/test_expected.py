@@ -8,13 +8,13 @@ from decimal import Decimal
 from invoicegen.compute import VAT_RATES, compute
 from invoicegen.corpus import cells_for
 from invoicegen.expected import (
-    ProjectionError, apply_projection, build_expected, derive_vat, dumps_expected, load_projection,
+    ProjectionError, apply_projection, build_expected, check_shape, derive_vat, dumps_expected, load_projection,
     vat_place,
 )
 from invoicegen.jsonc import load_jsonc
 from tests.fixtures import (
-    DATA_DOMESTIC, DATA_EU_SERVICES, DATA_NO_VAT, DATA_RECEIPT, IDENTITIES, PROJECTION_PATH,
-    TAXONOMY_PATH,
+    DATA_DOMESTIC, DATA_EU_SERVICES, DATA_EU_SERVICES_REFERENCE, DATA_NO_VAT, DATA_RECEIPT, DATA_THIRD_COUNTRY,
+    DATA_THIRD_COUNTRY_PERIOD, IDENTITIES, PROJECTION_PATH, TAXONOMY_PATH,
 )
 
 D = Decimal
@@ -125,6 +125,30 @@ class BuildExpectedTest(unittest.TestCase):
         self.assertIsNone(doc["supplier"]["companyId"])
         self.assertEqual([], doc["_resolve"]["contentTag"]["rowExceptions"])
         self.assertEqual([{"vatPct": 0, "base": D("432.70"), "tax": D("0.00"), "total": D("432.70")}], doc["vatRecap"])
+
+    # Hodnoty netištěné samostatně (#103 D110, D112)
+    def test_unprinted_reference_is_doc_number(self) -> None:
+        doc = expected_for(DATA_EU_SERVICES_REFERENCE)
+        self.assertEqual("INV-2026-0388", doc["payment"]["paymentReference"])
+        self.assertEqual("Please quote the invoice number with your payment.", doc["notes"]["onDocument"])
+        self.assertIsNone(expected_for(DATA_EU_SERVICES)["payment"]["paymentReference"])
+
+    def test_unprinted_period_stays_in_dates(self) -> None:
+        doc = expected_for(DATA_THIRD_COUNTRY_PERIOD)
+        self.assertEqual("2026-09-01", doc["dates"]["periodFrom"])
+        self.assertEqual("2026-09-30", doc["dates"]["periodTo"])
+        self.assertEqual("12 seats, 09/01/2026 – 09/30/2026", doc["rows"][0]["item"]["description"])
+        plain = expected_for(DATA_THIRD_COUNTRY)
+        self.assertIsNone(plain["dates"]["periodFrom"])
+        self.assertIsNone(plain["dates"]["periodTo"])
+
+    def test_reference_shape(self) -> None:
+        for value in ("INV-2026-0388", "QS-204611", "2026-0163", "20260163", "FV/2026/12"):
+            self.assertIsNone(check_shape("reference", value, None, PROJECTION, taxonomy=None), value)
+        for value in ("inv-2026-0388", "INV 2026-0388", "-2026", "", "X" * 36):
+            self.assertIsNotNone(check_shape("reference", value, None, PROJECTION, taxonomy=None), value)
+        self.assertEqual("reference", PROJECTION.document["payment"]["paymentReference"])
+        self.assertEqual("symbol", PROJECTION.document["payment"]["constantSymbol"])
 
     def test_receipt(self) -> None:
         doc = expected_for(DATA_RECEIPT)

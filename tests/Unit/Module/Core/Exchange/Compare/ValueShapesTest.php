@@ -29,6 +29,7 @@ class ValueShapesTest extends TestCase
             'PSČ s mezerou' => ['digits5', $re, '779 00', '77900'],
             'IČO s mezerou' => ['digits8', $re, '430 75 894', '43075894'],
             'symbol' => ['symbol', $re, ' 20261180 ', '20261180'],
+            'reference bez mezer' => ['reference', $re, ' INV-2026 -0388 ', 'INV-2026-0388'],
             'účet s nulami' => ['accountNumber', $re, '000019-0002000145399/0800', '19-2000145399/0800'],
             'účet bez předčíslí' => ['accountNumber', $re, '0101968643 / 0100', '101968643/0100'],
             'účet s nulovým předčíslím' => ['accountNumber', $re, '0-123/0100', '123/0100'],
