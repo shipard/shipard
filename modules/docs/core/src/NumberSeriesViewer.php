@@ -172,7 +172,6 @@ class NumberSeriesViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Název', $record['name'] ?? null);
         $this->addItem(
             $identityItems,
             'Typ dokladu',

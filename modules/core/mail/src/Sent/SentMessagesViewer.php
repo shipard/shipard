@@ -167,7 +167,6 @@ class SentMessagesViewer extends TableViewer
     {
         $cs        = ($this->language ?? 'en') === 'cs';
         $transport = $this->transportInfo()->state($record);
-        $to        = AddressList::format(AddressList::parse($record['email_to'] ?? null));
 
         $blocks = [];
         $body   = (string) ($record['body_text'] ?? '');
@@ -195,7 +194,6 @@ class SentMessagesViewer extends TableViewer
 
         $message = [];
         $this->addItem($message, $cs ? 'Odesílatel' : 'From', $from);
-        $this->addItem($message, $cs ? 'Komu' : 'To', $to !== '' ? $to : '—');
         $this->addItem($message, $cs ? 'Kopie' : 'Cc', AddressList::format(AddressList::parse($record['email_cc'] ?? null)));
         $this->addItem($message, $cs ? 'Osoba' : 'Person', $record['recipient_name'] ?? null);
         $this->addItem($message, $cs ? 'Záznam' : 'Record', $record['target_label'] ?? null);
@@ -205,13 +203,10 @@ class SentMessagesViewer extends TableViewer
         $this->addItem($message, $cs ? 'Jazyk' : 'Language', $record['language'] ?? null);
 
         $sending = [];
-        $this->addItem($sending, $cs ? 'Stav odeslání' : 'Transport state', $transport['stateLabel']);
-        $this->addItem($sending, $cs ? 'Pojistka' : 'Mail safety', $transport['safety']['label'] ?? null);
         $this->addItem($sending, $cs ? 'Odesláno' : 'Sent at', SubtableCellFormatter::dateTime($record['sent_at'] ?? null));
         $this->addItem($sending, $cs ? 'Počet odeslání' : 'Send count', (string) (int) ($record['send_count'] ?? 0));
         $this->addItem($sending, $cs ? 'Poslední chyba' : 'Last error', $record['last_error'] ?? null);
         $this->addItem($sending, $cs ? 'Spuštěno' : 'Trigger', $this->triggerLabel((string) ($record['send_trigger'] ?? '')));
-        $this->addItem($sending, $cs ? 'Vytvořeno' : 'Created', SubtableCellFormatter::dateTime($record['created'] ?? null));
         $this->addItem($sending, $cs ? 'Odeslal' : 'Sent by', $record['author_name'] ?? null);
 
         $blocks[] = [

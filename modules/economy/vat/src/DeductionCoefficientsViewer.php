@@ -127,7 +127,6 @@ class DeductionCoefficientsViewer extends TableViewer
         $registrations = $this->registrationNames();
         $items = [
             ['label' => 'Registrace DPH', 'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? ''],
-            ['label' => 'Kalendářní rok', 'value' => (string) ($record['year'] ?? '')],
             ['label' => 'Zálohový koeficient', 'value' => $this->formatCoefficient($record['coefficient_provisional'] ?? null) ?? 'odvozený (loňský vypořádací, jinak 1,00)'],
             ['label' => 'Vypořádací koeficient', 'value' => $this->formatCoefficient($record['coefficient_settled'] ?? null) ?? 'nevypořádáno'],
         ];

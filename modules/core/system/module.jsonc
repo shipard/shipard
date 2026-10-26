@@ -190,8 +190,7 @@
             "name:en": "Users",
             "icon": "users",
             "table": "core_system_users",
-            "class": "Shipard\\Module\\Core\\System\\UsersViewer",
-            "detailHeader": {"title": "{full_name}", "subtitle": "{login}"}
+            "class": "Shipard\\Module\\Core\\System\\UsersViewer"
         }
     ],
     "settingsItems": [

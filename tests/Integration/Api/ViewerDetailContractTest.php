@@ -65,21 +65,7 @@ class ViewerDetailContractTest extends IntegrationTestCase
      * výjimka test neshazuje (data zdrojů se liší).
      */
     private const PENDING = [
-        'base.registry.binders'              => ['Název'],
         'base.registry.documents'            => ['Druh', 'Partner', 'Šanon'],
-        'core.ai.backends'                   => ['Název'],
-        'core.ai.functions'                  => ['Funkce', 'ID'],
-        'core.alerts.alerts'                 => ['Titulek'],
-        'core.mail.aiProfiles'               => ['Název'],
-        'core.mail.mailboxes'                => ['Název', 'Kód schránky'],
-        'core.mail.preprocessRules'          => ['Klíč pravidla'],
-        'core.mail.senderRules'              => ['Vzor'],
-        'core.mail.senders'                  => ['Adresa odesílatele'],
-        'core.mail.sent'                     => ['Stav odeslání', 'Pojistka', 'Vytvořeno', 'Komu'],
-        'core.prints.texts'                  => ['Název'],
-        'core.system.users'                  => ['Jméno', 'Login'],
-        'core.units'                         => ['Název', 'Zkratka'],
-        'docs.core.numberSeries'             => ['Název'],
         'economy.accbal.balanceAccounts'     => ['Číslo účtu'],
         'economy.accbal.balances'            => ['Název', 'Zkrácený název'],
         'economy.accbal.cases'               => ['Saldokonto', 'Období', 'Partner', 'Variabilní symbol'],
@@ -92,20 +78,7 @@ class ViewerDetailContractTest extends IntegrationTestCase
         'economy.assets.types'               => ['Název', 'Zkrácený název'],
         'economy.bank.statements'            => ['Číslo výpisu', 'Bankovní účet', 'Období', 'Rekonciliace'],
         'economy.bank.transactions'          => ['Datum transakce', 'Stav', 'Partner', 'Název protistrany'],
-        'economy.codebooks.bankAccounts'     => ['Kód', 'Název'],
-        'economy.codebooks.cashDesks'        => ['Kód', 'Název'],
-        'economy.codebooks.costCenters'      => ['Kód', 'Název'],
-        'economy.codebooks.fiscalYears'      => ['Název'],
-        'economy.codebooks.paymentTerminals' => ['Kód', 'Název'],
-        'economy.codebooks.transports'       => ['Kód', 'Název'],
-        'economy.codebooks.vatRegistrations' => ['Název'],
-        'economy.codebooks.warehouses'       => ['Kód', 'Název'],
-        'economy.exchangeRates.lists'        => ['Typ'],
-        'economy.items.kinds'                => ['Název'],
-        'economy.vat.deductionCoefficients'  => ['Kalendářní rok'],
         'economy.workOrders.heads'           => ['Číslo', 'Název', 'Stav'],
-        'economy.workOrders.kinds'           => ['Název'],
-        'economy.workOrders.numberSeries'    => ['Název'],
     ];
 
     private ViewerRegistry $registry;

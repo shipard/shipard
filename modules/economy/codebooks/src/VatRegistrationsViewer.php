@@ -168,7 +168,6 @@ class VatRegistrationsViewer extends TableViewer
         $periodKindLabels = $this->resolvePeriodKindLabels();
 
         $identityItems = [];
-        $this->addItem($identityItems, 'Název', $record['name'] ?? null);
 
         $regionKey = (string) ($record['region'] ?? '');
         if ($regionKey !== '') {

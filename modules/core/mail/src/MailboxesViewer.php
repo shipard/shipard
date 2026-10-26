@@ -106,8 +106,6 @@ class MailboxesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $identity = [];
-        $this->addItem($identity, 'Kód schránky', $record['mailbox_id'] ?? null);
-        $this->addItem($identity, 'Název', $record['name'] ?? null);
         $this->addItem($identity, 'E-mailová adresa', $record['email_address'] ?? null);
         $this->addItem($identity, 'Popis', $record['description'] ?? null);
 
@@ -119,18 +117,11 @@ class MailboxesViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [[
-            'id'      => 'overview',
-            'label'   => $this->defaultOverviewLabel(),
-            'content' => [
-                'type'   => 'properties',
-                'groups' => [
-                    ['title' => 'Identifikace', 'items' => $identity],
-                    ['title' => 'Konfigurace', 'items' => $config],
-                    ['title' => 'Stav', 'items' => $status],
-                ],
-            ],
-        ]];
+        return [$this->propertiesTab([
+            ['title' => 'Identifikace', 'items' => $identity],
+            ['title' => 'Konfigurace', 'items' => $config],
+            ['title' => 'Stav', 'items' => $status],
+        ])];
     }
 
     private function resolvePrimaryTypeLabel(mixed $key): string

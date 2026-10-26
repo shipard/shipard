@@ -116,10 +116,6 @@ class ExchangeRateListsViewer extends TableViewer
         $recordId = (int) $record['id'];
 
         $items = [];
-        $this->addItem($items, 'Typ', $this->types()->labelOf((string) ($record['list_type'] ?? '')));
-        $this->addItem($items, 'Platnost od', SubtableCellFormatter::date($record['valid_from'] ?? null));
-        $this->addItem($items, 'Platnost do', SubtableCellFormatter::date($record['valid_to'] ?? null));
-        $this->addItem($items, 'Číslo lístku', $record['list_number'] ?? null);
         $this->addItem($items, 'Domácí měna', strtoupper((string) ($record['home_currency'] ?? '')));
         $this->addItem($items, 'Zdroj', $this->sourceLabel($record['source'] ?? null));
 

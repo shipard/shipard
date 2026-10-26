@@ -157,6 +157,9 @@ final class AiFunctionsViewerTest extends TestCase
         $function = $this->items($detail, 'Funkce');
         $this->assertSame('Vyvážený', $function['Úroveň']);
         $this->assertSame('pdf', $function['Požadavky na model']);
+        // Název funkce je titulkem, id podtitulkem — Přehled je neopakuje (#140 D26).
+        $this->assertArrayNotHasKey('Funkce', $function);
+        $this->assertArrayNotHasKey('ID', $function);
 
         $call = $this->items($detail, 'Volání');
         $this->assertSame('Anthropic Claude (default) — výchozí připojení', $call['AI připojení']);

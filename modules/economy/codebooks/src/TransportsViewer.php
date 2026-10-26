@@ -138,8 +138,6 @@ class TransportsViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Kód', $record['code'] ?? null);
-        $this->addItem($identityItems, 'Název', $record['name'] ?? null);
         $this->addItem($identityItems, 'Poznámka', $record['notice'] ?? null);
 
         $settingsItems = [];

@@ -147,10 +147,11 @@ class SentMessagesViewerTest extends TestCase
             $detail['tabs'][0]['content']['blocks'],
             static fn (array $block): bool => $block['type'] === 'properties',
         ))[0];
-        $this->assertContains(
-            ['label' => 'Pojistka', 'value' => 'Zachyceno — neodesláno'],
-            $properties['groups'][1]['items'],
-        );
+        // Pojistka i stav odeslání jsou štítky hlavičky — Přehled je neopakuje (#140 D26).
+        $labels = array_column($properties['groups'][1]['items'], 'label');
+        $this->assertNotContains('Pojistka', $labels);
+        $this->assertNotContains('Stav odeslání', $labels);
+        $this->assertContains('Odesláno', $labels);
     }
 
     public function testSafetyLabelFallsBackToEnglishWithoutConfig(): void

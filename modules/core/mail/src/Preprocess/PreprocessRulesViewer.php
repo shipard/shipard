@@ -112,7 +112,6 @@ class PreprocessRulesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $rule = [];
-        $this->addItem($rule, 'Klíč pravidla', $record['rule_id'] ?? null);
         $this->addItem($rule, 'Původ', $this->cfgLabel('core.mail.preprocessRuleOrigins', (string) ($record['origin'] ?? '')));
         $this->addItem($rule, 'Poznámka', $record['notice'] ?? null);
 
@@ -145,20 +144,13 @@ class PreprocessRulesViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [[
-            'id'      => 'overview',
-            'label'   => $this->defaultOverviewLabel(),
-            'content' => [
-                'type'   => 'properties',
-                'groups' => [
-                    ['title' => 'Pravidlo', 'items' => $rule],
-                    ['title' => 'Podmínky shody', 'items' => $match],
-                    ['title' => 'Akce', 'items' => $actions],
-                    ['title' => 'Statistiky', 'items' => $stats],
-                    ['title' => 'Stav', 'items' => $status],
-                ],
-            ],
-        ]];
+        return [$this->propertiesTab([
+            ['title' => 'Pravidlo', 'items' => $rule],
+            ['title' => 'Podmínky shody', 'items' => $match],
+            ['title' => 'Akce', 'items' => $actions],
+            ['title' => 'Statistiky', 'items' => $stats],
+            ['title' => 'Stav', 'items' => $status],
+        ])];
     }
 
     /** Krátký popis podmínek pro řádek seznamu. */

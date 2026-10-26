@@ -89,7 +89,6 @@ class SendersViewer extends TableViewer
         $no  = $isCs ? 'Ne' : 'No';
 
         $identity = [
-            ['label' => $isCs ? 'Adresa odesílatele' : 'From address', 'value' => (string) $record['email_from']],
             ['label' => $isCs ? 'Aktivní' : 'Active', 'value' => !empty($record['is_active']) ? $yes : $no],
             ['label' => $isCs ? 'Vytvořeno' : 'Created', 'value' => (string) ($record['created'] ?? '')],
         ];

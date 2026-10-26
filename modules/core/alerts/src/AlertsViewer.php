@@ -153,7 +153,6 @@ class AlertsViewer extends TableViewer
 
         // Overview
         $overviewItems = [
-            ['label' => 'Titulek',     'value' => (string) ($record['title'] ?? '')],
             ['label' => 'Závažnost',   'value' => $this->severityLabel($severity)],
             ['label' => 'Stav',        'value' => $this->stateLabel($alertState)],
             ['label' => 'Kontrola',    'value' => (string) ($record['check_id'] ?? '')],

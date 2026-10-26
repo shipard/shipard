@@ -119,8 +119,6 @@ class UnitsViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $items = [];
-        $this->addItem($items, 'Název', $record['name'] ?? null);
-        $this->addItem($items, 'Zkratka', $record['shortcut'] ?? null);
         $this->addItem($items, 'Veličina', $this->resolveQuantityLabel((string) ($record['quantity'] ?? '')));
         $coefficient = $record['coefficient'] ?? null;
         if ($coefficient !== null && $coefficient !== '') {

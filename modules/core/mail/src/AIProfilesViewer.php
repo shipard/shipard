@@ -127,7 +127,6 @@ class AIProfilesViewer extends TableViewer
     {
         $identity = [];
         $this->addItem($identity, 'Kód profilu', $record['profile_id'] ?? null);
-        $this->addItem($identity, 'Název', $record['name'] ?? null);
 
         $scope = [];
         $this->addItem($scope, 'Podporované typy dokumentů', $record['supported_doc_types'] ?? null);

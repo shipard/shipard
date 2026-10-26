@@ -103,7 +103,6 @@ class ItemKindsViewer extends TableViewer
         $recordId = (int) $record['id'];
 
         $items = [];
-        $this->addItem($items, 'Název', $record['name'] ?? null);
         $this->addItem($items, 'Typ položky', $this->resolveItemTypeLabel((int) ($record['item_type'] ?? 3)));
         $this->addItem($items, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
         $this->addItem($items, 'Platnost do', $this->formatDate($record['valid_to'] ?? null));
