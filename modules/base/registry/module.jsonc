@@ -36,7 +36,9 @@
             "table": "base_registry_documents",
             "class": "Shipard\\Module\\Base\\Registry\\RegistryDocumentsViewer",
             "navSection": "_top",
-            "navOrder": 35
+            "navOrder": 35,
+            // Tab Přílohy staví viewer sám — builder přílohy nepřidává (#136 D21).
+            "detailAttachments": "content"
         },
         {
             "id": "base.registry.binders",

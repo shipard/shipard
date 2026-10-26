@@ -31,11 +31,6 @@ class DetailContractTest extends TestCase
      * shodí); task B #136 ho vyprázdní a `renderDetail()` bude `final`.
      */
     public const NOT_CONVERTED = [
-        // base.persons
-        'base.persons',
-        // base.registry
-        'base.registry.documents',
-        'base.registry.binders',
         // core.ai
         'core.ai.backends',
         'core.ai.functions',
