@@ -39,7 +39,7 @@ class PersonValuesTest extends TestCase
         $this->assertSame(['phone' => '+420577123456'], PersonValues::normalizePerson(['phone' => '577123456'], 'cz'), 'částečný update');
     }
 
-    public function testAddressZipFollowsItsOwnCountryThenStoredCountry(): void
+    public function testAddressZipFollowsItsOwnCountryThenStoredCountryThenPersonCountry(): void
     {
         $this->assertSame(
             ['zip' => '76001', 'country' => 'cz', 'city' => 'Zlín'],
@@ -58,7 +58,7 @@ class PersonValuesTest extends TestCase
         $this->assertSame(
             ['zip' => '760 01'],
             PersonValues::normalizeAddress(['zip' => ' 760 01 ']),
-            'bez země jen trim',
+            'bez jakékoli země jen trim',
         );
         $this->assertSame(
             ['zip' => 'SW1A 1AA', 'country' => 'gb'],
@@ -66,6 +66,23 @@ class PersonValuesTest extends TestCase
             'země řádku má přednost před uloženou',
         );
         $this->assertSame(['zip' => null, 'country' => null], PersonValues::normalizeAddress(['zip' => null, 'country' => null], 'cz'));
+
+        // D24: adresa bez země (v řádku i v DB) podle země osoby; `country` se nedoplňuje.
+        $this->assertSame(
+            ['zip' => '76001', 'country' => ''],
+            PersonValues::normalizeAddress(['zip' => ' 760 01 ', 'country' => ''], null, 'CZ'),
+            'bez země řádku i uloženého řádku podle země osoby (D24)',
+        );
+        $this->assertSame(
+            ['zip' => '760 01'],
+            PersonValues::normalizeAddress(['zip' => ' 760 01 '], 'gb', 'cz'),
+            'uložený řádek má přednost před zemí osoby',
+        );
+        $this->assertSame(
+            ['zip' => 'SW1A 1AA'],
+            PersonValues::normalizeAddress(['zip' => ' SW1A 1AA '], null, 'gb'),
+            'země osoby bez pravidla: jen trim',
+        );
     }
 
     public function testContactColumns(): void
@@ -94,8 +111,14 @@ class PersonValuesTest extends TestCase
             PersonValues::checkAddress(['zip' => '7790', 'country' => 'CZ']),
         );
         $this->assertSame([], PersonValues::checkAddress(['zip' => '760 01', 'country' => 'cz']), 'mezera se normalizuje, ne hlásí');
-        $this->assertSame([], PersonValues::checkAddress(['zip' => '7790']), 'adresa bez země nález nemá');
+        $this->assertSame([], PersonValues::checkAddress(['zip' => '7790']), 'adresa bez jakékoli země nález nemá');
         $this->assertSame(1, count(PersonValues::checkAddress(['zip' => '7790'], 'cz')), 'země z uloženého řádku');
+        $this->assertSame(
+            [['column' => 'zip', 'code' => 'zip_invalid', 'message' => 'PSČ „7790“ nemá pět číslic (cz).']],
+            PersonValues::checkAddress(['zip' => '7790'], null, 'cz'),
+            'adresa bez země podle země osoby (D24)',
+        );
+        $this->assertSame([], PersonValues::checkAddress(['zip' => '7790'], 'gb', 'cz'), 'uložený řádek má přednost před zemí osoby');
 
         $this->assertSame(
             ['account_number', 'iban', 'bic'],

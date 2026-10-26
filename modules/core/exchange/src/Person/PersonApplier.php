@@ -923,7 +923,8 @@ class PersonApplier
      * Kanonický tvar podřízeného záznamu (#118 D18, D20) — podřízené záznamy
      * obcházejí třídy dokumentů, takže normalizaci volá applier sám, touž
      * funkcí jako formulář. Adresa podle vlastní země; při updatu bez země
-     * podle uloženého řádku. Kontakt podle země canonicalu.
+     * podle uloženého řádku; bez obojího podle země canonicalu (země osoby,
+     * D24). Kontakt podle země canonicalu.
      *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
@@ -934,6 +935,7 @@ class PersonApplier
             'base_persons_addresses' => PersonValues::normalizeAddress(
                 $payload,
                 $id !== null && PersonValues::text($payload['country'] ?? null) === null ? $this->storedAddressCountry($id) : null,
+                $this->canonicalCountry,
             ),
             'base_persons_contacts' => PersonValues::normalizeContact($payload, $this->canonicalCountry),
             'base_persons_bank_accounts' => PersonValues::normalizeBankAccount($payload),

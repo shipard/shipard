@@ -100,7 +100,8 @@ class PersonDocumentTest extends TestCase
         $doc->afterPersist($data + ['id' => 42]);
         $this->assertSame('76001', $doc->rows[0]['zip']);
         $this->assertSame('cz', $doc->rows[0]['country']);
-        $this->assertSame('SW1A 1AA', $doc->rows[1]['zip'], 'adresa bez země: jen trim');
+        $this->assertSame('SW1A1AA', $doc->rows[1]['zip'], 'adresa bez země podle země osoby — cz ze sídla (D24)');
+        $this->assertArrayNotHasKey('country', $doc->rows[1], 'země se nedoplňuje');
     }
 
     public function testUpdateUsesStoredAddressesThenDataSourceCountry(): void

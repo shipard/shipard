@@ -16,6 +16,7 @@ use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Economy\Bank\BankStatementDocument;
 use Shipard\Module\World\Validations\BankAccountKey;
+use Shipard\Module\World\Validations\DomesticAccount;
 
 /**
  * Orchestrace importu bankovního výpisu: detekce + parse → match našeho účtu →
@@ -388,9 +389,11 @@ class StatementImportService
 
     /**
      * Match našeho účtu (port konceptu `checkBankAccount`) přes account_number
-     * / iban / ebanking_id (normalizované). Override z CLI/endpointu má přednost.
-     * Matchuje i archivní účty (70) — importovaný výpis k později archivovanému
-     * účtu je historické datum, ne nová aktivita.
+     * / iban / ebanking_id (klíč účtu, #118 D23) a u odkazu bez kódu banky
+     * přes předčíslí a číslo tuzemského čísla účtu (D25). Override
+     * z CLI/endpointu má přednost. Matchuje i archivní účty (70) —
+     * importovaný výpis k později archivovanému účtu je historické datum,
+     * ne nová aktivita.
      *
      * @return array<string, mixed>
      * @throws ImportException nenalezen
@@ -411,12 +414,7 @@ class StatementImportService
         // CAMT (IBAN) najde účet uložený číslem a naopak; ID v ebankingu je
         // libovolný řetězec — porovnává se jako `raw:` klíč.
         $refKey = BankAccountKey::of($ref);
-        $accounts = $this->db->query(
-            'SELECT [id], [currency], [code], [account_number], [iban], [ebanking_id]'
-            . ' FROM %n WHERE [docState] IN %in',
-            self::tableBankAccounts(),
-            self::LINKABLE_STATES,
-        )->fetchAll();
+        $accounts = $this->loadOwnAccounts();
 
         foreach ($accounts as $a) {
             foreach (['account_number', 'iban', 'ebanking_id'] as $column) {
@@ -427,10 +425,59 @@ class StatementImportService
             }
         }
 
+        // Odkaz bez kódu banky (#118 D25) — hlavička GPC nese jen předčíslí
+        // a číslo: porovnat s tuzemským číslem vlastních účtů podle předčíslí
+        // a čísla bez vedoucích nul a přijmout jen jedinou shodu (chování
+        // starého `checkBankAccount`). IBAN ani ID v ebankingu se nehádají.
+        $bare = self::bareDomesticAccount($ref);
+        if ($bare !== null) {
+            $hits = [];
+            foreach ($accounts as $a) {
+                $domestic = DomesticAccount::parse((string) ($a['account_number'] ?? ''));
+                if ($domestic !== null && $domestic->prefix === $bare['prefix'] && $domestic->number === $bare['number']) {
+                    $hits[] = $a;
+                }
+            }
+            if (count($hits) === 1) {
+                return (array) $hits[0];
+            }
+        }
+
         throw new ImportException(
             "Účet z výpisu '{$ref}' není v žádném vlastním bankovním spojení "
             . '(Číslo účtu / IBAN / ID v ebankingu). Výpis přeskočen.',
         );
+    }
+
+    /**
+     * Vlastní účty v odkazovatelných stavech (i archivní 70) — šev pro testy.
+     *
+     * @return list<array<string, mixed>|\Dibi\Row>
+     */
+    protected function loadOwnAccounts(): array
+    {
+        return $this->db->query(
+            'SELECT [id], [currency], [code], [account_number], [iban], [ebanking_id]'
+            . ' FROM %n WHERE [docState] IN %in',
+            self::tableBankAccounts(),
+            self::LINKABLE_STATES,
+        )->fetchAll();
+    }
+
+    /**
+     * Holé tuzemské číslo bez kódu banky (`[předčíslí-]číslo`) bez mezer
+     * a vedoucích nul; jiný tvar (IBAN, číslo s kódem, ID v ebankingu) `null`.
+     *
+     * @return array{prefix: string, number: string}|null
+     */
+    private static function bareDomesticAccount(string $ref): ?array
+    {
+        $s = (string) preg_replace('/\s+/u', '', trim($ref));
+        if (preg_match('~^(?:([0-9]+)-)?([0-9]+)$~', $s, $m) !== 1) {
+            return null;
+        }
+        $number = ltrim($m[2], '0');
+        return ['prefix' => ltrim($m[1], '0'), 'number' => $number === '' ? '0' : $number];
     }
 
     /**

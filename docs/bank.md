@@ -265,8 +265,11 @@ starý import ho **zahazoval**.
 `opening_balance + Σ(příjem) − Σ(výdaj) == closing_balance` nad transakcemi
 navázanými na výpis → `reconciliation_state`. Nesoulad (stav 2) = chybějící
 nebo přebývající transakce; napojí se na alert (vzor `core.alerts`).
-Hlavička výpisu se s naším účtem páruje přes `bank_account` /
-`account_number` / `iban` / `ebanking_id` (jako `checkBankAccount` ve starém).
+Hlavička výpisu se s naším účtem páruje klíčem účtu (`BankAccountKey`,
+#118 D23) z `account_number` / `iban` / `ebanking_id`; odkaz bez kódu
+banky (hlavička GPC nese jen předčíslí a číslo) se porovná s tuzemským
+číslem vlastních účtů podle předčíslí a čísla bez vedoucích nul a přijme
+se jen při jediné shodě (D25, chování `checkBankAccount` ve starém).
 
 ### 4.5 Dohledání partnera
 

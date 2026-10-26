@@ -8,7 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Module\Base\Persons\AddressDocument;
 use Shipard\Module\Base\Persons\Values\PersonContext;
 
-/** Kontext bez databáze: osoba 1 je vlastní firma, ostatní partneři; země osoby 9 = sk. */
+/**
+ * Kontext bez databáze: osoba 1 je vlastní firma, ostatní partneři; země
+ * osoby 9 = sk, osoby 8 = gb; uložená adresa 5 má zemi gb.
+ */
 final class StubAddressContext extends PersonContext
 {
     public function __construct()
@@ -21,9 +24,18 @@ final class StubAddressContext extends PersonContext
         return $personId === 1;
     }
 
+    public function addressCountry(int $addressId): ?string
+    {
+        return $addressId === 5 ? 'gb' : null;
+    }
+
     protected function storedCountry(int $personId): ?string
     {
-        return $personId === 9 ? 'sk' : null;
+        return match ($personId) {
+            9 => 'sk',
+            8 => 'gb',
+            default => null,
+        };
     }
 }
 
@@ -69,14 +81,43 @@ class AddressDocumentTest extends TestCase
         $this->assertFalse($result->isValid());
         $this->assertSame('zip_invalid', $result->toArray()[0]['code']);
 
+        // D24: adresa bez země podle země osoby — vlastní firma (zdroj dat cz) chyba, partner varování.
         $noCountry = ['person' => 1, 'address_type' => 1, 'zip' => '7790'];
-        $this->assertTrue((new StubAddressDocument())->validate($noCountry)->isValid(), 'bez země se PSČ nekontroluje');
+        $result = (new StubAddressDocument())->validate($noCountry);
+        $this->assertFalse($result->isValid(), 'bez země podle země osoby (D24)');
+        $this->assertSame('zip_invalid', $result->toArray()[0]['code']);
+
+        $partner = ['person' => 9, 'address_type' => 1, 'zip' => '7790', 'country' => ''];
+        $result = (new StubAddressDocument())->validate($partner);
+        $this->assertTrue($result->isValid());
+        $this->assertSame('PSČ „7790“ nemá pět číslic (sk).', $result->warningsToArray()[0]['message'], 'země osoby z uložených adres');
+
+        $british = ['person' => 8, 'zip' => 'SW1A 1AA'];
+        $this->assertSame([], (new StubAddressDocument())->validate($british)->warningsToArray(), 'země osoby bez pravidla PSČ');
     }
 
-    public function testWithoutAnyCountryZipIsOnlyTrimmed(): void
+    public function testUpdateWithoutCountryKeyIsCheckedAgainstTheStoredRow(): void
     {
-        $data = ['zip' => ' 760 01 ', 'country' => null];
+        $stored = ['id' => 5, 'person' => 2, 'zip' => 'SW1A 1AA'];
+        $this->assertSame([], (new StubAddressDocument())->validate($stored)->warningsToArray(), 'uložený řádek gb má přednost před zemí osoby');
+
+        $unknown = ['id' => 6, 'person' => 2, 'zip' => 'SW1A 1AA'];
+        $this->assertSame('zip_invalid', (new StubAddressDocument())->validate($unknown)->warningsToArray()[0]['code'], 'bez uložené země platí země osoby');
+    }
+
+    public function testWithoutAnyCountryZipFollowsThePersonCountry(): void
+    {
+        $data = ['person' => 2, 'zip' => ' 760 01 ', 'country' => null];
         (new AddressDocument())->beforeSave($data);
-        $this->assertSame('760 01', $data['zip'], 'nic se nehádá');
+        $this->assertSame('76001', $data['zip'], 'bez databáze země zdroje dat (cz)');
+        $this->assertNull($data['country'], 'země se nedoplňuje');
+
+        $foreign = ['person' => 8, 'zip' => ' SW1A 1AA ', 'country' => null];
+        (new StubAddressDocument())->beforeSave($foreign);
+        $this->assertSame('SW1A 1AA', $foreign['zip'], 'země osoby gb: jen trim');
+
+        $update = ['id' => 7, 'zip' => ' 811 01 '];
+        (new StubAddressDocument())->beforeSave($update, ['id' => 7, 'person' => 9, 'country' => '']);
+        $this->assertSame('81101', $update['zip'], 'update bez země v payloadu i v DB: osoba z uloženého řádku');
     }
 }

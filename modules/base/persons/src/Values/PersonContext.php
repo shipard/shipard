@@ -65,6 +65,20 @@ class PersonContext
         return $this->db !== null && $this->fetchIsOwn($personId);
     }
 
+    /**
+     * Země uloženého řádku adresy — pro kontrolu PSČ při částečném updatu
+     * bez klíče `country` v payloadu (D24: vlastní země řádku má přednost
+     * před zemí osoby). Bez databáze `null`.
+     */
+    public function addressCountry(int $addressId): ?string
+    {
+        if ($this->db === null || $addressId <= 0) {
+            return null;
+        }
+        $country = $this->fetchAddressCountry($addressId);
+        return $country !== null && $country !== '' ? Country::normalize($country) : null;
+    }
+
     protected function storedCountry(int $personId): ?string
     {
         if ($this->db === null || $personId <= 0) {
@@ -79,6 +93,12 @@ class PersonContext
             self::ADDRESS_TYPE_HEADQUARTERS,
         );
         return is_string($country) && $country !== '' ? Country::normalize($country) : null;
+    }
+
+    protected function fetchAddressCountry(int $addressId): ?string
+    {
+        $country = $this->db->fetchSingle('SELECT [country] FROM [base_persons_addresses] WHERE [id] = %i', $addressId);
+        return is_string($country) ? $country : null;
     }
 
     protected function fetchIsOwn(int $personId): bool

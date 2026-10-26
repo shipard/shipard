@@ -268,6 +268,29 @@ class PersonApplierTest extends TestCase
         $this->assertSqlContains($applier->sqlCalls, 'UPDATE', 'base_persons_addresses', '76001');
     }
 
+    public function testAddressUpdateWithoutAnyStoredCountryUsesTheCanonicalCountry(): void
+    {
+        // D24: adresa bez země v payloadu i v DB → PSČ podle země osoby (canonical `country`).
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['id' => 50, 'person_type' => 2, 'full_name' => 'Acme s.r.o.']));
+        $resolver = $this->stubResolver(
+            header: ResolveResult::matched(50, 'companyId'),
+            addresses: [ResolveResult::matched(100, 'placeRegId', authoritativeRefresh: true)],
+        );
+        $gateway = $this->createMock(TransactionlessTableGateway::class);
+        $gateway->method('saveDocument')->willReturn(DocumentResult::ok(['id' => 50]));
+        $applier = $this->buildApplier(db: $db, resolver: $resolver, gateway: $gateway);
+        $applier->storedAddressCountry = null;
+
+        $result = $applier->apply($this->validCompanyPayload([
+            'applyOptions' => ['mergeStrategy' => 'mergeAdd'],
+            'addresses'    => [['addressType' => 3, 'placeRegType' => 'ICP', 'placeRegId' => '1234567890', 'city' => 'Zlín', 'zip' => '760 01']],
+        ]));
+
+        $this->assertTrue($result->success);
+        $this->assertSqlContains($applier->sqlCalls, 'UPDATE', 'base_persons_addresses', '76001');
+    }
+
     // ── apply() — mergeAdd + matched (no authRefresh) → leaves matched ─────
 
     public function testApplyMergeAddLeavesNonAuthoritativeMatchUntouched(): void

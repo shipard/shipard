@@ -111,14 +111,15 @@ class PersonDocument extends Document
 
         // Platnost IČO, DIČ a PSČ adres zapisovaných s osobou (#118 D19):
         // partner dostane varování, vlastní firma chybu — její údaje jdou
-        // na doklady, do QR platby a ISDOC.
+        // na doklady, do QR platby a ISDOC. Adresa bez země podle země
+        // osoby (D24).
         $country = $this->resolveCountry($data);
         $own = !empty($data['is_own']);
         self::report($result, PersonValues::checkPerson($data, $country), $own);
         if (is_array($data['addresses'] ?? null)) {
             foreach ($data['addresses'] as $n => $row) {
                 if (is_array($row)) {
-                    self::report($result, PersonValues::checkAddress($row), $own, "addresses.{$n}.");
+                    self::report($result, PersonValues::checkAddress($row, null, $country), $own, "addresses.{$n}.");
                 }
             }
         }
@@ -149,7 +150,8 @@ class PersonDocument extends Document
         $personType = PersonType::tryFrom((int) ($data['person_type'] ?? 0));
 
         // Kanonický tvar údajů (#118 D18): IČO, DIČ, telefon, e-mail, web podle
-        // země osoby; adresy zapisované s osobou podle vlastní země.
+        // země osoby; adresy zapisované s osobou podle vlastní země, bez ní
+        // podle země osoby (D24).
         $country = $this->resolveCountry($data);
         $this->country = null;
         unset($data[self::COUNTRY_HINT]);
@@ -162,7 +164,7 @@ class PersonDocument extends Document
         if (array_key_exists('addresses', $data)) {
             if (empty($data['id']) && is_array($data['addresses'])) {
                 $this->pendingAddresses = array_map(
-                    static fn (array $address): array => PersonValues::normalizeAddress($address),
+                    static fn (array $address): array => PersonValues::normalizeAddress($address, null, $country),
                     array_values(array_filter($data['addresses'], 'is_array')),
                 );
             }

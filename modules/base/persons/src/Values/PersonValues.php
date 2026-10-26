@@ -21,8 +21,8 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
  * Mění jen přítomné klíče (částečný update), `null` a prázdné hodnoty
  * nechává. Tvar určuje knihovna `world.validations`; země jde zvenku —
  * osoba podle D18 ({@see PersonContext}), adresa podle vlastního
- * `country`, kontakt podle osoby, účet zemi nepotřebuje (IBAN podle
- * prefixu).
+ * `country` a bez něj podle země osoby (D24), kontakt podle osoby, účet
+ * zemi nepotřebuje (IBAN podle prefixu).
  *
  * Kontroly (D19, `check*`) vracejí nálezy `{column, code, message}` nad
  * normalizovanou kopií — kódy a texty z knihovny ({@see ValueChecks}),
@@ -68,19 +68,21 @@ final class PersonValues
 
     /**
      * Země malými; PSČ podle země adresy — chybí-li v řádku, podle
-     * `$storedCountry` (uložený řádek při částečném updatu), jinak obecná
-     * pravidla (jen trim, nic se nehádá).
+     * `$storedCountry` (uložený řádek při částečném updatu), jinak podle
+     * `$personCountry` (země osoby, #118 D24: sídlo → první adresa se zemí
+     * → země zdroje dat), jinak obecná pravidla (jen trim). Do `country`
+     * se z fallbacku nic nezapisuje — země slouží jen pravidlům PSČ.
      *
      * @param array<string, mixed> $data
      * @return array<string, mixed>
      */
-    public static function normalizeAddress(array $data, ?string $storedCountry = null): array
+    public static function normalizeAddress(array $data, ?string $storedCountry = null, ?string $personCountry = null): array
     {
         $country = self::text($data['country'] ?? null);
         if ($country !== null) {
             $data['country'] = Country::normalize($country);
         }
-        $zipCountry = $country !== null ? $data['country'] : self::text($storedCountry);
+        $zipCountry = $country !== null ? $data['country'] : self::zipFallbackCountry($storedCountry, $personCountry);
         if (self::text($data['zip'] ?? null) !== null) {
             $data['zip'] = ValueRules::normalize(ValueRules::ZIP, $data['zip'], $zipCountry);
         }
@@ -125,20 +127,29 @@ final class PersonValues
     }
 
     /**
-     * PSČ podle země adresy (cz, sk, de); adresa bez země nález nemá.
+     * PSČ podle země adresy (cz, sk, de) — stejný řetěz zemí jako
+     * {@see normalizeAddress}: adresa bez země se kontroluje podle země
+     * osoby (D24); bez jakékoli země nález nemá.
      *
      * @param array<string, mixed> $data
      * @return list<array{column: string, code: string, message: string}>
      */
-    public static function checkAddress(array $data, ?string $storedCountry = null): array
+    public static function checkAddress(array $data, ?string $storedCountry = null, ?string $personCountry = null): array
     {
-        $shaped = self::normalizeAddress($data, $storedCountry);
+        $shaped = self::normalizeAddress($data, $storedCountry, $personCountry);
         $zip = self::text($shaped['zip'] ?? null);
         if ($zip === null) {
             return [];
         }
-        $country = self::text($shaped['country'] ?? null) ?? self::text($storedCountry);
+        $country = self::text($shaped['country'] ?? null) ?? self::zipFallbackCountry($storedCountry, $personCountry);
         return self::findings([ValueChecks::zip($zip, ValueRulesRegistry::forCountry($country))]);
+    }
+
+    /** Země pro PSČ adresy bez vlastní země: uložený řádek → země osoby (D24). */
+    private static function zipFallbackCountry(?string $storedCountry, ?string $personCountry): ?string
+    {
+        $country = self::text($storedCountry) ?? self::text($personCountry);
+        return $country !== null ? Country::normalize($country) : null;
     }
 
     /**

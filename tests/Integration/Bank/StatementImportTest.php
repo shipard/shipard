@@ -9,7 +9,6 @@ use Shipard\Api\DocumentLoader;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Economy\Bank\Checks\StatementReconciliationCheck;
-use Shipard\Module\Economy\Bank\Import\Parsers\GpcParser;
 use Shipard\Module\Economy\Bank\Import\StatementImportService;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
@@ -34,17 +33,15 @@ class StatementImportTest extends IntegrationTestCase
         $this->dibi = $this->db->getDibiConnection();
 
         // Vlastní bankovní spojení, které matchne všechny tři formáty:
-        // CAMT přes IBAN, FIO přes account_number (úplné, s kódem banky —
-        // klíč účtu #118 D23 část před lomítkem nehádá), GPC přes ebanking_id.
-        $gpcRef = (new GpcParser())->parse(file_get_contents(self::FIXTURES . '/statement.gpc'))[0]->bankAccountRef;
-
+        // CAMT i FIO (bez bankId) přes IBAN, GPC přes předčíslí a číslo
+        // tuzemského čísla účtu — hlavička GPC kód banky nenese (#118 D25),
+        // proto bez `ebanking_id`.
         $this->dibi->insert('economy_codebooks_bank_accounts', [
             'code'           => 'ITF2-' . substr((string) abs(crc32($this->name())), 0, 5),
             'name'           => 'IT F2 účet',
             'currency'       => 'czk',
-            'account_number' => '2900123456/0800',
+            'account_number' => '19-2000145399/0800',
             'iban'           => 'CZ6508000000192000145399',
-            'ebanking_id'    => $gpcRef,
             'is_default'     => 0,
             'sort_order'     => 0,
             'docState'       => 40,
