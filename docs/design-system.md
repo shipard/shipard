@@ -732,6 +732,23 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
      v hlavičce neukazuje (`detailBadge: false`, D20) — K řešení, V práci,
      Hotovo, Odeslaná, Podáno zůstávají. Další štítky (Chyba účtování,
      Po termínu) až za ním.
+   - **Přehled neopakuje hlavičku** (#140 D26): co je v hlavičce — titulek,
+     údaje podtitulku, štítky — se v prvním tabu znovu nevypisuje; skupina
+     vlastností, která tím zůstane prázdná, se nezobrazí (`propertiesTab()`
+     ji filtruje, ručně skládané skupiny si hlídá viewer). Zkrácený název
+     (účty, saldokonta, karty a typy majetku) se ukáže jen, když se liší od
+     názvu. Náhradní titulek (pohyb saldokonta bez partnera má titulkem
+     text, uživatel bez jména login) chybí v Přehledu jen v tom případě —
+     viewer rozhoduje z téhož záznamu jednou privátní metodou
+     (`LedgerViewer::titleOf()`, `BankTransactionsViewer::partyOf()`,
+     `BankStatementsViewer::reconciliationBadge()`). Karta strany dokladu
+     s názvem partnera je součást návrhu (D16), ne opakování. Shoda hodnot,
+     která opakováním není (druh položky pojmenovaný jako typ, součty
+     případu s jediným pohybem, pořadí bankovního účtu rovné kódu,
+     systémový kód jednotky, splatnost zápisu rovná datu), zůstává. Hlídá to
+     `ViewerDetailContractTest::testOverviewDoesNotRepeatHeader` nad pěti
+     nejnovějšími záznamy každého vieweru: chyba je jen soustavná shoda,
+     výjimky `OVERVIEW_REPEAT_ALLOWED` s komentářem proč.
 3. **Taby** — body, aktivní strong s modrou linkou.
 4. **Obsah** — sekce oddělené `--shpd-space-lg`, každá s nadpisem
    (heading, `margin-bottom: var(--shpd-space-xs)`).
@@ -760,9 +777,11 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   vieweru: skupiny s nadpisem heading (kód zprávy jako odkaz,
   datum normální tloušťkou; vlastní přílohy záznamu s nadpisem „Přílohy“);
   přepínač Miniatury / Velké náhledy v řádku s nadpisem první skupiny
-  vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Výjimka:
-  viewer s `detailAttachments: "tab"` (karta majetku — fotky, smlouvy) má
-  přílohy ve vlastním tabu Přílohy, který bez přílohy chybí.
+  vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Spisovna
+  má přílohy dokumentu na konci prvního tabu Obsah toutéž sekcí (#140 D27).
+  Výjimka: viewer s `detailAttachments: "tab"` — dnes jen karta majetku
+  (fotky, smlouvy) — má přílohy ve vlastním tabu Přílohy, který bez přílohy
+  chybí.
 - **Odeslaná pošta**: jen na konci Přehledu, za přílohami (D22) — pod
   ostatními taby se nekreslí.
 - **Obecné typy** (`properties`, `table`, `heading`, Odeslaná pošta) ve

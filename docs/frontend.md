@@ -967,7 +967,7 @@ viewer `renderDetail()` nepřepisuje, dodává části přes chráněné háčky
 | `loadDetailRecord(int $id): ?array` | `loadRecord()` | záznam potřebuje JOINy (jména partnerů, číselníky) |
 | `detailHeader(array $record): DetailHeader` | titulek z deklarace `detailHeader.title` ve `viewers[]`, jinak z `displayPattern` tabulky, jinak `#id`; podtitul jen z `detailHeader.subtitle`; ikona `viewers[].icon` — vzory `{sloupec}` vyplňuje `RecordPattern` (prázdná hodnota se vynechá i s oddělovačem, D19) | hlavička mimo vzor (doklad: protistrana, ikona podle typu) |
 | `detailBadges(array $record): array` | `[]` | štítky za štítkem stavu (`{label, style}`) |
-| `detailTabs(array $record): array` | `[]` | vždy — první tab je Přehled (`propertiesTab($groups)` nad skupinami vlastností, nebo vlastní obsah) |
+| `detailTabs(array $record): array` | `[]` | vždy — první tab je Přehled (`propertiesTab($groups)` nad skupinami vlastností, nebo vlastní obsah); co nese hlavička (titulek, části podtitulku, štítky), Přehled neopakuje (#140 D26, `docs/design-system.md` §12) |
 | `detailActions(array $record): array` | `[]` | per-record akce (viz Akce detailu); prázdné = klíč `actions` chybí |
 | `detailAttachmentGroups(array $record): array` | `[]` | vlastní skupiny příloh před přílohami záznamu (doklad: zdrojová pošta) |
 
@@ -1062,7 +1062,8 @@ v deklaraci vieweru:
   na konci (popisek `core.system.viewerDetailLabels.tabs.attachments`);
   karta majetku. Bez příloh tab není;
 - `content` — builder přílohy nenačítá, viewer si je kreslí ve svém obsahu
-  (`attachment-grid` u pošty, spisovny, položek, bankovních výpisů).
+  (`attachment-grid` u Došlé a Odeslané pošty; Spisovna přešla na
+  `overview`, #140 D27).
 
 ### Akce detailu (`detail.actions`)
 

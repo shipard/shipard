@@ -1,6 +1,6 @@
 # Design system — Přehled detailu neopakuje hlavičku
 
-**Stav:** naplánováno — #140 (D26, D27)
+**Stav:** hotovo — 2026-10-26, #140 (D26, D27); odchylky od auditu v §6, kontrakt zelený na `lh6x…` a `9gk5…`
 
 ## Kontext / Cíl
 
@@ -171,11 +171,43 @@ nebo jako `@dataProvider` v kontraktu) — shoda titulku, části podtitulku,
 - `docs/frontend.md` §7: u `detailAttachments` aktualizovat příklady
   (`content` mají Došlá a Odeslaná pošta).
 
+## 6. Odchylky od auditu (po implementaci)
+
+- `core.units`: **Systémový kód** zůstává — hlavička ho nenese, audit ho
+  chytil jen přes shodu seedu (`m`, `kg`, `l`); výjimka kontroly.
+- `core.system.users`: bez jména dával `displayPattern`
+  `{full_name} ({login})` titulek „(login)“ — hlavička je v PHP
+  (`UsersViewer::detailHeader()`), deklarace pryč; Login je v hlavičce vždy,
+  Jméno i Login z Přehledu bez podmínky.
+- `core.mail.sent`: navíc **Komu** (bez adres jen „—“, s adresami část
+  podtitulku) a **Vytvořeno** (podtitul).
+- `economy.bank.transactions` **Částka** a `economy.accbal.ledger`
+  **Částka {měna}**: hlavička částku nese (titulek se znaménkem, podtitul
+  s měnou), audit je minul kvůli formátu; přepočet v domácí měně a kurz
+  zůstávají jen u cizí měny.
+- `economy.bank.statements` **Rekonciliace** podmíněně — jen bez štítku
+  (Nezkontrolováno); `economy.bank.transactions` **Název protistrany**
+  podmíněně — jen vedle partnera (bez partnera je v podtitulku).
+- `economy.assets.assets`, `economy.assets.types`: **Zkrácený název** jen
+  když se liší (audit neuváděl).
+- `economy.vat.filings`, `core.exchange.tagRules`: beze změny — složený
+  titulek (`03/2026 — Řádné 1`, `IČO → štítek`) není „částí“ hlavičky
+  a u importovaných podání druh v názvu není.
+- Výjimka navíc: `economy.accounting.journal` **Splatnost** — u bankovních
+  a pokladních zápisů rovná datu zápisu (reálná kopie, 5 z 5).
+- Mimo D26, opraveno zvlášť (commit 1b): pět viewerů (AI připojení,
+  profily AI, schránky, pravidla předzpracování a odesílatelů) nevybíralo
+  v `loadDetailRecord()` `docState`, štítek stavu se nikdy nekreslil;
+  profil AI nevybíral ani `id`.
+- Spisovnu s přílohou žádný vývojový zdroj dat nemá — sdílenou sekci
+  u Spisovny kontrakt neověřil, jen v prohlížeči.
+
 ## Commity
 
 1. `test(core): kontrola opakování hlavičky v Přehledu (#140)` — logika
    a unit test, integrační test zatím s výjimkami pro všechny nálezy §1
    (seznam `PENDING`, jen ubývá — stejný vzor jako `NOT_CONVERTED` v #136)
+1b. `fix(core): štítek stavu v detailu AI připojení a nastavení pošty (#136, #140)`
 2. `refactor: Přehled bez údajů z hlavičky — číselníky, AI, pošta, uživatelé, jednotky (#140)`
 3. `refactor: Přehled bez údajů z hlavičky — saldokonto, účetnictví, banka, majetek, zakázky (#140)`
 4. `feat(base.registry): přílohy dokumentu v tabu Obsah, Přehled bez opakování (#140)`
@@ -200,11 +232,11 @@ s přílohou — přílohy na konci tabu Obsah, tab Přílohy není.
 
 ## Hotovo když
 
-- [ ] položky z §1 a viewery bez dat prošlé a upravené, podmíněné položky §2
-- [ ] Spisovna podle D27
-- [ ] kontrola v kontraktu se zelenou na vývojových zdrojích dat, `PENDING` zrušený
-- [ ] `docs/design-system.md` §12, `docs/frontend.md`
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] položky z §1 a viewery bez dat prošlé a upravené, podmíněné položky §2
+- [x] Spisovna podle D27
+- [x] kontrola v kontraktu se zelenou na vývojových zdrojích dat, `PENDING` zrušený
+- [x] `docs/design-system.md` §12, `docs/frontend.md`
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Pasti
 

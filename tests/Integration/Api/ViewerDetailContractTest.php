@@ -44,7 +44,8 @@ class ViewerDetailContractTest extends IntegrationTestCase
 
     /**
      * Shody hodnot, které nejsou opakováním hlavičky (#140 §1): jiný údaj
-     * se stejnou hodnotou. Viewer id → popisky položek Přehledu.
+     * se stejnou hodnotou. Viewer id → popisky položek Přehledu. Nevyužitá
+     * výjimka test neshazuje (data zdrojů se liší).
      */
     private const OVERVIEW_REPEAT_ALLOWED = [
         // Druh položky se často jmenuje stejně jako typ položky (Služba / Služba).
@@ -57,14 +58,6 @@ class ViewerDetailContractTest extends IntegrationTestCase
         'core.units' => ['Systémový kód'],
         // Splatnost bankovních a pokladních zápisů = datum zápisu v podtitulku; jiný údaj.
         'economy.accounting.journal' => ['Splatnost'],
-    ];
-
-    /**
-     * Položky, které hlavičku opakují a čekají na odstranění (#140 D26) —
-     * commity po modulech je ubírají, poslední konstantu smaže. Nevyužitá
-     * výjimka test neshazuje (data zdrojů se liší).
-     */
-    private const PENDING = [
     ];
 
     private ViewerRegistry $registry;
@@ -377,10 +370,7 @@ class ViewerDetailContractTest extends IntegrationTestCase
             }
             $checked++;
 
-            $allowed = [
-                ...(self::OVERVIEW_REPEAT_ALLOWED[$def->id] ?? []),
-                ...(self::PENDING[$def->id] ?? []),
-            ];
+            $allowed = self::OVERVIEW_REPEAT_ALLOWED[$def->id] ?? [];
             foreach (self::systematicRepeats($details, $allowed) as ['label' => $label, 'part' => $part]) {
                 $failures[] = sprintf(
                     'viewer %s: položka „%s“ v Přehledu opakuje %s hlavičky (%d z %d vzorků)',
