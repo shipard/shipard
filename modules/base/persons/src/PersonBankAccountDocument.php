@@ -18,17 +18,38 @@ use Shipard\Module\Base\Persons\Values\PersonValues;
  * Vlastní účty v číselníku řeší `economy.codebooks` `BankAccountDocument`.
  * Číslo účtu, IBAN, BIC a jejich soulad kontroluje (D19): u účtu vlastní
  * firmy chyba, u partnera varování; tuzemský tvar se čeká podle země osoby.
+ * Účet musí nést číslo účtu nebo IBAN (D28) — zahraniční účet má jen IBAN,
+ * bez obou údajů se neuloží ani partnerovi.
  */
 class PersonBankAccountDocument extends Document
 {
+    public const REQUIRED_ONE_OF_MESSAGE = 'Musí být vyplněn alespoň jeden z údajů: Číslo účtu nebo IBAN.';
+
     public function validate(array &$data): ValidationResult
     {
         $result = new ValidationResult();
         $context = $this->personContext();
         $person = (int) ($data['person'] ?? 0);
         $country = $person > 0 ? $context->country($person) : $context->dsCountry();
+
+        // Nad tvarem, v jakém se účet uloží (přesun IBAN ze sloupce čísla
+        // účtu, D20). Částečný update bez obou sloupců se nehodnotí — mění
+        // jiné sloupce a uložený účet nevidí.
+        if (self::carriesAccount($data)) {
+            $shaped = PersonValues::normalizeBankAccount($data);
+            if (PersonValues::text($shaped['account_number'] ?? null) === null && PersonValues::text($shaped['iban'] ?? null) === null) {
+                $result->addError('account_number', self::REQUIRED_ONE_OF_MESSAGE, 'required_one_of');
+            }
+        }
         PersonDocument::report($result, PersonValues::checkBankAccount($data, $country), $context->isOwn($person));
         return $result;
+    }
+
+    /** Nový záznam vždy; update jen když payload nese číslo účtu i IBAN (formulář). */
+    private static function carriesAccount(array $data): bool
+    {
+        return empty($data['id'])
+            || (array_key_exists('account_number', $data) && array_key_exists('iban', $data));
     }
 
     public function beforeSave(array &$data, ?array $originalData = null): void

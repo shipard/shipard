@@ -81,6 +81,20 @@ class RecordPatternTest extends TestCase
         $this->assertSame('123/', (new RecordPattern('{number}/{year}'))->render(['number' => 123, 'year' => null]));
     }
 
+    public function testFallbackPlaceholderTakesFirstNonEmptyValue(): void
+    {
+        $pattern = new RecordPattern('{account_number|iban}');
+
+        $this->assertSame(['account_number', 'iban'], $pattern->columns(), 'oba sloupce do dotazu');
+        $this->assertSame('19-2000145399/0800', $pattern->render(['account_number' => '19-2000145399/0800', 'iban' => 'CZ6508000000192000145399']));
+        $this->assertSame('DE72100700000532013000', $pattern->render(['account_number' => '', 'iban' => 'DE72100700000532013000']), 'účet bez čísla IBANem (D28)');
+        $this->assertSame('DE72100700000532013000', $pattern->render(['d_a__account_number' => null, 'd_a__iban' => 'DE72100700000532013000'], 'd_a__'));
+        $this->assertNull($pattern->render(['account_number' => '', 'iban' => null]));
+
+        $this->assertSame('X — Náhradník', (new RecordPattern('{code} — {name|alt|id}'))->render(['code' => 'X', 'name' => '', 'alt' => 'Náhradník', 'id' => 7]));
+        $this->assertSame(['code', 'name', 'alt', 'id'], (new RecordPattern('{code} — {name|alt|id} ({code})'))->columns());
+    }
+
     public function testSeparatorVariants(): void
     {
         foreach ([' — ', ' – ', ' · ', ' - ', ' '] as $separator) {

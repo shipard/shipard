@@ -35,9 +35,41 @@ final class StubBankDocument extends PersonBankAccountDocument
     }
 }
 
-/** Účet osoby z formuláře: tvary a přesun IBAN ze sloupce čísla účtu (#118 D18, D20). */
+/**
+ * Účet osoby z formuláře: tvary a přesun IBAN ze sloupce čísla účtu (#118
+ * D18, D20), číslo účtu nebo IBAN (D28).
+ */
 class PersonBankAccountDocumentTest extends TestCase
 {
+    public function testAccountNeedsAccountNumberOrIban(): void
+    {
+        $ibanOnly = ['person' => 2, 'account_number' => '', 'iban' => 'DE72 1007 0000 0532 0130 00', 'bic' => null];
+        $result = (new StubBankDocument())->validate($ibanOnly);
+        $this->assertTrue($result->isValid(), 'zahraniční účet má jen IBAN');
+        $this->assertSame([], $result->warningsToArray());
+
+        $moved = ['person' => 2, 'account_number' => 'DE72 1007 0000 0532 0130 00', 'iban' => ''];
+        $this->assertTrue((new StubBankDocument())->validate($moved)->isValid(), 'IBAN v čísle účtu se před kontrolou přesune (D20)');
+
+        foreach ([2, 1] as $person) {
+            $empty = ['person' => $person, 'name' => 'Bez údajů', 'account_number' => ' ', 'iban' => null, 'bic' => ''];
+            $result = (new StubBankDocument())->validate($empty);
+            $this->assertFalse($result->isValid(), "bez obou údajů chyba i u partnera (osoba {$person})");
+            $this->assertSame(
+                [['column' => 'account_number', 'message' => 'Musí být vyplněn alespoň jeden z údajů: Číslo účtu nebo IBAN.', 'code' => 'required_one_of']],
+                array_map(static fn (array $e): array => ['column' => $e['column'], 'message' => $e['message'], 'code' => $e['code']], $result->toArray()),
+            );
+        }
+
+        $newWithoutKeys = ['person' => 2, 'name' => 'Jen název'];
+        $this->assertFalse((new StubBankDocument())->validate($newWithoutKeys)->isValid(), 'nový záznam bez obou klíčů');
+
+        $partialUpdate = ['id' => 30, 'person' => 2, 'name' => 'Přejmenovaný'];
+        $this->assertTrue((new StubBankDocument())->validate($partialUpdate)->isValid(), 'částečný update jiných sloupců');
+        $partialIban = ['id' => 30, 'person' => 2, 'iban' => ''];
+        $this->assertTrue((new StubBankDocument())->validate($partialIban)->isValid(), 'jeden z klíčů bez druhého se nehodnotí — uložený účet není vidět');
+    }
+
     public function testBeforeSaveShapesColumns(): void
     {
         $data = ['person' => 1, 'name' => 'Hlavní', 'account_number' => ' 000019-2000145399 / 0800', 'iban' => 'cz65 0800 0000 1920 0014 5399', 'bic' => ' gibaczpx', 'currency' => 'czk'];

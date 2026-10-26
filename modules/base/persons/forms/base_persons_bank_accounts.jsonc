@@ -23,10 +23,13 @@
                                     "type": "input",
                                     "column": "name"
                                 },
+                                // Číslo účtu nebo IBAN — aspoň jeden (#118 D28);
+                                // sloupec je NOT NULL, takže `required` musí být
+                                // vypnuté výslovně.
                                 {
                                     "type": "input",
                                     "column": "account_number",
-                                    "required": true
+                                    "required": false
                                 },
                                 {
                                     "type": "input",

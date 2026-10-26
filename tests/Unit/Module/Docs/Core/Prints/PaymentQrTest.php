@@ -133,7 +133,38 @@ class PaymentQrTest extends TestCase
 
         $this->assertNull($generator->generate($this->input(['iban' => null, 'accountNumber' => null])));
         $this->assertNull($generator->generate($this->input(['iban' => null, 'accountNumber' => 'DE-účet 123'])));
-        $this->assertNull($generator->generate($this->input(['iban' => 'není IBAN'])), 'vadný IBAN se nedopočítává');
+        $this->assertNull($generator->generate($this->input(['iban' => 'není IBAN', 'accountNumber' => null])), 'vadný IBAN bez čísla účtu');
+        $this->assertNull($generator->generate($this->input(['iban' => null, 'accountNumber' => '2308417558/2010'])), 'číslo účtu bez mod 11 (D29)');
+    }
+
+    // ── Jen platný IBAN (#118 D29) ──────────────────────────────────────────
+
+    public function testInvalidStoredIbanIsReplacedByIbanFromValidAccountNumber(): void
+    {
+        $generator = new SpaydGenerator();
+
+        foreach (['CZ6508000000192000145398', 'CZ650800000019200014539', 'CZ5520100000002308417558', 'není IBAN'] as $invalid) {
+            $this->assertStringStartsWith(
+                'SPD*1.0*ACC:CZ6508000000192000145399+GIBACZPX*',
+                (string) $generator->generate($this->input(['iban' => $invalid])),
+                "neplatný IBAN „{$invalid}“: QR z čísla účtu",
+            );
+        }
+        $this->assertNull(
+            $generator->generate($this->input(['iban' => 'CZ6508000000192000145398', 'accountNumber' => '2308417558/2010'])),
+            'neplatný IBAN a číslo účtu bez mod 11 → bez QR',
+        );
+        $this->assertNull($generator->generate($this->input(['iban' => 'CZ6508000000192000145398', 'accountNumber' => ''])));
+        $this->assertStringStartsWith(
+            'SPD*1.0*ACC:CZ6508000000192000145399+GIBACZPX*',
+            (string) $generator->generate($this->input(['iban' => 'cz65 0800 0000 1920 0014 5399', 'accountNumber' => '2308417558/2010'])),
+            'platný IBAN má přednost, číslo účtu se nehodnotí',
+        );
+        $this->assertStringStartsWith(
+            'SPD*1.0*ACC:DE72100700000532013000*',
+            (string) $generator->generate($this->input(['iban' => 'DE72 1007 0000 0532 0130 00', 'bic' => null, 'accountNumber' => null])),
+            'platný cizí IBAN',
+        );
     }
 
     // ── IBAN z českého čísla účtu (world.validations, #118 D23) ─────────────

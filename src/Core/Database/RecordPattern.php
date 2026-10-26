@@ -12,13 +12,18 @@ namespace Shipard\Core\Database;
  * oddělovačem: `{code} — {name}` bez kódu dá „Název“, ne „— Název“.
  * Oddělovačem je literál ze sady `SEPARATORS`; jiný literál (`#`, `/`)
  * zůstává vždy. Datum (`DateTimeInterface`) se formátuje `j. n. Y`.
+ *
+ * Placeholder s náhradníky `{account_number|iban}` dá první neprázdnou
+ * hodnotu v pořadí zápisu (#118 D28: účet osoby bez čísla účtu se
+ * ukazuje IBANem); `columns()` vrací všechny jeho sloupce.
  */
 final class RecordPattern
 {
     /** Literály mezi placeholdery, které se při prázdném sousedovi zahazují. */
     private const SEPARATORS = [' — ', ' – ', ' · ', ' - ', ' '];
 
-    private const PLACEHOLDER = '/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/';
+    private const NAME = '[a-zA-Z_][a-zA-Z0-9_]*';
+    private const PLACEHOLDER = '/\{(' . self::NAME . '(?:\|' . self::NAME . ')*)\}/';
 
     public function __construct(public readonly string $pattern)
     {
@@ -34,7 +39,13 @@ final class RecordPattern
         if (!preg_match_all(self::PLACEHOLDER, $this->pattern, $m)) {
             return [];
         }
-        return array_values(array_unique($m[1]));
+        $columns = [];
+        foreach ($m[1] as $group) {
+            foreach (explode('|', $group) as $column) {
+                $columns[] = $column;
+            }
+        }
+        return array_values(array_unique($columns));
     }
 
     /**
@@ -47,7 +58,7 @@ final class RecordPattern
     public function render(array $record, string $prefix = ''): ?string
     {
         $tokens = preg_split(
-            '/(\{[a-zA-Z_][a-zA-Z0-9_]*\})/',
+            '/(\{' . self::NAME . '(?:\|' . self::NAME . ')*\})/',
             $this->pattern,
             -1,
             PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY,
@@ -62,7 +73,13 @@ final class RecordPattern
         foreach ($tokens as $token) {
             if (preg_match(self::PLACEHOLDER, $token, $m) && $token === $m[0]) {
                 $hasPlaceholder = true;
-                $value = self::stringify($record[$prefix . $m[1]] ?? null);
+                $value = '';
+                foreach (explode('|', $m[1]) as $column) {
+                    $value = self::stringify($record[$prefix . $column] ?? null);
+                    if ($value !== '') {
+                        break;
+                    }
+                }
                 if ($value === '') {
                     continue;
                 }

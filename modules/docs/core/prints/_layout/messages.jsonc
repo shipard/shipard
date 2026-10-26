@@ -87,11 +87,12 @@
         "sk": "Text na tlačiach č. {id} sa nevytlačil: {reason}",
         "de": "Der Drucktext Nr. {id} wurde ausgelassen: {reason}"
     },
+    // Bez platného IBAN ani platného českého čísla účtu QR nevznikne (#118 D29).
     "message.qrNoAccount": {
-        "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s IBAN.",
-        "en": "The payment QR code is missing — the document has no bank account with an IBAN.",
-        "sk": "QR platba na doklade chýba — doklad nemá bankový účet s IBAN.",
-        "de": "Der Zahlungs-QR-Code fehlt — der Beleg hat keine Bankverbindung mit IBAN."
+        "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s platným IBAN ani platným českým číslem účtu.",
+        "en": "The payment QR code is missing — the document has no bank account with a valid IBAN or a valid Czech account number.",
+        "sk": "QR platba na doklade chýba — doklad nemá bankový účet s platným IBAN ani platným českým číslom účtu.",
+        "de": "Der Zahlungs-QR-Code fehlt — der Beleg hat keine Bankverbindung mit gültiger IBAN oder gültiger tschechischer Kontonummer."
     },
     "message.qrSkipped.paymentReference": {
         "cs": "QR platba neobsahuje variabilní symbol — smí mít jen číslice, nejvýš 10.",

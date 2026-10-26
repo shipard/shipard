@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Docs\Core\Prints\PaymentQr;
 
 use Shipard\Module\World\Validations\Bic;
+use Shipard\Module\World\Validations\DomesticAccount;
 use Shipard\Module\World\Validations\Iban;
 use Shipard\Module\World\Validations\ValueRules;
 
@@ -13,9 +14,10 @@ use Shipard\Module\World\Validations\ValueRules;
  *
  * Pole: `ACC` (IBAN[+BIC]), `AM` (2 desetinná místa), `CC`, `X-VS`, `X-SS`,
  * `X-KS`, `DT` (splatnost `YYYYMMDD`), `MSG` (číslo dokladu). Účet: IBAN
- * z dokladu; chybí-li a číslo účtu je české, IBAN se dopočítá
- * (`world.validations`, #118 D23 — tvarový převod bez mod 11, jako dřív).
- * Bez účtu payload nevznikne.
+ * z dokladu, je-li platný; jinak IBAN dopočtený z platného českého čísla
+ * účtu (`world.validations`, #118 D29). Bez platného účtu payload
+ * nevznikne — neplatný uložený IBAN se do kódu nedostane, na tisk jde,
+ * jak je uložený, a oprava dat je na člověku.
  *
  * Symboly dovoluje standard jen číselné, nejvýš 10 číslic — jiný tvar se
  * vynechá (QR bez VS je pořád použitelný) a volající se o tom dozví přes
@@ -92,16 +94,21 @@ final class SpaydGenerator implements PaymentQrGenerator
         return $this->skipped;
     }
 
+    /**
+     * Uložený IBAN jen platný (tvar, mod 97, pravidlo státu); jinak IBAN
+     * z platného tuzemského čísla účtu (mod 11); jinak `null` (D29).
+     */
     private function resolveIban(PaymentQrInput $input): ?string
     {
         $iban = Iban::normalize((string) $input->iban);
-        if ($iban !== '') {
-            return Iban::hasShape($iban) ? $iban : null;
+        if ($iban !== '' && Iban::isValid($iban)) {
+            return $iban;
         }
-        if ($input->accountNumber === null || trim($input->accountNumber) === '') {
+        $account = DomesticAccount::parse((string) $input->accountNumber);
+        if ($account === null || !$account->isValid()) {
             return null;
         }
-        return ValueRules::ibanFromAccountNumber($input->accountNumber, 'cz');
+        return ValueRules::ibanFromAccountNumber((string) $account, 'cz');
     }
 
     /**

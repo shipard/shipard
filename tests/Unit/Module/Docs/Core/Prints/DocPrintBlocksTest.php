@@ -434,6 +434,26 @@ class DocPrintBlocksTest extends TestCase
         $this->assertSame([], $context->messages());
     }
 
+    public function testInvalidStoredIbanGivesQrFromAccountNumberAndPrintsStoredIban(): void
+    {
+        // Vlastní účet s chybou v IBAN a platným číslem účtu (#118 D29):
+        // QR z čísla účtu, platební údaje tisknou IBAN, jak je uložený.
+        $supplier = self::SUPPLIER;
+        $supplier['bank_account']['iban'] = 'CZ6508000000192000145398';
+        $context = $this->context(supplier: $supplier);
+        $payment = (new DocPaymentBlock())->build($context)['payment'];
+
+        $this->assertSame($supplier['bank_account'], $payment['bankAccount']);
+        $this->assertStringStartsWith('SPD*1.0*ACC:CZ6508000000192000145399+GIBACZPX*', $payment['qr']['payload']);
+        $this->assertSame([], $context->messages());
+
+        $supplier['bank_account']['account_number'] = '2308417558/2010';
+        $context = $this->context(supplier: $supplier);
+        $payment = (new DocPaymentBlock())->build($context)['payment'];
+        $this->assertNull($payment['qr'], 'neplatný IBAN a číslo účtu bez mod 11');
+        $this->assertSame(['payment.qrNoAccount'], array_map(static fn ($m) => $m->toArray()['code'], $context->messages()));
+    }
+
     /** @return array<string, array{array<string, mixed>}> */
     public static function headsWithoutQr(): array
     {

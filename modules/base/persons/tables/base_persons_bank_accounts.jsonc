@@ -3,7 +3,7 @@
     "name": "Bank accounts",
     "name:cs": "Bankovní účty",
     "name:en": "Bank accounts",
-    "displayPattern": "{account_number}",
+    "displayPattern": "{account_number|iban}",
 
     "docStates": {
         "stateColumn": "docState",
