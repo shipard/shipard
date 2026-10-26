@@ -10,14 +10,20 @@ use Dibi\Connection;
  * Resolves bank accounts. Two flavours depending on whose account it is:
  *
  *   - **Partner bank** — `base_persons_bank_accounts` filtered by the
- *     resolved partner `person_id`. Match path: IBAN → accountNumber.
- *     No match + known partner → `canCreate` (Applier attaches new row
- *     to partner). No match + partner pending creation → `canCreate`
- *     (Applier defers until partner side-create finishes).
+ *     resolved partner `person_id`. No match + known partner → `canCreate`
+ *     (Applier attaches new row to partner). No match + partner pending
+ *     creation → `canCreate` (Applier defers until partner side-create
+ *     finishes).
  *   - **Own bank** — `economy_codebooks_bank_accounts` (our codebook).
- *     Match path: IBAN → accountNumber + currency filter. No match →
- *     `notFound` (own accounts are managed exclusively via codebook UI;
- *     applier never creates them implicitly).
+ *     No match → `notFound` (own accounts are managed exclusively via
+ *     codebook UI; applier never creates them implicitly).
+ *
+ * Párování (#118 D16): účty osoby (resp. číselník) se načtou a porovnají
+ * v PHP přes {@see BankAccountKey} z **obou** sloupců (`iban`
+ * i `account_number` — u starých dat nese číslo účtu IBAN). IBAN
+ * z dokladu má přednost (`matchedBy: iban`), pak tuzemské číslo
+ * (`accountNumber`). Vstup se bere, jak přišel — canonical je v applieru
+ * už normalizovaný, klíč si mezery a velikost písmen srovná sám.
  */
 class BankAccountResolver
 {
@@ -27,11 +33,6 @@ class BankAccountResolver
         private readonly Connection $db,
     ) {}
 
-    /**
-     * @param array<string, mixed> $bankAccount Canonical Party.bankAccount block.
-     * @param int|null $partnerPersonId  Resolved partner id (null = partner is
-     *                                    pending side-create; Applier handles).
-     */
     /**
      * Bankovní spojení nese identifikátor (IBAN nebo číslo účtu). Objekt se
      * samými `null` (projekce dokladu bez účtu — účtenka, platba kartou) je
@@ -50,6 +51,11 @@ class BankAccountResolver
         return false;
     }
 
+    /**
+     * @param array<string, mixed> $bankAccount Canonical Party.bankAccount block.
+     * @param int|null $partnerPersonId  Resolved partner id (null = partner is
+     *                                    pending side-create; Applier handles).
+     */
     public function resolvePartnerBank(array $bankAccount, ?int $partnerPersonId): ResolveResult
     {
         $iban = $this->normalize($bankAccount['iban'] ?? null);
@@ -59,31 +65,16 @@ class BankAccountResolver
         }
 
         if ($partnerPersonId !== null) {
-            if ($iban !== null) {
-                $row = $this->db->fetch(
-                    'SELECT [id] FROM [base_persons_bank_accounts]
-                     WHERE [person] = %i AND [iban] = %s
-                       AND [docState] IN (%i, %i, %i)
-                     LIMIT 1',
-                    $partnerPersonId, $iban,
-                    self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-                );
-                if ($row !== null) {
-                    return ResolveResult::matched((int) $row['id'], 'iban');
-                }
-            }
-            if ($accountNumber !== null) {
-                $row = $this->db->fetch(
-                    'SELECT [id] FROM [base_persons_bank_accounts]
-                     WHERE [person] = %i AND [account_number] = %s
-                       AND [docState] IN (%i, %i, %i)
-                     LIMIT 1',
-                    $partnerPersonId, $accountNumber,
-                    self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-                );
-                if ($row !== null) {
-                    return ResolveResult::matched((int) $row['id'], 'accountNumber');
-                }
+            $rows = $this->db->fetchAll(
+                'SELECT [id], [account_number], [iban] FROM [base_persons_bank_accounts]
+                 WHERE [person] = %i AND [docState] IN (%i, %i, %i)
+                 ORDER BY [id]',
+                $partnerPersonId,
+                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
+            );
+            $match = $this->matchRows($rows, $iban, $accountNumber);
+            if ($match !== null) {
+                return ResolveResult::matched($match[0], $match[1]);
             }
         }
 
@@ -101,32 +92,55 @@ class BankAccountResolver
             return ResolveResult::notFound();
         }
 
-        if ($iban !== null) {
-            $row = $this->db->fetch(
-                'SELECT [id] FROM [economy_codebooks_bank_accounts]
-                 WHERE [iban] = %s AND [docState] IN (%i, %i, %i)
-                 LIMIT 1',
-                $iban,
-                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-            );
-            if ($row !== null) {
-                return ResolveResult::matched((int) $row['id'], 'iban');
-            }
+        $rows = $this->db->fetchAll(
+            'SELECT [id], [account_number], [iban] FROM [economy_codebooks_bank_accounts]
+             WHERE [docState] IN (%i, %i, %i)
+             ORDER BY [id]',
+            self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
+        );
+        $match = $this->matchRows($rows, $iban, $accountNumber);
+        return $match !== null ? ResolveResult::matched($match[0], $match[1]) : ResolveResult::notFound();
+    }
+
+    /**
+     * Klíč z dokladu (IBAN přednostně, pak číslo účtu) proti klíčům obou
+     * sloupců každého řádku.
+     *
+     * @param iterable<mixed> $rows
+     * @return array{0: int, 1: string}|null [id, matchedBy]
+     */
+    private function matchRows(iterable $rows, ?string $iban, ?string $accountNumber): ?array
+    {
+        $wanted = [];
+        $ibanKey = $iban !== null ? BankAccountKey::of($iban) : null;
+        if ($ibanKey !== null) {
+            $wanted[$ibanKey] = 'iban';
         }
-        if ($accountNumber !== null) {
-            $row = $this->db->fetch(
-                'SELECT [id] FROM [economy_codebooks_bank_accounts]
-                 WHERE [account_number] = %s AND [docState] IN (%i, %i, %i)
-                 LIMIT 1',
-                $accountNumber,
-                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-            );
-            if ($row !== null) {
-                return ResolveResult::matched((int) $row['id'], 'accountNumber');
-            }
+        $accountKey = $accountNumber !== null ? BankAccountKey::of($accountNumber) : null;
+        if ($accountKey !== null && !isset($wanted[$accountKey])) {
+            $wanted[$accountKey] = 'accountNumber';
+        }
+        if ($wanted === []) {
+            return null;
         }
 
-        return ResolveResult::notFound();
+        $stored = [];
+        foreach ($rows as $row) {
+            $arr = $row instanceof \Dibi\Row ? $row->toArray() : (array) $row;
+            foreach (['iban', 'account_number'] as $column) {
+                $value = $arr[$column] ?? null;
+                $key = is_string($value) ? BankAccountKey::of($value) : null;
+                if ($key !== null && !isset($stored[$key])) {
+                    $stored[$key] = (int) $arr['id'];
+                }
+            }
+        }
+        foreach ($wanted as $key => $matchedBy) {
+            if (isset($stored[$key])) {
+                return [$stored[$key], $matchedBy];
+            }
+        }
+        return null;
     }
 
     private function normalize(mixed $value): ?string

@@ -7,6 +7,8 @@ namespace Shipard\Module\Core\Exchange\Enrich;
 use Dibi\Connection;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\World\Validations\CompanyId;
+use Shipard\Module\World\Validations\ValueRulesRegistry;
 
 /**
  * Deterministická část obsahové eskalace párování položek
@@ -38,10 +40,17 @@ final class ContentTagResolver
         private readonly ?ConfigRuntime $config = null,
     ) {}
 
-    /** Normalizace IČO — bez mezer a oddělovačů, jen alfanumerické znaky. */
-    public static function normalizeCompanyId(string $companyId): string
+    /**
+     * Klíč tabulky pravidel: se zemí strany nejdřív pravidla státu
+     * (`world.validations` — cz/sk doplní vedoucí nuly IČO, #118 D16), pak
+     * dosavadní tvar klíče — bez mezer a oddělovačů, jen alfanumerické
+     * znaky velkými. Uložená pravidla se nepřepisují; starý tvar bez
+     * vedoucích nul hledá {@see resolveTagByRule()} jako druhou variantu.
+     */
+    public static function normalizeCompanyId(string $companyId, ?string $country = null): string
     {
-        return strtoupper((string) preg_replace('/[^0-9A-Za-z]/', '', $companyId));
+        $value = $country !== null ? ValueRulesRegistry::forCountry($country)->normalizeCompanyId($companyId) : $companyId;
+        return strtoupper((string) preg_replace('/[^0-9A-Za-z]/', '', $value));
     }
 
     /**
@@ -50,24 +59,26 @@ final class ContentTagResolver
      *
      * @return array{id: int, tag: string, origin: string}|null
      */
-    public function resolveTagByRule(string $companyId): ?array
+    public function resolveTagByRule(string $companyId, ?string $country = null): ?array
     {
-        $normalized = self::normalizeCompanyId($companyId);
+        $normalized = self::normalizeCompanyId($companyId, $country);
         if ($normalized === '') {
             return null;
         }
-        $row = $this->db->fetch(
-            'SELECT id, tag, origin FROM core_exchange_tag_rules WHERE company_id = %s',
-            $normalized,
-        );
-        if ($row === null || $row === false) {
-            return null;
+        foreach (CompanyId::lookupVariants($normalized) as $variant) {
+            $row = $this->db->fetch(
+                'SELECT id, tag, origin FROM core_exchange_tag_rules WHERE company_id = %s',
+                $variant,
+            );
+            if ($row !== null && $row !== false) {
+                return [
+                    'id'     => (int) $row['id'],
+                    'tag'    => (string) $row['tag'],
+                    'origin' => (string) $row['origin'],
+                ];
+            }
         }
-        return [
-            'id'     => (int) $row['id'],
-            'tag'    => (string) $row['tag'],
-            'origin' => (string) $row['origin'],
-        ];
+        return null;
     }
 
     /** Inkrement statistik pravidla při skutečném použití v pipeline. */

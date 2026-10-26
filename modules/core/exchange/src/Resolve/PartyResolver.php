@@ -6,7 +6,10 @@ namespace Shipard\Module\Core\Exchange\Resolve;
 
 use Dibi\Connection;
 use Shipard\Module\Base\Persons\PersonType;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\World\Validations\CompanyId;
+use Shipard\Module\World\Validations\ValueRules;
 
 /**
  * Resolves a canonical Party object to a `base_persons_persons.id`.
@@ -36,6 +39,12 @@ use Shipard\Module\Docs\Core\OwnCompanyResolver;
  * IČO / VAT ID / DIČ are global enough in the CZ context (and country is
  * stored on `base_persons_addresses`, not `persons`), Phase 1 ignores it.
  * Country filter on name fuzzy search is a follow-up.
+ *
+ * Identifikátory se před párováním normalizují pravidly `world.validations`
+ * podle země strany (`country`, jinak `address.country`; bez země jen
+ * obecná pravidla) a IČO se hledá i bez vedoucích nul — data z doby před
+ * normalizací (#118 D16). Pokrývá tak i ostatní poštu
+ * (`MessagePartnerWriter`) a registr (`RegistryApplier`).
  */
 class PartyResolver
 {
@@ -63,15 +72,18 @@ class PartyResolver
      */
     public function resolve(array $party, ?PersonType $personType = null, bool $identifiersOnly = false): ResolveResult
     {
-        $companyId = $this->normalize($party['companyId'] ?? null);
-        $vatId = $this->normalize($party['vatId'] ?? null);
-        $taxId = $this->normalize($party['taxId'] ?? null);
+        $country = CanonicalValueNormalizer::partyCountry($party);
+        $companyId = $this->identifier($party['companyId'] ?? null, ValueRules::COMPANY_ID, $country);
+        $vatId = $this->identifier($party['vatId'] ?? null, ValueRules::VAT_ID, $country);
+        $taxId = $this->identifier($party['taxId'] ?? null, ValueRules::TAX_ID, $country);
         $name = $this->normalize($party['name'] ?? null);
 
         if ($companyId !== null) {
-            $row = $this->fetchByColumn('company_id', $companyId, $personType);
-            if ($row !== null) {
-                return ResolveResult::matched((int) $row['id'], 'companyId');
+            foreach (CompanyId::lookupVariants($companyId) as $variant) {
+                $row = $this->fetchByColumn('company_id', $variant, $personType);
+                if ($row !== null) {
+                    return ResolveResult::matched((int) $row['id'], 'companyId');
+                }
             }
         }
         if ($vatId !== null) {
@@ -103,7 +115,7 @@ class PartyResolver
         }
 
         return ResolveResult::canCreate(
-            $this->buildPersonCreatePayload($party, $personType ?? PersonType::Company),
+            $this->buildPersonCreatePayload($party, $personType ?? PersonType::Company, $country),
         );
     }
 
@@ -136,19 +148,31 @@ class PartyResolver
         if ($own === null) {
             return [];
         }
+        $country = CanonicalValueNormalizer::partyCountry($party);
         $disagree = [];
         foreach ([
-            'companyId' => 'company_id',
-            'vatId'     => 'vat_id',
-            'taxId'     => 'tax_id',
-        ] as $canonicalKey => $dbCol) {
-            $payloadValue = $this->normalize($party[$canonicalKey] ?? null);
-            $ownValue = $this->normalize($own[$dbCol] ?? null);
-            if ($payloadValue !== null && $ownValue !== null && $payloadValue !== $ownValue) {
+            'companyId' => ['company_id', ValueRules::COMPANY_ID],
+            'vatId'     => ['vat_id', ValueRules::VAT_ID],
+            'taxId'     => ['tax_id', ValueRules::TAX_ID],
+        ] as $canonicalKey => [$dbCol, $kind]) {
+            $payloadValue = $this->identifier($party[$canonicalKey] ?? null, $kind, $country);
+            $ownValue = $this->identifier($own[$dbCol] ?? null, $kind, $country);
+            if ($payloadValue !== null && $ownValue !== null && !CompanyId::same($payloadValue, $ownValue)) {
                 $disagree[] = $canonicalKey;
             }
         }
         return $disagree;
+    }
+
+    /** Identifikátor normalizovaný pravidly země strany; prázdný → null. */
+    private function identifier(mixed $value, string $kind, ?string $country): ?string
+    {
+        $trimmed = $this->normalize($value);
+        if ($trimmed === null) {
+            return null;
+        }
+        $normalized = ValueRules::normalize($kind, $trimmed, $country);
+        return $normalized === '' ? null : $normalized;
     }
 
     /**
@@ -226,15 +250,15 @@ class PartyResolver
      * @param array<string, mixed> $party
      * @return array<string, mixed>
      */
-    private function buildPersonCreatePayload(array $party, PersonType $type): array
+    private function buildPersonCreatePayload(array $party, PersonType $type, ?string $country = null): array
     {
         $address = is_array($party['address'] ?? null) ? $this->buildAddressPayload($party['address']) : null;
         return ($address !== null ? ['addresses' => [$address]] : []) + [
             'person_type'        => $type->value,
             'full_name'          => $this->normalize($party['name'] ?? null) ?? '',
-            'company_id'         => $this->normalize($party['companyId'] ?? null) ?? '',
-            'tax_id'             => $this->normalize($party['taxId'] ?? null) ?? '',
-            'vat_id'             => $this->normalize($party['vatId'] ?? null) ?? '',
+            'company_id'         => $this->identifier($party['companyId'] ?? null, ValueRules::COMPANY_ID, $country) ?? '',
+            'tax_id'             => $this->identifier($party['taxId'] ?? null, ValueRules::TAX_ID, $country) ?? '',
+            'vat_id'             => $this->identifier($party['vatId'] ?? null, ValueRules::VAT_ID, $country) ?? '',
             'court_registration' => $this->normalize($party['courtRegistration'] ?? null) ?? '',
             'email'              => $this->normalize($party['contact']['email'] ?? null) ?? '',
             'phone'              => $this->normalize($party['contact']['phone'] ?? null) ?? '',

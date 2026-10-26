@@ -201,4 +201,25 @@ class ContentTagResolverTest extends TestCase
         $this->assertSame('CZ12345678', ContentTagResolver::normalizeCompanyId('cz-123.456/78'));
         $this->assertSame('', ContentTagResolver::normalizeCompanyId(' — '));
     }
+
+    public function testRuleLookupTriesFormWithoutLeadingZerosForOldRules(): void
+    {
+        // #118 D16: pravidlo uložené před normalizací bez vedoucích nul se najde jako druhá varianta.
+        $db = $this->createMock(Connection::class);
+        $db->expects($this->exactly(2))
+            ->method('fetch')
+            ->willReturnCallback(static fn(string $sql, string $companyId): ?Row =>
+                $companyId === '6947' ? new Row(['id' => 9, 'tag' => 'it.software', 'origin' => 'learned']) : null);
+
+        $hit = (new ContentTagResolver($db))->resolveTagByRule('6947', 'cz');
+
+        $this->assertSame(['id' => 9, 'tag' => 'it.software', 'origin' => 'learned'], $hit);
+    }
+
+    public function testNormalizeCompanyIdWithCountryPadsAndKeepsLegacyKeyShape(): void
+    {
+        $this->assertSame('00006947', ContentTagResolver::normalizeCompanyId(' 6947 ', 'cz'));
+        $this->assertSame('6947', ContentTagResolver::normalizeCompanyId(' 6947 ', 'us'));
+        $this->assertSame('CZ12345678', ContentTagResolver::normalizeCompanyId('cz-123.456/78', 'cz'));
+    }
 }

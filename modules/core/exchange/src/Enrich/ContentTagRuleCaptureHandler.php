@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Exchange\Enrich;
 
 use Shipard\Core\Document\AbstractDocumentEventHandler;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 
 /**
  * Učení pravidel obsahových štítků (tasks/content-tag-enrichment.md, D22):
@@ -193,7 +194,10 @@ class ContentTagRuleCaptureHandler extends AbstractDocumentEventHandler
     {
         $counterKey = ($canonical['selfParty'] ?? null) === 'supplier' ? 'customer' : 'supplier';
         $party = is_array($canonical[$counterKey] ?? null) ? $canonical[$counterKey] : [];
-        $normalized = ContentTagResolver::normalizeCompanyId((string) ($party['companyId'] ?? ''));
+        $normalized = ContentTagResolver::normalizeCompanyId(
+            (string) ($party['companyId'] ?? ''),
+            CanonicalValueNormalizer::partyCountry($party),
+        );
         return $normalized !== '' ? $normalized : null;
     }
 

@@ -14,6 +14,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 
 /**
  * Orchestrátor obohacení řádků AI-extrahovaného canonicalu — Vrstva 0
@@ -389,7 +390,13 @@ final class RowEnrichmentPipeline
         $counterKey = ($canonical['selfParty'] ?? null) === 'supplier' ? 'customer' : 'supplier';
         $party = is_array($canonical[$counterKey] ?? null) ? $canonical[$counterKey] : [];
         $companyId = trim((string) ($party['companyId'] ?? ''));
-        return $companyId !== '' ? $companyId : null;
+        if ($companyId === '') {
+            return null;
+        }
+        // Klíč pravidla podle země strany (#118 D16) — canonical je po
+        // normalizaci, tohle je pojistka pro volající mimo tu cestu.
+        $normalized = ContentTagResolver::normalizeCompanyId($companyId, CanonicalValueNormalizer::partyCountry($party));
+        return $normalized !== '' ? $normalized : null;
     }
 
     /**

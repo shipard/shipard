@@ -180,23 +180,26 @@ class PersonResolverTest extends TestCase
         //              one payload address; goes to canCreate)
         //   4. fetch — world_divisions lookup (no divisionCode supplied → SKIPPED)
         //              Actually skipped — lookupDivisionId returns null for null/empty.
-        //   5. fetch — BankAccountResolver iban probe → hit (id=201)
+        //   5. fetchAll — BankAccountResolver: účty osoby, porovnání klíčem
+        //               v PHP (#118 D16) → hit (id=201)
         //   6. fetchAll — closing addresses
         //   7. fetchAll — closing bank accounts
         //   8. fetchAll — closing contacts
 
-        $db->expects($this->exactly(4))
+        $db->expects($this->exactly(3))
             ->method('fetch')
             ->willReturnOnConsecutiveCalls(
                 new Row(['id' => 42]),    // header company_id hit
                 null,                     // address placeReg probe miss
                 null,                     // address registryCode probe miss
-                new Row(['id' => 201]),   // bank IBAN hit
             );
 
-        $db->expects($this->exactly(3))
+        $db->expects($this->exactly(4))
             ->method('fetchAll')
             ->willReturnOnConsecutiveCalls(
+                [   // účty osoby — IBAN z payloadu sedí na id 201
+                    new Row(['id' => 201, 'account_number' => '...', 'iban' => 'CZ65...']),
+                ],
                 [   // closing addresses — only address_type=1 enumerated
                     new Row(['id' => 100, 'address_type' => 1, 'display_line' => 'Stará 1, Praha', 'place_reg_type' => null, 'place_reg_id' => null]),
                     new Row(['id' => 101, 'address_type' => 1, 'display_line' => 'Stará 2, Brno', 'place_reg_type' => null, 'place_reg_id' => null]),
