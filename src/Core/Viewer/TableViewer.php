@@ -337,9 +337,8 @@ abstract class TableViewer
      * nenalezený záznam → `{tabs: []}`. Zámek, tisky, odeslání a Odeslanou
      * poštu doplňuje `ViewerController::detail()`.
      *
-     * V tasku A kontraktu detailu zůstává přepsatelná — nepřevedené
-     * viewery (`DetailContractTest::NOT_CONVERTED`) ji přepisují celou;
-     * nový viewer ji nepřepisuje, dodává háčky. Task B ji udělá `final`.
+     * Metoda je `final` (#136 task B): viewer detail neskládá, dodává háčky —
+     * `DetailContractTest` hlídá, že žádná deklarace vieweru ji nepřepisuje.
      *
      * Content types:
      * - "properties": {type: "properties", groups: [{title, items: [{label, value}]}]}
@@ -349,7 +348,7 @@ abstract class TableViewer
      *
      * @return array<string, mixed>
      */
-    public function renderDetail(int $recordId): array
+    final public function renderDetail(int $recordId): array
     {
         $record = $this->loadDetailRecord($recordId);
         if ($record === null) {

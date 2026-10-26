@@ -652,8 +652,8 @@ class PrintsApiPlainViewer extends TableViewer
 
 class PrintsApiActionViewer extends PrintsApiPlainViewer
 {
-    public function renderDetail(int $recordId): array
+    protected function detailActions(array $record): array
     {
-        return ['tabs' => [], 'actions' => [['id' => 'reaccount', 'label' => 'Přeúčtovat', 'kind' => 'button']]];
+        return [['id' => 'reaccount', 'label' => 'Přeúčtovat', 'kind' => 'button']];
     }
 }

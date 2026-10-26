@@ -17,15 +17,13 @@ use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Viewer\ViewerDefinition;
 use Shipard\Core\Viewer\ViewerRegistry;
 use Shipard\Tests\Integration\IntegrationTestCase;
-use Shipard\Tests\Unit\Core\Viewer\DetailContractTest;
 
 /**
  * Kontrakt detailu záznamu nad skutečným zdrojem dat (#136 D23), jen
- * čtení: každý převedený tabulkový viewer (mimo
- * `DetailContractTest::NOT_CONVERTED`) vrátí přes `ViewerController::detail()`
- * pro první záznam tabulky hlavičku s titulkem a ikonou; záznam s přílohou
- * má její id v `detail.attachments.groups` (umístění `overview` / `tab`).
- * Prázdné tabulky se přeskakují.
+ * čtení: každý tabulkový viewer, jehož tabulka na zdroji dat je, vrátí přes
+ * `ViewerController::detail()` pro první záznam tabulky hlavičku s titulkem
+ * a ikonou; záznam s přílohou má její id v `detail.attachments.groups`
+ * (umístění `overview` / `tab`). Prázdné tabulky se přeskakují.
  */
 class ViewerDetailContractTest extends IntegrationTestCase
 {
@@ -50,15 +48,12 @@ class ViewerDetailContractTest extends IntegrationTestCase
         $this->admin = new AuthContext(true, 1, 'session', 'shpd_st_test', isAdmin: true);
     }
 
-    /** @return list<ViewerDefinition> převedené tabulkové viewery, jejichž tabulka na zdroji dat je */
-    private function convertedViewers(): array
+    /** @return list<ViewerDefinition> tabulkové viewery, jejichž tabulka na zdroji dat je */
+    private function tableViewers(): array
     {
         $out = [];
         foreach ($this->registry->getAll() as $def) {
             if ($def->table === null || !isset($this->tables[$def->table])) {
-                continue;
-            }
-            if (in_array($def->id, DetailContractTest::NOT_CONVERTED, true)) {
                 continue;
             }
             $out[] = $def;
@@ -88,10 +83,10 @@ class ViewerDetailContractTest extends IntegrationTestCase
         return (new \ReflectionProperty($response, 'status'))->getValue($response);
     }
 
-    public function testConvertedViewersRenderHeaderForFirstRecord(): void
+    public function testTableViewersRenderHeaderForFirstRecord(): void
     {
         $checked = 0;
-        foreach ($this->convertedViewers() as $def) {
+        foreach ($this->tableViewers() as $def) {
             $id = $this->db->fetchSingle('SELECT `id` FROM `' . $def->table . '` ORDER BY `id` LIMIT 1');
             if ($id === null) {
                 continue;
@@ -107,14 +102,14 @@ class ViewerDetailContractTest extends IntegrationTestCase
             $checked++;
         }
         if ($checked === 0) {
-            $this->markTestSkipped('Žádný převedený viewer nemá na zdroji dat záznam.');
+            $this->markTestSkipped('Žádný tabulkový viewer nemá na zdroji dat záznam.');
         }
     }
 
     public function testRecordAttachmentsAppearInDetail(): void
     {
         $checked = 0;
-        foreach ($this->convertedViewers() as $def) {
+        foreach ($this->tableViewers() as $def) {
             if ($def->detailAttachments === ViewerDefinition::ATTACHMENTS_CONTENT) {
                 continue;
             }
@@ -151,7 +146,7 @@ class ViewerDetailContractTest extends IntegrationTestCase
             $checked++;
         }
         if ($checked === 0) {
-            $this->markTestSkipped('Žádný převedený viewer nemá na zdroji dat záznam s přílohou.');
+            $this->markTestSkipped('Žádný tabulkový viewer nemá na zdroji dat záznam s přílohou.');
         }
     }
 }

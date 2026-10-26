@@ -15,41 +15,14 @@ use Shipard\Core\Viewer\ViewerDefinition;
 
 /**
  * Kontrakt detailu záznamu (#136 D23) nad všemi `viewers[]` v repozitáři:
- * třída vieweru dědí `TableViewer`, detail skládá builder (viewer
- * `renderDetail()` nepřepisuje), placeholdery `detailHeader` jsou sloupce
+ * třída vieweru dědí `TableViewer`, detail skládá builder (`renderDetail()`
+ * je `final`, viewer dodává háčky), placeholdery `detailHeader` jsou sloupce
  * tabulky, viewer bez tabulky dodává vlastní hlavičku, umístění příloh je
- * známé. Výjimky drží `NOT_CONVERTED`.
+ * známé. Bez výjimek — seznam nepřevedených viewerů task B vyprázdnil.
  */
 class DetailContractTest extends TestCase
 {
     private const MODULES = __DIR__ . '/../../../../modules';
-
-    /**
-     * Viewery, které detail dál skládají vlastním `renderDetail()`.
-     * Seznam JEN UBÝVÁ: převod vieweru ho odsud odebere ve stejném commitu
-     * (viewer ze seznamu, který už `renderDetail()` nepřepisuje, test
-     * shodí); task B #136 ho vyprázdní a `renderDetail()` bude `final`.
-     */
-    public const NOT_CONVERTED = [
-        // core.ai
-        // core.alerts
-        // core.chat
-        // core.exchange
-        // core.mail
-        // core.prints
-        // core.system
-        // core.units
-        // docs.core
-        // economy.accbal
-        // economy.accounting
-        // economy.bank
-        // economy.codebooks
-        // economy.exchangeRates
-        // economy.items
-        // economy.vat
-        // hosting.core
-        // tasks.core
-    ];
 
     /** @var array<string, array{module: string, def: array<string, mixed>}> id vieweru → deklarace */
     private static array $viewers = [];
@@ -89,26 +62,16 @@ class DetailContractTest extends TestCase
         }
     }
 
-    public function testRenderDetailIsOverriddenExactlyByNotConvertedViewers(): void
+    public function testRenderDetailIsFinalAndNoViewerOverridesIt(): void
     {
-        foreach (self::NOT_CONVERTED as $id) {
-            $this->assertArrayHasKey($id, self::$viewers, "NOT_CONVERTED: viewer {$id} neexistuje");
-        }
+        $this->assertTrue(
+            (new \ReflectionMethod(TableViewer::class, 'renderDetail'))->isFinal(),
+            'TableViewer::renderDetail() je final — detail skládá builder, viewer dodává háčky (#136 task B)',
+        );
 
         foreach (self::$viewers as $id => ['def' => $def]) {
             $declaring = (new \ReflectionMethod($def['class'], 'renderDetail'))->getDeclaringClass()->getName();
-            $overrides = $declaring !== TableViewer::class;
-            if (in_array($id, self::NOT_CONVERTED, true)) {
-                $this->assertTrue(
-                    $overrides,
-                    "viewer {$id} už renderDetail() nepřepisuje — odeber ho z DetailContractTest::NOT_CONVERTED (seznam jen ubývá)",
-                );
-            } else {
-                $this->assertFalse(
-                    $overrides,
-                    "viewer {$id} přepisuje renderDetail() v {$declaring} — detail skládá builder TableViewer, viewer dodává háčky",
-                );
-            }
+            $this->assertSame(TableViewer::class, $declaring, "viewer {$id} přepisuje renderDetail() v {$declaring}");
         }
     }
 
@@ -139,10 +102,10 @@ class DetailContractTest extends TestCase
         $this->addToAssertionCount($checked === 0 ? 1 : 0);
     }
 
-    public function testConvertedViewerWithoutTableProvidesItsOwnHeader(): void
+    public function testViewerWithoutTableProvidesItsOwnHeader(): void
     {
         foreach (self::$viewers as $id => ['def' => $def]) {
-            if (($def['table'] ?? null) !== null || in_array($id, self::NOT_CONVERTED, true)) {
+            if (($def['table'] ?? null) !== null) {
                 continue;
             }
             $declaring = (new \ReflectionMethod($def['class'], 'detailHeader'))->getDeclaringClass()->getName();
