@@ -10,6 +10,7 @@
 
   import Modal from '../ui/Modal.svelte';
   import ViewerDetail from './ViewerDetail.svelte';
+  import { contentHasAttachments } from './detailContent.js';
   import { get } from '../../api/client.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -74,12 +75,6 @@
     return tabs.some(tab => contentHasAttachments(tab.content))
       ? { ...rest, attachments, tabs }
       : { ...rest, tabs };
-  }
-
-  function contentHasAttachments(content) {
-    if (!content) return false;
-    if (content.type === 'attachments') return true;
-    return content.type === 'composite' && (content.blocks ?? []).some(contentHasAttachments);
   }
 </script>
 

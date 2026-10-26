@@ -410,11 +410,12 @@ abstract class TableViewer
 
     /**
      * Hlavička detailu (#136 D19). Výchozí: titulek z deklarace
-     * `detailHeader.title`, jinak z `displayPattern` tabulky, jinak `#id`;
-     * podtitul jen z deklarace `detailHeader.subtitle`; ikona z deklarace
-     * vieweru. Vzory vyplňuje `RecordPattern` (prázdné hodnoty i
-     * s oddělovačem vynechá). Viewer s hlavičkou mimo vzor (protistrana
-     * dokladu, ikona podle typu) přepisuje.
+     * `detailHeader.title`; deklarovaný vzor bez hodnoty (token AI bez
+     * poznámky) spadne na `displayPattern` tabulky, teprve pak na `#id`.
+     * Podtitul jen z deklarace `detailHeader.subtitle` a nikdy neopakuje
+     * titulek; ikona z deklarace vieweru. Vzory vyplňuje `RecordPattern`
+     * (prázdné hodnoty i s oddělovačem vynechá). Viewer s hlavičkou mimo
+     * vzor (protistrana dokladu, ikona podle typu) přepisuje.
      *
      * @param array<string, mixed> $record
      */
@@ -422,15 +423,23 @@ abstract class TableViewer
     {
         $declared = $this->definition?->detailHeader ?? [];
 
-        $titlePattern = $declared['title'] ?? ($this->tables[$this->table] ?? null)?->displayPattern;
-        $title = is_string($titlePattern) && $titlePattern !== ''
-            ? (new RecordPattern($titlePattern))->render($record)
-            : null;
+        $title = null;
+        foreach ([$declared['title'] ?? null, ($this->tables[$this->table] ?? null)?->displayPattern] as $pattern) {
+            if (is_string($pattern) && $pattern !== '') {
+                $title = (new RecordPattern($pattern))->render($record);
+            }
+            if ($title !== null) {
+                break;
+            }
+        }
 
         $subtitlePattern = $declared['subtitle'] ?? null;
         $subtitle = is_string($subtitlePattern) && $subtitlePattern !== ''
             ? (new RecordPattern($subtitlePattern))->render($record)
             : null;
+        if ($subtitle === $title) {
+            $subtitle = null;
+        }
 
         return new DetailHeader($title ?? '#' . (int) ($record['id'] ?? 0), $subtitle, $this->definition?->icon);
     }

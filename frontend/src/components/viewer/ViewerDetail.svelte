@@ -9,6 +9,7 @@
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
   import DetailAttachments from './DetailAttachments.svelte';
+  import { contentHasAttachments } from './detailContent.js';
   import Icon from '../ui/Icon.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
@@ -80,12 +81,6 @@
 
   // Viewer, který přílohy deklaruje ve vlastním tabu (obsah typu
   // `attachments`, i jako blok composite), je v Přehledu nedostane podruhé.
-  function contentHasAttachments(content) {
-    if (!content) return false;
-    if (content.type === 'attachments') return true;
-    return content.type === 'composite' && (content.blocks ?? []).some(contentHasAttachments);
-  }
-
   let hasAttachmentsTab = $derived(
     (detail?.tabs ?? []).some(tab => contentHasAttachments(tab.content))
   );

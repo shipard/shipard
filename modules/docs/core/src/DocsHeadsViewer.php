@@ -578,24 +578,11 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Hlavička detailu nad taby (generický header ViewerDetail, sjednocené
-     * s Osobami, Položkami a Došlou poštou). Titulkem je protistrana —
-     * propisuje se i do horní lišty na mobilu; číslo dokladu a doc_text
-     * jdou do podtitulku jako `číslo · text` (chybí-li jedno, jen druhé).
-     * Doklad bez partnera — i s visící FK, kdy `partner_name` z LEFT JOIN
-     * v renderDetail je null — má titulkem číslo dokladu a podtitulkem
-     * doc_text. Badges nesou jen stav dokladu; štítek typu se neposílá,
-     * typ nese ikona podle doc_type — hlavička neopakuje kontext, ze
-     * kterého uživatel detail otevřel (#133 D13, D14). Nahrazuje dřívější
-     * hlavičku uvnitř content typu `document`; DocumentDetail ji bez
-     * klíče `header` nevykresluje.
-     *
-     * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>, icon: string}
-     */
-    /**
-     * Hlavička detailu (#135 D13–D14): titulek protistrana, číslo · text
-     * dokladu v podtitulku; doklad bez partnera má titulkem číslo. Štítek
-     * stavu přidává builder podle sady stavů (`detailBadge`, #136 D20).
+     * Hlavička detailu (#135 D13–D14): titulek protistrana (jde i do horní
+     * lišty na mobilu), číslo · text dokladu v podtitulku; doklad bez
+     * partnera — i s visící FK, kdy `partner_name` z LEFT JOIN je null —
+     * má titulkem číslo. Typ nese ikona podle doc_type, štítek stavu
+     * přidává builder podle sady stavů (`detailBadge`, #136 D20).
      */
     protected function detailHeader(array $record): DetailHeader
     {

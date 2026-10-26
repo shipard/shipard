@@ -184,6 +184,32 @@ class TableViewerDetailBuilderTest extends TestCase
         $this->assertNull($viewer->renderDetail(7)['subtitle']);
     }
 
+    public function testDeclaredTitleWithoutValueFallsBackToDisplayPatternThenToId(): void
+    {
+        $viewer = $this->viewer(['name' => ''] + self::RECORD);
+        $viewer->setTables(['test_table' => $this->table()]);
+        $viewer->setDefinition($this->definition(['title' => '{name}']));
+
+        $this->assertSame('A1', $viewer->renderDetail(7)['title'], 'deklarace bez hodnoty → displayPattern');
+
+        $viewer = $this->viewer(['name' => ''] + self::RECORD);
+        $viewer->setDefinition($this->definition(['title' => '{name}']));
+
+        $this->assertSame('#7', $viewer->renderDetail(7)['title'], 'bez definic tabulek → #id');
+    }
+
+    public function testSubtitleRepeatingTitleIsDropped(): void
+    {
+        $viewer = $this->viewer(['name' => ''] + self::RECORD);
+        $viewer->setTables(['test_table' => $this->table(displayPattern: '{code}')]);
+        $viewer->setDefinition($this->definition(['title' => '{name}', 'subtitle' => '{code}']));
+
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('A1', $detail['title']);
+        $this->assertNull($detail['subtitle'], 'podtitul shodný s titulkem (token bez poznámky) se vynechá');
+    }
+
     public function testHeaderFallsBackToIdWithoutAnyPattern(): void
     {
         $viewer = $this->viewer();
