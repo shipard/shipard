@@ -11,8 +11,12 @@
   // Hlavičku (titulek, podtitul, štítek stavu) kreslí ViewerDetail nad taby;
   // content klíč `header` nenese. Přílohy (vlastní i ze zdrojové zprávy)
   // obsah `document` nenese také — kreslí je sdílená sekce DetailAttachments
-  // na konci Přehledu z `detail.attachments` (#136 D21).
+  // na konci Přehledu z `detail.attachments` (#136 D21). Nadpisy sekcí
+  // a skupiny údajů kreslí sdílené SectionHeading / PropertyGroups (#137
+  // D28, D29) — komponenty vznikly z tohoto detailu, vzhled se jimi nemění.
   import { t } from '../../i18n/index.js';
+  import SectionHeading from '../ui/SectionHeading.svelte';
+  import PropertyGroups from '../ui/PropertyGroups.svelte';
 
   let { content = null, onAction = null } = $props();
 
@@ -22,11 +26,11 @@
   let totals = $derived(content?.totals ?? null);
 
   // Údaje dokladu ve dvou skupinách vedle sebe (#135): data a platební
-  // údaje. Pole s null / prázdnou hodnotou se nevykreslí, prázdná skupina
-  // celá.
+  // údaje. Kreslí je sdílená PropertyGroups (#137 D29) — pole s null /
+  // prázdnou hodnotou a prázdnou skupinu vynechá ona; dostává hotové
+  // přeložené texty.
   const META_GROUPS = [
     {
-      id: 'dates',
       labelKey: 'viewer.document.section.dates',
       fields: [
         ['issue_date', 'viewer.document.meta.issueDate'],
@@ -36,7 +40,6 @@
       ],
     },
     {
-      id: 'payment',
       labelKey: 'viewer.document.section.payment',
       fields: [
         ['payment_method', 'viewer.document.meta.paymentMethod'],
@@ -52,14 +55,10 @@
   ];
 
   let metaGroups = $derived(
-    META_GROUPS
-      .map((group) => ({
-        ...group,
-        items: group.fields
-          .map(([key, labelKey]) => ({ key, labelKey, value: meta?.[key] ?? null }))
-          .filter((f) => f.value !== null && f.value !== ''),
-      }))
-      .filter((group) => group.items.length > 0)
+    META_GROUPS.map((group) => ({
+      title: t(group.labelKey),
+      items: group.fields.map(([key, labelKey]) => ({ label: t(labelKey), value: meta?.[key] ?? null })),
+    }))
   );
 
   function formatAddress(addr) {
@@ -87,7 +86,7 @@
        DIČ, adresa a účet běžné údaje barvou textu, šedé a menší jsou jen
        kontakty. -->
   <div class="shpd-docdetail__party">
-    <h3 class="shpd-docdetail__section-heading">{t(labelKey)}</h3>
+    <SectionHeading level={3}>{t(labelKey)}</SectionHeading>
     {#if party}
       <div class="shpd-docdetail__party-body">
         {#if party.name}
@@ -171,25 +170,13 @@
       {@render partyCard('viewer.document.section.customer', content.customer)}
     </section>
 
-    {#if metaGroups.length > 0}
-      <section class="shpd-docdetail__meta">
-        {#each metaGroups as group (group.id)}
-          <div class="shpd-docdetail__meta-group">
-            <h3 class="shpd-docdetail__section-heading">{t(group.labelKey)}</h3>
-            <dl class="shpd-docdetail__fields">
-              {#each group.items as item (item.key)}
-                <dt class="shpd-docdetail__field-label">{t(item.labelKey)}</dt>
-                <dd class="shpd-docdetail__field-value">{item.value}</dd>
-              {/each}
-            </dl>
-          </div>
-        {/each}
-      </section>
-    {/if}
+    <!-- Údaje dokladu — sdílené skupiny vlastností (#137 D29); bez
+         vyplněného údaje nevykreslí nic, ani mezeru. -->
+    <PropertyGroups groups={metaGroups} headingLevel={3} />
 
     {#if rows.length > 0}
       <section class="shpd-docdetail__section">
-        <h3 class="shpd-docdetail__section-heading">{t('viewer.document.section.rows')}</h3>
+        <SectionHeading level={3}>{t('viewer.document.section.rows')}</SectionHeading>
         <table class="shpd-docdetail__rows">
           <thead>
             <tr>
@@ -293,15 +280,8 @@
     container-type: inline-size;
   }
 
-  /* Nadpis sekce, karty strany i skupiny údajů — role heading. base.css
-     dává h3 velikost xl, role se proto nastavuje explicitně. */
-  .shpd-docdetail__section-heading {
-    margin: 0 0 var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-    line-height: 1.4;
-    color: var(--shpd-color-text);
-  }
+  /* Nadpisy sekcí, karet stran i skupin údajů kreslí sdílený SectionHeading,
+     skupiny údajů PropertyGroups (#137 D28, D29) — vlastní CSS tu nemají. */
 
   /* ── Strany ──────────────────────────────────────────────────────────── */
 
@@ -370,33 +350,6 @@
   .shpd-docdetail__party-empty {
     color: var(--shpd-color-text-secondary);
     font-style: italic;
-  }
-
-  /* ── Údaje dokladu ───────────────────────────────────────────────────── */
-
-  .shpd-docdetail__meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--shpd-space-md) var(--shpd-space-lg);
-    align-items: start;
-  }
-
-  /* Popisek–hodnota v mřížce; obojí body, barvou textu — liší se jen
-     umístěním (D15). */
-  .shpd-docdetail__fields {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: var(--shpd-space-xs) var(--shpd-space-md);
-    margin: 0;
-  }
-
-  .shpd-docdetail__field-label,
-  .shpd-docdetail__field-value {
-    margin: 0;
-  }
-
-  .shpd-docdetail__field-value {
-    overflow-wrap: anywhere;
   }
 
   /* ── Řádky a rekapitulace DPH ────────────────────────────────────────── */
@@ -507,14 +460,14 @@
 
   /* ── Úzká šířka (D3) ─────────────────────────────────────────────────── */
 
-  /* Pod 30rem (480 px) šířky kontejneru .shpd-docdetail jdou strany
-     i skupiny údajů pod sebe. Dotaz platí pro potomky kontejneru, ne pro
-     něj sám. Práh vychází ze skutečných šířek: panel vedle seznamu má
-     šířku okna − 693 px, drawer 528 px — 40rem ze zadání stohovalo strany
-     i na běžných šířkách okna. */
+  /* Pod 30rem (480 px) šířky kontejneru .shpd-docdetail jdou strany pod
+     sebe; skupiny údajů si totéž řeší PropertyGroups vlastním kontejnerem
+     se stejným prahem. Dotaz platí pro potomky kontejneru, ne pro něj sám.
+     Práh vychází ze skutečných šířek: panel vedle seznamu má šířku okna
+     − 693 px, drawer 528 px — 40rem ze zadání stohovalo strany i na
+     běžných šířkách okna. */
   @container (max-width: 30rem) {
-    .shpd-docdetail__parties,
-    .shpd-docdetail__meta {
+    .shpd-docdetail__parties {
       grid-template-columns: 1fr;
     }
   }

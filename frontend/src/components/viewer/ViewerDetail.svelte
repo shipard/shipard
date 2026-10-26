@@ -13,6 +13,8 @@
   import Icon from '../ui/Icon.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
+  import PropertyGroups from '../ui/PropertyGroups.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
   import { t } from '../../i18n/index.js';
@@ -294,19 +296,10 @@
 
     {#snippet renderContent(content)}
       {#if content?.type === 'properties'}
-        {#each content.groups ?? [] as group}
-          <div class="shpd-detail__group">
-            <h4 class="shpd-detail__group-title">{group.title}</h4>
-            <dl class="shpd-detail__props">
-              {#each group.items ?? [] as item}
-                <div class="shpd-detail__prop">
-                  <dt class="shpd-detail__prop-label">{item.label}</dt>
-                  <dd class="shpd-detail__prop-value">{item.value}</dd>
-                </div>
-              {/each}
-            </dl>
-          </div>
-        {/each}
+        <!-- Skupiny vlastností sdílenou komponentou (#137 D29): dva sloupce,
+             skupina `wide` přes celou šířku, prázdné skupiny a hodnoty
+             vynechá komponenta. Nadpis skupiny h4 jako dosud. -->
+        <PropertyGroups groups={content.groups} headingLevel={4} />
 
       {:else if content?.type === 'table'}
         <div class="shpd-detail__table-wrap">
@@ -504,13 +497,16 @@
         <DocumentDetail content={content} onAction={onAction} />
 
       {:else if content?.type === 'heading'}
-        <h3 class="shpd-detail__content-heading">{content.text}</h3>
+        <SectionHeading level={3}>{content.text}</SectionHeading>
 
       {:else if content?.type === 'composite'}
         <!-- Composite = seznam bloků, každý blok je libovolný známý content
-             typ. Rekurzivní render přes tentýž snippet. -->
+             typ. Rekurzivní render přes tentýž snippet. Mezeru mezi bloky
+             dává obal bloku (D28), blok `heading` je nadpis bloku pod ním. -->
         {#each content.blocks ?? [] as block}
-          {@render renderContent(block)}
+          <div class="shpd-detail__block" class:shpd-detail__block--heading={block?.type === 'heading'}>
+            {@render renderContent(block)}
+          </div>
         {/each}
       {/if}
     {/snippet}
@@ -533,7 +529,7 @@
              je posílá u libovolné tabulky. -->
         {#if (detail.sentMessages ?? []).length > 0}
           <section class="shpd-detail__sent" data-testid="detail-sent-messages">
-            <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
+            <SectionHeading level={4}>{t('sentMessage.sectionTitle')}</SectionHeading>
             {#each detail.sentMessages as message (message.id)}
               <div class="shpd-detail__sent-message">
                 <button
@@ -911,40 +907,16 @@
     font-size: var(--shpd-font-size-meta);
   }
 
-  /* Properties content */
-  .shpd-detail__group {
-    margin-bottom: var(--shpd-space-lg);
+  /* Bloky composite: sekce od sebe odděluje mezera (D28) — dává ji obal
+     bloku, ne nadpis (SectionHeading horní odsazení nemá). Blok `heading` je
+     nadpis bloku pod ním (tabulka podzakázek, Kontrola deníku), proto ten
+     mezeru nad sebou nemá. Skupiny vlastností kreslí PropertyGroups. */
+  .shpd-detail__block + .shpd-detail__block {
+    margin-top: var(--shpd-space-lg);
   }
 
-  .shpd-detail__group-title {
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    padding-bottom: var(--shpd-space-xs);
-    border-bottom: 1px solid var(--shpd-color-border);
-    margin-bottom: var(--shpd-space-sm);
-  }
-
-  .shpd-detail__props {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--shpd-space-xs) var(--shpd-space-md);
-  }
-
-  .shpd-detail__prop {
-    display: contents;
-  }
-
-  /* Popisek i hodnota body, stejnou barvou — liší se umístěním (D15). */
-  .shpd-detail__prop-label {
-    font-size: var(--shpd-font-size-body);
-    color: var(--shpd-color-text);
-    white-space: nowrap;
-  }
-
-  .shpd-detail__prop-value {
-    font-size: var(--shpd-font-size-body);
-    color: var(--shpd-color-text);
+  .shpd-detail__block--heading + .shpd-detail__block {
+    margin-top: 0;
   }
 
   /* Table content */
@@ -1020,20 +992,6 @@
 
   .shpd-detail__tr--muted > .shpd-detail__td {
     color: var(--shpd-color-text-secondary);
-  }
-
-  /* Heading blok (composite) - vizualne sjednoceno s group-title */
-  .shpd-detail__content-heading {
-    margin: var(--shpd-space-lg) 0 var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    padding-bottom: var(--shpd-space-xs);
-    border-bottom: 1px solid var(--shpd-color-border);
-  }
-
-  .shpd-detail__content-heading:first-child {
-    margin-top: 0;
   }
 
   /* HTML content */
