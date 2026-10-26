@@ -8,7 +8,10 @@ from invoicegen.checks import (
     iban_check_digits, iban_from_account, iban_matches_account, iban_valid, ico_valid,
     phone_canonical, phone_parts, phone_unassigned, validate_identities, vat_id_format_valid,
 )
-from tests.fixtures import DEMO_RESERVED, IDENTITIES
+from invoicegen.jsonc import load_jsonc
+from tests.fixtures import DEMO_RESERVED, IDENTITIES, REPO_ROOT
+
+VALUE_CASES = REPO_ROOT / "tests" / "Fixtures" / "World" / "value-cases.jsonc"
 
 
 class ChecksumTest(unittest.TestCase):
@@ -128,6 +131,64 @@ class ValidateIdentitiesTest(unittest.TestCase):
 
     def test_verified_at(self) -> None:
         self.assertTrue(any("verifiedAt" in p for p in validate_identities(self.mutated("verifiedAt", "včera"))))
+
+
+class ValueCasesFixtureTest(unittest.TestCase):
+    """Sdílený fixture pravidel hodnot (`tests/Fixtures/World/value-cases.jsonc`,
+    #118 D6) — tytéž případy čte PHPUnit nad `world.validations`. Python ověří
+    jen kontroly, které `checks.py` umí; položka s `"python": false` je mimo."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.cases = load_jsonc(VALUE_CASES)
+
+    @staticmethod
+    def _python(case: dict) -> bool:
+        return case.get("python", True) is not False
+
+    def test_validate(self) -> None:
+        checks = {
+            "companyId": lambda c: ico_valid(c["value"]) if c.get("country") in ("cz", "sk") else None,
+            "accountNumber": lambda c: account_valid(c["value"]) if c.get("country") in (None, "cz", "sk") else None,
+            "iban": lambda c: iban_valid(c["value"]),
+            "bic": lambda c: bic_valid(c["value"]),
+            "vatId": lambda c: vat_id_format_valid(c["value"])
+            and (c["value"][:2] != "DE" or de_vat_valid(c["value"])),
+        }
+        seen = 0
+        for case in self.cases["validate"]:
+            check = checks.get(case["kind"])
+            if check is None or not self._python(case):
+                continue
+            with self.subTest(case=case):
+                result = check(case)
+                if result is None:
+                    continue
+                self.assertEqual(case["valid"], result)
+                seen += 1
+        self.assertGreater(seen, 20)
+
+    def test_repair_cz_from_account(self) -> None:
+        seen = 0
+        for case in self.cases["repair"]:
+            if not self._python(case) or case["country"] != "cz":
+                continue
+            with self.subTest(case=case):
+                out = case["out"]
+                iban_ok, account_ok = iban_valid(case["iban"]), account_valid(case["accountNumber"])
+                if out is None:
+                    self.assertEqual(iban_ok, account_ok, "bez opravy jen když jsou oba platné nebo oba neplatné")
+                elif out["basis"] == "accountNumber":
+                    self.assertFalse(iban_ok)
+                    self.assertTrue(account_ok)
+                    self.assertEqual(out["iban"], iban_from_account(case["accountNumber"]))
+                    self.assertTrue(iban_valid(out["iban"]))
+                else:
+                    self.assertTrue(iban_ok)
+                    self.assertFalse(account_ok)
+                    self.assertTrue(iban_matches_account(case["iban"], out["accountNumber"]))
+                seen += 1
+        self.assertGreaterEqual(seen, 5)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@
         "core.units",
         "world.vat",
         "world.trade",
+        "world.validations",
         "core.mail",
         "core.attachments"
     ],

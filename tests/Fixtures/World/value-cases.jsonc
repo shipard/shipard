@@ -1,0 +1,153 @@
+// Sdílené případy pravidel hodnot (`world.validations`, #118 D6, D17).
+// Čte je PHPUnit (tests/Unit/Module/World/Validations/ValueCasesFixtureTest)
+// i Python generátoru korpusu (tools/invoice-generator/tests/test_checks.py).
+//
+//   normalize: {kind, country?, in, out}            — kind = ValueRules::*, country null = bez země
+//   validate:  {kind, country?, value, valid}        — nad už normalizovanou hodnotou
+//   repair:    {country, iban, accountNumber, out}   — oprava z redundance (D4):
+//              out = {iban | accountNumber, basis} dopočtená hodnota, null = bez opravy
+//
+// `"python": false` = Python kontrolu nemá (PSČ, DE účet, sk převod účtu, mod 11
+// uvnitř IBAN) — PHP ji ověří vždy. Identity jsou smyšlené (korpus) nebo z testů
+// generátoru; IBAN „0701“ = korpusový doklad, který model četl s vloženou nulou.
+{
+    "normalize": [
+        {"kind": "country", "in": " CZ", "out": "cz"},
+
+        {"kind": "zip", "country": "cz", "in": "760 01", "out": "76001"},
+        {"kind": "zip", "country": "sk", "in": "811 01", "out": "81101"},
+        {"kind": "zip", "country": "de", "in": " 10115 ", "out": "10115"},
+        {"kind": "zip", "country": "us", "in": " 94105 ", "out": "94105"},
+        {"kind": "zip", "country": "us", "in": "94105-1234", "out": "94105-1234"},
+        {"kind": "zip", "country": null, "in": "760 01", "out": "760 01"},
+
+        {"kind": "companyId", "country": "cz", "in": "430 75 894", "out": "43075894"},
+        {"kind": "companyId", "country": "cz", "in": "6947", "out": "00006947"},
+        {"kind": "companyId", "country": "cz", "in": "52654150", "out": "52654150"},
+        {"kind": "companyId", "country": "sk", "in": "36339008", "out": "36339008"},
+        {"kind": "companyId", "country": "de", "in": " HRB 12345 ", "out": "HRB 12345"},
+        {"kind": "companyId", "country": null, "in": " 6947 ", "out": "6947"},
+
+        {"kind": "vatId", "country": "cz", "in": "cz 4307 5894", "out": "CZ43075894"},
+        {"kind": "vatId", "country": "cz", "in": "43075894", "out": "CZ43075894"},
+        {"kind": "vatId", "country": "cz", "in": "CZ-430-75-894", "out": "CZ43075894"},
+        {"kind": "vatId", "country": "cz", "in": "4307589", "out": "4307589"},
+        {"kind": "vatId", "country": "sk", "in": "2020000001", "out": "2020000001"},
+        {"kind": "vatId", "country": "de", "in": "DE 136.695.976", "out": "DE136695976"},
+        {"kind": "vatId", "country": null, "in": "atu 12345678", "out": "ATU12345678"},
+        {"kind": "vatId", "country": null, "in": "43075894", "out": "43075894"},
+
+        {"kind": "taxId", "country": "cz", "in": "cz 4307 5894", "out": "CZ43075894"},
+        {"kind": "taxId", "country": "cz", "in": "43075894", "out": "CZ43075894"},
+        {"kind": "taxId", "country": "de", "in": " 12/345/67890 ", "out": "12/345/67890"},
+
+        {"kind": "phone", "country": "cz", "in": "+420 577 123 456", "out": "+420577123456"},
+        {"kind": "phone", "country": "cz", "in": "577 123 456", "out": "+420577123456"},
+        {"kind": "phone", "country": "cz", "in": "000 201 304", "out": "+420000201304"},
+        {"kind": "phone", "country": "cz", "in": "00420 577 123 456", "out": "+420577123456"},
+        {"kind": "phone", "country": "cz", "in": "420 577 123 456", "out": "+420577123456"},
+        {"kind": "phone", "country": "cz", "in": "+420-577-123-456", "out": "+420577123456"},
+        {"kind": "phone", "country": "sk", "in": "0905 123 456", "out": "+421905123456"},
+        {"kind": "phone", "country": "sk", "in": "+421 905 123 456", "out": "+421905123456"},
+        {"kind": "phone", "country": "de", "in": "+49 (0)30 123456", "out": "+4930123456"},
+        {"kind": "phone", "country": "de", "in": "030 / 12 34 56", "out": "+4930123456"},
+        {"kind": "phone", "country": "us", "in": "(415) 555-0199", "out": "4155550199"},
+        {"kind": "phone", "country": null, "in": "+1 415 555 0199", "out": "+14155550199"},
+        {"kind": "phone", "country": null, "in": "000-201-304", "out": "000201304"},
+        {"kind": "phone", "country": null, "in": "0049 30 123456", "out": "+4930123456"},
+
+        {"kind": "email", "in": " Odbyt@Drevomat-Hana.example ", "out": "odbyt@drevomat-hana.example"},
+        {"kind": "web", "in": "https://WWW.Drevomat-hana.example/", "out": "www.drevomat-hana.example"},
+        {"kind": "web", "in": "http://x.example/shop/", "out": "x.example/shop"},
+
+        {"kind": "iban", "in": "cz65 0800 0000 1920 0014 5399", "out": "CZ6508000000192000145399"},
+        {"kind": "bic", "in": " kombczpp ", "out": "KOMBCZPP"},
+
+        {"kind": "accountNumber", "in": "000019-0002000145399/0800", "out": "19-2000145399/0800"},
+        {"kind": "accountNumber", "in": "0101968643 / 0100", "out": "101968643/0100"},
+        {"kind": "accountNumber", "in": "0-123/0100", "out": "123/0100"},
+        {"kind": "accountNumber", "in": "12 34 56", "out": "123456"},
+
+        {"kind": "symbol", "in": " 03 08 ", "out": "0308"},
+        {"kind": "reference", "in": " inv-2026 -0388 ", "out": "INV-2026-0388"},
+    ],
+
+    "validate": [
+        {"kind": "companyId", "country": "cz", "value": "52654150", "valid": true},
+        {"kind": "companyId", "country": "cz", "value": "07123451", "valid": true},
+        {"kind": "companyId", "country": "cz", "value": "00006947", "valid": true},
+        {"kind": "companyId", "country": "cz", "value": "52654151", "valid": false},
+        {"kind": "companyId", "country": "cz", "value": "12345678", "valid": false},
+        {"kind": "companyId", "country": "cz", "value": "5265415", "valid": false},
+        {"kind": "companyId", "country": "sk", "value": "36339008", "valid": true},
+        {"kind": "companyId", "country": "sk", "value": "52398417", "valid": false},
+        {"kind": "companyId", "country": "de", "value": "HRB 12345", "valid": true, "python": false},
+        {"kind": "companyId", "country": null, "value": "5265415", "valid": true, "python": false},
+
+        {"kind": "zip", "country": "cz", "value": "76001", "valid": true, "python": false},
+        {"kind": "zip", "country": "cz", "value": "760 01", "valid": false, "python": false},
+        {"kind": "zip", "country": "sk", "value": "8110", "valid": false, "python": false},
+        {"kind": "zip", "country": "de", "value": "10115", "valid": true, "python": false},
+        {"kind": "zip", "country": "us", "value": "94105-1234", "valid": true, "python": false},
+
+        {"kind": "vatId", "value": "CZ52654150", "valid": true},
+        {"kind": "vatId", "value": "CZ5265415012", "valid": true},
+        {"kind": "vatId", "value": "CZ526541", "valid": false},
+        {"kind": "vatId", "value": "SK2020000001", "valid": true},
+        {"kind": "vatId", "value": "SK202000000", "valid": false},
+        {"kind": "vatId", "value": "DE136695976", "valid": true},
+        {"kind": "vatId", "value": "DE136695975", "valid": false},
+        {"kind": "vatId", "value": "DE13669597", "valid": false},
+        {"kind": "vatId", "value": "ATU12345678", "valid": true},
+        {"kind": "vatId", "value": "cz52654150", "valid": false},
+        {"kind": "vatId", "value": "CZ 52654150", "valid": false},
+        {"kind": "vatId", "value": "52654150", "valid": false},
+
+        {"kind": "accountNumber", "value": "2308417557/2010", "valid": true},
+        {"kind": "accountNumber", "value": "19-2000145399/0800", "valid": true},
+        {"kind": "accountNumber", "value": "8360405366/0600", "valid": true},
+        {"kind": "accountNumber", "value": "2308417558/2010", "valid": false},
+        {"kind": "accountNumber", "value": "1234567890/0100", "valid": false},
+        {"kind": "accountNumber", "country": "cz", "value": "2308417557", "valid": false},
+        {"kind": "accountNumber", "country": null, "value": "2308417557", "valid": true, "python": false},
+        {"kind": "accountNumber", "country": "de", "value": "532013000", "valid": true, "python": false},
+        {"kind": "accountNumber", "country": "cz", "value": "532013000", "valid": false, "python": false},
+
+        {"kind": "iban", "value": "CZ8520100000002308417557", "valid": true},
+        {"kind": "iban", "value": "CZ0606000000008360405366", "valid": true},
+        {"kind": "iban", "value": "SK2411000000002600000003", "valid": true},
+        {"kind": "iban", "value": "DE72100700000532013000", "valid": true},
+        {"kind": "iban", "value": "CZ8520100000002308417558", "valid": false},
+        {"kind": "iban", "value": "CZ0606000000000836040536", "valid": false},
+        {"kind": "iban", "value": "CZ06060000000083604053660", "valid": false},
+        {"kind": "iban", "value": "CZ6508000000001234567890", "valid": false},
+        {"kind": "iban", "value": "CZ4701000000001234567890", "valid": false, "python": false},
+        {"kind": "iban", "value": "CZ65 0800 0000 1920 0014 5399", "valid": false},
+
+        {"kind": "bic", "value": "GIBACZPX", "valid": true},
+        {"kind": "bic", "value": "TESTDEBBXXX", "valid": true},
+        {"kind": "bic", "value": "GIBACZ", "valid": false},
+    ],
+
+    "repair": [
+        // IBAN 0701 s vloženou nulou (model), číslo účtu přečtené správně → IBAN z účtu
+        {"country": "cz", "iban": "CZ0606000000000836040536", "accountNumber": "8360405366/0600",
+         "out": {"iban": "CZ0606000000008360405366", "basis": "accountNumber"}},
+        // IBAN 0701 s nulou navíc (chybná délka i kontrolní číslice)
+        {"country": "cz", "iban": "CZ06060000000083604053660", "accountNumber": "8360405366/0600",
+         "out": {"iban": "CZ0606000000008360405366", "basis": "accountNumber"}},
+        // IBAN platný, číslo účtu s překlepem → účet z IBAN
+        {"country": "cz", "iban": "CZ8520100000002308417557", "accountNumber": "2308417558/2010",
+         "out": {"accountNumber": "2308417557/2010", "basis": "iban"}},
+        {"country": "sk", "iban": "SK2411000000002600000003", "accountNumber": "2600000001/1100",
+         "out": {"accountNumber": "2600000003/1100", "basis": "iban"}, "python": false},
+        // oba platné, nesedí na sebe → bez opravy (nález iban_account_mismatch)
+        {"country": "cz", "iban": "CZ8520100000002308417557", "accountNumber": "19-2000145399/0800", "out": null},
+        // oba neplatné → bez opravy
+        {"country": "cz", "iban": "CZ6508000000001234567890", "accountNumber": "1234567890/0100", "out": null},
+        // IBAN s platným mod 97, ale neplatným číslem uvnitř; účet neplatný → bez opravy (pojistka D4)
+        {"country": "cz", "iban": "CZ4701000000001234567890", "accountNumber": "1234567890/0100", "out": null, "python": false},
+        // oba platné a sedí → bez opravy
+        {"country": "cz", "iban": "CZ0606000000008360405366", "accountNumber": "8360405366/0600", "out": null},
+    ],
+}

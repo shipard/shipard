@@ -1,0 +1,14 @@
+{
+    "id": "world.validations",
+    "name": "Value rules per country",
+    "name:cs": "Validace a normalizace údajů per stát",
+    "name:en": "Value rules per country",
+    "description": "Normalization and validation of identifiers and contact values per country — company ID, VAT ID, ZIP, domestic bank account, IBAN, BIC, phone, e-mail, web (#118)",
+    "description:cs": "Normalizace a validace identifikátorů a kontaktních údajů per stát — IČO, DIČ, PSČ, tuzemské číslo účtu, IBAN, BIC, telefon, e-mail, web (#118)",
+    "description:en": "Normalization and validation of identifiers and contact values per country — company ID, VAT ID, ZIP, domestic bank account, IBAN, BIC, phone, e-mail, web (#118)",
+
+    // Čistá knihovna: bez tabulek, bez cfgItem, bez ConfigRuntime — pravidla
+    // jsou v PHP (#118 D11). Předvolbu každé třídy země hlídá test proti
+    // `world.base.countries` (phonePrefixes).
+    "dependencies": ["world.base"],
+}
