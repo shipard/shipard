@@ -9,6 +9,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class TestableValuesNormalizeCommand extends ValuesNormalizeCommand
@@ -116,10 +117,14 @@ class ValuesNormalizeCommandTest extends IntegrationTestCase
     }
 
     /** @return array{0: int, 1: array<string, mixed>} exit kód a JSON report */
-    private function runCommand(bool $dryRun): array
+    private function runCommand(bool $dryRun, ?string $only = null, bool $verbose = false): array
     {
         $tester = new CommandTester(new TestableValuesNormalizeCommand($this->dsConfig, $this->db, $this->realDsPath));
-        $exit = $tester->execute(['--json' => true, '--dry-run' => $dryRun]);
+        $input = ['--json' => true, '--dry-run' => $dryRun];
+        if ($only !== null) {
+            $input['--only'] = $only;
+        }
+        $exit = $tester->execute($input, $verbose ? ['verbosity' => OutputInterface::VERBOSITY_VERBOSE] : []);
         return [$exit, (array) json_decode($tester->getDisplay(), true)];
     }
 
@@ -142,6 +147,36 @@ class ValuesNormalizeCommandTest extends IntegrationTestCase
         $this->assertSame('577 123 456', $this->row('base_persons_persons', $ids['person'])['phone'], 'dry-run nic nezapsal');
         $this->assertSame(' 760 01 ', $this->row('base_persons_addresses', $ids['address'])['zip']);
         $this->assertSame('CZ65 0800 0000 1920 0014 5399', $this->row('base_persons_bank_accounts', $ids['account'])['account_number']);
+    }
+
+    public function testOnlyPhoneLeavesOtherColumnsAndVerboseNamesThePerson(): void
+    {
+        $ids = $this->seed();
+        [$exit, $report] = $this->runCommand(true, 'phone', true);
+        $this->assertSame(Command::SUCCESS, $exit);
+        $this->assertSame(['phone'], $report['only']);
+        $this->assertSame('not_selected', $report['tables']['base_persons_bank_accounts']['skipped']);
+        $change = null;
+        foreach ($report['changes'] as $entry) {
+            if ($entry['table'] === 'base_persons_persons' && $entry['id'] === $ids['person']) {
+                $change = $entry;
+            }
+        }
+        $this->assertNotNull($change, 'podrobný výpis nese změnu telefonu osoby');
+        $this->assertSame(['phone' => ['from' => '577 123 456', 'to' => '+420577123456']], $change['columns']);
+        $this->assertSame(self::PREFIX . ' s.r.o.', $change['person']['name']);
+
+        [$exit, $report] = $this->runCommand(false, 'phone');
+        $this->assertSame(Command::SUCCESS, $exit);
+        $this->assertArrayNotHasKey('changes', $report, 'bez -v žádné hodnoty');
+        $person = $this->row('base_persons_persons', $ids['person']);
+        $this->assertSame('+420577123456', $person['phone']);
+        $this->assertSame('6947', $person['company_id'], 'IČO mimo --only zůstává');
+        $this->assertSame('CZ65 0800 0000 1920 0014 5399', $this->row('base_persons_bank_accounts', $ids['account'])['account_number'], 'účet mimo --only zůstává');
+        $this->assertSame('+420604111222', $this->row('base_persons_contacts', $ids['contact'])['phone']);
+
+        [$exit, $second] = $this->runCommand(false, 'phone');
+        $this->assertSame(0, $second['totals']['changed'], 'druhý běh téhož druhu nic nezmění');
     }
 
     public function testRunNormalizesAndSecondRunChangesNothing(): void
