@@ -62,7 +62,8 @@
             "name:en": "Cash desks",
             "icon": "cash-register",
             "table": "economy_codebooks_cash_desks",
-            "class": "Shipard\\Module\\Economy\\Codebooks\\CashDesksViewer"
+            "class": "Shipard\\Module\\Economy\\Codebooks\\CashDesksViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         },
         {
             "id": "economy.codebooks.paymentTerminals",
@@ -71,7 +72,8 @@
             "name:en": "Payment terminals and gateways",
             "icon": "credit-card",
             "table": "economy_codebooks_payment_terminals",
-            "class": "Shipard\\Module\\Economy\\Codebooks\\PaymentTerminalsViewer"
+            "class": "Shipard\\Module\\Economy\\Codebooks\\PaymentTerminalsViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         },
         {
             "id": "economy.codebooks.transports",
@@ -80,7 +82,8 @@
             "name:en": "Transports",
             "icon": "truck",
             "table": "economy_codebooks_transports",
-            "class": "Shipard\\Module\\Economy\\Codebooks\\TransportsViewer"
+            "class": "Shipard\\Module\\Economy\\Codebooks\\TransportsViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         },
         {
             "id": "economy.codebooks.bankAccounts",
@@ -89,7 +92,8 @@
             "name:en": "Bank accounts",
             "icon": "bank",
             "table": "economy_codebooks_bank_accounts",
-            "class": "Shipard\\Module\\Economy\\Codebooks\\BankAccountsViewer"
+            "class": "Shipard\\Module\\Economy\\Codebooks\\BankAccountsViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         },
         {
             "id": "economy.codebooks.warehouses",
@@ -98,7 +102,8 @@
             "name:en": "Warehouses",
             "icon": "warehouse",
             "table": "economy_codebooks_warehouses",
-            "class": "Shipard\\Module\\Economy\\Codebooks\\WarehousesViewer"
+            "class": "Shipard\\Module\\Economy\\Codebooks\\WarehousesViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         },
         {
             "id": "economy.codebooks.costCenters",
@@ -107,7 +112,8 @@
             "name:en": "Cost centers",
             "icon": "chart-pie",
             "table": "economy_codebooks_cost_centers",
-            "class": "Shipard\\Module\\Economy\\Codebooks\\CostCentersViewer"
+            "class": "Shipard\\Module\\Economy\\Codebooks\\CostCentersViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         }
     ],
 

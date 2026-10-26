@@ -118,20 +118,19 @@ class VatRegistrationsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT r.*, p.`full_name` AS `tax_office_person_name`'
             . ' FROM `' . $this->table . '` r'
             . ' LEFT JOIN `base_persons_persons` p ON p.`id` = r.`tax_office_person`'
             . ' WHERE r.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $tabs = [];
 
         $tabs[] = [
@@ -158,7 +157,7 @@ class VatRegistrationsViewer extends TableViewer
         // Instance daňových tvrzení registrace zobrazuje viewer „Daňová
         // tvrzení" modulu economy.vat (filtr registrace) — codebooks na něm nezávisí.
 
-        return ['tabs' => $tabs];
+        return $tabs;
     }
 
     private function buildOverviewContent(array $record): array

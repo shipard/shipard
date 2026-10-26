@@ -129,9 +129,9 @@ class PaymentTerminalsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT t.*, cd.`code` AS cash_desk_code, cd.`name` AS cash_desk_name,'
             . ' p.`full_name` AS partner_name'
             . ' FROM `' . $this->table . '` t'
@@ -140,20 +140,15 @@ class PaymentTerminalsViewer extends TableViewer
             . ' WHERE t.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
-        return [
-            'tabs' => [
-                [
-                    'id'      => 'overview',
-                    'label'   => $this->defaultOverviewLabel(),
-                    'content' => $this->buildOverviewContent($record),
-                ],
-            ],
-        ];
+    protected function detailTabs(array $record): array
+    {
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => $this->buildOverviewContent($record),
+        ]];
     }
 
     private function buildOverviewContent(array $record): array

@@ -139,13 +139,10 @@ class ReportPeriodsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /** Přehled: vlastnosti tvrzení, zůstatky DPH po podání a tabulka podání. */
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+        $recordId = (int) $record['id'];
         $typeLabels = $this->resolveTypeLabels();
         $type = (string) ($record['report_type'] ?? '');
         $registrations = $this->registrationNames();
@@ -186,18 +183,28 @@ class ReportPeriodsViewer extends TableViewer
             $content[] = $this->filingsTable($filings);
         }
 
-        $detail = ['tabs' => [[
+        return [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
             'content' => $content,
-        ]]];
+        ]];
+    }
 
-        // „Sestavit podání" otevře formulář podání s předvyplněnou
-        // instancí; povolené druhy dopočítá formulář z typu tvrzení.
-        // Sestavit lze i nad zamčenou instancí — snapshot je nad neměnnými
-        // daty (D25).
+    /**
+     * Akce instance: „Sestavit podání" otevře formulář podání
+     * s předvyplněnou instancí (povolené druhy dopočítá formulář z typu
+     * tvrzení; sestavit lze i nad zamčenou instancí — snapshot je nad
+     * neměnnými daty, D25), zámek instance a odkaz na podání.
+     */
+    protected function detailActions(array $record): array
+    {
+        $recordId = (int) $record['id'];
+        $locked   = !empty($record['locked']);
+        $filings  = $this->filings($recordId);
+        $actions  = [];
+
         if ((int) ($record['docState'] ?? 0) !== 90) {
-            $detail['actions'] = [[
+            $actions[] = [
                 'id'      => 'composeFiling',
                 'label'   => 'Sestavit podání',
                 'variant' => 'primary',
@@ -206,15 +213,15 @@ class ReportPeriodsViewer extends TableViewer
                     'table'  => 'economy_vat_filings',
                     'preset' => ['report_period' => $recordId],
                 ],
-            ]];
+            ];
             // Zámek instance (#55 D25): po podání „jeden klik"; odemknutí je
             // vědomý krok před dodatečným podáním, proto potvrzení.
-            $detail['actions'][] = $locked
+            $actions[] = $locked
                 ? self::unlockAction($recordId)
                 : self::lockAction($recordId, $this->hasFiledFiling($filings) ? 'primary' : 'secondary');
         }
         if ($filings !== []) {
-            $detail['actions'][] = [
+            $actions[] = [
                 'id'       => 'openFilings',
                 'label'    => 'Podání DPH',
                 'variant'  => 'secondary',
@@ -224,7 +231,7 @@ class ReportPeriodsViewer extends TableViewer
             ];
         }
 
-        return $detail;
+        return $actions;
     }
 
     /**

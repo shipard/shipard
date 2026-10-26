@@ -52,21 +52,10 @@ class DetailContractTest extends TestCase
         'economy.bank.transactions',
         'economy.bank.statements',
         // economy.codebooks
-        'economy.codebooks.fiscalYears',
-        'economy.codebooks.vatRegistrations',
-        'economy.codebooks.cashDesks',
-        'economy.codebooks.paymentTerminals',
-        'economy.codebooks.transports',
-        'economy.codebooks.bankAccounts',
-        'economy.codebooks.warehouses',
-        'economy.codebooks.costCenters',
         // economy.exchangeRates
         'economy.exchangeRates.lists',
         // economy.items
         // economy.vat
-        'economy.vat.reportPeriods',
-        'economy.vat.filings',
-        'economy.vat.deductionCoefficients',
         // hosting.core
         'hosting.core.servers',
         'hosting.core.dataSources',

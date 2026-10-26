@@ -116,26 +116,13 @@ class CashDesksViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow(
-            'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
-            $recordId,
-        );
-
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
-        return [
-            'tabs' => [
-                [
-                    'id'      => 'overview',
-                    'label'   => $this->defaultOverviewLabel(),
-                    'content' => $this->buildOverviewContent($record),
-                ],
-            ],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => $this->buildOverviewContent($record),
+        ]];
     }
 
     private function buildOverviewContent(array $record): array
