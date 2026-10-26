@@ -304,15 +304,18 @@ canonicalu:
 - liší se od konvence datových sad (`docs/datasets.md` — tam se `null`
   vynechává): očekávání **není** soubor sady.
 
-### Význam sporných polí (#103 D109–D112)
+### Význam sporných polí (#103 D109–D112, D115)
 
 Jediné znění významu polí, u kterých se model a očekávání rozcházely
-(evaluace 2026-10-25). Prompt analýzy pošty (`tasks/prompt-field-rules.md`)
-na něj odkazuje, korpus ho kóduje v datech (`unprinted`, § 4) a generátoru:
+(evaluace 2026-10-25). Prompt analýzy pošty (`tasks/prompt-field-rules.md`,
+`tasks/eval-final-definitions.md`) na něj odkazuje, korpus ho kóduje
+v datech (`unprinted`, § 4), identitách (§ 3) a generátoru:
 
 | Pole | Význam |
 |------|--------|
-| `notes.onDocument` | Volný text poznámky z dokladu — dodací podmínky, poděkování, pokyn k platbě. Zákonné doložky k DPH (osvobozené dodání, přenesení daňové povinnosti, „Nejsem plátce DPH“) sem nepatří ani samostatně, ani připojené k poznámce — plynou z polí `vat`. Doklad bez jiné poznámky má `null` (D109). |
+| `notes.onDocument` | Volný text poznámky z dokladu — dodací podmínky, poděkování, pokyn k platbě. Zákonné doložky k DPH (osvobozené dodání, přenesení daňové povinnosti, „Nejsem plátce DPH“) sem nepatří ani samostatně, ani připojené k poznámce — plynou z polí `vat`. Doklad bez jiné poznámky má `null` (D109). V evaluaci AI je uzel **informativní** (D114, § 18): porovnává se a vykazuje zvlášť, do shody polí ani čistých dokladů nejde. |
+| `supplier.taxId` / `customer.taxId` | Národní daňové číslo. U českého subjektu je DIČ totéž co VAT ID — `taxId` = `vatId`, i když doklad tiskne jen „VAT ID: CZ…“. U zahraničního subjektu jen tehdy, když doklad národní daňové číslo uvádí (Steuernummer apod.); jinak `null`, `vatId` zůstává (D115). Hlídá kontrola identit v buildu (`checks.py`: cz `taxId` = `vatId`, jinde `null` nebo různé od `vatId`) a čtečka ISDOC to mapuje stejně (`docs/einvoice.md` § 8). |
+
 | `payment.paymentReference` | Platební reference, kterou doklad uvádí: variabilní symbol, nebo pole „Reference“ / „Payment reference“ / „Verwendungszweck“. Když doklad výslovně žádá uvést číslo faktury s platbou, je referencí číslo dokladu. Jinak `null` — číslo faktury se samo od sebe nedoplňuje (D110; v datech `unprinted.paymentReference`). |
 | `dates.taxPointDate` | Jen datum uskutečnění zdanitelného plnění uvedené na dokladu („DUZP“, „Datum zdan. plnění“, „Date of supply“, „Tax point“, „Leistungsdatum“). Neodvozuje se z data vystavení, platby ani z textu; doklad od neplátce DPH DUZP nemá. Účtenka: DUZP = datum prodeje (D111). |
 | `dates.periodFrom` / `periodTo` | Období plnění z hlavičky dokladu. Nemá-li ho hlavička a všechny řádky nesou totéž období (v textu nebo popisu řádku), je to období dokladu. Řádky s různými obdobími nebo bez období → `null` (D112; v datech `unprinted.period`). |
@@ -347,6 +350,15 @@ Top-level `nullableNodes` = jediné uzly, které smí být `null` jako celek
 (`customer` u účtenky). Ostatní objekty projekce jsou vždy přítomné
 s `null` v listech; pole bez prvků (`vatRecap` u dokladu bez DPH,
 `rowExceptions`) je prázdné pole — schéma formátu `null` u polí nedovolí.
+
+Top-level `informativeNodes` (#103 D114) = uzly (i s potomky), které
+evaluace AI porovnává a vykazuje zvlášť (`fields.informative.*`, § 18),
+ale nezapočítává do shody polí (`fields.all.*`) ani do dokladů bez
+odchylky — volný text bez účetního dopadu; dnes jen `notes.onDocument`.
+Očekávání i strážce je kontrolují jako každý jiný uzel, značka platí jen
+pro metriky evaluace (`metricsVersion` 2). `Projection::fromArray()`
+odmítne cestu, která není uzlem projekce; generátor značku nečte.
+
 
 Pole projekce: top-level `format`, `formatVersion`, `docType`, `docNumber`,
 `selfParty`, `supplier`, `customer`, `dates` {`issueDate`, `dueDate`,
@@ -435,7 +447,8 @@ jméno ze `shapes`.
 | ulice a číslo | kde číslo následuje ulici (`cz`, `de`): `street` bez čísla, `houseNumber` jak na dokladu včetně lomítka; kde číslo ulici předchází (`us`): celý řádek v `street`, `houseNumber` `null` | `Pilařská` + `1204/7`; `500 Market Street, Suite 200` + `null` | `text`, `houseNumber` (byCountry) |
 | obec | bez PSČ a bez zkratky státu (`us`) | `Zlín`, `San Francisco` | `text` |
 | IČO | `cz`, `sk`: 8 číslic včetně vedoucích nul; jinde jak na dokladu | `05123456` | `companyId` (byCountry) |
-| DIČ / VAT ID | velkými, s prefixem země, bez mezer; u EU `taxId` = `vatId` | `CZ52654150`, `DE123456789` | `vatId` |
+| DIČ / VAT ID | velkými, s prefixem země, bez mezer; `taxId` = národní daňové číslo — cz `taxId` = `vatId`, zahraniční jen z dokladu, jinak `null` (D115, § 8) | `CZ52654150`, `DE123456789` | `vatId` |
+
 | číslo účtu (`cz`) | `[předčíslí-]číslo/kód banky`, bez vedoucích nul, bez mezer | `19-2000145399/0800` | `accountNumber` |
 | IBAN | velkými, bez mezer | `CZ6508000000192000145399` | `iban` |
 | BIC | velkými | `GIBACZPX` | `bic` |
@@ -458,8 +471,9 @@ co má zachytit normalizace (#118).
 ## 12. Build
 
 ```bash
-python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error]
+python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error] [--refresh-approved]
 ```
+
 
 1. Validace identit (součty, disjunkce s demem), datových souborů
    (§ 4 — vč. bloku `unprinted`: období „jen v řádcích“ musí nést text
@@ -501,7 +515,13 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
    sad, `--fidelity=warn` jen vypíše (diagnostika při úpravě šablon).
 8. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
    všech datových souborů, i s `--only`; `--no-datasets` přeskočí) a řádek
-   per sada s počtem zpráv, kurzovních lístků a vynechaných buněk. Zpráva
+   per sada s počtem zpráv, kurzovních lístků a vynechaných buněk. Před
+   smazáním `expected/` build porovná existující kopii snímku hlavní
+   knihy s `profiles/<profil>/approved/general-ledger.json` — rozdíl je
+   chyba s oběma cestami (schválený snímek se změnil bez přestavění sady,
+   #103 D116); nový schválený snímek převezme jen `--refresh-approved`,
+   chybějící kopie se vytvoří bez chyby. Zpráva
+
    buňky podoby `pdfIsdoc` dostane `.isdoc` z `out/<profil>/` jako druhou
    přílohu (#103 D75; řeší O1 #119) — build kontroluje, že `.isdoc`
    existuje právě u podoby `pdfIsdoc`.
@@ -776,8 +796,10 @@ zpráva s ISDOC je už Analyzovaná, druhá příloha jen leží u zprávy (D75)
   generátor a nový build; strážce `CorpusExpectedTest::testDatasetsMatchCorpus`
   hlídá soulad s korpusem (vč. ISDOC jako druhé přílohy právě u podoby
   `pdfIsdoc`), `DatasetExpectationsTest` přepočítává `vat.json`
-  a `costs.json` do Kč vlastním resolverem nad lístky korpusu a hlídá
-  `exchange-rates.json`.
+  a `costs.json` do Kč vlastním resolverem nad lístky korpusu, hlídá
+  `exchange-rates.json` a bajtovou shodu kopií schválených souborů
+  (`expected/general-ledger.json` = `profiles/<profil>/approved/`, D116).
+
 - **Lístky se needitují ručně** — `exchange-rates/` plní jen `--fetch-rates`
   (skutečné lístky ČNB); změna účetního data dokladu v cizí měně = nový
   `--fetch-rates`, plný build staré lístky uklidí.
@@ -846,9 +868,13 @@ jak ho vede Shipard; nález G 2026-10-20); každá skupina se přepočítá
 a zdaní zvlášť, jako položka rekapitulace per kód.
 
 Strážce `tests/Unit/Corpus/DatasetExpectationsTest.php`: projekce v sadě
-= korpus, právě jeden záznam per zpráva, mapování pokrývá všechny varianty
-a jen řádky formuláře DP3, částky záznamů přepočítané z `expected/<profil>/`
+= korpus, kopie schválených souborů = `profiles/<profil>/approved/*`
+bajtově (a žádná kopie snímku bez schváleného zdroje; #103 D116 — po
+1489cc35 zůstaly kopie dva dny zastaralé a build je tiše srovnal), právě
+jeden záznam per zpráva, mapování pokrývá všechny varianty a jen řádky
+formuláře DP3, částky záznamů přepočítané z `expected/<profil>/`
 nezávisle na generátoru.
+
 
 ### Preflight a apply
 
@@ -946,8 +972,11 @@ třetí země papírové přenesení nemají (nález E). Nálezy A–H z ověře
 Postup: `dataset-verify … --no-apply --write-ledger-snapshot=<soubor>`
 vypíše obraty po účtech a skončí přeskočením; člověk je odsouhlasí,
 soubor commitne do `tests/corpus/cz/profiles/<profil>/approved/general-ledger.json`,
-přestaví sady (`build.py`) a další běh dá kontrolu 6 `ok`. Změna
-účtování = nový snímek se schválením, nikdy úprava snímku podle Shipardu.
+přestaví sady (`build.py --refresh-approved` — bez přepínače build
+rozdíl kopie v sadě proti `approved/` odmítne, D116) a další běh dá
+kontrolu 6 `ok`. Změna účtování = nový snímek se schválením, nikdy
+úprava snímku podle Shipardu.
+
 
 **Stav schválení (2026-10-20):** snímky všech tří profilů (`vat-payer`,
 `non-payer`, `association`) jsou schválené **s výhradou účetní revize**
@@ -1108,6 +1137,18 @@ běh se selháním u nejhoršího dokladu tak nevychází lichotivěji (D44).
 jen z úspěšných volání (selhání by zhoršilo každý uzel o 1 / opakování
 a je vidět v `calls.failed`).
 
+**Informativní listy** (#103 D114, `informativeNodes` projekce — § 8,
+dnes `notes.onDocument`): `EvalRunner` je po porovnání označí
+(`FieldOutcome::$informative`, `notCarried` se neznačí) a `EvalMetrics`
+je vede mimo skupiny, `fields.all.*` i `documents.clean` ve vlastním
+kyblíku `fields.informative.{n,hit,normalized,missing,extra,wrong}`
+(bez `notCarried`) a v `informativeByField` (obdoba `deviationsByField`);
+`EvalCallResult::isClean()` je nevidí, stabilita se měří dál. Verze
+metrik `EvalMetrics::VERSION` jde do souboru jako `metricsVersion: 2`;
+běhy bez klíče (před 2026-10-26) jsou verze 1 — poznámku započítávaly
+a nepřepočítávají se.
+
+
 ### Soubor výsledků (`tests/eval/<název sady>/<YYYY-MM-DD>-<varianta>[-<n>].json`, D36)
 
 `shpd.eval.run.v1` (`EvalRun`, `EvalRunStore`): `set` (název, země,
@@ -1131,8 +1172,15 @@ u selhaného volání jen počet chybějících), shody po normalizaci
 i s tvarem výstupu, aby prohlížeč výsledků ukázal IBAN s mezerami nebo
 PSČ s mezerou; běhy před tím mají jen cestu a čtení
 (`EvalCallResult::normalizedEntries()`) přijímá oba tvary — a **jen
-odchylky** `{path, state, expected, actual, similarity}`. `format`
+odchylky** `{path, state, expected, actual, similarity}`. Informativní
+listy (D114, od `metricsVersion` 2 hned za `format`): per volání
+`informativeCounts` `{match, matchNormalized, missing, extra, wrong}`
+a `informativeDeviations` ve stejném tvaru jako `deviations`, položky
+`normalized` informativních listů nesou `informative: true`; `counts`
+a `deviations` je neobsahují, `deviationCount()` ze souboru proto čte
+v1 i v2 správně; top-level `informativeByField`. `format`
 zůstává `shpd.eval.run.v1`. Data korpusu jsou fiktivní, výsledky nad
+
 veřejnými sadami patří do veřejného repa; nad reálnými doklady jen do
 soukromého (D8).
 
@@ -1144,7 +1192,11 @@ jiná sada = odmítnuto) — metriky vedle sebe s rozdílem B − A a směrem
 největšímu rozpětí opakování některého z běhů jako **v rámci šumu** (D41;
 bez opakování se šum neurčí a každý rozdíl se bere doslova), pole
 zlepšená / zhoršená podle počtu volání s odchylkou per uzel, upozornění
-na jiný výběr zpráv. **Vše na jedno opakování:** součty přes volání
+na jiný výběr zpráv a na různou verzi metrik (`metricsVersions`,
+`sameMetricsVersion`, D114 — od v2 jsou informativní listy mimo shodu
+polí a čisté doklady; `fields.informative.hit` je v přehledu). **Vše na
+jedno opakování:** součty přes volání
+
 (volání, tokeny, cena, čas, počty polí) i počty odchylek per uzel se dělí
 `repeat`, takže běh × 1 a běh × 3 jsou souměřitelné a součty sedí
 k rozpětí; podíly a hodnoty na doklad jsou průměrem už v souboru. Změna
@@ -1157,7 +1209,10 @@ beze změny, jediné odlišné volání z opakovaného běhu také.
 Sekce **Testování** vývojářského dashboardu (`/_dev/testing/`,
 `docs/dev/dev-daily.md` § 1) čte tytéž soubory: běhy sady se souhrnem
 (model extrakce a štítků, rozpětí opakování), detail běhu (metriky po
-skupinách, varianty a podoby, nejčastější odchylky, stabilita, doklady),
+skupinách, karta **Informativní pole** z `fields.informative.*`
+a `informativeByField` — u běhu v1 jen poznámka, že poznámku počítal do
+shody; varianty a podoby, nejčastější odchylky, stabilita, doklady),
+
 detail dokladu s PDF vedle očekávání a výstupu modelu, porovnání dvou
 běhů toutéž logikou jako `ai-eval-compare` (navíc doklady vedle sebe)
 a doklad napříč běhy. **Výstup modelu se skládá** z očekávání sady
@@ -1169,8 +1224,14 @@ nejsou), výjimky štítků podle `rowIndex`, odchylka na uzlu objektu
 nahrazuje listy pod ním, selhané volání podle D44; u volání cesty
 `isdoc` jsou listy, které ISDOC nenese, `notCarried` s důvodem a bez
 výstupu — soubor je nenese, odvodí se z téhož `IsdocFieldCoverage` jako
-v běhu (D76). Počty stavů z rekonstrukce sedí s `counts` volání (test
-přes celý běh). Detail běhu má vedle variant a podob kartu **Cesty
+v běhu (D76); u běhu s `metricsVersion` ≥ 2 jsou listy informativních
+uzlů (D114) z `informativeDeviations`, značených `normalized` a projekce
+ve vlastní 11. skupině `informative` se štítkem a vlastními
+`informativeCounts` (běh v1 je má jako obyčejné listy hlavičky). Počty
+stavů z rekonstrukce sedí s `counts` i `informativeCounts` volání (test
+přes celý běh). Starší běhy nesou v seznamu i souhrnu štítek
+„metriky v1“.
+ Detail běhu má vedle variant a podob kartu **Cesty
 výpočtu** (`byPath`; starší běh bez něj = poznámka, všechna volání AI)
 a u dokladu štítek cesty; detail dokladu ukazuje cestu, počet polí
 „nenese“ a filtr *jen odchylky* je skrývá. Běh nad jinou

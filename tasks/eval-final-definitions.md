@@ -1,6 +1,7 @@
 # Doladění sad: poznámka informativní, DIČ × VAT ID, strážce snímku hlavní knihy
 
-**Stav:** naplánováno — zadání 2026-10-25 (#103 D114–D116)
+**Stav:** hotovo — 2026-10-26 (#103 D114–D116); závěrečný běh tří sad ×3 pouští člověk z dashboardu
+
 
 ## Kontext / Cíl
 
@@ -104,22 +105,50 @@ systematického, je doladění veřejných sad podle D85 hotové.
 
 ## Hotovo když
 
-- [ ] Strážce selže při rozdílné kopii snímku (test), nad repem projde.
-- [ ] `notes.onDocument` se nepočítá do shody polí ani čistých dokladů;
+- [x] Strážce selže při rozdílné kopii snímku (test), nad repem projde.
+- [x] `notes.onDocument` se nepočítá do shody polí ani čistých dokladů;
       vykazuje se zvlášť; porovnání běhů upozorní na rozdílnou verzi metrik.
-- [ ] Zahraniční subjekty v očekávání `taxId: null`; české `taxId` = `vatId`;
+- [x] Zahraniční subjekty v očekávání `taxId: null`; české `taxId` = `vatId`;
       prompt v4.11.0 s pravidlem; ověření párování v závěrečné zprávě.
-- [ ] `dataset-verify` nad třemi sadami (zdroje „korpus“): kontroly 1–6
+- [x] `dataset-verify` nad třemi sadami (zdroje „korpus“): kontroly 1–6
       `ok`, snímek deníku beze změny.
-- [ ] `vendor/bin/phpunit --filter` na dotčené testy (Eval*, Projection*,
+- [x] `vendor/bin/phpunit --filter` na dotčené testy (Eval*, Projection*,
       CorpusExpected*, PromptProjectionCoverage*, PartyResolver*,
       IsdocCorpusRoundTrip*), testy generátoru, `npm test` a `npm run build`
       ve `frontend/` (prohlížeč výsledků), `npm run check:i18n`.
-- [ ] `shpd-ds ai-profile-reload --dry-run` na zdroji „korpus“: v4.10.0 → v4.11.0.
-- [ ] Dokumentace, `**Stav:**`, index tasků.
-- [ ] **Žádná evaluace v tomto tasku** — závěrečný běh pouští člověk.
+- [x] `shpd-ds ai-profile-reload --dry-run` na zdroji „korpus“: v4.10.0 → v4.11.0.
+- [x] Dokumentace, `**Stav:**`, index tasků.
+- [x] **Žádná evaluace v tomto tasku** — závěrečný běh pouští člověk.
+
+## Hotovo 2026-10-26
+
+- D116: `DatasetExpectationsTest::testApprovedCopiesMatchCorpus` (každý
+  soubor z `approved/`, sirotek bez zdroje) a build sad: rozdíl kopie proti
+  `approved/` je `DatasetBuildError` s oběma cestami, převzetí jen
+  `build.py --refresh-approved` (rozhodnuto v chatu 2026-10-26).
+- D114: `informativeNodes` v projekci, `FieldOutcome::$informative`,
+  `fields.informative.*` + `informativeByField`, `metricsVersion: 2`,
+  oddíl v reportu, varování porovnání, karta a skupina v prohlížeči.
+  Všechny stávající běhy mají od změny projekce jinou verzi sady.
+- D115: identity de `taxId` null, kontrola identit podle země, věrnost
+  tisku i pro `taxId`, prompt v4.11.0, čtečka ISDOC (`TIN`, cz DIČ = VAT
+  ID, jinak null). Kontrola identit je sdílená s demem — partneři
+  it-servis (nitra, tatranka, wolkenschiff, noordwolk) `taxId` null
+  a sada přestavěná (commit `fix(demo)`), PDF beze změny.
+
+### Ověření párování (D115)
+
+`PartyResolver` zkouší `companyId` → `vatId` → `taxId` a `null` sondu
+přeskočí (`PartyResolverTest::testForeignPartyWithoutTaxIdMatchesByVatId`);
+`PartyToPersonCanonical` prázdný klíč vynechá, `PersonApplier` ukládá
+`tax_id = ''`, `VatDocumentSelection` bere `vat_id ?? tax_id`,
+`IsdocDocumentCollector` `taxId ?? vatId ?? companyId` — na `taxId`
+zahraničního subjektu nic nespoléhá. ISDOC: korpus má ISDOC jen u českých
+dodavatelů (round-trip beze změny); čtečka dřív dávala zahraniční straně
+`taxId` = VAT ID, od D115 jen `TIN`.
 
 ## Pasti
+
 
 - **Evaluační zdroje dat nepoužívat.**
 - **Historické výsledky v `tests/eval/` nepřepisovat** — metriky v nich

@@ -569,8 +569,10 @@ strukturu.
 
   // Identifiers — alespoň jeden silně doporučený, resolver je zkouší v pořadí
   "companyId": "12345678",         // IČO (CZ), Reg.č. (SK), USt-IdNr base (DE), …
-  "taxId":     "CZ12345678",       // DIČ
-  "vatId":     "CZ12345678",       // VAT ID pro EU (v CZ obvykle = taxId)
+  "taxId":     "CZ12345678",       // národní daňové číslo: v CZ DIČ = vatId; u zahraniční
+                                   // strany jen číslo z dokladu (Steuernummer), jinak null (#103 D115)
+  "vatId":     "CZ12345678",       // VAT ID (DIČ k DPH)
+
 
   "courtRegistration":
     "Obchodní rejstřík vedený MS v Praze, oddíl C, vložka 123456",
@@ -776,10 +778,13 @@ Vstup: `Party` object + `country` hint.
 
 Postup:
 
-1. **`(country, companyId)` exact match** → je-li 1 výsledek, `matched`
+1. **`companyId` exact match** → je-li 1 výsledek, `matched`
    (`matchedBy: "companyId"`).
-2. **`(country, vatId)` exact match** → analogicky (`matchedBy: "vatId"`).
-3. **`(country, taxId)` exact match** → analogicky (`matchedBy: "taxId"`).
+2. **`vatId` exact match** → analogicky (`matchedBy: "vatId"`).
+3. **`taxId` exact match** → analogicky (`matchedBy: "taxId"`); `null`
+   sondu přeskočí — zahraniční strana s `vatId` a bez `taxId` (#103 D115)
+   se páruje přes `vatId`. Země se při párování identifikátorů nepoužívá.
+
 4. **`name` fuzzy s `country` filterem** — full-text + Levenshtein,
    `score >= threshold` → kandidáti seřazení podle score.
    - 1 kandidát se score `>= 0.95` → `matched`, `matchedBy: "name"`.

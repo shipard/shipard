@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.10.0)
+## Default prompt (v4.11.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -64,7 +64,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.10.0`).
+  shodná s `prompt_version` profilu (`v4.11.0`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -138,6 +138,13 @@ Klíčové pokyny v promptu:
   se pole vynechají.
 - `document.doc_type` nikdy `other` — když zpráva žádný doklad ani
   dokument nenese, vrať `document: null` a klasifikaci `other`.
+- **`taxId` je národní daňové číslo** (od v4.11.0,
+  [tasks/eval-final-definitions.md](../../../../tasks/eval-final-definitions.md)
+  D115; znění v [`docs/test-corpus.md`](../../../../docs/test-corpus.md)
+  § 8): u českého subjektu je DIČ totéž co VAT ID — `taxId` i `vatId`
+  stejně, i když doklad tiskne jen „VAT ID: CZ…“; u zahraničního subjektu
+  jen národní daňové číslo uvedené na dokladu (Steuernummer apod.), jinak
+  vynechat — `vatId` zůstává.
 
 Plný prompt v [`profiles/czech_general.jsonc`](../profiles/czech_general.jsonc)
 sekce `prompt_template`.
@@ -298,6 +305,27 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.11.0 (2026-10-26)
+
+Evaluace v4.10.0 (2026-10-25, kolo 3) nechaly u `supplier.taxId`
+německých dodavatelů a `customer.taxId` na anglické faktuře rozpor:
+doklad tiskne jen „VAT ID“, model vyplnil `vatId` a `taxId` nechal
+prázdné, očekávání mělo obě pole stejná
+([tasks/eval-final-definitions.md](../../../../tasks/eval-final-definitions.md),
+#103 D115). Význam pole od teď jednotně: `taxId` = národní daňové
+číslo ([`docs/test-corpus.md`](../../../../docs/test-corpus.md) § 8 →
+Význam sporných polí; korpus má u zahraničních identit `taxId` null,
+čtečka ISDOC mapuje stejně).
+
+- PRAVIDLA: k identifikátorům věta — u českého subjektu je DIČ totéž co
+  VAT ID, vyplnit `taxId` i `vatId` stejně, i když doklad tiskne jen
+  VAT ID; u zahraničního subjektu do `taxId` jen národní daňové číslo
+  uvedené na dokladu (Steuernummer apod.), jinak vynechat, `vatId`
+  zůstává.
+- Ukázka, ostatní pravidla a schéma beze změny (minor). Pravidlo D109
+  o poznámce zůstává; v evaluaci je `notes.onDocument` od D114
+  informativní (mimo shodu polí), prompt se tím nemění.
 
 ### v4.10.0 (2026-10-25)
 
