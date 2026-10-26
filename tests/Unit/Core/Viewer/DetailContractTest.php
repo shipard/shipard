@@ -49,8 +49,6 @@ class DetailContractTest extends TestCase
         'economy.accounting.accounts',
         'economy.accounting.journal',
         // economy.bank
-        'economy.bank.transactions',
-        'economy.bank.statements',
         // economy.codebooks
         // economy.exchangeRates
         'economy.exchangeRates.lists',

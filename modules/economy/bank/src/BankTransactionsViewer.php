@@ -6,6 +6,7 @@ namespace Shipard\Module\Economy\Bank;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -17,7 +18,7 @@ use Shipard\Core\Viewer\TableViewer;
  *
  * selectRows joinuje base_persons_persons (partner_name pro render
  * i hledání v partnerově full_name); docState po JOINu qualifikujeme
- * aliasem t. Ostatní JOINy jen v renderDetail nad jedním řádkem.
+ * aliasem t. Ostatní JOINy jen v loadDetailRecord() nad jedním řádkem.
  *
  * Grid layout (F2, docs/viewer-grid.md §7.3, D11): default grid, bez
  * footeru (SUM přes mix měn nedává smysl); stav = proužek (docStateMain
@@ -197,9 +198,9 @@ class BankTransactionsViewer extends TableViewer
         return $stateData['stateStyle'] ?? 'concept';
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $r = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT t.*, ba.`code` AS account_code, ba.`name` AS account_name,'
             . ' p.`full_name` AS partner_name,'
             . ' s.`period_start` AS st_start, s.`period_end` AS st_end'
@@ -210,49 +211,49 @@ class BankTransactionsViewer extends TableViewer
             . ' WHERE t.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($r === null) {
-            return ['tabs' => []];
-        }
-
+    /** Přehled (transakce, částky, protistrana, účet a výpis) a tab Zaúčtování, když má co ukázat. */
+    protected function detailTabs(array $record): array
+    {
         $cs = $this->language !== 'en';
 
         $txItems = [];
-        $this->addItem($txItems, $cs ? 'Datum transakce' : 'Transaction date', $this->formatDate($r['date_transaction'] ?? null));
-        $this->addItem($txItems, $cs ? 'Datum valuty' : 'Value date', $this->formatDate($r['date_value'] ?? null));
-        $this->addItem($txItems, $cs ? 'Směr' : 'Direction', $this->enumLabel('economy.bank.txDirections', $r['direction'] ?? null, 'int'));
-        $this->addItem($txItems, $cs ? 'Pohyb' : 'Operation', $this->enumLabel('economy.bank.txOperations', $r['operation'] ?? null, 'string'));
-        $this->addItem($txItems, $cs ? 'Stav' : 'State', $this->enumLabel('economy.bank.txStates', $r['docState'] ?? null, 'int', 'stateName'));
+        $this->addItem($txItems, $cs ? 'Datum transakce' : 'Transaction date', $this->formatDate($record['date_transaction'] ?? null));
+        $this->addItem($txItems, $cs ? 'Datum valuty' : 'Value date', $this->formatDate($record['date_value'] ?? null));
+        $this->addItem($txItems, $cs ? 'Směr' : 'Direction', $this->enumLabel('economy.bank.txDirections', $record['direction'] ?? null, 'int'));
+        $this->addItem($txItems, $cs ? 'Pohyb' : 'Operation', $this->enumLabel('economy.bank.txOperations', $record['operation'] ?? null, 'string'));
+        $this->addItem($txItems, $cs ? 'Stav' : 'State', $this->enumLabel('economy.bank.txStates', $record['docState'] ?? null, 'int', 'stateName'));
 
         $amountItems = [];
-        $curCode = strtoupper((string) ($r['currency'] ?? ''));
-        $this->addItem($amountItems, $cs ? 'Částka' : 'Amount', $this->formatMoney($r['amount'] ?? 0) . ' ' . $curCode);
-        $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($r['amount_dom'] ?? 0));
-        $rate = (float) ($r['exchange_rate'] ?? 1);
+        $curCode = strtoupper((string) ($record['currency'] ?? ''));
+        $this->addItem($amountItems, $cs ? 'Částka' : 'Amount', $this->formatMoney($record['amount'] ?? 0) . ' ' . $curCode);
+        $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($record['amount_dom'] ?? 0));
+        $rate = (float) ($record['exchange_rate'] ?? 1);
         if (abs($rate - 1.0) > 0.0000001) {
             $this->addItem($amountItems, $cs ? 'Kurz' : 'Exchange rate', number_format($rate, 6, ',', ' '));
         }
 
         $cpItems = [];
-        $this->addItem($cpItems, $cs ? 'Protiúčet' : 'Counterparty account', $r['counterparty_account'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $r['counterparty_name'] ?? null);
-        $this->addItem($cpItems, 'Partner', $r['partner_name'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Variabilní symbol' : 'Variable symbol', $r['payment_reference'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Specifický symbol' : 'Specific symbol', $r['specific_symbol'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $r['constant_symbol'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Zpráva' : 'Message', $r['message'] ?? null);
+        $this->addItem($cpItems, $cs ? 'Protiúčet' : 'Counterparty account', $record['counterparty_account'] ?? null);
+        $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $record['counterparty_name'] ?? null);
+        $this->addItem($cpItems, 'Partner', $record['partner_name'] ?? null);
+        $this->addItem($cpItems, $cs ? 'Variabilní symbol' : 'Variable symbol', $record['payment_reference'] ?? null);
+        $this->addItem($cpItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
+        $this->addItem($cpItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
+        $this->addItem($cpItems, $cs ? 'Zpráva' : 'Message', $record['message'] ?? null);
 
         $accountLabel = trim(
-            (string) ($r['account_code'] ?? '')
-            . (($r['account_name'] ?? null) !== null ? ' — ' . $r['account_name'] : ''),
+            (string) ($record['account_code'] ?? '')
+            . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
         );
         $ctxItems = [];
         $this->addItem($ctxItems, $cs ? 'Bankovní účet' : 'Bank account', $accountLabel !== '' ? $accountLabel : null);
-        if (($r['st_start'] ?? null) !== null && ($r['st_end'] ?? null) !== null) {
+        if (($record['st_start'] ?? null) !== null && ($record['st_end'] ?? null) !== null) {
             $this->addItem(
                 $ctxItems,
                 $cs ? 'Výpis' : 'Statement',
-                $this->formatDate($r['st_start']) . ' – ' . $this->formatDate($r['st_end']),
+                $this->formatDate($record['st_start']) . ' – ' . $this->formatDate($record['st_end']),
             );
         }
 
@@ -268,41 +269,21 @@ class BankTransactionsViewer extends TableViewer
             'content' => ['type' => 'properties', 'groups' => $groups],
         ]];
 
-        $accountingTab = $this->buildAccountingTab($r);
+        $accountingTab = $this->buildAccountingTab($record);
         if ($accountingTab !== null) {
             $tabs[] = $accountingTab;
         }
 
-        $header = $this->buildDetailHeader($r);
-        $detail = [
-            'title'    => $header['title'],
-            'subtitle' => $header['subtitle'],
-            'badges'   => $header['badges'],
-            'icon'     => $header['icon'],
-            'tabs'     => $tabs,
-        ];
-
-        $actions = $this->buildDetailActions($r);
-        if ($actions !== []) {
-            $detail['actions'] = $actions;
-        }
-
-        return $detail;
+        return $tabs;
     }
 
     /**
-     * Hlavička detailu nad taby (generický header ViewerDetail, sjednocené
-     * s doklady, Osobami a Položkami). Title = částka se znaménkem a měnou
-     * (u transakce nejvýraznější údaj — obdoba čísla dokladu u faktur),
-     * subtitle = Partner / protistrana / datum, badges = stav transakce
-     * (txStates) a při chybě účtování badge „Chyba účtování". Zaúčtováno
-     * samostatný badge nedostává — pokrývá ho už stav transakce (docState
-     * 40 = Zaúčtováno). Ikona shodná s viewers[].icon v module.jsonc (wallet).
-     *
-     * @param array<string, mixed> $record
-     * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>, icon: string}
+     * Hlavička detailu: částka se znaménkem a měnou jako titulek, „partner ·
+     * datum" v podtitulku (bez jména jen datum, a naopak; bez partnera
+     * protistrana z výpisu). Ikona z deklarace vieweru; štítek stavu
+     * (vč. Zaúčtováno — nese účetní stav, #136 D25) přidává builder.
      */
-    private function buildDetailHeader(array $record): array
+    protected function detailHeader(array $record): DetailHeader
     {
         $sign = (int) ($record['direction'] ?? 0) === 2 ? '−' : '+';
         $curCode = strtoupper((string) ($record['currency'] ?? ''));
@@ -315,47 +296,32 @@ class BankTransactionsViewer extends TableViewer
         $counterparty = trim((string) ($record['counterparty_name'] ?? ''));
         $who = $partner !== '' ? $partner : $counterparty;
         $date = $this->formatDate($record['date_transaction'] ?? null);
-        // Subtitle: „Partner · datum"; když chybí jméno, jen datum, a naopak.
         $subtitleParts = array_filter([$who, $date], static fn ($v) => $v !== null && $v !== '');
-        $subtitle = implode(' · ', $subtitleParts);
 
-        $badges = [];
-        $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
-        $stateData = $cfg->getState((int) ($record['docState'] ?? 10));
-        $stateName = (string) ($stateData['stateName'] ?? '');
-        if ($stateName !== '') {
-            $badges[] = [
-                'label' => $stateName,
-                'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
-            ];
+        return new DetailHeader($title, implode(' · ', $subtitleParts));
+    }
+
+    /**
+     * Stav účtování — štítek jen při chybě (stav 2). Zaúčtováno už
+     * signalizuje stav transakce (docState 40), duplicitní štítek by byl šum.
+     */
+    protected function detailBadges(array $record): array
+    {
+        if ((int) ($record['accounting_state'] ?? 0) !== 2) {
+            return [];
         }
-
-        // Stav účtování — badge jen při chybě (stav 2). Zaúčtováno už
-        // signalizuje stav transakce (docState 40), duplicitní badge by byl šum.
-        if ((int) ($record['accounting_state'] ?? 0) === 2) {
-            $badges[] = [
-                'label' => $this->language === 'en' ? 'Posting error' : 'Chyba účtování',
-                'style' => 'error',
-            ];
-        }
-
-        return [
-            'title'    => $title,
-            'subtitle' => ($subtitle !== null && $subtitle !== '') ? $subtitle : null,
-            'badges'   => $badges,
-            'icon'     => 'wallet',
-        ];
+        return [[
+            'label' => $this->language === 'en' ? 'Posting error' : 'Chyba účtování',
+            'style' => 'error',
+        ]];
     }
 
     /**
      * Akce detailu. Přeúčtovat — jen pro transakci ve stavu 40 (idempotentní,
      * jde i u bezchybně zaúčtované po opravě rozvrhu). Viewer.svelte volá
      * POST /_bank/reaccount a refreshne detail.
-     *
-     * @param array<string, mixed> $record
-     * @return list<array<string, mixed>>
      */
-    private function buildDetailActions(array $record): array
+    protected function detailActions(array $record): array
     {
         if ((int) ($record['docState'] ?? 0) !== 40) {
             return [];
