@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Bank\Import\Parsers;
 
+use Shipard\Module\World\Validations\DomesticAccount;
+
 /**
  * Sdílené helpery parserů — port z `ebankingImportDoc` (parseNumber, substr,
  * mod11, getAccountNumber) + normalizace symbolů a slučování memo.
@@ -91,17 +93,14 @@ final class ParserUtils
         return $d === false ? null : $d;
     }
 
-    /** ABO mod11 kontrola (CNB vyhl. 169/2011). Prázdný řetězec = platný (port). */
+    /**
+     * ABO mod11 kontrola (CNB vyhl. 169/2011) — váhy od pravého kraje dává
+     * knihovna (`DomesticAccount::mod11`, #118 D23). Prázdný řetězec = platný;
+     * číslice nad deset míst zleva se nepočítají (jako dřív).
+     */
     public static function mod11(string $n): bool
     {
-        $factor = [6, 3, 7, 9, 10, 5, 8, 4, 2, 1];
-        $len = strlen($n);
-        $sum = 0;
-        for ($i = 0; $i < $len; $i++) {
-            $fp = 10 - $len + $i;
-            $sum += ((int) $n[$i]) * ($factor[$fp] ?? 0);
-        }
-        return $sum % 11 === 0;
+        return DomesticAccount::mod11(strlen($n) > 10 ? substr($n, -10) : $n);
     }
 
     /**

@@ -42,7 +42,14 @@ final class FioJsonParser implements StatementParser
             }
         }
 
-        $account = $this->s($info['accountId'] ?? null) ?? $this->s($info['iban'] ?? null);
+        // Odkaz na vlastní účet pro párování klíčem účtu (#118 D23): číslo
+        // s kódem banky (`accountId/bankId`), jinak IBAN, jinak holé číslo
+        // (to se napáruje jen na stejně holý záznam — nic se nehádá).
+        $accountId = $this->s($info['accountId'] ?? null);
+        $bankId = $this->s($info['bankId'] ?? null);
+        $account = $accountId !== null && $bankId !== null
+            ? "{$accountId}/{$bankId}"
+            : ($this->s($info['iban'] ?? null) ?? $accountId);
         if ($account === null) {
             throw new ImportException('FIO: chybí číslo účtu (info.accountId).');
         }

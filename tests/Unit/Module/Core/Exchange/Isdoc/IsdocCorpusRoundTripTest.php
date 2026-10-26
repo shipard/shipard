@@ -14,7 +14,7 @@ use Shipard\Module\Core\Exchange\EInvoice\EInvoiceUuid;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocWriter;
-use Shipard\Module\Docs\Core\Prints\PaymentQr\CzIbanCalculator;
+use Shipard\Module\World\Validations\ValueRules;
 
 /**
  * Round-trip generátor → čtečka (#119 D8): každý `.isdoc` korpusu
@@ -144,7 +144,7 @@ class IsdocCorpusRoundTripTest extends TestCase
         $expected['rows'] = array_values(array_filter($canonical['rows'], static fn (array $r): bool => ($r['rowKind'] ?? 'item') === 'item'));
         $account = $canonical['supplier']['bankAccount']['accountNumber'] ?? null;
         if (($expected['supplier']['bankAccount']['iban'] ?? null) === null && $account !== null) {
-            $expected['supplier']['bankAccount']['iban'] = CzIbanCalculator::fromAccountNumber($account);
+            $expected['supplier']['bankAccount']['iban'] = ValueRules::ibanFromAccountNumber($account, 'cz');
         }
         if (($canonical['payment']['method'] ?? null) !== 'bankTransfer') {
             $expected['dates']['dueDate'] = null;

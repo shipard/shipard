@@ -7,7 +7,7 @@
     "description:cs": "Bankovní transakce a výpisy",
     "description:en": "Bank transactions and statements",
 
-    "dependencies": ["core.system", "economy.accounting", "economy.codebooks", "docs.core", "core.attachments"],
+    "dependencies": ["core.system", "economy.accounting", "economy.codebooks", "docs.core", "core.attachments", "world.validations"],
 
     "tables": [
         "economy_bank_transactions",

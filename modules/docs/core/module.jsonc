@@ -15,6 +15,7 @@
         "base.persons",
         "world.base",
         "world.vat",
+        "world.validations",
         "economy.codebooks",
         "economy.items",
         // Kurz k datu pro formuláře a applier (#121 D6); banka ho dostane přes docs.core.

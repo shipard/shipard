@@ -15,6 +15,7 @@ use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Economy\Bank\BankStatementDocument;
+use Shipard\Module\World\Validations\BankAccountKey;
 
 /**
  * Orchestrace importu bankovního výpisu: detekce + parse → match našeho účtu →
@@ -406,7 +407,10 @@ class StatementImportService
             return (array) $row;
         }
 
-        $refVariants = $this->accountVariants($ref);
+        // Klíč účtu (#118 D23): IBAN i tuzemské číslo dávají tentýž klíč, takže
+        // CAMT (IBAN) najde účet uložený číslem a naopak; ID v ebankingu je
+        // libovolný řetězec — porovnává se jako `raw:` klíč.
+        $refKey = BankAccountKey::of($ref);
         $accounts = $this->db->query(
             'SELECT [id], [currency], [code], [account_number], [iban], [ebanking_id]'
             . ' FROM %n WHERE [docState] IN %in',
@@ -415,13 +419,11 @@ class StatementImportService
         )->fetchAll();
 
         foreach ($accounts as $a) {
-            $cand = array_merge(
-                $this->accountVariants((string) ($a['account_number'] ?? '')),
-                $this->accountVariants((string) ($a['iban'] ?? '')),
-                $this->accountVariants((string) ($a['ebanking_id'] ?? '')),
-            );
-            if (array_intersect($refVariants, $cand) !== []) {
-                return (array) $a;
+            foreach (['account_number', 'iban', 'ebanking_id'] as $column) {
+                $value = $a[$column] ?? null;
+                if ($refKey !== null && is_string($value) && BankAccountKey::of($value) === $refKey) {
+                    return (array) $a;
+                }
             }
         }
 
@@ -655,24 +657,6 @@ class StatementImportService
             ->execute();
 
         return $state;
-    }
-
-    private function accountVariants(string $s): array
-    {
-        $s = trim($s);
-        if ($s === '') {
-            return [];
-        }
-        $out = [$this->normalizeAccount($s)];
-        if (str_contains($s, '/')) {
-            $out[] = $this->normalizeAccount(explode('/', $s, 2)[0]);
-        }
-        return array_values(array_unique(array_filter($out, static fn($v) => $v !== '')));
-    }
-
-    private function normalizeAccount(string $s): string
-    {
-        return strtoupper((string) preg_replace('/[\s\-\/]/', '', $s));
     }
 
     private function cap(?string $v, int $len): ?string

@@ -28,6 +28,7 @@ use Shipard\Module\Economy\Items\AccountingItemsGenerator;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
 use Shipard\Module\Economy\Items\AccountingItemsUnavailableException;
 use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
+use Shipard\Module\World\Validations\BankAccountKey;
 
 /**
  * Endpoints:
@@ -210,7 +211,7 @@ class SetupController
             return Response::error('NO_OWN_PERSON', 'No active own Person exists', 409);
         }
 
-        [$codebookIbans, $codebookNumbers] = $this->existingCodebookKeys();
+        $codebookKeys = $this->existingCodebookKeys();
 
         $candidates = [];
         foreach ($this->ownPersonBankAccounts((int) $own['id']) as $row) {
@@ -224,7 +225,7 @@ class SetupController
                 'source'           => (int) ($row['source'] ?? 0),
                 'validFrom'        => $row['valid_from'] ?? null,
                 'validTo'          => $row['valid_to'] ?? null,
-                'existsInCodebook' => $this->existsInCodebook($row, $codebookIbans, $codebookNumbers),
+                'existsInCodebook' => $this->existsInCodebook($row, $codebookKeys),
             ];
         }
 
@@ -288,9 +289,9 @@ class SetupController
             }
         }
 
-        [$codebookIbans, $codebookNumbers] = $this->existingCodebookKeys();
+        $codebookKeys = $this->existingCodebookKeys();
         foreach ($ids as $id) {
-            if (isset($rows[$id]) && $this->existsInCodebook($rows[$id], $codebookIbans, $codebookNumbers)) {
+            if (isset($rows[$id]) && $this->existsInCodebook($rows[$id], $codebookKeys)) {
                 $errors[] = [
                     'field'   => (string) $id,
                     'code'    => 'ALREADY_IN_CODEBOOK',
@@ -618,50 +619,47 @@ class SetupController
     }
 
     /**
-     * Klíče aktivních řádků číselníku pro detekci „už překlopeno":
-     * množina IBANů (uppercase) a čísel účtů.
+     * Klíče účtů v číselníku ({@see BankAccountKey}, #118 D23) z obou sloupců —
+     * IBAN a tuzemské číslo téhož účtu dávají jeden klíč.
      *
-     * @return array{0: array<string, true>, 1: array<string, true>}
+     * @return array<string, true>
      */
     private function existingCodebookKeys(): array
     {
-        $ibans   = [];
-        $numbers = [];
+        $keys = [];
         $rows = $this->db->fetchAll(
             'SELECT iban, account_number FROM ' . self::CODEBOOK_TABLE
                 . ' WHERE docState IN %in',
             self::ACTIVE_DOC_STATES,
         );
         foreach ($rows as $row) {
-            $iban   = strtoupper(trim((string) ($row['iban'] ?? '')));
-            $number = trim((string) ($row['account_number'] ?? ''));
-            if ($iban !== '') {
-                $ibans[$iban] = true;
-            }
-            if ($number !== '') {
-                $numbers[$number] = true;
+            foreach (['iban', 'account_number'] as $column) {
+                $key = BankAccountKey::of((string) ($row[$column] ?? ''));
+                if ($key !== null) {
+                    $keys[$key] = true;
+                }
             }
         }
-        return [$ibans, $numbers];
+        return $keys;
     }
 
     /**
-     * Match bankovního spojení proti číselníku: primárně IBAN, bez něj
-     * číslo účtu. Spojení bez obojího (nemělo by projít validací Osoby)
+     * Match bankovního spojení proti číselníku přes klíč účtu z IBAN nebo
+     * čísla účtu. Spojení bez obojího (nemělo by projít validací Osoby)
      * se považuje za nepřeklopené.
      *
      * @param array<string, mixed> $row řádek base_persons_bank_accounts
-     * @param array<string, true> $codebookIbans
-     * @param array<string, true> $codebookNumbers
+     * @param array<string, true> $codebookKeys
      */
-    private function existsInCodebook(array $row, array $codebookIbans, array $codebookNumbers): bool
+    private function existsInCodebook(array $row, array $codebookKeys): bool
     {
-        $iban = strtoupper(trim((string) ($row['iban'] ?? '')));
-        if ($iban !== '') {
-            return isset($codebookIbans[$iban]);
+        foreach (['iban', 'account_number'] as $column) {
+            $key = BankAccountKey::of((string) ($row[$column] ?? ''));
+            if ($key !== null && isset($codebookKeys[$key])) {
+                return true;
+            }
         }
-        $number = trim((string) ($row['account_number'] ?? ''));
-        return $number !== '' && isset($codebookNumbers[$number]);
+        return false;
     }
 
     /**

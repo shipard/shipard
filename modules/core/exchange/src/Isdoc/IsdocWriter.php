@@ -7,7 +7,8 @@ namespace Shipard\Module\Core\Exchange\Isdoc;
 use Shipard\Module\Core\Exchange\EInvoice\EInvoiceInputException;
 use Shipard\Module\Core\Exchange\EInvoice\EInvoiceOptions;
 use Shipard\Module\Core\Exchange\EInvoice\EInvoiceWriter;
-use Shipard\Module\Docs\Core\Prints\PaymentQr\CzIbanCalculator;
+use Shipard\Module\World\Validations\DomesticAccount;
+use Shipard\Module\World\Validations\ValueRules;
 
 /**
  * Generátor ISDOC 6.0.1 z canonicalu `shpd.docs.document.v1` (#119 D1–D7,
@@ -57,8 +58,6 @@ final class IsdocWriter implements EInvoiceWriter
 
     private const VAT_MODES = ['fromBase', 'fromTotal', 'none'];
     private const DATE_RE = '/^\d{4}-\d{2}-\d{2}$/';
-    /** `[předčíslí-]číslo/kód` — tvar, který umí i CzIbanCalculator. */
-    private const ACCOUNT_RE = '#^(?:\d{1,6}-)?\d{2,10}/\d{4}$#';
     private const ID_MAX_LENGTH = 36;
 
     /** @var list<array{path: string, message: string}> */
@@ -383,11 +382,13 @@ final class IsdocWriter implements EInvoiceWriter
         $iban = $this->optText($c, 'supplier.bankAccount.iban');
         if ($account !== null) {
             $account = preg_replace('/\s+/', '', $account) ?? $account;
-            if (preg_match(self::ACCOUNT_RE, $account) !== 1) {
+            // Tvar `[předčíslí-]číslo/kód` a IBAN z něj dává knihovna (#118 D23);
+            // ID a kód banky se zapisují, jak přišly (canonical je normalizovaný).
+            if (DomesticAccount::parse($account) === null) {
                 $this->problem('supplier.bankAccount.accountNumber', "'{$account}' není ve tvaru [předčíslí-]číslo/kód");
             } else {
                 [$accountId, $bankCode] = explode('/', $account, 2);
-                $iban ??= CzIbanCalculator::fromAccountNumber($account);
+                $iban ??= ValueRules::ibanFromAccountNumber($account, 'cz');
             }
         }
         $payment['details'] = [

@@ -6,10 +6,10 @@ namespace Shipard\Tests\Unit\Module\Docs\Core\Prints;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Shipard\Module\Docs\Core\Prints\PaymentQr\CzIbanCalculator;
 use Shipard\Module\Docs\Core\Prints\PaymentQr\PaymentQrInput;
 use Shipard\Module\Docs\Core\Prints\PaymentQr\PaymentQrResolver;
 use Shipard\Module\Docs\Core\Prints\PaymentQr\SpaydGenerator;
+use Shipard\Module\World\Validations\ValueRules;
 
 /**
  * QR platba (#90 D17): SPAYD payload, dopočet českého IBAN a volba
@@ -136,7 +136,7 @@ class PaymentQrTest extends TestCase
         $this->assertNull($generator->generate($this->input(['iban' => 'není IBAN'])), 'vadný IBAN se nedopočítává');
     }
 
-    // ── CzIbanCalculator ────────────────────────────────────────────────────
+    // ── IBAN z českého čísla účtu (world.validations, #118 D23) ─────────────
 
     /** @return array<string, array{string, ?string}> */
     public static function accountNumbers(): array
@@ -156,7 +156,7 @@ class PaymentQrTest extends TestCase
     #[DataProvider('accountNumbers')]
     public function testCzIban(string $accountNumber, ?string $expected): void
     {
-        $this->assertSame($expected, CzIbanCalculator::fromAccountNumber($accountNumber));
+        $this->assertSame($expected, ValueRules::ibanFromAccountNumber($accountNumber, 'cz'));
     }
 
     // ── PaymentQrResolver ───────────────────────────────────────────────────

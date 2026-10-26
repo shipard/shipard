@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core\Prints\PaymentQr;
 
+use Shipard\Module\World\Validations\Bic;
+use Shipard\Module\World\Validations\Iban;
+use Shipard\Module\World\Validations\ValueRules;
+
 /**
  * SPAYD (Short Payment Descriptor, „QR platba“ ČBA) verze 1.0.
  *
  * Pole: `ACC` (IBAN[+BIC]), `AM` (2 desetinná místa), `CC`, `X-VS`, `X-SS`,
  * `X-KS`, `DT` (splatnost `YYYYMMDD`), `MSG` (číslo dokladu). Účet: IBAN
- * z dokladu; chybí-li a číslo účtu je české, IBAN se dopočítá. Bez účtu
- * payload nevznikne.
+ * z dokladu; chybí-li a číslo účtu je české, IBAN se dopočítá
+ * (`world.validations`, #118 D23 — tvarový převod bez mod 11, jako dřív).
+ * Bez účtu payload nevznikne.
  *
  * Symboly dovoluje standard jen číselné, nejvýš 10 číslic — jiný tvar se
  * vynechá (QR bez VS je pořád použitelný) a volající se o tom dozví přes
@@ -38,8 +43,8 @@ final class SpaydGenerator implements PaymentQrGenerator
         }
 
         $account = $iban;
-        $bic = strtoupper((string) preg_replace('/\s+/', '', (string) $input->bic));
-        if (preg_match('/^[A-Z0-9]{8}(?:[A-Z0-9]{3})?$/', $bic)) {
+        $bic = Bic::normalize((string) $input->bic);
+        if (Bic::isValid($bic)) {
             $account .= '+' . $bic;
         }
 
@@ -89,14 +94,14 @@ final class SpaydGenerator implements PaymentQrGenerator
 
     private function resolveIban(PaymentQrInput $input): ?string
     {
-        $iban = strtoupper((string) preg_replace('/\s+/', '', (string) $input->iban));
+        $iban = Iban::normalize((string) $input->iban);
         if ($iban !== '') {
-            return preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/', $iban) ? $iban : null;
+            return Iban::hasShape($iban) ? $iban : null;
         }
         if ($input->accountNumber === null || trim($input->accountNumber) === '') {
             return null;
         }
-        return CzIbanCalculator::fromAccountNumber($input->accountNumber);
+        return ValueRules::ibanFromAccountNumber($input->accountNumber, 'cz');
     }
 
     /**
