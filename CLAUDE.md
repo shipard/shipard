@@ -211,18 +211,11 @@ smí názvy nést — tam jsou potřeba k práci.
 - Příkazy: Symfony Console, testovatelné přes subclassing
 - Žádná business logika v datových třídách
 - Tvar a platnost IČO, DIČ, čísel účtů, IBAN, BIC, PSČ a telefonu řeší
-  `world.validations` (`ValueRules`, `ValueRulesRegistry` — nová země =
-  nová třída v registru), ne vlastní regex ani kontrolní součet v modulu;
-  canonical normalizuje a validuje `core.exchange` `Values/`
-  (`docs/exchange-format.md` → Normalizace a validace hodnot, #118).
-  **Uložený tvar v adresáři je kanonický** (#118 D18–D20): každý zápis do
-  osob, adres, kontaktů, účtů osob a vlastních účtů jde přes
-  `base.persons` `Values\PersonValues` (třídy dokumentů, `PersonApplier`,
-  `bankCreate`), nálezy formulářů dává `ValueChecks` / `ValueFinding`
-  (partner varování, vlastní firma chyba — D19); **čitelný tvar jen pro
-  zobrazení** přes `ValueRules::format()` / Twig filtry `zip`, `iban`,
-  `phone` (D21), nikdy se neukládá; párování účtů vždy přes
-  `BankAccountKey` z obou sloupců (D16, D23)
+  `world.validations`, ne vlastní regex ani kontrolní součet v modulu;
+  ukládá se kanonický tvar (zápis do adresáře přes `PersonValues`), čitelný
+  tvar jen pro zobrazení (`ValueRules::format()`, Twig filtry) a účty se
+  párují přes `BankAccountKey` (`docs/exchange-format.md` → Normalizace
+  a validace hodnot, #118)
 
 ### Dokumentový systém
 - Data vždy jako PHP `array` — žádné property per sloupec (kvůli extensions)
