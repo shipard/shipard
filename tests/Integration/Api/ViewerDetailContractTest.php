@@ -65,7 +65,6 @@ class ViewerDetailContractTest extends IntegrationTestCase
      * výjimka test neshazuje (data zdrojů se liší).
      */
     private const PENDING = [
-        'base.registry.documents'            => ['Druh', 'Partner', 'Šanon'],
     ];
 
     private ViewerRegistry $registry;

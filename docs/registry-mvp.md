@@ -403,8 +403,8 @@ odblokovává import ze starého Shipardu (§10).
 Vše / per šanon / Nezařazené (`binder IS NULL`). Fulltext hledá v `title`,
 `ref_number`, `ai_summary` (fáze 2 přidá `extracted_text`).
 
-Detail panel: taby Obsah (metadata dle druhu) / Přílohy / Původ (odkaz na
-zdrojovou zprávu).
+Detail panel: taby Obsah (metadata dle druhu; přílohy dokumentu na jeho
+konci sdílenou sekcí, #140 D27) / Původ (odkaz na zdrojovou zprávu).
 
 ### 6.3 Formulář `RegistryDocumentsForm`
 

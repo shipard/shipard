@@ -37,8 +37,8 @@
             "class": "Shipard\\Module\\Base\\Registry\\RegistryDocumentsViewer",
             "navSection": "_top",
             "navOrder": 35,
-            // Tab Přílohy staví viewer sám — builder přílohy nepřidává (#136 D21).
-            "detailAttachments": "content"
+            // Přílohy dokumentu na konci prvního tabu Obsah sdílenou sekcí (#140 D27).
+            "detailAttachments": "overview"
         },
         {
             "id": "base.registry.binders",
