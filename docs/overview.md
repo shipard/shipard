@@ -239,7 +239,10 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
   `frontend/src/components/overview/CompanyOverview.svelte` v mapě panelů
   `ContentArea.svelte`, API `frontend/src/api/overview.js` (vrací obálku,
   403 přes `translateError`).
-- Sekce jako karty; položka = popisek (odkaz, je-li `link`), částka
+- Sekce jako sdílené karty `Card` v mřížce `CardGrid` (sloupec 20 rem,
+  karty v řádku stejně vysoké, tón rámečku podle stavu sekce, štítek
+  stavu v `aside` nadpisu; obsah v rolích §11 `design-system.md` — #137
+  task 2); položka = popisek (odkaz, je-li `link`), částka
   (`formatMoney` z `utils/formatNumber.js` — sdílené s pruhem Připraveno
   na Dashboardu), `asOf`, `dueDate` (zvýrazněný ≤ 7 dní před termínem
   a po něm), stav `stale` / `missing` jako badge, poznámka; zprávy sekce

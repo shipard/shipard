@@ -339,6 +339,51 @@ v pod-sekci *Dropdown / popover komponenty*.
   jen pokud backend pošle `detail.title` (kontrakt §5, rozvržení a písmo
   §12 Detail záznamu)
 
+### Karty
+
+Rozhodnutí D33–D35 z #133 (task 2 #137). Karta v obsahu je sdílená
+`Card.svelte`, mřížka karet `CardGrid.svelte` (obě `components/ui/`).
+
+- **Karta** (D33): rámeček `--shpd-color-border`, pozadí `--shpd-color-bg`,
+  zaoblení `--shpd-radius-md`, odsazení `--shpd-space-md`; karty stránek
+  v Nastavení (stránka nastavení, O zdroji dat, Nastavení zdroje dat,
+  Zabezpečení účtu) `spacious` = odsazení `--shpd-space-lg`. Žádný stín,
+  žádný vnější okraj — mezery dává rodič nebo `CardGrid`. Nadpis karty je
+  `SectionHeading` (`title`, `headingLevel` 2–4; snippet `aside` sedí
+  vpravo v řádku nadpisu — štítek stavu sekce v Přehledu firmy). Tón
+  `warning` / `danger` mění jen barvu rámečku (`--shpd-color-warning` /
+  `--shpd-color-danger`), `info` dává tónované pozadí
+  `--shpd-color-primary-soft` s rámečkem `--shpd-color-primary-soft-2`
+  (AI shrnutí). Kořen je flex sloupec: v roztaženém řádku mřížky zůstává
+  obsah nahoře a patička může dostat `margin-top: auto`. Zbylé atributy
+  (`data-testid`, `role`, `class` se stavovou třídou feedu) jdou na kořen;
+  `as` volí značku (`section` výchozí, `div`, `article`, `li`). Vnitřní
+  rozložení (řádek ikona + tělo karty feedu, stavový proužek) je obsah
+  karty — rodič kořen `Card` přes vlastní třídu nestyluje, co karta
+  potřebuje, je prop.
+- **Mřížka** (D34): `repeat(auto-fill, minmax(min(<šířka>, 100%), 1fr))`,
+  mezera md, `align-items: stretch` — karty v řádku vždy stejně vysoké,
+  obsah nahoře. Šířku sloupce určuje použití (`minWidth`: Přehled firmy
+  20 rem, feed dashboardu 22,5 rem). `min()` uvnitř `minmax` je nutné —
+  bez něj sloupec na úzké šířce přeteče. Roztáhne se jen přímá položka
+  mřížky: kde mezi mřížkou a `Card` musí být obal (komponenta s vlastním
+  kořenem), obal i karta dostanou `height: 100%`. Dva pevné sloupce stran
+  dokladu (`.shpd-docdetail__parties`, `.shpd-exchange__parties`) mřížkou
+  karet nejsou.
+- **Karta, nebo ne** (D35): rámeček + zaoblení md = karta v obsahu;
+  zaoblení lg + stín = plovoucí plocha (`Modal`, přihlášení, `StatusScreen`,
+  panel vzhledu, `Popover`, uživatelské menu) — karta stín nemá. Kartou
+  nejsou ani vložené panely se šedým pozadím (`FormSection`, nabídka
+  položek, souhrny v dialozích), hlášky a bannery (chyba, varování, zámek
+  dokladu) ani volitelné řádky (tlačítko volby v průvodci, řádek seznamu).
+  Hláška selhání analýzy (`FailureCard`) je karta s tónem — rámeček
+  v barvě, bez levého pruhu.
+- **Pravidlo:** nová karta = `Card` (v mřížce `CardGrid`), ne vlastní
+  třída s kopií rámečku. Dnes na nich stojí Přehled firmy, feed dashboardu
+  (karta feedu, AI shrnutí), čtyři karty Nastavení, strany dokladu
+  v detailu i v náhledu importu, karta návrhu z pošty, karta selhání
+  a náhled v průvodci importem ze Spisovny.
+
 ### Modální dialogy
 
 Všechny modální dialogy v aplikaci používají sdílenou `Modal.svelte` komponentu —
@@ -696,8 +741,10 @@ jsou to dvě role, aby šly v budoucnu rozdělit jedním místem.
 - **Nové komponenty používají role**, ne literály ani škálu, tam kde role
   sedí; škála zůstává prvkům mimo role (ikony podle textu v `em`, lišta
   akcí a tlačítka). Mimo detail (seznamy, formuláře, dashboard) se role
-  zavádějí postupně. `check-css-units.py` hlídá jen px — role nehlídá
-  nic než tahle kapitola.
+  zavádějí postupně — Přehled firmy je má (#137 task 2: popisek body,
+  částka title jako hlavní číslo karty, doplňky a štítky meta, splatnost
+  jen barvou). `check-css-units.py` hlídá jen px — role nehlídá nic než
+  tahle kapitola.
 
 ---
 
@@ -761,15 +808,16 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   i Odeslanou poštu — heading, barvou textu, bez linky, `margin: 0 0
   var(--shpd-space-xs)` a žádné horní odsazení: sekce od sebe odděluje
   mezera `--shpd-space-lg`, kterou dává rodič (obal bloků `composite`,
-  mřížka skupin), ne nadpis. `level` 3 nebo 4 (skupiny vlastností
-  v obecném detailu mají h4 jako dřív); volitelný snippet `aside` sedí
+  mřížka skupin), ne nadpis. `level` 2–4 (karty Přehledu firmy h2 pod
+  h1 stránky, skupiny vlastností v obecném detailu h4 jako dřív);
+  volitelný snippet `aside` sedí
   vpravo ve stejném řádku (přepínač náhledů příloh). Blok `heading`
   v `composite` je nadpis bloku pod ním — ten mezeru nad sebou nemá.
-- **Karta** (strany dokladu): rámeček `--shpd-color-border`, zaoblení
-  `--shpd-radius-md`, odsazení `0.75rem`, položky pod sebou s mezerou
-  `--shpd-space-xs`; nadpis karty `SectionHeading`, název entity heading
-  (odkaz na záznam modře), identifikátory, adresa a účet body barvou textu,
-  kontakty meta šedě s malou mezerou nad (D16).
+- **Karta** (strany dokladu): sdílená `Card` (§8 Karty, D33) s nadpisem
+  `title` — rámeček `--shpd-color-border`, zaoblení `--shpd-radius-md`,
+  odsazení `--shpd-space-md`; položky pod sebou s mezerou `--shpd-space-xs`,
+  název entity heading (odkaz na záznam modře), identifikátory, adresa
+  a účet body barvou textu, kontakty meta šedě s malou mezerou nad (D16).
 - **Popisek–hodnota** (D29, `PropertyList.svelte` + `PropertyGroups.svelte`
   v `components/ui/`): jedna sdílená komponenta pro obecný detail i detail
   dokladu. `<dl>` jedné skupiny je mřížka `grid-template-columns:
@@ -851,7 +899,9 @@ Složené řádky tabulek na úzké šířce řeší #138.
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
-| `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 3 / 4, snippet `aside` |
+| `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside` |
+| `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
+| `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
 | `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce |
 | `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
