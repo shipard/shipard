@@ -1,6 +1,6 @@
 # Normalizace a validace hodnot canonicalu — fáze 1
 
-**Stav:** hotovo — implementováno 2026-10-26 v 5 commitech (knihovna, normalizátor a validátor s napojením a stropem pásma, resolvery, porovnávač a `valueFindings`, dokumentace); odchylky níže; evaluaci tří sad × 3 pouští člověk z dashboardu (D17)
+**Stav:** hotovo — implementováno 2026-10-26 v 5 commitech (knihovna, normalizátor a validátor s napojením a stropem pásma, resolvery, porovnávač a `valueFindings`, dokumentace); odchylky níže; evaluace tří sad × 3 (2026-10-26) splnila D17
 
 
 ## Kontext / Cíl
@@ -362,3 +362,26 @@ s původní a novou hodnotou. Volá ho `DocumentValidator::validate()`.
   snímek deníku beze změny (ob9b, r1lf, wp66, 2026-10-26).
 - **`capBandByRowCoverage()` zanikla** — jediný strop je
   `AnalysisConfidenceResolver::capBand()` (pokrytí řádků + nálezy hodnot).
+
+## Ověření D17 (2026-10-26)
+
+Tři sady × 3, prompt v4.11.0, Sonnet 5.5, 156 volání, ~5,6 USD;
+výsledky `tests/eval/<sada>/2026-10-26-baseline-2.json`, srovnání
+s ranním během `2026-10-26-baseline.json` (před #118).
+
+| Sada | Shoda polí | Čisté doklady |
+|------|-----------|---------------|
+| plátce | 99,93 % (ráno 99,1 %, bez selhaného volání 99,97 %) | 88,3 % (90 %) |
+| neplátce | 99,99 % (99,99 %) | 97,9 % (97,9 %) |
+| spolek | 99,97 % (99,92 %) | 95,8 % (87,5 %) |
+
+- `matchNormalized`: telefon 101 → 0, IBAN 28 → 0, PSČ 31 → 0; zbývá
+  jen `totals.totalRounding` (0 ≡ `null`, sémantika porovnání).
+- `valueFindings`: jediný nález ve 156 voláních — `bank_account_repaired`
+  u 0701 (plátce, 1 ze 3), opravený IBAN = očekávání. V ostatních sadách
+  model IBAN 0701 tentokrát přečetl správně. Žádný falešný nález.
+- Odchylky nesouvisí s #118: E4 (0602 `supplyKind`, čeká na #123),
+  0301 `totals.totalAmount` 4 725,28 místo 4 725,00 v 2 ze 3 u plátce
+  (model vzal součet rekapitulace před zaokrouhlením; nové, normalizátor
+  součty nemení), 0802 obec s „CA“ 1/3, výjimka štítku řádku 1002
+  (ISDOC) 1/3.

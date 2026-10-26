@@ -1,0 +1,2828 @@
+{
+    "format": "shpd.eval.run.v1",
+    "metricsVersion": 2,
+    "set": {
+        "name": "cz-association",
+        "country": "cz",
+        "profile": "association",
+        "path": "/home/sebik/sw/shpd/tests/datasets/cz/association",
+        "hash": "98efce8e1f258b2ab8a43ce82fad7bc05615491f4b55520dd583d3cd2639fd95",
+        "messages": 16,
+        "messagesInSet": 16,
+        "only": [],
+        "limit": null
+    },
+    "git": {
+        "commit": "27311538",
+        "dirty": false
+    },
+    "variant": {
+        "name": "baseline",
+        "file": "baseline.jsonc",
+        "declared": {
+            "name": "baseline",
+            "description": "Výchozí profil a model funkce mail.extraction",
+            "profile": "czech_general",
+            "promptTemplateFile": null,
+            "call": {
+                "connection": null,
+                "model": null,
+                "thinking": null,
+                "effort": null,
+                "maxTokens": null
+            },
+            "contentTags": {
+                "model": null,
+                "thinking": null,
+                "effort": null
+            }
+        },
+        "effective": {
+            "profile": "czech_general",
+            "profileNdx": 1,
+            "promptVersion": "v4.11.0",
+            "promptSource": "profile",
+            "promptHash": "53db20a52a12d5b1c36ea2dd3f8191a2c4504fc2f6d4997b3e9bb3ef82668487",
+            "platform": "anthropic",
+            "connection": "server",
+            "connectionOrigin": "server",
+            "model": "claude-sonnet-5-5",
+            "catalogModel": "claude-sonnet-5-5",
+            "thinking": null,
+            "effort": null,
+            "maxTokens": 32768,
+            "temperature": 0.0,
+            "origins": {
+                "connection": "server",
+                "model": "tier",
+                "thinking": "declaration",
+                "effort": "declaration",
+                "maxTokens": "declaration"
+            },
+            "contentTags": {
+                "connection": "server",
+                "model": "claude-sonnet-5-5",
+                "thinking": null,
+                "effort": null,
+                "maxTokens": 8000
+            }
+        }
+    },
+    "startedAt": "2026-10-26T11:58:04+00:00",
+    "finishedAt": "2026-10-26T12:06:48+00:00",
+    "repeat": 3,
+    "plannedCalls": 48,
+    "stoppedBy": null,
+    "metrics": {
+        "calls.total": 48,
+        "calls.ok": 48,
+        "calls.failed": 0,
+        "fields.header.n": 732,
+        "fields.header.hit": 1.0,
+        "fields.header.normalized": 0.0,
+        "fields.header.missing": 0,
+        "fields.header.extra": 0,
+        "fields.header.wrong": 0,
+        "fields.header.notCarried": 36,
+        "fields.supplier.n": 846,
+        "fields.supplier.hit": 1.0,
+        "fields.supplier.normalized": 0.0,
+        "fields.supplier.missing": 0,
+        "fields.supplier.extra": 0,
+        "fields.supplier.wrong": 0,
+        "fields.supplier.notCarried": 18,
+        "fields.customer.n": 744,
+        "fields.customer.hit": 1.0,
+        "fields.customer.normalized": 0.0,
+        "fields.customer.missing": 0,
+        "fields.customer.extra": 0,
+        "fields.customer.wrong": 0,
+        "fields.customer.notCarried": 18,
+        "fields.vat.n": 1137,
+        "fields.vat.hit": 0.9983,
+        "fields.vat.normalized": 0.0,
+        "fields.vat.missing": 0,
+        "fields.vat.extra": 0,
+        "fields.vat.wrong": 2,
+        "fields.vat.notCarried": 213,
+        "fields.rows.n": 4239,
+        "fields.rows.hit": 1.0,
+        "fields.rows.normalized": 0.0,
+        "fields.rows.missing": 0,
+        "fields.rows.extra": 0,
+        "fields.rows.wrong": 0,
+        "fields.rows.notCarried": 585,
+        "fields.vatRecap.n": 228,
+        "fields.vatRecap.hit": 1.0,
+        "fields.vatRecap.normalized": 0.0,
+        "fields.vatRecap.missing": 0,
+        "fields.vatRecap.extra": 0,
+        "fields.vatRecap.wrong": 0,
+        "fields.vatRecap.notCarried": 0,
+        "fields.totals.n": 192,
+        "fields.totals.hit": 1.0,
+        "fields.totals.normalized": 0.0365,
+        "fields.totals.missing": 0,
+        "fields.totals.extra": 0,
+        "fields.totals.wrong": 0,
+        "fields.totals.notCarried": 0,
+        "fields.tag.n": 48,
+        "fields.tag.hit": 1.0,
+        "fields.tag.normalized": 0.0,
+        "fields.tag.missing": 0,
+        "fields.tag.extra": 0,
+        "fields.tag.wrong": 0,
+        "fields.tag.notCarried": 0,
+        "fields.rowExceptions.n": 282,
+        "fields.rowExceptions.hit": 1.0,
+        "fields.rowExceptions.normalized": 0.0,
+        "fields.rowExceptions.missing": 0,
+        "fields.rowExceptions.extra": 0,
+        "fields.rowExceptions.wrong": 0,
+        "fields.rowExceptions.notCarried": 0,
+        "fields.classification.n": 48,
+        "fields.classification.hit": 1.0,
+        "fields.classification.normalized": 0.0,
+        "fields.classification.missing": 0,
+        "fields.classification.extra": 0,
+        "fields.classification.wrong": 0,
+        "fields.classification.notCarried": 0,
+        "fields.all.n": 8496,
+        "fields.all.hit": 0.9997,
+        "fields.all.normalized": 0.0008,
+        "fields.all.missing": 0,
+        "fields.all.extra": 0,
+        "fields.all.wrong": 2,
+        "fields.all.notCarried": 870,
+        "fields.informative.n": 48,
+        "fields.informative.hit": 0.9167,
+        "fields.informative.normalized": 0.0,
+        "fields.informative.missing": 3,
+        "fields.informative.extra": 1,
+        "fields.informative.wrong": 0,
+        "documents.clean": 0.9583,
+        "documents.amountsCorrect": 1.0,
+        "documents.rowCountOk": 1.0,
+        "documents.classificationOk": 1.0,
+        "documents.tagOk": 1.0,
+        "cost.usd": 1.489174,
+        "cost.perDocument": 0.031024,
+        "cost.totalUsd": 1.704298,
+        "cost.totalPerDocument": 0.035506,
+        "tags.calls": 48,
+        "tags.usd": 0.215124,
+        "tags.tokens.input": 60942,
+        "tags.tokens.output": 9324,
+        "tokens.input": 367497,
+        "tokens.output": 75418,
+        "tokens.inputPerDocument": 7656,
+        "tokens.outputPerDocument": 1571,
+        "time.ms": 449572,
+        "time.perDocumentMs": 9366
+    },
+    "range": {
+        "calls.total": {
+            "min": 16,
+            "max": 16
+        },
+        "calls.ok": {
+            "min": 16,
+            "max": 16
+        },
+        "calls.failed": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.header.n": {
+            "min": 244,
+            "max": 244
+        },
+        "fields.header.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.header.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.header.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.header.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.header.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.header.notCarried": {
+            "min": 12,
+            "max": 12
+        },
+        "fields.supplier.n": {
+            "min": 282,
+            "max": 282
+        },
+        "fields.supplier.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.supplier.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.supplier.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.supplier.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.supplier.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.supplier.notCarried": {
+            "min": 6,
+            "max": 6
+        },
+        "fields.customer.n": {
+            "min": 248,
+            "max": 248
+        },
+        "fields.customer.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.customer.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.customer.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.customer.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.customer.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.customer.notCarried": {
+            "min": 6,
+            "max": 6
+        },
+        "fields.vat.n": {
+            "min": 379,
+            "max": 379
+        },
+        "fields.vat.hit": {
+            "min": 0.9974,
+            "max": 1.0
+        },
+        "fields.vat.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.vat.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vat.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vat.wrong": {
+            "min": 0,
+            "max": 1
+        },
+        "fields.vat.notCarried": {
+            "min": 71,
+            "max": 71
+        },
+        "fields.rows.n": {
+            "min": 1413,
+            "max": 1413
+        },
+        "fields.rows.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.rows.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.rows.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rows.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rows.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rows.notCarried": {
+            "min": 195,
+            "max": 195
+        },
+        "fields.vatRecap.n": {
+            "min": 76,
+            "max": 76
+        },
+        "fields.vatRecap.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.vatRecap.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.vatRecap.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vatRecap.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vatRecap.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vatRecap.notCarried": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.n": {
+            "min": 64,
+            "max": 64
+        },
+        "fields.totals.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.totals.normalized": {
+            "min": 0.0313,
+            "max": 0.0469
+        },
+        "fields.totals.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.notCarried": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.n": {
+            "min": 16,
+            "max": 16
+        },
+        "fields.tag.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.tag.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.tag.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.notCarried": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rowExceptions.n": {
+            "min": 94,
+            "max": 94
+        },
+        "fields.rowExceptions.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.rowExceptions.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.rowExceptions.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rowExceptions.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rowExceptions.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rowExceptions.notCarried": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.n": {
+            "min": 16,
+            "max": 16
+        },
+        "fields.classification.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.classification.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.classification.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.notCarried": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.all.n": {
+            "min": 2832,
+            "max": 2832
+        },
+        "fields.all.hit": {
+            "min": 0.9996,
+            "max": 1.0
+        },
+        "fields.all.normalized": {
+            "min": 0.0007,
+            "max": 0.0011
+        },
+        "fields.all.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.all.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.all.wrong": {
+            "min": 0,
+            "max": 1
+        },
+        "fields.all.notCarried": {
+            "min": 290,
+            "max": 290
+        },
+        "fields.informative.n": {
+            "min": 16,
+            "max": 16
+        },
+        "fields.informative.hit": {
+            "min": 0.875,
+            "max": 0.9375
+        },
+        "fields.informative.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.informative.missing": {
+            "min": 1,
+            "max": 1
+        },
+        "fields.informative.extra": {
+            "min": 0,
+            "max": 1
+        },
+        "fields.informative.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "documents.clean": {
+            "min": 0.9375,
+            "max": 1.0
+        },
+        "documents.amountsCorrect": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "documents.rowCountOk": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "documents.classificationOk": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "documents.tagOk": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "cost.usd": {
+            "min": 0.493488,
+            "max": 0.501748
+        },
+        "cost.perDocument": {
+            "min": 0.030843,
+            "max": 0.031359
+        },
+        "cost.totalUsd": {
+            "min": 0.563866,
+            "max": 0.573586
+        },
+        "cost.totalPerDocument": {
+            "min": 0.035242,
+            "max": 0.035849
+        },
+        "tags.calls": {
+            "min": 16,
+            "max": 16
+        },
+        "tags.usd": {
+            "min": 0.070378,
+            "max": 0.072908
+        },
+        "tags.tokens.input": {
+            "min": 20314,
+            "max": 20314
+        },
+        "tags.tokens.output": {
+            "min": 2975,
+            "max": 3228
+        },
+        "tokens.input": {
+            "min": 122499,
+            "max": 122499
+        },
+        "tokens.output": {
+            "min": 24849,
+            "max": 25675
+        },
+        "tokens.inputPerDocument": {
+            "min": 7656,
+            "max": 7656
+        },
+        "tokens.outputPerDocument": {
+            "min": 1553,
+            "max": 1605
+        },
+        "time.ms": {
+            "min": 146348,
+            "max": 155621
+        },
+        "time.perDocumentMs": {
+            "min": 9147,
+            "max": 9726
+        }
+    },
+    "fieldStability": {
+        "_resolve.contentTag.rowExceptions[].rowIndex": 1.0,
+        "_resolve.contentTag.rowExceptions[].tag": 1.0,
+        "_resolve.contentTag.tag": 1.0,
+        "currency": 1.0,
+        "customer": 1.0,
+        "customer.address.city": 1.0,
+        "customer.address.country": 1.0,
+        "customer.address.houseNumber": 1.0,
+        "customer.address.street": 1.0,
+        "customer.address.zip": 1.0,
+        "customer.bankAccount.accountNumber": 1.0,
+        "customer.bankAccount.bic": 1.0,
+        "customer.bankAccount.iban": 1.0,
+        "customer.companyId": 1.0,
+        "customer.contact.email": 1.0,
+        "customer.contact.name": 1.0,
+        "customer.contact.phone": 1.0,
+        "customer.contact.web": 1.0,
+        "customer.country": 1.0,
+        "customer.courtRegistration": 1.0,
+        "customer.name": 1.0,
+        "customer.taxId": 1.0,
+        "customer.vatId": 1.0,
+        "dates.dueDate": 1.0,
+        "dates.issueDate": 1.0,
+        "dates.periodFrom": 1.0,
+        "dates.periodTo": 1.0,
+        "dates.taxPointDate": 1.0,
+        "docNumber": 1.0,
+        "docType": 1.0,
+        "exchangeRate": 1.0,
+        "format": 1.0,
+        "formatVersion": 1.0,
+        "message_classification.primary_type": 1.0,
+        "notes.onDocument": 0.9375,
+        "payment.constantSymbol": 1.0,
+        "payment.method": 1.0,
+        "payment.paymentReference": 1.0,
+        "payment.specificSymbol": 1.0,
+        "rows[].discountAmount": 1.0,
+        "rows[].discountPct": 1.0,
+        "rows[].item.description": 1.0,
+        "rows[].item.ean": 1.0,
+        "rows[].item.name": 1.0,
+        "rows[].item.supplierCode": 1.0,
+        "rows[].priceCalcMode": 1.0,
+        "rows[].quantity": 1.0,
+        "rows[].rowKind": 1.0,
+        "rows[].totalPrice": 1.0,
+        "rows[].unit": 1.0,
+        "rows[].unitPrice": 1.0,
+        "rows[].vat.pct": 1.0,
+        "rows[].vat.reverseChargeCode": 1.0,
+        "rows[].vat.supplyKind": 0.9,
+        "selfParty": 1.0,
+        "supplier.address.city": 1.0,
+        "supplier.address.country": 1.0,
+        "supplier.address.houseNumber": 1.0,
+        "supplier.address.street": 1.0,
+        "supplier.address.zip": 1.0,
+        "supplier.bankAccount.accountNumber": 1.0,
+        "supplier.bankAccount.bic": 1.0,
+        "supplier.bankAccount.iban": 1.0,
+        "supplier.companyId": 1.0,
+        "supplier.contact.email": 1.0,
+        "supplier.contact.name": 1.0,
+        "supplier.contact.phone": 1.0,
+        "supplier.contact.web": 1.0,
+        "supplier.country": 1.0,
+        "supplier.courtRegistration": 1.0,
+        "supplier.name": 1.0,
+        "supplier.taxId": 1.0,
+        "supplier.vatId": 1.0,
+        "totals.totalAmount": 1.0,
+        "totals.totalBase": 1.0,
+        "totals.totalRounding": 1.0,
+        "totals.totalVat": 1.0,
+        "vat.mode": 1.0,
+        "vat.place": 1.0,
+        "vat.reverseCharge": 1.0,
+        "vatRecap[].base": 1.0,
+        "vatRecap[].tax": 1.0,
+        "vatRecap[].total": 1.0,
+        "vatRecap[].vatPct": 1.0
+    },
+    "formatStability": {
+        "_resolve.contentTag.rowExceptions[].rowIndex": 1.0,
+        "_resolve.contentTag.rowExceptions[].tag": 1.0,
+        "_resolve.contentTag.tag": 1.0,
+        "currency": 1.0,
+        "customer": 1.0,
+        "customer.address.city": 1.0,
+        "customer.address.country": 1.0,
+        "customer.address.houseNumber": 1.0,
+        "customer.address.street": 1.0,
+        "customer.address.zip": 1.0,
+        "customer.bankAccount.accountNumber": 1.0,
+        "customer.bankAccount.bic": 1.0,
+        "customer.bankAccount.iban": 1.0,
+        "customer.companyId": 1.0,
+        "customer.contact.email": 1.0,
+        "customer.contact.name": 1.0,
+        "customer.contact.phone": 1.0,
+        "customer.contact.web": 1.0,
+        "customer.country": 1.0,
+        "customer.courtRegistration": 1.0,
+        "customer.name": 1.0,
+        "customer.taxId": 1.0,
+        "customer.vatId": 1.0,
+        "dates.dueDate": 1.0,
+        "dates.issueDate": 1.0,
+        "dates.periodFrom": 1.0,
+        "dates.periodTo": 1.0,
+        "dates.taxPointDate": 1.0,
+        "docNumber": 1.0,
+        "docType": 1.0,
+        "exchangeRate": 1.0,
+        "format": 1.0,
+        "formatVersion": 1.0,
+        "message_classification.primary_type": 1.0,
+        "notes.onDocument": 1.0,
+        "payment.constantSymbol": 1.0,
+        "payment.method": 1.0,
+        "payment.paymentReference": 1.0,
+        "payment.specificSymbol": 1.0,
+        "rows[].discountAmount": 1.0,
+        "rows[].discountPct": 1.0,
+        "rows[].item.description": 1.0,
+        "rows[].item.ean": 1.0,
+        "rows[].item.name": 1.0,
+        "rows[].item.supplierCode": 1.0,
+        "rows[].priceCalcMode": 1.0,
+        "rows[].quantity": 1.0,
+        "rows[].rowKind": 1.0,
+        "rows[].totalPrice": 1.0,
+        "rows[].unit": 1.0,
+        "rows[].unitPrice": 1.0,
+        "rows[].vat.pct": 1.0,
+        "rows[].vat.reverseChargeCode": 1.0,
+        "rows[].vat.supplyKind": 1.0,
+        "selfParty": 1.0,
+        "supplier.address.city": 1.0,
+        "supplier.address.country": 1.0,
+        "supplier.address.houseNumber": 1.0,
+        "supplier.address.street": 1.0,
+        "supplier.address.zip": 1.0,
+        "supplier.bankAccount.accountNumber": 1.0,
+        "supplier.bankAccount.bic": 1.0,
+        "supplier.bankAccount.iban": 1.0,
+        "supplier.companyId": 1.0,
+        "supplier.contact.email": 1.0,
+        "supplier.contact.name": 1.0,
+        "supplier.contact.phone": 1.0,
+        "supplier.contact.web": 1.0,
+        "supplier.country": 1.0,
+        "supplier.courtRegistration": 1.0,
+        "supplier.name": 1.0,
+        "supplier.taxId": 1.0,
+        "supplier.vatId": 1.0,
+        "totals.totalAmount": 1.0,
+        "totals.totalBase": 1.0,
+        "totals.totalRounding": 0.9375,
+        "totals.totalVat": 1.0,
+        "vat.mode": 1.0,
+        "vat.place": 1.0,
+        "vat.reverseCharge": 1.0,
+        "vatRecap[].base": 1.0,
+        "vatRecap[].tax": 1.0,
+        "vatRecap[].total": 1.0,
+        "vatRecap[].vatPct": 1.0
+    },
+    "byVariant": {
+        "domestic-goods": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.141,
+            "tags.usd": 0.023976
+        },
+        "domestic-non-payer-supplier": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0058,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.111202,
+            "tags.usd": 0.016002
+        },
+        "domestic-reverse-charge": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.129206,
+            "tags.usd": 0.015636
+        },
+        "domestic-rounding": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.116574,
+            "tags.usd": 0.015854
+        },
+        "domestic-two-rates": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.122424,
+            "tags.usd": 0.018534
+        },
+        "eu-goods": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.997,
+            "fields.all.normalized": 0.006,
+            "documents.clean": 0.6667,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.252838,
+            "tags.usd": 0.016308
+        },
+        "long-document": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.403946,
+            "tags.usd": 0.091924
+        },
+        "receipt": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.211984,
+            "tags.usd": 0.01689
+        }
+    },
+    "byForm": {
+        "pdf": {
+            "calls.total": 30,
+            "calls.ok": 30,
+            "fields.all.hit": 0.9996,
+            "fields.all.normalized": 0.0014,
+            "documents.clean": 0.9333,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 1.489174,
+            "tags.usd": 0.116586
+        },
+        "pdfIsdoc": {
+            "calls.total": 18,
+            "calls.ok": 18,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.0,
+            "tags.usd": 0.098538
+        }
+    },
+    "byPath": {
+        "ai": {
+            "calls.total": 30,
+            "calls.ok": 30,
+            "fields.all.hit": 0.9996,
+            "fields.all.normalized": 0.0014,
+            "documents.clean": 0.9333,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 1.489174,
+            "tags.usd": 0.116586
+        },
+        "isdoc": {
+            "calls.total": 18,
+            "calls.ok": 18,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.0,
+            "tags.usd": 0.098538
+        }
+    },
+    "deviationsByField": {
+        "rows[].vat.supplyKind": 2
+    },
+    "informativeByField": {
+        "notes.onDocument": 4
+    },
+    "calls": [
+        {
+            "messageId": "MSG-CORPUS-AS-0301",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.038858,
+            "tokensIn": 12214,
+            "tokensOut": 1443,
+            "durationMs": 8220,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "tags": {
+                "tokensIn": 1132,
+                "tokensOut": 38,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002644
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 0,
+                "matchNormalized": 0,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [
+                {
+                    "path": "notes.onDocument",
+                    "state": "missing",
+                    "expected": "Vyúčtování dodávky elektřiny za období 1. 7. 2026 – 31. 7. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín.",
+                    "actual": null,
+                    "informative": true
+                }
+            ],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0301",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.038858,
+            "tokensIn": 12214,
+            "tokensOut": 1443,
+            "durationMs": 8580,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "tags": {
+                "tokensIn": 1132,
+                "tokensOut": 38,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002644
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 0,
+                "matchNormalized": 0,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [
+                {
+                    "path": "notes.onDocument",
+                    "state": "missing",
+                    "expected": "Vyúčtování dodávky elektřiny za období 1. 7. 2026 – 31. 7. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín.",
+                    "actual": null,
+                    "informative": true
+                }
+            ],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0301",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.038858,
+            "tokensIn": 12214,
+            "tokensOut": 1443,
+            "durationMs": 8082,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "tags": {
+                "tokensIn": 1132,
+                "tokensOut": 38,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002644
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 0,
+                "matchNormalized": 0,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [
+                {
+                    "path": "notes.onDocument",
+                    "state": "missing",
+                    "expected": "Vyúčtování dodávky elektřiny za období 1. 7. 2026 – 31. 7. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín.",
+                    "actual": null,
+                    "informative": true
+                }
+            ],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0601",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.03797,
+            "tokensIn": 11945,
+            "tokensOut": 1408,
+            "durationMs": 7618,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "tags": {
+                "tokensIn": 1117,
+                "tokensOut": 36,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002594
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0601",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0379,
+            "tokensIn": 11945,
+            "tokensOut": 1401,
+            "durationMs": 7993,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "tags": {
+                "tokensIn": 1117,
+                "tokensOut": 36,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002594
+            },
+            "counts": {
+                "match": 109,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0601",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.03805,
+            "tokensIn": 11945,
+            "tokensOut": 1416,
+            "durationMs": 7770,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "tags": {
+                "tokensIn": 1117,
+                "tokensOut": 36,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002594
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0201",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.040878,
+            "tokensIn": 12089,
+            "tokensOut": 1670,
+            "durationMs": 8913,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "tags": {
+                "tokensIn": 1181,
+                "tokensOut": 87,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.003232
+            },
+            "counts": {
+                "match": 133,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0201",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.040938,
+            "tokensIn": 12089,
+            "tokensOut": 1676,
+            "durationMs": 8922,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "tags": {
+                "tokensIn": 1181,
+                "tokensOut": 87,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.003232
+            },
+            "counts": {
+                "match": 133,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0201",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.040608,
+            "tokensIn": 12089,
+            "tokensOut": 1643,
+            "durationMs": 8673,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "tags": {
+                "tokensIn": 1181,
+                "tokensOut": 87,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.003232
+            },
+            "counts": {
+                "match": 133,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0101",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.04694,
+            "tokensIn": 12155,
+            "tokensOut": 2263,
+            "durationMs": 12705,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "tags": {
+                "tokensIn": 1161,
+                "tokensOut": 61,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002932
+            },
+            "counts": {
+                "match": 127,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0101",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.04693,
+            "tokensIn": 12155,
+            "tokensOut": 2262,
+            "durationMs": 12680,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "tags": {
+                "tokensIn": 1161,
+                "tokensOut": 61,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002932
+            },
+            "counts": {
+                "match": 127,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0101",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.04713,
+            "tokensIn": 12155,
+            "tokensOut": 2282,
+            "durationMs": 12502,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "tags": {
+                "tokensIn": 1161,
+                "tokensOut": 61,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002932
+            },
+            "counts": {
+                "match": 127,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0401",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.043132,
+            "tokensIn": 12026,
+            "tokensOut": 1908,
+            "durationMs": 11701,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "tags": {
+                "tokensIn": 1099,
+                "tokensOut": 39,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002588
+            },
+            "counts": {
+                "match": 95,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0401",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.043172,
+            "tokensIn": 12026,
+            "tokensOut": 1912,
+            "durationMs": 10990,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "tags": {
+                "tokensIn": 1099,
+                "tokensOut": 39,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002588
+            },
+            "counts": {
+                "match": 95,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0401",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.042902,
+            "tokensIn": 12026,
+            "tokensOut": 1885,
+            "durationMs": 10046,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "tags": {
+                "tokensIn": 1099,
+                "tokensOut": 39,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002588
+            },
+            "counts": {
+                "match": 95,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0901",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.032404,
+            "tokensIn": 11432,
+            "tokensOut": 954,
+            "durationMs": 5619,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "tags": {
+                "tokensIn": 1087,
+                "tokensOut": 67,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002844
+            },
+            "counts": {
+                "match": 80,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0901",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.032434,
+            "tokensIn": 11432,
+            "tokensOut": 957,
+            "durationMs": 5650,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "tags": {
+                "tokensIn": 1087,
+                "tokensOut": 67,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002844
+            },
+            "counts": {
+                "match": 80,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0901",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.032434,
+            "tokensIn": 11432,
+            "tokensOut": 957,
+            "durationMs": 5391,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "tags": {
+                "tokensIn": 1087,
+                "tokensOut": 67,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002844
+            },
+            "counts": {
+                "match": 80,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0701",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.042234,
+            "tokensIn": 11802,
+            "tokensOut": 1863,
+            "durationMs": 11735,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "tags": {
+                "tokensIn": 1097,
+                "tokensOut": 35,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002544
+            },
+            "counts": {
+                "match": 90,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0701",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.034484,
+            "tokensIn": 11802,
+            "tokensOut": 1088,
+            "durationMs": 5766,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "tags": {
+                "tokensIn": 1097,
+                "tokensOut": 35,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002544
+            },
+            "counts": {
+                "match": 90,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0701",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.034484,
+            "tokensIn": 11802,
+            "tokensOut": 1088,
+            "durationMs": 5932,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "tags": {
+                "tokensIn": 1097,
+                "tokensOut": 35,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002544
+            },
+            "counts": {
+                "match": 90,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-1001",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.133992,
+            "tokensIn": 15476,
+            "tokensOut": 10304,
+            "durationMs": 51841,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "tags": {
+                "tokensIn": 2228,
+                "tokensOut": 958,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.014036
+            },
+            "counts": {
+                "match": 765,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-1001",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.134432,
+            "tokensIn": 15476,
+            "tokensOut": 10348,
+            "durationMs": 50872,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "tags": {
+                "tokensIn": 2228,
+                "tokensOut": 878,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.013236
+            },
+            "counts": {
+                "match": 765,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-1001",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.135522,
+            "tokensIn": 15476,
+            "tokensOut": 10457,
+            "durationMs": 52189,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "tags": {
+                "tokensIn": 2228,
+                "tokensOut": 984,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.014296
+            },
+            "counts": {
+                "match": 765,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0102",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 2595,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "tags": {
+                "tokensIn": 1180,
+                "tokensOut": 297,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.00533
+            },
+            "counts": {
+                "match": 117,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 25
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0102",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 2308,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "tags": {
+                "tokensIn": 1180,
+                "tokensOut": 266,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.00502
+            },
+            "counts": {
+                "match": 117,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 25
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0102",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 2427,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "tags": {
+                "tokensIn": 1180,
+                "tokensOut": 247,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.00483
+            },
+            "counts": {
+                "match": 117,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 25
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0302",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1248,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "tags": {
+                "tokensIn": 1132,
+                "tokensOut": 37,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002634
+            },
+            "counts": {
+                "match": 93,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 17
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0302",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1061,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "tags": {
+                "tokensIn": 1132,
+                "tokensOut": 38,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002644
+            },
+            "counts": {
+                "match": 93,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 17
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0302",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1117,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "tags": {
+                "tokensIn": 1132,
+                "tokensOut": 38,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002644
+            },
+            "counts": {
+                "match": 93,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 17
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0202",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1251,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "tags": {
+                "tokensIn": 1163,
+                "tokensOut": 62,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002946
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 21
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0202",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1191,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "tags": {
+                "tokensIn": 1163,
+                "tokensOut": 62,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002946
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 21
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0202",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1064,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "tags": {
+                "tokensIn": 1163,
+                "tokensOut": 62,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002946
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 21
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0402",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1251,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "tags": {
+                "tokensIn": 1117,
+                "tokensOut": 39,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002624
+            },
+            "counts": {
+                "match": 93,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 17
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0402",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1333,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "tags": {
+                "tokensIn": 1117,
+                "tokensOut": 39,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002624
+            },
+            "counts": {
+                "match": 93,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 17
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0402",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1139,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "tags": {
+                "tokensIn": 1117,
+                "tokensOut": 39,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002624
+            },
+            "counts": {
+                "match": 93,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 17
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0902",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.039224,
+            "tokensIn": 11437,
+            "tokensOut": 1635,
+            "durationMs": 9924,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "tags": {
+                "tokensIn": 1078,
+                "tokensOut": 63,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002786
+            },
+            "counts": {
+                "match": 84,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0902",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.037614,
+            "tokensIn": 11437,
+            "tokensOut": 1474,
+            "durationMs": 9001,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "tags": {
+                "tokensIn": 1078,
+                "tokensOut": 63,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002786
+            },
+            "counts": {
+                "match": 84,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 0,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 1,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [
+                {
+                    "path": "notes.onDocument",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "Děkujeme za návštěvu.",
+                    "informative": true
+                }
+            ],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0902",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.037874,
+            "tokensIn": 11437,
+            "tokensOut": 1500,
+            "durationMs": 8832,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "tags": {
+                "tokensIn": 1078,
+                "tokensOut": 63,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002786
+            },
+            "counts": {
+                "match": 84,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0602",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.046116,
+            "tokensIn": 11923,
+            "tokensOut": 2227,
+            "durationMs": 12870,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "tags": {
+                "tokensIn": 1116,
+                "tokensOut": 61,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002842
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 1,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [
+                {
+                    "path": "rows[2].vat.supplyKind",
+                    "state": "wrong",
+                    "expected": "services",
+                    "actual": "goods"
+                }
+            ],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0602",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.046726,
+            "tokensIn": 11923,
+            "tokensOut": 2288,
+            "durationMs": 13177,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "tags": {
+                "tokensIn": 1116,
+                "tokensOut": 61,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002842
+            },
+            "counts": {
+                "match": 111,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0602",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.046076,
+            "tokensIn": 11923,
+            "tokensOut": 2223,
+            "durationMs": 12479,
+            "model": "claude-sonnet-5-5",
+            "path": "ai",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "tags": {
+                "tokensIn": 1116,
+                "tokensOut": 61,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.002842
+            },
+            "counts": {
+                "match": 110,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 1,
+                "notCarried": 0
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                {
+                    "path": "totals.totalRounding",
+                    "actual": null
+                }
+            ],
+            "deviations": [
+                {
+                    "path": "rows[2].vat.supplyKind",
+                    "state": "wrong",
+                    "expected": "services",
+                    "actual": "goods"
+                }
+            ],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0702",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1065,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "tags": {
+                "tokensIn": 1100,
+                "tokensOut": 59,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.00279
+            },
+            "counts": {
+                "match": 80,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 13
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0702",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1056,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "tags": {
+                "tokensIn": 1100,
+                "tokensOut": 59,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.00279
+            },
+            "counts": {
+                "match": 80,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 13
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-0702",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 1038,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "tags": {
+                "tokensIn": 1100,
+                "tokensOut": 59,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.00279
+            },
+            "counts": {
+                "match": 80,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 13
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-1002",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 7065,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "tags": {
+                "tokensIn": 2326,
+                "tokensOut": 1182,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.016472
+            },
+            "counts": {
+                "match": 632,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 197
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-1002",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 7023,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "tags": {
+                "tokensIn": 2326,
+                "tokensOut": 1146,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.016112
+            },
+            "counts": {
+                "match": 632,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 197
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        },
+        {
+            "messageId": "MSG-CORPUS-AS-1002",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0,
+            "tokensIn": 0,
+            "tokensOut": 0,
+            "durationMs": 7667,
+            "model": "isdoc",
+            "path": "isdoc",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "tags": {
+                "tokensIn": 2326,
+                "tokensOut": 1312,
+                "model": "claude-sonnet-5-5",
+                "costUsd": 0.017772
+            },
+            "counts": {
+                "match": 632,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0,
+                "notCarried": 197
+            },
+            "informativeCounts": {
+                "match": 1,
+                "matchNormalized": 0,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [],
+            "deviations": [],
+            "informativeDeviations": [],
+            "valueFindings": []
+        }
+    ]
+}
