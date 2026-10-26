@@ -512,7 +512,7 @@
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-lookup__action {
@@ -536,7 +536,7 @@
   }
 
   .shpd-lookup__action--clear {
-    font-size: 1.25rem;
+    font-size: var(--shpd-font-size-xl);
   }
 
   .shpd-lookup__dropdown {
@@ -544,7 +544,7 @@
     top: 100%;
     left: 0;
     right: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     background-color: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
@@ -578,7 +578,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
+    gap: 0.125rem;
     width: 100%;
     padding: var(--shpd-space-sm);
     border: none;

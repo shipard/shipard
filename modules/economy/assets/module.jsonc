@@ -163,7 +163,11 @@
             "table": "economy_assets_assets",
             "class": "Shipard\\Module\\Economy\\Assets\\AssetsViewer",
             "navSection": "assets",
-            "navOrder": 10
+            "navOrder": 10,
+            // Titulek je název, inventární číslo v podtitulku (#133 D19).
+            "detailHeader": {"title": "{name}", "subtitle": "{asset_number}"},
+            // Fotky, smlouvy, doklady — vlastní tab Přílohy (#133 D8, D21).
+            "detailAttachments": "tab"
         },
         {
             "id": "economy.assets.types",
@@ -190,7 +194,9 @@
             "name:en": "Asset accounting groups",
             "icon": "calculator",
             "table": "economy_assets_accounting_groups",
-            "class": "Shipard\\Module\\Economy\\Assets\\AccountingGroupsViewer"
+            "class": "Shipard\\Module\\Economy\\Assets\\AccountingGroupsViewer",
+            // displayPattern je `{code} — {name}`; v hlavičce název, kód v podtitulku (#133 D19).
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"}
         }
     ],
 

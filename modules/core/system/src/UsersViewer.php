@@ -77,23 +77,25 @@ class UsersViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    /**
+     * Záznam pro detail: jen bezpečné sloupce (heslo jako příznak
+     * `has_password`); Osoba — sloupec přidává rozšíření z base.persons
+     * (#93 D6), zdroj dat bez Osob ho nemá.
+     */
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        // Osoba — sloupec přidává rozšíření z base.persons (#93 D6); zdroj dat
-        // bez Osob ho nemá.
         $hasPerson = $this->hasColumn('person');
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT `id`, `login`, `full_name`, `email`, `is_active`, `is_admin`,'
             . ' `is_system`, (`password_hash` IS NOT NULL) AS `has_password`'
             . ($hasPerson ? ', `person`' : '')
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
         $yes = $isCs ? 'Ano' : 'Yes';
         $no  = $isCs ? 'Ne' : 'No';
@@ -103,7 +105,7 @@ class UsersViewer extends TableViewer
             ['label' => 'Login', 'value' => (string) $record['login']],
             ['label' => 'E-mail', 'value' => (string) ($record['email'] ?? '')],
         ];
-        if ($hasPerson) {
+        if (array_key_exists('person', $record)) {
             $identity[] = [
                 'label' => $isCs ? 'Osoba' : 'Person',
                 'value' => $this->personName($record['person'] ?? null),
@@ -121,33 +123,37 @@ class UsersViewer extends TableViewer
             ],
         ];
 
-        $actions = [];
-        // Pozvánku lze poslat jen aktivnímu ne-systémovému účtu s e-mailem —
-        // stejná pravidla vynucuje POST /_users/{id}/invite.
-        if (!empty($record['is_active']) && empty($record['is_system'])
-            && trim((string) ($record['email'] ?? '')) !== '') {
-            $actions[] = [
-                'id'      => 'invite',
-                'label'   => $isCs ? 'Poslat pozvánku' : 'Send invitation',
-                'kind'    => 'button',
-                'variant' => 'secondary',
-            ];
-        }
-
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                        ['title' => $isCs ? 'Účet' : 'Account', 'items' => $account],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
+                    ['title' => $isCs ? 'Účet' : 'Account', 'items' => $account],
                 ],
-            ]],
-            'actions' => $actions,
-        ];
+            ],
+        ]];
+    }
+
+    /**
+     * Pozvánku lze poslat jen aktivnímu ne-systémovému účtu s e-mailem —
+     * stejná pravidla vynucuje POST /_users/{id}/invite.
+     */
+    protected function detailActions(array $record): array
+    {
+        if (empty($record['is_active']) || !empty($record['is_system'])
+            || trim((string) ($record['email'] ?? '')) === '') {
+            return [];
+        }
+        $isCs = ($this->language ?? 'en') === 'cs';
+
+        return [[
+            'id'      => 'invite',
+            'label'   => $isCs ? 'Poslat pozvánku' : 'Send invitation',
+            'kind'    => 'button',
+            'variant' => 'secondary',
+        ]];
     }
 
     /** Jméno navázané Osoby; prázdné bez vazby i u vazby na neexistující Osobu. */

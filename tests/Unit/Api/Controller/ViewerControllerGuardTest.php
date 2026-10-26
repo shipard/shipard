@@ -175,7 +175,11 @@ class ViewerControllerGuardTest extends TestCase
 	{
 		$found = $this->ctrl->detail('test.configOnly', 1, $this->nonAdmin(), $this->registry, [], $this->db);
 		$this->assertSame(200, $this->getStatus($found));
-		$this->assertSame(['toolbar' => [], 'detail' => ConfigOnlyViewer::DETAIL], $found->getPayload()['data']);
+		$this->assertSame(
+			['toolbar' => [], 'detail' => ['title' => 'Only', 'subtitle' => null, 'badges' => [], 'icon' => 'chip', 'tabs' => ConfigOnlyViewer::TABS]],
+			$found->getPayload()['data'],
+			'builder: hlavička z háčku vieweru bez tabulky, ikona z deklarace, taby z detailTabs()',
+		);
 
 		$missing = $this->ctrl->detail('test.configOnly', 2, $this->nonAdmin(), $this->registry, [], $this->db);
 		$this->assertSame(404, $this->getStatus($missing));
@@ -183,10 +187,10 @@ class ViewerControllerGuardTest extends TestCase
 	}
 }
 
-/** Testovací viewer bez tabulky: jeden syntetický záznam s id 1. */
+/** Testovací viewer bez tabulky: jeden syntetický záznam s id 1, hlavičku dodává sám (bez displayPattern). */
 final class ConfigOnlyViewer extends \Shipard\Core\Viewer\TableViewer
 {
-	public const DETAIL = ['tabs' => [['id' => 'overview', 'label' => 'Overview', 'content' => ['type' => 'properties', 'groups' => []]]]];
+	public const TABS = [['id' => 'overview', 'label' => 'Overview', 'content' => ['type' => 'properties', 'groups' => []]]];
 
 	public function selectRows(?string $search, array $filters, int $pageNumber): array
 	{
@@ -203,9 +207,14 @@ final class ConfigOnlyViewer extends \Shipard\Core\Viewer\TableViewer
 		return $recordId === 1 ? ['id' => 1, 'name' => 'Only'] : null;
 	}
 
-	public function renderDetail(int $recordId): array
+	protected function detailHeader(array $record): \Shipard\Core\Viewer\Detail\DetailHeader
 	{
-		return self::DETAIL;
+		return new \Shipard\Core\Viewer\Detail\DetailHeader((string) $record['name']);
+	}
+
+	protected function detailTabs(array $record): array
+	{
+		return self::TABS;
 	}
 
 	public function getToolbarActions(?array $selectedRow): array

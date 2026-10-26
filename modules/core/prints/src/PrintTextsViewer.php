@@ -99,12 +99,13 @@ class PrintTextsViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+        return $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
+    }
+
+    protected function detailTabs(array $record): array
+    {
         $choices = $this->choices();
         $slot    = (string) ($record['slot'] ?? '');
 
@@ -144,20 +145,18 @@ class PrintTextsViewer extends TableViewer
             self::appliesOn($record, new \DateTimeImmutable('today')) ? 'Platí' : 'Neplatí',
         );
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => 'Text', 'items' => $text],
-                        ['title' => 'Kde se text použije', 'items' => $target],
-                        ['title' => 'Platnost', 'items' => $validity],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => 'Text', 'items' => $text],
+                    ['title' => 'Kde se text použije', 'items' => $target],
+                    ['title' => 'Platnost', 'items' => $validity],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     /**

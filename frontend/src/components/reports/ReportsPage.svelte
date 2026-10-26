@@ -432,12 +432,12 @@
     display: flex;
     flex-direction: column;
     min-width: 160px;
-    padding: 4px 0;
+    padding: var(--shpd-space-xs) 0;
   }
 
   .shpd-reports__export-item {
     text-align: left;
-    padding: 10px 14px;
+    padding: 0.625rem 0.875rem;
     border: none;
     background: none;
     font-family: inherit;

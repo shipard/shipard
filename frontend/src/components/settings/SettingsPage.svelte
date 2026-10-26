@@ -311,7 +311,7 @@
   }
 
   .shpd-settings-page__label {
-    padding-top: calc(var(--shpd-input-padding-y) + 1px);
+    padding-top: calc(var(--shpd-input-padding-y) + 0.0625rem);
     font-size: var(--shpd-font-size-sm);
     font-weight: 500;
     color: var(--shpd-color-text);

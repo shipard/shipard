@@ -9,6 +9,8 @@ use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Mail\IncomingMessageCode;
+use Shipard\Core\Viewer\Detail\DetailHeader;
+use Shipard\Core\Viewer\Detail\RecordAttachments;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -21,9 +23,6 @@ use Shipard\Core\Viewer\TableViewer;
 class DocsHeadsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'docs.core.docStates';
-
-    /** tableId tabulky docs_core_heads — pro vlastní přílohy dokladu. */
-    private const TABLE_ID_HEADS = 401;
 
     /**
      * docStates cfgItem položek (economy_items) — musí ladit
@@ -291,18 +290,21 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Detail dokladu — hlavička nad taby (generický header ViewerDetail:
-     * číslo, text, typ + stav, ikona) a tab `overview` s content typem
-     * `document`: strany Dodavatel/Odběratel, meta
-     * mřížka, řádky, DPH rekapitulace, součty a náhledy příloh (mailové
-     * zdrojové skupiny + vlastní přílohy dokladu) na konci.
+     * Detail dokladu přes builder `TableViewer` (#136 D18): záznam
+     * s JOINy (`loadDetailRecord`), hlavička (`detailHeader`: protistrana
+     * jako titulek, číslo · text v podtitulku, ikona podle typu; štítek
+     * stavu dodá builder — doklad V pořádku ho nemá, D20), tab Přehled
+     * s content typem `document` (strany Dodavatel/Odběratel, meta mřížka,
+     * řádky, DPH rekapitulace, součty) a tab Zaúčtování (`detailTabs`),
+     * akce (`detailActions`) a skupiny příloh zdrojové pošty
+     * (`detailAttachmentGroups`); vlastní přílohy dokladu načte builder.
      *
      * Server formátuje hodnoty (datumy `j. n. Y`, částky `1 234,56`);
      * frontend (DocumentDetail.svelte) jen skládá layout.
      */
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT h.*, p.`full_name` AS partner_name, pb.`full_name` AS partner_balance_name,'
             . ' cd.`code` AS cash_desk_code, cd.`name` AS cash_desk_name'
             . ' FROM `' . $this->table . '` h'
@@ -312,32 +314,25 @@ class DocsHeadsViewer extends TableViewer
             . ' WHERE h.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
+        $recordId = (int) $record['id'];
         [$supplier, $customer] = $this->buildDetailParties($record);
-
-        $content = [
-            'type'      => 'document',
-            'supplier'  => $supplier,
-            'customer'  => $customer,
-            'meta'      => $this->buildDetailMeta($record),
-            'rows'      => $this->buildDetailRows($recordId),
-            'vat_recap' => $this->buildDetailVatRecap($recordId),
-            'totals'    => $this->buildDetailTotals($record),
-        ];
-
-        $attachmentGroups = $this->detailAttachmentGroups($recordId);
-        if ($attachmentGroups !== []) {
-            $content['attachments'] = ['groups' => $attachmentGroups];
-        }
 
         $tabs = [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
-            'content' => $content,
+            'content' => [
+                'type'      => 'document',
+                'supplier'  => $supplier,
+                'customer'  => $customer,
+                'meta'      => $this->buildDetailMeta($record),
+                'rows'      => $this->buildDetailRows($recordId),
+                'vat_recap' => $this->buildDetailVatRecap($recordId),
+                'totals'    => $this->buildDetailTotals($record),
+            ],
         ]];
 
         $accountingTab = $this->buildAccountingTab($record);
@@ -345,22 +340,13 @@ class DocsHeadsViewer extends TableViewer
             $tabs[] = $accountingTab;
         }
 
-        $header = $this->buildDetailHeader($record);
+        return $tabs;
+    }
 
-        $detail = [
-            'title'    => $header['title'],
-            'subtitle' => $header['subtitle'],
-            'badges'   => $header['badges'],
-            'icon'     => $header['icon'],
-            'tabs'     => $tabs,
-        ];
-
-        $actions = $this->buildDetailActions($record);
-        if ($actions !== []) {
-            $detail['actions'] = $actions;
-        }
-
-        return $detail;
+    /** Přílohy zdrojových zpráv před vlastními přílohami dokladu (skupina `record` od builderu). */
+    protected function detailAttachmentGroups(array $record): array
+    {
+        return $this->sourceAttachmentGroups((int) $record['id']);
     }
 
     /**
@@ -371,7 +357,7 @@ class DocsHeadsViewer extends TableViewer
      * proto i bez confirm). Obsluha: Viewer.svelte volá
      * POST /_accounting/reaccount a refreshne detail.
      */
-    private function buildDetailActions(array $record): array
+    protected function detailActions(array $record): array
     {
         if (!array_key_exists('accounting_state', $record)) {
             return [];
@@ -592,40 +578,30 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Hlavička detailu nad taby (generický header ViewerDetail, sjednocené
-     * s Osobami, Položkami a Došlou poštou) — číslo dokladu jako title,
-     * doc_text jako subtitle, badges s typem dokladu a stavem, ikona podle
-     * doc_type. Nahrazuje dřívější hlavičku uvnitř content typu `document`;
-     * DocumentDetail ji bez klíče `header` nevykresluje.
-     *
-     * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>, icon: string}
+     * Hlavička detailu (#135 D13–D14): titulek protistrana (jde i do horní
+     * lišty na mobilu), číslo · text dokladu v podtitulku; doklad bez
+     * partnera — i s visící FK, kdy `partner_name` z LEFT JOIN je null —
+     * má titulkem číslo. Typ nese ikona podle doc_type, štítek stavu
+     * přidává builder podle sady stavů (`detailBadge`, #136 D20).
      */
-    private function buildDetailHeader(array $record): array
+    protected function detailHeader(array $record): DetailHeader
     {
-        $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem ?? ''));
-        $stateData = $cfg->getState((int) ($record['docState'] ?? 10));
         $docText = trim((string) ($record['doc_text'] ?? ''));
         $docNumber = trim((string) ($record['doc_number'] ?? ''));
+        // partner_name z LEFT JOIN v loadDetailRecord — null = doklad bez
+        // partnera nebo visící FK (stejná konvence jako attachPartnerPersonId).
+        $partnerName = trim((string) ($record['partner_name'] ?? ''));
 
-        $badges = [];
-        $typeLabel = $this->resolveDocTypeLabel((string) ($record['doc_type'] ?? ''));
-        if ($typeLabel !== '') {
-            $badges[] = ['label' => $typeLabel, 'style' => 'neutral'];
-        }
-        $stateName = (string) ($stateData['stateName'] ?? '');
-        if ($stateName !== '') {
-            $badges[] = [
-                'label' => $stateName,
-                'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
-            ];
+        if ($partnerName !== '') {
+            $title = $partnerName;
+            $subtitleParts = array_filter([$docNumber, $docText], static fn (string $s): bool => $s !== '');
+            $subtitle = $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null;
+        } else {
+            $title = $docNumber !== '' ? $docNumber : '—';
+            $subtitle = $docText !== '' ? $docText : null;
         }
 
-        return [
-            'title'    => $docNumber !== '' ? $docNumber : '—',
-            'subtitle' => $docText !== '' ? $docText : null,
-            'badges'   => $badges,
-            'icon'     => $this->detailIconForDocType((string) ($record['doc_type'] ?? '')),
-        ];
+        return new DetailHeader($title, $subtitle, $this->detailIconForDocType((string) ($record['doc_type'] ?? '')));
     }
 
     /** Ikona detailu podle typu dokladu — stejné klíče jako viewers[].icon v module.jsonc. */
@@ -884,49 +860,6 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Skupiny příloh pro konec detailu: mailové zdrojové skupiny první
-     * (kind 'mail'), pak vlastní přílohy dokladu (kind 'doc', vynechá se
-     * když žádné nejsou).
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function detailAttachmentGroups(int $recordId): array
-    {
-        $groups = $this->sourceAttachmentGroups($recordId);
-
-        $files = $this->db->fetchAll(
-            'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type`, `send_with_record`'
-            . ' FROM `core_attachments_files`'
-            . ' WHERE `table_id` = %i AND `record_id` = %i AND `is_deleted` = 0'
-            . ' ORDER BY `att_order` ASC, `name` ASC',
-            self::TABLE_ID_HEADS,
-            $recordId,
-        );
-        if ($files !== []) {
-            $attachments = [];
-            foreach ($files as $f) {
-                $attachment = [
-                    'id'        => (int) $f['id'],
-                    'name'      => (string) ($f['name'] ?? $f['file_name']),
-                    'mime_type' => (string) ($f['mime_type'] ?? ''),
-                    'file_size' => (int) ($f['file_size'] ?? 0),
-                ];
-                // Značka „Odeslat s dokladem“ v gridu příloh (#94 D6).
-                if (!empty($f['send_with_record'])) {
-                    $attachment['send_with_record'] = true;
-                }
-                $attachments[] = $attachment;
-            }
-            $groups[] = [
-                'kind'        => 'doc',
-                'attachments' => $attachments,
-            ];
-        }
-
-        return $groups;
-    }
-
-    /**
      * Zprávy došlé pošty, ze kterých tento doklad vznikl. Primární cesta je
      * FK `heads.source_message` (AI apply flow, D6 z mail-message-centric);
      * doplněná o reverzní vazbu `message.target_table_id + target_row`
@@ -986,15 +919,7 @@ class DocsHeadsViewer extends TableViewer
                 continue;
             }
 
-            $attachments = [];
-            foreach ($files as $f) {
-                $attachments[] = [
-                    'id'        => (int) $f['id'],
-                    'name'      => (string) ($f['name'] ?? $f['file_name']),
-                    'mime_type' => (string) ($f['mime_type'] ?? ''),
-                    'file_size' => (int) ($f['file_size'] ?? 0),
-                ];
-            }
+            $attachments = array_map([RecordAttachments::class, 'item'], $files);
 
             $messageCode = (string) $msg['message_id'];
             $groups[] = [

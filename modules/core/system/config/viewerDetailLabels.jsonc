@@ -10,6 +10,12 @@
             "name": "Overview",
             "name:cs": "Přehled",
             "name:en": "Overview"
+        },
+        // Tab Přílohy záznamu u vieweru s `detailAttachments: "tab"` (#136 D21).
+        "attachments": {
+            "name": "Attachments",
+            "name:cs": "Přílohy",
+            "name:en": "Attachments"
         }
     }
 }

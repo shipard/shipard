@@ -809,7 +809,7 @@
     height: 6px;
     border-radius: 50%;
     background: var(--shpd-color-danger);
-    margin-left: 4px;
+    margin-left: var(--shpd-space-xs);
     vertical-align: middle;
   }
 
@@ -904,7 +904,7 @@
   }
 
   .shpd-form-editor__validation-banner-list li + li {
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-form-editor__validation-banner-list strong {
@@ -937,7 +937,7 @@
   }
 
   .shpd-form-editor__warning-banner-list li + li {
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-form-editor__warning-banner-list strong {

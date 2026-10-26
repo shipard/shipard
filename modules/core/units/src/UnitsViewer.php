@@ -108,17 +108,16 @@ class UnitsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $items = [];
         $this->addItem($items, 'Název', $record['name'] ?? null);
         $this->addItem($items, 'Zkratka', $record['shortcut'] ?? null);
@@ -132,16 +131,14 @@ class UnitsViewer extends TableViewer
             $this->addItem($items, 'Systémový kód', (string) $record['system_code']);
         }
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [['title' => 'Měrná jednotka', 'items' => $items]],
-                ],
-            ]],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [['title' => 'Měrná jednotka', 'items' => $items]],
+            ],
+        ]];
     }
 
     private function resolveStateStyle(int $docState): string

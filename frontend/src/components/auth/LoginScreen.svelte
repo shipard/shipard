@@ -432,7 +432,7 @@
   }
 
   .shpd-login__lang-select {
-    padding: 4px 8px;
+    padding: var(--shpd-space-xs) var(--shpd-space-sm);
     font-size: var(--shpd-font-size-sm);
     font-family: inherit;
     color: var(--shpd-color-text);

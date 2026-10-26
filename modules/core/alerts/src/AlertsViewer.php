@@ -145,48 +145,41 @@ class AlertsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /** Přehled (identifikace a stav, zpráva) a tab Kontext se surovými akcemi a kontextem. */
+    protected function detailTabs(array $record): array
     {
-        $row = $this->db->fetchRow(
-            'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
-            $recordId,
-        );
-        if ($row === null) {
-            return ['tabs' => []];
-        }
-
-        $severity   = (int) ($row['severity'] ?? 20);
-        $alertState = (int) ($row['alert_state'] ?? AlertReconciler::STATE_ACTIVE);
+        $severity   = (int) ($record['severity'] ?? 20);
+        $alertState = (int) ($record['alert_state'] ?? AlertReconciler::STATE_ACTIVE);
 
         // Overview
         $overviewItems = [
-            ['label' => 'Titulek',     'value' => (string) ($row['title'] ?? '')],
+            ['label' => 'Titulek',     'value' => (string) ($record['title'] ?? '')],
             ['label' => 'Závažnost',   'value' => $this->severityLabel($severity)],
             ['label' => 'Stav',        'value' => $this->stateLabel($alertState)],
-            ['label' => 'Kontrola',    'value' => (string) ($row['check_id'] ?? '')],
-            ['label' => 'Klíč nálezu', 'value' => (string) ($row['finding_key'] ?? '')],
-            ['label' => 'Poprvé spatřeno',  'value' => (string) ($row['first_seen_at'] ?? '')],
-            ['label' => 'Naposled spatřeno','value' => (string) ($row['last_seen_at'] ?? '')],
-            ['label' => 'Počet pozorování', 'value' => (string) ((int) ($row['seen_count'] ?? 1))],
+            ['label' => 'Kontrola',    'value' => (string) ($record['check_id'] ?? '')],
+            ['label' => 'Klíč nálezu', 'value' => (string) ($record['finding_key'] ?? '')],
+            ['label' => 'Poprvé spatřeno',  'value' => (string) ($record['first_seen_at'] ?? '')],
+            ['label' => 'Naposled spatřeno','value' => (string) ($record['last_seen_at'] ?? '')],
+            ['label' => 'Počet pozorování', 'value' => (string) ((int) ($record['seen_count'] ?? 1))],
         ];
-        if ($alertState === AlertReconciler::STATE_SNOOZED && !empty($row['snoozed_until'])) {
-            $overviewItems[] = ['label' => 'Odloženo do', 'value' => (string) $row['snoozed_until']];
+        if ($alertState === AlertReconciler::STATE_SNOOZED && !empty($record['snoozed_until'])) {
+            $overviewItems[] = ['label' => 'Odloženo do', 'value' => (string) $record['snoozed_until']];
         }
-        if ($alertState === AlertReconciler::STATE_DISMISSED && !empty($row['dismissed_at'])) {
-            $overviewItems[] = ['label' => 'Zamítnuto',   'value' => (string) $row['dismissed_at']];
+        if ($alertState === AlertReconciler::STATE_DISMISSED && !empty($record['dismissed_at'])) {
+            $overviewItems[] = ['label' => 'Zamítnuto',   'value' => (string) $record['dismissed_at']];
         }
-        if ($alertState === AlertReconciler::STATE_RESOLVED && !empty($row['resolved_at'])) {
-            $overviewItems[] = ['label' => 'Vyřešeno',    'value' => (string) $row['resolved_at']];
+        if ($alertState === AlertReconciler::STATE_RESOLVED && !empty($record['resolved_at'])) {
+            $overviewItems[] = ['label' => 'Vyřešeno',    'value' => (string) $record['resolved_at']];
         }
 
         $overviewGroups = [
             ['title' => 'Identifikace a stav', 'items' => $overviewItems],
         ];
 
-        if (!empty($row['message'])) {
+        if (!empty($record['message'])) {
             $overviewGroups[] = [
                 'title' => 'Zpráva',
-                'items' => [['label' => '', 'value' => (string) $row['message']]],
+                'items' => [['label' => '', 'value' => (string) $record['message']]],
             ];
         }
 
@@ -200,16 +193,16 @@ class AlertsViewer extends TableViewer
 
         // Context tab — raw JSON view of context + actions
         $contextHtml = '';
-        if (!empty($row['actions'])) {
-            $decoded = is_string($row['actions']) ? json_decode($row['actions'], true) : null;
+        if (!empty($record['actions'])) {
+            $decoded = is_string($record['actions']) ? json_decode($record['actions'], true) : null;
             if (is_array($decoded)) {
                 $contextHtml .= '<h4>Akce</h4><pre>'
                     . htmlspecialchars(json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
                     . '</pre>';
             }
         }
-        if (!empty($row['context'])) {
-            $decoded = is_string($row['context']) ? json_decode($row['context'], true) : null;
+        if (!empty($record['context'])) {
+            $decoded = is_string($record['context']) ? json_decode($record['context'], true) : null;
             if (is_array($decoded)) {
                 $contextHtml .= '<h4>Kontext</h4><pre>'
                     . htmlspecialchars(json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
@@ -224,12 +217,12 @@ class AlertsViewer extends TableViewer
             ];
         }
 
-        $actions = $this->buildDetailActions($row, $alertState);
+        return $tabs;
+    }
 
-        return [
-            'tabs'    => $tabs,
-            'actions' => $actions,
-        ];
+    protected function detailActions(array $record): array
+    {
+        return $this->buildDetailActions($record, (int) ($record['alert_state'] ?? AlertReconciler::STATE_ACTIVE));
     }
 
     /**

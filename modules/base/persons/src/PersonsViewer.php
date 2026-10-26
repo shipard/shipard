@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Base\Persons;
 
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Base\Persons\Send\SendPurposes;
 
@@ -143,37 +144,61 @@ class PersonsViewer extends TableViewer
 	}
 
 	/**
-	 * Detail osoby — hlavička nad taby (jméno, identifikátory, badges, ikona
-	 * dle typu osoby; stejný vzor jako IncomingMessagesViewer) a jediný tab
-	 * Přehled s composite obsahem: vlastnosti záznamu + kontakty + adresy.
-	 *
-	 * Identifikátory zobrazené v hlavičce (IČO, DIČ, datum narození, kód
-	 * osoby) se v Přehledu už neopakují — zrcadlí PersonsForm::buildHeaderInfo.
+	 * Hlavička detailu: full_name jako titulek, identifikátory v podtitulku
+	 * (firma: IČO · DIČ · kód osoby; fyzická osoba: datum narození · kód
+	 * osoby), ikona podle typu osoby (company / user — stejné mapování jako
+	 * renderRow()). Štítek stavu přidává builder (#136 D20).
 	 */
-	public function renderDetail(int $recordId): array
+	protected function detailHeader(array $record): DetailHeader
 	{
-		$record = $this->db->fetchRow(
-			'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
-			$recordId,
-		);
+		$personType = (int) ($record['person_type'] ?? 0);
 
-		if ($record === null) {
-			return ['tabs' => []];
+		$subtitleParts = [];
+		if ($personType === 2) {
+			if (!empty($record['company_id'])) {
+				$subtitleParts[] = 'IČO ' . $record['company_id'];
+			}
+			if (!empty($record['tax_id'])) {
+				$subtitleParts[] = 'DIČ ' . $record['tax_id'];
+			}
+		} else {
+			$birthDate = $this->formatDate($record['birth_date'] ?? null);
+			if ($birthDate !== null) {
+				$subtitleParts[] = 'Datum narození ' . $birthDate;
+			}
+		}
+		if (!empty($record['person_id'])) {
+			$subtitleParts[] = 'Kód osoby ' . $record['person_id'];
 		}
 
-		$header = $this->buildDetailHeader($record);
+		$fullName = trim((string) ($record['full_name'] ?? ''));
 
-		return [
-			'title'    => $header['title'],
-			'subtitle' => $header['subtitle'],
-			'badges'   => $header['badges'],
-			'icon'     => $header['icon'],
-			'tabs'     => [[
-				'id'      => 'overview',
-				'label'   => $this->defaultOverviewLabel(),
-				'content' => $this->buildOverviewContent($record),
-			]],
-		];
+		return new DetailHeader(
+			$fullName !== '' ? $fullName : '(bez názvu)',
+			$subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
+			$personType === 2 ? 'company' : 'user',
+		);
+	}
+
+	/** Příznak Vlastní za štítkem stavu. */
+	protected function detailBadges(array $record): array
+	{
+		return !empty($record['is_own']) ? [['label' => 'Vlastní', 'style' => 'primary']] : [];
+	}
+
+	/**
+	 * Jediný tab Přehled s composite obsahem: vlastnosti záznamu + kontakty
+	 * + adresy. Identifikátory z hlavičky (IČO, DIČ, datum narození, kód
+	 * osoby) se v Přehledu neopakují — zrcadlí PersonsForm::buildHeaderInfo.
+	 * Přílohy osoby dodá builder na konec Přehledu (#136 D21).
+	 */
+	protected function detailTabs(array $record): array
+	{
+		return [[
+			'id'      => 'overview',
+			'label'   => $this->defaultOverviewLabel(),
+			'content' => $this->buildOverviewContent($record),
+		]];
 	}
 
 	public function getToolbarActions(?array $selectedRow): array
@@ -198,79 +223,6 @@ class PersonsViewer extends TableViewer
 		];
 
 		return $actions;
-	}
-
-	// -------------------------------------------------------------------------
-	// Private — detail header
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Hlavička detailu nad taby — full_name jako title, identifikátory jako
-	 * subtitle (firma: IČO · DIČ · kód osoby; fyzická osoba: datum narození ·
-	 * kód osoby), badges se stavem a příznakem Vlastní. Typ osoby vyjadřuje
-	 * jen ikona (company/user) — stejné mapování jako renderRow().
-	 *
-	 * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>, icon: string}
-	 */
-	private function buildDetailHeader(array $record): array
-	{
-		$personType = (int) ($record['person_type'] ?? 0);
-
-		$subtitleParts = [];
-		if ($personType === 2) {
-			if (!empty($record['company_id'])) {
-				$subtitleParts[] = 'IČO ' . $record['company_id'];
-			}
-			if (!empty($record['tax_id'])) {
-				$subtitleParts[] = 'DIČ ' . $record['tax_id'];
-			}
-		} else {
-			$birthDate = $this->formatDate($record['birth_date'] ?? null);
-			if ($birthDate !== null) {
-				$subtitleParts[] = 'Datum narození ' . $birthDate;
-			}
-		}
-		if (!empty($record['person_id'])) {
-			$subtitleParts[] = 'Kód osoby ' . $record['person_id'];
-		}
-
-		$badges = [];
-		$stateBadge = $this->buildStateBadge((int) ($record['docState'] ?? 10));
-		if ($stateBadge !== null) {
-			$badges[] = $stateBadge;
-		}
-		if (!empty($record['is_own'])) {
-			$badges[] = ['label' => 'Vlastní', 'style' => 'primary'];
-		}
-
-		$fullName = trim((string) ($record['full_name'] ?? ''));
-
-		return [
-			'title'    => $fullName !== '' ? $fullName : '(bez názvu)',
-			'subtitle' => $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
-			'badges'   => $badges,
-			'icon'     => $personType === 2 ? 'company' : 'user',
-		];
-	}
-
-	/** Badge stavu záznamu (label + stateStyle) z docState configu. */
-	private function buildStateBadge(int $docState): ?array
-	{
-		if ($this->config === null || $this->docStatesCfgItem === null) {
-			return null;
-		}
-
-		$cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
-		$stateData = $cfg->getState($docState);
-		$label = (string) ($stateData['stateName'] ?? '');
-		if ($label === '') {
-			return null;
-		}
-
-		return [
-			'label' => $label,
-			'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
-		];
 	}
 
 	// -------------------------------------------------------------------------

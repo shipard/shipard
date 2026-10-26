@@ -7,6 +7,11 @@ namespace Shipard\Tests\Unit\Module\Economy\Assets;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Module\ModuleLoader;
+use Shipard\Core\Utils\JsoncParser;
+use Shipard\Core\Viewer\ViewerDefinition;
+use Shipard\Core\Viewer\ViewerRegistry;
 use Shipard\Module\Economy\Assets\AssetAcquisitionService;
 use Shipard\Module\Economy\Assets\AssetJournalCheck;
 use Shipard\Module\Economy\Assets\AssetJournalService;
@@ -15,10 +20,27 @@ use Shipard\Module\Economy\Assets\AssetsViewer;
 
 /**
  * Spodní taby vieweru karet (druhy z cfgItem + Cizí) a jejich promítnutí
- * do dotazu; filtry Typ / Účetní skupina.
+ * do dotazu; filtry Typ / Účetní skupina; detail přes builder — hlavička
+ * z deklarace vieweru, štítek stavu, tab Přílohy jen s přílohou (#136).
  */
 class AssetsViewerTest extends TestCase
 {
+    private const MODULE_DIR = __DIR__ . '/../../../../../modules/economy/assets';
+    private const ARCHIVE_STATES = __DIR__ . '/../../../../../modules/core/system/config/docStatesArchive.jsonc';
+
+    /** Deklarace vieweru karet z module.jsonc (detailHeader, detailAttachments, ikona). */
+    private static function definition(): ViewerDefinition
+    {
+        $registry = new ViewerRegistry();
+        $registry->loadFromModules([ModuleLoader::loadModule(self::MODULE_DIR)], 'cs');
+        return $registry->get('economy.assets.assets') ?? throw new \RuntimeException('viewer economy.assets.assets');
+    }
+
+    private static function assetsTable(): TableDefinition
+    {
+        return TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE_DIR . '/tables/economy_assets_assets.jsonc'));
+    }
+
     private const CATEGORIES = [
         'small'    => ['name' => 'Drobný majetek', 'longTerm' => false],
         'tangible' => ['name' => 'Dlouhodobý hmotný', 'longTerm' => true, 'depreciable' => true],
@@ -72,6 +94,7 @@ class AssetsViewerTest extends TestCase
         array $acquisitionRows = [],
         array $journal = ['rows' => [], 'years' => []],
         ?AssetJournalCheck $journalCheck = null,
+        array $files = [],
     ): AssetsViewer {
         $service = new TestAssetPlanService();
         $service->cards[(int) $card['id']] = $card;
@@ -80,12 +103,16 @@ class AssetsViewerTest extends TestCase
 
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn($card);
+        // Jediný fetchAll v detailu = vlastní přílohy karty (builder, core_attachments_files).
+        $db->method('fetchAll')->willReturn($files);
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['economy.assets.categories', self::CATEGORIES],
             ['economy.assets.viewerLabels', self::LABELS],
             ['economy.assets.eventKinds', ['activation' => ['name' => 'Zařazení'], 'depreciation' => ['name' => 'Odpis']]],
             ['world.assets.cz', TestAssetPlanService::config()->cfgItem('world.assets.cz')],
+            ['core.system.docStatesArchive', JsoncParser::parseFile(self::ARCHIVE_STATES)],
+            ['core.system.viewerDetailLabels', ['tabs' => ['overview' => ['name' => 'Přehled'], 'attachments' => ['name' => 'Přílohy']]]],
         ]);
 
         $acquisition = new class($acquisitionRows) extends AssetAcquisitionService {
@@ -153,7 +180,42 @@ class AssetsViewerTest extends TestCase
             }
         };
         $viewer->setConfig($config);
+        $viewer->setDefinition(self::definition());
+        $viewer->setTables(['economy_assets_assets' => self::assetsTable()]);
         return $viewer;
+    }
+
+    // --- detail: hlavička a přílohy (#136) ---------------------------------------
+
+    public function testHeaderIsNameWithNumberInSubtitleAndStateBadgeOnlyOutsideConfirmed(): void
+    {
+        $card = ['id' => 4, 'asset_number' => 'MA0004', 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight',
+            'tax_rule' => 'cz-2', 'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $detail = $this->detailViewer($card, [])->renderDetail(4);
+
+        $this->assertSame('Soustruh', $detail['title'], 'titulek je název (D19)');
+        $this->assertSame('MA0004', $detail['subtitle'], 'inventární číslo v podtitulku');
+        $this->assertSame('box', $detail['icon'], 'ikona z deklarace vieweru');
+        $this->assertSame([], $detail['badges'], 'V pořádku bez štítku (D20)');
+
+        $detail = $this->detailViewer(['docState' => 10] + $card, [])->renderDetail(4);
+        $this->assertSame([['label' => 'Koncept', 'style' => 'concept']], $detail['badges']);
+    }
+
+    public function testAttachmentsTabOnlyWhenCardHasFiles(): void
+    {
+        $card = ['id' => 2, 'asset_number' => 'MA0002', 'name' => 'Svěrák', 'category' => 'small', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+
+        $detail = $this->detailViewer($card, [])->renderDetail(2);
+        $this->assertSame(['overview'], array_column($detail['tabs'], 'id'));
+        $this->assertArrayNotHasKey('attachments', $detail);
+
+        $file = ['id' => 55, 'name' => 'foto.jpg', 'file_name' => 'foto.jpg', 'file_size' => 100, 'mime_type' => 'image/jpeg', 'send_with_record' => 0];
+        $detail = $this->detailViewer($card, [], files: [$file])->renderDetail(2);
+        $this->assertSame(['overview', 'attachments'], array_column($detail['tabs'], 'id'), 'tab Přílohy na konci');
+        $this->assertSame(['id' => 'attachments', 'label' => 'Přílohy', 'content' => ['type' => 'attachments']], $detail['tabs'][1]);
+        $this->assertSame('record', $detail['attachments']['groups'][0]['kind']);
+        $this->assertSame(55, $detail['attachments']['groups'][0]['attachments'][0]['id']);
     }
 
     // --- detail: plán a akce (fáze 2b) ------------------------------------------
@@ -461,14 +523,14 @@ class AssetsViewerTest extends TestCase
         $this->assertSame(['activate', 'openingTax', 'openingAcc'], array_column($detail['actions'], 'id'));
         $this->assertSame('heading', $detail['tabs'][1]['content']['blocks'][1]['type']);
 
-        // Karta mimo V pořádku ani vyřazená nic nenabízí.
+        // Karta mimo V pořádku ani vyřazená nic nenabízí — builder klíč vynechá.
         $detail = $this->detailViewer(['docState' => 10] + $card, [])->renderDetail(5);
-        $this->assertSame([], $detail['actions']);
+        $this->assertArrayNotHasKey('actions', $detail);
         $detail = $this->detailViewer($card, [
             ['id' => 1, 'asset' => 5, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 100000, 'docState' => 40],
             ['id' => 2, 'asset' => 5, 'event_kind' => 'disposal', 'scope' => 'both', 'event_date' => '2024-05-10', 'amount' => 0, 'docState' => 40],
         ])->renderDetail(5);
-        $this->assertSame([], $detail['actions']);
+        $this->assertArrayNotHasKey('actions', $detail);
     }
 
     public function testBottomTabsComeFromCfgItemPlusForeign(): void

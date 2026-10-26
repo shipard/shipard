@@ -433,7 +433,7 @@
 
   .shpd-send__grid > label,
   .shpd-send__label {
-    padding-top: 6px;
+    padding-top: 0.375rem;
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
     text-align: right;
@@ -458,7 +458,7 @@
     display: flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 2px 4px 2px 8px;
+    padding: 0.125rem var(--shpd-space-xs) 0.125rem var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-bg-hover);
@@ -472,14 +472,14 @@
   }
 
   .shpd-send__chip-reason {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
   .shpd-send__chip-remove {
     border: 0;
     background: none;
-    padding: 2px 4px;
+    padding: 0.125rem var(--shpd-space-xs);
     color: var(--shpd-color-text-secondary);
     cursor: pointer;
   }
@@ -503,7 +503,7 @@
     display: flex;
     align-items: center;
     gap: var(--shpd-space-sm);
-    padding: 2px 0;
+    padding: 0.125rem 0;
     font-size: var(--shpd-font-size-sm);
   }
 

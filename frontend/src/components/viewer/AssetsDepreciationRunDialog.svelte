@@ -492,13 +492,13 @@
   .shpd-deprun__period {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text);
   }
 
   .shpd-deprun__select {
-    padding: 6px;
+    padding: 0.375rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     font-family: inherit;
@@ -515,7 +515,7 @@
 
   .shpd-deprun__table th,
   .shpd-deprun__table td {
-    padding: 4px 8px;
+    padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border-bottom: 1px solid var(--shpd-color-border);
     text-align: left;
     vertical-align: top;

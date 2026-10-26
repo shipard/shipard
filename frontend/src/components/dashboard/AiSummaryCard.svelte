@@ -84,7 +84,7 @@
   .shpd-ai-summary__icon {
     color: var(--shpd-color-primary);
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-ai-summary__body { flex: 1; min-width: 0; }

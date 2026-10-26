@@ -254,13 +254,13 @@
 
   .shpd-content-tags__title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: var(--shpd-font-size-xl);
     font-weight: 600;
   }
 
   .shpd-content-tags__subtitle {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-base);
     font-weight: 600;
   }
 
@@ -323,7 +323,7 @@
 
   .shpd-content-tags__chip {
     display: inline-block;
-    padding: 1px var(--shpd-space-sm);
+    padding: 0.0625rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-xs);
     white-space: nowrap;
@@ -346,7 +346,7 @@
 
   .shpd-content-tags__items {
     display: block;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }

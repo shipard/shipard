@@ -337,7 +337,7 @@
   .grid-3 + .dev-card { margin-top: var(--shpd-space-lg); }
   @media (max-width: 1100px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
   table.plain { width: 100%; border-collapse: collapse; font-size: var(--shpd-font-size-sm); }
-  table.plain td { padding: 3px 0; border-bottom: 1px solid var(--shpd-color-border-subtle); vertical-align: top; }
+  table.plain td { padding: 0.1875rem 0; border-bottom: 1px solid var(--shpd-color-border-subtle); vertical-align: top; }
   table.plain tr:last-child td { border-bottom: 0; }
   tr.total td { font-weight: 600; border-top: 2px solid var(--shpd-color-border); }
   .note { margin: var(--shpd-space-sm) 0 0; }

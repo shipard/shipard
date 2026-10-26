@@ -6,6 +6,7 @@ namespace Shipard\Module\Base\Registry;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Core\Mail\IncomingMessageTitle;
 
@@ -26,7 +27,8 @@ use Shipard\Module\Core\Mail\IncomingMessageTitle;
  *   výhradně tento viewer. „Přidat“ ze záložky šanonu předvyplní šanon
  *   (newRecordDefaults).
  *
- * Detail: taby Obsah (vlastnosti + metadata dle druhu) / Přílohy / Původ.
+ * Detail: taby Obsah (vlastnosti + metadata dle druhu) / Přílohy / Původ;
+ * tab Přílohy staví viewer sám (`detailAttachments: "content"`, #136 D21).
  */
 class RegistryDocumentsViewer extends TableViewer
 {
@@ -187,7 +189,7 @@ class RegistryDocumentsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
         $record = $this->db->fetchRow(
             'SELECT d.*, p.`full_name` AS `partner_name`, b.`name` AS `binder_name`'
@@ -197,15 +199,51 @@ class RegistryDocumentsViewer extends TableViewer
             . ' WHERE d.`id` = %i',
             $recordId,
         );
+        return $record === null ? null : (array) $record;
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
+    /** Titulek dokumentu; podtitul partner · šanon · do datum. Štítek stavu dodá builder. */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $subtitleParts = [];
+        $partner = trim((string) ($record['partner_name'] ?? ''));
+        if ($partner !== '') {
+            $subtitleParts[] = $partner;
+        }
+        $binderName = trim((string) ($record['binder_name'] ?? ''));
+        if ($binderName !== '') {
+            $subtitleParts[] = $binderName;
+        }
+        $validTo = $this->formatDate($record['valid_to'] ?? null);
+        if ($validTo !== null) {
+            $subtitleParts[] = 'do ' . $validTo;
         }
 
-        $record = (array) $record;
-        $header = $this->buildDetailHeader($record);
+        $title = trim((string) ($record['title'] ?? ''));
 
-        $tabs = [
+        return new DetailHeader(
+            $title !== '' ? $title : '#' . (int) ($record['id'] ?? 0),
+            $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
+        );
+    }
+
+    /** Druh dokumentu (label z docKinds, barva dle mapy; `muted` → `neutral`). */
+    protected function detailBadges(array $record): array
+    {
+        $kind = (string) ($record['doc_kind'] ?? '');
+        if ($kind === '') {
+            return [];
+        }
+        $style = self::KIND_SPAN_CLASS[$kind] ?? 'muted';
+        return [[
+            'label' => $this->resolveKindLabel($kind),
+            'style' => $style === 'muted' ? 'neutral' : $style,
+        ]];
+    }
+
+    protected function detailTabs(array $record): array
+    {
+        return [
             [
                 'id'      => 'content',
                 'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'content', 'Content'),
@@ -222,59 +260,11 @@ class RegistryDocumentsViewer extends TableViewer
                 'content' => $this->buildOriginTab($record),
             ],
         ];
-
-        return [
-            'title'    => $header['title'],
-            'subtitle' => $header['subtitle'],
-            'badges'   => $header['badges'],
-            'icon'     => 'folder',
-            'tabs'     => $tabs,
-        ];
     }
 
     // -------------------------------------------------------------------------
     // Private — detail
     // -------------------------------------------------------------------------
-
-    /**
-     * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>}
-     */
-    private function buildDetailHeader(array $record): array
-    {
-        $subtitleParts = [];
-        $partner = trim((string) ($record['partner_name'] ?? ''));
-        if ($partner !== '') {
-            $subtitleParts[] = $partner;
-        }
-        $binderName = trim((string) ($record['binder_name'] ?? ''));
-        if ($binderName !== '') {
-            $subtitleParts[] = $binderName;
-        }
-        $validTo = $this->formatDate($record['valid_to'] ?? null);
-        if ($validTo !== null) {
-            $subtitleParts[] = 'do ' . $validTo;
-        }
-
-        $badges = [];
-        $stateBadge = $this->buildStateBadge((int) ($record['docState'] ?? 10));
-        if ($stateBadge !== null) {
-            $badges[] = $stateBadge;
-        }
-        $kind = (string) ($record['doc_kind'] ?? '');
-        if ($kind !== '') {
-            $style = self::KIND_SPAN_CLASS[$kind] ?? 'muted';
-            $badges[] = [
-                'label' => $this->resolveKindLabel($kind),
-                'style' => $style === 'muted' ? 'neutral' : $style,
-            ];
-        }
-
-        return [
-            'title'    => (string) ($record['title'] ?? ''),
-            'subtitle' => $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
-            'badges'   => $badges,
-        ];
-    }
 
     private function buildContentTab(array $record): array
     {
@@ -523,23 +513,6 @@ class RegistryDocumentsViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
-    }
-
-    private function buildStateBadge(int $docState): ?array
-    {
-        if ($this->config === null || $this->docStatesCfgItem === null) {
-            return null;
-        }
-        $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
-        $stateData = $cfg->getState($docState);
-        $label = (string) ($stateData['stateName'] ?? '');
-        if ($label === '') {
-            return null;
-        }
-        return [
-            'label' => $label,
-            'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
-        ];
     }
 
     private function formatDate(mixed $value): ?string

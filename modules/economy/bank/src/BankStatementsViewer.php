@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Bank;
 
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -12,14 +13,12 @@ use Shipard\Core\Viewer\TableViewer;
  *
  * Archivní stavové taby (core.system.docStatesArchive). Bez akce „nový" —
  * výpis vzniká importem/migrací; editace a přílohy (PDF) přes Open (form má
- * tab Přílohy). Rekonciliace je Fáze 2.
+ * tab Přílohy); v detailu přílohy výpisu dodá builder na konec Přehledu
+ * (#136 D21). Rekonciliace je Fáze 2.
  */
 class BankStatementsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
-
-    /** tableId výpisů — vazba příloh v core_attachments_files (shodně s form tab „Přílohy"). */
-    private const TABLE_ID_STATEMENTS = 415;
 
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
@@ -112,77 +111,63 @@ class BankStatementsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $r = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT s.*, ba.`code` AS account_code, ba.`name` AS account_name'
             . ' FROM `' . $this->table . '` s'
             . ' LEFT JOIN `economy_codebooks_bank_accounts` ba ON ba.`id` = s.`bank_account`'
             . ' WHERE s.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($r === null) {
-            return ['tabs' => []];
-        }
-
+    /**
+     * Tab Přehled = composite: vlastnosti -> transakce výpisu (jen když
+     * existují). Přílohy výpisu přidává builder za obsah Přehledu.
+     */
+    protected function detailTabs(array $record): array
+    {
         $cs = $this->language !== 'en';
 
         $accountLabel = trim(
-            (string) ($r['account_code'] ?? '')
-            . (($r['account_name'] ?? null) !== null ? ' — ' . $r['account_name'] : ''),
+            (string) ($record['account_code'] ?? '')
+            . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
         );
 
         $stmtItems = [];
         $this->addItem($stmtItems, $cs ? 'Bankovní účet' : 'Bank account', $accountLabel !== '' ? $accountLabel : null);
-        $this->addItem($stmtItems, $cs ? 'Číslo výpisu' : 'Statement number', $r['statement_number'] ?? null);
+        $this->addItem($stmtItems, $cs ? 'Číslo výpisu' : 'Statement number', $record['statement_number'] ?? null);
         $this->addItem(
             $stmtItems,
             $cs ? 'Období' : 'Period',
-            $this->formatDate($r['period_start'] ?? null) . ' – ' . $this->formatDate($r['period_end'] ?? null),
+            $this->formatDate($record['period_start'] ?? null) . ' – ' . $this->formatDate($record['period_end'] ?? null),
         );
         $this->addItem(
             $stmtItems,
             $cs ? 'Rekonciliace' : 'Reconciliation',
-            $this->enumLabel('economy.bank.reconciliationStates', $r['reconciliation_state'] ?? null, 'int'),
+            $this->enumLabel('economy.bank.reconciliationStates', $record['reconciliation_state'] ?? null, 'int'),
         );
 
-        $curCode = strtoupper((string) ($r['currency'] ?? ''));
+        $curCode = strtoupper((string) ($record['currency'] ?? ''));
         $balanceItems = [];
-        $this->addItem($balanceItems, $cs ? 'Počáteční zůstatek' : 'Opening balance', $this->balanceLabel($r['opening_balance'] ?? null, $curCode));
-        $this->addItem($balanceItems, $cs ? 'Koncový zůstatek' : 'Closing balance', $this->balanceLabel($r['closing_balance'] ?? null, $curCode));
+        $this->addItem($balanceItems, $cs ? 'Počáteční zůstatek' : 'Opening balance', $this->balanceLabel($record['opening_balance'] ?? null, $curCode));
+        $this->addItem($balanceItems, $cs ? 'Koncový zůstatek' : 'Closing balance', $this->balanceLabel($record['closing_balance'] ?? null, $curCode));
 
         $groups = [];
         $this->addGroup($groups, $cs ? 'Výpis' : 'Statement', $stmtItems);
         $this->addGroup($groups, $cs ? 'Zůstatky' : 'Balances', $balanceItems);
 
-        // Tab Přehled = composite: vlastnosti -> transakce výpisu -> přílohy.
-        // Transakce a přílohy se přidávají jen když existují. Přílohy s
-        // přepínačem Velké náhledy/Miniatury — stejně jako u Přijatých faktur,
-        // ale ve stejném tabu, aby byly hned vidět.
         $blocks = [['type' => 'properties', 'groups' => $groups]];
-        foreach ($this->detailTransactionBlocks($recordId) as $txBlock) {
+        foreach ($this->detailTransactionBlocks((int) $record['id']) as $txBlock) {
             $blocks[] = $txBlock;
         }
-        foreach ($this->detailAttachmentBlocks($recordId) as $attBlock) {
-            $blocks[] = $attBlock;
-        }
 
-        $tabs = [[
+        return [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
             'content' => ['type' => 'composite', 'blocks' => $blocks],
         ]];
-
-        $header = $this->buildDetailHeader($r);
-
-        return [
-            'title'    => $header['title'],
-            'subtitle' => $header['subtitle'],
-            'badges'   => $header['badges'],
-            'icon'     => $header['icon'],
-            'tabs'     => $tabs,
-        ];
     }
 
     public function getToolbarActions(?array $selectedRow): array
@@ -208,30 +193,21 @@ class BankStatementsViewer extends TableViewer
     }
 
     /**
-     * Hlavička detailu nad taby (generický header ViewerDetail, sjednocené
-     * s doklady, Osobami, Položkami a Bankovními transakcemi). Title = číslo
-     * výpisu (nejvýraznější údaj — obdoba čísla dokladu u faktur), při chybějícím
-     * čísle fallback na období; subtitle = bankovní účet · období; badges = stav
-     * dokladu (docStatesArchive) a stav rekonciliace, když není
-     * „Nezkontrolováno" (0 je default — samostatný badge by byl šum, obdoba
-     * „Zaúčtováno" u transakcí). Ikona shodná s viewers[].icon v module.jsonc (bank).
-     *
-     * @param array<string, mixed> $record
-     * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>, icon: string}
+     * Hlavička detailu: číslo výpisu (bez čísla období) jako titulek,
+     * podtitul „účet · období" — když účet chybí, jen období, a když titulek
+     * už nese období kvůli chybějícímu číslu, podtitul ho neopakuje. Štítek
+     * stavu přidává builder (#136 D20).
      */
-    private function buildDetailHeader(array $record): array
+    protected function detailHeader(array $record): DetailHeader
     {
         $period = $this->formatDate($record['period_start'] ?? null)
             . ' – ' . $this->formatDate($record['period_end'] ?? null);
         $number = trim((string) ($record['statement_number'] ?? ''));
-        $title = $number !== '' ? $number : $period;
 
         $accountLabel = trim(
             (string) ($record['account_code'] ?? '')
             . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
         );
-        // Subtitle: „účet · období"; když účet chybí, jen období (a naopak,
-        // když title už nese období kvůli chybějícímu číslu, subtitle ho neopakuje).
         $subtitleParts = [];
         if ($accountLabel !== '') {
             $subtitleParts[] = $accountLabel;
@@ -239,78 +215,22 @@ class BankStatementsViewer extends TableViewer
         if ($number !== '') {
             $subtitleParts[] = $period;
         }
-        $subtitle = implode(' · ', $subtitleParts);
 
-        $badges = [];
-        $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
-        $stateData = $cfg->getState((int) ($record['docState'] ?? 10));
-        $stateName = (string) ($stateData['stateName'] ?? '');
-        if ($stateName !== '') {
-            $badges[] = [
-                'label' => $stateName,
-                'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
-            ];
-        }
-
-        // Rekonciliace — badge jen když není „Nezkontrolováno" (0). Souhlasí (1)
-        // success, Nesouhlasí (2) error.
-        $recon = (int) ($record['reconciliation_state'] ?? 0);
-        if ($recon !== 0) {
-            $reconLabel = $this->enumLabel('economy.bank.reconciliationStates', $recon, 'int');
-            if ($reconLabel !== null) {
-                $badges[] = [
-                    'label' => $reconLabel,
-                    'style' => $recon === 2 ? 'error' : 'success',
-                ];
-            }
-        }
-
-        return [
-            'title'    => $title,
-            'subtitle' => $subtitle !== '' ? $subtitle : null,
-            'badges'   => $badges,
-            'icon'     => 'bank',
-        ];
+        return new DetailHeader($number !== '' ? $number : $period, implode(' · ', $subtitleParts));
     }
 
-    /**
-     * Bloky příloh výpisu pro tab Přehled (composite). Vlastní přílohy
-     * z core_attachments_files (table_id = výpisy, shodně s form tabem
-     * „Přílohy"); když žádné nejsou, vrací prázdné pole a do composite se
-     * nic nepřidá. Nadpis „Přílohy" + plochý grid (attachment-grid) s
-     * přepínačem Velké náhledy/Miniatury — frontend ViewerDetail to renderuje
-     * sdílenou AttachmentGrid, beze změny.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function detailAttachmentBlocks(int $recordId): array
+    /** Rekonciliace — štítek jen když není „Nezkontrolováno" (0): Souhlasí (1) success, Nesouhlasí (2) error. */
+    protected function detailBadges(array $record): array
     {
-        $files = $this->db->fetchAll(
-            'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type`'
-            . ' FROM `core_attachments_files`'
-            . ' WHERE `table_id` = %i AND `record_id` = %i AND `is_deleted` = 0'
-            . ' ORDER BY `att_order` ASC, `name` ASC',
-            self::TABLE_ID_STATEMENTS,
-            $recordId,
-        );
-        if ($files === []) {
+        $recon = (int) ($record['reconciliation_state'] ?? 0);
+        if ($recon === 0) {
             return [];
         }
-
-        $attachments = [];
-        foreach ($files as $f) {
-            $attachments[] = [
-                'id'        => (int) $f['id'],
-                'name'      => (string) ($f['name'] ?? $f['file_name']),
-                'mime_type' => (string) ($f['mime_type'] ?? ''),
-                'file_size' => (int) ($f['file_size'] ?? 0),
-            ];
+        $reconLabel = $this->enumLabel('economy.bank.reconciliationStates', $recon, 'int');
+        if ($reconLabel === null) {
+            return [];
         }
-
-        return [
-            ['type' => 'heading', 'text' => $this->language === 'en' ? 'Attachments' : 'Přílohy'],
-            ['type' => 'attachment-grid', 'attachments' => $attachments],
-        ];
+        return [['label' => $reconLabel, 'style' => $recon === 2 ? 'error' : 'success']];
     }
 
     /**

@@ -197,7 +197,7 @@
     display: flex;
     align-items: flex-start;
     gap: var(--shpd-space-sm);
-    padding: calc(var(--shpd-space-md) + 4px) var(--shpd-space-md) var(--shpd-space-md);
+    padding: calc(var(--shpd-space-md) + var(--shpd-space-xs)) var(--shpd-space-md) var(--shpd-space-md);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
     background: var(--shpd-color-bg);
@@ -227,7 +227,7 @@
   .shpd-feed-card__icon {
     color: var(--shpd-color-text-secondary);
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-feed-card__body {
@@ -255,7 +255,7 @@
   /* Badge lhůty (K vyřízení): neutrální, po lhůtě nebo do 3 dnů danger. */
   .shpd-feed-card__due {
     display: inline-block;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     padding: 0 var(--shpd-space-xs);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-sm);
@@ -274,7 +274,7 @@
   .shpd-feed-card__subtitle {
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-feed-card__donut {

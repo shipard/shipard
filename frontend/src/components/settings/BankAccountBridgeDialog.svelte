@@ -233,7 +233,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-bank-bridge__name {
@@ -246,7 +246,7 @@
   }
 
   .shpd-bank-bridge__badge {
-    padding: 1px var(--shpd-space-sm);
+    padding: 0.0625rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-xs);
     font-weight: 500;

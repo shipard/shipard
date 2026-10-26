@@ -112,7 +112,7 @@
     background: none;
     border: none;
     border-radius: var(--shpd-radius-sm);
-    font-size: 1.25rem;
+    font-size: var(--shpd-font-size-xl);
     line-height: 1;
     color: var(--shpd-color-text-secondary);
     cursor: pointer;

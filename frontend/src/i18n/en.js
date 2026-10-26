@@ -247,14 +247,18 @@ export default {
   'viewer.detail.deleteTagRuleConfirm': 'Really delete this rule? Deletion is permanent; the rule can be re-learned.',
   'viewer.detail.mailBody': 'Message body',
 
+  // ── Shared record attachments section (DetailAttachments) ───────────────
+  'viewer.attachments.record': 'Attachments',
+  'viewer.attachments.viewGrid': 'Thumbnails',
+  'viewer.attachments.viewFull': 'Large previews',
+
   // ── Viewer document detail (content type `document`) ────────────────────
   'viewer.document.section.supplier': 'Supplier',
   'viewer.document.section.customer': 'Customer',
   'viewer.document.section.rows': 'Document rows',
   'viewer.document.section.recap': 'VAT',
-  'viewer.document.attachments.doc': 'Document attachments',
-  'viewer.document.attachments.viewGrid': 'Thumbnails',
-  'viewer.document.attachments.viewFull': 'Large previews',
+  'viewer.document.section.dates': 'Dates',
+  'viewer.document.section.payment': 'Payment',
   'viewer.document.party.companyId': 'Company ID',
   'viewer.document.party.taxId': 'Tax ID',
   'viewer.document.party.vatId': 'VAT ID',

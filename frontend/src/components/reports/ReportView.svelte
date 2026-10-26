@@ -121,7 +121,7 @@
             >
               <td
                 class="shpd-report__td shpd-report__td--label"
-                style:padding-left="calc(var(--shpd-space-sm) + {row.level * 16}px)"
+                style:padding-left="calc(var(--shpd-space-sm) + {row.level}rem)"
               >
                 {#if row.account}<span class="shpd-report__account">{row.account}</span>{/if}
                 {#if row.link && onAction}
@@ -312,7 +312,7 @@
     display: flex;
     align-items: baseline;
     gap: var(--shpd-space-xs);
-    padding: 2px 0;
+    padding: 0.125rem 0;
     font-size: var(--shpd-font-size-sm);
   }
 

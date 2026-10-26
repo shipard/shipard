@@ -156,7 +156,7 @@
   }
   .shpd-convlist__section {
     display: inline-block;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     padding: 0 var(--shpd-space-xs);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);

@@ -425,7 +425,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     /* Když Popover omezí výšku (shpd-popover--constrained je flex sloupec),
        panel se zmenší místo něj a zmenšení nese seznam výsledků — tlačítka
        Vytvořit / Vynechat zůstávají viditelná bez scrollování popoveru. */
@@ -455,14 +455,14 @@
     color: inherit;
     text-decoration: underline;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     flex-shrink: 0;
   }
 
   .shpd-resolve__candidates {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-resolve__heading {
@@ -470,13 +470,13 @@
     text-transform: uppercase;
     color: var(--shpd-color-text-secondary);
     letter-spacing: 0.5px;
-    margin-bottom: 2px;
+    margin-bottom: 0.125rem;
   }
 
   .shpd-resolve__candidate-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-resolve__candidate {
@@ -501,7 +501,7 @@
   .shpd-resolve__candidate-id {
     font-family: var(--shpd-font-mono, monospace);
     color: var(--shpd-color-text-secondary);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
   }
 
   .shpd-resolve__input {
@@ -509,7 +509,7 @@
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     font-family: inherit;
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
@@ -556,7 +556,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
+    gap: 0.125rem;
     width: 100%;
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border: 0;
@@ -586,7 +586,7 @@
   }
 
   .shpd-resolve__item-secondary {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 

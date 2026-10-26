@@ -213,7 +213,7 @@
     left: 0;
     right: 0;
     z-index: 20;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     max-height: 16rem;
     overflow-y: auto;
     border: 1px solid var(--shpd-color-border);

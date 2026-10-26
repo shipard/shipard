@@ -156,7 +156,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--shpd-space-sm);
-    padding: 2px 0;
+    padding: 0.125rem 0;
   }
 
   .shpd-sent-transport__attempt--fail { color: var(--shpd-color-danger); }

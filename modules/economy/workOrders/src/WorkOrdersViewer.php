@@ -167,41 +167,69 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /**
+     * Tab Fakturace a jeho akce vznikají jedním výpočtem (období, předpis)
+     * a Deník rovněž; builder volá `detailTabs()` a `detailActions()`
+     * zvlášť, proto memo per id zakázky místo dvojích dotazů.
+     *
+     * @var array<int, array{invoicing: array{tab: array<string, mixed>, actions: list<array<string, mixed>>}|null, journalTab: array<string, mixed>|null}>
+     */
+    private array $detailMemo = [];
+
+    /**
+     * @param array<string, mixed> $record
+     * @return array{invoicing: array{tab: array<string, mixed>, actions: list<array<string, mixed>>}|null, journalTab: array<string, mixed>|null}
+     */
+    private function detailData(array $record): array
     {
-        $record = $this->loadDetailRecord($recordId);
-        if ($record === null) {
-            return ['tabs' => []];
+        $recordId = (int) $record['id'];
+        if (isset($this->detailMemo[$recordId])) {
+            return $this->detailMemo[$recordId];
         }
+        $type = (string) ($record['type'] ?? '');
+        $periodic = $type !== '' && $this->types()->invoicing($type) === WorkOrderTypes::INVOICING_PERIODIC;
+
+        return $this->detailMemo[$recordId] = [
+            'invoicing'  => $periodic ? $this->invoicingTab($record) : null,
+            'journalTab' => $this->journalTab($recordId),
+        ];
+    }
+
+    /** Přehled (se stromem nadřazené a podzakázek), Fakturace u periodické zakázky, Deník má-li zakázka zápisy. */
+    protected function detailTabs(array $record): array
+    {
+        $recordId = (int) $record['id'];
         $tree = $this->treeService();
-        $detail = $this->overviewDetail($this->overviewGroups($record, $tree->effectiveCustomer($record)));
+        $overview = $this->propertiesTab($this->overviewGroups($record, $tree->effectiveCustomer($record)));
 
         $treeTable = $this->treeTable($record, $tree->children($recordId));
         if ($treeTable !== null) {
-            $detail['tabs'][0]['content'] = ['type' => 'composite', 'blocks' => [
-                $detail['tabs'][0]['content'],
+            $overview['content'] = ['type' => 'composite', 'blocks' => [
+                $overview['content'],
                 ['type' => 'heading', 'text' => $this->text('heading.tree', 'Parent and sub-orders')],
                 $treeTable,
             ]];
         }
 
-        $actions = [];
-        $type = (string) ($record['type'] ?? '');
-        if ($type !== '' && $this->types()->invoicing($type) === WorkOrderTypes::INVOICING_PERIODIC) {
-            $invoicing = $this->invoicingTab($record);
-            $detail['tabs'][] = $invoicing['tab'];
-            $actions = $invoicing['actions'];
+        $tabs = [$overview];
+        $data = $this->detailData($record);
+        if ($data['invoicing'] !== null) {
+            $tabs[] = $data['invoicing']['tab'];
         }
+        if ($data['journalTab'] !== null) {
+            $tabs[] = $data['journalTab'];
+        }
+        return $tabs;
+    }
 
-        $journalTab = $this->journalTab($recordId);
-        if ($journalTab !== null) {
-            $detail['tabs'][] = $journalTab;
-            $actions[] = $this->journalAction($recordId);
+    protected function detailActions(array $record): array
+    {
+        $data = $this->detailData($record);
+        $actions = $data['invoicing']['actions'] ?? [];
+        if ($data['journalTab'] !== null) {
+            $actions[] = $this->journalAction((int) $record['id']);
         }
-        if ($actions !== []) {
-            $detail['actions'] = $actions;
-        }
-        return $detail;
+        return $actions;
     }
 
     /**

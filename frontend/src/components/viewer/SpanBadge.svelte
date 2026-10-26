@@ -12,9 +12,9 @@
 <style>
   .shpd-span-badge {
     display: inline-block;
-    padding: 1px 8px;
-    border-radius: 999px;
-    font-size: 0.75rem;
+    padding: 0.0625rem var(--shpd-space-sm);
+    border-radius: var(--shpd-radius-full);
+    font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     line-height: 1.4;
     white-space: nowrap;

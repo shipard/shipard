@@ -289,7 +289,7 @@
   .shpd-mail-upload__mode {
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     border: 1px solid var(--shpd-color-border);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
     font: inherit;

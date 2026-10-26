@@ -4,40 +4,62 @@
   // ale bez sdílení tříd/klíčů s exchange — server posílá hodnoty už
   // zformátované a lokalizované, frontend jen skládá layout a statické
   // labely přes t().
+  //
+  // Písmo výhradně přes typografické role (--shpd-font-size-title / heading
+  // / body / meta, --shpd-font-weight-normal / strong; #135 D15, D16) —
+  // referenční implementace kapitoly Detail záznamu v docs/design-system.md.
+  // Hlavičku (titulek, podtitul, štítek stavu) kreslí ViewerDetail nad taby;
+  // content klíč `header` nenese. Přílohy (vlastní i ze zdrojové zprávy)
+  // obsah `document` nenese také — kreslí je sdílená sekce DetailAttachments
+  // na konci Přehledu z `detail.attachments` (#136 D21).
   import { t } from '../../i18n/index.js';
-  import { navigationStore } from '../../stores/navigation.svelte.js';
-  import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
-  import AttachmentGrid from './AttachmentGrid.svelte';
 
   let { content = null, onAction = null } = $props();
 
-  let header = $derived(content?.header ?? null);
   let meta = $derived(content?.meta ?? {});
   let rows = $derived(content?.rows ?? []);
   let vatRecap = $derived(content?.vat_recap ?? []);
   let totals = $derived(content?.totals ?? null);
-  let attachmentGroups = $derived(content?.attachments?.groups ?? []);
 
-  // Pole meta mřížky — null hodnoty se nerenderují.
-  const META_FIELDS = [
-    ['issue_date', 'viewer.document.meta.issueDate'],
-    ['due_date', 'viewer.document.meta.dueDate'],
-    ['accounting_date', 'viewer.document.meta.accountingDate'],
-    ['vat_duzp', 'viewer.document.meta.taxPointDate'],
-    ['currency', 'viewer.document.meta.currency'],
-    ['exchange_rate', 'viewer.document.meta.exchangeRate'],
-    ['payment_method', 'viewer.document.meta.paymentMethod'],
-    ['cash_desk', 'viewer.document.meta.cashDesk'],
-    ['payer', 'viewer.document.meta.payer'],
-    ['payment_reference', 'viewer.document.meta.paymentReference'],
-    ['specific_symbol', 'viewer.document.meta.specificSymbol'],
-    ['constant_symbol', 'viewer.document.meta.constantSymbol'],
+  // Údaje dokladu ve dvou skupinách vedle sebe (#135): data a platební
+  // údaje. Pole s null / prázdnou hodnotou se nevykreslí, prázdná skupina
+  // celá.
+  const META_GROUPS = [
+    {
+      id: 'dates',
+      labelKey: 'viewer.document.section.dates',
+      fields: [
+        ['issue_date', 'viewer.document.meta.issueDate'],
+        ['due_date', 'viewer.document.meta.dueDate'],
+        ['vat_duzp', 'viewer.document.meta.taxPointDate'],
+        ['accounting_date', 'viewer.document.meta.accountingDate'],
+      ],
+    },
+    {
+      id: 'payment',
+      labelKey: 'viewer.document.section.payment',
+      fields: [
+        ['payment_method', 'viewer.document.meta.paymentMethod'],
+        ['currency', 'viewer.document.meta.currency'],
+        ['exchange_rate', 'viewer.document.meta.exchangeRate'],
+        ['cash_desk', 'viewer.document.meta.cashDesk'],
+        ['payer', 'viewer.document.meta.payer'],
+        ['payment_reference', 'viewer.document.meta.paymentReference'],
+        ['specific_symbol', 'viewer.document.meta.specificSymbol'],
+        ['constant_symbol', 'viewer.document.meta.constantSymbol'],
+      ],
+    },
   ];
 
-  let metaItems = $derived(
-    META_FIELDS
-      .map(([key, labelKey]) => ({ key, labelKey, value: meta?.[key] ?? null }))
-      .filter((f) => f.value !== null && f.value !== '')
+  let metaGroups = $derived(
+    META_GROUPS
+      .map((group) => ({
+        ...group,
+        items: group.fields
+          .map(([key, labelKey]) => ({ key, labelKey, value: meta?.[key] ?? null }))
+          .filter((f) => f.value !== null && f.value !== ''),
+      }))
+      .filter((group) => group.items.length > 0)
   );
 
   function formatAddress(addr) {
@@ -46,25 +68,6 @@
     const street = [addr.street, addr.house_number].filter(Boolean).join(' ');
     const city = [addr.zip, addr.city].filter(Boolean).join(' ');
     return [street, city].filter(Boolean).join(', ') || null;
-  }
-
-  // Klik na kód zdrojové zprávy (tasks/mail-source-message-link.md D6, D10):
-  // s hostitelem, který obsluhuje akce (Viewer.svelte), otevře read-only
-  // detail zprávy v modalu a viewer se nepřepne. Akční id 'openSourceMessage'
-  // není ve sdíleném slovníku vestavěných akcí, propadne na obsluhu podle
-  // kind. Bez onAction (DocumentDetail uvnitř read-only ViewerDetailModal)
-  // zůstává dnešní přechod do vieweru Došlá pošta.
-  function openSourceMessage(group) {
-    if (!group.sourceViewerId) return;
-    if (onAction) {
-      onAction('openSourceMessage', {
-        id: 'openSourceMessage',
-        kind: 'open_detail',
-        target: { viewerId: group.sourceViewerId, recordId: group.message_ndx, tabId: 'content' },
-      });
-      return;
-    }
-    navigationStore.navigateToViewer(group.sourceViewerId, group.message_ndx);
   }
 
   // Klik na partnera / položku řádku — otevře FormDialog přes generický
@@ -77,14 +80,14 @@
       target: { table, mode: 'edit', id },
     });
   }
-
-  // Rezim zobrazeni priloh ('full'/'grid') je sdileny store — stejna volba
-  // plati i v detailu dosle posty (ViewerDetail). Detaily v attachmentView.svelte.js.
 </script>
 
 {#snippet partyCard(labelKey, party)}
+  <!-- Karta strany (D16): nadpis karty a název entity jsou heading, IČO /
+       DIČ, adresa a účet běžné údaje barvou textu, šedé a menší jsou jen
+       kontakty. -->
   <div class="shpd-docdetail__party">
-    <h3 class="shpd-docdetail__party-label">{t(labelKey)}</h3>
+    <h3 class="shpd-docdetail__section-heading">{t(labelKey)}</h3>
     {#if party}
       <div class="shpd-docdetail__party-body">
         {#if party.name}
@@ -103,29 +106,29 @@
         {#if party.company_id || party.tax_id || party.vat_id}
           <div class="shpd-docdetail__party-ids">
             {#if party.company_id}
-              <span>{t('viewer.document.party.companyId')}: <strong>{party.company_id}</strong></span>
+              <span>{t('viewer.document.party.companyId')}: {party.company_id}</span>
             {/if}
             {#if party.tax_id}
-              <span>{t('viewer.document.party.taxId')}: <strong>{party.tax_id}</strong></span>
+              <span>{t('viewer.document.party.taxId')}: {party.tax_id}</span>
             {/if}
             {#if party.vat_id && party.vat_id !== party.tax_id}
-              <span>{t('viewer.document.party.vatId')}: <strong>{party.vat_id}</strong></span>
+              <span>{t('viewer.document.party.vatId')}: {party.vat_id}</span>
             {/if}
           </div>
         {/if}
         {#if formatAddress(party.address)}
           <div class="shpd-docdetail__party-address">{formatAddress(party.address)}</div>
         {/if}
+        {#if party.bank_account?.iban || party.bank_account?.account_number}
+          <div class="shpd-docdetail__party-bank">
+            {t('viewer.document.party.bankAccount')}:
+            {party.bank_account.account_number ?? party.bank_account.iban}
+          </div>
+        {/if}
         {#if party.contact?.email || party.contact?.phone}
           <div class="shpd-docdetail__party-contact">
             {#if party.contact?.email}<span>{party.contact.email}</span>{/if}
             {#if party.contact?.phone}<span>{party.contact.phone}</span>{/if}
-          </div>
-        {/if}
-        {#if party.bank_account?.iban || party.bank_account?.account_number}
-          <div class="shpd-docdetail__party-bank">
-            {t('viewer.document.party.bankAccount')}:
-            <strong>{party.bank_account.account_number ?? party.bank_account.iban}</strong>
           </div>
         {/if}
       </div>
@@ -163,39 +166,22 @@
 
 {#if content}
   <div class="shpd-docdetail">
-    {#if header}
-      <header class="shpd-docdetail__header">
-        <div class="shpd-docdetail__header-main">
-          {#if header.docTypeLabel}
-            <span class="shpd-docdetail__type-badge">{header.docTypeLabel}</span>
-          {/if}
-          <h2 class="shpd-docdetail__title">{header.docNumber || '—'}</h2>
-          {#if header.docText}
-            <p class="shpd-docdetail__subtitle">{header.docText}</p>
-          {/if}
-        </div>
-        {#if header.state?.name}
-          <span
-            class="shpd-docdetail__state-badge"
-            style="background: var(--shpd-color-state-{header.state.style}-bg); color: var(--shpd-color-state-{header.state.style}-text);"
-          >
-            {header.state.name}
-          </span>
-        {/if}
-      </header>
-    {/if}
-
     <section class="shpd-docdetail__parties">
       {@render partyCard('viewer.document.section.supplier', content.supplier)}
       {@render partyCard('viewer.document.section.customer', content.customer)}
     </section>
 
-    {#if metaItems.length > 0}
-      <section class="shpd-docdetail__meta-grid">
-        {#each metaItems as item (item.key)}
-          <div class="shpd-docdetail__field">
-            <span class="shpd-docdetail__field-label">{t(item.labelKey)}</span>
-            <span class="shpd-docdetail__field-value">{item.value}</span>
+    {#if metaGroups.length > 0}
+      <section class="shpd-docdetail__meta">
+        {#each metaGroups as group (group.id)}
+          <div class="shpd-docdetail__meta-group">
+            <h3 class="shpd-docdetail__section-heading">{t(group.labelKey)}</h3>
+            <dl class="shpd-docdetail__fields">
+              {#each group.items as item (item.key)}
+                <dt class="shpd-docdetail__field-label">{t(item.labelKey)}</dt>
+                <dd class="shpd-docdetail__field-value">{item.value}</dd>
+              {/each}
+            </dl>
           </div>
         {/each}
       </section>
@@ -292,49 +278,6 @@
         {/if}
       </section>
     {/if}
-
-    {#if attachmentGroups.length > 0}
-      <section class="shpd-docdetail__section shpd-docdetail__attachments">
-        <div class="shpd-docdetail__att-toolbar">
-          <button
-            type="button"
-            class="shpd-docdetail__att-toggle"
-            onclick={() => attachmentViewStore.toggle()}
-          >
-            {attachmentViewStore.mode === 'full'
-              ? t('viewer.document.attachments.viewGrid')
-              : t('viewer.document.attachments.viewFull')}
-          </button>
-        </div>
-        {#each attachmentGroups as group, i (group.kind === 'mail' ? `mail-${group.message_ndx}` : `doc-${i}`)}
-          <div class="shpd-docdetail__att-group">
-            <h3 class="shpd-docdetail__section-heading">
-              {#if group.kind === 'mail'}
-                <!-- Krátký kód zprávy, plný v tooltipu (D9). -->
-                {#if group.sourceViewerId}
-                  <button
-                    type="button"
-                    class="shpd-docdetail__att-msglink"
-                    title={group.message_id}
-                    onclick={() => openSourceMessage(group)}
-                  >
-                    #{group.message_code_short ?? group.message_id}
-                  </button>
-                {:else}
-                  <span title={group.message_id}>#{group.message_code_short ?? group.message_id}</span>
-                {/if}
-                {#if group.received_at}
-                  <span class="shpd-docdetail__att-msgdate">· {group.received_at}</span>
-                {/if}
-              {:else}
-                {t('viewer.document.attachments.doc')}
-              {/if}
-            </h3>
-            <AttachmentGrid attachments={group.attachments} mode={attachmentViewStore.mode} />
-          </div>
-        {/each}
-      </section>
-    {/if}
   </div>
 {/if}
 
@@ -342,53 +285,25 @@
   .shpd-docdetail {
     display: flex;
     flex-direction: column;
-    gap: var(--shpd-space-md);
-    font-size: 0.875rem;
+    gap: var(--shpd-space-lg);
+    font-size: var(--shpd-font-size-body);
+    /* Kontejner pro @container dotazy níže (D3). Blok na celou šířku
+       obsahu detailu — inline-size mu šířku nezmění; na prvky, které se
+       mají smrštit na obsah, container-type nepatří. */
+    container-type: inline-size;
   }
 
-  /* ── Header ──────────────────────────────────────────────────────────── */
-
-  .shpd-docdetail__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--shpd-space-md);
-    border-bottom: 1px solid var(--shpd-color-border);
-    padding-bottom: var(--shpd-space-md);
+  /* Nadpis sekce, karty strany i skupiny údajů — role heading. base.css
+     dává h3 velikost xl, role se proto nastavuje explicitně. */
+  .shpd-docdetail__section-heading {
+    margin: 0 0 var(--shpd-space-xs);
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
+    line-height: 1.4;
+    color: var(--shpd-color-text);
   }
 
-  .shpd-docdetail__type-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    background: var(--shpd-color-primary-soft);
-    color: var(--shpd-color-primary);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-docdetail__title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-
-  .shpd-docdetail__subtitle {
-    margin: var(--shpd-space-xs) 0 0;
-    color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-docdetail__state-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  /* ── Parties ─────────────────────────────────────────────────────────── */
+  /* ── Strany ──────────────────────────────────────────────────────────── */
 
   .shpd-docdetail__parties {
     display: grid;
@@ -396,52 +311,23 @@
     gap: var(--shpd-space-md);
   }
 
-  @media (max-width: 600px) {
-    .shpd-docdetail__parties {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .shpd-docdetail__party {
     border: 1px solid var(--shpd-color-border);
-    border-radius: 6px;
-    padding: var(--shpd-space-sm);
+    border-radius: var(--shpd-radius-md);
+    padding: 0.75rem;
     background: var(--shpd-color-bg);
   }
 
-  .shpd-docdetail__party-label {
-    margin: 0 0 var(--shpd-space-xs);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-docdetail__party-name {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-docdetail__party-ids,
-  .shpd-docdetail__party-contact {
+  .shpd-docdetail__party-body {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--shpd-space-md);
-    font-size: 0.8125rem;
-    color: var(--shpd-color-text-secondary);
-    margin-bottom: var(--shpd-space-xs);
+    flex-direction: column;
+    gap: var(--shpd-space-xs);
   }
 
-  .shpd-docdetail__party-address,
-  .shpd-docdetail__party-bank {
-    font-size: 0.8125rem;
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-docdetail__party-empty {
-    color: var(--shpd-color-text-secondary);
-    font-style: italic;
+  /* Název entity má roli nadpisu obsahu karty (D16). */
+  .shpd-docdetail__party-name {
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   /* Klikatelné jméno partnera — link na záznam osoby. Stejná vizuální
@@ -452,8 +338,8 @@
     background: none;
     padding: 0;
     font: inherit;
-    font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     text-align: left;
     color: var(--shpd-color-primary);
     cursor: pointer;
@@ -463,83 +349,81 @@
     text-decoration: underline;
   }
 
-  /* ── Meta grid ───────────────────────────────────────────────────────── */
-
-  .shpd-docdetail__meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  /* IČO / DIČ, adresa a účet jsou běžné údaje — body, barvou textu, bez
+     zvýraznění (D15); dědí z kořene. */
+  .shpd-docdetail__party-ids {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--shpd-space-xs) var(--shpd-space-md);
   }
 
-  .shpd-docdetail__field {
+  /* Kontakty jsou doplněk — meta, šedé, s malou mezerou nad (D16). */
+  .shpd-docdetail__party-contact {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    gap: var(--shpd-space-xs) var(--shpd-space-md);
+    margin-top: var(--shpd-space-xs);
+    font-size: var(--shpd-font-size-meta);
+    color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-docdetail__field-label {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
+  .shpd-docdetail__party-empty {
     color: var(--shpd-color-text-secondary);
-    letter-spacing: 0.5px;
+    font-style: italic;
+  }
+
+  /* ── Údaje dokladu ───────────────────────────────────────────────────── */
+
+  .shpd-docdetail__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--shpd-space-md) var(--shpd-space-lg);
+    align-items: start;
+  }
+
+  /* Popisek–hodnota v mřížce; obojí body, barvou textu — liší se jen
+     umístěním (D15). */
+  .shpd-docdetail__fields {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--shpd-space-xs) var(--shpd-space-md);
+    margin: 0;
+  }
+
+  .shpd-docdetail__field-label,
+  .shpd-docdetail__field-value {
+    margin: 0;
   }
 
   .shpd-docdetail__field-value {
-    font-size: 0.875rem;
+    overflow-wrap: anywhere;
   }
 
-  /* Na mobilu (≤ 768px, MOBILE_BREAKPOINT) má meta mřížka dva pevné
-     sloupce místo jednoho — hodnoty (datumy, symboly, měna) jsou krátké
-     a vejdou se vedle sebe, čímž se ušetří vertikální místo. Desktop
-     zůstává na auto-fit (minmax 180px). */
-  @media (max-width: 768px) {
-    .shpd-docdetail__meta-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  /* Na mobilu (≤ 768px, MOBILE_BREAKPOINT) má meta mřížka dva pevné
-     sloupce místo jednoho — hodnoty (datumy, symboly, měna) jsou krátké
-     a vejdou se vedle sebe, čímž se ušetří vertikální místo. Desktop
-     zůstává na auto-fit (minmax 180px). */
-  @media (max-width: 768px) {
-    .shpd-docdetail__meta-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  /* ── Rows + VAT recap tables ─────────────────────────────────────────── */
-
-  .shpd-docdetail__section-heading {
-    margin: 0 0 var(--shpd-space-xs);
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--shpd-color-text-secondary);
-  }
+  /* ── Řádky a rekapitulace DPH ────────────────────────────────────────── */
 
   .shpd-docdetail__rows,
   .shpd-docdetail__vat-recap {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8125rem;
   }
 
   .shpd-docdetail__rows th,
   .shpd-docdetail__rows td,
   .shpd-docdetail__vat-recap th,
   .shpd-docdetail__vat-recap td {
-    padding: var(--shpd-space-xs);
+    padding: 0.375rem var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
     text-align: left;
   }
 
+  /* Hlavička sloupce — heading: stejná velikost jako řádky, silnější,
+     barvou textu, bez verzálek; čára pod ní silnější než mezi řádky. */
   .shpd-docdetail__rows th,
   .shpd-docdetail__vat-recap th {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    color: var(--shpd-color-text-secondary);
-    font-weight: 500;
-    letter-spacing: 0.5px;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
+    color: var(--shpd-color-text);
+    border-bottom-color: var(--shpd-color-border-strong);
   }
 
   .shpd-docdetail__rows .num,
@@ -563,15 +447,15 @@
     text-decoration: underline;
   }
 
-  /* Badge stavu položky (archiv/koš) za popisem řádku — stejné state
-     tokeny jako badge v hlavičce detailu, koš navíc přeškrtnutý. */
+  /* Štítek stavu položky (archiv/koš) za popisem řádku — meta, stejné
+     state tokeny jako štítek stavu v hlavičce detailu, koš přeškrtnutý. */
   .shpd-docdetail__row-badge {
     display: inline-block;
     margin-left: var(--shpd-space-xs);
-    padding: 1px 6px;
-    border-radius: 999px;
-    font-size: 0.6875rem;
-    font-weight: 500;
+    padding: 0.0625rem 0.375rem;
+    border-radius: var(--shpd-radius-full);
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
     line-height: 1.4;
     white-space: nowrap;
     vertical-align: middle;
@@ -581,7 +465,7 @@
     text-decoration: line-through;
   }
 
-  /* ── Totals ──────────────────────────────────────────────────────────── */
+  /* ── Součty ──────────────────────────────────────────────────────────── */
 
   .shpd-docdetail__totals-section {
     display: flex;
@@ -605,69 +489,33 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Jedna tučná úroveň: <strong> má výchozích 700, tady vždy token. */
+  .shpd-docdetail__totals-summary strong {
+    font-weight: var(--shpd-font-weight-strong);
+  }
+
   .shpd-docdetail__total {
     border-top: 1px solid var(--shpd-color-border);
     padding-top: var(--shpd-space-xs);
-    font-size: 1rem;
+    font-size: var(--shpd-font-size-title);
   }
 
   .shpd-docdetail__total-dom {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
-  /* ── Attachments ─────────────────────────────────────────────────────── */
+  /* ── Úzká šířka (D3) ─────────────────────────────────────────────────── */
 
-  .shpd-docdetail__attachments {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-lg);
-    border-top: 1px solid var(--shpd-color-border);
-    padding-top: var(--shpd-space-md);
-  }
-
-  .shpd-docdetail__att-msglink {
-    border: none;
-    background: none;
-    padding: 0;
-    font: inherit;
-    font-weight: 600;
-    color: var(--shpd-color-primary);
-    cursor: pointer;
-    text-transform: none;
-    letter-spacing: normal;
-  }
-
-  .shpd-docdetail__att-msglink:hover {
-    text-decoration: underline;
-  }
-
-  .shpd-docdetail__att-msgdate {
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: normal;
-  }
-
-  .shpd-docdetail__att-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    /* Kompenzace gap kontejneru, toolbar ma sedet tesne nad prvni skupinou. */
-    margin-bottom: calc(-1 * var(--shpd-space-md));
-  }
-
-  .shpd-docdetail__att-toggle {
-    border: 1px solid var(--shpd-color-border);
-    background: var(--shpd-color-bg);
-    color: var(--shpd-color-text-secondary);
-    border-radius: var(--shpd-radius-md);
-    padding: 2px 10px;
-    font: inherit;
-    font-size: 0.75rem;
-    cursor: pointer;
-  }
-
-  .shpd-docdetail__att-toggle:hover {
-    color: var(--shpd-color-text);
-    border-color: var(--shpd-color-text-secondary);
+  /* Pod 30rem (480 px) šířky kontejneru .shpd-docdetail jdou strany
+     i skupiny údajů pod sebe. Dotaz platí pro potomky kontejneru, ne pro
+     něj sám. Práh vychází ze skutečných šířek: panel vedle seznamu má
+     šířku okna − 693 px, drawer 528 px — 40rem ze zadání stohovalo strany
+     i na běžných šířkách okna. */
+  @container (max-width: 30rem) {
+    .shpd-docdetail__parties,
+    .shpd-docdetail__meta {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

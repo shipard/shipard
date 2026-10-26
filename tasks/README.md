@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 400 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 370.
+Celkem 404 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 374.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -167,6 +167,18 @@ Režim Nastavení (`docs/app-settings.md`) + custom vzhled sidebaru.
 | `custom-theme-phase2.md` | Gradienty, opacity slider, stránkování presetů |
 | `custom-theme-phase3.md` | Per-user persistence + režim Nastavení účtu |
 | `custom-theme-phase4.md` | DS-wide default vzhledu + `follow` flag |
+
+## Design system (vzhled)
+
+Pravidla vzhledu a úklid CSS — zastřešující issue #133, pravidla
+v [`docs/design-system.md`](../docs/design-system.md).
+
+| Task | Co řeší |
+|------|---------|
+| `design-system-foundations.md` | Mezery, odsazení, zaoblení a písmo v rem, `--shpd-radius-full`, kontrola px v pre-commitu (`check-css-units.py`) — vizuálně neutrální převod (#134) |
+| `design-system-detail-pilot.md` | Typografické role v tokenech, detail dokladu podle návrhu, hlavička s partnerem bez štítku typu, sdílená hlavička a obecný obsah detailu, kapitoly Typografie a Detail záznamu (#135, D13–D16) |
+| `design-system-detail-contract.md` | Kontrakt detailu, task A: builder detailu v `TableViewer` (hlavička z deklarace / `displayPattern`, štítek stavu bez „V pořádku“, přílohy obecně), sdílená sekce příloh, Odeslaná pošta jen v Přehledu, kontraktní test, převod dokladů, Majetku a Zakázek (#136, D18–D24) |
+| `design-system-detail-contract-rollout.md` | Kontrakt detailu, task B: převod zbývajících 49 viewerů na builder (deklarace hlavičky, štítky navíc v háčcích, obecné přílohy), `renderDetail()` jako `final`, kontraktní test bez výjimek, úklid z tasku A (#136, D18–D24) |
 
 ## Mobilní (responzivní) UI
 

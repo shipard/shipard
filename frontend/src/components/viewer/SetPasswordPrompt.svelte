@@ -55,7 +55,7 @@
 <style>
   .shpd-setpw__label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 0.375rem;
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text);
   }
@@ -63,7 +63,7 @@
   .shpd-setpw__input {
     width: 100%;
     box-sizing: border-box;
-    padding: 6px;
+    padding: 0.375rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     font-family: inherit;

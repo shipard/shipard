@@ -98,17 +98,16 @@ class ConversationsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $items = [];
         $this->addItem($items, 'Název', $record['title'] ?? null);
         $this->addItem($items, 'Model', $record['model_snapshot'] ?? null);
@@ -118,16 +117,14 @@ class ConversationsViewer extends TableViewer
         $this->addItem($items, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($items, 'Změněno', $record['modified'] ?? null);
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [['title' => 'Konverzace', 'items' => $items]],
-                ],
-            ]],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [['title' => 'Konverzace', 'items' => $items]],
+            ],
+        ]];
     }
 
     private function resolveStateStyle(int $docState): string

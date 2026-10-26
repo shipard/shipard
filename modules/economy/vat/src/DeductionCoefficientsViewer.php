@@ -122,13 +122,8 @@ class DeductionCoefficientsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
         $registrations = $this->registrationNames();
         $items = [
             ['label' => 'Registrace DPH', 'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? ''],
@@ -140,11 +135,7 @@ class DeductionCoefficientsViewer extends TableViewer
             $items[] = ['label' => 'Poznámka', 'value' => (string) $record['note']];
         }
 
-        return ['tabs' => [[
-            'id'      => 'overview',
-            'label'   => $this->defaultOverviewLabel(),
-            'content' => ['type' => 'properties', 'groups' => [['title' => 'Koeficient odpočtu', 'items' => $items]]],
-        ]]];
+        return [$this->propertiesTab([['title' => 'Koeficient odpočtu', 'items' => $items]])];
     }
 
     public function getFilters(): array

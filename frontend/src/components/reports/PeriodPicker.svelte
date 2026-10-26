@@ -174,7 +174,7 @@
   .shpd-period__grid {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     max-height: 60vh;
     overflow-y: auto;
   }
@@ -195,7 +195,7 @@
 
   .shpd-period__cells {
     display: inline-flex;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-period__cells--divided {
@@ -206,10 +206,10 @@
 
   .shpd-period__cell {
     min-width: 2em;
-    padding: 2px 4px;
+    padding: 0.125rem var(--shpd-space-xs);
     background: none;
     border: 1px solid transparent;
-    border-radius: var(--shpd-radius-sm, 4px);
+    border-radius: var(--shpd-radius-sm);
     color: var(--shpd-color-text);
     font-size: var(--shpd-font-size-sm);
     font-variant-numeric: tabular-nums;

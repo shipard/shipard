@@ -118,9 +118,9 @@ class ItemsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT i.*, k.`name` AS kind_name, u.`name` AS unit_name, u.`shortcut` AS unit_shortcut'
             . ' FROM `' . $this->table . '` i'
             . ' LEFT JOIN `economy_items_kinds` k ON k.`id` = i.`item_kind`'
@@ -128,12 +128,15 @@ class ItemsViewer extends TableViewer
             . ' WHERE i.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
-        // Kód a název jsou v hlavičce detailu — skupina Identifikace tu už není.
+    /**
+     * Přehled: klasifikace, cena, detaily. Kód a název jsou v hlavičce
+     * (deklarace `detailHeader`), přílohy položky dodá builder na konec
+     * Přehledu (#136 D21).
+     */
+    protected function detailTabs(array $record): array
+    {
         $classificationItems = [];
         $this->addItem($classificationItems, 'Druh', $record['kind_name'] ?? null);
         $this->addItem($classificationItems, 'Typ', $this->resolveItemTypeLabel((int) ($record['item_type'] ?? 3)));
@@ -153,102 +156,11 @@ class ItemsViewer extends TableViewer
         $this->addItem($detailItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
         $this->addItem($detailItems, 'Platnost do', $this->formatDate($record['valid_to'] ?? null));
 
-        $groups = [];
-        if ($classificationItems !== []) {
-            $groups[] = ['title' => 'Klasifikace', 'items' => $classificationItems];
-        }
-        if ($pricingItems !== []) {
-            $groups[] = ['title' => 'Cena', 'items' => $pricingItems];
-        }
-        if ($detailItems !== []) {
-            $groups[] = ['title' => 'Detaily', 'items' => $detailItems];
-        }
-
-        $name = trim((string) ($record['name'] ?? ''));
-        $code = trim((string) ($record['code'] ?? ''));
-
-        $badges = [];
-        $stateBadge = $this->buildStateBadge((int) ($record['docState'] ?? 10));
-        if ($stateBadge !== null) {
-            $badges[] = $stateBadge;
-        }
-
-        $blocks = [['type' => 'properties', 'groups' => $groups]];
-
-        // Přílohy — velké náhledy / miniatury s přepínáním (attachment-grid)
-        $attachments = $this->fetchAttachments((int) $record['id']);
-        if ($attachments !== []) {
-            $blocks[] = ['type' => 'heading', 'text' => 'Přílohy'];
-            $blocks[] = ['type' => 'attachment-grid', 'attachments' => $attachments];
-        }
-
-        return [
-            'title'    => $name !== '' ? $name : '(bez názvu)',
-            'subtitle' => $code !== '' ? 'Kód ' . $code : null,
-            'badges'   => $badges,
-            // Stejný klíč jako viewers[].icon v module.jsonc.
-            'icon'     => 'box',
-            'tabs'     => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => count($blocks) === 1
-                    ? $blocks[0]
-                    : ['type' => 'composite', 'blocks' => $blocks],
-            ]],
-        ];
-    }
-
-    /**
-     * Přílohy položky pro blok `attachment-grid` (AttachmentGrid s
-     * přepínáním full/grid na frontendu). Velikost posíláme v bajtech,
-     * formátuje frontend (formatFileSize v api/attachments.js).
-     *
-     * @return array<int, array{id: int, name: string, mime_type: string, file_size: int}>
-     */
-    private function fetchAttachments(int $recordId): array
-    {
-        // table_id 311 = economy_items (tables/economy_items.jsonc),
-        // stejný vzor jako 303 v IncomingMessagesViewer
-        $files = $this->db->fetchAll(
-            'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type`'
-            . ' FROM `core_attachments_files`'
-            . ' WHERE `table_id` = %i AND `record_id` = %i AND `is_deleted` = 0'
-            . ' ORDER BY `att_order` ASC, `name` ASC',
-            311,
-            $recordId,
-        );
-
-        $out = [];
-        foreach ($files as $f) {
-            $out[] = [
-                'id'        => (int) $f['id'],
-                'name'      => (string) ($f['name'] ?? $f['file_name']),
-                'mime_type' => (string) ($f['mime_type'] ?? ''),
-                'file_size' => (int) ($f['file_size'] ?? 0),
-            ];
-        }
-
-        return $out;
-    }
-
-    /** Badge stavu záznamu (label + stateStyle) z docState configu. */
-    private function buildStateBadge(int $docState): ?array
-    {
-        if ($this->config === null || $this->docStatesCfgItem === null) {
-            return null;
-        }
-
-        $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
-        $stateData = $cfg->getState($docState);
-        $label = (string) ($stateData['stateName'] ?? '');
-        if ($label === '') {
-            return null;
-        }
-
-        return [
-            'label' => $label,
-            'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
-        ];
+        return [$this->propertiesTab([
+            ['title' => 'Klasifikace', 'items' => $classificationItems],
+            ['title' => 'Cena', 'items' => $pricingItems],
+            ['title' => 'Detaily', 'items' => $detailItems],
+        ])];
     }
 
     private function resolveStateStyle(int $docState): string

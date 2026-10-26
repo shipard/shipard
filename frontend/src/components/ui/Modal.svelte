@@ -285,7 +285,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-modal__title {
@@ -331,7 +331,7 @@
     display: grid;
     grid-template-columns: max-content max-content;
     column-gap: var(--shpd-space-sm);
-    row-gap: 2px;
+    row-gap: 0.125rem;
     align-items: baseline;
     flex-shrink: 0;
     font-size: var(--shpd-font-size-sm);
@@ -377,7 +377,7 @@
     background: none;
     border: none;
     border-radius: var(--shpd-radius-sm);
-    font-size: 1.25rem;
+    font-size: var(--shpd-font-size-xl);
     line-height: 1;
     color: var(--shpd-color-text-secondary);
     cursor: pointer;

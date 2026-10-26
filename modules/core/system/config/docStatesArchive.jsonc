@@ -50,6 +50,10 @@
         "actionName:cs": "V pořádku",
         "actionName:en": "Confirm",
         "stateStyle": "done",
+        // Štítek stavu v hlavičce detailu se neukazuje (#136 D20): běžný
+        // stav bez proužku v seznamu, štítek by jen šuměl; formulář ho
+        // ukazuje dál.
+        "detailBadge": false,
         "mainState": 3,
         "viewGroup": "active",
         "readOnly": 1,

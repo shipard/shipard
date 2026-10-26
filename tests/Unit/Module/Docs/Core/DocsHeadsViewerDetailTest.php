@@ -9,20 +9,34 @@ use Dibi\Row;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Docs\Core\DocsHeadsViewer;
 
 /**
  * Detail dokladu jako "textová faktura" (content type `document`):
- * hlavička se state badge, strany ze snapshotů / živě, řádky, DPH
- * rekapitulace, součty (zaokrouhlení, cizí měna) a skupiny příloh
- * (mailové zdrojové + vlastní přílohy dokladu) na konci.
+ * hlavička s protistranou jako titulkem, číslem dokladu v podtitulku
+ * a jen štítkem stavu mimo V pořádku (#133 D13, D14, #136 D20), strany
+ * ze snapshotů / živě, řádky, DPH rekapitulace, součty (zaokrouhlení,
+ * cizí měna) a skupiny příloh v `detail.attachments` (mailové zdrojové
+ * od vieweru + vlastní přílohy dokladu od builderu, #136 D21).
  */
 class DocsHeadsViewerDetailTest extends TestCase
 {
     private const DOC_STATES = [
         '10' => ['stateName' => 'Koncept', 'stateStyle' => 'concept', 'mainState' => 1],
-        '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3],
+        '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'detailBadge' => false],
     ];
+
+    private const HEADS_TABLE = __DIR__ . '/../../../../../modules/docs/core/tables/docs_core_heads.jsonc';
+
+    private static ?TableDefinition $headsTable = null;
+
+    /** Reálná definice docs_core_heads (tableId 401) — builder podle ní načítá vlastní přílohy. */
+    private static function headsTable(): TableDefinition
+    {
+        return self::$headsTable ??= TableDefinition::fromArray(JsoncParser::parseFile(self::HEADS_TABLE));
+    }
 
     private const DOC_TYPES = [
         'invno'  => ['name' => 'Faktura vydaná', 'trade_dir' => 1],
@@ -147,7 +161,16 @@ class DocsHeadsViewerDetailTest extends TestCase
 
         $viewer = new DocsHeadsViewer($db, 'docs_core_heads');
         $viewer->setConfig($config);
+        $viewer->setTables(['docs_core_heads' => self::headsTable()]);
         return $viewer;
+    }
+
+    /** @return list<array<string, mixed>> skupiny příloh detailu (`detail.attachments.groups`) */
+    private function attachmentGroups(DocsHeadsViewer $viewer, int $recordId = 7): array
+    {
+        $detail = $viewer->renderDetail($recordId);
+        $this->assertArrayNotHasKey('attachments', $detail['tabs'][0]['content'], 'obsah dokladu přílohy nenese');
+        return $detail['attachments']['groups'] ?? [];
     }
 
     /** @return array<string, mixed> content jediného overview tabu */
@@ -161,23 +184,76 @@ class DocsHeadsViewerDetailTest extends TestCase
 
     // ── Hlavička ────────────────────────────────────────────────────────────
 
-    public function testHeaderCarriesTypeNumberTextAndStateBadge(): void
+    public function testHeaderWithPartnerUsesPartnerAsTitleAndNumberInSubtitle(): void
     {
-        $viewer = $this->makeViewer($this->baseRecord(['docState' => 40]));
+        $viewer = $this->makeViewer($this->baseRecord([
+            'partner'      => 5,
+            'partner_name' => 'Dodavatel s.r.o.',
+            'docState'     => 40,
+        ]));
         $detail = $viewer->renderDetail(7);
 
-        // Hlavička je nově nad taby (generický header ViewerDetail)
-        $this->assertSame('!0000000016', $detail['title']);
-        $this->assertSame('testtest', $detail['subtitle']);
-        $this->assertSame([
-            ['label' => 'Faktura přijatá', 'style' => 'neutral'],
-            ['label' => 'V pořádku', 'style' => 'done'],
-        ], $detail['badges']);
+        // Hlavička je nad taby (generický header ViewerDetail): titulkem
+        // protistrana, číslo a text v podtitulku, typ nese ikona, ne badge
+        // (#133 D13, D14); V pořádku je běžný stav bez štítku (#136 D20).
+        $this->assertSame('Dodavatel s.r.o.', $detail['title']);
+        $this->assertSame('!0000000016 · testtest', $detail['subtitle']);
+        $this->assertSame([], $detail['badges']);
         $this->assertSame('invoice-in', $detail['icon']);
 
         $content = $detail['tabs'][0]['content'];
         $this->assertSame('document', $content['type']);
-        $this->assertArrayNotHasKey('header', $content, 'Hlavička už není v contentu dokumentu');
+        $this->assertArrayNotHasKey('header', $content, 'Hlavička není v contentu dokumentu');
+    }
+
+    public function testConceptCarriesStateBadge(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord(['docState' => 10]));
+
+        $this->assertSame([['label' => 'Koncept', 'style' => 'concept']], $viewer->renderDetail(7)['badges']);
+    }
+
+    public function testHeaderWithoutPartnerUsesNumberAsTitle(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord());
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('!0000000016', $detail['title']);
+        $this->assertSame('testtest', $detail['subtitle']);
+    }
+
+    public function testHeaderWithDanglingPartnerFkBehavesLikeNoPartner(): void
+    {
+        // partner_name z LEFT JOIN je null → visící FK, stejná konvence
+        // jako v attachPartnerPersonId.
+        $viewer = $this->makeViewer($this->baseRecord(['partner' => 5, 'partner_name' => null]));
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('!0000000016', $detail['title']);
+        $this->assertSame('testtest', $detail['subtitle']);
+    }
+
+    public function testHeaderWithPartnerSubtitleOmitsMissingParts(): void
+    {
+        $withPartner = ['partner' => 5, 'partner_name' => 'Dodavatel s.r.o.'];
+
+        $viewer = $this->makeViewer($this->baseRecord($withPartner + ['doc_text' => '']));
+        $this->assertSame('!0000000016', $viewer->renderDetail(7)['subtitle']);
+
+        $viewer = $this->makeViewer($this->baseRecord($withPartner + ['doc_number' => '']));
+        $this->assertSame('testtest', $viewer->renderDetail(7)['subtitle']);
+
+        $viewer = $this->makeViewer($this->baseRecord($withPartner + ['doc_number' => '', 'doc_text' => '']));
+        $this->assertNull($viewer->renderDetail(7)['subtitle']);
+    }
+
+    public function testHeaderWithoutPartnerNumberAndTextFallsBackToDash(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord(['doc_number' => '', 'doc_text' => '']));
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame('—', $detail['title']);
+        $this->assertNull($detail['subtitle']);
     }
 
     // ── Strany ──────────────────────────────────────────────────────────────
@@ -387,9 +463,10 @@ class DocsHeadsViewerDetailTest extends TestCase
     public function testNoAttachmentsOmitsAttachmentsBlock(): void
     {
         $viewer = $this->makeViewer($this->baseRecord());
-        $content = $this->detailContent($viewer);
+        $detail = $viewer->renderDetail(7);
 
-        $this->assertArrayNotHasKey('attachments', $content);
+        $this->assertArrayNotHasKey('attachments', $detail);
+        $this->assertArrayNotHasKey('attachments', $detail['tabs'][0]['content']);
     }
 
     public function testMailGroupsComeFirstThenDocAttachments(): void
@@ -403,7 +480,8 @@ class DocsHeadsViewerDetailTest extends TestCase
             ],
         ];
         $docFiles = [
-            ['id' => 301, 'name' => 'smlouva.pdf', 'file_name' => 'smlouva.pdf', 'file_size' => 4096, 'mime_type' => 'application/pdf'],
+            ['id' => 301, 'name' => 'smlouva.pdf', 'file_name' => 'smlouva.pdf', 'file_size' => 4096, 'mime_type' => 'application/pdf', 'send_with_record' => 1],
+            ['id' => 302, 'name' => null, 'file_name' => 'dodatek.pdf', 'file_size' => 10, 'mime_type' => 'application/pdf', 'send_with_record' => 0],
         ];
 
         $viewer = $this->makeViewer(
@@ -412,7 +490,7 @@ class DocsHeadsViewerDetailTest extends TestCase
             filesByMessage: $filesByMessage,
             docFiles: $docFiles,
         );
-        $groups = $this->detailContent($viewer)['attachments']['groups'];
+        $groups = $this->attachmentGroups($viewer);
 
         $this->assertCount(2, $groups);
 
@@ -428,10 +506,16 @@ class DocsHeadsViewerDetailTest extends TestCase
             $groups[0]['attachments'][0],
         );
 
-        $this->assertSame('doc', $groups[1]['kind']);
+        // Vlastní přílohy dokladu dodává builder (skupina `record`, #136 D21)
+        // včetně značky „Odeslat s dokladem“ (#94 D6) jen tam, kde je nastavená.
+        $this->assertSame('record', $groups[1]['kind']);
         $this->assertSame(
-            ['id' => 301, 'name' => 'smlouva.pdf', 'mime_type' => 'application/pdf', 'file_size' => 4096],
+            ['id' => 301, 'name' => 'smlouva.pdf', 'mime_type' => 'application/pdf', 'file_size' => 4096, 'send_with_record' => true],
             $groups[1]['attachments'][0],
+        );
+        $this->assertSame(
+            ['id' => 302, 'name' => 'dodatek.pdf', 'mime_type' => 'application/pdf', 'file_size' => 10],
+            $groups[1]['attachments'][1],
         );
     }
 
@@ -449,7 +533,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         ];
 
         $viewer = $this->makeViewer($this->baseRecord(), messages: $messages, filesByMessage: $filesByMessage);
-        $groups = $this->detailContent($viewer)['attachments']['groups'];
+        $groups = $this->attachmentGroups($viewer);
 
         $this->assertSame('MSG-20260601-0007', $groups[0]['message_id']);
         $this->assertSame('260601-0007', $groups[0]['message_code_short']);
@@ -461,9 +545,9 @@ class DocsHeadsViewerDetailTest extends TestCase
             ['id' => 11, 'message_id' => 'MSG-A', 'received_at' => '2026-06-01 10:00:00', 'raw_source_attachment' => null],
         ];
         $viewer = $this->makeViewer($this->baseRecord(), messages: $messages, filesByMessage: [11 => []]);
-        $content = $this->detailContent($viewer);
 
-        $this->assertArrayNotHasKey('attachments', $content);
+        $this->assertSame([], $this->attachmentGroups($viewer));
+        $this->assertArrayNotHasKey('attachments', $viewer->renderDetail(7));
     }
 
     public function testRawEmlIsExcludedFromAttachmentQuery(): void
@@ -487,7 +571,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         $viewer->renderDetail(7);
 
         // První dotaz = přílohy zprávy (s vyloučením raw .eml), druhý =
-        // vlastní přílohy dokladu (table_id 401).
+        // vlastní přílohy dokladu od builderu (table_id 401 z definice tabulky).
         $this->assertCount(2, $attachmentQueries);
         $this->assertStringContainsString('AND `id` != %i', $attachmentQueries[0]['sql']);
         $this->assertContains(99, $attachmentQueries[0]['params']);

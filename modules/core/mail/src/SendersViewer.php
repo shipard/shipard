@@ -71,20 +71,19 @@ class SendersViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT `id`, `email_from`, `smtp_host`, `smtp_port`, `smtp_security`,'
             . ' `smtp_username`, `is_active`, `created`,'
             . ' (`password_enc` IS NOT NULL) AS `has_password`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
         $yes = $isCs ? 'Ano' : 'Yes';
         $no  = $isCs ? 'Ne' : 'No';
@@ -107,24 +106,28 @@ class SendersViewer extends TableViewer
             ],
         ];
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                        ['title' => 'SMTP', 'items' => $transport],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
+                    ['title' => 'SMTP', 'items' => $transport],
                 ],
-            ]],
-            'actions' => [[
-                'id'      => 'setPassword',
-                'label'   => $isCs ? 'Nastavit heslo' : 'Set password',
-                'kind'    => 'button',
-                'variant' => 'secondary',
-            ]],
-        ];
+            ],
+        ]];
+    }
+
+    protected function detailActions(array $record): array
+    {
+        $isCs = ($this->language ?? 'en') === 'cs';
+
+        return [[
+            'id'      => 'setPassword',
+            'label'   => $isCs ? 'Nastavit heslo' : 'Set password',
+            'kind'    => 'button',
+            'variant' => 'secondary',
+        ]];
     }
 }

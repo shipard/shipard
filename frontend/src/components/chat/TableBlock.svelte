@@ -111,7 +111,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 2px 6px;
+    padding: 0.125rem 0.375rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     background-color: var(--shpd-color-bg);

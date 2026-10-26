@@ -34,5 +34,5 @@
 </div>
 
 <style>
-  .line { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  .line { display: flex; flex-wrap: wrap; gap: var(--shpd-space-xs) 0.625rem; align-items: baseline; }
 </style>

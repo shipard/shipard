@@ -10,6 +10,7 @@
 
   import Modal from '../ui/Modal.svelte';
   import ViewerDetail from './ViewerDetail.svelte';
+  import { contentHasAttachments } from './detailContent.js';
   import { get } from '../../api/client.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -54,13 +55,26 @@
       // Akce detailu (Tisk, Přeúčtovat…) do čtecího modalu nepatří — bez
       // `onAction` by to byla mrtvá tlačítka.
       const { actions: _actions, ...d } = result.data?.detail ?? {};
-      detail = tId
-        ? { ...d, tabs: (d.tabs ?? []).filter(tab => tab.id === tId) }
-        : d;
+      detail = tId ? restrictToTab(d, tId) : d;
     } else {
       error = t('viewer.detailModal.loadFailed', { msg: translateError(result?.error) });
     }
     loading = false;
+  }
+
+  // Ořez na jediný tab (D2). Sdílená sekce příloh a Odeslaná pošta patří
+  // jen pod Přehled (první tab, #136 D21–D22) — ořezaný detail by je
+  // ViewerDetail nakreslil pod cizím tabem, protože ten je teď první.
+  // `attachments` zůstávají, když je ořezaný tab sám tabem Přílohy
+  // (obsah typu `attachments`), jinak by neměl co ukázat.
+  function restrictToTab(d, tId) {
+    const allTabs = d.tabs ?? [];
+    const tabs = allTabs.filter(tab => tab.id === tId);
+    if (tId === allTabs[0]?.id) return { ...d, tabs };
+    const { attachments, sentMessages: _sent, ...rest } = d;
+    return tabs.some(tab => contentHasAttachments(tab.content))
+      ? { ...rest, attachments, tabs }
+      : { ...rest, tabs };
   }
 </script>
 
@@ -98,7 +112,7 @@
     justify-content: center;
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-danger);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
     min-height: 200px;
   }
 </style>

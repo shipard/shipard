@@ -195,56 +195,53 @@ class AiUsageViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $r = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT u.*, ds.`name` AS ds_name, ds.`ds_id` AS ds_ds_id'
             . ' FROM `' . $this->table . '` u'
             . ' LEFT JOIN `hosting_core_data_sources` ds ON ds.`id` = u.`data_source`'
             . ' WHERE u.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($r === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $cs = ($this->language ?? 'en') === 'cs';
 
         $items = [
             [
                 'label' => $cs ? 'Zdroj dat' : 'Data source',
-                'value' => trim((string) ($r['ds_name'] ?? '')) . ' (' . $r['ds_ds_id'] . ')',
+                'value' => trim((string) ($record['ds_name'] ?? '')) . ' (' . $record['ds_ds_id'] . ')',
             ],
-            ['label' => 'Model', 'value' => (string) $r['model']],
-            ['label' => $cs ? 'Čas' : 'Time', 'value' => $this->formatDateTime($r['created'])],
-            ['label' => 'HTTP status', 'value' => (string) $r['http_status']],
-            ['label' => 'Stream', 'value' => (int) ($r['stream'] ?? 0) === 1 ? ($cs ? 'ano' : 'yes') : ($cs ? 'ne' : 'no')],
+            ['label' => 'Model', 'value' => (string) $record['model']],
+            ['label' => $cs ? 'Čas' : 'Time', 'value' => $this->formatDateTime($record['created'])],
+            ['label' => 'HTTP status', 'value' => (string) $record['http_status']],
+            ['label' => 'Stream', 'value' => (int) ($record['stream'] ?? 0) === 1 ? ($cs ? 'ano' : 'yes') : ($cs ? 'ne' : 'no')],
         ];
-        if (($r['duration_ms'] ?? null) !== null) {
-            $items[] = ['label' => $cs ? 'Trvání' : 'Duration', 'value' => $this->formatCount($r['duration_ms']) . ' ms'];
+        if (($record['duration_ms'] ?? null) !== null) {
+            $items[] = ['label' => $cs ? 'Trvání' : 'Duration', 'value' => $this->formatCount($record['duration_ms']) . ' ms'];
         }
 
         $tokenItems = [
-            ['label' => $cs ? 'Vstupní tokeny' : 'Input tokens', 'value' => $this->formatCount($r['input_tokens'] ?? 0)],
-            ['label' => $cs ? 'Výstupní tokeny' : 'Output tokens', 'value' => $this->formatCount($r['output_tokens'] ?? 0)],
-            ['label' => $cs ? 'Tokeny — zápis cache' : 'Cache creation tokens', 'value' => $this->formatCount($r['cache_creation_tokens'] ?? 0)],
-            ['label' => $cs ? 'Tokeny — čtení cache' : 'Cache read tokens', 'value' => $this->formatCount($r['cache_read_tokens'] ?? 0)],
+            ['label' => $cs ? 'Vstupní tokeny' : 'Input tokens', 'value' => $this->formatCount($record['input_tokens'] ?? 0)],
+            ['label' => $cs ? 'Výstupní tokeny' : 'Output tokens', 'value' => $this->formatCount($record['output_tokens'] ?? 0)],
+            ['label' => $cs ? 'Tokeny — zápis cache' : 'Cache creation tokens', 'value' => $this->formatCount($record['cache_creation_tokens'] ?? 0)],
+            ['label' => $cs ? 'Tokeny — čtení cache' : 'Cache read tokens', 'value' => $this->formatCount($record['cache_read_tokens'] ?? 0)],
         ];
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => $cs ? 'Průchod' : 'Request', 'items' => $items],
-                        ['title' => $cs ? 'Tokeny' : 'Tokens', 'items' => $tokenItems],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => $cs ? 'Průchod' : 'Request', 'items' => $items],
+                    ['title' => $cs ? 'Tokeny' : 'Tokens', 'items' => $tokenItems],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     public function getFilters(): array

@@ -171,13 +171,13 @@
 
   .shpd-sessions-panel__badge {
     margin-left: var(--shpd-space-xs);
-    padding: 2px 8px;
+    padding: 0.125rem var(--shpd-space-sm);
     font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     color: var(--shpd-color-success);
     background-color: var(--shpd-color-success-soft);
     border: 1px solid var(--shpd-color-success);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
   }
 
   .shpd-sessions-panel__actions {

@@ -2,8 +2,9 @@
   // Read-only zobrazení příloh ve dvou režimech:
   //
   //  - mode="grid" (default) — grid karet s thumbnail/ikonou, název,
-  //    velikost. Extrakce z ViewerDetail (content type `attachments`) —
-  //    sdílí ji detail došlé pošty a DocumentDetail (detail dokladu).
+  //    velikost. Sdílí ji detail došlé pošty (content typ
+  //    `attachment-grid`), sdílená sekce příloh záznamu DetailAttachments
+  //    (`detail.attachments.groups`, #136 D21) a Odeslaná pošta.
   //
   //  - mode="full" — velké náhledy přes celou šířku: PDF v <iframe> přes
   //    /download?inline=1 (nativní PDF viewer prohlížeče, všechny stránky),
@@ -13,7 +14,7 @@
   //
   //    Pozn.: iOS Safari vykreslí PDF v <iframe> jen jako první stránku
   //    (limitace WebKitu) — odkaz v popisku otevře plný viewer v nové
-  //    záložce. Proto DocumentDetail na mobilu defaultuje na "grid".
+  //    záložce. Proto attachmentViewStore na mobilu defaultuje na "grid".
   import { thumbnailUrl, downloadUrl, inlineUrl, formatFileSize } from '../../api/attachments.js';
   import Icon from '../ui/Icon.svelte';
   import { iconFile, iconFilePdf, iconFileImage } from '../../icons.js';
@@ -141,7 +142,7 @@
   .shpd-attgrid__badge {
     display: inline-block;
     margin-left: var(--shpd-space-xs);
-    padding: 0 6px;
+    padding: 0 0.375rem;
     border-radius: var(--shpd-radius-sm);
     font-size: 0.75em;
     line-height: 1.5;
@@ -197,7 +198,7 @@
     padding: var(--shpd-space-sm);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
     min-width: 0;
   }
 
@@ -211,7 +212,7 @@
   }
 
   .shpd-attgrid__size {
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 

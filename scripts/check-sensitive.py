@@ -49,6 +49,7 @@ DUMMY_GROUPS = (
         "test", "abcd", "efgh", "ijkl", "mnop", "1234", "5678",
         "dead", "beef", "shpd", "font", "size", "base", "oidc",
         "ctrl", "0001", "0002",
+        "body", "meta",  # tokeny rolí --shpd-font-size-body / -meta (#135)
     }
 )
 

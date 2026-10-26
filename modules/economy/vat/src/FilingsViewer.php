@@ -156,12 +156,14 @@ class FilingsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /**
+     * Taby: Přehled, Výstupní řádky podle typu, Hlavička podání (podle
+     * `_schema` uložené hodnoty), Rozdíly proti předchozímu podání,
+     * Rozdíly importu a Zprávy.
+     */
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+        $recordId = (int) $record['id'];
         $cs   = $this->language !== 'en';
         $type = (string) ($record['report_type'] ?? '');
 
@@ -228,9 +230,22 @@ class FilingsViewer extends TableViewer
             ];
         }
 
-        $detail = ['tabs' => $tabs];
+        return $tabs;
+    }
 
+    /**
+     * Akce podání: přepočet a hlavička z profilu jen u konceptu,
+     * zaúčtování a zámek tvrzení po podání, soubory pro daňový portál.
+     */
+    protected function detailActions(array $record): array
+    {
+        $recordId = (int) $record['id'];
+        $cs       = $this->language !== 'en';
+        $type     = (string) ($record['report_type'] ?? '');
+        $messages = $this->decodeJson($record['messages'] ?? null);
+        $imported = $this->isImported((array) $record);
         $docState = (int) ($record['docState'] ?? 0);
+        $actions  = [];
 
         // Přepočet je smysluplný jen u konceptu — podané podání je záznam
         // o tom, co odešlo, a composer ho odmítne. Hlavičku přepočet nechává
@@ -238,7 +253,7 @@ class FilingsViewer extends TableViewer
         // (#55 F3-5). Importované podání nemá co přepočítat — snapshot
         // i hlavička zrcadlí to, co bylo podáno.
         if ($docState === FilingDocument::DOC_STATE_COMPOSED && !$imported) {
-            $detail['actions'] = [
+            $actions = [
                 [
                     'id'      => 'recomposeFiling',
                     'label'   => $cs ? 'Přepočítat' : 'Recompose',
@@ -259,14 +274,14 @@ class FilingsViewer extends TableViewer
         $accDoc     = $this->accountingDocument($record);
         $canAccount = $docState === FilingDocument::DOC_STATE_FILED && $type === 'return' && ($accDoc === null || !$accDoc['live']);
         if ($canAccount) {
-            $detail['actions'][] = [
+            $actions[] = [
                 'id'      => 'accountFiling',
                 'label'   => $accDoc === null ? ($cs ? 'Zaúčtovat' : 'Post to accounting') : ($cs ? 'Zaúčtovat znovu' : 'Post again'),
                 'variant' => 'primary',
             ];
         }
         if ($accDoc !== null && $accDoc['live']) {
-            $detail['actions'][] = [
+            $actions[] = [
                 'id'       => 'openAccountingDocument',
                 'label'    => ($cs ? 'Účetní doklad ' : 'Accounting document ') . $accDoc['label'],
                 'variant'  => 'secondary',
@@ -287,7 +302,7 @@ class FilingsViewer extends TableViewer
                 ? $this->db->fetchRow('SELECT `locked`, `docState` FROM `economy_vat_report_periods` WHERE `id` = %i', $periodId)
                 : null;
             if ($period !== null && empty($period['locked']) && (int) $period['docState'] !== 90) {
-                $detail['actions'][] = ReportPeriodsViewer::lockAction(
+                $actions[] = ReportPeriodsViewer::lockAction(
                     $periodId,
                     $canAccount ? 'secondary' : 'primary',
                     $cs ? 'Uzamknout tvrzení' : 'Lock period',
@@ -301,14 +316,14 @@ class FilingsViewer extends TableViewer
         // v záložce Přílohy, odkud se i stahují. Importované podání má
         // původní soubory — generátor ho odmítne, akce se nenabízí.
         if ($docState !== FilingDocument::DOC_STATE_CANCELLED && !$imported) {
-            $detail['actions'][] = [
+            $actions[] = [
                 'id'      => 'generateFilingFiles',
                 'label'   => $cs ? 'Vytvořit soubory' : 'Create files',
                 'variant' => 'secondary',
             ];
         }
 
-        return $detail;
+        return $actions;
     }
 
     public function getFilters(): array

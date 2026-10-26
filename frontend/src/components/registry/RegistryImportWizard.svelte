@@ -580,7 +580,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .shpd-registry-wizard__row-name {
@@ -601,7 +601,7 @@
     gap: var(--shpd-space-md);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .shpd-registry-wizard__mono {
@@ -618,7 +618,7 @@
 
   .shpd-registry-wizard__badge {
     display: inline-block;
-    padding: 2px var(--shpd-space-sm);
+    padding: 0.125rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-xs);
     font-weight: 500;
@@ -699,7 +699,7 @@
 
   .shpd-registry-wizard__pill {
     padding: var(--shpd-space-xs) var(--shpd-space-md);
-    border-radius: var(--shpd-radius-pill, 9999px);
+    border-radius: var(--shpd-radius-full);
     background: var(--shpd-color-bg-hover);
     color: var(--shpd-color-text);
     font-size: var(--shpd-font-size-sm);

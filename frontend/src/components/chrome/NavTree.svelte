@@ -164,7 +164,7 @@
     justify-content: space-between;
     width: 100%;
     padding: var(--shpd-space-xs) var(--shpd-space-md);
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-xs);
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -193,7 +193,7 @@
   .shpd-navtree__badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--shpd-space-xs);
     margin-right: var(--shpd-space-xs);
     font-size: 0.7rem;
     font-weight: 600;
@@ -275,7 +275,7 @@
     top: 4px;
     bottom: 4px;
     width: 3px;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }
 </style>

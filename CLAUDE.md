@@ -339,6 +339,27 @@ smí názvy nést — tam jsou potřeba k práci.
   Do hlavní navigace nejde — patří do `settingsItems`. Tabulkové viewery
   `loadRecord()` nepřepisují. Viz `docs/frontend.md` → Registrace vieweru.
 
+### Viewery — detail přes builder
+
+- Detail záznamu skládá `TableViewer::renderDetail()` (builder, #136 D18);
+  viewer dodává háčky `loadDetailRecord()`, `detailHeader()` (výchozí
+  z deklarace `detailHeader` ve `viewers[]` nebo z `displayPattern` tabulky
+  přes `RecordPattern`, D19), `detailBadges()`, `detailTabs()`
+  (`propertiesTab()` = Přehled nad vlastnostmi), `detailActions()`,
+  `detailAttachmentGroups()`. Štítek stavu přidává builder sám — stav
+  s `detailBadge: false` („V pořádku“) ho nemá (D20). Přílohy záznamu
+  načítá builder (`RecordAttachments`) jako `detail.attachments`: konec
+  Přehledu (výchozí), tab Přílohy (`detailAttachments: "tab"`) nebo nic
+  (`content`, D21); frontend je kreslí sdílenou `DetailAttachments.svelte`,
+  Odeslaná pošta jen pod prvním tabem (D22). **`renderDetail()` je
+  `final`** (task B #136) — viewer ji nepřepisuje, `DetailContractTest` to
+  hlídá u každé deklarace; háček `detailHeader()` bez ikony dostane ikonu
+  z deklarace (vlastní jen Osoby: firma / osoba), podtitul shodný
+  s titulkem builder vynechá. Přílohy a štítek stavu si žádný viewer
+  nestaví sám (`content` = přílohy kreslí viewer v obsahu: Došlá
+  a Odeslaná pošta, Spisovna). Viz `docs/frontend.md` → Formát detail
+  panelu.
+
 ### Frontend — Navigace (sidebar)
 
 - Sekce hlavního sidebaru pocházejí z cfgItem **`global.navSections`**
@@ -611,7 +632,7 @@ ve stejném commitu.
 
 1. `php -l` na změněných PHP souborech
 2. `vendor/bin/phpunit --filter 'ClassName'` cíleně, pak celá sada
-3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny, hlídá i pre-commit)
+3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny; `python3 scripts/check-css-units.py` — px v mezerách, zaoblení a písmu; obě hlídá i pre-commit)
 4. **Aktualizovat `**Stav:**` v task filu** + `python3 scripts/tasks-index.py`
 
 ## Otevřené úkoly

@@ -7,7 +7,10 @@ namespace Shipard\Tests\Unit\Module\Economy\WorkOrders;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Core\Viewer\ViewerDefinition;
+use Shipard\Core\Viewer\ViewerRegistry;
 use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
 use Shipard\Module\Economy\WorkOrders\WorkOrderJournalService;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
@@ -16,11 +19,20 @@ use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
 
 /**
  * Viewer zakázek: skupiny stavů z vlastní sady, spodní taby = řady
- * s předvyplněním řady (P6), filtry druh / typ, hledání, řádek a Přehled.
+ * s předvyplněním řady (P6), filtry druh / typ, hledání, řádek a detail
+ * přes builder (hlavička z deklarace, štítek stavu mimo V pořádku, #136).
  */
 class WorkOrdersViewerTest extends TestCase
 {
     private const MODULE = __DIR__ . '/../../../../../modules/economy/workOrders';
+
+    /** Deklarace vieweru zakázek z module.jsonc (detailHeader, ikona). */
+    private static function definition(): ViewerDefinition
+    {
+        $registry = new ViewerRegistry();
+        $registry->loadFromModules([ModuleLoader::loadModule(self::MODULE)], 'cs');
+        return $registry->get(WorkOrdersViewer::VIEWER_ID) ?? throw new \RuntimeException('viewer zakázek');
+    }
 
     private const TYPES = [
         'project'  => ['name' => 'Externí jednorázová', 'external' => true, 'oneOff' => true, 'invoicing' => null],
@@ -59,6 +71,7 @@ class WorkOrdersViewerTest extends TestCase
         ]);
         $viewer = new TestableWorkOrdersViewer($db, 'economy_work_orders_heads');
         $viewer->setConfig($config);
+        $viewer->setDefinition(self::definition());
         $viewer->journal = $journal;
         $viewer->children = $children;
         $viewer->customer = $customer;
@@ -141,6 +154,12 @@ class WorkOrdersViewerTest extends TestCase
         $this->assertSame('done', $row['stateStyle']);
 
         $detail = $viewer->renderDetail(5);
+        // Hlavička z deklarace: název zakázky, číslo v podtitulku, ikona
+        // vieweru; V pořádku bez štítku (#136 D19, D20).
+        $this->assertSame('Rekonstrukce haly', $detail['title']);
+        $this->assertSame('Z260007', $detail['subtitle']);
+        $this->assertSame('briefcase', $detail['icon']);
+        $this->assertSame([], $detail['badges']);
         // Nadřazená zakázka: vedle Přehledu tabulka stromu s odkazem do detailu.
         $this->assertSame(['overview'], array_column($detail['tabs'], 'id'));
         $this->assertArrayNotHasKey('actions', $detail);
@@ -263,6 +282,7 @@ class WorkOrdersViewerTest extends TestCase
         $draftViewer->kind = $viewer->kind;
         $draft = $draftViewer->renderDetail(6);
         $this->assertArrayNotHasKey('actions', $draft);
+        $this->assertSame([['label' => 'Draft', 'style' => 'concept']], $draft['badges'], 'Koncept má štítek stavu');
         $this->assertSame('No period has been issued yet.', $draft['tabs'][1]['content']['blocks'][2]['text']);
     }
 }

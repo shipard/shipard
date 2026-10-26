@@ -134,7 +134,9 @@
             "table": "economy_work_orders_heads",
             "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrdersViewer",
             "navSection": "workOrders",
-            "navOrder": 10
+            "navOrder": 10,
+            // Titulek je název zakázky, číslo v podtitulku (#133 D19).
+            "detailHeader": {"title": "{title}", "subtitle": "{number}"}
         },
         {
             "id": "economy.workOrders.kinds",

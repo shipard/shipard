@@ -101,33 +101,21 @@ class BalancesViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /** Přehled: identifikace skupiny a tabulka účtů saldokonta. */
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow(
-            'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
-            $recordId,
-        );
-
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
         $cs = $this->language === 'cs';
 
         $blocks = [
             $this->identityBlock($record, $cs),
-            $this->accountsTable($recordId, $cs),
+            $this->accountsTable((int) $record['id'], $cs),
         ];
 
-        return [
-            'tabs' => [
-                [
-                    'id'      => 'overview',
-                    'label'   => $this->defaultOverviewLabel(),
-                    'content' => ['type' => 'composite', 'blocks' => $blocks],
-                ],
-            ],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => ['type' => 'composite', 'blocks' => $blocks],
+        ]];
     }
 
     /** Properties blok — Identifikace skupiny. */

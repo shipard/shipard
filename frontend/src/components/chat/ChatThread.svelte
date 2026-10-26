@@ -155,9 +155,9 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 2px var(--shpd-space-sm);
+    padding: 0.125rem var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);

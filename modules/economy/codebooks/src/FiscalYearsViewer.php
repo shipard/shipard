@@ -108,17 +108,10 @@ class FiscalYearsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /** Přehled a tab Měsíce (fiskální měsíce roku se zámky). */
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow(
-            'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
-            $recordId,
-        );
-
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+        $recordId = (int) $record['id'];
         $tabs = [];
 
         $tabs[] = [
@@ -170,7 +163,7 @@ class FiscalYearsViewer extends TableViewer
             ],
         ];
 
-        return ['tabs' => $tabs];
+        return $tabs;
     }
 
     private function buildOverviewContent(array $record): array

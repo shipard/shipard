@@ -185,7 +185,7 @@
     max-width: 360px;
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
-    border-radius: 6px;
+    border-radius: var(--shpd-radius-md);
     box-shadow: var(--shpd-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));
     padding: var(--shpd-space-sm);
     box-sizing: border-box;

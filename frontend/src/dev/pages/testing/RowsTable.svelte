@@ -114,6 +114,6 @@
   .group { margin-bottom: var(--shpd-space-lg); }
   .group__title { font-size: var(--shpd-font-size-base); font-weight: 600; margin-bottom: var(--shpd-space-xs); }
   .rows th, .rows td { font-size: 0.8rem; }
-  .cell { display: flex; flex-direction: column; gap: 2px; min-width: 60px; }
+  .cell { display: flex; flex-direction: column; gap: 0.125rem; min-width: 60px; }
   .node { display: flex; gap: var(--shpd-space-sm); align-items: baseline; flex-wrap: wrap; }
 </style>

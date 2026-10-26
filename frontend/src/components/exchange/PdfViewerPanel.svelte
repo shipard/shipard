@@ -101,7 +101,7 @@
 
   .shpd-pdf-panel__filename {
     font-family: var(--shpd-font-mono, monospace);
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-pdf-panel__download {
@@ -111,7 +111,7 @@
     background: var(--shpd-color-primary);
     color: white;
     text-decoration: none;
-    border-radius: 4px;
+    border-radius: var(--shpd-radius-sm);
   }
 
   .shpd-pdf-panel__download:hover {
@@ -134,9 +134,9 @@
     cursor: pointer;
     color: var(--shpd-color-text-secondary);
     border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
+    margin-bottom: -0.0625rem;
     white-space: nowrap;
-    font-size: 0.875rem;
+    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-pdf-panel__tab--active {

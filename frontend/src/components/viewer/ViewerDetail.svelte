@@ -8,6 +8,8 @@
   import FailureCard from './FailureCard.svelte';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
+  import DetailAttachments from './DetailAttachments.svelte';
+  import { contentHasAttachments } from './detailContent.js';
   import Icon from '../ui/Icon.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
@@ -69,6 +71,22 @@
 
   let activeContent = $derived(
     detail?.tabs?.find(t => t.id === activeTabId)?.content ?? null
+  );
+
+  // Sdílená sekce příloh (#136 D21) a Odeslaná pošta (D22) se kreslí jen
+  // pod prvním tabem (Přehled); detail bez tabů je nemá kam jinam dát.
+  let isOverviewTab = $derived(
+    !(detail?.tabs?.length > 0) || activeTabId === detail.tabs[0].id
+  );
+
+  // Viewer, který přílohy deklaruje ve vlastním tabu (obsah typu
+  // `attachments`, i jako blok composite), je v Přehledu nedostane podruhé.
+  let hasAttachmentsTab = $derived(
+    (detail?.tabs ?? []).some(tab => contentHasAttachments(tab.content))
+  );
+
+  let overviewAttachmentGroups = $derived(
+    hasAttachmentsTab ? [] : (detail?.attachments?.groups ?? [])
   );
 
   // --- Návrh (message-centric) — Exchange preview modal ---
@@ -471,11 +489,16 @@
             onclick={() => attachmentViewStore.toggle()}
           >
             {attachmentViewStore.mode === 'full'
-              ? t('viewer.document.attachments.viewGrid')
-              : t('viewer.document.attachments.viewFull')}
+              ? t('viewer.attachments.viewGrid')
+              : t('viewer.attachments.viewFull')}
           </button>
         </div>
         <AttachmentGrid attachments={content.attachments ?? []} mode={attachmentViewStore.mode} />
+
+      {:else if content?.type === 'attachments'}
+        <!-- Vlastní tab Přílohy (#136 D21) — sdílená sekce příloh nad
+             detail.attachments.groups; v Přehledu se pak nekreslí. -->
+        <DetailAttachments groups={detail?.attachments?.groups ?? []} onAction={onAction} />
 
       {:else if content?.type === 'document'}
         <DocumentDetail content={content} onAction={onAction} />
@@ -496,33 +519,43 @@
     <div class="shpd-detail__content">
       {@render renderContent(activeContent)}
 
-      <!-- Odeslaná pošta u záznamu (#90 D45) — zprávy, které na záznam
-           ukazují, pod obsahem každého tabu (roluje s ním). Server je
-           posílá u libovolné tabulky. -->
-      {#if (detail.sentMessages ?? []).length > 0}
-        <section class="shpd-detail__sent" data-testid="detail-sent-messages">
-          <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
-          {#each detail.sentMessages as message (message.id)}
-            <div class="shpd-detail__sent-message">
-              <button
-                type="button"
-                class="shpd-detail__sent-head"
-                title={t('sentMessage.open')}
-                onclick={() => openSentMessage(message.id)}
-              >
-                <span class="shpd-detail__sent-date">{message.createdAt}</span>
-                <span class="shpd-detail__sent-to">{(message.to ?? []).length > 0 ? message.to.join(', ') : '—'}</span>
-                <SpanBadge style={message.transport?.stateStyle ?? 'neutral'} text={message.transport?.stateLabel ?? ''} />
-                {#if message.transport?.safety}
-                  <SpanBadge style={message.transport.safety.style} text={message.transport.safety.label} />
+      {#if isOverviewTab}
+        <!-- Přílohy záznamu (#136 D21) — sdílená sekce na konci Přehledu
+             (roluje s obsahem), pokud je viewer nedal do vlastního tabu. -->
+        {#if overviewAttachmentGroups.length > 0}
+          <div class="shpd-detail__attachments">
+            <DetailAttachments groups={overviewAttachmentGroups} onAction={onAction} />
+          </div>
+        {/if}
+
+        <!-- Odeslaná pošta u záznamu (#90 D45) — zprávy, které na záznam
+             ukazují; jen na konci Přehledu, za přílohami (#136 D22). Server
+             je posílá u libovolné tabulky. -->
+        {#if (detail.sentMessages ?? []).length > 0}
+          <section class="shpd-detail__sent" data-testid="detail-sent-messages">
+            <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
+            {#each detail.sentMessages as message (message.id)}
+              <div class="shpd-detail__sent-message">
+                <button
+                  type="button"
+                  class="shpd-detail__sent-head"
+                  title={t('sentMessage.open')}
+                  onclick={() => openSentMessage(message.id)}
+                >
+                  <span class="shpd-detail__sent-date">{message.createdAt}</span>
+                  <span class="shpd-detail__sent-to">{(message.to ?? []).length > 0 ? message.to.join(', ') : '—'}</span>
+                  <SpanBadge style={message.transport?.stateStyle ?? 'neutral'} text={message.transport?.stateLabel ?? ''} />
+                  {#if message.transport?.safety}
+                    <SpanBadge style={message.transport.safety.style} text={message.transport.safety.label} />
+                  {/if}
+                </button>
+                {#if (message.attachments ?? []).length > 0}
+                  <AttachmentGrid attachments={message.attachments} />
                 {/if}
-              </button>
-              {#if (message.attachments ?? []).length > 0}
-                <AttachmentGrid attachments={message.attachments} />
-              {/if}
-            </div>
-          {/each}
-        </section>
+              </div>
+            {/each}
+          </section>
+        {/if}
       {/if}
     </div>
 
@@ -594,7 +627,7 @@
     gap: var(--shpd-space-sm);
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
   }
 
   .shpd-detail__spinner {
@@ -612,12 +645,14 @@
   }
 
   /* Header (title + badges) — zobrazuje se jen když backend
-     pošle detail.title. Drobný panel nad taby. */
+     pošle detail.title. Drobný panel nad taby. Písmo podle typografických
+     rolí (#135, docs/design-system.md → Detail záznamu): titulek title,
+     podtitul meta barvou textu, štítky meta normální tloušťkou. */
   .shpd-detail__header {
     display: flex;
     align-items: center;
-    gap: var(--shpd-space-sm);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
+    gap: 0.75rem;
+    padding: 0.75rem var(--shpd-space-md);
     border-bottom: 1px solid var(--shpd-color-border);
     background-color: var(--shpd-color-bg);
     flex-shrink: 0;
@@ -651,24 +686,24 @@
 
   .shpd-detail__title {
     margin: 0;
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
+    font-size: var(--shpd-font-size-title);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     line-height: 1.3;
   }
 
   .shpd-detail__subtitle {
-    margin-top: 2px;
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
+    margin-top: 0.125rem;
+    font-size: var(--shpd-font-size-meta);
+    color: var(--shpd-color-text);
   }
 
   .shpd-detail__badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    padding: 0.125rem 0.625rem;
+    border-radius: var(--shpd-radius-full);
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
     line-height: 1.4;
     white-space: nowrap;
   }
@@ -701,7 +736,11 @@
   /* Actions bar — řádek per-record akcí nad taby (snooze/dismiss/recheck +
      custom akce alertů). Stejná vizuální logika jako header: padding sm/md,
      border-bottom, wrap při velkém počtu tlačítek. */
-  /* Sekce Odeslaná pošta pod obsahem detailu — uvnitř rolovací plochy. */
+  /* Sekce Přílohy (#136 D21) a Odeslaná pošta (D22) na konci Přehledu —
+     uvnitř rolovací plochy, obě stejně oddělené od obsahu nad sebou. Čáru
+     a odsazení dává hostitel, ne DetailAttachments — ve vlastním tabu
+     Přílohy by čára nahoře neměla co oddělovat. */
+  .shpd-detail__attachments,
   .shpd-detail__sent {
     margin-top: var(--shpd-space-lg);
     padding-top: var(--shpd-space-md);
@@ -723,7 +762,7 @@
     border: 0;
     background: none;
     font: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
     text-align: left;
     cursor: pointer;
@@ -734,6 +773,7 @@
   }
 
   .shpd-detail__sent-date {
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -759,8 +799,8 @@
   .shpd-detail__action-dropdown {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: var(--shpd-space-xs);
+    padding: var(--shpd-space-xs) 0.625rem;
     font-family: inherit;
     font-size: var(--shpd-font-size-sm);
     font-weight: 500;
@@ -808,12 +848,12 @@
     display: flex;
     flex-direction: column;
     min-width: 140px;
-    padding: 4px 0;
+    padding: var(--shpd-space-xs) 0;
   }
 
   .shpd-detail__action-menu-item {
     text-align: left;
-    padding: 6px 14px;
+    padding: 0.375rem 0.875rem;
     border: none;
     background: none;
     font-family: inherit;
@@ -839,7 +879,7 @@
     border-bottom: 2px solid transparent;
     background: none;
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text-secondary);
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
@@ -852,7 +892,7 @@
   .shpd-detail__tab--active {
     color: var(--shpd-color-primary);
     border-bottom-color: var(--shpd-color-primary);
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   /* Content area */
@@ -868,7 +908,7 @@
     justify-content: center;
     height: 100%;
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
   }
 
   /* Properties content */
@@ -877,8 +917,8 @@
   }
 
   .shpd-detail__group-title {
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     padding-bottom: var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
@@ -895,14 +935,15 @@
     display: contents;
   }
 
+  /* Popisek i hodnota body, stejnou barvou — liší se umístěním (D15). */
   .shpd-detail__prop-label {
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
+    font-size: var(--shpd-font-size-body);
+    color: var(--shpd-color-text);
     white-space: nowrap;
   }
 
   .shpd-detail__prop-value {
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
   }
 
@@ -914,13 +955,14 @@
   .shpd-detail__table {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-detail__th {
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     text-align: left;
-    font-weight: 600;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     border-bottom: 2px solid var(--shpd-color-border);
     white-space: nowrap;
@@ -971,7 +1013,7 @@
   }
 
   .shpd-detail__tr--total > .shpd-detail__td {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     border-top: 2px solid var(--shpd-color-border);
     border-bottom: none;
   }
@@ -983,8 +1025,8 @@
   /* Heading blok (composite) - vizualne sjednoceno s group-title */
   .shpd-detail__content-heading {
     margin: var(--shpd-space-lg) 0 var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
+    font-size: var(--shpd-font-size-heading);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     padding-bottom: var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
@@ -996,7 +1038,7 @@
 
   /* HTML content */
   .shpd-detail__html {
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     line-height: 1.5;
   }
 
@@ -1009,7 +1051,7 @@
 
   .shpd-extracted__empty {
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
     font-style: italic;
     text-align: center;
     padding: var(--shpd-space-md);
@@ -1030,16 +1072,16 @@
   }
 
   .shpd-extracted__type {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
   }
 
   .shpd-extracted__badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 0.125rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
   }
 
   /* Stejné tokeny jako shpd-detail__badge — stejný stav, stejná barva.
@@ -1055,19 +1097,19 @@
   .shpd-extracted__confidence {
     margin-left: auto;
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
   }
 
   .shpd-extracted__summary {
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
     margin-bottom: var(--shpd-space-sm);
   }
 
   .shpd-extracted__meta {
-    font-size: 12px;
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
-    margin-top: 4px;
+    margin-top: var(--shpd-space-xs);
   }
 
   .shpd-extracted__actions {
@@ -1098,9 +1140,9 @@
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     border-radius: var(--shpd-radius-md);
-    padding: 2px 10px;
+    padding: 0.125rem 0.625rem;
     font: inherit;
-    font-size: 0.75rem;
+    font-size: var(--shpd-font-size-meta);
     cursor: pointer;
   }
 

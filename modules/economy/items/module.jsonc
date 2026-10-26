@@ -46,6 +46,7 @@
             "icon": "items",
             "table": "economy_items",
             "class": "Shipard\\Module\\Economy\\Items\\ItemsViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{code}"},
             "navSection": "basic",
             "navOrder": 20
         },

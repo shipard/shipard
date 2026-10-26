@@ -355,12 +355,12 @@
   }
 
   .portal__badge {
-    padding: 1px 8px;
+    padding: 0.0625rem var(--shpd-space-sm);
     font-size: var(--shpd-font-size-sm);
     font-weight: 500;
     color: var(--shpd-color-accent);
     background-color: var(--shpd-color-accent-soft);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
   }
 
   .portal__card-stats {
@@ -373,22 +373,22 @@
 
   .portal__pending {
     display: inline-block;
-    padding: 1px 8px;
+    padding: 0.0625rem var(--shpd-space-sm);
     font-weight: 500;
     color: var(--shpd-color-accent);
     background-color: var(--shpd-color-accent-soft);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
   }
 
   .portal__creating {
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 1px 8px;
+    padding: 0.0625rem var(--shpd-space-sm);
     font-weight: 500;
     color: var(--shpd-color-accent);
     background-color: var(--shpd-color-accent-soft);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
   }
 
   .portal__spinner {
@@ -405,11 +405,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 1px 8px;
+    padding: 0.0625rem var(--shpd-space-sm);
     font-weight: 500;
     color: var(--shpd-color-danger);
     background-color: var(--shpd-color-danger-soft);
-    border-radius: 999px;
+    border-radius: var(--shpd-radius-full);
   }
 
   .portal__failed-hint {

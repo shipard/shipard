@@ -174,12 +174,12 @@
 {/if}
 
 <style>
-  .repeats { display: inline-flex; align-items: center; gap: 4px; }
+  .repeats { display: inline-flex; align-items: center; gap: var(--shpd-space-xs); }
   .dev-chip input { margin: 0; }
   .head { margin-bottom: var(--shpd-space-lg); }
-  .runline { display: flex; gap: var(--shpd-space-sm); align-items: baseline; flex-wrap: wrap; margin-bottom: 4px; }
-  .facts { display: flex; flex-direction: column; gap: 4px; margin-top: var(--shpd-space-sm); }
-  .facts__row { display: flex; flex-wrap: wrap; gap: 4px var(--shpd-space-md); align-items: center; }
+  .runline { display: flex; gap: var(--shpd-space-sm); align-items: baseline; flex-wrap: wrap; margin-bottom: var(--shpd-space-xs); }
+  .facts { display: flex; flex-direction: column; gap: var(--shpd-space-xs); margin-top: var(--shpd-space-sm); }
+  .facts__row { display: flex; flex-wrap: wrap; gap: var(--shpd-space-xs) var(--shpd-space-md); align-items: center; }
   .body:not(.dev-split) { display: block; }
   /* Sloupec s PDF musí být vysoký jako celý řádek mřížky (.dev-split má
      align-items: start), jinak sticky PdfPane nemá v čem držet a odroluje. */
