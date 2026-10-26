@@ -142,10 +142,11 @@ Normalizátor a validátor canonicalu, resolvery ani porovnávač se nemění �
 - párování účtů přes `BankAccountKey` (D16, D23): `BankAccountResolver`,
   protiúčet a vlastní účet z výpisu (`economy.bank`), průvodce nastavením;
 - QR platba a ISDOC: `ValueRules::ibanFromAccountNumber()`; ABO mod 11
-  v `ParserUtils`.
+  v `ParserUtils`;
+- existující data adresáře: `shpd-ds values-normalize` (#118 D22,
+  `docs/cli.md`) — `base.persons` `Values\DirectoryValuesNormalizer` volá
+  tytéž funkce jako uložení nad všemi tabulkami adresáře.
 
 ## Mimo rozsah
 
-Jednorázová normalizace existujících dat adresáře (`values-normalize`,
-#118 D22, `tasks/value-rules-backfill.md`). Ověření v registrech (ARES,
-VIES) je #142.
+Ověření v registrech (ARES, VIES) je #142.

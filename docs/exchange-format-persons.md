@@ -166,6 +166,11 @@ partner varování, vlastní firma (`status.isOwn`) chyba — ta zastaví
 i apply (`validation_failed`); nevalidní IČO vlastní firmy z importu je
 nález k opravě, ne důvod chybu oslabit.
 
+Záznamy z doby před normalizací převede `shpd-ds values-normalize`
+(#118 D22, `docs/cli.md` → `shpd-ds`): tytéž funkce nad všemi pěti
+tabulkami adresáře, jen změněné sloupce v jedné transakci, nevalidní
+hodnoty jen vypíše (`Values\DirectoryValuesNormalizer`).
+
 ### Polymorfismus podle `personType`
 
 `personType` určuje, která pole jsou relevantní a jak applier mapuje payload
@@ -332,15 +337,17 @@ camelCase canonical → snake_case DB. Pole `divisionCode` se přes lookup
 v `world_divisions` mapuje na `division` (FK). Pole `displayLine`/`displayBlock`
 se ukládají, jak přišly — nic je nepřepočítává; tisk je vypisuje beze změny.
 
-**Kanonický tvar při uložení (#118 D18):** `country` malými a `zip`
-normalizované podle země adresy (cz / sk / de bez mezer); adresa bez
-země dostane jen trim — nic se nehádá. Při částečném updatu bez `country`
-(applier `fullSync` / `mergeAdd`, formulář) platí země uloženého řádku.
+**Kanonický tvar při uložení (#118 D18, D24):** `country` malými a `zip`
+normalizované podle země adresy (cz / sk / de bez mezer). Při částečném
+updatu bez `country` (applier `fullSync` / `mergeAdd`, formulář) platí
+země uloženého řádku; adresa bez jakékoli země dostane pro PSČ **zemi
+osoby** (sídlo → první adresa se zemí → země zdroje dat, § 3) — do
+`country` se nic nezapisuje, země slouží jen pravidlům PSČ (D24).
 Jedna funkce `Values\PersonValues::normalizeAddress()` pro formulář
 (`AddressDocument`), adresy zapisované s novou osobou (`PersonDocument`)
 i podřízené záznamy applieru (`insertSubRecord` / `updateSubRecord`).
-Formulář adresy kontroluje PSČ (D19): u partnera varování, u adresy
-vlastní firmy chyba.
+Formulář adresy kontroluje PSČ (D19) týmž řetězem zemí: u partnera
+varování, u adresy vlastní firmy chyba.
 
 ## 6. BankAccount sub-object
 

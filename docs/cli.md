@@ -1285,6 +1285,49 @@ s novým klíčem pohybu (postup nasazení v [accbal.md](accbal.md) §4.6),
 při podezření na rozjetý ledger. Bez `--all` / `--doc` / `--fiscal-year`
 příkaz nic neudělá. Na importovaném DS běží nízké desítky sekund.
 
+#### `values-normalize [--dry-run] [--json]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds values-normalize --dry-run     # co by se změnilo a co zůstane nevalidní; nic se nezapíše
+shpd-ds values-normalize               # ostrý běh — jedna transakce, jen změněné sloupce
+shpd-ds values-normalize --json        # tentýž report jako JSON (do issue, pro skript)
+```
+
+Jednorázová, opakovatelná normalizace existujících údajů adresáře (#118
+D22, `tasks/value-rules-backfill.md`): osoby (`company_id`, `vat_id`,
+`tax_id`, `phone`, `email`, `web`), adresy (`zip`, `country`), kontakty
+(`email`, `phone`), účty osob a vlastní účty (`account_number`, `iban`,
+`bic`) převede do kanonického tvaru **týmiž funkcemi jako uložení**
+(`PersonValues`, `BankAccountShape` — `docs/exchange-format-persons.md`
+§ 5–7), včetně přesunu IBAN ze sloupce čísla účtu do `iban` (D20). Země
+osoby podle uložených adres (sídlo → první adresa se zemí → země zdroje
+dat); adresa bez země dostane pro PSČ zemi osoby, `country` se nedoplňuje
+(D24). Tabulka vlastních účtů jen s aktivním modulem `economy.codebooks`
+(jinak se přeskočí a vypíše).
+
+Zapisuje jen změněné řádky a jen dotčené sloupce přímým UPDATE — bez
+změny stavu, bez tříd dokumentů a událostí; celý běh v jedné transakci
+(chyba = nic), dávky po 1000 řádcích přes `id`. Idempotentní: druhý běh
+hlásí 0 změn. **Nemění** doklady a jejich snapshoty stran, `display_line`
+/ `display_block` adres, pravidla obsahových štítků, bankovní výpisy ani
+historii. Nevalidní hodnotu (kódy D13: `company_id_invalid`,
+`zip_invalid`, `iban_invalid`, …) neopravuje — jen ji vypíše k ruční
+opravě.
+
+Výpis: řádek per tabulka (záznamů, změněno, po sloupcích, u účtů „IBAN
+přesunut z čísla účtu“), součet a nevalidní hodnoty po opravě tvaru jako
+`tabulka · id · sloupec · kód` — bez hodnot, jmen ani adres, takže výstup
+smí do issue. `--json`: `{dryRun, tables: {<tabulka>: {rows, changed,
+columns, ibanMoved?, skipped?}}, invalid: [{table, id, column, code}],
+totals: {rows, changed, invalid}}`. Exit 0 i s nevalidními hodnotami;
+nenulový jen chyba volání nebo infrastruktury.
+
+**Kopie reálných dat:** ostrý běh pouští člověk po `--dry-run` (Claude
+Code tam smí jen `--dry-run`). Párování (`PartyResolver`,
+`BankAccountResolver`, import výpisů) funguje před i po běhu stejně —
+páruje přes normalizované tvary na obou stranách.
+
 #### `vat-filing-account <filingId> [--dry-run]`
 
 ```bash

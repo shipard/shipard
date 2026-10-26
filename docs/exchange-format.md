@@ -1716,11 +1716,12 @@ a vlastní účty chyba — D19). Tisky a detail osoby formátují
 `ValueRules::format()` (D21), snapshoty stran na dokladech se nemění.
 Párování účtů všude přes `BankAccountKey` (účty v canonicalu, protiúčet
 a vlastní účet z výpisu, průvodce nastavením); QR platba a ISDOC berou
-IBAN z `ValueRules::ibanFromAccountNumber()`. Podrobně
-`docs/exchange-format-persons.md` § 5–7. Jednorázová normalizace
-existujících dat je `values-normalize` (D22,
-`tasks/value-rules-backfill.md`). Ověření v registrech (ARES, VIES)
-je #142.
+IBAN z `ValueRules::ibanFromAccountNumber()`. Adresa bez země dostane
+pro PSČ zemi osoby, `country` se nedoplňuje (D24). Podrobně
+`docs/exchange-format-persons.md` § 5–7. Existující data převede
+`shpd-ds values-normalize` (D22, `docs/cli.md` → `shpd-ds`): tytéž
+funkce, jen změněné sloupce, nevalidní hodnoty vypíše. Ověření
+v registrech (ARES, VIES) je #142.
 
 ## 11. REST API endpointy
 
