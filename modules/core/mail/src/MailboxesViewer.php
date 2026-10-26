@@ -96,7 +96,7 @@ class MailboxesViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT `id`, `mailbox_id`, `name`, `email_address`, `description`,'
+            'SELECT `id`, `docState`, `mailbox_id`, `name`, `email_address`, `description`,'
             . ' `default_primary_type`, `is_default`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,

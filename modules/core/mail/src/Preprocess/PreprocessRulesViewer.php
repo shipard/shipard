@@ -102,7 +102,7 @@ class PreprocessRulesViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT `id`, `rule_id`, `origin`, `notice`, `sender_email`, `sender_domain`,'
+            'SELECT `id`, `docState`, `rule_id`, `origin`, `notice`, `sender_email`, `sender_domain`,'
             . ' `subject_regex`, `body_regex`, `actions`, `hit_count`, `last_hit_at`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,

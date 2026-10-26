@@ -95,7 +95,7 @@ class SenderRulesViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT `id`, `pattern_kind`, `pattern`, `disposition`, `origin`,'
+            'SELECT `id`, `docState`, `pattern_kind`, `pattern`, `disposition`, `origin`,'
             . ' `hit_count`, `last_hit_at`, `notice`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,

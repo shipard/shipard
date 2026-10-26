@@ -95,7 +95,7 @@ class AIBackendsViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT `id`, `backend_id`, `name`, `provider`, `base_url`,'
+            'SELECT `id`, `docState`, `backend_id`, `name`, `provider`, `base_url`,'
             . ' `is_default`, `is_active`,'
             . ' `created`, `modified`,'
             . ' (`api_key` IS NOT NULL AND `api_key` != \'\') AS `has_api_key`'
