@@ -14,6 +14,8 @@
   import { translateError } from '../../i18n/errors.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
+  import Card from '../ui/Card.svelte';
+  import CardGrid from '../ui/CardGrid.svelte';
   import { iconOverview, iconRefresh } from '../../icons.js';
   import { fetchOverview } from '../../api/overview.js';
   import { formatMoney } from '../../utils/formatNumber.js';
@@ -125,17 +127,25 @@
   {:else if sections.length === 0}
     <p class="shpd-overview__state">{t('overview.empty')}</p>
   {:else}
-    <div class="shpd-overview__grid">
+    <!-- Sekce jako sdílené karty (#137 D33, D34): tón podle stavu sekce
+         (nedostupná = warning, chyba výpočtu = danger), štítek stavu vpravo
+         v řádku nadpisu; karty v řádku stejně vysoké, pod 20 rem jeden
+         sloupec. Nadpis karty je h2 pod h1 stránky. -->
+    <CardGrid minWidth="20rem">
       {#each sections as section (section.id)}
-        <section class="shpd-overview__card shpd-overview__card--{section.state}">
-          <h2 class="shpd-overview__card-title">
-            <span>{section.title}</span>
-            {#if section.state === 'unavailable'}
-              <span class="shpd-overview__badge shpd-overview__badge--warning">{t('overview.section.unavailable')}</span>
-            {:else if section.state === 'error'}
-              <span class="shpd-overview__badge shpd-overview__badge--danger">{t('overview.section.error')}</span>
-            {/if}
-          </h2>
+        {#snippet stateBadge()}
+          {#if section.state === 'unavailable'}
+            <span class="shpd-overview__badge shpd-overview__badge--warning">{t('overview.section.unavailable')}</span>
+          {:else}
+            <span class="shpd-overview__badge shpd-overview__badge--danger">{t('overview.section.error')}</span>
+          {/if}
+        {/snippet}
+        <Card
+          title={section.title}
+          headingLevel={2}
+          tone={section.state === 'unavailable' ? 'warning' : section.state === 'error' ? 'danger' : 'default'}
+          aside={section.state === 'unavailable' || section.state === 'error' ? stateBadge : undefined}
+        >
 
           {#if section.items.length > 0}
             <ul class="shpd-overview__items">
@@ -199,9 +209,9 @@
               {/each}
             </ul>
           {/if}
-        </section>
+        </Card>
       {/each}
-    </div>
+    </CardGrid>
   {/if}
 </div>
 
@@ -266,38 +276,11 @@
     color: var(--shpd-color-danger);
   }
 
-  .shpd-overview__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: var(--shpd-space-md);
-    align-items: start;
-  }
-
-  .shpd-overview__card {
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg);
-    color: var(--shpd-color-text);
-  }
-
-  .shpd-overview__card--unavailable {
-    border-color: var(--shpd-color-warning);
-  }
-
-  .shpd-overview__card--error {
-    border-color: var(--shpd-color-danger);
-  }
-
-  .shpd-overview__card-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--shpd-space-sm);
-    margin: 0 0 var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-base);
-    font-weight: 600;
-  }
+  /* Kartu, mřížku i nadpis karty kreslí sdílené Card / CardGrid /
+     SectionHeading (#137 D33, D34) — vlastní CSS tu nemají. Obsah karty
+     v rolích §11: popisek body, částka title (hlavní číslo karty, obdoba
+     řádku Celkem), doplňky a štítky meta; splatnost se tučně nezvýrazňuje
+     (D15), tloušťky jen tokeny. */
 
   .shpd-overview__items,
   .shpd-overview__messages {
@@ -308,6 +291,9 @@
 
   .shpd-overview__item {
     padding: var(--shpd-space-sm) 0;
+  }
+
+  .shpd-overview__item + .shpd-overview__item {
     border-top: 1px solid var(--shpd-color-border-subtle, var(--shpd-color-border));
   }
 
@@ -319,7 +305,7 @@
   }
 
   .shpd-overview__label {
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
     text-align: left;
   }
@@ -342,15 +328,15 @@
   }
 
   .shpd-overview__amount {
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 700;
+    font-size: var(--shpd-font-size-title);
+    font-weight: var(--shpd-font-weight-strong);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
   .shpd-overview__item--missing .shpd-overview__amount {
     color: var(--shpd-color-text-secondary);
-    font-weight: 400;
+    font-weight: var(--shpd-font-weight-normal);
   }
 
   .shpd-overview__item-meta {
@@ -358,26 +344,24 @@
     flex-wrap: wrap;
     gap: var(--shpd-space-xs) var(--shpd-space-sm);
     margin-top: 0.125rem;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
   .shpd-overview__due--soon {
     color: var(--shpd-color-warning);
-    font-weight: 600;
   }
 
   .shpd-overview__due--overdue {
     color: var(--shpd-color-danger);
-    font-weight: 600;
   }
 
   .shpd-overview__badge {
     display: inline-block;
     padding: 0 var(--shpd-space-xs);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 500;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
     line-height: 1.5;
   }
 
@@ -406,7 +390,7 @@
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border-left: 3px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
     background: var(--shpd-color-bg-secondary);
   }
@@ -428,7 +412,7 @@
     border: none;
     padding: 0;
     font: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     cursor: pointer;
     color: var(--shpd-color-primary, var(--shpd-color-text));
     text-decoration: underline;

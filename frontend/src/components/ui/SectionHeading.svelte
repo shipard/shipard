@@ -5,14 +5,15 @@
   // Jeden nadpis pro skupinu vlastností, blok `heading`, přílohy i Odeslanou
   // poštu; obecný detail i detail dokladu kreslí tentýž prvek.
   //
-  // `level` 3 (výchozí) nebo 4 — base.css dává h3 velikost xl a h4 lg, role
-  // se proto nastavuje explicitně. Obsah je snippet `children` (nadpis
+  // `level` 2–4 (výchozí 3; 2 = karta pod nadpisem stránky, Přehled firmy
+  // přes `Card`) — base.css dává h2–h4 vlastní velikosti, role se proto
+  // nastavuje explicitně. Obsah je snippet `children` (nadpis
   // přílohy nese odkaz a datum); volitelný snippet `aside` sedí vpravo ve
   // stejném řádku (přepínač náhledů příloh) — mezeru pod sebou pak nese
   // řádek, ne nadpis. Pravidla: docs/design-system.md §12.
   let { level = 3, children, aside = undefined } = $props();
 
-  let tag = $derived(level === 4 ? 'h4' : 'h3');
+  let tag = $derived([2, 3, 4].includes(level) ? `h${level}` : 'h3');
 </script>
 
 {#if aside}
