@@ -67,7 +67,7 @@
                             "name": "Nordlicht Hardware GmbH",
                             "country": "de",
                             "companyId": null,
-                            "taxId": "DE810932557",
+                            "taxId": null,
                             "vatId": "DE810932557",
                             "courtRegistration": "Amtsgericht Hamburg, HRB 998765",
                             "address": {
@@ -244,7 +244,7 @@
                     "name": "Nordlicht Hardware GmbH",
                     "country": "de",
                     "companyId": null,
-                    "taxId": "DE810932557",
+                    "taxId": null,
                     "vatId": "DE810932557",
                     "courtRegistration": "Amtsgericht Hamburg, HRB 998765",
                     "address": {

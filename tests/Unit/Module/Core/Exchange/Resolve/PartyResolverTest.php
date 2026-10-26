@@ -58,8 +58,31 @@ class PartyResolverTest extends TestCase
         $this->assertSame('vatId', $r->matchedBy);
     }
 
+    /** #103 D115: zahraniční strana bez `taxId` (doklad národní daňové číslo neuvádí) — trefa přes `vatId`, sonda `taxId` se nevolá. */
+    public function testForeignPartyWithoutTaxIdMatchesByVatId(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->expects($this->once())
+            ->method('fetch')
+            ->with($this->stringContains('base_persons_persons'), 'vat_id', 'DE383584058', 10, 40, 80)
+            ->willReturn(new Row(['id' => 7]));
+
+        $r = $this->buildResolver($db)->resolve([
+            'companyId' => null,
+            'vatId'     => 'DE383584058',
+            'taxId'     => null,
+            'name'      => 'Wolkenkraft Hosting GmbH',
+            'country'   => 'de',
+        ]);
+
+        $this->assertSame(ResolveStatus::Matched, $r->status);
+        $this->assertSame(7, $r->matchedId);
+        $this->assertSame('vatId', $r->matchedBy);
+    }
+
     public function testTaxIdProbeFallsThroughCompanyAndVatMisses(): void
     {
+
         $db = $this->createMock(Connection::class);
         $db->expects($this->exactly(3))
             ->method('fetch')

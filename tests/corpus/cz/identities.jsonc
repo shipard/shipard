@@ -3,6 +3,9 @@
 // VŠECHNY subjekty jsou fiktivní a odlišné od demo identit (demo/invoices/suppliers.jsonc):
 //   - CZ IČO mají validní kontrolní součet, v ARES neexistují a názvy mají 0 zásahů,
 //   - DIČ zemí EU mají platné kontrolní číslo (DE: ISO 7064 MOD 11,10) a ve VIES jsou neplatná,
+//   - taxId je národní daňové číslo (#103 D115): u cz totéž co vatId (DIČ = VAT ID), u zahraničního
+//     subjektu jen číslo, které doklad uvádí (Steuernummer apod.) — jinak null, vatId zůstává,
+
 //   - domény jen v TLD .example (RFC 2606) — nikdy nikomu nebudou patřit,
 //   - česká čísla účtů mají mod 11 a IBAN jim odpovídá; kódy bank jsou reálné, názvy bank
 //     se na dokladech neuvádí; zahraniční IBAN mají platné kontrolní číslice.
@@ -106,8 +109,9 @@
 			"name": "Wolkenkraft Hosting GmbH",
 			"country": "de",
 			"companyId": null,
-			"taxId": "DE383584058",
+			"taxId": null,
 			"vatId": "DE383584058",
+
 			"courtRegistration": "Amtsgericht Charlottenburg, HRB 994567 B",
 			"address": { "street": "Rechenzentrumsweg", "houseNumber": "7", "city": "Berlin", "zip": "10115", "country": "de" },
 			"contact": { "name": null, "email": "billing@wolkenkraft.example", "phone": "+490008874410", "web": "www.wolkenkraft.example" },
@@ -119,8 +123,9 @@
 			"name": "Nordlicht Hardware GmbH",
 			"country": "de",
 			"companyId": null,
-			"taxId": "DE810932557",
+			"taxId": null,
 			"vatId": "DE810932557",
+
 			"courtRegistration": "Amtsgericht Hamburg, HRB 998765",
 			"address": { "street": "Industriestraße", "houseNumber": "42", "city": "Hamburg", "zip": "20457", "country": "de" },
 			"contact": { "name": null, "email": "sales@nordlicht-hardware.example", "phone": "+490007005120", "web": "www.nordlicht-hardware.example" },

@@ -67,7 +67,7 @@
                             "name": "Wolkenkraft Hosting GmbH",
                             "country": "de",
                             "companyId": null,
-                            "taxId": "DE383584058",
+                            "taxId": null,
                             "vatId": "DE383584058",
                             "courtRegistration": "Amtsgericht Charlottenburg, HRB 994567 B",
                             "address": {
@@ -244,7 +244,7 @@
                     "name": "Wolkenkraft Hosting GmbH",
                     "country": "de",
                     "companyId": null,
-                    "taxId": "DE383584058",
+                    "taxId": null,
                     "vatId": "DE383584058",
                     "courtRegistration": "Amtsgericht Charlottenburg, HRB 994567 B",
                     "address": {

@@ -51,7 +51,8 @@ IDENTITIES = {
         "de": {
             "vatPayer": True,
             "name": "Hostaro GmbH", "country": "de", "companyId": None,
-            "taxId": "DE293847560", "vatId": "DE293847560",
+            "taxId": None, "vatId": "DE293847560",
+
             "courtRegistration": "Amtsgericht Berlin-Charlottenburg, HRB 999999",
             "address": {"street": "Serverstraße", "houseNumber": "14", "city": "Berlin", "zip": "10115", "country": "de"},
             "contact": {"name": None, "email": "billing@hostaro.example", "phone": "+490002345678", "web": "www.hostaro.example"},

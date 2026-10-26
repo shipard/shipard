@@ -25,11 +25,13 @@ __all__ = ["IDENTIFIER_PATHS", "FidelityError", "Finding", "identifier_values", 
 # částky) se nekontrolují — tisknou se formátovaně a jinde.
 IDENTIFIER_PATHS: tuple[str, ...] = (
     "docNumber",
-    "supplier.companyId", "supplier.vatId", "supplier.courtRegistration",
+    "supplier.companyId", "supplier.taxId", "supplier.vatId", "supplier.courtRegistration",
+
     "supplier.contact.email", "supplier.contact.phone", "supplier.contact.web",
     "supplier.bankAccount.accountNumber", "supplier.bankAccount.iban", "supplier.bankAccount.bic",
     "payment.paymentReference", "payment.constantSymbol", "payment.specificSymbol",
-    "customer.companyId", "customer.vatId",
+    "customer.companyId", "customer.taxId", "customer.vatId",
+
     "rows[].item.supplierCode", "rows[].item.ean", "rows[].item.description",
 )
 

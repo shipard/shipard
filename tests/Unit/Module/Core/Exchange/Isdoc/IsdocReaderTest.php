@@ -415,6 +415,17 @@ class IsdocReaderTest extends TestCase
 
         $this->assertSame(['mode' => 'fromBase'], $canonical['vat']);
         $this->assertSame('SK2020000001', $canonical['supplier']['vatId']);
+        // #103 D115: taxId je národní daňové číslo — zahraniční strana bez TIN ho nemá, česká má DIČ = VAT ID.
+        $this->assertNull($canonical['supplier']['taxId']);
+        $this->assertSame('CZ87654321', $canonical['customer']['taxId']);
+        $withTin = $this->reader->fromXmlString((string) preg_replace(
+            '~(<CompanyID>SK2020000001</CompanyID>\s*<TaxScheme>VAT</TaxScheme>\s*</PartyTaxScheme>)~',
+            '$1<PartyTaxScheme><CompanyID>2020000001</CompanyID><TaxScheme>TIN</TaxScheme></PartyTaxScheme>',
+            $this->fixture('invoice_eu_supplier.isdoc'),
+        ));
+        $this->assertSame('2020000001', $withTin['supplier']['taxId'], 'TIN = národní daňové číslo');
+        $this->assertSame('SK2020000001', $withTin['supplier']['vatId']);
+
         $this->assertSame('sk', $canonical['supplier']['country']);
         $this->assertSame('cz', $canonical['customer']['country']);
         $this->assertSame('EUR', $canonical['currency']);

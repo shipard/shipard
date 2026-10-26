@@ -204,8 +204,16 @@ def _validate_corpus_party(key: str, party: dict, problems: list[str], *,
         prefix = "EL" if country == "gr" else country.upper()
         if vat_id[:2] != prefix:
             bad(f"vatId {vat_id} neodpovídá zemi {country}")
-    if tax_id != vat_id:
-        bad(f"taxId {tax_id!r} ≠ vatId {vat_id!r} (u EU DIČ = VAT ID)")
+    # taxId = národní daňové číslo (#103 D115): u cz je DIČ totéž co VAT ID, u zahraničního
+    # subjektu jen číslo, které doklad uvádí (Steuernummer apod.) — nikdy opis VAT ID.
+    if country == "cz":
+        if tax_id != vat_id:
+            bad(f"taxId {tax_id!r} ≠ vatId {vat_id!r} (cz: DIČ = VAT ID, D115)")
+    elif tax_id is not None and not _text(tax_id):
+        bad(f"taxId {tax_id!r} není text")
+    elif tax_id is not None and tax_id == vat_id:
+        bad(f"taxId {tax_id!r} = vatId: zahraniční subjekt má v taxId jen národní daňové číslo z dokladu, jinak null (D115)")
+
     if "vatPayer" in party and bool(party["vatPayer"]) != (vat_id is not None):
         bad("vatPayer neodpovídá přítomnosti vatId")
     court_reg = party.get("courtRegistration")

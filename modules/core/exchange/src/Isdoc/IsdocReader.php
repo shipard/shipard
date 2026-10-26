@@ -304,21 +304,29 @@ final class IsdocReader
         $country = $this->text($party, 'PostalAddress', 'Country', 'IdentificationCode');
         $country = $country !== null ? strtolower($country) : null;
 
-        // DIČ: PartyTaxScheme s TaxScheme = VAT (druhá varianta bývá TIN).
+        // DIČ: PartyTaxScheme s TaxScheme = VAT; TIN = národní daňové číslo.
         $vatNumber = null;
+        $tin = null;
         foreach ($this->all($party, 'PartyTaxScheme') as $taxScheme) {
-            if (strtoupper((string) $this->text($taxScheme, 'TaxScheme')) === 'VAT') {
+            $scheme = strtoupper((string) $this->text($taxScheme, 'TaxScheme'));
+            if ($scheme === 'VAT' && $vatNumber === null) {
                 $vatNumber = $this->text($taxScheme, 'CompanyID');
-                break;
+            } elseif ($scheme === 'TIN' && $tin === null) {
+                $tin = $this->text($taxScheme, 'CompanyID');
             }
         }
+        // taxId = národní daňové číslo (#103 D115): u české strany je DIČ totéž co VAT ID,
+        // u zahraniční jen TIN — bez něj null, vatId zůstává. Země bez adresy podle prefixu DIČ.
+        $czech = $country === 'cz' || ($country === null && str_starts_with((string) $vatNumber, 'CZ'));
+        $taxId = $tin ?? ($czech ? $vatNumber : null);
 
         return [
             'name'              => $this->text($party, 'PartyName', 'Name'),
             'country'           => $country,
             'companyId'         => $this->text($party, 'PartyIdentification', 'ID'),
-            'taxId'             => $vatNumber,
+            'taxId'             => $taxId,
             'vatId'             => $vatNumber,
+
             'courtRegistration' => $this->text($party, 'RegisterIdentification', 'Preformatted'),
             'address' => [
                 'street'      => $this->text($party, 'PostalAddress', 'StreetName'),

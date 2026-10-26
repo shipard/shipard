@@ -64,7 +64,8 @@ class IdentifierValuesTest(unittest.TestCase):
         self.assertNotIn("supplier.contact.web", paths)          # null se přeskočí
         self.assertNotIn("rows[0].item.ean", paths)
         self.assertNotIn("supplier.bankAccount.bic", paths)
-        self.assertEqual(len(IDENTIFIER_PATHS), 18)
+        self.assertEqual(len(IDENTIFIER_PATHS), 20)
+
 
     def test_missing_objects_are_tolerated(self) -> None:
         self.assertEqual([("docNumber", "X")], identifier_values({"docNumber": "X", "customer": None, "rows": None}))

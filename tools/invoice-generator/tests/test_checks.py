@@ -106,7 +106,8 @@ class ValidateIdentitiesTest(unittest.TestCase):
             "suppliers.cz-payer.courtRegistration": "Spisová značka C 99999 vedená u Krajského soudu v Brně",
             "suppliers.cz-nonpayer.vatPayer": True,
             "suppliers.de.vatId": "DE293847561",
-            "suppliers.de.taxId": "DE293847561",
+            "suppliers.de.taxId": "DE293847560",   # opis VAT ID místo národního čísla (D115)
+
             "suppliers.us.address.houseNumber": "500",
             "suppliers.us.vatId": "US123",
             "profiles.vat-payer.address.country": "sk",
