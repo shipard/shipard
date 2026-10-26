@@ -172,6 +172,7 @@
             "icon": "table-list",
             "table": "economy_accounting_accounts",
             "class": "Shipard\\Module\\Economy\\Accounting\\AccountsViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{number}"},
             "navSection": "accounting",
             "navOrder": 20
         },

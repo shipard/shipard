@@ -7,6 +7,7 @@ namespace Shipard\Module\Economy\Accounting;
 use Shipard\Core\Accounting\JournalDimension;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Core\Viewer\UsesFiscalPeriods;
 
@@ -289,9 +290,9 @@ class JournalViewer extends TableViewer
         return $spans;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $r = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT j.*, p.`full_name` AS partner_name, a.`name` AS account_name,'
             . ' fy.`name` AS fiscal_year_name, fm.`calendar_year`, fm.`calendar_month`'
             . $this->dimensionSelect()
@@ -302,49 +303,70 @@ class JournalViewer extends TableViewer
             . ' WHERE j.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($r === null) {
-            return ['tabs' => []];
-        }
+    /** Titulek text řádku, bez textu název účtu; podtitul číslo a název účtu · datum (#136 §6). */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $text = trim((string) ($record['text'] ?? ''));
+        $accountName = trim((string) ($record['account_name'] ?? ''));
+        $accountLabel = trim(
+            (string) ($record['account_number'] ?? '')
+            . ($accountName !== '' ? ' — ' . $accountName : ''),
+        );
+        $title = $text !== '' ? $text : ($accountName !== '' ? $accountName : $accountLabel);
+        $subtitle = implode(' · ', array_filter(
+            [$accountLabel, $this->formatDate($record['accounting_date'] ?? null) ?? ''],
+            static fn (string $v): bool => $v !== '',
+        ));
 
+        return new DetailHeader(
+            $title !== '' ? $title : '#' . (int) ($record['id'] ?? 0),
+            $subtitle !== '' ? $subtitle : null,
+        );
+    }
+
+    /** Přehled: zápis (účet, text, operace, partner, dimenze, období), částky, doklad, platba. */
+    protected function detailTabs(array $record): array
+    {
         $cs = $this->language === 'cs';
 
         $entryItems = [];
-        $this->addItem($entryItems, $cs ? 'Datum' : 'Date', $this->formatDate($r['accounting_date'] ?? null));
+        $this->addItem($entryItems, $cs ? 'Datum' : 'Date', $this->formatDate($record['accounting_date'] ?? null));
         $accountLabel = trim(
-            (string) ($r['account_number'] ?? '')
-            . (($r['account_name'] ?? null) !== null ? ' — ' . $r['account_name'] : ''),
+            (string) ($record['account_number'] ?? '')
+            . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
         );
         $this->addItem($entryItems, $cs ? 'Účet' : 'Account', $accountLabel);
-        $this->addItem($entryItems, 'Text', $r['text'] ?? null);
+        $this->addItem($entryItems, 'Text', $record['text'] ?? null);
         $this->addItem(
             $entryItems,
             $cs ? 'Operace' : 'Operation',
-            $this->cfgItemName('docs.core.rowOperations', $r['operation'] ?? null),
+            $this->cfgItemName('docs.core.rowOperations', $record['operation'] ?? null),
         );
-        $this->addItem($entryItems, 'Partner', $r['partner_name'] ?? null);
+        $this->addItem($entryItems, 'Partner', $record['partner_name'] ?? null);
         foreach ($this->dimensions() as $dimension) {
-            $this->addItem($entryItems, $dimension->name, $this->dimensionLabel($dimension, $r));
+            $this->addItem($entryItems, $dimension->name, $this->dimensionLabel($dimension, $record));
         }
-        $this->addItem($entryItems, $cs ? 'Fiskální rok' : 'Fiscal year', $r['fiscal_year_name'] ?? null);
-        if (($r['calendar_month'] ?? null) !== null && ($r['calendar_year'] ?? null) !== null) {
+        $this->addItem($entryItems, $cs ? 'Fiskální rok' : 'Fiscal year', $record['fiscal_year_name'] ?? null);
+        if (($record['calendar_month'] ?? null) !== null && ($record['calendar_year'] ?? null) !== null) {
             $this->addItem(
                 $entryItems,
                 $cs ? 'Fiskální měsíc' : 'Fiscal month',
-                $r['calendar_month'] . '/' . $r['calendar_year'],
+                $record['calendar_month'] . '/' . $record['calendar_year'],
             );
         }
-        if ((int) ($r['is_error'] ?? 0) === 1) {
+        if ((int) ($record['is_error'] ?? 0) === 1) {
             $this->addItem($entryItems, $cs ? 'Chybový řádek' : 'Error line', $cs ? '⚠ Ano' : '⚠ Yes');
         }
 
         $amountItems = [];
-        $this->addItem($amountItems, 'MD', $this->formatMoney($r['money_dr'] ?? 0));
-        $this->addItem($amountItems, 'DAL', $this->formatMoney($r['money_cr'] ?? 0));
-        $drCur = (float) ($r['money_dr_cur'] ?? 0);
-        $crCur = (float) ($r['money_cr_cur'] ?? 0);
+        $this->addItem($amountItems, 'MD', $this->formatMoney($record['money_dr'] ?? 0));
+        $this->addItem($amountItems, 'DAL', $this->formatMoney($record['money_cr'] ?? 0));
+        $drCur = (float) ($record['money_dr_cur'] ?? 0);
+        $crCur = (float) ($record['money_cr_cur'] ?? 0);
         if ($drCur !== 0.0 || $crCur !== 0.0) {
-            $curCode = strtoupper((string) ($r['currency'] ?? ''));
+            $curCode = strtoupper((string) ($record['currency'] ?? ''));
             $this->addItem($amountItems, 'MD ' . $curCode, $this->formatMoney($drCur));
             $this->addItem($amountItems, 'DAL ' . $curCode, $this->formatMoney($crCur));
         }
@@ -353,15 +375,15 @@ class JournalViewer extends TableViewer
         $this->addItem(
             $docItems,
             $cs ? 'Typ dokladu' : 'Document type',
-            $this->cfgItemName('docs.core.docTypes', $r['doc_type'] ?? null),
+            $this->cfgItemName('docs.core.docTypes', $record['doc_type'] ?? null),
         );
-        $this->addItem($docItems, $cs ? 'Číslo dokladu' : 'Document number', $r['doc_number'] ?? null);
+        $this->addItem($docItems, $cs ? 'Číslo dokladu' : 'Document number', $record['doc_number'] ?? null);
 
         $paymentItems = [];
-        $this->addItem($paymentItems, $cs ? 'Variabilní symbol' : 'Payment reference', $r['payment_reference'] ?? null);
-        $this->addItem($paymentItems, $cs ? 'Specifický symbol' : 'Specific symbol', $r['specific_symbol'] ?? null);
-        $this->addItem($paymentItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $r['constant_symbol'] ?? null);
-        $this->addItem($paymentItems, $cs ? 'Splatnost' : 'Due date', $this->formatDate($r['due_date'] ?? null));
+        $this->addItem($paymentItems, $cs ? 'Variabilní symbol' : 'Payment reference', $record['payment_reference'] ?? null);
+        $this->addItem($paymentItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
+        $this->addItem($paymentItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
+        $this->addItem($paymentItems, $cs ? 'Splatnost' : 'Due date', $this->formatDate($record['due_date'] ?? null));
 
         $groups = [
             ['title' => $cs ? 'Zápis' : 'Entry', 'items' => $entryItems],
@@ -374,25 +396,26 @@ class JournalViewer extends TableViewer
             $groups[] = ['title' => $cs ? 'Platba' : 'Payment', 'items' => $paymentItems];
         }
 
-        $detail = ['tabs' => [[
-            'id'      => 'overview',
-            'label'   => $this->defaultOverviewLabel(),
-            'content' => ['type' => 'properties', 'groups' => $groups],
-        ]]];
+        return [$this->propertiesTab($groups)];
+    }
 
-        $docHead = (int) ($r['doc_head'] ?? 0);
-        if ($docHead > 0) {
-            $detail['actions'] = [[
-                'id'       => 'open_doc',
-                'label'    => $cs ? 'Otevřít doklad' : 'Open document',
-                'kind'     => 'open_viewer',
-                'viewerId' => 'docs.core.heads',
-                'recordId' => $docHead,
-                'variant'  => 'secondary',
-            ]];
+    /** Odkaz na zdrojový doklad řádku. */
+    protected function detailActions(array $record): array
+    {
+        $docHead = (int) ($record['doc_head'] ?? 0);
+        if ($docHead <= 0) {
+            return [];
         }
+        $cs = $this->language === 'cs';
 
-        return $detail;
+        return [[
+            'id'       => 'open_doc',
+            'label'    => $cs ? 'Otevřít doklad' : 'Open document',
+            'kind'     => 'open_viewer',
+            'viewerId' => 'docs.core.heads',
+            'recordId' => $docHead,
+            'variant'  => 'secondary',
+        ]];
     }
 
     /**

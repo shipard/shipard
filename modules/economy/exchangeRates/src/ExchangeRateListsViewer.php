@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\ExchangeRates;
 
 use Shipard\Core\Form\SubtableCellFormatter;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -89,12 +90,30 @@ class ExchangeRateListsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /** Titulek typ lístku; podtitul platnost od – do · číslo lístku (#136 §6). */
+    protected function detailHeader(array $record): DetailHeader
     {
-        $record = $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+        $type = $this->types()->labelOf((string) ($record['list_type'] ?? ''));
+        $validity = implode(' – ', array_filter([
+            SubtableCellFormatter::date($record['valid_from'] ?? null),
+            SubtableCellFormatter::date($record['valid_to'] ?? null),
+        ]));
+        $number = trim((string) ($record['list_number'] ?? ''));
+        $subtitle = implode(' · ', array_filter(
+            [$validity, $number !== '' ? 'č. ' . $number : ''],
+            static fn (string $v): bool => $v !== '',
+        ));
+
+        return new DetailHeader(
+            $type !== '' ? $type : '#' . (int) ($record['id'] ?? 0),
+            $subtitle !== '' ? $subtitle : null,
+        );
+    }
+
+    /** Přehled lístku a tab Kurzy (měna, množství, kurz, kurz za jednotku). */
+    protected function detailTabs(array $record): array
+    {
+        $recordId = (int) $record['id'];
 
         $items = [];
         $this->addItem($items, 'Typ', $this->types()->labelOf((string) ($record['list_type'] ?? '')));
@@ -121,7 +140,7 @@ class ExchangeRateListsViewer extends TableViewer
         }
         $this->addItem($items, 'Počet měn', (string) count($rows));
 
-        return ['tabs' => [
+        return [
             [
                 'id'      => 'overview',
                 'label'   => $this->defaultOverviewLabel(),
@@ -141,7 +160,7 @@ class ExchangeRateListsViewer extends TableViewer
                     'rows' => $rows,
                 ],
             ],
-        ]];
+        ];
     }
 
     /** Lístky jsou jen ke čtení — žádné Add/Open. */

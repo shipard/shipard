@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accbal;
 
+use Shipard\Core\Viewer\Detail\DetailHeader;
 
 /**
  * Viewer saldokonta **po případech** (#69 D1, T2) — výchozí vstup do
@@ -274,18 +275,18 @@ class CasesViewer extends AccbalViewerBase
     }
 
     /**
-     * Detail případu: id řádku je pohyb klíče (row_id) → klíč → agregát.
-     * Akce „Pohyby případu" otevře viewer pohybů s chipem saldokonta a
-     * viditelnými filtry období případu / partner / VS / SS (období
-     * přebíjí výchozí aktuální rok cílového vieweru).
+     * Záznam detailu = případ odvozený z řádku ledgeru (`row_id`): klíč,
+     * agregát a jména (saldokonto, partner, období) v jednom poli, aby je
+     * hlavička, Přehled i akce četly jednou. Řádek bez klíče nebo bez
+     * případu = detail bez tabů.
      */
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
         $query = new CaseQuery($this->db->getDibiConnection());
         $key = $query->keyOfRow($recordId);
         $case = $key !== null ? $query->caseOf($key) : null;
         if ($key === null || $case === null) {
-            return ['tabs' => []];
+            return null;
         }
         $names = $this->db->fetchRow(
             'SELECT b.`name` AS balance_name, b.`code` AS balance_code, p.`full_name` AS partner_name,'
@@ -298,14 +299,39 @@ class CasesViewer extends AccbalViewerBase
             $recordId,
         ) ?? [];
 
+        return ['id' => $recordId, 'key' => $key, 'case' => $case] + (array) $names;
+    }
+
+    /** Titulek partner (bez partnera „Bez partnera"), podtitul saldokonto · VS · období (#136 §6). */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $cs = $this->language === 'cs';
+        $partnerName = trim((string) ($record['partner_name'] ?? ''));
+        $subtitle = implode(' · ', array_filter([
+            (string) ($record['balance_name'] ?? ''),
+            (string) ($record['key']['payment_reference'] ?? ''),
+            (string) ($record['fiscal_year_name'] ?? ''),
+        ], static fn (string $v): bool => $v !== ''));
+
+        return new DetailHeader(
+            $partnerName !== '' ? $partnerName : ($cs ? 'Bez partnera' : 'No partner'),
+            $subtitle !== '' ? $subtitle : null,
+        );
+    }
+
+    /** Přehled: klíč případu a částky (předpisy, úhrady, zůstatek, stav, splatnost). */
+    protected function detailTabs(array $record): array
+    {
+        $key = $record['key'];
+        $case = $record['case'];
         $cs = $this->language === 'cs';
         $curCode = strtoupper((string) ($key['currency'] ?? ''));
         $hcCode = strtoupper((string) ($case['home_currency'] ?? ''));
-        $partnerName = trim((string) ($names['partner_name'] ?? ''));
+        $partnerName = trim((string) ($record['partner_name'] ?? ''));
 
         $keyItems = [];
-        $this->addItem($keyItems, $cs ? 'Saldokonto' : 'Balance', $names['balance_name'] ?? null);
-        $this->addItem($keyItems, $cs ? 'Období' : 'Period', $names['fiscal_year_name'] ?? null);
+        $this->addItem($keyItems, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
+        $this->addItem($keyItems, $cs ? 'Období' : 'Period', $record['fiscal_year_name'] ?? null);
         $this->addItem($keyItems, 'Partner', $partnerName !== '' ? $partnerName : ($cs ? '(Bez partnera)' : '(No partner)'));
         $this->addItem($keyItems, $cs ? 'Variabilní symbol' : 'Payment reference', $key['payment_reference'] ?? null);
         $this->addItem($keyItems, $cs ? 'Specifický symbol' : 'Specific symbol', $key['specific_symbol'] ?? null);
@@ -325,6 +351,23 @@ class CasesViewer extends AccbalViewerBase
         }
         $this->addItem($amountItems, $cs ? 'Pohybů' : 'Movements', $case['moves']);
 
+        return [$this->propertiesTab([
+            ['title' => $cs ? 'Případ' : 'Case', 'items' => $keyItems],
+            ['title' => $cs ? 'Částky' : 'Amounts', 'items' => $amountItems],
+        ])];
+    }
+
+    /**
+     * Akce „Pohyby případu" otevře viewer pohybů s chipem saldokonta
+     * a viditelnými filtry období případu / partner / VS / SS (období
+     * přebíjí výchozí aktuální rok cílového vieweru).
+     */
+    protected function detailActions(array $record): array
+    {
+        $key = $record['key'];
+        $cs = $this->language === 'cs';
+        $partnerName = trim((string) ($record['partner_name'] ?? ''));
+
         $filters = [];
         if (($key['fiscal_year'] ?? null) !== null) {
             $filters['fiscal_year'] = (string) $key['fiscal_year'];
@@ -339,25 +382,15 @@ class CasesViewer extends AccbalViewerBase
             $filters['specific_symbol'] = (string) $key['specific_symbol'];
         }
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => ['type' => 'properties', 'groups' => [
-                    ['title' => $cs ? 'Případ' : 'Case', 'items' => $keyItems],
-                    ['title' => $cs ? 'Částky' : 'Amounts', 'items' => $amountItems],
-                ]],
-            ]],
-            'actions' => [[
-                'id'        => 'open_ledger',
-                'label'     => $cs ? 'Pohyby případu' : 'Case movements',
-                'kind'      => 'open_viewer',
-                'viewerId'  => 'economy.accbal.ledger',
-                'viewGroup' => (string) ($names['balance_code'] ?? 'all'),
-                'filters'   => $filters,
-                'variant'   => 'primary',
-            ]],
-        ];
+        return [[
+            'id'        => 'open_ledger',
+            'label'     => $cs ? 'Pohyby případu' : 'Case movements',
+            'kind'      => 'open_viewer',
+            'viewerId'  => 'economy.accbal.ledger',
+            'viewGroup' => (string) ($record['balance_code'] ?? 'all'),
+            'filters'   => $filters,
+            'variant'   => 'primary',
+        ]];
     }
 
     public function getFilters(): array

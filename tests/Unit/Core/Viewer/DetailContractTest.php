@@ -41,17 +41,10 @@ class DetailContractTest extends TestCase
         // core.units
         // docs.core
         // economy.accbal
-        'economy.accbal.balances',
-        'economy.accbal.balanceAccounts',
-        'economy.accbal.cases',
-        'economy.accbal.ledger',
         // economy.accounting
-        'economy.accounting.accounts',
-        'economy.accounting.journal',
         // economy.bank
         // economy.codebooks
         // economy.exchangeRates
-        'economy.exchangeRates.lists',
         // economy.items
         // economy.vat
         // hosting.core

@@ -129,46 +129,34 @@ class BalanceAccountsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $r = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT a.*, b.`name` AS balance_name'
             . ' FROM `' . $this->table . '` a'
             . ' LEFT JOIN `economy_accbal_balances` b ON b.`id` = a.`balance`'
             . ' WHERE a.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($r === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $cs = $this->language === 'cs';
 
         $items = [];
-        $this->addItem($items, $cs ? 'Saldokonto' : 'Balance', $r['balance_name'] ?? null);
-        $this->addItem($items, $cs ? 'Číslo účtu' : 'Account number', $r['account_number'] ?? null);
-        $this->addItem($items, $cs ? 'Strana' : 'Side', $this->enumLabel('economy.accbal.accSides', $r['acc_side'] ?? null));
-        $this->addItem($items, $cs ? 'Částky' : 'Amounts', $this->enumLabel('economy.accbal.amountsSigns', $r['amounts_sign'] ?? null));
-        $this->addItem($items, $cs ? 'Předpis/Úhrada' : 'Role', $this->enumLabel('economy.accbal.balSides', $r['bal_side'] ?? null));
-        $this->addItem($items, $cs ? 'Obrátit znaménko' : 'Invert sign', (int) ($r['modify_sign'] ?? 0) === 1 ? ($cs ? 'Ano' : 'Yes') : ($cs ? 'Ne' : 'No'));
-        $this->addItem($items, $cs ? 'Poznámka' : 'Note', $r['note'] ?? null);
-        $this->addItem($items, $cs ? 'Platnost od' : 'Valid from', $this->formatDate($r['valid_from'] ?? null));
-        $this->addItem($items, $cs ? 'Platnost do' : 'Valid to', $this->formatDate($r['valid_to'] ?? null));
-        $this->addItem($items, $cs ? 'Pořadí' : 'Order', (string) ($r['sort_order'] ?? 0));
+        $this->addItem($items, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
+        $this->addItem($items, $cs ? 'Číslo účtu' : 'Account number', $record['account_number'] ?? null);
+        $this->addItem($items, $cs ? 'Strana' : 'Side', $this->enumLabel('economy.accbal.accSides', $record['acc_side'] ?? null));
+        $this->addItem($items, $cs ? 'Částky' : 'Amounts', $this->enumLabel('economy.accbal.amountsSigns', $record['amounts_sign'] ?? null));
+        $this->addItem($items, $cs ? 'Předpis/Úhrada' : 'Role', $this->enumLabel('economy.accbal.balSides', $record['bal_side'] ?? null));
+        $this->addItem($items, $cs ? 'Obrátit znaménko' : 'Invert sign', (int) ($record['modify_sign'] ?? 0) === 1 ? ($cs ? 'Ano' : 'Yes') : ($cs ? 'Ne' : 'No'));
+        $this->addItem($items, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
+        $this->addItem($items, $cs ? 'Platnost od' : 'Valid from', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($items, $cs ? 'Platnost do' : 'Valid to', $this->formatDate($record['valid_to'] ?? null));
+        $this->addItem($items, $cs ? 'Pořadí' : 'Order', (string) ($record['sort_order'] ?? 0));
 
-        return [
-            'tabs' => [
-                [
-                    'id'      => 'overview',
-                    'label'   => $this->defaultOverviewLabel(),
-                    'content' => [
-                        'type'   => 'properties',
-                        'groups' => [['title' => $cs ? 'Účet saldokonta' : 'Balance account', 'items' => $items]],
-                    ],
-                ],
-            ],
-        ];
+        return [$this->propertiesTab([['title' => $cs ? 'Účet saldokonta' : 'Balance account', 'items' => $items]])];
     }
 
     public function getFilters(): array

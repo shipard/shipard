@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Accbal;
 
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 
 /**
  * Viewer saldo pohybů (economy_accbal_ledger).
@@ -303,9 +304,9 @@ class LedgerViewer extends AccbalViewerBase
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $r = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT l.*, b.`name` AS balance_name, p.`full_name` AS partner_name, j.`operation`'
             . ' FROM `' . $this->table . '` l'
             . ' LEFT JOIN `economy_accbal_balances` b ON b.`id` = l.`balance`'
@@ -314,35 +315,53 @@ class LedgerViewer extends AccbalViewerBase
             . ' WHERE l.`id` = %i',
             $recordId,
         );
-        if ($r === null) {
-            return ['tabs' => []];
-        }
-        // Případ pohybu (#69 D1): agregát klíče, do kterého pohyb patří.
-        $case = (new CaseQuery($this->db->getDibiConnection()))->caseOf(CaseQuery::normalizeKey($r))
+    }
+
+    /** Titulek partner, bez partnera text pohybu, pak účet; podtitul účet · částka s měnou (#136 §6). */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $partner = trim((string) ($record['partner_name'] ?? ''));
+        $text = trim((string) ($record['text'] ?? ''));
+        $account = trim((string) ($record['account_number'] ?? ''));
+        $amount = trim($this->formatMoney($record['amount'] ?? 0) . ' ' . strtoupper((string) ($record['currency'] ?? '')));
+
+        $title = $partner !== '' ? $partner : ($text !== '' ? $text : $account);
+        $subtitle = implode(' · ', array_filter([$account, $amount], static fn (string $v): bool => $v !== ''));
+
+        return new DetailHeader(
+            $title !== '' ? $title : '#' . (int) ($record['id'] ?? 0),
+            $subtitle !== '' ? $subtitle : null,
+        );
+    }
+
+    /** Přehled: pohyb, částky, platba a případ pohybu (#69 D1: agregát klíče, do kterého pohyb patří). */
+    protected function detailTabs(array $record): array
+    {
+        $case = (new CaseQuery($this->db->getDibiConnection()))->caseOf(CaseQuery::normalizeKey($record))
             ?? CaseQuery::decorate([]);
 
         $cs = $this->language === 'cs';
 
         $moveItems = [];
-        $this->addItem($moveItems, $cs ? 'Saldokonto' : 'Balance', $r['balance_name'] ?? null);
-        $this->addItem($moveItems, 'Role', $this->roleOf($r)['text']);
-        $this->addItem($moveItems, $cs ? 'Účet' : 'Account', $r['account_number'] ?? null);
-        $this->addItem($moveItems, 'Partner', $r['partner_name'] ?? null);
-        $this->addItem($moveItems, 'Text', $r['text'] ?? null);
+        $this->addItem($moveItems, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
+        $this->addItem($moveItems, 'Role', $this->roleOf($record)['text']);
+        $this->addItem($moveItems, $cs ? 'Účet' : 'Account', $record['account_number'] ?? null);
+        $this->addItem($moveItems, 'Partner', $record['partner_name'] ?? null);
+        $this->addItem($moveItems, 'Text', $record['text'] ?? null);
 
-        $curCode = strtoupper((string) ($r['currency'] ?? ''));
-        $hcCode = strtoupper((string) ($r['home_currency'] ?? ''));
+        $curCode = strtoupper((string) ($record['currency'] ?? ''));
+        $hcCode = strtoupper((string) ($record['home_currency'] ?? ''));
         $amountItems = [];
-        $this->addItem($amountItems, ($cs ? 'Částka ' : 'Amount ') . $curCode, $this->formatMoney($r['amount'] ?? 0));
+        $this->addItem($amountItems, ($cs ? 'Částka ' : 'Amount ') . $curCode, $this->formatMoney($record['amount'] ?? 0));
         if ($hcCode !== '' && $hcCode !== $curCode) {
-            $this->addItem($amountItems, ($cs ? 'Částka ' : 'Amount ') . $hcCode, $this->formatMoney($r['amount_hc'] ?? 0));
+            $this->addItem($amountItems, ($cs ? 'Částka ' : 'Amount ') . $hcCode, $this->formatMoney($record['amount_hc'] ?? 0));
         }
 
         $payItems = [];
-        $this->addItem($payItems, $cs ? 'Variabilní symbol' : 'Payment reference', $r['payment_reference'] ?? null);
-        $this->addItem($payItems, $cs ? 'Specifický symbol' : 'Specific symbol', $r['specific_symbol'] ?? null);
-        $this->addItem($payItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $r['constant_symbol'] ?? null);
-        $this->addItem($payItems, $cs ? 'Splatnost' : 'Due date', $this->formatDate($r['due_date'] ?? null));
+        $this->addItem($payItems, $cs ? 'Variabilní symbol' : 'Payment reference', $record['payment_reference'] ?? null);
+        $this->addItem($payItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
+        $this->addItem($payItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
+        $this->addItem($payItems, $cs ? 'Splatnost' : 'Due date', $this->formatDate($record['due_date'] ?? null));
 
         $caseItems = [];
         $this->addItem($caseItems, $cs ? 'Předpisy' : 'Requests', $this->formatMoney($case['sum_requests']) . ' ' . $curCode);
@@ -363,15 +382,16 @@ class LedgerViewer extends AccbalViewerBase
         }
         $groups[] = ['title' => $cs ? 'Případ' : 'Case', 'items' => $caseItems];
 
-        $detail = ['tabs' => [[
-            'id'      => 'overview',
-            'label'   => $this->defaultOverviewLabel(),
-            'content' => ['type' => 'properties', 'groups' => $groups],
-        ]]];
+        return [$this->propertiesTab($groups)];
+    }
 
+    /** Odkazy na doklad, bankovní transakci a řádek deníku pohybu. */
+    protected function detailActions(array $record): array
+    {
+        $cs = $this->language === 'cs';
         $actions = [];
-        $docHead = (int) ($r['doc_head'] ?? 0);
-        $bankTx = (int) ($r['bank_transaction'] ?? 0);
+        $docHead = (int) ($record['doc_head'] ?? 0);
+        $bankTx = (int) ($record['bank_transaction'] ?? 0);
         if ($docHead > 0) {
             $actions[] = [
                 'id' => 'open_doc', 'label' => $cs ? 'Otevřít doklad' : 'Open document',
@@ -386,7 +406,7 @@ class LedgerViewer extends AccbalViewerBase
                 'variant' => 'secondary',
             ];
         }
-        $journalRow = (int) ($r['journal_row'] ?? 0);
+        $journalRow = (int) ($record['journal_row'] ?? 0);
         if ($journalRow > 0) {
             // Deník startuje s výchozím aktuálním rokem — období pohybu
             // posíláme, aby cílový řádek ze staršího roku nezmizel ze seznamu.
@@ -395,16 +415,12 @@ class LedgerViewer extends AccbalViewerBase
                 'kind' => 'open_viewer', 'viewerId' => 'economy.accounting.journal', 'recordId' => $journalRow,
                 'variant' => 'secondary',
             ];
-            if (($r['fiscal_year'] ?? null) !== null) {
-                $action['filters'] = ['fiscal_year' => (string) (int) $r['fiscal_year']];
+            if (($record['fiscal_year'] ?? null) !== null) {
+                $action['filters'] = ['fiscal_year' => (string) (int) $record['fiscal_year']];
             }
             $actions[] = $action;
         }
-        if ($actions !== []) {
-            $detail['actions'] = $actions;
-        }
-
-        return $detail;
+        return $actions;
     }
 
     public function getFilters(): array
