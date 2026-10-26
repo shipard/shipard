@@ -6,6 +6,7 @@
 //   validate:  {kind, country?, value, valid}        — nad už normalizovanou hodnotou
 //   repair:    {country, iban, accountNumber, out}   — oprava z redundance (D4):
 //              out = {iban | accountNumber, basis} dopočtená hodnota, null = bez opravy
+//   format:    {kind, country?, in, out}            — čitelný tvar pro zobrazení (D21, jen PHP)
 //
 // `"python": false` = Python kontrolu nemá (PSČ, DE účet, sk převod účtu, mod 11
 // uvnitř IBAN) — PHP ji ověří vždy. Identity jsou smyšlené (korpus) nebo z testů
@@ -149,5 +150,32 @@
         {"country": "cz", "iban": "CZ4701000000001234567890", "accountNumber": "1234567890/0100", "out": null, "python": false},
         // oba platné a sedí → bez opravy
         {"country": "cz", "iban": "CZ0606000000008360405366", "accountNumber": "8360405366/0600", "out": null},
+    ],
+
+    "format": [
+        {"kind": "zip", "country": "cz", "in": "76001", "out": "760 01"},
+        {"kind": "zip", "country": "cz", "in": "760 01", "out": "760 01"},
+        {"kind": "zip", "country": "sk", "in": "81101", "out": "811 01"},
+        {"kind": "zip", "country": "cz", "in": "7600", "out": "7600"},
+        {"kind": "zip", "country": "de", "in": "10115", "out": "10115"},
+        {"kind": "zip", "country": "us", "in": "94105-1234", "out": "94105-1234"},
+        {"kind": "zip", "country": null, "in": "76001", "out": "76001"},
+
+        {"kind": "iban", "in": "CZ6508000000192000145399", "out": "CZ65 0800 0000 1920 0014 5399"},
+        {"kind": "iban", "in": "cz65 0800 0000 1920 0014 5399", "out": "CZ65 0800 0000 1920 0014 5399"},
+        {"kind": "iban", "in": "DE72100700000532013000", "out": "DE72 1007 0000 0532 0130 00"},
+        {"kind": "iban", "in": "123456", "out": "123456"},
+
+        {"kind": "phone", "country": "cz", "in": "+420577123456", "out": "+420 577 123 456"},
+        {"kind": "phone", "country": "cz", "in": "577 123 456", "out": "+420 577 123 456"},
+        {"kind": "phone", "country": "sk", "in": "0905 123 456", "out": "+421 905 123 456"},
+        {"kind": "phone", "country": "de", "in": "+49 (0)30 123456", "out": "+49 30123456"},
+        {"kind": "phone", "country": "cz", "in": "+4930123456", "out": "+4930123456"},
+        {"kind": "phone", "country": "cz", "in": "+42057712345", "out": "+42057712345"},
+        {"kind": "phone", "country": null, "in": "+420 577 123 456", "out": "+420577123456"},
+        {"kind": "phone", "country": "us", "in": "(415) 555-0199", "out": "4155550199"},
+
+        {"kind": "companyId", "country": "cz", "in": "6947", "out": "00006947"},
+        {"kind": "accountNumber", "in": "000019-0002000145399/0800", "out": "19-2000145399/0800"},
     ],
 }

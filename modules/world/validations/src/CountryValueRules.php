@@ -33,12 +33,21 @@ interface CountryValueRules
     /** Délka národního čísla bez předvolby (cz 9); `null` = proměnlivá. */
     public function nationalNumberLength(): ?int;
 
+    /**
+     * Čitelný tvar normalizovaného telefonu (D21): cz / sk `+420 577 123 456`,
+     * de předvolba oddělená mezerou; jiný tvar beze změny. Jen pro zobrazení.
+     */
+    public function formatPhone(string $phone): string;
+
     // ── PSČ ─────────────────────────────────────────────────────────────
 
     public function normalizeZip(string $zip): string;
 
     /** Platnost normalizovaného PSČ; bez pravidla vždy `true`. */
     public function isValidZip(string $zip): bool;
+
+    /** Čitelný tvar normalizovaného PSČ (D21): cz / sk `760 01`; jinde beze změny. Jen pro zobrazení. */
+    public function formatZip(string $zip): string;
 
     // ── IČO ─────────────────────────────────────────────────────────────
 

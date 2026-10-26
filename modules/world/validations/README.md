@@ -36,6 +36,12 @@ ValueRules::normalize(ValueRules::PHONE, '577 123 456', 'cz');     // '+42057712
 ValueRules::normalize(ValueRules::COMPANY_ID, '6947', 'cz');        // '00006947'
 ValueRules::isValid(ValueRules::IBAN, 'CZ6508000000192000145399');  // true
 
+// Čitelný tvar jen pro zobrazení (D21) — nikdy se neukládá
+ValueRules::format(ValueRules::ZIP, '76001', 'cz');                  // '760 01'
+ValueRules::format(ValueRules::IBAN, 'CZ6508000000192000145399');    // 'CZ65 0800 0000 1920 0014 5399'
+ValueRules::format(ValueRules::PHONE, '577 123 456', 'cz');          // '+420 577 123 456'
+ValueRules::ibanFromAccountNumber('19-2000145399/0800', 'cz');       // 'CZ6508000000192000145399' (jen tvar, bez mod 11)
+
 // Přímo přes třídy
 $rules = ValueRulesRegistry::forCountry('cz');
 $rules->isValidCompanyId('52654150');                               // true
@@ -52,7 +58,7 @@ Iban::isValid('CZ6508000000192000145399');                          // mod 97 + 
 | `CzSkValueRulesBase`, `CzValueRules`, `SkValueRules` | IČO s kontrolním součtem, PSČ 5 číslic, účet `[předčíslí-]číslo/kód` s mod 11, BBAN ↔ IBAN 24 znaků |
 | `DeValueRules` | USt-IdNr s kontrolní číslicí ISO 7064 MOD 11,10, PSČ 5 číslic, IBAN 22 znaků |
 | `ValueRulesRegistry` | výběr pravidel podle země (`forCountry`), prefixu IBAN (`forIban`) nebo prefixu DIČ (`forVatPrefix`) |
-| `ValueRules` | jeden vstup podle druhu hodnoty (`ValueRules::PHONE`, …) a země |
+| `ValueRules` | jeden vstup podle druhu hodnoty (`ValueRules::PHONE`, …) a země: `normalize()`, `isValid()`, `format()`, `ibanFromAccountNumber()` |
 | `Iban`, `Bic`, `VatId`, `Phone`, `DomesticAccount`, `Contact`, `PaymentSymbols`, `Country` | obecná pravidla a primitiva |
 
 ## Pravidla
@@ -71,6 +77,13 @@ Iban::isValid('CZ6508000000192000145399');                          // mod 97 + 
 | VS, KS, SS | bez mezer | — |
 | platební reference | bez mezer, velkými | — |
 | tuzemský účet | tvar `…/kód` bez mezer a vedoucích nul; jiný tvar jen bez mezer | tvar `…/kód` → mod 11 bez ohledu na zemi; stát s tuzemským tvarem jiný tvar neuznává |
+
+**Čitelný tvar (D21):** `ValueRules::format()` nejdřív normalizuje, pak
+PSČ cz / sk `760 01`, IBAN po čtveřicích, telefon cz / sk
+`+420 577 123 456`, de `+49 301234567` (skupiny německých čísel závisí
+na předčíslí oblasti); ostatní druhy, jiný stát a nekanonický tvar
+= normalizovaná hodnota. Používají ho tisky a detail osoby; formuláře
+ukazují uložený (kanonický) tvar. Výstup se nikdy neukládá.
 
 **Telefon (D12):** mezery a interpunkce pryč, `(0)` pryč, `00` na
 začátku → `+` (jen když za ním nenásleduje `0`). Číslo bez `+` u státu
@@ -91,11 +104,12 @@ konstanta; shodu s `world.base.countries` (`phonePrefixes[0]`) hlídá
 ## Testy
 
 Sdílený fixture `tests/Fixtures/World/value-cases.jsonc` (sekce
-`normalize`, `validate`, `repair`) čte PHPUnit
+`normalize`, `validate`, `repair`, `format`) čte PHPUnit
 (`tests/Unit/Module/World/Validations/ValueCasesFixtureTest`) i Python
 generátoru korpusu (`tools/invoice-generator/tests/test_checks.py`, jen
 kontroly, které `checks.py` umí; položka s `"python": false` je mimo
-Python). Jedna sada případů = jedna pravda pro obě implementace (D6).
+Python; sekci `format` čte jen PHP). Jedna sada případů = jedna pravda
+pro obě implementace (D6).
 
 ## Závislosti
 

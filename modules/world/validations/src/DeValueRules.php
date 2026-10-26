@@ -29,6 +29,16 @@ final class DeValueRules extends AbstractCountryValueRules
         return '0';
     }
 
+    /** `+4930123456` → `+49 30123456` — skupiny německých čísel závisí na předčíslí oblasti, národní číslo zůstává vcelku. */
+    public function formatPhone(string $phone): string
+    {
+        $prefix = '+' . $this->phonePrefix();
+        if (!str_starts_with($phone, $prefix) || preg_match('/^[0-9]+$/', substr($phone, strlen($prefix))) !== 1) {
+            return $phone;
+        }
+        return $prefix . ' ' . substr($phone, strlen($prefix));
+    }
+
     public function normalizeZip(string $zip): string
     {
         return (string) preg_replace('/\s+/u', '', trim($zip));

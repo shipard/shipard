@@ -23,6 +23,16 @@ abstract class CzSkValueRulesBase extends AbstractCountryValueRules
         return 9;
     }
 
+    /** `+420577123456` → `+420 577 123 456`; jiný tvar (jiný stát, jiná délka) beze změny. */
+    public function formatPhone(string $phone): string
+    {
+        $prefix = '+' . $this->phonePrefix();
+        if (!str_starts_with($phone, $prefix) || preg_match('/^[0-9]{9}$/', substr($phone, strlen($prefix))) !== 1) {
+            return $phone;
+        }
+        return $prefix . ' ' . implode(' ', str_split(substr($phone, strlen($prefix)), 3));
+    }
+
     public function normalizeZip(string $zip): string
     {
         return (string) preg_replace('/\s+/u', '', trim($zip));
@@ -31,6 +41,12 @@ abstract class CzSkValueRulesBase extends AbstractCountryValueRules
     public function isValidZip(string $zip): bool
     {
         return preg_match('/^[0-9]{5}$/', $zip) === 1;
+    }
+
+    /** `76001` → `760 01`; jiný tvar beze změny. */
+    public function formatZip(string $zip): string
+    {
+        return $this->isValidZip($zip) ? substr($zip, 0, 3) . ' ' . substr($zip, 3) : $zip;
     }
 
     /** Bez mezer; samé číslice do osmi míst doplní vedoucí nuly, jiný obsah zůstává. */

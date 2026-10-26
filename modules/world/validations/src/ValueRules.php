@@ -77,6 +77,35 @@ final class ValueRules
         };
     }
 
+    /**
+     * Čitelný tvar pro zobrazení (D21): nejdřív normalizace, pak PSČ cz / sk
+     * `760 01`, IBAN po čtveřicích, telefon cz / sk `+420 577 123 456`, de
+     * `+49 301234567`; ostatní druhy a nekanonický tvar = normalizovaná
+     * hodnota. Výstup se nikdy neukládá — uložený tvar je kanonický.
+     */
+    public static function format(string $kind, string $value, ?string $country = null): string
+    {
+        $normalized = self::normalize($kind, $value, $country);
+        $rules = ValueRulesRegistry::forCountry($country);
+        return match ($kind) {
+            self::ZIP => $rules->formatZip($normalized),
+            self::IBAN => Iban::format($normalized),
+            self::PHONE => $rules->formatPhone($normalized),
+            default => $normalized,
+        };
+    }
+
+    /**
+     * IBAN z tuzemského čísla účtu `[předčíslí-]číslo/kód` podle země (cz, sk);
+     * jiný tvar nebo stát bez tuzemského tvaru `null`. Platnost mod 11 se
+     * nevyžaduje — převod je čistě tvarový (QR platba, ISDOC, D23).
+     */
+    public static function ibanFromAccountNumber(string $accountNumber, string $country): ?string
+    {
+        $account = DomesticAccount::parse($accountNumber);
+        return $account !== null ? ValueRulesRegistry::forCountry($country)->ibanFromDomesticAccount($account) : null;
+    }
+
     private static function isValidAccountNumber(string $value, CountryValueRules $rules): bool
     {
         $account = DomesticAccount::parse($value);

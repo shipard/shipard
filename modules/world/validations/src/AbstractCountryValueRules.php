@@ -33,6 +33,11 @@ abstract class AbstractCountryValueRules implements CountryValueRules
         return null;
     }
 
+    public function formatPhone(string $phone): string
+    {
+        return $phone;
+    }
+
     public function normalizeZip(string $zip): string
     {
         return trim($zip);
@@ -41,6 +46,11 @@ abstract class AbstractCountryValueRules implements CountryValueRules
     public function isValidZip(string $zip): bool
     {
         return true;
+    }
+
+    public function formatZip(string $zip): string
+    {
+        return $zip;
     }
 
     public function normalizeCompanyId(string $companyId): string

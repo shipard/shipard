@@ -23,6 +23,13 @@ final class Iban
         return preg_match(self::SHAPE, $iban) === 1;
     }
 
+    /** Čitelný tvar po čtveřicích (`CZ65 0800 0000 1920 0014 5399`, D21); hodnota bez tvaru IBAN jen normalizovaná. */
+    public static function format(string $iban): string
+    {
+        $s = self::normalize($iban);
+        return self::hasShape($s) ? implode(' ', str_split($s, 4)) : $s;
+    }
+
     /** Země z prefixu normalizovaného IBAN malými; bez tvaru IBAN `null`. */
     public static function countryOf(string $iban): ?string
     {
