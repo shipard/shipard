@@ -983,6 +983,54 @@ class AnalysisResultWriterTest extends TestCase
         $this->assertNull($decoded['rows'][0]['item']['ourCode']);
     }
 
+    public function testValidateCanonicalNormalizesValuesBeforeEnrichment(): void
+    {
+        // #118 D2: tvary (IČO s mezerou, země velkými, telefon s mezerami) se
+        // sjednotí po schématu a před obohacením — enrichment (a pravidlo
+        // štítku podle IČO) už dostane normalizovanou stranu.
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->method('fetchAll')->willReturn([]);
+        $party = $this->createMock(PartyResolver::class);
+        $party->expects($this->atLeastOnce())->method('resolve')
+            ->with($this->callback(static fn(array $p): bool => $p['companyId'] === '12345678' && $p['country'] === 'cz'))
+            ->willReturn(ResolveResult::matched(42, 'companyId'));
+        $db = $this->createMock(DataSourceConnection::class);
+        $writer = $this->validatingWriter($db, enricher: new RowEnrichmentPipeline(
+            new RowHistoryEnricher($dibi, $party),
+            new ContentTagResolver($dibi),
+        ));
+        $canonical = $this->happyCanonical();
+        $canonical['supplier']['companyId'] = '123 456 78';
+
+        [$json, $valid] = $this->callValidate($writer, $canonical);
+
+        $this->assertTrue($valid);
+        $decoded = json_decode((string) $json, true);
+        $this->assertSame('12345678', $decoded['supplier']['companyId']);
+        $this->assertSame('cz', $decoded['supplier']['address']['country']);
+        $this->assertSame('+420123456789', $decoded['supplier']['contact']['phone']);
+    }
+
+    public function testValidateCanonicalRepairsIbanFromAccountNumber(): void
+    {
+        // Doklad 0701: IBAN s vloženou nulou, číslo účtu správně → opravený IBAN
+        // a auditní blok v canonical_json; syrový výstup zůstává v analysis_json.
+        $db = $this->createMock(DataSourceConnection::class);
+        $writer = $this->validatingWriter($db);
+        $canonical = $this->happyCanonical();
+        $canonical['supplier']['bankAccount'] = [
+            'accountNumber' => '8360405366/0600', 'iban' => 'CZ06 0600 0000 0008 3604 0536', 'bic' => null, 'currency' => 'CZK',
+        ];
+
+        [$json, $valid] = $this->callValidate($writer, $canonical);
+
+        $this->assertTrue($valid);
+        $decoded = json_decode((string) $json, true);
+        $this->assertSame('CZ0606000000008360405366', $decoded['supplier']['bankAccount']['iban']);
+        $this->assertSame('supplier.bankAccount.iban', $decoded['_resolve']['valueRepairs'][0]['path']);
+        $this->assertSame('accountNumber', $decoded['_resolve']['valueRepairs'][0]['basis']);
+    }
+
     // ── validateCanonical — registry target ─────────────────────────
     //
     // Registry canonical se validuje proti shpd.registry.document.v1

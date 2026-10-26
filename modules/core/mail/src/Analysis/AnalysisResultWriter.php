@@ -12,6 +12,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Core\Mail\AttentionKinds;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
@@ -478,6 +479,10 @@ class AnalysisResultWriter
         );
 
         if ($schemaIssues === []) {
+            // Tvary hodnot a oprava IBAN ↔ číslo účtu (#118 D2) — po schématu,
+            // před obohacením (pravidlo štítku hledá normalizované IČO).
+            // Syrový výstup modelu zůstává v analysis_json.
+            $extractedJson = CanonicalValueNormalizer::normalize($extractedJson);
             if ($this->enricher !== null) {
                 // Obohacení řádků — Vrstva 0 (historie) + obsahová eskalace
                 // (pravidlo IČO / LLM klasifikace, D16/D17) — do canonical_json

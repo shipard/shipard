@@ -4473,4 +4473,90 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(0, $data['vat_mode'], 'none zůstává — žádné samovyměření');
         $this->assertSame(2, $data['vat_place']);
     }
+
+    // ── Normalizace a validace hodnot (#118) ────────────────────────────────
+
+    /** Applier s resolvery dodavatele canCreate, položka a jednotka napárované (jako auto-create testy). */
+    private function valueRulesApplier(): DocumentApplier
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        return $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'],
+        );
+    }
+
+    public function testPreviewReturnsNormalizedCanonicalWithValueFindings(): void
+    {
+        // Happy fixture: země velkými, telefon s mezerami, IČO 12345678 bez platného součtu.
+        $result = $this->valueRulesApplier()->preview($this->happyPayload());
+
+        $this->assertTrue($result->success);
+        $this->assertSame('cz', $result->canonical['supplier']['country']);
+        $this->assertSame('cz', $result->canonical['supplier']['address']['country']);
+        $this->assertSame('+420123456789', $result->canonical['supplier']['contact']['phone']);
+        $issue = $this->issueByCode($result, 'company_id_invalid');
+        $this->assertNotNull($issue);
+        $this->assertSame(['warning', 'supplier.companyId'], [$issue['severity'], $issue['path']]);
+    }
+
+    public function testValueRepairsSurviveRepeatedPreviewWithoutDuplication(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['supplier']['bankAccount'] = [
+            'accountNumber' => '2308417557/2010', 'iban' => 'CZ8520100000002308417558', 'bic' => 'FIOBCZPP', 'currency' => 'CZK',
+        ];
+        $applier = $this->valueRulesApplier();
+
+        $preview = $applier->preview($payload);
+        $this->assertSame('CZ8520100000002308417557', $preview->canonical['supplier']['bankAccount']['iban']);
+        $this->assertSame([[
+            'path' => 'supplier.bankAccount.iban', 'from' => 'CZ8520100000002308417558',
+            'to' => 'CZ8520100000002308417557', 'basis' => 'accountNumber',
+        ]], $preview->canonical['_resolve']['valueRepairs']);
+        $this->assertNotNull($this->issueByCode($preview, 'bank_account_repaired'));
+        $this->assertNull($this->issueByCode($preview, 'iban_invalid'));
+
+        // Náhled nad výsledkem náhledu (klient vrací celý payload): blok zůstává, nezdvojí se.
+        $again = $applier->preview($preview->canonical);
+        $this->assertCount(1, $again->canonical['_resolve']['valueRepairs']);
+        $this->assertCount(1, array_keys($this->issueCodes($again), 'bank_account_repaired', true));
+
+        // /validate zachovává příchozí _resolve včetně bloku.
+        $validated = $applier->validate($preview->canonical);
+        $this->assertCount(1, $validated->canonical['_resolve']['valueRepairs']);
+    }
+
+    public function testValueRepairsSurviveApplyAndRepairedValuesReachTheHead(): void
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $persons = $this->createMock(TransactionlessTableGateway::class);
+        $persons->method('saveDocument')->willReturn(DocumentResult::ok(['id' => 99]));
+        $saved = null;
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturnCallback(static function (array $data) use (&$saved) {
+            $saved = $data;
+            return DocumentResult::ok(['id' => 1234]);
+        });
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('getInsertId')->willReturn(0);
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads, persons: $persons,
+        );
+
+        $payload = $this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'safe']);
+        $payload['supplier']['bankAccount'] = [
+            'accountNumber' => '2308417557/2010', 'iban' => 'CZ8520100000002308417558', 'bic' => 'FIOBCZPP', 'currency' => 'CZK',
+        ];
+        $result = $applier->apply($applier->preview($payload)->canonical);
+
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
+        $this->assertCount(1, $result->canonical['_resolve']['valueRepairs']);
+        $this->assertNotNull($this->issueByCode($result, 'bank_account_repaired'));
+        $this->assertSame('CZ8520100000002308417557', $saved['partner_bank_iban'] ?? null, 'na hlavičku jde opravený IBAN');
+    }
 }

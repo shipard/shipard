@@ -6,13 +6,15 @@ namespace Shipard\Module\Core\Mail;
 
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
 
 /**
  * Runtime resolver confidence pásem dokumentového návrhu: mapování
- * confidence na pásmo podle prahů profilu + strop D7 podle pokrytí řádků
- * položkami. Pásmo NENÍ perzistentní stav (D3 z mail-message-centric) —
- * počítá se za běhu; používá dashboard (kind karty), detail zprávy (badge)
- * a preview. Nikam se nezapisuje.
+ * confidence na pásmo podle prahů profilu + strop podle pokrytí řádků
+ * položkami (D7) a podle nálezů hodnot (#118 D15) — jedna metoda
+ * {@see capBand()} pro feed i detail zprávy. Pásmo NENÍ perzistentní stav
+ * (D3 z mail-message-centric) — počítá se za běhu; používá dashboard
+ * (kind karty), detail zprávy (badge) a preview. Nikam se nezapisuje.
  */
 class AnalysisConfidenceResolver
 {
@@ -95,10 +97,32 @@ class AnalysisConfidenceResolver
     }
 
     /**
-     * Strop pásma podle pokrytí řádků (D7): ready smí zůstat jen když má
-     * každý item řádek položku — z extrakce, nebo návrhem enrichmentu.
-     * Kontační řádky (acc.record) položku nemají validně, strop se jich
-     * netýká.
+     * Jediný strop pásma (D7 + #118 D15): `ready` smí zůstat, jen když je
+     * každý item řádek pokrytý položkou a validace hodnot canonicalu
+     * nevrátí žádný nález — nevalidní IČO, DIČ, PSČ, účet, IBAN, BIC ani
+     * oprava IBAN ↔ číslo účtu (`_resolve.valueRepairs` →
+     * `bank_account_repaired`). Nižší pásma se nemění.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public function capBand(string $band, array $canonical): string
+    {
+        if ($band !== self::BAND_READY) {
+            return $band;
+        }
+        if (!$this->rowsCoveredByItems($canonical)) {
+            return self::BAND_REVIEW;
+        }
+        if (CanonicalValueValidator::validate($canonical) !== []) {
+            return self::BAND_REVIEW;
+        }
+        return $band;
+    }
+
+    /**
+     * Pokrytí řádků (D7): každý item řádek má položku — z extrakce, nebo
+     * návrhem enrichmentu. Kontační řádky (acc.record) položku nemají
+     * validně, stropu se netýkají.
      *
      * Řádek doplněný enrichmentem s confidence `low` (dominantní položka
      * partnera, bez textového signálu) se jako pokrytý nepočítá — návrh
@@ -113,11 +137,8 @@ class AnalysisConfidenceResolver
      *
      * @param array<string, mixed> $canonical
      */
-    public function capBandByRowCoverage(string $band, array $canonical): string
+    private function rowsCoveredByItems(array $canonical): bool
     {
-        if ($band !== self::BAND_READY) {
-            return $band;
-        }
         $rows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
         $enrichments = $this->enrichmentsByRowIndex($canonical);
         foreach ($rows as $idx => $row) {
@@ -125,16 +146,16 @@ class AnalysisConfidenceResolver
                 continue;
             }
             if (trim((string) ($row['item']['ourCode'] ?? '')) === '') {
-                return self::BAND_REVIEW;
+                return false;
             }
             if (($enrichments[$idx]['confidence'] ?? null) === 'low') {
-                return self::BAND_REVIEW;
+                return false;
             }
             if (($enrichments[$idx]['matchedBy'] ?? null) === 'contentTag') {
-                return self::BAND_REVIEW;
+                return false;
             }
         }
-        return $band;
+        return true;
     }
 
     /**
@@ -150,7 +171,7 @@ class AnalysisConfidenceResolver
             ? $this->thresholdsForProfile($profileNdx)
             : $this->thresholdsForDefaultProfile();
         $band = $this->bandFor($confidence ?? 0.0, $thresholds);
-        return $this->capBandByRowCoverage($band, $canonical);
+        return $this->capBand($band, $canonical);
     }
 
     /**

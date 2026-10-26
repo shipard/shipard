@@ -107,7 +107,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
             ),
@@ -122,7 +122,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
             ),
@@ -137,7 +137,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
             ),
@@ -148,7 +148,7 @@ class AnalysisConfidenceResolverTest extends TestCase
     {
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_LOW,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_LOW,
                 ['rows' => [['rowKind' => 'item', 'item' => []]]],
             ),
@@ -175,7 +175,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
             ),
@@ -214,7 +214,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
             ),
@@ -243,11 +243,64 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBandByRowCoverage(
+            $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
             ),
         );
+    }
+
+    // ── strop D15: nálezy hodnot (#118) ─────────────────────────────────────
+
+    public function testCapDowngradesReadyOnValueFinding(): void
+    {
+        // IČO s neplatným kontrolním součtem → nález validátoru hodnot → review.
+        $canonical = ['supplier' => ['country' => 'cz', 'companyId' => '12345678']];
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_REVIEW,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical),
+        );
+    }
+
+    public function testCapDowngradesReadyOnValueRepair(): void
+    {
+        // Opravený IBAN je validní, ale auditní blok dává bank_account_repaired → review.
+        $canonical = [
+            'supplier' => ['country' => 'cz', 'bankAccount' => ['accountNumber' => '8360405366/0600', 'iban' => 'CZ0606000000008360405366']],
+            '_resolve' => ['valueRepairs' => [[
+                'path' => 'supplier.bankAccount.iban', 'from' => 'CZ0606000000000836040536',
+                'to' => 'CZ0606000000008360405366', 'basis' => 'accountNumber',
+            ]]],
+        ];
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_REVIEW,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical),
+        );
+    }
+
+    public function testCapKeepsReadyForPrintShapesWithoutFinding(): void
+    {
+        // Persistovaná analýza z doby před normalizací: mezery nejsou nález.
+        $canonical = ['supplier' => [
+            'country' => 'CZ', 'companyId' => '526 541 50', 'vatId' => 'cz 5265 4150',
+            'address' => ['zip' => '779 00'],
+            'bankAccount' => ['accountNumber' => '2308417557/2010', 'iban' => 'CZ85 2010 0000 0023 0841 7557'],
+        ]];
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_READY,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical),
+        );
+    }
+
+    public function testCapLeavesLowerBandsAlone(): void
+    {
+        $canonical = ['supplier' => ['country' => 'cz', 'companyId' => '12345678']];
+
+        $this->assertSame(AnalysisConfidenceResolver::BAND_REVIEW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_REVIEW, $canonical));
+        $this->assertSame(AnalysisConfidenceResolver::BAND_LOW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_LOW, $canonical));
     }
 
     // ── bandForAnalysis (convenience) ───────────────────────────────────────

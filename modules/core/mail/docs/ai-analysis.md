@@ -558,14 +558,18 @@ i pro nenapárované a přeskočené řádky:
 }
 ```
 
-**Strop pásma (D7):** `AnalysisConfidenceResolver::capBandByRowCoverage`
-sníží runtime pásmo `ready` na `review`, pokud po enrichmentu existuje
-item řádek bez `item.ourCode`, **nebo** řádek doplněný enrichmentem
-s confidence `low` (dominance nemá textový signál — uživatel návrh
-potvrzuje, viz `tasks/enrichment-dominant-item.md` D5). Kontační řádky
-(`acc.record` / `accSide`) položku nemají validně — stropu se netýkají.
-Strop se počítá za běhu při každém čtení (feed, detail, preview) — nic
-se nepersistuje.
+**Strop pásma (D7, #118 D15):** `AnalysisConfidenceResolver::capBand`
+— jediná metoda stropu pro feed i detail zprávy — sníží runtime pásmo
+`ready` na `review`, pokud po enrichmentu existuje item řádek bez
+`item.ourCode`, **nebo** řádek doplněný enrichmentem s confidence `low`
+(dominance nemá textový signál — uživatel návrh potvrzuje, viz
+`tasks/enrichment-dominant-item.md` D5), **nebo** validace hodnot
+canonicalu (`CanonicalValueValidator`, `docs/exchange-format.md` →
+Normalizace a validace hodnot) vrátí nález — nevalidní IČO, DIČ, PSČ,
+číslo účtu, IBAN, BIC, nebo IBAN ↔ číslo účtu opravený z redundance
+(`_resolve.valueRepairs`). Kontační řádky (`acc.record` / `accSide`)
+položku nemají validně — stropu se netýkají. Strop se počítá za běhu při
+každém čtení (feed, detail, preview) — nic se nepersistuje.
 
 **Zpětný zápis supplier codes (D8):** `SupplierCodeCaptureHandler`
 (registrace `documentEventHandlers` v module.jsonc) při přechodu dokladu

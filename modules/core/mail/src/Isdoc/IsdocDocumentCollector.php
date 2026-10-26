@@ -9,6 +9,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocParseException;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Core\Mail\IsdocImportService;
 
 /**
@@ -79,6 +80,8 @@ class IsdocDocumentCollector
                     if (!$this->passesSchema($messageNdx, $file, $canonical)) {
                         return null;
                     }
+                    // Tvary hodnot (#118 D2) — po schématu, před dedupem identitou.
+                    $canonical = CanonicalValueNormalizer::normalize($canonical);
                     $candidates[] = [
                         'canonical' => $canonical,
                         'attachmentId' => (int) ($file['id'] ?? 0),
@@ -100,6 +103,7 @@ class IsdocDocumentCollector
                     if (!$this->passesSchema($messageNdx, $file, $canonical)) {
                         continue; // vadný embedded → ignor, pokračuje se zbytkem
                     }
+                    $canonical = CanonicalValueNormalizer::normalize($canonical);
                     $candidates[] = [
                         'canonical' => $canonical,
                         'attachmentId' => (int) ($file['id'] ?? 0),

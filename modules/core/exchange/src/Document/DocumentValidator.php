@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Document;
 
 use Shipard\Core\Accounting\JournalDimensionSet;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
 use Shipard\Module\Docs\Core\RoundingModes;
 
 /**
@@ -50,6 +51,11 @@ final class DocumentValidator
         $this->checkParkingStateRequiresImport($canonical, $issues);
         $this->checkReplaceConceptOptions($canonical, $issues);
         $this->checkDimensions($canonical, $issues);
+        // Tvar a platnost IČO, DIČ, PSČ, účtu, IBAN a BIC stran + opravy
+        // z redundance (#118 D13, D14) — vše warning, apply neblokuje.
+        foreach (CanonicalValueValidator::validate($canonical) as $issue) {
+            $issues[] = $issue;
+        }
 
         return $issues;
     }

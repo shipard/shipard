@@ -36,6 +36,7 @@ use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRate;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\World\Trade\TradeUnionResolver;
@@ -325,6 +326,8 @@ class DocumentApplier
             );
         }
 
+        // Tvary hodnot a oprava IBAN ↔ číslo účtu (#118 D2) — po schématu, před DocumentValidator.
+        $canonical = CanonicalValueNormalizer::normalize($canonical);
         $validatorIssues = $this->documentValidator->validate($canonical);
         $this->appendAuthorIssue($canonical, $validatorIssues);
         $enriched = $this->withResolveIssues($canonical, $validatorIssues);
@@ -356,6 +359,10 @@ class DocumentApplier
                 statusCode: 400,
             );
         }
+
+        // 1b. Tvary hodnot a oprava IBAN ↔ číslo účtu (#118 D2) — náhled vrací
+        //     normalizovaný canonical; `_resolve.valueRepairs` přenáší withResolve().
+        $canonical = CanonicalValueNormalizer::normalize($canonical);
 
         // 2. Semantic checks + resolve. Both contribute to _resolve.issues.
         //    Vynechané řádky (#111 D9, D12) z klientského _resolve jednou pro
@@ -602,6 +609,9 @@ class DocumentApplier
                 statusCode: 400,
             );
         }
+        // Tvary hodnot a oprava IBAN ↔ číslo účtu (#118 D2) — i v importním módu;
+        // na hlavičku i do založených účtů jdou normalizované hodnoty.
+        $canonical = CanonicalValueNormalizer::normalize($canonical);
         $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         // Vynechané řádky (#111 D9, D12) — tentýž seznam pro důvod přepočtu
         // rekapitulace i pro plán.
@@ -4365,6 +4375,12 @@ class DocumentApplier
                 $canonical['_resolve']['rows'] ?? null,
                 $resolve['rows'],
             );
+        }
+        // Auditní blok oprav hodnot (#118 D14) — zapsal ho normalizátor při
+        // /result nebo v tomto volání; čerstvý resolve ho nezná, přenáší se.
+        $repairs = $canonical['_resolve'][CanonicalValueNormalizer::REPAIRS_KEY] ?? null;
+        if (is_array($repairs) && $repairs !== []) {
+            $resolve[CanonicalValueNormalizer::REPAIRS_KEY] = $repairs;
         }
         $canonical['_resolve'] = $resolve;
         return $canonical;

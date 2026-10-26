@@ -420,6 +420,23 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame(['review', 'reject'], array_column($cards[0]['actions'], 'id'));
     }
 
+    public function testValueFindingCapsReadyToReview(): void
+    {
+        // #118 D15: IBAN dodavatele s chybnou kontrolní číslicí → strop na review
+        // i ve feedu (tatáž metoda stropu jako v detailu zprávy).
+        $row = $this->suggestionRow(0.95);
+        $canonical = json_decode((string) $row['canonical_json'], true);
+        $canonical['supplier']['country'] = 'cz';
+        $canonical['supplier']['bankAccount'] = ['accountNumber' => null, 'iban' => 'CZ8520100000002308417558'];
+        $row['canonical_json'] = json_encode($canonical);
+
+        $src = new MailSuggestionsSource();
+        $cards = $src->collectCards($this->context([$row], [], $this->primaryTypesConfig()));
+
+        $this->assertSame('review', $cards[0]['kind']);
+        $this->assertSame(['review', 'reject'], array_column($cards[0]['actions'], 'id'));
+    }
+
     public function testProfileThresholdsAreUsedForBand(): void
     {
         // Běh s profilem 17 (ready práh 0.8) → 0.85 stačí na ready.

@@ -177,6 +177,26 @@ final class IsdocDocumentCollectorTest extends TestCase
         $this->assertSame(501, $document['attachmentId']);
     }
 
+    public function testDedupMergesCandidatesWithSpacedIdentifiers(): void
+    {
+        // #118 D2: normalizace před dedupem — bez UUID se identita skládá z čísla
+        // dokladu, DIČ / IČ a data; tatáž faktura s IČO zapsaným s mezerou je jedna.
+        $a = $this->parsedCanonical('invoice_min.isdoc');
+        unset($a['source']['raw']['uuid']);
+        $b = $a;
+        foreach (['taxId', 'vatId', 'companyId'] as $key) {
+            if (is_string($b['supplier'][$key] ?? null)) {
+                $b['supplier'][$key] = strtolower(wordwrap($b['supplier'][$key], 3, ' ', true));
+            }
+        }
+        $files = [$this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf')];
+
+        $document = $this->collectorWithEmbedded([$a, $b])->collect(self::MESSAGE_NDX, $files);
+
+        $this->assertNotNull($document, 'odlišný zápis téže identity nesmí větev vzdát');
+        $this->assertSame($a['supplier']['companyId'], $document['canonical']['supplier']['companyId']);
+    }
+
     public function testEmbeddedFailingSchemaIsIgnored(): void
     {
         $broken = $this->parsedCanonical('invoice_min.isdoc');

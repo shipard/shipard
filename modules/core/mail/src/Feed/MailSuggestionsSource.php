@@ -178,7 +178,7 @@ final class MailSuggestionsSource implements FeedSource
                     ? $resolver->thresholdsForProfile($profileKey)
                     : $resolver->thresholdsForDefaultProfile();
             }
-            $band = $resolver->capBandByRowCoverage(
+            $band = $resolver->capBand(
                 $resolver->bandFor((float) ($row['confidence'] ?? 0.0), $thresholdsByProfile[$profileKey]),
                 $canonical,
             );

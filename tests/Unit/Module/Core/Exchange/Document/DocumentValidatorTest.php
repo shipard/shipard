@@ -989,4 +989,25 @@ class DocumentValidatorTest extends TestCase
         }
         return null;
     }
+
+    public function testValueFindingsAreAppended(): void
+    {
+        // #118 D13: čistý validátor hodnot běží z DocumentValidator — warning na cestě pole.
+        $issues = $this->v->validate([
+            'docType' => 'invoiceReceived',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'supplier' => [
+                'name' => 'X', 'country' => 'cz', 'companyId' => '52654150',
+                'bankAccount' => ['accountNumber' => null, 'iban' => 'CZ8520100000002308417558'],
+            ],
+            'rows' => [['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 100, 'totalPrice' => 100]],
+            'totals' => ['totalAmount' => 100],
+        ]);
+
+        $iban = $this->findByCode($issues, 'iban_invalid');
+        $this->assertNotNull($iban);
+        $this->assertSame('warning', $iban['severity']);
+        $this->assertSame('supplier.bankAccount.iban', $iban['path']);
+        $this->assertNull($this->findByCode($issues, 'company_id_invalid'));
+    }
 }
