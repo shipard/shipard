@@ -72,6 +72,8 @@ export default {
   'metrics.group.rowExceptions': 'Výjimky štítků řádků',
   'metrics.group.classification': 'Klasifikace zprávy',
   'metrics.group.all': 'Celkem',
+  'metrics.group.informative': 'Informativní pole',
+
   'metrics.metric.documents.clean': 'Doklady bez odchylky',
   'metrics.metric.documents.amountsCorrect': 'Správné částky',
   'metrics.metric.documents.rowCountOk': 'Správný počet řádků',
@@ -130,6 +132,9 @@ export default {
   'testing.run.otherSetVersion': 'jiná verze sady',
   'testing.run.otherSetVersionTitle': 'Běh vznikl nad starší verzí sady — očekávání se od té doby mohlo změnit',
   'testing.run.selection': 'výběr:',
+  'testing.run.metricsV1': 'metriky v1',
+  'testing.run.metricsV1Title': 'Starší běh: informativní uzly projekce (poznámka na dokladu) se počítaly do shody polí a odchylek',
+
   'testing.pdf.title': 'PDF zprávy',
   'testing.pdf.none': 'Zpráva nemá přílohu PDF.',
   'testing.pdf.openWindow': 'otevřít v novém okně',
@@ -431,6 +436,11 @@ export default {
   'testing.runDetail.acrossRuns': 'napříč běhy',
   'testing.runDetail.col.deviationsSum': 'Odchylek Σ',
   'testing.runDetail.col.costSum': 'Cena Σ',
+  'testing.runDetail.informative': 'Informativní pole',
+  'testing.runDetail.informativeNote': 'Informativní uzly projekce se porovnávají, ale nepočítají do shody polí ani do dokladů bez odchylky. Seznam: počet úspěšných volání s odchylkou na uzlu a podíl z nich.',
+  'testing.runDetail.informativeV1': 'Starší běh (metriky v1): informativní uzly se počítaly do shody polí a odchylek — jsou v tabulce skupin a v nejčastějších odchylkách.',
+  'testing.runDetail.informativeNone': 'Projekce sady nemá žádný informativní uzel.',
+
   'testing.message.arrayMore': '{label}: očekáváno {expected}, výstup {actual} prvků — prvky výstupu navíc se do souboru běhu neukládají, v tabulce nejsou.',
   'testing.message.arrayFewer': '{label}: očekáváno {expected}, výstup {actual} prvků — prvky očekávání nad počet výstupu se neporovnávaly.',
   'testing.message.variantForm': 'varianta {variant} · podoba {form}',
@@ -449,6 +459,8 @@ export default {
   'testing.message.facts.states': 'stavy',
   'testing.message.counts': '{match} shod · {normalized} po norm. · {missing} chybí · {extra} navíc · {wrong} špatně',
   'testing.message.countsNotCarried': ' · {n} nenese',
+  'testing.message.countsInformative': ' · {n, plural, one {# informativní odchylka} few {# informativní odchylky} other {# informativních odchylek}}',
+
   'testing.message.olderSet': 'Běh vznikl nad starší verzí sady — očekávání níže jsou z aktuální sady a mohou se od tehdejších lišit (počty stavů pak nesedí se souborem běhu).',
   'testing.message.countsMismatch': 'Počty stavů z rekonstrukce ({counts}) nesedí s počty v souboru běhu ({fileCounts}) — rekonstrukce tohoto volání není úplná, nahlas to.',
   'testing.message.callFailedAlert': 'Volání selhalo ({type}){note}. Výstup není — každé neprázdné pole očekávání chybí.',
@@ -459,6 +471,8 @@ export default {
   'testing.compare.crumb': 'Porovnání',
   'testing.compare.title': 'Porovnání běhů',
   'testing.compare.differentSelection': 'Běhy mají jiný výběr zpráv (--only / --limit) — porovnávej s rezervou.',
+  'testing.compare.differentMetricsVersion': 'Běhy mají různou verzi metrik (A v{a}, B v{b}). Od v2 se informativní uzly projekce (poznámka na dokladu) nepočítají do shody polí ani do dokladů bez odchylky — rozdíly v těchto metrikách a u informativních uzlů porovnávej s rezervou.',
+
   'testing.compare.perRepetitionNote': 'Součty (volání, tokeny, cena, čas, počty polí) jsou přepočtené na jedno opakování. „V rámci šumu“ = rozdíl nepřesahuje největší rozpětí opakování některého z běhů.',
   'testing.compare.metrics': 'Metriky',
   'testing.compare.all': 'všechny ({n})',
@@ -673,6 +687,9 @@ export default {
   'testing.fields.countWrong': '{n} špatně',
   'testing.fields.countNormalized': '{n} po norm.',
   'testing.fields.countNotCarried': '{n} nenese',
+  'testing.fields.informative': 'informativní',
+  'testing.fields.informativeTitle': 'Informativní uzly projekce: porovnávají se, ale nepočítají do shody polí ani do dokladů bez odchylky',
+
   'testing.fields.noDeviations': 'Bez odchylek ({hidden} shod skryto).',
   'testing.fields.col.field': 'Pole',
   'testing.fields.col.expected': 'Očekáváno',

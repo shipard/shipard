@@ -16,7 +16,16 @@ final class EvalFieldGroups
 
     public const array GROUPS = ['header', 'supplier', 'customer', 'vat', 'rows', 'vatRecap', 'totals', 'tag', 'rowExceptions', 'classification'];
 
+    /**
+     * Kyblík informativních listů (#103 D114) — není skupina v {@see GROUPS}
+     * (list patří do kyblíku podle značky `FieldOutcome::$informative`
+     * z projekce, ne podle cesty): metriky `fields.informative.*`
+     * a vlastní skupina v detailu zprávy prohlížeče.
+     */
+    public const string INFORMATIVE_GROUP = 'informative';
+
     private const array LABELS = [
+
         'header' => 'Hlavička',
         'supplier' => 'Dodavatel',
         'customer' => 'Odběratel',
@@ -27,7 +36,9 @@ final class EvalFieldGroups
         'tag' => 'Štítek dokladu',
         'rowExceptions' => 'Výjimky štítků řádků',
         'classification' => 'Klasifikace zprávy',
+        self::INFORMATIVE_GROUP => 'Informativní pole',
     ];
+
 
     /** Uzly, jejichž shoda znamená „správné částky“ (D37). */
     public const array AMOUNT_NODES = ['rows[].totalPrice', 'vatRecap', 'totals'];

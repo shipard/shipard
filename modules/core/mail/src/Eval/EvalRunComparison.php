@@ -34,7 +34,9 @@ final class EvalRunComparison
         'fields.all.hit', 'fields.all.normalized',
         'fields.header.hit', 'fields.supplier.hit', 'fields.customer.hit', 'fields.vat.hit', 'fields.rows.hit',
         'fields.vatRecap.hit', 'fields.totals.hit', 'fields.tag.hit', 'fields.rowExceptions.hit', 'fields.classification.hit',
-        'documents.clean', 'documents.amountsCorrect', 'documents.rowCountOk', 'documents.classificationOk', 'documents.tagOk',
+        'fields.informative.hit',
+        'documents.clean',
+ 'documents.amountsCorrect', 'documents.rowCountOk', 'documents.classificationOk', 'documents.tagOk',
         'calls.total', 'calls.ok', 'calls.failed',
         'cost.usd', 'cost.perDocument', 'cost.totalUsd', 'cost.totalPerDocument', 'tags.usd', 'tags.calls',
         'tokens.input', 'tokens.output', 'tokens.inputPerDocument', 'tokens.outputPerDocument',
@@ -80,11 +82,15 @@ final class EvalRunComparison
      *     runs: array{a: array<string, mixed>, b: array<string, mixed>},
      *     metrics: list<array{key: string, a: int|float|null, b: int|float|null, delta: int|float|null, noise: ?float, withinNoise: bool, better: ?bool, perRepetition: bool}>,
      *     fields: array{basis: string, threshold: float, improved: list<array{node: string, a: int|float, b: int|float, delta: float}>, worsened: list<array{node: string, a: int|float, b: int|float, delta: float}>},
-     *     sameSelection: bool
+     *     sameSelection: bool,
+     *     metricsVersions: array{a: int, b: int},
+     *     sameMetricsVersion: bool,
+     *     messages: list<array<string, mixed>>
      * }
      */
     public function toArray(): array
     {
+
         $metricsA = (array) ($this->a['metrics'] ?? []);
         $metricsB = (array) ($this->b['metrics'] ?? []);
         $rangeA = (array) ($this->a['range'] ?? []);
@@ -159,9 +165,20 @@ final class EvalRunComparison
             'sameSelection' => ($this->a['set']['messages'] ?? null) === ($this->b['set']['messages'] ?? null)
                 && ($this->a['set']['only'] ?? []) === ($this->b['set']['only'] ?? [])
                 && ($this->a['set']['limit'] ?? null) === ($this->b['set']['limit'] ?? null),
+            // Verze metrik (#103 D114): od 2 jsou informativní listy mimo shodu polí a čisté doklady,
+            // běh bez klíče je 1 — rozdíl těchto metrik mezi verzemi není souměřitelný.
+            'metricsVersions' => ['a' => self::metricsVersionOf($this->a), 'b' => self::metricsVersionOf($this->b)],
+            'sameMetricsVersion' => self::metricsVersionOf($this->a) === self::metricsVersionOf($this->b),
             'messages' => self::perMessage($this->a, $this->b),
         ];
     }
+
+    /** @param array<string, mixed> $run */
+    private static function metricsVersionOf(array $run): int
+    {
+        return max(1, (int) ($run['metricsVersion'] ?? 1));
+    }
+
 
     /**
      * Doklady vedle sebe (#103 D53, prohlížeč výsledků): per `messageId`
@@ -243,6 +260,13 @@ final class EvalRunComparison
         if (!$c['sameSelection']) {
             $lines[] = '<comment>Běhy mají jiný výběr zpráv (--only / --limit) — porovnávej s rezervou.</comment>';
         }
+        if (!$c['sameMetricsVersion']) {
+            $lines[] = sprintf(
+                '<comment>Běhy mají různou verzi metrik (A v%d, B v%d): od v2 jsou informativní pole (poznámka na dokladu) mimo shodu polí a doklady bez odchylky — tyhle metriky a změny informativních uzlů porovnávej s rezervou.</comment>',
+                $c['metricsVersions']['a'], $c['metricsVersions']['b'],
+            );
+        }
+
         if (max($c['runs']['a']['repeat'], $c['runs']['b']['repeat']) > 1) {
             $lines[] = '  Součty (volání, tokeny, cena, čas, počty polí) jsou přepočtené na jedno opakování.';
         }

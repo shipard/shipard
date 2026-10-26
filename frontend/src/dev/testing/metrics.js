@@ -10,6 +10,14 @@ import { t, has, label } from '../i18n/index.js';
 /** Skupiny polí v pořadí EvalFieldGroups + Celkem; popisky `metrics.group.*`. */
 export const FIELD_GROUP_IDS = ['header', 'supplier', 'customer', 'vat', 'rows', 'vatRecap', 'totals', 'tag', 'rowExceptions', 'classification', 'all'];
 
+/**
+ * Kyblík informativních polí (#103 D114, běh s metricsVersion ≥ 2): mimo
+ * tabulku skupin i Celkem — vlastní karta (`informativeMetricRow`) a
+ * vlastní skupina v detailu zprávy.
+ */
+export const INFORMATIVE_GROUP_ID = 'informative';
+
+
 /** Metriky dokladů a metriky volání / ceny / času v pořadí zobrazení; popisky `metrics.metric.*`. */
 export const DOCUMENT_METRICS = ['documents.clean', 'documents.amountsCorrect', 'documents.rowCountOk', 'documents.classificationOk', 'documents.tagOk'];
 
@@ -98,17 +106,28 @@ export function fieldMetricRows(metrics, range) {
   const r = range ?? {};
   return FIELD_GROUP_IDS
     .filter((id) => metrics[`fields.${id}.n`] !== undefined || metrics[`fields.${id}.hit`] !== undefined)
-    .map((id) => ({
-      id,
-      label: fieldGroupLabel(id),
-      n: metrics[`fields.${id}.n`] ?? null,
-      hit: { avg: metrics[`fields.${id}.hit`] ?? null, min: r[`fields.${id}.hit`]?.min ?? null, max: r[`fields.${id}.hit`]?.max ?? null },
-      normalized: metrics[`fields.${id}.normalized`] ?? null,
-      missing: metrics[`fields.${id}.missing`] ?? null,
-      extra: metrics[`fields.${id}.extra`] ?? null,
-      wrong: metrics[`fields.${id}.wrong`] ?? null,
-    }));
+    .map((id) => fieldRow(id, metrics, r));
 }
+
+/** Řádek informativních polí (#103 D114); `null` = běh bez `fields.informative.*` (metriky v1). */
+export function informativeMetricRow(metrics, range) {
+  if (metrics[`fields.${INFORMATIVE_GROUP_ID}.n`] === undefined) return null;
+  return fieldRow(INFORMATIVE_GROUP_ID, metrics, range ?? {});
+}
+
+function fieldRow(id, metrics, r) {
+  return {
+    id,
+    label: fieldGroupLabel(id),
+    n: metrics[`fields.${id}.n`] ?? null,
+    hit: { avg: metrics[`fields.${id}.hit`] ?? null, min: r[`fields.${id}.hit`]?.min ?? null, max: r[`fields.${id}.hit`]?.max ?? null },
+    normalized: metrics[`fields.${id}.normalized`] ?? null,
+    missing: metrics[`fields.${id}.missing`] ?? null,
+    extra: metrics[`fields.${id}.extra`] ?? null,
+    wrong: metrics[`fields.${id}.wrong`] ?? null,
+  };
+}
+
 
 /** Řádky metrik s rozpětím pro dané klíče (doklady, cena a čas). */
 export function metricRows(keys, metrics, range) {

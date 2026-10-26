@@ -123,14 +123,16 @@
           {/if}
           <span><span class="dev-muted">{t('testing.message.facts.time')}</span> {formatMs(d.durationMs)}</span>
           <span><span class="dev-muted">{t('testing.message.facts.classification')}</span> <ValueCell value={d.classification?.expected} muted /> → <ValueCell value={d.classification?.actual} /> <StateBadge state={d.classification?.state} /></span>
-          <span><span class="dev-muted">{t('testing.message.facts.states')}</span> {t('testing.message.counts', { match: d.counts.match, normalized: d.counts.matchNormalized, missing: d.counts.missing, extra: d.counts.extra, wrong: d.counts.wrong })}{#if d.counts.notCarried}{t('testing.message.countsNotCarried', { n: d.counts.notCarried })}{/if}</span>
+          <span><span class="dev-muted">{t('testing.message.facts.states')}</span> {t('testing.message.counts', { match: d.counts.match, normalized: d.counts.matchNormalized, missing: d.counts.missing, extra: d.counts.extra, wrong: d.counts.wrong })}{#if d.counts.notCarried}{t('testing.message.countsNotCarried', { n: d.counts.notCarried })}{/if}{#if (d.run?.metricsVersion ?? 1) >= 2 && d.informativeCounts}{t('testing.message.countsInformative', { n: d.informativeCounts.missing + d.informativeCounts.extra + d.informativeCounts.wrong })}{/if}</span>
+
         </div>
       {/each}
     </div>
     {#if !detail.currentSet}
       <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.message.olderSet')}</span></div>
     {:else if detail.countsMatch === false}
-      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.message.countsMismatch', { counts: JSON.stringify(detail.counts), fileCounts: JSON.stringify(detail.fileCounts) })}</span></div>
+      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.message.countsMismatch', { counts: JSON.stringify({ ...detail.counts, informative: detail.informativeCounts }), fileCounts: JSON.stringify({ ...detail.fileCounts, informative: detail.fileInformativeCounts }) })}</span></div>
+
     {/if}
     {#if detail.status !== 'ok'}
       <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{t('testing.message.callFailedAlert', { type: detail.errorType ?? '?', note: detail.note ? `: ${detail.note}` : '' })}</span></div>

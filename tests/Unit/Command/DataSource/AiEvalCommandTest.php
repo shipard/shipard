@@ -426,7 +426,17 @@ final class AiEvalCommandTest extends TestCase
         $this->assertFileExists($file);
         $run = json_decode((string) file_get_contents($file), true);
         $this->assertSame('shpd.eval.run.v1', $run['format']);
+        $this->assertSame(2, $run['metricsVersion'], 'informativní uzly mimo shodu polí (#103 D114)');
+        $this->assertSame(['format', 'metricsVersion', 'set'], array_slice(array_keys($run), 0, 3));
+        $this->assertSame([], $run['informativeByField'], 'poznámka beze změny');
+        $this->assertSame(2, $run['metrics']['fields.informative.n'], 'notes.onDocument × 2 opakování');
+        $this->assertSame(1.0, $run['metrics']['fields.informative.hit']);
+        $this->assertSame(['match' => 1, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0], $run['calls'][0]['informativeCounts']);
+        $this->assertSame([], $run['calls'][1]['informativeDeviations']);
+        $this->assertStringContainsString('Informativní pole (mimo shodu polí a doklady bez odchylky): 100,0 %', $display);
+
         $this->assertSame('cz-vat-payer', $run['set']['name']);
+
         $this->assertSame(1, $run['set']['messages']);
         $this->assertSame(20, $run['set']['messagesInSet']);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $run['set']['hash']);

@@ -115,7 +115,10 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertArrayNotHasKey('_file', $data['run']);
 		$this->assertSame('shpd.eval.run.v1', $data['run']['format']);
 		$this->assertArrayHasKey('deviationsByField', $data['run']);
+		$this->assertArrayNotHasKey('metricsVersion', $data['run'], 'běh před D114');
+		$this->assertSame(1, $data['summary']['metricsVersion']);
 		$this->assertSame(self::RUN, $data['summary']['file']);
+
 		$this->assertCount(20, $data['messages']);
 		$first = array_values(array_filter($data['messages'], static fn (array $m): bool => $m['messageId'] === self::MSG))[0];
 		$this->assertSame('domestic-rounding', $first['variant']);
@@ -138,7 +141,11 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertFalse($data['currentSet'], 'běh z 16. 10. je nad sadou před #119 krokem 1');
 		$this->assertTrue($data['hasPdf']);
 		$this->assertSame(self::RUN, $data['run']['file']);
-		$this->assertCount(10, $data['groups']);
+		$this->assertCount(11, $data['groups'], '10 skupin + informativní (#103 D114)');
+		$this->assertSame(1, $data['run']['metricsVersion']);
+		$this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0], $data['informativeCounts']);
+		$this->assertNull($data['fileInformativeCounts']);
+
 
 		$default = $this->data('/_dev/api/testing/runs/' . self::SET . '/' . self::RUN . '/messages/' . self::MSG);
 		$this->assertSame(1, $default['repeat'], 'bez ?repeat= první opakování');
@@ -177,6 +184,9 @@ final class DevTestingControllerTest extends TestCase
 		$this->assertNotEmpty($cmp['metrics']);
 		$this->assertCount(20, $cmp['messages'], 'doklady vedle sebe');
 		$this->assertSame(['messageId', 'a', 'b', 'delta'], array_keys($cmp['messages'][0]));
+		$this->assertSame(['a' => 1, 'b' => 1], $cmp['metricsVersions']);
+		$this->assertTrue($cmp['sameMetricsVersion']);
+
 
 		$resp = $this->get('/_dev/api/testing/compare/' . self::SET . '?a=' . self::RUN . '&b=' . self::OLD_RUN);
 		$this->assertSame(409, $this->statusOf($resp));

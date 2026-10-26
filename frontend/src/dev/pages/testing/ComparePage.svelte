@@ -65,6 +65,10 @@
     {#if !data.sameSelection}
       <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.compare.differentSelection')}</span></div>
     {/if}
+    {#if data.sameMetricsVersion === false}
+      <div class="dev-alert dev-alert--warning"><span class="dev-alert__text">{t('testing.compare.differentMetricsVersion', { a: data.metricsVersions.a, b: data.metricsVersions.b })}</span></div>
+    {/if}
+
     {#if Math.max(data.summaries.a.repeat, data.summaries.b.repeat) > 1}
       <p class="dev-small dev-muted note">{t('testing.compare.perRepetitionNote')}</p>
     {/if}

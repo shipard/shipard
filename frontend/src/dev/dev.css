@@ -609,6 +609,8 @@ code, .dev-code {
 .dev-state--neutral { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
 /* Pole, které zdroj výstupu nenese (cesta ISDOC, #103 D76) — ani shoda, ani odchylka. */
 .dev-state--notCarried { background: var(--shpd-color-state-archive-bg); color: var(--shpd-color-state-archive-text); font-style: italic; }
+.dev-state--informative { background: var(--shpd-color-state-archive-bg); color: var(--shpd-color-state-archive-text); }
+
 
 /* Dvousloupcový detail (PDF | pole) */
 .dev-split {

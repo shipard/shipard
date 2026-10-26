@@ -12,7 +12,13 @@ use Shipard\Core\Utils\JsoncParser;
  * soubor čte generátor korpusu (`invoicegen/expected.py`), strážce
  * `CorpusExpectedTest` a porovnávač (#103 D27).
  *
+ * `nullableNodes` = uzly, které smí být `null` jako celek;
+ * `informativeNodes` = uzly (i s potomky), které evaluace AI porovnává
+ * a vykazuje zvlášť, ale nezapočítává do shody polí ani čistých dokladů
+ * (#103 D114, {@see isInformativeNode()}).
+ *
  * Čtení (dispatch jen podle typu JSON, pořadí klíčů je významné):
+
  *   objekt bez `$ref`     strom klíčů — očekávání má přesně tyto klíče
  *   `{ "$ref": "Party" }` odkaz do `$defs`
  *   `[ uzel ]`            pole; každý prvek proti uzlu
@@ -35,13 +41,16 @@ final class Projection
      * @param array<string, mixed>   $defs
      * @param array<string, array<string, mixed>> $shapes
      * @param list<string>           $nullableNodes
+     * @param list<string>           $informativeNodes
      */
     private function __construct(
         private readonly array $document,
         private readonly array $defs,
         private readonly array $shapes,
         private readonly array $nullableNodes,
+        private readonly array $informativeNodes = [],
     ) {}
+
 
     public static function load(string $path): self
     {
@@ -103,8 +112,23 @@ final class Projection
         if (!is_array($nullable)) {
             throw new ProjectionException('nullableNodes musí být pole.');
         }
-        return new self($document, $defs, $shapes, array_values(array_map('strval', $nullable)));
+        $informative = $raw['informativeNodes'] ?? [];
+        if (!is_array($informative)) {
+            throw new ProjectionException('informativeNodes musí být pole.');
+        }
+        $self = new self($document, $defs, $shapes, array_values(array_map('strval', $nullable)), array_values(array_map('strval', $informative)));
+        if ($self->informativeNodes !== []) {
+            $nodePaths = $self->nodePaths();
+            foreach ($self->informativeNodes as $node) {
+                if (!in_array($node, $nodePaths, true)) {
+                    throw new ProjectionException("informativeNodes: {$node} není uzel projekce.");
+                }
+            }
+        }
+        return $self;
+
     }
+
 
     /** @return array<string, mixed> */
     public function document(): array
@@ -129,6 +153,23 @@ final class Projection
     {
         return in_array($nodePath, $this->nullableNodes, true);
     }
+
+    /** @return list<string> uzly informativní v evaluaci (#103 D114) */
+    public function informativeNodes(): array
+    {
+        return $this->informativeNodes;
+    }
+
+    /**
+     * Uzel projekce (cesta s `[]` místo indexů) je v evaluaci informativní
+     * — on sám nebo některý jeho předek je v `informativeNodes` (#103 D114):
+     * porovnává se a vykazuje zvlášť, do shody polí ani čistých dokladů nejde.
+     */
+    public function isInformativeNode(string $nodePath): bool
+    {
+        return CanonicalComparator::isIgnored($nodePath, $this->informativeNodes);
+    }
+
 
     /** Cesta hodnoty → cesta uzlu projekce (`rows[3].vat.pct` → `rows[].vat.pct`). */
     public static function nodePath(string $path): string

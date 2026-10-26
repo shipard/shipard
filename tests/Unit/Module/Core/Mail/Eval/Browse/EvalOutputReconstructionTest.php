@@ -145,7 +145,14 @@ final class EvalOutputReconstructionTest extends TestCase
         $this->assertSame('text', $docNumber['shape']);
 
         $groups = array_column($detail['groups'], 'id');
-        $this->assertSame(['header', 'supplier', 'customer', 'vat', 'rows', 'vatRecap', 'totals', 'tag', 'rowExceptions', 'classification'], $groups);
+        $this->assertSame(['header', 'supplier', 'customer', 'vat', 'rows', 'vatRecap', 'totals', 'tag', 'rowExceptions', 'classification', 'informative'], $groups);
+        // Běh v1 (#103 D114): poznámka je obyčejný list hlavičky, informativní skupina prázdná.
+        $this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0], $detail['informativeCounts']);
+        $this->assertNull($detail['fileInformativeCounts']);
+        $this->assertSame([], $detail['groups'][10]['fields']);
+        $note = self::field($detail, 'notes.onDocument');
+        $this->assertSame([false, 'header'], [$note['informative'], $note['group']]);
+
         $rows = array_values(array_filter($detail['tables'], static fn (array $t): bool => $t['path'] === 'rows'))[0];
         $this->assertContains('item.name', $rows['columns']);
         $this->assertContains('vat.pct', $rows['columns'], 'DPH řádku je sloupec tabulky řádků, i když metricky patří do skupiny DPH');
@@ -279,8 +286,61 @@ final class EvalOutputReconstructionTest extends TestCase
         $this->assertSame('match', self::field(EvalOutputReconstruction::build(self::projection(), $message, $call), 'vat.place')['state']);
     }
 
+    /**
+     * #103 D114: informativní listy u běhu s `metricsVersion` 2 — záznamy
+     * z `informativeDeviations` a značených `normalized`, shody z projekce
+     * živé sady; vlastní skupina a `informativeCounts` sedí s voláním, které
+     * by vydal `EvalRunner`; týž záznam čtený jako verze 1 je obyčejný list.
+     */
+    public function testInformativeLeavesOfAVersion2CallHaveTheirOwnGroupAndCounts(): void
+    {
+        $messages = new EvalDatasetMessages(DatasetReader::open(dirname(__DIR__, 7) . '/tests/datasets/cz/vat-payer'));
+        $projection = $messages->projection();
+        $this->assertTrue($projection->isInformativeNode('notes.onDocument'), 'živá projekce nese informativeNodes');
+        $message = $messages->find('MSG-CORPUS-VP-0601');
+        $this->assertNotNull($message);
+        $actual = $message->expectedCanonical;
+        $actual['notes']['onDocument'] = 'Something else entirely.';
+        $actual['supplier']['contact']['web'] = null;
+        $comparator = new CanonicalComparator($projection);
+        $outcomes = EvalRunner::markInformative(EvalRunner::forPath($comparator->evaluate($message->expectedCanonical, $actual), EvalCallResult::PATH_AI), $projection);
+        $outcomes[] = EvalRunner::classificationOutcome($message->expectedPrimaryType, $message->expectedPrimaryType);
+        $result = new EvalCallResult($message->messageId, 1, EvalCallResult::STATUS_OK, null, null, 0.01, 10, 10, 12, 'm', $message->expectedPrimaryType, 'it.hardware', $outcomes);
+        $call = $result->toArray();
+        $this->assertSame(['supplier.contact.web'], array_column($call['deviations'], 'path'));
+        $this->assertSame([['notes.onDocument', 'wrong']], array_map(static fn (array $d): array => [$d['path'], $d['state']], $call['informativeDeviations']));
+        $this->assertSame(1, $call['informativeCounts']['wrong']);
+
+        $detail = EvalOutputReconstruction::build($projection, $message, $call, true, 2);
+        $this->assertTrue($detail['countsMatch'], json_encode([$detail['counts'], $detail['fileCounts'], $detail['informativeCounts'], $detail['fileInformativeCounts']]));
+        $this->assertSame($call['counts'], $detail['counts']);
+        $this->assertSame($call['informativeCounts'], $detail['informativeCounts']);
+        $note = self::field($detail, 'notes.onDocument');
+        $this->assertSame(['wrong', true, 'header', 'Something else entirely.'], [$note['state'], $note['informative'], $note['group'], $note['actual']]);
+        $groups = array_column($detail['groups'], null, 'id');
+        $this->assertSame(['notes.onDocument'], array_column($groups['informative']['fields'], 'path'));
+        $this->assertNotContains('notes.onDocument', array_column($groups['header']['fields'], 'path'));
+        $this->assertSame(0, $groups['header']['counts']['wrong']);
+        $this->assertSame(1, $groups['informative']['counts']['wrong']);
+        $this->assertSame('missing', self::field($detail, 'supplier.contact.web')['state']);
+
+        $normalized = ['messageId' => $message->messageId, 'repeat' => 1, 'status' => 'ok', 'primaryType' => $message->expectedPrimaryType,
+            'normalized' => [['path' => 'notes.onDocument', 'actual' => 'goods remain our property', 'informative' => true]], 'deviations' => [], 'informativeDeviations' => []];
+        $v2 = EvalOutputReconstruction::build($projection, $message, $normalized, true, 2);
+        $this->assertSame(['matchNormalized', true], [self::field($v2, 'notes.onDocument')['state'], self::field($v2, 'notes.onDocument')['informative']]);
+        $this->assertSame(1, $v2['informativeCounts']['matchNormalized']);
+        $this->assertSame(0, $v2['counts']['matchNormalized']);
+        $this->assertNull($v2['countsMatch'], 'bez counts ve volání');
+
+        $v1 = EvalOutputReconstruction::build($projection, $message, $normalized, true, 1);
+        $this->assertSame(['matchNormalized', false], [self::field($v1, 'notes.onDocument')['state'], self::field($v1, 'notes.onDocument')['informative']]);
+        $this->assertSame(1, $v1['counts']['matchNormalized']);
+        $this->assertContains('notes.onDocument', array_column(array_column($v1['groups'], null, 'id')['header']['fields'], 'path'));
+    }
+
     public function testEmptyNullableCustomerIsASingleLeaf(): void
     {
+
         $receipt = self::messages()->find('MSG-CORPUS-VP-0901');
         $this->assertNull($receipt->expectedCanonical['customer'] ?? null, 'účtenka bez odběratele');
         $call = ['messageId' => $receipt->messageId, 'repeat' => 1, 'status' => 'ok', 'primaryType' => $receipt->expectedPrimaryType, 'normalized' => [], 'deviations' => []];

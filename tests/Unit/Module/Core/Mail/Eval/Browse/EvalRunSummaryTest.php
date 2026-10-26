@@ -31,7 +31,10 @@ final class EvalRunSummaryTest extends TestCase
         $this->assertSame('claude-sonnet-5-5', $summary['tagsModel']);
         $this->assertSame('v4.8.0', $summary['promptVersion']);
         $this->assertSame(3, $summary['repeat']);
+        $this->assertSame(1, $summary['metricsVersion'], 'běh bez klíče je verze 1 (#103 D114)');
+        $this->assertSame(2, EvalRunSummary::fromRun(['metricsVersion' => 2], null)['metricsVersion']);
         $this->assertSame(20, $summary['messages']);
+
         $this->assertSame(60, $summary['callsTotal']);
         $this->assertSame(0, $summary['failed']);
         $this->assertFalse($summary['currentSet'], 'běhy z 16. 10. jsou nad sadou před #119 krokem 1 (podoba druhých dokladů variant 5, 6, 8 a 9 je `pdf`, hash sady se změnil); nový běh nad aktuální sadou je věc člověka');

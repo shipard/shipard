@@ -235,8 +235,48 @@ final class EvalMetricsTest extends TestCase
         $this->assertSame(['pdf', 'pdfIsdoc'], array_keys($out['byForm']));
     }
 
+    /**
+     * #103 D114: informativní listy (`FieldOutcome::$informative`) mimo
+     * skupiny, `fields.all.*` i `documents.clean` — jen vlastní kyblík
+     * `fields.informative.*` (bez `notCarried`) a `informativeByField`.
+     */
+    public function testInformativeLeavesAreOutsideFieldMatchAndCleanDocuments(): void
+    {
+        $call = static fn (string $id, int $repeat, FieldState $note): EvalCallResult => new EvalCallResult(
+            $id, $repeat, EvalCallResult::STATUS_OK, null, null, 0.01, 100, 10, 1000, 'm', 'invoiceReceived', 'it.hosting', [
+                new FieldOutcome('docNumber', FieldState::Match, 'FV-1', 'FV-1'),
+                new FieldOutcome('notes.onDocument', $note, 'Děkujeme', $note === FieldState::Match ? 'Děkujeme' : null, null, null, true),
+                new FieldOutcome('totals.totalAmount', FieldState::Match, 10, 10),
+                new FieldOutcome(EvalFieldGroups::CLASSIFICATION_PATH, FieldState::Match, 'invoiceReceived', 'invoiceReceived'),
+            ],
+        );
+        $results = [
+            $call('A', 1, FieldState::Missing), $call('B', 1, FieldState::Match),
+            $call('A', 2, FieldState::Wrong), $call('B', 2, FieldState::Match),
+        ];
+        $out = EvalMetrics::compute($results, [self::message('A', 'x'), self::message('B', 'y')], 2);
+        $m = $out['metrics'];
+
+        $this->assertSame(12, $m['fields.all.n'], '3 počítané listy × 2 zprávy × 2 opakování — poznámka mimo');
+        $this->assertSame(1.0, $m['fields.all.hit']);
+        $this->assertSame(0, $m['fields.all.missing'] + $m['fields.all.wrong']);
+        $this->assertSame(4, $m['fields.header.n'], 'jen docNumber — poznámka není ve skupině hlavičky');
+        $this->assertSame(4, $m['fields.informative.n']);
+        $this->assertSame(0.5, $m['fields.informative.hit']);
+        $this->assertSame(0.0, $m['fields.informative.normalized']);
+        $this->assertSame([1, 0, 1], [$m['fields.informative.missing'], $m['fields.informative.extra'], $m['fields.informative.wrong']]);
+        $this->assertArrayNotHasKey('fields.informative.notCarried', $m);
+        $this->assertSame(['min' => 0, 'max' => 1], $out['range']['fields.informative.missing'], 'počet za opakování');
+        $this->assertSame(1.0, $m['documents.clean'], 'informativní odchylka doklad nešpiní');
+        $this->assertSame([], $out['deviationsByField']);
+        $this->assertSame(['notes.onDocument' => 2], $out['informativeByField'], 'A v obou opakováních');
+        $this->assertSame(0.5, $out['fieldStability']['notes.onDocument'], 'stabilita se měří dál: A missing / wrong, B stabilní');
+        $this->assertSame(1.0, $out['byVariant']['x']['documents.clean']);
+    }
+
     public function testFailedCallCountsItsExpectedFieldsAsMissing(): void
     {
+
         // D44: selhané volání = missing všech neprázdných polí očekávání ve fields.*;
         // documents.* a calls.* jako dřív, deviationsByField jen z úspěšných volání.
         $results = [

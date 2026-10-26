@@ -18,8 +18,13 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * (#103 D76): `ai` extrakce modelem, `isdoc` deterministický import ISDOC
  * + štítky; listy `notCarried` (pole, která ISDOC nenese) nejsou shoda ani
  * odchylka — do souboru jde jen jejich počet, prohlížeč je odvodí
- * z `IsdocFieldCoverage`.
+ * z `IsdocFieldCoverage`. Listy informativních uzlů projekce (#103 D114,
+ * `FieldOutcome::$informative`) jdou zvlášť: `informativeCounts`
+ * a `informativeDeviations` vedle `counts` a `deviations`, položky
+ * `normalized` nesou `informative: true`; do `counts`, `deviations`
+ * ani `isClean()` nepatří (metricsVersion 2).
  */
+
 final readonly class EvalCallResult
 {
     public const string STATUS_OK = 'ok';
@@ -67,27 +72,48 @@ final readonly class EvalCallResult
         return !$this->isOk() && in_array($this->errorType, self::INFRASTRUCTURE_ERRORS, true);
     }
 
-    /** @return list<FieldOutcome> missing / extra / wrong (`notCarried` není odchylka) */
+    /** @return list<FieldOutcome> missing / extra / wrong (`notCarried` není odchylka, informativní list jde zvlášť) */
     public function deviations(): array
     {
-        return array_values(array_filter($this->outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit() && $o->state->isCounted()));
+        return array_values(array_filter($this->outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit() && $o->state->isCounted() && !$o->informative));
     }
 
-    /** Úspěšné volání bez jediné odchylky. */
+    /** @return list<FieldOutcome> odchylky informativních listů (#103 D114) — mimo {@see deviations()} i {@see isClean()} */
+    public function informativeDeviations(): array
+    {
+        return array_values(array_filter($this->outcomes, static fn (FieldOutcome $o): bool => !$o->state->isHit() && $o->state->isCounted() && $o->informative));
+    }
+
+    /** Úspěšné volání bez jediné odchylky (informativní listy nerozhodují). */
     public function isClean(): bool
     {
         return $this->isOk() && $this->deviations() === [];
     }
 
-    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int, notCarried: int} */
+    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int, notCarried: int} bez informativních listů */
     public function counts(): array
     {
         $counts = ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
         foreach ($this->outcomes as $o) {
-            $counts[$o->state->value]++;
+            if (!$o->informative) {
+                $counts[$o->state->value]++;
+            }
         }
         return $counts;
     }
+
+    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int} stavy informativních listů (#103 D114) */
+    public function informativeCounts(): array
+    {
+        $counts = ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
+        foreach ($this->outcomes as $o) {
+            if ($o->informative) {
+                $counts[$o->state->value]++;
+            }
+        }
+        return $counts;
+    }
+
 
     /** @return array<string, mixed> */
     public function toArray(): array
@@ -113,6 +139,7 @@ final readonly class EvalCallResult
             'tags' => $this->tags,
         ];
         $out['counts'] = $this->counts();
+        $out['informativeCounts'] = $this->informativeCounts();
         if ($this->isOk()) {
             $out['normalized'] = array_values(array_map(
                 static function (FieldOutcome $o): array {
@@ -120,13 +147,18 @@ final readonly class EvalCallResult
                     if ($o->similarity !== null) {
                         $entry['similarity'] = $o->similarity;
                     }
+                    if ($o->informative) {
+                        $entry['informative'] = true;
+                    }
                     return $entry;
                 },
                 array_filter($this->outcomes, static fn (FieldOutcome $o): bool => $o->state === FieldState::MatchNormalized),
             ));
             $out['deviations'] = array_map(static fn (FieldOutcome $o): array => $o->toArray(), $this->deviations());
+            $out['informativeDeviations'] = array_map(static fn (FieldOutcome $o): array => $o->toArray(), $this->informativeDeviations());
         }
         return $out;
+
     }
 
     /**

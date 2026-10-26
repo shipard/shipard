@@ -6,10 +6,14 @@
   import StateBadge from '../../components/StateBadge.svelte';
   import ValueCell from '../../components/ValueCell.svelte';
   import { formatPercent } from '../../format.js';
-  import { isBlankState } from '../../testing/metrics.js';
+  import { isBlankState, INFORMATIVE_GROUP_ID } from '../../testing/metrics.js';
   import { t } from '../../i18n/index.js';
 
   let { group, fields = [], fieldsB = null, onlyDeviations = false } = $props();
+
+  // Informativní skupina (#103 D114): porovnané, ale mimo shodu polí a doklady bez odchylky.
+  const informative = $derived(group.id === INFORMATIVE_GROUP_ID);
+
 
   const rows = $derived.by(() => {
     const byPathB = new Map((fieldsB ?? []).map((f) => [f.path, f]));
@@ -32,7 +36,9 @@
   <section class="group">
     <h3 class="group__title">
       {group.label}
+      {#if informative}<span class="dev-state dev-state--informative dev-small" title={t('testing.fields.informativeTitle')}>{t('testing.fields.informative')}</span>{/if}
       <span class="group__counts dev-small">
+
         {#if counts.missing}<span class="dev-state dev-state--missing">{t('testing.fields.countMissing', { n: counts.missing })}</span>{/if}
         {#if counts.extra}<span class="dev-state dev-state--extra">{t('testing.fields.countExtra', { n: counts.extra })}</span>{/if}
         {#if counts.wrong}<span class="dev-state dev-state--wrong">{t('testing.fields.countWrong', { n: counts.wrong })}</span>{/if}

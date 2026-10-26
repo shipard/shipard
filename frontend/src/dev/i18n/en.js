@@ -72,6 +72,8 @@ export default {
   'metrics.group.rowExceptions': 'Row tag exceptions',
   'metrics.group.classification': 'Message classification',
   'metrics.group.all': 'Total',
+  'metrics.group.informative': 'Informative fields',
+
   'metrics.metric.documents.clean': 'Documents without deviation',
   'metrics.metric.documents.amountsCorrect': 'Correct amounts',
   'metrics.metric.documents.rowCountOk': 'Correct row count',
@@ -130,6 +132,9 @@ export default {
   'testing.run.otherSetVersion': 'other dataset version',
   'testing.run.otherSetVersionTitle': 'The run was made on an older dataset version — the expectations may have changed since',
   'testing.run.selection': 'selection:',
+  'testing.run.metricsV1': 'metrics v1',
+  'testing.run.metricsV1Title': 'Older run: informative projection nodes (document note) counted towards field match and deviations',
+
   'testing.pdf.title': 'Message PDF',
   'testing.pdf.none': 'The message has no PDF attachment.',
   'testing.pdf.openWindow': 'open in a new window',
@@ -431,6 +436,11 @@ export default {
   'testing.runDetail.acrossRuns': 'across runs',
   'testing.runDetail.col.deviationsSum': 'Deviations Σ',
   'testing.runDetail.col.costSum': 'Cost Σ',
+  'testing.runDetail.informative': 'Informative fields',
+  'testing.runDetail.informativeNote': 'Informative projection nodes are compared but not counted towards field match or clean documents. List: number of successful calls with a deviation on the node and their share.',
+  'testing.runDetail.informativeV1': 'Older run (metrics v1): informative nodes counted towards field match and deviations — they are in the group table and in the most frequent deviations.',
+  'testing.runDetail.informativeNone': 'The dataset projection has no informative node.',
+
   'testing.message.arrayMore': '{label}: expected {expected}, output {actual} items — extra output items are not stored in the run file and are not in the table.',
   'testing.message.arrayFewer': '{label}: expected {expected}, output {actual} items — expected items beyond the output count were not compared.',
   'testing.message.variantForm': 'variant {variant} · form {form}',
@@ -449,6 +459,8 @@ export default {
   'testing.message.facts.states': 'states',
   'testing.message.counts': '{match} matches · {normalized} normalized · {missing} missing · {extra} extra · {wrong} wrong',
   'testing.message.countsNotCarried': ' · {n} not carried',
+  'testing.message.countsInformative': ' · {n, plural, one {# informative deviation} other {# informative deviations}}',
+
   'testing.message.olderSet': 'The run was made on an older dataset version — the expectations below come from the current dataset and may differ from the ones back then (state counts then do not match the run file).',
   'testing.message.countsMismatch': 'State counts from the reconstruction ({counts}) do not match the counts in the run file ({fileCounts}) — the reconstruction of this call is incomplete, please report it.',
   'testing.message.callFailedAlert': 'The call failed ({type}){note}. There is no output — every non-empty expected field is missing.',
@@ -459,6 +471,8 @@ export default {
   'testing.compare.crumb': 'Comparison',
   'testing.compare.title': 'Run comparison',
   'testing.compare.differentSelection': 'The runs have a different message selection (--only / --limit) — compare with caution.',
+  'testing.compare.differentMetricsVersion': 'The runs have different metrics versions (A v{a}, B v{b}). From v2 informative projection nodes (document note) do not count towards field match or clean documents — compare differences in those metrics and on informative nodes with caution.',
+
   'testing.compare.perRepetitionNote': 'Totals (calls, tokens, cost, time, field counts) are recalculated per repetition. "Within noise" = the difference does not exceed the largest repetition range of either run.',
   'testing.compare.metrics': 'Metrics',
   'testing.compare.all': 'all ({n})',
@@ -673,6 +687,9 @@ export default {
   'testing.fields.countWrong': '{n} wrong',
   'testing.fields.countNormalized': '{n} normalized',
   'testing.fields.countNotCarried': '{n} not carried',
+  'testing.fields.informative': 'informative',
+  'testing.fields.informativeTitle': 'Informative projection nodes: compared but not counted towards field match or clean documents',
+
   'testing.fields.noDeviations': 'No deviations ({hidden, plural, one {# match hidden} other {# matches hidden}}).',
   'testing.fields.col.field': 'Field',
   'testing.fields.col.expected': 'Expected',

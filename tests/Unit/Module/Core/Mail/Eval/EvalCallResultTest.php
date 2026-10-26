@@ -101,8 +101,41 @@ final class EvalCallResultTest extends TestCase
         $this->assertSame([], EvalCallResult::normalizedEntries(['status' => 'failed']));
     }
 
+    /** #103 D114: informativní listy mají vlastní počty a odchylky; `counts`, `deviations` ani `isClean()` je nevidí, `deviationCount()` ze souboru také ne. */
+    public function testInformativeLeavesGoToTheirOwnCountsAndDeviations(): void
+    {
+        $outcomes = [
+            new FieldOutcome('docNumber', FieldState::Match, 'FV-1', 'FV-1'),
+            new FieldOutcome('notes.onDocument', FieldState::Wrong, 'Děkujeme', 'Thanks', 0.3, null, true),
+            new FieldOutcome('rows[0].item.description', FieldState::MatchNormalized, 'a  b', 'a b', 1.0, null, true),
+            new FieldOutcome('dates.dueDate', FieldState::Missing, '2026-01-01', null),
+        ];
+        $result = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', 'invoiceReceived', 'it.hosting', $outcomes);
+        $out = $result->toArray();
+        $keys = array_keys($out);
+        $this->assertSame(array_search('counts', $keys, true) + 1, array_search('informativeCounts', $keys, true));
+        $this->assertSame(array_search('deviations', $keys, true) + 1, array_search('informativeDeviations', $keys, true));
+        $this->assertSame(['match' => 1, 'matchNormalized' => 0, 'missing' => 1, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0], $out['counts']);
+        $this->assertSame(['match' => 0, 'matchNormalized' => 1, 'missing' => 0, 'extra' => 0, 'wrong' => 1], $out['informativeCounts']);
+        $this->assertSame(['dates.dueDate'], array_column($out['deviations'], 'path'));
+        $this->assertSame(
+            [['path' => 'notes.onDocument', 'state' => 'wrong', 'expected' => 'Děkujeme', 'actual' => 'Thanks', 'similarity' => 0.3, 'informative' => true]],
+            $out['informativeDeviations'],
+        );
+        $this->assertSame([['path' => 'rows[0].item.description', 'actual' => 'a b', 'similarity' => 1.0, 'informative' => true]], $out['normalized']);
+        $this->assertFalse($result->isClean(), 'chybí splatnost');
+        $this->assertSame(1, EvalCallResult::deviationCount($out));
+
+        $clean = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', 'invoiceReceived', 'it.hosting', array_slice($outcomes, 0, 3));
+        $this->assertTrue($clean->isClean(), 'špatná poznámka doklad nešpiní');
+        $this->assertSame([], $clean->deviations());
+        $this->assertSame(['notes.onDocument'], array_map(static fn (FieldOutcome $o): string => $o->path, $clean->informativeDeviations()));
+        $this->assertSame(0, EvalCallResult::deviationCount($clean->toArray()));
+    }
+
     public function testDeviationCount(): void
     {
+
         $this->assertSame(2, EvalCallResult::deviationCount(['status' => 'ok', 'deviations' => [['path' => 'a'], ['path' => 'b']]]));
         $this->assertSame(0, EvalCallResult::deviationCount(['status' => 'ok']));
         $this->assertSame(7, EvalCallResult::deviationCount(['status' => 'failed', 'counts' => ['match' => 0, 'matchNormalized' => 0, 'missing' => 5, 'extra' => 0, 'wrong' => 2]]));

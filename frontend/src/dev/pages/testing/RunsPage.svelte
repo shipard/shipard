@@ -102,6 +102,8 @@
       {:else if col.id === 'file'}
         <a href={router.href('testingRun', { set, file: row.file })} onclick={onLinkClick}><code>{row.file}</code></a>
         {#if !row.currentSet}<span class="dev-state dev-state--missing" title={t('testing.runs.otherSetTitle')}>{t('testing.run.otherSetVersion')}</span>{/if}
+        {#if (row.metricsVersion ?? 1) < 2}<span class="dev-state dev-state--neutral" title={t('testing.run.metricsV1Title')}>{t('testing.run.metricsV1')}</span>{/if}
+
       {:else if col.id === 'startedAt'}
         <span class="dev-nowrap">{formatDateTime(row.startedAt)}</span>
       {:else if col.id === 'model' || col.id === 'tagsModel'}

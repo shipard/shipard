@@ -27,7 +27,8 @@ final class EvalRun
      * @param array<string, mixed>  $set
      * @param array{commit: ?string, dirty: ?bool} $git
      * @param array<string, mixed>  $profile řádek profilu pošty
-     * @param array{metrics: array<string, int|float>, range?: array<string, mixed>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, mixed>, byForm: array<string, mixed>, byPath: array<string, mixed>, deviationsByField: array<string, int>} $metrics
+     * @param array{metrics: array<string, int|float>, range?: array<string, mixed>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, mixed>, byForm: array<string, mixed>, byPath: array<string, mixed>, deviationsByField: array<string, int>, informativeByField?: array<string, int>} $metrics
+
      * @param list<EvalCallResult>  $results
      * @return array<string, mixed>
      */
@@ -49,7 +50,9 @@ final class EvalRun
         $promptTemplate = $variant->promptTemplate ?? (string) ($profile['prompt_template'] ?? '');
         return [
             'format' => EvalRunStore::FORMAT,
+            'metricsVersion' => EvalMetrics::VERSION,
             'set' => $set,
+
             'git' => $git,
             'variant' => [
                 'name' => $variant->name,
@@ -93,7 +96,9 @@ final class EvalRun
             'byForm' => $metrics['byForm'],
             'byPath' => $metrics['byPath'],
             'deviationsByField' => $metrics['deviationsByField'],
+            'informativeByField' => $metrics['informativeByField'] ?? [],
             'calls' => array_map(static fn (EvalCallResult $r): array => $r->toArray(), $results),
+
         ];
     }
 }

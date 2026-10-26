@@ -24,6 +24,10 @@
   {#if summary.currentSet === false}
     <span class="dev-state dev-state--missing" title={t('testing.run.otherSetVersionTitle')}>{t('testing.run.otherSetVersion')}</span>
   {/if}
+  {#if (summary.metricsVersion ?? 1) < 2}
+    <span class="dev-state dev-state--neutral" title={t('testing.run.metricsV1Title')}>{t('testing.run.metricsV1')}</span>
+  {/if}
+
   {#if summary.only?.length || summary.limit}
     <span class="dev-state dev-state--neutral">{t('testing.run.selection')} {summary.only?.length ? `--only ${summary.only.join(',')}` : ''} {summary.limit ? `--limit ${summary.limit}` : ''}</span>
   {/if}

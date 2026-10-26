@@ -75,6 +75,22 @@ final class EvalReport
             }
             $lines[] = 'Nejčastější odchylky: ' . implode(', ', $parts);
         }
+        // Informativní pole (#103 D114): porovnané, ale mimo shodu polí a doklady bez odchylky; běh v1 klíče nemá.
+        $g = EvalFieldGroups::INFORMATIVE_GROUP;
+        if (($m["fields.{$g}.n"] ?? 0) > 0) {
+            $parts = [];
+            foreach ($run['informativeByField'] ?? [] as $node => $count) {
+                $parts[] = "{$node} {$count}×";
+            }
+            $lines[] = sprintf(
+                'Informativní pole (mimo shodu polí a doklady bez odchylky): %s  (po normalizaci %s)  chybí %d · navíc %d · špatně %d%s',
+                self::ratio($m["fields.{$g}.hit"], $range["fields.{$g}.hit"] ?? null),
+                self::pct($m["fields.{$g}.normalized"]),
+                $m["fields.{$g}.missing"], $m["fields.{$g}.extra"], $m["fields.{$g}.wrong"],
+                $parts !== [] ? ' — ' . implode(', ', $parts) : '',
+            );
+        }
+
         if (!empty($run['byVariant'])) {
             $lines[] = 'Po variantách korpusu:';
             foreach ($run['byVariant'] as $variant => $v) {

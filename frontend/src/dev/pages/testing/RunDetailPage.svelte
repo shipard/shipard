@@ -6,9 +6,10 @@
   import { router, onLinkClick } from '../../router.svelte.js';
   import { testingApi } from '../../testing/api.js';
   import {
-    fieldMetricRows, metricRows, topDeviations, unstableNodes, rangeText, formatMetric, deviationLevel, sumOf, stateLabel, pathLabel,
+    fieldMetricRows, informativeMetricRow, metricRows, topDeviations, unstableNodes, rangeText, formatMetric, deviationLevel, sumOf, stateLabel, pathLabel,
     DOCUMENT_METRICS, COST_METRICS,
   } from '../../testing/metrics.js';
+
   import { t, label } from '../../i18n/index.js';
   import { formatNumber, formatPercent, formatUsd, formatDateTime } from '../../format.js';
   import Crumbs from '../../components/Crumbs.svelte';
@@ -41,6 +42,11 @@
   const docRows = $derived(metricRows(DOCUMENT_METRICS, metrics, run?.range));
   const costRows = $derived(metricRows(COST_METRICS, metrics, run?.range));
   const deviations = $derived(topDeviations(run?.deviationsByField, metrics['calls.ok'] ?? 0));
+  // Informativní pole (#103 D114): jen běh s metricsVersion ≥ 2; starší běh je počítal do shody polí.
+  const metricsVersion = $derived(data?.summary?.metricsVersion ?? 1);
+  const informative = $derived(informativeMetricRow(metrics, run?.range));
+  const informativeNodes = $derived(topDeviations(run?.informativeByField, metrics['calls.ok'] ?? 0));
+
   const fieldStability = $derived(unstableNodes(run?.fieldStability));
   const formatStability = $derived(unstableNodes(run?.formatStability));
   const repeatCount = $derived(data?.summary?.repeat ?? 1);
@@ -100,8 +106,10 @@
   </div>
 
   <div class="grid-2">
+    <div>
     <div class="dev-card">
       <div class="dev-card__title">{t('testing.runDetail.fieldsByGroup')} {repeatCount > 1 ? t('testing.runDetail.avgAndRange') : ''}</div>
+
       <div class="dev-table-wrap">
         <table class="dev-table">
           <thead><tr><th>{t('testing.col.group')}</th><th class="dev-num">{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
@@ -122,10 +130,46 @@
       </div>
       <p class="dev-small dev-muted note">{t('testing.runDetail.countsNote')}</p>
     </div>
+    <div class="dev-card">
+      <div class="dev-card__title">{t('testing.runDetail.informative')}</div>
+      {#if metricsVersion < 2}
+        <div class="dev-muted dev-small">{t('testing.runDetail.informativeV1')}</div>
+      {:else if !informative || informative.n === 0}
+        <div class="dev-muted dev-small">{t('testing.runDetail.informativeNone')}</div>
+      {:else}
+        <div class="dev-table-wrap">
+          <table class="dev-table">
+            <thead><tr><th>{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="dev-num">{formatNumber(informative.n)}</td>
+                <td class="dev-num dev-nowrap">{rangeText(informative.hit.avg, informative.hit.min, informative.hit.max)}</td>
+                <td class="dev-num">{formatPercent(informative.normalized)}</td>
+                <td class="dev-num">{formatNumber(informative.missing)}</td>
+                <td class="dev-num">{formatNumber(informative.extra)}</td>
+                <td class="dev-num">{formatNumber(informative.wrong)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {#if informativeNodes.length > 0}
+          <table class="plain">
+            <tbody>
+              {#each informativeNodes as d (d.node)}
+                <tr><td><code>{d.node}</code></td><td class="dev-num dev-nowrap">{d.count}<span class="dev-muted"> ({formatPercent(d.share, 0)})</span></td></tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
+        <p class="dev-small dev-muted note">{t('testing.runDetail.informativeNote')}</p>
+      {/if}
+    </div>
+    </div>
 
     <div>
       <div class="dev-card">
         <div class="dev-card__title">{t('testing.runDetail.documents')}</div>
+
         <table class="plain">
           <tbody>
             {#each docRows as r (r.key)}

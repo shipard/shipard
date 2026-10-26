@@ -44,6 +44,9 @@ final class EvalRunSummary
             'thinking' => $effective['thinking'] ?? null,
             'effort' => $effective['effort'] ?? null,
             'repeat' => max(1, (int) ($run['repeat'] ?? 1)),
+            // Verze metrik (#103 D114): běhy bez klíče (před 2026-10-26) jsou 1 — poznámka započtená do shody polí.
+            'metricsVersion' => max(1, (int) ($run['metricsVersion'] ?? 1)),
+
             'messages' => (int) ($run['set']['messages'] ?? 0),
             'only' => (array) ($run['set']['only'] ?? []),
             'limit' => $run['set']['limit'] ?? null,

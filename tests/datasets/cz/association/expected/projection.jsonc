@@ -23,11 +23,17 @@
 // "nullableNodes": jediné uzly (objekt / pole), které smí být null jako celek — účtenka bez
 // odběratele. Ostatní objekty projekce jsou vždy přítomné, „na dokladu není“ vyjadřují null
 // v listech; pole bez prvků (vatRecap u dokladu bez DPH, rowExceptions) je prázdné pole.
+// "informativeNodes": uzly (i s potomky), které evaluace AI porovnává a vykazuje zvlášť
+// (fields.informative.*), ale nezapočítává do shody polí (fields.all.*) ani do dokladů bez
+// odchylky — volný text bez účetního dopadu (#103 D114). Očekávání i strážce je kontrolují
+// jako každý jiný uzel; značka platí jen pro metriky evaluace (metricsVersion 2).
 {
 	"format": "shpd.corpus.projection",
 	"formatVersion": "1",
 
 	"nullableNodes": ["customer"],
+	"informativeNodes": ["notes.onDocument"],
+
 
 	"document": {
 		"format": "docFormat",

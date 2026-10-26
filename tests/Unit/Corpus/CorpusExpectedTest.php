@@ -124,7 +124,8 @@ final class CorpusExpectedTest extends TestCase
         $problems = [];
         $this->assertSame('shpd.corpus.projection', $projection['format'] ?? null);
         $this->assertSame('1', $projection['formatVersion'] ?? null);
-        foreach (['document', '$defs', 'shapes', 'nullableNodes'] as $key) {
+        foreach (['document', '$defs', 'shapes', 'nullableNodes', 'informativeNodes'] as $key) {
+
             $this->assertArrayHasKey($key, $projection);
         }
 

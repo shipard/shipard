@@ -41,11 +41,23 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * projekce (nejčastější odchylky, porovnání běhů). Stabilita
  * i `deviationsByField` jen z úspěšných volání — selhání by zhoršilo každý
  * uzel o 1 / opakování a je vidět v `calls.failed`.
+ *
+ * Informativní listy (#103 D114, `FieldOutcome::$informative` z
+ * `informativeNodes` projekce — dnes poznámka na dokladu) jdou mimo
+ * skupiny, `fields.all.*` i `documents.clean` do vlastního kyblíku
+ * `fields.informative.{n,hit,normalized,missing,extra,wrong}`
+ * a `informativeByField` (obdoba `deviationsByField`). Verze metrik
+ * {@see VERSION} jde do souboru běhu jako `metricsVersion`; běhy před ní
+ * (bez klíče = 1) poznámku započítávaly a nepřepočítávají se.
  */
 final class EvalMetrics
 {
+    /** Verze metrik v souboru běhu (`metricsVersion`): 2 = informativní listy mimo shodu polí (D114). */
+    public const int VERSION = 2;
+
     /** Klíče, které se přes opakování průměrují (ostatní se sčítají). */
     private const array RATIO_PREFIXES = ['fields.', 'documents.'];
+
 
     private function __construct()
     {
@@ -54,8 +66,9 @@ final class EvalMetrics
     /**
      * @param list<EvalCallResult> $results
      * @param list<EvalMessage>    $messages
-     * @return array{metrics: array<string, int|float>, range?: array<string, array{min: int|float, max: int|float}>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, array<string, int|float>>, byForm: array<string, array<string, int|float>>, byPath: array<string, array<string, int|float>>, deviationsByField: array<string, int>}
+     * @return array{metrics: array<string, int|float>, range?: array<string, array{min: int|float, max: int|float}>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, array<string, int|float>>, byForm: array<string, array<string, int|float>>, byPath: array<string, array<string, int|float>>, deviationsByField: array<string, int>, informativeByField: array<string, int>}
      */
+
     public static function compute(array $results, array $messages, int $repeat): array
     {
         $slices = [];
@@ -80,8 +93,10 @@ final class EvalMetrics
         $out['byForm'] = self::byBucket($results, static fn (EvalCallResult $r): ?string => $cells[$r->messageId]->form ?? null);
         $out['byPath'] = self::byBucket($results, static fn (EvalCallResult $r): ?string => $r->path);
         $out['deviationsByField'] = self::deviationsByField($results);
+        $out['informativeByField'] = self::informativeByField($results);
         return $out;
     }
+
 
     /**
      * Metriky jedné sady výsledků (každá zpráva nejvýš jednou).
@@ -97,7 +112,9 @@ final class EvalMetrics
             $groups[$g] = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
         }
         $all = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
+        $informative = ['n' => 0, 'hit' => 0, 'normalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
         $clean = 0;
+
         $amounts = 0;
         $rowCount = 0;
         $classification = 0;
@@ -124,7 +141,7 @@ final class EvalMetrics
                 $tagsOut += (int) ($r->tags['tokensOut'] ?? 0);
             }
             // Pole: i selhané volání (jeho outcomes = missing neprázdných polí očekávání, D44);
-            // notCarried mimo n (D76).
+            // notCarried mimo n (D76); informativní list jen do vlastního kyblíku (D114).
             foreach ($r->outcomes as $o) {
                 $group = EvalFieldGroups::groupOf($o->nodePath());
                 $key = match ($o->state) {
@@ -135,7 +152,13 @@ final class EvalMetrics
                     FieldState::Wrong => 'wrong',
                     FieldState::NotCarried => 'notCarried',
                 };
+                if ($o->informative) {
+                    $informative[$key]++;
+                    $informative['n']++;
+                    continue;
+                }
                 $groups[$group][$key]++;
+
                 $all[$key]++;
                 if ($o->state->isCounted()) {
                     $groups[$group]['n']++;
@@ -153,8 +176,9 @@ final class EvalMetrics
             $rowCountOk = true;
             foreach ($r->outcomes as $o) {
                 $node = $o->nodePath();
-                if (!$o->state->isHit() && $o->state->isCounted()) {
+                if (!$o->state->isHit() && $o->state->isCounted() && !$o->informative) {
                     if (EvalFieldGroups::isAmountNode($node)) {
+
                         $amountsOk = false;
                     }
                     if ($node === 'rows') {
@@ -185,7 +209,15 @@ final class EvalMetrics
             $m["fields.{$g}.wrong"] = $c['wrong'];
             $m["fields.{$g}.notCarried"] = $c['notCarried'];
         }
+        $g = EvalFieldGroups::INFORMATIVE_GROUP;
+        $m["fields.{$g}.n"] = $informative['n'];
+        $m["fields.{$g}.hit"] = $informative['n'] > 0 ? round(($informative['hit'] + $informative['normalized']) / $informative['n'], 4) : 0.0;
+        $m["fields.{$g}.normalized"] = $informative['n'] > 0 ? round($informative['normalized'] / $informative['n'], 4) : 0.0;
+        $m["fields.{$g}.missing"] = $informative['missing'];
+        $m["fields.{$g}.extra"] = $informative['extra'];
+        $m["fields.{$g}.wrong"] = $informative['wrong'];
         $total = max(1, count($results));
+
         $m['documents.clean'] = round($clean / $total, 4);
         $m['documents.amountsCorrect'] = round($amounts / $total, 4);
         $m['documents.rowCountOk'] = round($rowCount / $total, 4);
@@ -388,13 +420,34 @@ final class EvalMetrics
      */
     public static function deviationsByField(array $results): array
     {
+        return self::callsWithDeviationByNode($results, static fn (EvalCallResult $r): array => $r->deviations());
+    }
+
+    /**
+     * Totéž pro informativní listy (#103 D114).
+     *
+     * @param list<EvalCallResult> $results
+     * @return array<string, int>
+     */
+    public static function informativeByField(array $results): array
+    {
+        return self::callsWithDeviationByNode($results, static fn (EvalCallResult $r): array => $r->informativeDeviations());
+    }
+
+    /**
+     * @param list<EvalCallResult> $results
+     * @param callable(EvalCallResult): list<FieldOutcome> $pick
+     * @return array<string, int>
+     */
+    private static function callsWithDeviationByNode(array $results, callable $pick): array
+    {
         $out = [];
         foreach ($results as $r) {
             if (!$r->isOk()) {
                 continue;   // selhání = missing všeho; porovnání běhů by hlásilo každé pole
             }
             $seen = [];
-            foreach ($r->deviations() as $o) {
+            foreach ($pick($r) as $o) {
                 $seen[$o->nodePath()] = true;
             }
             foreach (array_keys($seen) as $node) {
@@ -404,6 +457,7 @@ final class EvalMetrics
         uksort($out, static fn (string $a, string $b): int => [$out[$b], $a] <=> [$out[$a], $b]);
         return $out;
     }
+
 
     /** @param list<FieldOutcome> $outcomes @return list<string> */
     public static function deviationPaths(array $outcomes): array

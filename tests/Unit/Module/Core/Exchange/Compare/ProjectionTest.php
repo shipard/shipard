@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Compare;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Compare\Projection;
+
 use Shipard\Module\Core\Exchange\Compare\ProjectionException;
 
 class ProjectionTest extends TestCase
@@ -28,9 +30,28 @@ class ProjectionTest extends TestCase
         $this->assertSame(['customer'], $p->nullableNodes());
         $this->assertTrue($p->isNullableNode('customer'));
         $this->assertFalse($p->isNullableNode('supplier'));
+        $this->assertSame(['notes.onDocument'], $p->informativeNodes(), '#103 D114');
+        $this->assertTrue($p->isInformativeNode('notes.onDocument'));
+        $this->assertFalse($p->isInformativeNode('notes'), 'předek informativního listu informativní není');
+        $this->assertFalse($p->isInformativeNode('docNumber'));
         $this->assertSame('format', array_key_first($p->document()));
         $this->assertArrayHasKey('amount', $p->shapes());
     }
+
+    /** #103 D114: `informativeNodes` jen uzly projekce; značka platí i potomkům uzlu. */
+    public function testInformativeNodesMustBeProjectionNodes(): void
+    {
+        $raw = JsoncParser::parseFile(self::projectionPath());
+        $withParent = Projection::fromArray(['informativeNodes' => ['notes']] + $raw);
+        $this->assertTrue($withParent->isInformativeNode('notes.onDocument'));
+        $this->assertTrue($withParent->isInformativeNode('notes'));
+        $this->assertSame([], Projection::fromArray(array_diff_key($raw, ['informativeNodes' => true]))->informativeNodes(), 'bez klíče (zmrazená fixtura) nic');
+
+        $this->expectException(ProjectionException::class);
+        $this->expectExceptionMessage('notes.nope není uzel projekce');
+        Projection::fromArray(['informativeNodes' => ['notes.nope']] + $raw);
+    }
+
 
     public function testProjectOrdersKeysFillsNullsAndDropsExtras(): void
     {

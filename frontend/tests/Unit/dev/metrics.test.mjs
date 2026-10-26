@@ -2,10 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { use } from '../../../src/dev/i18n/index.js';
 import {
-  metricLabel, metricKind, formatMetric, formatMetricDelta, rangeText, fieldMetricRows, metricRows,
-  topDeviations, unstableNodes, deviationLevel, sumOf, maxRepeat, isHeadlineMetric, DOCUMENT_METRICS,
+  metricLabel, metricKind, formatMetric, formatMetricDelta, rangeText, fieldMetricRows, informativeMetricRow, metricRows,
+  topDeviations, unstableNodes, deviationLevel, sumOf, maxRepeat, isHeadlineMetric, DOCUMENT_METRICS, INFORMATIVE_GROUP_ID,
   stateLabel, isKnownState, pathLabel, isBlankState,
 } from '../../../src/dev/testing/metrics.js';
+
 
 // Popisky se testují česky; v Node je navigator.language en-US.
 use('cs');
@@ -76,6 +77,27 @@ test('řádky metrik polí a dokladů', () => {
   assert.deepEqual(docs.map((r) => r.key), ['documents.clean', 'documents.amountsCorrect']);
   assert.equal(docs[0].label, 'Doklady bez odchylky');
 });
+
+test('informativní pole mimo tabulku skupin (#103 D114)', () => {
+  assert.equal(INFORMATIVE_GROUP_ID, 'informative');
+  assert.equal(metricLabel('fields.informative.hit'), 'Informativní pole — shoda');
+  assert.equal(metricKind('fields.informative.n'), 'int');
+  assert.equal(isHeadlineMetric('fields.informative.hit'), true);
+  assert.equal(isHeadlineMetric('fields.informative.missing'), false);
+  const metrics = {
+    'fields.header.n': 10, 'fields.header.hit': 1, 'fields.all.n': 10, 'fields.all.hit': 1,
+    'fields.informative.n': 4, 'fields.informative.hit': 0.5, 'fields.informative.normalized': 0, 'fields.informative.missing': 1, 'fields.informative.extra': 0, 'fields.informative.wrong': 1,
+  };
+  assert.deepEqual(fieldMetricRows(metrics, null).map((r) => r.id), ['header', 'all'], 'informative není v tabulce skupin');
+  const row = informativeMetricRow(metrics, { 'fields.informative.hit': { min: 0.25, max: 0.75 } });
+  assert.equal(row.id, 'informative');
+  assert.equal(row.label, 'Informativní pole');
+  assert.equal(row.n, 4);
+  assert.deepEqual(row.hit, { avg: 0.5, min: 0.25, max: 0.75 });
+  assert.deepEqual([row.missing, row.extra, row.wrong], [1, 0, 1]);
+  assert.equal(informativeMetricRow({ 'fields.all.hit': 1 }, null), null, 'běh v1 bez klíčů');
+});
+
 
 test('nejčastější odchylky a stabilita', () => {
   const top = topDeviations({ 'supplier.contact.web': 48, 'docNumber': 2, 'notes.onDocument': 29 }, 60, 2);

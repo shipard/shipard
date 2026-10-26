@@ -8,7 +8,9 @@ use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\FieldOutcome;
 use Shipard\Module\Core\Exchange\Compare\FieldState;
+use Shipard\Module\Core\Exchange\Compare\Projection;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
+
 use Shipard\Module\Core\Mail\Analysis\AnalysisComputing;
 use Shipard\Module\Core\Mail\Analysis\AnalysisOutcome;
 use Shipard\Module\Core\Mail\Analysis\AnalysisRequest;
@@ -156,9 +158,10 @@ final class EvalRunner
             return $this->failed($message, $repeat, 'invalid_canonical', $note, $outcome, $primaryType, $path);
         }
 
-        $outcomes = self::forPath($this->comparator->evaluate($message->expectedCanonical, $canonical), $path);
+        $outcomes = self::markInformative(self::forPath($this->comparator->evaluate($message->expectedCanonical, $canonical), $path), $this->comparator->projection());
         $outcomes[] = self::classificationOutcome($message->expectedPrimaryType, $primaryType);
         $tag = $canonical['_resolve']['contentTag']['tag'] ?? null;
+
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_OK, null, null,
             $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName,
@@ -184,6 +187,28 @@ final class EvalRunner
     }
 
     /**
+     * Listy informativních uzlů projekce (`informativeNodes`, #103 D114)
+     * dostanou značku `informative` — porovnané zůstávají, do shody polí
+     * ani čistých dokladů nejdou. `notCarried` se neznačí (není shoda ani
+     * odchylka), proto až po {@see forPath()}.
+     *
+     * @param list<FieldOutcome> $outcomes
+     * @return list<FieldOutcome>
+     */
+    public static function markInformative(array $outcomes, Projection $projection): array
+    {
+        if ($projection->informativeNodes() === []) {
+            return $outcomes;
+        }
+        $out = [];
+        foreach ($outcomes as $o) {
+            $out[] = $o->state->isCounted() && $projection->isInformativeNode($o->nodePath()) ? $o->asInformative() : $o;
+        }
+        return $out;
+    }
+
+
+    /**
      * Selhané volání (D44): bez výstupu k porovnání nese každý neprázdný list
      * očekávání jako `missing` ({@see CanonicalComparator::evaluateAgainstNothing()})
      * plus virtuální list klasifikace — metriky polí selhání započítají,
@@ -192,8 +217,9 @@ final class EvalRunner
      */
     private function failed(EvalMessage $message, int $repeat, ?string $errorType, ?string $note, ?AnalysisOutcome $outcome, ?string $primaryType, string $path): EvalCallResult
     {
-        $outcomes = self::forPath($this->comparator->evaluateAgainstNothing($message->expectedCanonical), $path);
+        $outcomes = self::markInformative(self::forPath($this->comparator->evaluateAgainstNothing($message->expectedCanonical), $path), $this->comparator->projection());
         $outcomes[] = self::classificationOutcome($message->expectedPrimaryType, $primaryType);
+
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_FAILED, $errorType, $note,
             $outcome?->costUsd, $outcome?->tokensIn, $outcome?->tokensOut, $outcome?->durationMs, $outcome?->modelName,

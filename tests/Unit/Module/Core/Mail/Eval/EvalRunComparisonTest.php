@@ -154,8 +154,31 @@ final class EvalRunComparisonTest extends TestCase
         $this->assertSame([], EvalRunComparison::of(self::fixture('run-a'), self::fixture('run-b'))->toArray()['messages'], 'fixtury bez calls');
     }
 
+    /** #103 D114: různá verze metrik není odmítnutí, ale varování; `fields.informative.hit` je v přehledu. */
+    public function testDifferentMetricsVersionsAreFlagged(): void
+    {
+        $a = self::fixture('run-a');
+        $b = self::fixture('run-b');
+        $same = EvalRunComparison::of($a, $b)->toArray();
+        $this->assertSame(['a' => 1, 'b' => 1], $same['metricsVersions'], 'běh bez klíče je verze 1');
+        $this->assertTrue($same['sameMetricsVersion']);
+        $this->assertStringNotContainsString('verzi metrik', implode("\n", EvalRunComparison::of($a, $b)->lines()));
+
+        $b['metricsVersion'] = 2;
+        $b['metrics']['fields.informative.hit'] = 0.75;
+        $b['metrics']['fields.informative.n'] = 20;
+        $c = EvalRunComparison::of($a, $b)->toArray();
+        $this->assertSame(['a' => 1, 'b' => 2], $c['metricsVersions']);
+        $this->assertFalse($c['sameMetricsVersion']);
+        $rows = array_column($c['metrics'], null, 'key');
+        $this->assertSame([null, 0.75, null], [$rows['fields.informative.hit']['a'], $rows['fields.informative.hit']['b'], $rows['fields.informative.hit']['delta']]);
+        $this->assertContains('fields.informative.hit', EvalRunComparison::HEADLINE_METRICS);
+        $this->assertStringContainsString('různou verzi metrik (A v1, B v2)', implode("\n", EvalRunComparison::of($a, $b)->lines()));
+    }
+
     public function testDifferentSetsAreRefused(): void
     {
+
         $this->expectException(EvalException::class);
         $this->expectExceptionMessage('nejsou nad touž sadou');
         EvalRunComparison::of(self::fixture('run-a'), self::fixture('run-other-set'));

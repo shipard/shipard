@@ -196,10 +196,12 @@ final class DevTestingController
 			return Response::error('NOT_FOUND', 'call not found in run (message or repeat)', 404);
 		}
 		$currentHash = $catalog->currentHash($dataset);
-		$detail = EvalOutputReconstruction::build($messages->projection(), $evalMessage, $call, ($run['set']['hash'] ?? null) === $currentHash);
+		$summary = EvalRunSummary::fromRun($run, $currentHash);
+		$detail = EvalOutputReconstruction::build($messages->projection(), $evalMessage, $call, $summary['currentSet'], $summary['metricsVersion']);
 		sort($repeats);
 		$detail['repeats'] = $repeats;
-		$detail['run'] = EvalRunSummary::fromRun($run, $currentHash);
+		$detail['run'] = $summary;
+
 		$detail['hasPdf'] = $messages->pdfPath($evalMessage) !== null;
 		return Response::success($detail);
 	}

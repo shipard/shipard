@@ -41,8 +41,16 @@ use Shipard\Module\Core\Mail\Eval\EvalRunner;
  *   ({@see IsdocFieldCoverage}), jsou `notCarried` s důvodem — soubor je
  *   nenese, odvodí se z téhož zdroje jako v běhu; výstup se neukazuje,
  *   do počtů jdou jako `notCarried` (ne jako `notCompared`, které je mimo
- *   počty).
+ *   počty);
+ * - informativní listy (#103 D114, `informativeNodes` projekce, jen běh
+ *   s `metricsVersion` ≥ 2): záznamy jsou v `informativeDeviations`
+ *   a v `normalized` se značkou, shody bez záznamu se odvodí z projekce
+ *   (stejné pravidlo jako `EvalRunner::markInformative()`, `notCarried` se
+ *   neznačí); mají vlastní skupinu `informative` a vlastní
+ *   `informativeCounts`, do `counts` ani skupin podle cesty nejdou. Běh v1
+ *   je nese jako obyčejné listy — tehdy se tak počítaly.
  */
+
 final class EvalOutputReconstruction
 {
     public const string STATE_NOT_COMPARED = 'notCompared';
@@ -55,6 +63,9 @@ final class EvalOutputReconstruction
     ];
 
     private const array COUNTED_STATES = ['match', 'matchNormalized', 'missing', 'extra', 'wrong', 'notCarried'];
+    /** Stavy informativních listů (`informativeCounts` volání, #103 D114) — `notCarried` se neznačí. */
+    private const array INFORMATIVE_STATES = ['match', 'matchNormalized', 'missing', 'extra', 'wrong'];
+
 
     private function __construct()
     {
@@ -62,10 +73,12 @@ final class EvalOutputReconstruction
 
     /**
      * @param array<string, mixed> $call položka `calls[]` běhu
+     * @param int $metricsVersion `metricsVersion` běhu (bez klíče 1); od 2 informativní listy zvlášť (D114)
      * @return array<string, mixed>
      */
-    public static function build(Projection $projection, EvalMessage $message, array $call, bool $currentSet = true): array
+    public static function build(Projection $projection, EvalMessage $message, array $call, bool $currentSet = true, int $metricsVersion = 1): array
     {
+
         $projected = $projection->project($message->expectedCanonical);
         $leaves = self::expectedLeaves($projection, $projected);
         $arrays = [];
@@ -75,8 +88,9 @@ final class EvalOutputReconstruction
             foreach (EvalCallResult::normalizedEntries($call) as $entry) {
                 self::apply($leaves, $entry['path'], FieldState::MatchNormalized->value, null, $entry['actual'], $entry['actualKnown'], $entry['similarity'], keepExpected: true);
             }
-            foreach ((array) ($call['deviations'] ?? []) as $deviation) {
+            foreach (array_merge((array) ($call['deviations'] ?? []), (array) ($call['informativeDeviations'] ?? [])) as $deviation) {
                 if (!is_array($deviation) || !is_string($deviation['path'] ?? null)) {
+
                     continue;
                 }
                 $path = $deviation['path'];
@@ -108,11 +122,16 @@ final class EvalOutputReconstruction
             }
         }
 
+        if ($metricsVersion >= 2) {
+            self::markInformative($leaves, $arrays, $projection);
+        }
+
         $classification = EvalRunner::classificationOutcome($message->expectedPrimaryType, is_string($call['primaryType'] ?? null) ? $call['primaryType'] : null);
         $leaves[] = self::leaf($classification->path, null, $classification->expected, $classification->actual, $classification->state->value);
 
         return self::assemble($message, $call, $leaves, $arrays, $currentSet);
     }
+
 
     // ── listy očekávání ─────────────────────────────────────────────────────
 
@@ -268,7 +287,32 @@ final class EvalOutputReconstruction
         unset($leaf);
     }
 
+    /**
+     * Informativní listy (#103 D114) podle projekce — list i prvek pole,
+     * jehož uzel (nebo předek) je v `informativeNodes`; `notCarried`
+     * a neporovnané listy se neznačí (pravidlo jako `EvalRunner::markInformative()`).
+     *
+     * @param list<array<string, mixed>> $leaves
+     * @param list<array<string, mixed>> $arrays
+     */
+    private static function markInformative(array &$leaves, array &$arrays, Projection $projection): void
+    {
+        foreach ($leaves as &$leaf) {
+            if ($leaf['counted'] && $leaf['state'] !== FieldState::NotCarried->value && $projection->isInformativeNode($leaf['nodePath'])) {
+                $leaf['informative'] = true;
+            }
+        }
+        unset($leaf);
+        foreach ($arrays as &$entry) {
+            if ($projection->isInformativeNode($entry['path'])) {
+                $entry['informative'] = true;
+            }
+        }
+        unset($entry);
+    }
+
     /** Prvky pole od pozice `$from` se neporovnávaly (výstup má méně prvků). */
+
     private static function markNotCompared(array &$leaves, string $arrayPath, int $from): void
     {
         $re = '/^' . preg_quote($arrayPath, '/') . '\[(\d+)\]/';
@@ -309,8 +353,10 @@ final class EvalOutputReconstruction
             'similarity' => null,
             'reason' => null,
             'counted' => true,
+            'informative' => false,
         ];
     }
+
 
     /** @param list<array<string, mixed>> $leaves @return list<array<string, mixed>> */
     private static function ordered(array $leaves): array
@@ -329,26 +375,35 @@ final class EvalOutputReconstruction
     private static function assemble(EvalMessage $message, array $call, array $leaves, array $arrays, bool $currentSet): array
     {
         $counts = self::emptyCounts();
+        $informativeCounts = self::emptyInformativeCounts();
+        $groupIds = [...EvalFieldGroups::GROUPS, EvalFieldGroups::INFORMATIVE_GROUP];
         $groupCounts = [];
-        foreach (EvalFieldGroups::GROUPS as $group) {
+        foreach ($groupIds as $group) {
             $groupCounts[$group] = self::emptyCounts();
         }
-        $fieldsByGroup = array_fill_keys(EvalFieldGroups::GROUPS, []);
+        $fieldsByGroup = array_fill_keys($groupIds, []);
+
         $tables = [];
         foreach (self::TABLE_NODES as $path => $label) {
             $tables[$path] = ['path' => $path, 'label' => $label, 'group' => EvalFieldGroups::groupOf($path), 'columns' => [], 'rows' => []];
         }
 
         foreach ($leaves as $leaf) {
+            $bucket = $leaf['informative'] ? EvalFieldGroups::INFORMATIVE_GROUP : $leaf['group'];
             if ($leaf['counted'] && in_array($leaf['state'], self::COUNTED_STATES, true)) {
-                $counts[$leaf['state']]++;
-                $groupCounts[$leaf['group']][$leaf['state']]++;
+                if ($leaf['informative']) {
+                    $informativeCounts[$leaf['state']]++;
+                } else {
+                    $counts[$leaf['state']]++;
+                }
+                $groupCounts[$bucket][$leaf['state']]++;
             }
             $table = self::tableOf($leaf['path']);
             if ($table === null) {
-                $fieldsByGroup[$leaf['group']][] = $leaf;
+                $fieldsByGroup[$bucket][] = $leaf;
                 continue;
             }
+
             [$node, $key, $column] = $table;
             $tables[$node]['rows'][$key] ??= ['key' => $key, 'cells' => [], 'node' => null];
             if ($column === '') {
@@ -361,12 +416,18 @@ final class EvalOutputReconstruction
             $tables[$node]['rows'][$key]['cells'][$column] = $leaf;
         }
         foreach ($arrays as $entry) {
+            if ($entry['informative'] ?? false) {
+                $informativeCounts[$entry['state']]++;
+                $groupCounts[EvalFieldGroups::INFORMATIVE_GROUP][$entry['state']]++;
+                continue;
+            }
             $counts[$entry['state']]++;
             $groupCounts[EvalFieldGroups::groupOf($entry['path'])][$entry['state']]++;
         }
 
         $groups = [];
-        foreach (EvalFieldGroups::GROUPS as $group) {
+        foreach ($groupIds as $group) {
+
             $groups[] = [
                 'id' => $group,
                 'label' => EvalFieldGroups::label($group),
@@ -381,6 +442,8 @@ final class EvalOutputReconstruction
         unset($table);
 
         $fileCounts = is_array($call['counts'] ?? null) ? $call['counts'] : null;
+        $fileInformativeCounts = is_array($call['informativeCounts'] ?? null) ? $call['informativeCounts'] : null;
+
         $classification = null;
         foreach ($leaves as $leaf) {
             if ($leaf['path'] === EvalFieldGroups::CLASSIFICATION_PATH) {
@@ -406,8 +469,12 @@ final class EvalOutputReconstruction
             'currentSet' => $currentSet,
             'classification' => $classification,
             'counts' => $counts,
+            'informativeCounts' => $informativeCounts,
             'fileCounts' => $fileCounts,
-            'countsMatch' => $fileCounts === null ? null : self::sameCounts($counts, $fileCounts),
+            'fileInformativeCounts' => $fileInformativeCounts,
+            'countsMatch' => $fileCounts === null ? null : (self::sameCounts($counts, $fileCounts, self::COUNTED_STATES)
+                && ($fileInformativeCounts === null || self::sameCounts($informativeCounts, $fileInformativeCounts, self::INFORMATIVE_STATES))),
+
             'arrays' => $arrays,
             'groups' => $groups,
             'tables' => array_values($tables),
@@ -431,10 +498,17 @@ final class EvalOutputReconstruction
         return ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0, 'notCarried' => 0];
     }
 
-    /** @param array<string, int> $a @param array<string, mixed> $b */
-    private static function sameCounts(array $a, array $b): bool
+    /** @return array{match: int, matchNormalized: int, missing: int, extra: int, wrong: int} */
+    private static function emptyInformativeCounts(): array
     {
-        foreach (self::COUNTED_STATES as $state) {
+        return ['match' => 0, 'matchNormalized' => 0, 'missing' => 0, 'extra' => 0, 'wrong' => 0];
+    }
+
+    /** @param array<string, int> $a @param array<string, mixed> $b @param list<string> $states */
+    private static function sameCounts(array $a, array $b, array $states): bool
+    {
+        foreach ($states as $state) {
+
             if (($a[$state] ?? 0) !== (int) ($b[$state] ?? 0)) {
                 return false;
             }
