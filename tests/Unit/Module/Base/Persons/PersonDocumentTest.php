@@ -121,6 +121,47 @@ class PersonDocumentTest extends TestCase
         $this->assertSame('00006947', $plain['company_id']);
     }
 
+    // --- platnost údajů (#118 D19) ------------------------------------------
+
+    /** @return list<string> */
+    private static function codes(array $entries): array
+    {
+        return array_map(static fn (array $e): string => $e['column'] . ':' . $e['code'], $entries);
+    }
+
+    public function testPartnerWithInvalidValuesSavesWithWarnings(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Acme s.r.o.', 'company_id' => '52654151', 'vat_id' => 'CZ526541',
+            'addresses' => [['address_type' => 1, 'city' => 'Zlín', 'zip' => '7790', 'country' => 'cz']]];
+        $result = $this->doc()->validate($data);
+        $this->assertTrue($result->isValid(), 'varování uložení neblokuje');
+        $this->assertSame(
+            ['company_id:company_id_invalid', 'vat_id:vat_id_invalid', 'addresses.0.zip:zip_invalid'],
+            self::codes($result->warningsToArray()),
+        );
+        $this->assertSame('IČO „52654151“ nemá platný kontrolní součet.', $result->warningsToArray()[0]['message']);
+    }
+
+    public function testOwnCompanyWithInvalidValuesIsRejected(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Moje s.r.o.', 'is_own' => 1, 'company_id' => '52654150', 'vat_id' => 'CZ07123451'];
+        $result = $this->doc()->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame(['vat_id:vat_id_company_id_mismatch'], self::codes($result->toArray()));
+        $this->assertSame([], $result->warningsToArray());
+    }
+
+    public function testForeignCompanyIdHasNoFinding(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Muster GmbH', '_country' => 'de', 'company_id' => 'HRB 12345', 'vat_id' => 'DE136695976'];
+        $result = $this->doc()->validate($data);
+        $this->assertTrue($result->isValid());
+        $this->assertSame([], $result->warningsToArray());
+
+        $cz = ['person_type' => 2, 'full_name' => 'Acme s.r.o.', 'company_id' => '6947', 'vat_id' => '00006947'];
+        $this->assertSame([], $this->doc()->validate($cz)->warningsToArray(), 'kontrola nad normalizovaným tvarem (vedoucí nuly, prefix)');
+    }
+
     // --- adresy s novou osobou (#103 D99) ----------------------------------
 
     public function testAddressesLeaveTheDataInBeforeSaveAndArePersistedAfterTheRow(): void

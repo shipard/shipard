@@ -573,7 +573,16 @@ Uživatelé: FPB bez bankovního spojení dodavatele
 (`partner_bank_recommended`, dřív blokující `partner_bank_required` — hard
 požadavek se přesune do budoucího platebního flow); převzatá rekapitulace
 DPH proti řádkům dokladu (`rows_recap_mismatch`) a její vnitřní konzistence
-(`vat_recap_inconsistent`, `docs/vat-calculation.md` § 5).
+(`vat_recap_inconsistent`, `docs/vat-calculation.md` § 5); nevalidní IČO,
+DIČ, PSČ, číslo účtu, IBAN nebo BIC **partnera** v adresáři (#118 D19 —
+kódy `company_id_invalid`, `vat_id_invalid`, `vat_id_company_id_mismatch`,
+`zip_invalid`, `account_number_invalid`, `iban_invalid`, `bic_invalid`,
+`iban_account_mismatch` z `world.validations` `ValueChecks`, tytéž texty
+jako nálezy canonicalu dokladu; u **vlastní firmy**, jejích adres a účtů
+a u vlastních účtů v číselníku jsou to chyby). Dialog sub-tabulky
+(adresa, účet osoby) se po uložení s varováním **nezavře** —
+`FormSubTable.handleDialogSaved` nechá banner vidět, uživatel dialog
+zavře sám.
 
 ### Kontrakt `field`
 

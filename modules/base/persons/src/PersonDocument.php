@@ -109,7 +109,39 @@ class PersonDocument extends Document
             }
         }
 
+        // Platnost IČO, DIČ a PSČ adres zapisovaných s osobou (#118 D19):
+        // partner dostane varování, vlastní firma chybu — její údaje jdou
+        // na doklady, do QR platby a ISDOC.
+        $country = $this->resolveCountry($data);
+        $own = !empty($data['is_own']);
+        self::report($result, PersonValues::checkPerson($data, $country), $own);
+        if (is_array($data['addresses'] ?? null)) {
+            foreach ($data['addresses'] as $n => $row) {
+                if (is_array($row)) {
+                    self::report($result, PersonValues::checkAddress($row), $own, "addresses.{$n}.");
+                }
+            }
+        }
+
         return $result;
+    }
+
+    /**
+     * Nálezy hodnot do výsledku validace: chyba u vlastní firmy, varování
+     * u partnera (D19).
+     *
+     * @param list<array{column: string, code: string, message: string}> $findings
+     */
+    public static function report(ValidationResult $result, array $findings, bool $own, string $columnPrefix = ''): void
+    {
+        foreach ($findings as $finding) {
+            $column = $columnPrefix . $finding['column'];
+            if ($own) {
+                $result->addError($column, $finding['message'], $finding['code']);
+            } else {
+                $result->addWarning($column, $finding['message'], $finding['code']);
+            }
+        }
     }
 
     public function beforeSave(array &$data, ?array $originalData = null): void

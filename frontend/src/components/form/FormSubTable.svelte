@@ -227,10 +227,18 @@
   // (tlačítko Přidat = uložit a zavřít; Přidat a pokračovat jde jinou cestou,
   // viz handleSaveAndContinue). Existující záznam s doc states (Kontakty,
   // Adresy …) zůstane otevřený — zavření řeší close_form / onClose.
-  async function handleDialogSaved(_record, info) {
-    if (!info?.hasDocStates || info?.wasNew) {
+  // Uložení s varováním (#118 D19: neplatné PSČ nebo IBAN partnera) dialog
+  // nezavře nikdy — žlutý banner je v něm a zavřením by zmizel neviděn;
+  // uživatel ho zavře sám.
+  async function handleDialogSaved(record, info) {
+    const hasWarnings = Array.isArray(record?.warnings) && record.warnings.length > 0;
+    if ((!info?.hasDocStates || info?.wasNew) && !hasWarnings) {
       dialogOpen = false;
       editRecordId = null;
+    } else if (info?.wasNew && hasWarnings && record?.id != null) {
+      // Dialog zůstává na právě uloženém řádku (ne na dalším novém), aby šlo
+      // hodnotu z varování rovnou opravit.
+      editRecordId = record.id;
     }
     await fetchRows();
     onChanged?.();

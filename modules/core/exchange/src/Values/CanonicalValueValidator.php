@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Values;
 
-use Shipard\Module\World\Validations\Bic;
-use Shipard\Module\World\Validations\DomesticAccount;
-use Shipard\Module\World\Validations\Iban;
+use Shipard\Module\World\Validations\ValueChecks;
+use Shipard\Module\World\Validations\ValueFinding;
 use Shipard\Module\World\Validations\ValueRulesRegistry;
-use Shipard\Module\World\Validations\VatId;
 
 /**
  * Validace hodnot canonicalu `shpd.docs.document` (#118 D3, D13): čistá
@@ -18,24 +16,26 @@ use Shipard\Module\World\Validations\VatId;
  *
  * Kontroluje tvary po {@see CanonicalValueNormalizer::normalizeShapes()}
  * (hodnotu nemění): persistované canonicaly z doby před normalizací tak
- * nedostanou nález za mezery v IBAN nebo PSČ. Záznamy
- * `_resolve.valueRepairs` čte z původního vstupu a dělá z nich
- * `bank_account_repaired`. Telefon, e-mail, web a `taxId` nálezy
- * nevyrábí (D12; `taxId` u cz = DIČ, nález by se zdvojil).
+ * nedostanou nález za mezery v IBAN nebo PSČ. Kontroly i texty nálezů
+ * dává knihovna ({@see ValueChecks}, {@see ValueFinding}) — tytéž, které
+ * hlásí formuláře adresáře (D19). Záznamy `_resolve.valueRepairs` čte
+ * z původního vstupu a dělá z nich `bank_account_repaired`. Telefon,
+ * e-mail, web a `taxId` nálezy nevyrábí (D12; `taxId` u cz = DIČ, nález
+ * by se zdvojil).
  *
  * Volá ji `DocumentValidator::validate()` (`/validate`, `/preview`,
  * `/apply`) a strop pásma `AnalysisConfidenceResolver::capBand()`.
  */
 final class CanonicalValueValidator
 {
-    public const COMPANY_ID_INVALID = 'company_id_invalid';
-    public const VAT_ID_INVALID = 'vat_id_invalid';
-    public const VAT_ID_COMPANY_ID_MISMATCH = 'vat_id_company_id_mismatch';
-    public const ZIP_INVALID = 'zip_invalid';
-    public const ACCOUNT_NUMBER_INVALID = 'account_number_invalid';
-    public const IBAN_INVALID = 'iban_invalid';
-    public const BIC_INVALID = 'bic_invalid';
-    public const IBAN_ACCOUNT_MISMATCH = 'iban_account_mismatch';
+    public const COMPANY_ID_INVALID = ValueFinding::COMPANY_ID_INVALID;
+    public const VAT_ID_INVALID = ValueFinding::VAT_ID_INVALID;
+    public const VAT_ID_COMPANY_ID_MISMATCH = ValueFinding::VAT_ID_COMPANY_ID_MISMATCH;
+    public const ZIP_INVALID = ValueFinding::ZIP_INVALID;
+    public const ACCOUNT_NUMBER_INVALID = ValueFinding::ACCOUNT_NUMBER_INVALID;
+    public const IBAN_INVALID = ValueFinding::IBAN_INVALID;
+    public const BIC_INVALID = ValueFinding::BIC_INVALID;
+    public const IBAN_ACCOUNT_MISMATCH = ValueFinding::IBAN_ACCOUNT_MISMATCH;
     public const BANK_ACCOUNT_REPAIRED = 'bank_account_repaired';
 
     public const CODES = [
@@ -50,11 +50,14 @@ final class CanonicalValueValidator
         'balanceParty' => 'plátce',
     ];
 
-    /** Popis tvaru čísla DIČ za prefixem u států s třídou (do zprávy nálezu). */
-    private const VAT_NUMBER_RULES = [
-        'CZ' => '8–10 číslic',
-        'SK' => '10 číslic',
-        'DE' => '9 číslic s kontrolní číslicí',
+    /** Cesty polí strany podle druhu hodnoty nálezu. */
+    private const PATHS = [
+        'companyId'     => 'companyId',
+        'vatId'         => 'vatId',
+        'zip'           => 'address.zip',
+        'accountNumber' => 'bankAccount.accountNumber',
+        'iban'          => 'bankAccount.iban',
+        'bic'           => 'bankAccount.bic',
     ];
 
     /**
@@ -86,96 +89,26 @@ final class CanonicalValueValidator
         $country = CanonicalValueNormalizer::partyCountry($party);
         $rules = ValueRulesRegistry::forCountry($country);
 
-        $companyId = self::text($party['companyId'] ?? null);
-        $companyIdValid = $companyId !== null && $rules->isValidCompanyId($companyId);
-        if ($companyId !== null && !$companyIdValid) {
-            $reason = preg_match('/^[0-9]{8}$/', $companyId) === 1
-                ? 'nemá platný kontrolní součet'
-                : 'nemá tvar osmi číslic';
-            $issues[] = self::warning("{$key}.companyId", self::COMPANY_ID_INVALID, "IČO {$label} „{$companyId}“ {$reason}.");
-        }
-
-        $vatId = self::text($party['vatId'] ?? null);
-        $vatIdValid = $vatId !== null && VatId::isValid($vatId);
-        if ($vatId !== null && !$vatIdValid) {
-            $prefix = VatId::prefixOf($vatId);
-            $reason = $prefix !== null && isset(self::VAT_NUMBER_RULES[$prefix])
-                ? "neodpovídá pravidlu státu {$prefix} (" . self::VAT_NUMBER_RULES[$prefix] . ')'
-                : 'nemá tvar: prefix státu a 2–13 znaků';
-            $issues[] = self::warning("{$key}.vatId", self::VAT_ID_INVALID, "DIČ {$label} „{$vatId}“ {$reason}.");
-        }
-        if ($vatIdValid && $companyIdValid) {
-            $implied = $rules->companyIdFromVatId((string) $vatId);
-            if ($implied !== null && $implied !== $companyId) {
-                $issues[] = self::warning(
-                    "{$key}.vatId",
-                    self::VAT_ID_COMPANY_ID_MISMATCH,
-                    "DIČ {$label} „{$vatId}“ neodpovídá IČO „{$companyId}“ — osmimístné DIČ je {$rules->vatIdPrefix()} + IČO.",
-                );
-            }
-        }
+        $findings = ValueChecks::identity(self::text($party['companyId'] ?? null), self::text($party['vatId'] ?? null), $rules);
 
         $zip = self::text($party['address']['zip'] ?? null);
         if ($zip !== null) {
-            $zipCountry = self::text($party['address']['country'] ?? null) ?? $country;
-            $zipRules = ValueRulesRegistry::forCountry($zipCountry);
-            if (!$zipRules->isValidZip($zip)) {
-                $issues[] = self::warning("{$key}.address.zip", self::ZIP_INVALID, "PSČ {$label} „{$zip}“ nemá pět číslic ({$zipRules->country()}).");
-            }
+            $zipRules = ValueRulesRegistry::forCountry(self::text($party['address']['country'] ?? null) ?? $country);
+            $findings[] = ValueChecks::zip($zip, $zipRules);
         }
 
         if (is_array($party['bankAccount'] ?? null)) {
-            self::validateBankAccount($key, $label, $party['bankAccount'], $rules->supportsDomesticAccount(), $issues);
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $bank
-     * @param list<array{severity: string, path: string, code: string, message: string}> $issues
-     */
-    private static function validateBankAccount(string $key, string $label, array $bank, bool $partyDomestic, array &$issues): void
-    {
-        $accountNumber = self::text($bank['accountNumber'] ?? null);
-        $account = $accountNumber !== null ? DomesticAccount::parse($accountNumber) : null;
-        $accountValid = false;
-        if ($accountNumber !== null) {
-            if ($account !== null) {
-                $accountValid = $account->isValid();
-                if (!$accountValid) {
-                    $issues[] = self::warning("{$key}.bankAccount.accountNumber", self::ACCOUNT_NUMBER_INVALID, "Číslo účtu {$label} „{$accountNumber}“ nesplňuje kontrolu mod 11.");
-                }
-            } elseif ($partyDomestic) {
-                $issues[] = self::warning("{$key}.bankAccount.accountNumber", self::ACCOUNT_NUMBER_INVALID, "Číslo účtu {$label} „{$accountNumber}“ nemá tvar [předčíslí-]číslo/kód banky.");
-            }
+            $bank = $party['bankAccount'];
+            $findings = array_merge($findings, ValueChecks::bankAccount(
+                self::text($bank['accountNumber'] ?? null),
+                self::text($bank['iban'] ?? null),
+                self::text($bank['bic'] ?? null),
+                $rules->supportsDomesticAccount(),
+            ));
         }
 
-        $iban = self::text($bank['iban'] ?? null);
-        $ibanValid = $iban !== null && Iban::isValid($iban);
-        if ($iban !== null && !$ibanValid) {
-            if (!Iban::hasShape($iban)) {
-                $reason = 'nemá tvar IBAN';
-            } elseif (!Iban::checksumOk($iban)) {
-                $reason = 'nemá platnou kontrolní číslici';
-            } else {
-                $reason = 'neodpovídá pravidlu státu ' . strtoupper((string) Iban::countryOf($iban)) . ' (délka nebo číslo účtu uvnitř)';
-            }
-            $issues[] = self::warning("{$key}.bankAccount.iban", self::IBAN_INVALID, "IBAN {$label} „{$iban}“ {$reason}.");
-        }
-
-        $bic = self::text($bank['bic'] ?? null);
-        if ($bic !== null && !Bic::isValid($bic)) {
-            $issues[] = self::warning("{$key}.bankAccount.bic", self::BIC_INVALID, "BIC {$label} „{$bic}“ nemá tvar 8 nebo 11 znaků.");
-        }
-
-        if ($ibanValid && $accountValid && $account !== null) {
-            $fromIban = ValueRulesRegistry::forIban((string) $iban)->domesticAccountFromIban((string) $iban);
-            if ($fromIban !== null && $fromIban->toBban() !== $account->toBban()) {
-                $issues[] = self::warning(
-                    "{$key}.bankAccount.iban",
-                    self::IBAN_ACCOUNT_MISMATCH,
-                    "IBAN {$label} „{$iban}“ neodpovídá číslu účtu „{$accountNumber}“ — podle IBAN je účet „{$fromIban}“.",
-                );
-            }
+        foreach (array_filter($findings) as $finding) {
+            $issues[] = self::warning("{$key}." . self::PATHS[$finding->kind], $finding->code, $finding->message($label));
         }
     }
 
@@ -204,4 +137,3 @@ final class CanonicalValueValidator
         return is_string($value) && trim($value) !== '' ? $value : null;
     }
 }
-

@@ -7,11 +7,16 @@ namespace Shipard\Module\Economy\Codebooks;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Module\World\Validations\BankAccountShape;
+use Shipard\Module\World\Validations\ValueChecks;
+use Shipard\Module\World\Validations\ValueRulesRegistry;
 
 /**
  * Vlastní bankovní účet (číselník). Číslo účtu, IBAN a BIC ukládá
  * v kanonickém tvaru a IBAN zapsaný do čísla účtu přesouvá do `iban`
- * (#118 D18, D20) — touž funkcí jako účty osob.
+ * (#118 D18, D20) — touž funkcí jako účty osob. Nevalidní číslo účtu,
+ * IBAN, BIC nebo jejich nesoulad je chyba (D19): vlastní účet jde na
+ * doklady, do QR platby a ISDOC. Tuzemský tvar se čeká podle země
+ * zdroje dat.
  */
 class BankAccountDocument extends Document
 {
@@ -45,9 +50,12 @@ class BankAccountDocument extends Document
             );
         }
 
-        $accountNumber = trim((string) ($data['account_number'] ?? ''));
-        $iban = strtoupper(trim((string) ($data['iban'] ?? '')));
-        $bic = strtoupper(trim((string) ($data['bic'] ?? '')));
+        // Kontrola nad tvarem, v jakém se účet uloží (beforeSave normalizuje
+        // stejně — vč. přesunu IBAN ze sloupce čísla účtu).
+        $shaped = BankAccountShape::normalizeRow($data);
+        $accountNumber = trim((string) ($shaped['account_number'] ?? ''));
+        $iban = trim((string) ($shaped['iban'] ?? ''));
+        $bic = trim((string) ($shaped['bic'] ?? ''));
 
         if ($accountNumber === '' && $iban === '') {
             $result->addError(
@@ -57,12 +65,10 @@ class BankAccountDocument extends Document
             );
         }
 
-        if ($iban !== '' && !preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/', $iban)) {
-            $result->addError('iban', 'IBAN má neplatný formát.', 'invalid_format');
-        }
-
-        if ($bic !== '' && !preg_match('/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/', $bic)) {
-            $result->addError('bic', 'BIC/SWIFT má neplatný formát.', 'invalid_format');
+        $columns = ['accountNumber' => 'account_number', 'iban' => 'iban', 'bic' => 'bic'];
+        $domestic = ValueRulesRegistry::forCountry($this->dsConfig?->getCountry() ?? 'cz')->supportsDomesticAccount();
+        foreach (ValueChecks::bankAccount($accountNumber, $iban, $bic, $domestic) as $finding) {
+            $result->addError($columns[$finding->kind] ?? $finding->kind, $finding->message(), $finding->code);
         }
 
         // accounting_account (extension z economy.bank) musí odkazovat na

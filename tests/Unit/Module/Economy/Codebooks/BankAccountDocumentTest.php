@@ -129,7 +129,7 @@ class BankAccountDocumentTest extends TestCase
         $this->assertFalse($result->isValid());
         $errors = array_filter(
             $result->toArray(),
-            static fn(array $e): bool => $e['column'] === 'iban' && $e['code'] === 'invalid_format',
+            static fn(array $e): bool => $e['column'] === 'iban' && $e['code'] === 'iban_invalid',
         );
         $this->assertNotEmpty($errors);
     }
@@ -143,9 +143,41 @@ class BankAccountDocumentTest extends TestCase
         $this->assertFalse($result->isValid());
         $errors = array_filter(
             $result->toArray(),
-            static fn(array $e): bool => $e['column'] === 'iban' && $e['code'] === 'invalid_format',
+            static fn(array $e): bool => $e['column'] === 'iban' && $e['code'] === 'iban_invalid',
         );
         $this->assertNotEmpty($errors);
+    }
+
+    public function testIbanChecksumAndMismatchFail(): void
+    {
+        $data = $this->validData();
+        $data['iban'] = 'CZ8520100000002308417558';
+        $result = $this->doc()->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame(['iban:iban_invalid'], $this->codes($result->toArray()));
+        $this->assertSame('IBAN „CZ8520100000002308417558“ nemá platnou kontrolní číslici.', $result->toArray()[0]['message']);
+
+        $data['iban'] = 'CZ8520100000002308417557';
+        $result = $this->doc()->validate($data);
+        $this->assertSame(['iban:iban_account_mismatch'], $this->codes($result->toArray()), 'platný IBAN jiného účtu než číslo účtu');
+
+        $data['account_number'] = '2308417558/2010';
+        $data['iban'] = null;
+        $this->assertSame(['account_number:account_number_invalid'], $this->codes($this->doc()->validate($data)->toArray()), 'mod 11 čísla účtu');
+    }
+
+    public function testIbanTypedIntoAccountNumberIsValidAndMoved(): void
+    {
+        $data = $this->validData();
+        $data['account_number'] = 'CZ65 0800 0000 1920 0014 5399';
+        $data['iban'] = '';
+        $this->assertTrue($this->doc()->validate($data)->isValid(), 'kontrola nad tvarem po přesunu (D20) — formulář posílá oba sloupce');
+    }
+
+    /** @return list<string> */
+    private function codes(array $entries): array
+    {
+        return array_map(static fn (array $e): string => $e['column'] . ':' . $e['code'], $entries);
     }
 
     public function testIbanLowercaseAcceptedAfterUppercase(): void
@@ -166,7 +198,7 @@ class BankAccountDocumentTest extends TestCase
         $this->assertFalse($result->isValid());
         $errors = array_filter(
             $result->toArray(),
-            static fn(array $e): bool => $e['column'] === 'bic' && $e['code'] === 'invalid_format',
+            static fn(array $e): bool => $e['column'] === 'bic' && $e['code'] === 'bic_invalid',
         );
         $this->assertNotEmpty($errors);
     }
@@ -180,7 +212,7 @@ class BankAccountDocumentTest extends TestCase
         $this->assertFalse($result->isValid());
         $errors = array_filter(
             $result->toArray(),
-            static fn(array $e): bool => $e['column'] === 'bic' && $e['code'] === 'invalid_format',
+            static fn(array $e): bool => $e['column'] === 'bic' && $e['code'] === 'bic_invalid',
         );
         $this->assertNotEmpty($errors);
     }

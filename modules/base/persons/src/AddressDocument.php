@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Base\Persons;
 
 use Shipard\Core\Document\Document;
+use Shipard\Core\Document\ValidationResult;
 use Shipard\Module\Base\Persons\Values\PersonContext;
 use Shipard\Module\Base\Persons\Values\PersonValues;
 
@@ -14,10 +15,19 @@ use Shipard\Module\Base\Persons\Values\PersonValues;
  * adresy — při částečném updatu bez země podle uloženého řádku. Řádky
  * zapisované s novou osobou normalizuje `PersonDocument`, podřízené
  * záznamy applieru `PersonApplier` — všechny touž funkcí
- * ({@see PersonValues::normalizeAddress}).
+ * ({@see PersonValues::normalizeAddress}). PSČ cz / sk / de kontroluje
+ * (D19): u adresy vlastní firmy chyba, u partnera varování.
  */
 class AddressDocument extends Document
 {
+    public function validate(array &$data): ValidationResult
+    {
+        $result = new ValidationResult();
+        $own = $this->personContext()->isOwn((int) ($data['person'] ?? 0));
+        PersonDocument::report($result, PersonValues::checkAddress($data), $own);
+        return $result;
+    }
+
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
         $data = PersonValues::normalizeAddress($data, PersonValues::text($originalData['country'] ?? null));
