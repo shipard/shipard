@@ -247,6 +247,37 @@ class DatasetExpectationsTest extends TestCase
         );
     }
 
+    /**
+     * Kopie schválených souborů v sadě = schválený soubor profilu
+     * (`profiles/<profil>/approved/*` → `expected/<název>`, #103 D116):
+     * bajtově shodné a žádná kopie snímku bez schváleného zdroje. Rozdíl
+     * = sada nebyla po schválení přestavěna (`build.py --refresh-approved`).
+     */
+    #[DataProvider('datasets')]
+    public function testApprovedCopiesMatchCorpus(string $country, string $profile): void
+    {
+        $root = self::repoRoot();
+        $approvedDir = "{$root}/tests/corpus/{$country}/profiles/{$profile}/approved";
+        $expectedDir = self::datasetDir($country, $profile) . '/expected';
+        $rel = static fn (string $path): string => substr($path, strlen($root) + 1);
+        $problems = [];
+        foreach (glob($approvedDir . '/*') ?: [] as $source) {
+            $copy = $expectedDir . '/' . basename($source);
+            if (!is_file($copy)) {
+                $problems[] = "chybí kopie {$rel($copy)} schváleného {$rel($source)}";
+            } elseif (file_get_contents($copy) !== file_get_contents($source)) {
+                $problems[] = "kopie {$rel($copy)} ≠ schválený {$rel($source)}";
+            }
+        }
+        $ledgerCopy = $expectedDir . '/general-ledger.json';
+        if (is_file($ledgerCopy) && !is_file($approvedDir . '/general-ledger.json')) {
+            $problems[] = "kopie {$rel($ledgerCopy)} bez schváleného zdroje {$rel($approvedDir)}/general-ledger.json";
+        }
+        $this->assertSame([], $problems, "{$country}/{$profile}:\n" . implode("\n", $problems)
+            . "\nspusť python3 tests/corpus/cz/build.py --refresh-approved");
+    }
+
+
     #[DataProvider('datasets')]
     public function testExpectationsCoverEveryMessage(string $country, string $profile): void
     {

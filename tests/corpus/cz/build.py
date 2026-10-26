@@ -14,7 +14,8 @@ takže je výstup deterministický — výpis říká „ISDOC zapsán / beze zm
 podle obsahu, build-state.json se ho netýká. Buňce podoby pdf se .isdoc
 smaže; plný běh smaže i sirotky. Vyžaduje `composer install` (vendor/).
 
-    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error]
+    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--fetch-rates] [--no-datasets] [--fidelity=warn|error] [--refresh-approved]
+
 
 Věrnost tisku (#103 D105, invoicegen/fidelity.py): po PDF každé buňky
 (i beze změny — čte se z disku) build ověří, že identifikátory z očekávání
@@ -34,7 +35,11 @@ lístek je chyba. Plný běh (bez --only) smaže lístky, které žádný doklad
 nepotřebuje.
 Po korpusu sestaví datové sady tests/datasets/cz/<profil>/ ze základů
 profilů profiles/<profil>/ (tasks/testing-phase2.md; --no-datasets přeskočí;
-sady se stavějí vždy ze všech datových souborů, i s --only).
+sady se stavějí vždy ze všech datových souborů, i s --only). Kopie
+schváleného snímku hlavní knihy v sadě (expected/general-ledger.json) musí
+být shodná s profiles/<profil>/approved/ — rozdíl je chyba (#103 D116);
+nový schválený snímek převezme jen --refresh-approved.
+
 Env: GOTENBERG_URL (default http://10.199.6.210:3000). Exit != 0 = chyba.
 """
 
@@ -187,6 +192,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fetch-rates", action="store_true",
                         help="stáhnout chybějící kurzovní lístky ČNB ze služby kurzů (síť) do exchange-rates/")
     parser.add_argument("--no-datasets", action="store_true", help="nesestavovat datové sady tests/datasets/cz/")
+    parser.add_argument("--refresh-approved", action="store_true",
+                        help="převzít změněný schválený snímek hlavní knihy (profiles/<profil>/approved/) do sady; "
+                             "bez něj je rozdíl kopie v sadě proti approved/ chyba (D116)")
+
     parser.add_argument("--fidelity", choices=("warn", "error"), default="error",
                         help="identifikátor z očekávání mimo text PDF: chyba buildu (error, výchozí), nebo jen vypsat (warn)")
     args = parser.parse_args(argv)
@@ -356,7 +365,9 @@ def main(argv: list[str] | None = None) -> int:
         try:
             summaries = build_datasets(BASE_DIR, DATASETS_DIR, identities, docs,
                                        reporting=reporting, projection_path=PROJECTION_FILE,
-                                       rate_lists=rate_lists, currencies=currencies)
+                                       rate_lists=rate_lists, currencies=currencies,
+                                       refresh_approved=args.refresh_approved)
+
         except (DatasetBuildError, ReportingError) as e:
             print(f"datová sada: {e}", file=sys.stderr)
             return 1

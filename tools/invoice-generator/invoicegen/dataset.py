@@ -294,7 +294,8 @@ class DatasetSummary:
 
 def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], identities: dict,
                   corpus_dir: Path, out_dir: Path, *, reporting: VatReporting, projection_path: Path,
-                  rate_lists: list[dict], currencies: frozenset[str]) -> DatasetSummary:
+                  rate_lists: list[dict], currencies: frozenset[str], refresh_approved: bool = False) -> DatasetSummary:
+
     """Jedna sada: setup/ ze základu, kurzovní lístky pro doklady v cizí
     měně, vlastní firma z identity, zpráva per buňka matice profilu
     a očekávání pro `dataset-verify` (F3: projekce, DPH, náklady, schválený
@@ -365,8 +366,21 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     if len(set(ids)) != len(ids):
         raise DatasetBuildError(f"{profile.key}: duplicitní messageId")
 
+    # Kopie schváleného snímku hlavní knihy v sadě musí být bajtově shodná
+    # s profiles/<profil>/approved/ (#103 D116). Rozdíl = schválený snímek se
+    # změnil bez přestavění sady; tiché srovnání by to zakrylo, proto chyba
+    # a převzetí jen výslovně (--refresh-approved).
+    if profile.ledger_snapshot is not None and not refresh_approved:
+        copy = out_dir / "expected" / LEDGER_SNAPSHOT
+        if copy.is_file() and copy.read_bytes() != profile.ledger_snapshot.read_bytes():
+            raise DatasetBuildError(
+                f"{profile.key}: kopie snímku hlavní knihy {copy} se liší od schváleného "
+                f"{profile.ledger_snapshot} — sada nebyla po schválení přestavěna (D116); "
+                "nový schválený snímek převezmi s --refresh-approved")
+
     clear_managed(out_dir, MANAGED)
     (out_dir / "setup").mkdir(parents=True, exist_ok=True)
+
     for table, file in profile.setup.items():
         (out_dir / "setup" / f"{table}.jsonc").write_text(dumps_dataset(file), encoding="utf-8")
 
@@ -427,12 +441,13 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
 
 def build_datasets(corpus_dir: Path, out_root: Path, identities: dict, docs: dict[str, dict], *,
                    reporting: VatReporting, projection_path: Path, rate_lists: list[dict],
-                   currencies: frozenset[str]) -> list[DatasetSummary]:
+                   currencies: frozenset[str], refresh_approved: bool = False) -> list[DatasetSummary]:
     """Všechny profily: `corpus_dir/profiles/<profil>/` → `out_root/<profil>/`."""
     summaries = []
     for key in PROFILES:
         profile = load_profile(corpus_dir / "profiles" / key, key)
         summaries.append(build_dataset(profile, identities["profiles"][key], docs, identities, corpus_dir, out_root / key,
                                        reporting=reporting, projection_path=projection_path,
-                                       rate_lists=rate_lists, currencies=currencies))
+                                       rate_lists=rate_lists, currencies=currencies, refresh_approved=refresh_approved))
     return summaries
+

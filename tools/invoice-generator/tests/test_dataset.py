@@ -284,7 +284,8 @@ class BuildDatasetTest(unittest.TestCase):
         out = root / "datasets" / "vat-payer"
         summary = build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], docs, IDENTITIES, corpus, out,
                                 reporting=REPORTING, projection_path=PROJECTION_PATH, rate_lists=rate_lists, currencies=CURRENCIES)
-        return out, {"summary": summary, "docs": docs}
+        return out, {"summary": summary, "docs": docs, "profile": profile}
+
 
     @staticmethod
     def snapshot(out: Path) -> dict[str, bytes]:
@@ -382,7 +383,33 @@ class BuildDatasetTest(unittest.TestCase):
             costs = json.loads((out / "expected" / "costs.json").read_text(encoding="utf-8"), parse_float=Decimal)
             self.assertEqual(expected["totals"]["totalBase"] + expected["totals"]["totalVat"], costs[0]["cost"])
 
+    def test_changed_approved_snapshot_is_an_error_without_refresh(self) -> None:
+        """D116: kopie snímku v sadě ≠ approved/ = chyba s oběma cestami; převzetí
+        jen s refresh_approved; chybějící kopie se vytvoří bez chyby."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out, info = self.build(Path(tmp))
+            profile = info["profile"]
+            old = b'{"reportId": "economy.accounting.generalLedger"}\n'
+            new = b'{"reportId": "economy.accounting.generalLedger", "rows": []}\n'
+            copy = out / "expected" / "general-ledger.json"
+            self.assertEqual(old, copy.read_bytes())
+            profile.ledger_snapshot.write_bytes(new)
+            kwargs = {"reporting": REPORTING, "projection_path": PROJECTION_PATH, "rate_lists": RATE_LISTS, "currencies": CURRENCIES}
+            with self.assertRaises(DatasetBuildError) as ctx:
+                build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out, **kwargs)
+            self.assertIn(str(copy), str(ctx.exception))
+            self.assertIn(str(profile.ledger_snapshot), str(ctx.exception))
+            self.assertIn("--refresh-approved", str(ctx.exception))
+            self.assertEqual(old, copy.read_bytes(), "sada zůstala beze změny")
+            build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out,
+                          refresh_approved=True, **kwargs)
+            self.assertEqual(new, copy.read_bytes())
+            copy.unlink()
+            build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out, **kwargs)
+            self.assertEqual(new, copy.read_bytes(), "chybějící kopie se vytvoří bez chyby")
+
     def test_missing_expected_is_an_error(self) -> None:
+
         with tempfile.TemporaryDirectory() as tmp:
             out, info = self.build(Path(tmp))
             (Path(tmp) / "corpus" / "expected" / "vat-payer" / "0101-domestic-goods.json").unlink()
