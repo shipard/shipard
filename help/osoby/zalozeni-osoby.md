@@ -56,7 +56,8 @@ samostatné evidence; přidávají se až k uložené osobě.
 **Zápis údajů Shipard při uložení sjednotí.** **IČO** dostane vedoucí
 nuly, **DIČ** a **DIČ pro DPH** velká písmena a bez mezer, **PSČ** bez
 mezery, **Telefon** s předvolbou státu (`+420 577 123 456` se uloží jako
-`+420577123456`), **IBAN** a **BIC/SWIFT** velkými bez mezer a **Číslo
+`+420577123456`; pole s více čísly nebo s linkou zůstane, jak je zapsané),
+**IBAN** a **BIC/SWIFT** velkými bez mezer a **Číslo
 účtu** bez mezer a vedoucích nul. Zapíšeš-li IBAN do pole **Číslo účtu**,
 přesune se do **IBAN** a u českého nebo slovenského účtu se číslo účtu
 dopočítá. Ve formuláři pak vidíš uložený tvar; na faktuře a v detailu

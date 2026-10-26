@@ -56,6 +56,18 @@
         {"kind": "phone", "country": null, "in": "+1 415 555 0199", "out": "+14155550199"},
         {"kind": "phone", "country": null, "in": "000-201-304", "out": "000201304"},
         {"kind": "phone", "country": null, "in": "0049 30 123456", "out": "+4930123456"},
+        // D26: jen hodnota, která vypadá jako jedno číslo — jinak beze změny (jen oříznutá)
+        {"kind": "phone", "country": "cz", "in": "577 123 456, 777 888 999", "out": "577 123 456, 777 888 999"},
+        {"kind": "phone", "country": "cz", "in": "577 123 456 linka 25", "out": "577 123 456 linka 25"},
+        {"kind": "phone", "country": "cz", "in": "12345678901234", "out": "12345678901234"},
+        {"kind": "phone", "country": "cz", "in": " tel. 577 123 456 ", "out": "+420577123456"},
+        {"kind": "phone", "country": "cz", "in": "+420 577", "out": "+420 577"},
+        {"kind": "phone", "country": "cz", "in": "+420 577 123 456 777 888 999", "out": "+420 577 123 456 777 888 999"},
+        {"kind": "phone", "country": "cz", "in": "00420 577", "out": "00420 577"},
+        {"kind": "phone", "country": "sk", "in": "mobil 0905 123 456", "out": "+421905123456"},
+        {"kind": "phone", "country": "de", "in": "0 1234 5678 9012 34", "out": "0 1234 5678 9012 34"},
+        {"kind": "phone", "country": "de", "in": "12", "out": "12"},
+        {"kind": "phone", "country": null, "in": "415 555 0199 ext 12, 415 555 0200", "out": "415 555 0199 ext 12, 415 555 0200"},
 
         {"kind": "email", "in": " Odbyt@Drevomat-Hana.example ", "out": "odbyt@drevomat-hana.example"},
         {"kind": "web", "in": "https://WWW.Drevomat-hana.example/", "out": "www.drevomat-hana.example"},

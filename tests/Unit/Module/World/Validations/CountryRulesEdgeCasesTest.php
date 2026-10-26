@@ -121,7 +121,8 @@ class CountryRulesEdgeCasesTest extends TestCase
         $this->assertSame('n/a', Phone::normalize(' n/a ', $cz), 'bez číslic beze změny');
         $this->assertSame('+420577123456', Phone::normalize('+420577123456', $cz));
         $this->assertSame('+420000201304', Phone::normalize('000 201 304', $cz), 'korpusové 000… je národní číslo');
-        $this->assertSame('+4200201304', Phone::normalize('0201304', $cz), 'cz národní předčíslí nemá — nic se nezahazuje');
+        $this->assertSame('+420020130456', Phone::normalize('020 130 456', $cz), 'cz národní předčíslí nemá — nic se nezahazuje');
+        $this->assertSame('0201304', Phone::normalize('0201304', $cz), '7 číslic není cz číslo — beze změny (D26)');
         $this->assertSame('+421905123456', Phone::normalize('905 123 456', new SkValueRules()));
         $this->assertSame('+4930123456', Phone::normalize('(0)30 123456', new DeValueRules()));
         $this->assertSame('+49301234567', Phone::normalize('0049 (0)30 1234567', new GenericValueRules()));

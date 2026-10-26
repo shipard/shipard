@@ -236,7 +236,7 @@ class DirectoryValuesNormalizerTest extends TestCase
         $tables = ['base_persons_persons' => $this->tables()['base_persons_persons']];
         $report = $this->normalizer(batchSize: 2, tables: $tables)->run(true);
         $this->assertSame(4, $report['tables']['base_persons_persons']['rows']);
-        $this->assertSame(2, $report['tables']['base_persons_persons']['changed']);
+        $this->assertSame(1, $report['tables']['base_persons_persons']['changed'], 'bez adres má osoba 2 zemi zdroje dat (cz) a její sk číslo se neslije (D26)');
 
         $exact = $this->normalizer(batchSize: 4, tables: $tables)->run(true);
         $this->assertSame(4, $exact['tables']['base_persons_persons']['rows'], 'dávka přesně plná nekončí smyčku předčasně');

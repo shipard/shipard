@@ -1659,7 +1659,9 @@ nekontrolovala. Dva kroky nad canonicalem `shpd.docs.document`
   u cz jen číslice dostanou prefix `CZ`), `address.zip` (podle země
   adresy, jinak strany), `contact.email` / `phone` (D12: `00` → `+`,
   `(0)` pryč, národní číslo bez národního předčíslí s předvolkou země
-  strany; bez třídy země jen bez mezer a interpunkce) / `web`,
+  strany; bez třídy země jen bez mezer a interpunkce; jen hodnota, která
+  vypadá jako jedno číslo — víc čísel v poli, linka nebo nečekaná délka
+  zůstávají beze změny, D26) / `web`,
   `bankAccount.iban` / `bic` / `accountNumber` (bez mezer a vedoucích
   nul), `payment.paymentReference` / `specificSymbol` /
   `constantSymbol` i na řádcích. Strany `supplier`, `customer`,

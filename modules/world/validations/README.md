@@ -88,7 +88,7 @@ na předčíslí oblasti); ostatní druhy, jiný stát a nekanonický tvar
 = normalizovaná hodnota. Používají ho tisky a detail osoby; formuláře
 ukazují uložený (kanonický) tvar. Výstup se nikdy neukládá.
 
-**Telefon (D12):** mezery a interpunkce pryč, `(0)` pryč, `00` na
+**Telefon (D12, D26):** mezery a interpunkce pryč, `(0)` pryč, `00` na
 začátku → `+` (jen když za ním nenásleduje `0`). Číslo bez `+` u státu
 s třídou: zahodit národní předčíslí a doplnit `+` + předvolku; číslo
 začínající předvolkou státu v plné délce se bere jako mezinárodní.
@@ -96,13 +96,23 @@ U státu bez třídy zůstává bez předvolby. Předvolba každé třídy je
 konstanta; shodu s `world.base.countries` (`phonePrefixes[0]`) hlídá
 `PhonePrefixGuardTest`.
 
+Normalizuje se **jen hodnota, která vypadá jako jedno číslo** (D26);
+jinak zůstává beze změny (jen oříznutá) a nález nevzniká: víc než
+15 číslic (E.164) vždy beze změny; mezinárodní zápis (`+`, `00`) jen
+se 7–15 číslicemi; národní zápis u státu se známou délkou jen když po
+odebrání národního předčíslí délka sedí (cz, sk 9 číslic), u státu bez
+délky (de) jen když výsledek padne do okna 7–15 číslic; stát bez
+předvolby jen číslice. Dvě čísla v jednom poli (`577 123 456, 777 888
+999`) ani číslo s linkou (`577 123 456 linka 25`) se tak neslijí;
+písmena kolem jednoho čísla (`tel. 577 123 456`) normalizaci nebrání.
+
 **Státy s třídou**
 
 | Země | PSČ | IČO | DIČ | Účet / IBAN | Telefon |
 |---|---|---|---|---|---|
 | cz | 5 číslic bez mezer | 8 číslic (samé číslice do 8 míst dostanou vedoucí nuly), kontrolní součet | `CZ` + 8–10 číslic; jen číslice → doplní `CZ`; 8místné = `CZ` + IČO (9–10místné = fyzická osoba, vazba neplatí) | `[předčíslí-]číslo/kód`, mod 11 předčíslí i čísla; BBAN = kód 4 + předčíslí 6 + číslo 10; IBAN 24 znaků, platný jen s platným číslem uvnitř | `+420`, bez národního předčíslí, národní číslo 9 číslic |
 | sk | 5 číslic | jako cz | `SK` + 10 číslic | jako cz, prefix `SK` | `+421`, předčíslí `0`, 9 číslic |
-| de | 5 číslic | jak na dokladu (trim) | `DE` + 9 číslic, kontrolní číslice ISO 7064 MOD 11,10 | IBAN 22 znaků, bez tuzemského tvaru | `+49`, předčíslí `0`, proměnlivá délka |
+| de | 5 číslic | jak na dokladu (trim) | `DE` + 9 číslic, kontrolní číslice ISO 7064 MOD 11,10 | IBAN 22 znaků, bez tuzemského tvaru | `+49`, předčíslí `0`, proměnlivá délka (výsledek 7–15 číslic) |
 
 ## Testy
 

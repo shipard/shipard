@@ -1,6 +1,6 @@
 # Telefon: normalizovat jen hodnotu, která vypadá jako jedno číslo
 
-**Stav:** naplánováno — rozhodnutí 2026-10-26 (#118 D26), neimplementováno; pustit **před** ostrým během `values-normalize` na kopiích reálných dat
+**Stav:** hotovo — 2026-10-26 (#118 D26); `values-normalize --dry-run` na kopiích reálných dat znovu, ostrý běh pouští člověk
 
 
 ## Kontext / Cíl
@@ -60,11 +60,30 @@ a zůstávají beze změny). V canonicalu z AI ale přijít mohou a ostrý běh
 
 ## Hotovo když
 
-- [ ] Nové případy ve fixture procházejí, stávající beze změny.
-- [ ] `vendor/bin/phpunit --filter` na `World|Phone|ValueCases|PersonValues|CanonicalValue|CorpusValueRules|DirectoryValuesNormalizer`;
+- [x] Nové případy ve fixture procházejí, stávající beze změny.
+- [x] `vendor/bin/phpunit --filter` na `World|Phone|ValueCases|PersonValues|CanonicalValue|CorpusValueRules|DirectoryValuesNormalizer`;
       strážce korpusu (normalizace očekávání je identita) dál prochází.
-- [ ] `values-normalize --dry-run` na kopiích reálných dat znovu; do
+- [x] `values-normalize --dry-run` na kopiích reálných dat znovu; do
       závěrečné zprávy počty změn telefonů před a po (agregovaně).
+
+## Výsledek (2026-10-26)
+
+Upřesnění D26 při implementaci: stát bez předvolby (us, bez země) = do
+15 číslic dál jen číslice (stávající případy zůstaly), nad 15 beze
+změny; stát bez délky (de) má u národního zápisu totéž okno 7–15 číslic
+jako mezinárodní zápis (krátký útržek předvolbu nedostane). Jediná změna
+ve stávajících testech: 7 číslic u cz (`0201304`) už předvolbu nedostane
+a osoba bez adresy se slovenským číslem pod zemí zdroje dat cz se
+v `DirectoryValuesNormalizerTest` neslije.
+
+`values-normalize --dry-run` na kopiích reálných dat (změny telefonů
+před → po, agregovaně): btpg-p 1 300 → 1 299, e8w1-i 62 → 62, 4dnh-5
+9 → 9, ur4l-0 12 → 12, nelh-0 5 → 5, p4zq-s 22 → 22; ostatní sloupce
+a nevalidní hodnoty beze změny. Srovnání staré a nové normalizace nad
+všemi telefony šesti kopií (read-only SQL): jiný výsledek má jediná
+hodnota — národní zápis s 12 číslicemi na btpg-p, nově beze změny.
+Hodnoty s písmeny v poli telefonu jsou jen webové adresy bez číslic
+(beze změny dřív i teď).
 
 ## Pasti
 
