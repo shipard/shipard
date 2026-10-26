@@ -109,10 +109,12 @@ class AccountsViewer extends TableViewer
 
     private function buildOverviewContent(array $record): array
     {
+        // Název je titulkem, číslo účtu podtitulkem; zkrácený název jen když se liší (#140 D26, §2).
         $identityItems = [];
-        $this->addItem($identityItems, 'Číslo účtu', $record['number'] ?? null);
-        $this->addItem($identityItems, 'Název', $record['name'] ?? null);
-        $this->addItem($identityItems, 'Název zkrácený', $record['short_name'] ?? null);
+        $shortName = trim((string) ($record['short_name'] ?? ''));
+        if ($shortName !== trim((string) ($record['name'] ?? ''))) {
+            $this->addItem($identityItems, 'Název zkrácený', $shortName);
+        }
 
         $classificationItems = [];
         $this->addItem(

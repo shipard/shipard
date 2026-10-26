@@ -327,13 +327,9 @@ class CasesViewer extends AccbalViewerBase
         $cs = $this->language === 'cs';
         $curCode = strtoupper((string) ($key['currency'] ?? ''));
         $hcCode = strtoupper((string) ($case['home_currency'] ?? ''));
-        $partnerName = trim((string) ($record['partner_name'] ?? ''));
 
+        // Partner je titulkem; saldokonto, variabilní symbol a období podtitulkem (#140 D26).
         $keyItems = [];
-        $this->addItem($keyItems, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
-        $this->addItem($keyItems, $cs ? 'Období' : 'Period', $record['fiscal_year_name'] ?? null);
-        $this->addItem($keyItems, 'Partner', $partnerName !== '' ? $partnerName : ($cs ? '(Bez partnera)' : '(No partner)'));
-        $this->addItem($keyItems, $cs ? 'Variabilní symbol' : 'Payment reference', $key['payment_reference'] ?? null);
         $this->addItem($keyItems, $cs ? 'Specifický symbol' : 'Specific symbol', $key['specific_symbol'] ?? null);
         $this->addItem($keyItems, $cs ? 'Měna' : 'Currency', $curCode);
 

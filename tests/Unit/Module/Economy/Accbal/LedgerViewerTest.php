@@ -270,6 +270,34 @@ class LedgerViewerTest extends TestCase
         $this->assertContains(['label' => 'Role', 'value' => 'Příjem'], $items);
     }
 
+    public function testOverviewOmitsHeaderValuesAndShowsTextOnlyWhenNotTheTitle(): void
+    {
+        $row = [
+            'id' => 9, 'balance' => 4, 'bal_side' => 0, 'source_kind' => 'bankTransaction',
+            'operation' => 'payment.in', 'fiscal_year' => 7, 'partner' => 42,
+            'payment_reference' => 'VS1', 'specific_symbol' => null, 'currency' => 'czk',
+            'home_currency' => 'czk', 'amount' => 1000.0, 'amount_hc' => 1000.0,
+            'balance_name' => 'Přijaté zálohy', 'partner_name' => 'Partner',
+            'account_number' => '324000', 'text' => 'Záloha',
+        ];
+        $detail = $this->makeViewer(fetchRowResult: $row)->renderDetail(9);
+
+        $this->assertSame('Partner', $detail['title']);
+        $this->assertSame('324000 · 1 000,00 CZK', $detail['subtitle']);
+        $groups = $detail['tabs'][0]['content']['groups'];
+        $this->assertNotContains('Částky', array_column($groups, 'title'), 'částku v měně pohybu nese podtitul');
+        $move = array_column($groups[0]['items'], 'value', 'label');
+        $this->assertSame('Záloha', $move['Text']);
+        $this->assertArrayNotHasKey('Partner', $move);
+        $this->assertArrayNotHasKey('Účet', $move);
+
+        // Bez partnera je titulkem text — v Přehledu pak není (#140 §2).
+        $detail = $this->makeViewer(fetchRowResult: ['partner_name' => null] + $row)->renderDetail(9);
+        $this->assertSame('Záloha', $detail['title']);
+        $move = array_column($detail['tabs'][0]['content']['groups'][0]['items'], 'value', 'label');
+        $this->assertArrayNotHasKey('Text', $move);
+    }
+
     // ── Grid: footer (D7) ────────────────────────────────────────────────────
 
     public function testRenderGridFooterSharesWhereAndComputesBalance(): void

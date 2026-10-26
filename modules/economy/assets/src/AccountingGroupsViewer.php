@@ -83,9 +83,8 @@ class AccountingGroupsViewer extends AssetsViewerBase
 
     protected function detailTabs(array $record): array
     {
+        // Název je titulkem, kód podtitulkem (#140 D26).
         $identity = [];
-        $this->addItem($identity, $this->text('label.code', 'Code'), $record['code'] ?? null);
-        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
         $this->addItem($identity, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
         $labels = [

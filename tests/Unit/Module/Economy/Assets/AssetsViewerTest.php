@@ -202,6 +202,38 @@ class AssetsViewerTest extends TestCase
         $this->assertSame([['label' => 'Koncept', 'style' => 'concept']], $detail['badges']);
     }
 
+    public function testOverviewOmitsHeaderValuesAndShortNameOnlyWhenDifferent(): void
+    {
+        $card = ['id' => 4, 'asset_number' => 'MA0004', 'name' => 'Soustruh', 'short_name' => 'Soustruh', 'category' => 'tangible',
+            'tax_method' => 'straight', 'tax_rule' => 'cz-2', 'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $values = self::overviewValues($this->detailViewer($card, [])->renderDetail(4));
+
+        $this->assertNotContains('Soustruh', $values, 'název je titulkem, shodný zkrácený název se neopakuje (#140 D26, §2)');
+        $this->assertNotContains('MA0004', $values, 'inventární číslo je podtitulkem');
+
+        $values = self::overviewValues($this->detailViewer(['short_name' => 'Soustr.'] + $card, [])->renderDetail(4));
+        $this->assertContains('Soustr.', $values, 'zkrácený název jen když se liší');
+    }
+
+    /**
+     * @param array<string, mixed> $detail
+     * @return list<string> hodnoty položek Přehledu (properties i uvnitř composite)
+     */
+    private static function overviewValues(array $detail): array
+    {
+        $content = $detail['tabs'][0]['content'];
+        $blocks = $content['type'] === 'composite' ? $content['blocks'] : [$content];
+        $values = [];
+        foreach ($blocks as $block) {
+            foreach ($block['groups'] ?? [] as $group) {
+                foreach ($group['items'] ?? [] as $item) {
+                    $values[] = (string) $item['value'];
+                }
+            }
+        }
+        return $values;
+    }
+
     public function testAttachmentsTabOnlyWhenCardHasFiles(): void
     {
         $card = ['id' => 2, 'asset_number' => 'MA0002', 'name' => 'Svěrák', 'category' => 'small', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];

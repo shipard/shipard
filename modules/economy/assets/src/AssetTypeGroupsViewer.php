@@ -61,8 +61,8 @@ class AssetTypeGroupsViewer extends AssetsViewerBase
 
     protected function detailTabs(array $record): array
     {
+        // Název je titulkem (#140 D26).
         $items = [];
-        $this->addItem($items, $this->text('label.name', 'Name'), $record['name'] ?? null);
         $this->addItem($items, $this->text('label.order', 'Order'), (string) ($record['sort_order'] ?? 0));
         $this->addItem($items, $this->text('label.note', 'Note'), $record['note'] ?? null);
 

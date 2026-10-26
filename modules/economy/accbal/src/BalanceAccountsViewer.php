@@ -145,8 +145,8 @@ class BalanceAccountsViewer extends TableViewer
         $cs = $this->language === 'cs';
 
         $items = [];
+        // Číslo účtu je titulkem (#140 D26).
         $this->addItem($items, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
-        $this->addItem($items, $cs ? 'Číslo účtu' : 'Account number', $record['account_number'] ?? null);
         $this->addItem($items, $cs ? 'Strana' : 'Side', $this->enumLabel('economy.accbal.accSides', $record['acc_side'] ?? null));
         $this->addItem($items, $cs ? 'Částky' : 'Amounts', $this->enumLabel('economy.accbal.amountsSigns', $record['amounts_sign'] ?? null));
         $this->addItem($items, $cs ? 'Předpis/Úhrada' : 'Role', $this->enumLabel('economy.accbal.balSides', $record['bal_side'] ?? null));

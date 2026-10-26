@@ -363,7 +363,11 @@ class JournalViewerTest extends TestCase
         $this->assertSame(['Zápis', 'Částky', 'Doklad'], $titles);
 
         $entry = array_column($content['groups'][0]['items'], 'value', 'label');
-        $this->assertSame('518100 — Ostatní služby', $entry['Účet']);
+        // Datum, účet a text nese hlavička — Přehled je neopakuje (#140 D26).
+        foreach (['Datum', 'Účet', 'Text'] as $label) {
+            $this->assertArrayNotHasKey($label, $entry);
+        }
+        $this->assertStringStartsWith('518100 — Ostatní služby', (string) $detail['subtitle']);
         $this->assertSame('Nákup zboží', $entry['Operace']);
         $this->assertSame('5/2026', $entry['Fiskální měsíc']);
         $this->assertArrayNotHasKey('Chybový řádek', $entry);

@@ -166,7 +166,7 @@ class WorkOrdersViewerTest extends TestCase
         $blocks = $detail['tabs'][0]['content']['blocks'];
         $groups = $blocks[0]['groups'];
         $this->assertSame(['Identity', 'Zákazník', 'Hierarchy', 'Validity'], array_column($groups, 'title'));
-        $this->assertSame(['label' => 'Druh', 'value' => 'Projekty'], $groups[0]['items'][2]);
+        $this->assertSame(['label' => 'Druh', 'value' => 'Projekty'], $groups[0]['items'][0]);
         $this->assertSame('CZK', $groups[1]['items'][1]['value']);
         $this->assertSame('S1 — Stavby', $groups[2]['items'][0]['value']);
         $this->assertSame('table', $blocks[2]['type']);

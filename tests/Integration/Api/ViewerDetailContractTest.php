@@ -66,19 +66,6 @@ class ViewerDetailContractTest extends IntegrationTestCase
      */
     private const PENDING = [
         'base.registry.documents'            => ['Druh', 'Partner', 'Šanon'],
-        'economy.accbal.balanceAccounts'     => ['Číslo účtu'],
-        'economy.accbal.balances'            => ['Název', 'Zkrácený název'],
-        'economy.accbal.cases'               => ['Saldokonto', 'Období', 'Partner', 'Variabilní symbol'],
-        'economy.accbal.ledger'              => ['Partner', 'Účet', 'Text'],
-        'economy.accounting.accounts'        => ['Číslo účtu', 'Název', 'Název zkrácený'],
-        'economy.accounting.journal'         => ['Text', 'Účet', 'Datum'],
-        'economy.assets.accountingGroups'    => ['Kód', 'Název'],
-        'economy.assets.assets'              => ['Inventární číslo', 'Název', 'Zkrácený název'],
-        'economy.assets.typeGroups'          => ['Název'],
-        'economy.assets.types'               => ['Název', 'Zkrácený název'],
-        'economy.bank.statements'            => ['Číslo výpisu', 'Bankovní účet', 'Období', 'Rekonciliace'],
-        'economy.bank.transactions'          => ['Datum transakce', 'Stav', 'Partner', 'Název protistrany'],
-        'economy.workOrders.heads'           => ['Číslo', 'Název', 'Stav'],
     ];
 
     private ViewerRegistry $registry;

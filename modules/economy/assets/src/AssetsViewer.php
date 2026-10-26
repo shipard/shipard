@@ -294,10 +294,12 @@ class AssetsViewer extends AssetsViewerBase
         $depreciable = $data['depreciable'];
         $tracking    = $this->config?->cfgItem('economy.assets.trackingKinds') ?? [];
 
+        // Název je titulkem, inventární číslo podtitulkem; zkrácený název jen když se liší (#140 D26, §2).
         $identity = [];
-        $this->addItem($identity, $this->text('label.assetNumber', 'Inventory number'), $record['asset_number'] ?? null);
-        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
-        $this->addItem($identity, $this->text('label.shortName', 'Short name'), $record['short_name'] ?? null);
+        $shortName = trim((string) ($record['short_name'] ?? ''));
+        if ($shortName !== trim((string) ($record['name'] ?? ''))) {
+            $this->addItem($identity, $this->text('label.shortName', 'Short name'), $shortName);
+        }
 
         $classification = [];
         $this->addItem($classification, $this->text('label.type', 'Type'), $record['type_name'] ?? null);

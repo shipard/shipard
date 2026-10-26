@@ -218,26 +218,26 @@ class BankTransactionsViewer extends TableViewer
     {
         $cs = $this->language !== 'en';
 
+        // Datum transakce nese podtitul, stav štítek (#140 D26).
         $txItems = [];
-        $this->addItem($txItems, $cs ? 'Datum transakce' : 'Transaction date', $this->formatDate($record['date_transaction'] ?? null));
         $this->addItem($txItems, $cs ? 'Datum valuty' : 'Value date', $this->formatDate($record['date_value'] ?? null));
         $this->addItem($txItems, $cs ? 'Směr' : 'Direction', $this->enumLabel('economy.bank.txDirections', $record['direction'] ?? null, 'int'));
         $this->addItem($txItems, $cs ? 'Pohyb' : 'Operation', $this->enumLabel('economy.bank.txOperations', $record['operation'] ?? null, 'string'));
-        $this->addItem($txItems, $cs ? 'Stav' : 'State', $this->enumLabel('economy.bank.txStates', $record['docState'] ?? null, 'int', 'stateName'));
 
+        // Částku se znaménkem a měnou nese titulek; přepočet a kurz jen u cizí měny.
         $amountItems = [];
-        $curCode = strtoupper((string) ($record['currency'] ?? ''));
-        $this->addItem($amountItems, $cs ? 'Částka' : 'Amount', $this->formatMoney($record['amount'] ?? 0) . ' ' . $curCode);
-        $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($record['amount_dom'] ?? 0));
         $rate = (float) ($record['exchange_rate'] ?? 1);
         if (abs($rate - 1.0) > 0.0000001) {
+            $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($record['amount_dom'] ?? 0));
             $this->addItem($amountItems, $cs ? 'Kurz' : 'Exchange rate', number_format($rate, 6, ',', ' '));
         }
 
+        // Partner je v podtitulku; bez něj je tam název protistrany (#140 §2).
         $cpItems = [];
         $this->addItem($cpItems, $cs ? 'Protiúčet' : 'Counterparty account', $record['counterparty_account'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $record['counterparty_name'] ?? null);
-        $this->addItem($cpItems, 'Partner', $record['partner_name'] ?? null);
+        if ($this->partyOf($record)['column'] === 'partner_name') {
+            $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $record['counterparty_name'] ?? null);
+        }
         $this->addItem($cpItems, $cs ? 'Variabilní symbol' : 'Variable symbol', $record['payment_reference'] ?? null);
         $this->addItem($cpItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
         $this->addItem($cpItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
@@ -292,13 +292,28 @@ class BankTransactionsViewer extends TableViewer
             $title .= ' ' . $curCode;
         }
 
-        $partner = trim((string) ($record['partner_name'] ?? ''));
-        $counterparty = trim((string) ($record['counterparty_name'] ?? ''));
-        $who = $partner !== '' ? $partner : $counterparty;
         $date = $this->formatDate($record['date_transaction'] ?? null);
-        $subtitleParts = array_filter([$who, $date], static fn ($v) => $v !== null && $v !== '');
+        $subtitleParts = array_filter([$this->partyOf($record)['value'], $date], static fn ($v) => $v !== null && $v !== '');
 
         return new DetailHeader($title, implode(' · ', $subtitleParts));
+    }
+
+    /**
+     * Kdo je v podtitulku: partner, bez něj název protistrany z výpisu.
+     * Tutéž volbu čte Přehled — protistranu ukáže jen vedle partnera (#140 §2).
+     *
+     * @param array<string, mixed> $record
+     * @return array{column: string, value: string}
+     */
+    private function partyOf(array $record): array
+    {
+        foreach (['partner_name', 'counterparty_name'] as $column) {
+            $value = trim((string) ($record[$column] ?? ''));
+            if ($value !== '') {
+                return ['column' => $column, 'value' => $value];
+            }
+        }
+        return ['column' => '', 'value' => ''];
     }
 
     /**

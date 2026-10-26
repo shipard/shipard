@@ -130,24 +130,15 @@ class BankStatementsViewer extends TableViewer
     {
         $cs = $this->language !== 'en';
 
-        $accountLabel = trim(
-            (string) ($record['account_code'] ?? '')
-            . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
-        );
-
+        // Účet, číslo a období nese hlavička; Rekonciliace jen bez štítku, tj. Nezkontrolováno (#140 D26, §2).
         $stmtItems = [];
-        $this->addItem($stmtItems, $cs ? 'Bankovní účet' : 'Bank account', $accountLabel !== '' ? $accountLabel : null);
-        $this->addItem($stmtItems, $cs ? 'Číslo výpisu' : 'Statement number', $record['statement_number'] ?? null);
-        $this->addItem(
-            $stmtItems,
-            $cs ? 'Období' : 'Period',
-            $this->formatDate($record['period_start'] ?? null) . ' – ' . $this->formatDate($record['period_end'] ?? null),
-        );
-        $this->addItem(
-            $stmtItems,
-            $cs ? 'Rekonciliace' : 'Reconciliation',
-            $this->enumLabel('economy.bank.reconciliationStates', $record['reconciliation_state'] ?? null, 'int'),
-        );
+        if ($this->reconciliationBadge($record) === null) {
+            $this->addItem(
+                $stmtItems,
+                $cs ? 'Rekonciliace' : 'Reconciliation',
+                $this->enumLabel('economy.bank.reconciliationStates', $record['reconciliation_state'] ?? null, 'int'),
+            );
+        }
 
         $curCode = strtoupper((string) ($record['currency'] ?? ''));
         $balanceItems = [];
@@ -219,18 +210,31 @@ class BankStatementsViewer extends TableViewer
         return new DetailHeader($number !== '' ? $number : $period, implode(' · ', $subtitleParts));
     }
 
-    /** Rekonciliace — štítek jen když není „Nezkontrolováno" (0): Souhlasí (1) success, Nesouhlasí (2) error. */
     protected function detailBadges(array $record): array
+    {
+        $badge = $this->reconciliationBadge($record);
+        return $badge === null ? [] : [$badge];
+    }
+
+    /**
+     * Rekonciliace — štítek jen když není „Nezkontrolováno" (0): Souhlasí (1)
+     * success, Nesouhlasí (2) error. Bez štítku ji Přehled ukáže jako položku
+     * (#140 §2).
+     *
+     * @param array<string, mixed> $record
+     * @return array{label: string, style: string}|null
+     */
+    private function reconciliationBadge(array $record): ?array
     {
         $recon = (int) ($record['reconciliation_state'] ?? 0);
         if ($recon === 0) {
-            return [];
+            return null;
         }
         $reconLabel = $this->enumLabel('economy.bank.reconciliationStates', $recon, 'int');
         if ($reconLabel === null) {
-            return [];
+            return null;
         }
-        return [['label' => $reconLabel, 'style' => $recon === 2 ? 'error' : 'success']];
+        return ['label' => $reconLabel, 'style' => $recon === 2 ? 'error' : 'success'];
     }
 
     /**
