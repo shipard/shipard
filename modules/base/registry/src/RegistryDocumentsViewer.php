@@ -298,7 +298,7 @@ class RegistryDocumentsViewer extends TableViewer
 
         $notice = trim((string) ($record['notice'] ?? ''));
         if ($notice !== '') {
-            $groups[] = ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => $notice]]];
+            $groups[] = ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => $notice]], 'wide' => true];
         }
 
         if ($groups !== []) {

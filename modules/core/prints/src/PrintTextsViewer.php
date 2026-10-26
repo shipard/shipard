@@ -150,7 +150,7 @@ class PrintTextsViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => 'Text', 'items' => $text],
+                    ['title' => 'Text', 'items' => $text, 'wide' => true],
                     ['title' => 'Kde se text použije', 'items' => $target],
                     ['title' => 'Platnost', 'items' => $validity],
                 ],

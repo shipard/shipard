@@ -159,6 +159,7 @@ class TasksViewer extends TableViewer
             $groups[] = [
                 'title' => 'Popis',
                 'items' => [['label' => '', 'value' => $description]],
+                'wide'  => true,
             ];
         }
 

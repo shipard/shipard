@@ -397,10 +397,18 @@ class AssetsViewerTest extends TestCase
     public function testCardWithoutAcquisitionKeepsPlainOverviewAndPreset(): void
     {
         $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
-            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single', 'note' => 'Servis u dodavatele'];
         $detail = $this->detailViewer($card, [])->renderDetail(4);
 
         $this->assertSame('properties', $detail['tabs'][0]['content']['type']);
+        $groups = array_column($detail['tabs'][0]['content']['groups'], null, 'title');
+        $this->assertSame([['label' => 'Note', 'value' => 'Servis u dodavatele']], $groups['Note']['items']);
+        $this->assertTrue($groups['Note']['wide'], 'poznámka přes celou šířku (#137 D29)');
+        $this->assertSame(
+            ['Note'],
+            array_keys(array_filter($groups, static fn (array $g): bool => array_key_exists('wide', $g))),
+            'ostatní skupiny klíč wide nemají',
+        );
         $actions = array_column($detail['actions'], null, 'id');
         $this->assertSame(['asset' => 4, 'event_kind' => 'activation', 'scope' => 'both'], $actions['activate']['target']['preset']);
     }

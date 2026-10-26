@@ -179,6 +179,7 @@ class AlertsViewer extends TableViewer
             $overviewGroups[] = [
                 'title' => 'Zpráva',
                 'items' => [['label' => '', 'value' => (string) $record['message']]],
+                'wide'  => true,
             ];
         }
 

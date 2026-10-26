@@ -663,7 +663,7 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
             ['title' => $this->text('group.customer', 'Customer'), 'items' => $party],
             ['title' => $this->text('group.tree', 'Hierarchy'), 'items' => $tree],
             ['title' => $this->text('group.validity', 'Validity'), 'items' => $validity],
-            ['title' => $this->text('group.note', 'Note'), 'items' => $note],
+            ['title' => $this->text('group.note', 'Note'), 'items' => $note, 'wide' => true],
         ];
     }
 }

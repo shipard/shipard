@@ -312,12 +312,19 @@ class TableViewerDetailBuilderTest extends TestCase
         $tab = $viewer->overviewOf([
             ['title' => 'Identita', 'items' => [['label' => 'Kód', 'value' => 'A1']]],
             ['title' => 'Prázdná', 'items' => []],
+            ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => 'Volný text']], 'wide' => true],
         ]);
 
         $this->assertSame('overview', $tab['id']);
         $this->assertSame('Přehled', $tab['label']);
         $this->assertSame('properties', $tab['content']['type']);
-        $this->assertSame(['Identita'], array_column($tab['content']['groups'], 'title'));
+        $this->assertSame(['Identita', 'Poznámka'], array_column($tab['content']['groups'], 'title'));
+        $this->assertArrayNotHasKey('wide', $tab['content']['groups'][0], 'skupina bez příznaku klíč wide nemá');
+        $this->assertSame(
+            ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => 'Volný text']], 'wide' => true],
+            $tab['content']['groups'][1],
+            'příznak wide projde beze změny (#137 D29)',
+        );
     }
 
     public function testMissingRecordGivesEmptyTabs(): void

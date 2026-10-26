@@ -344,7 +344,7 @@ class AssetsViewer extends AssetsViewerBase
             ['title' => $this->text('group.ownership', 'Ownership'), 'items' => $ownership],
             ['title' => $this->text('group.lifecycle', 'Acquisition and disposal'), 'items' => $lifecycle],
             ['title' => $this->text('group.depreciation', 'Depreciation'), 'items' => $depreciation],
-            ['title' => $this->text('label.note', 'Note'), 'items' => $note],
+            ['title' => $this->text('label.note', 'Note'), 'items' => $note, 'wide' => true],
         ]);
 
         $acquisition = $data['acquisition'];
