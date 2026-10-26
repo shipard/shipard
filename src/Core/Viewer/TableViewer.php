@@ -368,7 +368,8 @@ abstract class TableViewer
             'title'    => $header->title,
             'subtitle' => $header->subtitle,
             'badges'   => $badges,
-            'icon'     => $header->icon,
+            // Háček bez ikony = ikona z deklarace vieweru (stejná jako řádek seznamu).
+            'icon'     => $header->icon ?? $this->definition?->icon,
             'tabs'     => $this->detailTabs($record),
         ];
 
@@ -412,9 +413,10 @@ abstract class TableViewer
      * `detailHeader.title`; deklarovaný vzor bez hodnoty (token AI bez
      * poznámky) spadne na `displayPattern` tabulky, teprve pak na `#id`.
      * Podtitul jen z deklarace `detailHeader.subtitle` a nikdy neopakuje
-     * titulek; ikona z deklarace vieweru. Vzory vyplňuje `RecordPattern`
-     * (prázdné hodnoty i s oddělovačem vynechá). Viewer s hlavičkou mimo
-     * vzor (protistrana dokladu, ikona podle typu) přepisuje.
+     * titulek. Vzory vyplňuje `RecordPattern` (prázdné hodnoty i
+     * s oddělovačem vynechá). Viewer s hlavičkou mimo vzor (protistrana
+     * dokladu) přepisuje; ikonu dává jen ten, u kterého závisí na záznamu
+     * (Osoby: firma / osoba) — bez ní builder dosadí ikonu z deklarace.
      *
      * @param array<string, mixed> $record
      */
@@ -440,7 +442,7 @@ abstract class TableViewer
             $subtitle = null;
         }
 
-        return new DetailHeader($title ?? '#' . (int) ($record['id'] ?? 0), $subtitle, $this->definition?->icon);
+        return new DetailHeader($title ?? '#' . (int) ($record['id'] ?? 0), $subtitle);
     }
 
     /**

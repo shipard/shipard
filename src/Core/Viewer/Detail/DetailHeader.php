@@ -8,8 +8,9 @@ namespace Shipard\Core\Viewer\Detail;
  * Hlavička detailu záznamu, kterou viewer dodá builderu
  * (`TableViewer::detailHeader()`, #136 D18–D19): titulek je to, podle
  * čeho uživatel záznam pozná (název, protistrana), kód nebo číslo jde do
- * podtitulku, ikona je klíč z `icons.js`. Štítky sem záměrně nepatří —
- * štítek stavu přidává builder a nejde ho obejít (D20).
+ * podtitulku, ikona je klíč z `icons.js` — null = ikona z deklarace
+ * vieweru, vlastní jen když závisí na záznamu. Štítky sem záměrně
+ * nepatří — štítek stavu přidává builder a nejde ho obejít (D20).
  */
 final class DetailHeader
 {

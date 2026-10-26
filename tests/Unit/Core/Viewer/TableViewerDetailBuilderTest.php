@@ -219,6 +219,18 @@ class TableViewerDetailBuilderTest extends TestCase
         $this->assertSame('#7', $this->viewer()->renderDetail(7)['title'], 'bez definic tabulek');
     }
 
+    public function testHeaderFromHookWithoutIconGetsDeclarationIcon(): void
+    {
+        $viewer = $this->viewer();
+        $viewer->setDefinition($this->definition());
+        $viewer->header = new DetailHeader('Dodavatel s.r.o.');
+
+        $this->assertSame('box', $viewer->renderDetail(7)['icon'], 'háček bez ikony → ikona z deklarace');
+
+        $viewer->header = new DetailHeader('Jan Novák', null, 'user');
+        $this->assertSame('user', $viewer->renderDetail(7)['icon'], 'ikona podle záznamu má přednost');
+    }
+
     public function testViewerMayOverrideHeaderEntirely(): void
     {
         $viewer = $this->viewer();

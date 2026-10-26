@@ -209,7 +209,7 @@ final class ConfigOnlyViewer extends \Shipard\Core\Viewer\TableViewer
 
 	protected function detailHeader(array $record): \Shipard\Core\Viewer\Detail\DetailHeader
 	{
-		return new \Shipard\Core\Viewer\Detail\DetailHeader((string) $record['name'], null, $this->definition?->icon);
+		return new \Shipard\Core\Viewer\Detail\DetailHeader((string) $record['name']);
 	}
 
 	protected function detailTabs(array $record): array
