@@ -1,6 +1,6 @@
 # Design system — sdílený nadpis sekce a seznam vlastností
 
-**Stav:** hotovo — #137 task 1 (D28, D29), 2026-10-26
+**Stav:** hotovo — #137 task 1 (D28, D29, doplnění D31, D32), 2026-10-26
 
 ## Kontext / Cíl
 
@@ -224,3 +224,26 @@ kontejneru):
 - **Hodnota `0`** (počet, pořadí) není prázdná hodnota.
 - **px v CSS** zastaví pre-commit (`check-css-units.py`) — mezery jen
   tokeny.
+
+## Doplnění po prokliku (D31, D32)
+
+Při prokliku hotového tasku přibyla v #133 dvě rozhodnutí:
+
+- ✓ **D31** Dvojice skupin v řádku patří věcně k sobě a jsou podobně
+  dlouhé; skupina, která u části záznamů mizí, stojí na konci, nebo její
+  položky patří do stálé skupiny. Karta majetku: skupina Identifikace
+  zaniká, Zkrácený název (dál jen když se liší od názvu) je první položka
+  Zařazení; pořadí Vlastnictví, Pořízení a vyřazení, Zařazení, Odpisy
+  (podmíněná, proto na konci dvojic), Poznámka (`wide`). Text
+  `group.identity` zůstává — používají ho Typy majetku a Účetní skupiny.
+  Hlídá review.
+- ✓ **D32** Skupina, která by v řádku zůstala sama (poslední lichá, nebo
+  skupina před `wide`), jde přes celou šířku: `visibleGroups()` dopočítá
+  `full` kurzorem sloupce nad viditelnými skupinami (`wide` kurzor
+  nuluje), `PropertyGroups` kreslí celou šířku podle `full`, ne podle
+  `wide`. Unit test: jediná skupina, lichý počet, skupina před `wide`,
+  `wide` uprostřed, sudý počet beze změny.
+
+Commity: `feat(frontend): skupina sama v řádku přes celou šířku (#137, D32)`,
+`refactor(economy.assets): pořadí skupin karty majetku (#137, D31)`,
+`docs: řazení skupin vlastností (#137, D31, D32)`.

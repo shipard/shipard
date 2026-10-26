@@ -785,6 +785,17 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   text, označuje viewer) jde přes celou šířku jako tabulky a ostatní bloky.
   Výběr vykreslitelných skupin a položek je čistá funkce `visibleGroups()`
   v `components/ui/propertyGroups.js`.
+  - **Řazení skupin** (D31): dvojice v řádku patří věcně k sobě a jsou
+    podobně dlouhé. Skupina, která u části záznamů mizí (Odpisy jen
+    u odpisovaného majetku), stojí na konci, nebo její položky patří do
+    stálé skupiny (Zkrácený název je první položka Zařazení karty
+    majetku) — jinak se dvojice u různých záznamů posouvají. Hlídá review,
+    kontrola na to není.
+  - **Sama v řádku** (D32): skupina, která by v řádku zůstala sama
+    (poslední při lichém počtu, nebo skupina před `wide`), jde přes celou
+    šířku. Příznak `full` dopočítá `visibleGroups()` kurzorem sloupce nad
+    viditelnými skupinami (`wide` kurzor nuluje), ne CSS sudá / lichá —
+    komponenta ho jen kreslí.
 - **Tabulka**: body; hlavička sloupce heading (stejná velikost jako řádky,
   silnější, barvou textu, bez verzálek), čára pod ní
   `--shpd-color-border-strong`, mezi řádky `--shpd-color-border`; buňky
