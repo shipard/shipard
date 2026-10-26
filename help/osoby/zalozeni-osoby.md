@@ -64,6 +64,12 @@ dopočítá. Ve formuláři pak vidíš uložený tvar; na faktuře a v detailu
 osoby se PSČ, IBAN a telefon tisknou čitelně (`760 01`,
 `CZ65 0800 0000 1920 0014 5399`, `+420 577 123 456`).
 
+**Bankovní účet stačí s IBAN.** Zahraniční účet nemá české číslo účtu —
+vyplň jen **IBAN** (a BIC/SWIFT), pole **Číslo účtu** nech prázdné.
+Vyplněný musí být aspoň jeden z údajů **Číslo účtu** nebo **IBAN**; bez
+obou se účet neuloží. Účet bez čísla se v nabídce účtů partnera i na
+dokladu ukazuje IBANem.
+
 **Neplatné IČO, DIČ, PSČ nebo účet Shipard pozná.** Kontroluje kontrolní
 součet IČO (české a slovenské firmy), tvar DIČ podle státu, PSČ, číslo
 účtu, IBAN a BIC, a to, zda DIČ odpovídá IČO a IBAN číslu účtu. U partnera

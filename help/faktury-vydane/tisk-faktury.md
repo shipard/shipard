@@ -84,8 +84,12 @@ nejde — odběratel by dostal doklad, který se ještě může změnit.
 
 **Nad náhledem je žluté upozornění, že chybí QR platba.** Doklad nemá
 bankovní účet, ze kterého by šel kód sestavit — **Náš bankovní účet** na
-záložce **Nastavení** dokladu potřebuje IBAN, nebo české číslo účtu s kódem
-banky. Druhé upozornění říká, že v kódu chybí variabilní symbol: QR platba
+záložce **Nastavení** dokladu potřebuje **platný** IBAN, nebo platné české
+číslo účtu s kódem banky. Do kódu jde jen IBAN, který projde kontrolou;
+má-li účet v IBAN překlep, Shipard kód sestaví z čísla účtu, a když ani to
+není platné, QR platba chybí. Vytištěné platební údaje se tím nemění —
+IBAN na faktuře je ten uložený, oprav ho na účtu v **Nastavení**
+(formulář účtu chybu ukáže). Druhé upozornění říká, že v kódu chybí variabilní symbol: QR platba
 unese jen číslice, nejvýš deset. Symbol s písmeny nebo lomítkem se na
 doklad vytiskne, ale do kódu se nedostane. PDF je v obou případech hotové
 a použitelné.

@@ -169,7 +169,9 @@ nález k opravě, ne důvod chybu oslabit.
 Záznamy z doby před normalizací převede `shpd-ds values-normalize`
 (#118 D22, `docs/cli.md` → `shpd-ds`): tytéž funkce nad všemi pěti
 tabulkami adresáře, jen změněné sloupce v jedné transakci, nevalidní
-hodnoty jen vypíše (`Values\DirectoryValuesNormalizer`).
+hodnoty jen vypíše (`Values\DirectoryValuesNormalizer`); `--only=<druhy>`
+běh po druzích hodnot a `-v` podrobný výpis s osobou, hodnotami před → po
+a návrhem opravy u nálezů (D27, jen na obrazovku).
 
 ### Polymorfismus podle `personType`
 
@@ -382,6 +384,15 @@ i vlastní účty v číselníku. Formulář účtu kontroluje číslo účtu (m
 IBAN, BIC a jejich soulad (D19): partner varování, vlastní firma chyba;
 jiný než tuzemský tvar čísla účtu je nález jen u osoby ze státu
 s tuzemským tvarem (země osoby, viz § 3).
+
+**Číslo účtu nebo IBAN (#118 D28):** účet osoby musí nést aspoň jeden
+z obou údajů — zahraniční účet má jen IBAN (`accountNumber` prázdné, po
+přesunu D20 mimo cz / sk také). Bez obou se neuloží ani partnerovi
+(chyba `required_one_of` na čísle účtu, stejný text jako u vlastního
+účtu); `account_number` ve formuláři není povinné. Účet bez čísla se
+všude ukazuje IBANem: `displayPattern` tabulky `{account_number|iban}`
+(první neprázdná hodnota), lookup účtů partnera, hlavička dokladu i tisk
+(číslo účtu jen když je, IBAN zvlášť).
 
 ## 7. Contact sub-object
 

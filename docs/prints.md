@@ -383,11 +383,14 @@ Pravidla:
 - **`*Dom` hodnoty** jen u dokladu v cizí měně, jinak null.
 - **QR (D17):** jen platba převodem a kladná částka. `PaymentQrResolver`
   volí standard podle země odběratele (v1 vždy SPAYD); `SpaydGenerator`
-  skládá `ACC`, `AM`, `CC`, `X-VS`, `X-SS`, `X-KS`, `DT`, `MSG`. IBAN ze
-  snapshotu, jinak dopočet z českého čísla účtu
-  (`ValueRules::ibanFromAccountNumber()`, `world.validations` — jen tvar,
-  bez mod 11, #118 D23).
-  Bez účtu `qr = null` + varování; symbol mimo 1–10 číslic se z kódu
+  skládá `ACC`, `AM`, `CC`, `X-VS`, `X-SS`, `X-KS`, `DT`, `MSG`. Účet jen
+  s **platným IBAN** (#118 D29): IBAN ze snapshotu, pokud projde
+  `Iban::isValid()` (tvar, mod 97, pravidlo státu); jinak IBAN dopočtený
+  z **platného** českého čísla účtu (mod 11,
+  `ValueRules::ibanFromAccountNumber()`); jinak `qr = null` + varování
+  `message.qrNoAccount`. Neplatný uložený IBAN se do kódu nedostane ani
+  neopravuje — v platebních údajích se tiskne, jak je uložený, oprava dat
+  je na člověku (nález D19 na účtu). Symbol mimo 1–10 číslic se z kódu
   vynechá + varování.
 - **Název souboru:** slug `fileName.<varianta>` z katalogu + číslo dokladu.
 

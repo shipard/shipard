@@ -1285,13 +1285,15 @@ s novým klíčem pohybu (postup nasazení v [accbal.md](accbal.md) §4.6),
 při podezření na rozjetý ledger. Bez `--all` / `--doc` / `--fiscal-year`
 příkaz nic neudělá. Na importovaném DS běží nízké desítky sekund.
 
-#### `values-normalize [--dry-run] [--json]`
+#### `values-normalize [--dry-run] [--json] [--only=<druhy>] [-v]`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds values-normalize --dry-run     # co by se změnilo a co zůstane nevalidní; nic se nezapíše
 shpd-ds values-normalize               # ostrý běh — jedna transakce, jen změněné sloupce
 shpd-ds values-normalize --json        # tentýž report jako JSON (do issue, pro skript)
+shpd-ds values-normalize --dry-run -v  # každá změna a nález s osobou a hodnotami — jen na obrazovku
+shpd-ds values-normalize --only=phone  # ostrý běh jen pro telefony (postupně po druzích)
 ```
 
 Jednorázová, opakovatelná normalizace existujících údajů adresáře (#118
@@ -1318,10 +1320,35 @@ opravě.
 Výpis: řádek per tabulka (záznamů, změněno, po sloupcích, u účtů „IBAN
 přesunut z čísla účtu“), součet a nevalidní hodnoty po opravě tvaru jako
 `tabulka · id · sloupec · kód` — bez hodnot, jmen ani adres, takže výstup
-smí do issue. `--json`: `{dryRun, tables: {<tabulka>: {rows, changed,
-columns, ibanMoved?, skipped?}}, invalid: [{table, id, column, code}],
-totals: {rows, changed, invalid}}`. Exit 0 i s nevalidními hodnotami;
-nenulový jen chyba volání nebo infrastruktury.
+smí do issue. `--json`: `{dryRun, only?, verbose?, tables: {<tabulka>:
+{rows, changed, columns, ibanMoved?, skipped?}}, changes?, invalid:
+[{table, id, column, code}], totals: {rows, changed, invalid}}`. Exit 0
+i s nevalidními hodnotami; nenulový jen chyba volání nebo infrastruktury.
+
+**Postupný běh `--only=<druhy>`** (#118 D27, čárkami): `phone`, `email`,
+`web`, `zip` (PSČ a země adresy), `ids` (IČO, DIČ, daňové číslo),
+`accounts` (číslo účtu, IBAN, BIC včetně přesunu IBAN). Ostatní sloupce
+se v běhu nemění ani nepočítají, nálezy jen pro vybrané druhy; tabulka bez
+vybraného sloupce se vypíše jako `přeskočeno — mimo --only`
+(`skipped: not_selected`). Neznámý druh = chyba volání (exit 2), nic se
+nespustí. Bez `--only` všechno.
+
+**Podrobný výpis `-v` / `--verbose`** (vestavěná volba Symfony Console):
+za součty sekce `Změny (N):` — u každé změny `tabulka · id · osoba <id>
+<kód> „<název>“` (u vlastního účtu `účet <kód> „<název>“`) a sloupce
+`„před“ → „po“`; přesun IBAN ze sloupce čísla účtu je jedna položka se
+všemi dotčenými sloupci s předponou `IBAN přesunut z čísla účtu:`.
+U nálezů navíc hodnota, srozumitelný důvod podle příčiny (u IBAN tvar /
+kontrolní číslice / chybná délka / číslo účtu uvnitř bez mod 11, u čísla
+účtu nepovolené znaky / chybějící kód banky / mod 11) a, kde to jde
+z redundance, `návrh: „…“` — IČO z osmimístného českého DIČ, IBAN
+z platného tuzemského čísla účtu a naopak. **Návrh se nikdy neprovede**,
+ani v ostrém běhu; oprava je na člověku. V JSONu `changes: [{table, id,
+person: {id, code, name}|null, account: {code, name}|null, ibanMoved,
+columns: {<sloupec>: {from, to}}}]` a `invalid[]` navíc `person`,
+`account`, `value`, `reason`, `suggestion`. **Podrobný výpis obsahuje
+osobní údaje — jen na obrazovku, nikdy do issue, tasku ani commitu.**
+Bez `-v` je výstup beze změny.
 
 **Kopie reálných dat:** ostrý běh pouští člověk po `--dry-run` (Claude
 Code tam smí jen `--dry-run`). Párování (`PartyResolver`,

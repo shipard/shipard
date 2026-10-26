@@ -1403,8 +1403,8 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_id_invalid` | warning | DIČ / VAT ID nemá tvar prefix státu + 2–13 znaků, nebo neodpovídá pravidlu státu podle prefixu (cz 8–10 číslic, sk 10, de kontrolní číslice). |
 | `vat_id_company_id_mismatch` | warning | Osmimístné české DIČ není `CZ` + IČO strany (9–10místné DIČ fyzické osoby vazbu nemá). Path `*.vatId`. |
 | `zip_invalid` | warning | PSČ cz / sk nemá pět číslic (podle země adresy, jinak strany). |
-| `account_number_invalid` | warning | Tuzemské číslo účtu `[předčíslí-]číslo/kód` nesplňuje mod 11 (předčíslí i číslo zvlášť), nebo strana cz / sk má účet jiného tvaru. |
-| `iban_invalid` | warning | IBAN nemá tvar, platnou kontrolní číslici (ISO 7064 MOD 97-10), nebo neodpovídá pravidlu státu (délka; u cz / sk i mod 11 čísla účtu uvnitř). |
+| `account_number_invalid` | warning | Tuzemské číslo účtu `[předčíslí-]číslo/kód` nesplňuje mod 11 (předčíslí i číslo zvlášť), nebo strana cz / sk má účet jiného tvaru — důvod podle příčiny (#118 D27): nepovolené znaky, chybějící kód banky, jiný tvar, mod 11. |
+| `iban_invalid` | warning | IBAN nemá tvar, platnou kontrolní číslici (ISO 7064 MOD 97-10), nebo neodpovídá pravidlu státu — důvod podle příčiny (#118 D27): chybná délka státu, nebo u cz / sk číslo účtu uvnitř bez mod 11. |
 | `bic_invalid` | warning | BIC nemá tvar 8 nebo 11 znaků. |
 | `iban_account_mismatch` | warning | IBAN i číslo účtu jsou platné, ale nenesou týž účet (BBAN se liší). Path `*.bankAccount.iban`. |
 | `bank_account_repaired` | warning | Normalizátor dopočetl neplatný IBAN z platného čísla účtu nebo naopak (D4) — z `_resolve.valueRepairs`, zpráva nese původní i novou hodnotu. Návrh s tímto nálezem nikdy není `ready`. |

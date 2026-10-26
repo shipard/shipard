@@ -1,6 +1,6 @@
 # `values-normalize`: podrobný výpis a postupný běh, účet bez čísla, QR jen s platným IBAN
 
-**Stav:** naplánováno — rozhodnutí schválená 2026-10-26 (#118 D27–D29), neimplementováno; pustit **před** ostrým během `values-normalize` na kopiích reálných dat
+**Stav:** hotovo — implementováno 2026-10-26 ve 4 commitech (D28 + D29, důvody nálezů D27, `--verbose` a `--only`, dokumentace); odchylky a ověření níže; ostrý běh na kopiích reálných dat zůstává na člověku
 
 
 ## Kontext / Cíl
@@ -105,22 +105,22 @@ dohledat a opravit; běh po druzích hodnot; účet osoby s IBAN bez čísla
 
 ## Hotovo když
 
-- [ ] D28: účet osoby jen s IBAN se uloží, bez obou údajů ne; účet bez
+- [x] D28: účet osoby jen s IBAN se uloží, bez obou údajů ne; účet bez
       čísla se v lookupu, na dokladu i na tisku ukazuje IBANem.
-- [ ] D29: neplatný uložený IBAN + platné číslo účtu → QR s IBAN z čísla;
+- [x] D29: neplatný uložený IBAN + platné číslo účtu → QR s IBAN z čísla;
       neplatný IBAN bez platného čísla → bez QR s hláškou; platný IBAN beze
       změny (stávající testy QR a ISDOC).
-- [ ] D27: testy výpisu — změna (před → po, osoba), přesun D20 jako jedna
+- [x] D27: testy výpisu — změna (před → po, osoba), přesun D20 jako jedna
       položka, nález s důvodem a návrhem opravy (IČO z DIČ, IBAN z čísla,
       číslo z IBAN), bez `--verbose` žádné hodnoty ani jména, `--only`
       mění a počítá jen vybrané druhy, `--only` s neznámým druhem → chyba
       volání.
-- [ ] Na volných zdrojích dat `--verbose --dry-run` a `--only=phone` ostrý
+- [x] Na volných zdrojích dat `--verbose --dry-run` a `--only=phone` ostrý
       běh + druhý běh 0 změn.
-- [ ] Na kopiích reálných dat **jen `--dry-run`**; do závěrečné zprávy jen
+- [x] Na kopiích reálných dat **jen `--dry-run`**; do závěrečné zprávy jen
       agregovaně (počty po druzích, počty návrhů oprav) — **žádný výstup
       `--verbose` z reálných dat do tasku, commitu ani zprávy**.
-- [ ] `vendor/bin/phpunit --filter` na dotčené testy; `docs/cli.md`,
+- [x] `vendor/bin/phpunit --filter` na dotčené testy; `docs/cli.md`,
       help, `**Stav:**`, index tasků.
 
 ## Pasti
@@ -132,3 +132,64 @@ dohledat a opravit; běh po druzích hodnot; účet osoby s IBAN bez čísla
   ostatních druhů se nesmí započítat.
 - **QR:** neměnit tvar platného IBAN ani pořadí polí SPAYD (zlaté výstupy).
 - **Kopie reálných dat jen `--dry-run`.**
+
+## Odchylky od zadání (2026-10-26)
+
+- **`--verbose` je vestavěná volba Symfony Console** (`-v`), ne vlastní
+  volba příkazu — vlastní `--verbose` by se při běhu přes aplikaci
+  srazila s výchozí definicí. Příkaz čte `$output->isVerbose()`
+  (jako `alerts-run`); uživatelsky je to přesně `--verbose` ze zadání.
+- **Tabulka bez vybraného sloupce** se při `--only` nevynechá z výpisu,
+  ale vypíše jako `přeskočeno — mimo --only` (`skipped: not_selected`),
+  aby pořadí tabulek zůstalo stejné.
+- **Návrh opravy jen u nálezu téže hodnoty:** IČO z DIČ jen u `company_id_invalid`
+  (u nesouladu dvou platných hodnot se neví, která je správně — bez
+  návrhu), IBAN z čísla účtu u `iban_invalid` podle státu z prefixu
+  neplatného IBAN (bez rozpoznatelného prefixu bez návrhu), číslo účtu
+  z IBAN u `account_number_invalid`. Návrh nese `ValueFinding::suggestion`
+  a `PersonValues::check*` (`value`, `reason`, `suggestion`); do zprávy
+  formuláře ani canonicalu nepatří.
+- **Důvody nálezů:** nová metoda `CountryValueRules::ibanLength()`
+  (cz / sk 24, de 22) pro „chybnou délku“; text mod 11 u čísla účtu
+  zůstal („nesplňuje kontrolu mod 11“), přibyly „obsahuje nepovolené
+  znaky“ a „nemá kód banky“. Kódy D13 beze změny.
+- **D28 v `validate()` jen nad payloadem s oběma klíči nebo u nového
+  záznamu** — částečný update jiných sloupců přes generické CRUD uložený
+  účet nevidí, proto se nehodnotí. Formulář posílá oba klíče vždy.
+  `account_number` je NOT NULL bez defaultu, takže `required: false`
+  musí být ve formuláři výslovně (`JsoncFormLoader::deriveRequired()`).
+- **`displayPattern` s náhradníky** `{account_number|iban}` — nová
+  syntaxe `RecordPattern` (první neprázdná hodnota, `columns()` vrací
+  všechny), místo dvou placeholderů vedle sebe.
+- **D29 u QR vyžaduje i mod 11 čísla účtu** (dřív jen tvar, D23); země
+  dopočtu zůstává `cz` — `PaymentQrInput` zemi nenese.
+
+## Ověření (2026-10-26)
+
+- Unit: `ValueChecks`, `CountryRulesEdgeCases`, `PersonValues`,
+  `PersonBankAccountDocument`, `BankAccountDocument`, `RecordPattern`,
+  `PaymentQr`, `DocPrintBlocks`, `CanonicalValueValidator`,
+  `DirectoryValuesNormalizer`, `ValuesNormalizeCommand`, `HelpDrift`,
+  ISDOC — cíleně prochází; celá sada `vendor/bin/phpunit`: 10 854 testů
+  OK (1 varování a 1 skip z dřívějška).
+- Integrační na 4l3j (`--testsuite Integration --filter ValuesNormalize`):
+  3/3 vč. nového `--only=phone` + `-v`.
+- Volné zdroje dat: 4l3j `--dry-run -v` (0 změn, 4 nálezy z testovacích
+  dat s osobou a důvodem), `--only=phone` ostrý běh a druhý běh 0 změn,
+  `--only=xyz` exit 2; demo 8yft `--dry-run` 0 změn, 2 nálezy IBAN.
+- Kopie reálných dat **jen `--dry-run`** (agregovaně, bez ID a hodnot):
+
+  | zdroj | záznamů | změn | po druzích | nálezů (po kódech) | návrhů oprav |
+  |---|---|---|---|---|---|
+  | btpg-p | 7 555 | 1 446 | phone 1 299, accounts 107, zip 35, email 10, web 4, ids 1 | 29 (13 číslo účtu, 8 PSČ, 5 IBAN, 3 IČO) | 2 (1 IČO z DIČ, 1 IBAN z čísla účtu) |
+  | e8w1-i | 1 308 | 189 | accounts 118, phone 62, web 8, ids 1, zip 1 | 9 (5 číslo účtu, 2 IČO, 1 DIČ, 1 PSČ) | 0 |
+  | 4dnh-5 | 704 | 51 | accounts 26, zip 14, phone 9, ids 2, email 1 | 11 (9 číslo účtu, 1 DIČ, 1 PSČ) | 0 |
+  | ur4l-0 | 176 | 14 | phone 12, ids 1, zip 1 | 1 (DIČ) | 0 |
+  | nelh-0 | 92 | 22 | accounts 17, phone 5 | 1 (číslo účtu) | 0 |
+  | p4zq-s | 296 | 29 | phone 22, accounts 6, web 3 | 0 | 0 |
+
+  Počty změn a nálezů shodné s během z `tasks/value-rules-backfill.md`
+  (btpg-p 29 nálezů: dřív 12 + 1 číslo účtu rozděleno na účty osob
+  a vlastní účet, tady dohromady). Ostrý běh na kopiích pouští člověk —
+  doporučení: po druzích (`--only=phone`, pak `zip`, `ids`, `accounts`)
+  s `--dry-run -v` před každým.
