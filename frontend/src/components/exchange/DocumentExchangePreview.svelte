@@ -21,6 +21,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Popover from '../ui/Popover.svelte';
+  import Card from '../ui/Card.svelte';
   import ResolveDecisionPanel from './ResolveDecisionPanel.svelte';
   import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
@@ -807,7 +808,9 @@
 {/snippet}
 
 {#snippet partyCard(label, party, partyResolve, path)}
-  <div class="shpd-exchange__party">
+  <!-- Obal karty strany = sdílená Card (#137 D33); hlavička a obsah
+       zůstávají, typografii stran náhledu řeší #139. -->
+  <Card as="div">
     <div class="shpd-exchange__party-header">
       <h3 class="shpd-exchange__party-label">{label}</h3>
       {@render statusBadge(partyResolve, path, 'party')}
@@ -879,7 +882,7 @@
         {/if}
       </div>
     {/if}
-  </div>
+  </Card>
 {/snippet}
 
 <!-- Místo plnění / režim DPH: efektivní hodnota z _resolve.vat se zdrojem
@@ -1401,13 +1404,7 @@
     }
   }
 
-  .shpd-exchange__party {
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    padding: var(--shpd-space-sm);
-    background: var(--shpd-color-bg);
-  }
-
+  /* Obal karty strany kreslí sdílená Card (#137 D33), odsazení md. */
   .shpd-exchange__party-header {
     display: flex;
     justify-content: space-between;

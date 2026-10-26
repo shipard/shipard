@@ -6,6 +6,7 @@
   import RejectReasonPrompt from '../dashboard/RejectReasonPrompt.svelte';
   import AttachmentGrid from './AttachmentGrid.svelte';
   import FailureCard from './FailureCard.svelte';
+  import Card from '../ui/Card.svelte';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
   import DetailAttachments from './DetailAttachments.svelte';
@@ -396,7 +397,8 @@
             {/if}
           {:else}
             {@const doc = content.proposal}
-            <div class="shpd-extracted__card">
+            <!-- Karta návrhu = sdílená Card (#137 D33). -->
+            <Card as="div">
               <div class="shpd-extracted__header">
                 <span class="shpd-extracted__type">{doc.proposed_type_label}</span>
                 {#if doc.ai_failed}
@@ -418,7 +420,9 @@
               </div>
 
               {#if doc.ai_failed && doc.failure}
-                <FailureCard failure={doc.failure} />
+                <div class="shpd-extracted__failure">
+                  <FailureCard failure={doc.failure} />
+                </div>
               {/if}
 
               {#if doc.summary}
@@ -468,7 +472,7 @@
                   />
                 {/if}
               </div>
-            </div>
+            </Card>
           {/if}
         </div>
 
@@ -1015,11 +1019,10 @@
     padding: var(--shpd-space-md);
   }
 
-  .shpd-extracted__card {
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    padding: var(--shpd-space-md);
-    background-color: var(--shpd-color-bg);
+  /* Obal karty návrhu kreslí sdílená Card (#137 D33). Karta selhání uvnitř
+     (nevalidní výstup) vnější okraj nemá — mezeru pod ní dává tenhle obal. */
+  .shpd-extracted__failure {
+    margin-bottom: var(--shpd-space-sm);
   }
 
   .shpd-extracted__header {

@@ -17,6 +17,7 @@
   import { t } from '../../i18n/index.js';
   import SectionHeading from '../ui/SectionHeading.svelte';
   import PropertyGroups from '../ui/PropertyGroups.svelte';
+  import Card from '../ui/Card.svelte';
 
   let { content = null, onAction = null } = $props();
 
@@ -82,11 +83,10 @@
 </script>
 
 {#snippet partyCard(labelKey, party)}
-  <!-- Karta strany (D16): nadpis karty a název entity jsou heading, IČO /
-       DIČ, adresa a účet běžné údaje barvou textu, šedé a menší jsou jen
-       kontakty. -->
-  <div class="shpd-docdetail__party">
-    <SectionHeading level={3}>{t(labelKey)}</SectionHeading>
+  <!-- Karta strany = sdílená Card s nadpisem (#137 D33); obsah podle D16:
+       název entity heading, IČO / DIČ, adresa a účet běžné údaje barvou
+       textu, šedé a menší jsou jen kontakty. -->
+  <Card title={t(labelKey)}>
     {#if party}
       <div class="shpd-docdetail__party-body">
         {#if party.name}
@@ -134,7 +134,7 @@
     {:else}
       <div class="shpd-docdetail__party-empty">—</div>
     {/if}
-  </div>
+  </Card>
 {/snippet}
 
 {#snippet rowDescription(row)}
@@ -280,22 +280,18 @@
     container-type: inline-size;
   }
 
-  /* Nadpisy sekcí, karet stran i skupin údajů kreslí sdílený SectionHeading,
-     skupiny údajů PropertyGroups (#137 D28, D29) — vlastní CSS tu nemají. */
+  /* Nadpisy sekcí a skupin údajů kreslí sdílený SectionHeading, skupiny
+     údajů PropertyGroups, karty stran Card (#137 D28, D29, D33) — vlastní
+     CSS tu nemají. */
 
   /* ── Strany ──────────────────────────────────────────────────────────── */
 
+  /* Dva sloupce karet stran — není to CardGrid: strany jsou pevně dvě
+     a pod 30 rem kontejneru jdou pod sebe (D3). */
   .shpd-docdetail__parties {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--shpd-space-md);
-  }
-
-  .shpd-docdetail__party {
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    padding: 0.75rem;
-    background: var(--shpd-color-bg);
   }
 
   .shpd-docdetail__party-body {
