@@ -99,19 +99,18 @@ class PreprocessRulesViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT `id`, `rule_id`, `origin`, `notice`, `sender_email`, `sender_domain`,'
             . ' `subject_regex`, `body_regex`, `actions`, `hit_count`, `last_hit_at`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $rule = [];
         $this->addItem($rule, 'Klíč pravidla', $record['rule_id'] ?? null);
         $this->addItem($rule, 'Původ', $this->cfgLabel('core.mail.preprocessRuleOrigins', (string) ($record['origin'] ?? '')));
@@ -146,22 +145,20 @@ class PreprocessRulesViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => 'Pravidlo', 'items' => $rule],
-                        ['title' => 'Podmínky shody', 'items' => $match],
-                        ['title' => 'Akce', 'items' => $actions],
-                        ['title' => 'Statistiky', 'items' => $stats],
-                        ['title' => 'Stav', 'items' => $status],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => 'Pravidlo', 'items' => $rule],
+                    ['title' => 'Podmínky shody', 'items' => $match],
+                    ['title' => 'Akce', 'items' => $actions],
+                    ['title' => 'Statistiky', 'items' => $stats],
+                    ['title' => 'Stav', 'items' => $status],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     /** Krátký popis podmínek pro řádek seznamu. */

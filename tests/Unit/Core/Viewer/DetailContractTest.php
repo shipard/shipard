@@ -42,13 +42,6 @@ class DetailContractTest extends TestCase
         // core.exchange
         'core.exchange.tagRules',
         // core.mail
-        'core.mail.incoming',
-        'core.mail.sent',
-        'core.mail.mailboxes',
-        'core.mail.senders',
-        'core.mail.aiProfiles',
-        'core.mail.senderRules',
-        'core.mail.preprocessRules',
         // core.prints
         'core.prints.texts',
         // core.system

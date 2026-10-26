@@ -111,6 +111,8 @@
             "icon": "mail",
             "table": "core_mail_incoming_messages",
             "class": "Shipard\\Module\\Core\\Mail\\IncomingMessagesViewer",
+            // Přílohy kreslí tab Obsah — builder je do Přehledu nepřidává (#136 D21).
+            "detailAttachments": "content",
             "navSection": "_top",
             "navOrder": 30
         },
@@ -124,6 +126,8 @@
             "icon": "mail-out",
             "table": "core_mail_sent_messages",
             "class": "Shipard\\Module\\Core\\Mail\\Sent\\SentMessagesViewer",
+            // Přílohy kreslí tab Obsah — builder je nepřidává (#136 D21).
+            "detailAttachments": "content",
             "navSection": "_top",
             "navOrder": 35
         },
@@ -134,7 +138,8 @@
             "name:en": "Mailboxes",
             "icon": "inbox",
             "table": "core_mail_mailboxes",
-            "class": "Shipard\\Module\\Core\\Mail\\MailboxesViewer"
+            "class": "Shipard\\Module\\Core\\Mail\\MailboxesViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{mailbox_id}"}
         },
         {
             "id": "core.mail.senders",

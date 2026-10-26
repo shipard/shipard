@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Mail;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
@@ -24,9 +25,10 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
  *        + první řádek body_plain (preview)
  *
  * Detail panel (§5.3): hlavička (předmět · partner · od: odesílatel ·
- * schránka · doručeno
- * + badges stavu a primárního typu) nad taby, taby Obsah (tělo, přílohy,
- * technické údaje) / Analýzy / Extrahované dokumenty / Originál.
+ * schránka · doručeno + štítky stavu, primárního typu, analýzy
+ * a předzpracování) nad taby, taby Obsah (tělo, přílohy, technické údaje)
+ * / Analýzy / Návrh / Originál. Přílohy kreslí tab Obsah
+ * (`detailAttachments: "content"`, #136 D21).
  */
 class IncomingMessagesViewer extends TableViewer
 {
@@ -180,9 +182,9 @@ class IncomingMessagesViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT m.*, mb.`name` AS mailbox_name, mb.`mailbox_id` AS mailbox_code,'
             . ' p.`full_name` AS partner_full_name'
             . ' FROM `' . $this->table . '` m'
@@ -191,51 +193,33 @@ class IncomingMessagesViewer extends TableViewer
             . ' WHERE m.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
-        $header = $this->buildDetailHeader($record);
-
-        $tabs = [];
-
-        // Tab 1 — Obsah
-        $tabs[] = [
-            'id'      => 'content',
-            'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'content', 'Content'),
-            'content' => $this->buildContentTab($record),
-        ];
-
-        // Tab 2 — Analýzy
-        $tabs[] = [
-            'id'      => 'analyses',
-            'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'analyses', 'Analyses'),
-            'content' => $this->buildAnalysesTab((int) $record['id']),
-        ];
-
-        // Tab 3 — Návrh (dokumentový návrh poslední analýzy)
-        $tabs[] = [
-            'id'      => 'proposal',
-            'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'proposal', 'Proposal'),
-            'content' => $this->buildProposalTab($record),
-        ];
-
-        // Tab 4 — Originál (raw .eml)
-        $tabs[] = [
-            'id'      => 'raw',
-            'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'original', 'Original'),
-            'content' => $this->buildRawSourceTab($record),
-        ];
-
+    protected function detailTabs(array $record): array
+    {
         return [
-            'title'    => $header['title'],
-            'subtitle' => $header['subtitle'],
-            'badges'   => $header['badges'],
-            // Stejny klic jako viewers[].icon v module.jsonc - jeden vyznam,
-            // jedna ikona pro radek vieweru i hlavicku detailu.
-            'icon'     => 'mail',
-            'tabs'     => $tabs,
+            [
+                'id'      => 'content',
+                'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'content', 'Content'),
+                'content' => $this->buildContentTab($record),
+            ],
+            [
+                'id'      => 'analyses',
+                'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'analyses', 'Analyses'),
+                'content' => $this->buildAnalysesTab((int) $record['id']),
+            ],
+            // Návrh — dokumentový návrh poslední analýzy
+            [
+                'id'      => 'proposal',
+                'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'proposal', 'Proposal'),
+                'content' => $this->buildProposalTab($record),
+            ],
+            // Originál — raw .eml
+            [
+                'id'      => 'raw',
+                'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'original', 'Original'),
+                'content' => $this->buildRawSourceTab($record),
+            ],
         ];
     }
 
@@ -316,13 +300,11 @@ class IncomingMessagesViewer extends TableViewer
     // -------------------------------------------------------------------------
 
     /**
-     * Hlavička detailu nad taby — předmět jako title, odesílatel · schránka ·
-     * doručeno jako subtitle, badges se stavem a primárním typem. Renderuje
-     * generický header v ViewerDetail (detail.title/subtitle/badges).
-     *
-     * @return array{title: string, subtitle: ?string, badges: array<int, array{label: string, style: string}>}
+     * Hlavička detailu — předmět jako titulek, partner · od: odesílatel ·
+     * schránka · doručeno v podtitulku (D7; bez partnera zůstává odesílatel
+     * bez prefixu). Štítek stavu zprávy přidává builder (#136 D20).
      */
-    private function buildDetailHeader(array $record): array
+    protected function detailHeader(array $record): DetailHeader
     {
         $subject = $this->displayTitle($record);
 
@@ -334,8 +316,6 @@ class IncomingMessagesViewer extends TableViewer
             default                                   => $senderEmail,
         };
 
-        // Subtitle: partner · od: odesílatel · schránka · doručeno (D7);
-        // bez partnera zůstává odesílatel bez prefixu jako dřív.
         $partner = $this->partnerLabel($record);
         $subtitleParts = [];
         if ($partner !== '') {
@@ -353,17 +333,25 @@ class IncomingMessagesViewer extends TableViewer
             $subtitleParts[] = $received;
         }
 
+        return new DetailHeader(
+            $subject !== '' ? $subject : '(bez předmětu)',
+            $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
+        );
+    }
+
+    /**
+     * Štítky za stavem zprávy: primární typ, stav AI analýzy a stav
+     * technického předzpracování (0 = netýká se, skryto). Detail badge nemá
+     * varianty `muted` ani `archive` — mapují se na `neutral`.
+     */
+    protected function detailBadges(array $record): array
+    {
         $badges = [];
-        $stateBadge = $this->buildStateBadge((int) ($record['docState'] ?? 10));
-        if ($stateBadge !== null) {
-            $badges[] = $stateBadge;
-        }
 
         $primaryType = (string) ($record['primary_type'] ?? 'other');
         $typeStyle = self::PRIMARY_TYPE_SPAN_CLASS[$primaryType] ?? 'muted';
         $badges[] = [
             'label' => $this->resolvePrimaryTypeLabel($primaryType),
-            // Detail badge nemá variantu `muted` — mapujeme na `neutral`.
             'style' => $typeStyle === 'muted' ? 'neutral' : $typeStyle,
         ];
 
@@ -375,7 +363,6 @@ class IncomingMessagesViewer extends TableViewer
             ];
         }
 
-        // Stav technického předzpracování (tasks/mail-preprocess.md) — 0 = netýká se, skryto.
         $preprocessBadge = $this->buildCfgStateBadge('core.mail.preprocessStates', (int) ($record['preprocess_state'] ?? 0));
         if ($preprocessBadge !== null) {
             $badges[] = [
@@ -384,11 +371,7 @@ class IncomingMessagesViewer extends TableViewer
             ];
         }
 
-        return [
-            'title'    => $subject !== '' ? $subject : '(bez předmětu)',
-            'subtitle' => $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
-            'badges'   => $badges,
-        ];
+        return $badges;
     }
 
     /**
@@ -423,26 +406,6 @@ class IncomingMessagesViewer extends TableViewer
         return [
             'label' => (string) ($entry['name'] ?? $state),
             'style' => (string) ($entry['stateStyle'] ?? 'concept'),
-        ];
-    }
-
-    /** Badge stavu zprávy (label + stateStyle) z docState configu. */
-    private function buildStateBadge(int $docState): ?array
-    {
-        if ($this->config === null || $this->docStatesCfgItem === null) {
-            return null;
-        }
-
-        $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
-        $stateData = $cfg->getState($docState);
-        $label = (string) ($stateData['stateName'] ?? '');
-        if ($label === '') {
-            return null;
-        }
-
-        return [
-            'label' => $label,
-            'style' => (string) ($stateData['stateStyle'] ?? 'concept'),
         ];
     }
 

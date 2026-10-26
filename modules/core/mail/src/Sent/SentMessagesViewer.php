@@ -8,6 +8,7 @@ use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Mail\AddressList;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Base\Persons\Send\SendPurposes;
 
@@ -113,9 +114,9 @@ class SentMessagesViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT m.*, p.`full_name` AS recipient_name,'
             . ' COALESCE(NULLIF(u.`full_name`, %s), u.`login`) AS author_name'
             . ' FROM `' . $this->table . '` m'
@@ -125,10 +126,45 @@ class SentMessagesViewer extends TableViewer
             '',
             $recordId,
         );
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+    }
 
+    /** Předmět jako titulek, Komu · vytvořeno v podtitulku; štítek stavu (Odeslaná) přidává builder. */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $cs = ($this->language ?? 'en') === 'cs';
+        $to = AddressList::format(AddressList::parse($record['email_to'] ?? null));
+        $subject = trim((string) ($record['subject'] ?? ''));
+
+        $subtitle = array_filter([
+            $to !== '' ? ($cs ? 'Komu: ' : 'To: ') . $to : null,
+            SubtableCellFormatter::dateTime($record['created'] ?? null),
+        ]);
+
+        return new DetailHeader(
+            $subject !== '' ? $subject : ($cs ? '(bez předmětu)' : '(no subject)'),
+            $subtitle !== [] ? implode(' · ', $subtitle) : null,
+        );
+    }
+
+    /** Stav doručení a stopa pojistky odchozí pošty (#95) za štítkem stavu zprávy. */
+    protected function detailBadges(array $record): array
+    {
+        $transport = $this->transportInfo()->state($record);
+
+        return array_values(array_filter([
+            ['label' => $transport['stateLabel'], 'style' => $transport['stateStyle']],
+            $transport['safety'] !== null
+                ? ['label' => $transport['safety']['label'], 'style' => $transport['safety']['style']]
+                : null,
+        ]));
+    }
+
+    /**
+     * Jediný tab Obsah: tělo zprávy, přílohy (vlastní blok —
+     * `detailAttachments: "content"`) a vlastnosti Zpráva / Odeslání.
+     */
+    protected function detailTabs(array $record): array
+    {
         $cs        = ($this->language ?? 'en') === 'cs';
         $transport = $this->transportInfo()->state($record);
         $to        = AddressList::format(AddressList::parse($record['email_to'] ?? null));
@@ -186,45 +222,32 @@ class SentMessagesViewer extends TableViewer
             ],
         ];
 
-        $subtitle = array_filter([
-            $to !== '' ? ($cs ? 'Komu: ' : 'To: ') . $to : null,
-            SubtableCellFormatter::dateTime($record['created'] ?? null),
-        ]);
+        return [[
+            'id'      => 'content',
+            'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'content', 'Content'),
+            'content' => count($blocks) === 1 ? $blocks[0] : ['type' => 'composite', 'blocks' => $blocks],
+        ]];
+    }
 
-        $detail = [
-            'title'    => (string) ($record['subject'] ?? ''),
-            'subtitle' => $subtitle !== [] ? implode(' · ', $subtitle) : null,
-            'badges'   => array_values(array_filter([
-                $this->stateBadge((int) ($record['docState'] ?? SentMessageStore::DOC_STATE_SENT)),
-                ['label' => $transport['stateLabel'], 'style' => $transport['stateStyle']],
-                $transport['safety'] !== null
-                    ? ['label' => $transport['safety']['label'], 'style' => $transport['safety']['style']]
-                    : null,
-            ])),
-            'icon'     => 'mail-out',
-            'tabs'     => [[
-                'id'      => 'content',
-                'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'content', 'Content'),
-                'content' => count($blocks) === 1 ? $blocks[0] : ['type' => 'composite', 'blocks' => $blocks],
-            ]],
-        ];
-
-        // Odkaz na záznam, ke kterému zpráva patří.
-        if (!empty($record['target_table_id']) && (int) ($record['target_row'] ?? 0) > 0) {
-            $detail['actions'] = [[
-                'id'      => 'openSentMessageTarget',
-                'label'   => $cs ? 'Otevřít záznam' : 'Open record',
-                'kind'    => 'open_form',
-                'variant' => 'secondary',
-                'target'  => [
-                    'table' => (string) $record['target_table_id'],
-                    'mode'  => 'edit',
-                    'id'    => (int) $record['target_row'],
-                ],
-            ]];
+    /** Odkaz na záznam, ke kterému zpráva patří. */
+    protected function detailActions(array $record): array
+    {
+        if (empty($record['target_table_id']) || (int) ($record['target_row'] ?? 0) <= 0) {
+            return [];
         }
+        $cs = ($this->language ?? 'en') === 'cs';
 
-        return $detail;
+        return [[
+            'id'      => 'openSentMessageTarget',
+            'label'   => $cs ? 'Otevřít záznam' : 'Open record',
+            'kind'    => 'open_form',
+            'variant' => 'secondary',
+            'target'  => [
+                'table' => (string) $record['target_table_id'],
+                'mode'  => 'edit',
+                'id'    => (int) $record['target_row'],
+            ],
+        ]];
     }
 
     /** Zprávy vznikají odesláním záznamu — bez akce Přidat. */
@@ -275,21 +298,6 @@ class SentMessagesViewer extends TableViewer
     {
         $state = $this->docStateData($docState);
         return (string) ($state['stateStyle'] ?? 'done');
-    }
-
-    /** @return array{label: string, style: string}|null */
-    private function stateBadge(int $docState): ?array
-    {
-        $state = $this->docStateData($docState);
-        if (!isset($state['stateName'])) {
-            return null;
-        }
-        $style = (string) ($state['stateStyle'] ?? 'done');
-        // Detail badge nemá variantu archivu ani koše — neutrální.
-        return [
-            'label' => (string) $state['stateName'],
-            'style' => in_array($style, ['archive', 'trash'], true) ? 'neutral' : $style,
-        ];
     }
 
     /** @return array<string, mixed> */

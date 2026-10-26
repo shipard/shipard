@@ -92,19 +92,18 @@ class SenderRulesViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT `id`, `pattern_kind`, `pattern`, `disposition`, `origin`,'
             . ' `hit_count`, `last_hit_at`, `notice`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $rule = [];
         $this->addItem($rule, 'Vzor', $record['pattern'] ?? null);
         $this->addItem($rule, 'Druh vzoru', $this->cfgLabel('core.mail.senderRulePatternKinds', (string) ($record['pattern_kind'] ?? '')));
@@ -120,20 +119,18 @@ class SenderRulesViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => 'Pravidlo', 'items' => $rule],
-                        ['title' => 'Statistiky', 'items' => $stats],
-                        ['title' => 'Stav', 'items' => $status],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => 'Pravidlo', 'items' => $rule],
+                    ['title' => 'Statistiky', 'items' => $stats],
+                    ['title' => 'Stav', 'items' => $status],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     private function cfgLabel(string $cfgItemId, string $key): string

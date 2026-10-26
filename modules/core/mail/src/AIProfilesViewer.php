@@ -109,9 +109,9 @@ class AIProfilesViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT p.`profile_id`, p.`name`, p.`backend`, b.`name` AS `backend_name`,'
             . ' p.`supported_doc_types`, p.`language`, p.`prompt_version`,'
             . ' p.`model`, p.`model_like`, p.`thinking`, p.`effort`,'
@@ -121,11 +121,10 @@ class AIProfilesViewer extends TableViewer
             . ' WHERE p.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $identity = [];
         $this->addItem($identity, 'Kód profilu', $record['profile_id'] ?? null);
         $this->addItem($identity, 'Název', $record['name'] ?? null);
@@ -158,23 +157,21 @@ class AIProfilesViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => 'Identifikace', 'items' => $identity],
-                        ['title' => 'Záběr', 'items' => $scope],
-                        ['title' => 'Prompt', 'items' => $prompt],
-                        ['title' => 'Přepsání AI funkce', 'items' => $override],
-                        ['title' => 'Příznaky', 'items' => $flags],
-                        ['title' => 'Stav', 'items' => $status],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => 'Identifikace', 'items' => $identity],
+                    ['title' => 'Záběr', 'items' => $scope],
+                    ['title' => 'Prompt', 'items' => $prompt],
+                    ['title' => 'Přepsání AI funkce', 'items' => $override],
+                    ['title' => 'Příznaky', 'items' => $flags],
+                    ['title' => 'Stav', 'items' => $status],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     private function resolveStateStyle(int $docState): string
