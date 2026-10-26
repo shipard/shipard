@@ -10,6 +10,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
   import FormDialog from '../form/FormDialog.svelte';
@@ -225,7 +226,8 @@
 </script>
 
 <div class="shpd-ds-setup">
-  <div class="shpd-ds-setup__card">
+  <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35). -->
+  <Card spacious>
     <h2 class="shpd-ds-setup__title">
       <Icon icon={iconListCheck} size="md" />
       <span>{t('setup.title')}</span>
@@ -308,7 +310,7 @@
         <AccountingItemsOffer />
       </div>
     {/if}
-  </div>
+  </Card>
 </div>
 
 {#snippet parameterControl(key)}
@@ -395,13 +397,6 @@
   .shpd-ds-setup {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-ds-setup__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
   }
 
   .shpd-ds-setup__title {

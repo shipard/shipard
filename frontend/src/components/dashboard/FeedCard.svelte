@@ -10,6 +10,7 @@
   import { resolveIcon, iconMail, iconWarning, iconChevronDown, iconChevronUp } from '../../icons.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
+  import Card from '../ui/Card.svelte';
   import FeedCardAttachment from './FeedCardAttachment.svelte';
   import { t } from '../../i18n/index.js';
 
@@ -64,149 +65,149 @@
 
 <!-- `data-card-id` = id karty ze serveru (`mail_suggestion:<ndx>`…) — proklikání
      sady (#103 F7a) podle něj pozná, která karta po použití zmizela. -->
-<div class="shpd-feed-card {stateClass}" data-testid="feed-card" data-card-id={card.id}>
+<!-- Obal karty kreslí sdílená Card (#137 D33) — kořen nese stavovou třídu
+     docState_*, stavový proužek a řádek ikona + tělo jsou obsah karty. -->
+<Card as="div" class={stateClass} data-testid="feed-card" data-card-id={card.id}>
   <span class="shpd-feed-card__bar"></span>
-  {#if card.icon}
-    <span class="shpd-feed-card__icon">
-      <Icon icon={resolveIcon(card.icon)} size="md" />
-    </span>
-  {/if}
-  <div class="shpd-feed-card__body">
-    <div class="shpd-feed-card__head">
-      <div class="shpd-feed-card__heading">
-        <div class="shpd-feed-card__title">{card.headline ? card.headline.partnerName : card.title}</div>
-        {#if card.dueText}
-          <!-- Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4):
-               text i stav (overdue / soon / later) posílá server. -->
-          <span class="shpd-feed-card__due shpd-feed-card__due--{card.dueState ?? 'later'}" data-testid="card-due">{card.dueText}</span>
-        {/if}
-        {#if subLine}
-          <div class="shpd-feed-card__subtitle">{subLine}</div>
+  <div class="shpd-feed-card__layout">
+    {#if card.icon}
+      <span class="shpd-feed-card__icon">
+        <Icon icon={resolveIcon(card.icon)} size="md" />
+      </span>
+    {/if}
+    <div class="shpd-feed-card__body">
+      <div class="shpd-feed-card__head">
+        <div class="shpd-feed-card__heading">
+          <div class="shpd-feed-card__title">{card.headline ? card.headline.partnerName : card.title}</div>
+          {#if card.dueText}
+            <!-- Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4):
+                 text i stav (overdue / soon / later) posílá server. -->
+            <span class="shpd-feed-card__due shpd-feed-card__due--{card.dueState ?? 'later'}" data-testid="card-due">{card.dueText}</span>
+          {/if}
+          {#if subLine}
+            <div class="shpd-feed-card__subtitle">{subLine}</div>
+          {/if}
+        </div>
+        {#if card.confidencePct != null}
+          <svg
+            class="shpd-feed-card__donut"
+            style="color: {donutColor}"
+            viewBox="0 0 36 36"
+            role="img"
+            aria-label={t('dashboard.card.confidence', { pct: card.confidencePct })}
+          >
+            <circle class="shpd-feed-card__donut-track" cx="18" cy="18" r={DONUT_R} />
+            <circle
+              class="shpd-feed-card__donut-arc"
+              cx="18"
+              cy="18"
+              r={DONUT_R}
+              stroke-dasharray="{donutArc} {DONUT_C}"
+            />
+            <text class="shpd-feed-card__donut-text" x="18" y="18">{card.confidencePct}</text>
+          </svg>
         {/if}
       </div>
-      {#if card.confidencePct != null}
-        <svg
-          class="shpd-feed-card__donut"
-          style="color: {donutColor}"
-          viewBox="0 0 36 36"
-          role="img"
-          aria-label={t('dashboard.card.confidence', { pct: card.confidencePct })}
-        >
-          <circle class="shpd-feed-card__donut-track" cx="18" cy="18" r={DONUT_R} />
-          <circle
-            class="shpd-feed-card__donut-arc"
-            cx="18"
-            cy="18"
-            r={DONUT_R}
-            stroke-dasharray="{donutArc} {DONUT_C}"
-          />
-          <text class="shpd-feed-card__donut-text" x="18" y="18">{card.confidencePct}</text>
-        </svg>
+      {#if card.headline?.amountText}
+        <div class="shpd-feed-card__amount">{card.headline.amountText}</div>
       {/if}
-    </div>
-    {#if card.headline?.amountText}
-      <div class="shpd-feed-card__amount">{card.headline.amountText}</div>
-    {/if}
-    {#if card.emailSubject}
-      <div class="shpd-feed-card__subject" title={card.emailSubject}>
-        <Icon icon={iconMail} size="sm" />
-        <span class="shpd-feed-card__subject-text">„{card.emailSubject}"</span>
-      </div>
-    {/if}
-    {#if card.secondaryFindings?.length}
-      <!-- Hint dalších nálezů běhu (D7 z mail-message-centric) — jen
-           informativní řádek, žádné akce. -->
-      <div class="shpd-feed-card__findings">
-        {#each card.secondaryFindings as finding}
-          <div class="shpd-feed-card__finding">
-            + {finding.type_label}{finding.note ? ` — ${finding.note}` : ''}
-          </div>
-        {/each}
-      </div>
-    {/if}
-    {#if card.warning}
-      <!-- Upozornění předzpracování (tasks/mail-preprocess-error-messages.md
-           D3c): návrh / klasifikace vznikly bez dokumentu, který mělo
-           předzpracování vytvořit. Text už lokalizovaný ze serveru, žádné
-           akce; druh karty se nemění. -->
-      <div class="shpd-feed-card__warning" role="note">
-        <Icon icon={iconWarning} size="sm" />
-        <span class="shpd-feed-card__warning-text" title={card.warning}>{card.warning}</span>
-      </div>
-    {/if}
-    {#if card.attachments?.length}
-      <div class="shpd-feed-card__attachments">
-        {#each card.attachments as att (att.id)}
-          <FeedCardAttachment {att} />
-        {/each}
-        {#if hiddenAttachments > 0}
-          <button
-            type="button"
-            class="shpd-feed-att__more"
-            title={t('dashboard.card.attachments.more', { n: hiddenAttachments })}
-            aria-label={t('dashboard.card.attachments.more', { n: hiddenAttachments })}
-            disabled={busy}
-            onclick={openMessage}
-          >+{hiddenAttachments}</button>
-        {/if}
-      </div>
-    {/if}
-    {#if card.details?.length}
-      <button
-        type="button"
-        class="shpd-feed-card__detail-toggle"
-        aria-expanded={detailOpen}
-        onclick={() => (detailOpen = !detailOpen)}
-      >
-        {t(detailOpen ? 'dashboard.card.hideDetail' : 'dashboard.card.showDetail')}
-        <Icon icon={detailOpen ? iconChevronUp : iconChevronDown} size="xs" />
-      </button>
-      {#if detailOpen}
-        <div class="shpd-feed-card__details">
-          {#each card.details as row (row.label)}
-            <div class="shpd-feed-card__detail-row">
-              <span class="shpd-feed-card__detail-label">{row.label}</span>
-              <span class="shpd-feed-card__detail-value">{row.value}</span>
+      {#if card.emailSubject}
+        <div class="shpd-feed-card__subject" title={card.emailSubject}>
+          <Icon icon={iconMail} size="sm" />
+          <span class="shpd-feed-card__subject-text">„{card.emailSubject}"</span>
+        </div>
+      {/if}
+      {#if card.secondaryFindings?.length}
+        <!-- Hint dalších nálezů běhu (D7 z mail-message-centric) — jen
+             informativní řádek, žádné akce. -->
+        <div class="shpd-feed-card__findings">
+          {#each card.secondaryFindings as finding}
+            <div class="shpd-feed-card__finding">
+              + {finding.type_label}{finding.note ? ` — ${finding.note}` : ''}
             </div>
           {/each}
         </div>
       {/if}
-    {/if}
-    {#if card.actions?.length}
-      <div class="shpd-feed-card__actions">
-        {#each card.actions as action (action.id)}
-          <Button
-            label={actionLabel(action)}
-            testid={`card-action-${action.id}`}
-            variant={action.primary ? 'primary' : 'secondary'}
-            size="sm"
-            disabled={busy}
-            onclick={() => onAction(action)}
-          />
-        {/each}
-      </div>
-    {/if}
+      {#if card.warning}
+        <!-- Upozornění předzpracování (tasks/mail-preprocess-error-messages.md
+             D3c): návrh / klasifikace vznikly bez dokumentu, který mělo
+             předzpracování vytvořit. Text už lokalizovaný ze serveru, žádné
+             akce; druh karty se nemění. -->
+        <div class="shpd-feed-card__warning" role="note">
+          <Icon icon={iconWarning} size="sm" />
+          <span class="shpd-feed-card__warning-text" title={card.warning}>{card.warning}</span>
+        </div>
+      {/if}
+      {#if card.attachments?.length}
+        <div class="shpd-feed-card__attachments">
+          {#each card.attachments as att (att.id)}
+            <FeedCardAttachment {att} />
+          {/each}
+          {#if hiddenAttachments > 0}
+            <button
+              type="button"
+              class="shpd-feed-att__more"
+              title={t('dashboard.card.attachments.more', { n: hiddenAttachments })}
+              aria-label={t('dashboard.card.attachments.more', { n: hiddenAttachments })}
+              disabled={busy}
+              onclick={openMessage}
+            >+{hiddenAttachments}</button>
+          {/if}
+        </div>
+      {/if}
+      {#if card.details?.length}
+        <button
+          type="button"
+          class="shpd-feed-card__detail-toggle"
+          aria-expanded={detailOpen}
+          onclick={() => (detailOpen = !detailOpen)}
+        >
+          {t(detailOpen ? 'dashboard.card.hideDetail' : 'dashboard.card.showDetail')}
+          <Icon icon={detailOpen ? iconChevronUp : iconChevronDown} size="xs" />
+        </button>
+        {#if detailOpen}
+          <div class="shpd-feed-card__details">
+            {#each card.details as row (row.label)}
+              <div class="shpd-feed-card__detail-row">
+                <span class="shpd-feed-card__detail-label">{row.label}</span>
+                <span class="shpd-feed-card__detail-value">{row.value}</span>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      {/if}
+      {#if card.actions?.length}
+        <div class="shpd-feed-card__actions">
+          {#each card.actions as action (action.id)}
+            <Button
+              label={actionLabel(action)}
+              testid={`card-action-${action.id}`}
+              variant={action.primary ? 'primary' : 'secondary'}
+              size="sm"
+              disabled={busy}
+              onclick={() => onAction(action)}
+            />
+          {/each}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+</Card>
 
 <style>
-  .shpd-feed-card {
-    --shpd-row-bar: transparent;
-
-    position: relative;
+  /* Rámeček, zaoblení, pozadí a odsazení md dává sdílená Card (#137 D33);
+     její kořen nese globální třídu .docState_*, která nastaví --shpd-row-bar.
+     Řádek ikona + tělo je obsah karty — nahoře o xs víc kvůli proužku. */
+  .shpd-feed-card__layout {
     display: flex;
     align-items: flex-start;
     gap: var(--shpd-space-sm);
-    padding: calc(var(--shpd-space-md) + var(--shpd-space-xs)) var(--shpd-space-md) var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg);
-    color: var(--shpd-color-text);
+    padding-top: var(--shpd-space-xs);
   }
 
-  /* Horní stavový proužek — 4px, barva z globální .docState_* třídy.
-     (Návrat na levou pozici = jen jiná geometrie tady, --shpd-row-bar
-     zůstává.) */
+  /* Horní stavový proužek — 4px, barva z globální .docState_* třídy na
+     kořeni Card (position: relative). (Návrat na levou pozici = jen jiná
+     geometrie tady, --shpd-row-bar zůstává.) */
   .shpd-feed-card__bar {
     position: absolute;
     top: 0;
@@ -214,14 +215,15 @@
     right: 0;
     height: 4px;
     border-radius: var(--shpd-radius-md) var(--shpd-radius-md) 0 0;
-    background: var(--shpd-row-bar);
+    background: var(--shpd-row-bar, transparent);
   }
 
   /* Dashboardový override: globální .docState_done proužek záměrně nemá
      (done je default stav ve viewerech), ale s horním proužkem by ready
-     karty byly jediné bez barvy → zelená jen tady. Snadno odstranitelné. */
-  .shpd-feed-card:global(.docState_done) {
-    --shpd-row-bar: var(--shpd-color-success);
+     karty byly jediné bez barvy → zelená jen tady. Snadno odstranitelné.
+     Kořen Card nese třídu, proužek je jeho přímý potomek. */
+  :global(.docState_done) > .shpd-feed-card__bar {
+    background: var(--shpd-color-success);
   }
 
   .shpd-feed-card__icon {
@@ -248,7 +250,7 @@
   }
 
   .shpd-feed-card__title {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
   }
 
@@ -259,7 +261,7 @@
     padding: 0 var(--shpd-space-xs);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     line-height: 1.6;
     color: var(--shpd-color-text-secondary);
     background: color-mix(in srgb, var(--shpd-color-text-secondary) 14%, transparent);
@@ -301,7 +303,7 @@
   .shpd-feed-card__donut-text {
     fill: var(--shpd-color-text);
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     text-anchor: middle;
     dominant-baseline: central;
   }

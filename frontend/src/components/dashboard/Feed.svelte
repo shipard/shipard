@@ -30,6 +30,7 @@
   import FeedCard from './FeedCard.svelte';
   import FeedReadySection from './FeedReadySection.svelte';
   import FeedRowCompact from './FeedRowCompact.svelte';
+  import CardGrid from '../ui/CardGrid.svelte';
 
   let {
     cards = [],
@@ -191,7 +192,7 @@
             {/each}
           </div>
         {:else}
-          <div class="shpd-feed__grid">
+          <CardGrid minWidth="22.5rem">
             {#each section.cards as card (card.id)}
               <FeedCard
                 {card}
@@ -199,7 +200,7 @@
                 onAction={(action) => onCardAction(card, action)}
               />
             {/each}
-          </div>
+          </CardGrid>
         {/if}
         {#if section.more > 0}
           <div class="shpd-feed__more">
@@ -278,16 +279,10 @@
     gap: var(--shpd-space-md);
   }
 
-  /* Grid (newItems / review / alerts): karty v řádku mají stejnou výšku
-     (stretch), rozbalený detail vedle sbalené karty nechá u sousedky volné
-     místo dole (záměr, žádný masonry, nerozbíjí prioritní pořadí). */
-  .shpd-feed__grid {
-    display: grid;
-    /* min(360px, 100%) — na displeji užším než 360px nesmí karta přetéct. */
-    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
-    gap: var(--shpd-space-md);
-    align-items: stretch;
-  }
+  /* Grid (newItems / review / attention / alerts) kreslí sdílený CardGrid
+     (#137 D34), sloupec 22,5 rem: karty v řádku stejně vysoké, rozbalený
+     detail vedle sbalené karty nechá u sousedky volné místo dole (záměr,
+     žádný masonry, nerozbíjí prioritní pořadí). */
 
   /* Other: sousední kompaktní řádky odděluje vlasová linka. Kreslí ji
      rodič — uvnitř FeedRowCompact by sibling selektor mezi instancemi

@@ -7,6 +7,7 @@
   import ChangePasswordPanel from './ChangePasswordPanel.svelte';
   import SessionsPanel from './SessionsPanel.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import { iconLock } from '../../icons.js';
   import { t } from '../../i18n/index.js';
 
@@ -14,7 +15,8 @@
 </script>
 
 <div class="shpd-account-security">
-  <div class="shpd-account-security__card">
+  <!-- Karta stránky Nastavení účtu = sdílená Card s odsazením lg (#137 D33, D35). -->
+  <Card spacious>
     <h2 class="shpd-account-security__title">
       <Icon icon={iconLock} size="md" />
       <span>{t('account.security.title')}</span>
@@ -26,20 +28,13 @@
     {/if}
 
     <SessionsPanel />
-  </div>
+  </Card>
 </div>
 
 <style>
   .shpd-account-security {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-account-security__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
   }
 
   .shpd-account-security__title {

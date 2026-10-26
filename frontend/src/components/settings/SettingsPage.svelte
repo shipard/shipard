@@ -11,6 +11,7 @@
   import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import ImageSlotField from './ImageSlotField.svelte';
   import AvatarSlotField from './AvatarSlotField.svelte';
   import ThemeField from './ThemeField.svelte';
@@ -151,7 +152,8 @@
   {:else if loadError}
     <div class="shpd-settings-page__status shpd-settings-page__status--error">{loadError}</div>
   {:else if definition}
-    <div class="shpd-settings-page__card">
+    <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35). -->
+    <Card spacious>
       <h2 class="shpd-settings-page__title">
         {#if definition.icon}
           <Icon icon={resolveIcon(definition.icon)} size="md" />
@@ -246,7 +248,7 @@
           />
         </div>
       {/if}
-    </div>
+    </Card>
   {/if}
 </div>
 
@@ -254,13 +256,6 @@
   .shpd-settings-page {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-settings-page__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
   }
 
   .shpd-settings-page__title {

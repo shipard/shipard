@@ -8,6 +8,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import { iconInfo } from '../../icons.js';
   import { fetchDsAbout } from '../../api/dsAbout.js';
   import { formatFileSize } from '../../api/attachments.js';
@@ -90,7 +91,8 @@
 </script>
 
 <div class="shpd-ds-about">
-  <div class="shpd-ds-about__card">
+  <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35). -->
+  <Card spacious>
     <h2 class="shpd-ds-about__title">
       <Icon icon={iconInfo} size="md" />
       <span>{t('dsAbout.title')}</span>
@@ -190,20 +192,13 @@
         </dl>
       </section>
     {/if}
-  </div>
+  </Card>
 </div>
 
 <style>
   .shpd-ds-about {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-ds-about__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
   }
 
   .shpd-ds-about__title {
