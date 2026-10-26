@@ -10,7 +10,6 @@
     "customer": {
         "name": "Wolkenschiff Logistik GmbH",
         "country": "de",
-        "taxId": "DE314670256",
         "vatId": "DE314670256",
         "address": {
             "street": "Hafenstraße",

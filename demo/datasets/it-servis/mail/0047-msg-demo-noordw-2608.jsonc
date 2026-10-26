@@ -10,12 +10,10 @@
     "senderName": "Noordwolk Backup B.V.",
     "senderPerson": {
         "name": "Noordwolk Backup B.V.",
-        "taxId": "NL854721039B01",
         "vatId": "NL854721039B01"
     },
     "partnerPerson": {
         "name": "Noordwolk Backup B.V.",
-        "taxId": "NL854721039B01",
         "vatId": "NL854721039B01"
     },
     "partnerName": "Noordwolk Backup B.V.",
@@ -83,7 +81,7 @@
                             "name": "Noordwolk Backup B.V.",
                             "country": "nl",
                             "companyId": null,
-                            "taxId": "NL854721039B01",
+                            "taxId": null,
                             "vatId": "NL854721039B01",
                             "courtRegistration": "KvK 87654321",
                             "address": {
@@ -239,7 +237,7 @@
                     "name": "Noordwolk Backup B.V.",
                     "country": "nl",
                     "companyId": null,
-                    "taxId": "NL854721039B01",
+                    "taxId": null,
                     "vatId": "NL854721039B01",
                     "courtRegistration": "KvK 87654321",
                     "address": {

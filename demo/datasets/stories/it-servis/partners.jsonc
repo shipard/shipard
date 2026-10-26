@@ -163,7 +163,8 @@
 		"nitra": {
 			"vatPayer": true,
 			"name": "Nitrianske Stroje s.r.o.",
-			"country": "sk", "companyId": "52398417", "taxId": "SK2023845117", "vatId": "SK2023845117",
+			"country": "sk", "companyId": "52398417", "taxId": null, "vatId": "SK2023845117",
+
 			"address": { "street": "Strojárenská", "houseNumber": "14", "city": "Nitra", "zip": "94901", "country": "sk" },
 			"contact": { "name": "Učtáreň", "email": "uctaren@nitrianske-stroje.example", "phone": "+421000512300", "web": "www.nitrianske-stroje.example" },
 			"bankAccount": { "accountNumber": null, "iban": "SK6709000000003914726058", "bic": "GIBASKBX" },
@@ -174,7 +175,8 @@
 		"tatranka": {
 			"vatPayer": true,
 			"name": "Horský Penzión Tatranka s.r.o.",
-			"country": "sk", "companyId": "47150823", "taxId": "SK2020471508", "vatId": "SK2020471508",
+			"country": "sk", "companyId": "47150823", "taxId": null, "vatId": "SK2020471508",
+
 			"address": { "street": "Pod Gerlachom", "houseNumber": "231", "city": "Poprad", "zip": "05801", "country": "sk" },
 			"contact": { "name": "Recepcia", "email": "recepcia@penzion-tatranka.example", "phone": "+421000721144", "web": "www.penzion-tatranka.example" },
 			"bankAccount": { "accountNumber": null, "iban": "SK0511000000002618439075", "bic": "TATRSKBX" },
@@ -185,7 +187,8 @@
 		"wolkenschiff": {
 			"vatPayer": true,
 			"name": "Wolkenschiff Logistik GmbH",
-			"country": "de", "companyId": null, "taxId": "DE314670256", "vatId": "DE314670256",
+			"country": "de", "companyId": null, "taxId": null, "vatId": "DE314670256",
+
 			"address": { "street": "Hafenstraße", "houseNumber": "118", "city": "Köln", "zip": "50678", "country": "de" },
 			"contact": { "name": "Buchhaltung", "email": "buchhaltung@wolkenschiff-logistik.example", "phone": "+490002094410", "web": "www.wolkenschiff-logistik.example" },
 			"bankAccount": { "accountNumber": null, "iban": "DE18370400440532014860", "bic": "COBADEFFXXX" },
@@ -340,7 +343,8 @@
 		"noordwolk": {
 			"vatPayer": true,
 			"name": "Noordwolk Backup B.V.",
-			"country": "nl", "companyId": null, "taxId": "NL854721039B01", "vatId": "NL854721039B01",
+			"country": "nl", "companyId": null, "taxId": null, "vatId": "NL854721039B01",
+
 			"courtRegistration": "KvK 87654321",
 			"address": { "street": "Datahaven", "houseNumber": "42", "city": "Rotterdam", "zip": "3011 AB", "country": "nl" },
 			"contact": { "name": null, "email": "billing@noordwolk-backup.example", "phone": "+310002004410", "web": "www.noordwolk-backup.example" },
