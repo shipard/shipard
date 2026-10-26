@@ -994,7 +994,10 @@ Výsledek — hlavička (`title`, `subtitle`, `badges`, `icon`) a taby s obsahem
     "tabs": [
         {"id": "overview", "label": "Přehled", "content": {
             "type": "properties",
-            "groups": [{"title": "Identifikace", "items": [{"label": "IČO", "value": "12345"}]}]
+            "groups": [
+                {"title": "Identifikace", "items": [{"label": "IČO", "value": "12345"}]},
+                {"title": "Poznámka", "items": [{"label": "", "value": "Volný text přes celou šířku…"}], "wide": true}
+            ]
         }},
         {"id": "journal", "label": "Zaúčtování", "content": {
             "type": "table",
@@ -1021,7 +1024,7 @@ Typy obsahu:
 
 | Typ | Popis |
 |---|---|
-| `properties` | label/value grid ve skupinách |
+| `properties` | skupiny popisek–hodnota: `groups[] {title, items[] {label, value}, wide?}`. Kreslí sdílená `PropertyGroups.svelte` (`docs/design-system.md` §12, #137 D29): skupiny ve dvou sloupcích v pořadí od backendu, pod 30 rem kontejneru v jednom; `wide: true` = skupina přes celou šířku — dává ji viewer skupině s volným textem (poznámka, popis, zpráva), ne krátkým údajům; prázdná hodnota (`null`, `''`; `0` prázdná není) a prázdná skupina se nevykreslí; `label: ''` = hodnota přes oba sloupce. `propertiesTab()` skupiny jen filtruje, `wide` propouští beze změny |
 | `table` | tabulka (`columns` + `rows`); `columns[].align: "right"` = číselný sloupec (zarovnání doprava + `tabular-nums`, header i buňky); `rows[]._class` = klasifikace řádku — `error` (červené podbarvení, chybové řádky deníku), `total` (tučný součtový řádek s horní linkou) nebo `muted` (tlumený text — plánované řádky odpisů); `_class` není sloupec, do buněk se nerenderuje. **Buňka-odkaz**: `columns[].link: true` + `rows[]._action` (běžná akce `{id, kind, target}`) = buňka sloupce je odkaz a klik spustí akci řádku přes `onAction` — typicky `kind: "open_detail"` s `target {viewerId, recordId, tabId?}`, který `Viewer.svelte` otevře jako read-only `ViewerDetailModal` (doklady v sekci Pořízení a v tabu Náklady a výnosy karty majetku). Bez `_action` nebo v hostiteli bez `onAction` (samotný `ViewerDetailModal`) zůstává prostý text |
 | `html` | surové HTML — **bez sanitizace**, backend musí hodnoty escapovat; **pouze pro trusted, backend-generovaný obsah** — pro cizí HTML použít `untrusted-html`; scoped styly komponenty se na `{@html}` nevztahují, vzhled jde přes globální CSS proměnné (vzor: stavový blok tabu Zaúčtování) |
 | `untrusted-html` | HTML z nedůvěryhodného zdroje (tělo e-mailu); renderuje se v sandboxovaném `<iframe srcdoc>` bez `allow-scripts` (`SandboxedHtml.svelte`): izolace skriptů i CSS oběma směry, odkazy do nového tabu (`<base target="_blank">`, whitelist protokolů — `javascript:` apod. se zahazuje), odstranění `meta refresh`, auto-height dle obsahu. **Nikdy nerozšiřovat sandbox o `allow-scripts`** — s `allow-same-origin` by skript z e-mailu četl Bearer token z localStorage |

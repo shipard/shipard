@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 405 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 375.
+Celkem 406 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 376.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -180,6 +180,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-detail-contract.md` | Kontrakt detailu, task A: builder detailu v `TableViewer` (hlavička z deklarace / `displayPattern`, štítek stavu bez „V pořádku“, přílohy obecně), sdílená sekce příloh, Odeslaná pošta jen v Přehledu, kontraktní test, převod dokladů, Majetku a Zakázek (#136, D18–D24) |
 | `design-system-detail-contract-rollout.md` | Kontrakt detailu, task B: převod zbývajících 49 viewerů na builder (deklarace hlavičky, štítky navíc v háčcích, obecné přílohy), `renderDetail()` jako `final`, kontraktní test bez výjimek, úklid z tasku A (#136, D18–D24) |
 | `design-system-overview-no-repeat.md` | Přehled detailu neopakuje hlavičku — odstranění opakovaných údajů ve všech detailech, kontrola v integračním kontraktu, přílohy Spisovny v tabu Obsah (#140, D26, D27) |
+| `design-system-shared-sections.md` | Sdílený nadpis sekce (bez linky) a seznam vlastností — skupiny ve dvou sloupcích, `wide` přes celou šířku; obecný detail i detail dokladu na stejných komponentách (#137 task 1, D28, D29) |
 
 ## Mobilní (responzivní) UI
 

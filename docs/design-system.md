@@ -751,19 +751,40 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
      výjimky `OVERVIEW_REPEAT_ALLOWED` s komentářem proč.
 3. **Taby** — body, aktivní strong s modrou linkou.
 4. **Obsah** — sekce oddělené `--shpd-space-lg`, každá s nadpisem
-   (heading, `margin-bottom: var(--shpd-space-xs)`).
+   (`SectionHeading`: heading, bez linky, `margin-bottom:
+   var(--shpd-space-xs)`; mezeru mezi sekcemi dává rodič, D28).
 
 ### Stavební prvky obsahu
 
+- **Nadpis sekce** (D28, `components/ui/SectionHeading.svelte`): jeden
+  nadpis pro skupinu vlastností, blok `heading`, kartu strany, přílohy
+  i Odeslanou poštu — heading, barvou textu, bez linky, `margin: 0 0
+  var(--shpd-space-xs)` a žádné horní odsazení: sekce od sebe odděluje
+  mezera `--shpd-space-lg`, kterou dává rodič (obal bloků `composite`,
+  mřížka skupin), ne nadpis. `level` 3 nebo 4 (skupiny vlastností
+  v obecném detailu mají h4 jako dřív); volitelný snippet `aside` sedí
+  vpravo ve stejném řádku (přepínač náhledů příloh). Blok `heading`
+  v `composite` je nadpis bloku pod ním — ten mezeru nad sebou nemá.
 - **Karta** (strany dokladu): rámeček `--shpd-color-border`, zaoblení
   `--shpd-radius-md`, odsazení `0.75rem`, položky pod sebou s mezerou
-  `--shpd-space-xs`; nadpis karty heading, název entity heading (odkaz na
-  záznam modře), identifikátory, adresa a účet body barvou textu, kontakty
-  meta šedě s malou mezerou nad (D16).
-- **Popisek–hodnota**: mřížka `grid-template-columns: max-content 1fr`,
-  mezera `--shpd-space-xs` svisle / `--shpd-space-md` vodorovně, oba
-  sloupce body barvou textu (D15); prázdná hodnota se nevykreslí, prázdná
-  skupina celá. Skupiny údajů vedle sebe (`1fr 1fr`), každá s nadpisem.
+  `--shpd-space-xs`; nadpis karty `SectionHeading`, název entity heading
+  (odkaz na záznam modře), identifikátory, adresa a účet body barvou textu,
+  kontakty meta šedě s malou mezerou nad (D16).
+- **Popisek–hodnota** (D29, `PropertyList.svelte` + `PropertyGroups.svelte`
+  v `components/ui/`): jedna sdílená komponenta pro obecný detail i detail
+  dokladu. `<dl>` jedné skupiny je mřížka `grid-template-columns:
+  max-content 1fr`, mezera `--shpd-space-xs` svisle / `--shpd-space-md`
+  vodorovně, oba sloupce body barvou textu (D15), hodnota se zalamuje
+  (`overflow-wrap: anywhere` — IBAN, e-mail); prázdná hodnota se nevykreslí
+  (`0` prázdná není), prázdná skupina celá; položka s prázdným popiskem
+  (`label: ''`, text poznámky) má hodnotu přes oba sloupce. Skupiny vedle
+  sebe ve dvou sloupcích (`repeat(2, minmax(0, 1fr))`, mezera
+  `--shpd-space-md` / `--shpd-space-lg`) po řádcích v pořadí od backendu —
+  frontend je nepřehazuje a nepoužívá CSS `columns`; výšku řádku určuje
+  vyšší skupina. Skupina s `wide: true` (poznámka, popis, zpráva — volný
+  text, označuje viewer) jde přes celou šířku jako tabulky a ostatní bloky.
+  Výběr vykreslitelných skupin a položek je čistá funkce `visibleGroups()`
+  v `components/ui/propertyGroups.js`.
 - **Tabulka**: body; hlavička sloupce heading (stejná velikost jako řádky,
   silnější, barvou textu, bez verzálek), čára pod ní
   `--shpd-color-border-strong`, mezi řádky `--shpd-color-border`; buňky
@@ -774,30 +795,38 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   vlevo se nezvýrazňuje.
 - **Přílohy**: na konci Přehledu (D8, #136 D21), sdílená
   `DetailAttachments.svelte` nad `detail.attachments.groups` u každého
-  vieweru: skupiny s nadpisem heading (kód zprávy jako odkaz,
+  vieweru: skupiny s nadpisem `SectionHeading` (kód zprávy jako odkaz,
   datum normální tloušťkou; vlastní přílohy záznamu s nadpisem „Přílohy“);
-  přepínač Miniatury / Velké náhledy v řádku s nadpisem první skupiny
-  vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Spisovna
+  přepínač Miniatury / Velké náhledy ve snippetu `aside` nadpisu první
+  skupiny vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Spisovna
   má přílohy dokumentu na konci prvního tabu Obsah toutéž sekcí (#140 D27).
   Výjimka: viewer s `detailAttachments: "tab"` — dnes jen karta majetku
   (fotky, smlouvy) — má přílohy ve vlastním tabu Přílohy, který bez přílohy
   chybí.
 - **Odeslaná pošta**: jen na konci Přehledu, za přílohami (D22) — pod
   ostatními taby se nekreslí.
-- **Obecné typy** (`properties`, `table`, `heading`, Odeslaná pošta) ve
-  `ViewerDetail.svelte` používají tytéž role — každý detail má stejné písmo.
+- **Obecný detail i doklad kreslí tytéž komponenty**: `ViewerDetail.svelte`
+  (`properties`, `heading`, Odeslaná pošta), `DocumentDetail.svelte` (karty
+  stran, údaje dokladu, Řádky) i `DetailAttachments.svelte` používají
+  `SectionHeading` a `PropertyGroups` — každý detail má stejné písmo
+  i mezery; obecný typ `table` používá tytéž role. **Pravidlo:** nový nadpis
+  sekce nebo seznam popisek–hodnota v detailu je sdílená komponenta, ne
+  vlastní třída s kopií CSS.
 
 ### Úzká šířka
 
-Kořen obsahu (`.shpd-docdetail`) je `container-type: inline-size`; pod
-`30rem` (480 px) šířky kontejneru jdou strany i skupiny údajů pod sebe
-přes `@container (max-width: 30rem)` — ne `@media`, protože detail bývá
+Kořen obsahu dokladu (`.shpd-docdetail`) i obal skupin vlastností
+(`PropertyGroups`, `.shpd-property-groups`) jsou `container-type:
+inline-size`; pod `30rem` (480 px) šířky kontejneru jdou strany pod sebe
+a skupiny vlastností do jednoho sloupce přes `@container (max-width:
+30rem)` — ne `@media`, protože detail bývá
 v panelu vedle seznamu, v draweru i v modalu a šířka okna o jeho šířce
 nic neříká (D3). Práh vychází ze skutečných šířek obsahu: panel vedle
 seznamu má šířku okna bez 693 px (sidebar, seznam, odsazení), drawer
 528 px, modal přes 1100 px — dvě karty vedle sebe tak zůstávají všude
 kromě úzkého okna a mobilu. Původních 40 rem stohovalo strany už při okně
-užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám;
+užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám —
+proto je kontejnerem obal mřížky na celou šířku, ne mřížka samotná;
 `container-type` nepatří na prvky, které se mají smrštit na obsah.
 Složené řádky tabulek na úzké šířce řeší #138.
 
@@ -811,9 +840,12 @@ Složené řádky tabulek na úzké šířce řeší #138.
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
+| `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 3 / 4, snippet `aside` |
+| `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce |
+| `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
-| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, badge; obecné typy obsahu podle rolí (§12) |
-| `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12 (role, karty stran, mřížka údajů, tabulky, součty, container query) |
+| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, badge; obecné typy obsahu sdílenými komponentami a podle rolí (§12) |
+| `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12 (role, karty stran, údaje přes `PropertyGroups`, tabulky, součty, container query) |
 | `frontend/src/components/form/FormStateBadge.svelte` | Stavový badge ve formuláři |
 
 ---
