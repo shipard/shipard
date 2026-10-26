@@ -351,10 +351,14 @@ smí názvy nést — tam jsou potřeba k práci.
   načítá builder (`RecordAttachments`) jako `detail.attachments`: konec
   Přehledu (výchozí), tab Přílohy (`detailAttachments: "tab"`) nebo nic
   (`content`, D21); frontend je kreslí sdílenou `DetailAttachments.svelte`,
-  Odeslaná pošta jen pod prvním tabem (D22). **Nový viewer `renderDetail()`
-  nepřepisuje** — `DetailContractTest` to hlídá, výjimky jen
-  v `NOT_CONVERTED` (seznam jen ubývá, task B #136 ho vyprázdní).
-  Viz `docs/frontend.md` → Formát detail panelu.
+  Odeslaná pošta jen pod prvním tabem (D22). **`renderDetail()` je
+  `final`** (task B #136) — viewer ji nepřepisuje, `DetailContractTest` to
+  hlídá u každé deklarace; háček `detailHeader()` bez ikony dostane ikonu
+  z deklarace (vlastní jen Osoby: firma / osoba), podtitul shodný
+  s titulkem builder vynechá. Přílohy a štítek stavu si žádný viewer
+  nestaví sám (`content` = přílohy kreslí viewer v obsahu: Došlá
+  a Odeslaná pošta, Spisovna). Viz `docs/frontend.md` → Formát detail
+  panelu.
 
 ### Frontend — Navigace (sidebar)
 

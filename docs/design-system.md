@@ -757,7 +757,7 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   vlevo se nezvýrazňuje.
 - **Přílohy**: na konci Přehledu (D8, #136 D21), sdílená
   `DetailAttachments.svelte` nad `detail.attachments.groups` u každého
-  převedeného vieweru: skupiny s nadpisem heading (kód zprávy jako odkaz,
+  vieweru: skupiny s nadpisem heading (kód zprávy jako odkaz,
   datum normální tloušťkou; vlastní přílohy záznamu s nadpisem „Přílohy“);
   přepínač Miniatury / Velké náhledy v řádku s nadpisem první skupiny
   vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Výjimka:
@@ -766,8 +766,7 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
 - **Odeslaná pošta**: jen na konci Přehledu, za přílohami (D22) — pod
   ostatními taby se nekreslí.
 - **Obecné typy** (`properties`, `table`, `heading`, Odeslaná pošta) ve
-  `ViewerDetail.svelte` používají tytéž role — každý detail má stejné písmo
-  bez ohledu na to, zda už prošel převodem na kontrakt #136.
+  `ViewerDetail.svelte` používají tytéž role — každý detail má stejné písmo.
 
 ### Úzká šířka
 

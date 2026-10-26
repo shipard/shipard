@@ -975,9 +975,12 @@ Builder sám přidá **štítek stavu** ze sady stavů tabulky
 (`docStates.cfgItem`, fallback `$docStatesCfgItem`) — stav s `detailBadge:
 false` („V pořádku“, D20) štítek nemá; štítek stavu je vždy první, pak
 `detailBadges()`. Přílohy záznamu načte `RecordAttachments` (viz níže).
-Nenalezený záznam → `{tabs: []}`. Nepřevedené viewery (49, task B #136)
-`renderDetail()` zatím přepisují celé — jejich seznam drží
-`DetailContractTest::NOT_CONVERTED` a smí jen ubývat.
+Nenalezený záznam → `{tabs: []}`. `renderDetail()` je `final` (task B
+#136) — každý viewer jde přes háčky, `DetailContractTest` to hlídá u každé
+deklarace. Háček `detailHeader()` bez ikony dostane ikonu z deklarace
+vieweru; vlastní ikonu dává jen hlavička, u které závisí na záznamu
+(Osoby: firma / osoba). Podtitul shodný s titulkem builder vynechá (token
+AI bez poznámky má v obou `token_prefix`).
 
 Výsledek — hlavička (`title`, `subtitle`, `badges`, `icon`) a taby s obsahem:
 
@@ -1005,8 +1008,8 @@ Výsledek — hlavička (`title`, `subtitle`, `badges`, `icon`) a taby s obsahem
 }
 ```
 
-Hlavička zůstává viditelná při přepínání tabů; převedený viewer ji má
-vždy (builder), u nepřevedeného je volitelná (bez `title` se nerenderuje).
+Hlavička zůstává viditelná při přepínání tabů; má ji každý detail
+(builder), frontend bez `title` hlavičku jen nekreslí (pojistka).
 `icon` (klíč z `icons.js`, typicky `viewers[].icon` daného modulu) se
 vykreslí ve 40×40 boxu vlevo od title — stejný vizuál jako ikona ve
 formulářovém modalu (`shpd-modal__header-icon`). Badge `style` přijímá
@@ -1124,8 +1127,9 @@ V `module.jsonc`:
 PHP třída vieweru žije v `modules/{skupina}/{modul}/src/` a dědí
 `TableViewer`. Pro podporu stavů dokumentů nastaví `$docStatesCfgItem`;
 detail skládá builder, viewer dodá jen taby (a případně záznam s JOINy,
-akce, vlastní hlavičku) — `renderDetail()` nepřepisuje, `DetailContractTest`
-to hlídá:
+akce, vlastní hlavičku) — `renderDetail()` je `final`, `DetailContractTest`
+hlídá, že ji žádná deklarace nepřepisuje. Modul mimo tento repozitář,
+který ji dosud přepisoval, převede detail na háčky z tabulky výše:
 
 ```php
 class AssetTypesViewer extends TableViewer
@@ -1151,7 +1155,9 @@ class AssetTypesViewer extends TableViewer
 `core.ai.modelCatalog` (`ModelCatalogViewer`, #85 D50). Konstruktor dostane
 `''`, `ViewerController` přeskočí `TableAccessGuard` a záznam pro detail
 bere z `TableViewer::loadRecord(int $id): ?array`, které viewer přepíše
-(syntetický záznam s kladným celočíselným id, null = 404). Takový viewer
+(syntetický záznam s kladným celočíselným id, null = 404); hlavičku
+dodává `detailHeader()` — bez tabulky není `displayPattern`
+(`DetailContractTest` to vyžaduje). Takový viewer
 nemá formulář (`getToolbarActions()` vrací `[]`), zámky, tisky ani
 Odeslanou poštu a do hlavní navigace nevstupuje — patří do `settingsItems`.
 Tabulkové viewery `loadRecord()` nepřepisují (výchozí `SELECT … WHERE id`).
@@ -1163,7 +1169,7 @@ Viz také `docs/doc-states.md` — sekce Viewer systém.
 | Viewer ID | Modul | Třída | Zvláštnosti |
 |---|---|---|---|
 | `base.persons` | `base.persons` | `PersonsViewer` | Archivační docStates, fulltext search přes full_name/company_id/email/person_id |
-| `core.mail.incoming` | `core.mail` | `IncomingMessagesViewer` | Vlastní docStates (`core.mail.docStatesIncoming`), JOIN na schránku, relativní formátování received_at, 4 detail taby (Obsah / Přílohy / Analýzy / Originál) |
+| `core.mail.incoming` | `core.mail` | `IncomingMessagesViewer` | Vlastní docStates (`core.mail.docStatesIncoming`), JOIN na schránku, relativní formátování received_at, 4 detail taby (Obsah / Analýzy / Návrh / Originál), přílohy kreslí Obsah (`detailAttachments: "content"`) |
 | `tasks.core` | `tasks.core` | `TasksViewer` | Vlastní docStates (`tasks.core.docStatesTasks`), JOIN na `core_system_users` kvůli zobrazení autora, indikace po termínu v t2 |
 | `economy.accounting.journal` | `economy.accounting` | `JournalViewer` | Read-only (prázdný toolbar, bez docStates, bez formu), custom filtry přes `getFilters()` vč. závislého selectu a výchozího aktuálního roku (`default`), detail akce `open_viewer` na zdrojový doklad; filtr dimenze `dim_{id}` hledá text v popisku, hodnota `#123` = přesně záznam s tímto id (odkaz „Otevřít v deníku“ z karty majetku) |
 

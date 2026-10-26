@@ -155,7 +155,7 @@ Každý stav je objekt s klíčem = číselná hodnota docState (jako string).
 | `goto` | int[] | Ano | Stavy, do kterých lze přejít z tohoto stavu |
 | `readOnly` | 0/1 | Ne | Dokument nelze editovat — musí se nejdřív přepnout do V opravě (default: 0) |
 | `enablePrint` | 0/1 | Ne | Dokument lze tisknout/exportovat (default: 0) |
-| `detailBadge` | bool | Ne | Štítek stavu v hlavičce detailu záznamu (builder `TableViewer`); `false` ho skryje — u „V pořádku“ ve všech třech sadách (#136 D20). Formulář (`FormStateBadge`) štítek ukazuje vždy (default: true) |
+| `detailBadge` | bool | Ne | Štítek stavu v hlavičce detailu záznamu (builder `TableViewer`); `false` ho skryje — u „V pořádku“ ve všech třech sadách (#136 D20). Jde o stav záznamu, ne o účetní stav — „Zaúčtováno“ u bankovních pohybů (`economy.bank.txStates`) štítek má (D25). Formulář (`FormStateBadge`) štítek ukazuje vždy (default: true) |
 
 ---
 
