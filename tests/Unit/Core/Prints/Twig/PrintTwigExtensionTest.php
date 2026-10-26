@@ -144,12 +144,46 @@ class PrintTwigExtensionTest extends TestCase
         $this->assertSame('', $extension->qrSvg(['payload' => '']));
     }
 
+    /** Čitelný tvar PSČ, IBAN a telefonu (#118 D21) — mezery nezlomitelné, nekanonický vstup se nejdřív normalizuje. */
+    public function testReadableZipIbanPhone(): void
+    {
+        $cs = $this->extension('cs');
+
+        $this->assertSame('760' . self::NBSP . '01', $cs->zip('76001', 'cz'));
+        $this->assertSame('760' . self::NBSP . '01', $cs->zip(' 760 01 ', 'CZ'), 'uložený tiskový tvar zůstává čitelný');
+        $this->assertSame('811' . self::NBSP . '01', $cs->zip('81101', 'sk'));
+        $this->assertSame('10115', $cs->zip('10115', 'de'));
+        $this->assertSame('76001', $cs->zip('76001', ''), 'bez země beze změny');
+        $this->assertSame('76001', $cs->zip('76001', null));
+        $this->assertSame('', $cs->zip(null, 'cz'));
+        $this->assertSame('', $cs->zip('  ', 'cz'));
+
+        $this->assertSame(
+            'CZ65' . self::NBSP . '0800' . self::NBSP . '0000' . self::NBSP . '1920' . self::NBSP . '0014' . self::NBSP . '5399',
+            $cs->iban('CZ6508000000192000145399'),
+        );
+        $this->assertSame(
+            'CZ65' . self::NBSP . '0800' . self::NBSP . '0000' . self::NBSP . '1920' . self::NBSP . '0014' . self::NBSP . '5399',
+            $this->extension('en')->iban('cz65 0800 0000 1920 0014 5399'),
+            'jazyk tisku tvar IBAN nemění',
+        );
+        $this->assertSame('123456', $cs->iban('123456'), 'bez tvaru IBAN jen normalizace');
+
+        $this->assertSame('+420' . self::NBSP . '577' . self::NBSP . '123' . self::NBSP . '456', $cs->phone('+420577123456', 'cz'));
+        $this->assertSame('+420' . self::NBSP . '577' . self::NBSP . '123' . self::NBSP . '456', $cs->phone('577 123 456', 'cz'));
+        $this->assertSame('+421' . self::NBSP . '905' . self::NBSP . '123' . self::NBSP . '456', $cs->phone('0905 123 456', 'sk'));
+        $this->assertSame('+49' . self::NBSP . '30123456', $cs->phone('+49 (0)30 123456', 'de'));
+        $this->assertSame('+4930123456', $cs->phone('+4930123456', 'cz'), 'jiný stát beze změny');
+        $this->assertSame('+420577123456', $cs->phone('+420 577 123 456', null), 'bez země jen normalizace');
+        $this->assertSame('', $cs->phone('', 'cz'));
+    }
+
     public function testRegisteredNames(): void
     {
         $extension = $this->extension('en');
 
         $this->assertSame(
-            ['money', 'qty', 'pct', 'date'],
+            ['money', 'qty', 'pct', 'date', 'zip', 'iban', 'phone'],
             array_map(static fn ($f) => $f->getName(), $extension->getFilters()),
         );
         $functions = [];

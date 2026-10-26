@@ -12,7 +12,7 @@
             {% endif %}
             {% if account.iban|default('') %}
                 <dt>{{ t('label.iban') }}</dt>
-                <dd>{{ account.iban }}</dd>
+                <dd>{{ account.iban|iban }}</dd>
             {% endif %}
             {% if account.bic|default('') %}
                 <dt>{{ t('label.bic') }}</dt>

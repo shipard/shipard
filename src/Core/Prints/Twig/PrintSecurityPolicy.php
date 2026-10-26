@@ -29,7 +29,7 @@ final class PrintSecurityPolicy
         'escape', 'e', 'raw', 'default', 'length', 'join', 'upper', 'lower', 'nl2br',
         'first', 'last', 'keys', 'merge',
         // PrintTwigExtension
-        'money', 'qty', 'pct', 'date',
+        'money', 'qty', 'pct', 'date', 'zip', 'iban', 'phone',
     ];
 
     public const TEMPLATE_FUNCTIONS = ['t', 'qr_svg', 'block', 'parent', 'include'];
@@ -45,7 +45,7 @@ final class PrintSecurityPolicy
     public const USER_TEXT_FILTERS = [
         'default', 'upper', 'lower', 'escape',
         // PrintTwigExtension
-        'money', 'qty', 'pct', 'date',
+        'money', 'qty', 'pct', 'date', 'zip', 'iban', 'phone',
     ];
 
     public const USER_TEXT_TESTS = ['defined', 'empty', 'null', 'none'];

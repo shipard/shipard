@@ -9,6 +9,7 @@ use chillerlan\QRCode\Output\QRMarkupSVG;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Shipard\Core\Prints\PrintTranslator;
+use Shipard\Module\World\Validations\ValueRules;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -25,6 +26,10 @@ use Twig\TwigFunction;
  *  - `date`  — ISO datum → `2. 10. 2026` (cs, sk) / `02.10.2026` (de) /
  *              `2 Oct 2026` (en); přepisuje vestavěný Twig filtr stejného
  *              jména
+ *  - `zip(země)`, `iban`, `phone(země)` — čitelný tvar PSČ (`760 01`),
+ *              IBAN po čtveřicích a telefonu (`+420 577 123 456`) z
+ *              `world.validations` (#118 D21); uložený tvar je kanonický,
+ *              formátuje se až při tisku, snapshoty se nemění
  *  - `t(klíč, {parametry})` — překlad z katalogu tisku
  *  - `qr_svg(payment.qr)` — inline SVG QR kódu, pro null prázdný řetězec
  *
@@ -76,6 +81,9 @@ final class PrintTwigExtension extends AbstractExtension
             new TwigFilter('qty', $this->qty(...)),
             new TwigFilter('pct', $this->pct(...)),
             new TwigFilter('date', $this->date(...)),
+            new TwigFilter('zip', $this->zip(...)),
+            new TwigFilter('iban', $this->iban(...)),
+            new TwigFilter('phone', $this->phone(...)),
         ];
     }
 
@@ -135,6 +143,34 @@ final class PrintTwigExtension extends AbstractExtension
         return (string) $this->dateFormatter->format(
             new \DateTimeImmutable(sprintf('%04d-%02d-%02dT12:00:00', $year, $month, $day), new \DateTimeZone('UTC')),
         );
+    }
+
+    /** PSČ v čitelném tvaru podle země adresy (`76001` → `760 01` u cz / sk; jinde beze změny). */
+    public function zip(mixed $value, mixed $country = null): string
+    {
+        return $this->readable(ValueRules::ZIP, $value, $country);
+    }
+
+    /** IBAN po čtveřicích; hodnota bez tvaru IBAN jen normalizovaná. */
+    public function iban(mixed $value): string
+    {
+        return $this->readable(ValueRules::IBAN, $value, null);
+    }
+
+    /** Telefon s předvolbou a skupinami podle země (`+420 577 123 456`); jiný stát beze změny. */
+    public function phone(mixed $value, mixed $country = null): string
+    {
+        return $this->readable(ValueRules::PHONE, $value, $country);
+    }
+
+    /** Čitelný tvar z knihovny; mezery uvnitř hodnoty nezlomitelné. */
+    private function readable(string $kind, mixed $value, mixed $country): string
+    {
+        if (!is_scalar($value) || trim((string) $value) === '') {
+            return '';
+        }
+        $country = is_string($country) && trim($country) !== '' ? $country : null;
+        return str_replace(' ', self::NBSP, ValueRules::format($kind, (string) $value, $country));
     }
 
     /**

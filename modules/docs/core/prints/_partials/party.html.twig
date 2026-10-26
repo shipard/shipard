@@ -2,7 +2,9 @@
     Jedna strana dokladu ze snapshotu hlavičky. Proměnné: `party` (snapshot),
     `showContact` (kontakt a zápis v rejstříku — jen u dodavatele).
     Snapshot nemusí nést všechny klíče (starší doklady, import), proto
-    `default` u každého čtení.
+    `default` u každého čtení. PSČ a telefon se formátují až tady podle
+    země adresy (#118 D21) — snapshot nese uložený (kanonický) tvar;
+    `display_block` se tiskne, jak je.
 #}
 {% set address = party.address|default({}) %}
 {% set vatRegistration = party.vat_registration|default({}) %}
@@ -13,7 +15,7 @@
         {{ address.display_block|nl2br }}
     {% else %}
         {{ address.street|default('') }}{% if address.house_number|default('') %} {{ address.house_number }}{% endif %}<br>
-        {{ address.zip|default('') }} {{ address.city|default('') }}
+        {{ address.zip|default('')|zip(address.country|default('')) }} {{ address.city|default('') }}
     {% endif %}
 </p>
 <p class="party-ids">
@@ -31,7 +33,7 @@
     {% endif %}
     {% if contact.email|default('') or contact.phone|default('') %}
         <p class="party-detail">
-            {{ [contact.phone|default(''), contact.email|default('')]|join(' · ') }}
+            {{ [contact.phone|default('')|phone(address.country|default('')), contact.email|default('')]|join(' · ') }}
         </p>
     {% endif %}
 {% endif %}

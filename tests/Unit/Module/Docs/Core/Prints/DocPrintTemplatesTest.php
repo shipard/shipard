@@ -147,6 +147,7 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('IČ: 00000019', $html);
         $this->assertStringContainsString('DIČ: CZ00000019', $html);
         $this->assertStringContainsString('C 12345 vedená u Krajského soudu v Brně', $html);
+        $this->assertStringContainsString('+420' . self::NBSP . '577' . self::NBSP . '000' . self::NBSP . '001', $html, 'telefon dodavatele čitelně (#118 D21)');
         $this->assertStringContainsString('Odběratel Zkušební a.s.', $html);
         $this->assertStringContainsString('DIČ: SK2020000027', $html);
 
@@ -157,7 +158,7 @@ class DocPrintTemplatesTest extends TestCase
 
         // Platba + QR
         $this->assertStringContainsString('Převodem', $html);
-        $this->assertStringContainsString('CZ6508000000192000145399', $html);
+        $this->assertStringContainsString('CZ65' . self::NBSP . '0800' . self::NBSP . '0000' . self::NBSP . '1920' . self::NBSP . '0014' . self::NBSP . '5399', $html, 'IBAN po čtveřicích (#118 D21)');
         $this->assertStringContainsString('Konstantní symbol', $html);
         $this->assertStringNotContainsString('Specifický symbol', $html);
         $this->assertStringContainsString('<svg', $html);
@@ -359,7 +360,7 @@ class DocPrintTemplatesTest extends TestCase
         $document = $this->render($definition, $data);
 
         $this->assertStringContainsString('Úzká 5', $document->html);
-        $this->assertStringContainsString('602 00 Brno', $document->html);
+        $this->assertStringContainsString('602' . self::NBSP . '00 Brno', $document->html, 'PSČ čitelně ve větvi bez display_block (#118 D21)');
         $this->assertStringContainsString('Odběratel bez adresy', $document->html);
         $this->assertStringNotContainsString('<svg', $document->html);
         $this->assertStringNotContainsString('IBAN', $document->html);
@@ -502,7 +503,7 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('Papírnictví U Brány s.r.o.', $html);
         $this->assertStringContainsString('Datum splatnosti', $html);
         $this->assertStringContainsString('14.' . self::NBSP . '10.' . self::NBSP . '2026', $html);
-        $this->assertStringContainsString('CZ6508000000192000145399', $html);
+        $this->assertStringContainsString('CZ65' . self::NBSP . '0800' . self::NBSP . '0000' . self::NBSP . '1920' . self::NBSP . '0014' . self::NBSP . '5399', $html, 'IBAN po čtveřicích (#118 D21)');
         $this->assertStringContainsString('<svg', $html);
         $this->assertStringContainsString('K úhradě', $html);
     }

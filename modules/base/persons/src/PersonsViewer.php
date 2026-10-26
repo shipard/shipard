@@ -7,6 +7,8 @@ use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Base\Persons\Send\SendPurposes;
+use Shipard\Module\Base\Persons\Values\PersonContext;
+use Shipard\Module\World\Validations\ValueRules;
 
 class PersonsViewer extends TableViewer
 {
@@ -245,9 +247,11 @@ class PersonsViewer extends TableViewer
 		$this->addItem($identityItems, 'Zápis v obchodním rejstříku', $record['court_registration'] ?? null);
 		$this->addItem($identityItems, 'ID datové schránky', $record['gov_e_box_id'] ?? null);
 
+		// Telefon čitelně podle země osoby (#118 D21) — uložený tvar je kanonický.
+		$country = $this->personContext()->country((int) ($record['id'] ?? 0));
 		$contactItems = [];
 		$this->addItem($contactItems, 'E-mail', $record['email'] ?? null);
-		$this->addItem($contactItems, 'Telefon', $record['phone'] ?? null);
+		$this->addItem($contactItems, 'Telefon', $this->readablePhone($record['phone'] ?? null, $country));
 		$this->addItem($contactItems, 'Web', $record['web'] ?? null);
 
 		$personalItems = [];
@@ -315,6 +319,7 @@ class PersonsViewer extends TableViewer
 			'SELECT * FROM `base_persons_contacts` WHERE `person` = %i ORDER BY `order_pos`',
 			$personId,
 		);
+		$country = $this->personContext()->country($personId);
 
 		$items = [];
 		foreach ($contacts as $c) {
@@ -325,8 +330,8 @@ class PersonsViewer extends TableViewer
 
 			$parts = [];
 			foreach (['role', 'email', 'phone'] as $col) {
-				$v = trim((string) ($c[$col] ?? ''));
-				if ($v !== '') {
+				$v = $col === 'phone' ? $this->readablePhone($c[$col] ?? null, $country) : trim((string) ($c[$col] ?? ''));
+				if ($v !== null && $v !== '') {
 					$parts[] = $v;
 				}
 			}
@@ -403,5 +408,18 @@ class PersonsViewer extends TableViewer
 		if ($value !== null && $value !== '') {
 			$items[] = ['label' => $label, 'value' => (string) $value];
 		}
+	}
+
+	/** Telefon v čitelném tvaru (`+420 577 123 456`) podle země osoby; prázdný → null. */
+	private function readablePhone(mixed $phone, string $country): ?string
+	{
+		$text = is_string($phone) ? trim($phone) : '';
+		return $text === '' ? null : ValueRules::format(ValueRules::PHONE, $text, $country);
+	}
+
+	/** Země osoby podle D18 (sídlo → první adresa → zdroj dat) — šev pro testy. */
+	protected function personContext(): PersonContext
+	{
+		return new PersonContext($this->db->getDibiConnection(), $this->dsConfig?->getCountry() ?? 'cz');
 	}
 }
