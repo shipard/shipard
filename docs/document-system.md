@@ -453,6 +453,9 @@ V `module.jsonc` se přidá pole `documentClasses`:
 | `defaultClass` | string | Ne | Výchozí třída, pokud hodnota typeColumn nemá mapování |
 
 Pokud tabulka nemá žádnou registraci v `documentClasses`, použije se `DefaultDocument` (prázdné hooky).
+Adresy a účty osob mají od #118 (fáze 2) vlastní třídy `AddressDocument`
+a `PersonBankAccountDocument` jen kvůli kanonickému tvaru a kontrole hodnot
+při uložení z formuláře (`docs/exchange-format-persons.md` § 5–6).
 
 ---
 

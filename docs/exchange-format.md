@@ -1099,7 +1099,7 @@ Postup pro **partner's bank** (resolved person je partner, ne my),
 
 1. Načíst aktivní účty osoby (`base_persons_bank_accounts` podle
    `person`) a porovnat v PHP přes **klíč účtu**
-   (`Resolve\BankAccountKey::of()`) z **obou** sloupců — u starých dat
+   (`World\Validations\BankAccountKey::of()`, od fáze 2 v knihovně) z **obou** sloupců — u starých dat
    nese `account_number` často IBAN. Klíč: IBAN státu s tuzemským tvarem
    účtu (cz, sk) i tuzemské číslo `[předčíslí-]číslo/kód` → `bban:<20
    číslic>` (BBAN je u cz i sk stejný, země není potřeba); jiný IBAN →
@@ -1700,11 +1700,27 @@ zaručenou strukturu), před obohacením, dedupem a `DocumentValidator`:
 
 Porovnávač evaluace (`Compare\ValueShapes`) deleguje sdílené tvary na
 tutéž knihovnu (D6) a výsledek volání nese `valueFindings`
-(`docs/test-corpus.md` § 18). Mimo fázi 1 (#118 D9, samostatný task):
-normalizace při uložení osob a účtů, jednorázová normalizace
-existujících dat a převod zbylých míst s vlastní implementací
-(`BankAccountDocument`, `Import\PartnerResolver`, `ParserUtils::mod11`,
-`CzIbanCalculator`). Ověření v registrech (ARES, VIES) je #142.
+(`docs/test-corpus.md` § 18).
+
+**Adresář (fáze 2, #118 D18–D21, D23).** Všechny zápisy do osob, adres,
+kontaktů, účtů osob a vlastních účtů ukládají kanonický tvar — jedna
+funkce na tabulku (`base.persons` `Values\PersonValues`, země osoby
+`Values\PersonContext`: sídlo → první adresa se zemí → země zdroje dat;
+applier ji dává hlavičce jako virtuální `_country`), volaná z tříd
+dokumentů (formuláře), z `PersonApplier` (podřízené záznamy přímým SQL)
+i z `bankCreate` tady v applieru dokladu. IBAN zapsaný do čísla účtu
+se přesouvá do `iban` (D20, `BankAccountShape`). Formuláře hlásí
+nevalidní hodnoty týmiž kódy a texty jako nálezy canonicalu
+(`ValueChecks` → `ValueFinding`; partner varování, vlastní firma
+a vlastní účty chyba — D19). Tisky a detail osoby formátují
+`ValueRules::format()` (D21), snapshoty stran na dokladech se nemění.
+Párování účtů všude přes `BankAccountKey` (účty v canonicalu, protiúčet
+a vlastní účet z výpisu, průvodce nastavením); QR platba a ISDOC berou
+IBAN z `ValueRules::ibanFromAccountNumber()`. Podrobně
+`docs/exchange-format-persons.md` § 5–7. Jednorázová normalizace
+existujících dat je `values-normalize` (D22,
+`tasks/value-rules-backfill.md`). Ověření v registrech (ARES, VIES)
+je #142.
 
 ## 11. REST API endpointy
 

@@ -214,7 +214,15 @@ smí názvy nést — tam jsou potřeba k práci.
   `world.validations` (`ValueRules`, `ValueRulesRegistry` — nová země =
   nová třída v registru), ne vlastní regex ani kontrolní součet v modulu;
   canonical normalizuje a validuje `core.exchange` `Values/`
-  (`docs/exchange-format.md` → Normalizace a validace hodnot, #118)
+  (`docs/exchange-format.md` → Normalizace a validace hodnot, #118).
+  **Uložený tvar v adresáři je kanonický** (#118 D18–D20): každý zápis do
+  osob, adres, kontaktů, účtů osob a vlastních účtů jde přes
+  `base.persons` `Values\PersonValues` (třídy dokumentů, `PersonApplier`,
+  `bankCreate`), nálezy formulářů dává `ValueChecks` / `ValueFinding`
+  (partner varování, vlastní firma chyba — D19); **čitelný tvar jen pro
+  zobrazení** přes `ValueRules::format()` / Twig filtry `zip`, `iban`,
+  `phone` (D21), nikdy se neukládá; párování účtů vždy přes
+  `BankAccountKey` z obou sloupců (D16, D23)
 
 ### Dokumentový systém
 - Data vždy jako PHP `array` — žádné property per sloupec (kvůli extensions)

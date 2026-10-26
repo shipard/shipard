@@ -59,6 +59,9 @@ Iban::isValid('CZ6508000000192000145399');                          // mod 97 + 
 | `DeValueRules` | USt-IdNr s kontrolní číslicí ISO 7064 MOD 11,10, PSČ 5 číslic, IBAN 22 znaků |
 | `ValueRulesRegistry` | výběr pravidel podle země (`forCountry`), prefixu IBAN (`forIban`) nebo prefixu DIČ (`forVatPrefix`) |
 | `ValueRules` | jeden vstup podle druhu hodnoty (`ValueRules::PHONE`, …) a země: `normalize()`, `isValid()`, `format()`, `ibanFromAccountNumber()` |
+| `ValueChecks`, `ValueFinding` | kontroly s důvodem (#118 D13, D19): kód nálezu, hodnota, česká věta; `message(vlastník)` skládá „IČO dodavatele „x“ nemá platný kontrolní součet.“ i „IČO „x“ …“ — jediný zdroj textů pro validátor canonicalu i formuláře adresáře |
+| `BankAccountKey` | klíč účtu pro párování z hodnoty (ne ze sloupce): IBAN cz / sk i tuzemské číslo → `bban:`, jiný IBAN → `iban:`, jinak `raw:` (D16, D23) |
+| `BankAccountShape` | tvar trojice číslo účtu / IBAN / BIC při uložení a přesun IBAN ze sloupce čísla účtu do `iban` (D20) |
 | `Iban`, `Bic`, `VatId`, `Phone`, `DomesticAccount`, `Contact`, `PaymentSymbols`, `Country` | obecná pravidla a primitiva |
 
 ## Pravidla
@@ -126,10 +129,23 @@ pro obě implementace (D6).
 Normalizátor a validátor canonicalu, resolvery ani porovnávač se nemění —
 žádné `if (cz)` mimo tento modul.
 
-## Mimo rozsah (fáze 2, #118 D9)
+## Kdo knihovnu používá
 
-Normalizace při uložení osob, adres, kontaktů a bankovních účtů,
-jednorázová normalizace existujících dat a převod zbylých míst s vlastní
-implementací (`BankAccountDocument`, párování bankovních pohybů
-`Import\PartnerResolver`, `ParserUtils::mod11`, `CzIbanCalculator`
-v tisku QR platby). Ověření v registrech (ARES, VIES) je #142.
+- canonical dokladu: normalizátor a validátor v `core.exchange`
+  (`docs/exchange-format.md` → Normalizace a validace hodnot);
+- adresář při uložení (#118 D18–D20): `base.persons` `Values\PersonValues`
+  (osoba, adresa, kontakt, účet osoby) a `economy.codebooks`
+  `BankAccountDocument` — kanonický tvar a kontroly D19 (partner varování,
+  vlastní firma chyba), `docs/exchange-format-persons.md` § 5–7;
+- zobrazení (D21): Twig filtry `zip`, `iban`, `phone` v tisku
+  (`docs/prints.md`) a detail osoby;
+- párování účtů přes `BankAccountKey` (D16, D23): `BankAccountResolver`,
+  protiúčet a vlastní účet z výpisu (`economy.bank`), průvodce nastavením;
+- QR platba a ISDOC: `ValueRules::ibanFromAccountNumber()`; ABO mod 11
+  v `ParserUtils`.
+
+## Mimo rozsah
+
+Jednorázová normalizace existujících dat adresáře (`values-normalize`,
+#118 D22, `tasks/value-rules-backfill.md`). Ověření v registrech (ARES,
+VIES) je #142.

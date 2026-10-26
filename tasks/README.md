@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 405 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 375.
+Celkem 407 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 376.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `value-rules-backfill.md` | naplánováno | rozhodnutí schválená 2026-10-26 (#118 D22), neimplementováno; pustit až po `tasks/value-rules-phase2.md` |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -268,6 +269,8 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `einvoice-phase1.md` | Strukturovaná e-faktura, fáze 1: generátor ISDOC z canonicalu (`IsdocWriter`), XSD 6.0.1 / 6.0.2 a validace, UUIDv5, rozšíření čtečky o přenesení daňové povinnosti, CLI `shpd-server einvoice-render`, soubory ISDOC a round-trip v korpusu, ISDOC jen mezi českými subjekty s IČO (#119 D1–D10) |
 | `einvoice-reader-reverse-charge.md` | Čtečka ISDOC: `vat.reverseCharge: false` jen u plnění se stejnou zemí dodavatele a odběratele, jinak `null` — došlý ISDOC od dodavatele z EU nesmí zablokovat kód DPH z historie (#119, oprava fáze 1) |
 | `value-rules.md` | Normalizace a validace hodnot canonicalu, fáze 1: pravidla per stát `world.validations` (PSČ, IČO, DIČ, účet, IBAN, BIC, telefon), normalizace na vstupu AI a ISDOC i v applieru, oprava IBAN ↔ číslo účtu, nálezy v náhledu a strop pásma, resolvery přes normalizované tvary, porovnávač evaluace na téže knihovně (#118 D1–D17) |
+| `value-rules-phase2.md` | Normalizace a validace hodnot, fáze 2: adresář ukládá kanonický tvar ze všech cest zápisu (třídy dokumentů adres a účtů, appliery), IBAN ze sloupce čísla účtu do `iban`, varování / chyby ve formulářích, čitelný tvar PSČ, IBAN a telefonu na tiscích a v detailu osoby, účty, QR platba a import výpisů na `world.validations` (#118 D18–D21, D23) |
+| `value-rules-backfill.md` | `shpd-ds values-normalize [--dry-run] [--json]` — normalizace existujících údajů adresáře stejnými pravidly jako uložení, výpis změn a nevalidních hodnot bez osobních údajů (#118 D22) |
 
 ## Účetnictví
 

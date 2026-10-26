@@ -53,6 +53,26 @@ firmy dostanou `F` a číslo, fyzické osoby `O` a číslo. Najdeš ho na tabu
 **Kontakty, Adresy a Bankovní účty jsou taby na osobě.** Nejsou to
 samostatné evidence; přidávají se až k uložené osobě.
 
+**Zápis údajů Shipard při uložení sjednotí.** **IČO** dostane vedoucí
+nuly, **DIČ** a **DIČ pro DPH** velká písmena a bez mezer, **PSČ** bez
+mezery, **Telefon** s předvolbou státu (`+420 577 123 456` se uloží jako
+`+420577123456`), **IBAN** a **BIC/SWIFT** velkými bez mezer a **Číslo
+účtu** bez mezer a vedoucích nul. Zapíšeš-li IBAN do pole **Číslo účtu**,
+přesune se do **IBAN** a u českého nebo slovenského účtu se číslo účtu
+dopočítá. Ve formuláři pak vidíš uložený tvar; na faktuře a v detailu
+osoby se PSČ, IBAN a telefon tisknou čitelně (`760 01`,
+`CZ65 0800 0000 1920 0014 5399`, `+420 577 123 456`).
+
+**Neplatné IČO, DIČ, PSČ nebo účet Shipard pozná.** Kontroluje kontrolní
+součet IČO (české a slovenské firmy), tvar DIČ podle státu, PSČ, číslo
+účtu, IBAN a BIC, a to, zda DIČ odpovídá IČO a IBAN číslu účtu. U partnera
+se záznam uloží a nad formulářem se objeví žlutý pruh **Uloženo, ale
+zkontroluj:** s popisem, co nesedí — u nové adresy nebo účtu zůstane
+dialog otevřený, aby šlo hodnotu rovnou opravit. U **Vlastní firmy**, jejích
+adres a účtů a u vlastních účtů v **Nastavení** se chybná hodnota neuloží
+vůbec — jde na doklady, do QR platby a do e-faktury. Zahraniční IČO se
+nekontroluje, telefon a e-mail také ne.
+
 **Registr existující osobu nepřepíše.** Když ve výsledcích hledání vidíš
 u firmy odznak **Firma již existuje**, znamená to, že ji v evidenci máš.
 Vybrat a uložit ji můžeš, ale **nic se nedoplní ani nepřepíše** — dostaneš

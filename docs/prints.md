@@ -384,7 +384,9 @@ Pravidla:
 - **QR (D17):** jen platba převodem a kladná částka. `PaymentQrResolver`
   volí standard podle země odběratele (v1 vždy SPAYD); `SpaydGenerator`
   skládá `ACC`, `AM`, `CC`, `X-VS`, `X-SS`, `X-KS`, `DT`, `MSG`. IBAN ze
-  snapshotu, jinak dopočet z českého čísla účtu (`CzIbanCalculator`).
+  snapshotu, jinak dopočet z českého čísla účtu
+  (`ValueRules::ibanFromAccountNumber()`, `world.validations` — jen tvar,
+  bez mod 11, #118 D23).
   Bez účtu `qr = null` + varování; symbol mimo 1–10 číslic se z kódu
   vynechá + varování.
 - **Název souboru:** slug `fileName.<varianta>` z katalogu + číslo dokladu.
@@ -573,6 +575,9 @@ Formát podle jazyka tisku (D30); mezery uvnitř hodnot jsou nezlomitelné.
 | `1.5\|qty` (bez zbytečných nul, nejvýš 4 místa) | `1,5` | `1,5` | `1.5` |
 | `21\|pct` (nejvýš 2 místa) | `21 %` | `21 %` | `21%` |
 | `'2026-10-02'\|date` | `2. 10. 2026` | `02.10.2026` | `2 Oct 2026` |
+| `'76001'\|zip('cz')` | `760 01` | `760 01` | `760 01` |
+| `'CZ6508000000192000145399'\|iban` | `CZ65 0800 0000 1920 0014 5399` | totéž | totéž |
+| `'+420577123456'\|phone('cz')` | `+420 577 123 456` | totéž | totéž |
 
 - Formátuje `ext-intl` (`NumberFormatter`, `IntlDateFormatter`), ale
   **vzory i symboly jsou zapsané v `PrintTwigExtension::FORMATS`** —
@@ -587,6 +592,15 @@ Formát podle jazyka tisku (D30); mezery uvnitř hodnot jsou nezlomitelné.
   jména.
 - Jazyk bez záznamu ve `FORMATS` je programátorská chyba
   (`LogicException`).
+- `zip(země)`, `iban`, `phone(země)` (#118 D21) delegují na
+  `ValueRules::format()` z `world.validations`: nejdřív normalizace, pak
+  PSČ cz / sk po třech, IBAN po čtveřicích, telefon cz / sk
+  `+420 577 123 456`, de `+49 301234567`; jiný stát, prázdná země nebo
+  nekanonický tvar = normalizovaná hodnota, mezery nezlomitelné. Uložený
+  tvar je kanonický — snapshoty stran se nemění, formátuje se až v šabloně
+  (`party.html.twig` PSČ jen ve větvi bez `display_block` a telefon
+  kontaktu podle `address.country`, `payment.html.twig` IBAN; číslo účtu,
+  BIC a `display_block` / `display_line` beze změny).
 
 `t('klíč', {param: hodnota})` čte katalog tisku, `qr_svg(data.payment.qr)`
 vrací inline SVG (pro null prázdný řetězec).

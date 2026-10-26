@@ -102,7 +102,7 @@ Pořadí elementů = `xs:sequence` schématu, booleany `true` / `false`,
 | `TaxTotal/TaxAmount`* | `totals.totalVat` (0 u dokladu bez DPH) |
 | `LegalMonetaryTotal`* | `TaxExclusiveAmount` = totalBase, `TaxInclusiveAmount` = totalAmount − totalRounding, `AlreadyClaimed*` 0, `Difference*` = totéž, `PayableRoundingAmount` = totalRounding, `PaidDepositsAmount` 0, `PayableAmount` = totalAmount |
 | `PaymentMeans/Payment` | `PaidAmount` = totalAmount, `PaymentMeansCode` podle `payment.method` (převod a platební brána 42, hotově 10, kartou 48, dobírka 50, zápočet 97); bez `payment.method` se `PaymentMeans` nepíše |
-| `Payment/Details` | jen u převodu: `PaymentDueDate` = dueDate, `ID` + `BankCode` z `accountNumber`, `Name` prázdný, `IBAN` = `bankAccount.iban` nebo dopočet `CzIbanCalculator` (docs.core), `BIC` = `bankAccount.bic` nebo prázdný, `VariableSymbol` = paymentReference, `ConstantSymbol`, `SpecificSymbol` |
+| `Payment/Details` | jen u převodu: `PaymentDueDate` = dueDate, `ID` + `BankCode` z `accountNumber`, `Name` prázdný, `IBAN` = `bankAccount.iban` nebo dopočet `ValueRules::ibanFromAccountNumber()` (`world.validations`, #118 D23), `BIC` = `bankAccount.bic` nebo prázdný, `VariableSymbol` = paymentReference, `ConstantSymbol`, `SpecificSymbol` |
 
 **Strana** (`Party`): `PartyIdentification/ID` = `companyId`,
 `PartyName/Name` = `name`, `PostalAddress` (`StreetName`, `BuildingNumber`,

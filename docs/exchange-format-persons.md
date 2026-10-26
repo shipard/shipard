@@ -154,6 +154,18 @@ Zbytek pojmosloví (Canonical, Schema, Resolve, Apply, Lineage) viz
 }
 ```
 
+### Země osoby a kanonický tvar hlavičky (#118 D18)
+
+Hlavička se ukládá přes `PersonDocument`, který IČO, DIČ, daňové číslo,
+telefon, e-mail a web normalizuje podle **země osoby**: klíč `_country`
+v payloadu (applier ho bere z povinného `country` canonicalu, side-create
+z dokladu ze země strany; do SQL nejde) → adresy v témže zápisu (sídlo,
+jinak první se zemí) → uložené adresy → země zdroje dat
+(`Values\PersonContext`). Kontroly IČO, DIČ a jejich souladu (D19):
+partner varování, vlastní firma (`status.isOwn`) chyba — ta zastaví
+i apply (`validation_failed`); nevalidní IČO vlastní firmy z importu je
+nález k opravě, ne důvod chybu oslabit.
+
 ### Polymorfismus podle `personType`
 
 `personType` určuje, která pole jsou relevantní a jak applier mapuje payload
@@ -300,7 +312,7 @@ by jedna osa modelovala špatně.
   "longitude": 14.4214,
   "manualGps": false,
 
-  // Display lines (informative; applier přepočte v beforeSave)
+  // Display lines — tiskový tvar adresy, ukládá se, jak přišel
   "displayLine":  "Hlavní 1/3, 110 00 Praha 1",
   "displayBlock": "Hlavní 1/3\n110 00 Praha 1",
 
@@ -318,7 +330,17 @@ Adresa má v DB i `docState` (default `10` — pro ruční UI; applier zapisuje
 **Mapování na sloupce `base_persons_addresses`:**
 camelCase canonical → snake_case DB. Pole `divisionCode` se přes lookup
 v `world_divisions` mapuje na `division` (FK). Pole `displayLine`/`displayBlock`
-jsou v payloadu informativní — `PersonDocument`/`AddressDocument` je přepočítává.
+se ukládají, jak přišly — nic je nepřepočítává; tisk je vypisuje beze změny.
+
+**Kanonický tvar při uložení (#118 D18):** `country` malými a `zip`
+normalizované podle země adresy (cz / sk / de bez mezer); adresa bez
+země dostane jen trim — nic se nehádá. Při částečném updatu bez `country`
+(applier `fullSync` / `mergeAdd`, formulář) platí země uloženého řádku.
+Jedna funkce `Values\PersonValues::normalizeAddress()` pro formulář
+(`AddressDocument`), adresy zapisované s novou osobou (`PersonDocument`)
+i podřízené záznamy applieru (`insertSubRecord` / `updateSubRecord`).
+Formulář adresy kontroluje PSČ (D19): u partnera varování, u adresy
+vlastní firmy chyba.
 
 ## 6. BankAccount sub-object
 
@@ -340,6 +362,19 @@ jsou v payloadu informativní — `PersonDocument`/`AddressDocument` je přepoč
 Identický fragment jako `Party.bankAccount` v dokladu — jen jako prvek pole.
 Tabulka `base_persons_bank_accounts` má v DB `docState` (default `10`;
 applier zapisuje `40`).
+
+**Kanonický tvar při uložení (#118 D18, D20):** číslo účtu bez mezer
+a vedoucích nul, IBAN a BIC velkými bez mezer; **IBAN zapsaný do
+`account_number`** se přesune do `iban` — u cz / sk se do čísla účtu
+dopočte tuzemské číslo, jinde zůstane prázdné; nese-li `iban` jiný účet,
+nic se nemění (validace nahlásí nesoulad). Číslo účtu bez IBANu se IBANem
+nedoplňuje. Jedna funkce `Values\PersonValues::normalizeBankAccount()`
+(`world.validations` `BankAccountShape`) pro formulář
+(`PersonBankAccountDocument`), applier osob, `bankCreate` z dokladu
+i vlastní účty v číselníku. Formulář účtu kontroluje číslo účtu (mod 11),
+IBAN, BIC a jejich soulad (D19): partner varování, vlastní firma chyba;
+jiný než tuzemský tvar čísla účtu je nález jen u osoby ze státu
+s tuzemským tvarem (země osoby, viz § 3).
 
 ## 7. Contact sub-object
 
@@ -374,6 +409,10 @@ posílá; kontakt bez účelu se při odesílání nepoužije.
 - **Klíč je → platí**, prázdný seznam znamená „žádný účel“. U existujícího
   kontaktu se zapíše jen při `fullSync` — jako ostatní pole kontaktu.
 - **Export** píše klíč jen u kontaktu s aspoň jedním účelem.
+
+**Kanonický tvar při uložení (#118 D18):** e-mail malými, telefon
+s předvolbou podle země osoby (`ContactDocument` ve formuláři, applier
+u podřízených záznamů). Nálezy telefon ani e-mail nevyrábí (D12).
 
 ## 8. Resolve
 
