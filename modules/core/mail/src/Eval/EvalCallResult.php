@@ -22,7 +22,10 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * `FieldOutcome::$informative`) jdou zvlášť: `informativeCounts`
  * a `informativeDeviations` vedle `counts` a `deviations`, položky
  * `normalized` nesou `informative: true`; do `counts`, `deviations`
- * ani `isClean()` nepatří (metricsVersion 2).
+ * ani `isClean()` nepatří (metricsVersion 2). Nálezy hodnot (#118 D17,
+ * `valueFindings` = `{path, code}` z `CanonicalValueValidator` nad
+ * validovaným canonicalem včetně oprav) jdou do souboru jako poslední
+ * klíč úspěšného volání; metriky je neznají, report je vypíše u dokladu.
  */
 
 final readonly class EvalCallResult
@@ -37,6 +40,7 @@ final readonly class EvalCallResult
     /**
      * @param list<FieldOutcome> $outcomes
      * @param array{tokensIn: int, tokensOut: int, model: ?string, costUsd: ?float}|null $tags spotřeba LLM klasifikace štítků (#103 F6b D56); null = LLM se nevolalo
+     * @param list<array{path: string, code: string}> $valueFindings nálezy hodnot canonicalu (#118 D17)
      */
     public function __construct(
         public string $messageId,
@@ -54,7 +58,26 @@ final readonly class EvalCallResult
         public array $outcomes = [],
         public ?array $tags = null,
         public string $path = self::PATH_AI,
+        public array $valueFindings = [],
     ) {}
+
+    /**
+     * Nálezy hodnot z položky `calls[]` souboru výsledků; starší běhy
+     * (před #118) klíč nemají → prázdný seznam.
+     *
+     * @param array<string, mixed> $call
+     * @return list<array{path: string, code: string}>
+     */
+    public static function valueFindingsOf(array $call): array
+    {
+        $out = [];
+        foreach (is_array($call['valueFindings'] ?? null) ? $call['valueFindings'] : [] as $finding) {
+            if (is_array($finding) && is_string($finding['path'] ?? null) && is_string($finding['code'] ?? null)) {
+                $out[] = ['path' => $finding['path'], 'code' => $finding['code']];
+            }
+        }
+        return $out;
+    }
 
     /** Cena volání štítků; 0 bez LLM volání nebo bez ceny (model mimo katalog). */
     public function tagsCostUsd(): float
@@ -156,6 +179,7 @@ final readonly class EvalCallResult
             ));
             $out['deviations'] = array_map(static fn (FieldOutcome $o): array => $o->toArray(), $this->deviations());
             $out['informativeDeviations'] = array_map(static fn (FieldOutcome $o): array => $o->toArray(), $this->informativeDeviations());
+            $out['valueFindings'] = $this->valueFindings;
         }
         return $out;
 

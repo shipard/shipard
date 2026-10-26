@@ -141,4 +141,20 @@ final class EvalCallResultTest extends TestCase
         $this->assertSame(7, EvalCallResult::deviationCount(['status' => 'failed', 'counts' => ['match' => 0, 'matchNormalized' => 0, 'missing' => 5, 'extra' => 0, 'wrong' => 2]]));
         $this->assertNull(EvalCallResult::deviationCount(['status' => 'failed', 'errorType' => 'schema_error']), 'selhané volání před D44 bez counts');
     }
+
+    /** #118 D17: nálezy hodnot jako poslední klíč úspěšného volání; selhané volání je nenese; starší běh bez klíče = prázdný seznam. */
+    public function testValueFindingsAreTheLastKeyOfAnOkCall(): void
+    {
+        $findings = [['path' => 'supplier.bankAccount.iban', 'code' => 'bank_account_repaired']];
+        $ok = new EvalCallResult('M', 1, EvalCallResult::STATUS_OK, null, null, 0.01, 1, 1, 1, 'm', 'invoiceReceived', null, [], null, EvalCallResult::PATH_AI, $findings);
+        $out = $ok->toArray();
+        $this->assertSame($findings, $out['valueFindings']);
+        $this->assertSame('valueFindings', array_key_last($out));
+        $this->assertSame($findings, EvalCallResult::valueFindingsOf($out));
+
+        $failed = new EvalCallResult('M', 1, EvalCallResult::STATUS_FAILED, 'ai_error', 'x', null, null, null, null, null, null, null);
+        $this->assertArrayNotHasKey('valueFindings', $failed->toArray());
+        $this->assertSame([], EvalCallResult::valueFindingsOf(['status' => 'ok']), 'běh před #118');
+        $this->assertSame([], EvalCallResult::valueFindingsOf(['valueFindings' => [['path' => 'x']]]), 'neúplný záznam se přeskočí');
+    }
 }

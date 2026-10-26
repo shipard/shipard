@@ -10,6 +10,7 @@ use Shipard\Module\Core\Exchange\Compare\FieldOutcome;
 use Shipard\Module\Core\Exchange\Compare\FieldState;
 use Shipard\Module\Core\Exchange\Compare\Projection;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocFieldCoverage;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
 
 use Shipard\Module\Core\Mail\Analysis\AnalysisComputing;
 use Shipard\Module\Core\Mail\Analysis\AnalysisOutcome;
@@ -161,11 +162,18 @@ final class EvalRunner
         $outcomes = self::markInformative(self::forPath($this->comparator->evaluate($message->expectedCanonical, $canonical), $path), $this->comparator->projection());
         $outcomes[] = self::classificationOutcome($message->expectedPrimaryType, $primaryType);
         $tag = $canonical['_resolve']['contentTag']['tag'] ?? null;
+        // Nálezy hodnot (#118 D17) nad validovaným canonicalem včetně oprav —
+        // evaluace tak ukáže, které doklady model přečetl s neplatným
+        // identifikátorem nebo s IBAN opraveným podle čísla účtu.
+        $valueFindings = array_map(
+            static fn (array $issue): array => ['path' => $issue['path'], 'code' => $issue['code']],
+            CanonicalValueValidator::validate($canonical),
+        );
 
         return new EvalCallResult(
             $message->messageId, $repeat, EvalCallResult::STATUS_OK, null, null,
             $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName,
-            $primaryType, is_string($tag) ? $tag : null, $outcomes, $outcome->validated?->tagsUsage, $path,
+            $primaryType, is_string($tag) ? $tag : null, $outcomes, $outcome->validated?->tagsUsage, $path, $valueFindings,
         );
     }
 

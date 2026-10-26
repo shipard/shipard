@@ -54,6 +54,20 @@ class ValueShapesTest extends TestCase
         $this->assertSame($expected, ValueShapes::normalizeValue($name, $shape, $value));
     }
 
+    /** #118 D6: sdílené tvary jdou přes world.validations — IČO cz/sk dostane vedoucí nuly, telefon zůstává bez země. */
+    public function testSharedShapesDelegateToValueRules(): void
+    {
+        $re = ['regex' => '^.*$'];
+        $this->assertSame('00006947', ValueShapes::normalizeValue('digits8', $re, '6947', 'cz'));
+        $this->assertSame('00006947', ValueShapes::normalizeValue('digits8', $re, '6947'));
+        $this->assertSame('36339008', ValueShapes::normalizeValue('digits8', $re, '363 39 008', 'sk'));
+        $this->assertSame('77900', ValueShapes::normalizeValue('digits5', $re, '779 00', 'cz'));
+        $this->assertSame('000201304', ValueShapes::normalizeValue('phone', $re, '000-201-304', 'cz'), 'bez předvolby i se zemí rodiče — rodič telefonu je contact');
+        $this->assertSame('+420577123456', ValueShapes::normalizeValue('phone', $re, '00420 577 123 456'));
+        $this->assertSame('CZ43075894', ValueShapes::normalizeValue('vatId', $re, 'cz-430.75-894'));
+        $this->assertSame('43075894', ValueShapes::normalizeValue('vatId', $re, '43075894'), 'bez země se prefix nedoplňuje');
+    }
+
     public function testNormalizeWalksProjectionWithByCountry(): void
     {
         $p = Projection::load(ProjectionTest::projectionPath());
@@ -61,6 +75,7 @@ class ValueShapesTest extends TestCase
         $doc['supplier']['address']['zip'] = '779 00';
         $doc['supplier']['address']['country'] = 'CZ';
         $doc['supplier']['vatId'] = 'cz43075894';
+        $doc['supplier']['companyId'] = '6947';          // byCountry cz → digits8 doplní nuly
         $doc['currency'] = 'czk';
         $doc['rows'][0]['unitPrice'] = '486.50';
         $doc['customer']['address']['zip'] = '760 01';
@@ -72,6 +87,7 @@ class ValueShapesTest extends TestCase
         $this->assertSame('77900', $out['supplier']['address']['zip']);
         $this->assertSame('cz', $out['supplier']['address']['country']);
         $this->assertSame('CZ43075894', $out['supplier']['vatId']);
+        $this->assertSame('00006947', $out['supplier']['companyId']);
         $this->assertSame('CZK', $out['currency']);
         $this->assertSame(486.5, $out['rows'][0]['unitPrice']);
         $this->assertSame('760 01', $out['customer']['address']['zip'], 'mimo cz/sk zůstává PSČ jak na dokladu');

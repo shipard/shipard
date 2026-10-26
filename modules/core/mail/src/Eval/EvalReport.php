@@ -143,6 +143,15 @@ final class EvalReport
                 $lines[] = sprintf('<comment>✗ %s (%d): %s — %s</comment>', $call['messageId'], $call['repeat'], $call['errorType'], $call['note']);
             }
         }
+        // Nálezy hodnot (#118 D17): neplatné IČO / DIČ / PSČ / účet / IBAN / BIC
+        // a opravy IBAN ↔ číslo účtu u úspěšných volání — mimo metriky.
+        $withFindings = array_values(array_filter($run['calls'], static fn (array $c): bool => EvalCallResult::valueFindingsOf($c) !== []));
+        if ($withFindings !== []) {
+            $lines[] = sprintf('Nálezy hodnot (IČO, DIČ, PSČ, účet, IBAN, BIC, opravy): %d volání', count($withFindings));
+            foreach ($withFindings as $call) {
+                $lines[] = sprintf('  %s (%d): %s', $call['messageId'], (int) ($call['repeat'] ?? 1), self::findings(EvalCallResult::valueFindingsOf($call)));
+            }
+        }
         if ($file !== null) {
             $lines[] = "Soubor: {$file}";
         }
@@ -162,10 +171,17 @@ final class EvalReport
         $hit = $n > 0 ? ($counts['match'] + $counts['matchNormalized']) / $n : 0.0;
         $deviations = $counts['missing'] + $counts['extra'] + $counts['wrong'];
         return sprintf(
-            '<info>✓</info> %-32s%s %s  $%s  shoda %s%s',
+            '<info>✓</info> %-32s%s %s  $%s  shoda %s%s%s',
             $label, $suffix, self::seconds((int) $r->durationMs), number_format((float) $r->costUsd, 4, '.', ''), self::pct($hit),
             $deviations > 0 ? " ({$deviations} odchylek)" : '',
+            $r->valueFindings !== [] ? '  nálezy: ' . self::findings($r->valueFindings) : '',
         );
+    }
+
+    /** @param list<array{path: string, code: string}> $findings */
+    private static function findings(array $findings): string
+    {
+        return implode(', ', array_map(static fn (array $f): string => "{$f['code']}@{$f['path']}", $findings));
     }
 
     private static function pct(int|float $ratio): string

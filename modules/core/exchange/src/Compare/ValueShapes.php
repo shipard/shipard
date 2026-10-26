@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Compare;
 
+use Shipard\Module\World\Validations\ValueRules;
+
 /**
  * Tvary hodnot (docs/test-corpus.md § 11, #103 D15) — kanonický tvar, na
- * který porovnávač srovná obě strany před porovnáním: země malými, měna
- * velkými, DIČ / IBAN / BIC velkými bez mezer, e-mail a web malými, telefon
- * `+` a číslice, PSČ a IČO cz / sk bez mezer, číslo účtu bez vedoucích nul,
- * částky na setiny, texty bez okrajových mezer. Pravidla jdou podle jména
- * tvaru ze `shapes` projekce; neznámé jméno dostane obecné pravidlo druhu
- * (regex → trim, check → číslo). Do dokončení #118 tím porovnávač nahrazuje
- * normalizaci v produkční cestě.
+ * který porovnávač srovná obě strany před porovnáním. Sdílené tvary
+ * (země, DIČ, IBAN, BIC, e-mail, web, telefon, PSČ a IČO cz / sk, číslo
+ * účtu, symboly) delegují na produkční knihovnu `world.validations`
+ * (#118 D6) — porovnávač tak měří stejnou normalizaci, jakou dostane
+ * canonical v produkci, a `matchNormalized` u těchto polí hlídá regresi.
+ * Pravidla jdou podle jména tvaru ze `shapes` projekce; neznámé jméno
+ * dostane obecné pravidlo druhu (regex → trim, check → číslo).
+ *
+ * Telefon zůstává bez země (rodič listu je `contact`): předvolbu doplní
+ * produkce ještě před porovnáním. `digits5` / `digits8` jsou tvary PSČ
+ * a IČO jen pro cz / sk (`byCountry`), země z rodičovského objektu.
  */
 final class ValueShapes
 {
@@ -29,15 +35,17 @@ final class ValueShapes
                     return $value;
                 }
                 [$name, $shape] = $projection->shapeOf($shapeName, $parent);
-                return self::normalizeValue($name, $shape, $value);
+                $country = is_string($parent['country'] ?? null) ? $parent['country'] : null;
+                return self::normalizeValue($name, $shape, $value, $country);
             },
         );
     }
 
     /**
-     * @param array<string, mixed> $shape konkrétní tvar (po rozpuštění byCountry)
+     * @param array<string, mixed> $shape   konkrétní tvar (po rozpuštění byCountry)
+     * @param ?string              $country země rodičovského objektu (PSČ, IČO); bez ní cz / sk pravidla
      */
-    public static function normalizeValue(string $name, array $shape, mixed $value): mixed
+    public static function normalizeValue(string $name, array $shape, mixed $value, ?string $country = null): mixed
     {
         if ($value === null || array_key_exists('const', $shape) || is_array($value) || is_bool($value)) {
             return $value;
@@ -50,14 +58,19 @@ final class ValueShapes
         }
         $s = trim($value);
         return match ($name) {
-            'country' => strtolower($s),
-            'currency', 'bic' => strtoupper($s),
-            'vatId', 'iban' => strtoupper(self::noSpaces($s)),
-            'email' => strtolower($s),
-            'phone' => self::phone($s),
-            'web' => self::web($s),
-            'digits5', 'digits8', 'symbol', 'reference', 'ean' => self::noSpaces($s),
-            'accountNumber' => self::accountNumber($s),
+            'country' => ValueRules::normalize(ValueRules::COUNTRY, $s),
+            'currency' => strtoupper($s),
+            'bic' => ValueRules::normalize(ValueRules::BIC, $s),
+            'vatId' => ValueRules::normalize(ValueRules::VAT_ID, $s),
+            'iban' => ValueRules::normalize(ValueRules::IBAN, $s),
+            'email' => ValueRules::normalize(ValueRules::EMAIL, $s),
+            'phone' => ValueRules::normalize(ValueRules::PHONE, $s),
+            'web' => ValueRules::normalize(ValueRules::WEB, $s),
+            'digits5' => ValueRules::normalize(ValueRules::ZIP, $s, $country ?? 'cz'),
+            'digits8' => ValueRules::normalize(ValueRules::COMPANY_ID, $s, $country ?? 'cz'),
+            'symbol', 'ean' => ValueRules::normalize(ValueRules::SYMBOL, $s),
+            'reference' => ValueRules::normalize(ValueRules::REFERENCE, $s),
+            'accountNumber' => ValueRules::normalize(ValueRules::ACCOUNT_NUMBER, $s),
             default => $s,
         };
     }
@@ -73,46 +86,5 @@ final class ValueShapes
             'number' => (float) $value,
             default => $value,
         };
-    }
-
-    private static function noSpaces(string $s): string
-    {
-        return (string) preg_replace('/\s+/u', '', $s);
-    }
-
-    /** `+` a číslice; vedoucí `+` zůstává, jiné znaky (mezery, pomlčky, závorky) pryč. */
-    private static function phone(string $s): string
-    {
-        $digits = (string) preg_replace('/[^0-9]/', '', $s);
-        return (str_starts_with($s, '+') ? '+' : '') . $digits;
-    }
-
-    /** Malými, bez schématu a bez koncového lomítka. */
-    private static function web(string $s): string
-    {
-        $s = strtolower($s);
-        $s = (string) preg_replace('~^[a-z][a-z0-9+.-]*://~', '', $s);
-        return rtrim($s, '/');
-    }
-
-    /**
-     * `[předčíslí-]číslo/kód banky` bez mezer a bez vedoucích nul v předčíslí
-     * a čísle; jiný tvar (zahraniční účet) jen bez mezer.
-     */
-    private static function accountNumber(string $s): string
-    {
-        $s = self::noSpaces($s);
-        if (preg_match('~^(?:([0-9]+)-)?([0-9]+)/([0-9]{4})$~', $s, $m) !== 1) {
-            return $s;
-        }
-        $prefix = $m[1] === '' ? null : self::stripZeros($m[1]);
-        $number = self::stripZeros($m[2]);
-        return ($prefix === null || $prefix === '0' ? '' : $prefix . '-') . $number . '/' . $m[3];
-    }
-
-    private static function stripZeros(string $digits): string
-    {
-        $out = ltrim($digits, '0');
-        return $out === '' ? '0' : $out;
     }
 }

@@ -67,6 +67,35 @@ final class EvalRunnerTest extends TestCase
         return ['tokensIn' => 120, 'tokensOut' => 30, 'model' => 'claude-haiku-5-5', 'costUsd' => $cost];
     }
 
+    /** #118 D17: nálezy hodnot nad validovaným canonicalem u úspěšného volání; čistý doklad bez nálezu. */
+    public function testOkCallCarriesValueFindings(): void
+    {
+        $reader = DatasetReader::open(dirname(__DIR__, 6) . '/tests/datasets/cz/vat-payer');
+        $messages = EvalMessages::filter(EvalMessages::fromDataset($reader), ['0101'], null);
+        $this->assertCount(1, $messages);
+        $broken = $messages[0]->expectedCanonical;
+        $broken['supplier']['bankAccount']['iban'] = substr_replace((string) $broken['supplier']['bankAccount']['iban'], '9', -1);
+        $computation = new ScriptedComputation([
+            self::okOutcome($messages[0]->expectedCanonical),
+            self::okOutcome($broken),
+        ]);
+        $runner = new EvalRunner(
+            $computation,
+            new CanonicalComparator(Projection::load($reader->resolvePath('expected/projection.jsonc'))),
+            new ArrayEvalDataSource($this->createMock(DataSourceConnection::class), ['MSG-CORPUS-VP-0101' => 11]),
+            ['id' => 1, 'prompt_version' => 'v4.7.1', 'prompt_template' => 'T'],
+            self::call(),
+            null,
+            2,
+        );
+
+        $results = $runner->run($messages, ['MSG-CORPUS-VP-0101' => 11]);
+
+        $this->assertSame([], $results[0]->valueFindings);
+        $this->assertSame([['path' => 'supplier.bankAccount.iban', 'code' => 'iban_invalid']], $results[1]->valueFindings);
+        $this->assertSame('valueFindings', array_key_last($results[1]->toArray()));
+    }
+
     public function testRunComparesEveryMessageAndRepeatWithoutWriting(): void
     {
         $reader = DatasetReader::open(dirname(__DIR__, 6) . '/tests/datasets/cz/vat-payer');

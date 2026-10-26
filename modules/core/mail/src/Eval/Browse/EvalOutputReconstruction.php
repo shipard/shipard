@@ -466,6 +466,7 @@ final class EvalOutputReconstruction
             'path' => EvalCallResult::pathOf($call),
             'tag' => $call['tag'] ?? null,
             'tags' => is_array($call['tags'] ?? null) ? $call['tags'] : null,
+            'valueFindings' => EvalCallResult::valueFindingsOf($call),
             'currentSet' => $currentSet,
             'classification' => $classification,
             'counts' => $counts,
