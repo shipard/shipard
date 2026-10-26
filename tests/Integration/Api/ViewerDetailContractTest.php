@@ -24,9 +24,90 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * `ViewerController::detail()` pro první záznam tabulky hlavičku s titulkem
  * a ikonou; záznam s přílohou má její id v `detail.attachments.groups`
  * (umístění `overview` / `tab`). Prázdné tabulky se přeskakují.
+ *
+ * Přehled neopakuje hlavičku (#140 D26): nad pěti nejnovějšími záznamy
+ * každého vieweru se žádná položka prvního tabu soustavně nerovná titulku,
+ * části podtitulku ani štítku. Porovnání je ve statických metodách
+ * (`overviewRepeats()`, `systematicRepeats()`), které pokrývá unit test
+ * `OverviewRepeatCheckTest` bez zdroje dat.
  */
 class ViewerDetailContractTest extends IntegrationTestCase
 {
+    /** Oddělovač částí podtitulku — `RecordPattern` i viewery s `implode(' · ')`. */
+    private const SUBTITLE_SEPARATOR = ' · ';
+
+    private const PART_NAMES = [
+        'title'    => 'titulek',
+        'subtitle' => 'část podtitulku',
+        'badge'    => 'štítek',
+    ];
+
+    /**
+     * Shody hodnot, které nejsou opakováním hlavičky (#140 §1): jiný údaj
+     * se stejnou hodnotou. Viewer id → popisky položek Přehledu.
+     */
+    private const OVERVIEW_REPEAT_ALLOWED = [
+        // Druh položky se často jmenuje stejně jako typ položky (Služba / Služba).
+        'economy.items.kinds' => ['Typ položky'],
+        // Součty případu s jediným pohybem = částka toho pohybu v podtitulku.
+        'economy.accbal.ledger' => ['Předpisy', 'Úhrady', 'Zůstatek'],
+        // Kód bankovního účtu bývá jeho pořadové číslo.
+        'economy.codebooks.bankAccounts' => ['Pořadí'],
+        // Systémový kód jednotky se v seedu shoduje se zkratkou (m, kg, l…); hlavička ho nenese.
+        'core.units' => ['Systémový kód'],
+        // Splatnost bankovních a pokladních zápisů = datum zápisu v podtitulku; jiný údaj.
+        'economy.accounting.journal' => ['Splatnost'],
+    ];
+
+    /**
+     * Položky, které hlavičku opakují a čekají na odstranění (#140 D26) —
+     * commity po modulech je ubírají, poslední konstantu smaže. Nevyužitá
+     * výjimka test neshazuje (data zdrojů se liší).
+     */
+    private const PENDING = [
+        'base.registry.binders'              => ['Název'],
+        'base.registry.documents'            => ['Druh', 'Partner', 'Šanon'],
+        'core.ai.backends'                   => ['Název'],
+        'core.ai.functions'                  => ['Funkce', 'ID'],
+        'core.alerts.alerts'                 => ['Titulek'],
+        'core.mail.aiProfiles'               => ['Název'],
+        'core.mail.mailboxes'                => ['Název', 'Kód schránky'],
+        'core.mail.preprocessRules'          => ['Klíč pravidla'],
+        'core.mail.senderRules'              => ['Vzor'],
+        'core.mail.senders'                  => ['Adresa odesílatele'],
+        'core.mail.sent'                     => ['Stav odeslání', 'Pojistka', 'Vytvořeno', 'Komu'],
+        'core.prints.texts'                  => ['Název'],
+        'core.system.users'                  => ['Jméno', 'Login'],
+        'core.units'                         => ['Název', 'Zkratka'],
+        'docs.core.numberSeries'             => ['Název'],
+        'economy.accbal.balanceAccounts'     => ['Číslo účtu'],
+        'economy.accbal.balances'            => ['Název', 'Zkrácený název'],
+        'economy.accbal.cases'               => ['Saldokonto', 'Období', 'Partner', 'Variabilní symbol'],
+        'economy.accbal.ledger'              => ['Partner', 'Účet', 'Text'],
+        'economy.accounting.accounts'        => ['Číslo účtu', 'Název', 'Název zkrácený'],
+        'economy.accounting.journal'         => ['Text', 'Účet', 'Datum'],
+        'economy.assets.accountingGroups'    => ['Kód', 'Název'],
+        'economy.assets.assets'              => ['Inventární číslo', 'Název', 'Zkrácený název'],
+        'economy.assets.typeGroups'          => ['Název'],
+        'economy.assets.types'               => ['Název', 'Zkrácený název'],
+        'economy.bank.statements'            => ['Číslo výpisu', 'Bankovní účet', 'Období', 'Rekonciliace'],
+        'economy.bank.transactions'          => ['Datum transakce', 'Stav', 'Partner', 'Název protistrany'],
+        'economy.codebooks.bankAccounts'     => ['Kód', 'Název'],
+        'economy.codebooks.cashDesks'        => ['Kód', 'Název'],
+        'economy.codebooks.costCenters'      => ['Kód', 'Název'],
+        'economy.codebooks.fiscalYears'      => ['Název'],
+        'economy.codebooks.paymentTerminals' => ['Kód', 'Název'],
+        'economy.codebooks.transports'       => ['Kód', 'Název'],
+        'economy.codebooks.vatRegistrations' => ['Název'],
+        'economy.codebooks.warehouses'       => ['Kód', 'Název'],
+        'economy.exchangeRates.lists'        => ['Typ'],
+        'economy.items.kinds'                => ['Název'],
+        'economy.vat.deductionCoefficients'  => ['Kalendářní rok'],
+        'economy.workOrders.heads'           => ['Číslo', 'Název', 'Stav'],
+        'economy.workOrders.kinds'           => ['Název'],
+        'economy.workOrders.numberSeries'    => ['Název'],
+    ];
+
     private ViewerRegistry $registry;
     private ConfigRuntime $config;
     private DocumentRegistry $documents;
@@ -47,6 +128,167 @@ class ViewerDetailContractTest extends IntegrationTestCase
         $this->controller = new ViewerController();
         $this->admin = new AuthContext(true, 1, 'session', 'shpd_st_test', isAdmin: true);
     }
+
+    // -------------------------------------------------------------------------
+    // Porovnání Přehledu s hlavičkou (čisté funkce, bez zdroje dat)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Položky prvního tabu detailu s neprázdnou hodnotou: `properties` →
+     * `groups[].items`, `composite` → `blocks` rekurzivně; `document` a ostatní
+     * typy obsahu položky nemají.
+     *
+     * @param array<string, mixed> $detail
+     * @return list<array{label: string, value: string}>
+     */
+    public static function overviewItems(array $detail): array
+    {
+        $content = $detail['tabs'][0]['content'] ?? null;
+        return is_array($content) ? self::collectItems($content) : [];
+    }
+
+    /**
+     * Položky Přehledu, které opakují hlavičku: hodnota se (bez okrajových
+     * mezer, bez HTML, bez ohledu na velikost písmen) rovná titulku, jedné
+     * části podtitulku nebo popisku štítku, anebo se část podtitulku rovná
+     * „popisek hodnota“ / „popisek: hodnota“. Vrací popisek a druh části
+     * (`title` / `subtitle` / `badge`), nikdy hodnoty.
+     *
+     * @param array<string, mixed> $detail
+     * @return list<array{label: string, part: string}>
+     */
+    public static function overviewRepeats(array $detail): array
+    {
+        $title = self::normalize((string) ($detail['title'] ?? ''));
+
+        $subtitleParts = [];
+        foreach (explode(self::SUBTITLE_SEPARATOR, (string) ($detail['subtitle'] ?? '')) as $part) {
+            $part = self::normalize($part);
+            if ($part !== '') {
+                $subtitleParts[] = $part;
+            }
+        }
+
+        $badges = [];
+        foreach ($detail['badges'] ?? [] as $badge) {
+            $label = self::normalize((string) ($badge['label'] ?? ''));
+            if ($label !== '') {
+                $badges[] = $label;
+            }
+        }
+
+        $repeats = [];
+        foreach (self::overviewItems($detail) as ['label' => $label, 'value' => $value]) {
+            $normValue = self::normalize($value);
+            $normLabel = self::normalize($label);
+            if ($normValue === '') {
+                continue;
+            }
+
+            $part = null;
+            if ($title !== '' && $normValue === $title) {
+                $part = 'title';
+            } elseif (
+                in_array($normValue, $subtitleParts, true)
+                || ($normLabel !== '' && in_array($normLabel . ' ' . $normValue, $subtitleParts, true))
+                || ($normLabel !== '' && in_array($normLabel . ': ' . $normValue, $subtitleParts, true))
+            ) {
+                $part = 'subtitle';
+            } elseif (in_array($normValue, $badges, true)) {
+                $part = 'badge';
+            }
+
+            if ($part !== null) {
+                $repeats[] = ['label' => $label, 'part' => $part];
+            }
+        }
+        return $repeats;
+    }
+
+    /**
+     * Soustavné opakování nad vzorkem detailů jednoho vieweru: dvojice
+     * (popisek, část hlavičky) se shoduje ve všech záznamech, kde položka je,
+     * a takových záznamů jsou aspoň dva. Ojedinělá shoda (kód náhodou stejný
+     * jako název) není chyba; popisky z `$allowedLabels` se vynechají.
+     *
+     * @param list<array<string, mixed>> $details
+     * @param list<string> $allowedLabels
+     * @return list<array{label: string, part: string}>
+     */
+    public static function systematicRepeats(array $details, array $allowedLabels = []): array
+    {
+        $present = []; // popisek → počet záznamů s položkou
+        $matched = []; // "popisek\0část" → počet záznamů se shodou
+
+        foreach ($details as $detail) {
+            foreach (array_unique(array_column(self::overviewItems($detail), 'label')) as $label) {
+                $present[$label] = ($present[$label] ?? 0) + 1;
+            }
+            $pairs = [];
+            foreach (self::overviewRepeats($detail) as ['label' => $label, 'part' => $part]) {
+                $pairs[$label . "\0" . $part] = true;
+            }
+            foreach (array_keys($pairs) as $key) {
+                $matched[$key] = ($matched[$key] ?? 0) + 1;
+            }
+        }
+
+        $out = [];
+        foreach ($matched as $key => $count) {
+            [$label, $part] = explode("\0", (string) $key, 2);
+            if (in_array($label, $allowedLabels, true)) {
+                continue;
+            }
+            $presentCount = $present[$label] ?? 0;
+            if ($presentCount < 2 || $count < $presentCount) {
+                continue;
+            }
+            $out[] = ['label' => $label, 'part' => $part];
+        }
+        return $out;
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     * @return list<array{label: string, value: string}>
+     */
+    private static function collectItems(array $content): array
+    {
+        $items = [];
+        switch ($content['type'] ?? null) {
+            case 'properties':
+                foreach ($content['groups'] ?? [] as $group) {
+                    foreach ($group['items'] ?? [] as $item) {
+                        $raw = $item['value'] ?? null;
+                        $value = is_scalar($raw) ? trim((string) $raw) : '';
+                        if ($value === '') {
+                            continue;
+                        }
+                        $items[] = ['label' => (string) ($item['label'] ?? ''), 'value' => $value];
+                    }
+                }
+                break;
+            case 'composite':
+                foreach ($content['blocks'] ?? [] as $block) {
+                    if (is_array($block)) {
+                        $items = [...$items, ...self::collectItems($block)];
+                    }
+                }
+                break;
+        }
+        return $items;
+    }
+
+    private static function normalize(string $text): string
+    {
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+        return mb_strtolower(trim($text));
+    }
+
+    // -------------------------------------------------------------------------
+    // Testy nad zdrojem dat
+    // -------------------------------------------------------------------------
 
     /** @return list<ViewerDefinition> tabulkové viewery, jejichž tabulka na zdroji dat je */
     private function tableViewers(): array
@@ -147,6 +389,53 @@ class ViewerDetailContractTest extends IntegrationTestCase
         }
         if ($checked === 0) {
             $this->markTestSkipped('Žádný tabulkový viewer nemá na zdroji dat záznam s přílohou.');
+        }
+    }
+
+    /**
+     * Přehled neopakuje hlavičku (#140 D26): pět nejnovějších záznamů každého
+     * vieweru; chyba je jen soustavná shoda (viz `systematicRepeats()`).
+     * Hláška nese viewer, popisek a druh části hlavičky — nikdy hodnoty,
+     * zdroj dat může nést reálná data.
+     */
+    public function testOverviewDoesNotRepeatHeader(): void
+    {
+        $checked = 0;
+        $failures = [];
+        foreach ($this->tableViewers() as $def) {
+            $rows = $this->db->fetchAll('SELECT `id` FROM `' . $def->table . '` ORDER BY `id` DESC LIMIT 5');
+            $details = [];
+            foreach ($rows as $row) {
+                $response = $this->detail($def->id, (int) $row['id']);
+                if (self::responseStatus($response) === 404) {
+                    continue;
+                }
+                $this->assertSame(200, self::responseStatus($response), "viewer {$def->id}, záznam {$row['id']}");
+                $details[] = $response->getPayload()['data']['detail'];
+            }
+            if ($details === []) {
+                continue;
+            }
+            $checked++;
+
+            $allowed = [
+                ...(self::OVERVIEW_REPEAT_ALLOWED[$def->id] ?? []),
+                ...(self::PENDING[$def->id] ?? []),
+            ];
+            foreach (self::systematicRepeats($details, $allowed) as ['label' => $label, 'part' => $part]) {
+                $failures[] = sprintf(
+                    'viewer %s: položka „%s“ v Přehledu opakuje %s hlavičky (%d z %d vzorků)',
+                    $def->id,
+                    $label,
+                    self::PART_NAMES[$part] ?? $part,
+                    count($details),
+                    count($details),
+                );
+            }
+        }
+        $this->assertSame([], $failures, implode("\n", $failures));
+        if ($checked === 0) {
+            $this->markTestSkipped('Žádný tabulkový viewer nemá na zdroji dat záznam.');
         }
     }
 }
