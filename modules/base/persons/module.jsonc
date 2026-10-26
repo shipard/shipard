@@ -12,6 +12,7 @@
         "core.alerts",
         "world.divisions",
         "world.trade",
+        "world.validations",
     ],
 
     "tables": [
@@ -74,6 +75,16 @@
         {
             "table": "base_persons_contacts",
             "class": "Shipard\\Module\\Base\\Persons\\ContactDocument"
+        },
+        // Adresy a účty osob (#118 D18, D20): kanonický tvar PSČ / země
+        // a čísla účtu / IBAN / BIC při uložení z formuláře, kontrola D19.
+        {
+            "table": "base_persons_addresses",
+            "class": "Shipard\\Module\\Base\\Persons\\AddressDocument"
+        },
+        {
+            "table": "base_persons_bank_accounts",
+            "class": "Shipard\\Module\\Base\\Persons\\PersonBankAccountDocument"
         }
     ],
 

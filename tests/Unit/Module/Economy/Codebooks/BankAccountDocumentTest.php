@@ -234,6 +234,24 @@ class BankAccountDocumentTest extends TestCase
         $this->assertSame('CZ6508000000192000145399', $data['iban']);
     }
 
+    public function testBeforeSaveShapesAccountNumberAndMovesIbanTypedIntoIt(): void
+    {
+        $doc = $this->doc();
+        $data = $this->validData() + ['iban' => 'cz65 0800 0000 1920 0014 5399', 'bic' => ' gibaczpx'];
+        $data['account_number'] = ' 000019 - 2000145399 / 0800';
+        $doc->beforeSave($data);
+        $this->assertSame('19-2000145399/0800', $data['account_number']);
+        $this->assertSame('CZ6508000000192000145399', $data['iban']);
+        $this->assertSame('GIBACZPX', $data['bic']);
+
+        $moved = $this->validData();
+        $moved['account_number'] = 'CZ65 0800 0000 1920 0014 5399';
+        $moved['iban'] = null;
+        $doc->beforeSave($moved);
+        $this->assertSame('19-2000145399/0800', $moved['account_number'], 'IBAN v čísle účtu → tuzemské číslo (#118 D20)');
+        $this->assertSame('CZ6508000000192000145399', $moved['iban']);
+    }
+
     public function testBeforeSaveUppercasesBic(): void
     {
         $doc = $this->doc();

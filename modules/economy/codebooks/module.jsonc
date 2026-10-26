@@ -7,7 +7,7 @@
     "description:cs": "Sklady, střediska, fiskální období, registrace DPH, pokladny, bankovní spojení a další číselníky",
     "description:en": "Warehouses, cost centers, fiscal periods, VAT registrations, cash desks, bank accounts and other codebooks",
 
-    "dependencies": ["core.system", "world.base", "world.trade", "base.persons"],
+    "dependencies": ["core.system", "world.base", "world.trade", "world.validations", "base.persons"],
 
     "tables": [
         "economy_codebooks_warehouses",

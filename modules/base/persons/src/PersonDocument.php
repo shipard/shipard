@@ -6,9 +6,22 @@ namespace Shipard\Module\Base\Persons;
 
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Module\Base\Persons\Values\PersonContext;
+use Shipard\Module\Base\Persons\Values\PersonValues;
+use Shipard\Module\World\Validations\Country;
 
 class PersonDocument extends Document
 {
+    /**
+     * Virtuální klíč payloadu s předem známou zemí osoby (#118 D18) — posílá
+     * ho `PersonApplier` (`country` canonicalu) a side-create z dokladu
+     * (země strany). Do SQL nejde, `beforeSave` ho odstraní.
+     */
+    public const COUNTRY_HINT = '_country';
+
+    /** Země osoby vyřešená pro jeden zápis (validate → beforeSave). */
+    private ?string $country = null;
+
     /**
      * Adresy k založení s novou osobou (#103 D99): klíč `addresses` (seznam
      * řádků `base_persons_addresses` bez `person`) přichází z formuláře
@@ -103,13 +116,23 @@ class PersonDocument extends Document
     {
         $personType = PersonType::tryFrom((int) ($data['person_type'] ?? 0));
 
+        // Kanonický tvar údajů (#118 D18): IČO, DIČ, telefon, e-mail, web podle
+        // země osoby; adresy zapisované s osobou podle vlastní země.
+        $country = $this->resolveCountry($data);
+        $this->country = null;
+        unset($data[self::COUNTRY_HINT]);
+        $data = PersonValues::normalizePerson($data, $country);
+
         // Adresy (#103 D99) nejsou sloupec osoby — vyjmout, zapíše je
         // afterPersist. Jen při vzniku záznamu; úprava osoby řádky adres
         // neřeší (spravují je jejich dialogy).
         $this->pendingAddresses = null;
         if (array_key_exists('addresses', $data)) {
             if (empty($data['id']) && is_array($data['addresses'])) {
-                $this->pendingAddresses = array_values(array_filter($data['addresses'], 'is_array'));
+                $this->pendingAddresses = array_map(
+                    static fn (array $address): array => PersonValues::normalizeAddress($address),
+                    array_values(array_filter($data['addresses'], 'is_array')),
+                );
             }
             unset($data['addresses']);
         }
@@ -172,6 +195,36 @@ class PersonDocument extends Document
             throw new \LogicException('PersonDocument: adresy nejde zapsat bez databáze');
         }
         $this->db->insert('base_persons_addresses', $row)->execute();
+    }
+
+    /**
+     * Země osoby pro pravidla hodnot (#118 D18): klíč `_country` z payloadu
+     * → adresy v témže zápisu (sídlo, jinak první se zemí) → uložené adresy
+     * → země zdroje dat. Jeden výpočet na zápis (validate i beforeSave).
+     *
+     * @param array<string, mixed> $data
+     */
+    private function resolveCountry(array $data): string
+    {
+        if ($this->country !== null) {
+            return $this->country;
+        }
+        $hint = PersonValues::text($data[self::COUNTRY_HINT] ?? null);
+        $country = $hint !== null ? Country::normalize($hint) : null;
+        if ($country === null && empty($data['id']) && is_array($data['addresses'] ?? null)) {
+            $country = PersonContext::countryFromAddresses(array_values(array_filter($data['addresses'], 'is_array')));
+        }
+        $context = $this->personContext();
+        if ($country === null && !empty($data['id'])) {
+            $country = $context->country((int) $data['id']);
+        }
+        return $this->country = $country ?? $context->dsCountry();
+    }
+
+    /** Šev pro testy — kontext s databází a zemí zdroje dat. */
+    protected function personContext(): PersonContext
+    {
+        return new PersonContext($this->db, $this->dsConfig?->getCountry() ?? 'cz');
     }
 
     /**

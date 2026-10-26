@@ -148,6 +148,10 @@ class PartyResolverTest extends TestCase
         $this->assertSame('CZ99887766', $r->createPayload['tax_id']);
         $this->assertSame(PersonType::Company->value, $r->createPayload['person_type']);
         $this->assertArrayNotHasKey('addresses', $r->createPayload, 'bez adresy v canonicalu klíč chybí');
+        $this->assertArrayNotHasKey('_country', $r->createPayload, 'strana bez země: PersonDocument sáhne po zemi zdroje dat');
+
+        $withCountry = $this->buildResolver($db)->resolve(['name' => 'Muster GmbH', 'country' => 'DE']);
+        $this->assertSame('de', $withCountry->createPayload['_country'], 'země strany pro normalizaci v PersonDocument (#118 D18)');
     }
 
     public function testCanCreatePayloadCarriesHeadquartersAddress(): void

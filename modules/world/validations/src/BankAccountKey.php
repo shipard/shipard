@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Shipard\Module\Core\Exchange\Resolve;
-
-use Shipard\Module\World\Validations\DomesticAccount;
-use Shipard\Module\World\Validations\Iban;
-use Shipard\Module\World\Validations\ValueRulesRegistry;
+namespace Shipard\Module\World\Validations;
 
 /**
- * Klíč bankovního účtu pro párování (#118 D16): tvar podle hodnoty, ne
- * podle sloupce — u starých dat nese `account_number` často IBAN.
+ * Klíč bankovního účtu pro párování (#118 D16, D20, D23): tvar podle
+ * hodnoty, ne podle sloupce — u starých dat nese `account_number` často
+ * IBAN. Používá ho párování účtů v canonicalu (`BankAccountResolver`),
+ * protiúčtu z výpisu (`Import\PartnerResolver`), vlastního účtu z výpisu
+ * i přesun IBAN ze sloupce čísla účtu ({@see BankAccountShape}).
  *
  *  - IBAN státu s tuzemským tvarem účtu (cz, sk) → `bban:<20 číslic>`,
  *    stejně jako tuzemské číslo `[předčíslí-]číslo/kód` (BBAN je u cz

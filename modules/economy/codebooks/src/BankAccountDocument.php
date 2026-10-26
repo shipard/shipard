@@ -6,7 +6,13 @@ namespace Shipard\Module\Economy\Codebooks;
 
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Module\World\Validations\BankAccountShape;
 
+/**
+ * Vlastní bankovní účet (číselník). Číslo účtu, IBAN a BIC ukládá
+ * v kanonickém tvaru a IBAN zapsaný do čísla účtu přesouvá do `iban`
+ * (#118 D18, D20) — touž funkcí jako účty osob.
+ */
 class BankAccountDocument extends Document
 {
     public function validate(array &$data): ValidationResult
@@ -88,16 +94,12 @@ class BankAccountDocument extends Document
         if (isset($data['currency'])) {
             $data['currency'] = strtolower(trim((string) $data['currency']));
         }
-        foreach (['code', 'name', 'notice', 'bank_name', 'account_number'] as $col) {
+        foreach (['code', 'name', 'notice', 'bank_name'] as $col) {
             if (isset($data[$col]) && $data[$col] !== null) {
                 $data[$col] = trim((string) $data[$col]);
             }
         }
-        foreach (['iban', 'bic'] as $col) {
-            if (isset($data[$col]) && $data[$col] !== null) {
-                $data[$col] = strtoupper(trim((string) $data[$col]));
-            }
-        }
+        $data = BankAccountShape::normalizeRow($data);
     }
 
     public function afterPersist(array $data): void

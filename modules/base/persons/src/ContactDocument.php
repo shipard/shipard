@@ -8,11 +8,15 @@ use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Module\Base\Persons\Send\SendPurposes;
+use Shipard\Module\Base\Persons\Values\PersonContext;
+use Shipard\Module\Base\Persons\Values\PersonValues;
 
 /**
  * Kontakt osoby. Hlídá účely odesílání (#90 D34): `send_purposes` je seznam
  * id z cfgItemu `base.persons.sendPurposes`, bez duplicit; prázdný výběr se
  * ukládá jako NULL — kontakt bez účelu se při odesílání nepoužije.
+ * E-mail a telefon ukládá v kanonickém tvaru (#118 D18) — telefon
+ * s předvolbou podle země osoby ({@see PersonContext}).
  */
 class ContactDocument extends Document
 {
@@ -52,9 +56,19 @@ class ContactDocument extends Document
 
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
+        $context = $this->personContext();
+        $person = (int) ($data['person'] ?? $originalData['person'] ?? 0);
+        $data = PersonValues::normalizeContact($data, $person > 0 ? $context->country($person) : $context->dsCountry());
+
         // JSON sloupce nemají auto-serializaci — encode tady.
         if (array_key_exists('send_purposes', $data)) {
             $data['send_purposes'] = SendPurposes::encode(SendPurposes::decode($data['send_purposes']) ?? []);
         }
+    }
+
+    /** Šev pro testy — kontext s databází a zemí zdroje dat. */
+    protected function personContext(): PersonContext
+    {
+        return new PersonContext($this->db, $this->dsConfig?->getCountry() ?? 'cz');
     }
 }

@@ -41,6 +41,14 @@ class TestablePersonApplier extends PersonApplier
     {
         return $this->nextInsertId++;
     }
+
+    /** Země uloženého řádku adresy pro update bez země (#118 D18). */
+    public ?string $storedAddressCountry = null;
+
+    protected function storedAddressCountry(int $id): ?string
+    {
+        return $this->storedAddressCountry;
+    }
 }
 
 class PersonApplierTest extends TestCase
@@ -203,6 +211,61 @@ class PersonApplierTest extends TestCase
 
         $this->assertTrue($result->success);
         $this->assertSqlContains($applier->sqlCalls, 'UPDATE', 'base_persons_addresses');
+    }
+
+    // ── apply() — kanonický tvar podřízených záznamů (#118 D18, D20) ────────
+
+    public function testSubRecordsAndHeaderAreStoredInCanonicalShape(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $resolver = $this->stubResolver(
+            header: ResolveResult::canCreate(['person_type' => 2, 'full_name' => 'Acme s.r.o.']),
+            addresses: [ResolveResult::canCreate(['address_type' => 1, 'city' => 'Zlín', 'zip' => '760 01', 'country' => 'CZ'])],
+            bankAccounts: [ResolveResult::canCreate([])],
+            contacts: [ResolveResult::canCreate(['name' => 'Jana', 'email' => ' Jana@Acme.Example', 'phone' => '577 123 456'])],
+        );
+        $saved = null;
+        $gateway = $this->createMock(TransactionlessTableGateway::class);
+        $gateway->method('saveDocument')->willReturnCallback(function (array $data) use (&$saved) {
+            $saved = $data;
+            return DocumentResult::ok(['id' => 42]);
+        });
+        $applier = $this->buildApplier(db: $db, resolver: $resolver, gateway: $gateway);
+
+        $result = $applier->apply($this->validCompanyPayload([
+            'addresses'    => [['addressType' => 1, 'city' => 'Zlín', 'zip' => '760 01', 'country' => 'cz']],
+            'bankAccounts' => [['accountNumber' => 'CZ65 0800 0000 1920 0014 5399']],
+            'contacts'     => [['name' => 'Jana', 'email' => ' Jana@Acme.Example', 'phone' => '577 123 456']],
+        ]));
+
+        $this->assertTrue($result->success, "Expected success; got {$result->errorCode}: {$result->errorMessage}");
+        $this->assertSame('cz', $saved['_country'] ?? null, 'hlavička dostane zemi canonicalu pro PersonDocument');
+        $this->assertSqlContains($applier->sqlCalls, 'INSERT', 'base_persons_addresses', '76001', 'cz');
+        $this->assertSqlContains($applier->sqlCalls, 'INSERT', 'base_persons_bank_accounts', '19-2000145399/0800', 'CZ6508000000192000145399');
+        $this->assertSqlContains($applier->sqlCalls, 'INSERT', 'base_persons_contacts', 'jana@acme.example', '+420577123456');
+    }
+
+    public function testAddressUpdateWithoutCountryUsesTheStoredRowForZip(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['id' => 50, 'person_type' => 2, 'full_name' => 'Acme s.r.o.']));
+        $resolver = $this->stubResolver(
+            header: ResolveResult::matched(50, 'companyId'),
+            addresses: [ResolveResult::matched(100, 'placeRegId', authoritativeRefresh: true)],
+        );
+        $gateway = $this->createMock(TransactionlessTableGateway::class);
+        $gateway->method('saveDocument')->willReturn(DocumentResult::ok(['id' => 50]));
+        $applier = $this->buildApplier(db: $db, resolver: $resolver, gateway: $gateway);
+        $applier->storedAddressCountry = 'cz';
+
+        $result = $applier->apply($this->validCompanyPayload([
+            'applyOptions' => ['mergeStrategy' => 'mergeAdd'],
+            'addresses'    => [['addressType' => 3, 'placeRegType' => 'ICP', 'placeRegId' => '1234567890', 'city' => 'Zlín', 'zip' => '760 01']],
+        ]));
+
+        $this->assertTrue($result->success);
+        $this->assertSqlContains($applier->sqlCalls, 'UPDATE', 'base_persons_addresses', '76001');
     }
 
     // ── apply() — mergeAdd + matched (no authRefresh) → leaves matched ─────

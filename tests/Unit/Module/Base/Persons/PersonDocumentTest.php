@@ -6,7 +6,35 @@ namespace Shipard\Tests\Unit\Module\Base\Persons;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Base\Persons\PersonDocument;
+use Shipard\Module\Base\Persons\Values\PersonContext;
 use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
+
+/** Kontext bez databáze s pevnou zemí zdroje dat a uloženou zemí osoby 50. */
+final class StubPersonContext extends PersonContext
+{
+    public function __construct(string $dsCountry, private readonly ?string $storedCountryOf50 = null)
+    {
+        parent::__construct(null, $dsCountry);
+    }
+
+    protected function storedCountry(int $personId): ?string
+    {
+        return $personId === 50 ? $this->storedCountryOf50 : null;
+    }
+}
+
+/** PersonDocument s podstrčeným kontextem (šev `personContext()`). */
+class ContextPersonDocument extends PersonDocument
+{
+    public function __construct(private readonly PersonContext $context)
+    {
+    }
+
+    protected function personContext(): PersonContext
+    {
+        return $this->context;
+    }
+}
 
 /** Zachytí řádky adres místo INSERTu (Dibi\Connection je final). */
 final class AddressCapturingPersonDocument extends PersonDocument
@@ -25,6 +53,72 @@ class PersonDocumentTest extends TestCase
     private function doc(): PersonDocument
     {
         return new PersonDocument();
+    }
+
+    // --- kanonický tvar údajů (#118 D18) ------------------------------------
+
+    public function testCountryHintDrivesNormalizationAndNeverReachesSql(): void
+    {
+        $doc = new ContextPersonDocument(new StubPersonContext('cz'));
+        $data = ['person_type' => 2, 'full_name' => 'Muster GmbH', 'person_id' => 'F00002', '_country' => 'DE',
+            'company_id' => ' HRB 12345 ', 'phone' => '030 / 12 34 56', 'email' => ' Info@Muster.Example'];
+        $this->assertTrue($doc->validate($data)->isValid());
+        $doc->beforeSave($data);
+        $this->assertArrayNotHasKey('_country', $data);
+        $this->assertSame('HRB 12345', $data['company_id'], 'německé IČO jen trim — bez vedoucích nul');
+        $this->assertSame('+4930123456', $data['phone']);
+        $this->assertSame('info@muster.example', $data['email']);
+    }
+
+    public function testCountryOfNewPersonComesFromItsAddresses(): void
+    {
+        $doc = new class (new StubPersonContext('cz')) extends ContextPersonDocument {
+            protected function insertAddress(array $row): void
+            {
+            }
+        };
+        $data = ['person_type' => 2, 'full_name' => 'Slovak s.r.o.', 'person_id' => 'F00003',
+            'company_id' => '36339008', 'phone' => '0905 123 456',
+            'addresses' => [
+                ['address_type' => 2, 'city' => 'Praha', 'country' => 'cz', 'zip' => '110 00'],
+                ['address_type' => 1, 'city' => 'Bratislava', 'country' => 'SK', 'zip' => '811 01'],
+            ]];
+        $doc->beforeSave($data);
+        $this->assertSame('+421905123456', $data['phone'], 'sídlo má přednost před první adresou');
+        $this->assertSame('36339008', $data['company_id']);
+    }
+
+    public function testPendingAddressesAreNormalizedByTheirOwnCountry(): void
+    {
+        $doc = new AddressCapturingPersonDocument();
+        $data = ['person_type' => 2, 'full_name' => 'Acme s.r.o.', 'person_id' => 'F00001', 'docState' => 10, 'docStateMain' => 1,
+            'addresses' => [
+                ['address_type' => 1, 'city' => 'Zlín', 'zip' => ' 760 01', 'country' => 'CZ'],
+                ['address_type' => 2, 'city' => 'London', 'zip' => 'SW1A 1AA'],
+            ]];
+        $doc->beforeSave($data);
+        $doc->afterPersist($data + ['id' => 42]);
+        $this->assertSame('76001', $doc->rows[0]['zip']);
+        $this->assertSame('cz', $doc->rows[0]['country']);
+        $this->assertSame('SW1A 1AA', $doc->rows[1]['zip'], 'adresa bez země: jen trim');
+    }
+
+    public function testUpdateUsesStoredAddressesThenDataSourceCountry(): void
+    {
+        $stored = new ContextPersonDocument(new StubPersonContext('cz', storedCountryOf50: 'sk'));
+        $data = ['id' => 50, 'person_type' => 2, 'full_name' => 'Slovak s.r.o.', 'phone' => '0905 123 456'];
+        $stored->beforeSave($data);
+        $this->assertSame('+421905123456', $data['phone'], 'země z uložených adres osoby');
+
+        $fallback = new ContextPersonDocument(new StubPersonContext('sk'));
+        $new = ['person_type' => 2, 'full_name' => 'Nová s.r.o.', 'person_id' => 'F00009', 'phone' => '0905 123 456'];
+        $fallback->beforeSave($new);
+        $this->assertSame('+421905123456', $new['phone'], 'nová osoba bez adres: země zdroje dat');
+
+        $plain = ['person_type' => 2, 'full_name' => 'Česká s.r.o.', 'person_id' => 'F00010', 'phone' => '577 123 456', 'company_id' => '6947'];
+        $this->doc()->beforeSave($plain);
+        $this->assertSame('+420577123456', $plain['phone'], 'bez konfigurace zdroje dat platí cz');
+        $this->assertSame('00006947', $plain['company_id']);
     }
 
     // --- adresy s novou osobou (#103 D99) ----------------------------------

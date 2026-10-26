@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Base\Persons;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Module\Base\Persons\ContactDocument;
+use Shipard\Module\Base\Persons\Values\PersonContext;
 use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
 
 class ContactDocumentTest extends TestCase
@@ -62,6 +63,29 @@ class ContactDocumentTest extends TestCase
             ['send_purposes:invalid'],
             $this->errorCodes(['name' => 'Účtárna', 'send_purposes' => 'invoices']),
         );
+    }
+
+    public function testBeforeSaveNormalizesEmailAndPhoneByPersonCountry(): void
+    {
+        $doc = new class extends ContactDocument {
+            protected function personContext(): PersonContext
+            {
+                return new class (null, 'cz') extends PersonContext {
+                    protected function storedCountry(int $personId): ?string
+                    {
+                        return $personId === 7 ? 'sk' : null;
+                    }
+                };
+            }
+        };
+        $data = ['person' => 7, 'name' => 'Jana', 'email' => ' Jana@Acme.Example ', 'phone' => '0905 123 456'];
+        $doc->beforeSave($data);
+        $this->assertSame('jana@acme.example', $data['email']);
+        $this->assertSame('+421905123456', $data['phone'], 'předvolba podle země osoby');
+
+        $plain = ['person' => 8, 'phone' => '577 123 456'];
+        $doc->beforeSave($plain);
+        $this->assertSame('+420577123456', $plain['phone'], 'osoba bez adresy: země zdroje dat');
     }
 
     public function testBeforeSaveSerializesListAndEmptySelection(): void

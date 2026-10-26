@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Resolve;
 
 use Dibi\Connection;
+use Shipard\Module\World\Validations\BankAccountKey;
 
 /**
  * Resolves bank accounts. Two flavours depending on whose account it is:

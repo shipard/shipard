@@ -12,6 +12,7 @@ use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Module\Base\Persons\PersonType;
+use Shipard\Module\Base\Persons\Values\PersonValues;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
@@ -1436,7 +1437,10 @@ class DocumentApplier
                 $bankPayload['person'] = $ids['supplier'] ?? $plan['resolvedSupplier'] ?? null;
             }
             if (!empty($bankPayload['person'])) {
-                // base_persons_bank_accounts has no docState — bypass.
+                // Přímý insert (stav řádku z výchozí hodnoty DB); tvar čísla účtu,
+                // IBAN a BIC sjednocuje táž funkce jako formulář a applier osob
+                // (#118 D18, D20).
+                $bankPayload = PersonValues::normalizeBankAccount($bankPayload);
                 $this->db->insert('base_persons_bank_accounts', $bankPayload)->execute();
                 $ids['supplierBank'] = (int) $this->db->getInsertId();
             }

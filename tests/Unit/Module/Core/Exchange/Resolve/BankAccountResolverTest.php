@@ -7,7 +7,7 @@ namespace Shipard\Tests\Unit\Module\Core\Exchange\Resolve;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
-use Shipard\Module\Core\Exchange\Resolve\BankAccountKey;
+use Shipard\Module\World\Validations\BankAccountKey;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 

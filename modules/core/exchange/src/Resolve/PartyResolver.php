@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Resolve;
 
 use Dibi\Connection;
+use Shipard\Module\Base\Persons\PersonDocument;
 use Shipard\Module\Base\Persons\PersonType;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
@@ -253,7 +254,11 @@ class PartyResolver
     private function buildPersonCreatePayload(array $party, PersonType $type, ?string $country = null): array
     {
         $address = is_array($party['address'] ?? null) ? $this->buildAddressPayload($party['address']) : null;
-        return ($address !== null ? ['addresses' => [$address]] : []) + [
+        // Země strany jako `_country` (#118 D18): PersonDocument podle ní
+        // normalizuje a kontroluje údaje i u strany bez adresy; do SQL nejde.
+        return ($address !== null ? ['addresses' => [$address]] : [])
+            + ($country !== null ? [PersonDocument::COUNTRY_HINT => $country] : [])
+            + [
             'person_type'        => $type->value,
             'full_name'          => $this->normalize($party['name'] ?? null) ?? '',
             'company_id'         => $this->identifier($party['companyId'] ?? null, ValueRules::COMPANY_ID, $country) ?? '',

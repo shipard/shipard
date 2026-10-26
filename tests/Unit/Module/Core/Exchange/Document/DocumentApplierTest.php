@@ -1596,6 +1596,16 @@ class DocumentApplierTest extends TestCase
         $ids = $ref->invoke($applier, ['partyCreates' => [], 'bankCreate' => $bank, 'resolvedSupplier' => null, 'rowItemCreates' => []], []);
         $this->assertNull($ids['supplierBank']);
         $this->assertSame([], $inserted);
+
+        // Kanonický tvar před insertem (#118 D18, D20): IBAN ve sloupci čísla
+        // účtu se přesune do iban, cz číslo účtu se dopočte.
+        $inserted = [];
+        $raw = ['account_number' => 'CZ65 0800 0000 1920 0014 5399', 'iban' => '', 'bic' => ' gibaczpx', 'currency' => 'czk'];
+        $ref->invoke($applier, ['partyCreates' => [], 'bankCreate' => $raw, 'resolvedSupplier' => 42, 'rowItemCreates' => []], []);
+        $this->assertSame(
+            ['account_number' => '19-2000145399/0800', 'iban' => 'CZ6508000000192000145399', 'bic' => 'GIBACZPX', 'currency' => 'czk', 'person' => 42],
+            $inserted[0][1],
+        );
     }
 
     // ── transform(): import-mode virtual fields ─────────────────────────────

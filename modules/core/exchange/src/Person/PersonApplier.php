@@ -10,7 +10,10 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Module\Base\Persons\PersonDocument;
 use Shipard\Module\Base\Persons\PersonType;
+use Shipard\Module\Base\Persons\Values\PersonValues;
+use Shipard\Module\World\Validations\Country;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Resolve\AddressResolver;
@@ -50,6 +53,9 @@ class PersonApplier
     /** Sub-record `docState` for fresh applier inserts (V pořádku). */
     private const SUB_DOC_STATE = 40;
     private const SUB_DOC_STATE_MAIN = 2;
+
+    /** Země canonicalu právě aplikované osoby (#118 D18), nastavená v `apply()`. */
+    private ?string $canonicalCountry = null;
 
     public function __construct(
         private readonly Connection $db,
@@ -214,6 +220,10 @@ class PersonApplier
                 statusCode: 400,
             );
         }
+
+        // Země osoby pro kanonický tvar údajů (#118 D18): canonical ji nese
+        // povinně; hlavička ji dostane jako `_country`, kontakty přímo.
+        $this->canonicalCountry = self::countryOf($canonical);
 
         // 2. PersonValidator
         $validatorIssues = $this->validatorIssues($canonical);
@@ -381,7 +391,7 @@ class PersonApplier
             // Create new
             $payload = $this->transformHeaderForCreate($canonical, $targetDocState);
             $this->guardPersonIdCollision($payload['person_id'] ?? null, existingId: null);
-            $result = $this->personsGateway->saveDocument($payload);
+            $result = $this->personsGateway->saveDocument($this->withCountryHint($payload));
             if (!$result->isSuccess()) {
                 throw new \RuntimeException('Header create failed: ' . ($result->getErrorMessage() ?? 'unknown'));
             }
@@ -417,7 +427,7 @@ class PersonApplier
         // overridden by the canonical-derived patch.
         $payload = array_merge($existing, $payload);
         $payload['id'] = $useExistingId;
-        $result = $this->personsGateway->saveDocument($payload);
+        $result = $this->personsGateway->saveDocument($this->withCountryHint($payload));
         if (!$result->isSuccess()) {
             throw new \RuntimeException('Header update failed: ' . $this->describeSaveFailure($result));
         }
@@ -789,6 +799,7 @@ class PersonApplier
      */
     private function insertSubRecord(string $table, array $payload): int
     {
+        $payload = $this->normalizeSubRecord($table, $payload, id: null);
         $payload['docState']     = self::SUB_DOC_STATE;
         $payload['docStateMain'] = self::SUB_DOC_STATE_MAIN;
         // Strip nulls — let DB defaults apply where columns are NOT NULL.
@@ -864,6 +875,7 @@ class PersonApplier
         // Update overwrites supplied fields only; docState is NEVER touched.
         unset($payload['docState'], $payload['docStateMain']);
         if ($payload === []) return;
+        $payload = $this->normalizeSubRecord($table, $payload, $id);
         $this->executeSql('UPDATE %n SET ', $table, $payload, 'WHERE [id] = %i', $id);
     }
 
@@ -905,6 +917,54 @@ class PersonApplier
             'valid_from'     => $this->normalize($bank['validFrom'] ?? null),
             'valid_to'       => $this->normalize($bank['validTo'] ?? null),
         ];
+    }
+
+    /**
+     * Kanonický tvar podřízeného záznamu (#118 D18, D20) — podřízené záznamy
+     * obcházejí třídy dokumentů, takže normalizaci volá applier sám, touž
+     * funkcí jako formulář. Adresa podle vlastní země; při updatu bez země
+     * podle uloženého řádku. Kontakt podle země canonicalu.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function normalizeSubRecord(string $table, array $payload, ?int $id): array
+    {
+        return match ($table) {
+            'base_persons_addresses' => PersonValues::normalizeAddress(
+                $payload,
+                $id !== null && PersonValues::text($payload['country'] ?? null) === null ? $this->storedAddressCountry($id) : null,
+            ),
+            'base_persons_contacts' => PersonValues::normalizeContact($payload, $this->canonicalCountry),
+            'base_persons_bank_accounts' => PersonValues::normalizeBankAccount($payload),
+            default => $payload,
+        };
+    }
+
+    /** Země uloženého řádku adresy — šev pro testy. */
+    protected function storedAddressCountry(int $id): ?string
+    {
+        $country = $this->db->fetchSingle('SELECT [country] FROM [base_persons_addresses] WHERE [id] = %i', $id);
+        return is_string($country) && $country !== '' ? $country : null;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function withCountryHint(array $payload): array
+    {
+        if ($this->canonicalCountry !== null) {
+            $payload[PersonDocument::COUNTRY_HINT] = $this->canonicalCountry;
+        }
+        return $payload;
+    }
+
+    /** @param array<string, mixed> $canonical */
+    private static function countryOf(array $canonical): ?string
+    {
+        $country = PersonValues::text($canonical['country'] ?? null);
+        return $country !== null ? Country::normalize($country) : null;
     }
 
     /**
