@@ -163,7 +163,7 @@
 		"nitra": {
 			"vatPayer": true,
 			"name": "Nitrianske Stroje s.r.o.",
-			"country": "sk", "companyId": "52398417", "taxId": null, "vatId": "SK2023845117",
+			"country": "sk", "companyId": "52398412", "taxId": null, "vatId": "SK2023845117",
 
 			"address": { "street": "Strojárenská", "houseNumber": "14", "city": "Nitra", "zip": "94901", "country": "sk" },
 			"contact": { "name": "Učtáreň", "email": "uctaren@nitrianske-stroje.example", "phone": "+421000512300", "web": "www.nitrianske-stroje.example" },
