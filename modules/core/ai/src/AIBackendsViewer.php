@@ -92,10 +92,9 @@ class AIBackendsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        // api_key NIKDY jako hodnota — jen has_api_key příznak.
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT `id`, `backend_id`, `name`, `provider`, `base_url`,'
             . ' `is_default`, `is_active`,'
             . ' `created`, `modified`,'
@@ -103,11 +102,10 @@ class AIBackendsViewer extends TableViewer
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $identity = [];
         $this->addItem($identity, 'Kód připojení', $record['backend_id'] ?? null);
         $this->addItem($identity, 'Název', $record['name'] ?? null);
@@ -132,22 +130,20 @@ class AIBackendsViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => 'Identifikace', 'items' => $identity],
-                        ['title' => 'Platforma', 'items' => $provider],
-                        ['title' => 'Přístup', 'items' => $access],
-                        ['title' => 'Příznaky', 'items' => $flags],
-                        ['title' => 'Stav', 'items' => $status],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => 'Identifikace', 'items' => $identity],
+                    ['title' => 'Platforma', 'items' => $provider],
+                    ['title' => 'Přístup', 'items' => $access],
+                    ['title' => 'Příznaky', 'items' => $flags],
+                    ['title' => 'Stav', 'items' => $status],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     private function resolveStateStyle(int $docState): string

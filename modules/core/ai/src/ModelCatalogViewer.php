@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Ai;
 
 use Shipard\Core\Ai\ModelSpec;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 
 /**
  * Přehled katalogu modelů jen pro čtení (tasks/ai-settings-section.md
@@ -13,7 +14,8 @@ use Shipard\Core\Ai\ModelSpec;
  * Řazení podle pořadí úrovně (mapa `core.ai.tiers`) a pak `order`
  * modelu; **id řádku = pozice v tomto seznamu od 1** (detail route bere
  * jen kladné int), takže `loadRecord()` vrací syntetický záznam bez
- * databáze. Bez formuláře a bez akcí.
+ * databáze; hlavičku detailu (název, dodavatel · id) dodává viewer, bez
+ * tabulky není displayPattern. Bez formuláře a bez akcí.
  */
 class ModelCatalogViewer extends AiViewerBase
 {
@@ -89,12 +91,17 @@ class ModelCatalogViewer extends AiViewerBase
         return $this->rows()[$recordId - 1] ?? null;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function detailHeader(array $record): DetailHeader
     {
-        $record = $this->loadRecord($recordId);
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+        /** @var ModelSpec $spec */
+        $spec = $record['spec'];
+        $subtitle = implode(' · ', array_filter([$spec->vendor, $spec->id], static fn (string $v): bool => $v !== ''));
+
+        return new DetailHeader($spec->name, $subtitle !== '' ? $subtitle : null);
+    }
+
+    protected function detailTabs(array $record): array
+    {
         /** @var ModelSpec $spec */
         $spec = $record['spec'];
 
@@ -173,15 +180,11 @@ class ModelCatalogViewer extends AiViewerBase
             $groups[] = ['title' => $this->text('group.platforms', 'IDs on platforms'), 'items' => $platforms];
         }
 
-        return [
-            'title' => $spec->name,
-            'subtitle' => $spec->id,
-            'tabs' => [[
-                'id' => 'overview',
-                'label' => $this->defaultOverviewLabel(),
-                'content' => ['type' => 'properties', 'groups' => $groups],
-            ]],
-        ];
+        return [[
+            'id' => 'overview',
+            'label' => $this->defaultOverviewLabel(),
+            'content' => ['type' => 'properties', 'groups' => $groups],
+        ]];
     }
 
     /** Jen čtení — bez Přidat i Otevřít. */

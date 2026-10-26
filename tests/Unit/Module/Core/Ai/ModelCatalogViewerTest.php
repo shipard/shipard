@@ -233,7 +233,7 @@ final class ModelCatalogViewerTest extends TestCase
         $detail = $this->viewer()->renderDetail(4);
 
         $this->assertSame('Claude Opus 5.5', $detail['title']);
-        $this->assertSame('claude-opus-5-5', $detail['subtitle']);
+        $this->assertSame('anthropic · claude-opus-5-5', $detail['subtitle'], 'dodavatel · id (#136 §6)');
         $this->assertSame(
             ['Model', 'Úrovně', 'Ceny', 'Schopnosti', 'ID na platformách'],
             array_column($detail['tabs'][0]['content']['groups'], 'title'),

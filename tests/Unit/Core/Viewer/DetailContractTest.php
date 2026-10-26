@@ -32,22 +32,13 @@ class DetailContractTest extends TestCase
      */
     public const NOT_CONVERTED = [
         // core.ai
-        'core.ai.backends',
-        'core.ai.functions',
-        'core.ai.modelCatalog',
         // core.alerts
-        'core.alerts.alerts',
         // core.chat
-        'core.chat.conversations',
         // core.exchange
-        'core.exchange.tagRules',
         // core.mail
         // core.prints
-        'core.prints.texts',
         // core.system
-        'core.system.users',
         // core.units
-        'core.units',
         // docs.core
         'docs.core.numberSeries',
         // economy.accbal

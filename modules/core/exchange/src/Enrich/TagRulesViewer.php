@@ -91,19 +91,18 @@ class TagRulesViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT `id`, `company_id`, `tag`, `origin`, `confirmed`,'
             . ' `hit_count`, `last_hit_at`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
         $companyId = (string) ($record['company_id'] ?? '');
 
@@ -129,26 +128,30 @@ class TagRulesViewer extends TableViewer
         $this->addItem($status, $isCs ? 'Vytvořeno' : 'Created', $record['created'] ?? null);
         $this->addItem($status, $isCs ? 'Změněno' : 'Modified', $record['modified'] ?? null);
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => $isCs ? 'Pravidlo' : 'Rule', 'items' => $rule],
-                        ['title' => $isCs ? 'Statistiky' : 'Statistics', 'items' => $stats],
-                        ['title' => $isCs ? 'Stav' : 'Status', 'items' => $status],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => $isCs ? 'Pravidlo' : 'Rule', 'items' => $rule],
+                    ['title' => $isCs ? 'Statistiky' : 'Statistics', 'items' => $stats],
+                    ['title' => $isCs ? 'Stav' : 'Status', 'items' => $status],
                 ],
-            ]],
-            'actions' => [[
-                'id'      => 'deleteTagRule',
-                'label'   => $isCs ? 'Smazat pravidlo' : 'Delete rule',
-                'kind'    => 'button',
-                'variant' => 'danger',
-            ]],
-        ];
+            ],
+        ]];
+    }
+
+    protected function detailActions(array $record): array
+    {
+        $isCs = ($this->language ?? 'en') === 'cs';
+
+        return [[
+            'id'      => 'deleteTagRule',
+            'label'   => $isCs ? 'Smazat pravidlo' : 'Delete rule',
+            'kind'    => 'button',
+            'variant' => 'danger',
+        ]];
     }
 
     /**

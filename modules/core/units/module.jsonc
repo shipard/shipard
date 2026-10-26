@@ -27,7 +27,8 @@
             "name:en": "Units",
             "icon": "ruler",
             "table": "core_units",
-            "class": "Shipard\\Module\\Core\\Units\\UnitsViewer"
+            "class": "Shipard\\Module\\Core\\Units\\UnitsViewer",
+            "detailHeader": {"title": "{name}", "subtitle": "{shortcut}"}
         }
     ],
 

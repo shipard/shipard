@@ -12,6 +12,7 @@ use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\AiTexts;
 use Shipard\Core\Ai\RequestChange;
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 
 /**
  * Viewer „Funkce“ v Nastavení → AI (tasks/ai-functions.md D38,
@@ -31,6 +32,14 @@ class AiFunctionsViewer extends AiViewerBase
 
     /** Platforma výchozího aktivního připojení pro odhad v seznamu; `false` = ještě nenačteno. */
     private string|false $defaultPlatform = false;
+
+    /**
+     * Deklarace a plán volání per id řádku — hlavička, štítek i Přehled
+     * čtou totéž, resolver se ptá jednou.
+     *
+     * @var array<int, array{function: ?AiFunction, preview: AiCallPreview}>
+     */
+    private array $detailMemo = [];
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
@@ -94,9 +103,9 @@ class AiFunctionsViewer extends AiViewerBase
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT f.`id`, f.`function_id`, f.`connection`, f.`model`, f.`model_like`,'
             . ' f.`thinking`, f.`effort`, f.`max_tokens`, f.`created`, f.`modified`,'
             . ' b.`name` AS `connection_name`, b.`backend_id` AS `connection_code`, b.`is_active` AS `connection_active`'
@@ -105,13 +114,46 @@ class AiFunctionsViewer extends AiViewerBase
             . ' WHERE f.`id` = %i',
             $recordId,
         );
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+    }
 
+    /** @return array{function: ?AiFunction, preview: AiCallPreview} */
+    private function detailData(array $record): array
+    {
+        $id = (int) ($record['id'] ?? 0);
+        if (!isset($this->detailMemo[$id])) {
+            $functionId = (string) ($record['function_id'] ?? '');
+            $this->detailMemo[$id] = [
+                'function' => $this->registry()->get($functionId),
+                'preview'  => $this->resolver()->preview($functionId),
+            ];
+        }
+        return $this->detailMemo[$id];
+    }
+
+    /** Název funkce z registru (bez deklarace její id), id v podtitulku; tabulka nemá stavy. */
+    protected function detailHeader(array $record): DetailHeader
+    {
         $functionId = (string) ($record['function_id'] ?? '');
-        $function = $this->registry()->get($functionId);
-        $preview = $this->resolver()->preview($functionId);
+        $name = $this->detailData($record)['function']?->name ?? $functionId;
+
+        return new DetailHeader(
+            $name !== '' ? $name : '#' . (int) ($record['id'] ?? 0),
+            $functionId !== $name ? $functionId : null,
+        );
+    }
+
+    /** OK / Chyba nastavení podle plánu volání. */
+    protected function detailBadges(array $record): array
+    {
+        return [$this->detailData($record)['preview']->isOk()
+            ? ['label' => $this->text('badge.callOk', 'OK'), 'style' => 'success']
+            : ['label' => $this->text('badge.callError', 'Setup error'), 'style' => 'danger']];
+    }
+
+    protected function detailTabs(array $record): array
+    {
+        $functionId = (string) ($record['function_id'] ?? '');
+        ['function' => $function, 'preview' => $preview] = $this->detailData($record);
         $texts = $this->texts();
 
         $functionItems = [];
@@ -148,18 +190,11 @@ class AiFunctionsViewer extends AiViewerBase
             $groups[] = ['title' => $this->text('group.status', 'Record'), 'items' => $record_];
         }
 
-        return [
-            'title' => $function?->name ?? $functionId,
-            'subtitle' => $functionId,
-            'badges' => [$preview->isOk()
-                ? ['label' => $this->text('badge.callOk', 'OK'), 'style' => 'success']
-                : ['label' => $this->text('badge.callError', 'Setup error'), 'style' => 'danger']],
-            'tabs' => [[
-                'id' => 'overview',
-                'label' => $this->defaultOverviewLabel(),
-                'content' => ['type' => 'properties', 'groups' => $groups],
-            ]],
-        ];
+        return [[
+            'id' => 'overview',
+            'label' => $this->defaultOverviewLabel(),
+            'content' => ['type' => 'properties', 'groups' => $groups],
+        ]];
     }
 
     /** Bez Přidat — řádky zakládá ds-upgrade pro každou deklarovanou funkci. */
