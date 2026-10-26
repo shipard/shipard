@@ -40,7 +40,6 @@ class DetailContractTest extends TestCase
         // core.system
         // core.units
         // docs.core
-        'docs.core.numberSeries',
         // economy.accbal
         'economy.accbal.balances',
         'economy.accbal.balanceAccounts',
@@ -64,8 +63,6 @@ class DetailContractTest extends TestCase
         // economy.exchangeRates
         'economy.exchangeRates.lists',
         // economy.items
-        'economy.items',
-        'economy.items.kinds',
         // economy.vat
         'economy.vat.reportPeriods',
         'economy.vat.filings',

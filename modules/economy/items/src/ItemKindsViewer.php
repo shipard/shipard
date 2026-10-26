@@ -97,16 +97,10 @@ class ItemKindsViewer extends TableViewer
         return $row;
     }
 
-    public function renderDetail(int $recordId): array
+    /** Přehled a tab Položky (prvních 100 položek druhu). */
+    protected function detailTabs(array $record): array
     {
-        $record = $this->db->fetchRow(
-            'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
-            $recordId,
-        );
-
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+        $recordId = (int) $record['id'];
 
         $items = [];
         $this->addItem($items, 'Název', $record['name'] ?? null);
@@ -153,7 +147,7 @@ class ItemKindsViewer extends TableViewer
             ];
         }
 
-        return ['tabs' => $tabs];
+        return $tabs;
     }
 
     private function resolveStateStyle(int $docState): string
