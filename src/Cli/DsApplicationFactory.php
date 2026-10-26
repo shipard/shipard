@@ -23,6 +23,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\DsSettingCommand());
         $app->add(new \Shipard\Command\DataSource\DsStateCommand());
         $app->add(new \Shipard\Command\DataSource\DsClassCommand());
+        $app->add(new \Shipard\Command\DataSource\ValuesNormalizeCommand());
         $app->add(new \Shipard\Command\DataSource\UserCreateCommand());
         $app->add(new \Shipard\Command\DataSource\UserSetAdminCommand());
         $app->add(new \Shipard\Command\DataSource\AuthEmergencyLoginCommand());

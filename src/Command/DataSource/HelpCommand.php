@@ -53,6 +53,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>help</info>                    Show this help message');
         $output->writeln('  <info>ds-upgrade</info>              Upgrade the data source schema and configuration');
         $output->writeln('  <info>ds-reset</info>                Reset the data source — drop all data tables and recreate them, keeping users, API keys and protected tables');
+        $output->writeln('  <info>values-normalize</info>        Normalize stored directory values (persons, addresses, contacts, bank accounts) with the same rules as saving; --dry-run counts only, --json');
         $output->writeln('');
         $output->writeln('<comment>Settings:</comment>');
         $output->writeln('  <info>ds-setting</info>              Read and write data source settings: list | get <key> | set <key> <value> [--unset]');
