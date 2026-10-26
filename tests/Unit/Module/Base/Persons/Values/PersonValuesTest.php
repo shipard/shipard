@@ -97,24 +97,29 @@ class PersonValuesTest extends TestCase
     {
         $this->assertSame([], PersonValues::checkPerson(['company_id' => '6947', 'vat_id' => 'cz 0000 6947'], 'cz'), 'kontrola nad normalizovaným tvarem');
         $this->assertSame(
-            [['column' => 'company_id', 'code' => 'company_id_invalid', 'message' => 'IČO „52654151“ nemá platný kontrolní součet.']],
+            [['column' => 'company_id', 'code' => 'company_id_invalid', 'message' => 'IČO „52654151“ nemá platný kontrolní součet.', 'value' => '52654151', 'reason' => 'nemá platný kontrolní součet', 'suggestion' => null]],
             PersonValues::checkPerson(['company_id' => '52654151'], 'cz'),
         );
         $this->assertSame(
-            [['column' => 'vat_id', 'code' => 'vat_id_company_id_mismatch', 'message' => 'DIČ „CZ07123451“ neodpovídá IČO „52654150“ — osmimístné DIČ je CZ + IČO.']],
+            [['column' => 'vat_id', 'code' => 'vat_id_company_id_mismatch', 'message' => 'DIČ „CZ07123451“ neodpovídá IČO „52654150“ — osmimístné DIČ je CZ + IČO.', 'value' => 'CZ07123451', 'reason' => 'neodpovídá IČO „52654150“ — osmimístné DIČ je CZ + IČO', 'suggestion' => null]],
             PersonValues::checkPerson(['company_id' => '52654150', 'vat_id' => 'CZ07123451'], 'cz'),
+        );
+        $this->assertSame(
+            [['column' => 'company_id', 'code' => 'company_id_invalid', 'message' => 'IČO „52654151“ nemá platný kontrolní součet.', 'value' => '52654151', 'reason' => 'nemá platný kontrolní součet', 'suggestion' => '52654150']],
+            PersonValues::checkPerson(['company_id' => '52654151', 'vat_id' => 'cz 5265 4150'], 'cz'),
+            'návrh opravy IČO z DIČ (D27)',
         );
         $this->assertSame([], PersonValues::checkPerson(['company_id' => '52654151'], 'de'), 'zahraniční IČO bez pravidla');
 
         $this->assertSame(
-            [['column' => 'zip', 'code' => 'zip_invalid', 'message' => 'PSČ „7790“ nemá pět číslic (cz).']],
+            [['column' => 'zip', 'code' => 'zip_invalid', 'message' => 'PSČ „7790“ nemá pět číslic (cz).', 'value' => '7790', 'reason' => 'nemá pět číslic (cz)', 'suggestion' => null]],
             PersonValues::checkAddress(['zip' => '7790', 'country' => 'CZ']),
         );
         $this->assertSame([], PersonValues::checkAddress(['zip' => '760 01', 'country' => 'cz']), 'mezera se normalizuje, ne hlásí');
         $this->assertSame([], PersonValues::checkAddress(['zip' => '7790']), 'adresa bez jakékoli země nález nemá');
         $this->assertSame(1, count(PersonValues::checkAddress(['zip' => '7790'], 'cz')), 'země z uloženého řádku');
         $this->assertSame(
-            [['column' => 'zip', 'code' => 'zip_invalid', 'message' => 'PSČ „7790“ nemá pět číslic (cz).']],
+            [['column' => 'zip', 'code' => 'zip_invalid', 'message' => 'PSČ „7790“ nemá pět číslic (cz).', 'value' => '7790', 'reason' => 'nemá pět číslic (cz)', 'suggestion' => null]],
             PersonValues::checkAddress(['zip' => '7790'], null, 'cz'),
             'adresa bez země podle země osoby (D24)',
         );
@@ -128,6 +133,14 @@ class PersonValuesTest extends TestCase
         $this->assertSame(
             ['iban_account_mismatch'],
             array_column(PersonValues::checkBankAccount(['account_number' => '19-2000145399/0800', 'iban' => 'CZ8520100000002308417557'], 'cz'), 'code'),
+        );
+        $this->assertSame(
+            [['column' => 'iban', 'code' => 'iban_invalid', 'value' => 'CZ6508000000192000145398', 'suggestion' => 'CZ6508000000192000145399']],
+            array_map(
+                static fn (array $f): array => ['column' => $f['column'], 'code' => $f['code'], 'value' => $f['value'], 'suggestion' => $f['suggestion']],
+                PersonValues::checkBankAccount(['account_number' => '19-2000145399/0800', 'iban' => 'cz65 0800 0000 1920 0014 5398'], 'cz'),
+            ),
+            'návrh IBAN z platného čísla účtu nad normalizovaným tvarem (D27)',
         );
         $this->assertSame(
             [],

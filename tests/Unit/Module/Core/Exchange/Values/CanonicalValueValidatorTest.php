@@ -140,7 +140,7 @@ class CanonicalValueValidatorTest extends TestCase
         $this->assertStringContainsString('mod 11', $issue['message']);
 
         $issue = $this->issue($this->withSupplier(['bankAccount' => ['accountNumber' => '2308417557', 'iban' => null]]), CanonicalValueValidator::ACCOUNT_NUMBER_INVALID);
-        $this->assertStringContainsString('nemá tvar', $issue['message']);
+        $this->assertStringContainsString('nemá kód banky', $issue['message'], 'důvod podle příčiny (D27)');
 
         // Tvar …/kód se hlídá i bez země; jiný tvar bez země ne.
         $this->assertContains(CanonicalValueValidator::ACCOUNT_NUMBER_INVALID, $this->codes(['supplier' => ['bankAccount' => ['accountNumber' => '2308417558/2010']]]));
@@ -160,7 +160,7 @@ class CanonicalValueValidatorTest extends TestCase
         $this->assertStringContainsString('kontrolní číslici', $issue['message']);
 
         $issue = $this->issue($this->withSupplier($bank('CZ4701000000001234567890')), CanonicalValueValidator::IBAN_INVALID);
-        $this->assertStringContainsString('pravidlu státu CZ', $issue['message']);
+        $this->assertStringContainsString('číslo účtu uvnitř „1234567890/0100“ neprojde kontrolou mod 11', $issue['message'], 'důvod podle příčiny (D27)');
 
         $this->assertSame([], $this->codes($this->withSupplier($bank('GB82WEST12345698765432'))), 'země bez třídy: jen tvar a mod 97');
     }

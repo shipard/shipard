@@ -93,6 +93,11 @@ abstract class AbstractCountryValueRules implements CountryValueRules
         return false;
     }
 
+    public function ibanLength(): ?int
+    {
+        return null;
+    }
+
     public function isValidIban(string $iban): bool
     {
         return true;

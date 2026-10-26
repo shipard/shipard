@@ -11,6 +11,13 @@ namespace Shipard\Module\World\Validations;
  * web, `taxId`), nález nevzniká. Volá je validátor canonicalu
  * (`core.exchange`) i formuláře adresáře (`base.persons`,
  * `economy.codebooks`) — texty jsou tak na jednom místě.
+ *
+ * Důvod rozlišuje příčinu (D27) a složené kontroly ({@see identity},
+ * {@see bankAccount}) přidají k nálezu **návrh opravy** z redundance,
+ * kde druhá hodnota je platná: IČO z osmimístného českého DIČ, tuzemské
+ * číslo účtu z platného IBAN a IBAN z platného tuzemského čísla (jako
+ * oprava D4 v canonicalu). Návrh musí sám projít validací; nic se
+ * neopravuje.
  */
 final class ValueChecks
 {
@@ -77,7 +84,27 @@ final class ValueChecks
         if (self::present($companyId) && self::present($vatId)) {
             $findings[] = self::vatIdCompanyId($vatId, $companyId, $rules);
         }
-        return array_values(array_filter($findings));
+        $findings = array_values(array_filter($findings));
+
+        $implied = self::present($vatId) ? self::companyIdImpliedByVatId($vatId, $rules) : null;
+        if ($implied !== null) {
+            foreach ($findings as $i => $finding) {
+                if ($finding->code === ValueFinding::COMPANY_ID_INVALID) {
+                    $findings[$i] = $finding->withSuggestion($implied);
+                }
+            }
+        }
+        return $findings;
+    }
+
+    /** IČO vyplývající z platného DIČ (cz: osmimístné = `CZ` + IČO), jen když samo projde kontrolou. */
+    private static function companyIdImpliedByVatId(string $vatId, CountryValueRules $rules): ?string
+    {
+        if (!VatId::isValid($vatId)) {
+            return null;
+        }
+        $implied = $rules->companyIdFromVatId($vatId);
+        return $implied !== null && $rules->isValidCompanyId($implied) ? $implied : null;
     }
 
     public static function zip(string $zip, CountryValueRules $rules): ?ValueFinding
@@ -101,8 +128,21 @@ final class ValueChecks
                 : new ValueFinding(ValueRules::ACCOUNT_NUMBER, ValueFinding::ACCOUNT_NUMBER_INVALID, $accountNumber, 'nesplňuje kontrolu mod 11');
         }
         return $domesticExpected
-            ? new ValueFinding(ValueRules::ACCOUNT_NUMBER, ValueFinding::ACCOUNT_NUMBER_INVALID, $accountNumber, 'nemá tvar [předčíslí-]číslo/kód banky')
+            ? new ValueFinding(ValueRules::ACCOUNT_NUMBER, ValueFinding::ACCOUNT_NUMBER_INVALID, $accountNumber, self::accountShapeReason($accountNumber))
             : null;
+    }
+
+    /** Proč hodnota není tuzemské číslo účtu (D27): cizí znaky, chybějící kód banky, jiný tvar. */
+    private static function accountShapeReason(string $accountNumber): string
+    {
+        $compact = (string) preg_replace('/\s+/u', '', $accountNumber);
+        if (preg_match('/[^0-9\/-]/', $compact) === 1) {
+            return 'obsahuje nepovolené znaky (jen číslice, pomlčka a lomítko)';
+        }
+        if (!str_contains($compact, '/')) {
+            return 'nemá kód banky (tvar [předčíslí-]číslo/kód banky)';
+        }
+        return 'nemá tvar [předčíslí-]číslo/kód banky';
     }
 
     public static function iban(string $iban): ?ValueFinding
@@ -115,9 +155,25 @@ final class ValueChecks
         } elseif (!Iban::checksumOk($iban)) {
             $reason = 'nemá platnou kontrolní číslici';
         } else {
-            $reason = 'neodpovídá pravidlu státu ' . strtoupper((string) Iban::countryOf($iban)) . ' (délka nebo číslo účtu uvnitř)';
+            $reason = self::ibanCountryReason($iban, ValueRulesRegistry::forIban($iban));
         }
         return new ValueFinding(ValueRules::IBAN, ValueFinding::IBAN_INVALID, $iban, $reason);
+    }
+
+    /** Kontrolní číslice sedí, pravidlo státu ne (D27): chybná délka, nebo číslo účtu uvnitř bez mod 11 (cz / sk). */
+    private static function ibanCountryReason(string $iban, CountryValueRules $rules): string
+    {
+        $country = strtoupper((string) Iban::countryOf($iban));
+        $length = $rules->ibanLength();
+        if ($length !== null && strlen($iban) !== $length) {
+            return "má pro stát {$country} chybnou délku ({$length} znaků, zapsáno " . strlen($iban) . ')';
+        }
+        if ($rules->supportsDomesticAccount()) {
+            $account = $rules->domesticAccountFromIban($iban);
+            return 'má platnou kontrolní číslici, ale číslo účtu uvnitř'
+                . ($account !== null ? " „{$account}“" : '') . ' neprojde kontrolou mod 11';
+        }
+        return "neodpovídá pravidlu státu {$country}";
     }
 
     public static function bic(string $bic): ?ValueFinding
@@ -166,7 +222,50 @@ final class ValueChecks
         if (self::present($iban) && self::present($accountNumber)) {
             $findings[] = self::ibanAccount($iban, $accountNumber);
         }
-        return array_values(array_filter($findings));
+        $findings = array_values(array_filter($findings));
+
+        if (self::present($iban) && self::present($accountNumber)) {
+            foreach ($findings as $i => $finding) {
+                $suggestion = match ($finding->code) {
+                    ValueFinding::ACCOUNT_NUMBER_INVALID => self::accountNumberImpliedByIban($iban),
+                    ValueFinding::IBAN_INVALID           => self::ibanImpliedByAccountNumber($accountNumber, $iban),
+                    default                              => null,
+                };
+                if ($suggestion !== null) {
+                    $findings[$i] = $finding->withSuggestion($suggestion);
+                }
+            }
+        }
+        return $findings;
+    }
+
+    /** Tuzemské číslo z platného IBAN státu s tuzemským tvarem — jen když samo projde mod 11. */
+    private static function accountNumberImpliedByIban(string $iban): ?string
+    {
+        if (!Iban::isValid($iban)) {
+            return null;
+        }
+        $account = ValueRulesRegistry::forIban($iban)->domesticAccountFromIban($iban);
+        return $account !== null && $account->isValid() ? (string) $account : null;
+    }
+
+    /**
+     * IBAN z platného tuzemského čísla účtu podle státu z prefixu neplatného
+     * IBAN (cz / sk; bez rozpoznatelného prefixu bez návrhu) — jen když je
+     * sám platný.
+     */
+    private static function ibanImpliedByAccountNumber(string $accountNumber, string $invalidIban): ?string
+    {
+        $account = DomesticAccount::parse($accountNumber);
+        if ($account === null || !$account->isValid()) {
+            return null;
+        }
+        $rules = ValueRulesRegistry::forIban($invalidIban);
+        if (!$rules->supportsDomesticAccount()) {
+            return null;
+        }
+        $derived = $rules->ibanFromDomesticAccount($account);
+        return $derived !== null && Iban::isValid($derived) ? $derived : null;
     }
 
     /** @phpstan-assert-if-true string $value */

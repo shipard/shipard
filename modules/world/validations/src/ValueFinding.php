@@ -9,6 +9,14 @@ namespace Shipard\Module\World\Validations;
  * a česká věta důvodu. Jediný zdroj textů nálezů — skládá z nich zprávu
  * validátor canonicalu (`IČO dodavatele „x“ nemá platný kontrolní
  * součet.`) i formuláře adresáře (`IČO „x“ nemá platný kontrolní součet.`).
+ * Důvod rozlišuje příčinu (D27: u IBAN tvar / kontrolní číslice / délka /
+ * číslo účtu uvnitř, u čísla účtu znaky / kód banky / mod 11).
+ *
+ * `suggestion` je **návrh opravy** téže hodnoty z redundance (IČO
+ * z osmimístného českého DIČ, IBAN z platného tuzemského čísla účtu
+ * a naopak — vzor D4), který {@see ValueChecks} přidá, kde to jde;
+ * nikdy se neprovádí, jen vypisuje (`values-normalize --verbose`).
+ * Do zprávy nálezu nepatří.
  */
 final readonly class ValueFinding
 {
@@ -42,13 +50,20 @@ final readonly class ValueFinding
      * @param string $code   kód nálezu (`self::*`)
      * @param string $value  hodnota, jak byla kontrolována (normalizovaná)
      * @param string $reason důvod bez podmětu a bez tečky („nemá platný kontrolní součet“)
+     * @param ?string $suggestion návrh opravy téže hodnoty z redundance; `null` = bez návrhu
      */
     public function __construct(
         public string $kind,
         public string $code,
         public string $value,
         public string $reason,
+        public ?string $suggestion = null,
     ) {}
+
+    public function withSuggestion(string $suggestion): self
+    {
+        return new self($this->kind, $this->code, $this->value, $this->reason, $suggestion);
+    }
 
     /**
      * Zpráva nálezu; `$owner` je vlastník hodnoty v genitivu („dodavatele“)

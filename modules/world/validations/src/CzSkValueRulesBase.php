@@ -87,6 +87,11 @@ abstract class CzSkValueRulesBase extends AbstractCountryValueRules
         return true;
     }
 
+    public function ibanLength(): ?int
+    {
+        return self::IBAN_LENGTH;
+    }
+
     /** Délka 24 a mod 11 na čísle účtu uvnitř — IBAN nesoucí neplatné číslo účtu platný není. */
     public function isValidIban(string $iban): bool
     {

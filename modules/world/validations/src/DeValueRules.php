@@ -60,6 +60,11 @@ final class DeValueRules extends AbstractCountryValueRules
             && self::checkDigit(substr($number, 0, 8)) === (int) $number[8];
     }
 
+    public function ibanLength(): ?int
+    {
+        return self::IBAN_LENGTH;
+    }
+
     public function isValidIban(string $iban): bool
     {
         return strlen($iban) === self::IBAN_LENGTH;

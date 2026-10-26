@@ -24,9 +24,11 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
  * `country` a bez něj podle země osoby (D24), kontakt podle osoby, účet
  * zemi nepotřebuje (IBAN podle prefixu).
  *
- * Kontroly (D19, `check*`) vracejí nálezy `{column, code, message}` nad
- * normalizovanou kopií — kódy a texty z knihovny ({@see ValueChecks}),
- * tytéž jako u canonicalu dokladu. Zda je nález chyba, nebo varování,
+ * Kontroly (D19, `check*`) vracejí nálezy `{column, code, message, value,
+ * reason, suggestion}` nad normalizovanou kopií — kódy a texty z knihovny
+ * ({@see ValueChecks}), tytéž jako u canonicalu dokladu; `value`, `reason`
+ * a návrh opravy `suggestion` (D27, nikdy se neprovádí) čte výpis
+ * `values-normalize --verbose`. Zda je nález chyba, nebo varování,
  * rozhoduje dokument (vlastní firma × partner).
  */
 final class PersonValues
@@ -114,7 +116,7 @@ final class PersonValues
      * IČO, DIČ a jejich soulad (D19).
      *
      * @param array<string, mixed> $data
-     * @return list<array{column: string, code: string, message: string}>
+     * @return list<array{column: string, code: string, message: string, value: string, reason: string, suggestion: ?string}>
      */
     public static function checkPerson(array $data, ?string $country): array
     {
@@ -132,7 +134,7 @@ final class PersonValues
      * osoby (D24); bez jakékoli země nález nemá.
      *
      * @param array<string, mixed> $data
-     * @return list<array{column: string, code: string, message: string}>
+     * @return list<array{column: string, code: string, message: string, value: string, reason: string, suggestion: ?string}>
      */
     public static function checkAddress(array $data, ?string $storedCountry = null, ?string $personCountry = null): array
     {
@@ -157,7 +159,7 @@ final class PersonValues
      * tvar čísla účtu je nález jen u osoby ze státu s tuzemským tvarem.
      *
      * @param array<string, mixed> $data
-     * @return list<array{column: string, code: string, message: string}>
+     * @return list<array{column: string, code: string, message: string, value: string, reason: string, suggestion: ?string}>
      */
     public static function checkBankAccount(array $data, ?string $country): array
     {
@@ -172,14 +174,21 @@ final class PersonValues
 
     /**
      * @param list<ValueFinding|null> $findings
-     * @return list<array{column: string, code: string, message: string}>
+     * @return list<array{column: string, code: string, message: string, value: string, reason: string, suggestion: ?string}>
      */
     private static function findings(array $findings): array
     {
         $out = [];
         foreach ($findings as $finding) {
             if ($finding instanceof ValueFinding) {
-                $out[] = ['column' => self::FINDING_COLUMNS[$finding->kind] ?? $finding->kind, 'code' => $finding->code, 'message' => $finding->message()];
+                $out[] = [
+                    'column'     => self::FINDING_COLUMNS[$finding->kind] ?? $finding->kind,
+                    'code'       => $finding->code,
+                    'message'    => $finding->message(),
+                    'value'      => $finding->value,
+                    'reason'     => $finding->reason,
+                    'suggestion' => $finding->suggestion,
+                ];
             }
         }
         return $out;

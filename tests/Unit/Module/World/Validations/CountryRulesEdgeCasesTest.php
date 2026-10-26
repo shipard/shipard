@@ -12,6 +12,7 @@ use Shipard\Module\World\Validations\GenericValueRules;
 use Shipard\Module\World\Validations\Iban;
 use Shipard\Module\World\Validations\Phone;
 use Shipard\Module\World\Validations\SkValueRules;
+use Shipard\Module\World\Validations\ValueRulesRegistry;
 use Shipard\Module\World\Validations\VatId;
 
 /** Okraje mimo sdílený fixture: primitiva a vazby, které fixture vyjadřuje jen nepřímo. */
@@ -56,6 +57,10 @@ class CountryRulesEdgeCasesTest extends TestCase
         $this->assertTrue(Iban::checksumOk('CZ4701000000001234567890'), 'mod 97 sedí');
         $this->assertFalse(Iban::isValid('CZ4701000000001234567890'), 'ale číslo účtu uvnitř mod 11 nesplňuje');
         $this->assertFalse(Iban::isValid('DE7210070000053201300'), 'DE má 22 znaků');
+        $this->assertSame(24, ValueRulesRegistry::forCountry('cz')->ibanLength());
+        $this->assertSame(24, ValueRulesRegistry::forCountry('sk')->ibanLength());
+        $this->assertSame(22, ValueRulesRegistry::forCountry('de')->ibanLength());
+        $this->assertNull(ValueRulesRegistry::forCountry('gb')->ibanLength(), 'stát bez třídy délku neurčuje');
         $this->assertTrue(Iban::isValid('GB82WEST12345698765432'), 'země bez třídy: jen tvar a mod 97');
         $this->assertSame('gb', Iban::countryOf('GB82WEST12345698765432'));
         $this->assertNull(Iban::countryOf('12345'));
