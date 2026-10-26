@@ -210,6 +210,11 @@ smí názvy nést — tam jsou potřeba k práci.
 - Datové třídy (*Definition): readonly, factory `fromArray()`, validace v konstruktoru
 - Příkazy: Symfony Console, testovatelné přes subclassing
 - Žádná business logika v datových třídách
+- Tvar a platnost IČO, DIČ, čísel účtů, IBAN, BIC, PSČ a telefonu řeší
+  `world.validations` (`ValueRules`, `ValueRulesRegistry` — nová země =
+  nová třída v registru), ne vlastní regex ani kontrolní součet v modulu;
+  canonical normalizuje a validuje `core.exchange` `Values/`
+  (`docs/exchange-format.md` → Normalizace a validace hodnot, #118)
 
 ### Dokumentový systém
 - Data vždy jako PHP `array` — žádné property per sloupec (kvůli extensions)

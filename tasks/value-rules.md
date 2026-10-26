@@ -1,6 +1,6 @@
 # Normalizace a validace hodnot canonicalu — fáze 1
 
-**Stav:** naplánováno — rozhodnutí schválená 2026-10-26 (#118 D1–D17), neimplementováno
+**Stav:** hotovo — implementováno 2026-10-26 v 5 commitech (knihovna, normalizátor a validátor s napojením a stropem pásma, resolvery, porovnávač a `valueFindings`, dokumentace); odchylky níže; evaluaci tří sad × 3 pouští člověk z dashboardu (D17)
 
 
 ## Kontext / Cíl
@@ -281,29 +281,29 @@ s původní a novou hodnotou. Volá ho `DocumentValidator::validate()`.
 
 ## Hotovo když
 
-- [ ] Knihovna: testy nad fixture projdou v PHP i Pythonu; strážce předvolby.
-- [ ] Normalizátor: testy každé cesty, idempotence (dvojí běh = jeden),
+- [x] Knihovna: testy nad fixture projdou v PHP i Pythonu; strážce předvolby.
+- [x] Normalizátor: testy každé cesty, idempotence (dvojí běh = jeden),
       oprava v obou směrech, nesoulad dvou validních hodnot, strana bez
       země, adresa s jinou zemí než strana.
-- [ ] Napojení: `validateCanonical()` normalizuje před obohacením (pravidlo
+- [x] Napojení: `validateCanonical()` normalizuje před obohacením (pravidlo
       štítku se najde i u IČO s mezerou); dedup ISDOC sloučí kandidáty
       s DIČ zapsaným s mezerou; `/preview` vrací normalizovaný canonical
       a nálezy D13.
-- [ ] Návrh s nálezem nebo opravou nikdy není `ready` (detail zprávy i feed).
-- [ ] Resolvery podle § 3, stávající testy párování beze změny výsledku.
-- [ ] Strážce korpusu: normalizace očekávání je identita, validace bez nálezů.
-- [ ] `vendor/bin/phpunit --filter` na dotčené testy (World*, Values*,
+- [x] Návrh s nálezem nebo opravou nikdy není `ready` (detail zprávy i feed).
+- [x] Resolvery podle § 3, stávající testy párování beze změny výsledku.
+- [x] Strážce korpusu: normalizace očekávání je identita, validace bez nálezů.
+- [x] `vendor/bin/phpunit --filter` na dotčené testy (World*, Values*,
       DocumentValidator*, DocumentApplier*, AnalysisResultWriter*,
       AnalysisConfidence*, IsdocDocumentCollector*, IsdocCorpusRoundTrip*,
       PartyResolver*, BankAccountResolver*, ContentTag*, MessagePartnerWriter*,
       RegistryApplier*, CanonicalComparator*, ValueShapes*, Eval*,
       CorpusExpected*); `python3 -m unittest` generátoru; celá sada lokálně
       na konci.
-- [ ] `dataset-verify` nad třemi sadami korpusu a demo sadou „IT servis“
+- [x] `dataset-verify` nad třemi sadami korpusu a demo sadou „IT servis“
       (volné zdroje dat po přeseedování): kontroly `ok`, snímek deníku beze
       změny — změna snímku je nález, ne důvod ho přeschválit.
-- [ ] Dokumentace, help, `CLAUDE.md`, `**Stav:**`, index tasků.
-- [ ] **Žádná evaluace v tomto tasku** — běh tří sad × 3 pouští člověk
+- [x] Dokumentace, help, `CLAUDE.md`, `**Stav:**`, index tasků.
+- [x] **Žádná evaluace v tomto tasku** — běh tří sad × 3 pouští člověk
       z dashboardu; očekávání v D17.
 
 ## Pasti
@@ -328,3 +328,37 @@ s původní a novou hodnotou. Volá ho `DocumentValidator::validate()`.
 - **Mod 11:** předčíslí a číslo se kontrolují zvlášť, prázdné předčíslí je
   platné; váhy `1, 2, 4, 8, 5, 10, 9, 7, 3, 6` od pravého kraje
   (`checks.py::_mod11`).
+
+## Odchylky od zadání (2026-10-26)
+
+- **Registr země vrací vždy pravidla** — stát bez třídy dostane
+  `GenericValueRules` (jen obecná pravidla, `isGeneric()`), ne `null`;
+  volající nemají větev pro chybějící pravidla (vzor
+  `AccountingOnlyTaxRules`).
+- **Platný cz / sk IBAN = mod 97 + délka 24 + mod 11 čísla účtu
+  uvnitř.** IBAN s platnou kontrolní číslicí, ale neplatným číslem účtu,
+  je nevalidní; oprava D4 má navíc pojistku „dopočtená hodnota musí sama
+  projít validací“ — happy fixture testů (`invoiceReceived_happy.json`)
+  má neplatné součty IČO, účtu i IBAN a bez pojistky by se „opravila“ na
+  jiný neplatný tvar.
+- **`taxId` se normalizuje (cz / sk jako DIČ), ale nevaliduje** — D13 pro
+  něj kód nemá a u cz by nález zdvojil `vat_id_invalid`.
+- **Validátor kontroluje tvary po `normalizeShapes()`**, ne syrový vstup:
+  strop pásma běží nad persistovaným `canonical_json` a návrhy z doby před
+  nasazením by jinak ve feedu dostaly `iban_invalid` za mezery.
+- **Prefix DIČ se doplňuje jen u cz** (`completeVatId`); sk a de ne.
+- **Klíč pravidel štítků** zůstává v dosavadním tvaru (alfanumerické
+  znaky velkými); země strany jen doplní vedoucí nuly IČO před ním.
+- **Demo sada „IT servis“** nesla slovenské IČO s chybnou kontrolní
+  číslicí (`52398417` → `52398412` ve 14 souborech), jinak by každý
+  `dataset-verify` demo sady hlásil `company_id_invalid`.
+- **`CzIbanCalculator`** (tisk QR platby) je třetí implementace IBAN —
+  patří do fáze 2 vedle `BankAccountDocument`, `Import\PartnerResolver`
+  a `ParserUtils::mod11`.
+- **Demo sada „IT servis“ nemá `expected/`** — `dataset-verify` ji odmítá
+  v preflightu; ověřeno přeseedováním (apply přes applier s normalizací,
+  3 dřívější varování o zahraničních firmách bez IČO, žádný nález hodnot).
+  Tři sady korpusu: `dataset-verify` exit 0, všech šest kontrol `ok`,
+  snímek deníku beze změny (ob9b, r1lf, wp66, 2026-10-26).
+- **`capBandByRowCoverage()` zanikla** — jediný strop je
+  `AnalysisConfidenceResolver::capBand()` (pokrytí řádků + nálezy hodnot).

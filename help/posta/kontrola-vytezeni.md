@@ -152,6 +152,20 @@ klik odtud nejde — rovnou uzavřít se dá jen z náhledu, po kontrole.
 Jisté návrhy k zařazení do **Spisovny** mají v sekci vedle vlastní pruh
 — stejné rozbalení a **Použít**, jen bez součtu částek.
 
+**Shipard sjednotí zápis údajů a zkontroluje je.** PSČ, IBAN, telefon,
+IČO a DIČ z faktury uloží v jednotném tvaru (PSČ bez mezery, IBAN bez
+mezer, telefon s předvolbou, IČO na osm číslic) bez ohledu na to, jak
+jsou na faktuře vytištěné. U IČO, DIČ, čísla účtu a IBAN navíc ověří
+platnost — kontrolní součet IČO, tvar DIČ podle státu, kontrolní číslici
+IBAN a to, že číslo účtu a IBAN nesou tentýž účet. Co nesedí, najdeš
+v sekci **Upozornění** náhledu; hodnota zůstává tak, jak ji AI přečetla,
+a opravíš ji v **Konceptu**. Jediná výjimka: když je z dvojice číslo účtu
+a IBAN jen jeden platný, Shipard ten druhý dopočítá a v **Upozornění**
+napíše, co a podle čeho doplnil. Návrh s takovým upozorněním nikdy není
+**K použití** — jde vždy **Ke kontrole**. Kam a jak se údaje po vystavení
+propíší do Osoby, se tím nemění; údaje v evidenci Osob Shipard zpětně
+nepřepisuje.
+
 **Víc faktur najednou projdeš frontou.** Když na Dashboardu čeká víc
 návrhů přijatých faktur, na záložkách **Vše** a **Přijaté faktury** je
 vedle filtru tlačítko **Projít frontu** s počtem čekajících. Otevře

@@ -435,9 +435,11 @@ Implementuje porovnávač F4, na obě strany:
 
 Kanonický tvar hodnot v očekávaném výsledku. Vychází z toho, co už dělá
 produkce (země malými v `IsdocReader`, `CanonicalParty` a promptu; ulice
-a číslo zvlášť). Je to zároveň vstup pro #118 — do jeho dokončení použije
-porovnávač stejná pravidla na obě strany. Sloupec *Tvar v projekci* je
-jméno ze `shapes`.
+a číslo zvlášť). Tvary implementuje produkční knihovna
+`world.validations` (#118): normalizátor canonicalu běží na vstupu AI
+i ISDOC a v applieru a porovnávač (`ValueShapes`) na tutéž knihovnu
+deleguje, takže `matchNormalized` u sdílených tvarů hlídá regresi
+(§ 18). Sloupec *Tvar v projekci* je jméno ze `shapes`.
 
 | Hodnota | Tvar | Příklad | Tvar v projekci |
 |---------|------|---------|-----------------|
@@ -466,7 +468,8 @@ jméno ze `shapes`.
 Na PDF se hodnoty tisknou tak, jak je tisknou skutečné doklady (PSČ
 s mezerou, IBAN po čtveřicích, telefon s mezerami, americká adresa se
 zkratkou státu) — rozdíl mezi tiskem a kanonickým tvarem je přesně to,
-co má zachytit normalizace (#118).
+co zachycuje normalizace (#118); strážce `CorpusValueRulesTest` hlídá, že
+každé očekávání je už v kanonickém tvaru a bez nálezu validátoru.
 
 ## 12. Build
 
@@ -1077,7 +1080,7 @@ dává stav **každého listu** projekce (`FieldOutcome`, `FieldState`):
 | Stav | Význam |
 |------|--------|
 | `match` | shoda syrových hodnot po projekci |
-| `matchNormalized` | shoda až po tvarech hodnot (§ 11, D15 — podklad pro #118), rovnocenných tvarech (§ 10), toleranci čísel 0,005, sjednocení mezer, nebo podobnosti volného textu ≥ 0,9 |
+| `matchNormalized` | shoda až po tvarech hodnot (§ 11, D15 — od #118 tatáž knihovna `world.validations` jako produkce, u sdílených tvarů tedy hlídač regrese: produkce tvar sjednotí dřív, než se porovnává), rovnocenných tvarech (§ 10), toleranci čísel 0,005, sjednocení mezer, nebo podobnosti volného textu ≥ 0,9 |
 | `missing` | očekávaná hodnota, výstup `null` / chybí („model nenašel“) |
 | `extra` | očekáván `null` („na dokladu není“), výstup má hodnotu |
 | `wrong` | obě strany mají hodnotu, liší se |
@@ -1178,8 +1181,13 @@ listy (D114, od `metricsVersion` 2 hned za `format`): per volání
 a `informativeDeviations` ve stejném tvaru jako `deviations`, položky
 `normalized` informativních listů nesou `informative: true`; `counts`
 a `deviations` je neobsahují, `deviationCount()` ze souboru proto čte
-v1 i v2 správně; top-level `informativeByField`. `format`
-zůstává `shpd.eval.run.v1`. Data korpusu jsou fiktivní, výsledky nad
+v1 i v2 správně; top-level `informativeByField`. **Nálezy hodnot**
+(#118 D17, od 26. 10. 2026): úspěšné volání nese `valueFindings`
+`[{path, code}]` z `CanonicalValueValidator` nad validovaným canonicalem
+včetně oprav IBAN ↔ číslo účtu (`bank_account_repaired`) — poslední
+klíč záznamu; starší běhy ho nemají (`EvalCallResult::valueFindingsOf()`
+→ prázdné), metriky je neznají, report je vypíše v průběhu u dokladu
+i v souhrnu. `format` zůstává `shpd.eval.run.v1`. Data korpusu jsou fiktivní, výsledky nad
 
 veřejnými sadami patří do veřejného repa; nad reálnými doklady jen do
 soukromého (D8).

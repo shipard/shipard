@@ -785,6 +785,14 @@ Postup:
    sondu přeskočí — zahraniční strana s `vatId` a bez `taxId` (#103 D115)
    se páruje přes `vatId`. Země se při párování identifikátorů nepoužívá.
 
+   Identifikátory se před párováním **normalizují** pravidly
+   `world.validations` podle země strany (`country`, jinak
+   `address.country`; bez země jen obecná pravidla — ostatní pošta
+   a registr tak párují beze změny) a IČO se hledá i **bez vedoucích
+   nul** — data z doby před normalizací (#118 D16). V applieru je
+   canonical už normalizovaný (§ 10 → Normalizace a validace hodnot);
+   resolver normalizuje znovu jako pojistku pro ostatní volající.
+
 4. **`name` fuzzy s `country` filterem** — full-text + Levenshtein,
    `score >= threshold` → kandidáti seřazení podle score.
    - 1 kandidát se score `>= 0.95` → `matched`, `matchedBy: "name"`.
@@ -1086,18 +1094,28 @@ nepoužívají.
 
 Vstup: `Party.bankAccount` object + resolved `personId` (pokud existuje).
 
-Postup pro **partner's bank** (resolved person je partner, ne my):
+Postup pro **partner's bank** (resolved person je partner, ne my),
+#118 D16:
 
-1. **`iban` exact match** v `base_persons_bank_accounts` filtrované na
-   `person_id` → `matched`.
-2. **`accountNumber` exact match** → analogicky.
-3. Žádný match, ale partner existuje → `canCreate` (přidat účet partnerovi).
-4. Partner ještě neexistuje (sám `canCreate`) → odložit do Apply fáze.
+1. Načíst aktivní účty osoby (`base_persons_bank_accounts` podle
+   `person`) a porovnat v PHP přes **klíč účtu**
+   (`Resolve\BankAccountKey::of()`) z **obou** sloupců — u starých dat
+   nese `account_number` často IBAN. Klíč: IBAN státu s tuzemským tvarem
+   účtu (cz, sk) i tuzemské číslo `[předčíslí-]číslo/kód` → `bban:<20
+   číslic>` (BBAN je u cz i sk stejný, země není potřeba); jiný IBAN →
+   `iban:<IBAN>`; jinak `raw:<hodnota>`. Nezávisí na platnosti
+   kontrolních součtů. IBAN z dokladu má přednost (`matchedBy: iban`),
+   pak číslo účtu (`accountNumber`).
+2. Žádný match, ale partner existuje → `canCreate` (přidat účet
+   partnerovi; payload nese normalizované a případně opravené hodnoty
+   z canonicalu).
+3. Partner ještě neexistuje (sám `canCreate`) → odložit do Apply fáze.
 
-Postup pro **vlastní účet** (`selfParty == "supplier"` na FVB):
+Postup pro **vlastní účet** (`resolveOwnBank`, dnes bez produkčního
+volajícího — applier bere vlastní účet kódem `importOwnBankAccount`):
 
-1. Lookup v `economy_codebooks_bank_accounts` podle `iban` /
-   `accountNumber` / `currency` filteru.
+1. Načíst aktivní účty z `economy_codebooks_bank_accounts` a porovnat
+   stejným klíčem.
 2. Žádný match → `notFound` (vlastní účet musí být v codebooks, applier
    ho nevytváří automaticky).
 
@@ -1316,6 +1334,16 @@ do něj přidávají vlastní bloky bez změny schématu:
   canonical `vatRecap` / `totals` jen jako fallback a při
   `computed_total_mismatch` jako „na dokladu dodavatele“
   (`tasks/exchange-preview-vat-recompute.md`).
+- `_resolve.valueRepairs` — auditní blok oprav hodnot z redundance
+  (#118 D4, D14): `[{path, from, to, basis}]`, `basis` `accountNumber`
+  (IBAN dopočtený z platného čísla účtu) | `iban` (číslo účtu dopočtené
+  z platného IBAN). Zapisuje ho normalizátor canonicalu
+  (`Values\CanonicalValueNormalizer`) při `/result`, sběru ISDOC
+  i v každém volání applieru — idempotentně: existující záznamy
+  zachová, stejný nepřidá; `withResolve()` ho přenáší do čerstvého
+  `_resolve`, takže přežije `/preview` i `/apply`. Validátor z něj dělá
+  warning `bank_account_repaired` a strop pásma návrhu ho vidí jako
+  nález (§ 10 → Normalizace a validace hodnot).
 
 ### `userAction` slovník
 
@@ -1371,6 +1399,15 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `replace_concept_requires_draft` | error | `applyOptions.replaceConcept` s `targetDocState` jiným než 10 — přegenerování ukládá vždy Koncept (#110 Q2). |
 | `replace_concept_with_import` | error | `applyOptions.replaceConcept` spolu s `importNumber` — koncept číslo nemá. |
 | `replace_author_ignored` | warning | `applyOptions.author` při přegenerování — autor původního konceptu zůstává, klíč se ignoruje. |
+| `company_id_invalid` | warning | IČO strany (cz, sk) nemá osm číslic nebo platný kontrolní součet (#118 D13, `Values\CanonicalValueValidator`). Path `supplier.companyId` apod. |
+| `vat_id_invalid` | warning | DIČ / VAT ID nemá tvar prefix státu + 2–13 znaků, nebo neodpovídá pravidlu státu podle prefixu (cz 8–10 číslic, sk 10, de kontrolní číslice). |
+| `vat_id_company_id_mismatch` | warning | Osmimístné české DIČ není `CZ` + IČO strany (9–10místné DIČ fyzické osoby vazbu nemá). Path `*.vatId`. |
+| `zip_invalid` | warning | PSČ cz / sk nemá pět číslic (podle země adresy, jinak strany). |
+| `account_number_invalid` | warning | Tuzemské číslo účtu `[předčíslí-]číslo/kód` nesplňuje mod 11 (předčíslí i číslo zvlášť), nebo strana cz / sk má účet jiného tvaru. |
+| `iban_invalid` | warning | IBAN nemá tvar, platnou kontrolní číslici (ISO 7064 MOD 97-10), nebo neodpovídá pravidlu státu (délka; u cz / sk i mod 11 čísla účtu uvnitř). |
+| `bic_invalid` | warning | BIC nemá tvar 8 nebo 11 znaků. |
+| `iban_account_mismatch` | warning | IBAN i číslo účtu jsou platné, ale nenesou týž účet (BBAN se liší). Path `*.bankAccount.iban`. |
+| `bank_account_repaired` | warning | Normalizátor dopočetl neplatný IBAN z platného čísla účtu nebo naopak (D4) — z `_resolve.valueRepairs`, zpráva nese původní i novou hodnotu. Návrh s tímto nálezem nikdy není `ready`. |
 
 Apply-level kódy (`ApplyResult.errorCode`, 422): `number_series_not_found`,
 `number_series_conflict` (`numberSeriesCode` i `numberSeriesId` najednou),
@@ -1606,6 +1643,68 @@ kódem). Konzument: datové sady, `shpd-ds dataset-dump`.
 
 `userAction` přebíjí mode — explicit `useExisting:<id>` nebo `create`
 funguje stejně ve všech režimech.
+
+### Normalizace a validace hodnot (#118)
+
+Tvar údajů stran dokladu určoval model nebo dodavatel ISDOC (PSČ
+s mezerou, IBAN po čtveřicích, telefon bez předvolby); platnost se
+nekontrolovala. Dva kroky nad canonicalem `shpd.docs.document`
+(`modules/core/exchange/src/Values/`, pravidla per stát v modulu
+`world.validations` — `modules/world/validations/README.md`):
+
+- **Normalizace** (`CanonicalValueNormalizer::normalize()`) — čistá,
+  idempotentní, mlčky sjednocuje tvar a obsah nemění (D1): země malými;
+  `companyId` (cz / sk: bez mezer, samé číslice do osmi míst dostanou
+  vedoucí nuly), `taxId`, `vatId` (velkými, bez mezer / teček / pomlček;
+  u cz jen číslice dostanou prefix `CZ`), `address.zip` (podle země
+  adresy, jinak strany), `contact.email` / `phone` (D12: `00` → `+`,
+  `(0)` pryč, národní číslo bez národního předčíslí s předvolkou země
+  strany; bez třídy země jen bez mezer a interpunkce) / `web`,
+  `bankAccount.iban` / `bic` / `accountNumber` (bez mezer a vedoucích
+  nul), `payment.paymentReference` / `specificSymbol` /
+  `constantSymbol` i na řádcích. Strany `supplier`, `customer`,
+  `balanceParty`; `null`, chybějící klíče a ne-řetězce zůstávají, nic
+  se nedoplňuje — jedinou výjimkou je **oprava z redundance (D4)**: IBAN
+  a tuzemské číslo účtu (cz, sk — země z prefixu IBAN, jinak strany)
+  nesou tentýž údaj; je-li jeden platný a druhý ne, neplatný se dopočte
+  z platného (dopočtená hodnota musí sama projít validací), záznam jde
+  do `_resolve.valueRepairs` (§ 9). Oba platné a nesedí → jen nález;
+  oba neplatné → beze změny.
+- **Validace** (`CanonicalValueValidator::validate()`) — kódy D13
+  v tabulce Issue codes výš, vše `warning` na cestě pole, hodnota
+  zůstává, apply neblokuje (D3). Kontroluje tvary po normalizaci
+  (`normalizeShapes()`), takže persistované návrhy z doby před nasazením
+  nedostanou nález za mezery. Telefon, e-mail, web ani `taxId` nálezy
+  nevyrábí (u cz je `taxId` totéž co DIČ — nález by se zdvojil). Volá ji
+  `DocumentValidator::validate()`, tedy `/validate`, `/preview` i
+  `/apply`, a strop pásma návrhu
+  (`AnalysisConfidenceResolver::capBand()`, D15: nález nebo oprava →
+  `ready` klesá na `review`, v detailu zprávy i ve feedu).
+
+**Kde a v jakém pořadí** (D2) — vždy po kontrole schématu (canonical má
+zaručenou strukturu), před obohacením, dedupem a `DocumentValidator`:
+
+1. AI analýza: `AnalysisResultWriter::validateCanonical()` (docs větev)
+   před `enrichAtResult()` — pravidlo štítku hledá normalizované IČO;
+   do `canonical_json` jde normalizovaný canonical, syrový výstup modelu
+   zůstává v `analysis_json`.
+2. ISDOC: `IsdocDocumentCollector::collect()` po `passesSchema()`
+   v obou větvích (samostatná příloha, embedded) před dedupem identitou
+   (páruje podle DIČ / IČ).
+3. `DocumentApplier::validate()`, `preview()`, `apply()` po schématu
+   před `DocumentValidator` — idempotentně pro každého producenta
+   canonicalu včetně importního módu (`applyOptions.importNumber`): data
+   ze starého Shipardu se při importu normalizují. Náhled vrací
+   normalizovaný canonical; na hlavičku (`partner_bank_*`, symboly)
+   i do založených účtů jdou normalizované / opravené hodnoty.
+
+Porovnávač evaluace (`Compare\ValueShapes`) deleguje sdílené tvary na
+tutéž knihovnu (D6) a výsledek volání nese `valueFindings`
+(`docs/test-corpus.md` § 18). Mimo fázi 1 (#118 D9, samostatný task):
+normalizace při uložení osob a účtů, jednorázová normalizace
+existujících dat a převod zbylých míst s vlastní implementací
+(`BankAccountDocument`, `Import\PartnerResolver`, `ParserUtils::mod11`,
+`CzIbanCalculator`). Ověření v registrech (ARES, VIES) je #142.
 
 ## 11. REST API endpointy
 
