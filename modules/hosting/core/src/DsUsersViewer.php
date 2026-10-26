@@ -6,6 +6,7 @@ namespace Shipard\Module\Hosting\Core;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -138,9 +139,9 @@ class DsUsersViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT du.*, u.`full_name` AS `user_name`, u.`login` AS `user_login`,'
             . ' ds.`name` AS `ds_name`'
             . ' FROM `' . $this->table . '` AS du'
@@ -149,11 +150,27 @@ class DsUsersViewer extends TableViewer
             . ' WHERE du.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
+    /** Titulek jméno uživatele (bez jména login), podtitul login · zdroj dat (#136 §6). */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $name = trim((string) ($record['user_name'] ?? ''));
+        $login = trim((string) ($record['user_login'] ?? ''));
+        $subtitle = implode(' · ', array_filter(
+            [$login, trim((string) ($record['ds_name'] ?? ''))],
+            static fn (string $v): bool => $v !== '',
+        ));
+        $title = $name !== '' ? $name : $login;
 
+        return new DetailHeader(
+            $title !== '' ? $title : '#' . (int) ($record['id'] ?? 0),
+            $subtitle !== '' && $subtitle !== $title ? $subtitle : null,
+        );
+    }
+
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
 
         $items = [
@@ -169,16 +186,14 @@ class DsUsersViewer extends TableViewer
             $items[] = ['label' => $isCs ? 'Poslední vstup' : 'Last entered', 'value' => (string) $record['last_entered']];
         }
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [['title' => $isCs ? 'Vazba' : 'Link', 'items' => $items]],
-                ],
-            ]],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [['title' => $isCs ? 'Vazba' : 'Link', 'items' => $items]],
+            ],
+        ]];
     }
 
     /** @param array<int, array<string, mixed>> $rows */

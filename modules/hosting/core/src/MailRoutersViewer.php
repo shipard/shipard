@@ -98,17 +98,16 @@ class MailRoutersViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT * FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
 
         $items = [
@@ -128,16 +127,14 @@ class MailRoutersViewer extends TableViewer
             $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];
         }
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [['title' => $isCs ? 'Mail-router' : 'Mail router', 'items' => $items]],
-                ],
-            ]],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [['title' => $isCs ? 'Mail-router' : 'Mail router', 'items' => $items]],
+            ],
+        ]];
     }
 
     private function resolveStateStyle(int $docState): string

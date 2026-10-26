@@ -159,7 +159,9 @@
             "name:en": "AI gateway tokens",
             "icon": "lock",
             "table": "hosting_core_ai_tokens",
-            "class": "Shipard\\Module\\Hosting\\Core\\AiTokensViewer"
+            "class": "Shipard\\Module\\Hosting\\Core\\AiTokensViewer",
+            // Bez poznámky titulek z displayPattern ({token_prefix}), podtitul se pak vynechá (#136 §1.2).
+            "detailHeader": {"title": "{note}", "subtitle": "{token_prefix}"}
         },
         {
             "id": "hosting.core.aiUsage",
@@ -168,7 +170,8 @@
             "name:en": "AI usage",
             "icon": "robot",
             "table": "hosting_core_ai_usage",
-            "class": "Shipard\\Module\\Hosting\\Core\\AiUsageViewer"
+            "class": "Shipard\\Module\\Hosting\\Core\\AiUsageViewer",
+            "detailHeader": {"title": "{model}", "subtitle": "{created}"}
         }
     ],
 

@@ -31,6 +31,8 @@ class DetailContractTest extends TestCase
      * shodí); task B #136 ho vyprázdní a `renderDetail()` bude `final`.
      */
     public const NOT_CONVERTED = [
+        // tasks.core
+        'tasks.core',
         // core.ai
         // core.alerts
         // core.chat
@@ -48,14 +50,7 @@ class DetailContractTest extends TestCase
         // economy.items
         // economy.vat
         // hosting.core
-        'hosting.core.servers',
-        'hosting.core.dataSources',
-        'hosting.core.dsUsers',
-        'hosting.core.mailRouters',
-        'hosting.core.aiTokens',
-        'hosting.core.aiUsage',
         // tasks.core
-        'tasks.core',
     ];
 
     /** @var array<string, array{module: string, def: array<string, mixed>}> id vieweru → deklarace */

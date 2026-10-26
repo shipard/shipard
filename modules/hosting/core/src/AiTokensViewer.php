@@ -97,20 +97,19 @@ class AiTokensViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT t.*, ds.`name` AS ds_name, ds.`ds_id` AS ds_ds_id'
             . ' FROM `' . $this->table . '` t'
             . ' LEFT JOIN `hosting_core_data_sources` ds ON ds.`id` = t.`data_source`'
             . ' WHERE t.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
         $isActive = (int) ($record['active'] ?? 0) === 1;
 
@@ -136,16 +135,14 @@ class AiTokensViewer extends TableViewer
         }
         $items[] = ['label' => $isCs ? 'Vytvořen' : 'Created', 'value' => $this->formatDateTime($record['created'])];
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [['title' => $isCs ? 'AI gateway token' : 'AI gateway token', 'items' => $items]],
-                ],
-            ]],
-        ];
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [['title' => $isCs ? 'AI gateway token' : 'AI gateway token', 'items' => $items]],
+            ],
+        ]];
     }
 
     private function resolveStateStyle(int $docState): string

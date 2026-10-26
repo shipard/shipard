@@ -127,20 +127,19 @@ class DataSourcesViewer extends TableViewer
         ];
     }
 
-    public function renderDetail(int $recordId): array
+    protected function loadDetailRecord(int $recordId): ?array
     {
-        $record = $this->db->fetchRow(
+        return $this->db->fetchRow(
             'SELECT ds.*, srv.`name` AS `server_name`'
             . ' FROM `' . $this->table . '` AS ds'
             . ' LEFT JOIN `hosting_core_servers` AS srv ON srv.`id` = ds.`server`'
             . ' WHERE ds.`id` = %i',
             $recordId,
         );
+    }
 
-        if ($record === null) {
-            return ['tabs' => []];
-        }
-
+    protected function detailTabs(array $record): array
+    {
         $isCs = ($this->language ?? 'en') === 'cs';
 
         $identity = [
@@ -192,19 +191,17 @@ class DataSourcesViewer extends TableViewer
             ];
         }
 
-        return [
-            'tabs' => [[
-                'id'      => 'overview',
-                'label'   => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type'   => 'properties',
-                    'groups' => [
-                        ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                        ['title' => $isCs ? 'Umístění' : 'Placement', 'items' => $placement],
-                    ],
+        return [[
+            'id'      => 'overview',
+            'label'   => $this->defaultOverviewLabel(),
+            'content' => [
+                'type'   => 'properties',
+                'groups' => [
+                    ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
+                    ['title' => $isCs ? 'Umístění' : 'Placement', 'items' => $placement],
                 ],
-            ]],
-        ];
+            ],
+        ]];
     }
 
     /**
