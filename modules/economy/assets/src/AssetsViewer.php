@@ -278,11 +278,15 @@ class AssetsViewer extends AssetsViewerBase
     }
 
     /**
-     * Přehled (identita, zařazení, vlastnictví, pořízení a vyřazení,
-     * odpisy, poznámka; s kontrolou proti deníku a pořízením z dokladů jako
+     * Přehled (vlastnictví, pořízení a vyřazení, zařazení, odpisy,
+     * poznámka; s kontrolou proti deníku a pořízením z dokladů jako
      * composite), u odpisovaného majetku taby Daňové / Účetní odpisy
      * a tab Náklady a výnosy, když karta nějaké má. Tab Přílohy přidává
      * builder (`detailAttachments: "tab"`, #136 D21).
+     *
+     * Pořadí skupin (#137 D31): dvojice v řádku patří věcně k sobě
+     * a jsou podobně dlouhé; Odpisy jsou jen u odpisovaného majetku, proto
+     * stojí na konci dvojic, Poznámka jde přes celou šířku (`wide`).
      */
     protected function detailTabs(array $record): array
     {
@@ -294,14 +298,14 @@ class AssetsViewer extends AssetsViewerBase
         $depreciable = $data['depreciable'];
         $tracking    = $this->config?->cfgItem('economy.assets.trackingKinds') ?? [];
 
-        // Název je titulkem, inventární číslo podtitulkem; zkrácený název jen když se liší (#140 D26, §2).
-        $identity = [];
+        // Název je titulkem, inventární číslo podtitulkem; zkrácený název jen
+        // když se liší (#140 D26, §2) — jako první položka Zařazení, samostatná
+        // skupina Identifikace by u většiny karet zanikla a posouvala dvojice (D31).
+        $classification = [];
         $shortName = trim((string) ($record['short_name'] ?? ''));
         if ($shortName !== trim((string) ($record['name'] ?? ''))) {
-            $this->addItem($identity, $this->text('label.shortName', 'Short name'), $shortName);
+            $this->addItem($classification, $this->text('label.shortName', 'Short name'), $shortName);
         }
-
-        $classification = [];
         $this->addItem($classification, $this->text('label.type', 'Type'), $record['type_name'] ?? null);
         $this->addItem($classification, $this->text('label.category', 'Category'), $category !== '' ? $categories->label($category) : null);
         $trackingKey = (string) ($record['tracking'] ?? '');
@@ -339,10 +343,9 @@ class AssetsViewer extends AssetsViewerBase
         $this->addItem($note, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
         $overview = $this->propertiesTab([
-            ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
-            ['title' => $this->text('group.classification', 'Classification'), 'items' => $classification],
             ['title' => $this->text('group.ownership', 'Ownership'), 'items' => $ownership],
             ['title' => $this->text('group.lifecycle', 'Acquisition and disposal'), 'items' => $lifecycle],
+            ['title' => $this->text('group.classification', 'Classification'), 'items' => $classification],
             ['title' => $this->text('group.depreciation', 'Depreciation'), 'items' => $depreciation],
             ['title' => $this->text('label.note', 'Note'), 'items' => $note, 'wide' => true],
         ]);

@@ -211,8 +211,15 @@ class AssetsViewerTest extends TestCase
         $this->assertNotContains('Soustruh', $values, 'název je titulkem, shodný zkrácený název se neopakuje (#140 D26, §2)');
         $this->assertNotContains('MA0004', $values, 'inventární číslo je podtitulkem');
 
-        $values = self::overviewValues($this->detailViewer(['short_name' => 'Soustr.'] + $card, [])->renderDetail(4));
-        $this->assertContains('Soustr.', $values, 'zkrácený název jen když se liší');
+        $detail = $this->detailViewer(['short_name' => 'Soustr.'] + $card, [])->renderDetail(4);
+        $this->assertContains('Soustr.', self::overviewValues($detail), 'zkrácený název jen když se liší');
+        $groups = array_column($detail['tabs'][0]['content']['groups'], null, 'title');
+        $this->assertSame(
+            ['label' => 'Short name', 'value' => 'Soustr.'],
+            $groups['Classification']['items'][0],
+            'zkrácený název je první položka Zařazení, samostatná Identifikace zanikla (#137 D31)',
+        );
+        $this->assertArrayNotHasKey('Identity', $groups);
     }
 
     /**
@@ -402,6 +409,11 @@ class AssetsViewerTest extends TestCase
 
         $this->assertSame('properties', $detail['tabs'][0]['content']['type']);
         $groups = array_column($detail['tabs'][0]['content']['groups'], null, 'title');
+        $this->assertSame(
+            ['Ownership', 'Classification', 'Depreciation', 'Note'],
+            array_keys($groups),
+            'pořadí skupin: podmíněné Odpisy na konci dvojic, Poznámka přes šířku; Pořízení bez dat chybí (#137 D31)',
+        );
         $this->assertSame([['label' => 'Note', 'value' => 'Servis u dodavatele']], $groups['Note']['items']);
         $this->assertTrue($groups['Note']['wide'], 'poznámka přes celou šířku (#137 D29)');
         $this->assertSame(
