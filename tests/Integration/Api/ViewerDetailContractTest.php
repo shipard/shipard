@@ -160,12 +160,13 @@ class ViewerDetailContractTest extends IntegrationTestCase
     /**
      * Soustavné opakování nad vzorkem detailů jednoho vieweru: dvojice
      * (popisek, část hlavičky) se shoduje ve všech záznamech, kde položka je,
-     * a takových záznamů jsou aspoň dva. Ojedinělá shoda (kód náhodou stejný
-     * jako název) není chyba; popisky z `$allowedLabels` se vynechají.
+     * a takových záznamů jsou aspoň dva (`samples` = kolik jich je). Ojedinělá
+     * shoda (kód náhodou stejný jako název) není chyba; popisky
+     * z `$allowedLabels` se vynechají.
      *
      * @param list<array<string, mixed>> $details
      * @param list<string> $allowedLabels
-     * @return list<array{label: string, part: string}>
+     * @return list<array{label: string, part: string, samples: int}>
      */
     public static function systematicRepeats(array $details, array $allowedLabels = []): array
     {
@@ -195,7 +196,7 @@ class ViewerDetailContractTest extends IntegrationTestCase
             if ($presentCount < 2 || $count < $presentCount) {
                 continue;
             }
-            $out[] = ['label' => $label, 'part' => $part];
+            $out[] = ['label' => $label, 'part' => $part, 'samples' => $presentCount];
         }
         return $out;
     }
@@ -371,13 +372,13 @@ class ViewerDetailContractTest extends IntegrationTestCase
             $checked++;
 
             $allowed = self::OVERVIEW_REPEAT_ALLOWED[$def->id] ?? [];
-            foreach (self::systematicRepeats($details, $allowed) as ['label' => $label, 'part' => $part]) {
+            foreach (self::systematicRepeats($details, $allowed) as ['label' => $label, 'part' => $part, 'samples' => $samples]) {
                 $failures[] = sprintf(
                     'viewer %s: položka „%s“ v Přehledu opakuje %s hlavičky (%d z %d vzorků)',
                     $def->id,
                     $label,
                     self::PART_NAMES[$part] ?? $part,
-                    count($details),
+                    $samples,
                     count($details),
                 );
             }

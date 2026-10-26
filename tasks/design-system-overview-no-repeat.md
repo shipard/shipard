@@ -1,6 +1,6 @@
 # Design system — Přehled detailu neopakuje hlavičku
 
-**Stav:** hotovo — 2026-10-26, #140 (D26, D27); odchylky od auditu v §6, kontrakt zelený na `lh6x…` a `9gk5…`
+**Stav:** hotovo — 2026-10-26, #140 (D26, D27); odchylky od auditu v §6, kontrakt zelený na `lh6x…`, `9gk5…` a `q7h6…`
 
 ## Kontext / Cíl
 
@@ -199,8 +199,11 @@ nebo jako `@dataProvider` v kontraktu) — shoda titulku, části podtitulku,
   profily AI, schránky, pravidla předzpracování a odesílatelů) nevybíralo
   v `loadDetailRecord()` `docState`, štítek stavu se nikdy nekreslil;
   profil AI nevybíral ani `id`.
-- Spisovnu s přílohou žádný vývojový zdroj dat nemá — sdílenou sekci
-  u Spisovny kontrakt neověřil, jen v prohlížeči.
+- Spisovna navíc **Platnost do / lhůta**: hlavička nese konec platnosti
+  v podtitulku jako „do <datum>“; kontrola to nechytila (předložka před
+  hodnotou, na vývojových zdrojích jediný vzorek).
+- Sdílenou sekci příloh u Spisovny ověřil kontrakt na `q7h6…` (jediný
+  vývojový zdroj dat s dokumentem Spisovny s přílohou).
 
 ## Commity
 

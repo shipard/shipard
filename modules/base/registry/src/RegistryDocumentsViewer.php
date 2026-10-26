@@ -30,7 +30,7 @@ use Shipard\Module\Core\Mail\IncomingMessageTitle;
  * Detail: taby Obsah (vlastnosti + metadata dle druhu) / Původ; přílohy
  * dokumentu a Odeslanou poštu dodává builder na konec Obsahu
  * (`detailAttachments: "overview"`, #140 D27). Druh je štítek, partner
- * a šanon podtitul hlavičky — Obsah je neopakuje (D26).
+ * a šanon i konec platnosti podtitul hlavičky — Obsah je neopakuje (D26).
  */
 class RegistryDocumentsViewer extends TableViewer
 {
@@ -279,9 +279,9 @@ class RegistryDocumentsViewer extends TableViewer
         $identity = [];
         $this->addItem($identity, 'Číslo / značka', $record['ref_number'] ?? null);
 
+        // Konec platnosti nese podtitul hlavičky („do <datum>“, #140 D26).
         $validity = [];
         $this->addItem($validity, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
-        $this->addItem($validity, 'Platnost do / lhůta', $this->formatDate($record['valid_to'] ?? null));
 
         $groups = [];
         if ($identity !== []) {

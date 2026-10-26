@@ -205,11 +205,11 @@ class OverviewRepeatCheckTest extends TestCase
 
         // Název opakuje titulek ve všech třech; Kód jen v jednom — ojedinělá shoda.
         $this->assertSame(
-            [['label' => 'Název', 'part' => 'title']],
+            [['label' => 'Název', 'part' => 'title', 'samples' => 3]],
             ViewerDetailContractTest::systematicRepeats([$a, $b, $c]),
         );
         $this->assertSame(
-            [['label' => 'Název', 'part' => 'title'], ['label' => 'Kód', 'part' => 'subtitle']],
+            [['label' => 'Název', 'part' => 'title', 'samples' => 2], ['label' => 'Kód', 'part' => 'subtitle', 'samples' => 2]],
             ViewerDetailContractTest::systematicRepeats([$a, self::detail('Pokladna D', 'D', [
                 ['label' => 'Název', 'value' => 'Pokladna D'],
                 ['label' => 'Kód', 'value' => 'D'],
@@ -226,7 +226,7 @@ class OverviewRepeatCheckTest extends TestCase
         $withShortcut = self::detail('Metr', 'm', [['label' => 'Název', 'value' => 'Metr'], ['label' => 'Zkratka', 'value' => 'm']]);
         $withoutShortcut = self::detail('Kus', null, [['label' => 'Název', 'value' => 'Kus']]);
         $this->assertSame(
-            [['label' => 'Název', 'part' => 'title']],
+            [['label' => 'Název', 'part' => 'title', 'samples' => 2]],
             ViewerDetailContractTest::systematicRepeats([$withShortcut, $withoutShortcut]),
         );
         $this->assertSame([], ViewerDetailContractTest::systematicRepeats([]));
@@ -238,7 +238,7 @@ class OverviewRepeatCheckTest extends TestCase
         $b = self::detail('Zboží', null, [['label' => 'Typ položky', 'value' => 'Zboží'], ['label' => 'Název', 'value' => 'Zboží']]);
 
         $this->assertSame(
-            [['label' => 'Název', 'part' => 'title']],
+            [['label' => 'Název', 'part' => 'title', 'samples' => 2]],
             ViewerDetailContractTest::systematicRepeats([$a, $b], ['Typ položky', 'Nikde nepoužitý popisek']),
         );
     }
