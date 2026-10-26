@@ -46,7 +46,7 @@ test('visibleGroups: prázdná skupina vypadne, pořadí zůstává', () => {
     { title: 'Platnost', items: [{ label: 'Od', value: '1. 1. 2026' }] },
   ]);
   assert.deepEqual(groups.map((g) => g.title), ['Identifikace', 'Platnost']);
-  assert.deepEqual(groups[0], { title: 'Identifikace', items: [{ label: 'Kód', value: 'A1' }], wide: false });
+  assert.deepEqual(groups[0], { title: 'Identifikace', items: [{ label: 'Kód', value: 'A1' }], wide: false, full: false });
 });
 
 test('visibleGroups: wide jen při přesně true', () => {
@@ -61,7 +61,42 @@ test('visibleGroups: wide jen při přesně true', () => {
 
 test('visibleGroups: hodnota 0 drží skupinu naživu, chybějící title je prázdný', () => {
   const groups = visibleGroups([{ items: [{ label: 'Počet', value: 0 }] }]);
-  assert.deepEqual(groups, [{ title: '', items: [{ label: 'Počet', value: 0 }], wide: false }]);
+  assert.deepEqual(groups, [{ title: '', items: [{ label: 'Počet', value: 0 }], wide: false, full: true }]);
+});
+
+// D32: skupina sama v řádku jde přes celou šířku — kurzor sloupce nad
+// viditelnými skupinami, wide kurzor nuluje.
+const g = (title, wide = false) => ({ title, items: [{ label: 'A', value: '1' }], ...(wide ? { wide: true } : {}) });
+const fullOf = (groups) => visibleGroups(groups).map((x) => [x.title, x.full]);
+
+test('D32: jediná skupina je přes celou šířku', () => {
+  assert.deepEqual(fullOf([g('a')]), [['a', true]]);
+});
+
+test('D32: sudý počet beze změny, lichý počet má poslední přes celou šířku', () => {
+  assert.deepEqual(fullOf([g('a'), g('b')]), [['a', false], ['b', false]]);
+  assert.deepEqual(fullOf([g('a'), g('b'), g('c'), g('d')]), [['a', false], ['b', false], ['c', false], ['d', false]]);
+  assert.deepEqual(fullOf([g('a'), g('b'), g('c')]), [['a', false], ['b', false], ['c', true]]);
+});
+
+test('D32: skupina před wide zůstává sama, wide je vždy přes celou šířku', () => {
+  assert.deepEqual(fullOf([g('a'), g('w', true), g('b')]), [['a', true], ['w', true], ['b', true]]);
+  assert.deepEqual(fullOf([g('a'), g('b'), g('c'), g('w', true)]), [['a', false], ['b', false], ['c', true], ['w', true]]);
+});
+
+test('D32: wide uprostřed nuluje kurzor — dvojice za ním začíná vlevo', () => {
+  assert.deepEqual(
+    fullOf([g('a'), g('b'), g('w', true), g('c'), g('d')]),
+    [['a', false], ['b', false], ['w', true], ['c', false], ['d', false]],
+  );
+  assert.deepEqual(fullOf([g('a'), g('w', true), g('b'), g('c')]), [['a', true], ['w', true], ['b', false], ['c', false]]);
+});
+
+test('D32: počítá se nad viditelnými skupinami — prázdná skupina dvojici nerozhodí', () => {
+  assert.deepEqual(
+    fullOf([g('a'), { title: 'prázdná', items: [] }, g('b'), g('c')]),
+    [['a', false], ['b', false], ['c', true]],
+  );
 });
 
 test('visibleGroups: nepole a null skupiny', () => {

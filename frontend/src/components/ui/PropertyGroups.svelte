@@ -5,7 +5,9 @@
   // popisy, zprávy — stejně jako tabulky a ostatní bloky), pod 30 rem šířky
   // kontejneru jeden sloupec. Výšku řádku určuje vyšší skupina. Skupina bez
   // vykreslitelné položky se nevykreslí (`visibleGroups`); bez skupin se
-  // nevykreslí nic, ani obal.
+  // nevykreslí nic, ani obal. Skupina, která by v řádku zůstala sama
+  // (poslední lichá, nebo před `wide`), jde přes celou šířku také — příznak
+  // `full` počítá `visibleGroups` (D32), komponenta ho jen kreslí.
   //
   // Obal je kontejner pro @container (`container-type: inline-size`) — na
   // celou šířku, mřížka až uvnitř: dotaz platí pro potomky kontejneru, ne pro
@@ -24,7 +26,7 @@
   <div class="shpd-property-groups">
     <div class="shpd-property-groups__grid">
       {#each visible as group}
-        <div class="shpd-property-groups__group" class:shpd-property-groups__group--wide={group.wide}>
+        <div class="shpd-property-groups__group" class:shpd-property-groups__group--full={group.full}>
           {#if group.title !== ''}
             <SectionHeading level={headingLevel}>{group.title}</SectionHeading>
           {/if}
@@ -51,7 +53,8 @@
     min-width: 0;
   }
 
-  .shpd-property-groups__group--wide {
+  /* Přes celou šířku: wide, nebo skupina sama v řádku (D32). */
+  .shpd-property-groups__group--full {
     grid-column: 1 / -1;
   }
 

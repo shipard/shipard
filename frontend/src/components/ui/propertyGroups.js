@@ -25,9 +25,15 @@ export function visibleItems(items) {
  * Vykreslitelné skupiny v pořadí od backendu (mřížka je čte po řádcích,
  * frontend je nepřehazuje): jen s aspoň jednou položkou; `wide` jen při
  * přesně `true` — skupina pak jde přes celou šířku.
+ *
+ * `full` (D32) = skupina se kreslí přes celou šířku: je `wide`, nebo by
+ * v řádku zůstala sama — stojí v levém sloupci a za ní už žádná viditelná
+ * skupina není, nebo je za ní skupina `wide`. Počítá se nad viditelnými
+ * skupinami kurzorem sloupce (`wide` kurzor nuluje), ne CSS sudá / lichá —
+ * ta by nevěděla, co skupina za ní udělá.
  */
 export function visibleGroups(groups) {
-  return (Array.isArray(groups) ? groups : [])
+  const visible = (Array.isArray(groups) ? groups : [])
     .filter((group) => group)
     .map((group) => ({
       title: group.title === null || group.title === undefined ? '' : String(group.title),
@@ -35,4 +41,20 @@ export function visibleGroups(groups) {
       wide: group.wide === true,
     }))
     .filter((group) => group.items.length > 0);
+
+  let column = 0;
+  return visible.map((group, i) => {
+    if (group.wide) {
+      column = 0;
+      return { ...group, full: true };
+    }
+    if (column === 1) {
+      column = 0;
+      return { ...group, full: false };
+    }
+    const next = visible[i + 1];
+    const alone = next === undefined || next.wide;
+    column = alone ? 0 : 1;
+    return { ...group, full: alone };
+  });
 }
