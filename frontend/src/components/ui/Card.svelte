@@ -9,20 +9,30 @@
   // nebo `CardGrid`.
   //
   // Nadpis karty je `SectionHeading` (`title`, `headingLevel` 2–4); snippet
-  // `aside` sedí vpravo v řádku nadpisu a bez `title` se nekreslí. Tón
-  // `warning` / `danger` mění jen barvu rámečku, `info` dává tónované pozadí
-  // (AI shrnutí). Kořen je flex sloupec, aby v roztaženém řádku mřížky
-  // zůstal obsah nahoře a případná patička mohla dostat `margin-top: auto`;
-  // `position: relative` nese stavový proužek karty feedu. Vnitřní
-  // rozložení (řádek ikona + tělo) patří do obsahu, ne na kořen — rodič
-  // kořen přes vlastní třídu nestyluje, co karta potřebuje, je prop. Zbylé
-  // atributy (`data-testid`, `role`, `aria-*`, `class` se stavovou třídou
-  // feedu) jdou na kořen. Pravidla: docs/design-system.md §8 Karty.
+  // `aside` sedí vpravo v řádku nadpisu a bez `title` se nekreslí. Roli
+  // nadpisu volí místo karty (D36): `titleRole` `heading` (výchozí — karta
+  // uvnitř obsahu: strany dokladu, karta návrhu, karty feedu) | `title`
+  // (karta jako samostatná část stránky: Přehled firmy, karty Nastavení);
+  // pod nadpisem v roli title je mezera rovná odsazení karty (md, u
+  // `spacious` lg). `icon` (D38) = ikona tématu před nadpisem, stejná jako
+  // příslušný prohlížeč / report v menu nebo stránka v Nastavení — jen
+  // u karty jako samostatné části stránky; mezinadpisy uvnitř karty jsou
+  // `SectionHeading` bez ikony. Tón `warning` / `danger` mění jen barvu
+  // rámečku, `info` dává tónované pozadí (AI shrnutí). Kořen je flex
+  // sloupec, aby v roztaženém řádku mřížky zůstal obsah nahoře a případná
+  // patička mohla dostat `margin-top: auto`; `position: relative` nese
+  // stavový proužek karty feedu. Vnitřní rozložení (řádek ikona + tělo)
+  // patří do obsahu, ne na kořen — rodič kořen přes vlastní třídu
+  // nestyluje, co karta potřebuje, je prop. Zbylé atributy (`data-testid`,
+  // `role`, `aria-*`, `class` se stavovou třídou feedu) jdou na kořen.
+  // Pravidla: docs/design-system.md §8 Karty.
   import SectionHeading from './SectionHeading.svelte';
 
   let {
     title = '',
     headingLevel = 3,
+    titleRole = 'heading',
+    icon = undefined,
     aside = undefined,
     tone = 'default',
     spacious = false,
@@ -34,6 +44,8 @@
 
   const TONES = ['default', 'warning', 'danger', 'info'];
   let safeTone = $derived(TONES.includes(tone) ? tone : 'default');
+  let safeTitleRole = $derived(titleRole === 'title' ? 'title' : 'heading');
+  let titleSpacing = $derived(safeTitleRole === 'title' ? (spacious ? 'lg' : 'md') : 'xs');
 </script>
 
 <svelte:element
@@ -43,7 +55,9 @@
   {...rest}
 >
   {#if title}
-    <SectionHeading level={headingLevel} {aside}>{title}</SectionHeading>
+    <SectionHeading level={headingLevel} role={safeTitleRole} {icon} spacing={titleSpacing} {aside}>
+      {title}
+    </SectionHeading>
   {/if}
   {@render children?.()}
 </svelte:element>

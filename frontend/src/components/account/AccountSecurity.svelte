@@ -6,7 +6,6 @@
   import { authStore } from '../../stores/auth.svelte.js';
   import ChangePasswordPanel from './ChangePasswordPanel.svelte';
   import SessionsPanel from './SessionsPanel.svelte';
-  import Icon from '../ui/Icon.svelte';
   import Card from '../ui/Card.svelte';
   import { iconLock } from '../../icons.js';
   import { t } from '../../i18n/index.js';
@@ -15,13 +14,9 @@
 </script>
 
 <div class="shpd-account-security">
-  <!-- Karta stránky Nastavení účtu = sdílená Card s odsazením lg (#137 D33, D35). -->
-  <Card spacious>
-    <h2 class="shpd-account-security__title">
-      <Icon icon={iconLock} size="md" />
-      <span>{t('account.security.title')}</span>
-    </h2>
-
+  <!-- Karta stránky Nastavení účtu = sdílená Card s odsazením lg (#137 D33, D35);
+       nadpis v roli title s ikonou tématu (D36, D38). -->
+  <Card spacious title={t('account.security.title')} headingLevel={2} titleRole="title" icon={iconLock}>
     {#if hasLocalPassword}
       <ChangePasswordPanel />
       <hr class="shpd-account-security__divider" />
@@ -35,16 +30,6 @@
   .shpd-account-security {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-account-security__title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-    margin-bottom: var(--shpd-space-lg);
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-account-security__divider {
