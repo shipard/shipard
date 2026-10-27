@@ -1,6 +1,6 @@
 # F8a — testovací kolo jedním příkazem
 
-**Stav:** hotovo — 2026-10-27 (#103 D130–D135); kolo bez evaluace ověřené z CLI i z dashboardu, evaluace v kole jen unit testy (útrata čeká na schválení)
+**Stav:** hotovo — 2026-10-27 (#103 D130–D135); kolo ověřené z CLI i z dashboardu včetně evaluace v kole (cz-non-payer, baseline ×1, 0,56 USD)
 
 ## Kontext / Cíl
 
@@ -234,6 +234,9 @@ exit 1 (nález `CI=1`), po opravě vrstva kódu celá `ok` (PHPUnit 11 044
 testů ~1,5 min); celé kolo `--detach` + sledování v dashboardu založilo
 tři zdroje dat kola a prošlo sady i videa (výsledky v souhrnu úlohy);
 kolo z dashboardu, zrušení uprostřed kroku kódu i dílčí úlohy — viz
-`docs/test-corpus.md` § 21. Evaluace v kole: jen unit testy bez volání AI
-(`--only datasets --dataset cz-non-payer --eval baseline --repeat 1
---max-cost 1` čeká na schválení útraty).
+`docs/test-corpus.md` § 21. Evaluace v kole (po schválení útraty v chatu):
+`--only datasets --dataset cz-non-payer --eval baseline --repeat 1
+--max-cost 1` — odhad 0,5549 USD pod stropem, kroky přeseedování → ověření
+→ proklikání → přeseedování → `ai-eval` všechny `ok` (evaluace 16 volání
+za 2:57 min, shoda polí 99,9 %, cena 0,557 USD, běh
+`tests/eval/cz-non-payer/2026-10-27-baseline.json`), exit 0.
