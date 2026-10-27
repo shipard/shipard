@@ -17,10 +17,12 @@
   let error = $state(null);
   let filterDataset = $state(router.route.query.dataset ?? '');
   let filterDs = $state(router.route.query.ds ?? '');
+  // `?parent=<id kola>` = jen dílčí úlohy kola (#103 F8a).
+  const filterParent = router.route.query.parent ?? '';
 
   async function load() {
     try {
-      jobs = (await testingApi.jobs({ dataset: filterDataset || undefined, ds: filterDs || undefined })).jobs;
+      jobs = (await testingApi.jobs({ dataset: filterDataset || undefined, ds: filterDs || undefined, parent: filterParent || undefined })).jobs;
       error = null;
     } catch (e) {
       error = e.message;
@@ -70,7 +72,7 @@
       {#if col.id === 'id'}
         <a href={router.href('testingJob', { jobId: job.id })} onclick={onLinkClick}><code>{job.id}</code></a>
       {:else if col.id === 'type'}
-        {jobTypeLabel(job.type)}
+        {jobTypeLabel(job.type)}{#if job.parent} <span class="dev-small dev-muted">({t('testing.jobs.inRound')} <a href={router.href('testingJob', { jobId: job.parent })} onclick={onLinkClick}><code>{job.parent}</code></a>)</span>{/if}
       {:else if col.id === 'dataSource'}
         {#if job.dataSource}
           {job.dataSource.name} <span class="dev-small dev-muted"><code>{job.dataSource.id}</code></span>

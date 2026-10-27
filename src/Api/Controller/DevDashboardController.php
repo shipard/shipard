@@ -79,6 +79,10 @@ class DevDashboardController
 		if ($path === DevEvalController::PREFIX || str_starts_with($path, DevEvalController::PREFIX . '/')) {
 			return (new DevEvalController($this->repoRoot, $this->dataSourcesDir, $this->serverMode(), $this->jobStore(), $this->jobLauncher()))->dispatch($request);
 		}
+		// Testovací kolo (#103 F8a D130–D134): poslední kolo, odhad, spuštění úlohy `round`.
+		if ($path === DevRoundController::PREFIX || str_starts_with($path, DevRoundController::PREFIX . '/')) {
+			return (new DevRoundController($this->repoRoot, $this->dataSourcesDir, $this->serverMode(), $this->jobStore(), $this->jobLauncher()))->dispatch($request);
+		}
 		// Zastaralost checkoutu a Aktualizovat (#129 D18–D21).
 		if ($path === DevUpdatesController::PREFIX || str_starts_with($path, DevUpdatesController::PREFIX . '/')) {
 			return $this->updatesController()->dispatch($request);

@@ -18,6 +18,7 @@
   import VerifyResult from './VerifyResult.svelte';
   import E2eResult from './E2eResult.svelte';
   import VideoResult from '../videos/VideoResult.svelte';
+  import RoundResult from './RoundResult.svelte';
   import { videoStepLabel } from '../../videos/videos.js';
 
   const route = $derived(router.route);
@@ -131,9 +132,10 @@
       <dl class="dev-kv">
         <dt>{t('common.dataset')}</dt><dd>{#if job.dataset}<a href={router.href('testingRuns', { set: job.dataset })} onclick={onLinkClick}><code>{job.dataset}</code></a>{:else}—{/if}</dd>
         <dt>{t('common.dataSource')}</dt><dd>{#if job.dataSource}{job.dataSource.name} <code>{job.dataSource.id}</code> · <a href="/{job.dataSource.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a>{:else}<span class="dev-muted">{t('jobs.server')}</span>{/if}</dd>
+        {#if job.parent}<dt>{t('testing.round.parent')}</dt><dd><a href={router.href('testingJob', { jobId: job.parent })} onclick={onLinkClick}><code>{job.parent}</code></a></dd>{/if}
         {#if job.variant}<dt>{t('testing.col.variant')}</dt><dd><a href={router.href('testingVariant', { name: job.variant })} onclick={onLinkClick}><code>{job.variant}</code></a></dd>{/if}
         {#if job.params && Object.keys(job.params).length}<dt>{t('testing.job.params')}</dt><dd><code>{JSON.stringify(job.params)}</code></dd>{/if}
-        <dt>{t('ds.col.created')}</dt><dd>{formatDateTime(job.createdAt)} <span class="dev-muted">{t('testing.job.from', { ip: job.clientIp ?? '?' })}</span></dd>
+        <dt>{t('ds.col.created')}</dt><dd>{formatDateTime(job.createdAt)} <span class="dev-muted">{job.clientIp === null && job.params?.origin === 'cli' ? t('testing.job.fromCli') : t('testing.job.from', { ip: job.clientIp ?? '?' })}</span></dd>
         <dt>{t('testing.col.run')}</dt><dd>{job.startedAt ? formatDateTime(job.startedAt) : '—'} → {job.finishedAt ? formatDateTime(job.finishedAt) : '…'}{#if job.pid} <span class="dev-muted">pid {job.pid}</span>{/if}</dd>
         {#if job.cancelRequestedAt}<dt>{t('testing.job.cancellation')}</dt><dd>{formatDateTime(job.cancelRequestedAt)}{#if job.forced} <span class="dev-muted">{t('testing.job.forced')}</span>{/if}</dd>{/if}
       </dl>
@@ -268,7 +270,14 @@
     </div>
   {/if}
 
-  {#if !active}
+  {#if job.type === 'round'}
+    <div class="dev-card">
+      <h2 class="dev-card__title">{active ? t('testing.round.progress') : t('testing.jobs.col.result')}</h2>
+      <RoundResult {result} />
+    </div>
+  {/if}
+
+  {#if !active && job.type !== 'round'}
     <div class="dev-card">
       <h2 class="dev-card__title">{t('testing.jobs.col.result')}</h2>
       {#if job.type === 'eval'}
@@ -330,7 +339,7 @@
 <DevConfirm
   open={confirm !== null}
   title={confirm?.force ? t('testing.job.forceKill') : t('testing.job.cancelJob')}
-  message={confirm?.force ? t('testing.job.forceMessage') : job?.type === 'e2e' ? t('testing.job.cancelMessageE2e') : job?.type === 'video' ? t('testing.job.cancelMessageVideo') : t('testing.job.cancelMessage')}
+  message={confirm?.force ? t('testing.job.forceMessage') : job?.type === 'e2e' ? t('testing.job.cancelMessageE2e') : job?.type === 'video' ? t('testing.job.cancelMessageVideo') : job?.type === 'round' ? t('testing.job.cancelMessageRound') : t('testing.job.cancelMessage')}
   variant="danger"
   confirmLabel={confirm?.force ? t('testing.job.force') : t('testing.job.cancelJob')}
   cancelLabel={t('common.back')}

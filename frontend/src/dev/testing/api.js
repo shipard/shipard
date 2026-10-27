@@ -40,8 +40,13 @@ export const testingApi = {
   estimate: (body) => postJson('/testing/eval/estimate', body),
   startEval: (body) => postJson('/testing/eval/run', body), // ne `run` — ten je detail běhu výše
 
-  // Úlohy na pozadí (D58)
-  jobs: ({ dataset, ds, days } = {}) => getJson(`/testing/jobs${query({ dataset, ds, days })}`),
+  // Testovací kolo (#103 F8a D130–D134): poslední kolo + nabídky, odhad ceny evaluací, spuštění úlohy `round`
+  round: () => getJson('/testing/round'),
+  roundEstimate: (body) => postJson('/testing/round/estimate', body),
+  startRound: (body) => postJson('/testing/round/run', body),
+
+  // Úlohy na pozadí (D58); `type` / `parent` = filtr typu a dílčích úloh kola
+  jobs: ({ dataset, ds, days, type, parent } = {}) => getJson(`/testing/jobs${query({ dataset, ds, days, type, parent })}`),
   job: (id, offset = 0, tail = undefined) => getJson(`/testing/jobs/${enc(id)}${query({ offset, tail })}`),
   cancelJob: (id, force = false) => postJson(`/testing/jobs/${enc(id)}/cancel${force ? '?force=1' : ''}`, { force }),
   // Trace selhané karty proklikání (D96) — server vydá jen soubory, které jmenuje report úlohy
