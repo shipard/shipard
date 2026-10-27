@@ -16,6 +16,7 @@
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
   import Badge from '../ui/Badge.svelte';
+  import Notice from '../ui/Notice.svelte';
   import PropertyGroups from '../ui/PropertyGroups.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
@@ -349,10 +350,33 @@
           </table>
         </div>
 
-      {:else if content?.type === 'html'}
-        <div class="shpd-detail__html">
-          {@html content.html}
+      {:else if content?.type === 'notice'}
+        <!-- Hláška v obsahu (#137 D30, D40): backend posílá tón a text
+             nebo položky, vzhled dává sdílená Notice. -->
+        <Notice tone={content.tone} title={content.title ?? ''} items={content.items}>
+          {#if content.text}{content.text}{/if}
+        </Notice>
+
+      {:else if content?.type === 'badges'}
+        <!-- Řada štítků (stav zaúčtování) — tytéž styly jako štítky hlavičky. -->
+        <div class="shpd-detail__badges">
+          {#each content.items ?? [] as badge}
+            <Badge style={badge.style ?? 'neutral'} label={badge.label} />
+          {/each}
         </div>
+
+      {:else if content?.type === 'empty'}
+        <p class="shpd-detail__empty">{content.text}</p>
+
+      {:else if content?.type === 'text'}
+        <!-- Prostý text (tělo pošty bez HTML, AI shrnutí) — vkládá se jako
+             text, zalomení z obsahu zůstávají. -->
+        <p class="shpd-detail__text">{content.text}</p>
+
+      {:else if content?.type === 'code'}
+        <!-- Strojový výpis (JSON kontextu upozornění) — neproporcionální
+             písmo, dlouhý řádek roluje v bloku. -->
+        <pre class="shpd-detail__code">{content.text}</pre>
 
       {:else if content?.type === 'untrusted-html'}
         <SandboxedHtml html={content.html} title={t('viewer.detail.mailBody')} />
@@ -964,9 +988,39 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  /* HTML content */
-  .shpd-detail__html {
+  /* Obecné typy obsahu (#137 D30): hláška kreslí Notice, štítky Badge;
+     prázdný stav, prostý text a kód jsou odstavce v rolích body / meta.
+     Backend HTML se vzhledem neposílá — jediné HTML je `untrusted-html`
+     v sandboxu. */
+  .shpd-detail__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--shpd-space-sm);
+  }
+
+  .shpd-detail__empty {
+    margin: 0;
     font-size: var(--shpd-font-size-body);
+    line-height: 1.5;
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-detail__text {
+    margin: 0;
+    font-size: var(--shpd-font-size-body);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .shpd-detail__code {
+    margin: 0;
+    padding: var(--shpd-space-sm);
+    overflow-x: auto;
+    border-radius: var(--shpd-radius-md);
+    background: var(--shpd-color-bg-secondary);
+    font-family: var(--shpd-font-family-mono);
+    font-size: var(--shpd-font-size-meta);
     line-height: 1.5;
   }
 
