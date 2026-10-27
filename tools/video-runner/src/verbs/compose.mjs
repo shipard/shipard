@@ -15,7 +15,7 @@ import { buildCaptions, checkReadability, renderAss } from '../captions.mjs';
 import { PROJECT_ROOT } from '../config.mjs';
 import { UserError } from '../errors.mjs';
 import * as ffmpeg from '../ffmpeg.mjs';
-import { GALLERY_NAME, generateGallery } from '../gallery.mjs';
+import { withResult } from '../result.mjs';
 import { loadScenario } from '../scenario.mjs';
 
 /** libavfilter dělí volby dvojtečkou, takže cesta se musí escapovat. */
@@ -28,7 +28,7 @@ function filterPath(path) {
  *
  * @param {import('./../config.mjs').Config} config
  * @param {import('./../scenario.mjs').Scenario} scenario
- * @returns {Promise<string>} Cesta k výslednému videu.
+ * @returns {Promise<string>} Absolutní cesta k výslednému videu.
  */
 export async function composeScenario(config, scenario) {
   await ffmpeg.assertAvailable();
@@ -91,16 +91,15 @@ export async function composeScenario(config, scenario) {
     + `, ${captions.length} titulků)`,
   );
 
-  const videoCount = await generateGallery(config.outDir);
-  console.log(
-    `Galerie: ${relative(PROJECT_ROOT, join(config.outDir, GALLERY_NAME))} `
-    + `(${videoCount} videí)`,
-  );
-
   return outPath;
 }
 
 export default async function compose({ config, scenarioPath }) {
   const scenario = await loadScenario(scenarioPath);
-  await composeScenario(config, scenario);
+  await withResult({
+    verb: 'compose',
+    dir: join(config.workDir, scenario.id),
+    scenarioId: scenario.id,
+    run: async () => ({ videoPath: await composeScenario(config, scenario) }),
+  });
 }

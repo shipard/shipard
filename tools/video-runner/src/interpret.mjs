@@ -32,6 +32,18 @@ function label(step) {
 }
 
 /**
+ * Strojově čitelná podoba `label()` — třetí parametr `UserError`, ze
+ * kterého `result.json` bere krok a selektor, na kterém scénář selhal.
+ * Číslo kroku je od jedničky, stejně jako v hlášce.
+ */
+function stepDetails(step) {
+  return { step: { index: step.index + 1, verb: step.verb, value: step[step.verb] } };
+}
+
+/** První řádek hlášky Playwrightu — zbytek je výpis volání, který do věty nepatří. */
+const firstLine = (error) => String(error?.message ?? error).split('\n')[0];
+
+/**
  * Počká na viditelný prvek a vrátí jeho obdélník v CSS px.
  * @returns {Promise<{x:number,y:number,width:number,height:number}>}
  */
@@ -45,12 +57,17 @@ async function elementRect(ctx, step) {
     throw new UserError(
       `${label(step)}: prvek se do ${DEFAULT_TIMEOUT / 1000} s neobjevil.`,
       'Sedí selektor na aktuální aplikaci? `@name` hledá [data-testid="name"], přesnou shodu.',
+      stepDetails(step),
     );
   }
 
   const box = await locator.boundingBox();
   if (!box) {
-    throw new UserError(`${label(step)}: prvek nemá rozměr, nedá se na něj najet.`);
+    throw new UserError(
+      `${label(step)}: prvek nemá rozměr, nedá se na něj najet.`,
+      undefined,
+      stepDetails(step),
+    );
   }
   return box;
 }
@@ -125,10 +142,18 @@ async function moveToElement(ctx, step) {
 
 const HANDLERS = {
   async goto(ctx, step) {
-    await ctx.page.goto(pageUrl(ctx.config, step.goto), {
-      waitUntil: 'domcontentloaded',
-      timeout: DEFAULT_TIMEOUT,
-    });
+    try {
+      await ctx.page.goto(pageUrl(ctx.config, step.goto), {
+        waitUntil: 'domcontentloaded',
+        timeout: DEFAULT_TIMEOUT,
+      });
+    } catch (error) {
+      throw new UserError(
+        `${label(step)}: stránka se nenačetla — ${firstLine(error)}`,
+        'Běží instance? Sedí SHPD_BASE_URL a cesta ve scénáři?',
+        stepDetails(step),
+      );
+    }
     ctx.timeline.mark('goto', { path: step.goto });
   },
 
@@ -169,6 +194,7 @@ const HANDLERS = {
         before.candidates?.length
           ? `Scrollovat jde tady: ${before.candidates.join(', ')}.`
           : 'Na stránce není žádná scrollovatelná oblast — má obsah dost řádků?',
+        stepDetails(step),
       );
     }
 
@@ -188,6 +214,7 @@ const HANDLERS = {
       throw new UserError(
         `${label(step)}: ${before.container} se neposunul (scrollTop ${before.top}).`,
         'Je oblast na konci ve směru scrollu? Kladný posun jde dolů, záporný nahoru.',
+        stepDetails(step),
       );
     }
 
@@ -207,7 +234,13 @@ const HANDLERS = {
     await elementRect(ctx, step);
     // Overlay dělá in-page querySelector — zkratku `@` musí dostat přeloženou.
     const rect = await highlight(ctx.page, resolveSelector(step.highlight), seconds);
-    if (!rect) throw new UserError(`${label(step)}: rámeček se nepodařilo vykreslit.`);
+    if (!rect) {
+      throw new UserError(
+        `${label(step)}: rámeček se nepodařilo vykreslit.`,
+        undefined,
+        stepDetails(step),
+      );
+    }
     ctx.timeline.mark('highlight', { selector: step.highlight, for: seconds, rect });
   },
 

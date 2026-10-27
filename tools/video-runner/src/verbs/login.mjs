@@ -17,7 +17,10 @@ export default async function login({ config }) {
   const url = pageUrl(config, APP_PATH);
   console.log(`Přihlašuji ${config.login} na ${url}`);
 
-  const browser = await launchChromium({ headless: !config.headful });
+  const browser = await launchChromium({
+    headless: !config.headful,
+    hostResolverRules: config.hostResolverRules,
+  });
   try {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await context.newPage();

@@ -46,6 +46,20 @@ const DEFAULT_LOCALE = 'cs-CZ';
 const DEFAULT_TIMEZONE = 'Europe/Prague';
 
 /**
+ * Datová sada a čas dne — pole scénáře, která **runner sám nečte**.
+ *
+ * `dataset` (povinné) říká, nad kterou sadou z `demo/datasets/` má scénář
+ * běžet; `clockTime` (volitelné, `HH:MM`) je čas dne v časové zóně scénáře,
+ * na kterém má v prohlížeči stát `Date` (D120). Obojí čte `shpd-ds
+ * video-run`: sadu naseeduje a čas předá runneru jako `VIDEO_FIXED_TIME`.
+ * Validátor je tu proto, aby překlep spadl už při `check`, ne až v úloze
+ * dashboardu; existenci sady ověřuje `video-run`.
+ */
+const DATASET_ID_RE = /^[a-z0-9][a-z0-9-]*$/;
+const CLOCK_TIME_RE = /^\d{2}:\d{2}$/;
+export const DEFAULT_CLOCK_TIME = '09:30';
+
+/**
  * Výchozí doba přejezdu kurzoru v sekundách. Do `pause` se nepočítá (D4).
  *
  * Jednotka je sekunda jako u všech ostatních časů ve scénáři, i když se
@@ -86,6 +100,31 @@ function readString(raw, label, fallback) {
   if (raw === undefined) return fallback;
   if (typeof raw !== 'string' || raw.trim() === '') {
     fail(`${label} musí být neprázdný řetězec, je ${JSON.stringify(raw)}.`);
+  }
+  return raw;
+}
+
+function readDataset(raw) {
+  if (typeof raw !== 'string' || !DATASET_ID_RE.test(raw)) {
+    fail(
+      'Scénář musí mít dataset — název datové sady z malých písmen, číslic a pomlček.',
+      'Název odpovídá složce v demo/datasets/ (např. "it-servis"); existenci ověřuje shpd-ds video-run.',
+    );
+  }
+  return raw;
+}
+
+function readClockTime(raw) {
+  if (raw === undefined) return DEFAULT_CLOCK_TIME;
+  if (typeof raw !== 'string' || !CLOCK_TIME_RE.test(raw)) {
+    fail(
+      `clockTime musí být čas dne ve tvaru HH:MM, je ${JSON.stringify(raw)}.`,
+      `Výchozí je ${DEFAULT_CLOCK_TIME}; platí v časové zóně scénáře (timezone).`,
+    );
+  }
+  const [hours, minutes] = raw.split(':').map(Number);
+  if (hours > 23 || minutes > 59) {
+    fail(`clockTime ${raw} není platný čas dne (00:00–23:59).`);
   }
   return raw;
 }
@@ -202,6 +241,10 @@ function validateStep(step, index) {
  * @property {{width:number,height:number}} viewport CSS viewport odvozený z capture.
  * @property {string} locale Jazyk prohlížeče — určuje jazyk aplikace ve videu.
  * @property {string} timezone Časová zóna prohlížeče.
+ * @property {string} dataset Název datové sady v `demo/datasets/`. Runner ho
+ *   nepoužívá — čte ho `shpd-ds video-run`.
+ * @property {string} clockTime Čas dne `HH:MM` v zóně scénáře, výchozí 09:30.
+ *   Runner ho nepoužívá — `video-run` z něj a z kotvy sady skládá `VIDEO_FIXED_TIME`.
  * @property {Array<Record<string, any> & {verb:string,index:number}>} steps
  */
 
@@ -237,6 +280,9 @@ export async function loadScenario(path) {
     );
   }
 
+  const dataset = readDataset(raw.dataset);
+  const clockTime = readClockTime(raw.clockTime);
+
   if (!Array.isArray(raw.steps) || raw.steps.length === 0) {
     throw new UserError(`Scénář ${raw.id} nemá žádné kroky.`);
   }
@@ -265,6 +311,8 @@ export async function loadScenario(path) {
     viewport: { width, height },
     locale: readString(raw.locale, 'locale', DEFAULT_LOCALE),
     timezone: readString(raw.timezone, 'timezone', DEFAULT_TIMEZONE),
+    dataset,
+    clockTime,
     steps: raw.steps.map(validateStep),
   };
 }

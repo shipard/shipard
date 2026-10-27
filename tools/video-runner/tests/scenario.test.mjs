@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
 
-import { loadScenario } from '../src/scenario.mjs';
+import { DEFAULT_CLOCK_TIME, loadScenario } from '../src/scenario.mjs';
 
 const dir = await mkdtemp(join(tmpdir(), 'video-runner-'));
 after(() => rm(dir, { recursive: true, force: true }));
@@ -14,12 +14,16 @@ let counter = 0;
 /** Zapíše scénář do dočasného souboru a načte ho. */
 async function load(body) {
   const path = join(dir, `s${counter++}.jsonc`);
-  await writeFile(path, JSON.stringify({ id: 'test', ...body }), 'utf8');
+  await writeFile(path, JSON.stringify({ id: 'test', dataset: 'demo', ...body }), 'utf8');
   return loadScenario(path);
 }
 
 function message(promise) {
   return promise.then(() => null, (error) => error.message);
+}
+
+function failure(promise) {
+  return promise.then(() => null, (error) => error);
 }
 
 test('výchozí capture a odvozený viewport', async () => {
@@ -88,7 +92,11 @@ test('scénář bez kroků', async () => {
 
 test('id musí být slug', async () => {
   const path = join(dir, 'bad-id.jsonc');
-  await writeFile(path, JSON.stringify({ id: 'Test Scénář', steps: [{ pause: 1 }] }), 'utf8');
+  await writeFile(
+    path,
+    JSON.stringify({ id: 'Test Scénář', dataset: 'demo', steps: [{ pause: 1 }] }),
+    'utf8',
+  );
   assert.match(await message(loadScenario(path)), /id z malých písmen/);
 });
 
@@ -114,3 +122,49 @@ test('jazyk a zóna mají výchozí hodnotu a validují se', async () => {
   assert.match(await message(load({ locale: '', steps: [{ pause: 1 }] })), /locale musí být/);
 });
 
+test('dataset je povinný a vrací se beze změny', async () => {
+  const scenario = await load({ dataset: 'it-servis', steps: [{ pause: 1 }] });
+  assert.equal(scenario.dataset, 'it-servis');
+
+  // JSON.stringify klíč s undefined vynechá — scénář pak pole nemá vůbec.
+  const error = await failure(load({ dataset: undefined, steps: [{ pause: 1 }] }));
+  assert.match(error.message, /Scénář musí mít dataset/);
+  assert.match(error.hint, /demo\/datasets\//);
+  assert.match(error.hint, /video-run/);
+});
+
+test('dataset musí být slug', async () => {
+  for (const bad of ['IT servis', 'It-Servis', '-it', '', 7, null, ['it-servis']]) {
+    assert.match(
+      await message(load({ dataset: bad, steps: [{ pause: 1 }] })),
+      /Scénář musí mít dataset/,
+      `dataset ${JSON.stringify(bad)} měl spadnout`,
+    );
+  }
+});
+
+test('clockTime má výchozí hodnotu, zadaný se vrací, špatný tvar spadne', async () => {
+  const implicit = await load({ steps: [{ pause: 1 }] });
+  assert.equal(implicit.clockTime, DEFAULT_CLOCK_TIME);
+  assert.equal(implicit.clockTime, '09:30');
+
+  const explicit = await load({ clockTime: '14:05', steps: [{ pause: 1 }] });
+  assert.equal(explicit.clockTime, '14:05');
+
+  for (const bad of ['9:30', '09:30:00', '0930', 930, '', null, 'ráno']) {
+    assert.match(
+      await message(load({ clockTime: bad, steps: [{ pause: 1 }] })),
+      /clockTime musí být čas dne ve tvaru HH:MM/,
+      `clockTime ${JSON.stringify(bad)} měl spadnout`,
+    );
+  }
+
+  assert.match(
+    await message(load({ clockTime: '24:00', steps: [{ pause: 1 }] })),
+    /není platný čas dne/,
+  );
+  assert.match(
+    await message(load({ clockTime: '09:60', steps: [{ pause: 1 }] })),
+    /není platný čas dne/,
+  );
+});

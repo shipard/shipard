@@ -1,9 +1,14 @@
 /**
- * Načtení a validace konfigurace z `.env`.
+ * Načtení a validace konfigurace z prostředí a z `.env`.
  *
  * Žádná závislost — `process.loadEnvFile()` umí Node 24 nativně. Hodnoty
  * už přítomné v prostředí mají přednost před souborem, takže jednorázové
  * přebití jde udělat prefixem příkazu (`VIDEO_HEADFUL=1 node bin/…`).
+ *
+ * `.env` je **volitelný**: slouží ručnímu použití runneru mimo Shipard.
+ * Když runner spouští `shpd-ds video-run`, předá všechno prostředím
+ * a žádný `.env` neexistuje — chybějící soubor proto není chyba, chybí-li
+ * položka, řekne to až kontrola konkrétní proměnné.
  */
 
 import { existsSync } from 'node:fs';
@@ -26,13 +31,9 @@ function loadEnvFile() {
   if (envLoaded) return;
   envLoaded = true;
 
-  if (!existsSync(ENV_FILE)) {
-    throw new UserError(
-      'Chybí konfigurace: tools/video-runner/.env neexistuje.',
-      'Zkopíruj vzor a vyplň: cp .env.example .env',
-    );
+  if (existsSync(ENV_FILE)) {
+    process.loadEnvFile(ENV_FILE);
   }
-  process.loadEnvFile(ENV_FILE);
 }
 
 /**
@@ -43,8 +44,8 @@ function required(name, what) {
   const value = process.env[name]?.trim();
   if (!value) {
     throw new UserError(
-      `Chybí povinná položka ${name} v .env (${what}).`,
-      'Vzor všech položek je v .env.example.',
+      `Chybí povinná položka ${name} (${what}).`,
+      'Nastav ji v prostředí, nebo v tools/video-runner/.env — vzor všech položek je v .env.example.',
     );
   }
   return value;
@@ -61,6 +62,29 @@ function projectPath(value) {
 }
 
 /**
+ * Pevný čas v prohlížeči (D120). Prázdná nebo nenastavená proměnná
+ * znamená skutečný čas — runner se pak chová jako dřív.
+ *
+ * Exportované kvůli testům; `loadConfig` ho volá nad `VIDEO_FIXED_TIME`.
+ *
+ * @param {string|undefined} raw
+ * @returns {Date|null}
+ */
+export function parseFixedTime(raw) {
+  const value = raw?.trim();
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new UserError(
+      `VIDEO_FIXED_TIME není platný čas: ${value}`,
+      'Očekává se ISO 8601 s posunem, např. 2026-10-27T09:30:00+01:00',
+    );
+  }
+  return date;
+}
+
+/**
  * @typedef {object} Config
  * @property {string} baseUrl Bez koncového lomítka.
  * @property {string} [login]
@@ -69,6 +93,10 @@ function projectPath(value) {
  * @property {string} workDir Absolutní cesta.
  * @property {string} outDir Absolutní cesta.
  * @property {boolean} headful
+ * @property {Date|null} fixedTime Pevný čas v prohlížeči (`VIDEO_FIXED_TIME`);
+ *   `null` = skutečný čas.
+ * @property {string|null} hostResolverRules Mapování hostitele pro Chromium
+ *   (`VIDEO_HOST_RESOLVER_RULES`, syntaxe `--host-resolver-rules`); `null` = žádné.
  */
 
 /**
@@ -88,6 +116,8 @@ export function loadConfig(need = {}) {
     workDir: projectPath(optional('VIDEO_WORK_DIR', './.work')),
     outDir: projectPath(optional('VIDEO_OUT_DIR', './out')),
     headful: optional('VIDEO_HEADFUL', '0') === '1',
+    fixedTime: parseFixedTime(process.env.VIDEO_FIXED_TIME),
+    hostResolverRules: optional('VIDEO_HOST_RESOLVER_RULES', null),
   };
 
   if (need.baseUrl) {

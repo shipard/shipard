@@ -91,7 +91,7 @@ export default async function captureCdp({ config, scenario, timeline, dir, log 
   const framesDir = join(dir, 'frames');
   await mkdir(framesDir, { recursive: true });
 
-  const session = await createSession(config, scenario, { headless: true });
+  const session = await createSession(config, scenario, { headless: true, log });
 
   /** @type {Array<{path: string, ts: number}>} */
   const frames = [];

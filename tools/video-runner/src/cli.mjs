@@ -70,7 +70,8 @@ ${rows}
 Volby:
   -h, --help          Tato nápověda.
 
-Konfigurace se čte z tools/video-runner/.env (vzor v .env.example).
+Konfigurace se čte z prostředí, doplňkově z tools/video-runner/.env
+(volitelný, vzor v .env.example). Výsledek běhu: VIDEO_WORK_DIR/<id>/result.json.
 Podrobnosti v README.md, instalace prostředí v INSTALL.md.`;
 }
 
@@ -108,7 +109,7 @@ export async function run(argv) {
     if (rest.length === 0) {
       throw new UserError(
         `Verb ${verbName} potřebuje cestu ke scénáři.`,
-        'Např. video-runner check demo/scenarios/spike-dashboard.jsonc',
+        'Např. video-runner check demo/scenarios/s1-prijata-faktura.jsonc',
       );
     }
     scenarioPath = rest[0];

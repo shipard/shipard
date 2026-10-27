@@ -119,6 +119,12 @@ Vyplň `SHPD_BASE_URL`, `SHPD_LOGIN` a `SHPD_PASSWORD`. `.env`
 i `.storage-state.json` jsou v `.gitignore` — uložená session je stejně
 citlivá jako heslo.
 
+`.env` je potřeba jen pro **ruční použití** runneru z terminálu. Soubor je
+volitelný: proměnné už nastavené v prostředí mají přednost a `shpd-ds
+video-run` předává runneru všechno prostředím (adresu instance, session,
+adresáře, pevný čas i mapování hostitele), takže na serveru žádný `.env`
+nevzniká. Přehled proměnných je v `README.md` → Konfigurace.
+
 ---
 
 ## 5. Ověření
@@ -126,57 +132,15 @@ citlivá jako heslo.
 ```bash
 node bin/video-runner.mjs --help          # vypíše verby
 node bin/video-runner.mjs login           # vyrobí .storage-state.json
-node bin/video-runner.mjs check demo/scenarios/spike-dashboard.jsonc
+node bin/video-runner.mjs check ../../demo/scenarios/s1-prijata-faktura.jsonc
 ```
 
 `check` projede scénář bez záznamu a vrátí 0. Nenulový kód znamená, že
-scénář na něco nesedí — hláška řekne který krok a jaký selektor.
+scénář na něco nesedí — hláška řekne který krok a jaký selektor; totéž
+strojově zapíše `VIDEO_WORK_DIR/<id>/result.json`.
 
-Nakonec obě varianty záznamu:
-
-```bash
-node bin/video-runner.mjs build ../../demo/scenarios/spike-dashboard.jsonc
-```
-
----
-
-## 6. Publikace (nginx s basic auth)
-
-Runner po každém `compose` přegeneruje `out/index.html` — statickou galerii
-všech videí v `out/`. Aby byla k vidění bez terminálu, servíruje adresář
-nginx (rozhodnutí D15 v #48). Nasazení vhostu, hesla a certifikátu je
-**ruční krok mimo repo** — tady je jen předpis.
-
-> **Basic auth není dočasná berlička, ale podmínka existence té URL (D17).**
-> Videa točená nad dev DS můžou obsahovat reálná jména a částky. Na veřejný
-> web smí až klipy natočené nad seedovaným deterministickým datasetem (#40).
-
-Heslo (balíček `apache2-utils`):
+Nakonec záznam a kompozice v jednom běhu:
 
 ```bash
-sudo htpasswd -c /etc/nginx/htpasswd-media <uživatel>
+node bin/video-runner.mjs build ../../demo/scenarios/s1-prijata-faktura.jsonc
 ```
-
-Vzorový server-block — `server_name` je návrh, `root` musí ukazovat na
-absolutní hodnotu `VIDEO_OUT_DIR`:
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name media.shpd.dev;
-
-    # certifikát např. přes certbot --nginx
-    ssl_certificate     /etc/letsencrypt/live/media.shpd.dev/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/media.shpd.dev/privkey.pem;
-
-    root /home/<uživatel>/sw/shpd/tools/video-runner/out;
-    index index.html;
-    autoindex off;
-
-    auth_basic           "Shipard media";
-    auth_basic_user_file /etc/nginx/htpasswd-media;
-}
-```
-
-Ověření po nasazení: adresa bez hesla vrátí **401**, s heslem se zobrazí
-galerie a video se přehraje přímo v prohlížeči (download = „Uložit jako“).

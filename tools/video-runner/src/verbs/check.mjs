@@ -2,19 +2,26 @@
  * Verb `check` — průchod scénáře bez záznamu.
  *
  * Zároveň smoke E2E: nenulový exit znamená, že se scénář rozešel
- * s aplikací. Hláška vždycky říká číslo kroku a selektor.
+ * s aplikací. Hláška vždycky říká číslo kroku a selektor; totéž strojově
+ * nese `result.json` v pracovním adresáři scénáře.
  */
 
-import { loadScenario } from '../scenario.mjs';
+import { join } from 'node:path';
+
 import { interpret } from '../interpret.mjs';
+import { withResult } from '../result.mjs';
 import { assertSession, createSession } from '../runner.mjs';
+import { loadScenario } from '../scenario.mjs';
 import { Timeline } from '../timeline.mjs';
 
 /** Chvilka na konci, aby při VIDEO_HEADFUL=1 šel výsledek vůbec zahlédnout. */
 const HEADFUL_LINGER_MS = 2000;
 
-export default async function check({ config, scenarioPath }) {
-  const scenario = await loadScenario(scenarioPath);
+/**
+ * @param {import('./../config.mjs').Config} config
+ * @param {import('./../scenario.mjs').Scenario} scenario
+ */
+async function checkScenario(config, scenario) {
   const { width, height } = scenario.viewport;
 
   console.log(
@@ -52,4 +59,14 @@ export default async function check({ config, scenarioPath }) {
   } finally {
     await session.close();
   }
+}
+
+export default async function check({ config, scenarioPath }) {
+  const scenario = await loadScenario(scenarioPath);
+  await withResult({
+    verb: 'check',
+    dir: join(config.workDir, scenario.id),
+    scenarioId: scenario.id,
+    run: () => checkScenario(config, scenario),
+  });
 }

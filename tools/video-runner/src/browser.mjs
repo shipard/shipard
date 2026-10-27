@@ -24,15 +24,25 @@ const RENDER_ARGS = [
  * @param {object} [options]
  * @param {boolean} [options.headless]
  * @param {string[]} [options.args] Argumenty navíc (geometrie okna).
+ * @param {string|null} [options.hostResolverRules] Připíchnutá adresa hostitele
+ *   (D97): jméno serveru se v prohlížeči nepřekládá znovu, aby ho mezi
+ *   ověřením a během nešlo přesměrovat. Syntaxe `--host-resolver-rules`,
+ *   např. `MAP demo.example.dev 127.0.0.1`. `null` = bez mapování.
  */
-export async function launchChromium({ headless = true, args = [] } = {}) {
+export async function launchChromium({ headless = true, args = [], hostResolverRules = null } = {}) {
+  const resolverArgs = hostResolverRules ? [`--host-resolver-rules=${hostResolverRules}`] : [];
+
   try {
     // `channel: 'chromium'` = plné Chromium v novém headless režimu, ne
     // ořezaný `chromium-headless-shell`. Rozdíl je vestavěný PDF viewer:
     // headless shell ho nemá, takže náhledy PDF (`AttachmentGrid`,
     // `PdfViewerPanel`) zůstávaly ve videu prázdné. Plné Chromium vykreslí
     // PDF v iframe stejně jako prohlížeč skutečného uživatele.
-    return await chromium.launch({ channel: 'chromium', headless, args: [...RENDER_ARGS, ...args] });
+    return await chromium.launch({
+      channel: 'chromium',
+      headless,
+      args: [...RENDER_ARGS, ...resolverArgs, ...args],
+    });
   } catch (error) {
     if (/Executable doesn't exist|please run the following command/i.test(error.message)) {
       throw new UserError(

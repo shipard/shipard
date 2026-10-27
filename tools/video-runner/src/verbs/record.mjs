@@ -1,8 +1,8 @@
 /**
  * Verb `record` — ① interpret + ② overlay → `raw.mp4` a `timeline.json`.
  *
- * Obě varianty záznamu končí stejnými dvěma artefakty; `compose` pak
- * nemusí vědět, kterou cestou vznikly.
+ * Záznam končí vždy stejnými dvěma artefakty; `compose` pak nemusí vědět
+ * nic o tom, jak vznikly.
  */
 
 import { mkdir, rm } from 'node:fs/promises';
@@ -12,6 +12,7 @@ import { RAW_NAME, TIMELINE_NAME } from '../artifacts.mjs';
 import capture from '../capture-cdp.mjs';
 import { PROJECT_ROOT } from '../config.mjs';
 import * as ffmpeg from '../ffmpeg.mjs';
+import { withResult } from '../result.mjs';
 import { loadScenario } from '../scenario.mjs';
 import { Timeline } from '../timeline.mjs';
 
@@ -29,9 +30,8 @@ export async function recordScenario(config, scenario) {
   await mkdir(dir, { recursive: true });
 
   // Zbytky z minulého běhu by při pádu uprostřed vypadaly jako platný
-  // výsledek — a `compose` by beze slova složil staré video. Maže se ale
-  // jen to, co teď vznikne: artefakty druhé varianty záznamu musí přežít,
-  // jinak se nedají porovnat.
+  // výsledek — a `compose` by beze slova složil staré video. Maže se jen
+  // to, co teď vznikne (`result.json` si hlídá obal verbu).
   for (const name of [RAW_NAME, TIMELINE_NAME]) {
     await rm(join(dir, name), { force: true });
   }
@@ -55,5 +55,10 @@ export async function recordScenario(config, scenario) {
 
 export default async function record({ config, scenarioPath }) {
   const scenario = await loadScenario(scenarioPath);
-  await recordScenario(config, scenario);
+  await withResult({
+    verb: 'record',
+    dir: join(config.workDir, scenario.id),
+    scenarioId: scenario.id,
+    run: () => recordScenario(config, scenario),
+  });
 }

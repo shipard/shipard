@@ -1,7 +1,7 @@
 /**
  * Sestavení prohlížeče pro průchod scénářem. Sdílené mezi `check`
- * a oběma variantami záznamu, aby se aplikace ve všech třech případech
- * vykreslila stejně.
+ * a záznamem (`record`), aby se aplikace v obou případech vykreslila
+ * stejně.
  */
 
 import { existsSync } from 'node:fs';
@@ -21,6 +21,7 @@ import { APP_PATH, isLoginScreen, SELECTORS } from './shipard.mjs';
  * @param {string[]} [options.args]
  * @param {number} [options.scale] Přebíje `capture.scale` ze scénáře — používá
  *   `check` při ladění s viditelným prohlížečem.
+ * @param {(line: string) => void} [options.log]
  */
 export async function createSession(config, scenario, options = {}) {
   if (!existsSync(config.storageState)) {
@@ -30,7 +31,9 @@ export async function createSession(config, scenario, options = {}) {
     );
   }
 
-  // Geometrie je pro oba záznamy stejná a **nesmí** se dělat Playwrightním
+  const log = options.log ?? ((line) => console.log(line));
+
+  // Geometrie je pro `check` i záznam stejná a **nesmí** se dělat Playwrightním
   // `deviceScaleFactor`. Ten hustotu jen emuluje přes
   // `Emulation.setDeviceMetricsOverride` a CDP screencast pak posílá framy
   // ve velikosti emulovaného zařízení v DIP — tedy 1×, i když stránka hlásí
@@ -42,13 +45,15 @@ export async function createSession(config, scenario, options = {}) {
 
   const browser = await launchChromium({
     headless: options.headless ?? true,
+    // Připíchnutá adresa hostitele (D97) — předává ji `shpd-ds video-run`.
+    hostResolverRules: config.hostResolverRules,
     args: [
       `--window-size=${width},${height}`,
       '--window-position=0,0',
       `--force-device-scale-factor=${scale}`,
       // Headless scrollbary skrývá sám, headed ne. Bez tohohle by se
-      // varianty záznamu lišily o šířku scrollbaru a vypadalo by to jako
-      // rozdíl varianty, přitom je to rozdíl nastavení.
+      // headful `check` lišil od záznamu o šířku scrollbaru a vypadalo by
+      // to jako rozdíl aplikace, přitom je to rozdíl nastavení.
       '--hide-scrollbars',
       ...(options.args ?? []),
     ],
@@ -58,10 +63,21 @@ export async function createSession(config, scenario, options = {}) {
     storageState: config.storageState,
     viewport: null,
     // Jazyk aplikace se odvozuje z `navigator.language`, takže bez tohohle
-    // by video vyšlo v angličtině (Playwright startuje v en-US).
+    // by video vyšlo v angličtině (Playwright startuje v en-US). Jazyk
+    // i zóna jdou ze scénáře (D121).
     locale: scenario.locale,
     timezoneId: scenario.timezone,
   });
+
+  // Pevný čas dne (D120): `Date` v prohlížeči stojí na zadaném okamžiku,
+  // takže „dnes“ a „před chvílí“ ve videu nezávisí na tom, kdy se točilo.
+  // Musí přijít před první navigací — i ověření session načítá aplikaci
+  // a ta by si čas přečetla ještě skutečný. Server počítá dnešek sám;
+  // proto `video-run` dává za datum skutečný dnešek a mění jen čas dne.
+  if (config.fixedTime) {
+    await context.clock.setFixedTime(config.fixedTime);
+    log(`  čas: ${config.fixedTime.toISOString()}`);
+  }
 
   await installOverlay(context);
   const page = await context.newPage();
