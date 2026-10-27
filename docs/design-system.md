@@ -341,16 +341,18 @@ v pod-sekci *Dropdown / popover komponenty*.
 
 ### Karty
 
-Rozhodnutí D33–D35 z #133 (task 2 #137). Karta v obsahu je sdílená
-`Card.svelte`, mřížka karet `CardGrid.svelte` (obě `components/ui/`).
+Rozhodnutí D33–D35 (task 2 #137) a D36–D38 (task 2b) z #133. Karta
+v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
+`components/ui/`).
 
 - **Karta** (D33): rámeček `--shpd-color-border`, pozadí `--shpd-color-bg`,
   zaoblení `--shpd-radius-md`, odsazení `--shpd-space-md`; karty stránek
   v Nastavení (stránka nastavení, O zdroji dat, Nastavení zdroje dat,
   Zabezpečení účtu) `spacious` = odsazení `--shpd-space-lg`. Žádný stín,
   žádný vnější okraj — mezery dává rodič nebo `CardGrid`. Nadpis karty je
-  `SectionHeading` (`title`, `headingLevel` 2–4; snippet `aside` sedí
-  vpravo v řádku nadpisu — štítek stavu sekce v Přehledu firmy). Tón
+  `SectionHeading` (`title`, `headingLevel` 2–4, role a ikona podle místa
+  karty níže; snippet `aside` sedí vpravo v řádku nadpisu — štítek stavu
+  sekce v Přehledu firmy). Tón
   `warning` / `danger` mění jen barvu rámečku (`--shpd-color-warning` /
   `--shpd-color-danger`), `info` dává tónované pozadí
   `--shpd-color-primary-soft` s rámečkem `--shpd-color-primary-soft-2`
@@ -361,6 +363,29 @@ Rozhodnutí D33–D35 z #133 (task 2 #137). Karta v obsahu je sdílená
   rozložení (řádek ikona + tělo karty feedu, stavový proužek) je obsah
   karty — rodič kořen `Card` přes vlastní třídu nestyluje, co karta
   potřebuje, je prop.
+- **Nadpis podle místa karty** (D36): karta jako **samostatná část
+  stránky** (Přehled firmy, karty stránek v Nastavení) má nadpis v roli
+  **title** (`titleRole="title"` → `SectionHeading role="title"`: lg,
+  strong, `line-height` jako titulek detailu); karta **uvnitř obsahu**
+  (strany dokladu, karta návrhu z pošty, karty feedu) **heading**
+  (výchozí). Pod nadpisem v roli title je mezera rovná odsazení karty
+  (`--shpd-space-md`, u `spacious` `--shpd-space-lg`; `SectionHeading`
+  prop `spacing`), pod heading jen xs jako v detailu. Mezinadpisy uvnitř
+  karet Nastavení (bloky O zdroji dat, Volitelné v Nastavení zdroje dat)
+  jsou `SectionHeading` v roli heading, ne vlastní třída.
+- **Ikona tématu v nadpisu** (D38): karta jako samostatná část stránky
+  má před nadpisem ikonu tématu — **stejnou jako příslušný prohlížeč /
+  report v menu nebo stránka v Nastavení**, žádné nové ikony. Prop `icon`
+  na `Card` (objekt ikony jako pro `Icon`); kreslí ji `SectionHeading`:
+  `Icon size="md"` (velikost v `em` roste s písmem nadpisu, px
+  nepřepisovat), šedá `--shpd-color-text-secondary`, mezera
+  `--shpd-space-sm`, na střed řádku, bez `label` (dekorace, `aria-hidden`
+  — nadpis čte jen text). Odkud: Přehled firmy z konfigurace sekce
+  (`core.overview.sections[].icon`, `docs/overview.md` §3 — bez ikony se
+  klíč neposílá a karta ikonu nemá, ne fallback `resolveIcon`), stránka
+  nastavení z `definition.icon`, pevné stránky frontendu (O zdroji dat,
+  Nastavení zdroje dat, Zabezpečení účtu) importovanou ikonou v kódu.
+  Mezinadpisy ikonu nemají; karta uvnitř obsahu taky ne.
 - **Mřížka** (D34): `repeat(auto-fill, minmax(min(<šířka>, 100%), 1fr))`,
   mezera md, `align-items: stretch` — karty v řádku vždy stejně vysoké,
   obsah nahoře. Šířku sloupce určuje použití (`minWidth`: Přehled firmy
@@ -714,8 +739,8 @@ dál — proto se role mění na jednom místě.
 
 | Role | Token | Velikost | Tloušťka | Barva | Kde |
 |---|---|---|---|---|---|
-| title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem |
-| heading | `--shpd-font-size-heading` | `sm` (0.875rem) | strong | text | nadpis sekce, název entity v kartě, hlavička sloupce tabulky |
+| title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem, nadpis karty jako samostatné části stránky (Přehled firmy, karty Nastavení — D36), hlavní částka karty (Přehled firmy, feed) |
+| heading | `--shpd-font-size-heading` | `sm` (0.875rem) | strong | text | nadpis sekce (detail i feed dashboardu), nadpis karty uvnitř obsahu, název entity v kartě, hlavička sloupce tabulky |
 | body | `--shpd-font-size-body` | `sm` (0.875rem) | normal | text | popisky i hodnoty, řádky tabulek, taby |
 | meta | `--shpd-font-size-meta` | `xs` (0.75rem) | normal | text; šedá (`--shpd-color-text-secondary`) jen u kontaktů a doplňků | podtitul, štítky, kontakty, přepočet v domácí měně |
 
@@ -743,8 +768,12 @@ jsou to dvě role, aby šly v budoucnu rozdělit jedním místem.
   akcí a tlačítka). Mimo detail (seznamy, formuláře, dashboard) se role
   zavádějí postupně — Přehled firmy je má (#137 task 2: popisek body,
   částka title jako hlavní číslo karty, doplňky a štítky meta, splatnost
-  jen barvou). `check-css-units.py` hlídá jen px — role nehlídá nic než
-  tahle kapitola.
+  jen barvou; task 2b: nadpis karty title s ikonou) a dashboard taky
+  (#137 task 2b, D37: název karty feedu heading, částka title strong,
+  hodnota rozbaleného detailu body normal, nadpis sekce feedu heading
+  přes `SectionHeading` — verzálky a šedá nadpisu sekce zanikly, §11
+  verzálky jen ve větších nadpisech). `check-css-units.py` hlídá jen px
+  — role nehlídá nic než tahle kapitola.
 
 ---
 
@@ -813,6 +842,9 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   volitelný snippet `aside` sedí
   vpravo ve stejném řádku (přepínač náhledů příloh). Blok `heading`
   v `composite` je nadpis bloku pod ním — ten mezeru nad sebou nemá.
+  Propy `role="title"`, `icon` a `spacing` jsou pro nadpis karty jako
+  samostatné části stránky (§8 Karty, D36, D38) — v detailu záznamu je
+  nadpis sekce vždy heading bez ikony.
 - **Karta** (strany dokladu): sdílená `Card` (§8 Karty, D33) s nadpisem
   `title` — rámeček `--shpd-color-border`, zaoblení `--shpd-radius-md`,
   odsazení `--shpd-space-md`; položky pod sebou s mezerou `--shpd-space-xs`,
@@ -899,8 +931,8 @@ Složené řádky tabulek na úzké šířce řeší #138.
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
-| `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside` |
-| `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
+| `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
+| `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
 | `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce |
 | `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |

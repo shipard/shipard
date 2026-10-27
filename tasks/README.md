@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 407 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 377.
+Celkem 408 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 378.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -182,6 +182,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-overview-no-repeat.md` | Přehled detailu neopakuje hlavičku — odstranění opakovaných údajů ve všech detailech, kontrola v integračním kontraktu, přílohy Spisovny v tabu Obsah (#140, D26, D27) |
 | `design-system-shared-sections.md` | Sdílený nadpis sekce (bez linky) a seznam vlastností — skupiny ve dvou sloupcích, `wide` přes celou šířku; obecný detail i detail dokladu na stejných komponentách (#137 task 1, D28, D29) |
 | `design-system-cards.md` | Sdílená karta a mřížka karet (`Card`, `CardGrid`) — stejná výška karet v řádku, karty v Nastavení se zaoblením md, Přehled firmy na typografických rolích, dashboard, detail, náhled importu (#137 task 2, D33–D35) |
+| `design-system-card-titles.md` | Nadpisy karet podle místa (title / heading) s ikonou tématu — Přehled firmy s ikonami sekcí z konfigurace, karty Nastavení na nadpisu `Card`, karta feedu na typografických rolích (#137 task 2b, D36–D38) |
 
 ## Mobilní (responzivní) UI
 
