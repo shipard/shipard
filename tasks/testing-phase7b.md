@@ -1,6 +1,6 @@
 # F7b — videa nad demo sadou ve vývojářském dashboardu
 
-**Stav:** naplánováno — zadání 2026-10-27 (#103 D119–D124, D125–D129 k potvrzení)
+**Stav:** naplánováno — zadání 2026-10-27 (#103 D119–D129)
 
 ## Kontext / Cíl
 
@@ -53,7 +53,7 @@ hesla (`E2eSession`, D92), lokální adresa s připíchnutím (`LocalBaseUrl`,
 Zamčená v #103: **D119** (scénář nad sadou), **D120** (kotva = dnešek,
 pevný čas dne v prohlížeči), **D121** (jazyk ze scénáře), **D122** (videa
 v dashboardu, galerie přes nginx zrušena), **D123** (videa mimo repo),
-**D124** (`check` v F8). K potvrzení v tomto PRD:
+**D124** (`check` v F8). Potvrzená 2026-10-27 a zapsaná v #103:
 
 - **D125 — Jeden příkaz `shpd-ds video-run`,** úloha dashboardu je jeho
   obal (vzor D91): preflight → sestavení sady s kotvou → přeseedování →
