@@ -12,5 +12,15 @@
             "name:cs": "Zaúčtování",
             "name:en": "Accounting"
         }
+    },
+
+    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    "texts": {
+        // Přípona hlášení enginu s odkazem na řádek dokladu (AccountingStatusContent).
+        "rowReference": {
+            "name": "(row {n})",
+            "name:cs": "(řádek {n})",
+            "name:en": "(row {n})"
+        }
     }
 }

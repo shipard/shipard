@@ -10,6 +10,7 @@ use Shipard\Core\Database\SchemaLoader;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Core\Viewer\Detail\DetailContent;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Core\Viewer\ViewerDefinition;
 
@@ -19,6 +20,11 @@ use Shipard\Core\Viewer\ViewerDefinition;
  * je `final`, viewer dodává háčky), placeholdery `detailHeader` jsou sloupce
  * tabulky, viewer bez tabulky dodává vlastní hlavičku, umístění příloh je
  * známé. Bez výjimek — seznam nepřevedených viewerů task B vyprázdnil.
+ *
+ * Typy obsahu (#137 D30): `DetailContent::TYPES` bez `html` a žádný PHP
+ * zdroj (`modules/*\/*\/src`, `src/`) blok `'type' => 'html'` neskládá —
+ * hláška je `notice`, štítky `badges`, prázdný stav `empty`; obsah nad
+ * skutečnými daty hlídá integrační `ViewerDetailContractTest`.
  */
 class DetailContractTest extends TestCase
 {
@@ -124,5 +130,39 @@ class DetailContractTest extends TestCase
                 "viewer {$id} ({$module}): neznámé detailAttachments '{$placement}'",
             );
         }
+    }
+
+    public function testContentTypesExcludeHtml(): void
+    {
+        $this->assertNotContains('html', DetailContent::TYPES, 'HTML se vzhledem backend neposílá (#137 D30)');
+        $this->assertContains('untrusted-html', DetailContent::TYPES, 'Tělo e-mailu v sandboxu zůstává');
+        $this->assertSame(array_values(array_unique(DetailContent::TYPES)), DetailContent::TYPES);
+    }
+
+    public function testNoPhpSourceEmitsHtmlContent(): void
+    {
+        $repo = realpath(__DIR__ . '/../../../..');
+        $this->assertIsString($repo);
+        $hits = [];
+        foreach ([self::MODULES, $repo . '/src'] as $root) {
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            );
+            foreach ($files as $file) {
+                if ($file->getExtension() !== 'php') {
+                    continue;
+                }
+                $path = (string) $file->getPathname();
+                if ($root === self::MODULES && !str_contains($path, '/src/')) {
+                    continue;
+                }
+                foreach (file($path) ?: [] as $index => $line) {
+                    if (preg_match('/[\'"]type[\'"]\s*=>\s*[\'"]html[\'"]/', $line) === 1) {
+                        $hits[] = substr((string) realpath($path), strlen($repo) + 1) . ':' . ($index + 1);
+                    }
+                }
+            }
+        }
+        $this->assertSame([], $hits, "Blok detailu typu html (#137 D30 — použít notice / badges / empty / text / code):\n" . implode("\n", $hits));
     }
 }

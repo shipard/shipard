@@ -191,29 +191,31 @@ class AlertsViewer extends TableViewer
             ],
         ];
 
-        // Context tab — raw JSON view of context + actions
-        $contextHtml = '';
-        if (!empty($record['actions'])) {
-            $decoded = is_string($record['actions']) ? json_decode($record['actions'], true) : null;
-            if (is_array($decoded)) {
-                $contextHtml .= '<h4>Akce</h4><pre>'
-                    . htmlspecialchars(json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
-                    . '</pre>';
+        // Tab Kontext — surové akce a kontext jako výpis JSON: nadpis + blok
+        // `code` per sloupec (#137 D30); bez tabu, když není co ukázat.
+        $contextBlocks = [];
+        foreach (['actions' => 'Actions', 'context' => 'Context'] as $column => $fallback) {
+            if (empty($record[$column])) {
+                continue;
             }
-        }
-        if (!empty($record['context'])) {
-            $decoded = is_string($record['context']) ? json_decode($record['context'], true) : null;
-            if (is_array($decoded)) {
-                $contextHtml .= '<h4>Kontext</h4><pre>'
-                    . htmlspecialchars(json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
-                    . '</pre>';
+            $decoded = is_string($record[$column]) ? json_decode($record[$column], true) : null;
+            if (!is_array($decoded)) {
+                continue;
             }
+            $contextBlocks[] = [
+                'type' => 'heading',
+                'text' => $this->detailText('core.alerts.viewerDetailLabels', $column, $fallback),
+            ];
+            $contextBlocks[] = [
+                'type' => 'code',
+                'text' => (string) json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+            ];
         }
-        if ($contextHtml !== '') {
+        if ($contextBlocks !== []) {
             $tabs[] = [
                 'id'      => 'context',
                 'label'   => $this->detailTabLabel('core.alerts.viewerDetailLabels', 'context', 'Context'),
-                'content' => ['type' => 'html', 'html' => $contextHtml],
+                'content' => ['type' => 'composite', 'blocks' => $contextBlocks],
             ];
         }
 

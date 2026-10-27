@@ -138,7 +138,7 @@ class OverviewRepeatCheckTest extends TestCase
         $detail = self::detail('Smlouva o dílo', 'Partner s.r.o. · Smlouvy', [], [], [
             'type'   => 'composite',
             'blocks' => [
-                ['type' => 'html', 'html' => '<p>Smlouva o dílo</p>'],
+                ['type' => 'text', 'text' => 'Smlouva o dílo'],
                 ['type' => 'properties', 'groups' => [
                     ['title' => 'Identifikace', 'items' => [
                         ['label' => 'Šanon', 'value' => 'Smlouvy'],

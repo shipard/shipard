@@ -148,8 +148,8 @@ class ReportPeriodsViewer extends TableViewer
         $registrations = $this->registrationNames();
 
         $locked = !empty($record['locked']);
+        // Název nese titulek hlavičky — Přehled ho neopakuje (#140 D26).
         $items = [
-            ['label' => 'Název', 'value' => (string) ($record['name'] ?? '')],
             ['label' => 'Typ tvrzení', 'value' => $typeLabels[$type] ?? $type],
             ['label' => 'Registrace DPH', 'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? ''],
             ['label' => 'Začátek období', 'value' => $this->formatDate($record['date_begin'] ?? null)],
@@ -178,15 +178,17 @@ class ReportPeriodsViewer extends TableViewer
             $groups[] = ['title' => 'Zůstatky DPH', 'items' => $this->balanceItems($recordId)];
         }
 
-        $content = [['type' => 'properties', 'groups' => $groups]];
+        $blocks = [['type' => 'properties', 'groups' => $groups]];
         if ($filings !== []) {
-            $content[] = $this->filingsTable($filings);
+            $blocks[] = $this->filingsTable($filings);
         }
 
+        // Víc bloků = `composite` (do #137 task 3 šel holý seznam bloků bez
+        // typu a frontend Přehled nekreslil; odhalil kontrakt typů obsahu).
         return [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
-            'content' => $content,
+            'content' => count($blocks) === 1 ? $blocks[0] : ['type' => 'composite', 'blocks' => $blocks],
         ]];
     }
 

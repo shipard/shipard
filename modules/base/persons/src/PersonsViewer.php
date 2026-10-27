@@ -293,7 +293,10 @@ class PersonsViewer extends TableViewer
 		}
 
 		if ($blocks === []) {
-			return ['type' => 'html', 'html' => '<p class="muted">Záznam nemá žádné další údaje.</p>'];
+			return [
+				'type' => 'empty',
+				'text' => $this->detailText('base.persons.viewerDetailLabels', 'noDetails', 'No further details.'),
+			];
 		}
 		if (count($blocks) === 1) {
 			return $blocks[0];

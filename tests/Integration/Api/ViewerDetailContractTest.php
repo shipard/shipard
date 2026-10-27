@@ -14,6 +14,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintRegistry;
+use Shipard\Core\Viewer\Detail\DetailContent;
 use Shipard\Core\Viewer\ViewerDefinition;
 use Shipard\Core\Viewer\ViewerRegistry;
 use Shipard\Tests\Integration\IntegrationTestCase;
@@ -23,7 +24,9 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * čtení: každý tabulkový viewer, jehož tabulka na zdroji dat je, vrátí přes
  * `ViewerController::detail()` pro první záznam tabulky hlavičku s titulkem
  * a ikonou; záznam s přílohou má její id v `detail.attachments.groups`
- * (umístění `overview` / `tab`). Prázdné tabulky se přeskakují.
+ * (umístění `overview` / `tab`). Prázdné tabulky se přeskakují. Obsah
+ * každého tabu je jen ze známých typů `DetailContent::TYPES` — žádný
+ * viewer neposílá HTML se vzhledem (#137 D30).
  *
  * Přehled neopakuje hlavičku (#140 D26): nad pěti nejnovějšími záznamy
  * každého vieweru se žádná položka prvního tabu soustavně nerovná titulku,
@@ -294,6 +297,35 @@ class ViewerDetailContractTest extends IntegrationTestCase
             $this->assertNotSame('', (string) ($detail['icon'] ?? ''), "viewer {$def->id}: chybí ikona");
             $this->assertIsArray($detail['badges'] ?? null, "viewer {$def->id}: chybí badges");
             $this->assertNotEmpty($detail['tabs'] ?? [], "viewer {$def->id}: detail bez tabů");
+            $checked++;
+        }
+        if ($checked === 0) {
+            $this->markTestSkipped('Žádný tabulkový viewer nemá na zdroji dat záznam.');
+        }
+    }
+
+    public function testDetailContentUsesKnownTypesOnly(): void
+    {
+        $checked = 0;
+        foreach ($this->tableViewers() as $def) {
+            $id = $this->db->fetchSingle('SELECT `id` FROM `' . $def->table . '` ORDER BY `id` LIMIT 1');
+            if ($id === null) {
+                continue;
+            }
+            $response = $this->detail($def->id, (int) $id);
+            $this->assertSame(200, self::responseStatus($response), "viewer {$def->id}, záznam {$id}");
+
+            foreach ($response->getPayload()['data']['detail']['tabs'] ?? [] as $tab) {
+                $tabId = (string) ($tab['id'] ?? '?');
+                $this->assertIsArray($tab['content'] ?? null, "viewer {$def->id}, tab {$tabId}: chybí content");
+                foreach (DetailContent::types($tab['content']) as $type) {
+                    $this->assertContains(
+                        $type,
+                        DetailContent::TYPES,
+                        "viewer {$def->id}, tab {$tabId}: neznámý typ obsahu '{$type}'",
+                    );
+                }
+            }
             $checked++;
         }
         if ($checked === 0) {

@@ -193,9 +193,9 @@ class SentMessagesViewerTest extends TestCase
         );
 
         $types = array_column($content['blocks'], 'type');
-        $this->assertSame(['html', 'heading', 'attachment-grid', 'properties'], $types);
-        // Tělo je prostý text — do HTML jde escapované.
-        $this->assertStringContainsString('&lt;b&gt;v příloze&lt;/b&gt;', $content['blocks'][0]['html']);
+        $this->assertSame(['text', 'heading', 'attachment-grid', 'properties'], $types);
+        // Tělo je prostý text — blok `text` ho nese beze změny, frontend ho vkládá jako text (#137 D30).
+        $this->assertStringContainsString('<b>v příloze</b>', $content['blocks'][0]['text']);
         $this->assertSame('faktura-2260011.pdf', $content['blocks'][2]['attachments'][0]['name']);
 
         $this->assertSame([

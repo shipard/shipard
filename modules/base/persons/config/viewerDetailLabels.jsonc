@@ -15,5 +15,15 @@
             "name:cs": "Adresy",
             "name:en": "Addresses"
         }
+    },
+
+    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    "texts": {
+        // Přehled bez kontaktů i adres — prázdný stav tabu.
+        "noDetails": {
+            "name": "No further details.",
+            "name:cs": "Záznam nemá žádné další údaje.",
+            "name:en": "No further details."
+        }
     }
 }

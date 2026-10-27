@@ -171,12 +171,7 @@ class SentMessagesViewer extends TableViewer
         $blocks = [];
         $body   = (string) ($record['body_text'] ?? '');
         if ($body !== '') {
-            $blocks[] = [
-                'type' => 'html',
-                'html' => '<pre style="white-space: pre-wrap; font-family: inherit;">'
-                    . htmlspecialchars($body, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-                    . '</pre>',
-            ];
+            $blocks[] = ['type' => 'text', 'text' => $body];
         }
 
         $attachments = $this->attachments((int) $record['id']);

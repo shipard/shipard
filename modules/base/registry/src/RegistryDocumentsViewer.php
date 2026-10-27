@@ -269,10 +269,8 @@ class RegistryDocumentsViewer extends TableViewer
 
         $summary = trim((string) ($record['ai_summary'] ?? ''));
         if ($summary !== '') {
-            $blocks[] = [
-                'type' => 'html',
-                'html' => '<p>' . nl2br(htmlspecialchars($summary, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>',
-            ];
+            // AI shrnutí jako prostý text — zalomení z obsahu zůstávají (#137 D30).
+            $blocks[] = ['type' => 'text', 'text' => $summary];
         }
 
         // Druh je štítek, partner a šanon podtitul hlavičky (#140 D26).
@@ -306,7 +304,10 @@ class RegistryDocumentsViewer extends TableViewer
         }
 
         if ($blocks === []) {
-            return ['type' => 'html', 'html' => '<p class="muted">Dokument nemá žádný obsah.</p>'];
+            return [
+                'type' => 'empty',
+                'text' => $this->detailText(self::LABELS_CFG_ITEM, 'noContent', 'The document has no content.'),
+            ];
         }
         if (count($blocks) === 1) {
             return $blocks[0];

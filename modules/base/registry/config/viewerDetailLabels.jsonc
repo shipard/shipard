@@ -26,5 +26,15 @@
             "name:cs": "Nezařazené",
             "name:en": "Unfiled"
         }
+    },
+
+    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    "texts": {
+        // Tab Obsah bez shrnutí, údajů i poznámky.
+        "noContent": {
+            "name": "The document has no content.",
+            "name:cs": "Dokument nemá žádný obsah.",
+            "name:en": "The document has no content."
+        }
     }
 }

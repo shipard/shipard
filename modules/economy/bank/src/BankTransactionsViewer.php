@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Bank;
 
+use Shipard\Core\Accounting\AccountingStatusContent;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\Detail\DetailHeader;
@@ -372,7 +373,8 @@ class BankTransactionsViewer extends TableViewer
             return null;
         }
 
-        $blocks = [$this->accountingStatusBlock($record, $state)];
+        // Štítek stavu + hláška s hlášeními enginu — sdílené s dokladem (#137 D30).
+        $blocks = AccountingStatusContent::blocks($this->config, $state, $record['accounting_messages'] ?? null);
         if ($journalRows !== []) {
             $blocks[] = $this->accountingJournalTable($journalRows);
         }
@@ -386,53 +388,6 @@ class BankTransactionsViewer extends TableViewer
             ),
             'content' => ['type' => 'composite', 'blocks' => $blocks],
         ];
-    }
-
-    /**
-     * Badge stavu účtování; při chybě (stav 2) banner s hlášeními. Vzor
-     * DocsHeadsViewer::accountingStatusBlock — escapované hodnoty, vzhled
-     * přes globální CSS proměnné (funguje i v dark mode).
-     *
-     * @param array<string, mixed> $record
-     */
-    private function accountingStatusBlock(array $record, int $state): array
-    {
-        $states = $this->config?->cfgItem('economy.accounting.accountingStates');
-        $stateName = is_array($states) ? (string) ($states[(string) $state]['name'] ?? '') : '';
-        if ($stateName === '') {
-            $stateName = ['Not accounted', 'Accounted', 'Accounting error'][$state] ?? (string) $state;
-        }
-        $tone = match ($state) {
-            1       => 'done',
-            2       => 'error',
-            default => 'concept',
-        };
-
-        $html = '<div style="margin-bottom:var(--shpd-space-md)">'
-            . '<span style="display:inline-block;padding:2px 8px;border-radius:999px;'
-            . 'font-size:0.75rem;font-weight:500;'
-            . 'background:var(--shpd-color-state-' . $tone . '-bg);'
-            . 'color:var(--shpd-color-state-' . $tone . '-text)">'
-            . htmlspecialchars($stateName, ENT_QUOTES) . '</span>';
-
-        // Stav OK může nést varování (zprávy úrovně `warning`, selhání
-        // contributoru deníku #79 D3b) — vypíší se v tónu „k pozornosti“.
-        $messages = $state >= 1 ? $this->decodeAccountingMessages($record['accounting_messages'] ?? null) : [];
-        if ($messages !== []) {
-            $listTone = $state === 2 ? 'error' : 'edit';
-            $items = '';
-            foreach ($messages as $msg) {
-                $items .= '<li>' . htmlspecialchars((string) ($msg['message'] ?? ''), ENT_QUOTES) . '</li>';
-            }
-            $html .= '<ul role="' . ($state === 2 ? 'alert' : 'status') . '" style="margin:var(--shpd-space-sm) 0 0;'
-                . 'padding:var(--shpd-space-sm) var(--shpd-space-md) var(--shpd-space-sm) 28px;'
-                . 'background:var(--shpd-color-state-' . $listTone . '-bg);'
-                . 'color:var(--shpd-color-state-' . $listTone . '-text);'
-                . 'border-radius:var(--shpd-radius-md);'
-                . 'font-size:var(--shpd-font-size-sm)">' . $items . '</ul>';
-        }
-
-        return ['type' => 'html', 'html' => $html . '</div>'];
     }
 
     /**
@@ -486,19 +441,6 @@ class BankTransactionsViewer extends TableViewer
             return null;
         }
         return $this->formatMoney($amount);
-    }
-
-    /** @return list<array<string, mixed>> dekódované accounting_messages (JSON sloupec) */
-    private function decodeAccountingMessages(mixed $raw): array
-    {
-        if (is_array($raw)) {
-            return array_values(array_filter($raw, 'is_array'));
-        }
-        if (!is_string($raw) || trim($raw) === '') {
-            return [];
-        }
-        $decoded = json_decode($raw, true);
-        return is_array($decoded) ? array_values(array_filter($decoded, 'is_array')) : [];
     }
 
     public function getToolbarActions(?array $selectedRow): array
