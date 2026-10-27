@@ -1314,8 +1314,9 @@ změny stavu, bez tříd dokumentů a událostí; celý běh v jedné transakci
 hlásí 0 změn. **Nemění** doklady a jejich snapshoty stran, `display_line`
 / `display_block` adres, pravidla obsahových štítků, bankovní výpisy ani
 historii. Nevalidní hodnotu (kódy D13: `company_id_invalid`,
-`zip_invalid`, `iban_invalid`, …) neopravuje — jen ji vypíše k ruční
-opravě.
+`zip_invalid`, `iban_invalid`, …) ani podezření `account_number_checksum`
+(číslo účtu bez mod 11, D30) neopravuje — jen je vypíše k ruční opravě
+či ověření.
 
 Výpis: řádek per tabulka (záznamů, změněno, po sloupcích, u účtů „IBAN
 přesunut z čísla účtu“), součet a nevalidní hodnoty po opravě tvaru jako
@@ -1339,10 +1340,12 @@ za součty sekce `Změny (N):` — u každé změny `tabulka · id · osoba <id>
 `„před“ → „po“`; přesun IBAN ze sloupce čísla účtu je jedna položka se
 všemi dotčenými sloupci s předponou `IBAN přesunut z čísla účtu:`.
 U nálezů navíc hodnota, srozumitelný důvod podle příčiny (u IBAN tvar /
-kontrolní číslice / chybná délka / číslo účtu uvnitř bez mod 11, u čísla
-účtu nepovolené znaky / chybějící kód banky / mod 11) a, kde to jde
+kontrolní číslice / chybná délka, u čísla účtu nepovolené znaky /
+chybějící kód banky / samé nuly; podezření `account_number_checksum`
+„neprojde kontrolou mod 11 — ověřte ho“, D30) a, kde to jde
 z redundance, `návrh: „…“` — IČO z osmimístného českého DIČ, IBAN
-z platného tuzemského čísla účtu a naopak. **Návrh se nikdy neprovede**,
+z tuzemského čísla účtu, které projde vším včetně mod 11, a naopak;
+podezření návrh nenese. **Návrh se nikdy neprovede**,
 ani v ostrém běhu; oprava je na člověku. V JSONu `changes: [{table, id,
 person: {id, code, name}|null, account: {code, name}|null, ibanMoved,
 columns: {<sloupec>: {from, to}}}]` a `invalid[]` navíc `person`,

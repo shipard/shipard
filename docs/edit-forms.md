@@ -579,7 +579,10 @@ kódy `company_id_invalid`, `vat_id_invalid`, `vat_id_company_id_mismatch`,
 `zip_invalid`, `account_number_invalid`, `iban_invalid`, `bic_invalid`,
 `iban_account_mismatch` z `world.validations` `ValueChecks`, tytéž texty
 jako nálezy canonicalu dokladu; u **vlastní firmy**, jejích adres a účtů
-a u vlastních účtů v číselníku jsou to chyby). Dialog sub-tabulky
+a u vlastních účtů v číselníku jsou to chyby — kromě podezření
+`account_number_checksum` (číslo účtu bez mod 11, #118 D30), které je
+varování všude: `ValueFinding::SUSPICIONS`, `PersonDocument::report()`,
+`BankAccountDocument`). Dialog sub-tabulky
 (adresa, účet osoby) se po uložení s varováním **nezavře** —
 `FormSubTable.handleDialogSaved` nechá banner vidět, uživatel dialog
 zavře sám.

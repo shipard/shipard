@@ -1,6 +1,6 @@
 # Mod 11 jako podezření, ne jistá chyba
 
-**Stav:** naplánováno — rozhodnutí schválené 2026-10-27 (#118 D30), neimplementováno
+**Stav:** hotovo — implementováno 2026-10-27 ve 3 commitech (knihovna a volající, závažnost u vlastních účtů, dokumentace); odchylky a ověření níže; ostrý běh `values-normalize` na kopiích reálných dat zůstává na člověku
 
 
 ## Kontext / Cíl
@@ -91,23 +91,25 @@ D4 a dopočet IBAN dál jen z čísla, které projde vším.
 
 ## Hotovo když
 
-- [ ] IBAN s platnou kontrolní číslicí, jehož číslo uvnitř neprojde mod 11:
+- [x] IBAN s platnou kontrolní číslicí, jehož číslo uvnitř neprojde mod 11:
       platný IBAN, jeden nález `account_number_checksum`; s číslem účtu
-      téhož účtu taky jen jeden nález (u čísla).
-- [ ] Vlastní účet s podezřelým číslem se uloží s varováním; s neplatnou
-      kontrolní číslicí IBAN, nepovolenými znaky nebo bez kódu banky dál ne.
-- [ ] Návrh dokladu s podezřelým číslem: varování a strop `review` jako
-      dnes; oprava D4 z podezřelého čísla nevznikne (test).
-- [ ] QR: platný IBAN s podezřelým číslem uvnitř se použije; dopočet
-      IBAN z podezřelého čísla ne.
-- [ ] `values-normalize --dry-run` na volném zdroji dat: nový kód ve výpisu,
+      téhož účtu taky jen jeden nález (u čísla) — `ValueChecksTest`,
+      `CanonicalValueValidatorTest`.
+- [x] Vlastní účet s podezřelým číslem se uloží s varováním; s neplatnou
+      kontrolní číslicí IBAN, nepovolenými znaky nebo bez kódu banky dál ne
+      — `BankAccountDocumentTest`, `PersonBankAccountDocumentTest` + živě
+      na `4l3j` (níže).
+- [x] Návrh dokladu s podezřelým číslem: varování a strop `review` jako
+      dnes; oprava D4 z podezřelého čísla nevznikne
+      (`CanonicalValueNormalizerTest`, fixture `repair`).
+- [x] QR: platný IBAN s podezřelým číslem uvnitř se použije; dopočet
+      IBAN z podezřelého čísla ne (`PaymentQrTest`).
+- [x] `values-normalize --dry-run` na volném zdroji dat: nový kód ve výpisu,
       bez návrhu opravy; na kopiích reálných dat jen `--dry-run`, do zprávy
       jen počty po kódech.
-- [ ] `vendor/bin/phpunit --filter` na dotčené testy (World*, ValueChecks*,
-      Iban*, CanonicalValue*, PersonBankAccountDocument*,
-      BankAccountDocument*, Spayd*, DirectoryValuesNormalizer*,
-      CorpusValueRules*); `python3 -m unittest` generátoru; strážce korpusu.
-- [ ] Dokumentace, help, `**Stav:**`, index tasků.
+- [x] `vendor/bin/phpunit --filter` na dotčené testy; celá sada 10 857 testů
+      OK; `python3 -m unittest` generátoru 322 OK; strážce korpusu beze změny.
+- [x] Dokumentace, help, `**Stav:**`, index tasků.
 
 ## Pasti
 
@@ -121,3 +123,45 @@ D4 a dopočet IBAN dál jen z čísla, které projde vším.
   nevyžaduje) — párování zůstává stejné.
 - Python `checks.py` mod 11 nemění (generátor dál vyrábí jen validní
   účty); `test_checks.py` čte jen kontroly, které `checks.py` umí.
+
+## Odchylky od zadání (2026-10-27)
+
+- **Nesoulad IBAN × číslo účtu se hlásí i při podezření** (odsouhlaseno
+  v chatu): `iban_account_mismatch` vzniká u platného IBAN a čísla
+  s tuzemským tvarem, když se BBAN liší — mod 11 nerozhoduje. Dva různé
+  účty jsou jistá chyba; u vlastního účtu dál blokuje uložení a zpráva
+  „podle IBAN je účet X“ nahrazuje zrušený návrh opravy u podezření. Dřív
+  se nesoulad hlásil jen u dvou hodnot s platným mod 11.
+- **Číslo účtu ze samých nul** (`0/0100`) zůstává `account_number_invalid`
+  s důvodem „má číslo účtu ze samých nul“ — je to chyba tvaru, ne mod 11
+  (`DomesticAccount::checksumOk()` jen mod 11, `isValid()` navíc číslo ≠ 0).
+- **Oprava D4 smí přepsat „jen podezřelý“ IBAN**, když zapsané číslo účtu
+  projde vším a nese jiný účet — zdroj opravy je vždy hodnota, která projde
+  vším včetně mod 11; chování stejné jako dřív (test
+  `testSuspectIbanIsReplacedFromAccountNumberThatPassesAllChecks`).
+- Přísná varianta se jmenuje `Iban::isValidWithDomesticAccount()`;
+  rozhraní `CountryValueRules` se nemění (`isValidIban()` u cz / sk jen
+  délka 24). Místo, kde se ví, že kód je jen podezření:
+  `ValueFinding::SUSPICIONS` + `isSuspicion()`.
+- Fixture: případ `validate` IBAN `CZ47…` je nově `valid: true` a bez
+  `"python": false` (Python `iban_valid` mod 11 uvnitř nikdy nekontroloval);
+  případ `repair` „pojistka D4“ zůstává s `"python": false`.
+
+## Ověření (2026-10-27)
+
+- Cílené testy i celá sada (`vendor/bin/phpunit -d memory_limit=1G`:
+  10 857 testů OK, 1 warning a 1 skip jako dřív); `python3 -m unittest`
+  generátoru 322 OK; `CorpusValueRulesTest` beze změny.
+- Volný zdroj `4l3j`: `values-normalize --dry-run --only=accounts -v` vypsal
+  u dvou účtů testovacích dat `account_number_checksum` s důvodem
+  „neprojde kontrolou mod 11 — ověřte ho“ a bez `návrh:`; formulář vlastního
+  účtu (`POST /_ui/form/economy_codebooks_bank_accounts/save`) podezřelé
+  číslo uložil (201, `warnings[]` s novým kódem), IBAN s chybnou kontrolní
+  číslicí a IBAN jiného účtu odmítl (422 `iban_invalid` /
+  `iban_account_mismatch`); testovací záznam smazán.
+- Kopie reálných dat jen `--dry-run --only=accounts`, počty po kódech:
+  `btpg-p` 17 nálezů (účty osob: 4 `account_number_checksum`,
+  8 `account_number_invalid`, 3 `iban_invalid`; vlastní účty:
+  1 `account_number_invalid`, 1 `iban_invalid`), `e8w1-i` 5 nálezů (účty
+  osob: 2 `account_number_checksum`, 3 `account_number_invalid`). Ostrý
+  běh zůstává na člověku.

@@ -47,7 +47,8 @@ $rules = ValueRulesRegistry::forCountry('cz');
 $rules->isValidCompanyId('52654150');                               // true
 $account = DomesticAccount::parse('19-2000145399/0800');
 $rules->ibanFromDomesticAccount($account);                          // 'CZ6508000000192000145399'
-Iban::isValid('CZ6508000000192000145399');                          // mod 97 + délka + mod 11 uvnitř
+Iban::isValid('CZ6508000000192000145399');                          // tvar + mod 97 + délka státu (mod 11 uvnitř nehodnotí, D30)
+Iban::isValidWithDomesticAccount('CZ6508000000192000145399');       // navíc mod 11 na čísle uvnitř — jen pro dopočet z redundance
 ```
 
 | Třída | Role |
@@ -55,11 +56,11 @@ Iban::isValid('CZ6508000000192000145399');                          // mod 97 + 
 | `CountryValueRules` | rozhraní pravidel jednoho státu — to, co se mezi státy liší |
 | `AbstractCountryValueRules` | výchozí chování: trim, žádná kontrola, žádná předvolba |
 | `GenericValueRules` | stát bez třídy, neznámá nebo chybějící země |
-| `CzSkValueRulesBase`, `CzValueRules`, `SkValueRules` | IČO s kontrolním součtem, PSČ 5 číslic, účet `[předčíslí-]číslo/kód` s mod 11, BBAN ↔ IBAN 24 znaků |
+| `CzSkValueRulesBase`, `CzValueRules`, `SkValueRules` | IČO s kontrolním součtem, PSČ 5 číslic, účet `[předčíslí-]číslo/kód` (mod 11 = podezření, #118 D30), BBAN ↔ IBAN 24 znaků |
 | `DeValueRules` | USt-IdNr s kontrolní číslicí ISO 7064 MOD 11,10, PSČ 5 číslic, IBAN 22 znaků |
 | `ValueRulesRegistry` | výběr pravidel podle země (`forCountry`), prefixu IBAN (`forIban`) nebo prefixu DIČ (`forVatPrefix`) |
 | `ValueRules` | jeden vstup podle druhu hodnoty (`ValueRules::PHONE`, …) a země: `normalize()`, `isValid()`, `format()`, `ibanFromAccountNumber()` |
-| `ValueChecks`, `ValueFinding` | kontroly s důvodem (#118 D13, D19): kód nálezu, hodnota, česká věta; `message(vlastník)` skládá „IČO dodavatele „x“ nemá platný kontrolní součet.“ i „IČO „x“ …“ — jediný zdroj textů pro validátor canonicalu i formuláře adresáře. Důvod rozlišuje příčinu (D27: IBAN tvar / kontrolní číslice / chybná délka podle `ibanLength()` / číslo účtu uvnitř bez mod 11; číslo účtu nepovolené znaky / chybějící kód banky / jiný tvar / mod 11). `identity()` a `bankAccount()` přidají k nálezu **návrh opravy** `suggestion` z platné druhé hodnoty (IČO z osmimístného českého DIČ, tuzemské číslo z platného IBAN, IBAN z platného tuzemského čísla podle prefixu) — nikdy se neprovádí, do zprávy nepatří, čte ho `values-normalize --verbose` |
+| `ValueChecks`, `ValueFinding` | kontroly s důvodem (#118 D13, D19): kód nálezu, hodnota, česká věta; `message(vlastník)` skládá „IČO dodavatele „x“ nemá platný kontrolní součet.“ i „IČO „x“ …“ — jediný zdroj textů pro validátor canonicalu i formuláře adresáře. Důvod rozlišuje příčinu (D27: IBAN tvar / kontrolní číslice / chybná délka podle `ibanLength()`; číslo účtu nepovolené znaky / chybějící kód banky / jiný tvar / samé nuly). **Mod 11 je podezření, ne jistá chyba** (D30): kód `account_number_checksum` jednou na účet — u čísla účtu, nebo (jen s IBAN či u IBAN jiného účtu) u IBAN „číslo účtu uvnitř … neprojde kontrolou mod 11 — ověřte ho“; `ValueFinding::SUSPICIONS` / `isSuspicion()` říká, že jde o varování i u vlastní firmy. Nesoulad `iban_account_mismatch` se hlásí u platného IBAN a čísla s tuzemským tvarem bez ohledu na mod 11. `identity()` a `bankAccount()` přidají k nálezu **návrh opravy** `suggestion` z druhé hodnoty, která projde vším včetně mod 11 (IČO z osmimístného českého DIČ, tuzemské číslo z IBAN, IBAN z tuzemského čísla podle prefixu) — podezření návrh nenese, nikdy se neprovádí, do zprávy nepatří, čte ho `values-normalize --verbose` |
 | `BankAccountKey` | klíč účtu pro párování z hodnoty (ne ze sloupce): IBAN cz / sk i tuzemské číslo → `bban:`, jiný IBAN → `iban:`, jinak `raw:` (D16, D23) |
 | `BankAccountShape` | tvar trojice číslo účtu / IBAN / BIC při uložení a přesun IBAN ze sloupce čísla účtu do `iban` (D20) |
 | `Iban`, `Bic`, `VatId`, `Phone`, `DomesticAccount`, `Contact`, `PaymentSymbols`, `Country` | obecná pravidla a primitiva |
@@ -79,7 +80,7 @@ Iban::isValid('CZ6508000000192000145399');                          // mod 97 + 
 | telefon | `+` a číslice (viz níže) | — |
 | VS, KS, SS | bez mezer | — |
 | platební reference | bez mezer, velkými | — |
-| tuzemský účet | tvar `…/kód` bez mezer a vedoucích nul; jiný tvar jen bez mezer | tvar `…/kód` → mod 11 bez ohledu na zemi; stát s tuzemským tvarem jiný tvar neuznává |
+| tuzemský účet | tvar `…/kód` bez mezer a vedoucích nul; jiný tvar jen bez mezer | tvar `…/kód` → mod 11 bez ohledu na zemi (`ValueRules::isValid()` přísně; v nálezech jen podezření, D30); stát s tuzemským tvarem jiný tvar neuznává |
 
 **Čitelný tvar (D21):** `ValueRules::format()` nejdřív normalizuje, pak
 PSČ cz / sk `760 01`, IBAN po čtveřicích, telefon cz / sk
@@ -110,7 +111,7 @@ písmena kolem jednoho čísla (`tel. 577 123 456`) normalizaci nebrání.
 
 | Země | PSČ | IČO | DIČ | Účet / IBAN | Telefon |
 |---|---|---|---|---|---|
-| cz | 5 číslic bez mezer | 8 číslic (samé číslice do 8 míst dostanou vedoucí nuly), kontrolní součet | `CZ` + 8–10 číslic; jen číslice → doplní `CZ`; 8místné = `CZ` + IČO (9–10místné = fyzická osoba, vazba neplatí) | `[předčíslí-]číslo/kód`, mod 11 předčíslí i čísla; BBAN = kód 4 + předčíslí 6 + číslo 10; IBAN 24 znaků, platný jen s platným číslem uvnitř | `+420`, bez národního předčíslí, národní číslo 9 číslic |
+| cz | 5 číslic bez mezer | 8 číslic (samé číslice do 8 míst dostanou vedoucí nuly), kontrolní součet | `CZ` + 8–10 číslic; jen číslice → doplní `CZ`; 8místné = `CZ` + IČO (9–10místné = fyzická osoba, vazba neplatí) | `[předčíslí-]číslo/kód`, mod 11 předčíslí i čísla jako podezření (D30); BBAN = kód 4 + předčíslí 6 + číslo 10; IBAN 24 znaků, platný s tvarem, kontrolní číslicí a délkou — číslo uvnitř bez mod 11 je podezření u IBAN | `+420`, bez národního předčíslí, národní číslo 9 číslic |
 | sk | 5 číslic | jako cz | `SK` + 10 číslic | jako cz, prefix `SK` | `+421`, předčíslí `0`, 9 číslic |
 | de | 5 číslic | jak na dokladu (trim) | `DE` + 9 číslic, kontrolní číslice ISO 7064 MOD 11,10 | IBAN 22 znaků, bez tuzemského tvaru | `+49`, předčíslí `0`, proměnlivá délka (výsledek 7–15 číslic) |
 

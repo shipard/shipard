@@ -380,10 +380,12 @@ nic se nemění (validace nahlásí nesoulad). Číslo účtu bez IBANu se IBANe
 nedoplňuje. Jedna funkce `Values\PersonValues::normalizeBankAccount()`
 (`world.validations` `BankAccountShape`) pro formulář
 (`PersonBankAccountDocument`), applier osob, `bankCreate` z dokladu
-i vlastní účty v číselníku. Formulář účtu kontroluje číslo účtu (mod 11),
-IBAN, BIC a jejich soulad (D19): partner varování, vlastní firma chyba;
-jiný než tuzemský tvar čísla účtu je nález jen u osoby ze státu
-s tuzemským tvarem (země osoby, viz § 3).
+i vlastní účty v číselníku. Formulář účtu kontroluje číslo účtu, IBAN,
+BIC a jejich soulad (D19): partner varování, vlastní firma chyba; číslo
+účtu, které neprojde mod 11, je jen podezření (`account_number_checksum`,
+#118 D30) — varování i u vlastní firmy, účet se uloží; jiný než tuzemský
+tvar čísla účtu je nález jen u osoby ze státu s tuzemským tvarem (země
+osoby, viz § 3).
 
 **Číslo účtu nebo IBAN (#118 D28):** účet osoby musí nést aspoň jeden
 z obou údajů — zahraniční účet má jen IBAN (`accountNumber` prázdné, po

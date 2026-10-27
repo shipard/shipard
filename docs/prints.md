@@ -385,8 +385,9 @@ Pravidla:
   volí standard podle země odběratele (v1 vždy SPAYD); `SpaydGenerator`
   skládá `ACC`, `AM`, `CC`, `X-VS`, `X-SS`, `X-KS`, `DT`, `MSG`. Účet jen
   s **platným IBAN** (#118 D29): IBAN ze snapshotu, pokud projde
-  `Iban::isValid()` (tvar, mod 97, pravidlo státu); jinak IBAN dopočtený
-  z **platného** českého čísla účtu (mod 11,
+  `Iban::isValid()` (tvar, mod 97, délka státu — číslo uvnitř bez mod 11
+  je jen podezření, D30, IBAN se použije); jinak IBAN dopočtený
+  z českého čísla účtu, které projde i mod 11 (z podezřelého ne;
   `ValueRules::ibanFromAccountNumber()`); jinak `qr = null` + varování
   `message.qrNoAccount`. Neplatný uložený IBAN se do kódu nedostane ani
   neopravuje — v platebních údajích se tiskne, jak je uložený, oprava dat

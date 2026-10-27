@@ -80,6 +80,15 @@ adres a účtů a u vlastních účtů v **Nastavení** se chybná hodnota neulo
 vůbec — jde na doklady, do QR platby a do e-faktury. Zahraniční IČO se
 nekontroluje, telefon a e-mail také ne.
 
+**Číslo účtu, které „neprojde kontrolou mod 11“, je jen upozornění.**
+Mod 11 je pravidlo, podle kterého banky čísla účtů tvoří; některé
+zveřejněné účty ho přesto nesplňují. Shipard proto takové číslo uloží
+i u **Vlastní firmy** a vlastních účtů, jen ho označí žlutým pruhem
+s textem *neprojde kontrolou mod 11 — ověřte ho*. Zkontroluj číslo
+proti smlouvě nebo výpisu; pokud je opsané správně, nech ho být. Když
+k účtu zapíšeš i IBAN, hlídá se navíc, že IBAN a číslo účtu jsou týž
+účet — jiný účet v IBAN je u vlastní firmy chyba.
+
 **Registr existující osobu nepřepíše.** Když ve výsledcích hledání vidíš
 u firmy odznak **Firma již existuje**, znamená to, že ji v evidenci máš.
 Vybrat a uložit ji můžeš, ale **nic se nedoplní ani nepřepíše** — dostaneš

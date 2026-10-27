@@ -1336,8 +1336,10 @@ do něj přidávají vlastní bloky bez změny schématu:
   (`tasks/exchange-preview-vat-recompute.md`).
 - `_resolve.valueRepairs` — auditní blok oprav hodnot z redundance
   (#118 D4, D14): `[{path, from, to, basis}]`, `basis` `accountNumber`
-  (IBAN dopočtený z platného čísla účtu) | `iban` (číslo účtu dopočtené
-  z platného IBAN). Zapisuje ho normalizátor canonicalu
+  (IBAN dopočtený z čísla účtu) | `iban` (číslo účtu dopočtené z IBAN) —
+  zdrojem je jen hodnota, která projde vším včetně mod 11; z podezřelého
+  čísla (`account_number_checksum`, D30) se nic nedopočítává. Zapisuje
+  ho normalizátor canonicalu
   (`Values\CanonicalValueNormalizer`) při `/result`, sběru ISDOC
   i v každém volání applieru — idempotentně: existující záznamy
   zachová, stejný nepřidá; `withResolve()` ho přenáší do čerstvého
@@ -1403,11 +1405,12 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_id_invalid` | warning | DIČ / VAT ID nemá tvar prefix státu + 2–13 znaků, nebo neodpovídá pravidlu státu podle prefixu (cz 8–10 číslic, sk 10, de kontrolní číslice). |
 | `vat_id_company_id_mismatch` | warning | Osmimístné české DIČ není `CZ` + IČO strany (9–10místné DIČ fyzické osoby vazbu nemá). Path `*.vatId`. |
 | `zip_invalid` | warning | PSČ cz / sk nemá pět číslic (podle země adresy, jinak strany). |
-| `account_number_invalid` | warning | Tuzemské číslo účtu `[předčíslí-]číslo/kód` nesplňuje mod 11 (předčíslí i číslo zvlášť), nebo strana cz / sk má účet jiného tvaru — důvod podle příčiny (#118 D27): nepovolené znaky, chybějící kód banky, jiný tvar, mod 11. |
-| `iban_invalid` | warning | IBAN nemá tvar, platnou kontrolní číslici (ISO 7064 MOD 97-10), nebo neodpovídá pravidlu státu — důvod podle příčiny (#118 D27): chybná délka státu, nebo u cz / sk číslo účtu uvnitř bez mod 11. |
+| `account_number_invalid` | warning | Jistá chyba tvaru tuzemského čísla účtu `[předčíslí-]číslo/kód`, nebo strana cz / sk má účet jiného tvaru — důvod podle příčiny (#118 D27): nepovolené znaky, chybějící kód banky, jiný tvar, číslo ze samých nul. Mod 11 sem nepatří (D30). |
+| `account_number_checksum` | warning | **Podezření** (#118 D30): tuzemské číslo účtu má správný tvar, ale předčíslí nebo číslo neprojde mod 11 — pravidlo pro vytvoření čísla, zveřejněné účty ho někdy nesplňují. Jednou na účet: path `*.bankAccount.accountNumber`; jen s IBAN (nebo IBAN jiného účtu) `*.bankAccount.iban` s textem „číslo účtu uvnitř … neprojde kontrolou mod 11 — ověřte ho“. Nikdy nenese návrh opravy; z podezřelého čísla se nic nedopočítává. V adresáři varování i u vlastní firmy a vlastních účtů. |
+| `iban_invalid` | warning | IBAN nemá tvar, platnou kontrolní číslici (ISO 7064 MOD 97-10), nebo chybnou délku státu — důvod podle příčiny (#118 D27). Číslo účtu uvnitř (cz / sk) IBAN neznehodnotí (D30, `account_number_checksum`). |
 | `bic_invalid` | warning | BIC nemá tvar 8 nebo 11 znaků. |
-| `iban_account_mismatch` | warning | IBAN i číslo účtu jsou platné, ale nenesou týž účet (BBAN se liší). Path `*.bankAccount.iban`. |
-| `bank_account_repaired` | warning | Normalizátor dopočetl neplatný IBAN z platného čísla účtu nebo naopak (D4) — z `_resolve.valueRepairs`, zpráva nese původní i novou hodnotu. Návrh s tímto nálezem nikdy není `ready`. |
+| `iban_account_mismatch` | warning | IBAN je platný a číslo účtu má tuzemský tvar, ale nenesou týž účet (BBAN se liší) — mod 11 nerozhoduje (D30), dva různé účty jsou jistá chyba. Path `*.bankAccount.iban`. |
+| `bank_account_repaired` | warning | Normalizátor dopočetl neplatný IBAN z čísla účtu nebo naopak (D4) — zdrojem je jen hodnota, která projde vším včetně mod 11 (D30, `Iban::isValidWithDomesticAccount()`); z `_resolve.valueRepairs`, zpráva nese původní i novou hodnotu. Návrh s tímto nálezem nikdy není `ready`. |
 
 Apply-level kódy (`ApplyResult.errorCode`, 422): `number_series_not_found`,
 `number_series_conflict` (`numberSeriesCode` i `numberSeriesId` najednou),
