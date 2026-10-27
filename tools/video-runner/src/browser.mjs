@@ -29,8 +29,13 @@ const RENDER_ARGS = [
  *   ověřením a během nešlo přesměrovat. Syntaxe `--host-resolver-rules`,
  *   např. `MAP demo.example.dev 127.0.0.1`. `null` = bez mapování.
  */
-export async function launchChromium({ headless = true, args = [], hostResolverRules = null } = {}) {
+export async function launchChromium({ headless = true, args = [], hostResolverRules = null, locale = null } = {}) {
   const resolverArgs = hostResolverRules ? [`--host-resolver-rules=${hostResolverRules}`] : [];
+  // Locale procesu prohlížeče z `locale` scénáře (`cs-CZ` → `cs_CZ.UTF-8`):
+  // jen podle něj Chromium formátuje nativní datumová a číselná pole
+  // (`--lang` ani `locale` kontextu Playwrightu na ně nemají vliv).
+  // Runner sám může běžet s `LC_ALL=C` (pevné prostředí `video-run`).
+  const env = locale ? { ...process.env, ...processLocaleEnv(locale) } : undefined;
 
   try {
     // `channel: 'chromium'` = plné Chromium v novém headless režimu, ne
@@ -42,6 +47,7 @@ export async function launchChromium({ headless = true, args = [], hostResolverR
       channel: 'chromium',
       headless,
       args: [...RENDER_ARGS, ...resolverArgs, ...args],
+      ...(env ? { env } : {}),
     });
   } catch (error) {
     if (/Executable doesn't exist|please run the following command/i.test(error.message)) {
@@ -52,4 +58,16 @@ export async function launchChromium({ headless = true, args = [], hostResolverR
     }
     throw error;
   }
+}
+
+/**
+ * Proměnné prostředí s locale procesu Chromia pro BCP 47 `locale`
+ * (`cs-CZ` → `cs_CZ.UTF-8`, `en` → `en.UTF-8`). Exportované kvůli testům.
+ *
+ * @param {string} locale
+ * @returns {{LANG: string, LC_ALL: string, LANGUAGE: string}}
+ */
+export function processLocaleEnv(locale) {
+  const posix = `${locale.trim().replace('-', '_')}.UTF-8`;
+  return { LANG: posix, LC_ALL: posix, LANGUAGE: locale.trim().split('-')[0] };
 }

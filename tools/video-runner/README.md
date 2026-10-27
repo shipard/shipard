@@ -15,7 +15,8 @@ stejně dobře pustit z terminálu (viz Ruční použití mimo Shipard).
 Rozhodnutí, ze kterých návrh vychází, jsou v issue **shipard/shipard#48**
 a v tasku [`tasks/video-runner-spike.md`](../../tasks/video-runner-spike.md);
 napojení na datové sady, pevný čas a dashboard řeší #103 D119–D129
-([`tasks/testing-phase7b.md`](../../tasks/testing-phase7b.md)).
+([`tasks/testing-phase7b.md`](../../tasks/testing-phase7b.md),
+[`docs/test-corpus.md`](../../docs/test-corpus.md) § 20).
 
 > **Stav: pilotní spike.** Implementovaná je podmnožina — chybí zoomy
 > a rámečky v postprodukci, dabing, verby `fill` / `press` / `scrollTo` /
@@ -177,6 +178,9 @@ existuje) a z kotvy sady a `clockTime` složí `VIDEO_FIXED_TIME`.
 `locale` (výchozí `cs-CZ`) a `timezone` (výchozí `Europe/Prague`) řídí
 jazyk a časovou zónu prohlížeče — aplikace si jazyk odvozuje
 z `navigator.language`, takže bez `cs-CZ` by video vyšlo anglicky (D121).
+Z `locale` dostává proces Chromia i `LANG` / `LC_ALL` (`cs_CZ.UTF-8`):
+jen podle nich formátuje nativní datumová a číselná pole (`--lang` ani
+`locale` kontextu Playwrightu na ně nemají vliv).
 
 `capture.w`/`capture.h` jsou rozměry **rawu v pixelech**, `scale` je
 `deviceScaleFactor`. CSS viewport z toho vychází jako `w/scale × h/scale`

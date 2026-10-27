@@ -47,6 +47,10 @@ export async function createSession(config, scenario, options = {}) {
     headless: options.headless ?? true,
     // Připíchnutá adresa hostitele (D97) — předává ji `shpd-ds video-run`.
     hostResolverRules: config.hostResolverRules,
+    // Nativní prvky (datumová a číselná pole) formátuje Chromium podle
+    // locale svého procesu, ne podle `locale` kontextu — bez toho má
+    // české video data jako 10/12/2026.
+    locale: scenario.locale,
     args: [
       `--window-size=${width},${height}`,
       '--window-position=0,0',
