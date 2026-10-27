@@ -16,7 +16,7 @@
   import Button from '../ui/Button.svelte';
   import Card from '../ui/Card.svelte';
   import CardGrid from '../ui/CardGrid.svelte';
-  import { iconOverview, iconRefresh } from '../../icons.js';
+  import { iconOverview, iconRefresh, resolveIcon } from '../../icons.js';
   import { fetchOverview } from '../../api/overview.js';
   import { formatMoney } from '../../utils/formatNumber.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
@@ -130,7 +130,9 @@
     <!-- Sekce jako sdílené karty (#137 D33, D34): tón podle stavu sekce
          (nedostupná = warning, chyba výpočtu = danger), štítek stavu vpravo
          v řádku nadpisu; karty v řádku stejně vysoké, pod 20 rem jeden
-         sloupec. Nadpis karty je h2 pod h1 stránky. -->
+         sloupec. Nadpis karty je h2 pod h1 stránky v roli title (D36)
+         s ikonou tématu ze serveru (`section.icon`, D38) — bez ní žádná
+         ikona, ne fallback resolveIcon. -->
     <CardGrid minWidth="20rem">
       {#each sections as section (section.id)}
         {#snippet stateBadge()}
@@ -143,6 +145,8 @@
         <Card
           title={section.title}
           headingLevel={2}
+          titleRole="title"
+          icon={section.icon ? resolveIcon(section.icon) : undefined}
           tone={section.state === 'unavailable' ? 'warning' : section.state === 'error' ? 'danger' : 'default'}
           aside={section.state === 'unavailable' || section.state === 'error' ? stateBadge : undefined}
         >
