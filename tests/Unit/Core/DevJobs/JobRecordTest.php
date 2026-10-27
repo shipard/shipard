@@ -62,6 +62,17 @@ final class JobRecordTest extends TestCase
         $this->assertSame('e2e', JobRecord::fromArray($record->toArray())->type);
     }
 
+    public function testAcceptsVideoType(): void
+    {
+        $step = new JobStep('video-run s1 (build)', ['/usr/bin/php', 'shpd-ds', 'video-run', '/repo/demo/scenarios/s1.jsonc', '--verb', 'build', '--json'], '/opt/ds', true);
+        $record = new JobRecord('20261027-123456-abc123', JobRecord::TYPE_VIDEO, 'aaaa-bbbb-cccc-dddd', 'Videa', 'it-servis', null, ['scenario' => 's1', 'verb' => 'build'], [$step], '2026-10-27T09:00:00Z', null, 180);
+
+        $this->assertFalse($record->isServerWide());
+        $this->assertTrue($record->isCancellable());
+        $this->assertSame('video', JobRecord::fromArray($record->toArray())->type);
+        $this->assertSame(['scenario' => 's1', 'verb' => 'build'], JobRecord::fromArray($record->toArray())->params);
+    }
+
     public function testRejectsUnknownType(): void
     {
         $step = new JobStep('x', ['true'], '/tmp');

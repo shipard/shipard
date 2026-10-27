@@ -56,7 +56,7 @@ final class DevActionGuard
                     'status' => 403,
                     'message' => "Data source {$dataSource->id} is not a free data source (data class "
                         . ($dataSource->readable ? $dataSource->dataClass->value . ($dataSource->dataClassExplicit ? '' : ', not set in main.json') : 'unknown — main.json unreadable')
-                        . ') — launch actions (reseed, verify, eval, e2e, delete) run only on free data sources',
+                        . ') — launch actions (reseed, verify, eval, e2e, video, delete) run only on free data sources',
                 ];
             }
         }

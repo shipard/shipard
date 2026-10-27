@@ -62,6 +62,8 @@ import {
   faCircleQuestion,
   faPaperclip,
   faDownload,
+  faFilm,
+  faPlay,
   faCloudArrowDown,
   faUpload,
   faFile,
@@ -245,6 +247,8 @@ export const iconChat = faComments;
 // ── Přílohy / soubory ─────────────────────────────────────────────
 export const iconAttachment = faPaperclip;
 export const iconDownload = faDownload;
+export const iconVideo = faFilm; // oddíl Videa vývojářského dashboardu (#103 F7b)
+export const iconPlay = faPlay;
 export const iconCloudDownload = faCloudArrowDown;
 export const iconUpload = faUpload;
 export const iconFile = faFile;
@@ -341,6 +345,8 @@ export const iconMap = {
   'info': iconInfo,
   // vývojářský dashboard (#129 D5)
   'testing': iconTesting,
+  'video': iconVideo,
+  'play': iconPlay,
   'doctor': iconDoctor,
   'upgrade': iconUpgrade,
   'commit': iconCommit,

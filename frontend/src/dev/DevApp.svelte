@@ -6,7 +6,7 @@
   // bloku měří a dává do --dev-top-height pro lepicí prvky pod lištou (PdfPane).
   import { onMount } from 'svelte';
   import Icon from '../components/ui/Icon.svelte';
-  import { iconDatabase, iconTesting, iconDocument, iconDoctor, iconUpgrade, iconBook, iconServer } from '../icons.js';
+  import { iconDatabase, iconTesting, iconVideo, iconDocument, iconDoctor, iconUpgrade, iconBook, iconServer } from '../icons.js';
   import logoUrl from './assets/shipard-logo.svg';
   import { router, onLinkClick } from './router.svelte.js';
   import { devInfo } from './info.svelte.js';
@@ -19,6 +19,7 @@
   import LogsPage from './pages/LogsPage.svelte';
   import ActionPage from './pages/ActionPage.svelte';
   import TestingPage from './pages/testing/TestingPage.svelte';
+  import VideosPage from './pages/videos/VideosPage.svelte';
   import NotFoundPage from './pages/NotFoundPage.svelte';
 
   const route = $derived(router.route);
@@ -31,6 +32,7 @@
     logs: 'logs',
     doctor: 'doctor',
     upgradeAll: 'upgradeAll',
+    videos: 'videos',
   };
 
   const isTesting = $derived(route.name.startsWith('testing'));
@@ -38,6 +40,7 @@
   const navItems = $derived([
     { id: 'dataSources', label: t('app.nav.dataSources'), icon: iconDatabase, href: router.href('dataSources') },
     ...(devInfo.value?.testing ? [{ id: 'testing', label: t('app.nav.testing'), icon: iconTesting, href: router.href('testingDatasets') }] : []),
+    ...(devInfo.value?.videos ? [{ id: 'videos', label: t('app.nav.videos'), icon: iconVideo, href: router.href('videos') }] : []),
     { id: 'logs', label: t('app.nav.logs'), icon: iconDocument, href: router.href('logs') },
     { id: 'doctor', label: t('app.nav.doctor'), icon: iconDoctor, href: router.href('doctor') },
     { id: 'upgradeAll', label: t('app.nav.upgradeAll'), icon: iconUpgrade, href: router.href('upgradeAll') },
@@ -59,6 +62,7 @@
     doctor: 'app.nav.doctor',
     upgradeAll: 'app.nav.upgradeAll',
     dsUpgrade: 'app.title.dsUpgrade',
+    videos: 'app.nav.videos',
     notFound: 'app.title.notFound',
   };
 
@@ -131,6 +135,8 @@
       <ActionPage />
     {:else if isTesting}
       <TestingPage />
+    {:else if route.name === 'videos'}
+      <VideosPage />
     {:else}
       <NotFoundPage />
     {/if}

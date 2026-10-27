@@ -19,6 +19,8 @@ const ROUTES = [
   ['doctor', 'doctor'],
   ['upgrade-all', 'upgradeAll'],
   ['ds-upgrade', 'dsUpgrade'],
+  // Videa nad demo sadou (#103 F7b D122)
+  ['videos', 'videos'],
   // Testování (#103 D53) — sada, běhy, detail běhu, doklad v běhu, porovnání, doklad napříč běhy
   ['testing', 'testingDatasets'],
   // Úlohy a varianty (F6b) — před `testing/:set`: první shoda vítězí, sada se nesmí jmenovat `jobs` / `variants`

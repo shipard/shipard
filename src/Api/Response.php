@@ -59,6 +59,38 @@ class Response
 		return $resp;
 	}
 
+	/**
+	 * Soubor z disku po částech (video pro přehrávač, tasks/testing-phase7b.md
+	 * D127): tělo se nečte do paměti, `send()` ho posílá po blocích. Bez
+	 * `$range` celý soubor s 200, s ním 206 a `Content-Range`; vždy
+	 * `Accept-Ranges: bytes`. Rozsah se ověřuje předem přes
+	 * {@see ByteRange::resolve()} — 416 skládá {@see rangeNotSatisfiable()}.
+	 * `getPayload()` vrací cestu.
+	 */
+	public static function file(string $path, string $contentType, int $size, ?ByteRange $range = null): self
+	{
+		$resp = new self($range === null ? 200 : 206, $path);
+		$resp->bodyType = 'file';
+		$resp->headers['Content-Type'] = $contentType;
+		$resp->headers['Accept-Ranges'] = 'bytes';
+		$resp->headers['Content-Length'] = (string) ($range === null ? $size : $range->length());
+		if ($range !== null) {
+			$resp->headers['Content-Range'] = $range->contentRange();
+		}
+		return $resp;
+	}
+
+	/** 416 pro rozsah mimo soubor ({@see ByteRangeUnsatisfiable}). */
+	public static function rangeNotSatisfiable(int $size): self
+	{
+		$resp = new self(416, '');
+		$resp->bodyType = 'binary';
+		$resp->headers['Content-Type'] = 'text/plain; charset=utf-8';
+		$resp->headers['Content-Length'] = '0';
+		$resp->headers['Content-Range'] = ByteRange::unsatisfiableRange($size);
+		return $resp;
+	}
+
 	public static function redirect(string $location, int $status = 302): self
 	{
 		$resp = new self($status, '');
@@ -91,6 +123,11 @@ class Response
 	public function getPayload(): mixed
 	{
 		return $this->payload;
+	}
+
+	public function getStatus(): int
+	{
+		return $this->status;
 	}
 
 	public function getHeaders(): array
@@ -128,6 +165,11 @@ class Response
 			return;
 		}
 
+		if ($this->bodyType === 'file') {
+			$this->sendFile();
+			return;
+		}
+
 		if ($this->bodyType === 'html') {
 			header('Content-Type: text/html; charset=utf-8');
 			echo $this->payload;
@@ -141,5 +183,38 @@ class Response
 			header('Content-Type: application/json; charset=utf-8');
 		}
 		echo json_encode($this->payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+	}
+
+	/**
+	 * Tělo souboru po blocích (256 KiB) od začátku rozsahu s `flush()` po
+	 * každém (výstupní buffer PHP-FPM se tak nikdy nenaplní celým videem)
+	 * a bez limitu běhu — velký soubor přes pomalou linku trvá.
+	 */
+	private function sendFile(): void
+	{
+		$start = 0;
+		$length = (int) ($this->headers['Content-Length'] ?? 0);
+		if (isset($this->headers['Content-Range']) && preg_match('/^bytes (\d+)-(\d+)\//', $this->headers['Content-Range'], $m) === 1) {
+			$start = (int) $m[1];
+		}
+		$handle = @fopen((string) $this->payload, 'rb');
+		if ($handle === false) {
+			return;
+		}
+		@set_time_limit(0);
+		if ($start > 0) {
+			fseek($handle, $start);
+		}
+		$remaining = $length;
+		while ($remaining > 0 && !feof($handle)) {
+			$chunk = fread($handle, min(262_144, $remaining));
+			if ($chunk === false || $chunk === '') {
+				break;
+			}
+			echo $chunk;
+			flush();
+			$remaining -= strlen($chunk);
+		}
+		fclose($handle);
 	}
 }

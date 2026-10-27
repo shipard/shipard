@@ -17,6 +17,8 @@
   import Crumbs from '../../components/Crumbs.svelte';
   import VerifyResult from './VerifyResult.svelte';
   import E2eResult from './E2eResult.svelte';
+  import VideoResult from '../videos/VideoResult.svelte';
+  import { videoStepLabel } from '../../videos/videos.js';
 
   const route = $derived(router.route);
   const jobId = $derived(route.params.jobId);
@@ -242,6 +244,30 @@
     </div>
   {/if}
 
+  {#if job.type === 'video'}
+    <div class="dev-card">
+      <h2 class="dev-card__title">{t('testing.job.videoProgress')}</h2>
+      {#if progress.started || progress.steps.length}
+        <dl class="dev-kv">
+          <dt>{t('testing.job.e2eStep')}</dt>
+          <dd>
+            {#each progress.steps as s (s.step)}
+              <span class="dev-state dev-state--{s.status === 'finished' ? 'match' : s.status === 'failed' ? 'wrong' : 'neutral'}">{videoStepLabel(s.step)}{#if s.exitCode !== null} · exit {s.exitCode}{/if}</span>
+            {/each}
+          </dd>
+          {#if progress.started?.scenario}
+            <dt>{t('videos.col.scenario')}</dt><dd><code>{progress.started.scenario}</code> · <code>{progress.started.verb}</code> · {t('videos.anchor', { anchor: progress.started.anchor })}</dd>
+          {/if}
+          {#if progress.error}
+            <dt>{t('testing.job.error')}</dt><dd class="dev-lvl dev-lvl--bad">{progress.error}</dd>
+          {/if}
+        </dl>
+      {:else}
+        <div class="dev-empty">{t('testing.job.noProgress')}</div>
+      {/if}
+    </div>
+  {/if}
+
   {#if !active}
     <div class="dev-card">
       <h2 class="dev-card__title">{t('testing.jobs.col.result')}</h2>
@@ -272,6 +298,8 @@
         <VerifyResult report={result} />
       {:else if job.type === 'e2e'}
         <E2eResult report={result} jobId={job.id} />
+      {:else if job.type === 'video'}
+        <VideoResult report={result} />
       {:else if job.type === 'create'}
         {#if job.status === 'finished'}
           <p>{t('testing.job.created', { id: job.dataSource?.id })} — <a href="/{job.dataSource?.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a> {t('testing.job.createdNote')}</p>
@@ -302,7 +330,7 @@
 <DevConfirm
   open={confirm !== null}
   title={confirm?.force ? t('testing.job.forceKill') : t('testing.job.cancelJob')}
-  message={confirm?.force ? t('testing.job.forceMessage') : job?.type === 'e2e' ? t('testing.job.cancelMessageE2e') : t('testing.job.cancelMessage')}
+  message={confirm?.force ? t('testing.job.forceMessage') : job?.type === 'e2e' ? t('testing.job.cancelMessageE2e') : job?.type === 'video' ? t('testing.job.cancelMessageVideo') : t('testing.job.cancelMessage')}
   variant="danger"
   confirmLabel={confirm?.force ? t('testing.job.force') : t('testing.job.cancelJob')}
   cancelLabel={t('common.back')}

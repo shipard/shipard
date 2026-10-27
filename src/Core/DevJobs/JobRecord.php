@@ -27,7 +27,9 @@ final readonly class JobRecord
     public const string TYPE_UPDATE = 'update';
     /** Proklikání datové sady v prohlížeči (`dataset-e2e`, tasks/testing-phase7a.md D88, D91). */
     public const string TYPE_E2E = 'e2e';
-    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE, self::TYPE_UPDATE, self::TYPE_E2E];
+    /** Video nad demo sadou (`video-run --verb check|build`, tasks/testing-phase7b.md D122, D125). */
+    public const string TYPE_VIDEO = 'video';
+    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE, self::TYPE_UPDATE, self::TYPE_E2E, self::TYPE_VIDEO];
     /** Úlohy celého serveru — bez zdroje dat (U1): vylučují jakoukoli jinou úlohu a naopak. */
     public const array SERVER_TYPES = [self::TYPE_UPDATE];
     /** Úlohy, které z dashboardu nejde zrušit ani vynutit (U2): přerušení by nechalo checkout v půli. */

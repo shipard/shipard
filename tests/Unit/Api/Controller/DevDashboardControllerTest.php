@@ -211,6 +211,7 @@ class DevDashboardControllerTest extends TestCase
 			// validaci ?ds= dělá klient a POST endpoint — stránka je vždy SPA
 			['/_dev/ds-upgrade/?ds=abcd-1234-efgh-5678'], ['/_dev/ds-upgrade/?ds=bad!id'], ['/_dev/ds-upgrade'],
 			['/_dev/testing'], ['/_dev/testing/'], ['/_dev/testing/cz-vat-payer/runs/2026-10-16-baseline.json/'],
+			['/_dev/videos'], ['/_dev/videos/'],
 		];
 	}
 

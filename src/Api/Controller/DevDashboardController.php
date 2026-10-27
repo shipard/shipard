@@ -34,7 +34,7 @@ class DevDashboardController
 	 * Tabulka rout na klientu (`frontend/src/dev/routes.js`) si s tímto
 	 * seznamem musí odpovídat.
 	 */
-	private const array SPA_PAGES = ['logs', 'ds-create', 'doctor', 'upgrade-all', 'ds-upgrade', 'testing'];
+	private const array SPA_PAGES = ['logs', 'ds-create', 'doctor', 'upgrade-all', 'ds-upgrade', 'testing', 'videos'];
 	/** Zrušení úlohy smazání: ds-delete běží sekundy, SIGTERM stačí. */
 	public const int DELETE_CANCEL_GRACE_SECONDS = 60;
 
@@ -82,6 +82,11 @@ class DevDashboardController
 		// Zastaralost checkoutu a Aktualizovat (#129 D18–D21).
 		if ($path === DevUpdatesController::PREFIX || str_starts_with($path, DevUpdatesController::PREFIX . '/')) {
 			return $this->updatesController()->dispatch($request);
+		}
+
+		// Oddíl Videa (#103 F7b D122, D126, D127): scénáře, úlohy video / create, video s Range.
+		if ($path === DevVideosController::PREFIX || str_starts_with($path, DevVideosController::PREFIX . '/')) {
+			return (new DevVideosController($this->repoRoot, $this->dataSourcesDir, $this->serverMode(), $this->jobStore(), $this->jobLauncher()))->dispatch($request);
 		}
 
 		// Sekce Testování (#103 D51–D53) — jen čtení souborů v checkoutu.
@@ -189,6 +194,7 @@ class DevDashboardController
 			'dataSourcesDir' => $this->dataSourcesDir,
 			'testing'        => is_dir($this->repoRoot . '/tests/datasets') && is_dir($this->repoRoot . '/tests/eval'),
 			'datasets'       => (new DatasetCatalog($this->repoRoot))->isAvailable(),
+			'videos'         => is_dir($this->repoRoot . '/demo/scenarios') && is_dir($this->repoRoot . '/tools/video-runner'),
 			'version'        => [
 				'version'    => Version::VERSION,
 				'hash'       => $git['hash'] ?? null,
