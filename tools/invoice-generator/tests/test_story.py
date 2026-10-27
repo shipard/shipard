@@ -9,6 +9,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from invoicegen.catalogs import load_catalogs
+from invoicegen.collation import sort_czech
 from invoicegen.jsonc import load_jsonc
 from invoicegen.story import StoryError, identities_for_checks, load_story
 from tests.fixtures import REPO_ROOT
@@ -40,6 +41,11 @@ class StoryLoadTest(unittest.TestCase):
         self.assertEqual(("Nájem", "Pojištění", "Smlouvy"), story.binders)
         self.assertEqual(Decimal("24.47"), story.rates["EUR"][0])
         self.assertEqual("2026-01-01", story.setup["bank_accounts"]["rows"][0]["valid_from"], "@period.start doplněno")
+        settings_rows = story.setup["settings"]["rows"]
+        self.assertEqual({"key": "app.name", "value": "Zelený Terminál s.r.o."}, settings_rows[0],
+                         "název firmy aplikace odvozený z own.name, první v pořadí dumpu (#103 D135)")
+        self.assertEqual(sort_czech([r["key"] for r in settings_rows]), [r["key"] for r in settings_rows], "pořadí dumpu")
+        self.assertEqual(1, sum(1 for r in settings_rows if r["key"] == "app.name"))
         self.assertEqual(sorted(story.setup), sorted(["settings", "accounts", "bank_accounts", "cash_desks", "cost_centers",
                                                       "vat_registrations", "binders", "mailboxes",
                                                       "work_order_kinds", "work_order_series",
@@ -95,6 +101,11 @@ class StoryValidationTest(unittest.TestCase):
         with self.assertRaises(StoryError) as ctx:
             load(self.dir)
         self.assertIn(fragment, str(ctx.exception))
+
+    def test_app_name_in_settings_is_derived_not_written(self) -> None:
+        self.edit("setup/settings.jsonc", '{ "key": "economy.accountChart", "value": "default" },',
+                  '{ "key": "app.name", "value": "Ručně psaný název" },\n\t\t{ "key": "economy.accountChart", "value": "default" },')
+        self.assert_problem("setup/settings.jsonc: rows[0].key app.name odvozuje generátor z story.own.name")
 
     def test_bad_ico_checksum(self) -> None:
         self.edit("partners.jsonc", '"companyId": "83715266"', '"companyId": "83715267"')

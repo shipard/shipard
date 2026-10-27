@@ -191,8 +191,12 @@ class DevUpdateCommand extends Command
         }
 
         // 2. Fast-forward. Od teď žádná nová třída — jen podprocesy.
+        $gitBinary = $git->binary();
+        if ($gitBinary === null) {
+            return $this->fail($output, 'git is not available in PATH — nothing changed.');
+        }
         $this->banner($output, 2, 'git merge --ff-only ' . $ref);
-        $exit = $this->runStep($runner, [$git->binary(), '-C', $root, '-c', 'core.hooksPath=/dev/null', 'merge', '--ff-only', $ref], $root, $env);
+        $exit = $this->runStep($runner, [$gitBinary, '-C', $root, '-c', 'core.hooksPath=/dev/null', 'merge', '--ff-only', $ref], $root, $env);
         if ($exit !== 0) {
             return $this->fail($output, "git merge --ff-only failed (exit {$exit}) — the checkout is unchanged; reconcile by hand (git status).");
         }

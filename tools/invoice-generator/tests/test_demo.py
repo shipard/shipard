@@ -105,8 +105,11 @@ class BuildDemoDatasetTest(unittest.TestCase):
             self.assertEqual(("purchase.asset", "042100", {"asset": "MA0001"}),
                              (purchase["rows"][0]["operation"], purchase["rows"][0]["account"], purchase["rows"][0]["dimensions"]))
             self.assertNotIn("item", purchase["rows"][0])
-            settings = {r["key"]: r["value"] for r in load_jsonc(out / "setup" / "settings.jsonc")["rows"]}
+            settings_rows = load_jsonc(out / "setup" / "settings.jsonc")["rows"]
+            settings = {r["key"]: r["value"] for r in settings_rows}
             self.assertEqual(("month", "yes"), (settings["economy.assets.accPeriodicity"], settings["economy.accounting.dimension.asset"]))
+            self.assertEqual({"key": "app.name", "value": "Zelený Terminál s.r.o."}, settings_rows[0],
+                             "název firmy aplikace z own.name jako první řádek (#103 D135)")
             self.assertIn("bank/0001-bu1-2026-01.jsonc", files)
             self.assertIn("bank/0010-bu1-2026-10.jsonc", files)
             self.assertIn("bank/0011-bu2-2026-01.jsonc", files)

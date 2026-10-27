@@ -87,7 +87,7 @@ záporné = minulost), `day` = den v měsíci (delší než měsíc se ořízne)
 | `items.jsonc` | vlastní prodejní položky: kód, název, druh (`service` / `stock`), jednotka (`core.units`), cena, sazba, výnosový účet. Účetní položky pro přijaté faktury přidá seed z nabídky osnovy (`provision.accountingItems: "all"`) |
 | `registry.jsonc` | dokumenty spisovny: druh, šablona z `templates/`, šanon, partner, `refNumber`, `created` {month, day, time}, `validFrom`, `validTo` ({afterAnchorDays} / {years} / {month, day}), `summary`, `kindFields` podle druhu (promote klíče doplní generátor) |
 | `mail.jsonc` | zprávy k řešení bez dokladu (`kind: other`) s pozorností (`attention`, `actionNote`, `dueInDays` od kotvy); návrhy faktur vznikají z `anchorMonth: open` u dodavatelů |
-| `setup/*.jsonc` | číselníky ve tvaru dumpu (všechny sloupce vč. `null`): nastavení (vč. `economy.accounting.dimension.workOrder: yes` a `economy.accounting.dimension.asset: yes` — pole Zakázka a Majetek na dokladech, `economy.assets.accPeriodicity: month` — měsíční účetní odpisy; **bez** id řad dokladů `economy.assets.accountingSeries` / `economy.vat.filingAccountingSeries` — ta po resetu nastaví provisionery, D42), nesystémové účty osnovy (`accounts` — analytika 221200 pro eurový účet, výchozí osnova má jen 221100), bankovní účty (BU1 CZK, BU2 EUR, každý s `accounting_account` = analytika 221), pokladna, registrace DPH, šanony, střediska (prázdné), schránka, druhy a řady zakázek (`work_order_kinds` — periodický druh s řadou dokladů `{docType, code}` D37 a účtem kódem, druh projektů; `work_order_series` — řady `S` a `P` průběžné, druh názvem), číselníky majetku (`asset_accounting_groups` — všech sedm skupin provisioneru s účty číslem, `asset_type_groups`, `asset_types` — typ „Výpočetní technika“ se skupinou typů názvem a výchozí účetní skupinou `022` kódem). `@period.start` v datu = první den dat |
+| `setup/*.jsonc` | číselníky ve tvaru dumpu (všechny sloupce vč. `null`): nastavení (`app.name` — název firmy v záhlaví aplikace — doplňuje generátor z `own.name` příběhu, v `settings.jsonc` příběhu se nepíše, #103 D135; vč. `economy.accounting.dimension.workOrder: yes` a `economy.accounting.dimension.asset: yes` — pole Zakázka a Majetek na dokladech, `economy.assets.accPeriodicity: month` — měsíční účetní odpisy; **bez** id řad dokladů `economy.assets.accountingSeries` / `economy.vat.filingAccountingSeries` — ta po resetu nastaví provisionery, D42), nesystémové účty osnovy (`accounts` — analytika 221200 pro eurový účet, výchozí osnova má jen 221100), bankovní účty (BU1 CZK, BU2 EUR, každý s `accounting_account` = analytika 221), pokladna, registrace DPH, šanony, střediska (prázdné), schránka, druhy a řady zakázek (`work_order_kinds` — periodický druh s řadou dokladů `{docType, code}` D37 a účtem kódem, druh projektů; `work_order_series` — řady `S` a `P` průběžné, druh názvem), číselníky majetku (`asset_accounting_groups` — všech sedm skupin provisioneru s účty číslem, `asset_type_groups`, `asset_types` — typ „Výpočetní technika“ se skupinou typů názvem a výchozí účetní skupinou `022` kódem). `@period.start` v datu = první den dat |
 
 Pravidla, která loader vynucuje: kontrolní součty IČO / účtů / IBAN / DE
 DIČ, domény jen `.example` (D15), telefony s nepřidělitelným předčíslím 000 za kódem země, žádný překryv s identitami dema
@@ -178,6 +178,15 @@ Výchozí schránka: `ds-upgrade` ji zakládá s adresou podle ID zdroje dat,
 sada ji přepíše pevnou `demo-it-servis@shipard.email`, aby dump vyšel
 stejně na každém zdroji dat. Demo zdroj dat nemá přijímat skutečnou poštu;
 kdo to potřebuje, opraví adresu v Nastavení.
+
+**Název firmy aplikace** (`app.name`, #103 D135): sada ho nese
+v `setup/settings.jsonc`, aby záhlaví aplikace — i ve videích natočených
+nad sadou — ukazovalo „Zelený Terminál s.r.o.“, ne název zdroje dat.
+Hodnotu doplňuje generátor z `own.name` příběhu. Pozor při přeseedování
+téhož zdroje dat jinou sadou: `core_system_settings` reset přežije
+a `SetupSeeder` maže jen vyloučené klíče (id řad dokladů), takže sada
+bez `app.name` nechá v záhlaví název firmy z předchozí sady — v Nastavení
+→ Aplikace ho pak smaž ručně.
 
 ## Banka (fáze 2a, převody D26) a její meze
 

@@ -6,11 +6,30 @@ namespace Shipard\Tests\Unit\Core;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\DevUpdate\Git;
 use Shipard\Core\Version;
+use Shipard\Tests\Fixtures\Core\DevUpdate\GitStub;
 
 class VersionTest extends TestCase
 {
-    private const LOG_LINE = "e4ab901a\te4ab901a848e88b0954ed13330abb928c971a2f3\t2026-10-17T10:17:42+00:00\n";
+    /** @var list<GitStub> */
+    private array $stubs = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->stubs as $stub) {
+            $stub->cleanup();
+        }
+        $this->stubs = [];
+    }
+
+    /** @param array<string, string> $answers */
+    private function stub(array $answers = GitStub::HEAD): GitStub
+    {
+        $stub = GitStub::create($answers);
+        $this->stubs[] = $stub;
+        return $stub;
+    }
 
     public function testFullStartsWithVersion(): void
     {
@@ -53,38 +72,60 @@ class VersionTest extends TestCase
         }
     }
 
-    public function testParseGitInfoReadsHashesBranchAndCommitDate(): void
+    /** #103 D135: git z pevného PATH a prázdné prostředí (jako PHP-FPM s `clear_env`) — žádný shell, žádný PATH procesu. */
+    public function testReadGitInfoWithEmptyEnvironmentReadsHashesBranchAndCommitDate(): void
     {
+        $stub = $this->stub();
+        $git = $stub->git('/repo');
+
+        $this->assertSame($stub->dir . '/git', $git->binary(), 'binárka nalezená findTool v PATH prostředí');
         $this->assertSame([
-            'hash'       => 'e4ab901a',
-            'fullHash'   => 'e4ab901a848e88b0954ed13330abb928c971a2f3',
-            'branch'     => 'stable',
-            'commitDate' => '2026-10-17T10:17:42+00:00',
-        ], Version::parseGitInfo(self::LOG_LINE, "stable\n"));
+            'hash'       => GitStub::SHORT_HASH,
+            'fullHash'   => GitStub::FULL_HASH,
+            'branch'     => GitStub::BRANCH,
+            'commitDate' => GitStub::COMMIT_DATE,
+        ], Version::readGitInfo('/repo', $git));
     }
 
-    public function testParseGitInfoDetachedHeadHasNoBranch(): void
+    public function testReadGitInfoWithoutGitInPathIsNull(): void
     {
-        $this->assertNull(Version::parseGitInfo(self::LOG_LINE, "HEAD\n")['branch']);
-        $this->assertNull(Version::parseGitInfo(self::LOG_LINE, '')['branch'], 'rev-parse selhal → větev neznámá, zbytek platí');
+        $stub = $this->stub();
+        $git = new Git('/repo', $stub->envWithoutGit());
+
+        $this->assertNull($git->binary());
+        $this->assertNull(Version::readGitInfo('/repo', $git));
     }
 
-    /** @return iterable<string, array{string}> */
-    public static function brokenLogLines(): iterable
+    public function testReadGitInfoDetachedHeadHasNoBranch(): void
     {
-        yield 'prázdný výstup' => [''];
-        yield 'jen hash' => ['e4ab901a'];
-        yield 'krátký hash není prefix plného' => ["abcdef0\te4ab901a848e88b0954ed13330abb928c971a2f3\t2026-10-17T10:17:42+00:00"];
-        yield 'plný hash moc krátký' => ["e4ab901a\te4ab901a\t2026-10-17T10:17:42+00:00"];
-        yield 'ne-hex znaky' => ["e4ab901z\te4ab901z848e88b0954ed13330abb928c971a2f3\t2026-10-17T10:17:42+00:00"];
-        yield 'datum mimo ISO 8601' => ["e4ab901a\te4ab901a848e88b0954ed13330abb928c971a2f3\tFri Oct 17 10:17:42 2026"];
-        yield 'hláška gitu' => ["fatal: not a git repository"];
+        $detached = $this->stub([GitStub::Q_BRANCH => 'HEAD'] + GitStub::HEAD);
+        $this->assertNull(Version::readGitInfo('/repo', $detached->git('/repo'))['branch']);
+
+        $failing = $this->stub(array_diff_key(GitStub::HEAD, [GitStub::Q_BRANCH => '']));
+        $info = Version::readGitInfo('/repo', $failing->git('/repo'));
+        $this->assertNotNull($info, 'rev-parse větve selhal → větev neznámá, zbytek platí');
+        $this->assertNull($info['branch']);
+        $this->assertSame(GitStub::FULL_HASH, $info['fullHash']);
     }
 
-    #[DataProvider('brokenLogLines')]
-    public function testParseGitInfoRejectsBrokenOutput(string $logLine): void
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function brokenGitAnswers(): iterable
     {
-        $this->assertNull(Version::parseGitInfo($logLine, 'stable'));
+        yield 'rev-parse HEAD selže (mimo repozitář)' => [array_diff_key(GitStub::HEAD, [GitStub::Q_HEAD => ''])];
+        yield 'krátký hash selže' => [array_diff_key(GitStub::HEAD, [GitStub::Q_SHORT => ''])];
+        yield 'datum commitu selže' => [array_diff_key(GitStub::HEAD, [GitStub::Q_DATE => ''])];
+        yield 'krátký hash není prefix plného' => [[GitStub::Q_SHORT => 'abcdef0'] + GitStub::HEAD];
+        yield 'plný hash moc krátký' => [[GitStub::Q_HEAD => GitStub::SHORT_HASH] + GitStub::HEAD];
+        yield 'ne-hex znaky' => [[GitStub::Q_HEAD => 'e4ab901z848e88b0954ed13330abb928c971a2f3', GitStub::Q_SHORT => 'e4ab901z'] + GitStub::HEAD];
+        yield 'datum mimo ISO 8601' => [[GitStub::Q_DATE => 'Fri Oct 17 10:17:42 2026'] + GitStub::HEAD];
+        yield 'hláška gitu místo hashe' => [[GitStub::Q_HEAD => 'fatal: not a git repository'] + GitStub::HEAD];
+    }
+
+    /** @param array<string, string> $answers */
+    #[DataProvider('brokenGitAnswers')]
+    public function testReadGitInfoRejectsBrokenOutput(array $answers): void
+    {
+        $this->assertNull(Version::readGitInfo('/repo', $this->stub($answers)->git('/repo')));
     }
 
     /** Bez repozitáře (adresář mimo git) je HEAD neznámá — pruh dashboardu ukáže jen číslo verze. */

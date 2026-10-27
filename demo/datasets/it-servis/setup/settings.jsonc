@@ -3,6 +3,10 @@
     "table": "settings",
     "rows": [
         {
+            "key": "app.name",
+            "value": "Zelený Terminál s.r.o."
+        },
+        {
             "key": "economy.accountChart",
             "value": "default"
         },

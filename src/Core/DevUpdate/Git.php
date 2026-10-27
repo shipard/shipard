@@ -7,16 +7,21 @@ namespace Shipard\Core\DevUpdate;
 use Shipard\Core\Process\CapturedProcess;
 
 /**
- * Tenký wrapper nad gitem checkoutu pro kontrolu aktualizací: argv bez
- * shellu, prostředí z {@see UpdateEnvironment}, timeout. Dotazy jsou
- * lokální (10 s) kromě {@see fetch()} (30 s). Nikdy `git pull`, nikdy
- * `fetch origin` — jen pevná HTTPS URL z {@see Upstream}.
+ * Tenký wrapper nad gitem checkoutu: argv bez shellu, prostředí
+ * z {@see UpdateEnvironment}, timeout. Binárku hledá {@see UpdateEnvironment::findTool()}
+ * v `PATH` toho prostředí (pevný, ne z prostředí procesu — PHP-FPM
+ * s `clear_env` žádný nemá, #103 D135); bez ní každý dotaz selže
+ * (`exitCode` null), nic se nespouští. Dotazy jsou lokální (10 s) kromě
+ * {@see fetch()} (30 s). Nikdy `git pull`, nikdy `fetch origin` — jen
+ * pevná HTTPS URL z {@see Upstream}. Slouží kontrole aktualizací (#129),
+ * {@see \Shipard\Core\Version} i {@see \Shipard\Core\Utils\GitState}.
  */
 final class Git
 {
     /** @var array<string, string> */
     private readonly array $env;
-    private readonly string $binary;
+    /** Absolutní cesta k binárce; null = git v `PATH` chybí. */
+    private readonly ?string $binary;
 
     /** @param array<string, string>|null $env výchozí {@see UpdateEnvironment::env()} */
     public function __construct(
@@ -25,7 +30,7 @@ final class Git
         ?string $binary = null,
     ) {
         $this->env = $env ?? UpdateEnvironment::env();
-        $this->binary = $binary ?? UpdateEnvironment::findTool('git', $this->env['PATH'] ?? UpdateEnvironment::DEFAULT_PATH) ?? 'git';
+        $this->binary = $binary ?? UpdateEnvironment::findTool('git', $this->env['PATH'] ?? UpdateEnvironment::DEFAULT_PATH);
     }
 
     public function root(): string
@@ -39,7 +44,8 @@ final class Git
         return $this->env;
     }
 
-    public function binary(): string
+    /** Absolutní cesta k binárce gitu; null = v `PATH` prostředí chybí. */
+    public function binary(): ?string
     {
         return $this->binary;
     }
@@ -50,6 +56,9 @@ final class Git
      */
     public function run(array $args, float $timeoutSeconds = UpdateEnvironment::LOCAL_TIMEOUT_SECONDS): array
     {
+        if ($this->binary === null) {
+            return ['exitCode' => null, 'stdout' => '', 'stderr' => 'git not found in PATH', 'timedOut' => false];
+        }
         $r = CapturedProcess::run([$this->binary, '-C', $this->root, ...$args], null, $timeoutSeconds, env: $this->env);
         return [
             'exitCode' => $r['exitCode'],
@@ -112,6 +121,23 @@ final class Git
     {
         $hash = $this->line(['rev-parse', 'HEAD']);
         return $hash !== null && preg_match('/^[0-9a-f]{40}$/', $hash) === 1 ? $hash : null;
+    }
+
+    /** Krátký hash HEAD (`rev-parse --short`, délka podle `core.abbrev`, 7–40 znaků); null = chyba. */
+    public function shortHash(): ?string
+    {
+        $hash = $this->line(['rev-parse', '--short', 'HEAD']);
+        return $hash !== null && preg_match('/^[0-9a-f]{7,40}$/', $hash) === 1 ? $hash : null;
+    }
+
+    /** Datum HEAD commitu (committer date, ISO 8601 `%cI`); null = chyba nebo nevalidní datum. */
+    public function commitDate(): ?string
+    {
+        $date = $this->line(['log', '-1', '--format=%cI']);
+        if ($date === null || $date === '' || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $date) === false) {
+            return null;
+        }
+        return $date;
     }
 
     /** Název větve; null = odpojená HEAD nebo chyba. */

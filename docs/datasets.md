@@ -97,7 +97,7 @@ které jsou uživatelská data. Sada proto nese (`SetupExporter::TABLES`):
 
 | Soubor | Tabulka | Klíč | Poznámka |
 |--------|---------|------|----------|
-| `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou). **Bez** `economy.assets.accountingSeries` a `economy.vat.filingAccountingSeries` (`SetupExporter::SETTINGS_EXCLUDED`, #131 fáze 2c D42): jsou to id řad dokladů, která na jiném zdroji dat neplatí a která by po resetu zablokovala provisioner řady „Majetek“ — po resetu je nastaví `ds-upgrade`; seed je ve starší sadě přeskočí. Tytéž klíče maže i samotný `ds-reset` podle deklarací `clearSettingsOnReset` modulů ([docs/modules.md](modules.md)); konstanta exportéru je jejich kopie hlídaná testem |
+| `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou). `app.name` = název firmy v záhlaví aplikace: demo sada ho dostává od generátoru z `own.name` příběhu (#103 D135); protože tabulka přežije reset a `SetupSeeder` maže jen vyloučené klíče, přežije `app.name` i přeseedování jinou sadou, která ho nenese. **Bez** `economy.assets.accountingSeries` a `economy.vat.filingAccountingSeries` (`SetupExporter::SETTINGS_EXCLUDED`, #131 fáze 2c D42): jsou to id řad dokladů, která na jiném zdroji dat neplatí a která by po resetu zablokovala provisioner řady „Majetek“ — po resetu je nastaví `ds-upgrade`; seed je ve starší sadě přeskočí. Tytéž klíče maže i samotný `ds-reset` podle deklarací `clearSettingsOnReset` modulů ([docs/modules.md](modules.md)); konstanta exportéru je jejich kopie hlídaná testem |
 | `accounts.jsonc` | `economy_accounting_accounts` | `number` | jen **nesystémové** účty (`is_system = 0`) — analytiky založené nad seedem, např. 221200 pro bankovní účet v cizí měně (#131 fáze 2a); systémové obnoví `AccountChartProvisioner`. Seeduje se abecedně před `bank_accounts.jsonc`, takže `accounting_account` číslem se dohledá |
 | `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují); `accounting_account` = číslo analytiky 221 (bez něj bankovní engine hlásí `bank_account_not_found`) |
 | `cash_desks.jsonc` | `economy_codebooks_cash_desks` | `code` | pokladny; výchozí (`is_default`) dostane v apply doklad placený hotově bez `cashDesk` (#103 F3) |
@@ -570,4 +570,8 @@ Fáze 2b (`tasks/demo-dataset-phase2b-work-orders.md`) přidala sekci
 (`tasks/demo-dataset-phase2c-assets.md`) sekci `assets/` — server
 pořízený fakturou velkoobchodu s řádkem `purchase.asset`, zařazený, bez
 zaúčtování (D38); `invoicegen/assets.py` portuje měsíční plán účetních
-odpisů jen pro souhrn ekonomiky.
+odpisů jen pro souhrn ekonomiky. Nastavení `app.name` (název firmy
+v záhlaví aplikace, které jinak ukazuje název zdroje dat — i ve videích
+nad sadou) doplňuje generátor z `own.name` příběhu (#103 D135);
+v `setup/settings.jsonc` příběhu se nepíše a loader ho tam hlásí jako
+chybu. Sada bez `app.name` ho při přeseedování nesmaže — viz § 1.

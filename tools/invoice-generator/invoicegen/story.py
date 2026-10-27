@@ -20,7 +20,7 @@ from pathlib import Path
 
 from .catalogs import Catalogs
 from .checks import account_valid, iban_matches_account, validate_identities
-from .collation import robust_order
+from .collation import czech_key, robust_order
 from .datasetio import NAME_PATTERN, SETUP_FORMAT, SETUP_TABLES
 from .jsonc import load_jsonc
 from .timeline import Period, invoice_from, month_date, period_for
@@ -47,6 +47,7 @@ VAT_PCTS = (0, 12, 21)
 # Majetek (#131 fáze 2c): číselníky v setup/, nastavení, inventární číslo,
 # jediná kombinace odpisů, kterou generátor umí spočítat (invoicegen/assets.py).
 ASSET_SETUP_TABLES = ("asset_accounting_groups", "asset_type_groups", "asset_types")
+APP_NAME_KEY = "app.name"    # název firmy v záhlaví aplikace — odvozuje generátor z own.name (#103 D135)
 ASSET_SETTINGS = {"economy.assets.accPeriodicity": "month", "economy.accounting.dimension.asset": "yes"}
 ASSET_NUMBER_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9-]{1,19}$")
 ASSET_TAX_METHOD = "straight"
@@ -295,8 +296,24 @@ def _load_setup(story_dir: Path, period: Period, own: dict, problems: _Problems)
                     problems.add(where, f"rows[{i}].name chybí")
                 else:
                     binders.append(row["name"])
+        if table == "settings":
+            resolved_rows = _settings_rows(resolved_rows, own, where, problems)
         setup[table] = {"format": SETUP_FORMAT, "table": table, "rows": resolved_rows}
     return setup, tuple(binders)
+
+
+def _settings_rows(rows: list[dict], own: dict, where: str, problems: _Problems) -> list[dict]:
+    """Nastavení sady: `app.name` (název firmy, který aplikace ukazuje
+    v záhlaví) doplní generátor z `story.own.name` (#103 D135) — ručně
+    zapsaný je chyba příběhu. Řádky v pořadí dumpu (`ORDER BY key`
+    v české kolaci), takže `app.name` je první."""
+    for i, row in enumerate(rows):
+        if row.get("key") == APP_NAME_KEY:
+            problems.add(where, f"rows[{i}].key {APP_NAME_KEY} odvozuje generátor z story.own.name — vynech ho")
+    rows = [r for r in rows if r.get("key") != APP_NAME_KEY]
+    if _is_text(own.get("name")):
+        rows.append({"key": APP_NAME_KEY, "value": own["name"]})
+    return sorted(rows, key=lambda r: czech_key(str(r.get("key", ""))))
 
 
 def _party(key: str, kind: str, raw: dict, problems: _Problems, catalogs: Catalogs,
