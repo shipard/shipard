@@ -8,6 +8,7 @@ use Shipard\Api\Response;
 use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
 use Shipard\Core\DevJobs\JobStore;
+use Shipard\Module\Core\Exchange\Dataset\Jobs\DatasetJobRecipes;
 
 /**
  * API úloh na pozadí vývojářského dashboardu (`/_dev/api/testing/jobs…`,
@@ -19,7 +20,7 @@ use Shipard\Core\DevJobs\JobStore;
  *
  * | metoda | cesta                      | odpověď                                                      |
  * |--------|----------------------------|--------------------------------------------------------------|
- * | GET    | `jobs?dataset=&ds=&days=`  | `{jobs[]}` nejnovější první (před výpisem úklid po retenci)   |
+ * | GET    | `jobs?dataset=&ds=&days=&type=&parent=` | `{jobs[]}` nejnovější první (před výpisem úklid po retenci); `type` = typ úlohy, `parent` = dílčí úlohy kola |
  * | GET    | `jobs/{id}?offset=&tail=`  | `{job, progress{events,nextOffset}, outputTail, result}`      |
  * | POST   | `jobs/{id}/cancel?force=1` | `{job}` po zrušení; 409 `JOB_NOT_ACTIVE` když není co rušit, |
  * |        |                            | 409 `JOB_NOT_CANCELLABLE` pro typ `update` (#129 U2)          |
@@ -66,7 +67,7 @@ final class DevJobsController
 	}
 
 	/** Podadresář úlohy s výstupem `dataset-e2e --output-dir` a jeho trace soubory (D96). */
-	public const string E2E_DIR = 'e2e';
+	public const string E2E_DIR = DatasetJobRecipes::E2E_DIR;
 	public const string E2E_TRACES_DIR = 'traces';
 
 	/**
@@ -115,8 +116,12 @@ final class DevJobsController
 		$dataset = self::stringParam($qp, 'dataset');
 		$ds = self::stringParam($qp, 'ds');
 		$days = self::intParam($qp, 'days', JobStore::RETENTION_DAYS, 1, self::MAX_DAYS);
+		$type = self::stringParam($qp, 'type');
+		$type = $type !== null && in_array($type, JobRecord::TYPES, true) ? $type : null;
+		$parent = self::stringParam($qp, 'parent');
+		$parent = $parent !== null && JobStore::isValidId($parent) ? $parent : null;
 		$this->store->prune();
-		return Response::success(['jobs' => $this->store->list($dataset, $ds, $days)]);
+		return Response::success(['jobs' => $this->store->list($dataset, $ds, $days, $type, $parent)]);
 	}
 
 	private function detail(string $id, Request $request): Response

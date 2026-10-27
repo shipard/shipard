@@ -13,7 +13,6 @@ use Shipard\Core\DevJobs\DevActionGuard;
 use Shipard\Core\DevJobs\JobConflict;
 use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
-use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
@@ -22,6 +21,7 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetCatalog;
 use Shipard\Module\Core\Exchange\Dataset\DatasetCatalogEntry;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2eException;
 use Shipard\Module\Core\Exchange\Dataset\E2e\LocalBaseUrl;
+use Shipard\Module\Core\Exchange\Dataset\Jobs\DatasetJobRecipes;
 use Shipard\Module\Core\Exchange\Dataset\Video\VideoDataSources;
 use Shipard\Module\Core\Exchange\Dataset\Video\VideoPreflight;
 use Shipard\Module\Core\Exchange\Dataset\Video\VideoReport;
@@ -52,9 +52,9 @@ use Shipard\Module\Core\Exchange\Dataset\Video\VideoStore;
 class DevVideosController
 {
 	public const string PREFIX = '/_dev/api/videos';
-	/** Zrušení videa: runner po SIGINT zavře Chromium, příkaz uklidí session; seed je nepřerušitelný (desítky sekund). */
-	public const int VIDEO_CANCEL_GRACE_SECONDS = 180;
-	public const int CREATE_CANCEL_GRACE_SECONDS = 60;
+	/** Grace zrušení žijí v receptech ({@see DatasetJobRecipes}); aliasy pro testy a dokumentaci. */
+	public const int VIDEO_CANCEL_GRACE_SECONDS = DatasetJobRecipes::VIDEO_CANCEL_GRACE_SECONDS;
+	public const int CREATE_CANCEL_GRACE_SECONDS = DatasetJobRecipes::DEFAULT_CANCEL_GRACE_SECONDS;
 	public const array VERBS = [VideoReport::VERB_CHECK, VideoReport::VERB_BUILD];
 	public const string CONTENT_TYPE = 'video/mp4';
 
@@ -272,28 +272,7 @@ class DevVideosController
 		} catch (E2eException $e) {
 			return Response::error('VALIDATION', $e->getMessage(), 400);
 		}
-		$jobId = JobRecord::newId($this->now());
-		$argv = [
-			...$this->dsCommand(), 'video-run', $scenario->path,
-			'--verb', $verb,
-			'--json',
-			'--progress-file', $this->jobs->path($jobId, JobStore::PROGRESS_FILE),
-			'--base-url', $origin,
-		];
-		$record = new JobRecord(
-			$jobId,
-			JobRecord::TYPE_VIDEO,
-			$info->id,
-			$info->name,
-			$scenario->dataset,
-			null,
-			['scenario' => $scenario->id, 'verb' => $verb, 'baseUrl' => $origin],
-			[new JobStep("video-run {$scenario->id} ({$verb})", $argv, $this->dsDir($info->id), captureStdout: true)],
-			JobStore::formatTime($this->now()),
-			$request->getClientIp(),
-			self::VIDEO_CANCEL_GRACE_SECONDS,
-		);
-		return $this->launch($record);
+		return $this->launch($this->recipes($request)->video($info->id, $info->name, $scenario->dataset, $scenario->id, $scenario->path, $verb, $origin));
 	}
 
 	// ── Zdroj dat pro videa (D126) ─────────────────────────────────────────
@@ -319,38 +298,14 @@ class DevVideosController
 			return Response::error('VIDEO_DS_EXISTS', "Data source {$existing->id} already holds the videos of '{$dataset->name}'", 409, ['dataSource' => self::dataSourceView($existing)]);
 		}
 		$id = $this->newDataSourceId();
-		$dsName = 'Videa — ' . $dataset->title;
-		$purpose = VideoDataSources::purposeFor($dataset->name);
-		$steps = [
-			new JobStep('ds-create ' . $id, [
-				...$this->serverCommand(), 'ds-create',
-				'--name', $dsName,
-				'--language', 'cs',
-				'--country', $dataset->country ?? 'cz',
-				'--module', 'install.base',
-				// Bez --no-cron (na rozdíl od evaluačních zdrojů dat): pruh „Periodické
-				// úlohy vypnuté“ by byl na každém videu; sada se stejně před během přeseeduje.
-				'--ds-id', $id,
-				'--purpose', $purpose,
-			], $this->repoRoot),
-			// Čerstvý zdroj dat nemá tabulky — API by odpovídalo 500 a preflight
-			// video-run by ho odmítl; seed až video-run (sada s kotvou).
-			new JobStep('ds-upgrade ' . $id, [...$this->dsCommand(), 'ds-upgrade'], $this->dsDir($id)),
-		];
-		$record = new JobRecord(
-			JobRecord::newId($this->now()),
-			JobRecord::TYPE_CREATE,
+		// S cronem a s `ds-upgrade` místo seedu — proč, viz {@see DatasetJobRecipes::createVideo()}.
+		return $this->launch($this->recipes($request)->createVideo(
 			$id,
-			$dsName,
+			DatasetJobRecipes::videoDataSourceName($dataset->title),
+			VideoDataSources::purposeFor($dataset->name),
 			$dataset->name,
-			null,
-			['purpose' => $purpose, 'videos' => true],
-			$steps,
-			JobStore::formatTime($this->now()),
-			$request->getClientIp(),
-			self::CREATE_CANCEL_GRACE_SECONDS,
-		);
-		return $this->launch($record);
+			$dataset->country,
+		));
 	}
 
 	// ── Video (D127) ───────────────────────────────────────────────────────
@@ -409,6 +364,20 @@ class DevVideosController
 	private function dsDir(string $id): string
 	{
 		return rtrim($this->dataSourcesDir, '/') . '/' . $id;
+	}
+
+	/** Recepty úloh s binárkami, cestami a časem tohoto controlleru (seamy) a IP klienta požadavku. */
+	private function recipes(Request $request): DatasetJobRecipes
+	{
+		return new DatasetJobRecipes(
+			$this->serverCommand(),
+			$this->dsCommand(),
+			$this->repoRoot,
+			$this->dataSourcesDir,
+			$this->jobs,
+			fn (): \DateTimeImmutable => $this->now(),
+			$request->getClientIp(),
+		);
 	}
 
 	private function launch(JobRecord $record): Response

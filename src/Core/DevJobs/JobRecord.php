@@ -29,9 +29,17 @@ final readonly class JobRecord
     public const string TYPE_E2E = 'e2e';
     /** Video nad demo sadou (`video-run --verb check|build`, tasks/testing-phase7b.md D122, D125). */
     public const string TYPE_VIDEO = 'video';
-    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE, self::TYPE_UPDATE, self::TYPE_E2E, self::TYPE_VIDEO];
-    /** Úlohy celého serveru — bez zdroje dat (U1): vylučují jakoukoli jinou úlohu a naopak. */
-    public const array SERVER_TYPES = [self::TYPE_UPDATE];
+    /**
+     * Testovací kolo (`test-round-run <adresář>`, tasks/testing-phase8a.md D130, D134):
+     * jeden krok s vlastní orchestrací, dílčí úlohy spouští přes {@see JobLauncher}
+     * s odkazem `parent` na sebe.
+     */
+    public const string TYPE_ROUND = 'round';
+    public const array TYPES = [self::TYPE_EVAL, self::TYPE_VERIFY, self::TYPE_RESEED, self::TYPE_CREATE, self::TYPE_DELETE, self::TYPE_UPDATE, self::TYPE_E2E, self::TYPE_VIDEO, self::TYPE_ROUND];
+    /** Úlohy celého serveru — bez zdroje dat; souběžně nejvýš jedna téhož typu. */
+    public const array SERVER_TYPES = [self::TYPE_UPDATE, self::TYPE_ROUND];
+    /** Výlučné úlohy (#129 U1): vylučují jakoukoli jinou úlohu a naopak. Kolo výlučné není (D134). */
+    public const array EXCLUSIVE_TYPES = [self::TYPE_UPDATE];
     /** Úlohy, které z dashboardu nejde zrušit ani vynutit (U2): přerušení by nechalo checkout v půli. */
     public const array UNCANCELLABLE_TYPES = [self::TYPE_UPDATE];
 
@@ -42,6 +50,7 @@ final readonly class JobRecord
     /**
      * @param array<string, mixed> $params
      * @param list<JobStep>        $steps
+     * @param string|null          $parentJobId id kola, které úlohu spustilo jako dílčí (D134)
      */
     public function __construct(
         public string $id,
@@ -55,9 +64,13 @@ final readonly class JobRecord
         public string $createdAt,
         public ?string $clientIp,
         public int $cancelGraceSeconds,
+        public ?string $parentJobId = null,
     ) {
         if (preg_match(self::ID_REGEX, $id) !== 1) {
             throw new \InvalidArgumentException("Invalid job id '{$id}'");
+        }
+        if ($parentJobId !== null && preg_match(self::ID_REGEX, $parentJobId) !== 1) {
+            throw new \InvalidArgumentException("Invalid parent job id '{$parentJobId}'");
         }
         if (!in_array($type, self::TYPES, true)) {
             throw new \InvalidArgumentException("Unknown job type '{$type}'");
@@ -99,6 +112,12 @@ final readonly class JobRecord
         return in_array($this->type, self::SERVER_TYPES, true);
     }
 
+    /** Výlučná úloha ({@see EXCLUSIVE_TYPES}): nesmí běžet vedle žádné jiné. */
+    public function isExclusive(): bool
+    {
+        return in_array($this->type, self::EXCLUSIVE_TYPES, true);
+    }
+
     /** Smí ji API zrušit / vynutit ({@see UNCANCELLABLE_TYPES}). */
     public function isCancellable(): bool
     {
@@ -131,6 +150,7 @@ final readonly class JobRecord
             (string) ($raw['createdAt'] ?? ''),
             isset($raw['clientIp']) ? (string) $raw['clientIp'] : null,
             (int) ($raw['cancelGraceSeconds'] ?? 0),
+            isset($raw['parent']) ? (string) $raw['parent'] : null,
         );
     }
 
@@ -148,6 +168,7 @@ final readonly class JobRecord
             'createdAt' => $this->createdAt,
             'clientIp' => $this->clientIp,
             'cancelGraceSeconds' => $this->cancelGraceSeconds,
+            'parent' => $this->parentJobId,
         ];
     }
 }

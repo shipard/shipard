@@ -66,6 +66,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>dev-ai-key</info>      Store or check the server AI key for development data sources (--set-key | --status)');
         $output->writeln('  <info>dev-update-check</info> Check how far this development checkout is behind stable on GitHub (--json)');
         $output->writeln('  <info>dev-update</info>      Update this development checkout: fetch, fast-forward, dev-update.sh, ds-upgrade-all, cron check');
+        $output->writeln('  <info>test-round</info>      Run the whole test round as a dashboard job: code tests, public datasets, video checks; --eval only with --max-cost');
         $output->writeln('  <info>doctor</info>          Diagnose server configuration and permissions');
         $output->writeln('  <info>fix-permissions</info> Fix ownership and modes (requires sudo)');
         $output->writeln('');
@@ -99,6 +100,11 @@ class HelpCommand extends Command
         $output->writeln('                                           commits and update safeguards; exit 1 only when the check fails (development only)');
         $output->writeln('  dev-update [--yes] [--job=<id>]           Fetch, git merge --ff-only, scripts/dev-update.sh, ds-upgrade-all, cron-install --check;');
         $output->writeln('                                           refuses on another branch, dirty tree, local commits, running job, missing tools');
+        $output->writeln('  test-round [--only=<code,datasets,videos>] [--dataset=<name|dir>]… [--scenario=<id>]… [--base-url=<origin>]');
+        $output->writeln('             [--eval=<variant> --repeat=<n> --max-cost=<USD>] [--detach | --follow=<id>] [--json]');
+        $output->writeln('                                           Code tests → public datasets (reseed, verify, walkthrough) → video checks as one dashboard');
+        $output->writeln('                                           job on dedicated data sources; follows it (Ctrl+C cancels, twice detaches); evaluation only');
+        $output->writeln('                                           with --eval and a spend cap (estimate first); exit 0 all ok, 1 problems, 2 refused, 130 cancelled');
         $output->writeln('  domain-remove --host <host>              Remove a hostname mapping');
         $output->writeln('  doctor                                   Read-only health check (no options)');
         $output->writeln('  fix-permissions [--dry-run] [--force]    Fix /opt/shipard and /etc/shipard');

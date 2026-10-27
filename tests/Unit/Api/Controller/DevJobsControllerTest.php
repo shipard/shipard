@@ -110,6 +110,25 @@ final class DevJobsControllerTest extends TestCase
 		$this->assertSame(['20261016-115901-bbbbbb'], array_column($byDs, 'id'));
 	}
 
+	public function testListFiltersByTypeAndParent(): void
+	{
+		$round = new JobRecord('20261027-120000-rrrrrr', JobRecord::TYPE_ROUND, '', '', null, null, ['layers' => ['code']], [new JobStep('test-round-run', ['true'], '/repo')], '2026-10-27T12:00:00Z', '10.0.0.5', 960);
+		$this->store->create($round);
+		$child = new JobRecord('20261027-120001-cccccc', JobRecord::TYPE_RESEED, 'aaaa-bbbb-cccc-dddd', 'DS', 'cz-vat-payer', null, [], [new JobStep('seed', ['true'], '/tmp')], '2026-10-27T12:00:01Z', null, 60, '20261027-120000-rrrrrr');
+		$this->store->create($child);
+		$this->job('20261027-120002-vvvvvv');
+
+		$byType = $this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/jobs?type=round')))['jobs'];
+		$this->assertSame(['20261027-120000-rrrrrr'], array_column($byType, 'id'));
+		$this->assertNull($byType[0]['parent']);
+		$byParent = $this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/jobs?parent=20261027-120000-rrrrrr')))['jobs'];
+		$this->assertSame(['20261027-120001-cccccc'], array_column($byParent, 'id'));
+		$this->assertSame('20261027-120000-rrrrrr', $byParent[0]['parent']);
+		// Neznámý typ nebo neplatné id rodiče se ignoruje — vrátí vše.
+		$all = $this->data($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/jobs?type=deploy&parent=..%2Fx')))['jobs'];
+		$this->assertCount(3, $all);
+	}
+
 	public function testDetailRejectsUnknownAndInvalidIds(): void
 	{
 		$this->assertSame(404, $this->statusOf($this->ctrl->dispatch($this->request('GET', '/_dev/api/testing/jobs/20261016-115900-zzzzzz'))));

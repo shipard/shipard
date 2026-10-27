@@ -209,6 +209,22 @@ final class DevJobRunCommandTest extends TestCase
         $this->assertFalse($cmd->handleSignal(15), 'false = Symfony does not exit; the wrapper finishes the state file');
     }
 
+    public function testStepDoesNotInheritTheWrapperLock(): void
+    {
+        if (!is_dir('/proc/self/fd')) {
+            $this->markTestSkipped('needs /proc');
+        }
+        $jobDir = $this->createJob([new JobStep('fds', ['sh', '-c', 'ls -l /proc/$$/fd'], $this->jobsDir)]);
+        $cmd = new TestableDevJobRunCommand($this->jobsDir);
+
+        $this->assertSame(0, $this->runJob($cmd, $jobDir));
+
+        $log = (string) file_get_contents($jobDir . '/output.log');
+        $this->assertStringContainsString(' -> ', $log, 'the listing ran');
+        // Zámek obalu se otevírá close-on-exec: krok (a z něj spuštěný obal dílčí úlohy kola) ho nedrží (D134).
+        $this->assertStringNotContainsString(JobStore::LOCK_FILE, $log);
+    }
+
     private function rrmdir(string $dir): void
     {
         if (!is_dir($dir)) {

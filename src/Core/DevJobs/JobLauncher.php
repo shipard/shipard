@@ -10,14 +10,18 @@ use Shipard\Core\Process\DetachedProcess;
 
 /**
  * Spuštění a zrušení úlohy (D58). `launch()` běží pod `flock` na
- * `dev-jobs/.lock`: kontrola jediné aktivní úlohy na zdroji dat (úloha
- * celého serveru `update` vylučuje všechny, #129 U1) → zápis
- * `job.json` → `setsid -f` obalu `shpd-server dev-job-run <adresář>`
- * ({@see DetachedProcess}). Obal je session leader (PGID = PID), takže
- * zrušení = signál celé skupině `posix_kill(-pid, 15)` zasáhne i kroky;
+ * `dev-jobs/.lock`: kontrola konfliktu ({@see conflictingJob()}: jedna
+ * aktivní úloha na zdroj dat, výlučná `update` vylučuje všechny — #129 U1,
+ * kolo `round` jen druhé kolo — D134) → zápis `job.json` → `setsid -f`
+ * obalu `shpd-server dev-job-run <adresář>` ({@see DetachedProcess}). Obal
+ * je session leader (PGID = PID), takže zrušení = signál celé skupině
+ * `posix_kill(-pid, 15)` zasáhne i kroky; dílčí úlohy kola mají vlastní
+ * session, proto {@see cancel()} kaskáduje na aktivní úlohy s `parent`.
  * `force` pošle SIGKILL a po uvolnění `wrapper.lock` dopíše `state.json`
  * (jediný případ vedle selhaného spawnu, kdy do něj zapisuje API). Pod
  * php-fpm není `pcntl`, proto čísla signálů místo konstant `SIGTERM`.
+ * Zámek se otevírá s `e` (close-on-exec) — jinak by ho zdědil obal i jeho
+ * kroky a držely ho po smrti držitele.
  */
 final class JobLauncher
 {
@@ -39,7 +43,7 @@ final class JobLauncher
 
     /**
      * @return array<string, mixed> pohled na úlohu ({@see JobStore::view()})
-     * @throws JobConflict na zdroji dat už běží úloha
+     * @throws JobConflict běží úloha, která novou vylučuje
      * @throws \RuntimeException adresář úloh nejde založit nebo zapsat
      */
     public function launch(JobRecord $record): array
@@ -47,7 +51,7 @@ final class JobLauncher
         if (!$this->store->ensureDir()) {
             throw new \RuntimeException('Cannot create the jobs directory ' . $this->store->jobsDir());
         }
-        $lock = @fopen($this->store->jobsDir() . '/' . JobStore::LAUNCH_LOCK, 'c');
+        $lock = @fopen($this->store->jobsDir() . '/' . JobStore::LAUNCH_LOCK, 'ce');
         if ($lock === false) {
             throw new \RuntimeException('Cannot open the launch lock in ' . $this->store->jobsDir());
         }
@@ -80,17 +84,29 @@ final class JobLauncher
     }
 
     /**
-     * Běžící úloha, která novou vylučuje: úloha celého serveru (`update`,
-     * U1) koliduje s jakoukoli aktivní úlohou; úloha se zdrojem dat
-     * s aktivní úlohou téhož zdroje nebo s jakoukoli úlohou celého serveru.
+     * Běžící úloha, která novou vylučuje: výlučná úloha (`update`, U1)
+     * koliduje s jakoukoli aktivní úlohou a jakákoli nová s ní; jiná úloha
+     * celého serveru (kolo) jen s aktivní úlohou téhož typu (D134: jedno
+     * kolo naráz, dílčí úlohy kola i cizí úlohy vedle něj běží); úloha se
+     * zdrojem dat s aktivní úlohou téhož zdroje.
      *
      * @return array<string, mixed>|null
      */
     private function conflictingJob(JobRecord $record): ?array
     {
         foreach ($this->store->activeJobs() as $job) {
+            $jobType = (string) ($job['type'] ?? '');
+            if ($record->isExclusive() || in_array($jobType, JobRecord::EXCLUSIVE_TYPES, true)) {
+                return $job;
+            }
+            if ($record->isServerWide()) {
+                if ($jobType === $record->type) {
+                    return $job;
+                }
+                continue;
+            }
             $jobDataSource = $job['dataSource']['id'] ?? null;
-            if ($record->isServerWide() || $jobDataSource === null || $jobDataSource === $record->dataSourceId) {
+            if ($jobDataSource !== null && $jobDataSource === $record->dataSourceId) {
                 return $job;
             }
         }
@@ -99,7 +115,9 @@ final class JobLauncher
 
     /**
      * Zrušení aktivní úlohy; null = úloha neexistuje nebo není co rušit
-     * (neaktivní, nebo obal ještě nezapsal PID).
+     * (neaktivní, nebo obal ještě nezapsal PID). Aktivní dílčí úlohy
+     * (`parent` = tato úloha) se zruší stejně — mají vlastní session, signál
+     * skupině obalu je nezasáhne (D134).
      *
      * @return array<string, mixed>|null
      */
@@ -117,6 +135,9 @@ final class JobLauncher
         $this->store->requestCancel($id, $force);
         $kill = $this->kill ?? static fn (int $pid, int $signal): bool => function_exists('posix_kill') && posix_kill($pid, $signal);
         $kill(-$state->pid, $force ? self::SIGKILL : self::SIGTERM);
+        foreach ($this->store->activeChildren($id) as $child) {
+            $this->cancel((string) $child['id'], $force);
+        }
 
         if ($force) {
             $deadline = microtime(true) + self::FORCE_WAIT_SECONDS;

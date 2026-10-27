@@ -19,7 +19,9 @@ use Shipard\Core\Server\CronProvisioner;
  *   - `cancel.json`    značka žádosti o zrušení — píše API;
  *   - `progress.jsonl` události příkazu (`ai-eval --progress-file`);
  *   - `output.log`     stdout + stderr kroků a `[STEP]` hlavičky obalu;
- *   - `result.json`    stdout kroku s `captureStdout`.
+ *   - `result.json`    stdout kroku s `captureStdout`, nebo výsledek, který
+ *                      si krok píše sám průběžně ({@see writeResult()},
+ *                      testovací kolo — přežije i SIGKILL obalu).
  *
  * Stav se nikdy neukládá jako celek — {@see status()} ho odvozuje při každém
  * čtení: bez `state.json` je úloha `starting` nejvýš STARTING_GRACE_SECONDS,
@@ -250,11 +252,12 @@ final class JobStore
     }
 
     /**
-     * Úlohy nejnovější první; filtr podle sady, zdroje dat a stáří ve dnech.
+     * Úlohy nejnovější první; filtr podle sady, zdroje dat, stáří ve dnech,
+     * typu a rodičovského kola.
      *
      * @return list<array<string, mixed>>
      */
-    public function list(?string $dataset = null, ?string $dataSourceId = null, ?int $days = null): array
+    public function list(?string $dataset = null, ?string $dataSourceId = null, ?int $days = null, ?string $type = null, ?string $parent = null): array
     {
         $cutoff = $days !== null ? $this->now()->getTimestamp() - $days * 86400 : null;
         $views = [];
@@ -267,6 +270,12 @@ final class JobStore
                 continue;
             }
             if ($dataSourceId !== null && $record->dataSourceId !== $dataSourceId) {
+                continue;
+            }
+            if ($type !== null && $record->type !== $type) {
+                continue;
+            }
+            if ($parent !== null && $record->parentJobId !== $parent) {
                 continue;
             }
             if ($cutoff !== null && self::timestamp($record->createdAt) < $cutoff) {
@@ -298,6 +307,17 @@ final class JobStore
     public function activeJobs(): array
     {
         return array_values(array_filter($this->list(), static fn (array $view): bool => $view['active'] === true));
+    }
+
+    /**
+     * Aktivní dílčí úlohy kola (`parent` = `$parentId`), nejnovější první —
+     * kaskáda zrušení ({@see JobLauncher::cancel()}).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function activeChildren(string $parentId): array
+    {
+        return array_values(array_filter($this->list(null, null, null, null, $parentId), static fn (array $view): bool => $view['active'] === true));
     }
 
     /** Smaže neaktivní úlohy starší než `$days`; vrací počet smazaných. */
@@ -379,7 +399,19 @@ final class JobStore
         return implode("\n", (new LogTail($this->path($id, self::OUTPUT_FILE)))->readLast($lines));
     }
 
-    /** Výsledek kroku s `captureStdout`; prázdný nebo nevalidní JSON → null. @return array<string, mixed>|null */
+    /**
+     * Výsledek, který si krok píše sám (atomicky: tmp + rename, takže čtenář
+     * nikdy nevidí rozepsaný soubor). Krok s `captureStdout` ho nevolá.
+     *
+     * @param array<string, mixed> $result
+     * @throws \RuntimeException
+     */
+    public function writeResult(string $id, array $result): void
+    {
+        $this->writeJson($this->path($id, self::RESULT_FILE), $result);
+    }
+
+    /** Výsledek kroku s `captureStdout` nebo z {@see writeResult()}; prázdný nebo nevalidní JSON → null. @return array<string, mixed>|null */
     public function result(string $id): ?array
     {
         $path = $this->path($id, self::RESULT_FILE);

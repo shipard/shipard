@@ -289,6 +289,71 @@ final class JobStoreTest extends TestCase
         $this->store->jobDir('../etc');
     }
 
+    private function roundRecord(string $id): JobRecord
+    {
+        return new JobRecord($id, JobRecord::TYPE_ROUND, '', '', null, null, [], [new JobStep('test-round-run', ['true'], $this->dir)], JobStore::formatTime($this->now), null, 960);
+    }
+
+    private function childRecord(string $id, string $parent, string $ds = 'aaaa-bbbb-cccc-dddd'): JobRecord
+    {
+        return new JobRecord($id, JobRecord::TYPE_RESEED, $ds, 'DS', 'cz-vat-payer', null, [], [new JobStep('seed', ['true'], $this->dir)], JobStore::formatTime($this->now), null, 60, $parent);
+    }
+
+    public function testListFiltersByTypeAndParent(): void
+    {
+        $this->store->create($this->roundRecord('20261027-120000-aaaaaa'));
+        $this->store->create($this->childRecord('20261027-120001-bbbbbb', '20261027-120000-aaaaaa'));
+        $this->store->create($this->record('20261027-120002-cccccc'));
+
+        $ids = static fn (array $views): array => array_column($views, 'id');
+
+        $this->assertSame(['20261027-120000-aaaaaa'], $ids($this->store->list(null, null, null, JobRecord::TYPE_ROUND)));
+        $this->assertSame(['20261027-120001-bbbbbb'], $ids($this->store->list(null, null, null, null, '20261027-120000-aaaaaa')));
+        $this->assertSame([], $ids($this->store->list(null, null, null, JobRecord::TYPE_ROUND, '20261027-120000-aaaaaa')));
+        $this->assertSame('20261027-120000-aaaaaa', $this->store->viewOf('20261027-120001-bbbbbb')['parent']);
+        $this->assertNull($this->store->viewOf('20261027-120000-aaaaaa')['parent']);
+        $this->assertNull($this->store->viewOf('20261027-120002-cccccc')['parent']);
+    }
+
+    public function testActiveChildrenListsOnlyActiveJobsOfTheParent(): void
+    {
+        $this->store->create($this->roundRecord('20261027-120000-aaaaaa'));
+        $this->store->writeState('20261027-120000-aaaaaa', $this->runningState(4242));
+        $this->store->create($this->childRecord('20261027-120001-bbbbbb', '20261027-120000-aaaaaa'));
+        $this->store->writeState('20261027-120001-bbbbbb', $this->runningState(5151));
+        $this->store->create($this->childRecord('20261027-120002-cccccc', '20261027-120000-aaaaaa', 'eeee-ffff-gggg-hhhh'));
+        $done = $this->runningState(6161);
+        $done->status = JobStatus::FINISHED;
+        $this->store->writeState('20261027-120002-cccccc', $done);
+        $this->store->create($this->roundRecord('20261027-110000-zzzzzz'));
+        $this->store->create($this->childRecord('20261027-110001-yyyyyy', '20261027-110000-zzzzzz', 'iiii-jjjj-kkkk-llll'));
+        $this->store->writeState('20261027-110001-yyyyyy', $this->runningState(7171));
+
+        $this->alive = true;
+        $this->assertSame(['20261027-120001-bbbbbb'], array_column($this->store->activeChildren('20261027-120000-aaaaaa'), 'id'));
+        $this->assertSame(['20261027-110001-yyyyyy'], array_column($this->store->activeChildren('20261027-110000-zzzzzz'), 'id'));
+
+        $this->alive = false;
+        $this->assertSame([], $this->store->activeChildren('20261027-120000-aaaaaa'), 'dead wrappers are failed, not active');
+    }
+
+    public function testWriteResultIsAtomicAndReadable(): void
+    {
+        $record = $this->roundRecord('20261027-120000-aaaaaa');
+        $this->store->create($record);
+        $path = $this->store->path($record->id, JobStore::RESULT_FILE);
+
+        $this->store->writeResult($record->id, ['status' => 'running', 'steps' => [['step' => 'phpunit', 'status' => 'started']]]);
+
+        $this->assertSame('running', $this->store->result($record->id)['status'] ?? null);
+        $this->assertTrue($this->store->view($record, null)['hasResult']);
+        $this->assertFileDoesNotExist($path . '.tmp');
+        $this->assertStringEndsWith("\n", (string) file_get_contents($path));
+
+        $this->store->writeResult($record->id, ['status' => 'ok', 'steps' => []]);
+        $this->assertSame(['status' => 'ok', 'steps' => []], $this->store->result($record->id));
+    }
+
     private function rrmdir(string $dir): void
     {
         if (!is_dir($dir)) {

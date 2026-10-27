@@ -6,9 +6,9 @@ namespace Shipard\Core\DevJobs;
 
 /**
  * Už běží úloha, která novou vylučuje (D58: nejvýš jedna úloha na zdroj dat;
- * #129 U1: úloha celého serveru `update` vylučuje všechny a naopak). Nese
- * id a zdroj dat **běžící** úlohy (prázdný = úloha celého serveru). API
- * odpovídá 409 s odkazem na ni.
+ * #129 U1: výlučná úloha `update` vylučuje všechny a naopak; D134: kolo
+ * vylučuje jen druhé kolo). Nese id a zdroj dat **běžící** úlohy (prázdný
+ * = úloha celého serveru). API odpovídá 409 s odkazem na ni.
  */
 final class JobConflict extends \RuntimeException
 {

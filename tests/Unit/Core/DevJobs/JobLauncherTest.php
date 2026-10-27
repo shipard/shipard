@@ -230,6 +230,166 @@ final class JobLauncherTest extends TestCase
         $this->assertCount(2, $this->spawns);
     }
 
+    private function roundRecord(string $id): JobRecord
+    {
+        return new JobRecord($id, JobRecord::TYPE_ROUND, '', '', null, null, ['layers' => ['code']], [new JobStep('test-round-run', ['true'], '/repo')], JobStore::formatTime($this->now), '10.0.0.5', 960);
+    }
+
+    private function childRecord(string $id, string $parent, string $ds = 'aaaa-bbbb-cccc-dddd'): JobRecord
+    {
+        return new JobRecord($id, JobRecord::TYPE_RESEED, $ds, 'DS', 'cz-vat-payer', null, [], [new JobStep('seed', ['true'], '/tmp')], JobStore::formatTime($this->now), null, 60, $parent);
+    }
+
+    private function markRunning(string $id, int $pid): void
+    {
+        $state = JobState::pending(1);
+        $state->pid = $pid;
+        $state->status = JobStatus::RUNNING;
+        $state->steps[0]['status'] = JobState::STEP_RUNNING;
+        $this->store->writeState($id, $state);
+    }
+
+    public function testRoundCoexistsWithDataSourceJobsButNotWithAnotherRoundOrUpdate(): void
+    {
+        // Běžící reseed na zdroji dat → kolo projde (D134: kolo nevylučuje ostatní úlohy).
+        $this->launcher->launch($this->record('20261027-120000-aaaaaa'));
+        $round = $this->launcher->launch($this->roundRecord('20261027-120001-bbbbbb'));
+        $this->assertSame(JobStatus::STARTING, $round['status']);
+        $this->assertNull($round['dataSource']);
+
+        // Vedle běžícího kola projde úloha na volném zdroji dat (dílčí úloha kola i cizí), na obsazeném ne.
+        $child = $this->launcher->launch($this->childRecord('20261027-120002-cccccc', '20261027-120001-bbbbbb', 'eeee-ffff-gggg-hhhh'));
+        $this->assertSame(JobStatus::STARTING, $child['status']);
+        $this->assertSame('20261027-120001-bbbbbb', $child['parent']);
+        try {
+            $this->launcher->launch($this->record('20261027-120003-dddddd'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertSame('20261027-120000-aaaaaa', $e->runningJobId, 'the data source is busy, the round is not the reason');
+        }
+
+        // Druhé kolo ne.
+        try {
+            $this->launcher->launch($this->roundRecord('20261027-120004-eeeeee'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertSame('20261027-120001-bbbbbb', $e->runningJobId);
+            $this->assertSame('', $e->dataSourceId);
+            $this->assertSame(JobRecord::TYPE_ROUND, $e->runningType);
+            $this->assertStringContainsString('server-wide job 20261027-120001-bbbbbb (round)', $e->getMessage());
+        }
+        // Update vedle kola ne (U1).
+        try {
+            $this->launcher->launch($this->updateRecord('20261027-120005-ffffff'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertContains($e->runningJobId, ['20261027-120000-aaaaaa', '20261027-120001-bbbbbb', '20261027-120002-cccccc']);
+        }
+        $this->assertCount(3, $this->spawns);
+    }
+
+    public function testUpdateBlocksARound(): void
+    {
+        $this->launcher->launch($this->updateRecord('20261027-120000-aaaaaa'));
+
+        try {
+            $this->launcher->launch($this->roundRecord('20261027-120001-bbbbbb'));
+            $this->fail('expected JobConflict');
+        } catch (JobConflict $e) {
+            $this->assertSame('20261027-120000-aaaaaa', $e->runningJobId);
+            $this->assertSame(JobRecord::TYPE_UPDATE, $e->runningType);
+        }
+        $this->assertCount(1, $this->spawns);
+    }
+
+    public function testCancelCascadesToActiveChildren(): void
+    {
+        $this->launcher->launch($this->roundRecord('20261027-120000-aaaaaa'));
+        $this->markRunning('20261027-120000-aaaaaa', 4242);
+        $this->launcher->launch($this->childRecord('20261027-120001-bbbbbb', '20261027-120000-aaaaaa'));
+        $this->markRunning('20261027-120001-bbbbbb', 5151);
+        // Hotová dílčí úloha se neruší.
+        $this->launcher->launch($this->childRecord('20261027-120002-cccccc', '20261027-120000-aaaaaa', 'eeee-ffff-gggg-hhhh'));
+        $done = JobState::pending(1);
+        $done->pid = 6161;
+        $done->status = JobStatus::FINISHED;
+        $this->store->writeState('20261027-120002-cccccc', $done);
+
+        $view = $this->launcher->cancel('20261027-120000-aaaaaa');
+
+        $this->assertSame([[-4242, JobLauncher::SIGTERM], [-5151, JobLauncher::SIGTERM]], $this->kills, 'kolo i jeho běžící dílčí úloha — každá má vlastní session');
+        $this->assertSame(JobStatus::CANCELLING, $view['status'] ?? null);
+        $this->assertFileExists($this->dir . '/20261027-120001-bbbbbb/cancel.json');
+        $this->assertFileDoesNotExist($this->dir . '/20261027-120002-cccccc/cancel.json');
+        $this->assertSame(JobStatus::CANCELLING, $this->store->viewOf('20261027-120001-bbbbbb')['status']);
+    }
+
+    public function testForceCancelCascadesWithSigkill(): void
+    {
+        // Živost per úloha: SIGKILL skupině kola nesmí „zabít“ zámek dílčí úlohy (vlastní session).
+        $dead = [];
+        $pids = ['20261027-120000-aaaaaa' => 4242, '20261027-120001-bbbbbb' => 5151];
+        $this->store = new JobStore($this->dir, static function (string $jobDir) use (&$dead): bool {
+            return !in_array(basename($jobDir), $dead, true);
+        }, fn (): \DateTimeImmutable => $this->now);
+        $this->launcher = new JobLauncher(
+            $this->store,
+            function (array $argv, string $cwd, string $log): bool {
+                $this->spawns[] = ['argv' => $argv, 'cwd' => $cwd, 'log' => $log];
+                return true;
+            },
+            function (int $pid, int $signal) use (&$dead, $pids): bool {
+                $this->kills[] = [$pid, $signal];
+                if ($signal === JobLauncher::SIGKILL) {
+                    $dead[] = (string) array_search(-$pid, $pids, true);
+                }
+                return true;
+            },
+            ['/usr/bin/php', '/repo/bin/shpd-server'],
+        );
+        $this->launcher->launch($this->roundRecord('20261027-120000-aaaaaa'));
+        $this->markRunning('20261027-120000-aaaaaa', 4242);
+        $this->launcher->launch($this->childRecord('20261027-120001-bbbbbb', '20261027-120000-aaaaaa'));
+        $this->markRunning('20261027-120001-bbbbbb', 5151);
+
+        $view = $this->launcher->cancel('20261027-120000-aaaaaa', true);
+
+        $this->assertSame([[-4242, JobLauncher::SIGKILL], [-5151, JobLauncher::SIGKILL]], $this->kills);
+        $this->assertSame(JobStatus::CANCELLED, $view['status'] ?? null);
+        $child = $this->store->viewOf('20261027-120001-bbbbbb');
+        $this->assertSame(JobStatus::CANCELLED, $child['status']);
+        $this->assertTrue($child['forced']);
+    }
+
+    public function testLaunchLockIsNotInheritedBySpawnedProcesses(): void
+    {
+        if (!is_dir('/proc/self/fd')) {
+            $this->markTestSkipped('needs /proc');
+        }
+        $listing = null;
+        $launcher = new JobLauncher(
+            $this->store,
+            static function (array $argv, string $cwd, string $log) use (&$listing): bool {
+                // Místo obalu spustíme výpis deskriptorů potomka — co zdědil, to by zdědil i obal.
+                $proc = proc_open(['sh', '-c', 'ls -l /proc/$$/fd'], [1 => ['pipe', 'w']], $pipes);
+                $listing = $proc === false ? '' : (string) stream_get_contents($pipes[1]);
+                if ($proc !== false) {
+                    fclose($pipes[1]);
+                    proc_close($proc);
+                }
+                return true;
+            },
+            null,
+            ['/usr/bin/php', '/repo/bin/shpd-server'],
+        );
+
+        $launcher->launch($this->record('20261027-120000-aaaaaa'));
+
+        $this->assertIsString($listing);
+        $this->assertStringContainsString(' -> ', $listing, 'the listing ran');
+        $this->assertStringNotContainsString(JobStore::LAUNCH_LOCK, (string) $listing, 'the launch lock is opened close-on-exec');
+    }
+
     private function rrmdir(string $dir): void
     {
         if (!is_dir($dir)) {

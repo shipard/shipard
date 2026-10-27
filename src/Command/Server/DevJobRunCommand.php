@@ -112,7 +112,9 @@ class DevJobRunCommand extends Command implements SignalableCommandInterface
             return Command::INVALID;
         }
 
-        $lock = @fopen($store->path($id, JobStore::LOCK_FILE), 'c');
+        // `e` = close-on-exec: kroky (a obaly dílčích úloh kola spuštěné z nich) zámek nezdědí,
+        // jinak by ho držely i po smrti obalu a úloha by vypadala živá (D134).
+        $lock = @fopen($store->path($id, JobStore::LOCK_FILE), 'ce');
         if ($lock === false) {
             $output->writeln("<error>Cannot open wrapper.lock in {$jobDir}</error>");
             return Command::FAILURE;

@@ -20,20 +20,20 @@ use Shipard\Core\DevJobs\DevActionGuard;
 use Shipard\Core\DevJobs\JobConflict;
 use Shipard\Core\DevJobs\JobLauncher;
 use Shipard\Core\DevJobs\JobRecord;
-use Shipard\Core\DevJobs\JobStep;
 use Shipard\Core\DevJobs\JobStore;
 use Shipard\Core\Process\CapturedProcess;
 use Shipard\Core\Server\DataSourceInfo;
 use Shipard\Core\Server\DataSourceInventory;
-use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Core\Utils\IdGenerator;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2eException;
 use Shipard\Module\Core\Exchange\Dataset\E2e\E2ePreflight;
 use Shipard\Module\Core\Exchange\Dataset\E2e\LocalBaseUrl;
+use Shipard\Module\Core\Exchange\Dataset\Jobs\DatasetJobRecipes;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalCatalog;
 use Shipard\Module\Core\Mail\Eval\Browse\EvalDatasetInfo;
 use Shipard\Module\Core\Mail\Eval\EvalDataSource;
 use Shipard\Module\Core\Mail\Eval\EvalDataSourceStatus;
+use Shipard\Module\Core\Mail\Eval\EvalEstimateRunner;
 use Shipard\Module\Core\Mail\Eval\EvalException;
 use Shipard\Module\Core\Mail\Eval\EvalMessage;
 use Shipard\Module\Core\Mail\Eval\EvalMessages;
@@ -72,15 +72,13 @@ use Shipard\Module\Core\Mail\Eval\EvalVariantStore;
 class DevEvalController
 {
 	public const string PREFIX = '/_dev/api/testing/eval';
-	/** Zrušení evaluace čeká na dobíhající volání modelu (AnalysisComputation::CALL_TIMEOUT_SECONDS 840 + rezerva). */
-	public const int EVAL_CANCEL_GRACE_SECONDS = 900;
-	public const int DEFAULT_CANCEL_GRACE_SECONDS = 60;
-	/** Zrušení proklikání: Playwright po SIGINT zavře prohlížeč a dopíše reportery, příkaz uklidí session. */
-	public const int E2E_CANCEL_GRACE_SECONDS = 120;
-	public const float ESTIMATE_TIMEOUT_SECONDS = 60.0;
+	/** Grace zrušení per typ úlohy žijí v receptech ({@see DatasetJobRecipes}); aliasy pro testy a dokumentaci. */
+	public const int EVAL_CANCEL_GRACE_SECONDS = DatasetJobRecipes::EVAL_CANCEL_GRACE_SECONDS;
+	public const int DEFAULT_CANCEL_GRACE_SECONDS = DatasetJobRecipes::DEFAULT_CANCEL_GRACE_SECONDS;
+	public const int E2E_CANCEL_GRACE_SECONDS = DatasetJobRecipes::E2E_CANCEL_GRACE_SECONDS;
+	public const float ESTIMATE_TIMEOUT_SECONDS = EvalEstimateRunner::TIMEOUT_SECONDS;
 	public const int MAX_REPEAT = 5;
 	private const string ONLY_TOKEN = '/^[A-Za-z0-9._-]+$/';
-	private const int OUTPUT_TAIL_BYTES = 4000;
 
 	public function __construct(
 		private readonly string $repoRoot,
@@ -386,16 +384,12 @@ class DevEvalController
 				['current' => $held, 'requested' => $dataset->name],
 			);
 		}
-		return $this->launch($this->record(
-			JobRecord::TYPE_RESEED,
+		return $this->launch($this->recipes($request)->reseed(
 			$info->id,
 			$info->name,
 			$dataset->name,
-			null,
+			$dataset->dir,
 			$replace ? ['replaceDataset' => true, 'previousDataset' => $held] : [],
-			[new JobStep('dataset-seed ' . $dataset->name, [...$this->dsCommand(), 'dataset-seed', $dataset->dir, '--yes'], $this->dsDir($info->id))],
-			self::DEFAULT_CANCEL_GRACE_SECONDS,
-			$request,
 		));
 	}
 
@@ -409,26 +403,14 @@ class DevEvalController
 		}
 		/** @var EvalDatasetInfo $dataset */
 		$id = $this->newDataSourceId();
-		$name = 'Evaluace — ' . $dataset->title;
-		try {
-			$purpose = MainConfigPatcher::normalizePurpose('evaluace AI — ' . $dataset->name);
-		} catch (\InvalidArgumentException) {
-			$purpose = 'evaluace AI';
-		}
-		$steps = [
-			new JobStep('ds-create ' . $id, [
-				...$this->serverCommand(), 'ds-create',
-				'--name', $name,
-				'--language', 'cs',
-				'--country', $dataset->country ?? 'cz',
-				'--module', 'install.base',
-				'--no-cron',
-				'--ds-id', $id,
-				'--purpose', $purpose,
-			], $this->repoRoot),
-			new JobStep('dataset-seed ' . $dataset->name, [...$this->dsCommand(), 'dataset-seed', $dataset->dir, '--yes'], $this->dsDir($id)),
-		];
-		return $this->launch($this->record(JobRecord::TYPE_CREATE, $id, $name, $dataset->name, null, [], $steps, self::DEFAULT_CANCEL_GRACE_SECONDS, $request));
+		return $this->launch($this->recipes($request)->createSeeded(
+			$id,
+			DatasetJobRecipes::evalDataSourceName($dataset->title),
+			DatasetJobRecipes::evalPurpose($dataset->name),
+			$dataset->name,
+			$dataset->dir,
+			$dataset->country,
+		));
 	}
 
 	/** @param array<string, mixed> $body */
@@ -442,21 +424,7 @@ class DevEvalController
 		}
 		/** @var EvalDatasetInfo $dataset @var DataSourceInfo $info */
 		$apply = (bool) ($body['apply'] ?? true);
-		$argv = [...$this->dsCommand(), 'dataset-verify', $dataset->dir, '--json'];
-		if (!$apply) {
-			$argv[] = '--no-apply';
-		}
-		return $this->launch($this->record(
-			JobRecord::TYPE_VERIFY,
-			$info->id,
-			$info->name,
-			$dataset->name,
-			null,
-			['apply' => $apply],
-			[new JobStep('dataset-verify ' . $dataset->name, $argv, $this->dsDir($info->id), captureStdout: true)],
-			self::DEFAULT_CANCEL_GRACE_SECONDS,
-			$request,
-		));
+		return $this->launch($this->recipes($request)->verify($info->id, $info->name, $dataset->name, $dataset->dir, $apply));
 	}
 
 	/**
@@ -493,27 +461,7 @@ class DevEvalController
 		} catch (E2eException $e) {
 			return Response::error('VALIDATION', $e->getMessage(), 400);
 		}
-		$id = JobRecord::newId($this->now());
-		$argv = [
-			...$this->dsCommand(), 'dataset-e2e', $dataset->dir, '--json',
-			'--progress-file', $this->jobs->path($id, JobStore::PROGRESS_FILE),
-			'--output-dir', $this->jobs->jobDir($id) . '/' . DevJobsController::E2E_DIR,
-			'--base-url', $origin,
-		];
-		$record = new JobRecord(
-			$id,
-			JobRecord::TYPE_E2E,
-			$info->id,
-			$info->name,
-			$dataset->name,
-			null,
-			['baseUrl' => $origin],
-			[new JobStep('dataset-e2e ' . $dataset->name, $argv, $this->dsDir($info->id), captureStdout: true)],
-			JobStore::formatTime($this->now()),
-			$request->getClientIp(),
-			self::E2E_CANCEL_GRACE_SECONDS,
-		);
-		return $this->launch($record);
+		return $this->launch($this->recipes($request)->e2e($info->id, $info->name, $dataset->name, $dataset->dir, $origin));
 	}
 
 	/** @param array<string, mixed> $body */
@@ -534,26 +482,14 @@ class DevEvalController
 			return $params;
 		}
 		/** @var EvalDatasetInfo $dataset @var DataSourceInfo $info */
-		$argv = $this->aiEvalArgv($dataset, $variantPath, $params);
-		$argv[] = '--estimate';
-		$argv[] = '--json';
-		$result = $this->capture($argv, $this->dsDir($info->id), self::ESTIMATE_TIMEOUT_SECONDS);
-		if ($result['timedOut']) {
-			return Response::error('EVAL_TIMEOUT', 'ai-eval --estimate did not finish in time', 504, ['stderr' => self::tail($result['stderr'])]);
-		}
-		$json = self::lastJsonLine($result['stdout']);
-		if (is_array($json) && ($json['ok'] ?? null) === true) {
-			return Response::success($json + ['variant' => $json['variant'] ?? null, 'dataSource' => $info->id]);
-		}
-		if (is_array($json) && ($json['ok'] ?? null) === false) {
-			return Response::error('EVAL_PREFLIGHT', 'ai-eval odmítnuto', 422, [
-				'problems' => array_values(array_map('strval', (array) ($json['problems'] ?? []))),
-			]);
-		}
-		return Response::error('EVAL_ERROR', 'ai-eval --estimate failed (exit ' . var_export($result['exitCode'], true) . ')', 500, [
-			'stderr' => self::tail($result['stderr']),
-			'stdout' => self::tail($result['stdout']),
-		]);
+		$runner = new EvalEstimateRunner($this->dsCommand(), fn (array $argv, string $cwd, float $timeout): array => $this->capture($argv, $cwd, $timeout));
+		$outcome = $runner->estimate($this->dsDir($info->id), $dataset->dir, $variantPath, $params['repeat'], $params['only']);
+		return match ($outcome['kind']) {
+			EvalEstimateRunner::KIND_OK => Response::success(($outcome['json'] ?? []) + ['variant' => $outcome['json']['variant'] ?? null, 'dataSource' => $info->id]),
+			EvalEstimateRunner::KIND_PREFLIGHT => Response::error('EVAL_PREFLIGHT', 'ai-eval odmítnuto', 422, ['problems' => $outcome['problems']]),
+			EvalEstimateRunner::KIND_TIMEOUT => Response::error('EVAL_TIMEOUT', 'ai-eval --estimate did not finish in time', 504, ['stderr' => $outcome['stderr']]),
+			default => Response::error('EVAL_ERROR', 'ai-eval --estimate failed (exit ' . var_export($outcome['exitCode'], true) . ')', 500, ['stderr' => $outcome['stderr'], 'stdout' => $outcome['stdout']]),
+		};
 	}
 
 	/** @param array<string, mixed> $body */
@@ -579,24 +515,7 @@ class DevEvalController
 		}
 		$maxCost = (float) $maxCost;
 		/** @var EvalDatasetInfo $dataset @var DataSourceInfo $info */
-		$id = JobRecord::newId($this->now());
-		$argv = $this->aiEvalArgv($dataset, $variantPath, $params);
-		array_push($argv, '--yes', '--json', '--max-cost', self::formatUsd($maxCost), '--progress-file', $this->jobs->path($id, JobStore::PROGRESS_FILE));
-		$variantName = basename($variantPath, '.jsonc');
-		$record = new JobRecord(
-			$id,
-			JobRecord::TYPE_EVAL,
-			$info->id,
-			$info->name,
-			$dataset->name,
-			$variantName,
-			['repeat' => $params['repeat'], 'only' => $params['only'], 'maxCostUsd' => $maxCost],
-			[new JobStep('ai-eval ' . $dataset->name . ' / ' . $variantName, $argv, $this->dsDir($info->id), captureStdout: true)],
-			JobStore::formatTime($this->now()),
-			$request->getClientIp(),
-			self::EVAL_CANCEL_GRACE_SECONDS,
-		);
-		return $this->launch($record);
+		return $this->launch($this->recipes($request)->eval($info->id, $info->name, $dataset->name, $dataset->dir, $variantPath, $params['repeat'], $params['only'], $maxCost));
 	}
 
 	// ── Editor variant (D62) ───────────────────────────────────────────────
@@ -756,35 +675,17 @@ class DevEvalController
 		return ['repeat' => $repeat, 'only' => $only];
 	}
 
-	/** @param array{repeat: int, only: list<string>} $params @return list<string> */
-	private function aiEvalArgv(EvalDatasetInfo $dataset, string $variantPath, array $params): array
+	/** Recepty úloh s binárkami, cestami a časem tohoto controlleru (seamy) a IP klienta požadavku. */
+	private function recipes(Request $request): DatasetJobRecipes
 	{
-		$argv = [...$this->dsCommand(), 'ai-eval', $dataset->dir, '--variant', $variantPath, '--repeat', (string) $params['repeat']];
-		if ($params['only'] !== []) {
-			$argv[] = '--only';
-			$argv[] = implode(',', $params['only']);
-		}
-		return $argv;
-	}
-
-	/**
-	 * @param array<string, mixed> $params
-	 * @param list<JobStep>        $steps
-	 */
-	private function record(string $type, string $dsId, string $dsName, string $dataset, ?string $variant, array $params, array $steps, int $grace, Request $request): JobRecord
-	{
-		return new JobRecord(
-			JobRecord::newId($this->now()),
-			$type,
-			$dsId,
-			$dsName,
-			$dataset,
-			$variant,
-			$params,
-			$steps,
-			JobStore::formatTime($this->now()),
+		return new DatasetJobRecipes(
+			$this->serverCommand(),
+			$this->dsCommand(),
+			$this->repoRoot,
+			$this->dataSourcesDir,
+			$this->jobs,
+			fn (): \DateTimeImmutable => $this->now(),
 			$request->getClientIp(),
-			$grace,
 		);
 	}
 
@@ -797,34 +698,6 @@ class DevEvalController
 		} catch (\RuntimeException $e) {
 			return Response::error('JOB_LAUNCH_FAILED', $e->getMessage(), 500);
 		}
-	}
-
-	/** @return array<string, mixed>|null poslední řádek stdout, který je JSON objekt */
-	private static function lastJsonLine(string $stdout): ?array
-	{
-		foreach (array_reverse(explode("\n", trim($stdout))) as $line) {
-			$line = trim($line);
-			if ($line === '' || $line[0] !== '{') {
-				continue;
-			}
-			$decoded = json_decode($line, true);
-			if (is_array($decoded)) {
-				return $decoded;
-			}
-		}
-		return null;
-	}
-
-	private static function tail(string $text): string
-	{
-		return strlen($text) > self::OUTPUT_TAIL_BYTES ? substr($text, -self::OUTPUT_TAIL_BYTES) : $text;
-	}
-
-	/** USD do argv bez exponentu a bez koncových nul (`0.5`, `1.275`). */
-	private static function formatUsd(float $value): string
-	{
-		$s = rtrim(rtrim(number_format($value, 6, '.', ''), '0'), '.');
-		return $s === '' ? '0' : $s;
 	}
 
 	private function notFound(): Response

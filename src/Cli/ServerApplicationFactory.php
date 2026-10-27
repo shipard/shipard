@@ -39,6 +39,8 @@ final class ServerApplicationFactory
         $app->add(new \Shipard\Command\Server\DevJobRunCommand());
         $app->add(new \Shipard\Command\Server\DevUpdateCheckCommand());
         $app->add(new \Shipard\Command\Server\DevUpdateCommand());
+        $app->add(new \Shipard\Command\Server\TestRoundCommand());
+        $app->add(new \Shipard\Command\Server\TestRoundRunCommand());
         $app->add(new \Shipard\Command\Server\DoctorCommand());
         $app->add(new \Shipard\Command\Server\FixPermissionsCommand());
         $app->setDefaultCommand('help');

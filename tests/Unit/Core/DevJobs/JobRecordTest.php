@@ -119,4 +119,44 @@ final class JobRecordTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         new JobRecord('20261017-120000-abc123', JobRecord::TYPE_DELETE, '', '', null, null, [], [$step], '2026-10-17T12:00:00Z', null, 60);
     }
+
+    public function testRoundIsServerWideCancellableAndNotExclusive(): void
+    {
+        $step = new JobStep('test-round-run', ['/usr/bin/php', 'shpd-server', 'test-round-run', '/run/dev-jobs/20261027-120000-abc123'], '/repo');
+        $record = new JobRecord('20261027-120000-abc123', JobRecord::TYPE_ROUND, '', '', null, null, ['layers' => ['code']], [$step], '2026-10-27T12:00:00Z', null, 960);
+
+        $this->assertTrue($record->isServerWide());
+        $this->assertTrue($record->isCancellable(), 'kolo jde zrušit (D134), na rozdíl od update');
+        $this->assertFalse($record->isExclusive(), 'kolo nevylučuje ostatní úlohy');
+        $this->assertNull($record->parentJobId);
+        $this->assertNull($record->toArray()['parent']);
+        $this->assertNull($record->toArray()['dataSource']);
+
+        $update = new JobRecord('20261027-120000-abc124', JobRecord::TYPE_UPDATE, '', '', null, null, [], [$step], '2026-10-27T12:00:00Z', null, 60);
+        $this->assertTrue($update->isExclusive());
+    }
+
+    public function testChildJobCarriesItsParentThroughArray(): void
+    {
+        $step = new JobStep('seed', ['true'], '/opt/ds');
+        $child = new JobRecord('20261027-120001-abc124', JobRecord::TYPE_RESEED, 'aaaa-bbbb-cccc-dddd', 'DS', 'cz-vat-payer', null, [], [$step], '2026-10-27T12:00:01Z', null, 60, '20261027-120000-abc123');
+
+        $this->assertSame('20261027-120000-abc123', $child->toArray()['parent']);
+        $copy = JobRecord::fromArray($child->toArray());
+        $this->assertSame('20261027-120000-abc123', $copy->parentJobId);
+        $this->assertSame($child->toArray(), $copy->toArray());
+
+        // job.json z doby před kolem pole `parent` nemá.
+        $legacy = $child->toArray();
+        unset($legacy['parent']);
+        $this->assertNull(JobRecord::fromArray($legacy)->parentJobId);
+    }
+
+    public function testRejectsInvalidParentId(): void
+    {
+        $step = new JobStep('seed', ['true'], '/opt/ds');
+
+        $this->expectException(\InvalidArgumentException::class);
+        new JobRecord('20261027-120001-abc124', JobRecord::TYPE_RESEED, 'aaaa-bbbb-cccc-dddd', 'DS', null, null, [], [$step], '2026-10-27T12:00:01Z', null, 60, 'kolo');
+    }
 }
