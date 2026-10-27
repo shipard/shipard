@@ -94,6 +94,13 @@
   --shpd-color-alert-error-bg:       #fee2e2;
   --shpd-color-alert-error-text:     #991b1b;
 
+  /* Hláška `Notice` (#137 D40) má i tón success — aliasy na existující
+     zelené, žádná nová barva. Vyhodnocují se na :root, kde tmavý vzhled
+     (`data-theme="dark"` na <html>) cílové tokeny přebarví. */
+  --shpd-color-alert-success-bar:    var(--shpd-color-success);
+  --shpd-color-alert-success-bg:     var(--shpd-color-state-done-bg);
+  --shpd-color-alert-success-text:   var(--shpd-color-state-done-text);
+
   /* Plochy.
    *   bg            = obsah (hlavička s tlačítky, seznam, detail panel)
    *   bg-secondary  = "podloží" pod a kolem prohlížeče
@@ -178,6 +185,7 @@
 
   /* Typography */
   --shpd-font-family: Inter, system-ui, sans-serif;
+  --shpd-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; /* blok `code` v detailu (#137 D30) */
   --shpd-font-size-xs: 0.75rem;
   --shpd-font-size-sm: 0.875rem;
   --shpd-font-size-base: 1rem;

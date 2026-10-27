@@ -15,6 +15,7 @@
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
+  import Badge from '../ui/Badge.svelte';
   import PropertyGroups from '../ui/PropertyGroups.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
@@ -263,9 +264,7 @@
           <div class="shpd-detail__title-row">
             <h2 class="shpd-detail__title">{detail.title}</h2>
             {#each detail.badges ?? [] as badge}
-              <span class="shpd-detail__badge shpd-detail__badge--{badge.style ?? 'neutral'}">
-                {badge.label}
-              </span>
+              <Badge style={badge.style ?? 'neutral'} label={badge.label} />
             {/each}
           </div>
           {#if detail.subtitle}
@@ -698,41 +697,6 @@
     color: var(--shpd-color-text);
   }
 
-  .shpd-detail__badge {
-    display: inline-block;
-    padding: 0.125rem 0.625rem;
-    border-radius: var(--shpd-radius-full);
-    font-size: var(--shpd-font-size-meta);
-    font-weight: var(--shpd-font-weight-normal);
-    line-height: 1.4;
-    white-space: nowrap;
-  }
-
-  /* Stylové varianty badge.
-     Sjednoceno s doc-state škálou v ViewerRow + accent pro brand. */
-  /* Typové varianty (mimo doc-state) — mají vlastní barevnou logiku.
-   * neutral, primary, accent, success, warning, danger se používají pro
-   * libovolné typové badge (typ záznamu, VIP, atd.). Sdílí paletu
-   * s doc-state tokeny tam, kde to barevně sedí. */
-  .shpd-detail__badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
-  .shpd-detail__badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
-  .shpd-detail__badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
-  .shpd-detail__badge--success   { background: var(--shpd-color-state-done-bg); color: var(--shpd-color-state-done-text); }
-  .shpd-detail__badge--warning   { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
-  .shpd-detail__badge--danger    { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
-
-  /* Doc-state varianty — sdílejí tokeny s ostatními badge
-   * (FormStateBadge, extracted__badge), aby stejný stav vypadal
-   * všude stejně. */
-  .shpd-detail__badge--concept   { background: var(--shpd-color-state-concept-bg);   color: var(--shpd-color-state-concept-text); }
-  .shpd-detail__badge--edit      { background: var(--shpd-color-state-edit-bg);      color: var(--shpd-color-state-edit-text); }
-  .shpd-detail__badge--confirmed { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
-  .shpd-detail__badge--archive   { background: var(--shpd-color-state-archive-bg);   color: var(--shpd-color-state-archive-text); }
-  .shpd-detail__badge--trash     { background: var(--shpd-color-state-trash-bg);     color: var(--shpd-color-state-trash-text); text-decoration: line-through; }
-  .shpd-detail__badge--cancelled { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
-  .shpd-detail__badge--done      { background: var(--shpd-color-state-done-bg);      color: var(--shpd-color-state-done-text); }
-  .shpd-detail__badge--error     { background: var(--shpd-color-state-error-bg);     color: var(--shpd-color-state-error-text); }
-
   /* Actions bar — řádek per-record akcí nad taby (snooze/dismiss/recheck +
      custom akce alertů). Stejná vizuální logika jako header: padding sm/md,
      border-bottom, wrap při velkém počtu tlačítek. */
@@ -1047,7 +1011,7 @@
     font-weight: var(--shpd-font-weight-normal);
   }
 
-  /* Stejné tokeny jako shpd-detail__badge — stejný stav, stejná barva.
+  /* Stejné tokeny jako ui/Badge.svelte — stejný stav, stejná barva.
    * Pozn.: confirmed je tady tichá šedá (sjednoceno se zbytkem systému),
    * dříve byla zelená — oprava při přechodu na tokeny. */
   .shpd-extracted__badge--done      { background: var(--shpd-color-state-done-bg);      color: var(--shpd-color-state-done-text); }
