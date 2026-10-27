@@ -1418,8 +1418,9 @@ a úlohu nezaloží.
   je to uživatel php-fpm) a dosažitelnost **API** zdroje dat
   `<base-url>/<ds-id>/api/v1/_app/info` (bez přihlášení; statickou stránku
   `/app/` dá nginx i pro host, který aplikace nezná). Chybějící Node,
-  závislosti nebo prohlížeč odmítne s přesnou větou:
-  `cd tests/e2e && npm ci && npx playwright install chromium`.
+  závislosti nebo prohlížeč odmítne s přesnou větou, co doinstalovat;
+  postup je v `docs/dev/dev-daily.md` § 5 (*Nástroje pro proklikání, videa
+  a testovací kolo*), jedním příkazem `dev-bootstrap.sh --with-testing`.
 - **Lokální adresa běhu (D97, `LocalBaseUrl`).** Host z `--base-url`
   (z CLI i z dashboardu) musí být IP literál, nebo jméno, jehož **všechny**
   adresy (A i AAAA, systémový resolver vč. `/etc/hosts` —
@@ -1564,7 +1565,7 @@ krok karty je pojmenovaný id karty, síť ukazuje `POST …/apply` s tělem
   s 0 kartami nesoulad počtu (`--no-reseed` jen pro ladění).
 - **Prohlížeč patří uživateli** (`~/.cache/ms-playwright`): instalovat pod
   tím, pod kým běží php-fpm, jinak z terminálu projde a z dashboardu ne —
-  preflight to pozná a řekne.
+  preflight to pozná a řekne (postup `docs/dev/dev-daily.md` § 5).
 - **`http://127.0.0.1` musí mířit na Shipard** (výchozí `server_name`
   nginx); jinak `--base-url`. Úloha dashboardu bere origin požadavku.
   Obojí smí být jen IP nebo jméno **tohoto** serveru (všechny adresy
@@ -1749,7 +1750,9 @@ Exit `0` jen při `ok`, `1` nálezy, `2` preflight, `130` zrušeno.
   potřebuje, musí dostat od příkazu; nic nedědit z vývojářova shellu
   ani z `.env` runneru.
 - **Prohlížeč, ffmpeg a python patří uživateli** PHP-FPM (jako u
-  proklikání); preflight to pozná a řekne, co spustit.
+  proklikání); preflight to pozná a řekne, co spustit — postup instalace
+  `docs/dev/dev-daily.md` § 5 (*Nástroje pro proklikání, videa a testovací
+  kolo*), jedním příkazem `dev-bootstrap.sh --with-testing`.
 - **Název firmy v záhlaví** dává od F8a `app.name` v sadě (#103 D135):
   generátor ho doplňuje z `own.name` příběhu, takže video ukazuje „Zelený
   Terminál s.r.o.“, ne název zdroje dat. Zdroj dat seedovaný dřív ho má

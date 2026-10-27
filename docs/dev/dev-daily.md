@@ -92,7 +92,8 @@ Sekce v horní liště:
   sestaví s kotvou = dnešek (první běh dne trvá minuty, pak z mezipaměti)
   a zdroj dat se přeseeduje. Tlačítka jsou neaktivní s nápovědou, když
   na serveru chybí Node, závislosti nebo Chromium `tools/video-runner/`,
-  ffmpeg, python3 nebo Gotenberg v `server.json`. Sekce je v liště jen
+  ffmpeg, python3 nebo Gotenberg v `server.json` (postup instalace: oddíl 5,
+  *Nástroje pro proklikání, videa a testovací kolo*). Sekce je v liště jen
   s `demo/scenarios` a `tools/video-runner` v checkoutu.
 - **Logy** — prohlížeč logu (`/opt/shipard/log/shipard.log`) s filtrováním
   podle úrovně, zdroje dat a fulltextu, obnovování ve stylu `tail -f`
@@ -191,10 +192,9 @@ také. Starší než 14 dní se při výpisu mažou.
   show-trace <soubor>`), chyby prohlížeče, odpovědi API ≥ 400 a tabulku
   kontrol. Každý rozdíl proti F3 je nález do tasku, ne důvod měnit UI.
   Tlačítko je neaktivní s nápovědou, když na serveru chybí Node,
-  závislosti `tests/e2e/` nebo Chromium Playwrightu — nainstaluj je **pod
-  uživatelem, pod kterým běží php-fpm** (prohlížeč sedí v jeho
-  `~/.cache/ms-playwright`): `cd tests/e2e && npm ci && npx playwright
-  install chromium`; Node musí být v systémovém `PATH`, ne jen z nvm.
+  závislosti `tests/e2e/` nebo Chromium Playwrightu — postup instalace
+  (pod uživatelem, pod kterým běží php-fpm) je v oddílu 5, *Nástroje pro
+  proklikání, videa a testovací kolo*.
   Prohlížeč na serveru otevře aplikaci **adresou, kterou máš v dashboardu
   ty** (origin požadavku) — musí to být jméno nebo IP tohoto serveru;
   přes tunel či proxy z jiného stroje akce vrátí 400 (#103 D97).
@@ -261,7 +261,10 @@ bash scripts/dev-update.sh
 ```
 
 Skript vždy spustí `composer install`, `npm install` (ve `frontend/`)
-a `npm run build`. Všechny kroky jsou idempotentní — pokud se nic
+a `npm run build`; kdo má nainstalované nástroje pro testování (oddíl 5),
+dostane i `npm install` a Chromium Playwrightu v `tests/e2e/`
+a `tools/video-runner/` — bez `node_modules` se tyhle kroky přeskočí.
+Všechny kroky jsou idempotentní — pokud se nic
 nezměnilo, projdou během pár sekund. Na konci připomene, co sám neudělá
 (nevolá `sudo`): upgrade datových zdrojů a instalaci cronu, pokud na stroji
 chybí nebo je zastaralý (oddíl 4).
@@ -366,6 +369,63 @@ verze balíků. Závislost přidávej přes `composer require <balík>`, verzi m
 přes `composer update <balík>`; po ruční úpravě `composer.json` (např.
 `ext-*`) přepočti lock příkazem `composer update --lock`. `composer.json`
 a `composer.lock` patří vždy do stejného commitu.
+
+### Nástroje pro proklikání, videa a testovací kolo
+
+Akce **Proklikat** v panelu sady, oddíl **Videa** (oddíl 1) a vrstvy sad
+a videí testovacího kola (`shpd-server test-round`) potřebují navíc render
+službu, `ffmpeg`, závislosti projektů `tests/e2e/` a `tools/video-runner/`
+a Chromium Playwrightu. Prohlížeč sedí v `~/.cache/ms-playwright`
+**uživatele, pod kterým běží php-fpm** — na Multipassu `ubuntu`, jinde
+vývojář —, takže se instaluje pod ním, ne pod rootem; z terminálu by jinak
+prošlo a z dashboardu ne. Jedním příkazem to udělá bootstrap (volba zahrnuje
+`--with-render`):
+
+```bash
+bash scripts/dev-bootstrap.sh --with-testing
+```
+
+Ručně z kořene checkoutu — bootstrap dělá přesně tyto kroky:
+
+1. render služba: `bash scripts/dev-bootstrap.sh --with-render`
+   ([`operations/render-service.md`](../operations/render-service.md));
+2. `ffmpeg`:
+
+   ```bash
+   sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get install -y ffmpeg
+   ```
+
+3. závislosti obou projektů:
+
+   ```bash
+   (cd tests/e2e && npm ci)
+   (cd tools/video-runner && npm ci)
+   ```
+
+4. systémové knihovny Chromia jako root — **lokálním CLI Playwrightu**, ne
+   `npx` (pod `sudo` by stahoval z registru a nemusel najít Node, viz
+   `tools/video-runner/INSTALL.md` § 3):
+
+   ```bash
+   sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a "$(command -v node)" tests/e2e/node_modules/@playwright/test/cli.js install-deps chromium
+   ```
+
+5. Chromium pod svým uživatelem pro oba projekty (stejná revize Playwrightu
+   → druhý příkaz nic nestahuje):
+
+   ```bash
+   node tests/e2e/node_modules/@playwright/test/cli.js install chromium
+   node tools/video-runner/node_modules/playwright/cli.js install chromium
+   ```
+
+Node musí být v systémovém `PATH` (`/usr/bin`, tak ho instaluje
+`install-packages.sh`), ne jen z nvm — preflighty i úlohy dashboardu ho
+hledají v pevné cestě.
+
+Po `git pull` kroky 3 a 5 zopakuje `scripts/dev-update.sh` (oddíl 3) — jen
+u projektu, který `node_modules` má; bez nich ho přeskočí. Systémové
+knihovny Chromia neaktualizuje: když je nová revize potřebuje, řekne to
+preflight akce Proklikat / Videa a pomůže krok 4.
 
 ---
 

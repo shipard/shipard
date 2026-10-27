@@ -5,8 +5,10 @@
 # Glues the steps of docs/dev/linux-install.md together, it does not replace
 # them — fixes belong to install-packages.sh and docs/dev/linux-install.md:
 #   checkout → install-packages.sh → dev-update.sh → server-init → cron-install
-#   → git hooks → render service (--with-render) → SSH for remote-dev-bridge
-#   (--with-ssh) → doctor → summary with the dashboard address
+#   → git hooks → render service (--with-render) → testing tools: ffmpeg,
+#   Playwright + Chromium for tests/e2e and tools/video-runner (--with-testing,
+#   implies --with-render) → SSH for remote-dev-bridge (--with-ssh) → doctor
+#   → summary with the dashboard address
 #
 # Idempotent. Run it as your own user, NOT via sudo: the script calls sudo
 # itself, so that install-packages.sh finds the developer in $SUDO_USER.
@@ -36,6 +38,7 @@ BRANCH="stable"
 BRANCH_GIVEN=0
 TARGET_DIR=""
 WITH_RENDER=0
+WITH_TESTING=0
 WITH_SSH=0
 SSH_PUBKEY_FILE=""
 
@@ -57,6 +60,9 @@ Spouštěj pod svým uživatelem, ne přes sudo. Opakované spuštění je bezpe
 
 Volby:
   --with-render              i PDF rendering služba (Gotenberg v podmanu)
+  --with-testing             nástroje pro proklikání, videa a testovací kolo:
+                             ffmpeg, závislosti tests/e2e a tools/video-runner,
+                             Chromium Playwrightu (zahrnuje --with-render)
   --with-ssh                 SSH server pro remote-dev-bridge: port $SSH_PORT,
                              přihlášení jen klíčem
   --ssh-pubkey-file <cesta>  veřejný klíč do ~/.ssh/authorized_keys (ve WSL
@@ -111,6 +117,7 @@ parse_args() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --with-render) WITH_RENDER=1 ;;
+            --with-testing) WITH_TESTING=1; WITH_RENDER=1 ;;
             --with-ssh)    WITH_SSH=1 ;;
             --ssh-pubkey-file=*) SSH_PUBKEY_FILE="${1#*=}" ;;
             --branch=*)          BRANCH="${1#*=}"; BRANCH_GIVEN=1 ;;
@@ -378,7 +385,62 @@ echo "    Do $path doplněn klíč render.\n";
 PHP
 }
 
-# ─── 9. SSH for remote-dev-bridge (--with-ssh) ───────────────────────────────
+# ─── 9. Testing tools (--with-testing) ───────────────────────────────────────
+# The manual steps of docs/dev/dev-daily.md § 5 (Nástroje pro proklikání,
+# videa a testovací kolo), in the same order. Everything belongs to the
+# developer (= the php-fpm user, whose ~/.cache/ms-playwright the preflights
+# look into): npm and the browser download run as the developer, only
+# apt-get and Playwright's install-deps go through sudo — via the local CLI
+# with an explicit node binary, never npx (under sudo it would fetch from the
+# registry and may not find node at all).
+E2E_DIR_REL="tests/e2e"
+VIDEO_DIR_REL="tools/video-runner"
+E2E_CLI_REL="$E2E_DIR_REL/node_modules/@playwright/test/cli.js"
+VIDEO_CLI_REL="$VIDEO_DIR_REL/node_modules/playwright/cli.js"
+
+setup_testing() {
+    local node_bin dir
+
+    step "Testing tools (--with-testing)"
+
+    if command -v ffmpeg >/dev/null 2>&1; then
+        echo "    ffmpeg už je nainstalovaný."
+    else
+        echo "    Instaluji ffmpeg…"
+        sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a \
+            apt-get install -y ffmpeg \
+            || fail "ffmpeg se nepovedlo nainstalovat (apt-get install ffmpeg) — výpis výše."
+    fi
+
+    # npm ci on every run: cheap when nothing changed, and it is the only
+    # way to be sure node_modules matches package-lock.json.
+    for dir in "$E2E_DIR_REL" "$VIDEO_DIR_REL"; do
+        echo "    npm ci ($dir)…"
+        (cd "$TARGET_DIR/$dir" && npm ci --no-audit --no-fund) \
+            || fail "npm ci v $dir selhal — výpis výše."
+    done
+
+    node_bin="$(command -v node)" \
+        || fail "chybí node — install-packages.sh ho instaluje z NodeSource."
+    echo "    Systémové knihovny Chromia (playwright install-deps, přes sudo)…"
+    sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a \
+        "$node_bin" "$TARGET_DIR/$E2E_CLI_REL" install-deps chromium \
+        || fail "instalace systémových knihoven Chromia selhala (playwright install-deps chromium)." \
+                "Je to nález pro #146, ne důvod obejít ji ručním seznamem balíků."
+
+    # The same Playwright revision in both projects → the second download is
+    # a no-op; each project is still asked, the revisions are not guaranteed
+    # to stay equal.
+    echo "    Chromium Playwrightu pod uživatelem $(id -un) (~/.cache/ms-playwright)…"
+    (cd "$TARGET_DIR/$E2E_DIR_REL" && node "$TARGET_DIR/$E2E_CLI_REL" install chromium) \
+        || fail "stažení Chromia pro $E2E_DIR_REL selhalo (playwright install chromium)."
+    (cd "$TARGET_DIR/$VIDEO_DIR_REL" && node "$TARGET_DIR/$VIDEO_CLI_REL" install chromium) \
+        || fail "stažení Chromia pro $VIDEO_DIR_REL selhalo (playwright install chromium)."
+
+    echo "    OK: ffmpeg, závislosti $E2E_DIR_REL a $VIDEO_DIR_REL, Chromium Playwrightu."
+}
+
+# ─── 10. SSH for remote-dev-bridge (--with-ssh) ──────────────────────────────
 
 # Effective sshd configuration into a file. Needs root (host keys) and the
 # privilege separation directory, which exists only while ssh.service runs.
@@ -502,7 +564,7 @@ setup_ssh() {
     echo "    sshd naslouchá na portu $SSH_PORT, přihlášení jen klíčem."
 }
 
-# ─── 10. Doctor ──────────────────────────────────────────────────────────────
+# ─── 11. Doctor ──────────────────────────────────────────────────────────────
 run_doctor() {
     step "Verification (shpd-server doctor)"
 
@@ -517,7 +579,7 @@ run_doctor() {
     fi
 }
 
-# ─── 11. Summary ─────────────────────────────────────────────────────────────
+# ─── 12. Summary ─────────────────────────────────────────────────────────────
 print_summary() {
     local host="localhost" ips=""
 
@@ -551,6 +613,14 @@ print_summary() {
          cronu, dosud existujícím zdrojům dat se vypnuly — seznam je ve
          výpisu kroku „Periodic jobs" výše.
 EOF
+
+    if [ "$WITH_TESTING" = 1 ]; then
+        cat <<EOF
+
+    Nástroje pro testování jsou nainstalované: v dashboardu akce Proklikat
+    a oddíl Videa, v terminálu 'shpd-server test-round' (testovací kolo).
+EOF
+    fi
 
     if [ "$WITH_SSH" = 1 ]; then
         cat <<EOF
@@ -604,6 +674,9 @@ main() {
 
     if [ "$WITH_RENDER" = 1 ]; then
         setup_render
+    fi
+    if [ "$WITH_TESTING" = 1 ]; then
+        setup_testing
     fi
     if [ "$WITH_SSH" = 1 ]; then
         setup_ssh

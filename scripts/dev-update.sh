@@ -9,6 +9,15 @@
 #   1. composer install   (regenerates autoloader as a side-effect)
 #   2. npm install        (in frontend/)
 #   3. npm run build      (in frontend/)
+#   4. npm install + Chromium of Playwright   (in tests/e2e/)          ┐ only when
+#   5. npm install + Chromium of Playwright   (in tools/video-runner/) ┘ node_modules exists
+#
+# Steps 4–5 keep the testing tools (docs/dev/dev-daily.md § 5, installed by
+# dev-bootstrap.sh --with-testing) in step with the checkout; a project
+# without node_modules is skipped silently — the developer did not want the
+# tools. Chromium's system libraries need root and are not touched here:
+# when a new revision wants more of them, the preflight of Proklikat / Videa
+# says so (step 4 of § 5 fixes it).
 #
 # Data-source upgrades (ds-upgrade-all) and the system cron file
 # (cron-install) are intentionally NOT run here — both need sudo; the former
@@ -23,16 +32,54 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "==> [1/3] composer install"
+E2E_DIR="tests/e2e"
+VIDEO_DIR="tools/video-runner"
+E2E_CLI="$E2E_DIR/node_modules/@playwright/test/cli.js"
+VIDEO_CLI="$VIDEO_DIR/node_modules/playwright/cli.js"
+
+# Step numbering counts only the steps that will run.
+TOTAL=3
+if [ -d "$E2E_DIR/node_modules" ]; then
+    TOTAL=$((TOTAL + 1))
+fi
+if [ -d "$VIDEO_DIR/node_modules" ]; then
+    TOTAL=$((TOTAL + 1))
+fi
+STEP=0
+
+step() {
+    STEP=$((STEP + 1))
+    if [ "$STEP" -gt 1 ]; then
+        echo ""
+    fi
+    echo "==> [$STEP/$TOTAL] $1"
+}
+
+# update_playwright_project <dir> <playwright cli.js> — dependencies and the
+# browser of one Node project, as the current user (the browser lives in
+# ~/.cache/ms-playwright of whoever runs this). Not npx: it would look at the
+# registry. Skipped without node_modules.
+update_playwright_project() {
+    local dir="$1" cli="$2"
+    if [ ! -d "$dir/node_modules" ]; then
+        return 0
+    fi
+    step "npm install + Chromium ($dir)"
+    (cd "$dir" && npm install --no-audit --no-fund)
+    (cd "$dir" && node "$REPO_ROOT/$cli" install chromium)
+}
+
+step "composer install"
 composer install --no-interaction
 
-echo ""
-echo "==> [2/3] npm install (frontend)"
+step "npm install (frontend)"
 (cd frontend && npm install --no-audit --no-fund)
 
-echo ""
-echo "==> [3/3] npm run build (frontend)"
+step "npm run build (frontend)"
 (cd frontend && npm run build)
+
+update_playwright_project "$E2E_DIR" "$E2E_CLI"
+update_playwright_project "$VIDEO_DIR" "$VIDEO_CLI"
 
 echo ""
 echo "==> Done. Pokud se měnily definice tabulek nebo cfgItems modulů,"

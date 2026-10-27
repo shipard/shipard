@@ -2476,8 +2476,9 @@ session nesmí odejít jinam, #103 D97; ověřená adresa se připíchne curl
 i Chromiu) a dosažitelnost API `<base-url>/<ds-id>/api/v1/_app/info`
 (jméno, které aplikace nezná — bez záznamu v `/etc/shipard/domains.json`
 — odmítne jako `UNKNOWN_HOST`; bez mapy domén jde jen IP). Chybějící
-Node, závislosti nebo prohlížeč: `cd tests/e2e && npm ci && npx
-playwright install chromium`.
+Node, závislosti nebo prohlížeč: postup v [`dev/dev-daily.md`](dev/dev-daily.md)
+§ 5 (*Nástroje pro proklikání, videa a testovací kolo*), jedním příkazem
+`bash scripts/dev-bootstrap.sh --with-testing`.
 
 Výstup: karty použité / selhané (id karty, krok, důvod, cesta reference,
 trace), chyby prohlížeče, odpovědi API ≥ 400, souhrn kontrol
@@ -2534,8 +2535,10 @@ Gotenberg v `server.json` (`render.url`; před stavbou sady i `/health`),
 `tools/video-runner/node_modules` a Chromium Playwrightu **runneru** pod
 uživatelem, který příkaz spouští, **lokální host** `--base-url` (D97)
 a dosažitelnost API `<base-url>/<ds-id>/api/v1/_app/info`. Chybějící
-závislosti runneru: `cd tools/video-runner && npm ci && npx playwright
-install chromium`.
+`ffmpeg`, závislosti runneru nebo prohlížeč: postup
+v [`dev/dev-daily.md`](dev/dev-daily.md) § 5 (*Nástroje pro proklikání,
+videa a testovací kolo*), jedním příkazem `bash scripts/dev-bootstrap.sh
+--with-testing`.
 
 Výstup: scénář, sada, kotva, pevný čas, kroky s exit kódy a časy
 (`build` i „z mezipaměti“, `reseed`, `check` nebo `record` + `compose`),
