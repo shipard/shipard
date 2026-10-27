@@ -31,6 +31,7 @@
   import FeedReadySection from './FeedReadySection.svelte';
   import FeedRowCompact from './FeedRowCompact.svelte';
   import CardGrid from '../ui/CardGrid.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
 
   let {
     cards = [],
@@ -133,23 +134,27 @@
   <div class="shpd-feed" data-testid="feed">
     {#each sectionInfos as section (section.id)}
       <section class="shpd-feed__section" data-section={section.id}>
-        <h2 class="shpd-feed__section-title">
+        {#snippet sectionAction()}
+          <Button
+            label={t('dashboard.feed.archiveAll', { n: section.archivable })}
+            variant="secondary"
+            size="sm"
+            disabled={busyCardId !== null}
+            testid="feed-archive-all"
+            onclick={archiveAll}
+          />
+        {/snippet}
+        <!-- Nadpis sekce = sdílený SectionHeading v roli heading (#137 D37):
+             tečka a počet jsou obsah nadpisu, Archivovat vše (jen Ostatní)
+             sedí vpravo v aside. -->
+        <SectionHeading
+          level={2}
+          aside={section.id === 'other' && section.archivable > 0 ? sectionAction : undefined}
+        >
           <span class="shpd-feed__section-dot shpd-feed__section-dot--{section.id}" aria-hidden="true"></span>
           {t(`dashboard.feed.section.${section.id}`)}
           <span class="shpd-feed__section-count">({section.count})</span>
-          {#if section.id === 'other' && section.archivable > 0}
-            <span class="shpd-feed__section-action">
-              <Button
-                label={t('dashboard.feed.archiveAll', { n: section.archivable })}
-                variant="secondary"
-                size="sm"
-                disabled={busyCardId !== null}
-                testid="feed-archive-all"
-                onclick={archiveAll}
-              />
-            </span>
-          {/if}
-        </h2>
+        </SectionHeading>
         {#if section.id === 'ready'}
           {#if readyGroups.invoices.length > 0}
             <FeedReadySection
@@ -231,37 +236,23 @@
     gap: var(--shpd-space-sm);
   }
 
-  .shpd-feed__section-title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-xs);
-    margin: 0;
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--shpd-color-text-secondary);
-  }
-
+  /* Nadpis sekce kreslí sdílený SectionHeading (role heading, #137 D37);
+     počet v závorce je v nadpisu běžnou tloušťkou. */
   .shpd-feed__section-count {
-    font-weight: 500;
-  }
-
-  /* Akce sekce (Archivovat vše) — vpravo v hlavičce, bez uppercase nadpisu. */
-  .shpd-feed__section-action {
-    margin-left: auto;
-    text-transform: none;
-    letter-spacing: normal;
+    font-weight: var(--shpd-font-weight-normal);
   }
 
   /* Barevná tečka sekce — failed/review/ready zrcadlí barvy stavových
      proužků karet; alerts sdílí warning (sekce mísí závažnosti), newItems
-     primary (odlišná od stavových barev), other tlumená. */
+     primary (odlišná od stavových barev), other tlumená. Sedí v řádku
+     nadpisu před textem. */
   .shpd-feed__section-dot {
+    display: inline-block;
     width: 8px;
     height: 8px;
+    margin-right: var(--shpd-space-xs);
     border-radius: 50%;
-    flex-shrink: 0;
+    vertical-align: middle;
   }
 
   .shpd-feed__section-dot--newItems { background: var(--shpd-color-primary); }

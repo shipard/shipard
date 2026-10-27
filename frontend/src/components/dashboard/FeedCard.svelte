@@ -6,6 +6,10 @@
    * rozbalovací detail a řada akčních tlačítek. Karty bez `headline`
    * (alerty, chybové, položky k založení) renderují title/subtitle fallback.
    * Chování akcí drží rodič (Dashboard) — FeedCard jen emituje onAction(action).
+   *
+   * Písmo v rolích §11 design-system.md (#137 D37): název karty heading,
+   * částka title strong (hlavní číslo karty), hodnota rozbaleného detailu
+   * body normal; tloušťky jen tokeny, žádné literály.
    */
   import { resolveIcon, iconMail, iconWarning, iconChevronDown, iconChevronUp } from '../../icons.js';
   import Icon from '../ui/Icon.svelte';
@@ -250,6 +254,7 @@
   }
 
   .shpd-feed-card__title {
+    font-size: var(--shpd-font-size-heading);
     font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
   }
@@ -310,8 +315,8 @@
 
   .shpd-feed-card__amount {
     margin-top: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-xl);
-    font-weight: 700;
+    font-size: var(--shpd-font-size-title);
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   /* Předmět zdrojového e-mailu — jeden řádek s ellipsis, plný text v title. */
@@ -437,7 +442,8 @@
 
   .shpd-feed-card__detail-value {
     color: var(--shpd-color-text);
-    font-weight: 500;
+    font-size: var(--shpd-font-size-body);
+    font-weight: var(--shpd-font-weight-normal);
     text-align: right;
   }
 
