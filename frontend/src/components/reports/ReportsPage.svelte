@@ -13,6 +13,7 @@
   // volá GET /_reports/{id} a výsledek předává čistému rendereru ReportView.
   import { untrack } from 'svelte';
   import PeriodPicker from './PeriodPicker.svelte';
+  import Notice from '../ui/Notice.svelte';
   import VatPeriodPicker from './VatPeriodPicker.svelte';
   import ReportView from './ReportView.svelte';
   import ViewerDetailModal from '../viewer/ViewerDetailModal.svelte';
@@ -330,10 +331,10 @@
 
   <div class="shpd-reports__body">
     {#if catalogError}
-      <div class="shpd-reports__error">
-        <p>{t('reports.catalogFailed')}: {catalogError}</p>
+      <Notice tone="danger">
+        <p class="shpd-reports__error-text">{t('reports.catalogFailed')}: {catalogError}</p>
         <button type="button" class="shpd-reports__retry" onclick={loadCatalog}>{t('reports.retry')}</button>
-      </div>
+      </Notice>
     {:else if catalog && !reportDef}
       <p class="shpd-reports__note">{t('reports.unknownReport')}</p>
     {:else if noPeriods}
@@ -341,9 +342,7 @@
         {t(periodSource === 'vatPeriod' ? 'reports.noVatRegistrations' : 'reports.noPeriods')}
       </p>
     {:else if runError}
-      <div class="shpd-reports__error">
-        <p>{t('reports.loadFailed')}: {runError}</p>
-      </div>
+      <Notice tone="danger">{t('reports.loadFailed')}: {runError}</Notice>
     {:else if loading && !result}
       <p class="shpd-reports__note">{t('reports.loading')}</p>
     {:else if result}
@@ -466,12 +465,8 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-reports__error {
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-state-error-text);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-state-error-bg);
-    color: var(--shpd-color-state-error-text);
+  .shpd-reports__error-text {
+    margin: 0 0 var(--shpd-space-sm);
   }
 
   .shpd-reports__retry {

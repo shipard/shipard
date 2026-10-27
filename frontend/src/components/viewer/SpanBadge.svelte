@@ -2,7 +2,7 @@
   // Pilulka pro span s `badge: <style>` (docs/viewer-grid.md §3.4, D5).
   // Sdílí ji ViewerRow (list) i ViewerGrid — proto samostatná komponenta,
   // ne kopie CSS v obou. Paleta = badge systém (design-system.md §5),
-  // stejné tokeny jako .shpd-detail__badge--*, ale lokální třídy
+  // stejné tokeny jako ui/Badge.svelte (.shpd-badge--*), ale lokální třídy
   // (žádné :global — anti-pattern §6). `badge` má přednost před `class`.
   let { style = 'neutral', text } = $props();
 </script>
@@ -21,7 +21,7 @@
   }
 
   /* Typové varianty (mimo doc-state) — stejná paleta jako
-   * .shpd-detail__badge--* ve ViewerDetail.svelte. */
+   * .shpd-badge--* v ui/Badge.svelte. */
   .shpd-span-badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
   .shpd-span-badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
   .shpd-span-badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }

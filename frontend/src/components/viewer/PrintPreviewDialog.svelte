@@ -15,6 +15,7 @@
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
   import Select from '../ui/Select.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { fetchPrintPdf } from '../../api/prints.js';
   import { saveBlob } from '../../utils/download.js';
   import { iconDownload } from '../../icons.js';
@@ -127,11 +128,7 @@
       <div class="shpd-print__state shpd-print__state--error" role="alert">{error}</div>
     {:else if pdfUrl}
       {#if messages.length > 0}
-        <ul class="shpd-print__messages">
-          {#each messages as message (message.code)}
-            <li>{message.text}</li>
-          {/each}
-        </ul>
+        <Notice tone="warning" items={messages.map((message) => message.text)} />
       {/if}
       {#if canPreview}
         <iframe class="shpd-print__frame" src={pdfUrl} title={fileName}></iframe>
@@ -248,16 +245,6 @@
 
   .shpd-print__state--error {
     color: var(--shpd-color-danger);
-  }
-
-  .shpd-print__messages {
-    margin: 0;
-    padding: var(--shpd-space-sm) var(--shpd-space-md) var(--shpd-space-sm) calc(var(--shpd-space-md) + 1.2em);
-    border: 1px solid var(--shpd-color-warning);
-    border-radius: var(--shpd-radius-sm);
-    background: var(--shpd-color-warning-soft);
-    color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-print__spinner {

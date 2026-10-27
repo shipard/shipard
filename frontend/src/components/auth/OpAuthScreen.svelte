@@ -5,6 +5,7 @@
   import { approveOpAuth } from '../../api/oidcOp.js';
   import { brandingUrl } from '../../api/app.js';
   import { t } from '../../i18n/index.js';
+  import Notice from '../ui/Notice.svelte';
   import { translateError } from '../../i18n/errors.js';
 
   // Schválení OIDC OP transakce (session bridge D10): mountuje se jen
@@ -40,7 +41,7 @@
     <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
 
     {#if errorMessage}
-      <div class="shpd-login__error">{t('opAuth.error')}</div>
+      <div class="shpd-login__notice"><Notice tone="danger">{t('opAuth.error')}</Notice></div>
       <p class="shpd-login__intro">{errorMessage}</p>
       <button class="shpd-login__button" type="button" onclick={backToPortal}>
         {t('opAuth.backToPortal')}
@@ -98,14 +99,9 @@
     text-align: center;
   }
 
-  .shpd-login__error {
+  /* Hláška přihlášení (#137 D40): sdílená Notice, obal dává jen mezeru. */
+  .shpd-login__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-md);
   }
 
   .shpd-login__button {

@@ -5,6 +5,7 @@
   import AttachmentPanel from './AttachmentPanel.svelte';
   import FormStateBar from './FormStateBar.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { FORM_DATA_CONTEXT } from './formContext.js';
@@ -672,18 +673,15 @@
        Žije nad tab-content (mimo scrollovaný obsah) — je globální o formuláři,
        ne o aktuálním tabu. Form-level chyby holé, field-level s labelem pole. -->
   {#if formErrors.length > 0 || Object.keys(fieldErrors).length > 0}
-    <div class="shpd-form-editor__validation-banner" role="alert">
-      <div class="shpd-form-editor__validation-banner-title">
-        {t('form.validation.bannerTitle')}
-      </div>
-      <ul class="shpd-form-editor__validation-banner-list">
-        {#each formErrors as err}
-          <li>{err.message}</li>
-        {/each}
-        {#each fieldEntriesForBanner() as { label, message }}
-          <li><strong>{label}:</strong> {message}</li>
-        {/each}
-      </ul>
+    <div class="shpd-form-editor__banner">
+      <Notice
+        tone="danger"
+        title={t('form.validation.bannerTitle')}
+        items={[
+          ...formErrors.map((err) => err.message),
+          ...fieldEntriesForBanner().map(({ label, message }) => ({ label, text: message })),
+        ]}
+      />
     </div>
   {/if}
 
@@ -691,22 +689,19 @@
        Žije vedle validačního banneru (taky nad tab-contentem), ale žlutě
        a bez tabových teček: warningy nebrání uložení ani přechodu stavu. -->
   {#if warnings.length > 0}
-    <div class="shpd-form-editor__warning-banner" role="status">
-      <div class="shpd-form-editor__warning-banner-title">
-        {t('form.warnings.bannerTitle')}
-      </div>
-      <ul class="shpd-form-editor__warning-banner-list">
-        {#each warningEntriesForBanner() as { label, message }}
-          <li>{#if label}<strong>{label}:</strong> {/if}{message}</li>
-        {/each}
-      </ul>
+    <div class="shpd-form-editor__banner">
+      <Notice
+        tone="warning"
+        title={t('form.warnings.bannerTitle')}
+        items={warningEntriesForBanner().map(({ label, message }) => ({ label, text: message }))}
+      />
     </div>
   {/if}
 
   <!-- Content -->
   <div class="shpd-form-editor__content">
     {#if loadError}
-      <div class="shpd-form-editor__error-banner">{loadError}</div>
+      <div class="shpd-form-editor__banner"><Notice tone="danger">{loadError}</Notice></div>
     {/if}
 
     {#if !formDef}
@@ -868,79 +863,11 @@
     font-size: var(--shpd-font-size-sm);
   }
 
-  .shpd-form-editor__error-banner {
+  /* Hlášky formuláře (#137 D40) — chyba načtení, validace, varování —
+     jsou sdílená Notice; obal dává jen mezeru a flex-shrink: 0 je drží nad
+     scrollovaným obsahem. */
+  .shpd-form-editor__banner {
     margin: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    background: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-md);
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
-  }
-
-  /* Validační banner — sladěn s __error-banner (červené téma), ale samostatná
-     třída, aby šel nezávisle styliovat. flex-shrink: 0 ho drží nad scrollovaným
-     contentem. */
-  .shpd-form-editor__validation-banner {
-    margin: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    background: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-md);
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
     flex-shrink: 0;
-  }
-
-  .shpd-form-editor__validation-banner-title {
-    font-weight: 600;
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-form-editor__validation-banner-list {
-    margin: 0;
-    padding-left: var(--shpd-space-lg);
-    list-style: disc;
-  }
-
-  .shpd-form-editor__validation-banner-list li + li {
-    margin-top: 0.125rem;
-  }
-
-  .shpd-form-editor__validation-banner-list strong {
-    font-weight: 600;
-  }
-
-  /* Banner warningů — stejná geometrie jako validační, jiné téma (žlutá):
-     na první pohled odlišitelné od chyby, která brání uložení. */
-  .shpd-form-editor__warning-banner {
-    margin: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    background: var(--shpd-color-warning-soft);
-    border: 1px solid var(--shpd-color-warning);
-    border-radius: var(--shpd-radius-md);
-    color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-sm);
-    flex-shrink: 0;
-  }
-
-  .shpd-form-editor__warning-banner-title {
-    font-weight: 600;
-    margin-bottom: var(--shpd-space-xs);
-    color: var(--shpd-color-warning);
-  }
-
-  .shpd-form-editor__warning-banner-list {
-    margin: 0;
-    padding-left: var(--shpd-space-lg);
-    list-style: disc;
-  }
-
-  .shpd-form-editor__warning-banner-list li + li {
-    margin-top: 0.125rem;
-  }
-
-  .shpd-form-editor__warning-banner-list strong {
-    font-weight: 600;
   }
 </style>
