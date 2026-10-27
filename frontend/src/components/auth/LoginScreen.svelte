@@ -7,6 +7,7 @@
   import { brandingUrl } from '../../api/app.js';
   import { language, t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import Notice from '../ui/Notice.svelte';
 
   let { onSuccess } = $props();
 
@@ -131,7 +132,7 @@
 
     {#if forgotMode}
       {#if forgotSent}
-        <div class="shpd-login__success">{t('login.forgot.sent')}</div>
+        <div class="shpd-login__notice"><Notice tone="success">{t('login.forgot.sent')}</Notice></div>
         <button class="shpd-login__button" type="button" onclick={exitForgotMode}>
           {t('login.forgot.backToLogin')}
         </button>
@@ -194,11 +195,11 @@
     {/if}
 
     {#if successMessage}
-      <div class="shpd-login__success">{successMessage}</div>
+      <div class="shpd-login__notice"><Notice tone="success">{successMessage}</Notice></div>
     {/if}
 
     {#if errorMessage}
-      <div class="shpd-login__error" data-testid="login-error">{errorMessage}</div>
+      <div class="shpd-login__notice"><Notice tone="danger" data-testid="login-error">{errorMessage}</Notice></div>
     {/if}
 
     {#if localEnabled}
@@ -318,24 +319,9 @@
     cursor: not-allowed;
   }
 
-  .shpd-login__error {
+  /* Hláška přihlášení (#137 D40): sdílená Notice, obal dává jen mezeru. */
+  .shpd-login__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-md);
-  }
-
-  .shpd-login__success {
-    margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-success);
-    background-color: var(--shpd-color-success-soft);
-    border: 1px solid var(--shpd-color-success);
-    border-radius: var(--shpd-radius-md);
   }
 
   .shpd-login__intro {

@@ -2,12 +2,20 @@
     // core.overview.sections — sekce Přehledu firmy (#120 D1) v pořadí
     // obrazovky. Bloky se k sekci hlásí klíčem `section` v `overviewBlocks`
     // (docs/overview.md); sekce bez příspěvku se neposílá.
+    //
+    // `icon` (#137 D38) = ikona tématu v nadpisu karty, stejná jako
+    // příslušný prohlížeč / report v menu nebo stránka v Nastavení — žádná
+    // nová ikona: Peníze = Bankovní výpisy, Pohledávky / Závazky = položky
+    // saldokonta pohledávkového / závazkového typu v menu, DPH = Podání DPH
+    // (reporty mají v menu jen obecnou ikonu reportu, docs/overview.md §8),
+    // Výsledek = Výsledovka v menu. Nepovinné; bez ikony se klíč neposílá
+    // a karta ikonu nemá.
 
     "sections": [
-        {"id": "money",       "order": 10, "name": "Money",          "name:cs": "Peníze",               "name:en": "Money"},
-        {"id": "receivables", "order": 20, "name": "Receivables",    "name:cs": "Pohledávky",           "name:en": "Receivables"},
-        {"id": "payables",    "order": 30, "name": "Payables",       "name:cs": "Závazky",              "name:en": "Payables"},
-        {"id": "vat",         "order": 40, "name": "VAT",            "name:cs": "DPH",                  "name:en": "VAT"},
-        {"id": "result",      "order": 50, "name": "Profit or loss", "name:cs": "Výsledek hospodaření", "name:en": "Profit or loss"}
+        {"id": "money",       "order": 10, "icon": "bank",    "name": "Money",          "name:cs": "Peníze",               "name:en": "Money"},
+        {"id": "receivables", "order": 20, "icon": "receivable", "name": "Receivables",    "name:cs": "Pohledávky",           "name:en": "Receivables"},
+        {"id": "payables",    "order": 30, "icon": "payable",    "name": "Payables",       "name:cs": "Závazky",              "name:en": "Payables"},
+        {"id": "vat",         "order": 40, "icon": "filing",     "name": "VAT",            "name:cs": "DPH",                  "name:en": "VAT"},
+        {"id": "result",      "order": 50, "icon": "chart",   "name": "Profit or loss", "name:cs": "Výsledek hospodaření", "name:en": "Profit or loss"}
     ]
 }

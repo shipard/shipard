@@ -137,7 +137,7 @@ class WorkOrderSettingsViewersTest extends TestCase
         $this->assertSame([['label' => 'Koncept', 'style' => 'concept']], $detail['badges']);
         $groups = $detail['tabs'][0]['content']['groups'];
         $this->assertSame(['Identity', 'Číslování', 'Validity'], array_column($groups, 'title'));
-        $this->assertSame(['label' => 'Druh', 'value' => 'Servis (Externí jednorázová)'], $groups[0]['items'][1]);
+        $this->assertSame(['label' => 'Druh', 'value' => 'Servis (Externí jednorázová)'], $groups[0]['items'][0]);
         $this->assertSame('Po roce', $groups[1]['items'][2]['value']);
     }
 }

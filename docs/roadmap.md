@@ -172,6 +172,7 @@ z M0 má vždy přednost.
 | Agregace alertů do skupinových karet feedu | `dashboard-alert-grouping.md` |
 | Detekce chybějících překladů (validační nástroj) | — |
 | Vývojářský dashboard: vzhled, verze, čeština a angličtina, aktualizace (#129) | `dev-dashboard-look.md` (fáze 1), `dev-dashboard-i18n.md` (fáze 2) a `dev-dashboard-update.md` (fáze 3, D16–D22) hotové 2026-10-17 |
+| Design system — detail záznamu (#133, #137): sdílený nadpis sekce a seznam vlastností, karty, HTML z backendu, karta návrhu | `design-system-shared-sections.md` (task 1, D28–D29) hotové 2026-10-26; tasky 2–4 dle #137 |
 
 ---
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Bank;
 
+use Shipard\Core\Accounting\AccountingStatusContent;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\Detail\DetailHeader;
@@ -218,26 +219,26 @@ class BankTransactionsViewer extends TableViewer
     {
         $cs = $this->language !== 'en';
 
+        // Datum transakce nese podtitul, stav štítek (#140 D26).
         $txItems = [];
-        $this->addItem($txItems, $cs ? 'Datum transakce' : 'Transaction date', $this->formatDate($record['date_transaction'] ?? null));
         $this->addItem($txItems, $cs ? 'Datum valuty' : 'Value date', $this->formatDate($record['date_value'] ?? null));
         $this->addItem($txItems, $cs ? 'Směr' : 'Direction', $this->enumLabel('economy.bank.txDirections', $record['direction'] ?? null, 'int'));
         $this->addItem($txItems, $cs ? 'Pohyb' : 'Operation', $this->enumLabel('economy.bank.txOperations', $record['operation'] ?? null, 'string'));
-        $this->addItem($txItems, $cs ? 'Stav' : 'State', $this->enumLabel('economy.bank.txStates', $record['docState'] ?? null, 'int', 'stateName'));
 
+        // Částku se znaménkem a měnou nese titulek; přepočet a kurz jen u cizí měny.
         $amountItems = [];
-        $curCode = strtoupper((string) ($record['currency'] ?? ''));
-        $this->addItem($amountItems, $cs ? 'Částka' : 'Amount', $this->formatMoney($record['amount'] ?? 0) . ' ' . $curCode);
-        $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($record['amount_dom'] ?? 0));
         $rate = (float) ($record['exchange_rate'] ?? 1);
         if (abs($rate - 1.0) > 0.0000001) {
+            $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($record['amount_dom'] ?? 0));
             $this->addItem($amountItems, $cs ? 'Kurz' : 'Exchange rate', number_format($rate, 6, ',', ' '));
         }
 
+        // Partner je v podtitulku; bez něj je tam název protistrany (#140 §2).
         $cpItems = [];
         $this->addItem($cpItems, $cs ? 'Protiúčet' : 'Counterparty account', $record['counterparty_account'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $record['counterparty_name'] ?? null);
-        $this->addItem($cpItems, 'Partner', $record['partner_name'] ?? null);
+        if ($this->partyOf($record)['column'] === 'partner_name') {
+            $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $record['counterparty_name'] ?? null);
+        }
         $this->addItem($cpItems, $cs ? 'Variabilní symbol' : 'Variable symbol', $record['payment_reference'] ?? null);
         $this->addItem($cpItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
         $this->addItem($cpItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
@@ -292,13 +293,28 @@ class BankTransactionsViewer extends TableViewer
             $title .= ' ' . $curCode;
         }
 
-        $partner = trim((string) ($record['partner_name'] ?? ''));
-        $counterparty = trim((string) ($record['counterparty_name'] ?? ''));
-        $who = $partner !== '' ? $partner : $counterparty;
         $date = $this->formatDate($record['date_transaction'] ?? null);
-        $subtitleParts = array_filter([$who, $date], static fn ($v) => $v !== null && $v !== '');
+        $subtitleParts = array_filter([$this->partyOf($record)['value'], $date], static fn ($v) => $v !== null && $v !== '');
 
         return new DetailHeader($title, implode(' · ', $subtitleParts));
+    }
+
+    /**
+     * Kdo je v podtitulku: partner, bez něj název protistrany z výpisu.
+     * Tutéž volbu čte Přehled — protistranu ukáže jen vedle partnera (#140 §2).
+     *
+     * @param array<string, mixed> $record
+     * @return array{column: string, value: string}
+     */
+    private function partyOf(array $record): array
+    {
+        foreach (['partner_name', 'counterparty_name'] as $column) {
+            $value = trim((string) ($record[$column] ?? ''));
+            if ($value !== '') {
+                return ['column' => $column, 'value' => $value];
+            }
+        }
+        return ['column' => '', 'value' => ''];
     }
 
     /**
@@ -357,7 +373,8 @@ class BankTransactionsViewer extends TableViewer
             return null;
         }
 
-        $blocks = [$this->accountingStatusBlock($record, $state)];
+        // Štítek stavu + hláška s hlášeními enginu — sdílené s dokladem (#137 D30).
+        $blocks = AccountingStatusContent::blocks($this->config, $state, $record['accounting_messages'] ?? null);
         if ($journalRows !== []) {
             $blocks[] = $this->accountingJournalTable($journalRows);
         }
@@ -371,53 +388,6 @@ class BankTransactionsViewer extends TableViewer
             ),
             'content' => ['type' => 'composite', 'blocks' => $blocks],
         ];
-    }
-
-    /**
-     * Badge stavu účtování; při chybě (stav 2) banner s hlášeními. Vzor
-     * DocsHeadsViewer::accountingStatusBlock — escapované hodnoty, vzhled
-     * přes globální CSS proměnné (funguje i v dark mode).
-     *
-     * @param array<string, mixed> $record
-     */
-    private function accountingStatusBlock(array $record, int $state): array
-    {
-        $states = $this->config?->cfgItem('economy.accounting.accountingStates');
-        $stateName = is_array($states) ? (string) ($states[(string) $state]['name'] ?? '') : '';
-        if ($stateName === '') {
-            $stateName = ['Not accounted', 'Accounted', 'Accounting error'][$state] ?? (string) $state;
-        }
-        $tone = match ($state) {
-            1       => 'done',
-            2       => 'error',
-            default => 'concept',
-        };
-
-        $html = '<div style="margin-bottom:var(--shpd-space-md)">'
-            . '<span style="display:inline-block;padding:2px 8px;border-radius:999px;'
-            . 'font-size:0.75rem;font-weight:500;'
-            . 'background:var(--shpd-color-state-' . $tone . '-bg);'
-            . 'color:var(--shpd-color-state-' . $tone . '-text)">'
-            . htmlspecialchars($stateName, ENT_QUOTES) . '</span>';
-
-        // Stav OK může nést varování (zprávy úrovně `warning`, selhání
-        // contributoru deníku #79 D3b) — vypíší se v tónu „k pozornosti“.
-        $messages = $state >= 1 ? $this->decodeAccountingMessages($record['accounting_messages'] ?? null) : [];
-        if ($messages !== []) {
-            $listTone = $state === 2 ? 'error' : 'edit';
-            $items = '';
-            foreach ($messages as $msg) {
-                $items .= '<li>' . htmlspecialchars((string) ($msg['message'] ?? ''), ENT_QUOTES) . '</li>';
-            }
-            $html .= '<ul role="' . ($state === 2 ? 'alert' : 'status') . '" style="margin:var(--shpd-space-sm) 0 0;'
-                . 'padding:var(--shpd-space-sm) var(--shpd-space-md) var(--shpd-space-sm) 28px;'
-                . 'background:var(--shpd-color-state-' . $listTone . '-bg);'
-                . 'color:var(--shpd-color-state-' . $listTone . '-text);'
-                . 'border-radius:var(--shpd-radius-md);'
-                . 'font-size:var(--shpd-font-size-sm)">' . $items . '</ul>';
-        }
-
-        return ['type' => 'html', 'html' => $html . '</div>'];
     }
 
     /**
@@ -471,19 +441,6 @@ class BankTransactionsViewer extends TableViewer
             return null;
         }
         return $this->formatMoney($amount);
-    }
-
-    /** @return list<array<string, mixed>> dekódované accounting_messages (JSON sloupec) */
-    private function decodeAccountingMessages(mixed $raw): array
-    {
-        if (is_array($raw)) {
-            return array_values(array_filter($raw, 'is_array'));
-        }
-        if (!is_string($raw) || trim($raw) === '') {
-            return [];
-        }
-        $decoded = json_decode($raw, true);
-        return is_array($decoded) ? array_values(array_filter($decoded, 'is_array')) : [];
     }
 
     public function getToolbarActions(?array $selectedRow): array

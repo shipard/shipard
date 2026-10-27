@@ -95,7 +95,7 @@ class AIBackendsViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT `id`, `backend_id`, `name`, `provider`, `base_url`,'
+            'SELECT `id`, `docState`, `backend_id`, `name`, `provider`, `base_url`,'
             . ' `is_default`, `is_active`,'
             . ' `created`, `modified`,'
             . ' (`api_key` IS NOT NULL AND `api_key` != \'\') AS `has_api_key`'
@@ -108,7 +108,6 @@ class AIBackendsViewer extends TableViewer
     {
         $identity = [];
         $this->addItem($identity, 'Kód připojení', $record['backend_id'] ?? null);
-        $this->addItem($identity, 'Název', $record['name'] ?? null);
 
         $provider = [];
         $platforms = AiPlatforms::fromConfig($this->config);
@@ -130,20 +129,13 @@ class AIBackendsViewer extends TableViewer
         $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
         $this->addItem($status, 'Změněno', $record['modified'] ?? null);
 
-        return [[
-            'id'      => 'overview',
-            'label'   => $this->defaultOverviewLabel(),
-            'content' => [
-                'type'   => 'properties',
-                'groups' => [
-                    ['title' => 'Identifikace', 'items' => $identity],
-                    ['title' => 'Platforma', 'items' => $provider],
-                    ['title' => 'Přístup', 'items' => $access],
-                    ['title' => 'Příznaky', 'items' => $flags],
-                    ['title' => 'Stav', 'items' => $status],
-                ],
-            ],
-        ]];
+        return [$this->propertiesTab([
+            ['title' => 'Identifikace', 'items' => $identity],
+            ['title' => 'Platforma', 'items' => $provider],
+            ['title' => 'Přístup', 'items' => $access],
+            ['title' => 'Příznaky', 'items' => $flags],
+            ['title' => 'Stav', 'items' => $status],
+        ])];
     }
 
     private function resolveStateStyle(int $docState): string

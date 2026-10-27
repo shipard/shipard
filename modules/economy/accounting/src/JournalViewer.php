@@ -326,19 +326,12 @@ class JournalViewer extends TableViewer
         );
     }
 
-    /** Přehled: zápis (účet, text, operace, partner, dimenze, období), částky, doklad, platba. */
+    /** Přehled: zápis (operace, partner, dimenze, období — datum, účet a text nese hlavička), částky, doklad, platba. */
     protected function detailTabs(array $record): array
     {
         $cs = $this->language === 'cs';
 
         $entryItems = [];
-        $this->addItem($entryItems, $cs ? 'Datum' : 'Date', $this->formatDate($record['accounting_date'] ?? null));
-        $accountLabel = trim(
-            (string) ($record['account_number'] ?? '')
-            . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
-        );
-        $this->addItem($entryItems, $cs ? 'Účet' : 'Account', $accountLabel);
-        $this->addItem($entryItems, 'Text', $record['text'] ?? null);
         $this->addItem(
             $entryItems,
             $cs ? 'Operace' : 'Operation',

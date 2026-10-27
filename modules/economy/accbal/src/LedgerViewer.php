@@ -320,18 +320,30 @@ class LedgerViewer extends AccbalViewerBase
     /** Titulek partner, bez partnera text pohybu, pak účet; podtitul účet · částka s měnou (#136 §6). */
     protected function detailHeader(array $record): DetailHeader
     {
-        $partner = trim((string) ($record['partner_name'] ?? ''));
-        $text = trim((string) ($record['text'] ?? ''));
         $account = trim((string) ($record['account_number'] ?? ''));
         $amount = trim($this->formatMoney($record['amount'] ?? 0) . ' ' . strtoupper((string) ($record['currency'] ?? '')));
-
-        $title = $partner !== '' ? $partner : ($text !== '' ? $text : $account);
         $subtitle = implode(' · ', array_filter([$account, $amount], static fn (string $v): bool => $v !== ''));
 
-        return new DetailHeader(
-            $title !== '' ? $title : '#' . (int) ($record['id'] ?? 0),
-            $subtitle !== '' ? $subtitle : null,
-        );
+        return new DetailHeader($this->titleOf($record)['value'], $subtitle !== '' ? $subtitle : null);
+    }
+
+    /**
+     * Titulek pohybu: partner, bez něj text, bez obojího číslo účtu, jinak
+     * `#id`. Tutéž volbu čte Přehled — údaj, který je titulkem, neopakuje
+     * (#140 §2).
+     *
+     * @param array<string, mixed> $record
+     * @return array{column: string, value: string}
+     */
+    private function titleOf(array $record): array
+    {
+        foreach (['partner_name', 'text', 'account_number'] as $column) {
+            $value = trim((string) ($record[$column] ?? ''));
+            if ($value !== '') {
+                return ['column' => $column, 'value' => $value];
+            }
+        }
+        return ['column' => 'id', 'value' => '#' . (int) ($record['id'] ?? 0)];
     }
 
     /** Přehled: pohyb, částky, platba a případ pohybu (#69 D1: agregát klíče, do kterého pohyb patří). */
@@ -342,17 +354,18 @@ class LedgerViewer extends AccbalViewerBase
 
         $cs = $this->language === 'cs';
 
+        // Partner a účet nese hlavička; text jen když není titulkem (#140 D26, §2).
         $moveItems = [];
         $this->addItem($moveItems, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
         $this->addItem($moveItems, 'Role', $this->roleOf($record)['text']);
-        $this->addItem($moveItems, $cs ? 'Účet' : 'Account', $record['account_number'] ?? null);
-        $this->addItem($moveItems, 'Partner', $record['partner_name'] ?? null);
-        $this->addItem($moveItems, 'Text', $record['text'] ?? null);
+        if ($this->titleOf($record)['column'] !== 'text') {
+            $this->addItem($moveItems, 'Text', $record['text'] ?? null);
+        }
 
+        // Částku v měně pohybu nese podtitul; zůstává jen přepočet v domácí měně.
         $curCode = strtoupper((string) ($record['currency'] ?? ''));
         $hcCode = strtoupper((string) ($record['home_currency'] ?? ''));
         $amountItems = [];
-        $this->addItem($amountItems, ($cs ? 'Částka ' : 'Amount ') . $curCode, $this->formatMoney($record['amount'] ?? 0));
         if ($hcCode !== '' && $hcCode !== $curCode) {
             $this->addItem($amountItems, ($cs ? 'Částka ' : 'Amount ') . $hcCode, $this->formatMoney($record['amount_hc'] ?? 0));
         }

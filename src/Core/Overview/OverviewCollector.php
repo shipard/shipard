@@ -31,17 +31,23 @@ final class OverviewCollector
     public const STATE_UNAVAILABLE = 'unavailable';
     public const STATE_ERROR       = 'error';
 
-    /** Pořadí a anglické názvy sekcí bez compiled configu (DS před `ds-upgrade`). */
+    /**
+     * Pořadí, anglické názvy a ikony sekcí bez compiled configu (DS před
+     * `ds-upgrade`) — zrcadlí `overviewSections.jsonc` (#137 D38).
+     */
     private const SECTIONS_FALLBACK = [
-        ['id' => 'money',       'order' => 10, 'name' => 'Money'],
-        ['id' => 'receivables', 'order' => 20, 'name' => 'Receivables'],
-        ['id' => 'payables',    'order' => 30, 'name' => 'Payables'],
-        ['id' => 'vat',         'order' => 40, 'name' => 'VAT'],
-        ['id' => 'result',      'order' => 50, 'name' => 'Profit or loss'],
+        ['id' => 'money',       'order' => 10, 'name' => 'Money',          'icon' => 'bank'],
+        ['id' => 'receivables', 'order' => 20, 'name' => 'Receivables',    'icon' => 'receivable'],
+        ['id' => 'payables',    'order' => 30, 'name' => 'Payables',       'icon' => 'payable'],
+        ['id' => 'vat',         'order' => 40, 'name' => 'VAT',            'icon' => 'filing'],
+        ['id' => 'result',      'order' => 50, 'name' => 'Profit or loss', 'icon' => 'chart'],
     ];
 
     /**
-     * @return array{asOf: string, sections: list<array{id: string, title: string,
+     * Sekce nese `icon` (klíč ikony frontendu, #137 D38) jen když ji má
+     * v konfiguraci — bez ikony se klíč neposílá a karta ikonu nekreslí.
+     *
+     * @return array{asOf: string, sections: list<array{id: string, title: string, icon?: string,
      *         items: list<array<string, mixed>>, messages: list<array<string, mixed>>, state: string}>}
      */
     public function collect(OverviewContext $ctx, OverviewBlockRegistry $registry): array
@@ -97,13 +103,14 @@ final class OverviewCollector
             $state = $a['failed']
                 ? self::STATE_ERROR
                 : (($a['items'] === [] && $a['unavailable']) ? self::STATE_UNAVAILABLE : self::STATE_OK);
-            $out[] = [
-                'id'       => $sectionId,
-                'title'    => $section['name'],
-                'items'    => array_map(static fn (OverviewItem $i): array => $i->toArray(), $a['items']),
-                'messages' => array_map(static fn (OverviewMessage $m): array => $m->toArray(), $a['messages']),
-                'state'    => $state,
-            ];
+            $row = ['id' => $sectionId, 'title' => $section['name']];
+            if ($section['icon'] !== null) {
+                $row['icon'] = $section['icon'];
+            }
+            $row['items']    = array_map(static fn (OverviewItem $i): array => $i->toArray(), $a['items']);
+            $row['messages'] = array_map(static fn (OverviewMessage $m): array => $m->toArray(), $a['messages']);
+            $row['state']    = $state;
+            $out[] = $row;
         }
 
         return ['asOf' => $ctx->todayIso(), 'sections' => $out];
@@ -111,9 +118,10 @@ final class OverviewCollector
 
     /**
      * Sekce z cfgItemu v pořadí `order` (compiled config nese `name` už
-     * lokalizované); bez configu anglický fallback.
+     * lokalizované); bez configu anglický fallback. `icon` nepovinná —
+     * chybějící nebo prázdná = null.
      *
-     * @return array<string, array{order: int, name: string}> id → sekce, seřazené
+     * @return array<string, array{order: int, name: string, icon: ?string}> id → sekce, seřazené
      */
     private function sections(?ConfigRuntime $config): array
     {
@@ -128,6 +136,7 @@ final class OverviewCollector
             $sections[$entry['id']] = [
                 'order' => is_int($entry['order'] ?? null) ? $entry['order'] : 1000,
                 'name'  => is_string($entry['name'] ?? null) && $entry['name'] !== '' ? $entry['name'] : $entry['id'],
+                'icon'  => is_string($entry['icon'] ?? null) && $entry['icon'] !== '' ? $entry['icon'] : null,
             ];
         }
         uksort($sections, static fn (string $a, string $b): int

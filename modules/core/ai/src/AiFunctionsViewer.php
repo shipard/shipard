@@ -157,8 +157,6 @@ class AiFunctionsViewer extends AiViewerBase
         $texts = $this->texts();
 
         $functionItems = [];
-        $this->addItem($functionItems, $this->text('label.function', 'Function'), $function?->name ?? $functionId);
-        $this->addItem($functionItems, $this->text('label.id', 'ID'), $functionId);
         $this->addItem($functionItems, $this->text('label.description', 'Description'), $function?->description);
         $this->addItem(
             $functionItems,

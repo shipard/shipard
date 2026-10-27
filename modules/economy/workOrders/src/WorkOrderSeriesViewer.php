@@ -90,7 +90,6 @@ class WorkOrderSeriesViewer extends WorkOrdersViewerBase
     protected function detailTabs(array $record): array
     {
         $identity = [];
-        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
         $kind = (string) ($record['kind_name'] ?? '');
         $type = (string) ($record['kind_type'] ?? '');
         if ($kind !== '' && $type !== '') {

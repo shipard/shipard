@@ -204,14 +204,14 @@ Frontend má **tři vrstvy badge** s podobnou paletou:
 
 | Komponenta | CSS prefix | Účel |
 |---|---|---|
-| `ViewerDetail.svelte` (hlavička) | `.shpd-detail__badge--*` | Badge v hlavičce detailu — stav a vlastnosti, které nejsou zřejmé z kontextu (VIP…); typ záznamu nese ikona (D13, §12) |
+| `ui/Badge.svelte` (hlavička detailu, blok `badges`) | `.shpd-badge--*` | Štítek v hlavičce detailu — stav a vlastnosti, které nejsou zřejmé z kontextu (VIP…); typ záznamu nese ikona (D13, §12). Tutéž komponentu kreslí blok `badges` v obsahu (stav zaúčtování, #137 task 3); neznámý `style` = `neutral` |
 | `ViewerDetail.svelte` (tab Návrh) | `.shpd-extracted__badge--*` | Badge pásma/verdiktu u dokumentového návrhu zprávy |
 | `FormStateBadge.svelte` | `.shpd-form-state-badge.docState_*` | Stavový badge v hlavičce editačního formuláře |
 
 Všechny tři používají **stejnou doc-state paletu** (concept, edit, confirmed,
 archive, trash, cancelled). Plus mají vlastní **typové varianty** mimo doc-state:
 
-### Typové varianty (jen `__badge--*`)
+### Typové varianty (jen `.shpd-badge--*`)
 
 | Třída | Pozadí / text | Použití |
 |---|---|---|
@@ -338,6 +338,117 @@ v pod-sekci *Dropdown / popover komponenty*.
 - Detail má volitelnou hlavičku (title + subtitle + badges) — vykreslí se
   jen pokud backend pošle `detail.title` (kontrakt §5, rozvržení a písmo
   §12 Detail záznamu)
+
+### Karty
+
+Rozhodnutí D33–D35 (task 2 #137) a D36–D38 (task 2b) z #133. Karta
+v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
+`components/ui/`).
+
+- **Karta** (D33): rámeček `--shpd-color-border`, pozadí `--shpd-color-bg`,
+  zaoblení `--shpd-radius-md`, odsazení `--shpd-space-md`; karty stránek
+  v Nastavení (stránka nastavení, O zdroji dat, Nastavení zdroje dat,
+  Zabezpečení účtu) `spacious` = odsazení `--shpd-space-lg`. Žádný stín,
+  žádný vnější okraj — mezery dává rodič nebo `CardGrid`. Nadpis karty je
+  `SectionHeading` (`title`, `headingLevel` 2–4, role a ikona podle místa
+  karty níže; snippet `aside` sedí vpravo v řádku nadpisu — štítek stavu
+  sekce v Přehledu firmy). Tón
+  `warning` / `danger` mění jen barvu rámečku (`--shpd-color-warning` /
+  `--shpd-color-danger`), `info` dává tónované pozadí
+  `--shpd-color-primary-soft` s rámečkem `--shpd-color-primary-soft-2`
+  (AI shrnutí). Kořen je flex sloupec: v roztaženém řádku mřížky zůstává
+  obsah nahoře a patička může dostat `margin-top: auto`. Zbylé atributy
+  (`data-testid`, `role`, `class` se stavovou třídou feedu) jdou na kořen;
+  `as` volí značku (`section` výchozí, `div`, `article`, `li`). Vnitřní
+  rozložení (řádek ikona + tělo karty feedu, stavový proužek) je obsah
+  karty — rodič kořen `Card` přes vlastní třídu nestyluje, co karta
+  potřebuje, je prop.
+- **Nadpis podle místa karty** (D36): karta jako **samostatná část
+  stránky** (Přehled firmy, karty stránek v Nastavení) má nadpis v roli
+  **title** (`titleRole="title"` → `SectionHeading role="title"`: lg,
+  strong, `line-height` jako titulek detailu); karta **uvnitř obsahu**
+  (strany dokladu, karta návrhu z pošty, karty feedu) **heading**
+  (výchozí). Pod nadpisem v roli title je mezera rovná odsazení karty
+  (`--shpd-space-md`, u `spacious` `--shpd-space-lg`; `SectionHeading`
+  prop `spacing`), pod heading jen xs jako v detailu. Mezinadpisy uvnitř
+  karet Nastavení (bloky O zdroji dat, Volitelné v Nastavení zdroje dat)
+  jsou `SectionHeading` v roli heading, ne vlastní třída.
+- **Ikona tématu v nadpisu** (D38): karta jako samostatná část stránky
+  má před nadpisem ikonu tématu — **stejnou jako příslušný prohlížeč /
+  report v menu nebo stránka v Nastavení**, žádné nové ikony. Prop `icon`
+  na `Card` (objekt ikony jako pro `Icon`); kreslí ji `SectionHeading`:
+  `Icon size="md"` (velikost v `em` roste s písmem nadpisu, px
+  nepřepisovat), šedá `--shpd-color-text-secondary`, mezera
+  `--shpd-space-sm`, na střed řádku, bez `label` (dekorace, `aria-hidden`
+  — nadpis čte jen text). Odkud: Přehled firmy z konfigurace sekce
+  (`core.overview.sections[].icon`, `docs/overview.md` §3 — bez ikony se
+  klíč neposílá a karta ikonu nemá, ne fallback `resolveIcon`), stránka
+  nastavení z `definition.icon`, pevné stránky frontendu (O zdroji dat,
+  Nastavení zdroje dat, Zabezpečení účtu) importovanou ikonou v kódu.
+  Mezinadpisy ikonu nemají; karta uvnitř obsahu taky ne.
+- **Mřížka** (D34): `repeat(auto-fill, minmax(min(<šířka>, 100%), 1fr))`,
+  mezera md, `align-items: stretch` — karty v řádku vždy stejně vysoké,
+  obsah nahoře. Šířku sloupce určuje použití (`minWidth`: Přehled firmy
+  20 rem, feed dashboardu 22,5 rem). `min()` uvnitř `minmax` je nutné —
+  bez něj sloupec na úzké šířce přeteče. Roztáhne se jen přímá položka
+  mřížky: kde mezi mřížkou a `Card` musí být obal (komponenta s vlastním
+  kořenem), obal i karta dostanou `height: 100%`. Dva pevné sloupce stran
+  dokladu (`.shpd-docdetail__parties`, `.shpd-exchange__parties`) mřížkou
+  karet nejsou.
+- **Karta, nebo ne** (D35): rámeček + zaoblení md = karta v obsahu;
+  zaoblení lg + stín = plovoucí plocha (`Modal`, přihlášení, `StatusScreen`,
+  panel vzhledu, `Popover`, uživatelské menu) — karta stín nemá. Kartou
+  nejsou ani vložené panely se šedým pozadím (`FormSection`, nabídka
+  položek, souhrny v dialozích), hlášky a pruhy (chyba, varování, zámek
+  dokladu — `Notice` / `PageBanner`, viz Hlášky a pruhy níže) ani
+  volitelné řádky (tlačítko volby v průvodci, řádek seznamu).
+  Hláška selhání analýzy (`FailureCard`) je karta s tónem — rámeček
+  v barvě, bez levého pruhu.
+- **Pravidlo:** nová karta = `Card` (v mřížce `CardGrid`), ne vlastní
+  třída s kopií rámečku. Dnes na nich stojí Přehled firmy, feed dashboardu
+  (karta feedu, AI shrnutí), čtyři karty Nastavení, strany dokladu
+  v detailu i v náhledu importu, karta návrhu z pošty, karta selhání
+  a náhled v průvodci importem ze Spisovny.
+
+### Hlášky a pruhy
+
+Rozhodnutí D40 a D41 (task 3 #137) z #133. Hláška v obsahu je sdílená
+`Notice.svelte`, pruh nad obsahem `PageBanner.svelte` (obě `components/ui/`).
+
+- **Hláška** (D40, `Notice`): tóny `info` / `success` / `warning` /
+  `danger`, barvy jen z rodiny `--shpd-color-alert-*` — pozadí `-bg`, text
+  `-text`, rámeček 1 px `-bar` v barvě tónu (`success` jsou aliasy na
+  existující zelené, `danger` mapuje na `alert-error-*`); zaoblení
+  `--shpd-radius-md`, odsazení `--shpd-space-sm` / `--shpd-space-md`, písmo
+  body. Bez levého pruhu, bez stínu a **bez vnějšího okraje** — mezeru dává
+  rodič (obal se třídou, nebo mezera flex sloupce). Volitelně nadpis
+  `title` (strong, velikost body), ikona `icon` vlevo (dekorace) a seznam
+  `items` — položka text, nebo `{label, text}` („popisek: text“, popisek
+  strong: validace formuláře, zámek dokladu); jiný obsah dává `children`.
+  Role `alert` jen u `danger` (čte se hned — jen chyba), jinak `status`,
+  volající ji smí přepsat; `data-testid` a `aria-*` jdou na kořen, `class`
+  jen pro stavové třídy, nikdy pro mezery.
+- **Pruh nad obsahem** (D41, `PageBanner`): jiný prvek než hláška — celá
+  šířka, odsazení xs / lg, pozadí a text `alert-<tón>-*`, linka 2 px dole
+  `alert-<tón>-bar`, body strong, na střed; bez zaoblení a bez okraje.
+  Tón `warning` výchozí, `info` / `danger` pro budoucí pruhy. Dnes: jen ke
+  čtení, kopie reálných dat, cron vypnutý, pojistka pošty — texty a logika
+  zůstávají v jejich komponentách, vzhled má jedno místo.
+- **Hláška, pruh, karta, nebo toast**: hláška patří k místu, kde vznikla
+  (formulář, dialog, tab detailu), a trvá, dokud trvá důvod; pruh je stav
+  celého zdroje dat nad obsahem; karta s tónem (`FailureCard`, Karty výše)
+  je obsah s vlastním nadpisem a akcemi; toast (`GlobalToast`) je pomíjivé
+  potvrzení akce. Rámeček 1 px v barvě tónu má jen hláška — karta má
+  rámeček `--shpd-color-border`, nebo tón jen v barvě rámečku.
+- **Pravidlo:** nová hláška = `Notice`, nový pruh = `PageBanner`, ne
+  vlastní třída s kopií pozadí a rámečku. Dnes na `Notice` stojí chyba
+  a potvrzení přihlášení, chyby OP přihlášení a nastavení hesla, relace
+  účtu, bannery formuláře (chyba načtení, validace, varování), chyba
+  sub-tabulky, chyby reportů, hlášení náhledu tisku, zámek dokladu,
+  pojistka pošty v dialogu Odeslat a blok `notice` v detailu (§12).
+  Zbylé vlastní hlášky (zpráva stránky Nastavení a změny hesla, chyby
+  nahrání pošty a nového zdroje dat, varování průvodce zdroje dat, zprávy
+  Přehledu firmy, nálezy náhledu importu) jsou kandidáti na převod.
 
 ### Modální dialogy
 
@@ -661,22 +772,27 @@ což je vlastní dokument, kde px nevadí.
 ## 11. Typografie
 
 Pravidla D6, D15 a D16 z #133, zavedená pilotem #135 (detail dokladu).
-**Tři velikosti, dvě tloušťky, žádné verzálky.** Role jsou tokeny ve
+**Čtyři velikosti, dvě tloušťky, žádné verzálky.** Role jsou tokeny ve
 `variables.css` a odkazují na škálu `--shpd-font-size-*`; žádná nová
 velikost nevzniká. Základní text je **14 px** (`sm`): D6 původně mířilo na
 16 px, při ověření pilotu se ukázalo přestřelené a 14 px se drží všude
-dál — proto se role mění na jednom místě.
+dál — proto se role mění na jednom místě. Nadpis (heading) je od #137
+task 2b **16 px** (`base`): do té doby měl velikost body a lišil se jen
+tloušťkou, při ověření v prohlížeči byl název karty feedu a mezinadpis
+v kartě Nastavení moc malý, a rozdělení proběhlo tím jedním místem.
 
 | Role | Token | Velikost | Tloušťka | Barva | Kde |
 |---|---|---|---|---|---|
-| title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem |
-| heading | `--shpd-font-size-heading` | `sm` (0.875rem) | strong | text | nadpis sekce, název entity v kartě, hlavička sloupce tabulky |
-| body | `--shpd-font-size-body` | `sm` (0.875rem) | normal | text | popisky i hodnoty, řádky tabulek, taby |
+| title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem, nadpis karty jako samostatné části stránky (Přehled firmy, karty Nastavení — D36), hlavní částka karty (Přehled firmy, feed) |
+| heading | `--shpd-font-size-heading` | `base` (1rem) | strong | text | nadpis sekce (detail i feed dashboardu), nadpis karty uvnitř obsahu, název entity v kartě, název karty feedu, mezinadpis v kartě Nastavení |
+| body | `--shpd-font-size-body` | `sm` (0.875rem) | normal (hlavička sloupce strong) | text | popisky i hodnoty, řádky tabulek i hlavička sloupce (ve velikosti řádků, silnější), taby |
 | meta | `--shpd-font-size-meta` | `xs` (0.75rem) | normal | text; šedá (`--shpd-color-text-secondary`) jen u kontaktů a doplňků | podtitul, štítky, kontakty, přepočet v domácí měně |
 
 Tloušťky: `--shpd-font-weight-normal` (400) a `--shpd-font-weight-strong`
-(600). `heading` a `body` mají dnes stejnou velikost a liší se tloušťkou —
-jsou to dvě role, aby šly v budoucnu rozdělit jedním místem.
+(600). `heading` a `body` byly původně stejně velké a lišily se jen
+tloušťkou — dvě role právě proto, aby šly rozdělit jedním místem, což se
+v #137 task 2b stalo. Hlavička sloupce tabulky je body + strong, ne
+heading: má být ve velikosti řádků.
 
 ### Pravidla
 
@@ -696,8 +812,14 @@ jsou to dvě role, aby šly v budoucnu rozdělit jedním místem.
 - **Nové komponenty používají role**, ne literály ani škálu, tam kde role
   sedí; škála zůstává prvkům mimo role (ikony podle textu v `em`, lišta
   akcí a tlačítka). Mimo detail (seznamy, formuláře, dashboard) se role
-  zavádějí postupně. `check-css-units.py` hlídá jen px — role nehlídá
-  nic než tahle kapitola.
+  zavádějí postupně — Přehled firmy je má (#137 task 2: popisek body,
+  částka title jako hlavní číslo karty, doplňky a štítky meta, splatnost
+  jen barvou; task 2b: nadpis karty title s ikonou) a dashboard taky
+  (#137 task 2b, D37: název karty feedu heading, částka title strong,
+  hodnota rozbaleného detailu body normal, nadpis sekce feedu heading
+  přes `SectionHeading` — verzálky a šedá nadpisu sekce zanikly, §11
+  verzálky jen ve větších nadpisech). `check-css-units.py` hlídá jen px
+  — role nehlídá nic než tahle kapitola.
 
 ---
 
@@ -732,23 +854,77 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
      v hlavičce neukazuje (`detailBadge: false`, D20) — K řešení, V práci,
      Hotovo, Odeslaná, Podáno zůstávají. Další štítky (Chyba účtování,
      Po termínu) až za ním.
+   - **Přehled neopakuje hlavičku** (#140 D26): co je v hlavičce — titulek,
+     údaje podtitulku, štítky — se v prvním tabu znovu nevypisuje; skupina
+     vlastností, která tím zůstane prázdná, se nezobrazí (`propertiesTab()`
+     ji filtruje, ručně skládané skupiny si hlídá viewer). Zkrácený název
+     (účty, saldokonta, karty a typy majetku) se ukáže jen, když se liší od
+     názvu. Náhradní titulek (pohyb saldokonta bez partnera má titulkem
+     text, uživatel bez jména login) chybí v Přehledu jen v tom případě —
+     viewer rozhoduje z téhož záznamu jednou privátní metodou
+     (`LedgerViewer::titleOf()`, `BankTransactionsViewer::partyOf()`,
+     `BankStatementsViewer::reconciliationBadge()`). Karta strany dokladu
+     s názvem partnera je součást návrhu (D16), ne opakování. Shoda hodnot,
+     která opakováním není (druh položky pojmenovaný jako typ, součty
+     případu s jediným pohybem, pořadí bankovního účtu rovné kódu,
+     systémový kód jednotky, splatnost zápisu rovná datu), zůstává. Hlídá to
+     `ViewerDetailContractTest::testOverviewDoesNotRepeatHeader` nad pěti
+     nejnovějšími záznamy každého vieweru: chyba je jen soustavná shoda,
+     výjimky `OVERVIEW_REPEAT_ALLOWED` s komentářem proč.
 3. **Taby** — body, aktivní strong s modrou linkou.
 4. **Obsah** — sekce oddělené `--shpd-space-lg`, každá s nadpisem
-   (heading, `margin-bottom: var(--shpd-space-xs)`).
+   (`SectionHeading`: heading, bez linky, `margin-bottom:
+   var(--shpd-space-xs)`; mezeru mezi sekcemi dává rodič, D28).
 
 ### Stavební prvky obsahu
 
-- **Karta** (strany dokladu): rámeček `--shpd-color-border`, zaoblení
-  `--shpd-radius-md`, odsazení `0.75rem`, položky pod sebou s mezerou
-  `--shpd-space-xs`; nadpis karty heading, název entity heading (odkaz na
-  záznam modře), identifikátory, adresa a účet body barvou textu, kontakty
-  meta šedě s malou mezerou nad (D16).
-- **Popisek–hodnota**: mřížka `grid-template-columns: max-content 1fr`,
-  mezera `--shpd-space-xs` svisle / `--shpd-space-md` vodorovně, oba
-  sloupce body barvou textu (D15); prázdná hodnota se nevykreslí, prázdná
-  skupina celá. Skupiny údajů vedle sebe (`1fr 1fr`), každá s nadpisem.
-- **Tabulka**: body; hlavička sloupce heading (stejná velikost jako řádky,
-  silnější, barvou textu, bez verzálek), čára pod ní
+- **Nadpis sekce** (D28, `components/ui/SectionHeading.svelte`): jeden
+  nadpis pro skupinu vlastností, blok `heading`, kartu strany, přílohy
+  i Odeslanou poštu — heading, barvou textu, bez linky, `margin: 0 0
+  var(--shpd-space-xs)` a žádné horní odsazení: sekce od sebe odděluje
+  mezera `--shpd-space-lg`, kterou dává rodič (obal bloků `composite`,
+  mřížka skupin), ne nadpis. `level` 2–4 (karty Přehledu firmy h2 pod
+  h1 stránky, skupiny vlastností v obecném detailu h4 jako dřív);
+  volitelný snippet `aside` sedí
+  vpravo ve stejném řádku (přepínač náhledů příloh). Blok `heading`
+  v `composite` je nadpis bloku pod ním — ten mezeru nad sebou nemá.
+  Propy `role="title"`, `icon` a `spacing` jsou pro nadpis karty jako
+  samostatné části stránky (§8 Karty, D36, D38) — v detailu záznamu je
+  nadpis sekce vždy heading bez ikony.
+- **Karta** (strany dokladu): sdílená `Card` (§8 Karty, D33) s nadpisem
+  `title` — rámeček `--shpd-color-border`, zaoblení `--shpd-radius-md`,
+  odsazení `--shpd-space-md`; položky pod sebou s mezerou `--shpd-space-xs`,
+  název entity heading (odkaz na záznam modře), identifikátory, adresa
+  a účet body barvou textu, kontakty meta šedě s malou mezerou nad (D16).
+- **Popisek–hodnota** (D29, `PropertyList.svelte` + `PropertyGroups.svelte`
+  v `components/ui/`): jedna sdílená komponenta pro obecný detail i detail
+  dokladu. `<dl>` jedné skupiny je mřížka `grid-template-columns:
+  max-content 1fr`, mezera `--shpd-space-xs` svisle / `--shpd-space-md`
+  vodorovně, oba sloupce body barvou textu (D15), hodnota se zalamuje
+  (`overflow-wrap: anywhere` — IBAN, e-mail); prázdná hodnota se nevykreslí
+  (`0` prázdná není), prázdná skupina celá; položka s prázdným popiskem
+  (`label: ''`, text poznámky) má hodnotu přes oba sloupce. Skupiny vedle
+  sebe ve dvou sloupcích (`repeat(2, minmax(0, 1fr))`, mezera
+  `--shpd-space-md` / `--shpd-space-lg`) po řádcích v pořadí od backendu —
+  frontend je nepřehazuje a nepoužívá CSS `columns`; výšku řádku určuje
+  vyšší skupina. Skupina s `wide: true` (poznámka, popis, zpráva — volný
+  text, označuje viewer) jde přes celou šířku jako tabulky a ostatní bloky.
+  Výběr vykreslitelných skupin a položek je čistá funkce `visibleGroups()`
+  v `components/ui/propertyGroups.js`.
+  - **Řazení skupin** (D31): dvojice v řádku patří věcně k sobě a jsou
+    podobně dlouhé. Skupina, která u části záznamů mizí (Odpisy jen
+    u odpisovaného majetku), stojí na konci, nebo její položky patří do
+    stálé skupiny (Zkrácený název je první položka Zařazení karty
+    majetku) — jinak se dvojice u různých záznamů posouvají. Hlídá review,
+    kontrola na to není.
+  - **Sama v řádku** (D32): skupina, která by v řádku zůstala sama
+    (poslední při lichém počtu, nebo skupina před `wide`), jde přes celou
+    šířku. Příznak `full` dopočítá `visibleGroups()` kurzorem sloupce nad
+    viditelnými skupinami (`wide` kurzor nuluje), ne CSS sudá / lichá —
+    komponenta ho jen kreslí.
+- **Tabulka**: body; hlavička sloupce body + strong (stejná velikost jako
+  řádky, silnější, barvou textu, bez verzálek — ne heading, ten je od
+  #137 task 2b větší), čára pod ní
   `--shpd-color-border-strong`, mezi řádky `--shpd-color-border`; buňky
   `padding: 0.375rem var(--shpd-space-xs)`, čísla vpravo
   s `tabular-nums`. Štítek stavu v buňce = meta.
@@ -757,28 +933,62 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   vlevo se nezvýrazňuje.
 - **Přílohy**: na konci Přehledu (D8, #136 D21), sdílená
   `DetailAttachments.svelte` nad `detail.attachments.groups` u každého
-  vieweru: skupiny s nadpisem heading (kód zprávy jako odkaz,
+  vieweru: skupiny s nadpisem `SectionHeading` (kód zprávy jako odkaz,
   datum normální tloušťkou; vlastní přílohy záznamu s nadpisem „Přílohy“);
-  přepínač Miniatury / Velké náhledy v řádku s nadpisem první skupiny
-  vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Výjimka:
-  viewer s `detailAttachments: "tab"` (karta majetku — fotky, smlouvy) má
-  přílohy ve vlastním tabu Přílohy, který bez přílohy chybí.
+  přepínač Miniatury / Velké náhledy ve snippetu `aside` nadpisu první
+  skupiny vpravo, velikost meta. Dlaždice kreslí `AttachmentGrid.svelte`. Spisovna
+  má přílohy dokumentu na konci prvního tabu Obsah toutéž sekcí (#140 D27).
+  Výjimka: viewer s `detailAttachments: "tab"` — dnes jen karta majetku
+  (fotky, smlouvy) — má přílohy ve vlastním tabu Přílohy, který bez přílohy
+  chybí.
 - **Odeslaná pošta**: jen na konci Přehledu, za přílohami (D22) — pod
   ostatními taby se nekreslí.
-- **Obecné typy** (`properties`, `table`, `heading`, Odeslaná pošta) ve
-  `ViewerDetail.svelte` používají tytéž role — každý detail má stejné písmo.
+- **Hláška** (D30, D40): blok `notice` `{tone, title?, text? | items?}`
+  kreslí sdílená `Notice` (§8 Hlášky a pruhy) — stav zaúčtování
+  s hlášeními enginu (danger u chyby, warning u varování).
+- **Štítky v obsahu**: blok `badges` `{items: [{label, style}]}` je řada
+  `Badge` (§5) s mezerou `--shpd-space-sm`, styly jako štítky hlavičky —
+  stav zaúčtování (warning / success / danger).
+- **Prázdný stav**: blok `empty` `{text}` — odstavec body
+  `--shpd-color-text-secondary`; text z katalogu popisků vieweru
+  (`*.viewerDetailLabels` sekce `texts`, `TableViewer::detailText()`),
+  cs i en, ne natvrdo v PHP.
+- **Prostý text**: blok `text` `{text}` — odstavec body, `white-space:
+  pre-wrap` a `overflow-wrap: anywhere` (tělo pošty bez HTML, AI shrnutí
+  Spisovny).
+- **Kód**: blok `code` `{text}` — `<pre>` v `--shpd-font-family-mono`,
+  velikost meta, pozadí `--shpd-color-bg-secondary`, zaoblení md, odsazení
+  sm, dlouhý řádek roluje v bloku (JSON kontextu upozornění).
+- **Backend HTML se vzhledem neposílá** (D30): typ `html` v kontraktu
+  detailu není; všechny typy nesou čistý text a frontend ho vkládá jako
+  text, nikdy `{@html}`. Jediné HTML je `untrusted-html` — tělo e-mailu
+  v sandboxu. Hlídá `DetailContent::TYPES` (unit `DetailContractTest`:
+  žádný PHP zdroj blok `html` neskládá; integrační
+  `ViewerDetailContractTest`: obsah tabů prvního záznamu každého vieweru
+  jen ze známých typů).
+- **Obecný detail i doklad kreslí tytéž komponenty**: `ViewerDetail.svelte`
+  (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`,
+  Odeslaná pošta), `DocumentDetail.svelte` (karty
+  stran, údaje dokladu, Řádky) i `DetailAttachments.svelte` používají
+  `SectionHeading` a `PropertyGroups` — každý detail má stejné písmo
+  i mezery; obecný typ `table` používá tytéž role. **Pravidlo:** nový nadpis
+  sekce, seznam popisek–hodnota, hláška nebo štítek v detailu je sdílená
+  komponenta, ne vlastní třída s kopií CSS.
 
 ### Úzká šířka
 
-Kořen obsahu (`.shpd-docdetail`) je `container-type: inline-size`; pod
-`30rem` (480 px) šířky kontejneru jdou strany i skupiny údajů pod sebe
-přes `@container (max-width: 30rem)` — ne `@media`, protože detail bývá
+Kořen obsahu dokladu (`.shpd-docdetail`) i obal skupin vlastností
+(`PropertyGroups`, `.shpd-property-groups`) jsou `container-type:
+inline-size`; pod `30rem` (480 px) šířky kontejneru jdou strany pod sebe
+a skupiny vlastností do jednoho sloupce přes `@container (max-width:
+30rem)` — ne `@media`, protože detail bývá
 v panelu vedle seznamu, v draweru i v modalu a šířka okna o jeho šířce
 nic neříká (D3). Práh vychází ze skutečných šířek obsahu: panel vedle
 seznamu má šířku okna bez 693 px (sidebar, seznam, odsazení), drawer
 528 px, modal přes 1100 px — dvě karty vedle sebe tak zůstávají všude
 kromě úzkého okna a mobilu. Původních 40 rem stohovalo strany už při okně
-užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám;
+užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám —
+proto je kontejnerem obal mřížky na celou šířku, ne mřížka samotná;
 `container-type` nepatří na prvky, které se mají smrštit na obsah.
 Složené řádky tabulek na úzké šířce řeší #138.
 
@@ -792,9 +1002,17 @@ Složené řádky tabulek na úzké šířce řeší #138.
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
+| `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
+| `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
+| `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
+| `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce |
+| `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |
+| `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text}`), role podle tónu, bez okraje |
+| `frontend/src/components/ui/Badge.svelte` | Štítek hlavičky detailu a bloku `badges` (§5) — obecné i doc-state varianty, pilulka meta |
+| `frontend/src/components/ui/PageBanner.svelte` | Pruh nad obsahem (§8 Hlášky a pruhy, D41) — celá šířka, linka 2 px dole, tóny `warning` / `info` / `danger` |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
-| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, badge; obecné typy obsahu podle rolí (§12) |
-| `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12 (role, karty stran, mřížka údajů, tabulky, součty, container query) |
+| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, štítky (`Badge`); obecné typy obsahu (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`) sdílenými komponentami a podle rolí (§12); HTML jen `untrusted-html` v sandboxu (D30) |
+| `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12 (role, karty stran, údaje přes `PropertyGroups`, tabulky, součty, container query) |
 | `frontend/src/components/form/FormStateBadge.svelte` | Stavový badge ve formuláři |
 
 ---

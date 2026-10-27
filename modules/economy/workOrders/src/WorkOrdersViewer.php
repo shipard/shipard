@@ -627,14 +627,11 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
         $external = $type !== '' && $types->isExternal($type);
         $periodic = $type !== '' && $types->invoicing($type) === WorkOrderTypes::INVOICING_PERIODIC;
 
+        // Název je titulkem, číslo podtitulkem, stav štítkem (#140 D26; V pořádku se neukazuje záměrně, D20).
         $identity = [];
-        $this->addItem($identity, $this->text('label.number', 'Number'), $record['number'] ?? null);
-        $this->addItem($identity, $this->text('label.title', 'Title'), $record['title'] ?? null);
         $this->addItem($identity, $this->text('label.kind', 'Kind'), $record['kind_name'] ?? null);
         $this->addItem($identity, $this->text('label.type', 'Type'), $type !== '' ? $types->label($type) : null);
         $this->addItem($identity, $this->text('label.series', 'Number series'), $record['series_name'] ?? null);
-        $badge = $this->stateBadge((int) ($record['docState'] ?? 10));
-        $this->addItem($identity, $this->text('label.state', 'State'), $badge['text'] ?? null);
 
         $party = [];
         if ($external) {
@@ -666,7 +663,7 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
             ['title' => $this->text('group.customer', 'Customer'), 'items' => $party],
             ['title' => $this->text('group.tree', 'Hierarchy'), 'items' => $tree],
             ['title' => $this->text('group.validity', 'Validity'), 'items' => $validity],
-            ['title' => $this->text('group.note', 'Note'), 'items' => $note],
+            ['title' => $this->text('group.note', 'Note'), 'items' => $note, 'wide' => true],
         ];
     }
 }

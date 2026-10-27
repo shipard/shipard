@@ -166,7 +166,7 @@ class WorkOrdersViewerTest extends TestCase
         $blocks = $detail['tabs'][0]['content']['blocks'];
         $groups = $blocks[0]['groups'];
         $this->assertSame(['Identity', 'Zákazník', 'Hierarchy', 'Validity'], array_column($groups, 'title'));
-        $this->assertSame(['label' => 'Druh', 'value' => 'Projekty'], $groups[0]['items'][2]);
+        $this->assertSame(['label' => 'Druh', 'value' => 'Projekty'], $groups[0]['items'][0]);
         $this->assertSame('CZK', $groups[1]['items'][1]['value']);
         $this->assertSame('S1 — Stavby', $groups[2]['items'][0]['value']);
         $this->assertSame('table', $blocks[2]['type']);
@@ -204,6 +204,14 @@ class WorkOrdersViewerTest extends TestCase
         $this->assertSame(
             [['label' => 'Customer', 'value' => 'Alfa s.r.o.'], ['label' => 'Customer from', 'value' => 'Z260001 — Areál']],
             $groups[1]['items'],
+        );
+        $byTitle = array_column($groups, null, 'title');
+        $this->assertSame([['label' => 'Internal note', 'value' => 'pozn.']], $byTitle['Note']['items']);
+        $this->assertTrue($byTitle['Note']['wide'], 'interní poznámka přes celou šířku (#137 D29)');
+        $this->assertSame(
+            ['Note'],
+            array_keys(array_filter($byTitle, static fn (array $g): bool => array_key_exists('wide', $g))),
+            'ostatní skupiny klíč wide nemají',
         );
         $treeRows = $detail['tabs'][0]['content']['blocks'][2]['rows'];
         $this->assertSame(['Sub-order', '—', 'Krov', 8], [$treeRows[0]['relation'], $treeRows[0]['number'], $treeRows[0]['title'], $treeRows[0]['_action']['target']['recordId']]);

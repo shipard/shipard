@@ -4,6 +4,7 @@
   // nikdy neposílá — aktuální relaci značí flag `current`.
   import { listSessions, deleteSession, revokeOtherSessions } from '../../api/security.js';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
 
@@ -65,7 +66,7 @@
   <h3 class="shpd-sessions-panel__title">{t('account.security.sessions')}</h3>
 
   {#if errorMessage}
-    <div class="shpd-sessions-panel__error">{errorMessage}</div>
+    <div class="shpd-sessions-panel__notice"><Notice tone="danger">{errorMessage}</Notice></div>
   {/if}
 
   {#if loading}
@@ -128,14 +129,8 @@
     color: var(--shpd-color-text);
   }
 
-  .shpd-sessions-panel__error {
+  .shpd-sessions-panel__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-md);
   }
 
   .shpd-sessions-panel__status {

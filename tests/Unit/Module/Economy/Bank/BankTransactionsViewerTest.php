@@ -20,11 +20,12 @@ class BankTransactionsViewerTest extends TestCase
     /** @var list<array{sql: string, params: array}> */
     private array $queries = [];
 
-    private function makeViewer(): BankTransactionsViewer
+    private function makeViewer(?array $detailRow = null): BankTransactionsViewer
     {
         $this->queries = [];
 
         $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn($detailRow);
         $db->method('fetchAll')->willReturnCallback(
             function (string $sql, ...$params): array {
                 $this->queries[] = ['sql' => $sql, 'params' => $params];
@@ -178,5 +179,29 @@ class BankTransactionsViewerTest extends TestCase
             'ORDER BY t.`docStateMain` ASC, t.`date_transaction` DESC, t.`id` DESC',
             $this->queries[0]['sql'],
         );
+    }
+
+    // ── detail: Přehled bez údajů z hlavičky (#140 D26) ────────────────────
+
+    public function testOverviewOmitsHeaderValuesAndShowsCounterpartyOnlyBesidePartner(): void
+    {
+        $detail = $this->makeViewer(detailRow: $this->txRow())->renderDetail(7);
+
+        $this->assertSame('+1 500,00 CZK', $detail['title']);
+        $this->assertSame('ACME, spol. s r.o. · 2. 6. 2026', $detail['subtitle']);
+        $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
+        $this->assertArrayNotHasKey('Částky', $byTitle, 'částku nese titulek; bez cizí měny skupina chybí');
+        $tx = array_column($byTitle['Transakce'], 'value', 'label');
+        $this->assertArrayNotHasKey('Datum transakce', $tx);
+        $this->assertArrayNotHasKey('Stav', $tx);
+        $cp = array_column($byTitle['Protistrana'], 'value', 'label');
+        $this->assertSame('ACME s.r.o.', $cp['Název protistrany']);
+        $this->assertArrayNotHasKey('Partner', $cp);
+
+        // Bez partnera je v podtitulku název protistrany — v Přehledu pak není (#140 §2).
+        $detail = $this->makeViewer(detailRow: $this->txRow(['partner_name' => null]))->renderDetail(7);
+        $this->assertSame('ACME s.r.o. · 2. 6. 2026', $detail['subtitle']);
+        $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
+        $this->assertArrayNotHasKey('Název protistrany', array_column($byTitle['Protistrana'], 'value', 'label'));
     }
 }

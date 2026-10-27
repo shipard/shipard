@@ -111,9 +111,10 @@ class ExchangeRateListsViewerTest extends TestCase
         $this->assertSame(['overview', 'values'], array_column($detail['tabs'], 'id'));
         $this->assertSame('Kurzy', $detail['tabs'][1]['label']);
         $items = array_column($detail['tabs'][0]['content']['groups'][0]['items'], 'value', 'label');
-        $this->assertSame('ČNB — kurzy devizového trhu', $items['Typ']);
-        $this->assertSame('16.10.2026', $items['Platnost od']);
-        $this->assertArrayNotHasKey('Platnost do', $items);
+        // Typ, platnost a číslo lístku nese hlavička — Přehled je neopakuje (#140 D26).
+        $this->assertSame('ČNB — kurzy devizového trhu', $detail['title']);
+        $this->assertSame('16.10.2026 · č. 201', $detail['subtitle']);
+        $this->assertSame(['Domácí měna', 'Zdroj', 'Počet měn'], array_keys($items));
         $this->assertSame('Soubor', $items['Zdroj']);
         $this->assertSame('2', $items['Počet měn']);
         $this->assertSame(

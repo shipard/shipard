@@ -10,6 +10,8 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
   import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
   import FormDialog from '../form/FormDialog.svelte';
@@ -225,11 +227,10 @@
 </script>
 
 <div class="shpd-ds-setup">
-  <div class="shpd-ds-setup__card">
-    <h2 class="shpd-ds-setup__title">
-      <Icon icon={iconListCheck} size="md" />
-      <span>{t('setup.title')}</span>
-    </h2>
+  <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35);
+       nadpis v roli title s ikonou tématu (D36, D38), mezinadpis Volitelné
+       sdílený SectionHeading bez ikony. -->
+  <Card spacious title={t('setup.title')} headingLevel={2} titleRole="title" icon={iconListCheck}>
     <p class="shpd-ds-setup__intro">{t('setup.intro')}</p>
 
     {#if loading}
@@ -303,12 +304,12 @@
       <!-- Nabídky (D18/D19): samostatná sekce mimo checklist — nesplněná
            nabídka není problém a nikdy nic nerozsvítí. -->
       <div class="shpd-ds-setup__optional">
-        <h3 class="shpd-ds-setup__optional-title">{t('setup.optional.title')}</h3>
+        <SectionHeading level={3}>{t('setup.optional.title')}</SectionHeading>
         <p class="shpd-ds-setup__optional-intro">{t('setup.optional.intro')}</p>
         <AccountingItemsOffer />
       </div>
     {/if}
-  </div>
+  </Card>
 </div>
 
 {#snippet parameterControl(key)}
@@ -395,23 +396,6 @@
   .shpd-ds-setup {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-ds-setup__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
-  }
-
-  .shpd-ds-setup__title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-    margin-bottom: var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-ds-setup__intro {
@@ -556,12 +540,6 @@
     margin-top: var(--shpd-space-xl, 2rem);
     padding-top: var(--shpd-space-lg);
     border-top: 1px solid var(--shpd-color-border);
-  }
-
-  .shpd-ds-setup__optional-title {
-    font-size: var(--shpd-font-size-base);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-ds-setup__optional-intro {

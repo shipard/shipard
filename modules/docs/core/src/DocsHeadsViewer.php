@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Accounting\AccountingStatusContent;
 use Shipard\Core\Accounting\JournalDimensionLabels;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Database\SearchCondition;
@@ -411,7 +412,8 @@ class DocsHeadsViewer extends TableViewer
             return null;
         }
 
-        $blocks = [$this->accountingStatusBlock($record, $state)];
+        // Štítek stavu + hláška s hlášeními enginu — sdílené s bankovním pohybem (#137 D30).
+        $blocks = AccountingStatusContent::blocks($this->config, $state, $record['accounting_messages'] ?? null);
         if ($journalRows !== []) {
             $blocks[] = $this->accountingJournalTable($record, $journalRows);
         }
@@ -425,61 +427,6 @@ class DocsHeadsViewer extends TableViewer
             ),
             'content' => ['type' => 'composite', 'blocks' => $blocks],
         ];
-    }
-
-    /**
-     * Badge stavu účtování; při chybě (state 2) navíc banner s výpisem
-     * accounting_messages, při stavu OK jen varování (zprávy úrovně
-     * `warning`, např. selhání contributoru deníku — #79 D3b) v tónu
-     * „k pozornosti“. Scoped styly ViewerDetail.svelte se na {@html}
-     * obsah nevztahují — vzhled jde přes globální CSS proměnné, které
-     * fungují i v dark mode. Všechny hodnoty escapované (frontend vkládá
-     * html bez sanitizace).
-     */
-    private function accountingStatusBlock(array $record, int $state): array
-    {
-        $states = $this->config?->cfgItem('economy.accounting.accountingStates');
-        $stateName = is_array($states) ? (string) ($states[(string) $state]['name'] ?? '') : '';
-        if ($stateName === '') {
-            $stateName = ['Not accounted', 'Accounted', 'Accounting error'][$state] ?? (string) $state;
-        }
-        $tone = match ($state) {
-            1       => 'done',
-            2       => 'error',
-            default => 'concept',
-        };
-
-        $html = '<div style="margin-bottom:var(--shpd-space-md)">'
-            . '<span style="display:inline-block;padding:2px 8px;border-radius:999px;'
-            . 'font-size:0.75rem;font-weight:500;'
-            . 'background:var(--shpd-color-state-' . $tone . '-bg);'
-            . 'color:var(--shpd-color-state-' . $tone . '-text)">'
-            . htmlspecialchars($stateName, ENT_QUOTES) . '</span>';
-
-        $messages = $state >= 1
-            ? $this->decodeAccountingMessages($record['accounting_messages'] ?? null)
-            : [];
-        if ($messages !== []) {
-            $listTone = $state === 2 ? 'error' : 'edit';
-            $rowWord = $this->language === 'cs' ? 'řádek' : 'row';
-            $items = '';
-            foreach ($messages as $msg) {
-                $text = htmlspecialchars((string) ($msg['message'] ?? ''), ENT_QUOTES);
-                $rowId = $msg['rowId'] ?? null;
-                if ($rowId !== null) {
-                    $text .= ' (' . $rowWord . ' ' . (int) $rowId . ')';
-                }
-                $items .= '<li>' . $text . '</li>';
-            }
-            $html .= '<ul role="' . ($state === 2 ? 'alert' : 'status') . '" style="margin:var(--shpd-space-sm) 0 0;'
-                . 'padding:var(--shpd-space-sm) var(--shpd-space-md) var(--shpd-space-sm) 28px;'
-                . 'background:var(--shpd-color-state-' . $listTone . '-bg);'
-                . 'color:var(--shpd-color-state-' . $listTone . '-text);'
-                . 'border-radius:var(--shpd-radius-md);'
-                . 'font-size:var(--shpd-font-size-sm)">' . $items . '</ul>';
-        }
-
-        return ['type' => 'html', 'html' => $html . '</div>'];
     }
 
     /**
@@ -556,16 +503,6 @@ class DocsHeadsViewer extends TableViewer
         $rows[] = $total;
 
         return ['type' => 'table', 'columns' => $columns, 'rows' => $rows];
-    }
-
-    /** @return list<array<string, mixed>> dekódované accounting_messages (JSON) */
-    private function decodeAccountingMessages(mixed $raw): array
-    {
-        if (!is_string($raw) || trim($raw) === '') {
-            return [];
-        }
-        $decoded = json_decode($raw, true);
-        return is_array($decoded) ? array_values(array_filter($decoded, 'is_array')) : [];
     }
 
     /** Částka pro stranu zápisu — nula se nechává prázdná. */

@@ -6,6 +6,7 @@
   import RejectReasonPrompt from '../dashboard/RejectReasonPrompt.svelte';
   import AttachmentGrid from './AttachmentGrid.svelte';
   import FailureCard from './FailureCard.svelte';
+  import Card from '../ui/Card.svelte';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
   import DetailAttachments from './DetailAttachments.svelte';
@@ -13,6 +14,10 @@
   import Icon from '../ui/Icon.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
+  import Badge from '../ui/Badge.svelte';
+  import Notice from '../ui/Notice.svelte';
+  import PropertyGroups from '../ui/PropertyGroups.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
   import { t } from '../../i18n/index.js';
@@ -260,9 +265,7 @@
           <div class="shpd-detail__title-row">
             <h2 class="shpd-detail__title">{detail.title}</h2>
             {#each detail.badges ?? [] as badge}
-              <span class="shpd-detail__badge shpd-detail__badge--{badge.style ?? 'neutral'}">
-                {badge.label}
-              </span>
+              <Badge style={badge.style ?? 'neutral'} label={badge.label} />
             {/each}
           </div>
           {#if detail.subtitle}
@@ -294,19 +297,10 @@
 
     {#snippet renderContent(content)}
       {#if content?.type === 'properties'}
-        {#each content.groups ?? [] as group}
-          <div class="shpd-detail__group">
-            <h4 class="shpd-detail__group-title">{group.title}</h4>
-            <dl class="shpd-detail__props">
-              {#each group.items ?? [] as item}
-                <div class="shpd-detail__prop">
-                  <dt class="shpd-detail__prop-label">{item.label}</dt>
-                  <dd class="shpd-detail__prop-value">{item.value}</dd>
-                </div>
-              {/each}
-            </dl>
-          </div>
-        {/each}
+        <!-- Skupiny vlastností sdílenou komponentou (#137 D29): dva sloupce,
+             skupina `wide` přes celou šířku, prázdné skupiny a hodnoty
+             vynechá komponenta. Nadpis skupiny h4 jako dosud. -->
+        <PropertyGroups groups={content.groups} headingLevel={4} />
 
       {:else if content?.type === 'table'}
         <div class="shpd-detail__table-wrap">
@@ -356,10 +350,33 @@
           </table>
         </div>
 
-      {:else if content?.type === 'html'}
-        <div class="shpd-detail__html">
-          {@html content.html}
+      {:else if content?.type === 'notice'}
+        <!-- Hláška v obsahu (#137 D30, D40): backend posílá tón a text
+             nebo položky, vzhled dává sdílená Notice. -->
+        <Notice tone={content.tone} title={content.title ?? ''} items={content.items}>
+          {#if content.text}{content.text}{/if}
+        </Notice>
+
+      {:else if content?.type === 'badges'}
+        <!-- Řada štítků (stav zaúčtování) — tytéž styly jako štítky hlavičky. -->
+        <div class="shpd-detail__badges">
+          {#each content.items ?? [] as badge}
+            <Badge style={badge.style ?? 'neutral'} label={badge.label} />
+          {/each}
         </div>
+
+      {:else if content?.type === 'empty'}
+        <p class="shpd-detail__empty">{content.text}</p>
+
+      {:else if content?.type === 'text'}
+        <!-- Prostý text (tělo pošty bez HTML, AI shrnutí) — vkládá se jako
+             text, zalomení z obsahu zůstávají. -->
+        <p class="shpd-detail__text">{content.text}</p>
+
+      {:else if content?.type === 'code'}
+        <!-- Strojový výpis (JSON kontextu upozornění) — neproporcionální
+             písmo, dlouhý řádek roluje v bloku. -->
+        <pre class="shpd-detail__code">{content.text}</pre>
 
       {:else if content?.type === 'untrusted-html'}
         <SandboxedHtml html={content.html} title={t('viewer.detail.mailBody')} />
@@ -403,7 +420,8 @@
             {/if}
           {:else}
             {@const doc = content.proposal}
-            <div class="shpd-extracted__card">
+            <!-- Karta návrhu = sdílená Card (#137 D33). -->
+            <Card as="div">
               <div class="shpd-extracted__header">
                 <span class="shpd-extracted__type">{doc.proposed_type_label}</span>
                 {#if doc.ai_failed}
@@ -425,7 +443,9 @@
               </div>
 
               {#if doc.ai_failed && doc.failure}
-                <FailureCard failure={doc.failure} />
+                <div class="shpd-extracted__failure">
+                  <FailureCard failure={doc.failure} />
+                </div>
               {/if}
 
               {#if doc.summary}
@@ -475,7 +495,7 @@
                   />
                 {/if}
               </div>
-            </div>
+            </Card>
           {/if}
         </div>
 
@@ -504,13 +524,16 @@
         <DocumentDetail content={content} onAction={onAction} />
 
       {:else if content?.type === 'heading'}
-        <h3 class="shpd-detail__content-heading">{content.text}</h3>
+        <SectionHeading level={3}>{content.text}</SectionHeading>
 
       {:else if content?.type === 'composite'}
         <!-- Composite = seznam bloků, každý blok je libovolný známý content
-             typ. Rekurzivní render přes tentýž snippet. -->
+             typ. Rekurzivní render přes tentýž snippet. Mezeru mezi bloky
+             dává obal bloku (D28), blok `heading` je nadpis bloku pod ním. -->
         {#each content.blocks ?? [] as block}
-          {@render renderContent(block)}
+          <div class="shpd-detail__block" class:shpd-detail__block--heading={block?.type === 'heading'}>
+            {@render renderContent(block)}
+          </div>
         {/each}
       {/if}
     {/snippet}
@@ -533,7 +556,7 @@
              je posílá u libovolné tabulky. -->
         {#if (detail.sentMessages ?? []).length > 0}
           <section class="shpd-detail__sent" data-testid="detail-sent-messages">
-            <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
+            <SectionHeading level={4}>{t('sentMessage.sectionTitle')}</SectionHeading>
             {#each detail.sentMessages as message (message.id)}
               <div class="shpd-detail__sent-message">
                 <button
@@ -697,41 +720,6 @@
     font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text);
   }
-
-  .shpd-detail__badge {
-    display: inline-block;
-    padding: 0.125rem 0.625rem;
-    border-radius: var(--shpd-radius-full);
-    font-size: var(--shpd-font-size-meta);
-    font-weight: var(--shpd-font-weight-normal);
-    line-height: 1.4;
-    white-space: nowrap;
-  }
-
-  /* Stylové varianty badge.
-     Sjednoceno s doc-state škálou v ViewerRow + accent pro brand. */
-  /* Typové varianty (mimo doc-state) — mají vlastní barevnou logiku.
-   * neutral, primary, accent, success, warning, danger se používají pro
-   * libovolné typové badge (typ záznamu, VIP, atd.). Sdílí paletu
-   * s doc-state tokeny tam, kde to barevně sedí. */
-  .shpd-detail__badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
-  .shpd-detail__badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
-  .shpd-detail__badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
-  .shpd-detail__badge--success   { background: var(--shpd-color-state-done-bg); color: var(--shpd-color-state-done-text); }
-  .shpd-detail__badge--warning   { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
-  .shpd-detail__badge--danger    { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
-
-  /* Doc-state varianty — sdílejí tokeny s ostatními badge
-   * (FormStateBadge, extracted__badge), aby stejný stav vypadal
-   * všude stejně. */
-  .shpd-detail__badge--concept   { background: var(--shpd-color-state-concept-bg);   color: var(--shpd-color-state-concept-text); }
-  .shpd-detail__badge--edit      { background: var(--shpd-color-state-edit-bg);      color: var(--shpd-color-state-edit-text); }
-  .shpd-detail__badge--confirmed { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
-  .shpd-detail__badge--archive   { background: var(--shpd-color-state-archive-bg);   color: var(--shpd-color-state-archive-text); }
-  .shpd-detail__badge--trash     { background: var(--shpd-color-state-trash-bg);     color: var(--shpd-color-state-trash-text); text-decoration: line-through; }
-  .shpd-detail__badge--cancelled { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
-  .shpd-detail__badge--done      { background: var(--shpd-color-state-done-bg);      color: var(--shpd-color-state-done-text); }
-  .shpd-detail__badge--error     { background: var(--shpd-color-state-error-bg);     color: var(--shpd-color-state-error-text); }
 
   /* Actions bar — řádek per-record akcí nad taby (snooze/dismiss/recheck +
      custom akce alertů). Stejná vizuální logika jako header: padding sm/md,
@@ -911,40 +899,16 @@
     font-size: var(--shpd-font-size-meta);
   }
 
-  /* Properties content */
-  .shpd-detail__group {
-    margin-bottom: var(--shpd-space-lg);
+  /* Bloky composite: sekce od sebe odděluje mezera (D28) — dává ji obal
+     bloku, ne nadpis (SectionHeading horní odsazení nemá). Blok `heading` je
+     nadpis bloku pod ním (tabulka podzakázek, Kontrola deníku), proto ten
+     mezeru nad sebou nemá. Skupiny vlastností kreslí PropertyGroups. */
+  .shpd-detail__block + .shpd-detail__block {
+    margin-top: var(--shpd-space-lg);
   }
 
-  .shpd-detail__group-title {
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    padding-bottom: var(--shpd-space-xs);
-    border-bottom: 1px solid var(--shpd-color-border);
-    margin-bottom: var(--shpd-space-sm);
-  }
-
-  .shpd-detail__props {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--shpd-space-xs) var(--shpd-space-md);
-  }
-
-  .shpd-detail__prop {
-    display: contents;
-  }
-
-  /* Popisek i hodnota body, stejnou barvou — liší se umístěním (D15). */
-  .shpd-detail__prop-label {
-    font-size: var(--shpd-font-size-body);
-    color: var(--shpd-color-text);
-    white-space: nowrap;
-  }
-
-  .shpd-detail__prop-value {
-    font-size: var(--shpd-font-size-body);
-    color: var(--shpd-color-text);
+  .shpd-detail__block--heading + .shpd-detail__block {
+    margin-top: 0;
   }
 
   /* Table content */
@@ -958,10 +922,12 @@
     font-size: var(--shpd-font-size-body);
   }
 
+  /* Hlavička sloupce — body + strong ve velikosti řádků (není heading,
+     #137 task 2b). */
   .shpd-detail__th {
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     text-align: left;
-    font-size: var(--shpd-font-size-heading);
+    font-size: var(--shpd-font-size-body);
     font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     border-bottom: 2px solid var(--shpd-color-border);
@@ -1022,23 +988,39 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  /* Heading blok (composite) - vizualne sjednoceno s group-title */
-  .shpd-detail__content-heading {
-    margin: var(--shpd-space-lg) 0 var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    padding-bottom: var(--shpd-space-xs);
-    border-bottom: 1px solid var(--shpd-color-border);
+  /* Obecné typy obsahu (#137 D30): hláška kreslí Notice, štítky Badge;
+     prázdný stav, prostý text a kód jsou odstavce v rolích body / meta.
+     Backend HTML se vzhledem neposílá — jediné HTML je `untrusted-html`
+     v sandboxu. */
+  .shpd-detail__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--shpd-space-sm);
   }
 
-  .shpd-detail__content-heading:first-child {
-    margin-top: 0;
-  }
-
-  /* HTML content */
-  .shpd-detail__html {
+  .shpd-detail__empty {
+    margin: 0;
     font-size: var(--shpd-font-size-body);
+    line-height: 1.5;
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-detail__text {
+    margin: 0;
+    font-size: var(--shpd-font-size-body);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .shpd-detail__code {
+    margin: 0;
+    padding: var(--shpd-space-sm);
+    overflow-x: auto;
+    border-radius: var(--shpd-radius-md);
+    background: var(--shpd-color-bg-secondary);
+    font-family: var(--shpd-font-family-mono);
+    font-size: var(--shpd-font-size-meta);
     line-height: 1.5;
   }
 
@@ -1057,11 +1039,10 @@
     padding: var(--shpd-space-md);
   }
 
-  .shpd-extracted__card {
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    padding: var(--shpd-space-md);
-    background-color: var(--shpd-color-bg);
+  /* Obal karty návrhu kreslí sdílená Card (#137 D33). Karta selhání uvnitř
+     (nevalidní výstup) vnější okraj nemá — mezeru pod ní dává tenhle obal. */
+  .shpd-extracted__failure {
+    margin-bottom: var(--shpd-space-sm);
   }
 
   .shpd-extracted__header {
@@ -1084,7 +1065,7 @@
     font-weight: var(--shpd-font-weight-normal);
   }
 
-  /* Stejné tokeny jako shpd-detail__badge — stejný stav, stejná barva.
+  /* Stejné tokeny jako ui/Badge.svelte — stejný stav, stejná barva.
    * Pozn.: confirmed je tady tichá šedá (sjednoceno se zbytkem systému),
    * dříve byla zelená — oprava při přechodu na tokeny. */
   .shpd-extracted__badge--done      { background: var(--shpd-color-state-done-bg);      color: var(--shpd-color-state-done-text); }

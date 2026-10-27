@@ -81,9 +81,10 @@ sběru zaloguje a přeskočí. Po změně registrace je nutný `ds-upgrade`
 
 ### 2.3 Sběr (`OverviewCollector`)
 
-- Sekce v pořadí `core.overview.sections` (fallback pořadí + anglické
-  názvy v PHP bez compiled configu); bloky uvnitř sekce dle `order`, pak
-  `id`.
+- Sekce v pořadí `core.overview.sections` (fallback pořadí, anglické
+  názvy a ikony v PHP bez compiled configu); bloky uvnitř sekce dle
+  `order`, pak `id`. Sekce nese `icon` z konfigurace (#137 D38) — chybí-li
+  nebo je prázdná, klíč se do odpovědi nedává.
 - **Izolace per blok** (vzor `FeedCollector`): výjimka v `isAvailable()`
   nebo `collect()` → `ErrorLogger::logException`, sekce dostane stav
   `error` a zprávu `blockFailed`, ostatní bloky běží dál.
@@ -124,7 +125,7 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
   "asOf": "2026-10-16",
   "sections": [
     {
-      "id": "money", "title": "Peníze", "state": "ok",
+      "id": "money", "title": "Peníze", "icon": "bank", "state": "ok",
       "items": [
         {
           "id": "bank:3", "label": "Běžný účet", "kind": "bank",
@@ -143,6 +144,12 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
 ```
 
 - `section.state`: `ok` | `unavailable` | `error` (§2.3).
+- `section.icon`: klíč ikony frontendu (`resolveIcon`, #137 D38) — ikona
+  tématu v nadpisu karty, nepovinná; bez ní klíč chybí a karta ikonu
+  nekreslí (žádný fallback). Hodnoty v `overviewSections.jsonc`: Peníze
+  `bank` (Bankovní výpisy), Pohledávky `receivable` a Závazky `payable`
+  (položky saldokonta podle typu v menu), DPH `filing` (Podání DPH),
+  Výsledek `chart` (Výsledovka).
 - `item.state`: `ok` | `stale` (D14) | `missing` (účet bez výpisu).
 - `amount.value` plná přesnost, `currency` velkými písmeny; formátuje
   frontend (`formatMoney`). Položka v jiné měně je samostatná položka,
@@ -239,7 +246,13 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
   `frontend/src/components/overview/CompanyOverview.svelte` v mapě panelů
   `ContentArea.svelte`, API `frontend/src/api/overview.js` (vrací obálku,
   403 přes `translateError`).
-- Sekce jako karty; položka = popisek (odkaz, je-li `link`), částka
+- Sekce jako sdílené karty `Card` v mřížce `CardGrid` (sloupec 20 rem,
+  karty v řádku stejně vysoké, tón rámečku podle stavu sekce, štítek
+  stavu v `aside` nadpisu; nadpis karty v roli title s ikonou tématu
+  ze `section.icon` — `titleRole="title"`, `icon={resolveIcon(…)}` jen
+  je-li klíč přítomný (#137 D36, D38); obsah v rolích §11
+  `design-system.md` — #137 task 2); položka = popisek (odkaz, je-li
+  `link`), částka
   (`formatMoney` z `utils/formatNumber.js` — sdílené s pruhem Připraveno
   na Dashboardu), `asOf`, `dueDate` (zvýrazněný ≤ 7 dní před termínem
   a po něm), stav `stale` / `missing` jako badge, poznámka; zprávy sekce
@@ -288,3 +301,11 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
    (`payableDueDays` je splatnost daně).
 7. Chybějící třída bloku v cfgItemu = `warn` + přeskočit (DS před
    `ds-upgrade`), ne 500.
+8. Ikona sekce DPH (#137 D38, `tasks/design-system-card-titles.md`):
+   zadání odkazuje na živé přiznání k DPH v menu, ale reporty v menu
+   nemají vlastní ikonu — `NavigationController` dává všem obecnou `chart`
+   a sekce DPH by splynula s Výsledkem. Sekce DPH má proto ikonu Podání
+   DPH (`filing`, prohlížeč téhož modulu v menu); Výsledek drží `chart`
+   jako Výsledovka v menu. Pohledávky a Závazky mají ikony položek
+   saldokonta podle typu (`receivable` / `payable`), ne obecnou ikonu
+   Saldokonta.

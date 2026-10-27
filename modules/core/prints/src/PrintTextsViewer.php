@@ -110,7 +110,6 @@ class PrintTextsViewer extends TableViewer
         $slot    = (string) ($record['slot'] ?? '');
 
         $text = [];
-        $this->addItem($text, 'Název', $record['name'] ?? null);
         $this->addItem($text, 'Umístění', $choices->slotName($slot));
         $this->addItem($text, 'Text', $record['text'] ?? null);
         $this->addItem($text, 'Poznámka', $record['note'] ?? null);
@@ -151,7 +150,7 @@ class PrintTextsViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => 'Text', 'items' => $text],
+                    ['title' => 'Text', 'items' => $text, 'wide' => true],
                     ['title' => 'Kde se text použije', 'items' => $target],
                     ['title' => 'Platnost', 'items' => $validity],
                 ],

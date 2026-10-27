@@ -9,6 +9,7 @@
   import { brandingUrl } from '../../api/app.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import Notice from '../ui/Notice.svelte';
 
   const MIN_LENGTH = 12;
 
@@ -79,7 +80,7 @@
     <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
 
     {#if tokenInvalid}
-      <div class="shpd-login__error">{t('setPassword.invalidToken')}</div>
+      <div class="shpd-login__notice"><Notice tone="danger">{t('setPassword.invalidToken')}</Notice></div>
       <button class="shpd-login__button" type="button" onclick={backToLogin}>
         {t('setPassword.backToLogin')}
       </button>
@@ -116,7 +117,7 @@
       <p class="shpd-login__hint">{t('setPassword.policyHint', { min: MIN_LENGTH })}</p>
 
       {#if errorMessage}
-        <div class="shpd-login__error">{errorMessage}</div>
+        <div class="shpd-login__notice"><Notice tone="danger">{errorMessage}</Notice></div>
       {/if}
 
       <button
@@ -213,14 +214,9 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-login__error {
+  /* Hláška přihlášení (#137 D40): sdílená Notice, obal dává jen mezeru. */
+  .shpd-login__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-md);
   }
 
   .shpd-login__button {

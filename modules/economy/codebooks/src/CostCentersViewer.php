@@ -115,8 +115,6 @@ class CostCentersViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Kód', $record['code'] ?? null);
-        $this->addItem($identityItems, 'Název', $record['name'] ?? null);
 
         $settingsItems = [];
         $this->addItem($settingsItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));

@@ -30,6 +30,8 @@
   import FeedCard from './FeedCard.svelte';
   import FeedReadySection from './FeedReadySection.svelte';
   import FeedRowCompact from './FeedRowCompact.svelte';
+  import CardGrid from '../ui/CardGrid.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
 
   let {
     cards = [],
@@ -132,23 +134,27 @@
   <div class="shpd-feed" data-testid="feed">
     {#each sectionInfos as section (section.id)}
       <section class="shpd-feed__section" data-section={section.id}>
-        <h2 class="shpd-feed__section-title">
+        {#snippet sectionAction()}
+          <Button
+            label={t('dashboard.feed.archiveAll', { n: section.archivable })}
+            variant="secondary"
+            size="sm"
+            disabled={busyCardId !== null}
+            testid="feed-archive-all"
+            onclick={archiveAll}
+          />
+        {/snippet}
+        <!-- Nadpis sekce = sdílený SectionHeading v roli heading (#137 D37):
+             tečka a počet jsou obsah nadpisu, Archivovat vše (jen Ostatní)
+             sedí vpravo v aside. -->
+        <SectionHeading
+          level={2}
+          aside={section.id === 'other' && section.archivable > 0 ? sectionAction : undefined}
+        >
           <span class="shpd-feed__section-dot shpd-feed__section-dot--{section.id}" aria-hidden="true"></span>
           {t(`dashboard.feed.section.${section.id}`)}
           <span class="shpd-feed__section-count">({section.count})</span>
-          {#if section.id === 'other' && section.archivable > 0}
-            <span class="shpd-feed__section-action">
-              <Button
-                label={t('dashboard.feed.archiveAll', { n: section.archivable })}
-                variant="secondary"
-                size="sm"
-                disabled={busyCardId !== null}
-                testid="feed-archive-all"
-                onclick={archiveAll}
-              />
-            </span>
-          {/if}
-        </h2>
+        </SectionHeading>
         {#if section.id === 'ready'}
           {#if readyGroups.invoices.length > 0}
             <FeedReadySection
@@ -191,7 +197,7 @@
             {/each}
           </div>
         {:else}
-          <div class="shpd-feed__grid">
+          <CardGrid minWidth="22.5rem">
             {#each section.cards as card (card.id)}
               <FeedCard
                 {card}
@@ -199,7 +205,7 @@
                 onAction={(action) => onCardAction(card, action)}
               />
             {/each}
-          </div>
+          </CardGrid>
         {/if}
         {#if section.more > 0}
           <div class="shpd-feed__more">
@@ -230,37 +236,23 @@
     gap: var(--shpd-space-sm);
   }
 
-  .shpd-feed__section-title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-xs);
-    margin: 0;
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--shpd-color-text-secondary);
-  }
-
+  /* Nadpis sekce kreslí sdílený SectionHeading (role heading, #137 D37);
+     počet v závorce je v nadpisu běžnou tloušťkou. */
   .shpd-feed__section-count {
-    font-weight: 500;
-  }
-
-  /* Akce sekce (Archivovat vše) — vpravo v hlavičce, bez uppercase nadpisu. */
-  .shpd-feed__section-action {
-    margin-left: auto;
-    text-transform: none;
-    letter-spacing: normal;
+    font-weight: var(--shpd-font-weight-normal);
   }
 
   /* Barevná tečka sekce — failed/review/ready zrcadlí barvy stavových
      proužků karet; alerts sdílí warning (sekce mísí závažnosti), newItems
-     primary (odlišná od stavových barev), other tlumená. */
+     primary (odlišná od stavových barev), other tlumená. Sedí v řádku
+     nadpisu před textem. */
   .shpd-feed__section-dot {
+    display: inline-block;
     width: 8px;
     height: 8px;
+    margin-right: var(--shpd-space-xs);
     border-radius: 50%;
-    flex-shrink: 0;
+    vertical-align: middle;
   }
 
   .shpd-feed__section-dot--newItems { background: var(--shpd-color-primary); }
@@ -278,16 +270,10 @@
     gap: var(--shpd-space-md);
   }
 
-  /* Grid (newItems / review / alerts): karty v řádku mají stejnou výšku
-     (stretch), rozbalený detail vedle sbalené karty nechá u sousedky volné
-     místo dole (záměr, žádný masonry, nerozbíjí prioritní pořadí). */
-  .shpd-feed__grid {
-    display: grid;
-    /* min(360px, 100%) — na displeji užším než 360px nesmí karta přetéct. */
-    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
-    gap: var(--shpd-space-md);
-    align-items: stretch;
-  }
+  /* Grid (newItems / review / attention / alerts) kreslí sdílený CardGrid
+     (#137 D34), sloupec 22,5 rem: karty v řádku stejně vysoké, rozbalený
+     detail vedle sbalené karty nechá u sousedky volné místo dole (záměr,
+     žádný masonry, nerozbíjí prioritní pořadí). */
 
   /* Other: sousední kompaktní řádky odděluje vlasová linka. Kreslí ji
      rodič — uvnitř FeedRowCompact by sibling selektor mezi instancemi

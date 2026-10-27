@@ -87,9 +87,12 @@ class AssetTypesViewer extends AssetsViewerBase
     {
         $categories = new AssetCategories($this->config);
 
+        // Název je titulkem; zkrácený název jen když se liší (#140 D26, §2).
         $identity = [];
-        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
-        $this->addItem($identity, $this->text('label.shortName', 'Short name'), $record['short_name'] ?? null);
+        $shortName = trim((string) ($record['short_name'] ?? ''));
+        if ($shortName !== trim((string) ($record['name'] ?? ''))) {
+            $this->addItem($identity, $this->text('label.shortName', 'Short name'), $shortName);
+        }
         $this->addItem($identity, $this->text('label.typeGroup', 'Type group'), $record['group_name'] ?? null);
         $this->addItem($identity, $this->text('label.note', 'Note'), $record['note'] ?? null);
 

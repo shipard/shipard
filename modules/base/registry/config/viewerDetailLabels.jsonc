@@ -1,19 +1,15 @@
 {
     // base.registry.viewerDetailLabels
     //
-    // Labels for RegistryDocumentsViewer — detail tabs (Content / Attachments
-    // / Origin) and the bottom binder-tab bar sentinels (All / Unfiled).
+    // Labels for RegistryDocumentsViewer — detail tabs (Content / Origin;
+    // attachments come from the shared section, #140 D27) and the bottom
+    // binder-tab bar sentinels (All / Unfiled).
 
     "tabs": {
         "content": {
             "name": "Content",
             "name:cs": "Obsah",
             "name:en": "Content"
-        },
-        "attachments": {
-            "name": "Attachments",
-            "name:cs": "Přílohy",
-            "name:en": "Attachments"
         },
         "origin": {
             "name": "Origin",
@@ -29,6 +25,16 @@
             "name": "Unfiled",
             "name:cs": "Nezařazené",
             "name:en": "Unfiled"
+        }
+    },
+
+    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    "texts": {
+        // Tab Obsah bez shrnutí, údajů i poznámky.
+        "noContent": {
+            "name": "The document has no content.",
+            "name:cs": "Dokument nemá žádný obsah.",
+            "name:en": "The document has no content."
         }
     }
 }

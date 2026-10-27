@@ -49,5 +49,33 @@
             "name:cs": "Předmět",
             "name:en": "Subject"
         }
+    },
+
+    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    "texts": {
+        // Tab Obsah bez těla, příloh i technických údajů.
+        "noContent": {
+            "name": "The message has no content.",
+            "name:cs": "Zpráva nemá žádný obsah.",
+            "name:en": "The message has no content."
+        },
+        // Tab Analýzy bez záznamu.
+        "noAnalyses": {
+            "name": "No AI analysis for this message yet.",
+            "name:cs": "Pro tuto zprávu zatím neexistuje žádná AI analýza.",
+            "name:en": "No AI analysis for this message yet."
+        },
+        // Tab Originál u zprávy bez uloženého zdroje.
+        "originalMissing": {
+            "name": "The original .eml is not available (message entered manually).",
+            "name:cs": "Originální .eml není k dispozici (zpráva pořízena ručně).",
+            "name:en": "The original .eml is not available (message entered manually)."
+        },
+        // Tab Originál, když příloha se zdrojem chybí.
+        "originalDeleted": {
+            "name": "The original was deleted or is not available.",
+            "name:cs": "Originál byl smazán nebo není dostupný.",
+            "name:en": "The original was deleted or is not available."
+        }
     }
 }

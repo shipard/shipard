@@ -10,14 +10,16 @@
   //  - `record` (a cokoli jiného) — vlastní přílohy záznamu, nadpis „Přílohy“.
   //
   // Přepínač Miniatury / Velké náhledy sedí v řádku nadpisu první skupiny
-  // a platí pro všechny skupiny — režim drží sdílený attachmentViewStore
-  // (stejná volba jako v detailu došlé pošty). Vzhled převzatý beze změny
-  // z někdejší sekce příloh DocumentDetail; písmo přes typografické role
+  // (snippet `aside` sdíleného SectionHeading, #137 D28) a platí pro všechny
+  // skupiny — režim drží sdílený attachmentViewStore (stejná volba jako
+  // v detailu došlé pošty). Vzhled převzatý beze změny z někdejší sekce
+  // příloh DocumentDetail; písmo přes typografické role
   // (--shpd-font-size-heading / body / meta, #135 D15, D16).
   import { t } from '../../i18n/index.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import AttachmentGrid from './AttachmentGrid.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
 
   let { groups = [], onAction = null } = $props();
 
@@ -47,47 +49,46 @@
   }
 </script>
 
+{#snippet viewToggle()}
+  <!-- Přepínač režimu náhledů — v řádku nadpisu první skupiny vpravo,
+       platí pro všechny skupiny (sdílený store). -->
+  <button
+    type="button"
+    class="shpd-detail-att__toggle"
+    onclick={() => attachmentViewStore.toggle()}
+  >
+    {attachmentViewStore.mode === 'full'
+      ? t('viewer.attachments.viewGrid')
+      : t('viewer.attachments.viewFull')}
+  </button>
+{/snippet}
+
 {#if visibleGroups.length > 0}
   <section class="shpd-detail-att" data-testid="detail-attachments">
     {#each visibleGroups as group, i (groupKey(group, i))}
-      <div class="shpd-detail-att__group">
-        <div class="shpd-detail-att__head">
-          <h3 class="shpd-detail-att__heading">
-            {#if group.kind === 'mail'}
-              <!-- Krátký kód zprávy, plný v tooltipu (D9). -->
-              {#if group.sourceViewerId}
-                <button
-                  type="button"
-                  class="shpd-detail-att__msglink"
-                  title={group.message_id}
-                  onclick={() => openSourceMessage(group)}
-                >
-                  #{group.message_code_short ?? group.message_id}
-                </button>
-              {:else}
-                <span title={group.message_id}>#{group.message_code_short ?? group.message_id}</span>
-              {/if}
-              {#if group.received_at}
-                <span class="shpd-detail-att__msgdate">· {group.received_at}</span>
-              {/if}
+      <div>
+        <SectionHeading level={3} aside={i === 0 ? viewToggle : undefined}>
+          {#if group.kind === 'mail'}
+            <!-- Krátký kód zprávy, plný v tooltipu (D9). -->
+            {#if group.sourceViewerId}
+              <button
+                type="button"
+                class="shpd-detail-att__msglink"
+                title={group.message_id}
+                onclick={() => openSourceMessage(group)}
+              >
+                #{group.message_code_short ?? group.message_id}
+              </button>
             {:else}
-              {t('viewer.attachments.record')}
+              <span title={group.message_id}>#{group.message_code_short ?? group.message_id}</span>
             {/if}
-          </h3>
-          {#if i === 0}
-            <!-- Přepínač režimu náhledů sedí v řádku s nadpisem první
-                 skupiny vpravo; platí pro všechny skupiny (sdílený store). -->
-            <button
-              type="button"
-              class="shpd-detail-att__toggle"
-              onclick={() => attachmentViewStore.toggle()}
-            >
-              {attachmentViewStore.mode === 'full'
-                ? t('viewer.attachments.viewGrid')
-                : t('viewer.attachments.viewFull')}
-            </button>
+            {#if group.received_at}
+              <span class="shpd-detail-att__msgdate">· {group.received_at}</span>
+            {/if}
+          {:else}
+            {t('viewer.attachments.record')}
           {/if}
-        </div>
+        </SectionHeading>
         <AttachmentGrid attachments={group.attachments ?? []} mode={attachmentViewStore.mode} />
       </div>
     {/each}
@@ -104,30 +105,8 @@
     font-size: var(--shpd-font-size-body);
   }
 
-  .shpd-detail-att__group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
-  }
-
-  /* Řádek s nadpisem skupiny; u první skupiny vpravo přepínač náhledů. */
-  .shpd-detail-att__head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--shpd-space-sm);
-  }
-
-  /* Nadpis skupiny — role heading (base.css dává h3 velikost xl, role se
-     proto nastavuje explicitně); vlastní kopie nadpisu sekce DocumentDetail. */
-  .shpd-detail-att__heading {
-    margin: 0;
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-    line-height: 1.4;
-    color: var(--shpd-color-text);
-  }
-
+  /* Nadpis skupiny a řádek s přepínačem kreslí sdílený SectionHeading
+     (#137 D28); mezeru pod nadpisem dává on. */
   .shpd-detail-att__msglink {
     border: none;
     background: none;

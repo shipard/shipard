@@ -93,7 +93,6 @@ class BindersViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $items = [];
-        $this->addItem($items, 'Název', $record['name'] ?? null);
         $this->addItem($items, 'Ikona', $record['icon'] ?? null);
         $this->addItem($items, 'Pořadí', (string) ($record['order_pos'] ?? 0));
         $this->addItem($items, 'Poznámka', $record['notice'] ?? null);

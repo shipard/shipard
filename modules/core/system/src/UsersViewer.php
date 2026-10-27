@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\System;
 
+use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -94,6 +95,21 @@ class UsersViewer extends TableViewer
         );
     }
 
+    /**
+     * Titulek jméno, podtitul login; bez jména je titulkem login (#140 §2) —
+     * vzor tabulky `{full_name} ({login})` by dal „(login)“. Login je tak
+     * v hlavičce vždy a Přehled ho neopakuje.
+     */
+    protected function detailHeader(array $record): DetailHeader
+    {
+        $fullName = trim((string) ($record['full_name'] ?? ''));
+        $login = trim((string) ($record['login'] ?? ''));
+        if ($fullName !== '') {
+            return new DetailHeader($fullName, $login !== '' ? $login : null);
+        }
+        return new DetailHeader($login !== '' ? $login : '#' . (int) ($record['id'] ?? 0));
+    }
+
     protected function detailTabs(array $record): array
     {
         $isCs = ($this->language ?? 'en') === 'cs';
@@ -101,8 +117,6 @@ class UsersViewer extends TableViewer
         $no  = $isCs ? 'Ne' : 'No';
 
         $identity = [
-            ['label' => $isCs ? 'Jméno' : 'Full name', 'value' => (string) $record['full_name']],
-            ['label' => 'Login', 'value' => (string) $record['login']],
             ['label' => 'E-mail', 'value' => (string) ($record['email'] ?? '')],
         ];
         if (array_key_exists('person', $record)) {

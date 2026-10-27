@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 411 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 380.
+Celkem 416 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 385.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -180,6 +180,11 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-detail-pilot.md` | Typografické role v tokenech, detail dokladu podle návrhu, hlavička s partnerem bez štítku typu, sdílená hlavička a obecný obsah detailu, kapitoly Typografie a Detail záznamu (#135, D13–D16) |
 | `design-system-detail-contract.md` | Kontrakt detailu, task A: builder detailu v `TableViewer` (hlavička z deklarace / `displayPattern`, štítek stavu bez „V pořádku“, přílohy obecně), sdílená sekce příloh, Odeslaná pošta jen v Přehledu, kontraktní test, převod dokladů, Majetku a Zakázek (#136, D18–D24) |
 | `design-system-detail-contract-rollout.md` | Kontrakt detailu, task B: převod zbývajících 49 viewerů na builder (deklarace hlavičky, štítky navíc v háčcích, obecné přílohy), `renderDetail()` jako `final`, kontraktní test bez výjimek, úklid z tasku A (#136, D18–D24) |
+| `design-system-overview-no-repeat.md` | Přehled detailu neopakuje hlavičku — odstranění opakovaných údajů ve všech detailech, kontrola v integračním kontraktu, přílohy Spisovny v tabu Obsah (#140, D26, D27) |
+| `design-system-shared-sections.md` | Sdílený nadpis sekce (bez linky) a seznam vlastností — skupiny ve dvou sloupcích, `wide` přes celou šířku; obecný detail i detail dokladu na stejných komponentách (#137 task 1, D28, D29) |
+| `design-system-cards.md` | Sdílená karta a mřížka karet (`Card`, `CardGrid`) — stejná výška karet v řádku, karty v Nastavení se zaoblením md, Přehled firmy na typografických rolích, dashboard, detail, náhled importu (#137 task 2, D33–D35) |
+| `design-system-card-titles.md` | Nadpisy karet podle místa (title / heading) s ikonou tématu — Přehled firmy s ikonami sekcí z konfigurace, karty Nastavení na nadpisu `Card`, karta feedu na typografických rolích (#137 task 2b, D36–D38) |
+| `design-system-content-types.md` | Typy obsahu detailu místo HTML z backendu (`notice`, `badges`, `empty`, `text`, `code`; `html` pryč, hlídá kontrakt), sdílená hláška `Notice`, štítek `Badge`, pruh nad obsahem `PageBanner` (#137 task 3, D30, D40, D41) |
 
 ## Mobilní (responzivní) UI
 

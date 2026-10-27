@@ -202,6 +202,45 @@ class AssetsViewerTest extends TestCase
         $this->assertSame([['label' => 'Koncept', 'style' => 'concept']], $detail['badges']);
     }
 
+    public function testOverviewOmitsHeaderValuesAndShortNameOnlyWhenDifferent(): void
+    {
+        $card = ['id' => 4, 'asset_number' => 'MA0004', 'name' => 'Soustruh', 'short_name' => 'Soustruh', 'category' => 'tangible',
+            'tax_method' => 'straight', 'tax_rule' => 'cz-2', 'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $values = self::overviewValues($this->detailViewer($card, [])->renderDetail(4));
+
+        $this->assertNotContains('Soustruh', $values, 'název je titulkem, shodný zkrácený název se neopakuje (#140 D26, §2)');
+        $this->assertNotContains('MA0004', $values, 'inventární číslo je podtitulkem');
+
+        $detail = $this->detailViewer(['short_name' => 'Soustr.'] + $card, [])->renderDetail(4);
+        $this->assertContains('Soustr.', self::overviewValues($detail), 'zkrácený název jen když se liší');
+        $groups = array_column($detail['tabs'][0]['content']['groups'], null, 'title');
+        $this->assertSame(
+            ['label' => 'Short name', 'value' => 'Soustr.'],
+            $groups['Classification']['items'][0],
+            'zkrácený název je první položka Zařazení, samostatná Identifikace zanikla (#137 D31)',
+        );
+        $this->assertArrayNotHasKey('Identity', $groups);
+    }
+
+    /**
+     * @param array<string, mixed> $detail
+     * @return list<string> hodnoty položek Přehledu (properties i uvnitř composite)
+     */
+    private static function overviewValues(array $detail): array
+    {
+        $content = $detail['tabs'][0]['content'];
+        $blocks = $content['type'] === 'composite' ? $content['blocks'] : [$content];
+        $values = [];
+        foreach ($blocks as $block) {
+            foreach ($block['groups'] ?? [] as $group) {
+                foreach ($group['items'] ?? [] as $item) {
+                    $values[] = (string) $item['value'];
+                }
+            }
+        }
+        return $values;
+    }
+
     public function testAttachmentsTabOnlyWhenCardHasFiles(): void
     {
         $card = ['id' => 2, 'asset_number' => 'MA0002', 'name' => 'Svěrák', 'category' => 'small', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
@@ -365,10 +404,23 @@ class AssetsViewerTest extends TestCase
     public function testCardWithoutAcquisitionKeepsPlainOverviewAndPreset(): void
     {
         $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
-            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single', 'note' => 'Servis u dodavatele'];
         $detail = $this->detailViewer($card, [])->renderDetail(4);
 
         $this->assertSame('properties', $detail['tabs'][0]['content']['type']);
+        $groups = array_column($detail['tabs'][0]['content']['groups'], null, 'title');
+        $this->assertSame(
+            ['Ownership', 'Classification', 'Depreciation', 'Note'],
+            array_keys($groups),
+            'pořadí skupin: podmíněné Odpisy na konci dvojic, Poznámka přes šířku; Pořízení bez dat chybí (#137 D31)',
+        );
+        $this->assertSame([['label' => 'Note', 'value' => 'Servis u dodavatele']], $groups['Note']['items']);
+        $this->assertTrue($groups['Note']['wide'], 'poznámka přes celou šířku (#137 D29)');
+        $this->assertSame(
+            ['Note'],
+            array_keys(array_filter($groups, static fn (array $g): bool => array_key_exists('wide', $g))),
+            'ostatní skupiny klíč wide nemají',
+        );
         $actions = array_column($detail['actions'], null, 'id');
         $this->assertSame(['asset' => 4, 'event_kind' => 'activation', 'scope' => 'both'], $actions['activate']['target']['preset']);
     }

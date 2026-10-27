@@ -169,7 +169,6 @@ class FiscalYearsViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Název', $record['name'] ?? null);
         $this->addItem($identityItems, 'Prefix čísla dokladu', $record['doc_number_prefix'] ?? null);
 
         $periodItems = [];

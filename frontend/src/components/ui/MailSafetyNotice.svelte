@@ -4,10 +4,13 @@
   // GET /_app/info (jen režim, žádné adresy); produkční server s vypnutou
   // pojistkou nic neukazuje.
   //
-  // `banner` = pruh nad obsahem (ContentArea, jako ReadOnlyBanner), jinak
-  // rámeček uvnitř dialogu.
+  // `banner` = pruh nad obsahem (ContentArea, sdílený `PageBanner` jako
+  // ReadOnlyBanner, #137 D41), jinak hláška `Notice` uvnitř dialogu
+  // Odeslat (D40). Text i logika režimu zůstávají tady.
   import { appInfoStore } from '../../stores/appInfo.svelte.js';
   import { t } from '../../i18n/index.js';
+  import Notice from './Notice.svelte';
+  import PageBanner from './PageBanner.svelte';
 
   let { banner = false } = $props();
 
@@ -21,32 +24,9 @@
 </script>
 
 {#if key}
-  <div
-    class="shpd-mail-safety"
-    class:shpd-mail-safety--banner={banner}
-    role="status"
-    data-testid="mail-safety-notice"
-  >
-    {t(key)}
-  </div>
+  {#if banner}
+    <PageBanner data-testid="mail-safety-notice">{t(key)}</PageBanner>
+  {:else}
+    <Notice tone="warning" data-testid="mail-safety-notice">{t(key)}</Notice>
+  {/if}
 {/if}
-
-<style>
-  .shpd-mail-safety {
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    background: var(--shpd-color-alert-warning-bg);
-    color: var(--shpd-color-alert-warning-text);
-    border-left: 3px solid var(--shpd-color-alert-warning-bar);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
-  }
-
-  .shpd-mail-safety--banner {
-    padding: var(--shpd-space-xs) var(--shpd-space-lg);
-    border-left: 0;
-    border-bottom: 2px solid var(--shpd-color-alert-warning-bar);
-    border-radius: 0;
-    text-align: center;
-  }
-</style>

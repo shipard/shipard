@@ -340,11 +340,10 @@ abstract class TableViewer
      * Metoda je `final` (#136 task B): viewer detail neskládá, dodává háčky —
      * `DetailContractTest` hlídá, že žádná deklarace vieweru ji nepřepisuje.
      *
-     * Content types:
-     * - "properties": {type: "properties", groups: [{title, items: [{label, value}]}]}
-     * - "table": {type: "table", columns: [{id, label}], rows: [{col: val}]}
-     * - "html": {type: "html", html: "<div>..."}
-     * - "attachments": {type: "attachments"} — tab Přílohy nad `detail.attachments`
+     * Typy obsahu tabů: `DetailContent::TYPES` (tvar v docs/frontend.md →
+     * Formát detail panelu). HTML se vzhledem backend neposílá (#137 D30) —
+     * hláška je `notice`, štítky `badges`, prázdný stav `empty`; jediné HTML
+     * je `untrusted-html` v sandboxu.
      *
      * @return array<string, mixed>
      */
@@ -702,6 +701,25 @@ abstract class TableViewer
     {
         $defs = ($this->config?->cfgItem($cfgItemId) ?? [])['tabs'] ?? [];
         return $defs[$key]['name'] ?? $englishFallback;
+    }
+
+    /**
+     * Text detailu z katalogu `*.viewerDetailLabels`, sekce `texts`
+     * (`{texts: {<key>: {name: "..."}}}`, #137 D30): prázdný stav tabu,
+     * nadpisy bloků. `{param}` v textu nahradí `$params` (prostý
+     * `str_replace`, žádné ICU — plurály sem nepatří); bez cfgItem
+     * (nezkompilovaná konfigurace) anglický fallback jako `detailTabLabel()`.
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function detailText(string $cfgItemId, string $key, string $englishFallback, array $params = []): string
+    {
+        $defs = ($this->config?->cfgItem($cfgItemId) ?? [])['texts'] ?? [];
+        $text = (string) ($defs[$key]['name'] ?? $englishFallback);
+        foreach ($params as $name => $value) {
+            $text = str_replace('{' . $name . '}', (string) $value, $text);
+        }
+        return $text;
     }
 
     /**

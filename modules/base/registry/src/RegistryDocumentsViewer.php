@@ -27,8 +27,10 @@ use Shipard\Module\Core\Mail\IncomingMessageTitle;
  *   výhradně tento viewer. „Přidat“ ze záložky šanonu předvyplní šanon
  *   (newRecordDefaults).
  *
- * Detail: taby Obsah (vlastnosti + metadata dle druhu) / Přílohy / Původ;
- * tab Přílohy staví viewer sám (`detailAttachments: "content"`, #136 D21).
+ * Detail: taby Obsah (vlastnosti + metadata dle druhu) / Původ; přílohy
+ * dokumentu a Odeslanou poštu dodává builder na konec Obsahu
+ * (`detailAttachments: "overview"`, #140 D27). Druh je štítek, partner
+ * a šanon i konec platnosti podtitul hlavičky — Obsah je neopakuje (D26).
  */
 class RegistryDocumentsViewer extends TableViewer
 {
@@ -250,11 +252,6 @@ class RegistryDocumentsViewer extends TableViewer
                 'content' => $this->buildContentTab($record),
             ],
             [
-                'id'      => 'attachments',
-                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'attachments', 'Attachments'),
-                'content' => $this->buildAttachmentsTab((int) $record['id']),
-            ],
-            [
                 'id'      => 'origin',
                 'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'origin', 'Origin'),
                 'content' => $this->buildOriginTab($record),
@@ -272,21 +269,17 @@ class RegistryDocumentsViewer extends TableViewer
 
         $summary = trim((string) ($record['ai_summary'] ?? ''));
         if ($summary !== '') {
-            $blocks[] = [
-                'type' => 'html',
-                'html' => '<p>' . nl2br(htmlspecialchars($summary, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>',
-            ];
+            // AI shrnutí jako prostý text — zalomení z obsahu zůstávají (#137 D30).
+            $blocks[] = ['type' => 'text', 'text' => $summary];
         }
 
+        // Druh je štítek, partner a šanon podtitul hlavičky (#140 D26).
         $identity = [];
-        $this->addItem($identity, 'Druh', $this->resolveKindLabel((string) ($record['doc_kind'] ?? '')));
-        $this->addItem($identity, 'Šanon', $record['binder_name'] ?? null);
         $this->addItem($identity, 'Číslo / značka', $record['ref_number'] ?? null);
-        $this->addItem($identity, 'Partner', $record['partner_name'] ?? null);
 
+        // Konec platnosti nese podtitul hlavičky („do <datum>“, #140 D26).
         $validity = [];
         $this->addItem($validity, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
-        $this->addItem($validity, 'Platnost do / lhůta', $this->formatDate($record['valid_to'] ?? null));
 
         $groups = [];
         if ($identity !== []) {
@@ -303,7 +296,7 @@ class RegistryDocumentsViewer extends TableViewer
 
         $notice = trim((string) ($record['notice'] ?? ''));
         if ($notice !== '') {
-            $groups[] = ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => $notice]]];
+            $groups[] = ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => $notice]], 'wide' => true];
         }
 
         if ($groups !== []) {
@@ -311,7 +304,10 @@ class RegistryDocumentsViewer extends TableViewer
         }
 
         if ($blocks === []) {
-            return ['type' => 'html', 'html' => '<p class="muted">Dokument nemá žádný obsah.</p>'];
+            return [
+                'type' => 'empty',
+                'text' => $this->detailText(self::LABELS_CFG_ITEM, 'noContent', 'The document has no content.'),
+            ];
         }
         if (count($blocks) === 1) {
             return $blocks[0];
@@ -355,35 +351,6 @@ class RegistryDocumentsViewer extends TableViewer
             }
         }
         return $items;
-    }
-
-    private function buildAttachmentsTab(int $recordId): array
-    {
-        $tableId = 428;
-        $files = $this->db->fetchAll(
-            'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type`'
-            . ' FROM `core_attachments_files`'
-            . ' WHERE `table_id` = %i AND `record_id` = %i AND `is_deleted` = 0'
-            . ' ORDER BY `att_order` ASC, `name` ASC',
-            $tableId,
-            $recordId,
-        );
-
-        if ($files === []) {
-            return ['type' => 'html', 'html' => '<p class="muted">Dokument nemá žádné přílohy.</p>'];
-        }
-
-        $attachments = [];
-        foreach ($files as $f) {
-            $attachments[] = [
-                'id'        => (int) $f['id'],
-                'name'      => (string) ($f['name'] ?? $f['file_name']),
-                'mime_type' => (string) ($f['mime_type'] ?? ''),
-                'file_size' => (int) ($f['file_size'] ?? 0),
-            ];
-        }
-
-        return ['type' => 'attachment-grid', 'attachments' => $attachments];
     }
 
     private function buildOriginTab(array $record): array

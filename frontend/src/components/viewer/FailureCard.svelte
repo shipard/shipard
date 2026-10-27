@@ -21,6 +21,7 @@
   //             reanalysisRecommended?, analyzedAt?, promptVersion?, finishedAt?}
   //   variant  'error' | 'warning' | 'info' (default 'error')
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import { iconWarning, iconInfo } from '../../icons.js';
   import { t } from '../../i18n/index.js';
 
@@ -29,19 +30,25 @@
   const VARIANTS = ['error', 'warning', 'info'];
   const safeVariant = $derived(VARIANTS.includes(variant) ? variant : 'error');
 
+  // Tón sdílené karty (#137 D33): tón = barva rámečku, levý pruh zanikl.
+  const TONE = { error: 'danger', warning: 'warning', info: 'info' };
+
   const hasTechnical = $derived(
     Boolean(failure?.technical || failure?.analyzedAt || failure?.promptVersion || failure?.finishedAt),
   );
 </script>
 
 {#if failure}
-  <div
-    class="shpd-failure-card shpd-failure-card--{safeVariant}"
+  <!-- Sdílená Card s tónem podle varianty; vnější okraj karta nemá, mezeru
+       dává rodič (.shpd-extracted má gap, v kartě návrhu obal __failure). -->
+  <Card
+    as="div"
+    tone={TONE[safeVariant]}
     data-kind={failure.kind}
     data-variant={safeVariant}
     role="status"
   >
-    <div class="shpd-failure-card__header">
+    <div class="shpd-failure-card__header shpd-failure-card__header--{safeVariant}">
       <Icon icon={safeVariant === 'info' ? iconInfo : iconWarning} size="sm" class="shpd-failure-card__icon" />
       <span class="shpd-failure-card__title">{failure.title}</span>
     </div>
@@ -82,48 +89,34 @@
         </dl>
       </details>
     {/if}
-  </div>
+  </Card>
 {/if}
 
 <style>
-  /* Barvy pres CSS promenne stavu per varianta: error = stejne tokeny jako
-   * shpd-extracted__badge--error (stejny stav, stejna barva); warning =
-   * varovna barva + jemny amber ram (concept tokeny, warning-soft je na
-   * svetlem pozadi neviditelny); info = neutralni confirmed tokeny
-   * (samostatny info token neni). Telo karty zustava v beznem textu. */
-  .shpd-failure-card {
-    --shpd-failure-accent: var(--shpd-color-state-error-text);
-    --shpd-failure-border: var(--shpd-color-state-error-bg);
-
-    border: 1px solid var(--shpd-failure-border);
-    border-left: 4px solid var(--shpd-failure-accent);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-bg);
-    padding: var(--shpd-space-md);
-    margin-bottom: var(--shpd-space-md);
-    text-align: left;
-  }
-
-  .shpd-failure-card--warning {
-    --shpd-failure-accent: var(--shpd-color-warning);
-    --shpd-failure-border: var(--shpd-color-state-concept-bg);
-  }
-
-  .shpd-failure-card--info {
-    --shpd-failure-accent: var(--shpd-color-state-confirmed-text);
-    --shpd-failure-border: var(--shpd-color-state-confirmed-bg);
-  }
-
+  /* Rámeček, zaoblení, pozadí a odsazení dává sdílená Card; tón karty
+   * (danger / warning / info) je barva rámečku, u info tónované pozadí
+   * (#137 D33). Barva hlavičky per varianta: error = tokeny stavu error
+   * (stejný stav jako shpd-extracted__badge--error), warning = varovná
+   * barva, info = neutrální confirmed tokeny (samostatný info token není).
+   * Tělo karty zůstává v běžném textu. */
   .shpd-failure-card__header {
     display: flex;
     align-items: center;
     gap: var(--shpd-space-sm);
     margin-bottom: var(--shpd-space-sm);
-    color: var(--shpd-failure-accent);
+    color: var(--shpd-color-state-error-text);
+  }
+
+  .shpd-failure-card__header--warning {
+    color: var(--shpd-color-warning);
+  }
+
+  .shpd-failure-card__header--info {
+    color: var(--shpd-color-state-confirmed-text);
   }
 
   .shpd-failure-card__title {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   .shpd-failure-card__text {

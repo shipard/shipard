@@ -94,6 +94,13 @@
   --shpd-color-alert-error-bg:       #fee2e2;
   --shpd-color-alert-error-text:     #991b1b;
 
+  /* Hláška `Notice` (#137 D40) má i tón success — aliasy na existující
+     zelené, žádná nová barva. Vyhodnocují se na :root, kde tmavý vzhled
+     (`data-theme="dark"` na <html>) cílové tokeny přebarví. */
+  --shpd-color-alert-success-bar:    var(--shpd-color-success);
+  --shpd-color-alert-success-bg:     var(--shpd-color-state-done-bg);
+  --shpd-color-alert-success-text:   var(--shpd-color-state-done-text);
+
   /* Plochy.
    *   bg            = obsah (hlavička s tlačítky, seznam, detail panel)
    *   bg-secondary  = "podloží" pod a kolem prohlížeče
@@ -178,21 +185,24 @@
 
   /* Typography */
   --shpd-font-family: Inter, system-ui, sans-serif;
+  --shpd-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; /* blok `code` v detailu (#137 D30) */
   --shpd-font-size-xs: 0.75rem;
   --shpd-font-size-sm: 0.875rem;
   --shpd-font-size-base: 1rem;
   --shpd-font-size-lg: 1.125rem;
   --shpd-font-size-xl: 1.25rem;
 
-  /* Typografické role (#135, docs/design-system.md → Typografie). Tři
+  /* Typografické role (#135, docs/design-system.md → Typografie). Čtyři
      velikosti, dvě tloušťky, žádné verzálky: komponenty používají role,
      ne škálu, tam kde role sedí. Základní text je 14 px (D6 upřesněno při
-     ověření pilotu — 16 px bylo přestřelené). heading a body mají stejnou
-     velikost a liší se tloušťkou — jsou to dvě role, aby šly rozdělit
-     jedním místem. */
-  --shpd-font-size-title:   var(--shpd-font-size-lg);  /* 18 px — titulek detailu, Celkem */
-  --shpd-font-size-heading: var(--shpd-font-size-sm);  /* 14 px — nadpis sekce, název entity, hlavička sloupce */
-  --shpd-font-size-body:    var(--shpd-font-size-sm);  /* 14 px — popisky i hodnoty, řádky tabulek */
+     ověření pilotu — 16 px bylo přestřelené). heading měl stejnou velikost
+     jako body a lišil se jen tloušťkou; při ověření #137 task 2b byl
+     nadpis v kartě moc malý, proto je heading 16 px — rozdělení na tomto
+     jednom místě. Hlavička sloupce tabulky není heading: zůstává body +
+     strong, ve velikosti řádků. */
+  --shpd-font-size-title:   var(--shpd-font-size-lg);   /* 18 px — titulek detailu, Celkem, nadpis karty jako části stránky */
+  --shpd-font-size-heading: var(--shpd-font-size-base); /* 16 px — nadpis sekce, název entity, název karty feedu */
+  --shpd-font-size-body:    var(--shpd-font-size-sm);   /* 14 px — popisky i hodnoty, řádky tabulek i jejich hlavička */
   --shpd-font-size-meta:    var(--shpd-font-size-xs);  /* 12 px — doplňky, podtitul, štítek */
   --shpd-font-weight-normal: 400;
   --shpd-font-weight-strong: 600;

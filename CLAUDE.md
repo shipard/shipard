@@ -362,9 +362,17 @@ smí názvy nést — tam jsou potřeba k práci.
   hlídá u každé deklarace; háček `detailHeader()` bez ikony dostane ikonu
   z deklarace (vlastní jen Osoby: firma / osoba), podtitul shodný
   s titulkem builder vynechá. Přílohy a štítek stavu si žádný viewer
-  nestaví sám (`content` = přílohy kreslí viewer v obsahu: Došlá
-  a Odeslaná pošta, Spisovna). Viz `docs/frontend.md` → Formát detail
-  panelu.
+  nestaví sám (`content` = přílohy kreslí viewer v obsahu: jen Došlá
+  a Odeslaná pošta; Spisovna má přílohy na konci tabu Obsah, #140 D27).
+  **Přehled neopakuje hlavičku** (#140 D26): titulek, části podtitulku
+  ani štítky se v prvním tabu nevypisují, prázdná skupina mizí
+  (`propertiesTab()`); náhradní titulek (pohyb saldokonta bez partnera →
+  text) a zkrácený název (jen když se liší) jsou podmíněné položky, volbu
+  sdílí hlavička i Přehled jednou privátní metodou (`LedgerViewer::titleOf`).
+  Hlídá `ViewerDetailContractTest::testOverviewDoesNotRepeatHeader` nad
+  pěti nejnovějšími záznamy každého vieweru; výjimky
+  `OVERVIEW_REPEAT_ALLOWED` jen pro jiný údaj se stejnou hodnotou. Viz
+  `docs/frontend.md` → Formát detail panelu, `docs/design-system.md` §12.
 
 ### Frontend — Navigace (sidebar)
 

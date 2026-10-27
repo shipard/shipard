@@ -15,5 +15,20 @@
             "name:cs": "Kontext",
             "name:en": "Context"
         }
+    },
+
+    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    "texts": {
+        // Nadpisy bloků tabu Kontext (výpis JSON).
+        "actions": {
+            "name": "Actions",
+            "name:cs": "Akce",
+            "name:en": "Actions"
+        },
+        "context": {
+            "name": "Context",
+            "name:cs": "Kontext",
+            "name:en": "Context"
+        }
     }
 }

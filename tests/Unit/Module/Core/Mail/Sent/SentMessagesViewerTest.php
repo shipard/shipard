@@ -147,10 +147,11 @@ class SentMessagesViewerTest extends TestCase
             $detail['tabs'][0]['content']['blocks'],
             static fn (array $block): bool => $block['type'] === 'properties',
         ))[0];
-        $this->assertContains(
-            ['label' => 'Pojistka', 'value' => 'Zachyceno — neodesláno'],
-            $properties['groups'][1]['items'],
-        );
+        // Pojistka i stav odeslání jsou štítky hlavičky — Přehled je neopakuje (#140 D26).
+        $labels = array_column($properties['groups'][1]['items'], 'label');
+        $this->assertNotContains('Pojistka', $labels);
+        $this->assertNotContains('Stav odeslání', $labels);
+        $this->assertContains('Odesláno', $labels);
     }
 
     public function testSafetyLabelFallsBackToEnglishWithoutConfig(): void
@@ -192,9 +193,9 @@ class SentMessagesViewerTest extends TestCase
         );
 
         $types = array_column($content['blocks'], 'type');
-        $this->assertSame(['html', 'heading', 'attachment-grid', 'properties'], $types);
-        // Tělo je prostý text — do HTML jde escapované.
-        $this->assertStringContainsString('&lt;b&gt;v příloze&lt;/b&gt;', $content['blocks'][0]['html']);
+        $this->assertSame(['text', 'heading', 'attachment-grid', 'properties'], $types);
+        // Tělo je prostý text — blok `text` ho nese beze změny, frontend ho vkládá jako text (#137 D30).
+        $this->assertStringContainsString('<b>v příloze</b>', $content['blocks'][0]['text']);
         $this->assertSame('faktura-2260011.pdf', $content['blocks'][2]['attachments'][0]['name']);
 
         $this->assertSame([

@@ -112,7 +112,7 @@ class AIProfilesViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT p.`profile_id`, p.`name`, p.`backend`, b.`name` AS `backend_name`,'
+            'SELECT p.`id`, p.`docState`, p.`profile_id`, p.`name`, p.`backend`, b.`name` AS `backend_name`,'
             . ' p.`supported_doc_types`, p.`language`, p.`prompt_version`,'
             . ' p.`model`, p.`model_like`, p.`thinking`, p.`effort`,'
             . ' p.`max_tokens`, p.`is_default`, p.`is_active`, p.`created`, p.`modified`'
@@ -127,7 +127,6 @@ class AIProfilesViewer extends TableViewer
     {
         $identity = [];
         $this->addItem($identity, 'Kód profilu', $record['profile_id'] ?? null);
-        $this->addItem($identity, 'Název', $record['name'] ?? null);
 
         $scope = [];
         $this->addItem($scope, 'Podporované typy dokumentů', $record['supported_doc_types'] ?? null);

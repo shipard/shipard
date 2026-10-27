@@ -15,9 +15,9 @@ test('attachment-grid uvnitř obsahu není tab Přílohy záznamu', () => {
 
 test('composite hledá rekurzivně, i bez blocks', () => {
   assert.equal(contentHasAttachments({ type: 'composite' }), false);
-  assert.equal(contentHasAttachments({ type: 'composite', blocks: [{ type: 'html', html: '' }] }), false);
+  assert.equal(contentHasAttachments({ type: 'composite', blocks: [{ type: 'text', text: '' }] }), false);
   assert.equal(
-    contentHasAttachments({ type: 'composite', blocks: [{ type: 'html', html: '' }, { type: 'composite', blocks: [{ type: 'attachments' }] }] }),
+    contentHasAttachments({ type: 'composite', blocks: [{ type: 'text', text: '' }, { type: 'composite', blocks: [{ type: 'attachments' }] }] }),
     true,
   );
 });

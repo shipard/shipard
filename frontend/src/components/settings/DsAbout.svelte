@@ -7,7 +7,8 @@
   import { onMount } from 'svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
-  import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
   import { iconInfo } from '../../icons.js';
   import { fetchDsAbout } from '../../api/dsAbout.js';
   import { formatFileSize } from '../../api/attachments.js';
@@ -90,11 +91,10 @@
 </script>
 
 <div class="shpd-ds-about">
-  <div class="shpd-ds-about__card">
-    <h2 class="shpd-ds-about__title">
-      <Icon icon={iconInfo} size="md" />
-      <span>{t('dsAbout.title')}</span>
-    </h2>
+  <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35);
+       nadpis v roli title s ikonou tématu (D36, D38), mezinadpisy bloků
+       sdílený SectionHeading bez ikony. -->
+  <Card spacious title={t('dsAbout.title')} headingLevel={2} titleRole="title" icon={iconInfo}>
     <p class="shpd-ds-about__intro">{t('dsAbout.intro')}</p>
 
     {#if loading}
@@ -103,7 +103,7 @@
       <p class="shpd-ds-about__state shpd-ds-about__state--error">{error}</p>
     {:else}
       <section class="shpd-ds-about__block">
-        <h3 class="shpd-ds-about__block-title">{t('dsAbout.block.identity')}</h3>
+        <SectionHeading level={3}>{t('dsAbout.block.identity')}</SectionHeading>
         <dl class="shpd-ds-about__list">
           <div class="shpd-ds-about__row">
             <dt>{t('dsAbout.field.dsName')}</dt>
@@ -135,7 +135,7 @@
       </section>
 
       <section class="shpd-ds-about__block">
-        <h3 class="shpd-ds-about__block-title">{t('dsAbout.block.profile')}</h3>
+        <SectionHeading level={3}>{t('dsAbout.block.profile')}</SectionHeading>
         <dl class="shpd-ds-about__list">
           <div class="shpd-ds-about__row">
             <dt>{t('dsAbout.field.vat')}</dt>
@@ -157,7 +157,7 @@
       </section>
 
       <section class="shpd-ds-about__block">
-        <h3 class="shpd-ds-about__block-title">{t('dsAbout.block.storage')}</h3>
+        <SectionHeading level={3}>{t('dsAbout.block.storage')}</SectionHeading>
         <dl class="shpd-ds-about__list">
           <div class="shpd-ds-about__row">
             <dt>{t('dsAbout.field.databaseSize')}</dt>
@@ -190,30 +190,13 @@
         </dl>
       </section>
     {/if}
-  </div>
+  </Card>
 </div>
 
 <style>
   .shpd-ds-about {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-ds-about__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
-  }
-
-  .shpd-ds-about__title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-    margin-bottom: var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-ds-about__intro {
@@ -234,13 +217,6 @@
     margin-top: var(--shpd-space-lg);
     padding-top: var(--shpd-space-lg);
     border-top: 1px solid var(--shpd-color-border);
-  }
-
-  .shpd-ds-about__block-title {
-    margin-bottom: var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-base);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   /* Definiční seznam jako dvousloupcová mřížka: popisek | hodnota. */

@@ -22,7 +22,7 @@ use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
  * Sběr Přehledu firmy (#120): pořadí sekcí a bloků, izolace výjimky,
  * vynechání prázdné sekce a nedostupného bloku, stav sekce
  * `unavailable` vs `ok` při smíšené sekci, neznámá sekce, fallback sekcí
- * bez compiled configu.
+ * bez compiled configu, ikona sekce z konfigurace (#137 D38).
  */
 final class OverviewCollectorTest extends TestCase
 {
@@ -59,6 +59,23 @@ final class OverviewCollectorTest extends TestCase
         $this->assertSame(['m1', 'm2'], array_column($out['sections'][0]['items'], 'id'));
         $this->assertSame('ok', $out['sections'][0]['state']);
         $this->assertSame([], $out['sections'][0]['messages']);
+    }
+
+    public function testSectionIconOnlyWhenConfigured(): void
+    {
+        $registry = new OverviewBlockRegistry();
+        $registry->add('b.money', 'money', 10, self::block([self::item('m1')]));
+        $registry->add('b.rec', 'receivables', 10, self::block([self::item('r1')]));
+        $registry->add('b.result', 'result', 10, self::block([self::item('x1')]));
+
+        $out = (new OverviewCollector())->collect($this->context(), $registry);
+
+        [$money, $receivables, $result] = $out['sections'];
+        $this->assertSame(['id', 'title', 'icon', 'items', 'messages', 'state'], array_keys($money));
+        $this->assertSame('bank', $money['icon']);
+        // receivables v konfiguraci ikonu nemá, result ji má prázdnou → klíč se neposílá
+        $this->assertArrayNotHasKey('icon', $receivables);
+        $this->assertArrayNotHasKey('icon', $result);
     }
 
     public function testItemSerialization(): void
@@ -164,6 +181,7 @@ final class OverviewCollectorTest extends TestCase
 
         $this->assertSame(['money', 'result'], array_column($out['sections'], 'id'));
         $this->assertSame(['Money', 'Profit or loss'], array_column($out['sections'], 'title'));
+        $this->assertSame(['bank', 'chart'], array_column($out['sections'], 'icon'));
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────
@@ -174,8 +192,8 @@ final class OverviewCollectorTest extends TestCase
         if ($withConfig) {
             $config = ConfigRuntimeFactory::fromItems([
                 OverviewCollector::SECTIONS_ITEM => ['sections' => [
-                    ['id' => 'result', 'order' => 50, 'name' => 'Výsledek hospodaření'],
-                    ['id' => 'money', 'order' => 10, 'name' => 'Peníze'],
+                    ['id' => 'result', 'order' => 50, 'name' => 'Výsledek hospodaření', 'icon' => ''],
+                    ['id' => 'money', 'order' => 10, 'name' => 'Peníze', 'icon' => 'bank'],
                     ['id' => 'receivables', 'order' => 20, 'name' => 'Pohledávky'],
                 ]],
                 OverviewCollector::TEXTS_ITEM => [

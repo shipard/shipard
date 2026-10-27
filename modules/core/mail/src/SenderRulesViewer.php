@@ -95,7 +95,7 @@ class SenderRulesViewer extends TableViewer
     protected function loadDetailRecord(int $recordId): ?array
     {
         return $this->db->fetchRow(
-            'SELECT `id`, `pattern_kind`, `pattern`, `disposition`, `origin`,'
+            'SELECT `id`, `docState`, `pattern_kind`, `pattern`, `disposition`, `origin`,'
             . ' `hit_count`, `last_hit_at`, `notice`, `created`, `modified`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
@@ -105,7 +105,6 @@ class SenderRulesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $rule = [];
-        $this->addItem($rule, 'Vzor', $record['pattern'] ?? null);
         $this->addItem($rule, 'Druh vzoru', $this->cfgLabel('core.mail.senderRulePatternKinds', (string) ($record['pattern_kind'] ?? '')));
         $this->addItem($rule, 'Akce', $this->cfgLabel('core.mail.senderRuleDispositions', (string) ($record['disposition'] ?? '')));
         $this->addItem($rule, 'Původ', $this->cfgLabel('core.mail.senderRuleOrigins', (string) ($record['origin'] ?? '')));

@@ -23,6 +23,7 @@
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import { iconCompany, iconUser, iconSpinner } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -369,8 +370,9 @@
     {:else if canonical}
       {@const addr = primaryAddress(canonical)}
       {@const line = addressLine(addr)}
+      <!-- Karty náhledu = sdílená Card (#137 D33), vlastní nadpis s ikonou. -->
       <div class="shpd-registry-wizard__preview">
-        <section class="shpd-registry-wizard__card">
+        <Card>
           <h3 class="shpd-registry-wizard__card-title">
             <Icon icon={canonical.personType === 'person' ? iconUser : iconCompany} />
             <span>{displayName || '—'}</span>
@@ -393,18 +395,18 @@
               </div>
             {/if}
           </dl>
-        </section>
+        </Card>
 
         {#if addr || line}
-          <section class="shpd-registry-wizard__card">
+          <Card>
             <h3 class="shpd-registry-wizard__card-title">
               {t('registry.wizard.preview.section.address')}
             </h3>
             <div class="shpd-registry-wizard__address-line">{line ?? '—'}</div>
-          </section>
+          </Card>
         {/if}
 
-        <section class="shpd-registry-wizard__card">
+        <Card>
           <h3 class="shpd-registry-wizard__card-title">
             {t('registry.wizard.preview.section.collections')}
           </h3>
@@ -419,7 +421,7 @@
               {t('registry.wizard.preview.counts.contacts', { count: contactCount })}
             </span>
           </div>
-        </section>
+        </Card>
 
         {#if applyError}
           <div class="shpd-registry-wizard__status shpd-registry-wizard__status--error">
@@ -649,13 +651,7 @@
     margin: 0 auto;
   }
 
-  .shpd-registry-wizard__card {
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg);
-    padding: var(--shpd-space-md) var(--shpd-space-lg);
-  }
-
+  /* Karty náhledu kreslí sdílená Card (#137 D33), odsazení md. */
   .shpd-registry-wizard__card-title {
     margin: 0 0 var(--shpd-space-sm);
     font-size: var(--shpd-font-size-base);

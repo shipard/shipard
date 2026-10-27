@@ -3,6 +3,7 @@
   import { streamDashboardSummary } from '../../api/dashboard.js';
   import { iconRobot } from '../../icons.js';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
 
   let { summary } = $props();
 
@@ -57,25 +58,25 @@
   });
 </script>
 
-<div class="shpd-ai-summary">
-  <span class="shpd-ai-summary__icon">
-    <Icon icon={iconRobot} size="lg" />
-  </span>
-  <div class="shpd-ai-summary__body">
-    <div class="shpd-ai-summary__title">{t('dashboard.aiSummary.title')}</div>
-    <div class="shpd-ai-summary__text">{displayText}</div>
-    {#if streaming}
-      <div class="shpd-ai-summary__hint">{t('dashboard.aiSummary.generating')}</div>
-    {/if}
+<!-- Sdílená karta s tónovaným pozadím (#137 D33, tón info); řádek
+     ikona + tělo je obsah karty. -->
+<Card as="div" tone="info">
+  <div class="shpd-ai-summary__layout">
+    <span class="shpd-ai-summary__icon">
+      <Icon icon={iconRobot} size="lg" />
+    </span>
+    <div class="shpd-ai-summary__body">
+      <div class="shpd-ai-summary__title">{t('dashboard.aiSummary.title')}</div>
+      <div class="shpd-ai-summary__text">{displayText}</div>
+      {#if streaming}
+        <div class="shpd-ai-summary__hint">{t('dashboard.aiSummary.generating')}</div>
+      {/if}
+    </div>
   </div>
-</div>
+</Card>
 
 <style>
-  .shpd-ai-summary {
-    background: var(--shpd-color-primary-soft);
-    border: 1px solid var(--shpd-color-primary-soft-2);
-    border-radius: var(--shpd-radius-md);
-    padding: var(--shpd-space-md);
+  .shpd-ai-summary__layout {
     display: flex;
     gap: var(--shpd-space-md);
     align-items: flex-start;
@@ -90,7 +91,7 @@
   .shpd-ai-summary__body { flex: 1; min-width: 0; }
 
   .shpd-ai-summary__title {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-primary);
     margin-bottom: var(--shpd-space-xs);
   }

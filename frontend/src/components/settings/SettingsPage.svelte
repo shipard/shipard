@@ -11,6 +11,7 @@
   import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Card from '../ui/Card.svelte';
   import ImageSlotField from './ImageSlotField.svelte';
   import AvatarSlotField from './AvatarSlotField.svelte';
   import ThemeField from './ThemeField.svelte';
@@ -151,14 +152,15 @@
   {:else if loadError}
     <div class="shpd-settings-page__status shpd-settings-page__status--error">{loadError}</div>
   {:else if definition}
-    <div class="shpd-settings-page__card">
-      <h2 class="shpd-settings-page__title">
-        {#if definition.icon}
-          <Icon icon={resolveIcon(definition.icon)} size="md" />
-        {/if}
-        <span>{definition.label}</span>
-      </h2>
-
+    <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35);
+         nadpis v roli title s ikonou stránky z definice (D36, D38). -->
+    <Card
+      spacious
+      title={definition.label}
+      headingLevel={2}
+      titleRole="title"
+      icon={definition.icon ? resolveIcon(definition.icon) : undefined}
+    >
       {#if saveMessage}
         <div
           class="shpd-settings-page__message"
@@ -246,7 +248,7 @@
           />
         </div>
       {/if}
-    </div>
+    </Card>
   {/if}
 </div>
 
@@ -254,23 +256,6 @@
   .shpd-settings-page {
     padding: var(--shpd-space-lg);
     max-width: 760px;
-  }
-
-  .shpd-settings-page__card {
-    padding: var(--shpd-space-lg);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-lg);
-  }
-
-  .shpd-settings-page__title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-    margin-bottom: var(--shpd-space-lg);
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-settings-page__message {

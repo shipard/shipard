@@ -435,12 +435,7 @@ class IncomingMessagesViewer extends TableViewer
         if ($bodyHtml !== '') {
             $bodyContent = ['type' => 'untrusted-html', 'html' => $bodyHtml];
         } elseif ($bodyPlain !== '') {
-            $bodyContent = [
-                'type' => 'html',
-                'html' => '<pre style="white-space: pre-wrap; font-family: inherit;">'
-                    . htmlspecialchars($bodyPlain, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-                    . '</pre>',
-            ];
+            $bodyContent = ['type' => 'text', 'text' => $bodyPlain];
         }
 
         $attachments = $this->fetchContentAttachments($record);
@@ -479,7 +474,10 @@ class IncomingMessagesViewer extends TableViewer
         }
 
         if ($blocks === []) {
-            return ['type' => 'html', 'html' => '<p class="muted">Zpráva nemá žádný obsah.</p>'];
+            return [
+                'type' => 'empty',
+                'text' => $this->detailText('core.mail.viewerDetailLabels', 'noContent', 'The message has no content.'),
+            ];
         }
         if (count($blocks) === 1) {
             return $blocks[0];
@@ -651,7 +649,10 @@ class IncomingMessagesViewer extends TableViewer
         );
 
         if ($analyses === []) {
-            return ['type' => 'html', 'html' => '<p class="muted">Pro tuto zprávu zatím neexistuje žádná AI analýza.</p>'];
+            return [
+                'type' => 'empty',
+                'text' => $this->detailText('core.mail.viewerDetailLabels', 'noAnalyses', 'No AI analysis for this message yet.'),
+            ];
         }
 
         $statusLabels = [1 => 'Probíhá', 2 => 'Úspěch', 3 => 'Selhala'];
@@ -974,8 +975,12 @@ class IncomingMessagesViewer extends TableViewer
 
         if ($rawId === null) {
             return [
-                'type' => 'html',
-                'html' => '<p class="muted">Originální <code>.eml</code> není k dispozici (zpráva pořízena ručně).</p>',
+                'type' => 'empty',
+                'text' => $this->detailText(
+                    'core.mail.viewerDetailLabels',
+                    'originalMissing',
+                    'The original .eml is not available (message entered manually).',
+                ),
             ];
         }
 
@@ -986,7 +991,10 @@ class IncomingMessagesViewer extends TableViewer
         );
 
         if ($raw === null) {
-            return ['type' => 'html', 'html' => '<p class="muted">Originál byl smazán nebo není dostupný.</p>'];
+            return [
+                'type' => 'empty',
+                'text' => $this->detailText('core.mail.viewerDetailLabels', 'originalDeleted', 'The original was deleted or is not available.'),
+            ];
         }
 
         return [

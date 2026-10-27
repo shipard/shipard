@@ -123,8 +123,11 @@ class BalancesViewer extends TableViewer
     {
         $items = [];
         $this->addItem($items, $cs ? 'Kód' : 'Code', $record['code'] ?? null);
-        $this->addItem($items, $cs ? 'Název' : 'Name', $record['name'] ?? null);
-        $this->addItem($items, $cs ? 'Zkrácený název' : 'Short name', $record['short_name'] ?? null);
+        // Název je titulkem; zkrácený název jen když se od něj liší (#140 D26, §2).
+        $shortName = trim((string) ($record['short_name'] ?? ''));
+        if ($shortName !== trim((string) ($record['name'] ?? ''))) {
+            $this->addItem($items, $cs ? 'Zkrácený název' : 'Short name', $shortName);
+        }
         $this->addItem($items, $cs ? 'Platnost od' : 'Valid from', $this->formatDate($record['valid_from'] ?? null));
         $this->addItem($items, $cs ? 'Platnost do' : 'Valid to', $this->formatDate($record['valid_to'] ?? null));
         $this->addItem($items, $cs ? 'Pořadí' : 'Order', (string) ($record['sort_order'] ?? 0));

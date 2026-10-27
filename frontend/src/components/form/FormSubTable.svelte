@@ -42,6 +42,7 @@
   import { get, post } from '../../api/client.js';
   import Button from '../ui/Button.svelte';
   import Input from '../ui/Input.svelte';
+  import Notice from '../ui/Notice.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
   import FormDialog from './FormDialog.svelte';
   import { iconAdd, iconEdit, iconDelete, iconPreview, iconMoveUp, iconMoveDown } from '../../icons.js';
@@ -315,7 +316,7 @@
     </div>
 
     {#if loadError}
-      <div class="shpd-form-subtable__error" role="alert">{loadError}</div>
+      <div class="shpd-form-subtable__notice"><Notice tone="danger">{loadError}</Notice></div>
     {/if}
 
     {#if loading && rows.length === 0}
@@ -479,13 +480,8 @@
     font-size: var(--shpd-font-size-sm);
   }
 
-  .shpd-form-subtable__error {
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
+  .shpd-form-subtable__notice {
     margin-bottom: var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
-    background: var(--shpd-color-alert-danger-bg, var(--shpd-color-bg-hover));
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
   }
 
   .shpd-form-subtable__toolbar {

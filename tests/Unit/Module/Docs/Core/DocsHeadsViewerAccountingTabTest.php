@@ -11,8 +11,8 @@ use Shipard\Module\Docs\Core\DocsHeadsViewer;
 
 /**
  * Tab Zaúčtování v detailu dokladu (Fáze 3 účtování): podmíněné zobrazení
- * (extension sloupec accounting_state + řádky deníku), stavový blok
- * s banner výpisem accounting_messages, tabulka řádků deníku se Σ řádkem,
+ * (extension sloupec accounting_state + řádky deníku), stavový blok —
+ * štítek a hláška s accounting_messages (#137 D30) —, tabulka řádků deníku se Σ řádkem,
  * cizoměnové sloupce a klasifikace chybových řádků.
  */
 class DocsHeadsViewerAccountingTabTest extends TestCase
@@ -80,6 +80,7 @@ class DocsHeadsViewerAccountingTabTest extends TestCase
         array $record,
         array $journal = [],
         array &$journalQueries = [],
+        bool $rowReferenceText = true,
     ): DocsHeadsViewer {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn($record);
@@ -93,15 +94,18 @@ class DocsHeadsViewerAccountingTabTest extends TestCase
             },
         );
 
+        $labels = ['tabs' => ['accounting' => ['name' => 'Zaúčtování']]];
+        if ($rowReferenceText) {
+            $labels['texts'] = ['rowReference' => ['name' => '(řádek {n})']];
+        }
+
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
             static fn (string $id): mixed => match ($id) {
                 'docs.core.docStates'                     => self::DOC_STATES,
                 'docs.core.docTypes'                      => self::DOC_TYPES,
                 'economy.accounting.accountingStates'     => self::ACCOUNTING_STATES,
-                'economy.accounting.viewerDetailLabels'   => [
-                    'tabs' => ['accounting' => ['name' => 'Zaúčtování']],
-                ],
+                'economy.accounting.viewerDetailLabels'   => $labels,
                 default                                   => null,
             },
         );
@@ -188,11 +192,10 @@ class DocsHeadsViewerAccountingTabTest extends TestCase
         $this->assertSame('Zaúčtování', $tab['label']);
         $this->assertSame('composite', $tab['content']['type']);
 
+        $this->assertSame(['badges', 'table'], array_column($tab['content']['blocks'], 'type'), 'Bez chyb není hláška');
         [$status, $table] = $tab['content']['blocks'];
 
-        $this->assertSame('html', $status['type']);
-        $this->assertStringContainsString('Zaúčtováno', $status['html']);
-        $this->assertStringNotContainsString('<ul', $status['html'], 'Bez chyb není banner');
+        $this->assertSame([['label' => 'Zaúčtováno', 'style' => 'success']], $status['items']);
 
         $this->assertSame('table', $table['type']);
         $this->assertSame(['account', 'text', 'md', 'dal'], array_column($table['columns'], 'id'));
@@ -237,11 +240,13 @@ class DocsHeadsViewerAccountingTabTest extends TestCase
             $journal,
         );
         $tab = $this->accountingTab($viewer);
-        [$status, $table] = $tab['content']['blocks'];
+        $this->assertSame(['badges', 'notice', 'table'], array_column($tab['content']['blocks'], 'type'));
+        [$status, $notice, $table] = $tab['content']['blocks'];
 
-        $this->assertStringContainsString('Chyba účtování', $status['html']);
-        $this->assertStringContainsString('Účet 504??? nenalezen (řádek 12)', $status['html']);
-        $this->assertStringContainsString('MD &lt;&gt; DAL</li>', $status['html'], 'Message je escapovaná, bez odkazu na řádek');
+        $this->assertSame([['label' => 'Chyba účtování', 'style' => 'danger']], $status['items']);
+        $this->assertSame('danger', $notice['tone']);
+        // Čistý text bez escapování; odkaz na řádek z katalogu, bez rowId bez přípony.
+        $this->assertSame(['Účet 504??? nenalezen (řádek 12)', 'MD <> DAL'], $notice['items']);
 
         $this->assertSame('error', $table['rows'][0]['_class']);
         $this->assertSame('504???', $table['rows'][0]['account']);
@@ -258,8 +263,26 @@ class DocsHeadsViewerAccountingTabTest extends TestCase
         ]));
         $tab = $this->accountingTab($viewer);
 
-        $this->assertCount(1, $tab['content']['blocks'], 'Jen stavový blok, prázdná tabulka se vynechá');
-        $this->assertStringContainsString('Chybí fiskální období', $tab['content']['blocks'][0]['html']);
+        $this->assertSame(
+            ['badges', 'notice'],
+            array_column($tab['content']['blocks'], 'type'),
+            'Štítek a hláška, prázdná tabulka se vynechá',
+        );
+        $this->assertSame(['Chybí fiskální období'], $tab['content']['blocks'][1]['items']);
+    }
+
+    public function testRowReferenceFallsBackToEnglishWithoutCatalogText(): void
+    {
+        // Nezkompilovaná konfigurace bez sekce `texts` — přípona řádku anglicky.
+        $viewer = $this->makeViewer($this->baseRecord([
+            'accounting_state'    => 2,
+            'accounting_messages' => json_encode([
+                ['code' => 'account_not_found', 'message' => 'Účet nenalezen', 'rowId' => 3],
+            ]),
+        ]), rowReferenceText: false);
+        $tab = $this->accountingTab($viewer);
+
+        $this->assertSame(['Účet nenalezen (row 3)'], $tab['content']['blocks'][1]['items']);
     }
 
     // ── Akce Přeúčtovat ─────────────────────────────────────────────────────
