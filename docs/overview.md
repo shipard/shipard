@@ -147,7 +147,9 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
 - `section.icon`: klíč ikony frontendu (`resolveIcon`, #137 D38) — ikona
   tématu v nadpisu karty, nepovinná; bez ní klíč chybí a karta ikonu
   nekreslí (žádný fallback). Hodnoty v `overviewSections.jsonc`: Peníze
-  `bank`, Pohledávky i Závazky `balance`, DPH `vat`, Výsledek `chart`.
+  `bank` (Bankovní výpisy), Pohledávky `receivable` a Závazky `payable`
+  (položky saldokonta podle typu v menu), DPH `filing` (Podání DPH),
+  Výsledek `chart` (Výsledovka).
 - `item.state`: `ok` | `stale` (D14) | `missing` (účet bez výpisu).
 - `amount.value` plná přesnost, `currency` velkými písmeny; formátuje
   frontend (`formatMoney`). Položka v jiné měně je samostatná položka,
@@ -302,6 +304,8 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
 8. Ikona sekce DPH (#137 D38, `tasks/design-system-card-titles.md`):
    zadání odkazuje na živé přiznání k DPH v menu, ale reporty v menu
    nemají vlastní ikonu — `NavigationController` dává všem obecnou `chart`
-   a sekce DPH by splynula s Výsledkem. Sekce DPH má proto ikonu
-   Registrací DPH v Nastavení (`vat`, téma DPH); Výsledek drží `chart`
-   jako Výsledovka v menu.
+   a sekce DPH by splynula s Výsledkem. Sekce DPH má proto ikonu Podání
+   DPH (`filing`, prohlížeč téhož modulu v menu); Výsledek drží `chart`
+   jako Výsledovka v menu. Pohledávky a Závazky mají ikony položek
+   saldokonta podle typu (`receivable` / `payable`), ne obecnou ikonu
+   Saldokonta.

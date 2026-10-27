@@ -1,6 +1,6 @@
 # Design system — typografie a ikony nadpisů karet
 
-**Stav:** hotovo — 2026-10-27, 4 commity (#137 task 2b, D36–D38); ikona sekce DPH `vat` místo obecné ikony reportu (`docs/overview.md` §8)
+**Stav:** hotovo — 2026-10-27 (#137 task 2b, D36–D38); ikony sekcí po ověření: Pohledávky / Závazky podle typu saldokonta, DPH = Podání DPH (`docs/overview.md` §8)
 
 ## Kontext / Cíl
 
@@ -167,9 +167,11 @@ V prohlížeči, světlý i tmavý vzhled:
 
 ## Odchylky od zadání
 
-1. **Ikona sekce DPH** je `vat` (Registrace DPH v Nastavení), ne ikona
-   živého přiznání v menu — reporty tam mají jen obecnou `chart`
-   (`NavigationController`), DPH by splynula s Výsledkem. Zapsáno
+1. **Ikony sekcí po ověření v prohlížeči:** DPH má ikonu Podání DPH
+   (`filing`), ne živého přiznání v menu — reporty tam mají jen obecnou
+   `chart` (`NavigationController`), DPH by splynula s Výsledkem;
+   Pohledávky a Závazky mají ikony položek saldokonta podle typu
+   (`receivable` / `payable`), ne obecnou ikonu Saldokonta. Zapsáno
    v `docs/overview.md` §8.
 2. **`SectionHeading` má navíc prop `spacing`** (`xs` | `md` | `lg`) —
    bez něj `Card` neumí dát pod nadpis v roli title mezeru rovnou svému

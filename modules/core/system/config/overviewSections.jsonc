@@ -5,16 +5,17 @@
     //
     // `icon` (#137 D38) = ikona tématu v nadpisu karty, stejná jako
     // příslušný prohlížeč / report v menu nebo stránka v Nastavení — žádná
-    // nová ikona: Peníze = Bankovní výpisy, Pohledávky i Závazky =
-    // Saldokonto, DPH = Registrace DPH (reporty mají v menu jen obecnou
-    // ikonu reportu, docs/overview.md §8), Výsledek = Výsledovka v menu.
-    // Nepovinné; bez ikony se klíč neposílá a karta ikonu nemá.
+    // nová ikona: Peníze = Bankovní výpisy, Pohledávky / Závazky = položky
+    // saldokonta pohledávkového / závazkového typu v menu, DPH = Podání DPH
+    // (reporty mají v menu jen obecnou ikonu reportu, docs/overview.md §8),
+    // Výsledek = Výsledovka v menu. Nepovinné; bez ikony se klíč neposílá
+    // a karta ikonu nemá.
 
     "sections": [
         {"id": "money",       "order": 10, "icon": "bank",    "name": "Money",          "name:cs": "Peníze",               "name:en": "Money"},
-        {"id": "receivables", "order": 20, "icon": "balance", "name": "Receivables",    "name:cs": "Pohledávky",           "name:en": "Receivables"},
-        {"id": "payables",    "order": 30, "icon": "balance", "name": "Payables",       "name:cs": "Závazky",              "name:en": "Payables"},
-        {"id": "vat",         "order": 40, "icon": "vat",     "name": "VAT",            "name:cs": "DPH",                  "name:en": "VAT"},
+        {"id": "receivables", "order": 20, "icon": "receivable", "name": "Receivables",    "name:cs": "Pohledávky",           "name:en": "Receivables"},
+        {"id": "payables",    "order": 30, "icon": "payable",    "name": "Payables",       "name:cs": "Závazky",              "name:en": "Payables"},
+        {"id": "vat",         "order": 40, "icon": "filing",     "name": "VAT",            "name:cs": "DPH",                  "name:en": "VAT"},
         {"id": "result",      "order": 50, "icon": "chart",   "name": "Profit or loss", "name:cs": "Výsledek hospodaření", "name:en": "Profit or loss"}
     ]
 }

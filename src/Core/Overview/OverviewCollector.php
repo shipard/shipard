@@ -37,9 +37,9 @@ final class OverviewCollector
      */
     private const SECTIONS_FALLBACK = [
         ['id' => 'money',       'order' => 10, 'name' => 'Money',          'icon' => 'bank'],
-        ['id' => 'receivables', 'order' => 20, 'name' => 'Receivables',    'icon' => 'balance'],
-        ['id' => 'payables',    'order' => 30, 'name' => 'Payables',       'icon' => 'balance'],
-        ['id' => 'vat',         'order' => 40, 'name' => 'VAT',            'icon' => 'vat'],
+        ['id' => 'receivables', 'order' => 20, 'name' => 'Receivables',    'icon' => 'receivable'],
+        ['id' => 'payables',    'order' => 30, 'name' => 'Payables',       'icon' => 'payable'],
+        ['id' => 'vat',         'order' => 40, 'name' => 'VAT',            'icon' => 'filing'],
         ['id' => 'result',      'order' => 50, 'name' => 'Profit or loss', 'icon' => 'chart'],
     ];
 
