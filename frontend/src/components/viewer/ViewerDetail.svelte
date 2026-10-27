@@ -934,10 +934,12 @@
     font-size: var(--shpd-font-size-body);
   }
 
+  /* Hlavička sloupce — body + strong ve velikosti řádků (není heading,
+     #137 task 2b). */
   .shpd-detail__th {
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     text-align: left;
-    font-size: var(--shpd-font-size-heading);
+    font-size: var(--shpd-font-size-body);
     font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     border-bottom: 2px solid var(--shpd-color-border);

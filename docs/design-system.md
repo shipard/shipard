@@ -731,22 +731,27 @@ což je vlastní dokument, kde px nevadí.
 ## 11. Typografie
 
 Pravidla D6, D15 a D16 z #133, zavedená pilotem #135 (detail dokladu).
-**Tři velikosti, dvě tloušťky, žádné verzálky.** Role jsou tokeny ve
+**Čtyři velikosti, dvě tloušťky, žádné verzálky.** Role jsou tokeny ve
 `variables.css` a odkazují na škálu `--shpd-font-size-*`; žádná nová
 velikost nevzniká. Základní text je **14 px** (`sm`): D6 původně mířilo na
 16 px, při ověření pilotu se ukázalo přestřelené a 14 px se drží všude
-dál — proto se role mění na jednom místě.
+dál — proto se role mění na jednom místě. Nadpis (heading) je od #137
+task 2b **16 px** (`base`): do té doby měl velikost body a lišil se jen
+tloušťkou, při ověření v prohlížeči byl název karty feedu a mezinadpis
+v kartě Nastavení moc malý, a rozdělení proběhlo tím jedním místem.
 
 | Role | Token | Velikost | Tloušťka | Barva | Kde |
 |---|---|---|---|---|---|
 | title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem, nadpis karty jako samostatné části stránky (Přehled firmy, karty Nastavení — D36), hlavní částka karty (Přehled firmy, feed) |
-| heading | `--shpd-font-size-heading` | `sm` (0.875rem) | strong | text | nadpis sekce (detail i feed dashboardu), nadpis karty uvnitř obsahu, název entity v kartě, hlavička sloupce tabulky |
-| body | `--shpd-font-size-body` | `sm` (0.875rem) | normal | text | popisky i hodnoty, řádky tabulek, taby |
+| heading | `--shpd-font-size-heading` | `base` (1rem) | strong | text | nadpis sekce (detail i feed dashboardu), nadpis karty uvnitř obsahu, název entity v kartě, název karty feedu, mezinadpis v kartě Nastavení |
+| body | `--shpd-font-size-body` | `sm` (0.875rem) | normal (hlavička sloupce strong) | text | popisky i hodnoty, řádky tabulek i hlavička sloupce (ve velikosti řádků, silnější), taby |
 | meta | `--shpd-font-size-meta` | `xs` (0.75rem) | normal | text; šedá (`--shpd-color-text-secondary`) jen u kontaktů a doplňků | podtitul, štítky, kontakty, přepočet v domácí měně |
 
 Tloušťky: `--shpd-font-weight-normal` (400) a `--shpd-font-weight-strong`
-(600). `heading` a `body` mají dnes stejnou velikost a liší se tloušťkou —
-jsou to dvě role, aby šly v budoucnu rozdělit jedním místem.
+(600). `heading` a `body` byly původně stejně velké a lišily se jen
+tloušťkou — dvě role právě proto, aby šly rozdělit jedním místem, což se
+v #137 task 2b stalo. Hlavička sloupce tabulky je body + strong, ne
+heading: má být ve velikosti řádků.
 
 ### Pravidla
 
@@ -876,8 +881,9 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
     šířku. Příznak `full` dopočítá `visibleGroups()` kurzorem sloupce nad
     viditelnými skupinami (`wide` kurzor nuluje), ne CSS sudá / lichá —
     komponenta ho jen kreslí.
-- **Tabulka**: body; hlavička sloupce heading (stejná velikost jako řádky,
-  silnější, barvou textu, bez verzálek), čára pod ní
+- **Tabulka**: body; hlavička sloupce body + strong (stejná velikost jako
+  řádky, silnější, barvou textu, bez verzálek — ne heading, ten je od
+  #137 task 2b větší), čára pod ní
   `--shpd-color-border-strong`, mezi řádky `--shpd-color-border`; buňky
   `padding: 0.375rem var(--shpd-space-xs)`, čísla vpravo
   s `tabular-nums`. Štítek stavu v buňce = meta.

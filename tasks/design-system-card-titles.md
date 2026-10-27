@@ -182,6 +182,14 @@ V prohlížeči, světlý i tmavý vzhled:
 4. **Nadpis sekce feedu** přišel o verzálky a šedou — důsledek D37 a §11
    (verzálky jen ve větších nadpisech); tečka a počet zůstaly v nadpisu,
    Archivovat vše v `aside`.
+5. **Role heading je 16 px** (po ověření v prohlížeči): název karty feedu
+   a mezinadpis Volitelné dřív dědily základní písmo 16 px a role heading
+   = body (14 px) je zmenšila. Rozdělení heading od body proběhlo jedním
+   tokenem `--shpd-font-size-heading` → `base`, jak §11 předvídala;
+   zvětšily se tím i nadpisy sekcí a skupin v detailu, názvy stran na
+   kartách dokladu a nadpisy sekcí feedu. Hlavičky sloupců tabulek
+   v detailu heading nejsou — zůstávají ve velikosti řádků (body +
+   strong). §11 má čtyři velikosti: 18 / 16 / 14 / 12.
 
 ## Pasti
 

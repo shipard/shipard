@@ -365,11 +365,12 @@
     text-align: left;
   }
 
-  /* Hlavička sloupce — heading: stejná velikost jako řádky, silnější,
-     barvou textu, bez verzálek; čára pod ní silnější než mezi řádky. */
+  /* Hlavička sloupce — body + strong: stejná velikost jako řádky, silnější,
+     barvou textu, bez verzálek (není heading — ten je od #137 task 2b
+     větší než řádky); čára pod ní silnější než mezi řádky. */
   .shpd-docdetail__rows th,
   .shpd-docdetail__vat-recap th {
-    font-size: var(--shpd-font-size-heading);
+    font-size: var(--shpd-font-size-body);
     font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     border-bottom-color: var(--shpd-color-border-strong);
