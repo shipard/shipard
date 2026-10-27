@@ -754,6 +754,62 @@ a nejde zrušit.
 
 ---
 
+### `test-round [--only=<vrstvy>] [--dataset=<n|adresář>]… [--scenario=<id>]… [--eval=<varianta> --repeat=<n> --max-cost=<USD>] [--base-url=<origin>] [--detach | --follow=<id>] [--json]`
+
+```bash
+shpd-server test-round                       # celé kolo: kód → veřejné sady → videa; sleduje ho v terminálu
+shpd-server test-round --only code           # jen vrstva kódu (PHPUnit, generátor, frontend, CSS, video-runner, spec)
+shpd-server test-round --only datasets --dataset cz-non-payer --json
+shpd-server test-round --detach              # vypíše id úlohy a skončí; shpd-server test-round --follow <id> připojí znovu
+shpd-server test-round --only datasets --dataset cz-non-payer --eval baseline --repeat 1 --max-cost 1
+```
+
+Testovací kolo jedním příkazem (#103 F8a D130–D135, `docs/test-corpus.md`
+§ 21): tři vrstvy — **kód** (celý PHPUnit s `memory_limit=1G`, `python3 -m
+unittest` v `tools/invoice-generator`, `npm test` a `npm run check:i18n` ve
+`frontend`, kontroly CSS, `npm test` ve `tools/video-runner`, `npm run
+test:unit` v `tests/e2e`), **sady** (pro každou veřejnou sadu
+z `tests/datasets` přeseedování, `dataset-verify` a `dataset-e2e`) a
+**videa** (`video-run --verb check` každého scénáře). Kolo **vždy běží
+jako úloha dashboardu** typu `round`: příkaz udělá preflight (jen režim
+`development`; adresář `/opt/shipard/run/dev-jobs` vlastněný uživatelem
+příkazu — spouštěj pod uživatelem poolu php-fpm, jinak kolo dashboard
+neuvidí ani nezruší; `--base-url` jen lokální host, D97; známé sady
+a scénáře), založí úlohu a bez `--detach` ji sleduje: řádky přechodů
+kroků, na konci tabulka vrstva / sada / scénář / krok / stav / doba /
+dílčí úloha / důvod (`--json` celý `result.json`), `-v` navíc streamuje
+`output.log`. První Ctrl+C kolo zruší (i běžící dílčí úlohu) a sleduje
+dál, druhé odpojí terminál — kolo běží dál. Kroky na zdrojích dat jsou
+dílčí úlohy dashboardu (`reseed` / `create` / `verify` / `e2e` / `video` /
+`eval`) nad **vlastními** zdroji dat kola (účel `testovací kolo — <sada>`,
+chybějící kolo založí `ds-create --no-cron` + seedem; videa `videa —
+<sada>`); cizí zdroj dat se nikdy nepřeseeduje, obsazený = krok `skipped`.
+Kolo pokračuje po selhání; souhrn nese commit, větev a příznak
+necommitnutých změn. Výchozí kolo nic neutrácí: evaluace jen s `--eval`
+a povinným `--max-cost` (strop za celé kolo) — nejdřív odhad per sada
+(`ai-eval --estimate`), nad stropem kolo nezačne; odhad potřebuje
+existující zdroj dat kola.
+
+| Opce | Význam |
+|------|--------|
+| `--only=<vrstvy>` | `code`, `datasets`, `videos` čárkami; výchozí všechny. |
+| `--dataset=<název \| adresář>` | Jen tato veřejná sada (název z `tests/datasets`, nebo adresář s `manifest.jsonc` — kopie sady mimo repo); opakovatelné; neznámá = exit 2. Filtruje jen vrstvu sad. |
+| `--scenario=<id>` | Jen tento scénář z `demo/scenarios`; opakovatelné; neznámé id = exit 2. |
+| `--eval=<varianta>` | Spustit i evaluaci (varianta z `tests/eval/variants`); vyžaduje `--max-cost`. |
+| `--repeat=<n>` | Opakování evaluace per sada (1–5, výchozí 1). |
+| `--max-cost=<USD>` | Strop útraty za evaluace celého kola; dílčí `eval` dostane zbytek po předchozích. |
+| `--base-url=<origin>` | Lokální adresa aplikace pro proklikání a videa (výchozí `http://127.0.0.1`). |
+| `--detach` | Jen spustit a vypsat id úlohy. |
+| `--follow=<id>` | Připojit se k běžícímu (nebo hotovému) kolu místo nového. |
+| `--json` | Na konci `result.json` místo tabulky. |
+
+Exit `0` jen když všechny kroky `ok`, `1` cokoli selhalo nebo se
+přeskočilo, `2` kolo nezačalo (preflight, limit ceny, běží kolo nebo
+`update`), `130` zrušeno / odpojeno. Z dashboardu: Testování → **Spustit
+testovací kolo** ([dev/dev-daily.md](dev/dev-daily.md) § 1).
+
+---
+
 ### `dev-job-run` (interní, skrytý)
 
 ```bash
@@ -768,6 +824,20 @@ stdout kroku do `result.json` nebo `output.log`) a stav zapisuje do
 `state.json`. SIGTERM = zrušení (běžící krok dostane SIGTERM, po
 `cancelGraceSeconds` SIGKILL), exit 0 hotovo / 1 selhání / 130 zrušeno.
 V nápovědě se neukazuje; ručně se nespouští.
+
+### `test-round-run` (interní, skrytý)
+
+```bash
+shpd-server test-round-run /opt/shipard/run/dev-jobs/<id>  # jediný krok úlohy `round`; spouští obal dev-job-run
+```
+
+Orchestrátor testovacího kola (#103 F8a, `docs/test-corpus.md` § 21):
+čte výběr z `job.json` úlohy `round`, kroky kódu pouští jako podprocesy,
+kroky na zdrojích dat jako dílčí úlohy s `parent`, souhrn píše průběžně do
+`result.json` úlohy, log na stderr (`output.log`). SIGTERM = zrušení
+(běžící krok kódu SIGTERM, běžící dílčí úloha `cancel`, zbytek `skipped`).
+Exit 0 / 1 / 130. Ručně se nespouští — bez obalu by nebyl `state.json`;
+k tomu je `test-round`.
 
 ## `shpd-ds` — kompletní reference
 

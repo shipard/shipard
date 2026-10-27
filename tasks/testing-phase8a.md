@@ -1,6 +1,6 @@
 # F8a — testovací kolo jedním příkazem
 
-**Stav:** naplánováno — zadání 2026-10-27 (#103 D130–D135)
+**Stav:** hotovo — 2026-10-27 (#103 D130–D135); kolo bez evaluace ověřené z CLI i z dashboardu, evaluace v kole jen unit testy (útrata čeká na schválení)
 
 ## Kontext / Cíl
 
@@ -190,4 +190,50 @@ Zamčená v #103:
 
 ## Nálezy
 
-_(doplní implementace)_
+Rozhodnutí při implementaci (nad rámec D130–D135; podrobně `docs/test-corpus.md` § 21):
+
+- **O1 — vyhrazený zdroj dat kola per sada** (účel přesně `testovací kolo
+  — <sada>`, vzor D126): na dev serveru má jedna sada čtyři volné zdroje
+  dat (pokus, korpus, evaluace…) a „první vhodný“ by přeseedoval cizí
+  experiment. Ostatní zdroje dat sady kolo nikdy nepřeseeduje; chybějící
+  založí (`ds-create --no-cron` + seed) a `create` nahradí první `reseed`.
+- **Kolo = jeden krok úlohy** (`test-round-run`, orchestrace uvnitř):
+  obal `dev-job-run` po prvním selhání zbytek přeskočí, kolo má pokračovat
+  (D133). `result.json` píše orchestrátor sám průběžně
+  (`JobStore::writeResult`) — `captureStdout` by po SIGKILL nechal prázdný
+  soubor; dashboard tak má živou tabulku bez událostí průběhu.
+- **CLI spouští úlohu a sleduje ji** (jedna cesta provedení; kolo
+  z terminálu je v dashboardu vždy): první Ctrl+C zruší, druhé odpojí,
+  `--follow <id>` připojí znovu. Preflight hlídá vlastníka adresáře úloh
+  (kolo pod `sudo` by dashboard neviděl ani nezrušil).
+- **Pravidlo konfliktů**: `round` je druhá úloha celého serveru, ale
+  nevýlučná (`JobRecord::EXCLUSIVE_TYPES = [update]`; kolo blokuje jen
+  druhé kolo). Dílčí úlohy nesou `parent`, `JobLauncher::cancel` kaskáduje
+  (dítě má vlastní session, signál skupině obalu ho nezasáhne).
+- **Zámky úloh dědili potomci** (`fopen` mód `c`): obal dílčí úlohy
+  spuštěný z kola by držel `wrapper.lock` kola i po jeho smrti. Od F8a mód
+  `ce` (close-on-exec) u `wrapper.lock` i `dev-jobs/.lock`.
+- **`ai-eval --estimate` odmítal použitý zdroj dat** (po `verify` má
+  doklady), kolo odhad potřebuje před přeseedováním → `EvalPreflight`
+  rozdělen na prostředí a čistotu; odhad kontroluje jen prostředí.
+- **`CI=1` v prostředí kroků kódu** shodilo `CancellableProcessTest`
+  a `VideoRunCommandTest` (hlídají, že skládání prostředí podprocesů
+  `CI` nepřidá — PHPUnit ho zdědil z kola). Kolo přidává jen locale
+  a `PYTHONUTF8`; `node --test` dává TAP mimo TTY i bez `CI`. Tyto testy
+  padají na každém stroji s `CI` v prostředí.
+- **Demo sada není ve vrstvě sad** (bez `expected/`); jen ve videích.
+- **Vrstva sad = jen `tests/datasets`**; `--dataset` bere i adresář
+  s `manifest.jsonc` (kopie sady mimo repo pro umělé rozbití).
+- **D135 ověření**: `Version::gitInfo()` / `GitState::describe()` přes
+  `Git` (argv, `findTool` v pevném `PATH`); `app.name` doplňuje generátor
+  z `own.name` příběhu (ručně zapsaný = chyba příběhu), `app.name` přežije
+  přeseedování jinou sadou (dokumentováno).
+
+Ověření 2026-10-27 na dev serveru: `test-round --only code` — první běh
+exit 1 (nález `CI=1`), po opravě vrstva kódu celá `ok` (PHPUnit 11 044
+testů ~1,5 min); celé kolo `--detach` + sledování v dashboardu založilo
+tři zdroje dat kola a prošlo sady i videa (výsledky v souhrnu úlohy);
+kolo z dashboardu, zrušení uprostřed kroku kódu i dílčí úlohy — viz
+`docs/test-corpus.md` § 21. Evaluace v kole: jen unit testy bez volání AI
+(`--only datasets --dataset cz-non-payer --eval baseline --repeat 1
+--max-cost 1` čeká na schválení útraty).

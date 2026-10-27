@@ -74,7 +74,10 @@ Sekce v horní liště:
   **Přeseedovat**, **Ověřit zaúčtování** (`dataset-verify`), **Spustit
   evaluaci** (odhad ceny → strop útraty → úloha), **Založit evaluační
   zdroj dat** (`ds-create --no-cron` + seed, bez uživatele) a přeseedování
-  jiného volného zdroje dat. Dál **Úlohy na pozadí** (seznam, detail
+  jiného volného zdroje dat. Nad seznamem sad karta **Testovací kolo**
+  (#103 F8a): poslední kolo se souhrnem a **Spustit testovací kolo** —
+  kód → sady → videa jednou úlohou, evaluace jen volitelně se stropem
+  (viz níže). Dál **Úlohy na pozadí** (seznam, detail
   s průběhem, zrušení) a **Varianty** (editor souborů
   `tests/eval/variants/`). Na serveru bez `tests/` (instalace z balíčku)
   se sekce nenabídne.
@@ -147,8 +150,11 @@ nejvýš jedna úloha (druhou API odmítne 409 s odkazem na běžící). Úloha
 **Aktualizace checkoutu** (tlačítko Aktualizovat v bublině verze v pruhu) zdroj
 dat nemá — v seznamu je u ní „celý server“ — a vylučuje všechny ostatní
 úlohy i naopak; **nejde zrušit**: přerušení uprostřed `composer install`
-nebo buildu by nechalo checkout v půli, zaseknutou řeš v terminálu. Starší
-než 14 dní se při výpisu mažou.
+nebo buildu by nechalo checkout v půli, zaseknutou řeš v terminálu.
+**Testovací kolo** (typ `round`) zdroj dat také nemá, ale ostatní úlohy
+nevylučuje — jen druhé kolo; jeho dílčí úlohy (přeseedování, ověření,
+proklikání, videa, evaluace) nesou odkaz na kolo a zrušení kola je zruší
+také. Starší než 14 dní se při výpisu mažou.
 
 - **Zrušit** pošle SIGTERM celé skupině procesů: `ai-eval` nezačne další
   volání modelu, rozběhnuté doběhne (až 14 minut při zaseknutém volání)
@@ -205,7 +211,20 @@ než 14 dní se při výpisu mažou.
   nebo runner se ukončí, session uživatele `video` se zneplatní,
   rozpracované video se nepovýší (předchozí zůstává); přeseedování se
   přerušit nedá. Podrobně `docs/test-corpus.md` § 20.
-- Totéž z terminálu: `shpd-ds dataset-seed <cesta> -y`, `shpd-ds
+- **Testovací kolo** (F8a): na stránce Testování **Spustit testovací
+  kolo** → dialog s vrstvami (kód / sady / videa), filtrem sad a scénářů
+  (u každé sady, který zdroj dat kolo použije, nebo že ho založí — kolo
+  má vlastní zdroje dat `testovací kolo — <sada>`, cizí nikdy
+  nepřeseeduje) a volitelnou evaluací (**Odhadnout cenu** → strop). Detail
+  úlohy ukazuje živou tabulku kroků po vrstvách s odkazy na dílčí úlohy
+  a na konci souhrn (commit, necommitnuté změny, počty testů, první
+  selhání, u evaluací shoda polí a cena). Kolo pokračuje po selhání;
+  obsazený zdroj dat = krok přeskočen. Zrušení zruší i běžící dílčí
+  úlohu. Podrobně `docs/test-corpus.md` § 21.
+- Totéž z terminálu: `shpd-server test-round` (celé kolo; `--only code`,
+  `--dataset`, `--scenario`, `--eval <varianta> --max-cost <USD>`,
+  `--detach` / `--follow <id>`, `--json`; spouštěj pod uživatelem poolu
+  php-fpm), `shpd-ds dataset-seed <cesta> -y`, `shpd-ds
   dataset-verify <cesta> --json`, `shpd-ds dataset-e2e <cesta> --json`,
   `shpd-ds video-run <scénář> --verb build --json`,
   `shpd-ds ai-eval <cesta> --variant <soubor> --estimate --json` /

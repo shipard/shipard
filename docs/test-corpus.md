@@ -1351,6 +1351,17 @@ s událostmi průběhu od bajtového offsetu — jen celé řádky — a koncem
 výpisu mažou. Pod php-fpm není `pcntl`, proto čísla signálů místo
 konstant `SIGTERM`.
 
+Od F8a (§ 21) je typ `round` druhá úloha celého serveru: **nevylučuje**
+ostatní úlohy (jen druhé kolo; `update` dál vylučuje vše —
+`JobRecord::EXCLUSIVE_TYPES`), dílčí úlohy kola nesou `parent` (id kola;
+`JobStore::activeChildren`, filtr `jobs?parent=`) a `JobLauncher::cancel`
+**kaskáduje** na aktivní děti — mají vlastní session, signál skupině obalu
+je nezasáhne. Oba zámky (`wrapper.lock`, `dev-jobs/.lock`) se otevírají
+close-on-exec (`fopen` mód `ce`): jinak by je zdědil každý krok a obal
+dílčí úlohy a držel i po smrti držitele. `result.json` si krok může psát
+sám (`JobStore::writeResult`, atomicky) — kolo tak dává živý souhrn, který
+přežije i SIGKILL obalu.
+
 ### Pasti
 
 - **Útrata.** Každé volání stojí peníze; odhad a `--yes` nejsou formalita.
@@ -1739,10 +1750,173 @@ Exit `0` jen při `ok`, `1` nálezy, `2` preflight, `130` zrušeno.
   ani z `.env` runneru.
 - **Prohlížeč, ffmpeg a python patří uživateli** PHP-FPM (jako u
   proklikání); preflight to pozná a řekne, co spustit.
-- **Název zdroje dat je v záhlaví aplikace** („Videa — Demo — IT servis“
-  v sidebaru) — demo sada zatím nenastavuje `app.name`; pro video na web
-  patří název firmy příběhu do `setup/settings.jsonc` sady (#131).
+- **Název firmy v záhlaví** dává od F8a `app.name` v sadě (#103 D135):
+  generátor ho doplňuje z `own.name` příběhu, takže video ukazuje „Zelený
+  Terminál s.r.o.“, ne název zdroje dat. Zdroj dat seedovaný dřív ho má
+  až po dalším přeseedování.
 - **Kotva přes hranici fiskálního roku** (`--anchor 2027-01-20`): seed
   roky založí, ale platby minulého roku zůstanou nespárované
   (`demo/datasets/README.md`) — video pak ukazuje jinou situaci než
   s kotvou v roce sady.
+
+
+## 21. Testovací kolo (F8a)
+
+Zadání a rozhodnutí D130–D135: `tasks/testing-phase8a.md`, issue #103.
+Po F1–F7 se testování pouštělo po kouskách (v repu není CI); kolo je
+jediné místo, kde se spustí všechno najednou: **kód** (celý PHPUnit, testy
+generátoru korpusu, frontend — `npm test`, `check:i18n`, kontroly CSS —,
+video-runner, unit testy specu proklikání), **sady** (pro každou veřejnou
+sadu z `tests/datasets` `dataset-verify` na čerstvém seedu a `dataset-e2e`)
+a **videa** (`video-run --verb check` všech scénářů), volitelně
+**evaluace** (jen výslovně, se stropem útraty — D131). Výchozí kolo nic
+neutrácí.
+
+### Jeden příkaz, kolo je úloha dashboardu (D130, D134)
+
+```bash
+shpd-server test-round                                   # celé kolo, sleduje ho v terminálu
+shpd-server test-round --only code                       # jen vrstva kódu
+shpd-server test-round --only datasets --dataset cz-non-payer --json
+shpd-server test-round --detach                          # jen id úlohy; --follow <id> připojí znovu
+shpd-server test-round --only datasets --dataset cz-non-payer --eval baseline --repeat 1 --max-cost 1
+```
+
+Kolo **vždy běží jako úloha dashboardu** typu `round` (`RoundJobFactory`
+— týž záznam z CLI i z dashboardu): jeden krok `shpd-server test-round-run
+<adresář úlohy>` (skrytý orchestrátor) s cwd v kořeni repa, výběr
+v `job.json` → `params` (`layers`, `datasets`, `scenarios`, `eval`,
+`baseUrl`, `origin`), grace zrušení 960 s. Příkaz `test-round` udělá
+preflight (režim `development` fail-closed; adresář úloh zapisovatelný
+a **vlastněný uživatelem příkazu** — pool php-fpm běží pod vývojářem,
+kolo pod `sudo` by dashboard neviděl ani nezrušil; `--base-url` lokální
+přes `LocalBaseUrl`, D97; známé sady a scénáře; odhad ceny evaluací),
+založí úlohu přes `JobLauncher` a bez `--detach` ji **sleduje**: každou
+sekundu čte `result.json` kola, vypisuje přechody kroků, na konci tabulku
+(`--json` celý souhrn) a vrátí exit kola. První Ctrl+C kolo zruší
+a sleduje dál, druhé odpojí terminál (kolo běží dál). `-v` streamuje
+i `output.log`. Exit `0` jen při samých `ok`, `1` cokoli selhalo nebo se
+přeskočilo, `2` kolo nezačalo, `130` zrušeno.
+
+Proč jeden krok a vlastní orchestrace: obal `dev-job-run` po prvním
+selhání zbytek kroků přeskočí, kolo má pokračovat (D133). Proč úloha
+i z terminálu: jedna cesta provedení, obal drží `state.json` a živost,
+dashboard kolo vidí.
+
+### Co kolo dělá (`RoundRunner`)
+
+Pořadí: **kód** → pro každou sadu `create` nebo `reseed` → `verify` →
+`e2e` → [`reseed` → `eval`] → pro každou demo sadu scénářů `create`
+zdroje videí → `video-run --verb check` per scénář.
+
+- **Vrstva kódu** (`CodeSteps`, `CodeStepProcess`): podprocesy v pevném
+  pořadí — `php -d memory_limit=1G vendor/bin/phpunit --colors=never`
+  (bez capu by nekonečná rekurze sežrala RAM stroje), `python3 -m unittest
+  discover -s tests` v `tools/invoice-generator`, `npm test` a `npm run
+  check:i18n` ve `frontend`, `scripts/check-css-tokens.py`,
+  `scripts/check-css-units.py`, `npm test` v `tools/video-runner`, `npm run
+  test:unit` v `tests/e2e`. Nástroje z pevného `PATH`
+  (`UpdateEnvironment::findTool`); prostředí = pevný `PATH`, `HOME`,
+  `LC_ALL` / `LANG` `C.UTF-8`, `PYTHONUTF8` — nic víc (`CI=1` by zdědil
+  celý PHPUnit a testy skládání prostředí padaly jen pod kolem, nález 1).
+  Chybějící nástroj, `vendor/` nebo `node_modules` = krok `failed` s větou,
+  co doinstalovat. Výstup kroku jde do `output.log` a ohraničeně do paměti
+  (`TeeOutput`: začátek + konec) pro parser (`CodeStepParser`): PHPUnit
+  `OK (N tests…)` / `Tests: N, …, Failures: F, Errors: E` + první `1) …`,
+  `node --test` TAP `# tests / # pass / # fail` + první `not ok`, python
+  `Ran N tests` / `FAILED (…)` + první `FAIL:` / `ERROR:`, skripty jen exit
+  kód. Do souhrnu jen počty a první selhání.
+- **Zdroje dat kola** (D132, rozhodnutí O1): kolo pracuje jen s vlastními
+  zdroji dat — pro sadu zdroj s účelem přesně `testovací kolo — <sada>`
+  (`RoundDataSources`, kritéria `PurposeDataSources`: volný, aktivní,
+  čitelný; stejně jako `videa — <sada>` pro videa, D126). Chybí-li, kolo
+  ho založí dílčí úlohou `create` (`ds-create --no-cron` + `dataset-seed`;
+  pro videa `ds-create` s cronem + `ds-upgrade`) a `create` nahradí první
+  `reseed`. Ostatní zdroje dat sady (pokus, korpus, evaluace) kolo nikdy
+  nepřeseeduje; reálnou kopii nevybere.
+- **Dílčí úlohy** (`ChildJobGateway`, recepty `DatasetJobRecipes` —
+  tytéž argv jako akce dashboardu, testy controllerů jsou strážcem):
+  spuštěné přes `JobLauncher` s `parent` = id kola, kolo na ně čeká
+  pollingem. Obsazený zdroj dat (`JobConflict`) = krok `skipped` s důvodem,
+  nečeká se (D134). Závislosti: selhaný `reseed` → `verify` téže sady
+  `skipped`; `e2e` seeduje sám; `eval` má vlastní `reseed`. Chybějící
+  nástroje proklikání / videí (`E2ePreflight::toolProblems`,
+  `VideoPreflight::toolProblems` + Gotenberg) = kroky `failed` rovnou, bez
+  dílčích úloh. Neplatný scénář z katalogu = krok `failed` s jeho větou.
+- **Zrušení**: SIGTERM orchestrátoru (obal po `cancel` z API / CLI) →
+  běžící krok kódu SIGTERM, běžící dílčí úloha `cancel` (API kaskáduje
+  i samo — volání je idempotentní) a čekání nejvýš její grace + 30 s,
+  zbytek `skipped` „kolo zrušeno“, stav `cancelled`, exit 130.
+- **Souhrn** (D133, `RoundResult`, `result.json`
+  `shpd.testRound.result.v1`): `status`, `exitCode`, `git` (commit, větev,
+  necommitnuté změny), `selection`, `dataSources[]` (role, sada, id,
+  název, `created`, id úlohy `create`), `steps[]` (vrstva, sada, scénář,
+  krok, stav `ok` / `failed` / `skipped` / `cancelled`, doba, id dílčí
+  úlohy, exit, důvod, počty testů, první selhání, u evaluace soubor běhu,
+  shoda polí `fields.all.hit` a cena `cost.totalUsd`), `summary`. Píše se
+  **průběžně** po každé změně (`JobStore::writeResult`, atomicky) —
+  dashboard z něj kreslí živou tabulku, poslední snímek přežije i SIGKILL.
+
+### Evaluace v kole (D131)
+
+`--eval <varianta>` (z `tests/eval/variants/`), `--repeat N`, `--max-cost
+<USD>` povinný. Před startem odhad per sada (`RoundEstimate` →
+`EvalEstimateRunner` = `ai-eval … --estimate --json` podprocesem — tentýž
+kód jako odhad v dashboardu); součet nad stropem = kolo nezačne (exit 2,
+výpis po sadách). Odhad potřebuje **existující** zdroj dat kola (profil
+a AI připojení z jeho databáze) — bez něj kolo s `--eval` odmítne; založí
+ho kolo bez `--eval` nebo dashboard. `ai-eval --estimate` od F8a kontroluje
+jen **prostředí** (`EvalPreflight::environmentProblems`), ne čistotu
+zdroje dat — zdroj po `verify` má doklady a odhad na nich nezávisí; ostrý
+běh dál vyžaduje obojí (kolo před evaluací přeseeduje). Dílčí `eval`
+dostane `--max-cost` = strop − dosud utraceno (`cost.totalUsd`
+předchozích evaluací kola); vyčerpaný strop = `skipped`. Výsledky jdou
+jako dnes do `tests/eval/<sada>/` (commit dělá člověk). Evaluace
+zastavená stropem (`stoppedBy`) je krok `failed`.
+
+### Dashboard
+
+Stránka Testování: karta **Testovací kolo** — poslední kolo (stav,
+součty, commit, výběr, odkaz) nebo běžící kolo, tlačítko **Spustit
+testovací kolo** → dialog (vrstvy, filtr sad a scénářů s tím, který zdroj
+dat kolo použije nebo založí, chybějící nástroje, evaluace: varianta,
+opakování, **Odhadnout cenu** → strop předvyplněný 1,5× odhad). Detail
+úlohy `round`: živá tabulka kroků po vrstvách s odkazy na dílčí úlohy
+(stávající `VerifyResult`, `E2eResult`, výsledek videa, evaluace), po
+skončení táž tabulka jako výsledek; zrušení přes stávající tlačítko
+(kaskáda). Dílčí úloha ukazuje „Součást kola“, seznam úloh filtr
+`?parent=<id kola>`. API `DevRoundController` (`/_dev/api/testing/round`:
+`GET` poslední kolo + nabídky, `POST estimate`, `POST run` — origin
+požadavku jako `baseUrl`, 409 při běžícím kole / `update`, 422
+`EVAL_PREFLIGHT` / `EVAL_OVER_CAP`).
+
+### Nálezy při zavedení (2026-10-27)
+
+1. **`CI=1` v prostředí kroků kódu** shodilo dva testy
+   (`CancellableProcessTest`, `VideoRunCommandTest`), které hlídají, že
+   skládání prostředí podprocesů žádné `CI` nepřidá — PHPUnit ho zdědil
+   z kola. Kolo proto přidává jen locale a `PYTHONUTF8`; TAP `node
+   --test` mimo TTY dává i bez `CI`. Testy jsou citlivé na `CI` v prostředí
+   stroje — na skutečném CI by padaly také.
+2. **Zámky úloh dědili potomci** (`fopen` mód `c` bez close-on-exec):
+   obal dílčí úlohy spuštěný z kola by držel `wrapper.lock` kola i po jeho
+   smrti a kolo by vypadalo živé. Od F8a mód `ce`.
+3. **Odhad `ai-eval --estimate` odmítal použitý zdroj dat** — po `verify`
+   má doklady; kolo odhad potřebuje před přeseedováním. Preflight rozdělen
+   na prostředí a čistotu.
+4. **Demo sada není ve vrstvě sad**: nemá `expected/`, `dataset-verify`
+   ani `dataset-e2e` nad ní nejdou — patří jen do vrstvy videí.
+
+### Pasti
+
+- **Celý PHPUnit běží desítky sekund až minuty** (11 tisíc testů ~ 1,5
+  min na dev stroji); při ladění kola `--only datasets` nebo `--only
+  videos`.
+- **Kolo pod jiným uživatelem než pool php-fpm** příkaz odmítne (vlastník
+  adresáře úloh) — jinak by dashboard kolo nemohl zrušit.
+- **Jedno kolo naráz**; `update` kolo blokuje a naopak. Cizí úloha na
+  zdroji dat kola = krok `skipped` (nečeká se) — kolo pak končí exit 1.
+- **Evaluace stojí peníze** — jen `--eval` se stropem; bez zdroje dat kola
+  odhad nejde, spusť nejdřív kolo bez `--eval`.
+- **Kolo nepřepíná větev ani nedělá `git pull`** — testuje checkout, jak
+  je; necommitnuté změny jen zapíše do souhrnu (`git.dirty`).

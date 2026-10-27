@@ -149,7 +149,11 @@ evaluací, #103 D53, `docs/test-corpus.md` § 18) a od F6b spouštění
 `pages/testing/DataSourcesPanel.svelte` panel Zdroje dat se sadou,
 `EvalRunDialog.svelte` odhad + strop útraty, `JobsPage` / `JobDetailPage`
 (polling každé 2 s přes offset `progress.jsonl`), `VerifyResult.svelte`,
-`VariantsPage` / `VariantEditorPage.svelte`). Dialogy jsou dev-lokální
+`VariantsPage` / `VariantEditorPage.svelte`; testovací kolo #103 F8a:
+karta na `DatasetsPage`, `RoundRunDialog.svelte` vrstvy + filtry + odhad
+evaluací, `RoundResult.svelte` živá i konečná tabulka kroků ze
+`result.json` úlohy `round`, čisté funkce `testing/round.js`,
+`testing/api.js` → `/_dev/api/testing/round*`). Dialogy jsou dev-lokální
 `components/DevDialog.svelte` + `DevConfirm.svelte` — sdílený `Modal`
 a `ConfirmDialog` tahají `t()`. Routy `testing/jobs…` a `testing/variants…`
 stojí v `routes.js` **před** `testing/:set` (první shoda vítězí — sada se
