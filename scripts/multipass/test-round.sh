@@ -230,6 +230,7 @@ die() {
 }
 
 on_interrupt() {
+    local phase="$PHASE_ID"
     trap - INT TERM
     INTERRUPTED=1
     echo "" >&2
@@ -238,9 +239,16 @@ on_interrupt() {
     FINAL_EXIT=130
     if [ -n "$OUT_DIR" ] && [ -d "$OUT_DIR" ]; then
         note "běh přerušen — výsledky jsou neúplné, sběr z VM se neprovedl"
-        if [ "$PHASE_ID" = "" ] && [ -z "$ROUND_EXIT" ] && [ -n "$DASHBOARD_URL" ]; then
-            note "kolo ve VM může běžet dál jako úloha dashboardu: $DASHBOARD_URL"
-        fi
+        # Only a running round survives the interrupt as a dashboard job —
+        # multipass exec dies, the job in the VM does not. Earlier phases
+        # leave nothing running that would be worth mentioning.
+        case "$phase" in
+            round|eval)
+                if [ -n "$DASHBOARD_URL" ]; then
+                    note "kolo ve VM může běžet dál jako úloha dashboardu: $DASHBOARD_URL"
+                fi
+                ;;
+        esac
         finish
     fi
     exit 130

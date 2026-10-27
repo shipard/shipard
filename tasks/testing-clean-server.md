@@ -355,8 +355,9 @@ jen `grep`em zakázaných konstrukcí, skutečný běh na Macu je na člověku.
 - **Adresa dashboardu** se zjišťuje hned po `launch`, ne až před kolem —
   souhrn po selhání cloud-initu nebo druhého bootstrapu ji tak nese také.
 - **Ctrl+C**: sběr z VM se neprovádí (VM zůstává se vším), `summary.txt`
-  a `environment.json` se zapíší; poznámka, že kolo ve VM může běžet dál
-  jako úloha dashboardu (`multipass exec` padne, úloha `round` ne).
+  a `environment.json` se zapíší; při přerušení během kola nebo evaluace
+  poznámka, že kolo ve VM může běžet dál jako úloha dashboardu
+  (`multipass exec` padne, úloha `round` ne) — N1.
 - **`jobs.tgz` / `eval.tgz`** se po stažení ověří `tar -tzf`; poškozený
   nebo prázdný archiv je poznámka v souhrnu. `eval.tgz` bere soubory
   z `git ls-files --others --modified --exclude-standard -- tests/eval`.
@@ -381,7 +382,7 @@ větví, evaluací a volbami za `--` (exit 0, VM smazaná, výsledky kompletní,
 STDIN a nikde v argv ani ve výsledcích), kolo exit 1 (sběr, VM zůstane,
 exit 1), přerušení (TERM) během druhého bootstrapu → N1.
 
-- [ ] **N1 — zavádějící poznámka po přerušení.** Přerušení během
+- [x] **N1 — zavádějící poznámka po přerušení.** Přerušení během
   `cloud-init` nebo `bootstrap-2` dá do souhrnu „kolo ve VM může běžet dál
   jako úloha dashboardu“, ačkoli kolo nezačalo (souhrn zároveň hlásí „Kolo:
   neproběhlo“). Příčina: `on_interrupt` testuje `PHASE_ID` až po
@@ -389,6 +390,12 @@ exit 1), přerušení (TERM) během druhého bootstrapu → N1.
   fázi si zapamatovat **před** `phase_end` a poznámku psát jen pro `round`
   a `eval`. Ověř maketou: přerušení během `bootstrap-2` → bez poznámky,
   během `round` → s poznámkou.
+  **Opraveno 2026-10-27:** `on_interrupt` čte `PHASE_ID` do lokální
+  proměnné jako první a poznámku píše jen pro fáze `round` a `eval`.
+  Ověřeno maketou se SIGINT (skript ve vlastní session přes `setsid -f`
+  — proces spuštěný přes `&` má SIGINT ignorovaný a trap se neuplatní):
+  `bootstrap-2` → bez poznámky, `round` i `eval` → s poznámkou; vždy
+  exit 130, VM zůstává, bez `delete`.
 - [x] **N2 — mezipaměť `raw.githubusercontent.com`.** Soubory drží až
   5 minut, takže hned po pushnutí může skript stáhnout starý
   `shipard-dev.yaml` a cloud-init starý `dev-bootstrap.sh` (druhý běh
