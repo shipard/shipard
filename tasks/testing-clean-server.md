@@ -1,6 +1,6 @@
 # F8b — testovací kolo na čistém serveru (Multipass)
 
-**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9), ověřeno nanečisto proti maketám; zbývá ruční ověření 1–4 na Macu (člověk), časy do `docs/test-corpus.md` § 22 a výsledek do #146
+**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9), ověřeno nanečisto proti maketám; první běh na Macu (AVF) našel N3–N10 — k opravě N3 a N5–N10 (N7 blokuje nasazení na testovací server), N4 po běhu na QEMU; pak ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146
 
 ## Kontext / Cíl
 
@@ -87,6 +87,10 @@ v `docs/dev/dev-daily.md` § 1. Proto D3.
 - ✓ **D9 — Spouští se ručně z terminálu hostitele;** plánování a CI až
   s incusem. Dokumentace `docs/test-corpus.md` § 22, `--with-testing`
   v `docs/dev/`.
+- ✓ **D10 — `doctor` kontroluje rozšíření PHP** podle `ext-*`
+  z `composer.json` (✗ s názvem balíčku k doinstalování); chybějící
+  rozšíření se tak už neschová za náhodně vybavený server (z N7,
+  2026-10-27).
 
 ## Upřesnění pro implementaci
 
@@ -401,6 +405,99 @@ exit 1), přerušení (TERM) během druhého bootstrapu → N1.
   `shipard-dev.yaml` a cloud-init starý `dev-bootstrap.sh` (druhý běh
   bootstrapu jede z čerstvého checkoutu, toho se to netýká). Doplněno do
   pastí `docs/test-corpus.md` § 22 a do ručního ověření výše.
+
+## Nálezy z prvního běhu na Macu (2026-10-27)
+
+**Pro Claude Code:** oprav N3 a N5–N10 (N4 až po běhu na QEMU). Commity po
+nálezech (N7 s D10 samostatně — jde do produkce), každý s testem, kde
+to jde; N7 ověř i na vývojářském serveru (`doctor` sekce rozšíření ✓;
+chybějící rozšíření nasimuluj v testu, ne odinstalací). Celou sadu PHPUnit
+na konci. U každého nálezu označ `[x]` s větou, jak je opraven a ověřen.
+
+Běh 1 (stable, Ubuntu 26.04, Apple silicon, Multipass 1.17 s backendem
+**Apple Virtualization Framework** — novinka 1.17; testy #96 běžely na QEMU).
+Instalace cestou nováčka prošla (zelený `doctor`, dashboard funguje),
+cloud-init `degraded` jen kvůli nepovedenému přejmenování síťového
+rozhraní (`enp0s1` → `eth0`, věc Multipassu a cloud-initu — skript to bere
+jako varování).
+
+- [ ] **N3 — zastaralý souhrn bootstrapu.** `print_summary`
+  v `dev-bootstrap.sh` radí „+ New DS → zaškrtni „Seed test data“ → Create
+  Data Source → Open“ — stav před #103 F6c. Dnes **Nový zdroj dat**, pole
+  **Data** s výběrem sady, **Vytvořit zdroj dat**, **Otevřít zdroj dat →**
+  (`docs/dev/dev-daily.md` § 2). Kroky neopisovat: jedna věta s názvy
+  tlačítek (ověř v `frontend/src/dev/i18n/cs.js`) a odkaz na § 2.
+- [ ] **N4 — `multipass launch` na AVF nečeká na cloud-init.** VM
+  vznikla v 19:15, launch vrátil „Launched“ v 19:19:47 (≈ 4,7 min), bootstrap
+  běžel do ≈ 19:21 — přes `--timeout 3600`. Skript na cloud-init čeká sám,
+  ale `docs/dev/local-dev.md` kapitola 2 krok 4 („příkaz čeká, dokud
+  instalace uvnitř nedoběhne“) a krok 5 (`multipass exec shipard -- tail -f
+  shipard-bootstrap.log` — na AVF během startu jen točící se lomítko, viz
+  N5) platí jen pro QEMU. Text upravit podle výsledku běhu na QEMU; do
+  pastí § 22 backend jako údaj (`environment.json` → `host.driver`
+  z `multipass get local.driver`).
+- [ ] **N5 — `multipass exec` spuštěný během startu VM nevrátí (AVF).**
+  `multipass exec … cloud-init status --wait` z 19:19:48 visel půl hodiny:
+  ve VM příkaz doběhl (session `sshd-session` bez potomka), spojení mělo
+  `Send-Q 0` — data Mac převzal, visí klient `multipass`. Stejný příznak měl
+  ruční `tail -f` logu bootstrapu (jen točící se lomítko). Krátké i dlouhé
+  příkazy spuštěné **po** startu fungují (15 s s průběžným výpisem
+  i s přesměrovaným výstupem); běh pokračoval po `kill` visicího klienta.
+  Oprava ve fázi `cloud-init`: žádný dlouhý `exec` — každých 10 s krátké
+  `multipass exec <vm> -- cloud-init status` (`running` / `done` /
+  `degraded` / `error`) s celkovým limitem 3600 s a větou při vypršení;
+  každé volání ohlídané hlídačem (`timeout` na macOS není: `exec` na
+  pozadí, po 30 s `kill` a další pokus), protože nevíme, jestli visí jen
+  dlouhé volání, nebo každé zahájené během startu. Výstup posledního
+  dotazu do `cloud-init.txt` jako dnes (`status --long` až po skončení).
+  Ověření maketou: `exec`, který prvních N volání visí, a stav
+  `running` → `done`; vypršení limitu → exit 2, VM zůstane.
+- [ ] **N6 — varování buildu dashboardu.** `vite-plugin-svelte` při každém
+  `npm run build`: `frontend/src/dev/pages/testing/DatasetsPage.svelte:72`
+  `<div>` uvnitř `<p>` (karta Testovací kolo z #103 F8a) — prohlížeč HTML
+  přeskládá. Vnější `<p>` → `<div>` (se stejnou třídou), vzhled beze změny.
+
+**Kolo** (commit `362f87df`, 26.04 aarch64, PHP 8.5.4, Node 24.22.1): 11 ok,
+8 selhalo, exit 1. Fáze: launch 4:39, cloud-init 34:11 (z toho ≈ 30 min
+visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
+7:18, kolo 5:28 (zkrácené selháními). Vrstva kódu kromě PHPUnit zelená.
+
+- [ ] **N7 — chybí rozšíření PHP `bcmath` (blokuje nasazení).** Od #103
+  D84 (`c61cca00`, přepočet do domácí měny v desítkové aritmetice) volá
+  `DocDocument::toHome()` / `homeTax()` funkce `bcmul` / `bcround` — při
+  každém výpočtu částek dokladu, i v domácí měně. `install-packages.sh`
+  `php8.5-bcmath` neinstaluje, `composer.json` `ext-bcmath` nevyžaduje,
+  `doctor` rozšíření nekontroluje; vývojářský server ho má náhodou
+  (balíček z PPA). Na čistém serveru: `Call to undefined function …\bcround()`
+  → 66 chyb PHPUnit (většina z 92 selhání), `dataset-verify` nepoužil ani
+  jeden doklad (`internal_error`), `dataset-e2e` 500 na každém Použít, seed
+  demo sady 310 chyb. **Testovací server rozšíření nemá** a je na commitu
+  před D84 — nasazení dnešního `stable` bez opravy = žádný doklad nepůjde
+  uložit. Oprava: `php8.5-bcmath` do `install-packages.sh` (`shpd-server
+  upgrade` ho volá, existující servery ho tak dostanou), `"ext-bcmath": "*"`
+  do `composer.json` + `composer update --lock`, `doctor` kontroluje
+  rozšíření PHP podle `ext-*` z `composer.json` (✗ s názvem balíčku).
+- [ ] **N8 — `%cI` z novejšího gitu.** `UpdateCheckerTest::testBehindReports…`
+  čeká `2026-09-20T08:00:00+00:00`, git na 26.04 vrací `…T08:00:00Z`
+  (vývojářský server git 2.43). `Git` předává `%cI` beze změny do
+  `state.json` a UI. Normalizovat na jednom místě v `Git` (`DateTimeImmutable`
+  → `DATE_ATOM`), test ponechat.
+- [ ] **N9 — rozpoznání ISDOC z nevalidního XML.**
+  `AttachmentPreparerTest::testIsdocIsNeverSentToTheModel`: příloha
+  `broken.xml` (useknutý `<Invoice xmlns="http://isdoc.cz/namespace/2013"><ID>`)
+  má zůstat textem pro model, na 26.04 ji `isIsdoc()` vyhodnotí jako ISDOC
+  a vyřadí. `rootNamespace()` čte `XMLReader` jen do prvního elementu —
+  libxml2 2.9 (vývojářský server) chybu ohlásí dřív, novejší libxml2
+  první element vrátí. Dokumentace metody slibuje „null u nevalidního XML“:
+  dokument dočíst až do konce (namespace prvního elementu si zapamatovat,
+  chyba čtení = null).
+- [ ] **N10 — stopy prokliknutí třikrát.** Každá selhaná úloha
+  `dataset-e2e` má ≈ 200 MB: tytéž trace leží v `e2e/traces/`,
+  `e2e/test-results/…/attachments/` i `e2e/playwright-report/data/`
+  (po ≈ 77 MB) — na vývojářském serveru i v `jobs.tgz` (619 MB). Nechat
+  jedinou kopii (tu, kterou nabízí detail úlohy ke stažení — ověř
+  v `E2eResult` / API), ostatní po běhu smazat nebo Playwright nastavit,
+  ať je nevytváří. `docs/test-corpus.md` § 19 upravit.
 
 ## Pasti
 
