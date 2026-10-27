@@ -55,7 +55,7 @@
     {#if list.length > 0}
       <ul class="shpd-notice__list">
         {#each list as item}
-          <li>{#if item.label}<strong>{item.label}</strong>: {/if}{item.text}</li>
+          <li>{#if item.label}<strong>{item.label}</strong>{': '}{/if}{item.text}</li>
         {/each}
       </ul>
     {/if}
