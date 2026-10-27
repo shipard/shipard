@@ -1923,3 +1923,155 @@ požadavku jako `baseUrl`, 409 při běžícím kole / `update`, 422
   odhad nejde, spusť nejdřív kolo bez `--eval`.
 - **Kolo nepřepíná větev ani nedělá `git pull`** — testuje checkout, jak
   je; necommitnuté změny jen zapíše do souhrnu (`git.dirty`).
+- **Totéž kolo na čistém serveru** — Multipass VM z hostitele jedním
+  příkazem, včetně instalace cestou nováčka: § 22.
+
+
+## 22. Testovací kolo na čistém serveru (F8b)
+
+Zadání a rozhodnutí D1–D9, U1–U5: `tasks/testing-clean-server.md`, issue
+#146. Kolo z § 21 běží na dlouho žijícím vývojářském serveru
+s nahromaděným stavem — že instalace cestou nováčka (`docs/dev/local-dev.md`:
+`scripts/multipass/shipard-dev.yaml` → cloud-init → `dev-bootstrap.sh`)
+a provisioning fungují i na čistém stroji, ověří jen čistý stroj. Řídicí
+skript `scripts/multipass/test-round.sh` to dělá jedním příkazem na
+hostiteli s Multipassem (macOS, Linux; Windows ne — D1): založí VM, nechá
+proběhnout bootstrap přesně podle návodu, podruhé ho spustí
+s `--with-testing` (D2, D3 — ověří i idempotenci a doplnění nástrojů
+z `docs/dev/dev-daily.md` § 5), pustí kolo, volitelně evaluaci, výsledky
+odnese na hostitele a VM po úspěchu smaže. Testuje se **pushnutý kód
+z GitHubu** (D4), ne lokální změny. Incus (vyhrazený server, plánování)
+je další fáze #146.
+
+### Spuštění (D9 — ručně z terminálu hostitele)
+
+Checkout na hostiteli není potřeba, stačí skript (U1):
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/shipard/shipard/stable/scripts/multipass/test-round.sh
+bash test-round.sh                                   # stable, Ubuntu 26.04, celé kolo (kód, sady, videa)
+bash test-round.sh --branch moje-vetev               # jiná větev: yaml i bootstrap z ní
+bash test-round.sh -- --only datasets --dataset cz-non-payer
+bash test-round.sh --eval baseline --repeat 1 --max-cost 1 --eval-dataset cz-non-payer --ai-key-file ~/.secrets/anthropic.key
+bash test-round.sh --image 24.04 --keep
+```
+
+| Volba | Význam |
+|-------|--------|
+| `--branch <větev>` | větev na GitHubu (výchozí `stable`); neexistující = HTTP 404 a konec před `launch` |
+| `--image 26.04 \| 24.04` | obraz Ubuntu (výchozí 26.04); architektura podle hostitele |
+| `--cpus <n>`, `--memory <x>`, `--disk <x>` | velikost VM, výchozí 4 / 8G / 30G (D7) |
+| `--out <adresář>` | kořen výsledků (výchozí `~/shipard-rounds`) |
+| `--keep` | VM nechat i po úspěchu |
+| `--eval <varianta> --repeat <n> --max-cost <USD> --ai-key-file <soubor>` | evaluace po kole, všechny čtyři spolu (D5); klíč jen ze souboru |
+| `--eval-dataset <sada>` | sada pro evaluaci, opakovatelné; bez ní všechny |
+| `-- …` | vše za `--` jde beze změny do prvního `shpd-server test-round` (`--only`, `--dataset`, `--scenario`) |
+
+### Průběh
+
+Fáze — každá s časem začátku, dobou a stavem v `environment.json`
+a v souhrnu; nadpisy fází anglicky, hlášky česky jako v `dev-bootstrap.sh`:
+
+1. **preflight** hostitele — `multipass` (verze do výsledků), `curl`,
+   zapisovatelný `--out`, platné hodnoty voleb, s evaluací čitelný
+   neprázdný soubor s klíčem a úplná čtveřice voleb. Selhání = exit 2,
+   žádná VM.
+2. **yaml** (U2) — `shipard-dev.yaml` z testované větve přes HTTPS
+   (`raw.githubusercontent.com`). Pro `stable` beze změny; pro jinou
+   větev náhrada `…/stable/scripts/dev-bootstrap.sh` → `…/<větev>/…`
+   a `| bash >` → `| bash -s -- --branch <větev> >` — každá musí trefit
+   právě jedno místo, jinak konec s větou „shipard-dev.yaml se změnil —
+   uprav scripts/multipass/test-round.sh“. Zástupný řádek SSH klíče
+   zůstává (do VM se chodí jen přes `multipass exec`). Použitý yaml je
+   ve výsledcích.
+3. **launch** — `multipass launch <image> --name shipard-round-<čas>
+   --cpus … --memory … --disk … --timeout 3600 --cloud-init <yaml>`;
+   nenulový exit s existující VM je timeout, pokračuje se.
+4. **cloud-init** — `cloud-init status --wait`, `status --long`
+   do `cloud-init.txt`, `~/shipard-bootstrap.log` jako `bootstrap-1.log`;
+   `error` = exit 2 (VM zůstane, konec logu v terminálu), `degraded`
+   = varování v souhrnu.
+5. **bootstrap-2** (D2) — `bash ~/sw/shpd/scripts/dev-bootstrap.sh
+   --with-testing` přes `multipass exec`, výstup do terminálu
+   a `bootstrap-2.log`; selhání = exit 2.
+6. **ai-key** (jen s `--eval`, D5) — `sudo shpd-server dev-ai-key
+   --set-key` se souborem na STDIN; klíč není v argv, v proměnné ani ve
+   výsledcích; `--status` (existence a práva) do `ai-key.log`.
+7. **round** (U4) — adresa dashboardu VM do terminálu (`http://<IPv4>/_dev/`,
+   kolo jde sledovat živě), `shpd-server test-round <volby za -->` pod
+   uživatelem `ubuntu` (vlastník adresáře úloh — nikdy `sudo`), výstup do
+   terminálu a `round.log`, exit kola přes `PIPESTATUS`.
+8. **eval** (jen s `--eval`) — po kole, pokud začalo (exit ≠ 2): `test-round
+   --only datasets [--dataset <sada>]… --eval <varianta> --repeat <n>
+   --max-cost <USD>` → `round-eval.log`.
+9. **collect** (D6) — `doctor.txt`, `jobs.tgz` (`tar -czf -` nad
+   `/opt/shipard/run/dev-jobs` přes `multipass exec`, přenos ověří `tar
+   -tzf`), s evaluací `eval.tgz` (nové a změněné soubory `tests/eval/` —
+   ve VM zůstanou necommitnuté a s ní zaniknou), verze ve VM
+   (`/etc/os-release`, PHP, MariaDB, Node, npm, commit a větev checkoutu).
+   Běží i po selhání, pokud VM existuje; co nejde sebrat, je poznámka
+   v souhrnu, sběr kvůli tomu nekončí.
+10. **souhrn** do terminálu a `summary.txt`; **úklid** (D7): vše prošlo
+    a bez `--keep` → `multipass delete --purge`; jinak VM zůstane
+    a souhrn vypíše `multipass shell <vm>` a `multipass delete --purge <vm>`.
+
+### Výsledky (`~/shipard-rounds/<vm>/`)
+
+```
+summary.txt          souhrn z terminálu
+environment.json     hostitel, VM, verze ve VM, commit, časy a exit kódy fází
+                     (shpd.testRound.cleanServer.v1)
+shipard-dev.yaml     použitý cloud-init
+cloud-init.txt       cloud-init status --long
+bootstrap-1.log      ~/shipard-bootstrap.log (cloud-init, cesta nováčka)
+bootstrap-2.log      druhý běh s --with-testing
+ai-key.log           dev-ai-key: existence a práva klíče (jen s --eval)
+round.log            průběh kola
+round-eval.log       průběh kola s evaluací (jen s --eval)
+doctor.txt           shpd-server doctor po kole
+jobs.tgz             /opt/shipard/run/dev-jobs — kolo a dílčí úlohy;
+                     result.json kola je strojový souhrn
+eval.tgz             nové soubory tests/eval/ (jen s --eval)
+```
+
+Výsledek do #146 se zapisuje ručně (D6). O commitu výsledků evaluace
+z čistého serveru se tu nerozhoduje — `tests/eval/` z VM se do repa
+nekopírují.
+
+### Exit kódy a osud VM
+
+| Exit | Kdy | VM |
+|------|-----|----|
+| `0` | kolo i případná evaluace skončily 0 | smazána (bez `--keep`) |
+| `1` | kolo nebo evaluace skončily 1 (selhání, přeskočený krok, strop útraty) | zůstává |
+| `2` | preflight, yaml, launch, cloud-init nebo druhý bootstrap selhaly; kolo nezačalo (exit 2) | zůstává (po preflightu a yaml nevznikla) |
+| `130` | Ctrl+C (U5) | zůstává; kolo ve VM může běžet dál jako úloha dashboardu |
+
+### Doba běhu
+
+Doplnit po prvním ověření na Macu (fáze a časy v `environment.json`).
+Bez mezipamětí (D8): čistý server stahuje vše — o klonu VM po bootstrapu
+nebo snapshotech se rozhodne podle naměřených časů, a jen pro opakování
+kola, ne pro test instalace.
+
+### Pasti
+
+- **`multipass launch` bez `--timeout`** hlásí chybu po 5 minutách,
+  ačkoli instalace pokračuje — skript dává 3600 s a nenulový exit
+  s živou VM bere jako timeout, ne jako konec.
+- **`multipass exec` nemá TTY** — `sudo` ve VM musí projít bez hesla
+  (`ubuntu` na cloud image má NOPASSWD, bootstrap volá `sudo -n`);
+  STDIN ale předává — proto jde klíč ze souboru.
+- **Kolo nikdy pod `sudo`** — adresář úloh vlastní `ubuntu`; `test-round`
+  jiného vlastníka odmítne (§ 21).
+- **Exit přes `tee`** — v bash 3.2 `${PIPESTATUS[0]}` hned za rourou
+  s dočasně vypnutým `set -e`; `pipefail` sám vrátí exit `tee`, když
+  selže zápis.
+- **bash 3.2 na macOS** — žádná asociativní pole, `mapfile`, `${x,,}`,
+  `sed -i`, `date -d`, `readlink -f`, `grep -P`, `jq` ani `python`;
+  prázdné pole pod `set -u` jen přes `${a[@]+"${a[@]}"}`.
+- **Evaluace potřebuje zdroj dat kola** — založí ho první kolo (vrstva
+  sad); `-- --only code` s `--eval` odmítne až `test-round` ve VM (odhad
+  bez zdroje dat, § 21), skript to nehlídá.
+- **Windows** — Multipass existuje, skript je bash; WSL se neautomatizuje
+  (D1).

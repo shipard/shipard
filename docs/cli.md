@@ -1,6 +1,6 @@
 # CLI nástroje — kompletní reference
 
-Shipard má dvě hlavní CLI utility a tři podpůrné shell skripty. Dohromady
+Shipard má dvě hlavní CLI utility a čtyři podpůrné shell skripty. Dohromady
 pokrývají instalaci serveru, vytváření a správu datových zdrojů (DS),
 údržbu (secrets, mail-router, AI připojení) a vývojový workflow.
 
@@ -11,6 +11,7 @@ pokrývají instalaci serveru, vytváření a správu datových zdrojů (DS),
 | `scripts/dev-update.sh` | Po `git pull` — sync composer/npm/build | repo root (skript si dohledá sám) |
 | `scripts/install-packages.sh` | Jednorázová instalace systémových balíčků (PHP, MariaDB, nginx, …) | repo root, jako root |
 | `scripts/dev-bootstrap.sh` | Celé vývojové prostředí jedním příkazem (Multipass, WSL, čisté Ubuntu) | odkudkoli, pod běžným uživatelem |
+| `scripts/multipass/test-round.sh` | Testovací kolo na čisté Multipass VM — instalace cestou nováčka + `shpd-server test-round` (#146) | hostitel s Multipassem (macOS, Linux), bez checkoutu |
 
 `scripts/install-packages.sh` vytvoří symlinky `/usr/bin/shpd-server`
 a `/usr/bin/shpd-ds`, takže oba nástroje jsou poté volatelné odkudkoliv.
@@ -2569,7 +2570,13 @@ bash scripts/dev-update.sh
 ```
 
 Po `git pull` synchronizuje vývojové prostředí — `composer install`,
-`npm install`, `npm run build`. Všechny tři kroky jsou idempotentní;
+`npm install`, `npm run build`; má-li projekt `tests/e2e/` nebo
+`tools/video-runner/` svůj `node_modules` (nástroje pro testování
+z [`dev/dev-daily.md`](dev/dev-daily.md) § 5, `dev-bootstrap.sh
+--with-testing`), přidá i `npm install` a `… cli.js install chromium` pod
+aktuálním uživatelem; bez `node_modules` krok tiše přeskočí (#146 D3).
+Systémové knihovny Chromia (root) neřeší — ozve se preflight. Číslování
+kroků `[n/N]` počítá jen ty, které poběží. Všechny kroky jsou idempotentní;
 pokud se nic nezměnilo, projdou během pár sekund. Skript lze spustit
 z libovolného CWD (sám si dohledá repo root).
 
@@ -2652,7 +2659,8 @@ curl -fsSL … | bash -s -- --with-ssh --ssh-pubkey-file <cesta>
 Vývojové prostředí jedním příkazem — skládá za sebe kroky z [`dev/linux-install.md`](dev/linux-install.md):
 checkout → `install-packages.sh --mode=development` → `dev-update.sh` →
 `server-init` → `cron-install` → `git config core.hooksPath .githooks` →
-volitelné části → `shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
+volitelné části (`--with-render`, `--with-testing`, `--with-ssh`) →
+`shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
 (Multipass, cloud-init `scripts/multipass/shipard-dev.yaml`) a Windows (WSL):
 [`dev/local-dev.md`](dev/local-dev.md).
 
@@ -2673,10 +2681,52 @@ volitelné části → `shpd-server doctor` → souhrn s adresou dashboardu. Ná
 | Opce | Význam |
 |------|--------|
 | `--with-render` | Render služba dle [`operations/render-service.md`](operations/render-service.md): unit `shpd-render`, čekání na `/health`, klíč `render` do `/etc/shipard/server.json` (ostatní klíče beze změny, existující `render` se nepřepisuje). |
+| `--with-testing` | Nástroje pro proklikání, videa a testovací kolo (#146 D3): `ffmpeg` přes apt, `npm ci` v `tests/e2e` a `tools/video-runner`, systémové knihovny Chromia přes `sudo` lokálním CLI Playwrightu s explicitním `node` (ne `npx`), Chromium Playwrightu pod vývojářem pro oba projekty; zahrnuje `--with-render`. Idempotentní, kroky = [`dev/dev-daily.md`](dev/dev-daily.md) § 5. |
 | `--with-ssh` | `openssh-server` pro `remote-dev-bridge`: drop-in `/etc/ssh/sshd_config.d/shipard-dev.conf`, port 2222, přihlášení jen klíčem. Mimo WSL zůstávají vedle 2222 i porty, na kterých sshd naslouchal dosud. Když se nastavení neuplatní (jiný soubor zapíná hesla dřív), drop-in se odstraní a skript skončí chybou. |
 | `--ssh-pubkey-file <cesta>` | Veřejný klíč, který se připojí do `~/.ssh/authorized_keys` (bez duplicit). Povinný s `--with-ssh`, pokud je `authorized_keys` prázdný. |
 | `--branch <větev>` | Větev pro nový checkout. Default `stable`. |
 | `--dir <cesta>` | Adresář checkoutu. Default `~/sw/shpd`; při spuštění z checkoutu ten checkout. |
+
+### `scripts/multipass/test-round.sh`
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/shipard/shipard/stable/scripts/multipass/test-round.sh
+bash test-round.sh                                        # stable, Ubuntu 26.04, celé kolo
+bash test-round.sh --branch <větev> -- --only datasets    # jiná větev; vše za -- jde do shpd-server test-round
+bash test-round.sh --eval baseline --repeat 1 --max-cost 1 --ai-key-file <soubor>
+```
+
+Testovací kolo na **čisté Multipass VM** z hostitele (macOS, Linux
+s Multipassem; Windows ne — #146 D1, `docs/test-corpus.md` § 22): jeden
+samostatný soubor pro bash 3.2 bez `jq` a `python`, checkout na hostiteli
+není potřeba. Fáze: preflight hostitele → `shipard-dev.yaml` testované
+větve z GitHubu (jiná větev než `stable` = náhrada odkazu na
+`dev-bootstrap.sh` a `--branch`, každá právě jednou) → `multipass launch
+… --timeout 3600 --cloud-init` (bootstrap cestou nováčka) → `cloud-init
+status` → druhý bootstrap `--with-testing` → (klíč AI ze souboru jen přes
+STDIN do `dev-ai-key --set-key`) → `shpd-server test-round` pod `ubuntu`
+(nikdy `sudo`) s adresou dashboardu VM pro živé sledování → (evaluace
+`--only datasets --eval …`) → sběr (`doctor`, `jobs.tgz`, `eval.tgz`,
+verze ve VM) → souhrn → VM smazat jen po úspěchu bez `--keep`, jinak
+zůstává s výpisem `multipass shell` / `multipass delete --purge`.
+Výsledky v `~/shipard-rounds/<vm>/` (`summary.txt`, `environment.json`
+s časy fází, logy obou bootstrapů, kola a evaluace, `cloud-init.txt`,
+`doctor.txt`, archivy).
+
+| Opce | Význam |
+|------|--------|
+| `--branch <větev>` | Testovaná větev na GitHubu (výchozí `stable`); 404 = konec před `launch`. |
+| `--image <verze>` | `26.04` (výchozí) nebo `24.04`. |
+| `--cpus <n>`, `--memory <x>`, `--disk <x>` | Velikost VM; výchozí 4 / 8G / 30G. |
+| `--out <adresář>` | Kořen výsledků (výchozí `~/shipard-rounds`). |
+| `--keep` | VM nechat i po úspěchu. |
+| `--eval <varianta> --repeat <n> --max-cost <USD> --ai-key-file <soubor>` | Evaluace po kole (všechny čtyři spolu); klíč nikdy v argv ani ve výsledcích. |
+| `--eval-dataset <sada>` | Sada pro evaluaci (opakovatelné; výchozí všechny). |
+| `-- <volby>` | Beze změny do prvního `shpd-server test-round` (`--only`, `--dataset`, `--scenario`). |
+
+Exit `0` vše prošlo, `1` kolo nebo evaluace skončily 1, `2` preflight,
+launch, cloud-init nebo druhý bootstrap selhaly nebo kolo nezačalo, `130`
+přerušeno (VM zůstane). Spouští se ručně z terminálu hostitele (D9).
 
 ---
 

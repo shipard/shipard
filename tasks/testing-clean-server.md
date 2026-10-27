@@ -1,6 +1,6 @@
 # F8b — testovací kolo na čistém serveru (Multipass)
 
-**Stav:** naplánováno — #146 D1–D9 (2026-10-27)
+**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9), ověřeno nanečisto proti maketám; zbývá ruční ověření 1–4 na Macu (člověk), časy do `docs/test-corpus.md` § 22 a výsledek do #146
 
 ## Kontext / Cíl
 
@@ -317,15 +317,59 @@ Adresář výsledků vyhodnotí Claude v chatu a výsledek jde komentářem do #
 
 ## Hotovo když
 
-- [ ] `dev-daily.md` § 5 popisuje nástroje pro testování; § 1 a `test-corpus.md` § 19–20 na ni odkazují
-- [ ] `dev-bootstrap.sh --with-testing` (implikuje render), idempotentní, popsaný v `usage`, `cli.md`, `local-dev.md`
-- [ ] `dev-update.sh` aktualizuje závislosti `tests/e2e` a `tools/video-runner`, jen když existují
-- [ ] `scripts/multipass/test-round.sh` podle kroku 2, bash 3.2, bez `jq` / `python` na hostiteli
-- [ ] klíč AI jen přes STDIN, nikde v argv ani ve výsledcích (ověřeno maketou)
-- [ ] VM po úspěchu smazaná, po selhání / Ctrl+C zůstává s návodem
-- [ ] `docs/test-corpus.md` § 22, odkaz z § 21
-- [ ] ověření nanečisto prošlo; ruční ověření 1–3 na Macu (člověk) s výsledkem v #146
-- [ ] `**Stav:**` + `tasks-index.py`
+- [x] `dev-daily.md` § 5 popisuje nástroje pro testování; § 1 a `test-corpus.md` § 19–20 na ni odkazují
+- [x] `dev-bootstrap.sh --with-testing` (implikuje render), idempotentní, popsaný v `usage`, `cli.md`, `local-dev.md`
+- [x] `dev-update.sh` aktualizuje závislosti `tests/e2e` a `tools/video-runner`, jen když existují
+- [x] `scripts/multipass/test-round.sh` podle kroku 2, bash 3.2, bez `jq` / `python` na hostiteli
+- [x] klíč AI jen přes STDIN, nikde v argv ani ve výsledcích (ověřeno maketou)
+- [x] VM po úspěchu smazaná, po selhání / Ctrl+C zůstává s návodem
+- [x] `docs/test-corpus.md` § 22, odkaz z § 21
+- [ ] ověření nanečisto prošlo (2026-10-27); ruční ověření 1–3 na Macu (člověk) s výsledkem v #146
+- [x] `**Stav:**` + `tasks-index.py`
+
+## Stav implementace (2026-10-27)
+
+Tři commity podle strategie. Vývojový server nemá Multipass ani `sudo`,
+takže `test-round.sh` a `dev-bootstrap.sh --with-testing` běžely jen
+**nasucho** proti maketám (`multipass`, `curl`, `sudo`, `apt-get`, `node`,
+`npm`); `dev-update.sh` reálně (kroky `[4/5]` a `[5/5]` proběhly,
+Chromium už byl — bez stahování; přeskočení bez `node_modules` ověřeno
+v kopii struktury repa s maketami). Scénáře z Ověření prošly všechny:
+úspěch → `delete --purge` + kompletní výsledky + exit 0; `--keep`;
+cloud-init `error` → exit 2 bez kola, `degraded` → varování; kolo exit 1 →
+sběr, VM zůstane, exit 1; kolo exit 2 → exit 2; druhý bootstrap selhal →
+exit 2 se sběrem; `launch` nenulový s živou VM → pokračuje; bez VM → exit 2;
+neznámá větev 404 → exit 2 bez `launch`; `feature/x` → obě náhrady v yaml
+právě jednou, `stable` → yaml shodný; yaml bez vzoru → věta z U2; evaluace
+po kole exit 1 proběhne, po exit 2 ne, `grep -rFf <klíč>` nad argv
+i výsledky nic; SIGINT během kola → exit 130, VM zůstane, bez `delete`.
+`shellcheck` na serveru není; bash 3.2 také ne — kompatibilita ověřena
+jen `grep`em zakázaných konstrukcí, skutečný běh na Macu je na člověku.
+
+### Odchylky od textu zadání
+
+- **`ai-key.log`** navíc ve výsledcích: výstup `dev-ai-key --set-key`
+  a `--status` (jen existence a práva klíče) — `round.log` v tu chvíli
+  ještě neexistuje.
+- **Adresa dashboardu** se zjišťuje hned po `launch`, ne až před kolem —
+  souhrn po selhání cloud-initu nebo druhého bootstrapu ji tak nese také.
+- **Ctrl+C**: sběr z VM se neprovádí (VM zůstává se vším), `summary.txt`
+  a `environment.json` se zapíší; poznámka, že kolo ve VM může běžet dál
+  jako úloha dashboardu (`multipass exec` padne, úloha `round` ne).
+- **`jobs.tgz` / `eval.tgz`** se po stažení ověří `tar -tzf`; poškozený
+  nebo prázdný archiv je poznámka v souhrnu. `eval.tgz` bere soubory
+  z `git ls-files --others --modified --exclude-standard -- tests/eval`.
+- **Neznámá větev a změněný yaml** končí stejnou cestou jako selhání fází
+  (`summary.txt` a `environment.json` s „VM nevznikla“), ne holým výpisem.
+- **Exit 2 i pro evaluační kolo s exit 2** (odhad ceny selhal, kolo
+  nezačalo) — zadání jmenuje jen první kolo.
+- **`--branch`** se validuje na `^[A-Za-z0-9._/-]+$` (bezpečné do URL
+  i do `sed`); `--image` jen `26.04` / `24.04`, `--repeat` 1–5.
+- **Opsaný postup** `npm ci && npx playwright install chromium` nahrazen
+  odkazem i v `docs/cli.md` (`dataset-e2e`, `video-run`) a v `dev-daily.md`
+  § 3; PHP konstanty `E2ePreflight::REMEDY` / `VideoPreflight::VIDEO_REMEDY`
+  (hlášky s testy) beze změny.
+- **`dev-update.sh`** čísluje `[n/N]` jen kroky, které poběží (3–5).
 
 ## Pasti
 

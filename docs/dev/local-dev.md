@@ -238,6 +238,7 @@ doplní volitelné části:
 | Volba | Co přidá |
 |-------|----------|
 | `--with-render` | PDF rendering službu (tisky dokladů) — viz [`operations/render-service.md`](../operations/render-service.md) |
+| `--with-testing` | nástroje pro akci Proklikat, oddíl Videa a testovací kolo (`shpd-server test-round`): `ffmpeg`, závislosti `tests/e2e` a `tools/video-runner`, Chromium Playwrightu; zahrnuje `--with-render`. Co přesně a jak ručně: [`dev-daily.md`](dev-daily.md#5-závislosti), oddíl 5 |
 | `--with-ssh` | SSH server na portu 2222, přihlášení jen klíčem |
 | `--ssh-pubkey-file <cesta>` | veřejný klíč, který se smí přes SSH přihlásit |
 | `--branch <větev>` | větev pro nový checkout (výchozí `stable`) |
