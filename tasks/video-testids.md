@@ -7,6 +7,8 @@ jen na SidebarShell) a `sidebar` — bez nich by scénář nesplnil
 „žádné CSS třídy". Pozn.: scénář předpokládá shell `sidebar`;
 uživatel s override `classic`/`wild` `@sidebar` nenajde.
 
+> Pilotní scénář `demo/scenarios/spike-dashboard.jsonc` byl zrušen (#103 F7b D129, `tasks/testing-phase7b.md`); odkazy na něj níže jsou historie. Videa běží nad demo sadou přes `shpd-ds video-run` a vývojářský dashboard.
+
 Navazuje na `tasks/video-runner-spike.md` (Zjištění + Doporučení). Rozhodnuto
 v chatu, zapsáno v #48:
 

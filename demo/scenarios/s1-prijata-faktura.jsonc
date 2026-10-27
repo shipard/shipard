@@ -7,20 +7,15 @@
 // (došlá pošta se neukazuje — „klient přeposlal fakturu" říká titulek,
 // viz #48 Determinismus); končí otevřeným hotovým dokladem přes toast.
 //
-// PŘEDPOKLADY DAT (do doby seedu z #40 ruční příprava):
-//   - na dashboardu je jako PRVNÍ karta návrh přijaté faktury se
-//     zanalyzovaným PDF (runner bere @feed-card / @card-action-review
-//     jako .first() — pořadí karet určuje, co se natočí),
-//   - všechny reference jsou matched (jinak je „Vystavit a uzavřít"
-//     disabled a klik selže),
-//   - POZOR: průchod (i verb `check`!) zprávu SPOTŘEBUJE — apply vytvoří
-//     skutečný doklad. Každý záběr potřebuje čerstvou zprávu.
-//   - Per D17: dokud běží nad reálnými daty, video je jen interní za auth.
+// DATA: scénář běží nad demo sadou „IT servis“ (pole `dataset`) — `shpd-ds
+// video-run` ji před každým během sestaví s kotvou = dnešek a přeseeduje
+// vyhrazený zdroj dat, takže první karta dashboardu je vždy čerstvý návrh
+// přijaté faktury se spárovanými referencemi (#103 F7b, D119).
 {
   "id": "s1-prijata-faktura",
 
-  // Dokumentační vazba na sadu z #40 — runner pole zatím nečte.
-  "dataset": "web-demo",
+  // Demo sada z demo/datasets/ (#103 D119) — čte ji shpd-ds video-run.
+  "dataset": "it-servis",
 
   "capture": { "w": 2560, "h": 1600, "scale": 2 },
   "output":  { "fps": 30 },

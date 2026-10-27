@@ -2,6 +2,8 @@
 
 **Stav:** hotovo — implementace i ověření na dev serveru 2026-08-27; závěry níže
 
+> Pilotní scénář `demo/scenarios/spike-dashboard.jsonc` byl zrušen (#103 F7b D129, `tasks/testing-phase7b.md`); odkazy na něj níže jsou historie. Videa běží nad demo sadou přes `shpd-ds video-run` a vývojářský dashboard.
+
 ## Kontext / Cíl
 
 Automatizovaná výroba videí z UI podle scénáře — issue **shipard/shpd#48**,
