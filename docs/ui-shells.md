@@ -223,7 +223,7 @@ jen přenášejí (`params`), žádné UI. Hustota může pokrýt část
 
 Změna shellu = **soft swap** komponenty v AppShellu (žádný reload) —
 `navigationStore` přežije, uživatel zůstane na aktivní položce. Mobil
-(<768 px) a settings/account módy volbu ignorují — vždy sidebar-style
+(≤ 48rem) a settings/account módy volbu ignorují — vždy sidebar-style
 chrome (řeší resolver v AppShellu jedním výrazem).
 
 ## 12. Plánované shelly

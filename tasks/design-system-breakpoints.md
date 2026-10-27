@@ -1,6 +1,6 @@
 # Design system — breakpointy shellu a obsah na container queries
 
-**Stav:** naplánováno — #138 task 1 (D42, D43, D47)
+**Stav:** hotovo — 2026-10-27, #138 task 1 (D42, D43, D47); 4 commity (patička náhledu tisku má vlastní kontejner — snippet `footer` je mimo kořen `.shpd-print`), ověřeno v Chromiu 390 / 520 / 600 / 700 / 768 / 769 / 800 / 1280 px a při písmu 20 px, čitelnost formuláře na 700 px viz #138
 
 ## Kontext / Cíl
 
@@ -208,12 +208,12 @@ V prohlížeči, šířky okna **390, 700, 769, 800 a 1280 px**:
 
 ## Hotovo když
 
-- [ ] v aplikaci jen `@media … 48rem`, ve dev dashboardu `68.75rem`
-- [ ] `MOBILE_BREAKPOINT = '48rem'`, `matchMedia` s rem
-- [ ] obsahové media queries jako `@container … 30rem` (tabulka v §2)
-- [ ] kontrola breakpointů a JS konstanty v pre-commitu
-- [ ] `docs/design-system.md` §8, §10, §12, `docs/frontend.md`
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] v aplikaci jen `@media … 48rem`, ve dev dashboardu `68.75rem`
+- [x] `MOBILE_BREAKPOINT = '48rem'`, `matchMedia` s rem
+- [x] obsahové media queries jako `@container … 30rem` (tabulka v §2)
+- [x] kontrola breakpointů a JS konstanty v pre-commitu
+- [x] `docs/design-system.md` §8, §10, §12, `docs/frontend.md`
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Pasti
 

@@ -315,8 +315,9 @@ Pokud `row.avatar` chybí, fallback na `row.icon` (emoji nebo unicode glyph).
 
 ### Mobilní drawer
 
-Na ≤ 768px se sidebar mění na overlay drawer (vysune zleva přes obsah,
-overlay ztmaví zbytek). Spouští ho hamburger v `MobileTopBar`. Detaily
+Na ≤ 48rem (768 px při výchozím písmu; breakpoint shellu, viz
+*Responzivita* níže) se sidebar mění na overlay drawer (vysune zleva přes
+obsah, overlay ztmaví zbytek). Spouští ho hamburger v `MobileTopBar`. Detaily
 v [`frontend.md`](frontend.md) sekce *Aplikační shell → Mobilní režim*.
 
 ### User dropdown v patce sidebaru
@@ -468,11 +469,12 @@ posledního.
   s vlastním rozvržením na celou plochu (`FormDialog`, `ViewerDetailModal`,
   review modal, průvodce importem z registru) ho vypínají propem `flush`
   a odsazení řeší po sekcích
-- **Mobil (≤ 768px)**: každý modál je fullscreen (`100vw × 100dvh`,
+- **Mobil (≤ 48rem, 768 px)**: každý modál je fullscreen (`100vw × 100dvh`,
   bez zaoblení/okrajů), footer tlačítka na plnou šířku, header summary
   skryt, depth-shrink vypnut (vnořený modál překryje rodiče). Pevné
-  width/height props se přebijí. Čistě CSS `@media` v `Modal.svelte`;
-  breakpoint 768px ladí s `MOBILE_BREAKPOINT`. Detaily v
+  width/height props se přebijí. Čistě CSS `@media` v `Modal.svelte`
+  s breakpointem shellu (D42, *Responzivita* níže) — tatáž hodnota jako
+  `MOBILE_BREAKPOINT`, shodu hlídá kontrola v pre-commitu. Detaily v
   [`edit-forms.md`](edit-forms.md) sekce *Velikost modalu → Mobilní fullscreen*.
 
 **Použití**:
@@ -485,6 +487,73 @@ posledního.
   {/snippet}
 </Modal>
 ```
+
+### Responzivita
+
+Rozhodnutí D42, D43 a D47 z #133 (#138 task 1):
+
+**Media query patří jen shellu aplikace** — tomu, co se řídí oknem:
+drawer sidebaru, modal přes celou obrazovku, přepínání seznam / detail
+ve vieweru, taby PDF / údaje v review modalu a prvky vázané na výšku okna
+(`vh`). Shell má jedinou hodnotu, stejnou v CSS i v JS
+(`MOBILE_BREAKPOINT` v `stores/layout.svelte.js` je řetězec s jednotkou,
+`matchMedia` ji dosazuje přímo). Vývojářský dashboard má vlastní shell
+s vlastní hodnotou.
+
+**Obsah reaguje na šířku svého kontejneru**, ne okna — detail, formulář,
+stránka nastavení nebo dialog bývají v panelu vedle seznamu, v draweru
+i v modalu a šířka okna o jejich šířce nic neříká (D3). Takové bloky
+používají `@container`, ne `@media`.
+
+| Hodnota | Kde | K čemu |
+|---|---|---|
+| `48rem` (768 px) | `@media` v aplikaci | shell: drawer, fullscreen modal, seznam / detail, taby review modalu, výšky ve `vh` |
+| `68.75rem` (1100 px) | `@media` ve `frontend/src/dev/` | shell vývojářského dashboardu (split dvou sloupců) |
+| `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole, strany dokladu pod sebe, patička dialogu zalomená |
+| `36rem` (576 px) | `@container` | složené řádky tabulky dokladu (#139) |
+
+Px v závorce platí při výchozím písmu prohlížeče 16 px.
+
+**Proč `rem` v `@media`.** V media query se `rem` nevztahuje k `font-size`
+kořene stránky, ale k výchozímu písmu prohlížeče. Aplikace kořenové písmo
+nenastavuje (§10), takže při 16 px je `48rem` přesně 768 px a nic se
+nemění; kdo si písmo zvětší na 20 px, dostane mobilní rozložení už při
+960 px okna — text i rozvržení se škálují spolu. `matchMedia` v JS počítá
+stejně jako CSS, proto se drawer a CSS shellu přepnou současně. Kořenové
+písmo se **nenastavuje** i kvůli tomu.
+
+**Jak převést obsah na kontejner.** Kořen bloku dostane
+`container-type: inline-size` a dnešní `@media (max-width: …)` se změní na
+`@container (max-width: 30rem)`:
+
+- Kontejner je obal **na celou šířku rodiče**, mřížka nebo pole až uvnitř:
+  dotaz platí pro potomky kontejneru, ne pro něj sám. `container-type`
+  nepatří na prvek, který se smršťuje podle obsahu (flex položka bez
+  `flex: 1`, inline prvek) — inline-size containment mu dá nulovou šířku.
+- Nepojmenovaný `@container` se ptá nejbližšího předka s `container-type`.
+  Když se dva prvky musí přepnout ve stejný okamžik, pojmenuj kontejner
+  a ptej se ho jménem — vzor `form-section`: sekce formuláře
+  (`FormSection`) má `container-name: form-section` a náhled příloh uvnitř
+  jejího sloupce (`FormAttachmentsView`) píše
+  `@container form-section (max-width: 30rem)`, takže se přepne spolu se
+  sloupci, ne podle nejbližšího kontejneru.
+- Obsah vykreslený snippetem `Modal` (patička přes `footer`) je mimo kořen
+  komponenty — kořenový kontejner na něj nedosáhne. Takový kus dostane
+  vlastní obal na celou šířku snippetu (`PrintPreviewDialog`:
+  `.shpd-print__footer-box` s `flex: 1; min-width: 0`), řádek až uvnitř.
+- Kontejner nemění chování absolutně a fixně polohovaných vrstev uvnitř
+  (lookup, select, `Popover`) — `container-type` zavádí inline-size
+  a style containment, ne layout containment; ověřeno v Chromiu (lookup
+  dropdown ve `FormSection` sedí pod polem a není ořezaný).
+- Vzory: `PropertyGroups` (kontejner na obalu mřížky), `DocumentDetail`
+  (strany dokladu), `SettingsPage`, `SendDialog`, `FormSection`.
+
+**Nová hodnota = nové rozhodnutí v #133.** Kontrola v pre-commitu
+(`scripts/check-css-units.py`, §10) odmítne `@media` s rysem šířky mimo
+hodnotu shellu, `@container` mimo prahy výše i JS konstantu, která
+s CSS neladí; značka `px-ok` na breakpointy neplatí. Pevné šířky, výšky
+a layout tokeny v px řeší #138 task 4; obaly tabulek s posunem do strany
+a složené řádky #138 task 3 a #139.
 
 ---
 
@@ -685,9 +754,10 @@ synchronizovaná místa** v [`frontend.md`](frontend.md)
 Pravidlo D1 z #133: **mezery, odsazení, zaoblení a velikost písma se píší
 v rem** — tokenem, nebo rem literálem; **px zůstávají jen okrajům, obrysům,
 stínům a stavovému proužku** (linka má být 1 px bez ohledu na písmo).
-Breakpointy `@media`, pevné šířky a výšky a layout tokeny
+Breakpointy řeší §8 *Responzivita* (`@media` jen shell v `rem`, obsah
+přes `@container`, #138 task 1); pevné šířky a výšky a layout tokeny
 (`--shpd-sidebar-width`, `--shpd-header-height`, šířky pásů shellu) řeší
-responzivita #138 — do té doby zůstávají v px (D11).
+#138 task 4 — do té doby zůstávají v px (D11).
 
 ### Proč rem a proč se kořenové písmo nenastavuje
 
@@ -742,9 +812,10 @@ zůstávají v px.
   svým písmem. Mezery mezi bloky a odsazení sekcí nikdy v em — násobí se
   s každým vnořením.
 - **V px zůstává:** `border`, `outline`, `box-shadow`, stavový proužek
-  (`::before` 3 px / 6 px), `@media`, `width` / `height` / `min-*` /
-  `max-*` (do #138), polohování (`top`, `left`, `inset`), `letter-spacing`,
-  `transform`; `line-height` bez jednotky.
+  (`::before` 3 px / 6 px), `width` / `height` / `min-*` / `max-*`
+  (do #138 task 4), polohování (`top`, `left`, `inset`), `letter-spacing`,
+  `transform`; `line-height` bez jednotky. Breakpointy `@media`
+  a `@container` jsou v `rem` (§8 Responzivita).
 
 ### Kontrola v pre-commitu
 
@@ -766,6 +837,16 @@ převodu základů je výjimek nula. Ruční spuštění:
 deklarace` na stderr). Styly vkládané z JavaScriptu kontrola nevidí —
 jediný takový případ je základní CSS iframe e-mailu v `SandboxedHtml.svelte`,
 což je vlastní dokument, kde px nevadí.
+
+Tentýž skript hlídá **breakpointy** (D47): `@media` s rysem šířky
+(`width`, `min-width`, `max-width`, i rozsahový zápis `width <= …`) smí mít
+jen hodnotu shellu — `48rem` v aplikaci, `68.75rem` ve `frontend/src/dev/`;
+rysy bez šířky (`hover`, `pointer`, `prefers-*`, `print`) projdou.
+`@container` smí mít jen `30rem` a `36rem`. `MOBILE_BREAKPOINT`
+v `stores/layout.svelte.js` musí být řetězec rovný hodnotě shellu, bez
+jednotky za dosazením do `matchMedia`. Povolené hodnoty jsou konstanty
+nahoře ve skriptu; značka `px-ok` tu neplatí — jiná hodnota je nové
+rozhodnutí v #133 (§8 Responzivita).
 
 ---
 
@@ -979,10 +1060,10 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
 
 Kořen obsahu dokladu (`.shpd-docdetail`) i obal skupin vlastností
 (`PropertyGroups`, `.shpd-property-groups`) jsou `container-type:
-inline-size`; pod `30rem` (480 px) šířky kontejneru jdou strany pod sebe
-a skupiny vlastností do jednoho sloupce přes `@container (max-width:
-30rem)` — ne `@media`, protože detail bývá
-v panelu vedle seznamu, v draweru i v modalu a šířka okna o jeho šířce
+inline-size`; pod prahem úzkého kontejneru `30rem` (480 px, §8
+*Responzivita*) jdou strany pod sebe a skupiny vlastností do jednoho
+sloupce přes `@container (max-width: 30rem)` — ne `@media`, protože detail
+bývá v panelu vedle seznamu, v draweru i v modalu a šířka okna o jeho šířce
 nic neříká (D3). Práh vychází ze skutečných šířek obsahu: panel vedle
 seznamu má šířku okna bez 693 px (sidebar, seznam, odsazení), drawer
 528 px, modal přes 1100 px — dvě karty vedle sebe tak zůstávají všude
@@ -990,7 +1071,8 @@ kromě úzkého okna a mobilu. Původních 40 rem stohovalo strany už při okn�
 užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám —
 proto je kontejnerem obal mřížky na celou šířku, ne mřížka samotná;
 `container-type` nepatří na prvky, které se mají smrštit na obsah.
-Složené řádky tabulek na úzké šířce řeší #138.
+Složené řádky tabulky dokladu na úzké šířce dostanou práh `36rem` (#139);
+obal tabulky s posunem do strany řeší #138 task 3.
 
 ---
 
