@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 417 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 386.
+Celkem 418 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 387.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -185,6 +185,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-cards.md` | Sdílená karta a mřížka karet (`Card`, `CardGrid`) — stejná výška karet v řádku, karty v Nastavení se zaoblením md, Přehled firmy na typografických rolích, dashboard, detail, náhled importu (#137 task 2, D33–D35) |
 | `design-system-card-titles.md` | Nadpisy karet podle místa (title / heading) s ikonou tématu — Přehled firmy s ikonami sekcí z konfigurace, karty Nastavení na nadpisu `Card`, karta feedu na typografických rolích (#137 task 2b, D36–D38) |
 | `design-system-content-types.md` | Typy obsahu detailu místo HTML z backendu (`notice`, `badges`, `empty`, `text`, `code`; `html` pryč, hlídá kontrakt), sdílená hláška `Notice`, štítek `Badge`, pruh nad obsahem `PageBanner` (#137 task 3, D30, D40, D41) |
+| `design-system-breakpoints.md` | Breakpoint shellu `48rem` v CSS i JS, obsahové media queries jako container queries `30rem`, kontrola breakpointů v pre-commitu (#138 task 1, D42, D43, D47) |
 
 ## Mobilní (responzivní) UI
 

@@ -430,7 +430,8 @@ jsou integrovány v sidebaru:
 
 ### Mobilní režim (drawer)
 
-Na viewportu ≤ 768px se shell přepne do mobilního režimu (řídí
+Na viewportu ≤ 48rem (768 px při výchozím písmu) se shell přepne do
+mobilního režimu (řídí
 `layout.svelte.js` store přes `window.matchMedia`):
 
 - Nahoře se objeví `MobileTopBar` — hamburger (otevře drawer), titul
@@ -452,13 +453,19 @@ Na viewportu ≤ 768px se shell přepne do mobilního režimu (řídí
 - Sbalovací logika (`collapsed`) se na mobilu nepoužívá — drawer je buď
   otevřený, nebo zavřený.
 
-Na desktopu (> 768px) zůstává sidebar pevným sloupcem se sbalováním
+Na desktopu (> 48rem) zůstává sidebar pevným sloupcem se sbalováním
 beze změny.
 
-**Breakpoint 768px** je definovaný na dvou místech, která musí ladit:
-JS konstanta `MOBILE_BREAKPOINT` v `layout.svelte.js` a literál
-v `@media` queries v komponentách. Stejný vzor jako theme/language
-bootstrap ↔ store.
+**Breakpoint shellu `48rem`** (#133 D42) je jediná hodnota: JS konstanta
+`MOBILE_BREAKPOINT` v `layout.svelte.js` (řetězec s jednotkou, `matchMedia`
+ji dosazuje přímo) a `@media (max-width: 48rem)` v shellových komponentách
+(`Modal`, `Viewer`, review modal, `AttachmentGrid`). `rem` v media query
+bere výchozí písmo prohlížeče, takže při větším písmu přijde mobilní
+rozložení dřív a CSS i JS se přepnou současně. Shodu hodnot hlídá
+`scripts/check-css-units.py` v pre-commitu — jiná hodnota je nové
+rozhodnutí v #133. Obsah (formuláře, nastavení, dialogy) se neřídí oknem,
+ale šířkou svého kontejneru (`@container`, práh `30rem`) —
+[`design-system.md`](design-system.md) §8 *Responzivita*.
 
 ### Mode systém — App / Settings / Account
 
@@ -724,7 +731,8 @@ Generický renderer — `FormRenderer` dostane tabulku a volitelně ID záznamu,
 - password_hash se nezobrazuje v editaci
 
 **`FormInline` na mobilu** — inline skupina (víc polí na jednom řádku,
-např. „Platnost od / do") se na ≤ 768px rozpadne na samostatná pole pod
+např. „Platnost od / do") se na ≤ 48rem (mobilní režim shellu) rozpadne
+na samostatná pole pod
 sebou, každé se svým labelem vedle inputu (splyne s běžnými poli). Je to
 strukturní přepnutí markupu řízené `layoutStore.isMobile` (ne CSS) —
 desktop renderuje flex skupinu s mini-labely, mobil sérii label+input
@@ -734,7 +742,7 @@ sdílený mezi větvemi přes Svelte snippet `inputFor`. Detaily v
 
 **`FormStateBar` na mobilu** — footer formuláře má na desktopu Uložit
 + všechny přechody dokladu (Potvrdit, Archivovat, Storno…) vedle sebe.
-Na ≤ 768px se na úzkou obrazovku nevejdou, proto jdou do kebab menu (⋮)
+Na ≤ 48rem se na úzkou obrazovku nevejdou, proto jdou do kebab menu (⋮)
 přes `Popover` (placement `top` — footer je dole, otevírá se nahoru):
 **destruktivní** přechody (`archive`/`trash`/`cancelled` — Archivovat,
 Stornovat, Smazat; v kebabu červeně), **`concept`** (Uložit jako koncept
@@ -767,7 +775,7 @@ v non-modálním slide-over draweru. Layout je prezentační režim jednoho view
 viewer navíc implementuje `getGridColumns()` + `renderGridRow()` (volitelně
 `getDefaultLayout()`, `renderGridFooter()`, `getGridOptions()`). Meta pak vrací
 `layouts`/`defaultLayout`/`grid`, endpoint `rows` přijímá `layout=grid`.
-Na mobilu (≤ 768 px) grid degraduje na list — `renderRow()` zůstává povinný.
+Na mobilu (≤ 48rem) grid degraduje na list — `renderRow()` zůstává povinný.
 Buňky používají stejný span formát jako list vč. badge varianty
 (`{text, badge: style}` → pilulka, sdílená `SpanBadge.svelte` +
 `viewerSpans.js`).
@@ -787,7 +795,7 @@ bez footeru).
 
 ### Mobilní viewer (list/detail)
 
-Na ≤ 768px se viewer přepne z dvoupanelu na list/detail přepínání:
+Na ≤ 48rem se viewer přepne z dvoupanelu na list/detail přepínání:
 v daný moment je vidět buď seznam, nebo detail (řídí `selectedRowId`).
 Bez vybraného záznamu se zobrazí seznam přes celou šířku; po kliknutí
 na řádek se seznam skryje (CSS přes třídy `shpd-viewer__body--mobile`

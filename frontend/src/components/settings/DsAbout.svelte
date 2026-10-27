@@ -197,6 +197,10 @@
   .shpd-ds-about {
     padding: var(--shpd-space-lg);
     max-width: 760px;
+    /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
+       ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
+       rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */
+    container-type: inline-size;
   }
 
   .shpd-ds-about__intro {
@@ -253,7 +257,8 @@
     font-size: var(--shpd-font-size-sm);
   }
 
-  @media (max-width: 600px) {
+  /* Úzký kontejner: údaje v jednom sloupci. */
+  @container (max-width: 30rem) {
     .shpd-ds-about__list {
       grid-template-columns: 1fr;
     }

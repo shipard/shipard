@@ -3,8 +3,10 @@
 # pre-commit: ověří citlivé údaje ve staged souborech, soulad generovaných
 # souhrnů (tasks/README.md, help/README.md) se zdroji pravdy, metadata
 # stránek uživatelské dokumentace, CSS tokeny frontendu (nedefinovaný
-# token použitý bez fallbacku, #129 D14) a jednotky v CSS frontendu (px
-# v mezerách, zaoblení a písmu, #134 D10).
+# token použitý bez fallbacku, #129 D14), jednotky v CSS frontendu (px
+# v mezerách, zaoblení a písmu, #134 D10) a breakpointy (@media jen shell
+# 48rem / 68.75rem, @container jen 30rem / 36rem, JS konstanta shodná
+# s CSS, #133 D47).
 #
 # Zdroj pravdy je hlavička v task filu. Když se rozejde s indexem, commit
 # se zastaví a stačí spustit generátor.
@@ -47,10 +49,13 @@ fi
 if ! python3 "$REPO_ROOT/scripts/check-css-units.py"; then
     echo ""
     echo "==> Commit zastaven: v CSS frontendu jsou px v mezerách, zaoblení"
-    echo "    nebo písmu. Převeď na rem (px / 16) nebo token --shpd-space-* /"
-    echo "    --shpd-radius-* / --shpd-font-size-*; výjimka jen se značkou"
-    echo "    /* px-ok: důvod */ na stejném řádku. Kontrola jde celým stromem:"
-    echo "    python3 scripts/check-css-units.py"
+    echo "    nebo písmu, nebo breakpoint mimo rozhodnutí #133. Px převeď na"
+    echo "    rem (px / 16) nebo token --shpd-space-* / --shpd-radius-* /"
+    echo "    --shpd-font-size-*; výjimka jen se značkou /* px-ok: důvod */ na"
+    echo "    stejném řádku. @media s šířkou jen 48rem (dev dashboard 68.75rem),"
+    echo "    @container jen 30rem / 36rem, MOBILE_BREAKPOINT = '48rem' —"
+    echo "    jiná hodnota = nové rozhodnutí v #133, px-ok tu neplatí."
+    echo "    Kontrola jde celým stromem: python3 scripts/check-css-units.py"
     echo ""
     exit 1
 fi

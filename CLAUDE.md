@@ -674,7 +674,7 @@ ve stejném commitu.
 
 1. `php -l` na změněných PHP souborech
 2. `vendor/bin/phpunit --filter 'ClassName'` cíleně, pak celá sada
-3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny; `python3 scripts/check-css-units.py` — px v mezerách, zaoblení a písmu; obě hlídá i pre-commit)
+3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny; `python3 scripts/check-css-units.py` — px v mezerách, zaoblení a písmu a breakpointy mimo D42 / D43; obě hlídá i pre-commit)
 4. **Aktualizovat `**Stav:**` v task filu** + `python3 scripts/tasks-index.py`
 
 ## Otevřené úkoly

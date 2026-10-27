@@ -1338,6 +1338,10 @@
     gap: var(--shpd-space-md);
     padding: var(--shpd-space-md);
     font-size: var(--shpd-font-size-sm);
+    /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
+       ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
+       rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */
+    container-type: inline-size;
   }
 
   .shpd-exchange__header {
@@ -1398,7 +1402,8 @@
     gap: var(--shpd-space-md);
   }
 
-  @media (max-width: 600px) {
+  /* Úzký kontejner: strany pod sebe (týž práh jako detail dokladu). */
+  @container (max-width: 30rem) {
     .shpd-exchange__parties {
       grid-template-columns: 1fr;
     }

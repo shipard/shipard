@@ -510,7 +510,9 @@
     overflow: visible;
   }
 
-  @media (max-width: 768px) {
+  /* Dočasně breakpoint shellu (#133 D42): obal tabulky s posunem do strany
+     vždy řeší #138 task 3 (D44). */
+  @media (max-width: 48rem) {
     .shpd-form-subtable__table-wrap {
       overflow-x: auto;
     }

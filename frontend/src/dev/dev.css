@@ -620,7 +620,7 @@ code, .dev-code {
   align-items: start;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 68.75rem) {
   .dev-split { grid-template-columns: 1fr; }
 }
 

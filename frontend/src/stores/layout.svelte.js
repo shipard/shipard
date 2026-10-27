@@ -1,14 +1,18 @@
 // Layout store — řídí mobilní vs. desktopový režim a stav drawera.
 //
-// `isMobile` se odvozuje z window.matchMedia. Breakpoint 768px musí
-// LADIT s literálem v @media queries napříč komponentami (AppShell,
-// MobileTopBar). Stejný vzor jako theme/language bootstrap ↔ store:
-// jedna pravda na dvou místech, drž je v synchronu.
+// `isMobile` se odvozuje z window.matchMedia nad breakpointem shellu
+// (#133 D42): jediná hodnota `48rem`, stejná jako v `@media` shellových
+// komponent (Modal, Viewer, review modal, AttachmentGrid). `rem` v media
+// query i v matchMedia bere výchozí písmo prohlížeče, ne font-size kořene
+// — aplikace kořenové písmo nenastavuje, takže CSS i JS se přepnou
+// současně (při větším písmu přijde mobilní rozložení dřív). Shodu s CSS
+// hlídá `scripts/check-css-units.py` v pre-commitu, ne komentáře
+// v komponentách.
 //
 // `drawerOpen` je stav mobilního drawer sidebaru. Na desktopu se
 // nepoužívá (drawer neexistuje, sidebar je pevný sloupec).
 
-const MOBILE_BREAKPOINT = 768; // px — musí ladit s @media v komponentách
+const MOBILE_BREAKPOINT = '48rem'; // breakpoint shellu (#133 D42), hlídá check-css-units.py
 
 let isMobile   = $state(false);
 let drawerOpen = $state(false);
@@ -48,7 +52,7 @@ function clearScreenSurface() {
 function initLayout() {
   if (typeof window === 'undefined' || !window.matchMedia) return;
 
-  const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+  const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT})`);
 
   // Počáteční hodnota
   isMobile = mq.matches;

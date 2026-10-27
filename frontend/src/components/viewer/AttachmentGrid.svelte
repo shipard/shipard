@@ -261,8 +261,9 @@
     background: var(--shpd-color-bg-secondary);
   }
 
-  @media (max-width: 768px) {
-    /* Breakpoint 768px ladí s MOBILE_BREAKPOINT v layout.svelte.js. */
+  @media (max-width: 48rem) {
+    /* Breakpoint shellu (#133 D42): výška náhledu je vázaná na okno (vh),
+       proto media query, ne kontejner. Hodnotu hlídá check-css-units.py. */
     .shpd-attgrid__full-pdf {
       height: 50vh;
     }

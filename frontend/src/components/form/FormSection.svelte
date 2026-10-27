@@ -46,6 +46,13 @@
     border: 1px solid var(--shpd-color-border-subtle);
     border-radius: var(--shpd-radius-md);
     padding: var(--shpd-form-section-padding-y) var(--shpd-space-lg);
+    /* Pojmenovaný kontejner pro @container (#133 D43): sekce reaguje na
+       svou šířku (formulář bývá v modalu i v panelu), ne na okno. Jméno
+       `form-section` sdílí FormAttachmentsView — náhled příloh uvnitř
+       sloupce se musí přepnout ve stejný okamžik jako sloupce samotné,
+       proto se ptá tohoto kontejneru, ne nejbližšího předka. */
+    container-type: inline-size;
+    container-name: form-section;
   }
 
   .shpd-form-section__title {
@@ -79,12 +86,11 @@
     min-height: 0;
   }
 
-  /* Breakpoint 768px ladí s MOBILE_BREAKPOINT v layout.svelte.js
-     (konzistentní s ostatní mobilní prací). Na mobilu se sloupce
-     skládají pod sebe; gap přepneme z xl (vodorovná mezera mezi
-     sloupci vedle sebe) na sm, aby svislá mezera mezi naskládanými
-     sloupci navazovala na row-gap polí uvnitř sloupce (FormColumn). */
-  @media (max-width: 768px) {
+  /* Úzký kontejner (práh 30rem, #133 D43): sloupce se skládají pod sebe;
+     gap přepneme z xl (vodorovná mezera mezi sloupci vedle sebe) na sm,
+     aby svislá mezera mezi naskládanými sloupci navazovala na row-gap
+     polí uvnitř sloupce (FormColumn). */
+  @container form-section (max-width: 30rem) {
     .shpd-form-section__columns {
       grid-template-columns: 1fr;
       gap: var(--shpd-space-sm);

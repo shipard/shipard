@@ -275,7 +275,8 @@ Horizontální linka s volitelným textem. Pokrývá obě grid kolony (label + i
 
 Více polí v jedné řádce. Label prvního pole slouží jako „velký" label řádky (vlevo, v label dráze gridu). Ostatní pole mají vlastní mini-label vedle inputu. Uvnitř `inline.elements` jsou povoleny pouze `input` a `select`.
 
-Na mobilu (≤ 768px) se inline skupina **rozpadne na samostatná pole pod
+Na mobilu (≤ 48rem, mobilní režim shellu) se inline skupina **rozpadne na
+samostatná pole pod
 sebou** — každý prvek skupiny dostane svůj label vedle inputu, jako běžné
 pole (mini-labely zanikají). Na desktopu zůstává skupina na jednom řádku
 (první prvek velký label vlevo, další mini-labely mezi poli). Řídí
@@ -398,7 +399,7 @@ zavření řeší `close_form` / `onClose`.
 - **Tlačítko Uložit** — viditelné pokud `!read_only`. Uloží data, ale formulář nezavře.
 - **Přechodová tlačítka** — ze `transitions`. U existujících záznamů nejdříve uloží data, pak přepne stav. Pokud `close_form`, zavře formulář.
 - **ReadOnly formulář** — všechna pole disabled, tlačítko Uložit skryto, jen přechodová tlačítka.
-- **Mobilní footer (≤ 768px)** — footer zobrazuje Uložit + **postupové** přechody (V pořádku, Opravit… — v daném stavu jich je max pár, takže se vejdou). Do kebab menu (⋮) přes `Popover` (placement `top`, otevírá se nad footerem) jdou: **destruktivní** přechody (`archive`/`trash`/`cancelled` — Archivovat, Stornovat, Smazat; bezpečnost, méně omylů palcem, v kebabu červeně), **`concept`** (Uložit jako koncept — návrat dokladu zpět na koncept, pomocná akce; v kebabu neutrálně) a přechody s příznakem **`mobileKebab`** v docStates (vedlejší akce, jejíž `stateStyle` na rozlišení nestačí — viz `docs/doc-states.md`). Kebab se nerenderuje, pokud není žádný takový přechod. Na desktopu (> 768px) zůstávají všechny přechody jako tlačítka vedle sebe — beze změny. Strukturní přepnutí (tlačítka → kebab) řídí `layout.svelte.js` (`isMobile`), ne CSS. Kebab volá stejný `onTransition`, takže případný `confirm` u přechodu proběhne stejně jako u tlačítka.
+- **Mobilní footer (≤ 48rem)** — footer zobrazuje Uložit + **postupové** přechody (V pořádku, Opravit… — v daném stavu jich je max pár, takže se vejdou). Do kebab menu (⋮) přes `Popover` (placement `top`, otevírá se nad footerem) jdou: **destruktivní** přechody (`archive`/`trash`/`cancelled` — Archivovat, Stornovat, Smazat; bezpečnost, méně omylů palcem, v kebabu červeně), **`concept`** (Uložit jako koncept — návrat dokladu zpět na koncept, pomocná akce; v kebabu neutrálně) a přechody s příznakem **`mobileKebab`** v docStates (vedlejší akce, jejíž `stateStyle` na rozlišení nestačí — viz `docs/doc-states.md`). Kebab se nerenderuje, pokud není žádný takový přechod. Na desktopu (> 48rem) zůstávají všechny přechody jako tlačítka vedle sebe — beze změny. Strukturní přepnutí (tlačítka → kebab) řídí `layout.svelte.js` (`isMobile`), ne CSS. Kebab volá stejný `onTransition`, takže případný `confirm` u přechodu proběhne stejně jako u tlačítka.
 
 ---
 
@@ -458,9 +459,11 @@ běžný sloupec:
   hrany scroll containeru. Tělo formuláře pak scrolluje jen tehdy, když
   se nevejdou samotná pole — obsah fill sloupce scrolluje uvnitř sebe.
 - Sousedící běžné sloupce drží pole nahoře (`align-content: start`).
-- Na mobilu (<768 px, sloupce pod sebou) se výška od souseda odvodit
-  nedá — komponenta si řeší pevné scroll okno sama (např.
-  `max-height: 60vh` u příloh).
+- V úzké sekci (kontejner `form-section` ≤ 30rem, sloupce pod sebou) se
+  výška od souseda odvodit nedá — komponenta si řeší pevné scroll okno
+  sama (např. `max-height: 60vh` u příloh) přes
+  `@container form-section (max-width: 30rem)`, tedy ve stejný okamžik,
+  kdy `FormSection` skládá sloupce pod sebe.
 
 Formuláře bez fill sloupců zůstávají tímto mechanismem nedotčené.
 Použití: `IncomingMessagesForm` — tab Zpráva, pravý sloupec s náhledy příloh.
@@ -675,9 +678,10 @@ Konkrétní offsety podle hloubky (odecténo od aktuálně vypočtené `clamp()`
 
 Shrink je **fixní v px** (30 px / úroveň), ne procentuální — slouží k rozpoznání hierarchie, ne k proporcionálnímu škálování. Aplikuje se na vypočtenou velikost po `clamp()`, takže na širokém monitoru (modal u stropu 1700 px) i na laptopu (modal u spodní meze 1200 px) je vnořený modal vždy o 60 px užší/nižší než jeho rodič.
 
-### Mobilní fullscreen (≤ 768px)
+### Mobilní fullscreen (≤ 48rem)
 
-Na mobilu (≤ 768px) je **každý** modál fullscreen — `Modal.svelte` má
+Na mobilu (≤ 48rem, 768 px při výchozím písmu) je **každý** modál
+fullscreen — `Modal.svelte` má
 `@media` blok, který kartu přepíše na `100vw × 100dvh` (fallback `100vh`),
 bez zaoblení a overlay okrajů. Platí univerzálně pro všechny modály
 postavené přes `Modal.svelte` (FormDialog, reanalyze, reject, Exchange
@@ -696,7 +700,7 @@ Specifika na mobilu:
 
 Je to čistě CSS přepnutí vzhledu (karta → fullscreen), bez čtení
 `layoutStore.isMobile` — konzistentní se strategií „CSS na vzhled, JS
-store jen na chování". Na desktopu (> 768px) beze změny (clamp, pevné
+store jen na chování". Na desktopu (> 48rem) beze změny (clamp, pevné
 šířky i depth-shrink fungují jako dnes). Vnitřní layout polí (label nad
 input) řeší samostatná fáze 3b — kontejner a pole jsou oddělené.
 
