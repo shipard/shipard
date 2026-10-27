@@ -302,7 +302,8 @@ jen nanečisto — jako u `tasks/local-dev-bootstrap.md`):
 Celou sadu PHPUnit pouštět není potřeba (mění se jen skripty a docs).
 
 **Člověk** (Mac s Multipassem; skript i yaml se berou z GitHubu, takže až
-po pushnutí):
+po pushnutí — a pak pár minut počkat, `raw.githubusercontent.com` drží
+soubory v mezipaměti až 5 minut, viz N2):
 
 1. `bash test-round.sh` (stable, 26.04) → exit 0, VM smazaná, výsledky
    kompletní; časy fází do § 22.
@@ -370,6 +371,29 @@ jen `grep`em zakázaných konstrukcí, skutečný běh na Macu je na člověku.
   § 3; PHP konstanty `E2ePreflight::REMEDY` / `VideoPreflight::VIDEO_REMEDY`
   (hlášky s testy) beze změny.
 - **`dev-update.sh`** čísluje `[n/N]` jen kroky, které poběží (3–5).
+
+## Nálezy z revize (2026-10-27)
+
+Revize v chatu: syntaxe všech tří skriptů, zakázané konstrukce bash 3.2,
+`check-sensitive`; vlastní maketa `multipass` / `curl` — úspěch s jinou
+větví, evaluací a volbami za `--` (exit 0, VM smazaná, výsledky kompletní,
+`environment.json` platný JSON, v yaml právě dvě náhrady, klíč 20 B na
+STDIN a nikde v argv ani ve výsledcích), kolo exit 1 (sběr, VM zůstane,
+exit 1), přerušení (TERM) během druhého bootstrapu → N1.
+
+- [ ] **N1 — zavádějící poznámka po přerušení.** Přerušení během
+  `cloud-init` nebo `bootstrap-2` dá do souhrnu „kolo ve VM může běžet dál
+  jako úloha dashboardu“, ačkoli kolo nezačalo (souhrn zároveň hlásí „Kolo:
+  neproběhlo“). Příčina: `on_interrupt` testuje `PHASE_ID` až po
+  `phase_end`, který ho vynuluje — podmínka platí vždy. Oprava: přerušenou
+  fázi si zapamatovat **před** `phase_end` a poznámku psát jen pro `round`
+  a `eval`. Ověř maketou: přerušení během `bootstrap-2` → bez poznámky,
+  během `round` → s poznámkou.
+- [x] **N2 — mezipaměť `raw.githubusercontent.com`.** Soubory drží až
+  5 minut, takže hned po pushnutí může skript stáhnout starý
+  `shipard-dev.yaml` a cloud-init starý `dev-bootstrap.sh` (druhý běh
+  bootstrapu jede z čerstvého checkoutu, toho se to netýká). Doplněno do
+  pastí `docs/test-corpus.md` § 22 a do ručního ověření výše.
 
 ## Pasti
 

@@ -2075,3 +2075,9 @@ kola, ne pro test instalace.
   bez zdroje dat, § 21), skript to nehlídá.
 - **Windows** — Multipass existuje, skript je bash; WSL se neautomatizuje
   (D1).
+- **Hned po pushnutí může jet stará verze** — `raw.githubusercontent.com`
+  drží soubory v mezipaměti až 5 minut, takže skript může stáhnout starý
+  `shipard-dev.yaml` a cloud-init starý `dev-bootstrap.sh` (stejně tak
+  `curl` samotného `test-round.sh`). Po pushnutí pár minut počkej. Druhý
+  běh bootstrapu jede z čerstvého checkoutu, toho se to netýká; commit,
+  který VM opravdu testovala, je v `environment.json` (`guest.commit`).
