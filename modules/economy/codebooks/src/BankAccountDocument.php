@@ -15,8 +15,9 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
  * v kanonickém tvaru a IBAN zapsaný do čísla účtu přesouvá do `iban`
  * (#118 D18, D20) — touž funkcí jako účty osob. Nevalidní číslo účtu,
  * IBAN, BIC nebo jejich nesoulad je chyba (D19): vlastní účet jde na
- * doklady, do QR platby a ISDOC. Tuzemský tvar se čeká podle země
- * zdroje dat.
+ * doklady, do QR platby a ISDOC. Číslo účtu, které neprojde mod 11, je
+ * jen podezření (`account_number_checksum`, D30) — varování, účet se
+ * uloží. Tuzemský tvar se čeká podle země zdroje dat.
  */
 class BankAccountDocument extends Document
 {
@@ -68,7 +69,12 @@ class BankAccountDocument extends Document
         $columns = ['accountNumber' => 'account_number', 'iban' => 'iban', 'bic' => 'bic'];
         $domestic = ValueRulesRegistry::forCountry($this->dsConfig?->getCountry() ?? 'cz')->supportsDomesticAccount();
         foreach (ValueChecks::bankAccount($accountNumber, $iban, $bic, $domestic) as $finding) {
-            $result->addError($columns[$finding->kind] ?? $finding->kind, $finding->message(), $finding->code);
+            $column = $columns[$finding->kind] ?? $finding->kind;
+            if ($finding->isSuspicion()) {
+                $result->addWarning($column, $finding->message(), $finding->code);
+            } else {
+                $result->addError($column, $finding->message(), $finding->code);
+            }
         }
 
         // accounting_account (extension z economy.bank) musí odkazovat na

@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Base\Persons;
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Base\Persons\PersonBankAccountDocument;
 use Shipard\Module\Base\Persons\Values\PersonContext;
+use Shipard\Module\World\Validations\Iban;
 
 /** Kontext bez databáze: osoba 1 je vlastní firma (cz), osoba 9 má sídlo v de. */
 final class StubBankContext extends PersonContext
@@ -100,6 +101,41 @@ class PersonBankAccountDocumentTest extends TestCase
         $this->assertSame([], (new StubBankDocument())->validate($foreign)->warningsToArray(), 'tuzemský tvar se čeká podle země osoby');
         $domestic = ['person' => 2, 'account_number' => '532013000'];
         $this->assertSame(['account_number_invalid'], array_column((new StubBankDocument())->validate($domestic)->warningsToArray(), 'code'));
+    }
+
+    public function testSuspectAccountNumberIsWarningEvenForOwnCompany(): void
+    {
+        // D30: mod 11 je pravidlo pro vytvoření čísla, zveřejněné účty ho někdy nesplňují — uloží se s varováním.
+        $suspect = ['person' => 1, 'account_number' => '2308417558/2010', 'iban' => ''];
+        $result = (new StubBankDocument())->validate($suspect);
+        $this->assertTrue($result->isValid(), 'vlastní firma: podezřelé číslo jde uložit');
+        $this->assertSame(['account_number:account_number_checksum'], array_map(static fn (array $e): string => $e['column'] . ':' . $e['code'], $result->warningsToArray()));
+        $this->assertSame('Číslo účtu „2308417558/2010“ neprojde kontrolou mod 11 — ověřte ho.', $result->warningsToArray()[0]['message']);
+
+        $withIban = ['person' => 1, 'account_number' => '2308417558/2010', 'iban' => 'CZ' . Iban::checkDigits('CZ', '20100000002308417558') . '20100000002308417558'];
+        $result = (new StubBankDocument())->validate($withIban);
+        $this->assertTrue($result->isValid(), 'IBAN téhož podezřelého účtu je platný');
+        $this->assertSame(['account_number'], array_column($result->warningsToArray(), 'column'), 'jeden nález, u čísla účtu');
+
+        $ibanOnly = ['person' => 1, 'account_number' => '', 'iban' => 'CZ4701000000001234567890'];
+        $result = (new StubBankDocument())->validate($ibanOnly);
+        $this->assertTrue($result->isValid());
+        $this->assertSame(['iban:account_number_checksum'], array_map(static fn (array $e): string => $e['column'] . ':' . $e['code'], $result->warningsToArray()), 'jen IBAN: podezření u IBAN');
+
+        foreach (['CZ8520100000002308417558' => 'iban_invalid', 'CZ850100000002308417558' => 'iban_invalid'] as $iban => $code) {
+            $data = ['person' => 1, 'account_number' => '2308417558/2010', 'iban' => $iban];
+            $result = (new StubBankDocument())->validate($data);
+            $this->assertFalse($result->isValid(), "jistá chyba IBAN „{$iban}“ dál blokuje");
+            $this->assertSame([$code], array_column($result->toArray(), 'code'));
+            $this->assertSame(['account_number_checksum'], array_column($result->warningsToArray(), 'code'));
+        }
+        $different = ['person' => 1, 'account_number' => '2308417558/2010', 'iban' => 'CZ8520100000002308417557'];
+        $result = (new StubBankDocument())->validate($different);
+        $this->assertFalse($result->isValid(), 'platný IBAN jiného účtu: nesoulad je chyba i při podezření');
+        $this->assertSame(['iban_account_mismatch'], array_column($result->toArray(), 'code'));
+        $this->assertSame(['account_number_checksum'], array_column($result->warningsToArray(), 'code'));
+        $noBank = ['person' => 1, 'account_number' => '2308417558', 'iban' => ''];
+        $this->assertFalse((new StubBankDocument())->validate($noBank)->isValid(), 'bez kódu banky dál chyba');
     }
 
     public function testIbanTypedIntoAccountNumberMovesToIban(): void

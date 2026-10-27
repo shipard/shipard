@@ -22,7 +22,8 @@ use Shipard\Module\World\Validations\Iban;
  * změny `docState`, bez tříd dokumentů a událostí; ostrý běh v jedné
  * transakci ({@see NestedTransaction}: chyba = nic), `dry-run` nezapíše
  * nic. Idempotentní: druhý běh hlásí 0 změn. Nevalidní hodnoty po opravě
- * tvaru (kódy D13, {@see PersonValues::checkPerson} …) se neopravují, jen
+ * tvaru (kódy D13, {@see PersonValues::checkPerson} …) i podezření
+ * (`account_number_checksum`, D30 — bez návrhu opravy) se neopravují, jen
  * vypisují jako tabulka · id · sloupec · kód — bez hodnot, výpis smí do
  * issue. Doklady, snapshoty stran a `display_line` / `display_block` adres
  * nemění.

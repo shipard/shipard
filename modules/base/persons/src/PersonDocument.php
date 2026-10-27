@@ -9,6 +9,7 @@ use Shipard\Core\Document\ValidationResult;
 use Shipard\Module\Base\Persons\Values\PersonContext;
 use Shipard\Module\Base\Persons\Values\PersonValues;
 use Shipard\Module\World\Validations\Country;
+use Shipard\Module\World\Validations\ValueFinding;
 
 class PersonDocument extends Document
 {
@@ -129,7 +130,8 @@ class PersonDocument extends Document
 
     /**
      * Nálezy hodnot do výsledku validace: chyba u vlastní firmy, varování
-     * u partnera (D19).
+     * u partnera (D19). Podezření ({@see ValueFinding::SUSPICIONS} — číslo
+     * účtu bez mod 11, D30) je varování i u vlastní firmy.
      *
      * @param list<array{column: string, code: string, message: string}> $findings
      */
@@ -137,7 +139,7 @@ class PersonDocument extends Document
     {
         foreach ($findings as $finding) {
             $column = $columnPrefix . $finding['column'];
-            if ($own) {
+            if ($own && !in_array($finding['code'], ValueFinding::SUSPICIONS, true)) {
                 $result->addError($column, $finding['message'], $finding['code']);
             } else {
                 $result->addWarning($column, $finding['message'], $finding['code']);

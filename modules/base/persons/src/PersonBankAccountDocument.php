@@ -17,7 +17,9 @@ use Shipard\Module\Base\Persons\Values\PersonValues;
  * z dokladu normalizuje táž funkce ({@see PersonValues::normalizeBankAccount}).
  * Vlastní účty v číselníku řeší `economy.codebooks` `BankAccountDocument`.
  * Číslo účtu, IBAN, BIC a jejich soulad kontroluje (D19): u účtu vlastní
- * firmy chyba, u partnera varování; tuzemský tvar se čeká podle země osoby.
+ * firmy chyba, u partnera varování; číslo bez mod 11 je podezření
+ * (`account_number_checksum`, D30) — varování i u vlastní firmy; tuzemský
+ * tvar se čeká podle země osoby.
  * Účet musí nést číslo účtu nebo IBAN (D28) — zahraniční účet má jen IBAN,
  * bez obou údajů se neuloží ani partnerovi.
  */

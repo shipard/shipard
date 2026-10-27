@@ -163,7 +163,19 @@ class BankAccountDocumentTest extends TestCase
 
         $data['account_number'] = '2308417558/2010';
         $data['iban'] = null;
-        $this->assertSame(['account_number:account_number_checksum'], $this->codes($this->doc()->validate($data)->toArray()), 'mod 11 čísla účtu je podezření (D30)');
+        $result = $this->doc()->validate($data);
+        $this->assertTrue($result->isValid(), 'číslo bez mod 11 je podezření (D30) — vlastní účet se uloží');
+        $this->assertSame(['account_number:account_number_checksum'], $this->codes($result->warningsToArray()));
+
+        $data['iban'] = 'CZ8520100000002308417557';
+        $result = $this->doc()->validate($data);
+        $this->assertFalse($result->isValid(), 'platný IBAN jiného účtu: nesoulad je chyba i při podezření');
+        $this->assertSame(['iban:iban_account_mismatch'], $this->codes($result->toArray()));
+        $this->assertSame(['account_number:account_number_checksum'], $this->codes($result->warningsToArray()));
+
+        $data['account_number'] = '0/0100';
+        $data['iban'] = null;
+        $this->assertSame(['account_number:account_number_invalid'], $this->codes($this->doc()->validate($data)->toArray()), 'samé nuly jsou dál chyba');
     }
 
     public function testIbanTypedIntoAccountNumberIsValidAndMoved(): void
