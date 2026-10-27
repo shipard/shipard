@@ -204,14 +204,14 @@ Frontend má **tři vrstvy badge** s podobnou paletou:
 
 | Komponenta | CSS prefix | Účel |
 |---|---|---|
-| `ViewerDetail.svelte` (hlavička) | `.shpd-detail__badge--*` | Badge v hlavičce detailu — stav a vlastnosti, které nejsou zřejmé z kontextu (VIP…); typ záznamu nese ikona (D13, §12) |
+| `ui/Badge.svelte` (hlavička detailu, blok `badges`) | `.shpd-badge--*` | Štítek v hlavičce detailu — stav a vlastnosti, které nejsou zřejmé z kontextu (VIP…); typ záznamu nese ikona (D13, §12). Tutéž komponentu kreslí blok `badges` v obsahu (stav zaúčtování, #137 task 3); neznámý `style` = `neutral` |
 | `ViewerDetail.svelte` (tab Návrh) | `.shpd-extracted__badge--*` | Badge pásma/verdiktu u dokumentového návrhu zprávy |
 | `FormStateBadge.svelte` | `.shpd-form-state-badge.docState_*` | Stavový badge v hlavičce editačního formuláře |
 
 Všechny tři používají **stejnou doc-state paletu** (concept, edit, confirmed,
 archive, trash, cancelled). Plus mají vlastní **typové varianty** mimo doc-state:
 
-### Typové varianty (jen `__badge--*`)
+### Typové varianty (jen `.shpd-badge--*`)
 
 | Třída | Pozadí / text | Použití |
 |---|---|---|
@@ -399,8 +399,9 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
   zaoblení lg + stín = plovoucí plocha (`Modal`, přihlášení, `StatusScreen`,
   panel vzhledu, `Popover`, uživatelské menu) — karta stín nemá. Kartou
   nejsou ani vložené panely se šedým pozadím (`FormSection`, nabídka
-  položek, souhrny v dialozích), hlášky a bannery (chyba, varování, zámek
-  dokladu) ani volitelné řádky (tlačítko volby v průvodci, řádek seznamu).
+  položek, souhrny v dialozích), hlášky a pruhy (chyba, varování, zámek
+  dokladu — `Notice` / `PageBanner`, viz Hlášky a pruhy níže) ani
+  volitelné řádky (tlačítko volby v průvodci, řádek seznamu).
   Hláška selhání analýzy (`FailureCard`) je karta s tónem — rámeček
   v barvě, bez levého pruhu.
 - **Pravidlo:** nová karta = `Card` (v mřížce `CardGrid`), ne vlastní
@@ -408,6 +409,46 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
   (karta feedu, AI shrnutí), čtyři karty Nastavení, strany dokladu
   v detailu i v náhledu importu, karta návrhu z pošty, karta selhání
   a náhled v průvodci importem ze Spisovny.
+
+### Hlášky a pruhy
+
+Rozhodnutí D40 a D41 (task 3 #137) z #133. Hláška v obsahu je sdílená
+`Notice.svelte`, pruh nad obsahem `PageBanner.svelte` (obě `components/ui/`).
+
+- **Hláška** (D40, `Notice`): tóny `info` / `success` / `warning` /
+  `danger`, barvy jen z rodiny `--shpd-color-alert-*` — pozadí `-bg`, text
+  `-text`, rámeček 1 px `-bar` v barvě tónu (`success` jsou aliasy na
+  existující zelené, `danger` mapuje na `alert-error-*`); zaoblení
+  `--shpd-radius-md`, odsazení `--shpd-space-sm` / `--shpd-space-md`, písmo
+  body. Bez levého pruhu, bez stínu a **bez vnějšího okraje** — mezeru dává
+  rodič (obal se třídou, nebo mezera flex sloupce). Volitelně nadpis
+  `title` (strong, velikost body), ikona `icon` vlevo (dekorace) a seznam
+  `items` — položka text, nebo `{label, text}` („popisek: text“, popisek
+  strong: validace formuláře, zámek dokladu); jiný obsah dává `children`.
+  Role `alert` jen u `danger` (čte se hned — jen chyba), jinak `status`,
+  volající ji smí přepsat; `data-testid` a `aria-*` jdou na kořen, `class`
+  jen pro stavové třídy, nikdy pro mezery.
+- **Pruh nad obsahem** (D41, `PageBanner`): jiný prvek než hláška — celá
+  šířka, odsazení xs / lg, pozadí a text `alert-<tón>-*`, linka 2 px dole
+  `alert-<tón>-bar`, body strong, na střed; bez zaoblení a bez okraje.
+  Tón `warning` výchozí, `info` / `danger` pro budoucí pruhy. Dnes: jen ke
+  čtení, kopie reálných dat, cron vypnutý, pojistka pošty — texty a logika
+  zůstávají v jejich komponentách, vzhled má jedno místo.
+- **Hláška, pruh, karta, nebo toast**: hláška patří k místu, kde vznikla
+  (formulář, dialog, tab detailu), a trvá, dokud trvá důvod; pruh je stav
+  celého zdroje dat nad obsahem; karta s tónem (`FailureCard`, Karty výše)
+  je obsah s vlastním nadpisem a akcemi; toast (`GlobalToast`) je pomíjivé
+  potvrzení akce. Rámeček 1 px v barvě tónu má jen hláška — karta má
+  rámeček `--shpd-color-border`, nebo tón jen v barvě rámečku.
+- **Pravidlo:** nová hláška = `Notice`, nový pruh = `PageBanner`, ne
+  vlastní třída s kopií pozadí a rámečku. Dnes na `Notice` stojí chyba
+  a potvrzení přihlášení, chyby OP přihlášení a nastavení hesla, relace
+  účtu, bannery formuláře (chyba načtení, validace, varování), chyba
+  sub-tabulky, chyby reportů, hlášení náhledu tisku, zámek dokladu,
+  pojistka pošty v dialogu Odeslat a blok `notice` v detailu (§12).
+  Zbylé vlastní hlášky (zpráva stránky Nastavení a změny hesla, chyby
+  nahrání pošty a nového zdroje dat, varování průvodce zdroje dat, zprávy
+  Přehledu firmy, nálezy náhledu importu) jsou kandidáti na převod.
 
 ### Modální dialogy
 
@@ -902,13 +943,37 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   chybí.
 - **Odeslaná pošta**: jen na konci Přehledu, za přílohami (D22) — pod
   ostatními taby se nekreslí.
+- **Hláška** (D30, D40): blok `notice` `{tone, title?, text? | items?}`
+  kreslí sdílená `Notice` (§8 Hlášky a pruhy) — stav zaúčtování
+  s hlášeními enginu (danger u chyby, warning u varování).
+- **Štítky v obsahu**: blok `badges` `{items: [{label, style}]}` je řada
+  `Badge` (§5) s mezerou `--shpd-space-sm`, styly jako štítky hlavičky —
+  stav zaúčtování (warning / success / danger).
+- **Prázdný stav**: blok `empty` `{text}` — odstavec body
+  `--shpd-color-text-secondary`; text z katalogu popisků vieweru
+  (`*.viewerDetailLabels` sekce `texts`, `TableViewer::detailText()`),
+  cs i en, ne natvrdo v PHP.
+- **Prostý text**: blok `text` `{text}` — odstavec body, `white-space:
+  pre-wrap` a `overflow-wrap: anywhere` (tělo pošty bez HTML, AI shrnutí
+  Spisovny).
+- **Kód**: blok `code` `{text}` — `<pre>` v `--shpd-font-family-mono`,
+  velikost meta, pozadí `--shpd-color-bg-secondary`, zaoblení md, odsazení
+  sm, dlouhý řádek roluje v bloku (JSON kontextu upozornění).
+- **Backend HTML se vzhledem neposílá** (D30): typ `html` v kontraktu
+  detailu není; všechny typy nesou čistý text a frontend ho vkládá jako
+  text, nikdy `{@html}`. Jediné HTML je `untrusted-html` — tělo e-mailu
+  v sandboxu. Hlídá `DetailContent::TYPES` (unit `DetailContractTest`:
+  žádný PHP zdroj blok `html` neskládá; integrační
+  `ViewerDetailContractTest`: obsah tabů prvního záznamu každého vieweru
+  jen ze známých typů).
 - **Obecný detail i doklad kreslí tytéž komponenty**: `ViewerDetail.svelte`
-  (`properties`, `heading`, Odeslaná pošta), `DocumentDetail.svelte` (karty
+  (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`,
+  Odeslaná pošta), `DocumentDetail.svelte` (karty
   stran, údaje dokladu, Řádky) i `DetailAttachments.svelte` používají
   `SectionHeading` a `PropertyGroups` — každý detail má stejné písmo
   i mezery; obecný typ `table` používá tytéž role. **Pravidlo:** nový nadpis
-  sekce nebo seznam popisek–hodnota v detailu je sdílená komponenta, ne
-  vlastní třída s kopií CSS.
+  sekce, seznam popisek–hodnota, hláška nebo štítek v detailu je sdílená
+  komponenta, ne vlastní třída s kopií CSS.
 
 ### Úzká šířka
 
@@ -942,8 +1007,11 @@ Složené řádky tabulek na úzké šířce řeší #138.
 | `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
 | `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce |
 | `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |
+| `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text}`), role podle tónu, bez okraje |
+| `frontend/src/components/ui/Badge.svelte` | Štítek hlavičky detailu a bloku `badges` (§5) — obecné i doc-state varianty, pilulka meta |
+| `frontend/src/components/ui/PageBanner.svelte` | Pruh nad obsahem (§8 Hlášky a pruhy, D41) — celá šířka, linka 2 px dole, tóny `warning` / `info` / `danger` |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
-| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, badge; obecné typy obsahu sdílenými komponentami a podle rolí (§12) |
+| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, štítky (`Badge`); obecné typy obsahu (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`) sdílenými komponentami a podle rolí (§12); HTML jen `untrusted-html` v sandboxu (D30) |
 | `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12 (role, karty stran, údaje přes `PropertyGroups`, tabulky, součty, container query) |
 | `frontend/src/components/form/FormStateBadge.svelte` | Stavový badge ve formuláři |
 

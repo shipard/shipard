@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 408 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 378.
+Celkem 409 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 379.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -183,6 +183,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-shared-sections.md` | Sdílený nadpis sekce (bez linky) a seznam vlastností — skupiny ve dvou sloupcích, `wide` přes celou šířku; obecný detail i detail dokladu na stejných komponentách (#137 task 1, D28, D29) |
 | `design-system-cards.md` | Sdílená karta a mřížka karet (`Card`, `CardGrid`) — stejná výška karet v řádku, karty v Nastavení se zaoblením md, Přehled firmy na typografických rolích, dashboard, detail, náhled importu (#137 task 2, D33–D35) |
 | `design-system-card-titles.md` | Nadpisy karet podle místa (title / heading) s ikonou tématu — Přehled firmy s ikonami sekcí z konfigurace, karty Nastavení na nadpisu `Card`, karta feedu na typografických rolích (#137 task 2b, D36–D38) |
+| `design-system-content-types.md` | Typy obsahu detailu místo HTML z backendu (`notice`, `badges`, `empty`, `text`, `code`; `html` pryč, hlídá kontrakt), sdílená hláška `Notice`, štítek `Badge`, pruh nad obsahem `PageBanner` (#137 task 3, D30, D40, D41) |
 
 ## Mobilní (responzivní) UI
 

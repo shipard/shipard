@@ -1344,16 +1344,20 @@ Zobrazí se, když `accounting_state != 0` nebo existují řádky deníku.
   s nainstalovaným modulem; bez něj se na tabulku deníku vůbec nesahá.
   Čistý extension point (`viewerDetailExtensions` v module.jsonc, obdoba
   `documentEventHandlers`) zůstává dluh.
-- **Obsah** (composite): stavový badge (názvy z `accountingStates`,
-  inline styly přes globální CSS proměnné — scoped styly se na `{@html}`
-  nevztahují); při stavu 2 banner s `accounting_messages` (`rowId` →
-  „řádek N", hodnoty escapované). Tabulka řádků deníku Účet / Text /
+- **Obsah** (composite): stav a hlášení skládá sdílená
+  `Core\Accounting\AccountingStatusContent::blocks()` (#137 D30, tatáž
+  i pro bankovní pohyb) — blok `badges` se štítkem stavu (názvy
+  z `accountingStates`; 0 warning, 1 success, 2 danger) a při hlášeních
+  blok `notice` s `accounting_messages` (stav 2 danger, varování
+  zaúčtovaného dokladu warning; `rowId` → přípona „(řádek N)“ z katalogu
+  `economy.accounting.viewerDetailLabels` `texts.rowReference`; čistý text,
+  bez HTML). Tabulka řádků deníku Účet / Text /
   MD / DAL se Σ řádkem; u cizoměnového dokladu navíc MD/DAL v měně
   dokladu (kód měny v labelu sloupce). Chybové řádky `_class: error`,
   součtový řádek `_class: total`, částky `align: right` (viz
   `docs/frontend.md` §7). Nulová strana zápisu se nechává prázdná.
-  Prázdný deník při chybě (např. chybějící fiskální období) → jen
-  banner bez tabulky.
+  Prázdný deník při chybě (např. chybějící fiskální období) → štítek
+  a hláška bez tabulky.
 
 ### Akce Přeúčtovat
 
