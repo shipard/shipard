@@ -34,6 +34,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\DatasetSeedCommand());
         $app->add(new \Shipard\Command\DataSource\DatasetVerifyCommand());
         $app->add(new \Shipard\Command\DataSource\DatasetE2eCommand());
+        $app->add(new \Shipard\Command\DataSource\VideoRunCommand());
         $app->add(new \Shipard\Command\DataSource\MailRouterBootstrapCommand());
         $app->add(new \Shipard\Command\DataSource\MailRouterSetupCommand());
         $app->add(new \Shipard\Command\DataSource\MailIdempotencyPruneCommand());

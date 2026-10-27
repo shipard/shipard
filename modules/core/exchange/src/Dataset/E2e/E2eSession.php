@@ -35,10 +35,16 @@ class E2eSession
     private ?string $storagePath = null;
     private bool $closed = false;
 
+    /**
+     * @param string $fullName zobrazované jméno nově založeného uživatele (existující se nemění)
+     * @param ?string $language `shpd_language` v `storageState` (`cs` / `en` / `auto` = podle `locale` prohlížeče); null = nezapisovat
+     */
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly SessionService $sessions,
         private readonly string $login = self::LOGIN,
+        private readonly string $fullName = self::FULL_NAME,
+        private readonly ?string $language = self::LANGUAGE,
     ) {}
 
     /**
@@ -59,13 +65,13 @@ class E2eSession
             $id = $this->db->insertRow('core_system_users', [
                 'login'         => $this->login,
                 'password_hash' => null,
-                'full_name'     => self::FULL_NAME,
+                'full_name'     => $this->fullName,
                 'email'         => null,
                 'is_active'     => 1,
                 'is_admin'      => 1,
                 'is_system'     => 1,
             ]);
-            $this->user = ['id' => $id, 'login' => $this->login, 'full_name' => self::FULL_NAME, 'is_admin' => true];
+            $this->user = ['id' => $id, 'login' => $this->login, 'full_name' => $this->fullName, 'is_admin' => true];
             return $this->user + ['created' => true, 'warnings' => []];
         }
         if (!(bool) ($row['is_active'] ?? false)) {
@@ -119,7 +125,7 @@ class E2eSession
         $this->closed = false;
         [$token] = $this->sessions->createSession($user['id'], $this->db, null, $ttlSeconds);
         $target = $dir . '/' . self::STORAGE_FILE;
-        $json = json_encode(self::storageState($origin, $token, $user), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $json = json_encode(self::storageState($origin, $token, $user, $this->language), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         unset($token);
         $tmp = @tempnam($dir, '.storage-');
         if ($tmp === false || $json === false) {
@@ -162,9 +168,10 @@ class E2eSession
      * tvar odpovědi `POST /_auth/login`) a jazykem rozhraní.
      *
      * @param array{id: int, login: string, full_name: string, is_admin: bool} $user
+     * @param ?string $language jazyk rozhraní (`cs` / `en` / `auto`); null = klíč vynechat
      * @return array<string, mixed>
      */
-    public static function storageState(string $origin, string $token, array $user): array
+    public static function storageState(string $origin, string $token, array $user, ?string $language = self::LANGUAGE): array
     {
         $profile = [
             'id'           => $user['id'],
@@ -173,15 +180,18 @@ class E2eSession
             'is_admin'     => (bool) $user['is_admin'],
             'has_password' => false,
         ];
+        $localStorage = [
+            ['name' => 'shpd_token', 'value' => $token],
+            ['name' => 'shpd_user', 'value' => (string) json_encode($profile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)],
+        ];
+        if ($language !== null) {
+            $localStorage[] = ['name' => 'shpd_language', 'value' => $language];
+        }
         return [
             'cookies' => [],
             'origins' => [[
                 'origin' => rtrim($origin, '/'),
-                'localStorage' => [
-                    ['name' => 'shpd_token', 'value' => $token],
-                    ['name' => 'shpd_user', 'value' => (string) json_encode($profile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)],
-                    ['name' => 'shpd_language', 'value' => self::LANGUAGE],
-                ],
+                'localStorage' => $localStorage,
             ]],
         ];
     }

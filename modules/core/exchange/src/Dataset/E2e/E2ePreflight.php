@@ -42,6 +42,7 @@ class E2ePreflight
     private readonly string $repoRoot;
     private readonly string $browsersPath;
     private readonly string $home;
+    private readonly PlaywrightInstall $install;
 
     /**
      * @param string $repoRoot kořen checkoutu (`tests/e2e/` v něm)
@@ -58,6 +59,7 @@ class E2ePreflight
         $this->repoRoot = rtrim($repoRoot, '/');
         $this->home = $home ?? self::homeDir();
         $this->browsersPath = rtrim($browsersPath ?? self::defaultBrowsersPath($this->home), '/');
+        $this->install = new PlaywrightInstall($this->repoRoot . '/' . self::E2E_DIR . '/node_modules', $this->browsersPath);
     }
 
     /** Domovský adresář efektivního uživatele (pod ním leží cache prohlížeče); prázdný = neznámý. */
@@ -119,28 +121,22 @@ class E2ePreflight
         return $this->repoRoot . '/' . self::E2E_DIR;
     }
 
+    /** Instalace Playwrightu projektu `tests/e2e` (revize Chromia, adresář prohlížeče). */
+    public function install(): PlaywrightInstall
+    {
+        return $this->install;
+    }
+
     /** Revize Chromia podle nainstalovaného `playwright-core`; null = soubor chybí nebo prohlížeč v něm není. */
     public function chromiumRevision(): ?string
     {
-        $file = $this->repoRoot . '/' . self::BROWSERS_JSON_REL;
-        if (!is_file($file)) {
-            return null;
-        }
-        $data = json_decode((string) @file_get_contents($file), true);
-        foreach (is_array($data['browsers'] ?? null) ? $data['browsers'] : [] as $browser) {
-            if (($browser['name'] ?? null) === self::BROWSER_NAME && is_scalar($browser['revision'] ?? null)) {
-                $revision = trim((string) $browser['revision']);
-                return $revision === '' ? null : $revision;
-            }
-        }
-        return null;
+        return $this->install->chromiumRevision();
     }
 
     /** Adresář nainstalovaného Chromia; null bez známé revize. */
     public function browserDir(): ?string
     {
-        $revision = $this->chromiumRevision();
-        return $revision === null ? null : $this->browsersPath . '/' . self::BROWSER_NAME . '-' . $revision;
+        return $this->install->browserDir();
     }
 
     /**
