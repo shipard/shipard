@@ -6,8 +6,10 @@ namespace Shipard\Module\World\Validations;
 
 /**
  * IBAN: velkými bez mezer; platnost = tvar, kontrolní číslice ISO 7064
- * MOD 97-10 a pravidlo státu podle prefixu (délka, u cz/sk mod 11 na
- * čísle účtu uvnitř). Aritmetika po číslicích, bez `bcmath`.
+ * MOD 97-10 a pravidlo státu podle prefixu (délka). Mod 11 na čísle účtu
+ * uvnitř (cz, sk) je jen podezření (#118 D30) — {@see isValid()} ho
+ * nevyžaduje, přísná {@see isValidWithDomesticAccount()} ano (dopočet
+ * druhé hodnoty z redundance). Aritmetika po číslicích, bez `bcmath`.
  */
 final class Iban
 {
@@ -36,13 +38,28 @@ final class Iban
         return self::hasShape($iban) ? strtolower(substr($iban, 0, 2)) : null;
     }
 
-    /** Tvar + MOD 97-10 + pravidlo státu (`CountryValueRules::isValidIban`). */
+    /** Tvar + MOD 97-10 + pravidlo státu (`CountryValueRules::isValidIban`, délka); číslo účtu uvnitř se nehodnotí. */
     public static function isValid(string $iban): bool
     {
         if (!self::hasShape($iban) || !self::checksumOk($iban)) {
             return false;
         }
         return ValueRulesRegistry::forIban($iban)->isValidIban($iban);
+    }
+
+    /**
+     * Platný IBAN, jehož číslo účtu uvnitř (stát s tuzemským tvarem — cz, sk)
+     * navíc projde mod 11; u ostatních států totéž co {@see isValid()}.
+     * Jen pro dopočet druhé hodnoty z redundance (D4, D27, D29) — nikdy
+     * z podezřelého čísla.
+     */
+    public static function isValidWithDomesticAccount(string $iban): bool
+    {
+        if (!self::isValid($iban)) {
+            return false;
+        }
+        $rules = ValueRulesRegistry::forIban($iban);
+        return !$rules->supportsDomesticAccount() || ($rules->domesticAccountFromIban($iban)?->isValid() ?? false);
     }
 
     /** Jen tvar a MOD 97-10, bez pravidla státu. */

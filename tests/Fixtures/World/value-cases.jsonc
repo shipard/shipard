@@ -8,9 +8,11 @@
 //              out = {iban | accountNumber, basis} dopočtená hodnota, null = bez opravy
 //   format:    {kind, country?, in, out}            — čitelný tvar pro zobrazení (D21, jen PHP)
 //
-// `"python": false` = Python kontrolu nemá (PSČ, DE účet, sk převod účtu, mod 11
-// uvnitř IBAN) — PHP ji ověří vždy. Identity jsou smyšlené (korpus) nebo z testů
-// generátoru; IBAN „0701“ = korpusový doklad, který model četl s vloženou nulou.
+// `"python": false` = Python kontrolu nemá (PSČ, DE účet, sk převod účtu, přísná
+// platnost IBAN s mod 11 uvnitř u opravy D4) — PHP ji ověří vždy. Identity jsou
+// smyšlené (korpus) nebo z testů generátoru; IBAN „0701“ = korpusový doklad, který
+// model četl s vloženou nulou. Mod 11 je podezření, ne neplatnost (#118 D30):
+// IBAN s platnou kontrolní číslicí a délkou je platný i s podezřelým číslem uvnitř.
 {
     "normalize": [
         {"kind": "country", "in": " CZ", "out": "cz"},
@@ -134,7 +136,8 @@
         {"kind": "iban", "value": "CZ0606000000000836040536", "valid": false},
         {"kind": "iban", "value": "CZ06060000000083604053660", "valid": false},
         {"kind": "iban", "value": "CZ6508000000001234567890", "valid": false},
-        {"kind": "iban", "value": "CZ4701000000001234567890", "valid": false, "python": false},
+        // kontrolní číslice a délka sedí, číslo uvnitř bez mod 11 = jen podezření (D30)
+        {"kind": "iban", "value": "CZ4701000000001234567890", "valid": true},
         {"kind": "iban", "value": "CZ65 0800 0000 1920 0014 5399", "valid": false},
 
         {"kind": "bic", "value": "GIBACZPX", "valid": true},
@@ -158,7 +161,7 @@
         {"country": "cz", "iban": "CZ8520100000002308417557", "accountNumber": "19-2000145399/0800", "out": null},
         // oba neplatné → bez opravy
         {"country": "cz", "iban": "CZ6508000000001234567890", "accountNumber": "1234567890/0100", "out": null},
-        // IBAN s platným mod 97, ale neplatným číslem uvnitř; účet neplatný → bez opravy (pojistka D4)
+        // IBAN platný (D30), ale číslo uvnitř i účet neprojdou mod 11 → bez opravy (z podezřelého čísla se nedopočítává)
         {"country": "cz", "iban": "CZ4701000000001234567890", "accountNumber": "1234567890/0100", "out": null, "python": false},
         // oba platné a sedí → bez opravy
         {"country": "cz", "iban": "CZ0606000000008360405366", "accountNumber": "8360405366/0600", "out": null},

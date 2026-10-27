@@ -18,7 +18,9 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
  * (hodnotu nemění): persistované canonicaly z doby před normalizací tak
  * nedostanou nález za mezery v IBAN nebo PSČ. Kontroly i texty nálezů
  * dává knihovna ({@see ValueChecks}, {@see ValueFinding}) — tytéž, které
- * hlásí formuláře adresáře (D19). Záznamy `_resolve.valueRepairs` čte
+ * hlásí formuláře adresáře (D19); podezření `account_number_checksum`
+ * (mod 11, D30) je tu warning jako všechno ostatní a stropuje pásmo
+ * stejně. Záznamy `_resolve.valueRepairs` čte
  * z původního vstupu a dělá z nich `bank_account_repaired`. Telefon,
  * e-mail, web a `taxId` nálezy nevyrábí (D12; `taxId` u cz = DIČ, nález
  * by se zdvojil).
@@ -36,12 +38,13 @@ final class CanonicalValueValidator
     public const IBAN_INVALID = ValueFinding::IBAN_INVALID;
     public const BIC_INVALID = ValueFinding::BIC_INVALID;
     public const IBAN_ACCOUNT_MISMATCH = ValueFinding::IBAN_ACCOUNT_MISMATCH;
+    public const ACCOUNT_NUMBER_CHECKSUM = ValueFinding::ACCOUNT_NUMBER_CHECKSUM;
     public const BANK_ACCOUNT_REPAIRED = 'bank_account_repaired';
 
     public const CODES = [
         self::COMPANY_ID_INVALID, self::VAT_ID_INVALID, self::VAT_ID_COMPANY_ID_MISMATCH, self::ZIP_INVALID,
         self::ACCOUNT_NUMBER_INVALID, self::IBAN_INVALID, self::BIC_INVALID, self::IBAN_ACCOUNT_MISMATCH,
-        self::BANK_ACCOUNT_REPAIRED,
+        self::ACCOUNT_NUMBER_CHECKSUM, self::BANK_ACCOUNT_REPAIRED,
     ];
 
     private const PARTY_LABELS = [

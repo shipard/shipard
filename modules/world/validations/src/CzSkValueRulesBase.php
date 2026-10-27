@@ -7,9 +7,9 @@ namespace Shipard\Module\World\Validations;
 /**
  * Společná pravidla Česka a Slovenska: osmimístné IČO s kontrolním
  * součtem, pětimístné PSČ, tuzemský účet `[předčíslí-]číslo/kód banky`
- * s mod 11 a BBAN = kód 4 + předčíslí 6 + číslo 10 (IBAN 24 znaků),
- * DIČ s prefixem státu. Liší se jen předvolba, národní předčíslí
- * a tvar DIČ.
+ * s mod 11 (neprojití je podezření, ne neplatnost — #118 D30) a BBAN =
+ * kód 4 + předčíslí 6 + číslo 10 (IBAN 24 znaků), DIČ s prefixem státu.
+ * Liší se jen předvolba, národní předčíslí a tvar DIČ.
  */
 abstract class CzSkValueRulesBase extends AbstractCountryValueRules
 {
@@ -92,11 +92,10 @@ abstract class CzSkValueRulesBase extends AbstractCountryValueRules
         return self::IBAN_LENGTH;
     }
 
-    /** Délka 24 a mod 11 na čísle účtu uvnitř — IBAN nesoucí neplatné číslo účtu platný není. */
+    /** Jen délka 24 — mod 11 na čísle účtu uvnitř je podezření, ne neplatnost (D30; přísně `Iban::isValidWithDomesticAccount()`). */
     public function isValidIban(string $iban): bool
     {
-        return strlen($iban) === self::IBAN_LENGTH
-            && ($this->domesticAccountFromIban($iban)?->isValid() ?? false);
+        return strlen($iban) === self::IBAN_LENGTH;
     }
 
     public function ibanFromDomesticAccount(DomesticAccount $account): ?string

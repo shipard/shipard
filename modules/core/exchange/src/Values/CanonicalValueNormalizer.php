@@ -214,16 +214,18 @@ final class CanonicalValueNormalizer
             return null;
         }
 
-        $ibanValid = Iban::isValid($iban);
+        // Přísně včetně mod 11 (D30): zdrojem opravy je jen hodnota, která
+        // projde vším; z podezřelého čísla se nic nedopočítává.
+        $ibanValid = Iban::isValidWithDomesticAccount($iban);
         $account = DomesticAccount::parse($accountNumber);
         $accountValid = $account?->isValid() ?? false;
         if ($ibanValid === $accountValid) {
-            return null; // oba platné (shodu hlídá validátor) nebo oba neplatné
+            return null; // oba projdou (shodu hlídá validátor), nebo žádný
         }
 
         if ($accountValid) {
             $derived = $rules->ibanFromDomesticAccount($account);
-            if ($derived === null || !Iban::isValid($derived)) {
+            if ($derived === null || !Iban::isValidWithDomesticAccount($derived)) {
                 return null;
             }
             return [

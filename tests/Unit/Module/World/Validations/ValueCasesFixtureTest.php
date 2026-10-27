@@ -14,7 +14,8 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
 /**
  * Sdílený fixture `tests/Fixtures/World/value-cases.jsonc` (#118 D6):
  * tytéž případy čte Python generátoru korpusu. Sekce `repair` tu ověřuje
- * primitiva převodu účet ↔ IBAN a rozhodnutí „který z dvojice je platný“;
+ * primitiva převodu účet ↔ IBAN a rozhodnutí „který z dvojice projde vším
+ * včetně mod 11“ (D30: přísná `Iban::isValidWithDomesticAccount()`);
  * oprava v canonicalu je věc normalizátoru v `core.exchange`. Sekce
  * `format` (čitelný tvar, D21) je jen pro PHP.
  */
@@ -97,7 +98,7 @@ class ValueCasesFixtureTest extends TestCase
         foreach (self::cases()['repair'] as $case) {
             $label = json_encode($case, JSON_UNESCAPED_UNICODE);
             $rules = ValueRulesRegistry::forCountry($case['country']);
-            $ibanValid = Iban::isValid($case['iban']);
+            $ibanValid = Iban::isValidWithDomesticAccount($case['iban']);
             $account = DomesticAccount::parse($case['accountNumber']);
             $accountValid = $account?->isValid() ?? false;
 
@@ -111,7 +112,7 @@ class ValueCasesFixtureTest extends TestCase
                 $this->assertNotNull($account);
                 $derived = $rules->ibanFromDomesticAccount($account);
                 $this->assertSame($case['out']['iban'], $derived, $label);
-                $this->assertTrue(Iban::isValid((string) $derived), "dopočtený IBAN musí být platný: {$label}");
+                $this->assertTrue(Iban::isValidWithDomesticAccount((string) $derived), "dopočtený IBAN musí projít vším: {$label}");
                 continue;
             }
             $this->assertSame('iban', $case['out']['basis'], $label);

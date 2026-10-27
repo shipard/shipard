@@ -165,6 +165,15 @@ class PaymentQrTest extends TestCase
             (string) $generator->generate($this->input(['iban' => 'DE72 1007 0000 0532 0130 00', 'bic' => null, 'accountNumber' => null])),
             'platný cizí IBAN',
         );
+        $this->assertStringStartsWith(
+            'SPD*1.0*ACC:CZ4701000000001234567890+GIBACZPX*',
+            (string) $generator->generate($this->input(['iban' => 'CZ47 0100 0000 0012 3456 7890', 'accountNumber' => '19-2000145399/0800'])),
+            'IBAN s platnou kontrolní číslicí a podezřelým číslem uvnitř je platný (D30) — použije se',
+        );
+        $this->assertNull(
+            $generator->generate($this->input(['iban' => '', 'accountNumber' => '1234567890/0100'])),
+            'z podezřelého čísla účtu se IBAN nedopočítává (D30)',
+        );
     }
 
     // ── IBAN z českého čísla účtu (world.validations, #118 D23) ─────────────

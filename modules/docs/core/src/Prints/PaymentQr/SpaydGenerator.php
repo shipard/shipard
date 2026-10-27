@@ -95,8 +95,9 @@ final class SpaydGenerator implements PaymentQrGenerator
     }
 
     /**
-     * Uložený IBAN jen platný (tvar, mod 97, pravidlo státu); jinak IBAN
-     * z platného tuzemského čísla účtu (mod 11); jinak `null` (D29).
+     * Uložený IBAN jen platný (tvar, mod 97, délka státu — číslo uvnitř bez
+     * mod 11 je jen podezření, D30); jinak IBAN z tuzemského čísla účtu,
+     * které projde i mod 11; jinak `null` (D29).
      */
     private function resolveIban(PaymentQrInput $input): ?string
     {

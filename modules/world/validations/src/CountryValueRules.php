@@ -81,7 +81,7 @@ interface CountryValueRules
     /** Délka IBAN státu (cz / sk 24, de 22); `null` = stát ji neurčuje. Důvod nálezu „chybná délka“ (#118 D27). */
     public function ibanLength(): ?int;
 
-    /** Platnost IBAN podle pravidel státu (délka, u cz/sk mod 11 na BBAN); obecné kontroly dělá {@see Iban}. */
+    /** Platnost IBAN podle pravidel státu (délka); mod 11 na čísle uvnitř je podezření (D30), obecné kontroly dělá {@see Iban}. */
     public function isValidIban(string $iban): bool;
 
     public function ibanFromDomesticAccount(DomesticAccount $account): ?string;

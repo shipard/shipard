@@ -46,6 +46,12 @@ class CountryRulesEdgeCasesTest extends TestCase
         $this->assertTrue(DomesticAccount::mod11('2000145399'));
         $this->assertFalse(DomesticAccount::mod11('2000145398'));
         $this->assertFalse((new DomesticAccount('', '0', '0100'))->isValid(), 'číslo 0 není účet');
+        $this->assertTrue((new DomesticAccount('', '0', '0100'))->checksumOk(), 'samé nuly mod 11 projdou — chyba tvaru, ne podezření');
+        $suspect = DomesticAccount::parse('1234567890/0100');
+        $this->assertNotNull($suspect);
+        $this->assertFalse($suspect->checksumOk(), 'mod 11 neprojde = podezření (D30)');
+        $this->assertFalse($suspect->isValid());
+        $this->assertTrue(DomesticAccount::parse('19-2000145399/0800')?->checksumOk());
     }
 
     // ── IBAN ────────────────────────────────────────────────────────────
@@ -55,7 +61,11 @@ class CountryRulesEdgeCasesTest extends TestCase
         $this->assertSame('65', Iban::checkDigits('CZ', '0800' . '000019' . '2000145399'));
         $this->assertSame('72', Iban::checkDigits('de', '100700000532013000'));
         $this->assertTrue(Iban::checksumOk('CZ4701000000001234567890'), 'mod 97 sedí');
-        $this->assertFalse(Iban::isValid('CZ4701000000001234567890'), 'ale číslo účtu uvnitř mod 11 nesplňuje');
+        $this->assertTrue(Iban::isValid('CZ4701000000001234567890'), 'číslo účtu uvnitř bez mod 11 je jen podezření (D30)');
+        $this->assertFalse(Iban::isValidWithDomesticAccount('CZ4701000000001234567890'), 'přísná varianta pro dopočet ho odmítne');
+        $this->assertTrue(Iban::isValidWithDomesticAccount('CZ8520100000002308417557'));
+        $this->assertFalse(Iban::isValidWithDomesticAccount('CZ8520100000002308417558'), 'chybná kontrolní číslice ani přísně');
+        $this->assertTrue(Iban::isValidWithDomesticAccount('GB82WEST12345698765432'), 'stát bez tuzemského tvaru: totéž co isValid');
         $this->assertFalse(Iban::isValid('DE7210070000053201300'), 'DE má 22 znaků');
         $this->assertSame(24, ValueRulesRegistry::forCountry('cz')->ibanLength());
         $this->assertSame(24, ValueRulesRegistry::forCountry('sk')->ibanLength());

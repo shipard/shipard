@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Core\Exchange\Values;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
+use Shipard\Module\World\Validations\Iban;
 use Shipard\Tests\Unit\Module\World\Validations\ValueCasesFixtureTest;
 
 /**
@@ -121,12 +122,29 @@ class CanonicalValueNormalizerTest extends TestCase
         ]], $out['_resolve']['valueRepairs']);
     }
 
+    public function testSuspectIbanIsReplacedFromAccountNumberThatPassesAllChecks(): void
+    {
+        // IBAN je platný (D30), ale číslo uvnitř neprojde mod 11; zapsané číslo
+        // účtu projde vším a nese jiný účet → IBAN se dopočte z něj (zdroj opravy
+        // je vždy hodnota, která projde vším; cíl smí být i „jen podezřelý“).
+        $canonical = $this->canonical();
+        $canonical['supplier']['bankAccount'] = ['accountNumber' => '2308417557/2010', 'iban' => 'CZ4701000000001234567890'];
+
+        $out = CanonicalValueNormalizer::normalize($canonical);
+
+        $this->assertSame('CZ8520100000002308417557', $out['supplier']['bankAccount']['iban']);
+        $this->assertSame('2308417557/2010', $out['supplier']['bankAccount']['accountNumber']);
+        $this->assertSame('accountNumber', $out['_resolve']['valueRepairs'][0]['basis']);
+    }
+
     public function testNoRepairWhenBothValidOrBothInvalidOrDerivedValueInvalid(): void
     {
         $cases = [
             'oba platné, nesedí'          => ['accountNumber' => '19-2000145399/0800', 'iban' => 'CZ8520100000002308417557'],
             'oba neplatné'                => ['accountNumber' => '1234567890/0100', 'iban' => 'CZ6508000000001234567890'],
             'mod 97 sedí, účet uvnitř ne' => ['accountNumber' => '1234567890/0100', 'iban' => 'CZ4701000000001234567890'],
+            'podezřelé číslo, IBAN téhož účtu (D30)' => ['accountNumber' => '2308417558/2010', 'iban' => 'CZ' . Iban::checkDigits('CZ', '20100000002308417558') . '20100000002308417558'],
+            'podezřelé číslo + IBAN s chybnou kontrolní číslicí: z podezřelého se nedopočítává' => ['accountNumber' => '2308417558/2010', 'iban' => 'CZ8520100000002308417558'],
             'oba platné a sedí'           => ['accountNumber' => '8360405366/0600', 'iban' => 'CZ0606000000008360405366'],
             'jen IBAN'                    => ['accountNumber' => null, 'iban' => 'CZ0606000000000836040536'],
             'jen účet'                    => ['accountNumber' => '2308417558/2010', 'iban' => null],

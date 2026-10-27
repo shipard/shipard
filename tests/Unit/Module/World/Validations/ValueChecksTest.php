@@ -8,9 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Module\World\Validations\Iban;
 use Shipard\Module\World\Validations\ValueChecks;
 use Shipard\Module\World\Validations\ValueFinding;
+use Shipard\Module\World\Validations\ValueRules;
 use Shipard\Module\World\Validations\ValueRulesRegistry;
 
-/** Kontroly hodnot s důvodem a sdílené texty nálezů (#118 D13, D19). */
+/** Kontroly hodnot s důvodem a sdílené texty nálezů (#118 D13, D19); mod 11 jako podezření (D30). */
 class ValueChecksTest extends TestCase
 {
     public function testCompanyIdReasons(): void
@@ -58,7 +59,15 @@ class ValueChecksTest extends TestCase
     public function testBankAccountReasons(): void
     {
         $this->assertNull(ValueChecks::accountNumber('2308417557/2010', true));
-        $this->assertSame('Číslo účtu „2308417558/2010“ nesplňuje kontrolu mod 11.', ValueChecks::accountNumber('2308417558/2010', true)?->message());
+        $suspect = ValueChecks::accountNumber('2308417558/2010', true);
+        $this->assertSame(ValueFinding::ACCOUNT_NUMBER_CHECKSUM, $suspect?->code, 'mod 11 je podezření, ne jistá chyba (D30)');
+        $this->assertTrue($suspect->isSuspicion());
+        $this->assertSame('Číslo účtu „2308417558/2010“ neprojde kontrolou mod 11 — ověřte ho.', $suspect->message());
+        $this->assertSame(ValueFinding::ACCOUNT_NUMBER_CHECKSUM, ValueChecks::accountNumber('12-2308417557/2010', true)?->code, 'podezřelé předčíslí');
+        $zeros = ValueChecks::accountNumber('0/0100', true);
+        $this->assertSame(ValueFinding::ACCOUNT_NUMBER_INVALID, $zeros?->code, 'samé nuly jsou chyba tvaru');
+        $this->assertSame('Číslo účtu „0/0100“ má číslo účtu ze samých nul.', $zeros->message());
+        $this->assertFalse($zeros->isSuspicion());
         $this->assertSame('Číslo účtu „532013000“ nemá kód banky (tvar [předčíslí-]číslo/kód banky).', ValueChecks::accountNumber('532013000', true)?->message());
         $this->assertSame('Číslo účtu „2308417557/2010<“ obsahuje nepovolené znaky (jen číslice, pomlčka a lomítko).', ValueChecks::accountNumber('2308417557/2010<', true)?->message());
         $this->assertSame('Číslo účtu „230841755ě/2010“ obsahuje nepovolené znaky (jen číslice, pomlčka a lomítko).', ValueChecks::accountNumber('230841755ě/2010', true)?->message(), 'písmeno z české klávesnice');
@@ -69,10 +78,17 @@ class ValueChecksTest extends TestCase
         $this->assertNull(ValueChecks::iban('CZ8520100000002308417557'));
         $this->assertSame('IBAN „CZ1“ nemá tvar IBAN.', ValueChecks::iban('CZ1')?->message());
         $this->assertSame('IBAN „CZ8520100000002308417558“ nemá platnou kontrolní číslici.', ValueChecks::iban('CZ8520100000002308417558')?->message());
+        $this->assertNull(ValueChecks::iban('CZ4701000000001234567890'), 'číslo uvnitř bez mod 11 IBAN neznehodnotí (D30)');
+        $suspectIban = ValueChecks::ibanAccountChecksum('CZ4701000000001234567890');
+        $this->assertSame(ValueFinding::ACCOUNT_NUMBER_CHECKSUM, $suspectIban?->code);
+        $this->assertSame(ValueRules::IBAN, $suspectIban->kind, 'nález u IBAN');
         $this->assertSame(
-            'IBAN „CZ4701000000001234567890“ má platnou kontrolní číslici, ale číslo účtu uvnitř „1234567890/0100“ neprojde kontrolou mod 11.',
-            ValueChecks::iban('CZ4701000000001234567890')?->message(),
+            'IBAN „CZ4701000000001234567890“ má platnou kontrolní číslici, ale číslo účtu uvnitř „1234567890/0100“ neprojde kontrolou mod 11 — ověřte ho.',
+            $suspectIban->message(),
         );
+        $this->assertNull(ValueChecks::ibanAccountChecksum('CZ8520100000002308417557'));
+        $this->assertNull(ValueChecks::ibanAccountChecksum('CZ8520100000002308417558'), 'neplatný IBAN hlásí iban()');
+        $this->assertNull(ValueChecks::ibanAccountChecksum('GB82WEST12345698765432'), 'stát bez tuzemského tvaru');
         $short = 'CZ' . Iban::checkDigits('CZ', '0800000019200014539') . '0800000019200014539';
         $this->assertTrue(Iban::checksumOk($short));
         $this->assertSame("IBAN „{$short}“ má pro stát CZ chybnou délku (24 znaků, zapsáno 23).", ValueChecks::iban($short)?->message(), 'IBAN bez jedné číslice');
@@ -89,12 +105,19 @@ class ValueChecksTest extends TestCase
             $mismatch->message(),
         );
         $this->assertNull(ValueChecks::ibanAccount('CZ8520100000002308417557', '2308417557/2010'));
-        $this->assertNull(ValueChecks::ibanAccount('CZ8520100000002308417558', '19-2000145399/0800'), 'jen když jsou obě hodnoty platné');
+        $this->assertNull(ValueChecks::ibanAccount('CZ8520100000002308417558', '19-2000145399/0800'), 'neplatný IBAN nesoulad nehlásí');
+        $this->assertNull(ValueChecks::ibanAccount('CZ8520100000002308417557', '2308417557'), 'číslo bez tuzemského tvaru');
         $this->assertNull(ValueChecks::ibanAccount('DE72100700000532013000', '19-2000145399/0800'), 'IBAN bez tuzemského tvaru');
+        $this->assertSame(
+            ValueFinding::IBAN_ACCOUNT_MISMATCH,
+            ValueChecks::ibanAccount('CZ8520100000002308417557', '2308417558/2010')?->code,
+            'nesoulad i u podezřelého čísla — dva různé účty jsou jistá chyba (D30)',
+        );
+        $this->assertNull(ValueChecks::ibanAccount('CZ4701000000001234567890', '1234567890/0100'), 'týž podezřelý účet není nesoulad');
 
         $codes = array_map(
             static fn (ValueFinding $f): string => $f->code,
-            ValueChecks::bankAccount('1/0100', 'CZ1', 'X', true),
+            ValueChecks::bankAccount('0/0100', 'CZ1', 'X', true),
         );
         $this->assertSame([ValueFinding::ACCOUNT_NUMBER_INVALID, ValueFinding::IBAN_INVALID, ValueFinding::BIC_INVALID], $codes);
         $this->assertSame([], ValueChecks::bankAccount(null, '', null, true));
@@ -124,14 +147,45 @@ class ValueChecksTest extends TestCase
         $this->assertNull(ValueChecks::bankAccount('19-2000145399/0800', 'DE72100700000532013001', null, true)[0]->suggestion, 'stát bez tuzemského tvaru');
 
         $findings = ValueChecks::bankAccount('2308417558/2010', 'CZ8520100000002308417557', null, true);
-        $this->assertSame([ValueFinding::ACCOUNT_NUMBER_INVALID], array_column($findings, 'code'));
-        $this->assertSame('2308417557/2010', $findings[0]->suggestion, 'číslo účtu z platného IBAN');
-        $this->assertSame('2308417557/2010', ValueChecks::bankAccount('2308417557', 'CZ8520100000002308417557', null, true)[0]->suggestion, 'číslo bez kódu banky');
+        $this->assertSame([ValueFinding::ACCOUNT_NUMBER_CHECKSUM, ValueFinding::IBAN_ACCOUNT_MISMATCH], array_column($findings, 'code'), 'podezřelé číslo + platný IBAN jiného účtu');
+        $this->assertNull($findings[0]->suggestion, 'podezření návrh nenese (D30) — účet podle IBAN říká nesoulad');
+        $this->assertStringContainsString('podle IBAN je účet „2308417557/2010“', $findings[1]->message());
+        $this->assertSame('2308417557/2010', ValueChecks::bankAccount('2308417557', 'CZ8520100000002308417557', null, true)[0]->suggestion, 'číslo bez kódu banky: návrh z IBAN');
+        $this->assertNull(ValueChecks::bankAccount('2308417557', 'CZ4701000000001234567890', null, true)[0]->suggestion, 'z IBAN s podezřelým číslem uvnitř se nenavrhuje');
 
         $both = ValueChecks::bankAccount('2308417558/2010', 'CZ8520100000002308417558', null, true);
-        $this->assertSame([null, null], array_column($both, 'suggestion'), 'oba neplatné: bez návrhu');
+        $this->assertSame([ValueFinding::ACCOUNT_NUMBER_CHECKSUM, ValueFinding::IBAN_INVALID], array_column($both, 'code'));
+        $this->assertSame([null, null], array_column($both, 'suggestion'), 'podezřelé číslo + chybná kontrolní číslice: bez návrhu — z podezřelého čísla se nedopočítává');
         $this->assertNull(ValueChecks::bankAccount('19-2000145399/0800', 'CZ8520100000002308417557', null, true)[0]->suggestion, 'nesoulad dvou platných hodnot');
         $this->assertNull(ValueChecks::bankAccount(null, 'CZ6508000000192000145398', null, true)[0]->suggestion, 'bez druhé hodnoty není z čeho');
+    }
+
+    public function testSuspectAccountIsReportedOncePerAccount(): void
+    {
+        $same = ValueChecks::bankAccount('1234567890/0100', 'CZ4701000000001234567890', null, true);
+        $this->assertSame([ValueFinding::ACCOUNT_NUMBER_CHECKSUM], array_column($same, 'code'), 'číslo i IBAN téhož podezřelého účtu: jeden nález');
+        $this->assertSame(ValueRules::ACCOUNT_NUMBER, $same[0]->kind, 'u čísla účtu');
+        $this->assertNull($same[0]->suggestion);
+
+        $ibanOnly = ValueChecks::bankAccount(null, 'CZ4701000000001234567890', null, true);
+        $this->assertSame([ValueFinding::ACCOUNT_NUMBER_CHECKSUM], array_column($ibanOnly, 'code'));
+        $this->assertSame(ValueRules::IBAN, $ibanOnly[0]->kind, 'jen IBAN: nález u IBAN');
+
+        $different = ValueChecks::bankAccount('19-2000145399/0800', 'CZ4701000000001234567890', null, true);
+        $this->assertSame(
+            [ValueFinding::ACCOUNT_NUMBER_CHECKSUM, ValueFinding::IBAN_ACCOUNT_MISMATCH],
+            array_column($different, 'code'),
+            'platné číslo + IBAN jiného, podezřelého účtu: podezření u IBAN a nesoulad',
+        );
+        $this->assertSame(ValueRules::IBAN, $different[0]->kind);
+
+        $shapeless = ValueChecks::bankAccount('2308417557', 'CZ4701000000001234567890', null, true);
+        $this->assertSame([ValueFinding::ACCOUNT_NUMBER_INVALID, ValueFinding::ACCOUNT_NUMBER_CHECKSUM], array_column($shapeless, 'code'), 'číslo bez tvaru nenese podezření IBAN');
+        $this->assertSame(
+            [ValueFinding::ACCOUNT_NUMBER_CHECKSUM],
+            array_column(ValueChecks::bankAccount('1234567890/0100', 'CZ4701000000001234567890', null, false), 'code'),
+            'tuzemský tvar se hodnotí bez ohledu na zemi strany',
+        );
     }
 
     public function testEveryCodeCanBeProduced(): void
@@ -141,8 +195,9 @@ class ValueChecksTest extends TestCase
             ValueChecks::identity('12345678', 'CZ1', $cz),
             ValueChecks::identity('52654150', 'CZ07123451', $cz),
             [ValueChecks::zip('1', $cz)],
-            ValueChecks::bankAccount('1/0100', 'CZ1', 'X', true),
+            ValueChecks::bankAccount('0/0100', 'CZ1', 'X', true),
             ValueChecks::bankAccount('19-2000145399/0800', 'CZ8520100000002308417557', null, true),
+            ValueChecks::bankAccount('2308417558/2010', null, null, true),
         );
         $codes = array_unique(array_map(static fn (ValueFinding $f): string => $f->code, array_filter($produced)));
         sort($codes);

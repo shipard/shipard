@@ -8,7 +8,9 @@ namespace Shipard\Module\World\Validations;
  * Tuzemské číslo účtu `[předčíslí-]číslo/kód banky` (cz, sk): bez mezer
  * a bez vedoucích nul; mod 11 zvlášť na předčíslí a čísle (váhy
  * 1, 2, 4, 8, 5, 10, 9, 7, 3, 6 od pravého kraje, prázdné předčíslí je
- * platné — `checks.py::_mod11`); BBAN = kód 4 + předčíslí 6 + číslo 10.
+ * platné — `checks.py::_mod11`) je pravidlo pro vytvoření čísla, jeho
+ * neprojití je podezření, ne jistá chyba ({@see checksumOk()}, #118 D30);
+ * BBAN = kód 4 + předčíslí 6 + číslo 10.
  */
 final readonly class DomesticAccount
 {
@@ -47,9 +49,16 @@ final readonly class DomesticAccount
         return $parsed !== null ? (string) $parsed : (string) preg_replace('/\s+/u', '', trim($value));
     }
 
+    /** Číslo není samé nuly a předčíslí i číslo projdou mod 11 — přísná platnost pro dopočet druhé hodnoty. */
     public function isValid(): bool
     {
-        return $this->number !== '0' && self::mod11($this->prefix) && self::mod11($this->number);
+        return $this->number !== '0' && $this->checksumOk();
+    }
+
+    /** Mod 11 zvlášť na předčíslí a čísle; neprojití = podezření `account_number_checksum` (D30). */
+    public function checksumOk(): bool
+    {
+        return self::mod11($this->prefix) && self::mod11($this->number);
     }
 
     public static function mod11(string $digits): bool

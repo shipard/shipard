@@ -115,7 +115,7 @@ class DirectoryValuesNormalizerTest extends TestCase
 
     /**
      * Nálezy s návrhem opravy (D27): IČO s překlepem a platné DIČ, platné
-     * číslo účtu s IBAN o jednu číslici kratším, číslo bez mod 11 s platným IBAN.
+     * číslo účtu s IBAN o jednu číslici kratším, podezřelé číslo (mod 11, D30) s platným IBAN jiného účtu.
      *
      * @return array<string, list<array<string, mixed>>>
      */
@@ -415,10 +415,14 @@ class DirectoryValuesNormalizerTest extends TestCase
         $this->assertSame('52654150', $byKey['7:company_id']['suggestion'], 'IČO z DIČ');
         $this->assertSame('CZ6508000000192000145399', $byKey['70:iban']['suggestion'], 'IBAN z platného čísla účtu');
         $this->assertSame('iban_invalid', $byKey['70:iban']['code']);
-        $this->assertSame('2308417557/2010', $byKey['71:account_number']['suggestion'], 'číslo účtu z platného IBAN');
-        $this->assertSame('nesplňuje kontrolu mod 11', $byKey['71:account_number']['reason']);
-        $this->assertNull($byKey['72:account_number']['suggestion'], 'oba neplatné: bez návrhu');
-        $this->assertNull($byKey['72:iban']['suggestion']);
+        $this->assertSame('account_number_checksum', $byKey['71:account_number']['code'], 'mod 11 je podezření (D30)');
+        $this->assertSame('neprojde kontrolou mod 11 — ověřte ho', $byKey['71:account_number']['reason']);
+        $this->assertNull($byKey['71:account_number']['suggestion'], 'podezření návrh nenese');
+        $this->assertSame('iban_account_mismatch', $byKey['71:iban']['code'], 'IBAN jiného účtu: nesoulad i při podezření');
+        $this->assertSame('account_number_checksum', $byKey['72:account_number']['code']);
+        $this->assertSame('iban_invalid', $byKey['72:iban']['code']);
+        $this->assertNull($byKey['72:account_number']['suggestion'], 'podezřelé číslo + chybná kontrolní číslice: bez návrhu');
+        $this->assertNull($byKey['72:iban']['suggestion'], 'z podezřelého čísla se IBAN nenavrhuje');
         $this->assertSame([], $report['changes'], 'tvary už kanonické — nálezy se neopravují');
     }
 

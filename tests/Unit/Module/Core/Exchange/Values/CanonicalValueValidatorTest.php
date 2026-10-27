@@ -135,15 +135,18 @@ class CanonicalValueValidatorTest extends TestCase
 
     public function testAccountNumberInvalid(): void
     {
-        $issue = $this->issue($this->withSupplier(['bankAccount' => ['accountNumber' => '2308417558/2010', 'iban' => null]]), CanonicalValueValidator::ACCOUNT_NUMBER_INVALID);
+        $issue = $this->issue($this->withSupplier(['bankAccount' => ['accountNumber' => '2308417558/2010', 'iban' => null]]), CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM);
         $this->assertSame('supplier.bankAccount.accountNumber', $issue['path']);
-        $this->assertStringContainsString('mod 11', $issue['message']);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertStringContainsString('neprojde kontrolou mod 11 — ověřte ho', $issue['message'], 'mod 11 je podezření (D30)');
 
         $issue = $this->issue($this->withSupplier(['bankAccount' => ['accountNumber' => '2308417557', 'iban' => null]]), CanonicalValueValidator::ACCOUNT_NUMBER_INVALID);
         $this->assertStringContainsString('nemá kód banky', $issue['message'], 'důvod podle příčiny (D27)');
+        $issue = $this->issue($this->withSupplier(['bankAccount' => ['accountNumber' => '0/0100', 'iban' => null]]), CanonicalValueValidator::ACCOUNT_NUMBER_INVALID);
+        $this->assertStringContainsString('ze samých nul', $issue['message']);
 
         // Tvar …/kód se hlídá i bez země; jiný tvar bez země ne.
-        $this->assertContains(CanonicalValueValidator::ACCOUNT_NUMBER_INVALID, $this->codes(['supplier' => ['bankAccount' => ['accountNumber' => '2308417558/2010']]]));
+        $this->assertContains(CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM, $this->codes(['supplier' => ['bankAccount' => ['accountNumber' => '2308417558/2010']]]));
         $this->assertSame([], $this->codes(['supplier' => ['bankAccount' => ['accountNumber' => '532013000']]]));
         $this->assertSame([], $this->codes($this->withSupplier(['country' => 'de', 'companyId' => 'HRB 1', 'vatId' => 'DE136695976', 'taxId' => null, 'address' => ['zip' => '10115'], 'bankAccount' => ['accountNumber' => '532013000', 'iban' => 'DE72100700000532013000', 'bic' => null]])));
     }
@@ -159,8 +162,11 @@ class CanonicalValueValidatorTest extends TestCase
         $issue = $this->issue($this->withSupplier($bank('CZ8520100000002308417558')), CanonicalValueValidator::IBAN_INVALID);
         $this->assertStringContainsString('kontrolní číslici', $issue['message']);
 
-        $issue = $this->issue($this->withSupplier($bank('CZ4701000000001234567890')), CanonicalValueValidator::IBAN_INVALID);
-        $this->assertStringContainsString('číslo účtu uvnitř „1234567890/0100“ neprojde kontrolou mod 11', $issue['message'], 'důvod podle příčiny (D27)');
+        $issue = $this->issue($this->withSupplier($bank('CZ4701000000001234567890')), CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM);
+        $this->assertSame('supplier.bankAccount.iban', $issue['path'], 'jen IBAN: podezření u IBAN (D30)');
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertStringContainsString('číslo účtu uvnitř „1234567890/0100“ neprojde kontrolou mod 11 — ověřte ho', $issue['message'], 'důvod podle příčiny (D27)');
+        $this->assertSame([CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM], $this->codes($this->withSupplier($bank('CZ4701000000001234567890'))), 'IBAN sám je platný');
 
         $this->assertSame([], $this->codes($this->withSupplier($bank('GB82WEST12345698765432'))), 'země bez třídy: jen tvar a mod 97');
     }
@@ -179,7 +185,14 @@ class CanonicalValueValidatorTest extends TestCase
         $this->assertStringContainsString('podle IBAN je účet „2308417557/2010“', $issue['message']);
 
         $codes = $this->codes($this->withSupplier(['bankAccount' => ['accountNumber' => '19-2000145398/0800']]));
-        $this->assertSame([CanonicalValueValidator::ACCOUNT_NUMBER_INVALID], $codes, 'neplatný účet: jen nález účtu, ne nesoulad');
+        $this->assertSame(
+            [CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM, CanonicalValueValidator::IBAN_ACCOUNT_MISMATCH],
+            $codes,
+            'podezřelé číslo (mod 11, D30): podezření u čísla a nesoulad s IBAN jiného účtu',
+        );
+        $codes = $this->codes($this->withSupplier(['bankAccount' => ['accountNumber' => '1234567890/0100', 'iban' => 'CZ4701000000001234567890']]));
+        $this->assertSame([CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM], $codes, 'číslo i IBAN téhož podezřelého účtu: jeden nález');
+        $this->assertSame('supplier.bankAccount.accountNumber', $this->issue($this->withSupplier(['bankAccount' => ['accountNumber' => '1234567890/0100', 'iban' => 'CZ4701000000001234567890']]), CanonicalValueValidator::ACCOUNT_NUMBER_CHECKSUM)['path'], 'u čísla účtu');
     }
 
     public function testRepairsBecomeFindingsFromAuditBlock(): void
@@ -203,9 +216,10 @@ class CanonicalValueValidatorTest extends TestCase
     {
         $canonical = $this->withSupplier([
             'companyId' => '12345678', 'vatId' => 'CZ1', 'address' => ['zip' => '1'],
-            'bankAccount' => ['accountNumber' => '1/0100', 'iban' => 'CZ1', 'bic' => 'X'],
+            'bankAccount' => ['accountNumber' => '0/0100', 'iban' => 'CZ1', 'bic' => 'X'],
         ]);
         $canonical['customer'] = ['name' => 'Y', 'country' => 'cz', 'companyId' => '52654150', 'vatId' => 'CZ07123451', 'bankAccount' => ['accountNumber' => '19-2000145399/0800', 'iban' => 'CZ8520100000002308417557']];
+        $canonical['balanceParty'] = ['name' => 'Z', 'country' => 'cz', 'bankAccount' => ['accountNumber' => '2308417558/2010']];
         $canonical['_resolve'] = ['valueRepairs' => [['path' => 'balanceParty.bankAccount.iban', 'from' => 'a', 'to' => 'b', 'basis' => 'accountNumber']]];
 
         $issues = CanonicalValueValidator::validate($canonical);

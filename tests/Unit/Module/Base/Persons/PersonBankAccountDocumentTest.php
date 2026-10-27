@@ -86,9 +86,9 @@ class PersonBankAccountDocumentTest extends TestCase
         $result = (new StubBankDocument())->validate($partner);
         $this->assertTrue($result->isValid());
         $this->assertSame(
-            ['account_number:account_number_invalid', 'bic:bic_invalid'],
+            ['account_number:account_number_checksum', 'bic:bic_invalid', 'iban:iban_account_mismatch'],
             array_map(static fn (array $e): string => $e['column'] . ':' . $e['code'], $result->warningsToArray()),
-            'nesoulad se hlásí jen u dvou platných hodnot',
+            'podezřelé číslo (mod 11, D30) a nesoulad s IBAN jiného účtu',
         );
 
         $own = ['person' => 1, 'account_number' => '19-2000145399/0800', 'iban' => 'CZ8520100000002308417557'];

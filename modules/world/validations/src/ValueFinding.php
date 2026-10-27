@@ -9,8 +9,15 @@ namespace Shipard\Module\World\Validations;
  * a česká věta důvodu. Jediný zdroj textů nálezů — skládá z nich zprávu
  * validátor canonicalu (`IČO dodavatele „x“ nemá platný kontrolní
  * součet.`) i formuláře adresáře (`IČO „x“ nemá platný kontrolní součet.`).
- * Důvod rozlišuje příčinu (D27: u IBAN tvar / kontrolní číslice / délka /
- * číslo účtu uvnitř, u čísla účtu znaky / kód banky / mod 11).
+ * Důvod rozlišuje příčinu (D27: u IBAN tvar / kontrolní číslice / délka,
+ * u čísla účtu znaky / kód banky / samé nuly).
+ *
+ * **Podezření × jistá chyba** (D30): `account_number_checksum` = tuzemské
+ * číslo účtu se správným tvarem, které neprojde mod 11 (samo, nebo uvnitř
+ * platného IBAN) — mod 11 je pravidlo pro vytvoření čísla a zveřejněné
+ * účty ho někdy nesplňují. Kódy v {@see SUSPICIONS} jsou varování
+ * i u vlastní firmy a vlastních účtů ({@see isSuspicion()}) a nikdy
+ * nenesou návrh opravy; ostatní kódy jsou jisté chyby.
  *
  * `suggestion` je **návrh opravy** téže hodnoty z redundance (IČO
  * z osmimístného českého DIČ, IBAN z platného tuzemského čísla účtu
@@ -28,12 +35,17 @@ final readonly class ValueFinding
     public const IBAN_INVALID = 'iban_invalid';
     public const BIC_INVALID = 'bic_invalid';
     public const IBAN_ACCOUNT_MISMATCH = 'iban_account_mismatch';
+    public const ACCOUNT_NUMBER_CHECKSUM = 'account_number_checksum';
 
     /** @var list<string> kódy, které {@see ValueChecks} vyrábí */
     public const CODES = [
         self::COMPANY_ID_INVALID, self::VAT_ID_INVALID, self::VAT_ID_COMPANY_ID_MISMATCH, self::ZIP_INVALID,
         self::ACCOUNT_NUMBER_INVALID, self::IBAN_INVALID, self::BIC_INVALID, self::IBAN_ACCOUNT_MISMATCH,
+        self::ACCOUNT_NUMBER_CHECKSUM,
     ];
+
+    /** @var list<string> kódy, které jsou jen podezření (D30): varování všude, bez návrhu opravy */
+    public const SUSPICIONS = [self::ACCOUNT_NUMBER_CHECKSUM];
 
     /** @var array<string, string> druh hodnoty → podmět zprávy */
     private const SUBJECTS = [
@@ -63,6 +75,12 @@ final readonly class ValueFinding
     public function withSuggestion(string $suggestion): self
     {
         return new self($this->kind, $this->code, $this->value, $this->reason, $suggestion);
+    }
+
+    /** Podezření (D30), ne jistá chyba — varování i u vlastní firmy a vlastních účtů. */
+    public function isSuspicion(): bool
+    {
+        return in_array($this->code, self::SUSPICIONS, true);
     }
 
     /**
