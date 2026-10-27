@@ -78,6 +78,19 @@ Sekce v horní liště:
   s průběhem, zrušení) a **Varianty** (editor souborů
   `tests/eval/variants/`). Na serveru bez `tests/` (instalace z balíčku)
   se sekce nenabídne.
+- **Videa** — videa ze scénářů `demo/scenarios/` nad demo sadou (#103
+  F7b, `docs/test-corpus.md` § 20): tabulka scénářů se stavem posledního
+  **ověření** a **natočení**, karta **Zdroj dat pro videa** per sada
+  (vyhrazený volný zdroj dat s účelem „videa — <sada>“; chybí-li,
+  tlačítko **Založit zdroj dat** ho založí úlohou — `ds-create` s cronem
+  + `ds-upgrade`, bez seedu), akce **Ověřit** (průchod bez záznamu)
+  a **Natočit** (záznam + složení) jako úloha `video`, **Přehrát**
+  (přehrávač se posouváním) a **Stáhnout**. Sada se před každým během
+  sestaví s kotvou = dnešek (první běh dne trvá minuty, pak z mezipaměti)
+  a zdroj dat se přeseeduje. Tlačítka jsou neaktivní s nápovědou, když
+  na serveru chybí Node, závislosti nebo Chromium `tools/video-runner/`,
+  ffmpeg, python3 nebo Gotenberg v `server.json`. Sekce je v liště jen
+  s `demo/scenarios` a `tools/video-runner` v checkoutu.
 - **Logy** — prohlížeč logu (`/opt/shipard/log/shipard.log`) s filtrováním
   podle úrovně, zdroje dat a fulltextu, obnovování ve stylu `tail -f`
   (při rozbaleném záznamu se pozastaví) a detail záznamu včetně trace
@@ -121,14 +134,14 @@ Výstupy příkazů a chybové hlášky serveru zůstávají, jak je nástroje v
 ### Úlohy na pozadí a pojistky (F6b)
 
 Delší operace z Testování (přeseedování, ověření, proklikání, evaluace,
-založení zdroje dat) a smazání zdroje dat ze seznamu zdrojů dat neběží v HTTP
+založení zdroje dat), videa z oddílu Videa a smazání zdroje dat ze seznamu zdrojů dat neběží v HTTP
 požadavku, ale jako **úloha na pozadí**: API
 zapíše zadání do `/opt/shipard/run/dev-jobs/<id>/` a spustí obal
 `shpd-server dev-job-run` (skrytý příkaz, `setsid`), který kroky provede
 a průběh ukládá do téhož adresáře (`job.json` zadání, `state.json` stav
-a výsledky kroků, `progress.jsonl` průběh `ai-eval` / `dataset-e2e`,
-`output.log` výstup, `result.json` výsledek `dataset-verify` / `ai-eval
---json` / `dataset-e2e --json`). Úloha přežije
+a výsledky kroků, `progress.jsonl` průběh `ai-eval` / `dataset-e2e` /
+`video-run`, `output.log` výstup, `result.json` výsledek `dataset-verify`
+/ `ai-eval --json` / `dataset-e2e --json` / `video-run --json`). Úloha přežije
 zavření prohlížeče; detail se obnovuje sám. Na jednom zdroji dat běží
 nejvýš jedna úloha (druhou API odmítne 409 s odkazem na běžící). Úloha
 **Aktualizace checkoutu** (tlačítko Aktualizovat v bublině verze v pruhu) zdroj
@@ -182,8 +195,19 @@ než 14 dní se při výpisu mažou.
   Zrušení pošle SIGTERM: Playwright zavře prohlížeč, session uživatele
   `e2e` se zneplatní, zdroj dat zůstane s použitými doklady (další běh ho
   přeseeduje). Podrobně `docs/test-corpus.md` § 19.
+- **Videa** (F7b): oddíl **Videa** v liště, akce **Ověřit** / **Natočit**
+  u scénáře = úloha `video` (`shpd-ds video-run <scénář> --verb check|build
+  --json --progress-file … --base-url <origin>`) na vyhrazeném zdroji dat
+  sady. Detail úlohy ukazuje kroky (sestavení sady — i „z mezipaměti“,
+  přeseedování, ověření nebo natáčení, skládání) a výsledek: stav, krok
+  a selektor, na kterém scénář selhal, u natočení délku a velikost videa
+  s odkazem zpět do oddílu Videa. Zrušení pošle SIGTERM: generátor sady
+  nebo runner se ukončí, session uživatele `video` se zneplatní,
+  rozpracované video se nepovýší (předchozí zůstává); přeseedování se
+  přerušit nedá. Podrobně `docs/test-corpus.md` § 20.
 - Totéž z terminálu: `shpd-ds dataset-seed <cesta> -y`, `shpd-ds
   dataset-verify <cesta> --json`, `shpd-ds dataset-e2e <cesta> --json`,
+  `shpd-ds video-run <scénář> --verb build --json`,
   `shpd-ds ai-eval <cesta> --variant <soubor> --estimate --json` /
   `--yes --max-cost <USD>` (`docs/cli.md`).
 

@@ -2426,6 +2426,65 @@ zrušeno (SIGTERM: Playwright dostane SIGINT, session se uklidí).
 | `--json` | Report jako JSON na stdout |
 | `--progress-file <soubor>` | JSON řádky průběhu `started` / `step` / `card` / `finished` / `error` (úloha dashboardu) |
 
+#### `video-run`
+
+```bash
+shpd-ds video-run s1-prijata-faktura
+shpd-ds video-run s1-prijata-faktura --verb build --json
+shpd-ds video-run /cesta/k/repu/demo/scenarios/s1-prijata-faktura.jsonc --anchor 2027-01-20
+shpd-ds video-run s1-prijata-faktura --base-url http://10.0.0.5 --progress-file /tmp/video.jsonl
+```
+
+Video ze scénáře nad demo sadou (#103 F7b, D119–D129,
+`docs/test-corpus.md` § 20): demo sadu scénáře (`dataset` v JSONC)
+sestaví generátorem s **kotvou = dnešek** do mezipaměti
+`/opt/shipard/run/video-datasets/<sada>/<kotva>/` (druhý běh téhož dne
+sadu nestaví; změna příběhu nebo generátoru ji přestaví; starší kotvy
+sady se mažou), zdroj dat přeseeduje (`dataset-seed --yes`), založí
+vyhrazeného uživatele `video` (administrátor, systémový, bez hesla) a
+krátkodobou session jen v souboru `storageState` (0600, soukromý
+adresář), spustí video-runner (`tools/video-runner/`) jako podproces
+s pevným časem v prohlížeči (kotva + `clockTime` scénáře v jeho časové
+zóně, výchozí 09:30) a jazykem podle `locale` scénáře, session zneplatní
+a soubor smaže (i při chybě a SIGTERM). `--verb check` = průchod bez
+záznamu; `--verb build` = `record` + `compose`, hotové video
+`/opt/shipard/run/videos/<id>/<id>.mp4` s `meta.json` (sada, kotva,
+commit, čas, délka, velikost) — jedna verze na scénář, nové natočení
+přepíše předchozí; výsledek posledního ověření v `check.json`. Stejný
+příkaz spouští úloha vývojářského dashboardu (oddíl **Videa**, akce
+**Ověřit** / **Natočit**, úloha `video`).
+
+**Preflight** (nic se nemění, exit 2): režim `development`, zdroj dat
+třídy `free` (vyhrazený zdroj dat pro videa sady má účel `videa —
+<sada>`; čerstvý zdroj dat z `ds-create` potřebuje `ds-upgrade`, jinak
+API odpoví 500), scénář z `demo/scenarios/` platný (`dataset`
+z `demo/datasets/` druhu demo s příběhem v `demo/datasets/stories/`),
+Gotenberg v `server.json` (`render.url`; před stavbou sady i `/health`),
+`node`, `ffmpeg` a `python3` v systémovém `PATH`,
+`tools/video-runner/node_modules` a Chromium Playwrightu **runneru** pod
+uživatelem, který příkaz spouští, **lokální host** `--base-url` (D97)
+a dosažitelnost API `<base-url>/<ds-id>/api/v1/_app/info`. Chybějící
+závislosti runneru: `cd tools/video-runner && npm ci && npx playwright
+install chromium`.
+
+Výstup: scénář, sada, kotva, pevný čas, kroky s exit kódy a časy
+(`build` i „z mezipaměti“, `reseed`, `check` nebo `record` + `compose`),
+výsledek runneru (`result.json`: stav, u selhání krok a selektor), u
+`build` cesta, délka a velikost videa; `--json` tentýž obsah jako jeden
+JSON na stdout (lidské řádky na stderr). Exit `0` jen při `ok`, `1`
+nálezy (scénář nesedí, sada nebo seed selhaly, video nevzniklo), `2`
+odmítnutý preflight, `130` zrušeno (SIGTERM: generátor dostane SIGTERM,
+runner SIGINT, session se uklidí, nic rozepsaného se nepovýší).
+
+| Opce | Význam |
+|------|--------|
+| `<scenario>` | Id scénáře (`demo/scenarios/<id>.jsonc`), nebo cesta k souboru v tomto adresáři |
+| `--verb check\|build` | `check` = průchod bez záznamu (výchozí), `build` = natočit a složit video |
+| `--anchor YYYY-MM-DD` | Kotva sady; výchozí dnešek (podle času serveru, UTC) — jiný den jen pro ladění (kotva v jiném fiskálním roce zakládá roky při seedu) |
+| `--base-url <url>` | Origin aplikace, výchozí `http://127.0.0.1`; jen IP nebo jméno tohoto serveru (D97), jinak exit 2 |
+| `--json` | Report jako JSON na stdout |
+| `--progress-file <soubor>` | JSON řádky průběhu `started` / `step` (`build` / `reseed` / `check` / `record` / `compose`) / `finished` / `error` (úloha dashboardu) |
+
 ---
 
 ## Pomocné skripty

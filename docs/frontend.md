@@ -260,6 +260,24 @@ i direktivě `style:…=`; `0px`, custom properties a komentáře nevadí, výji
 jen `/* px-ok: důvod */` na stejném řádku. Tokeny a pravidla psaní:
 [`design-system.md`](design-system.md) → Jednotky a mezery.
 
+**Videa (#103 F7b D122, D126, D127, `tasks/testing-phase7b.md`).** Stránka
+`videos` (`routes.js` `['videos', 'videos']`, `SPA_PAGES` += `videos`,
+položka lišty jen s flagem `videos` z `GET /_dev/api/info` =
+`demo/scenarios` + `tools/video-runner` v checkoutu): `pages/videos/VideosPage.svelte`
+(karta zdrojů dat per sada s tlačítkem Založit zdroj dat, tabulka scénářů
+se stavem posledního ověření a natočení, akce Ověřit / Natočit s nápovědou
+důvodu neaktivity, přehrávač `<video controls preload="metadata">` nad
+`GET /_dev/api/videos/{id}/file` a odkaz Stáhnout s `?download=1`),
+`pages/videos/VideoResult.svelte` (výsledek úlohy `video` v detailu
+úlohy: stav, kroky, krok a selektor selhání, délka a velikost videa),
+`videos/api.js` (`videosApi`), `videos/videos.js` (čisté funkce:
+`blockerText`, `checkState`, `datasetsOf`, `formatBytes`, `formatDuration`,
+popisky `jobs.videoStep.*` / `jobs.videoStatus.*`; test
+`tests/Unit/dev/videos.test.mjs`). Průběh úlohy `video` čte
+`reduceProgress` beze změny (události `step` s názvy kroků `build` /
+`reseed` / `check` / `record` / `compose`); `JobDetailPage` má pro typ
+`video` blok průběhu, výsledek a vlastní větu zrušení. Klíče `videos.*`.
+
 **Čeština a angličtina (#129 D12, `tasks/dev-dashboard-i18n.md`).** Dashboard
 má vlastní slovníky `src/dev/i18n/cs.js` / `en.js` (ploché objekty, tečkové
 klíče podle obrazovky: `app.*`, `common.*`, `ds.*`, `dsCreate.*`, `logs.*`,
@@ -1399,6 +1417,13 @@ Rozhodnutí D11–D14 z #48:
   entity) — nová blokující cesta bez ovládání tam padne; že šablona odznak
   pro každou cestu skutečně **vykreslí**, hlídá spec proklikání
   (`apply/disabled` „cesta bez ovládání“), komponentové testy frontend nemá.
+- **Vývojářský dashboard — oddíl Videa (#103 F7b).** První testidy
+  v dashboardu, stejná konvence `oblast-konkretum` s id scénáře nebo sady
+  ze serveru: `videos-refresh`, `videos-tools-missing`, `videos-ds-{sada}`
+  + `videos-ds-create-{sada}`, řádek `videos-row-{id}`, akce
+  `videos-check-{id}` / `videos-build-{id}` / `videos-play-{id}` /
+  `videos-download-{id}`, přehrávač `videos-player-{id}`. Slouží
+  headless kontrole stránky při vývoji, žádný scénář je zatím nečte.
 
 ---
 

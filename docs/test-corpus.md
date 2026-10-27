@@ -1568,3 +1568,181 @@ krok karty je pojmenovaný id karty, síť ukazuje `POST …/apply` s tělem
 - **strict × liberal** (D93): rozdíl v tom, co jde založit, je smysl
   proklikání, ne důvod přepnout UI na liberal.
 
+
+## 20. Videa nad demo sadou (F7b)
+
+Video-runner (`tools/video-runner/`, #48) natáčí video ze scénáře
+v `demo/scenarios/`; do F7b běžel nad tím, co na instanci zrovna bylo,
+„dnes“ bylo skutečné dnes a `check` zprávu spotřeboval. Od F7b
+(`tasks/testing-phase7b.md`, #103 D119–D129) nese scénář pole `dataset`
+a jeden příkaz sestaví demo sadu s **kotvou = dnešek**, naseeduje ji do
+vyhrazeného volného zdroje dat, otevře session bez hesla a scénář ověří
+nebo natočí. Videa se prohlížejí a stahují v oddílu **Videa**
+vývojářského dashboardu; galerie přes nginx (`tasks/video-publish.md`)
+zanikla (D122, D129).
+
+### Jeden příkaz, úloha dashboardu je jeho obal (D125)
+
+```bash
+cd /opt/shipard/data-sources/<ds-id videí>
+shpd-ds video-run s1-prijata-faktura                 # ověření (check)
+shpd-ds video-run s1-prijata-faktura --verb build    # natočení a složení
+```
+
+Kroky: **preflight** (exit 2) → **sestavení sady s kotvou** (`build.py
+--story <sada> --anchor <dnešek>`, mezipaměť D128) → **přeseedování**
+(`dataset-seed --yes` ve stejném procesu) → **uživatel a session**
+(D92, uživatel `video`) → **video-runner** (`check`, nebo `record` +
+`compose` jako dva podprocesy — kroky průběhu natáčení a skládání) →
+úklid session → `meta.json` / `check.json` → **report**. Z dashboardu
+je to oddíl **Videa**, akce **Ověřit** / **Natočit**, úloha typu `video`
+se stejným příkazem (`--json --progress-file <úloha>/progress.jsonl
+--base-url <origin požadavku>`), `docs/dev/dev-daily.md` § 1.
+
+- **Preflight** (`VideoPreflight`, dědí sondy z `E2ePreflight`): režim
+  serveru `development` (fail-closed), zdroj dat třídy `free`, sada
+  scénáře v katalogu (`DevActionGuard`) a druhu **demo** s příběhem
+  v `demo/datasets/stories/<sada>/story.jsonc`, Gotenberg v `server.json`
+  (`render.url`; bez něj by `build.py` tiše použil svou zapsanou adresu —
+  a před stavbou sady i `GET /health`), `node`, `ffmpeg` a `python3`
+  v pevném `PATH`, `tools/video-runner/node_modules/playwright` a
+  Chromium Playwrightu **runneru** (`PlaywrightInstall` nad jeho
+  `playwright-core/browsers.json` — `tests/e2e` má vlastní, dnes stejnou
+  revizi), lokální host `--base-url` (D97, `LocalBaseUrl`, připíchnutí
+  curl i Chromiu `VIDEO_HOST_RESOLVER_RULES`) a dosažitelnost API
+  zdroje dat. Čerstvý zdroj dat z `ds-create` nemá tabulky a API vrací
+  500 — nejdřív `ds-upgrade` (úloha dashboardu Založit zdroj dat ho
+  dělá sama).
+- **Sada s kotvou a mezipaměť (D120, D128, `DatasetBuildCache`).**
+  Výstup `build.py --out` leží v `/opt/shipard/run/video-datasets/<sada>/<kotva>/`
+  s cache PDF (`.build-state.json`) a značkou `build.json` `{dataset,
+  anchor, sourceHash, builtAt, commit}` zapsanou až po úspěšném buildu;
+  adresář bez značky se příště přestaví. `sourceHash` je sha256 nad
+  příběhem (`stories/<sada>/**` bez `build-state.json`), `build.py`,
+  šablonami a generátorem (`invoicegen/**/*.py` bez testů) — změna
+  příběhu týž den sadu přestaví. Starší kotvy sady se po úspěchu mažou.
+  Zámek `<sada>/.lock` (`flock`) drží běh přes build **i seed**, aby
+  úklid jednoho běhu nesmazal sadu, kterou druhý seeduje. Kotva je
+  **dnešek podle PHP** (server má UTC — tak počítá i splatnosti;
+  mezi 22:00 a 24:00 UTC je datum v Praze o den dál, ale shodné
+  s tím, co server počítá); `--anchor` jiný den jen pro ladění (kotva
+  v jiném fiskálním roce: `FiscalYearsSeeder` roky založí, platby za
+  minulý rok zůstanou nespárované — `demo/datasets/README.md`).
+- **Pevný čas v prohlížeči (D120).** `VIDEO_FIXED_TIME` = kotva +
+  `clockTime` scénáře (výchozí 09:30) v jeho časové zóně, ISO s posunem;
+  runner volá `context.clock.setFixedTime` hned po vzniku kontextu
+  (před ověřením session). Zmrazený je jen `Date` v prohlížeči — proto
+  kotva = skutečný dnešek. Jazyk a zóna z `locale` / `timezone` scénáře
+  (D121): `shpd_language = auto` ve `storageState`, aplikace si jazyk
+  bere z `navigator.language`; nativní datumová a číselná pole formátuje
+  Chromium podle locale **svého procesu** — runner mu dává `LANG` /
+  `LC_ALL` z `locale` scénáře (`cs_CZ.UTF-8`), `--lang` ani `locale`
+  kontextu na ně nemají vliv.
+- **Přihlášení bez hesla (D92).** Jako u proklikání, ale vyhrazený
+  uživatel `video` (jméno **Jana Zelená** — je vidět v menu uživatele
+  na videu; existujícího uživatele příkaz nemění, jen varuje), TTL
+  3600 s, `storageState` v soukromém dočasném adresáři 0700 jen po dobu
+  běhu (runner ho při zavření přepíše obnoveným tokenem — maže se až po
+  skončení podprocesu), zneplatnění všech sessions před během i po něm.
+  Token není na stdout, v argumentech, v logu, v průběhu ani v reportu.
+- **Runner jako podproces** (`VideoRunnerProcess`, společná smyčka
+  `CancellableProcess` s `PlaywrightRunner`): `node
+  tools/video-runner/bin/video-runner.mjs <verb> <absolutní cesta
+  scénáře>` s cwd v adresáři runneru. Prostředí skládá příkaz celé —
+  PHP-FPM běží s `clear_env`, úloha dashboardu startuje s prázdným
+  prostředím: pevný `PATH`, `HOME` (cache prohlížeče), `SHPD_BASE_URL =
+  <origin>/<ds-id>`, `SHPD_STORAGE_STATE`, `VIDEO_WORK_DIR` /
+  `VIDEO_OUT_DIR` (pod úložištěm videa), `VIDEO_FIXED_TIME`,
+  `VIDEO_HOST_RESOLVER_RULES` (jen u jména hostu) a `VIDEO_HEADFUL=0`
+  (vývojářův `tools/video-runner/.env` má nižší prioritu, ale `1` by
+  prosáklo). Generátor sady (`DatasetBuildProcess`) dostává
+  `GOTENBERG_URL` ze `server.json` a `PYTHONUTF8=1` (pevné prostředí
+  nese `LC_ALL=C`). Výsledek čte příkaz z `result.json` runneru
+  (`<VIDEO_WORK_DIR>/<id>/result.json`: stav, doba, `error.step {index,
+  verb, value}`, `video.path`).
+- **Zrušení**: SIGTERM příkazu → během stavby sady dostane python
+  SIGTERM (bez značky, příště se přestaví), přeseedování se přerušit
+  nedá (doběhne, pak 130), runner dostane SIGINT (zavře Chromium, bez
+  `result.json` — zrušení má přednost před „chybí výsledek“), nic
+  rozepsaného se nepovýší; session se uklidí vždy. Exit 130. Z dashboardu
+  jde SIGTERM celé skupině procesů (grace 180 s kvůli seedu).
+
+### Úložiště videí a dashboard (D122, D126, D127)
+
+`/opt/shipard/run/videos/<id scénáře>/` (`VideoStore`): hotové
+`<id>.mp4`, `meta.json` `{scenario, file, dataset, anchor, fixedTime,
+recordedAt, commit, durationMs, bytes}`, `check.json` (poslední
+ověření: čas, verb, kotva, stav, krok selhání) a pracovní `work/`
+(runner v něm dělá `<id>/raw.mp4`, `timeline.json`, `result.json`;
+složené video jde do `work/out/<id>.mp4`). Nové natočení se **povýší**
+`rename` a `meta.json` se zapíše až poté — přehrávač nikdy nevidí
+rozepsaný soubor, při selhání zůstává předchozí video. Jedna verze na
+scénář. Obě úložiště (videa i mezipaměť sad) jsou pod `/opt/shipard/run`,
+ne v `/tmp`: příkaz z terminálu a úloha dashboardu musí vidět totéž.
+
+Zdroj dat pro videa (D126, `VideoDataSources`): per sada, volný,
+aktivní, účel přesně `videa — <sada>` (`dataset-seed` existující účel
+nemění, takže přežije přeseedování). Dashboard ho najde, nebo založí
+úlohou `create` (`ds-create --purpose "videa — <sada>"` **s cronem** —
+`--no-cron` by na každém videu nechal pruh „Periodické úlohy vypnuté“;
+sada se stejně před během přeseeduje — a `ds-upgrade`, bez seedu).
+Evaluační zdroje dat ani zdroje „korpus“ se pro videa nikdy nepoužijí.
+
+`DevVideosController` (`/_dev/api/videos`): `GET` seznam (scénáře
+z `VideoScenarioCatalog` i s neplatnými — nesou větu problému —, stav
+z `meta.json` / `check.json`, zdroj dat sady, běžící úloha, nástroje),
+`POST {id}/run {verb}` (jen scénář z výpisu; 409 `VIDEO_DS_MISSING`,
+422 `VIDEO_UNAVAILABLE` s větami, 400 cizí origin, 409 `JOB_RUNNING`),
+`POST data-source {dataset}` (409 `VIDEO_DS_EXISTS`), `GET {id}/file`
+(`Response::file` po blocích, HTTP `Range` přes `ByteRange`: 206
+s `Content-Range`, 416 mimo soubor, `Accept-Ranges: bytes`; jen soubor,
+který `meta.json` jmenuje; `?download=1` = příloha). Vše jen
+`development` (`DevActionGuard`).
+
+### Report
+
+`--json` = jeden objekt na stdout (lidské řádky na stderr): `ok`,
+`status` (`ok` / `failed` / `cancelled`), `exitCode`, `problems[]`,
+`verb`, `scenario` (id, titulek a popis z hlavičky komentářů, sada,
+`locale`, `timezone`, `clockTime`), `anchor`, `fixedTime`, `dataset`
+(název, adresář mezipaměti, `cached`, otisk), `dataSource`, `appUrl`,
+`steps` (`build` s `cached`, `reseed`, `check` nebo `record` +
+`compose`: `ran`, `exitCode`, `termSignal`, `durationMs`), `result`
+(`result.json` runneru) a `video` (jen `build`: soubor, cesta, délka,
+velikost, čas, commit). Nálezy: selhaná stavba sady, selhaný seed,
+runner ukončený signálem nebo s neznámým kódem, chybějící `result.json`,
+výsledek jiný než `ok` (věta s krokem a selektorem), `build` bez videa.
+Exit `0` jen při `ok`, `1` nálezy, `2` preflight, `130` zrušeno.
+
+### Odchylky od zadání
+
+- `build` z `video-run` jsou **dva běhy runneru** (`record`, `compose`),
+  aby průběh nesl krok natáčení i skládání a skládání běželo už bez
+  session; verb `build` runneru zůstává pro ruční použití.
+- Mezipaměť sady je per sada a kotva **a otisk zdrojů** (zpřísnění
+  D128): změněný příběh nebo generátor sadu přestaví i týž den.
+- Zdroj dat pro videa se zakládá **s cronem** (evaluační bez) — kvůli
+  pruhu na videu; a se dvěma kroky (`ds-create` + `ds-upgrade`).
+- Runner validuje `dataset` jen tvarem a `clockTime` jen formátem;
+  existenci sady ověřuje `video-run` (runner o Shipardu neví nic).
+- Proces Chromia dostává `LANG` / `LC_ALL` z `locale` scénáře — nativní
+  datumová a číselná pole se jinak formátovala americky i v české
+  aplikaci (`--lang` Chromia to neřeší).
+
+### Pasti
+
+- **První běh dne staví sadu** (generátor + PDF přes Gotenberg): na dev
+  stroji desítky sekund až minuty; průběh to ukazuje jako krok
+  „sestavení sady“. Druhý běh téhož dne jde z mezipaměti.
+- **Prostředí úlohy je prázdné** (`clear_env` PHP-FPM) — co podproces
+  potřebuje, musí dostat od příkazu; nic nedědit z vývojářova shellu
+  ani z `.env` runneru.
+- **Prohlížeč, ffmpeg a python patří uživateli** PHP-FPM (jako u
+  proklikání); preflight to pozná a řekne, co spustit.
+- **Název zdroje dat je v záhlaví aplikace** („Videa — Demo — IT servis“
+  v sidebaru) — demo sada zatím nenastavuje `app.name`; pro video na web
+  patří název firmy příběhu do `setup/settings.jsonc` sady (#131).
+- **Kotva přes hranici fiskálního roku** (`--anchor 2027-01-20`): seed
+  roky založí, ale platby minulého roku zůstanou nespárované
+  (`demo/datasets/README.md`) — video pak ukazuje jinou situaci než
+  s kotvou v roce sady.

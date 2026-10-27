@@ -1,6 +1,6 @@
 # F7b — videa nad demo sadou ve vývojářském dashboardu
 
-**Stav:** naplánováno — zadání 2026-10-27 (#103 D119–D129)
+**Stav:** hotovo — implementace, ověření a natočení S1 z CLI i z dashboardu 2026-10-27 (#103 D119–D129); nálezy N1–N7 níže
 
 ## Kontext / Cíl
 
@@ -169,22 +169,28 @@ session při výjimce.
 
 ## Hotovo když
 
-- [ ] `shpd-ds video-run s1-prijata-faktura --verb check` doběhne `ok` na
+- [x] `shpd-ds video-run s1-prijata-faktura --verb check` doběhne `ok` na
       vyhrazeném zdroji dat demo sady; druhý běh hned po něm taky (sada se
-      přeseeduje, mezipaměť se použije).
-- [ ] `--verb build` vytvoří video; v něm je česky aplikace, datum kotvy
-      = dnešek a čas dne 09:30 (kontrola: snímek z videa).
-- [ ] Z dashboardu jde scénář ověřit, natočit, přehrát (s posouváním)
-      a stáhnout; úlohu jde zrušit.
-- [ ] Preflight s cizí adresou odmítne před session; bez Node / ffmpeg /
+      přeseeduje, mezipaměť se použije) — 2026-10-27 na `360b-n`: první
+      běh sestavení 10 s + seed 30 s + průchod 17 s, druhý z mezipaměti.
+- [x] `--verb build` vytvoří video; v něm je česky aplikace, datum kotvy
+      = dnešek a čas dne 09:30 (kontrola: snímek z videa) — 17 s, 1,8 MiB,
+      první karta Energie Jiskra 13. 10. 2026, uživatelka Jana Zelená.
+- [x] Z dashboardu jde scénář ověřit, natočit, přehrát (s posouváním —
+      206 `Content-Range` i při skoku) a stáhnout; úlohu jde zrušit
+      (tlačítko Zrušit v detailu, grace 180 s; zrušení ověřeno unit testy).
+- [x] Preflight s cizí adresou odmítne před session; bez Node / ffmpeg /
       závislostí odmítne s přesnou větou; akce v dashboardu neaktivní
-      s nápovědou.
-- [ ] Token se neobjeví ve výstupu, reportu, logu ani v `ps`.
-- [ ] Galerie a sekce nginx pryč; `spike-dashboard` smazaný.
-- [ ] `vendor/bin/phpunit --filter` na nové a dotčené testy, testy
-      video-runneru, `npm test` a `npm run build` ve `frontend/`,
-      `npm run check:i18n`, `python3 scripts/check-css-tokens.py`.
-- [ ] Dokumentace podle § 5, `**Stav:**`, index tasků.
+      s nápovědou (unit testy `VideoRunCommandTest`, `VideoPreflightTest`,
+      `DevVideosControllerTest`; v dashboardu nápověda i u běžící úlohy).
+- [x] Token se neobjeví ve výstupu, reportu, logu ani v `ps` (`shpd_st_`
+      v `output.log`, `result.json`, `progress.jsonl` úlohy 0×; argv jen
+      cesta scénáře a soubor průběhu).
+- [x] Galerie a sekce nginx pryč; `spike-dashboard` smazaný.
+- [x] `vendor/bin/phpunit` celá sada (10 895 testů), testy video-runneru
+      (48), `npm test` (230), `npm run build`, `npm run check:i18n`,
+      `check-css-tokens.py`, `check-css-units.py`.
+- [x] Dokumentace podle § 5, `**Stav:**`, index tasků.
 
 ## Pasti
 
@@ -203,4 +209,38 @@ session při výjimce.
 
 ## Nálezy
 
-_(doplní implementace)_
+- **N1 — Čerstvý zdroj dat z `ds-create` nemá tabulky.** API odpoví 500
+  (`core_system_rate_limits` neexistuje) a preflight `video-run` ho
+  odmítne jako nedosažitelný. Akce **Založit zdroj dat** proto má dva
+  kroky, `ds-create` a `ds-upgrade` (bez seedu — sadu s kotvou seeduje až
+  první běh); z CLI před prvním `video-run` spustit `ds-upgrade`.
+- **N2 — `--no-cron` je vidět na videu.** Pruh „Periodické úlohy jsou na
+  tomto zdroji dat vypnuté“ nad dashboardem. Zdroj dat pro videa se
+  proto zakládá **s cronem** (na rozdíl od evaluačních zdrojů dat); sada
+  se stejně před každým během přeseeduje, úlohy cronu nemají co pokazit.
+  Existujícímu zdroji dat `shpd-ds ds-state cron --on`.
+- **N3 — Název zdroje dat je v záhlaví aplikace.** Sidebar ukazuje
+  „Videa — Dem…“ — demo sada nenastavuje `app.name`. Pro video na web má
+  příběh nést název firmy (Zelený Terminál s.r.o.) v `setup/settings.jsonc`
+  sady (#131, mimo tento task).
+- **N4 — Nativní datumová pole jsou v americkém formátu** (`10/12/2026`)
+  i v české aplikaci: Chromium formátuje `<input type=date>` a číselná
+  pole podle locale **svého procesu** (`LANG` / `LC_ALL`), ne podle
+  `locale` kontextu Playwrightu ani `--lang` (ověřeno sondou nad pěti
+  variantami). Runner nově spouští Chromium s `LANG` / `LC_ALL`
+  z `locale` scénáře (`cs_CZ.UTF-8`); týká se nativních prvků formuláře
+  v posledních vteřinách S1.
+- **N5 — Doby na dev stroji:** sestavení sady s kotvou 10 s (Gotenberg
+  v síti, cache PDF v mezipaměti kotvy), přeseedování 25–36 s (295
+  dokladů, 20 výpisů — nepřerušitelné, proto grace úlohy 180 s), ověření
+  16–17 s, natáčení 25 s, skládání 8 s. Celé natočení z mezipaměti ≈ 1,5
+  minuty.
+- **N6 — Kotva = dnešek podle PHP, tedy UTC** (tak server počítá
+  splatnosti). Mezi 22:00 a 24:00 UTC je v Praze už další den; datum ve
+  videu je přesto shodné s tím, co server považuje za dnešek.
+- **N7 — Prostředí úlohy dashboardu je prázdné** (`clear_env` PHP-FPM):
+  bez `PATH`, `HOME`, `LANG`. Všechny podprocesy dostávají prostředí
+  složené příkazem (pevný `PATH`, `HOME` z `posix_getpwuid`,
+  `GOTENBERG_URL` ze `server.json`, `PYTHONUTF8=1`, `VIDEO_HEADFUL=0`);
+  `Version::gitInfo()` pod úlohou git nenajde, `commit` v `meta.json`
+  je pak `null`.

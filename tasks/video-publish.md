@@ -1,6 +1,6 @@
 # Video: publikace přes HTTP — galerie v `out/` (#48)
 
-**Stav:** hotovo — galerie i předpis v INSTALL.md; nasazení nginx je ruční krok mimo repo
+**Stav:** zrušeno — galerie přes nginx a `gallery.mjs` odstraněny 2026-10-27 (#103 F7b D122, D129); videa se prohlížejí a stahují v oddílu **Videa** vývojářského dashboardu (`tasks/testing-phase7b.md`). Text níže je historie D15–D17.
 
 Rozhodnuto v chatu, zapsáno v #48:
 
