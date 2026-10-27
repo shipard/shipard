@@ -140,7 +140,10 @@
 
   {#snippet footer()}
     <!-- Jeden obal: patička modalu na mobilu roztahuje své děti do jedné
-         řady, výběr jazyka by se v ní neuvešel — tady se láme nad tlačítka. -->
+         řady, výběr jazyka by se v ní neuvešel — tady se láme nad tlačítka.
+         Snippet se kreslí v patičce Modalu mimo `.shpd-print`, proto má
+         vlastní kontejner na celou šířku patičky (#133 D43). -->
+    <div class="shpd-print__footer-box">
     <div class="shpd-print__footer">
       {#if languageOptions.length > 1}
         <div class="shpd-print__language" data-testid="print-language">
@@ -167,6 +170,7 @@
         onclick={download}
       />
     </div>
+    </div>
   {/snippet}
 </Modal>
 
@@ -192,8 +196,16 @@
     background: var(--shpd-color-bg-secondary);
   }
 
-  .shpd-print__footer {
+  /* Kontejner pro @container patičky: položka patičky Modalu na celou
+     šířku (flex: 1, min-width: 0 — inline-size containment by ji jinak
+     smrštil na nulu), vlastní řádek až uvnitř. */
+  .shpd-print__footer-box {
     flex: 1;
+    min-width: 0;
+    container-type: inline-size;
+  }
+
+  .shpd-print__footer {
     display: flex;
     /* Výchozí stretch — tlačítka dorostou na výšku výběru jazyka. */
     justify-content: flex-end;
