@@ -335,7 +335,7 @@
   .grid-2 .dev-card { margin-top: 0; }
   .grid-2 > div > .dev-card + .dev-card { margin-top: var(--shpd-space-lg); }
   .grid-3 + .dev-card { margin-top: var(--shpd-space-lg); }
-  @media (max-width: 1100px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 68.75rem) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
   table.plain { width: 100%; border-collapse: collapse; font-size: var(--shpd-font-size-sm); }
   table.plain td { padding: 0.1875rem 0; border-bottom: 1px solid var(--shpd-color-border-subtle); vertical-align: top; }
   table.plain tr:last-child td { border-bottom: 0; }

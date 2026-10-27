@@ -1430,8 +1430,9 @@
   /* --- Mobilní list/detail přepínání --- */
   /* Na mobilu je vidět jen jeden panel. Bez vybraného řádku seznam přes
      celou šířku; s vybraným řádkem detail přes celou šířku, seznam skrytý.
-     Breakpoint 768px musí LADIT s MOBILE_BREAKPOINT v layout.svelte.js. */
-  @media (max-width: 768px) {
+     Breakpoint shellu (#133 D42) — tentýž jako MOBILE_BREAKPOINT
+     v layout.svelte.js, shodu hlídá check-css-units.py. */
+  @media (max-width: 48rem) {
     .shpd-viewer__body--mobile .shpd-viewer__list-panel {
       width: 100%;
       flex-shrink: 1;

@@ -84,6 +84,12 @@
 </section>
 
 <style>
+  .shpd-security-panel {
+    /* Kontejner pro @container níže (#133 D43): panel reaguje na svou šířku,
+       ne na okno. Blok na celou šířku rodiče, pole až uvnitř. */
+    container-type: inline-size;
+  }
+
   .shpd-security-panel__title {
     margin-bottom: var(--shpd-space-md);
     font-size: var(--shpd-font-size-base);
@@ -137,7 +143,8 @@
     max-width: calc(180px + 320px + var(--shpd-space-md));
   }
 
-  @media (max-width: 640px) {
+  /* Úzký kontejner: popisky nad poli. */
+  @container (max-width: 30rem) {
     .shpd-security-panel__field {
       grid-template-columns: 1fr;
       gap: var(--shpd-space-xs);

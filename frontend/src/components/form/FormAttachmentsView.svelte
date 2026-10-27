@@ -91,9 +91,11 @@
     padding-right: var(--shpd-space-xs);
   }
 
-  /* Na mobilu (sloupce pod sebou) se výška od souseda odvodit nedá —
-     náhledy scrollují v pevném okně. Breakpoint ladí s FormSection. */
-  @media (max-width: 768px) {
+  /* Úzká sekce (sloupce pod sebou) — výška od souseda se odvodit nedá,
+     náhledy scrollují v pevném okně. Přepíná se ve stejný okamžik jako
+     sloupce, proto pojmenovaný kontejner `form-section` (FormSection),
+     ne nejbližší předek — uvnitř formuláře může být jiný kontejner. */
+  @container form-section (max-width: 30rem) {
     .shpd-form-attview {
       height: auto;
       min-height: 0;

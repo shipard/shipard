@@ -256,6 +256,10 @@
   .shpd-settings-page {
     padding: var(--shpd-space-lg);
     max-width: 760px;
+    /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
+       ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
+       rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */
+    container-type: inline-size;
   }
 
   .shpd-settings-page__message {
@@ -334,7 +338,8 @@
     color: var(--shpd-color-danger);
   }
 
-  @media (max-width: 640px) {
+  /* Úzký kontejner: popisky nad pole, jeden sloupec. */
+  @container (max-width: 30rem) {
     .shpd-settings-page__fields,
     .shpd-settings-page__field {
       grid-template-columns: 1fr;

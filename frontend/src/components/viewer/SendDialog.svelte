@@ -422,6 +422,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-md);
+    /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
+       ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
+       rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */
+    container-type: inline-size;
   }
 
   .shpd-send__grid {
@@ -541,8 +545,8 @@
 
   .shpd-send__result p { margin: 0; }
 
-  /* Na mobilu popisky nad poli. */
-  @media (max-width: 768px) {
+  /* Úzký kontejner: popisky nad poli. */
+  @container (max-width: 30rem) {
     .shpd-send__grid { grid-template-columns: minmax(0, 1fr); }
     .shpd-send__grid > label,
     .shpd-send__label { text-align: left; padding-top: 0; }

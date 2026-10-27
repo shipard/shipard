@@ -177,6 +177,10 @@
     gap: var(--shpd-space-sm);
     height: 100%;
     min-height: 0;
+    /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
+       ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
+       rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */
+    container-type: inline-size;
   }
 
   .shpd-print__frame {
@@ -210,9 +214,9 @@
     width: 11rem;
   }
 
-  /* Stejný zlom jako Modal: výběr jazyka na vlastní řádek, tlačítka pod ním
-     přes celou šířku. */
-  @media (max-width: 768px) {
+  /* Úzký kontejner: výběr jazyka na vlastní řádek, tlačítka pod ním přes
+     celou šířku. */
+  @container (max-width: 30rem) {
     .shpd-print__footer {
       flex-wrap: wrap;
     }

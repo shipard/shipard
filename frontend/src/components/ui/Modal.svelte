@@ -425,17 +425,19 @@
   /* ============================================================
    * Mobilní fullscreen
    * ------------------------------------------------------------
-   * Na ≤ 768px je každý modál fullscreen (100vw × 100vh), bez
+   * Na ≤ 48rem (breakpoint shellu, #133 D42) je každý modál fullscreen
+   * (100vw × 100vh), bez
    * zaoblení a okrajů. Přebíjí inline cardStyle (width/height/
    * max-* počítané z depth a width prop) — proto !important.
    *
-   * Breakpoint 768px ladí s MOBILE_BREAKPOINT v layout.svelte.js.
+   * Tentýž breakpoint jako MOBILE_BREAKPOINT v layout.svelte.js —
+   * shodu hlídá check-css-units.py (D47).
    *
    * Depth-shrink (odsazení vnořených modálů) se tím ruší: všechny
    * hloubky dostanou stejný fullscreen rozměr, vnořený modál
    * překryje rodiče. Stack/Esc/zavírání funguje beze změny.
    * ============================================================ */
-  @media (max-width: 768px) {
+  @media (max-width: 48rem) {
     .shpd-modal {
       /* Overlay okraje pryč — karta vyplní celou plochu. */
       align-items: stretch;

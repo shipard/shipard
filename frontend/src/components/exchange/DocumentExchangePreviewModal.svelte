@@ -67,7 +67,7 @@
   //     — jinak by ve frontovém režimu badge počítadla skákal mezi titulkem
   //     a subtitle řádkem při načítání další zprávy.
   //
-  // Mobile (<768px): single column with PDF/Preview tab switcher.
+  // Mobile (shell ≤ 48rem, #133 D42): single column with PDF/Preview tab switcher.
 
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
@@ -560,7 +560,7 @@
   }
 
   /* Mobile: single column controlled by tab. */
-  @media (max-width: 768px) {
+  @media (max-width: 48rem) {
     .shpd-exchange-modal__mobile-tabs {
       display: flex;
     }

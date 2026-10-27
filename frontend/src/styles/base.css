@@ -96,7 +96,9 @@ a:hover {
   gap: var(--shpd-space-lg);
 }
 
-@media (max-width: 720px) {
+/* Dočasně breakpoint shellu (#133 D42): HTML se vzhledem z backendu ve
+   formuláři dokladu (DocsHeadsFormBase), dluh zapsaný v #138. */
+@media (max-width: 48rem) {
   .snapshots-container {
     grid-template-columns: 1fr;
   }
