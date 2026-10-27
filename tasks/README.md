@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 418 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 387.
+Celkem 419 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 387.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `testing-clean-server.md` | naplánováno | #146 D1–D9 (2026-10-27) |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -506,6 +507,7 @@ zaúčtování a evaluace AI.
 | `testing-phase7a-fixes.md` | F7a | Opravy nálezů proklikání: proklikání jen proti lokální adrese serveru, rozhodnutí u bankovního účtu strany v kontrole, osoba z kontroly s adresou, neznámé IČO v registru, chyba JS v popoveru (#103 D97–D101) |
 | `testing-phase7b.md` | F7b | Videa nad demo sadou: scénář nese sadu, `shpd-ds video-run` (kotva = dnešek, přeseedování, session, `check` / `build`), oddíl Videa ve vývojářském dashboardu, galerie přes nginx zrušena (#103 D119–D129) |
 | `testing-phase8a.md` | F8 | Testovací kolo jedním příkazem: `shpd-server test-round` — kód, veřejné sady (`dataset-verify`, `dataset-e2e`), videoscénáře (`video-run check`), evaluace jen na vyžádání s limitem ceny; dílčí úlohy dashboardu, souhrn (#103 D130–D135) |
+| `testing-clean-server.md` | F8b | Testovací kolo na čisté Multipass VM: `scripts/multipass/test-round.sh` (instalace cestou nováčka, kolo, volitelně evaluace, výsledky na hostiteli), `dev-bootstrap.sh --with-testing` (#146 D1–D9) |
 | `corpus-print-fidelity.md` | F3/F4 | Věrnost tisku korpusu: kódy položek a EAN na PDF, spisová značka bez popisku, jednoznačné položky dlouhého dokladu, build hlídá identifikátory očekávání v textu PDF (#103 D102–D105) |
 | `eval-tests-fixtures.md` | F4 | Testy katalogu a prohlížeče evaluací nad vlastní fixturou — commit nového běhu do `tests/eval/` žádný test nerozbije (#103 D106) |
 | `prompt-projection-coverage.md` | F4 | Prompt `czech_general` v4.9.0: ukázka dokladu pokrývá celou papírovou projekci (web, období plnění, EAN), test pokrytí ukázky proti `projection.jsonc` (#103 D107, D108) |
