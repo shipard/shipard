@@ -12,14 +12,23 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetPreflight;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 
 /**
- * Preflight `ai-eval` (D39) — nic se nemění, při nálezu příkaz končí exit 2:
- * server jen v režimu `development`; země sady = země zdroje dat a schémata
- * (`DatasetPreflight`); zprávy zdroje dat jsou přesně zprávy sady
- * (`VerifyPreflight::membershipProblems`); **žádný doklad** ze sady není
- * použitý a **žádné pravidlo IČO → štítek** — historie řádků a pravidla by
- * pokryly štítky dřív než AI a běh by měřil něco jiného (zdroj dat po
- * `dataset-verify` se přeseeduje); profil varianty existuje a je aktivní;
- * volání funkce `mail.extraction` s přepsáním varianty jde sestavit.
+ * Preflight `ai-eval` (D39) — nic se nemění, při nálezu příkaz končí exit 2.
+ * Dvě skupiny ({@see problems()} = obě):
+ *
+ *   - **prostředí** ({@see environmentProblems()}): server jen v režimu
+ *     `development`; země sady = země zdroje dat a schémata
+ *     (`DatasetPreflight`); sada má zprávy; profil varianty existuje a je
+ *     aktivní; volání funkce `mail.extraction` s přepsáním varianty jde
+ *     sestavit;
+ *   - **čistota zdroje dat** ({@see cleanlinessProblems()}): zprávy zdroje
+ *     dat jsou přesně zprávy sady (`VerifyPreflight::membershipProblems`),
+ *     **žádný doklad** ze sady není použitý a **žádné pravidlo IČO → štítek**
+ *     — historie řádků a pravidla by pokryly štítky dřív než AI a běh by
+ *     měřil něco jiného (zdroj dat po `dataset-verify` se přeseeduje).
+ *
+ * Odhad (`--estimate`) kontroluje jen prostředí — na stavu dat nezávisí
+ * a testovací kolo ho potřebuje před kolem, nad zdrojem dat, který ještě
+ * přeseeduje (tasks/testing-phase8a.md N11); ostrý běh kontroluje obojí.
  */
 final class EvalPreflight
 {
@@ -36,8 +45,14 @@ final class EvalPreflight
         private readonly AiCallOverride $override,
     ) {}
 
-    /** @param list<string> $setMessageIds @return list<string> */
+    /** Prostředí i čistota zdroje dat (ostrý běh). @param list<string> $setMessageIds @return list<string> */
     public function problems(array $setMessageIds): array
+    {
+        return [...$this->environmentProblems($setMessageIds), ...$this->cleanlinessProblems($setMessageIds)];
+    }
+
+    /** Jen prostředí — stačí pro odhad ceny. @param list<string> $setMessageIds @return list<string> */
+    public function environmentProblems(array $setMessageIds): array
     {
         $problems = [];
         if ($this->serverMode !== ServerAiConnection::MODE_DEVELOPMENT) {
@@ -51,7 +66,20 @@ final class EvalPreflight
         if ($setMessageIds === []) {
             $problems[] = 'sada nemá žádnou zprávu v mail/';
         }
+        if ($this->dataSource->profile($this->variant->profile) === null) {
+            $problems[] = "profil pošty '{$this->variant->profile}' z varianty ve zdroji dat není nebo není aktivní";
+        }
+        $preview = $this->resolver->preview(self::AI_FUNCTION, $this->override);
+        if ($preview->error !== null) {
+            $problems[] = 'volání funkce ' . self::AI_FUNCTION . ' nejde sestavit: ' . $preview->error->getMessage();
+        }
+        return $problems;
+    }
 
+    /** Jen čistota zdroje dat (ostrý běh; odhad ji nepotřebuje). @param list<string> $setMessageIds @return list<string> */
+    public function cleanlinessProblems(array $setMessageIds): array
+    {
+        $problems = [];
         // Čistota zdroje dat — totéž čte panel Zdroje dat dashboardu (D59).
         $status = EvalDataSourceStatus::inspect($this->dataSource, $setMessageIds);
         if ($status['membership'] !== []) {
@@ -71,14 +99,6 @@ final class EvalPreflight
         }
         foreach ($status['missing'] as $id) {
             $problems[] = "zpráva {$id} ze sady ve zdroji dat není — přeseeduj";
-        }
-
-        if ($this->dataSource->profile($this->variant->profile) === null) {
-            $problems[] = "profil pošty '{$this->variant->profile}' z varianty ve zdroji dat není nebo není aktivní";
-        }
-        $preview = $this->resolver->preview(self::AI_FUNCTION, $this->override);
-        if ($preview->error !== null) {
-            $problems[] = 'volání funkce ' . self::AI_FUNCTION . ' nejde sestavit: ' . $preview->error->getMessage();
         }
         return $problems;
     }

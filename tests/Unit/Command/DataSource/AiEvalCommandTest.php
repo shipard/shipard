@@ -340,6 +340,29 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame(0, $command->computationsCreated);
     }
 
+    public function testEstimateIgnoresUsedDocumentsAndRulesButTheRunDoesNot(): void
+    {
+        // N11 (tasks/testing-phase8a.md): odhad nic nevolá, na stavu dat nezávisí — testovací kolo ho
+        // dělá před přeseedováním nad zdrojem dat po dataset-verify; ostrý běh dál čistotu vyžaduje.
+        $command = $this->command(['MSG-FOREIGN' => 99] + self::ndxByCode(), docs: [5 => 3], tagRules: 2);
+        $tester = self::execute($command, ['--only' => '0101', '--estimate' => true, '--json' => true]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame(0, $command->computationsCreated);
+        $lines = array_values(array_filter(explode("\n", $tester->getDisplay()), static fn (string $l): bool => str_starts_with($l, '{"ok":true')));
+        $this->assertCount(1, $lines);
+
+        $tester = self::execute($command, ['--only' => '0101', '--yes' => true]);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertStringContainsString('1 doklad(ů)', $tester->getDisplay());
+
+        // Prostředí odhad dál hlídá: chybějící profil varianty.
+        $command = $this->command(self::ndxByCode(), profile: null);
+        $tester = self::execute($command, ['--only' => '0101', '--estimate' => true]);
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $this->assertStringContainsString("profil pošty 'czech_general'", $tester->getDisplay());
+    }
+
     public function testEstimateOnlyPrintsJsonAndRunsNothing(): void
     {
         $command = $this->command(self::ndxByCode());

@@ -332,7 +332,8 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
 
         $setMessageIds = array_map(static fn (EvalMessage $m): string => $m->messageId, $messages);
         $preflight = new EvalPreflight($this->getServerMode(), $reader, $dsConfig, $this->createPreflight(), $dataSource, $variant, $resolver, $override);
-        $problems = $preflight->problems($setMessageIds);
+        // Odhad nepotřebuje čistý zdroj dat (nic nevolá; testovací kolo ho dělá před přeseedováním, N11).
+        $problems = $input->getOption('estimate') ? $preflight->environmentProblems($setMessageIds) : $preflight->problems($setMessageIds);
         if ($problems !== [] || $profile === null) {
             $reader->close();
             return $this->refuse($err, $problems);
