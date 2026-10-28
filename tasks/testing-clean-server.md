@@ -446,6 +446,17 @@ jako varování).
   N5) platí jen pro QEMU. Text upravit podle výsledku běhu na QEMU; do
   pastí § 22 backend jako údaj (`environment.json` → `host.driver`
   z `multipass get local.driver`).
+  **Po bězích 2 a 3 (2026-10-28):** QEMU na instalaci počkal (launch 7:03,
+  cloud-init už hotový), AVF jednou ano (běh 2, 5:15) a jednou ne (běh 1).
+  Upravit: `local-dev.md` kap. 2 krok 4 — „příkaz obvykle čeká …; s backendem
+  Apple Virtualization (Multipass 1.17) může skončit dřív“ a jak to poznat
+  (`multipass exec shipard -- cloud-init status`: `running` = instalace
+  pokračuje, `done` = hotovo; kdyby příkaz neodpověděl, přerušit Ctrl+C
+  a zkusit za chvíli); krok 5 — na AVF může `tail -f` během instalace
+  ukazovat jen točící se lomítko, pak počkat na konec launche a ověřit
+  stav jako v kroku 4; `cloud-init status --wait` tam nedoporučovat.
+  Kapitola 7 (potíže): `extended_status: degraded done` je neškodné (viz
+  běh 3). `host.driver` do `environment.json` a souhrnu skriptu (dnes chybí).
 - [x] **N5 — `multipass exec` spuštěný během startu VM nevrátí (AVF).**
   `multipass exec … cloud-init status --wait` z 19:19:48 visel půl hodiny:
   ve VM příkaz doběhl (session `sshd-session` bez potomka), spojení mělo
@@ -556,6 +567,58 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   `E2eReport::artifacts()` beze změny). § 19 upraveno; `node --check`
   a `npm run test:unit` v `tests/e2e`; skutečný běh se selhanou kartou
   neproběhl — velikost úlohy potvrdí další kolo.
+
+## Běh 2 na Macu po opravách (2026-10-28, AVF)
+
+Commit `94e0fd74`, Ubuntu 26.04 aarch64, PHP 8.5.4, Multipass 1.17 (AVF).
+**Kolo 19 ok, 0 selhalo, exit 0, VM smazaná.** PHPUnit 11 049 testů bez
+selhání (N7–N9 potvrzené na 26.04), všechny tři sady `dataset-verify`
+6/6 kontrol `ok` a `dataset-e2e` 16 / 16 / 20 karet, video `check` v pořádku;
+`doctor` po kole bez ✗ (jen očekávaná varování: cron `daily` / `weekly`
+ještě neběžel, zdroje dat bez odchozí pošty). `jobs.tgz` 677 kB.
+
+Fáze: launch 5:15 (instalace cestou nováčka uvnitř), cloud-init 0:03
+(už doběhl), bootstrap-2 6:24, kolo 5:21 — celkem ≈ 17 min. Tentokrát launch
+na cloud-init počkal (v běhu 1 ne, N4) a žádný dotaz nevisel — cesta
+hlídače z N5 je ověřená jen maketou.
+
+- [ ] **N11 — `rootNamespace()` nemaže staré chyby libxml.** Metoda zapne
+  interní chyby a na konci čte `libxml_get_errors()`, ale na začátku frontu
+  nevyčistí — chyba, kterou ve frontě nechal volající (interní chyby už
+  zapnuté, bez `libxml_clear_errors()`), udělá z platného ISDOC „není
+  ISDOC“. `libxml_clear_errors()` hned za `libxml_use_internal_errors(true)`;
+  test: chyba ve frontě před voláním, platný ISDOC se rozpozná.
+- [ ] **N12 — čekání na cloud-init končí po třech odpovědích bez stavu.**
+  `wait_cloud_init` skončí chybou po třech dotazech za sebou, které odpověděly
+  bez řádku `status:` (≈ 30 s). Restart sshd během bootstrapu (needrestart
+  po upgradu balíčků) může trvat déle — limit zvýšit na 6 (≈ 1 min),
+  konstanta vedle `CLOUD_INIT_POLL`; věta chyby beze změny.
+
+## Běh 3 na Macu (2026-10-28, QEMU, s evaluací)
+
+Commit `94e0fd74`, Ubuntu 26.04 aarch64, Multipass 1.17 s QEMU, ruční
+ověření 3 (`--eval baseline --repeat 1 --max-cost 1 --eval-dataset
+cz-non-payer --ai-key-file …`). **Kolo 19 ok, evaluace exit 0, VM smazaná.**
+Evaluace neplátce ×1: shoda polí 100 %, částky 100 %, 0 selhaných volání,
+0,56 USD, prompt v4.11.0 (`eval.tgz` = `tests/eval/cz-non-payer/2026-10-28-baseline.json`,
+do repa se nekopíruje — D6). `ai-key.log` jen existence a práva klíče;
+ve výsledcích žádný řetězec ve tvaru API klíče.
+
+Fáze: launch 7:03 (instalace uvnitř), cloud-init 0:03, bootstrap-2 6:29,
+ai-key 0:01, kolo 4:27, evaluace 4:27 (z toho `ai-eval` 3:41) — celkem
+≈ 22 min, bez evaluace ≈ 18 min. `jobs.tgz` 0,9 MB.
+
+**cloud-init `degraded` i na QEMU** — stejné varování o přejmenování
+rozhraní jako na AVF, tedy vlastnost Ubuntu 26.04 + Multipass, ne backendu;
+neškodné (instalace, `doctor` i kolo v pořádku).
+
+Ruční ověření 2 (kolo, které nezačne) vynecháno — cestu s exit 2 pokrývá
+maketa; ověření 4 (`--image 24.04`) nepouštěno.
+
+**Zbývá (pro Claude Code):** N4 (texty výše, `host.driver`), N11, N12;
+`docs/test-corpus.md` § 22 — *Doba běhu* tabulkou z běhů 2 a 3 (AVF / QEMU
+po fázích), do pastí `degraded` na 26.04, AVF launch (N4) a hlídač (N5);
+pak `**Stav:**` hotovo.
 
 ## Pasti
 
