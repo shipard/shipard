@@ -7,7 +7,6 @@
       "Bash(gh pr merge *)"
     ],
     "deny": [
-      "Read(//opt/shipard/data-sources/*/config/main.json)",
       "Read(//opt/shipard/data-sources/*/secrets/**)"
     ]
   }

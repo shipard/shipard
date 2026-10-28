@@ -1,6 +1,6 @@
 # Konec přechodného čtení tajemství z `config/main.json` (#126 task B2)
 
-**Stav:** hotovo — implementováno 2026-10-28 (5 commitů, oddíl „Hotovo“); zbývá ruční odebrání řádku `deny` pro `main.json` z `.claude/settings.json`, nasazení (běžný upgrade + `doctor`) a `dev-env` / instrukce Projektu (U7)
+**Stav:** hotovo — implementováno 2026-10-28 (5 commitů + ruční úprava `deny`, oddíl „Hotovo“), ověřeno na vývojářském stroji; zbývá nasazení na testovací server a hosting (běžný upgrade + `doctor`)
 
 > PRD pro Claude Code (5 commitů). Design: issue #126, komentář
 > „Rozhodnutí (2026-10-16)“, body D4 a D5. Navazuje na task B1
@@ -257,9 +257,8 @@ nepřipojí — proto se B2 nasazuje až po čistém `doctor` všude (splněno).
 - [x] migrátor odebírá podle `id` a hodnoty, souběžná změna = varování
       (oddíl 3)
 - [x] fixtury bez tajemství v `main.json` mimo testy starého tvaru (oddíl 4)
-- [ ] `deny` jen pro `secrets/` — **řádek v `.claude/settings.json` odebere
-      člověk** (Claude Code v auto režimu úpravu vlastních oprávnění
-      zamítá); pravidlo v `CLAUDE.md` a `docs/ai-workflow.md` §3 a §8 ✓
+- [x] `deny` jen pro `secrets/` (řádek v `.claude/settings.json` odebral
+      člověk ručně), pravidlo v `CLAUDE.md` a `docs/ai-workflow.md` §3 a §8
       (oddíl 5)
 - [x] dokumentace podle oddílu 6, hlavičky tasků, index
 - [x] cílené testy zelené, na konci celá sada lokálně
@@ -268,10 +267,10 @@ nepřipojí — proto se B2 nasazuje až po čistém `doctor` všude (splněno).
 
 Pět commitů podle oddílu „Commity“. Odchylky a upřesnění proti PRD:
 
-- **`.claude/settings.json`** zůstal beze změny: odebrání řádku
+- **`.claude/settings.json`** v pěti commitech beze změny: odebrání řádku
   `Read(//opt/shipard/data-sources/*/config/main.json)` z `deny` je úprava
-  vlastních oprávnění, kterou Claude Code v auto režimu zamítne. Odebere ho
-  člověk ručně (jeden řádek); pravidlo v textech je už uvolněné.
+  vlastních oprávnění, kterou Claude Code v auto režimu zamítne. Řádek
+  odebral člověk ručně, commit spolu s touto hlavičkou.
 - Do commitu 1 šly i dvě fixtury z oddílu 4, bez nichž by sada nebyla
   zelená: `OidcControllerTest` (client secrety providerů `test` a `github`
   do `secrets/`) a `DataSourceConfigTest::testLoadValidConfig` (heslo ze
@@ -302,6 +301,11 @@ Pět commitů podle oddílu „Commity“. Odchylky a upřesnění proti PRD:
 Ověření 1–4 z oddílu „Nasazení a ověření“ dělá člověk (`ds-upgrade` je
 mutace zdroje `realCopy`; změna `settings.json` se projeví po restartu
 session Claude Code).
+
+**Ověření (2026-10-28):** vývojářský stroj po `ds-upgrade` — `doctor`
+čistý (vlastník i Claude v chatu, exit 0, připojení k databázím
+z `secrets/db.password`), `ds-secret` na volném zdroji `db.password present`,
+cílené testy (353) zelené. Pravidla v `dev-env` upravil Claude v chatu (U7).
 
 ## Rozhodnutí k designu (potvrzená)
 
