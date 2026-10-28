@@ -130,14 +130,26 @@ final class Git
         return $hash !== null && preg_match('/^[0-9a-f]{7,40}$/', $hash) === 1 ? $hash : null;
     }
 
-    /** Datum HEAD commitu (committer date, ISO 8601 `%cI`); null = chyba nebo nevalidní datum. */
+    /** Datum HEAD commitu (committer date, ISO 8601 `%cI`, {@see isoDate()}); null = chyba nebo nevalidní datum. */
     public function commitDate(): ?string
     {
         $date = $this->line(['log', '-1', '--format=%cI']);
-        if ($date === null || $date === '' || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $date) === false) {
+        return $date === null ? null : self::isoDate($date);
+    }
+
+    /**
+     * Datum z `%cI` v jednom tvaru (`DATE_ATOM`, `2026-09-20T08:00:00+00:00`):
+     * git od 2.45 vypisuje nulové posunutí jako `Z` (#146 N8), starší jako
+     * `+00:00` — `state.json`, UI i testy vidí vždy druhý tvar.
+     * Null = prázdné nebo nevalidní datum.
+     */
+    public static function isoDate(string $date): ?string
+    {
+        if ($date === '' || preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/', $date) !== 1) {
             return null;
         }
-        return $date;
+        $parsed = \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, str_replace('Z', '+00:00', $date));
+        return $parsed === false ? null : $parsed->format(\DateTimeInterface::ATOM);
     }
 
     /** Název větve; null = odpojená HEAD nebo chyba. */
@@ -184,7 +196,7 @@ final class Git
             if (count($parts) !== 4) {
                 continue;
             }
-            $commits[] = ['hash' => $parts[0], 'fullHash' => $parts[1], 'date' => $parts[2], 'subject' => $parts[3]];
+            $commits[] = ['hash' => $parts[0], 'fullHash' => $parts[1], 'date' => self::isoDate($parts[2]) ?? $parts[2], 'subject' => $parts[3]];
         }
         return $commits;
     }
@@ -196,7 +208,8 @@ final class Git
      */
     public function commitDates(string $range): ?array
     {
-        return $this->lines(['log', '--format=%cI', $range]);
+        $lines = $this->lines(['log', '--format=%cI', $range]);
+        return $lines === null ? null : array_map(static fn (string $date): string => self::isoDate($date) ?? $date, $lines);
     }
 
     /**

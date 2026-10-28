@@ -484,11 +484,17 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   upgrade` ho volá, existující servery ho tak dostanou), `"ext-bcmath": "*"`
   do `composer.json` + `composer update --lock`, `doctor` kontroluje
   rozšíření PHP podle `ext-*` z `composer.json` (✗ s názvem balíčku).
-- [ ] **N8 — `%cI` z novejšího gitu.** `UpdateCheckerTest::testBehindReports…`
+- [x] **N8 — `%cI` z novejšího gitu.** `UpdateCheckerTest::testBehindReports…`
   čeká `2026-09-20T08:00:00+00:00`, git na 26.04 vrací `…T08:00:00Z`
   (vývojářský server git 2.43). `Git` předává `%cI` beze změny do
   `state.json` a UI. Normalizovat na jednom místě v `Git` (`DateTimeImmutable`
   → `DATE_ATOM`), test ponechat.
+  **Opraveno 2026-10-28:** `Git::isoDate()` převádí `%cI` na `DATE_ATOM`
+  (`Z` → `+00:00`, nenulové posunutí zůstává, jiný tvar = null) v `commitDate()`,
+  `log()` i `commitDates()`; test `GitTest::testCommitDateIsNormalizedToAtomRegardlessOfGitVersion`
+  s atrapou gitu vracející `Z`; `UpdateCheckerTest` beze změny (git 2.43 na
+  vývojářském serveru dává `+00:00` i bez opravy — selhání na 26.04 ověří
+  další kolo).
 - [ ] **N9 — rozpoznání ISDOC z nevalidního XML.**
   `AttachmentPreparerTest::testIsdocIsNeverSentToTheModel`: příloha
   `broken.xml` (useknutý `<Invoice xmlns="http://isdoc.cz/namespace/2013"><ID>`)

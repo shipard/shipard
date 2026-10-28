@@ -83,6 +83,22 @@ final class GitTest extends TestCase
         $this->assertNull($empty->commitDate());
     }
 
+    /** #146 N8: git ≥ 2.45 vypisuje `%cI` s nulovým posunutím jako `Z` — na výstupu vždy `+00:00`. */
+    public function testCommitDateIsNormalizedToAtomRegardlessOfGitVersion(): void
+    {
+        $zulu = $this->stub([GitStub::Q_DATE => '2026-09-20T08:00:00Z'] + GitStub::HEAD)->git('/repo');
+        $this->assertSame('2026-09-20T08:00:00+00:00', $zulu->commitDate());
+
+        $offset = $this->stub([GitStub::Q_DATE => '2026-09-20T10:00:00+02:00'] + GitStub::HEAD)->git('/repo');
+        $this->assertSame('2026-09-20T10:00:00+02:00', $offset->commitDate(), 'nenulové posunutí zůstává');
+
+        $this->assertSame('2026-09-20T08:00:00+00:00', Git::isoDate('2026-09-20T08:00:00Z'));
+        $this->assertSame('2026-09-20T08:00:00+00:00', Git::isoDate('2026-09-20T08:00:00+00:00'));
+        $this->assertNull(Git::isoDate(''));
+        $this->assertNull(Git::isoDate('Fri Oct 17 10:17:42 2026'));
+        $this->assertNull(Git::isoDate('2026-09-20 08:00:00'));
+    }
+
     public function testShortHashAndCommitDateOfARealClone(): void
     {
         if (!GitFixture::available()) {
