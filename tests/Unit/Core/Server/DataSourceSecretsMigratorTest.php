@@ -252,4 +252,106 @@ final class DataSourceSecretsMigratorTest extends TestCase
 
         $this->assertStringNotContainsString('fake', (string) $dump);
     }
+
+    // ── souběžná změna main.json mezi zápisem souborů a patchem (#126 B2, U3) ──
+
+    /** Migrátor, který mezi zápisem souborů a patchem `main.json` pustí zásah „jiného zapisovatele“. */
+    private function migratorWithConcurrentWrite(\Closure $between): DataSourceSecretsMigrator
+    {
+        return new class($between) extends DataSourceSecretsMigrator {
+            public function __construct(private readonly \Closure $between)
+            {
+                parent::__construct();
+            }
+
+            protected function beforeConfigPatch(string $dsDir): void
+            {
+                ($this->between)($dsDir);
+            }
+        };
+    }
+
+    private function rewriteMainJson(\Closure $change): void
+    {
+        $config = $this->mainJson();
+        $config = $change($config);
+        file_put_contents(MainConfigFile::path($this->dsDir), json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    public function testConcurrentReorderOfProvidersRemovesTheClientSecretByIdNotIndex(): void
+    {
+        // hosting-sync mezi čtením a patchem prohodí pořadí providerů: tajemství zmizí tomu, komu patří.
+        $this->writeMainJson(['auth' => ['providers' => [
+            $this->provider('shipard-id', 'oidc-fake-1'),
+            $this->provider('github', null, ['kind' => 'github']),
+        ]]]);
+        $migrator = $this->migratorWithConcurrentWrite(function (): void {
+            $this->rewriteMainJson(static function (array $config): array {
+                $config['auth']['providers'] = array_reverse($config['auth']['providers']);
+                return $config;
+            });
+        });
+
+        $result = $migrator->migrate($this->dsDir);
+
+        $this->assertSame(['oidc-shipard-id.client-secret'], $result->moved);
+        $this->assertSame([], $result->warnings);
+        $config = $this->mainJson();
+        $this->assertSame('github', $config['auth']['providers'][0]['id']);
+        $this->assertArrayNotHasKey('clientSecret', $config['auth']['providers'][0]);
+        $this->assertSame('shipard-id', $config['auth']['providers'][1]['id']);
+        $this->assertArrayNotHasKey('clientSecret', $config['auth']['providers'][1]);
+        $this->assertSame('oidc-fake-1', $this->secret('oidc-shipard-id.client-secret'));
+    }
+
+    public function testConcurrentlyChangedValueStaysInMainJsonWithAWarningAndIsNotReportedAsMoved(): void
+    {
+        $this->writeMainJson(['database_password' => 'db-pw-fake', 'mail' => ['relay' => ['host' => 'smtp.example', 'password' => 'relay-pw-fake']]]);
+        $migrator = $this->migratorWithConcurrentWrite(function (): void {
+            $this->rewriteMainJson(static function (array $config): array {
+                $config['database_password'] = 'db-pw-rotated-fake';
+                return $config;
+            });
+        });
+
+        $result = $migrator->migrate($this->dsDir);
+
+        $this->assertSame(['mail-relay.password'], $result->moved);
+        $this->assertSame(['db.password changed in config/main.json during migration — left there, run ds-upgrade again'], $result->warnings);
+        $this->assertSame('db-pw-rotated-fake', $this->mainJson()['database_password'], 'změněná hodnota zůstává');
+        $this->assertArrayNotHasKey('password', $this->mainJson()['mail']['relay']);
+        $this->assertSame('db-pw-fake', $this->secret('db.password'), 'soubor se starší hodnotou nevadí');
+
+        // Další běh ji přesune a soubor přepíše (U2).
+        $again = (new DataSourceSecretsMigrator())->migrate($this->dsDir);
+        $this->assertSame(['db.password'], $again->moved);
+        $this->assertSame(['secrets/db.password had a different value — overwritten with the value from config/main.json'], $again->warnings);
+        $this->assertSame('db-pw-rotated-fake', $this->secret('db.password'));
+        $this->assertArrayNotHasKey('database_password', $this->mainJson());
+    }
+
+    public function testConcurrentlyRemovedProviderLeavesAWarningAndMovesTheRest(): void
+    {
+        $this->writeMainJson(['database_password' => 'db-pw-fake', 'auth' => ['providers' => [
+            $this->provider('shipard-id', 'oidc-fake-1'),
+            $this->provider('github', 'oidc-fake-2', ['kind' => 'github']),
+        ]]]);
+        $migrator = $this->migratorWithConcurrentWrite(function (): void {
+            $this->rewriteMainJson(static function (array $config): array {
+                $config['auth']['providers'] = [$config['auth']['providers'][0]];
+                return $config;
+            });
+        });
+
+        $result = $migrator->migrate($this->dsDir);
+
+        $this->assertSame(['db.password', 'oidc-shipard-id.client-secret'], $result->moved);
+        $this->assertSame(['oidc-github.client-secret changed in config/main.json during migration — left there, run ds-upgrade again'], $result->warnings);
+        $this->assertStringNotContainsString('fake', implode("\n", $result->warnings));
+        $config = $this->mainJson();
+        $this->assertArrayNotHasKey('database_password', $config);
+        $this->assertCount(1, $config['auth']['providers']);
+        $this->assertArrayNotHasKey('clientSecret', $config['auth']['providers'][0]);
+        $this->assertSame('oidc-fake-2', $this->secret('oidc-github.client-secret'), 'soubor zapsaný, další běh bez providera ho nechá');
+    }
 }

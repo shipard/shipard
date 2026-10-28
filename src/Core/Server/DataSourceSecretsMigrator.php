@@ -17,12 +17,22 @@ use Shipard\Core\Security\SecretsFileWriter;
  * teprve potom {@see MainConfigFile::patch()} odebere klíče. Pád mezi tím
  * nechá hodnotu v obou souborech (shodnou) a další běh migraci dokončí;
  * `main.json` bez tajemství = no-op bez přepisu souboru. Soubor s jinou
- * hodnotou se přepíše hodnotou z `main.json` s varováním (U3 — hodnota
- * v `main.json` má v přechodném období přednost). Provider s neplatným `id`
- * soubor pojmenovat nejde: tajemství zůstane v `main.json` s varováním (U5).
+ * hodnotou se přepíše hodnotou z `main.json` s varováním (B1 U3, B2 U2 —
+ * hodnota v `main.json` je po B2 čekající změna od člověka nebo z obnovené
+ * zálohy). Provider s neplatným `id` soubor pojmenovat nejde: tajemství
+ * zůstane v `main.json` s varováním (U5).
+ *
+ * Z `main.json` se odebírá nad **čerstvým** obsahem pod zámkem patche
+ * a jen hodnota, kterou migrátor zapsal do souboru (B2 U3): `database_password`
+ * a `mail.relay.password` podle hodnoty, `clientSecret` providera podle `id`
+ * **a** hodnoty, bez ohledu na pořadí v poli. Změní-li `main.json` mezi čtením
+ * a patchem jiný zapisovatel (`hosting-sync`, ruční úprava), hodnota zůstane
+ * s varováním a další běh ji přesune; soubor se starší hodnotou nevadí
+ * (přepíše se). {@see SecretsMigrationResult::$moved} nese jen tajemství,
+ * která z `main.json` skutečně zmizela.
  * Migrátor zůstává natrvalo — obnova starší zálohy přinese starý `main.json`.
  */
-final class DataSourceSecretsMigrator
+class DataSourceSecretsMigrator
 {
     private readonly FileOwnership $ownership;
 
@@ -30,6 +40,11 @@ final class DataSourceSecretsMigrator
     public function __construct(?FileOwnership $ownership = null)
     {
         $this->ownership = $ownership ?? new FileOwnership();
+    }
+
+    /** Šev pro testy: zásah jiného zapisovatele do `main.json` mezi zápisem souborů a patchem (U3). */
+    protected function beforeConfigPatch(string $dsDir): void
+    {
     }
 
     /**
@@ -51,8 +66,6 @@ final class DataSourceSecretsMigrator
         $warnings = [];
         /** @var array<string, string> název souboru → hodnota */
         $secrets = [];
-        /** @var list<int> indexy providerů, jejichž clientSecret se přesouvá */
-        $movedProviders = [];
 
         $dbPassword = $config['database_password'] ?? null;
         if (is_string($dbPassword) && $dbPassword !== '') {
@@ -85,7 +98,6 @@ final class DataSourceSecretsMigrator
                     continue;
                 }
                 $secrets[$name] = $clientSecret;
-                $movedProviders[] = (int) $i;
             }
         }
 
@@ -103,18 +115,18 @@ final class DataSourceSecretsMigrator
             }
         }
 
+        $this->beforeConfigPatch($dsDir);
+
+        /** @var list<string> názvy, jejichž hodnota z main.json skutečně zmizela */
+        $removed = [];
         MainConfigFile::patch(
             $dsDir,
-            static function (array $raw) use ($secrets, $movedProviders): array {
-                if (isset($secrets[DataSourceSecrets::DB_PASSWORD])) {
-                    unset($raw['database_password']);
-                }
-                if (isset($secrets[DataSourceSecrets::MAIL_RELAY_PASSWORD]) && is_array($raw['mail']['relay'] ?? null)) {
-                    unset($raw['mail']['relay']['password']);
-                }
-                foreach ($movedProviders as $i) {
-                    if (is_array($raw['auth']['providers'][$i] ?? null)) {
-                        unset($raw['auth']['providers'][$i]['clientSecret']);
+            static function (array $raw) use ($secrets, &$removed, &$warnings): array {
+                foreach ($secrets as $name => $value) {
+                    if (self::removeFromConfig($raw, $name, $value)) {
+                        $removed[] = $name;
+                    } else {
+                        $warnings[] = "{$name} changed in config/main.json during migration — left there, run ds-upgrade again";
                     }
                 }
                 return $raw;
@@ -122,6 +134,46 @@ final class DataSourceSecretsMigrator
             $this->ownership,
         );
 
-        return new SecretsMigrationResult(array_keys($secrets), $warnings);
+        return new SecretsMigrationResult($removed, $warnings);
+    }
+
+    /**
+     * Odebere z čerstvě načteného `main.json` klíč tajemství `$name`, jen když
+     * jeho hodnota sedí na tu, kterou migrátor zapsal do souboru (U3);
+     * providera hledá podle `id`, ne podle indexu. Vrací, zda se odebralo.
+     *
+     * @param array<string, mixed> $raw
+     */
+    private static function removeFromConfig(array &$raw, string $name, string $value): bool
+    {
+        if ($name === DataSourceSecrets::DB_PASSWORD) {
+            if (($raw['database_password'] ?? null) !== $value) {
+                return false;
+            }
+            unset($raw['database_password']);
+            return true;
+        }
+
+        if ($name === DataSourceSecrets::MAIL_RELAY_PASSWORD) {
+            if (!is_array($raw['mail']['relay'] ?? null) || ($raw['mail']['relay']['password'] ?? null) !== $value) {
+                return false;
+            }
+            unset($raw['mail']['relay']['password']);
+            return true;
+        }
+
+        $providerId = DataSourceSecrets::oidcProviderIdFromName($name);
+        $providers = $raw['auth']['providers'] ?? null;
+        if ($providerId === null || !is_array($providers)) {
+            return false;
+        }
+        $removed = false;
+        foreach ($providers as $i => $provider) {
+            if (is_array($provider) && ($provider['id'] ?? null) === $providerId && ($provider['clientSecret'] ?? null) === $value) {
+                unset($raw['auth']['providers'][$i]['clientSecret']);
+                $removed = true;
+            }
+        }
+        return $removed;
     }
 }
