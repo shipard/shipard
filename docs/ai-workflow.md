@@ -106,7 +106,8 @@ implementuje.
 **GitHub** — přes `gh` CLI, vždy s `--repo shipard/shipard`. Víceřádkové texty přes
 `--body-file /tmp/soubor.md`, ne přes `--body` (uvozovky a diakritika). Přes vzdálený
 most (bez TTY) volat `gh issue view` vždy s `--json number,title,body,comments` —
-bez `--json` vrátí prázdný výstup s exit 0, tedy tiché selhání.
+bez `--json` vrátí prázdný výstup s exit 0, s `--comments` jen komentáře bez
+názvu a těla issue. Obojí je tiché selhání; druhé navíc vypadá jako úplný výstup.
 
 **PHPUnit** — vždy úzký filtr: `vendor/bin/phpunit --filter 'TestA|TestB'`;
 široký filtr nebo celá sada přes vzdálený nástroj vyprší (držet timeout ≈ 120 s).
