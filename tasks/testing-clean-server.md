@@ -456,10 +456,13 @@ jako varování).
   dotazu do `cloud-init.txt` jako dnes (`status --long` až po skončení).
   Ověření maketou: `exec`, který prvních N volání visí, a stav
   `running` → `done`; vypršení limitu → exit 2, VM zůstane.
-- [ ] **N6 — varování buildu dashboardu.** `vite-plugin-svelte` při každém
+- [x] **N6 — varování buildu dashboardu.** `vite-plugin-svelte` při každém
   `npm run build`: `frontend/src/dev/pages/testing/DatasetsPage.svelte:72`
   `<div>` uvnitř `<p>` (karta Testovací kolo z #103 F8a) — prohlížeč HTML
   přeskládá. Vnější `<p>` → `<div>` (se stejnou třídou), vzhled beze změny.
+  **Opraveno 2026-10-28:** vnější `<p>` větve *poslední kolo* → `<div>`
+  (bez třídy; `reset.css` nuluje okraje všech prvků, vzhled beze změny);
+  `npm run build` bez varování.
 
 **Kolo** (commit `362f87df`, 26.04 aarch64, PHP 8.5.4, Node 24.22.1): 11 ok,
 8 selhalo, exit 1. Fáze: launch 4:39, cloud-init 34:11 (z toho ≈ 30 min

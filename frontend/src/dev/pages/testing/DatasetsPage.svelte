@@ -61,7 +61,7 @@
       </p>
     {:else if round.last}
       {@const last = round.last}
-      <p>
+      <div>
         <strong>{t('testing.round.last')}</strong>
         <a href={router.href('testingJob', { jobId: last.job.id })} onclick={onLinkClick}><code>{last.job.id}</code></a>
         · {formatDateTime(last.job.createdAt)}
@@ -73,7 +73,7 @@
         {:else}
           · {jobStatusLabel(last.job.status)}
         {/if}
-      </p>
+      </div>
     {:else}
       <p class="dev-muted">{t('testing.round.none')}</p>
     {/if}
