@@ -601,8 +601,9 @@ print_summary() {
     Checkout:   $TARGET_DIR
 
     Co dál:
-      1. Otevři dashboard v prohlížeči a založ první zdroj dat:
-         + New DS → zaškrtni „Seed test data“ → Create Data Source → Open.
+      1. Otevři dashboard v prohlížeči a založ první zdroj dat: tlačítko
+         „Nový zdroj dat“, v poli „Data“ vyber datovou sadu, „Vytvořit zdroj
+         dat“ a na konci „Otevřít zdroj dat →“ (docs/dev/dev-daily.md § 2).
       2. Claude Code a napojení Clauda v chatu (remote-dev-bridge):
          $DOCS_URL
       3. Po 'git pull' se závislosti a frontend aktualizují samy (git hooky);

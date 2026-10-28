@@ -421,12 +421,16 @@ cloud-init `degraded` jen kvůli nepovedenému přejmenování síťového
 rozhraní (`enp0s1` → `eth0`, věc Multipassu a cloud-initu — skript to bere
 jako varování).
 
-- [ ] **N3 — zastaralý souhrn bootstrapu.** `print_summary`
+- [x] **N3 — zastaralý souhrn bootstrapu.** `print_summary`
   v `dev-bootstrap.sh` radí „+ New DS → zaškrtni „Seed test data“ → Create
   Data Source → Open“ — stav před #103 F6c. Dnes **Nový zdroj dat**, pole
   **Data** s výběrem sady, **Vytvořit zdroj dat**, **Otevřít zdroj dat →**
   (`docs/dev/dev-daily.md` § 2). Kroky neopisovat: jedna věta s názvy
   tlačítek (ověř v `frontend/src/dev/i18n/cs.js`) a odkaz na § 2.
+  **Opraveno 2026-10-28:** `print_summary` radí tlačítko „Nový zdroj dat“,
+  pole „Data“, „Vytvořit zdroj dat“ a „Otevřít zdroj dat →“ s odkazem na
+  `dev-daily.md` § 2 (názvy z `frontend/src/dev/i18n/cs.js`); ověřeno
+  `bash -n`, text souhrnu bez testu.
 - [ ] **N4 — `multipass launch` na AVF nečeká na cloud-init.** VM
   vznikla v 19:15, launch vrátil „Launched“ v 19:19:47 (≈ 4,7 min), bootstrap
   běžel do ≈ 19:21 — přes `--timeout 3600`. Skript na cloud-init čeká sám,
