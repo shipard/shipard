@@ -308,7 +308,13 @@ class AttachmentPreparer
         return self::rootNamespace($att->content) === IsdocWriter::NAMESPACE;
     }
 
-    /** Namespace kořenového elementu XML; null u nevalidního XML nebo bez namespace. */
+    /**
+     * Namespace kořenového elementu XML; null u nevalidního XML nebo bez
+     * namespace. Dokument se čte až do konce (#146 N9): libxml2 2.9 ohlásí
+     * useknutý dokument už při prvním čtení, novější verze první element
+     * vrátí a chybu až za ním — namespace se zapamatuje a platí jen, když
+     * čtení doběhne bez chyby.
+     */
     private static function rootNamespace(string $xml): ?string
     {
         if (trim($xml) === '') {
@@ -320,16 +326,20 @@ class AttachmentPreparer
             if (!$reader->XML($xml, null, LIBXML_NONET)) {
                 return null;
             }
+            $namespace = null;
             try {
                 while (@$reader->read()) {
-                    if ($reader->nodeType === \XMLReader::ELEMENT) {
-                        return $reader->namespaceURI !== '' ? $reader->namespaceURI : null;
+                    if ($namespace === null && $reader->nodeType === \XMLReader::ELEMENT) {
+                        $namespace = $reader->namespaceURI !== '' ? $reader->namespaceURI : '';
                     }
                 }
-                return null;
             } finally {
                 $reader->close();
             }
+            if (libxml_get_errors() !== [] || $namespace === null || $namespace === '') {
+                return null;
+            }
+            return $namespace;
         } finally {
             libxml_clear_errors();
             libxml_use_internal_errors($previous);

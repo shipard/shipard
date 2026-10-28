@@ -495,7 +495,7 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   s atrapou gitu vracející `Z`; `UpdateCheckerTest` beze změny (git 2.43 na
   vývojářském serveru dává `+00:00` i bez opravy — selhání na 26.04 ověří
   další kolo).
-- [ ] **N9 — rozpoznání ISDOC z nevalidního XML.**
+- [x] **N9 — rozpoznání ISDOC z nevalidního XML.**
   `AttachmentPreparerTest::testIsdocIsNeverSentToTheModel`: příloha
   `broken.xml` (useknutý `<Invoice xmlns="http://isdoc.cz/namespace/2013"><ID>`)
   má zůstat textem pro model, na 26.04 ji `isIsdoc()` vyhodnotí jako ISDOC
@@ -504,6 +504,12 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   první element vrátí. Dokumentace metody slibuje „null u nevalidního XML“:
   dokument dočíst až do konce (namespace prvního elementu si zapamatovat,
   chyba čtení = null).
+  **Opraveno 2026-10-28:** `rootNamespace()` čte dokument až do konce,
+  namespace prvního elementu si pamatuje a vrací ho jen bez chyby libxml
+  (`libxml_get_errors()`); test `testTruncatedXmlWithIsdocRootIsNotIsdoc`
+  s dlouhým useknutým dokumentem (11 kB) — ten na libxml2 2.9 vracel
+  namespace i před opravou, chyba je tak reprodukovaná i na vývojářském
+  serveru, ne jen na 26.04.
 - [ ] **N10 — stopy prokliknutí třikrát.** Každá selhaná úloha
   `dataset-e2e` má ≈ 200 MB: tytéž trace leží v `e2e/traces/`,
   `e2e/test-results/…/attachments/` i `e2e/playwright-report/data/`

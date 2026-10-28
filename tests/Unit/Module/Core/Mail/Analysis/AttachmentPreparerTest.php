@@ -96,6 +96,22 @@ final class AttachmentPreparerTest extends TestCase
         $this->assertFalse(AttachmentPreparer::isIsdoc(new RawAttachment(9, 'x.xml', 'text/xml', '')));
     }
 
+    /**
+     * #146 N9: useknuté XML není ISDOC ani když libxml2 první element vrátí
+     * a chybu ohlásí až za ním (novější libxml2 vždy, 2.9 u delšího
+     * dokumentu) — čte se až do konce.
+     */
+    public function testTruncatedXmlWithIsdocRootIsNotIsdoc(): void
+    {
+        $prefix = '<?xml version="1.0"?><Invoice xmlns="http://isdoc.cz/namespace/2013">'
+            . str_repeat('<Note>' . str_repeat('x', 100) . '</Note>', 100);
+
+        $this->assertFalse(AttachmentPreparer::isIsdoc(new RawAttachment(1, 'long-broken.xml', 'text/xml', $prefix . '<ID>')), 'useknuto za prvním elementem');
+        $this->assertFalse(AttachmentPreparer::isIsdoc(new RawAttachment(2, 'unclosed.xml', 'text/xml', $prefix)), 'kořen neuzavřený');
+        $this->assertTrue(AttachmentPreparer::isIsdoc(new RawAttachment(3, 'long.xml', 'text/xml', $prefix . '<ID>1</ID></Invoice>')), 'celý dokument je ISDOC');
+        $this->assertFalse(AttachmentPreparer::isIsdoc(new RawAttachment(4, 'nons.xml', 'text/xml', '<Invoice><ID>1</ID></Invoice>')), 'bez namespace');
+    }
+
     public function testTextAttachmentIsDecoded(): void
     {
         $out = $this->preparer()->prepareRaw([new RawAttachment(3, 'notes.txt', 'text/plain', 'Pozn: faktura')]);
