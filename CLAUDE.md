@@ -37,7 +37,7 @@ správce do `docs/operations/`; specifikace zůstávají v kořeni `docs/`.
 | `docs/frontend.md` | Frontend architektura — Svelte 5, komponenty, ikony (Font Awesome), API komunikace |
 | `docs/edit-forms.md` | Editační formuláře — FormDefinition, taby, sekce, sloupce, `TableForm`, JSONC formy, recalculate, doc states, **Sub-tabulky** (sekce 15: endpoint `/subtable`, `renderSubtable()`, read-only, ConfirmDialog), **HeaderInfo + živý pruh `live_summary`** (sekce 21), **Lookup pole** (sekce 22) |
 | `docs/edit-forms-cookbook.md` | Editační formuláře — cookbook s izolovanými vzory pro psaní forem (JSONC i PHP `TableBuilder`); rychlý úvod, sekce/sloupce/inline/separator recepty, časté chyby. Pro hluboký referenční materiál viz `edit-forms.md`. |
-| `docs/operations/secrets.md` | Per-DS šifrování `encrypted_text` sloupců — `DsSecretCipher`, klíčový soubor, rotace, health check, threat model; **tajemství konfigurace zdroje dat** v `secrets/` (§5, #126 B1): `db.password`, `mail-relay.password`, `oidc-<id>.client-secret` — `DataSourceSecrets` + sloty, migrace krokem 0 `ds-upgrade` (`DataSourceSecretsMigrator`), `shpd-ds ds-secret`, sekce `doctor`, přechodná přednost `main.json` do tasku B2 |
+| `docs/operations/secrets.md` | Per-DS šifrování `encrypted_text` sloupců — `DsSecretCipher`, klíčový soubor, rotace, health check, threat model; **tajemství konfigurace zdroje dat** v `secrets/` (§5, #126 B1): `db.password`, `mail-relay.password`, `oidc-<id>.client-secret` — `DataSourceSecrets` + sloty, migrace krokem 0 `ds-upgrade` (`DataSourceSecretsMigrator`, odebírá z `main.json` podle `id` a hodnoty), `shpd-ds ds-secret`, sekce `doctor`; hodnota, která zůstala v `main.json`, se ignoruje a `doctor` ji hlásí chybou (B2) |
 | `docs/migration-guide.md` | Backup a přenos DS na jiný server — tarball, DB dump, perms, ověření |
 | `docs/dashboard.md` | Dashboard — home feed akčních karet (fáze 2), kartový kontrakt, zdroje, akce + undo, tasks widget, API kontrakt |
 | `docs/app-settings.md` | Settings pages + branding — `SettingsStore`, `settingsPages` v module.jsonc, klíče `app.*`, branding sloty, `/_app` endpointy, jak přidat další stránku, typy polí (`text`, `select`, `color`, …) |
@@ -135,13 +135,15 @@ Formát hlavičky stránky a šablona: `docs/help-authoring.md`.
 ### Konfigurace na serveru
 - Server config: `/etc/shipard/server.json` (práva 0600)
 - Data sources: `/opt/shipard/data-sources/{id}/config/main.json` (práva 0600)
-  — **bez tajemství** (#126 D1–D4): heslo k databázi, heslo relay pošty
+  — **bez tajemství** (#126 D1–D5): heslo k databázi, heslo relay pošty
   a `clientSecret` OIDC providerů žijí v `secrets/` jako `db.password`,
   `mail-relay.password`, `oidc-<id>.client-secret` (líné čtení
   `DataSourceSecrets`, zápis jen `SecretsFileWriter`, ruční zadání
-  `shpd-ds ds-secret`; krok 0 `ds-upgrade` je z `main.json` přesune — do
-  tasku B2 má hodnota v `main.json` přednost a `doctor` ji hlásí). Nové
-  tajemství = nový soubor v `secrets/`, nikdy klíč v `main.json`.
+  `shpd-ds ds-secret`; krok 0 `ds-upgrade` je z `main.json` přesune).
+  Hodnota, která v `main.json` zůstala (obnova starší zálohy), se **ignoruje**
+  a `doctor` ji hlásí chybou (B2). Nové tajemství = nový soubor v `secrets/`,
+  nikdy klíč v `main.json`. **`main.json` smí číst i Claude**; `secrets/`
+  nikdy — ani skriptem, který by si soubor otevřel sám.
   Viz `docs/operations/secrets.md` §5
 
 ### Soubory zapisované z CLI do adresáře zdroje dat

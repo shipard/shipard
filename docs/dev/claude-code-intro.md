@@ -115,9 +115,9 @@ platí v každém režimu, i v auto:
   Odeslání práce spouští jen na tvůj výslovný pokyn a ty ho potvrzuješ
   (kapitola 8). Když se na odeslání zeptá, aniž jsi o něj požádal,
   odmítni.
-- **Čtení konfigurace a secrets zdrojů dat** (`config/main.json`,
-  `secrets/`) **je zakázané.** Zákaz zachytí přímé čtení souboru;
-  aplikace a její příkazy si konfiguraci čtou dál.
+- **Čtení `secrets/` zdrojů dat je zakázané.** Zákaz zachytí přímé čtení
+  souboru; aplikace a její příkazy si tajemství čtou dál. `config/main.json`
+  je bez tajemství (#126 B2) a Claude ho číst smí.
 
 Když Claude narazí na zákaz, není to chyba — ten krok vynech, nebo ho
 udělej sám.

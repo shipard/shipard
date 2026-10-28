@@ -77,17 +77,18 @@ implementuje.
   nezbytné řádky. Zdroje s třídou **`free`** (ukázková a seedovaná data) omezení
   nemají. Na `free` přepíná jen člověk v terminálu (`shpd-ds ds-class set free`
   bez terminálu skončí chybou) — Claude třídu nemění.
-- **Secrets.** Nikdy nečíst `config/main.json` zdroje dat ani `secrets/`
-  (konfiguraci zdroje dat čte Claude přes `shpd-server ds-list --json`, který
-  tajemství nevypisuje). Tajemství se z `main.json` stěhují do `secrets/`
-  (task B1 z #126: `ds-upgrade` je přesune, `ds-secret` je zadává); pravidlo
-  „nečíst `main.json`“ platí, dokud task B2 neodstraní přechodné čtení
-  z `main.json` — `secrets/` zůstává tabu natrvalo.
+- **Secrets.** Nikdy nečíst `secrets/` zdrojů dat — ani skriptem, který by si
+  soubor otevřel sám. `config/main.json` je od #126 B2 **bez tajemství**
+  (heslo k databázi, relay pošty a OIDC `clientSecret` žijí v `secrets/`,
+  `ds-upgrade` je přesune, `ds-secret` je zadává) a číst se smí; přehled
+  všech zdrojů dat a jejich třídy dál dává `shpd-server ds-list --json`.
+  Výjimka: zdroj dat, u kterého `shpd-server doctor` hlásí tajemství
+  v `main.json` (typicky po obnově starší zálohy), se do `ds-upgrade` nečte.
   Heslo read-only uživatele se předává přes proměnnou prostředí, nikdy do chatu
-  ani do argumentů příkazu. V Claude Code přímé čtení blokuje `.claude/settings.json`
-  (`permissions.deny`) v každém režimu — je to pojistka, ne úplná ochrana:
-  zachytí nástroje pro čtení a příkazy, které soubor jmenují (`cat`, `head`, …),
-  ne skript nebo aplikaci, která si soubor otevře sama.
+  ani do argumentů příkazu. V Claude Code přímé čtení `secrets/` blokuje
+  `.claude/settings.json` (`permissions.deny`) v každém režimu — je to pojistka,
+  ne úplná ochrana: zachytí nástroje pro čtení a příkazy, které soubor jmenují
+  (`cat`, `head`, …), ne skript nebo aplikaci, která si soubor otevře sama.
 - **O odeslání rozhoduje vždy člověk.** Push, pull request a merge spouští
   Claude Code **jen na výslovný pokyn** v dané konverzaci — nikdy z vlastní
   iniciativy. `git push`, `gh pr create` a `gh pr merge` si v každém režimu
@@ -317,9 +318,9 @@ jsou v knowledge, pokud je mám.
   Třídu dat neměň (`ds-class set free` je jen pro mě v terminálu). Na
   testovacím serveru se zdrojový kód needituje. Do odpovědí žádné výpisy
   osobních dat.
-- Nikdy nečti `config/main.json` zdrojů dat ani `secrets/`; konfiguraci
-  zdroje dat ber z `ds-list --json`. Hesla nepatří do chatu ani do argumentů
-  příkazů.
+- Nikdy nečti `secrets/` zdrojů dat. `config/main.json` číst smíš (je bez
+  tajemství); přehled zdrojů dat ber z `ds-list --json`. Hesla nepatří do
+  chatu ani do argumentů příkazů.
 - Po každém `patch_file` ověř `git diff`. PHPUnit jen s úzkým `--filter`.
   Grep s `--include`, ne široká rekurze přes `modules/`.
 - Nikdy nepushuj.
