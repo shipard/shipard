@@ -1,6 +1,6 @@
 # Konec přechodného čtení tajemství z `config/main.json` (#126 task B2)
 
-**Stav:** naplánováno — PRD k implementaci (#126 D4 konec, D5, upřesnění U1–U7 potvrzena 2026-10-28)
+**Stav:** hotovo — implementováno 2026-10-28 (5 commitů, oddíl „Hotovo“); zbývá ruční odebrání řádku `deny` pro `main.json` z `.claude/settings.json`, nasazení (běžný upgrade + `doctor`) a `dev-env` / instrukce Projektu (U7)
 
 > PRD pro Claude Code (5 commitů). Design: issue #126, komentář
 > „Rozhodnutí (2026-10-16)“, body D4 a D5. Navazuje na task B1
@@ -250,17 +250,58 @@ nepřipojí — proto se B2 nasazuje až po čistém `doctor` všude (splněno).
 
 ## Hotovo když
 
-- [ ] `DataSourceConfig` nečte tajemství z `main.json`; hodnota tam se
+- [x] `DataSourceConfig` nečte tajemství z `main.json`; hodnota tam se
       ignoruje (oddíl 1)
-- [ ] `doctor` hlásí tajemství v `main.json` jako chybu, `ds-secret` nové
+- [x] `doctor` hlásí tajemství v `main.json` jako chybu, `ds-secret` nové
       stavy a hlášky (oddíl 2)
-- [ ] migrátor odebírá podle `id` a hodnoty, souběžná změna = varování
+- [x] migrátor odebírá podle `id` a hodnoty, souběžná změna = varování
       (oddíl 3)
-- [ ] fixtury bez tajemství v `main.json` mimo testy starého tvaru (oddíl 4)
-- [ ] `deny` jen pro `secrets/`, pravidlo v `CLAUDE.md` a
-      `docs/ai-workflow.md` §3 a §8 (oddíl 5)
-- [ ] dokumentace podle oddílu 6, hlavičky tasků, index
-- [ ] cílené testy zelené, na konci celá sada lokálně
+- [x] fixtury bez tajemství v `main.json` mimo testy starého tvaru (oddíl 4)
+- [ ] `deny` jen pro `secrets/` — **řádek v `.claude/settings.json` odebere
+      člověk** (Claude Code v auto režimu úpravu vlastních oprávnění
+      zamítá); pravidlo v `CLAUDE.md` a `docs/ai-workflow.md` §3 a §8 ✓
+      (oddíl 5)
+- [x] dokumentace podle oddílu 6, hlavičky tasků, index
+- [x] cílené testy zelené, na konci celá sada lokálně
+
+## Hotovo (2026-10-28)
+
+Pět commitů podle oddílu „Commity“. Odchylky a upřesnění proti PRD:
+
+- **`.claude/settings.json`** zůstal beze změny: odebrání řádku
+  `Read(//opt/shipard/data-sources/*/config/main.json)` z `deny` je úprava
+  vlastních oprávnění, kterou Claude Code v auto režimu zamítne. Odebere ho
+  člověk ručně (jeden řádek); pravidlo v textech je už uvolněné.
+- Do commitu 1 šly i dvě fixtury z oddílu 4, bez nichž by sada nebyla
+  zelená: `OidcControllerTest` (client secrety providerů `test` a `github`
+  do `secrets/`) a `DataSourceConfigTest::testLoadValidConfig` (heslo ze
+  `secrets/db.password`).
+- Šev migrátoru je chráněná metoda `beforeConfigPatch(string $dsDir)`
+  (třída už není `final`); testy ji přepisují anonymní podtřídou.
+  `<název>` ve varování `… changed in config/main.json during migration` je
+  název souboru tajemství (`db.password`, `oidc-<id>.client-secret`), stejně
+  jako u ostatních varování migrátoru.
+- Fixtura `doctor` (`createDataSourceFixture`) má výchozí heslo
+  v `secrets/db.password`; `passwordInMainJson: true` = starý tvar jen pro
+  testy, které ho hlásí, `secretFiles: []` = heslo nikde. Aserce „ostatní
+  klíče beze změny“ (`DsClassCommandTest`, `MainConfigPatcherTest`) jdou
+  přes `database_user`. Po smazání řádku se v zarovnaných blocích srovnalo
+  zarovnání `=>` (jen whitespace).
+- `grep -rl --include=*.php database_password tests` vrací devět souborů:
+  testy starého tvaru `DataSourceConfigTest` (ignorování, sloty),
+  `DataSourceSecretsMigratorTest`, `DoctorCommandTest`, `DsSecretCommandTest`,
+  `DsUpgradeCommandTest` (krok 0), `DsCreateCommandTest`
+  (`assertArrayNotHasKey`) — a **strážci úniku** `DsListCommandTest`,
+  `DataSourceInventoryTest`, `DevDashboardControllerTest`, které tajemství
+  do `main.json` dávají schválně a ověřují, že výpis je nevypíše (po obnově
+  starší zálohy je nemigrovaný `main.json` reálný, #126 D10). Ty nejsou
+  v seznamu výjimek PRD a zůstávají záměrně.
+- `tasks/README.md` měl řádek tohoto tasku v oblasti *Server, CLI a provoz*
+  už z PRD; změnil se jen generovaný souhrn.
+
+Ověření 1–4 z oddílu „Nasazení a ověření“ dělá člověk (`ds-upgrade` je
+mutace zdroje `realCopy`; změna `settings.json` se projeví po restartu
+session Claude Code).
 
 ## Rozhodnutí k designu (potvrzená)
 

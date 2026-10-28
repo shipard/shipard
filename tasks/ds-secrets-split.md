@@ -1,6 +1,6 @@
 # Tajemství zdroje dat mimo `config/main.json` (#126 task B1)
 
-**Stav:** hotovo — implementováno 2026-10-16 (6 commitů, oddíl „Hotovo“); zbývá nasazení `ds-upgrade-all` na vývojových strojích, testovacím serveru a hostingu, potom task B2
+**Stav:** hotovo — implementováno 2026-10-16 (6 commitů, oddíl „Hotovo“), nasazeno všude 2026-10-28; konec přechodného čtení řeší task B2 (`ds-secrets-transition-end.md`)
 
 > PRD pro Claude Code (6 commitů). Design: issue #126, komentář
 > „Rozhodnutí (2026-10-16)“, body D1–D5. Task A (`tasks/ds-data-class.md`)
@@ -301,8 +301,9 @@ může se psát B2.
 
 ## Navazuje — B2
 
-Samostatný task (U7), až `doctor` na všech serverech (vývojářské stroje,
-testovací server, hosting) nehlásí tajemství v `main.json`:
+Samostatný task (U7) — [`ds-secrets-transition-end.md`](ds-secrets-transition-end.md),
+implementovaný 2026-10-28, až `doctor` na všech serverech (vývojářské
+stroje, testovací server, hosting) nehlásil tajemství v `main.json`:
 
 - `DataSourceConfig` přestane číst tajemství z `main.json`; `doctor`
   je hlásí jako `FAIL` (D4),

@@ -192,27 +192,38 @@ nikdy klíč v `main.json`.
   bere správce z `secrets/db.password`.
 
 **Ruční zadání** (`shpd-ds ds-secret`, [cli.md](../cli.md)): `ds-secret`
-vypíše tabulku Name / Used by / Status (`present` / `missing` /
-`in main.json (run ds-upgrade)`) bez hodnot; `ds-secret set
+vypíše tabulku Name / Used by / Status bez hodnot — stav souboru
+(`present` / `missing` / `missing (optional)`) a k němu případně
+`; main.json value ignored (run ds-upgrade)`; `ds-secret set
 mail-relay.password` a `ds-secret set oidc-<id>.client-secret` berou hodnotu
-jen ze skrytého dotazu nebo ze stdin, nikdy z argumentu. `db.password`
-takto nastavit nejde — musí sedět na uživatele databáze.
+jen ze skrytého dotazu nebo ze stdin, nikdy z argumentu, a totéž tajemství
+z `main.json` odeberou (jinak by ho příští `ds-upgrade` přesunul přes
+novou hodnotu). `db.password` takto nastavit nejde — musí sedět na
+uživatele databáze.
 
-**Migrace** (#126 D4): krok 0 `shpd-ds ds-upgrade` (`Core\Server\
+**Migrace** (#126 D4, B2 U3): krok 0 `shpd-ds ds-upgrade` (`Core\Server\
 DataSourceSecretsMigrator`) tajemství z `main.json` zapíše do `secrets/`
 a teprve potom klíče z `main.json` odebere — pád mezi tím nechá hodnotu
 v obou souborech a další běh migraci dokončí; bez tajemství v `main.json`
 je krok no-op. Liší-li se hodnota v souboru, přepíše ji hodnotou
-z `main.json` s varováním. Migrátor zůstává natrvalo (obnova starší zálohy
-přinese starý `main.json`).
+z `main.json` s varováním. Z `main.json` odebírá nad čerstvým obsahem pod
+zámkem a jen hodnotu, kterou do souboru zapsal: `database_password`
+a `mail.relay.password` podle hodnoty, `clientSecret` providera podle `id`
+**a** hodnoty, ne podle pořadí v poli. Změní-li `main.json` mezi čtením
+a zápisem jiný zapisovatel (`hosting-sync`, ruční úprava), hodnota tam
+zůstane s varováním `… changed in config/main.json during migration — left
+there, run ds-upgrade again` a další běh ji přesune. Migrátor zůstává
+natrvalo (obnova starší zálohy přinese starý `main.json`).
 
-**Přechodné období** (do tasku B2): `DataSourceConfig` čte tajemství i
-z `main.json` a hodnota tam má **přednost** před souborem — je buď ještě
-nepřesunutá, nebo ji tam vložil člověk a je novější. `doctor` (sekce
-*Data source secrets*) hlásí tajemství v `main.json` jako varování; až je
-sekce čistá na všech serverech, task B2 přechodné čtení odstraní, z varování
-udělá chybu a uvolní pravidlo pro AI (`main.json` se smí číst, `secrets/`
-nikdy).
+**Hodnota v `main.json`** (#126 B2, U1): `DataSourceConfig` tajemství
+z `main.json` nečte — hodnota, která tam zůstala (obnova starší zálohy,
+ruční zápis), se za běhu **ignoruje** a zdroj dat běží s tajemstvím ze
+souboru; chybí-li i soubor `db.password`, výjimka to řekne včetně poznámky
+o klíči v `main.json` (nikdy hodnotu). `doctor` (sekce *Data source
+secrets*) ji hlásí jako chybu `✗ … still in config/main.json — ignored`,
+`ds-upgrade` ji přesune a soubor přepíše, `ds-secret list` ukáže stav.
+Pravidlo pro AI: `main.json` je bez tajemství a Claude ho číst smí,
+`secrets/` nikdy ([ai-workflow.md](../ai-workflow.md) §3).
 
 ## 6. Troubleshooting
 

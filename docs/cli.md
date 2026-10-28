@@ -98,14 +98,16 @@ Read-only health check. Vypíše:
   function` při prvním výpočtu částek dokladu
 - **Data source DB connections** — pokus o `SELECT 1` na každý DS
 - **Data source secrets** — tajemství zdrojů dat v `secrets/`
-  ([operations/secrets.md](operations/secrets.md) §5, #126 B1): `⚠` tajemství
-  ještě v `config/main.json` (`… still in config/main.json — run shpd-ds
-  ds-upgrade`; v tasku B2 se stane chybou), `✗` chybějící heslo k databázi
-  (v souboru ani v `main.json` — počítá se jako chyba), `⚠` OIDC provider
-  bez `secrets/oidc-<id>.client-secret` (přihlášení přes něj selže), `⚠`
-  `mail.relay` s `username` bez hesla; souhrn `N data source(s) still keep
-  secrets in config/main.json` / `All secrets in secrets/ ✓`. Čte jen
-  přítomnost souborů, nikdy hodnoty
+  ([operations/secrets.md](operations/secrets.md) §5, #126 B1, B2): `✗`
+  tajemství v `config/main.json` (`… still in config/main.json — ignored;
+  run shpd-ds ds-upgrade`; hodnota se za běhu ignoruje, jedna chyba za
+  zdroj dat — chybí-li zároveň soubor, stačí tento řádek), `✗` chybějící
+  heslo k databázi (`secrets/db.password`), `⚠` OIDC provider bez
+  `secrets/oidc-<id>.client-secret` (přihlášení přes něj selže), `⚠`
+  `mail.relay` s `username` bez hesla; souhrn `N data source(s) keep
+  ignored secrets in config/main.json (shpd-server ds-upgrade-all moves
+  them)` / `All secrets in secrets/ ✓`. Čte jen přítomnost souborů, nikdy
+  hodnoty
 - **Data source states** — stavy z `config/state.json`
   ([ds-state.md](ds-state.md)): počty per stav a `cron off N`, `⚠` DS
   v maintenance déle než 7 dní (zapomenutá? D8), `✗` poškozený
@@ -887,9 +889,13 @@ opakované spuštění bez efektu, pokud se nic nezměnilo):
    odebrání klíčů z `main.json` (#126 D4,
    [operations/secrets.md](operations/secrets.md) §5). Jen soubory, před
    připojením k databázi; `[INFO] Moved N secret(s) from config/main.json
-   to secrets/: …` i bez `-v`, `[WARN]` u souboru s jinou hodnotou
-   (přepíše se hodnotou z `main.json`) nebo providera s neplatným `id`
-   (tajemství zůstává), `[ERROR]` + exit 1 u nečitelného `main.json`
+   to secrets/: …` i bez `-v` (jen tajemství, která z `main.json` skutečně
+   zmizela), `[WARN]` u souboru s jinou hodnotou (přepíše se hodnotou
+   z `main.json`), providera s neplatným `id` (tajemství zůstává) nebo
+   hodnoty změněné jiným zapisovatelem mezi čtením a zápisem (`… changed in
+   config/main.json during migration — left there, run ds-upgrade again`;
+   z `main.json` se odebírá podle `id` providera a hodnoty, ne podle
+   indexu — B2 U3), `[ERROR]` + exit 1 u nečitelného `main.json`
    (nic se nemění). Bez tajemství v `main.json` no-op; zůstává natrvalo
    (obnova starší zálohy)
 1. **Modules resolve** — spočítá závislosti modulů, ověří absenci cyklů
@@ -1752,25 +1758,33 @@ cat secret.txt | sudo shpd-ds ds-secret set oidc-shipard-id.client-secret   # ze
 ```
 
 Tajemství konfigurace zdroje dat v `secrets/` — co tajemství, to soubor
-(#126 B1, U4, [operations/secrets.md](operations/secrets.md) §5,
-[`tasks/ds-secrets-split.md`](../tasks/ds-secrets-split.md)). Ruční zadání
-toho, co správce dřív psal do `config/main.json`: GitHub, Google, „Shipard
-ID“ z `hosting-oidc-client --generate`, relay pošty.
+(#126 B1 U4, B2, [operations/secrets.md](operations/secrets.md) §5,
+[`tasks/ds-secrets-split.md`](../tasks/ds-secrets-split.md),
+[`tasks/ds-secrets-transition-end.md`](../tasks/ds-secrets-transition-end.md)).
+Ruční zadání toho, co správce dřív psal do `config/main.json`: GitHub,
+Google, „Shipard ID“ z `hosting-oidc-client --generate`, relay pošty.
 
 - **`list`** — tabulka `Name | Used by | Status`: `db.password` (vždy),
   `mail-relay.password` (má-li `main.json` sekci `mail.relay`; bez
   `username` `missing (optional)`), `oidc-<id>.client-secret` pro každý
-  provider z `auth.providers`. Stav `present` / `missing` /
-  `in main.json (run ds-upgrade)`. Ostatní soubory v `secrets/`
-  (`secrets.key`, klíče hostingu) jen počtem. Nikdy hodnoty ani délky.
+  provider z `auth.providers`. Stav souboru `present` / `missing` /
+  `missing (optional)`; zůstala-li hodnota i v `main.json`, přípona
+  `; main.json value ignored (run ds-upgrade)` a závěrečná poznámka
+  `N secret(s) still in config/main.json — ignored; shpd-ds ds-upgrade
+  moves them to secrets/ and overwrites the files.` Ostatní soubory
+  v `secrets/` (`secrets.key`, klíče hostingu) jen počtem. Nikdy hodnoty
+  ani délky.
 - **`set <name>`** — jen `mail-relay.password` a `oidc-<id>.client-secret`
   (`id` providera `[a-z0-9-]+`; není-li provider v `main.json`, zapíše
   a varuje). Hodnota **nikdy z argumentu**: interaktivní terminál → skrytý
   dotaz, jinak se čte stdin do EOF a odstraní jedno koncové `\n`; prázdná
   hodnota = exit 1. Zápis `SecretsFileWriter` (0700 / 0600, vlastník zdroje
   dat i pod `sudo`, varování vlastnictví vypíše). Je-li totéž tajemství
-  ještě v `main.json`, odebere ho — v přechodném období by jinak mělo
-  přednost (U1). Výstup `Secret <name> written.`
+  i v `main.json`, odebere ho — za běhu se ignoruje, ale příští
+  `ds-upgrade` by ho přesunul přes novou hodnotu (B2 U2); nejde-li
+  odebrat, exit 1 s `… it is ignored now, but the next ds-upgrade would
+  move it over the new value; remove it by hand.` Výstup
+  `Secret <name> written.`
 - `db.password` nastavit nejde — musí sedět na uživatele databáze
   (zapisuje `ds-create`, přesouvá `ds-upgrade`).
 

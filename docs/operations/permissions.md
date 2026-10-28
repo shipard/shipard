@@ -33,7 +33,7 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 | `/opt/shipard/data-sources/` | shipard-user | shipard-user | `0750` | parent všech DS |
 | `/opt/shipard/data-sources/<id>/` | shipard-user | shipard-user | `0750` | per-DS root |
 | `/opt/shipard/data-sources/<id>/config/` | shipard-user | shipard-user | `0750` | |
-| `/opt/shipard/data-sources/<id>/config/main.json` | shipard-user | shipard-user | `0600` | konfigurace bez tajemství (do tasku B2 z #126 může ještě nést heslo před migrací `ds-upgrade`) |
+| `/opt/shipard/data-sources/<id>/config/main.json` | shipard-user | shipard-user | `0600` | konfigurace bez tajemství (#126 B2; hodnota, která tam zůstala, se ignoruje a `doctor` ji hlásí) |
 | `/opt/shipard/data-sources/<id>/config/state.json` | shipard-user | shipard-user | `0640` | (volitelné — bez souboru je DS `active`); stav DS ([ds-state.md](../ds-state.md) §3). Zapisuje se i pod rootem — špatný vlastník = DS fail-closed `suspended` |
 | `/opt/shipard/data-sources/<id>/config/configuration/` | shipard-user | shipard-user | `0750` | compiled configs |
 | `/opt/shipard/data-sources/<id>/secrets/` | shipard-user | shipard-user | `0700` | striktní |

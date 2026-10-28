@@ -67,7 +67,9 @@ chmod 0600 "/opt/shipard/data-sources/${DS_ID}/secrets/secrets.key"
 # 3. Database (admin musí mít CREATE DATABASE / CREATE USER); heslo je
 #    v secrets/db.password (holá hodnota). Záloha z doby před migrací
 #    tajemství (#126 B1) ho má ještě v main.json (database_password) —
-#    pak ho vezmi odtud a krok 5 (ds-upgrade) ho přesune do secrets/.
+#    pak ho vezmi odtud; zdroj dat se k databázi nepřipojí (hodnota
+#    v main.json se ignoruje, #126 B2), dokud ho krok 5 (ds-upgrade)
+#    nepřesune do secrets/.
 mysql -e "CREATE DATABASE \`${DS_DB}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_czech_ci"
 mysql -e "CREATE USER 'shpd_$(echo ${DS_ID:0:9} | tr -d -)'@'localhost' \
     IDENTIFIED BY '$(cat /opt/shipard/data-sources/${DS_ID}/secrets/db.password)'"

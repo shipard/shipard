@@ -1069,17 +1069,16 @@ Soubor se načítá při startu aplikace jedním čtením z disku.
 
 ### Konfigurace — `config/main.json`
 
-Do konfigurace zdroje dat se přidá pole `modules` a `defaultLanguage`:
+Do konfigurace zdroje dat se přidá pole `modules` a `defaultLanguage`
+(heslo k databázi v `main.json` není — žije v `secrets/db.password`,
+viz [operations/secrets.md](operations/secrets.md) §5):
 
 ```json
 {
     "id": "a3f2-b8c1-d4e7-f9a0",
     "name": "Naše firma s.r.o.",
-    "database": {
-        "name": "a3f2_b8c1_d4e7_f9a0",
-        "user": "shpd_a3f2b8c1",
-        "password": "nahodne-generovane-heslo"
-    },
+    "database_name": "a3f2_b8c1_d4e7_f9a0",
+    "database_user": "shpd_a3f2b8c1",
     "created": "2026-03-12T14:30:00+01:00",
     "defaultLanguage": "cs",
     "modules": [

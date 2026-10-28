@@ -48,7 +48,8 @@ session vznikne. Mintování a invalidaci session drží `SessionService`
   `DataSourceConfig::getAuthPolicy()` ho providerovi doplní ze souboru.
   Zápis: `shpd-ds ds-secret set oidc-<id>.client-secret` (skrytý dotaz nebo
   stdin), hosting přes `hosting-sync`; `ds-upgrade` starý `clientSecret`
-  z `main.json` přesune (do tasku B2 má hodnota v `main.json` přednost).
+  z `main.json` přesune — hodnota, která v `main.json` zůstala, se ignoruje
+  a `doctor` ji hlásí chybou (#126 B2).
   Chybějící tajemství: `… is missing clientSecret (secrets/oidc-<id>.client-secret)`.
 - Validuje se **lazy** při prvním použití (`DataSourceConfig::getAuthPolicy()`),
   ne při načtení configu — rozbitá auth sekce nezablokuje CLI (break-glass).
