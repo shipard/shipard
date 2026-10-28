@@ -26,12 +26,11 @@ class TransportResolverTest extends TestCase
         $this->tmpDir = sys_get_temp_dir() . '/shpd-transport-' . bin2hex(random_bytes(8));
         mkdir($this->tmpDir . '/config', 0700, true);
         file_put_contents($this->tmpDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Transport test',
-            'database_name'     => 'test_db',
-            'database_user'     => 'test',
-            'database_password' => 'pw',
-            'created'           => date('c'),
+            'id'            => 'test-test-test-test',
+            'name'          => 'Transport test',
+            'database_name' => 'test_db',
+            'database_user' => 'test',
+            'created'       => date('c'),
         ]));
         DsSecretCipher::generateKey($this->tmpDir);
         $this->config = new DataSourceConfig($this->tmpDir);

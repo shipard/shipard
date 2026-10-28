@@ -43,7 +43,6 @@ class AnalysisControllerSaveDecisionsTest extends TestCase
             'name' => 'Test',
             'database_name' => 'test_db',
             'database_user' => 'test',
-            'database_password' => 'pw',
             'created' => date('c'),
         ]));
         DsSecretCipher::generateKey($this->tmpDir);
@@ -177,8 +176,8 @@ class AnalysisControllerSaveDecisionsTest extends TestCase
         $resp = $this->controller($db)->saveDecisions(
             $this->authed(),
             $this->requestWithBody(['_resolve' => [
-                'supplier'     => 'useExisting:42',
-                'bogus'        => 'create',
+                'supplier' => 'useExisting:42',
+                'bogus'    => 'create',
                 'rows[0].item' => 'skip',
                 'customer'     => '',
             ]]),
@@ -258,9 +257,9 @@ class AnalysisControllerSaveDecisionsTest extends TestCase
         $resp = $this->controller($db)->saveDecisions(
             $this->authed(),
             $this->requestWithBody(['_resolve' => [
-                'vat.place'       => 'useValue:intracom',
-                'vat.mode'        => 'useValue:none',
-                'vat.bogus'       => 'useValue:x',
+                'vat.place' => 'useValue:intracom',
+                'vat.mode'  => 'useValue:none',
+                'vat.bogus' => 'useValue:x',
                 'rows[0].vatCode' => 'useCode:cz-218',
             ]]),
             100,

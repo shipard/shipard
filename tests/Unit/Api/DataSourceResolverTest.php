@@ -75,12 +75,11 @@ class DataSourceResolverTest extends TestCase
 		$dsDir = $this->tempDir . '/data-sources/' . $dsId . '/config';
 		mkdir($dsDir, 0755, true);
 		$defaults = [
-			'id'                => $dsId,
-			'name'              => 'Test DS',
-			'database_name'     => str_replace('-', '_', $dsId),
-			'database_user'     => 'shpd_test',
-			'database_password' => 'secret',
-			'created'           => '2026-03-16T10:00:00+01:00',
+			'id'            => $dsId,
+			'name'          => 'Test DS',
+			'database_name' => str_replace('-', '_', $dsId),
+			'database_user' => 'shpd_test',
+			'created'       => '2026-03-16T10:00:00+01:00',
 		];
 		file_put_contents($dsDir . '/main.json', json_encode(array_merge($defaults, $data)));
 	}

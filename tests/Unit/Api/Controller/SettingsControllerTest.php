@@ -30,13 +30,12 @@ class SettingsControllerTest extends TestCase
         $this->dsDir = sys_get_temp_dir() . '/shpd_settingsctrl_' . uniqid('', true);
         mkdir($this->dsDir . '/config', 0755, true);
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Testovací firma',
-            'database_name'     => 'x',
-            'database_user'     => 'x',
-            'database_password' => 'x',
-            'created'           => '2026-01-01T00:00:00+00:00',
-            'modules'           => ['core.system'],
+            'id'            => 'test-test-test-test',
+            'name'          => 'Testovací firma',
+            'database_name' => 'x',
+            'database_user' => 'x',
+            'created'       => '2026-01-01T00:00:00+00:00',
+            'modules'       => ['core.system'],
         ]));
 
         $this->resolver = new ModulePathResolver([dirname(__DIR__, 4) . '/modules']);
@@ -178,9 +177,9 @@ class SettingsControllerTest extends TestCase
         $resp = $this->ctrl->savePage(
             'appSettings',
             $this->saveRequest(['values' => [
-                'app.name'     => '  Nová firma  ',
-                'evil.key'     => 'hack',
-                'app.icon'     => ['hash' => 'spoofed'],
+                'app.name' => '  Nová firma  ',
+                'evil.key' => 'hack',
+                'app.icon' => ['hash' => 'spoofed'],
             ]]),
             $this->config(), $this->resolver, $this->auth(), $db,
         );
@@ -929,13 +928,12 @@ class SettingsControllerTest extends TestCase
     private function aiConfig(): DataSourceConfig
     {
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Testovací firma',
-            'database_name'     => 'x',
-            'database_user'     => 'x',
-            'database_password' => 'x',
-            'created'           => '2026-01-01T00:00:00+00:00',
-            'modules'           => ['core.ai'],
+            'id'            => 'test-test-test-test',
+            'name'          => 'Testovací firma',
+            'database_name' => 'x',
+            'database_user' => 'x',
+            'created'       => '2026-01-01T00:00:00+00:00',
+            'modules'       => ['core.ai'],
         ]));
         return new DataSourceConfig($this->dsDir);
     }
@@ -992,13 +990,12 @@ class SettingsControllerTest extends TestCase
     private function hostingConfig(): DataSourceConfig
     {
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Testovací firma',
-            'database_name'     => 'x',
-            'database_user'     => 'x',
-            'database_password' => 'x',
-            'created'           => '2026-01-01T00:00:00+00:00',
-            'modules'           => ['core.system', 'test.hosting'],
+            'id'            => 'test-test-test-test',
+            'name'          => 'Testovací firma',
+            'database_name' => 'x',
+            'database_user' => 'x',
+            'created'       => '2026-01-01T00:00:00+00:00',
+            'modules'       => ['core.system', 'test.hosting'],
         ]));
         return new DataSourceConfig($this->dsDir);
     }
@@ -1056,13 +1053,12 @@ class SettingsControllerTest extends TestCase
     private function codebooksConfig(): DataSourceConfig
     {
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Testovací firma',
-            'database_name'     => 'x',
-            'database_user'     => 'x',
-            'database_password' => 'x',
-            'created'           => '2026-01-01T00:00:00+00:00',
-            'modules'           => ['economy.codebooks'],
+            'id'            => 'test-test-test-test',
+            'name'          => 'Testovací firma',
+            'database_name' => 'x',
+            'database_user' => 'x',
+            'created'       => '2026-01-01T00:00:00+00:00',
+            'modules'       => ['economy.codebooks'],
         ]));
         return new DataSourceConfig($this->dsDir);
     }

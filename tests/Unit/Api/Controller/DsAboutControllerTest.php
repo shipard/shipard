@@ -39,13 +39,12 @@ final class DsAboutControllerTest extends TestCase
         $this->dsDir = sys_get_temp_dir() . '/shpd_dsabout_' . uniqid('', true);
         mkdir($this->dsDir . '/config', 0755, true);
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Testovací firma',
-            'database_name'     => 'x',
-            'database_user'     => 'x',
-            'database_password' => 'x',
-            'created'           => '2026-01-01T00:00:00+00:00',
-            'modules'           => ['core.system'],
+            'id'            => 'test-test-test-test',
+            'name'          => 'Testovací firma',
+            'database_name' => 'x',
+            'database_user' => 'x',
+            'created'       => '2026-01-01T00:00:00+00:00',
+            'modules'       => ['core.system'],
         ]));
     }
 

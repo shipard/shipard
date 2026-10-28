@@ -39,7 +39,6 @@ class AnalysisClaimServiceTest extends TestCase
             'name' => 'Claim Test',
             'database_name' => 'test_db',
             'database_user' => 'test',
-            'database_password' => 'pw',
             'created' => date('c'),
         ]));
         $this->config = new DataSourceConfig($this->tmpDir);

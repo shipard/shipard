@@ -37,7 +37,6 @@ class CanaryTableTest extends TestCase
             'name' => 'Canary',
             'database_name' => 'canary_db',
             'database_user' => 'canary',
-            'database_password' => 'pw',
             'created' => date('c'),
         ]));
 

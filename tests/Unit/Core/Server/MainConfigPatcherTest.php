@@ -20,7 +20,6 @@ class MainConfigPatcherTest extends TestCase
             'modules' => ['install.base'],
             'database_name' => 'db',
             'database_user' => 'user',
-            'database_password' => 'pw',
         ];
     }
 
@@ -44,7 +43,7 @@ class MainConfigPatcherTest extends TestCase
         // Nesouvisející klíče beze změny.
         $this->assertSame('Test DS', $result['name']);
         $this->assertSame(['install.base'], $result['modules']);
-        $this->assertSame('pw', $result['database_password']);
+        $this->assertSame('user', $result['database_user']);
     }
 
     public function testReplacesExistingProviderById(): void

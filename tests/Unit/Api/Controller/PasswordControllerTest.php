@@ -66,13 +66,12 @@ class PasswordControllerTest extends TestCase
 		$this->dsDir = sys_get_temp_dir() . '/shpd-password-ctrl-test-' . uniqid();
 		mkdir($this->dsDir . '/config', 0755, true);
 		file_put_contents($this->dsDir . '/config/main.json', json_encode([
-			'id'                => self::DS_ID,
-			'name'              => 'Test DS',
-			'database_name'     => 'test_db',
-			'database_user'     => 'test_user',
-			'database_password' => 'pw',
-			'created'           => '2026-01-01 00:00:00',
-			'defaultLanguage'   => 'cs',
+			'id'              => self::DS_ID,
+			'name'            => 'Test DS',
+			'database_name'   => 'test_db',
+			'database_user'   => 'test_user',
+			'created'         => '2026-01-01 00:00:00',
+			'defaultLanguage' => 'cs',
 		]));
 
 		$this->db = InMemoryAuthDb::create();

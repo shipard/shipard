@@ -92,12 +92,11 @@ class DataSourceConfigTest extends TestCase
     public function testDefaultLanguageDefaultsToEnglish(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -108,13 +107,12 @@ class DataSourceConfigTest extends TestCase
     public function testDefaultLanguageReadsFromConfig(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'defaultLanguage'   => 'cs',
+            'id'              => 'abcd-efgh-ijkl-mnop',
+            'name'            => 'Test DS',
+            'database_name'   => 'abcd_efgh_ijkl_mnop',
+            'database_user'   => 'shpd_abcdefgh',
+            'created'         => '2026-03-12T10:00:00+01:00',
+            'defaultLanguage' => 'cs',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -125,13 +123,12 @@ class DataSourceConfigTest extends TestCase
     public function testCountryReadsFromConfig(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'country'           => 'sk',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
+            'country'       => 'sk',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -143,12 +140,11 @@ class DataSourceConfigTest extends TestCase
     public function testCountryMissingFallsBackToCz(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -160,13 +156,12 @@ class DataSourceConfigTest extends TestCase
     public function testCountryEmptyStringFallsBackToCz(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'country'           => '',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
+            'country'       => '',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -178,12 +173,11 @@ class DataSourceConfigTest extends TestCase
     public function testShouldSkipProvisioningDefaultsToFalse(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -194,13 +188,12 @@ class DataSourceConfigTest extends TestCase
     public function testShouldSkipProvisioningReadsTrueFromConfig(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'skipProvisioning'  => true,
+            'id'               => 'abcd-efgh-ijkl-mnop',
+            'name'             => 'Test DS',
+            'database_name'    => 'abcd_efgh_ijkl_mnop',
+            'database_user'    => 'shpd_abcdefgh',
+            'created'          => '2026-03-12T10:00:00+01:00',
+            'skipProvisioning' => true,
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -211,13 +204,12 @@ class DataSourceConfigTest extends TestCase
     public function testShouldSkipProvisioningReadsFalseFromConfig(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'skipProvisioning'  => false,
+            'id'               => 'abcd-efgh-ijkl-mnop',
+            'name'             => 'Test DS',
+            'database_name'    => 'abcd_efgh_ijkl_mnop',
+            'database_user'    => 'shpd_abcdefgh',
+            'created'          => '2026-03-12T10:00:00+01:00',
+            'skipProvisioning' => false,
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -228,12 +220,11 @@ class DataSourceConfigTest extends TestCase
     public function testAllowsResetDefaultsToFalse(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -244,13 +235,12 @@ class DataSourceConfigTest extends TestCase
     public function testAllowsResetReadsTrueFromConfig(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'enableReset'       => true,
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
+            'enableReset'   => true,
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -258,7 +248,7 @@ class DataSourceConfigTest extends TestCase
         $this->assertTrue($config->allowsReset());
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<string, mixed> main.json ve starém tvaru s `database_password` — jen pro test slotů (`inMainConfig`) */
     private function baseData(): array
     {
         return [
@@ -333,9 +323,9 @@ class DataSourceConfigTest extends TestCase
     {
         return [
             'Free s velkým písmenem' => ['Free'],
-            'REALCOPY'               => ['REALCOPY'],
-            'true'                   => [true],
-            'null'                   => [null],
+            'REALCOPY' => ['REALCOPY'],
+            'true'     => [true],
+            'null'     => [null],
             'číslo'                  => [1],
             'pole'                   => [['free']],
         ];
@@ -388,12 +378,11 @@ class DataSourceConfigTest extends TestCase
     public function testGetMailRelayMissingReturnsNull(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ]);
 
         $config = new DataSourceConfig($this->tempDir);
@@ -406,19 +395,17 @@ class DataSourceConfigTest extends TestCase
     public function testGetMailRelayOverride(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'mail'              => [
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
+            'mail'          => [
                 'relay' => [
                     'host'     => 'smtp.customer.example',
                     'port'     => 465,
                     'security' => 'tls',
                     'username' => 'ds-mailer',
-                    'password' => 'pw',
                 ],
             ],
         ]);
@@ -436,13 +423,12 @@ class DataSourceConfigTest extends TestCase
     public function testGetMailRelayInvalidThrowsLazily(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
-            'mail'              => ['relay' => ['security' => 'bogus']],
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
+            'mail'          => ['relay' => ['security' => 'bogus']],
         ]);
 
         // load nesmí spadnout — validace až při prvním použití

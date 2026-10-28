@@ -88,7 +88,6 @@ class HostingSyncRunnerTest extends TestCase
                 'modules' => $modules,
                 'database_name' => 'db',
                 'database_user' => 'user',
-                'database_password' => 'pw',
             ], JSON_PRETTY_PRINT),
         );
     }

@@ -31,7 +31,6 @@ class AIBackendDocumentTest extends TestCase
             'name' => 'AIBackendCanary',
             'database_name' => 'canary_db',
             'database_user' => 'canary',
-            'database_password' => 'pw',
             'created' => date('c'),
         ]));
         DsSecretCipher::generateKey($this->tmpDir);

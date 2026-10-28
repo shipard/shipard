@@ -449,7 +449,7 @@ class PrintsApiTest extends TestCase
         }
         file_put_contents($this->root . '/ds/config/main.json', (string) json_encode([
             'id' => 'test-test-test-test', 'name' => 'Test', 'database_name' => 'x', 'database_user' => 'x',
-            'database_password' => 'x', 'created' => '2026-01-01T00:00:00+00:00', 'modules' => $moduleIds,
+            'created' => '2026-01-01T00:00:00+00:00', 'modules' => $moduleIds,
         ]));
         return new \Shipard\Core\Config\DataSourceConfig($this->root . '/ds');
     }

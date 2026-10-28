@@ -684,16 +684,18 @@ class DoctorCommandTest extends TestCase
     // ─── enableReset warning ────────────────────────────────────────────────
 
     /**
+     * @param bool $passwordInMainJson          starý tvar (před #126 B1) — jen pro testy, které ho hlásí
      * @param array<string, mixed> $extra        další klíče main.json
-     * @param array<string, string> $secretFiles soubory v secrets/ (název → obsah)
+     * @param array<string, string>|null $secretFiles soubory v secrets/ (název → obsah); null = výchozí
+     *   `db.password`, není-li heslo v main.json; `[]` = žádný soubor
      */
     private function createDataSourceFixture(
         PermissionSpec $spec,
         string $id,
         bool $enableReset = false,
-        bool $passwordInMainJson = true,
+        bool $passwordInMainJson = false,
         array $extra = [],
-        array $secretFiles = [],
+        ?array $secretFiles = null,
     ): void {
         $dsDir = $spec->getDataSourcesDir() . '/' . $id;
         mkdir($dsDir . '/config', 0750, true);
@@ -708,6 +710,7 @@ class DoctorCommandTest extends TestCase
         if ($passwordInMainJson) {
             $config['database_password'] = 'secret';
         }
+        $secretFiles ??= $passwordInMainJson ? [] : ['db.password' => 'db-fake'];
         file_put_contents($dsDir . '/config/main.json', json_encode($config));
         // Práva podle kontraktu, aby filesystem checks nepřidávaly nálezy.
         chmod($dsDir . '/config/main.json', 0600);
@@ -808,7 +811,7 @@ class DoctorCommandTest extends TestCase
         $baseline = new CommandTester($command);
         $baseline->execute([]);
 
-        $this->createDataSourceFixture($spec, 'test-0001-test-0001', passwordInMainJson: false);
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001', secretFiles: []); // heslo nikde
         $tester = new CommandTester($this->commandWithStubsNoTree($spec));
         $tester->execute([]);
         $display = $tester->getDisplay();

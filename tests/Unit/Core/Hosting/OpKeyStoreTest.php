@@ -23,12 +23,11 @@ class OpKeyStoreTest extends TestCase
         self::$dsDir = sys_get_temp_dir() . '/shpd-opkeystore-test-' . uniqid();
         mkdir(self::$dsDir . '/config', 0755, true);
         file_put_contents(self::$dsDir . '/config/main.json', json_encode([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'test_db',
-            'database_user'     => 'test_user',
-            'database_password' => 'pw',
-            'created'           => '2026-01-01 00:00:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'test_db',
+            'database_user' => 'test_user',
+            'created'       => '2026-01-01 00:00:00',
         ]));
         self::$generatedKid = OpKeyStore::generateKey(self::$dsDir)['kid'];
     }
@@ -140,12 +139,11 @@ class OpKeyStoreTest extends TestCase
         $emptyDir = sys_get_temp_dir() . '/shpd-opkeystore-empty-' . uniqid();
         mkdir($emptyDir . '/config', 0755, true);
         file_put_contents($emptyDir . '/config/main.json', json_encode([
-            'id'                => 'wxyz-wxyz-wxyz-wxyz',
-            'name'              => 'Empty DS',
-            'database_name'     => 'db',
-            'database_user'     => 'u',
-            'database_password' => 'p',
-            'created'           => '2026-01-01 00:00:00',
+            'id'            => 'wxyz-wxyz-wxyz-wxyz',
+            'name'          => 'Empty DS',
+            'database_name' => 'db',
+            'database_user' => 'u',
+            'created'       => '2026-01-01 00:00:00',
         ]));
 
         try {

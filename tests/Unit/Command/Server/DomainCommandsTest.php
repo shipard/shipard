@@ -37,12 +37,11 @@ class DomainCommandsTest extends TestCase
 		$dir = $this->dsDir . '/' . $dsId . '/config';
 		mkdir($dir, 0755, true);
 		file_put_contents($dir . '/main.json', json_encode([
-			'id'                => $dsId,
-			'name'              => $name,
-			'database_name'     => 'db',
-			'database_user'     => 'u',
-			'database_password' => 'p',
-			'created'           => date('c'),
+			'id'            => $dsId,
+			'name'          => $name,
+			'database_name' => 'db',
+			'database_user' => 'u',
+			'created'       => date('c'),
 		]));
 	}
 

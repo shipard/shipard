@@ -77,13 +77,12 @@ class TableLoaderTest extends TestCase
     private function columnLabels(string $language): array
     {
         file_put_contents($this->tmpDir . '/ds/config/main.json', json_encode([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'secret',
-            'created'           => '2026-10-03T10:00:00+02:00',
-            'modules'           => ['test.docs'],
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-10-03T10:00:00+02:00',
+            'modules'       => ['test.docs'],
         ]));
 
         $tables = TableLoader::load(

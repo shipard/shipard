@@ -158,7 +158,6 @@ class CronCommandTest extends TestCase
             'modules' => $modules,
             'database_name' => 'db',
             'database_user' => 'user',
-            'database_password' => 'pw',
             'created' => '2026-10-13T10:00:00+00:00',
         ]);
         file_put_contents($dir . '/config/main.json', $main);

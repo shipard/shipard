@@ -236,7 +236,6 @@ final class MessageTitleComposerTest extends TestCase
             'name' => 'Title Test',
             'database_name' => 'test_db',
             'database_user' => 'test',
-            'database_password' => 'pw',
             'created' => date('c'),
             'defaultLanguage' => 'en',
         ]));

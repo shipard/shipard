@@ -64,7 +64,6 @@ class AiBackendSetKeyCommandTest extends TestCase
             'name' => 'AISetKey Test',
             'database_name' => 'test_db',
             'database_user' => 'test',
-            'database_password' => 'pw',
             'created' => date('c'),
         ]));
         DsSecretCipher::generateKey($this->tempDir);

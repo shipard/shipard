@@ -50,13 +50,12 @@ class NavigationReportsTest extends TestCase
     private function config(): DataSourceConfig
     {
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'test-test-test-test',
-            'name'              => 'Testovací firma',
-            'database_name'     => 'x',
-            'database_user'     => 'x',
-            'database_password' => 'x',
-            'created'           => '2026-01-01T00:00:00+00:00',
-            'modules'           => ['install.base'],
+            'id'            => 'test-test-test-test',
+            'name'          => 'Testovací firma',
+            'database_name' => 'x',
+            'database_user' => 'x',
+            'created'       => '2026-01-01T00:00:00+00:00',
+            'modules'       => ['install.base'],
         ]));
         return new DataSourceConfig($this->dsDir);
     }

@@ -76,12 +76,11 @@ class DsClassCommandTest extends TestCase
     private function writeMainJson(array $extra = []): void
     {
         file_put_contents($this->dsDir . '/config/main.json', json_encode([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ] + $extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
@@ -170,7 +169,7 @@ class DsClassCommandTest extends TestCase
         $this->assertSame('ds-class', $config['origin']);
         $this->assertSame('2026-10-16T12:00:00Z', $config['dataClassChanged']);
         $this->assertSame(['other' => 1], $config['ai'], 'zaniklý příznak pryč, ostatní klíče ai zůstávají');
-        $this->assertSame('supersecret', $config['database_password'], 'ostatní klíče beze změny');
+        $this->assertSame('shpd_abcdefgh', $config['database_user'], 'ostatní klíče beze změny');
     }
 
     public function testSetRealCopyOnAnImplicitRealCopyMakesItExplicit(): void

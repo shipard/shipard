@@ -36,7 +36,6 @@ class DsSecretCipherTest extends TestCase
                 'name' => 'Test',
                 'database_name' => 'test_test_test_test',
                 'database_user' => 'shpd_testtest',
-                'database_password' => 'pw',
                 'created' => date('c'),
             ]),
         );

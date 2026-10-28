@@ -62,7 +62,6 @@ class DataSourceModulesTest extends TestCase
             $main += [
                 'database_name' => 'db',
                 'database_user' => 'user',
-                'database_password' => 'pw',
                 'created' => '2026-10-13T10:00:00+00:00',
             ];
         }

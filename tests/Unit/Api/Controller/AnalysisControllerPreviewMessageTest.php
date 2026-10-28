@@ -46,7 +46,6 @@ class AnalysisControllerPreviewMessageTest extends TestCase
             'name' => 'Test',
             'database_name' => 'test_db',
             'database_user' => 'test',
-            'database_password' => 'pw',
             'created' => date('c'),
         ]));
         DsSecretCipher::generateKey($this->tmpDir);
