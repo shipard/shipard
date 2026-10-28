@@ -141,7 +141,7 @@ fi
 echo "==> Installing PHP 8.5, MariaDB, nginx, composer and tools..."
 apt-get install -y \
     php8.5-cli php8.5-fpm \
-    php8.5-mysql php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-intl \
+    php8.5-mysql php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-intl php8.5-bcmath \
     poppler-utils librsvg2-bin libvips-tools \
     podman \
     cron logrotate \

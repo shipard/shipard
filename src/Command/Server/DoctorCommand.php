@@ -38,6 +38,22 @@ class DoctorCommand extends Command
         'vips'          => 'libvips-tools',
     ];
 
+    /**
+     * Rozšíření PHP → přípona apt balíčku `php<verze>-<přípona>` (hint pro
+     * admina); null = součást `php<verze>-cli`, bez vlastního balíčku.
+     * Co se kontroluje, určuje `composer.json` (`ext-*`), ne tento seznam.
+     */
+    private const EXTENSION_PACKAGES = [
+        'openssl'   => null,
+        'mysqli'    => 'mysql',
+        'pdo_mysql' => 'mysql',
+        'dom'       => 'xml',
+        'simplexml' => 'xml',
+        'xmlreader' => 'xml',
+        'xmlwriter' => 'xml',
+        'xsl'       => 'xml',
+    ];
+
     protected string $serverConfigPath = '/etc/shipard/server.json';
 
     public function __construct(
@@ -126,6 +142,10 @@ class DoctorCommand extends Command
         $cronErrors = $this->checkCron($output, $mode);
 
         $output->writeln('');
+        $output->writeln('<info>PHP extensions</info>');
+        $extErrors = $this->checkPhpExtensions($output);
+
+        $output->writeln('');
         $output->writeln('<info>Attachment tools</info>');
         $toolErrors = $this->checkAttachmentTools($output);
 
@@ -153,7 +173,7 @@ class DoctorCommand extends Command
         $output->writeln('');
         $output->writeln(str_repeat('─', 55));
 
-        $totalIssues = count($issues) + $dsErrors + $fpmErrors + $nginxErrors + $toolErrors
+        $totalIssues = count($issues) + $dsErrors + $fpmErrors + $nginxErrors + $extErrors + $toolErrors
                      + $mailErrors + $cronErrors + $renderErrors + $stateErrors + $secretErrors
                      + ($poolUser !== $shipardUser ? 1 : 0);
         if ($totalIssues === 0) {
@@ -780,6 +800,60 @@ class DoctorCommand extends Command
             }
         }
         return null;
+    }
+
+    /**
+     * Rozšíření PHP, která `composer.json` vyžaduje (`ext-*` v `require`),
+     * musí být načtená (#146 D10). Chybějící rozšíření se jinak projeví až
+     * `Call to undefined function` při prvním použití — `bcmath` při každém
+     * výpočtu částek dokladu — a na vývojářském serveru se schová za
+     * náhodně vybavený stroj. Zdroj pravdy je `composer.json`, ne opsaný
+     * seznam; `scripts/install-packages.sh` instaluje balíčky jen na novém
+     * serveru, existující dostane nové rozšíření ručně podle hintu.
+     *
+     * @return int number of missing extensions
+     */
+    protected function checkPhpExtensions(OutputInterface $output): int
+    {
+        $composerFile = $this->getRepoRoot() . '/composer.json';
+        $json = is_file($composerFile) ? @file_get_contents($composerFile) : false;
+        $composer = $json === false ? null : json_decode($json, true);
+        if (!is_array($composer) || !is_array($composer['require'] ?? null)) {
+            $output->writeln("  ⚠ {$composerFile} not readable — required PHP extensions not checked");
+            return 0;
+        }
+
+        $missing = 0;
+        foreach (array_keys($composer['require']) as $package) {
+            if (!is_string($package) || !str_starts_with($package, 'ext-')) {
+                continue;
+            }
+            $extension = substr($package, 4);
+            if ($this->extensionLoaded($extension)) {
+                $output->writeln("  ✓ {$extension}");
+                continue;
+            }
+            $output->writeln("  ✗ {$extension}: extension not loaded");
+            $output->writeln('    <comment>→ ' . $this->extensionHint($extension) . '</comment>');
+            $missing++;
+        }
+        return $missing;
+    }
+
+    /** Seam pro testy: chybějící rozšíření se simuluje, ne odinstalovává. */
+    protected function extensionLoaded(string $extension): bool
+    {
+        return extension_loaded($extension);
+    }
+
+    private function extensionHint(string $extension): string
+    {
+        $version = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+        $suffix = array_key_exists($extension, self::EXTENSION_PACKAGES) ? self::EXTENSION_PACKAGES[$extension] : $extension;
+        if ($suffix === null) {
+            return "Built into php{$version}-cli — check php.ini (phpenmod {$extension}), then: systemctl restart php{$version}-fpm";
+        }
+        return "Install: sudo apt install php{$version}-{$suffix} && sudo systemctl restart php{$version}-fpm";
     }
 
     /**

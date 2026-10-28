@@ -89,6 +89,13 @@ Read-only health check. Vypíše:
   `sudo shpd-server cron-install` a větou, že první instalace vypne cron
   existujícím zdrojům dat; zatuchlý heartbeat `⚠` s radou
   `systemctl status cron` (uspaný notebook, zastavená VM).
+- **PHP extensions** — rozšíření, která `composer.json` vyžaduje (`ext-*`
+  v `require`: `bcmath`, `intl`, `openssl`, `zip`), jsou načtená (#146 D10);
+  chybějící = error s balíčkem k doinstalování (`sudo apt install
+  php8.5-bcmath && sudo systemctl restart php8.5-fpm`). Nový server je
+  dostane ze `scripts/install-packages.sh`, existující jen ručně (`upgrade`
+  balíčky neinstaluje) — proto to hlídá doctor, ne až `Call to undefined
+  function` při prvním výpočtu částek dokladu
 - **Data source DB connections** — pokus o `SELECT 1` na každý DS
 - **Data source secrets** — tajemství zdrojů dat v `secrets/`
   ([operations/secrets.md](operations/secrets.md) §5, #126 B1): `⚠` tajemství

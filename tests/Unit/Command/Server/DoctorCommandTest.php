@@ -65,6 +65,14 @@ class TestableDoctorCommand extends DoctorCommand
         return $this->fakeRepoRoot ?? parent::getRepoRoot();
     }
 
+    /** @var list<string> rozšíření PHP, která se tváří jako nenačtená (#146 D10) */
+    public array $fakeMissingExtensions = [];
+
+    protected function extensionLoaded(string $extension): bool
+    {
+        return !in_array($extension, $this->fakeMissingExtensions, true) && parent::extensionLoaded($extension);
+    }
+
     protected function findBinary(string $name): ?string
     {
         // array_key_exists, ne ?? — hodnota null znamená "binárka chybí".
@@ -1028,6 +1036,68 @@ class DoctorCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('Include file missing in repo: docs/nginx/shipard-common.conf', $display);
         $this->assertStringContainsString('Include file missing in repo: docs/php/shipard-fpm-common.conf', $display);
+    }
+
+    // ─── PHP extensions (#146 D10) ───────────────────────────────────────────
+
+    public function testPhpExtensionsRequiredByComposerJsonAreListed(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('PHP extensions', $display);
+        foreach (['bcmath', 'intl', 'openssl', 'zip'] as $extension) {
+            $this->assertStringContainsString("✓ {$extension}", $display, "ext-{$extension} z composer.json");
+        }
+        $this->assertStringNotContainsString('extension not loaded', $display);
+        $this->assertStringNotContainsString('required PHP extensions not checked', $display);
+    }
+
+    public function testMissingPhpExtensionIsAnErrorWithTheAptPackageToInstall(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        preg_match('/Issues found: (\d+)/', $tester->getDisplay(), $mWithout);
+        $baseline = (int) ($mWithout[1] ?? 0);
+
+        $command->fakeMissingExtensions = ['bcmath', 'openssl'];
+        $exitCode = $tester->execute([]);
+        $display = $tester->getDisplay();
+        preg_match('/Issues found: (\d+)/', $display, $mWith);
+
+        $version = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('✗ bcmath: extension not loaded', $display);
+        $this->assertStringContainsString("sudo apt install php{$version}-bcmath", $display);
+        $this->assertStringContainsString('✗ openssl: extension not loaded', $display);
+        $this->assertStringContainsString("Built into php{$version}-cli", $display);
+        $this->assertStringContainsString('✓ intl', $display);
+        $this->assertSame($baseline + 2, (int) ($mWith[1] ?? 0), 'každé chybějící rozšíření je jedna chyba');
+    }
+
+    public function testUnreadableComposerJsonIsAWarningThatDoesNotChangeTheExitCount(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        preg_match('/Issues found: (\d+)/', $tester->getDisplay(), $mWithout);
+
+        $emptyRepo = $this->tempRoot . '/empty-repo';
+        mkdir($emptyRepo, 0750, true);
+        $command->fakeRepoRoot = $emptyRepo;
+        $tester->execute([]);
+        $display = $tester->getDisplay();
+        preg_match('/Issues found: (\d+)/', $display, $mWith);
+
+        $this->assertStringContainsString("⚠ {$emptyRepo}/composer.json not readable — required PHP extensions not checked", $display);
+        $this->assertSame((int) ($mWithout[1] ?? 0), (int) ($mWith[1] ?? 0));
     }
 
     // ─── Attachment tools check ──────────────────────────────────────────────

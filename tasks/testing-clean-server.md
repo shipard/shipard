@@ -469,7 +469,7 @@ jako varování).
 visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
 7:18, kolo 5:28 (zkrácené selháními). Vrstva kódu kromě PHPUnit zelená.
 
-- [ ] **N7 — chybí rozšíření PHP `bcmath` (blokuje nasazení).** Od #103
+- [x] **N7 — chybí rozšíření PHP `bcmath` (blokuje nasazení).** Od #103
   D84 (`c61cca00`, přepočet do domácí měny v desítkové aritmetice) volá
   `DocDocument::toHome()` / `homeTax()` funkce `bcmul` / `bcround` — při
   každém výpočtu částek dokladu, i v domácí měně. `install-packages.sh`
@@ -484,6 +484,18 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   upgrade` ho volá, existující servery ho tak dostanou), `"ext-bcmath": "*"`
   do `composer.json` + `composer update --lock`, `doctor` kontroluje
   rozšíření PHP podle `ext-*` z `composer.json` (✗ s názvem balíčku).
+  **Opraveno 2026-10-28 (D10):** `php8.5-bcmath` v `install-packages.sh`,
+  `ext-bcmath` v `composer.json` + `composer update --lock`, `doctor`
+  sekce **PHP extensions** z `ext-*` v `require` `composer.json` (✗ s hintem
+  `sudo apt install php8.5-<ext> && sudo systemctl restart php8.5-fpm`,
+  `openssl` jako součást `php8.5-cli`; nečitelný `composer.json` = ⚠ bez
+  vlivu na exit). Testy `DoctorCommandTest` (všechna ✓; chybějící `bcmath`
+  + `openssl` nasimulované seamem `extensionLoaded()` = +2 chyby s hinty;
+  nečitelný `composer.json`), na vývojářském serveru sekce ✓ (bcmath, intl,
+  openssl, zip). Pozor: `shpd-server upgrade` balíčky **neinstaluje**
+  (jen composer, frontend, ds-upgrade, cron, completion) — existující
+  servery vč. testovacího dostanou `bcmath` ručně podle hintu doctoru
+  (`docs/cli.md` § doctor), zadání to předpokládalo jinak.
 - [x] **N8 — `%cI` z novejšího gitu.** `UpdateCheckerTest::testBehindReports…`
   čeká `2026-09-20T08:00:00+00:00`, git na 26.04 vrací `…T08:00:00Z`
   (vývojářský server git 2.43). `Git` předává `%cI` beze změny do

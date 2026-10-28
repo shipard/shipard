@@ -2,6 +2,7 @@
     "name": "shipard/shipard",
     "require": {
         "php": ">=8.5",
+        "ext-bcmath": "*",
         "ext-intl": "*",
         "ext-openssl": "*",
         "ext-zip": "*",
