@@ -510,13 +510,20 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   s dlouhým useknutým dokumentem (11 kB) — ten na libxml2 2.9 vracel
   namespace i před opravou, chyba je tak reprodukovaná i na vývojářském
   serveru, ne jen na 26.04.
-- [ ] **N10 — stopy prokliknutí třikrát.** Každá selhaná úloha
+- [x] **N10 — stopy prokliknutí třikrát.** Každá selhaná úloha
   `dataset-e2e` má ≈ 200 MB: tytéž trace leží v `e2e/traces/`,
   `e2e/test-results/…/attachments/` i `e2e/playwright-report/data/`
   (po ≈ 77 MB) — na vývojářském serveru i v `jobs.tgz` (619 MB). Nechat
   jedinou kopii (tu, kterou nabízí detail úlohy ke stažení — ověř
   v `E2eResult` / API), ostatní po běhu smazat nebo Playwright nastavit,
   ať je nevytváří. `docs/test-corpus.md` § 19 upravit.
+  **Opraveno 2026-10-28:** spec trace nepřikládá k testu (`testInfo.attach`)
+  — tím zanikly obě kopie (`test-results/…/attachments/` dělá Playwright
+  z přílohy, `playwright-report/data/` HTML reportér); jediná kopie
+  `traces/` je ta, kterou vydává detail úlohy (`DevJobsController::E2E_TRACES_DIR`,
+  `E2eReport::artifacts()` beze změny). § 19 upraveno; `node --check`
+  a `npm run test:unit` v `tests/e2e`; skutečný běh se selhanou kartou
+  neproběhl — velikost úlohy potvrdí další kolo.
 
 ## Pasti
 

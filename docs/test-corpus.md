@@ -1507,9 +1507,12 @@ očekávané, žádná neprošlá karta, žádné selhání, chyby prohlížeče
   zavře a text přidá k důvodu.
 - **Trace jen selhaných karet**: config má `trace: 'off'`, spec volá
   `tracing.start()` jednou a `startChunk` / `stopChunk` per karta;
-  `stopChunk({path})` jen při selhání (`<out>/traces/trace-<id karty>.zip`,
-  též jako příloha testu v HTML reportu). `retain-on-failure` by dal
-  jeden trace na celý test.
+  `stopChunk({path})` jen při selhání (`<out>/traces/trace-<id karty>.zip`).
+  `retain-on-failure` by dal jeden trace na celý test. Trace **není**
+  příloha testu (`testInfo.attach`): Playwright by ho zkopíroval ještě do
+  `test-results/…/attachments/` a HTML reportér do `playwright-report/data/`
+  — třikrát ≈ 77 MB za každou selhanou kartu (#146 N10). Jediná kopie je
+  ta, kterou nabízí detail úlohy ke stažení.
 - **Výstupy v adresáři běhu**: `walkthrough.json` (po každé kartě —
   při pádu testu zůstane `complete: false` a `current` s rozpracovanou
   kartou), `report.json` (JSON reportér Playwrightu), `playwright-report/`

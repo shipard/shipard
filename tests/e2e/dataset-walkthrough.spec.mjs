@@ -277,10 +277,12 @@ async function processCard(page, context, testInfo, state, cardId) {
     state.write();
     return;
   }
+  // Jediná kopie trace je v traces/ — tu nabízí detail úlohy ke stažení.
+  // Jako příloha testu (testInfo.attach) by ležela ještě dvakrát:
+  // v test-results/…/attachments/ a v playwright-report/data/ (#146 N10).
   const file = traceFileName(cardId);
   const tracePath = path.join(tracesDir, file);
   await context.tracing.stopChunk({ path: tracePath });
-  await testInfo.attach(file, { path: tracePath, contentType: 'application/zip' });
   state.fail(failure, file);
   state.write();
   await recover(page);
