@@ -63,13 +63,13 @@ class DataSourceConfigTest extends TestCase
     public function testLoadValidConfig(): void
     {
         $this->createConfig([
-            'id'                => 'abcd-efgh-ijkl-mnop',
-            'name'              => 'Test DS',
-            'database_name'     => 'abcd_efgh_ijkl_mnop',
-            'database_user'     => 'shpd_abcdefgh',
-            'database_password' => 'supersecret',
-            'created'           => '2026-03-12T10:00:00+01:00',
+            'id'            => 'abcd-efgh-ijkl-mnop',
+            'name'          => 'Test DS',
+            'database_name' => 'abcd_efgh_ijkl_mnop',
+            'database_user' => 'shpd_abcdefgh',
+            'created'       => '2026-03-12T10:00:00+01:00',
         ]);
+        $this->writeSecret('db.password', 'db-pw-fake');
 
         $config = new DataSourceConfig($this->tempDir);
 
@@ -77,7 +77,7 @@ class DataSourceConfigTest extends TestCase
         $this->assertSame('Test DS', $config->getName());
         $this->assertSame('abcd_efgh_ijkl_mnop', $config->getDatabaseName());
         $this->assertSame('shpd_abcdefgh', $config->getDatabaseUser());
-        $this->assertSame('supersecret', $config->getDatabasePassword());
+        $this->assertSame('db-pw-fake', $config->getDatabasePassword());
         $this->assertSame('2026-03-12T10:00:00+01:00', $config->getCreated());
     }
 
@@ -452,7 +452,7 @@ class DataSourceConfigTest extends TestCase
         $config->getMailRelay();
     }
 
-    // ── tajemství v secrets/ (#126 B1, D3, U1) ─────────────────────────────
+    // ── tajemství v secrets/ (#126 B1 D3; B2 U1 — hodnota v main.json se ignoruje) ──
 
     public function testLoadWithoutDatabasePasswordSucceeds(): void
     {
@@ -468,9 +468,13 @@ class DataSourceConfigTest extends TestCase
         $this->createConfig($this->baseDataWithoutSecrets());
         $config = new DataSourceConfig($this->tempDir);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('secrets/db.password');
-        $config->getDatabasePassword();
+        try {
+            $config->getDatabasePassword();
+            $this->fail('expected RuntimeException');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Database password missing — expected secrets/db.password (run shpd-ds ds-upgrade)', $e->getMessage());
+            $this->assertStringNotContainsString('main.json', $e->getMessage(), 'bez klíče v main.json se o něm nemluví');
+        }
     }
 
     public function testDatabasePasswordComesFromSecretsFile(): void
@@ -481,13 +485,27 @@ class DataSourceConfigTest extends TestCase
         $this->assertSame('file-pw-fake', (new DataSourceConfig($this->tempDir))->getDatabasePassword());
     }
 
-    public function testDatabasePasswordInMainJsonWinsOverTheFile(): void
+    public function testDatabasePasswordInMainJsonIsIgnoredWhenTheFileExists(): void
     {
-        // U1: hodnota v main.json je buď nepřesunutá, nebo novější od člověka.
+        // B2 U1: hodnota v main.json se ignoruje — doctor ji hlásí, ds-upgrade přesune.
         $this->createConfig($this->baseDataWithoutSecrets() + ['database_password' => 'config-pw-fake']);
         $this->writeSecret('db.password', 'file-pw-fake');
 
-        $this->assertSame('config-pw-fake', (new DataSourceConfig($this->tempDir))->getDatabasePassword());
+        $this->assertSame('file-pw-fake', (new DataSourceConfig($this->tempDir))->getDatabasePassword());
+    }
+
+    public function testDatabasePasswordOnlyInMainJsonThrowsAndNamesTheLeftoverKey(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + ['database_password' => 'config-pw-fake']);
+
+        try {
+            (new DataSourceConfig($this->tempDir))->getDatabasePassword();
+            $this->fail('expected RuntimeException');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Database password missing — expected secrets/db.password (run shpd-ds ds-upgrade)', $e->getMessage());
+            $this->assertStringContainsString('config/main.json still has database_password, run shpd-ds ds-upgrade to move it', $e->getMessage());
+            $this->assertStringNotContainsString('fake', $e->getMessage(), 'hláška nikdy nenese hodnotu');
+        }
     }
 
     public function testEmptyDatabasePasswordInMainJsonFallsBackToTheFile(): void
@@ -530,14 +548,26 @@ class DataSourceConfigTest extends TestCase
         $this->assertSame('relay-pw-fake', $relay->password);
     }
 
-    public function testMailRelayPasswordInMainJsonWinsOverTheFile(): void
+    public function testMailRelayPasswordInMainJsonIsIgnoredWhenTheFileExists(): void
     {
         $this->createConfig($this->baseDataWithoutSecrets() + [
             'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'config-relay-fake']],
         ]);
         $this->writeSecret('mail-relay.password', 'file-relay-fake');
 
-        $this->assertSame('config-relay-fake', (new DataSourceConfig($this->tempDir))->getMailRelay()?->password);
+        $this->assertSame('file-relay-fake', (new DataSourceConfig($this->tempDir))->getMailRelay()?->password);
+    }
+
+    public function testMailRelayPasswordOnlyInMainJsonLeavesTheRelayWithoutPassword(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'config-relay-fake']],
+        ]);
+
+        $relay = (new DataSourceConfig($this->tempDir))->getMailRelay();
+        $this->assertNotNull($relay);
+        $this->assertSame('u', $relay->username);
+        $this->assertNull($relay->password, 'hodnota z main.json se nepoužije');
     }
 
     public function testMailRelayWithoutAnyPasswordStaysWithoutPassword(): void
@@ -573,7 +603,7 @@ class DataSourceConfigTest extends TestCase
         $this->assertSame('oidc-fake-secret', $policy->getProvider('shipard-id')?->clientSecret);
     }
 
-    public function testAuthPolicyClientSecretInMainJsonWinsOverTheFile(): void
+    public function testAuthPolicyClientSecretInMainJsonIsIgnoredWhenTheFileExists(): void
     {
         $this->createConfig($this->baseDataWithoutSecrets() + [
             'auth' => ['providers' => [$this->providerData(['clientSecret' => 'config-oidc-fake'])]],
@@ -581,7 +611,22 @@ class DataSourceConfigTest extends TestCase
         $this->writeSecret('oidc-shipard-id.client-secret', 'file-oidc-fake');
 
         $policy = (new DataSourceConfig($this->tempDir))->getAuthPolicy();
-        $this->assertSame('config-oidc-fake', $policy->getProvider('shipard-id')?->clientSecret);
+        $this->assertSame('file-oidc-fake', $policy->getProvider('shipard-id')?->clientSecret);
+    }
+
+    public function testAuthPolicyClientSecretOnlyInMainJsonIsRejectedWithoutTheValue(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'auth' => ['providers' => [$this->providerData(['clientSecret' => 'config-oidc-fake'])]],
+        ]);
+
+        try {
+            (new DataSourceConfig($this->tempDir))->getAuthPolicy();
+            $this->fail('expected RuntimeException');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString("provider 'shipard-id' is missing clientSecret (secrets/oidc-shipard-id.client-secret)", $e->getMessage());
+            $this->assertStringNotContainsString('fake', $e->getMessage(), 'hláška nikdy nenese hodnotu');
+        }
     }
 
     public function testAuthPolicyMissingClientSecretNamesTheFile(): void

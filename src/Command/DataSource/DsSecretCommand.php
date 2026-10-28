@@ -28,9 +28,10 @@ use Symfony\Component\Console\Question\Question;
  * Hodnota **nikdy z argumentu**: interaktivní terminál → skrytý dotaz, jinak
  * stdin do EOF (jedno koncové `\n` se odstraní). `db.password` nastavit
  * nejde — musí sedět na uživatele databáze (zapisuje `ds-create`, přesouvá
- * `ds-upgrade`). Je-li totéž tajemství ještě v `main.json`, `set` ho odtud
- * odebere — v přechodném období by jinak mělo přednost (U1). `list` čte jen
- * přítomnost souborů, nikdy hodnoty ani délky.
+ * `ds-upgrade`). Hodnota, která zůstala v `main.json`, se za běhu ignoruje
+ * (B2); `list` ji ukáže vedle stavu souboru a `set` ji odtud odebere — jinak
+ * by ji příští `ds-upgrade` přesunul přes nově zadanou hodnotu (B2 U2).
+ * `list` čte jen přítomnost souborů, nikdy hodnoty ani délky.
  */
 class DsSecretCommand extends Command
 {
@@ -93,13 +94,14 @@ class DsSecretCommand extends Command
         $table->setHeaders(['Name', 'Used by', 'Status']);
         foreach ($slots as $slot) {
             $knownNames[] = $slot->name;
-            if ($slot->inMainConfig) {
-                $status = 'in main.json (run ds-upgrade)';
-                $inMainConfig++;
-            } elseif ($secrets->has($slot->name)) {
+            if ($secrets->has($slot->name)) {
                 $status = 'present';
             } else {
                 $status = $slot->required ? 'missing' : 'missing (optional)';
+            }
+            if ($slot->inMainConfig) {
+                $status .= '; main.json value ignored (run ds-upgrade)';
+                $inMainConfig++;
             }
             $table->addRow([$slot->name, $slot->usedBy, $status]);
         }
@@ -119,7 +121,7 @@ class DsSecretCommand extends Command
 
         if ($inMainConfig > 0) {
             $output->writeln(sprintf(
-                '<comment>%d secret(s) still in config/main.json — run shpd-ds ds-upgrade to move them to secrets/.</comment>',
+                '<comment>%d secret(s) still in config/main.json — ignored; shpd-ds ds-upgrade moves them to secrets/ and overwrites the files.</comment>',
                 $inMainConfig,
             ));
         }
@@ -169,7 +171,7 @@ class DsSecretCommand extends Command
             try {
                 MainConfigFile::patch($dsDir, static fn (array $raw): array => self::withoutSecret($raw, $name));
             } catch (\RuntimeException $e) {
-                return $this->fail($output, "Secret {$name} written, but the old value could not be removed from config/main.json (" . $e->getMessage() . ') — it still takes precedence; remove it by hand.');
+                return $this->fail($output, "Secret {$name} written, but the old value could not be removed from config/main.json (" . $e->getMessage() . ') — it is ignored now, but the next ds-upgrade would move it over the new value; remove it by hand.');
             }
             $output->writeln("Secret {$name} written; the old value was removed from config/main.json.");
             return Command::SUCCESS;

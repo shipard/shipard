@@ -99,13 +99,12 @@ class OidcControllerTest extends TestCase
 		$this->dsDir = sys_get_temp_dir() . '/shpd-oidc-ctrl-test-' . uniqid();
 		mkdir($this->dsDir . '/config', 0755, true);
 		file_put_contents($this->dsDir . '/config/main.json', json_encode([
-			'id'                => self::DS_ID,
-			'name'              => 'Test DS',
-			'database_name'     => 'test_db',
-			'database_user'     => 'test_user',
-			'database_password' => 'pw',
-			'created'           => '2026-01-01 00:00:00',
-			'auth'              => [
+			'id'            => self::DS_ID,
+			'name'          => 'Test DS',
+			'database_name' => 'test_db',
+			'database_user' => 'test_user',
+			'created'       => '2026-01-01 00:00:00',
+			'auth'          => [
 				'local'     => true,
 				'providers' => [
 					[
@@ -113,7 +112,6 @@ class OidcControllerTest extends TestCase
 						'label'         => 'Test IdP',
 						'issuer'        => 'https://idp.example.com/realm',
 						'clientId'      => 'cid',
-						'clientSecret'  => 'secret',
 						'autoLinkEmail' => true,
 					],
 					[
@@ -121,12 +119,15 @@ class OidcControllerTest extends TestCase
 						'label'         => 'GitHub',
 						'kind'          => 'github',
 						'clientId'      => 'gh-cid',
-						'clientSecret'  => 'gh-secret',
 						'autoLinkEmail' => true,
 					],
 				],
 			],
 		]));
+		// clientSecret žije v secrets/ (#126 B2) — hodnoty zjevně falešné.
+		mkdir($this->dsDir . '/secrets', 0700);
+		file_put_contents($this->dsDir . '/secrets/oidc-test.client-secret', 'secret');
+		file_put_contents($this->dsDir . '/secrets/oidc-github.client-secret', 'gh-secret');
 
 		$this->db = InMemoryAuthDb::create();
 		$this->client = new StubOidcClient();
@@ -143,6 +144,9 @@ class OidcControllerTest extends TestCase
 	{
 		@unlink($this->dsDir . '/config/main.json');
 		@rmdir($this->dsDir . '/config');
+		@unlink($this->dsDir . '/secrets/oidc-test.client-secret');
+		@unlink($this->dsDir . '/secrets/oidc-github.client-secret');
+		@rmdir($this->dsDir . '/secrets');
 		@rmdir($this->dsDir);
 	}
 

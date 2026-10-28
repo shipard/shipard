@@ -735,7 +735,7 @@ class DoctorCommandTest extends TestCase
         return substr($display, $start, $end === false ? null : $end - $start);
     }
 
-    // ── Data source secrets (#126 B1, U6) ───────────────────────────────────
+    // ── Data source secrets (#126 B1 U6, B2 U4) ─────────────────────────────
 
     public function testSecretsSectionSitsBetweenDbConnectionsAndStates(): void
     {
@@ -752,32 +752,52 @@ class DoctorCommandTest extends TestCase
         $this->assertStringContainsString('(no data sources)', $this->secretsSection($display));
     }
 
-    public function testSecretsStillInMainJsonAreAWarningThatDoesNotChangeTheExitCount(): void
+    public function testSecretsStillInMainJsonAreOneErrorPerDataSource(): void
     {
         $spec = $this->makeSpec();
         $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002', passwordInMainJson: false, secretFiles: ['db.password' => 'db-fake']);
+        $baseline = new CommandTester($command);
+        $baseline->execute([]);
+        $this->assertStringContainsString('All secrets in secrets/ ✓', $this->secretsSection($baseline->getDisplay()));
+
+        // Soubory existují, hodnoty v main.json zůstaly (obnova starší zálohy) — ignorují se, ale je to chyba.
         $this->createDataSourceFixture($spec, 'test-0001-test-0001', passwordInMainJson: true, extra: [
             'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'relay-fake']],
-        ]);
-        $this->createDataSourceFixture($spec, 'test-0002-test-0002', passwordInMainJson: false, secretFiles: ['db.password' => 'db-fake']);
-
-        $tester = new CommandTester($command);
+        ], secretFiles: ['db.password' => 'db-fake', 'mail-relay.password' => 'relay-file-fake']);
+        $tester = new CommandTester($this->commandWithStubsNoTree($spec));
         $tester->execute([]);
         $display = $tester->getDisplay();
         $section = $this->secretsSection($display);
 
-        $this->assertStringContainsString('⚠ test-0001-test-0001: db.password, mail-relay.password still in config/main.json — run shpd-ds ds-upgrade', $section);
+        $this->assertStringContainsString('✗ test-0001-test-0001: db.password, mail-relay.password still in config/main.json — ignored; run shpd-ds ds-upgrade', $section);
         $this->assertStringNotContainsString('test-0002-test-0002', $section);
-        $this->assertStringContainsString('1 data source(s) still keep secrets in config/main.json', $section);
+        $this->assertStringContainsString('1 data source(s) keep ignored secrets in config/main.json (shpd-server ds-upgrade-all moves them)', $section);
         $this->assertStringNotContainsString('All secrets in secrets/', $section);
+        $this->assertStringNotContainsString('⚠', $section);
         $this->assertStringNotContainsString('fake', $display);
+        $this->assertSame($this->issuesFound($baseline->getDisplay()) + 1, $this->issuesFound($display), 'jedna chyba za zdroj dat');
+    }
 
-        // Stejný strom bez tajemství v main.json → stejný počet nálezů.
-        $this->recursiveDelete($spec->getDataSourcesDir() . '/test-0001-test-0001');
-        $again = new CommandTester($this->commandWithStubsNoTree($spec));
-        $again->execute([]);
-        $this->assertSame($this->issuesFound($again->getDisplay()), $this->issuesFound($display));
-        $this->assertStringContainsString('All secrets in secrets/ ✓', $this->secretsSection($again->getDisplay()));
+    public function testDatabasePasswordOnlyInMainJsonIsASingleErrorLine(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002', passwordInMainJson: false, secretFiles: ['db.password' => 'db-fake']);
+        $baseline = new CommandTester($command);
+        $baseline->execute([]);
+
+        // Soubor chybí a klíč je v main.json: ds-upgrade vyřeší obojí, stačí jeden řádek.
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001', passwordInMainJson: true);
+        $tester = new CommandTester($this->commandWithStubsNoTree($spec));
+        $tester->execute([]);
+        $display = $tester->getDisplay();
+        $section = $this->secretsSection($display);
+
+        $this->assertStringContainsString('✗ test-0001-test-0001: db.password still in config/main.json — ignored; run shpd-ds ds-upgrade', $section);
+        $this->assertStringNotContainsString('database password missing', $section);
+        $this->assertSame(1, substr_count($section, 'test-0001-test-0001'));
+        $this->assertSame($this->issuesFound($baseline->getDisplay()) + 1, $this->issuesFound($display));
     }
 
     public function testMissingDatabasePasswordIsAnError(): void

@@ -235,12 +235,12 @@ class DoctorCommand extends Command
     }
 
     /**
-     * Tajemství zdrojů dat (#126 B1, U6): tajemství ještě v config/main.json je
-     * varování (v tasku B2 se z něj stane chyba), chybějící heslo k databázi
-     * chyba, provider bez tajemství a relay s username bez hesla varování.
-     * Čte jen přítomnost klíčů a existenci souborů ({@see DataSourceSecrets::has()}),
-     * hodnoty nikdy. Souhrn: počet zdrojů s tajemstvím v main.json — podle něj
-     * se pozná, kdy je server připravený na B2.
+     * Tajemství zdrojů dat (#126 B1 U6, B2 U4): tajemství v config/main.json
+     * je chyba (hodnota se ignoruje, `ds-upgrade` ji přesune — jedna chyba za
+     * zdroj dat, u chybějícího souboru stačí tento řádek), chybějící heslo
+     * k databázi chyba, provider bez tajemství a relay s username bez hesla
+     * varování. Čte jen přítomnost klíčů a existenci souborů
+     * ({@see DataSourceSecrets::has()}), hodnoty nikdy.
      *
      * @return int number of errors
      */
@@ -290,13 +290,14 @@ class DoctorCommand extends Command
             }
             if ($inConfig !== []) {
                 $withSecretsInConfig++;
-                $output->writeln("  ⚠ {$id}: " . implode(', ', $inConfig) . ' still in config/main.json — run shpd-ds ds-upgrade');
+                $errors++;
+                $output->writeln("  ✗ {$id}: " . implode(', ', $inConfig) . ' still in config/main.json — ignored; run shpd-ds ds-upgrade');
             }
         }
 
         if ($withSecretsInConfig > 0) {
             $output->writeln(sprintf(
-                '  %d data source(s) still keep secrets in config/main.json (shpd-server ds-upgrade-all moves them)',
+                '  %d data source(s) keep ignored secrets in config/main.json (shpd-server ds-upgrade-all moves them)',
                 $withSecretsInConfig,
             ));
         } elseif ($errors === 0 && $warnings === 0) {

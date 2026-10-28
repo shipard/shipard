@@ -19,7 +19,7 @@ final readonly class DataSourceSecretSlot
         public string $usedBy,
         /** Bez tajemství konzument nefunguje (relay bez `username` ho nepotřebuje). */
         public bool $required,
-        /** Hodnota je ještě v `main.json` (přechodné období, přednost podle U1). */
+        /** Hodnota zůstala v `main.json` — ignoruje se, `doctor` ji hlásí, `ds-upgrade` přesune (B2). */
         public bool $inMainConfig,
     ) {
     }

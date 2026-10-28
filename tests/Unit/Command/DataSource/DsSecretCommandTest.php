@@ -122,24 +122,26 @@ class DsSecretCommandTest extends TestCase
 
     public function testListShowsStatusesWithoutValues(): void
     {
+        // Hodnoty v main.json se ignorují (B2): status nese stav souboru a k němu ignorovanou hodnotu.
         $this->writeMainJson([
             'database_password' => 'db-pw-fake',
             'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u']],
             'auth' => ['providers' => [$this->provider('shipard-id'), $this->provider('github', ['clientSecret' => 'oidc-fake'])]],
         ]);
         $this->writeSecret('oidc-shipard-id.client-secret', 'file-oidc-fake');
+        $this->writeSecret('oidc-github.client-secret', 'file-github-fake');
         $this->writeSecret('secrets.key', str_repeat('k', 32));
         [, $tester] = $this->makeTester();
 
         $this->assertSame(Command::SUCCESS, $tester->execute([]));
         $display = $tester->getDisplay();
 
-        $this->assertMatchesRegularExpression('/db\.password\s+\|\s+database\s+\|\s+in main\.json \(run ds-upgrade\)/', $display);
+        $this->assertMatchesRegularExpression('/db\.password\s+\|\s+database\s+\|\s+missing; main\.json value ignored \(run ds-upgrade\)/', $display);
         $this->assertMatchesRegularExpression('/mail-relay\.password\s+\|\s+mail\.relay\s+\|\s+missing\s+\|/', $display);
-        $this->assertMatchesRegularExpression('/oidc-shipard-id\.client-secret\s+\|\s+auth\.providers\[shipard-id\]\s+\|\s+present/', $display);
-        $this->assertMatchesRegularExpression('/oidc-github\.client-secret\s+\|\s+auth\.providers\[github\]\s+\|\s+in main\.json/', $display);
+        $this->assertMatchesRegularExpression('/oidc-shipard-id\.client-secret\s+\|\s+auth\.providers\[shipard-id\]\s+\|\s+present\s+\|/', $display);
+        $this->assertMatchesRegularExpression('/oidc-github\.client-secret\s+\|\s+auth\.providers\[github\]\s+\|\s+present; main\.json value ignored \(run ds-upgrade\)/', $display);
         $this->assertStringContainsString('Other files in secrets/: 1 (not managed by ds-secret)', $display);
-        $this->assertStringContainsString('2 secret(s) still in config/main.json — run shpd-ds ds-upgrade', $display);
+        $this->assertStringContainsString('2 secret(s) still in config/main.json — ignored; shpd-ds ds-upgrade moves them to secrets/ and overwrites the files.', $display);
         $this->assertStringNotContainsString('fake', $display);
         $this->assertStringNotContainsString('kkkk', $display);
     }
@@ -204,7 +206,7 @@ class DsSecretCommandTest extends TestCase
 
     public function testSetRemovesTheOldValueFromMainJson(): void
     {
-        // U1: hodnota v main.json by jinak měla přednost před souborem.
+        // B2 U2: hodnotu v main.json by jinak příští ds-upgrade přesunul přes nově zadanou.
         $this->writeMainJson([
             'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'old-relay-fake']],
             'auth' => ['providers' => [$this->provider('github', ['clientSecret' => 'old-oidc-fake']), $this->provider('other', ['clientSecret' => 'other-fake'])]],
@@ -223,6 +225,29 @@ class DsSecretCommandTest extends TestCase
         $this->assertSame('new-relay-fake', $this->secret('mail-relay.password'));
         $this->assertSame('new-oidc-fake', $this->secret('oidc-github.client-secret'));
         $this->assertSame(0600, fileperms($this->dsDir . '/config/main.json') & 0777);
+    }
+
+    public function testSetReportsWhenTheOldValueCannotBeRemovedFromMainJson(): void
+    {
+        if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            $this->markTestSkipped('root zapíše i do adresáře bez práv');
+        }
+        $this->writeMainJson(['mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'old-relay-fake']]]);
+        chmod($this->dsDir . '/config', 0500);
+        [, $tester] = $this->makeTester(terminal: false, stdin: 'new-relay-fake');
+        try {
+            $exit = $tester->execute(['action' => 'set', 'name' => 'mail-relay.password']);
+        } finally {
+            chmod($this->dsDir . '/config', 0750);
+        }
+
+        $this->assertSame(Command::FAILURE, $exit);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Secret mail-relay.password written, but the old value could not be removed from config/main.json', $display);
+        $this->assertStringContainsString('it is ignored now, but the next ds-upgrade would move it over the new value; remove it by hand.', $display);
+        $this->assertSame('new-relay-fake', $this->secret('mail-relay.password'), 'soubor je zapsaný');
+        $this->assertSame('old-relay-fake', $this->mainJson()['mail']['relay']['password'], 'main.json zůstal');
+        $this->assertStringNotContainsString('fake', $display);
     }
 
     public function testSetForAnUnknownProviderWritesWithAWarning(): void

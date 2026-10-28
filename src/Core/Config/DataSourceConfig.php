@@ -15,9 +15,10 @@ use Shipard\Core\Mail\MailRelayConfig;
  * potřebuje jen konfiguraci (dispatcher cronu, `DataSourceModules`,
  * `ds-class`, `DataSourceInventory`), do `secrets/` nesáhne.
  *
- * Přechodné období (U1, do tasku B2): hodnota ještě v `main.json` má přednost
- * před souborem — buď ji migrace (`ds-upgrade`) teprve přesune, nebo ji tam
- * vložil člověk a je novější; migrace ji vždy přesune a soubor přepíše.
+ * Hodnota tajemství, která v `main.json` zůstala (obnova starší zálohy, ruční
+ * zápis), se **ignoruje** (#126 B2, U1): zdroj dat běží s tajemstvím ze
+ * souboru, `doctor` ji hlásí jako chybu a krok 0 `ds-upgrade` ji přesune
+ * a soubor přepíše. Sloty ({@see getSecretSlots()}) ji ukazují bez hodnoty.
  */
 class DataSourceConfig
 {
@@ -79,23 +80,22 @@ class DataSourceConfig
     }
 
     /**
-     * Heslo k databázi: `main.json` `database_password` (přechodně, U1),
-     * jinak `secrets/db.password`. Chybí-li obojí, výjimka s cestou — nikdy
-     * tiché prázdné heslo.
+     * Heslo k databázi — jen `secrets/db.password`; klíč `database_password`
+     * v `main.json` se ignoruje (B2). Chybí-li soubor, výjimka s cestou (a
+     * s poznámkou, že klíč v `main.json` ještě je) — nikdy tiché prázdné
+     * heslo a nikdy hodnota.
      */
     public function getDatabasePassword(): string
     {
-        $inConfig = $this->nonEmptyString($this->data['database_password'] ?? null);
-        if ($inConfig !== null) {
-            return $inConfig;
-        }
         $fromFile = $this->secrets()->get(DataSourceSecrets::DB_PASSWORD);
         if ($fromFile !== null) {
             return $fromFile;
         }
-        throw new \RuntimeException(
-            'Database password missing — expected secrets/' . DataSourceSecrets::DB_PASSWORD . ' (run shpd-ds ds-upgrade)',
-        );
+        $message = 'Database password missing — expected secrets/' . DataSourceSecrets::DB_PASSWORD . ' (run shpd-ds ds-upgrade)';
+        if ($this->nonEmptyString($this->data['database_password'] ?? null) !== null) {
+            $message .= ' — config/main.json still has database_password, run shpd-ds ds-upgrade to move it';
+        }
+        throw new \RuntimeException($message);
     }
 
     /** Tajemství v `secrets/` — líně; veřejné pro `ds-secret` a `doctor` (`has()`). */
@@ -174,11 +174,12 @@ class DataSourceConfig
             $auth = $this->data['auth'] ?? [];
             if (is_array($auth) && is_array($auth['providers'] ?? null)) {
                 foreach ($auth['providers'] as $i => $provider) {
-                    // clientSecret ze secrets/oidc-<id>.client-secret, pokud není
-                    // v main.json (U1); neplatné id nechat AuthPolicy odmítnout.
-                    if (!is_array($provider) || $this->nonEmptyString($provider['clientSecret'] ?? null) !== null) {
+                    if (!is_array($provider)) {
                         continue;
                     }
+                    // clientSecret jen ze secrets/oidc-<id>.client-secret — hodnota
+                    // v main.json se ignoruje (B2); neplatné id nechat AuthPolicy odmítnout.
+                    unset($auth['providers'][$i]['clientSecret']);
                     $id = $provider['id'] ?? null;
                     if (!is_string($id) || !preg_match('/^[a-z0-9-]+$/', $id)) {
                         continue;
@@ -208,15 +209,12 @@ class DataSourceConfig
                 if (!is_array($relay)) {
                     throw new \RuntimeException("Data source config 'mail.relay' must be an object");
                 }
-                // Heslo ze secrets/mail-relay.password, pokud není v main.json (U1);
-                // chybí-li obojí, relay zůstane bez hesla jako dřív.
-                if ($this->nonEmptyString($relay['password'] ?? null) === null) {
-                    $password = $this->secrets()->get(DataSourceSecrets::MAIL_RELAY_PASSWORD);
-                    if ($password !== null) {
-                        $relay['password'] = $password;
-                    } else {
-                        unset($relay['password']);
-                    }
+                // Heslo jen ze secrets/mail-relay.password — hodnota v main.json se
+                // ignoruje (B2); bez souboru zůstane relay bez hesla jako dřív.
+                unset($relay['password']);
+                $password = $this->secrets()->get(DataSourceSecrets::MAIL_RELAY_PASSWORD);
+                if ($password !== null) {
+                    $relay['password'] = $password;
                 }
                 $this->mailRelay = MailRelayConfig::fromArray($relay);
             }
@@ -338,7 +336,8 @@ class DataSourceConfig
      * `main.json` sekci `mail.relay` (povinné jen s `username`);
      * `oidc-<id>.client-secret` pro každý provider s řetězcovým `id` (i
      * neplatným — ten `AuthPolicy` odmítne a `ds-secret` / `doctor` ho má
-     * ukázat). Jediný zdroj pro `ds-secret list` a sekci `doctor`.
+     * ukázat). `inMainConfig` = hodnota zůstala v `main.json` a ignoruje se
+     * (B2). Jediný zdroj pro `ds-secret list` a sekci `doctor`.
      *
      * @return list<DataSourceSecretSlot>
      */
@@ -381,8 +380,8 @@ class DataSourceConfig
     }
 
     /**
-     * Názvy souborů tajemství, jejichž hodnota je ještě v `main.json` (pro
-     * `doctor` a `ds-secret list`) — nikdy hodnoty.
+     * Názvy souborů tajemství, jejichž hodnota zůstala v `main.json` a ignoruje
+     * se (pro `doctor` a `ds-secret list`) — nikdy hodnoty.
      *
      * @return list<string>
      */
