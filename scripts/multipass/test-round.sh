@@ -26,6 +26,14 @@ set -euo pipefail
 RAW_BASE="https://raw.githubusercontent.com/shipard/shipard"
 RESULTS_FORMAT="shpd.testRound.cleanServer.v1"
 LAUNCH_TIMEOUT=3600
+# cloud-init phase (#146 N5): short `cloud-init status` queries every
+# CLOUD_INIT_POLL s, each under a watchdog of EXEC_GUARD s, CLOUD_INIT_LIMIT s
+# in total — on Apple Virtualization Framework (Multipass 1.17) a `multipass
+# exec` started while the VM boots may never return although the command
+# inside finished; `timeout` does not exist on macOS.
+CLOUD_INIT_LIMIT=3600
+CLOUD_INIT_POLL=10
+EXEC_GUARD=30
 
 BRANCH="stable"
 IMAGE="26.04"
@@ -44,6 +52,7 @@ ROUND_ARGS=()
 VM=""
 OUT_DIR=""
 TMP_DIR=""
+GUARDED_PID=""
 PHASES_FILE=""
 NOTES_FILE=""
 GUEST_FILE=""
@@ -199,6 +208,33 @@ vm_ipv4() {
     printf '%s' "${ip:-<IPv4 z multipass info $VM>}"
 }
 
+# vm_exec_guarded <limit s> <output file> <command…> — `multipass exec` in
+# the background under a watchdog: the client may hang on AVF (N5), so a call
+# that does not return within the limit is killed. Returns the command's exit
+# code, 124 when killed by the watchdog. Output (both streams) to the file.
+vm_exec_guarded() {
+    local limit="$1" out="$2" waited=0 rc
+    shift 2
+    multipass exec "$VM" -- "$@" > "$out" 2>&1 &
+    GUARDED_PID=$!
+    while kill -0 "$GUARDED_PID" 2>/dev/null; do
+        if [ "$waited" -ge "$limit" ]; then
+            kill "$GUARDED_PID" 2>/dev/null || true
+            wait "$GUARDED_PID" 2>/dev/null || true
+            GUARDED_PID=""
+            return 124
+        fi
+        sleep 1
+        waited=$((waited + 1))
+    done
+    # No `set +e` / `set -e` pair here: re-enabling errexit inside the
+    # function would make the caller's own `set +e` ineffective.
+    rc=0
+    wait "$GUARDED_PID" || rc=$?
+    GUARDED_PID=""
+    return "$rc"
+}
+
 # fail <message> [<hint>…] — before the VM exists: message, exit 2.
 fail() {
     local line
@@ -233,6 +269,10 @@ on_interrupt() {
     local phase="$PHASE_ID"
     trap - INT TERM
     INTERRUPTED=1
+    if [ -n "$GUARDED_PID" ]; then
+        kill "$GUARDED_PID" 2>/dev/null || true
+        GUARDED_PID=""
+    fi
     echo "" >&2
     echo "==> Přerušeno (Ctrl+C)" >&2
     phase_end interrupted 130
@@ -496,27 +536,91 @@ launch_vm() {
 }
 
 # ─── 4. cloud-init ───────────────────────────────────────────────────────────
+# No long-running `multipass exec` here (N5): `cloud-init status --wait`
+# started during the boot hung for half an hour on AVF although it had
+# finished inside the VM. Short queries under a watchdog instead; the
+# `--long` output and the bootstrap log are read only after cloud-init ended.
 wait_cloud_init() {
-    local status
+    local started waited status rc last_rc=0 hung=0 polls=0 unparsed=0 degraded=0
+    local short="$TMP_DIR/cloud-init-status.txt"
 
     phase_begin cloud-init "Waiting for cloud-init (bootstrap cestou nováčka)"
+    echo "    Každých $CLOUD_INIT_POLL s dotaz 'cloud-init status' (hlídač $EXEC_GUARD s na dotaz,"
+    echo "    celkem nejvýš $(fmt_duration "$CLOUD_INIT_LIMIT")); instalace cestou nováčka trvá minuty až desítky minut."
 
-    set +e
-    vm_exec cloud-init status --wait >/dev/null 2>&1
-    vm_exec cloud-init status --long > "$OUT_DIR/cloud-init.txt" 2>&1
-    vm_exec cat shipard-bootstrap.log > "$OUT_DIR/bootstrap-1.log" 2>/dev/null \
-        || note "bootstrap-1.log (~/shipard-bootstrap.log ve VM) se nepodařilo zkopírovat"
-    set -e
+    started="$(now_epoch)"
+    while :; do
+        set +e
+        vm_exec_guarded "$EXEC_GUARD" "$short" cloud-init status
+        rc=$?
+        set -e
+        if [ "$rc" -eq 124 ]; then
+            hung=$((hung + 1))
+            status=""
+        else
+            last_rc="$rc"
+            status="$(awk -F': *' '$1 == "status" {print $2; exit}' "$short" 2>/dev/null || true)"
+            if [ -z "$status" ]; then
+                # Answered, but not with a status line: a VM that is gone, a
+                # broken client. Three times in a row is not a boot in progress.
+                unparsed=$((unparsed + 1))
+                if [ "$unparsed" -ge 3 ]; then
+                    sed 's/^/    | /' "$short" >&2
+                    die "multipass exec $VM -- cloud-init status opakovaně nevrací stav (výpis výše) — VM zůstává."
+                fi
+            else
+                unparsed=0
+            fi
+        fi
+        case "$status" in
+            done|"degraded done"|error*|disabled) break ;;
+        esac
+        # running, "not started", "degraded running" or no answer: keep waiting.
+        waited=$(( $(now_epoch) - started ))
+        if [ "$waited" -ge "$CLOUD_INIT_LIMIT" ]; then
+            die "cloud-init ve VM nedoběhl do $(fmt_duration "$CLOUD_INIT_LIMIT") (poslední stav: ${status:-bez odpovědi}, dotazů bez odpovědi: $hung) — VM zůstává, průběh: multipass exec $VM -- cat shipard-bootstrap.log"
+        fi
+        polls=$((polls + 1))
+        if [ $((polls % 6)) -eq 0 ]; then
+            echo "    … $(fmt_duration "$waited"): ${status:-bez odpovědi}"
+        fi
+        sleep "$CLOUD_INIT_POLL"
+    done
 
-    status="$(awk -F': *' '$1 == "status" {print $2; exit}' "$OUT_DIR/cloud-init.txt" 2>/dev/null || true)"
+    if [ "$hung" -gt 0 ]; then
+        note "cloud-init: $hung dotazů 'multipass exec' bez odpovědi do $EXEC_GUARD s, ukončil je hlídač (AVF, N5)"
+    fi
+
+    # Details only now, when the VM is up: `status --long` into cloud-init.txt
+    # (the short answer as a fallback) and the newcomer's bootstrap log. The
+    # exit code of `status --long` repeats the state (1 error, 2 degraded) —
+    # only the watchdog or a missing status line means no answer.
+    rc=0
+    vm_exec_guarded "$EXEC_GUARD" "$OUT_DIR/cloud-init.txt" cloud-init status --long || rc=$?
+    if [ "$rc" -eq 124 ] || ! grep -q '^status:' "$OUT_DIR/cloud-init.txt" 2>/dev/null; then
+        cp "$short" "$OUT_DIR/cloud-init.txt" 2>/dev/null || true
+        note "cloud-init status --long bez odpovědi — v cloud-init.txt je poslední krátký stav"
+    fi
+    if ! vm_exec_guarded 120 "$OUT_DIR/bootstrap-1.log" cat shipard-bootstrap.log; then
+        note "bootstrap-1.log (~/shipard-bootstrap.log ve VM) se nepodařilo zkopírovat celý"
+    fi
+
+    # Degraded: exit 2 of `cloud-init status`, or the extended status of the
+    # long form (`status: done` + `extended_status: degraded done`).
+    if [ "$last_rc" -eq 2 ] || [ "$status" = "degraded done" ] \
+        || grep -q -E '^(extended_)?status: *degraded' "$OUT_DIR/cloud-init.txt" 2>/dev/null; then
+        degraded=1
+    fi
+
     case "$status" in
-        done)
-            echo "    cloud-init: done."
-            phase_end ok 0
-            ;;
-        degraded)
-            note "cloud-init skončil jako 'degraded' (cloud-init.txt) — pokračuji"
-            phase_end warning 0
+        done|"degraded done")
+            if [ "$degraded" = 1 ]; then
+                note "cloud-init skončil jako 'degraded' (cloud-init.txt) — pokračuji"
+                phase_end warning 0
+            else
+                echo "    cloud-init: done."
+                phase_end ok 0
+            fi
             ;;
         *)
             if [ -s "$OUT_DIR/bootstrap-1.log" ]; then

@@ -2709,8 +2709,9 @@ samostatný soubor pro bash 3.2 bez `jq` a `python`, checkout na hostiteli
 není potřeba. Fáze: preflight hostitele → `shipard-dev.yaml` testované
 větve z GitHubu (jiná větev než `stable` = náhrada odkazu na
 `dev-bootstrap.sh` a `--branch`, každá právě jednou) → `multipass launch
-… --timeout 3600 --cloud-init` (bootstrap cestou nováčka) → `cloud-init
-status` → druhý bootstrap `--with-testing` → (klíč AI ze souboru jen přes
+… --timeout 3600 --cloud-init` (bootstrap cestou nováčka) → krátké dotazy
+`cloud-init status` každých 10 s pod hlídačem (žádný dlouhý `exec` —
+na AVF visí, § 22 Pasti) → druhý bootstrap `--with-testing` → (klíč AI ze souboru jen přes
 STDIN do `dev-ai-key --set-key`) → `shpd-server test-round` pod `ubuntu`
 (nikdy `sudo`) s adresou dashboardu VM pro živé sledování → (evaluace
 `--only datasets --eval …`) → sběr (`doctor`, `jobs.tgz`, `eval.tgz`,

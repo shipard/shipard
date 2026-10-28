@@ -1,6 +1,6 @@
 # F8b — testovací kolo na čistém serveru (Multipass)
 
-**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9), ověřeno nanečisto proti maketám; první běh na Macu (AVF) našel N3–N10 — k opravě N3 a N5–N10 (N7 blokuje nasazení na testovací server), N4 po běhu na QEMU; pak ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146
+**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; zbývá na testovacím serveru doinstalovat `php8.5-bcmath` (člověk), ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146
 
 ## Kontext / Cíl
 
@@ -376,6 +376,12 @@ jen `grep`em zakázaných konstrukcí, skutečný běh na Macu je na člověku.
   § 3; PHP konstanty `E2ePreflight::REMEDY` / `VideoPreflight::VIDEO_REMEDY`
   (hlášky s testy) beze změny.
 - **`dev-update.sh`** čísluje `[n/N]` jen kroky, které poběží (3–5).
+- **Fáze cloud-init po N5** (2026-10-28): hlídač dotazu 30 s, rozestup
+  10 s a limit 3600 s jsou konstanty v hlavičce skriptu; `status --long`
+  i kopie logu bootstrapu (120 s) běží také pod hlídačem; tři odpovědi bez
+  řádku `status:` za sebou končí exit 2. `degraded` se pozná z exit 2
+  dotazu nebo `extended_status` — krátký výpis cloud-initu říká jen
+  `status: done`.
 
 ## Nálezy z revize (2026-10-27)
 
@@ -440,7 +446,7 @@ jako varování).
   N5) platí jen pro QEMU. Text upravit podle výsledku běhu na QEMU; do
   pastí § 22 backend jako údaj (`environment.json` → `host.driver`
   z `multipass get local.driver`).
-- [ ] **N5 — `multipass exec` spuštěný během startu VM nevrátí (AVF).**
+- [x] **N5 — `multipass exec` spuštěný během startu VM nevrátí (AVF).**
   `multipass exec … cloud-init status --wait` z 19:19:48 visel půl hodiny:
   ve VM příkaz doběhl (session `sshd-session` bez potomka), spojení mělo
   `Send-Q 0` — data Mac převzal, visí klient `multipass`. Stejný příznak měl
@@ -456,6 +462,20 @@ jako varování).
   dotazu do `cloud-init.txt` jako dnes (`status --long` až po skončení).
   Ověření maketou: `exec`, který prvních N volání visí, a stav
   `running` → `done`; vypršení limitu → exit 2, VM zůstane.
+  **Opraveno 2026-10-28:** fáze `cloud-init` = `vm_exec_guarded` (`multipass
+  exec` na pozadí, po 30 s `kill`, návrat 124) a dotaz `cloud-init status`
+  každých 10 s do limitu 3600 s (konstanty v hlavičce skriptu); `done` /
+  `error` / `disabled` čekání končí, `degraded` = exit 2 dotazu nebo
+  `extended_status: degraded …` z `--long` (krátký výpis má jen
+  `status: done`); `status --long` a kopie logu bootstrapu až po skončení,
+  též pod hlídačem (bez odpovědi = poznámka a krátký stav v `cloud-init.txt`);
+  tři odpovědi bez řádku `status:` za sebou = exit 2 (zmizelá VM by jinak
+  čekala celý limit); přerušení zabije i hlídaný proces. Ověřeno maketou
+  s konstantami zkrácenými `sed`: 2 visící dotazy + 2× `running` → ok
+  s poznámkou o hlídači, trvalé `running` → exit 2 bez kola, odpověď bez
+  stavu → exit 2 po třech, `degraded` → varování, `error` → exit 2, SIGINT
+  během visícího dotazu → 130 bez sirotků; ostré konstanty: úspěch, kolo
+  exit 1, evaluace, `--keep`, 404 beze změny chování.
 - [x] **N6 — varování buildu dashboardu.** `vite-plugin-svelte` při každém
   `npm run build`: `frontend/src/dev/pages/testing/DatasetsPage.svelte:72`
   `<div>` uvnitř `<p>` (karta Testovací kolo z #103 F8a) — prohlížeč HTML

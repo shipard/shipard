@@ -1990,10 +1990,15 @@ a v souhrnu; nadpisy fází anglicky, hlášky česky jako v `dev-bootstrap.sh`:
 3. **launch** — `multipass launch <image> --name shipard-round-<čas>
    --cpus … --memory … --disk … --timeout 3600 --cloud-init <yaml>`;
    nenulový exit s existující VM je timeout, pokračuje se.
-4. **cloud-init** — `cloud-init status --wait`, `status --long`
-   do `cloud-init.txt`, `~/shipard-bootstrap.log` jako `bootstrap-1.log`;
-   `error` = exit 2 (VM zůstane, konec logu v terminálu), `degraded`
-   = varování v souhrnu.
+4. **cloud-init** — každých 10 s krátký dotaz `cloud-init status`, každý
+   pod hlídačem 30 s (na Apple Virtualization Framework klient `multipass
+   exec` zahájený během startu VM nevrátí, i když příkaz uvnitř doběhl —
+   N5; `timeout` na macOS není, hlídač je `exec` na pozadí + `kill`),
+   celkem nejvýš 3600 s; po skončení `status --long` do `cloud-init.txt`
+   a `~/shipard-bootstrap.log` jako `bootstrap-1.log`; `error`
+   nebo vypršení limitu = exit 2 (VM zůstane, konec logu v terminálu),
+   `degraded` (exit 2 dotazu nebo `extended_status: degraded done`)
+   = varování v souhrnu, dotazy bez odpovědi = poznámka v souhrnu.
 5. **bootstrap-2** (D2) — `bash ~/sw/shpd/scripts/dev-bootstrap.sh
    --with-testing` přes `multipass exec`, výstup do terminálu
    a `bootstrap-2.log`; selhání = exit 2.
@@ -2062,6 +2067,12 @@ kola, ne pro test instalace.
 - **`multipass launch` bez `--timeout`** hlásí chybu po 5 minutách,
   ačkoli instalace pokračuje — skript dává 3600 s a nenulový exit
   s živou VM bere jako timeout, ne jako konec.
+- **`multipass exec` zahájený během startu VM nevrátí** (Apple
+  Virtualization Framework, Multipass 1.17): příkaz ve VM doběhne, data
+  klient převezme, ale neskončí — `cloud-init status --wait` tak visel půl
+  hodiny (N5). Proto ve fázi cloud-init jen krátké dotazy s hlídačem;
+  ruční `multipass exec … -- tail -f shipard-bootstrap.log` během startu
+  má týž příznak (točící se lomítko), po startu příkazy fungují.
 - **`multipass exec` nemá TTY** — `sudo` ve VM musí projít bez hesla
   (`ubuntu` na cloud image má NOPASSWD, bootstrap volá `sudo -n`);
   STDIN ale předává — proto jde klíč ze souboru.
