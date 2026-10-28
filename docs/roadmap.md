@@ -151,7 +151,7 @@ dnes za něj dělá vývojář z příkazové řádky, a bezpečnost cizích dat
 | Co | Zadání |
 |---|---|
 | Rate limiting a evidence neúspěšných přihlášení | `auth-phase0a-hardening.md` |
-| Záloha a obnova datového zdroje | — |
+| Záloha a obnova datového zdroje — obnova na neprodukční server vypne periodické úlohy a zneplatní přihlašovací údaje ostrého zdroje (AI připojení, výhledově banka) (#115 D12; do té doby ruční krok v `docs/migration-guide.md`) | — |
 | Samoobslužná správa uživatelů a přístupových práv | — |
 | Zobrazení adresy pro příjem pošty v aplikaci | — |
 | Příkaz `ds-delete` pro produkci a hosting (záloha před smazáním, vazba na portál) — pro vývoj hotový 2026-10-17: volné zdroje dat mimo produkci z CLI i z vývojářského dashboardu (#103 D68–D71, `tasks/ds-delete.md`); `ds-list` hotový dřív (#126) | — (vývoj: `ds-delete.md`) |

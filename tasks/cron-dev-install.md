@@ -1,6 +1,6 @@
 # Periodické úlohy — cron ve vývojové instalaci (#115 fáze 2)
 
-**Stav:** částečně — kód, testy, skripty a dokumentace hotové 2026-10-13 (4 commity podle PRD); ověřeno bez roota na vývojářském stroji (`cron-install --dry-run` vypsal dotčené zdroje dat, `--check` exit 1, `doctor` sekce Cron jako varování, `dev-update.sh` připomínka, `logrotate -d` nad pravidlem projde); zbývá člověk: čistá VM (bootstrap → zelený `doctor`, obnovující se heartbeat slotu `minute`), stroj se zdroji dat (první instalace všechny vypne a vypíše), `shellcheck` (na vývojářském stroji není)
+**Stav:** hotovo — kód, testy, skripty a dokumentace 2026-10-13 (4 commity podle PRD); ověřeno bez roota na vývojářském stroji (`cron-install --dry-run` vypsal dotčené zdroje dat, `--check` exit 1, `doctor` sekce Cron jako varování, `dev-update.sh` připomínka, `logrotate -d` nad pravidlem projde); čistá VM ověřena 2026-10-28 testovacím kolem z #146 (bootstrap cron nainstaluje, `doctor` po kole bez ✗, jen varování nespuštěných slotů `daily` / `weekly`); první instalaci na stroji se zdroji dat kryjí testy a `--dry-run`, živě neověřená; `shellcheck` neběžel
 
 > PRD pro Claude Code (4 commity). Design: issue #115 (D6, D10, D12),
 > navazuje na fázi 1 (`tasks/cron-ds-switch.md`). Souvisí: #96
@@ -223,9 +223,13 @@ Skript `sudo` nevolá a cron sám neinstaluje (stejně jako
 - [x] dokumentace podle sekce 5
 - [x] `php -l`, `bash -n`, cílené testy, celá sada (`shellcheck` na
       stroji není)
-- [ ] čistá VM: bootstrap skončí zeleným `doctor` a heartbeat slotu
-      `minute` se obnovuje (člověk)
-- [ ] stroj se zdroji dat: první instalace je všechny vypne (člověk)
+- [x] čistá VM: bootstrap skončí zeleným `doctor` a heartbeat slotu
+      `minute` se obnovuje (člověk) — 2026-10-28, testovací kolo #146
+      (`tasks/testing-clean-server.md`, běh 2): `doctor` po kole bez ✗,
+      jen varování nespuštěných slotů `daily` / `weekly`
+- [ ] stroj se zdroji dat: první instalace je všechny vypne (člověk) —
+      živě neověřeno, kryjí testy a `cron-install --dry-run`; #115
+      uzavřeno 2026-10-28 bez živého ověření
 - [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
 
 ## Rozhodnutí k designu (potvrzená)

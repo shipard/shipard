@@ -1,6 +1,6 @@
 # F8b — testovací kolo na čistém serveru (Multipass)
 
-**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; zbývá na testovacím serveru doinstalovat `php8.5-bcmath` (člověk), ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146
+**Stav:** částečně — kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; `php8.5-bcmath` na testovacím serveru doinstalovaný 2026-10-28; zbývá ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146
 
 ## Kontext / Cíl
 
@@ -526,7 +526,9 @@ visící `exec`, N5 — instalace sama ≈ 6 min od startu VM), bootstrap-2
   openssl, zip). Pozor: `shpd-server upgrade` balíčky **neinstaluje**
   (jen composer, frontend, ds-upgrade, cron, completion) — existující
   servery vč. testovacího dostanou `bcmath` ručně podle hintu doctoru
-  (`docs/cli.md` § doctor), zadání to předpokládalo jinak.
+  (`docs/cli.md` § doctor), zadání to předpokládalo jinak. Testovací
+  server: `php8.5-bcmath` doinstalovaný 2026-10-28, PHP-FPM restartován
+  při instalaci, rozšíření načtené.
 - [x] **N8 — `%cI` z novejšího gitu.** `UpdateCheckerTest::testBehindReports…`
   čeká `2026-09-20T08:00:00+00:00`, git na 26.04 vrací `…T08:00:00Z`
   (vývojářský server git 2.43). `Git` předává `%cI` beze změny do

@@ -1,6 +1,6 @@
 # Periodické úlohy — přepínač per zdroj dat a jeho ovládání (#115 fáze 1)
 
-**Stav:** hotovo — implementováno 2026-10-12 (6 commitů podle PRD), ruční ověření na volném zdroji dat (`vlm9-y`) vč. pruhu v headless prohlížeči; zbývá nasazení na alfě — musí být nasazeno dřív než fáze 2 (cron ve vývojové instalaci)
+**Stav:** hotovo — implementováno 2026-10-12 (6 commitů podle PRD), ruční ověření na volném zdroji dat (`vlm9-y`) vč. pruhu v headless prohlížeči; nasazení na testovacím serveru ověřeno 2026-10-28 (heartbeat slotů nese `cronDisabledDataSources`, sloty bez selhání)
 
 > PRD pro Claude Code (6 commitů). Design: issue #115, komentáře
 > „Přehodnocení směru; zamčeno D1–D12“ a „D9 → D13, D14“. Navazuje na
