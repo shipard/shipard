@@ -69,7 +69,7 @@
     color: var(--shpd-color-text);
   }
 
-  /* Role title (D36): písmo titulku detailu (ViewerDetail .shpd-detail__title). */
+  /* Role title (D36): písmo titulku detailu (ui/DetailHeader .shpd-detail-header__title). */
   .shpd-section-heading--title {
     font-size: var(--shpd-font-size-title);
     line-height: 1.3;

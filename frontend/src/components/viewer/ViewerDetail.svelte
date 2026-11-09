@@ -11,7 +11,7 @@
   import DocumentDetail from './DocumentDetail.svelte';
   import DetailAttachments from './DetailAttachments.svelte';
   import { contentHasAttachments } from './detailContent.js';
-  import Icon from '../ui/Icon.svelte';
+  import DetailHeader from '../ui/DetailHeader.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
@@ -252,27 +252,15 @@
     {/if}
 
     {#if detail.title}
-      <!-- Header (title + badges) — zobrazuje se jen pokud backend
-           posílá detail.title. Bez něj se hlavička přeskočí a layout
-           je stejný jako předtím. -->
-      <div class="shpd-detail__header">
-        {#if detail.icon}
-          <div class="shpd-detail__header-icon">
-            <Icon icon={resolveIcon(detail.icon)} />
-          </div>
-        {/if}
-        <div class="shpd-detail__header-main">
-          <div class="shpd-detail__title-row">
-            <h2 class="shpd-detail__title">{detail.title}</h2>
-            {#each detail.badges ?? [] as badge}
-              <Badge style={badge.style ?? 'neutral'} label={badge.label} />
-            {/each}
-          </div>
-          {#if detail.subtitle}
-            <div class="shpd-detail__subtitle">{detail.subtitle}</div>
-          {/if}
-        </div>
-      </div>
+      <!-- Hlavička (titulek, štítky, podtitul) = sdílená DetailHeader
+           (#139 D48) — zobrazuje se jen pokud backend posílá detail.title.
+           Bez něj se hlavička přeskočí a layout je stejný jako předtím. -->
+      <DetailHeader
+        title={detail.title}
+        subtitle={detail.subtitle ?? ''}
+        badges={detail.badges ?? []}
+        icon={detail.icon ? resolveIcon(detail.icon) : undefined}
+      />
     {/if}
 
     <!-- Zámek záznamu (documentLockProviders, #55 D24) — server ho
@@ -665,60 +653,6 @@
 
   @keyframes shpd-detail-spin {
     to { transform: rotate(360deg); }
-  }
-
-  /* Header (title + badges) — zobrazuje se jen když backend
-     pošle detail.title. Drobný panel nad taby. Písmo podle typografických
-     rolí (#135, docs/design-system.md → Detail záznamu): titulek title,
-     podtitul meta barvou textu, štítky meta normální tloušťkou. */
-  .shpd-detail__header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem var(--shpd-space-md);
-    border-bottom: 1px solid var(--shpd-color-border);
-    background-color: var(--shpd-color-bg);
-    flex-shrink: 0;
-  }
-
-  /* Ikona vlevo v hlavicce (typ zaznamu) - stejny vizual jako
-     shpd-modal__header-icon ve formularovem modalu. */
-  .shpd-detail__header-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    font-size: 1.75em;
-    color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-detail__header-main {
-    flex: 1;
-    /* min-width: 0 kvuli ellipsis uvnitr flex containeru */
-    min-width: 0;
-  }
-
-  .shpd-detail__title-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--shpd-space-sm);
-  }
-
-  .shpd-detail__title {
-    margin: 0;
-    font-size: var(--shpd-font-size-title);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    line-height: 1.3;
-  }
-
-  .shpd-detail__subtitle {
-    margin-top: 0.125rem;
-    font-size: var(--shpd-font-size-meta);
-    color: var(--shpd-color-text);
   }
 
   /* Actions bar — řádek per-record akcí nad taby (snooze/dismiss/recheck +
