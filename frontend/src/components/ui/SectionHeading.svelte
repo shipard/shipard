@@ -9,8 +9,9 @@
   // přes `Card`) — base.css dává h2–h4 vlastní velikosti, role se proto
   // nastavuje explicitně. Obsah je snippet `children` (nadpis
   // přílohy nese odkaz a datum); volitelný snippet `aside` sedí vpravo ve
-  // stejném řádku (přepínač náhledů příloh) — mezeru pod sebou pak nese
-  // řádek, ne nadpis. Pravidla: docs/design-system.md §12.
+  // stejném řádku (přepínač náhledů příloh; na úzké šířce se zalomí pod
+  // nadpis) — mezeru pod sebou pak nese řádek, ne nadpis. Pravidla:
+  // docs/design-system.md §12.
   //
   // `role` (#137 D36): `heading` (výchozí, nadpis sekce a mezinadpis
   // v kartě) | `title` (nadpis karty jako samostatné části stránky —
@@ -105,9 +106,12 @@
     margin-bottom: var(--shpd-space-lg);
   }
 
-  /* Řádek nadpis + aside: nadpis vlevo, aside vpravo na účaří. */
+  /* Řádek nadpis + aside: nadpis vlevo, aside vpravo na účaří; když se
+     vedle sebe nevejdou (hromadné akce review na úzké šířce, #139 D45),
+     aside se zalomí pod nadpis místo stlačení nadpisu do víc řádků. */
   .shpd-section-heading__row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: baseline;
     gap: var(--shpd-space-sm);

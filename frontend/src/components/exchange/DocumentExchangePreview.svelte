@@ -1,6 +1,17 @@
 <script>
   // Canonical document visualization with optional interactive resolve.
   //
+  // Od #139 (D48–D53) kreslí review tytéž sdílené části dokladu jako detail
+  // (`DetailHeader`, `PartyCard`, `PropertyGroups`, `DocRows`, `DocTotals`
+  // v `components/document/`) přes adaptér `reviewParts.js` (canonical →
+  // hotové texty). Stav review — rozhodnutí, stavové značky, popovery,
+  // výběr DPH, rychlé založení z registru — zůstává tady a do částí jde
+  // snippety přes uzávěr; části jsou prezentační. Pasti: ve složeném
+  // režimu řádků (pod 36 rem) jsou značky jednotky, kódu DPH a účtu v DOM
+  // dvakrát (skryté široké buňky + řádek meta) — obě volají totéž
+  // rozhodnutí (stejná `path`), popover se kotví ke kliknuté značce
+  // (`event.currentTarget`); testy hledají jen viditelné prvky.
+  //
   // Phase 3a: read-only render. Phase 3b adds interactive status badges:
   // when `onUserActionsChange` callback is provided, non-matched badges
   // become <button>s that open a Popover with a ResolveDecisionPanel
@@ -21,7 +32,22 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Popover from '../ui/Popover.svelte';
-  import Card from '../ui/Card.svelte';
+  import DetailHeader from '../ui/DetailHeader.svelte';
+  import Notice from '../ui/Notice.svelte';
+  import Button from '../ui/Button.svelte';
+  import PropertyGroups from '../ui/PropertyGroups.svelte';
+  import PartyCard from '../document/PartyCard.svelte';
+  import DocRows from '../document/DocRows.svelte';
+  import DocTotals from '../document/DocTotals.svelte';
+  import {
+    formatDate,
+    formatMoney,
+    issueNotice,
+    reviewHeader,
+    reviewParty,
+    reviewRows,
+    reviewTotals,
+  } from './reviewParts.js';
   import ResolveDecisionPanel from './ResolveDecisionPanel.svelte';
   import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
@@ -48,10 +74,6 @@
   } = $props();
 
   // Derived helpers
-  let docType = $derived(canonical?.docType ?? null);
-  let docTypeLabel = $derived(
-    docType ? t(`exchange.preview.docType.${docType}`) : '',
-  );
   let resolve = $derived(canonical?._resolve ?? null);
   let summary = $derived(resolve?.summary ?? null);
   let issues = $derived(resolve?.issues ?? []);
@@ -689,51 +711,60 @@
     return statusLabel(resolveBlock);
   }
 
-  // Efektivní kód a sazba DPH řádku — to, co applier zapíše na doklad
-  // (_resolve.rows[i].vatCode.createPayload); u samovyměření 21 %, i když
-  // dodavatel na faktuře uvádí 0 %. Bez resolve nebo u nenapárovaného kódu
-  // zůstává sazba z canonicalu (fallback v šabloně).
-  function effectiveRowVat(block) {
-    if (block?.status !== 'matched') return null;
-    const payload = block.createPayload ?? {};
-    return { code: payload.code ?? null, pct: payload.pct ?? null };
+  // ── Sdílené části dokladu (#139 D48–D53) ─────────────────────────────
+  // Hlavička, strany, řádky, součty a hláška problémů jdou přes adaptér
+  // do týchž komponent jako detail dokladu.
+  let header = $derived(reviewHeader(canonical, summary, t));
+  let supplierParty = $derived(reviewParty(canonical?.supplier ?? null, t));
+  let customerParty = $derived(reviewParty(canonical?.customer ?? null, t));
+  let rows = $derived(reviewRows(canonical, resolve, computedRowPrices));
+  let totalsData = $derived(reviewTotals(recapRows, totals, canonical?.currency ?? null));
+  let issueNoticeData = $derived(issueNotice(issues));
+  let rowsAsideVisible = $derived(enrichedCount > 0 || bulkItemVisible || bulkVatCodeVisible);
+  let aiFailedItems = $derived(
+    (wrapper?._validationIssues ?? []).map((issue) => ({ text: issue?.message ?? '', meta: issue?.path ?? '' })),
+  );
+
+  // Skupiny údajů (D51): Data / Platba / DPH — prázdné pole „—“ (kontroluje
+  // se vytěžení), režim a místo plnění jako položky se snippetem výběru;
+  // snippet je hodnota až v šabloně, proto funkce volaná z `{@const}`.
+  function metaGroups(vatChoice) {
+    return [
+      {
+        title: t('document.section.dates'),
+        items: [
+          { label: t('document.meta.issueDate'), value: formatDate(canonical?.dates?.issueDate) },
+          { label: t('document.meta.dueDate'), value: formatDate(canonical?.dates?.dueDate) },
+          { label: t('document.meta.accountingDate'), value: formatDate(canonical?.dates?.accountingDate) },
+          { label: t('document.meta.taxPointDate'), value: formatDate(canonical?.dates?.taxPointDate) },
+          { label: t('exchange.preview.field.vatObligationDate'), value: formatDate(canonical?.dates?.vatObligationDate) },
+        ],
+      },
+      {
+        title: t('document.section.payment'),
+        items: [
+          { label: t('document.meta.currency'), value: canonical?.currency ?? null },
+          { label: t('document.meta.paymentMethod'), value: paymentMethodLabel },
+          { label: t('document.meta.paymentReference'), value: canonical?.payment?.paymentReference ?? null },
+        ],
+      },
+      {
+        title: t('exchange.preview.section.vat'),
+        items: [
+          { label: t('exchange.preview.field.vatMode'), kind: 'mode', snippet: vatChoice },
+          { label: t('exchange.preview.field.vatPlace'), kind: 'place', snippet: vatChoice },
+        ],
+      },
+    ];
   }
 
-  function formatMoney(value, currency) {
-    if (value === null || value === undefined) return '—';
-    try {
-      return new Intl.NumberFormat('cs-CZ', {
-        style: 'currency',
-        currency: currency ?? 'CZK',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value);
-    } catch {
-      return String(value);
-    }
-  }
-
-  function formatDate(iso) {
-    if (!iso) return '—';
-    try {
-      return new Intl.DateTimeFormat('cs-CZ').format(new Date(iso));
-    } catch {
-      return String(iso);
-    }
-  }
-
-  function formatAddress(addr) {
-    if (!addr) return '—';
-    if (addr.displayLine) return addr.displayLine;
-    const street = [addr.street, addr.houseNumber].filter(Boolean).join(' ');
-    const city = [addr.zip, addr.city].filter(Boolean).join(' ');
-    return [street, city].filter(Boolean).join(', ') || '—';
-  }
-
-  function issueGlyph(severity) {
-    if (severity === 'error') return '✗';
-    if (severity === 'warning') return '⚠';
-    return 'ℹ';
+  // Patička karty strany — rychlé založení z registru (Issue #28): jen
+  // v interaktivním režimu, s nálezem, bez rozhodnutí a u nenapárované strany.
+  function registryOffered(path) {
+    return onUserActionsChange !== null
+      && Boolean(registryHits[path])
+      && (userActions[path] ?? null) === null
+      && resolve?.[path]?.status !== 'matched';
   }
 </script>
 
@@ -807,90 +838,14 @@
   {/if}
 {/snippet}
 
-{#snippet partyCard(label, party, partyResolve, path)}
-  <!-- Obal karty strany = sdílená Card (#137 D33); hlavička a obsah
-       zůstávají, typografii stran náhledu řeší #139. -->
-  <Card as="div">
-    <div class="shpd-exchange__party-header">
-      <h3 class="shpd-exchange__party-label">{label}</h3>
-      {@render statusBadge(partyResolve, path, 'party')}
-    </div>
-    {#if party}
-      <!-- Bankovní účet strany je reference s vlastním rozhodnutím
-           (`supplierBank` / `customerBank`, D98): odznak i bez textu účtu. -->
-      {@const bankPath = `${path}Bank`}
-      {@const bankResolve = resolve?.[bankPath] ?? null}
-      <div class="shpd-exchange__party-body">
-        {#if party.name}
-          <div class="shpd-exchange__party-name">{party.name}</div>
-        {/if}
-        {#if party.companyId || party.taxId || party.vatId}
-          <div class="shpd-exchange__party-ids">
-            {#if party.companyId}
-              <span>{t('exchange.preview.field.companyId')}: <strong>{party.companyId}</strong></span>
-            {/if}
-            {#if party.taxId}
-              <span>{t('exchange.preview.field.taxId')}: <strong>{party.taxId}</strong></span>
-            {/if}
-            {#if party.vatId && party.vatId !== party.taxId}
-              <span>{t('exchange.preview.field.vatId')}: <strong>{party.vatId}</strong></span>
-            {/if}
-          </div>
-        {/if}
-        {#if party.address}
-          <div class="shpd-exchange__party-address">{formatAddress(party.address)}</div>
-        {/if}
-        {#if party.contact?.name || party.contact?.email || party.contact?.phone}
-          <div class="shpd-exchange__party-contact">
-            {#if party.contact?.name}
-              <span>{t('exchange.preview.field.contactName')}: <strong>{party.contact.name}</strong></span>
-            {/if}
-            {#if party.contact?.email}<span>{party.contact.email}</span>{/if}
-            {#if party.contact?.phone}<span>{party.contact.phone}</span>{/if}
-          </div>
-        {/if}
-        {#if party.bankAccount?.iban || party.bankAccount?.accountNumber || bankResolve}
-          <div class="shpd-exchange__party-bank">
-            <span>
-              {t('exchange.preview.field.bankAccount')}:
-              <strong>{party.bankAccount?.iban ?? party.bankAccount?.accountNumber ?? '—'}</strong>
-            </span>
-            {@render statusBadge(bankResolve, bankPath, 'bankAccount')}
-          </div>
-        {/if}
-      </div>
-    {:else}
-      <div class="shpd-exchange__party-empty">—</div>
-    {/if}
-    {#if onUserActionsChange !== null
-         && registryHits[path]
-         && (userActions[path] ?? null) === null
-         && partyResolve?.status !== 'matched'}
-      <div class="shpd-exchange__party-registry">
-        <button
-          type="button"
-          class="shpd-exchange__party-registry-btn"
-          onclick={() => handleRegistryQuickAdd(path)}
-          disabled={quickAddBusy[path]}
-        >
-          + {quickAddBusy[path]
-            ? t('exchange.preview.registry.creating')
-            : t('exchange.preview.registry.quickAdd', { name: registryHits[path].fullName })}
-        </button>
-        {#if quickAddError[path]}
-          <span class="shpd-exchange__party-registry-error">{quickAddError[path]}</span>
-        {/if}
-      </div>
-    {/if}
-  </Card>
-{/snippet}
-
-<!-- Místo plnění / režim DPH: efektivní hodnota z _resolve.vat se zdrojem
-     (D14); s nabídkou kódů i select „Automaticky (…)“ / pevná volba (D16).
-     V závorce je `auto` = co by Shipard určil bez volby, ne aktuální
-     efektivní hodnota — jinak by po volbě ukazovala to, co uživatel vybral.
-     Bez _resolve.vat fallback na canonical jako dřív. -->
-{#snippet vatChoiceField(kind)}
+<!-- Místo plnění / režim DPH jako položka skupiny DPH (D51): popisek
+     kreslí PropertyList, snippet hodnotu — efektivní hodnota z _resolve.vat
+     se zdrojem (D14); s nabídkou kódů i select „Automaticky (…)“ / pevná
+     volba (D16). V závorce je `auto` = co by Shipard určil bez volby, ne
+     aktuální efektivní hodnota — jinak by po volbě ukazovala to, co
+     uživatel vybral. Bez _resolve.vat fallback na canonical jako dřív. -->
+{#snippet vatChoiceField(item)}
+  {@const kind = item.kind}
   {@const keys = kind === 'mode' ? VAT_MODE_KEYS : VAT_PLACE_KEYS}
   {@const prefix = kind === 'mode' ? 'vatMode' : 'vatPlace'}
   {@const display = kind === 'mode' ? vatModeDisplay : vatPlaceDisplay}
@@ -899,38 +854,36 @@
   {@const chosen = userActions[path] ?? null}
   {@const effLabel = eff ? enumLabel(prefix, keys, eff.value) : null}
   {@const autoLabel = eff ? enumLabel(prefix, keys, eff.auto ?? eff.value) : null}
-  <div class="shpd-exchange__field">
-    <span class="shpd-exchange__field-label">{t(`exchange.preview.field.${prefix}`)}</span>
-    {#if vatChoiceEnabled && eff}
-      <span class="shpd-exchange__field-value shpd-exchange__vat-choice">
-        <select
-          class="shpd-exchange__vat-select"
-          value={chosen ?? ''}
-          onchange={(e) => chooseVatHeader(kind, e.currentTarget.value)}
-        >
-          <option value="">{t('exchange.preview.vatChoice.auto', { value: autoLabel })}</option>
-          {#each keys as key (key)}
-            <option value={`useValue:${key}`}>{t(`exchange.preview.${prefix}.${key}`)}</option>
-          {/each}
-        </select>
-        <span class="shpd-exchange__field-hint">
-          {chosen !== null && eff.source !== 'user'
-            ? t('exchange.preview.vatChoice.overridden', { value: effLabel })
-            : t(`exchange.preview.vatChoice.source.${eff.source}`)}
-        </span>
+  {#if vatChoiceEnabled && eff}
+    <span class="shpd-exchange__vat-choice">
+      <select
+        class="shpd-exchange__vat-select"
+        value={chosen ?? ''}
+        onchange={(e) => chooseVatHeader(kind, e.currentTarget.value)}
+      >
+        <option value="">{t('exchange.preview.vatChoice.auto', { value: autoLabel })}</option>
+        {#each keys as key (key)}
+          <option value={`useValue:${key}`}>{t(`exchange.preview.${prefix}.${key}`)}</option>
+        {/each}
+      </select>
+      <span class="shpd-exchange__field-hint">
+        {chosen !== null && eff.source !== 'user'
+          ? t('exchange.preview.vatChoice.overridden', { value: effLabel })
+          : t(`exchange.preview.vatChoice.source.${eff.source}`)}
       </span>
+    </span>
     {:else}
-      <span class="shpd-exchange__field-value">
-        {eff ? effLabel : display.text}
-        {#if eff}
-          <span class="shpd-exchange__field-hint">{t(`exchange.preview.vatChoice.source.${eff.source}`)}</span>
-        {:else if display.isDefault}
-          <span class="shpd-exchange__field-hint">{t('exchange.preview.defaultHint')}</span>
-        {/if}
-      </span>
+    <span>
+      {eff ? effLabel : display.text}
+      {#if eff}
+        <span class="shpd-exchange__field-hint">{t(`exchange.preview.vatChoice.source.${eff.source}`)}</span>
+      {:else if display.isDefault}
+        <span class="shpd-exchange__field-hint">{t('exchange.preview.defaultHint')}</span>
+      {/if}
+    </span>
     {/if}
-  </div>
 {/snippet}
+
 
 <!-- Badge kódu DPH řádku — na rozdíl od statusBadge klikací i u matched
      (D16) a bez entity: popover s VatCodeDecisionPanel. Klikací i bez
@@ -959,296 +912,249 @@
   {/if}
 {/snippet}
 
-{#snippet field(label, value, hint = null)}
-  <div class="shpd-exchange__field">
-    <span class="shpd-exchange__field-label">{label}</span>
-    <span class="shpd-exchange__field-value">
-      {value ?? '—'}{#if hint}
-        <span class="shpd-exchange__field-hint">{hint}</span>
+
+<!-- Řádek nadpisu Řádky dokladu (D45): souhrn obohacení a hromadné akce
+     jako textová tlačítka — položka do všech ne-matched řádků (Issue #29),
+     kód DPH do všech řádků s volbou. -->
+{#snippet rowsAside()}
+  <span class="shpd-exchange__rows-aside">
+    {#if enrichedCount > 0}
+      <span class="shpd-exchange__enrich-summary">
+        {t('exchange.preview.enrich.summary', { count: enrichedCount })}
+      </span>
+    {/if}
+    {#if bulkItemVisible}
+      <Button
+        size="sm"
+        variant="secondary"
+        label={t('exchange.preview.bulk.itemButton', { count: bulkItemIndices.length })}
+        testid="review-ref-bulk:item"
+        onclick={openBulkItemDecision}
+      />
+    {/if}
+    {#if bulkVatCodeVisible}
+      <Button
+        size="sm"
+        variant="secondary"
+        label={t('exchange.preview.vatCode.bulkButton', { count: vatCodeRowIndices.length })}
+        onclick={openBulkVatCodeDecision}
+      />
+    {/if}
+  </span>
+{/snippet}
+
+<!-- Popis řádku: text složený serverem (_resolve.rows[i].rowText, #84 —
+     tentýž, co applier zapíše), kód dodavatele, značka položky a ⟲ jen
+     u řádku s enrichmentem bez druhého řádku (U1). -->
+{#snippet rowDescription(row, i)}
+  {@const match = rowMatchInfo(i)}
+  {row.description}
+  {#if row.supplierCode}
+    <span class="shpd-exchange__row-code">{row.supplierCode}</span>
+  {/if}
+  {@render statusBadge(resolve?.rows?.[i]?.item, `rows[${i}].item`, 'item')}
+  {#if match === null}
+    {@render enrichBadge(resolve?.rows?.[i]?.enrichment)}
+  {/if}
+{/snippet}
+
+{#snippet rowBelow(row, i)}
+  {@const match = rowMatchInfo(i)}
+  {#if match !== null}
+    {@render rowMatchLine(i, match)}
+  {/if}
+{/snippet}
+
+<!-- Účet, podle kterého se řádek zaúčtuje (_resolve.rows[i].effectiveAccount,
+     #111 D7b); značka jen u účtu z řádku. -->
+{#snippet rowAccount(row, i)}
+  {@const acc = rowEffectiveAccount(i)}
+  {#if acc}
+    <span class="shpd-exchange__row-code" title={acc.name ?? ''}>{acc.number}</span>
+    {#if acc.source === 'row'}
+      {@render statusBadge(resolve?.rows?.[i]?.account)}
+    {/if}
+  {:else}
+    —
+  {/if}
+{/snippet}
+
+{#snippet rowUnit(row, i)}
+  {row.unit ?? '—'}
+  {@render statusBadge(resolve?.rows?.[i]?.unit)}
+{/snippet}
+
+{#snippet rowVat(row, i)}
+  {row.vat ?? '—'}
+  {#if row.vatCode}
+    <span class="shpd-exchange__row-code">{row.vatCode}</span>
+  {/if}
+  {@render vatCodeBadge(i, resolve?.rows?.[i]?.vatCode)}
+{/snippet}
+
+<!-- Řádek složeného režimu (D45): „množství jednotka × cena · sazba kód“
+     a „· účet“ — stejné oddělovače jako rowMetaLine (documentParts.js), ale
+     skládá se tu, aby značky jednotky, kódu DPH a účtu stály u svých částí.
+     Tytéž značky jsou i ve skrytých širokých buňkách (viz hlavička souboru). -->
+{#snippet rowMeta(row, i)}
+  {@const amount = [row.quantity, row.unit].filter((part) => part).join(' ')}
+  {@const vatBlock = resolve?.rows?.[i]?.vatCode ?? null}
+  {@const acc = hasAccountColumn ? rowEffectiveAccount(i) : null}
+  {#if amount}
+    {amount}{@render statusBadge(resolve?.rows?.[i]?.unit)}
+  {/if}
+  {#if row.unitPrice}
+    {amount ? ' \u00d7 ' : ''}{row.unitPrice}
+  {/if}
+  {#if row.vat || vatBlock}
+    {amount || row.unitPrice ? ' \u00b7 ' : ''}{row.vat ?? '—'}
+    {#if row.vatCode}
+      <span class="shpd-exchange__row-code">{row.vatCode}</span>
+    {/if}
+    {@render vatCodeBadge(i, vatBlock)}
+  {/if}
+  {#if acc}
+    {' \u00b7 '}<span class="shpd-exchange__row-code" title={acc.name ?? ''}>{acc.number}</span>
+    {#if acc.source === 'row'}
+      {@render statusBadge(resolve?.rows?.[i]?.account)}
+    {/if}
+  {/if}
+{/snippet}
+
+<!-- Zdroj čísel rekapitulace a součtů (tasks/exchange-preview-vat-recompute.md
+     D5): převzatá z dokladu / přepočítaná (s důvodem) / bez přepočtu. -->
+{#snippet totalsBefore()}
+  <div class="shpd-exchange__recap-source">
+    {#if computed}
+      {t(computed.recapSource === 'declared'
+        ? 'exchange.preview.recap.declared'
+        : 'exchange.preview.recap.computed')}
+      {#if computed.recapFallback}
+        <span class="shpd-exchange__recap-reason">— {computed.recapFallback}</span>
       {/if}
-    </span>
+    {:else}
+      {t('exchange.preview.recap.notComputed')}
+    {/if}
   </div>
 {/snippet}
 
+<!-- Sazba v rekapitulaci: kód DPH (meta) a „oddaňovací řádek“ u dvojice
+     přenesené povinnosti (meta, ne zvláštní třída řádku). -->
+{#snippet recapRate(r)}
+  {r.rate ?? '—'}
+  {#if r.vatCode}
+    <span class="shpd-exchange__row-code">{r.vatCode}</span>
+  {/if}
+  {#if r.isReversePair}
+    <span class="shpd-exchange__recap-pair">{t('exchange.preview.recap.reversePair')}</span>
+  {/if}
+{/snippet}
+
+<!-- Nesoulad s částkou na dokladu dodavatele (computed_total_mismatch) —
+     hláška pod souhrnem (D52). -->
+{#snippet totalsAfter()}
+  <Notice tone="warning">
+    {t('exchange.preview.totals.supplierMismatch', { amount: formatMoney(supplierTotal, canonical?.currency ?? null) })}
+  </Notice>
+{/snippet}
+
 {#if aiFailed && wrapper}
-  <div class="shpd-exchange shpd-exchange--ai-failed">
-    <div class="shpd-exchange__ai-failed-header">
-      <span class="shpd-exchange__ai-failed-icon" aria-hidden="true">⚠</span>
-      <h2>{t('exchange.preview.aiFailed.title')}</h2>
-    </div>
-    <p class="shpd-exchange__ai-failed-message">
-      {t('exchange.preview.aiFailed.message')}
-    </p>
-    {#if wrapper._validationIssues && wrapper._validationIssues.length > 0}
-      <h3>{t('exchange.preview.aiFailed.issues')}</h3>
-      <ul class="shpd-exchange__ai-failed-issues">
-        {#each wrapper._validationIssues as issue}
-          <li>
-            <code>{issue.path}</code> — {issue.message}
-          </li>
-        {/each}
-      </ul>
-    {/if}
-    <details class="shpd-exchange__ai-failed-raw">
+  <!-- Selhání AI (D53): hláška danger s problémy formátu, surový výstup
+       rozbalovací pod ní jako blok `code` detailu. -->
+  <div class="shpd-exchange">
+    <Notice tone="danger" title={t('exchange.preview.aiFailed.title')} items={aiFailedItems}>
+      <p class="shpd-exchange__notice-text">{t('exchange.preview.aiFailed.message')}</p>
+    </Notice>
+    <details class="shpd-exchange__raw">
       <summary>{t('exchange.preview.aiFailed.rawOutput')}</summary>
-      <pre>{JSON.stringify(wrapper._rawOutput, null, 2)}</pre>
+      <pre class="shpd-exchange__raw-pre">{JSON.stringify(wrapper._rawOutput, null, 2)}</pre>
     </details>
   </div>
 {:else if canonical}
+  {@const groups = metaGroups(vatChoiceField)}
   <div class="shpd-exchange">
-    <header class="shpd-exchange__header">
-      <div class="shpd-exchange__header-main">
-        <span class="shpd-exchange__type-badge">{docTypeLabel}</span>
-        <h2 class="shpd-exchange__title">{canonical.docNumber ?? '—'}</h2>
-        {#if canonical.docText}
-          <p class="shpd-exchange__subtitle">{canonical.docText}</p>
-        {/if}
-      </div>
-      {#if summary}
-        <span
-          class="shpd-exchange__summary-badge shpd-exchange__summary-badge--{summary.status}"
-        >
-          {summary.status === 'ok'
-            ? t('exchange.preview.status.summary.ok')
-            : t('exchange.preview.status.summary.needsAttention')}
-        </span>
-      {/if}
-    </header>
+    <!-- Hlavička (D49): titulek protistrana (bez ní číslo), podtitul
+         „číslo · text“, štítky typ výsledku analýzy a souhrnný stav kontroly
+         — review je místo kontroly výsledku analýzy, stav kontroly není
+         stav záznamu (D20 se tu neuplatní). Bez ikony. -->
+    <DetailHeader title={header.title} subtitle={header.subtitle} badges={header.badges} />
 
+    <!-- Problémy z vytěžení (D53): hned pod hlavičkou, tón podle nejvyšší
+         závažnosti, cesta v roli meta. -->
+    {#if issueNoticeData.items.length > 0}
+      <Notice tone={issueNoticeData.tone} title={t('exchange.preview.section.issues')} items={issueNoticeData.items} />
+    {/if}
+
+    <!-- Strany (D50): sdílené karty v mřížce dvou sloupců; stav strany
+         v nadpisu karty, značka účtu za číslem (účet i bez čísla, když má
+         vlastní rozhodnutí — `supplierBank` / `customerBank`, D98), rychlé
+         založení z registru dole v kartě. -->
     <section class="shpd-exchange__parties">
-      {@render partyCard(
-        t('exchange.preview.section.supplier'),
-        canonical.supplier,
-        resolve?.supplier,
-        'supplier',
-      )}
-      {@render partyCard(
-        t('exchange.preview.section.customer'),
-        canonical.customer,
-        resolve?.customer,
-        'customer',
-      )}
-    </section>
-
-    <section class="shpd-exchange__meta-grid">
-      {@render field(t('exchange.preview.field.issueDate'), formatDate(canonical.dates?.issueDate))}
-      {@render field(t('exchange.preview.field.dueDate'), formatDate(canonical.dates?.dueDate))}
-      {@render field(t('exchange.preview.field.accountingDate'), formatDate(canonical.dates?.accountingDate))}
-      {@render field(t('exchange.preview.field.taxPointDate'), formatDate(canonical.dates?.taxPointDate))}
-      {@render field(t('exchange.preview.field.vatObligationDate'), formatDate(canonical.dates?.vatObligationDate))}
-      {@render field(t('exchange.preview.field.currency'), canonical.currency)}
-      {@render field(t('exchange.preview.field.paymentMethod'), paymentMethodLabel)}
-      {@render field(t('exchange.preview.field.paymentReference'), canonical.payment?.paymentReference)}
-      {@render vatChoiceField('mode')}
-      {@render vatChoiceField('place')}
-    </section>
-
-    {#if (canonical.rows ?? []).length > 0}
-      <section class="shpd-exchange__section">
-        <h3 class="shpd-exchange__section-heading shpd-exchange__section-heading--split">
-          <span>{t('exchange.preview.section.rows')}</span>
-          {#if enrichedCount > 0}
-            <span class="shpd-exchange__enrich-summary">
-              {t('exchange.preview.enrich.summary', { count: enrichedCount })}
-            </span>
-          {/if}
-        </h3>
-        <table class="shpd-exchange__rows">
-          <thead>
-            <tr>
-              <th class="shpd-exchange__rows-pos">{t('exchange.preview.row.position')}</th>
-              <th>
-                {t('exchange.preview.row.item')}
-                {#if bulkItemVisible}
-                  <button
-                    type="button"
-                    class="shpd-exchange__status shpd-exchange__status--canCreate shpd-exchange__status--interactive"
-                    title={t('exchange.preview.bulk.itemTitle', { count: bulkItemIndices.length })}
-                    data-testid="review-ref-bulk:item"
-                    onclick={openBulkItemDecision}
-                  >
-                    <span class="shpd-exchange__status-glyph">+</span>
-                  </button>
-                {/if}
-              </th>
-              {#if hasAccountColumn}
-                <th>{t('exchange.preview.row.account')}</th>
-              {/if}
-              <th class="num">{t('exchange.preview.row.quantity')}</th>
-              <th>{t('exchange.preview.row.unit')}</th>
-              <th class="num">{t('exchange.preview.row.unitPrice')}</th>
-              <th>
-                {t('exchange.preview.row.vat')}
-                {#if bulkVatCodeVisible}
-                  <button
-                    type="button"
-                    class="shpd-exchange__status shpd-exchange__status--canCreate shpd-exchange__status--interactive"
-                    title={t('exchange.preview.vatCode.bulkTitle', { count: vatCodeRowIndices.length })}
-                    onclick={openBulkVatCodeDecision}
-                  >
-                    <span class="shpd-exchange__status-glyph">%</span>
-                  </button>
-                {/if}
-              </th>
-              <th class="num">{t('exchange.preview.row.total')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each canonical.rows as row, i}
-              {@const effVat = effectiveRowVat(resolve?.rows?.[i]?.vatCode)}
-              {@const rowPrices = computedRowPrices.get(i)}
-              {@const match = rowMatchInfo(i)}
-              <tr>
-                <td>{row.orderPos ?? i + 1}</td>
-                <td>
-                  <!-- Row text composed server-side (_resolve.rows[i].rowText, #84) — the same
-                       text the applier writes to the document. item.name fallback only for
-                       a canonical without _resolve (previewMessage without applier). -->
-                  <span class="shpd-exchange__row-name">{resolve?.rows?.[i]?.rowText ?? row.item?.name ?? '—'}</span>
-                  {#if row.item?.supplierCode}
-                    <span class="shpd-exchange__row-code">{row.item.supplierCode}</span>
-                  {/if}
-                  {@render statusBadge(resolve?.rows?.[i]?.item, `rows[${i}].item`, 'item')}
-                  <!-- ⟲ jen u řádku s enrichmentem bez druhého řádku (U1): obsahová
-                       klasifikace jen s návrhem účtu, guarded, návrh bez napárování. -->
-                  {#if match === null}
-                    {@render enrichBadge(resolve?.rows?.[i]?.enrichment)}
-                  {:else}
-                    {@render rowMatchLine(i, match)}
-                  {/if}
-                </td>
-                {#if hasAccountColumn}
-                  {@const acc = rowEffectiveAccount(i)}
-                  <td>
-                    {#if acc}
-                      <span class="shpd-exchange__row-code" title={acc.name ?? ''}>{acc.number}</span>
-                      {#if acc.source === 'row'}
-                        {@render statusBadge(resolve?.rows?.[i]?.account)}
-                      {/if}
-                    {:else}
-                      —
-                    {/if}
-                  </td>
-                {/if}
-                <td class="num">{row.quantity ?? '—'}</td>
-                <td>
-                  {row.unit ?? '—'}
-                  {@render statusBadge(resolve?.rows?.[i]?.unit)}
-                </td>
-                <td class="num">{formatMoney(rowPrices?.unitPrice ?? row.unitPrice, canonical.currency)}</td>
-                <td>
-                  {effVat?.pct ?? row.vat?.pct ?? '—'}%
-                  {#if effVat?.code}
-                    <span class="shpd-exchange__row-code">{effVat.code}</span>
-                  {/if}
-                  {@render vatCodeBadge(i, resolve?.rows?.[i]?.vatCode)}
-                </td>
-                <td class="num">{formatMoney(rowPrices?.totalPrice ?? row.totalPrice, canonical.currency)}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </section>
-    {/if}
-
-    {#if recapRows.length > 0 || totals}
-      <section class="shpd-exchange__section shpd-exchange__totals-section">
-        <!-- Zdroj čísel: převzatá z dokladu / přepočítaná (s důvodem) / bez
-             přepočtu. Platí pro rekapitulaci i součty, proto nad oběma. -->
-        <div class="shpd-exchange__recap-source">
-          {#if computed}
-            {t(computed.recapSource === 'declared'
-              ? 'exchange.preview.recap.declared'
-              : 'exchange.preview.recap.computed')}
-            {#if computed.recapFallback}
-              <span class="shpd-exchange__recap-reason">— {computed.recapFallback}</span>
-            {/if}
-          {:else}
-            {t('exchange.preview.recap.notComputed')}
-          {/if}
-        </div>
-        {#if recapRows.length > 0}
-          <div class="shpd-exchange__recap">
-            <table class="shpd-exchange__vat-recap">
-              <thead>
-                <tr>
-                  <th>{t('exchange.preview.row.vat')}</th>
-                  <th class="num">{t('exchange.preview.totals.base')}</th>
-                  <th class="num">{t('exchange.preview.totals.vat')}</th>
-                  <th class="num">{t('exchange.preview.totals.total')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each recapRows as r}
-                  <tr class:shpd-exchange__recap-row--pair={r.isReversePair}>
-                    <td>
-                      {r.vatPct}%
-                      {#if r.vatCode}
-                        <span class="shpd-exchange__row-code">{r.vatCode}</span>
-                      {/if}
-                      {#if r.isReversePair}
-                        <span class="shpd-exchange__recap-pair">{t('exchange.preview.recap.reversePair')}</span>
-                      {/if}
-                    </td>
-                    <td class="num">{formatMoney(r.base, canonical.currency)}</td>
-                    <td class="num">{formatMoney(r.tax, canonical.currency)}</td>
-                    <td class="num">{formatMoney(r.total, canonical.currency)}</td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        {/if}
-        {#if totals}
-          <div class="shpd-exchange__totals-summary">
-            <div>
-              {t('exchange.preview.totals.base')}:
-              <strong>{formatMoney(totals.totalBase, canonical.currency)}</strong>
-            </div>
-            <div>
-              {t('exchange.preview.totals.vat')}:
-              <strong>{formatMoney(totals.totalVat, canonical.currency)}</strong>
-            </div>
-            <!-- Hodnota, která skončí na dokladu (data-testid zůstává na ní). -->
-            <div class="shpd-exchange__total" data-testid="review-total">
-              {t('exchange.preview.totals.total')}:
-              <strong>{formatMoney(totals.totalAmount, canonical.currency)}</strong>
-            </div>
-            {#if totalMismatch && supplierTotal !== null}
-              <div class="shpd-exchange__supplier-total">
-                {t('exchange.preview.totals.supplierTotal')}:
-                <span>{formatMoney(supplierTotal, canonical.currency)}</span>
-              </div>
-            {/if}
-            {#if totals.totalRounding}
-              <div>
-                {t('exchange.preview.totals.rounding')}:
-                <strong>{formatMoney(totals.totalRounding, canonical.currency)}</strong>
-              </div>
+      {#each [
+        ['supplier', supplierParty, t('document.section.supplier')],
+        ['customer', customerParty, t('document.section.customer')],
+      ] as [path, party, title] (path)}
+        {@const bankPath = `${path}Bank`}
+        {@const bankResolve = resolve?.[bankPath] ?? null}
+        {#snippet partyStatus()}
+          {@render statusBadge(resolve?.[path], path, 'party')}
+        {/snippet}
+        {#snippet partyBankStatus()}
+          {@render statusBadge(bankResolve, bankPath, 'bankAccount')}
+        {/snippet}
+        {#snippet partyFooter()}
+          <div class="shpd-exchange__party-footer">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={quickAddBusy[path] ?? false}
+              label={quickAddBusy[path]
+                ? t('exchange.preview.registry.creating')
+                : `+ ${t('exchange.preview.registry.quickAdd', { name: registryHits[path].fullName })}`}
+              onclick={() => handleRegistryQuickAdd(path)}
+            />
+            {#if quickAddError[path]}
+              <Notice tone="danger">{quickAddError[path]}</Notice>
             {/if}
           </div>
-        {/if}
-      </section>
+        {/snippet}
+        <PartyCard
+          {title}
+          {party}
+          status={resolve?.[path] ? partyStatus : undefined}
+          bankStatus={bankResolve ? partyBankStatus : undefined}
+          footer={registryOffered(path) ? partyFooter : undefined}
+        />
+      {/each}
+    </section>
+
+    <!-- Údaje (D51): PropertyGroups jako detail, prázdné pole „—“ —
+         kontroluje se vytěžení; výběr DPH je snippet položky. -->
+    <PropertyGroups {groups} headingLevel={3} emptyValue={'\u2014'} />
+
+    {#if rows.length > 0}
+      <DocRows
+        title={t('document.section.rows')}
+        {rows}
+        aside={rowsAsideVisible ? rowsAside : undefined}
+        description={rowDescription}
+        below={rowBelow}
+        account={hasAccountColumn ? rowAccount : undefined}
+        unit={rowUnit}
+        vat={rowVat}
+        meta={rowMeta}
+      />
     {/if}
 
-    {#if issues.length > 0}
-      <section class="shpd-exchange__section shpd-exchange__issues">
-        <h3 class="shpd-exchange__section-heading">
-          {t('exchange.preview.section.issues')}
-        </h3>
-        <ul>
-          {#each issues as issue}
-            <li class="shpd-exchange__issue shpd-exchange__issue--{issue.severity}">
-              <span class="shpd-exchange__issue-glyph" aria-hidden="true">
-                {issueGlyph(issue.severity)}
-              </span>
-              <code>{issue.path}</code>
-              <span>—</span>
-              <span>{issue.message}</span>
-            </li>
-          {/each}
-        </ul>
-      </section>
+    {#if totalsData.recap.length > 0 || totalsData.summary}
+      <!-- Hodnota Celkem nese data-testid review-total (proklikání sady #103). -->
+      <DocTotals
+        totals={totalsData}
+        totalTestId="review-total"
+        before={totalsBefore}
+        rate={recapRate}
+        after={totalMismatch && supplierTotal !== null ? totalsAfter : undefined}
+      />
     {/if}
   </div>
 {/if}
@@ -1344,55 +1250,10 @@
     container-type: inline-size;
   }
 
-  .shpd-exchange__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--shpd-space-md);
-    border-bottom: 1px solid var(--shpd-color-border);
-    padding-bottom: var(--shpd-space-md);
-  }
-
-  .shpd-exchange__type-badge {
-    display: inline-block;
-    padding: 0.125rem var(--shpd-space-sm);
-    background: var(--shpd-color-primary-soft);
-    color: var(--shpd-color-primary);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-exchange__title {
-    margin: 0;
-    font-size: var(--shpd-font-size-xl);
-    font-weight: 600;
-  }
-
-  .shpd-exchange__subtitle {
-    margin: var(--shpd-space-xs) 0 0;
-    color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-exchange__summary-badge {
-    padding: var(--shpd-space-xs) 0.625rem;
-    border-radius: 0.75rem;
-    font-size: var(--shpd-font-size-xs);
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  .shpd-exchange__summary-badge--ok {
-    background: var(--shpd-color-state-done-bg);
-    color: var(--shpd-color-state-done-text);
-  }
-
-  .shpd-exchange__summary-badge--needsAttention {
-    background: var(--shpd-color-state-concept-bg);
-    color: var(--shpd-color-state-concept-text);
-  }
+  /* Hlavičku, karty stran, údaje, tabulky, součty a hlášky kreslí sdílené
+     části (#139 D48): DetailHeader, PartyCard, PropertyGroups, DocRows,
+     DocTotals, Notice — vlastní CSS tu mají jen mřížka stran, stavové
+     značky, napárování, kódy, výběr DPH a drobné obaly snippetů. */
 
   /* ── Parties ─────────────────────────────────────────────────────────── */
 
@@ -1409,115 +1270,22 @@
     }
   }
 
-  /* Obal karty strany kreslí sdílená Card (#137 D33), odsazení md. */
-  .shpd-exchange__party-header {
+  /* Patička karty strany: rychlé založení z registru + chyba pod ním. */
+  .shpd-exchange__party-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--shpd-space-xs);
+    flex-direction: column;
+    gap: var(--shpd-space-xs);
   }
 
-  .shpd-exchange__party-label {
-    margin: 0;
-    font-size: var(--shpd-font-size-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-exchange__party-name {
-    font-weight: 600;
-    font-size: var(--shpd-font-size-base);
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-exchange__party-ids,
-  .shpd-exchange__party-contact {
-    display: flex;
+  /* Řádek nadpisu Řádky dokladu: souhrn obohacení a hromadné akce. */
+  .shpd-exchange__rows-aside {
+    display: inline-flex;
     flex-wrap: wrap;
-    gap: var(--shpd-space-md);
-    font-size: 0.8125rem;
-    color: var(--shpd-color-text-secondary);
-    margin-bottom: var(--shpd-space-xs);
-  }
-
-  .shpd-exchange__party-address,
-  .shpd-exchange__party-bank {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    font-size: 0.8125rem;
-    margin-bottom: var(--shpd-space-xs);
+    gap: var(--shpd-space-sm);
   }
 
-  .shpd-exchange__party-empty {
-    color: var(--shpd-color-text-secondary);
-    font-style: italic;
-  }
-
-  /* Quick-add z registru (Issue #28) — vizuálně zrcadlí .shpd-resolve__create
-     v ResolveDecisionPanel, aby obě místa nabízela stejně vypadající akci. */
-  .shpd-exchange__party-registry {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
-    margin-top: var(--shpd-space-xs);
-  }
-
-  .shpd-exchange__party-registry-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-xs);
-    width: 100%;
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
-    background-color: var(--shpd-color-bg);
-    color: var(--shpd-color-primary);
-    font-family: inherit;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    border-radius: var(--shpd-radius-sm);
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .shpd-exchange__party-registry-btn:hover:not(:disabled) {
-    background-color: var(--shpd-color-primary-soft);
-  }
-
-  .shpd-exchange__party-registry-btn:disabled {
-    cursor: default;
-    opacity: 0.7;
-  }
-
-  .shpd-exchange__party-registry-error {
-    font-size: var(--shpd-font-size-xs);
-    color: var(--shpd-color-danger);
-  }
-
-  /* ── Meta grid ───────────────────────────────────────────────────────── */
-
-  .shpd-exchange__meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: var(--shpd-space-xs) var(--shpd-space-md);
-  }
-
-  .shpd-exchange__field {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .shpd-exchange__field-label {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    color: var(--shpd-color-text-secondary);
-    letter-spacing: 0.5px;
-  }
-
-  .shpd-exchange__field-value {
-    font-size: var(--shpd-font-size-sm);
-  }
+  /* ── Údaje: výběr DPH ──────────────────────────────────────────────── */
 
   .shpd-exchange__field-hint {
     margin-left: var(--shpd-space-xs);
@@ -1669,63 +1437,11 @@
   }
 
   .shpd-exchange__enrich-summary {
-    text-transform: none;
-    letter-spacing: normal;
     font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-exchange__section-heading--split {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--shpd-space-sm);
-  }
-
-  /* ── Rows table ──────────────────────────────────────────────────────── */
-
-  .shpd-exchange__section-heading {
-    margin: 0 0 var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-exchange__rows,
-  .shpd-exchange__vat-recap {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8125rem;
-  }
-
-  .shpd-exchange__rows th,
-  .shpd-exchange__rows td,
-  .shpd-exchange__vat-recap th,
-  .shpd-exchange__vat-recap td {
-    padding: var(--shpd-space-xs);
-    border-bottom: 1px solid var(--shpd-color-border);
-    text-align: left;
-  }
-
-  .shpd-exchange__rows th,
-  .shpd-exchange__vat-recap th {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    color: var(--shpd-color-text-secondary);
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
-
-  .shpd-exchange__rows .num,
-  .shpd-exchange__vat-recap .num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .shpd-exchange__row-name {
-    font-weight: 500;
-  }
+  /* ── Řádky: napárování a kódy ──────────────────────────────────────── */
 
   /* Druhý řádek buňky Položka (#111 D1, D2): napárovaná / zvolená položka
      a zdroj — menší a šedě; slabý zdroj (podobný text, častá položka,
@@ -1777,24 +1493,7 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  /* ── Totals ──────────────────────────────────────────────────────────── */
-
-  .shpd-exchange__totals-section {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--shpd-space-md);
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .shpd-exchange__totals-summary {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
-    text-align: right;
-    min-width: 220px;
-    font-variant-numeric: tabular-nums;
-  }
+  /* ── Součty: zdroj čísel, dvojice přenesené povinnosti ─────────────── */
 
   /* Zdroj čísel nad rekapitulací i součty — celá šířka sekce. */
   .shpd-exchange__recap-source {
@@ -1807,101 +1506,32 @@
     font-style: italic;
   }
 
-  /* Tabulka rekapitulace s kódy se na telefonu scrolluje, nerozbíjí layout. */
-  .shpd-exchange__recap {
-    flex: 1 1 280px;
-    min-width: 0;
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  .shpd-exchange__recap-row--pair td {
-    color: var(--shpd-color-text-secondary);
-  }
-
   .shpd-exchange__recap-pair {
     margin-left: var(--shpd-space-xs);
     font-size: 0.6875rem;
     color: var(--shpd-color-text-secondary);
   }
 
-  /* Částka z dokladu dodavatele — jen při rozdílu proti výpočtu. */
-  .shpd-exchange__supplier-total {
-    font-size: 0.8125rem;
-    color: var(--shpd-color-text-secondary);
-  }
+  /* ── Selhání AI ────────────────────────────────────────────────────── */
 
-  .shpd-exchange__total {
-    border-top: 1px solid var(--shpd-color-border);
-    padding-top: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-base);
-  }
-
-  /* ── Issues ──────────────────────────────────────────────────────────── */
-
-  .shpd-exchange__issues ul {
-    list-style: none;
-    padding: 0;
+  .shpd-exchange__notice-text {
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
   }
 
-  .shpd-exchange__issue {
-    display: flex;
-    gap: var(--shpd-space-xs);
-    padding: var(--shpd-space-xs);
-    border-radius: var(--shpd-radius-sm);
-    font-size: 0.8125rem;
+  .shpd-exchange__raw summary {
+    cursor: pointer;
   }
 
-  .shpd-exchange__issue--error {
-    background: var(--shpd-color-state-cancelled-bg);
-    color: var(--shpd-color-state-cancelled-text);
-  }
-
-  .shpd-exchange__issue--warning {
-    background: var(--shpd-color-state-concept-bg);
-    color: var(--shpd-color-state-concept-text);
-  }
-
-  .shpd-exchange__issue--info {
-    background: var(--shpd-color-primary-soft);
-    color: var(--shpd-color-primary);
-  }
-
-  .shpd-exchange__issue-glyph {
-    font-weight: 700;
-  }
-
-  /* ── ai_failed ───────────────────────────────────────────────────────── */
-
-  .shpd-exchange--ai-failed {
-    color: var(--shpd-color-state-cancelled-text);
-  }
-
-  .shpd-exchange__ai-failed-header {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-  }
-
-  .shpd-exchange__ai-failed-icon {
-    font-size: 1.5rem;
-  }
-
-  .shpd-exchange__ai-failed-issues {
-    margin: var(--shpd-space-xs) 0;
-    padding-left: var(--shpd-space-md);
-  }
-
-  .shpd-exchange__ai-failed-raw pre {
-    background: var(--shpd-color-bg-secondary);
+  /* Surový výstup jako blok `code` detailu (§12): mono, meta, pozadí
+     bg-secondary, zaoblení md, dlouhý řádek roluje v bloku. */
+  .shpd-exchange__raw-pre {
+    margin: var(--shpd-space-xs) 0 0;
     padding: var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
+    background: var(--shpd-color-bg-secondary);
+    border-radius: var(--shpd-radius-md);
+    font-family: var(--shpd-font-family-mono);
+    font-size: var(--shpd-font-size-meta);
     overflow: auto;
-    font-size: var(--shpd-font-size-xs);
     max-height: 320px;
   }
 </style>
