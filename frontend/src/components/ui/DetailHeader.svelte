@@ -1,7 +1,7 @@
 <script>
   // Hlavička detailu záznamu (#139 D48; docs/design-system.md §12 Hlavička):
   // ikona typu záznamu 40×40 vlevo, titulek (role title), štítky v řádku
-  // titulku (`Badge`), podtitul (meta, barvou textu). Vytažená z
+  // titulku (`Badge`), podtitul (body, barvou textu, D56). Vytažená z
   // `ViewerDetail` beze změny vzhledu, aby ji task 2 #139 použil i pro
   // review dokladu (bez ikony, D49) — hlavička je sdílená část, ne kopie.
   //
@@ -37,8 +37,9 @@
 
 <style>
   /* Drobný panel nad taby. Písmo podle typografických rolí (#135,
-     docs/design-system.md → Detail záznamu): titulek title, podtitul meta
-     barvou textu, štítky meta normální tloušťkou (Badge). */
+     docs/design-system.md → Detail záznamu): titulek title, podtitul body
+     barvou textu (D56 — v roli meta splýval se štítky), štítky meta
+     normální tloušťkou (Badge). */
   .shpd-detail-header {
     display: flex;
     align-items: center;
@@ -85,7 +86,7 @@
 
   .shpd-detail-header__subtitle {
     margin-top: 0.125rem;
-    font-size: var(--shpd-font-size-meta);
+    font-size: var(--shpd-font-size-body);
     color: var(--shpd-color-text);
   }
 </style>

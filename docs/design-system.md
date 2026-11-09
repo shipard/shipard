@@ -873,8 +873,8 @@ v kartě Nastavení moc malý, a rozdělení proběhlo tím jedním místem.
 |---|---|---|---|---|---|
 | title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem, nadpis karty jako samostatné části stránky (Přehled firmy, karty Nastavení — D36), hlavní částka karty (Přehled firmy, feed) |
 | heading | `--shpd-font-size-heading` | `base` (1rem) | strong | text | nadpis sekce (detail i feed dashboardu), nadpis karty uvnitř obsahu, název entity v kartě, název karty feedu, mezinadpis v kartě Nastavení |
-| body | `--shpd-font-size-body` | `sm` (0.875rem) | normal (hlavička sloupce strong) | text | popisky i hodnoty, řádky tabulek i hlavička sloupce (ve velikosti řádků, silnější), taby |
-| meta | `--shpd-font-size-meta` | `xs` (0.75rem) | normal | text; šedá (`--shpd-color-text-secondary`) jen u kontaktů a doplňků | podtitul, štítky, kontakty, přepočet v domácí měně |
+| body | `--shpd-font-size-body` | `sm` (0.875rem) | normal (hlavička sloupce strong) | text | popisky i hodnoty, řádky tabulek i hlavička sloupce (ve velikosti řádků, silnější), taby, podtitul hlavičky detailu (D56) |
+| meta | `--shpd-font-size-meta` | `xs` (0.75rem) | normal | text; šedá (`--shpd-color-text-secondary`) jen u kontaktů a doplňků | štítky, kontakty, přepočet v domácí měně |
 
 Tloušťky: `--shpd-font-weight-normal` (400) a `--shpd-font-weight-strong`
 (600). `heading` a `body` byly původně stejně velké a lišily se jen
@@ -925,7 +925,7 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
    zbytku aplikace (`Button size="sm"`, škála `sm`).
 2. **Hlavička** (`components/ui/DetailHeader.svelte`, #139 D48 — sdílená
    pro `ViewerDetail` i review dokladu): ikona typu záznamu 40×40 vlevo,
-   titulek (title), podtitul (meta, barvou textu), štítky (`Badge`: meta,
+   titulek (title), podtitul (body, barvou textu, D56), štítky (`Badge`: meta,
    normální tloušťka, `padding: 0.125rem 0.625rem`, pilulka). Odsazení
    `0.75rem var(--shpd-space-md)`, mezera ikona–text `0.75rem`.
    - **Hlavička neopakuje kontext** (D13): štítek typu záznamu do ní
@@ -1224,7 +1224,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29), `emptyValue`; výběr skupin čistá funkce `propertyGroups.js` |
 | `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text, meta}`), role podle tónu, bez okraje |
 | `frontend/src/components/ui/Badge.svelte` | Štítek hlavičky detailu a bloku `badges` (§5) — obecné i doc-state varianty, pilulka meta |
-| `frontend/src/components/ui/DetailHeader.svelte` | Hlavička detailu (§12 Pořadí, #139 D48) — ikona 40×40, titulek title, štítky `Badge`, podtitul meta; sdílená pro `ViewerDetail` i review dokladu |
+| `frontend/src/components/ui/DetailHeader.svelte` | Hlavička detailu (§12 Pořadí, #139 D48) — ikona 40×40, titulek title, štítky `Badge`, podtitul body (D56); sdílená pro `ViewerDetail` i review dokladu |
 | `frontend/src/components/ui/TableScroll.svelte` | Obal tabulky s posunem do strany (§12 Tabulka, D44) — `overflow-x: auto`, bez `tabindex`, volitelný `label` → region |
 | `frontend/src/components/document/documentParts.js` | Adaptér detailu dokladu (čisté funkce, `t` parametrem, #139 D48): `detailParty`, `detailRows`, `detailTotals`, `formatAddress`, `rowMetaLine` — jeden tvar dat částí s hotovými texty |
 | `frontend/src/components/document/PartyCard.svelte` | Karta strany dokladu (§12, D50) — `Card`, pořadí D16, snippety `name` / `status` / `bankStatus` / `footer` |

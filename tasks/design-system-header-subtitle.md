@@ -1,6 +1,6 @@
 # Design system — podtitul hlavičky v roli body
 
-**Stav:** naplánováno — #139 task 3 (D56), drobnost z ověření tasků 1 a 2
+**Stav:** hotovo — #139 task 3 (D56), 2026-11-09; drobnost z ověření tasků 1 a 2
 
 ## Kontext / Cíl
 
@@ -79,11 +79,11 @@ V prohlížeči (Firefox), okno 1440 a 1280 px a telefon 390 px:
 
 ## Hotovo když
 
-- [ ] podtitul `DetailHeader` v roli body
-- [ ] `docs/design-system.md` §11, §12, §13 a komentáře v `variables.css`
+- [x] podtitul `DetailHeader` v roli body
+- [x] `docs/design-system.md` §11, §12, §13 a komentáře v `variables.css`
       bez podtitulu v roli meta
-- [ ] ověřeno v detailu tří typů záznamů, v review a v náhledu Spisovny
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] ověřeno v detailu tří typů záznamů, v review a v náhledu Spisovny
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Pasti
 
