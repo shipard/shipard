@@ -101,7 +101,7 @@
 
   .shpd-pdf-panel__filename {
     font-family: var(--shpd-font-mono, monospace);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-pdf-panel__download {
@@ -136,13 +136,13 @@
     border-bottom: 2px solid transparent;
     margin-bottom: -0.0625rem;
     white-space: nowrap;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-pdf-panel__tab--active {
     color: var(--shpd-color-primary);
     border-bottom-color: var(--shpd-color-primary);
-    font-weight: 500;
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   .shpd-pdf-panel__iframe {

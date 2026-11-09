@@ -94,7 +94,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     flex: 1 1 auto;
     min-height: 0;
   }
@@ -108,7 +108,7 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--shpd-space-sm);
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-vatcode__unselect {
@@ -117,21 +117,20 @@
     color: inherit;
     text-decoration: underline;
     cursor: pointer;
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     flex-shrink: 0;
   }
 
   .shpd-vatcode__hint {
     margin: 0;
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
   .shpd-vatcode__heading {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text-secondary);
-    letter-spacing: 0.5px;
   }
 
   .shpd-vatcode__list {
@@ -171,7 +170,7 @@
 
   .shpd-vatcode__code {
     font-family: var(--shpd-font-mono, monospace);
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -181,11 +180,10 @@
 
   .shpd-vatcode__pct {
     font-variant-numeric: tabular-nums;
-    font-weight: 500;
   }
 
   .shpd-vatcode__tag {
-    font-size: 0.6875rem;
+    font-size: var(--shpd-font-size-meta);
     padding: 0 var(--shpd-space-xs);
     border-radius: 0.1875rem;
     background: var(--shpd-color-bg-secondary);

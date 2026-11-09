@@ -425,7 +425,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     /* Když Popover omezí výšku (shpd-popover--constrained je flex sloupec),
        panel se zmenší místo něj a zmenšení nese seznam výsledků — tlačítka
        Vytvořit / Vynechat zůstávají viditelná bez scrollování popoveru. */
@@ -446,7 +446,7 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--shpd-space-sm);
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-resolve__unselect {
@@ -455,7 +455,7 @@
     color: inherit;
     text-decoration: underline;
     cursor: pointer;
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     flex-shrink: 0;
   }
 
@@ -466,10 +466,9 @@
   }
 
   .shpd-resolve__heading {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text-secondary);
-    letter-spacing: 0.5px;
     margin-bottom: 0.125rem;
   }
 
@@ -491,7 +490,7 @@
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     color: var(--shpd-color-text);
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-resolve__candidate:hover {
@@ -501,7 +500,7 @@
   .shpd-resolve__candidate-id {
     font-family: var(--shpd-font-mono, monospace);
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
   }
 
   .shpd-resolve__input {
@@ -509,7 +508,7 @@
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     font-family: inherit;
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
@@ -545,7 +544,7 @@
     padding: var(--shpd-space-sm);
     text-align: center;
     color: var(--shpd-color-text-secondary);
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-resolve__status--error {
@@ -563,7 +562,7 @@
     background: transparent;
     color: var(--shpd-color-text);
     font-family: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-body);
     cursor: pointer;
     text-align: left;
     border-bottom: 1px solid var(--shpd-color-border);
@@ -581,12 +580,8 @@
     background-color: var(--shpd-color-bg-secondary);
   }
 
-  .shpd-resolve__item-primary {
-    font-weight: 500;
-  }
-
   .shpd-resolve__item-secondary {
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -606,8 +601,7 @@
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-primary);
     font-family: inherit;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--shpd-font-size-body);
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     text-align: left;
@@ -625,7 +619,7 @@
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     font-family: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-body);
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     text-align: left;
@@ -654,7 +648,7 @@
     background-color: var(--shpd-color-bg-secondary);
     border-radius: var(--shpd-radius-sm);
     color: var(--shpd-color-text-secondary);
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-meta);
   }
 
   /* Napárovaná položka nad hledáním (#111 D5) — tišší než „Vybráno“,

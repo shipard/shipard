@@ -458,7 +458,7 @@
   }
 
   .shpd-exchange-modal__source-code {
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     font-variant-numeric: tabular-nums;
   }
 
@@ -467,7 +467,7 @@
     background: none;
     padding: 0;
     font: inherit;
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     font-variant-numeric: tabular-nums;
     color: var(--shpd-color-primary);
     cursor: pointer;
@@ -484,7 +484,7 @@
     border-radius: var(--shpd-radius-full);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-meta);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
@@ -495,7 +495,7 @@
     margin-right: auto;
     align-self: center;
     color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
   }
 
   .shpd-exchange-modal__loading,
@@ -505,7 +505,7 @@
     justify-content: center;
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     min-height: 200px;
   }
 
@@ -531,13 +531,14 @@
     color: var(--shpd-color-text-secondary);
     border-bottom: 2px solid transparent;
     margin-bottom: -0.0625rem;
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 500;
+    font-size: var(--shpd-font-size-body);
+    font-weight: var(--shpd-font-weight-normal);
   }
 
   .shpd-exchange-modal__mobile-tab--active {
     color: var(--shpd-color-primary);
     border-bottom-color: var(--shpd-color-primary);
+    font-weight: var(--shpd-font-weight-strong);
   }
 
   /* Desktop: 50/50 split. */

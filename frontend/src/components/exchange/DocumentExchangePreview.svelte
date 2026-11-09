@@ -1243,7 +1243,7 @@
     flex-direction: column;
     gap: var(--shpd-space-md);
     padding: var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
        ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
        rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */
@@ -1289,7 +1289,7 @@
 
   .shpd-exchange__field-hint {
     margin-left: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -1303,7 +1303,7 @@
 
   .shpd-exchange__vat-select {
     font: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-body);
     padding: 0.125rem var(--shpd-space-xs);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
@@ -1314,6 +1314,9 @@
 
   /* ── Status badges ───────────────────────────────────────────────────── */
 
+  /* Stavová značka (kolečko se znakem) zůstává ovládacím prvkem; znak
+     v roli meta normální tloušťkou (D54), kolečko 18 px — D46 (#138 task 4). */
+
   .shpd-exchange__status {
     display: inline-flex;
     align-items: center;
@@ -1322,8 +1325,8 @@
     height: 18px;
     border-radius: 50%;
     margin-left: var(--shpd-space-xs);
-    font-size: 0.625rem;
-    font-weight: 700;
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
     vertical-align: middle;
   }
 
@@ -1413,7 +1416,7 @@
     height: 14px;
     border-radius: 50%;
     margin-left: 0.125rem;
-    font-size: 0.6875rem;
+    font-size: var(--shpd-font-size-meta);
     line-height: 1;
     vertical-align: middle;
     cursor: default;
@@ -1437,7 +1440,7 @@
   }
 
   .shpd-exchange__enrich-summary {
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -1450,7 +1453,7 @@
   .shpd-exchange__row-match {
     display: block;
     margin-top: 0.125rem;
-    font-size: var(--shpd-font-size-xs);
+    font-size: var(--shpd-font-size-meta);
     line-height: 1.3;
     color: var(--shpd-color-text-secondary);
     text-align: left;
@@ -1488,8 +1491,8 @@
     padding: 0 var(--shpd-space-xs);
     background: var(--shpd-color-bg-secondary);
     border-radius: 0.1875rem;
-    font-family: var(--shpd-font-mono, monospace);
-    font-size: 0.6875rem;
+    font-family: var(--shpd-font-family-mono);
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -1498,7 +1501,7 @@
   /* Zdroj čísel nad rekapitulací i součty — celá šířka sekce. */
   .shpd-exchange__recap-source {
     flex-basis: 100%;
-    font-size: 0.8125rem;
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
@@ -1508,7 +1511,7 @@
 
   .shpd-exchange__recap-pair {
     margin-left: var(--shpd-space-xs);
-    font-size: 0.6875rem;
+    font-size: var(--shpd-font-size-meta);
     color: var(--shpd-color-text-secondary);
   }
 
