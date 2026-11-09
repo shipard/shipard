@@ -680,6 +680,15 @@ i kód zdrojové zprávy na detailu dokladu (`DocumentDetail` → akce
 v read-only modalu zůstává přechod do vieweru Došlá pošta). Žádný nový
 globální store ani hostitel modalu (D10).
 
+**Náhled na sdílených částech dokladu** (#139 D49–D55): pravý panel
+kreslí tytéž části jako detail dokladu (`DetailHeader`, `PartyCard`,
+`PropertyGroups`, `DocRows`, `DocTotals`, `Notice`) přes adaptér
+`components/exchange/reviewParts.js`; co je navíc ke kontrole (stavové
+značky, napárování, výběr DPH, hromadné akce, rychlé založení z registru),
+dodává `DocumentExchangePreview` snippety. Vzhled, hlavička se dvěma
+štítky a „—“ u prázdných polí: `docs/design-system.md` §12 → Review
+dokladu a náhled Spisovny.
+
 ### 6.4 `reject_message` — prompt na důvod
 
 Sdílená komponenta `RejectReasonPrompt` (povinný neprázdný důvod) →

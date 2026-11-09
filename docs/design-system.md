@@ -424,8 +424,10 @@ Rozhodnutí D40 a D41 (task 3 #137) z #133. Hláška v obsahu je sdílená
   body. Bez levého pruhu, bez stínu a **bez vnějšího okraje** — mezeru dává
   rodič (obal se třídou, nebo mezera flex sloupce). Volitelně nadpis
   `title` (strong, velikost body), ikona `icon` vlevo (dekorace) a seznam
-  `items` — položka text, nebo `{label, text}` („popisek: text“, popisek
-  strong: validace formuláře, zámek dokladu); jiný obsah dává `children`.
+  `items` — položka text, nebo `{label, text, meta}` („popisek: text“,
+  popisek strong: validace formuláře, zámek dokladu; `meta` za textem
+  v roli meta šedě — cesta problému z vytěžení v review, #139 D53); jiný
+  obsah dává `children`.
   Role `alert` jen u `danger` (čte se hned — jen chyba), jinak `status`,
   volající ji smí přepsat; `data-testid` a `aria-*` jdou na kořen, `class`
   jen pro stavové třídy, nikdy pro mezery.
@@ -973,7 +975,9 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   mřížka skupin), ne nadpis. `level` 2–4 (karty Přehledu firmy h2 pod
   h1 stránky, skupiny vlastností v obecném detailu h4 jako dřív);
   volitelný snippet `aside` sedí
-  vpravo ve stejném řádku (přepínač náhledů příloh). Blok `heading`
+  vpravo ve stejném řádku (přepínač náhledů příloh, hromadné akce review);
+  když se vedle nadpisu nevejde, zalomí se pod něj (`flex-wrap`, #139),
+  nadpis se nestlačuje do víc řádků. Blok `heading`
   v `composite` je nadpis bloku pod ním — ten mezeru nad sebou nemá.
   Propy `role="title"`, `icon` a `spacing` jsou pro nadpis karty jako
   samostatné části stránky (§8 Karty, D36, D38) — v detailu záznamu je
@@ -997,7 +1001,13 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   vodorovně, oba sloupce body barvou textu (D15), hodnota se zalamuje
   (`overflow-wrap: anywhere` — IBAN, e-mail); prázdná hodnota se nevykreslí
   (`0` prázdná není), prázdná skupina celá; položka s prázdným popiskem
-  (`label: ''`, text poznámky) má hodnotu přes oba sloupce. Skupiny vedle
+  (`label: ''`, text poznámky) má hodnotu přes oba sloupce. Volba
+  `emptyValue` (#139 D51) prázdnou hodnotu nahradí textem („—“ v review —
+  kontroluje se vytěžení, prázdné pole je informace) a skupina se pak
+  nevynechá; detail (výchozí `null`) prázdné pole dál vynechává. Položka
+  se `snippet` (Svelte snippet `(item)`) kreslí snippet místo hodnoty
+  a je viditelná vždy (výběr režimu a místa plnění DPH v review); položka
+  projde do snippetu celá i s vlastními klíči volajícího. Skupiny vedle
   sebe ve dvou sloupcích (`repeat(2, minmax(0, 1fr))`, mezera
   `--shpd-space-md` / `--shpd-space-lg`) po řádcích v pořadí od backendu —
   frontend je nepřehazuje a nepoužívá CSS `columns`; výšku řádku určuje
@@ -1134,6 +1144,69 @@ jsou v DOM dvakrát, vidět je jen jedno. Obal s posunem do strany
 (`TableScroll`, D44) mají řádky i rekapitulace DPH; na ostatní tabulky ho
 rozšíří #138 task 3.
 
+### Review dokladu a náhled Spisovny
+
+Review modal (`components/exchange/DocumentExchangePreview.svelte`)
+a náhled Spisovny (`RegistryExtractedPreview.svelte`) kreslí od #139
+(D49–D55) **tytéž sdílené části jako detail dokladu** — `DetailHeader`,
+`PartyCard`, `PropertyGroups`, `DocRows`, `DocTotals`, `Notice` — přes
+adaptér `components/exchange/reviewParts.js` (čisté funkce, `t`
+parametrem: canonical → hotové texty v tvaru částí; peníze, datum
+a adresu formátuje adaptér, dřív pomocné funkce komponenty). Review má
+vypadat jako detail téhož dokladu; liší se jen tím, co je navíc ke
+kontrole. Části jsou prezentační (D48): stav review — rozhodnutí, stavové
+značky, popovery, výběr DPH, rychlé založení z registru — zůstává
+v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
+
+- **Hlavička** (D49): `DetailHeader` bez ikony; titulek protistrana podle
+  `selfParty` (D14; bez ní číslo dokladu, bez obojího „—“), podtitul
+  „číslo · text“. Štítky **typ výsledku analýzy** (`primary`, „Faktura
+  přijatá“) a **souhrnný stav kontroly vždy** — „Vše napárováno“
+  (`success`) / „Vyžaduje pozornost“ (`warning`). Na rozdíl od detailu
+  (D13: typ nese ikona, D20: „V pořádku“ se neukazuje) je review místo
+  kontroly výsledku analýzy — typ říká, co analýza určila, stav je
+  výsledek kontroly, ne stav záznamu.
+- **Hlášky** (D53): problémy z vytěžení jako `Notice` hned pod hlavičkou
+  (nadpis „Upozornění“, tón podle nejvyšší závažnosti, položky od
+  nejzávažnější, cesta jako `meta`); selhání AI `Notice` danger
+  s problémy formátu a surovým výstupem rozbalovacím pod ní (blok `code`);
+  chyba rychlého založení `Notice` danger v patičce karty strany;
+  nesoulad s částkou dodavatele `Notice` warning pod souhrnem.
+- **Strany** (D50): `PartyCard` ×2 v mřížce dvou sloupců (pod 30 rem pod
+  sebe) se snippety `status` (stav strany vpravo v nadpisu karty —
+  `Card` `aside`), `bankStatus` (značka účtu za číslem; účet se ukáže
+  i bez čísla, když má vlastní rozhodnutí) a `footer` („Založit
+  z registru“ jako `Button` secondary sm); kontaktní osoba je první
+  položka kontaktů („Kontaktní osoba: …“).
+- **Údaje** (D51): `PropertyGroups` se skupinami Data / Platba / DPH
+  a `emptyValue="—"` — prázdné pole se ukazuje, kontroluje se vytěžení;
+  popisky sdílené s detailem (`document.*`), režim a místo plnění DPH
+  jako položky se snippetem (select „Automaticky (…)“ a zdroj v roli meta).
+- **Řádky** (D45): `DocRows` — hromadné akce („Založit položky (n)“, „Kód
+  DPH u řádků (n)“) jako textová tlačítka v řádku nadpisu (`aside`), ne
+  kolečka v hlavičce sloupců; snippety `description` (text řádku, kód
+  dodavatele, značka položky, ⟲), `below` (napárování), `account` (zapíná
+  sloupec Účet), `unit`, `vat`, `meta` (řádek složeného režimu „množství
+  jednotka × cena · sazba kód · účet“ se značkami u svých částí — skládá
+  se v komponentě se stejnými oddělovači jako `rowMetaLine`). Ve složeném
+  režimu jsou značky jednotky, kódu DPH a účtu **v DOM dvakrát** (skryté
+  široké buňky + řádek meta), obě volají totéž rozhodnutí; proklikání
+  sady (#103) hledá jen viditelné odznaky.
+- **Součty** (D52, D55): `DocTotals` s `before` (zdroj čísel: převzaté /
+  přepočtené / bez přepočtu, meta), `rate` (kód DPH meta, „oddaňovací
+  řádek“ u dvojice přenesené povinnosti) a `after` (`Notice` nesouladu);
+  popisek „Celkem“, `data-testid="review-total"`.
+- **Spisovna** (D54): `DetailHeader` (titulek název dokumentu, podtitul
+  „protistrana · IČO“, štítek „Spisovna · druh“, bez stavu), shrnutí jako
+  prostý text přes celou šířku, pole druhu a návrh šanonu (poslední
+  položka) v jedné skupině `PropertyGroups`.
+- **Typografie** (D54): v `components/exchange/` jen role — body pro
+  texty, vstupy a tlačítka, meta pro doplňky (kódy, napárování, hinty,
+  štítky, sekundární řádek výsledku), nadpisy sekcí panelů meta strong
+  bez verzálek; stavové značky (kolečko se znakem) zůstávají ovládacím
+  prvkem, znak v roli meta normální tloušťkou. Rozměry koleček a popoveru
+  v px řeší #138 task 4.
+
 ---
 
 ## 13. Soubory
@@ -1147,9 +1220,9 @@ rozšíří #138 task 3.
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
-| `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce |
-| `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |
-| `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text}`), role podle tónu, bez okraje |
+| `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce; `emptyValue` a položka se `snippet` (D51) |
+| `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29), `emptyValue`; výběr skupin čistá funkce `propertyGroups.js` |
+| `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text, meta}`), role podle tónu, bez okraje |
 | `frontend/src/components/ui/Badge.svelte` | Štítek hlavičky detailu a bloku `badges` (§5) — obecné i doc-state varianty, pilulka meta |
 | `frontend/src/components/ui/DetailHeader.svelte` | Hlavička detailu (§12 Pořadí, #139 D48) — ikona 40×40, titulek title, štítky `Badge`, podtitul meta; sdílená pro `ViewerDetail` i review dokladu |
 | `frontend/src/components/ui/TableScroll.svelte` | Obal tabulky s posunem do strany (§12 Tabulka, D44) — `overflow-x: auto`, bez `tabindex`, volitelný `label` → region |
@@ -1161,6 +1234,9 @@ rozšíří #138 task 3.
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
 | `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou (`DetailHeader`), taby, štítky (`Badge`); obecné typy obsahu (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`) sdílenými komponentami a podle rolí (§12); HTML jen `untrusted-html` v sandboxu (D30) |
 | `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12: skládá sdílené části dokladu (`PartyCard`, `PropertyGroups`, `DocRows`, `DocTotals`) přes adaptér `documentParts.js`; vlastní jen kořen (container query stran), mřížka stran a odkazy na záznamy |
+| `frontend/src/components/exchange/reviewParts.js` | Adaptér review dokladu a náhledu Spisovny (§12 Review, #139 D49–D53): `counterparty`, `reviewHeader`, `registryHeader`, `reviewParty`, `reviewRows`, `reviewTotals`, `issueNotice`, formátování peněz / data / adresy — canonical → tvar sdílených částí |
+| `frontend/src/components/exchange/DocumentExchangePreview.svelte` | Review dokladu na sdílených částech (§12 Review): stav review (rozhodnutí, značky, popovery, výběr DPH, registr) a snippety do částí; vlastní CSS jen mřížka stran, stavové značky, napárování, kódy, výběr DPH |
+| `frontend/src/components/exchange/RegistryExtractedPreview.svelte` | Náhled Spisovny na `DetailHeader`, textu a `PropertyGroups` (§12 Review, D54) |
 | `frontend/src/components/form/FormStateBadge.svelte` | Stavový badge ve formuláři |
 
 ---
