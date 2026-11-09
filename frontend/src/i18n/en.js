@@ -277,6 +277,7 @@ export default {
   'document.meta.constantSymbol': 'Constant symbol',
   'document.row.position': 'Pos.',
   'document.row.description': 'Description',
+  'document.row.account': 'Account',
   'document.row.quantity': 'Quantity',
   'document.row.unit': 'Unit',
   'document.row.unitPrice': 'Unit price',

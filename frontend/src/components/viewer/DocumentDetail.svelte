@@ -3,7 +3,7 @@
   // (DocsHeadsViewer::renderDetail). Server posílá hodnoty už zformátované
   // a lokalizované; frontend jen skládá layout ze **sdílených částí
   // dokladu** (#139 D48): karty stran `PartyCard`, údaje `PropertyGroups`,
-  // řádky dokladu a součty `DocTotals` v `components/document/` — tytéž
+  // řádky `DocRows` a součty `DocTotals` v `components/document/` — tytéž
   // části použije review (task 2 #139) se svým adaptérem z canonical.
   // Data jdou přes adaptér `documentParts.js` (snake_case obsah → jeden
   // tvar částí, hotové texty); tady zůstává kořen, mřížka stran, snippety
@@ -17,10 +17,10 @@
   // zdrojové zprávy) obsah `document` nenese také — kreslí je sdílená sekce
   // DetailAttachments na konci Přehledu z `detail.attachments` (#136 D21).
   import { t } from '../../i18n/index.js';
-  import SectionHeading from '../ui/SectionHeading.svelte';
   import PropertyGroups from '../ui/PropertyGroups.svelte';
   import Badge from '../ui/Badge.svelte';
   import PartyCard from '../document/PartyCard.svelte';
+  import DocRows from '../document/DocRows.svelte';
   import DocTotals from '../document/DocTotals.svelte';
   import { detailParty, detailRows, detailTotals } from '../document/documentParts.js';
 
@@ -132,42 +132,11 @@
          vyplněného údaje nevykreslí nic, ani mezeru. -->
     <PropertyGroups groups={metaGroups} headingLevel={3} />
 
+    <!-- Řádky dokladu: sdílená část (#139 D45) — tabulka v obalu s posunem
+         do strany, pod 36 rem kontejneru složený řádek (pořadí, popis,
+         celkem; pod popisem množství × cena · sazba šedě). -->
     {#if rows.length > 0}
-      <section class="shpd-docdetail__section">
-        <SectionHeading level={3}>{t('document.section.rows')}</SectionHeading>
-        <table class="shpd-docdetail__rows">
-          <thead>
-            <tr>
-              <th>{t('document.row.position')}</th>
-              <th>{t('document.row.description')}</th>
-              <th class="num">{t('document.row.quantity')}</th>
-              <th>{t('document.row.unit')}</th>
-              <th class="num">{t('document.row.unitPrice')}</th>
-              <th class="num">{t('document.row.vat')}</th>
-              <th class="num">{t('document.row.total')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each rows as row (row.key)}
-              <tr>
-                {#if row.isText}
-                  <!-- Textový řádek — jen popis přes celou šířku. -->
-                  <td>{row.pos}</td>
-                  <td colspan="6">{@render rowDescription(row)}</td>
-                {:else}
-                  <td>{row.pos}</td>
-                  <td>{@render rowDescription(row)}</td>
-                  <td class="num">{row.quantity ?? '—'}</td>
-                  <td>{row.unit ?? '—'}</td>
-                  <td class="num">{row.unitPrice ?? '—'}</td>
-                  <td class="num">{row.vat ?? '—'}</td>
-                  <td class="num">{row.total ?? '—'}</td>
-                {/if}
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </section>
+      <DocRows title={t('document.section.rows')} {rows} description={rowDescription} />
     {/if}
 
     <!-- Součty: sdílená část (#139 D52, D55); bez rekapitulace i součtů
@@ -188,9 +157,9 @@
     container-type: inline-size;
   }
 
-  /* Nadpisy sekcí a skupiny údajů kreslí sdílený SectionHeading
-     a PropertyGroups (#137 D28, D29), karty stran PartyCard a součty
-     DocTotals (#139 D48) — vlastní CSS tu nemají. */
+  /* Skupiny údajů kreslí sdílená PropertyGroups (#137 D29), karty stran
+     PartyCard, řádky DocRows a součty DocTotals (#139 D48) — vlastní CSS
+     tu nemají; zůstává kořen, mřížka stran a odkazy na záznamy. */
 
   /* ── Strany ──────────────────────────────────────────────────────────── */
 
@@ -225,35 +194,6 @@
   .shpd-docdetail__row-state {
     margin-left: var(--shpd-space-xs);
     vertical-align: middle;
-  }
-
-  /* ── Řádky dokladu ───────────────────────────────────────────────────── */
-
-  .shpd-docdetail__rows {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .shpd-docdetail__rows th,
-  .shpd-docdetail__rows td {
-    padding: 0.375rem var(--shpd-space-xs);
-    border-bottom: 1px solid var(--shpd-color-border);
-    text-align: left;
-  }
-
-  /* Hlavička sloupce — body + strong: stejná velikost jako řádky, silnější,
-     barvou textu, bez verzálek (není heading — ten je od #137 task 2b
-     větší než řádky); čára pod ní silnější než mezi řádky. */
-  .shpd-docdetail__rows th {
-    font-size: var(--shpd-font-size-body);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    border-bottom-color: var(--shpd-color-border-strong);
-  }
-
-  .shpd-docdetail__rows .num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
   }
 
   /* ── Úzká šířka (D3) ─────────────────────────────────────────────────── */

@@ -137,9 +137,16 @@
     border-bottom-color: var(--shpd-color-border-strong);
   }
 
+  /* Čísla vpravo; buňky rekapitulace se nelámou — v úzkém obalu se
+     tabulka posune (TableScroll, D44), ne rozpadne na dva řádky. */
   .shpd-doc-totals__table .num {
     text-align: right;
     font-variant-numeric: tabular-nums;
+  }
+
+  .shpd-doc-totals__table th,
+  .shpd-doc-totals__table td {
+    white-space: nowrap;
   }
 
   .shpd-doc-totals__summary {

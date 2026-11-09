@@ -286,6 +286,7 @@ export default {
   'document.meta.constantSymbol': 'Konstantní symbol',
   'document.row.position': 'Poz.',
   'document.row.description': 'Popis',
+  'document.row.account': 'Účet',
   'document.row.quantity': 'Množství',
   'document.row.unit': 'MJ',
   'document.row.unitPrice': 'Cena za MJ',
