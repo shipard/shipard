@@ -108,15 +108,24 @@ async function applyButton(page) {
   return page.getByTestId('review-apply-registry');
 }
 
-/** První odznak čekající reference (jen cesty z `data-pending-paths`), nebo null. */
+/**
+ * První odznak čekající reference (jen cesty z `data-pending-paths`), nebo null.
+ * Jen viditelné odznaky (#139): ve složeném režimu řádků (náhled pod 36 rem
+ * — při 1280 px má půlka modalu obsah užší) jsou značky jednotky, kódu DPH
+ * a účtu v DOM dvakrát (skryté široké buňky + řádek meta), obě se stejnou
+ * cestou a stavem; klikat se musí na tu viditelnou.
+ */
 async function findUndecidedBadge(page, pending) {
   const infos = await page
-    .locator('[data-testid^="review-ref:"]')
+    .locator('[data-testid^="review-ref:"]:visible')
     .evaluateAll((els) => els.map((el) => ({ testid: el.getAttribute('data-testid'), status: el.getAttribute('data-status') })));
+  const seen = new Set();
   for (const info of infos) {
     const refPath = refPathFromTestId(info.testid);
-    if (refPath && pending.includes(refPath) && isUndecided(info.status)) {
-      return { path: refPath, locator: page.locator(`[data-testid="review-ref:${refPath}"]`).first() };
+    if (!refPath || seen.has(refPath)) continue;
+    seen.add(refPath);
+    if (pending.includes(refPath) && isUndecided(info.status)) {
+      return { path: refPath, locator: page.locator(`[data-testid="review-ref:${refPath}"]:visible`).first() };
     }
   }
   return null;
