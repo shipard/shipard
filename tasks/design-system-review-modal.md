@@ -403,13 +403,16 @@ dashboardu:
   u viditelné značky; žádná chyba stránky. **Neověřeno:** náhled Spisovny
   (v sadách není karta Spisovny — jen kompilace a unit testy adaptéru),
   selhání AI (žádná zpráva ve stavu selhání), Firefox, ukládání
-  rozhodnutí a hromadných akcí ručně — čeká na Annu. Proklikání sady:
+  rozhodnutí a hromadných akcí ručně — čeká na ruční proklik. Proklikání sady:
   viz níže.
 - Proklikání sady `cz/association` nad `nham-q…` (`shpd-ds dataset-e2e`):
   v pořádku — 16 z 16 karet vystaveno (přeseedování 15 s, proklikání
   31 s), `dataset-verify` 6 / 6 kontrol v pořádku, žádná chyba
   prohlížeče; jediná odpověď 4xx je `GET /_app/avatar` (uživatel `e2e`
   bez avataru, nesouvisí).
+- **Ručně ověřeno 2026-11-09** (ruční proklik, Firefox): náhled Spisovny v pořádku;
+  selhání AI v review z rozhraní nedosažitelné (chybová karta feedu,
+  `FailureCard` v Došlé poště) — ověřeno čtením kódu; výsledek v #139.
 
 ## Pasti
 

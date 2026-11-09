@@ -364,6 +364,10 @@ přijaté i vydané:
   Firefox (na stroji není), `ViewerDetailModal`, doklad s archivovanou /
   smazanou položkou, v cizí měně a bez partnera (v sadách nebyl) —
   ruční ověření.
+- **Ručně ověřeno 2026-11-09** (ruční proklik, Firefox desktop + telefon): cizí
+  měna, doklad bez partnera, archivovaná / smazaná položka,
+  `ViewerDetailModal` (karta majetku → Řádky deníku), textový řádek ve
+  složeném režimu — vše v pořádku; výsledek v #139.
 
 ## Pasti
 
