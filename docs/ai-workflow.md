@@ -59,6 +59,13 @@ implementuje.
 6. **Uzavření**: aktualizace `**Stav:**` v tasku ve stejném commitu jako kód,
    `python3 scripts/tasks-index.py`, komentář nebo uzavření issue.
 
+**Drobnosti z ověření.** Co se najde při ověřování (bod 5) a patří do
+rozsahu otevřené issue, se řeší v ní hned — krátkým taskem nebo doplněním
+tasku. Když drobnost mění sdílené pravidlo (vzhled, kontrakt), dostane nové
+rozhodnutí D. Co je mimo rozsah nebo potřebuje vlastní návrh, se zapíše do
+zastřešující nebo nové issue. Issue se zavírá až po vyřešení drobností
+z jejího ověření.
+
 ---
 
 ## 3. Pravidla, která přebíjejí vše ostatní
