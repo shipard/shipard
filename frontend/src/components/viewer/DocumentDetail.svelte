@@ -1,30 +1,36 @@
 <script>
   // Detail dokladu jako "textová faktura" — render content typu `document`
-  // (DocsHeadsViewer::renderDetail). Vizuální vzor: DocumentExchangePreview,
-  // ale bez sdílení tříd/klíčů s exchange — server posílá hodnoty už
-  // zformátované a lokalizované, frontend jen skládá layout a statické
-  // labely přes t().
+  // (DocsHeadsViewer::renderDetail). Server posílá hodnoty už zformátované
+  // a lokalizované; frontend jen skládá layout ze **sdílených částí
+  // dokladu** (#139 D48): karty stran `PartyCard`, údaje `PropertyGroups`,
+  // řádky dokladu a součty `DocTotals` v `components/document/` — tytéž
+  // části použije review (task 2 #139) se svým adaptérem z canonical.
+  // Data jdou přes adaptér `documentParts.js` (snake_case obsah → jeden
+  // tvar částí, hotové texty); tady zůstává kořen, mřížka stran, snippety
+  // s odkazy na záznamy a akce.
   //
   // Písmo výhradně přes typografické role (--shpd-font-size-title / heading
   // / body / meta, --shpd-font-weight-normal / strong; #135 D15, D16) —
   // referenční implementace kapitoly Detail záznamu v docs/design-system.md.
-  // Hlavičku (titulek, podtitul, štítek stavu) kreslí ViewerDetail nad taby;
-  // content klíč `header` nenese. Přílohy (vlastní i ze zdrojové zprávy)
-  // obsah `document` nenese také — kreslí je sdílená sekce DetailAttachments
-  // na konci Přehledu z `detail.attachments` (#136 D21). Nadpisy sekcí
-  // a skupiny údajů kreslí sdílené SectionHeading / PropertyGroups (#137
-  // D28, D29) — komponenty vznikly z tohoto detailu, vzhled se jimi nemění.
+  // Hlavičku (titulek, podtitul, štítek stavu) kreslí ViewerDetail nad taby
+  // (`DetailHeader`); content klíč `header` nenese. Přílohy (vlastní i ze
+  // zdrojové zprávy) obsah `document` nenese také — kreslí je sdílená sekce
+  // DetailAttachments na konci Přehledu z `detail.attachments` (#136 D21).
   import { t } from '../../i18n/index.js';
   import SectionHeading from '../ui/SectionHeading.svelte';
   import PropertyGroups from '../ui/PropertyGroups.svelte';
-  import Card from '../ui/Card.svelte';
+  import Badge from '../ui/Badge.svelte';
+  import PartyCard from '../document/PartyCard.svelte';
+  import DocTotals from '../document/DocTotals.svelte';
+  import { detailParty, detailRows, detailTotals } from '../document/documentParts.js';
 
   let { content = null, onAction = null } = $props();
 
   let meta = $derived(content?.meta ?? {});
-  let rows = $derived(content?.rows ?? []);
-  let vatRecap = $derived(content?.vat_recap ?? []);
-  let totals = $derived(content?.totals ?? null);
+  let supplier = $derived(detailParty(content?.supplier ?? null, t));
+  let customer = $derived(detailParty(content?.customer ?? null, t));
+  let rows = $derived(detailRows(content?.rows ?? []));
+  let totals = $derived(detailTotals(content?.vat_recap ?? [], content?.totals ?? null));
 
   // Údaje dokladu ve dvou skupinách vedle sebe (#135): data a platební
   // údaje. Kreslí je sdílená PropertyGroups (#137 D29) — pole s null /
@@ -32,25 +38,25 @@
   // přeložené texty.
   const META_GROUPS = [
     {
-      labelKey: 'viewer.document.section.dates',
+      labelKey: 'document.section.dates',
       fields: [
-        ['issue_date', 'viewer.document.meta.issueDate'],
-        ['due_date', 'viewer.document.meta.dueDate'],
-        ['vat_duzp', 'viewer.document.meta.taxPointDate'],
-        ['accounting_date', 'viewer.document.meta.accountingDate'],
+        ['issue_date', 'document.meta.issueDate'],
+        ['due_date', 'document.meta.dueDate'],
+        ['vat_duzp', 'document.meta.taxPointDate'],
+        ['accounting_date', 'document.meta.accountingDate'],
       ],
     },
     {
-      labelKey: 'viewer.document.section.payment',
+      labelKey: 'document.section.payment',
       fields: [
-        ['payment_method', 'viewer.document.meta.paymentMethod'],
-        ['currency', 'viewer.document.meta.currency'],
-        ['exchange_rate', 'viewer.document.meta.exchangeRate'],
-        ['cash_desk', 'viewer.document.meta.cashDesk'],
-        ['payer', 'viewer.document.meta.payer'],
-        ['payment_reference', 'viewer.document.meta.paymentReference'],
-        ['specific_symbol', 'viewer.document.meta.specificSymbol'],
-        ['constant_symbol', 'viewer.document.meta.constantSymbol'],
+        ['payment_method', 'document.meta.paymentMethod'],
+        ['currency', 'document.meta.currency'],
+        ['exchange_rate', 'document.meta.exchangeRate'],
+        ['cash_desk', 'document.meta.cashDesk'],
+        ['payer', 'document.meta.payer'],
+        ['payment_reference', 'document.meta.paymentReference'],
+        ['specific_symbol', 'document.meta.specificSymbol'],
+        ['constant_symbol', 'document.meta.constantSymbol'],
       ],
     },
   ];
@@ -61,14 +67,6 @@
       items: group.fields.map(([key, labelKey]) => ({ label: t(labelKey), value: meta?.[key] ?? null })),
     }))
   );
-
-  function formatAddress(addr) {
-    if (!addr) return null;
-    if (addr.display_line) return addr.display_line;
-    const street = [addr.street, addr.house_number].filter(Boolean).join(' ');
-    const city = [addr.zip, addr.city].filter(Boolean).join(' ');
-    return [street, city].filter(Boolean).join(', ') || null;
-  }
 
   // Klik na partnera / položku řádku — otevře FormDialog přes generický
   // handler detail akcí ve Viewer.svelte (kind: open_form). Akční id
@@ -82,69 +80,32 @@
   }
 </script>
 
-{#snippet partyCard(labelKey, party)}
-  <!-- Karta strany = sdílená Card s nadpisem (#137 D33); obsah podle D16:
-       název entity heading, IČO / DIČ, adresa a účet běžné údaje barvou
-       textu, šedé a menší jsou jen kontakty. -->
-  <Card title={t(labelKey)}>
-    {#if party}
-      <div class="shpd-docdetail__party-body">
-        {#if party.name}
-          {#if party.person_id && onAction}
-            <button
-              type="button"
-              class="shpd-docdetail__party-name shpd-docdetail__party-name--link"
-              onclick={() => openRecord('base_persons_persons', party.person_id)}
-            >
-              {party.name}
-            </button>
-          {:else}
-            <div class="shpd-docdetail__party-name">{party.name}</div>
-          {/if}
-        {/if}
-        {#if party.company_id || party.tax_id || party.vat_id}
-          <div class="shpd-docdetail__party-ids">
-            {#if party.company_id}
-              <span>{t('viewer.document.party.companyId')}: {party.company_id}</span>
-            {/if}
-            {#if party.tax_id}
-              <span>{t('viewer.document.party.taxId')}: {party.tax_id}</span>
-            {/if}
-            {#if party.vat_id && party.vat_id !== party.tax_id}
-              <span>{t('viewer.document.party.vatId')}: {party.vat_id}</span>
-            {/if}
-          </div>
-        {/if}
-        {#if formatAddress(party.address)}
-          <div class="shpd-docdetail__party-address">{formatAddress(party.address)}</div>
-        {/if}
-        {#if party.bank_account?.iban || party.bank_account?.account_number}
-          <div class="shpd-docdetail__party-bank">
-            {t('viewer.document.party.bankAccount')}:
-            {party.bank_account.account_number ?? party.bank_account.iban}
-          </div>
-        {/if}
-        {#if party.contact?.email || party.contact?.phone}
-          <div class="shpd-docdetail__party-contact">
-            {#if party.contact?.email}<span>{party.contact.email}</span>{/if}
-            {#if party.contact?.phone}<span>{party.contact.phone}</span>{/if}
-          </div>
-        {/if}
-      </div>
-    {:else}
-      <div class="shpd-docdetail__party-empty">—</div>
-    {/if}
-  </Card>
+{#snippet partyName(party)}
+  <!-- Klikatelné jméno partnera — odkaz na záznam osoby (`person_id` posílá
+       backend jen na partnerské straně, vlastní firma ho nemá). Písmo
+       (heading, strong) dědí z obalu názvu v PartyCard. -->
+  {#if party.person_id && onAction}
+    <button
+      type="button"
+      class="shpd-docdetail__link"
+      onclick={() => openRecord('base_persons_persons', party.person_id)}
+    >
+      {party.name}
+    </button>
+  {:else}
+    {party.name}
+  {/if}
 {/snippet}
 
 {#snippet rowDescription(row)}
   <!-- Popis řádku: klikatelný link na Položku, když řádek má FK item
        a položka v DB existuje (backend posílá item_id jen tehdy).
-       item_state (archiv/koš) se vykreslí jako badge za popisem. -->
+       item_state (archiv/koš) je za popisem jako sdílený štítek Badge
+       (koš přeškrtnutý dělá Badge sám). -->
   {#if row.item_id && onAction}
     <button
       type="button"
-      class="shpd-docdetail__row-link"
+      class="shpd-docdetail__link"
       onclick={() => openRecord('economy_items', row.item_id)}
     >
       {row.description}
@@ -153,21 +114,18 @@
     {row.description}
   {/if}
   {#if row.item_state}
-    <span
-      class="shpd-docdetail__row-badge"
-      class:shpd-docdetail__row-badge--trash={row.item_state.style === 'trash'}
-      style="background: var(--shpd-color-state-{row.item_state.style}-bg); color: var(--shpd-color-state-{row.item_state.style}-text);"
-    >
-      {row.item_state.label}
+    <span class="shpd-docdetail__row-state">
+      <Badge style={row.item_state.style} label={row.item_state.label} />
     </span>
   {/if}
 {/snippet}
 
 {#if content}
   <div class="shpd-docdetail">
+    <!-- Strany: dvě sdílené karty strany (#139 D50) v mřížce dvou sloupců. -->
     <section class="shpd-docdetail__parties">
-      {@render partyCard('viewer.document.section.supplier', content.supplier)}
-      {@render partyCard('viewer.document.section.customer', content.customer)}
+      <PartyCard title={t('document.section.supplier')} party={supplier} name={partyName} />
+      <PartyCard title={t('document.section.customer')} party={customer} name={partyName} />
     </section>
 
     <!-- Údaje dokladu — sdílené skupiny vlastností (#137 D29); bez
@@ -176,34 +134,34 @@
 
     {#if rows.length > 0}
       <section class="shpd-docdetail__section">
-        <SectionHeading level={3}>{t('viewer.document.section.rows')}</SectionHeading>
+        <SectionHeading level={3}>{t('document.section.rows')}</SectionHeading>
         <table class="shpd-docdetail__rows">
           <thead>
             <tr>
-              <th class="shpd-docdetail__rows-pos">{t('viewer.document.row.position')}</th>
-              <th>{t('viewer.document.row.description')}</th>
-              <th class="num">{t('viewer.document.row.quantity')}</th>
-              <th>{t('viewer.document.row.unit')}</th>
-              <th class="num">{t('viewer.document.row.unitPrice')}</th>
-              <th class="num">{t('viewer.document.row.vat')}</th>
-              <th class="num">{t('viewer.document.row.total')}</th>
+              <th>{t('document.row.position')}</th>
+              <th>{t('document.row.description')}</th>
+              <th class="num">{t('document.row.quantity')}</th>
+              <th>{t('document.row.unit')}</th>
+              <th class="num">{t('document.row.unitPrice')}</th>
+              <th class="num">{t('document.row.vat')}</th>
+              <th class="num">{t('document.row.total')}</th>
             </tr>
           </thead>
           <tbody>
-            {#each rows as row, i}
+            {#each rows as row (row.key)}
               <tr>
-                {#if row.kind === 0}
+                {#if row.isText}
                   <!-- Textový řádek — jen popis přes celou šířku. -->
-                  <td>{row.order_pos ?? i + 1}</td>
+                  <td>{row.pos}</td>
                   <td colspan="6">{@render rowDescription(row)}</td>
                 {:else}
-                  <td>{row.order_pos ?? i + 1}</td>
+                  <td>{row.pos}</td>
                   <td>{@render rowDescription(row)}</td>
                   <td class="num">{row.quantity ?? '—'}</td>
                   <td>{row.unit ?? '—'}</td>
-                  <td class="num">{row.unit_price ?? '—'}</td>
-                  <td class="num">{row.vat_pct != null ? `${row.vat_pct} %` : '—'}</td>
-                  <td class="num">{row.total_price ?? '—'}</td>
+                  <td class="num">{row.unitPrice ?? '—'}</td>
+                  <td class="num">{row.vat ?? '—'}</td>
+                  <td class="num">{row.total ?? '—'}</td>
                 {/if}
               </tr>
             {/each}
@@ -212,59 +170,9 @@
       </section>
     {/if}
 
-    {#if vatRecap.length > 0 || totals}
-      <section class="shpd-docdetail__totals-section">
-        {#if vatRecap.length > 0}
-          <table class="shpd-docdetail__vat-recap">
-            <thead>
-              <tr>
-                <th>{t('viewer.document.section.recap')}</th>
-                <th class="num">{t('viewer.document.totals.base')}</th>
-                <th class="num">{t('viewer.document.totals.vat')}</th>
-                <th class="num">{t('viewer.document.totals.total')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each vatRecap as r}
-                <tr>
-                  <td>{r.vat_pct} %</td>
-                  <td class="num">{r.base ?? '—'}</td>
-                  <td class="num">{r.tax ?? '—'}</td>
-                  <td class="num">{r.total ?? '—'}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        {/if}
-        {#if totals}
-          <div class="shpd-docdetail__totals-summary">
-            <div>
-              {t('viewer.document.totals.base')}:
-              <strong>{totals.base ?? '—'} {totals.currency}</strong>
-            </div>
-            <div>
-              {t('viewer.document.totals.vat')}:
-              <strong>{totals.vat ?? '—'} {totals.currency}</strong>
-            </div>
-            {#if totals.rounding}
-              <div>
-                {t('viewer.document.totals.rounding')}:
-                <strong>{totals.rounding} {totals.currency}</strong>
-              </div>
-            {/if}
-            <div class="shpd-docdetail__total">
-              {t('viewer.document.totals.total')}:
-              <strong>{totals.amount ?? '—'} {totals.currency}</strong>
-            </div>
-            {#if totals.dom}
-              <div class="shpd-docdetail__total-dom">
-                {totals.dom.base} + {totals.dom.vat} = {totals.dom.amount} {totals.dom.currency}
-              </div>
-            {/if}
-          </div>
-        {/if}
-      </section>
-    {/if}
+    <!-- Součty: sdílená část (#139 D52, D55); bez rekapitulace i součtů
+         nevykreslí nic. -->
+    <DocTotals {totals} />
   </div>
 {/if}
 
@@ -280,9 +188,9 @@
     container-type: inline-size;
   }
 
-  /* Nadpisy sekcí a skupin údajů kreslí sdílený SectionHeading, skupiny
-     údajů PropertyGroups, karty stran Card (#137 D28, D29, D33) — vlastní
-     CSS tu nemají. */
+  /* Nadpisy sekcí a skupiny údajů kreslí sdílený SectionHeading
+     a PropertyGroups (#137 D28, D29), karty stran PartyCard a součty
+     DocTotals (#139 D48) — vlastní CSS tu nemají. */
 
   /* ── Strany ──────────────────────────────────────────────────────────── */
 
@@ -294,72 +202,40 @@
     gap: var(--shpd-space-md);
   }
 
-  .shpd-docdetail__party-body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
-  }
-
-  /* Název entity má roli nadpisu obsahu karty (D16). */
-  .shpd-docdetail__party-name {
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
-  }
-
-  /* Klikatelné jméno partnera — link na záznam osoby. Stejná vizuální
-     váha jako party-name, jen primary barva + underline na hover. */
-  .shpd-docdetail__party-name--link {
-    display: block;
+  /* Odkaz na záznam (partner v kartě strany, položka v řádku) — tlačítko
+     vzhledem odkazu: písmo dědí z místa (název strany heading + strong,
+     popis řádku body), primary barva, underline na hover. */
+  .shpd-docdetail__link {
+    display: inline;
     border: none;
     background: none;
     padding: 0;
     font: inherit;
-    font-size: var(--shpd-font-size-heading);
-    font-weight: var(--shpd-font-weight-strong);
     text-align: left;
     color: var(--shpd-color-primary);
     cursor: pointer;
   }
 
-  .shpd-docdetail__party-name--link:hover {
+  .shpd-docdetail__link:hover {
     text-decoration: underline;
   }
 
-  /* IČO / DIČ, adresa a účet jsou běžné údaje — body, barvou textu, bez
-     zvýraznění (D15); dědí z kořene. */
-  .shpd-docdetail__party-ids {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--shpd-space-xs) var(--shpd-space-md);
+  /* Štítek stavu položky (archiv/koš) za popisem řádku — sdílený Badge,
+     jen umístění za textem. */
+  .shpd-docdetail__row-state {
+    margin-left: var(--shpd-space-xs);
+    vertical-align: middle;
   }
 
-  /* Kontakty jsou doplněk — meta, šedé, s malou mezerou nad (D16). */
-  .shpd-docdetail__party-contact {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--shpd-space-xs) var(--shpd-space-md);
-    margin-top: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-meta);
-    color: var(--shpd-color-text-secondary);
-  }
+  /* ── Řádky dokladu ───────────────────────────────────────────────────── */
 
-  .shpd-docdetail__party-empty {
-    color: var(--shpd-color-text-secondary);
-    font-style: italic;
-  }
-
-  /* ── Řádky a rekapitulace DPH ────────────────────────────────────────── */
-
-  .shpd-docdetail__rows,
-  .shpd-docdetail__vat-recap {
+  .shpd-docdetail__rows {
     width: 100%;
     border-collapse: collapse;
   }
 
   .shpd-docdetail__rows th,
-  .shpd-docdetail__rows td,
-  .shpd-docdetail__vat-recap th,
-  .shpd-docdetail__vat-recap td {
+  .shpd-docdetail__rows td {
     padding: 0.375rem var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
     text-align: left;
@@ -368,91 +244,16 @@
   /* Hlavička sloupce — body + strong: stejná velikost jako řádky, silnější,
      barvou textu, bez verzálek (není heading — ten je od #137 task 2b
      větší než řádky); čára pod ní silnější než mezi řádky. */
-  .shpd-docdetail__rows th,
-  .shpd-docdetail__vat-recap th {
+  .shpd-docdetail__rows th {
     font-size: var(--shpd-font-size-body);
     font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
     border-bottom-color: var(--shpd-color-border-strong);
   }
 
-  .shpd-docdetail__rows .num,
-  .shpd-docdetail__vat-recap .num {
+  .shpd-docdetail__rows .num {
     text-align: right;
     font-variant-numeric: tabular-nums;
-  }
-
-  /* Klikatelný popis řádku — link na záznam položky. */
-  .shpd-docdetail__row-link {
-    border: none;
-    background: none;
-    padding: 0;
-    font: inherit;
-    text-align: left;
-    color: var(--shpd-color-primary);
-    cursor: pointer;
-  }
-
-  .shpd-docdetail__row-link:hover {
-    text-decoration: underline;
-  }
-
-  /* Štítek stavu položky (archiv/koš) za popisem řádku — meta, stejné
-     state tokeny jako štítek stavu v hlavičce detailu, koš přeškrtnutý. */
-  .shpd-docdetail__row-badge {
-    display: inline-block;
-    margin-left: var(--shpd-space-xs);
-    padding: 0.0625rem 0.375rem;
-    border-radius: var(--shpd-radius-full);
-    font-size: var(--shpd-font-size-meta);
-    font-weight: var(--shpd-font-weight-normal);
-    line-height: 1.4;
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-
-  .shpd-docdetail__row-badge--trash {
-    text-decoration: line-through;
-  }
-
-  /* ── Součty ──────────────────────────────────────────────────────────── */
-
-  .shpd-docdetail__totals-section {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--shpd-space-md);
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .shpd-docdetail__vat-recap {
-    max-width: 420px;
-    flex: 1 1 280px;
-  }
-
-  .shpd-docdetail__totals-summary {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-xs);
-    text-align: right;
-    min-width: 220px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Jedna tučná úroveň: <strong> má výchozích 700, tady vždy token. */
-  .shpd-docdetail__totals-summary strong {
-    font-weight: var(--shpd-font-weight-strong);
-  }
-
-  .shpd-docdetail__total {
-    border-top: 1px solid var(--shpd-color-border);
-    padding-top: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-title);
-  }
-
-  .shpd-docdetail__total-dom {
-    font-size: var(--shpd-font-size-meta);
-    color: var(--shpd-color-text-secondary);
   }
 
   /* ── Úzká šířka (D3) ─────────────────────────────────────────────────── */
