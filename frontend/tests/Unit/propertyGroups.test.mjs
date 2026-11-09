@@ -104,3 +104,45 @@ test('visibleGroups: nepole a null skupiny', () => {
   assert.deepEqual(visibleGroups(undefined), []);
   assert.deepEqual(visibleGroups([null, undefined]), []);
 });
+
+test('visibleItems: emptyValue drží prázdnou položku s náhradním textem, 0 zůstává (#139 D51)', () => {
+  const items = visibleItems([
+    { label: 'Kód', value: 'A1' },
+    { label: 'Prázdné', value: '' },
+    { label: 'Null', value: null },
+    { label: 'Pořadí', value: 0 },
+  ], { emptyValue: '—' });
+  assert.deepEqual(items, [
+    { label: 'Kód', value: 'A1' },
+    { label: 'Prázdné', value: '—' },
+    { label: 'Null', value: '—' },
+    { label: 'Pořadí', value: 0 },
+  ]);
+});
+
+test('visibleItems: bez emptyValue se chování nemění (null i bez volby)', () => {
+  const items = [{ label: 'Kód', value: 'A1' }, { label: 'Null', value: null }];
+  assert.deepEqual(visibleItems(items), [{ label: 'Kód', value: 'A1' }]);
+  assert.deepEqual(visibleItems(items, { emptyValue: null }), [{ label: 'Kód', value: 'A1' }]);
+});
+
+test('visibleItems: položka se snippetem je viditelná i bez hodnoty a projde celá', () => {
+  const snippet = () => {};
+  const items = visibleItems([{ label: 'Režim DPH', kind: 'mode', snippet }]);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].snippet, snippet);
+  assert.equal(items[0].kind, 'mode');
+  assert.equal(items[0].label, 'Režim DPH');
+  assert.equal(items[0].value, undefined);
+});
+
+test('visibleGroups: s emptyValue zůstává skupina s jen prázdnými hodnotami, bez položek mizí', () => {
+  const groups = visibleGroups([
+    { title: 'Data', items: [{ label: 'Vystaveno', value: null }] },
+    { title: 'Bez položek', items: [] },
+    { title: 'Platba', items: [{ label: 'Měna', value: 'CZK' }] },
+  ], { emptyValue: '—' });
+  assert.deepEqual(groups.map((g) => g.title), ['Data', 'Platba']);
+  assert.deepEqual(groups[0].items, [{ label: 'Vystaveno', value: '—' }]);
+  assert.deepEqual(visibleGroups([{ title: 'Data', items: [{ label: 'Vystaveno', value: null }] }]), []);
+});

@@ -2,6 +2,13 @@
 // PropertyGroups; #137 D29). Kontrakt skupin typu `properties`:
 // docs/frontend.md → Formát detail panelu. Hodnota `0` (počet, pořadí) není
 // prázdná — prázdné je jen null, undefined a prázdný řetězec.
+//
+// Volba `emptyValue` (#139 D51): review ukazuje prázdné pole jako „—“
+// (kontroluje se vytěžení), detail ho vynechává — s `emptyValue` prázdná
+// hodnota zůstává nahrazená textem a skupina se nevynechá; bez ní
+// (výchozí `null`) se chování nemění. Položka se `snippet` (Svelte snippet
+// `(item)`, kreslí se místo hodnoty) je viditelná vždy; položka se vrací
+// celá, aby snippet dostal i vlastní klíče volajícího.
 
 /** Prázdná hodnota se nevykreslí; `0` a `false` prázdné nejsou. */
 export function isEmptyValue(value) {
@@ -9,15 +16,17 @@ export function isEmptyValue(value) {
 }
 
 /**
- * Vykreslitelné položky skupiny: jen s hodnotou, popisek vždy řetězec —
- * prázdný popisek (text poznámky) znamená hodnotu přes oba sloupce.
+ * Vykreslitelné položky skupiny: jen s hodnotou (nebo se snippetem, nebo
+ * s `emptyValue` místo prázdné hodnoty), popisek vždy řetězec — prázdný
+ * popisek (text poznámky) znamená hodnotu přes oba sloupce.
  */
-export function visibleItems(items) {
+export function visibleItems(items, { emptyValue = null } = {}) {
   return (Array.isArray(items) ? items : [])
-    .filter((item) => item && !isEmptyValue(item.value))
+    .filter((item) => item && (typeof item.snippet === 'function' || emptyValue !== null || !isEmptyValue(item.value)))
     .map((item) => ({
+      ...item,
       label: item.label === null || item.label === undefined ? '' : String(item.label),
-      value: item.value,
+      value: isEmptyValue(item.value) && typeof item.snippet !== 'function' ? emptyValue : item.value,
     }));
 }
 
@@ -32,12 +41,12 @@ export function visibleItems(items) {
  * skupinami kurzorem sloupce (`wide` kurzor nuluje), ne CSS sudá / lichá —
  * ta by nevěděla, co skupina za ní udělá.
  */
-export function visibleGroups(groups) {
+export function visibleGroups(groups, options = {}) {
   const visible = (Array.isArray(groups) ? groups : [])
     .filter((group) => group)
     .map((group) => ({
       title: group.title === null || group.title === undefined ? '' : String(group.title),
-      items: visibleItems(group.items),
+      items: visibleItems(group.items, options),
       wide: group.wide === true,
     }))
     .filter((group) => group.items.length > 0);

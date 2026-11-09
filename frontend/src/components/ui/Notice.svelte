@@ -12,8 +12,10 @@
   //
   // `title` (strong, velikost body) a `icon` (vlevo, dekorace) jsou
   // nepovinné. `items` kreslí seznam — položka je text, nebo
-  // `{label, text}` (popisek strong, za ním „: “ a text: validace
-  // formuláře, zámek dokladu); ostatní obsah dává snippet `children`.
+  // `{label, text, meta}` (popisek strong, za ním „: “ a text: validace
+  // formuláře, zámek dokladu; `meta` za textem v roli meta šedě — cesta
+  // problému z vytěžení v review, #139 D53); ostatní obsah dává snippet
+  // `children`.
   // `role`: `alert` u `danger` (čte se hned — proto jen chyba), jinak
   // `status`; volající ji smí přepsat. Zbylé atributy (`data-testid`,
   // `aria-*`) jdou na kořen; `class` je jen pro stavové třídy, nikdy pro
@@ -37,8 +39,8 @@
   let list = $derived(
     (Array.isArray(items) ? items : [])
       .map((item) => (item !== null && typeof item === 'object'
-        ? { label: String(item.label ?? ''), text: String(item.text ?? '') }
-        : { label: '', text: String(item ?? '') }))
+        ? { label: String(item.label ?? ''), text: String(item.text ?? ''), meta: String(item.meta ?? '') }
+        : { label: '', text: String(item ?? ''), meta: '' }))
       .filter((item) => item.label !== '' || item.text !== ''),
   );
 </script>
@@ -55,7 +57,10 @@
     {#if list.length > 0}
       <ul class="shpd-notice__list">
         {#each list as item}
-          <li>{#if item.label}<strong>{item.label}</strong>{': '}{/if}{item.text}</li>
+          <li>
+            {#if item.label}<strong>{item.label}</strong>{': '}{/if}{item.text}
+            {#if item.meta}<span class="shpd-notice__meta">{item.meta}</span>{/if}
+          </li>
         {/each}
       </ul>
     {/if}
@@ -126,5 +131,12 @@
 
   .shpd-notice__list li + li {
     margin-top: var(--shpd-space-xs);
+  }
+
+  /* Doplněk položky (cesta problému) — meta šedě za textem. */
+  .shpd-notice__meta {
+    margin-left: var(--shpd-space-xs);
+    font-size: var(--shpd-font-size-meta);
+    color: var(--shpd-color-text-secondary);
   }
 </style>

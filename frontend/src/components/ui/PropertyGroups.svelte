@@ -8,6 +8,8 @@
   // nevykreslí nic, ani obal. Skupina, která by v řádku zůstala sama
   // (poslední lichá, nebo před `wide`), jde přes celou šířku také — příznak
   // `full` počítá `visibleGroups` (D32), komponenta ho jen kreslí.
+  // `emptyValue` (#139 D51): review ukazuje prázdné pole jako „—“ a skupina
+  // se pak nevynechá; detail (výchozí `null`) prázdné pole vynechává.
   //
   // Obal je kontejner pro @container (`container-type: inline-size`) — na
   // celou šířku, mřížka až uvnitř: dotaz platí pro potomky kontejneru, ne pro
@@ -17,9 +19,9 @@
   import PropertyList from './PropertyList.svelte';
   import { visibleGroups } from './propertyGroups.js';
 
-  let { groups = [], headingLevel = 3 } = $props();
+  let { groups = [], headingLevel = 3, emptyValue = null } = $props();
 
-  let visible = $derived(visibleGroups(groups));
+  let visible = $derived(visibleGroups(groups, { emptyValue }));
 </script>
 
 {#if visible.length > 0}
@@ -30,7 +32,7 @@
           {#if group.title !== ''}
             <SectionHeading level={headingLevel}>{group.title}</SectionHeading>
           {/if}
-          <PropertyList items={group.items} />
+          <PropertyList items={group.items} {emptyValue} />
         </div>
       {/each}
     </div>
