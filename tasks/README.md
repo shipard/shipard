@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 422 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 391.
+Celkem 423 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 391.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-header-subtitle.md` | naplánováno | #139 task 3 (D56), drobnost z ověření tasků 1 a 2 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -189,6 +190,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-breakpoints.md` | Breakpoint shellu `48rem` v CSS i JS, obsahové media queries jako container queries `30rem`, kontrola breakpointů v pre-commitu (#138 task 1, D42, D43, D47) |
 | `design-system-document-parts.md` | Sdílené části dokladu (`DetailHeader`, `PartyCard`, `DocRows`, `DocTotals`) a obal tabulky `TableScroll`, adaptér detailu, detail dokladu na nich, složený řádek pod `36rem` (#139 task 1, D44, D45, D48, D50, D52, D55) |
 | `design-system-review-modal.md` | Review modal a náhled Spisovny na sdílených částech dokladu — adaptér z canonical, hlavička s typem a souhrnným stavem, hlášky jako `Notice` nahoře, `PropertyList` se snippetem a „—“, hromadné akce v řádku nadpisu, typografie review jen v rolích, proklikání sady jen nad viditelnými odznaky (#139 task 2, D49–D55) |
+| `design-system-header-subtitle.md` | Podtitul hlavičky detailu (`DetailHeader`) v roli body místo meta — detail záznamu i review, drobnost z ověření #139 (#139 task 3, D56) |
 
 ## Mobilní (responzivní) UI
 
