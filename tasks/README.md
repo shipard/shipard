@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 420 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 389.
+Celkem 422 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 390.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-review-modal.md` | naplánováno | #139 task 2 (D49–D55); navazuje na `design-system-document-parts.md` |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -187,6 +188,8 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-card-titles.md` | Nadpisy karet podle místa (title / heading) s ikonou tématu — Přehled firmy s ikonami sekcí z konfigurace, karty Nastavení na nadpisu `Card`, karta feedu na typografických rolích (#137 task 2b, D36–D38) |
 | `design-system-content-types.md` | Typy obsahu detailu místo HTML z backendu (`notice`, `badges`, `empty`, `text`, `code`; `html` pryč, hlídá kontrakt), sdílená hláška `Notice`, štítek `Badge`, pruh nad obsahem `PageBanner` (#137 task 3, D30, D40, D41) |
 | `design-system-breakpoints.md` | Breakpoint shellu `48rem` v CSS i JS, obsahové media queries jako container queries `30rem`, kontrola breakpointů v pre-commitu (#138 task 1, D42, D43, D47) |
+| `design-system-document-parts.md` | Sdílené části dokladu (`DetailHeader`, `PartyCard`, `DocRows`, `DocTotals`) a obal tabulky `TableScroll`, adaptér detailu, detail dokladu na nich, složený řádek pod `36rem` (#139 task 1, D44, D45, D48, D50, D52, D55) |
+| `design-system-review-modal.md` | Review modal a náhled Spisovny na sdílených částech dokladu — adaptér z canonical, hlavička s typem a souhrnným stavem, hlášky jako `Notice` nahoře, `PropertyList` se snippetem a „—“, hromadné akce v řádku nadpisu, typografie review jen v rolích, proklikání sady jen nad viditelnými odznaky (#139 task 2, D49–D55) |
 
 ## Mobilní (responzivní) UI
 

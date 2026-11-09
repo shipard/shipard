@@ -510,7 +510,7 @@ používají `@container`, ne `@media`.
 | `48rem` (768 px) | `@media` v aplikaci | shell: drawer, fullscreen modal, seznam / detail, taby review modalu, výšky ve `vh` |
 | `68.75rem` (1100 px) | `@media` ve `frontend/src/dev/` | shell vývojářského dashboardu (split dvou sloupců) |
 | `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole, strany dokladu pod sebe, patička dialogu zalomená |
-| `36rem` (576 px) | `@container` | složené řádky tabulky dokladu (#139) |
+| `36rem` (576 px) | `@container` | složené řádky dokladu (`DocRows`, pojmenovaný kontejner `doc-rows`, #139 D45) |
 
 Px v závorce platí při výchozím písmu prohlížeče 16 px.
 
@@ -536,7 +536,10 @@ písmo se **nenastavuje** i kvůli tomu.
   (`FormSection`) má `container-name: form-section` a náhled příloh uvnitř
   jejího sloupce (`FormAttachmentsView`) píše
   `@container form-section (max-width: 30rem)`, takže se přepne spolu se
-  sloupci, ne podle nejbližšího kontejneru.
+  sloupci, ne podle nejbližšího kontejneru. Stejně `DocRows` (#139): kořen
+  má `container-name: doc-rows` a dotaz `@container doc-rows (max-width:
+  36rem)`, protože uvnitř detailu je kontejnerem i `.shpd-docdetail`
+  (strany pod sebe) a nepojmenovaný dotaz by se ptal jeho.
 - Obsah vykreslený snippetem `Modal` (patička přes `footer`) je mimo kořen
   komponenty — kořenový kontejner na něj nedosáhne. Takový kus dostane
   vlastní obal na celou šířku snippetu (`PrintPreviewDialog`:
@@ -552,8 +555,10 @@ písmo se **nenastavuje** i kvůli tomu.
 (`scripts/check-css-units.py`, §10) odmítne `@media` s rysem šířky mimo
 hodnotu shellu, `@container` mimo prahy výše i JS konstantu, která
 s CSS neladí; značka `px-ok` na breakpointy neplatí. Pevné šířky, výšky
-a layout tokeny v px řeší #138 task 4; obaly tabulek s posunem do strany
-a složené řádky #138 task 3 a #139.
+a layout tokeny v px řeší #138 task 4. Obal tabulky s posunem do strany je
+sdílený `TableScroll` (D44, #139 — řádky dokladu a rekapitulace DPH), na
+ostatní tabulky ho rozšíří #138 task 3; složené řádky dokladu pod `36rem`
+jsou hotové (`DocRows`, §12 Úzká šířka).
 
 ---
 
@@ -916,9 +921,10 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
 
 1. **Lišta akcí** (`detail.actions`) — nad hlavičkou, beze změny vůči
    zbytku aplikace (`Button size="sm"`, škála `sm`).
-2. **Hlavička**: ikona typu záznamu 40×40 vlevo, titulek (title),
-   podtitul (meta, barvou textu), štítky (meta, normální tloušťka,
-   `padding: 0.125rem 0.625rem`, pilulka). Odsazení
+2. **Hlavička** (`components/ui/DetailHeader.svelte`, #139 D48 — sdílená
+   pro `ViewerDetail` i review dokladu): ikona typu záznamu 40×40 vlevo,
+   titulek (title), podtitul (meta, barvou textu), štítky (`Badge`: meta,
+   normální tloušťka, `padding: 0.125rem 0.625rem`, pilulka). Odsazení
    `0.75rem var(--shpd-space-md)`, mezera ikona–text `0.75rem`.
    - **Hlavička neopakuje kontext** (D13): štítek typu záznamu do ní
      nepatří, typ nese ikona a název vieweru. Štítky jen pro stav a pro
@@ -972,11 +978,18 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   Propy `role="title"`, `icon` a `spacing` jsou pro nadpis karty jako
   samostatné části stránky (§8 Karty, D36, D38) — v detailu záznamu je
   nadpis sekce vždy heading bez ikony.
-- **Karta** (strany dokladu): sdílená `Card` (§8 Karty, D33) s nadpisem
-  `title` — rámeček `--shpd-color-border`, zaoblení `--shpd-radius-md`,
-  odsazení `--shpd-space-md`; položky pod sebou s mezerou `--shpd-space-xs`,
-  název entity heading (odkaz na záznam modře), identifikátory, adresa
-  a účet body barvou textu, kontakty meta šedě s malou mezerou nad (D16).
+- **Karta strany** (`components/document/PartyCard.svelte`, #139 D48,
+  D50): sdílená `Card` (§8 Karty, D33) s nadpisem `title` — rámeček
+  `--shpd-color-border`, zaoblení `--shpd-radius-md`, odsazení
+  `--shpd-space-md`; obsah v pořadí D16, položky pod sebou s mezerou
+  `--shpd-space-xs`: název entity heading (odkaz na záznam modře dává
+  snippet `name`), identifikátory IČO / DIČ / VAT ID, adresa a účet body
+  barvou textu bez tučného (D15), kontakty meta šedě s malou mezerou nad;
+  bez strany „—“. Jeden tvar dat s hotovými texty (adaptér
+  `documentParts.js`). Review přidává snippety `status` (stav strany vpravo
+  v nadpisu — `Card` `aside`), `bankStatus` (značka účtu za číslem; účet se
+  pak ukáže i bez čísla) a `footer` („Založit z registru“); kontaktní osoba
+  je první položka `contacts`.
 - **Popisek–hodnota** (D29, `PropertyList.svelte` + `PropertyGroups.svelte`
   v `components/ui/`): jedna sdílená komponenta pro obecný detail i detail
   dokladu. `<dl>` jedné skupiny je mřížka `grid-template-columns:
@@ -1008,10 +1021,35 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   #137 task 2b větší), čára pod ní
   `--shpd-color-border-strong`, mezi řádky `--shpd-color-border`; buňky
   `padding: 0.375rem var(--shpd-space-xs)`, čísla vpravo
-  s `tabular-nums`. Štítek stavu v buňce = meta.
-- **Součty**: vpravo pod tabulkou, hodnoty strong (token), řádek Celkem
-  title s čarou nad; přepočet v domácí měně meta šedě. Rekapitulace DPH
-  vlevo se nezvýrazňuje.
+  s `tabular-nums` a nikdy zalomená (`white-space: nowrap`). Štítek stavu
+  v buňce = sdílený `Badge`. **Každá tabulka v obsahu má vlastní obal
+  s posunem do strany** (`components/ui/TableScroll.svelte`, #139 D44):
+  `overflow-x: auto`, bez vzhledu navíc, bez `tabindex` (posuvný obal bez
+  fokusovatelného obsahu dělá fokusovatelným prohlížeč sám, obal
+  s `tabindex` by přidal zastávku tabulátoru ke každé tabulce; volitelný
+  `label` → `role="region"`). Stránka ani panel nikdy nerolují do strany —
+  v úzkém obalu se posune tabulka. Dnes řádky dokladu a rekapitulace DPH,
+  ostatní tabulky (obecný typ `table`, sub-tabulky, reporty) převede #138
+  task 3.
+- **Řádky dokladu** (`components/document/DocRows.svelte`, #139 D45, D48):
+  `SectionHeading` (`title`, snippet `aside` — hromadné akce review)
+  a tabulka v `TableScroll`. Sloupce Poz. · Popis · [Účet] · Množství · MJ
+  · Cena za MJ · DPH · Celkem; textový řádek = pořadí + popis přes zbytek;
+  prázdná hodnota „—“. Snippety s výchozím textem z řádku: `description`
+  (detail: odkaz na položku + `Badge` stavu položky), `below` (pod popisem
+  v obou režimech — napárování), `account` (přítomnost zapíná sloupec
+  Účet), `unit`, `vat`, `meta` (řádek složeného režimu). Složený řádek pod
+  `36rem` viz Úzká šířka.
+- **Součty** (`components/document/DocTotals.svelte`, #139 D52, D55):
+  rekapitulace DPH vlevo (tabulka v `TableScroll`, nezvýrazňuje se),
+  souhrn vpravo — Základ, DPH, Zaokrouhlení (jen když je), Celkem title
+  s čarou nad, hodnoty strong (token); přepočet v domácí měně meta šedě.
+  Popisek řádku součtu je **„Celkem“**, ne „Celkem k úhradě“ (D55): u
+  pokladního dokladu, zaplacené faktury nebo interního dokladu by
+  „k úhradě“ bylo zavádějící. Review přidává snippety `before` (zdroj čísel
+  nad rekapitulací, meta), `rate` (sazba s kódem DPH, dvojice přenesené
+  povinnosti) a `after` (`Notice` při nesouladu s částkou dodavatele);
+  `totalTestId` → `data-testid` řádku Celkem.
 - **Přílohy**: na konci Přehledu (D8, #136 D21), sdílená
   `DetailAttachments.svelte` nad `detail.attachments.groups` u každého
   vieweru: skupiny s nadpisem `SectionHeading` (kód zprávy jako odkaz,
@@ -1049,12 +1087,19 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   jen ze známých typů).
 - **Obecný detail i doklad kreslí tytéž komponenty**: `ViewerDetail.svelte`
   (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`,
-  Odeslaná pošta), `DocumentDetail.svelte` (karty
-  stran, údaje dokladu, Řádky) i `DetailAttachments.svelte` používají
-  `SectionHeading` a `PropertyGroups` — každý detail má stejné písmo
-  i mezery; obecný typ `table` používá tytéž role. **Pravidlo:** nový nadpis
-  sekce, seznam popisek–hodnota, hláška nebo štítek v detailu je sdílená
-  komponenta, ne vlastní třída s kopií CSS.
+  Odeslaná pošta), `DocumentDetail.svelte` i `DetailAttachments.svelte`
+  používají `SectionHeading` a `PropertyGroups` — každý detail má stejné
+  písmo i mezery; obecný typ `table` používá tytéž role. **Sdílené části
+  dokladu** (#139 D48): `DocumentDetail.svelte` jen skládá `PartyCard`,
+  `PropertyGroups`, `DocRows` a `DocTotals` z `components/document/` přes
+  adaptér `documentParts.js` (čisté funkce, `t` parametrem: snake_case
+  obsah `document` → jeden tvar dat s hotovými texty; review bude mít
+  adaptér z canonical) — vlastní má jen kořen, mřížku stran a snippety
+  s odkazy. Části jsou prezentační: stav a interaktivní prvky (značky,
+  rozhodnutí, hromadné akce) dodává volající snippety. **Pravidlo:** nový
+  nadpis sekce, seznam popisek–hodnota, hláška nebo štítek v detailu je
+  sdílená komponenta, ne vlastní třída s kopií CSS; nový prvek dokladu je
+  sdílená část v `components/document/`, ne kopie v detailu nebo review.
 
 ### Úzká šířka
 
@@ -1071,8 +1116,23 @@ kromě úzkého okna a mobilu. Původních 40 rem stohovalo strany už při okn�
 užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám —
 proto je kontejnerem obal mřížky na celou šířku, ne mřížka samotná;
 `container-type` nepatří na prvky, které se mají smrštit na obsah.
-Složené řádky tabulky dokladu na úzké šířce dostanou práh `36rem` (#139);
-obal tabulky s posunem do strany řeší #138 task 3.
+**Složený řádek** (D45, #139): řádky dokladu (`DocRows`) pod `36rem`
+(576 px) kontejneru přepnou na složený řádek — jedno DOM, přepíná jen
+CSS: hlavička tabulky a buňky Účet / Množství / MJ / Cena / DPH jsou
+skryté, zůstává pořadí · popis · celkem vpravo a pod popisem řádek
+„množství jednotka × cena · sazba“ v roli meta šedě (`rowMetaLine`;
+v review navíc „· účet“ se značkou); textový řádek jen popis. Při okně
+1280 px má panel vedle seznamu 587 px (tabulka), drawer 528 px a mobil
+složené řádky; při písmu 20 px se složený režim zapne už při 1280 px
+(`rem`). Kontejner je kořen `DocRows` a je **pojmenovaný**
+(`container-name: doc-rows`): uvnitř detailu je kontejnerem
+i `.shpd-docdetail` a nepojmenovaný dotaz by se ptal nejbližšího předka.
+Textový řádek drží `colspan` i ve složeném režimu — skryté sloupce bez
+vlastní buňky mají v Chromiu nulovou šířku, tabulka se neroztáhne. Cena
+čistě CSS řešení: snippety buněk review (`unit`, `vat`, `account`, `meta`)
+jsou v DOM dvakrát, vidět je jen jedno. Obal s posunem do strany
+(`TableScroll`, D44) mají řádky i rekapitulace DPH; na ostatní tabulky ho
+rozšíří #138 task 3.
 
 ---
 
@@ -1091,10 +1151,16 @@ obal tabulky s posunem do strany řeší #138 task 3.
 | `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29); výběr skupin čistá funkce `propertyGroups.js` |
 | `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text}`), role podle tónu, bez okraje |
 | `frontend/src/components/ui/Badge.svelte` | Štítek hlavičky detailu a bloku `badges` (§5) — obecné i doc-state varianty, pilulka meta |
+| `frontend/src/components/ui/DetailHeader.svelte` | Hlavička detailu (§12 Pořadí, #139 D48) — ikona 40×40, titulek title, štítky `Badge`, podtitul meta; sdílená pro `ViewerDetail` i review dokladu |
+| `frontend/src/components/ui/TableScroll.svelte` | Obal tabulky s posunem do strany (§12 Tabulka, D44) — `overflow-x: auto`, bez `tabindex`, volitelný `label` → region |
+| `frontend/src/components/document/documentParts.js` | Adaptér detailu dokladu (čisté funkce, `t` parametrem, #139 D48): `detailParty`, `detailRows`, `detailTotals`, `formatAddress`, `rowMetaLine` — jeden tvar dat částí s hotovými texty |
+| `frontend/src/components/document/PartyCard.svelte` | Karta strany dokladu (§12, D50) — `Card`, pořadí D16, snippety `name` / `status` / `bankStatus` / `footer` |
+| `frontend/src/components/document/DocRows.svelte` | Řádky dokladu (§12, D45) — tabulka v `TableScroll`, složený řádek pod `36rem` (pojmenovaný kontejner `doc-rows`), snippety `description` / `below` / `account` / `unit` / `vat` / `meta`, `aside` nadpisu |
+| `frontend/src/components/document/DocTotals.svelte` | Součty dokladu (§12, D52, D55) — rekapitulace DPH v `TableScroll`, souhrn s řádkem Celkem, snippety `before` / `rate` / `after`, `totalTestId` |
 | `frontend/src/components/ui/PageBanner.svelte` | Pruh nad obsahem (§8 Hlášky a pruhy, D41) — celá šířka, linka 2 px dole, tóny `warning` / `info` / `danger` |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
-| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou, taby, štítky (`Badge`); obecné typy obsahu (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`) sdílenými komponentami a podle rolí (§12); HTML jen `untrusted-html` v sandboxu (D30) |
-| `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12 (role, karty stran, údaje přes `PropertyGroups`, tabulky, součty, container query) |
+| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou (`DetailHeader`), taby, štítky (`Badge`); obecné typy obsahu (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`) sdílenými komponentami a podle rolí (§12); HTML jen `untrusted-html` v sandboxu (D30) |
+| `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12: skládá sdílené části dokladu (`PartyCard`, `PropertyGroups`, `DocRows`, `DocTotals`) přes adaptér `documentParts.js`; vlastní jen kořen (container query stran), mřížka stran a odkazy na záznamy |
 | `frontend/src/components/form/FormStateBadge.svelte` | Stavový badge ve formuláři |
 
 ---
