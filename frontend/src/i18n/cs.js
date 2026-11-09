@@ -645,7 +645,6 @@ export default {
 
   // ── Registry import wizard (Přidat firmu z registru) ────────────────────
   // Registry (Spisovna) — preview extrakce + labely druhů a kindFields
-  'registry.preview.party': 'Protistrana',
   'registry.preview.companyId': 'IČO',
   'registry.preview.fields': 'Údaje dokumentu',
   'registry.preview.binderSuggestion': 'Návrh šanonu',

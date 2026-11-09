@@ -632,7 +632,6 @@ export default {
 
   // ── Registry import wizard (Add company from registry) ──────────────────
   // Registry (Spisovna) — extraction preview + doc kind and kindFields labels
-  'registry.preview.party': 'Counterparty',
   'registry.preview.companyId': 'Company ID',
   'registry.preview.fields': 'Document fields',
   'registry.preview.binderSuggestion': 'Suggested binder',
