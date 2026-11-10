@@ -4,7 +4,7 @@
   // docs/frontend.md → Vývojářský dashboard). Esc a klik mimo kartu zavírá.
   import { t } from '../i18n/index.js';
 
-  let { open = false, title = '', width = '640px', onClose, children, footer } = $props();
+  let { open = false, title = '', width = '40rem', onClose, children, footer } = $props();
 
   function onKeydown(e) {
     if (open && e.key === 'Escape') onClose?.();

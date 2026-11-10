@@ -114,14 +114,14 @@
       {level}
     </button>
   {/each}
-  <span class="dev-field" style="min-width: 220px">
+  <span class="dev-field" style="min-width: 13.75rem">
     <select bind:value={ds} aria-label={t('common.dataSource')}>
       {#each options as o (o.value)}
         <option value={o.value}>{o.label}</option>
       {/each}
     </select>
   </span>
-  <span class="dev-field" style="flex: 1; min-width: 200px">
+  <span class="dev-field" style="flex: 1; min-width: 12.5rem">
     <input type="search" placeholder={t('logs.searchPlaceholder')} bind:value={search} />
   </span>
 </div>
@@ -212,8 +212,8 @@
 
 <style>
   .dot {
-    width: 10px;
-    height: 10px;
+    width: 0.625rem;
+    height: 0.625rem;
     border-radius: 50%;
     background: var(--shpd-color-success);
     display: inline-block;
@@ -234,7 +234,7 @@
 
   .row__main {
     display: grid;
-    grid-template-columns: 70px 56px 56px minmax(80px, 180px) 1fr;
+    grid-template-columns: 4.375rem 3.5rem 3.5rem minmax(5rem, 11.25rem) 1fr;
     gap: var(--shpd-space-sm);
     align-items: baseline;
     width: 100%;
@@ -281,7 +281,7 @@
   .ds-chip--none { color: var(--shpd-color-text-secondary); cursor: default; }
 
   .row__detail { padding: var(--shpd-space-sm) 0.75rem var(--shpd-space-md) 5.125rem; }
-  .row__detail dl { display: grid; grid-template-columns: 90px 1fr; gap: 0.125rem var(--shpd-space-md); }
+  .row__detail dl { display: grid; grid-template-columns: 5.625rem 1fr; gap: 0.125rem var(--shpd-space-md); }
   .row__detail dt { color: var(--shpd-color-text-secondary); }
   .row__detail dd { margin: 0; word-break: break-word; }
   .ctx {
@@ -291,7 +291,7 @@
     border: 1px solid var(--shpd-color-border-subtle);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-xs);
-    max-height: 320px;
+    max-height: 20rem;
     overflow: auto;
   }
 

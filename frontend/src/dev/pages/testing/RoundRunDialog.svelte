@@ -83,7 +83,7 @@
   }
 </script>
 
-<DevDialog title={t('testing.round.run')} {open} onClose={() => onClose?.()} width="680px">
+<DevDialog title={t('testing.round.run')} {open} onClose={() => onClose?.()} width="42.5rem">
   <div class="dev-form">
     <div class="dev-field">
       <span class="dev-field__label">{t('testing.round.layers')}</span>

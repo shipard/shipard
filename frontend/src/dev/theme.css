@@ -49,5 +49,5 @@
   --dev-class-real-text: #5a4300;
   /* Výška pruhu + lišty pro lepicí prvky pod lištou (PdfPane). Výchozí odhad;
      DevApp ji na .dev-shell přepisuje naměřenou výškou, pruh i lišta smí zalomit. */
-  --dev-top-height: 84px;
+  --dev-top-height: 5.25rem;
 }

@@ -54,7 +54,7 @@
     font-size: var(--shpd-font-size-xs);
     line-height: 1.5;
     overflow: auto;
-    max-height: 320px;
+    max-height: 20rem;
     white-space: pre;
   }
 </style>

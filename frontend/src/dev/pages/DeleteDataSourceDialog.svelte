@@ -43,7 +43,7 @@
   }
 </script>
 
-<DevDialog title={t('dsDelete.title')} {open} width="560px" onClose={() => { if (!busy) onClose?.(); }}>
+<DevDialog title={t('dsDelete.title')} {open} width="35rem" onClose={() => { if (!busy) onClose?.(); }}>
   <div class="dev-form">
     <dl class="dev-kv dev-small">
       <dt>{t('common.dataSource')}</dt>

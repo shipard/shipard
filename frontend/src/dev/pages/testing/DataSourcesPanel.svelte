@@ -274,5 +274,5 @@
 
 <style>
   .dev-toolbar { margin-top: var(--shpd-space-sm); }
-  .dev-toolbar select { max-width: 420px; }
+  .dev-toolbar select { max-width: 26.25rem; }
 </style>

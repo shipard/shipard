@@ -18,7 +18,7 @@
   } = $props();
 </script>
 
-<DevDialog {open} {title} width="480px" onClose={() => { if (!busy) onCancel?.(); }}>
+<DevDialog {open} {title} width="30rem" onClose={() => { if (!busy) onCancel?.(); }}>
   <div class="dev-dialog__message">{message}</div>
   {#snippet footer()}
     <Button label={cancelLabel} variant="secondary" size="sm" disabled={busy} onclick={() => onCancel?.()} />

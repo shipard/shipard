@@ -76,7 +76,7 @@
   }
 </script>
 
-<DevDialog title={t('testing.dsPanel.runEval')} {open} onClose={() => onClose?.()} width="640px">
+<DevDialog title={t('testing.dsPanel.runEval')} {open} onClose={() => onClose?.()} width="40rem">
   <div class="dev-form">
     <dl class="dev-kv dev-small">
       <dt>{t('common.dataset')}</dt><dd><code>{set}</code></dd>

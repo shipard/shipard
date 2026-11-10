@@ -120,7 +120,7 @@
 </button>
 
 {#if open}
-  <Popover open={true} anchor={buttonEl} placement="bottom" width="440px" onClose={() => closeBubble()}>
+  <Popover open={true} anchor={buttonEl} placement="bottom" width="27.5rem" onClose={() => closeBubble()}>
     <div class="bubble" role="document">
       <div class="bubble__head">
         <h3 class="bubble__title">{t('updates.bubble.versionTitle', { version: version?.version ?? pending })}</h3>

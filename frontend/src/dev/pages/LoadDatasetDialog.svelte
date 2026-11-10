@@ -77,7 +77,7 @@
   }
 </script>
 
-<DevDialog title={t('ds.menu.loadDataset')} {open} width="560px" onClose={() => { if (!busy && !confirmReplace) onClose?.(); }}>
+<DevDialog title={t('ds.menu.loadDataset')} {open} width="35rem" onClose={() => { if (!busy && !confirmReplace) onClose?.(); }}>
   <div class="dev-form">
     <dl class="dev-kv dev-small">
       <dt>{t('common.dataSource')}</dt>

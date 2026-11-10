@@ -147,8 +147,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     vertical-align: middle;
     color: var(--shpd-color-text);
@@ -175,7 +175,7 @@
   .dev-kebab__menu {
     display: flex;
     flex-direction: column;
-    min-width: 180px;
+    min-width: 11.25rem;
     padding: var(--shpd-space-xs) 0;
     outline: none;
   }
@@ -199,7 +199,7 @@
     outline: none;
   }
   .dev-kebab__sep {
-    height: 1px;
+    height: 1px; /* px-ok: čára */
     margin: var(--shpd-space-xs) 0;
     background: var(--shpd-color-border);
   }
