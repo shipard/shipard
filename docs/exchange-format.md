@@ -921,6 +921,8 @@ a bez rekapitulace (D8); řádky `total_price` = cena s daní,
 `price_calc_mode` 1 (z celkové ceny, jednotkovou cenu dopočítá
 `DocRowCalculator`), bez slev (cena je obsahuje) a bez `vat_code` /
 `vat_pct` — kód z historie řádků ani sazba dodavatele se nepropisují.
+Jednotková cena se dopočítá i u záporného množství (přijatý dobropis:
+−10 ks za −12 500 = 1 250 za kus); jen množství 0 nebo prázdné dává 0 (#98).
 `total_rounding_mode` se odvodí ze součtu převedených řádků. Účtování
 žádnou změnu nepotřebuje: doklad Bez DPH zaúčtuje plnou částku řádku.
 

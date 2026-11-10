@@ -65,6 +65,59 @@ class DocRowCalculatorTest extends TestCase
         $this->assertSame(100.0, $p['total_price']);
     }
 
+    /** Množství chybí (kontační řádek, prázdné pole z klienta): cena za jednotku 0 jako u nuly. */
+    public function testFromTotalPriceWithoutQuantityGivesZeroUnitPrice(): void
+    {
+        foreach ([null, '', '0'] as $quantity) {
+            $p = DocRowCalculator::computePrice([
+                'row_kind' => 1, 'quantity' => $quantity, 'total_price' => 100, 'price_calc_mode' => 1,
+            ]);
+
+            $this->assertSame(0.0, $p['unit_price'], var_export($quantity, true));
+            $this->assertSame(100.0, $p['total_price'], var_export($quantity, true));
+        }
+    }
+
+    /** Dobropis, vratka (#98): záporné množství cenu za jednotku dopočítá, ne vynuluje. */
+    public function testFromTotalPriceWithNegativeQuantityAndTotalGivesPositiveUnitPrice(): void
+    {
+        $p = DocRowCalculator::computePrice([
+            'row_kind' => 1, 'quantity' => -2, 'total_price' => -100, 'price_calc_mode' => 1,
+        ]);
+
+        $this->assertSame(50.0, $p['unit_price']);
+        $this->assertSame(-100.0, $p['total_price']);
+        $this->assertSame(-100.0, $p['net_total']);
+    }
+
+    /** Znaménka se neupravují, platí prosté dělení. */
+    public function testFromTotalPriceNegativeTotalWithPositiveQuantity(): void
+    {
+        $p = DocRowCalculator::computePrice([
+            'row_kind' => 1, 'quantity' => 2, 'total_price' => -100, 'price_calc_mode' => 1,
+        ]);
+
+        $this->assertSame(-50.0, $p['unit_price']);
+    }
+
+    public function testFromTotalPricePositiveTotalWithNegativeQuantity(): void
+    {
+        $p = DocRowCalculator::computePrice([
+            'row_kind' => 1, 'quantity' => -2, 'total_price' => 100, 'price_calc_mode' => 1,
+        ]);
+
+        $this->assertSame(-50.0, $p['unit_price']);
+    }
+
+    public function testFromTotalPriceWithNegativeQuantityRoundsUnitToFourDecimals(): void
+    {
+        $p = DocRowCalculator::computePrice([
+            'row_kind' => 1, 'quantity' => -3, 'total_price' => -100, 'price_calc_mode' => 1,
+        ]);
+
+        $this->assertSame(33.3333, $p['unit_price']);
+    }
+
     public function testDiscountPctKeepsTotalPriceBeforeDiscount(): void
     {
         // Past P1: total_price před slevou, net_total po slevě.

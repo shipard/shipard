@@ -227,6 +227,36 @@ class DocDocumentComputeAmountsTest extends TestCase
         $this->assertMatchesBeforeSave($this->data([$this->row('cz-115', 21.0, 200.00)]));
     }
 
+    /**
+     * Dobropis: řádek z celkové ceny se záporným množstvím (#98) — jednotková
+     * cena je −100 / −2 = 50, částky řádku i dokladu jdou dál z celkové ceny.
+     */
+    public function testNegativeQuantityFromTotalPriceFillsUnitPriceAndKeepsAmounts(): void
+    {
+        $row = [
+            'row_kind'        => 1,
+            'quantity'        => -2,
+            'total_price'     => -100.00,
+            'price_calc_mode' => 1,
+            'vat_code'        => 'cz-110',
+            'vat_pct'         => 21.0,
+        ];
+        $data = $this->data([$row]);
+
+        $result = $this->doc()->computeAmounts($data);
+
+        $this->assertSame(50.0, $result['rows'][0]['unit_price']);
+        $this->assertSame(-100.0, $result['rows'][0]['total_price']);
+        $this->assertSame(-100.0, $result['rows'][0]['vat_base']);
+        $this->assertSame(-21.0, $result['rows'][0]['vat_amount']);
+        $this->assertSame(-121.0, $result['rows'][0]['vat_total']);
+        $this->assertSame(-100.0, $data['total_base']);
+        $this->assertSame(-21.0, $data['total_vat']);
+        $this->assertSame(-121.0, $data['total_amount']);
+
+        $this->assertMatchesBeforeSave($this->data([$row]));
+    }
+
     // ── Bez vedlejších efektů ───────────────────────────────────────────────
 
     public function testDoesNotWriteOrNumberOrChangeState(): void

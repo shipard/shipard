@@ -26,8 +26,10 @@ final class DocRowCalculator
      * Cena řádku podle `price_calc_mode`:
      *  - 0 (z ceny za jednotku): `total_price = round(quantity × unit_price, 2)`,
      *    `unit_price` je vstup (normalizovaný na float, prázdný → null);
-     *  - 1 (z celkové ceny): `unit_price = round(total_price / quantity, 4)`,
-     *    množství 0 → 0.0; `total_price` je vstup (normalizovaný stejně).
+     *  - 1 (z celkové ceny): `unit_price = round(total_price / quantity, 4)`
+     *    pro nenulové množství — i záporné (dobropis, vratka: −2 ks za −100
+     *    celkem = 50 za kus, #98); množství 0 a prázdné → 0.0 (kontační
+     *    řádky bez množství). `total_price` je vstup (normalizovaný stejně).
      * `net_total` = `total_price` po slevě: `discount_pct` má přednost před
      * `discount_amount`, zaokrouhlení na 2 — u procent dvoustupňově (nejdřív
      * částka slevy, pak rozdíl), shodně s původní save cestou. `empty()` na
@@ -54,7 +56,7 @@ final class DocRowCalculator
             $totalPrice = round($qty * ($unitPrice ?? 0.0), 2);
         } else {
             $totalPrice = self::toNullableFloat($row['total_price'] ?? null);
-            $unitPrice = $qty > 0 ? round(($totalPrice ?? 0.0) / $qty, 4) : 0.0;
+            $unitPrice = $qty !== 0.0 ? round(($totalPrice ?? 0.0) / $qty, 4) : 0.0;
         }
 
         $netTotal = $totalPrice ?? 0.0;

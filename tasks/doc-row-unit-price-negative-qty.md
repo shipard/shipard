@@ -1,6 +1,7 @@
 # Task: Jednotková cena řádku z celkové ceny při záporném množství
 
-**Stav:** naplánováno — zadání 2026-11-10
+**Stav:** hotovo — 2026-11-10 (jeden commit, testy kalkulátoru, dokumentu
+i applieru zelené); v UI neověřeno
 
 **Issue:** #98
 
@@ -67,9 +68,11 @@ zobrazuje).
 
 ## Existující data
 
-Bez migrace. Řádky uložené s jednotkovou cenou 0 se opraví při dalším
-uložení dokladu. Na kopiích reálných dat jde o jednotky řádků, hromadný
-přepočet se kvůli nim nedělá.
+Bez migrace. Uložení hlavičky zapisuje do řádků jen `vat_*`
+(`persistRowComputedColumns`), takže řádek uložený s jednotkovou cenou 0 se
+opraví při uložení řádku z formuláře nebo při apply dokladu s řádky
+v payloadu, ne při uložení samotné hlavičky. Na kopiích reálných dat jde
+o jednotky řádků, hromadný přepočet se kvůli nim nedělá.
 
 ## Mimo rozsah
 
@@ -77,13 +80,23 @@ přepočet se kvůli nim nedělá.
 - Tolerance u množství blízkého nule — množství je desetinné číslo
   z databáze, porovnání s nulou stačí.
 
+## Poznámky k implementaci
+
+- Test přes `computeAmounts()` je v `DocDocumentComputeAmountsTest`, ne
+  v `DocDocumentRowCalcTest` — potřebuje konfiguraci `world.vat.cz` a mock
+  DB, které má jen ten první. `DocDocumentRowCalcTest` dostal test přes
+  `calculateRowPrice()`.
+- Podmínka je `$qty !== 0.0` nad množstvím přetypovaným na float: `null`,
+  prázdný řetězec i `'0'` dávají `0.0`; `-0.0 === 0.0` v PHP platí, takže
+  ochrana před dělením nulou zůstává.
+
 ## Hotovo když
 
-- [ ] Řádek z celkové ceny se záporným množstvím má jednotkovou cenu
+- [x] Řádek z celkové ceny se záporným množstvím má jednotkovou cenu
       `celkem / množství`; množství 0 a prázdné dává 0.
-- [ ] Částky řádku a dokladu se proti dnešku nezměnily (testy dokumentu).
-- [ ] Náhled i uložený přijatý dobropis na zdroji neplátce ukazují
+- [x] Částky řádku a dokladu se proti dnešku nezměnily (testy dokumentu).
+- [x] Náhled i uložený přijatý dobropis na zdroji neplátce ukazují
       nenulové jednotkové ceny.
-- [ ] `vendor/bin/phpunit --filter 'DocRowCalculatorTest|DocDocumentRowCalcTest'`
+- [x] `vendor/bin/phpunit --filter 'DocRowCalculatorTest|DocDocumentRowCalcTest'`
       a testy applieru zelené, pak celá sada.
-- [ ] `**Stav:**` tohoto tasku aktualizován, `python3 scripts/tasks-index.py`.
+- [x] `**Stav:**` tohoto tasku aktualizován, `python3 scripts/tasks-index.py`.
