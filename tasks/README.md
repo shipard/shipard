@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 430 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 398.
+Celkem 433 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 398.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,6 +27,9 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
+| `corrective-doc-core.md` | naplánováno | zadání 2026-11-10 (D1–D11 zamčené v #92) |
+| `corrective-doc-exchange.md` | naplánováno | zadání 2026-11-10 (D1–D11 zamčené v #92); čeká na task A |
+| `corrective-doc-outputs.md` | naplánováno | zadání 2026-11-10 (D1–D11 zamčené v #92); čeká na tasky A a B |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `design-system-chat-page-height.md` | naplánováno | 2026-11-10 (#133 Další nesoulady) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -245,6 +248,9 @@ Polymorfní jádro `docs.core` + per-typ faktury. Řídící dokument
 | `exchange-rates-download.md` | Kurzy cizích měn, task B: stahování lístků ze služby (`server.json`, okno od předchozího fiskálního roku, `five-minutes`, limit a pauza), CLI `exchange-rates-download`, upozornění na chybějící lístek, neznámá měna při importu přeskočena (#121 D2, D3, D9, U1–U7) |
 | `doc-row-unit-price-negative-qty.md` | Jednotková cena řádku z celkové ceny při záporném množství — `DocRowCalculator::computePrice()` (#98) |
 | `doc-total-rounding-auto.md` | Automatické zaokrouhlení částky podle způsobu úhrady, měny a země — sloupec `total_rounding_auto`, konfigurace hotovosti `world.base.cashRounding`, formuláře prodejních dokladů, varování, výměnný formát (#73 D1–D8) |
+| `corrective-doc-core.md` | Opravný daňový doklad, task A: sloupce opravy na hlavičce, pravidla dokumentu (denormalizace z původního dokladu, validace, sazba k datu původního plnění, kurz), lookup dokladů, formulář faktury vydané, vazba v detailu z obou stran (#92 D1–D5, D7) |
+| `corrective-doc-exchange.md` | Opravný daňový doklad, task B: blok `correction` ve výměnném formátu (applier, export, datové sady), služba a akce „Vystavit opravný doklad“ z detailu faktury (#92 D6, D10) |
+| `corrective-doc-outputs.md` | Opravný daňový doklad, task C: tisk (titulky, původní doklad, důvod opravy) a ISDOC typ 2 / 3 s odkazem na původní doklad (#92 D8, D9) |
 
 ## Tisky (doména print)
 
