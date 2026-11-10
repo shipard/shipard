@@ -117,6 +117,10 @@
   // Měří ResizeObserver $effect níže; na mobilu se neměří.
   let bodyEl = $state(null);
   let isNarrow = $state(false);
+  // Změřená šířka těla vieweru v px (0 = neměřeno / mobil). Horní mez
+  // šířky draweru — drawer nesmí přesáhnout přes navigaci vlevo od
+  // vieweru; platí pro list i grid.
+  let bodyWidth = $state(0);
   // Kde žije detail: drawer (grid, úzký viewer) × panel vedle seznamu.
   // Na mobilu nikdy drawer — tam platí přepínání seznam / detail (D42).
   let detailInDrawer = $derived(!layoutStore.isMobile && (isGrid || isNarrow));
@@ -1098,15 +1102,20 @@
   // Šířka 0 (element bez rozměru) se ignoruje, zůstává poslední stav.
   // Čte jen isMobile a bodyEl; na mobilu se neměří (detailInDrawer je tam
   // false bez ohledu na isNarrow).
+  //
+  // Měří se bez ohledu na layout — změřená šířka (bodyWidth) je i horní
+  // mez šířky draweru, a ten má grid vždy.
   $effect(() => {
     const el = bodyEl;
     if (layoutStore.isMobile || el == null || typeof ResizeObserver === 'undefined') {
       isNarrow = false;
+      bodyWidth = 0;
       return;
     }
     const measure = () => {
       const width = el.getBoundingClientRect().width;
       if (width <= 0) return;
+      bodyWidth = width;
       const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
       isNarrow = isNarrowViewer(width, VIEWER_SPLIT_MIN, rootFontSize);
     };
@@ -1386,6 +1395,7 @@
     {detail}
     loading={detailLoading}
     actions={detailToolbar}
+    viewerWidth={bodyWidth}
     onToolbarAction={handleToolbarAction}
     onAction={handleDetailAction}
     onRefresh={handleDetailRefresh}

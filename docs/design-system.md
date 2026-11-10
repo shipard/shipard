@@ -590,7 +590,12 @@ konstanta `VIEWER_SPLIT_MIN` ve `stores/layout.svelte.js`, ne media
 query: `Viewer.svelte` měří `.shpd-viewer__body` přes `ResizeObserver`
 a práh přepočítává z rem podle aktuálního písma kořene při každém měření
 (`utils/viewerSplit.js`). Drawer je `position: fixed` a šířku vieweru
-nemění, takže na hraně nic nekmitá. Platí stejně ve všech shellech — práh
+nemění, takže na hraně nic nekmitá. Tatáž změřená šířka je horní mezí
+šířky draweru (`max-width: min(90vw, var(--shpd-viewer-width, 90vw))`,
+vlastnost nastavuje `Viewer.svelte` na kořeni draweru): drawer `35rem`
+nikdy nepřesáhne přes navigaci vlevo od vieweru — v sidebar shellu při
+okně 800 px má viewer 540 px a drawer právě tolik. Platí i pro drawer
+tabulkových seznamů. Platí stejně ve všech shellech — práh
 přijde při jiné šířce okna (sidebar shell 1140 px, classic a wild s užším
 levým pásem dřív, sbalený sidebar také) — i při větším písmu (písmo 20 px,
 okno 1280 px, sidebar shell: viewer 955 px < 1100 px → drawer).

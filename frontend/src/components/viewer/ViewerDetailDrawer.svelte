@@ -15,6 +15,9 @@
     detail = null,
     loading = false,
     actions = [],
+    /** Změřená šířka vieweru v px (Viewer.svelte měří .shpd-viewer__body);
+     *  0 / null = neznámá. Horní mez šířky draweru — viz max-width níže. */
+    viewerWidth = 0,
     /** Akce hlavičky (detailToolbar) — kontrakt handleToolbarAction(id),
      *  stejně jako desktop ViewerToolbar / mobile top bar. */
     onToolbarAction,
@@ -43,7 +46,12 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="shpd-drawer" role="complementary" aria-label={t('viewer.selectRecord')}>
+<div
+  class="shpd-drawer"
+  role="complementary"
+  aria-label={t('viewer.selectRecord')}
+  style:--shpd-viewer-width={viewerWidth > 0 ? `${viewerWidth}px` : null}
+>
   <div class="shpd-drawer__header">
     <div class="shpd-drawer__actions">
       {#each headerActions as action (action.id)}
@@ -70,7 +78,14 @@
     right: 0;
     bottom: 0;
     width: 35rem;
-    max-width: 90vw;
+    /* Horní mez je šířka VIEWERU, ne okna: drawer je position: fixed
+       u pravého okraje okna a viewer sahá k témuž okraji, takže drawer
+       širší než viewer by přesáhl přes navigaci vlevo (sidebar shell,
+       okno 800 px: viewer 540 px, drawer 560 px — uříznuté šipky sekcí;
+       90vw tu nepomůže). --shpd-viewer-width nastavuje Viewer.svelte ze
+       změřené šířky .shpd-viewer__body (px z měření vykresleného prvku,
+       D46); bez ní platí jen strop podle okna. */
+    max-width: min(90vw, var(--shpd-viewer-width, 90vw));
     display: flex;
     flex-direction: column;
     background-color: var(--shpd-color-bg);

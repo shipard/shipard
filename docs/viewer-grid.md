@@ -287,6 +287,12 @@ zprava** (~560 px):
   (FormDialog z detail akce), Esc zavírá modál, ne drawer.
 - Mobil drawer nepoužívá — tam platí stávající list/detail full-width
   přepínání.
+- **Drawer není širší než viewer** (#133 D58, doplnění): šířka `35rem`,
+  horní mez `min(90vw, šířka vieweru)`. `Viewer.svelte` měří
+  `.shpd-viewer__body` (list i grid, jen desktop) a šířku předává propem
+  `viewerWidth` → custom property `--shpd-viewer-width` na kořeni draweru.
+  Drawer je fixní u pravého okraje okna stejně jako viewer, takže širší
+  drawer by překryl navigaci vlevo (sidebar shell, okno 800 px).
 - **Drawer slouží i list layoutu v úzkém vieweru** (#133 D58): viewer se
   seznamem užší než `55rem` (seznam + nejužší rozumný detail) roztáhne
   seznam karet přes celou šířku a detail otevře v tomtéž draweru — stejné

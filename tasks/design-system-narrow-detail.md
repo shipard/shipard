@@ -1,6 +1,6 @@
 # Design system — úzký detail vedle seznamu: detail v draweru podle šířky vieweru
 
-**Stav:** hotovo — 2026-11-10 (#138 task 5, D58); zbývá ruční ověření ve Firefoxu (tři shelly, písmo 20 px) a na telefonu
+**Stav:** hotovo — 2026-11-10 (#138 task 5, D58); ruční ověření ve Firefoxu prošlo, doplnění z něj (drawer nepřesahuje přes navigaci) hotové
 
 ## Kontext / Cíl
 
@@ -199,6 +199,62 @@ okno), viewer se seznamem — Faktury přijaté:
   deník (grid) a telefon 390 px beze změny. Neprošlo ruční ověření ve
   Firefoxu a navigace na záznam odjinud (`navigateToViewer` s `recordId`)
   v úzkém režimu — ta jde stejnou cestou jako klik na řádek.
+- **Ruční ověření ve Firefoxu (2026-11-10)** prošlo — tři shelly,
+  přepínání za běhu, písmo 20 px, navigace odjinud, grid a telefon —
+  kromě jedné drobnosti: drawer v úzkém okně přesahoval přes navigaci.
+  Opraveno v Doplnění níže.
+
+## Doplnění po ručním ověření (2026-11-10)
+
+Ruční proklik ve Firefoxu prošel (tři shelly, přepínání za běhu, písmo
+20 px, navigace odjinud, grid a telefon beze změny) kromě jednoho —
+drobnost z ověření podle `docs/ai-workflow.md` §2, řeší se v tomto tasku.
+
+**Drawer v úzkém okně překrývá navigaci.** Sidebar shell, okno 800 px:
+viewer má 540 px, drawer `35rem` (560 px; `max-width: 90vw` = 720 px
+nepomůže) přesahuje o 20 px přes sidebar — u sbalovacích sekcí navigace
+je uříznutá šipka vpravo. Platí až k hranici mobilu (`48rem`) a stejně
+i pro drawer tabulkových seznamů (Účetní deník) — stav před taskem,
+oprava jedna pro oba.
+
+Úprava:
+
+- Drawer nesmí být širší než viewer: `Viewer.svelte` už měří
+  `.shpd-viewer__body` — předá změřenou šířku draweru jako custom
+  property na jeho kořeni (`--shpd-viewer-width`, px z měření je
+  v pořádku — měří vykreslený prvek, D46), drawer
+  `max-width: min(90vw, var(--shpd-viewer-width, 90vw))`. Měření běží
+  i pro grid (dnes se pro něj neměří, jen pro list — rozšířit; na mobilu
+  dál ne).
+- Šířka `35rem` zůstává, mění se jen horní mez. Drawer tak sahá nejvýš
+  k levému okraji vieweru, navigace zůstane celá.
+- Komentář u `max-width` v `ViewerDetailDrawer` (proč viewer, ne okno).
+
+Ověření: sidebar shell 800 a 900 px (list i Účetní deník) — drawer končí
+na hraně sidebaru, šipky sekcí celé; se sbaleným sidebarem drawer
+`35rem`; classic a wild 800 px — drawer nepřekrývá levý pás; 1280 px
+beze změny.
+
+Commit: `fix(frontend): drawer detailu nepřesahuje přes navigaci (#138, D58)`
+— s `**Stav:** hotovo` a řádkem výsledku ručního ověření v Jak to dopadlo.
+
+**Hotovo (2026-11-10).** `Viewer.svelte` měřil šířku už pro oba layouty
+(měření se neváže na layout, jen na desktop) — přibyl stav `bodyWidth`
+a prop `viewerWidth` draweru; drawer má `max-width: min(90vw,
+var(--shpd-viewer-width, 90vw))`. Ověřeno v Chromiu (Playwright, volný
+demo zdroj dat): sidebar shell 800 px — list i Účetní deník: viewer
+i drawer 540 px, levá hrana draweru na hraně sidebaru, šipky sekcí celé;
+900 a 1024 px drawer 560 px; sbalený sidebar při 800 px drawer 560 px;
+zúžení 1024 → 800 px s otevřeným drawerem mez přepočítá; classic a wild
+800 px (viewer 724 px) drawer 560 px, levý pás volný; 1280 px (grid)
+a 1100 px (list) beze změny; písmo 20 px, okno 1000 px: viewer i drawer
+675 px (drawer by měl 700). Důsledek: v sidebar shellu pod 820 px okna
+drawer zakrývá celý viewer včetně horní lišty — seznam je zpět po
+zavření draweru (křížek, Escape).
+
+**Poznámka k ověření:** „Otevřít“ na kartě dashboardu otevírá náhled
+v modalu nad dashboardem (`open_detail`), ne viewer — v pořádku, mimo
+D58.
 
 ## Pasti
 
