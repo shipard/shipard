@@ -1344,6 +1344,11 @@ abstract class DocsHeadsFormBase extends TableForm
             $this->applyExchangeRate($data);
         }
 
+        if ($changedColumn === 'corrected_doc') {
+            // Původní doklad opravného dokladu (#92 U8): číslo, datum plnění, kurz.
+            $this->applyCorrectedDoc($data);
+        }
+
         if ($changedColumn === 'payment_method') {
             if ((int) ($data['payment_method'] ?? 1) === 0) {
                 // Hotovost: předvyplnit výchozí pokladnu měny dokladu (is_default,
@@ -1545,6 +1550,92 @@ abstract class DocsHeadsFormBase extends TableForm
     protected function isTaxDocument(array $data): bool
     {
         return DocTypes::isTaxDocument($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Typ dokladu, který jde označit jako opravný daňový doklad
+     * (`docTypes[].corrective`, #92 D1 — faktura vydaná, zálohová ne).
+     * Řídí zobrazení sekce Oprava v tabu Nastavení.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function isCorrectiveType(array $data): bool
+    {
+        return DocTypes::isCorrective($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Opravný doklad = typ s příznakem a zapnuté zaškrtávátko (bool
+     * z klienta, 0/1 z DB — proto `!empty()`). Řídí viditelnost polí opravy.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function isCorrective(array $data): bool
+    {
+        return !empty($data['corrective']) && $this->isCorrectiveType($data);
+    }
+
+    /**
+     * Filtr lookupu původního dokladu (#92 U9): doklady téhož typu, a je-li
+     * partner vyplněný, jen jeho.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, scalar>
+     */
+    protected function correctedDocLookupFilter(array $data): array
+    {
+        $filter = [DocsHeadsLookup::FILTER_DOC_TYPE => (string) ($data['doc_type'] ?? '')];
+        if (!empty($data['partner'])) {
+            $filter[DocsHeadsLookup::FILTER_PARTNER] = (int) $data['partner'];
+        }
+        return $filter;
+    }
+
+    /**
+     * Výběr původního dokladu (#92 D3, D4, U8): doplní číslo a datum
+     * plnění původního dokladu (DUZP, bez něj datum vystavení) a kurz —
+     * ten jen při shodné měně, jinak ho zadá uživatel; partnera a měnu
+     * jen když jsou na dokladu prázdné. Dokument při uložení číslo a datum
+     * z původního dokladu přepíše znovu (`DocDocument::applyCorrectiveColumns`
+     * je autorita), formulář je jen předvyplní, aby je uživatel viděl.
+     * Zrušení odkazu hodnoty nechá a pole odemkne (readOnly řídí stavba
+     * formuláře podle vyplněného odkazu).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function applyCorrectedDoc(array &$data): void
+    {
+        $id = (int) ($data['corrected_doc'] ?? 0);
+        if ($id <= 0 || $this->db === null) {
+            return;
+        }
+        $original = $this->db->fetchRow(
+            'SELECT `doc_number`, `vat_duzp`, `issue_date`, `partner`, `doc_currency`, `exchange_rate`'
+            . ' FROM `docs_core_heads` WHERE `id` = %i',
+            $id,
+        );
+        if ($original === null) {
+            return;
+        }
+        $number = trim((string) ($original['doc_number'] ?? ''));
+        $data['corrected_doc_number'] = $number !== '' ? $number : null;
+        $date = trim((string) ($original['vat_duzp'] ?? $original['issue_date'] ?? ''));
+        $data['corrected_doc_date'] = $date !== '' ? substr($date, 0, 10) : null;
+
+        if (empty($data['partner']) && !empty($original['partner'])) {
+            $data['partner'] = (int) $original['partner'];
+        }
+        $originalCurrency = strtolower(trim((string) ($original['doc_currency'] ?? '')));
+        if ($originalCurrency !== '' && empty($data['doc_currency'])) {
+            $data['doc_currency'] = $originalCurrency;
+        }
+        $rate = $original['exchange_rate'] ?? null;
+        if ($originalCurrency !== ''
+            && strtolower((string) ($data['doc_currency'] ?? '')) === $originalCurrency
+            && $rate !== null && (float) $rate > 0
+        ) {
+            $data['exchange_rate'] = (float) $rate;
+        }
     }
 
     /**
