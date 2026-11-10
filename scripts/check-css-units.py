@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kontrola jednotek a breakpointů v CSS frontendu (#133 D1–D2, D42, D43, D46, D47; #134 D10).
+"""Kontrola jednotek a breakpointů v CSS frontendu (#133 D1–D2, D42, D43, D46, D47, D58; #134 D10).
 
 Mezery, odsazení, zaoblení, velikost písma a pevné rozměry se píší v rem
 nebo tokenem (`--shpd-space-*`, `--shpd-radius-*`, `--shpd-font-size-*`),
@@ -47,9 +47,12 @@ shellu — `48rem` v aplikaci, `68.75rem` ve vývojářském dashboardu
 `print`) projdou. `@container` smí mít jen prahy `30rem` a `36rem`
 (pojmenovaný kontejner před závorkou je v pořádku). JS konstanta
 `MOBILE_BREAKPOINT` v `stores/layout.svelte.js` musí být řetězec rovný
-hodnotě shellu, bez další jednotky za dosazením. Povolené hodnoty jsou
-konstanty nahoře v tomto skriptu; jiná hodnota znamená nové rozhodnutí
-v #133 — značka `px-ok` tu neplatí.
+hodnotě shellu, bez další jednotky za dosazením. Tamtéž `VIEWER_SPLIT_MIN`
+(#133 D58) — nejmenší šířka vieweru se seznamem, při které je detail ještě
+vedle seznamu; měří ji JavaScript nad šířkou vieweru, není to media query,
+ale hodnota je stejně rozhodnutí: musí být řetězec `55rem`. Povolené
+hodnoty jsou konstanty nahoře v tomto skriptu; jiná hodnota znamená nové
+rozhodnutí v #133 — značka `px-ok` tu neplatí.
 
 Použití:
     python3 scripts/check-css-units.py
@@ -79,6 +82,9 @@ SKIP_DIRS = {"node_modules"}
 SHELL_BREAKPOINT = "48rem"  # D42: shell aplikace, totéž MOBILE_BREAKPOINT v JS
 DEV_SHELL_BREAKPOINT = "68.75rem"  # D42: vývojářský dashboard (frontend/src/dev/)
 CONTAINER_THRESHOLDS = ("30rem", "36rem")  # D43: úzký obsah, složené řádky dokladu
+# D58: úzký viewer se seznamem — pod touto šířkou vieweru (25rem seznam +
+# 30rem nejužší detail) jde detail do draweru; totéž VIEWER_SPLIT_MIN v JS.
+VIEWER_SPLIT_MIN = "55rem"
 DEV_DIR = "dev"
 LAYOUT_STORE = FRONTEND_SRC / "stores" / "layout.svelte.js"
 VARIABLES_CSS = FRONTEND_SRC / "styles" / "variables.css"
@@ -120,10 +126,21 @@ WIDTH_FEATURE_RE = re.compile(
 LENGTH_RE = re.compile(
     r"(?<![\w.-])(?P<number>\d*\.?\d+)(?P<unit>px|rem|em|vw|vh|ch)(?![\w-])", re.IGNORECASE
 )
-# JS konstanta shellu — hodnota až po `;` nebo konec řádku (komentář za ní).
-MOBILE_BREAKPOINT_RE = re.compile(r"MOBILE_BREAKPOINT\s*=\s*(?P<value>[^;\n]*)")
-# Dosazení konstanty s jednotkou navíc (`${MOBILE_BREAKPOINT}px`).
-BREAKPOINT_UNIT_RE = re.compile(r"\$\{MOBILE_BREAKPOINT\}(?P<unit>[a-z]+)")
+# JS konstanty layout storu: (název, očekávaná hodnota, rozhodnutí v #133).
+LAYOUT_STORE_CONSTANTS = (
+    ("MOBILE_BREAKPOINT", SHELL_BREAKPOINT, "D42"),
+    ("VIEWER_SPLIT_MIN", VIEWER_SPLIT_MIN, "D58"),
+)
+
+
+def js_constant_re(name: str) -> re.Pattern[str]:
+    """Přiřazení JS konstanty — hodnota až po `;` nebo konec řádku (komentář za ní)."""
+    return re.compile(rf"(?<![\w$]){name}\s*=\s*(?P<value>[^;\n]*)")
+
+
+def js_constant_unit_re(name: str) -> re.Pattern[str]:
+    """Dosazení konstanty s jednotkou navíc (`${MOBILE_BREAKPOINT}px`)."""
+    return re.compile(rf"\$\{{{name}\}}(?P<unit>[a-z]+)")
 
 # Rozměrový prop komponenty v šabloně (#133 D47): `width="480px"`,
 # `height={'90vh'}`. Lookbehind vyřadí `style:width=`, `stroke-width=`,
@@ -329,25 +346,29 @@ def check_breakpoints(path: Path, text: str) -> list[tuple[int, str]]:
     return findings
 
 
-def check_layout_store() -> list[str]:
-    """Hlášky k JS konstantě shellu: musí být řetězec rovný SHELL_BREAKPOINT."""
+def check_layout_store(text: str | None = None) -> list[str]:
+    """Hlášky k JS konstantám layout storu: breakpoint shellu (D42) a práh
+    úzkého vieweru (D58) musí být řetězce rovné konstantám nahoře."""
     rel = LAYOUT_STORE.relative_to(REPO_ROOT)
-    expected = f"'{SHELL_BREAKPOINT}'"
-    if not LAYOUT_STORE.is_file():
-        return [f"  {rel}: soubor chybí — MOBILE_BREAKPOINT = {expected} nemá kde být"]
-    text = LAYOUT_STORE.read_text(encoding="utf-8")
+    if text is None:
+        if not LAYOUT_STORE.is_file():
+            names = ", ".join(f"{name} = '{expected}'" for name, expected, _ in LAYOUT_STORE_CONSTANTS)
+            return [f"  {rel}: soubor chybí — {names} nemá kde být"]
+        text = LAYOUT_STORE.read_text(encoding="utf-8")
     problems: list[str] = []
-    match = MOBILE_BREAKPOINT_RE.search(text)
-    if match is None:
-        problems.append(f"  {rel}: chybí konstanta MOBILE_BREAKPOINT = {expected}")
-    else:
-        value = re.sub(r"\s*//.*$", "", match.group("value")).strip()
-        if value not in (expected, f'"{SHELL_BREAKPOINT}"'):
+    for name, expected_value, decision in LAYOUT_STORE_CONSTANTS:
+        expected = f"'{expected_value}'"
+        match = js_constant_re(name).search(text)
+        if match is None:
+            problems.append(f"  {rel}: chybí konstanta {name} = {expected} ({decision})")
+        else:
+            value = re.sub(r"\s*//.*$", "", match.group("value")).strip()
+            if value not in (expected, f'"{expected_value}"'):
+                lineno = line_of(text, match.start())
+                problems.append(f"  {rel}:{lineno}: {name} = {value} — musí být {expected} (řetězec, {decision})")
+        for match in js_constant_unit_re(name).finditer(text):
             lineno = line_of(text, match.start())
-            problems.append(f"  {rel}:{lineno}: MOBILE_BREAKPOINT = {value} — musí být {expected} (řetězec, D42)")
-    for match in BREAKPOINT_UNIT_RE.finditer(text):
-        lineno = line_of(text, match.start())
-        problems.append(f"  {rel}:{lineno}: {match.group(0)} — jednotka je už v konstantě")
+            problems.append(f"  {rel}:{lineno}: {match.group(0)} — jednotka je už v konstantě")
     return problems
 
 
@@ -378,13 +399,14 @@ def main() -> int:
             file=sys.stderr,
         )
     if breakpoint_problems:
-        print("Breakpointy mimo rozhodnutí #133 (D42, D43, D47):\n", file=sys.stderr)
+        print("Breakpointy mimo rozhodnutí #133 (D42, D43, D47, D58):\n", file=sys.stderr)
         print("\n".join(breakpoint_problems), file=sys.stderr)
         print(
             f"\n@media s rysem šířky jen pro shell: {SHELL_BREAKPOINT} v aplikaci,"
             f" {DEV_SHELL_BREAKPOINT} ve frontend/src/{DEV_DIR}/; @container jen prahy"
             f" {' / '.join(CONTAINER_THRESHOLDS)}; MOBILE_BREAKPOINT v"
-            f" {LAYOUT_STORE.relative_to(FRONTEND_SRC)} musí být řetězec '{SHELL_BREAKPOINT}'."
+            f" {LAYOUT_STORE.relative_to(FRONTEND_SRC)} musí být řetězec '{SHELL_BREAKPOINT}',"
+            f" VIEWER_SPLIT_MIN tamtéž '{VIEWER_SPLIT_MIN}' (práh úzkého vieweru, D58)."
             " Jiná hodnota = nové rozhodnutí v #133 (docs/design-system.md →"
             " Responzivita); značka px-ok tu neplatí.",
             file=sys.stderr,
