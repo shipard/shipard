@@ -4,8 +4,8 @@ Autoritativní pravidla DPH na dokladu pro `docs.core` — kde se kód liší, p
 tento dokument a rozdíl je chyba (#75). Implementace:
 `DocDocument::beforeSave` → `computeAmounts` = `calculateRowPrice` /
 `calculateRowVat` → `buildVatRecapitulation` (nebo `takeOverVatRecapitulation`
-u převzaté) → `sumTotals` / `applyTotalRounding` → `reconcileRowsToRecap` →
-`applyDomesticAmounts`.
+u převzaté) → `sumTotals` / `applyTotalRoundingAuto` / `applyTotalRounding` →
+`reconcileRowsToRecap` → `applyDomesticAmounts`.
 
 ## 1. Tři úrovně, jedna autorita
 
@@ -153,7 +153,7 @@ dle režimu) — signál neúplných nebo špatně zadaných řádků.
   z řádků, když je pro sazbu jednoznačný kód. Detaily
   `docs/exchange-format.md`.
 
-## 6. Zaokrouhlení celkové částky — `total_rounding_mode`
+## 6. Zaokrouhlení celkové částky — `total_rounding_mode`, `total_rounding_auto`
 
 Až po rekapitulaci: `total_amount` se zaokrouhlí (matematicky na celé jednotky,
 nahoru, dolů, **matematicky na 0,05** — hotovost SK a část eurozóny, nebo na
@@ -161,8 +161,44 @@ haléře = bez efektu), rozdíl jde do `total_rounding`; rekapitulace zůstává
 Kódy módů a výpočet `kód → (krok, směr)` drží `RoundingModes`
 (`modules/docs/core/src/`), jsonc `docs.core.roundingModes` nese jen názvy;
 historický kód 2 (matematicky na 0,01) byl totožný s 0 a `ds-upgrade` ho slévá
-(#63). `vat_rounding_mode` má užší nabídku `docs.core.vatRoundingModes` (§ 4).
-Hotovostní úhrada faktury na celé Kč = #73.
+(#63). `vat_rounding_mode` má užší nabídku `docs.core.vatRoundingModes` (§ 3).
+
+**Automatika podle způsobu úhrady** (#73 D1–D8, `tasks/doc-total-rounding-auto.md`).
+Prodejní doklad (`docTypes[].total_rounding_auto`: `invno`, `invpo`,
+`cashreg`, příjmový `cash` — směr přes `DocDocument::resolveTradeDir()`) si
+při zapnutém `total_rounding_auto` mód určí sám: `computeAmounts` před
+`applyTotalRounding` zavolá `TotalRoundingAuto::modeFor()` se způsobem
+úhrady, měnou dokladu (`doc_currency`; náhled applieru běží před
+`applyHomeCurrency`, proto fallback na domácí) a zemí zdroje dat
+(`DataSourceConfig::getCountry()`):
+
+- hotovostní způsob úhrady (`paymentMethods[].cashRounding`: Hotovost,
+  Dobírkou) → krok z `world.base.cashRounding` pro měnu, platí-li pravidlo
+  pro zemi (CZ + CZK → 1 matematicky na 1; SK, FI, NL, BE, IE, IT, EE, LT
+  + EUR → 5 matematicky na 0,05, rozbor v #63); krok na mód překládá
+  `RoundingModes::forStep()`. Měna bez pravidla nebo země mimo seznam
+  → na haléře;
+- nehotovostní úhrada → na haléře;
+- bez konfigurace nebo bez země → `null`, mód se nemění (unit testy, zdroj
+  dat před `ds-upgrade`) — nikdy tiché Na haléře.
+
+Kde automatika neplatí (typ bez příznaku, výdajový pokladní doklad), se
+zapnutý příznak při výpočtu vynuluje; chybějící klíč `DocDocument`
+nedoplňuje — platí výchozí hodnota sloupce 0, existující doklady se nemění.
+Zapnutou automatiku dává novému dokladu formulář
+(`DocsHeadsFormBase::applyNewRecordDefaults`; select módu je při zapnuté
+automatice jen ke čtení a `recalculate` ho drží podle úhrady a měny,
+`docs/edit-forms.md` kap. 23) a applier (`totals.totalRoundingAuto`, D8,
+`docs/exchange-format.md`). Ostatní typy mají z formuláře mód Na haléře.
+
+Při **vypnuté** automatice `DocDocument::validate()` varuje (`addWarning` na
+`total_rounding_mode`, jen prodejní typy, mimo import mód; uložení
+neblokuje): hotovostní úhrada s jiným módem, než dává pravidlo →
+`cash_rounding_mismatch` (text jmenuje očekávaný mód z číselníku);
+nehotovostní úhrada se zaokrouhlením u dokladu s DPH → `non_cash_rounding`.
+Zaokrouhlovací rozdíl je ze základu daně vyjmut jen při hotovostní platbě
+(§ 36 odst. 5 ZDPH); u bezhotovostní úhrady se do základu dál nezahrnuje,
+doklad jen varuje (D7).
 
 ## 7. Dorovnání řádků na rekapitulaci — obě měny
 

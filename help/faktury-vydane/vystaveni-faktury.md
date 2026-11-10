@@ -1,7 +1,7 @@
 ---
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku.
-keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku]
+keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku, zaokrouhlení faktury, zaokrouhlení částky, zaokrouhlení na celé koruny, automatické zaokrouhlení, faktura za hotové na koruny, haléře na faktuře]
 related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
@@ -56,6 +56,17 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    - **Náš bankovní účet** je u vydané faktury povinný — je to účet, na který
      má odběratel zaplatit. Předvybraný je účet označený v Nastavení jako
      **Výchozí**; bez výchozího účtu ho vyber ručně, jinak doklad nepůjde dát do **V pořádku**.
+
+   Tam je i **Automatické zaokrouhlení**, u nové faktury zapnuté. Celková
+   částka se zaokrouhlí podle způsobu platby: při *Hotovost* a *Dobírkou*
+   na celé koruny, při *Převodem*, *Kartou*, *Platební bránou* a *Zápočtem*
+   zůstane na haléře. Faktura v eurech se na českém zdroji dat
+   nezaokrouhluje ani za hotové. **Zaokrouhlení částky** vedle toho jen
+   ukazuje výsledek a nejde přepsat; po změně způsobu platby nebo měny se
+   přepočítá samo. Chceš-li zaokrouhlit jinak, zaškrtnutí zruš a mód vyber
+   ručně — zůstane, jak ho nastavíš. U neobvyklé kombinace (hotovost bez
+   zaokrouhlení, zaokrouhlení u platby převodem) Shipard po uložení
+   upozorní, doklad ale uloží.
 
    Na stejné záložce je pole **Vystavil** — jméno, které se vytiskne
    v zápatí faktury. Předvybraný jsi ty; viz
@@ -144,6 +155,13 @@ neptá — doklad se založí do řady, která je právě vybraná v seznamu. M�
 víc, přepínají se v liště dole pod seznamem faktur a seznam přitom ukazuje jen
 doklady vybrané řady. S jedinou řadou, což je běžný stav, lišta není vidět
 vůbec.
+
+**Faktura za hotové vychází na celé koruny, převodem na haléře.** To dělá
+**Automatické zaokrouhlení** na záložce **Nastavení** — řídí se způsobem
+platby a měnou. Když má být částka jinak, vypni ho a vyber **Zaokrouhlení
+částky** ručně; při *Hotovost* bez zaokrouhlení nebo při zaokrouhlení
+u *Převodem* dostaneš po uložení upozornění, protože zaokrouhlovací rozdíl
+smí stát mimo základ daně jen u platby v hotovosti.
 
 **Variabilní symbol není číslo faktury.** Předplní se pořadovým číslem v řadě,
 ne celým číslem dokladu. Když potřebuješ jiný, přepiš ho — přepis se

@@ -1,6 +1,6 @@
 # Task: Automatické zaokrouhlení částky podle způsobu úhrady
 
-**Stav:** naplánováno — zadání 2026-11-10 (D1–D8 zamčené v #73)
+**Stav:** hotovo — 2026-11-10 (5 commitů; unit sada zelená, integrační test přes gateway a HTTP smoke formulářů na ukázkovém zdroji 4l3j po `ds-upgrade`; proklik v prohlížeči podle „Ověření na dev zdroji“ a alfa zbývají)
 
 **Issue:** #73
 
@@ -258,26 +258,83 @@ netýká.
   ne do `beforeSave()`, jinak náhled návrhu ukáže jinou částku než doklad.
 - **Měna dokladu, ne domácí.** Mód se řídí `doc_currency`; `total_amount`
   v domácí měně se dopočítá kurzem z už zaokrouhlené částky jako dnes.
-- **Prodejka a pokladní doklad** povolují jen hotovost a kartu
-  (`CashDeskDocumentBase`) — dobírka se u nich neřeší.
+- **Pokladní doklad** povoluje jen hotovost a kartu
+  (`CashDeskDocumentBase::PAYMENT_METHODS_ALLOWED`); **prodejka** navíc
+  převod, dobírku a bránu (`CashRegisterDocument`) — pravidlo je generické,
+  dobírka na prodejce jde na koruny.
 - **Existující testy formulářů** mohou spoléhat na výchozí mód 1 —
   opravit očekávání, ne chování.
 - **Zálohová faktura vydaná** není daňový doklad: varování
   `non_cash_rounding` u ní padá jen s DPH, tedy prakticky nikdy.
 
+## Poznámky z implementace (2026-11-10)
+
+- **„Dnes 1“ platilo jen v unit testech.** `FormController::meta()` doplní
+  novému záznamu výchozí hodnoty sloupců (schéma `total_rounding_mode` 0)
+  dřív, než běží hooky formuláře, takže `= 1` v `applyClientDefaults()` se
+  v UI nikdy neuplatnilo (ukázkový zdroj: všechny doklady mód 0). Sjednoceno
+  na 0; z téhož důvodu nejde u nového dokladu odlišit „nezadáno“ od schéma
+  defaultu `total_rounding_auto` 0 — u typů s automatikou se nastavuje 1
+  vždy (jako `vat_mode` neplátce).
+- **Dvě úrovně u pokladního dokladu.** Příznak typu
+  (`DocTypes::hasTotalRoundingAuto()`) řídí výchozí hodnotu nového dokladu;
+  účinnost (`TotalRoundingAuto::applies()` = příznak ∧ směr obchodu výstup
+  přes `DocDocument::resolveTradeDir()`) řídí přepis módu, zobrazení
+  zaškrtávátka, `readOnly` selectu, varování i vynulování příznaku při
+  uložení. Nový `cash` bez směru má příznak 1 a zaškrtávátko skryté, mód
+  dopočítá `recalculate('cash_dir')` po volbě příjmu; výdaj příznak při
+  uložení vynuluje.
+- **`CashDeskFormBase::recalculate()` nevolá parent** pro `payment_method`,
+  `cash_dir` a `number_series` — sdílený helper
+  `DocsHeadsFormBase::applyTotalRoundingAuto()` se volá z obou míst a běží
+  při každém přepočtu (idempotentní), ne jen u vyjmenovaných sloupců.
+- **Import mód ve `validate()`** přes `isLockExempt($data)`
+  (`_importNumber`); `$importMode` se plní až v `beforeSave()`.
+- **Náhled applieru** volá `computeAmounts()` před `applyHomeCurrency()`,
+  `doc_currency` může chybět → fallback na domácí měnu.
+  `_resolve.computed.totals.totalRoundingMode` nově nese výsledný mód.
+- **Schéma má tři kopie:** `.jsonc`, ručně udržovaný `.json`
+  (`SchemaDriftTest`) a kopii v profilu pošty
+  `modules/core/mail/profiles/czech_general.jsonc` (`ProfileSchemaDriftTest`).
+  Prompt nový klíč nezmiňuje a zakazuje klíče mimo ukázku, model ho tedy
+  neemituje.
+- **Prodejka dobírku povoluje** (`CashRegisterDocument::PAYMENT_METHODS_ALLOWED`
+  = 0, 1, 2, 3, 5), původní past platila jen pro `cash`; pravidlo je
+  generické, nic navíc nebylo třeba.
+- **Ověření na 4l3j:** `ds-upgrade` přidal sloupec a zkompiloval cfgItem;
+  existující doklady auto 0, mód 0, částky beze změny. Integrační test
+  `TotalRoundingAutoGatewayTest` jede i bez registrace DPH (zdroj ji nemá —
+  bez DPH 100,33 → 100,00). HTTP smoke (`GET …/_ui/form/docs_core_heads/meta`
+  + `recalculate`): FVB převodem mód 0 / hotovost a dobírka 1 / karta 0 /
+  hotovost v EUR 0, vypnutá automatika mód nechává a select odemkne;
+  prodejka a FVZ zapnuto; FPB bez zaškrtávátka; pokladní doklad bez směru
+  skryté, příjem 1 a `read_only`, výdej skryté. `DatasetRoundTripTest` na
+  4l3j padá už před novým assertem na „Registrace DPH je povinná“ (stav dat,
+  v základní sadě selhání od 2026-10) — příznak v dumpu kryjí
+  `DocumentExporterTest` a testy applieru.
+- **Generátor demo sad** (`tools/invoice-generator`) píše `totals.totalAmount`
+  → seedované doklady mají automatiku vypnutou podle D8; beze změny.
+- **Všimnuto mimo rozsah:** `CashDeskFormBase::applyNewRecordDefaults()`
+  kontroluje způsob úhrady proti `CashDeskDocumentBase::PAYMENT_METHODS_ALLOWED`,
+  ne `allowedPaymentMethods()` — prodejka s prefillem Převodem / Dobírkou /
+  Bránou se vrátí na Hotovost.
+
 ## Hotovo když
 
-- [ ] Nový prodejní doklad má automatiku zapnutou a mód podle způsobu
+- [x] Nový prodejní doklad má automatiku zapnutou a mód podle způsobu
       úhrady, měny a země; při změně způsobu úhrady nebo měny se mód
       přepočítá ve formuláři i při uložení.
-- [ ] Existující doklady mají po `ds-upgrade` automatiku vypnutou
-      a nezměněné částky.
-- [ ] Nový přijatý doklad z formuláře má mód Na haléře.
-- [ ] Vypnutá automatika s neobvyklým módem dává varování, ne chybu.
-- [ ] Generovaná faktura (periodická fakturace) má automatiku zapnutou;
-      import a doklady z pošty se chovají jako dosud.
-- [ ] Dump → seed datové sady zachová příznak.
-- [ ] Dokumentace a nápověda popisují nové chování.
-- [ ] Testy zelené (cíleně, pak celá sada), `npm run build` jen pokud se
-      měnil frontend.
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.
+- [x] Existující doklady mají po `ds-upgrade` automatiku vypnutou
+      a nezměněné částky (4l3j: 9 dokladů, auto 0, mód 0, součet beze změny).
+- [x] Nový přijatý doklad z formuláře má mód Na haléře.
+- [x] Vypnutá automatika s neobvyklým módem dává varování, ne chybu.
+- [x] Generovaná faktura (periodická fakturace) má automatiku zapnutou;
+      import a doklady z pošty se chovají jako dosud (testy applieru:
+      bez `totals` zapnuto, s deklarovanou částkou vypnuto a mód z čísel).
+- [x] Dump → seed datové sady zachová příznak (exporter vyváží
+      `totals.totalRoundingAuto`, applier explicitní hodnotu respektuje —
+      unit testy; integrační `DatasetRoundTripTest` viz poznámky).
+- [x] Dokumentace a nápověda popisují nové chování.
+- [x] Testy zelené (cíleně, pak celá sada — 11 148 testů), frontend se
+      neměnil (`read_only` a `hidden` posílá server).
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.

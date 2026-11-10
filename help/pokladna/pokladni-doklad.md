@@ -1,7 +1,7 @@
 ---
 title: Pokladní doklad
 summary: Jak zapsat příjem nebo výdej hotovosti či platbu kartou na pokladně — včetně úhrady faktury —, jak doklad vytisknout a co k tomu musí být nastavené.
-keywords: [pokladní doklad, příjmový pokladní doklad, výdajový pokladní doklad, příjmový doklad, výdajový doklad, pokladna, hotovost, platba hotově, platba kartou, úhrada faktury hotově, zaplaceno hotově, pokladní lístek, paragon, směr pokladního dokladu, příjem, výdej, převod peněz, odvod hotovosti do banky, dotace pokladny, převod mezi pokladnami, peníze na cestě, záloha v hotovosti, přijatá záloha, poskytnutá záloha, odpočet zálohy, vrácení zálohy, archivovaná pokladna, tisk pokladního dokladu, vytisknout pokladní doklad, PDF pokladního dokladu, podpis pokladníka, podpis příjemce]
+keywords: [pokladní doklad, příjmový pokladní doklad, výdajový pokladní doklad, příjmový doklad, výdajový doklad, pokladna, hotovost, platba hotově, platba kartou, úhrada faktury hotově, zaplaceno hotově, pokladní lístek, paragon, směr pokladního dokladu, příjem, výdej, převod peněz, odvod hotovosti do banky, dotace pokladny, převod mezi pokladnami, peníze na cestě, záloha v hotovosti, přijatá záloha, poskytnutá záloha, odpočet zálohy, vrácení zálohy, archivovaná pokladna, tisk pokladního dokladu, vytisknout pokladní doklad, PDF pokladního dokladu, podpis pokladníka, podpis příjemce, zaokrouhlení pokladního dokladu, zaokrouhlení na celé koruny, automatické zaokrouhlení, zaokrouhlení částky]
 related: [pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystaveni-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-dnes-nejde.md]
 ---
 
@@ -50,6 +50,14 @@ Pro rychlý prodej zboží bez partnera se víc hodí [Prodejka](prodejka.md).
    doplní **Platební terminál / brána** pokladny a **Plátce** (protistrana
    terminálu) — viz [Platba kartou, přes bránu a dobírkou](platba-kartou-branou-dobirkou.md);
    bez terminálu musí mít doklad partnera.
+
+   Příjmový doklad má na tabu **Nastavení** zapnuté **Automatické
+   zaokrouhlení**: příjem za *Hotovost* vyjde na celé koruny, *Kartou* na
+   haléře; **Zaokrouhlení částky** jen ukazuje výsledek. Potřebuješ-li
+   jinak, zaškrtnutí zruš a mód vyber ručně — na neobvyklou kombinaci
+   Shipard po uložení upozorní, doklad ale uloží. Výdajový doklad
+   automatiku nemá a zaokrouhlení částky si volíš sám (předvyplněné je
+   na haléře).
 
 5. **Dej Uložit** a zadej řádky na tabu **Řádky**. **Pohyb** vybírej podle
    toho, co se stalo:

@@ -301,10 +301,13 @@ UPDATE měl obcházet (vzor ř. 271 to neřeší, chovat se stejně).
   základu daně vyjmut jen při **hotovostní** platbě; u bezhotovostní by měl
   podle výkladu GFŘ (2019) vstupovat do základu. Dnes jde `total_rounding`
   mimo základ vždy, bez ohledu na `payment_method`. Patří k #73, tady se
-  nemění — jen zaznamenáno.
+  nemění — jen zaznamenáno. **#73 (2026-11-10):** bezhotovostní úhrada se
+  zaokrouhlením dává varování `non_cash_rounding`; do základu se rozdíl dál
+  nezahrnuje (`tasks/doc-total-rounding-auto.md` D7).
 - **P6 — `DocsHeadsViewer` a exporty** čtou jen `total_rounding` (částku), ne
   mód — bez změny. `DocumentExporter` mód nevyváží (jen `totalRounding`),
-  mód 5 se tedy do výměnného formátu nedostane a nemusí.
+  mód 5 se tedy do výměnného formátu nedostane a nemusí. Od #73 vyváží
+  příznak automatiky `totals.totalRoundingAuto` (mód dál ne).
 
 ## Poznámky z implementace (2026-09-10)
 

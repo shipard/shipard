@@ -1241,7 +1241,7 @@ serveru v `Document::beforeSave`** podle povahy:
 | `bank_account` | default účet pro `doc_currency` z `economy_codebooks_bank_accounts` |
 | `vat_registration` | jediná aktivní registrace, pokud je jen jedna |
 | `payment_method` | 1 (převodem) |
-| `total_rounding_mode` | 1 (matematicky na 1 — celé Kč) |
+| `total_rounding_mode` | 0 (na haléře); prodejní doklad má `total_rounding_auto` 1 a mód podle způsobu úhrady, měny a země (#73, `docs/vat-calculation.md` § 6) |
 | `vat_rounding_mode` | 0 (na haléře) |
 | `fiscal_year`, `fiscal_month` | resolvované z `accounting_date` v `beforeSave` |
 | `vat_period` | resolvované z `vat_duzp` + `vat_registration` v `beforeSave` |

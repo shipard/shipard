@@ -1,7 +1,7 @@
 ---
 title: Zálohová faktura
 summary: Kdy vystavit zálohovou fakturu (proformu) místo faktury, proč není daňovým dokladem a jak ji vystavit — od Přidat po V pořádku.
-keywords: [zálohová faktura, zálohové faktury, zálohovou fakturu, proforma, proforma faktura, proformu, výzva k platbě, záloha, zálohu, platba předem, vystavit zálohovou fakturu, vystavení zálohové faktury, zálohová faktura vydaná, zálohové faktury vydané, DUZP na zálohové faktuře, není daňový doklad, daňový doklad k záloze, odpočet zálohy, odpočet přijaté zálohy, faktura z proformy, variabilní symbol zálohy, zaúčtování zálohové faktury, podrozvaha, úhrada zálohové faktury, zaplacená proforma, přijatá záloha v saldokontu, saldokonto zálohové faktury, částečná úhrada zálohové faktury, uzavření zálohové faktury, záloha v hotovosti]
+keywords: [zálohová faktura, zálohové faktury, zálohovou fakturu, proforma, proforma faktura, proformu, výzva k platbě, záloha, zálohu, platba předem, vystavit zálohovou fakturu, vystavení zálohové faktury, zálohová faktura vydaná, zálohové faktury vydané, DUZP na zálohové faktuře, není daňový doklad, daňový doklad k záloze, odpočet zálohy, odpočet přijaté zálohy, faktura z proformy, variabilní symbol zálohy, zaúčtování zálohové faktury, podrozvaha, úhrada zálohové faktury, zaplacená proforma, přijatá záloha v saldokontu, saldokonto zálohové faktury, částečná úhrada zálohové faktury, uzavření zálohové faktury, záloha v hotovosti, zaokrouhlení zálohové faktury, automatické zaokrouhlení]
 related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/tisk-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
@@ -45,7 +45,10 @@ ještě neproběhlo.
    Na záložce **Nastavení** — úplně vpravo, za **Přílohami** — zkontroluj
    dvě předvybrané věci: **Náš bankovní účet** je povinný, je to účet, na
    který má odběratel zaplatit; **Registrace DPH** je potřeba, aby šel na
-   řádku vybrat **Kód DPH**.
+   řádku vybrat **Kód DPH**. Je tam i **Automatické zaokrouhlení**, stejné
+   jako u faktury (viz [Vystavení faktury](vystaveni-faktury.md)): při
+   *Převodem* zůstává částka na haléře, při *Hotovost* se zaokrouhlí na
+   celé koruny.
 
 3. **Dej Uložit a zadej řádky.** Tab **Řádky** → **Přidat**, stejně jako
    u faktury — postup řádku najdeš ve
