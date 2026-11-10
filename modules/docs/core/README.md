@@ -83,6 +83,34 @@ entitě spouští recompute parenta — je užitečný všude, kde má hlavička
 odvozené hodnoty od child setů. Detaily k save semantice gatewayů viz
 `docs/document-system.md` sekce 6.
 
+### Opravný daňový doklad (#92, `tasks/corrective-doc-core.md`)
+
+Faktura vydaná s příznakem `corrective` na hlavičce, ne nový typ dokladu;
+které typy ho mají, říká `docTypes[].corrective` (`DocTypes::isCorrective`).
+Skupina sloupců `correction` (`tables/docs_core_heads.md`): odkaz na původní
+doklad (nepovinný — souhrnný opravný doklad), jeho číslo, datum plnění
+a důvod opravy. Pravidla drží `DocDocument`:
+
+- `applyCorrectiveColumns()` (beforeSave): typ bez příznaku a vypnutý
+  příznak sloupce opravy nulují; s odkazem se číslo a datum plnění přepíší
+  z původního dokladu (`vat_duzp`, bez něj `issue_date`);
+- `validateCorrective()`: odkaz vede na existující doklad typu s příznakem
+  a ne na doklad sám (vždy), při potvrzení původní doklad V pořádku se
+  stejným partnerem; mimo import mód je důvod opravy povinný a prázdný odkaz
+  i číslo dají varování;
+- sazba DPH k datu plnění původního dokladu
+  (`DocHeadVatContext::vatRateDate`, `docs/vat-calculation.md` § 5.2); kurz
+  se z lístku nepřepisuje (`docs/exchange-rates.md` § 5.1).
+
+Formulář: sekce Oprava v tabu Nastavení faktury vydané
+(`IssuedInvoiceFormBase`), lookup původního dokladu `DocsHeadsLookup`
+(jen V pořádku, filtry `doc_type` a `partner`). Detail (`DocsHeadsViewer`):
+štítek Opravný doklad, skupina Oprava s odkazem na původní doklad, na
+původní faktuře sekce Opravné doklady; texty z `docs.core.viewerLabels`.
+Saldokonto, účtování, přiznání k DPH ani KH se podle příznaku nemění
+(dobropis zůstává zápornou fakturou). Tisk, ISDOC a výměnný formát přijdou
+s tasky B a C.
+
 ### Server-driven UI s formuláři
 
 `DocsHeadsForm` výpočty rekapitulace nepošle do form definition jako
@@ -101,7 +129,7 @@ Modul registruje cfgItem soubory — viz `config/` (výčet v `module.jsonc`,
 zde ty podstatné):
 
 - `docs.core.docTypes` — typy dokladů a jejich příznaky (`tax_document`,
-  `total_rounding_auto`; čte jen `src/DocTypes.php`)
+  `total_rounding_auto`, `corrective`; čte jen `src/DocTypes.php`)
 - `docs.core.docStates` — stavový automat (Koncept → Potvrzeno → V pořádku
   → V opravě → Storno → Smazáno)
 - `docs.core.vatModes` — režim DPH na hlavičce

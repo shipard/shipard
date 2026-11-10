@@ -2,7 +2,7 @@
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku.
 keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku, zaokrouhlení faktury, zaokrouhlení částky, zaokrouhlení na celé koruny, automatické zaokrouhlení, faktura za hotové na koruny, haléře na faktuře]
-related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, faktury-vydane/opravny-doklad.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Vystavení faktury
@@ -175,8 +175,10 @@ vystav novou.
 společné všem dokladům: hotovou fakturu převedeš na **V opravě**, opravíš
 a vrátíš na **V pořádku**; neplatnou fakturu **Stornuješ**, nemažeš. Přechody
 a jejich pravidla popisuje [Oprava dokladu](../faktury-prijate/oprava-dokladu.md)
-— je psaná pro přijaté faktury, ale přechody platí i tady. Co u vydaných
-faktur platí metodicky jinak, popsané zatím není.
+— je psaná pro přijaté faktury, ale přechody platí i tady. Fakturu, kterou
+už odběratel má, ale neopravuješ ani nestornuješ: změnu ceny, množství
+nebo vrácené zboží řeší **opravný daňový doklad** (dobropis, vrubopis) —
+viz [Opravný daňový doklad](opravny-doklad.md).
 
 **Přílohy, které mají jít odběrateli s fakturou, si označ předem.**
 Na záložce **Přílohy** má každý soubor přepínač **Odeslat s dokladem** —
@@ -197,6 +199,8 @@ i zálohová faktura.
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
 - [Platba kartou, přes bránu a dobírkou](../pokladna/platba-kartou-branou-dobirkou.md)
   — kdo je plátcem faktury placené kartou, bránou nebo na dobírku
+- [Opravný daňový doklad](opravny-doklad.md) — dobropis nebo vrubopis
+  k vystavené faktuře
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — přechody stavů
   (psáno pro přijaté faktury)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — hromadné odesílání a další chybějící výstupy

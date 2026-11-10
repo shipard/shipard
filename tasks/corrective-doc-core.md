@@ -1,6 +1,9 @@
 # Task: Opravný daňový doklad — task A: datový model, dokument, formulář, detail
 
-**Stav:** naplánováno — zadání 2026-11-10 (D1–D11 zamčené v #92)
+**Stav:** hotovo — 2026-11-10 (4 commity; unit sada zelená, integrační test
+přes gateway, HTTP smoke lookupu, formuláře a detailu a `ds-upgrade` na
+ukázkovém zdroji 4l3j; proklik v prohlížeči podle „Ověření na dev zdroji“,
+alfa a komentář do #92 zbývají; tasky B a C navazují)
 
 **Issue:** #92
 

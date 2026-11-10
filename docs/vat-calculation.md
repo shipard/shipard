@@ -153,6 +153,26 @@ dle režimu) — signál neúplných nebo špatně zadaných řádků.
   z řádků, když je pro sazbu jednoznačný kód. Detaily
   `docs/exchange-format.md`.
 
+### 5.2 Datum sazby kódu DPH — opravný doklad (#92 D4)
+
+Sazba kódu (`VatRateResolver::resolveVatPct`) se hledá k **datu sazby**,
+které na jednom místě dává `DocHeadVatContext::vatRateDate($head)`:
+
+- **opravný daňový doklad** (`docs_core_heads.corrective` = 1,
+  `tasks/corrective-doc-core.md`) s vyplněným `corrected_doc_date` → datum
+  plnění původního dokladu — oprava používá sazbu původního plnění, ne sazbu
+  platnou k datu opravy;
+- jinak **DUZP** (`vat_duzp`), a bez něj datum vystavení (nedaňový doklad
+  DUZP nemá, #79 D1).
+
+Konzumenti: `DocHeadVatContext::load()` (→ `vat_rate_date` pro sub-formuláře
+řádku `DocRowsForm` a rekapitulace `VatRecapForm`, kde se při výběru kódu
+předvyplní sazba) a kontrola převzaté rekapitulace
+`DocDocument::validateDeclaredRecap()` (`vat_recap_inconsistent`, když sazba
+řádku ke kódu k tomuto datu nepatří). **Zařazení do období DPH, kontrolního
+hlášení a zámky období se dál řídí `vat_duzp` opravného dokladu** —
+`economy.vat` datum sazby nečte.
+
 ## 6. Zaokrouhlení celkové částky — `total_rounding_mode`, `total_rounding_auto`
 
 Až po rekapitulaci: `total_amount` se zaokrouhlí (matematicky na celé jednotky,

@@ -61,12 +61,25 @@
     },
   ];
 
-  let metaGroups = $derived(
-    META_GROUPS.map((group) => ({
+  // Skupina Oprava opravného dokladu (#92 U10): texty posílá server
+  // (katalog popisků vieweru), položka s `action` (původní doklad) se kreslí
+  // jako odkaz na náhled — snippet, stejně jako partner v kartě strany.
+  let correction = $derived(content?.correction ?? null);
+
+  let metaGroups = $derived([
+    ...META_GROUPS.map((group) => ({
       title: t(group.labelKey),
       items: group.fields.map(([key, labelKey]) => ({ label: t(labelKey), value: meta?.[key] ?? null })),
-    }))
-  );
+    })),
+    ...(correction
+      ? [{
+          title: correction.title ?? '',
+          items: (correction.items ?? []).map((item) =>
+            item.action && item.value != null && item.value !== '' ? { ...item, snippet: correctionLink } : item
+          ),
+        }]
+      : []),
+  ]);
 
   // Klik na partnera / položku řádku — otevře FormDialog přes generický
   // handler detail akcí ve Viewer.svelte (kind: open_form). Akční id
@@ -94,6 +107,23 @@
     </button>
   {:else}
     {party.name}
+  {/if}
+{/snippet}
+
+{#snippet correctionLink(item)}
+  <!-- Původní doklad opravného dokladu — odkaz na read-only náhled (akce
+       open_detail přes generický handler ve Viewer.svelte); bez onAction
+       (náhled v modalu) prostý text. -->
+  {#if item.action && onAction}
+    <button
+      type="button"
+      class="shpd-docdetail__link"
+      onclick={() => onAction('open_corrected_doc', item.action)}
+    >
+      {item.value}
+    </button>
+  {:else}
+    {item.value}
   {/if}
 {/snippet}
 

@@ -169,6 +169,15 @@ Kontrola „Kurz je povinný pro cizí měnu“ ve `validate` bere domácí měn
 z dat, jinak z nastavení — vystřelí i na cestě apply (U5), kde
 `home_currency` v datech není.
 
+**Opravný daňový doklad** (#92 D4, U7, `tasks/corrective-doc-core.md`):
+u dokladu s `corrective` = 1 v cizí měně `applyExchangeRate()` kurz z lístku
+nedotahuje ani nepřepisuje a upozornění nedává — kurz se má převzít
+z původního dokladu, což dělá `recalculate('corrected_doc')`
+(`DocsHeadsFormBase::applyCorrectedDoc`, jen při shodné měně obou dokladů);
+u souhrnného opravného dokladu bez odkazu ho zadá uživatel a prázdný kurz
+při potvrzení zastaví stávající kontrola „Kurz je povinný pro cizí měnu“.
+Domácí měna má kurz 1 i na opravném dokladu.
+
 ### 5.2 Applier (náhled i apply)
 
 `DocumentApplier::transform()` (jediné místo pro náhled i apply): měna ≠

@@ -1,6 +1,22 @@
 {
     // docs.core.viewerLabels — popisky prohlížečů dokladů, které nejsou
-    // taby detailu (ty mají *.viewerDetailLabels): filtry pravého panelu.
-    // Čte DocsHeadsViewer přes cfgItem; bez katalogu anglický fallback.
-    "filter.sourceKind": { "name": "Source", "name:cs": "Zdroj", "name:en": "Source" }
+    // taby detailu (ty mají *.viewerDetailLabels): filtry pravého panelu,
+    // štítek a skupina opravného dokladu (#92 U10). Čte DocsHeadsViewer přes
+    // TableViewer::labelText(); bez katalogu anglický fallback.
+    "filter.sourceKind": { "name": "Source", "name:cs": "Zdroj", "name:en": "Source" },
+
+    // Opravný daňový doklad (#92): štítek v řádku seznamu a hlavičce detailu,
+    // skupina Oprava v Přehledu opravného dokladu, sekce Opravné doklady
+    // v Přehledu původní faktury.
+    "badge.corrective": { "name": "Corrective document", "name:cs": "Opravný doklad", "name:en": "Corrective document" },
+    "group.correction": { "name": "Correction", "name:cs": "Oprava", "name:en": "Correction" },
+    "field.correctedDoc": { "name": "Original document", "name:cs": "Původní doklad", "name:en": "Original document" },
+    "field.correctedDocNumber": { "name": "Original document number", "name:cs": "Číslo původního dokladu", "name:en": "Original document number" },
+    "field.correctedDocDate": { "name": "Original tax point date", "name:cs": "Datum plnění původního dokladu", "name:en": "Original tax point date" },
+    "field.correctionReason": { "name": "Correction reason", "name:cs": "Důvod opravy", "name:en": "Correction reason" },
+    "section.correctiveDocs": { "name": "Corrective documents", "name:cs": "Opravné doklady", "name:en": "Corrective documents" },
+    "column.number": { "name": "Number", "name:cs": "Číslo", "name:en": "Number" },
+    "column.issueDate": { "name": "Issued", "name:cs": "Vystaveno", "name:en": "Issued" },
+    "column.amount": { "name": "Amount", "name:cs": "Částka", "name:en": "Amount" },
+    "column.state": { "name": "State", "name:cs": "Stav", "name:en": "State" }
 }
