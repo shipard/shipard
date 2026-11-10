@@ -10,6 +10,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Notice from '../ui/Notice.svelte';
+  import CenteredScreen from '../ui/CenteredScreen.svelte';
 
   const MIN_LENGTH = 12;
 
@@ -68,90 +69,71 @@
   }
 </script>
 
-<div class="shpd-login">
-  <div class="shpd-login__card">
-    {#if appInfoStore.companyLogo}
-      <img
-        class="shpd-login__logo"
-        src={brandingUrl('companyLogo', appInfoStore.companyLogo.hash)}
-        alt=""
-      />
-    {/if}
-    <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
+<CenteredScreen>
+  {#if appInfoStore.companyLogo}
+    <img
+      class="shpd-login__logo"
+      src={brandingUrl('companyLogo', appInfoStore.companyLogo.hash)}
+      alt=""
+    />
+  {/if}
+  <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
 
-    {#if tokenInvalid}
-      <div class="shpd-login__notice"><Notice tone="danger">{t('setPassword.invalidToken')}</Notice></div>
-      <button class="shpd-login__button" type="button" onclick={backToLogin}>
-        {t('setPassword.backToLogin')}
-      </button>
-    {:else}
-      <p class="shpd-login__intro">{t('setPassword.intro')}</p>
+  {#if tokenInvalid}
+    <div class="shpd-login__notice"><Notice tone="danger">{t('setPassword.invalidToken')}</Notice></div>
+    <button class="shpd-login__button" type="button" onclick={backToLogin}>
+      {t('setPassword.backToLogin')}
+    </button>
+  {:else}
+    <p class="shpd-login__intro">{t('setPassword.intro')}</p>
 
-      <div class="shpd-login__field">
-        <label class="shpd-login__label" for="set-password">{t('setPassword.password')}</label>
-        <input
-          bind:this={passwordInput}
-          id="set-password"
-          class="shpd-login__input"
-          type="password"
-          autocomplete="new-password"
-          disabled={loading}
-          bind:value={password}
-          onkeydown={handleKeydown}
-        />
-      </div>
-
-      <div class="shpd-login__field">
-        <label class="shpd-login__label" for="set-password-confirm">{t('setPassword.confirm')}</label>
-        <input
-          id="set-password-confirm"
-          class="shpd-login__input"
-          type="password"
-          autocomplete="new-password"
-          disabled={loading}
-          bind:value={confirm}
-          onkeydown={handleKeydown}
-        />
-      </div>
-
-      <p class="shpd-login__hint">{t('setPassword.policyHint', { min: MIN_LENGTH })}</p>
-
-      {#if errorMessage}
-        <div class="shpd-login__notice"><Notice tone="danger">{errorMessage}</Notice></div>
-      {/if}
-
-      <button
-        class="shpd-login__button"
-        type="button"
+    <div class="shpd-login__field">
+      <label class="shpd-login__label" for="set-password">{t('setPassword.password')}</label>
+      <input
+        bind:this={passwordInput}
+        id="set-password"
+        class="shpd-login__input"
+        type="password"
+        autocomplete="new-password"
         disabled={loading}
-        onclick={handleSubmit}
-      >
-        {loading ? t('setPassword.submitting') : t('setPassword.submit')}
-      </button>
+        bind:value={password}
+        onkeydown={handleKeydown}
+      />
+    </div>
+
+    <div class="shpd-login__field">
+      <label class="shpd-login__label" for="set-password-confirm">{t('setPassword.confirm')}</label>
+      <input
+        id="set-password-confirm"
+        class="shpd-login__input"
+        type="password"
+        autocomplete="new-password"
+        disabled={loading}
+        bind:value={confirm}
+        onkeydown={handleKeydown}
+      />
+    </div>
+
+    <p class="shpd-login__hint">{t('setPassword.policyHint', { min: MIN_LENGTH })}</p>
+
+    {#if errorMessage}
+      <div class="shpd-login__notice"><Notice tone="danger">{errorMessage}</Notice></div>
     {/if}
-  </div>
-</div>
+
+    <button
+      class="shpd-login__button"
+      type="button"
+      disabled={loading}
+      onclick={handleSubmit}
+    >
+      {loading ? t('setPassword.submitting') : t('setPassword.submit')}
+    </button>
+  {/if}
+</CenteredScreen>
 
 <style>
-  /* Sdílí vizuál s LoginScreen — stejné třídy, vlastní kopie stylů
-     (Svelte styly jsou scoped per komponenta). */
-  .shpd-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
-  .shpd-login__card {
-    width: 100%;
-    max-width: 25rem;
-    padding: var(--shpd-space-xl);
-    background-color: var(--shpd-color-bg);
-    border-radius: var(--shpd-radius-lg);
-    box-shadow: var(--shpd-shadow-md);
-  }
-
+  /* Obal a kartu dává CenteredScreen. Pravidla obsahu mají stejné třídy
+     jako LoginScreen (Svelte styly jsou scoped per komponenta). */
   .shpd-login__logo {
     display: block;
     max-height: 3rem;

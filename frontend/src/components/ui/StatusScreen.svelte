@@ -6,38 +6,26 @@
   // z 503 nerozlišuje (details nesou efektivní stav `suspended`), jeden
   // text pro všechny zavřené stavy.
   import { t } from '../../i18n/index.js';
+  import CenteredScreen from './CenteredScreen.svelte';
 
   function retry() {
     window.location.reload();
   }
 </script>
 
-<div class="shpd-status" data-testid="status-screen">
-  <div class="shpd-status__card">
+<CenteredScreen testid="status-screen">
+  <div class="shpd-status__body">
     <h1 class="shpd-status__heading">{t('dsState.unavailable.title')}</h1>
     <p class="shpd-status__text">{t('dsState.unavailable.text')}</p>
     <button type="button" class="shpd-status__retry" onclick={retry} data-testid="status-retry">
       {t('dsState.unavailable.retry')}
     </button>
   </div>
-</div>
+</CenteredScreen>
 
 <style>
-  .shpd-status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
-  .shpd-status__card {
-    width: 100%;
-    max-width: 25rem;
-    padding: var(--shpd-space-xl);
-    background-color: var(--shpd-color-bg);
-    border-radius: var(--shpd-radius-lg);
-    box-shadow: var(--shpd-shadow-md);
+  /* Obal a kartu dává CenteredScreen; obsah stavové obrazovky je na střed. */
+  .shpd-status__body {
     text-align: center;
   }
 

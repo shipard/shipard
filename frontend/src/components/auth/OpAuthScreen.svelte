@@ -6,6 +6,7 @@
   import { brandingUrl } from '../../api/app.js';
   import { t } from '../../i18n/index.js';
   import Notice from '../ui/Notice.svelte';
+  import CenteredScreen from '../ui/CenteredScreen.svelte';
   import { translateError } from '../../i18n/errors.js';
 
   // Schválení OIDC OP transakce (session bridge D10): mountuje se jen
@@ -29,49 +30,30 @@
   }
 </script>
 
-<div class="shpd-login">
-  <div class="shpd-login__card">
-    {#if appInfoStore.companyLogo}
-      <img
-        class="shpd-login__logo"
-        src={brandingUrl('companyLogo', appInfoStore.companyLogo.hash)}
-        alt=""
-      />
-    {/if}
-    <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
+<CenteredScreen>
+  {#if appInfoStore.companyLogo}
+    <img
+      class="shpd-login__logo"
+      src={brandingUrl('companyLogo', appInfoStore.companyLogo.hash)}
+      alt=""
+    />
+  {/if}
+  <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
 
-    {#if errorMessage}
-      <div class="shpd-login__notice"><Notice tone="danger">{t('opAuth.error')}</Notice></div>
-      <p class="shpd-login__intro">{errorMessage}</p>
-      <button class="shpd-login__button" type="button" onclick={backToPortal}>
-        {t('opAuth.backToPortal')}
-      </button>
-    {:else}
-      <p class="shpd-login__status">{t('opAuth.redirecting')}</p>
-    {/if}
-  </div>
-</div>
+  {#if errorMessage}
+    <div class="shpd-login__notice"><Notice tone="danger">{t('opAuth.error')}</Notice></div>
+    <p class="shpd-login__intro">{errorMessage}</p>
+    <button class="shpd-login__button" type="button" onclick={backToPortal}>
+      {t('opAuth.backToPortal')}
+    </button>
+  {:else}
+    <p class="shpd-login__status">{t('opAuth.redirecting')}</p>
+  {/if}
+</CenteredScreen>
 
 <style>
-  /* Sdílí vizuál s LoginScreen — stejné třídy, vlastní kopie stylů
-     (Svelte styly jsou scoped per komponenta). */
-  .shpd-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
-  .shpd-login__card {
-    width: 100%;
-    max-width: 25rem;
-    padding: var(--shpd-space-xl);
-    background-color: var(--shpd-color-bg);
-    border-radius: var(--shpd-radius-lg);
-    box-shadow: var(--shpd-shadow-md);
-  }
-
+  /* Obal a kartu dává CenteredScreen. Pravidla obsahu mají stejné třídy
+     jako LoginScreen (Svelte styly jsou scoped per komponenta). */
   .shpd-login__logo {
     display: block;
     max-height: 3rem;

@@ -8,6 +8,7 @@
   import { language, t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Notice from '../ui/Notice.svelte';
+  import CenteredScreen from '../ui/CenteredScreen.svelte';
 
   let { onSuccess } = $props();
 
@@ -119,156 +120,137 @@
   }
 </script>
 
-<div class="shpd-login">
-  <div class="shpd-login__card">
-    {#if appInfoStore.companyLogo}
-      <img
-        class="shpd-login__logo"
-        src={brandingUrl('companyLogo', appInfoStore.companyLogo.hash)}
-        alt=""
-      />
-    {/if}
-    <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
+<CenteredScreen>
+  {#if appInfoStore.companyLogo}
+    <img
+      class="shpd-login__logo"
+      src={brandingUrl('companyLogo', appInfoStore.companyLogo.hash)}
+      alt=""
+    />
+  {/if}
+  <h1 class="shpd-login__heading">{appInfoStore.name ?? t('login.heading')}</h1>
 
-    {#if forgotMode}
-      {#if forgotSent}
-        <div class="shpd-login__notice"><Notice tone="success">{t('login.forgot.sent')}</Notice></div>
-        <button class="shpd-login__button" type="button" onclick={exitForgotMode}>
-          {t('login.forgot.backToLogin')}
-        </button>
-      {:else}
-        <p class="shpd-login__intro">{t('login.forgot.intro')}</p>
-        <div class="shpd-login__field">
-          <label class="shpd-login__label" for="forgot-identifier">{t('login.forgot.identifier')}</label>
-          <input
-            id="forgot-identifier"
-            class="shpd-login__input"
-            type="text"
-            autocomplete="username"
-            disabled={loading}
-            bind:value={forgotIdentifier}
-            onkeydown={handleForgotKeydown}
-          />
-        </div>
-        <button
-          class="shpd-login__button"
-          type="button"
-          disabled={loading}
-          onclick={handleForgotSubmit}
-        >
-          {loading ? t('login.forgot.submitting') : t('login.forgot.submit')}
-        </button>
-        <button class="shpd-login__link" type="button" onclick={exitForgotMode}>
-          {t('login.forgot.backToLogin')}
-        </button>
-      {/if}
+  {#if forgotMode}
+    {#if forgotSent}
+      <div class="shpd-login__notice"><Notice tone="success">{t('login.forgot.sent')}</Notice></div>
+      <button class="shpd-login__button" type="button" onclick={exitForgotMode}>
+        {t('login.forgot.backToLogin')}
+      </button>
     {:else}
-    {#if localEnabled}
+      <p class="shpd-login__intro">{t('login.forgot.intro')}</p>
       <div class="shpd-login__field">
-        <label class="shpd-login__label" for="login-name">{t('login.username')}</label>
+        <label class="shpd-login__label" for="forgot-identifier">{t('login.forgot.identifier')}</label>
         <input
-          bind:this={loginInput}
-          id="login-name"
-          data-testid="login-name"
+          id="forgot-identifier"
           class="shpd-login__input"
           type="text"
           autocomplete="username"
           disabled={loading}
-          bind:value={loginName}
-          onkeydown={handleKeydown}
+          bind:value={forgotIdentifier}
+          onkeydown={handleForgotKeydown}
         />
       </div>
-
-      <div class="shpd-login__field">
-        <label class="shpd-login__label" for="login-password">{t('login.password')}</label>
-        <input
-          id="login-password"
-          data-testid="login-password"
-          class="shpd-login__input"
-          type="password"
-          autocomplete="current-password"
-          disabled={loading}
-          bind:value={password}
-          onkeydown={handleKeydown}
-        />
-      </div>
-    {/if}
-
-    {#if successMessage}
-      <div class="shpd-login__notice"><Notice tone="success">{successMessage}</Notice></div>
-    {/if}
-
-    {#if errorMessage}
-      <div class="shpd-login__notice"><Notice tone="danger" data-testid="login-error">{errorMessage}</Notice></div>
-    {/if}
-
-    {#if localEnabled}
       <button
         class="shpd-login__button"
         type="button"
         disabled={loading}
-        onclick={handleSubmit}
+        onclick={handleForgotSubmit}
       >
-        {loading ? t('login.submitting') : t('login.submit')}
+        {loading ? t('login.forgot.submitting') : t('login.forgot.submit')}
       </button>
-      <button class="shpd-login__link" type="button" onclick={enterForgotMode}>
-        {t('login.forgot.link')}
+      <button class="shpd-login__link" type="button" onclick={exitForgotMode}>
+        {t('login.forgot.backToLogin')}
       </button>
     {/if}
-
-    {#if providers.length > 0}
-      <!-- Oddělovač jen když je vidět i lokální formulář -->
-      {#if localEnabled}
-        <div class="shpd-login__divider">{t('login.providerHint')}</div>
-      {/if}
-      {#each providers as provider (provider.id)}
-        <button
-          class="shpd-login__provider"
-          type="button"
-          onclick={() => startOidc(provider.id)}
-        >
-          {provider.label}
-        </button>
-      {/each}
-    {/if}
-    {/if}
-
-    <div class="shpd-login__footer">
-      <label class="shpd-login__lang-label" for="login-language">
-        {t('login.languagePicker.label')}
-      </label>
-      <select
-        id="login-language"
-        class="shpd-login__lang-select"
-        value={language.mode}
-        onchange={handleLanguageChange}
-      >
-        {#each languageOptions as opt}
-          <option value={opt.value}>{t(opt.labelKey)}</option>
-        {/each}
-      </select>
+  {:else}
+  {#if localEnabled}
+    <div class="shpd-login__field">
+      <label class="shpd-login__label" for="login-name">{t('login.username')}</label>
+      <input
+        bind:this={loginInput}
+        id="login-name"
+        data-testid="login-name"
+        class="shpd-login__input"
+        type="text"
+        autocomplete="username"
+        disabled={loading}
+        bind:value={loginName}
+        onkeydown={handleKeydown}
+      />
     </div>
+
+    <div class="shpd-login__field">
+      <label class="shpd-login__label" for="login-password">{t('login.password')}</label>
+      <input
+        id="login-password"
+        data-testid="login-password"
+        class="shpd-login__input"
+        type="password"
+        autocomplete="current-password"
+        disabled={loading}
+        bind:value={password}
+        onkeydown={handleKeydown}
+      />
+    </div>
+  {/if}
+
+  {#if successMessage}
+    <div class="shpd-login__notice"><Notice tone="success">{successMessage}</Notice></div>
+  {/if}
+
+  {#if errorMessage}
+    <div class="shpd-login__notice"><Notice tone="danger" data-testid="login-error">{errorMessage}</Notice></div>
+  {/if}
+
+  {#if localEnabled}
+    <button
+      class="shpd-login__button"
+      type="button"
+      disabled={loading}
+      onclick={handleSubmit}
+    >
+      {loading ? t('login.submitting') : t('login.submit')}
+    </button>
+    <button class="shpd-login__link" type="button" onclick={enterForgotMode}>
+      {t('login.forgot.link')}
+    </button>
+  {/if}
+
+  {#if providers.length > 0}
+    <!-- Oddělovač jen když je vidět i lokální formulář -->
+    {#if localEnabled}
+      <div class="shpd-login__divider">{t('login.providerHint')}</div>
+    {/if}
+    {#each providers as provider (provider.id)}
+      <button
+        class="shpd-login__provider"
+        type="button"
+        onclick={() => startOidc(provider.id)}
+      >
+        {provider.label}
+      </button>
+    {/each}
+  {/if}
+  {/if}
+
+  <div class="shpd-login__footer">
+    <label class="shpd-login__lang-label" for="login-language">
+      {t('login.languagePicker.label')}
+    </label>
+    <select
+      id="login-language"
+      class="shpd-login__lang-select"
+      value={language.mode}
+      onchange={handleLanguageChange}
+    >
+      {#each languageOptions as opt}
+        <option value={opt.value}>{t(opt.labelKey)}</option>
+      {/each}
+    </select>
   </div>
-</div>
+</CenteredScreen>
 
 <style>
-  .shpd-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
-  .shpd-login__card {
-    width: 100%;
-    max-width: 25rem;
-    padding: var(--shpd-space-xl);
-    background-color: var(--shpd-color-bg);
-    border-radius: var(--shpd-radius-lg);
-    box-shadow: var(--shpd-shadow-md);
-  }
-
   .shpd-login__logo {
     display: block;
     max-height: 3rem;
