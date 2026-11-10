@@ -36,7 +36,7 @@
   }
 </script>
 
-<Modal {title} {open} {onClose} width="480px">
+<Modal {title} {open} {onClose} width="30rem">
   <label for="reject-reason-prompt" class="shpd-reject__label">{reasonLabel}</label>
   <textarea
     id="reject-reason-prompt"

@@ -318,7 +318,7 @@
 <style>
   .shpd-attachments {
     padding: var(--shpd-space-lg);
-    min-height: 200px;
+    min-height: 12.5rem;
     transition: background-color 0.15s;
   }
 
@@ -378,7 +378,7 @@
   /* Grid of cards */
   .shpd-attachments__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
     gap: var(--shpd-space-md);
   }
 

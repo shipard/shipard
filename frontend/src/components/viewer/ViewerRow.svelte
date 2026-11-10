@@ -121,7 +121,7 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 6px;
+    width: 6px; /* px-ok: stavový proužek */
     background-color: var(--shpd-row-bar, transparent);
   }
 
@@ -153,7 +153,7 @@
     align-items: center;
     justify-content: center;
     align-self: stretch;
-    width: 32px;
+    width: 2rem;
     flex-shrink: 0;
     color: var(--shpd-color-text-secondary);
   }
@@ -180,8 +180,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     flex-shrink: 0;
     border-radius: 50%;
     font-size: var(--shpd-font-size-xs);

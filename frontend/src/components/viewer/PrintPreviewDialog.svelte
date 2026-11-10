@@ -117,7 +117,7 @@
   }
 </script>
 
-<Modal title={t('print.preview.title')} {open} {onClose} width="960px" height="90vh" testid="print-preview">
+<Modal title={t('print.preview.title')} {open} {onClose} width="60rem" height="90vh" testid="print-preview">
   <div class="shpd-print">
     {#if loading}
       <div class="shpd-print__state">
@@ -264,8 +264,8 @@
   }
 
   .shpd-print__spinner {
-    width: 16px;
-    height: 16px;
+    width: 1rem;
+    height: 1rem;
     border: 2px solid var(--shpd-color-border);
     border-top-color: var(--shpd-color-primary);
     border-radius: 50%;

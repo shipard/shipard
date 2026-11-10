@@ -29,7 +29,7 @@
 <style>
   .shpd-account-security {
     padding: var(--shpd-space-lg);
-    max-width: 760px;
+    max-width: 47.5rem;
   }
 
   .shpd-account-security__divider {

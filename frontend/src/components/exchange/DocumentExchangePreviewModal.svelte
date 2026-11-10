@@ -506,7 +506,7 @@
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-body);
-    min-height: 200px;
+    min-height: 12.5rem;
   }
 
   .shpd-exchange-modal__error {

@@ -15,8 +15,8 @@
   // nečte), `after()` = `Notice` warning při nesouladu s částkou
   // dodavatele pod souhrnem. `totalTestId` → `data-testid` na řádku Celkem
   // (review `review-total`, čte ho proklikání sady #103). CSS přenesené
-  // z `DocumentDetail` beze změny vzhledu; `max-width: 420px` rekapitulace
-  // a `min-width: 220px` souhrnu zůstávají v px — D46 je #138 task 4.
+  // z `DocumentDetail` beze změny vzhledu; `max-width` rekapitulace
+  // (26.25rem) a `min-width` souhrnu (13.75rem) jsou v rem (#133 D46).
   import { t } from '../../i18n/index.js';
   import TableScroll from '../ui/TableScroll.svelte';
 
@@ -110,8 +110,8 @@
      min-width: 0, aby se tabulka při nedostatku místa posouvala v obalu
      TableScroll, ne přetékala (D44). */
   .shpd-doc-totals__recap {
-    max-width: 420px;
-    flex: 1 1 280px;
+    max-width: 26.25rem;
+    flex: 1 1 17.5rem;
     min-width: 0;
   }
 
@@ -154,7 +154,7 @@
     flex-direction: column;
     gap: var(--shpd-space-xs);
     text-align: right;
-    min-width: 220px;
+    min-width: 13.75rem;
     font-variant-numeric: tabular-nums;
   }
 

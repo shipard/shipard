@@ -1168,7 +1168,7 @@
     open={true}
     anchor={decisionOpen?.anchor ?? null}
     placement="bottom"
-    width="400px"
+    width="25rem"
     testid="review-ref-dialog"
     onClose={closeDecision}
   >
@@ -1321,8 +1321,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     border-radius: 50%;
     margin-left: var(--shpd-space-xs);
     font-size: var(--shpd-font-size-meta);
@@ -1412,8 +1412,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
+    width: 0.875rem;
+    height: 0.875rem;
     border-radius: 50%;
     margin-left: 0.125rem;
     font-size: var(--shpd-font-size-meta);
@@ -1535,6 +1535,6 @@
     font-family: var(--shpd-font-family-mono);
     font-size: var(--shpd-font-size-meta);
     overflow: auto;
-    max-height: 320px;
+    max-height: 20rem;
   }
 </style>

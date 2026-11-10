@@ -66,7 +66,7 @@
     /** Optional content rendered in a footer strip below the body.
      *  Useful for action buttons (Save, Cancel, etc.). */
     footer?: Snippet;
-    /** Modal width, e.g. '720px' or '1200px'. Default '640px'.
+    /** Modal width in rem (#133 D46), e.g. '45rem' or '75rem'. Default '40rem'.
      *  Special keyword `'full'` expands to 95vw × 95vh (no `height` needed). */
     width?: string;
     /** Modal height. If set, the card uses this fixed height (capped at 90vh).
@@ -105,7 +105,7 @@
     iconSlot,
     summary,
     footer,
-    width = '640px',
+    width = '40rem',
     height,
     testid,
     fixedSize = false,
@@ -273,8 +273,8 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     font-size: 1.75em;
     color: var(--shpd-color-text-secondary);
   }
@@ -371,8 +371,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     padding: 0;
     background: none;
     border: none;

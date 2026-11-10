@@ -347,8 +347,8 @@
   /* CSS-only spinner */
   .shpd-browser__spinner {
     display: inline-block;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     border: 2px solid var(--shpd-color-border);
     border-top-color: var(--shpd-color-primary);
     border-radius: 50%;
@@ -457,7 +457,7 @@
   }
 
   .shpd-browser__loading-row {
-    height: 80px;
+    height: 5rem;
     vertical-align: middle;
   }
 

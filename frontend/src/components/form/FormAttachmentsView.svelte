@@ -81,7 +81,7 @@
        min-height je pojistka pro formuláře s málo poli. */
     position: relative;
     height: 100%;
-    min-height: 320px;
+    min-height: 20rem;
   }
 
   .shpd-form-attview__scroll {

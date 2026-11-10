@@ -147,7 +147,7 @@
   .shpd-form-separator::after {
     content: '';
     flex: 1;
-    height: 1px;
+    height: 1px; /* px-ok: čára */
     background: var(--shpd-color-border);
   }
   .shpd-form-separator__text {

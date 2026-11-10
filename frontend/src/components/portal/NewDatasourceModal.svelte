@@ -141,7 +141,7 @@
   }
 </script>
 
-<Modal title={t('portal.create.title')} {open} {onClose} width="480px">
+<Modal title={t('portal.create.title')} {open} {onClose} width="30rem">
   <div class="shpd-ds-create__field">
     <label class="shpd-ds-create__label" for="ds-create-name">{t('portal.create.name')}</label>
     <Input id="ds-create-name" bind:value={name} disabled={submitting} maxlength={200}

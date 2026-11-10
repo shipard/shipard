@@ -124,7 +124,7 @@
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
     outline: none;
-    max-width: 130px;
+    max-width: 8.125rem;
   }
 
   .shpd-viewer-filters__select:disabled {

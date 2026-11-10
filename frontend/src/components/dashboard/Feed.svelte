@@ -248,8 +248,8 @@
      nadpisu před textem. */
   .shpd-feed__section-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 0.5rem;
+    height: 0.5rem;
     margin-right: var(--shpd-space-xs);
     border-radius: 50%;
     vertical-align: middle;

@@ -61,7 +61,7 @@
   }
 </script>
 
-<Modal title={t('dashboard.queue.precheckTitle')} {open} {onClose} width="560px">
+<Modal title={t('dashboard.queue.precheckTitle')} {open} {onClose} width="35rem">
   <div class="shpd-queue-precheck">
     {#if remaining.length === 0}
       <p class="shpd-queue-precheck__empty">{t('dashboard.queue.precheckEmpty')}</p>

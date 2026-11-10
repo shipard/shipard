@@ -114,7 +114,7 @@
   }
 </script>
 
-<Modal title={t('dashboard.upload.title')} {open} {onClose} width="520px">
+<Modal title={t('dashboard.upload.title')} {open} {onClose} width="32.5rem">
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="shpd-mail-upload__dropzone"
@@ -228,7 +228,7 @@
     margin: var(--shpd-space-md) 0 0;
     padding: 0;
     list-style: none;
-    max-height: 220px;
+    max-height: 13.75rem;
     overflow-y: auto;
   }
 

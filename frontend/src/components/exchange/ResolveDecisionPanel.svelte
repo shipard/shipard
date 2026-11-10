@@ -524,7 +524,7 @@
   .shpd-resolve__results {
     display: flex;
     flex-direction: column;
-    max-height: 280px;
+    max-height: 17.5rem;
     /* Jediný pružný prvek panelu — zmenšuje se, když je popover omezený
        výškou (viz .shpd-resolve). */
     flex: 1 1 auto;

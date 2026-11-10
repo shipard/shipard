@@ -217,7 +217,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 4px; /* px-ok: stavový proužek */
     border-radius: var(--shpd-radius-md) var(--shpd-radius-md) 0 0;
     background: var(--shpd-row-bar, transparent);
   }
@@ -285,8 +285,8 @@
   }
 
   .shpd-feed-card__donut {
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
     flex-shrink: 0;
   }
 

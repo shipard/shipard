@@ -54,7 +54,7 @@
   }
 </script>
 
-<Modal {title} {open} onClose={handleCancel} width="480px" fixedSize {testid}>
+<Modal {title} {open} onClose={handleCancel} width="30rem" fixedSize {testid}>
   <div class="shpd-confirm__message">{message}</div>
 
   {#snippet footer()}

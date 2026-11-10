@@ -58,8 +58,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     flex-shrink: 0;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
@@ -76,8 +76,8 @@
   .shpd-checkbox__native:checked + .shpd-checkbox__box::after {
     content: '';
     display: block;
-    width: 5px;
-    height: 9px;
+    width: 0.3125rem;
+    height: 0.5625rem;
     border: 2px solid white;
     border-top: none;
     border-left: none;
@@ -93,7 +93,7 @@
   .shpd-checkbox__native:indeterminate + .shpd-checkbox__box::after {
     content: '';
     display: block;
-    width: 9px;
+    width: 0.5625rem;
     height: 0;
     border: none;
     border-top: 2px solid white;

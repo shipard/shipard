@@ -194,8 +194,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     flex-shrink: 0;
     /* Vždy na pravý konec footeru — vizuálně oddělený od akčních tlačítek. */
     margin-left: auto;
@@ -219,7 +219,7 @@
   .shpd-form-state-bar__kebab-menu {
     display: flex;
     flex-direction: column;
-    min-width: 180px;
+    min-width: 11.25rem;
     padding: var(--shpd-space-xs) 0;
   }
   .shpd-form-state-bar__kebab-item {

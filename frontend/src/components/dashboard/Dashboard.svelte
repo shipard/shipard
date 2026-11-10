@@ -879,13 +879,13 @@
   .shpd-toast {
     position: fixed;
     left: 50%;
-    bottom: calc(var(--shpd-space-lg) + 72px);
+    bottom: calc(var(--shpd-space-lg) + 4.5rem);
     transform: translateX(-50%);
     z-index: 1000;
     display: flex;
     align-items: center;
     gap: var(--shpd-space-md);
-    max-width: min(90vw, 560px);
+    max-width: min(90vw, 35rem);
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     background: var(--shpd-color-text);
     color: var(--shpd-color-bg);

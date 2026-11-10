@@ -277,8 +277,8 @@
     title={headerTitle}
     open={true}
     onClose={handleClose}
-    width="clamp(1200px, 80vw, 1700px)"
-    height="clamp(720px, 88vh, 1100px)"
+    width="clamp(75rem, 80vw, 106.25rem)"
+    height="clamp(45rem, 88vh, 68.75rem)"
     subtitle={hasHeaderInfo ? subtitleSnippet : undefined}
     iconSlot={hasIcon ? iconSnippet : undefined}
     summary={hasSummary ? summarySnippet : undefined}

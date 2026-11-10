@@ -644,8 +644,8 @@
 
   .shpd-detail__spinner {
     display: inline-block;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     border: 2px solid var(--shpd-color-border);
     border-top-color: var(--shpd-color-primary);
     border-radius: 50%;
@@ -770,7 +770,7 @@
   .shpd-detail__action-menu {
     display: flex;
     flex-direction: column;
-    min-width: 140px;
+    min-width: 8.75rem;
     padding: var(--shpd-space-xs) 0;
   }
 

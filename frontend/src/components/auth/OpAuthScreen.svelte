@@ -65,7 +65,7 @@
 
   .shpd-login__card {
     width: 100%;
-    max-width: 400px;
+    max-width: 25rem;
     padding: var(--shpd-space-xl);
     background-color: var(--shpd-color-bg);
     border-radius: var(--shpd-radius-lg);
@@ -74,8 +74,8 @@
 
   .shpd-login__logo {
     display: block;
-    max-height: 48px;
-    max-width: 200px;
+    max-height: 3rem;
+    max-width: 12.5rem;
     margin: 0 auto var(--shpd-space-md);
   }
 

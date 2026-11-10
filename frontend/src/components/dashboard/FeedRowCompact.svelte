@@ -143,8 +143,8 @@
   }
 
   .shpd-feed-row__donut {
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     flex-shrink: 0;
     color: var(--shpd-color-success);
   }

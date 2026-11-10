@@ -58,9 +58,10 @@
     return out;
   });
 
-  /** Inline styl <col> — width px pro fixní, rovný podíl % pro grow. */
+  /** Inline styl <col> — pevná šířka v rem (backend ji posílá v px, do CSS
+   *  jde px / 16, #133 D46), rovný podíl % pro grow. */
   function colStyle(col) {
-    if (col.width) return `width: ${col.width}px;`;
+    if (col.width) return `width: ${col.width / 16}rem;`;
     if (col.grow) return `width: ${Math.floor(100 / growCount)}%;`;
     return '';
   }
@@ -91,7 +92,7 @@
     <table class="shpd-grid__table">
       <colgroup>
         {#if showIndex}
-          <col style="width: 44px;" />
+          <col style="width: 2.75rem;" />
         {/if}
         {#each columns as col (col.id)}
           <col style={colStyle(col)} />
@@ -252,7 +253,7 @@
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
     white-space: nowrap;
-    height: 34px;
+    height: 2.125rem;
     box-sizing: border-box;
   }
 
@@ -270,7 +271,7 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 6px;
+    width: 6px; /* px-ok: stavový proužek */
     background-color: var(--shpd-row-bar, transparent);
   }
 
@@ -364,8 +365,8 @@
 
   .shpd-grid__spinner {
     display: inline-block;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     border: 2px solid var(--shpd-color-border);
     border-top-color: var(--shpd-color-primary);
     border-radius: 50%;

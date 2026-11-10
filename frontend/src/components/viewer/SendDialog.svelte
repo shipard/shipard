@@ -215,7 +215,7 @@
   subtitle={draft?.targetLabel ? recordLabel : undefined}
   {open}
   {onClose}
-  width="760px"
+  width="47.5rem"
   testid="send-dialog"
 >
   {#snippet recordLabel()}{draft?.targetLabel ?? ''}{/snippet}

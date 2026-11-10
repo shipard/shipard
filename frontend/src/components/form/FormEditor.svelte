@@ -804,8 +804,8 @@
 
   .shpd-form-editor__tab-error-dot {
     display: inline-block;
-    width: 6px;
-    height: 6px;
+    width: 0.375rem;
+    height: 0.375rem;
     border-radius: 50%;
     background: var(--shpd-color-danger);
     margin-left: var(--shpd-space-xs);

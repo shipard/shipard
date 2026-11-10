@@ -646,7 +646,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-md);
-    max-width: 720px;
+    max-width: 45rem;
     width: 100%;
     margin: 0 auto;
   }

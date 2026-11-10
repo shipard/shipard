@@ -257,7 +257,7 @@
 <style>
   .portal {
     width: 100%;
-    max-width: 720px;
+    max-width: 45rem;
     margin: 0 auto;
     padding: var(--shpd-space-xl);
   }
@@ -453,7 +453,7 @@
     display: flex;
     align-items: center;
     gap: var(--shpd-space-md);
-    max-width: min(90vw, 560px);
+    max-width: min(90vw, 35rem);
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     background: var(--shpd-color-text);
     color: var(--shpd-color-bg);

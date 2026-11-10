@@ -181,8 +181,8 @@
   .shpd-popover {
     position: fixed;
     z-index: 1000;
-    min-width: 240px;
-    max-width: 360px;
+    min-width: 15rem;
+    max-width: 22.5rem;
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);

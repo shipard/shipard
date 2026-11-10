@@ -115,8 +115,8 @@
 
   .shpd-theme-field__ds-swatch {
     display: inline-block;
-    width: 20px;
-    height: 20px;
+    width: 1.25rem;
+    height: 1.25rem;
     border-radius: 50%;
     border: 1px solid color-mix(in srgb, var(--shpd-color-text) 25%, transparent);
     flex-shrink: 0;

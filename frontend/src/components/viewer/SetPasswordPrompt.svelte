@@ -29,7 +29,7 @@
   }
 </script>
 
-<Modal title={t('viewer.detail.setPasswordTitle')} {open} {onClose} width="480px">
+<Modal title={t('viewer.detail.setPasswordTitle')} {open} {onClose} width="30rem">
   <label for="set-password-prompt" class="shpd-setpw__label">{t('viewer.detail.setPasswordLabel')}</label>
   <input
     id="set-password-prompt"

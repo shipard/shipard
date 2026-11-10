@@ -224,7 +224,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
+    width: 1.5rem;
     align-self: stretch;
     padding: 0;
     flex-shrink: 0;
@@ -260,8 +260,8 @@
   }
 
   .shpd-theme-swatches__dot {
-    width: 8px;
-    height: 8px;
+    width: 0.5rem;
+    height: 0.5rem;
     padding: 0;
     border-radius: 50%;
     background-color: var(--shpd-color-border-strong);
@@ -274,8 +274,8 @@
   }
 
   .shpd-theme-swatches__swatch {
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
     padding: 0;
     border: 1px solid color-mix(in srgb, var(--shpd-color-text) 25%, transparent);
     border-radius: 50%;
@@ -305,7 +305,7 @@
 
   .shpd-theme-swatches__color-input {
     width: 100%;
-    height: 36px;
+    height: 2.25rem;
     padding: 0.125rem;
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);

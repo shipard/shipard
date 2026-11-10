@@ -252,7 +252,7 @@
 <style>
   .shpd-content-tags {
     padding: var(--shpd-space-lg);
-    max-width: 900px;
+    max-width: 56.25rem;
   }
 
   .shpd-content-tags__title {

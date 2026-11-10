@@ -138,8 +138,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 72px;
-    height: 72px;
+    width: 4.5rem;
+    height: 4.5rem;
     flex-shrink: 0;
     background-color: var(--shpd-color-bg-secondary);
     border: 1px solid var(--shpd-color-border);

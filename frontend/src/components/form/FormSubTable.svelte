@@ -161,7 +161,8 @@
   // ── Sloupce ────────────────────────────────────────────────────────────────
 
   /**
-   * Inline styl <col>: px jen pro pevnou šířku. Rostoucí sloupec záměrně
+   * Inline styl <col>: jen pro pevnou šířku — backend ji posílá v px
+   * (kontrakt beze změny), do CSS jde v rem (px / 16, #133 D46). Rostoucí sloupec záměrně
    * BEZ `width: 100%` (vzor ViewerGrid): v auto layoutu se k procentuálnímu
    * sloupci přičtou pevné šířky ostatních a tabulka přeteče doprava přes
    * padding tabu — grid to maskuje vlastním scroll kontejnerem, formulář ne.
@@ -170,7 +171,7 @@
    * (popis) dostane prakticky všechno.
    */
   function colStyle(col) {
-    if (col.width) return `width: ${col.width}px;`;
+    if (col.width) return `width: ${col.width / 16}rem;`;
     return '';
   }
 
@@ -333,7 +334,7 @@
             {#each columns as col (col.id)}
               <col style={colStyle(col)} />
             {/each}
-            <col style="width: {canReorder ? 148 : 72}px;" />
+            <col style="width: {canReorder ? 9.25 : 4.5}rem;" />
           </colgroup>
           <thead>
             <tr>
@@ -510,7 +511,7 @@
   }
 
   .shpd-form-subtable__filter {
-    width: min(280px, 50%);
+    width: min(17.5rem, 50%);
   }
 
   /* Sticky hlavička (th níže) drží vůči obalu `TableScroll fill`.

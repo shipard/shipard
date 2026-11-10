@@ -33,7 +33,7 @@
 
   .shpd-status__card {
     width: 100%;
-    max-width: 400px;
+    max-width: 25rem;
     padding: var(--shpd-space-xl);
     background-color: var(--shpd-color-bg);
     border-radius: var(--shpd-radius-lg);

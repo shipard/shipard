@@ -68,7 +68,7 @@
   /* Inline editor pod segmented controlem — omezená šířka, ať grid presetů
      nevytéká přes celou stránku nastavení. */
   .shpd-ds-theme-field__swatches {
-    max-width: 320px;
+    max-width: 20rem;
     padding: var(--shpd-space-md);
     background: var(--shpd-color-bg-secondary);
     border: 1px solid var(--shpd-color-border);

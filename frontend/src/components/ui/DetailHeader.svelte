@@ -57,8 +57,8 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     font-size: 1.75em;
     color: var(--shpd-color-text-secondary);
   }

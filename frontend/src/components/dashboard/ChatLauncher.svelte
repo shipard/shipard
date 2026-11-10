@@ -63,7 +63,7 @@
     bottom: var(--shpd-space-lg);
     margin-top: auto; /* krátký obsah → launcher u spodní hrany */
     align-self: center;
-    width: min(680px, 100%);
+    width: min(42.5rem, 100%);
     z-index: 10; /* nad kartami feedu */
     display: flex;
     align-items: center;

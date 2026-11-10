@@ -155,8 +155,8 @@
   /* Spinner */
   .shpd-btn__spinner {
     display: inline-block;
-    width: 14px;
-    height: 14px;
+    width: 0.875rem;
+    height: 0.875rem;
     border: 2px solid currentColor;
     border-top-color: transparent;
     border-radius: 50%;

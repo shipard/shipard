@@ -123,7 +123,7 @@
   .shpd-sandboxed-html {
     display: block;
     width: 100%;
-    min-height: 60px; /* placeholder než doběhne load */
+    min-height: 3.75rem; /* placeholder než doběhne load */
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
     /* Bílá i před loadem — žádný flash; v tmavém režimu působí blok

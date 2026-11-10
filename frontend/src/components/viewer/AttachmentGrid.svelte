@@ -153,7 +153,7 @@
 
   .shpd-attgrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr));
     gap: var(--shpd-space-md);
     margin-top: var(--shpd-space-sm);
   }
@@ -277,6 +277,6 @@
   }
 
   .shpd-attgrid__full-card {
-    max-width: 220px;
+    max-width: 13.75rem;
   }
 </style>

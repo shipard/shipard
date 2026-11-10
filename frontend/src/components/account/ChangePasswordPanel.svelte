@@ -118,7 +118,7 @@
 
   .shpd-security-panel__field {
     display: grid;
-    grid-template-columns: 180px minmax(0, 320px);
+    grid-template-columns: 11.25rem minmax(0, 20rem);
     align-items: center;
     gap: var(--shpd-space-md);
     margin-bottom: var(--shpd-space-sm);
@@ -140,7 +140,7 @@
   .shpd-security-panel__actions {
     display: flex;
     justify-content: flex-end;
-    max-width: calc(180px + 320px + var(--shpd-space-md));
+    max-width: calc(11.25rem + 20rem + var(--shpd-space-md));
   }
 
   /* Úzký kontejner: popisky nad poli. */

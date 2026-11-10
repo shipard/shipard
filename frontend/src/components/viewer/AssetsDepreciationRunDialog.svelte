@@ -191,7 +191,7 @@
   }
 </script>
 
-<Modal title={posting ? t('assets.posting.title') : t('assets.depreciationRun.title')} {open} {onClose} width="760px">
+<Modal title={posting ? t('assets.posting.title') : t('assets.depreciationRun.title')} {open} {onClose} width="47.5rem">
   <div class="shpd-deprun" data-testid="assets-depreciation-run">
     <div class="shpd-deprun__controls">
       <div class="shpd-deprun__scope" role="group" aria-label={t('assets.depreciationRun.scope')}>

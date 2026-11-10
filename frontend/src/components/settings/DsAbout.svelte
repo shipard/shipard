@@ -196,7 +196,7 @@
 <style>
   .shpd-ds-about {
     padding: var(--shpd-space-lg);
-    max-width: 760px;
+    max-width: 47.5rem;
     /* Kontejner pro @container níže (#133 D43): obsah reaguje na svou šířku,
        ne na okno — bývá v panelu, draweru i modalu. Blok na celou šířku
        rodiče, mřížka až uvnitř (dotaz platí pro potomky kontejneru). */

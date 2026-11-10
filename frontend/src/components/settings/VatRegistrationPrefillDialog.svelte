@@ -234,7 +234,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
-    max-width: 320px;
+    max-width: 20rem;
   }
 
   .shpd-vat-prefill__field label {

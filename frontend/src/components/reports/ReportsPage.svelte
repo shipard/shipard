@@ -430,7 +430,7 @@
   .shpd-reports__export-menu {
     display: flex;
     flex-direction: column;
-    min-width: 160px;
+    min-width: 10rem;
     padding: var(--shpd-space-xs) 0;
   }
 

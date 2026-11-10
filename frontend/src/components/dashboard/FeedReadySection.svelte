@@ -137,7 +137,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    width: 4px;
+    width: 4px; /* px-ok: stavový proužek */
     background: var(--shpd-color-success);
   }
 

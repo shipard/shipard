@@ -395,7 +395,7 @@
 <style>
   .shpd-ds-setup {
     padding: var(--shpd-space-lg);
-    max-width: 760px;
+    max-width: 47.5rem;
   }
 
   .shpd-ds-setup__intro {
@@ -477,7 +477,7 @@
   }
 
   .shpd-ds-setup__select {
-    max-width: 320px;
+    max-width: 20rem;
   }
 
   .shpd-ds-setup__segments {

@@ -84,8 +84,8 @@
   title={t('viewer.detailModal.title')}
   {open}
   {onClose}
-  width="clamp(1200px, 80vw, 1700px)"
-  height="clamp(720px, 88vh, 1100px)"
+  width="clamp(75rem, 80vw, 106.25rem)"
+  height="clamp(45rem, 88vh, 68.75rem)"
   flush
 >
   {#if error}
@@ -113,6 +113,6 @@
     padding: var(--shpd-space-xl);
     color: var(--shpd-color-danger);
     font-size: var(--shpd-font-size-sm);
-    min-height: 200px;
+    min-height: 12.5rem;
   }
 </style>
