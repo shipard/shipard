@@ -3,6 +3,7 @@
   // (výchozí true), sortValue?(row), defaultDir?}. Buňku vykreslí snippet
   // `cell(row, column)`, bez něj `row[id]`. Null hodnoty řadí nakonec.
   import { t, currentLanguage } from '../i18n/index.js';
+  import TableScroll from '../../components/ui/TableScroll.svelte';
 
   let {
     columns = [],
@@ -51,38 +52,40 @@
 </script>
 
 <div class="dev-table-wrap">
-  <table class="dev-table">
-    <thead>
-      <tr>
-        {#each columns as col (col.id)}
-          <th class:dev-num={col.align === 'right'} class:is-sorted={sort?.id === col.id}>
-            {#if col.sortable === false}
-              {col.label}
-            {:else}
-              <button type="button" class="th-btn" onclick={() => toggle(col)}>
-                {col.label}{#if sort?.id === col.id}<span class="arrow">{sort.dir === 'asc' ? '▲' : '▼'}</span>{/if}
-              </button>
-            {/if}
-          </th>
-        {/each}
-      </tr>
-    </thead>
-    <tbody>
-      {#if sorted.length === 0}
-        <tr><td colspan={columns.length} class="dev-empty">{empty}</td></tr>
-      {:else}
-        {#each sorted as row, i (rowKey(row, i))}
-          <tr class={rowClass(row)} class:is-clickable={!!onRowClick} onclick={onRowClick ? () => onRowClick(row) : undefined}>
-            {#each columns as col (col.id)}
-              <td class:dev-num={col.align === 'right'}>
-                {#if cell}{@render cell(row, col)}{:else}{row[col.id] ?? '—'}{/if}
-              </td>
-            {/each}
-          </tr>
-        {/each}
-      {/if}
-    </tbody>
-  </table>
+  <TableScroll>
+    <table class="dev-table">
+      <thead>
+        <tr>
+          {#each columns as col (col.id)}
+            <th class:dev-num={col.align === 'right'} class:is-sorted={sort?.id === col.id}>
+              {#if col.sortable === false}
+                {col.label}
+              {:else}
+                <button type="button" class="th-btn" onclick={() => toggle(col)}>
+                  {col.label}{#if sort?.id === col.id}<span class="arrow">{sort.dir === 'asc' ? '▲' : '▼'}</span>{/if}
+                </button>
+              {/if}
+            </th>
+          {/each}
+        </tr>
+      </thead>
+      <tbody>
+        {#if sorted.length === 0}
+          <tr><td colspan={columns.length} class="dev-empty">{empty}</td></tr>
+        {:else}
+          {#each sorted as row, i (rowKey(row, i))}
+            <tr class={rowClass(row)} class:is-clickable={!!onRowClick} onclick={onRowClick ? () => onRowClick(row) : undefined}>
+              {#each columns as col (col.id)}
+                <td class:dev-num={col.align === 'right'}>
+                  {#if cell}{@render cell(row, col)}{:else}{row[col.id] ?? '—'}{/if}
+                </td>
+              {/each}
+            </tr>
+          {/each}
+        {/if}
+      </tbody>
+    </table>
+  </TableScroll>
 </div>
 
 <style>

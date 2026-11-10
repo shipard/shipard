@@ -8,6 +8,7 @@
   import ValueCell from '../../components/ValueCell.svelte';
   import { stateLabel, isBlankState } from '../../testing/metrics.js';
   import { t } from '../../i18n/index.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let { table, tableB = null, onlyDeviations = false, label = null } = $props();
 
@@ -48,63 +49,65 @@
     <div class="dev-muted dev-small">{t('testing.rows.noDeviations', { hidden })}</div>
   {:else}
     <div class="dev-table-wrap">
-      <table class="dev-table rows">
-        <thead>
-          <tr>
-            <th>{keyLabel}</th>
-            {#each columns as c (c)}<th>{c}</th>{/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each rows as row (row.key)}
-            {@const nodeA = row.a?.node}
-            {@const nodeB = row.b?.node}
-            {#if (nodeA || nodeB) && !(row.a?.cells && Object.keys(row.a.cells).length)}
-              <tr class="dev-row--{worst(nodeA, nodeB)}">
-                <td>{row.key}</td>
-                <td colspan={columns.length}>
-                  {#each (compare ? [['A', nodeA], ['B', nodeB]] : [['', nodeA]]) as [side, node] (side)}
-                    {#if node}
-                      <div class="node">
-                        {#if side}<span class="dev-muted">{side}:</span>{/if}
-                        <StateBadge state={node.state} />
-                        <span class="dev-cell-expected">{t('testing.rows.expectedShort')} <ValueCell value={node.expected} /></span>
-                        <span class="dev-cell-actual">{t('testing.rows.output')} <ValueCell value={node.actual} /></span>
-                      </div>
-                    {:else if side}
-                      <div class="node"><span class="dev-muted">{side}: —</span></div>
-                    {/if}
-                  {/each}
-                </td>
-              </tr>
-            {:else}
-              <tr>
-                <td>{row.key}</td>
-                {#each columns as c (c)}
-                  {@const ca = row.a?.cells?.[c]}
-                  {@const cb = row.b?.cells?.[c]}
-                  {@const primary = ca ?? cb}
-                  <td class="dev-cellstate--{worst(ca, cb)}" title={primary ? `${primary.path}: ${primary.state}${primary.reason ? ` — ${primary.reason}` : ''}` : ''}>
-                    {#if !primary}
-                      <span class="dev-muted">—</span>
-                    {:else}
-                      <div class="cell">
-                        <span class="dev-cell-expected"><ValueCell value={primary.expected} /></span>
-                        {#if ca && ca.state !== 'match'}
-                          <span class="dev-cell-actual">{compare ? 'A: ' : ''}{#if isBlankState(ca.state)}<span class="dev-muted">{stateLabel(ca.state)}</span>{:else}<ValueCell value={ca.actual} />{/if}</span>
-                        {/if}
-                        {#if cb && cb.state !== 'match'}
-                          <span class="dev-cell-actual">B: {#if isBlankState(cb.state)}<span class="dev-muted">{stateLabel(cb.state)}</span>{:else}<ValueCell value={cb.actual} />{/if}</span>
-                        {/if}
-                      </div>
-                    {/if}
+      <TableScroll>
+        <table class="dev-table rows">
+          <thead>
+            <tr>
+              <th>{keyLabel}</th>
+              {#each columns as c (c)}<th>{c}</th>{/each}
+            </tr>
+          </thead>
+          <tbody>
+            {#each rows as row (row.key)}
+              {@const nodeA = row.a?.node}
+              {@const nodeB = row.b?.node}
+              {#if (nodeA || nodeB) && !(row.a?.cells && Object.keys(row.a.cells).length)}
+                <tr class="dev-row--{worst(nodeA, nodeB)}">
+                  <td>{row.key}</td>
+                  <td colspan={columns.length}>
+                    {#each (compare ? [['A', nodeA], ['B', nodeB]] : [['', nodeA]]) as [side, node] (side)}
+                      {#if node}
+                        <div class="node">
+                          {#if side}<span class="dev-muted">{side}:</span>{/if}
+                          <StateBadge state={node.state} />
+                          <span class="dev-cell-expected">{t('testing.rows.expectedShort')} <ValueCell value={node.expected} /></span>
+                          <span class="dev-cell-actual">{t('testing.rows.output')} <ValueCell value={node.actual} /></span>
+                        </div>
+                      {:else if side}
+                        <div class="node"><span class="dev-muted">{side}: —</span></div>
+                      {/if}
+                    {/each}
                   </td>
-                {/each}
-              </tr>
-            {/if}
-          {/each}
-        </tbody>
-      </table>
+                </tr>
+              {:else}
+                <tr>
+                  <td>{row.key}</td>
+                  {#each columns as c (c)}
+                    {@const ca = row.a?.cells?.[c]}
+                    {@const cb = row.b?.cells?.[c]}
+                    {@const primary = ca ?? cb}
+                    <td class="dev-cellstate--{worst(ca, cb)}" title={primary ? `${primary.path}: ${primary.state}${primary.reason ? ` — ${primary.reason}` : ''}` : ''}>
+                      {#if !primary}
+                        <span class="dev-muted">—</span>
+                      {:else}
+                        <div class="cell">
+                          <span class="dev-cell-expected"><ValueCell value={primary.expected} /></span>
+                          {#if ca && ca.state !== 'match'}
+                            <span class="dev-cell-actual">{compare ? 'A: ' : ''}{#if isBlankState(ca.state)}<span class="dev-muted">{stateLabel(ca.state)}</span>{:else}<ValueCell value={ca.actual} />{/if}</span>
+                          {/if}
+                          {#if cb && cb.state !== 'match'}
+                            <span class="dev-cell-actual">B: {#if isBlankState(cb.state)}<span class="dev-muted">{stateLabel(cb.state)}</span>{:else}<ValueCell value={cb.actual} />{/if}</span>
+                          {/if}
+                        </div>
+                      {/if}
+                    </td>
+                  {/each}
+                </tr>
+              {/if}
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     </div>
     {#if hidden > 0}<div class="dev-small dev-muted">{t('testing.rows.rowsHidden', { hidden })}</div>{/if}
   {/if}

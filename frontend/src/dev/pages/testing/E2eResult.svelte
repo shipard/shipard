@@ -9,6 +9,7 @@
   import { e2eStepLabel } from '../../testing/jobs.js';
   import { formatMs } from '../../format.js';
   import VerifyResult from './VerifyResult.svelte';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let { report, jobId } = $props();
 
@@ -71,20 +72,22 @@
     <div class="dev-empty">{t('testing.e2e.none')}</div>
   {:else}
     <div class="dev-table-wrap">
-      <table class="dev-table">
-        <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.e2e.col.reason')}</th><th>{t('testing.e2e.col.path')}</th><th>{t('testing.e2e.col.detail')}</th><th>{t('testing.e2e.col.trace')}</th></tr></thead>
-        <tbody>
-          {#each failed as f (f.cardId)}
-            <tr>
-              <td><code>{f.cardId}</code></td>
-              <td><span class="dev-state dev-state--wrong">{reasonText(f)}</span></td>
-              <td>{#if f.path}<code>{f.path}</code>{:else}<span class="dev-muted">—</span>{/if}</td>
-              <td class="dev-small">{detailText(f)}</td>
-              <td>{#if f.trace}<a href={testingApi.jobFileUrl(jobId, f.trace)} download={f.trace}>{t('testing.e2e.download')}</a>{:else}<span class="dev-muted">—</span>{/if}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <TableScroll>
+        <table class="dev-table">
+          <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.e2e.col.reason')}</th><th>{t('testing.e2e.col.path')}</th><th>{t('testing.e2e.col.detail')}</th><th>{t('testing.e2e.col.trace')}</th></tr></thead>
+          <tbody>
+            {#each failed as f (f.cardId)}
+              <tr>
+                <td><code>{f.cardId}</code></td>
+                <td><span class="dev-state dev-state--wrong">{reasonText(f)}</span></td>
+                <td>{#if f.path}<code>{f.path}</code>{:else}<span class="dev-muted">—</span>{/if}</td>
+                <td class="dev-small">{detailText(f)}</td>
+                <td>{#if f.trace}<a href={testingApi.jobFileUrl(jobId, f.trace)} download={f.trace}>{t('testing.e2e.download')}</a>{:else}<span class="dev-muted">—</span>{/if}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     </div>
   {/if}
 
@@ -97,14 +100,16 @@
     </button>
     {#if showApplied}
       <div class="dev-table-wrap">
-        <table class="dev-table">
-          <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.e2e.col.document')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
-          <tbody>
-            {#each applied as a (a.cardId)}
-              <tr><td><code>{a.cardId}</code></td><td>{a.savedDocId ? `#${a.savedDocId}` : '—'}</td><td class="dev-num">{formatMs(a.durationMs)}</td></tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="dev-table">
+            <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.e2e.col.document')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
+            <tbody>
+              {#each applied as a (a.cardId)}
+                <tr><td><code>{a.cardId}</code></td><td>{a.savedDocId ? `#${a.savedDocId}` : '—'}</td><td class="dev-num">{formatMs(a.durationMs)}</td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
       </div>
     {/if}
   {/if}

@@ -10,6 +10,7 @@
   import DevTable from '../../components/DevTable.svelte';
   import RunSummaryLine from '../../components/RunSummaryLine.svelte';
   import { t } from '../../i18n/index.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -79,31 +80,33 @@
       <label class="dev-chip" class:is-on={allMetrics}><input type="checkbox" bind:checked={allMetrics} /> {t('testing.compare.all', { n: data.metrics.length })}</label>
     </div>
     <div class="dev-table-wrap">
-      <table class="dev-table">
-        <thead><tr><th>{t('testing.compare.col.metric')}</th><th class="dev-num">A</th><th class="dev-num">B</th><th class="dev-num">{t('testing.compare.col.delta')}</th><th class="dev-num">{t('testing.compare.col.noise')}</th><th>{t('testing.compare.col.verdict')}</th></tr></thead>
-        <tbody>
-          {#each metricRows as m (m.key)}
-            <tr>
-              <td title={m.key}>{metricLabel(m.key)}{#if m.perRepetition}<span class="dev-muted dev-small"> {t('testing.compare.perRep')}</span>{/if}</td>
-              <td class="dev-num">{formatMetric(m.key, m.a)}</td>
-              <td class="dev-num">{formatMetric(m.key, m.b)}</td>
-              <td class="dev-num">{formatMetricDelta(m.key, m.delta)}</td>
-              <td class="dev-num dev-muted">{m.noise === null ? '—' : formatMetricDelta(m.key, m.noise).replace(/^[+−±]/, '')}</td>
-              <td>
-                {#if m.delta === null || Math.abs(m.delta) < 1e-9}
-                  <span class="dev-muted">{t('testing.compare.unchanged')}</span>
-                {:else if m.withinNoise}
-                  <span class="dev-state dev-state--neutral">{t('testing.compare.withinNoise')}</span>
-                {:else if m.better}
-                  <span class="dev-state dev-state--match">{t('testing.compare.better')}</span>
-                {:else}
-                  <span class="dev-state dev-state--wrong">{t('testing.compare.worse')}</span>
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <TableScroll>
+        <table class="dev-table">
+          <thead><tr><th>{t('testing.compare.col.metric')}</th><th class="dev-num">A</th><th class="dev-num">B</th><th class="dev-num">{t('testing.compare.col.delta')}</th><th class="dev-num">{t('testing.compare.col.noise')}</th><th>{t('testing.compare.col.verdict')}</th></tr></thead>
+          <tbody>
+            {#each metricRows as m (m.key)}
+              <tr>
+                <td title={m.key}>{metricLabel(m.key)}{#if m.perRepetition}<span class="dev-muted dev-small"> {t('testing.compare.perRep')}</span>{/if}</td>
+                <td class="dev-num">{formatMetric(m.key, m.a)}</td>
+                <td class="dev-num">{formatMetric(m.key, m.b)}</td>
+                <td class="dev-num">{formatMetricDelta(m.key, m.delta)}</td>
+                <td class="dev-num dev-muted">{m.noise === null ? '—' : formatMetricDelta(m.key, m.noise).replace(/^[+−±]/, '')}</td>
+                <td>
+                  {#if m.delta === null || Math.abs(m.delta) < 1e-9}
+                    <span class="dev-muted">{t('testing.compare.unchanged')}</span>
+                  {:else if m.withinNoise}
+                    <span class="dev-state dev-state--neutral">{t('testing.compare.withinNoise')}</span>
+                  {:else if m.better}
+                    <span class="dev-state dev-state--match">{t('testing.compare.better')}</span>
+                  {:else}
+                    <span class="dev-state dev-state--wrong">{t('testing.compare.worse')}</span>
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     </div>
   </div>
 
@@ -114,13 +117,15 @@
         {#if items.length === 0}
           <div class="dev-muted dev-small">{t('common.none')}</div>
         {:else}
-          <table class="plain">
-            <tbody>
-              {#each items as f (f.node)}
-                <tr><td><code>{f.node}</code></td><td class="dev-num dev-nowrap">{formatNumber(f.a, Number.isInteger(f.a) ? 0 : 1)} → {formatNumber(f.b, Number.isInteger(f.b) ? 0 : 1)} <span class="dev-state dev-state--{style}">{f.delta > 0 ? '+' : ''}{formatNumber(f.delta, 1)}</span></td></tr>
-              {/each}
-            </tbody>
-          </table>
+          <TableScroll>
+            <table class="plain">
+              <tbody>
+                {#each items as f (f.node)}
+                  <tr><td><code>{f.node}</code></td><td class="dev-num dev-nowrap">{formatNumber(f.a, Number.isInteger(f.a) ? 0 : 1)} → {formatNumber(f.b, Number.isInteger(f.b) ? 0 : 1)} <span class="dev-state dev-state--{style}">{f.delta > 0 ? '+' : ''}{formatNumber(f.delta, 1)}</span></td></tr>
+                {/each}
+              </tbody>
+            </table>
+          </TableScroll>
         {/if}
       </div>
     {/each}
@@ -159,6 +164,10 @@
   .dev-card__title { display: flex; gap: var(--shpd-space-md); align-items: center; flex-wrap: wrap; }
   .dev-chip input { margin: 0; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--shpd-space-lg); margin-top: var(--shpd-space-lg); align-items: start; }
+  /* Položka mřížky se nesmí roztáhnout podle tabulky uvnitř (výchozí
+     min-width: auto) — jinak by do strany rolovala stránka, ne obal
+     tabulky (#133 D44). */
+  .grid-2 > :global(*) { min-width: 0; }
   .grid-2 > .dev-card { margin-top: 0; }
   .grid-2 + .dev-card { margin-top: var(--shpd-space-lg); }
   table.plain { width: 100%; border-collapse: collapse; font-size: var(--shpd-font-size-sm); }

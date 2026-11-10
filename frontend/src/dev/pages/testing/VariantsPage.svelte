@@ -7,6 +7,7 @@
   import { testingApi } from '../../testing/api.js';
   import Crumbs from '../../components/Crumbs.svelte';
   import { t } from '../../i18n/index.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let data = $state(null);
   let error = $state(null);
@@ -34,23 +35,25 @@
   <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   <div class="dev-table-wrap">
-    <table class="dev-table">
-      <thead><tr><th>{t('testing.col.variant')}</th><th>{t('testing.variants.col.description')}</th><th>{t('testing.col.profile')}</th><th>{t('testing.variants.col.extractionModel')}</th><th>{t('testing.variants.col.tagsModel')}</th><th>Prompt</th><th>{t('testing.col.state')}</th></tr></thead>
-      <tbody>
-        {#each data.variants as v (v.name)}
-          <tr class:is-dim={!v.valid}>
-            <td><a href={router.href('testingVariant', { name: v.name })} onclick={onLinkClick}><code>{v.name}</code></a>{#if v.valid && v.declaredName !== v.name} <span class="dev-small dev-muted">(name: {v.declaredName})</span>{/if}</td>
-            <td>{v.description ?? '—'}</td>
-            <td>{v.profile ?? '—'}</td>
-            <td><code>{v.call?.model ?? t('testing.variants.perDataSource')}</code>{#if v.call?.connection} <span class="dev-small dev-muted">@{v.call.connection}</span>{/if}</td>
-            <td><code>{v.contentTags?.model ?? t('testing.variants.perDataSource')}</code></td>
-            <td>{v.promptTemplateFile ?? '—'}</td>
-            <td>{#if v.valid}<span class="dev-state dev-state--match">{t('testing.variants.valid')}</span>{:else}<span class="dev-state dev-state--wrong" title={v.error}>{t('testing.variants.error')}</span>{/if}</td>
-          </tr>
-        {:else}
-          <tr><td colspan="7" class="dev-empty">{t('testing.variants.empty')}</td></tr>
-        {/each}
-      </tbody>
-    </table>
+    <TableScroll>
+      <table class="dev-table">
+        <thead><tr><th>{t('testing.col.variant')}</th><th>{t('testing.variants.col.description')}</th><th>{t('testing.col.profile')}</th><th>{t('testing.variants.col.extractionModel')}</th><th>{t('testing.variants.col.tagsModel')}</th><th>Prompt</th><th>{t('testing.col.state')}</th></tr></thead>
+        <tbody>
+          {#each data.variants as v (v.name)}
+            <tr class:is-dim={!v.valid}>
+              <td><a href={router.href('testingVariant', { name: v.name })} onclick={onLinkClick}><code>{v.name}</code></a>{#if v.valid && v.declaredName !== v.name} <span class="dev-small dev-muted">(name: {v.declaredName})</span>{/if}</td>
+              <td>{v.description ?? '—'}</td>
+              <td>{v.profile ?? '—'}</td>
+              <td><code>{v.call?.model ?? t('testing.variants.perDataSource')}</code>{#if v.call?.connection} <span class="dev-small dev-muted">@{v.call.connection}</span>{/if}</td>
+              <td><code>{v.contentTags?.model ?? t('testing.variants.perDataSource')}</code></td>
+              <td>{v.promptTemplateFile ?? '—'}</td>
+              <td>{#if v.valid}<span class="dev-state dev-state--match">{t('testing.variants.valid')}</span>{:else}<span class="dev-state dev-state--wrong" title={v.error}>{t('testing.variants.error')}</span>{/if}</td>
+            </tr>
+          {:else}
+            <tr><td colspan="7" class="dev-empty">{t('testing.variants.empty')}</td></tr>
+          {/each}
+        </tbody>
+      </table>
+    </TableScroll>
   </div>
 {/if}

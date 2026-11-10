@@ -18,6 +18,7 @@
   import { t } from '../../i18n/index.js';
   import { dataClassLabel, formatDateTime } from '../../format.js';
   import EvalRunDialog from './EvalRunDialog.svelte';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let { set, datasetTitle = '' } = $props();
 
@@ -166,66 +167,68 @@
     <div class="dev-empty">{t('common.loading')}</div>
   {:else}
     <div class="dev-table-wrap">
-      <table class="dev-table">
-        <thead>
-          <tr>
-            <th>{t('common.dataSource')}</th><th>{t('ds.col.class')}</th><th>{t('common.dataset')}</th><th>{t('testing.dsPanel.col.usage')}</th><th>{t('testing.col.state')}</th><th>{t('testing.dsPanel.col.job')}</th><th>{t('testing.dsPanel.col.actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each data.dataSources as row (row.id)}
-            {@const ds = datasetCell(row)}
-            {@const usage = usageCell(row)}
+      <TableScroll>
+        <table class="dev-table">
+          <thead>
             <tr>
-              <td>
-                <div>{row.name}</div>
-                <div class="dev-small dev-muted"><code>{row.id}</code> · <a href="/{row.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a></div>
-              </td>
-              <td>
-                <span class="dev-nowrap">{dataClassLabel(row.dataClass)}</span>
-                {#if row.serverAi}<span class="dev-state dev-state--neutral" title={t('testing.dsPanel.aiTitle')}>AI</span>{/if}
-              </td>
-              <td>
-                <span class="dev-state dev-state--{ds.cls}">{ds.text}</span>
-                {#if row.dataset?.seededAt}<div class="dev-small dev-muted">{formatDateTime(row.dataset.seededAt)}</div>{/if}
-              </td>
-              <td>
-                <span class="dev-state dev-state--{usage.cls}" title={row.usageError ?? ''}>{usage.text}</span>
-              </td>
-              <td>{row.state}</td>
-              <td>
-                {#if row.job}
-                  <a href={router.href('testingJob', { jobId: row.job.id })} onclick={onLinkClick}>{jobTypeLabel(row.job.type)} · {jobStatusLabel(row.job.status)}</a>
-                {:else}
-                  <span class="dev-muted">—</span>
-                {/if}
-              </td>
-              <td>
-                <div class="dev-btnrow">
-                  <Button label={t('testing.dsPanel.reseed')} variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
-                  <Button label={t('testing.dsPanel.verifyButton')} variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
-                  <span title={row.e2eBlocker ?? ''}>
-                    <Button label={t('testing.dsPanel.e2e')} variant="secondary" size="sm" disabled={busy || !row.canE2e} onclick={() => askE2e(row)} />
-                  </span>
-                  <span title={row.blockers.join('\n')}>
-                    <Button label={t('testing.dsPanel.runEval')} variant="secondary" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
-                  </span>
-                </div>
-                {#if row.blockers.length}
-                  <ul class="dev-blockers">
-                    {#each row.blockers as b (b)}<li>{b}</li>{/each}
-                  </ul>
-                {/if}
-                {#if row.e2eBlocker}
-                  <div class="dev-small dev-muted">{t('testing.dsPanel.e2eBlocked', { reason: row.e2eBlocker })}</div>
-                {/if}
-              </td>
+              <th>{t('common.dataSource')}</th><th>{t('ds.col.class')}</th><th>{t('common.dataset')}</th><th>{t('testing.dsPanel.col.usage')}</th><th>{t('testing.col.state')}</th><th>{t('testing.dsPanel.col.job')}</th><th>{t('testing.dsPanel.col.actions')}</th>
             </tr>
-          {:else}
-            <tr><td colspan="7" class="dev-empty">{t('testing.dsPanel.empty')}</td></tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each data.dataSources as row (row.id)}
+              {@const ds = datasetCell(row)}
+              {@const usage = usageCell(row)}
+              <tr>
+                <td>
+                  <div>{row.name}</div>
+                  <div class="dev-small dev-muted"><code>{row.id}</code> · <a href="/{row.id}/app/" target="_blank" rel="noopener">{t('common.open')}</a></div>
+                </td>
+                <td>
+                  <span class="dev-nowrap">{dataClassLabel(row.dataClass)}</span>
+                  {#if row.serverAi}<span class="dev-state dev-state--neutral" title={t('testing.dsPanel.aiTitle')}>AI</span>{/if}
+                </td>
+                <td>
+                  <span class="dev-state dev-state--{ds.cls}">{ds.text}</span>
+                  {#if row.dataset?.seededAt}<div class="dev-small dev-muted">{formatDateTime(row.dataset.seededAt)}</div>{/if}
+                </td>
+                <td>
+                  <span class="dev-state dev-state--{usage.cls}" title={row.usageError ?? ''}>{usage.text}</span>
+                </td>
+                <td>{row.state}</td>
+                <td>
+                  {#if row.job}
+                    <a href={router.href('testingJob', { jobId: row.job.id })} onclick={onLinkClick}>{jobTypeLabel(row.job.type)} · {jobStatusLabel(row.job.status)}</a>
+                  {:else}
+                    <span class="dev-muted">—</span>
+                  {/if}
+                </td>
+                <td>
+                  <div class="dev-btnrow">
+                    <Button label={t('testing.dsPanel.reseed')} variant="secondary" size="sm" disabled={busy || !row.canReseed} onclick={() => askReseed(row)} />
+                    <Button label={t('testing.dsPanel.verifyButton')} variant="secondary" size="sm" disabled={busy || !row.canVerify} onclick={() => askVerify(row)} />
+                    <span title={row.e2eBlocker ?? ''}>
+                      <Button label={t('testing.dsPanel.e2e')} variant="secondary" size="sm" disabled={busy || !row.canE2e} onclick={() => askE2e(row)} />
+                    </span>
+                    <span title={row.blockers.join('\n')}>
+                      <Button label={t('testing.dsPanel.runEval')} variant="secondary" size="sm" disabled={busy || !row.canEval} onclick={() => (evalFor = row)} />
+                    </span>
+                  </div>
+                  {#if row.blockers.length}
+                    <ul class="dev-blockers">
+                      {#each row.blockers as b (b)}<li>{b}</li>{/each}
+                    </ul>
+                  {/if}
+                  {#if row.e2eBlocker}
+                    <div class="dev-small dev-muted">{t('testing.dsPanel.e2eBlocked', { reason: row.e2eBlocker })}</div>
+                  {/if}
+                </td>
+              </tr>
+            {:else}
+              <tr><td colspan="7" class="dev-empty">{t('testing.dsPanel.empty')}</td></tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     </div>
 
     <div class="dev-toolbar">

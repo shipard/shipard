@@ -24,6 +24,7 @@
   import DevKebabMenu from '../components/DevKebabMenu.svelte';
   import LoadDatasetDialog from './LoadDatasetDialog.svelte';
   import DeleteDataSourceDialog from './DeleteDataSourceDialog.svelte';
+  import TableScroll from '../../components/ui/TableScroll.svelte';
 
   const JOB_REFRESH_SECONDS = 5;
 
@@ -187,80 +188,82 @@
   </div>
 {:else}
 <div class="dev-table-wrap">
-  <table class="dev-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>{t('ds.col.name')}</th>
-        <th>{t('ds.col.class')}</th>
-        <th>{t('ds.col.purpose')}</th>
-        <th>{t('ds.col.created')}</th>
-        <th>Cron</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if loading}
-        <tr><td colspan="7" class="dev-empty">{t('common.loading')}</td></tr>
-      {:else}
-        {#each items as ds (ds.id)}
-          <tr>
-            <td class="dev-nowrap">
-              <code>{ds.id}</code>
-              {#if copiedId === ds.id}
-                <span class="dev-small dev-muted copied" role="status">{t('ds.copied')}</span>
-              {/if}
-            </td>
-            <td>
-              {ds.name}
-              {#if ds.job}
-                <div class="dev-small">
-                  <a href={router.href('testingJob', { jobId: ds.job.id })} onclick={onLinkClick} title={t('ds.runningJobTitle')}>
-                    <Icon icon={iconRefresh} size="sm" /> {jobTypeLabel(ds.job.type)} · {jobStatusLabel(ds.job.status)}
-                  </a>
-                </div>
-              {/if}
-            </td>
-            <!-- Třída dat (#126 D10) jako štítek: volný modře, reálná kopie žlutě, bez explicitní
-                 třídy jen rámeček (v main.json chybí → reálná kopie); značka AI = serverové AI připojení. -->
-            <td class="dev-nowrap">
-              <span class="dev-badge dev-badge--{dataClassBadge(ds)}" title={dataClassTitle(ds)}>
-                {dataClassLabel(ds.dataClass)}
-              </span>
-              {#if ds.serverAi}
-                <span class="dev-badge dev-badge--outline" title={t('ds.aiTitle')}>AI</span>
-              {/if}
-            </td>
-            <td class="dev-muted purpose" title={ds.purpose ?? ''}>
-              {truncate(ds.purpose)}
-              {#if heldDataset(ds)}
-                <div class="dev-small" title={ds.dataset ? t('ds.seededAt', { when: formatDateTime(ds.dataset.seededAt) }) : t('ds.datasetLegacyTitle')}>
-                  {t('ds.datasetLabel')} <code>{heldDataset(ds)}</code>{#if !ds.dataset} <span class="dev-muted">{t('ds.datasetFromOrigin')}</span>{/if}
-                </div>
-              {/if}
-            </td>
-            <td class="dev-nowrap dev-muted">{ds.created ? formatDateTime(ds.created) : '—'}</td>
-            <td class="dev-nowrap">
-              {#if ds.cron}
-                <span>{t('ds.cron.on')}</span>
-              {:else}
-                <span class="cron-off" title={t('ds.cron.offTitle')}><Icon icon={iconClock} size="sm" /> {t('ds.cron.off')}</span>
-              {/if}
-              {#if ds.state && ds.state !== 'active'}
-                <span class="dev-muted"> · {label('ds.state', ds.state)}</span>
-              {/if}
-            </td>
-            <td class="dev-actions">
-              <span class="dev-actions__inner">
-                <a class="dev-btn-outline" href={`/${ds.id}/app/`} target="_blank" rel="noopener">{t('common.open')} <Icon icon={iconOpenExternal} size="sm" /></a>
-                <DevKebabMenu label={t('common.moreActionsFor', { name: ds.name })} items={menuItems(ds)} />
-              </span>
-            </td>
-          </tr>
-        {/each}
-      {/if}
-    </tbody>
-  </table>
+  <TableScroll>
+    <table class="dev-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>{t('ds.col.name')}</th>
+          <th>{t('ds.col.class')}</th>
+          <th>{t('ds.col.purpose')}</th>
+          <th>{t('ds.col.created')}</th>
+          <th>Cron</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {#if loading}
+          <tr><td colspan="7" class="dev-empty">{t('common.loading')}</td></tr>
+        {:else}
+          {#each items as ds (ds.id)}
+            <tr>
+              <td class="dev-nowrap">
+                <code>{ds.id}</code>
+                {#if copiedId === ds.id}
+                  <span class="dev-small dev-muted copied" role="status">{t('ds.copied')}</span>
+                {/if}
+              </td>
+              <td>
+                {ds.name}
+                {#if ds.job}
+                  <div class="dev-small">
+                    <a href={router.href('testingJob', { jobId: ds.job.id })} onclick={onLinkClick} title={t('ds.runningJobTitle')}>
+                      <Icon icon={iconRefresh} size="sm" /> {jobTypeLabel(ds.job.type)} · {jobStatusLabel(ds.job.status)}
+                    </a>
+                  </div>
+                {/if}
+              </td>
+              <!-- Třída dat (#126 D10) jako štítek: volný modře, reálná kopie žlutě, bez explicitní
+                   třídy jen rámeček (v main.json chybí → reálná kopie); značka AI = serverové AI připojení. -->
+              <td class="dev-nowrap">
+                <span class="dev-badge dev-badge--{dataClassBadge(ds)}" title={dataClassTitle(ds)}>
+                  {dataClassLabel(ds.dataClass)}
+                </span>
+                {#if ds.serverAi}
+                  <span class="dev-badge dev-badge--outline" title={t('ds.aiTitle')}>AI</span>
+                {/if}
+              </td>
+              <td class="dev-muted purpose" title={ds.purpose ?? ''}>
+                {truncate(ds.purpose)}
+                {#if heldDataset(ds)}
+                  <div class="dev-small" title={ds.dataset ? t('ds.seededAt', { when: formatDateTime(ds.dataset.seededAt) }) : t('ds.datasetLegacyTitle')}>
+                    {t('ds.datasetLabel')} <code>{heldDataset(ds)}</code>{#if !ds.dataset} <span class="dev-muted">{t('ds.datasetFromOrigin')}</span>{/if}
+                  </div>
+                {/if}
+              </td>
+              <td class="dev-nowrap dev-muted">{ds.created ? formatDateTime(ds.created) : '—'}</td>
+              <td class="dev-nowrap">
+                {#if ds.cron}
+                  <span>{t('ds.cron.on')}</span>
+                {:else}
+                  <span class="cron-off" title={t('ds.cron.offTitle')}><Icon icon={iconClock} size="sm" /> {t('ds.cron.off')}</span>
+                {/if}
+                {#if ds.state && ds.state !== 'active'}
+                  <span class="dev-muted"> · {label('ds.state', ds.state)}</span>
+                {/if}
+              </td>
+              <td class="dev-actions">
+                <span class="dev-actions__inner">
+                  <a class="dev-btn-outline" href={`/${ds.id}/app/`} target="_blank" rel="noopener">{t('common.open')} <Icon icon={iconOpenExternal} size="sm" /></a>
+                  <DevKebabMenu label={t('common.moreActionsFor', { name: ds.name })} items={menuItems(ds)} />
+                </span>
+              </td>
+            </tr>
+          {/each}
+        {/if}
+      </tbody>
+    </table>
+  </TableScroll>
 </div>
 {/if}
 

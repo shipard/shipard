@@ -16,6 +16,7 @@
   import DevTable from '../../components/DevTable.svelte';
   import RunSummaryLine from '../../components/RunSummaryLine.svelte';
   import StateBadge from '../../components/StateBadge.svelte';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -111,22 +112,24 @@
       <div class="dev-card__title">{t('testing.runDetail.fieldsByGroup')} {repeatCount > 1 ? t('testing.runDetail.avgAndRange') : ''}</div>
 
       <div class="dev-table-wrap">
-        <table class="dev-table">
-          <thead><tr><th>{t('testing.col.group')}</th><th class="dev-num">{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
-          <tbody>
-            {#each fieldRows as r (r.id)}
-              <tr class:total={r.id === 'all'}>
-                <td>{r.label}</td>
-                <td class="dev-num">{formatNumber(r.n)}</td>
-                <td class="dev-num dev-nowrap">{rangeText(r.hit.avg, r.hit.min, r.hit.max)}</td>
-                <td class="dev-num">{formatPercent(r.normalized)}</td>
-                <td class="dev-num">{formatNumber(r.missing)}</td>
-                <td class="dev-num">{formatNumber(r.extra)}</td>
-                <td class="dev-num">{formatNumber(r.wrong)}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="dev-table">
+            <thead><tr><th>{t('testing.col.group')}</th><th class="dev-num">{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
+            <tbody>
+              {#each fieldRows as r (r.id)}
+                <tr class:total={r.id === 'all'}>
+                  <td>{r.label}</td>
+                  <td class="dev-num">{formatNumber(r.n)}</td>
+                  <td class="dev-num dev-nowrap">{rangeText(r.hit.avg, r.hit.min, r.hit.max)}</td>
+                  <td class="dev-num">{formatPercent(r.normalized)}</td>
+                  <td class="dev-num">{formatNumber(r.missing)}</td>
+                  <td class="dev-num">{formatNumber(r.extra)}</td>
+                  <td class="dev-num">{formatNumber(r.wrong)}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
       </div>
       <p class="dev-small dev-muted note">{t('testing.runDetail.countsNote')}</p>
     </div>
@@ -138,28 +141,32 @@
         <div class="dev-muted dev-small">{t('testing.runDetail.informativeNone')}</div>
       {:else}
         <div class="dev-table-wrap">
-          <table class="dev-table">
-            <thead><tr><th>{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
-            <tbody>
-              <tr>
-                <td class="dev-num">{formatNumber(informative.n)}</td>
-                <td class="dev-num dev-nowrap">{rangeText(informative.hit.avg, informative.hit.min, informative.hit.max)}</td>
-                <td class="dev-num">{formatPercent(informative.normalized)}</td>
-                <td class="dev-num">{formatNumber(informative.missing)}</td>
-                <td class="dev-num">{formatNumber(informative.extra)}</td>
-                <td class="dev-num">{formatNumber(informative.wrong)}</td>
-              </tr>
-            </tbody>
-          </table>
+          <TableScroll>
+            <table class="dev-table">
+              <thead><tr><th>{t('testing.col.fields')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.normalized')}</th><th class="dev-num">{t('testing.col.missing')}</th><th class="dev-num">{t('testing.col.extra')}</th><th class="dev-num">{t('testing.col.wrong')}</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td class="dev-num">{formatNumber(informative.n)}</td>
+                  <td class="dev-num dev-nowrap">{rangeText(informative.hit.avg, informative.hit.min, informative.hit.max)}</td>
+                  <td class="dev-num">{formatPercent(informative.normalized)}</td>
+                  <td class="dev-num">{formatNumber(informative.missing)}</td>
+                  <td class="dev-num">{formatNumber(informative.extra)}</td>
+                  <td class="dev-num">{formatNumber(informative.wrong)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </TableScroll>
         </div>
         {#if informativeNodes.length > 0}
-          <table class="plain">
-            <tbody>
-              {#each informativeNodes as d (d.node)}
-                <tr><td><code>{d.node}</code></td><td class="dev-num dev-nowrap">{d.count}<span class="dev-muted"> ({formatPercent(d.share, 0)})</span></td></tr>
-              {/each}
-            </tbody>
-          </table>
+          <TableScroll>
+            <table class="plain">
+              <tbody>
+                {#each informativeNodes as d (d.node)}
+                  <tr><td><code>{d.node}</code></td><td class="dev-num dev-nowrap">{d.count}<span class="dev-muted"> ({formatPercent(d.share, 0)})</span></td></tr>
+                {/each}
+              </tbody>
+            </table>
+          </TableScroll>
         {/if}
         <p class="dev-small dev-muted note">{t('testing.runDetail.informativeNote')}</p>
       {/if}
@@ -170,46 +177,52 @@
       <div class="dev-card">
         <div class="dev-card__title">{t('testing.runDetail.documents')}</div>
 
-        <table class="plain">
-          <tbody>
-            {#each docRows as r (r.key)}
-              <tr><td>{r.label}</td><td class="dev-num dev-nowrap">{rangeText(r.value, r.min, r.max)}</td></tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="plain">
+            <tbody>
+              {#each docRows as r (r.key)}
+                <tr><td>{r.label}</td><td class="dev-num dev-nowrap">{rangeText(r.value, r.min, r.max)}</td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
       </div>
       <div class="dev-card">
         <div class="dev-card__title">{t('testing.runDetail.callsCostTime')}</div>
-        <table class="plain">
-          <tbody>
-            {#each costRows as r (r.key)}
-              <tr><td>{r.label}</td><td class="dev-num dev-nowrap">{formatMetric(r.key, r.value)}{#if r.min !== null && r.max !== null && r.min !== r.max}<span class="dev-muted"> ({formatMetric(r.key, r.min)}–{formatMetric(r.key, r.max)})</span>{/if}</td></tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="plain">
+            <tbody>
+              {#each costRows as r (r.key)}
+                <tr><td>{r.label}</td><td class="dev-num dev-nowrap">{formatMetric(r.key, r.value)}{#if r.min !== null && r.max !== null && r.min !== r.max}<span class="dev-muted"> ({formatMetric(r.key, r.min)}–{formatMetric(r.key, r.max)})</span>{/if}</td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
       </div>
     </div>
   </div>
 
   {#snippet cellTable(kind, cells)}
     <div class="dev-table-wrap">
-      <table class="dev-table">
-        <thead><tr><th>{kind === 'variant' ? t('testing.col.variant') : kind === 'form' ? t('testing.col.form') : t('testing.col.path')}</th><th class="dev-num">{t('metrics.metric.calls.total')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.clean')}</th><th class="dev-num">{t('testing.col.amounts')}</th><th class="dev-num">{t('metrics.group.rows')}</th><th class="dev-num">{t('testing.col.cost')}</th></tr></thead>
-        <tbody>
-          {#each Object.keys(cells ?? {}) as key (key)}
-            {@const c = cellOf(cells, key)}
-            <tr>
-              <td>{kind === 'path' ? pathLabel(key) : key}</td>
-              <td class="dev-num dev-nowrap">{c['calls.ok'] ?? 0} / {c['calls.total'] ?? 0}</td>
-              <td class="dev-num dev-nowrap">{formatPercent(c['fields.all.hit'])}</td>
-              <td class="dev-num dev-nowrap">{formatPercent(c['documents.clean'])}</td>
-              <td class="dev-num dev-nowrap">{formatPercent(c['documents.amountsCorrect'])}</td>
-              <td class="dev-num dev-nowrap">{formatPercent(c['documents.rowCountOk'])}</td>
-              <td class="dev-num dev-nowrap">{formatUsd(bucketCost(c))}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <TableScroll>
+        <table class="dev-table">
+          <thead><tr><th>{kind === 'variant' ? t('testing.col.variant') : kind === 'form' ? t('testing.col.form') : t('testing.col.path')}</th><th class="dev-num">{t('metrics.metric.calls.total')}</th><th class="dev-num">{t('testing.col.hit')}</th><th class="dev-num">{t('testing.col.clean')}</th><th class="dev-num">{t('testing.col.amounts')}</th><th class="dev-num">{t('metrics.group.rows')}</th><th class="dev-num">{t('testing.col.cost')}</th></tr></thead>
+          <tbody>
+            {#each Object.keys(cells ?? {}) as key (key)}
+              {@const c = cellOf(cells, key)}
+              <tr>
+                <td>{kind === 'path' ? pathLabel(key) : key}</td>
+                <td class="dev-num dev-nowrap">{c['calls.ok'] ?? 0} / {c['calls.total'] ?? 0}</td>
+                <td class="dev-num dev-nowrap">{formatPercent(c['fields.all.hit'])}</td>
+                <td class="dev-num dev-nowrap">{formatPercent(c['documents.clean'])}</td>
+                <td class="dev-num dev-nowrap">{formatPercent(c['documents.amountsCorrect'])}</td>
+                <td class="dev-num dev-nowrap">{formatPercent(c['documents.rowCountOk'])}</td>
+                <td class="dev-num dev-nowrap">{formatUsd(bucketCost(c))}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     </div>
   {/snippet}
 
@@ -241,13 +254,15 @@
       {#if deviations.length === 0}
         <div class="dev-muted dev-small">{t('common.none')}</div>
       {:else}
-        <table class="plain">
-          <tbody>
-            {#each deviations as d (d.node)}
-              <tr><td><code>{d.node}</code></td><td class="dev-num dev-nowrap">{d.count}<span class="dev-muted"> ({formatPercent(d.share, 0)})</span></td></tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="plain">
+            <tbody>
+              {#each deviations as d (d.node)}
+                <tr><td><code>{d.node}</code></td><td class="dev-num dev-nowrap">{d.count}<span class="dev-muted"> ({formatPercent(d.share, 0)})</span></td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
         <p class="dev-small dev-muted note">{t('testing.runDetail.topDeviationsNote')}</p>
       {/if}
     </div>
@@ -258,13 +273,15 @@
       {:else if fieldStability.length === 0}
         <div class="dev-muted dev-small">{t('testing.runDetail.allStable')}</div>
       {:else}
-        <table class="plain">
-          <tbody>
-            {#each fieldStability as s (s.node)}
-              <tr><td><code>{s.node}</code></td><td class="dev-num">{formatPercent(s.ratio, 0)}</td></tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="plain">
+            <tbody>
+              {#each fieldStability as s (s.node)}
+                <tr><td><code>{s.node}</code></td><td class="dev-num">{formatPercent(s.ratio, 0)}</td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
         <p class="dev-small dev-muted note">{t('testing.runDetail.fieldStabilityNote')}</p>
       {/if}
     </div>
@@ -275,13 +292,15 @@
       {:else if formatStability.length === 0}
         <div class="dev-muted dev-small">{t('testing.runDetail.allSameShape')}</div>
       {:else}
-        <table class="plain">
-          <tbody>
-            {#each formatStability as s (s.node)}
-              <tr><td><code>{s.node}</code></td><td class="dev-num">{formatPercent(s.ratio, 0)}</td></tr>
-            {/each}
-          </tbody>
-        </table>
+        <TableScroll>
+          <table class="plain">
+            <tbody>
+              {#each formatStability as s (s.node)}
+                <tr><td><code>{s.node}</code></td><td class="dev-num">{formatPercent(s.ratio, 0)}</td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
         <p class="dev-small dev-muted note">{t('testing.runDetail.formatStabilityNote')}</p>
       {/if}
     </div>
@@ -331,6 +350,10 @@
   .meta { margin-top: var(--shpd-space-sm); }
   .grid-2 { display: grid; grid-template-columns: 3fr 2fr; gap: var(--shpd-space-lg); margin-top: var(--shpd-space-lg); align-items: start; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--shpd-space-lg); margin-top: var(--shpd-space-lg); align-items: start; }
+  /* Položka mřížky se nesmí roztáhnout podle tabulky uvnitř (výchozí
+     min-width: auto) — jinak by do strany rolovala stránka, ne obal
+     tabulky (#133 D44). */
+  .grid-2 > :global(*), .grid-3 > :global(*) { min-width: 0; }
   .grid-2 > .dev-card + .dev-card, .grid-3 > .dev-card + .dev-card { margin-top: 0; }
   .grid-2 .dev-card { margin-top: 0; }
   .grid-2 > div > .dev-card + .dev-card { margin-top: var(--shpd-space-lg); }

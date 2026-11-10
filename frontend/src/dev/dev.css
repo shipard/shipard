@@ -336,11 +336,14 @@ code, .dev-code {
 }
 
 /* ---- Tabulky ---- */
+/* Rám tabulky (pozadí, čára, zaoblení). Neroluje — `overflow: hidden` jen
+   ořízne rohy; posun do strany dává sdílený `TableScroll` uvnitř rámu
+   (#133 D44, D57: tabulka v toku obsahu, stránka do strany neroluje). */
 .dev-table-wrap {
   background: var(--shpd-color-bg);
   border: 1px solid var(--shpd-color-border);
   border-radius: var(--shpd-radius-lg);
-  overflow: auto;
+  overflow: hidden;
 }
 
 .dev-table {

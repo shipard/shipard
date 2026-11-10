@@ -8,6 +8,7 @@
   import Crumbs from '../../components/Crumbs.svelte';
   import { stateLabel } from '../../testing/metrics.js';
   import { t } from '../../i18n/index.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   const route = $derived(router.route);
   const set = $derived(route.params.set);
@@ -43,39 +44,41 @@
 {:else}
   <p class="dev-small dev-muted note">{t('testing.messageRuns.note')}</p>
   <div class="dev-table-wrap">
-    <table class="dev-table">
-      <thead>
-        <tr>
-          <th>{t('testing.col.run')}</th><th>{t('testing.col.variant')}</th><th>Model</th><th>{t('testing.col.tags')}</th><th>{t('testing.col.date')}</th>
-          {#each columns as n (n)}<th class="dev-num">×{n}</th>{/each}
-        </tr>
-      </thead>
-      <tbody>
-        {#each data.runs as run (run.file)}
-          <tr class:is-dim={!run.currentSet}>
-            <td><a href={router.href('testingRun', { set, file: run.file })} onclick={onLinkClick}><code>{run.file}</code></a>{#if !run.currentSet} <span class="dev-state dev-state--missing">{t('testing.run.otherSetVersion')}</span>{/if}</td>
-            <td>{run.variant}</td>
-            <td><code>{run.model ?? '—'}</code></td>
-            <td>{run.tagsModel && run.tagsModel !== run.model ? run.tagsModel : '—'}</td>
-            <td class="dev-nowrap dev-muted">{formatDateTime(run.startedAt)}</td>
-            {#each columns as n (n)}
-              {@const rep = run.repeats.find((r) => r.repeat === n)}
-              <td class="dev-num">
-                {#if !rep}
-                  <span class="dev-muted">—</span>
-                {:else if rep.status !== 'ok'}
-                  <a class="dev-lvl dev-lvl--failed" href={router.href('testingMessage', { set, file: run.file, messageId }, { repeat: n === 1 ? '' : n })} onclick={onLinkClick} title={rep.errorType ?? ''}>{stateLabel('failed')}</a>
-                {:else}
-                  <a class="dev-lvl dev-lvl--{deviationLevel(rep.deviations)}" href={router.href('testingMessage', { set, file: run.file, messageId }, { repeat: n === 1 ? '' : n })} onclick={onLinkClick}>{rep.deviations}</a>
-                {/if}
-              </td>
-            {/each}
+    <TableScroll>
+      <table class="dev-table">
+        <thead>
+          <tr>
+            <th>{t('testing.col.run')}</th><th>{t('testing.col.variant')}</th><th>Model</th><th>{t('testing.col.tags')}</th><th>{t('testing.col.date')}</th>
+            {#each columns as n (n)}<th class="dev-num">×{n}</th>{/each}
           </tr>
-        {:else}
-          <tr><td colspan={5 + columns.length} class="dev-empty">{t('testing.messageRuns.empty')}</td></tr>
-        {/each}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {#each data.runs as run (run.file)}
+            <tr class:is-dim={!run.currentSet}>
+              <td><a href={router.href('testingRun', { set, file: run.file })} onclick={onLinkClick}><code>{run.file}</code></a>{#if !run.currentSet} <span class="dev-state dev-state--missing">{t('testing.run.otherSetVersion')}</span>{/if}</td>
+              <td>{run.variant}</td>
+              <td><code>{run.model ?? '—'}</code></td>
+              <td>{run.tagsModel && run.tagsModel !== run.model ? run.tagsModel : '—'}</td>
+              <td class="dev-nowrap dev-muted">{formatDateTime(run.startedAt)}</td>
+              {#each columns as n (n)}
+                {@const rep = run.repeats.find((r) => r.repeat === n)}
+                <td class="dev-num">
+                  {#if !rep}
+                    <span class="dev-muted">—</span>
+                  {:else if rep.status !== 'ok'}
+                    <a class="dev-lvl dev-lvl--failed" href={router.href('testingMessage', { set, file: run.file, messageId }, { repeat: n === 1 ? '' : n })} onclick={onLinkClick} title={rep.errorType ?? ''}>{stateLabel('failed')}</a>
+                  {:else}
+                    <a class="dev-lvl dev-lvl--{deviationLevel(rep.deviations)}" href={router.href('testingMessage', { set, file: run.file, messageId }, { repeat: n === 1 ? '' : n })} onclick={onLinkClick}>{rep.deviations}</a>
+                  {/if}
+                </td>
+              {/each}
+            </tr>
+          {:else}
+            <tr><td colspan={5 + columns.length} class="dev-empty">{t('testing.messageRuns.empty')}</td></tr>
+          {/each}
+        </tbody>
+      </table>
+    </TableScroll>
   </div>
 {/if}
 

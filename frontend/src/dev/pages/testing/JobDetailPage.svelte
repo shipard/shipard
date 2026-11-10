@@ -20,6 +20,7 @@
   import VideoResult from '../videos/VideoResult.svelte';
   import RoundResult from './RoundResult.svelte';
   import { videoStepLabel } from '../../videos/videos.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   const route = $derived(router.route);
   const jobId = $derived(route.params.jobId);
@@ -183,21 +184,23 @@
           {/if}
         </dl>
         {#if progress.lastCalls.length}
-          <table class="dev-table">
-            <thead><tr><th>{t('testing.col.document')}</th><th>×</th><th>{t('testing.col.state')}</th><th class="dev-num">{t('testing.col.cost')}</th><th class="dev-num">{t('testing.col.tags')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
-            <tbody>
-              {#each [...progress.lastCalls].reverse() as c, i (i)}
-                <tr>
-                  <td>{c.stem ?? c.messageId}</td>
-                  <td>{c.repeat}</td>
-                  <td><span class="dev-state dev-state--{c.status === 'ok' ? 'match' : 'failed'}">{c.status}{c.errorType ? ` · ${c.errorType}` : ''}</span></td>
-                  <td class="dev-num">{formatUsd(c.costUsd)}</td>
-                  <td class="dev-num">{c.tagsCostUsd === null || c.tagsCostUsd === undefined ? '—' : formatUsd(c.tagsCostUsd)}</td>
-                  <td class="dev-num">{formatMs(c.durationMs)}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
+          <TableScroll>
+            <table class="dev-table">
+              <thead><tr><th>{t('testing.col.document')}</th><th>×</th><th>{t('testing.col.state')}</th><th class="dev-num">{t('testing.col.cost')}</th><th class="dev-num">{t('testing.col.tags')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
+              <tbody>
+                {#each [...progress.lastCalls].reverse() as c, i (i)}
+                  <tr>
+                    <td>{c.stem ?? c.messageId}</td>
+                    <td>{c.repeat}</td>
+                    <td><span class="dev-state dev-state--{c.status === 'ok' ? 'match' : 'failed'}">{c.status}{c.errorType ? ` · ${c.errorType}` : ''}</span></td>
+                    <td class="dev-num">{formatUsd(c.costUsd)}</td>
+                    <td class="dev-num">{c.tagsCostUsd === null || c.tagsCostUsd === undefined ? '—' : formatUsd(c.tagsCostUsd)}</td>
+                    <td class="dev-num">{formatMs(c.durationMs)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </TableScroll>
         {/if}
       {:else}
         <div class="dev-empty">{t('testing.job.noProgress')}</div>
@@ -226,19 +229,21 @@
           {/if}
         </dl>
         {#if progress.lastCards.length}
-          <table class="dev-table">
-            <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.col.state')}</th><th>{t('testing.e2e.col.reason')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
-            <tbody>
-              {#each [...progress.lastCards].reverse() as c, i (i)}
-                <tr>
-                  <td><code>{c.cardId}</code></td>
-                  <td><span class="dev-state dev-state--{c.status === 'applied' ? 'match' : 'wrong'}">{c.status}</span></td>
-                  <td>{c.status === 'failed' ? `${c.step ?? '?'}/${c.reason ?? '?'}${c.path ? ` (${c.path})` : ''}` : (c.savedDocId ? `#${c.savedDocId}` : '')}</td>
-                  <td class="dev-num">{formatMs(c.durationMs)}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
+          <TableScroll>
+            <table class="dev-table">
+              <thead><tr><th>{t('testing.e2e.col.card')}</th><th>{t('testing.col.state')}</th><th>{t('testing.e2e.col.reason')}</th><th class="dev-num">{t('testing.job.col.time')}</th></tr></thead>
+              <tbody>
+                {#each [...progress.lastCards].reverse() as c, i (i)}
+                  <tr>
+                    <td><code>{c.cardId}</code></td>
+                    <td><span class="dev-state dev-state--{c.status === 'applied' ? 'match' : 'wrong'}">{c.status}</span></td>
+                    <td>{c.status === 'failed' ? `${c.step ?? '?'}/${c.reason ?? '?'}${c.path ? ` (${c.path})` : ''}` : (c.savedDocId ? `#${c.savedDocId}` : '')}</td>
+                    <td class="dev-num">{formatMs(c.durationMs)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </TableScroll>
         {/if}
       {:else}
         <div class="dev-empty">{t('testing.job.noProgress')}</div>

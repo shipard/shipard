@@ -19,6 +19,7 @@
   import { t } from '../../i18n/index.js';
   import { formatDateTime } from '../../format.js';
   import { blockerText, checkState, datasetsOf, formatBytes, formatDuration } from '../../videos/videos.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let data = $state(null);
   let error = $state(null);
@@ -147,84 +148,86 @@
   <div class="dev-card">
     <h2 class="dev-card__title">{t('videos.scenarios')}</h2>
     <div class="dev-table-wrap">
-      <table class="dev-table">
-        <thead>
-          <tr>
-            <th>{t('videos.col.scenario')}</th>
-            <th>{t('common.dataset')}</th>
-            <th>{t('videos.col.check')}</th>
-            <th>{t('videos.col.video')}</th>
-            <th>{t('videos.col.actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each data.scenarios as row (row.id)}
-            {@const blocker = blockerText(row, data.toolProblems)}
-            {@const check = checkState(row.check)}
-            <tr data-testid="videos-row-{row.id}">
-              <td>
-                <strong>{row.title}</strong> <code class="dev-small">{row.id}</code>
-                {#if row.description}<div class="dev-small dev-muted">{row.description}</div>{/if}
-                {#if row.problem}<div class="dev-small"><span class="dev-lvl dev-lvl--bad">{row.problem}</span></div>{/if}
-              </td>
-              <td>
-                {#if row.dataset}<code>{row.dataset}</code>{#if row.datasetTitle}<div class="dev-small dev-muted">{row.datasetTitle}</div>{/if}{:else}<span class="dev-muted">—</span>{/if}
-              </td>
-              <td>
-                {#if check}
-                  <span class="dev-lvl dev-lvl--{check.cls}">{check.label}</span>
-                  <div class="dev-small dev-muted">{formatDateTime(row.check.at)} · {t('videos.anchor', { anchor: row.check.anchor })}</div>
-                  {#if row.check.error?.message}<div class="dev-small"><span class="dev-lvl dev-lvl--bad">{row.check.error.message}</span></div>{/if}
-                {:else}
-                  <span class="dev-muted">{t('videos.noCheck')}</span>
-                {/if}
-              </td>
-              <td>
-                {#if row.hasVideo && row.meta}
-                  <div>{formatDateTime(row.meta.recordedAt)}</div>
-                  <div class="dev-small dev-muted">
-                    {formatDuration(row.meta.durationMs)} · {formatBytes(row.meta.bytes)} · {t('videos.anchor', { anchor: row.meta.anchor })}
-                    {#if row.meta.commit} · <code>{String(row.meta.commit).slice(0, 8)}</code>{/if}
-                  </div>
-                {:else}
-                  <span class="dev-muted">{t('videos.noVideo')}</span>
-                {/if}
-              </td>
-              <td>
-                <div class="dev-btnrow">
-                  <span title={blocker ?? ''}>
-                    <Button label={t('videos.check')} variant="secondary" size="sm" disabled={busy || blocker !== null} onclick={() => askRun(row, 'check')} testid="videos-check-{row.id}" />
-                  </span>
-                  <span title={blocker ?? ''}>
-                    <Button label={t('videos.build')} variant="secondary" size="sm" disabled={busy || blocker !== null} onclick={() => askRun(row, 'build')} testid="videos-build-{row.id}" />
-                  </span>
-                  {#if row.hasVideo}
-                    <Button label={playing === row.id ? t('videos.hide') : t('videos.play')} icon={iconPlay} variant="secondary" size="sm" onclick={() => (playing = playing === row.id ? null : row.id)} testid="videos-play-{row.id}" />
-                    <a class="download" href={videosApi.fileUrl(row.id, true)} download={row.meta?.file ?? `${row.id}.mp4`} data-testid="videos-download-{row.id}">
-                      <Icon icon={iconDownload} size="sm" /> {t('videos.download')}
-                    </a>
-                  {/if}
-                </div>
-                {#if row.activeJob}
-                  <div class="dev-small"><a href={router.href('testingJob', { jobId: row.activeJob.id })} onclick={onLinkClick}>{t('common.runningJob', { id: row.activeJob.id })}</a></div>
-                {:else if blocker}
-                  <div class="dev-small dev-muted">{t('videos.blocked', { reason: blocker })}</div>
-                {/if}
-              </td>
+      <TableScroll>
+        <table class="dev-table">
+          <thead>
+            <tr>
+              <th>{t('videos.col.scenario')}</th>
+              <th>{t('common.dataset')}</th>
+              <th>{t('videos.col.check')}</th>
+              <th>{t('videos.col.video')}</th>
+              <th>{t('videos.col.actions')}</th>
             </tr>
-            {#if playing === row.id}
-              <tr>
-                <td colspan="5">
-                  <!-- svelte-ignore a11y_media_has_caption -->
-                  <video class="player" controls preload="metadata" src={videosApi.fileUrl(row.id)} data-testid="videos-player-{row.id}"></video>
+          </thead>
+          <tbody>
+            {#each data.scenarios as row (row.id)}
+              {@const blocker = blockerText(row, data.toolProblems)}
+              {@const check = checkState(row.check)}
+              <tr data-testid="videos-row-{row.id}">
+                <td>
+                  <strong>{row.title}</strong> <code class="dev-small">{row.id}</code>
+                  {#if row.description}<div class="dev-small dev-muted">{row.description}</div>{/if}
+                  {#if row.problem}<div class="dev-small"><span class="dev-lvl dev-lvl--bad">{row.problem}</span></div>{/if}
+                </td>
+                <td>
+                  {#if row.dataset}<code>{row.dataset}</code>{#if row.datasetTitle}<div class="dev-small dev-muted">{row.datasetTitle}</div>{/if}{:else}<span class="dev-muted">—</span>{/if}
+                </td>
+                <td>
+                  {#if check}
+                    <span class="dev-lvl dev-lvl--{check.cls}">{check.label}</span>
+                    <div class="dev-small dev-muted">{formatDateTime(row.check.at)} · {t('videos.anchor', { anchor: row.check.anchor })}</div>
+                    {#if row.check.error?.message}<div class="dev-small"><span class="dev-lvl dev-lvl--bad">{row.check.error.message}</span></div>{/if}
+                  {:else}
+                    <span class="dev-muted">{t('videos.noCheck')}</span>
+                  {/if}
+                </td>
+                <td>
+                  {#if row.hasVideo && row.meta}
+                    <div>{formatDateTime(row.meta.recordedAt)}</div>
+                    <div class="dev-small dev-muted">
+                      {formatDuration(row.meta.durationMs)} · {formatBytes(row.meta.bytes)} · {t('videos.anchor', { anchor: row.meta.anchor })}
+                      {#if row.meta.commit} · <code>{String(row.meta.commit).slice(0, 8)}</code>{/if}
+                    </div>
+                  {:else}
+                    <span class="dev-muted">{t('videos.noVideo')}</span>
+                  {/if}
+                </td>
+                <td>
+                  <div class="dev-btnrow">
+                    <span title={blocker ?? ''}>
+                      <Button label={t('videos.check')} variant="secondary" size="sm" disabled={busy || blocker !== null} onclick={() => askRun(row, 'check')} testid="videos-check-{row.id}" />
+                    </span>
+                    <span title={blocker ?? ''}>
+                      <Button label={t('videos.build')} variant="secondary" size="sm" disabled={busy || blocker !== null} onclick={() => askRun(row, 'build')} testid="videos-build-{row.id}" />
+                    </span>
+                    {#if row.hasVideo}
+                      <Button label={playing === row.id ? t('videos.hide') : t('videos.play')} icon={iconPlay} variant="secondary" size="sm" onclick={() => (playing = playing === row.id ? null : row.id)} testid="videos-play-{row.id}" />
+                      <a class="download" href={videosApi.fileUrl(row.id, true)} download={row.meta?.file ?? `${row.id}.mp4`} data-testid="videos-download-{row.id}">
+                        <Icon icon={iconDownload} size="sm" /> {t('videos.download')}
+                      </a>
+                    {/if}
+                  </div>
+                  {#if row.activeJob}
+                    <div class="dev-small"><a href={router.href('testingJob', { jobId: row.activeJob.id })} onclick={onLinkClick}>{t('common.runningJob', { id: row.activeJob.id })}</a></div>
+                  {:else if blocker}
+                    <div class="dev-small dev-muted">{t('videos.blocked', { reason: blocker })}</div>
+                  {/if}
                 </td>
               </tr>
-            {/if}
-          {:else}
-            <tr><td colspan="5" class="dev-empty">{t('videos.empty')}</td></tr>
-          {/each}
-        </tbody>
-      </table>
+              {#if playing === row.id}
+                <tr>
+                  <td colspan="5">
+                    <!-- svelte-ignore a11y_media_has_caption -->
+                    <video class="player" controls preload="metadata" src={videosApi.fileUrl(row.id)} data-testid="videos-player-{row.id}"></video>
+                  </td>
+                </tr>
+              {/if}
+            {:else}
+              <tr><td colspan="5" class="dev-empty">{t('videos.empty')}</td></tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     </div>
   </div>
 {/if}

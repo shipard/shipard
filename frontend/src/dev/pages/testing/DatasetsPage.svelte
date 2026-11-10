@@ -10,6 +10,7 @@
   import { roundStatusClass, roundStatusLabel, roundSummaryText, roundSelectionText } from '../../testing/round.js';
   import { jobStatusLabel } from '../../testing/jobs.js';
   import { t } from '../../i18n/index.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let datasets = $state(null);
   let error = $state(null);
@@ -89,26 +90,28 @@
   <div class="dev-empty">{t('common.loading')}</div>
 {:else}
   <div class="dev-table-wrap">
-    <table class="dev-table">
-      <thead>
-        <tr><th>{t('common.dataset')}</th><th>{t('testing.datasets.col.title')}</th><th>{t('dsCreate.countryLabel')}</th><th>{t('testing.col.profile')}</th><th class="dev-num">{t('testing.datasets.col.messages')}</th><th class="dev-num">{t('testing.datasets.col.runs')}</th><th>{t('testing.datasets.col.lastRun')}</th></tr>
-      </thead>
-      <tbody>
-        {#each datasets as ds (ds.name)}
-          <tr>
-            <td><a href={router.href('testingRuns', { set: ds.name })} onclick={onLinkClick}><code>{ds.name}</code></a></td>
-            <td>{ds.title}</td>
-            <td>{ds.country ?? '—'}</td>
-            <td>{ds.profile ?? '—'}</td>
-            <td class="dev-num">{ds.messages}</td>
-            <td class="dev-num">{ds.runs}</td>
-            <td class="dev-muted">{ds.lastRunAt ? formatDateTime(ds.lastRunAt) : '—'}</td>
-          </tr>
-        {:else}
-          <tr><td colspan="7" class="dev-empty">{t('dsLoad.noDatasets')}.</td></tr>
-        {/each}
-      </tbody>
-    </table>
+    <TableScroll>
+      <table class="dev-table">
+        <thead>
+          <tr><th>{t('common.dataset')}</th><th>{t('testing.datasets.col.title')}</th><th>{t('dsCreate.countryLabel')}</th><th>{t('testing.col.profile')}</th><th class="dev-num">{t('testing.datasets.col.messages')}</th><th class="dev-num">{t('testing.datasets.col.runs')}</th><th>{t('testing.datasets.col.lastRun')}</th></tr>
+        </thead>
+        <tbody>
+          {#each datasets as ds (ds.name)}
+            <tr>
+              <td><a href={router.href('testingRuns', { set: ds.name })} onclick={onLinkClick}><code>{ds.name}</code></a></td>
+              <td>{ds.title}</td>
+              <td>{ds.country ?? '—'}</td>
+              <td>{ds.profile ?? '—'}</td>
+              <td class="dev-num">{ds.messages}</td>
+              <td class="dev-num">{ds.runs}</td>
+              <td class="dev-muted">{ds.lastRunAt ? formatDateTime(ds.lastRunAt) : '—'}</td>
+            </tr>
+          {:else}
+            <tr><td colspan="7" class="dev-empty">{t('dsLoad.noDatasets')}.</td></tr>
+          {/each}
+        </tbody>
+      </table>
+    </TableScroll>
   </div>
 {/if}
 

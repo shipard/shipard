@@ -8,6 +8,7 @@
   import { router, onLinkClick } from '../../router.svelte.js';
   import { formatDateTime, formatMs } from '../../format.js';
   import { roundStatusClass, roundStatusLabel, roundStepClass, roundLayerLabel, roundSummaryText, groupRoundSteps, roundStepNote, roundSelectionText } from '../../testing/round.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let { result = null } = $props();
 
@@ -41,29 +42,31 @@
   </dl>
 
   <div class="dev-table-wrap">
-    <table class="dev-table">
-      <thead>
-        <tr><th>{t('testing.round.col.layer')}</th><th>{t('testing.round.col.dataset')}</th><th>{t('testing.round.col.scenario')}</th><th>{t('testing.round.col.step')}</th><th>{t('testing.col.state')}</th><th class="dev-num">{t('testing.round.col.duration')}</th><th>{t('testing.round.col.job')}</th><th>{t('testing.round.col.note')}</th></tr>
-      </thead>
-      <tbody>
-        {#each groups as group (group.layer)}
-          {#each group.steps as step, i (`${group.layer}:${i}`)}
-            <tr>
-              <td>{roundLayerLabel(group.layer)}</td>
-              <td>{#if step.dataset}<code>{step.dataset}</code>{:else}—{/if}</td>
-              <td>{#if step.scenario}<code>{step.scenario}</code>{:else}—{/if}</td>
-              <td>{step.label ?? step.step}</td>
-              <td><span class="dev-state dev-state--{roundStepClass(step.status)}">{roundStatusLabel(step.status)}</span></td>
-              <td class="dev-num">{step.durationMs ? formatMs(step.durationMs) : ''}</td>
-              <td>{#if step.jobId}<a href={router.href('testingJob', { jobId: step.jobId })} onclick={onLinkClick}><code>{step.jobId}</code></a>{/if}</td>
-              <td class="note">{roundStepNote(step)}{#if step.firstFailure && step.firstFailure !== step.reason}<div class="dev-muted dev-small">{step.firstFailure}</div>{/if}</td>
-            </tr>
+    <TableScroll>
+      <table class="dev-table">
+        <thead>
+          <tr><th>{t('testing.round.col.layer')}</th><th>{t('testing.round.col.dataset')}</th><th>{t('testing.round.col.scenario')}</th><th>{t('testing.round.col.step')}</th><th>{t('testing.col.state')}</th><th class="dev-num">{t('testing.round.col.duration')}</th><th>{t('testing.round.col.job')}</th><th>{t('testing.round.col.note')}</th></tr>
+        </thead>
+        <tbody>
+          {#each groups as group (group.layer)}
+            {#each group.steps as step, i (`${group.layer}:${i}`)}
+              <tr>
+                <td>{roundLayerLabel(group.layer)}</td>
+                <td>{#if step.dataset}<code>{step.dataset}</code>{:else}—{/if}</td>
+                <td>{#if step.scenario}<code>{step.scenario}</code>{:else}—{/if}</td>
+                <td>{step.label ?? step.step}</td>
+                <td><span class="dev-state dev-state--{roundStepClass(step.status)}">{roundStatusLabel(step.status)}</span></td>
+                <td class="dev-num">{step.durationMs ? formatMs(step.durationMs) : ''}</td>
+                <td>{#if step.jobId}<a href={router.href('testingJob', { jobId: step.jobId })} onclick={onLinkClick}><code>{step.jobId}</code></a>{/if}</td>
+                <td class="note">{roundStepNote(step)}{#if step.firstFailure && step.firstFailure !== step.reason}<div class="dev-muted dev-small">{step.firstFailure}</div>{/if}</td>
+              </tr>
+            {/each}
+          {:else}
+            <tr><td colspan="8" class="dev-empty">{t('testing.job.noProgress')}</td></tr>
           {/each}
-        {:else}
-          <tr><td colspan="8" class="dev-empty">{t('testing.job.noProgress')}</td></tr>
-        {/each}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </TableScroll>
   </div>
 {/if}
 

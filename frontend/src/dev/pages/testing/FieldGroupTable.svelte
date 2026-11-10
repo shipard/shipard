@@ -8,6 +8,7 @@
   import { formatPercent } from '../../format.js';
   import { isBlankState, INFORMATIVE_GROUP_ID } from '../../testing/metrics.js';
   import { t } from '../../i18n/index.js';
+  import TableScroll from '../../../components/ui/TableScroll.svelte';
 
   let { group, fields = [], fieldsB = null, onlyDeviations = false } = $props();
 
@@ -50,48 +51,50 @@
       <div class="dev-muted dev-small group__empty">{t('testing.fields.noDeviations', { hidden })}</div>
     {:else}
       <div class="dev-table-wrap">
-        <table class="dev-table fields">
-          <thead>
-            <tr>
-              <th>{t('testing.fields.col.field')}</th>
-              <th>{t('testing.fields.col.expected')}</th>
-              <th>{compare ? t('testing.fields.col.outputA') : t('testing.fields.col.output')}</th>
-              <th>{compare ? t('testing.fields.col.stateA') : t('testing.col.state')}</th>
-              {#if compare}<th>{t('testing.fields.col.outputB')}</th><th>{t('testing.fields.col.stateB')}</th>{/if}
-            </tr>
-          </thead>
-          <tbody>
-            {#each rows as row (row.path)}
-              {@const primary = row.a ?? row.b}
-              <tr class="dev-row--{primary.state}">
-                <td><code>{row.path}</code></td>
-                <td class="dev-cell-expected"><ValueCell value={primary.expected} /></td>
-                {#each (compare ? [row.a, row.b] : [row.a]) as side, i (i)}
-                  {#if side}
-                    <td class="dev-cell-actual dev-cellstate--{side.state}">
-                      {#if isBlankState(side.state)}
-                        <span class="dev-muted">—</span>
-                      {:else}
-                        <ValueCell value={side.actual} />
-                        {#if side.state === 'matchNormalized' && !side.actualKnown}
-                          <span class="dev-small dev-muted" title={t('testing.fields.shapeNotStoredTitle')}> {t('testing.fields.shapeNotStored')}</span>
-                        {/if}
-                      {/if}
-                    </td>
-                    <td class="dev-nowrap">
-                      <StateBadge state={side.state} title={side.reason ?? null} />
-                      {#if side.similarity !== null && side.similarity !== undefined}
-                        <span class="dev-small dev-muted" title={t('testing.fields.similarityTitle')}> {formatPercent(side.similarity, 0)}</span>
-                      {/if}
-                    </td>
-                  {:else}
-                    <td class="dev-muted">—</td><td class="dev-muted">—</td>
-                  {/if}
-                {/each}
+        <TableScroll>
+          <table class="dev-table fields">
+            <thead>
+              <tr>
+                <th>{t('testing.fields.col.field')}</th>
+                <th>{t('testing.fields.col.expected')}</th>
+                <th>{compare ? t('testing.fields.col.outputA') : t('testing.fields.col.output')}</th>
+                <th>{compare ? t('testing.fields.col.stateA') : t('testing.col.state')}</th>
+                {#if compare}<th>{t('testing.fields.col.outputB')}</th><th>{t('testing.fields.col.stateB')}</th>{/if}
               </tr>
-            {/each}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {#each rows as row (row.path)}
+                {@const primary = row.a ?? row.b}
+                <tr class="dev-row--{primary.state}">
+                  <td><code>{row.path}</code></td>
+                  <td class="dev-cell-expected"><ValueCell value={primary.expected} /></td>
+                  {#each (compare ? [row.a, row.b] : [row.a]) as side, i (i)}
+                    {#if side}
+                      <td class="dev-cell-actual dev-cellstate--{side.state}">
+                        {#if isBlankState(side.state)}
+                          <span class="dev-muted">—</span>
+                        {:else}
+                          <ValueCell value={side.actual} />
+                          {#if side.state === 'matchNormalized' && !side.actualKnown}
+                            <span class="dev-small dev-muted" title={t('testing.fields.shapeNotStoredTitle')}> {t('testing.fields.shapeNotStored')}</span>
+                          {/if}
+                        {/if}
+                      </td>
+                      <td class="dev-nowrap">
+                        <StateBadge state={side.state} title={side.reason ?? null} />
+                        {#if side.similarity !== null && side.similarity !== undefined}
+                          <span class="dev-small dev-muted" title={t('testing.fields.similarityTitle')}> {formatPercent(side.similarity, 0)}</span>
+                        {/if}
+                      </td>
+                    {:else}
+                      <td class="dev-muted">—</td><td class="dev-muted">—</td>
+                    {/if}
+                  {/each}
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
       </div>
       {#if hidden > 0}<div class="dev-small dev-muted group__empty">{t('testing.fields.matchesHidden', { hidden })}</div>{/if}
     {/if}
