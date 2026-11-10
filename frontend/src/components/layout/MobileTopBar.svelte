@@ -174,8 +174,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     flex-shrink: 0;
     color: var(--shpd-color-text-sidebar);
     background: transparent;
@@ -217,7 +217,7 @@
     align-items: center;
     gap: var(--shpd-space-xs);
     flex-shrink: 0;
-    min-width: 40px;
+    min-width: 2.5rem;
     justify-content: flex-end;
   }
 
@@ -227,7 +227,7 @@
   .shpd-topbar__kebab-menu {
     display: flex;
     flex-direction: column;
-    min-width: 160px;
+    min-width: 10rem;
     padding: var(--shpd-space-xs) 0;
   }
 

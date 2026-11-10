@@ -168,7 +168,7 @@
     top: 12vh;
     left: 50%;
     transform: translateX(-50%);
-    width: min(600px, calc(100vw - 2 * var(--shpd-space-md)));
+    width: min(37.5rem, calc(100vw - 2 * var(--shpd-space-md)));
     max-height: 60vh;
     display: flex;
     flex-direction: column;

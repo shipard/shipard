@@ -52,8 +52,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
     padding: 0;
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-sidebar);
@@ -83,7 +83,7 @@
     left: 0;
     top: 4px;
     bottom: 4px;
-    width: 3px;
+    width: 3px; /* px-ok: aktivní proužek */
     border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }

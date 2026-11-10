@@ -485,8 +485,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     font-size: var(--shpd-font-size-sm);
     font-weight: 600;
     color: var(--shpd-color-text-sidebar);
@@ -537,7 +537,7 @@
     bottom: var(--shpd-space-sm);
     left: calc(100% - 4px);
     right: auto;
-    min-width: 200px;
+    min-width: 12.5rem;
   }
 
   /* Top bar varianta: root bez patkového rámečku/odsazení, dropdown
@@ -552,7 +552,7 @@
     bottom: auto;
     left: auto;
     right: 0;
-    min-width: 220px;
+    min-width: 13.75rem;
   }
 
   .shpd-usermenu__menu-item {
@@ -593,7 +593,7 @@
   }
 
   .shpd-usermenu__menu-divider {
-    height: 1px;
+    height: 1px; /* px-ok: čára */
     margin: var(--shpd-space-xs) 0;
     background-color: var(--shpd-color-bg-sidebar-border);
   }
@@ -609,7 +609,7 @@
     position: absolute;
     bottom: 0;
     left: calc(100% + 6px);
-    min-width: 180px;
+    min-width: 11.25rem;
     background-color: var(--shpd-color-bg-sidebar-elevated);
     border: 1px solid var(--shpd-color-bg-sidebar-border);
     border-radius: var(--shpd-radius-md);

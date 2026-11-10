@@ -25,8 +25,8 @@
   }
 
   .shpd-brandheader__app-icon {
-    width: 24px;
-    height: 24px;
+    width: 1.5rem;
+    height: 1.5rem;
     object-fit: contain;
     border-radius: var(--shpd-radius-sm);
     flex-shrink: 0;

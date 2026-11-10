@@ -121,7 +121,7 @@
     bottom: 0;
     left: 0;
     width: 72%;
-    max-width: 320px;
+    max-width: 20rem;
     z-index: 100;
     transform: translateX(-100%);
     transition: transform 0.22s ease;

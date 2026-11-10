@@ -291,8 +291,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     color: var(--shpd-color-text-sidebar-muted);
     border-radius: var(--shpd-radius-sm);
     transition: color 0.15s, background-color 0.15s;

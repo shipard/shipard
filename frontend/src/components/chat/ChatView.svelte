@@ -49,7 +49,7 @@
     background-color: var(--shpd-color-bg);
   }
   .shpd-chat__list {
-    width: 320px;
+    width: 20rem;
     flex-shrink: 0;
     border-right: 1px solid var(--shpd-color-border);
     background-color: var(--shpd-color-bg);

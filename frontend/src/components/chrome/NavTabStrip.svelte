@@ -151,8 +151,8 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    min-width: 36px;
-    height: 36px;
+    min-width: 2.25rem;
+    height: 2.25rem;
     padding: 0 var(--shpd-space-sm);
     color: var(--shpd-color-text-sidebar);
     border-radius: var(--shpd-radius-sm);
@@ -162,7 +162,7 @@
   }
 
   .shpd-tabstrip__label {
-    max-width: 180px;
+    max-width: 11.25rem;
     font-size: var(--shpd-font-size-sm);
     white-space: nowrap;
     overflow: hidden;
@@ -190,7 +190,7 @@
     left: 4px;
     right: 4px;
     bottom: 0;
-    height: 3px;
+    height: 3px; /* px-ok: aktivní proužek */
     border-radius: 0.125rem 0.125rem 0 0;
     background-color: var(--shpd-color-accent);
   }
@@ -240,7 +240,7 @@
   .shpd-tabstrip__dropdown-divider::after {
     content: '';
     flex: 1;
-    height: 1px;
+    height: 1px; /* px-ok: čára */
     background-color: var(--shpd-color-border);
   }
 </style>

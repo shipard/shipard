@@ -182,7 +182,7 @@
     left: 0;
     top: 4px;
     bottom: 4px;
-    width: 3px;
+    width: 3px; /* px-ok: aktivní proužek */
     border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }
@@ -232,7 +232,7 @@
   .shpd-flyoutstrip__flyout-divider::after {
     content: '';
     flex: 1;
-    height: 1px;
+    height: 1px; /* px-ok: čára */
     background-color: var(--shpd-color-border);
   }
 </style>

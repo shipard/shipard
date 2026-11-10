@@ -41,7 +41,7 @@
 
   /* Hide scrollbar but keep functionality */
   .shpd-tabbar::-webkit-scrollbar {
-    height: 3px;
+    height: 3px; /* px-ok: tloušťka posuvníku */
   }
   .shpd-tabbar::-webkit-scrollbar-thumb {
     background: var(--shpd-color-border);
@@ -87,8 +87,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
+    width: 1rem;
+    height: 1rem;
     font-size: var(--shpd-font-size-sm);
     line-height: 1;
     color: var(--shpd-color-text-secondary);

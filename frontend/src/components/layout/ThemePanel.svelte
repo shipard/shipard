@@ -108,9 +108,10 @@
 <style>
   .shpd-theme-panel {
     position: fixed;
-    top: 64px;
+    /* Pod horní lištou: její výška + sm (64px při 16px) — roste s ní. */
+    top: calc(var(--shpd-header-height) + var(--shpd-space-sm));
     /* left dodává inline style:left (prop leftOffset). */
-    width: 340px;
+    width: 21.25rem;
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-lg);
@@ -138,8 +139,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     padding: 0;
     border-radius: var(--shpd-radius-sm);
     color: var(--shpd-color-text-secondary);

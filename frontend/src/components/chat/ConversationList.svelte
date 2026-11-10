@@ -93,7 +93,7 @@
   </div>
 </div>
 
-<Modal title={t('chat.rename.title')} open={renameId !== null} onClose={() => (renameId = null)} width="420px">
+<Modal title={t('chat.rename.title')} open={renameId !== null} onClose={() => (renameId = null)} width="26.25rem">
   <Input bind:value={renameText} placeholder={t('chat.rename.placeholder')} />
   {#snippet footer()}
     <Button label={t('common.cancel')} variant="secondary" size="sm" onclick={() => (renameId = null)} />
@@ -101,7 +101,7 @@
   {/snippet}
 </Modal>
 
-<Modal title={t('chat.delete.title')} open={deleteId !== null} onClose={() => (deleteId = null)} width="420px">
+<Modal title={t('chat.delete.title')} open={deleteId !== null} onClose={() => (deleteId = null)} width="26.25rem">
   <p>{t('chat.delete.confirm')}</p>
   {#snippet footer()}
     <Button label={t('common.cancel')} variant="secondary" size="sm" onclick={() => (deleteId = null)} />
@@ -172,8 +172,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     background: none;
     border: none;
     border-radius: var(--shpd-radius-sm);

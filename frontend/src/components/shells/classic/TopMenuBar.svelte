@@ -198,7 +198,7 @@
     left: 4px;
     right: 4px;
     bottom: 0;
-    height: 3px;
+    height: 3px; /* px-ok: aktivní proužek */
     border-radius: 0.125rem 0.125rem 0 0;
     background-color: var(--shpd-color-accent);
   }
@@ -213,8 +213,8 @@
   }
 
   .shpd-topmenu__badge-dot {
-    width: 7px;
-    height: 7px;
+    width: 0.4375rem;
+    height: 0.4375rem;
     border-radius: 50%;
     background-color: var(--shpd-color-warning, #d97706);
   }
@@ -234,8 +234,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     color: var(--shpd-color-text-sidebar-muted);
     border-radius: var(--shpd-radius-sm);
     transition: color 0.15s, background-color 0.15s;

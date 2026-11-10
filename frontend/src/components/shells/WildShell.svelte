@@ -233,7 +233,7 @@
     display: flex;
     align-items: center;
     gap: 0.125rem;
-    height: 44px;
+    height: 2.75rem;
     padding: 0 var(--shpd-space-sm);
     background: var(--shpd-sidebar-bg-image, var(--shpd-color-bg-sidebar));
     border-bottom: 1px solid var(--shpd-color-bg-sidebar-border);
@@ -247,8 +247,8 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    min-width: 36px;
-    height: 36px;
+    min-width: 2.25rem;
+    height: 2.25rem;
     padding: 0 var(--shpd-space-sm);
     color: var(--shpd-color-text-sidebar);
     border-radius: var(--shpd-radius-sm);
@@ -258,7 +258,7 @@
   }
 
   .shpd-wild__ai-tab-label {
-    max-width: 200px;
+    max-width: 12.5rem;
     font-size: var(--shpd-font-size-sm);
     white-space: nowrap;
     overflow: hidden;
@@ -281,14 +281,14 @@
     left: 4px;
     right: 4px;
     bottom: 0;
-    height: 3px;
+    height: 3px; /* px-ok: aktivní proužek */
     border-radius: 0.125rem 0.125rem 0 0;
     background-color: var(--shpd-color-accent);
   }
 
   .shpd-wild__tabs-sep {
-    width: 1px;
-    height: 22px;
+    width: 1px; /* px-ok: čára */
+    height: 1.375rem;
     margin: 0 var(--shpd-space-xs);
     background-color: var(--shpd-color-bg-sidebar-border);
     flex-shrink: 0;

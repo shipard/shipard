@@ -203,8 +203,8 @@
   }
 
   .shpd-navtree__badge-dot {
-    width: 7px;
-    height: 7px;
+    width: 0.4375rem;
+    height: 0.4375rem;
     border-radius: 50%;
     background-color: var(--shpd-color-warning, #d97706);
   }
@@ -274,7 +274,7 @@
     left: 0;
     top: 4px;
     bottom: 4px;
-    width: 3px;
+    width: 3px; /* px-ok: aktivní proužek */
     border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }

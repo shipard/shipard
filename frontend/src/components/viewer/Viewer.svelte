@@ -1370,7 +1370,7 @@
   title={t('viewer.reanalyze.title')}
   open={reanalyzeDialogOpen}
   onClose={closeReanalyzeDialog}
-  width="520px"
+  width="32.5rem"
 >
   <p>{t('viewer.reanalyze.body', { states: t('viewer.reanalyze.replaceableStates') })}</p>
 
@@ -1455,7 +1455,7 @@
 
   /* Left panel */
   .shpd-viewer__list-panel {
-    width: 400px;
+    width: 25rem;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -1547,8 +1547,8 @@
     right: 4px;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
+    width: 1.25rem;
+    height: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1617,7 +1617,7 @@
     padding: 0.375rem 0.625rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
-    min-width: 280px;
+    min-width: 17.5rem;
     max-width: 100%;
     font-family: inherit;
     font-size: var(--shpd-font-size-sm);
@@ -1666,8 +1666,8 @@
   /* Spinner */
   .shpd-viewer__spinner {
     display: inline-block;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     border: 2px solid var(--shpd-color-border);
     border-top-color: var(--shpd-color-primary);
     border-radius: 50%;

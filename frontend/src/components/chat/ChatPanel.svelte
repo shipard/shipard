@@ -79,7 +79,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: min(480px, 90vw);
+    width: min(30rem, 90vw);
     z-index: 80; /* pod drawerem 90/100, ThemePanelem 200, Modalem 1000 */
     display: flex;
     flex-direction: column;

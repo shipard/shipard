@@ -73,8 +73,8 @@
   }
 
   .shpd-modeback__button--icon-only {
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     gap: 0;
     justify-content: center;

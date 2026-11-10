@@ -121,15 +121,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     margin-bottom: var(--shpd-space-sm);
     flex-shrink: 0;
   }
 
   .shpd-rail__app-icon {
-    width: 24px;
-    height: 24px;
+    width: 1.5rem;
+    height: 1.5rem;
     object-fit: contain;
     border-radius: var(--shpd-radius-sm);
   }
@@ -202,7 +202,7 @@
     left: 0;
     top: 4px;
     bottom: 4px;
-    width: 3px;
+    width: 3px; /* px-ok: aktivní proužek */
     border-radius: 0 0.125rem 0.125rem 0;
     background-color: var(--shpd-color-accent);
   }
@@ -212,14 +212,14 @@
   .shpd-rail__badge {
     position: absolute;
     top: 0;
-    right: 12px;
-    min-width: 14px;
-    height: 14px;
+    right: 0.75rem;
+    min-width: 0.875rem;
+    height: 0.875rem;
     padding: 0 0.1875rem;
     border-radius: 0.4375rem;
     font-size: 0.6rem;
     font-weight: 700;
-    line-height: 14px;
+    line-height: 0.875rem;
     text-align: center;
     color: #fff;
     background-color: var(--shpd-color-warning, #d97706);

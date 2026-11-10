@@ -67,7 +67,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: 560px;
+    width: 35rem;
     max-width: 90vw;
     display: flex;
     flex-direction: column;
@@ -106,8 +106,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     padding: 0;
     background: none;
     border: none;

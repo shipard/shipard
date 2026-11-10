@@ -222,14 +222,14 @@
   --shpd-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shpd-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
-  /* Layout */
-  --shpd-sidebar-width: 260px;
-  --shpd-sidebar-width-collapsed: 48px;
-  --shpd-header-height: 56px;
+  /* Layout — v rem (#133 D46): shell roste s písmem prohlížeče. */
+  --shpd-sidebar-width: 16.25rem;          /* 260px při 16px */
+  --shpd-sidebar-width-collapsed: 3rem;    /*  48px */
+  --shpd-header-height: 3.5rem;            /*  56px */
   /* Levý pás classic shellu (ikona + popisek pod sebou). */
-  --shpd-classic-strip-width: 76px;
+  --shpd-classic-strip-width: 4.75rem;     /*  76px */
   /* Levý rail wild shellu (ikona + popisek pod sebou, Issue #51). */
-  --shpd-rail-width: 76px;
+  --shpd-rail-width: 4.75rem;              /*  76px */
 }
 
 /* ============================================================
