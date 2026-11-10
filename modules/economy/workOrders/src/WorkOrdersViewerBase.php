@@ -29,20 +29,13 @@ abstract class WorkOrdersViewerBase extends TableViewer
     ];
 
     /**
-     * Popisek z cfgItem `economy.workOrders.viewerLabels` (lokalizovaný
-     * kompilací); bez konfigurace anglický fallback. `{param}` v textu se
-     * nahradí z `$params`.
+     * Popisek z cfgItem `economy.workOrders.viewerLabels` — viz `TableViewer::labelText()`.
      *
      * @param array<string, scalar> $params
      */
     protected function text(string $key, string $englishFallback, array $params = []): string
     {
-        $defs = $this->config?->cfgItem(self::LABELS_CFG_ITEM);
-        $text = is_array($defs) ? (string) ($defs[$key]['name'] ?? $englishFallback) : $englishFallback;
-        foreach ($params as $name => $value) {
-            $text = str_replace('{' . $name . '}', (string) $value, $text);
-        }
-        return $text;
+        return $this->labelText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     protected function types(): WorkOrderTypes

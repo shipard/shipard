@@ -714,8 +714,52 @@ abstract class TableViewer
      */
     protected function detailText(string $cfgItemId, string $key, string $englishFallback, array $params = []): string
     {
-        $defs = ($this->config?->cfgItem($cfgItemId) ?? [])['texts'] ?? [];
-        $text = (string) ($defs[$key]['name'] ?? $englishFallback);
+        return $this->detailSectionText($cfgItemId, 'texts', $key, $englishFallback, $params);
+    }
+
+    /**
+     * Text z pojmenované sekce katalogu `*.viewerDetailLabels`
+     * (`{<sekce>: {<key>: {name: "..."}}}`) — `detailText()` je případ se
+     * sekcí `texts`; vlastní sekci má Spisovna (`fields`, popisky polí
+     * metadat). Náhrada parametrů a fallback jako `labelText()`.
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function detailSectionText(
+        string $cfgItemId,
+        string $section,
+        string $key,
+        string $fallback,
+        array $params = [],
+    ): string {
+        $catalog = $this->config?->cfgItem($cfgItemId);
+        return self::catalogText(is_array($catalog) ? ($catalog[$section] ?? null) : null, $key, $fallback, $params);
+    }
+
+    /**
+     * Text z plochého katalogu popisků `*.viewerLabels`
+     * (`{<key>: {name: "..."}}`, lokalizovaný kompilací konfigurace).
+     * `{param}` v textu nahradí `$params` (prostý `str_replace`, žádné
+     * ICU); bez cfgItem (nezkompilovaná konfigurace) i pro chybějící klíč
+     * anglický fallback. Plochý katalog a `*.viewerDetailLabels` se
+     * sekcemi jsou dva různé tvary — pro sekce je `detailSectionText()`.
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function labelText(string $cfgItemId, string $key, string $englishFallback, array $params = []): string
+    {
+        return self::catalogText($this->config?->cfgItem($cfgItemId), $key, $englishFallback, $params);
+    }
+
+    /**
+     * Jediné místo, kde se z definic `{<key>: {name}}` bere text, nahrazují
+     * parametry a vrací fallback.
+     *
+     * @param array<string, scalar> $params
+     */
+    private static function catalogText(mixed $defs, string $key, string $fallback, array $params): string
+    {
+        $text = is_array($defs) ? (string) ($defs[$key]['name'] ?? $fallback) : $fallback;
         foreach ($params as $name => $value) {
             $text = str_replace('{' . $name . '}', (string) $value, $text);
         }
