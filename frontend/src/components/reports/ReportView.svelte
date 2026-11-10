@@ -264,6 +264,14 @@
     border-bottom: 1px solid var(--shpd-color-border-light, var(--shpd-color-border));
   }
 
+  /* Sloupec názvu drží nejmenší šířku (#138): v úzkém okně je tabulka širší
+     než obal a auto layout by názvu nechal jen nejdelší slovo — text by se
+     lámal po slovech. 14rem při 390 px dá název účtu na dva až tři řádky
+     (číslo účtu + ~25 znaků na řádek); zbytek roluje do strany v TableScroll. */
+  .shpd-report__td--label {
+    min-width: 14rem;
+  }
+
   .shpd-report__td--num {
     text-align: right;
     font-variant-numeric: tabular-nums;
