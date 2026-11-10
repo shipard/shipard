@@ -66,6 +66,35 @@ class RoundingModesTest extends TestCase
         $this->assertTrue(RoundingModes::isKnown(RoundingModes::MATH_FIVE_CENT));
     }
 
+    public function testForStepMapsCashStepsToMathModes(): void
+    {
+        $this->assertSame(RoundingModes::MATH_UNIT, RoundingModes::forStep(1.0));
+        $this->assertSame(RoundingModes::MATH_FIVE_CENT, RoundingModes::forStep(0.05));
+        $this->assertSame(RoundingModes::ON_CENT, RoundingModes::forStep(0.01));
+        $this->assertNull(RoundingModes::forStep(0.5), 'DK 0,50 zatím nemá mód');
+        $this->assertNull(RoundingModes::forStep(10.0));
+    }
+
+    /**
+     * `world.base.cashRounding` nese krok, ne kód módu (#73 U2) — každý krok
+     * z konfigurace musí mít matematický mód v TABLE, jinak by hotovostní
+     * doklad v té měně tiše skončil na haléřích.
+     */
+    public function testEveryCashRoundingStepHasMathMode(): void
+    {
+        $rules = JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/world/base/config/cashRounding.jsonc');
+        $this->assertIsArray($rules);
+        $this->assertNotEmpty($rules);
+        foreach ($rules as $currency => $rule) {
+            $this->assertIsArray($rule, $currency);
+            $this->assertArrayHasKey('step', $rule, $currency);
+            $this->assertNotEmpty($rule['countries'] ?? null, "{$currency}: pravidlo bez zemí");
+            $mode = RoundingModes::forStep((float) $rule['step']);
+            $this->assertNotNull($mode, "{$currency}: krok {$rule['step']} nemá mód v RoundingModes::TABLE");
+            $this->assertSame('math', RoundingModes::TABLE[$mode]['dir'], $currency);
+        }
+    }
+
     /** @return iterable<string, array{float, int, float}> */
     public static function applyCases(): iterable
     {

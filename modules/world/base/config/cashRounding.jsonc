@@ -1,0 +1,22 @@
+{
+    // world.base.cashRounding
+    //
+    // Zaokrouhlování hotovostních plateb podle měny a země (#73 D6, rozbor
+    // zemí v #63). Klíč = ISO 4217 alpha-3 malými písmeny (jako
+    // currencies.jsonc).
+    //
+    //   step:      krok zaokrouhlení v jednotkách měny (1 = celé koruny,
+    //              0.05 = pěticenty). Na kód zaokrouhlovacího módu dokladu
+    //              ho převádí docs.core (RoundingModes::forStep) — world
+    //              kódy módů nezná.
+    //   countries: země (ISO 3166-1 alpha-2 malými písmeny), kde pravidlo
+    //              platí. Hotovost v téže měně jinde se zaokrouhluje na
+    //              nejmenší minci (na haléře / centy).
+    //
+    // Kroky bez módu v docs.core (DK 0,50 DKK, HU 5 Ft) se doplní s prvním
+    // zdrojem dat, který je potřebuje — RoundingModesTest hlídá, že každý
+    // krok tady má svůj mód.
+
+    "czk": { "step": 1, "countries": ["cz"] },
+    "eur": { "step": 0.05, "countries": ["sk", "fi", "nl", "be", "ie", "it", "ee", "lt"] }
+}

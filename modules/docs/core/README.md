@@ -100,7 +100,8 @@ změna prezentační vrstvy vyžaduje deploy backendu.
 Modul registruje cfgItem soubory — viz `config/` (výčet v `module.jsonc`,
 zde ty podstatné):
 
-- `docs.core.docTypes` — typy dokladů (zatím `invno`, `invni`)
+- `docs.core.docTypes` — typy dokladů a jejich příznaky (`tax_document`,
+  `total_rounding_auto`; čte jen `src/DocTypes.php`)
 - `docs.core.docStates` — stavový automat (Koncept → Potvrzeno → V pořádku
   → V opravě → Storno → Smazáno)
 - `docs.core.vatModes` — režim DPH na hlavičce
@@ -111,7 +112,8 @@ zde ty podstatné):
 - `docs.core.roundingModes` — zaokrouhlení celkové částky (názvy pro UI;
   sémantiku kódů drží `src/RoundingModes.php`)
 - `docs.core.vatRoundingModes` — zaokrouhlení DPH, podmnožina {0, 1}
-- `docs.core.paymentMethods` — způsoby platby
+- `docs.core.paymentMethods` — způsoby platby (`cashRounding` = hotovostní
+  úhrada pro automatické zaokrouhlení částky, `src/TotalRoundingAuto.php`)
 - `docs.core.resetScopes` — kdy se restartuje counter řady
 
 ## Závislosti

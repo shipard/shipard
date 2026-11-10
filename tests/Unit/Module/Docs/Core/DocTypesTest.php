@@ -97,4 +97,37 @@ class DocTypesTest extends TestCase
             $this->assertTrue(DocTypes::isTaxDocument($config, $type), $type);
         }
     }
+
+    public function testHasTotalRoundingAutoOnlyForExplicitTrue(): void
+    {
+        $config = $this->config([
+            'invno' => ['trade_dir' => 1, 'total_rounding_auto' => true],
+            'a'     => ['total_rounding_auto' => 1],
+            'b'     => ['total_rounding_auto' => false],
+            'c'     => ['trade_dir' => 2],
+        ]);
+
+        $this->assertTrue(DocTypes::hasTotalRoundingAuto($config, 'invno'));
+        $this->assertFalse(DocTypes::hasTotalRoundingAuto($config, 'a'), 'jen striktní true');
+        $this->assertFalse(DocTypes::hasTotalRoundingAuto($config, 'b'));
+        $this->assertFalse(DocTypes::hasTotalRoundingAuto($config, 'c'), 'chybějící atribut = bez automatiky');
+        $this->assertFalse(DocTypes::hasTotalRoundingAuto($config, 'unknown'));
+        $this->assertFalse(DocTypes::hasTotalRoundingAuto(null, 'invno'), 'bez konfigurace');
+    }
+
+    /** Pojistka nad reálnou konfigurací: automatiku mají prodejní typy (#73 D2). */
+    public function testRealConfigMarksSalesTypesWithTotalRoundingAuto(): void
+    {
+        $docTypes = JsoncParser::parseFile(
+            dirname(__DIR__, 5) . '/modules/docs/core/config/docTypes.jsonc',
+        );
+        $config = $this->config($docTypes);
+
+        foreach (['invno', 'invpo', 'cashreg', 'cash'] as $type) {
+            $this->assertTrue(DocTypes::hasTotalRoundingAuto($config, $type), $type);
+        }
+        foreach (['invni', 'invpi', 'cmnbkp'] as $type) {
+            $this->assertFalse(DocTypes::hasTotalRoundingAuto($config, $type), $type);
+        }
+    }
 }

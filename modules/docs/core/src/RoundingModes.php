@@ -48,6 +48,22 @@ final class RoundingModes
     }
 
     /**
+     * Matematický mód pro krok hotovostního zaokrouhlení z konfigurace
+     * `world.base.cashRounding` (1 → MATH_UNIT, 0,05 → MATH_FIVE_CENT, #73 U2);
+     * null pro krok bez módu. Jen `math` — hotovost se zaokrouhluje
+     * matematicky, směrové módy jsou pro ruční volbu.
+     */
+    public static function forStep(float $step): ?int
+    {
+        foreach (self::TABLE as $mode => $def) {
+            if ($def['dir'] === 'math' && abs($def['step'] - $step) < 1e-6) {
+                return $mode;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Zaokrouhlí částku podle módu. Výsledek má vždy nejvýš 2 desetinná
      * místa (`scale: 2` sloupců), i pro neznámý mód.
      */

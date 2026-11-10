@@ -16,10 +16,28 @@ use Shipard\Core\Config\ConfigRuntime;
  * dosavadní typy). Kód nikdy neporovnává `doc_type === 'invpo'` — vždy
  * tenhle helper.
  *
+ * `total_rounding_auto` (#73 D2): `true` = prodejní typ s automatickým
+ * zaokrouhlením celkové částky podle způsobu úhrady (`invno`, `invpo`,
+ * `cashreg`, `cash`). Zda automatika na konkrétním dokladu platí (u `cash`
+ * jen příjem), říká `TotalRoundingAuto::applies()`.
+ *
  * Směr obchodu má vlastní autoritu `DocDocument::resolveTradeDir()`.
  */
 final class DocTypes
 {
+    /**
+     * Bez configu, u neznámého typu i bez atributu = typ bez automatiky;
+     * s automatikou jen při explicitním `true`.
+     */
+    public static function hasTotalRoundingAuto(?ConfigRuntime $config, string $docType): bool
+    {
+        $docTypes = $config?->cfgItem('docs.core.docTypes');
+        if (!is_array($docTypes) || !is_array($docTypes[$docType] ?? null)) {
+            return false;
+        }
+        return ($docTypes[$docType]['total_rounding_auto'] ?? false) === true;
+    }
+
     /**
      * Bez configu, u neznámého typu i bez atributu = daňový doklad (dnešní
      * chování); nedaňový jen při explicitním `false`.
