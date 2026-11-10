@@ -90,6 +90,11 @@ class TestableDocsHeadsDocument extends DocsHeadsDocument
         $this->applyTotalRounding($data);
     }
 
+    public function applyTotalRoundingAutoPub(array &$data): void
+    {
+        $this->applyTotalRoundingAuto($data);
+    }
+
     public function applyRoundingPub(float $amount, int $mode): float
     {
         return $this->applyRounding($amount, $mode);

@@ -71,7 +71,10 @@ intracom / zahraničí). Pravidla výpočtu: `docs/vat-calculation.md`.
 
 ### `rounding`
 
-`total_rounding_mode`, `vat_rounding_mode`.
+`total_rounding_auto` (automatika podle způsobu úhrady, měny dokladu a země
+zdroje dat — #73; jen prodejní typy s `docTypes.total_rounding_auto`,
+pravidlo `TotalRoundingAuto` běží v `computeAmounts`), `total_rounding_mode`,
+`vat_rounding_mode`.
 
 ### `totals` — všechny `system: true`
 

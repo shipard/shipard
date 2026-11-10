@@ -187,8 +187,73 @@ abstract class DocDocument extends Document
         }
 
         $this->validateDeclaredRecap($data, $result);
+        $this->validateTotalRounding($data, $result);
 
         return $result;
+    }
+
+    /**
+     * Varování k zaokrouhlení částky při vypnuté automatice (#73 D7, U8) —
+     * jen prodejní doklad ({@see TotalRoundingAuto::applies()}), mimo import
+     * mód; uložení neblokuje:
+     *
+     *  - `cash_rounding_mismatch` — hotovostní úhrada s jiným módem, než dává
+     *    pravidlo pro měnu a zemi (text jmenuje očekávaný mód z číselníku);
+     *  - `non_cash_rounding` — nehotovostní úhrada se zaokrouhlením u dokladu
+     *    s DPH: zaokrouhlovací rozdíl je mimo základ daně jen u hotovosti
+     *    (§ 36 odst. 5 ZDPH, tasks/doc-rounding-modes.md P5).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateTotalRounding(array $data, ValidationResult $result): void
+    {
+        if ($this->config === null || $this->isLockExempt($data) || !empty($data['total_rounding_auto'])) {
+            return;
+        }
+        $applies = TotalRoundingAuto::applies(
+            $this->config,
+            (string) ($data['doc_type'] ?? ''),
+            (int) ($data['cash_dir'] ?? 0),
+        );
+        if (!$applies) {
+            return;
+        }
+        $paymentMethod = (int) ($data['payment_method'] ?? 1);
+        $expected = TotalRoundingAuto::modeFor(
+            $this->config,
+            $paymentMethod,
+            $this->docCurrencyFor($data),
+            $this->dsConfig?->getCountry(),
+        );
+        if ($expected === null) {
+            return;
+        }
+        $mode = (int) ($data['total_rounding_mode'] ?? 0);
+
+        if (TotalRoundingAuto::isCashPayment($this->config, $paymentMethod)) {
+            if ($mode !== $expected) {
+                $modes = $this->config->cfgItem('docs.core.roundingModes');
+                $name = is_array($modes) && is_array($modes[$expected] ?? null)
+                    ? (string) ($modes[$expected]['name'] ?? $expected)
+                    : (string) $expected;
+                $result->addWarning(
+                    'total_rounding_mode',
+                    "Doklad hrazený hotově se zaokrouhluje „{$name}“ — zkontroluj zaokrouhlení částky,"
+                    . ' nebo zapni automatické zaokrouhlení.',
+                    'cash_rounding_mismatch',
+                );
+            }
+            return;
+        }
+
+        if ($mode !== RoundingModes::ON_CENT && (int) ($data['vat_mode'] ?? 1) !== 0) {
+            $result->addWarning(
+                'total_rounding_mode',
+                'Zaokrouhlení celkové částky mimo základ daně je možné jen u hotovostní platby'
+                . ' (§ 36 odst. 5 ZDPH) — u bezhotovostní úhrady nech částku na haléře.',
+                'non_cash_rounding',
+            );
+        }
     }
 
     /**
@@ -561,6 +626,7 @@ abstract class DocDocument extends Document
         $tolerance = $this->recapDeclared ? self::DECLARED_RECAP_TOLERANCE : null;
 
         $this->sumTotals($data, $recap, $rowsForCompute);
+        $this->applyTotalRoundingAuto($data);
         $this->applyTotalRounding($data);
         // Dorovnání řádků na rekapitulaci v měně dokladu (I5) — v domácí
         // měně ho dělá applyDomesticAmounts nad už dorovnanými cur hodnotami,
@@ -1515,6 +1581,57 @@ abstract class DocDocument extends Document
         $rounded = $this->applyRounding($original, $mode);
         $data['total_amount']   = $rounded;
         $data['total_rounding'] = round($rounded - $original, 2);
+    }
+
+    /**
+     * Automatické zaokrouhlení podle způsobu úhrady (#73 D4, U5): při
+     * zapnutém `total_rounding_auto` na prodejním dokladu přepíše
+     * `total_rounding_mode` výsledkem {@see TotalRoundingAuto::modeFor()}
+     * (měna dokladu, země zdroje dat). Běží před `applyTotalRounding`, takže
+     * uložení i náhled applieru sdílejí výsledek. Na dokladu, kde automatika
+     * neplatí (typ bez příznaku, výdajový pokladní doklad), se zapnutý
+     * příznak vynuluje; chybějící klíč se nedoplňuje (U6 — platí výchozí
+     * hodnota sloupce 0). Bez konfigurace nebo bez země se nic nemění —
+     * nikdy tiché Na haléře.
+     */
+    protected function applyTotalRoundingAuto(array &$data): void
+    {
+        if ($this->config === null) {
+            return;
+        }
+        $applies = TotalRoundingAuto::applies(
+            $this->config,
+            (string) ($data['doc_type'] ?? ''),
+            (int) ($data['cash_dir'] ?? 0),
+        );
+        if (!$applies) {
+            if (!empty($data['total_rounding_auto'])) {
+                $data['total_rounding_auto'] = 0;
+            }
+            return;
+        }
+        if (empty($data['total_rounding_auto'])) {
+            return;
+        }
+        $mode = TotalRoundingAuto::modeFor(
+            $this->config,
+            (int) ($data['payment_method'] ?? 1),
+            $this->docCurrencyFor($data),
+            $this->dsConfig?->getCountry(),
+        );
+        if ($mode !== null) {
+            $data['total_rounding_mode'] = $mode;
+        }
+    }
+
+    /**
+     * Měna dokladu pro pravidlo zaokrouhlení; náhled applieru volá
+     * computeAmounts před applyHomeCurrency, proto fallback na domácí měnu.
+     */
+    private function docCurrencyFor(array $data): string
+    {
+        $currency = strtolower((string) ($data['doc_currency'] ?? ''));
+        return $currency !== '' ? $currency : $this->homeCurrencyFor($data);
     }
 
     /** Sémantika kódů (krok, směr, chování u dobropisů): {@see RoundingModes}. */

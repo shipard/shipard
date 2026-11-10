@@ -459,6 +459,20 @@
 
         // --- rounding ---
 
+        // Automatické zaokrouhlení podle způsobu úhrady, měny a země (#73 D1):
+        // DocDocument::computeAmounts přepíše total_rounding_mode pravidlem
+        // TotalRoundingAuto; jen prodejní typy (docTypes.total_rounding_auto).
+        // Nový doklad z formuláře a applieru ji má zapnutou, existující 0.
+        {
+            "id": "total_rounding_auto",
+            "name": "Automatic rounding",
+            "name:cs": "Automatické zaokrouhlení",
+            "name:en": "Automatic rounding",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "group": "rounding"
+        },
         {
             "id": "total_rounding_mode",
             "name": "Total rounding",
