@@ -53,36 +53,46 @@ class TestableDocumentApplier extends DocumentApplier
 class DocumentApplierTest extends TestCase
 {
     /**
-     * Výchozí config: jen typy dokladů (směr obchodu pro snapshot partnera
-     * v import módu jde přes DocDocument::resolveTradeDir), ostatní cfgItems
-     * null jako u holého mocku.
+     * Výchozí config: typy dokladů (směr obchodu pro snapshot partnera
+     * v import módu jde přes DocDocument::resolveTradeDir, příznak
+     * automatického zaokrouhlení #73), způsoby úhrady a kroky hotovosti ze
+     * skutečných číselníků, ostatní cfgItems null jako u holého mocku.
      */
     private function defaultConfig(): ConfigRuntime
     {
         $docTypes = [
-            'invno'   => ['trade_dir' => 1],
-            'invpo'   => ['trade_dir' => 1, 'tax_document' => false],
+            'invno'   => ['trade_dir' => 1, 'total_rounding_auto' => true],
+            'invpo'   => ['trade_dir' => 1, 'tax_document' => false, 'total_rounding_auto' => true],
             'invni'   => ['trade_dir' => 2],
             'invpi'   => ['trade_dir' => 2, 'tax_document' => false],
             'cmnbkp'  => ['trade_dir' => 0],
-            'cash'    => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
-            'cashreg' => ['trade_dir' => 1, 'series_binding' => 'cash_desk'],
+            'cash'    => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk', 'total_rounding_auto' => true],
+            'cashreg' => ['trade_dir' => 1, 'series_binding' => 'cash_desk', 'total_rounding_auto' => true],
         ];
+        $root = dirname(__DIR__, 6);
         // Názvy míst plnění pro zprávu vat_place_derived (skutečný číselník).
-        self::$vatPlaces ??= JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/docs/core/config/vatPlaces.jsonc');
+        self::$vatPlaces ??= JsoncParser::parseFile($root . '/modules/docs/core/config/vatPlaces.jsonc');
+        self::$paymentMethods ??= JsoncParser::parseFile($root . '/modules/docs/core/config/paymentMethods.jsonc');
+        self::$cashRounding ??= JsoncParser::parseFile($root . '/modules/world/base/config/cashRounding.jsonc');
         $vatPlaces = self::$vatPlaces;
+        $paymentMethods = self::$paymentMethods;
+        $cashRounding = self::$cashRounding;
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
             static fn (string $id): mixed => match ($id) {
-                'docs.core.docTypes'  => $docTypes,
-                'docs.core.vatPlaces' => $vatPlaces,
-                default               => null,
+                'docs.core.docTypes'       => $docTypes,
+                'docs.core.vatPlaces'      => $vatPlaces,
+                'docs.core.paymentMethods' => $paymentMethods,
+                'world.base.cashRounding'  => $cashRounding,
+                default                    => null,
             },
         );
         return $config;
     }
 
     private static ?array $vatPlaces = null;
+    private static ?array $paymentMethods = null;
+    private static ?array $cashRounding = null;
 
     /**
      * Import mód (starý Shipard, datové sady): doklad se přenáší, jak je —
@@ -2326,6 +2336,80 @@ class DocumentApplierTest extends TestCase
         ], $extra);
 
         return $this->invokeTransform($applier, $canonical);
+    }
+
+    // Automatické zaokrouhlení podle způsobu úhrady (#73 D8): prodejní doklad
+    // bez deklarované částky ho má zapnuté a mód neposílá (určí ho dokument);
+    // s částkou vypnuté a mód odvozený z čísel; explicitní příznak vyhrává.
+
+    public function testIssuedInvoiceWithoutTotalsTurnsAutomaticRoundingOn(): void
+    {
+        // Faktura ze zakázky (InvoiceBuilder) totals neposílá.
+        $data = $this->transformWithTotals(['docType' => 'invoiceIssued', 'selfParty' => 'supplier']);
+
+        $this->assertSame(1, $data['total_rounding_auto']);
+        $this->assertArrayNotHasKey('total_rounding_mode', $data, 'mód určí DocDocument::computeAmounts');
+    }
+
+    public function testIssuedInvoiceWithDeclaredTotalKeepsDerivedMode(): void
+    {
+        // Import, pošta, ISDOC: deklarovaná částka → automatika vypnutá, mód z čísel jako dosud.
+        $data = $this->transformWithTotals([
+            'docType'   => 'invoiceIssued',
+            'selfParty' => 'supplier',
+            'vatRecap'  => [['vatPct' => 21, 'total' => 1709.05]],
+            'totals'    => ['totalAmount' => 1709.00],
+        ]);
+
+        $this->assertSame(0, $data['total_rounding_auto']);
+        $this->assertSame(1, $data['total_rounding_mode']);
+    }
+
+    public function testExplicitTotalRoundingAutoWins(): void
+    {
+        // true s deklarovanou částkou — dump → seed dokladu s automatikou.
+        $data = $this->transformWithTotals([
+            'docType'   => 'invoiceIssued',
+            'selfParty' => 'supplier',
+            'vatRecap'  => [['vatPct' => 21, 'total' => 1709.05]],
+            'totals'    => ['totalAmount' => 1709.00, 'totalRoundingAuto' => true],
+        ]);
+        $this->assertSame(1, $data['total_rounding_auto']);
+        $this->assertArrayNotHasKey('total_rounding_mode', $data);
+
+        // false bez částky — ruční mód zůstává na uživateli (default 0).
+        $data = $this->transformWithTotals([
+            'docType'   => 'invoiceIssued',
+            'selfParty' => 'supplier',
+            'totals'    => ['totalRoundingAuto' => false],
+        ]);
+        $this->assertSame(0, $data['total_rounding_auto']);
+        $this->assertArrayNotHasKey('total_rounding_mode', $data);
+
+        // null = nerozhodnuto, platí pravidlo bez částky.
+        $data = $this->transformWithTotals([
+            'docType'   => 'invoiceIssued',
+            'selfParty' => 'supplier',
+            'totals'    => ['totalRoundingAuto' => null],
+        ]);
+        $this->assertSame(1, $data['total_rounding_auto']);
+    }
+
+    public function testReceivedInvoiceNeverGetsAutomaticRounding(): void
+    {
+        $this->assertSame(0, $this->transformWithTotals([])['total_rounding_auto']);
+        $this->assertSame(
+            0,
+            $this->transformWithTotals(['totals' => ['totalRoundingAuto' => true]])['total_rounding_auto'],
+            'explicitní true na přijatém dokladu nic nezapne',
+        );
+    }
+
+    public function testProformaIssuedTurnsAutomaticRoundingOn(): void
+    {
+        $data = $this->transformWithTotals(['docType' => 'proformaIssued', 'selfParty' => 'supplier']);
+
+        $this->assertSame(1, $data['total_rounding_auto']);
     }
 
     public function testDeriveRoundingModeFromRecapFeinkost(): void

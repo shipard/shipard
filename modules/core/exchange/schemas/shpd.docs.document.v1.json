@@ -101,7 +101,8 @@
                 "totalBase":     { "type": ["number", "null"] },
                 "totalVat":      { "type": ["number", "null"] },
                 "totalAmount":   { "type": ["number", "null"] },
-                "totalRounding": { "type": ["number", "null"] }
+                "totalRounding": { "type": ["number", "null"] },
+                "totalRoundingAuto": { "type": ["boolean", "null"] }
             }
         },
         "attachments": {

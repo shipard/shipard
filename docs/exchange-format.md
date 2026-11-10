@@ -482,6 +482,23 @@ poslat `sumTotal + rounding`, jinak vyjde mód 0 a doklad zaokrouhlení ztratí
 proti 69,99). Platí pro AI extrakci i ISDOC
 (`PayableRoundingAmount`) — obě cesty jdou přes týž applier.
 
+**Automatické zaokrouhlení podle způsobu úhrady** (#73 D8, sloupec
+`total_rounding_auto`): u prodejního dokladu (`invoiceIssued`,
+`proformaIssued`, `cashRegisterDocument`, příjmový `cashDocument`) applier
+nastaví příznak podle `totals.totalRoundingAuto`. Explicitní `true` /
+`false` vyhrává; bez něj (nebo `null`) je automatika **zapnutá právě tehdy,
+když canonical nemá `totals.totalAmount`** — faktura ze zakázky
+(`InvoiceBuilder`). Při zapnuté automatice applier `total_rounding_mode`
+neposílá: mód určí `DocDocument::computeAmounts()` ze způsobu úhrady,
+měny dokladu a země zdroje dat (`TotalRoundingAuto`,
+`docs/vat-calculation.md` § 6) a náhled ho ukáže
+v `_resolve.computed.totals.totalRoundingMode`. Doklad s deklarovanou
+částkou (import ze starého Shipardu, pošta, ISDOC, generované datové sady)
+má automatiku vypnutou a mód odvozený z čísel jako dosud — nic se mu
+nepřepočítá. Přijatý doklad automatiku nemá nikdy. `DocumentExporter`
+příznak vyváží explicitně, aby dump → seed zachoval stav dokladu
+(dumpovaný doklad má `totalAmount` vždy).
+
 ### Polymorfismus podle `docType`
 
 `docType` určuje, která pole jsou relevantní:

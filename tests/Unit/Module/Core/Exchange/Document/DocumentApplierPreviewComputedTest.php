@@ -313,7 +313,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
             'isReversePair' => false,
         ]], $computed['vatRecap']);
         $this->assertSame(
-            ['totalBase' => 10330.58, 'totalVat' => 2169.42, 'totalAmount' => 12500.00, 'totalRounding' => 0.0],
+            ['totalBase' => 10330.58, 'totalVat' => 2169.42, 'totalAmount' => 12500.00, 'totalRounding' => 0.0, 'totalRoundingMode' => 0],
             $computed['totals'],
         );
         $codes = $this->issueCodes($result->canonical);
@@ -500,6 +500,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
                 'totalVat'      => (float) $saved['total_vat'],
                 'totalAmount'   => (float) $saved['total_amount'],
                 'totalRounding' => (float) $saved['total_rounding'],
+                'totalRoundingMode' => (int) ($saved['total_rounding_mode'] ?? 0),
             ], $computed['totals'], $label);
             $this->assertSame(
                 array_map(static fn (array $r): array => [
@@ -566,7 +567,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $this->assertNull($computed['recapFallback']);
         $this->assertSame([], $computed['vatRecap']);
         $this->assertSame(
-            ['totalBase' => 12500.00, 'totalVat' => 0.0, 'totalAmount' => 12500.00, 'totalRounding' => 0.0],
+            ['totalBase' => 12500.00, 'totalVat' => 0.0, 'totalAmount' => 12500.00, 'totalRounding' => 0.0, 'totalRoundingMode' => 0],
             $computed['totals'],
         );
         $this->assertSame(
@@ -755,7 +756,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
             $this->assertSame(400.0, $computed['vatRecap'][0]['base'], $label);
             $this->assertSame(84.0, $computed['vatRecap'][0]['tax'], $label);
             $this->assertSame(
-                ['totalBase' => 400.0, 'totalVat' => 84.0, 'totalAmount' => 484.0, 'totalRounding' => 0.0],
+                ['totalBase' => 400.0, 'totalVat' => 84.0, 'totalAmount' => 484.0, 'totalRounding' => 0.0, 'totalRoundingMode' => 0],
                 $computed['totals'],
                 $label,
             );

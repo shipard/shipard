@@ -513,6 +513,12 @@
                                                         "number",
                                                         "null"
                                                     ]
+                                                },
+                                                "totalRoundingAuto": {
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
                                                 }
                                             }
                                         },

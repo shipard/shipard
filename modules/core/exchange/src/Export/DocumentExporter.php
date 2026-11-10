@@ -28,8 +28,10 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
  * koncepty bez čísla ho nemají a číslo dostanou až při potvrzení.
  * Odvozené sloupce (fiskální rok, DPH období, částky v domácí měně,
  * snapshoty partnera, účetní stav) se neexportují — `DocDocument` je při
- * seedu spočítá znovu. Řádkový partner (účetní doklad) formát nenese →
- * warning.
+ * seedu spočítá znovu. Zaokrouhlení: mód se neexportuje (applier ho odvodí
+ * z deklarované částky), příznak automatiky ano (`totals.totalRoundingAuto`,
+ * #73 D8 — jinak by deklarovaná částka automatiku vypnula). Řádkový partner
+ * (účetní doklad) formát nenese → warning.
  */
 final class DocumentExporter implements RecordExporter
 {
@@ -358,6 +360,9 @@ final class DocumentExporter implements RecordExporter
                 'totalVat'      => V::float($h['total_vat'] ?? null),
                 'totalAmount'   => V::float($h['total_amount'] ?? null),
                 'totalRounding' => V::float($h['total_rounding'] ?? null),
+                // Explicitní příznak, aby dump → seed zachoval automatiku
+                // (#73 D8) — bez něj by deklarovaná částka automatiku vypnula.
+                'totalRoundingAuto' => V::bool($h['total_rounding_auto'] ?? null),
             ],
             'applyOptions'  => $applyOptions,
         ];

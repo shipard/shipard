@@ -26,6 +26,7 @@ use Shipard\Module\Docs\Core\DocRowCalculator;
 use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Docs\Core\RoundingModes;
+use Shipard\Module\Docs\Core\TotalRoundingAuto;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
@@ -498,6 +499,9 @@ class DocumentApplier
                 'totalVat'      => (float) ($data['total_vat'] ?? 0),
                 'totalAmount'   => (float) ($data['total_amount'] ?? 0),
                 'totalRounding' => (float) ($data['total_rounding'] ?? 0),
+                // Mód, který skončí na dokladu — při automatice (#73 D8) ho
+                // určil computeAmounts, jinak odvození z čísel.
+                'totalRoundingMode' => (int) ($data['total_rounding_mode'] ?? 0),
             ],
             'rows' => $computedRows,
         ];
@@ -1592,6 +1596,7 @@ class DocumentApplier
         };
         // Směr pokladního dokladu (jen cashDocument; validátor hlídá 1/2).
         $cashDir = isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0;
+        $totalRoundingAuto = $this->resolveTotalRoundingAuto($canonical, $docType, $cashDir);
         // Ruční plátce (#72): poslaná strana = partner_balance s příznakem
         // ručního zadání, aby ho odvození (terminál / dopravce) nepřepsalo.
         $balancePartyId = $sideIds['balanceParty'] ?? $plan['resolvedBalanceParty'] ?? null;
@@ -1707,10 +1712,14 @@ class DocumentApplier
             // Kurz z dokladu vyhrává; bez něj kurz z lístku k účetnímu datu
             // (#121 D6) — mimo import mód, viz exchangeRateDecision().
             'exchange_rate'        => $canonical['exchangeRate'] ?? ($this->exchangeRateDecision($canonical)['rate'] ?? null)?->rate,
-            // Odvozeno z čísel (computed vs declared), extrahovaný
-            // totals.totalRounding je jen informativní. Null → klíč vypadne
-            // přes array_filter níže a platí default 0 (bez zaokrouhlení).
-            'total_rounding_mode'  => $this->deriveTotalRoundingMode(
+            // Automatické zaokrouhlení podle způsobu úhrady (#73 D8), viz
+            // resolveTotalRoundingAuto(). Při zapnuté automatice mód určí
+            // DocDocument::computeAmounts (klíč vypadne); jinak odvozeno
+            // z čísel (computed vs declared), extrahovaný totals.totalRounding
+            // je jen informativní. Null → klíč vypadne přes array_filter níže
+            // a platí default 0 (bez zaokrouhlení).
+            'total_rounding_auto'  => $totalRoundingAuto ? 1 : 0,
+            'total_rounding_mode'  => $totalRoundingAuto ? null : $this->deriveTotalRoundingMode(
                 $canonical,
                 $nonPayerGross !== [] ? round(array_sum($nonPayerGross), 2) : null,
             ),
@@ -3584,6 +3593,31 @@ class DocumentApplier
             $out[(int) $row['id']] = (int) $row['item_type'];
         }
         return $out;
+    }
+
+    /**
+     * Příznak automatického zaokrouhlení nového dokladu (#73 D8, U9): jen
+     * doklad, kde automatika platí ({@see TotalRoundingAuto::applies()} —
+     * prodejní typ, u pokladního dokladu příjem). Explicitní
+     * `totals.totalRoundingAuto` vyhrává (dump → seed zachová stav dokladu);
+     * bez něj zapnuto právě tehdy, když canonical nemá deklarovanou
+     * `totals.totalAmount` (faktura ze zakázky). Import ze starého Shipardu,
+     * pošta i ISDOC částku nesou — zůstávají u módu odvozeného z čísel
+     * ({@see deriveTotalRoundingMode()}), žádný doklad se jim nepřepočítá.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    private function resolveTotalRoundingAuto(array $canonical, string $docType, int $cashDir): bool
+    {
+        if (!TotalRoundingAuto::applies($this->config, $docType, $cashDir)) {
+            return false;
+        }
+        $totals = $canonical['totals'] ?? null;
+        $explicit = is_array($totals) ? ($totals['totalRoundingAuto'] ?? null) : null;
+        if (is_bool($explicit)) {
+            return $explicit;
+        }
+        return !is_array($totals) || !isset($totals['totalAmount']) || !is_numeric($totals['totalAmount']);
     }
 
     /**

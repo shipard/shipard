@@ -15,6 +15,8 @@
     //     `totalAmount` less than 1.00 away from a computed variant passes
     //     (rounded invoice total — Applier derives `total_rounding_mode`
     //     from the numbers, `totals.totalRounding` itself is informative).
+    //     `totals.totalRoundingAuto` is the one authoritative key there
+    //     (#73 D8): automatic rounding by payment method on sales documents.
 
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://shipard.cz/schemas/shpd.docs.document.v1.json",
@@ -201,7 +203,11 @@
                 "totalBase":     { "type": ["number", "null"] },
                 "totalVat":      { "type": ["number", "null"] },
                 "totalAmount":   { "type": ["number", "null"] },
-                "totalRounding": { "type": ["number", "null"] }
+                "totalRounding": { "type": ["number", "null"] },
+                // Automatické zaokrouhlení podle způsobu úhrady (#73 D8):
+                // explicitní hodnota vyhrává; null / chybí = zapnuto u
+                // prodejního dokladu bez totalAmount, jinak vypnuto.
+                "totalRoundingAuto": { "type": ["boolean", "null"] }
             }
         },
 

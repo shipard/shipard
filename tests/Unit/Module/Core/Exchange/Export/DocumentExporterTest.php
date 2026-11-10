@@ -29,7 +29,7 @@ class DocumentExporterTest extends TestCase
             'fiscal_year' => 1, 'fiscal_month' => 6, 'vat_registration' => 1, 'vat_period' => 12,
             'vat_mode' => 1, 'vat_calc_source' => 0, 'vat_place' => 0,
             'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => null,
-            'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
+            'total_rounding_auto' => 0, 'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
             'total_base' => '1500.00', 'total_vat' => '315.00', 'total_amount' => '1815.00', 'total_rounding' => '0.00',
             'total_base_dom' => '1500.00', 'total_vat_dom' => '315.00', 'total_amount_dom' => '1815.00', 'total_rounding_dom' => '0.00',
             'payment_method' => 1, 'bank_account' => 4, 'payment_reference' => '2026031', 'specific_symbol' => null, 'constant_symbol' => '0308',
@@ -291,7 +291,11 @@ class DocumentExporterTest extends TestCase
         $this->assertArrayNotHasKey('account', $row);
 
         $this->assertSame([['vatCode' => 'highEU', 'vatPct' => 21.0, 'base' => 1500.0, 'tax' => 315.0, 'total' => 1815.0]], $c['vatRecap']);
-        $this->assertSame(['totalBase' => 1500.0, 'totalVat' => 315.0, 'totalAmount' => 1815.0, 'totalRounding' => 0.0], $c['totals'], '0.0 is a value, not empty — kept');
+        $this->assertSame(
+            ['totalBase' => 1500.0, 'totalVat' => 315.0, 'totalAmount' => 1815.0, 'totalRounding' => 0.0, 'totalRoundingAuto' => false],
+            $c['totals'],
+            '0.0 and false are values, not empty — kept',
+        );
 
         $this->assertSame([
             'targetDocState'       => 40,
@@ -317,6 +321,23 @@ class DocumentExporterTest extends TestCase
 
         $this->assertSame('closing', $exporter->exportDocument($this->headRow(['fiscal_period_type' => 'closing']))->data['fiscalPeriodType']);
         $this->assertArrayNotHasKey('fiscalPeriodType', $exporter->exportDocument($this->headRow())->data, 'běžný doklad: null se ořeže');
+    }
+
+    /** #73 D8: automatika musí přežít dump → seed — deklarovaná částka by ji bez příznaku vypnula. */
+    public function testTotalRoundingAutoRoundTrips(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+
+        $this->assertTrue($exporter->exportDocument($this->headRow(['total_rounding_auto' => 1]))->data['totals']['totalRoundingAuto']);
+        $this->assertFalse($exporter->exportDocument($this->headRow())->data['totals']['totalRoundingAuto']);
+
+        $row = $this->headRow();
+        unset($row['total_rounding_auto']);
+        $this->assertArrayNotHasKey(
+            'totalRoundingAuto',
+            $exporter->exportDocument($row)->data['totals'],
+            'zdroj dat před ds-upgrade: bez sloupce se klíč ořeže',
+        );
     }
 
     public function testManualControlStatementModeIsExported(): void

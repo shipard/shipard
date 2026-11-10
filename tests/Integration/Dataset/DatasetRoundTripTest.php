@@ -597,7 +597,11 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame('sale.goods', $cashregOut['rows'][0]['operation']);
         $this->assertSame(self::ITEM_CODE, $cashregOut['rows'][0]['item']['ourCode']);
         $this->assertSame(500.0, $cashregOut['rows'][0]['unitPrice']);
-        $this->assertSame(['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0], $cashregOut['totals']);
+        // Seed s deklarovanou částkou → automatika vypnutá (#73 D8), dump ji vyváží explicitně.
+        $this->assertSame(
+            ['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0, 'totalRoundingAuto' => false],
+            $cashregOut['totals'],
+        );
         $this->assertSame(['docNumber' => self::CASHREG_NUMBER, 'sequenceNumber' => 1], $cashregOut['applyOptions']['importNumber']);
         // Kód vázané řady = kód pokladny; applier ho u vázaných typů ignoruje
         // (řadu určuje pokladna), v dumpu je ale přítomný.
