@@ -493,7 +493,8 @@ posledního.
 
 ### Responzivita
 
-Rozhodnutí D42, D43 a D47 z #133 (#138 task 1):
+Rozhodnutí D42, D43 a D47 z #133 (#138 task 1) a D58 (#138 task 5 —
+úzký viewer se seznamem, níže):
 
 **Media query patří jen shellu aplikace** — tomu, co se řídí oknem:
 drawer sidebaru, modal přes celou obrazovku, přepínání seznam / detail
@@ -514,6 +515,7 @@ používají `@container`, ne `@media`.
 | `68.75rem` (1100 px) | `@media` ve `frontend/src/dev/` | shell vývojářského dashboardu (split dvou sloupců) |
 | `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole, strany dokladu pod sebe, patička dialogu zalomená |
 | `36rem` (576 px) | `@container` | složené řádky dokladu (`DocRows`, pojmenovaný kontejner `doc-rows`, #139 D45) |
+| `55rem` (880 px) | JS, šířka vieweru (`VIEWER_SPLIT_MIN`) | viewer se seznamem: užší viewer má seznam přes celou šířku a detail v draweru (D58) |
 
 Px v závorce platí při výchozím písmu prohlížeče 16 px.
 
@@ -557,19 +559,50 @@ písmo se **nenastavuje** i kvůli tomu.
 **Nová hodnota = nové rozhodnutí v #133.** Kontrola v pre-commitu
 (`scripts/check-css-units.py`, §10) odmítne `@media` s rysem šířky mimo
 hodnotu shellu, `@container` mimo prahy výše i JS konstantu, která
-s CSS neladí; značka `px-ok` na breakpointy neplatí.
+s CSS neladí nebo má jinou hodnotu než rozhodnutí (`MOBILE_BREAKPOINT`,
+`VIEWER_SPLIT_MIN`); značka `px-ok` na breakpointy neplatí.
 
 **Při větším písmu prohlížeče roste i shell a panely** (D46, #138 task 4).
 Layout tokeny, šířka seznamu vieweru, drawer, modaly a popovery jsou v rem
 (§10 Pevné rozměry), takže s písmem 20 px má sidebar 325 px místo 260
 a seznam 500 px místo 400 — text i rozvržení se škálují spolu, stejně jako
 breakpoint shellu. Modal a drawer drží v okně strop podle okna
-(`max-width: calc(100vw - …)`, `90vw`, `max-height: 90vh`). Důsledek pro
-detail vedle seznamu: v okně těsně nad hranicí shellu mu zbude méně místa
-než dřív (okno 1024 px, písmo 20 px, sidebar shell: 199 px) — obsah se
-složí přes `@container`, tabulky rolují ve svém obalu, stránka nepřetéká.
-Úzký detail vedle seznamu je otevřený bod v #138 a čeká na rozhodnutí
-v #133; šířka seznamu se tu jen převedla 1 : 1.
+(`max-width: calc(100vw - …)`, `90vw`, `max-height: 90vh`). Detailu
+vedle seznamu by tak v okně těsně nad hranicí shellu zbylo ještě méně
+místa než dřív (okno 1024 px, písmo 20 px, sidebar shell: 199 px) — řeší
+to úzký viewer níže (D58).
+
+**Viewer se seznamem má tři režimy** (D58, #138 task 5). Těsně nad
+hranicí shellu zabere navigace a seznam (`25rem`) skoro celou šířku —
+v sidebar shellu při okně 800 px by detailu zbylo asi 140 px, při 1024 px
+asi 364 px. Viewer s layoutem `list` proto přepíná podle **své šířky, ne
+okna** (obsah reaguje na svůj kontejner, D43):
+
+| Režim | Kdy | Seznam a detail |
+|---|---|---|
+| mobil | okno pod `48rem` (D42) | přepínání seznam / detail přes celou šířku, akce v top baru |
+| úzký viewer | okno nad `48rem`, viewer užší než `55rem` | seznam přes celou šířku, detail v draweru (`ViewerDetailDrawer`) jako u tabulkových seznamů — akce detailu v hlavičce draweru, horní lišta v kontextu seznamu |
+| široký viewer | viewer `55rem` a širší | seznam `25rem` a detail vedle sebe |
+
+Práh `55rem` = seznam `25rem` + nejužší rozumný detail `30rem` (práh
+úzkého obsahu D43); viewer široký přesně `55rem` úzký není. Je to JS
+konstanta `VIEWER_SPLIT_MIN` ve `stores/layout.svelte.js`, ne media
+query: `Viewer.svelte` měří `.shpd-viewer__body` přes `ResizeObserver`
+a práh přepočítává z rem podle aktuálního písma kořene při každém měření
+(`utils/viewerSplit.js`). Drawer je `position: fixed` a šířku vieweru
+nemění, takže na hraně nic nekmitá. Platí stejně ve všech shellech — práh
+přijde při jiné šířce okna (sidebar shell 1140 px, classic a wild s užším
+levým pásem dřív, sbalený sidebar také) — i při větším písmu (písmo 20 px,
+okno 1280 px, sidebar shell: viewer 955 px < 1100 px → drawer).
+
+Mění se jen **umístění detailu**: řádky seznamu zůstávají kartami, dotaz
+se nemění a nic se nenačítá znovu. Výběr přežívá přepnutí — zúžení okna
+otevře drawer se stejným záznamem, rozšíření vrátí detail do panelu;
+zavření draweru (křížek, Escape) výběr ruší a prázdný stav „Vyberte
+záznam“ se v úzkém režimu neukazuje. Tabulkové seznamy (layout `grid`)
+mají detail v draweru vždy (`docs/viewer-grid.md` §6). Zamítnuto: pružná
+šířka seznamu (při okně 800 px detail pořád úzký) a automaticky sbalený
+sidebar (jen jeden shell, druhá hodnota media query shellu).
 
 **Stránka ani panel nerolují do strany — posune se tabulka ve svém obalu**
 (D44, D57). Tabulky jsou dvojího druhu: **tabulka v toku obsahu** (detail,
@@ -938,7 +971,8 @@ jen hodnotu shellu — `48rem` v aplikaci, `68.75rem` ve `frontend/src/dev/`;
 rysy bez šířky (`hover`, `pointer`, `prefers-*`, `print`) projdou.
 `@container` smí mít jen `30rem` a `36rem`. `MOBILE_BREAKPOINT`
 v `stores/layout.svelte.js` musí být řetězec rovný hodnotě shellu, bez
-jednotky za dosazením do `matchMedia`. Povolené hodnoty jsou konstanty
+jednotky za dosazením do `matchMedia`; `VIEWER_SPLIT_MIN` tamtéž (práh
+úzkého vieweru, D58) musí být řetězec `55rem`. Povolené hodnoty jsou konstanty
 nahoře ve skriptu; značka `px-ok` tu neplatí — jiná hodnota je nové
 rozhodnutí v #133 (§8 Responzivita).
 

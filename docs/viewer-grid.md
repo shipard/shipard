@@ -220,6 +220,9 @@ Přibývá:
   přepínání, top bar).
 - Toolbar v grid layoutu zůstává v list kontextu (`meta.toolbar`) —
   detail akce žijí v draweru (§6).
+- O umístění detailu nerozhoduje `isGrid`, ale derived `detailInDrawer`
+  (`!isMobile && (isGrid || isNarrow)`) — drawer má i list layout v úzkém
+  vieweru (#133 D58, §6). `effectiveLayout` se tím nemění.
 
 ### 4.2 `ViewerGrid.svelte`
 
@@ -284,6 +287,14 @@ zprava** (~560 px):
   (FormDialog z detail akce), Esc zavírá modál, ne drawer.
 - Mobil drawer nepoužívá — tam platí stávající list/detail full-width
   přepínání.
+- **Drawer slouží i list layoutu v úzkém vieweru** (#133 D58): viewer se
+  seznamem užší než `55rem` (seznam + nejužší rozumný detail) roztáhne
+  seznam karet přes celou šířku a detail otevře v tomtéž draweru — stejné
+  chování (non-modální, klik na jiný záznam přepíná detail, ✕ / Esc ruší
+  výběr, akce detailu v hlavičce). Layout zůstává `list`: tvar řádků
+  i dotaz se nemění, nic se nenačítá znovu, výběr přežívá přepnutí
+  panel ↔ drawer. Práh, měření a tři režimy vieweru:
+  [`design-system.md`](design-system.md) §8 *Responzivita*.
 
 ## 7. Fáze 2 — řazení, toggle, BankTransactionsViewer
 
@@ -389,7 +400,7 @@ práce.
 | `src/Api/Controller/ViewerController.php` | `layout` parametr, meta klíče, footer |
 | `frontend/src/components/viewer/Viewer.svelte` | `activeLayout`, refetch, render větvení, drawer stav |
 | `frontend/src/components/viewer/ViewerGrid.svelte` | **Nový** — tabulka |
-| `frontend/src/components/viewer/ViewerDetailDrawer.svelte` | **Nový** — slide-over |
+| `frontend/src/components/viewer/ViewerDetailDrawer.svelte` | **Nový** — slide-over (grid; od #133 D58 i list layout v úzkém vieweru) |
 | `frontend/src/components/viewer/viewerSpans.js` | **Nový** — sdílené spany + badge |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Používá sdílenou utilitu, badge |
 | `modules/economy/accounting/src/JournalViewer.php` | Pilot (F1) |

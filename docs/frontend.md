@@ -471,6 +471,18 @@ rozhodnutí v #133. Obsah (formuláře, nastavení, dialogy) se neřídí oknem,
 ale šířkou svého kontejneru (`@container`, práh `30rem`) —
 [`design-system.md`](design-system.md) §8 *Responzivita*.
 
+**Úzký viewer se seznamem** (#133 D58): vedle `MOBILE_BREAKPOINT` nese
+`layout.svelte.js` konstantu `VIEWER_SPLIT_MIN = '55rem'` — nejmenší šířku
+vieweru, při které je detail ještě vedle seznamu. `Viewer.svelte` měří
+šířku `.shpd-viewer__body` (`ResizeObserver`, jen na desktopu; první
+měření synchronně v efektu, aby se detail panel nemihl) a čistá funkce
+`isNarrowViewer()` z `utils/viewerSplit.js` ji porovná s prahem
+přepočteným z rem podle aktuálního písma kořene. Užší viewer = derived
+`detailInDrawer`: seznam přes celou šířku, detail ve `ViewerDetailDrawer`,
+akce detailu v hlavičce draweru. `effectiveLayout` se nemění (žádný
+refetch) a mobilní přepínání seznam / detail zůstává. Hodnotu konstanty
+hlídá tentýž skript.
+
 ### Mode systém — App / Settings / Account
 
 Aplikace má tři navigační módy: `'app'` (běžná práce), `'settings'`
@@ -780,6 +792,8 @@ viewer navíc implementuje `getGridColumns()` + `renderGridRow()` (volitelně
 `getDefaultLayout()`, `renderGridFooter()`, `getGridOptions()`). Meta pak vrací
 `layouts`/`defaultLayout`/`grid`, endpoint `rows` přijímá `layout=grid`.
 Na mobilu (≤ 48rem) grid degraduje na list — `renderRow()` zůstává povinný.
+Stejný drawer používá i list layout, když je viewer užší než `55rem`
+(#133 D58, výše *Úzký viewer se seznamem*).
 Buňky používají stejný span formát jako list vč. badge varianty
 (`{text, badge: style}` → pilulka, sdílená `SpanBadge.svelte` +
 `viewerSpans.js`).

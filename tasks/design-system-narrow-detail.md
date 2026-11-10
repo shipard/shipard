@@ -1,6 +1,6 @@
 # Design system — úzký detail vedle seznamu: detail v draweru podle šířky vieweru
 
-**Stav:** naplánováno — #138 task 5 (D58)
+**Stav:** hotovo — 2026-11-10 (#138 task 5, D58); zbývá ruční ověření ve Firefoxu (tři shelly, písmo 20 px) a na telefonu
 
 ## Kontext / Cíl
 
@@ -163,13 +163,42 @@ okno), viewer se seznamem — Faktury přijaté:
 
 ## Hotovo když
 
-- [ ] `VIEWER_SPLIT_MIN`, měření šířky vieweru, unit test
-- [ ] list layout v úzkém vieweru: seznam přes celou šířku, detail
+- [x] `VIEWER_SPLIT_MIN`, měření šířky vieweru, unit test
+- [x] list layout v úzkém vieweru: seznam přes celou šířku, detail
       v draweru, výběr přežívá přepnutí, akce detailu v hlavičce draweru
-- [ ] široký viewer, grid a mobil beze změny
-- [ ] kontrola konstanty v `check-css-units.py`
-- [ ] `docs/design-system.md` §8, `docs/viewer-grid.md` §6
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] široký viewer, grid a mobil beze změny
+- [x] kontrola konstanty v `check-css-units.py`
+- [x] `docs/design-system.md` §8, `docs/viewer-grid.md` §6
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
+
+## Jak to dopadlo (2026-11-10)
+
+- **První vykreslení:** zvoleno synchronní měření v `$effect` (běží po
+  připojení DOM, před vykreslením) + `ResizeObserver` pro další změny.
+  Varianta „detail panel do prvního měření nevykreslovat“ by přidala
+  třetí stav a v širokém vieweru by problikla opačně. Ověřeno sondou
+  po snímcích: v úzkém okně žádný snímek s detail panelem.
+- **Hystereze není:** přepnutí šířku `.shpd-viewer__body` nemění; na
+  hraně (viewer 879 / 880 px) se nic nepřepíná opakovaně.
+- **Práh jde čistým funkcím parametrem** (`isNarrowViewer(šířka, práh,
+  písmo)`), konstantu předává `Viewer.svelte` — `layout.svelte.js`
+  používá runy a v unit testu (`node --test`) ho načíst nejde.
+- **Šířka 0 se ignoruje** (element bez rozměru) — zůstává poslední stav.
+- **Akce Reanalyze** (Došlá pošta) hledala své profily v akcích horní
+  lišty; s detailem v draweru nese lišta akce seznamu, proto se hledá
+  v `detailToolbar`.
+- **Přepnutí panel ↔ drawer** připojí `ViewerDetail` znovu — výběr
+  a načtená data zůstávají, vnitřní stav detailu (aktivní tab) začíná
+  od prvního tabu.
+- **Uživatelská nápověda** beze změny: „v pravém panelu“
+  (`help/uctarna/`) platí i pro drawer vpravo.
+- **Ověřeno v Chromiu** (Playwright, volný demo zdroj dat, Faktury
+  přijaté): sidebar shell 1280 / 1140 / 1139 / 1100 / 1024 / 800 px
+  včetně sbalení sidebaru, formuláře nad drawerem a Escape; classic
+  a wild 1280 / 1024 / 800 px; písmo 20 px při 1280 a 1600 px; Účetní
+  deník (grid) a telefon 390 px beze změny. Neprošlo ruční ověření ve
+  Firefoxu a navigace na záznam odjinud (`navigateToViewer` s `recordId`)
+  v úzkém režimu — ta jde stejnou cestou jako klik na řádek.
 
 ## Pasti
 
