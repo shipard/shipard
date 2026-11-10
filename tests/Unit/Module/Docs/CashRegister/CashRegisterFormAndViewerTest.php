@@ -127,6 +127,30 @@ class CashRegisterFormAndViewerTest extends TestCase
         $this->assertTrue($this->findElement($def, 'vat_duzp')->hidden, 'DUZP v hlavičce bez DPH skryté');
     }
 
+    /**
+     * HTTP cesta nové prodejky: schéma default Převodem → Hotovost, explicitní
+     * prefill povolené úhrady prodejky (Kartou, Dobírkou, Bránou) přežije,
+     * nepovolená (Zápočtem) → Hotovost. Dřív rozhodovala konstanta pokladního
+     * dokladu a Dobírkou i Bránou padaly na Hotovost.
+     */
+    public function testNewRecordHookKeepsPrefillOfPaymentMethodsAllowedOnRetailSale(): void
+    {
+        $form = new CashRegisterForm('docs_core_heads');
+        $form->setConfig($this->config());
+        $form->setDb($this->db());
+
+        $expected = [1 => 0, 2 => 2, 3 => 3, 5 => 5, 4 => 0];
+        foreach ($expected as $prefill => $result) {
+            $data = ['doc_type' => 'cashreg', 'number_series' => 12, 'payment_method' => $prefill, 'vat_mode' => 1];
+            $form->applyNewRecordDefaults($data);
+            $this->assertSame($result, $data['payment_method'], "prefill {$prefill}");
+        }
+
+        $data = ['doc_type' => 'cashreg', 'number_series' => 12, 'vat_mode' => 1];
+        $form->applyNewRecordDefaults($data);
+        $this->assertSame(0, $data['payment_method'], 'bez hodnoty → Hotovost');
+    }
+
     /** #73 D2, D4: prodejka má automatiku — při zapnuté je mód jen ke čtení a recalculate ho drží podle úhrady. */
     public function testAutomaticRoundingFollowsPaymentMethod(): void
     {

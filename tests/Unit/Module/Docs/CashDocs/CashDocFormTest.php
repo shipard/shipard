@@ -184,6 +184,10 @@ class CashDocFormTest extends TestCase
         $this->form()->applyNewRecordDefaults($data);
 
         $this->assertSame(2, $data['payment_method'], 'Kartou je povolené — explicitní prefill vyhrává');
+
+        $data = ['doc_type' => 'cash', 'number_series' => 12, 'payment_method' => 3];
+        $this->form()->applyNewRecordDefaults($data);
+        $this->assertSame(0, $data['payment_method'], 'Dobírkou pokladní doklad nepovoluje → Hotovost');
     }
 
     public function testNewRecordHookWithoutSeriesKeepsSchemaCurrency(): void

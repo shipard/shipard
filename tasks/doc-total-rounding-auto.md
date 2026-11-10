@@ -314,10 +314,13 @@ netýká.
   `DocumentExporterTest` a testy applieru.
 - **Generátor demo sad** (`tools/invoice-generator`) píše `totals.totalAmount`
   → seedované doklady mají automatiku vypnutou podle D8; beze změny.
-- **Všimnuto mimo rozsah:** `CashDeskFormBase::applyNewRecordDefaults()`
-  kontroluje způsob úhrady proti `CashDeskDocumentBase::PAYMENT_METHODS_ALLOWED`,
-  ne `allowedPaymentMethods()` — prodejka s prefillem Převodem / Dobírkou /
-  Bránou se vrátí na Hotovost.
+- **Všimnuto mimo rozsah a opraveno týž den:**
+  `CashDeskFormBase::applyNewRecordDefaults()` kontrolovalo způsob úhrady
+  proti `CashDeskDocumentBase::PAYMENT_METHODS_ALLOWED`, ne
+  `allowedPaymentMethods()` — prodejka s prefillem Dobírkou / Bránou spadla
+  na Hotovost. Teď rozhodují povolené úhrady formuláře; schéma default
+  Převodem (1) se dál bere jako „nezadáno“ → Hotovost, protože ho od
+  prefillu na této cestě odlišit nejde.
 
 ## Hotovo když
 
