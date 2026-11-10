@@ -22,6 +22,7 @@
   import { resolveIcon } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import TableScroll from '../ui/TableScroll.svelte';
 
   // hideSingleTabBar: opt-in pro hostitele s jediným tabem (ViewerDetailModal) —
   // skryje tab lištu, když není mezi čím přepínat. Default false, aby se
@@ -291,7 +292,7 @@
         <PropertyGroups groups={content.groups} headingLevel={4} />
 
       {:else if content?.type === 'table'}
-        <div class="shpd-detail__table-wrap">
+        <TableScroll>
           <table class="shpd-detail__table">
             <thead>
               <tr>
@@ -336,7 +337,7 @@
               {/if}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
 
       {:else if content?.type === 'notice'}
         <!-- Hláška v obsahu (#137 D30, D40): backend posílá tón a text
@@ -845,11 +846,7 @@
     margin-top: 0;
   }
 
-  /* Table content */
-  .shpd-detail__table-wrap {
-    overflow-x: auto;
-  }
-
+  /* Table content — obal s posunem do strany dává `TableScroll` (D44). */
   .shpd-detail__table {
     width: 100%;
     border-collapse: collapse;

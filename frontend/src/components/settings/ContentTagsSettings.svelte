@@ -20,6 +20,7 @@
     tagContentItems,
   } from '../../api/contentTags.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
+  import TableScroll from '../ui/TableScroll.svelte';
 
   let loading = $state(true);
   let loadError = $state(null);
@@ -136,47 +137,49 @@
 
     <!-- (a) Přehled taxonomie -->
     <section class="shpd-content-tags__section">
-      <table class="shpd-content-tags__table">
-        <thead>
-          <tr>
-            <th>{t('settings.contentTags.col.tag')}</th>
-            <th>{t('settings.contentTags.col.state')}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each overview.tags as tag (tag.tag)}
+      <TableScroll>
+        <table class="shpd-content-tags__table">
+          <thead>
             <tr>
-              <td>
-                <span class="shpd-content-tags__label">{tag.label}</span>
-                <span class="shpd-content-tags__key">{tag.tag}</span>
-              </td>
-              <td>
-                <span
-                  class="shpd-content-tags__chip shpd-content-tags__chip--{tag.state}"
-                >{stateLabel(tag)}</span>
-                {#if tag.items.length > 0}
-                  <span class="shpd-content-tags__items">
-                    {tag.items.map((i) => `${i.code} — ${i.name}`).join(', ')}
-                  </span>
-                {/if}
-              </td>
-              <td class="shpd-content-tags__action-cell">
-                {#if tag.state === 'defaultAccount' && overview.available}
-                  <Button
-                    label={t('settings.contentTags.action.create')}
-                    size="sm"
-                    variant="secondary"
-                    disabled={materializingTag !== null}
-                    loading={materializingTag === tag.tag}
-                    onclick={() => handleMaterialize(tag)}
-                  />
-                {/if}
-              </td>
+              <th>{t('settings.contentTags.col.tag')}</th>
+              <th>{t('settings.contentTags.col.state')}</th>
+              <th></th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each overview.tags as tag (tag.tag)}
+              <tr>
+                <td>
+                  <span class="shpd-content-tags__label">{tag.label}</span>
+                  <span class="shpd-content-tags__key">{tag.tag}</span>
+                </td>
+                <td>
+                  <span
+                    class="shpd-content-tags__chip shpd-content-tags__chip--{tag.state}"
+                  >{stateLabel(tag)}</span>
+                  {#if tag.items.length > 0}
+                    <span class="shpd-content-tags__items">
+                      {tag.items.map((i) => `${i.code} — ${i.name}`).join(', ')}
+                    </span>
+                  {/if}
+                </td>
+                <td class="shpd-content-tags__action-cell">
+                  {#if tag.state === 'defaultAccount' && overview.available}
+                    <Button
+                      label={t('settings.contentTags.action.create')}
+                      size="sm"
+                      variant="secondary"
+                      disabled={materializingTag !== null}
+                      loading={materializingTag === tag.tag}
+                      onclick={() => handleMaterialize(tag)}
+                    />
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
       {#if materializeError}
         <p class="shpd-content-tags__state shpd-content-tags__state--error">{materializeError}</p>
       {/if}

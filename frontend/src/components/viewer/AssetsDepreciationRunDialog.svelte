@@ -26,6 +26,7 @@
   import { formatAmount } from '../../utils/formatNumber.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import TableScroll from '../ui/TableScroll.svelte';
 
   /** Viewer, ve kterém se otevírá detail účetního dokladu majetku. */
   const DOC_VIEWER_ID = 'docs.core.heads';
@@ -271,6 +272,112 @@
         {#if preview.depreciations.length === 0}
           <p class="shpd-deprun__muted">{t('assets.posting.noDepreciations')}</p>
         {:else}
+          <TableScroll>
+            <table class="shpd-deprun__table">
+              <thead>
+                <tr>
+                  <th>{t('assets.depreciationRun.colNumber')}</th>
+                  <th>{t('assets.depreciationRun.colName')}</th>
+                  <th>{t('assets.depreciationRun.colFormula')}</th>
+                  <th class="shpd-deprun__num">{t('assets.depreciationRun.colAmount')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each preview.depreciations as item (item.id)}
+                  <tr>
+                    <td>{item.number}</td>
+                    <td>
+                      {item.name}
+                      {#each item.messages as msg}
+                        <div class="shpd-deprun__warning">{msg}</div>
+                      {/each}
+                    </td>
+                    <td class="shpd-deprun__formula">{item.formula}</td>
+                    <td class="shpd-deprun__num">{formatAmount(item.amount)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3">{t('assets.depreciationRun.total', { count: preview.depreciations.length })}</td>
+                  <td class="shpd-deprun__num">{formatAmount(preview.depreciationTotal)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </TableScroll>
+        {/if}
+
+        {#if preview.events.length > 0}
+          <h4 class="shpd-deprun__heading">{t('assets.posting.events')}</h4>
+          <TableScroll>
+            <table class="shpd-deprun__table">
+              <thead>
+                <tr>
+                  <th>{t('assets.depreciationRun.colNumber')}</th>
+                  <th>{t('assets.depreciationRun.colName')}</th>
+                  <th>{t('assets.posting.colKind')}</th>
+                  <th>{t('assets.posting.colDate')}</th>
+                  <th class="shpd-deprun__num">{t('assets.depreciationRun.colAmount')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each preview.events as item, i (i)}
+                  <tr>
+                    <td>{item.number}</td>
+                    <td>{item.name}</td>
+                    <td>{t(`assets.posting.kind.${item.kind}`)}</td>
+                    <td>{formatDate(item.date)}</td>
+                    <td class="shpd-deprun__num">{item.kind === 'disposal' ? '' : formatAmount(item.amount)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </TableScroll>
+        {/if}
+
+        <h4 class="shpd-deprun__heading">{t('assets.posting.accounts')}</h4>
+        <TableScroll>
+          <table class="shpd-deprun__table">
+            <thead>
+              <tr>
+                <th>{t('assets.posting.colAccount')}</th>
+                <th class="shpd-deprun__num">{t('assets.posting.colDebit')}</th>
+                <th class="shpd-deprun__num">{t('assets.posting.colCredit')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each preview.accounts as account (account.account)}
+                <tr>
+                  <td>{account.number} {account.name}</td>
+                  <td class="shpd-deprun__num">{account.debit ? formatAmount(account.debit) : ''}</td>
+                  <td class="shpd-deprun__num">{account.credit ? formatAmount(account.credit) : ''}</td>
+                </tr>
+              {/each}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>{t('assets.posting.accountsTotal')}</td>
+                <td class="shpd-deprun__num">{formatAmount(preview.totalDebit)}</td>
+                <td class="shpd-deprun__num">{formatAmount(preview.totalCredit)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </TableScroll>
+      {/if}
+
+      {#if preview.excluded.length > 0}
+        <h4 class="shpd-deprun__heading">{t('assets.depreciationRun.excluded')}</h4>
+        <ul class="shpd-deprun__excluded">
+          {#each preview.excluded as item (item.id)}
+            <li><strong>{item.number}</strong> {item.name} — {reasonText(item)}</li>
+          {/each}
+        </ul>
+      {/if}
+    {:else if preview}
+      {#if preview.assets.length === 0}
+        <p class="shpd-deprun__muted">{t('assets.depreciationRun.empty')}</p>
+      {:else}
+        <TableScroll>
           <table class="shpd-deprun__table">
             <thead>
               <tr>
@@ -281,7 +388,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each preview.depreciations as item (item.id)}
+              {#each preview.assets as item (item.id)}
                 <tr>
                   <td>{item.number}</td>
                   <td>
@@ -297,110 +404,12 @@
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="3">{t('assets.depreciationRun.total', { count: preview.depreciations.length })}</td>
-                <td class="shpd-deprun__num">{formatAmount(preview.depreciationTotal)}</td>
+                <td colspan="3">{t('assets.depreciationRun.total', { count: preview.assets.length })}</td>
+                <td class="shpd-deprun__num">{formatAmount(preview.total)}</td>
               </tr>
             </tfoot>
           </table>
-        {/if}
-
-        {#if preview.events.length > 0}
-          <h4 class="shpd-deprun__heading">{t('assets.posting.events')}</h4>
-          <table class="shpd-deprun__table">
-            <thead>
-              <tr>
-                <th>{t('assets.depreciationRun.colNumber')}</th>
-                <th>{t('assets.depreciationRun.colName')}</th>
-                <th>{t('assets.posting.colKind')}</th>
-                <th>{t('assets.posting.colDate')}</th>
-                <th class="shpd-deprun__num">{t('assets.depreciationRun.colAmount')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each preview.events as item, i (i)}
-                <tr>
-                  <td>{item.number}</td>
-                  <td>{item.name}</td>
-                  <td>{t(`assets.posting.kind.${item.kind}`)}</td>
-                  <td>{formatDate(item.date)}</td>
-                  <td class="shpd-deprun__num">{item.kind === 'disposal' ? '' : formatAmount(item.amount)}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        {/if}
-
-        <h4 class="shpd-deprun__heading">{t('assets.posting.accounts')}</h4>
-        <table class="shpd-deprun__table">
-          <thead>
-            <tr>
-              <th>{t('assets.posting.colAccount')}</th>
-              <th class="shpd-deprun__num">{t('assets.posting.colDebit')}</th>
-              <th class="shpd-deprun__num">{t('assets.posting.colCredit')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each preview.accounts as account (account.account)}
-              <tr>
-                <td>{account.number} {account.name}</td>
-                <td class="shpd-deprun__num">{account.debit ? formatAmount(account.debit) : ''}</td>
-                <td class="shpd-deprun__num">{account.credit ? formatAmount(account.credit) : ''}</td>
-              </tr>
-            {/each}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>{t('assets.posting.accountsTotal')}</td>
-              <td class="shpd-deprun__num">{formatAmount(preview.totalDebit)}</td>
-              <td class="shpd-deprun__num">{formatAmount(preview.totalCredit)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      {/if}
-
-      {#if preview.excluded.length > 0}
-        <h4 class="shpd-deprun__heading">{t('assets.depreciationRun.excluded')}</h4>
-        <ul class="shpd-deprun__excluded">
-          {#each preview.excluded as item (item.id)}
-            <li><strong>{item.number}</strong> {item.name} — {reasonText(item)}</li>
-          {/each}
-        </ul>
-      {/if}
-    {:else if preview}
-      {#if preview.assets.length === 0}
-        <p class="shpd-deprun__muted">{t('assets.depreciationRun.empty')}</p>
-      {:else}
-        <table class="shpd-deprun__table">
-          <thead>
-            <tr>
-              <th>{t('assets.depreciationRun.colNumber')}</th>
-              <th>{t('assets.depreciationRun.colName')}</th>
-              <th>{t('assets.depreciationRun.colFormula')}</th>
-              <th class="shpd-deprun__num">{t('assets.depreciationRun.colAmount')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each preview.assets as item (item.id)}
-              <tr>
-                <td>{item.number}</td>
-                <td>
-                  {item.name}
-                  {#each item.messages as msg}
-                    <div class="shpd-deprun__warning">{msg}</div>
-                  {/each}
-                </td>
-                <td class="shpd-deprun__formula">{item.formula}</td>
-                <td class="shpd-deprun__num">{formatAmount(item.amount)}</td>
-              </tr>
-            {/each}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3">{t('assets.depreciationRun.total', { count: preview.assets.length })}</td>
-              <td class="shpd-deprun__num">{formatAmount(preview.total)}</td>
-            </tr>
-          </tfoot>
-        </table>
+        </TableScroll>
       {/if}
 
       {#if preview.excluded.length > 0}

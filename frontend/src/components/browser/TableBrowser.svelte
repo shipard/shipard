@@ -219,7 +219,7 @@
     </div>
 
   {:else}
-    <!-- Table wrapper enables horizontal scroll -->
+    <!-- Obal datové mřížky (D57) — roluje v obou osách -->
     <div class="shpd-browser__table-wrap">
       <table class="shpd-browser__table">
         <thead>
@@ -374,7 +374,9 @@
     font-size: var(--shpd-font-size-lg);
   }
 
-  /* Table wrapper — horizontal scroll */
+  /* Datová mřížka s držící hlavičkou (#133 D57): vlastní obal, který
+     vyplní panel nad stránkováním a roluje v obou osách — sticky
+     hlavička na něm závisí. Proto ne `TableScroll`. */
   .shpd-browser__table-wrap {
     flex: 1;
     overflow: auto;

@@ -7,6 +7,7 @@
   import Notice from '../ui/Notice.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import TableScroll from '../ui/TableScroll.svelte';
 
   let sessions = $state([]);
   let loading = $state(true);
@@ -74,39 +75,41 @@
   {:else if sessions.length === 0}
     <p class="shpd-sessions-panel__status">{t('account.security.noSessions')}</p>
   {:else}
-    <table class="shpd-sessions-panel__table">
-      <thead>
-        <tr>
-          <th>{t('account.security.created')}</th>
-          <th>{t('account.security.ipAddress')}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each sessions as session (session.id)}
+    <TableScroll>
+      <table class="shpd-sessions-panel__table">
+        <thead>
           <tr>
-            <td>
-              {formatDate(session.created)}
-              {#if session.current}
-                <span class="shpd-sessions-panel__badge">{t('account.security.current')}</span>
-              {/if}
-            </td>
-            <td>{session.ip_address ?? '—'}</td>
-            <td class="shpd-sessions-panel__cell-action">
-              {#if !session.current}
-                <Button
-                  label={t('account.security.revoke')}
-                  variant="secondary"
-                  size="sm"
-                  disabled={working}
-                  onclick={() => handleRevoke(session.id)}
-                />
-              {/if}
-            </td>
+            <th>{t('account.security.created')}</th>
+            <th>{t('account.security.ipAddress')}</th>
+            <th></th>
           </tr>
-        {/each}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {#each sessions as session (session.id)}
+            <tr>
+              <td>
+                {formatDate(session.created)}
+                {#if session.current}
+                  <span class="shpd-sessions-panel__badge">{t('account.security.current')}</span>
+                {/if}
+              </td>
+              <td>{session.ip_address ?? '—'}</td>
+              <td class="shpd-sessions-panel__cell-action">
+                {#if !session.current}
+                  <Button
+                    label={t('account.security.revoke')}
+                    variant="secondary"
+                    size="sm"
+                    disabled={working}
+                    onclick={() => handleRevoke(session.id)}
+                  />
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </TableScroll>
 
     {#if hasOthers}
       <div class="shpd-sessions-panel__actions">

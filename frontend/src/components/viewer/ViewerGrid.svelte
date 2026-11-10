@@ -175,6 +175,10 @@
 </div>
 
 <style>
+  /* Datová mřížka s držící hlavičkou (#133 D57): vlastní obal, který
+     vyplní panel a roluje v obou osách — sticky hlavička, součtový footer
+     i infinite scroll (posluchač rolování na obalu) na něm závisí. Proto
+     ne `TableScroll`. */
   .shpd-grid {
     flex: 1;
     overflow: auto;

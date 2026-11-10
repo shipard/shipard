@@ -726,6 +726,7 @@ export default {
   'chat.delete.confirm': 'Opravdu smazat tuto konverzaci? Akci nelze vrátit.',
   'chat.copyTable': 'Kopírovat tabulku',
   'chat.copied': 'Zkopírováno',
+  'chat.table': 'Tabulka',
   'chat.tool.personsSearch': '🔍 Hledám osoby…',
   'chat.tool.personsGet': '🔍 Načítám detail osoby…',
   'chat.tool.documentsSearch': '🔍 Hledám doklady…',

@@ -8,6 +8,7 @@
   import { iconCopy, iconConfirm } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { copyTableToClipboard } from './clipboardTable.js';
+  import TableScroll from '../ui/TableScroll.svelte';
 
   let { header = [], rows = [], align = [] } = $props();
 
@@ -48,7 +49,7 @@
     <Icon icon={copied ? iconConfirm : iconCopy} size="sm" />
     {#if copied}<span>{t('chat.copied')}</span>{/if}
   </button>
-  <div class="shpd-md-table__scroll">
+  <TableScroll label={t('chat.table')}>
     <table>
       <thead>
         <tr>
@@ -67,7 +68,7 @@
         {/each}
       </tbody>
     </table>
-  </div>
+  </TableScroll>
 </div>
 
 <style>
@@ -77,9 +78,6 @@
   }
   .shpd-md-table:last-child {
     margin-bottom: 0;
-  }
-  .shpd-md-table__scroll {
-    overflow-x: auto;
   }
   table {
     width: 100%;
