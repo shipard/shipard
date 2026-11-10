@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 425 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 394.
+Celkem 426 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 394.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-narrow-detail.md` | naplánováno | #138 task 5 (D58) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -192,6 +193,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-header-subtitle.md` | Podtitul hlavičky detailu (`DetailHeader`) v roli body místo meta — detail záznamu i review, drobnost z ověření #139 (#139 task 3, D56) |
 | `design-system-tables.md` | Tabulky v obalu: `TableScroll` s režimem `fill`, tabulky v toku obsahu (aplikace i vývojářský dashboard) v obalu, report a sub-tabulka formuláře jako datová mřížka s držící hlavičkou (#138 task 3, D44, D57) |
 | `design-system-dimensions.md` | Pevné rozměry, šířky modalů a popoverů (i propy) a layout tokeny v rem 1 : 1, kontrola rozměrů v pre-commitu, drobnosti z ověření tabulek (#138 task 4, D46, D47) |
+| `design-system-narrow-detail.md` | Úzký detail vedle seznamu: viewer se seznamem měří svou šířku a pod `55rem` otevírá detail v draweru jako tabulkové seznamy, seznam přes celou šířku (#138 task 5, D58) |
 
 ## Mobilní (responzivní) UI
 

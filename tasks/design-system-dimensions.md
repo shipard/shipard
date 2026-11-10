@@ -1,6 +1,6 @@
 # Design system — pevné rozměry a layout tokeny v rem
 
-**Stav:** hotovo — 2026-11-10 (#138 task 4, D46, D47; drobnosti z ověření tasku 3); zbývá ruční ověření ve Firefoxu (písmo 20 px) a na telefonu
+**Stav:** hotovo — 2026-11-10 (#138 task 4, D46, D47; drobnosti z ověření tasku 3); ruční ověření ve Firefoxu (písmo 20 px) a na telefonu prošlo
 
 ## Kontext / Cíl
 
@@ -297,6 +297,12 @@ upravena jen věta o kontrole; navíc `docs/edit-forms.md` §9,
 **Neověřeno** (ruční): Firefox s písmem 20 px v nastavení prohlížeče,
 skutečný telefon, panel motivu ve třech shellech (poloha je `calc()` nad
 tokeny, ve snímcích není) a chat panel.
+
+**Ručně ověřeno 2026-11-10** (Firefox, písmo 20 px, telefon): tři
+rozložení, panel Vlastní vzhled, modaly a popovery, chat, změna hesla,
+vývojářský dashboard, report na telefonu — v pořádku. Nalezená chyba
+chatu (uříznuté pole zprávy, roluje celá obsahová oblast) je stav před
+taskem, zapsaná v #133.
 
 ## Pasti
 
