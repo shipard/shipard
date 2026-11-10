@@ -143,6 +143,11 @@ abstract class DocsHeadsFormBase extends TableForm
      * nechá a pole dostane upozornění přes EXCHANGE_RATE_HINT_KEY. Volá se
      * z applyNewRecordDefaults a z recalculate pro měnu, účetní datum, datum
      * vystavení (když posunulo účetní datum) a řadu pokladny.
+     *
+     * Opravný doklad (#92 D4, U7) kurz z lístku nedotahuje ani nepřepisuje:
+     * kurz se převezme z původního dokladu (recalculate('corrected_doc')),
+     * u souhrnného dokladu bez odkazu ho zadá uživatel. Domácí měna má
+     * kurz 1 i tady.
      */
     protected function applyExchangeRate(array &$data): void
     {
@@ -154,6 +159,9 @@ abstract class DocsHeadsFormBase extends TableForm
         $currency = strtolower((string) ($data['doc_currency'] ?? ''));
         if ($currency === '' || $currency === $home) {
             $data['exchange_rate'] = 1;
+            return;
+        }
+        if (!empty($data['corrective'])) {
             return;
         }
         $date = (string) ($data['accounting_date'] ?? '');

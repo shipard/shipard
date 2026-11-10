@@ -267,7 +267,9 @@ abstract class DocDocument extends Document
      *
      * - `vat_recap_inconsistent` — řádek si vnitřně neodpovídá (`base + tax`
      *   ≠ `total`, daň ≠ sazba ze základu, u kódu ze sazebníku neznámá sazba
-     *   k DUZP). Oddaňovací páry a nulové sazby se přeskakují.
+     *   k datu sazby — `DocHeadVatContext::vatRateDate`, u opravného
+     *   dokladu datum plnění původního dokladu). Oddaňovací páry a nulové
+     *   sazby se přeskakují.
      * - `rows_recap_mismatch` — Σ řádkových cen per (kód, sazba) neodpovídá
      *   rekapitulaci (v mode 1 základu, v mode 2 celkem). Mez je stejná jako
      *   u dorovnání řádků ({@see reconcileRowsToRecap}), takže warning padne
@@ -294,7 +296,9 @@ abstract class DocDocument extends Document
         $resolved = $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
         $country  = $resolved['country'] ?? null;
-        $duzp     = (string) ($data['vat_duzp'] ?? $data['issue_date'] ?? '');
+        // Datum sazby: u opravného dokladu datum plnění původního dokladu
+        // (#92 D4), jinak DUZP / datum vystavení — jedno místo pravidla.
+        $duzp     = (string) (DocHeadVatContext::vatRateDate($data) ?? '');
 
         foreach ($recap as $r) {
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {

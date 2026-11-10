@@ -202,6 +202,53 @@ class DocRowsFormTest extends TestCase
         $this->assertSame(21.0, (float) $result->data['vat_pct'], 'sazba k datu vystavení');
     }
 
+    // ── Sazba k datu plnění původního dokladu (#92 D4) ────────────────────
+
+    /** @param array<string, mixed> $head */
+    private function formWithVatHead(array $head): DocRowsForm
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(
+            static function (mixed ...$args) use ($head): ?array {
+                if (str_contains((string) ($args[0] ?? ''), 'vat_registrations')) {
+                    return ['country' => 'cz'];
+                }
+                return $head + [
+                    'doc_type' => 'invno', 'cash_dir' => 0, 'vat_place' => 0, 'vat_duzp' => '2026-05-06',
+                    'issue_date' => '2026-05-06', 'vat_mode' => 1, 'vat_registration' => 1,
+                    'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => 1.0,
+                ];
+            },
+        );
+        $db->method('fetchAll')->willReturn([]);
+        $form = $this->createForm();
+        $form->setDb($db);
+        $form->setConfig(ConfigRuntimeFactory::fromItems([
+            'world.vat.cz'       => JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/world/vat/config/vat-cz.jsonc'),
+            'docs.core.docTypes' => ['invno' => ['trade_dir' => 1, 'corrective' => true]],
+        ]));
+        return $form;
+    }
+
+    /** Opravný doklad s datem původního plnění před změnou sazby dostane na řádku tehdejší sazbu. */
+    public function testCorrectiveRowRateFollowsOriginalTaxPointDate(): void
+    {
+        $row = ['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-110', 'quantity' => '-1', 'unit_price' => '100'];
+
+        // cz-110: 20 % do 2012-12-31, 21 % od 2013 (VatRateResolverTest).
+        $form = $this->formWithVatHead(['corrective' => 1, 'corrected_doc_date' => '2012-06-01']);
+        $result = $form->recalculate('vat_code', $row);
+        $this->assertSame(20.0, (float) $result->data['vat_pct'], 'sazba k datu plnění původního dokladu');
+
+        $form = $this->formWithVatHead(['corrective' => 1, 'corrected_doc_date' => null]);
+        $result = $form->recalculate('vat_code', $row);
+        $this->assertSame(21.0, (float) $result->data['vat_pct'], 'bez data původního plnění sazba k DUZP');
+
+        $form = $this->formWithVatHead(['corrective' => 0, 'corrected_doc_date' => '2012-06-01']);
+        $result = $form->recalculate('vat_code', $row);
+        $this->assertSame(21.0, (float) $result->data['vat_pct'], 'běžný doklad beze změny');
+    }
+
     // ── Živý přepočet (#71) ───────────────────────────────────────────────
 
     /**
