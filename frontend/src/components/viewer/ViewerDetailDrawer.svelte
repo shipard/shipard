@@ -1,9 +1,11 @@
 <script>
-  // Non-modální slide-over detail pro grid layout — docs/viewer-grid.md §6
-  // (D4). Bez overlay: grid pod drawerem zůstává interaktivní, klik na
-  // jiný řádek přepíná detail. Obsahem je stávající ViewerDetail (props
-  // kontrakt beze změny). Na mobilu se drawer nepoužívá (tam platí
-  // list/detail full-width přepínání).
+  // Non-modální slide-over detail — docs/viewer-grid.md §6 (D4). Slouží
+  // grid layoutu a úzkému vieweru se seznamem (#133 D58: viewer užší než
+  // seznam + nejužší rozumný detail). Bez overlay: seznam pod drawerem
+  // zůstává interaktivní, klik na jiný řádek přepíná detail. Obsahem je
+  // stávající ViewerDetail (props kontrakt beze změny). Na mobilu (pod
+  // breakpointem shellu) se drawer nepoužívá — tam platí přepínání
+  // seznam / detail přes celou šířku (D42).
   import ViewerDetail from './ViewerDetail.svelte';
   import Button from '../ui/Button.svelte';
   import { isModalOpen } from '../ui/Modal.svelte';

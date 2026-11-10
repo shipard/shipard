@@ -14,6 +14,14 @@
 
 const MOBILE_BREAKPOINT = '48rem'; // breakpoint shellu (#133 D42), hlídá check-css-units.py
 
+// Nejmenší šířka vieweru se seznamem, při které je detail ještě vedle
+// seznamu (#133 D58): `25rem` seznam + `30rem` nejužší rozumný detail
+// (práh úzkého obsahu D43). Užší viewer roztáhne seznam přes celou šířku
+// a detail otevře v draweru. Řídí se šířkou vieweru, ne okna — měří ji
+// Viewer.svelte (utils/viewerSplit.js), není to media query. Hodnotu hlídá
+// check-css-units.py.
+export const VIEWER_SPLIT_MIN = '55rem';
+
 let isMobile   = $state(false);
 let drawerOpen = $state(false);
 

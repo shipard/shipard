@@ -31,8 +31,9 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
-  import { layoutStore } from '../../stores/layout.svelte.js';
+  import { layoutStore, VIEWER_SPLIT_MIN } from '../../stores/layout.svelte.js';
   import { getViewerLayout, setViewerLayout } from '../../utils/viewerLayout.js';
+  import { isNarrowViewer } from '../../utils/viewerSplit.js';
   import { supportedFilters, initialFilterValues } from '../../utils/viewerFilters.js';
   import { iconTable, iconList } from '../../icons.js';
   import { formatAmount } from '../../utils/formatNumber.js';
@@ -107,6 +108,19 @@
       : activeLayout
   );
   let isGrid = $derived(effectiveLayout === 'grid');
+
+  // --- Úzký viewer (#133 D58) ---
+  // Viewer se seznamem měří SVOU šířku (ne okno): pod VIEWER_SPLIT_MIN
+  // (seznam + nejužší rozumný detail) se seznam roztáhne přes celou šířku
+  // a detail se otevře v draweru jako u gridu. Mění se jen umístění
+  // detailu — effectiveLayout (tvar řádků, dotaz) zůstává, žádný refetch.
+  // Měří ResizeObserver $effect níže; na mobilu se neměří.
+  let bodyEl = $state(null);
+  let isNarrow = $state(false);
+  // Kde žije detail: drawer (grid, úzký viewer) × panel vedle seznamu.
+  // Na mobilu nikdy drawer — tam platí přepínání seznam / detail (D42).
+  let detailInDrawer = $derived(!layoutStore.isMobile && (isGrid || isNarrow));
+
   // Součtový footer gridu — přichází jen s page 0, append ho nemění (D7).
   let footer = $state(null);
   // Předchozí efektivní layout — obyčejná (ne-reaktivní) proměnná.
@@ -163,10 +177,11 @@
   let searchInputEl = $state(null);
 
   // --- Derived ---
-  // V grid layoutu zůstává horní toolbar v list kontextu (meta.toolbar) —
-  // detail akce žijí v hlavičce draweru (docs/viewer-grid.md §4.1, §6).
+  // S detailem v draweru (grid, úzký viewer — D58) zůstává horní toolbar
+  // v list kontextu (meta.toolbar) — detail akce žijí v hlavičce draweru
+  // (docs/viewer-grid.md §4.1, §6).
   let toolbarActions = $derived(
-    !isGrid && selectedRowId != null ? detailToolbar : (meta?.toolbar ?? [])
+    !detailInDrawer && selectedRowId != null ? detailToolbar : (meta?.toolbar ?? [])
   );
 
   // --- Data fetching ---
@@ -449,8 +464,10 @@
     } else if (actionId === 'import_from_registry') {
       registryWizardOpen = true;
     } else if (actionId === 'reanalyze' && selectedRowId != null) {
-      // Najdi action a vytáhni z meta.profiles seznam profilů.
-      const action = (toolbarActions ?? []).find(a => a.id === 'reanalyze');
+      // Najdi action a vytáhni z meta.profiles seznam profilů. Hledá se
+      // v detailToolbar, ne v toolbarActions — s detailem v draweru nese
+      // horní lišta akce seznamu a akce přichází z hlavičky draweru.
+      const action = (detailToolbar ?? []).find(a => a.id === 'reanalyze');
       reanalyzeProfiles = action?.meta?.profiles ?? [];
       reanalyzeProfileNdx = '';
       reanalyzeDialogOpen = true;
@@ -1066,11 +1083,46 @@
     });
   });
 
+  // Měření šířky vieweru (#133 D58). Sleduje se .shpd-viewer__body — má
+  // šířku seznamu + detailu a přepnutí ji nemění (drawer je position:
+  // fixed, seznam přes celou šířku zabere místo detail panelu), takže na
+  // hraně nic nekmitá a hystereze není potřeba.
+  //
+  // První měření je synchronní v efektu: efekt běží po připojení DOM, ale
+  // před vykreslením, takže se detail panel vedle seznamu v úzkém vieweru
+  // nemihne. (Alternativa „detail do prvního měření nevykreslovat“ by
+  // přidala třetí stav a v širokém vieweru by problikla opačně.)
+  //
+  // Práh se přepočítává z rem při KAŽDÉM měření — písmo prohlížeče se může
+  // změnit; s ním se mění i šířka sidebaru v rem, takže observer vystřelí.
+  // Šířka 0 (element bez rozměru) se ignoruje, zůstává poslední stav.
+  // Čte jen isMobile a bodyEl; na mobilu se neměří (detailInDrawer je tam
+  // false bez ohledu na isNarrow).
+  $effect(() => {
+    const el = bodyEl;
+    if (layoutStore.isMobile || el == null || typeof ResizeObserver === 'undefined') {
+      isNarrow = false;
+      return;
+    }
+    const measure = () => {
+      const width = el.getBoundingClientRect().width;
+      if (width <= 0) return;
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      isNarrow = isNarrowViewer(width, VIEWER_SPLIT_MIN, rootFontSize);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  });
+
   // Publikování akcí do MobileTopBaru (jen mobil). Na desktopu se akce
   // renderují ve ViewerToolbar (beze změny), takže top bar nečteme.
   //
   // Reaktivně čte isMobile, selectedRowId, meta, detail, detailToolbar, tab —
   // přepočítá se při výběru řádku i při přepnutí mobil/desktop (žádoucí).
+  // Úzký desktopový viewer (D58) sem nepatří: akce detailu má hlavička
+  // draweru, ne top bar — podmínka zůstává jen isMobile.
   //
   // Mapování handlerů: jak list akce (meta.toolbar), tak detail akce
   // (detailToolbar = result.data.toolbar) jdou přes `handleToolbarAction`,
@@ -1169,11 +1221,12 @@
     class="shpd-viewer__body"
     class:shpd-viewer__body--mobile={layoutStore.isMobile}
     class:shpd-viewer__body--detail={layoutStore.isMobile && selectedRowId != null}
+    bind:this={bodyEl}
   >
     <!-- Left panel: tabs + search + row list.
-         V grid layoutu panel zabírá celou šířku (tabulka je full-width,
-         detail žije v draweru), taby/search/filtry zůstávají stejné. -->
-    <div class="shpd-viewer__list-panel" class:shpd-viewer__list-panel--grid={isGrid}>
+         S detailem v draweru (grid, úzký viewer — D58) panel zabírá celou
+         šířku, taby/search/filtry zůstávají stejné. -->
+    <div class="shpd-viewer__list-panel" class:shpd-viewer__list-panel--full={detailInDrawer}>
 
       <!-- Doc state tab bar (only shown when viewer supports viewGroups) -->
       {#if hasViewGroups && viewTabs().length > 0}
@@ -1302,9 +1355,10 @@
       {/if}
     </div>
 
-    <!-- Right panel: detail. V grid layoutu se nerenderuje — detail
-         žije v non-modálním draweru (ViewerDetailDrawer). -->
-    {#if !isGrid}
+    <!-- Right panel: detail. V gridu a v úzkém vieweru (D58) se
+         nerenderuje — detail žije v non-modálním draweru
+         (ViewerDetailDrawer); prázdný stav „Vyberte záznam“ tam není. -->
+    {#if !detailInDrawer}
       <div class="shpd-viewer__detail-panel" data-testid="viewer-detail">
         {#if selectedRowId != null}
           <ViewerDetail
@@ -1323,9 +1377,11 @@
   </div>
 </div>
 
-<!-- Detail drawer gridu — non-modální slide-over zprava (D4). Bez overlay,
-     klik na jiný řádek přepíná detail v otevřeném draweru. -->
-{#if isGrid && selectedRowId != null}
+<!-- Detail drawer — non-modální slide-over zprava (D4 gridu): grid a úzký
+     viewer se seznamem (#133 D58). Bez overlay, klik na jiný řádek přepíná
+     detail v otevřeném draweru. Výběr přežívá přepnutí panel ↔ drawer —
+     selectedRowId a detail žijí tady, mění se jen místo vykreslení. -->
+{#if detailInDrawer && selectedRowId != null}
   <ViewerDetailDrawer
     {detail}
     loading={detailLoading}
@@ -1463,8 +1519,9 @@
     overflow: hidden;
   }
 
-  /* Grid layout — tabulka přes celou šířku body, detail v draweru. */
-  .shpd-viewer__list-panel--grid {
+  /* Detail v draweru (grid, úzký viewer — D58): seznam nebo tabulka přes
+     celou šířku body. */
+  .shpd-viewer__list-panel--full {
     width: auto;
     flex: 1;
     border-right: none;
