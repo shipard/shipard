@@ -1,22 +1,30 @@
 #!/usr/bin/env python3
-"""Kontrola CSS tokenů ve frontendu (#129 D14).
+"""Kontrola CSS tokenů ve frontendu (#129 D14, #133 D10).
 
 Token `--shpd-…` (aplikace) nebo `--dev-…` (vývojářský dashboard) použitý
-jako `var(--x)` bez fallbacku musí být někde ve `frontend/src` definovaný —
-jinak prohlížeč vlastnost tiše zahodí (karta dialogu bez pozadí, text bez
-barvy). Skript to hlídá za celý strom, ne jen za staged soubory: je rychlý
-a nedefinovaný token vznikne i smazáním definice v jiném souboru.
+ve `var(…)` musí být někde ve `frontend/src` definovaný — **s fallbackem
+i bez**. Bez fallbacku prohlížeč vlastnost tiše zahodí (karta dialogu bez
+pozadí, text bez barvy). S fallbackem tiše platí fallback a token, který
+nikdy neexistoval, vypadá jako použitý design systém: tak žil
+`--shpd-font-mono` v devíti komponentách a dřív
+`--shpd-color-alert-danger-bg`. Skript to hlídá za celý strom, ne jen za
+staged soubory: je rychlý a nedefinovaný token vznikne i smazáním definice
+v jiném souboru.
 
 Co se počítá jako **definice**:
 
 - `--shpd-x: hodnota` kdekoli — CSS, `style="…"` v markupu, klíč JS objektu
-  (`'--shpd-x': …`, tokeny vlastního vzhledu v `utils/themeColor.js`);
+  (`'--shpd-x': …`);
+- přiřazení do JS objektu `tokens['--shpd-x'] = …` (tokeny vlastního
+  vzhledu v `utils/themeColor.js`, např. `--shpd-sidebar-bg-image`);
 - Svelte direktiva `style:--shpd-x={…}` (`FormSection.svelte`);
 - `setProperty('--shpd-x', …)` v JS.
 
-Co se počítá jako **použití bez fallbacku**: `var(--shpd-x)` bez čárky.
-`var(--shpd-x, hodnota)` je v pořádku; u `var(--a, var(--b))` se hlídá
-`--b` — to je hodnota, která nakonec platí.
+Co se počítá jako **použití**: každé `var(--shpd-x)` i `var(--shpd-x, …)`.
+U `var(--a, var(--b))` se hlídají oba tokeny.
+
+Seznam výjimek skript nemá. Token, který se definuje způsobem, jaký skript
+nepozná, se řeší rozšířením vzoru definice, ne výjimkou.
 
 Použití:
     python3 scripts/check-css-tokens.py
@@ -42,13 +50,17 @@ TOKEN = r"--(?:shpd|dev)-[A-Za-z0-9_-]+"
 DEFINITION_RES = (
     # CSS deklarace, inline style, klíč JS objektu (i v uvozovkách)
     re.compile(rf"({TOKEN})['\"]?\s*:"),
+    # JS: přiřazení do objektu — tokens['--x'] = …
+    re.compile(rf"\[\s*['\"]({TOKEN})['\"]\s*\]\s*="),
     # Svelte direktiva style:--x={…}
     re.compile(rf"style:({TOKEN})="),
     # JS: el.style.setProperty('--x', …)
     re.compile(rf"setProperty\(\s*['\"]({TOKEN})['\"]"),
 )
 
-USAGE_RE = re.compile(rf"var\(\s*({TOKEN})\s*\)")
+# Skupina 2 = `,` (použití s fallbackem) nebo `)` (bez). Vnořené
+# `var(--a, var(--b))` najde finditer jako dvě použití.
+USAGE_RE = re.compile(rf"var\(\s*({TOKEN})\s*([,)])")
 
 
 def scannable(path: Path) -> bool:
@@ -60,6 +72,7 @@ def scannable(path: Path) -> bool:
 def main() -> int:
     defined: set[str] = set()
     used: dict[str, set[str]] = {}
+    with_fallback: set[str] = set()
 
     for path in sorted(FRONTEND_SRC.rglob("*")):
         if not scannable(path):
@@ -70,26 +83,25 @@ def main() -> int:
         rel = str(path.relative_to(REPO_ROOT))
         for m in USAGE_RE.finditer(text):
             used.setdefault(m.group(1), set()).add(rel)
+            if m.group(2) == ",":
+                with_fallback.add(m.group(1))
 
     undefined = {token: files for token, files in used.items() if token not in defined}
     if undefined:
-        print("Nedefinované CSS tokeny použité bez fallbacku:\n", file=sys.stderr)
+        print("Nedefinované CSS tokeny:\n", file=sys.stderr)
         for token in sorted(undefined):
-            print(f"  {token}", file=sys.stderr)
+            note = "  (má fallback — ten skrývá chybu)" if token in with_fallback else ""
+            print(f"  {token}{note}", file=sys.stderr)
             for rel in sorted(undefined[token]):
                 print(f"      {rel}", file=sys.stderr)
         print(
             "\nNahraď token existujícím (frontend/src/styles/variables.css,"
-            " frontend/src/dev/theme.css), definuj ho, nebo dej fallback"
-            " var(--x, hodnota).",
+            " frontend/src/dev/theme.css), nebo ho definuj.",
             file=sys.stderr,
         )
         return 1
 
-    print(
-        f"CSS tokeny v pořádku: {len(defined)} definic, "
-        f"{len(used)} tokenů použitých bez fallbacku."
-    )
+    print(f"CSS tokeny v pořádku: {len(defined)} definic, {len(used)} použitých tokenů.")
     return 0
 
 
