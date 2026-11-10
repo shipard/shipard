@@ -21,10 +21,28 @@ use Shipard\Core\Config\ConfigRuntime;
  * `cashreg`, `cash`). Zda automatika na konkrétním dokladu platí (u `cash`
  * jen příjem), říká `TotalRoundingAuto::applies()`.
  *
+ * `corrective` (#92 D1): `true` = typ, který jde označit jako opravný
+ * daňový doklad (`invno`). Opravný doklad je příznak na hlavičce, ne nový
+ * typ; původní doklad musí být typu s příznakem. Chybějící atribut = typ bez
+ * opravných dokladů (`DocDocument::applyCorrectiveColumns` příznak vynuluje).
+ *
  * Směr obchodu má vlastní autoritu `DocDocument::resolveTradeDir()`.
  */
 final class DocTypes
 {
+    /**
+     * Bez configu, u neznámého typu i bez atributu = typ bez opravných
+     * dokladů; s nimi jen při explicitním `true`.
+     */
+    public static function isCorrective(?ConfigRuntime $config, string $docType): bool
+    {
+        $docTypes = $config?->cfgItem('docs.core.docTypes');
+        if (!is_array($docTypes) || !is_array($docTypes[$docType] ?? null)) {
+            return false;
+        }
+        return ($docTypes[$docType]['corrective'] ?? false) === true;
+    }
+
     /**
      * Bez configu, u neznámého typu i bez atributu = typ bez automatiky;
      * s automatikou jen při explicitním `true`.

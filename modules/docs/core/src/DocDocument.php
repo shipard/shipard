@@ -29,6 +29,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *   1. denormalize doc_type (+ cash_desk for bound types) from number_series
  *   1b. resolve partner_balance (+ payment_terminal) — osoba pro saldokonto
  *      (PartnerBalanceResolver, #72; běží i ve validate, idempotentní)
+ *   1c. sloupce opravného dokladu (#92): typ bez příznaku je nuluje,
+ *      s odkazem se číslo a datum plnění přepíší z původního dokladu
  *   2. apply date defaults (accounting_date, vat_duzp, vat_dppd, due_date;
  *      nedaňový typ — docTypes[].tax_document: false — DUZP/DPPD nuluje)
  *   3. apply home_currency from DS config
@@ -140,6 +142,7 @@ abstract class DocDocument extends Document
         // brány / plátce (CashDeskDocumentBase) běžely nad odvozenou hodnotou.
         $this->resolvePartnerBalance($data);
         $this->validatePaymentIntermediary($data, $result);
+        $this->validateCorrective($data, $result);
 
         $newState = (int) ($data['docState'] ?? 10);
 
@@ -503,6 +506,169 @@ abstract class DocDocument extends Document
     }
 
     /**
+     * Opravný daňový doklad (#92 D2, D5; U4, U5) — jen při zapnutém
+     * `corrective`; na typu bez příznaku (`docTypes[].corrective`) ho
+     * `applyCorrectiveColumns` při uložení zahodí, takže se tam nekontroluje.
+     *
+     * U4 (vždy, i v konceptu a v import módu): vyplněný odkaz musí vést na
+     * existující doklad typu s příznakem a ne na doklad sám
+     * (`corrective_doc_invalid`); při potvrzení (40) navíc původní doklad
+     * V pořádku (`corrective_doc_state`) a stejný partner
+     * (`corrective_doc_partner_mismatch`). Opravný doklad k opravnému dokladu
+     * je povolený. Bez databáze se kontroly odkazu přeskočí.
+     *
+     * U5 (potvrzení mimo import mód, {@see isLockExempt}): důvod opravy je
+     * povinný (`correction_reason_required`); prázdný odkaz i číslo původního
+     * dokladu je souhrnný opravný doklad — jen varování
+     * (`correction_original_missing`), vymezení původních dokladů patří do
+     * důvodu opravy.
+     *
+     * Běží ve `validate()`, tedy před `beforeSave` — odkaz čte z dat,
+     * původní doklad z databáze, na pořadí hooků nespoléhá.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateCorrective(array $data, ValidationResult $result): void
+    {
+        if (empty($data['corrective'])) {
+            return;
+        }
+        if ($this->config !== null && !DocTypes::isCorrective($this->config, (string) ($data['doc_type'] ?? ''))) {
+            return;
+        }
+        $confirm = (int) ($data['docState'] ?? 10) === 40;
+        $correctedId = (int) ($data['corrected_doc'] ?? 0);
+
+        if ($correctedId > 0 && $this->db !== null) {
+            $original = $this->loadCorrectedDoc($correctedId);
+            if ($original === null) {
+                $result->addError('corrected_doc', 'Původní doklad neexistuje', 'corrective_doc_invalid');
+            } elseif ($correctedId === (int) ($data['id'] ?? 0)) {
+                $result->addError('corrected_doc', 'Doklad nemůže opravovat sám sebe', 'corrective_doc_invalid');
+            } elseif ($this->config !== null
+                && !DocTypes::isCorrective($this->config, (string) ($original['doc_type'] ?? ''))
+            ) {
+                $result->addError(
+                    'corrected_doc',
+                    'Původní doklad není typu, ke kterému jde vystavit opravný doklad',
+                    'corrective_doc_invalid',
+                );
+            } elseif ($confirm) {
+                if ((int) ($original['docState'] ?? 0) !== 40) {
+                    $result->addError(
+                        'corrected_doc',
+                        'Původní doklad musí být ve stavu V pořádku',
+                        'corrective_doc_state',
+                    );
+                }
+                if ((int) ($original['partner'] ?? 0) !== (int) ($data['partner'] ?? 0)) {
+                    $result->addError(
+                        'corrected_doc',
+                        'Původní doklad má jiného partnera než opravný doklad',
+                        'corrective_doc_partner_mismatch',
+                    );
+                }
+            }
+        }
+
+        if (!$confirm || $this->isLockExempt($data)) {
+            return;
+        }
+        if (trim((string) ($data['correction_reason'] ?? '')) === '') {
+            $result->addError('correction_reason', 'Důvod opravy je povinný', 'correction_reason_required');
+        }
+        if ($correctedId <= 0 && trim((string) ($data['corrected_doc_number'] ?? '')) === '') {
+            $result->addWarning(
+                'corrected_doc_number',
+                'Opravný doklad nemá číslo původního dokladu — u souhrnné opravy uveď vymezení'
+                . ' původních dokladů v důvodu opravy.',
+                'correction_original_missing',
+            );
+        }
+    }
+
+    /**
+     * Sloupce opravy při uložení (#92 U2, U3). Typ bez příznaku
+     * (`docTypes[].corrective`) příznak zahodí a ostatní čtyři sloupce
+     * vynuluje — bez konfigurace se o typu nic neví a krok neběží (vzor
+     * `applyTotalRoundingAuto`). Doklad s příznakem v datech vypnutým (klíč
+     * přítomný a prázdný) sloupce opravy vynuluje; chybějící klíč (uložení
+     * bez formuláře) nic nemění. S odkazem na původní doklad přepíše číslo
+     * (`doc_number`) a datum plnění (`vat_duzp`, bez něj `issue_date`)
+     * původního dokladu — dokument je autorita, formulář je jen předvyplní.
+     * Bez odkazu zůstávají ruční hodnoty (souhrnný opravný doklad).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function applyCorrectiveColumns(array &$data): void
+    {
+        if ($this->config !== null && !DocTypes::isCorrective($this->config, (string) ($data['doc_type'] ?? ''))) {
+            $data['corrective'] = 0;
+            $this->clearCorrectionColumns($data);
+            return;
+        }
+        if (!array_key_exists('corrective', $data)) {
+            return;
+        }
+        if (empty($data['corrective'])) {
+            $data['corrective'] = 0;
+            $this->clearCorrectionColumns($data);
+            return;
+        }
+        $data['corrective'] = 1;
+        $correctedId = (int) ($data['corrected_doc'] ?? 0);
+        if ($correctedId <= 0 || $this->db === null) {
+            return;
+        }
+        $original = $this->loadCorrectedDoc($correctedId);
+        if ($original === null) {
+            return;
+        }
+        $number = trim((string) ($original['doc_number'] ?? ''));
+        $data['corrected_doc_number'] = $number !== '' ? $number : null;
+        $data['corrected_doc_date'] = self::dateString($original['vat_duzp'] ?? null)
+            ?? self::dateString($original['issue_date'] ?? null);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function clearCorrectionColumns(array &$data): void
+    {
+        foreach (['corrected_doc', 'corrected_doc_number', 'corrected_doc_date', 'correction_reason'] as $column) {
+            $data[$column] = null;
+        }
+    }
+
+    /**
+     * Původní doklad opravného dokladu z databáze — sloupce pro validaci
+     * (typ, stav, partner) i denormalizaci (číslo, datum plnění). Null =
+     * neexistuje. Sdílí `validateCorrective` a `applyCorrectiveColumns`.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function loadCorrectedDoc(int $id): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch(
+            'SELECT [id], [doc_type], [docState], [partner], [doc_number], [vat_duzp], [issue_date]'
+            . ' FROM [docs_core_heads] WHERE [id] = %i',
+            $id,
+        );
+        return $row?->toArray();
+    }
+
+    /** Datum z databáze (Dibi DateTime) nebo z dat (string) jako `Y-m-d`; prázdné → null. */
+    private static function dateString(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        $text = trim((string) ($value ?? ''));
+        return $text !== '' ? substr($text, 0, 10) : null;
+    }
+
+    /**
      * Import mód (#55 D26) zrcadlí doklad z cizího systému, needituje ho —
      * zámek období (documentLockProviders) obchází. Tentýž marker čte
      * beforeSave; tady je v `$data` ještě přítomný, protože gateway se ptá
@@ -543,6 +709,7 @@ abstract class DocDocument extends Document
 
         $this->denormalizeFromSeries($data);
         $this->resolvePartnerBalance($data);
+        $this->applyCorrectiveColumns($data);
         $this->applyDateDefaults($data);
         $this->applyHomeCurrency($data);
         $this->applyHomeCurrencyRate($data);

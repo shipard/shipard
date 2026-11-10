@@ -95,6 +95,11 @@ class TestableDocsHeadsDocument extends DocsHeadsDocument
         $this->applyTotalRoundingAuto($data);
     }
 
+    public function applyCorrectiveColumnsPub(array &$data): void
+    {
+        $this->applyCorrectiveColumns($data);
+    }
+
     public function applyRoundingPub(float $amount, int $mode): float
     {
         return $this->applyRounding($amount, $mode);

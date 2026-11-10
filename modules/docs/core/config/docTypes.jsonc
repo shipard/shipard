@@ -30,6 +30,14 @@
     //                směr hlídá TotalRoundingAuto::applies(). Chybí = typ
     //                bez automatiky, mód zadává uživatel. Jediná autorita
     //                čtení: DocTypes::hasTotalRoundingAuto().
+    //   corrective:  true = typ, který jde označit jako opravný daňový doklad
+    //                (#92 D1: jen invno). Opravný doklad není nový typ, ale
+    //                příznak na hlavičce (docs_core_heads.corrective) s odkazem
+    //                na původní doklad, jeho číslem, datem plnění a důvodem
+    //                opravy; původní doklad musí být téhož typu s příznakem.
+    //                Chybí = typ bez opravných dokladů — DocDocument příznak
+    //                při uložení vynuluje. Jediná autorita čtení:
+    //                DocTypes::isCorrective().
     //   trade_dir_column: název sloupce hlavičky, ze kterého se čte směr
     //                obchodu, když je trade_dir 0. Hodnota sloupce se mapuje
     //                1→1, 2→2, jinak „bez stran". Jediná povolená hodnota je
@@ -60,6 +68,7 @@
         "doc_id_code": "1",
         "trade_dir": 1,
         "total_rounding_auto": true,
+        "corrective": true,
         "doc_number_pattern_default": "%D%y%C%4",
         "subclass": "Shipard\\Module\\Docs\\InvoicesOut\\IssuedInvoiceDocument"
     },
