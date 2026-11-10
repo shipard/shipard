@@ -708,7 +708,11 @@
       <div class="shpd-form-editor__loading">{t('common.loading')}</div>
     {:else}
       {#each formDef.tabs as tab (tab.id)}
-        <div class="shpd-form-editor__tab-content" hidden={tab.id !== activeTabId}>
+        <div
+          class="shpd-form-editor__tab-content"
+          class:shpd-form-editor__tab-content--grid={tab.type === 'subtable'}
+          hidden={tab.id !== activeTabId}
+        >
           {#if tab.type === 'attachments'}
             <AttachmentPanel
               tableId={tab.table_id}
@@ -850,6 +854,18 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
+  }
+
+  /* Tab se sub-tabulkou (datová mřížka, #133 D57) má určenou výšku oblasti
+     tabu, ne min-height: `__content` je svislý scroller a s min-height by
+     obsah tabu narostl, roloval by scroller a obal sub-tabulky by svisle
+     nikdy nepřetekl (hlavička by nedržela). Třída podle typu tabu, ne
+     `:has()` — Modal není portál a vnořený dialog se sub-tabulkou (lookup,
+     dialog řádku) by přepnul i tab rodiče, nad kterým je otevřený. */
+  .shpd-form-editor__tab-content--grid {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   /* display:flex výše by jinak přebil UA styl pro [hidden]. */

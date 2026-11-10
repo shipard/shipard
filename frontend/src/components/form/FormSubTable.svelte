@@ -48,6 +48,7 @@
   import { iconAdd, iconEdit, iconDelete, iconPreview, iconMoveUp, iconMoveDown } from '../../icons.js';
   import { normalizeSpans } from '../viewer/viewerSpans.js';
   import SpanBadge from '../viewer/SpanBadge.svelte';
+  import TableScroll from '../ui/TableScroll.svelte';
   import { foldDiacritics } from '../../utils/paletteMatch.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -326,119 +327,119 @@
     {:else if visibleRows.length === 0}
       <div class="shpd-form-subtable__status">{t('subtable.noMatch')}</div>
     {:else}
-      <div class="shpd-form-subtable__table-wrap">
-      <table class="shpd-form-subtable__table">
-        <colgroup>
-          {#each columns as col (col.id)}
-            <col style={colStyle(col)} />
-          {/each}
-          <col style="width: {canReorder ? 148 : 72}px;" />
-        </colgroup>
-        <thead>
-          <tr>
+      <TableScroll fill>
+        <table class="shpd-form-subtable__table">
+          <colgroup>
             {#each columns as col (col.id)}
-              <th
-                class="shpd-form-subtable__th"
-                class:shpd-form-subtable__th--num={col.align === 'right'}
-              >{col.label}</th>
+              <col style={colStyle(col)} />
             {/each}
-            <th class="shpd-form-subtable__th shpd-form-subtable__th--actions"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each visibleRows as row, i (row.id)}
-            <tr
-              class="shpd-form-subtable__tr {row.stateStyle ? `docState_${row.stateStyle}` : ''}"
-              data-testid="subtable-row"
-              data-row-id={row.id}
-              ondblclick={() => openRow(row.id)}
-            >
+            <col style="width: {canReorder ? 148 : 72}px;" />
+          </colgroup>
+          <thead>
+            <tr>
               {#each columns as col (col.id)}
-                <td
-                  class="shpd-form-subtable__td"
-                  class:shpd-form-subtable__td--num={col.align === 'right'}
-                >
-                  {#each normalizeSpans(row.cells?.[col.id]) ?? [] as span}
-                    {#if span.badge}
-                      <span class="shpd-form-subtable__badge"><SpanBadge style={span.badge} text={span.text} /></span>
-                    {:else}
-                      <span class={span.class ? `shpd-form-subtable__span--${span.class}` : ''}>{span.text}</span>
-                    {/if}
-                  {/each}
-                </td>
+                <th
+                  class="shpd-form-subtable__th"
+                  class:shpd-form-subtable__th--num={col.align === 'right'}
+                >{col.label}</th>
               {/each}
-              <td class="shpd-form-subtable__td shpd-form-subtable__actions">
-                {#if canReorder}
-                  <Button
-                    icon={iconMoveUp}
-                    iconOnly
-                    size="sm"
-                    variant="ghost"
-                    label={t('subtable.moveUp')}
-                    disabled={disabled || moving || i === 0}
-                    onclick={() => moveRow(row.id, 'up')}
-                    testid="subtable-row-up"
-                  />
-                  <Button
-                    icon={iconMoveDown}
-                    iconOnly
-                    size="sm"
-                    variant="ghost"
-                    label={t('subtable.moveDown')}
-                    disabled={disabled || moving || i === visibleRows.length - 1}
-                    onclick={() => moveRow(row.id, 'down')}
-                    testid="subtable-row-down"
-                  />
-                {/if}
-                {#if dialogReadOnly}
-                  <Button
-                    icon={iconPreview}
-                    iconOnly
-                    size="sm"
-                    variant="ghost"
-                    label={t('common.view')}
-                    onclick={() => openRow(row.id)}
-                    testid="subtable-row-view"
-                  />
-                {:else if independentRows}
-                  <Button
-                    icon={iconEdit}
-                    iconOnly
-                    size="sm"
-                    variant="ghost"
-                    label={t('common.open')}
-                    {disabled}
-                    onclick={() => openRow(row.id)}
-                    testid="subtable-row-edit"
-                  />
-                {:else}
-                  <Button
-                    icon={iconEdit}
-                    iconOnly
-                    size="sm"
-                    variant="ghost"
-                    label={t('common.edit')}
-                    {disabled}
-                    onclick={() => openRow(row.id)}
-                    testid="subtable-row-edit"
-                  />
-                  <Button
-                    icon={iconDelete}
-                    iconOnly
-                    size="sm"
-                    variant="ghost"
-                    label={t('common.delete')}
-                    {disabled}
-                    onclick={() => requestDelete(row.id)}
-                    testid="subtable-row-delete"
-                  />
-                {/if}
-              </td>
+              <th class="shpd-form-subtable__th shpd-form-subtable__th--actions"></th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
-      </div>
+          </thead>
+          <tbody>
+            {#each visibleRows as row, i (row.id)}
+              <tr
+                class="shpd-form-subtable__tr {row.stateStyle ? `docState_${row.stateStyle}` : ''}"
+                data-testid="subtable-row"
+                data-row-id={row.id}
+                ondblclick={() => openRow(row.id)}
+              >
+                {#each columns as col (col.id)}
+                  <td
+                    class="shpd-form-subtable__td"
+                    class:shpd-form-subtable__td--num={col.align === 'right'}
+                  >
+                    {#each normalizeSpans(row.cells?.[col.id]) ?? [] as span}
+                      {#if span.badge}
+                        <span class="shpd-form-subtable__badge"><SpanBadge style={span.badge} text={span.text} /></span>
+                      {:else}
+                        <span class={span.class ? `shpd-form-subtable__span--${span.class}` : ''}>{span.text}</span>
+                      {/if}
+                    {/each}
+                  </td>
+                {/each}
+                <td class="shpd-form-subtable__td shpd-form-subtable__actions">
+                  {#if canReorder}
+                    <Button
+                      icon={iconMoveUp}
+                      iconOnly
+                      size="sm"
+                      variant="ghost"
+                      label={t('subtable.moveUp')}
+                      disabled={disabled || moving || i === 0}
+                      onclick={() => moveRow(row.id, 'up')}
+                      testid="subtable-row-up"
+                    />
+                    <Button
+                      icon={iconMoveDown}
+                      iconOnly
+                      size="sm"
+                      variant="ghost"
+                      label={t('subtable.moveDown')}
+                      disabled={disabled || moving || i === visibleRows.length - 1}
+                      onclick={() => moveRow(row.id, 'down')}
+                      testid="subtable-row-down"
+                    />
+                  {/if}
+                  {#if dialogReadOnly}
+                    <Button
+                      icon={iconPreview}
+                      iconOnly
+                      size="sm"
+                      variant="ghost"
+                      label={t('common.view')}
+                      onclick={() => openRow(row.id)}
+                      testid="subtable-row-view"
+                    />
+                  {:else if independentRows}
+                    <Button
+                      icon={iconEdit}
+                      iconOnly
+                      size="sm"
+                      variant="ghost"
+                      label={t('common.open')}
+                      {disabled}
+                      onclick={() => openRow(row.id)}
+                      testid="subtable-row-edit"
+                    />
+                  {:else}
+                    <Button
+                      icon={iconEdit}
+                      iconOnly
+                      size="sm"
+                      variant="ghost"
+                      label={t('common.edit')}
+                      {disabled}
+                      onclick={() => openRow(row.id)}
+                      testid="subtable-row-edit"
+                    />
+                    <Button
+                      icon={iconDelete}
+                      iconOnly
+                      size="sm"
+                      variant="ghost"
+                      label={t('common.delete')}
+                      {disabled}
+                      onclick={() => requestDelete(row.id)}
+                      testid="subtable-row-delete"
+                    />
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
     {/if}
   {/if}
 </div>
@@ -468,7 +469,16 @@
 />
 
 <style>
+  /* Datová mřížka s držící hlavičkou (#133 D57): kořen je flex sloupec
+     ve výšce oblasti tabu (řetěz výšky: FormEditor `__tab-content--grid`
+     → FormTab `--grid` → kořen), toolbar a stavové texty drží svou výšku
+     a tabulka v `TableScroll fill` roluje v obou osách ve svém obalu —
+     tab ani modal nerolují. */
   .shpd-form-subtable {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
     width: 100%;
   }
 
@@ -481,11 +491,13 @@
   }
 
   .shpd-form-subtable__notice {
+    flex: none;
     margin-bottom: var(--shpd-space-sm);
   }
 
   .shpd-form-subtable__toolbar {
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: space-between;
     gap: var(--shpd-space-sm);
@@ -501,24 +513,8 @@
     width: min(280px, 50%);
   }
 
-  /* Na desktopu bez vlastního scroll kontejneru (overflow visible), aby
-     sticky hlavička držela vůči scroll oblasti tabu; tabulka se do šířky
-     vejde (viz colStyle). Na mobilu se 9 sloupců řádků dokladu nevejde
-     nikdy — tam obal posouvá vodorovně sám a padding tabu zůstane. */
-  .shpd-form-subtable__table-wrap {
-    width: 100%;
-    overflow: visible;
-  }
-
-  /* Dočasně breakpoint shellu (#133 D42): obal tabulky s posunem do strany
-     vždy řeší #138 task 3 (D44). */
-  @media (max-width: 48rem) {
-    .shpd-form-subtable__table-wrap {
-      overflow-x: auto;
-    }
-  }
-
-  /* border-collapse: separate — s collapse by bordery sticky hlavičky
+  /* Sticky hlavička (th níže) drží vůči obalu `TableScroll fill`.
+     border-collapse: separate — s collapse by bordery sticky hlavičky
      odscrollovaly s obsahem (stejný důvod jako ViewerGrid). Barva textu
      na tabulce, ne na td — globální .docState_archive / .docState_trash
      na <tr> ji přebíjí (tlumený archiv, škrtnutý koš). */

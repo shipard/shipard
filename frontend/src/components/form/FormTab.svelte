@@ -24,7 +24,7 @@
   } = $props();
 </script>
 
-<div class="shpd-form-tab">
+<div class="shpd-form-tab" class:shpd-form-tab--grid={tab.type === 'subtable'}>
   {#if tab.type === 'subtable'}
     <FormSubTable
       element={tab.subtable}
@@ -70,6 +70,13 @@
 
   /* Součást řetězu pro fill sloupce — viz FormEditor / FormSection. */
   .shpd-form-tab:has(:global(.shpd-form-column--fill)) {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Tab se sub-tabulkou — článek řetězu výšky datové mřížky (#133 D57),
+     viz FormEditor. Padding tabu zůstává kolem obalu tabulky. */
+  .shpd-form-tab--grid {
     flex: 1;
     min-height: 0;
   }
