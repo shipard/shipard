@@ -1072,6 +1072,11 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   border-spacing: 0` (s `collapse` čáry hlavičky odjedou s obsahem);
   u víceřádkové hlavičky drží celý `thead` (`position: sticky; top: 0`),
   ne jednotlivé `th` — ty by se s `top: 0` v obou řádcích překryly.
+
+  Tabulka v kontejneru s `word-break: break-word` (bublina chatu) si
+  v buňkách vrací `word-break: normal`: `break-word` zmenšuje i nejmenší
+  šířku obsahu, tabulka by se pak vždy vešla, lámala text po znacích
+  a obal by nikdy nerozroloval (`chat/TableBlock.svelte`).
 - **Řádky dokladu** (`components/document/DocRows.svelte`, #139 D45, D48):
   `SectionHeading` (`title`, snippet `aside` — hromadné akce review)
   a tabulka v `TableScroll`. Sloupce Poz. · Popis · [Účet] · Množství · MJ

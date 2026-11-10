@@ -90,6 +90,14 @@
     border-bottom: 1px solid var(--shpd-color-border);
     text-align: left;
     vertical-align: top;
+    /* Bublina (`.shpd-msg__text`, `.shpd-md`) má `word-break: break-word`
+       a tabulka ho dědí. Na rozdíl od `overflow-wrap: break-word` zmenšuje
+       i nejmenší šířku obsahu (min-content) — automatický layout tabulky
+       pak smí zúžit sloupec pod šířku slova, tabulka se vždy vejde
+       a láme text po znacích. Tabulka má rolovat ve svém obalu, ne lámat
+       slova (#133 D44, D57); dlouhé nedělitelné slovo (URL) sloupec
+       rozšíří. `overflow-wrap` sem nepřidávat. */
+    word-break: normal;
   }
   th {
     font-weight: 600;

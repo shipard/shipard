@@ -1,6 +1,6 @@
 # Design system — tabulky v obalu, report a sub-tabulka jako datová mřížka
 
-**Stav:** částečně — kód a dokumentace hotové 2026-11-10 (#138 task 3, D44, D57); zbývá ruční ověření v aplikaci (Firefox, telefon) podle sekce Ověření
+**Stav:** hotovo — 2026-11-10 (#138 task 3, D44, D57); ruční ověření ve Firefoxu a na telefonu prošlo, doplnění tabulky v chatu hotové
 
 ## Kontext / Cíl
 
@@ -243,7 +243,8 @@ V prohlížeči (Firefox), zdroj dat ukázkové sady (třída `free`):
 - [x] grep z Ověření bez nálezu mimo `ViewerGrid` / `TableBrowser`
 - [x] `docs/design-system.md` §8, §12, §13, `docs/edit-forms.md`
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`
-- [ ] ruční ověření v aplikaci podle sekce Ověření
+- [x] ruční ověření v aplikaci podle sekce Ověření
+- [x] doplnění po ručním ověření — tabulka v chatu roluje do strany
 
 ## Odchylky od zadání a výsledek ověření (2026-11-10)
 
@@ -294,6 +295,51 @@ V prohlížeči (Firefox), zdroj dat ukázkové sady (třída `free`):
   roluje do strany kvůli dlouhým hodnotám v `dl.dev-kv` (bez tabulky);
   v reportu na 390 px se sloupec názvu láme po slovech (tabulka je širší
   než obal, název dostane nejmenší šířku) — obojí bylo i před taskem.
+- **Ruční ověření (Firefox, telefon) prošlo** ve všech místech ze sekce
+  Ověření kromě tabulky v chatu na telefonu — viz Doplnění níže.
+- **Doplnění hotové**: `th, td { word-break: normal }` v
+  `chat/TableBlock.svelte`, věta v `docs/design-system.md` §12 Tabulka.
+  Změřeno v Chromiu na skutečné `MessageBubble` (tabulka o šesti sloupcích
+  s URL v buňce, okno 390 px): před úpravou tabulka 240 px = šířka obalu,
+  buňky až na osm řádků; po úpravě tabulka 742 px v obalu 240 px, obal
+  roluje do strany, slova celá (nejvýš tři řádky v buňce), bublina, vlákno
+  ani stránka do strany nerolují, dlouhé slovo v odstavci se dál láme,
+  tlačítko Kopírovat na místě; úzká tabulka a okno 1280 px beze změny.
+  Na telefonu v aplikaci neověřeno — ruční kontrola.
+
+## Doplnění po ručním ověření (2026-11-10)
+
+Ruční proklik (Firefox, telefon) prošel ve všech místech z Ověření kromě
+jednoho — drobnost z ověření podle `docs/ai-workflow.md` §2, řeší se
+v tomto tasku.
+
+**Tabulka v odpovědi chatu na telefonu neroluje do strany**, sloupce se
+zúží a text buněk i hlavičky se láme po znacích.
+
+Příčina: `.shpd-md` (`Markdown.svelte`) i `.shpd-msg__text`
+(`MessageBubble.svelte`) mají `word-break: break-word` a tabulka ho dědí.
+Na rozdíl od `overflow-wrap: break-word` `word-break: break-word`
+**zmenšuje min-content šířku** — automatický
+layout tabulky pak smí zúžit každý sloupec pod šířku slova, tabulka se
+vždy vejde do bubliny a obal `TableScroll` nikdy nepřeteče.
+
+Úprava v `chat/TableBlock.svelte`:
+
+- `th, td { word-break: normal; }` s komentářem proč (dědičnost z bubliny,
+  min-content, D44 / D57 — tabulka má rolovat ve svém obalu, ne lámat
+  slova). Dlouhé nedělitelné slovo (URL) pak sloupec rozšíří a tabulka
+  roluje, nezalomí se po znacích; `overflow-wrap` do buněk nepřidávat.
+- Nic jiného v chatu neměnit (odstavce a kód v bublině dál lámou dlouhá
+  slova, to je správně).
+
+Ověření: telefon 390 px, odpověď chatu s tabulkou o 4+ sloupcích (např.
+„Vypiš posledních 5 faktur vydaných jako tabulku“) — slova v buňkách
+i hlavičce celá, tabulka roluje do strany ve svém obalu, bublina ani
+panel chatu ne; tlačítko Kopírovat tabulku na místě; na desktopu úzká
+tabulka beze změny (`width: 100%`).
+
+Commit: `fix(frontend): tabulka v chatu roluje do strany, slova nezalamuje (#138, D44)`
+— s `**Stav:** hotovo` a řádkem výsledku ručního ověření v Odchylkách.
 
 ## Pasti
 
