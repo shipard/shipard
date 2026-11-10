@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 426 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 395.
+Celkem 427 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 396.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -193,6 +193,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-tables.md` | Tabulky v obalu: `TableScroll` s režimem `fill`, tabulky v toku obsahu (aplikace i vývojářský dashboard) v obalu, report a sub-tabulka formuláře jako datová mřížka s držící hlavičkou (#138 task 3, D44, D57) |
 | `design-system-dimensions.md` | Pevné rozměry, šířky modalů a popoverů (i propy) a layout tokeny v rem 1 : 1, kontrola rozměrů v pre-commitu, drobnosti z ověření tabulek (#138 task 4, D46, D47) |
 | `design-system-narrow-detail.md` | Úzký detail vedle seznamu: viewer se seznamem měří svou šířku a pod `55rem` otevírá detail v draweru jako tabulkové seznamy, seznam přes celou šířku (#138 task 5, D58) |
+| `design-system-small-fixes.md` | Drobnosti z checklistu #133: nedefinované CSS tokeny i s fallbackem v pre-commitu, token textu na plné barvě, text z katalogu popisků na jednom místě v `TableViewer`, popisky a data metadat v detailu Spisovny, sdílená obrazovka s kartou uprostřed (#133, D59) |
 
 ## Mobilní (responzivní) UI
 

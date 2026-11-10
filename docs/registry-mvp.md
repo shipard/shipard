@@ -211,6 +211,15 @@ Pozn. 2: Starý `wkf.docs` měl druhy jako per-DS DB řádky
 (`wkf_docs_docsKinds`); nový slovník je řízený. Mapování řeší import (§10);
 případná potřeba per-DS rozšíření slovníku je otevřený bod (§11).
 
+Pozn. 3: Popisky polí pro detail dokumentu jsou v katalogu
+`base.registry.viewerDetailLabels`, sekce `fields` (`{<pole>: {name,
+name:cs, name:en}}`) — `RegistryDocumentsViewer` je v tabu Obsah ukazuje
+místo klíčů a hodnotu ve tvaru ISO data formátuje jako ostatní data
+detailu. **Každé pole každého druhu musí mít popisek** a žádný popisek
+nesmí být navíc (`RegistryDocKindsLabelsTest`); texty se shodují
+s `registry.field.*` ve frontendu (náhled review). Neznámý klíč
+(`legacyKind` z importu) se ukáže jako klíč.
+
 ### 4.2 `base.registry.sourceKinds`
 
 ```jsonc

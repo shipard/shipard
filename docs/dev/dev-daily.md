@@ -299,7 +299,7 @@ Pre-commit hook zastaví commit, když: staged soubory obsahují citlivé
 údaje (`scripts/check-sensitive.py`), souhrn stavů tasků není aktuální
 (`scripts/tasks-index.py --check`), rozcestník nápovědy nebo metadata
 stránek nesedí (`scripts/help-index.py --check`), frontend používá
-CSS token `var(--x)` bez fallbacku, který nikde není definovaný
+CSS token ve `var(--x…)`, který nikde není definovaný (i s fallbackem)
 (`scripts/check-css-tokens.py`), nebo má v CSS mezery, zaoblení, písmo či
 rozměry v px nebo breakpoint mimo rozhodnutí #133 (`scripts/check-css-units.py`,
 #134, #138). Každý skript jde spustit

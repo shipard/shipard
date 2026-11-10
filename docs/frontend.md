@@ -251,11 +251,14 @@ odkazu Otevřít, detail nenabízí Zrušit ani Vynutit (API vrací 409
 pollingu u běžící úlohy nepřepisuje poslední stav.
 
 Nedefinované tokeny hlídá `scripts/check-css-tokens.py` v pre-commit hooku
-(D14): projde celý `frontend/src`, token `--shpd-*` / `--dev-*` použitý jako
-`var(--x)` bez fallbacku musí mít definici (`--x:` v CSS, `style=""` nebo
-JS objektu, direktiva `style:--x=`, `setProperty('--x'`); `var(--x, y)`
-nevadí. Chybějící token prohlížeč tiše zahodí (karta dialogu bez pozadí) —
-proto kontrola, ne alias.
+(D14, #133 D10): projde celý `frontend/src`, token `--shpd-*` / `--dev-*`
+použitý ve `var(…)` musí mít definici (`--x:` v CSS, `style=""` nebo JS
+objektu, přiřazení `tokens['--x'] =`, direktiva `style:--x=`,
+`setProperty('--x'`) — **i když má fallback**; u `var(--a, var(--b))` se
+hlídají oba. Bez fallbacku prohlížeč vlastnost tiše zahodí (karta dialogu
+bez pozadí), s fallbackem tiše platí fallback a neexistující token vypadá
+jako použitý design systém — proto kontrola, ne alias, a žádný seznam
+výjimek.
 
 Px v mezerách, odsazení, zaoblení, písmu a pevných rozměrech hlídá
 `scripts/check-css-units.py` (#134 D10, pravidlo D1 a D46 z #133): tytéž

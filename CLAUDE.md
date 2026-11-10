@@ -491,7 +491,7 @@ smí názvy nést — tam jsou potřeba k práci.
   vč. akcí v řádcích a tlačítek, která jen otevřou potvrzení, `danger` =
   provede nevratnou akci; pruh + lišta = sticky `.dev-top` (z-index 100,
   lepicí prvky pod ní přes `--dev-top-height`); nedefinovaný token
-  `var(--x)` bez fallbacku zastaví pre-commit
+  ve `var(--x…)`, i s fallbackem, zastaví pre-commit
   (`scripts/check-css-tokens.py`). **Úlohy na pozadí** (#103 F6b
   D58): `src/Core/DevJobs/` (`JobRecord` = `job.json` od API, `JobState`
   = `state.json` jen od obalu, živost přes `flock` na `wrapper.lock`,
@@ -641,7 +641,7 @@ Lokalizace UI textů, které generuje backend (toolbar tlačítka, taby formulá
 
 - **Toolbar default** (`Add`/`Open`): `core.system.viewerDefaults.toolbarActions` — `TableViewer::getToolbarActions()` z cfgItem; module overrides v `core.mail.viewerDefaults` apod.
 - **AutoFormBuilder General tab**: `core.system.formDefaults.generalTabLabel`
-- **Detail taby vieweru**: `*.viewerDetailLabels.tabs.*` per-modul (`core.system` má sdílený `overview`, ostatní moduly mají specifické klíče). Helper `TableViewer::detailTabLabel()` / `defaultOverviewLabel()`
+- **Detail taby vieweru**: `*.viewerDetailLabels.tabs.*` per-modul (`core.system` má sdílený `overview`, ostatní moduly mají specifické klíče). Helper `TableViewer::detailTabLabel()` / `defaultOverviewLabel()`; texty detailu ze sekce `texts` přes `detailText()` (jiná sekce `detailSectionText()` — popisky polí Spisovny `fields`). Plochý katalog `*.viewerLabels` (`{<klíč>: {name}}`, seznamy a detaily Majetku, Zakázek a AI) čte `TableViewer::labelText()` — báze modulu mají jen tenkou `text()`, náhrada `{param}` a anglický fallback jsou v `TableViewer` jednou
 - **JSONC form titulky/taby**: `JsoncFormLoader::load($lang)` aplikuje `ConfigLocalizer::localize()` rekurzivně na `:cs`/`:en` varianty v `title`, `titleNew`, `tabs[].label`, `elements[].label` (separátory)
 - **Texty karet feedu** (#101 D11): katalog `*.feedTexts` per modul, který kartu vyrábí (`core.mail` / `core.alerts` / `core.exchange`, `config/feedTexts.jsonc`, položka `{text, text:cs, text:en}`), čte `Shipard\Core\Feed\FeedTexts::t(klíč, anglický fallback, params)`. Vzor = ICU MessageFormat jako ve frontendu (plurály `{n, plural, one {# …} few {…} other {…}}`) — uvnitř plurálu **vždy `#`** (PHP intl neumí `{n}` v plurálové větvi), apostrof `''`. Fallback v PHP musí být znak po znaku holé pole katalogu (`FeedTextsCatalogTest` to hlídá). Bez katalogu (DS před `ds-upgrade`) tiše anglicky; warning jen pro chybějící klíč v existujícím katalogu. Viz `docs/dashboard.md` §5
 - **Fallback při chybějícím compiled configu**: anglický řetězec přímo v PHP — lokalizace funguje degradovaně, ne crash

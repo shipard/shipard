@@ -82,6 +82,7 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 | `--shpd-color-text-secondary` | `#5b6878` | Sekundární text (popisky, meta) |
 | `--shpd-color-text-sidebar` | `#e6eef5` | Text v sidebaru |
 | `--shpd-color-text-sidebar-muted` | `#9bb4cc` | Tlumený text v sidebaru (nadpisy skupin) |
+| `--shpd-color-text-on-fill` | `#ffffff` | Text na plné barvě — tlačítko, aktivní buňka a podobné plochy v barvě primary, accent nebo stavové (D59); stejná hodnota v obou motivech, vlastní vzhled ho neodvozuje |
 
 ### Borders & focus
 
@@ -257,7 +258,10 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
 
 1. **Žádné hardcoded hex hodnoty v komponentách.** Pokud potřebuješ barvu,
    která není v `variables.css`, přidej ji tam jako token a použij přes
-   `var(--shpd-color-...)`.
+   `var(--shpd-color-...)`. Bílý text na plné barvě =
+   `--shpd-color-text-on-fill` (D59), ne `#fff`. Token ve `var(…)` musí
+   existovat i tehdy, když má fallback — jinak tiše platí fallback
+   (`scripts/check-css-tokens.py`).
 2. **Nepoužívej `:global(.docState_*)`** — kolizuje napříč komponentami,
    které mají stejné `docState_*` třídy. Místo toho použij child selectory
    (`.shpd-component-name.docState_edit`).
@@ -410,6 +414,18 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
   (karta feedu, AI shrnutí), čtyři karty Nastavení, strany dokladu
   v detailu i v náhledu importu, karta návrhu z pošty, karta selhání
   a náhled v průvodci importem ze Spisovny.
+
+### Obrazovka s kartou uprostřed
+
+Přihlášení, nastavení hesla, schválení OIDC transakce a stavová obrazovka
+nedostupného zdroje dat stojí na `ui/CenteredScreen.svelte`, ne na vlastním
+obalu: obal přes celou obrazovku (`min-height: 100dvh`, pozadí
+`bg-secondary`, odsazení `--shpd-space-md` ze všech stran) a plovoucí
+plocha uprostřed (`max-width: 25rem`, odsazení `--shpd-space-xl`, zaoblení
+lg, stín — D35). Na telefonu karta zůstává kartou, jen má okraj od krajů
+obrazovky; na 360 px se formulář s odsazením `xl` vejde, proto obal
+container query nemá. Obsah karty (logo, nadpis, formulář) dává a styluje
+obrazovka sama jako `children`.
 
 ### Hlášky a pruhy
 
@@ -1369,12 +1385,13 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 |---|---|
 | `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny (v rem, D46) |
 | `scripts/check-css-units.py` | Kontrola jednotek v pre-commitu (§10): px v mezerách, zaoblení, písmu a **rozměrech** (`width`, `height`, `min-*`, `max-*`, `flex`), rozměrové propy komponent, layout tokeny; breakpointy (§8) |
-| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: `var(--x)` bez fallbacku musí mít definici |
+| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu) |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
+| `frontend/src/components/ui/CenteredScreen.svelte` | Obrazovka s kartou uprostřed (§8) — obal `100dvh` s odsazením md a plovoucí plocha `25rem`; přihlášení, nastavení hesla, OpAuth, `StatusScreen` |
 | `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
 | `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce; `emptyValue` a položka se `snippet` (D51) |
 | `frontend/src/components/ui/PropertyGroups.svelte` | Skupiny vlastností ve dvou sloupcích, `wide`, container query 30 rem (§12, D29), `emptyValue`; výběr skupin čistá funkce `propertyGroups.js` |
