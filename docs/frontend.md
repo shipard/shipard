@@ -257,11 +257,15 @@ JS objektu, direktiva `style:--x=`, `setProperty('--x'`); `var(--x, y)`
 nevadí. Chybějící token prohlížeč tiše zahodí (karta dialogu bez pozadí) —
 proto kontrola, ne alias.
 
-Px v mezerách, odsazení, zaoblení a písmu hlídá `scripts/check-css-units.py`
-(#134 D10, pravidlo D1 z #133): tytéž soubory, vlastnosti `padding*`,
-`margin*`, `gap`, `font-size`, `border-radius*` v `<style>`, `style=""`
-i direktivě `style:…=`; `0px`, custom properties a komentáře nevadí, výjimka
-jen `/* px-ok: důvod */` na stejném řádku. Tokeny a pravidla psaní:
+Px v mezerách, odsazení, zaoblení, písmu a pevných rozměrech hlídá
+`scripts/check-css-units.py` (#134 D10, pravidlo D1 a D46 z #133): tytéž
+soubory, vlastnosti `padding*`, `margin*`, `gap`, `font-size`,
+`border-radius*` a rozměry `width`, `height`, `min-*`, `max-*`, `flex`
+v `<style>`, `style=""` i direktivě `style:…=`, k tomu prop `width` /
+`height` s px na komponentě (`<Modal width="30rem">`, ne `"480px"`)
+a layout tokeny ve `variables.css`; `0px`, ostatní custom properties
+a komentáře nevadí, výjimka jen `/* px-ok: důvod */` na stejném řádku
+(čáry, proužky). Tokeny a pravidla psaní:
 [`design-system.md`](design-system.md) → Jednotky a mezery.
 
 **Videa (#103 F7b D122, D126, D127, `tasks/testing-phase7b.md`).** Stránka

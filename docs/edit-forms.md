@@ -642,9 +642,13 @@ existující záznam (přechod stavu naostro je až druhý PUT s `{docState}`).
 `FormDialog.svelte` vždy renderuje formulář v Modal komponentě (centrovaný popup nad tmavým overlayem). Velikost top-level modalu se plynule škáluje podle velikosti okna přes CSS `clamp()`:
 
 ```
-width:  clamp(1200px, 80vw, 1700px)
-height: clamp(720px, 88vh, 1100px)
+width:  clamp(75rem, 80vw, 106.25rem)
+height: clamp(45rem, 88vh, 68.75rem)
 ```
+
+Meze jsou v rem (#133 D46) — px níže platí při výchozím písmu 16 px, s větším
+písmem prohlížeče rostou; okno je vždy stropem (`max-width` / `max-height`
+karty modalu).
 
 - **Spodní mez (1200 × 720)** — co se nikdy nepodleze. Na malých laptopech (1366×768) modal nevyleze mimo viewport, formulář scrolluje.
 - **Preferovaná (80vw × 88vh)** — co se vykreslí, když není uplatněna mez. Na FHD (1920×1080) vyjde cca 1536 × 950.

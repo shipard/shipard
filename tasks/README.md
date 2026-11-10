@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 424 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 393.
+Celkem 425 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 394.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -191,6 +191,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-review-modal.md` | Review modal a náhled Spisovny na sdílených částech dokladu — adaptér z canonical, hlavička s typem a souhrnným stavem, hlášky jako `Notice` nahoře, `PropertyList` se snippetem a „—“, hromadné akce v řádku nadpisu, typografie review jen v rolích, proklikání sady jen nad viditelnými odznaky (#139 task 2, D49–D55) |
 | `design-system-header-subtitle.md` | Podtitul hlavičky detailu (`DetailHeader`) v roli body místo meta — detail záznamu i review, drobnost z ověření #139 (#139 task 3, D56) |
 | `design-system-tables.md` | Tabulky v obalu: `TableScroll` s režimem `fill`, tabulky v toku obsahu (aplikace i vývojářský dashboard) v obalu, report a sub-tabulka formuláře jako datová mřížka s držící hlavičkou (#138 task 3, D44, D57) |
+| `design-system-dimensions.md` | Pevné rozměry, šířky modalů a popoverů (i propy) a layout tokeny v rem 1 : 1, kontrola rozměrů v pre-commitu, drobnosti z ověření tabulek (#138 task 4, D46, D47) |
 
 ## Mobilní (responzivní) UI
 

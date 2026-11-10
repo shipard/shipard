@@ -264,10 +264,10 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
 3. **Tlačítka řeš přes `<Button>`** komponentu, ne přes vlastní hardcoded
    styly s `!important`. `Button` má varianty `primary | secondary |
    danger | success | ghost`.
-4. **Mezery, odsazení, zaoblení a písmo bez px.** Token (`--shpd-space-*`,
-   `--shpd-radius-*`, `--shpd-font-size-*`) nebo rem; px jen okrajům,
-   stínům a stavovému proužku. Hlídá `scripts/check-css-units.py` —
-   viz §10 Jednotky a mezery.
+4. **Mezery, odsazení, zaoblení, písmo a pevné rozměry bez px.** Token
+   (`--shpd-space-*`, `--shpd-radius-*`, `--shpd-font-size-*`) nebo rem; px
+   jen čarám, okrajům, stínům a stavovému / aktivnímu proužku. Hlídá
+   `scripts/check-css-units.py` — viz §10 Jednotky a mezery.
 
 ### Anti-patterny
 
@@ -464,7 +464,8 @@ posledního.
 - Overlay `var(--shpd-color-overlay)` (40 % černá v light, 65 % v dark)
 - Tlačítka v patce přes snippet `footer` + `<Button>` komponentu
 - Title + volitelný `headerExtra` snippet pro badge/stav v hlavičce
-- Width default 640px, lze předělat (`width="800px"`, `width="480px"` atd.)
+- Width default `40rem`, lze předělat (`width="50rem"`, `width="30rem"` atd.)
+  — vždy v rem (D46, §10 Pevné rozměry); px v propu zastaví pre-commit
 - **Odsazení těla**: tělo má výchozí padding `--shpd-space-lg` (vodorovně
   lícuje s hlavičkou a patičkou) a krajním dětem ruší vnější margin. Obsah
   malého dialogu si padding **nenese sám** — zdvojil by se. Dialogy
@@ -481,7 +482,7 @@ posledního.
 
 **Použití**:
 ```svelte
-<Modal title="Zamítnout dokument" {open} onClose={close} width="480px">
+<Modal title="Zamítnout dokument" {open} onClose={close} width="30rem">
   <p>Obsah dialogu</p>
   {#snippet footer()}
     <Button label="Zrušit" variant="secondary" onclick={close} />
@@ -556,8 +557,19 @@ písmo se **nenastavuje** i kvůli tomu.
 **Nová hodnota = nové rozhodnutí v #133.** Kontrola v pre-commitu
 (`scripts/check-css-units.py`, §10) odmítne `@media` s rysem šířky mimo
 hodnotu shellu, `@container` mimo prahy výše i JS konstantu, která
-s CSS neladí; značka `px-ok` na breakpointy neplatí. Pevné šířky, výšky
-a layout tokeny v px řeší #138 task 4.
+s CSS neladí; značka `px-ok` na breakpointy neplatí.
+
+**Při větším písmu prohlížeče roste i shell a panely** (D46, #138 task 4).
+Layout tokeny, šířka seznamu vieweru, drawer, modaly a popovery jsou v rem
+(§10 Pevné rozměry), takže s písmem 20 px má sidebar 325 px místo 260
+a seznam 500 px místo 400 — text i rozvržení se škálují spolu, stejně jako
+breakpoint shellu. Modal a drawer drží v okně strop podle okna
+(`max-width: calc(100vw - …)`, `90vw`, `max-height: 90vh`). Důsledek pro
+detail vedle seznamu: v okně těsně nad hranicí shellu mu zbude méně místa
+než dřív (okno 1024 px, písmo 20 px, sidebar shell: 199 px) — obsah se
+složí přes `@container`, tabulky rolují ve svém obalu, stránka nepřetéká.
+Úzký detail vedle seznamu je otevřený bod v #138 a čeká na rozhodnutí
+v #133; šířka seznamu se tu jen převedla 1 : 1.
 
 **Stránka ani panel nerolují do strany — posune se tabulka ve svém obalu**
 (D44, D57). Tabulky jsou dvojího druhu: **tabulka v toku obsahu** (detail,
@@ -768,12 +780,12 @@ synchronizovaná místa** v [`frontend.md`](frontend.md)
 ## 10. Jednotky a mezery
 
 Pravidlo D1 z #133: **mezery, odsazení, zaoblení a velikost písma se píší
-v rem** — tokenem, nebo rem literálem; **px zůstávají jen okrajům, obrysům,
-stínům a stavovému proužku** (linka má být 1 px bez ohledu na písmo).
-Breakpointy řeší §8 *Responzivita* (`@media` jen shell v `rem`, obsah
-přes `@container`, #138 task 1); pevné šířky a výšky a layout tokeny
-(`--shpd-sidebar-width`, `--shpd-header-height`, šířky pásů shellu) řeší
-#138 task 4 — do té doby zůstávají v px (D11).
+v rem** — tokenem, nebo rem literálem; **px zůstávají jen čarám, okrajům,
+obrysům, stínům a stavovému / aktivnímu proužku** (linka má být 1 px bez
+ohledu na písmo). Totéž platí pro **pevné rozměry a layout tokeny** (D46,
+#138 task 4) — viz *Pevné rozměry a layout tokeny* níže. Breakpointy řeší
+§8 *Responzivita* (`@media` jen shell v `rem`, obsah přes `@container`,
+#138 task 1).
 
 ### Proč rem a proč se kořenové písmo nenastavuje
 
@@ -827,11 +839,61 @@ zůstávají v px.
   vedle textu (`width: 1em`), vnitřní odsazení štítku, který má růst se
   svým písmem. Mezery mezi bloky a odsazení sekcí nikdy v em — násobí se
   s každým vnořením.
-- **V px zůstává:** `border`, `outline`, `box-shadow`, stavový proužek
-  (`::before` 3 px / 6 px), `width` / `height` / `min-*` / `max-*`
-  (do #138 task 4), polohování (`top`, `left`, `inset`), `letter-spacing`,
-  `transform`; `line-height` bez jednotky. Breakpointy `@media`
-  a `@container` jsou v `rem` (§8 Responzivita).
+- **V px zůstává:** `border`, `outline`, `box-shadow`, čára (`height: 1px`)
+  a stavový / aktivní proužek (`::before` 3 px / 4 px / 6 px) — u rozměru
+  se značkou `px-ok`; drobné polohování (`top`, `left`, `inset` o pár px),
+  `letter-spacing`, `transform`; `line-height` bez jednotky. Breakpointy
+  `@media` a `@container` jsou v `rem` (§8 Responzivita).
+
+### Pevné rozměry a layout tokeny
+
+Rozhodnutí D46 z #133 (#138 task 4): **pevné rozměry odvozené od textu
+a ovládání jsou v rem** — šířky panelů, modalů, popoverů a sloupců,
+`max-width` textu a formulářů, výšky ovládacích prvků, avatary, značky
+a tečky u textu, `min-height` míst držících výšku obsahu — a stejně
+**layout tokeny**. Převod byl 1 : 1 (px / 16, bez zaokrouhlení: `260px` je
+`16.25rem`, ne `16rem`); při výchozím písmu 16 px se nic nezměnilo.
+
+| Token | Hodnota | px při 16 px |
+|---|---|---|
+| `--shpd-sidebar-width` | `16.25rem` | 260 |
+| `--shpd-sidebar-width-collapsed` | `3rem` | 48 |
+| `--shpd-header-height` | `3.5rem` | 56 |
+| `--shpd-classic-strip-width` | `4.75rem` | 76 |
+| `--shpd-rail-width` | `4.75rem` | 76 |
+
+- **Šířka modalu a popoveru je prop v rem**: `<Modal width="30rem">`,
+  `<Popover width="25rem">`, výchozí `Modal` `40rem`. Obsahové modaly
+  (`FormDialog`, `ViewerDetailModal`) mají jednotně
+  `clamp(75rem, 80vw, 106.25rem)` × `clamp(45rem, 88vh, 68.75rem)`.
+- Hodnota shodná s tokenem mezery se tokenem píše jen tam, kde **jde
+  o mezeru**; šířka prvku `1.5rem` zůstává literál, ne `--shpd-space-lg`.
+- Uvnitř `min()`, `max()`, `clamp()`, `calc()` a `flex` totéž:
+  `max-width: min(90vw, 35rem)`, `flex: 1 1 17.5rem`; sloupce mřížky
+  (`grid-template-columns: 11.25rem minmax(0, 20rem)`) taky, i když je
+  kontrola nehlídá.
+- **Rozměry podle okna** (`vh`, `dvh`, `vw`) se nemění; **ikony** zůstávají
+  v `em` (§10 výše), atributy `width` / `height` na `<svg>` a `<img>`
+  a rozměry v JS (grafy) jsou mimo pravidlo.
+- **Rozměr složený v JavaScriptu.** JS smí hodnotu jen dosadit do CSS, nebo
+  měřit vykreslený prvek (`getBoundingClientRect`, `clientHeight` — px je
+  tam správně: polohy `Popover`, výška lišty dashboardu). Číslo v px se
+  nesmí sčítat s rem řetězcem. Šířka sloupce z backendu (`col.width` v px,
+  kontrakt se nemění) jde do CSS jako `px / 16` rem (`colStyle`
+  ve `ViewerGrid` a `FormSubTable`). Odsazení vnořeného modalu (30 px na
+  úroveň, `Modal.cardStyle`) je px uvnitř `calc()` — rozlišuje hierarchii,
+  s písmem neroste.
+- **Poloha, která stojí na převedeném rozměru, jde do rem s ním**: panel
+  motivu pod horní lištou (`top: calc(var(--shpd-header-height) +
+  var(--shpd-space-sm))`), toast nad ChatLauncherem, odznak v railu.
+- **Hraniční případy** rozhoduje otázka „má růst s písmem?“: fajfka
+  zaškrtávátka, tečky stavu a průběhový pruh dashboardu ano (rem);
+  tloušťka posuvníku ne (px se značkou).
+
+V px se značkou `px-ok` zůstává 19 rozměrů: čáry 1 px (oddělovače menu,
+flyoutu, dropdownu, formuláře, tabů), aktivní proužek 3 px položek navigace,
+stavový proužek 4 px / 6 px karet a řádků, tloušťka posuvníku lišty tabů
+a dva okraje ve výšce výběru barvy.
 
 ### Kontrola v pre-commitu
 
@@ -845,14 +907,30 @@ nehlídá. Výjimka jen značkou s důvodem na stejném řádku:
 
 ```css
 padding: 1px; /* px-ok: optické zarovnání ikony na základní čáru */
+height: 1px; /* px-ok: čára */
 ```
 
-Značka bez důvodu je chyba. Každou výjimku uveď v popisu commitu; po
-převodu základů je výjimek nula. Ruční spuštění:
-`python3 scripts/check-css-units.py` (exit 1, výpis `soubor:řádek:
+Značka bez důvodu je chyba. Každou výjimku uveď v popisu commitu; v mezerách
+a písmu je výjimek nula, v rozměrech jen čáry a proužky (výše). Ruční
+spuštění: `python3 scripts/check-css-units.py` (exit 1, výpis `soubor:řádek:
 deklarace` na stderr). Styly vkládané z JavaScriptu kontrola nevidí —
-jediný takový případ je základní CSS iframe e-mailu v `SandboxedHtml.svelte`,
-což je vlastní dokument, kde px nevadí.
+základní CSS iframe e-mailu v `SandboxedHtml.svelte` (vlastní dokument, kde
+px nevadí), styl složený v JS (`colStyle`) a výchozí hodnotu propu
+(`width = '40rem'` v `Modal`); ty hlídá jen tato kapitola.
+
+Po převodu D46 hlídá tentýž skript i **rozměry** (D47):
+
+- vlastnosti `width`, `height`, `min-*` / `max-*`, `inline-size`,
+  `block-size`, `flex-basis` a zkratku `flex` — i uvnitř `min()`, `clamp()`
+  a `calc()`. `border-width`, `outline-width`, `stroke-width`,
+  `column-rule-width` ani `line-height` rozměry nejsou a neprojdou sem;
+- **rozměrové propy komponent** v šabloně `.svelte`: `width="…px"` /
+  `height="…px"` (i `width={'…px'}`) na značce s velkým počátečním
+  písmenem; `<svg width="16">` a `<img>` projdou. Značka `px-ok` tu smí
+  být i jako HTML komentář na stejném řádku;
+- **layout tokeny**: custom property `--shpd-*-width*` / `--shpd-*-height*`
+  s px ve `styles/variables.css` (ostatní tokeny s px — stíny,
+  `--shpd-radius-full` — projdou).
 
 Tentýž skript hlídá **breakpointy** (D47): `@media` s rysem šířky
 (`width`, `min-width`, `max-width`, i rozsahový zápis `width <= …`) smí mít
@@ -1157,7 +1235,8 @@ sloupce přes `@container (max-width: 30rem)` — ne `@media`, protože detail
 bývá v panelu vedle seznamu, v draweru i v modalu a šířka okna o jeho šířce
 nic neříká (D3). Práh vychází ze skutečných šířek obsahu: panel vedle
 seznamu má šířku okna bez 693 px (sidebar, seznam, odsazení), drawer
-528 px, modal přes 1100 px — dvě karty vedle sebe tak zůstávají všude
+528 px, modal přes 1100 px (při písmu 16 px; šířky jsou v rem, §10) — dvě
+karty vedle sebe tak zůstávají všude
 kromě úzkého okna a mobilu. Původních 40 rem stohovalo strany už při okně
 užším než 1333 px. Dotaz platí pro potomky kontejneru, ne pro něj sám —
 proto je kontejnerem obal mřížky na celou šířku, ne mřížka samotná;
@@ -1241,7 +1320,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
   štítky, sekundární řádek výsledku), nadpisy sekcí panelů meta strong
   bez verzálek; stavové značky (kolečko se znakem) zůstávají ovládacím
   prvkem, znak v roli meta normální tloušťkou. Rozměry koleček a popoveru
-  v px řeší #138 task 4.
+  jsou v rem (D46, §10 Pevné rozměry).
 
 ---
 
@@ -1249,7 +1328,9 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 
 | Soubor | Obsah |
 |---|---|
-| `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny |
+| `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny (v rem, D46) |
+| `scripts/check-css-units.py` | Kontrola jednotek v pre-commitu (§10): px v mezerách, zaoblení, písmu a **rozměrech** (`width`, `height`, `min-*`, `max-*`, `flex`), rozměrové propy komponent, layout tokeny; breakpointy (§8) |
+| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: `var(--x)` bez fallbacku musí mít definici |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
