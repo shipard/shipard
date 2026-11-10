@@ -6,9 +6,12 @@ namespace Shipard\Tests\Unit\Module\Docs\Core;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormElement;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Docs\Core\DocsHeadsForm;
 use Shipard\Module\Docs\Core\DocsHeadsFormBase;
 use Shipard\Module\Docs\InvoicesIn\ReceivedInvoiceForm;
@@ -257,6 +260,89 @@ class DocsHeadsFormNewRecordDefaultsTest extends TestCase
         $this->assertSame(7, $data['vat_registration']);
         $this->assertSame(3, $data['bank_account']);
         $this->assertSame(date('Y-m-d'), $data['issue_date']);
+    }
+
+    // ── Automatické zaokrouhlení (#73 D2, D3, U7) ────────────────────────────
+
+    /** Form s reálnými cfgItems automatiky a zemí zdroje dat (null = bez země). */
+    private function formWithAuto(DocsHeadsFormBase $form, ?string $country = 'cz'): DocsHeadsFormBase
+    {
+        $root = dirname(__DIR__, 5);
+        $items = [
+            'docs.core.docTypes'       => JsoncParser::parseFile($root . '/modules/docs/core/config/docTypes.jsonc'),
+            'docs.core.paymentMethods' => JsoncParser::parseFile($root . '/modules/docs/core/config/paymentMethods.jsonc'),
+            'world.base.cashRounding'  => JsoncParser::parseFile($root . '/modules/world/base/config/cashRounding.jsonc'),
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $items[$id] ?? null);
+        $form->setConfig($config);
+        if ($country !== null) {
+            $ds = $this->createMock(DataSourceConfig::class);
+            $ds->method('getCountry')->willReturn($country);
+            $form->setDsConfig($ds);
+        }
+        return $this->form(form: $form);
+    }
+
+    /** Data ze schématu včetně sloupců zaokrouhlení (oba default 0). */
+    private function roundingSchemaData(string $docType, array $overrides = []): array
+    {
+        return $this->schemaData(array_merge(
+            ['doc_type' => $docType, 'total_rounding_auto' => 0, 'total_rounding_mode' => 0],
+            $overrides,
+        ));
+    }
+
+    /** @return array<string, array{0: DocsHeadsFormBase, 1: string, 2: int}> form, typ, očekávaná automatika */
+    public static function roundingAutoForms(): array
+    {
+        return [
+            'generic invno' => [new DocsHeadsForm('docs_core_heads'), 'invno', 1],
+            'invno'         => [new IssuedInvoiceForm('docs_core_heads'), 'invno', 1],
+            'invpo'         => [new ProformaOutForm('docs_core_heads'), 'invpo', 1],
+            'invni'         => [new ReceivedInvoiceForm('docs_core_heads'), 'invni', 0],
+        ];
+    }
+
+    #[DataProvider('roundingAutoForms')]
+    public function testSalesTypesStartWithAutomaticRounding(DocsHeadsFormBase $form, string $docType, int $expectedAuto): void
+    {
+        $data = $this->roundingSchemaData($docType);
+        $this->formWithAuto($form)->applyNewRecordDefaults($data);
+
+        $this->assertSame($expectedAuto, $data['total_rounding_auto']);
+        $this->assertSame(0, $data['total_rounding_mode'], 'převodem → na haléře');
+    }
+
+    public function testCashPrefillGivesUnitRoundingOnlyWithAutomation(): void
+    {
+        $data = $this->roundingSchemaData('invno', ['payment_method' => 0]);
+        $this->formWithAuto(new IssuedInvoiceForm('docs_core_heads'))->applyNewRecordDefaults($data);
+        $this->assertSame(1, $data['total_rounding_auto']);
+        $this->assertSame(1, $data['total_rounding_mode'], 'hotovost → na koruny');
+
+        $data = $this->roundingSchemaData('invno', ['payment_method' => 0, 'doc_currency' => 'eur']);
+        $this->formWithAuto(new IssuedInvoiceForm('docs_core_heads'))->applyNewRecordDefaults($data);
+        $this->assertSame(0, $data['total_rounding_mode'], 'EUR hotově na českém zdroji → centy');
+
+        $data = $this->roundingSchemaData('invni', ['payment_method' => 0]);
+        $this->formWithAuto(new ReceivedInvoiceForm('docs_core_heads'))->applyNewRecordDefaults($data);
+        $this->assertSame(0, $data['total_rounding_auto']);
+        $this->assertSame(0, $data['total_rounding_mode'], 'přijatá faktura zůstává na haléřích');
+
+        $data = $this->roundingSchemaData('invno', ['payment_method' => 0]);
+        $this->formWithAuto(new IssuedInvoiceForm('docs_core_heads'), country: null)->applyNewRecordDefaults($data);
+        $this->assertSame(1, $data['total_rounding_auto']);
+        $this->assertSame(0, $data['total_rounding_mode'], 'bez země se mód nemění');
+    }
+
+    public function testWithoutConfigAutomationStaysOff(): void
+    {
+        $data = $this->roundingSchemaData('invno', ['payment_method' => 0]);
+        $this->form(form: new IssuedInvoiceForm('docs_core_heads'))->applyNewRecordDefaults($data);
+
+        $this->assertSame(0, $data['total_rounding_auto']);
+        $this->assertSame(0, $data['total_rounding_mode']);
     }
 
     #[DataProvider('invoiceForms')]

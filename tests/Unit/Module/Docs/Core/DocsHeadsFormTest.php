@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Docs\Core;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormElement;
@@ -245,14 +246,122 @@ class DocsHeadsFormTest extends TestCase
 
     public function testNewDocumentDefaultsRoundingModes(): void
     {
-        // Akceptace #63/3: nový doklad z formuláře total 1, vat 0 (dřív 2,
-        // které bylo s 0 totožné).
+        // #73 D3: doklad bez automatiky má mód Na haléře (dřívější 1 se v UI
+        // přes schéma default 0 stejně neuplatnilo), DPH 0 (#63/3).
         $form = new TestableDocsHeadsForm('docs_core_heads');
         $data = [];
         $form->applyClientDefaultsPub($data, true);
 
-        $this->assertSame(1, $data['total_rounding_mode']);
+        $this->assertSame(0, $data['total_rounding_mode']);
         $this->assertSame(0, $data['vat_rounding_mode']);
+        $this->assertSame(0, $data['total_rounding_auto'], 'bez typu / konfigurace automatika vypnutá');
+    }
+
+    // ── Automatické zaokrouhlení podle způsobu úhrady (#73) ──────────────────
+
+    /**
+     * Form s reálnými cfgItems pro automatiku, zemí zdroje dat (null = bez
+     * země) a prázdnou DB (žádná výchozí pokladna, žádné registrace).
+     */
+    private function createFormWithAutoCfg(?string $country = 'cz', ?DocsHeadsForm $form = null): DocsHeadsForm
+    {
+        $root = dirname(__DIR__, 5);
+        $items = [
+            'docs.core.docTypes'         => JsoncParser::parseFile($root . '/modules/docs/core/config/docTypes.jsonc'),
+            'docs.core.paymentMethods'   => JsoncParser::parseFile($root . '/modules/docs/core/config/paymentMethods.jsonc'),
+            'docs.core.roundingModes'    => JsoncParser::parseFile($root . '/modules/docs/core/config/roundingModes.jsonc'),
+            'docs.core.vatRoundingModes' => JsoncParser::parseFile($root . '/modules/docs/core/config/vatRoundingModes.jsonc'),
+            'world.base.cashRounding'    => JsoncParser::parseFile($root . '/modules/world/base/config/cashRounding.jsonc'),
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $items[$id] ?? null);
+        $form ??= $this->createForm();
+        $form->setConfig($config);
+        if ($country !== null) {
+            $ds = $this->createMock(DataSourceConfig::class);
+            $ds->method('getCountry')->willReturn($country);
+            $form->setDsConfig($ds);
+        }
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([]);
+        $db->method('fetchRow')->willReturn(null);
+        $form->setDb($db);
+        return $form;
+    }
+
+    public function testAutoCheckboxShowsForSalesTypesAndLocksModeSelect(): void
+    {
+        $form = $this->createFormWithAutoCfg();
+
+        $def = $form->buildFormDefinition(['doc_type' => 'invno', 'total_rounding_auto' => 1, 'vat_mode' => 1], true);
+        $checkbox = $this->findElement($def, 'basic', 'total_rounding_auto');
+        $this->assertNotNull($checkbox);
+        $this->assertFalse($checkbox->hidden);
+        $this->assertSame('reload', $checkbox->triggers);
+        $this->assertTrue($this->findElement($def, 'basic', 'total_rounding_mode')->readOnly, 'zapnutá automatika → mód jen ke čtení');
+
+        $def = $form->buildFormDefinition(['doc_type' => 'invno', 'total_rounding_auto' => 0, 'vat_mode' => 1], true);
+        $this->assertFalse($this->findElement($def, 'basic', 'total_rounding_mode')->readOnly, 'vypnutá → jde upravit');
+
+        $def = $form->buildFormDefinition(['doc_type' => 'invni', 'total_rounding_auto' => 1, 'vat_mode' => 1], true);
+        $this->assertTrue($this->findElement($def, 'basic', 'total_rounding_auto')->hidden, 'přijatá faktura automatiku nemá');
+        $this->assertFalse($this->findElement($def, 'basic', 'total_rounding_mode')->readOnly);
+
+        $def = $this->createForm()->buildFormDefinition(['total_rounding_auto' => 1], true);
+        $this->assertTrue($this->findElement($def, 'basic', 'total_rounding_auto')->hidden, 'bez konfigurace a typu skryté');
+    }
+
+    public function testRecalculateKeepsModeInSyncWithAutomation(): void
+    {
+        $form = $this->createFormWithAutoCfg();
+        $base = [
+            'doc_type' => 'invno', 'doc_currency' => 'czk', 'home_currency' => 'czk', 'vat_mode' => 1,
+            'payment_method' => 0, 'total_rounding_auto' => 1, 'total_rounding_mode' => 0,
+        ];
+
+        $result = $form->recalculate('payment_method', $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'hotovost → na koruny');
+        $this->assertTrue($this->findElement($result->formDefinition, 'basic', 'total_rounding_mode')->readOnly);
+
+        $result = $form->recalculate('payment_method', ['payment_method' => 2, 'total_rounding_auto' => true, 'total_rounding_mode' => 1] + $base);
+        $this->assertSame(0, $result->data['total_rounding_mode'], 'kartou → na haléře (příznak jako bool z klienta)');
+
+        $result = $form->recalculate('payment_method', ['doc_currency' => 'eur', 'total_rounding_mode' => 1] + $base);
+        $this->assertSame(0, $result->data['total_rounding_mode'], 'EUR hotově na českém zdroji → centy');
+
+        $result = $form->recalculate('total_rounding_auto', ['total_rounding_auto' => 0, 'total_rounding_mode' => 1] + $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'po vypnutí zůstává poslední mód');
+        $this->assertFalse($this->findElement($result->formDefinition, 'basic', 'total_rounding_mode')->readOnly);
+
+        $result = $form->recalculate('total_rounding_auto', $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'po zapnutí se mód dopočítá');
+
+        $result = $form->recalculate('issue_date', ['issue_date' => '2026-05-06'] + $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'běží při každém přepočtu');
+
+        $result = $this->createFormWithAutoCfg(country: null)->recalculate('payment_method', $base);
+        $this->assertSame(0, $result->data['total_rounding_mode'], 'bez země zdroje dat se mód nemění');
+    }
+
+    public function testClientDefaultsTurnAutomationOnForSalesTypes(): void
+    {
+        $form = new TestableDocsHeadsForm('docs_core_heads');
+        $this->createFormWithAutoCfg(form: $form);
+
+        $data = ['doc_type' => 'invno'];
+        $form->applyClientDefaultsPub($data, true);
+        $this->assertSame(1, $data['total_rounding_auto']);
+        $this->assertSame(0, $data['total_rounding_mode'], 'mód do dat propisuje applyNewRecordDefaults, tady jen renderování');
+
+        $data = ['doc_type' => 'invni'];
+        $form->applyClientDefaultsPub($data, true);
+        $this->assertSame(0, $data['total_rounding_auto']);
+        $this->assertSame(0, $data['total_rounding_mode']);
+
+        $data = ['doc_type' => 'invno', 'total_rounding_auto' => 0, 'total_rounding_mode' => 3];
+        $form->applyClientDefaultsPub($data, true);
+        $this->assertSame(0, $data['total_rounding_auto'], 'explicitní hodnota vyhrává');
+        $this->assertSame(3, $data['total_rounding_mode']);
     }
 
     // ── VAT mode visibility ──────────────────────────────────────────────────

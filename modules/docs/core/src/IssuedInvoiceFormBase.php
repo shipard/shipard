@@ -22,8 +22,8 @@ use Shipard\Core\Form\FormTab;
  *   - `buildExtraTabs()` — tab „Nastavení" za Přílohami: sekce Měna
  *     (`home_currency` readOnly) a Ostatní (`bank_account`,
  *     `vat_registration`, `vat_calc_source`, `vat_recap_source`,
- *     `total_rounding_mode`, `vat_rounding_mode`, `cs_mode`,
- *     `constant_symbol`).
+ *     `total_rounding_auto` + `total_rounding_mode` (při zapnuté automatice
+ *     jen ke čtení, #73), `vat_rounding_mode`, `cs_mode`, `constant_symbol`).
  *
  * Nedaňový typ (`docTypes[].tax_document: false`, `isTaxDocument()`): DUZP
  * a ruční zařazení do KH (`cs_mode`) se nezobrazují — doklad do tvrzení DPH
@@ -200,9 +200,13 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
                 hint: self::VAT_RECAP_SOURCE_HINT,
             )
 
+            // Automatické zaokrouhlení podle způsobu úhrady (#73 D4): při
+            // zapnutém mód určuje doklad, select je jen ke čtení.
+            ->checkbox('total_rounding_auto', triggers: 'reload', hidden: !$this->appliesTotalRoundingAuto($data))
             ->select(
                 'total_rounding_mode',
                 options: $this->resolveCfgItemOptions('docs.core.roundingModes'),
+                readOnly: $this->isTotalRoundingAuto($data),
             )
             ->select(
                 'vat_rounding_mode',

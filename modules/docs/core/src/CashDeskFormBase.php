@@ -93,6 +93,8 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
             $this->applyExchangeRate($data);
         }
         $this->applyPartnerBalancePreview($data);
+        // Způsob úhrady, směr i měna pokladny z řady mění mód automatiky (#73 U7).
+        $this->applyTotalRoundingAuto($data);
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';
         return new RecalculateResult($this->buildFormDefinition($data, $isNew), $data);
     }
