@@ -1,23 +1,44 @@
 #!/usr/bin/env python3
-"""Kontrola jednotek a breakpointů v CSS frontendu (#133 D1–D2, D42, D43, D47; #134 D10).
+"""Kontrola jednotek a breakpointů v CSS frontendu (#133 D1–D2, D42, D43, D46, D47; #134 D10).
 
-Mezery, odsazení, zaoblení a velikost písma se píší v rem nebo tokenem
-(`--shpd-space-*`, `--shpd-radius-*`, `--shpd-font-size-*`), ne v px — px
-patří jen okrajům, stínům a stavovému proužku (#133 D1). Skript hlídá
-deklarace vlastností `padding*`, `margin*`, `gap`, `row-gap`, `column-gap`,
-`font-size` a `border-radius*` v celém `frontend/src` (`.css` a `.svelte`:
-blok `<style>`, atribut `style="…"` i direktiva `style:vlastnost=…`), ne jen
-ve staged souborech — stejně jako `check-css-tokens.py`.
+Mezery, odsazení, zaoblení, velikost písma a pevné rozměry se píší v rem
+nebo tokenem (`--shpd-space-*`, `--shpd-radius-*`, `--shpd-font-size-*`),
+ne v px — px patří jen čarám, okrajům, obrysům, stínům a stavovému /
+aktivnímu proužku (#133 D1, D46). Skript hlídá v celém `frontend/src`
+(`.css` a `.svelte`: blok `<style>`, atribut `style="…"` i direktiva
+`style:vlastnost=…`), ne jen ve staged souborech — stejně jako
+`check-css-tokens.py`:
 
-Co se **nehlídá**: custom properties (`--x: 4px` je definice tokenu),
-komentáře `/* … */`, JavaScript v `<script>`, `0px` (projde, ale piš `0`)
-a vlastnosti mimo seznam (šířky, polohování, okraje, stíny).
+- mezery a písmo (#134 D10): `padding*`, `margin*`, `gap`, `row-gap`,
+  `column-gap`, `font-size`, `border-radius*`;
+- rozměry (#133 D46, D47): `width`, `height`, `min-*` / `max-*`,
+  `inline-size`, `block-size` (i `min-` / `max-`), `flex-basis` a zkratku
+  `flex` (px v ní je `flex-basis`) — i uvnitř `min()`, `clamp()`, `calc()`;
+- rozměrové propy komponent: atribut `width` / `height` s px na značce
+  s velkým počátečním písmenem (`<Modal width="480px">`); `<svg width="16">`
+  a `<img>` projdou;
+- layout tokeny: custom property `--shpd-*-width*` / `--shpd-*-height*`
+  s px ve `styles/variables.css`.
+
+Co se **nehlídá**: ostatní custom properties (`--x: 4px` je definice
+tokenu), komentáře `/* … */`, `0px` (projde, ale piš `0`), rozměry podle
+okna (`vh`, `dvh`, `vw` — nejsou px), ikony (`em`), atributy `width` /
+`height` na `<svg>` a `<img>`, vlastnosti mimo seznam (polohování, okraje,
+stíny, `grid-template-*`) a JavaScript v `<script>` — tedy ani výchozí
+hodnota propu (`width = '40rem'`), ani styl složený v JS (`colStyle`).
+Čáry jinde než v rozměru nejsou rozměry a neprojdou sem vůbec:
+`border-width`, `outline-width`, `stroke-width`, `column-rule-width`
+i `line-height` končí na hlídaný název, ale lookbehind v `DECLARATION_RE`
+(před názvem nesmí být písmeno ani pomlčka) je vyřadí — ověřeno testem
+regulárního výrazu při zavedení (#138 task 4).
 
 Výjimka jen značkou na stejném řádku s důvodem:
 
     padding: 1px; /* px-ok: optické zarovnání ikony na základní čáru */
+    height: 1px; /* px-ok: čára */
 
-Značka bez textu důvodu je chyba. Každá výjimka patří do popisu commitu.
+U propu komponenty smí být značka i jako `<!-- px-ok: důvod -->`. Značka bez
+textu důvodu je chyba. Každá výjimka patří do popisu commitu.
 
 Breakpointy (#133 D42, D43, D47): `@media` s rysem šířky (`width`,
 `min-width`, `max-width`, i rozsahový zápis `width <= …`) smí mít jen hodnotu
@@ -33,10 +54,11 @@ v #133 — značka `px-ok` tu neplatí.
 Použití:
     python3 scripts/check-css-units.py
 
-Volá se z `pre-commit` hooku. Exit 1 = px v hlídané vlastnosti nebo
-breakpoint mimo povolené hodnoty (výpis `soubor:řádek: deklarace` na
-stderr). Pravidla a tokeny: docs/design-system.md → Jednotky a mezery,
-breakpointy → Layout konvence → Responzivita.
+Volá se z `pre-commit` hooku. Exit 1 = px v hlídané vlastnosti, propu
+komponenty nebo layout tokenu, nebo breakpoint mimo povolené hodnoty (výpis
+`soubor:řádek: deklarace` na stderr). Pravidla a tokeny:
+docs/design-system.md → Jednotky a mezery, breakpointy → Layout konvence →
+Responzivita.
 """
 
 from __future__ import annotations
@@ -59,9 +81,11 @@ DEV_SHELL_BREAKPOINT = "68.75rem"  # D42: vývojářský dashboard (frontend/src
 CONTAINER_THRESHOLDS = ("30rem", "36rem")  # D43: úzký obsah, složené řádky dokladu
 DEV_DIR = "dev"
 LAYOUT_STORE = FRONTEND_SRC / "stores" / "layout.svelte.js"
+VARIABLES_CSS = FRONTEND_SRC / "styles" / "variables.css"
 
-# Hlídané vlastnosti (#134 D10). Logické varianty (padding-block-start…)
-# patří k těm fyzickým.
+# Hlídané vlastnosti (#134 D10; rozměry #133 D46, D47). Logické varianty
+# (padding-block-start…, inline-size…) patří k těm fyzickým. Px ve zkratce
+# `flex` je `flex-basis`.
 PROPERTY = r"""(?:
     (?:padding|margin)(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?
   | gap | row-gap | column-gap
@@ -69,10 +93,15 @@ PROPERTY = r"""(?:
   | border-radius
   | border-(?:top|bottom)-(?:left|right)-radius
   | border-(?:start|end)-(?:start|end)-radius
+  | (?:min-|max-)?(?:width|height|inline-size|block-size)
+  | flex-basis | flex
 )"""
 
 # Deklarace `vlastnost: hodnota` v CSS textu. Lookbehind vyřadí custom
-# properties (`--shpd-space-xs: 4px`) i delší názvy (`scroll-padding`).
+# properties (`--shpd-space-xs: 4px`, `--shpd-sidebar-width: …`) i delší
+# názvy: `scroll-padding`, a u rozměrů hlavně čáry — `border-width`,
+# `outline-width`, `stroke-width`, `column-rule-width` — a `line-height`.
+# `flex-direction`, `flex-grow` a spol. neprojdou přes `\s*:` za `flex`.
 DECLARATION_RE = re.compile(
     rf"(?<![\w-])(?P<prop>{PROPERTY})\s*:\s*(?P<value>[^;{{}}]*)",
     re.VERBOSE | re.IGNORECASE,
@@ -96,8 +125,28 @@ MOBILE_BREAKPOINT_RE = re.compile(r"MOBILE_BREAKPOINT\s*=\s*(?P<value>[^;\n]*)")
 # Dosazení konstanty s jednotkou navíc (`${MOBILE_BREAKPOINT}px`).
 BREAKPOINT_UNIT_RE = re.compile(r"\$\{MOBILE_BREAKPOINT\}(?P<unit>[a-z]+)")
 
+# Rozměrový prop komponenty v šabloně (#133 D47): `width="480px"`,
+# `height={'90vh'}`. Lookbehind vyřadí `style:width=`, `stroke-width=`,
+# `data-width=`; o komponentu jde jen u značky s velkým počátečním písmenem.
+SIZE_PROP_RE = re.compile(
+    r"""(?<![\w:.-])(?P<name>width|height)\s*=\s*
+        (?: "(?P<dq>[^"]*)" | '(?P<sq>[^']*)' | \{(?P<br>[^}]*)\} )""",
+    re.VERBOSE,
+)
+# Otevírací značka — poslední před atributem je ta, ke které atribut patří
+# (hledat `<Tag …>` nejde: `>` je i v `onClose={() => …}`).
+TAG_OPEN_RE = re.compile(r"<(?P<name>[A-Za-z][\w.:-]*)")
+
+# Layout token (#133 D46, D47): `--shpd-sidebar-width`, `--shpd-header-height`,
+# `--shpd-sidebar-width-collapsed` — jen ve `styles/variables.css`.
+LAYOUT_TOKEN_RE = re.compile(
+    r"(?<![\w-])(?P<name>--shpd-(?:[\w]+-)*(?:width|height)(?:-[\w-]+)?)\s*:\s*(?P<value>[^;{}]*)"
+)
+
 COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 MARKER_RE = re.compile(r"/\*\s*px-ok(?::[ \t]*(?P<reason>.*?))?\s*\*/")
+# Značka u propu komponenty smí být i HTML komentář.
+HTML_MARKER_RE = re.compile(r"<!--\s*px-ok(?::[ \t]*(?P<reason>.*?))?\s*-->")
 
 SCRIPT_BLOCK_RE = re.compile(r"<script\b[^>]*>.*?</script>", re.DOTALL | re.IGNORECASE)
 STYLE_BLOCK_RE = re.compile(r"<style\b[^>]*>(?P<css>.*?)</style>", re.DOTALL | re.IGNORECASE)
@@ -193,7 +242,57 @@ def check_file(path: Path, text: str) -> list[tuple[int, str]]:
                 continue
             declaration = " ".join(decl.group(0).split())
             findings.append((lineno, declaration))
+    findings.extend(check_size_props(path, text, lines))
+    findings.extend(check_layout_tokens(path, text, lines))
     return sorted(set(findings))
+
+
+def marker_allows(line: str, lineno: int, findings: list[tuple[int, str]]) -> bool:
+    """Značka px-ok na řádku (CSS i HTML komentář); bez důvodu je nález."""
+    marker = MARKER_RE.search(line) or HTML_MARKER_RE.search(line)
+    if marker is None:
+        return False
+    if not marker.group("reason"):
+        findings.append((lineno, "značka px-ok bez důvodu"))
+        return False
+    return True
+
+
+def check_size_props(path: Path, text: str, lines: list[str]) -> list[tuple[int, str]]:
+    """Nálezy: prop `width` / `height` s px na komponentě (#133 D47)."""
+    if path.suffix != ".svelte":
+        return []
+    markup = SCRIPT_BLOCK_RE.sub(lambda m: blank(m.group(0)), text)
+    markup = STYLE_BLOCK_RE.sub(lambda m: blank(m.group(0)), markup)
+    findings: list[tuple[int, str]] = []
+    for attr in SIZE_PROP_RE.finditer(markup):
+        value = next(attr.group(g) for g in ("dq", "sq", "br") if attr.group(g) is not None)
+        if not has_px(value):
+            continue
+        tags = list(TAG_OPEN_RE.finditer(markup, 0, attr.start()))
+        if not tags or not tags[-1].group("name")[0].isupper():
+            continue
+        lineno = line_of(text, attr.start())
+        if marker_allows(lines[lineno - 1], lineno, findings):
+            continue
+        attribute = " ".join(attr.group(0).split())
+        findings.append((lineno, f"<{tags[-1].group('name')} {attribute}> — prop komponenty"))
+    return findings
+
+
+def check_layout_tokens(path: Path, text: str, lines: list[str]) -> list[tuple[int, str]]:
+    """Nálezy: layout token `--shpd-*-width*` / `--shpd-*-height*` s px (#133 D47)."""
+    if path != VARIABLES_CSS:
+        return []
+    findings: list[tuple[int, str]] = []
+    for token in LAYOUT_TOKEN_RE.finditer(strip_comments(text)):
+        if not has_px(token.group("value")):
+            continue
+        lineno = line_of(text, token.start())
+        if marker_allows(lines[lineno - 1], lineno, findings):
+            continue
+        findings.append((lineno, f"{' '.join(token.group(0).split())} — layout token"))
+    return findings
 
 
 def normalize_length(number: str, unit: str) -> str:
@@ -269,12 +368,13 @@ def main() -> int:
     breakpoint_problems.extend(check_layout_store())
 
     if px_problems:
-        print("Px v mezerách, odsazení, zaoblení nebo písmu (#133 D1):\n", file=sys.stderr)
+        print("Px v mezerách, odsazení, zaoblení, písmu nebo rozměrech (#133 D1, D46):\n", file=sys.stderr)
         print("\n".join(px_problems), file=sys.stderr)
         print(
             "\nPřeveď na rem (px / 16) nebo token --shpd-space-* / --shpd-radius-* /"
             " --shpd-font-size-* (docs/design-system.md → Jednotky a mezery)."
-            " Výjimka jen se značkou /* px-ok: důvod */ na stejném řádku.\n",
+            " V px zůstávají jen čáry, okraje, obrysy, stíny a proužek — výjimka"
+            " jen se značkou /* px-ok: důvod */ na stejném řádku.\n",
             file=sys.stderr,
         )
     if breakpoint_problems:
@@ -292,7 +392,7 @@ def main() -> int:
     if px_problems or breakpoint_problems:
         return 1
 
-    print(f"CSS jednotky a breakpointy v pořádku: {scanned} souborů prošlo.")
+    print(f"CSS jednotky, rozměry a breakpointy v pořádku: {scanned} souborů prošlo.")
     return 0
 
 

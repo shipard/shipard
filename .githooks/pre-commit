@@ -48,11 +48,13 @@ fi
 
 if ! python3 "$REPO_ROOT/scripts/check-css-units.py"; then
     echo ""
-    echo "==> Commit zastaven: v CSS frontendu jsou px v mezerách, zaoblení"
-    echo "    nebo písmu, nebo breakpoint mimo rozhodnutí #133. Px převeď na"
-    echo "    rem (px / 16) nebo token --shpd-space-* / --shpd-radius-* /"
-    echo "    --shpd-font-size-*; výjimka jen se značkou /* px-ok: důvod */ na"
-    echo "    stejném řádku. @media s šířkou jen 48rem (dev dashboard 68.75rem),"
+    echo "==> Commit zastaven: v CSS frontendu jsou px v mezerách, zaoblení,"
+    echo "    písmu nebo rozměrech (i v propu width komponenty a layout tokenu),"
+    echo "    nebo breakpoint mimo rozhodnutí #133. Px převeď na rem (px / 16)"
+    echo "    nebo token --shpd-space-* / --shpd-radius-* / --shpd-font-size-*;"
+    echo "    v px zůstávají jen čáry, okraje, stíny a proužek — výjimka jen se"
+    echo "    značkou /* px-ok: důvod */ na stejném řádku."
+    echo "    @media s šířkou jen 48rem (dev dashboard 68.75rem),"
     echo "    @container jen 30rem / 36rem, MOBILE_BREAKPOINT = '48rem' —"
     echo "    jiná hodnota = nové rozhodnutí v #133, px-ok tu neplatí."
     echo "    Kontrola jde celým stromem: python3 scripts/check-css-units.py"
