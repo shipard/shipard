@@ -100,7 +100,7 @@
   }
 
   .shpd-pdf-panel__filename {
-    font-family: var(--shpd-font-mono, monospace);
+    font-family: var(--shpd-font-family-mono);
     font-size: var(--shpd-font-size-body);
   }
 

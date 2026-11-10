@@ -607,7 +607,7 @@
   }
 
   .shpd-registry-wizard__mono {
-    font-family: var(--shpd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-family: var(--shpd-font-family-mono);
   }
 
   .shpd-registry-wizard__row-badges {

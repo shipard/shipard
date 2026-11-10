@@ -548,7 +548,7 @@
   }
 
   .shpd-deprun__warning {
-    color: var(--shpd-color-state-warning-text, var(--shpd-color-text-secondary));
+    color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-xs);
   }
 

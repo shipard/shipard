@@ -249,7 +249,7 @@
   }
 
   .shpd-ds-about__mono {
-    font-family: var(--shpd-font-mono, monospace);
+    font-family: var(--shpd-font-family-mono);
   }
 
   .shpd-ds-about__muted {

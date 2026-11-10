@@ -358,7 +358,7 @@
   }
 
   .shpd-items-offer__account {
-    font-family: var(--shpd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-family: var(--shpd-font-family-mono);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
   }

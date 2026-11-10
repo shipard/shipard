@@ -742,7 +742,7 @@
 
   .shpd-detail__action-dropdown--primary {
     background-color: var(--shpd-color-primary);
-    color: var(--shpd-color-on-primary, #fff);
+    color: var(--shpd-color-text-on-fill);
     border-color: var(--shpd-color-primary);
   }
   .shpd-detail__action-dropdown--primary:hover {

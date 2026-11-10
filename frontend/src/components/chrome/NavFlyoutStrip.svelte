@@ -213,7 +213,7 @@
   }
 
   .shpd-flyoutstrip__flyout-item--active {
-    background-color: var(--shpd-color-bg-active, var(--shpd-color-bg-hover));
+    background-color: var(--shpd-color-bg-hover);
     font-weight: 500;
   }
 

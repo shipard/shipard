@@ -319,7 +319,7 @@
 
   .shpd-content-tags__key {
     display: block;
-    font-family: var(--shpd-font-mono, monospace);
+    font-family: var(--shpd-font-family-mono);
     font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }
@@ -384,7 +384,7 @@
   }
 
   .shpd-content-tags__account {
-    font-family: var(--shpd-font-mono, monospace);
+    font-family: var(--shpd-font-family-mono);
     font-size: var(--shpd-font-size-xs);
     color: var(--shpd-color-text-secondary);
   }

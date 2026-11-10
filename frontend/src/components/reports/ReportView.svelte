@@ -261,7 +261,7 @@
 
   .shpd-report__td {
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-bottom: 1px solid var(--shpd-color-border-light, var(--shpd-color-border));
+    border-bottom: 1px solid var(--shpd-color-border);
   }
 
   /* Sloupec názvu drží nejmenší šířku (#138): v úzkém okně je tabulka širší

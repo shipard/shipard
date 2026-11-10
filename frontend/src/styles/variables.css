@@ -150,6 +150,10 @@
   --shpd-color-text-secondary: #5b6878;
   --shpd-color-text-sidebar:   #e6eef5;
   --shpd-color-text-sidebar-muted: #9bb4cc;
+  /* Text na plné barvě (#133 D59): tlačítko, aktivní buňka a podobné
+     plochy v barvě primary, accent nebo stavové. Vlastní vzhled ho
+     neodvozuje — barví jen sidebar. */
+  --shpd-color-text-on-fill:   #ffffff;
 
   /* Borders */
   --shpd-color-border:        #e2e8f0;
@@ -311,6 +315,9 @@
   --shpd-color-text-secondary:     #9ba3af;
   --shpd-color-text-sidebar:       #e6e8eb;
   --shpd-color-text-sidebar-muted: #8a92a0;
+  /* Stejná hodnota jako ve světlém motivu — plné barvy jsou i v tmavém
+     motivu dost syté na bílý text (D59). */
+  --shpd-color-text-on-fill:       #ffffff;
 
   /* Borders */
   --shpd-color-border:        #3a3f4a;

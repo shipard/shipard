@@ -498,7 +498,7 @@
   }
 
   .shpd-resolve__candidate-id {
-    font-family: var(--shpd-font-mono, monospace);
+    font-family: var(--shpd-font-family-mono);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-meta);
   }

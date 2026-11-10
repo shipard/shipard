@@ -223,7 +223,7 @@
 
   .shpd-period__cell--active {
     background-color: var(--shpd-color-accent);
-    color: var(--shpd-color-text-on-accent, #fff);
+    color: var(--shpd-color-text-on-fill);
     font-weight: 600;
   }
 

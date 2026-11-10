@@ -498,7 +498,7 @@
 
   .shpd-ds-setup__segment--active {
     border-color: var(--shpd-color-primary);
-    background-color: var(--shpd-color-primary-bg, var(--shpd-color-bg-secondary));
+    background-color: var(--shpd-color-bg-secondary);
     font-weight: 600;
   }
 
