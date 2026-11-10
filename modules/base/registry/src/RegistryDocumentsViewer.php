@@ -318,6 +318,8 @@ class RegistryDocumentsViewer extends TableViewer
     /**
      * Read-only výpis metadata dle druhu: nejdřív pole z docKinds[kind].fields
      * (v deklarovaném pořadí), pak zbývající klíče (např. legacyKind z importu).
+     * Popisek z katalogu (sekce `fields`), hodnota ve tvaru ISO data jako
+     * `j. n. Y` — viz `metadataItem()`.
      *
      * @return array<int, array{label: string, value: string}>
      */
@@ -341,16 +343,37 @@ class RegistryDocumentsViewer extends TableViewer
         $items = [];
         foreach ($kindFields as $field) {
             if (isset($metadata[$field]) && is_scalar($metadata[$field])) {
-                $items[] = ['label' => (string) $field, 'value' => (string) $metadata[$field]];
+                $items[] = $this->metadataItem((string) $field, $metadata[$field]);
                 unset($metadata[$field]);
             }
         }
         foreach ($metadata as $key => $value) {
             if (is_scalar($value)) {
-                $items[] = ['label' => (string) $key, 'value' => (string) $value];
+                $items[] = $this->metadataItem((string) $key, $value);
             }
         }
         return $items;
+    }
+
+    /**
+     * Položka metadat: popisek pole z katalogu `viewerDetailLabels.fields`
+     * (#133) — neznámý klíč (budoucí druh, `legacyKind` z importu) i katalog
+     * před `ds-upgrade` dají klíč pole, stejně jako náhled review ve
+     * frontendu. Hodnota ve tvaru ISO data se formátuje jako ostatní data
+     * detailu; částky a čísla zůstávají, jak jsou v JSON.
+     *
+     * @return array{label: string, value: string}
+     */
+    private function metadataItem(string $field, bool|int|float|string $value): array
+    {
+        $text = (string) $value;
+        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+            $text = $this->formatDate($value) ?? $text;
+        }
+        return [
+            'label' => $this->detailSectionText(self::LABELS_CFG_ITEM, 'fields', $field, $field),
+            'value' => $text,
+        ];
     }
 
     private function buildOriginTab(array $record): array

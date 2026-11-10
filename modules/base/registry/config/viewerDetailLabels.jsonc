@@ -2,8 +2,9 @@
     // base.registry.viewerDetailLabels
     //
     // Labels for RegistryDocumentsViewer — detail tabs (Content / Origin;
-    // attachments come from the shared section, #140 D27) and the bottom
-    // binder-tab bar sentinels (All / Unfiled).
+    // attachments come from the shared section, #140 D27), the bottom
+    // binder-tab bar sentinels (All / Unfiled), detail texts and labels
+    // of document metadata fields (`fields`).
 
     "tabs": {
         "content": {
@@ -35,6 +36,119 @@
             "name": "The document has no content.",
             "name:cs": "Dokument nemá žádný obsah.",
             "name:en": "The document has no content."
+        }
+    },
+
+    // Popisky polí metadat (#133) — klíče = pole všech druhů z
+    // `docKinds.jsonc` (`fields`); čte `RegistryDocumentsViewer` v tabu
+    // Obsah. Každé pole druhu tu musí mít položku a žádná tu není navíc
+    // (`RegistryDocKindsLabelsTest`). Texty se shodují s `registry.field.*`
+    // ve frontendu (náhled review) — při změně uprav obojí.
+    "fields": {
+        "counterparty": {
+            "name": "Counterparty",
+            "name:cs": "Protistrana",
+            "name:en": "Counterparty"
+        },
+        "subject": {
+            "name": "Subject",
+            "name:cs": "Předmět",
+            "name:en": "Subject"
+        },
+        "signedDate": {
+            "name": "Signing date",
+            "name:cs": "Datum podpisu",
+            "name:en": "Signing date"
+        },
+        "contractNumber": {
+            "name": "Contract number",
+            "name:cs": "Číslo smlouvy",
+            "name:en": "Contract number"
+        },
+        "validFrom": {
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to"
+        },
+        "noticePeriod": {
+            "name": "Notice period",
+            "name:cs": "Výpovědní doba",
+            "name:en": "Notice period"
+        },
+        "insurer": {
+            "name": "Insurer",
+            "name:cs": "Pojišťovna",
+            "name:en": "Insurer"
+        },
+        "policyNumber": {
+            "name": "Policy number",
+            "name:cs": "Číslo pojistky",
+            "name:en": "Policy number"
+        },
+        "insuredSubject": {
+            "name": "Insured subject",
+            "name:cs": "Předmět pojištění",
+            "name:en": "Insured subject"
+        },
+        "annualPremium": {
+            "name": "Annual premium",
+            "name:cs": "Roční pojistné",
+            "name:en": "Annual premium"
+        },
+        "currency": {
+            "name": "Currency",
+            "name:cs": "Měna",
+            "name:en": "Currency"
+        },
+        "supplier": {
+            "name": "Supplier",
+            "name:cs": "Dodavatel",
+            "name:en": "Supplier"
+        },
+        "totalAmount": {
+            "name": "Total amount",
+            "name:cs": "Celková částka",
+            "name:en": "Total amount"
+        },
+        "validUntil": {
+            "name": "Valid until",
+            "name:cs": "Platnost do",
+            "name:en": "Valid until"
+        },
+        "issuer": {
+            "name": "Issuer",
+            "name:cs": "Vydal",
+            "name:en": "Issuer"
+        },
+        "issuedDate": {
+            "name": "Issue date",
+            "name:cs": "Datum vydání",
+            "name:en": "Issue date"
+        },
+        "authority": {
+            "name": "Authority",
+            "name:cs": "Úřad",
+            "name:en": "Authority"
+        },
+        "refNumber": {
+            "name": "Reference number",
+            "name:cs": "Číslo jednací",
+            "name:en": "Reference number"
+        },
+        "receivedDate": {
+            "name": "Received date",
+            "name:cs": "Datum doručení",
+            "name:en": "Received date"
+        },
+        "deadline": {
+            "name": "Deadline",
+            "name:cs": "Lhůta",
+            "name:en": "Deadline"
         }
     }
 }
