@@ -1,6 +1,6 @@
 # Design system — drobnosti z checklistu #133 (tokeny, texty viewerů, Spisovna, přihlašovací obrazovky)
 
-**Stav:** hotovo — 2026-11-10 (6 commitů; odchylky viz „Odchylky od zadání“); zbývá ruční proklik (detail Spisovny s reálným dokumentem, navigace, report, `DsSetup`, dialog odpisů, výběr období) a zaškrtnutí checklistu #133
+**Stav:** hotovo — 2026-11-10 (6 commitů; odchylky viz „Odchylky od zadání“); ruční proklik prošel
 
 ## Kontext / Cíl
 
@@ -316,3 +316,19 @@ než viditelná plocha.
   databáze) — volné zdroje dat nemají dokument Spisovny, proklik detailu
   zůstává ruční.
 - PHPUnit celá sada, `npm run build`, `check:i18n`, obě CSS kontroly.
+
+## Ruční ověření (2026-11-10)
+
+Firefox a telefon: přihlášení, zapomenuté heslo a nastavení hesla na
+telefonu na výšku i na šířku (na šířku se karta roluje, celá dosažitelná
+— očekávané); detail dokumentu Spisovny po `ds-upgrade` (popisky metadat
+a data česky i anglicky); seznamy a detaily Majetku, Zakázek a AI česky
+i anglicky; navigace classic / wild, report, výběr období, primární
+tlačítko s nabídkou v detailu, dialog odpisů, průvodce nastavením — beze
+změny. Neproporcionální písmo technických hodnot (`--shpd-font-family-mono`)
+v Nastavení a review modalu schváleno.
+
+Zvažované sjednocení přihlašovací karty s kartami v obsahu (rámeček,
+zaoblení md, bez stínu) odloženo — karta zůstává plovoucí plochou podle
+D35. Česky natvrdo psané nadpisy a popisky detailu Spisovny („Identifikace“,
+„Číslo / značka“) patří k bodu checklistu #133 o popiscích ve viewerech.
