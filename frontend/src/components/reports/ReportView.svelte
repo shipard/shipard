@@ -6,7 +6,14 @@
   // zprávy samotné jdou „pod čaru" dole (D15). Drill-down (D70): řádek
   // s `link` má název jako odkaz, `cellLinks[sloupec]` textovou buňku —
   // akci (tvar akce detailu vieweru) jen předá rodiči přes onAction.
+  //
+  // Datová mřížka s držící hlavičkou (#133 D57): kořen je flex sloupec
+  // ve výšce oblasti výsledku (řetěz výšky drží `ReportsPage`), tabulka
+  // v `TableScroll fill` roluje v obou osách a hlavička drží vůči obalu.
+  // Štítek stavu je nad obalem, zprávy pod ním — krátký report je má hned
+  // pod tabulkou, u dlouhého zůstávají vidět u spodní hrany.
   import Icon from '../ui/Icon.svelte';
+  import TableScroll from '../ui/TableScroll.svelte';
   import { iconWarning, iconInfo, iconAlert } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { formatAmount } from '../../utils/formatNumber.js';
@@ -69,111 +76,122 @@
 </script>
 
 {#if result}
-  {#if result.status !== 'ok'}
-    <div
-      class="shpd-report__badge"
-      class:shpd-report__badge--error={result.status === 'errors'}
-    >
-      <Icon icon={result.status === 'errors' ? iconAlert : iconWarning} size="sm" />
-      <span>{t(result.status === 'errors' ? 'reports.status.errors' : 'reports.status.warnings')}</span>
-    </div>
-  {/if}
+  <div class="shpd-report">
+    {#if result.status !== 'ok'}
+      <div
+        class="shpd-report__badge"
+        class:shpd-report__badge--error={result.status === 'errors'}
+      >
+        <Icon icon={result.status === 'errors' ? iconAlert : iconWarning} size="sm" />
+        <span>{t(result.status === 'errors' ? 'reports.status.errors' : 'reports.status.warnings')}</span>
+      </div>
+    {/if}
 
-  {#if rows.length === 0}
-    <p class="shpd-report__empty">{t('reports.empty')}</p>
-  {:else}
-    <div class="shpd-report__scroll">
-      <table class="shpd-report__table">
-        <thead>
-          <tr>
-            <th class="shpd-report__th shpd-report__th--label" rowspan={hasSides ? 2 : 1}></th>
-            {#each columns as column (column.id)}
-              {#if isTextual(column)}
-                <th class="shpd-report__th shpd-report__th--text" rowspan={hasSides ? 2 : 1}>{headerLabel(column)}</th>
-              {:else if (column.display ?? 'balance') === 'sides'}
-                <th class="shpd-report__th shpd-report__th--group" colspan="3">{headerLabel(column)}</th>
-              {:else}
-                <th class="shpd-report__th shpd-report__th--num" rowspan={hasSides ? 2 : 1}>{headerLabel(column)}</th>
-              {/if}
-            {/each}
-          </tr>
-          {#if hasSides}
+    {#if rows.length === 0}
+      <p class="shpd-report__empty">{t('reports.empty')}</p>
+    {:else}
+      <TableScroll fill>
+        <table class="shpd-report__table">
+          <thead>
             <tr>
+              <th class="shpd-report__th shpd-report__th--label" rowspan={hasSides ? 2 : 1}></th>
               {#each columns as column (column.id)}
-                {#if (column.display ?? 'balance') === 'sides'}
-                  <th class="shpd-report__th shpd-report__th--num shpd-report__th--sub">{t('reports.side.md')}</th>
-                  <th class="shpd-report__th shpd-report__th--num shpd-report__th--sub">{t('reports.side.d')}</th>
-                  <th class="shpd-report__th shpd-report__th--num shpd-report__th--sub">{t('reports.side.balance')}</th>
-                {/if}
-              {/each}
-            </tr>
-          {/if}
-        </thead>
-        <tbody>
-          {#each rows as row, index}
-            <tr
-              class="shpd-report__tr"
-              class:shpd-report__tr--subtotal={row.kind === 'subtotal'}
-              class:shpd-report__tr--total={row.kind === 'total'}
-              class:shpd-report__tr--computed={row.kind === 'computed'}
-              class:shpd-report__tr--error={rowSeverity.get(index) === 'error'}
-              class:shpd-report__tr--warning={rowSeverity.get(index) === 'warning'}
-            >
-              <td
-                class="shpd-report__td shpd-report__td--label"
-                style:padding-left="calc(var(--shpd-space-sm) + {row.level}rem)"
-              >
-                {#if row.account}<span class="shpd-report__account">{row.account}</span>{/if}
-                {#if row.link && onAction}
-                  <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
-                {:else}
-                  {row.label}
-                {/if}
-              </td>
-              {#each columns as column (column.id)}
-                {@const cell = row.values?.[column.id]}
                 {#if isTextual(column)}
-                  <td class="shpd-report__td shpd-report__td--text">
-                    {#if row.cellLinks?.[column.id] && onAction && fmtText(column, cell) !== ''}
-                      <button
-                        type="button"
-                        class="shpd-report__link"
-                        onclick={() => onAction(row.cellLinks[column.id])}
-                      >{fmtText(column, cell)}</button>
-                    {:else}
-                      {fmtText(column, cell)}
-                    {/if}
-                  </td>
+                  <th class="shpd-report__th shpd-report__th--text" rowspan={hasSides ? 2 : 1}>{headerLabel(column)}</th>
                 {:else if (column.display ?? 'balance') === 'sides'}
-                  <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.md)}</td>
-                  <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.d)}</td>
-                  <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.balance)}</td>
+                  <th class="shpd-report__th shpd-report__th--group" colspan="3">{headerLabel(column)}</th>
                 {:else}
-                  <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.balance)}</td>
+                  <th class="shpd-report__th shpd-report__th--num" rowspan={hasSides ? 2 : 1}>{headerLabel(column)}</th>
                 {/if}
               {/each}
             </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
+            {#if hasSides}
+              <tr>
+                {#each columns as column (column.id)}
+                  {#if (column.display ?? 'balance') === 'sides'}
+                    <th class="shpd-report__th shpd-report__th--num shpd-report__th--sub">{t('reports.side.md')}</th>
+                    <th class="shpd-report__th shpd-report__th--num shpd-report__th--sub">{t('reports.side.d')}</th>
+                    <th class="shpd-report__th shpd-report__th--num shpd-report__th--sub">{t('reports.side.balance')}</th>
+                  {/if}
+                {/each}
+              </tr>
+            {/if}
+          </thead>
+          <tbody>
+            {#each rows as row, index}
+              <tr
+                class="shpd-report__tr"
+                class:shpd-report__tr--subtotal={row.kind === 'subtotal'}
+                class:shpd-report__tr--total={row.kind === 'total'}
+                class:shpd-report__tr--computed={row.kind === 'computed'}
+                class:shpd-report__tr--error={rowSeverity.get(index) === 'error'}
+                class:shpd-report__tr--warning={rowSeverity.get(index) === 'warning'}
+              >
+                <td
+                  class="shpd-report__td shpd-report__td--label"
+                  style:padding-left="calc(var(--shpd-space-sm) + {row.level}rem)"
+                >
+                  {#if row.account}<span class="shpd-report__account">{row.account}</span>{/if}
+                  {#if row.link && onAction}
+                    <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
+                  {:else}
+                    {row.label}
+                  {/if}
+                </td>
+                {#each columns as column (column.id)}
+                  {@const cell = row.values?.[column.id]}
+                  {#if isTextual(column)}
+                    <td class="shpd-report__td shpd-report__td--text">
+                      {#if row.cellLinks?.[column.id] && onAction && fmtText(column, cell) !== ''}
+                        <button
+                          type="button"
+                          class="shpd-report__link"
+                          onclick={() => onAction(row.cellLinks[column.id])}
+                        >{fmtText(column, cell)}</button>
+                      {:else}
+                        {fmtText(column, cell)}
+                      {/if}
+                    </td>
+                  {:else if (column.display ?? 'balance') === 'sides'}
+                    <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.md)}</td>
+                    <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.d)}</td>
+                    <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.balance)}</td>
+                  {:else}
+                    <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.balance)}</td>
+                  {/if}
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
+    {/if}
 
-  {#if messages.length > 0}
-    <ul class="shpd-report__messages">
-      {#each messages as msg}
-        <li class="shpd-report__message shpd-report__message--{msg.severity}" title={msg.code}>
-          <Icon icon={severityIcons[msg.severity] ?? iconInfo} size="sm" />
-          <span>{msg.text}</span>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+    {#if messages.length > 0}
+      <ul class="shpd-report__messages">
+        {#each messages as msg}
+          <li class="shpd-report__message shpd-report__message--{msg.severity}" title={msg.code}>
+            <Icon icon={severityIcons[msg.severity] ?? iconInfo} size="sm" />
+            <span>{msg.text}</span>
+          </li>
+        {/each}
+      </ul>
+    {/if}
+  </div>
 {/if}
 
 <style>
+  .shpd-report {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
   .shpd-report__badge {
     display: inline-flex;
+    flex: none;
+    align-self: flex-start;
     align-items: center;
     gap: var(--shpd-space-xs);
     margin-bottom: var(--shpd-space-sm);
@@ -196,20 +214,26 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-report__scroll {
-    overflow-x: auto;
-  }
-
+  /* border-collapse: separate — s collapse by čáry držící hlavičky
+     odjely s obsahem (stejný důvod jako ViewerGrid). */
   .shpd-report__table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background-color: var(--shpd-color-bg);
     font-size: var(--shpd-font-size-sm);
   }
 
-  .shpd-report__th {
+  /* Drží celý thead, ne jednotlivé th: hlavička může mít dva řádky
+     (skupina sloupců + MD / D / Zůstatek) a th s top: 0 v obou řádcích by
+     se po odrolování překryly. Pozadí nesou th. */
+  .shpd-report__table > thead {
     position: sticky;
     top: 0;
+    z-index: 1;
+  }
+
+  .shpd-report__th {
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     background-color: var(--shpd-color-bg);
     border-bottom: 2px solid var(--shpd-color-border);
@@ -286,6 +310,13 @@
     border-bottom: none;
   }
 
+  /* Se separate se čáry sousedních řádků nesčítají do jedné jako
+     u collapse — řádek nad součtem by přidal svou spodní čáru k horní
+     čáře součtu. */
+  .shpd-report__tr:has(+ .shpd-report__tr--total) > .shpd-report__td {
+    border-bottom: none;
+  }
+
   .shpd-report__tr--computed > .shpd-report__td {
     font-style: italic;
     font-weight: 600;
@@ -301,7 +332,13 @@
     color: var(--shpd-color-alert-warning-text);
   }
 
+  /* Zprávy „pod čarou“ mají vlastní svislé rolování a strop výšky, aby
+     při mnoha zprávách nezmáčkly tabulku na pár řádků: nejvýš 12 rem
+     (zhruba osm zpráv), na nízkém okně nejvýš 35 % výšky výsledku. */
   .shpd-report__messages {
+    flex: none;
+    max-height: min(12rem, 35%);
+    overflow-y: auto;
     margin: var(--shpd-space-md) 0 0;
     padding: var(--shpd-space-sm) 0 0;
     border-top: 1px solid var(--shpd-color-border);

@@ -449,10 +449,24 @@
     background-color: var(--shpd-color-bg-hover);
   }
 
+  /* Řetěz výšky datové mřížky (#133 D57): body → result → ReportView →
+     TableScroll fill, každý článek flex sloupec s min-height: 0. Výsledek
+     vyplní přesně výšku body a dolů roluje obal tabulky; body samo roluje
+     jen u stavů bez výsledku (poznámky, chyby). */
   .shpd-reports__body {
+    display: flex;
+    flex-direction: column;
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: var(--shpd-space-md);
+  }
+
+  .shpd-reports__result {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .shpd-reports__result--loading {
