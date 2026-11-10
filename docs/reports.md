@@ -417,7 +417,11 @@ Body, kde implementace zpřesnila návrh (tvar §3.1 platí beze změn):
   měsíc), `PeriodPicker` (mřížka roky × měsíc | čtvrtletí | pololetí |
   rok dle granularit deklarace), `ReportView` (čistý renderer
   `ReportResult`; červené řádky dle `rowRef`, messages pod čarou,
-  přepínač „V tisících" dělí 1000 jen při renderu — D6).
+  přepínač „V tisících" dělí 1000 jen při renderu — D6). Tabulka je
+  datová mřížka (#133 D57): roluje v obou osách ve svém obalu
+  (`TableScroll fill`), drží celá hlavička včetně řádku MD / D / Zůstatek,
+  štítek stavu je nad obalem a zprávy pod ním s vlastním rolováním —
+  `docs/design-system.md` §12 Tabulka.
 - **Deep-link (D10)**: `?report=<id>&fy=<rok>&mf=<od>&mt=<do>&detail=<d>`
   (parametry deklarace obecně pod svým id, §16.1)
   — `history.replaceState` při každé změně parametrů, žádný router.

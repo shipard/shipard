@@ -1,6 +1,6 @@
 # Design system — tabulky v obalu, report a sub-tabulka jako datová mřížka
 
-**Stav:** naplánováno — #138 task 3 (D44, D57)
+**Stav:** částečně — kód a dokumentace hotové 2026-11-10 (#138 task 3, D44, D57); zbývá ruční ověření v aplikaci (Firefox, telefon) podle sekce Ověření
 
 ## Kontext / Cíl
 
@@ -233,16 +233,67 @@ V prohlížeči (Firefox), zdroj dat ukázkové sady (třída `free`):
 
 ## Hotovo když
 
-- [ ] `TableScroll` s `fill`, komentář s D57
-- [ ] tabulky v toku obsahu v aplikaci v `TableScroll` (§2), vlastní CSS
+- [x] `TableScroll` s `fill`, komentář s D57
+- [x] tabulky v toku obsahu v aplikaci v `TableScroll` (§2), vlastní CSS
       obalů pryč
-- [ ] report: obal `fill`, sticky `thead`, zprávy pod obalem, hlavička
+- [x] report: obal `fill`, sticky `thead`, zprávy pod obalem, hlavička
       drží
-- [ ] sub-tabulka: obal `fill`, řetěz výšky tabu, dočasná media query pryč
-- [ ] vývojářský dashboard v `TableScroll`
-- [ ] grep z Ověření bez nálezu mimo `ViewerGrid` / `TableBrowser`
-- [ ] `docs/design-system.md` §8, §12, §13, `docs/edit-forms.md`
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] sub-tabulka: obal `fill`, řetěz výšky tabu, dočasná media query pryč
+- [x] vývojářský dashboard v `TableScroll`
+- [x] grep z Ověření bez nálezu mimo `ViewerGrid` / `TableBrowser`
+- [x] `docs/design-system.md` §8, §12, §13, `docs/edit-forms.md`
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [ ] ruční ověření v aplikaci podle sekce Ověření
+
+## Odchylky od zadání a výsledek ověření (2026-11-10)
+
+- **`fill` je `flex: 0 1 auto`, ne `flex: 1`** (§1). S `flex: 1` by obal
+  vždy vyplnil zbytek výšky a zprávy krátkého reportu by skončily u spodní
+  hrany; §3 je chce hned pod tabulkou. Obal má výšku tabulky a smrští se,
+  když se nevejde — dlouhá tabulka roluje stejně.
+- **Řetěz výšky formuláře třídou podle typu tabu, ne `:has()`** (§4):
+  `.shpd-form-editor__tab-content--grid` a `.shpd-form-tab--grid`
+  z `tab.type === 'subtable'`. `Modal` není portál — vnořený dialog se
+  sub-tabulkou (lookup, dialog řádku) je v DOM potomkem tabu rodiče
+  a `:has(.shpd-form-subtable)` by přepnul výšku i jemu.
+- **Vývojářský dashboard už obal měl** (§6): `.dev-table-wrap` je rám
+  (pozadí, čára, zaoblení) s `overflow: auto` na 18 místech. Rám zůstal
+  jako vzhled s `overflow: hidden` (ořez rohů), posun dává `TableScroll`
+  uvnitř; tabulky bez rámu (`table.plain`, dvě v `JobDetailPage`) mají jen
+  `TableScroll`.
+- **Karty v mřížce detailu běhu a porovnání** (`RunDetailPage`,
+  `ComparePage`) mají nově `min-width: 0`. Stránka tam do strany rolovala
+  už před taskem (27 px při 1280 px, 179 px při 480 px) — položka mřížky
+  se roztáhla podle tabulky, obal uvnitř nepomohl.
+- **Report**: zprávy pod čarou mají `max-height: min(12rem, 35%)`
+  — 12 rem je zhruba osm zpráv, podíl výšky chrání tabulku na nízkém okně
+  (při výšce okna 390 px zbude tabulce 143 px, zprávám 105 px). Se
+  `separate` má řádek nad součtem zrušenou spodní čáru, aby se nesčítala
+  s horní čárou součtu.
+- Tabulka v chatu má `label` (nový klíč `chat.table`) — nemá nadpis
+  sekce; ostatní tabulky z §2 nadpis mají.
+- `docs/reports.md` doplněno o větu u `ReportView`.
+- **Ověřeno v Chromiu (Playwright)** na skutečných komponentách
+  s podvrženým API (`ReportView` v kopii řetězu výšky `ReportsPage`,
+  `FormDialog` → `FormEditor` → `FormSubTable`), 1280 a 390 px: roluje
+  obal, ne stránka ani tab; po odrolování drží oba řádky hlavičky reportu
+  bez překryvu a hlavička sub-tabulky; krátký report má zprávy hned pod
+  tabulkou; 40 zpráv má vlastní rolování; prázdný stav sub-tabulky je
+  vidět s odsazením; na 390 px roluje tabulka do strany ve svém obalu.
+  Vývojářský dashboard naživo (přehled zdrojů dat, videa, testování,
+  úlohy, varianty, běhy, detail běhu, porovnání) při 1280 a 480 px: každá
+  tabulka v obalu, stránka do strany neroluje.
+- **Neověřeno** (v aplikaci se mi nepodařilo přihlásit — rozšíření Chrome
+  nebylo připojené a session pro Playwright nešla založit): skutečná
+  stránka reportů (parametry, stavy bez výsledku, drill-down), formuláře
+  nad daty (řádky faktury, karta majetku, dialog řádku read-only dokladu,
+  taby s poli a fill sloupcem příloh), tabulky z §2 (detail s obecnou
+  tabulkou, chat, relace, obsahové štítky, dialog odpisů), seznam
+  vieweru, Firefox, telefon — ruční ověření.
+- Mimo rozsah, nalezeno při ověření: detail úlohy v dashboardu při 480 px
+  roluje do strany kvůli dlouhým hodnotám v `dl.dev-kv` (bez tabulky);
+  v reportu na 390 px se sloupec názvu láme po slovech (tabulka je širší
+  než obal, název dostane nejmenší šířku) — obojí bylo i před taskem.
 
 ## Pasti
 

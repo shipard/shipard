@@ -557,10 +557,19 @@ písmo se **nenastavuje** i kvůli tomu.
 (`scripts/check-css-units.py`, §10) odmítne `@media` s rysem šířky mimo
 hodnotu shellu, `@container` mimo prahy výše i JS konstantu, která
 s CSS neladí; značka `px-ok` na breakpointy neplatí. Pevné šířky, výšky
-a layout tokeny v px řeší #138 task 4. Obal tabulky s posunem do strany je
-sdílený `TableScroll` (D44, #139 — řádky dokladu a rekapitulace DPH), na
-ostatní tabulky ho rozšíří #138 task 3; složené řádky dokladu pod `36rem`
-jsou hotové (`DocRows`, §12 Úzká šířka).
+a layout tokeny v px řeší #138 task 4.
+
+**Stránka ani panel nerolují do strany — posune se tabulka ve svém obalu**
+(D44, D57). Tabulky jsou dvojího druhu: **tabulka v toku obsahu** (detail,
+nastavení, dialogy, chat, vývojářský dashboard) má sdílený obal
+`TableScroll` s posunem jen do strany; **datová mřížka s držící
+hlavičkou** (seznam vieweru, prohlížeč tabulek, report, sub-tabulka
+formuláře) má obal, který zabere zbytek výšky své oblasti a roluje v obou
+osách — `TableScroll fill`, u seznamu vieweru a prohlížeče tabulek vlastní
+obal. Podrobnosti §12 Tabulka; složené řádky dokladu pod `36rem` §12 Úzká
+šířka. Položka mřížky nebo flexu, která nese tabulku, potřebuje
+`min-width: 0` — jinak se roztáhne podle tabulky a do strany roluje
+stránka.
 
 ---
 
@@ -1032,15 +1041,37 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   `--shpd-color-border-strong`, mezi řádky `--shpd-color-border`; buňky
   `padding: 0.375rem var(--shpd-space-xs)`, čísla vpravo
   s `tabular-nums` a nikdy zalomená (`white-space: nowrap`). Štítek stavu
-  v buňce = sdílený `Badge`. **Každá tabulka v obsahu má vlastní obal
-  s posunem do strany** (`components/ui/TableScroll.svelte`, #139 D44):
-  `overflow-x: auto`, bez vzhledu navíc, bez `tabindex` (posuvný obal bez
-  fokusovatelného obsahu dělá fokusovatelným prohlížeč sám, obal
-  s `tabindex` by přidal zastávku tabulátoru ke každé tabulce; volitelný
-  `label` → `role="region"`). Stránka ani panel nikdy nerolují do strany —
-  v úzkém obalu se posune tabulka. Dnes řádky dokladu a rekapitulace DPH,
-  ostatní tabulky (obecný typ `table`, sub-tabulky, reporty) převede #138
-  task 3.
+  v buňce = sdílený `Badge`. **Každá tabulka má vlastní obal**
+  (`components/ui/TableScroll.svelte`, D44, D57): bez vzhledu navíc, bez
+  `tabindex` (posuvný obal bez fokusovatelného obsahu dělá fokusovatelným
+  prohlížeč sám, obal s `tabindex` by přidal zastávku tabulátoru ke každé
+  tabulce; volitelný `label` → `role="region"` pro tabulku bez vlastního
+  nadpisu sekce). Stránka ani panel nikdy nerolují do strany — v úzkém
+  obalu se posune tabulka. Dva druhy:
+  - **Tabulka v toku obsahu** — `<TableScroll>`, `overflow-x: auto`: posun
+    jen do strany, dolů roluje stránka nebo panel, hlavička nedrží. Řádky
+    dokladu, rekapitulace DPH, obecný typ `table` v detailu, tabulka
+    v chatu, relace, obsahové štítky, dialog odpisů majetku a všechny
+    tabulky vývojářského dashboardu (tam uvnitř rámu `.dev-table-wrap`,
+    který jen kreslí čáru a zaoblení a neroluje).
+  - **Datová mřížka s držící hlavičkou** — `<TableScroll fill>`
+    (`flex: 0 1 auto; min-height: 0; overflow: auto`): obal zabere nejvýš
+    zbytek výšky své oblasti, roluje v obou osách a sticky hlavička drží
+    vůči němu. Report (`ReportView`) a sub-tabulka formuláře
+    (`FormSubTable`); seznam vieweru (`ViewerGrid`) a prohlížeč tabulek
+    (`TableBrowser`) mají týž vzor s vlastním obalem. Rodič `fill` musí být
+    flex sloupec s **určenou výškou** — každý článek řetězu `flex: 1;
+    min-height: 0` nebo výška, ne `min-height`; jinak obal naroste
+    s obsahem a roluje zase stránka. Obal neroste nad výšku tabulky:
+    krátká tabulka má další obsah (zprávy reportu) hned pod sebou.
+
+  Proč dva druhy: prvek s `overflow-x: auto` má spočítané i `overflow-y:
+  auto` — je rolovací oblastí, která svisle neroluje, a `position: sticky`
+  uvnitř se drží jeho okraje. Obal s posunem jen do strany proto držící
+  hlavičku ruší. Tabulka s držící hlavičkou má `border-collapse: separate;
+  border-spacing: 0` (s `collapse` čáry hlavičky odjedou s obsahem);
+  u víceřádkové hlavičky drží celý `thead` (`position: sticky; top: 0`),
+  ne jednotlivé `th` — ty by se s `top: 0` v obou řádcích překryly.
 - **Řádky dokladu** (`components/document/DocRows.svelte`, #139 D45, D48):
   `SectionHeading` (`title`, snippet `aside` — hromadné akce review)
   a tabulka v `TableScroll`. Sloupce Poz. · Popis · [Účet] · Množství · MJ
@@ -1141,8 +1172,8 @@ Textový řádek drží `colspan` i ve složeném režimu — skryté sloupce be
 vlastní buňky mají v Chromiu nulovou šířku, tabulka se neroztáhne. Cena
 čistě CSS řešení: snippety buněk review (`unit`, `vat`, `account`, `meta`)
 jsou v DOM dvakrát, vidět je jen jedno. Obal s posunem do strany
-(`TableScroll`, D44) mají řádky i rekapitulace DPH; na ostatní tabulky ho
-rozšíří #138 task 3.
+(`TableScroll`, D44) má každá tabulka v obsahu; datové mřížky rolují ve
+svém obalu v obou osách (D57, viz Tabulka výše).
 
 ### Review dokladu a náhled Spisovny
 
@@ -1225,7 +1256,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/ui/Notice.svelte` | Hláška v obsahu (§8 Hlášky a pruhy, D40) — tóny z rodiny `alert-*`, rámeček 1 px, `title`, `icon`, `items` (text nebo `{label, text, meta}`), role podle tónu, bez okraje |
 | `frontend/src/components/ui/Badge.svelte` | Štítek hlavičky detailu a bloku `badges` (§5) — obecné i doc-state varianty, pilulka meta |
 | `frontend/src/components/ui/DetailHeader.svelte` | Hlavička detailu (§12 Pořadí, #139 D48) — ikona 40×40, titulek title, štítky `Badge`, podtitul body (D56); sdílená pro `ViewerDetail` i review dokladu |
-| `frontend/src/components/ui/TableScroll.svelte` | Obal tabulky s posunem do strany (§12 Tabulka, D44) — `overflow-x: auto`, bez `tabindex`, volitelný `label` → region |
+| `frontend/src/components/ui/TableScroll.svelte` | Obal tabulky (§12 Tabulka, D44, D57) — tabulka v toku obsahu `overflow-x: auto`; `fill` = datová mřížka s držící hlavičkou (zbytek výšky oblasti, rolování v obou osách); bez `tabindex`, volitelný `label` → region |
 | `frontend/src/components/document/documentParts.js` | Adaptér detailu dokladu (čisté funkce, `t` parametrem, #139 D48): `detailParty`, `detailRows`, `detailTotals`, `formatAddress`, `rowMetaLine` — jeden tvar dat částí s hotovými texty |
 | `frontend/src/components/document/PartyCard.svelte` | Karta strany dokladu (§12, D50) — `Card`, pořadí D16, snippety `name` / `status` / `bankStatus` / `footer` |
 | `frontend/src/components/document/DocRows.svelte` | Řádky dokladu (§12, D45) — tabulka v `TableScroll`, složený řádek pod `36rem` (pojmenovaný kontejner `doc-rows`), snippety `description` / `below` / `account` / `unit` / `vat` / `meta`, `aside` nadpisu |

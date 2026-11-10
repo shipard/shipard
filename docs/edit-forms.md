@@ -1218,6 +1218,17 @@ $fallback)` (lokalizovaný label sloupce dětské tabulky), `subtableColumnSpec(
   hlavička (`border-collapse: separate`), zarovnání přes `--num` třídy,
   barva textu na `<table>` (ne na `td`), aby ji globální `.docState_*` na
   `<tr>` přebila.
+- **Datová mřížka** (#133 D57, `docs/design-system.md` §12 Tabulka):
+  tabulka je v obalu `TableScroll fill`, který roluje v obou osách;
+  hlavička drží vůči obalu, toolbar (Přidat, filtr) a stavové texty jsou
+  nad ním, tab ani modal nerolují. Tab se sub-tabulkou má proto **určenou
+  výšku oblasti tabu**: `FormEditor` dává `.shpd-form-editor__tab-content--grid`
+  (`height: 100%`, flex sloupec), `FormTab` `.shpd-form-tab--grid`
+  (`flex: 1; min-height: 0`), kořen `FormSubTable` je flex sloupec. Třídy
+  jdou z `tab.type === 'subtable'`, ne z `:has()` — `Modal` není portál
+  a vnořený dialog se sub-tabulkou (lookup, dialog řádku) by přepnul výšku
+  i tabu rodiče, nad kterým je otevřený. S `min-height` místo výšky by
+  roloval `.shpd-form-editor__content` a hlavička by nedržela.
 - **Šipky přesunu ▲ ▼** (`iconMoveUp` / `iconMoveDown`) před Upravit /
   Smazat, jen když přišlo `order_column`, rodič není read-only a filtr
   nemá zadaný text (zúžený seznam: soused ve filtru není soused v pořadí;
