@@ -185,6 +185,6 @@
     color: var(--shpd-color-text);
   }
   .shpd-thread__notice {
-    padding: var(--shpd-space-xs) var(--shpd-space-md) 0;
+    padding: var(--shpd-space-xs) var(--shpd-space-md);
   }
 </style>

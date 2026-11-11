@@ -421,7 +421,9 @@
     font: inherit;
     font-size: var(--shpd-font-size-body);
     cursor: pointer;
-    color: var(--shpd-color-primary, var(--shpd-color-text));
+    /* Barva tónu hlášky, odkaz nese podtržení: modrá odkazu má na tónovaném
+       pozadí v tmavém vzhledu kontrast pod 3 : 1. */
+    color: inherit;
     text-decoration: underline;
     white-space: nowrap;
   }
