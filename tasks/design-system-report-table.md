@@ -1,6 +1,6 @@
 # Design system — tabulka reportu: sloupec Účet, stav a zprávy (D63, D64)
 
-**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D63, D64); varování nese tón jen ikonou, chyba i textem (kontrast, viz Odchylky); „Účet“ je i nad čísly řádků Přiznání k DPH (viz Odchylky); ověřeno v Chromiu nad demo sadou IT servis a s podvrženými zprávami, ruční ověření na dev serveru čeká
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D63, D64); varování nese tón jen ikonou, chyba i textem (kontrast, viz Odchylky); „Účet“ je i nad čísly řádků Přiznání k DPH (viz Odchylky); ověřeno v Chromiu nad demo sadou IT servis a s podvrženými zprávami, ruční ověření na dev serveru prošlo (viz Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -284,4 +284,24 @@ vodorovného rolování stránky:
 - Export Hlavní knihy před a po: CSV bajtově shodné, XLSX se liší jen
   časem vytvoření.
 
-Neověřeno: Firefox, telefon, jiné rozložení než sidebar, angličtina.
+V Chromiu neověřeno: Firefox, telefon, jiné rozložení než sidebar,
+angličtina — první tři pokrylo ruční ověření níže.
+
+## Ruční ověření (2026-11-11)
+
+Firefox na desktopu a telefon, čeština; rozložení sidebar, classic i wild
+— vše v pořádku:
+
+- Hlavní kniha analyticky i synteticky, Rozvaha, Výsledovka: sloupec Účet
+  i u mezisoučtů, název neodsazený, prázdná buňka Účet u dopočtených
+  řádků a součtů, hlavička po odrolování drží.
+- Sestava odpisů: bez sloupce Účet, odsazení jako dřív.
+- Kontrola evidence × deník: hláška „Varování“ nad tabulkou, řádek
+  s ikonou bez pozadí, zpráva pod čarou.
+- Přiznání k DPH — živě: hlavička „Účet“ nad čísly řádků je (odchylka
+  výše, oprava mimo rozsah).
+- Tmavý vzhled v pořádku; na telefonu se číslo účtu neláme a tabulka
+  roluje do strany ve svém obalu.
+
+Ručně neověřeno: angličtina a stav `errors` (na zdroji není report
+s chybou — pokrylo jen Chromium s podvrženou odpovědí API).
