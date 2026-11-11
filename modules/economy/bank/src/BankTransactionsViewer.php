@@ -237,11 +237,10 @@ class BankTransactionsViewer extends TableViewer
         }
 
         // Partner je v podtitulku; bez něj je tam název protistrany (#140 §2).
+        // Název z výpisu se ukáže jen vedle partnera a jen když se od něj liší.
         $cpItems = [];
         $this->addItem($cpItems, $cs ? 'Protiúčet' : 'Counterparty account', $record['counterparty_account'] ?? null);
-        if ($this->partyOf($record)['column'] === 'partner_name') {
-            $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $record['counterparty_name'] ?? null);
-        }
+        $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $this->counterpartyBesidePartner($record));
         $this->addItem($cpItems, $cs ? 'Variabilní symbol' : 'Variable symbol', $record['payment_reference'] ?? null);
         $this->addItem($cpItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
         $this->addItem($cpItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
@@ -318,6 +317,24 @@ class BankTransactionsViewer extends TableViewer
             }
         }
         return ['column' => '', 'value' => ''];
+    }
+
+    /**
+     * Název protistrany z výpisu pro Přehled: jen když podtitul nese
+     * partnera a název z výpisu se od něj liší (velikost písmen a mezery
+     * nerozhodují) — jinak by Přehled opakoval hlavičku (#140 D26).
+     *
+     * @param array<string, mixed> $record
+     */
+    private function counterpartyBesidePartner(array $record): ?string
+    {
+        $party = $this->partyOf($record);
+        $counterparty = trim((string) ($record['counterparty_name'] ?? ''));
+        if ($party['column'] !== 'partner_name' || $counterparty === '') {
+            return null;
+        }
+        $normalize = static fn (string $v): string => mb_strtolower((string) preg_replace('/\s+/u', ' ', trim($v)));
+        return $normalize($counterparty) === $normalize($party['value']) ? null : $counterparty;
     }
 
     /**

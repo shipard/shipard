@@ -204,4 +204,18 @@ class BankTransactionsViewerTest extends TestCase
         $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
         $this->assertArrayNotHasKey('Název protistrany', array_column($byTitle['Protistrana'], 'value', 'label'));
     }
+
+    public function testOverviewOmitsCounterpartyNameEqualToPartner(): void
+    {
+        // Výpis nese stejný název jako partner v podtitulku (jen jiná velikost
+        // písmen a mezery) — Přehled by opakoval hlavičku (#140 D26).
+        $row = $this->txRow(['partner_name' => 'ACME s.r.o.', 'counterparty_name' => ' acme  S.R.O. ']);
+        $detail = $this->makeViewer(detailRow: $row)->renderDetail(7);
+
+        $this->assertSame('ACME s.r.o. · 2. 6. 2026', $detail['subtitle']);
+        $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
+        $cp = array_column($byTitle['Protistrana'], 'value', 'label');
+        $this->assertArrayNotHasKey('Název protistrany', $cp);
+        $this->assertSame('20260042', $cp['Variabilní symbol']);
+    }
 }
