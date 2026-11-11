@@ -146,7 +146,8 @@
     width: 1.75rem;
     height: 1.75rem;
     flex-shrink: 0;
-    color: var(--shpd-color-success-text);
+    /* Oblouk (currentColor) je značka bez textu — `-mark`, D74. */
+    color: var(--shpd-color-success-mark);
   }
 
   .shpd-feed-row__donut-track {

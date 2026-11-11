@@ -663,7 +663,7 @@ td.dev-cellstate--notCarried { color: var(--shpd-color-text-secondary); font-sty
 .dev-btnrow { display: flex; flex-wrap: wrap; gap: var(--shpd-space-xs); align-items: center; }
 .dev-progress { height: 0.5rem; background: var(--shpd-color-bg-secondary); border-radius: var(--shpd-radius-sm); overflow: hidden; margin: var(--shpd-space-xs) 0; }
 .dev-progress__bar { height: 100%; background: var(--shpd-color-primary); transition: width 0.3s; }
-.dev-progress__bar--warn { background: var(--shpd-color-warning); }
+.dev-progress__bar--warn { background: var(--shpd-color-warning-mark); }
 /* Hodnoty jsou ID, cesty a JSON bez mezer: sloupec se smí zúžit pod obsah
    (minmax(0, 1fr)) a hodnota se láme kdekoli — detail úlohy neroluje do strany. */
 .dev-kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.125rem 0.75rem; margin: 0; }

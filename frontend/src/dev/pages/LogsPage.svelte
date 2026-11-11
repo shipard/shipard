@@ -215,10 +215,10 @@
     width: 0.625rem;
     height: 0.625rem;
     border-radius: 50%;
-    background: var(--shpd-color-success-text);
+    background: var(--shpd-color-success-mark);
     display: inline-block;
   }
-  .dot--paused { background: var(--shpd-color-danger-text); }
+  .dot--paused { background: var(--shpd-color-danger-mark); }
 
   .status { margin-bottom: var(--shpd-space-sm); }
   .status-error { color: var(--shpd-color-danger-text); }

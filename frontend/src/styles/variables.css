@@ -25,9 +25,10 @@
      - plocha `--shpd-color-{tón}` (+ `-hover`): tlačítko, odznak s textem.
        Text na ní je `--shpd-color-text-on-fill`, kontrast ≥ 4,5 : 1.
        Hodnoty jsou v obou vzhledech stejné.
-     - text `--shpd-color-{tón}-text`: text, ikona, tečka a rámeček prvku
+     - text `--shpd-color-{tón}-text`: text, ikona a rámeček prvku
        na pozadí stránky; ≥ 4,5 : 1 na `bg` i `bg-hover`. Tmavý vzhled má
-       vlastní, světlejší hodnoty. */
+       vlastní, světlejší hodnoty.
+     Třetí role je značka `--shpd-color-{tón}-mark` — viz blok níže. */
   --shpd-color-danger:        #dc2626;
   --shpd-color-danger-hover:  #b91c1c;
   --shpd-color-success:       #15803d;
@@ -37,6 +38,16 @@
   --shpd-color-danger-text:   #dc2626;
   --shpd-color-success-text:  #15803d;
   --shpd-color-warning-text:  #b45309;
+
+  /* Značka bez textu (#133 D74): tečka, donut jistoty, barevný proužek
+     karty, tečka chyby na tabu. Nenese text ani samostatný význam, proto
+     jí stačí práh grafiky 3 : 1 vůči pozadí — ve světlém vzhledu je
+     světlejší než `-text` (laděný na 4,5 : 1 pro malé písmo). `info` je
+     modrá tečka Nové položky. Tmavý vzhled odkazuje na `primary` a `-text`. */
+  --shpd-color-info-mark:     #3b82f6;
+  --shpd-color-success-mark:  #16a34a;
+  --shpd-color-warning-mark:  #d06f06;
+  --shpd-color-danger-mark:   #dc2626;
 
   /* Soft "chyby" pozadí — např. error notice ramp-up v formálři */
   --shpd-color-danger-soft:   #fef2f2;
@@ -289,7 +300,8 @@
 
   /* Tónové barvy (#133 D69, D70): plochy jako ve světlém vzhledu (bílý
      text na nich drží 4,5 : 1), světlejší jsou jen `-text` tokeny pro
-     text, ikonu a tečku na tmavém pozadí. */
+     text a ikonu na tmavém pozadí. Značky bez textu (`-mark`, D74) tu
+     berou tytéž světlejší hodnoty, `info` primary — jako před D74. */
   --shpd-color-danger:        #dc2626;
   --shpd-color-danger-hover:  #b91c1c;
   --shpd-color-success:       #15803d;
@@ -299,6 +311,10 @@
   --shpd-color-danger-text:   #f87171;
   --shpd-color-success-text:  #22c55e;
   --shpd-color-warning-text:  #f59e0b;
+  --shpd-color-info-mark:     var(--shpd-color-primary);
+  --shpd-color-success-mark:  var(--shpd-color-success-text);
+  --shpd-color-warning-mark:  var(--shpd-color-warning-text);
+  --shpd-color-danger-mark:   var(--shpd-color-danger-text);
   --shpd-color-danger-soft:   #2d1414;
   --shpd-color-success-soft:  #14291c;
   --shpd-color-warning-soft:  #2e2410;

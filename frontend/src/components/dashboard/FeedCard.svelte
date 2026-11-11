@@ -44,15 +44,16 @@
   // stejně mění), to je OK.
   let detailOpen = $state(false);
 
-  // Donut jistoty — inline SVG, oblouk přes stroke-dasharray.
+  // Donut jistoty — inline SVG, oblouk přes stroke-dasharray. Oblouk je
+  // značka bez textu (`-mark`, D74); procenta uvnitř mají vlastní `fill`.
   const DONUT_R = 15.5;
   const DONUT_C = 2 * Math.PI * DONUT_R;
   const donutArc = $derived(((card.confidencePct ?? 0) / 100) * DONUT_C);
   const donutColor = $derived(
     card.kind === 'ready'
-      ? 'var(--shpd-color-success-text)'
+      ? 'var(--shpd-color-success-mark)'
       : card.kind === 'review'
-        ? 'var(--shpd-color-warning-text)'
+        ? 'var(--shpd-color-warning-mark)'
         : 'var(--shpd-color-text-secondary)',
   );
 
@@ -227,7 +228,7 @@
      karty byly jediné bez barvy → zelená jen tady. Snadno odstranitelné.
      Kořen Card nese třídu, proužek je jeho přímý potomek. */
   :global(.docState_done) > .shpd-feed-card__bar {
-    background: var(--shpd-color-success);
+    background: var(--shpd-color-success-mark);
   }
 
   .shpd-feed-card__icon {

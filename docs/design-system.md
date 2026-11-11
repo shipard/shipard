@@ -96,9 +96,9 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 
 ### Stavové (semantické)
 
-Tón má **dvě role a dva tokeny** (#133 D69, D70) — jedna hodnota nesplní
-kontrast bílého textu na ploše i kontrast textu na pozadí stránky v obou
-vzhledech:
+Tón má **tři role a tři tokeny** (#133 D69, D70, D74) — jedna hodnota
+nesplní kontrast bílého textu na ploše i kontrast textu na pozadí stránky
+v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
 
 | Tón | Plocha `--shpd-color-{tón}` | Hover `-hover` | Text `-text` světlý / tmavý | Soft `-soft` světlý / tmavý | Použití |
 |---|---|---|---|---|---|
@@ -106,25 +106,47 @@ vzhledech:
 | `success` | `#15803d` | `#166534` | `#15803d` / `#22c55e` | `#f0fdf4` / `#14291c` | Použít, potvrdit pozitivní akci |
 | `warning` | `#b45309` | `#92400e` | `#b45309` / `#f59e0b` | `#fffbeb` / `#2e2410` | Varování (mimo doc-state systém) |
 
-- **Plocha** (`--shpd-color-{tón}`, `-hover`): pozadí tlačítka, odznaku
-  s textem, proužek karty. Text na ní je `--shpd-color-text-on-fill`. Hodnoty
+- **Plocha** (`--shpd-color-{tón}`, `-hover`): pozadí tlačítka a odznaku
+  s textem. Text na ní je `--shpd-color-text-on-fill`. Hodnoty
   jsou **v obou vzhledech stejné**; bílý text drží 4,8–5,0 : 1 (hover
   6,5–7,1 : 1).
-- **Text** (`--shpd-color-{tón}-text`): text, ikona, **tečka a donut bez
-  textu** a rámeček prvku (input ve stavu chyby, karta s tónem) na pozadí
-  stránky, karty nebo dialogu. Na `bg` / `bg-hover` drží světlý vzhled
-  4,8 / 4,5 (danger), 5,0 / 4,7 (warning, success), tmavý 5,4 / 4,6
-  (danger), 7,0 / 5,9 (warning), 6,6 / 5,6 (success).
+- **Text** (`--shpd-color-{tón}-text`): text, ikona a rámeček prvku (input
+  ve stavu chyby, karta s tónem) na pozadí stránky, karty nebo dialogu. Na
+  `bg` / `bg-hover` drží světlý vzhled 4,8 / 4,5 (danger), 5,0 / 4,7
+  (warning, success), tmavý 5,4 / 4,6 (danger), 7,0 / 5,9 (warning),
+  6,6 / 5,6 (success).
+- **Značka** (`--shpd-color-{tón}-mark`, D74): prvek, který **nenese text
+  ani samostatný význam bez okolí** — tečka sekce a filtru, donut jistoty
+  (jen oblouk; procenta uvnitř jsou `--shpd-color-text`), barevný proužek
+  karty, tečka chyby na tabu, tečka stavu a varovná výplň průběhového
+  pruhu ve vývojářském dashboardu. Stačí jí práh grafiky **3 : 1** vůči pozadí, ve
+  světlém vzhledu je proto světlejší než `-text`; v tmavém na `-text`
+  odkazuje. Čtvrtý tón `info` (modrá tečka Nové položky) má jen tuto roli.
+  **Ikona s významem je text**, ne značka: varování ve feedu, ikona řádku
+  reportu a každá ikona s vlastním popiskem (`title`, `aria-label`) berou
+  `-text`.
+
+  | Tón | Značka světlý | Značka tmavý | Světlý na `bg` / `bg-hover` | Tmavý na `bg` / `bg-secondary` |
+  |---|---|---|---|---|
+  | `info` | `#3b82f6` | `--shpd-color-primary` (`#2d6890`) | 3,68 / 3,45 | 2,49 / 2,81 |
+  | `success` | `#16a34a` | `-text` (`#22c55e`) | 3,30 / 3,10 | 6,56 / 7,41 |
+  | `warning` | `#d06f06` | `-text` (`#f59e0b`) | 3,52 / 3,31 | 6,96 / 7,86 |
+  | `danger` | `#dc2626` | `-text` (`#f87171`) | 4,83 / 4,54 | 5,41 / 6,10 |
+
+  Modrá tečka v tmavém vzhledu zůstává pod prahem (D74 tmavý vzhled
+  nemění) — otevřený bod #133.
 - **Soft** (`-soft`) a tónovaný podklad `color-mix(… 14 % …)` z plochy:
   pozadí štítku; text na něm je `-text`.
-- **Na pozadí sidebaru** neplatí ani jedna role (`-text` světlého vzhledu
+- **Na pozadí sidebaru** neplatí žádná z rolí (`-text` světlého vzhledu
   dá na `#00345c` jen 2,6 : 1): text je `--shpd-color-text-sidebar` a tón
   nese ikona (chyba načtení navigace). Tečky odznaků sekcí (`NavTree`,
   `TopMenuBar`) jsou zatím plocha — pod 3 : 1, tón pro sidebar je otevřený
   bod #133.
 
 Vývojářský dashboard přepisuje `danger` i `danger-text` na `#c81e1e`
-(`dev/theme.css`), ostatní dědí.
+(`dev/theme.css`), ostatní dědí — i značky: `danger-mark` je tam `#dc2626`,
+o odstín světlejší než červená dashboardu (4,46 : 1 na jeho pozadí),
+`success-mark` má na pozadí dashboardu 3,04 : 1.
 
 ---
 
@@ -317,9 +339,10 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
 - ❌ `box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15)` (stará Tailwind modrá)
   ve focus stavech inputů. ✅ Použij `var(--shpd-color-focus-ring)`.
 - ❌ `color: var(--shpd-color-danger)` — plocha jako barva textu; v tmavém
-  vzhledu dá na pozadí jen 3,1 : 1. ✅ Text, ikona, tečka a rámeček prvku
-  berou `var(--shpd-color-danger-text)` (D69); `--shpd-color-danger` je jen
-  pozadí pod `--shpd-color-text-on-fill`.
+  vzhledu dá na pozadí jen 3,1 : 1. ✅ Text, ikona a rámeček prvku
+  berou `var(--shpd-color-danger-text)` (D69), značka bez textu (tečka,
+  donut, proužek karty) `var(--shpd-color-danger-mark)` (D74);
+  `--shpd-color-danger` je jen pozadí pod `--shpd-color-text-on-fill`.
 - ❌ `var(--shpd-color-warning, #d97706)` — fallback s hexem. ✅
   `var(--shpd-color-warning)` (D71).
 
@@ -900,10 +923,11 @@ z velké části recyklují solid paletu:
 - **Doc-state pruhy zůstávají stejné** — jasné barvy (žlutá, fialová,
   červená) fungujou na tmavém pozadí bez úpravy.
 - **Tónové plochy zůstávají stejné, světlejší je jen tónový text** (D70) —
-  tlačítko Smazat má v obou vzhledech `#dc2626` s bílým textem; text,
-  ikona a tečka tónu na tmavém pozadí berou `-text` (`#f87171`,
-  `#f59e0b`, `#22c55e`). Plocha použitá jako barva textu by na tmavém
-  pozadí dala jen kolem 3 : 1.
+  tlačítko Smazat má v obou vzhledech `#dc2626` s bílým textem; text
+  a ikona tónu na tmavém pozadí berou `-text` (`#f87171`, `#f59e0b`,
+  `#22c55e`) a značka bez textu (`-mark`, D74) na tytéž hodnoty odkazuje —
+  světlejší značku má jen světlý vzhled. Plocha použitá jako barva textu
+  by na tmavém pozadí dala jen kolem 3 : 1.
 - **Doc-state badge mají invertovanou logiku** — bg je tmavá saturovaná
   varianta barvy, text je světlý. Např. `concept` v light má
   bg `#fef3c7` / text `#854d0e`, v dark bg `#3d3214` / text `#fde047`.

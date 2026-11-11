@@ -138,7 +138,7 @@
     bottom: 0;
     left: 0;
     width: 4px; /* px-ok: stavový proužek */
-    background: var(--shpd-color-success);
+    background: var(--shpd-color-success-mark);
   }
 
   /* Pruh: souhrn vlevo, akce vpravo; na úzkém okně se akce zalomí pod

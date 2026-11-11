@@ -78,6 +78,6 @@
     width: 0.375rem;
     height: 0.375rem;
     border-radius: 50%;
-    background: var(--shpd-color-danger-text);
+    background: var(--shpd-color-danger-mark);
   }
 </style>

@@ -244,8 +244,9 @@
 
   /* Barevná tečka sekce — failed/review/ready zrcadlí barvy stavových
      proužků karet; alerts sdílí warning (sekce mísí závažnosti), newItems
-     primary (odlišná od stavových barev), other tlumená. Sedí v řádku
-     nadpisu před textem. */
+     modrá (odlišná od stavových barev), other tlumená. Sedí v řádku
+     nadpisu před textem. Tečka je značka bez textu: tón bere z `-mark`
+     (práh 3 : 1, #133 D74), ne z `-text`. */
   .shpd-feed__section-dot {
     display: inline-block;
     width: 0.5rem;
@@ -255,12 +256,12 @@
     vertical-align: middle;
   }
 
-  .shpd-feed__section-dot--newItems { background: var(--shpd-color-primary); }
-  .shpd-feed__section-dot--ready    { background: var(--shpd-color-success-text); }
-  .shpd-feed__section-dot--review   { background: var(--shpd-color-warning-text); }
-  .shpd-feed__section-dot--attention { background: var(--shpd-color-warning-text); }
-  .shpd-feed__section-dot--failed   { background: var(--shpd-color-danger-text); }
-  .shpd-feed__section-dot--alerts   { background: var(--shpd-color-warning-text); }
+  .shpd-feed__section-dot--newItems { background: var(--shpd-color-info-mark); }
+  .shpd-feed__section-dot--ready    { background: var(--shpd-color-success-mark); }
+  .shpd-feed__section-dot--review   { background: var(--shpd-color-warning-mark); }
+  .shpd-feed__section-dot--attention { background: var(--shpd-color-warning-mark); }
+  .shpd-feed__section-dot--failed   { background: var(--shpd-color-danger-mark); }
+  .shpd-feed__section-dot--alerts   { background: var(--shpd-color-warning-mark); }
   .shpd-feed__section-dot--other    { background: var(--shpd-color-text-secondary); }
 
   /* Failed: full-width karty pod sebou (D2). */
