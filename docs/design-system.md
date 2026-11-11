@@ -489,22 +489,24 @@ Rozhodnutí D40 a D41 (task 3 #137), D60 a D61
     u jednotlivého majetku v řádku dialogu odpisů, chyba nahrání obrázku
     (`ImageSlotField`, `AvatarSlotField`), chyba pole v předvyplnění
     registrace DPH a v průvodci nastavení, chyba adresy v dialogu Odeslat,
-    chyba hledání u pole (`LookupInput`, rozhodnutí v review). Jejich
+    chyba hledání u pole (`LookupInput`, rozhodnutí v review), řádek
+    reportu se zprávou (`ReportView`, D64 — ikona před názvem; chyba barví
+    text řádku, varování nese tón jen ikonou, protože
+    `--shpd-color-warning` na světlém pozadí nedá textu 4,5 : 1). Jejich
     sjednocení mezi sebou je případný další bod.
   - Hláška: uložení Nastavení, změna hesla, limit souborů a chyba nahrání
     pošty, chyba založení zdroje dat, chyba chatu (nad polem zprávy, mimo
     rolovací oblast zpráv), varování průvodce nastavení (jedna hláška se
     seznamem), blokace zaúčtování odpisů (jedna hláška se seznamem), chyba
-    odeslání.
+    odeslání, stav reportu nad tabulkou (`ReportView`, D64).
   - Ani jedno: varování na kartě a řádku feedu je součást karty, text
     potvrzovacího dialogu je tělo dialogu.
 
   Rodina `--shpd-color-alert-*` **je** vzhled hlášky — použít ji
   (`var(…)`) smí jen `Notice` a `PageBanner`. Kdo ji potřebuje jinde,
   kopíruje `Notice`. Hlídá `scripts/check-css-tokens.py` v pre-commitu;
-  výjimky má vyjmenované: dočasně `ReportView` (štítek a barevné řádky
-  reportu, do vyřešení bodu reportů v #133) a vývojářský dashboard
-  s vlastním vzhledem (D12).
+  jedinou výjimku má vyjmenovanou: vývojářský dashboard s vlastním
+  vzhledem (D12).
 - **Chyba načtení místo obsahu** (D60): když chyba **nahrazuje obsah**
   (seznam, detail, modal, stránka), je to `Notice` v tónu `danger` nahoře
   v oblasti, kde by obsah byl — ne vycentrovaný červený text ve volné
@@ -1445,7 +1447,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 |---|---|
 | `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny (v rem, D46) |
 | `scripts/check-css-units.py` | Kontrola jednotek v pre-commitu (§10): px v mezerách, zaoblení, písmu a **rozměrech** (`width`, `height`, `min-*`, `max-*`, `flex`), rozměrové propy komponent, layout tokeny; breakpointy (§8) |
-| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; výjimky v pojmenovaných konstantách (dočasně `ReportView`, vývojářský dashboard) |
+| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard) |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |

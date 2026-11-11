@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 431 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 398.
+Celkem 432 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 399.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -198,6 +198,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-small-fixes.md` | Drobnosti z checklistu #133: nedefinované CSS tokeny i s fallbackem v pre-commitu, token textu na plné barvě, text z katalogu popisků na jednom místě v `TableViewer`, popisky a data metadat v detailu Spisovny, sdílená obrazovka s kartou uprostřed (#133, D59) |
 | `design-system-chat-page-height.md` | Stránka chatu: seznam konverzací a vlákno rolují každé zvlášť, pole zprávy vždy vidět — nejdřív měření řetězu výšky v Chromiu, pak oprava; `ChatThread` jako flex item bez přebití v `ChatPanel` (#133) |
 | `design-system-notices.md` | Hlášky formulářů, dialogů a panelů na `Notice`, chyba načtení místo obsahu jako `Notice` s „Zkusit znovu“ (D60), zprávy Přehledu firmy jako `Notice`, tokeny `--shpd-color-alert-*` jen v `Notice` / `PageBanner` s kontrolou (D61) (#133) |
+| `design-system-report-table.md` | Tabulka reportu: číslo účtu ve vlastním sloupci jako v exportu, bez odsazení názvu v účtových reportech (D63); stav reportu jako `Notice`, řádek se zprávou barvou textu a ikonou, zprávy pod čarou bez `alert-*`, konec výjimky v kontrole tokenů (D64) (#133) |
 
 ## Mobilní (responzivní) UI
 

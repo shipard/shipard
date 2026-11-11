@@ -117,8 +117,12 @@ i čte AI asistentem.
 ```
 
 - `kind`: `detail | subtotal | total | computed`.
-- `level`: hloubka řádku (analytika → syntetika → skupina → třída → celkem);
-  renderer z něj odvozuje odsazení a zvýraznění.
+- `level`: hloubka řádku (analytika → syntetika → skupina → třída → celkem).
+  Renderer z něj odvozuje odsazení názvu **jen u reportu bez účtů**; má-li
+  číslo účtu aspoň jeden řádek, stojí číslo ve vlastním sloupci „Účet“
+  (i u mezisoučtů — prefix třídy, skupiny, syntetiky) a hierarchii nese
+  délka čísla a tučné mezisoučty, název se neodsazuje (#133 D63; stejné
+  pravidlo sloupce má export, §15.2).
 - Přesný seznam polí řádku doladí PRD (např. `accountId` vedle
   `account_number` pro drill-down do deníku).
 
@@ -143,8 +147,12 @@ To stačí pro oči, ne pro stroje. `ReportResult` proto nese **tvrdý aparát**
 
 Závazná pravidla pro konzumenty:
 
-- **Renderer**: červené řádky a zprávy pod čarou — prezentace nad daty,
-  jako dřív.
+- **Renderer**: stav, označené řádky a zprávy pod čarou — prezentace nad
+  daty. Stav `warnings` / `errors` je hláška (`Notice`) nad tabulkou; řádek
+  odkázaný z `rowRef` je chyba u prvku — ikona tónu před názvem, `title`
+  s textem první zprávy, bez barevného pozadí; chyba navíc barví text
+  řádku, varování nese tón jen ikonou (kontrast). Zprávy jsou pod tabulkou
+  ve stejných tónech (#133 D64, `docs/design-system.md` §8 Hlášky a pruhy).
 - **MCP / AI asistent**: výsledek se `status: errors` se nesmí mlčky
   použít jako spolehlivá čísla — asistent chybu ohlásí (a případné
   odpovědi z takových dat explicitně označí). Tool `report_run` tuto
@@ -416,11 +424,12 @@ Body, kde implementace zpřesnila návrh (tvar §3.1 platí beze změn):
   (stav parametrů per report v session mapě, default = poslední celý
   měsíc), `PeriodPicker` (mřížka roky × měsíc | čtvrtletí | pololetí |
   rok dle granularit deklarace), `ReportView` (čistý renderer
-  `ReportResult`; červené řádky dle `rowRef`, messages pod čarou,
+  `ReportResult`; sloupec „Účet“ u reportu s účty — D63; řádky se zprávou
+  dle `rowRef` s ikonou a tónem textu, messages pod čarou — D64, §3.3;
   přepínač „V tisících" dělí 1000 jen při renderu — D6). Tabulka je
   datová mřížka (#133 D57): roluje v obou osách ve svém obalu
   (`TableScroll fill`), drží celá hlavička včetně řádku MD / D / Zůstatek,
-  štítek stavu je nad obalem a zprávy pod ním s vlastním rolováním —
+  hláška stavu je nad obalem a zprávy pod ním s vlastním rolováním —
   `docs/design-system.md` §12 Tabulka.
 - **Deep-link (D10)**: `?report=<id>&fy=<rok>&mf=<od>&mt=<do>&detail=<d>`
   (parametry deklarace obecně pod svým id, §16.1)
