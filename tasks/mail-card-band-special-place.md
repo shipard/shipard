@@ -1,6 +1,6 @@
 # Task: Karta návrhu se zvláštním místem plnění jde do kontroly; varování v odpovědi MCP
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-11 (D17, D18); zbývá ověření na dev zdroji (ručně připravená zpráva — korpus doklad se zvláštním místem plnění bez daně nemá)
+**Stav:** hotovo — implementováno a ověřeno 2026-11-11 (D17, D18; cílené testy včetně stropu proti skutečnému applieru); na dev zdroji neověřováno — strop D17 je dnes pojistka (návrh se štítkem je v kontrole už kvůli štítku) a korpus doklad se zvláštním místem plnění bez daně nemá
 
 **Issue:** #89 (drobnost z ověření tasku `exchange-received-foreign-vat.md`)
 
@@ -134,5 +134,6 @@ Jeden commit — `feat(mail): karta návrhu se zvláštním místem plnění do 
 - [x] `mail_draft_document` vrací varování (D18); test nástroje zelený.
 - [x] Dokumentace a help aktualizované; `help-index.py` a `tasks-index.py`
       prošly.
-- [ ] Ověření na dev zdroji: návrh se zvláštním místem plnění bez daně má
-      kartu v kontrole, jednoklik není nabídnut.
+- [x] Ověření: cílené testy zelené (strop, predikát, nástroj MCP, applier);
+      na dev zdroji neověřováno — rozhodnuto 2026-11-11, strop je pojistka
+      a ruční příprava zprávy se nevyplatí.
