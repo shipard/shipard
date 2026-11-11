@@ -1,6 +1,6 @@
 # Design system — tónové barvy a hex v komponentách (D69–D72)
 
-**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72); tečky a donut na pozadí stránky berou `-text`, ne plochu (viz Odchylky); tečky odznaků na sidebaru a text na tónovaném podkladu zůstávají pod prahem (viz Odchylky); změřeno v Chromiu nad demo sadou IT servis v obou vzhledech, ruční ověření na dev serveru zbývá
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72); tečky a donut na pozadí stránky berou `-text`, ne plochu (viz Odchylky); tečky odznaků na sidebaru a text na tónovaném podkladu zůstávají pod prahem (viz Odchylky); změřeno v Chromiu nad demo sadou IT servis v obou vzhledech, ruční ověření na dev serveru prošlo (viz Ruční ověření); tečky a donut dále upravilo D74 (`design-system-mark-colors.md`)
 
 ## Kontext / Cíl
 
@@ -366,18 +366,21 @@ deklarace, ve fallbacku `var()`, v atributu `style` a direktivě `style:`
 ano. Nad stromem před úpravami hlásí 36 výskytů (+ 1 ve výjimce), nad
 současným žádný.
 
-## Ruční ověření
+## Ruční ověření (2026-11-11)
 
-Zbývá na dev serveru (oba vzhledy):
+Firefox, dev zdroj `lh6x`, světlý i tmavý vzhled — v pořádku: chyby ve
+formuláři (text, hvězdička, rámeček, tečka na tabu), tlačítka Smazat
+a Ukončit platnost i pod kurzorem, dialog potvrzení se Smazat (řádek
+sub-tabulky), report s varováním (Kontrola evidence × deník — text řádku
+i zprávy oranžově, D72), termín po lhůtě na kartě dashboardu, vývojářský
+dashboard beze změny.
 
-- formulář s chybou (prázdná nová osoba → Uložit): barva chyb a tlačítka
-  Smazat / Ukončit platnost, i pod kurzorem;
-- dialog potvrzení se Smazat (řádek sub-tabulky);
-- seznam se štítky (banka, faktury po splatnosti) a dashboard — tečky
-  sekcí, donut, termín po lhůtě;
-- report s varováním (`economy.assets.journalCheck` má skutečné) — text
-  řádku i zprávy v barvě varování;
-- chyba navigace v sidebaru jde vyvolat jen výpadkem API;
-- vývojářský dashboard: pruh, blok výstupu příkazu, přehrávač videa,
-  náhled PDF — beze změny.
+Nálezy:
 
+- **tečky a donut na dashboardu** ve světlém vzhledu příliš tmavé
+  (`-text`) → D74, task `design-system-mark-colors.md`;
+- **zelené štítky v seznamu** (banka „zaúčtováno“ apod.) ve světlém vzhledu
+  příliš tmavé — otevřeno v #133 (text musí mít 4,5 : 1, `success-text`
+  má na řádku pod kurzorem 4,71, prostor pro zesvětlení není).
+
+Bez dat na `lh6x`: faktury po splatnosti (červený text v seznamu).
