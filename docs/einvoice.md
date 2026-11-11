@@ -22,9 +22,13 @@ jen druhé doklady variant 1–4, 7 a 10.
 V1 generuje jen **doklady v Kč** (D4 — ISDOC chce všechny částky v tuzemské
 měně a jednotkovou cenu v cizí měně nemá) a jen typy **faktura** (`DocumentType`
 1 — `invoiceIssued` / `invoiceReceived`) a **zálohová faktura** (4 —
-`proformaIssued` / `proformaReceived`) (D5). Opravné doklady (2, 3) přijdou
-s #92; pokladní doklad, prodejka ani zjednodušený daňový doklad ISDOC
-nedostanou.
+`proformaIssued` / `proformaReceived`) (D5), a **opravný daňový doklad**
+(#92 D9): faktura vydaná (`invoiceIssued`) s blokem `correction` vychází
+jako **dobropis** (2) při záporné částce celkem, jinak jako **vrubopis**
+(3) — § 4, Opravný doklad. Pokladní doklad, prodejka ani zjednodušený
+daňový doklad ISDOC nedostanou. Čtečka čte typy 1 a 2 (dobropis jako
+`creditNote`); vrubopis ani odkaz na původní doklad nečte — přijaté
+opravné doklady jsou mimo #92 (D11).
 
 ## 2. Třídy (`modules/core/exchange/`)
 
@@ -57,8 +61,9 @@ zaokrouhlení) a částku řádku před slevou.
 Povinné, jinak `EInvoiceInputException` se všemi cestami:
 
 - `docType` z D5 (jiný typ, i `creditNote`, = „typ není podporován");
+  opravný doklad není typ, ale blok `correction` na `invoiceIssued`;
 - `docNumber` (nejvýš 36 znaků), `dates.issueDate`; u faktury s DPH
-  (`vat.mode` ≠ `none`) i `dates.taxPointDate`;
+  (`vat.mode` ≠ `none`), tedy i u opravného dokladu, `dates.taxPointDate`;
 - `vat.mode` ∈ `fromBase` / `fromTotal` / `none`;
 - `currency` `CZK`, `exchangeRate` null nebo 1;
 - u obou stran `name`, `companyId`, `address.{street, houseNumber, city,
@@ -86,17 +91,18 @@ Pořadí elementů = `xs:sequence` schématu, booleany `true` / `false`,
 
 | ISDOC | Zdroj v canonicalu |
 |---|---|
-| `DocumentType`* | 1 (`invoice*`), 4 (`proforma*`) |
+| `DocumentType`* | 1 (`invoice*`), 4 (`proforma*`); `invoiceIssued` s blokem `correction`: 2 při `totals.totalAmount` < 0, jinak 3 |
 | `ID`* | `docNumber` (číslo vystavující strany) |
 | `UUID`* | `options.uuid` |
 | `IssuingSystem` | `options.issuingSystem` |
 | `IssueDate`* | `dates.issueDate` |
-| `TaxPointDate` | `dates.taxPointDate` — jen typ 1 s DPH |
+| `TaxPointDate` | `dates.taxPointDate` — jen faktura a opravný doklad (typy 1–3) s DPH |
 | `VATApplicable`* | `vat.mode !== 'none'` |
 | `ElectronicPossibilityAgreementReference`* | prázdný |
-| `Note` | `notes.onDocument` |
+| `Note` | `notes.onDocument`; u opravného dokladu před ní řádek „Důvod opravy: “ + `correction.reason` |
 | `LocalCurrencyCode`*, `CurrRate`*, `RefCurrRate`* | `CZK`, `1`, `1` |
 | `AccountingSupplierParty/Party`*, `AccountingCustomerParty/Party`* | `supplier`, `customer` — viz Strana |
+| `OriginalDocumentReferences/OriginalDocumentReference` | jen opravný doklad s `correction.originalDocNumber`: `ID` = číslo původního dokladu |
 | `InvoiceLines/InvoiceLine`* | položkové řádky (`rowKind: item`; text a sekce do ISDOC nejdou) — viz Řádek |
 | `TaxTotal/TaxSubTotal`* | `vatRecap[]` v pořadí canonicalu: `TaxableAmount` = base, `TaxAmount` = tax, `TaxInclusiveAmount` = total, `AlreadyClaimed*` 0, `Difference*` = totéž, `TaxCategory/Percent` = vatPct, `LocalReverseChargeFlag` `true` u sazby, v níž je řádek s kódem přenesení; doklad bez DPH jeden subtotal 0 % s `VATApplicable false` |
 | `TaxTotal/TaxAmount`* | `totals.totalVat` (0 u dokladu bez DPH) |
@@ -128,6 +134,32 @@ false` u dokladu bez DPH, `LocalReverseCharge/LocalReverseChargeCode` =
 
 **Formát čísel:** částky na 2 desetinná místa (`-0.00` → `0.00`), množství
 a sazby bez koncových nul, desetinná tečka.
+
+**Opravný doklad** (#92 D9, U4–U6 v `tasks/corrective-doc-outputs.md`).
+Rozhoduje **blok `correction`**, ne znaménko: záporná faktura bez bloku je
+typ 1, blok na jiném typu než `invoiceIssued` se nečte. Objekt se samými
+`null` (import ze starého Shipardu) je pořád opravný doklad — jen bez
+odkazu a bez důvodu.
+
+- **Typ:** `totals.totalAmount` < 0 → 2 (dobropis), jinak 3 (vrubopis,
+  i nulový doklad).
+- **Odkaz:** kolekce `OriginalDocumentReferences` s jedním
+  `OriginalDocumentReference/ID`, v pořadí schématu mezi stranami
+  a `InvoiceLines`. Souhrnný opravný doklad číslo původního dokladu nemá —
+  kolekce se nepíše (prázdnou XSD nedovolí). `IssueDate` původního dokladu
+  se nepíše: canonical nese datum jeho plnění, ne vystavení.
+- **Důvod opravy:** první řádek `Note` („Důvod opravy: …“), poznámka
+  dokladu za ním na dalším řádku; bez důvodu jen poznámka.
+- **Znaménka:** množství a všechny částky řádků, rekapitulace, součtů
+  i `PaidAmount` se píší se znaménkem dokladu, jednotková cena zůstává
+  kladná. Kontrola vstupu záporné hodnoty neodmítala ani dřív. Sleva
+  částkou má u opravného dokladu znaménko řádku (`discountAmount` −50
+  u řádku −857,20 → před slevou −907,20); u běžného dokladu se dál bere
+  jen kladná.
+- **Čtení zpět:** `IsdocReader` přečte dobropis se stejnými částkami jako
+  `creditNote` (`source.raw.documentType` 2); důvod opravy je součást
+  `Note`, odkaz a zápornou slevu nečte, vrubopis odmítne
+  (`IsdocParseException`) — D11.
 
 ## 5. Mapování ISDOC → canonical (čtečka)
 
@@ -210,7 +242,9 @@ ISDOC bez AI extrakce (§ 18 tamtéž, D76); O1 vyřešeno 2026-10-20.
 **Round-trip** `IsdocCorpusRoundTripTest`: každý `.isdoc` korpusu →
 `IsdocReader` → `CanonicalComparator` proti očekávanému výsledku bez
 rozdílu mimo `IGNORE`; totéž nad fixturami generátoru
-(`tests/Fixtures/Exchange/einvoice/`, vydané doklady s prohozenou rolí).
+(`tests/Fixtures/Exchange/einvoice/`, vydané doklady s prohozenou rolí;
+dobropis se čte jako `creditNote` s důvodem opravy v poznámce, vrubopis
+se jen ověří proti XSD).
 Výjimky (pole, která ISDOC nenese — ověřeno proti XSD) žijí v jediném
 zdroji `Isdoc\IsdocFieldCoverage::NOT_CARRIED` (`modules/core/exchange/src/Isdoc/`):
 round-trip test z něj čte (`IGNORE` = `NOT_CARRIED` + `_resolve`)
@@ -240,5 +274,6 @@ detailech), `paymentGateway` → 42 → zpět `bankTransfer`, procento slevy.
 - výběr formátu podle stran (D10): ISDOC jen odběratel se sídlem v ČR
   s IČO od vlastní firmy v ČR;
 - validace za běhu s degradací; přechod na `version="6.0.2"` s ISDOC.PDF;
-- mimo: cizí měna (D4), opravné doklady (#92), `.isdocx`, podpis,
+- mimo: cizí měna (D4), čtení přijatých opravných dokladů (#92 D11 —
+  vrubopis, odkaz na původní doklad, záporná sleva), `.isdocx`, podpis,
   Schematron, EN 16931 / Peppol.

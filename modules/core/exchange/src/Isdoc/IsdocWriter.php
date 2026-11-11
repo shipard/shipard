@@ -26,6 +26,10 @@ use Shipard\Module\World\Validations\ValueRules;
  *   - jen doklady v Kč (D4), typy faktura (1) a zálohová faktura (4) (D5),
  *     obě strany české s IČO a úplnou adresou (D10); prázdné smějí zůstat
  *     jen název banky a BIC,
+ *   - opravný doklad (#92 D9) = faktura vydaná s blokem `correction`: typ 2
+ *     (dobropis) při záporné částce celkem, jinak 3 (vrubopis); odkaz na
+ *     původní doklad v `OriginalDocumentReferences` (jen s číslem), důvod
+ *     opravy na začátku `Note`. Částky se píší se znaménkem dokladu,
  *   - žádné časové razítko ani jiná proměnná hodnota — stejný vstup dává
  *     stejné bajty; UUID a vystavující systém dodává {@see EInvoiceOptions},
  *   - pořadí elementů přesně podle `xs:sequence` schématu, booleany
@@ -38,7 +42,10 @@ final class IsdocWriter implements EInvoiceWriter
     public const NAMESPACE = 'http://isdoc.cz/namespace/2013';
     public const VERSION = '6.0.1';
 
-    /** Canonical docType → ISDOC DocumentType (D5); opravné doklady až s #92. */
+    /**
+     * Canonical docType → ISDOC DocumentType (D5). Opravný doklad (2 / 3)
+     * není typ canonicalu — `invoiceIssued` s blokem `correction` (#92 D9).
+     */
     private const DOC_TYPE_MAP = [
         'invoiceIssued'    => 1,
         'invoiceReceived'  => 1,
@@ -59,6 +66,11 @@ final class IsdocWriter implements EInvoiceWriter
     private const VAT_MODES = ['fromBase', 'fromTotal', 'none'];
     private const DATE_RE = '/^\d{4}-\d{2}-\d{2}$/';
     private const ID_MAX_LENGTH = 36;
+
+    private const DOC_TYPE_CREDIT_NOTE = 2;
+    private const DOC_TYPE_DEBIT_NOTE = 3;
+    /** Uvozuje důvod opravy v `Note`; ISDOC je český standard, text je český. */
+    private const CORRECTION_REASON_PREFIX = 'Důvod opravy: ';
 
     /** @var list<array{path: string, message: string}> */
     private array $problems = [];
@@ -85,6 +97,7 @@ final class IsdocWriter implements EInvoiceWriter
         $this->writeHeader($invoice, $model, $options);
         $this->writeParty($invoice, 'AccountingSupplierParty', $model['supplier']);
         $this->writeParty($invoice, 'AccountingCustomerParty', $model['customer']);
+        $this->writeOriginalDocumentReferences($invoice, $model);
         $this->writeLines($invoice, $model);
         $this->writeTaxTotal($invoice, $model);
         $this->writeMonetaryTotal($invoice, $model);
@@ -107,6 +120,14 @@ final class IsdocWriter implements EInvoiceWriter
             $this->problem('docType', 'typ dokladu ' . var_export($docTypeRaw, true)
                 . ' není podporován (jen faktura a zálohová faktura, D5)');
         }
+        // Opravný doklad (#92 D9): jen faktura vydaná s blokem `correction`;
+        // u jiného typu se blok nečte a platí mapa typů.
+        $correction = $docTypeRaw === 'invoiceIssued' && is_array($c['correction'] ?? null)
+            ? [
+                'originalNumber' => $this->optText($c, 'correction.originalDocNumber'),
+                'reason'         => $this->optText($c, 'correction.reason'),
+            ]
+            : null;
 
         $docNumber = $this->reqText($c, 'docNumber');
         if ($docNumber !== null && mb_strlen($docNumber) > self::ID_MAX_LENGTH) {
@@ -138,7 +159,7 @@ final class IsdocWriter implements EInvoiceWriter
         $supplier = $this->checkParty($c, 'supplier', $options);
         $customer = $this->checkParty($c, 'customer', $options);
 
-        [$rows, $reverseChargePcts] = $this->checkRows($c, $mode, $vatApplicable, $reverseCharge);
+        [$rows, $reverseChargePcts] = $this->checkRows($c, $mode, $vatApplicable, $reverseCharge, $correction !== null);
         if ($reverseCharge && $reverseChargePcts === []) {
             $this->problem('vat.reverseCharge', 'přenesení daňové povinnosti bez reverseChargeCode na řádku');
         }
@@ -147,6 +168,17 @@ final class IsdocWriter implements EInvoiceWriter
         $totals = $this->checkTotals($c, $vatApplicable);
         $payment = $this->checkPayment($c);
 
+        // Typ opravného dokladu podle znaménka částky celkem: záporná =
+        // dobropis, jinak vrubopis. Důvod opravy jde před poznámku dokladu.
+        $note = $this->optText($c, 'notes.onDocument');
+        if ($correction !== null) {
+            $docType = ($totals['totalAmount'] ?? 0.0) < 0 ? self::DOC_TYPE_CREDIT_NOTE : self::DOC_TYPE_DEBIT_NOTE;
+            if ($correction['reason'] !== null) {
+                $reason = self::CORRECTION_REASON_PREFIX . $correction['reason'];
+                $note = $note !== null ? $reason . "\n" . $note : $reason;
+            }
+        }
+
         return [
             'docType'       => $docType,
             'docNumber'     => $docNumber,
@@ -154,7 +186,8 @@ final class IsdocWriter implements EInvoiceWriter
             'vatApplicable' => $vatApplicable,
             'issueDate'     => $issueDate,
             'taxPointDate'  => $taxPointDate,
-            'note'          => $this->optText($c, 'notes.onDocument'),
+            'note'          => $note,
+            'correction'    => $correction,
             'supplier'      => $supplier,
             'customer'      => $customer,
             'rows'          => $rows,
@@ -209,10 +242,13 @@ final class IsdocWriter implements EInvoiceWriter
      * Položkové řádky (text a sekce do ISDOC nejdou) s dopočtenými
      * informativními hodnotami.
      *
+     * U opravného dokladu má sleva částkou znaménko řádku (dobropis −50
+     * u řádku −857,20); běžný doklad bere jen kladnou slevu jako dosud.
+     *
      * @param array<string, mixed> $c
      * @return array{0: list<array<string, mixed>>, 1: list<float>} řádky, sazby s přenesením
      */
-    private function checkRows(array $c, string $mode, bool $vatApplicable, bool $reverseCharge): array
+    private function checkRows(array $c, string $mode, bool $vatApplicable, bool $reverseCharge, bool $corrective): array
     {
         $rows = [];
         $reverseChargePcts = [];
@@ -256,7 +292,7 @@ final class IsdocWriter implements EInvoiceWriter
             $rowAmount = $mode === 'fromTotal' ? $vatTotal : $vatBase;
             if ($rowAmount !== null) {
                 $before = null;
-                if ($discountAmount !== null && $discountAmount > 0) {
+                if ($discountAmount !== null && ($discountAmount > 0 || ($corrective && $discountAmount < 0))) {
                     $before = $rowAmount + $discountAmount;
                 } elseif ($discountPct !== null && $discountPct > 0 && $discountPct < 100) {
                     $before = round($rowAmount / (1 - $discountPct / 100), 2);
@@ -425,6 +461,25 @@ final class IsdocWriter implements EInvoiceWriter
         $this->add($invoice, 'LocalCurrencyCode', 'CZK');
         $this->add($invoice, 'CurrRate', '1');
         $this->add($invoice, 'RefCurrRate', '1');
+    }
+
+    /**
+     * Odkaz na původní doklad opravného dokladu (#92 D9). Podle `xs:sequence`
+     * patří mezi strany a řádky. Souhrnný opravný doklad číslo původního
+     * dokladu nemá — kolekce se nepíše (prázdnou XSD nedovolí) a vymezení
+     * nese důvod opravy v `Note`. Datum vystavení původního dokladu
+     * canonical nemá (jen datum plnění), `IssueDate` se proto nepíše.
+     *
+     * @param array<string, mixed> $m
+     */
+    private function writeOriginalDocumentReferences(\DOMElement $invoice, array $m): void
+    {
+        $number = $m['correction']['originalNumber'] ?? null;
+        if ($number === null) {
+            return;
+        }
+        $reference = $this->add($this->add($invoice, 'OriginalDocumentReferences'), 'OriginalDocumentReference');
+        $this->add($reference, 'ID', (string) $number);
     }
 
     /** @param array<string, mixed> $p */
