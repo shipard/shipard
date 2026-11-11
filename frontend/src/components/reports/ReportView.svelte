@@ -1,18 +1,24 @@
 <script>
   // Čistý renderer ReportResult (docs/reports.md §3) — žádné fetche, žádný
   // stav parametrů. Sloupec s display: 'sides' se rozpadá na trojici
-  // MD / D / Zůstatek, 'balance' zobrazuje jen balance. Řádky odkázané
-  // z messages přes rowRef ('rows.{index}') se podbarvují dle severity;
-  // zprávy samotné jdou „pod čaru" dole (D15). Drill-down (D70): řádek
-  // s `link` má název jako odkaz, `cellLinks[sloupec]` textovou buňku —
-  // akci (tvar akce detailu vieweru) jen předá rodiči přes onAction.
+  // MD / D / Zůstatek, 'balance' zobrazuje jen balance. Drill-down (D70):
+  // řádek s `link` má název jako odkaz, `cellLinks[sloupec]` textovou
+  // buňku — akci (tvar akce detailu vieweru) jen předá rodiči přes onAction.
+  //
+  // Stav a zprávy (D15, vzhled #133 D64 podle D61): stav reportu je hláška
+  // (`Notice`) nad tabulkou; řádek odkázaný z messages přes rowRef
+  // ('rows.{index}') je chyba u prvku — ikona před názvem a tón textem,
+  // bez pozadí (pozadí má jen mezisoučet); zprávy samotné jdou „pod čaru“
+  // dole. Chyba barví text (`--shpd-color-danger`), varování nese tón jen
+  // ikonou: `--shpd-color-warning` na světlém pozadí nedá textu 4,5 : 1.
   //
   // Datová mřížka s držící hlavičkou (#133 D57): kořen je flex sloupec
   // ve výšce oblasti výsledku (řetěz výšky drží `ReportsPage`), tabulka
   // v `TableScroll fill` roluje v obou osách a hlavička drží vůči obalu.
-  // Štítek stavu je nad obalem, zprávy pod ním — krátký report je má hned
+  // Hláška stavu je nad obalem, zprávy pod ním — krátký report je má hned
   // pod tabulkou, u dlouhého zůstávají vidět u spodní hrany.
   import Icon from '../ui/Icon.svelte';
+  import Notice from '../ui/Notice.svelte';
   import TableScroll from '../ui/TableScroll.svelte';
   import { iconWarning, iconInfo, iconAlert } from '../../icons.js';
   import { t } from '../../i18n/index.js';
@@ -28,20 +34,29 @@
   const severityRank = { info: 0, warning: 1, error: 2 };
   const severityIcons = { info: iconInfo, warning: iconWarning, error: iconAlert };
 
-  // rowRef 'rows.5' → index 5; per řádek drží nejvyšší severity.
-  const rowSeverity = $derived.by(() => {
+  // rowRef 'rows.5' → index 5 do `result.rows`; per řádek drží nejvyšší
+  // severity a text první zprávy, která na něj ukazuje (title řádku).
+  const rowMarks = $derived.by(() => {
     const map = new Map();
     for (const msg of messages) {
       const match = /^rows\.(\d+)$/.exec(msg.rowRef ?? '');
       if (!match) continue;
       const index = Number(match[1]);
       const prev = map.get(index);
-      if (prev === undefined || severityRank[msg.severity] > severityRank[prev]) {
-        map.set(index, msg.severity);
+      if (prev === undefined) {
+        map.set(index, { severity: msg.severity, title: msg.text });
+      } else if (severityRank[msg.severity] > severityRank[prev.severity]) {
+        prev.severity = msg.severity;
       }
     }
     return map;
   });
+
+  // Ikonu a tón má jen chyba a varování; `info` řádek neznačí.
+  function rowTone(index) {
+    const severity = rowMarks.get(index)?.severity;
+    return severity === 'error' || severity === 'warning' ? severity : null;
+  }
 
   const hasSides = $derived(columns.some((c) => (c.display ?? 'balance') === 'sides'));
 
@@ -85,12 +100,10 @@
 {#if result}
   <div class="shpd-report">
     {#if result.status !== 'ok'}
-      <div
-        class="shpd-report__badge"
-        class:shpd-report__badge--error={result.status === 'errors'}
-      >
-        <Icon icon={result.status === 'errors' ? iconAlert : iconWarning} size="sm" />
-        <span>{t(result.status === 'errors' ? 'reports.status.errors' : 'reports.status.warnings')}</span>
+      <div class="shpd-report__status">
+        <Notice tone={result.status === 'errors' ? 'danger' : 'warning'}>
+          {t(result.status === 'errors' ? 'reports.status.errors' : 'reports.status.warnings')}
+        </Notice>
       </div>
     {/if}
 
@@ -129,13 +142,15 @@
           </thead>
           <tbody>
             {#each rows as row, index}
+              {@const tone = rowTone(index)}
               <tr
                 class="shpd-report__tr"
                 class:shpd-report__tr--subtotal={row.kind === 'subtotal'}
                 class:shpd-report__tr--total={row.kind === 'total'}
                 class:shpd-report__tr--computed={row.kind === 'computed'}
-                class:shpd-report__tr--error={rowSeverity.get(index) === 'error'}
-                class:shpd-report__tr--warning={rowSeverity.get(index) === 'warning'}
+                class:shpd-report__tr--error={tone === 'error'}
+                class:shpd-report__tr--warning={tone === 'warning'}
+                title={tone ? rowMarks.get(index).title : undefined}
               >
                 {#if hasAccount}
                   <td class="shpd-report__td shpd-report__td--account">{row.account ?? ''}</td>
@@ -144,6 +159,7 @@
                   class="shpd-report__td shpd-report__td--label"
                   style:padding-left={hasAccount ? undefined : `calc(var(--shpd-space-sm) + ${row.level}rem)`}
                 >
+                  {#if tone}<span class="shpd-report__row-icon"><Icon icon={severityIcons[tone]} size="sm" /></span>{/if}
                   {#if row.link && onAction}
                     <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
                   {:else}
@@ -183,7 +199,7 @@
       <ul class="shpd-report__messages">
         {#each messages as msg}
           <li class="shpd-report__message shpd-report__message--{msg.severity}" title={msg.code}>
-            <Icon icon={severityIcons[msg.severity] ?? iconInfo} size="sm" />
+            <span class="shpd-report__message-icon"><Icon icon={severityIcons[msg.severity] ?? iconInfo} size="sm" /></span>
             <span>{msg.text}</span>
           </li>
         {/each}
@@ -200,24 +216,11 @@
     min-height: 0;
   }
 
-  .shpd-report__badge {
-    display: inline-flex;
+  /* Obal hlášky stavu: `Notice` nemá vnější okraj, mezeru pod ní dává
+     rodič. `flex: none` — hláška se nesmrští a tabulce nechá zbytek výšky. */
+  .shpd-report__status {
     flex: none;
-    align-self: flex-start;
-    align-items: center;
-    gap: var(--shpd-space-xs);
     margin-bottom: var(--shpd-space-sm);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-alert-warning-bg);
-    color: var(--shpd-color-alert-warning-text);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
-  }
-
-  .shpd-report__badge--error {
-    background-color: var(--shpd-color-state-error-bg);
-    color: var(--shpd-color-state-error-text);
   }
 
   .shpd-report__empty {
@@ -351,14 +354,19 @@
     font-weight: 600;
   }
 
-  .shpd-report__tr--error > .shpd-report__td {
-    background-color: var(--shpd-color-state-error-bg);
-    color: var(--shpd-color-state-error-text);
+  /* Řádek se zprávou = chyba u prvku (D61, D64): bez pozadí, tón nese
+     ikona před názvem a u chyby i barva textu buněk. Varování text nebarví
+     (kontrast, viz komentář nahoře). Odkaz v řádku zůstává v barvě odkazu. */
+  .shpd-report__row-icon {
+    margin-right: var(--shpd-space-xs);
   }
 
-  .shpd-report__tr--warning > .shpd-report__td {
-    background-color: var(--shpd-color-alert-warning-bg);
-    color: var(--shpd-color-alert-warning-text);
+  .shpd-report__tr--error > .shpd-report__td {
+    color: var(--shpd-color-danger);
+  }
+
+  .shpd-report__tr--warning .shpd-report__row-icon {
+    color: var(--shpd-color-warning);
   }
 
   /* Zprávy „pod čarou“ mají vlastní svislé rolování a strop výšky, aby
@@ -382,12 +390,13 @@
     font-size: var(--shpd-font-size-sm);
   }
 
+  /* Tón jako u řádku: chyba textem i ikonou, varování jen ikonou. */
   .shpd-report__message--error {
-    color: var(--shpd-color-state-error-text);
+    color: var(--shpd-color-danger);
   }
 
-  .shpd-report__message--warning {
-    color: var(--shpd-color-alert-warning-text);
+  .shpd-report__message--warning > .shpd-report__message-icon {
+    color: var(--shpd-color-warning);
   }
 
   .shpd-report__message--info {
