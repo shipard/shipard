@@ -1,5 +1,13 @@
 [
   {
+    "messageId": "MSG-CORPUS-NP-1101",
+    "currency": "EUR",
+    "rateDate": "2026-08-18",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-08-18",
+    "rate": 24.180000
+  },
+  {
     "messageId": "MSG-CORPUS-NP-0601",
     "currency": "EUR",
     "rateDate": "2026-08-18",
@@ -14,5 +22,13 @@
     "listType": "cz.cnb.daily",
     "validFrom": "2026-09-22",
     "rate": 24.345000
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1102",
+    "currency": "EUR",
+    "rateDate": "2026-09-30",
+    "listType": "cz.cnb.daily",
+    "validFrom": "2026-09-30",
+    "rate": 24.440000
   }
 ]

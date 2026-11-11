@@ -1,0 +1,23 @@
+// Varianta 11, podoba pdf — hotel v Německu účtuje vlastní DPH (en), EUR, úhrada převodem.
+// Dva řádky v sazbě 19 %: Σ řádků s daní (37,31 + 29,10) se od rekapitulace dodavatele (66,40)
+// liší o haléř — převod cen ho dorovná na největší řádek (#97 D5), doklad sedí na částku k úhradě.
+{
+	"variant": "eu-foreign-vat",
+	"form": "pdf",
+	"supplier": "kranichturm",
+	"docNumber": "KT-2026-05102",
+	"paymentReference": null,
+	"dates": { "issue": "2026-09-30", "tax": "2026-09-30", "due": "2026-10-14" },
+	"currency": "EUR",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "travel.accommodation",
+	"rows": [
+		{ "text": "Single room, 3 nights", "description": "Arrival 09/27/2026, departure 09/30/2026", "qty": 3, "unit": "night", "unitPrice": 94.00, "vatPct": 7, "supplyKind": "services" },
+		{ "text": "Breakfast buffet", "qty": 3, "unit": "pcs", "unitPrice": 10.45, "vatPct": 19, "supplyKind": "services" },
+		{ "text": "Garage parking", "qty": 3, "unit": "day", "unitPrice": 8.15, "vatPct": 19, "supplyKind": "services" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Payment within 14 days by bank transfer. Thank you for staying with us." },
+}

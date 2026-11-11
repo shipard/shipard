@@ -30,6 +30,7 @@ VARIANTS = {
     "third-country-services": 8,
     "receipt": 9,
     "long-document": 10,
+    "eu-foreign-vat": 11,
 }
 RECEIPT_TEMPLATES = frozenset({"receipt"})
 # Jazyk šablony — řídí jazyk tisku i předmět / tělo zprávy v datové sadě.

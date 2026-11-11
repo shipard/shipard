@@ -21,7 +21,7 @@ final class EvalMessagesTest extends TestCase
     {
         $messages = EvalMessages::fromDataset(DatasetReader::open(self::datasetDir()));
 
-        $this->assertCount(20, $messages);
+        $this->assertCount(22, $messages);
         $first = $messages[0];
         $this->assertSame('MSG-CORPUS-VP-0301', $first->messageId, 'pořadí sady podle receivedAt');
         $this->assertSame('0301-domestic-rounding', $first->stem);
@@ -50,6 +50,6 @@ final class EvalMessagesTest extends TestCase
         $this->assertSame([], $ids(EvalMessages::filter($messages, ['01'], null)), 'prefix jen celé číslo buňky');
         $this->assertCount(3, EvalMessages::filter($messages, [], 3));
         $this->assertSame(['MSG-CORPUS-VP-0601'], $ids(EvalMessages::filter($messages, ['eu-goods'], 1)), 'limit až po výběru');
-        $this->assertCount(20, EvalMessages::filter($messages, [], null));
+        $this->assertCount(22, EvalMessages::filter($messages, [], null));
     }
 }

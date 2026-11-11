@@ -6,6 +6,12 @@
     "form": "pdf"
   },
   {
+    "messageId": "MSG-CORPUS-NP-1101",
+    "stem": "1101-eu-foreign-vat",
+    "variant": "eu-foreign-vat",
+    "form": "pdf"
+  },
+  {
     "messageId": "MSG-CORPUS-NP-0601",
     "stem": "0601-eu-goods",
     "variant": "eu-goods",
@@ -94,5 +100,11 @@
     "stem": "1002-long-document",
     "variant": "long-document",
     "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1102",
+    "stem": "1102-eu-foreign-vat",
+    "variant": "eu-foreign-vat",
+    "form": "pdf"
   }
 ]

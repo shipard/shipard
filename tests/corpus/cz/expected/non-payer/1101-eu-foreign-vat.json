@@ -1,0 +1,152 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "KT-2026-04417",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Kranichturm Hotelbetrieb GmbH",
+    "country": "de",
+    "companyId": null,
+    "taxId": null,
+    "vatId": "DE294718364",
+    "courtRegistration": "Amtsgericht München, HRB 996204",
+    "address": {
+      "street": "Uferpromenade",
+      "houseNumber": "11",
+      "city": "München",
+      "zip": "80331",
+      "country": "de"
+    },
+    "contact": {
+      "name": null,
+      "email": "reception@kranichturm.example",
+      "phone": "+490008215530",
+      "web": "www.kranichturm.example"
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": "DE95700500000003918274",
+      "bic": "KRNTDEMMXXX"
+    }
+  },
+  "customer": {
+    "name": "Kreslírna Modrá s.r.o.",
+    "country": "cz",
+    "companyId": "68040725",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Náčrtková",
+      "houseNumber": "15",
+      "city": "Brno",
+      "zip": "60200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-08-18",
+    "dueDate": "2026-09-01",
+    "taxPointDate": "2026-08-18",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "EUR",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "intracom",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": null,
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Company booking, payment within 14 days by bank transfer. Thank you for staying with us."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Double room, 2 nights",
+        "description": "Arrival 08/16/2026, departure 08/18/2026"
+      },
+      "unit": "night",
+      "quantity": 2,
+      "unitPrice": 129.00,
+      "totalPrice": 258.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 7,
+        "supplyKind": "services",
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Breakfast buffet",
+        "description": null
+      },
+      "unit": "pcs",
+      "quantity": 4,
+      "unitPrice": 14.90,
+      "totalPrice": 59.60,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 19,
+        "supplyKind": "services",
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 19,
+      "base": 59.60,
+      "tax": 11.32,
+      "total": 70.92
+    },
+    {
+      "vatPct": 7,
+      "base": 258.00,
+      "tax": 18.06,
+      "total": 276.06
+    }
+  ],
+  "totals": {
+    "totalBase": 317.60,
+    "totalVat": 29.38,
+    "totalAmount": 346.98,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "travel.accommodation",
+      "rowExceptions": []
+    }
+  }
+}

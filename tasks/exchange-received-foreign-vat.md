@@ -1,6 +1,6 @@
 # Task: Přijatý doklad se zahraniční DPH a zvláštním místem plnění — doklad Bez DPH
 
-**Stav:** částečně — commity 1/3 a 2/3 hotové 2026-11-11 (D1–D4: doklad se zahraniční DPH / zvláštním místem plnění vznikne Bez DPH, ruční Bez DPH mimo tuzemsko platí, náhled, help); zbývá varianta korpusu (3/3) a ověření na dev zdroji (#89, task A)
+**Stav:** částečně — commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11 se schválenými snímky deníku); zbývá ověření na dev zdroji (body 1–6) a výsledek do #89 (task A)
 
 **Issue:** #89 (task A; task B je `vat-reverse-charge-subjects.md`)
 
@@ -117,6 +117,14 @@ Upřesnění při implementaci (2026-11-11):
 - **Volba Bez DPH má přednost i před volbou kódu řádku** (D4) — kód se
   pak ohlásí info `vat_pin_ignored`. „Automaticky“ v náhledu dál ukazuje,
   co by vyšlo bez volby (`autoOutOfScope` / `autoReverseCharge` v kontextu).
+- **Korpus (3/3):** varianta 11 `eu-foreign-vat` (hotel v Německu, EUR,
+  7 % + 19 %) je ve všech třech profilech bez přepisu — u plátce cestou
+  dokladu mimo české DPH, u neplátce a spolku cestou #97; deník je u všech
+  stejný (512100 / 321100). Očekávání plátce: `vat-reporting.jsonc` režim
+  `none`, náklad z řádků s daní (`reporting.out_of_czech_vat`), výjimky
+  věrnosti `ApplyFidelityCheck::EXCEPTIONS_OUT_OF_SCOPE` čtené z návrhu.
+  Sady mají 22 / 18 / 18 zpráv; dřívější běhy evaluací neodpovídají
+  aktuální sadě.
 - **Jednoklik a MCP:** varování apply neblokuje, doklad vznikne jako
   koncept. Karta feedu ani odpověď `mail_draft_document` varování nenesou
   — je vidět jen v náhledu. Pásmo karty (`capBand`) applier nepouští,
@@ -254,5 +262,5 @@ Na volném zdroji dat (třída `free`) s registrací DPH a s analyzovanou pošto
       zelené; build frontendu a i18n parita.
 - [x] `docs/exchange-format.md` a help aktualizované; `help-index.py`
       a `tasks-index.py` prošly.
-- [ ] Varianta korpusu se zahraniční DPH (nebo zapsaný důvod, proč ne).
+- [x] Varianta korpusu se zahraniční DPH (nebo zapsaný důvod, proč ne).
 - [ ] Ověření na dev zdroji (body 1–6) a výsledek do #89.

@@ -208,10 +208,10 @@ země o DPH nemluví vůbec.
 
 ## 6. Varianty a matice
 
-Deset variant první vlny (D16), každá se dvěma doklady (`01`, `02`). Podobu
-`pdfIsdoc` má podle D10 (#119) jen druhý doklad variant 1–4, 7 a 10; druhé
-doklady variant 5, 6, 8 (zahraniční dodavatel) a 9 (účtenka) zůstávají
-`pdf`:
+Deset variant první vlny (D16) a varianta 11 (#89 — zahraniční DPH), každá
+se dvěma doklady (`01`, `02`). Podobu `pdfIsdoc` má podle D10 (#119) jen
+druhý doklad variant 1–4, 7 a 10; druhé doklady variant 5, 6, 8, 11
+(zahraniční dodavatel) a 9 (účtenka) zůstávají `pdf`:
 
 | V | Slug | Dodavatel | Měna | Šablona | `vatTreatment` | Podoba `02` | Štítek | Prověří |
 |---|------|-----------|------|---------|----------------|-------------|--------|---------|
@@ -225,6 +225,7 @@ doklady variant 5, 6, 8 (zahraniční dodavatel) a 9 (účtenka) zůstávají
 | 8 | `third-country-services` | US | USD | `en` | `noVat` | `pdf` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou, období jen v textu řádku (D112, `unprinted`) |
 | 9 | `receipt` | CZ | CZK | `receipt` | `pricesWithVat` 21 % (+ 12 %) | `pdf` | `vehicle.fuel` | účtenka bez odběratele a splatnosti, `fromTotal` u PHM |
 | 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `pdfIsdoc` | `office.cleaning`, potraviny a potřeby ke kávě `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků; žádná nejednoznačná položka (D104) |
+| 11 | `eu-foreign-vat` | DE | EUR | `en` | `standard` 7 % + 19 % (daň dodavatele) | `pdf` | `travel.accommodation` | hotel v EU s vlastní DPH: doklad **mimo české DPH** — Bez DPH, řádky v cenách s daní, součet = částka k úhradě (#89 D2); u `02` haléřové dorovnání řádků na rekapitulaci dodavatele (#97 D5) |
 
 První doklad (`01`) každé varianty je `pdf`.
 
@@ -232,13 +233,19 @@ Matice variant × profil (D17). Identifikovaná osoba se v první vlně neřeš�
 
 | V | `vat-payer` | `non-payer` | `association` |
 |---|-------------|-------------|---------------|
-| 1–3, 7, 9, 10 | ✓ | ✓ | ✓ |
+| 1–3, 7, 9, 10, 11 | ✓ | ✓ | ✓ |
 | 4 | ✓ | přepis: běžná faktura 21 %, bez přenesení | přepis jako `non-payer` |
 | 5 | ✓ | vynecháno: identifikovaná osoba — druhá vlna | vynecháno: identifikovaná osoba — druhá vlna |
 | 6 | ✓ | přepis: DPH dodavatele 19 %, bez DIČ odběratele, bez textu čl. 138 | přepis jako `non-payer` |
 | 8 | ✓ | vynecháno: identifikovaná osoba — druhá vlna | vynecháno: identifikovaná osoba — druhá vlna |
 
-Celkem 20 + 16 + 16 = **52 buněk** (PDF + očekávaný výsledek), 8 vynechaných.
+Celkem 22 + 18 + 18 = **58 buněk** (PDF + očekávaný výsledek), 8 vynechaných.
+
+Varianta 11 je u všech profilů tentýž doklad a končí stejně — Bez DPH
+s daní dodavatele v cenách řádků: u plátce cestou dokladu mimo české DPH
+(#89, `docs/exchange-format.md` § 8.4), u neplátce a spolku cestou #97.
+V přiznání DPH ani v kontrolním hlášení není (`vat-reporting.jsonc`:
+režim `none`), náklad je Σ řádků s daní (`reporting.out_of_czech_vat`).
 
 ## 7. Výpočet (D5)
 
@@ -786,7 +793,7 @@ sadu** u volného zdroje dat v seznamu (§ 18, F6c).
 `dataset-seed` si na čerstvém DS doplní schéma (`ds-upgrade`), zapíše
 nastavení, resetuje DS, založí fiskální rok 2026 a účetní položky
 z nabídky (57 / 57 / 31) a naseeduje vlastní firmu a zprávy
-(20 / 16 / 16); před zprávami nahraje kurzovní lístky sekce
+(22 / 18 / 18); před zprávami nahraje kurzovní lístky sekce
 `exchangeRates/`, takže návrh v cizí měně dostane při Použít kurz
 z lístku sady (#121 D6). Zdroj dat jiné země odmítne v preflightu. Po
 Použít tuzemského návrhu se naučí pravidlo IČO → štítek (`tagSource:
@@ -823,7 +830,7 @@ odpovídá návrhu, Použít nezaložilo položku, přiznání DPH a kontrolní
 hlášení i náklady odpovídají očekávání spočtenému nezávisle na Shipardu
 a deník odpovídá schválenému snímku. Kontroly jedou nad všemi doklady
 sady, i z dřívějšího běhu — druhý běh (i `--no-apply`) dá totéž.
-Doklady v cizí měně (6 u plátce, 2 u neplátce i spolku) dostanou při
+Doklady v cizí měně (8 u plátce, 4 u neplátce i spolku) dostanou při
 apply kurz z lístků sady (`exchangeRates/`, #121 D6) a jejich očekávání
 DPH i nákladů jsou v domácí měně (§ 16, #103 D73); přeskakování D30
 skončilo 2026-10-20 (D74).
@@ -951,6 +958,7 @@ z běhu se sepíší a člověk rozhodne.
 | `exchangeRate` | doklad v cizí měně (schváleno 2026-10-20, D79) | papír kurz nenese, applier ho doplní z lístku k účetnímu datu (#121 D6); hodnotu i datum hlídá kontrola 5 |
 | `vat.mode` | doklad bez DPH ze třetí země (`vat.mode` none + `vat.place` thirdCountry; schváleno 2026-10-20, nález F) | applier službu ze třetí země samovyměří (F3 nález B) a „Bez DPH“ se samovyměřením přepne na fromBase; řádky a rekapitulaci srovná adaptér |
 | `rows[].unitPrice`, `rows[].totalPrice`, `rows[].priceCalcMode`, `rows[].discountPct`, `rows[].vat`, `vat.mode`, `vatRecap`, `totals.totalBase`, `totals.totalVat` | zdroj dat bez agendy DPH | neplátce ukládá ceny s DPH, bez kódů a rekapitulace (#97); celková částka, data, strany a texty se porovnávají dál |
+| tytéž uzly (`EXCEPTIONS_OUT_OF_SCOPE`) | plátce, návrh mimo české DPH: `vat.place` mimo tuzemsko, `vat.reverseCharge` není `true`, doklad nese daň dodavatele (schváleno 2026-11-11, #89 D2) | doklad vznikne Bez DPH s daní dodavatele v cenách řádků; podmínka se čte z **návrhu**, ne z dokladu — doklad, který Bez DPH vzniknout neměl, výjimku nedostane |
 
 Podstrom `_resolve` export nenese — štítky řádků hlídá kontrola 2.
 **Pravidla adaptéru** (rovnocenné tvary doplněné ze zdroje dat, ne
@@ -990,7 +998,9 @@ po opravě předpisů pro osnovu NNO (#122): zaokrouhlení jde na 549100 /
 343205 / 343207 / 343215 / 343217 (EU zboží a služby), 343407 / 343417
 (třetí země), 501201, 518206, haléřový zbytek přepočtu po řádcích na
 648100 (plátce) a 548100 / 549100 (neplátce / spolek); první schválení
-2026-10-15 bez cizí měny.
+2026-10-15 bez cizí měny. Od 2026-11-11 nesou i dva doklady varianty 11
+(#89): u všech tří profilů 17 387,32 Kč na 512100 proti 321100 —
+8 389,98 + 8 997,34, celá částka včetně daně dodavatele, žádný účet 343.
 
 ### Pasti
 

@@ -30,5 +30,8 @@
 		"eu-goods":                    { "regime": "intracomGoods",        "controlStatement": "A2", "czRate": 21 },
 		"third-country-services":      { "regime": "thirdCountryServices", "controlStatement": "A2", "czRate": 21 },
 		"domestic-non-payer-supplier": { "regime": "none", "controlStatement": null },
+		// Dodavatel z EU účtuje vlastní DPH (hotel): doklad je mimo české DPH — vznikne Bez DPH,
+		// do přiznání ani KH nejde, daň dodavatele je v nákladu (#89 D2).
+		"eu-foreign-vat":              { "regime": "none", "controlStatement": null },
 	},
 }

@@ -25,6 +25,14 @@
     }
   },
   {
+    "messageId": "MSG-CORPUS-VP-1101",
+    "variant": "eu-foreign-vat",
+    "currency": "EUR",
+    "period": null,
+    "return": {},
+    "controlStatement": null
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0601",
     "variant": "eu-goods",
     "currency": "EUR",
@@ -482,6 +490,14 @@
       },
       "reverseChargeCode": null
     }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1102",
+    "variant": "eu-foreign-vat",
+    "currency": "EUR",
+    "period": null,
+    "return": {},
+    "controlStatement": null
   },
   {
     "messageId": "MSG-CORPUS-VP-0502",
