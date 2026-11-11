@@ -123,6 +123,14 @@ i čte AI asistentem.
   (i u mezisoučtů — prefix třídy, skupiny, syntetiky) a hierarchii nese
   délka čísla a tučné mezisoučty, název se neodsazuje (#133 D63; stejné
   pravidlo sloupce má export, §15.2).
+- `accountLabel` (volitelné, mezi `columns` a `rows`): popisek sloupce
+  s číslem řádku, když pole `account` nenese číslo účtu — „Řádek“
+  u Přiznání k DPH — živě, „Oddíl“ u Kontrolního hlášení — živě (#133 D68).
+  Hodnota je v jazyce požadavku. Klíč ve výsledku **chybí**, když definice
+  reportu popisek nemá (všechny účtové reporty) — prezentace pak píše
+  výchozí „Účet“ a tvar výsledku se pro ně nemění. Builder ho nezadává:
+  doplňuje ho `ReportRunner` z definice (`ReportResult::withAccountLabel()`),
+  viz §4.
 - Přesný seznam polí řádku doladí PRD (např. `accountId` vedle
   `account_number` pro drill-down do deníku).
 
@@ -186,6 +194,29 @@ vrátí `ReportResult`.
 systémem (i18n přes `name:cs`, kompilace konfigurace, `ds-upgrade` po
 změně). Deklarace odkazuje na `ReportBuilder` třídu. Zůstává jediným
 místem, ze kterého se odvozuje toolbar, validace i MCP schéma.
+
+**Popisek sloupce s číslem — `accountColumn`** (#133 D68). Volitelné pole
+deklarace pro report, který v `account` řádku nenese číslo účtu:
+
+```jsonc
+"accountColumn": {"name": "Line", "name:cs": "Řádek", "name:en": "Line"}
+```
+
+Stejný tvar lokalizovaného textu jako `name` reportu; po `ConfigLocalizer`
+z něj `ReportDefinition` čte jen `name` (`$accountLabel`). Objekt bez
+neprázdného řetězce `name` = `InvalidArgumentException` se jménem reportu.
+Bez pole zůstává výchozí „Účet“ (`reports.column.account` ve frontendu,
+`account` v popiscích exportu). Popisek mění jen hlavičku — pravidlo
+„sloupec je tam, když číslo má aspoň jeden řádek“ ani název pole `account`
+v kontraktu se nemění. Dnes ho mají dva reporty modulu `economy.vat`:
+Přiznání k DPH — živě („Řádek“ / „Line“, číslo řádku přiznání)
+a Kontrolní hlášení — živě („Oddíl“ / „Section“, kód oddílu u součtových
+řádků). Nový report, který do `account` dává jiný identifikátor než číslo
+účtu, pole deklaruje také.
+
+Deklarace reportů nejsou součástí kompilované konfigurace:
+`ReportDefinitionLoader` je čte ze souborů modulů při každém požadavku,
+změna `reports.jsonc` se tedy projeví hned, bez `ds-upgrade`.
 
 ### 4.1 Parametry v1 (D9)
 
@@ -424,7 +455,8 @@ Body, kde implementace zpřesnila návrh (tvar §3.1 platí beze změn):
   (stav parametrů per report v session mapě, default = poslední celý
   měsíc), `PeriodPicker` (mřížka roky × měsíc | čtvrtletí | pololetí |
   rok dle granularit deklarace), `ReportView` (čistý renderer
-  `ReportResult`; sloupec „Účet“ u reportu s účty — D63; řádky se zprávou
+  `ReportResult`; sloupec „Účet“ u reportu s účty — D63, popisek z
+  `result.accountLabel`, má-li ho definice — D68; řádky se zprávou
   dle `rowRef` s ikonou a tónem textu, messages pod čarou — D64, §3.3;
   přepínač „V tisících" dělí 1000 jen při renderu — D6). Tabulka je
   datová mřížka (#133 D57): roluje v obou osách ve svém obalu
@@ -559,7 +591,9 @@ ReportResult ──► ReportTabularizer ──► ReportTable ──┬─► R
 ### 15.2 Pravidla převodu
 
 - **Sloupce:** [`Účet`, je-li u některého řádku `account`] + `Název` +
-  sloupce reportu. Money `display: balance` = jedna číselná buňka
+  sloupce reportu. Hlavička prvního sloupce je `accountLabel` výsledku,
+  má-li ho (`Řádek` u Přiznání k DPH, `Oddíl` u Kontrolního hlášení —
+  #133 D68, §4), jinak `Účet` z popisků exportu. Money `display: balance` = jedna číselná buňka
   (zůstatek); `display: sides` = tři sloupce „{label} — MD“, „— D“,
   „— Zůstatek“. `text` = text, `date` = datum (nevalidní ISO zůstává
   textem).
@@ -694,7 +728,9 @@ jen total, `$totalLabel = null` jen skupiny.
 (`asset:68`, `event:412`, `group:…`); v JSON jen když je vyplněná.
 `account` zůstává číslem účtu: renderer ho tiskne před názvem a export
 z něj dělá sloupec „Účet“, takže inventární číslo patří do textového
-sloupce, ne do `account`. `ReportDiff` páruje detail řádky podle
+sloupce, ne do `account`. Výjimkou jsou živé DPH výstupy (číslo řádku
+přiznání, kód oddílu hlášení) — ty sloupci dávají vlastní popisek přes
+`accountColumn` deklarace (§4, D68). `ReportDiff` páruje detail řádky podle
 `key ?? account` — reporty mimo deník tak jdou porovnat `report-diff`
 a dva řádky téhož účtu se nepřepíšou.
 

@@ -1,6 +1,6 @@
 # Report — popisek sloupce s číslem podle definice reportu (D68)
 
-**Stav:** naplánováno — 2026-11-11 (#133 Další nesoulady, D68)
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D68); popisek doplňuje `ReportRunner` přes `withAccountLabel()`, `ds-upgrade` není potřeba (viz Odchylky); ověřeno z CLI a v Chromiu nad demo sadou IT servis v `cs` i `en`, ruční ověření na dev serveru zbývá
 
 ## Kontext / Cíl
 
@@ -115,19 +115,78 @@ odchylek.
 
 ## Hotovo když
 
-- [ ] Definice reportu umí vlastní popisek sloupce s číslem, výchozí
+- [x] Definice reportu umí vlastní popisek sloupce s číslem, výchozí
       „Účet“ beze změny
-- [ ] Přiznání k DPH a Kontrolní hlášení mají správnou hlavičku na
+- [x] Přiznání k DPH a Kontrolní hlášení mají správnou hlavičku na
       obrazovce i v exportu, v obou jazycích
-- [ ] Účtové reporty beze změny (obrazovka, export, tvar výsledku)
-- [ ] Dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
+- [x] Účtové reporty beze změny (obrazovka, export, tvar výsledku)
+- [x] Dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
 
 ## Pasti
 
 - Definice se lokalizují před `fromArray()` — `ReportDefinition` dostává
   už jen `name`, žádné `name:cs`; nečti jazykové varianty sám.
-- Kompilace konfigurace: změna `reports.jsonc` se na zdroji projeví po
-  `ds-upgrade` — spouštěj ho jen na zdrojích s třídou `free`.
+- ~~Kompilace konfigurace: změna `reports.jsonc` se na zdroji projeví po
+  `ds-upgrade` — spouštěj ho jen na zdrojích s třídou `free`.~~ Neplatí —
+  deklarace reportů se čtou ze souboru modulu při požadavku (viz Odchylky).
 - `toArray()` čtou i MCP a kontrolní diff (`ReportDiff`) — nový klíč jen
   když je hodnota, aby se nezměnil tvar ostatních reportů.
+
+## Odchylky od zadání
+
+- **`withAccountLabel()` (krok 3).** `ReportResult` je immutabilní a staví
+  ho dvanáct builderů, popisek proto doplňuje `ReportRunner` kopií výsledku
+  (`ReportResult::withAccountLabel()`, čas vytvoření zůstává). Žádný
+  builder se neměnil. Klíč `accountLabel` stojí v `toArray()` mezi
+  `columns` a `rows`.
+- **Past „změna `reports.jsonc` se projeví po `ds-upgrade`“ neplatí.**
+  Deklarace reportů nejsou v kompilované konfiguraci —
+  `ReportDefinitionLoader` čte `reports.jsonc` ze souboru modulu při každém
+  požadavku. Popisek se na obrazovce i v `report-run` objevil bez
+  `ds-upgrade`; žádný zdroj dat se kvůli tasku neupgradoval. Doplněno do
+  `docs/reports.md` §4.
+- **Dokumentace nad rámec kroku 4.** Vedle §3.1, §4 a §15.2 dostaly větu
+  i §12 (popis `ReportView`) a §16.4 (identita řádku) — obě místa tvrdila,
+  že sloupec je vždy „Účet“.
+- **Inventura (krok 1)** nic dalšího nenašla, viz níže.
+
+## Inventura builderů (2026-11-11)
+
+Všechna místa, která vyrábějí `ReportRow` (`modules/*/*/src/Reports/`,
+`SubtotalAggregator`):
+
+| Builder | Co nese `account` |
+|---------|-------------------|
+| `VatReturnLiveBuilder` | číslo řádku přiznání — **popisek „Řádek“** |
+| `VatControlStatementLiveBuilder` | kód oddílu u součtových řádků, detail `null` — **popisek „Oddíl“** |
+| `VatRecapitulativeStatementLiveBuilder` | nic (`null`) |
+| `GeneralLedgerBuilder`, `ProfitLossBuilder`, `BalanceSheetBuilder`, `SubtotalAggregator::aggregate` | číslo účtu a jeho prefixy |
+| `JournalCheckBuilder` (majetek) | číslo účtu u řádků účtů, jinak `null` |
+| `RegisterBuilder`, `MovementsBuilder`, `DepreciationScheduleBuilder`, `TaxDepreciationReturnBuilder`, `SubtotalAggregator::groupBy` | nic (`null`) — identitu nese `key` |
+
+## Ověření (2026-11-11)
+
+Volný zdroj dat `zey0-g` (demo sada IT servis, plátce DPH), bez
+`ds-upgrade`:
+
+- **`report-run`** — Přiznání k DPH — živě: `accountLabel` „Řádek“, klíče
+  výsledku `…, columns, accountLabel, rows`; Kontrolní hlášení — živě:
+  „Oddíl“ nad kódy A2, A4, A5, B2, B3; Hlavní kniha: klíč chybí.
+- **Export** — CSV i XLSX přiznání s hlavičkou „Řádek“ (před změnou
+  „Účet“), kontrolního hlášení s „Oddíl“. Hlavní kniha za celý rok 2026
+  před a po: CSV shodné bajt po bajtu, JSON shodný kromě `generatedAt`,
+  XLSX se liší jen časem vytvoření.
+- **Obrazovka v Chromiu** (Playwright, 1440 px) — hlavička sloupce:
+
+  | Report | `cs` | `en` |
+  |--------|------|------|
+  | Přiznání k DPH — živě | Řádek | Line |
+  | Kontrolní hlášení — živě | Oddíl | Section |
+  | Hlavní kniha | Účet | Account |
+  | Kontrola evidence × deník (majetek) | Účet | Account |
+
+- **Testy** — celá sada PHPUnit prošla (11 318 testů; tři přeskočené
+  a jedno varování PHP patří ISDOC a chybějícímu GD, ne reportům),
+  `npm run build`, `npm test`, `npm run check:i18n` a kontroly CSS tokenů
+  a jednotek bez nálezu.
