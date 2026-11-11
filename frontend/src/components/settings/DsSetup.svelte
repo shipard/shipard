@@ -14,6 +14,7 @@
   import SectionHeading from '../ui/SectionHeading.svelte';
   import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import VatRegistrationPrefillDialog from './VatRegistrationPrefillDialog.svelte';
@@ -239,13 +240,10 @@
       <p class="shpd-ds-setup__state shpd-ds-setup__state--error">{error}</p>
     {:else}
       {#if warnings.length > 0}
-        <div class="shpd-ds-setup__warnings" role="alert">
-          {#each warnings as warning}
-            <p class="shpd-ds-setup__warning">
-              <Icon icon={iconWarning} size="sm" />
-              <span>{warning}</span>
-            </p>
-          {/each}
+        <!-- Varování průvodce = jedna sdílená Notice (#133 D61); `alert`
+             zachovaný z původního markupu, ať se čtečka nezmění. -->
+        <div class="shpd-ds-setup__notice">
+          <Notice tone="warning" icon={iconWarning} items={warnings} role="alert" />
         </div>
       {/if}
 
@@ -412,20 +410,8 @@
     color: var(--shpd-color-danger);
   }
 
-  .shpd-ds-setup__warnings {
+  .shpd-ds-setup__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-warning, #b98900);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
-  .shpd-ds-setup__warning {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
   }
 
   .shpd-ds-setup__empty {

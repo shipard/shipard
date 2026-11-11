@@ -12,6 +12,7 @@
    */
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Select from '../ui/Select.svelte';
   import Input from '../ui/Input.svelte';
   import TextArea from '../ui/TextArea.svelte';
@@ -246,11 +247,13 @@
       </div>
     {:else if draft}
       {#if messages.length > 0}
-        <ul class="shpd-send__messages" data-testid="send-messages">
-          {#each messages as message (message.code + message.text)}
-            <li class:shpd-send__message--error={message.severity === 'error'}>{message.text}</li>
-          {/each}
-        </ul>
+        <!-- Nálezy návrhu = jedna sdílená Notice (#133 D61); tón podle
+             nejzávažnějšího nálezu. -->
+        <Notice
+          tone={messages.some((message) => message.severity === 'error') ? 'danger' : 'warning'}
+          items={messages.map((message) => message.text)}
+          data-testid="send-messages"
+        />
       {/if}
 
       <div class="shpd-send__grid">
@@ -386,7 +389,7 @@
       </div>
 
       {#if sendError}
-        <div class="shpd-send__state shpd-send__state--error" role="alert" data-testid="send-error">{sendError}</div>
+        <Notice tone="danger" data-testid="send-error">{sendError}</Notice>
       {/if}
     {/if}
   </div>
@@ -444,8 +447,7 @@
   }
 
   .shpd-send__chips,
-  .shpd-send__attachments,
-  .shpd-send__messages {
+  .shpd-send__attachments {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -512,16 +514,6 @@
   }
 
   .shpd-send__attachment-size { color: var(--shpd-color-text-secondary); }
-
-  .shpd-send__messages {
-    padding: var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-warning);
-  }
-
-  .shpd-send__message--error { color: var(--shpd-color-danger); }
 
   .shpd-send__state {
     padding: var(--shpd-space-md);

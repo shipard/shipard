@@ -12,6 +12,7 @@
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
   import Card from '../ui/Card.svelte';
+  import Notice from '../ui/Notice.svelte';
   import ImageSlotField from './ImageSlotField.svelte';
   import AvatarSlotField from './AvatarSlotField.svelte';
   import ThemeField from './ThemeField.svelte';
@@ -162,12 +163,8 @@
       icon={definition.icon ? resolveIcon(definition.icon) : undefined}
     >
       {#if saveMessage}
-        <div
-          class="shpd-settings-page__message"
-          class:shpd-settings-page__message--success={saveMessage.type === 'success'}
-          class:shpd-settings-page__message--error={saveMessage.type === 'error'}
-        >
-          {saveMessage.text}
+        <div class="shpd-settings-page__notice">
+          <Notice tone={saveMessage.type === 'success' ? 'success' : 'danger'}>{saveMessage.text}</Notice>
         </div>
       {/if}
 
@@ -262,23 +259,9 @@
     container-type: inline-size;
   }
 
-  .shpd-settings-page__message {
+  /* Výsledek uložení je sdílená Notice (#133 D61) — obal dává jen mezeru. */
+  .shpd-settings-page__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    border-radius: var(--shpd-radius-md);
-  }
-
-  .shpd-settings-page__message--success {
-    color: var(--shpd-color-success, #16a34a);
-    background-color: var(--shpd-color-success-soft, rgba(22, 163, 74, 0.1));
-    border: 1px solid var(--shpd-color-success, #16a34a);
-  }
-
-  .shpd-settings-page__message--error {
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
   }
 
   /* Label vlevo (zarovnaný doprava), input vpravo — stejný vzor jako

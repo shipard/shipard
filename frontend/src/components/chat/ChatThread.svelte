@@ -10,6 +10,7 @@
   import ToolCallChip from './ToolCallChip.svelte';
   import SectionCards from './SectionCards.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { iconClose } from '../../icons.js';
   import { chatStore } from '../../stores/chat.svelte.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
@@ -90,10 +91,15 @@
       </div>
     {/if}
 
-    {#if chatStore.error}
-      <div class="shpd-thread__error">{translateError(chatStore.error)}</div>
-    {/if}
   </div>
+
+  <!-- Chyba chatu je sdílená Notice (#133 D61) nad polem zprávy — mimo
+       rolovací oblast, ať je vidět i u dlouhého vlákna. -->
+  {#if chatStore.error}
+    <div class="shpd-thread__notice">
+      <Notice tone="danger">{translateError(chatStore.error)}</Notice>
+    </div>
+  {/if}
 
   {#if scopeSection && showScopeChip}
     <div class="shpd-thread__scope">
@@ -178,12 +184,7 @@
   .shpd-thread__scope-remove:hover {
     color: var(--shpd-color-text);
   }
-  .shpd-thread__error {
-    margin: var(--shpd-space-sm) 0;
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-danger);
-    color: #fff;
-    font-size: var(--shpd-font-size-sm);
+  .shpd-thread__notice {
+    padding: var(--shpd-space-xs) var(--shpd-space-md) 0;
   }
 </style>

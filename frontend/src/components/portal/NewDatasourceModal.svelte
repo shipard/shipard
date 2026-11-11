@@ -8,6 +8,7 @@
    */
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Input from '../ui/Input.svelte';
   import Select from '../ui/Select.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -186,7 +187,8 @@
   {/if}
 
   {#if errorMsg}
-    <div class="shpd-ds-create__error">{errorMsg}</div>
+    <!-- Mezeru nad hláškou dává spodní okraj posledního pole. -->
+    <Notice tone="danger">{errorMsg}</Notice>
   {/if}
 
   {#snippet footer()}
@@ -246,14 +248,5 @@
 
   .shpd-ds-create__check--muted {
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-ds-create__error {
-    margin-top: var(--shpd-space-sm);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border-radius: var(--shpd-radius-sm);
-    background: color-mix(in srgb, var(--shpd-color-danger) 10%, transparent);
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
   }
 </style>

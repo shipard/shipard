@@ -8,6 +8,7 @@
    */
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { uploadMailMessages } from '../../api/mail.js';
@@ -162,7 +163,7 @@
   {/if}
 
   {#if limitHit}
-    <div class="shpd-mail-upload__notice">{t('dashboard.upload.tooMany')}</div>
+    <div class="shpd-mail-upload__feedback"><Notice tone="warning">{t('dashboard.upload.tooMany')}</Notice></div>
   {/if}
 
   {#if files.length > 1}
@@ -184,7 +185,7 @@
   {/if}
 
   {#if errorMsg}
-    <div class="shpd-mail-upload__error">{errorMsg}</div>
+    <div class="shpd-mail-upload__feedback"><Notice tone="danger">{errorMsg}</Notice></div>
   {/if}
 
   {#snippet footer()}
@@ -274,10 +275,10 @@
     color: var(--shpd-color-danger);
   }
 
-  .shpd-mail-upload__notice {
-    margin-top: var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+  /* Limit souborů a chyba nahrání jsou sdílená Notice (#133 D61) — obal
+     dává jen mezeru nad hláškou. */
+  .shpd-mail-upload__feedback {
+    margin-top: var(--shpd-space-md);
   }
 
   .shpd-mail-upload__modes {
@@ -305,14 +306,5 @@
     background: var(--shpd-color-primary);
     border-color: var(--shpd-color-primary);
     color: #ffffff;
-  }
-
-  .shpd-mail-upload__error {
-    margin-top: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border-radius: var(--shpd-radius-sm);
-    background: color-mix(in srgb, var(--shpd-color-danger) 10%, transparent);
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
   }
 </style>

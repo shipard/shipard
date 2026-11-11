@@ -11,6 +11,7 @@
   // projeví až u prvního přiznání.
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Select from '../ui/Select.svelte';
   import DateInput from '../ui/DateInput.svelte';
   import { t } from '../../i18n/index.js';
@@ -169,7 +170,7 @@
       </div>
 
       {#if saveError}
-        <p class="shpd-vat-prefill__state shpd-vat-prefill__state--error">{saveError}</p>
+        <Notice tone="danger">{saveError}</Notice>
       {/if}
     {/if}
   </div>

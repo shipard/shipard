@@ -11,6 +11,7 @@
   // settings page tabulku s akcemi neunese.
   import { onMount } from 'svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Checkbox from '../ui/Checkbox.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -181,7 +182,7 @@
         </table>
       </TableScroll>
       {#if materializeError}
-        <p class="shpd-content-tags__state shpd-content-tags__state--error">{materializeError}</p>
+        <div class="shpd-content-tags__notice"><Notice tone="danger">{materializeError}</Notice></div>
       {/if}
     </section>
 
@@ -224,7 +225,7 @@
           </ul>
 
           {#if taggingError}
-            <p class="shpd-content-tags__state shpd-content-tags__state--error">{taggingError}</p>
+            <div class="shpd-content-tags__notice"><Notice tone="danger">{taggingError}</Notice></div>
           {/if}
 
           <div class="shpd-content-tags__actions">
@@ -281,6 +282,12 @@
     margin-top: var(--shpd-space-sm);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
+  }
+
+  /* Chyby akcí a načtení jsou sdílená Notice (#133 D60, D61) — obal dává
+     jen mezeru nad hláškou. */
+  .shpd-content-tags__notice {
+    margin-top: var(--shpd-space-sm);
   }
 
   .shpd-content-tags__state--error {

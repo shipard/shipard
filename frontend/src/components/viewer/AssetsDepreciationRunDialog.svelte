@@ -17,6 +17,7 @@
    */
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
   import ViewerDetailModal from './ViewerDetailModal.svelte';
   import {
@@ -225,10 +226,10 @@
     {/if}
 
     {#if error}
-      <p class="shpd-deprun__error">{error}</p>
+      <Notice tone="danger">{error}</Notice>
     {/if}
     {#if notice}
-      <p class="shpd-deprun__notice">{notice}</p>
+      <Notice tone="info">{notice}</Notice>
     {/if}
 
     {#if postResult}
@@ -258,9 +259,9 @@
     {:else if loading && !preview}
       <p class="shpd-deprun__muted">{t('common.loading')}</p>
     {:else if preview && posting}
-      {#each preview.blockers as blocker (blocker.code)}
-        <p class="shpd-deprun__error">{blocker.message}</p>
-      {/each}
+      {#if preview.blockers.length > 0}
+        <Notice tone="danger" items={preview.blockers.map((blocker) => blocker.message)} />
+      {/if}
       {#if preview.series}
         <p class="shpd-deprun__muted">{t('assets.posting.series', { name: preview.series.name })}</p>
       {/if}
@@ -568,16 +569,6 @@
   .shpd-deprun__muted {
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
-  }
-
-  .shpd-deprun__error {
-    color: var(--shpd-color-state-error-text);
-    font-size: var(--shpd-font-size-sm);
-  }
-
-  .shpd-deprun__notice {
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
   }
 
   .shpd-deprun__result {

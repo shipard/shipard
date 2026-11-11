@@ -9,6 +9,7 @@
   // pojistku, takže se na pořadí klikání nedá rozbít.
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Checkbox from '../ui/Checkbox.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -165,7 +166,7 @@
     {/if}
 
     {#if saveError}
-      <p class="shpd-bank-bridge__state shpd-bank-bridge__state--error">{saveError}</p>
+      <Notice tone="danger">{saveError}</Notice>
     {/if}
   </div>
 

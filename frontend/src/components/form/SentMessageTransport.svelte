@@ -11,6 +11,7 @@
    * tlačítko nemá vůbec — nové odeslání je Odeslat na záznamu.
    */
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import SpanBadge from '../viewer/SpanBadge.svelte';
   import { resendSentMessage } from '../../api/mail.js';
   import { iconSend } from '../../icons.js';
@@ -82,10 +83,10 @@
       <p class="shpd-sent-transport__note">{t('sentMessage.queuedNote')}</p>
     {/if}
     {#if transport.lastError}
-      <p class="shpd-sent-transport__error">{transport.lastError}</p>
+      <Notice tone="danger">{transport.lastError}</Notice>
     {/if}
     {#if error}
-      <p class="shpd-sent-transport__error" data-testid="sent-message-transport-error">{error}</p>
+      <Notice tone="danger" data-testid="sent-message-transport-error">{error}</Notice>
     {/if}
 
     {#if attempts.length > 0}
@@ -133,12 +134,6 @@
   .shpd-sent-transport__note {
     margin: 0;
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-sent-transport__error {
-    margin: 0;
-    color: var(--shpd-color-danger);
-    overflow-wrap: anywhere;
   }
 
   .shpd-sent-transport__attempts summary {

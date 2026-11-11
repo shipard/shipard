@@ -5,6 +5,7 @@
   import { changePassword } from '../../api/security.js';
   import Input from '../ui/Input.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
 
@@ -50,12 +51,8 @@
   <h3 class="shpd-security-panel__title">{t('account.security.changePassword')}</h3>
 
   {#if message}
-    <div
-      class="shpd-security-panel__message"
-      class:shpd-security-panel__message--success={message.type === 'success'}
-      class:shpd-security-panel__message--error={message.type === 'error'}
-    >
-      {message.text}
+    <div class="shpd-security-panel__notice">
+      <Notice tone={message.type === 'success' ? 'success' : 'danger'}>{message.text}</Notice>
     </div>
   {/if}
 
@@ -97,23 +94,9 @@
     color: var(--shpd-color-text);
   }
 
-  .shpd-security-panel__message {
+  /* Výsledek změny hesla je sdílená Notice (#133 D61) — obal dává jen mezeru. */
+  .shpd-security-panel__notice {
     margin-bottom: var(--shpd-space-md);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    border-radius: var(--shpd-radius-md);
-  }
-
-  .shpd-security-panel__message--success {
-    color: var(--shpd-color-success);
-    background-color: var(--shpd-color-success-soft);
-    border: 1px solid var(--shpd-color-success);
-  }
-
-  .shpd-security-panel__message--error {
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
   }
 
   .shpd-security-panel__field {

@@ -9,6 +9,7 @@
   // v DsSetup nijak neinteraguje.
   import { onMount } from 'svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Checkbox from '../ui/Checkbox.svelte';
   import Icon from '../ui/Icon.svelte';
   import { iconChevronDown, iconChevronRight } from '../../icons.js';
@@ -211,7 +212,7 @@
     </div>
 
     {#if generateError}
-      <p class="shpd-items-offer__state shpd-items-offer__state--error">{generateError}</p>
+      <div class="shpd-items-offer__notice"><Notice tone="danger">{generateError}</Notice></div>
     {/if}
 
     <div class="shpd-items-offer__actions">
@@ -255,6 +256,12 @@
     margin-top: var(--shpd-space-sm);
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
+  }
+
+  /* Chyby akce a načtení jsou sdílená Notice (#133 D60, D61) — obal dává
+     jen mezeru nad hláškou. */
+  .shpd-items-offer__notice {
+    margin-top: var(--shpd-space-sm);
   }
 
   .shpd-items-offer__state--error {

@@ -11,6 +11,7 @@
   } from '../../api/attachments.js';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { iconUpload, iconDownload, iconDelete, iconEdit, iconFile, iconFilePdf, iconFileImage, iconSpinner, iconSendWith } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -204,7 +205,7 @@
     </div>
 
     {#if sendFlagError}
-      <div class="shpd-attachments__error" role="alert">{sendFlagError}</div>
+      <div class="shpd-attachments__notice"><Notice tone="danger">{sendFlagError}</Notice></div>
     {/if}
 
     <!-- Content -->
@@ -454,10 +455,9 @@
     box-sizing: border-box;
   }
 
-  .shpd-attachments__error {
+  /* Chyba příznaku odeslání je sdílená Notice (#133 D61) — obal dává mezeru. */
+  .shpd-attachments__notice {
     margin-bottom: var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
   }
 
   /* Odeslat s dokladem */

@@ -22,6 +22,7 @@
 
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Icon from '../ui/Icon.svelte';
   import Card from '../ui/Card.svelte';
   import { iconCompany, iconUser, iconSpinner } from '../../icons.js';
@@ -424,9 +425,7 @@
         </Card>
 
         {#if applyError}
-          <div class="shpd-registry-wizard__status shpd-registry-wizard__status--error">
-            {applyError}
-          </div>
+          <Notice tone="danger">{applyError}</Notice>
         {/if}
       </div>
     {/if}
