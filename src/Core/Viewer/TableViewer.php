@@ -147,6 +147,24 @@ abstract class TableViewer
     }
 
     /**
+     * Popisek sloupce z definice tabulky (#133 D66): `formLabel ?? name`,
+     * stejně jako formulář (`TableForm::subtableLabel()`). Definice jsou
+     * lokalizované už při načtení (`TableLoader` + `ConfigLocalizer`),
+     * metoda nic nepřekládá. `$table` = jiná tabulka než tabulka vieweru
+     * (hodnota z připojeného číselníku); bez definice tabulky nebo sloupce
+     * (testy, viewer bez tabulky) anglický `$fallback`.
+     */
+    protected function columnLabel(string $column, string $fallback, ?string $table = null): string
+    {
+        foreach (($this->tables[$table ?? $this->table] ?? null)?->columns ?? [] as $col) {
+            if ($col->id === $column) {
+                return $col->formLabel ?? $col->name;
+            }
+        }
+        return $fallback;
+    }
+
+    /**
      * Returns available viewGroup identifiers for this viewer's tab bar.
      * Derived automatically from $docStatesCfgItem if set.
      * Returns empty array when docStates are not supported.
