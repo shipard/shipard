@@ -4,8 +4,8 @@
 zlatého testu opravené 2026-09-11 (F3-3 číselník zemí, F3-4 nula ≡ chybějící, F3-5 akce
 Načíst hlavičku z profilu, F3-6 (a) v porovnávači; F3-1 je chyba importu v `old_shipard`,
 F3-2 zaniklo se strukturou). **Zlatý test DP3 01–04/2026 sedí** až na prohozená jména
-oprávněné osoby v profilu (data). Zbývá zlatý test KH (reimport po opravě importu + #77),
-ruční proklik UI a nasazení na alfě
+oprávněné osoby v profilu (data). **Zlatý test KH 01/2026 sedí** až na známou výjimku F3-7
+(2026-11-11, po reimportu a #77). Zbývá ruční proklik UI a nasazení na alfě
 **Issue:** #55 (Fáze 3), návaznost D19 (#74 hotovo), D20 (přílohy na podání), D17 (zaokrouhlení)
 **Návaznost:** staví na Fázi 2 (`tasks/vat-filings.md` — snapshot `economy_vat_filings`
 + výstupní řádky `_return_rows` / `_cs_rows` / `_rs_rows`), na strukturovaných polích
@@ -379,7 +379,9 @@ gitignorované). Hodnoty ř. 62/63/64 sedí ve všech čtyřech DP3; rozdíly:
   zařazením do detailu ve starém Shipardu (`vatCS = 1`, opakované FPB 4 356 / 4 590 Kč) →
   chybějící vlastnost, **#77** (`kh_mode` na hlavičce + import z `vatCS`). Čtvrtý je FPB
   s nulovou částkou a prázdným DIČ, kterou starý do B2 dal chybně — nový správně
-  nevykazuje; známá výjimka zlatého testu. Zlatý test KH se uzavře až po #77 a reimportu.
+  nevykazuje; známá výjimka zlatého testu. **Uzavřeno 2026-11-11:** po #77 a reimportu
+  `btpg-p` má zlatý test KH 01/2026 jediný rozdíl — tuto výjimku; tolerance se pro ni
+  vědomě nezavádí, test proto formálně neprochází.
 - **F3-6 — rozhodnuto (a), hotovo:** nechat krácený sloupec + ř. 52; zlatý test porovnává
   ř. 40–48 jako součet „plný + krácený" proti podanému plnému sloupci (`foldAttributes`
   v `EpoXmlDiff`, odvozené z mapovací konfigurace) a ř. 52 / `koef_p20_nov` ignoruje.

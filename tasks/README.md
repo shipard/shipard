@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 439 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 405.
+Celkem 439 tasků: **naplánováno** 7 · **částečně** 25 · **zrušeno** 1 · **hotovo** 406.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -53,7 +53,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `taxes-phase01.md` | částečně | implementace kompletní (mapping, jádro reportů s periodSource vatPeriod + text/date sloupci, kalkulátory, buildery, UI, testy); zbývá ds-upgrade + proklik na dev DS a read-only ověření na alfě dle „Hotovo když" |
 | `testing-clean-server.md` | částečně | kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; `php8.5-bcmath` na testovacím serveru doinstalovaný 2026-10-28; zbývá ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146 |
 | `testing-phase3.md` | částečně | implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); snímek spolku schválený 2026-10-15 po #122 (kontrola 5 `ok` u všech tří sad); zbývá alfa |
-| `vat-cs-mode.md` | částečně | shpd hotové 2026-09-11 (4 commity: sloupec + kalkulátor, formuláře |
 | `vat-filing-xml.md` | částečně | implementace hotová 2026-09-10 (commity 1–7), nálezy prvního běhu |
 | `vat-filings-import.md` | částečně | kód, testy, CLI, UI a docs hotové 2026-09-13 (4 commity); |
 | `vat-period-lock.md` | částečně | shpd hotové 2026-09-11 (6 commitů: jádro lock providerů, zámek instance, |
