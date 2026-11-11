@@ -1,6 +1,6 @@
 # Report — popisek sloupce s číslem podle definice reportu (D68)
 
-**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D68); popisek doplňuje `ReportRunner` přes `withAccountLabel()`, `ds-upgrade` není potřeba (viz Odchylky); ověřeno z CLI a v Chromiu nad demo sadou IT servis v `cs` i `en`, ruční ověření na dev serveru zbývá
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D68); popisek doplňuje `ReportRunner` přes `withAccountLabel()`, `ds-upgrade` není potřeba (viz Odchylky); ověřeno z CLI a v Chromiu nad demo sadou IT servis v `cs` i `en`, ruční ověření na dev serveru prošlo (viz Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -190,3 +190,10 @@ Volný zdroj dat `zey0-g` (demo sada IT servis, plátce DPH), bez
   a jedno varování PHP patří ISDOC a chybějícímu GD, ne reportům),
   `npm run build`, `npm test`, `npm run check:i18n` a kontroly CSS tokenů
   a jednotek bez nálezu.
+
+## Ruční ověření (2026-11-11)
+
+Firefox, dev zdroj `lh6x`, čeština i angličtina — v pořádku: Přiznání
+k DPH — živě „Řádek“ / „Line“, Kontrolní hlášení — živě „Oddíl“ /
+„Section“, Souhrnné hlášení bez sloupce, Hlavní kniha „Účet“ beze změny,
+export XLSX přiznání s hlavičkou „Řádek“.

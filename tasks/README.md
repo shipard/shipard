@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 439 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 406.
+Celkem 440 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 406.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -31,6 +31,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `design-system-date-format.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D73) |
 | `design-system-tone-colors.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `navigation-reports-group-id.md` | naplánováno | 2026-11-11 (#133 Další nesoulady) |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -203,6 +204,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-report-account-label.md` | Report: popisek sloupce s číslem podle definice reportu (`accountColumn`), výchozí „Účet“; Přiznání k DPH „Řádek“, Kontrolní hlášení „Oddíl“ — obrazovka i export (D68, #133) |
 | `design-system-tone-colors.md` | Tónové barvy jako plocha a `-text` token s kontrastem 4,5 : 1 v obou vzhledech, hex jen v definicích tokenů s kontrolou v pre-commitu, varování v reportu i textem (D69–D72, #133) |
 | `design-system-date-format.md` | Jeden formát data na obrazovce podle jazyka — cs `01.01.2026`, en ISO `2026-01-01`; sdílený `DisplayDate` v backendu a `utils/formatDate.js` ve frontendu místo ~30 + 7 kopií, kontrola testy (D73, #133) |
+| `navigation-reports-group-id.md` | Navigace: skupina Reporty s id podle sekce (`reports:<sekce>`) — v sidebaru se podskupiny pod Majetkem a Účtárnou rozbalovaly spolu; test jedinečnosti id skupin (#133) |
 
 ## Mobilní (responzivní) UI
 
