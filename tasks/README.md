@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 435 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 400.
+Celkem 436 tasků: **naplánováno** 9 · **částečně** 26 · **zrušeno** 1 · **hotovo** 400.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-date-format.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D73) |
 | `design-system-report-account-label.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D68) |
 | `design-system-tone-colors.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72) |
 | `doc-row-unit-price-negative-qty.md` | naplánováno | zadání 2026-11-10 |
@@ -204,6 +205,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-viewer-texts.md` | Texty viewerů (detail i seznam) z katalogů místo literálů v PHP: popisek sloupce z definice tabulky (`columnLabel()`), ostatní `*.viewerDetailLabels` / `*.viewerLabels`, sdílené stavy v `core.system`; test proti literálům (D65–D67, F1, #133) |
 | `design-system-report-account-label.md` | Report: popisek sloupce s číslem podle definice reportu (`accountColumn`), výchozí „Účet“; Přiznání k DPH „Řádek“, Kontrolní hlášení „Oddíl“ — obrazovka i export (D68, #133) |
 | `design-system-tone-colors.md` | Tónové barvy jako plocha a `-text` token s kontrastem 4,5 : 1 v obou vzhledech, hex jen v definicích tokenů s kontrolou v pre-commitu, varování v reportu i textem (D69–D72, #133) |
+| `design-system-date-format.md` | Jeden formát data na obrazovce podle jazyka — cs `01.01.2026`, en ISO `2026-01-01`; sdílený `DisplayDate` v backendu a `utils/formatDate.js` ve frontendu místo ~30 + 7 kopií, kontrola testy (D73, #133) |
 
 ## Mobilní (responzivní) UI
 

@@ -1,6 +1,6 @@
 # Design system — texty viewerů z katalogů místo literálů v PHP (D65–D67, F1)
 
-**Stav:** hotovo — 2026-11-11 (6 commitů; odchylky viz „Odchylky od zadání“); ruční proklik čeká
+**Stav:** hotovo — 2026-11-11 (6 commitů; odchylky viz „Odchylky od zadání“); ruční proklik na dev serveru prošel (viz Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -370,3 +370,23 @@ Test přidej až po převodu (každý commit musí nechat strom zelený).
   `testOverviewDoesNotRepeatHeader` hlásí u bankovních transakcí položku
   „Název protistrany“ — stejně i před převodem (na obvyklém integračním
   zdroji transakce nejsou), s tímto taskem nesouvisí.
+
+## Ruční ověření (2026-11-11)
+
+Firefox, dev zdroj `lh6x`, čeština i angličtina — v pořádku:
+
+- převzaté popisky sloupců (Osoby, Došlá pošta, Spisovna, Položky
+  s měnou, Fiskální roky, AI profily, Upozornění) — ponechány všechny,
+  i technické („RFC822 Message-ID“, „Přemýšlení (thinking)“);
+- přeformulované texty: „Počet měn: N“, relativní čas „před 3 d“, zůstatky
+  343 se symbolem měny;
+- angličtina u Osob, Došlé pošty, Položek, Fiskálních roků a Období DPH —
+  česky jen data záznamů.
+
+Ručně neověřeno (bez dat na `lh6x`): Odesílatelé, Pravidla odesílatelů,
+Upozornění v seznamu, Texty na tiscích, Střediska, Dopravy, Sklady, Úkoly;
+Pravidla štítků (záznam nejde přidat — mimo tento task).
+
+Zjištěno při ověření, mimo rozsah: datum v detailu Fiskálních roků (a ve
+dvanácti dalších viewerech) se posílá jako ISO `2026-01-01`, jinde
+`1. 1. 2026` nebo `01.01.2026` — nový bod checklistu #133.
