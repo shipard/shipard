@@ -1,7 +1,7 @@
 ---
 title: Opravný daňový doklad (dobropis)
-summary: Jak vystavit dobropis nebo vrubopis k vydané faktuře — tlačítko Vystavit opravný doklad v detailu faktury, ruční pořízení souhrnného dokladu, důvod opravy, sazby DPH a kurz podle původního plnění, vazba v detailu.
-keywords: [opravný daňový doklad, opravný doklad, dobropis, dobropisy, vystavit dobropis, vystavení dobropisu, vystavit opravný doklad, tlačítko vystavit opravný doklad, dobropis z detailu faktury, vrubopis, vrubopisy, oprava faktury vydané, oprava základu daně, snížení ceny, vrácené zboží, vratka faktury, částečný dobropis, storno faktury vs dobropis, souhrnný opravný doklad, bonus za období, sleva za období, původní doklad, číslo původního dokladu, datum plnění původního dokladu, důvod opravy, sazba DPH na dobropisu, kurz na dobropisu, záporná faktura, faktura se zápornou částkou, odkaz na původní fakturu]
+summary: Jak vystavit dobropis nebo vrubopis k vydané faktuře — tlačítko Vystavit opravný doklad v detailu faktury, ruční pořízení souhrnného dokladu, důvod opravy, sazby DPH a kurz podle původního plnění, vazba v detailu, jak vypadá vytištěný opravný doklad.
+keywords: [opravný daňový doklad, opravný doklad, dobropis, dobropisy, vystavit dobropis, vystavení dobropisu, vystavit opravný doklad, tlačítko vystavit opravný doklad, dobropis z detailu faktury, vrubopis, vrubopisy, oprava faktury vydané, oprava základu daně, snížení ceny, vrácené zboží, vratka faktury, částečný dobropis, storno faktury vs dobropis, souhrnný opravný doklad, bonus za období, sleva za období, původní doklad, číslo původního dokladu, datum plnění původního dokladu, důvod opravy, sazba DPH na dobropisu, kurz na dobropisu, záporná faktura, faktura se zápornou částkou, odkaz na původní fakturu, tisk dobropisu, vytisknout dobropis, PDF dobropisu, tisk opravného dokladu, titulek opravný daňový doklad, původní doklad na tisku]
 related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/tisk-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/uzamceni-obdobi.md, co-dnes-nejde.md]
 ---
 
@@ -87,6 +87,22 @@ nepoužiješ; původní faktury vymezíš v důvodu opravy:
 5. **Napiš Důvod opravy, ulož a převeď na V pořádku** — stejně jako
    v bodech 4 až 6 výše.
 
+## Jak vypadá vytištěný opravný doklad
+
+Opravný doklad vytiskneš stejně jako fakturu — tlačítkem **Tisk** v detailu
+(viz [Tisk faktury](tisk-faktury.md)). Od faktury se liší:
+
+- **Titulek** je *Opravný daňový doklad*, u neplátce DPH *Opravný doklad*.
+- Pod textem dokladu je řádek **Původní doklad** s číslem opravované
+  faktury a řádek **Důvod opravy**. Souhrnný opravný doklad bez čísla
+  původního dokladu má jen důvod opravy.
+- **Částky jsou se znaménkem** — dobropis má záporné řádky, rekapitulaci
+  DPH i částku k úhradě. **QR platba** na něm není, je jen u kladné částky.
+- Soubor se jmenuje `opravny-doklad-<číslo>.pdf`.
+
+V jiném jazyce než českém se titulek i popisky tisknou v jazyce dokladu
+jako na faktuře.
+
 ## Na co narazíš
 
 **Původní doklad musí být faktura vydaná ve stavu V pořádku a na stejného
@@ -121,18 +137,25 @@ se koncept zakládá, je tlačítko neaktivní; každé další kliknutí by jin
 založilo další koncept. Když původní faktura není ve stavu **V pořádku**,
 tlačítko v detailu není.
 
-**Vytiskne se zatím jako faktura.** Na PDF ještě nejsou titulek „Opravný
-daňový doklad“, číslo původního dokladu ani důvod opravy — viz
+**Titulek opravného dokladu řídí volba Opravný doklad, ne znaménko.**
+Faktura se zápornou částkou bez zaškrtnuté volby se vytiskne jako běžná
+faktura — bez původního dokladu a bez důvodu opravy.
+
+**Datum plnění původního dokladu se netiskne.** Na dokladu je jen jeho
+číslo a důvod opravy; souhrnný doklad proto vymez v **Důvodu opravy**.
+
+**Jako elektronickou fakturu (ISDOC) opravný doklad neodešleš** — Shipard
+ISDOC k vydaným dokladům zatím nevystavuje, viz
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 ## Souvisí
 
 - [Vystavení faktury](vystaveni-faktury.md) — hlavička a řádky, které
   má opravný doklad společné s fakturou
-- [Tisk faktury](tisk-faktury.md) — PDF dokladu
+- [Tisk faktury](tisk-faktury.md) — náhled, stažení a co na PDF je
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — kdy fakturu
   opravit nebo stornovat místo dobropisu
 - [Uzamčení období](../uctarna/uzamceni-obdobi.md) — do kterého období
   opravný doklad patří
-- [Co Shipard dnes neumí](../co-dnes-nejde.md) — tisk opravného dokladu,
-  přijaté dobropisy
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — přijaté dobropisy,
+  elektronická faktura

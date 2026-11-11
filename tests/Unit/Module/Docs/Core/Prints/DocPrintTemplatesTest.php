@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Docs\Core\Prints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\RenderConfig;
 use Shipard\Core\I18n\ConfigLocalizer;
@@ -364,6 +365,123 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('Odběratel bez adresy', $document->html);
         $this->assertStringNotContainsString('<svg', $document->html);
         $this->assertStringNotContainsString('IBAN', $document->html);
+    }
+
+    // ── opravný doklad (#92 D8) ─────────────────────────────────────────────
+
+    public function testCorrectiveDocumentPrintsOriginalNumberAndReasonUnderSubject(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $document   = $this->render($definition, self::printData('invoiceCorrective', $definition->id));
+        $html       = $document->html;
+
+        $this->assertStringContainsString('Opravný daňový doklad', (string) $document->header);
+        $this->assertStringContainsString('IT-PRINT-COR', (string) $document->header);
+
+        $this->assertStringContainsString('<dl class="doc-correction">', $html);
+        $this->assertMatchesRegularExpression('~<dt>Původní doklad</dt>\s*<dd>IT-PRINT-INV</dd>~', $html);
+        $this->assertMatchesRegularExpression('~<dt>Důvod opravy</dt>\s*<dd>Sleva po reklamaci části dodávky\.</dd>~', $html);
+        self::assertOrder($html, 'doc-subject', 'doc-correction', 'doc-parties', 'doc-info');
+
+        // Záporné částky v řádcích, rekapitulaci i součtu; DUZP se tiskne.
+        $this->assertStringContainsString('-500,00', $html);
+        $this->assertStringContainsString('-105,00', $html);
+        $this->assertStringContainsString('-605,00' . self::NBSP . 'CZK', $html);
+        $this->assertStringContainsString('Rekapitulace DPH', $html);
+        $this->assertStringContainsString('Datum zdanitelného plnění', $html);
+        $this->assertStringNotContainsString('<svg', $html, 'záporná částka nemá QR platbu');
+    }
+
+    /** @return array<string, array{string, string, string, string, string}> */
+    public static function correctiveLanguages(): array
+    {
+        return [
+            'cs' => ['cs', 'Opravný daňový doklad', 'Opravný doklad', 'Původní doklad', 'Důvod opravy'],
+            'en' => ['en', 'Corrective tax document', 'Corrective document', 'Original document', 'Reason for correction'],
+            'sk' => ['sk', 'Opravná faktúra', 'Opravný doklad', 'Pôvodný doklad', 'Dôvod opravy'],
+            'de' => ['de', 'Rechnungskorrektur', 'Rechnungskorrektur', 'Ursprünglicher Beleg', 'Korrekturgrund'],
+        ];
+    }
+
+    #[DataProvider('correctiveLanguages')]
+    public function testCorrectiveDocumentInEveryPrintLanguage(
+        string $language,
+        string $titlePayer,
+        string $titleNonPayer,
+        string $originalLabel,
+        string $reasonLabel,
+    ): void {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $translator = (new PrintCatalogLoader(new PrintTemplatePaths(self::modules())))->translator($definition, $language);
+
+        // Titulek skládá builder z katalogu — fixture ho nese česky.
+        $this->assertSame($titlePayer, $translator->t('title.correctiveVatPayer'));
+        $this->assertSame($titleNonPayer, $translator->t('title.correctiveNonVatPayer'));
+        $this->assertNotSame('', $translator->t('fileName.correctiveVatPayer'));
+        $this->assertSame($translator->t('fileName.correctiveVatPayer'), $translator->t('fileName.correctiveNonVatPayer'));
+
+        $data = self::printData('invoiceCorrective', $definition->id, $language, static function (array $data) use ($titlePayer): array {
+            $data['document']['title'] = $titlePayer;
+            return $data;
+        });
+        $document = $this->render($definition, $data);
+
+        $this->assertStringContainsString('<html lang="' . $language . '">', $document->html);
+        $this->assertStringContainsString($titlePayer . '<span class="head-number">IT-PRINT-COR', (string) $document->header);
+        $this->assertMatchesRegularExpression(
+            '~<dt>' . preg_quote($originalLabel, '~') . '</dt>\s*<dd>IT-PRINT-INV</dd>~',
+            $document->html,
+        );
+        $this->assertStringContainsString('<dt>' . $reasonLabel . '</dt>', $document->html);
+    }
+
+    public function testSummaryCorrectiveDocumentPrintsOnlyReason(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $data = self::printData('invoiceCorrective', $definition->id, modify: static function (array $data): array {
+            $data['document']['correction'] = ['originalNumber' => null, 'reason' => "Roční bonus\nza odběr <2026>"];
+            return $data;
+        });
+        $html = $this->render($definition, $data)->html;
+
+        $this->assertStringNotContainsString('Původní doklad', $html);
+        $this->assertStringContainsString("<dd>Roční bonus<br />\nza odběr &lt;2026&gt;</dd>", $html, 'důvod víceřádkově a escapovaný');
+    }
+
+    public function testCorrectiveDocumentOfNonPayerAndWithoutValues(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $data = self::printData('invoiceCorrective', $definition->id, modify: static function (array $data): array {
+            $data['document'] = ['titleVariant' => 'correctiveNonVatPayer', 'title' => 'Opravný doklad',
+                'vatPayer' => false, 'vatMode' => 0,
+                // Import ze starého Shipardu: jen příznak, bez čísla a důvodu.
+                'correction' => ['originalNumber' => null, 'reason' => null]] + $data['document'];
+            $data['vatRecap'] = [];
+            $data['rows'][0]['vat'] = null;
+            return $data;
+        });
+        $document = $this->render($definition, $data);
+
+        $this->assertStringContainsString('>Opravný doklad<span class="head-number">IT-PRINT-COR', (string) $document->header);
+        $this->assertStringNotContainsString('daňový', (string) $document->header);
+        $this->assertStringNotContainsString('doc-correction', $document->html, 'bez hodnot se blok netiskne');
+        $this->assertStringNotContainsString('Rekapitulace DPH', $document->html);
+    }
+
+    /** Běžná faktura, zálohová faktura ani starší data bez klíče blok opravy nemají. */
+    public function testOrdinaryDocumentsHaveNoCorrectionBlock(): void
+    {
+        $invoice = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $this->assertStringNotContainsString('doc-correction', $this->render($invoice, self::printData('invoice', $invoice->id))->html);
+
+        $withoutKey = self::printData('invoice', $invoice->id, modify: static function (array $data): array {
+            unset($data['document']['correction']);
+            return $data;
+        });
+        $this->assertStringNotContainsString('doc-correction', $this->render($invoice, $withoutKey)->html);
+
+        $proforma = self::definition('docs.proformasOut', 'docs.proformasOut.proforma');
+        $this->assertStringNotContainsString('doc-correction', $this->render($proforma, self::printData('proforma', $proforma->id))->html);
     }
 
     // ── zálohová faktura ────────────────────────────────────────────────────

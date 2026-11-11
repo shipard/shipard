@@ -65,7 +65,7 @@ class DocPrintBlocksTest extends TestCase
             $this->configDir . '/config/configuration/compiled.cs.json',
             json_encode(['items' => [
                 'docs.core.docTypes' => [
-                    'invno' => ['name' => 'Faktura vydaná', 'trade_dir' => 1],
+                    'invno' => ['name' => 'Faktura vydaná', 'trade_dir' => 1, 'corrective' => true],
                     'invpo' => ['name' => 'Zálohová faktura vydaná', 'trade_dir' => 1, 'tax_document' => false],
                     'cash'  => ['name' => 'Pokladní doklad', 'trade_dir' => 0, 'trade_dir_column' => 'cash_dir'],
                 ],
@@ -137,6 +137,8 @@ class DocPrintBlocksTest extends TestCase
             translator: new PrintTranslator([
                 'title.invoiceVatPayer'    => ['cs' => 'Faktura – daňový doklad'],
                 'title.invoiceNonVatPayer' => ['cs' => 'Faktura'],
+                'title.correctiveVatPayer'    => ['cs' => 'Opravný daňový doklad'],
+                'title.correctiveNonVatPayer' => ['cs' => 'Opravný doklad'],
                 'title.proforma'           => ['cs' => 'Zálohová faktura'],
                 'message.qrNoAccount'      => ['cs' => 'QR chybí'],
                 'message.qrSkipped.paymentReference' => ['cs' => 'QR bez VS'],
@@ -171,6 +173,13 @@ class DocPrintBlocksTest extends TestCase
             'faktura neplátce'  => ['invoiceNonVatPayer', new DocTitleContext('invno', false, 1)],
             'proforma plátce'   => ['proforma', new DocTitleContext('invpo', true, 1, true, 1210.0)],
             'proforma neplátce' => ['proforma', new DocTitleContext('invpo', false, 1)],
+            // Opravný doklad (#92 D8) — rozhoduje příznak, ne znaménko.
+            'opravný doklad plátce'       => ['correctiveVatPayer', new DocTitleContext('invno', true, 1, true, -605.0, corrective: true)],
+            'opravný doklad neplátce'     => ['correctiveNonVatPayer', new DocTitleContext('invno', false, 1, false, -500.0, corrective: true)],
+            'vrubopis plátce'             => ['correctiveVatPayer', new DocTitleContext('invno', true, 1, true, 605.0, corrective: true)],
+            'záporná faktura bez příznaku' => ['invoiceVatPayer', new DocTitleContext('invno', true, 1, true, -605.0)],
+            'záporná faktura neplátce bez příznaku' => ['invoiceNonVatPayer', new DocTitleContext('invno', false, 1, false, -500.0)],
+            'proforma s příznakem v datech' => ['proforma', new DocTitleContext('invpo', true, 1, true, 1210.0, corrective: true)],
             // Pokladní doklad (D25)
             'příjem, plátce, rekapitulace'     => ['cashInTaxDocument', new DocTitleContext('cash', true, 1, true, 1210.0)],
             'příjem, plátce, bez rekapitulace' => ['cashIn', new DocTitleContext('cash', true, 1, false, 1210.0)],
@@ -243,7 +252,81 @@ class DocPrintBlocksTest extends TestCase
             'exchangeRate'    => null,
             'foreignCurrency' => false,
             'author'          => null,
+            'correction'      => null,
         ], $document);
+    }
+
+    // ── opravný doklad (#92 D8) ─────────────────────────────────────────────
+
+    public function testCorrectiveDocumentHasCorrectiveTitleAndCorrection(): void
+    {
+        $document = (new DocDocumentBlock())->build($this->context([
+            'corrective'           => 1,
+            'corrected_doc_number' => ' 2026000101 ',
+            'correction_reason'    => 'Sleva po reklamaci.',
+            'total_amount'         => -605.0,
+        ], config: $this->config()))['document'];
+
+        $this->assertSame('correctiveVatPayer', $document['titleVariant']);
+        $this->assertSame('Opravný daňový doklad', $document['title']);
+        $this->assertSame(
+            ['originalNumber' => '2026000101', 'reason' => 'Sleva po reklamaci.'],
+            $document['correction'],
+        );
+        $this->assertSame('correction', array_key_last($document), 'correction je poslední klíč bloku');
+    }
+
+    public function testSummaryCorrectiveDocumentOfNonPayerHasOnlyReason(): void
+    {
+        $document = (new DocDocumentBlock())->build($this->context([
+            'corrective'           => 1,
+            'corrected_doc_number' => '',
+            'correction_reason'    => 'Roční bonus za odběr 2026',
+            'vat_registration'     => null,
+        ], config: $this->config()))['document'];
+
+        $this->assertSame('correctiveNonVatPayer', $document['titleVariant']);
+        $this->assertSame('Opravný doklad', $document['title']);
+        $this->assertSame(['originalNumber' => null, 'reason' => 'Roční bonus za odběr 2026'], $document['correction']);
+    }
+
+    /** Import ze starého Shipardu nese jen příznak — blok je, hodnoty ne. */
+    public function testCorrectiveDocumentWithoutValuesStillHasCorrectionObject(): void
+    {
+        $document = (new DocDocumentBlock())->build(
+            $this->context(['corrective' => 1], config: $this->config()),
+        )['document'];
+
+        $this->assertSame(['originalNumber' => null, 'reason' => null], $document['correction']);
+    }
+
+    public function testNegativeInvoiceWithoutFlagStaysInvoice(): void
+    {
+        $document = (new DocDocumentBlock())->build($this->context([
+            'corrective'           => 0,
+            'corrected_doc_number' => '2026000101',
+            'total_amount'         => -605.0,
+        ], config: $this->config()))['document'];
+
+        $this->assertSame('invoiceVatPayer', $document['titleVariant']);
+        $this->assertNull($document['correction']);
+    }
+
+    /** Příznak čte jen typ, který opravné doklady má (`docTypes[].corrective`). */
+    public function testFlagOnTypeWithoutCorrectiveDocumentsIsIgnored(): void
+    {
+        $head = ['corrective' => 1, 'corrected_doc_number' => '2026000101', 'correction_reason' => 'x'];
+
+        $proforma = $this->context(['doc_type' => 'invpo'] + $head, config: $this->config());
+        $this->assertFalse($proforma->corrective());
+        $this->assertFalse($proforma->titleContext()->corrective);
+        $document = (new DocDocumentBlock())->build($proforma)['document'];
+        $this->assertSame('proforma', $document['titleVariant']);
+        $this->assertNull($document['correction']);
+
+        // Bez konfigurace typ příznak nemá.
+        $this->assertFalse($this->context($head, config: null)->corrective());
+        $this->assertTrue($this->context($head, config: $this->config())->titleContext()->corrective);
     }
 
     public function testDocumentBlockCarriesAuthorName(): void

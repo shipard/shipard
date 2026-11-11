@@ -21,6 +21,7 @@ trait PrintFixtureDocuments
     private const NUMBER_PREFIX   = 'IT-PRINT-';
     private const INVOICE_NUMBER  = 'IT-PRINT-INV';
     private const PROFORMA_NUMBER = 'IT-PRINT-PRO';
+    private const CORRECTIVE_NUMBER = 'IT-PRINT-COR';
     private const CASH_NUMBER     = 'IT-PRINT-CASH';
     private const RECEIPT_NUMBER  = 'IT-PRINT-REC';
     private const GENERAL_NUMBER  = 'IT-PRINT-GEN';
@@ -476,6 +477,45 @@ trait PrintFixtureDocuments
         $this->insertRecap($headId, [[
             'vat_code' => 'cz-120', 'vat_pct' => 21, 'base' => 10000, 'tax' => 2100, 'total' => 12100,
             'base_dom' => 10000, 'tax_dom' => 2100, 'total_dom' => 12100,
+        ]]);
+
+        return $headId;
+    }
+
+    /**
+     * Opravný daňový doklad (#92): faktura vydaná s příznakem, záporné
+     * množství, číslo původního dokladu a důvod opravy.
+     *
+     * @param array<string, mixed> $expected
+     * @param array<string, mixed> $headOverrides
+     */
+    private function insertCorrectiveInvoice(array $expected, array $headOverrides = []): int
+    {
+        $headId = $this->insertHead($expected, $headOverrides + [
+            'doc_type'             => 'invno',
+            'doc_number'           => self::CORRECTIVE_NUMBER,
+            'doc_text'             => 'Oprava ceny tiskovin',
+            'corrective'           => 1,
+            'corrected_doc_number' => self::INVOICE_NUMBER,
+            'corrected_doc_date'   => '2026-09-15',
+            'correction_reason'    => 'Sleva po reklamaci části dodávky.',
+            'vat_duzp'             => '2026-09-30',
+            'doc_currency'         => 'czk',
+            'exchange_rate'        => 1.0,
+            'payment_reference'    => '2026000046',
+            'total_base'           => -500.0, 'total_vat' => -105.0, 'total_amount' => -605.0,
+            'total_base_dom'       => -500.0, 'total_vat_dom' => -105.0, 'total_amount_dom' => -605.0,
+        ]);
+
+        $this->insertRows($headId, [[
+            'row_kind' => 1, 'operation' => 'sale.goods', 'description' => 'Tištěná příručka — sleva po reklamaci',
+            'quantity' => -1, 'unit_price' => 500, 'total_price' => -500,
+            'vat_code' => 'cz-120', 'vat_pct' => 21,
+            'vat_base' => -500, 'vat_amount' => -105, 'vat_total' => -605,
+        ]]);
+        $this->insertRecap($headId, [[
+            'vat_code' => 'cz-120', 'vat_pct' => 21, 'base' => -500, 'tax' => -105, 'total' => -605,
+            'base_dom' => -500, 'tax_dom' => -105, 'total_dom' => -605,
         ]]);
 
         return $headId;

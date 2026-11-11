@@ -1,0 +1,18 @@
+{#
+    Údaje opravného dokladu (#92 D8) pod předmětem dokladu: číslo původního
+    dokladu (souhrnný opravný doklad ho nemá) a důvod opravy. Každý řádek
+    jen s hodnotou; datum plnění původního dokladu se netiskne.
+#}
+{% set correction = data.document.correction %}
+{% if correction.originalNumber|default('') or correction.reason|default('') %}
+    <dl class="doc-correction">
+        {% if correction.originalNumber|default('') %}
+            <dt>{{ t('label.correctedDoc') }}</dt>
+            <dd>{{ correction.originalNumber }}</dd>
+        {% endif %}
+        {% if correction.reason|default('') %}
+            <dt>{{ t('label.correctionReason') }}</dt>
+            <dd>{{ correction.reason|nl2br }}</dd>
+        {% endif %}
+    </dl>
+{% endif %}

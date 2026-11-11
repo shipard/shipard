@@ -72,6 +72,11 @@ dd {
     font-size: 10pt;
 }
 
+/* Opravný doklad: původní doklad a důvod opravy (mřížka z `dl`). */
+.doc-correction {
+    margin-bottom: 0.5cm;
+}
+
 .doc-note-nontax {
     margin-bottom: 0.5cm;
     font-weight: 700;

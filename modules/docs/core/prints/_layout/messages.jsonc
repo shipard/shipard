@@ -15,6 +15,10 @@
     "label.period":       { "cs": "Období", "en": "Period", "sk": "Obdobie", "de": "Leistungszeitraum" },
     "label.cashDesk":     { "cs": "Pokladna", "en": "Cash desk", "sk": "Pokladňa", "de": "Kasse" },
 
+    // Opravný doklad (#92 D8)
+    "label.correctedDoc":     { "cs": "Původní doklad", "en": "Original document", "sk": "Pôvodný doklad", "de": "Ursprünglicher Beleg" },
+    "label.correctionReason": { "cs": "Důvod opravy", "en": "Reason for correction", "sk": "Dôvod opravy", "de": "Korrekturgrund" },
+
     // Platba
     "label.paymentMethod":    { "cs": "Způsob úhrady", "en": "Payment method", "sk": "Spôsob úhrady", "de": "Zahlungsart" },
     "label.bankAccount":      { "cs": "Bankovní účet", "en": "Bank account", "sk": "Bankový účet", "de": "Bankverbindung" },

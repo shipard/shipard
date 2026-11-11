@@ -30,6 +30,10 @@
         {% if doc.text %}
             <p class="doc-subject">{{ doc.text }}</p>
         {% endif %}
+        {#- Opravný doklad (#92 D8); `-` drží výstup běžného dokladu beze změny. -#}
+        {%- if doc.correction|default(null) %}
+            {% include '@docs.core/_partials/correction.html.twig' %}
+        {% endif %}
     {% endblock %}
 
     {% block parties %}

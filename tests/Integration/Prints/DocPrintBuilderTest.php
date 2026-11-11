@@ -111,6 +111,81 @@ class DocPrintBuilderTest extends IntegrationTestCase
         );
     }
 
+    // ── opravný doklad (#92 D8) ─────────────────────────────────────────────
+
+    public function testCorrectiveInvoiceDataMatchesContractSnapshot(): void
+    {
+        $expected = $this->expected('invoiceCorrective');
+
+        $headId = $this->insertCorrectiveInvoice($expected);
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'cs');
+
+        $this->assertSame(self::normalize($expected), self::normalize($output->printData->data));
+        $this->assertSame(
+            $this->expectedEnvelope('invoiceCorrective')['meta'],
+            $output->printData->toArray()['meta'],
+        );
+        $this->assertSame([], $output->printData->messages);
+    }
+
+    public function testCorrectiveInvoiceTitleInEveryPrintLanguage(): void
+    {
+        $headId = $this->insertCorrectiveInvoice($this->expected('invoiceCorrective'));
+
+        $titles = [];
+        $files  = [];
+        foreach (['en', 'sk', 'de'] as $language) {
+            $data = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, $language)->printData;
+            $titles[$language] = $data->data['document']['title'];
+            $files[$language]  = $data->fileName;
+            $this->assertSame(
+                ['originalNumber' => 'IT-PRINT-INV', 'reason' => 'Sleva po reklamaci části dodávky.'],
+                $data->data['document']['correction'],
+            );
+        }
+        $this->assertSame(
+            ['en' => 'Corrective tax document', 'sk' => 'Opravná faktúra', 'de' => 'Rechnungskorrektur'],
+            $titles,
+        );
+        $this->assertSame([
+            'en' => 'corrective-document-it-print-cor.pdf',
+            'sk' => 'opravny-doklad-it-print-cor.pdf',
+            'de' => 'rechnungskorrektur-it-print-cor.pdf',
+        ], $files);
+    }
+
+    public function testCorrectiveInvoiceOfNonPayerAndSummaryWithoutOriginalNumber(): void
+    {
+        $headId = $this->insertCorrectiveInvoice($this->expected('invoiceCorrective'), [
+            'vat_registration'     => null,
+            'vat_mode'             => 0,
+            'corrected_doc_number' => '',
+        ]);
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'cs');
+
+        $document = $output->printData->data['document'];
+        $this->assertSame('correctiveNonVatPayer', $document['titleVariant']);
+        $this->assertSame('Opravný doklad', $document['title']);
+        $this->assertSame('opravny-doklad-it-print-cor.pdf', $output->printData->fileName);
+        $this->assertSame(
+            ['originalNumber' => null, 'reason' => 'Sleva po reklamaci části dodávky.'],
+            $document['correction'],
+        );
+    }
+
+    /** Titulek řídí příznak, ne znaménko: záporná faktura bez příznaku je faktura. */
+    public function testNegativeInvoiceWithoutFlagIsPrintedAsInvoice(): void
+    {
+        $headId = $this->insertCorrectiveInvoice($this->expected('invoiceCorrective'), ['corrective' => 0]);
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'cs');
+
+        $document = $output->printData->data['document'];
+        $this->assertSame('invoiceVatPayer', $document['titleVariant']);
+        $this->assertSame('Faktura – daňový doklad', $document['title']);
+        $this->assertNull($document['correction']);
+        $this->assertSame('faktura-it-print-cor.pdf', $output->printData->fileName);
+    }
+
     // ── storno (D23) ────────────────────────────────────────────────────────
 
     public function testCancelledInvoiceIsPrintedWithWatermark(): void
