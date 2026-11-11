@@ -625,8 +625,8 @@
 
   .shpd-registry-wizard__badge--warning {
     background: var(--shpd-color-warning-soft, rgba(220, 130, 0, 0.12));
-    color: var(--shpd-color-warning, #b45309);
-    border: 1px solid var(--shpd-color-warning, #b45309);
+    color: var(--shpd-color-warning-text, #b45309);
+    border: 1px solid var(--shpd-color-warning-text, #b45309);
   }
 
   .shpd-registry-wizard__badge--muted {

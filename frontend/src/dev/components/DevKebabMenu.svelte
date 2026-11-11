@@ -205,6 +205,6 @@
   }
   /* Destruktivní akce (Smazat…) červeně včetně ikony, jako ve formuláři. */
   .dev-kebab__item--danger {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 </style>

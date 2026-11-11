@@ -83,11 +83,11 @@
   /* Tón: warning / danger jen barva rámečku, info tónované pozadí. Jen
      tokeny — tmavý vzhled je přebarví sám. */
   .shpd-card--warning {
-    border-color: var(--shpd-color-warning);
+    border-color: var(--shpd-color-warning-text);
   }
 
   .shpd-card--danger {
-    border-color: var(--shpd-color-danger);
+    border-color: var(--shpd-color-danger-text);
   }
 
   .shpd-card--info {

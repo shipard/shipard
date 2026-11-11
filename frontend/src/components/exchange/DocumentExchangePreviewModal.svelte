@@ -499,7 +499,7 @@
   .shpd-exchange-modal__save-error {
     margin-right: auto;
     align-self: center;
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     font-size: var(--shpd-font-size-body);
   }
 

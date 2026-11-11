@@ -146,7 +146,7 @@
     width: 1.75rem;
     height: 1.75rem;
     flex-shrink: 0;
-    color: var(--shpd-color-success);
+    color: var(--shpd-color-success-text);
   }
 
   .shpd-feed-row__donut-track {
@@ -193,7 +193,7 @@
     align-items: center;
     align-self: center;
     flex-shrink: 0;
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
     cursor: help;
   }
 

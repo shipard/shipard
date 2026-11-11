@@ -548,7 +548,7 @@
   }
 
   .shpd-resolve__status--error {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-resolve__item {

@@ -490,7 +490,7 @@
     cursor: pointer;
   }
 
-  .shpd-send__chip-remove:hover { color: var(--shpd-color-danger); }
+  .shpd-send__chip-remove:hover { color: var(--shpd-color-danger-text); }
 
   .shpd-send__add {
     display: flex;
@@ -502,7 +502,7 @@
 
   .shpd-send__address-error {
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-send__attachments li {

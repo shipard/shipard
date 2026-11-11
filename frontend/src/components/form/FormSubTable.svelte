@@ -576,9 +576,9 @@
   .shpd-form-subtable__span--muted   { opacity: 0.7; font-style: italic; }
   .shpd-form-subtable__span--bold    { font-weight: 600; }
   .shpd-form-subtable__span--primary { color: var(--shpd-color-primary); }
-  .shpd-form-subtable__span--success { color: var(--shpd-color-success); }
-  .shpd-form-subtable__span--warning { color: var(--shpd-color-warning); }
-  .shpd-form-subtable__span--danger  { color: var(--shpd-color-danger); }
+  .shpd-form-subtable__span--success { color: var(--shpd-color-success-text); }
+  .shpd-form-subtable__span--warning { color: var(--shpd-color-warning-text); }
+  .shpd-form-subtable__span--danger  { color: var(--shpd-color-danger-text); }
 
   .shpd-form-subtable__td > span + span {
     margin-left: var(--shpd-space-xs);

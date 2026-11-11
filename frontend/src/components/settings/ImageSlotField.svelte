@@ -191,7 +191,7 @@
   .shpd-image-slot__error {
     margin-top: var(--shpd-space-xs);
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-image-slot__file {

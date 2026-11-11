@@ -34,7 +34,7 @@
     white-space: nowrap;
   }
   :global(.shpd-form-field-row__required) {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     margin-left: 0.125rem;
   }
   .shpd-form-field-row__input {

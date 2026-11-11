@@ -282,7 +282,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     font-weight: 600;
     cursor: help;
   }

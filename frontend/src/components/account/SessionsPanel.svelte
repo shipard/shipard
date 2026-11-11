@@ -172,9 +172,9 @@
     padding: 0.125rem var(--shpd-space-sm);
     font-size: var(--shpd-font-size-xs);
     font-weight: 500;
-    color: var(--shpd-color-success);
+    color: var(--shpd-color-success-text);
     background-color: var(--shpd-color-success-soft);
-    border: 1px solid var(--shpd-color-success);
+    border: 1px solid var(--shpd-color-success-text);
     border-radius: var(--shpd-radius-full);
   }
 

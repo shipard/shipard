@@ -154,7 +154,7 @@
     padding: 0.125rem 0;
   }
 
-  .shpd-sent-transport__attempt--fail { color: var(--shpd-color-danger); }
+  .shpd-sent-transport__attempt--fail { color: var(--shpd-color-danger-text); }
 
   .shpd-sent-transport__response {
     flex-basis: 100%;

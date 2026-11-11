@@ -99,6 +99,6 @@
 
   .shpd-tabbar__close:hover {
     background-color: rgb(0 0 0 / 0.08);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 </style>

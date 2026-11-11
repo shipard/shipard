@@ -50,9 +50,9 @@
   const donutArc = $derived(((card.confidencePct ?? 0) / 100) * DONUT_C);
   const donutColor = $derived(
     card.kind === 'ready'
-      ? 'var(--shpd-color-success)'
+      ? 'var(--shpd-color-success-text)'
       : card.kind === 'review'
-        ? 'var(--shpd-color-warning)'
+        ? 'var(--shpd-color-warning-text)'
         : 'var(--shpd-color-text-secondary)',
   );
 
@@ -274,7 +274,7 @@
 
   .shpd-feed-card__due--overdue,
   .shpd-feed-card__due--soon {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
   }
 
@@ -357,7 +357,7 @@
     gap: var(--shpd-space-xs);
     margin-top: var(--shpd-space-xs);
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
     min-width: 0;
   }
 

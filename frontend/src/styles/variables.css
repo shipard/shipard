@@ -21,13 +21,22 @@
   --shpd-color-accent-hover:   #c45405;
   --shpd-color-accent-soft:    #fdebdc; /* světlé pozadí pro accent badge */
 
-  /* Stavové (s hover variantou pro tlačítka) */
+  /* Tónové barvy mají dvě role (#133 D69, D70):
+     - plocha `--shpd-color-{tón}` (+ `-hover`): tlačítko, odznak s textem.
+       Text na ní je `--shpd-color-text-on-fill`, kontrast ≥ 4,5 : 1.
+       Hodnoty jsou v obou vzhledech stejné.
+     - text `--shpd-color-{tón}-text`: text, ikona, tečka a rámeček prvku
+       na pozadí stránky; ≥ 4,5 : 1 na `bg` i `bg-hover`. Tmavý vzhled má
+       vlastní, světlejší hodnoty. */
   --shpd-color-danger:        #dc2626;
   --shpd-color-danger-hover:  #b91c1c;
-  --shpd-color-success:       #16a34a;
-  --shpd-color-success-hover: #15803d;
-  --shpd-color-warning:       #d97706;
-  --shpd-color-warning-hover: #b45309;
+  --shpd-color-success:       #15803d;
+  --shpd-color-success-hover: #166534;
+  --shpd-color-warning:       #b45309;
+  --shpd-color-warning-hover: #92400e;
+  --shpd-color-danger-text:   #dc2626;
+  --shpd-color-success-text:  #15803d;
+  --shpd-color-warning-text:  #b45309;
 
   /* Soft "chyby" pozadí — např. error notice ramp-up v formálři */
   --shpd-color-danger-soft:   #fef2f2;
@@ -96,8 +105,10 @@
 
   /* Hláška `Notice` (#137 D40) má i tón success — aliasy na existující
      zelené, žádná nová barva. Vyhodnocují se na :root, kde tmavý vzhled
-     (`data-theme="dark"` na <html>) cílové tokeny přebarví. */
-  --shpd-color-alert-success-bar:    var(--shpd-color-success);
+     (`data-theme="dark"` na <html>) cílové tokeny přebarví. Rámeček bere
+     `-text`, ne plochu: v tmavém vzhledu tak zůstává světlá zelená
+     (plocha je po D70 v obou vzhledech tmavá). */
+  --shpd-color-alert-success-bar:    var(--shpd-color-success-text);
   --shpd-color-alert-success-bg:     var(--shpd-color-state-done-bg);
   --shpd-color-alert-success-text:   var(--shpd-color-state-done-text);
 
@@ -276,13 +287,18 @@
   --shpd-color-accent-hover:   #ff9555;
   --shpd-color-accent-soft:    #3d2415;
 
-  /* Stavové barvy — světlejší varianty pro dark */
-  --shpd-color-danger:        #ef4444;
-  --shpd-color-danger-hover:  #f87171;
-  --shpd-color-success:       #22c55e;
-  --shpd-color-success-hover: #4ade80;
-  --shpd-color-warning:       #f59e0b;
-  --shpd-color-warning-hover: #fbbf24;
+  /* Tónové barvy (#133 D69, D70): plochy jako ve světlém vzhledu (bílý
+     text na nich drží 4,5 : 1), světlejší jsou jen `-text` tokeny pro
+     text, ikonu a tečku na tmavém pozadí. */
+  --shpd-color-danger:        #dc2626;
+  --shpd-color-danger-hover:  #b91c1c;
+  --shpd-color-success:       #15803d;
+  --shpd-color-success-hover: #166534;
+  --shpd-color-warning:       #b45309;
+  --shpd-color-warning-hover: #92400e;
+  --shpd-color-danger-text:   #f87171;
+  --shpd-color-success-text:  #22c55e;
+  --shpd-color-warning-text:  #f59e0b;
   --shpd-color-danger-soft:   #2d1414;
   --shpd-color-success-soft:  #14291c;
   --shpd-color-warning-soft:  #2e2410;

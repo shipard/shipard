@@ -335,9 +335,9 @@
   .shpd-grid__span--muted    { opacity: 0.6; }
   .shpd-grid__span--bold     { font-weight: 600; }
   .shpd-grid__span--primary  { color: var(--shpd-color-primary); }
-  .shpd-grid__span--success  { color: var(--shpd-color-success); }
-  .shpd-grid__span--warning  { color: var(--shpd-color-warning); }
-  .shpd-grid__span--danger   { color: var(--shpd-color-danger); }
+  .shpd-grid__span--success  { color: var(--shpd-color-success-text); }
+  .shpd-grid__span--warning  { color: var(--shpd-color-warning-text); }
+  .shpd-grid__span--danger   { color: var(--shpd-color-danger-text); }
 
   /* Víc spanů v jedné buňce (cizoměnová částka) — mezera mezi nimi.
      :global kvůli SpanBadge (root element vlastní child komponenta,

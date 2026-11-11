@@ -797,9 +797,9 @@
     border-bottom-color: var(--shpd-color-primary);
     font-weight: 600;
   }
-  .shpd-form-editor__tab--error { color: var(--shpd-color-danger); }
+  .shpd-form-editor__tab--error { color: var(--shpd-color-danger-text); }
   .shpd-form-editor__tab--error.shpd-form-editor__tab--active {
-    border-bottom-color: var(--shpd-color-danger);
+    border-bottom-color: var(--shpd-color-danger-text);
   }
 
   .shpd-form-editor__tab-error-dot {
@@ -807,7 +807,7 @@
     width: 0.375rem;
     height: 0.375rem;
     border-radius: 50%;
-    background: var(--shpd-color-danger);
+    background: var(--shpd-color-danger-text);
     margin-left: var(--shpd-space-xs);
     vertical-align: middle;
   }

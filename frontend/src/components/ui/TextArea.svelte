@@ -56,7 +56,7 @@
   }
 
   .shpd-textarea__field--error {
-    border-color: var(--shpd-color-danger);
+    border-color: var(--shpd-color-danger-text);
   }
 
   .shpd-textarea__field--error:focus {
@@ -71,7 +71,7 @@
 
   .shpd-textarea__error {
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     margin-top: var(--shpd-space-xs);
   }
 </style>

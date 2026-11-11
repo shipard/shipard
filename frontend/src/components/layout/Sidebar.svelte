@@ -185,11 +185,8 @@
       </div>
     {:else if error}
       <div class="shpd-sidebar__status shpd-sidebar__status--error">
-        {#if collapsed}
-          <Icon icon={iconWarning} size="sm" />
-        {:else}
-          {error}
-        {/if}
+        <span class="shpd-sidebar__status-icon"><Icon icon={iconWarning} size="sm" /></span>
+        {#if !collapsed}<span>{error}</span>{/if}
       </div>
     {:else if collapsed}
       <!-- Trigger palety ve sbaleném pásu ikon — nad navigací. -->
@@ -313,7 +310,15 @@
     color: var(--shpd-color-text-sidebar-muted);
   }
 
+  /* Chyba na pozadí sidebaru: tónový text tu nedá 4,5 : 1 (`danger-text`
+     na výchozím sidebaru 2,6 : 1), proto text v barvě sidebaru a tón nese
+     jen ikona (#133 D69). */
   .shpd-sidebar__status--error {
-    color: var(--shpd-color-danger, #ef4444);
+    color: var(--shpd-color-text-sidebar);
+  }
+
+  .shpd-sidebar__status-icon {
+    flex: none;
+    color: var(--shpd-color-danger-text);
   }
 </style>

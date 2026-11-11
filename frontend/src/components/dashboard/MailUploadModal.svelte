@@ -272,7 +272,7 @@
   }
 
   .shpd-mail-upload__remove:hover:not(:disabled) {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   /* Limit souborů a chyba nahrání jsou sdílená Notice (#133 D61) — obal

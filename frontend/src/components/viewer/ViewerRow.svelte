@@ -249,7 +249,7 @@
   .shpd-viewer-row__span--muted    { opacity: 0.6; }
   .shpd-viewer-row__span--bold     { font-weight: 600; }
   .shpd-viewer-row__span--primary  { color: var(--shpd-color-primary); }
-  .shpd-viewer-row__span--success  { color: var(--shpd-color-success); }
-  .shpd-viewer-row__span--warning  { color: var(--shpd-color-warning); }
-  .shpd-viewer-row__span--danger   { color: var(--shpd-color-danger); }
+  .shpd-viewer-row__span--success  { color: var(--shpd-color-success-text); }
+  .shpd-viewer-row__span--warning  { color: var(--shpd-color-warning-text); }
+  .shpd-viewer-row__span--danger   { color: var(--shpd-color-danger-text); }
 </style>

@@ -256,11 +256,11 @@
   }
 
   .shpd-feed__section-dot--newItems { background: var(--shpd-color-primary); }
-  .shpd-feed__section-dot--ready    { background: var(--shpd-color-success); }
-  .shpd-feed__section-dot--review   { background: var(--shpd-color-warning); }
-  .shpd-feed__section-dot--attention { background: var(--shpd-color-warning); }
-  .shpd-feed__section-dot--failed   { background: var(--shpd-color-danger); }
-  .shpd-feed__section-dot--alerts   { background: var(--shpd-color-warning); }
+  .shpd-feed__section-dot--ready    { background: var(--shpd-color-success-text); }
+  .shpd-feed__section-dot--review   { background: var(--shpd-color-warning-text); }
+  .shpd-feed__section-dot--attention { background: var(--shpd-color-warning-text); }
+  .shpd-feed__section-dot--failed   { background: var(--shpd-color-danger-text); }
+  .shpd-feed__section-dot--alerts   { background: var(--shpd-color-warning-text); }
   .shpd-feed__section-dot--other    { background: var(--shpd-color-text-secondary); }
 
   /* Failed: full-width karty pod sebou (D2). */

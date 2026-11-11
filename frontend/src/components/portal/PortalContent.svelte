@@ -388,7 +388,7 @@
     gap: var(--shpd-space-xs);
     padding: 0.0625rem var(--shpd-space-sm);
     font-weight: 500;
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     background-color: var(--shpd-color-danger-soft);
     border-radius: var(--shpd-radius-full);
   }
@@ -401,7 +401,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    color: var(--shpd-color-success);
+    color: var(--shpd-color-success-text);
   }
 
   .portal__enter {

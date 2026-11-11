@@ -108,7 +108,7 @@
   }
 
   .shpd-failure-card__header--warning {
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
   }
 
   .shpd-failure-card__header--info {

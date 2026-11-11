@@ -76,7 +76,7 @@
   }
 
   .shpd-combo__field--error {
-    border-color: var(--shpd-color-danger);
+    border-color: var(--shpd-color-danger-text);
   }
 
   .shpd-combo__field--error:focus {
@@ -91,7 +91,7 @@
 
   .shpd-combo__error {
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     margin-top: var(--shpd-space-xs);
   }
 </style>

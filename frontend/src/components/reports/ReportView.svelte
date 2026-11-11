@@ -385,11 +385,11 @@
   }
 
   .shpd-report__tr--error > .shpd-report__td {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-report__tr--warning .shpd-report__row-icon {
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
   }
 
   /* Zprávy „pod čarou“ mají vlastní svislé rolování a strop výšky, aby
@@ -415,11 +415,11 @@
 
   /* Tón jako u řádku: chyba textem i ikonou, varování jen ikonou. */
   .shpd-report__message--error {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-report__message--warning > .shpd-report__message-icon {
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
   }
 
   .shpd-report__message--info {

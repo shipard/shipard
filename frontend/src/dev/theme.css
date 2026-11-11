@@ -15,9 +15,12 @@
   --shpd-color-accent:         #eb6507;
   --shpd-color-accent-hover:   #cf5804;
 
-  /* Červená pro nevratné akce — bílý text 5,8 : 1 */
+  /* Červená pro nevratné akce — bílý text 5,8 : 1. Stejná hodnota i jako
+     barva textu a ikon (D69): dashboard je jen světlý, 5,7 : 1 na bílé.
+     Warning a success dědí plochu i text z aplikace. */
   --shpd-color-danger:         #c81e1e;
   --shpd-color-danger-hover:   #a51818;
+  --shpd-color-danger-text:    #c81e1e;
 
   /* Text, hrany a plochy webu (--text / --text-muted, --border, --card-gray, --bg-light) */
   --shpd-color-text:           #1c2b3a;

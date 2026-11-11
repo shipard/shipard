@@ -239,11 +239,11 @@
   }
 
   .shpd-ds-create__check--ok {
-    color: var(--shpd-color-success);
+    color: var(--shpd-color-success-text);
   }
 
   .shpd-ds-create__check--error {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-ds-create__check--muted {

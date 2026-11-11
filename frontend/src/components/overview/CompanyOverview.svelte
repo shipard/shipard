@@ -371,11 +371,11 @@
   }
 
   .shpd-overview__due--soon {
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
   }
 
   .shpd-overview__due--overdue {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-overview__badge {
@@ -388,12 +388,12 @@
   }
 
   .shpd-overview__badge--warning {
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
     background: color-mix(in srgb, var(--shpd-color-warning) 14%, transparent);
   }
 
   .shpd-overview__badge--danger {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
   }
 

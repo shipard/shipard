@@ -528,7 +528,7 @@
   }
 
   .shpd-attachments__action-btn--danger:hover {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-attachments__action-btn + .shpd-attachments__action-btn {

@@ -238,6 +238,6 @@
   /* Destruktivní přechody (Archivovat, Smazat, Ukončit platnost) červeně —
      uživatel si uvědomí závažnost i bez velkého tlačítka. */
   .shpd-form-state-bar__kebab-item--danger {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 </style>

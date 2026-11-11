@@ -159,7 +159,7 @@
 
   .shpd-queue-precheck__error {
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-queue-precheck__actions {

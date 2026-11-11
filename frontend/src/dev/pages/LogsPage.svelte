@@ -215,13 +215,13 @@
     width: 0.625rem;
     height: 0.625rem;
     border-radius: 50%;
-    background: var(--shpd-color-success);
+    background: var(--shpd-color-success-text);
     display: inline-block;
   }
-  .dot--paused { background: var(--shpd-color-danger); }
+  .dot--paused { background: var(--shpd-color-danger-text); }
 
   .status { margin-bottom: var(--shpd-space-sm); }
-  .status-error { color: var(--shpd-color-danger); }
+  .status-error { color: var(--shpd-color-danger-text); }
 
   .dev-chip.level-error.is-on { background: var(--shpd-color-state-cancelled-bg); border-color: var(--shpd-color-danger); color: var(--shpd-color-state-cancelled-text); }
   .dev-chip.level-warn.is-on { background: var(--shpd-color-state-concept-bg); border-color: var(--shpd-color-warning); color: var(--shpd-color-state-concept-text); }
@@ -252,7 +252,7 @@
   .row__request { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: var(--shpd-font-size-xs); }
   .row__msg { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row.is-open .row__msg { white-space: normal; }
-  .row__exc { color: var(--shpd-color-danger); }
+  .row__exc { color: var(--shpd-color-danger-text); }
 
   .badge {
     display: inline-block;

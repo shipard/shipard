@@ -247,6 +247,6 @@
 
   .shpd-vat-prefill__error {
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 </style>

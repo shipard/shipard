@@ -1460,7 +1460,7 @@
   }
 
   .shpd-exchange__row-match--weak {
-    color: var(--shpd-color-warning);
+    color: var(--shpd-color-warning-text);
   }
 
   .shpd-exchange__row-match-arrow {

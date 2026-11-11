@@ -490,7 +490,7 @@
   }
 
   .shpd-lookup__input--error {
-    border-color: var(--shpd-color-danger);
+    border-color: var(--shpd-color-danger-text);
   }
 
   .shpd-lookup__input--error:focus {
@@ -571,7 +571,7 @@
   }
 
   .shpd-lookup__status--error {
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
   }
 
   .shpd-lookup__item {
@@ -629,7 +629,7 @@
 
   .shpd-lookup__error {
     font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
+    color: var(--shpd-color-danger-text);
     margin-top: var(--shpd-space-xs);
   }
 </style>

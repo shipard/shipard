@@ -255,7 +255,7 @@
     align-items: center;
     gap: 0.375rem;
   }
-  .bubble__status--ok { color: var(--shpd-color-success); }
+  .bubble__status--ok { color: var(--shpd-color-success-text); }
   .bubble__commits {
     margin: 0;
     padding: 0;
