@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 439 tasků: **naplánováno** 7 · **částečně** 25 · **zrušeno** 1 · **hotovo** 406.
+Celkem 441 tasků: **naplánováno** 9 · **částečně** 25 · **zrušeno** 1 · **hotovo** 406.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -31,7 +31,9 @@ nevypisují — níže je jen to, co není dokončené.
 | `design-system-date-format.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D73) |
 | `design-system-report-account-label.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D68) |
 | `design-system-tone-colors.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72) |
+| `exchange-received-foreign-vat.md` | naplánováno | rozhodnutí D1–D5 potvrzená 2026-11-11 (#89, task A) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `vat-reverse-charge-subjects.md` | naplánováno | rozhodnutí D6–D16 potvrzená 2026-11-11 (#89, task B) |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -224,6 +226,7 @@ Základ pro dokladový systém — osoby, měna/země, položky, období.
 |------|---------|
 | `persons-is-own-extension.md` | `base.persons`: `is_own` (vlastní firma) + obchodní rejstřík |
 | `world-vat-cz.md` | Modul `world.vat` — CZ DPH kódy a procenta |
+| `vat-reverse-charge-subjects.md` | Předmět plnění tuzemského přenesení daňové povinnosti jako samostatný údaj řádku a rekapitulace — číselník předmětů s platností, obecné kódy přenesení (zrušení `cz-117` / `cz-152`), kontrolní hlášení A.1 / B.1 z rekapitulace, volba v náhledu návrhu; prompt v4.12.0 (#89 D6–D16) |
 | `economy-items-phase1.md` | Položky + měrné jednotky |
 | `economy-cash-and-bank.md` | Pokladny + vlastní bankovní spojení |
 | `economy-fiscal-periods.md` | Fiskální období (roky/měsíce) |
@@ -285,6 +288,7 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-received-reverse-charge.md` | Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů AI, registrace z naší DPH, přepočítaná rekapitulace; prompt v4.6.0 (#86) |
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
 | `exchange-received-non-vat-payer.md` | Přijatý doklad u neplátce DPH — Bez DPH s daní dodavatele v cenách řádků, plátcovství k datu, ceny s daní z ISDOC (#97) |
+| `exchange-received-foreign-vat.md` | Přijatý doklad se zahraniční DPH nebo zvláštním místem plnění — vznikne Bez DPH s daní dodavatele v cenách řádků, ruční Bez DPH mimo tuzemsko platí (#89 D1–D5) |
 | `exchange-format-persons-phase1.md` | Výměnný formát osob (`shpd.persons.person.v1`) |
 | `exchange-format-items-phase1.md` | Výměnný formát položek (`shpd.items.item.v1`) |
 | `docs-import-number-mode.md` | Import-mód čísla dokladu + fix validace bank. spojení |
