@@ -9,8 +9,9 @@
   // (`Notice`) nad tabulkou; řádek odkázaný z messages přes rowRef
   // ('rows.{index}') je chyba u prvku — ikona před názvem a tón textem,
   // bez pozadí (pozadí má jen mezisoučet); zprávy samotné jdou „pod čaru“
-  // dole. Chyba barví text (`--shpd-color-danger`), varování nese tón jen
-  // ikonou: `--shpd-color-warning` na světlém pozadí nedá textu 4,5 : 1.
+  // dole. Chyba i varování nesou tón ikonou i barvou textu
+  // (`--shpd-color-danger-text`, `--shpd-color-warning-text`, D72): textové
+  // tokeny tónu drží 4,5 : 1 na pozadí řádku i mezisoučtu v obou vzhledech.
   //
   // Datová mřížka s držící hlavičkou (#133 D57): kořen je flex sloupec
   // ve výšce oblasti výsledku (řetěz výšky drží `ReportsPage`), tabulka
@@ -367,8 +368,8 @@
   }
 
   /* Řádek se zprávou = chyba u prvku (D61, D64): bez pozadí, tón nese
-     ikona před názvem a u chyby i barva textu buněk. Varování text nebarví
-     (kontrast, viz komentář nahoře). Odkaz v řádku zůstává v barvě odkazu. */
+     ikona před názvem a barva textu buněk — u chyby i u varování (D72).
+     Odkaz v řádku zůstává v barvě odkazu. */
   /* Ikona a název drží vedle sebe: název jako odkaz je tlačítko
      (inline-block) a dlouhý by v běžném toku spadl pod ikonu. Víceřádkový
      název se láme vedle ikony, ne pod ni. Zarovnání nahoru, ne na účaří:
@@ -388,7 +389,7 @@
     color: var(--shpd-color-danger-text);
   }
 
-  .shpd-report__tr--warning .shpd-report__row-icon {
+  .shpd-report__tr--warning > .shpd-report__td {
     color: var(--shpd-color-warning-text);
   }
 
@@ -413,12 +414,12 @@
     font-size: var(--shpd-font-size-sm);
   }
 
-  /* Tón jako u řádku: chyba textem i ikonou, varování jen ikonou. */
+  /* Tón jako u řádku: chyba i varování textem i ikonou (D72). */
   .shpd-report__message--error {
     color: var(--shpd-color-danger-text);
   }
 
-  .shpd-report__message--warning > .shpd-report__message-icon {
+  .shpd-report__message--warning {
     color: var(--shpd-color-warning-text);
   }
 
