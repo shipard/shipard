@@ -98,6 +98,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private const WO_NUMBER = 'ITDSS0001';
     private const WO_FILE = 'workOrders/0001-itdss0001.jsonc';
     private const INVNO_NUMBER = 'IT-DS-1001';
+    /** Opravný doklad k vydané faktuře (#92 task B U5): odkaz se po seedu obnoví podle čísla. */
+    private const CORRECTIVE_NUMBER = 'IT-DS-1002';
+    private const CORRECTIVE_REASON = 'IT-DS sleva za vadu';
     /** Majetek (#131 fáze 2c): typ v setup/, karta v assets/, faktura s pořízením, doklad zaúčtování. */
     private const ASSET_TYPE_GROUP = 'IT-DS Hmotný majetek';
     private const ASSET_TYPE = 'IT-DS Výpočetní technika';
@@ -277,9 +280,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame(1, $counts['persons']['ok']);
         $this->assertSame(1, $counts['items']['ok']);
         $this->assertSame(
-            2 + ($this->hasWorkOrders ? 1 : 0) + ($this->hasAssets ? 2 : 0),
+            2 + ($this->hasWorkOrders ? 2 : 0) + ($this->hasAssets ? 2 : 0),
             $counts['docs']['ok'],
-            'faktura přijatá + prodejka (+ vydaná ze zakázky) (+ pořízení majetku + účetní doklad)',
+            'faktura přijatá + prodejka (+ vydaná ze zakázky + opravný doklad k ní) (+ pořízení majetku + účetní doklad)',
         );
         $this->assertSame(1, $counts['registry']['ok']);
         $this->assertSame(1, $counts['mail']['ok']);
@@ -439,6 +442,21 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame('issued', $period['state']);
             $this->assertSame($invnoId, (int) $period['doc'], 'doklad číslem mezi vydanými');
             $this->assertSame(ContentHash::ofStoredDocument($dibi, $invnoId), $period['content_hash'], 'otisk jako po běhu');
+
+            // Opravný doklad (#92 task B U3, U5): blok `correction` → příznak,
+            // odkaz dohledaný podle čísla mezi vydanými fakturami V pořádku,
+            // číslo a datum plnění z původního dokladu, důvod z bloku.
+            $correctiveId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::CORRECTIVE_NUMBER);
+            $this->assertGreaterThan(0, $correctiveId);
+            $corrective = $dibi->fetch('SELECT * FROM docs_core_heads WHERE id = %i', $correctiveId)->toArray();
+            $this->assertSame(40, (int) $corrective['docState']);
+            $this->assertSame(1, (int) $corrective['corrective']);
+            $this->assertSame($invnoId, (int) $corrective['corrected_doc'], 'odkaz na původní fakturu podle čísla');
+            $this->assertSame(self::INVNO_NUMBER, $corrective['corrected_doc_number']);
+            $this->assertSame('2026-06-01', substr((string) $corrective['corrected_doc_date'], 0, 10), 'datum plnění původní faktury');
+            $this->assertSame(self::CORRECTIVE_REASON, $corrective['correction_reason']);
+            $this->assertSame(-600.0, (float) $corrective['total_base'], 'záporný řádek = opačný základ');
+            $this->assertSame($personId, (int) $corrective['partner']);
         }
 
         // Majetek (#131 fáze 2c): typ ze setup/ s FK přirozeným klíčem, karta
@@ -644,10 +662,24 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame($srcWoLoose, $outWoLoose, 'zakázka se vrátí beze změny — předpis s platností, období s číslem dokladu');
             $this->assertSame([], $woExporter->getWarnings());
 
-            $invnoOut = (new DocumentExporter($dibi, $this->config, ['economy_work_orders_heads']))->exportByIds([$invnoId])[0]->data;
+            $issuedOut = [];
+            foreach ((new DocumentExporter($dibi, $this->config, ['economy_work_orders_heads']))->exportByIds([$invnoId, $correctiveId]) as $record) {
+                $issuedOut[$record->id] = $record->data;
+            }
+            $this->assertSame([$invnoId, $correctiveId], array_keys($issuedOut), 'opravný doklad řadí dump až za běžné doklady typu (U5)');
+            $invnoOut = $issuedOut[$invnoId];
             $this->assertSame(['kind' => 'workOrder'], $invnoOut['source']);
             $this->assertSame(['workOrder' => self::WO_NUMBER], $invnoOut['dimensions'], 'dimenze zakázky přežije round-trip');
             $this->assertArrayNotHasKey('dimensions', $invnoOut['rows'][0], 'řádek dimenzi nenese (deník ji dědí z hlavičky)');
+            $this->assertArrayNotHasKey('correction', $invnoOut, 'běžná faktura blok opravy nenese');
+            $correctiveOut = $issuedOut[$correctiveId];
+            $this->assertSame(
+                $reader->readJsonc('docs/0006-it-ds-1002.jsonc')['correction'],
+                $correctiveOut['correction'],
+                'blok opravy se vrátí beze změny — číslo i datum plnění původního dokladu z odkazu',
+            );
+            $this->assertSame(-1.0, $correctiveOut['rows'][0]['quantity']);
+            $this->assertSame(-600.0, $correctiveOut['totals']['totalBase']);
         }
 
         if ($this->hasAssets) {
@@ -887,6 +919,33 @@ class DatasetRoundTripTest extends IntegrationTestCase
                     'importOwnBankAccount' => self::BANK_ACCOUNT_CODE,
                 ], static fn($v) => $v !== null),
             ]);
+            // Opravný doklad k vydané faktuře (#92 task B U1, U5): blok
+            // `correction` s číslem původního dokladu; odkaz sada nenese,
+            // obnoví ho applier dohledáním podle čísla (původní faktura je
+            // v souboru s nižším pořadím). Záporný řádek, stejný partner.
+            $w->writeJsonc('docs/0006-it-ds-1002.jsonc', [
+                'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+                'docType' => 'invoiceIssued', 'docText' => self::P . ' dobropis k paušálu červen 2026', 'selfParty' => 'supplier',
+                'customer' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
+                'dates' => ['issueDate' => '2026-06-20', 'dueDate' => '2026-07-04', 'accountingDate' => '2026-06-20', 'taxPointDate' => '2026-06-20'],
+                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+                'payment' => ['method' => 'bankTransfer', 'paymentReference' => '1002'],
+                'correction' => ['originalDocNumber' => self::INVNO_NUMBER, 'originalTaxPointDate' => '2026-06-01', 'reason' => self::CORRECTIVE_REASON],
+                'rows' => [[
+                    'rowKind' => 'item', 'operation' => 'sale.services', 'orderPos' => 1,
+                    'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                    'quantity' => -1.0, 'unitPrice' => 600.0, 'totalPrice' => -600.0, 'priceCalcMode' => 'fromUnitPrice',
+                    'vat' => ['code' => 'cz-120', 'pct' => 21.0], 'description' => self::P . ' dobropis paušál',
+                ]],
+                'vatRecap' => [['vatCode' => 'cz-120', 'vatPct' => 21.0, 'base' => -600.0, 'tax' => -126.0, 'total' => -726.0]],
+                'totals' => ['totalBase' => -600.0, 'totalVat' => -126.0, 'totalAmount' => -726.0, 'totalRounding' => 0.0],
+                'applyOptions' => array_filter([
+                    'targetDocState' => 40,
+                    'importNumber' => ['docNumber' => self::CORRECTIVE_NUMBER, 'sequenceNumber' => null],
+                    'numberSeriesCode' => $this->invnoCode,
+                    'importOwnBankAccount' => self::BANK_ACCOUNT_CODE,
+                ], static fn($v) => $v !== null),
+            ]);
         }
         // Majetek (#131 fáze 2c): skupina typů a typ v setup/ (klíče v pořadí
         // sloupců tabulky), karta serveru se zařazením (klíče v pořadí
@@ -1023,7 +1082,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $deskIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_cash_desks WHERE code = %s', self::CASH_DESK_CODE));
         $docs = $dibi->fetchAll(
             'SELECT id FROM docs_core_heads WHERE doc_number IN %in' . ($deskIds !== [] ? ' OR cash_desk IN %in' : ''),
-            [self::DOC_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER, self::ASSET_DOC_NUMBER, self::POSTING_DOC_NUMBER],
+            [self::DOC_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER, self::CORRECTIVE_NUMBER, self::ASSET_DOC_NUMBER, self::POSTING_DOC_NUMBER],
             ...($deskIds !== [] ? [$deskIds] : []),
         );
         foreach ($docs as $r) {

@@ -537,6 +537,15 @@ Vědomé normalizace a limity fáze 1:
   znovu Odpisy za období; karta bez inventárního čísla identitu v sadě
   nemá; stav V opravě se vrátí jako V pořádku; dlouhodobá vyřazená karta
   skončí v archivu jen přes potvrzené vyřazení.
+- Opravný daňový doklad (#92 task B U5): sada nese blok `correction`
+  (číslo a datum plnění původního dokladu, důvod), ne odkaz — po seedu ho
+  applier obnoví dohledáním podle čísla mezi doklady téhož typu ve stavu
+  V pořádku. Dump proto řadí opravné doklady až za běžné doklady téhož
+  typu (`DocumentExporter::orderSql`), aby původní doklad byl v sadě dřív
+  i v jiné řadě. Limity: opravný doklad k opravnému dokladu v jiné řadě,
+  než má ten původní, může být v sadě dřív a odkaz ztratí (číslo zůstane
+  textem, info `correction_original_not_found`); původní doklad mimo stav
+  V pořádku (stornovaný) odkaz po seedu nedostane.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI.
 

@@ -86,6 +86,15 @@
             "type": ["object", "null"],
             "additionalProperties": { "type": "string" }
         },
+        "correction": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+                "originalDocNumber":    { "type": ["string", "null"], "maxLength": 40 },
+                "originalTaxPointDate": { "type": ["string", "null"], "format": "date" },
+                "reason":               { "type": ["string", "null"] }
+            }
+        },
         "rows": {
             "type": "array",
             "items": { "$ref": "#/$defs/Row" }

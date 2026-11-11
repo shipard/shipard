@@ -36,6 +36,7 @@ class DocumentExporterTest extends TestCase
             'source_kind' => 'aiExtraction', 'source_message' => 55, 'source_extracted_at' => new \DateTimeImmutable('2026-06-01 08:00:00'),
             'supplier_snapshot' => '{}', 'customer_snapshot' => null,
             'notice' => 'interní', 'doc_notice' => null,
+            'corrective' => 0, 'corrected_doc' => null, 'corrected_doc_number' => null, 'corrected_doc_date' => null, 'correction_reason' => null,
             'docState' => 40, 'docStateMain' => 4, 'doc_state_changed_at' => null,
             'accounting_state' => 1, 'accounting_messages' => null,
             // joins
@@ -323,6 +324,44 @@ class DocumentExporterTest extends TestCase
         $this->assertArrayNotHasKey('fiscalPeriodType', $exporter->exportDocument($this->headRow())->data, 'běžný doklad: null se ořeže');
     }
 
+    /**
+     * Opravný daňový doklad (#92 D10, task B U5): blok `correction` jen
+     * u dokladu s příznakem — číslo, datum plnění a důvod ze sloupců; odkaz
+     * se nevyváží (po seedu ho obnoví dohledání podle čísla).
+     */
+    public function testCorrectionBlockExportedOnlyForCorrectiveDocument(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+
+        $this->assertArrayNotHasKey('correction', $exporter->exportDocument($this->headRow())->data, 'běžný doklad blok nenese');
+
+        $c = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'invno', 'corrective' => 1, 'corrected_doc' => 77,
+            'corrected_doc_number' => 'FV26-00123', 'corrected_doc_date' => new \DateTimeImmutable('2026-03-15'),
+            'correction_reason' => 'Sleva za vadu',
+        ]))->data;
+        $this->assertSame(
+            ['originalDocNumber' => 'FV26-00123', 'originalTaxPointDate' => '2026-03-15', 'reason' => 'Sleva za vadu'],
+            $c['correction'],
+        );
+        $this->assertSame('invoiceIssued', $c['docType']);
+
+        $schema = new SchemaValidator(SchemaLoader::default());
+        $this->assertSame([], $schema->validate($c, 'shpd.docs.document', '1'), 'blok odpovídá schématu');
+    }
+
+    /** Import ze starého Shipardu nese jen příznak — blok se samými null nesmí prune odstranit (U1). */
+    public function testCorrectionBlockWithOnlyFlagSurvivesPrune(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+
+        $c = $exporter->exportDocument($this->headRow(['doc_type' => 'invno', 'corrective' => 1]))->data;
+        $this->assertSame(['originalDocNumber' => null, 'originalTaxPointDate' => null, 'reason' => null], $c['correction']);
+
+        $schema = new SchemaValidator(SchemaLoader::default());
+        $this->assertSame([], $schema->validate($c, 'shpd.docs.document', '1'));
+    }
+
     /** #73 D8: automatika musí přežít dump → seed — deklarovaná částka by ji bez příznaku vypnula. */
     public function testTotalRoundingAutoRoundTrips(): void
     {
@@ -586,8 +625,10 @@ class DocumentExporterTest extends TestCase
                 $this->assertStringContainsString('[h.docState] <> 90', $sql);
                 $this->assertStringContainsString('[cd.code] AS [cash_desk_code]', $sql, 'kód pokladny jde z číselníku (#59 D12)');
                 $this->assertStringContainsString('LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]', $sql);
+                // Opravné doklady až za běžnými doklady téhož typu (#92 task B
+                // U5) — odkaz se po seedu obnovuje podle čísla původního dokladu.
                 $this->assertStringContainsString(
-                    'ORDER BY [h.doc_type], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]',
+                    'ORDER BY [h.doc_type], [h.corrective], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]',
                     $sql,
                 );
                 return [];

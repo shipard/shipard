@@ -171,9 +171,15 @@ final class DocumentExporter implements RecordExporter
             . ' LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]';
     }
 
+    /**
+     * Pořadí = pořadí seedu. Opravné doklady (#92 task B U5) až za běžnými
+     * doklady téhož typu — odkaz na původní doklad se po seedu obnovuje
+     * dohledáním podle čísla, takže původní doklad musí být v sadě dřív
+     * (i v jiné řadě, jejíž kód řadí před řadu původního dokladu).
+     */
     private function orderSql(): string
     {
-        return 'ORDER BY [h.doc_type], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]';
+        return 'ORDER BY [h.doc_type], [h.corrective], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]';
     }
 
     private function hasAccounting(): bool
@@ -353,6 +359,15 @@ final class DocumentExporter implements RecordExporter
                 'onDocument' => V::str($h['doc_notice'] ?? null),
             ],
             'dimensions'    => $this->dimensionValues($h, true, $label),
+            // Opravný daňový doklad (#92 D10, task B U5): číslo, datum plnění
+            // a důvod ze sloupců; odkaz se nevyváží — po seedu ho applier obnoví
+            // dohledáním podle čísla (původní doklad je v dumpu dřív, viz
+            // orderSql). Samé null = jen příznak (viz doplnění po prune).
+            'correction'    => !empty($h['corrective']) ? [
+                'originalDocNumber'    => V::str($h['corrected_doc_number'] ?? null),
+                'originalTaxPointDate' => V::date($h['corrected_doc_date'] ?? null),
+                'reason'               => V::str($h['correction_reason'] ?? null),
+            ] : null,
             'rows'          => $this->rows($id, $label),
             'vatRecap'      => $this->vatRecap($id),
             'totals'        => [
@@ -374,6 +389,11 @@ final class DocumentExporter implements RecordExporter
         // schématu povinný klíč — prune ho nesmí odstranit.
         if (isset($pruned['applyOptions']['importNumber']) && !array_key_exists('sequenceNumber', $pruned['applyOptions']['importNumber'])) {
             $pruned['applyOptions']['importNumber']['sequenceNumber'] = null;
+        }
+        // Opravný doklad bez údajů (import ze starého Shipardu nese jen příznak):
+        // prune prázdný objekt odstranil, příznak ale přenést musíme.
+        if (!empty($h['corrective']) && !isset($pruned['correction'])) {
+            $pruned['correction'] = ['originalDocNumber' => null, 'originalTaxPointDate' => null, 'reason' => null];
         }
 
         return new ExportedRecord($id, $slug, $pruned);

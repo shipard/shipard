@@ -198,6 +198,19 @@ takže je to pokrývá. Resolver dostává applier v `create()` jen na zdroji
 dat s tabulkou lístků. Ve výměnném formátu viz `docs/exchange-format.md`
 (`exchangeRate`).
 
+**Opravný daňový doklad v applieru** (#92 D4, task B U4): u canonicalu
+s blokem `correction` na typu s příznakem `exchangeRateDecision()` lístek
+nečte. S odkazem na původní doklad (`_resolve.correction`, nebo dohledání
+podle čísla) a shodnou měnou převezme jeho kurz — info
+`exchange_rate_from_original` („Kurz 24,1 převzat z původního dokladu
+FV26-00123.“); bez odkazu zůstane kurz prázdný — info
+`exchange_rate_corrective_manual` — a potvrzení zastaví validace dokladu,
+stejně jako ve formuláři. `exchangeRate` z canonicalu dál vyhrává, import
+mód dál nedohledává. Na zdroji dat bez tabulky lístků (applier bez
+resolveru) se převzatý kurz uplatní také, chybějící se nehlásí — domácí
+měna tam není známá. Viz `docs/exchange-format.md` § 5 „Opravný daňový
+doklad“.
+
 ### 5.3 Banka (D7)
 
 `docs/bank.md` §4.6: `StatementImportService::resolveExchangeRates` před
