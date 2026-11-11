@@ -214,6 +214,12 @@ importované dobropisy chovají jako dnes (záporné faktury bez příznaku).
   řádku musí být taky záporná. Hlídá test `net_total` = −původní.
 - **Řádek z celkové ceny** se záporným množstvím vyžaduje opravu #98
   (`doc-row-unit-price-negative-qty.md`, hotovo).
+- **Datum plnění původního dokladu doplň už v applieru.** Dokument ho
+  z odkazu přepisuje až v `beforeSave()` (`applyCorrectiveColumns`), ale
+  `validate()` a odvození sazeb DPH běží dřív a datum sazby čtou z dat
+  (`DocHeadVatContext::vatRateDate`). Applier proto po dohledání odkazu
+  nastaví `corrected_doc_number` a `corrected_doc_date` sám — stejné
+  hodnoty, jaké pak potvrdí dokument.
 - **Dohledání podle čísla** jen mezi doklady téhož typu ve stavu
   V pořádku — koncept číslo nemá, stornovaný doklad se neopravuje.
 - **Tři kopie schématu** — viz poznámky v `doc-total-rounding-auto.md`.
