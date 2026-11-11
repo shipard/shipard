@@ -276,13 +276,22 @@ je v [TESTERS.md](../TESTERS.md).
   kód DPH řádků určí podle údajů na dokladu a **DPH rekapitulaci**
   přepočítá s oddaňovacím řádkem. Sníženou sazbu u samovyměření sám
   nepozná (dá základní) — vyber ji v náhledu kliknutím na odznak u sazby
-  řádku. Co zatím neumí: fakturu se zahraniční DPH (hotel nebo tankování
-  v cizině), přenesení daňové povinnosti mimo stavební práce a přílohu 5
-  (mobilní telefony, povolenky…), **dovoz zboží ze třetí země** (DPH se
-  řeší z celního dokladu, ne z faktury dodavatele) a služby ze zahraničí
-  se zvláštním místem plnění (ubytování, jízdenky a letenky, stravování,
-  nájem a služby k nemovitosti, mýto, parkování). Pro ty v nabídce kódů
-  v náhledu nic není, návrh skončí chybou kódu DPH a doklad založíš ručně.
+  řádku. Fakturu se zahraniční DPH (hotel nebo tankování v cizině)
+  a službu ze zahraničí se zvláštním místem plnění (ubytování, jízdenky
+  a letenky, stravování, nájem a služby k nemovitosti, mýto, parkování)
+  návrh zpracuje jako doklad *Bez DPH* — postup je v
+  [Kontrole vytěžení](posta/kontrola-vytezeni.md). Co zatím neumí:
+  přenesení daňové povinnosti mimo stavební práce a přílohu 5 (mobilní
+  telefony, povolenky…), **dovoz zboží ze třetí země** (DPH se řeší
+  z celního dokladu, ne z faktury dodavatele) a **smíšenou fakturu ze
+  zahraničí** — část řádků se zahraniční DPH nebo se zvláštním místem
+  plnění a část se samovyměřením. U přenesení a dovozu v nabídce kódů
+  v náhledu nic není, návrh skončí chybou kódu DPH a doklad založíš
+  ručně; u smíšené faktury vyber kód u každého řádku, nebo dej celému
+  dokladu **Režim DPH** *Bez DPH*.
+- **Zahraniční DPH se nevrací.** Daň, kterou ti naúčtoval dodavatel v jiném
+  státě, je na dokladu součástí ceny. Žádost o její vrácení z jiného
+  členského státu Shipard nepřipravuje ani neeviduje.
 - **Samovyměření u neplátce — identifikované osoby.** Když k datu faktury
   nemáš platnou **Registraci DPH**, návrh vznikne *Bez DPH* a daň se na
   něm nevyměří, ani když jde o fakturu s přenesením daňové povinnosti

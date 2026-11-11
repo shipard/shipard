@@ -638,6 +638,8 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $issue = $this->issue($result->canonical, 'vat_code_unknown');
         $this->assertNotNull($issue);
         $this->assertStringContainsString('zahraniční DPH', $issue['message']);
+        // Rada vede k volbám v náhledu, ne k ručnímu zakládání.
+        $this->assertStringContainsString('zvol režim Bez DPH', $issue['message']);
     }
 
     /** Pořadí v kontextu: místo plnění z volby = tuzemsko → režim mimo DPH se neuplatní. */

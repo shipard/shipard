@@ -506,6 +506,7 @@ export default {
   'exchange.preview.status.decided.skip': 'Row skipped',
   'exchange.preview.status.decided.noItem': 'Account only — no item (decided)',
   'exchange.preview.status.decided.useCode': 'VAT code {code} chosen',
+  'exchange.preview.status.withoutVat': 'No VAT — document outside Czech VAT',
   // Second line of the Item cell — matched / chosen item and its source (#111)
   'exchange.preview.match.source.supplierCode': 'supplier code',
   'exchange.preview.match.source.ean': 'EAN',
@@ -529,6 +530,8 @@ export default {
   'exchange.preview.vatCode.noOptions': 'No VAT code is available for this place of supply and date — add VAT codes in Settings or change the place of supply.',
   'exchange.preview.vatCode.reverseCharge': 'reverse charge',
   'exchange.preview.vatCode.reducedDeduction': 'reduced deduction',
+  'exchange.preview.vatCode.withoutVat': 'no VAT',
+  'exchange.preview.vatCode.withoutVatHint': 'The document will be created without VAT. Choosing a code brings VAT back — every row of the document then needs a code.',
   'exchange.preview.vatChoice.auto': 'Automatic ({value})',
   'exchange.preview.vatChoice.overridden': '{value} will be used',
   'exchange.preview.vatChoice.source.ai': 'read from document',
@@ -537,6 +540,9 @@ export default {
   'exchange.preview.vatChoice.source.derived': 'derived from rows',
   'exchange.preview.vatChoice.source.default': 'default',
   'exchange.preview.vatChoice.source.nonPayer': 'not a VAT payer — tax included in prices',
+  'exchange.preview.vatChoice.source.outOfScope.foreignVat': 'foreign VAT — supplier tax included in prices',
+  'exchange.preview.vatChoice.source.outOfScope.specialPlace': 'special place of supply — outside Czech VAT',
+  'exchange.preview.vatChoice.source.outOfScope.user': 'chosen — no VAT declared in Czechia',
   'exchange.preview.apply.disabled': 'Some references need a decision',
   'exchange.preview.apply.error.unresolved': 'Apply found additional unresolved references. Reopen and decide them.',
 

@@ -125,6 +125,11 @@ test('formatAddress / formatDate / formatMoney: prázdné je null', () => {
 test('effectiveRowVat: jen napárovaný kód', () => {
   assert.deepEqual(effectiveRowVat({ status: 'matched', createPayload: { code: 'cz-217', pct: 21 } }), { code: 'cz-217', pct: 21 });
   assert.equal(effectiveRowVat({ status: 'canCreate' }), null);
+  // #89: řádek dokladu mimo české DPH — vyřešený, ale bez kódu a sazby.
+  assert.deepEqual(
+    effectiveRowVat({ status: 'matched', matchedBy: 'outOfScope' }),
+    { code: null, pct: null, withoutVat: true },
+  );
   assert.equal(effectiveRowVat(null), null);
 });
 
@@ -156,6 +161,16 @@ test('reviewRows: text řádku ze serveru, ceny z přepočtu, sazba z kódu, ext
     key: 1, index: 1, pos: 2, isText: true, description: 'Poznámka',
     quantity: null, unit: null, unitPrice: null, vat: null, total: null, supplierCode: null, vatCode: null,
   });
+});
+
+test('reviewRows: řádek dokladu mimo české DPH má „bez DPH“ místo sazby dodavatele a žádný kód', () => {
+  const canonical = { currency: 'EUR', rows: [{ item: { name: 'Ubytování' }, unitPrice: 100, totalPrice: 200, vat: { pct: 7 } }] };
+  const resolve = { rows: [{ vatCode: { status: 'matched', matchedBy: 'outOfScope' } }] };
+  const prices = new Map([[0, { unitPrice: 107, totalPrice: 214 }]]);
+  const rows = reviewRows(canonical, resolve, prices, (key) => (key === 'exchange.preview.vatCode.withoutVat' ? 'bez DPH' : key));
+  assert.equal(rows[0].vat, 'bez DPH');
+  assert.equal(rows[0].vatCode, null);
+  assert.match(rows[0].total, /214,00/);
 });
 
 test('reviewRows: bez resolve název položky a ceny z canonicalu, bez ničeho „—“', () => {

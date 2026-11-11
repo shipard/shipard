@@ -1,6 +1,6 @@
 # Task: Přijatý doklad se zahraniční DPH a zvláštním místem plnění — doklad Bez DPH
 
-**Stav:** částečně — commit 1/3 hotový 2026-11-11 (D1–D3: doklad se zahraniční DPH / zvláštním místem plnění vznikne Bez DPH); zbývá D4 + náhled + help (2/3) a korpus (3/3) (#89, task A)
+**Stav:** částečně — commity 1/3 a 2/3 hotové 2026-11-11 (D1–D4: doklad se zahraniční DPH / zvláštním místem plnění vznikne Bez DPH, ruční Bez DPH mimo tuzemsko platí, náhled, help); zbývá varianta korpusu (3/3) a ověření na dev zdroji (#89, task A)
 
 **Issue:** #89 (task A; task B je `vat-reverse-charge-subjects.md`)
 
@@ -114,6 +114,13 @@ Upřesnění při implementaci (2026-11-11):
   matchedBy: "outOfScope"}` bez kódu — náhled na něm drží volbu kódu.
 - **`vat_registration`** doklad mimo DPH nese (naše registrace) — formulář
   ji při přepnutí na *Bez DPH* jen skrývá, nemaže.
+- **Volba Bez DPH má přednost i před volbou kódu řádku** (D4) — kód se
+  pak ohlásí info `vat_pin_ignored`. „Automaticky“ v náhledu dál ukazuje,
+  co by vyšlo bez volby (`autoOutOfScope` / `autoReverseCharge` v kontextu).
+- **Jednoklik a MCP:** varování apply neblokuje, doklad vznikne jako
+  koncept. Karta feedu ani odpověď `mail_draft_document` varování nenesou
+  — je vidět jen v náhledu. Pásmo karty (`capBand`) applier nepouští,
+  takže doklad se zvláštním místem plnění smí být v pásmu *ready*.
 
 ### Co skončí na dokladu
 
@@ -239,13 +246,13 @@ Na volném zdroji dat (třída `free`) s registrací DPH a s analyzovanou pošto
 
 ## Hotovo když
 
-- [ ] Doklad se zahraniční DPH a doklad se zvláštním místem plnění vznikne
+- [x] Doklad se zahraniční DPH a doklad se zvláštním místem plnění vznikne
       z návrhu Bez DPH podle D2 / D3; testy
       `DocumentApplier|VatCodeDerivation` zelené, neplátce beze změny.
-- [ ] Ruční *Bez DPH* mimo tuzemsko platí (D4), tuzemsko beze změny; testy
+- [x] Ruční *Bez DPH* mimo tuzemsko platí (D4), tuzemsko beze změny; testy
       `DocumentApplierVatPins|MessageProposalApplier|AnalysisController`
       zelené; build frontendu a i18n parita.
-- [ ] `docs/exchange-format.md` a help aktualizované; `help-index.py`
+- [x] `docs/exchange-format.md` a help aktualizované; `help-index.py`
       a `tasks-index.py` prošly.
 - [ ] Varianta korpusu se zahraniční DPH (nebo zapsaný důvod, proč ne).
 - [ ] Ověření na dev zdroji (body 1–6) a výsledek do #89.

@@ -106,6 +106,10 @@
   // (vystavený doklad, přijatý doklad neplátce DPH, canonical bez _resolve)
   // se nic nevolí; hlavička ukazuje efektivní hodnotu se zdrojem
   // (u neplátce „Bez DPH“ / nonPayer), bez _resolve canonical jako dřív.
+  // Doklad mimo české DPH (#89: zahraniční DPH, zvláštní místo plnění,
+  // zvolené Bez DPH mimo tuzemsko) má režim „Bez DPH“ se zdrojem outOfScope
+  // a důvodem; řádky nesou blok vatCode bez kódu (matchedBy outOfScope) —
+  // odznak „bez DPH“ je klikací a volbou kódu se doklad vrátí k DPH.
   let vatCodeOptions = $derived(Array.isArray(resolve?.vatCodeOptions) ? resolve.vatCodeOptions : []);
   let vatCodeOptionCodes = $derived(new Set(vatCodeOptions.map((o) => o.code)));
   let effectiveVat = $derived(resolve?.vat ?? null);
@@ -262,6 +266,7 @@
     if (s === 'canCreateDecided') return '+';
     if (s === 'skipped') return '⊘';
     if (s === 'noItemDecided') return '✓';
+    if (s === 'withoutVat') return '–';
     return null;
   }
 
@@ -549,7 +554,22 @@
     if (block?.matchedBy === 'user') return 'matchedDecided';
     const chosen = chosenVatCode(path);
     if (chosen !== null && vatCodeOptionCodes.has(chosen)) return 'matchedDecided';
+    if (block?.matchedBy === 'outOfScope') return 'withoutVat';
     return statusKey(block?.status);
+  }
+
+  // Zdroj efektivního místa / režimu DPH v hlavičce; doklad mimo české DPH
+  // má vlastní text podle důvodu (#89).
+  function vatSourceLabel(eff) {
+    return eff.source === 'outOfScope'
+      ? t(`exchange.preview.vatChoice.source.outOfScope.${eff.reason ?? 'foreignVat'}`)
+      : t(`exchange.preview.vatChoice.source.${eff.source}`);
+  }
+
+  // Platí volba uživatele? Bez DPH mimo tuzemsko se vrací se zdrojem
+  // outOfScope a důvodem user (#89 D4).
+  function vatChoiceHonored(eff) {
+    return eff.source === 'user' || (eff.source === 'outOfScope' && eff.reason === 'user');
   }
 
   function vatCodeStatusLabel(path, block) {
@@ -558,6 +578,7 @@
     if (chosen !== null && (code !== null || vatCodeOptionCodes.has(chosen))) {
       return t('exchange.preview.status.decided.useCode', { code: chosen });
     }
+    if (block?.matchedBy === 'outOfScope') return t('exchange.preview.status.withoutVat');
     return statusLabel(block);
   }
 
@@ -717,7 +738,7 @@
   let header = $derived(reviewHeader(canonical, summary, t));
   let supplierParty = $derived(reviewParty(canonical?.supplier ?? null, t));
   let customerParty = $derived(reviewParty(canonical?.customer ?? null, t));
-  let rows = $derived(reviewRows(canonical, resolve, computedRowPrices));
+  let rows = $derived(reviewRows(canonical, resolve, computedRowPrices, t));
   let totalsData = $derived(reviewTotals(recapRows, totals, canonical?.currency ?? null));
   let issueNoticeData = $derived(issueNotice(issues));
   let rowsAsideVisible = $derived(enrichedCount > 0 || bulkItemVisible || bulkVatCodeVisible);
@@ -867,16 +888,16 @@
         {/each}
       </select>
       <span class="shpd-exchange__field-hint">
-        {chosen !== null && eff.source !== 'user'
+        {chosen !== null && !vatChoiceHonored(eff)
           ? t('exchange.preview.vatChoice.overridden', { value: effLabel })
-          : t(`exchange.preview.vatChoice.source.${eff.source}`)}
+          : vatSourceLabel(eff)}
       </span>
     </span>
     {:else}
     <span>
       {eff ? effLabel : display.text}
       {#if eff}
-        <span class="shpd-exchange__field-hint">{t(`exchange.preview.vatChoice.source.${eff.source}`)}</span>
+        <span class="shpd-exchange__field-hint">{vatSourceLabel(eff)}</span>
       {:else if display.isDefault}
         <span class="shpd-exchange__field-hint">{t('exchange.preview.defaultHint')}</span>
       {/if}
@@ -893,7 +914,10 @@
     {@const path = `rows[${i}].vatCode`}
     {@const modifier = vatCodeStatusKey(path, block)}
     {@const label = vatCodeStatusLabel(path, block)}
-    {#if hasControl({ kind: 'vatCode', block }, { interactive: onUserActionsChange !== null })}
+    {#if modifier === 'withoutVat' && onUserActionsChange === null}
+      <!-- Read-only náhled: text „bez DPH“ ve sloupci stačí, odznak bez
+           ovládání by nic neřekl. -->
+    {:else if hasControl({ kind: 'vatCode', block }, { interactive: onUserActionsChange !== null })}
       <button
         type="button"
         class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
@@ -1175,6 +1199,7 @@
     {#if decisionOpen?.kind === 'vatCode'}
       <VatCodeDecisionPanel
         options={vatCodeOptions}
+        withoutVat={effectiveVat?.mode?.source === 'outOfScope'}
         currentUserAction={decisionOpen?.path != null ? userActions[decisionOpen.path] ?? null : null}
         bulkCount={decisionOpen?.bulkPaths?.length ?? 0}
         bulkDecidedCount={decisionOpen?.bulkPaths
@@ -1392,6 +1417,13 @@
   .shpd-exchange__status--skipped {
     background: var(--shpd-color-text-secondary);
     color: var(--shpd-color-bg);
+  }
+
+  /* Řádek dokladu mimo české DPH (#89) — bez kódu záměrně, ne chyba:
+     neutrální paleta, žádná zelená „napárováno“ ani červená „nenalezeno“. */
+  .shpd-exchange__status--withoutVat {
+    background: var(--shpd-color-bg-secondary);
+    color: var(--shpd-color-text-secondary);
   }
 
   /* noItem — řádek půjde jen s účtem, bez položky. Pozitivní rozhodnutí

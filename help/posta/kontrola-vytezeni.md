@@ -265,6 +265,28 @@ dáš **V pořádku** — v Konceptu se dá kdykoli přepsat i ručně.
 Co u samovyměření návrh zatím neumí, je v
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
+**Faktura ze zahraničí bez české DPH.** Dodavatel mimo Česko, který ti
+naúčtoval DPH svého státu (hotel, tankování nebo nákup v cizině), ti dal
+daň, kterou si v českém přiznání neodečteš a ani ji nepřiznáváš. Návrh
+takové faktury vznikne s **Režimem DPH** *Bez DPH* (náhled u něj píše
+*zahraniční DPH — daň dodavatele v ceně*): řádky ukazují ceny **včetně
+daně dodavatele**, u sazby je místo kódu *bez DPH*, **DPH rekapitulace**
+chybí a **Celkem** se rovná částce k úhradě na faktuře. Do nákladů i do
+závazku jde celá zaplacená částka a doklad se nedostane do přiznání ani
+do kontrolního hlášení. Stejně vznikne faktura za službu se zvláštním
+místem plnění — ubytování, jízdenky a letenky, stravování, nájem a služby
+k nemovitosti, mýto, parkování v cizině —, i když na ní žádná daň není
+(náhled píše *zvláštní místo plnění — mimo české DPH* a upozorní na to).
+Shipard to pozná podle kategorie dokladu, proto zkontroluj, že kategorie
+sedí. Když daň v Česku přiznat máš, klikni na odznak u sazby řádku
+a vyber kód z nabídky: doklad se tím vrátí k samovyměření a kód pak
+potřebuje každý řádek (jde to naráz tlačítkem **Kód DPH u řádků**).
+Opačně to jde také: u faktury ze zahraničí, kterou Shipard navrhl se
+samovyměřením, zvol v hlavičce **Režim DPH** *Bez DPH* — doklad vznikne
+bez kódů a bez daně a náhled připomene, že se daň v Česku nepřizná. Volba
+*Automaticky* vrátí původní návrh. U tuzemské faktury s přenesením daňové
+povinnosti se *Bez DPH* zvolit nedá, Shipard režim vrátí zpět.
+
 **Neplátce DPH.** Když k datu faktury nejsi plátcem DPH, daň dodavatele
 si odečíst nemůžeš — je součástí ceny. Návrh faktury od plátce proto
 vznikne s **Režimem DPH** *Bez DPH* (náhled u něj píše *neplátce DPH —

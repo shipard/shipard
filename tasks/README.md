@@ -42,7 +42,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
-| `exchange-received-foreign-vat.md` | částečně | commit 1/3 hotový 2026-11-11 (D1–D3: doklad se zahraniční DPH / zvláštním místem plnění vznikne Bez DPH); zbývá D4 + náhled + help (2/3) a korpus (3/3) (#89, task A) |
+| `exchange-received-foreign-vat.md` | částečně | commity 1/3 a 2/3 hotové 2026-11-11 (D1–D4: doklad se zahraniční DPH / zvláštním místem plnění vznikne Bez DPH, ruční Bez DPH mimo tuzemsko platí, náhled, help); zbývá varianta korpusu (3/3) a ověření na dev zdroji (#89, task A) |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |

@@ -43,6 +43,17 @@ test('pendingPaths: položky řádků v pořadí, rozhodnutí null se nepočít�
   assert.deepEqual(pendingPaths(resolve, { 'rows[0].item': 'noItem', 'rows[2].item': 'useExisting:3' }), []);
 });
 
+test('doklad mimo české DPH: řádek bez kódu na rozhodnutí nečeká, ale ovládání má (#89)', () => {
+  const block = { status: 'matched', matchedBy: 'outOfScope' };
+  const resolve = {
+    vatCodeOptions: [{ code: 'cz-217' }],
+    rows: [{ item: { status: 'matched', id: 1 }, vatCode: block }],
+  };
+  assert.deepEqual(pendingPaths(resolve, {}), []);
+  assert.equal(hasControl({ kind: 'vatCode', block }, { interactive: true }), true);
+  assert.equal(hasControl({ kind: 'vatCode', block }, { interactive: false }), false);
+});
+
 test('pendingPaths: kód DPH notFound chce useCode z nabídky', () => {
   const resolve = {
     vatCodeOptions: [{ code: 'IN21' }, { code: 'IN12' }],

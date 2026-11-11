@@ -519,6 +519,7 @@ export default {
   'exchange.preview.status.decided.skip': 'Řádek přeskočen',
   'exchange.preview.status.decided.noItem': 'Jen účet — bez položky (rozhodnuto)',
   'exchange.preview.status.decided.useCode': 'Zvolen kód DPH {code}',
+  'exchange.preview.status.withoutVat': 'Bez DPH — doklad mimo české DPH',
   // Druhý řádek buňky Položka — napárovaná / zvolená položka a zdroj (#111)
   'exchange.preview.match.source.supplierCode': 'kód dodavatele',
   'exchange.preview.match.source.ean': 'EAN',
@@ -542,6 +543,8 @@ export default {
   'exchange.preview.vatCode.noOptions': 'Pro toto místo plnění a datum není v nabídce žádný kód DPH — doplňte kódy DPH v Nastavení, nebo změňte místo plnění.',
   'exchange.preview.vatCode.reverseCharge': 'samovyměření',
   'exchange.preview.vatCode.reducedDeduction': 'krácený odpočet',
+  'exchange.preview.vatCode.withoutVat': 'bez DPH',
+  'exchange.preview.vatCode.withoutVatHint': 'Doklad vznikne bez DPH. Volbou kódu se k DPH vrátíš — kód pak potřebuje každý řádek dokladu.',
   'exchange.preview.vatChoice.auto': 'Automaticky ({value})',
   'exchange.preview.vatChoice.overridden': 'Použije se {value}',
   'exchange.preview.vatChoice.source.ai': 'přečteno z dokladu',
@@ -550,6 +553,9 @@ export default {
   'exchange.preview.vatChoice.source.derived': 'odvozeno z řádků',
   'exchange.preview.vatChoice.source.default': 'výchozí',
   'exchange.preview.vatChoice.source.nonPayer': 'neplátce DPH — daň v ceně',
+  'exchange.preview.vatChoice.source.outOfScope.foreignVat': 'zahraniční DPH — daň dodavatele v ceně',
+  'exchange.preview.vatChoice.source.outOfScope.specialPlace': 'zvláštní místo plnění — mimo české DPH',
+  'exchange.preview.vatChoice.source.outOfScope.user': 'zvoleno — daň se v ČR nepřizná',
   'exchange.preview.apply.disabled': 'Některé reference vyžadují rozhodnutí',
   'exchange.preview.apply.error.unresolved': 'Při ukládání se objevily další nerozhodnuté reference. Zobraz znovu a rozhodni je.',
 

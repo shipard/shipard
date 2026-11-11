@@ -79,8 +79,10 @@ v [Co Shipard dnes neumí](../co-dnes-nejde.md). Pokud u nich narazíš na
 něco *jiného*, než co je tam popsané, ozvi se. Kód DPH u samovyměření
 (reverse charge) už návrh určuje sám; když skončí chybou kódu DPH, nebo
 zvolí jiný kód, než na fakturu patří, vyber kód přímo v náhledu u řádku.
-Co v nabídce není (zahraniční DPH, přenesení daňové povinnosti mimo
-stavební práce a přílohu 5), je vyjmenované tamtéž a doklad založíš ručně.
+Faktura se zahraniční DPH (hotel, tankování v cizině) kód nepotřebuje —
+návrh vznikne *Bez DPH*, viz [Kontrola vytěžení](kontrola-vytezeni.md).
+Co v nabídce není (přenesení daňové povinnosti mimo stavební práce
+a přílohu 5, dovoz zboží), je vyjmenované tamtéž a doklad založíš ručně.
 
 **Čím víc dokladů od dodavatele máš, tím méně chyb.** Shipard doplňuje
 položky, sazby a účty z tvých dřívějších dokladů od téhož partnera. První
