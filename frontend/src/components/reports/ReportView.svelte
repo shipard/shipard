@@ -97,6 +97,14 @@
   }
 </script>
 
+{#snippet rowName(row)}
+  {#if row.link && onAction}
+    <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
+  {:else}
+    {row.label}
+  {/if}
+{/snippet}
+
 {#if result}
   <div class="shpd-report">
     {#if result.status !== 'ok'}
@@ -159,11 +167,13 @@
                   class="shpd-report__td shpd-report__td--label"
                   style:padding-left={hasAccount ? undefined : `calc(var(--shpd-space-sm) + ${row.level}rem)`}
                 >
-                  {#if tone}<span class="shpd-report__row-icon"><Icon icon={severityIcons[tone]} size="sm" /></span>{/if}
-                  {#if row.link && onAction}
-                    <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
+                  {#if tone}
+                    <span class="shpd-report__marked">
+                      <span class="shpd-report__row-icon"><Icon icon={severityIcons[tone]} size="sm" /></span>
+                      <span>{@render rowName(row)}</span>
+                    </span>
                   {:else}
-                    {row.label}
+                    {@render rowName(row)}
                   {/if}
                 </td>
                 {#each columns as column (column.id)}
@@ -357,8 +367,19 @@
   /* Řádek se zprávou = chyba u prvku (D61, D64): bez pozadí, tón nese
      ikona před názvem a u chyby i barva textu buněk. Varování text nebarví
      (kontrast, viz komentář nahoře). Odkaz v řádku zůstává v barvě odkazu. */
+  /* Ikona a název drží vedle sebe: název jako odkaz je tlačítko
+     (inline-block) a dlouhý by v běžném toku spadl pod ikonu. Víceřádkový
+     název se láme vedle ikony, ne pod ni. Zarovnání nahoru, ne na účaří:
+     účaří víceřádkového tlačítka je jeho poslední řádek a ikona by sjela
+     k němu. */
+  .shpd-report__marked {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--shpd-space-xs);
+  }
+
   .shpd-report__row-icon {
-    margin-right: var(--shpd-space-xs);
+    flex: none;
   }
 
   .shpd-report__tr--error > .shpd-report__td {
