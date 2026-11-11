@@ -797,7 +797,12 @@ class IncomingMessagesViewer extends TableViewer
         if (!$aiFailed && $resolution === null) {
             $resolver = new AnalysisConfidenceResolver($this->db);
             $profileNdx = $analysis['profile'] !== null ? (int) $analysis['profile'] : null;
-            $band = $resolver->bandForAnalysis($confidence, $profileNdx, $canonical);
+            $band = $resolver->bandForAnalysis(
+                $confidence,
+                $profileNdx,
+                $canonical,
+                AnalysisConfidenceResolver::contentTagsFrom($this->config),
+            );
         }
 
         $docState = (int) ($record['docState'] ?? 0);

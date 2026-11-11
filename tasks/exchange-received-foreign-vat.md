@@ -128,9 +128,9 @@ Upřesnění při implementaci (2026-11-11):
 - **Snímky deníku** s variantou 11 (přírůstek jen na 512100 a 321100
   o součet obou dokladů) schválené člověkem 2026-11-11.
 - **Jednoklik a MCP:** varování apply neblokuje, doklad vznikne jako
-  koncept. Karta feedu ani odpověď `mail_draft_document` varování nenesou
-  — je vidět jen v náhledu. Pásmo karty (`capBand`) applier nepouští,
-  takže doklad se zvláštním místem plnění smí být v pásmu *ready*.
+  koncept. Karta návrhu se zvláštním místem plnění má strop pásma na
+  *review* a `mail_draft_document` varování vrací v odpovědi — doplněk
+  `mail-card-band-special-place.md` (D17, D18).
 
 ### Co skončí na dokladu
 

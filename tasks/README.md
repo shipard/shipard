@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 442 tasků: **naplánováno** 9 · **částečně** 26 · **zrušeno** 1 · **hotovo** 406.
+Celkem 442 tasků: **naplánováno** 8 · **částečně** 27 · **zrušeno** 1 · **hotovo** 406.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -31,7 +31,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `design-system-date-format.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D73) |
 | `design-system-report-account-label.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D68) |
 | `design-system-tone-colors.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72) |
-| `mail-card-band-special-place.md` | naplánováno | rozhodnutí D17, D18 potvrzená 2026-11-11 (#89, doplněk tasku A) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `vat-reverse-charge-subjects.md` | naplánováno | rozhodnutí D6–D16 potvrzená 2026-11-11 (#89, task B) |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -46,6 +45,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `exchange-received-foreign-vat.md` | částečně | commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11); ověřeno na dev zdroji 2026-11-11 datovou sadou plátce (body 1, 5, 6; `dataset-verify` 6× `ok`), body 2–4 jen testy; zbývá ruční proklik náhledu (body 2–4); navazuje `mail-card-band-special-place.md` (D17, D18) |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
+| `mail-card-band-special-place.md` | částečně | kód, testy a dokumentace hotové 2026-11-11 (D17, D18); zbývá ověření na dev zdroji (ručně připravená zpráva — korpus doklad se zvláštním místem plnění bez daně nemá) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |

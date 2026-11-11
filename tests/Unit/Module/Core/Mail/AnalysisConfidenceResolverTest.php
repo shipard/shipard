@@ -5,17 +5,26 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Mail;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
 
 /**
  * Runtime mapování confidence → pásmo návrhu (tasks/mail-message-centric.md
- * D3): prahy profilu s fallbacky + strop D7 podle pokrytí řádků položkami.
+ * D3): prahy profilu s fallbacky + strop D7 podle pokrytí řádků položkami,
+ * D15 podle nálezů hodnot a D17 u zvláštního místa plnění (#89).
  * Pásmo se počítá za běhu, nikam se nezapisuje — testuje se resolver přímo,
  * hlavně thresholds fallbacky a hranice stropu.
  */
 class AnalysisConfidenceResolverTest extends TestCase
 {
+    /** Výřez taxonomie `core.exchange.contentTags` — jen atribut, který strop čte. */
+    private const TAGS = [
+        'travel.accommodation' => ['crossBorderSupply' => 'special'],
+        'premises.rent'        => ['crossBorderSupply' => 'special'],
+        'it.software'          => ['crossBorderSupply' => 'services'],
+    ];
+
     private function resolver(?DataSourceConnection $db = null): AnalysisConfidenceResolver
     {
         return new AnalysisConfidenceResolver(
@@ -110,6 +119,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
+                self::TAGS,
             ),
         );
     }
@@ -125,6 +135,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
+                self::TAGS,
             ),
         );
     }
@@ -140,6 +151,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
+                self::TAGS,
             ),
         );
     }
@@ -151,6 +163,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_LOW,
                 ['rows' => [['rowKind' => 'item', 'item' => []]]],
+                self::TAGS,
             ),
         );
     }
@@ -178,6 +191,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
+                self::TAGS,
             ),
         );
     }
@@ -217,6 +231,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
+                self::TAGS,
             ),
         );
     }
@@ -246,6 +261,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $this->resolver()->capBand(
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
+                self::TAGS,
             ),
         );
     }
@@ -259,7 +275,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
         );
     }
 
@@ -276,7 +292,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
         );
     }
 
@@ -291,7 +307,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
         );
     }
 
@@ -299,8 +315,161 @@ class AnalysisConfidenceResolverTest extends TestCase
     {
         $canonical = ['supplier' => ['country' => 'cz', 'companyId' => '12345678']];
 
-        $this->assertSame(AnalysisConfidenceResolver::BAND_REVIEW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_REVIEW, $canonical));
-        $this->assertSame(AnalysisConfidenceResolver::BAND_LOW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_LOW, $canonical));
+        $this->assertSame(AnalysisConfidenceResolver::BAND_REVIEW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_REVIEW, $canonical, self::TAGS));
+        $this->assertSame(AnalysisConfidenceResolver::BAND_LOW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_LOW, $canonical, self::TAGS));
+    }
+
+    // ── strop D17: zvláštní místo plnění (#89) ──────────────────────────────
+
+    /**
+     * Návrh, který by bez stropu D17 byl `ready`: řádky pokryté položkami,
+     * žádný nález hodnot. Ubytování v Německu bez vyčíslené daně; dodavatel
+     * bez DIČ (místo plnění říká `vat.place`).
+     *
+     * @return array<string, mixed>
+     */
+    private function specialPlaceCanonical(): array
+    {
+        return [
+            'selfParty' => 'customer',
+            'supplier'  => ['name' => 'Hotel Beispiel GmbH', 'country' => 'de'],
+            'customer'  => null,
+            'vat'       => ['mode' => 'fromBase', 'place' => 'intracom'],
+            'rows'      => [
+                ['rowKind' => 'item', 'item' => ['ourCode' => 'UBYT'], 'totalPrice' => 200.0, 'vat' => ['pct' => 0]],
+                ['rowKind' => 'item', 'item' => ['ourCode' => 'UBYT'], 'totalPrice' => 30.0, 'vat' => ['pct' => 0]],
+            ],
+            'vatRecap'  => [['vatPct' => 0, 'base' => 230.0, 'tax' => 0, 'total' => 230.0]],
+            '_resolve'  => ['contentTag' => ['tag' => 'travel.accommodation', 'tagSource' => 'rule', 'rowExceptions' => []]],
+        ];
+    }
+
+    public function testCapDowngradesReadyForSpecialPlaceWithoutSupplierTax(): void
+    {
+        $canonical = $this->specialPlaceCanonical();
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_REVIEW,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+        );
+        // Bez taxonomie strop D17 neplatí — a jiný důvod stropu canonical nemá.
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_READY,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, []),
+        );
+    }
+
+    public function testCapKeepsReadyForForeignVat(): void
+    {
+        // Zahraniční DPH (#89 D2) je údaj z faktury, ne odhad — pásmo nemění.
+        $canonical = $this->specialPlaceCanonical();
+        $canonical['rows'][0]['vat']['pct'] = 7;
+        $canonical['vatRecap'] = [['vatPct' => 7, 'base' => 230.0, 'tax' => 16.1, 'total' => 246.1]];
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_READY,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+        );
+    }
+
+    public function testCapKeepsReadyForDomesticNonPayerWithSpecialTag(): void
+    {
+        // Nájem od tuzemského neplátce: štítek special, daň nenese — běžná
+        // měsíční faktura do kontroly nesmí, s odběratelem i bez něj.
+        $canonical = $this->specialPlaceCanonical();
+        $canonical['supplier'] = ['name' => 'Pronajímatel', 'country' => 'cz'];
+        $canonical['vat'] = ['mode' => 'none', 'place' => 'domestic'];
+        $canonical['_resolve']['contentTag']['tag'] = 'premises.rent';
+
+        foreach ([null, ['name' => 'Odběratel s.r.o.', 'country' => 'cz', 'vatId' => 'CZ12345678']] as $customer) {
+            $canonical['customer'] = $customer;
+            $this->assertSame(
+                AnalysisConfidenceResolver::BAND_READY,
+                $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            );
+        }
+    }
+
+    public function testCapKeepsReadyWhenOnlyPartOfRowsIsSpecial(): void
+    {
+        $canonical = $this->specialPlaceCanonical();
+        $canonical['_resolve']['contentTag']['rowExceptions'] = [['rowIndex' => 1, 'tag' => 'it.software']];
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_READY,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+        );
+    }
+
+    public function testSpecialPlaceCapReadsSupplierOriginFromAnySignal(): void
+    {
+        // Hrubý signál „dodavatel není tuzemský“ — testuje se podmínka sama,
+        // DIČ tu neprochází validací hodnot (strop D15).
+        $base = $this->specialPlaceCanonical();
+        $base['vat'] = ['mode' => 'fromBase', 'place' => 'domestic'];
+        $base['supplier'] = ['name' => 'Dodavatel'];
+        $caps = static fn (array $canonical): bool => AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS);
+        $customerCz = ['name' => 'Odběratel s.r.o.', 'country' => 'cz'];
+
+        // Dodavatel bez DIČ a bez země signál nedá.
+        $this->assertFalse($caps($base));
+
+        // `vat.place` mimo tuzemsko stačí.
+        $this->assertTrue($caps(['vat' => ['place' => 'thirdCountry']] + $base));
+
+        // Prefix DIČ dodavatele proti DIČ odběratele.
+        $withVatIds = $base;
+        $withVatIds['supplier']['vatId'] = 'DE 123 456 789';
+        $withVatIds['customer'] = ['vatId' => 'cz12345678'];
+        $this->assertTrue($caps($withVatIds));
+        $withVatIds['supplier']['vatId'] = 'CZ87654321';
+        $this->assertFalse($caps($withVatIds));
+
+        // Prefix DIČ dodavatele proti zemi odběratele (DIČ odběratele návrh často nenese).
+        $prefixVsCountry = $base;
+        $prefixVsCountry['supplier']['vatId'] = 'ATU12345678';
+        $prefixVsCountry['customer'] = $customerCz;
+        $this->assertTrue($caps($prefixVsCountry));
+        $prefixVsCountry['supplier']['vatId'] = 'CZ87654321';
+        $this->assertFalse($caps($prefixVsCountry));
+
+        // Země dodavatele proti zemi odběratele (i z adresy).
+        $countries = $base;
+        $countries['supplier']['address'] = ['country' => 'SK'];
+        $countries['customer'] = $customerCz;
+        $this->assertTrue($caps($countries));
+        $countries['supplier']['address']['country'] = 'CZ';
+        $this->assertFalse($caps($countries));
+
+        // Odběratel bez údajů: rozhoduje písmenný prefix DIČ dodavatele —
+        // applier z něj místo plnění odvozuje proti zemi naší registrace.
+        $noCustomer = $base;
+        $noCustomer['supplier'] = ['name' => 'Dodavatel', 'country' => 'de', 'vatId' => 'DE123456789'];
+        $this->assertTrue($caps($noCustomer));
+        $noCustomer['supplier'] = ['name' => 'Dodavatel', 'country' => 'de'];
+        $this->assertFalse($caps($noCustomer));
+        $noCustomer['supplier'] = ['name' => 'Dodavatel', 'vatId' => '12345678'];
+        $this->assertFalse($caps($noCustomer));
+    }
+
+    public function testSpecialPlaceCapOnlyForReceivedDocuments(): void
+    {
+        // Applier o dokladu mimo české DPH rozhoduje jen u přijatého dokladu.
+        $canonical = ['selfParty' => 'supplier'] + $this->specialPlaceCanonical();
+
+        $this->assertFalse(AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS));
+    }
+
+    public function testContentTagsFromConfig(): void
+    {
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'core.exchange.contentTags' ? self::TAGS : null,
+        );
+
+        $this->assertSame(self::TAGS, AnalysisConfidenceResolver::contentTagsFrom($config));
+        $this->assertSame([], AnalysisConfidenceResolver::contentTagsFrom(null));
+        $this->assertSame([], AnalysisConfidenceResolver::contentTagsFrom($this->createMock(ConfigRuntime::class)));
     }
 
     // ── bandForAnalysis (convenience) ───────────────────────────────────────
@@ -315,7 +484,7 @@ class AnalysisConfidenceResolverTest extends TestCase
         // 0.85 ≥ profile ready 0.8 → ready; canonical bez řádků strop nesráží.
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver($db)->bandForAnalysis(0.85, 17, []),
+            $this->resolver($db)->bandForAnalysis(0.85, 17, [], self::TAGS),
         );
 
         // Řádek bez ourCode → strop D7 sráží ready na review.
@@ -323,7 +492,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             AnalysisConfidenceResolver::BAND_REVIEW,
             $this->resolver($db)->bandForAnalysis(0.85, 17, [
                 'rows' => [['rowKind' => 'item', 'item' => ['name' => 'X']]],
-            ]),
+            ], self::TAGS),
         );
     }
 
@@ -335,11 +504,11 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_LOW,
-            $this->resolver($db)->bandForAnalysis(null, null, []),
+            $this->resolver($db)->bandForAnalysis(null, null, [], self::TAGS),
         );
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver($db)->bandForAnalysis(0.7, null, []),
+            $this->resolver($db)->bandForAnalysis(0.7, null, [], self::TAGS),
         );
     }
 }

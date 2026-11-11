@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail;
 
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
+use Shipard\Module\Core\Exchange\Document\SupplierVatPrices;
+use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
 use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
+use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
 
 /**
  * Runtime resolver confidence pásem dokumentového návrhu: mapování
  * confidence na pásmo podle prahů profilu + strop podle pokrytí řádků
- * položkami (D7) a podle nálezů hodnot (#118 D15) — jedna metoda
- * {@see capBand()} pro feed i detail zprávy. Pásmo NENÍ perzistentní stav
+ * položkami (D7), podle nálezů hodnot (#118 D15) a u dokladu se zvláštním
+ * místem plnění (#89 D17) — jedna metoda {@see capBand()} pro feed
+ * i detail zprávy. Pásmo NENÍ perzistentní stav
  * (D3 z mail-message-centric) — počítá se za běhu; používá dashboard
  * (kind karty), detail zprávy (badge) a preview. Nikam se nezapisuje.
  */
@@ -29,6 +35,12 @@ class AnalysisConfidenceResolver
     public const DEFAULT_THRESHOLDS = ['ready' => 0.9, 'review' => 0.6];
 
     private const PROFILES_TABLE = 'core_mail_ai_profiles';
+
+    /** cfgItem taxonomie štítků — tentýž, který čte `DocumentApplier`. */
+    private const CONTENT_TAGS_CFG_ITEM = 'core.exchange.contentTags';
+
+    /** `vat.place` mimo tuzemsko. */
+    private const FOREIGN_PLACES = ['intracom', 'thirdCountry'];
 
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -97,15 +109,35 @@ class AnalysisConfidenceResolver
     }
 
     /**
-     * Jediný strop pásma (D7 + #118 D15): `ready` smí zůstat, jen když je
-     * každý item řádek pokrytý položkou a validace hodnot canonicalu
+     * Taxonomie štítků pro {@see capBand()} z konfigurace zdroje dat —
+     * stejný cfgItem jako applier, takže strop a rozhodnutí applieru čtou
+     * totéž. Bez konfigurace prázdná: applier pak zvláštní místo plnění
+     * neohlásí, strop ho proto nehlídá.
+     *
+     * @return array<string, mixed>
+     */
+    public static function contentTagsFrom(?ConfigRuntime $config): array
+    {
+        $tags = $config?->cfgItem(self::CONTENT_TAGS_CFG_ITEM);
+        return is_array($tags) ? $tags : [];
+    }
+
+    /**
+     * Jediný strop pásma (D7 + #118 D15 + #89 D17): `ready` smí zůstat, jen
+     * když je každý item řádek pokrytý položkou, validace hodnot canonicalu
      * nevrátí žádný nález — nevalidní IČO, DIČ, PSČ, účet, IBAN, BIC ani
      * oprava IBAN ↔ číslo účtu (`_resolve.valueRepairs` →
-     * `bank_account_repaired`). Nižší pásma se nemění.
+     * `bank_account_repaired`) — a doklad není služba se zvláštním místem
+     * plnění od dodavatele mimo tuzemsko ({@see capsSpecialPlace()}).
+     * Nižší pásma se nemění.
+     *
+     * Taxonomie je povinná — bez ní třetí důvod vyhodnotit nejde
+     * ({@see contentTagsFrom()}).
      *
      * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
      */
-    public function capBand(string $band, array $canonical): string
+    public function capBand(string $band, array $canonical, array $contentTags): string
     {
         if ($band !== self::BAND_READY) {
             return $band;
@@ -116,7 +148,94 @@ class AnalysisConfidenceResolver
         if (CanonicalValueValidator::validate($canonical) !== []) {
             return self::BAND_REVIEW;
         }
+        if (self::capsSpecialPlace($canonical, $contentTags)) {
+            return self::BAND_REVIEW;
+        }
         return $band;
+    }
+
+    /**
+     * Strop D17 (#89): přijatý doklad, u kterého by applier ohlásil
+     * varování `vat_special_place` — vznikne Bez DPH jen proto, že to říká
+     * štítek řádků, ne údaj z faktury. Takové rozhodnutí má vidět člověk.
+     *
+     * Podmínka je záměrně **širší** než rozhodnutí applieru, nikdy užší:
+     * doklad nenese daň dodavatele, každý položkový řádek má štítek se
+     * zvláštním místem plnění ({@see SpecialPlaceSupply}) a dodavatel není
+     * tuzemský podle hrubého signálu canonicalu
+     * ({@see supplierNotDomestic()}). Applier místo plnění určuje přesně
+     * (registrace, členství v unii k datu) — ta logika se tu neopakuje.
+     * Doklad se zahraniční DPH strop nedostane: daň je údaj z faktury.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
+     */
+    public static function capsSpecialPlace(array $canonical, array $contentTags): bool
+    {
+        return ($canonical['selfParty'] ?? null) === 'customer'
+            && !SupplierVatPrices::carriesSupplierVat($canonical)
+            && SpecialPlaceSupply::allItemRowsSpecial($canonical, $contentTags)
+            && self::supplierNotDomestic($canonical);
+    }
+
+    /**
+     * Hrubý signál „dodavatel není tuzemský“ — kterýkoli z:
+     *
+     *  - `vat.place` je `intracom` / `thirdCountry`;
+     *  - prefix DIČ dodavatele nebo jeho země se liší od odběratele (jeho
+     *    prefix DIČ, jinak země);
+     *  - odběratel nedává prefix ani zemi (návrh ho často nenese — účtenka,
+     *    doklad bez našeho DIČ) a dodavatel má DIČ s písmenným prefixem.
+     *    Applier místo plnění odvozuje právě z toho prefixu proti zemi naší
+     *    registrace; bez srovnání se strop přikloní k opatrnosti.
+     *
+     * Dodavatel bez DIČ a bez odlišné země (tuzemský neplátce) signál nedá.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    private static function supplierNotDomestic(array $canonical): bool
+    {
+        if (in_array($canonical['vat']['place'] ?? null, self::FOREIGN_PLACES, true)) {
+            return true;
+        }
+        $supplier = is_array($canonical['supplier'] ?? null) ? $canonical['supplier'] : [];
+        $customer = is_array($canonical['customer'] ?? null) ? $canonical['customer'] : [];
+        $supplierPrefix = self::vatIdPrefix($supplier);
+        $supplierCountry = self::partyCountryCode($supplier);
+
+        $own = array_values(array_filter(
+            [self::vatIdPrefix($customer), self::partyCountryCode($customer)],
+            static fn (?string $code): bool => $code !== null,
+        ));
+        if ($own === []) {
+            return $supplierPrefix !== null;
+        }
+        return ($supplierPrefix !== null && !in_array($supplierPrefix, $own, true))
+            || ($supplierCountry !== null && !in_array($supplierCountry, $own, true));
+    }
+
+    /**
+     * Písmenný prefix DIČ strany (`vatId`), velkými; bez DIČ nebo bez
+     * písmenného prefixu null.
+     *
+     * @param array<string, mixed> $party
+     */
+    private static function vatIdPrefix(array $party): ?string
+    {
+        $vatId = $party['vatId'] ?? null;
+        $prefix = substr(VatPlaceDerivation::normalize(is_scalar($vatId) ? (string) $vatId : null), 0, 2);
+        return strlen($prefix) === 2 && ctype_alpha($prefix) ? $prefix : null;
+    }
+
+    /**
+     * Země strany velkými (srovnatelná s prefixem DIČ); bez země null.
+     *
+     * @param array<string, mixed> $party
+     */
+    private static function partyCountryCode(array $party): ?string
+    {
+        $country = CanonicalValueNormalizer::partyCountry($party);
+        return $country !== null && $country !== '' ? strtoupper($country) : null;
     }
 
     /**
@@ -160,18 +279,19 @@ class AnalysisConfidenceResolver
 
     /**
      * Pásmo návrhu z řádku analýzy: confidence + prahy profilu běhu
-     * (fallback default profil) + strop pokrytí. Convenience pro čtecí
-     * místa (feed, viewer, preview).
+     * (fallback default profil) + strop {@see capBand()}. Convenience pro
+     * čtecí místa (detail zprávy).
      *
      * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
      */
-    public function bandForAnalysis(?float $confidence, ?int $profileNdx, array $canonical): string
+    public function bandForAnalysis(?float $confidence, ?int $profileNdx, array $canonical, array $contentTags): string
     {
         $thresholds = $profileNdx !== null
             ? $this->thresholdsForProfile($profileNdx)
             : $this->thresholdsForDefaultProfile();
         $band = $this->bandFor($confidence ?? 0.0, $thresholds);
-        return $this->capBand($band, $canonical);
+        return $this->capBand($band, $canonical, $contentTags);
     }
 
     /**

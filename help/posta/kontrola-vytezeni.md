@@ -278,7 +278,9 @@ místem plnění — ubytování, jízdenky a letenky, stravování, nájem a sl
 k nemovitosti, mýto, parkování v cizině —, i když na ní žádná daň není
 (náhled píše *zvláštní místo plnění — mimo české DPH* a upozorní na to).
 Shipard to pozná podle kategorie dokladu, proto zkontroluj, že kategorie
-sedí. Když daň v Česku přiznat máš, klikni na odznak u sazby řádku
+sedí. Návrh takové faktury proto nikdy není **K použití** — jde vždy
+**Ke kontrole**, ať je jistota jakkoli vysoká. Faktury se zahraniční daní
+se to netýká, tam Shipard vychází z daně vytištěné na faktuře. Když daň v Česku přiznat máš, klikni na odznak u sazby řádku
 a vyber kód z nabídky: doklad se tím vrátí k samovyměření a kód pak
 potřebuje každý řádek (jde to naráz tlačítkem **Kód DPH u řádků**).
 Opačně to jde také: u faktury ze zahraničí, kterou Shipard navrhl se

@@ -1100,9 +1100,11 @@ počítá výsledek stejnou cestou jako u neplátce.
 
 **Issues:** info `vat_foreign_tax`, warning `vat_special_place`
 (rozhodnutí stojí na štítku, proto varování s cestou zpět), nebo warning
-`vat_out_of_scope_user` (zvolené Bez DPH); apply neblokuje žádná. Jednoklik
-(režim `safe`) i MCP `mail_draft_document` doklad vystaví — varování je
-vidět v náhledu, karta feedu ho nenese. U dokladu mimo české DPH se **nehlásí** `vat_code_unknown`,
+`vat_out_of_scope_user` (zvolené Bez DPH); apply neblokuje žádná. Režim
+`safe` doklad vystaví, ale k `vat_special_place` se jednoklikem z karty
+nedojde: karta takového návrhu má strop pásma na *review*
+(`docs/dashboard.md` § 5.1, #89 D17) a MCP `mail_draft_document` varování
+vrací v odpovědi (`warnings`, D18). U dokladu mimo české DPH se **nehlásí** `vat_code_unknown`,
 `vat_code_derived`, `supply_kind_derived`, `vat_mode_derived`,
 `vat_mode_suspect` ani `recap_source_computed_fallback`.
 
@@ -1575,7 +1577,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_mode_suspect` | warning | Řádky vypadají jako ceny s DPH při deklarovaném `fromBase`, ale derivace nemá dost dat na korekci. |
 | `vat_non_payer` | info | Přijatý doklad, ke kterému neplatí žádná registrace DPH, a doklad nese daň dodavatele: vznikne Bez DPH s daní v cenách řádků (§ 8.4, #97). Path `vat.mode`. |
 | `vat_foreign_tax` | info | Přijatý doklad od dodavatele mimo tuzemsko, který účtuje vlastní DPH: vznikne Bez DPH s daní dodavatele v cenách řádků (§ 8.4, #89 D2). Path `vat.mode`. |
-| `vat_special_place` | warning | Přijatý doklad od dodavatele mimo tuzemsko bez daně, všechny řádky se štítkem zvláštního místa plnění: vznikne Bez DPH; volbou kódu DPH u řádku se vrátí samovyměření (§ 8.4, #89 D3). Path `vat.mode`. Apply neblokuje. |
+| `vat_special_place` | warning | Přijatý doklad od dodavatele mimo tuzemsko bez daně, všechny řádky se štítkem zvláštního místa plnění: vznikne Bez DPH; volbou kódu DPH u řádku se vrátí samovyměření (§ 8.4, #89 D3). Path `vat.mode`. Apply neblokuje; karta návrhu ve feedu má kvůli němu strop pásma na *review* (`docs/dashboard.md` § 5.1, D17) a `mail_draft_document` ho vrací ve `warnings` (D18). |
 | `vat_out_of_scope_user` | warning | Uživatel zvolil režim Bez DPH u přijatého dokladu od dodavatele mimo tuzemsko: doklad vznikne bez DPH, daň se v ČR nepřizná (§ 8.4, #89 D4). Path `vat.mode`. Apply neblokuje. |
 | `non_payer_reverse_charge` | warning | Přijatý doklad neplátce nese přenesení daňové povinnosti — daň se nevyměří; identifikovaná osoba ji musí přiznat mimo doklad (#97 D9). Path `vat.reverseCharge`. |
 | `partner_doc_number_missing` | warning | Přijatá faktura cílí na stav ≥ 20 bez čísla dokladu dodavatele. |

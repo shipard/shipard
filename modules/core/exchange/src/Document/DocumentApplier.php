@@ -2152,7 +2152,7 @@ class DocumentApplier
             // (rozhodnutí výše sloužila jen k vyhodnocení), doklad je Bez DPH.
             $ctx['outOfScope'] = $importMode
                 ? null
-                : $this->outOfScopeKind($canonical, $place, $pins, $reverseCharge, $kinds['rows'], $decisions);
+                : $this->outOfScopeKind($canonical, $place, $pins, $reverseCharge, $decisions);
             if ($ctx['outOfScope'] === self::OUT_OF_SCOPE_USER) {
                 // Hodnota „Automaticky“ = výsledek bez volby režimu; řádky
                 // se zahodí, proto se samovyměření zjistí tady.
@@ -2161,7 +2161,6 @@ class DocumentApplier
                     $place,
                     ['mode' => null] + $pins,
                     $reverseCharge,
-                    $kinds['rows'],
                     $decisions,
                 );
                 $ctx['autoReverseCharge'] = $ctx['autoOutOfScope'] === null
@@ -2202,10 +2201,12 @@ class DocumentApplier
      * tam se Bez DPH se samovyměřením dál tiše přepíná na „Ze základu“
      * ({@see effectiveVatMode()}, D11 z #87).
      *
+     * Pravidlo „každý položkový řádek má štítek `special`“ drží
+     * {@see SpecialPlaceSupply::allItemRowsSpecial()} — sdílí ho strop
+     * pásma karty návrhu (#89 D17), který smí být širší, nikdy užší.
+     *
      * @param array<string, mixed> $canonical
      * @param array{place: ?string, mode: ?string, rows: array<int, string>, invalid: list<array<string, string>>} $pins
-     * @param array<int, array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string}> $kinds
-     *        položkové řádky ({@see effectiveSupplyKinds()})
      * @param array<int, array<string, mixed>> $decisions rozhodnutí o kódech ({@see decideRowVatCode()})
      * @return string|null foreignVat | specialPlace | user
      */
@@ -2214,7 +2215,6 @@ class DocumentApplier
         ?string $place,
         array $pins,
         ?bool $reverseCharge,
-        array $kinds,
         array $decisions,
     ): ?string {
         if (!in_array($place, ['intracom', 'thirdCountry'], true)) {
@@ -2234,15 +2234,9 @@ class DocumentApplier
         if (SupplierVatPrices::carriesSupplierVat($canonical)) {
             return $reverseCharge === true ? null : VatCodeDerivation::FAIL_FOREIGN_VAT;
         }
-        if ($kinds === []) {
-            return null;
-        }
-        foreach ($kinds as $kind) {
-            if ($kind['tagSupply'] !== VatCodeDerivation::TAG_SUPPLY_SPECIAL) {
-                return null;
-            }
-        }
-        return VatCodeDerivation::FAIL_SPECIAL_PLACE;
+        return SpecialPlaceSupply::allItemRowsSpecial($canonical, $this->contentTags)
+            ? VatCodeDerivation::FAIL_SPECIAL_PLACE
+            : null;
     }
 
     /**
@@ -2410,8 +2404,7 @@ class DocumentApplier
     /** `crossBorderSupply` štítku z taxonomie; neznámá hodnota nebo štítek = null. */
     private function tagSupplyOf(string $tag): ?string
     {
-        $value = $this->contentTags[$tag]['crossBorderSupply'] ?? null;
-        return is_string($value) && in_array($value, VatCodeDerivation::TAG_SUPPLY_VALUES, true) ? $value : null;
+        return SpecialPlaceSupply::tagSupplyOf($this->contentTags, $tag);
     }
 
     /** Lokalizovaný `name` štítku z taxonomie (compiled config jazyka requestu), fallback klíč. */

@@ -150,6 +150,8 @@ final class MailSuggestionsSource implements FeedSource
 
         $resolver = new AnalysisConfidenceResolver($ctx->db);
         $thresholdsByProfile = [];
+        // Taxonomie štítků jednou za sběr — strop zvláštního místa plnění (#89 D17).
+        $contentTags = AnalysisConfidenceResolver::contentTagsFrom($ctx->config);
         // Jeden presenter per sběr — verzi výchozího profilu čte jednou.
         $presenter = new AnalysisErrorPresenter($ctx->db, $ctx->config);
         $preprocess = new PreprocessErrorPresenter($ctx->config);
@@ -181,6 +183,7 @@ final class MailSuggestionsSource implements FeedSource
             $band = $resolver->capBand(
                 $resolver->bandFor((float) ($row['confidence'] ?? 0.0), $thresholdsByProfile[$profileKey]),
                 $canonical,
+                $contentTags,
             );
 
             $cards[] = $this->withPreprocessWarning(

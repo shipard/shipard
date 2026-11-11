@@ -1,6 +1,6 @@
 # Task: Karta návrhu se zvláštním místem plnění jde do kontroly; varování v odpovědi MCP
 
-**Stav:** naplánováno — rozhodnutí D17, D18 potvrzená 2026-11-11 (#89, doplněk tasku A)
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-11 (D17, D18); zbývá ověření na dev zdroji (ručně připravená zpráva — korpus doklad se zvláštním místem plnění bez daně nemá)
 
 **Issue:** #89 (drobnost z ověření tasku `exchange-received-foreign-vat.md`)
 
@@ -78,6 +78,43 @@ Jeden commit — `feat(mail): karta návrhu se zvláštním místem plnění do 
    doklad se zvláštním místem plnění smí být v pásmu *ready*; `**Stav:**`
    tohoto tasku a `python3 scripts/tasks-index.py`.
 
+## Upřesnění z implementace
+
+- **D17 dnes nic nepřesune.** Blok `_resolve.contentTag` vzniká jen
+  u dokladu s nepokrytým položkovým řádkem a každý takový řádek dostane
+  audit `matchedBy: "contentTag"`, který pásmo sráží už dnes (D14
+  z `content-tag-enrichment.md`). Návrh se štítkem tedy v pásmu *ready*
+  být nemůže — strop D17 je pojistka invariantu „varování applieru ⇒
+  karta v kontrole“ pro případ, že se pipeline štítků změní. Testy proto
+  staví canonical uměle (řádky s položkou, bez auditu štítku).
+- **D17, odběratel bez údajů (potvrzeno 2026-11-11).** Návrh přijatého
+  dokladu odběratele často nenese — ukázka v promptu má `customer: null`,
+  u účtenek to prompt předepisuje; na ukázkovém zdroji mělo DIČ odběratele
+  3 z 31 návrhů, zemi 27. Applier se na odběratele nedívá (prefix DIČ
+  dodavatele proti zemi naší registrace), takže doslovné „liší se od
+  odběratele“ by bylo užší. Doplnění: když odběratel nedává prefix DIČ ani
+  zemi, stačí k „není tuzemský“ písmenný prefix DIČ dodavatele. Neplátce
+  bez DIČ strop nedostane; navíc jde do kontroly jen doklad bez daně od
+  tuzemského plátce (osvobozený nájem), který odběratele vůbec
+  neidentifikuje. Zbytková mezera: odběratel na dokladu s cizím DIČ téhož
+  prefixu jako dodavatel — bez země registrace ji zavřít nejde.
+- **Strop jen u přijatého dokladu** (`selfParty: "customer"`) — jinde
+  applier o dokladu mimo české DPH nerozhoduje. Platí i na zdroji bez
+  registrace DPH, kde applier nevaruje (větev neplátce) — širší, v pořádku.
+- **Predikát** `SpecialPlaceSupply` (`core.exchange`, i čtení
+  `crossBorderSupply` z taxonomie); podmínka stropu je veřejná čistá
+  funkce `AnalysisConfidenceResolver::capsSpecialPlace()`. Taxonomii
+  dostává `capBand()` / `bandForAnalysis()` povinným parametrem
+  (`contentTagsFrom()` čte tentýž cfgItem jako applier); prázdná taxonomie
+  = bez stropu, shodně s applierem. Náhled pásmo nepočítá — místa volání
+  jsou dvě (feed, detail zprávy).
+- **Test oběma směry** `SpecialPlaceCapTest` běží nad payloady
+  `DocumentApplierOutOfScopeTest` (harness vytažený do traitu
+  `OutOfScopeHarness`, aserce testu beze změny) se skutečným applierem.
+- **D18:** `MessageProposalApplier` beze změny — úspěšný výsledek applieru
+  issues nese. `warnings` je u `drafted: true` vždy (prázdné pole = bez
+  varování); doklad založený dříve (`skipped`) ho nenese.
+
 ## Pasti
 
 - **Širší, ne užší.** Applier určuje místo plnění přes `VatPlaceDerivation`
@@ -91,11 +128,11 @@ Jeden commit — `feat(mail): karta návrhu se zvláštním místem plnění do 
 
 ## Hotovo když
 
-- [ ] Karta návrhu podle D17 je v pásmu *review* (feed, detail zprávy,
+- [x] Karta návrhu podle D17 je v pásmu *review* (feed, detail zprávy,
       náhled); ostatní karty beze změny; testy
       `AnalysisConfidenceResolver|DocumentApplierOutOfScope` zelené.
-- [ ] `mail_draft_document` vrací varování (D18); test nástroje zelený.
-- [ ] Dokumentace a help aktualizované; `help-index.py` a `tasks-index.py`
+- [x] `mail_draft_document` vrací varování (D18); test nástroje zelený.
+- [x] Dokumentace a help aktualizované; `help-index.py` a `tasks-index.py`
       prošly.
 - [ ] Ověření na dev zdroji: návrh se zvláštním místem plnění bez daně má
       kartu v kontrole, jednoklik není nabídnut.

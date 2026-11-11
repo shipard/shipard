@@ -437,6 +437,39 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame(['review', 'reject'], array_column($cards[0]['actions'], 'id'));
     }
 
+    public function testSpecialPlaceCapsReadyToReview(): void
+    {
+        // #89 D17: ubytování v zahraničí bez vyčíslené daně, všechny řádky
+        // se štítkem zvláštního místa plnění → doklad by vznikl Bez DPH jen
+        // podle štítku; karta jde do kontroly, jednoklik se nenabízí.
+        $row = $this->suggestionRow(0.95);
+        $canonical = json_decode((string) $row['canonical_json'], true);
+        $canonical['supplier'] = ['name' => 'Hotel Beispiel GmbH', 'country' => 'de'];
+        $canonical['vat'] = ['mode' => 'fromBase', 'place' => 'intracom'];
+        $canonical['rows'] = [['rowKind' => 'item', 'item' => ['ourCode' => 'UBYT'], 'vat' => ['pct' => 0]]];
+        $canonical['_resolve'] = ['contentTag' => ['tag' => 'travel.accommodation', 'tagSource' => 'rule']];
+        $row['canonical_json'] = json_encode($canonical);
+
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn(string $id): mixed => match ($id) {
+                'core.mail.primaryTypes'    => ['invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs']],
+                'core.exchange.contentTags' => ['travel.accommodation' => ['name' => 'Ubytování', 'crossBorderSupply' => 'special']],
+                default                     => null,
+            },
+        );
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$row], [], $config));
+        $this->assertSame('review', $cards[0]['kind']);
+        $this->assertSame(['review', 'reject'], array_column($cards[0]['actions'], 'id'));
+
+        // Tentýž návrh s daní dodavatele (zahraniční DPH) zůstává připravený.
+        $canonical['rows'][0]['vat']['pct'] = 7;
+        $row['canonical_json'] = json_encode($canonical);
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$row], [], $config));
+        $this->assertSame('ready', $cards[0]['kind']);
+    }
+
     public function testProfileThresholdsAreUsedForBand(): void
     {
         // Běh s profilem 17 (ready práh 0.8) → 0.85 stačí na ready.

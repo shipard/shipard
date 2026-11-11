@@ -405,13 +405,44 @@ zprávy v docState 10/20, `analysis_state=30`, poslední úspěšný běh
 (`MAX(analyzed_at)`, status=2) s `canonical_json IS NOT NULL` a
 `resolution IS NULL`. Návrhy s `proposed_type='other'` se ignorují —
 pojistka, prompt je zakazuje. Confidence pásmo se počítá za běhu
-(`AnalysisConfidenceResolver`, prahy profilu běhu + strop pokrytí řádků):
+(`AnalysisConfidenceResolver`, prahy profilu běhu + strop pásma):
 
 - pásmo **ready** → `kind=ready`, `stateStyle=done`; akce `apply`
   (primary, jednoklik safe), `review`, `reject`.
 - pásmo **review/low** → `kind=review`, `stateStyle=confirmed`/`edit`;
   akce `review` (primary), `reject`. (Jednoklik se u nižší jistoty
   záměrně nenabízí.)
+
+**Strop pásma** (`AnalysisConfidenceResolver::capBand()`, jediná metoda
+pro feed i detail zprávy) sráží `ready` na `review` ze tří důvodů —
+kterýkoli stačí, nižší pásma se nemění:
+
+1. **pokrytí řádků** — položkový řádek bez položky, s položkou
+   z dominance (`confidence: low`) nebo z obsahové eskalace
+   (`matchedBy: contentTag`);
+2. **nálezy hodnot** (#118 D15) — nevalidní IČO, DIČ, PSČ, účet, IBAN,
+   BIC, nebo oprava IBAN ↔ číslo účtu;
+3. **zvláštní místo plnění** (#89 D17) — přijatý doklad, který by applier
+   založil Bez DPH s varováním `vat_special_place`: nenese daň dodavatele,
+   každý položkový řádek má štítek s `crossBorderSupply: "special"`
+   a dodavatel není tuzemský. Rozhodnutí stojí na štítku, ne na údaji
+   z faktury, proto ho má vidět člověk. Doklad se zahraniční DPH
+   (`vat_foreign_tax`) strop nedostane.
+
+Třetí důvod applier nevolá (feed sbírá desítky karet) a jeho rozhodnutí
+neopakuje — podmínka je záměrně **širší, nikdy užší**
+(`AnalysisConfidenceResolver::capsSpecialPlace()`). Pravidlo o štítcích
+řádků sdílí s applierem (`SpecialPlaceSupply::allItemRowsSpecial()`),
+taxonomii čtou oba z téhož cfgItemu `core.exchange.contentTags`
+(`contentTagsFrom()`; volající ji stropu předat musí). „Dodavatel není
+tuzemský“ je hrubý signál canonicalu: `vat.place` je `intracom` /
+`thirdCountry`, nebo se prefix DIČ či země dodavatele liší od odběratele
+(jeho prefix DIČ, jinak země); když odběratel nedává prefix ani zemi —
+návrh ho často nenese —, stačí písmenný prefix DIČ dodavatele, protože
+právě z něj applier místo plnění odvozuje. Tuzemský neplátce (bez DIČ,
+např. nájem) strop nedostane. Strop platí i tam, kde applier nevaruje
+(zdroj dat bez registrace DPH jde větví neplátce) — karta v kontrole
+navíc nevadí.
 
 Karta má `id = "mail_suggestion:{messageNdx}"`, akční targety
 `{messageNdx}`.
