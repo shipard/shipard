@@ -392,28 +392,40 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Akce detailu dokladu. Přeúčtovat — jen pro doklad ve stavu 40
-     * s nainstalovaným economy.accounting (guard přes extension sloupec,
-     * stejně jako buildAccountingTab). Záměrně bez vazby na accounting_state:
-     * přeúčtovat lze i bezchybně zaúčtovaný doklad (operace je idempotentní,
-     * proto i bez confirm). Obsluha: Viewer.svelte volá
-     * POST /_accounting/reaccount a refreshne detail.
+     * Akce detailu dokladu — jen ve stavu 40:
+     *  - Přeúčtovat — s nainstalovaným economy.accounting (guard přes
+     *    extension sloupec, stejně jako buildAccountingTab). Záměrně bez
+     *    vazby na accounting_state: přeúčtovat lze i bezchybně zaúčtovaný
+     *    doklad (operace je idempotentní, proto i bez confirm). Obsluha:
+     *    Viewer.svelte volá POST /_accounting/reaccount a refreshne detail.
+     *  - Vystavit opravný doklad (#92 D6, task B U7–U8) — doklad typu
+     *    s příznakem `corrective` (i když je sám opravný). Viewer.svelte volá
+     *    POST /_docs/corrective, obnoví detail a otevře koncept ve formuláři.
      */
     protected function detailActions(array $record): array
     {
-        if (!array_key_exists('accounting_state', $record)) {
-            return [];
-        }
         if ((int) ($record['docState'] ?? 0) !== 40) {
             return [];
         }
 
-        return [[
-            'id'      => 'reaccount',
-            'label'   => $this->language === 'cs' ? 'Přeúčtovat' : 'Re-account',
-            'kind'    => 'button',
-            'variant' => 'secondary',
-        ]];
+        $actions = [];
+        if (array_key_exists('accounting_state', $record)) {
+            $actions[] = [
+                'id'      => 'reaccount',
+                'label'   => $this->language === 'cs' ? 'Přeúčtovat' : 'Re-account',
+                'kind'    => 'button',
+                'variant' => 'secondary',
+            ];
+        }
+        if (DocTypes::isCorrective($this->config, (string) ($record['doc_type'] ?? ''))) {
+            $actions[] = [
+                'id'      => 'createCorrectiveDoc',
+                'label'   => $this->text('action.createCorrectiveDoc', 'Issue corrective document'),
+                'kind'    => 'button',
+                'variant' => 'secondary',
+            ];
+        }
+        return $actions;
     }
 
     // ── Tab Zaúčtování (economy.accounting) ────────────────────────────────

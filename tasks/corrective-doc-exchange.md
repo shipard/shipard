@@ -1,6 +1,11 @@
 # Task: Opravný daňový doklad — task B: výměnný formát a akce „Vystavit opravný doklad“
 
-**Stav:** naplánováno — zadání 2026-11-10 (D1–D11 zamčené v #92); čeká na task A
+**Stav:** hotovo — 2026-11-11 (3 commity; unit sada zelená, `npm run build`;
+integrační test služby na 4l3j a jfpl, round-trip datové sady s opravným
+dokladem na blkm; HTTP smoke endpointu a detailu a headless proklik
+tlačítka → koncept se zápornými řádky a sekcí Oprava na DEMO zdroji 8yft;
+ruční potvrzení konceptu s důvodem v prohlížeči, alfa a komentář do #92
+zbývají; navazuje task C a task `old_shipard` z oddílu Návaznost)
 
 **Issue:** #92
 

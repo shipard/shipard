@@ -69,7 +69,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 |---------|----------------|
 | [Z jaké adresy faktury odcházejí](faktury-vydane/odesilatel-faktur.md) | Jak nastavit adresu a jméno odesílatele e-mailů s doklady — výchozí adresu zdroje dat a jinou adresu pro doklady jedné číselné řady. |
 | [Odeslání faktury e-mailem](faktury-vydane/odeslani-faktury.md) | Jak fakturu, zálohovou fakturu, pokladní doklad nebo prodejku poslat odběrateli e-mailem přímo z Shipardu — komu odejde, co je v příloze a co dělat, když odběratel nahlásí jinou adresu. |
-| [Opravný daňový doklad (dobropis)](faktury-vydane/opravny-doklad.md) | Jak vystavit dobropis nebo vrubopis k vydané faktuře — příznak Opravný doklad, výběr původní faktury, důvod opravy, sazby DPH a kurz podle původního plnění, vazba v detailu. |
+| [Opravný daňový doklad (dobropis)](faktury-vydane/opravny-doklad.md) | Jak vystavit dobropis nebo vrubopis k vydané faktuře — tlačítko Vystavit opravný doklad v detailu faktury, ruční pořízení souhrnného dokladu, důvod opravy, sazby DPH a kurz podle původního plnění, vazba v detailu. |
 | [Texty na tiscích](faktury-vydane/texty-na-tiscich.md) | Jak na faktury a další doklady přidat vlastní text — oznámení na pár dní nebo trvalý text na konci dokladu — a jak si přepsat předmět a text e-mailu, kterým doklad odchází. |
 | [Tisk faktury](faktury-vydane/tisk-faktury.md) | Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne. |
 | [Vystavení faktury](faktury-vydane/vystaveni-faktury.md) | Jak vystavit fakturu odběrateli — od Přidat po V pořádku. |

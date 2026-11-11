@@ -108,8 +108,26 @@ Formulář: sekce Oprava v tabu Nastavení faktury vydané
 štítek Opravný doklad, skupina Oprava s odkazem na původní doklad, na
 původní faktuře sekce Opravné doklady; texty z `docs.core.viewerLabels`.
 Saldokonto, účtování, přiznání k DPH ani KH se podle příznaku nemění
-(dobropis zůstává zápornou fakturou). Tisk, ISDOC a výměnný formát přijdou
-s tasky B a C.
+(dobropis zůstává zápornou fakturou). Tisk a ISDOC přijdou s taskem C.
+
+**Výměnný formát a akce Vystavit opravný doklad** (#92 task B,
+`tasks/corrective-doc-exchange.md`): canonical nese blok `correction`
+(`originalDocNumber`, `originalTaxPointDate`, `reason`) a odkaz pinem
+`_resolve.correction` — applier ho bere jen u typu s příznakem, původní
+doklad dohledá pinem nebo podle čísla mezi doklady téhož typu V pořádku,
+sloupce opravy zapíše už v `transform()`, sazby DPH hledá k datu původního
+plnění a kurz přebírá z původního dokladu (`docs/exchange-format.md` § 5
+„Opravný daňový doklad“). `src/Corrective/`: `CorrectiveDocBuilder` (čistá
+funkce hlavička + řádky původního dokladu → canonical: partner, řada, účet,
+měna a kurz, režim a místo DPH převzaté; řádky se záporným množstvím, sleva
+částkou s opačným znaménkem; bez `totals` / `vatRecap`, zdroj
+`correctiveDoc`), `CorrectiveDocService` (jen typ s příznakem ve stavu
+V pořádku, uložení přes `DocumentApplier`, odmítnutí
+`CorrectiveDocException` 404 / 422) a `CorrectiveDocController`
+(`POST /_docs/corrective {docId}` → `{docId}`; read-only režim 403
+z `ReadOnlyPolicy`). Akce detailu `createCorrectiveDoc` v `DocsHeadsViewer`
+(popisek `action.createCorrectiveDoc` z `viewerLabels`), obsluha
+ve `Viewer.svelte` otevře koncept ve formuláři.
 
 ### Server-driven UI s formuláři
 

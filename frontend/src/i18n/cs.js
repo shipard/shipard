@@ -374,6 +374,8 @@ export default {
   'error.METHOD_NOT_ALLOWED': 'Metoda není povolená',
   'error.TOO_MANY_FILES': 'Najednou lze nahrát nejvýše 20 souborů',
   'error.INVALID_DOC_STATE': 'Doklad není ve stavu, který tuto akci umožňuje',
+  'error.CORRECTIVE_SOURCE_INVALID': 'Opravný doklad nejde vystavit: {message}',
+  'error.CORRECTIVE_APPLY_FAILED': 'Opravný doklad se nepodařilo založit: {message}',
   'error.FILING_COMPOSE_FAILED': 'Podání se nepodařilo sestavit: {message}',
   'error.FILING_HEADER_RESET_FAILED': 'Hlavičku podání se nepodařilo načíst z profilu: {message}',
   'error.INTERNAL_ERROR': 'Vnitřní chyba serveru',

@@ -15,6 +15,9 @@
     "field.correctedDocDate": { "name": "Original tax point date", "name:cs": "Datum plnění původního dokladu", "name:en": "Original tax point date" },
     "field.correctionReason": { "name": "Correction reason", "name:cs": "Důvod opravy", "name:en": "Correction reason" },
     "section.correctiveDocs": { "name": "Corrective documents", "name:cs": "Opravné doklady", "name:en": "Corrective documents" },
+    // Akce detailu potvrzené faktury vydané (#92 D6, task B U8) — Viewer.svelte
+    // volá POST /_docs/corrective a otevře koncept ve formuláři.
+    "action.createCorrectiveDoc": { "name": "Issue corrective document", "name:cs": "Vystavit opravný doklad", "name:en": "Issue corrective document" },
     "column.number": { "name": "Number", "name:cs": "Číslo", "name:en": "Number" },
     "column.issueDate": { "name": "Issued", "name:cs": "Vystaveno", "name:en": "Issued" },
     "column.amount": { "name": "Amount", "name:cs": "Částka", "name:en": "Amount" },

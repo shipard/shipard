@@ -39,7 +39,7 @@ class DocsHeadsViewerDetailTest extends TestCase
     }
 
     private const DOC_TYPES = [
-        'invno'  => ['name' => 'Faktura vydaná', 'trade_dir' => 1],
+        'invno'  => ['name' => 'Faktura vydaná', 'trade_dir' => 1, 'corrective' => true],
         'invni'  => ['name' => 'Faktura přijatá', 'trade_dir' => 2],
         'cmnbkp' => ['name' => 'Účetní doklad', 'trade_dir' => 0],
     ];
@@ -57,6 +57,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         'field.correctedDocDate'   => ['name' => 'Datum plnění původního dokladu'],
         'field.correctionReason'   => ['name' => 'Důvod opravy'],
         'section.correctiveDocs'   => ['name' => 'Opravné doklady'],
+        'action.createCorrectiveDoc' => ['name' => 'Vystavit opravný doklad'],
         'column.number'            => ['name' => 'Číslo'],
         'column.issueDate'         => ['name' => 'Vystaveno'],
         'column.amount'            => ['name' => 'Částka'],
@@ -438,6 +439,32 @@ class DocsHeadsViewerDetailTest extends TestCase
             ['label' => 'Datum plnění původního dokladu', 'value' => '10. 3. 2026'],
             ['label' => 'Důvod opravy', 'value' => 'Vrácené zboží'],
         ], $content['correction']['items']);
+    }
+
+    /** Akce Vystavit opravný doklad (#92 D6, task B U7–U8): jen typ s příznakem ve stavu V pořádku. */
+    public function testConfirmedIssuedInvoiceOffersCorrectiveAction(): void
+    {
+        $detail = $this->makeViewer($this->baseRecord(['doc_type' => 'invno', 'docState' => 40]))->renderDetail(7);
+
+        $this->assertSame([[
+            'id'      => 'createCorrectiveDoc',
+            'label'   => 'Vystavit opravný doklad',
+            'kind'    => 'button',
+            'variant' => 'secondary',
+        ]], $detail['actions'], 'bez economy.accounting jen akce opravného dokladu');
+    }
+
+    public function testCorrectiveDocumentItselfOffersCorrectiveAction(): void
+    {
+        $detail = $this->makeViewer($this->correctiveRecord())->renderDetail(7);
+
+        $this->assertSame(['createCorrectiveDoc'], array_column($detail['actions'], 'id'), 'opravný doklad k opravnému dokladu je povolený (U7)');
+    }
+
+    public function testNoCorrectiveActionForDraftOrOtherType(): void
+    {
+        $this->assertArrayNotHasKey('actions', $this->makeViewer($this->baseRecord(['doc_type' => 'invno', 'docState' => 10]))->renderDetail(7), 'koncept');
+        $this->assertArrayNotHasKey('actions', $this->makeViewer($this->baseRecord(['doc_type' => 'invni', 'docState' => 40]))->renderDetail(7), 'typ bez příznaku');
     }
 
     public function testCorrectiveWithoutLinkShowsNumberOnly(): void

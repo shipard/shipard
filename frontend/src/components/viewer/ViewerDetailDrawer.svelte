@@ -24,6 +24,8 @@
     /** Akce uvnitř ViewerDetail (detail.actions) — kontrakt
      *  handleDetailAction(id, action, value). */
     onAction,
+    /** Právě běžící akce detailu — ViewerDetail jí zablokuje tlačítko. */
+    busyActionId = null,
     onRefresh,
     onClose,
   } = $props();
@@ -67,7 +69,7 @@
     <button class="shpd-drawer__close" onclick={() => onClose?.()} aria-label={t('viewer.drawer.close')}>×</button>
   </div>
   <div class="shpd-drawer__body">
-    <ViewerDetail {detail} {loading} {onRefresh} {onAction} />
+    <ViewerDetail {detail} {loading} {onRefresh} {onAction} {busyActionId} />
   </div>
 </div>
 

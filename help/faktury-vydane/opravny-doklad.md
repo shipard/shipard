@@ -1,7 +1,7 @@
 ---
 title: Opravný daňový doklad (dobropis)
-summary: Jak vystavit dobropis nebo vrubopis k vydané faktuře — příznak Opravný doklad, výběr původní faktury, důvod opravy, sazby DPH a kurz podle původního plnění, vazba v detailu.
-keywords: [opravný daňový doklad, opravný doklad, dobropis, dobropisy, vystavit dobropis, vystavení dobropisu, vrubopis, vrubopisy, oprava faktury vydané, oprava základu daně, snížení ceny, vrácené zboží, vratka faktury, storno faktury vs dobropis, souhrnný opravný doklad, bonus za období, sleva za období, původní doklad, číslo původního dokladu, datum plnění původního dokladu, důvod opravy, sazba DPH na dobropisu, kurz na dobropisu, záporná faktura, faktura se zápornou částkou, odkaz na původní fakturu]
+summary: Jak vystavit dobropis nebo vrubopis k vydané faktuře — tlačítko Vystavit opravný doklad v detailu faktury, ruční pořízení souhrnného dokladu, důvod opravy, sazby DPH a kurz podle původního plnění, vazba v detailu.
+keywords: [opravný daňový doklad, opravný doklad, dobropis, dobropisy, vystavit dobropis, vystavení dobropisu, vystavit opravný doklad, tlačítko vystavit opravný doklad, dobropis z detailu faktury, vrubopis, vrubopisy, oprava faktury vydané, oprava základu daně, snížení ceny, vrácené zboží, vratka faktury, částečný dobropis, storno faktury vs dobropis, souhrnný opravný doklad, bonus za období, sleva za období, původní doklad, číslo původního dokladu, datum plnění původního dokladu, důvod opravy, sazba DPH na dobropisu, kurz na dobropisu, záporná faktura, faktura se zápornou částkou, odkaz na původní fakturu]
 related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/tisk-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/uzamceni-obdobi.md, co-dnes-nejde.md]
 ---
 
@@ -24,48 +24,68 @@ k původnímu plnění — to všechno Shipard na dokladu hlídá.
 
 ## Postup
 
+### Z detailu původní faktury
+
+1. **Otevři Prodej → Faktury vydané, vyber fakturu ve stavu V pořádku
+   a v jejím detailu dej Vystavit opravný doklad.** Tlačítko je jen
+   u potvrzené faktury vydané — i u takové, která je sama opravným
+   dokladem (opravný doklad k opravnému dokladu vystavit jde).
+
+2. **Otevře se koncept opravného dokladu.** Má řádky původní faktury se
+   **záporným množstvím** (cena za kus zůstává kladná), zaškrtnutou volbu
+   **Opravný doklad**, vyplněný **Původní doklad** s jeho číslem a datem
+   plnění, stejného odběratele, řadu, bankovní účet, měnu i **Kurz**
+   původní faktury; datum vystavení je dnešní. **Důvod opravy** je prázdný.
+
+3. **Uprav řádky na skutečnou opravu.** Vracíš-li jen část, smaž řádky,
+   které se neopravují, nebo zmenši množství; při slevě uprav cenu. Vrubopis
+   dostaneš obrácením množství na kladné. Sazba DPH u kódu zůstává podle
+   **Data plnění původního dokladu** — když se mezitím sazba změnila,
+   dostaneš tu původní, správnou. Celková částka dobropisu vyjde záporná.
+
+4. **Na záložce Nastavení napiš Důvod opravy** — třeba „Vrácené zboží“.
+   Bez důvodu doklad do stavu **V pořádku** nepřejde.
+
+5. **Ulož a převeď na V pořádku.** Doklad dostane číslo z řady vydaných
+   faktur, zaúčtuje se, jde do saldokonta a do přiznání k DPH i kontrolního
+   hlášení stejně jako každá vydaná faktura — se zápornou částkou.
+
+6. **Zkontroluj vazbu v detailu.** Detail opravného dokladu má skupinu
+   **Oprava** s původním dokladem (klikem otevřeš jeho náhled), datem jeho
+   plnění a důvodem opravy. Detail původní faktury má dole sekci **Opravné
+   doklady** se všemi svými dobropisy a vrubopisy — i s koncepty, bez
+   stornovaných.
+
+### Ručně — souhrnný opravný doklad k více fakturám
+
+Když opravuješ víc faktur najednou (bonus, sleva za období), tlačítko
+nepoužiješ; původní faktury vymezíš v důvodu opravy:
+
 1. **Otevři Prodej → Faktury vydané a dej Přidat.** Hlavičku vyplň jako
-   u běžné faktury (viz [Vystavení faktury](vystaveni-faktury.md)) —
-   nebo ji nech na výběr původní faktury, ten doplní partnera.
+   u běžné faktury (viz [Vystavení faktury](vystaveni-faktury.md)).
 
 2. **Na záložce Nastavení zaškrtni v sekci Oprava volbu Opravný doklad.**
    Objeví se pole **Původní doklad**, **Číslo původního dokladu**, **Datum
    plnění původního dokladu** a **Důvod opravy**.
 
-3. **Vyber Původní doklad.** Hledá se podle čísla faktury, variabilního
-   symbolu nebo názvu odběratele; nabízejí se jen faktury ve stavu
-   **V pořádku**, a když už máš vyplněného partnera, jen jeho. Po výběru se
-   **Číslo původního dokladu** a **Datum plnění původního dokladu** doplní
-   z faktury a zamknou; prázdný partner se doplní z ní a u faktury v cizí
-   měně se převezme i její **Kurz**.
+3. **Původní doklad nevybírej** — pole nech prázdné a původní faktury vymez
+   v **Důvodu opravy**, třeba „Sleva za odběr v 3. čtvrtletí 2026, faktury
+   126A0007–126A0012“. Číslo a datum plnění můžeš zapsat ručně, nebo je
+   nechat prázdné; po uložení dostaneš upozornění, že u souhrnné opravy má
+   být vymezení původních faktur v důvodu opravy — uložení to neblokuje.
 
-   Opravuješ-li víc faktur najednou (bonus, sleva za období), **Původní
-   doklad nevybírej** — pole nech prázdné a původní faktury vymez
-   v **Důvodu opravy**. Číslo a datum plnění pak můžeš zapsat ručně, nebo je
-   nechat prázdné.
+   Opravuješ-li ručně jedinou fakturu, **Původní doklad** naopak vyber:
+   hledá se podle čísla faktury, variabilního symbolu nebo názvu odběratele,
+   nabízejí se jen faktury ve stavu **V pořádku**. Po výběru se číslo
+   a datum plnění doplní z faktury a zamknou, prázdný partner se doplní z ní
+   a u faktury v cizí měně se převezme i její **Kurz**.
 
-4. **Napiš Důvod opravy** — třeba „Vrácené zboží“ nebo „Sleva za odběr
-   v 3. čtvrtletí 2026, faktury 126A0007–126A0012“. Bez důvodu doklad
-   do stavu **V pořádku** nepřejde.
+4. **Přidej řádky.** Dobropis má **záporné množství** (−2 ks à 500 Kč), cena
+   za kus zůstává kladná; vrubopis má množství kladné. Sazba DPH se
+   předvyplní podle **Data plnění původního dokladu**, je-li vyplněné.
 
-5. **Přidej řádky.** Dobropis má **záporné množství** (−2 ks à 500 Kč), cena
-   za kus zůstává kladná; vrubopis má množství kladné. Sazba DPH u kódu se
-   předvyplní podle **Data plnění původního dokladu** — když se mezitím
-   sazba změnila, dostaneš tu původní, správnou. Celková částka dobropisu
-   vyjde záporná.
-
-6. **Ulož a převeď na V pořádku.** Doklad dostane číslo z řady vydaných
-   faktur, zaúčtuje se, jde do saldokonta a do přiznání k DPH i kontrolního
-   hlášení stejně jako každá vydaná faktura — se zápornou částkou. Pokud jsi
-   nevyplnil ani původní doklad, ani jeho číslo, dostaneš po uložení
-   upozornění, že u souhrnné opravy má být vymezení původních faktur
-   v důvodu opravy; uložení to neblokuje.
-
-7. **Zkontroluj vazbu v detailu.** Detail opravného dokladu má skupinu
-   **Oprava** s původním dokladem (klikem otevřeš jeho náhled), datem jeho
-   plnění a důvodem opravy. Detail původní faktury má dole sekci **Opravné
-   doklady** se všemi svými dobropisy a vrubopisy — i s koncepty, bez
-   stornovaných.
+5. **Napiš Důvod opravy, ulož a převeď na V pořádku** — stejně jako
+   v bodech 4 až 6 výše.
 
 ## Na co narazíš
 
@@ -94,11 +114,16 @@ nepřejde.
 a odemknou se.** Vypnutím volby **Opravný doklad** se při uložení všechny
 údaje opravy smažou.
 
+**Tlačítko Vystavit opravný doklad založí vždy celý dobropis** — všechny
+řádky původní faktury s opačným znaménkem, text ani poznámky faktury
+nepřebírá. Částečnou opravu z něj uděláš úpravou řádků v konceptu. Dokud
+se koncept zakládá, je tlačítko neaktivní; každé další kliknutí by jinak
+založilo další koncept. Když původní faktura není ve stavu **V pořádku**,
+tlačítko v detailu není.
+
 **Vytiskne se zatím jako faktura.** Na PDF ještě nejsou titulek „Opravný
 daňový doklad“, číslo původního dokladu ani důvod opravy — viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md). Také tlačítko, které by
-dobropis založilo rovnou z detailu faktury s převrácenými řádky, teprve
-přijde; dnes se opravný doklad pořizuje ručně podle postupu výše.
+[Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 ## Souvisí
 

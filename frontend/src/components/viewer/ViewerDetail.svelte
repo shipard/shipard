@@ -27,7 +27,10 @@
   // hideSingleTabBar: opt-in pro hostitele s jediným tabem (ViewerDetailModal) —
   // skryje tab lištu, když není mezi čím přepínat. Default false, aby se
   // nezměnil vzhled stávajících hostitelů (inline panel, drawer).
-  let { detail = null, loading = false, onRefresh, onAction = null, hideSingleTabBar = false } = $props();
+  // busyActionId: id akce detailu, která právě běží — její tlačítko je
+  // zablokované (dvojklik na Vystavit opravný doklad by založil dva
+  // koncepty, #92 task B U8). Nastavuje hostitel (Viewer.svelte).
+  let { detail = null, loading = false, onRefresh, onAction = null, hideSingleTabBar = false, busyActionId = null } = $props();
 
   // Otevřený dropdown — { actionId, anchor }. Per-action, takže různá tlačítka
   // se navzájem zavírají (otevření nového dropdownu shodí předchozí).
@@ -239,6 +242,7 @@
           label={action.label}
           variant={action.variant ?? 'secondary'}
           size="sm"
+          disabled={busyActionId === action.id}
           onclick={() => handleAction(action)}
         />
       {/if}

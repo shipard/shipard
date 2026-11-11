@@ -138,9 +138,8 @@ faktura vydaná s volbou **Opravný doklad** — s původním dokladem, datem je
 plnění a důvodem opravy, viz
 [Opravný daňový doklad](faktury-vydane/opravny-doklad.md) — ale PDF se
 tiskne s titulkem faktury: bez čísla původního dokladu a bez důvodu opravy.
-Tlačítko, které by dobropis založilo rovnou z detailu faktury s převrácenými
-řádky, zatím není; opravný doklad se pořizuje ručně. Přijaté dobropisy od
-dodavatelů jsou dál jen přijaté faktury se zápornými řádky.
+Přijaté dobropisy od dodavatelů jsou dál jen přijaté faktury se zápornými
+řádky.
 
 **Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostaneš,
 vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přijaté

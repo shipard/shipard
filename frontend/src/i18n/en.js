@@ -362,6 +362,8 @@ export default {
   'error.METHOD_NOT_ALLOWED': 'Method not allowed',
   'error.TOO_MANY_FILES': 'You can upload at most 20 files at once',
   'error.INVALID_DOC_STATE': 'The document state does not allow this action',
+  'error.CORRECTIVE_SOURCE_INVALID': 'The corrective document cannot be issued: {message}',
+  'error.CORRECTIVE_APPLY_FAILED': 'The corrective document could not be created: {message}',
   'error.FILING_COMPOSE_FAILED': 'The filing could not be composed: {message}',
   'error.FILING_HEADER_RESET_FAILED': 'The filing header could not be reloaded from the profile: {message}',
   'error.INTERNAL_ERROR': 'Internal server error',

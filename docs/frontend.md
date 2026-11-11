@@ -1136,8 +1136,16 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
 
 - `kind: "button"` (default) — obsluhu řeší `Viewer.svelte::handleDetailAction`
   podle `action.id` (sdílený slovník id: `snooze`, `dismiss`, `unsnooze`,
-  `recheck`, `reaccount`, `depreciation_run`); po úspěchu `refreshAfterAction()`
-  (detail i seznam), chyba → `alert(translateError(...))`. `depreciation_run`
+  `recheck`, `reaccount`, `depreciation_run`, `accountFiling`,
+  `createCorrectiveDoc`); po úspěchu `refreshAfterAction()`
+  (detail i seznam), chyba → `alert(translateError(...))`. `accountFiling`
+  (podání DPH, `api/vat.js`) a `createCorrectiveDoc` (Vystavit opravný doklad
+  z detailu potvrzené faktury vydané, `api/docs.js` → `POST /_docs/corrective`,
+  #92 D6) po úspěchu navíc otevřou založený koncept ve `FormDialog`
+  (`formTable = 'docs_core_heads'`); `createCorrectiveDoc` je po dobu volání
+  zablokovaná (`busyActionId` → `ViewerDetail` prop → `Button disabled`),
+  aby dvojklik nezaložil dva koncepty, a chyby applieru (`error.details[]`)
+  skládá do alertu čistý helper `viewer/detailActionResult.js`. `depreciation_run`
   (viewer Majetek, `target.assetId`; v toolbaru bez karty) otevírá
   `AssetsDepreciationRunDialog` (options → preview → run přes
   `api/assets.js`), po úspěchu refresh.
