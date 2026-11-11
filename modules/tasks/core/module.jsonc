@@ -45,6 +45,8 @@
 
     "config": [
         { "id": "tasks.core.docStatesTasks", "file": "config/docStatesTasks.jsonc" },
-        { "id": "tasks.core.priorities",     "file": "config/priorities.jsonc" }
+        { "id": "tasks.core.priorities",     "file": "config/priorities.jsonc" },
+        // Texty vieweru úkolů (#133 D66).
+        { "id": "tasks.core.viewerDetailLabels", "file": "config/viewerDetailLabels.jsonc" }
     ]
 }

@@ -15,6 +15,8 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class AiUsageViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'hosting.core.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = null;
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -98,7 +100,7 @@ class AiUsageViewer extends TableViewer
             ['text' => $this->formatDateTime($rowData['created'] ?? null), 'class' => 'muted'],
         ];
         if ($isError) {
-            $t2[] = ['text' => 'HTTP ' . $status, 'class' => 'danger'];
+            $t2[] = ['text' => $this->text('rowHttpStatus', 'HTTP {status}', ['status' => $status]), 'class' => 'danger'];
         }
 
         return [
@@ -107,7 +109,10 @@ class AiUsageViewer extends TableViewer
             't2'         => $t2,
             'i2'         => [
                 ['text' => ($isCs ? 'in ' : 'in ') . $this->formatCount($rowData['input_tokens'] ?? 0), 'class' => 'muted'],
-                ['text' => 'out ' . $this->formatCount($rowData['output_tokens'] ?? 0), 'class' => 'amount'],
+                [
+                    'text'  => $this->text('rowOutputTokens', 'out {count}', ['count' => $this->formatCount($rowData['output_tokens'] ?? 0)]),
+                    'class' => 'amount',
+                ],
             ],
             'stateStyle' => $isError ? 'error' : 'done',
         ];
@@ -127,13 +132,13 @@ class AiUsageViewer extends TableViewer
         return [
             ['id' => 'created', 'label' => $cs ? 'Čas' : 'Time', 'width' => 140, 'sortable' => true],
             ['id' => 'ds_name', 'label' => $cs ? 'Zdroj dat' : 'Data source'],
-            ['id' => 'model', 'label' => 'Model'],
-            ['id' => 'input_tokens', 'label' => 'In', 'width' => 90, 'align' => 'right', 'sortable' => true],
-            ['id' => 'output_tokens', 'label' => 'Out', 'width' => 90, 'align' => 'right', 'sortable' => true],
+            ['id' => 'model', 'label' => $this->columnLabel('model', 'Model')],
+            ['id' => 'input_tokens', 'label' => $this->text('gridInputTokens', 'In'), 'width' => 90, 'align' => 'right', 'sortable' => true],
+            ['id' => 'output_tokens', 'label' => $this->text('gridOutputTokens', 'Out'), 'width' => 90, 'align' => 'right', 'sortable' => true],
             ['id' => 'cache_creation_tokens', 'label' => $cs ? 'Cache zápis' : 'Cache write', 'width' => 100, 'align' => 'right'],
             ['id' => 'cache_read_tokens', 'label' => $cs ? 'Cache čtení' : 'Cache read', 'width' => 100, 'align' => 'right'],
-            ['id' => 'http_status', 'label' => 'HTTP', 'width' => 60, 'align' => 'right'],
-            ['id' => 'stream', 'label' => 'SSE', 'width' => 50],
+            ['id' => 'http_status', 'label' => $this->text('gridHttpStatus', 'HTTP'), 'width' => 60, 'align' => 'right'],
+            ['id' => 'stream', 'label' => $this->text('gridStream', 'SSE'), 'width' => 50],
             ['id' => 'duration_ms', 'label' => $cs ? 'Trvání' : 'Duration', 'width' => 90, 'align' => 'right', 'sortable' => true],
         ];
     }
@@ -215,10 +220,10 @@ class AiUsageViewer extends TableViewer
                 'label' => $cs ? 'Zdroj dat' : 'Data source',
                 'value' => trim((string) ($record['ds_name'] ?? '')) . ' (' . $record['ds_ds_id'] . ')',
             ],
-            ['label' => 'Model', 'value' => (string) $record['model']],
+            ['label' => $this->columnLabel('model', 'Model'), 'value' => (string) $record['model']],
             ['label' => $cs ? 'Čas' : 'Time', 'value' => $this->formatDateTime($record['created'])],
-            ['label' => 'HTTP status', 'value' => (string) $record['http_status']],
-            ['label' => 'Stream', 'value' => (int) ($record['stream'] ?? 0) === 1 ? ($cs ? 'ano' : 'yes') : ($cs ? 'ne' : 'no')],
+            ['label' => $this->columnLabel('http_status', 'HTTP status'), 'value' => (string) $record['http_status']],
+            ['label' => $this->columnLabel('stream', 'Stream'), 'value' => (int) ($record['stream'] ?? 0) === 1 ? ($cs ? 'ano' : 'yes') : ($cs ? 'ne' : 'no')],
         ];
         if (($record['duration_ms'] ?? null) !== null) {
             $items[] = ['label' => $cs ? 'Trvání' : 'Duration', 'value' => $this->formatCount($record['duration_ms']) . ' ms'];
@@ -283,6 +288,12 @@ class AiUsageViewer extends TableViewer
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
+
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
+    }
 
     private function formatCount(mixed $value): string
     {

@@ -107,7 +107,7 @@ class ServersViewer extends TableViewer
 
         $items = [
             ['label' => $isCs ? 'Název' : 'Name', 'value' => (string) $record['name']],
-            ['label' => 'FQDN', 'value' => (string) $record['fqdn']],
+            ['label' => $this->columnLabel('fqdn', 'FQDN'), 'value' => (string) $record['fqdn']],
         ];
         if (!empty($record['note'])) {
             $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];

@@ -10,6 +10,8 @@ use Shipard\Core\Viewer\TableViewer;
 
 class TasksViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'tasks.core.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'tasks.core.docStatesTasks';
 
     // Pozn.: `edit` (Pozastaveno) je záměrně mapováno na `muted`,
@@ -126,7 +128,7 @@ class TasksViewer extends TableViewer
         $row['t2'] = $t2 !== [] ? $t2 : null;
 
         $creator = $this->resolveCreatorLabel($rowData);
-        $row['t3'] = $creator !== '' ? 'Vytvořil: ' . $creator : null;
+        $row['t3'] = $creator !== '' ? $this->text('rowCreatedBy', 'Created by: {name}', ['name' => $creator]) : null;
 
         return $row;
     }
@@ -149,15 +151,15 @@ class TasksViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $items = [];
-        $this->addItem($items, 'Vytvořil', $this->resolveCreatorLabel($record));
-        $this->addItem($items, 'Vytvořeno', $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($items, $this->columnLabel('created_by', 'Created by'), $this->resolveCreatorLabel($record));
+        $this->addItem($items, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
 
         $description = trim((string) ($record['description'] ?? ''));
 
-        $groups = [['title' => 'Úkol', 'items' => $items]];
+        $groups = [['title' => $this->text('groupTask', 'Task'), 'items' => $items]];
         if ($description !== '') {
             $groups[] = [
-                'title' => 'Popis',
+                'title' => $this->columnLabel('description', 'Description'),
                 'items' => [['label' => '', 'value' => $description]],
                 'wide'  => true,
             ];
@@ -173,8 +175,8 @@ class TasksViewer extends TableViewer
         $title = trim((string) ($record['title'] ?? ''));
 
         return new DetailHeader(
-            $title !== '' ? $title : '(bez názvu)',
-            $dueDate !== '' ? 'Termín ' . $dueDate : null,
+            $title !== '' ? $title : $this->sharedText('untitled', '(untitled)'),
+            $dueDate !== '' ? $this->text('headerDueDate', 'Due date {date}', ['date' => $dueDate]) : null,
         );
     }
 
@@ -197,10 +199,16 @@ class TasksViewer extends TableViewer
         }
 
         if ($this->isOverdue($record['due_date'] ?? null, $docState)) {
-            $badges[] = ['label' => 'Po termínu', 'style' => 'danger'];
+            $badges[] = ['label' => $this->text('overdue', 'Overdue'), 'style' => 'danger'];
         }
 
         return $badges;
+    }
+
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     private function resolveStateStyle(int $docState): string

@@ -206,6 +206,11 @@
         {
             "id": "hosting.core.dsUserRoles",
             "file": "config/dsUserRoles.jsonc"
+        },
+        {
+            // Texty viewerů hostingu (#133 D66) — zatím jen Spotřeba AI.
+            "id": "hosting.core.viewerDetailLabels",
+            "file": "config/viewerDetailLabels.jsonc"
         }
     ]
 }

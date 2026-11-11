@@ -147,7 +147,7 @@ class DataSourcesViewer extends TableViewer
             ['label' => $isCs ? 'ID zdroje dat' : 'Data source ID', 'value' => (string) $record['ds_id']],
         ];
         if (!empty($record['web_id'])) {
-            $identity[] = ['label' => 'Web ID', 'value' => (string) $record['web_id']];
+            $identity[] = ['label' => $this->columnLabel('web_id', 'Web ID'), 'value' => (string) $record['web_id']];
         }
         $identity[] = [
             'label' => $isCs ? 'Jazyk' : 'Language',
@@ -161,12 +161,12 @@ class DataSourcesViewer extends TableViewer
         $placement = [
             ['label' => $isCs ? 'URL aplikace' : 'Application URL', 'value' => (string) $record['url_app']],
             [
-                'label' => 'Lifecycle',
+                'label' => $this->columnLabel('lifecycle', 'Lifecycle'),
                 'value' => $this->resolveLifecycleLabel((string) ($record['lifecycle'] ?? 'active')),
             ],
         ];
         if (!empty($record['server_name'])) {
-            $placement[] = ['label' => 'Server', 'value' => (string) $record['server_name']];
+            $placement[] = ['label' => $this->columnLabel('server', 'Server'), 'value' => (string) $record['server_name']];
         }
         if (!empty($record['install_module'])) {
             $placement[] = ['label' => $isCs ? 'Install modul' : 'Install module', 'value' => (string) $record['install_module']];

@@ -1,0 +1,20 @@
+{
+    // hosting.core.viewerDetailLabels
+    //
+    // Texty viewerů hostingu — `AiUsageViewer` (Spotřeba AI): řádek seznamu
+    // a zkrácené hlavičky sloupců mřížky. Jen sekce `texts` (čte
+    // `TableViewer::detailText()`); tab Přehled je sdílený
+    // v core.system.viewerDetailLabels. Holé `name` je anglická varianta
+    // a shoduje se s fallbackem v PHP.
+
+    "texts": {
+        // Řádek seznamu: chybový stav průchodu a výstupní tokeny.
+        "rowHttpStatus": { "name": "HTTP {status}", "name:cs": "HTTP {status}", "name:en": "HTTP {status}" },
+        "rowOutputTokens": { "name": "out {count}", "name:cs": "out {count}", "name:en": "out {count}" },
+        // Mřížka: zkratky úzkých sloupců (plné popisky nese definice tabulky).
+        "gridInputTokens": { "name": "In", "name:cs": "In", "name:en": "In" },
+        "gridOutputTokens": { "name": "Out", "name:cs": "Out", "name:en": "Out" },
+        "gridHttpStatus": { "name": "HTTP", "name:cs": "HTTP", "name:en": "HTTP" },
+        "gridStream": { "name": "SSE", "name:cs": "SSE", "name:en": "SSE" }
+    }
+}
