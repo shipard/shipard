@@ -1,6 +1,6 @@
 # Design system — tónové barvy a hex v komponentách (D69–D72)
 
-**Stav:** naplánováno — 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72)
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72); tečky a donut na pozadí stránky berou `-text`, ne plochu (viz Odchylky); tečky odznaků na sidebaru a text na tónovaném podkladu zůstávají pod prahem (viz Odchylky); změřeno v Chromiu nad demo sadou IT servis v obou vzhledech, ruční ověření na dev serveru zbývá
 
 ## Kontext / Cíl
 
@@ -233,14 +233,14 @@ nehlídá — zapiš to do komentáře skriptu jako vědomou mez.
 
 ## Hotovo když
 
-- [ ] Tokeny podle D70 v obou vzhledech, nové `-text` tokeny
-- [ ] Text a ikony tónu na pozadí používají `-text`, plochy základní token
+- [x] Tokeny podle D70 v obou vzhledech, nové `-text` tokeny
+- [x] Text a ikony tónu na pozadí používají `-text`, plochy základní token
       s `text-on-fill`
-- [ ] Hex jen v `variables.css`, `dev/theme.css` a zdůvodněných výjimkách;
+- [x] Hex jen v `variables.css`, `dev/theme.css` a zdůvodněných výjimkách;
       kontrola v pre-commitu ho hlídá
-- [ ] Varování v reportu textem i ikonou (D72)
-- [ ] Měření kontrastu zapsané, vše nad prahem nebo v odchylkách
-- [ ] Dokumentace podle kroku 6, `**Stav:**` aktualizovaný, index tasků
+- [x] Varování v reportu textem i ikonou (D72)
+- [x] Měření kontrastu zapsané, vše nad prahem nebo v odchylkách
+- [x] Dokumentace podle kroku 6, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
 
 ## Pasti
@@ -256,3 +256,128 @@ nehlídá — zapiš to do komentáře skriptu jako vědomou mez.
   dřív, než se hledá; `#fff` uvnitř URL nebo selektoru `#id` v CSS
   (`#app`) není barva — hledej jen v hodnotách deklarací.
 - Kontrola tokenů jde celým stromem — commit 4 až po commitech 2 a 3.
+
+## Odchylky od zadání
+
+1. **Tečky a donut na pozadí stránky berou `-text`, ne plochu** (schváleno
+   v konverzaci 2026-11-11). D69 řadí tečku k plochám, jenže tečka nenese
+   text a její kontrast je vůči pozadí: plocha z D70 by v tmavém vzhledu
+   dala na `bg` / `bg-hover` 2,98 / 2,52 (warning, success) a 3,10 / 2,62
+   (danger). Týká se teček sekcí ve `Feed`, tečky ve `FeedFilter`, tečky
+   chyby na tabu ve `FormEditor`, donutu jistoty (`FeedCard`,
+   `FeedRowCompact`) a teček stavu v `LogsPage` dashboardu. V tmavém
+   vzhledu se tím jejich barva nemění.
+2. **`--shpd-color-alert-success-bar` odkazuje na `success-text`**, ne na
+   plochu (zadání: „rámeček hlášky je plocha, zůstává“). S plochou by
+   rámeček hlášky success v tmavém vzhledu ztmavl z `#22c55e` na `#15803d`
+   (2,8 : 1 na pozadí hlášky); takhle se v tmavém vzhledu nemění.
+3. **Počty:** zadání odhaduje kolem 50 převodů a 10 ploch; použití je 118 —
+   93 na `-text` (včetně 9 teček z bodu 1 a rámečku hlášky z bodu 2),
+   24 ploch, 1 sidebar.
+4. **Chyba v sidebaru** (`.shpd-sidebar__status--error`): `danger-text` na
+   výchozím sidebaru dá 2,64 : 1 (světlý vzhled, i vlastní vzhled s výchozí
+   barvou), v tmavém 4,91 : 1. Podle zadání je text `--shpd-color-text-sidebar`
+   (10,9 / 11,1 : 1) a tón nese ikona — nově i v rozbaleném sidebaru, kde
+   dřív ikona nebyla. Ikona má ve světlém vzhledu 2,64 : 1 jako dosud.
+5. **Hex ve vývojářském dashboardu** je nad rámec výčtu i v `PdfPane`
+   (`#525659`) a `VideosPage` (`#000`) — obojí na tokeny `--dev-*`.
+6. **Výjimky kontroly:** `ThemeField`, `DsThemeField`, `ThemeSwatches`
+   a `ColorField` mají hex jen ve `<script>`, kam kontrola nesahá; výjimka
+   se dnes uplatní jen u `SandboxedHtml` (v konstantě je všech pět, D71).
+7. **`rgba()` s barvou, která má token** (neopraveno, mimo rozsah):
+   fallback `rgba(34, 102, 238, …)` u `--shpd-color-primary-soft`
+   v `RegistryImportWizard` (2×) a `BankAccountBridgeDialog`.
+8. **Pod prahem zůstává** (vzhled se nemění, rozhodnutí patří do #133):
+   - tečky odznaků sekcí na sidebaru (`NavTree`, `TopMenuBar`) — plocha
+     na `#00345c` 2,54 (warning, dřív 4,01) a 2,64 (danger, beze změny),
+     v tmavém vzhledu na `#2a2e38` 2,70 (dřív 6,32) a 2,81 (dřív 3,6);
+     na aktivní položce horního menu (`primary`) danger 1,73 / 1,24.
+     `-text` světlého vzhledu by na sidebaru dal totéž — chce to tón pro
+     sidebar;
+   - odznak `SectionRail` vůči sidebaru 2,54–2,81 (text v odznaku
+     4,83 / 5,02 projde);
+   - text na tónovaném podkladu 14 % ve světlém vzhledu: danger 3,88
+     (termín po lhůtě ve `FeedCard`, naměřeno; odznak v Přehledu firmy
+     stejná dvojice), warning 4,14 (výpočet); beze změny proti dřívějšku
+     u danger;
+   - světlý `danger-text` na `danger-soft` 4,41 (chyba portálu, výpočet —
+     portál na demo sadě není);
+   - tmavý danger na tónovaném podkladu nad `bg-hover` 4,30 (výpočet);
+   - proužek karty Připraveno (`FeedCard`, `FeedReadySection`) je plocha:
+     v tmavém vzhledu 2,98 : 1 vůči `bg` (výpočet);
+   - tmavý vzhled, tlačítko `danger` pod kurzorem vůči pozadí dialogu
+     2,31 (text na něm 6,47);
+   - dashboard: `success-text` na jeho `bg-hover` (`#eef3f8`) 4,49
+     (`.dev-lvl--ok` v řádku pod kurzorem), `warning-text` 4,50 (výpočet).
+
+## Ověření v Chromiu (2026-11-11)
+
+Playwright, zdroj dat `zey0-g…` (třída `free`, demo sada IT servis),
+1280 px, kontrast z vykreslených barev (`getComputedStyle`, pozadí složené
+přes předky). Zprávy reportu, odznaky sekcí a chyba navigace podvržené
+v odpovědi API. Světlý / tmavý vzhled:
+
+| místo | dvojice | světlý | tmavý |
+|-------|---------|--------|-------|
+| tlačítko `danger` — text na ploše | `text-on-fill` / `danger` | 4,83 | 4,83 |
+| tlačítko `danger` pod kurzorem | `text-on-fill` / `danger-hover` | 6,47 | 6,47 |
+| chyba pod polem, hvězdička povinného pole | `danger-text` / pozadí sekce | 4,54 | 6,10 |
+| rámeček pole s chybou | `danger-text` / pozadí sekce | 4,54 | 5,41 |
+| tab formuláře s chybou + tečka | `danger-text` / `bg` | 4,83 | 5,41 |
+| štítek `--success` v seznamu (banka) | `success-text` / `bg` | 5,02 | 6,56 |
+| totéž, řádek pod kurzorem | `success-text` / `bg-hover` | 4,71 | 5,55 |
+| report — řádek s chybou, text a ikona | `danger-text` / `bg` | 4,83 | 5,41 |
+| report — mezisoučet s chybou | `danger-text` / `bg-hover` | 4,54 | 4,58 |
+| report — řádek s varováním, text a ikona | `warning-text` / `bg` | 5,02 | 6,96 |
+| report — mezisoučet s varováním | `warning-text` / `bg-hover` | 4,72 | 5,89 |
+| report — zprávy pod čarou (chyba / varování) | `-text` / pozadí stránky | 4,54 / 4,72 | 6,10 / 7,86 |
+| relace v Účtu — text na `success-soft` | `success-text` / `success-soft` | 4,79 | 6,76 |
+| relace v Účtu — rámeček štítku | `success-text` / `bg` | 4,79 | 6,56 |
+| feed — tečka sekce (warning) | `warning-text` / pozadí stránky | 4,72 | 7,86 |
+| feed — varování na kartě, donut | `warning-text` / `bg` | 5,02 | 6,96 |
+| feed — termín po lhůtě (tónovaný podklad) | `danger-text` / 14 % | **3,88** | 4,97 |
+| sidebar — ikona chyby navigace | `danger-text` / `bg-sidebar` | **2,64** | 4,91 |
+| `NavTree`, `TopMenuBar` — tečka warning | `warning` / `bg-sidebar` | **2,54** | **2,70** |
+| `NavTree`, `TopMenuBar` — tečka danger | `danger` / `bg-sidebar` | **2,64** | **2,81** |
+| `SectionRail` — text v odznaku (danger / warning) | `text-on-fill` / plocha | 4,83 / 5,02 | 4,83 / 5,02 |
+
+Vývojářský dashboard (jen světlý): text chyby v logu 5,74, stav „ok“ ve
+Videích 5,02 (v řádku pod kurzorem **4,49**), tečka běhu logů 4,63,
+rámeček zapnutého štítku úrovně 3,97 / 4,51.
+
+Co demo sada nevykreslila a platí pro to výpočet z hodnot tokenů (stejné
+dvojice jako výše): štítky `--danger` / `--warning` v seznamu a v sub-tabulce
+formuláře, tlačítko `success` (bílý text 5,02, hover 7,13), odznaky
+Přehledu firmy, chyba portálu, štítek průvodce Spisovny, `FeedFilter`
+s tečkou.
+
+Snímky před / po (1280 px, oba vzhledy; dashboard, Přehled firmy, seznam,
+formulář s chybou, report s podvrženými zprávami, přihlášení, vývojářský
+dashboard): beze změny rozvržení. Liší se jen tónové barvy — ve světlém
+vzhledu tmavší zelená a oranžová, v tmavém světlejší červený text
+a tmavší plochy tlačítek; v reportu varování nově barví text řádku.
+Přihlášení, Přehled firmy a seznam faktur jsou pixelově shodné. Dialog
+mazání ze sub-tabulky se skriptem otevřít nepodařilo — tlačítko `danger`
+je změřené ve formuláři.
+
+Kontrola hex: podvržené případy (komentář s `#133`, selektor `#app`,
+`url(#…)`, `href="#top"`, hex ve `<script>`) nález nedávají; hex v hodnotě
+deklarace, ve fallbacku `var()`, v atributu `style` a direktivě `style:`
+ano. Nad stromem před úpravami hlásí 36 výskytů (+ 1 ve výjimce), nad
+současným žádný.
+
+## Ruční ověření
+
+Zbývá na dev serveru (oba vzhledy):
+
+- formulář s chybou (prázdná nová osoba → Uložit): barva chyb a tlačítka
+  Smazat / Ukončit platnost, i pod kurzorem;
+- dialog potvrzení se Smazat (řádek sub-tabulky);
+- seznam se štítky (banka, faktury po splatnosti) a dashboard — tečky
+  sekcí, donut, termín po lhůtě;
+- report s varováním (`economy.assets.journalCheck` má skutečné) — text
+  řádku i zprávy v barvě varování;
+- chyba navigace v sidebaru jde vyvolat jen výpadkem API;
+- vývojářský dashboard: pruh, blok výstupu příkazu, přehrávač videa,
+  náhled PDF — beze změny.
+

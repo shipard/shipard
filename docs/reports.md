@@ -158,9 +158,9 @@ Závazná pravidla pro konzumenty:
 - **Renderer**: stav, označené řádky a zprávy pod čarou — prezentace nad
   daty. Stav `warnings` / `errors` je hláška (`Notice`) nad tabulkou; řádek
   odkázaný z `rowRef` je chyba u prvku — ikona tónu před názvem, `title`
-  s textem první zprávy, bez barevného pozadí; chyba navíc barví text
-  řádku, varování nese tón jen ikonou (kontrast). Zprávy jsou pod tabulkou
-  ve stejných tónech (#133 D64, `docs/design-system.md` §8 Hlášky a pruhy).
+  s textem první zprávy, bez barevného pozadí; chyba i varování navíc
+  barví text řádku (#133 D72). Zprávy jsou pod tabulkou ve stejných tónech
+  (#133 D64, `docs/design-system.md` §8 Hlášky a pruhy).
 - **MCP / AI asistent**: výsledek se `status: errors` se nesmí mlčky
   použít jako spolehlivá čísla — asistent chybu ohlásí (a případné
   odpovědi z takových dat explicitně označí). Tool `report_run` tuto

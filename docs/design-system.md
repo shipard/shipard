@@ -96,11 +96,35 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 
 ### Stavové (semantické)
 
-| Token | Hodnota | Hover token | Soft token | Použití |
-|---|---|---|---|---|
-| `--shpd-color-danger` | `#dc2626` | `--shpd-color-danger-hover` (`#b91c1c`) | `--shpd-color-danger-soft` (`#fef2f2`) | Mazání, error, zamítnutí |
-| `--shpd-color-success` | `#16a34a` | `--shpd-color-success-hover` (`#15803d`) | — | Použít, potvrdit pozitivní akci |
-| `--shpd-color-warning` | `#d97706` | `--shpd-color-warning-hover` (`#b45309`) | — | Varování (mimo doc-state systém) |
+Tón má **dvě role a dva tokeny** (#133 D69, D70) — jedna hodnota nesplní
+kontrast bílého textu na ploše i kontrast textu na pozadí stránky v obou
+vzhledech:
+
+| Tón | Plocha `--shpd-color-{tón}` | Hover `-hover` | Text `-text` světlý / tmavý | Soft `-soft` světlý / tmavý | Použití |
+|---|---|---|---|---|---|
+| `danger` | `#dc2626` | `#b91c1c` | `#dc2626` / `#f87171` | `#fef2f2` / `#2d1414` | Mazání, error, zamítnutí |
+| `success` | `#15803d` | `#166534` | `#15803d` / `#22c55e` | `#f0fdf4` / `#14291c` | Použít, potvrdit pozitivní akci |
+| `warning` | `#b45309` | `#92400e` | `#b45309` / `#f59e0b` | `#fffbeb` / `#2e2410` | Varování (mimo doc-state systém) |
+
+- **Plocha** (`--shpd-color-{tón}`, `-hover`): pozadí tlačítka, odznaku
+  s textem, proužek karty. Text na ní je `--shpd-color-text-on-fill`. Hodnoty
+  jsou **v obou vzhledech stejné**; bílý text drží 4,8–5,0 : 1 (hover
+  6,5–7,1 : 1).
+- **Text** (`--shpd-color-{tón}-text`): text, ikona, **tečka a donut bez
+  textu** a rámeček prvku (input ve stavu chyby, karta s tónem) na pozadí
+  stránky, karty nebo dialogu. Na `bg` / `bg-hover` drží světlý vzhled
+  4,8 / 4,5 (danger), 5,0 / 4,7 (warning, success), tmavý 5,4 / 4,6
+  (danger), 7,0 / 5,9 (warning), 6,6 / 5,6 (success).
+- **Soft** (`-soft`) a tónovaný podklad `color-mix(… 14 % …)` z plochy:
+  pozadí štítku; text na něm je `-text`.
+- **Na pozadí sidebaru** neplatí ani jedna role (`-text` světlého vzhledu
+  dá na `#00345c` jen 2,6 : 1): text je `--shpd-color-text-sidebar` a tón
+  nese ikona (chyba načtení navigace). Tečky odznaků sekcí (`NavTree`,
+  `TopMenuBar`) jsou zatím plocha — pod 3 : 1, tón pro sidebar je otevřený
+  bod #133.
+
+Vývojářský dashboard přepisuje `danger` i `danger-text` na `#c81e1e`
+(`dev/theme.css`), ostatní dědí.
 
 ---
 
@@ -258,12 +282,20 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
 
 ### Pravidla
 
-1. **Žádné hardcoded hex hodnoty v komponentách.** Pokud potřebuješ barvu,
-   která není v `variables.css`, přidej ji tam jako token a použij přes
-   `var(--shpd-color-...)`. Bílý text na plné barvě =
-   `--shpd-color-text-on-fill` (D59), ne `#fff`. Token ve `var(…)` musí
-   existovat i tehdy, když má fallback — jinak tiše platí fallback
-   (`scripts/check-css-tokens.py`).
+1. **Žádné hex hodnoty v komponentách** (D71). Hex smí být jen v souborech
+   s definicemi tokenů — `styles/variables.css` a `dev/theme.css` (tokeny
+   vývojářského dashboardu `--dev-*`). Pokud potřebuješ barvu, která tam
+   není, přidej ji jako token a použij přes `var(--shpd-color-...)`. Bílý
+   text na plné barvě = `--shpd-color-text-on-fill` (D59), ne `#fff`.
+   **Fallback ve `var(--x, #hex)` se nepíše**: token musí existovat (jinak
+   tiše platí fallback) a druhá hodnota jen zastará. Hlídá
+   `scripts/check-css-tokens.py` v pre-commitu — hex v hodnotách deklarací
+   (`.css`, bloky `<style>`), v atributu `style` a direktivě `style:`,
+   mimo komentáře. Výjimky po souborech s důvodem (konstanta `HEX_EXEMPT`):
+   komponenty vlastního vzhledu (`ThemeField`, `DsThemeField`,
+   `ThemeSwatches`, `ColorField` — barva jako data) a `SandboxedHtml`
+   (bílý papír cizího e-mailu). Hex v JS datech (`<script>`, soubory `.js`)
+   kontrola nehlídá.
 2. **Nepoužívej `:global(.docState_*)`** — kolizuje napříč komponentami,
    které mají stejné `docState_*` třídy. Místo toho použij child selectory
    (`.shpd-component-name.docState_edit`).
@@ -284,6 +316,12 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   `.shpd-form-state-badge.docState_edit`.
 - ❌ `box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15)` (stará Tailwind modrá)
   ve focus stavech inputů. ✅ Použij `var(--shpd-color-focus-ring)`.
+- ❌ `color: var(--shpd-color-danger)` — plocha jako barva textu; v tmavém
+  vzhledu dá na pozadí jen 3,1 : 1. ✅ Text, ikona, tečka a rámeček prvku
+  berou `var(--shpd-color-danger-text)` (D69); `--shpd-color-danger` je jen
+  pozadí pod `--shpd-color-text-on-fill`.
+- ❌ `var(--shpd-color-warning, #d97706)` — fallback s hexem. ✅
+  `var(--shpd-color-warning)` (D71).
 
 ---
 
@@ -373,8 +411,8 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
   `SectionHeading` (`title`, `headingLevel` 2–4, role a ikona podle místa
   karty níže; snippet `aside` sedí vpravo v řádku nadpisu — štítek stavu
   sekce v Přehledu firmy). Tón
-  `warning` / `danger` mění jen barvu rámečku (`--shpd-color-warning` /
-  `--shpd-color-danger`), `info` dává tónované pozadí
+  `warning` / `danger` mění jen barvu rámečku (`--shpd-color-warning-text` /
+  `--shpd-color-danger-text`), `info` dává tónované pozadí
   `--shpd-color-primary-soft` s rámečkem `--shpd-color-primary-soft-2`
   (AI shrnutí). Kořen je flex sloupec: v roztaženém řádku mřížky zůstává
   obsah nahoře a patička může dostat `margin-top: auto`. Zbylé atributy
@@ -481,8 +519,8 @@ Rozhodnutí D40 a D41 (task 3 #137), D60 a D61
   rámeček `--shpd-color-border`, nebo tón jen v barvě rámečku.
 - **Hláška, nebo chyba u prvku** (D61): chyba nebo varování, které patří
   k **jednomu poli, položce seznamu nebo řádku**, zůstává textem u prvku —
-  tón nese jen barva textu (`--shpd-color-danger`, `--shpd-color-warning`),
-  bez pozadí a rámečku. **Výsledek akce a stav celého formuláře, dialogu
+  tón nese jen barva textu (`--shpd-color-danger-text`,
+  `--shpd-color-warning-text`, D69), bez pozadí a rámečku. **Výsledek akce a stav celého formuláře, dialogu
   nebo panelu** je `Notice`.
   - Chyba u prvku: chyby inputů (`ui/*Input`, `Select`, `TextArea`),
     chyba karty v kontrole front (`QueueCategoriesPrompt`), varování
@@ -490,10 +528,9 @@ Rozhodnutí D40 a D41 (task 3 #137), D60 a D61
     (`ImageSlotField`, `AvatarSlotField`), chyba pole v předvyplnění
     registrace DPH a v průvodci nastavení, chyba adresy v dialogu Odeslat,
     chyba hledání u pole (`LookupInput`, rozhodnutí v review), řádek
-    reportu se zprávou (`ReportView`, D64 — ikona před názvem; chyba barví
-    text řádku, varování nese tón jen ikonou, protože
-    `--shpd-color-warning` na světlém pozadí nedá textu 4,5 : 1). Jejich
-    sjednocení mezi sebou je případný další bod.
+    reportu se zprávou (`ReportView`, D64 — ikona před názvem; chyba
+    i varování barví text řádku, D72). Jejich sjednocení mezi sebou je
+    případný další bod.
   - Hláška: uložení Nastavení, změna hesla, limit souborů a chyba nahrání
     pošty, chyba založení zdroje dat, chyba chatu (nad polem zprávy, mimo
     rolovací oblast zpráv), varování průvodce nastavení (jedna hláška se
@@ -862,6 +899,11 @@ z velké části recyklují solid paletu:
   funguje na obou módech.
 - **Doc-state pruhy zůstávají stejné** — jasné barvy (žlutá, fialová,
   červená) fungujou na tmavém pozadí bez úpravy.
+- **Tónové plochy zůstávají stejné, světlejší je jen tónový text** (D70) —
+  tlačítko Smazat má v obou vzhledech `#dc2626` s bílým textem; text,
+  ikona a tečka tónu na tmavém pozadí berou `-text` (`#f87171`,
+  `#f59e0b`, `#22c55e`). Plocha použitá jako barva textu by na tmavém
+  pozadí dala jen kolem 3 : 1.
 - **Doc-state badge mají invertovanou logiku** — bg je tmavá saturovaná
   varianta barvy, text je světlý. Např. `concept` v light má
   bg `#fef3c7` / text `#854d0e`, v dark bg `#3d3214` / text `#fde047`.
@@ -1453,7 +1495,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 |---|---|
 | `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny (v rem, D46) |
 | `scripts/check-css-units.py` | Kontrola jednotek v pre-commitu (§10): px v mezerách, zaoblení, písmu a **rozměrech** (`width`, `height`, `min-*`, `max-*`, `flex`), rozměrové propy komponent, layout tokeny; breakpointy (§8) |
-| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard) |
+| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard). Třetí pravidlo (D71): hex barva jen ve `styles/variables.css` a `dev/theme.css` — hledá se v hodnotách deklarací, atributu `style` a direktivě `style:` mimo komentáře; výjimky po souborech s důvodem (`HEX_EXEMPT`), hex v JS datech se nehlídá |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |

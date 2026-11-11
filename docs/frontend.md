@@ -258,7 +258,9 @@ objektu, přiřazení `tokens['--x'] =`, direktiva `style:--x=`,
 hlídají oba. Bez fallbacku prohlížeč vlastnost tiše zahodí (karta dialogu
 bez pozadí), s fallbackem tiše platí fallback a neexistující token vypadá
 jako použitý design systém — proto kontrola, ne alias, a žádný seznam
-výjimek.
+výjimek. Tentýž skript hlídá i hex barvy (#133 D71): hex smí být jen ve
+`styles/variables.css` a `dev/theme.css`, komponenta bere token a fallback
+ve `var(--x, #hex)` se nepíše; výjimky a meze v `docs/design-system.md` §6.
 
 Px v mezerách, odsazení, zaoblení, písmu a pevných rozměrech hlídá
 `scripts/check-css-units.py` (#134 D10, pravidlo D1 a D46 z #133): tytéž

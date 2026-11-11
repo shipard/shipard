@@ -493,7 +493,8 @@ smí názvy nést — tam jsou potřeba k práci.
   vč. akcí v řádcích a tlačítek, která jen otevřou potvrzení, `danger` =
   provede nevratnou akci; pruh + lišta = sticky `.dev-top` (z-index 100,
   lepicí prvky pod ní přes `--dev-top-height`); nedefinovaný token
-  ve `var(--x…)`, i s fallbackem, zastaví pre-commit
+  ve `var(--x…)`, i s fallbackem, a hex barva mimo `dev/theme.css`
+  (i v `dev.css` a komponentách dashboardu, #133 D71) zastaví pre-commit
   (`scripts/check-css-tokens.py`). **Úlohy na pozadí** (#103 F6b
   D58): `src/Core/DevJobs/` (`JobRecord` = `job.json` od API, `JobState`
   = `state.json` jen od obalu, živost přes `flock` na `wrapper.lock`,
@@ -679,7 +680,7 @@ ve stejném commitu.
 
 1. `php -l` na změněných PHP souborech
 2. `vendor/bin/phpunit --filter 'ClassName'` cíleně, pak celá sada
-3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny a tokeny hlášek `--shpd-color-alert-*` mimo `Notice` / `PageBanner`; `python3 scripts/check-css-units.py` — px v mezerách, zaoblení, písmu a rozměrech (i prop `width` komponenty a layout tokeny) a breakpointy mimo D42 / D43, práh úzkého vieweru `VIEWER_SPLIT_MIN` D58; obě hlídá i pre-commit)
+3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny, tokeny hlášek `--shpd-color-alert-*` mimo `Notice` / `PageBanner` a hex barvy mimo `styles/variables.css` / `dev/theme.css` (#133 D71; tón jako text, ikona a tečka bere `--shpd-color-{tón}-text`, plocha `--shpd-color-{tón}` jen pod `--shpd-color-text-on-fill`, D69); `python3 scripts/check-css-units.py` — px v mezerách, zaoblení, písmu a rozměrech (i prop `width` komponenty a layout tokeny) a breakpointy mimo D42 / D43, práh úzkého vieweru `VIEWER_SPLIT_MIN` D58; obě hlídá i pre-commit)
 4. **Aktualizovat `**Stav:**` v task filu** + `python3 scripts/tasks-index.py`
 
 ## Otevřené úkoly
