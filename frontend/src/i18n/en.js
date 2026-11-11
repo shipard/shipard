@@ -932,6 +932,7 @@ export default {
   'reports.format.exact': 'Exact',
   'reports.format.thousands': 'In thousands',
   'reports.thousandsSuffix': '(in thousands)',
+  'reports.column.account': 'Account',
   'reports.side.md': 'Dr',
   'reports.side.d': 'Cr',
   'reports.side.balance': 'Balance',

@@ -945,6 +945,7 @@ export default {
   'reports.format.exact': 'Přesně',
   'reports.format.thousands': 'V tisících',
   'reports.thousandsSuffix': '(v tis.)',
+  'reports.column.account': 'Účet',
   'reports.side.md': 'MD',
   'reports.side.d': 'D',
   'reports.side.balance': 'Zůstatek',

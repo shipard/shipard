@@ -45,6 +45,13 @@
 
   const hasSides = $derived(columns.some((c) => (c.display ?? 'balance') === 'sides'));
 
+  // Sloupec „Účet“ (#133 D63) — stejné pravidlo jako export
+  // (`ReportTabularizer`): je tam, když číslo účtu má aspoň jeden řádek.
+  // Číslo mají i mezisoučty (prefix třídy, skupiny, syntetiky), hierarchii
+  // tak nese délka čísla a tučné mezisoučty — název se v účtovém reportu
+  // neodsazuje. Report bez účtů odsazuje název podle `level` jako dřív.
+  const hasAccount = $derived(rows.some((row) => row.account != null && row.account !== ''));
+
   function fmt(value) {
     // Nuly prázdné — účetní konvence, mřížka se nezahltí nulami.
     if (value === 0 || value == null) return '';
@@ -94,6 +101,9 @@
         <table class="shpd-report__table">
           <thead>
             <tr>
+              {#if hasAccount}
+                <th class="shpd-report__th shpd-report__th--account" rowspan={hasSides ? 2 : 1}>{t('reports.column.account')}</th>
+              {/if}
               <th class="shpd-report__th shpd-report__th--label" rowspan={hasSides ? 2 : 1}></th>
               {#each columns as column (column.id)}
                 {#if isTextual(column)}
@@ -127,11 +137,13 @@
                 class:shpd-report__tr--error={rowSeverity.get(index) === 'error'}
                 class:shpd-report__tr--warning={rowSeverity.get(index) === 'warning'}
               >
+                {#if hasAccount}
+                  <td class="shpd-report__td shpd-report__td--account">{row.account ?? ''}</td>
+                {/if}
                 <td
                   class="shpd-report__td shpd-report__td--label"
-                  style:padding-left="calc(var(--shpd-space-sm) + {row.level}rem)"
+                  style:padding-left={hasAccount ? undefined : `calc(var(--shpd-space-sm) + ${row.level}rem)`}
                 >
-                  {#if row.account}<span class="shpd-report__account">{row.account}</span>{/if}
                   {#if row.link && onAction}
                     <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
                   {:else}
@@ -267,9 +279,26 @@
   /* Sloupec názvu drží nejmenší šířku (#138): v úzkém okně je tabulka širší
      než obal a auto layout by názvu nechal jen nejdelší slovo — text by se
      lámal po slovech. 14rem při 390 px dá název účtu na dva až tři řádky
-     (číslo účtu + ~25 znaků na řádek); zbytek roluje do strany v TableScroll. */
+     (číslo účtu má vlastní sloupec, D63); zbytek roluje do strany
+     v TableScroll. */
   .shpd-report__td--label {
     min-width: 14rem;
+  }
+
+  /* Sloupec „Účet“ (D63) se drží obsahu — číslo se nikdy neláme a volnou
+     šířku tabulky (`width: 100%`, report s pár sloupci) dostanou ostatní
+     sloupce: `width: 1%` s `nowrap` znamená „jen tolik, kolik obsah“.
+     Tučnost dědí z řádku (mezisoučet, součet). */
+  .shpd-report__th--account,
+  .shpd-report__td--account {
+    width: 1%;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .shpd-report__td--account {
+    color: var(--shpd-color-text-secondary);
+    font-variant-numeric: tabular-nums;
   }
 
   .shpd-report__td--num {
@@ -282,14 +311,6 @@
   .shpd-report__td--text {
     text-align: left;
     white-space: nowrap;
-  }
-
-  .shpd-report__account {
-    display: inline-block;
-    min-width: 4.5em;
-    margin-right: var(--shpd-space-xs);
-    color: var(--shpd-color-text-secondary);
-    font-variant-numeric: tabular-nums;
   }
 
   .shpd-report__link {
