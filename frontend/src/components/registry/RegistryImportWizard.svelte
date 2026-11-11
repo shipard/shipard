@@ -297,9 +297,7 @@
 
     <div class="shpd-registry-wizard__results">
       {#if searchError}
-        <div class="shpd-registry-wizard__status shpd-registry-wizard__status--error">
-          {searchError}
-        </div>
+        <Notice tone="danger">{searchError}</Notice>
       {:else if searchLoading && searchResults.length === 0}
         <div class="shpd-registry-wizard__status">
           <Icon icon={iconSpinner} spin />
@@ -365,9 +363,8 @@
     </div>
   {:else if screen === 'preview'}
     {#if previewError}
-      <div class="shpd-registry-wizard__status shpd-registry-wizard__status--error">
-        {previewError}
-      </div>
+      <!-- Modal je `flush` — odsazení hlášky od krajů dává obal. -->
+      <div class="shpd-registry-wizard__notice"><Notice tone="danger">{previewError}</Notice></div>
     {:else if canonical}
       {@const addr = primaryAddress(canonical)}
       {@const line = addressLine(addr)}
@@ -515,8 +512,8 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-registry-wizard__status--error {
-    color: var(--shpd-color-danger);
+  .shpd-registry-wizard__notice {
+    padding: var(--shpd-space-md);
   }
 
   .shpd-registry-wizard__list {

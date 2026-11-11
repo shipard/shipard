@@ -226,7 +226,7 @@
     {#if loading && draft === null}
       <div class="shpd-send__state">{t('send.loading')}</div>
     {:else if loadError}
-      <div class="shpd-send__state shpd-send__state--error" role="alert">{loadError}</div>
+      <Notice tone="danger">{loadError}</Notice>
     {:else if result}
       <div class="shpd-send__result" data-testid="send-result">
         {#if result.safety}
@@ -519,12 +519,6 @@
     padding: var(--shpd-space-md);
     text-align: center;
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-send__state--error {
-    color: var(--shpd-color-danger);
-    text-align: left;
-    padding: var(--shpd-space-sm);
   }
 
   .shpd-send__result {

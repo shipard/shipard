@@ -333,7 +333,7 @@
     {#if catalogError}
       <Notice tone="danger">
         <p class="shpd-reports__error-text">{t('reports.catalogFailed')}: {catalogError}</p>
-        <button type="button" class="shpd-reports__retry" onclick={loadCatalog}>{t('reports.retry')}</button>
+        <Button label={t('reports.retry')} variant="secondary" size="sm" onclick={loadCatalog} />
       </Notice>
     {:else if catalog && !reportDef}
       <p class="shpd-reports__note">{t('reports.unknownReport')}</p>
@@ -483,12 +483,4 @@
     margin: 0 0 var(--shpd-space-sm);
   }
 
-  .shpd-reports__retry {
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
-    border: 1px solid currentColor;
-    border-radius: var(--shpd-radius-md);
-    background: none;
-    color: inherit;
-    cursor: pointer;
-  }
 </style>

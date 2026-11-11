@@ -237,7 +237,7 @@
     {#if loading}
       <p class="shpd-ds-setup__state">{t('common.loading')}</p>
     {:else if error}
-      <p class="shpd-ds-setup__state shpd-ds-setup__state--error">{error}</p>
+      <Notice tone="danger">{error}</Notice>
     {:else}
       {#if warnings.length > 0}
         <!-- Varování průvodce = jedna sdílená Notice (#133 D61); `alert`
@@ -404,10 +404,6 @@
 
   .shpd-ds-setup__state {
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-ds-setup__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-ds-setup__notice {

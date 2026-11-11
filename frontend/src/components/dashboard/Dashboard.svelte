@@ -13,6 +13,7 @@
   import { iconRefresh, iconUpload } from '../../icons.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import DocumentExchangePreviewModal from '../exchange/DocumentExchangePreviewModal.svelte';
   import AiSummaryCard from './AiSummaryCard.svelte';
@@ -670,7 +671,8 @@
   {#if loading && !data}
     <div class="shpd-dashboard__loading">{t('common.loading')}</div>
   {:else if error && !data}
-    <div class="shpd-dashboard__error">{error}</div>
+    <!-- Chyba načtení místo obsahu (#133 D60). -->
+    <Notice tone="danger">{error}</Notice>
   {:else if data}
     <AiSummaryCard summary={data.summary} />
 
@@ -866,8 +868,7 @@
     flex-shrink: 0;
   }
 
-  .shpd-dashboard__loading,
-  .shpd-dashboard__error {
+  .shpd-dashboard__loading {
     padding: var(--shpd-space-xl);
     text-align: center;
     color: var(--shpd-color-text-secondary);

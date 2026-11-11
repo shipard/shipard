@@ -14,6 +14,7 @@
   import { translateError } from '../../i18n/errors.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import Card from '../ui/Card.svelte';
   import CardGrid from '../ui/CardGrid.svelte';
   import { iconOverview, iconRefresh, resolveIcon } from '../../icons.js';
@@ -111,19 +112,26 @@
       {#if data?.asOf}
         <span class="shpd-overview__asof">{t('overview.asOf', { date: formatDate(data.asOf) })}</span>
       {/if}
-      <Button variant="ghost" size="sm" icon={iconRefresh} onclick={load} disabled={loading}>
-        {t('overview.refresh')}
-      </Button>
+      <Button
+        label={t('overview.refresh')}
+        variant="ghost"
+        size="sm"
+        icon={iconRefresh}
+        onclick={load}
+        disabled={loading}
+      />
     </div>
   </header>
 
   {#if loading && !data}
     <p class="shpd-overview__state">{t('overview.loading')}</p>
   {:else if error && !data}
-    <div class="shpd-overview__state shpd-overview__state--error">
-      <p>{error}</p>
-      <Button variant="secondary" size="sm" onclick={load}>{t('overview.retry')}</Button>
-    </div>
+    <!-- Chyba načtení místo obsahu (#133 D60): Notice nahoře, „Zkusit
+         znovu“ jako sekundární tlačítko pod textem. -->
+    <Notice tone="danger">
+      <p class="shpd-overview__error-text">{error}</p>
+      <Button label={t('overview.retry')} variant="secondary" size="sm" onclick={load} />
+    </Notice>
   {:else if sections.length === 0}
     <p class="shpd-overview__state">{t('overview.empty')}</p>
   {:else}
@@ -272,12 +280,8 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-overview__state--error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--shpd-space-md);
-    color: var(--shpd-color-danger);
+  .shpd-overview__error-text {
+    margin: 0 0 var(--shpd-space-sm);
   }
 
   /* Kartu, mřížku i nadpis karty kreslí sdílené Card / CardGrid /

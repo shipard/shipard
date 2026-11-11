@@ -10,6 +10,7 @@
   import { t } from '../../i18n/index.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import NewDatasourceModal from './NewDatasourceModal.svelte';
   import { iconAdd, iconDatabase, iconOpenExternal, iconSpinner, iconSuccess, iconWarning } from '../../icons.js';
 
@@ -160,12 +161,11 @@
   {#if items === null}
     <div class="portal__status">{t('portal.loading')}</div>
   {:else if error}
-    <div class="portal__error">
-      {t('portal.error')}
-      <button class="portal__retry" type="button" onclick={load}>
-        {t('portal.retry')}
-      </button>
-    </div>
+    <!-- Chyba načtení místo obsahu (#133 D60). -->
+    <Notice tone="danger">
+      <p class="portal__problem-text">{t('portal.error')}</p>
+      <Button label={t('portal.retry')} variant="secondary" size="sm" onclick={load} />
+    </Notice>
   {:else if items.length === 0}
     <div class="portal__status">
       {t('portal.empty')}
@@ -291,27 +291,8 @@
     margin-top: var(--shpd-space-md);
   }
 
-  .portal__error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--shpd-space-md);
-    padding: var(--shpd-space-xl);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-danger);
-    background-color: var(--shpd-color-danger-soft);
-    border: 1px solid var(--shpd-color-danger);
-    border-radius: var(--shpd-radius-lg);
-  }
-
-  .portal__retry {
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    cursor: pointer;
+  .portal__problem-text {
+    margin: 0 0 var(--shpd-space-sm);
   }
 
   .portal__grid {

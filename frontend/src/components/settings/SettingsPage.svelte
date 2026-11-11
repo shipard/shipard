@@ -151,7 +151,8 @@
       <span>{t('common.loading')}</span>
     </div>
   {:else if loadError}
-    <div class="shpd-settings-page__status shpd-settings-page__status--error">{loadError}</div>
+    <!-- Chyba načtení místo obsahu (#133 D60). -->
+    <Notice tone="danger">{loadError}</Notice>
   {:else if definition}
     <!-- Karta stránky Nastavení = sdílená Card s odsazením lg (#137 D33, D35);
          nadpis v roli title s ikonou stránky z definice (D36, D38). -->
@@ -315,10 +316,6 @@
     gap: var(--shpd-space-sm);
     padding: var(--shpd-space-lg);
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-settings-page__status--error {
-    color: var(--shpd-color-danger);
   }
 
   /* Úzký kontejner: popisky nad pole, jeden sloupec. */

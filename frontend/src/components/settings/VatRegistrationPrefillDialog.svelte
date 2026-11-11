@@ -117,7 +117,7 @@
     {#if loading}
       <p class="shpd-vat-prefill__state">{t('common.loading')}</p>
     {:else if loadError}
-      <p class="shpd-vat-prefill__state shpd-vat-prefill__state--error">{loadError}</p>
+      <Notice tone="danger">{loadError}</Notice>
     {:else if values}
       <!-- Předvyplněný zbytek jen k nahlédnutí — zdrojem je vlastní Osoba
            a vrstva A, editace patří do plného formuláře („Zadat ručně"). -->
@@ -196,10 +196,6 @@
 
   .shpd-vat-prefill__state {
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-vat-prefill__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-vat-prefill__summary {

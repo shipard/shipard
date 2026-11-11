@@ -128,7 +128,7 @@
   {#if loading}
     <p class="shpd-content-tags__state">{t('common.loading')}</p>
   {:else if loadError}
-    <p class="shpd-content-tags__state shpd-content-tags__state--error">{loadError}</p>
+    <div class="shpd-content-tags__notice"><Notice tone="danger">{loadError}</Notice></div>
   {:else if overview}
     {#if !overview.available}
       <p class="shpd-content-tags__state shpd-content-tags__state--muted">
@@ -288,10 +288,6 @@
      jen mezeru nad hláškou. */
   .shpd-content-tags__notice {
     margin-top: var(--shpd-space-sm);
-  }
-
-  .shpd-content-tags__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-content-tags__state--muted {

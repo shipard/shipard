@@ -142,7 +142,7 @@
   {#if loading}
     <p class="shpd-items-offer__state">{t('common.loading')}</p>
   {:else if loadError}
-    <p class="shpd-items-offer__state shpd-items-offer__state--error">{loadError}</p>
+    <div class="shpd-items-offer__notice"><Notice tone="danger">{loadError}</Notice></div>
   {:else if offer && !offer.available}
     <!-- Nedostupná nabídka se NEschovává — uživatel má vědět, že existuje
          a proč teď nejde (chart_undecided / chart_none / accounting_inactive). -->
@@ -262,10 +262,6 @@
      jen mezeru nad hláškou. */
   .shpd-items-offer__notice {
     margin-top: var(--shpd-space-sm);
-  }
-
-  .shpd-items-offer__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-items-offer__state--muted {

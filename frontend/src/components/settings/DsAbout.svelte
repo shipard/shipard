@@ -9,6 +9,7 @@
   import { translateError } from '../../i18n/errors.js';
   import Card from '../ui/Card.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
+  import Notice from '../ui/Notice.svelte';
   import { iconInfo } from '../../icons.js';
   import { fetchDsAbout } from '../../api/dsAbout.js';
   import { formatFileSize } from '../../api/attachments.js';
@@ -100,7 +101,7 @@
     {#if loading}
       <p class="shpd-ds-about__state">{t('common.loading')}</p>
     {:else if error}
-      <p class="shpd-ds-about__state shpd-ds-about__state--error">{error}</p>
+      <Notice tone="danger">{error}</Notice>
     {:else}
       <section class="shpd-ds-about__block">
         <SectionHeading level={3}>{t('dsAbout.block.identity')}</SectionHeading>
@@ -211,10 +212,6 @@
 
   .shpd-ds-about__state {
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-ds-about__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-ds-about__block + .shpd-ds-about__block {

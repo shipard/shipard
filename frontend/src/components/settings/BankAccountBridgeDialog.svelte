@@ -113,7 +113,7 @@
     {#if loading}
       <p class="shpd-bank-bridge__state">{t('common.loading')}</p>
     {:else if loadError}
-      <p class="shpd-bank-bridge__state shpd-bank-bridge__state--error">{loadError}</p>
+      <Notice tone="danger">{loadError}</Notice>
     {:else if candidates.length === 0}
       <p class="shpd-bank-bridge__state">{t('setup.bankDialog.empty')}</p>
     {:else}
@@ -196,10 +196,6 @@
 
   .shpd-bank-bridge__state {
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-bank-bridge__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-bank-bridge__list {

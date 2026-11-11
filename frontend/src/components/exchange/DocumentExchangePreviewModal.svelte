@@ -71,6 +71,7 @@
 
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
   import DocumentExchangePreview from './DocumentExchangePreview.svelte';
   import RegistryExtractedPreview from './RegistryExtractedPreview.svelte';
@@ -314,7 +315,11 @@
       {t('exchange.preview.loading')}
     </div>
   {:else if error}
-    <div class="shpd-exchange-modal__error" data-testid="review-error">{error}</div>
+    <!-- Chyba načtení místo obsahu (#133 D60); `review-error` čte e2e
+         průchod sadou (tests/e2e/dataset-walkthrough.spec.mjs). -->
+    <div class="shpd-exchange-modal__notice">
+      <Notice tone="danger" data-testid="review-error">{error}</Notice>
+    </div>
   {:else if data}
     <div class="shpd-exchange-modal__mobile-tabs" role="tablist">
       <button
@@ -498,8 +503,7 @@
     font-size: var(--shpd-font-size-body);
   }
 
-  .shpd-exchange-modal__loading,
-  .shpd-exchange-modal__error {
+  .shpd-exchange-modal__loading {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -509,8 +513,9 @@
     min-height: 12.5rem;
   }
 
-  .shpd-exchange-modal__error {
-    color: var(--shpd-color-danger);
+  /* Modal je `flush` — odsazení hlášky od krajů dává obal. */
+  .shpd-exchange-modal__notice {
+    padding: var(--shpd-space-md);
   }
 
   /* Mobile tab bar — hidden on desktop. */

@@ -1,6 +1,7 @@
 <script>
   import { get } from '../../api/client.js';
   import Button from '../ui/Button.svelte';
+  import Notice from '../ui/Notice.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -213,10 +214,8 @@
     </div>
 
   {:else if error}
-    <div class="shpd-browser__error">
-      <span class="shpd-browser__error-icon">⚠</span>
-      {error}
-    </div>
+    <!-- Chyba načtení místo obsahu (#133 D60): Notice nahoře v oblasti. -->
+    <div class="shpd-browser__notice"><Notice tone="danger">{error}</Notice></div>
 
   {:else}
     <!-- Obal datové mřížky (D57) — roluje v obou osách -->
@@ -360,18 +359,9 @@
     to { transform: rotate(360deg); }
   }
 
-  /* Error */
-  .shpd-browser__error {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-    padding: var(--shpd-space-lg);
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
-  }
-
-  .shpd-browser__error-icon {
-    font-size: var(--shpd-font-size-lg);
+  /* Chyba načtení — obal dává odsazení od krajů, vzhled má Notice. */
+  .shpd-browser__notice {
+    padding: var(--shpd-space-md);
   }
 
   /* Datová mřížka s držící hlavičkou (#133 D57): vlastní obal, který

@@ -9,6 +9,7 @@
   // na jediný tab (D2); hlavička (title/subtitle/badges/icon) zůstává vždy.
 
   import Modal from '../ui/Modal.svelte';
+  import Notice from '../ui/Notice.svelte';
   import ViewerDetail from './ViewerDetail.svelte';
   import { contentHasAttachments } from './detailContent.js';
   import { get } from '../../api/client.js';
@@ -89,7 +90,8 @@
   flush
 >
   {#if error}
-    <div class="shpd-detail-modal__error">{error}</div>
+    <!-- Chyba načtení místo obsahu (#133 D60): Notice nahoře v těle modalu. -->
+    <div class="shpd-detail-modal__notice"><Notice tone="danger">{error}</Notice></div>
   {:else}
     <div class="shpd-detail-modal__body">
       <ViewerDetail {detail} {loading} hideSingleTabBar />
@@ -106,13 +108,8 @@
     overflow: hidden;
   }
 
-  .shpd-detail-modal__error {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--shpd-space-xl);
-    color: var(--shpd-color-danger);
-    font-size: var(--shpd-font-size-sm);
-    min-height: 12.5rem;
+  /* Modal je `flush` — odsazení hlášky od krajů dává obal. */
+  .shpd-detail-modal__notice {
+    padding: var(--shpd-space-md);
   }
 </style>

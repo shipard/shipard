@@ -125,7 +125,7 @@
         <span>{t('print.preview.loading')}</span>
       </div>
     {:else if error}
-      <div class="shpd-print__state shpd-print__state--error" role="alert">{error}</div>
+      <Notice tone="danger">{error}</Notice>
     {:else if pdfUrl}
       {#if messages.length > 0}
         <Notice tone="warning" items={messages.map((message) => message.text)} />
@@ -257,10 +257,6 @@
     padding: var(--shpd-space-lg);
     text-align: center;
     color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-print__state--error {
-    color: var(--shpd-color-danger);
   }
 
   .shpd-print__spinner {
