@@ -1,6 +1,6 @@
 # Task: Opravný daňový doklad — task C: tisk a ISDOC
 
-**Stav:** naplánováno — zadání 2026-11-10 (D1–D11 zamčené v #92); čeká na tasky A a B
+**Stav:** hotovo — 2026-11-11 (3 commity; unit sada zelená, integrační testy tisku na ukázkovém zdroji plátce, tisk a ISDOC ověřené nad potvrzeným opravným dokladem na DEMO zdroji; zbývá revize formulací `sk` / `de`, nálezy z ověření níže a uzavření #92)
 
 **Issue:** #92
 
@@ -152,14 +152,73 @@ Ostatní rozhodnutí viz tasky A a B.
 
 ## Hotovo když
 
-- [ ] Opravný doklad se tiskne se správným titulkem, číslem původního
+- [x] Opravný doklad se tiskne se správným titulkem, číslem původního
       dokladu a důvodem opravy ve všech jazycích tisku.
-- [ ] ISDOC opravného dokladu má typ 2 nebo 3, odkaz na původní doklad
+- [x] ISDOC opravného dokladu má typ 2 nebo 3, odkaz na původní doklad
       a projde validací proti XSD.
-- [ ] Běžná faktura, zálohová faktura a záporná faktura bez příznaku
+- [x] Běžná faktura, zálohová faktura a záporná faktura bez příznaku
       beze změny.
-- [ ] Dokumentace a nápověda aktuální.
-- [ ] Testy zelené (cíleně, pak celá sada).
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`; po
-      ověření zavřít #92 a přesunout D11 do samostatného issue, pokud ho
-      chceme sledovat.
+- [x] Dokumentace a nápověda aktuální.
+- [x] Testy zelené (cíleně, pak celá sada).
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.
+- [ ] Po ověření zavřít #92 a přesunout D11 do samostatného issue, pokud
+      ho chceme sledovat (rozhoduje člověk).
+
+## Odchylky od zadání (2026-11-11)
+
+- **Stávající fixtury tisku dostaly klíč `correction: null`** (osm
+  fixtur dokladů, jeden řádek) — U3 chce klíč i u běžného dokladu
+  a kontraktní test porovnává `data` striktně. „Ani o bajt“ se hlídalo na
+  výstupu: HTML všech stávajících fixtur ve čtyřech jazycích a ISDOC všech
+  stávajících fixtur je před změnou a po ní bajtově shodné. Kontace klíč
+  nenese (`describe()` se neměnil).
+- **Řádky opravy tiskne společný layout** (`doc-base`, partial
+  `_partials/correction.html.twig`), ne šablona faktury — ta nic
+  nepřepisuje a popisky jsou podle U2 ve společném katalogu.
+- **Čtečka ISDOC se neměnila.** Dobropis čte jako `creditNote` se stejnými
+  částkami (round-trip test); vrubopis (typ 3) odmítá, odkaz na původní
+  doklad a zápornou slevu nečte — přijaté opravné doklady jsou D11.
+  Vrubopis se proto ověřuje jen proti XSD.
+- **Kontrola vstupu writeru záporné hodnoty neodmítala** — nebylo co
+  uvolňovat. Jediná úprava: sleva částkou se u opravného dokladu bere i se
+  záporným znaménkem (znaménko řádku).
+- **Nápověda k tisku šla do commitu 1**, ne 3 — stránka má být ve stejném
+  commitu jako funkce, kterou popisuje. E-fakturu nápověda nepopisuje:
+  ISDOC k vydaným dokladům z aplikace vyrobit nejde (fáze 2 #119),
+  `co-dnes-nejde.md` to říká dál.
+
+## Nálezy z ověření (neřešeno tady)
+
+1. **Odběratel bez adresy na tisku dokladu bez `partner_address`.**
+   Opravný doklad založený akcí *Vystavit opravný doklad* a potvrzený má
+   ve snapshotu odběratele jen název, IČO, DIČ a kontakt — adresa chybí
+   a na PDF není. Příčina je obecná: applier `partner_address` neplní
+   a `PersonSnapshotBuilder` adresu bez id nedohledá (vlastní strana
+   náhradu sídlem má, partner ne). Týká se každého dokladu potvrzeného bez
+   vybrané adresy partnera, tedy i faktur z periodické fakturace. Daňový
+   doklad má sídlo odběratele nést — chce vlastní rozhodnutí (náhrada
+   sídlem partnera ve snapshotu, nebo doplnění adresy v applieru).
+2. **„K úhradě“ u záporné částky.** Dobropis tiskne „K úhradě −12 100,00
+   CZK“ a splatnost; QR platba na něm správně není. Popisek u záporné
+   částky nedává smysl (správně „K vrácení“ / „Dobropisováno“) — podle
+   oddílu Mimo rozsah jen zapsáno.
+3. **ISDOC nad skutečným dokladem jde jen ručně.** Canonical z exportu
+   nenese vlastní stranu ani číslo dokladu; pro ověření se doplnily ze
+   snapshotu tisku. Adaptér `PrintData → canonical` a vystavení z aplikace
+   jsou fáze 2 #119 — krok „ISDOC z detailu“ a „přijetí zpět do pošty“
+   z ověření proto neexistuje (čtení zpět ověřeno přímo `IsdocReader`).
+4. **Neplátce** je ověřený integračním testem (doklad bez registrace DPH
+   na zdroji plátce) a testy šablony; ukázkový zdroj bez registrace DPH
+   s vydanými fakturami na dev serveru není.
+
+## Formulace k revizi (`sk`, `de`)
+
+Titulky mají právní váhu — k revizi kolegy stejně jako
+`tasks/prints-languages.md` → Formulace k revizi:
+
+| klíč | cs | sk | de |
+|---|---|---|---|
+| `title.correctiveVatPayer` | Opravný daňový doklad | Opravná faktúra | Rechnungskorrektur |
+| `title.correctiveNonVatPayer` | Opravný doklad | Opravný doklad | Rechnungskorrektur |
+| `label.correctedDoc` | Původní doklad | Pôvodný doklad | Ursprünglicher Beleg |
+| `label.correctionReason` | Důvod opravy | Dôvod opravy | Korrekturgrund |
