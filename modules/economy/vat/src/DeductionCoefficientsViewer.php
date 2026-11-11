@@ -14,6 +14,8 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class DeductionCoefficientsViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'economy.vat.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     private const STATE_SPAN_CLASS = [
@@ -126,15 +128,29 @@ class DeductionCoefficientsViewer extends TableViewer
     {
         $registrations = $this->registrationNames();
         $items = [
-            ['label' => 'Registrace DPH', 'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? ''],
-            ['label' => 'Zálohový koeficient', 'value' => $this->formatCoefficient($record['coefficient_provisional'] ?? null) ?? 'odvozený (loňský vypořádací, jinak 1,00)'],
-            ['label' => 'Vypořádací koeficient', 'value' => $this->formatCoefficient($record['coefficient_settled'] ?? null) ?? 'nevypořádáno'],
+            [
+                'label' => $this->columnLabel('vat_registration', 'VAT registration'),
+                'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? '',
+            ],
+            [
+                'label' => $this->columnLabel('coefficient_provisional', 'Provisional coefficient'),
+                'value' => $this->formatCoefficient($record['coefficient_provisional'] ?? null)
+                    ?? $this->text('provisionalDerived', 'derived (last year\'s settled, otherwise 1.00)'),
+            ],
+            [
+                'label' => $this->columnLabel('coefficient_settled', 'Settled coefficient'),
+                'value' => $this->formatCoefficient($record['coefficient_settled'] ?? null)
+                    ?? $this->text('notSettled', 'not settled'),
+            ],
         ];
         if (!empty($record['note'])) {
-            $items[] = ['label' => 'Poznámka', 'value' => (string) $record['note']];
+            $items[] = ['label' => $this->columnLabel('note', 'Note'), 'value' => (string) $record['note']];
         }
 
-        return [$this->propertiesTab([['title' => 'Koeficient odpočtu', 'items' => $items]])];
+        return [$this->propertiesTab([[
+            'title' => $this->text('groupCoefficient', 'Deduction coefficient'),
+            'items' => $items,
+        ]])];
     }
 
     public function getFilters(): array
@@ -143,13 +159,13 @@ class DeductionCoefficientsViewer extends TableViewer
 
         $registrations = $this->registrationNames();
         if (count($registrations) > 1) {
-            $regOptions = [['value' => '0', 'label' => 'Vše']];
+            $regOptions = [['value' => '0', 'label' => $this->sharedText('all', 'All')]];
             foreach ($registrations as $id => $name) {
                 $regOptions[] = ['value' => (string) $id, 'label' => $name];
             }
             $filters[] = [
                 'id'      => 'vat_registration',
-                'label'   => 'Registrace DPH',
+                'label'   => $this->columnLabel('vat_registration', 'VAT registration'),
                 'type'    => 'enum',
                 'default' => '0',
                 'options' => $regOptions,
@@ -160,13 +176,13 @@ class DeductionCoefficientsViewer extends TableViewer
             'SELECT DISTINCT `year` AS y FROM `' . $this->table . '` WHERE `docState` != 90 ORDER BY y DESC',
         );
         if ($years !== []) {
-            $yearOptions = [['value' => '0', 'label' => 'Vše']];
+            $yearOptions = [['value' => '0', 'label' => $this->sharedText('all', 'All')]];
             foreach ($years as $row) {
                 $yearOptions[] = ['value' => (string) $row['y'], 'label' => (string) $row['y']];
             }
             $filters[] = [
                 'id'      => 'year',
-                'label'   => 'Rok',
+                'label'   => $this->text('year', 'Year'),
                 'type'    => 'enum',
                 'default' => '0',
                 'options' => $yearOptions,
@@ -181,7 +197,16 @@ class DeductionCoefficientsViewer extends TableViewer
     {
         $prov = $this->formatCoefficient($rowData['coefficient_provisional'] ?? null) ?? '—';
         $settled = $this->formatCoefficient($rowData['coefficient_settled'] ?? null) ?? '—';
-        return "zálohový {$prov} · vypořádací {$settled}";
+        return $this->text('rowCoefficients', 'provisional {provisional} · settled {settled}', [
+            'provisional' => $prov,
+            'settled'     => $settled,
+        ]);
+    }
+
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     private function formatCoefficient(mixed $value): ?string

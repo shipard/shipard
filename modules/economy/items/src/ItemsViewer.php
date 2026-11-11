@@ -6,11 +6,20 @@ namespace Shipard\Module\Economy\Items;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Viewer\TableViewer;
 
 class ItemsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
+
+    private const LABELS_CFG_ITEM = 'economy.items.viewerDetailLabels';
+
+    /**
+     * Přípona ceny se symbolem domácí měny (` Kč`); prázdná bez nastavené
+     * domácí měny. Načítá se jednou na instanci — ne dotaz na každý řádek.
+     */
+    private ?string $priceSuffix = null;
 
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
@@ -106,7 +115,7 @@ class ItemsViewer extends TableViewer
         $price = $rowData['sales_price_no_vat'] ?? null;
         if ($price !== null && $price !== '') {
             $shortcut = (string) ($rowData['unit_shortcut'] ?? '');
-            $formatted = number_format((float) $price, 2, ',', ' ') . ' Kč';
+            $formatted = number_format((float) $price, 2, ',', ' ') . $this->priceSuffix();
             if ($shortcut !== '') {
                 $formatted .= ' / ' . $shortcut;
             }
@@ -138,28 +147,32 @@ class ItemsViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $classificationItems = [];
-        $this->addItem($classificationItems, 'Druh', $record['kind_name'] ?? null);
-        $this->addItem($classificationItems, 'Typ', $this->resolveItemTypeLabel((int) ($record['item_type'] ?? 3)));
+        $this->addItem($classificationItems, $this->columnLabel('item_kind', 'Item kind'), $record['kind_name'] ?? null);
+        $this->addItem($classificationItems, $this->columnLabel('item_type', 'Item type'), $this->resolveItemTypeLabel((int) ($record['item_type'] ?? 3)));
 
         $pricingItems = [];
         $price = $record['sales_price_no_vat'] ?? null;
         if ($price !== null && $price !== '') {
-            $this->addItem($pricingItems, 'Cena bez DPH', number_format((float) $price, 2, ',', ' ') . ' Kč');
+            $this->addItem(
+                $pricingItems,
+                $this->columnLabel('sales_price_no_vat', 'Sales price (no VAT)'),
+                number_format((float) $price, 2, ',', ' ') . $this->priceSuffix(),
+            );
         }
         $unitName = trim((string) ($record['unit_name'] ?? ''));
         $unitShort = trim((string) ($record['unit_shortcut'] ?? ''));
         $unitLabel = $unitShort !== '' && $unitName !== '' ? "{$unitName} ({$unitShort})" : ($unitName !== '' ? $unitName : $unitShort);
-        $this->addItem($pricingItems, 'Jednotka', $unitLabel);
+        $this->addItem($pricingItems, $this->columnLabel('unit', 'Unit'), $unitLabel);
 
         $detailItems = [];
-        $this->addItem($detailItems, 'Popis', $record['description'] ?? null);
-        $this->addItem($detailItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
-        $this->addItem($detailItems, 'Platnost do', $this->formatDate($record['valid_to'] ?? null));
+        $this->addItem($detailItems, $this->columnLabel('description', 'Description'), $record['description'] ?? null);
+        $this->addItem($detailItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($detailItems, $this->columnLabel('valid_to', 'Valid to'), $this->formatDate($record['valid_to'] ?? null));
 
         return [$this->propertiesTab([
-            ['title' => 'Klasifikace', 'items' => $classificationItems],
-            ['title' => 'Cena', 'items' => $pricingItems],
-            ['title' => 'Detaily', 'items' => $detailItems],
+            ['title' => $this->text('groupClassification', 'Classification'), 'items' => $classificationItems],
+            ['title' => $this->text('groupPrice', 'Price'), 'items' => $pricingItems],
+            ['title' => $this->text('groupDetails', 'Details'), 'items' => $detailItems],
         ])];
     }
 
@@ -180,11 +193,12 @@ class ItemsViewer extends TableViewer
                 return (string) $cfg[(string) $key]['name'];
             }
         }
+        // Bez zkompilované konfigurace anglicky — holá pole `economy.items.itemTypes`.
         return match ($key) {
-            0 => 'Služba',
-            1 => 'Zásoba',
-            2 => 'Účetní položka',
-            default => 'Ostatní',
+            0 => 'Service',
+            1 => 'Stock',
+            2 => 'Accounting',
+            default => 'Other',
         };
     }
 
@@ -198,6 +212,38 @@ class ItemsViewer extends TableViewer
         }
         $ts = is_string($value) ? strtotime($value) : null;
         return $ts !== null && $ts !== false ? date('j. n. Y', $ts) : null;
+    }
+
+    /**
+     * Mezera + symbol domácí měny za cenu: kód z nastavení
+     * `economy.homeCurrency`, symbol z `world.base.currencies` (bez symbolu
+     * kód měny velkými písmeny). Bez nastavené domácí měny prázdný řetězec
+     * — cena se ukáže jen jako číslo.
+     */
+    private function priceSuffix(): string
+    {
+        if ($this->priceSuffix === null) {
+            $value = (new SettingsStore($this->db))->get('economy.homeCurrency');
+            $code = is_string($value) ? strtolower(trim($value)) : '';
+            if ($code === '') {
+                $this->priceSuffix = '';
+            } else {
+                $currencies = $this->config?->cfgItem('world.base.currencies');
+                $symbol = is_array($currencies) ? ($currencies[$code]['symbol'] ?? null) : null;
+                $this->priceSuffix = ' ' . (is_string($symbol) && $symbol !== '' ? $symbol : strtoupper($code));
+            }
+        }
+        return $this->priceSuffix;
+    }
+
+    /**
+     * Text vieweru z katalogu `economy.items.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

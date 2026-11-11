@@ -11,6 +11,8 @@ class VatRegistrationsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -91,7 +93,7 @@ class VatRegistrationsViewer extends TableViewer
         if ($validFrom !== null && $validTo !== null) {
             $t2[] = ['text' => $validFrom . ' – ' . $validTo];
         } elseif ($validFrom !== null) {
-            $t2[] = ['text' => 'od ' . $validFrom];
+            $t2[] = ['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $validFrom])];
         }
 
         $periodKindLabels = $this->resolvePeriodKindLabels();
@@ -149,7 +151,7 @@ class VatRegistrationsViewer extends TableViewer
         if ($filingGroups !== []) {
             $tabs[] = [
                 'id'      => 'filing',
-                'label'   => 'Podací údaje',
+                'label'   => $this->columnLabel('filing_profile', 'Filing profile'),
                 'content' => ['type' => 'properties', 'groups' => $filingGroups],
             ];
         }
@@ -171,7 +173,7 @@ class VatRegistrationsViewer extends TableViewer
 
         $regionKey = (string) ($record['region'] ?? '');
         if ($regionKey !== '') {
-            $this->addItem($identityItems, 'Region', $regionLabels[$regionKey] ?? $regionKey);
+            $this->addItem($identityItems, $this->columnLabel('region', 'Region'), $regionLabels[$regionKey] ?? $regionKey);
         }
 
         $countryKey = (string) ($record['country'] ?? '');
@@ -180,15 +182,15 @@ class VatRegistrationsViewer extends TableViewer
             if (isset($countryLabels[$countryKey])) {
                 $countryDisplay .= ' (' . $countryLabels[$countryKey] . ')';
             }
-            $this->addItem($identityItems, 'Země', $countryDisplay);
+            $this->addItem($identityItems, $this->columnLabel('country', 'Country'), $countryDisplay);
         }
 
-        $this->addItem($identityItems, 'DIČ', $record['vat_id'] ?? null);
+        $this->addItem($identityItems, $this->columnLabel('vat_id', 'VAT ID'), $record['vat_id'] ?? null);
 
         $taxpayerKind = (int) ($record['taxpayer_kind'] ?? 0);
         $this->addItem(
             $identityItems,
-            'Druh plátce',
+            $this->columnLabel('taxpayer_kind', 'Taxpayer kind'),
             $taxpayerKindLabels[$taxpayerKind] ?? (string) $taxpayerKind,
         );
 
@@ -196,45 +198,55 @@ class VatRegistrationsViewer extends TableViewer
         // účetní doklad přiznání se saldo řádkem bez partnera.
         $this->addItem(
             $identityItems,
-            'Správce daně',
-            $record['tax_office_person_name'] ?? (empty($record['tax_office_person']) ? 'nevyplněn' : null),
+            $this->columnLabel('tax_office_person', 'Tax office'),
+            $record['tax_office_person_name'] ?? (empty($record['tax_office_person']) ? $this->text('taxOfficeNotSet', 'not set') : null),
         );
 
         $periodItems = [];
         $taxPeriodKind = (int) ($record['tax_period_kind'] ?? 0);
         $this->addItem(
             $periodItems,
-            'Frekvence přiznání DPH',
+            $this->columnLabel('tax_period_kind', 'Tax period kind'),
             $periodKindLabels[$taxPeriodKind] ?? (string) $taxPeriodKind,
         );
 
         $csPeriodKind = (int) ($record['cs_period_kind'] ?? 0);
         $this->addItem(
             $periodItems,
-            'Frekvence kontrolního hlášení',
+            $this->columnLabel('cs_period_kind', 'Control statement period kind'),
             $periodKindLabels[$csPeriodKind] ?? (string) $csPeriodKind,
         );
 
         $rsPeriodKind = (int) ($record['rs_period_kind'] ?? 0);
         $this->addItem(
             $periodItems,
-            'Frekvence souhrnného hlášení',
+            $this->columnLabel('rs_period_kind', 'Recapitulative statement period kind'),
             $periodKindLabels[$rsPeriodKind] ?? (string) $rsPeriodKind,
         );
 
-        $this->addItem($periodItems, 'Platí od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($periodItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $validTo = $this->formatDate($record['valid_to'] ?? null);
-        $this->addItem($periodItems, 'Platí do', $validTo ?? 'bez konce');
+        $this->addItem($periodItems, $this->columnLabel('valid_to', 'Valid to'), $validTo ?? $this->sharedText('noEnd', 'no end'));
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($periodItems !== []) {
-            $groups[] = ['title' => 'Periodicita a platnost', 'items' => $periodItems];
+            $groups[] = ['title' => $this->text('groupPeriodicity', 'Periodicity and validity'), 'items' => $periodItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
+    }
+
+    /**
+     * Text z katalogu modulu (`economy.codebooks.viewerDetailLabels`, sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

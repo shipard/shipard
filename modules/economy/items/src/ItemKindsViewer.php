@@ -82,7 +82,7 @@ class ItemKindsViewer extends TableViewer
 
         $t2 = [];
         if (!empty($rowData['system_code'])) {
-            $t2[] = ['text' => 'systémový', 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('statusSystem', 'system'), 'class' => 'muted'];
         }
         if ($docState !== 10) {
             $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
@@ -103,11 +103,11 @@ class ItemKindsViewer extends TableViewer
         $recordId = (int) $record['id'];
 
         $items = [];
-        $this->addItem($items, 'Typ položky', $this->resolveItemTypeLabel((int) ($record['item_type'] ?? 3)));
-        $this->addItem($items, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
-        $this->addItem($items, 'Platnost do', $this->formatDate($record['valid_to'] ?? null));
+        $this->addItem($items, $this->columnLabel('item_type', 'Item type'), $this->resolveItemTypeLabel((int) ($record['item_type'] ?? 3)));
+        $this->addItem($items, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($items, $this->columnLabel('valid_to', 'Valid to'), $this->formatDate($record['valid_to'] ?? null));
         if (!empty($record['system_code'])) {
-            $this->addItem($items, 'Systémový kód', (string) $record['system_code']);
+            $this->addItem($items, $this->columnLabel('system_code', 'System code'), (string) $record['system_code']);
         }
 
         $tabs = [[
@@ -115,7 +115,7 @@ class ItemKindsViewer extends TableViewer
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => 'Druh položky', 'items' => $items]],
+                'groups' => [['title' => $this->detailText('economy.items.viewerDetailLabels', 'groupItemKind', 'Item kind'), 'items' => $items]],
             ],
         ]];
 
@@ -138,8 +138,8 @@ class ItemKindsViewer extends TableViewer
                 'content' => [
                     'type'    => 'table',
                     'columns' => [
-                        ['id' => 'code', 'label' => 'Kód'],
-                        ['id' => 'name', 'label' => 'Název'],
+                        ['id' => 'code', 'label' => $this->columnLabel('code', 'Code', 'economy_items')],
+                        ['id' => 'name', 'label' => $this->columnLabel('name', 'Name', 'economy_items')],
                     ],
                     'rows' => $rows,
                 ],
@@ -166,11 +166,12 @@ class ItemKindsViewer extends TableViewer
                 return (string) $cfg[(string) $key]['name'];
             }
         }
+        // Bez zkompilované konfigurace anglicky — holá pole `economy.items.itemTypes`.
         return match ($key) {
-            0 => 'Služba',
-            1 => 'Zásoba',
-            2 => 'Účetní položka',
-            default => 'Ostatní',
+            0 => 'Service',
+            1 => 'Stock',
+            2 => 'Accounting',
+            default => 'Other',
         };
     }
 

@@ -100,7 +100,8 @@
         {"id": "economy.bank.txDirections",         "file": "config/txDirections.jsonc"},
         {"id": "economy.bank.reconciliationStates", "file": "config/reconciliationStates.jsonc"},
         {"id": "economy.bank.statementFormats",     "file": "config/statementFormats.jsonc"},
-        {"id": "economy.bank.overviewTexts",        "file": "config/overviewTexts.jsonc"}
+        {"id": "economy.bank.overviewTexts",        "file": "config/overviewTexts.jsonc"},
+        {"id": "economy.bank.viewerDetailLabels",   "file": "config/viewerDetailLabels.jsonc"}
     ],
 
     // Přehled firmy (#120): Peníze → banka = koncový zůstatek posledního výpisu per účet.

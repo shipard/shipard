@@ -107,11 +107,11 @@ class CasesViewer extends AccbalViewerBase
         $t2[] = ['text' => $balanceShort !== '' ? $balanceShort : trim((string) ($rowData['balance_name'] ?? '')), 'class' => 'muted'];
         $vs = trim((string) ($rowData['payment_reference'] ?? ''));
         if ($vs !== '') {
-            $t2[] = ['text' => 'VS ' . $vs, 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('rowPaymentReference', 'Ref. {value}', ['value' => $vs]), 'class' => 'muted'];
         }
         $ss = trim((string) ($rowData['specific_symbol'] ?? ''));
         if ($ss !== '') {
-            $t2[] = ['text' => 'SS ' . $ss, 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('rowSpecificSymbol', 'Spec. symbol {value}', ['value' => $ss]), 'class' => 'muted'];
         }
         $due = $this->formatDate($rowData['due_date'] ?? null);
         if ($due !== null) {
@@ -395,7 +395,7 @@ class CasesViewer extends AccbalViewerBase
 
         return [
             $this->periodFilter(),
-            ['id' => 'partner', 'label' => 'Partner', 'type' => 'text'],
+            ['id' => 'partner', 'label' => $this->columnLabel('partner', 'Partner'), 'type' => 'text'],
             ['id' => 'payment_reference', 'label' => $cs ? 'Variabilní symbol' : 'Payment reference', 'type' => 'text'],
             [
                 'id'      => 'kind',

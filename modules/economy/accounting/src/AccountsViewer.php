@@ -11,6 +11,8 @@ class AccountsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.accounting.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -113,50 +115,50 @@ class AccountsViewer extends TableViewer
         $identityItems = [];
         $shortName = trim((string) ($record['short_name'] ?? ''));
         if ($shortName !== trim((string) ($record['name'] ?? ''))) {
-            $this->addItem($identityItems, 'Název zkrácený', $shortName);
+            $this->addItem($identityItems, $this->columnLabel('short_name', 'Short name'), $shortName);
         }
 
         $classificationItems = [];
         $this->addItem(
             $classificationItems,
-            'Úroveň',
+            $this->columnLabel('account_level', 'Level'),
             $this->enumLabel('economy.accounting.accountLevels', $record['account_level'] ?? null),
         );
         $this->addItem(
             $classificationItems,
-            'Povaha účtu',
+            $this->columnLabel('account_kind', 'Account kind'),
             $this->enumLabel('economy.accounting.accountKinds', $record['account_kind'] ?? null),
         );
         $this->addItem(
             $classificationItems,
-            'Druh nákladu',
+            $this->columnLabel('costs_type', 'Cost type'),
             $this->enumLabel('economy.accounting.costsTypes', $record['costs_type'] ?? null),
         );
         $this->addItem(
             $classificationItems,
-            'Druh výsledku',
+            $this->columnLabel('results_type', 'Result type'),
             $this->enumLabel('economy.accounting.resultsTypes', $record['results_type'] ?? null),
         );
 
         $settingsItems = [];
-        $this->addItem($settingsItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($settingsItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem(
             $settingsItems,
-            'Platnost do',
-            $this->formatDate($record['valid_to'] ?? null) ?? 'bez konce',
+            $this->columnLabel('valid_to', 'Valid to'),
+            $this->formatDate($record['valid_to'] ?? null) ?? $this->sharedText('noEnd', 'no end'),
         );
-        $this->addItem($settingsItems, 'Systémový', !empty($record['is_system']) ? 'Ano' : 'Ne');
-        $this->addItem($settingsItems, 'Popis', $record['note'] ?? null);
+        $this->addItem($settingsItems, $this->columnLabel('is_system', 'System'), $this->yesNoText(!empty($record['is_system'])));
+        $this->addItem($settingsItems, $this->columnLabel('note', 'Note'), $record['note'] ?? null);
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($classificationItems !== []) {
-            $groups[] = ['title' => 'Zatřídění', 'items' => $classificationItems];
+            $groups[] = ['title' => $this->text('groupClassification', 'Classification'), 'items' => $classificationItems];
         }
         if ($settingsItems !== []) {
-            $groups[] = ['title' => 'Nastavení', 'items' => $settingsItems];
+            $groups[] = ['title' => $this->text('groupSettings', 'Settings'), 'items' => $settingsItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
@@ -178,6 +180,16 @@ class AccountsViewer extends TableViewer
             return $entry['name'] ?? null;
         }
         return null;
+    }
+
+    /**
+     * Text vieweru z katalogu `economy.accounting.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

@@ -12,6 +12,8 @@ class TransportsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -79,7 +81,7 @@ class TransportsViewer extends TableViewer
         if (!empty($rowData['partner_name'])) {
             $t2[] = ['text' => (string) $rowData['partner_name'], 'class' => 'muted'];
         } else {
-            $t2[] = ['text' => 'bez protistrany', 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('noCounterparty', 'no counterparty'), 'class' => 'muted'];
         }
 
         $validFrom = $this->formatDate($rowData['valid_from'] ?? null);
@@ -87,9 +89,9 @@ class TransportsViewer extends TableViewer
         if ($validFrom !== null && $validTo !== null) {
             $t2[] = ['text' => $validFrom . ' – ' . $validTo, 'class' => 'muted'];
         } elseif ($validFrom !== null) {
-            $t2[] = ['text' => 'od ' . $validFrom, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $validFrom]), 'class' => 'muted'];
         } elseif ($validTo !== null) {
-            $t2[] = ['text' => 'do ' . $validTo, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo]), 'class' => 'muted'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -138,27 +140,37 @@ class TransportsViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Poznámka', $record['notice'] ?? null);
+        $this->addItem($identityItems, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $settingsItems = [];
-        $this->addItem($settingsItems, 'Osoba pro saldokonto', $record['partner_name'] ?? 'bez protistrany');
-        $this->addItem($settingsItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($settingsItems, $this->columnLabel('partner', 'Balance partner'), $record['partner_name'] ?? $this->text('noCounterparty', 'no counterparty'));
+        $this->addItem($settingsItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem(
             $settingsItems,
-            'Platnost do',
-            $this->formatDate($record['valid_to'] ?? null) ?? 'bez konce',
+            $this->columnLabel('valid_to', 'Valid to'),
+            $this->formatDate($record['valid_to'] ?? null) ?? $this->sharedText('noEnd', 'no end'),
         );
-        $this->addItem($settingsItems, 'Pořadí', (string) ($record['sort_order'] ?? 0));
+        $this->addItem($settingsItems, $this->columnLabel('sort_order', 'Order'), (string) ($record['sort_order'] ?? 0));
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($settingsItems !== []) {
-            $groups[] = ['title' => 'Nastavení', 'items' => $settingsItems];
+            $groups[] = ['title' => $this->text('groupSettings', 'Settings'), 'items' => $settingsItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
+    }
+
+    /**
+     * Text z katalogu modulu (`economy.codebooks.viewerDetailLabels`, sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

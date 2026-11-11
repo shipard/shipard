@@ -8,6 +8,9 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\I18n\ConfigLocalizer;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListsViewer;
 
 /** Viewer Kurzovní lístky (§9): filtr typu, řazení podle platnosti, řádek, detail s hodnotami, bez toolbar akcí. */
@@ -34,15 +37,26 @@ class ExchangeRateListsViewerTest extends TestCase
             $config->method('cfgItem')->willReturnMap([
                 ['world.cz.exchangeRateLists', self::TYPES],
                 [ExchangeRateListsViewer::SOURCES_CFG_ITEM, ['1' => ['name' => 'Soubor'], '2' => ['name' => 'Datová sada'], '3' => ['name' => 'Služba']]],
-                [ExchangeRateListsViewer::LABELS_CFG_ITEM, ['tabs' => ['values' => ['name' => 'Kurzy']]]],
-                ['core.system.viewerDetailLabels', ['tabs' => ['overview' => ['name' => 'Přehled']]]],
+                [ExchangeRateListsViewer::LABELS_CFG_ITEM, self::czech('modules/economy/exchangeRates/config/viewerDetailLabels.jsonc')],
+                ['core.system.viewerDetailLabels', self::czech('modules/core/system/config/viewerDetailLabels.jsonc')],
             ]);
             $viewer->setConfig($config);
             $dsConfig = $this->createMock(DataSourceConfig::class);
             $dsConfig->method('getCountry')->willReturn('cz');
             $viewer->setDsConfig($dsConfig);
+            // Popisky sloupců jdou z definic tabulek (#133 D66) — česky jako po načtení TableLoaderem.
+            $viewer->setTables([
+                'economy_exchange_rates_lists'  => TableDefinition::fromArray(self::czech('modules/economy/exchangeRates/tables/economy_exchange_rates_lists.jsonc')),
+                'economy_exchange_rates_values' => TableDefinition::fromArray(self::czech('modules/economy/exchangeRates/tables/economy_exchange_rates_values.jsonc')),
+            ]);
         }
         return $viewer;
+    }
+
+    /** Zdrojový JSONC (katalog textů, definice tabulky) v češtině — test tak hlídá skutečné texty. */
+    private static function czech(string $repoPath): array
+    {
+        return ConfigLocalizer::localize(JsoncParser::parseFile(dirname(__DIR__, 5) . '/' . $repoPath), 'cs');
     }
 
     public function testSelectRowsFiltersTypeSearchesNumberAndOrdersByValidFromDesc(): void
@@ -90,12 +104,12 @@ class ExchangeRateListsViewerTest extends TestCase
         $this->assertSame('ČNB — kurzy ostatních měn', $row['t1']);
         $this->assertSame('č. 10', $row['i1']);
         $this->assertSame([['text' => 'od 01.10.2026'], ['text' => 'do 31.10.2026']], $row['t2']);
-        $this->assertSame([['text' => '3 měny'], ['text' => 'Datová sada', 'class' => 'muted']], $row['t3']);
+        $this->assertSame([['text' => 'Počet měn: 3'], ['text' => 'Datová sada', 'class' => 'muted']], $row['t3']);
 
         $daily = $this->viewer($calls)->renderRow(['id' => 6, 'list_type' => 'cz.cnb.daily', 'valid_from' => '2026-10-16', 'valid_to' => null, 'list_number' => null, 'source' => 1, 'rate_count' => 31]);
         $this->assertNull($daily['i1']);
         $this->assertSame([['text' => 'od 16.10.2026']], $daily['t2']);
-        $this->assertSame('31 měn', $daily['t3'][0]['text']);
+        $this->assertSame('Počet měn: 31', $daily['t3'][0]['text']);
     }
 
     public function testDetailHasOverviewAndValuesWithPerUnitRate(): void

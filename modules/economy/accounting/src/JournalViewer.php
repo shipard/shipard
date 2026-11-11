@@ -32,6 +32,8 @@ class JournalViewer extends TableViewer
 {
     use UsesFiscalPeriods;
 
+    private const LABELS_CFG_ITEM = 'economy.accounting.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = null;
 
     private ?JournalDimensionSet $dimensions = null;
@@ -173,7 +175,7 @@ class JournalViewer extends TableViewer
         $dr = (float) ($rowData['money_dr'] ?? 0);
         $cr = (float) ($rowData['money_cr'] ?? 0);
         $i2 = [
-            ['text' => $dr !== 0.0 ? 'MD' : 'DAL', 'class' => 'muted'],
+            ['text' => $dr !== 0.0 ? $this->text('debit', 'Debit') : $this->text('credit', 'Credit'), 'class' => 'muted'],
             ['text' => $this->formatMoney($dr !== 0.0 ? $dr : $cr), 'class' => 'amount'],
         ];
         $drCur = (float) ($rowData['money_dr_cur'] ?? 0);
@@ -206,15 +208,15 @@ class JournalViewer extends TableViewer
             ['id' => 'accounting_date', 'label' => $cs ? 'Datum' : 'Date', 'width' => 96, 'sortable' => true],
             ['id' => 'doc_number', 'label' => $cs ? 'Doklad' : 'Document'],
             ['id' => 'account_number', 'label' => $cs ? 'Účet' : 'Account', 'width' => 80, 'sortable' => true],
-            ['id' => 'money_dr', 'label' => 'MD', 'width' => 110, 'align' => 'right', 'sortable' => true],
-            ['id' => 'money_cr', 'label' => 'DAL', 'width' => 110, 'align' => 'right', 'sortable' => true],
+            ['id' => 'money_dr', 'label' => $this->text('debit', 'Debit'), 'width' => 110, 'align' => 'right', 'sortable' => true],
+            ['id' => 'money_cr', 'label' => $this->text('credit', 'Credit'), 'width' => 110, 'align' => 'right', 'sortable' => true],
             ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 130],
             ['id' => 'partner_name', 'label' => $cs ? 'Osoba' : 'Person'],
         ];
         foreach ($this->dimensions() as $dimension) {
             $columns[] = ['id' => 'dim_' . $dimension->id, 'label' => $dimension->name];
         }
-        $columns[] = ['id' => 'text', 'label' => 'Text', 'grow' => true];
+        $columns[] = ['id' => 'text', 'label' => $this->columnLabel('text', 'Text'), 'grow' => true];
 
         return $columns;
     }
@@ -337,7 +339,7 @@ class JournalViewer extends TableViewer
             $cs ? 'Operace' : 'Operation',
             $this->cfgItemName('docs.core.rowOperations', $record['operation'] ?? null),
         );
-        $this->addItem($entryItems, 'Partner', $record['partner_name'] ?? null);
+        $this->addItem($entryItems, $this->columnLabel('partner', 'Partner'), $record['partner_name'] ?? null);
         foreach ($this->dimensions() as $dimension) {
             $this->addItem($entryItems, $dimension->name, $this->dimensionLabel($dimension, $record));
         }
@@ -354,14 +356,14 @@ class JournalViewer extends TableViewer
         }
 
         $amountItems = [];
-        $this->addItem($amountItems, 'MD', $this->formatMoney($record['money_dr'] ?? 0));
-        $this->addItem($amountItems, 'DAL', $this->formatMoney($record['money_cr'] ?? 0));
+        $this->addItem($amountItems, $this->text('debit', 'Debit'), $this->formatMoney($record['money_dr'] ?? 0));
+        $this->addItem($amountItems, $this->text('credit', 'Credit'), $this->formatMoney($record['money_cr'] ?? 0));
         $drCur = (float) ($record['money_dr_cur'] ?? 0);
         $crCur = (float) ($record['money_cr_cur'] ?? 0);
         if ($drCur !== 0.0 || $crCur !== 0.0) {
             $curCode = strtoupper((string) ($record['currency'] ?? ''));
-            $this->addItem($amountItems, 'MD ' . $curCode, $this->formatMoney($drCur));
-            $this->addItem($amountItems, 'DAL ' . $curCode, $this->formatMoney($crCur));
+            $this->addItem($amountItems, $this->text('debitInCurrency', 'Debit {currency}', ['currency' => $curCode]), $this->formatMoney($drCur));
+            $this->addItem($amountItems, $this->text('creditInCurrency', 'Credit {currency}', ['currency' => $curCode]), $this->formatMoney($crCur));
         }
 
         $docItems = [];
@@ -449,7 +451,7 @@ class JournalViewer extends TableViewer
             ],
             [
                 'id'    => 'partner',
-                'label' => 'Partner',
+                'label' => $this->columnLabel('partner', 'Partner'),
                 'type'  => 'text',
             ],
             [
@@ -545,6 +547,16 @@ class JournalViewer extends TableViewer
         }
         $entry = $items[(string) $key] ?? null;
         return is_array($entry) ? ($entry['name'] ?? null) : null;
+    }
+
+    /**
+     * Text vieweru z katalogu `economy.accounting.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

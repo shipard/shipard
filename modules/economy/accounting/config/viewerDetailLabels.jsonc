@@ -5,6 +5,9 @@
     // that DocsHeadsViewer adds to document detail when this module is
     // installed. The shared "overview" tab lives in
     // core.system.viewerDetailLabels.
+    //
+    // Sekce `texts` nese i texty AccountsViewer (účtový rozvrh)
+    // a JournalViewer (účetní deník).
 
     "tabs": {
         "accounting": {
@@ -21,6 +24,18 @@
             "name": "(row {n})",
             "name:cs": "(řádek {n})",
             "name:en": "(row {n})"
-        }
+        },
+
+        // AccountsViewer — skupiny Přehledu účtu (Identifikace je sdílená v core.system).
+        "groupClassification": { "name": "Classification", "name:cs": "Zatřídění", "name:en": "Classification" },
+        "groupSettings": { "name": "Settings", "name:cs": "Nastavení", "name:en": "Settings" },
+
+        // JournalViewer — strana zápisu: štítek u částky v řádku seznamu,
+        // sloupce tabulky a položky skupiny Částky v detailu.
+        "debit": { "name": "Debit", "name:cs": "MD", "name:en": "Debit" },
+        "credit": { "name": "Credit", "name:cs": "DAL", "name:en": "Credit" },
+        // Částka v měně dokladu u cizoměnového řádku ({currency} = kód měny).
+        "debitInCurrency": { "name": "Debit {currency}", "name:cs": "MD {currency}", "name:en": "Debit {currency}" },
+        "creditInCurrency": { "name": "Credit {currency}", "name:cs": "DAL {currency}", "name:en": "Credit {currency}" }
     }
 }

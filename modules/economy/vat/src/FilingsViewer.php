@@ -25,6 +25,8 @@ use Shipard\Module\Economy\Vat\Import\FilingImportService;
  */
 class FilingsViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'economy.vat.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'economy.vat.docStatesFilings';
 
     private const STATE_SPAN_CLASS = [
@@ -133,7 +135,10 @@ class FilingsViewer extends TableViewer
         $t2[] = ['text' => $this->typeLabels()[$type] ?? $type, 'class' => 'muted'];
         $t2[] = ['text' => $this->kindLabels()[(string) $rowData['filing_kind']] ?? (string) $rowData['filing_kind']];
         if ($this->isImported($rowData)) {
-            $t2[] = ['text' => 'Import', 'badge' => 'neutral'];
+            $t2[] = [
+                'text'  => $this->detailText(self::LABELS_CFG_ITEM, 'importBadge', 'Import'),
+                'badge' => 'neutral',
+            ];
         }
 
         $filed = $this->formatDate($rowData['date_filed'] ?? null);
@@ -586,8 +591,8 @@ class FilingsViewer extends TableViewer
         return ['type' => 'table', 'columns' => [
             ['id' => 'section', 'label' => $cs ? 'Sekce' : 'Section'],
             ['id' => 'evid',    'label' => $cs ? 'Ev. číslo' : 'Evidence no.'],
-            ['id' => 'vatId',   'label' => 'DIČ'],
-            ['id' => 'dppd',    'label' => 'DPPD'],
+            ['id' => 'vatId',   'label' => $this->detailText(self::LABELS_CFG_ITEM, 'colVatId', 'VAT ID')],
+            ['id' => 'dppd',    'label' => $this->detailText(self::LABELS_CFG_ITEM, 'colDppd', 'DPPD')],
             ['id' => 'kod',     'label' => $cs ? 'Kód PDP' : 'RC code'],
             ['id' => 'base',    'label' => $cs ? 'Základ' : 'Base', 'align' => 'right'],
             ['id' => 'tax',     'label' => $cs ? 'Daň' : 'Tax', 'align' => 'right'],

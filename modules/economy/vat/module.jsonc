@@ -127,6 +127,9 @@
     "config": [
         { "id": "economy.vat.reports.cz", "file": "config/vat-reports-cz.jsonc" },
 
+        // Texty viewerů DPH (#133 D66) — tvrzení, koeficienty odpočtu, podání.
+        { "id": "economy.vat.viewerDetailLabels", "file": "config/viewerDetailLabels.jsonc" },
+
         // Mapování obsahu podání na atributy XML pro EPO (#55 Fáze 3, X4);
         // schémata v modules/economy/vat/xsd/.
         { "id": "economy.vat.xml.cz", "file": "config/vat-xml-cz.jsonc" },

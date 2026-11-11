@@ -11,5 +11,41 @@
             "name:cs": "Měsíce",
             "name:en": "Months"
         }
+    },
+
+    // Texty seznamu a detailu číselníků (#133 D66) — čte
+    // `TableViewer::detailText()`. Holé `name` je anglická varianta a shoduje
+    // se s fallbackem v PHP. Popisky shodné se sloupcem jdou z definice
+    // tabulky (`columnLabel()`), „od / do {date}“, „bez konce“, Ano / Ne
+    // a skupina Identifikace ze sdílených textů `core.system`.
+    "texts": {
+        // Nadpisy skupin Přehledu.
+        "groupSettings": { "name": "Settings", "name:cs": "Nastavení", "name:en": "Settings" },
+        "groupBankAccount": { "name": "Bank account", "name:cs": "Bankovní účet", "name:en": "Bank account" },
+        "groupPeriod": { "name": "Period", "name:cs": "Období", "name:en": "Period" },
+        "groupPeriodicity": { "name": "Periodicity and validity", "name:cs": "Periodicita a platnost", "name:en": "Periodicity and validity" },
+
+        // Štítek řádku seznamu: výchozí bankovní účet, pokladna, terminál.
+        "default": { "name": "Default", "name:cs": "Výchozí", "name:en": "Default" },
+        // Bankovní účty a pokladny — výchozí se určuje per měna.
+        "defaultForCurrency": { "name": "Default for currency", "name:cs": "Výchozí pro měnu", "name:en": "Default for currency" },
+
+        // Fiskální roky: štítek zamčeného roku v seznamu a zámek měsíce
+        // v tabu Měsíce (s časem zamknutí, bez něj holé).
+        "locked": { "name": "Locked", "name:cs": "Uzamčeno", "name:en": "Locked" },
+        "lockedAt": { "name": "Locked ({at})", "name:cs": "Uzamčeno ({at})", "name:en": "Locked ({at})" },
+        // Hlavičky tabulky měsíců — krátké, plný popisek sloupce by úzkou
+        // tabulku v detailu roztáhl; `lock` skládá zámek a čas zamknutí.
+        "monthBegin": { "name": "Begin", "name:cs": "Začátek", "name:en": "Begin" },
+        "monthEnd": { "name": "End", "name:cs": "Konec", "name:en": "End" },
+        "monthType": { "name": "Type", "name:cs": "Typ", "name:en": "Type" },
+        "monthYear": { "name": "Year", "name:cs": "Rok", "name:en": "Year" },
+        "monthMonth": { "name": "Month", "name:cs": "Měsíc", "name:en": "Month" },
+        "lock": { "name": "Lock", "name:cs": "Zámek", "name:en": "Lock" },
+
+        // Doprava bez osoby pro saldokonto — řádek seznamu i hodnota v detailu.
+        "noCounterparty": { "name": "no counterparty", "name:cs": "bez protistrany", "name:en": "no counterparty" },
+        // Registrace DPH bez správce daně — hodnota položky Správce daně.
+        "taxOfficeNotSet": { "name": "not set", "name:cs": "nevyplněn", "name:en": "not set" }
     }
 }

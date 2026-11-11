@@ -114,7 +114,10 @@ class BankTransactionsViewer extends TableViewer
         }
         $vs = trim((string) ($rowData['payment_reference'] ?? ''));
         if ($vs !== '') {
-            $t2[] = ['text' => 'VS ' . $vs, 'class' => 'muted'];
+            $t2[] = [
+                'text'  => $this->detailText('economy.bank.viewerDetailLabels', 'rowPaymentReference', 'Ref. {value}', ['value' => $vs]),
+                'class' => 'muted',
+            ];
         }
         $operation = $this->enumLabel('economy.bank.txOperations', $rowData['operation'] ?? null, 'string');
         if ($operation !== null) {
@@ -150,7 +153,7 @@ class BankTransactionsViewer extends TableViewer
             ['id' => 'date_transaction', 'label' => $cs ? 'Datum' : 'Date', 'width' => 96, 'sortable' => true],
             ['id' => 'amount', 'label' => $cs ? 'Částka' : 'Amount', 'width' => 130, 'align' => 'right', 'sortable' => true],
             ['id' => 'counterparty_name', 'label' => $cs ? 'Protistrana' : 'Counterparty', 'grow' => true],
-            ['id' => 'partner_name', 'label' => 'Partner'],
+            ['id' => 'partner_name', 'label' => $this->columnLabel('partner', 'Partner')],
             ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 120],
             ['id' => 'operation', 'label' => $cs ? 'Operace' : 'Operation', 'width' => 110],
             ['id' => 'accounting', 'label' => $cs ? 'Zaúčtování' : 'Accounting', 'width' => 120],
@@ -401,7 +404,7 @@ class BankTransactionsViewer extends TableViewer
         $cs = $this->language !== 'en';
         $columns = [
             ['id' => 'account', 'label' => $cs ? 'Účet' : 'Account'],
-            ['id' => 'text',    'label' => 'Text'],
+            ['id' => 'text',    'label' => $this->columnLabel('text', 'Text', 'economy_accounting_journal')],
             ['id' => 'md',      'label' => $cs ? 'MD' : 'Debit',  'align' => 'right'],
             ['id' => 'dal',     'label' => $cs ? 'DAL' : 'Credit', 'align' => 'right'],
         ];

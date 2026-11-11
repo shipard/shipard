@@ -28,7 +28,8 @@ class ViewerDetailLabelsCatalogTest extends TestCase
     private const EXPECTED = [
         'base.persons', 'base.registry',
         'core.alerts', 'core.chat', 'core.mail', 'core.prints', 'core.system', 'core.units',
-        'economy.accounting',
+        'economy.accbal', 'economy.accounting', 'economy.bank', 'economy.codebooks',
+        'economy.exchangeRates', 'economy.items', 'economy.vat',
     ];
 
     /** @return array<string, array<string, mixed>> cfgItem id → surový katalog */

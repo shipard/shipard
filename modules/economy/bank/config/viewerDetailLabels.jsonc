@@ -1,0 +1,12 @@
+{
+    // economy.bank.viewerDetailLabels
+    //
+    // Texty vieweru bankovních transakcí (BankTransactionsViewer). Jen sekce
+    // `texts`; sdílený tab „Přehled“ je v core.system.viewerDetailLabels.
+
+    // Texty seznamu — čte `TableViewer::detailText()`.
+    "texts": {
+        // Řádek seznamu — variabilní symbol transakce.
+        "rowPaymentReference": { "name": "Ref. {value}", "name:cs": "VS {value}", "name:en": "Ref. {value}" }
+    }
+}

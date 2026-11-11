@@ -58,6 +58,9 @@ class DocsHeadsViewer extends TableViewer
     /** Id filtru zdroje dokladu (`docs_core_heads.source_kind`, cfgItem docs.core.sourceKinds). */
     public const FILTER_SOURCE_KIND = 'source_kind';
 
+    /** Plochý katalog popisků prohlížečů dokladů (filtry, texty řádku seznamu). */
+    private const LABELS_CFG_ITEM = 'docs.core.viewerLabels';
+
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT h.`id`, h.`doc_type`, h.`doc_number`, h.`doc_text`,'
@@ -155,10 +158,9 @@ class DocsHeadsViewer extends TableViewer
                 $options[] = ['value' => (string) $key, 'label' => (string) ($entry['name'] ?? $key)];
             }
         }
-        $labels = $this->config?->cfgItem('docs.core.viewerLabels');
         return [[
             'id'      => self::FILTER_SOURCE_KIND,
-            'label'   => (string) ((is_array($labels) ? ($labels['filter.sourceKind']['name'] ?? null) : null) ?? 'Source'),
+            'label'   => $this->labelText(self::LABELS_CFG_ITEM, 'filter.sourceKind', 'Source'),
             'type'    => 'select',
             'options' => $options,
         ]];
@@ -242,7 +244,10 @@ class DocsHeadsViewer extends TableViewer
         }
         $dueDate = $this->formatDate($rowData['due_date'] ?? null);
         if ($dueDate !== null) {
-            $t2[] = ['text' => 'splat. ' . $dueDate, 'class' => 'muted'];
+            $t2[] = [
+                'text'  => $this->labelText(self::LABELS_CFG_ITEM, 'row.dueDate', 'due {date}', ['date' => $dueDate]),
+                'class' => 'muted',
+            ];
         }
         $stateTag = $this->stateTag($docState);
         if ($stateTag !== null) {
@@ -445,7 +450,7 @@ class DocsHeadsViewer extends TableViewer
         $dalLabel = $cs ? 'DAL' : 'Credit';
         $columns = [
             ['id' => 'account', 'label' => $cs ? 'Účet' : 'Account'],
-            ['id' => 'text',    'label' => 'Text'],
+            ['id' => 'text',    'label' => $this->columnLabel('text', 'Text', 'economy_accounting_journal')],
         ];
         // Dimenze deníku (majetek, …) — sloupec jen když ji některý řádek nese.
         $dimensionLabels = JournalDimensionLabels::forRows(

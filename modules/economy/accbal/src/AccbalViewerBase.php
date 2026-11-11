@@ -19,6 +19,8 @@ abstract class AccbalViewerBase extends TableViewer
 {
     use UsesFiscalPeriods;
 
+    protected const LABELS_CFG_ITEM = 'economy.accbal.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = null;
 
     /**
@@ -38,6 +40,16 @@ abstract class AccbalViewerBase extends TableViewer
     public function getToolbarActions(?array $selectedRow): array
     {
         return [];
+    }
+
+    /**
+     * Text vieweru z katalogu `economy.accbal.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /**

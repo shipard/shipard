@@ -166,11 +166,11 @@ class LedgerViewer extends AccbalViewerBase
         }
         $vs = trim((string) ($rowData['payment_reference'] ?? ''));
         if ($vs !== '') {
-            $t2[] = ['text' => 'VS ' . $vs, 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('rowPaymentReference', 'Ref. {value}', ['value' => $vs]), 'class' => 'muted'];
         }
         $ss = trim((string) ($rowData['specific_symbol'] ?? ''));
         if ($ss !== '') {
-            $t2[] = ['text' => 'SS ' . $ss, 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('rowSpecificSymbol', 'Spec. symbol {value}', ['value' => $ss]), 'class' => 'muted'];
         }
         $due = $this->formatDate($rowData['due_date'] ?? null);
         if ($due !== null) {
@@ -206,13 +206,13 @@ class LedgerViewer extends AccbalViewerBase
 
         return [
             ['id' => 'accounting_date', 'label' => $cs ? 'Datum' : 'Date', 'width' => 96],
-            ['id' => 'role', 'label' => 'Role', 'width' => 90],
+            ['id' => 'role', 'label' => $this->text('role', 'Role'), 'width' => 90],
             ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 110],
             ['id' => 'specific_symbol', 'label' => $cs ? 'SS' : 'Spec. symbol', 'width' => 90],
             ['id' => 'due_date', 'label' => $cs ? 'Splatnost' : 'Due date', 'width' => 96],
             ['id' => 'amount', 'label' => $cs ? 'Částka' : 'Amount', 'width' => 130, 'align' => 'right'],
             ['id' => 'case_residual', 'label' => $cs ? 'Zůstatek případu' : 'Case balance', 'width' => 130, 'align' => 'right'],
-            ['id' => 'text', 'label' => 'Text', 'grow' => true],
+            ['id' => 'text', 'label' => $this->columnLabel('text', 'Text'), 'grow' => true],
             // Se zvoleným chipem redundantní, na „Vše" užitečné.
             ['id' => 'balance', 'label' => $cs ? 'Saldokonto' : 'Balance', 'width' => 140],
         ];
@@ -357,9 +357,9 @@ class LedgerViewer extends AccbalViewerBase
         // Partner a účet nese hlavička; text jen když není titulkem (#140 D26, §2).
         $moveItems = [];
         $this->addItem($moveItems, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
-        $this->addItem($moveItems, 'Role', $this->roleOf($record)['text']);
+        $this->addItem($moveItems, $this->text('role', 'Role'), $this->roleOf($record)['text']);
         if ($this->titleOf($record)['column'] !== 'text') {
-            $this->addItem($moveItems, 'Text', $record['text'] ?? null);
+            $this->addItem($moveItems, $this->columnLabel('text', 'Text'), $record['text'] ?? null);
         }
 
         // Částku v měně pohybu nese podtitul; zůstává jen přepočet v domácí měně.
@@ -442,7 +442,7 @@ class LedgerViewer extends AccbalViewerBase
 
         return [
             $this->periodFilter(),
-            ['id' => 'partner', 'label' => 'Partner', 'type' => 'text'],
+            ['id' => 'partner', 'label' => $this->columnLabel('partner', 'Partner'), 'type' => 'text'],
             ['id' => 'payment_reference', 'label' => $cs ? 'Variabilní symbol' : 'Payment reference', 'type' => 'text'],
             ['id' => 'specific_symbol', 'label' => $cs ? 'Specifický symbol' : 'Specific symbol', 'type' => 'text'],
             ['id' => 'only_open', 'label' => $cs ? 'Jen otevřené případy' : 'Open cases only', 'type' => 'checkbox'],

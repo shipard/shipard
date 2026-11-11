@@ -9,6 +9,8 @@ use Shipard\Core\Viewer\TableViewer;
 
 class NumberSeriesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'docs.core.viewerLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     private const STATE_SPAN_CLASS = [
@@ -118,10 +120,16 @@ class NumberSeriesViewer extends TableViewer
             $t2[] = ['text' => $docTypeLabel];
         }
         if (!empty($rowData['cash_desk_code'])) {
-            $t2[] = ['text' => 'Pokladna ' . $rowData['cash_desk_code'], 'class' => 'muted'];
+            $t2[] = [
+                'text'  => $this->text('row.cashDesk', 'Cash desk {code}', ['code' => (string) $rowData['cash_desk_code']]),
+                'class' => 'muted',
+            ];
         }
         if (!empty($rowData['warehouse_code'])) {
-            $t2[] = ['text' => 'Sklad ' . $rowData['warehouse_code'], 'class' => 'muted'];
+            $t2[] = [
+                'text'  => $this->text('row.warehouse', 'Warehouse {code}', ['code' => (string) $rowData['warehouse_code']]),
+                'class' => 'muted',
+            ];
         }
         if (!empty($rowData['doc_number_pattern'])) {
             $t2[] = ['text' => (string) $rowData['doc_number_pattern'], 'class' => 'muted'];
@@ -132,9 +140,9 @@ class NumberSeriesViewer extends TableViewer
         if ($validFrom !== null && $validTo !== null) {
             $t2[] = ['text' => $validFrom . ' – ' . $validTo, 'class' => 'muted'];
         } elseif ($validFrom !== null) {
-            $t2[] = ['text' => 'od ' . $validFrom, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $validFrom]), 'class' => 'muted'];
         } elseif ($validTo !== null) {
-            $t2[] = ['text' => 'do ' . $validTo, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo]), 'class' => 'muted'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -174,39 +182,39 @@ class NumberSeriesViewer extends TableViewer
         $identityItems = [];
         $this->addItem(
             $identityItems,
-            'Typ dokladu',
+            $this->columnLabel('doc_type', 'Document type'),
             $this->resolveDocTypeLabel((string) ($record['doc_type'] ?? '')),
         );
-        $this->addItem($identityItems, 'Pokladna', $this->resolveBindingLabel('cash_desk', $record));
-        $this->addItem($identityItems, 'Sklad', $this->resolveBindingLabel('warehouse', $record));
-        $this->addItem($identityItems, 'Poznámka', $record['notice'] ?? null);
+        $this->addItem($identityItems, $this->columnLabel('cash_desk', 'Cash desk'), $this->resolveBindingLabel('cash_desk', $record));
+        $this->addItem($identityItems, $this->columnLabel('warehouse', 'Warehouse'), $this->resolveBindingLabel('warehouse', $record));
+        $this->addItem($identityItems, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $numberingItems = [];
-        $this->addItem($numberingItems, 'Kód řady (%C)', $record['doc_number_code'] ?? null);
-        $this->addItem($numberingItems, 'Vzorec čísla dokladu', $record['doc_number_pattern'] ?? null);
+        $this->addItem($numberingItems, $this->columnLabel('doc_number_code', 'Series code (%C)'), $record['doc_number_code'] ?? null);
+        $this->addItem($numberingItems, $this->columnLabel('doc_number_pattern', 'Document number pattern'), $record['doc_number_pattern'] ?? null);
         $this->addItem(
             $numberingItems,
-            'Restart počítadla',
+            $this->columnLabel('reset_scope', 'Counter reset'),
             $this->resolveResetScopeLabel((string) ($record['reset_scope'] ?? '')),
         );
 
         $validityItems = [];
-        $this->addItem($validityItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($validityItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem(
             $validityItems,
-            'Platnost do',
-            $this->formatDate($record['valid_to'] ?? null) ?? 'bez konce',
+            $this->columnLabel('valid_to', 'Valid to'),
+            $this->formatDate($record['valid_to'] ?? null) ?? $this->sharedText('noEnd', 'no end'),
         );
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($numberingItems !== []) {
-            $groups[] = ['title' => 'Číslování', 'items' => $numberingItems];
+            $groups[] = ['title' => $this->text('group.numbering', 'Numbering'), 'items' => $numberingItems];
         }
         if ($validityItems !== []) {
-            $groups[] = ['title' => 'Platnost', 'items' => $validityItems];
+            $groups[] = ['title' => $this->sharedText('groupValidity', 'Validity'), 'items' => $validityItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
@@ -259,6 +267,12 @@ class NumberSeriesViewer extends TableViewer
         if ($value !== null && $value !== '') {
             $items[] = ['label' => $label, 'value' => (string) $value];
         }
+    }
+
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->labelText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     private function formatDate(mixed $value): ?string

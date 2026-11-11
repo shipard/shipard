@@ -1,6 +1,23 @@
 {
-    // Popisky tabů detailu vieweru Kurzovní lístky (TableViewer::detailTabLabel).
+    // economy.exchangeRates.viewerDetailLabels
+    //
+    // Texty vieweru Kurzovní lístky (ExchangeRateListsViewer): sekce `tabs`
+    // (TableViewer::detailTabLabel) a `texts` (TableViewer::detailText).
     "tabs": {
         "values": { "name": "Rates", "name:cs": "Kurzy", "name:en": "Rates" }
+    },
+
+    // Texty seznamu a detailu. „od {date}“ / „do {date}“ a „Vše“ jsou sdílené
+    // v core.system.viewerDetailLabels.
+    "texts": {
+        // Číslo lístku v řádku seznamu a v podtitulku detailu.
+        "listNumber": { "name": "No. {number}", "name:cs": "č. {number}", "name:en": "No. {number}" },
+        // Řádek seznamu — počet měn lístku (bez skloňování).
+        "rowCurrencyCount": { "name": "Currencies: {n}", "name:cs": "Počet měn: {n}", "name:en": "Currencies: {n}" },
+        // Přehled — nadpis skupiny a počet měn.
+        "groupList": { "name": "Exchange rate list", "name:cs": "Kurzovní lístek", "name:en": "Exchange rate list" },
+        "currencyCount": { "name": "Number of currencies", "name:cs": "Počet měn", "name:en": "Number of currencies" },
+        // Tab Kurzy — dopočtený sloupec kurz ÷ množství.
+        "ratePerUnit": { "name": "Rate per unit", "name:cs": "Kurz za jednotku", "name:en": "Rate per unit" }
     }
 }

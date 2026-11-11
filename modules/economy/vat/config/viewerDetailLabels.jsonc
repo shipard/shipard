@@ -1,0 +1,74 @@
+{
+    // economy.vat.viewerDetailLabels
+    //
+    // Texty viewerů DPH — `ReportPeriodsViewer` (Daňová tvrzení),
+    // `DeductionCoefficientsViewer` (Koeficienty odpočtu) a čip Import
+    // ve `FilingsViewer`. Jen sekce `texts` (čte `TableViewer::detailText()`);
+    // tab Přehled a sdílené texty (Vše, Ano / Ne) jsou v
+    // core.system.viewerDetailLabels. Holé `name` je anglická varianta
+    // a shoduje se s fallbackem v PHP.
+
+    "texts": {
+        // Filtr roku (Daňová tvrzení, Koeficienty odpočtu).
+        "year": { "name": "Year", "name:cs": "Rok", "name:en": "Year" },
+
+        // ── Daňová tvrzení ──────────────────────────────────────────────
+        // Skupiny Přehledu.
+        "groupReportPeriod": { "name": "Report period", "name:cs": "Tvrzení", "name:en": "Report period" },
+        "groupVatBalances": { "name": "VAT balances", "name:cs": "Zůstatky DPH", "name:en": "VAT balances" },
+        // Počet dokladů zařazených do instance tvrzení.
+        "assignedDocuments": { "name": "Assigned documents", "name:cs": "Přiřazené doklady", "name:en": "Assigned documents" },
+        // Hodnota vlastnosti Uzamčeno: zámek z importu (bez času), s časem
+        // a s časem i uživatelem.
+        "lockedImport": { "name": "Yes (import)", "name:cs": "Ano (import)", "name:en": "Yes (import)" },
+        "lockedAt": { "name": "Yes, {at}", "name:cs": "Ano, {at}", "name:en": "Yes, {at}" },
+        "lockedAtBy": { "name": "Yes, {at} ({name})", "name:cs": "Ano, {at} ({name})", "name:en": "Yes, {at} ({name})" },
+        // Zůstatky DPH po podání přiznání (#55 D31).
+        "balanceAccounts": { "name": "Sub-accounts of 343", "name:cs": "Analytiky 343", "name:en": "Sub-accounts of 343" },
+        "balancesSettled": {
+            "name": "Settled — balances are zero",
+            "name:cs": "Vypořádáno — zůstatky jsou nulové",
+            "name:en": "Settled — balances are zero"
+        },
+        "balancesUnsettled": {
+            "name": "Not settled — the VAT return is not posted, or VAT changed after filing",
+            "name:cs": "Nevypořádáno — chybí zaúčtování přiznání, nebo se DPH po podání změnila",
+            "name:en": "Not settled — the VAT return is not posted, or VAT changed after filing"
+        },
+        // Popisek stavu: řádek pod zůstatky a sloupec tabulky podání.
+        "state": { "name": "State", "name:cs": "Stav", "name:en": "State" },
+        // Akce detailu.
+        "composeFiling": { "name": "Compose filing", "name:cs": "Sestavit podání", "name:en": "Compose filing" },
+        "vatFilings": { "name": "VAT filings", "name:cs": "Podání DPH", "name:en": "VAT filings" },
+        "lock": { "name": "Lock", "name:cs": "Uzamknout", "name:en": "Lock" },
+        "unlock": { "name": "Unlock", "name:cs": "Odemknout", "name:en": "Unlock" },
+        "unlockConfirm": {
+            "name": "Unlock the report period? Documents of the filed period can be changed again — unlocking is the step before an additional or corrective filing.",
+            "name:cs": "Odemknout tvrzení? Doklady podaného období půjde znovu měnit — odemknutí je krok před dodatečným nebo opravným podáním.",
+            "name:en": "Unlock the report period? Documents of the filed period can be changed again — unlocking is the step before an additional or corrective filing."
+        },
+
+        // ── Koeficienty odpočtu ─────────────────────────────────────────
+        "groupCoefficient": { "name": "Deduction coefficient", "name:cs": "Koeficient odpočtu", "name:en": "Deduction coefficient" },
+        // Řádek seznamu: „zálohový 0,80 · vypořádací —“.
+        "rowCoefficients": {
+            "name": "provisional {provisional} · settled {settled}",
+            "name:cs": "zálohový {provisional} · vypořádací {settled}",
+            "name:en": "provisional {provisional} · settled {settled}"
+        },
+        // Hodnoty koeficientu bez čísla.
+        "provisionalDerived": {
+            "name": "derived (last year's settled, otherwise 1.00)",
+            "name:cs": "odvozený (loňský vypořádací, jinak 1,00)",
+            "name:en": "derived (last year's settled, otherwise 1.00)"
+        },
+        "notSettled": { "name": "not settled", "name:cs": "nevypořádáno", "name:en": "not settled" },
+
+        // ── Podání DPH ──────────────────────────────────────────────────
+        // Čip importovaného podání v řádku seznamu.
+        "importBadge": { "name": "Import", "name:cs": "Import", "name:en": "Import" },
+        // Hlavičky tabulky řádků kontrolního hlášení — krátké.
+        "colVatId": { "name": "VAT ID", "name:cs": "DIČ", "name:en": "VAT ID" },
+        "colDppd": { "name": "DPPD", "name:cs": "DPPD", "name:en": "DPPD" }
+    }
+}

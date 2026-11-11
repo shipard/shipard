@@ -154,7 +154,7 @@ class BalancesViewer extends TableViewer
             ['id' => 'side',    'label' => $cs ? 'Strana' : 'Side'],
             ['id' => 'amounts', 'label' => $cs ? 'Částky' : 'Amounts'],
             ['id' => 'role',    'label' => $cs ? 'Předpis/Úhrada' : 'Role'],
-            ['id' => 'invert',  'label' => '×−1', 'align' => 'center'],
+            ['id' => 'invert',  'label' => $this->detailText('economy.accbal.viewerDetailLabels', 'invertSign', '×−1'), 'align' => 'center'],
             ['id' => 'note',    'label' => $cs ? 'Poznámka' : 'Note'],
         ];
 

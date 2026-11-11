@@ -12,6 +12,8 @@ class FiscalYearsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -87,7 +89,7 @@ class FiscalYearsViewer extends TableViewer
         }
 
         if (!empty($rowData['locked'])) {
-            $t2[] = ['text' => 'Uzamčeno', 'class' => 'warning'];
+            $t2[] = ['text' => $this->text('locked', 'Locked'), 'class' => 'warning'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -136,28 +138,31 @@ class FiscalYearsViewer extends TableViewer
             // Zámek měsíce (#55 D27) — přepíná se ve formuláři měsíce
             // (sub-tabulka roku); s časem zamknutí, bez něj (import) holé.
             $lockedAt = !empty($m['locked']) ? SubtableCellFormatter::dateTime($m['locked_at'] ?? null) : null;
+            $lockedText = $lockedAt !== null
+                ? $this->text('lockedAt', 'Locked ({at})', ['at' => $lockedAt])
+                : $this->text('locked', 'Locked');
             $monthRows[] = [
                 'date_begin'     => $this->formatDate($m['date_begin'] ?? null),
                 'date_end'       => $this->formatDate($m['date_end'] ?? null),
                 'period_type'    => $periodTypeLabels[$type] ?? (string) $type,
                 'calendar_year'  => $m['calendar_year'] ?? null,
                 'calendar_month' => $m['calendar_month'] ?? null,
-                'locked'         => !empty($m['locked']) ? ('Uzamčeno' . ($lockedAt !== null ? " ({$lockedAt})" : '')) : '—',
+                'locked'         => !empty($m['locked']) ? $lockedText : '—',
             ];
         }
 
         $tabs[] = [
             'id'      => 'months',
-            'label'   => $this->detailTabLabel('economy.codebooks.viewerDetailLabels', 'months', 'Months'),
+            'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'months', 'Months'),
             'content' => [
                 'type'    => 'table',
                 'columns' => [
-                    ['id' => 'date_begin',     'label' => 'Začátek'],
-                    ['id' => 'date_end',       'label' => 'Konec'],
-                    ['id' => 'period_type',    'label' => 'Typ'],
-                    ['id' => 'calendar_year',  'label' => 'Rok'],
-                    ['id' => 'calendar_month', 'label' => 'Měsíc'],
-                    ['id' => 'locked',         'label' => 'Zámek'],
+                    ['id' => 'date_begin',     'label' => $this->text('monthBegin', 'Begin')],
+                    ['id' => 'date_end',       'label' => $this->text('monthEnd', 'End')],
+                    ['id' => 'period_type',    'label' => $this->text('monthType', 'Type')],
+                    ['id' => 'calendar_year',  'label' => $this->text('monthYear', 'Year')],
+                    ['id' => 'calendar_month', 'label' => $this->text('monthMonth', 'Month')],
+                    ['id' => 'locked',         'label' => $this->text('lock', 'Lock')],
                 ],
                 'rows' => $monthRows,
             ],
@@ -169,23 +174,33 @@ class FiscalYearsViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Prefix čísla dokladu', $record['doc_number_prefix'] ?? null);
+        $this->addItem($identityItems, $this->columnLabel('doc_number_prefix', 'Document number prefix'), $record['doc_number_prefix'] ?? null);
 
         $periodItems = [];
-        $this->addItem($periodItems, 'Začátek', $this->formatDate($record['date_begin'] ?? null));
-        $this->addItem($periodItems, 'Konec', $this->formatDate($record['date_end'] ?? null));
-        $this->addItem($periodItems, 'Měna', !empty($record['currency']) ? strtoupper((string) $record['currency']) : null);
-        $this->addItem($periodItems, 'Uzamčeno', !empty($record['locked']) ? 'Ano' : 'Ne');
+        $this->addItem($periodItems, $this->columnLabel('date_begin', 'Begin date'), $this->formatDate($record['date_begin'] ?? null));
+        $this->addItem($periodItems, $this->columnLabel('date_end', 'End date'), $this->formatDate($record['date_end'] ?? null));
+        $this->addItem($periodItems, $this->columnLabel('currency', 'Currency'), !empty($record['currency']) ? strtoupper((string) $record['currency']) : null);
+        $this->addItem($periodItems, $this->columnLabel('locked', 'Locked'), $this->yesNoText(!empty($record['locked'])));
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($periodItems !== []) {
-            $groups[] = ['title' => 'Období', 'items' => $periodItems];
+            $groups[] = ['title' => $this->text('groupPeriod', 'Period'), 'items' => $periodItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
+    }
+
+    /**
+     * Text z katalogu modulu (`economy.codebooks.viewerDetailLabels`, sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

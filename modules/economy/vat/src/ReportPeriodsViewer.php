@@ -7,6 +7,7 @@ namespace Shipard\Module\Economy\Vat;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Form\SubtableCellFormatter;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -18,6 +19,11 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class ReportPeriodsViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'economy.vat.viewerDetailLabels';
+
+    /** Mezera + symbol domácí měny za zůstatkem; null = ještě nenačteno. */
+    private ?string $moneySuffix = null;
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     private const STATE_SPAN_CLASS = [
@@ -120,7 +126,7 @@ class ReportPeriodsViewer extends TableViewer
         }
 
         if (!empty($rowData['locked'])) {
-            $t2[] = ['text' => 'Uzamčeno', 'class' => 'warning', 'icon' => 'lock'];
+            $t2[] = ['text' => $this->columnLabel('locked', 'Locked'), 'class' => 'warning', 'icon' => 'lock'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -150,11 +156,17 @@ class ReportPeriodsViewer extends TableViewer
         $locked = !empty($record['locked']);
         // Název nese titulek hlavičky — Přehled ho neopakuje (#140 D26).
         $items = [
-            ['label' => 'Typ tvrzení', 'value' => $typeLabels[$type] ?? $type],
-            ['label' => 'Registrace DPH', 'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? ''],
-            ['label' => 'Začátek období', 'value' => $this->formatDate($record['date_begin'] ?? null)],
-            ['label' => 'Konec období', 'value' => $this->formatDate($record['date_end'] ?? null)],
-            ['label' => 'Uzamčeno', 'value' => $locked ? $this->lockLabel($record) : 'Ne'],
+            ['label' => $this->columnLabel('report_type', 'Report type'), 'value' => $typeLabels[$type] ?? $type],
+            [
+                'label' => $this->columnLabel('vat_registration', 'VAT registration'),
+                'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? '',
+            ],
+            ['label' => $this->columnLabel('date_begin', 'Begin date'), 'value' => $this->formatDate($record['date_begin'] ?? null)],
+            ['label' => $this->columnLabel('date_end', 'End date'), 'value' => $this->formatDate($record['date_end'] ?? null)],
+            [
+                'label' => $this->columnLabel('locked', 'Locked'),
+                'value' => $locked ? $this->lockLabel($record) : $this->yesNoText(false),
+            ],
         ];
 
         $column = ReportPeriodDocument::HEAD_COLUMN_BY_TYPE[$type] ?? null;
@@ -163,10 +175,10 @@ class ReportPeriodsViewer extends TableViewer
                 'SELECT COUNT(*) FROM `docs_core_heads` WHERE %n = %i AND `docState` != 90',
                 $column, $recordId,
             );
-            $items[] = ['label' => 'Přiřazené doklady', 'value' => (string) $count];
+            $items[] = ['label' => $this->text('assignedDocuments', 'Assigned documents'), 'value' => (string) $count];
         }
 
-        $groups = [['title' => 'Tvrzení', 'items' => $items]];
+        $groups = [['title' => $this->text('groupReportPeriod', 'Report period'), 'items' => $items]];
 
         $filings = $this->filings($recordId);
 
@@ -175,7 +187,10 @@ class ReportPeriodsViewer extends TableViewer
         // nula; nenulový = chybí zaúčtování přiznání, nebo se DPH po podání
         // změnila.
         if ($type === VatPeriodAssigner::TYPE_RETURN && $this->hasFiledFiling($filings)) {
-            $groups[] = ['title' => 'Zůstatky DPH', 'items' => $this->balanceItems($recordId)];
+            $groups[] = [
+                'title' => $this->text('groupVatBalances', 'VAT balances'),
+                'items' => $this->balanceItems($recordId),
+            ];
         }
 
         $blocks = [['type' => 'properties', 'groups' => $groups]];
@@ -208,7 +223,7 @@ class ReportPeriodsViewer extends TableViewer
         if ((int) ($record['docState'] ?? 0) !== 90) {
             $actions[] = [
                 'id'      => 'composeFiling',
-                'label'   => 'Sestavit podání',
+                'label'   => $this->text('composeFiling', 'Compose filing'),
                 'variant' => 'primary',
                 'kind'    => 'open_form',
                 'target'  => [
@@ -219,13 +234,25 @@ class ReportPeriodsViewer extends TableViewer
             // Zámek instance (#55 D25): po podání „jeden klik"; odemknutí je
             // vědomý krok před dodatečným podáním, proto potvrzení.
             $actions[] = $locked
-                ? self::unlockAction($recordId)
-                : self::lockAction($recordId, $this->hasFiledFiling($filings) ? 'primary' : 'secondary');
+                ? self::unlockAction(
+                    $recordId,
+                    $this->text('unlock', 'Unlock'),
+                    $this->text(
+                        'unlockConfirm',
+                        'Unlock the report period? Documents of the filed period can be changed again — unlocking is'
+                        . ' the step before an additional or corrective filing.',
+                    ),
+                )
+                : self::lockAction(
+                    $recordId,
+                    $this->hasFiledFiling($filings) ? 'primary' : 'secondary',
+                    $this->text('lock', 'Lock'),
+                );
         }
         if ($filings !== []) {
             $actions[] = [
                 'id'       => 'openFilings',
-                'label'    => 'Podání DPH',
+                'label'    => $this->text('vatFilings', 'VAT filings'),
                 'variant'  => 'secondary',
                 'kind'     => 'open_viewer',
                 'viewerId' => 'economy.vat.filings',
@@ -254,29 +281,33 @@ class ReportPeriodsViewer extends TableViewer
 
     /**
      * Akce „Uzamknout" — sdílí ji detail instance i detail podaného podání
-     * (FilingsViewer); klient volá POST /_vat/report-period-lock.
+     * (FilingsViewer); klient volá POST /_vat/report-period-lock. Popisek
+     * dodává volající ze svého katalogu (statická metoda katalog nečte).
      *
      * @return array<string, mixed>
      */
-    public static function lockAction(int $periodId, string $variant = 'secondary', ?string $label = null): array
+    public static function lockAction(int $periodId, string $variant, string $label): array
     {
         return [
             'id'      => 'lockReportPeriod',
-            'label'   => $label ?? 'Uzamknout',
+            'label'   => $label,
             'variant' => $variant,
             'target'  => ['periodId' => $periodId],
         ];
     }
 
-    /** @return array<string, mixed> */
-    public static function unlockAction(int $periodId): array
+    /**
+     * Akce „Odemknout" s potvrzením — texty dodává volající z katalogu.
+     *
+     * @return array<string, mixed>
+     */
+    public static function unlockAction(int $periodId, string $label, string $confirm): array
     {
         return [
             'id'      => 'unlockReportPeriod',
-            'label'   => 'Odemknout',
+            'label'   => $label,
             'variant' => 'secondary',
-            'confirm' => 'Odemknout tvrzení? Doklady podaného období půjde znovu měnit — odemknutí je krok'
-                . ' před dodatečným nebo opravným podáním.',
+            'confirm' => $confirm,
             'target'  => ['periodId' => $periodId],
         ];
     }
@@ -291,17 +322,16 @@ class ReportPeriodsViewer extends TableViewer
     {
         $at = SubtableCellFormatter::dateTime($record['locked_at'] ?? null);
         if ($at === null) {
-            return 'Ano (import)';
+            return $this->text('lockedImport', 'Yes (import)');
         }
-        $label = 'Ano, ' . $at;
         $userId = (int) ($record['locked_by'] ?? 0);
         if ($userId > 0) {
             $name = $this->db->fetchSingle('SELECT `full_name` FROM `core_system_users` WHERE `id` = %i', $userId);
             if (is_string($name) && $name !== '') {
-                $label .= " ({$name})";
+                return $this->text('lockedAtBy', 'Yes, {at} ({name})', ['at' => $at, 'name' => $name]);
             }
         }
-        return $label;
+        return $this->text('lockedAt', 'Yes, {at}', ['at' => $at]);
     }
 
     /** @param list<array<string, mixed>> $filings */
@@ -325,16 +355,25 @@ class ReportPeriodsViewer extends TableViewer
     {
         $balances = (new ClosedPeriodBalanceService($this->db))->balancesForPeriod($recordId);
         if ($balances === []) {
-            return [['label' => 'Analytiky 343', 'value' => 'Vypořádáno — zůstatky jsou nulové']];
+            return [[
+                'label' => $this->text('balanceAccounts', 'Sub-accounts of 343'),
+                'value' => $this->text('balancesSettled', 'Settled — balances are zero'),
+            ]];
         }
         $items = [];
         foreach ($balances as $b) {
             $items[] = [
                 'label' => (string) $b['account'],
-                'value' => (SubtableCellFormatter::money($b['balance']) ?? '0,00') . ' Kč',
+                'value' => (SubtableCellFormatter::money($b['balance']) ?? '0,00') . $this->moneySuffix(),
             ];
         }
-        $items[] = ['label' => 'Stav', 'value' => 'Nevypořádáno — chybí zaúčtování přiznání, nebo se DPH po podání změnila'];
+        $items[] = [
+            'label' => $this->text('state', 'State'),
+            'value' => $this->text(
+                'balancesUnsettled',
+                'Not settled — the VAT return is not posted, or VAT changed after filing',
+            ),
+        ];
         return $items;
     }
 
@@ -360,11 +399,11 @@ class ReportPeriodsViewer extends TableViewer
         }
 
         return ['type' => 'table', 'columns' => [
-            ['id' => 'sequence', 'label' => 'Pořadí'],
-            ['id' => 'kind',     'label' => 'Druh podání'],
-            ['id' => 'issued',   'label' => 'Sestaveno'],
-            ['id' => 'filed',    'label' => 'Podáno'],
-            ['id' => 'state',    'label' => 'Stav'],
+            ['id' => 'sequence', 'label' => $this->columnLabel('sequence', 'Sequence', 'economy_vat_filings')],
+            ['id' => 'kind',     'label' => $this->columnLabel('filing_kind', 'Filing kind', 'economy_vat_filings')],
+            ['id' => 'issued',   'label' => $this->columnLabel('date_issue', 'Composed on', 'economy_vat_filings')],
+            ['id' => 'filed',    'label' => $this->columnLabel('date_filed', 'Filed on', 'economy_vat_filings')],
+            ['id' => 'state',    'label' => $this->text('state', 'State')],
         ], 'rows' => $rows];
     }
 
@@ -384,14 +423,14 @@ class ReportPeriodsViewer extends TableViewer
 
     public function getFilters(): array
     {
-        $typeOptions = [['value' => 'all', 'label' => 'Vše']];
+        $typeOptions = [['value' => 'all', 'label' => $this->sharedText('all', 'All')]];
         foreach ($this->resolveTypeLabels() as $key => $label) {
             $typeOptions[] = ['value' => $key, 'label' => $label];
         }
 
         $filters = [[
             'id'      => 'report_type',
-            'label'   => 'Typ tvrzení',
+            'label'   => $this->columnLabel('report_type', 'Report type'),
             'type'    => 'enum',
             'default' => 'all',
             'options' => $typeOptions,
@@ -399,13 +438,13 @@ class ReportPeriodsViewer extends TableViewer
 
         $registrations = $this->registrationNames();
         if (count($registrations) > 1) {
-            $regOptions = [['value' => '0', 'label' => 'Vše']];
+            $regOptions = [['value' => '0', 'label' => $this->sharedText('all', 'All')]];
             foreach ($registrations as $id => $name) {
                 $regOptions[] = ['value' => (string) $id, 'label' => $name];
             }
             $filters[] = [
                 'id'      => 'vat_registration',
-                'label'   => 'Registrace DPH',
+                'label'   => $this->columnLabel('vat_registration', 'VAT registration'),
                 'type'    => 'enum',
                 'default' => '0',
                 'options' => $regOptions,
@@ -417,13 +456,13 @@ class ReportPeriodsViewer extends TableViewer
             . ' WHERE `docState` != 90 ORDER BY y DESC',
         );
         if ($years !== []) {
-            $yearOptions = [['value' => '0', 'label' => 'Vše']];
+            $yearOptions = [['value' => '0', 'label' => $this->sharedText('all', 'All')]];
             foreach ($years as $row) {
                 $yearOptions[] = ['value' => (string) $row['y'], 'label' => (string) $row['y']];
             }
             $filters[] = [
                 'id'      => 'year',
-                'label'   => 'Rok',
+                'label'   => $this->text('year', 'Year'),
                 'type'    => 'enum',
                 'default' => '0',
                 'options' => $yearOptions,
@@ -462,6 +501,12 @@ class ReportPeriodsViewer extends TableViewer
         return $this->registrationNames;
     }
 
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
+    }
+
     private function formatDate(mixed $value): string
     {
         if ($value === null || $value === '') {
@@ -471,5 +516,28 @@ class ReportPeriodsViewer extends TableViewer
             return $value->format('Y-m-d');
         }
         return substr((string) $value, 0, 10);
+    }
+
+    /**
+     * Mezera + symbol domácí měny za zůstatkem účtu (deník je v domácí
+     * měně): kód z nastavení `economy.homeCurrency`, symbol z
+     * `world.base.currencies` (bez symbolu kód měny velkými písmeny). Bez
+     * nastavené domácí měny prázdný řetězec — zůstatek jen jako číslo.
+     * Stejné pravidlo má `ItemsViewer::priceSuffix()` (#133 D66).
+     */
+    private function moneySuffix(): string
+    {
+        if ($this->moneySuffix === null) {
+            $value = (new SettingsStore($this->db))->get('economy.homeCurrency');
+            $code = is_string($value) ? strtolower(trim($value)) : '';
+            if ($code === '') {
+                $this->moneySuffix = '';
+            } else {
+                $currencies = $this->config?->cfgItem('world.base.currencies');
+                $symbol = is_array($currencies) ? ($currencies[$code]['symbol'] ?? null) : null;
+                $this->moneySuffix = ' ' . (is_string($symbol) && $symbol !== '' ? $symbol : strtoupper($code));
+            }
+        }
+        return $this->moneySuffix;
     }
 }

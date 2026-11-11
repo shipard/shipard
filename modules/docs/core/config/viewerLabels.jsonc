@@ -1,6 +1,17 @@
 {
     // docs.core.viewerLabels — popisky prohlížečů dokladů, které nejsou
-    // taby detailu (ty mají *.viewerDetailLabels): filtry pravého panelu.
-    // Čte DocsHeadsViewer přes cfgItem; bez katalogu anglický fallback.
-    "filter.sourceKind": { "name": "Source", "name:cs": "Zdroj", "name:en": "Source" }
+    // taby detailu (ty mají *.viewerDetailLabels): filtry pravého panelu,
+    // texty řádku seznamu a skupiny Přehledu číselných řad. Čtou
+    // DocsHeadsViewer a NumberSeriesViewer přes `TableViewer::labelText()`;
+    // bez katalogu anglický fallback (holé `name` = fallback v PHP).
+    "filter.sourceKind": { "name": "Source", "name:cs": "Zdroj", "name:en": "Source" },
+
+    // Řádek seznamu dokladů: datum splatnosti.
+    "row.dueDate": { "name": "due {date}", "name:cs": "splat. {date}", "name:en": "due {date}" },
+
+    // Číselné řady — řádek seznamu: vazba řady na pokladnu / sklad (kód).
+    "row.cashDesk": { "name": "Cash desk {code}", "name:cs": "Pokladna {code}", "name:en": "Cash desk {code}" },
+    "row.warehouse": { "name": "Warehouse {code}", "name:cs": "Sklad {code}", "name:en": "Warehouse {code}" },
+    // Číselné řady — skupina Přehledu (Identifikace a Platnost jsou sdílené).
+    "group.numbering": { "name": "Numbering", "name:cs": "Číslování", "name:en": "Numbering" }
 }

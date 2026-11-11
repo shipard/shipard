@@ -11,6 +11,8 @@ class BankAccountsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -93,7 +95,7 @@ class BankAccountsViewer extends TableViewer
         }
 
         if (!empty($rowData['is_default'])) {
-            $t3[] = ['text' => 'Výchozí', 'class' => 'primary'];
+            $t3[] = ['text' => $this->text('default', 'Default'), 'class' => 'primary'];
         }
 
         $validFrom = $this->formatDate($rowData['valid_from'] ?? null);
@@ -101,9 +103,9 @@ class BankAccountsViewer extends TableViewer
         if ($validFrom !== null && $validTo !== null) {
             $t3[] = ['text' => $validFrom . ' – ' . $validTo, 'class' => 'muted'];
         } elseif ($validFrom !== null) {
-            $t3[] = ['text' => 'od ' . $validFrom, 'class' => 'muted'];
+            $t3[] = ['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $validFrom]), 'class' => 'muted'];
         } elseif ($validTo !== null) {
-            $t3[] = ['text' => 'do ' . $validTo, 'class' => 'muted'];
+            $t3[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo]), 'class' => 'muted'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -139,38 +141,38 @@ class BankAccountsViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Poznámka', $record['notice'] ?? null);
+        $this->addItem($identityItems, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $accountItems = [];
-        $this->addItem($accountItems, 'Název banky', $record['bank_name'] ?? null);
-        $this->addItem($accountItems, 'Číslo účtu', $record['account_number'] ?? null);
-        $this->addItem($accountItems, 'IBAN', $record['iban'] ?? null);
-        $this->addItem($accountItems, 'BIC/SWIFT', $record['bic'] ?? null);
+        $this->addItem($accountItems, $this->columnLabel('bank_name', 'Bank name'), $record['bank_name'] ?? null);
+        $this->addItem($accountItems, $this->columnLabel('account_number', 'Account number'), $record['account_number'] ?? null);
+        $this->addItem($accountItems, $this->columnLabel('iban', 'IBAN'), $record['iban'] ?? null);
+        $this->addItem($accountItems, $this->columnLabel('bic', 'BIC/SWIFT'), $record['bic'] ?? null);
 
         $settingsItems = [];
         $this->addItem(
             $settingsItems,
-            'Měna',
+            $this->columnLabel('currency', 'Currency'),
             !empty($record['currency']) ? strtoupper((string) $record['currency']) : null,
         );
-        $this->addItem($settingsItems, 'Výchozí pro měnu', !empty($record['is_default']) ? 'Ano' : 'Ne');
-        $this->addItem($settingsItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($settingsItems, $this->text('defaultForCurrency', 'Default for currency'), $this->yesNoText(!empty($record['is_default'])));
+        $this->addItem($settingsItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem(
             $settingsItems,
-            'Platnost do',
-            $this->formatDate($record['valid_to'] ?? null) ?? 'bez konce',
+            $this->columnLabel('valid_to', 'Valid to'),
+            $this->formatDate($record['valid_to'] ?? null) ?? $this->sharedText('noEnd', 'no end'),
         );
-        $this->addItem($settingsItems, 'Pořadí', (string) ($record['sort_order'] ?? 0));
+        $this->addItem($settingsItems, $this->columnLabel('sort_order', 'Order'), (string) ($record['sort_order'] ?? 0));
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($accountItems !== []) {
-            $groups[] = ['title' => 'Bankovní účet', 'items' => $accountItems];
+            $groups[] = ['title' => $this->text('groupBankAccount', 'Bank account'), 'items' => $accountItems];
         }
         if ($settingsItems !== []) {
-            $groups[] = ['title' => 'Nastavení', 'items' => $settingsItems];
+            $groups[] = ['title' => $this->text('groupSettings', 'Settings'), 'items' => $settingsItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
@@ -188,6 +190,16 @@ class BankAccountsViewer extends TableViewer
             return $iban;
         }
         return null;
+    }
+
+    /**
+     * Text z katalogu modulu (`economy.codebooks.viewerDetailLabels`, sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

@@ -12,6 +12,8 @@ class PaymentTerminalsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -93,7 +95,7 @@ class PaymentTerminalsViewer extends TableViewer
         }
 
         if (!empty($rowData['is_default'])) {
-            $t2[] = ['text' => 'Výchozí', 'class' => 'primary'];
+            $t2[] = ['text' => $this->text('default', 'Default'), 'class' => 'primary'];
         }
 
         $validFrom = $this->formatDate($rowData['valid_from'] ?? null);
@@ -101,9 +103,9 @@ class PaymentTerminalsViewer extends TableViewer
         if ($validFrom !== null && $validTo !== null) {
             $t2[] = ['text' => $validFrom . ' – ' . $validTo, 'class' => 'muted'];
         } elseif ($validFrom !== null) {
-            $t2[] = ['text' => 'od ' . $validFrom, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $validFrom]), 'class' => 'muted'];
         } elseif ($validTo !== null) {
-            $t2[] = ['text' => 'do ' . $validTo, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo]), 'class' => 'muted'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -154,27 +156,27 @@ class PaymentTerminalsViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
-        $this->addItem($identityItems, 'Druh', $this->kindLabel($record['kind'] ?? null));
-        $this->addItem($identityItems, 'Poznámka', $record['notice'] ?? null);
+        $this->addItem($identityItems, $this->columnLabel('kind', 'Kind'), $this->kindLabel($record['kind'] ?? null));
+        $this->addItem($identityItems, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $settingsItems = [];
-        $this->addItem($settingsItems, 'Pokladna', $this->formatCashDesk($record));
-        $this->addItem($settingsItems, 'Osoba pro saldokonto', $record['partner_name'] ?? null);
-        $this->addItem($settingsItems, 'Výchozí', !empty($record['is_default']) ? 'Ano' : 'Ne');
-        $this->addItem($settingsItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($settingsItems, $this->columnLabel('cash_desk', 'Cash desk'), $this->formatCashDesk($record));
+        $this->addItem($settingsItems, $this->columnLabel('partner', 'Balance partner'), $record['partner_name'] ?? null);
+        $this->addItem($settingsItems, $this->columnLabel('is_default', 'Default'), $this->yesNoText(!empty($record['is_default'])));
+        $this->addItem($settingsItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem(
             $settingsItems,
-            'Platnost do',
-            $this->formatDate($record['valid_to'] ?? null) ?? 'bez konce',
+            $this->columnLabel('valid_to', 'Valid to'),
+            $this->formatDate($record['valid_to'] ?? null) ?? $this->sharedText('noEnd', 'no end'),
         );
-        $this->addItem($settingsItems, 'Pořadí', (string) ($record['sort_order'] ?? 0));
+        $this->addItem($settingsItems, $this->columnLabel('sort_order', 'Order'), (string) ($record['sort_order'] ?? 0));
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($settingsItems !== []) {
-            $groups[] = ['title' => 'Nastavení', 'items' => $settingsItems];
+            $groups[] = ['title' => $this->text('groupSettings', 'Settings'), 'items' => $settingsItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];
@@ -198,6 +200,16 @@ class PaymentTerminalsViewer extends TableViewer
             return null;
         }
         return $code !== '' && $name !== '' ? "{$code} — {$name}" : ($code !== '' ? $code : $name);
+    }
+
+    /**
+     * Text z katalogu modulu (`economy.codebooks.viewerDetailLabels`, sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

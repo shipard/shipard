@@ -68,19 +68,20 @@ class ExchangeRateListsViewer extends TableViewer
         $row = [
             'id' => (int) $rowData['id'],
             't1' => $this->types()->labelOf($listType),
-            'i1' => !empty($rowData['list_number']) ? 'č. ' . $rowData['list_number'] : null,
+            'i1' => !empty($rowData['list_number']) ? $this->text('listNumber', 'No. {number}', ['number' => $rowData['list_number']]) : null,
         ];
 
-        $t2 = [['text' => 'od ' . (SubtableCellFormatter::date($rowData['valid_from'] ?? null) ?? '')]];
+        $t2 = [['text' => $this->sharedText('fromDate', 'from {date}', ['date' => SubtableCellFormatter::date($rowData['valid_from'] ?? null) ?? ''])]];
         $validTo = SubtableCellFormatter::date($rowData['valid_to'] ?? null);
         if ($validTo !== null) {
-            $t2[] = ['text' => 'do ' . $validTo];
+            $t2[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo])];
         }
         $row['t2'] = $t2;
 
         $t3 = [];
         $count = (int) ($rowData['rate_count'] ?? 0);
-        $t3[] = ['text' => $count . ' ' . self::pluralCurrencies($count)];
+        // Bez skloňování („3 měny“ → „Počet měn: 3“) — katalog neumí plurály.
+        $t3[] = ['text' => $this->text('rowCurrencyCount', 'Currencies: {n}', ['n' => $count])];
         $source = $this->sourceLabel($rowData['source'] ?? null);
         if ($source !== null) {
             $t3[] = ['text' => $source, 'class' => 'muted'];
@@ -100,7 +101,7 @@ class ExchangeRateListsViewer extends TableViewer
         ]));
         $number = trim((string) ($record['list_number'] ?? ''));
         $subtitle = implode(' · ', array_filter(
-            [$validity, $number !== '' ? 'č. ' . $number : ''],
+            [$validity, $number !== '' ? $this->text('listNumber', 'No. {number}', ['number' => $number]) : ''],
             static fn (string $v): bool => $v !== '',
         ));
 
@@ -116,8 +117,8 @@ class ExchangeRateListsViewer extends TableViewer
         $recordId = (int) $record['id'];
 
         $items = [];
-        $this->addItem($items, 'Domácí měna', strtoupper((string) ($record['home_currency'] ?? '')));
-        $this->addItem($items, 'Zdroj', $this->sourceLabel($record['source'] ?? null));
+        $this->addItem($items, $this->columnLabel('home_currency', 'Home currency'), strtoupper((string) ($record['home_currency'] ?? '')));
+        $this->addItem($items, $this->columnLabel('source', 'Source'), $this->sourceLabel($record['source'] ?? null));
 
         $values = $this->db->fetchAll(
             'SELECT `currency`, `amount`, `rate` FROM `' . ExchangeRateResolver::TABLE_VALUES . '`'
@@ -134,13 +135,13 @@ class ExchangeRateListsViewer extends TableViewer
                 'per_unit' => SubtableCellFormatter::trimmedNumber(ExchangeRate::perUnit((string) ($value['rate'] ?? '0'), $amount), 6),
             ];
         }
-        $this->addItem($items, 'Počet měn', (string) count($rows));
+        $this->addItem($items, $this->text('currencyCount', 'Number of currencies'), (string) count($rows));
 
         return [
             [
                 'id'      => 'overview',
                 'label'   => $this->defaultOverviewLabel(),
-                'content' => ['type' => 'properties', 'groups' => [['title' => 'Kurzovní lístek', 'items' => $items]]],
+                'content' => ['type' => 'properties', 'groups' => [['title' => $this->text('groupList', 'Exchange rate list'), 'items' => $items]]],
             ],
             [
                 'id'      => 'values',
@@ -148,10 +149,10 @@ class ExchangeRateListsViewer extends TableViewer
                 'content' => [
                     'type'    => 'table',
                     'columns' => [
-                        ['id' => 'currency', 'label' => 'Měna'],
-                        ['id' => 'amount',   'label' => 'Množství'],
-                        ['id' => 'rate',     'label' => 'Kurz'],
-                        ['id' => 'per_unit', 'label' => 'Kurz za jednotku'],
+                        ['id' => 'currency', 'label' => $this->columnLabel('currency', 'Currency', ExchangeRateResolver::TABLE_VALUES)],
+                        ['id' => 'amount',   'label' => $this->columnLabel('amount', 'Amount', ExchangeRateResolver::TABLE_VALUES)],
+                        ['id' => 'rate',     'label' => $this->columnLabel('rate', 'Rate', ExchangeRateResolver::TABLE_VALUES)],
+                        ['id' => 'per_unit', 'label' => $this->text('ratePerUnit', 'Rate per unit')],
                     ],
                     'rows' => $rows,
                 ],
@@ -171,13 +172,13 @@ class ExchangeRateListsViewer extends TableViewer
         if ($types === []) {
             return [];
         }
-        $options = [['value' => '0', 'label' => 'Vše']];
+        $options = [['value' => '0', 'label' => $this->sharedText('all', 'All')]];
         foreach ($types as $type) {
             $options[] = ['value' => $type->id, 'label' => $type->name];
         }
         return [[
             'id'      => 'list_type',
-            'label'   => 'Typ',
+            'label'   => $this->columnLabel('list_type', 'List type'),
             'type'    => 'enum',
             'default' => '0',
             'options' => $options,
@@ -199,13 +200,14 @@ class ExchangeRateListsViewer extends TableViewer
         return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : (string) $source;
     }
 
-    private static function pluralCurrencies(int $count): string
+    /**
+     * Text vieweru z katalogu `economy.exchangeRates.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
     {
-        return match (true) {
-            $count === 1 => 'měna',
-            $count >= 2 && $count <= 4 => 'měny',
-            default => 'měn',
-        };
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param list<array{label: string, value: string}> $items */

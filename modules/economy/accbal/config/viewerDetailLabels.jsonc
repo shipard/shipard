@@ -1,0 +1,21 @@
+{
+    // economy.accbal.viewerDetailLabels
+    //
+    // Texty viewerů saldokonta — BalancesViewer (skupiny saldokonta),
+    // CasesViewer (případy) a LedgerViewer (pohyby). Jen sekce `texts`;
+    // sdílený tab „Přehled“ je v core.system.viewerDetailLabels.
+
+    // Texty seznamu a detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // BalancesViewer — záhlaví sloupce „obrátit znaménko“ v tabulce účtů skupiny.
+        "invertSign": { "name": "×−1", "name:cs": "×−1", "name:en": "×−1" },
+
+        // CasesViewer, LedgerViewer — symboly platby v řádku seznamu.
+        "rowPaymentReference": { "name": "Ref. {value}", "name:cs": "VS {value}", "name:en": "Ref. {value}" },
+        "rowSpecificSymbol": { "name": "Spec. symbol {value}", "name:cs": "SS {value}", "name:en": "Spec. symbol {value}" },
+
+        // LedgerViewer — druh pohybu (Předpis / Úhrada / Příjem / Výdaj):
+        // sloupec tabulky a položka skupiny Pohyb v detailu.
+        "role": { "name": "Role", "name:cs": "Role", "name:en": "Role" }
+    }
+}

@@ -11,6 +11,8 @@ class CostCentersViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -80,9 +82,9 @@ class CostCentersViewer extends TableViewer
         if ($validFrom !== null && $validTo !== null) {
             $t2[] = ['text' => $validFrom . ' – ' . $validTo, 'class' => 'muted'];
         } elseif ($validFrom !== null) {
-            $t2[] = ['text' => 'od ' . $validFrom, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $validFrom]), 'class' => 'muted'];
         } elseif ($validTo !== null) {
-            $t2[] = ['text' => 'do ' . $validTo, 'class' => 'muted'];
+            $t2[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo]), 'class' => 'muted'];
         }
 
         $docState = (int) ($rowData['docState'] ?? 10);
@@ -117,20 +119,20 @@ class CostCentersViewer extends TableViewer
         $identityItems = [];
 
         $settingsItems = [];
-        $this->addItem($settingsItems, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($settingsItems, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
         $this->addItem(
             $settingsItems,
-            'Platnost do',
-            $this->formatDate($record['valid_to'] ?? null) ?? 'bez konce',
+            $this->columnLabel('valid_to', 'Valid to'),
+            $this->formatDate($record['valid_to'] ?? null) ?? $this->sharedText('noEnd', 'no end'),
         );
-        $this->addItem($settingsItems, 'Pořadí', (string) ($record['sort_order'] ?? 0));
+        $this->addItem($settingsItems, $this->columnLabel('sort_order', 'Sort order'), (string) ($record['sort_order'] ?? 0));
 
         $groups = [];
         if ($identityItems !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
         }
         if ($settingsItems !== []) {
-            $groups[] = ['title' => 'Nastavení', 'items' => $settingsItems];
+            $groups[] = ['title' => $this->detailText(self::LABELS_CFG_ITEM, 'groupSettings', 'Settings'), 'items' => $settingsItems];
         }
 
         return ['type' => 'properties', 'groups' => $groups];

@@ -10,5 +10,15 @@
             "name:cs": "Položky",
             "name:en": "Items"
         }
+    },
+
+    // Texty detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // ItemsViewer — skupiny Přehledu položky.
+        "groupClassification": { "name": "Classification", "name:cs": "Klasifikace", "name:en": "Classification" },
+        "groupPrice": { "name": "Price", "name:cs": "Cena", "name:en": "Price" },
+        "groupDetails": { "name": "Details", "name:cs": "Detaily", "name:en": "Details" },
+        // ItemKindsViewer — skupina Přehledu druhu položky.
+        "groupItemKind": { "name": "Item kind", "name:cs": "Druh položky", "name:en": "Item kind" }
     }
 }

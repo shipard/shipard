@@ -7,6 +7,8 @@ namespace Shipard\Tests\Unit\Module\Economy\Accounting;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\I18n\ConfigLocalizer;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\Accounting\JournalViewer;
 use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
@@ -47,6 +49,11 @@ class JournalViewerTest extends TestCase
                 'docs.core.docTypes'      => ['invni' => ['name' => 'Faktura přijatá']],
                 'docs.core.rowOperations' => ['purchase.goods' => ['name' => 'Nákup zboží']],
                 'core.accounting.journalDimensions' => $this->dimensions,
+                // Texty vieweru (MD / DAL) ze zdrojového katalogu v češtině (#133 D66).
+                'economy.accounting.viewerDetailLabels' => ConfigLocalizer::localize(
+                    JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/economy/accounting/config/viewerDetailLabels.jsonc'),
+                    'cs',
+                ),
                 default                   => null,
             },
         );
