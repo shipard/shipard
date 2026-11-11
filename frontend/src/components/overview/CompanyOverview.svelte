@@ -82,6 +82,13 @@
     return '';
   }
 
+  // Závažnost zprávy sekce → tón hlášky; neznámá závažnost je informace.
+  const MESSAGE_TONES = { info: 'info', warning: 'warning', error: 'danger' };
+
+  function messageTone(severity) {
+    return MESSAGE_TONES[severity] ?? 'info';
+  }
+
   function handleAction(action) {
     const target = action?.target ?? {};
     if (action?.kind === 'open_detail') {
@@ -204,19 +211,26 @@
           {/if}
 
           {#if section.messages.length > 0}
-            <ul class="shpd-overview__messages">
+            <!-- Zprávy sekce = sdílená Notice, každá zvlášť (#133 D61): tón
+                 podle závažnosti, odkaz Otevřít uvnitř hlášky — vpravo od
+                 textu, při nedostatku místa pod ním. Seznam zůstává <ul>. -->
+            <ul class="shpd-overview__notices">
               {#each section.messages as message, i (message.code + ':' + i)}
-                <li class="shpd-overview__message shpd-overview__message--{message.severity}">
-                  <span>{message.text}</span>
-                  {#if message.link}
-                    <button
-                      type="button"
-                      class="shpd-overview__message-link"
-                      onclick={() => handleAction(message.link)}
-                    >
-                      {t('overview.item.open')}
-                    </button>
-                  {/if}
+                <li>
+                  <Notice tone={messageTone(message.severity)}>
+                    <div class="shpd-overview__notice-row">
+                      <span>{message.text}</span>
+                      {#if message.link}
+                        <button
+                          type="button"
+                          class="shpd-overview__notice-link"
+                          onclick={() => handleAction(message.link)}
+                        >
+                          {t('overview.item.open')}
+                        </button>
+                      {/if}
+                    </div>
+                  </Notice>
                 </li>
               {/each}
             </ul>
@@ -291,7 +305,7 @@
      (D15), tloušťky jen tokeny. */
 
   .shpd-overview__items,
-  .shpd-overview__messages {
+  .shpd-overview__notices {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -383,39 +397,24 @@
     background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
   }
 
-  .shpd-overview__messages {
+  /* Zprávy sekce kreslí Notice — tady jen mezery seznamu a rozložení
+     obsahu hlášky (text + odkaz), které komponenta sama vykreslí. */
+  .shpd-overview__notices {
     margin-top: var(--shpd-space-sm);
     display: flex;
     flex-direction: column;
-    gap: var(--shpd-space-xs);
+    gap: var(--shpd-space-sm);
   }
 
-  .shpd-overview__message {
+  .shpd-overview__notice-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: var(--shpd-space-sm);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-left: 3px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-body);
-    color: var(--shpd-color-text);
-    background: var(--shpd-color-bg-secondary);
+    gap: var(--shpd-space-xs) var(--shpd-space-sm);
   }
 
-  .shpd-overview__message--info {
-    border-left-color: var(--shpd-color-alert-info-bar, var(--shpd-color-border-strong));
-  }
-
-  .shpd-overview__message--warning {
-    border-left-color: var(--shpd-color-warning);
-  }
-
-  .shpd-overview__message--error {
-    border-left-color: var(--shpd-color-danger);
-  }
-
-  .shpd-overview__message-link {
+  .shpd-overview__notice-link {
     background: none;
     border: none;
     padding: 0;
