@@ -1,6 +1,6 @@
 # Navigace — skupina Reporty s id podle sekce
 
-**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady)
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady); ruční ověření na dev serveru prošlo
 
 ## Kontext / Cíl
 
@@ -94,6 +94,11 @@ Je-li oprava malá, smí být v jednom commitu.
   navigace neexistuje (mimo rozsah).
 - Ověřeno v Chromiu na volném zdroji dat `zey0-g`: sidebar (klikání, deep
   link na report v obou sekcích), classic a wild.
+
+## Ruční ověření (2026-11-11)
+
+Firefox, dev zdroj `lh6x`: v rozložení sidebar se Reporty pod Majetkem
+a pod Účtárnou rozbalují a sbalují nezávisle; classic a wild beze změny.
 
 ## Pasti
 
