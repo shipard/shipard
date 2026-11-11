@@ -38,9 +38,11 @@ fi
 
 if ! python3 "$REPO_ROOT/scripts/check-css-tokens.py"; then
     echo ""
-    echo "==> Commit zastaven: frontend používá nedefinovaný CSS token."
-    echo "    Nahraď ho tokenem ze styles/variables.css (nebo dev/theme.css),"
-    echo "    nebo dej fallback var(--x, hodnota). Kontrola jde celým stromem:"
+    echo "==> Commit zastaven: frontend používá nedefinovaný CSS token, token"
+    echo "    hlášky mimo Notice / PageBanner, nebo hex barvu mimo soubory"
+    echo "    s definicemi tokenů (styles/variables.css, dev/theme.css)."
+    echo "    Barvu ber z tokenu, bílý text na ploše z --shpd-color-text-on-fill;"
+    echo "    fallback var(--x, hodnota) nepomůže. Kontrola jde celým stromem:"
     echo "    python3 scripts/check-css-tokens.py"
     echo ""
     exit 1
