@@ -52,6 +52,13 @@ a u parametrů vrstvy C validuje hodnoty při zápisu.
 - Hodnoty se trimují; validuje se `maxLength` (422 s details per pole).
 - **Prázdný string = smazání klíče** → čtenáři padnou na fallback
   (např. `app.name` → `main.json` `name`).
+- **Nezvolená hodnota = smazání klíče** i u ostatních typů: prázdný
+  `select` / `color` a `null` u `theme` / `shell` stránky zdroje dat
+  (`app.theme`, `app.shell` — výchozí vzhled / rozložení nezvoleno).
+  Stránka posílá při Uložit **všechna** svá pole, tedy i nezvolená —
+  `null` proto není chyba validace. U uživatelské stránky (`account.theme`,
+  `account.shell`) `null` chybou zůstává; „bez vlastní volby“ se tam
+  zapisuje jako `{follow:true}`.
 
 ## 2. Klíče `app.*`
 
@@ -228,6 +235,10 @@ ukládá na server (zdroj pravdy). Validace v `savePage()`:
   interpretace). Follow kontrakt identický s theme: user-scope
   `{follow:true}` | `{follow:false, shell, params}` (legacy bez follow →
   override), DS-scope follow zahazuje.
+- `null` u **DS-scope** `theme` / `shell` = nezvoleno → klíč se smaže
+  a čtenáři padnou na výchozí (vestavěný Shipard light / `sidebar`);
+  jiná ne-objektová hodnota (řetězec, `false`) je 422 `INVALID_VALUE`.
+  U **user-scope** je 422 i `null`.
 - `language` — string `cs` | `en` | `auto`.
 
 Klíče: user store `account.theme`/`account.shell`/`account.language`,

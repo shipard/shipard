@@ -701,6 +701,99 @@ class SettingsControllerTest extends TestCase
         $this->assertSame('app.theme', $resp->getPayload()['error']['details'][0]['field']);
     }
 
+    // --- nezvolený DS default (app.theme / app.shell = null) ---
+
+    public function testSavePageAppSettingsWithUnsetThemeAndShellSavesOtherValues(): void
+    {
+        // Tělo, které posílá stránka Aplikace na zdroji dat bez výchozího
+        // vzhledu a rozložení: všechna pole, nezvolená jako null.
+        $captured = null;
+        $deleted  = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([]);
+        $db->expects($this->once())->method('execute')
+            ->willReturnCallback(function (...$args) use (&$captured) { $captured = $args; });
+        $db->method('deleteWhere')
+            ->willReturnCallback(function (...$args) use (&$deleted) { $deleted[] = end($args); });
+
+        $resp = $this->ctrl->savePage(
+            'appSettings',
+            $this->saveRequest(['values' => [
+                'app.name'      => 'Nová firma',
+                'app.shortName' => '',
+                'app.theme'     => null,
+                'app.shell'     => null,
+            ]]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(200, $this->getStatus($resp));
+        // Jediný upsert = app.name; nezvolená pole klíč mažou (nic se neuloží).
+        $this->assertSame('app.name', $captured[1]);
+        $this->assertSame(['app.shortName', 'app.theme', 'app.shell'], $deleted);
+
+        $values = $resp->getPayload()['data']['values'];
+        $this->assertSame('Nová firma', $values['app.name']);
+        $this->assertNull($values['app.theme']);
+        $this->assertNull($values['app.shell']);
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    public static function invalidDsDefaultProvider(): array
+    {
+        return [
+            'theme jako řetězec'   => ['app.theme', 'dark'],
+            'theme false'          => ['app.theme', false],
+            'theme prázdný objekt' => ['app.theme', []],
+            'shell jako řetězec'   => ['app.shell', 'classic'],
+            'shell false'          => ['app.shell', false],
+            'shell prázdný objekt' => ['app.shell', []],
+            'shell neznámé jméno'  => ['app.shell', ['shell' => 'nope']],
+        ];
+    }
+
+    #[DataProvider('invalidDsDefaultProvider')]
+    public function testSavePageInvalidDsDefaultReturns422(string $key, mixed $value): void
+    {
+        $db = $this->mockDb();
+        $db->expects($this->never())->method('execute');
+        $db->expects($this->never())->method('deleteWhere');
+
+        $resp = $this->ctrl->savePage(
+            'appSettings',
+            $this->saveRequest(['values' => ['app.name' => 'Nová firma', $key => $value]]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(422, $this->getStatus($resp));
+        $this->assertSame($key, $resp->getPayload()['error']['details'][0]['field']);
+        $this->assertSame('INVALID_VALUE', $resp->getPayload()['error']['details'][0]['code']);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function userScopeFollowKeyProvider(): array
+    {
+        return ['account.theme' => ['account.theme'], 'account.shell' => ['account.shell']];
+    }
+
+    #[DataProvider('userScopeFollowKeyProvider')]
+    public function testSavePageUserScopeNullStaysInvalid(string $key): void
+    {
+        // User-scope „nezvoleno" nezná — sledování výchozího je {follow:true}.
+        $db = $this->mockDb();
+        $db->expects($this->never())->method('execute');
+        $db->expects($this->never())->method('deleteWhere');
+
+        $resp = $this->ctrl->savePage(
+            'accountBasic',
+            $this->saveRequest(['values' => [$key => null]]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(422, $this->getStatus($resp));
+        $this->assertSame($key, $resp->getPayload()['error']['details'][0]['field']);
+    }
+
     // --- account.shell / app.shell (typ shell, UI shells Fáze 4) ---
 
     public function testSavePageAccountShellFollowTrue(): void

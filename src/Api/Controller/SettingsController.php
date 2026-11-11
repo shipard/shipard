@@ -179,7 +179,8 @@ class SettingsController
      *
      * Body: { values: { "app.name": "...", ... } }. Ukládá jen textová pole
      * definovaná ve stránce (whitelist), trim, maxLength validace, prázdný
-     * string maže klíč (fallback na default). `image` klíče se ignorují —
+     * string maže klíč (fallback na default); stejně tak nezvolený `select`
+     * / `color` a `null` u DS-scope `theme` / `shell`. `image` klíče se ignorují —
      * obrázky mají vlastní upload endpoint (/_app/branding/{slot}).
      */
     public function savePage(
@@ -240,6 +241,15 @@ class SettingsController
                 // Prázdný string = smazat klíč → čtenáři padnou na fallback.
                 $toSave[$id] = $value === '' ? null : $value;
             } elseif ($type === 'theme') {
+                $isUserScope = ($pageDef['scope'] ?? 'ds') === 'user';
+                // DS-scope: null = výchozí vzhled nezvolen → smazat klíč,
+                // čtenáři padnou na vestavěný. Stránka posílá všechna svá
+                // pole, tedy i nezvolená. User-scope „nezvoleno" nezná
+                // (má {follow:true}), tam null zůstává chybou.
+                if ($raw === null && !$isUserScope) {
+                    $toSave[$id] = null;
+                    continue;
+                }
                 if (!is_array($raw)) {
                     $errors[] = ['field' => $id, 'code' => 'INVALID_VALUE', 'message' => 'Invalid theme value'];
                     continue;
@@ -249,7 +259,6 @@ class SettingsController
                 //   {follow:false, mode, custom} → vlastní override
                 //   {mode, custom} (legacy)      → ber jako override (follow:false)
                 // DS-scope theme (app.theme) follow nemá — případný flag zahodíme.
-                $isUserScope = ($pageDef['scope'] ?? 'ds') === 'user';
                 if ($isUserScope && ($raw['follow'] ?? false) === true) {
                     $toSave[$id] = ['follow' => true];
                     continue;
@@ -270,6 +279,14 @@ class SettingsController
                 // odlišil od „sleduj DS"; ds-scope follow nezná.
                 $toSave[$id] = $isUserScope ? ['follow' => false] + $clean : $clean;
             } elseif ($type === 'shell') {
+                $isUserScope = ($pageDef['scope'] ?? 'ds') === 'user';
+                // DS-scope: null = výchozí rozložení nezvoleno → smazat klíč
+                // (čtenáři padnou na `sidebar`); user-scope null dál chyba —
+                // stejně jako u theme.
+                if ($raw === null && !$isUserScope) {
+                    $toSave[$id] = null;
+                    continue;
+                }
                 if (!is_array($raw)) {
                     $errors[] = ['field' => $id, 'code' => 'INVALID_VALUE', 'message' => 'Invalid shell value'];
                     continue;
@@ -277,7 +294,6 @@ class SettingsController
                 // Stejný follow kontrakt jako theme: user-scope {follow:true}
                 // = sleduj DS default, jinak {follow:false, shell, params};
                 // DS-scope follow nezná — případný flag zahodíme.
-                $isUserScope = ($pageDef['scope'] ?? 'ds') === 'user';
                 if ($isUserScope && ($raw['follow'] ?? false) === true) {
                     $toSave[$id] = ['follow' => true];
                     continue;
