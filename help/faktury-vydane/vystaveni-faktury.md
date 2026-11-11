@@ -29,8 +29,10 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
 
    - **Partner** je odběratel. Hledá se psaním; když ho v evidenci ještě nemáš,
      založíš ho přímo odsud — viz [Založení osoby](../osoby/zalozeni-osoby.md).
-   - **Adresa partnera** se dá vybrat teprve po zvolení partnera. Bankovní
-     účet odběratele se na vydané faktuře nezadává — platí on tobě.
+   - **Adresa partnera** se dá vybrat teprve po zvolení partnera. Když ji
+     nevybereš, na doklad jde **sídlo** odběratele (nemá-li ho, jeho první
+     adresa). Bankovní účet odběratele se na vydané faktuře nezadává —
+     platí on tobě.
    - **Způsob platby** — když zvolíš *Hotovost*, objeví se pod ním ještě
      **Pokladna**. U *Kartou* a *Platební bránou* se objeví **Platební
      terminál / brána**, u *Dobírkou* vyber **Způsob dopravy**; pole

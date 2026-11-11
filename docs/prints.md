@@ -367,7 +367,13 @@ Pravidla:
   Částky se tisknou se znaménkem dokladu; QR platba u záporné částky není.
 - **Strany a náš účet ze snapshotů (D5, D14)**; jednotky, tiskové popisky
   DPH, pokladna a logo jsou aktuální v okamžiku tisku. `rows[].unit.label`
-  je zkratka v jazyce tisku (§3, Zkratky jednotek).
+  je zkratka v jazyce tisku (§3, Zkratky jednotek). **Adresa partnera**
+  ve snapshotu je adresa vybraná na hlavičce (`partner_address`); bez
+  výběru — doklad z applieru, z akce Vystavit opravný doklad,
+  z periodické fakturace — sídlo partnera, bez sídla jeho první platná
+  adresa (`PersonSnapshotBuilder::buildPartner()`, stejně živé strany
+  v detailu konceptu). Sloupec hlavičky se nedoplňuje. Snapshoty dokladů
+  potvrzených dřív se nemění.
 - **Povinné strany (D24):** snapshot **vlastní strany** (výstup →
   `supplier`, vstup → `customer`) je povinný, **partnerský** jen když
   hlavička má `partner` — pokladní doklad a prodejka ho mít nemusí. Chybí-li

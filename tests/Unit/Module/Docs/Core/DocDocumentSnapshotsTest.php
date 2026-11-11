@@ -172,6 +172,93 @@ class DocDocumentSnapshotsTest extends TestCase
         $this->assertSame('Partner s.r.o.', $customer['name']);
     }
 
+    // ── adresa partnera bez výběru → sídlo ──────────────────────────────────
+
+    /**
+     * Doklad z applieru (akce Vystavit opravný doklad, periodická fakturace)
+     * `partner_address` nenese — snapshot odběratele dostane sídlo partnera.
+     */
+    public function testPartnerWithoutSelectedAddressGetsHeadquartersAddress(): void
+    {
+        $db = $this->dbReturning([
+            new Row(['id' => 50, 'full_name' => 'Partner s.r.o.']),
+            new Row(['id' => 77, 'street' => 'Lázeňská', 'house_number' => '5', 'city' => 'Luhačovice', 'zip' => '76326', 'country' => 'cz']),
+            new Row(['id' => 1]),
+            new Row(['id' => 1]),
+            new Row(['id' => 100, 'street' => 'Vlastní 1', 'city' => 'Brno']),
+            new Row(['id' => 1, 'full_name' => 'Naše firma s.r.o.']),
+        ]);
+        $queries = [];
+        $db->method('fetchSingle')->willReturnCallback(function (mixed ...$args) use (&$queries): int {
+            $queries[] = $args;
+            return 77;
+        });
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($db);
+        $doc->setConfig($this->buildConfig());
+
+        $data = ['doc_type' => 'invno', 'partner' => 50, 'partner_address' => null];
+        $doc->buildSnapshotsPub($data);
+
+        $customer = json_decode($data['customer_snapshot'], true);
+        $this->assertSame('Partner s.r.o.', $customer['name']);
+        $this->assertSame('Lázeňská', $customer['address']['street']);
+        $this->assertSame('Luhačovice', $customer['address']['city']);
+        $this->assertArrayNotHasKey('partner_address', array_filter($data), 'hlavička adresu nedostává, jen snapshot');
+
+        // Sídlo napřed, bez něj první adresa; mimo koš a platná k dnešku.
+        $this->assertCount(1, $queries);
+        [$sql, $personId, $headquarters] = $queries[0];
+        $this->assertSame(50, $personId);
+        $this->assertSame(1, $headquarters, 'address_type sídla');
+        $this->assertStringContainsString('[docState] <> 90', $sql);
+        $this->assertStringContainsString('[valid_to] >= CURDATE()', $sql);
+        $this->assertStringContainsString('ORDER BY ([address_type] = %i) DESC, [order_pos], [id]', $sql);
+    }
+
+    public function testSelectedPartnerAddressIsKept(): void
+    {
+        $db = $this->dbReturning([
+            new Row(['id' => 50, 'full_name' => 'Partner s.r.o.']),
+            new Row(['id' => 12, 'street' => 'Provozní 9', 'city' => 'Zlín']),
+            new Row(['id' => 1]),
+            new Row(['id' => 1]),
+            new Row(['id' => 100, 'street' => 'Vlastní 1', 'city' => 'Brno']),
+            new Row(['id' => 1, 'full_name' => 'Naše firma s.r.o.']),
+        ]);
+        $db->expects($this->never())->method('fetchSingle');
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($db);
+        $doc->setConfig($this->buildConfig());
+
+        $data = ['doc_type' => 'invno', 'partner' => 50, 'partner_address' => 12];
+        $doc->buildSnapshotsPub($data);
+
+        $this->assertSame('Zlín', json_decode($data['customer_snapshot'], true)['address']['city']);
+    }
+
+    public function testPartnerWithoutAnyAddressHasSnapshotWithoutAddress(): void
+    {
+        $db = $this->dbReturning([
+            new Row(['id' => 50, 'full_name' => 'Partner s.r.o.']),
+            new Row(['id' => 1]),
+            new Row(['id' => 1]),
+            new Row(['id' => 100, 'street' => 'Vlastní 1', 'city' => 'Brno']),
+            new Row(['id' => 1, 'full_name' => 'Naše firma s.r.o.']),
+        ]);
+        $db->expects($this->once())->method('fetchSingle')->willReturn(null);
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($db);
+        $doc->setConfig($this->buildConfig());
+
+        $data = ['doc_type' => 'invno', 'partner' => 50, 'partner_address' => null];
+        $doc->buildSnapshotsPub($data);
+
+        $customer = json_decode($data['customer_snapshot'], true);
+        $this->assertSame('Partner s.r.o.', $customer['name']);
+        $this->assertArrayNotHasKey('address', $customer);
+    }
+
     public function testBuildSnapshotsForReceivedInvoiceFlipsRoles(): void
     {
         $db = $this->dbReturning([

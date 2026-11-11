@@ -2347,12 +2347,13 @@ abstract class DocDocument extends Document
             return;
         }
 
-        $partnerSnap = $this->buildPersonSnapshot(
-            personId:  (int) ($data['partner'] ?? 0),
-            addressId: $data['partner_address'] ?? null,
-            bankAccountId: null,
-            vatRegistrationId: null,
-        );
+        // Partner bez vybrané adresy dostane sídlo (bez něj první adresu) —
+        // doklad z applieru ani z akce Vystavit opravný doklad
+        // `partner_address` nenese.
+        $partnerId   = (int) ($data['partner'] ?? 0);
+        $partnerSnap = $this->db === null || $partnerId === 0
+            ? []
+            : $this->personSnapshotBuilder()->buildPartner($partnerId, $data['partner_address'] ?? null);
         $ownSnap = $this->buildOwnSnapshot($data);
 
         $this->assignSnapshots($data, $tradeDir, $partnerSnap, $ownSnap);

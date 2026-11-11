@@ -13,13 +13,61 @@ namespace Shipard\Module\Docs\Core;
  * The output shape is persisted in the supplier_snapshot / customer_snapshot
  * JSON columns — existing stored snapshots must stay compatible with it.
  *
+ * Partner bez vybrané adresy (`partner_address` prázdné — doklad z applieru,
+ * z akce Vystavit opravný doklad, z periodické fakturace, nebo formulář,
+ * kde ji uživatel nevybral) dostane **sídlo**, bez sídla první adresu
+ * osoby: {@see buildPartner()}. Bez toho by daňový doklad neměl adresu
+ * odběratele. Vlastní strana předává sídlo sama (`OwnCompanyResolver`).
+ *
  * Takes a raw \Dibi\Connection because Document subclasses hold one.
  */
 final class PersonSnapshotBuilder
 {
+    private const ADDRESS_TYPE_HEADQUARTERS = 1;
+
     public function __construct(
         private readonly \Dibi\Connection $db,
     ) {}
+
+    /**
+     * Snapshot partnera dokladu: vybraná adresa, bez ní výchozí adresa
+     * osoby ({@see defaultAddressId()}).
+     *
+     * @return array<string, mixed>  empty array when the person doesn't exist
+     */
+    public function buildPartner(int $personId, mixed $addressId): array
+    {
+        if ($personId === 0) {
+            return [];
+        }
+        return $this->build(
+            $personId,
+            !empty($addressId) ? $addressId : $this->defaultAddressId($personId),
+            null,
+            null,
+        );
+    }
+
+    /**
+     * Výchozí adresa osoby pro doklad: sídlo, bez sídla první adresa
+     * v pořadí na osobě (docs/docs-mvp.md, výchozí hodnoty hlavičky). Jen
+     * adresy mimo koš a platné k dnešku — stejně jako nabídka adres ve
+     * formuláři.
+     */
+    public function defaultAddressId(int $personId): ?int
+    {
+        $id = $this->db->fetchSingle(
+            'SELECT [id] FROM [base_persons_addresses]
+             WHERE [person] = %i AND [docState] <> 90
+               AND ([valid_from] IS NULL OR [valid_from] <= CURDATE())
+               AND ([valid_to] IS NULL OR [valid_to] >= CURDATE())
+             ORDER BY ([address_type] = %i) DESC, [order_pos], [id]
+             LIMIT 1',
+            $personId,
+            self::ADDRESS_TYPE_HEADQUARTERS,
+        );
+        return is_numeric($id) ? (int) $id : null;
+    }
 
     /**
      * @return array<string, mixed>  empty array when the person doesn't exist

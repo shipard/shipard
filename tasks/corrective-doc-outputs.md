@@ -187,17 +187,19 @@ Ostatní rozhodnutí viz tasky A a B.
   ISDOC k vydaným dokladům z aplikace vyrobit nejde (fáze 2 #119),
   `co-dnes-nejde.md` to říká dál.
 
-## Nálezy z ověření (neřešeno tady)
+## Nálezy z ověření
 
-1. **Odběratel bez adresy na tisku dokladu bez `partner_address`.**
-   Opravný doklad založený akcí *Vystavit opravný doklad* a potvrzený má
-   ve snapshotu odběratele jen název, IČO, DIČ a kontakt — adresa chybí
-   a na PDF není. Příčina je obecná: applier `partner_address` neplní
-   a `PersonSnapshotBuilder` adresu bez id nedohledá (vlastní strana
-   náhradu sídlem má, partner ne). Týká se každého dokladu potvrzeného bez
-   vybrané adresy partnera, tedy i faktur z periodické fakturace. Daňový
-   doklad má sídlo odběratele nést — chce vlastní rozhodnutí (náhrada
-   sídlem partnera ve snapshotu, nebo doplnění adresy v applieru).
+1. **Odběratel bez adresy na tisku dokladu bez `partner_address`** —
+   **opraveno 2026-11-11** samostatným commitem. Opravný doklad z akce
+   *Vystavit opravný doklad* měl po potvrzení ve snapshotu odběratele jen
+   název, IČO, DIČ a kontakt: applier `partner_address` neplní
+   a `PersonSnapshotBuilder` adresu bez id nedohledal. Nově partner bez
+   vybrané adresy dostane sídlo, bez sídla první platnou adresu
+   (`PersonSnapshotBuilder::buildPartner()` — snapshot při potvrzení
+   i živé strany v detailu konceptu; sloupec hlavičky se nedoplňuje).
+   Platí pro všechny doklady, tedy i pro faktury z periodické fakturace.
+   Snapshoty dokladů potvrzených dřív se nemění (znovu se staví jen při
+   změně partnera) — zpětná oprava dat není součástí.
 2. **„K úhradě“ u záporné částky.** Dobropis tiskne „K úhradě −12 100,00
    CZK“ a splatnost; QR platba na něm správně není. Popisek u záporné
    částky nedává smysl (správně „K vrácení“ / „Dobropisováno“) — podle

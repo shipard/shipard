@@ -635,11 +635,11 @@ class DocsHeadsViewer extends TableViewer
         $partner = null;
         $partnerId = (int) ($record['partner'] ?? 0);
         if ($partnerId > 0) {
-            $snap = $this->personSnapshotBuilder()->build(
+            // Stejné pravidlo jako snapshot při potvrzení: bez vybrané
+            // adresy sídlo partnera, bez sídla jeho první adresa.
+            $snap = $this->personSnapshotBuilder()->buildPartner(
                 $partnerId,
                 $record['partner_address'] ?? null,
-                null,
-                null,
             );
             $partner = $snap !== [] ? $snap : null;
         }
