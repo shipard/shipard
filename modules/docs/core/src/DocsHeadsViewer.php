@@ -67,7 +67,7 @@ class DocsHeadsViewer extends TableViewer
             . ' h.`docState`, h.`docStateMain`,'
             . ' h.`issue_date`, h.`due_date`,'
             . ' h.`total_amount`, h.`doc_currency`,'
-            . ' h.`cash_dir`, h.`payment_method`,'
+            . ' h.`cash_dir`, h.`payment_method`, h.`corrective`,'
             . ' p.`full_name` AS partner_name'
             . ' FROM `' . $this->table . '` h'
             . ' LEFT JOIN `base_persons_persons` p ON p.`id` = h.`partner`';
@@ -238,6 +238,11 @@ class DocsHeadsViewer extends TableViewer
         if ($docTypeLabel !== '') {
             $t2[] = ['text' => $docTypeLabel, 'class' => 'muted'];
         }
+        // Opravný daňový doklad (#92 U10) — štítek jen u dokladu s příznakem,
+        // ze sloupce v SELECTu (řádek je sdílený všemi typy, bez dalšího dotazu).
+        if (!empty($rowData['corrective'])) {
+            $t2[] = ['text' => $this->text('badge.corrective', 'Corrective document'), 'badge' => 'neutral'];
+        }
         $issueDate = $this->formatDate($rowData['issue_date'] ?? null);
         if ($issueDate !== null) {
             $t2[] = ['text' => $issueDate];
@@ -299,9 +304,12 @@ class DocsHeadsViewer extends TableViewer
      * Detail dokladu přes builder `TableViewer` (#136 D18): záznam
      * s JOINy (`loadDetailRecord`), hlavička (`detailHeader`: protistrana
      * jako titulek, číslo · text v podtitulku, ikona podle typu; štítek
-     * stavu dodá builder — doklad V pořádku ho nemá, D20), tab Přehled
-     * s content typem `document` (strany Dodavatel/Odběratel, meta mřížka,
-     * řádky, DPH rekapitulace, součty) a tab Zaúčtování (`detailTabs`),
+     * stavu dodá builder — doklad V pořádku ho nemá, D20; štítek Opravný
+     * doklad z `detailBadges`, #92), tab Přehled s content typem `document`
+     * (strany Dodavatel/Odběratel, meta mřížka, u opravného dokladu skupina
+     * Oprava s odkazem na původní doklad, řádky, DPH rekapitulace, součty;
+     * původní faktura s opravnými doklady má obsah `composite` s nadpisem
+     * a tabulkou Opravné doklady) a tab Zaúčtování (`detailTabs`),
      * akce (`detailActions`) a skupiny příloh zdrojové pošty
      * (`detailAttachmentGroups`); vlastní přílohy dokladu načte builder.
      *
@@ -310,16 +318,29 @@ class DocsHeadsViewer extends TableViewer
      */
     protected function loadDetailRecord(int $recordId): ?array
     {
+        // corrected_doc_type z LEFT JOIN původního dokladu — null = bez odkazu
+        // nebo visící FK; odkaz open_detail se pak neposílá.
         return $this->db->fetchRow(
             'SELECT h.*, p.`full_name` AS partner_name, pb.`full_name` AS partner_balance_name,'
-            . ' cd.`code` AS cash_desk_code, cd.`name` AS cash_desk_name'
+            . ' cd.`code` AS cash_desk_code, cd.`name` AS cash_desk_name,'
+            . ' co.`doc_type` AS corrected_doc_type'
             . ' FROM `' . $this->table . '` h'
             . ' LEFT JOIN `base_persons_persons` p ON p.`id` = h.`partner`'
             . ' LEFT JOIN `base_persons_persons` pb ON pb.`id` = h.`partner_balance`'
             . ' LEFT JOIN `economy_codebooks_cash_desks` cd ON cd.`id` = h.`cash_desk`'
+            . ' LEFT JOIN `' . $this->table . '` co ON co.`id` = h.`corrected_doc`'
             . ' WHERE h.`id` = %i',
             $recordId,
         );
+    }
+
+    /** Štítek „Opravný doklad“ za štítkem stavu (#92 U10) — typ dokladu dál nese ikona. */
+    protected function detailBadges(array $record): array
+    {
+        if (empty($record['corrective'])) {
+            return [];
+        }
+        return [['label' => $this->text('badge.corrective', 'Corrective document'), 'style' => 'neutral']];
     }
 
     protected function detailTabs(array $record): array
@@ -327,18 +348,38 @@ class DocsHeadsViewer extends TableViewer
         $recordId = (int) $record['id'];
         [$supplier, $customer] = $this->buildDetailParties($record);
 
+        $document = [
+            'type'      => 'document',
+            'supplier'  => $supplier,
+            'customer'  => $customer,
+            'meta'      => $this->buildDetailMeta($record),
+            'rows'      => $this->buildDetailRows($recordId),
+            'vat_recap' => $this->buildDetailVatRecap($recordId),
+            'totals'    => $this->buildDetailTotals($record),
+        ];
+        // Opravný doklad (#92 D2, D3, U10): skupina Oprava mezi údaji dokladu —
+        // původní doklad jako odkaz (open_detail), nebo jen jeho číslo.
+        $correction = $this->buildDetailCorrection($record);
+        if ($correction !== null) {
+            $document['correction'] = $correction;
+        }
+
+        // Původní faktura (#92 D7): sekce Opravné doklady pod dokladem —
+        // generická tabulka s odkazy, obsah je pak composite.
+        $correctiveDocs = $this->buildCorrectiveDocsTable($recordId);
+        $content = $correctiveDocs === null ? $document : [
+            'type'   => 'composite',
+            'blocks' => [
+                $document,
+                ['type' => 'heading', 'text' => $this->text('section.correctiveDocs', 'Corrective documents')],
+                $correctiveDocs,
+            ],
+        ];
+
         $tabs = [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
-            'content' => [
-                'type'      => 'document',
-                'supplier'  => $supplier,
-                'customer'  => $customer,
-                'meta'      => $this->buildDetailMeta($record),
-                'rows'      => $this->buildDetailRows($recordId),
-                'vat_recap' => $this->buildDetailVatRecap($recordId),
-                'totals'    => $this->buildDetailTotals($record),
-            ],
+            'content' => $content,
         ]];
 
         $accountingTab = $this->buildAccountingTab($record);
@@ -356,28 +397,40 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Akce detailu dokladu. Přeúčtovat — jen pro doklad ve stavu 40
-     * s nainstalovaným economy.accounting (guard přes extension sloupec,
-     * stejně jako buildAccountingTab). Záměrně bez vazby na accounting_state:
-     * přeúčtovat lze i bezchybně zaúčtovaný doklad (operace je idempotentní,
-     * proto i bez confirm). Obsluha: Viewer.svelte volá
-     * POST /_accounting/reaccount a refreshne detail.
+     * Akce detailu dokladu — jen ve stavu 40:
+     *  - Přeúčtovat — s nainstalovaným economy.accounting (guard přes
+     *    extension sloupec, stejně jako buildAccountingTab). Záměrně bez
+     *    vazby na accounting_state: přeúčtovat lze i bezchybně zaúčtovaný
+     *    doklad (operace je idempotentní, proto i bez confirm). Obsluha:
+     *    Viewer.svelte volá POST /_accounting/reaccount a refreshne detail.
+     *  - Vystavit opravný doklad (#92 D6, task B U7–U8) — doklad typu
+     *    s příznakem `corrective` (i když je sám opravný). Viewer.svelte volá
+     *    POST /_docs/corrective, obnoví detail a otevře koncept ve formuláři.
      */
     protected function detailActions(array $record): array
     {
-        if (!array_key_exists('accounting_state', $record)) {
-            return [];
-        }
         if ((int) ($record['docState'] ?? 0) !== 40) {
             return [];
         }
 
-        return [[
-            'id'      => 'reaccount',
-            'label'   => $this->language === 'cs' ? 'Přeúčtovat' : 'Re-account',
-            'kind'    => 'button',
-            'variant' => 'secondary',
-        ]];
+        $actions = [];
+        if (array_key_exists('accounting_state', $record)) {
+            $actions[] = [
+                'id'      => 'reaccount',
+                'label'   => $this->language === 'cs' ? 'Přeúčtovat' : 'Re-account',
+                'kind'    => 'button',
+                'variant' => 'secondary',
+            ];
+        }
+        if (DocTypes::isCorrective($this->config, (string) ($record['doc_type'] ?? ''))) {
+            $actions[] = [
+                'id'      => 'createCorrectiveDoc',
+                'label'   => $this->text('action.createCorrectiveDoc', 'Issue corrective document'),
+                'kind'    => 'button',
+                'variant' => 'secondary',
+            ];
+        }
+        return $actions;
     }
 
     // ── Tab Zaúčtování (economy.accounting) ────────────────────────────────
@@ -587,11 +640,11 @@ class DocsHeadsViewer extends TableViewer
         $partner = null;
         $partnerId = (int) ($record['partner'] ?? 0);
         if ($partnerId > 0) {
-            $snap = $this->personSnapshotBuilder()->build(
+            // Stejné pravidlo jako snapshot při potvrzení: bez vybrané
+            // adresy sídlo partnera, bez sídla jeho první adresa.
+            $snap = $this->personSnapshotBuilder()->buildPartner(
                 $partnerId,
                 $record['partner_address'] ?? null,
-                null,
-                null,
             );
             $partner = $snap !== [] ? $snap : null;
         }
@@ -658,6 +711,139 @@ class DocsHeadsViewer extends TableViewer
         }
         $decoded = json_decode($raw, true);
         return is_array($decoded) && $decoded !== [] ? $decoded : null;
+    }
+
+    /** Viewer dokladu podle typu pro odkaz open_detail (jako WorkOrdersViewer::DOC_TYPE_VIEWERS). */
+    private const DOC_TYPE_VIEWERS = [
+        'invno' => 'docs.invoicesOut.heads',
+        'invpo' => 'docs.proformasOut.heads',
+        'invni' => 'docs.invoicesIn.heads',
+        'invpi' => 'docs.proformasIn.heads',
+    ];
+
+    private const DOCUMENTS_VIEWER = 'docs.core.heads';
+
+    /** Text z katalogu `docs.core.viewerLabels` (anglický fallback bez konfigurace). */
+    private function text(string $key, string $fallback, array $params = []): string
+    {
+        return $this->labelText('docs.core.viewerLabels', $key, $fallback, $params);
+    }
+
+    /** @return array{kind: string, target: array{viewerId: string, recordId: int}} */
+    private function openDetailAction(string $docType, int $docId): array
+    {
+        return [
+            'kind'   => 'open_detail',
+            'target' => [
+                'viewerId' => self::DOC_TYPE_VIEWERS[$docType] ?? self::DOCUMENTS_VIEWER,
+                'recordId' => $docId,
+            ],
+        ];
+    }
+
+    /**
+     * Skupina Oprava v obsahu `document` opravného dokladu (#92 U10):
+     * původní doklad jako odkaz open_detail (jen když existuje — LEFT JOIN
+     * v loadDetailRecord), bez odkazu jen číslo; datum plnění původního
+     * dokladu; důvod opravy. Null u běžného dokladu.
+     *
+     * @param array<string, mixed> $record
+     * @return array{title: string, items: list<array<string, mixed>>}|null
+     */
+    private function buildDetailCorrection(array $record): ?array
+    {
+        if (empty($record['corrective'])) {
+            return null;
+        }
+        $items = [];
+        $number = $this->nullableString($record['corrected_doc_number'] ?? null);
+        $correctedId = (int) ($record['corrected_doc'] ?? 0);
+        $correctedType = $this->nullableString($record['corrected_doc_type'] ?? null);
+        if ($correctedId > 0 && $correctedType !== null) {
+            $items[] = [
+                'label'  => $this->text('field.correctedDoc', 'Original document'),
+                'value'  => $number ?? ('#' . $correctedId),
+                'action' => $this->openDetailAction($correctedType, $correctedId),
+            ];
+        } elseif ($number !== null) {
+            $items[] = ['label' => $this->text('field.correctedDocNumber', 'Original document number'), 'value' => $number];
+        }
+        $items[] = [
+            'label' => $this->text('field.correctedDocDate', 'Original tax point date'),
+            'value' => $this->formatDate($record['corrected_doc_date'] ?? null),
+        ];
+        $items[] = [
+            'label' => $this->text('field.correctionReason', 'Correction reason'),
+            'value' => $this->nullableString($record['correction_reason'] ?? null),
+        ];
+        return ['title' => $this->text('group.correction', 'Correction'), 'items' => $items];
+    }
+
+    /**
+     * Tabulka opravných dokladů původní faktury (#92 D7, U10): číslo, datum
+     * vystavení, částka, stav; řádek otevírá náhled (open_detail). Koncepty
+     * se ukazují, stornované a smazané ne. Null bez opravných dokladů —
+     * sekce se nekreslí.
+     *
+     * @return array<string, mixed>|null blok `table`
+     */
+    private function buildCorrectiveDocsTable(int $recordId): ?array
+    {
+        $rows = $this->db->fetchAll(
+            'SELECT `id`, `doc_type`, `doc_number`, `issue_date`, `total_amount`, `doc_currency`, `docState`'
+            . ' FROM `' . $this->table . '`'
+            . ' WHERE `corrected_doc` = %i AND `docState` NOT IN %in'
+            . ' ORDER BY `issue_date` ASC, `id` ASC',
+            $recordId,
+            $this->hiddenCorrectiveStates(),
+        );
+        if ($rows === []) {
+            return null;
+        }
+        $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem ?? ''));
+        $out = [];
+        foreach ($rows as $row) {
+            $amount = $this->formatMoney($row['total_amount'] ?? null);
+            $currency = strtoupper((string) ($row['doc_currency'] ?? ''));
+            $out[] = [
+                'number'     => $this->nullableString($row['doc_number'] ?? null) ?? ('#' . (int) $row['id']),
+                'issue_date' => $this->formatDate($row['issue_date'] ?? null) ?? '',
+                'amount'     => $amount === null ? '' : trim($amount . ' ' . $currency),
+                'state'      => (string) ($cfg->getState((int) ($row['docState'] ?? 0))['stateName'] ?? ''),
+                '_action'    => $this->openDetailAction((string) ($row['doc_type'] ?? ''), (int) $row['id']),
+            ];
+        }
+        return [
+            'type'    => 'table',
+            'columns' => [
+                ['id' => 'number', 'label' => $this->text('column.number', 'Number'), 'link' => true],
+                ['id' => 'issue_date', 'label' => $this->text('column.issueDate', 'Issued')],
+                ['id' => 'amount', 'label' => $this->text('column.amount', 'Amount'), 'align' => 'right'],
+                ['id' => 'state', 'label' => $this->text('column.state', 'State')],
+            ],
+            'rows' => $out,
+        ];
+    }
+
+    /**
+     * Stavy, ve kterých se opravný doklad v sekci původní faktury neukazuje:
+     * storno a koš podle `stateStyle` sady stavů; bez konfigurace 30 a 90.
+     *
+     * @return list<int>
+     */
+    private function hiddenCorrectiveStates(): array
+    {
+        $states = $this->config?->cfgItem($this->docStatesCfgItem ?? '');
+        if (!is_array($states)) {
+            return [30, 90];
+        }
+        $hidden = [];
+        foreach ($states as $value => $state) {
+            if (is_array($state) && in_array($state['stateStyle'] ?? '', ['cancelled', 'trash'], true)) {
+                $hidden[] = (int) $value;
+            }
+        }
+        return $hidden !== [] ? $hidden : [30, 90];
     }
 
     /** @return array<string, ?string> */

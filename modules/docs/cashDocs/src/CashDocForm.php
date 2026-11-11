@@ -175,9 +175,13 @@ class CashDocForm extends CashDeskFormBase
 
             ->section(title: 'Zaokrouhlení')
                 ->col()
+                    // Automatika jen u příjmu (#73 D2) — výdajový doklad
+                    // zaškrtávátko nemá a mód zadává uživatel.
+                    ->checkbox('total_rounding_auto', triggers: 'reload', hidden: !$this->appliesTotalRoundingAuto($data))
                     ->select(
                         'total_rounding_mode',
                         options: $this->resolveCfgItemOptions('docs.core.roundingModes'),
+                        readOnly: $this->isTotalRoundingAuto($data),
                     )
                     ->select(
                         'vat_rounding_mode',

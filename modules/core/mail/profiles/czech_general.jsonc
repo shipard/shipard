@@ -474,6 +474,35 @@
                                                 "type": "string"
                                             }
                                         },
+                                        "correction": {
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ],
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "originalDocNumber": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "maxLength": 40
+                                                },
+                                                "originalTaxPointDate": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "date"
+                                                },
+                                                "reason": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        },
                                         "rows": {
                                             "type": "array",
                                             "items": {
@@ -511,6 +540,12 @@
                                                 "totalRounding": {
                                                     "type": [
                                                         "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "totalRoundingAuto": {
+                                                    "type": [
+                                                        "boolean",
                                                         "null"
                                                     ]
                                                 }

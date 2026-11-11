@@ -32,6 +32,7 @@
         {"id": "rounding",   "name": "Rounding",      "name:cs": "Zaokrouhlení",      "name:en": "Rounding"},
         {"id": "totals",     "name": "Totals",        "name:cs": "Součty",            "name:en": "Totals"},
         {"id": "payment",    "name": "Payment",       "name:cs": "Platba",            "name:en": "Payment"},
+        {"id": "correction", "name": "Correction",    "name:cs": "Oprava",            "name:en": "Correction"},
         {"id": "lineage",    "name": "Lineage",       "name:cs": "Návaznosti",        "name:en": "Lineage"},
         {"id": "snapshots",  "name": "Snapshots",     "name:cs": "Snapshoty",         "name:en": "Snapshots"},
         {"id": "notes",      "name": "Notes",         "name:cs": "Poznámky",          "name:en": "Notes"}
@@ -459,6 +460,20 @@
 
         // --- rounding ---
 
+        // Automatické zaokrouhlení podle způsobu úhrady, měny a země (#73 D1):
+        // DocDocument::computeAmounts přepíše total_rounding_mode pravidlem
+        // TotalRoundingAuto; jen prodejní typy (docTypes.total_rounding_auto).
+        // Nový doklad z formuláře a applieru ji má zapnutou, existující 0.
+        {
+            "id": "total_rounding_auto",
+            "name": "Automatic rounding",
+            "name:cs": "Automatické zaokrouhlení",
+            "name:en": "Automatic rounding",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "group": "rounding"
+        },
         {
             "id": "total_rounding_mode",
             "name": "Total rounding",
@@ -661,6 +676,64 @@
             "name:en": "Constant symbol",
             "type": "varchar", "length": 10,
             "nullable": true, "group": "payment"
+        },
+
+        // --- correction (#92 D1–D3) ---
+        // Opravný daňový doklad je faktura vydaná s příznakem, ne nový typ
+        // (docTypes[].corrective, jediné čtení DocTypes::isCorrective).
+        // Odkaz na původní doklad je nepovinný (souhrnný opravný doklad):
+        // s odkazem DocDocument při uložení přepíše číslo a datum plnění
+        // původního dokladu (doc_number, vat_duzp / issue_date), bez odkazu
+        // jsou ruční. Typ bez příznaku a vypnutý příznak ostatní čtyři
+        // sloupce nulují. Sazba DPH se hledá k corrected_doc_date
+        // (DocHeadVatContext::vatRateDate), kurz se z lístku nepřepisuje.
+        // Období DPH, KH a zámky dál čtou vat_duzp opravného dokladu.
+        {
+            "id": "corrective",
+            "name": "Corrective document",
+            "name:cs": "Opravný doklad",
+            "name:en": "Corrective document",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "group": "correction"
+        },
+        {
+            "id": "corrected_doc",
+            "name": "Original document",
+            "name:cs": "Původní doklad",
+            "name:en": "Original document",
+            "type": "int",
+            "nullable": true,
+            "reference": "docs_core_heads",
+            "group": "correction"
+        },
+        {
+            "id": "corrected_doc_number",
+            "name": "Original document number",
+            "name:cs": "Číslo původního dokladu",
+            "name:en": "Original document number",
+            "type": "varchar", "length": 40,
+            "nullable": true,
+            "group": "correction"
+        },
+        {
+            "id": "corrected_doc_date",
+            "name": "Original tax point date",
+            "name:cs": "Datum plnění původního dokladu",
+            "name:en": "Original tax point date",
+            "type": "date",
+            "nullable": true,
+            "group": "correction"
+        },
+        {
+            "id": "correction_reason",
+            "name": "Correction reason",
+            "name:cs": "Důvod opravy",
+            "name:en": "Correction reason",
+            "type": "text",
+            "nullable": true,
+            "group": "correction"
         },
 
         // --- lineage ---
@@ -875,6 +948,13 @@
             "id": "idx_payment_terminal",
             "type": "index",
             "columns": [{"column": "payment_terminal"}]
+        },
+
+        // opravné doklady původní faktury (#92 D7) — detail původního dokladu
+        {
+            "id": "idx_corrected_doc",
+            "type": "index",
+            "columns": [{"column": "corrected_doc"}]
         },
 
         // dates for reports

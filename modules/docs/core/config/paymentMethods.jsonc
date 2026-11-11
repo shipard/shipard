@@ -7,13 +7,21 @@
     //   3 = dobírkou
     //   4 = zápočtem
     //   5 = platební bránou (#72 D4 — vyžaduje payment_terminal druhu brána)
+    //
+    // Atributy:
+    //   cashRounding: true = hotovostní způsob úhrady (#73 D5). Při zapnutém
+    //                 automatickém zaokrouhlení se celková částka dokladu
+    //                 zaokrouhlí podle world.base.cashRounding (měna + země
+    //                 zdroje dat); chybí = nehotovostní úhrada, na haléře.
+    //                 Jediná autorita čtení: TotalRoundingAuto::isCashPayment().
 
     "0": {
         "name": "Cash",
         "name:cs": "Hotovost",
         "name:en": "Cash",
         "name:sk": "Hotovosť",
-        "name:de": "Barzahlung"
+        "name:de": "Barzahlung",
+        "cashRounding": true
     },
     "1": {
         "name": "Bank transfer",
@@ -34,7 +42,8 @@
         "name:cs": "Dobírkou",
         "name:en": "Cash on delivery",
         "name:sk": "Dobierkou",
-        "name:de": "Nachnahme"
+        "name:de": "Nachnahme",
+        "cashRounding": true
     },
     "4": {
         "name": "Set-off",

@@ -133,9 +133,14 @@ bank; pro odběratele v zahraničí jiný standard zatím není.
 **Fakturu pro strojové zpracování (ISDOC) Shipard nevystaví.** PDF je jen
 obrázek dokladu pro člověka.
 
-**Opravný daňový doklad nemá vlastní tisk.** Dobropis je v Shipardu faktura
-se zápornou částkou a vytiskne se s titulkem faktury — bez odkazu na
-opravovaný doklad a bez důvodu opravy.
+**Přijatý dobropis nemá vlastní doklad.** Vydaný dobropis vystavíš jako
+fakturu vydanou s volbou **Opravný doklad** a vytiskne se s titulkem
+*Opravný daňový doklad*, číslem původního dokladu a důvodem opravy — viz
+[Opravný daňový doklad](faktury-vydane/opravny-doklad.md). Přijaté
+dobropisy od dodavatelů jsou ale dál jen přijaté faktury se zápornými
+řádky, bez příznaku a bez odkazu na původní doklad. **Vratka na prodejce**
+se u plátce DPH tiskne s titulkem *Prodejka – vratka*, ne jako opravný
+daňový doklad.
 
 **Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostaneš,
 vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přijaté

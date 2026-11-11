@@ -363,6 +363,30 @@ class DocDocumentVatRecapDeclaredTest extends TestCase
         $this->assertContains('vat_recap_inconsistent', $codes);
     }
 
+    /** Opravný doklad (#92 D4): sazba převzaté rekapitulace se ověřuje k datu plnění původního dokladu. */
+    public function testCorrectiveDocumentChecksRateAtOriginalTaxPointDate(): void
+    {
+        $doc = $this->doc();
+        $this->dbRows = [$this->row('cz-110', 20.0, 120.00, 1)];
+        // cz-110 mělo v roce 2012 sazbu 20 % — k DUZP opravy (2026) by 20 % neprošlo.
+        $recap = [['vat_code' => 'cz-110', 'vat_pct' => 20.0, 'base' => 100.00, 'tax' => 20.00, 'total' => 120.00]];
+
+        $codes = array_column($this->warnings($doc, $this->declaredData($recap, [
+            'corrective' => 1, 'corrected_doc_date' => '2012-06-01',
+        ])), 'code');
+        $this->assertNotContains('vat_recap_inconsistent', $codes, 'sazba k datu původního plnění sedí');
+
+        $codes = array_column($this->warnings($doc, $this->declaredData($recap, [
+            'corrective' => 1, 'corrected_doc_date' => null,
+        ])), 'code');
+        $this->assertContains('vat_recap_inconsistent', $codes, 'bez data původního plnění platí DUZP opravy');
+
+        $codes = array_column($this->warnings($doc, $this->declaredData($recap, [
+            'corrective' => 0, 'corrected_doc_date' => '2012-06-01',
+        ])), 'code');
+        $this->assertContains('vat_recap_inconsistent', $codes, 'běžný doklad: DUZP');
+    }
+
     public function testComputedRecapProducesNoRecapWarnings(): void
     {
         $doc = $this->doc();

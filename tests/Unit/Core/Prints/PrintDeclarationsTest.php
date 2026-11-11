@@ -222,7 +222,7 @@ class PrintDeclarationsTest extends TestCase
                 $checked++;
             }
         }
-        // Osm fixture dokladů × sada dokladů; Kontace proměnné nemá.
+        // Devět fixture dokladů × sada dokladů; Kontace proměnné nemá.
         $this->assertGreaterThan(50, $checked);
     }
 

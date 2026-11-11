@@ -26,6 +26,7 @@ use Shipard\Module\Docs\Core\DocRowCalculator;
 use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Docs\Core\RoundingModes;
+use Shipard\Module\Docs\Core\TotalRoundingAuto;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
@@ -81,6 +82,15 @@ class DocumentApplier
      * @var array{key: string, ctx: array<string, mixed>}|null
      */
     private ?array $vatContextCache = null;
+
+    /**
+     * Opravný doklad ({@see correctionDecision()}) — dohledání původního
+     * dokladu jednou per canonical; čtou ho vatContext(), exchangeRateDecision(),
+     * resolveAll(), transform() i appendCorrectionIssues().
+     *
+     * @var array{key: string, decision: array<string, mixed>}|null
+     */
+    private ?array $correctionCache = null;
 
     /** Map canonical vat.mode → docs_core_heads.vat_mode (cfgItem docs.core.vatModes). */
     private const VAT_MODE_MAP = [
@@ -377,6 +387,7 @@ class DocumentApplier
         $this->appendVatHeaderIssues($canonical, $issues);
         $this->appendRecapSourceIssue($canonical, $issues, $rowSkips);
         $this->appendExchangeRateIssue($canonical, $issues);
+        $this->appendCorrectionIssues($canonical, $issues);
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues));
         // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
         //     — čte uložené volby z klientského _resolve, ale nerozhoduje
@@ -498,6 +509,9 @@ class DocumentApplier
                 'totalVat'      => (float) ($data['total_vat'] ?? 0),
                 'totalAmount'   => (float) ($data['total_amount'] ?? 0),
                 'totalRounding' => (float) ($data['total_rounding'] ?? 0),
+                // Mód, který skončí na dokladu — při automatice (#73 D8) ho
+                // určil computeAmounts, jinak odvození z čísel.
+                'totalRoundingMode' => (int) ($data['total_rounding_mode'] ?? 0),
             ],
             'rows' => $computedRows,
         ];
@@ -623,6 +637,7 @@ class DocumentApplier
         $this->appendVatHeaderIssues($canonical, $validatorIssues);
         $this->appendRecapSourceIssue($canonical, $validatorIssues, $rowSkips);
         $this->appendExchangeRateIssue($canonical, $validatorIssues);
+        $this->appendCorrectionIssues($canonical, $validatorIssues);
 
         // 3. Re-run resolve (fresh DB read; client's _resolve might be stale).
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $validatorIssues));
@@ -995,6 +1010,19 @@ class DocumentApplier
         }
         if ($supplierBankResult !== null) {
             $resolved['supplierBank'] = $supplierBankResult->toArray();
+        }
+        // Opravný doklad (#92 task B U3): výsledek dohledání původního dokladu
+        // do náhledu — tvar jako ResolveResult::toArray(); souhrn ho nepočítá,
+        // withResolve() ho vrátí klientovi.
+        $correction = $this->correctionDecision($canonical);
+        if ($correction !== null && $correction['supported']) {
+            $resolved['correction'] = array_filter([
+                'status'       => $correction['status'],
+                'matchedId'    => $correction['originalId'],
+                'matchedBy'    => $correction['matchedBy'],
+                'docNumber'    => $correction['originalNumber'],
+                'taxPointDate' => $correction['originalDate'],
+            ], static fn ($v) => $v !== null);
         }
         return $resolved;
     }
@@ -1592,6 +1620,7 @@ class DocumentApplier
         };
         // Směr pokladního dokladu (jen cashDocument; validátor hlídá 1/2).
         $cashDir = isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0;
+        $totalRoundingAuto = $this->resolveTotalRoundingAuto($canonical, $docType, $cashDir);
         // Ruční plátce (#72): poslaná strana = partner_balance s příznakem
         // ručního zadání, aby ho odvození (terminál / dopravce) nepřepsalo.
         $balancePartyId = $sideIds['balanceParty'] ?? $plan['resolvedBalanceParty'] ?? null;
@@ -1706,11 +1735,15 @@ class DocumentApplier
                                        : null,
             // Kurz z dokladu vyhrává; bez něj kurz z lístku k účetnímu datu
             // (#121 D6) — mimo import mód, viz exchangeRateDecision().
-            'exchange_rate'        => $canonical['exchangeRate'] ?? ($this->exchangeRateDecision($canonical)['rate'] ?? null)?->rate,
-            // Odvozeno z čísel (computed vs declared), extrahovaný
-            // totals.totalRounding je jen informativní. Null → klíč vypadne
-            // přes array_filter níže a platí default 0 (bez zaokrouhlení).
-            'total_rounding_mode'  => $this->deriveTotalRoundingMode(
+            'exchange_rate'        => $canonical['exchangeRate'] ?? ($this->exchangeRateDecision($canonical)['value'] ?? null),
+            // Automatické zaokrouhlení podle způsobu úhrady (#73 D8), viz
+            // resolveTotalRoundingAuto(). Při zapnuté automatice mód určí
+            // DocDocument::computeAmounts (klíč vypadne); jinak odvozeno
+            // z čísel (computed vs declared), extrahovaný totals.totalRounding
+            // je jen informativní. Null → klíč vypadne přes array_filter níže
+            // a platí default 0 (bez zaokrouhlení).
+            'total_rounding_auto'  => $totalRoundingAuto ? 1 : 0,
+            'total_rounding_mode'  => $totalRoundingAuto ? null : $this->deriveTotalRoundingMode(
                 $canonical,
                 $nonPayerGross !== [] ? round(array_sum($nonPayerGross), 2) : null,
             ),
@@ -1723,6 +1756,12 @@ class DocumentApplier
             'source_kind'          => $canonical['source']['kind'] ?? null,
             'source_message'       => $canonical['source']['message'] ?? null,
             'source_extracted_at'  => $this->mapExtractedAt($canonical['source']['extractedAt'] ?? null),
+            // Opravný daňový doklad (#92 D10, task B U2–U3): jen u typu
+            // s příznakem. Číslo a datum plnění původního dokladu jdou už
+            // odsud — validate() i sazby DPH je čtou z dat před beforeSave()
+            // (DocHeadVatContext::vatRateDate), dokument pak z odkazu potvrdí
+            // tytéž hodnoty. Bez bloku žádný klíč — příznak zůstane na 0.
+            ...$this->correctionColumns($canonical),
             // Dimenze deníku (#110 T2): sloupce hlavičky podle deklarace
             // (`headColumn`); chybějící objekt = sloupce se nezapíší (NULL).
             ...$this->dimensionColumns($plan['resolvedHeadDimensions'] ?? [], head: true),
@@ -1940,6 +1979,9 @@ class DocumentApplier
             $canonical['selfParty'] ?? null,
             $canonical['vat'] ?? null,
             $canonical['dates'] ?? null,
+            // Opravný doklad (#92): datum sazby závisí na bloku a pinu.
+            $canonical['correction'] ?? null,
+            $canonical['_resolve']['correction']['userAction'] ?? null,
             $importMode,
             $supplierVatId,
             $customerVatId,
@@ -1958,6 +2000,17 @@ class DocumentApplier
         }
 
         $taxPointDate = $canonical['dates']['taxPointDate'] ?? ($canonical['dates']['issueDate'] ?? null);
+        // Datum sazby DPH (#92 D4, task B U4): u opravného dokladu datum plnění
+        // původního dokladu (z odkazu, jinak correction.originalTaxPointDate),
+        // jinak DUZP — totéž pravidlo jako DocHeadVatContext::vatRateDate().
+        // Místo plnění a registrace k datu dál čtou taxPointDate.
+        $rateDate = $taxPointDate;
+        $correction = $this->correctionDecision($canonical);
+        if ($correction !== null && $correction['supported']) {
+            $rateDate = $correction['originalDate']
+                ?? self::dateText($canonical['correction']['originalTaxPointDate'] ?? null)
+                ?? $taxPointDate;
+        }
         $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
         $inputPlace = is_string($vat['place'] ?? null) ? $vat['place'] : null;
         $ctx = [
@@ -1966,6 +2019,7 @@ class DocumentApplier
             'ownCountry'        => null,
             'ownRegistrationId' => null,
             'taxPointDate'      => is_string($taxPointDate) && $taxPointDate !== '' ? $taxPointDate : null,
+            'rateDate'          => is_string($rateDate) && $rateDate !== '' ? $rateDate : null,
             'place'             => $inputPlace,
             'placeSource'       => $inputPlace !== null ? 'ai' : null,
             'placePrefix'       => null,
@@ -2493,7 +2547,8 @@ class DocumentApplier
     ): ?array {
         $rowVat = is_array($row['vat'] ?? null) ? $row['vat'] : [];
         $pct = isset($rowVat['pct']) && is_numeric($rowVat['pct']) ? (float) $rowVat['pct'] : null;
-        $date = $vatCtx['taxPointDate'];
+        // Sazba k datu sazby (opravný doklad = původní plnění, #92 D4).
+        $date = $vatCtx['rateDate'];
         $decision = $vatCtx['rows'][$idx] ?? null;
 
         if ($decision === null) {
@@ -2830,7 +2885,8 @@ class DocumentApplier
             ? (string) $vatCtx['ownCountry']
             : strtolower((string) ($canonical['vat']['registrationCountry'] ?? ''));
         $supplierCountry = strtolower((string) ($canonical['supplier']['country'] ?? ''));
-        $taxPointDate = $vatCtx['taxPointDate'];
+        // Sazba rekapitulace k datu sazby (opravný doklad = původní plnění, #92 D4).
+        $taxPointDate = $vatCtx['rateDate'];
         $recap = [];
         foreach ($entries as $entry) {
             if (!is_array($entry)) {
@@ -2998,26 +3054,63 @@ class DocumentApplier
      * dokladu. Náhled i apply jdou přes transform(), takže kurz vzniká na
      * jednom místě; resolver memoizuje, dotaz do lístků je jeden.
      *
+     * Opravný doklad (#92 D4, task B U4): lístek se nečte — s odkazem se
+     * převezme kurz původního dokladu (jen při shodné měně, jako formulář),
+     * bez odkazu zůstane prázdný a potvrzení zastaví validace dokladu.
+     *
      * @param array<string, mixed> $canonical
-     * @return array{currency: string, date: ?string, rate: ?ExchangeRate}|null null = nic nedohledávat
+     * @return array{currency: string, date: ?string, source: string, value: ?float, rate: ?ExchangeRate, originalNumber: ?string}|null
+     *   null = nic nedohledávat; `source`: `list` (kurz z lístku, `rate` nese
+     *   lístek), `original` (kurz původního dokladu), `correctiveManual`
+     *   (opravný doklad bez odkazu — `value` null)
      */
     private function exchangeRateDecision(array $canonical): ?array
     {
-        if ($this->exchangeRateResolver === null || ($canonical['exchangeRate'] ?? null) !== null) {
+        if (($canonical['exchangeRate'] ?? null) !== null) {
             return null;
         }
         if (is_array($canonical['applyOptions']['importNumber'] ?? null)) {
             return null;
         }
         $currency = strtolower((string) ($canonical['currency'] ?? ''));
-        if ($currency === '' || $currency === $this->exchangeRateResolver->homeCurrency()) {
+        if ($currency === '') {
+            return null;
+        }
+        $homeCurrency = $this->exchangeRateResolver?->homeCurrency();
+        if ($homeCurrency !== null && $currency === $homeCurrency) {
+            return null;
+        }
+        $correction = $this->correctionDecision($canonical);
+        if ($correction !== null && $correction['supported']) {
+            $fromOriginal = $correction['originalId'] !== null
+                && $correction['originalRate'] !== null
+                && $correction['originalCurrency'] === $currency;
+            // Bez resolveru (zdroj dat bez lístků) není známá domácí měna —
+            // hlásí se jen převzatý kurz, ne chybějící.
+            if (!$fromOriginal && $homeCurrency === null) {
+                return null;
+            }
+            return [
+                'currency'       => $currency,
+                'date'           => null,
+                'source'         => $fromOriginal ? 'original' : 'correctiveManual',
+                'value'          => $fromOriginal ? $correction['originalRate'] : null,
+                'rate'           => null,
+                'originalNumber' => $correction['originalNumber'],
+            ];
+        }
+        if ($this->exchangeRateResolver === null) {
             return null;
         }
         $date = AccountingDateRule::fromCanonical($canonical); // účetní datum (D5, D78)
+        $rate = $date !== null ? $this->exchangeRateResolver->rateFor($currency, $date) : null;
         return [
-            'currency' => $currency,
-            'date'     => $date,
-            'rate'     => $date !== null ? $this->exchangeRateResolver->rateFor($currency, $date) : null,
+            'currency'       => $currency,
+            'date'           => $date,
+            'source'         => 'list',
+            'value'          => $rate?->rate,
+            'rate'           => $rate,
+            'originalNumber' => null,
         ];
     }
 
@@ -3033,6 +3126,31 @@ class DocumentApplier
     {
         $decision = $this->exchangeRateDecision($canonical);
         if ($decision === null) {
+            return;
+        }
+        if ($decision['source'] === 'original') {
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => 'exchangeRate',
+                'code'     => 'exchange_rate_from_original',
+                'message'  => sprintf(
+                    'Kurz %s převzat z původního dokladu %s.',
+                    self::exchangeRateText((float) $decision['value']),
+                    (string) ($decision['originalNumber'] ?? ''),
+                ),
+            ];
+            return;
+        }
+        if ($decision['source'] === 'correctiveManual') {
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => 'exchangeRate',
+                'code'     => 'exchange_rate_corrective_manual',
+                'message'  => sprintf(
+                    'Opravný doklad v měně %s bez původního dokladu — kurz z lístku se nepřebírá, doplňte kurz původního plnění ručně; bez něj doklad nepůjde potvrdit.',
+                    strtoupper($decision['currency']),
+                ),
+            ];
             return;
         }
         $rate = $decision['rate'];
@@ -3060,6 +3178,210 @@ class DocumentApplier
                 $decision['date'] !== null ? self::exchangeRateDateText($decision['date']) : '(bez data)',
             ),
         ];
+    }
+
+    // ── Opravný daňový doklad (#92 D10, task B U2–U4) ───────────────────────
+
+    /**
+     * Blok `correction` canonicalu a dohledání původního dokladu — jednou per
+     * canonical (memoizace), čtou ho vatContext() (datum sazby),
+     * exchangeRateDecision() (kurz), resolveAll() (blok `_resolve.correction`
+     * náhledu), transform() (sloupce) i appendCorrectionIssues(). Blok se
+     * bere jen u typu dokladu s příznakem `docTypes[].corrective`
+     * (`supported`); jinde se ignoruje s varováním.
+     *
+     * Pořadí dohledání (U3): pin `_resolve.correction.userAction =
+     * useExisting:<id>` — doklad existuje a má typ s příznakem (stav nehlídá,
+     * při potvrzení ho zkontroluje DocDocument::validateCorrective); neplatný
+     * pin = `pinMissing` a pokračuje se podle `originalDocNumber` mezi doklady
+     * téhož typu ve stavu V pořádku: právě jeden = odkaz, žádný = číslo
+     * zůstane textem, víc = bez odkazu. `originalDate` = DUZP původního
+     * dokladu, bez něj datum vystavení (DocDocument::applyCorrectiveColumns).
+     *
+     * @param array<string, mixed> $canonical
+     * @return array{supported: bool, status: string, matchedBy: ?string, pinMissing: ?int,
+     *     originalId: ?int, originalNumber: ?string, originalDate: ?string,
+     *     originalRate: ?float, originalCurrency: ?string}|null  null = blok chybí
+     */
+    private function correctionDecision(array $canonical): ?array
+    {
+        if (!is_array($canonical['correction'] ?? null)) {
+            return null;
+        }
+        $correction = $canonical['correction'];
+        $userAction = $canonical['_resolve']['correction']['userAction'] ?? null;
+        $docType = $this->mapDocType($canonical);
+        $key = md5((string) json_encode([$docType, $correction, $userAction]));
+        if ($this->correctionCache !== null && $this->correctionCache['key'] === $key) {
+            return $this->correctionCache['decision'];
+        }
+
+        $decision = [
+            'supported'        => DocTypes::isCorrective($this->config, $docType),
+            'status'           => 'none',
+            'matchedBy'        => null,
+            'pinMissing'       => null,
+            'originalId'       => null,
+            'originalNumber'   => null,
+            'originalDate'     => null,
+            'originalRate'     => null,
+            'originalCurrency' => null,
+        ];
+        if ($decision['supported']) {
+            $original = null;
+            $pinId = self::useExistingId($userAction);
+            if ($pinId !== null) {
+                $row = $this->db->fetch(
+                    'SELECT [id], [doc_type], [doc_number], [vat_duzp], [issue_date], [exchange_rate], [doc_currency]
+                     FROM [docs_core_heads] WHERE [id] = %i',
+                    $pinId,
+                );
+                if ($row !== null && DocTypes::isCorrective($this->config, (string) $row['doc_type'])) {
+                    $original = $row;
+                    $decision['matchedBy'] = 'pin';
+                } else {
+                    $decision['pinMissing'] = $pinId;
+                }
+            }
+            $number = trim((string) ($correction['originalDocNumber'] ?? ''));
+            if ($original === null && $number !== '') {
+                $rows = $this->db->fetchAll(
+                    'SELECT [id], [doc_type], [doc_number], [vat_duzp], [issue_date], [exchange_rate], [doc_currency]
+                     FROM [docs_core_heads]
+                     WHERE [doc_number] = %s AND [doc_type] = %s AND [docState] = %i
+                     ORDER BY [id] LIMIT 2',
+                    $number,
+                    $docType,
+                    40,
+                );
+                if (count($rows) === 1) {
+                    $original = $rows[0];
+                    $decision['matchedBy'] = 'number';
+                } else {
+                    $decision['status'] = $rows === [] ? 'notFound' : 'ambiguous';
+                }
+            }
+            if ($original !== null) {
+                $decision['status'] = 'matched';
+                $decision['originalId'] = (int) $original['id'];
+                $decision['originalNumber'] = self::nullableText($original['doc_number'] ?? null);
+                $decision['originalDate'] = self::dateText($original['vat_duzp'] ?? null)
+                    ?? self::dateText($original['issue_date'] ?? null);
+                $decision['originalRate'] = isset($original['exchange_rate']) && is_numeric((string) $original['exchange_rate'])
+                    ? (float) $original['exchange_rate']
+                    : null;
+                $decision['originalCurrency'] = self::nullableText(
+                    isset($original['doc_currency']) ? strtolower((string) $original['doc_currency']) : null,
+                );
+            }
+        }
+        $this->correctionCache = ['key' => $key, 'decision' => $decision];
+        return $decision;
+    }
+
+    /**
+     * Sloupce skupiny `correction` pro transform(): jen u podporovaného typu;
+     * null hodnoty vypadnou přes array_filter volajícího (default sloupců).
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<string, mixed>
+     */
+    private function correctionColumns(array $canonical): array
+    {
+        $decision = $this->correctionDecision($canonical);
+        if ($decision === null || !$decision['supported']) {
+            return [];
+        }
+        $correction = $canonical['correction'];
+        return [
+            'corrective'           => 1,
+            'corrected_doc'        => $decision['originalId'],
+            'corrected_doc_number' => $decision['originalNumber']
+                ?? self::nullableText($correction['originalDocNumber'] ?? null),
+            'corrected_doc_date'   => $decision['originalDate']
+                ?? self::dateText($correction['originalTaxPointDate'] ?? null),
+            'correction_reason'    => self::nullableText($correction['reason'] ?? null),
+        ];
+    }
+
+    /**
+     * Náhled i apply: blok na typu bez příznaku = warning
+     * `correction_not_supported` (doklad vznikne jako běžný); neplatný pin =
+     * warning `pin_target_missing`; číslo bez shody = info
+     * `correction_original_not_found` (zůstane textem); víc shod = warning
+     * `correction_original_ambiguous` (bez odkazu).
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function appendCorrectionIssues(array $canonical, array &$issues): void
+    {
+        $decision = $this->correctionDecision($canonical);
+        if ($decision === null) {
+            return;
+        }
+        if (!$decision['supported']) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => 'correction',
+                'code'     => 'correction_not_supported',
+                'message'  => 'Údaje opravy platí jen u typu dokladu, ke kterému jde vystavit opravný doklad — ignorovány, doklad vznikne jako běžný.',
+            ];
+            return;
+        }
+        if ($decision['pinMissing'] !== null) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => '_resolve.correction',
+                'code'     => 'pin_target_missing',
+                'message'  => "Cílový doklad docs_core_heads#{$decision['pinMissing']} pro „_resolve.correction\" neexistuje nebo není typu s opravným dokladem — odkaz na původní doklad nebyl nastaven.",
+            ];
+        }
+        $number = trim((string) ($canonical['correction']['originalDocNumber'] ?? ''));
+        if ($decision['status'] === 'notFound') {
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => 'correction.originalDocNumber',
+                'code'     => 'correction_original_not_found',
+                'message'  => "Původní doklad {$number} není mezi doklady tohoto typu ve stavu V pořádku — číslo zůstane jen textem, bez odkazu.",
+            ];
+        } elseif ($decision['status'] === 'ambiguous') {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => 'correction.originalDocNumber',
+                'code'     => 'correction_original_ambiguous',
+                'message'  => "Číslo původního dokladu {$number} má víc dokladů ve stavu V pořádku — odkaz nebyl nastaven, číslo zůstává textem.",
+            ];
+        }
+    }
+
+    /** `useExisting:<id>` → id, jinak null (bez hlášení — tvar hlídá DocumentValidator). */
+    private static function useExistingId(mixed $userAction): ?int
+    {
+        if (!is_string($userAction) || !str_starts_with($userAction, 'useExisting:')) {
+            return null;
+        }
+        $idStr = substr($userAction, strlen('useExisting:'));
+        return ctype_digit($idStr) && (int) $idStr > 0 ? (int) $idStr : null;
+    }
+
+    private static function nullableText(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $text = trim((string) $value);
+        return $text !== '' ? $text : null;
+    }
+
+    /** Datum z DB (DateTime) nebo canonicalu (string) → `Y-m-d`, prázdné → null. */
+    private static function dateText(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        $text = trim((string) ($value ?? ''));
+        return $text !== '' ? substr($text, 0, 10) : null;
     }
 
     private static function exchangeRateText(float $rate): string
@@ -3587,6 +3909,31 @@ class DocumentApplier
     }
 
     /**
+     * Příznak automatického zaokrouhlení nového dokladu (#73 D8, U9): jen
+     * doklad, kde automatika platí ({@see TotalRoundingAuto::applies()} —
+     * prodejní typ, u pokladního dokladu příjem). Explicitní
+     * `totals.totalRoundingAuto` vyhrává (dump → seed zachová stav dokladu);
+     * bez něj zapnuto právě tehdy, když canonical nemá deklarovanou
+     * `totals.totalAmount` (faktura ze zakázky). Import ze starého Shipardu,
+     * pošta i ISDOC částku nesou — zůstávají u módu odvozeného z čísel
+     * ({@see deriveTotalRoundingMode()}), žádný doklad se jim nepřepočítá.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    private function resolveTotalRoundingAuto(array $canonical, string $docType, int $cashDir): bool
+    {
+        if (!TotalRoundingAuto::applies($this->config, $docType, $cashDir)) {
+            return false;
+        }
+        $totals = $canonical['totals'] ?? null;
+        $explicit = is_array($totals) ? ($totals['totalRoundingAuto'] ?? null) : null;
+        if (is_bool($explicit)) {
+            return $explicit;
+        }
+        return !is_array($totals) || !isset($totals['totalAmount']) || !is_numeric($totals['totalAmount']);
+    }
+
+    /**
      * Odvodí `total_rounding_mode` z rozdílu mezi spočtenou a deklarovanou
      * celkovou částkou. Konzervativně: mod se nastaví jen když se computed
      * a declared liší o >= 0,01 a < 1,00 a některý mod declared přesně
@@ -3960,6 +4307,9 @@ class DocumentApplier
         'payment_reference' => null, 'specific_symbol' => null, 'constant_symbol' => null,
         'notice' => null, 'doc_notice' => null, 'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
         'source_kind' => null, 'source_message' => null, 'source_extracted_at' => null,
+        // Opravný doklad (#92 task B): bez bloku `correction` běžný doklad.
+        'corrective' => 0, 'corrected_doc' => null, 'corrected_doc_number' => null,
+        'corrected_doc_date' => null, 'correction_reason' => null,
     ];
 
     /** @param array<string, mixed> $applyOptions */
@@ -4177,6 +4527,20 @@ class DocumentApplier
     public static function canonicalPaymentMethod(int $paymentMethod): ?string
     {
         $name = array_search($paymentMethod, self::PAYMENT_METHOD_MAP, true);
+        return $name === false ? null : $name;
+    }
+
+    /** docs_core_heads.vat_place → canonical `vat.place` (opravný doklad, #92 task B). */
+    public static function canonicalVatPlace(int $vatPlace): ?string
+    {
+        $name = array_search($vatPlace, self::VAT_PLACE_MAP, true);
+        return $name === false ? null : $name;
+    }
+
+    /** docs_core_heads.vat_calc_source → canonical `vat.calcSource`. */
+    public static function canonicalVatCalcSource(int $calcSource): ?string
+    {
+        $name = array_search($calcSource, self::VAT_CALC_SOURCE_MAP, true);
         return $name === false ? null : $name;
     }
 

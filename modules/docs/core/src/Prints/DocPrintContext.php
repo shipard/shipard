@@ -258,7 +258,18 @@ final class DocPrintContext
             tradeDir: $this->tradeDir(),
             hasVatRecap: $this->hasVatRecap(),
             totalAmount: (float) ($this->head['total_amount'] ?? 0.0),
+            corrective: $this->corrective(),
         );
+    }
+
+    /**
+     * Opravný doklad (#92): hlavička nese příznak a typ dokladu ho smí mít
+     * (`DocTypes::isCorrective`). Rozhoduje příznak, ne znaménko částky.
+     */
+    public function corrective(): bool
+    {
+        return !empty($this->head['corrective'])
+            && DocTypes::isCorrective($this->config, $this->docType());
     }
 
     public function isTaxDocument(): bool

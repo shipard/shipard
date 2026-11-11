@@ -150,9 +150,13 @@ class CashRegisterForm extends CashDeskFormBase
 
             ->section(title: 'Zaokrouhlení')
                 ->col()
+                    // Automatika podle způsobu úhrady (#73 D4): hotovost a dobírka
+                    // na koruny, karta / převod / brána na haléře; select jen ke čtení.
+                    ->checkbox('total_rounding_auto', triggers: 'reload', hidden: !$this->appliesTotalRoundingAuto($data))
                     ->select(
                         'total_rounding_mode',
                         options: $this->resolveCfgItemOptions('docs.core.roundingModes'),
+                        readOnly: $this->isTotalRoundingAuto($data),
                     )
                     ->select(
                         'vat_rounding_mode',

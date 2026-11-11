@@ -70,6 +70,16 @@ class DocDocumentRowCalcTest extends TestCase
         $this->assertSame(0.0, $row['unit_price']);
     }
 
+    public function testCalculateRowPriceFromTotalWithNegativeQuantity(): void
+    {
+        // Dobropis (#98): −2 ks za −100 celkem = 50 za kus, celková cena beze změny.
+        $row = ['row_kind' => 1, 'quantity' => -2, 'total_price' => -100, 'price_calc_mode' => 1];
+        $this->doc()->calculateRowPricePub($row);
+
+        $this->assertSame(50.0, $row['unit_price']);
+        $this->assertSame(-100.0, $row['total_price']);
+    }
+
     // ── calculateRowVat ────────────────────────────────────────────────────
 
     public function testCalculateRowVatModeNoVat(): void

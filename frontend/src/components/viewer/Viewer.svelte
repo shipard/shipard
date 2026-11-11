@@ -8,6 +8,8 @@
     runAlertCheck,
   } from '../../api/alerts.js';
   import { reaccountDocument } from '../../api/accounting.js';
+  import { createCorrectiveDoc } from '../../api/docs.js';
+  import { createdDocId, errorText } from './detailActionResult.js';
   import { recomposeFiling, generateFilingFiles, reloadFilingHeader, lockReportPeriod, accountFiling } from '../../api/vat.js';
   import { importStatement, reaccountTransaction } from '../../api/bank.js';
   import { issueDuePeriods, regeneratePeriod, restorePeriod } from '../../api/workOrders.js';
@@ -159,6 +161,10 @@
   let detail = $state(null);
   let detailToolbar = $state([]);
   let detailLoading = $state(false);
+  // Právě běžící akce detailu (id) — ViewerDetail jí zablokuje tlačítko,
+  // aby dvojklik nezaložil dva doklady (#92 task B U8). Zatím ji nastavuje
+  // jen Vystavit opravný doklad.
+  let busyActionId = $state(null);
 
   // --- Form dialog state ---
   let formOpen = $state(false);
@@ -830,6 +836,33 @@
       }
       return;
     }
+    // Vystavit opravný doklad (#92 D6, task B U8, DocsHeadsViewer): služba
+    // založí koncept s převrácenými řádky, odkazem na původní fakturu, datem
+    // plnění a kurzem původního dokladu — po úspěchu se obnoví detail (sekce
+    // Opravné doklady) a koncept se otevře ve formuláři, kde uživatel upraví
+    // řádky a doplní důvod opravy. Tlačítko je po dobu volání zablokované.
+    // Odmítnutí (jiný typ / stav, chyby applieru) přijde jako 422 s detaily.
+    if (actionId === 'createCorrectiveDoc') {
+      if (busyActionId !== null) return;
+      busyActionId = actionId;
+      let result;
+      try {
+        result = await createCorrectiveDoc(recordId);
+      } finally {
+        busyActionId = null;
+      }
+      const docId = createdDocId(result);
+      if (docId != null) {
+        refreshAfterAction();
+        formTable = 'docs_core_heads';
+        editRecordId = docId;
+        formDefaultData = {};
+        formOpen = true;
+      } else {
+        alert(errorText(result, translateError));
+      }
+      return;
+    }
     // Zamknout / odemknout instanci tvrzení DPH (#55 D25) — z detailu
     // instance (ReportPeriodsViewer) i podaného podání (FilingsViewer,
     // „Uzamknout tvrzení"); id instance nese action.target.periodId.
@@ -1375,6 +1408,7 @@
             loading={detailLoading}
             onRefresh={handleDetailRefresh}
             onAction={handleDetailAction}
+            {busyActionId}
           />
         {:else}
           <div class="shpd-viewer__detail-empty">
@@ -1398,6 +1432,7 @@
     viewerWidth={bodyWidth}
     onToolbarAction={handleToolbarAction}
     onAction={handleDetailAction}
+    {busyActionId}
     onRefresh={handleDetailRefresh}
     onClose={handleDrawerClose}
   />

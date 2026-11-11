@@ -131,6 +131,12 @@ class IsdocCorpusRoundTripTest extends TestCase
             // Čtečka typ 4 zatím nepřijímá (jen 1 a 2) — proforma se ověří jen schématem v IsdocWriterTest.
             $this->markTestSkipped('IsdocReader nečte DocumentType 4');
         }
+        // Opravný doklad (#92 D9): dobropis čtečka čte jako `creditNote`,
+        // vrubopis (typ 3) nepřijímá — přijaté opravné doklady jsou #92 D11.
+        $correction = $canonical['correction'] ?? null;
+        if (is_array($correction) && ($canonical['totals']['totalAmount'] ?? 0) >= 0) {
+            $this->markTestSkipped('IsdocReader nečte DocumentType 3');
+        }
         $options = new EInvoiceOptions(EInvoiceUuid::fromName('fixtures/' . basename($file)), CountryNames::fromModuleFile(self::COUNTRIES));
         $xml = (new IsdocWriter())->write($canonical, $options);
         $actual = (new IsdocReader())->fromXmlString($xml);
@@ -150,7 +156,25 @@ class IsdocCorpusRoundTripTest extends TestCase
             $expected['dates']['dueDate'] = null;
         }
 
+        if (is_array($correction)) {
+            // Částky se čtou se znaménkem, jak je writer zapsal; důvod opravy
+            // je součást `Note`, odkaz na původní doklad čtečka nečte (D11).
+            $expected['docType'] = 'creditNote';
+            if (($correction['reason'] ?? null) !== null) {
+                $note = $canonical['notes']['onDocument'] ?? null;
+                $expected['notes']['onDocument'] = 'Důvod opravy: ' . $correction['reason'] . ($note !== null ? "\n" . $note : '');
+            }
+            $this->assertSame(2, $actual['source']['raw']['documentType'], basename($file));
+            $this->assertLessThan(0, $actual['totals']['totalAmount'], basename($file));
+            $this->assertLessThan(0, $actual['rows'][0]['quantity'], basename($file));
+        }
+
         $this->assertSame([], self::differences($expected, $actual), basename($file));
+        if (is_array($correction)) {
+            // Slevu čtečka vrací jen kladnou — na záporném řádku dobropisu
+            // ji z částky před slevou nečte (informativní pole, D11).
+            return;
+        }
         $this->assertDiscountSurvivesAsAmount($expected, $actual, basename($file));
     }
 }

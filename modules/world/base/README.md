@@ -20,6 +20,7 @@ Modul nemá vlastní tabulky.
 | `world.base.currencies` | [config/currencies.jsonc](config/currencies.jsonc) | Měny — ISO 4217 |
 | `world.base.languages` | [config/languages.jsonc](config/languages.jsonc) | Jazyky — ISO 639-1 |
 | `world.base.documentLanguages` | [config/documentLanguages.jsonc](config/documentLanguages.jsonc) | Jazyky dokumentů — ve kterých lze partnerovi vystavit a poslat doklad (`cs`, `en`, `sk`, `de`); zdroj pro `base_persons_persons.language` a `DocumentLanguageResolver`. Není to seznam jazyků tisku |
+| `world.base.cashRounding` | [config/cashRounding.jsonc](config/cashRounding.jsonc) | Zaokrouhlování hotovostních plateb podle měny a země (#73 D6) — krok a země, kde platí; na mód dokladu překládá `docs.core` (`TotalRoundingAuto`) |
 
 ## Struktura konfiguračních souborů
 
@@ -51,6 +52,18 @@ Každý záznam obsahuje:
 - `name`, `name:cs`, `name:en` — vícejazyčné názvy
 - `symbol` — symbol měny (Kč, €, $)
 - `decimals` — počet desetinných míst (0 pro JPY, 2 pro většinu, 3 pro BHD/KWD/OMR)
+
+### cashRounding.jsonc
+
+Klíčem je ISO 4217 alpha-3 kód měny malými písmeny (`czk`, `eur`).
+
+Každý záznam obsahuje:
+
+- `step` — krok zaokrouhlení hotovostní platby v jednotkách měny (`1` celé
+  koruny, `0.05` pěticenty); kódy zaokrouhlovacích módů dokladu modul nezná,
+  krok překládá `docs.core` (`RoundingModes::forStep()`)
+- `countries` — země (klíče do `countries.jsonc`), kde pravidlo platí;
+  hotovost v téže měně jinde se zaokrouhluje na nejmenší minci
 
 ### languages.jsonc
 

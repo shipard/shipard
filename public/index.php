@@ -377,6 +377,7 @@ function dispatch(
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
 		'assets' => dispatchAssets($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
 		'workOrders' => dispatchWorkOrders($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
+		'docs'    => dispatchDocs($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
 		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
@@ -597,6 +598,31 @@ function dispatchWorkOrders(
 		'regeneratePeriod' => $ctrl->regenerate($request),
 		'restorePeriod'    => $ctrl->restore($request),
 		default            => Response::error('INTERNAL_ERROR', "Unknown workOrders action: {$route->action}", 500),
+	};
+}
+
+function dispatchDocs(
+	Route $route,
+	Request $request,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+	\Shipard\Api\ResolvedDataSource $resolved,
+	?\Shipard\Core\Document\DocumentRegistry $documentRegistry = null,
+	array $tables = [],
+	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
+): Response {
+	// Akce nad doklady mimo CRUD a formulář (#92 D6): Vystavit opravný doklad.
+	$ctrl = new \Shipard\Module\Docs\Core\Corrective\CorrectiveDocController(
+		$db,
+		$configRuntime,
+		$resolved->config,
+		$documentRegistry,
+		$tables,
+		$documentEventDispatcher,
+	);
+	return match ($route->action) {
+		'corrective' => $ctrl->create($request),
+		default      => Response::error('INTERNAL_ERROR', "Unknown docs action: {$route->action}", 500),
 	};
 }
 

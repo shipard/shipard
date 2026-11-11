@@ -12,5 +12,6 @@
         {"id": "world.base.currencies", "file": "config/currencies.jsonc"},
         {"id": "world.base.languages", "file": "config/languages.jsonc"},
         {"id": "world.base.documentLanguages", "file": "config/documentLanguages.jsonc"},
+        {"id": "world.base.cashRounding", "file": "config/cashRounding.jsonc"},
     ],
 }

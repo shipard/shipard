@@ -143,6 +143,11 @@ abstract class DocsHeadsFormBase extends TableForm
      * nechá a pole dostane upozornění přes EXCHANGE_RATE_HINT_KEY. Volá se
      * z applyNewRecordDefaults a z recalculate pro měnu, účetní datum, datum
      * vystavení (když posunulo účetní datum) a řadu pokladny.
+     *
+     * Opravný doklad (#92 D4, U7) kurz z lístku nedotahuje ani nepřepisuje:
+     * kurz se převezme z původního dokladu (recalculate('corrected_doc')),
+     * u souhrnného dokladu bez odkazu ho zadá uživatel. Domácí měna má
+     * kurz 1 i tady.
      */
     protected function applyExchangeRate(array &$data): void
     {
@@ -154,6 +159,9 @@ abstract class DocsHeadsFormBase extends TableForm
         $currency = strtolower((string) ($data['doc_currency'] ?? ''));
         if ($currency === '' || $currency === $home) {
             $data['exchange_rate'] = 1;
+            return;
+        }
+        if (!empty($data['corrective'])) {
             return;
         }
         $date = (string) ($data['accounting_date'] ?? '');
@@ -269,6 +277,21 @@ abstract class DocsHeadsFormBase extends TableForm
         //    v cizí měně nastaví měnu před parent::) dostane kurz k účetnímu
         //    datu; domácí měna kurz 1.
         $this->applyExchangeRate($data);
+        // 7. Automatické zaokrouhlení (#73 D2, D3, U7): prodejní typ ho má
+        //    zapnuté a mód podle způsobu úhrady, měny a země; ostatní typy
+        //    vypnuté a mód Na haléře. Schéma default sloupce (0) tady od
+        //    „nezadáno“ odlišit nejde (jako vat_mode v bodě 1), proto se
+        //    u typů s automatikou nastavuje vždy. U pokladního dokladu bez
+        //    směru zůstane jen příznak — mód dopočítá recalculate('cash_dir').
+        if ($this->hasTotalRoundingAuto($data)) {
+            $data['total_rounding_auto'] = 1;
+            $this->applyTotalRoundingAuto($data);
+        } else {
+            $data['total_rounding_auto'] = 0;
+            if (!isset($data['total_rounding_mode'])) {
+                $data['total_rounding_mode'] = RoundingModes::ON_CENT;
+            }
+        }
     }
 
     /**
@@ -596,8 +619,13 @@ abstract class DocsHeadsFormBase extends TableForm
         if (!isset($data['payment_method'])) {
             $data['payment_method'] = 1;
         }
+        if (!isset($data['total_rounding_auto'])) {
+            $data['total_rounding_auto'] = $this->hasTotalRoundingAuto($data) ? 1 : 0;
+        }
         if (!isset($data['total_rounding_mode'])) {
-            $data['total_rounding_mode'] = 1;
+            // Na haléře (#73 D3); mód podle automatiky propisuje do dat
+            // applyNewRecordDefaults a recalculate, tady jen renderování.
+            $data['total_rounding_mode'] = RoundingModes::ON_CENT;
         }
         if (!isset($data['vat_rounding_mode'])) {
             $data['vat_rounding_mode'] = 0;
@@ -735,8 +763,12 @@ abstract class DocsHeadsFormBase extends TableForm
                     ->number('exchange_rate', hidden: !$hasForeignCurrency, hint: $this->exchangeRateHint($data))
 
                     ->separator('Zaokrouhlení')
+                    // Automatika podle způsobu úhrady (#73 D4): při zapnuté
+                    // mód určuje doklad, select je jen ke čtení.
+                    ->checkbox('total_rounding_auto', triggers: 'reload', hidden: !$this->appliesTotalRoundingAuto($data))
                     ->select('total_rounding_mode',
                         options: $this->resolveCfgItemOptions('docs.core.roundingModes'),
+                        readOnly: $this->isTotalRoundingAuto($data),
                     )
                     ->select('vat_rounding_mode',
                         options: $this->resolveCfgItemOptions('docs.core.vatRoundingModes'),
@@ -1312,6 +1344,11 @@ abstract class DocsHeadsFormBase extends TableForm
             $this->applyExchangeRate($data);
         }
 
+        if ($changedColumn === 'corrected_doc') {
+            // Původní doklad opravného dokladu (#92 U8): číslo, datum plnění, kurz.
+            $this->applyCorrectedDoc($data);
+        }
+
         if ($changedColumn === 'payment_method') {
             if ((int) ($data['payment_method'] ?? 1) === 0) {
                 // Hotovost: předvyplnit výchozí pokladnu měny dokladu (is_default,
@@ -1331,6 +1368,10 @@ abstract class DocsHeadsFormBase extends TableForm
         if (in_array($changedColumn, self::PAYER_RECALC_COLUMNS, true)) {
             $this->applyPartnerBalancePreview($data);
         }
+
+        // Zapnutá automatika drží mód podle způsobu úhrady, měny a země (#73
+        // U7) — při každém přepočtu, aby uživatel viděl výsledek před uložením.
+        $this->applyTotalRoundingAuto($data);
 
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';
         return new RecalculateResult(
@@ -1509,6 +1550,158 @@ abstract class DocsHeadsFormBase extends TableForm
     protected function isTaxDocument(array $data): bool
     {
         return DocTypes::isTaxDocument($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Typ dokladu, který jde označit jako opravný daňový doklad
+     * (`docTypes[].corrective`, #92 D1 — faktura vydaná, zálohová ne).
+     * Řídí zobrazení sekce Oprava v tabu Nastavení.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function isCorrectiveType(array $data): bool
+    {
+        return DocTypes::isCorrective($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Opravný doklad = typ s příznakem a zapnuté zaškrtávátko (bool
+     * z klienta, 0/1 z DB — proto `!empty()`). Řídí viditelnost polí opravy.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function isCorrective(array $data): bool
+    {
+        return !empty($data['corrective']) && $this->isCorrectiveType($data);
+    }
+
+    /**
+     * Filtr lookupu původního dokladu (#92 U9): doklady téhož typu, a je-li
+     * partner vyplněný, jen jeho.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, scalar>
+     */
+    protected function correctedDocLookupFilter(array $data): array
+    {
+        $filter = [DocsHeadsLookup::FILTER_DOC_TYPE => (string) ($data['doc_type'] ?? '')];
+        if (!empty($data['partner'])) {
+            $filter[DocsHeadsLookup::FILTER_PARTNER] = (int) $data['partner'];
+        }
+        return $filter;
+    }
+
+    /**
+     * Výběr původního dokladu (#92 D3, D4, U8): doplní číslo a datum
+     * plnění původního dokladu (DUZP, bez něj datum vystavení) a kurz —
+     * ten jen při shodné měně, jinak ho zadá uživatel; partnera a měnu
+     * jen když jsou na dokladu prázdné. Dokument při uložení číslo a datum
+     * z původního dokladu přepíše znovu (`DocDocument::applyCorrectiveColumns`
+     * je autorita), formulář je jen předvyplní, aby je uživatel viděl.
+     * Zrušení odkazu hodnoty nechá a pole odemkne (readOnly řídí stavba
+     * formuláře podle vyplněného odkazu).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function applyCorrectedDoc(array &$data): void
+    {
+        $id = (int) ($data['corrected_doc'] ?? 0);
+        if ($id <= 0 || $this->db === null) {
+            return;
+        }
+        $original = $this->db->fetchRow(
+            'SELECT `doc_number`, `vat_duzp`, `issue_date`, `partner`, `doc_currency`, `exchange_rate`'
+            . ' FROM `docs_core_heads` WHERE `id` = %i',
+            $id,
+        );
+        if ($original === null) {
+            return;
+        }
+        $number = trim((string) ($original['doc_number'] ?? ''));
+        $data['corrected_doc_number'] = $number !== '' ? $number : null;
+        $date = trim((string) ($original['vat_duzp'] ?? $original['issue_date'] ?? ''));
+        $data['corrected_doc_date'] = $date !== '' ? substr($date, 0, 10) : null;
+
+        if (empty($data['partner']) && !empty($original['partner'])) {
+            $data['partner'] = (int) $original['partner'];
+        }
+        $originalCurrency = strtolower(trim((string) ($original['doc_currency'] ?? '')));
+        if ($originalCurrency !== '' && empty($data['doc_currency'])) {
+            $data['doc_currency'] = $originalCurrency;
+        }
+        $rate = $original['exchange_rate'] ?? null;
+        if ($originalCurrency !== ''
+            && strtolower((string) ($data['doc_currency'] ?? '')) === $originalCurrency
+            && $rate !== null && (float) $rate > 0
+        ) {
+            $data['exchange_rate'] = (float) $rate;
+        }
+    }
+
+    /**
+     * Typ dokladu s automatickým zaokrouhlením celkové částky
+     * (`docTypes[].total_rounding_auto`, #73 D2) — řídí výchozí hodnotu
+     * příznaku nového dokladu. Zda automatika na dokladu skutečně platí
+     * (u pokladního dokladu jen příjem), říká {@see appliesTotalRoundingAuto()}.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function hasTotalRoundingAuto(array $data): bool
+    {
+        return DocTypes::hasTotalRoundingAuto($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Automatika na dokladu platí (typ s příznakem, směr obchodu výstup) —
+     * zaškrtávátko se zobrazuje. Jediná autorita: `TotalRoundingAuto::applies()`.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function appliesTotalRoundingAuto(array $data): bool
+    {
+        return TotalRoundingAuto::applies(
+            $this->config,
+            (string) ($data['doc_type'] ?? ''),
+            (int) ($data['cash_dir'] ?? 0),
+        );
+    }
+
+    /**
+     * Automatika platí a je zapnutá → mód určuje doklad, select je jen ke
+     * čtení. Hodnota zaškrtávátka přijde jako bool z klienta, 0/1 z DB nebo
+     * ze schématu — proto `!empty()`.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function isTotalRoundingAuto(array $data): bool
+    {
+        return !empty($data['total_rounding_auto']) && $this->appliesTotalRoundingAuto($data);
+    }
+
+    /**
+     * Při zapnuté automatice dopočítá `total_rounding_mode` stejným pravidlem
+     * jako `DocDocument::computeAmounts()` (#73 D4), aby uživatel viděl mód
+     * před uložením; bez konfigurace nebo země mód nemění. Po vypnutí
+     * automatiky zůstává poslední mód a jde upravit. Volá se z obou
+     * recalculate (base i CashDeskFormBase) a z applyNewRecordDefaults.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function applyTotalRoundingAuto(array &$data): void
+    {
+        if (!$this->isTotalRoundingAuto($data)) {
+            return;
+        }
+        $currency = strtolower((string) ($data['doc_currency'] ?? ''));
+        $mode = TotalRoundingAuto::modeFor(
+            $this->config,
+            (int) ($data['payment_method'] ?? 1),
+            $currency !== '' ? $currency : strtolower($this->homeCurrency()),
+            $this->dsConfig?->getCountry(),
+        );
+        if ($mode !== null) {
+            $data['total_rounding_mode'] = $mode;
+        }
     }
 
     /**

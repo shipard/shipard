@@ -54,6 +54,21 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(Response::class, $result);
 	}
 
+	// Vystavit opravný doklad (#92 D6, task B U8)
+	public function testDocsCorrectivePost(): void
+	{
+		$result = $this->router->resolve('/api/v1/_docs/corrective', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'docs', 'corrective');
+	}
+
+	public function testDocsCorrectiveGetNotAllowed(): void
+	{
+		$result = $this->router->resolve('/api/v1/_docs/corrective', 'GET');
+		$this->assertInstanceOf(Response::class, $result);
+		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
+	}
+
 	// Panel „O zdroji dat" (Issue #41)
 	public function testDsAboutGet(): void
 	{

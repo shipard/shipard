@@ -1,8 +1,8 @@
 ---
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku.
-keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku]
-related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku, zaokrouhlení faktury, zaokrouhlení částky, zaokrouhlení na celé koruny, automatické zaokrouhlení, faktura za hotové na koruny, haléře na faktuře]
+related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, faktury-vydane/opravny-doklad.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Vystavení faktury
@@ -29,8 +29,10 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
 
    - **Partner** je odběratel. Hledá se psaním; když ho v evidenci ještě nemáš,
      založíš ho přímo odsud — viz [Založení osoby](../osoby/zalozeni-osoby.md).
-   - **Adresa partnera** se dá vybrat teprve po zvolení partnera. Bankovní
-     účet odběratele se na vydané faktuře nezadává — platí on tobě.
+   - **Adresa partnera** se dá vybrat teprve po zvolení partnera. Když ji
+     nevybereš, na doklad jde **sídlo** odběratele (nemá-li ho, jeho první
+     adresa). Bankovní účet odběratele se na vydané faktuře nezadává —
+     platí on tobě.
    - **Způsob platby** — když zvolíš *Hotovost*, objeví se pod ním ještě
      **Pokladna**. U *Kartou* a *Platební bránou* se objeví **Platební
      terminál / brána**, u *Dobírkou* vyber **Způsob dopravy**; pole
@@ -56,6 +58,17 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    - **Náš bankovní účet** je u vydané faktury povinný — je to účet, na který
      má odběratel zaplatit. Předvybraný je účet označený v Nastavení jako
      **Výchozí**; bez výchozího účtu ho vyber ručně, jinak doklad nepůjde dát do **V pořádku**.
+
+   Tam je i **Automatické zaokrouhlení**, u nové faktury zapnuté. Celková
+   částka se zaokrouhlí podle způsobu platby: při *Hotovost* a *Dobírkou*
+   na celé koruny, při *Převodem*, *Kartou*, *Platební bránou* a *Zápočtem*
+   zůstane na haléře. Faktura v eurech se na českém zdroji dat
+   nezaokrouhluje ani za hotové. **Zaokrouhlení částky** vedle toho jen
+   ukazuje výsledek a nejde přepsat; po změně způsobu platby nebo měny se
+   přepočítá samo. Chceš-li zaokrouhlit jinak, zaškrtnutí zruš a mód vyber
+   ručně — zůstane, jak ho nastavíš. U neobvyklé kombinace (hotovost bez
+   zaokrouhlení, zaokrouhlení u platby převodem) Shipard po uložení
+   upozorní, doklad ale uloží.
 
    Na stejné záložce je pole **Vystavil** — jméno, které se vytiskne
    v zápatí faktury. Předvybraný jsi ty; viz
@@ -145,6 +158,13 @@ víc, přepínají se v liště dole pod seznamem faktur a seznam přitom ukazuj
 doklady vybrané řady. S jedinou řadou, což je běžný stav, lišta není vidět
 vůbec.
 
+**Faktura za hotové vychází na celé koruny, převodem na haléře.** To dělá
+**Automatické zaokrouhlení** na záložce **Nastavení** — řídí se způsobem
+platby a měnou. Když má být částka jinak, vypni ho a vyber **Zaokrouhlení
+částky** ručně; při *Hotovost* bez zaokrouhlení nebo při zaokrouhlení
+u *Převodem* dostaneš po uložení upozornění, protože zaokrouhlovací rozdíl
+smí stát mimo základ daně jen u platby v hotovosti.
+
 **Variabilní symbol není číslo faktury.** Předplní se pořadovým číslem v řadě,
 ne celým číslem dokladu. Když potřebuješ jiný, přepiš ho — přepis se
 nepřepisuje zpátky.
@@ -157,8 +177,10 @@ vystav novou.
 společné všem dokladům: hotovou fakturu převedeš na **V opravě**, opravíš
 a vrátíš na **V pořádku**; neplatnou fakturu **Stornuješ**, nemažeš. Přechody
 a jejich pravidla popisuje [Oprava dokladu](../faktury-prijate/oprava-dokladu.md)
-— je psaná pro přijaté faktury, ale přechody platí i tady. Co u vydaných
-faktur platí metodicky jinak, popsané zatím není.
+— je psaná pro přijaté faktury, ale přechody platí i tady. Fakturu, kterou
+už odběratel má, ale neopravuješ ani nestornuješ: změnu ceny, množství
+nebo vrácené zboží řeší **opravný daňový doklad** (dobropis, vrubopis) —
+viz [Opravný daňový doklad](opravny-doklad.md).
 
 **Přílohy, které mají jít odběrateli s fakturou, si označ předem.**
 Na záložce **Přílohy** má každý soubor přepínač **Odeslat s dokladem** —
@@ -179,6 +201,8 @@ i zálohová faktura.
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
 - [Platba kartou, přes bránu a dobírkou](../pokladna/platba-kartou-branou-dobirkou.md)
   — kdo je plátcem faktury placené kartou, bránou nebo na dobírku
+- [Opravný daňový doklad](opravny-doklad.md) — dobropis nebo vrubopis
+  k vystavené faktuře
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — přechody stavů
   (psáno pro přijaté faktury)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — hromadné odesílání a další chybějící výstupy

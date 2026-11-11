@@ -10,21 +10,26 @@ use Shipard\Core\Prints\PrintBuildException;
  * Varianta titulku tištěného dokladu (#90 D16). Text titulku je
  * v překladovém katalogu tisku pod klíčem `title.<varianta>`.
  *
- * Plátce = hlavička dokladu má registraci k DPH. Opravný daňový doklad
- * (`correctiveVatPayer`, `correctiveNonVatPayer`) je rezervovaný pro #92.
+ * Plátce = hlavička dokladu má registraci k DPH.
+ *
+ * Opravný doklad (#92 D8): faktura vydaná s příznakem opravného dokladu má
+ * titulek `correctiveVatPayer` / `correctiveNonVatPayer`. Rozhoduje příznak,
+ * ne znaménko — záporná faktura bez příznaku zůstává fakturou; u typu, který
+ * opravné doklady nemá, se příznak v datech nečte.
  *
  * Pokladní doklad (D25): příjem je daňovým dokladem jen u plátce s tištěnou
  * rekapitulací DPH (prodej za hotové); výdej nikdy — daňový doklad k němu
  * vystavuje druhá strana.
  *
  * Prodejka (D26): titulek podle plátcovství jako u faktury; vratka (záporná
- * celková částka) má přednost — její správný titulek (opravný daňový
- * doklad) doladí #92.
+ * celková částka) má přednost — titulek vratky plátce #92 neřeší (D11).
  */
 final class TitleVariantResolver
 {
     public const INVOICE_VAT_PAYER     = 'invoiceVatPayer';
     public const INVOICE_NON_VAT_PAYER = 'invoiceNonVatPayer';
+    public const CORRECTIVE_VAT_PAYER     = 'correctiveVatPayer';
+    public const CORRECTIVE_NON_VAT_PAYER = 'correctiveNonVatPayer';
     public const PROFORMA              = 'proforma';
     public const CASH_IN_TAX_DOCUMENT  = 'cashInTaxDocument';
     public const CASH_IN               = 'cashIn';
@@ -37,7 +42,12 @@ final class TitleVariantResolver
     public static function resolve(DocTitleContext $context): string
     {
         return match ($context->docType) {
-            'invno' => $context->vatPayer ? self::INVOICE_VAT_PAYER : self::INVOICE_NON_VAT_PAYER,
+            'invno' => match (true) {
+                $context->corrective && $context->vatPayer => self::CORRECTIVE_VAT_PAYER,
+                $context->corrective                       => self::CORRECTIVE_NON_VAT_PAYER,
+                $context->vatPayer                         => self::INVOICE_VAT_PAYER,
+                default                                    => self::INVOICE_NON_VAT_PAYER,
+            },
             'invpo' => self::PROFORMA,
             'cash'  => self::cash($context),
             'cashreg' => match (true) {

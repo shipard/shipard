@@ -163,6 +163,22 @@ class VatRecapFormTest extends TestCase
         $this->assertSame(20.0, $data['vat_pct']);
     }
 
+    /** Opravný doklad (#92 D4): sazba kódu k datu plnění původního dokladu, ne k DUZP opravy. */
+    public function testCorrectiveDocumentPrefillsRateAtOriginalTaxPointDate(): void
+    {
+        $form = $this->form(['corrective' => 1, 'corrected_doc_date' => '2012-06-01'] + $this->receivedInvoiceHead());
+        $result = $form->recalculate('vat_code', ['doc_head' => 1, 'vat_code' => 'cz-110']);
+        $this->assertSame(20.0, $result->data['vat_pct'], 'cz-110 mělo v roce 2012 sazbu 20 %');
+
+        $form = $this->form(['corrective' => 1, 'corrected_doc_date' => null] + $this->receivedInvoiceHead());
+        $result = $form->recalculate('vat_code', ['doc_head' => 1, 'vat_code' => 'cz-110']);
+        $this->assertSame(21.0, $result->data['vat_pct'], 'bez data původního plnění sazba k DUZP');
+
+        $form = $this->form(['corrective' => 0, 'corrected_doc_date' => '2012-06-01'] + $this->receivedInvoiceHead());
+        $result = $form->recalculate('vat_code', ['doc_head' => 1, 'vat_code' => 'cz-110']);
+        $this->assertSame(21.0, $result->data['vat_pct'], 'běžný doklad beze změny');
+    }
+
     public function testChangingCodePrefillsItsRate(): void
     {
         $form = $this->form($this->receivedInvoiceHead());

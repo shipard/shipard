@@ -71,7 +71,10 @@ intracom / zahraničí). Pravidla výpočtu: `docs/vat-calculation.md`.
 
 ### `rounding`
 
-`total_rounding_mode`, `vat_rounding_mode`.
+`total_rounding_auto` (automatika podle způsobu úhrady, měny dokladu a země
+zdroje dat — #73; jen prodejní typy s `docTypes.total_rounding_auto`,
+pravidlo `TotalRoundingAuto` běží v `computeAmounts`), `total_rounding_mode`,
+`vat_rounding_mode`.
 
 ### `totals` — všechny `system: true`
 
@@ -122,6 +125,28 @@ Sloupec proto nemá `system: true` — systémovost pro vázané typy vynucuje
 - Prodejní doklad nad pokladnou (prodejka, příjmový PD) placený kartou,
   dobírkou nebo bránou musí mít plátce — chyba `partner_balance_required`
   (`CashDeskDocumentBase`).
+
+
+### `correction` — opravný daňový doklad (#92 D1–D3, `tasks/corrective-doc-core.md`)
+
+Opravný doklad je faktura vydaná s příznakem, ne nový typ dokladu; které
+typy ho mají, říká `docTypes[].corrective` (`DocTypes::isCorrective`).
+Dobropis a vrubopis rozliší znaménko řádků. Saldokonto, účtování, přiznání
+k DPH ani kontrolní hlášení se podle příznaku nemění.
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `corrective` | boolean, default 0, not null | Příznak opravného dokladu. Na typu bez příznaku ho `DocDocument::applyCorrectiveColumns` při uložení vynuluje |
+| `corrected_doc` | int → `docs_core_heads`, nullable, index `idx_corrected_doc` | Původní (opravovaný) doklad — nepovinný (souhrnný opravný doklad). Musí existovat, být typu s příznakem a ne doklad sám (`corrective_doc_invalid`); při potvrzení V pořádku a se stejným partnerem (`corrective_doc_state`, `corrective_doc_partner_mismatch`). Opravný doklad k opravnému dokladu je povolený |
+| `corrected_doc_number` | varchar(40), nullable | Číslo původního dokladu. S odkazem se při uložení přepíše z `doc_number` původního dokladu, bez odkazu ruční |
+| `corrected_doc_date` | date, nullable | Datum plnění původního dokladu. S odkazem z jeho `vat_duzp` (bez něj `issue_date`), bez odkazu ruční. **K tomuto datu se hledá sazba DPH** (`DocHeadVatContext::vatRateDate`); období DPH, KH a zámky období dál řídí `vat_duzp` opravného dokladu |
+| `correction_reason` | text, nullable | Důvod opravy — při potvrzení povinný (`correction_reason_required`) mimo import mód; prázdný odkaz i číslo dají varování `correction_original_missing` |
+
+Vypnutý příznak (klíč v datech přítomný a prázdný) ostatní čtyři sloupce
+vynuluje; chybějící klíč (uložení bez formuláře) je nemění. Kurz
+opravného dokladu v cizí měně se z lístku nepřepisuje
+(`DocsHeadsFormBase::applyExchangeRate`), formulář ho převezme z původního
+dokladu.
 
 ### `lineage` — system
 

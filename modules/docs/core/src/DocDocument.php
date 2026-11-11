@@ -29,6 +29,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *   1. denormalize doc_type (+ cash_desk for bound types) from number_series
  *   1b. resolve partner_balance (+ payment_terminal) — osoba pro saldokonto
  *      (PartnerBalanceResolver, #72; běží i ve validate, idempotentní)
+ *   1c. sloupce opravného dokladu (#92): typ bez příznaku je nuluje,
+ *      s odkazem se číslo a datum plnění přepíší z původního dokladu
  *   2. apply date defaults (accounting_date, vat_duzp, vat_dppd, due_date;
  *      nedaňový typ — docTypes[].tax_document: false — DUZP/DPPD nuluje)
  *   3. apply home_currency from DS config
@@ -140,6 +142,7 @@ abstract class DocDocument extends Document
         // brány / plátce (CashDeskDocumentBase) běžely nad odvozenou hodnotou.
         $this->resolvePartnerBalance($data);
         $this->validatePaymentIntermediary($data, $result);
+        $this->validateCorrective($data, $result);
 
         $newState = (int) ($data['docState'] ?? 10);
 
@@ -187,8 +190,73 @@ abstract class DocDocument extends Document
         }
 
         $this->validateDeclaredRecap($data, $result);
+        $this->validateTotalRounding($data, $result);
 
         return $result;
+    }
+
+    /**
+     * Varování k zaokrouhlení částky při vypnuté automatice (#73 D7, U8) —
+     * jen prodejní doklad ({@see TotalRoundingAuto::applies()}), mimo import
+     * mód; uložení neblokuje:
+     *
+     *  - `cash_rounding_mismatch` — hotovostní úhrada s jiným módem, než dává
+     *    pravidlo pro měnu a zemi (text jmenuje očekávaný mód z číselníku);
+     *  - `non_cash_rounding` — nehotovostní úhrada se zaokrouhlením u dokladu
+     *    s DPH: zaokrouhlovací rozdíl je mimo základ daně jen u hotovosti
+     *    (§ 36 odst. 5 ZDPH, tasks/doc-rounding-modes.md P5).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateTotalRounding(array $data, ValidationResult $result): void
+    {
+        if ($this->config === null || $this->isLockExempt($data) || !empty($data['total_rounding_auto'])) {
+            return;
+        }
+        $applies = TotalRoundingAuto::applies(
+            $this->config,
+            (string) ($data['doc_type'] ?? ''),
+            (int) ($data['cash_dir'] ?? 0),
+        );
+        if (!$applies) {
+            return;
+        }
+        $paymentMethod = (int) ($data['payment_method'] ?? 1);
+        $expected = TotalRoundingAuto::modeFor(
+            $this->config,
+            $paymentMethod,
+            $this->docCurrencyFor($data),
+            $this->dsConfig?->getCountry(),
+        );
+        if ($expected === null) {
+            return;
+        }
+        $mode = (int) ($data['total_rounding_mode'] ?? 0);
+
+        if (TotalRoundingAuto::isCashPayment($this->config, $paymentMethod)) {
+            if ($mode !== $expected) {
+                $modes = $this->config->cfgItem('docs.core.roundingModes');
+                $name = is_array($modes) && is_array($modes[$expected] ?? null)
+                    ? (string) ($modes[$expected]['name'] ?? $expected)
+                    : (string) $expected;
+                $result->addWarning(
+                    'total_rounding_mode',
+                    "Doklad hrazený hotově se zaokrouhluje „{$name}“ — zkontroluj zaokrouhlení částky,"
+                    . ' nebo zapni automatické zaokrouhlení.',
+                    'cash_rounding_mismatch',
+                );
+            }
+            return;
+        }
+
+        if ($mode !== RoundingModes::ON_CENT && (int) ($data['vat_mode'] ?? 1) !== 0) {
+            $result->addWarning(
+                'total_rounding_mode',
+                'Zaokrouhlení celkové částky mimo základ daně je možné jen u hotovostní platby'
+                . ' (§ 36 odst. 5 ZDPH) — u bezhotovostní úhrady nech částku na haléře.',
+                'non_cash_rounding',
+            );
+        }
     }
 
     /**
@@ -199,7 +267,9 @@ abstract class DocDocument extends Document
      *
      * - `vat_recap_inconsistent` — řádek si vnitřně neodpovídá (`base + tax`
      *   ≠ `total`, daň ≠ sazba ze základu, u kódu ze sazebníku neznámá sazba
-     *   k DUZP). Oddaňovací páry a nulové sazby se přeskakují.
+     *   k datu sazby — `DocHeadVatContext::vatRateDate`, u opravného
+     *   dokladu datum plnění původního dokladu). Oddaňovací páry a nulové
+     *   sazby se přeskakují.
      * - `rows_recap_mismatch` — Σ řádkových cen per (kód, sazba) neodpovídá
      *   rekapitulaci (v mode 1 základu, v mode 2 celkem). Mez je stejná jako
      *   u dorovnání řádků ({@see reconcileRowsToRecap}), takže warning padne
@@ -226,7 +296,9 @@ abstract class DocDocument extends Document
         $resolved = $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
         $country  = $resolved['country'] ?? null;
-        $duzp     = (string) ($data['vat_duzp'] ?? $data['issue_date'] ?? '');
+        // Datum sazby: u opravného dokladu datum plnění původního dokladu
+        // (#92 D4), jinak DUZP / datum vystavení — jedno místo pravidla.
+        $duzp     = (string) (DocHeadVatContext::vatRateDate($data) ?? '');
 
         foreach ($recap as $r) {
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {
@@ -438,6 +510,169 @@ abstract class DocDocument extends Document
     }
 
     /**
+     * Opravný daňový doklad (#92 D2, D5; U4, U5) — jen při zapnutém
+     * `corrective`; na typu bez příznaku (`docTypes[].corrective`) ho
+     * `applyCorrectiveColumns` při uložení zahodí, takže se tam nekontroluje.
+     *
+     * U4 (vždy, i v konceptu a v import módu): vyplněný odkaz musí vést na
+     * existující doklad typu s příznakem a ne na doklad sám
+     * (`corrective_doc_invalid`); při potvrzení (40) navíc původní doklad
+     * V pořádku (`corrective_doc_state`) a stejný partner
+     * (`corrective_doc_partner_mismatch`). Opravný doklad k opravnému dokladu
+     * je povolený. Bez databáze se kontroly odkazu přeskočí.
+     *
+     * U5 (potvrzení mimo import mód, {@see isLockExempt}): důvod opravy je
+     * povinný (`correction_reason_required`); prázdný odkaz i číslo původního
+     * dokladu je souhrnný opravný doklad — jen varování
+     * (`correction_original_missing`), vymezení původních dokladů patří do
+     * důvodu opravy.
+     *
+     * Běží ve `validate()`, tedy před `beforeSave` — odkaz čte z dat,
+     * původní doklad z databáze, na pořadí hooků nespoléhá.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateCorrective(array $data, ValidationResult $result): void
+    {
+        if (empty($data['corrective'])) {
+            return;
+        }
+        if ($this->config !== null && !DocTypes::isCorrective($this->config, (string) ($data['doc_type'] ?? ''))) {
+            return;
+        }
+        $confirm = (int) ($data['docState'] ?? 10) === 40;
+        $correctedId = (int) ($data['corrected_doc'] ?? 0);
+
+        if ($correctedId > 0 && $this->db !== null) {
+            $original = $this->loadCorrectedDoc($correctedId);
+            if ($original === null) {
+                $result->addError('corrected_doc', 'Původní doklad neexistuje', 'corrective_doc_invalid');
+            } elseif ($correctedId === (int) ($data['id'] ?? 0)) {
+                $result->addError('corrected_doc', 'Doklad nemůže opravovat sám sebe', 'corrective_doc_invalid');
+            } elseif ($this->config !== null
+                && !DocTypes::isCorrective($this->config, (string) ($original['doc_type'] ?? ''))
+            ) {
+                $result->addError(
+                    'corrected_doc',
+                    'Původní doklad není typu, ke kterému jde vystavit opravný doklad',
+                    'corrective_doc_invalid',
+                );
+            } elseif ($confirm) {
+                if ((int) ($original['docState'] ?? 0) !== 40) {
+                    $result->addError(
+                        'corrected_doc',
+                        'Původní doklad musí být ve stavu V pořádku',
+                        'corrective_doc_state',
+                    );
+                }
+                if ((int) ($original['partner'] ?? 0) !== (int) ($data['partner'] ?? 0)) {
+                    $result->addError(
+                        'corrected_doc',
+                        'Původní doklad má jiného partnera než opravný doklad',
+                        'corrective_doc_partner_mismatch',
+                    );
+                }
+            }
+        }
+
+        if (!$confirm || $this->isLockExempt($data)) {
+            return;
+        }
+        if (trim((string) ($data['correction_reason'] ?? '')) === '') {
+            $result->addError('correction_reason', 'Důvod opravy je povinný', 'correction_reason_required');
+        }
+        if ($correctedId <= 0 && trim((string) ($data['corrected_doc_number'] ?? '')) === '') {
+            $result->addWarning(
+                'corrected_doc_number',
+                'Opravný doklad nemá číslo původního dokladu — u souhrnné opravy uveď vymezení'
+                . ' původních dokladů v důvodu opravy.',
+                'correction_original_missing',
+            );
+        }
+    }
+
+    /**
+     * Sloupce opravy při uložení (#92 U2, U3). Typ bez příznaku
+     * (`docTypes[].corrective`) příznak zahodí a ostatní čtyři sloupce
+     * vynuluje — bez konfigurace se o typu nic neví a krok neběží (vzor
+     * `applyTotalRoundingAuto`). Doklad s příznakem v datech vypnutým (klíč
+     * přítomný a prázdný) sloupce opravy vynuluje; chybějící klíč (uložení
+     * bez formuláře) nic nemění. S odkazem na původní doklad přepíše číslo
+     * (`doc_number`) a datum plnění (`vat_duzp`, bez něj `issue_date`)
+     * původního dokladu — dokument je autorita, formulář je jen předvyplní.
+     * Bez odkazu zůstávají ruční hodnoty (souhrnný opravný doklad).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function applyCorrectiveColumns(array &$data): void
+    {
+        if ($this->config !== null && !DocTypes::isCorrective($this->config, (string) ($data['doc_type'] ?? ''))) {
+            $data['corrective'] = 0;
+            $this->clearCorrectionColumns($data);
+            return;
+        }
+        if (!array_key_exists('corrective', $data)) {
+            return;
+        }
+        if (empty($data['corrective'])) {
+            $data['corrective'] = 0;
+            $this->clearCorrectionColumns($data);
+            return;
+        }
+        $data['corrective'] = 1;
+        $correctedId = (int) ($data['corrected_doc'] ?? 0);
+        if ($correctedId <= 0 || $this->db === null) {
+            return;
+        }
+        $original = $this->loadCorrectedDoc($correctedId);
+        if ($original === null) {
+            return;
+        }
+        $number = trim((string) ($original['doc_number'] ?? ''));
+        $data['corrected_doc_number'] = $number !== '' ? $number : null;
+        $data['corrected_doc_date'] = self::dateString($original['vat_duzp'] ?? null)
+            ?? self::dateString($original['issue_date'] ?? null);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function clearCorrectionColumns(array &$data): void
+    {
+        foreach (['corrected_doc', 'corrected_doc_number', 'corrected_doc_date', 'correction_reason'] as $column) {
+            $data[$column] = null;
+        }
+    }
+
+    /**
+     * Původní doklad opravného dokladu z databáze — sloupce pro validaci
+     * (typ, stav, partner) i denormalizaci (číslo, datum plnění). Null =
+     * neexistuje. Sdílí `validateCorrective` a `applyCorrectiveColumns`.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function loadCorrectedDoc(int $id): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch(
+            'SELECT [id], [doc_type], [docState], [partner], [doc_number], [vat_duzp], [issue_date]'
+            . ' FROM [docs_core_heads] WHERE [id] = %i',
+            $id,
+        );
+        return $row?->toArray();
+    }
+
+    /** Datum z databáze (Dibi DateTime) nebo z dat (string) jako `Y-m-d`; prázdné → null. */
+    private static function dateString(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        $text = trim((string) ($value ?? ''));
+        return $text !== '' ? substr($text, 0, 10) : null;
+    }
+
+    /**
      * Import mód (#55 D26) zrcadlí doklad z cizího systému, needituje ho —
      * zámek období (documentLockProviders) obchází. Tentýž marker čte
      * beforeSave; tady je v `$data` ještě přítomný, protože gateway se ptá
@@ -478,6 +713,7 @@ abstract class DocDocument extends Document
 
         $this->denormalizeFromSeries($data);
         $this->resolvePartnerBalance($data);
+        $this->applyCorrectiveColumns($data);
         $this->applyDateDefaults($data);
         $this->applyHomeCurrency($data);
         $this->applyHomeCurrencyRate($data);
@@ -561,6 +797,7 @@ abstract class DocDocument extends Document
         $tolerance = $this->recapDeclared ? self::DECLARED_RECAP_TOLERANCE : null;
 
         $this->sumTotals($data, $recap, $rowsForCompute);
+        $this->applyTotalRoundingAuto($data);
         $this->applyTotalRounding($data);
         // Dorovnání řádků na rekapitulaci v měně dokladu (I5) — v domácí
         // měně ho dělá applyDomesticAmounts nad už dorovnanými cur hodnotami,
@@ -1517,6 +1754,57 @@ abstract class DocDocument extends Document
         $data['total_rounding'] = round($rounded - $original, 2);
     }
 
+    /**
+     * Automatické zaokrouhlení podle způsobu úhrady (#73 D4, U5): při
+     * zapnutém `total_rounding_auto` na prodejním dokladu přepíše
+     * `total_rounding_mode` výsledkem {@see TotalRoundingAuto::modeFor()}
+     * (měna dokladu, země zdroje dat). Běží před `applyTotalRounding`, takže
+     * uložení i náhled applieru sdílejí výsledek. Na dokladu, kde automatika
+     * neplatí (typ bez příznaku, výdajový pokladní doklad), se zapnutý
+     * příznak vynuluje; chybějící klíč se nedoplňuje (U6 — platí výchozí
+     * hodnota sloupce 0). Bez konfigurace nebo bez země se nic nemění —
+     * nikdy tiché Na haléře.
+     */
+    protected function applyTotalRoundingAuto(array &$data): void
+    {
+        if ($this->config === null) {
+            return;
+        }
+        $applies = TotalRoundingAuto::applies(
+            $this->config,
+            (string) ($data['doc_type'] ?? ''),
+            (int) ($data['cash_dir'] ?? 0),
+        );
+        if (!$applies) {
+            if (!empty($data['total_rounding_auto'])) {
+                $data['total_rounding_auto'] = 0;
+            }
+            return;
+        }
+        if (empty($data['total_rounding_auto'])) {
+            return;
+        }
+        $mode = TotalRoundingAuto::modeFor(
+            $this->config,
+            (int) ($data['payment_method'] ?? 1),
+            $this->docCurrencyFor($data),
+            $this->dsConfig?->getCountry(),
+        );
+        if ($mode !== null) {
+            $data['total_rounding_mode'] = $mode;
+        }
+    }
+
+    /**
+     * Měna dokladu pro pravidlo zaokrouhlení; náhled applieru volá
+     * computeAmounts před applyHomeCurrency, proto fallback na domácí měnu.
+     */
+    private function docCurrencyFor(array $data): string
+    {
+        $currency = strtolower((string) ($data['doc_currency'] ?? ''));
+        return $currency !== '' ? $currency : $this->homeCurrencyFor($data);
+    }
+
     /** Sémantika kódů (krok, směr, chování u dobropisů): {@see RoundingModes}. */
     protected function applyRounding(float $amount, int $mode): float
     {
@@ -2059,12 +2347,13 @@ abstract class DocDocument extends Document
             return;
         }
 
-        $partnerSnap = $this->buildPersonSnapshot(
-            personId:  (int) ($data['partner'] ?? 0),
-            addressId: $data['partner_address'] ?? null,
-            bankAccountId: null,
-            vatRegistrationId: null,
-        );
+        // Partner bez vybrané adresy dostane sídlo (bez něj první adresu) —
+        // doklad z applieru ani z akce Vystavit opravný doklad
+        // `partner_address` nenese.
+        $partnerId   = (int) ($data['partner'] ?? 0);
+        $partnerSnap = $this->db === null || $partnerId === 0
+            ? []
+            : $this->personSnapshotBuilder()->buildPartner($partnerId, $data['partner_address'] ?? null);
         $ownSnap = $this->buildOwnSnapshot($data);
 
         $this->assignSnapshots($data, $tradeDir, $partnerSnap, $ownSnap);

@@ -19,11 +19,15 @@ use Shipard\Core\Form\FormTab;
  *     → datumy; vpravo režim DPH, místo plnění, měna a kurz, variabilní
  *     a specifický symbol, období. Bankovní účet odběratele a DPPD se
  *     nezadávají (DPPD odvozuje `DocDocument` z DUZP),
- *   - `buildExtraTabs()` — tab „Nastavení" za Přílohami: sekce Měna
- *     (`home_currency` readOnly) a Ostatní (`bank_account`,
- *     `vat_registration`, `vat_calc_source`, `vat_recap_source`,
- *     `total_rounding_mode`, `vat_rounding_mode`, `cs_mode`,
- *     `constant_symbol`).
+ *   - `buildExtraTabs()` — tab „Nastavení" za Přílohami: sekce Oprava
+ *     (opravný daňový doklad, #92 — jen typ s `docTypes[].corrective`,
+ *     tedy faktura vydaná: zaškrtávátko `corrective`, po zapnutí lookup
+ *     původního dokladu, jeho číslo a datum plnění — při vyplněném odkazu
+ *     jen ke čtení — a důvod opravy), Měna (`home_currency` readOnly)
+ *     a Ostatní (`bank_account`, `vat_registration`, `vat_calc_source`,
+ *     `vat_recap_source`, `total_rounding_auto` + `total_rounding_mode`
+ *     (při zapnuté automatice jen ke čtení, #73), `vat_rounding_mode`,
+ *     `cs_mode`, `constant_symbol`).
  *
  * Nedaňový typ (`docTypes[].tax_document: false`, `isTaxDocument()`): DUZP
  * a ruční zařazení do KH (`cs_mode`) se nezobrazují — doklad do tvrzení DPH
@@ -169,7 +173,39 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $hasVat = $vatMode !== 0;
         $taxDocument = $this->isTaxDocument($data);
+        $corrective = $this->isCorrective($data);
+        $hasCorrectedDoc = (int) ($data['corrected_doc'] ?? 0) > 0;
         $tab = $this->tab('settings', 'Nastavení')
+            // Opravný daňový doklad (#92 D1–D3, U8): sekce jen u typu
+            // s příznakem; po zapnutí odkaz na původní doklad (lookup
+            // dokladů téhož typu, partnera je-li vyplněný), jeho číslo
+            // a datum plnění — s odkazem jen ke čtení, dokument je při
+            // uložení přepíše — a důvod opravy (při potvrzení povinný).
+            ->section(title: 'Oprava', hidden: !$this->isCorrectiveType($data))
+            ->col()
+            ->checkbox('corrective', triggers: 'reload')
+            ->lookup(
+                'corrected_doc',
+                table: 'docs_core_heads',
+                filter: $this->correctedDocLookupFilter($data),
+                placeholder: 'Hledat podle čísla, variabilního symbolu nebo partnera…',
+                hidden: !$corrective,
+                triggers: 'reload',
+                hint: 'Nepovinné — souhrnný opravný doklad původní doklady vymezí v důvodu opravy.',
+            )
+            ->input('corrected_doc_number', readOnly: $hasCorrectedDoc, hidden: !$corrective)
+            ->date(
+                'corrected_doc_date',
+                readOnly: $hasCorrectedDoc,
+                hidden: !$corrective,
+                hint: 'Sazby DPH opravného dokladu se určují k tomuto datu.',
+            )
+            ->textarea(
+                'correction_reason',
+                hidden: !$corrective,
+                hint: 'Při potvrzení povinný. U souhrnné opravy sem patří i vymezení původních dokladů.',
+            )
+
             ->section(title: 'Měna')
             ->col()
             ->input('home_currency', readOnly: true)
@@ -200,9 +236,13 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
                 hint: self::VAT_RECAP_SOURCE_HINT,
             )
 
+            // Automatické zaokrouhlení podle způsobu úhrady (#73 D4): při
+            // zapnutém mód určuje doklad, select je jen ke čtení.
+            ->checkbox('total_rounding_auto', triggers: 'reload', hidden: !$this->appliesTotalRoundingAuto($data))
             ->select(
                 'total_rounding_mode',
                 options: $this->resolveCfgItemOptions('docs.core.roundingModes'),
+                readOnly: $this->isTotalRoundingAuto($data),
             )
             ->select(
                 'vat_rounding_mode',

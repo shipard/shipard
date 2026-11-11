@@ -313,7 +313,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
             'isReversePair' => false,
         ]], $computed['vatRecap']);
         $this->assertSame(
-            ['totalBase' => 10330.58, 'totalVat' => 2169.42, 'totalAmount' => 12500.00, 'totalRounding' => 0.0],
+            ['totalBase' => 10330.58, 'totalVat' => 2169.42, 'totalAmount' => 12500.00, 'totalRounding' => 0.0, 'totalRoundingMode' => 0],
             $computed['totals'],
         );
         $codes = $this->issueCodes($result->canonical);
@@ -500,6 +500,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
                 'totalVat'      => (float) $saved['total_vat'],
                 'totalAmount'   => (float) $saved['total_amount'],
                 'totalRounding' => (float) $saved['total_rounding'],
+                'totalRoundingMode' => (int) ($saved['total_rounding_mode'] ?? 0),
             ], $computed['totals'], $label);
             $this->assertSame(
                 array_map(static fn (array $r): array => [
@@ -566,7 +567,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $this->assertNull($computed['recapFallback']);
         $this->assertSame([], $computed['vatRecap']);
         $this->assertSame(
-            ['totalBase' => 12500.00, 'totalVat' => 0.0, 'totalAmount' => 12500.00, 'totalRounding' => 0.0],
+            ['totalBase' => 12500.00, 'totalVat' => 0.0, 'totalAmount' => 12500.00, 'totalRounding' => 0.0, 'totalRoundingMode' => 0],
             $computed['totals'],
         );
         $this->assertSame(
@@ -619,6 +620,54 @@ class DocumentApplierPreviewComputedTest extends TestCase
         // Daň dodavatele je v základu řádku — tudy jde do nákladů i závazku.
         $this->assertSame(12500.00, (float) $saved['rows'][0]['vat_base']);
         $this->assertSame(0.0, (float) $saved['rows'][0]['vat_amount']);
+    }
+
+    /**
+     * Přijatý dobropis neplátce (#98): řádek převedený na výpočet z celkové
+     * ceny má záporné množství i cenu — jednotková cena se dopočítá
+     * (−12 500 / −10 = 1 250), ne nula, v náhledu i na uloženém dokladu.
+     */
+    public function testNonPayerCreditNoteKeepsUnitPricesWithNegativeQuantity(): void
+    {
+        $applier = $this->buildApplier(db: $this->dbWithoutVatRegistration());
+        $payload = $this->creditNotePayload();
+
+        $computed = $applier->preview($payload)->canonical['_resolve']['computed'];
+        $this->assertSame(
+            [['index' => 0, 'unitPrice' => 1250.0, 'totalPrice' => -12500.00]],
+            $computed['rows'],
+        );
+        $this->assertSame(-12500.00, $computed['totals']['totalAmount']);
+
+        $applied = $applier->apply($payload);
+
+        $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
+        $saved = $this->savedHeadsData;
+        $this->assertIsArray($saved);
+        $this->assertSame(-12500.00, (float) $saved['total_amount']);
+        $this->assertSame(1, (int) $saved['rows'][0]['price_calc_mode']);
+        $this->assertSame(-10.0, (float) $saved['rows'][0]['quantity']);
+        $this->assertSame(-12500.00, (float) $saved['rows'][0]['total_price']);
+        $this->assertSame(1250.0, (float) $saved['rows'][0]['unit_price']);
+    }
+
+    /**
+     * Happy fixture jako dobropis: záporné množství, ceny, rekapitulace
+     * i součty — tvar, v jakém dobropis přijde z ISDOC.
+     *
+     * @return array<string, mixed>
+     */
+    private function creditNotePayload(): array
+    {
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['quantity'] = -10;
+        $payload['rows'][0]['totalPrice'] = -10330.58;
+        $payload['rows'][0]['computed'] = ['vatBase' => -10330.58, 'vatAmount' => -2169.42, 'vatTotal' => -12500.0];
+        $payload['vatRecap'] = [
+            ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => -10330.58, 'tax' => -2169.42, 'total' => -12500.0, 'isReversePair' => false],
+        ];
+        $payload['totals'] = ['totalBase' => -10330.58, 'totalVat' => -2169.42, 'totalAmount' => -12500.0, 'totalRounding' => 0.0];
+        return $payload;
     }
 
     // ── Vynechaný řádek v náhledu (#111 D9, D12) ────────────────────────────
@@ -707,7 +756,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
             $this->assertSame(400.0, $computed['vatRecap'][0]['base'], $label);
             $this->assertSame(84.0, $computed['vatRecap'][0]['tax'], $label);
             $this->assertSame(
-                ['totalBase' => 400.0, 'totalVat' => 84.0, 'totalAmount' => 484.0, 'totalRounding' => 0.0],
+                ['totalBase' => 400.0, 'totalVat' => 84.0, 'totalAmount' => 484.0, 'totalRounding' => 0.0, 'totalRoundingMode' => 0],
                 $computed['totals'],
                 $label,
             );

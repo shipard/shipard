@@ -1,0 +1,131 @@
+{
+    "printId": "docs.invoicesOut.invoice",
+    "version": 1,
+    "language": "cs",
+    "record": { "table": "docs_core_heads", "id": 124, "docState": 40 },
+    "generatedAt": "2026-10-02T10:30:00+02:00",
+    "meta": { "title": "Opravný daňový doklad IT-PRINT-COR", "fileName": "opravny-doklad-it-print-cor.pdf", "watermark": null },
+    "branding": { "logo": null, "logoPlacement": "left", "accentColor": "#c8c8c8" },
+    "texts": {},
+    "messages": [],
+    "data": {
+        "document": {
+            "type": "invno",
+            "tradeDir": 1,
+            "titleVariant": "correctiveVatPayer",
+            "title": "Opravný daňový doklad",
+            "number": "IT-PRINT-COR",
+            "text": "Oprava ceny tiskovin",
+            "notice": null,
+            "isTaxDocument": true,
+            "vatPayer": true,
+            "vatMode": 1,
+            "currency": "CZK",
+            "homeCurrency": "CZK",
+            "exchangeRate": null,
+            "foreignCurrency": false,
+            "author": null,
+            "correction": { "originalNumber": "IT-PRINT-INV", "reason": "Sleva po reklamaci části dodávky." }
+        },
+        "dates": {
+            "issue": "2026-09-30",
+            "due": "2026-10-14",
+            "duzp": "2026-09-30",
+            "periodFrom": null,
+            "periodTo": null
+        },
+        "supplier": {
+            "name": "Tiskárna Vzorová s.r.o.",
+            "company_id": "00000019",
+            "tax_id": "CZ00000019",
+            "vat_id": "CZ00000019",
+            "court_registration": "C 12345 vedená u Krajského soudu v Brně",
+            "contact": { "email": "fakturace@tiskarna.example", "phone": "+420 577 000 001" },
+            "address": {
+                "street": "Dlouhá 1",
+                "house_number": null,
+                "city": "Zlín",
+                "city_part": null,
+                "zip": "760 01",
+                "country": "cz",
+                "display_block": "Dlouhá 1\n760 01 Zlín",
+                "display_line": "Dlouhá 1, 760 01 Zlín"
+            },
+            "bank_account": {
+                "name": "Běžný účet",
+                "account_number": "19-2000145399/0800",
+                "iban": null,
+                "bic": null,
+                "currency": "czk"
+            },
+            "vat_registration": { "country": "cz", "vat_id": "CZ00000019" }
+        },
+        "customer": {
+            "name": "Odběratel Zkušební a.s.",
+            "company_id": "00000027",
+            "tax_id": null,
+            "vat_id": "SK2020000027",
+            "court_registration": null,
+            "contact": { "email": null, "phone": null },
+            "address": {
+                "street": "Krátká 2",
+                "house_number": null,
+                "city": "Bratislava",
+                "city_part": null,
+                "zip": "811 01",
+                "country": "sk",
+                "display_block": "Krátká 2\n811 01 Bratislava",
+                "display_line": "Krátká 2, 811 01 Bratislava"
+            }
+        },
+        "payment": {
+            "method": { "id": 1, "label": "Převodem" },
+            "bankTransfer": true,
+            "reference": "2026000046",
+            "specificSymbol": null,
+            "constantSymbol": null,
+            "bankAccount": {
+                "name": "Běžný účet",
+                "account_number": "19-2000145399/0800",
+                "iban": null,
+                "bic": null,
+                "currency": "czk"
+            },
+            "amountToPay": -605,
+            "currency": "CZK",
+            "qr": null
+        },
+        "rows": [
+            {
+                "kind": "item",
+                "description": "Tištěná příručka — sleva po reklamaci",
+                "quantity": -1,
+                "unit": null,
+                "unitPrice": 500,
+                "unitPriceIncludesVat": false,
+                "discountPct": null,
+                "vat": { "code": "cz-120", "pct": 21, "label": "Základní", "noteMark": null },
+                "base": -500,
+                "vatAmount": -105,
+                "total": -605,
+                "advanceDeduction": false
+            }
+        ],
+        "vatRecap": [
+            { "label": "Základní", "pct": 21, "base": -500, "tax": -105, "total": -605,
+              "baseDom": null, "taxDom": null, "totalDom": null, "noteMark": null }
+        ],
+        "vatNotes": [],
+        "advances": null,
+        "totals": {
+            "base": -500,
+            "vat": -105,
+            "rounding": 0,
+            "total": -605,
+            "totalBeforeAdvances": -605,
+            "baseDom": null,
+            "vatDom": null,
+            "totalDom": null
+        }
+    }
+}

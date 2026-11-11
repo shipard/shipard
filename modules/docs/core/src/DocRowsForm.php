@@ -18,9 +18,10 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * Sub-form for docs_core_rows (Phase 3).
  *
  * Loads parent header context (vat_registration → country, doc_type →
- * direction, vat_place, vat_rate_date = DUZP or issue date, vat_mode,
- * doc_currency) on every render in order to filter VAT codes and resolve
- * vat_pct.
+ * direction, vat_place, vat_rate_date = DUZP or issue date — original tax
+ * point date on a corrective document (`DocHeadVatContext::vatRateDate`),
+ * vat_mode, doc_currency) on every render in order to filter VAT codes and
+ * resolve vat_pct.
  *
  * Cena, základ, DPH a celkem řádku se přepočítávají živě při každém
  * recalculate stejným kódem jako při uložení (`DocRowCalculator`, #71) —
@@ -371,7 +372,9 @@ class DocRowsForm extends TableForm
 
     /**
      * Sazba DPH z kódu podle země registrace hlavičky a data sazby
-     * (`vat_rate_date`: DUZP, u nedaňového dokladu datum vystavení). Bez
+     * (`vat_rate_date`: u opravného dokladu datum plnění původního dokladu,
+     * jinak DUZP, u nedaňového dokladu datum vystavení —
+     * `DocHeadVatContext::vatRateDate`). Bez
      * data (doklad před uložením) nebo bez známé sazby zůstává ruční zadání
      * — UI ukáže varování. Sdílené hookem a recalculate('vat_code').
      *

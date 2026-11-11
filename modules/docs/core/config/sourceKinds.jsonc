@@ -32,6 +32,14 @@
         "name:cs": "Periodická fakturace",
         "name:en": "Periodic invoicing"
     },
+    "correctiveDoc": {
+        // Opravný doklad založený akcí Vystavit opravný doklad z detailu
+        // faktury (#92 D6, tasks/corrective-doc-exchange.md U9) —
+        // CorrectiveDocBuilder::SOURCE_KIND.
+        "name": "Corrective document",
+        "name:cs": "Opravný doklad",
+        "name:en": "Corrective document"
+    },
     "import.flexibee": {
         "name": "Import — Flexibee",
         "name:cs": "Import — Flexibee",

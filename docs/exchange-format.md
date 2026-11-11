@@ -334,6 +334,20 @@ Top-level struktura:
                                   //   (obě blokují apply). Chybějící objekt
                                   //   = sloupce zůstanou prázdné.
 
+  // ── Opravný daňový doklad (#92 D10, task B) ──────────────────────────────
+  "correction": {                 // objekt = opravný doklad (docs_core_heads
+    "originalDocNumber":    "FV26-00123",   //   .corrective = 1), null / chybí
+    "originalTaxPointDate": "2026-03-15",   //   = běžný doklad. Jen u typu
+    "reason":               "Sleva za vadu" //   s příznakem docTypes[]
+  },                              //   .corrective (faktura vydaná); jinde
+                                  //   warning correction_not_supported.
+                                  //   Původní doklad = _resolve.correction
+                                  //   useExisting:<id>, jinak dohledání
+                                  //   podle originalDocNumber (§ 5 „Opravný
+                                  //   daňový doklad“). Objekt se samými null
+                                  //   = jen příznak (import ze starého
+                                  //   Shipardu).
+
   // ── Rows ─────────────────────────────────────────────────────────────────
   "rows": [
     { /* DocumentRow — viz sekce 7 */ }
@@ -482,6 +496,23 @@ poslat `sumTotal + rounding`, jinak vyjde mód 0 a doklad zaokrouhlení ztratí
 proti 69,99). Platí pro AI extrakci i ISDOC
 (`PayableRoundingAmount`) — obě cesty jdou přes týž applier.
 
+**Automatické zaokrouhlení podle způsobu úhrady** (#73 D8, sloupec
+`total_rounding_auto`): u prodejního dokladu (`invoiceIssued`,
+`proformaIssued`, `cashRegisterDocument`, příjmový `cashDocument`) applier
+nastaví příznak podle `totals.totalRoundingAuto`. Explicitní `true` /
+`false` vyhrává; bez něj (nebo `null`) je automatika **zapnutá právě tehdy,
+když canonical nemá `totals.totalAmount`** — faktura ze zakázky
+(`InvoiceBuilder`). Při zapnuté automatice applier `total_rounding_mode`
+neposílá: mód určí `DocDocument::computeAmounts()` ze způsobu úhrady,
+měny dokladu a země zdroje dat (`TotalRoundingAuto`,
+`docs/vat-calculation.md` § 6) a náhled ho ukáže
+v `_resolve.computed.totals.totalRoundingMode`. Doklad s deklarovanou
+částkou (import ze starého Shipardu, pošta, ISDOC, generované datové sady)
+má automatiku vypnutou a mód odvozený z čísel jako dosud — nic se mu
+nepřepočítá. Přijatý doklad automatiku nemá nikdy. `DocumentExporter`
+příznak vyváží explicitně, aby dump → seed zachoval stav dokladu
+(dumpovaný doklad má `totalAmount` vždy).
+
 ### Polymorfismus podle `docType`
 
 `docType` určuje, která pole jsou relevantní:
@@ -558,6 +589,67 @@ Pole, která nedávají smysl pro daný `docType`, mají být `null` nebo
 vynechána. Validace polymorfismu je v PHP
 (`DocumentValidator::checkPerDocType()`), JSON Schema definuje jen společnou
 strukturu.
+
+### Opravný daňový doklad — blok `correction`
+
+Opravný doklad (#92, `tasks/corrective-doc-core.md` D1–D5,
+`tasks/corrective-doc-exchange.md` D10, U1–U5) je faktura vydaná s příznakem
+na hlavičce; ve výměnném formátu ho nese volitelný blok `correction`
+(`originalDocNumber` string | null, max 40; `originalTaxPointDate` date |
+null; `reason` string | null). Objekt = opravný doklad, `null` nebo chybějící
+klíč = běžný doklad; objekt se samými `null` je platný (starý Shipard posílá
+jen příznak).
+
+**Typ dokladu.** Applier blok bere jen u typu s příznakem
+`docTypes[].corrective` (`DocTypes::isCorrective()`, dnes `invoiceIssued`);
+u jiného typu ho ignoruje a přidá warning `correction_not_supported` —
+doklad vznikne jako běžný. Mapování: `corrective` = 1, `corrected_doc`
+(odkaz), `corrected_doc_number`, `corrected_doc_date`, `correction_reason`.
+Bez bloku se do hlavičky nic nezapisuje (příznak zůstává 0);
+`applyOptions.replaceConcept` bez bloku sloupce opravy vynuluje.
+
+**Dohledání původního dokladu** (`DocumentApplier::correctionDecision()`,
+jednou per canonical — čtou ho datum sazby, kurz, `transform()` i náhled):
+
+1. `_resolve.correction.userAction = "useExisting:<id>"` — odkaz přímo
+   (posílá služba Vystavit opravný doklad). Doklad musí existovat a mít typ
+   s příznakem; jinak warning `pin_target_missing` (path `_resolve.correction`)
+   a pokračuje se bodem 2. Stav původního dokladu applier nehlídá — při
+   potvrzení ho zkontroluje `DocDocument::validateCorrective` (V pořádku,
+   stejný partner).
+2. Jinak podle `originalDocNumber`: právě jeden doklad **téhož typu** ve
+   stavu V pořádku s tímto číslem → odkaz. Žádný → bez odkazu, číslo zůstane
+   textem, info `correction_original_not_found`; víc shod → bez odkazu,
+   warning `correction_original_ambiguous`.
+
+S odkazem applier přepíše `corrected_doc_number` a `corrected_doc_date`
+(DUZP původního dokladu, bez něj datum vystavení) už v `transform()` —
+dokument je z odkazu dosazuje znovu v `beforeSave()`, ale `validate()`
+i odvození sazeb DPH běží dřív a čtou je z dat
+(`DocHeadVatContext::vatRateDate`). Náhled vrací výsledek dohledání
+v `_resolve.correction` (`status` matched | notFound | ambiguous | none,
+`matchedId`, `matchedBy` pin | number, `docNumber`, `taxPointDate`).
+
+**Datum sazby DPH** (D4): kódy a sazby DPH řádků i rekapitulace se
+u opravného dokladu hledají k datu plnění původního dokladu (z odkazu, jinak
+`originalTaxPointDate`; bez obojího k DUZP jako dnes) — klíč `rateDate`
+ve `vatContext()`. Místo plnění, registrace k datu, období DPH a KH dál
+čtou `taxPointDate` / DUZP opravného dokladu.
+
+**Kurz** (D4): u opravného dokladu v cizí měně applier kurz z lístku
+nedoplňuje. S odkazem a shodnou měnou převezme kurz původního dokladu (info
+`exchange_rate_from_original`); bez odkazu zůstane prázdný (info
+`exchange_rate_corrective_manual`) a potvrzení zastaví validace dokladu.
+`exchangeRate` z canonicalu vždy vyhrává; import mód nedohledává nic
+(`docs/exchange-rates.md` § 5.2).
+
+**Import mód** (`applyOptions.importNumber`): blok platí stejně — příznak,
+dohledání podle čísla i datum sazby; důvod opravy ani číslo původního
+dokladu se nevyžadují (`validateCorrective` je v import módu nekontroluje)
+a doklad se uloží v cílovém stavu. Datové sady na tom stojí: dump vyváží
+blok ze sloupců bez odkazu a seed odkaz obnoví dohledáním podle čísla —
+proto exportér řadí opravné doklady až za běžné doklady téhož typu
+(`DocumentExporter::orderSql()`, `docs/datasets.md` § 4).
 
 ## 6. Party object
 
@@ -921,6 +1013,8 @@ a bez rekapitulace (D8); řádky `total_price` = cena s daní,
 `price_calc_mode` 1 (z celkové ceny, jednotkovou cenu dopočítá
 `DocRowCalculator`), bez slev (cena je obsahuje) a bez `vat_code` /
 `vat_pct` — kód z historie řádků ani sazba dodavatele se nepropisují.
+Jednotková cena se dopočítá i u záporného množství (přijatý dobropis:
+−10 ks za −12 500 = 1 250 za kus); jen množství 0 nebo prázdné dává 0 (#98).
 `total_rounding_mode` se odvodí ze součtu převedených řádků. Účtování
 žádnou změnu nepotřebuje: doklad Bez DPH zaúčtuje plnou částku řádku.
 
@@ -1226,6 +1320,17 @@ klient drží jeden payload mezi step preview a apply.
       "reverseCharge": true, "reducedDeduction": false, "supplyKind": "services" }
   ],
 
+  // Opravný doklad (#92 task B): výsledek dohledání původního dokladu
+  // (§ 5 „Opravný daňový doklad“) — jen při bloku `correction` na typu
+  // s příznakem. Vstup: userAction "useExisting:<id>" = odkaz přímo.
+  "correction": {
+    "status":       "matched",            // matched | notFound | ambiguous | none
+    "matchedId":    77,
+    "matchedBy":    "number",             // pin | number
+    "docNumber":    "FV26-00123",
+    "taxPointDate": "2026-03-15"
+  },
+
   // Rekapitulace a součty, které skončí na dokladu — jen z /preview,
   // spočítané DocDocument::computeAmounts() nad transform() canonicalu
   // (stejný kód jako uložení; tasks/exchange-preview-vat-recompute.md).
@@ -1411,6 +1516,13 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `bic_invalid` | warning | BIC nemá tvar 8 nebo 11 znaků. |
 | `iban_account_mismatch` | warning | IBAN je platný a číslo účtu má tuzemský tvar, ale nenesou týž účet (BBAN se liší) — mod 11 nerozhoduje (D30), dva různé účty jsou jistá chyba. Path `*.bankAccount.iban`. |
 | `bank_account_repaired` | warning | Normalizátor dopočetl neplatný IBAN z čísla účtu nebo naopak (D4) — zdrojem je jen hodnota, která projde vším včetně mod 11 (D30, `Iban::isValidWithDomesticAccount()`); z `_resolve.valueRepairs`, zpráva nese původní i novou hodnotu. Návrh s tímto nálezem nikdy není `ready`. |
+| `exchange_rate_from_list` | info | Doklad v cizí měně bez `exchangeRate` mimo import mód: kurz doplněn z kurzovního lístku k účetnímu datu (#121 D6, `docs/exchange-rates.md` § 5.2). Path `exchangeRate`. |
+| `exchange_rate_missing` | warning | Kurz k účetnímu datu není v lístku — doklad se uloží bez kurzu, potvrzení zastaví validace dokladu. |
+| `correction_not_supported` | warning | Blok `correction` na typu dokladu bez příznaku `docTypes[].corrective` (přijatá, zálohová, pokladní) — ignorován, doklad vznikne jako běžný (#92 task B U2). Path `correction`. |
+| `correction_original_not_found` | info | `correction.originalDocNumber` nemá doklad téhož typu ve stavu V pořádku — číslo zůstane textem bez odkazu (souhrnný opravný doklad, migrace). |
+| `correction_original_ambiguous` | warning | Číslo původního dokladu má víc dokladů téhož typu ve stavu V pořádku — odkaz se nenastaví, číslo zůstane textem. |
+| `exchange_rate_from_original` | info | Opravný doklad v cizí měně bez `exchangeRate`: kurz převzat z původního dokladu (odkaz, shodná měna) místo lístku (#92 D4). Path `exchangeRate`. |
+| `exchange_rate_corrective_manual` | info | Opravný doklad v cizí měně bez odkazu a bez `exchangeRate`: lístek se nečte, kurz zůstane prázdný a potvrzení zastaví validace dokladu. |
 
 Apply-level kódy (`ApplyResult.errorCode`, 422): `number_series_not_found`,
 `number_series_conflict` (`numberSeriesCode` i `numberSeriesId` najednou),
@@ -1798,7 +1910,7 @@ target = opakovaný apply vrátí existující entitu, nevzniká duplicita.
 
 | Sloupec | Typ | Význam |
 |---------|-----|--------|
-| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
+| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `workOrder` (periodická fakturace) / `correctiveDoc` (opravný doklad z akce Vystavit opravný doklad, #92 D6) / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
 | `source_message` | `int nullable` ref `core_mail_incoming_messages`, index `idx_source_message` | Zdrojová zpráva došlé pošty; plní server-side injection `source.message` při apply návrhu. |
 | `source_extracted_at` | `datetime nullable` | Časový bod extrakce / importu. |
 

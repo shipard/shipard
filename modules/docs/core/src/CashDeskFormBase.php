@@ -28,11 +28,17 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
     /** @var array<string, array{id: int, code: string, name: string, currency: string}|null> */
     private array $cashDeskCache = [];
 
+    /** Schéma default `docs_core_heads.payment_method` (Převodem) — u nového dokladu pokladny se bere jako „nezadáno“. */
+    private const SCHEMA_DEFAULT_PAYMENT_METHOD = 1;
+
     /**
      * HTTP cesta nového dokladu: schéma default payment_method = 1 (Převodem)
-     * na pokladní doklad nepatří — hodnota mimo povolené (Hotovost, Kartou)
-     * → Hotovost; explicitní prefill Kartou přežije. („Když neprefillnuto"
-     * na této cestě poznat nejde, FormController vloží schéma default dřív.)
+     * na doklad pokladny nepatří — nový doklad začíná Hotovostí, i u prodejky,
+     * která převod povoluje. („Když neprefillnuto" na této cestě poznat nejde,
+     * FormController vloží schéma default dřív, takže explicitní prefill
+     * Převodem nepřežije.) Hodnota mimo povolené úhrady formuláře
+     * ({@see allowedPaymentMethods()}) → Hotovost; jiný povolený prefill
+     * (Kartou; u prodejky i Dobírkou, Bránou) přežije.
      * Měna = měna pokladny z řady (prefill vieweru). Pak base (datum,
      * registrace DPH); bankovní účet formulář nemá. Větve v
      * applyClientDefaults zůstávají pro renderování a recalculate.
@@ -41,7 +47,8 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
     {
         $paymentMethod = $data['payment_method'] ?? null;
         if ($paymentMethod === null || $paymentMethod === ''
-            || !in_array((int) $paymentMethod, CashDeskDocumentBase::PAYMENT_METHODS_ALLOWED, true)
+            || (int) $paymentMethod === self::SCHEMA_DEFAULT_PAYMENT_METHOD
+            || !in_array((int) $paymentMethod, $this->allowedPaymentMethods(), true)
         ) {
             $data['payment_method'] = 0;
         }
@@ -93,6 +100,8 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
             $this->applyExchangeRate($data);
         }
         $this->applyPartnerBalancePreview($data);
+        // Způsob úhrady, směr i měna pokladny z řady mění mód automatiky (#73 U7).
+        $this->applyTotalRoundingAuto($data);
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';
         return new RecalculateResult($this->buildFormDefinition($data, $isNew), $data);
     }

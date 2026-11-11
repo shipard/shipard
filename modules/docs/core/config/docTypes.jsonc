@@ -22,6 +22,22 @@
     //                dosavadní typy). Jediná autorita čtení:
     //                DocTypes::isTaxDocument() — kód nikdy neporovnává
     //                doc_type === 'invpo'.
+    //   total_rounding_auto: true = prodejní doklad s automatickým
+    //                zaokrouhlením celkové částky podle způsobu úhrady, měny
+    //                a země (#73 D2: invno, invpo, cashreg, cash). Nový
+    //                doklad má automatiku zapnutou (docs_core_heads.
+    //                total_rounding_auto); u cash platí jen pro příjem —
+    //                směr hlídá TotalRoundingAuto::applies(). Chybí = typ
+    //                bez automatiky, mód zadává uživatel. Jediná autorita
+    //                čtení: DocTypes::hasTotalRoundingAuto().
+    //   corrective:  true = typ, který jde označit jako opravný daňový doklad
+    //                (#92 D1: jen invno). Opravný doklad není nový typ, ale
+    //                příznak na hlavičce (docs_core_heads.corrective) s odkazem
+    //                na původní doklad, jeho číslem, datem plnění a důvodem
+    //                opravy; původní doklad musí být téhož typu s příznakem.
+    //                Chybí = typ bez opravných dokladů — DocDocument příznak
+    //                při uložení vynuluje. Jediná autorita čtení:
+    //                DocTypes::isCorrective().
     //   trade_dir_column: název sloupce hlavičky, ze kterého se čte směr
     //                obchodu, když je trade_dir 0. Hodnota sloupce se mapuje
     //                1→1, 2→2, jinak „bez stran". Jediná povolená hodnota je
@@ -51,6 +67,8 @@
         "shortcut:en": "IV",
         "doc_id_code": "1",
         "trade_dir": 1,
+        "total_rounding_auto": true,
+        "corrective": true,
         "doc_number_pattern_default": "%D%y%C%4",
         "subclass": "Shipard\\Module\\Docs\\InvoicesOut\\IssuedInvoiceDocument"
     },
@@ -70,6 +88,7 @@
         "doc_id_code": "12",
         "trade_dir": 1,
         "tax_document": false,
+        "total_rounding_auto": true,
         "doc_number_pattern_default": "%D%y%C%4",
         "subclass": "Shipard\\Module\\Docs\\ProformasOut\\ProformaOutDocument"
     },
@@ -141,6 +160,7 @@
         "trade_dir": 0,
         "trade_dir_column": "cash_dir",
         "series_binding": "cash_desk",
+        "total_rounding_auto": true,
         "doc_number_pattern_default": "%D%C%y%5",
         "subclass": "Shipard\\Module\\Docs\\CashDocs\\CashDocument"
     },
@@ -159,6 +179,7 @@
         "doc_id_code": "14",
         "trade_dir": 1,
         "series_binding": "cash_desk",
+        "total_rounding_auto": true,
         "doc_number_pattern_default": "%D%C%y%5",
         "subclass": "Shipard\\Module\\Docs\\CashRegister\\CashRegisterDocument"
     }

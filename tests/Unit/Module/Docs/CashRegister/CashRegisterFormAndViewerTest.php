@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Docs\CashRegister;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormElement;
@@ -24,10 +25,11 @@ class CashRegisterFormAndViewerTest extends TestCase
     {
         $items = [
             'docs.core.paymentMethods' => [
-                '0' => ['name' => 'Hotovost'], '1' => ['name' => 'Převodem'], '2' => ['name' => 'Kartou'],
+                '0' => ['name' => 'Hotovost', 'cashRounding' => true], '1' => ['name' => 'Převodem'], '2' => ['name' => 'Kartou'],
             ],
+            'world.base.cashRounding' => ['czk' => ['step' => 1, 'countries' => ['cz']]],
             'docs.core.docTypes' => [
-                'cashreg' => ['name' => 'Prodejka', 'trade_dir' => 1, 'series_binding' => 'cash_desk'],
+                'cashreg' => ['name' => 'Prodejka', 'trade_dir' => 1, 'series_binding' => 'cash_desk', 'total_rounding_auto' => true],
             ],
             'docs.core.docStates' => [
                 '10' => ['stateName' => 'Koncept', 'stateStyle' => 'concept', 'mainState' => 1],
@@ -123,6 +125,61 @@ class CashRegisterFormAndViewerTest extends TestCase
         }
         $this->assertFalse($this->findElement($def, 'total_rounding_mode', 'settings')->hidden);
         $this->assertTrue($this->findElement($def, 'vat_duzp')->hidden, 'DUZP v hlavičce bez DPH skryté');
+    }
+
+    /**
+     * HTTP cesta nové prodejky: schéma default Převodem → Hotovost, explicitní
+     * prefill povolené úhrady prodejky (Kartou, Dobírkou, Bránou) přežije,
+     * nepovolená (Zápočtem) → Hotovost. Dřív rozhodovala konstanta pokladního
+     * dokladu a Dobírkou i Bránou padaly na Hotovost.
+     */
+    public function testNewRecordHookKeepsPrefillOfPaymentMethodsAllowedOnRetailSale(): void
+    {
+        $form = new CashRegisterForm('docs_core_heads');
+        $form->setConfig($this->config());
+        $form->setDb($this->db());
+
+        $expected = [1 => 0, 2 => 2, 3 => 3, 5 => 5, 4 => 0];
+        foreach ($expected as $prefill => $result) {
+            $data = ['doc_type' => 'cashreg', 'number_series' => 12, 'payment_method' => $prefill, 'vat_mode' => 1];
+            $form->applyNewRecordDefaults($data);
+            $this->assertSame($result, $data['payment_method'], "prefill {$prefill}");
+        }
+
+        $data = ['doc_type' => 'cashreg', 'number_series' => 12, 'vat_mode' => 1];
+        $form->applyNewRecordDefaults($data);
+        $this->assertSame(0, $data['payment_method'], 'bez hodnoty → Hotovost');
+    }
+
+    /** #73 D2, D4: prodejka má automatiku — při zapnuté je mód jen ke čtení a recalculate ho drží podle úhrady. */
+    public function testAutomaticRoundingFollowsPaymentMethod(): void
+    {
+        $form = new CashRegisterForm('docs_core_heads');
+        $form->setConfig($this->config());
+        $form->setDb($this->db());
+        $ds = $this->createMock(DataSourceConfig::class);
+        $ds->method('getCountry')->willReturn('cz');
+        $form->setDsConfig($ds);
+        $base = [
+            'doc_type' => 'cashreg', 'number_series' => 12, 'vat_mode' => 1, 'payment_method' => 0,
+            'doc_currency' => 'czk', 'home_currency' => 'czk', 'total_rounding_auto' => 1, 'total_rounding_mode' => 0,
+        ];
+
+        $def = $form->buildFormDefinition($base, true);
+        $checkbox = $this->findElement($def, 'total_rounding_auto', 'settings');
+        $this->assertNotNull($checkbox, 'zaškrtávátko v Nastavení');
+        $this->assertFalse($checkbox->hidden);
+        $this->assertSame('reload', $checkbox->triggers);
+        $this->assertTrue($this->findElement($def, 'total_rounding_mode', 'settings')->readOnly);
+        $this->assertNull($this->findElement($def, 'total_rounding_auto'), 'v hlavičce není');
+
+        $result = $form->recalculate('payment_method', $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'hotově → na koruny');
+        $result = $form->recalculate('payment_method', ['payment_method' => 2, 'total_rounding_mode' => 1] + $base);
+        $this->assertSame(0, $result->data['total_rounding_mode'], 'kartou → na haléře');
+        $result = $form->recalculate('payment_method', ['total_rounding_auto' => 0, 'total_rounding_mode' => 1] + $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'vypnutá automatika mód nechává');
+        $this->assertFalse($this->findElement($result->formDefinition, 'total_rounding_mode', 'settings')->readOnly);
     }
 
     public function testHeaderInfoUsesCustomerSnapshot(): void

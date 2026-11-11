@@ -169,6 +169,15 @@ Kontrola „Kurz je povinný pro cizí měnu“ ve `validate` bere domácí měn
 z dat, jinak z nastavení — vystřelí i na cestě apply (U5), kde
 `home_currency` v datech není.
 
+**Opravný daňový doklad** (#92 D4, U7, `tasks/corrective-doc-core.md`):
+u dokladu s `corrective` = 1 v cizí měně `applyExchangeRate()` kurz z lístku
+nedotahuje ani nepřepisuje a upozornění nedává — kurz se má převzít
+z původního dokladu, což dělá `recalculate('corrected_doc')`
+(`DocsHeadsFormBase::applyCorrectedDoc`, jen při shodné měně obou dokladů);
+u souhrnného opravného dokladu bez odkazu ho zadá uživatel a prázdný kurz
+při potvrzení zastaví stávající kontrola „Kurz je povinný pro cizí měnu“.
+Domácí měna má kurz 1 i na opravném dokladu.
+
 ### 5.2 Applier (náhled i apply)
 
 `DocumentApplier::transform()` (jediné místo pro náhled i apply): měna ≠
@@ -188,6 +197,19 @@ Shipardem (periodická fakturace přes `InvoiceBuilder`) jdou přes apply,
 takže je to pokrývá. Resolver dostává applier v `create()` jen na zdroji
 dat s tabulkou lístků. Ve výměnném formátu viz `docs/exchange-format.md`
 (`exchangeRate`).
+
+**Opravný daňový doklad v applieru** (#92 D4, task B U4): u canonicalu
+s blokem `correction` na typu s příznakem `exchangeRateDecision()` lístek
+nečte. S odkazem na původní doklad (`_resolve.correction`, nebo dohledání
+podle čísla) a shodnou měnou převezme jeho kurz — info
+`exchange_rate_from_original` („Kurz 24,1 převzat z původního dokladu
+FV26-00123.“); bez odkazu zůstane kurz prázdný — info
+`exchange_rate_corrective_manual` — a potvrzení zastaví validace dokladu,
+stejně jako ve formuláři. `exchangeRate` z canonicalu dál vyhrává, import
+mód dál nedohledává. Na zdroji dat bez tabulky lístků (applier bez
+resolveru) se převzatý kurz uplatní také, chybějící se nehlásí — domácí
+měna tam není známá. Viz `docs/exchange-format.md` § 5 „Opravný daňový
+doklad“.
 
 ### 5.3 Banka (D7)
 

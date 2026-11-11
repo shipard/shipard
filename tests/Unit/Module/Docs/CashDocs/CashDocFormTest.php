@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Docs\CashDocs;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormElement;
@@ -60,15 +61,19 @@ class CashDocFormTest extends TestCase
     {
         $items = [
             'docs.core.paymentMethods' => [
-                '0' => ['name' => 'Hotovost'], '1' => ['name' => 'Převodem'], '2' => ['name' => 'Kartou'],
-                '3' => ['name' => 'Dobírkou'], '4' => ['name' => 'Zápočtem'],
+                '0' => ['name' => 'Hotovost', 'cashRounding' => true], '1' => ['name' => 'Převodem'], '2' => ['name' => 'Kartou'],
+                '3' => ['name' => 'Dobírkou', 'cashRounding' => true], '4' => ['name' => 'Zápočtem'],
             ],
             'docs.core.cashDirections' => [
                 '0' => ['name' => '—'], '1' => ['name' => 'Příjem'], '2' => ['name' => 'Výdej'],
             ],
             'docs.core.docTypes' => [
-                'cash' => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
+                'cash' => [
+                    'trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk',
+                    'total_rounding_auto' => true,
+                ],
             ],
+            'world.base.cashRounding' => ['czk' => ['step' => 1, 'countries' => ['cz']]],
         ];
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
@@ -179,6 +184,10 @@ class CashDocFormTest extends TestCase
         $this->form()->applyNewRecordDefaults($data);
 
         $this->assertSame(2, $data['payment_method'], 'Kartou je povolené — explicitní prefill vyhrává');
+
+        $data = ['doc_type' => 'cash', 'number_series' => 12, 'payment_method' => 3];
+        $this->form()->applyNewRecordDefaults($data);
+        $this->assertSame(0, $data['payment_method'], 'Dobírkou pokladní doklad nepovoluje → Hotovost');
     }
 
     public function testNewRecordHookWithoutSeriesKeepsSchemaCurrency(): void
@@ -197,6 +206,40 @@ class CashDocFormTest extends TestCase
         $el = $this->findElement($def, 'payment_method', 'settings');
         $this->assertSame([0, 2], array_column($el->options, 'value'));
         $this->assertSame('reload', $el->triggers);
+    }
+
+    /** #73 D2: automatika jen u příjmu — výdej zaškrtávátko nemá; recalculate směru i úhrady dopočítá mód. */
+    public function testAutomaticRoundingOnlyForReceipts(): void
+    {
+        $form = $this->form();
+        $ds = $this->createMock(DataSourceConfig::class);
+        $ds->method('getCountry')->willReturn('cz');
+        $form->setDsConfig($ds);
+        $base = [
+            'doc_type' => 'cash', 'number_series' => 12, 'vat_mode' => 1, 'payment_method' => 0,
+            'doc_currency' => 'czk', 'home_currency' => 'czk', 'total_rounding_auto' => 1, 'total_rounding_mode' => 0,
+        ];
+
+        $def = $form->buildFormDefinition(['cash_dir' => 2] + $base, true);
+        $this->assertTrue($this->findElement($def, 'total_rounding_auto', 'settings')->hidden, 'výdej automatiku nemá');
+        $this->assertFalse($this->findElement($def, 'total_rounding_mode', 'settings')->readOnly);
+
+        $def = $form->buildFormDefinition(['cash_dir' => 1] + $base, true);
+        $checkbox = $this->findElement($def, 'total_rounding_auto', 'settings');
+        $this->assertFalse($checkbox->hidden, 'příjem automatiku má');
+        $this->assertSame('reload', $checkbox->triggers);
+        $this->assertTrue($this->findElement($def, 'total_rounding_mode', 'settings')->readOnly);
+
+        $def = $form->buildFormDefinition(['cash_dir' => 1, 'total_rounding_auto' => 0] + $base, true);
+        $this->assertFalse($this->findElement($def, 'total_rounding_mode', 'settings')->readOnly, 'vypnutá → jde upravit');
+
+        // Směr a úhrada jdou přes CashDeskFormBase::recalculate — mód se dopočítá i tam.
+        $result = $form->recalculate('cash_dir', ['cash_dir' => 1] + $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'příjem hotově → na koruny');
+        $result = $form->recalculate('payment_method', ['cash_dir' => 1, 'payment_method' => 2] + $base);
+        $this->assertSame(0, $result->data['total_rounding_mode'], 'kartou → na haléře');
+        $result = $form->recalculate('cash_dir', ['cash_dir' => 2, 'total_rounding_mode' => 1] + $base);
+        $this->assertSame(1, $result->data['total_rounding_mode'], 'výdej mód nemění');
     }
 
     /** Issue #67: tab Nastavení za Přílohami, přesunutá pole, ev. číslo a místo plnění v hlavičce. */

@@ -352,6 +352,143 @@ class IsdocWriterTest extends TestCase
         }
     }
 
+    // ── Opravný doklad (#92 D9) ─────────────────────────────────────────────
+
+    public function testCreditNoteHasTypeTwoReferenceAndSignedAmounts(): void
+    {
+        $xml = $this->write('issued_corrective_credit');
+        $this->assertValidIsdoc($xml);
+        $xp = $this->xpath($xml);
+
+        $this->assertSame('2', $this->text($xp, '/i:Invoice/i:DocumentType'));
+        $this->assertSame('2026-10-05', $this->text($xp, '/i:Invoice/i:TaxPointDate'));
+
+        // Odkaz na původní doklad: jeden, mezi stranami a řádky (xs:sequence).
+        $refs = '/i:Invoice/i:OriginalDocumentReferences';
+        $this->assertSame(1, $this->nodeCount($xp, "{$refs}/i:OriginalDocumentReference"));
+        $this->assertSame('FV-2026-0104', $this->text($xp, "{$refs}/i:OriginalDocumentReference/i:ID"));
+        $this->assertSame(0, $this->nodeCount($xp, "{$refs}/i:OriginalDocumentReference/i:IssueDate"));
+        $this->assertSame(1, $this->nodeCount($xp, "{$refs}/preceding-sibling::i:AccountingCustomerParty"));
+        $this->assertSame(1, $this->nodeCount($xp, "{$refs}/following-sibling::*[1][self::i:InvoiceLines]"));
+
+        // Důvod opravy před poznámkou dokladu.
+        $this->assertSame(
+            "Důvod opravy: Vrácení zboží po reklamaci\nČástku vrátíme převodem na váš účet.",
+            $this->text($xp, '/i:Invoice/i:Note'),
+        );
+
+        // Částky se znaménkem dokladu; jednotková cena zůstává kladná.
+        $l = '/i:Invoice/i:InvoiceLines/i:InvoiceLine';
+        $this->assertSame('-4', $this->text($xp, "{$l}[1]/i:InvoicedQuantity"));
+        $this->assertSame('-8892.00', $this->text($xp, "{$l}[1]/i:LineExtensionAmount"));
+        $this->assertSame('-10759.32', $this->text($xp, "{$l}[1]/i:LineExtensionAmountTaxInclusive"));
+        $this->assertSame('-1867.32', $this->text($xp, "{$l}[1]/i:LineExtensionTaxAmount"));
+        $this->assertSame('2340.00', $this->text($xp, "{$l}[1]/i:UnitPrice"));
+        $this->assertSame('-9360.00', $this->text($xp, "{$l}[1]/i:LineExtensionAmountBeforeDiscount"), 'sleva procentem');
+        $this->assertSame('-907.20', $this->text($xp, "{$l}[2]/i:LineExtensionAmountBeforeDiscount"), 'sleva částkou má znaménko řádku');
+
+        $sub = '/i:Invoice/i:TaxTotal/i:TaxSubTotal';
+        $this->assertSame('-10399.20', $this->text($xp, "{$sub}/i:TaxableAmount"));
+        $this->assertSame('-2183.83', $this->text($xp, "{$sub}/i:TaxAmount"));
+        $this->assertSame('-12583.03', $this->text($xp, "{$sub}/i:DifferenceTaxInclusiveAmount"));
+        $this->assertSame('-2183.83', $this->text($xp, '/i:Invoice/i:TaxTotal/i:TaxAmount'));
+        $t = '/i:Invoice/i:LegalMonetaryTotal';
+        $this->assertSame('-10399.20', $this->text($xp, "{$t}/i:TaxExclusiveAmount"));
+        $this->assertSame('-12583.03', $this->text($xp, "{$t}/i:TaxInclusiveAmount"));
+        $this->assertSame('-12583.03', $this->text($xp, "{$t}/i:PayableAmount"));
+        $this->assertSame('-12583.03', $this->text($xp, '/i:Invoice/i:PaymentMeans/i:Payment/i:PaidAmount'));
+    }
+
+    public function testDebitNoteHasTypeThree(): void
+    {
+        $xml = $this->write('issued_corrective_debit');
+        $this->assertValidIsdoc($xml);
+        $xp = $this->xpath($xml);
+
+        $this->assertSame('3', $this->text($xp, '/i:Invoice/i:DocumentType'));
+        $this->assertSame('FV-2026-0104', $this->text($xp, '/i:Invoice/i:OriginalDocumentReferences/i:OriginalDocumentReference/i:ID'));
+        $this->assertSame('Důvod opravy: Doúčtování dopravy', $this->text($xp, '/i:Invoice/i:Note'), 'bez poznámky dokladu jen důvod');
+        $this->assertSame('363.00', $this->text($xp, '/i:Invoice/i:LegalMonetaryTotal/i:PayableAmount'));
+
+        // Typ řídí znaménko částky celkem: nulový opravný doklad je vrubopis.
+        $canonical = $this->fixture('issued_corrective_debit');
+        $canonical['totals']['totalAmount'] = 0;
+        $this->assertSame('3', $this->text($this->xpath($this->writer->write($canonical, $this->options())), '/i:Invoice/i:DocumentType'));
+    }
+
+    public function testSummaryCorrectiveDocumentHasNoReferenceOnlyReasonInNote(): void
+    {
+        $xml = $this->write('issued_corrective_summary');
+        $this->assertValidIsdoc($xml);
+        $xp = $this->xpath($xml);
+
+        $this->assertSame('2', $this->text($xp, '/i:Invoice/i:DocumentType'));
+        $this->assertSame(0, $this->nodeCount($xp, '/i:Invoice/i:OriginalDocumentReferences'), 'bez čísla se kolekce nepíše');
+        $this->assertSame(
+            "Důvod opravy: Bonus za odběr ve 3. čtvrtletí 2026, faktury FV-2026-0090 až FV-2026-0104\nDěkujeme za spolupráci.",
+            $this->text($xp, '/i:Invoice/i:Note'),
+        );
+    }
+
+    /** Import ze starého Shipardu: blok se samými null je pořád opravný doklad. */
+    public function testCorrectionBlockWithoutValuesGivesTypeWithoutReferenceAndReason(): void
+    {
+        $canonical = $this->fixture('issued_corrective_summary');
+        $canonical['correction'] = ['originalDocNumber' => null, 'originalTaxPointDate' => null, 'reason' => null];
+        $xml = $this->writer->write($canonical, $this->options());
+        $this->assertValidIsdoc($xml);
+        $xp = $this->xpath($xml);
+
+        $this->assertSame('2', $this->text($xp, '/i:Invoice/i:DocumentType'));
+        $this->assertSame(0, $this->nodeCount($xp, '/i:Invoice/i:OriginalDocumentReferences'));
+        $this->assertSame('Děkujeme za spolupráci.', $this->text($xp, '/i:Invoice/i:Note'));
+    }
+
+    /** Typ řídí blok, ne znaménko; u jiného typu než faktury vydané se blok nečte. */
+    public function testWithoutCorrectionBlockTypeMapStaysAsBefore(): void
+    {
+        // Záporná faktura bez bloku je faktura — a bez odkazu a důvodu.
+        $negative = $this->fixture('issued_corrective_credit');
+        unset($negative['correction']);
+        $xp = $this->xpath($this->writer->write($negative, $this->options()));
+        $this->assertSame('1', $this->text($xp, '/i:Invoice/i:DocumentType'));
+        $this->assertSame(0, $this->nodeCount($xp, '/i:Invoice/i:OriginalDocumentReferences'));
+        $this->assertSame('Částku vrátíme převodem na váš účet.', $this->text($xp, '/i:Invoice/i:Note'));
+        $this->assertSame(
+            0,
+            $this->nodeCount($xp, '/i:Invoice/i:InvoiceLines/i:InvoiceLine[2]/i:LineExtensionAmountBeforeDiscount'),
+            'záporná sleva částkou se u běžného dokladu nepíše jako dosud',
+        );
+
+        // `correction: null` = běžný doklad.
+        $plain = $this->fixture('issued_two_rates');
+        $expected = $this->writer->write($plain, $this->options());
+        $plain['correction'] = null;
+        $this->assertSame($expected, $this->writer->write($plain, $this->options()));
+
+        // Blok na přijaté faktuře ani na zálohové faktuře typ nemění.
+        foreach (['invoiceReceived' => '1', 'proformaIssued' => '4'] as $docType => $isdocType) {
+            $other = $this->fixture('issued_corrective_debit');
+            $other['docType'] = $docType;
+            $xp = $this->xpath($this->writer->write($other, $this->options()));
+            $this->assertSame($isdocType, $this->text($xp, '/i:Invoice/i:DocumentType'), $docType);
+            $this->assertSame(0, $this->nodeCount($xp, '/i:Invoice/i:OriginalDocumentReferences'), $docType);
+            $this->assertSame(0, $this->nodeCount($xp, '/i:Invoice/i:Note'), $docType);
+        }
+    }
+
+    public function testCorrectiveDocumentWithVatNeedsTaxPointDate(): void
+    {
+        $canonical = $this->fixture('issued_corrective_credit');
+        $canonical['dates']['taxPointDate'] = null;
+        try {
+            $this->writer->write($canonical, $this->options());
+            $this->fail();
+        } catch (EInvoiceInputException $e) {
+            $this->assertSame(['dates.taxPointDate'], $e->paths());
+        }
+    }
+
     public function testUnsupportedDocTypeAndMissingRows(): void
     {
         $canonical = $this->fixture('issued_two_rates');

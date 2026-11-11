@@ -1,9 +1,10 @@
 {
     // docs.core.viewerLabels — popisky prohlížečů dokladů, které nejsou
     // taby detailu (ty mají *.viewerDetailLabels): filtry pravého panelu,
-    // texty řádku seznamu a skupiny Přehledu číselných řad. Čtou
-    // DocsHeadsViewer a NumberSeriesViewer přes `TableViewer::labelText()`;
-    // bez katalogu anglický fallback (holé `name` = fallback v PHP).
+    // texty řádku seznamu, skupiny Přehledu číselných řad, štítek a skupina
+    // opravného dokladu (#92 U10). Čtou DocsHeadsViewer a NumberSeriesViewer
+    // přes `TableViewer::labelText()`; bez katalogu anglický fallback (holé
+    // `name` = fallback v PHP).
     "filter.sourceKind": { "name": "Source", "name:cs": "Zdroj", "name:en": "Source" },
 
     // Řádek seznamu dokladů: datum splatnosti.
@@ -13,5 +14,23 @@
     "row.cashDesk": { "name": "Cash desk {code}", "name:cs": "Pokladna {code}", "name:en": "Cash desk {code}" },
     "row.warehouse": { "name": "Warehouse {code}", "name:cs": "Sklad {code}", "name:en": "Warehouse {code}" },
     // Číselné řady — skupina Přehledu (Identifikace a Platnost jsou sdílené).
-    "group.numbering": { "name": "Numbering", "name:cs": "Číslování", "name:en": "Numbering" }
+    "group.numbering": { "name": "Numbering", "name:cs": "Číslování", "name:en": "Numbering" },
+
+    // Opravný daňový doklad (#92): štítek v řádku seznamu a hlavičce detailu,
+    // skupina Oprava v Přehledu opravného dokladu, sekce Opravné doklady
+    // v Přehledu původní faktury.
+    "badge.corrective": { "name": "Corrective document", "name:cs": "Opravný doklad", "name:en": "Corrective document" },
+    "group.correction": { "name": "Correction", "name:cs": "Oprava", "name:en": "Correction" },
+    "field.correctedDoc": { "name": "Original document", "name:cs": "Původní doklad", "name:en": "Original document" },
+    "field.correctedDocNumber": { "name": "Original document number", "name:cs": "Číslo původního dokladu", "name:en": "Original document number" },
+    "field.correctedDocDate": { "name": "Original tax point date", "name:cs": "Datum plnění původního dokladu", "name:en": "Original tax point date" },
+    "field.correctionReason": { "name": "Correction reason", "name:cs": "Důvod opravy", "name:en": "Correction reason" },
+    "section.correctiveDocs": { "name": "Corrective documents", "name:cs": "Opravné doklady", "name:en": "Corrective documents" },
+    // Akce detailu potvrzené faktury vydané (#92 D6, task B U8) — Viewer.svelte
+    // volá POST /_docs/corrective a otevře koncept ve formuláři.
+    "action.createCorrectiveDoc": { "name": "Issue corrective document", "name:cs": "Vystavit opravný doklad", "name:en": "Issue corrective document" },
+    "column.number": { "name": "Number", "name:cs": "Číslo", "name:en": "Number" },
+    "column.issueDate": { "name": "Issued", "name:cs": "Vystaveno", "name:en": "Issued" },
+    "column.amount": { "name": "Amount", "name:cs": "Částka", "name:en": "Amount" },
+    "column.state": { "name": "State", "name:cs": "Stav", "name:en": "State" }
 }

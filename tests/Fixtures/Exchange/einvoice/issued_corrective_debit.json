@@ -1,0 +1,129 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "docNumber": "OD-2026-0008",
+  "selfParty": "supplier",
+  "supplier": {
+    "name": "Alfa Nábytek s.r.o.",
+    "country": "cz",
+    "companyId": "12345678",
+    "taxId": "CZ12345678",
+    "vatId": "CZ12345678",
+    "courtRegistration": "C 12345 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Výrobní",
+      "houseNumber": "1230/5",
+      "city": "Brno",
+      "zip": "61600",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@alfa-nabytek.example",
+      "phone": "+420511222333",
+      "web": "www.alfa-nabytek.example"
+    },
+    "bankAccount": {
+      "accountNumber": "123457/0100",
+      "iban": null,
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Beta Kanceláře a.s.",
+    "country": "cz",
+    "companyId": "87654321",
+    "taxId": "CZ87654321",
+    "vatId": "CZ87654321",
+    "courtRegistration": null,
+    "address": {
+      "street": "Kancelářská",
+      "houseNumber": "7",
+      "city": "Praha 4",
+      "zip": "14000",
+      "country": "cz"
+    },
+    "contact": {
+      "name": "Petr Odběratel",
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-10-06",
+    "dueDate": "2026-10-20",
+    "taxPointDate": "2026-10-06",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20260008",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": null
+  },
+  "correction": {
+    "originalDocNumber": "FV-2026-0104",
+    "originalTaxPointDate": "2026-09-18",
+    "reason": "Doúčtování dopravy"
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Doprava a manipulace — doúčtování",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 300,
+      "totalPrice": 300,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      },
+      "computed": {
+        "vatBase": 300,
+        "vatAmount": 63,
+        "vatTotal": 363
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 300,
+      "tax": 63,
+      "total": 363
+    }
+  ],
+  "totals": {
+    "totalBase": 300,
+    "totalVat": 63,
+    "totalAmount": 363,
+    "totalRounding": 0
+  }
+}

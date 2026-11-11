@@ -2,7 +2,7 @@
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
 keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, faktura v angličtině, jazyk podle odběratele, faktura slovensky, faktura německy, přepnout jazyk tisku, změnit jazyk faktury, výběr jazyka, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
-related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/odeslani-faktury.md, faktury-vydane/vystavil-na-dokladu.md, faktury-vydane/vzhled-tisku.md, faktury-vydane/texty-na-tiscich.md, faktury-vydane/zalohova-faktura.md, osoby/zalozeni-osoby.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/odeslani-faktury.md, faktury-vydane/vystavil-na-dokladu.md, faktury-vydane/vzhled-tisku.md, faktury-vydane/texty-na-tiscich.md, faktury-vydane/zalohova-faktura.md, faktury-vydane/opravny-doklad.md, osoby/zalozeni-osoby.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
 ---
 
 # Tisk faktury
@@ -51,7 +51,10 @@ stejný.
 
 - **Titulek** podle toho, co doklad je: u plátce DPH *Faktura – daňový
   doklad*, u neplátce *Faktura*, u zálohové faktury *Zálohová faktura*
-  s větou *Nejedná se o daňový doklad.*
+  s větou *Nejedná se o daňový doklad.* Opravný doklad má titulek *Opravný
+  daňový doklad* (u neplátce *Opravný doklad*) a pod textem dokladu číslo
+  původního dokladu a důvod opravy — viz
+  [Opravný daňový doklad](opravny-doklad.md).
 - **Dodavatel a odběratel** z **Fakturačních údajů** zmrazených při
   přechodu do **V pořádku** — tedy tak, jak platily při vystavení. Když odběrateli
   později změníš adresu v **Osobách**, vystavená faktura se nezmění.

@@ -1,7 +1,7 @@
 ---
 title: Prodejka
 summary: Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury, jak udělat vratku a jak prodejku vytisknout.
-keywords: [prodejka, prodej za hotové, prodej na pokladně, paragon, účtenka, platba kartou, prodej kartou, prodej na dobírku, dobírka, platební brána, tržba, vratka, vrácení zboží, storno prodeje, prodejky, plátce, tisk prodejky, vytisknout prodejku, PDF prodejky, prodejka daňový doklad, prodejka vratka]
+keywords: [prodejka, prodej za hotové, prodej na pokladně, paragon, účtenka, platba kartou, prodej kartou, prodej na dobírku, dobírka, platební brána, tržba, vratka, vrácení zboží, storno prodeje, prodejky, plátce, tisk prodejky, vytisknout prodejku, PDF prodejky, prodejka daňový doklad, prodejka vratka, zaokrouhlení prodejky, zaokrouhlení na celé koruny, automatické zaokrouhlení, zaokrouhlení částky]
 related: [pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, polozky/zalozeni-polozky.md, uctarna/dph-zive-vystupy.md, co-dnes-nejde.md]
 ---
 
@@ -36,7 +36,14 @@ s pohybem *Úhrada pohledávky*, nebo na faktuře zvol platbu *Hotovost* rovnou.
    datum** jsou povinné.
    **Měna dokladu** je měna pokladny. **Režim DPH**, **Místo plnění**,
    **Registrace DPH** a zaokrouhlení najdeš na záložce **Nastavení** úplně
-   vpravo — běžně je nemusíš měnit, doplní se samy.
+   vpravo — běžně je nemusíš měnit, doplní se samy. **Automatické
+   zaokrouhlení** je u nové prodejky zapnuté: prodej za *Hotovost* nebo
+   *Dobírkou* vyjde na celé koruny, *Kartou*, *Převodem* a *Platební
+   bránou* na haléře (prodejka v eurech se na českém zdroji dat
+   nezaokrouhluje). **Zaokrouhlení částky** vedle toho jen ukazuje výsledek
+   a přepočítá se, když změníš způsob platby. Potřebuješ-li jinak,
+   zaškrtnutí zruš a mód vyber ručně — na neobvyklou kombinaci Shipard po
+   uložení upozorní, prodejku ale uloží.
 
 4. **Dej Uložit** a přidej řádky: **Pohyb** *Prodej zboží* nebo *Prodej
    služeb*, **Položka**, **Množství**, cena a **Kód DPH** — stejně jako na

@@ -976,6 +976,7 @@ na entitu (#59 D2, D3):
 | `rounding` | Zaokrouhlení | `total_rounding_mode`, `vat_rounding_mode` |
 | `totals` | Součtové částky (system) | `total_base`, `total_vat`, `total_amount`, `total_rounding`, `*_dom` |
 | `payment` | Platba a symboly | `payment_method`, `bank_account`, `cash_desk`, `payment_reference`, `specific_symbol`, `constant_symbol` |
+| `correction` | Opravný daňový doklad (#92, `tasks/corrective-doc-core.md`) | `corrective`, `corrected_doc` (→ `docs_core_heads`), `corrected_doc_number`, `corrected_doc_date` (datum sazby DPH, `docs/vat-calculation.md` § 5.2), `correction_reason` |
 | `snapshots` | JSON snapshoty (system) | `supplier_snapshot`, `customer_snapshot` |
 | `notes` | Poznámky | `notice`, `doc_notice` |
 | (system) | Stavy | `docState`, `docStateMain` |
@@ -1241,7 +1242,7 @@ serveru v `Document::beforeSave`** podle povahy:
 | `bank_account` | default účet pro `doc_currency` z `economy_codebooks_bank_accounts` |
 | `vat_registration` | jediná aktivní registrace, pokud je jen jedna |
 | `payment_method` | 1 (převodem) |
-| `total_rounding_mode` | 1 (matematicky na 1 — celé Kč) |
+| `total_rounding_mode` | 0 (na haléře); prodejní doklad má `total_rounding_auto` 1 a mód podle způsobu úhrady, měny a země (#73, `docs/vat-calculation.md` § 6) |
 | `vat_rounding_mode` | 0 (na haléře) |
 | `fiscal_year`, `fiscal_month` | resolvované z `accounting_date` v `beforeSave` |
 | `vat_period` | resolvované z `vat_duzp` + `vat_registration` v `beforeSave` |

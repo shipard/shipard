@@ -39,13 +39,29 @@ class DocsHeadsViewerDetailTest extends TestCase
     }
 
     private const DOC_TYPES = [
-        'invno'  => ['name' => 'Faktura vydaná', 'trade_dir' => 1],
+        'invno'  => ['name' => 'Faktura vydaná', 'trade_dir' => 1, 'corrective' => true],
         'invni'  => ['name' => 'Faktura přijatá', 'trade_dir' => 2],
         'cmnbkp' => ['name' => 'Účetní doklad', 'trade_dir' => 0],
     ];
 
     private const PAYMENT_METHODS = [
         '1' => ['name' => 'Převodem'],
+    ];
+
+    /** Lokalizovaný katalog popisků vieweru (kompilace konfigurace dává `name` v jazyce rozhraní). */
+    private const VIEWER_LABELS = [
+        'badge.corrective'         => ['name' => 'Opravný doklad'],
+        'group.correction'         => ['name' => 'Oprava'],
+        'field.correctedDoc'       => ['name' => 'Původní doklad'],
+        'field.correctedDocNumber' => ['name' => 'Číslo původního dokladu'],
+        'field.correctedDocDate'   => ['name' => 'Datum plnění původního dokladu'],
+        'field.correctionReason'   => ['name' => 'Důvod opravy'],
+        'section.correctiveDocs'   => ['name' => 'Opravné doklady'],
+        'action.createCorrectiveDoc' => ['name' => 'Vystavit opravný doklad'],
+        'column.number'            => ['name' => 'Číslo'],
+        'column.issueDate'         => ['name' => 'Vystaveno'],
+        'column.amount'            => ['name' => 'Částka'],
+        'column.state'             => ['name' => 'Stav'],
     ];
 
     /** @return array<string, mixed> výchozí hlavička dokladu pro fetchRow */
@@ -82,6 +98,12 @@ class DocsHeadsViewerDetailTest extends TestCase
             'total_vat_dom'     => 0.0,
             'total_amount_dom'  => 0.0,
             'partner_name'      => null,
+            'corrective'        => 0,
+            'corrected_doc'     => null,
+            'corrected_doc_type' => null,
+            'corrected_doc_number' => null,
+            'corrected_doc_date' => null,
+            'correction_reason' => null,
         ], $overrides);
     }
 
@@ -94,6 +116,8 @@ class DocsHeadsViewerDetailTest extends TestCase
      * @param list<array<string, mixed>> $docFiles       vlastní přílohy dokladu (table_id 401)
      * @param array<string, mixed> $dibiFetchMap         SQL substring → row data pro živé strany
      * @param list<array<string, mixed>> $attachmentQueries  zachycené dotazy na core_attachments_files (out)
+     * @param list<array<string, mixed>> $correctiveDocs  opravné doklady původní faktury (#92 D7)
+     * @param list<array<string, mixed>> $correctiveQueries zachycené dotazy na opravné doklady (out)
      */
     private function makeViewer(
         array $record,
@@ -104,13 +128,19 @@ class DocsHeadsViewerDetailTest extends TestCase
         array $docFiles = [],
         array $dibiFetchMap = [],
         array &$attachmentQueries = [],
+        array $correctiveDocs = [],
+        array &$correctiveQueries = [],
     ): DocsHeadsViewer {
         $db = $this->createMock(DataSourceConnection::class);
 
         $db->method('fetchRow')->willReturn($record);
 
         $db->method('fetchAll')->willReturnCallback(
-            function (string $sql, ...$params) use ($rows, $recap, $messages, $filesByMessage, $docFiles, &$attachmentQueries): array {
+            function (string $sql, ...$params) use ($rows, $recap, $messages, $filesByMessage, $docFiles, $correctiveDocs, &$attachmentQueries, &$correctiveQueries): array {
+                if (str_contains($sql, '`corrected_doc` = %i')) {
+                    $correctiveQueries[] = ['sql' => $sql, 'params' => $params];
+                    return $correctiveDocs;
+                }
                 if (str_contains($sql, 'docs_core_rows')) {
                     return $rows;
                 }
@@ -155,6 +185,7 @@ class DocsHeadsViewerDetailTest extends TestCase
                 'docs.core.docStates'      => self::DOC_STATES,
                 'docs.core.docTypes'       => self::DOC_TYPES,
                 'docs.core.paymentMethods' => self::PAYMENT_METHODS,
+                'docs.core.viewerLabels'   => self::VIEWER_LABELS,
                 default                    => null,
             },
         );
@@ -371,6 +402,156 @@ class DocsHeadsViewerDetailTest extends TestCase
         $this->assertSame('Převodem', $meta['payment_method']);
         $this->assertSame('16', $meta['payment_reference']);
         $this->assertNull($meta['specific_symbol']);
+    }
+
+    // ── Opravný daňový doklad (#92 D2, D3, D7, U10) ──────────────────────────
+
+    /** @return array<string, mixed> opravný doklad s odkazem na původní fakturu */
+    private function correctiveRecord(array $overrides = []): array
+    {
+        return $this->baseRecord(array_merge([
+            'doc_type'             => 'invno',
+            'docState'             => 40,
+            'partner'              => 5,
+            'partner_name'         => 'Odběratel s.r.o.',
+            'corrective'           => 1,
+            'corrected_doc'        => 50,
+            'corrected_doc_type'   => 'invno',
+            'corrected_doc_number' => '126A0007',
+            'corrected_doc_date'   => '2026-03-10',
+            'correction_reason'    => 'Vrácené zboží',
+        ], $overrides));
+    }
+
+    public function testCorrectiveDocumentHasBadgeAndCorrectionGroupWithLink(): void
+    {
+        $viewer = $this->makeViewer($this->correctiveRecord());
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame([['label' => 'Opravný doklad', 'style' => 'neutral']], $detail['badges'], 'V pořádku bez štítku stavu, štítek opravy ano');
+
+        $content = $detail['tabs'][0]['content'];
+        $this->assertSame('document', $content['type'], 'bez vlastních opravných dokladů zůstává prostý doklad');
+        $this->assertSame('Oprava', $content['correction']['title']);
+        $this->assertSame([
+            ['label' => 'Původní doklad', 'value' => '126A0007',
+             'action' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 50]]],
+            ['label' => 'Datum plnění původního dokladu', 'value' => '10. 3. 2026'],
+            ['label' => 'Důvod opravy', 'value' => 'Vrácené zboží'],
+        ], $content['correction']['items']);
+    }
+
+    /** Akce Vystavit opravný doklad (#92 D6, task B U7–U8): jen typ s příznakem ve stavu V pořádku. */
+    public function testConfirmedIssuedInvoiceOffersCorrectiveAction(): void
+    {
+        $detail = $this->makeViewer($this->baseRecord(['doc_type' => 'invno', 'docState' => 40]))->renderDetail(7);
+
+        $this->assertSame([[
+            'id'      => 'createCorrectiveDoc',
+            'label'   => 'Vystavit opravný doklad',
+            'kind'    => 'button',
+            'variant' => 'secondary',
+        ]], $detail['actions'], 'bez economy.accounting jen akce opravného dokladu');
+    }
+
+    public function testCorrectiveDocumentItselfOffersCorrectiveAction(): void
+    {
+        $detail = $this->makeViewer($this->correctiveRecord())->renderDetail(7);
+
+        $this->assertSame(['createCorrectiveDoc'], array_column($detail['actions'], 'id'), 'opravný doklad k opravnému dokladu je povolený (U7)');
+    }
+
+    public function testNoCorrectiveActionForDraftOrOtherType(): void
+    {
+        $this->assertArrayNotHasKey('actions', $this->makeViewer($this->baseRecord(['doc_type' => 'invno', 'docState' => 10]))->renderDetail(7), 'koncept');
+        $this->assertArrayNotHasKey('actions', $this->makeViewer($this->baseRecord(['doc_type' => 'invni', 'docState' => 40]))->renderDetail(7), 'typ bez příznaku');
+    }
+
+    public function testCorrectiveWithoutLinkShowsNumberOnly(): void
+    {
+        // Souhrnný opravný doklad: jen ručně zapsané číslo, bez odkazu.
+        $viewer = $this->makeViewer($this->correctiveRecord(['corrected_doc' => null, 'corrected_doc_type' => null, 'corrected_doc_number' => 'FV-2025-11']));
+        $items = $this->detailContent($viewer)['correction']['items'];
+        $this->assertSame(['label' => 'Číslo původního dokladu', 'value' => 'FV-2025-11'], $items[0]);
+        $this->assertArrayNotHasKey('action', $items[0]);
+
+        // Visící odkaz (původní doklad smazaný z DB) — jako bez odkazu.
+        $viewer = $this->makeViewer($this->correctiveRecord(['corrected_doc_type' => null]));
+        $items = $this->detailContent($viewer)['correction']['items'];
+        $this->assertSame('Číslo původního dokladu', $items[0]['label']);
+        $this->assertArrayNotHasKey('action', $items[0]);
+
+        // Bez čísla i odkazu zůstává datum a důvod; prázdné hodnoty vynechá frontend.
+        $viewer = $this->makeViewer($this->correctiveRecord(['corrected_doc' => null, 'corrected_doc_type' => null, 'corrected_doc_number' => null, 'corrected_doc_date' => null]));
+        $items = $this->detailContent($viewer)['correction']['items'];
+        $this->assertSame(['Datum plnění původního dokladu', 'Důvod opravy'], array_column($items, 'label'));
+        $this->assertNull($items[0]['value']);
+    }
+
+    public function testOriginalInvoiceListsCorrectiveDocumentsAsTable(): void
+    {
+        $correctiveQueries = [];
+        $viewer = $this->makeViewer(
+            $this->baseRecord(['doc_type' => 'invno', 'docState' => 40]),
+            correctiveDocs: [
+                ['id' => 61, 'doc_type' => 'invno', 'doc_number' => '126A0012', 'issue_date' => '2026-04-15',
+                 'total_amount' => -1210.0, 'doc_currency' => 'czk', 'docState' => 40],
+                ['id' => 62, 'doc_type' => 'invno', 'doc_number' => '!0000000062', 'issue_date' => '2026-05-02',
+                 'total_amount' => -500.0, 'doc_currency' => 'czk', 'docState' => 10],
+            ],
+            correctiveQueries: $correctiveQueries,
+        );
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame([], $detail['badges'], 'původní faktura štítek opravy nemá');
+        $content = $detail['tabs'][0]['content'];
+        $this->assertSame('composite', $content['type']);
+        $this->assertSame(['document', 'heading', 'table'], array_column($content['blocks'], 'type'));
+        $this->assertArrayNotHasKey('correction', $content['blocks'][0]);
+        $this->assertSame('Opravné doklady', $content['blocks'][1]['text']);
+
+        $table = $content['blocks'][2];
+        $this->assertSame(['number', 'issue_date', 'amount', 'state'], array_column($table['columns'], 'id'));
+        $this->assertTrue($table['columns'][0]['link']);
+        $this->assertSame('right', $table['columns'][2]['align']);
+        $this->assertSame([
+            ['number' => '126A0012', 'issue_date' => '15. 4. 2026', 'amount' => '-1 210,00 CZK', 'state' => 'V pořádku',
+             '_action' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 61]]],
+            ['number' => '!0000000062', 'issue_date' => '2. 5. 2026', 'amount' => '-500,00 CZK', 'state' => 'Koncept',
+             '_action' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 62]]],
+        ], $table['rows']);
+
+        // Storno a koš se neukazují (podle stateStyle sady stavů; zde bez nich fallback 30 a 90).
+        $this->assertCount(1, $correctiveQueries);
+        $this->assertStringContainsString('`corrected_doc` = %i AND `docState` NOT IN %in', $correctiveQueries[0]['sql']);
+        $this->assertSame([7, [30, 90]], $correctiveQueries[0]['params']);
+    }
+
+    public function testInvoiceWithoutCorrectionsHasPlainDocumentContent(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord(['doc_type' => 'invno', 'docState' => 40]));
+        $detail = $viewer->renderDetail(7);
+
+        $this->assertSame([], $detail['badges']);
+        $this->assertSame('document', $detail['tabs'][0]['content']['type']);
+        $this->assertArrayNotHasKey('correction', $detail['tabs'][0]['content']);
+    }
+
+    public function testListRowCarriesCorrectiveBadgeOnlyWithFlag(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord());
+        $rowData = [
+            'id' => 7, 'doc_type' => 'invno', 'doc_number' => '126A0012', 'doc_text' => '', 'docState' => 40,
+            'issue_date' => '2026-04-15', 'due_date' => null, 'total_amount' => -1210.0, 'doc_currency' => 'czk',
+            'partner_name' => 'Odběratel s.r.o.', 'corrective' => 1,
+        ];
+
+        $row = $viewer->renderRow($rowData);
+        $this->assertContains(['text' => 'Opravný doklad', 'badge' => 'neutral'], $row['t2']);
+        $this->assertSame('Faktura vydaná', $row['t2'][0]['text'], 'štítek za typem dokladu');
+
+        $row = $viewer->renderRow(['corrective' => 0] + $rowData);
+        $this->assertNotContains(['text' => 'Opravný doklad', 'badge' => 'neutral'], $row['t2']);
     }
 
     public function testRowsIncludeTextualKindAndFormattedAmounts(): void

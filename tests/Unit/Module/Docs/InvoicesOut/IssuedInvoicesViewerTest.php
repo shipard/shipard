@@ -29,6 +29,7 @@ class IssuedInvoicesViewerTest extends TestCase
         $sql = (string) ($captured[0] ?? '');
         $this->assertStringContainsString('h.`doc_type` = %s', $sql);
         $this->assertContains('invno', $captured, 'invno must be passed as a parameter');
+        $this->assertStringContainsString('h.`corrective`', $sql, 'štítek opravného dokladu bez dalšího dotazu (#92)');
     }
 
     public function testSelectRowsFilterCombinesWithViewGroup(): void

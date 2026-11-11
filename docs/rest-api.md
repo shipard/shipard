@@ -195,6 +195,7 @@ http://{ip-adresa}/{ds-id}/api/v1/{tabulka}
 | `POST` | `/api/v1/_app/branding/{slot}` | Upload obrázku slotu (multipart, pole `file`) — auth |
 | `DELETE` | `/api/v1/_app/branding/{slot}` | Smazání obrázku slotu — auth |
 | `POST` | `/api/v1/_accounting/reaccount` | Přeúčtování dokladu ve stavu 40 (auth) |
+| `POST` | `/api/v1/_docs/corrective` | Vystavit opravný doklad k potvrzené faktuře vydané — založí koncept (auth) |
 
 **`GET /_ui/section-badges`** — badge stavů sekcí navigace (UI shells
 Fáze 3). Bearer auth (stejný režim jako `/_ui/dashboard`). Agreguje
@@ -211,6 +212,20 @@ položky). Vrací `{"accountingState": 1|2, "messages": [...]}`. Doklad mimo
 stav 40 → `422 INVALID_DOC_STATE`, neexistující → `404`. Účtování při
 přechodech stavů běží automaticky přes `documentEventHandlers` — endpoint
 je pro ruční přeúčtování (alert / tlačítko v UI od Fáze 3).
+
+**`POST /_docs/corrective`** — body `{"docId": N}` (#92 D6,
+`tasks/corrective-doc-exchange.md` U8). K dokladu typu s příznakem
+`corrective` (faktura vydaná) ve stavu 40 založí přes `DocumentApplier`
+koncept opravného dokladu: řádky původního dokladu se záporným množstvím,
+odkaz na původní doklad, jeho číslo a datum plnění, stejný partner, řada,
+účet, měna a kurz, prázdný důvod opravy (`CorrectiveDocService`,
+`modules/docs/core/src/Corrective/`). Vrací `{"docId": <nový koncept>}`.
+Chyby: `400 BAD_REQUEST` bez `docId`, `404 NOT_FOUND`, `422
+CORRECTIVE_SOURCE_INVALID` (jiný typ dokladu nebo stav jiný než V pořádku),
+`422 CORRECTIVE_APPLY_FAILED` s `details[] {field, code, message, severity}`
+= chybové hlášky applieru; read-only režim zdroje dat `403 DS_READ_ONLY`.
+Tlačítko **Vystavit opravný doklad** v detailu faktury (`DocsHeadsViewer`)
+volá tento endpoint a koncept otevře ve formuláři.
 
 **`GET /_ui/ds-about`** — backend panelu „O zdroji dat"
 (`tasks/ds-about-panel.md`, Issue #41; komponenta `DsAbout.svelte`,

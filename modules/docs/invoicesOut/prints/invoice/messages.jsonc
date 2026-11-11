@@ -1,8 +1,14 @@
-// Katalog tisku faktury vydané — titulky podle varianty (#90 D16) a název
-// souboru. Společné klíče dokladů jsou v @docs.core/_layout.
+// Katalog tisku faktury vydané — titulky podle varianty (#90 D16; opravný
+// doklad #92 D8) a název souboru. Společné klíče dokladů jsou
+// v @docs.core/_layout.
 {
     "title.invoiceVatPayer":       { "cs": "Faktura – daňový doklad", "en": "Invoice – tax document", "sk": "Faktúra – daňový doklad", "de": "Rechnung" },
     "title.invoiceNonVatPayer":    { "cs": "Faktura", "en": "Invoice", "sk": "Faktúra", "de": "Rechnung" },
     "fileName.invoiceVatPayer":    { "cs": "faktura", "en": "invoice", "sk": "faktura", "de": "rechnung" },
-    "fileName.invoiceNonVatPayer": { "cs": "faktura", "en": "invoice", "sk": "faktura", "de": "rechnung" }
+    "fileName.invoiceNonVatPayer": { "cs": "faktura", "en": "invoice", "sk": "faktura", "de": "rechnung" },
+
+    "title.correctiveVatPayer":       { "cs": "Opravný daňový doklad", "en": "Corrective tax document", "sk": "Opravná faktúra", "de": "Rechnungskorrektur" },
+    "title.correctiveNonVatPayer":    { "cs": "Opravný doklad", "en": "Corrective document", "sk": "Opravný doklad", "de": "Rechnungskorrektur" },
+    "fileName.correctiveVatPayer":    { "cs": "opravny-doklad", "en": "corrective-document", "sk": "opravny-doklad", "de": "rechnungskorrektur" },
+    "fileName.correctiveNonVatPayer": { "cs": "opravny-doklad", "en": "corrective-document", "sk": "opravny-doklad", "de": "rechnungskorrektur" }
 }

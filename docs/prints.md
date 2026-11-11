@@ -23,8 +23,9 @@ texty na tiscích včetně textů e-mailu (§12) a tisky:
 
 Nehotovo: hromadné a automatické odesílání (D11), revize slovenských
 a německých formulací (D32, `tasks/prints-languages.md`), QR pro další
-země (#91), opravný daňový doklad (#92), „Vystavil“ a jména u podpisů
-(#93), vlastní šablony per zdroj dat (D7), účtenka na POS tiskárnu, EET.
+země (#91), titulek vratky na prodejce u plátce (#92 D11), „Vystavil“
+a jména u podpisů (#93), vlastní šablony per zdroj dat (D7), účtenka na POS
+tiskárnu, EET.
 
 ## 1. Princip
 
@@ -314,7 +315,7 @@ nahradí nebo vynechá:
 
 | Klíč | Blok | Obsah |
 |---|---|---|
-| `document` | `DocDocumentBlock` | `type`, `tradeDir` (1 výstup, 2 vstup, null bez směru — `DocDocument::resolveTradeDir()`), `titleVariant`, `title`, `number`, `text`, `notice`, `isTaxDocument`, `vatPayer`, `vatMode` (0 bez DPH / 1 ze základu / 2 z ceny celkem), `currency`, `homeCurrency`, `exchangeRate` (null v domácí měně), `foreignCurrency`, `author` (`{name}` — autor dokladu, „Vystavil“ v zápatí; `null` bez autora i u autora, který už mezi uživateli není, #93 D4) |
+| `document` | `DocDocumentBlock` | `type`, `tradeDir` (1 výstup, 2 vstup, null bez směru — `DocDocument::resolveTradeDir()`), `titleVariant`, `title`, `number`, `text`, `notice`, `isTaxDocument`, `vatPayer`, `vatMode` (0 bez DPH / 1 ze základu / 2 z ceny celkem), `currency`, `homeCurrency`, `exchangeRate` (null v domácí měně), `foreignCurrency`, `author` (`{name}` — autor dokladu, „Vystavil“ v zápatí; `null` bez autora i u autora, který už mezi uživateli není, #93 D4), `correction` (`null` u běžného dokladu; u opravného dokladu `{originalNumber, reason}` — obě hodnoty text nebo `null`, #92 D8) |
 | `dates` | `DocDatesBlock` | `issue`, `due`, `duzp` (null u nedaňového dokladu), `periodFrom`, `periodTo`; pokladní doklad (`DocCashDatesBlock`) navíc `paymentReceived` — den přijetí platby, jen na příjmu s DPH |
 | `supplier`, `customer` | `DocPartiesBlock` | snapshoty hlavičky **beze změny tvaru** (`PersonSnapshotBuilder`); **`null`**, když doklad stranu nemá (D24) |
 | `payment` | `DocPaymentBlock` | `method {id, label}`, `bankTransfer` (platí se převodem), `reference`, `specificSymbol`, `constantSymbol`, `bankAccount` (ze snapshotu dodavatele, **jen u převodu**, jinak null), `amountToPay`, `currency`, `qr {standard, payload}` nebo null |
@@ -332,11 +333,14 @@ Pravidla:
   prázdný.
 - **Titulek (D16, D25, D26):** `TitleVariantResolver` nad
   `DocTitleContext` (typ, plátce, směr, zda má doklad tištěnou
-  rekapitulaci DPH, celková částka); text z katalogu pod
+  rekapitulaci DPH, celková částka, příznak opravného dokladu); text
+  z katalogu pod
   `title.<varianta>`, název souboru pod `fileName.<varianta>`:
 
   | Typ | Podmínka | Varianta | Titulek `cs` |
   |---|---|---|---|
+  | `invno` | opravný doklad, plátce | `correctiveVatPayer` | Opravný daňový doklad |
+  | `invno` | opravný doklad, neplátce | `correctiveNonVatPayer` | Opravný doklad |
   | `invno` | plátce | `invoiceVatPayer` | Faktura – daňový doklad |
   | `invno` | neplátce | `invoiceNonVatPayer` | Faktura |
   | `invpo` | — | `proforma` | Zálohová faktura |
@@ -347,13 +351,29 @@ Pravidla:
   | `cashreg` | plátce | `cashRegisterVatPayer` | Prodejka – daňový doklad |
   | `cashreg` | neplátce | `cashRegisterNonVatPayer` | Prodejka |
 
-  Vratka má přednost před plátcovstvím (správný titulek vratky plátce
-  doladí #92). Neznámý typ dokladu nebo pokladní doklad bez směru =
-  `PrintBuildException`. `correctiveVatPayer` / `correctiveNonVatPayer`
-  jsou rezervované (#92).
+  Vratka na prodejce má přednost před plátcovstvím; její titulek u plátce
+  #92 neřeší (D11). Neznámý typ dokladu nebo pokladní doklad bez směru =
+  `PrintBuildException`.
+- **Opravný doklad (#92 D8):** `DocPrintContext::corrective()` = hlavička
+  nese příznak `corrective` a typ dokladu ho smí mít
+  (`DocTypes::isCorrective()`, dnes jen `invno`). **Rozhoduje příznak, ne
+  znaménko** — záporná faktura bez příznaku se tiskne jako faktura, příznak
+  v datech typu bez opravných dokladů se nečte. `document.correction` nese
+  číslo původního dokladu (`corrected_doc_number`; souhrnný opravný doklad
+  ho nemá) a důvod opravy (`correction_reason`); datum plnění původního
+  dokladu se netiskne. `doc-base` je tiskne pod předmětem dokladu
+  (`_partials/correction.html.twig`, popisky `label.correctedDoc`
+  a `label.correctionReason`) — každý řádek jen s hodnotou, bez hodnot nic.
+  Částky se tisknou se znaménkem dokladu; QR platba u záporné částky není.
 - **Strany a náš účet ze snapshotů (D5, D14)**; jednotky, tiskové popisky
   DPH, pokladna a logo jsou aktuální v okamžiku tisku. `rows[].unit.label`
-  je zkratka v jazyce tisku (§3, Zkratky jednotek).
+  je zkratka v jazyce tisku (§3, Zkratky jednotek). **Adresa partnera**
+  ve snapshotu je adresa vybraná na hlavičce (`partner_address`); bez
+  výběru — doklad z applieru, z akce Vystavit opravný doklad,
+  z periodické fakturace — sídlo partnera, bez sídla jeho první platná
+  adresa (`PersonSnapshotBuilder::buildPartner()`, stejně živé strany
+  v detailu konceptu). Sloupec hlavičky se nedoplňuje. Snapshoty dokladů
+  potvrzených dřív se nemění.
 - **Povinné strany (D24):** snapshot **vlastní strany** (výstup →
   `supplier`, vstup → `customer`) je povinný, **partnerský** jen když
   hlavička má `partner` — pokladní doklad a prodejka ho mít nemusí. Chybí-li
@@ -442,11 +462,11 @@ modules/docs/core/prints/
     _partials/
         parties.html.twig, party.html.twig, payment.html.twig,
         rows.html.twig, vat-recap.html.twig, totals.html.twig,
-        watermark.html.twig
+        watermark.html.twig, correction.html.twig
 
 modules/docs/invoicesOut/prints/invoice/
     page.html.twig            # extends doc-base, beze změn
-    messages.jsonc            # titulky, název souboru
+    messages.jsonc            # titulky (i opravného dokladu), název souboru
 
 modules/docs/proformasOut/prints/proforma/
     page.html.twig            # + věta „Nejedná se o daňový doklad.“
@@ -961,7 +981,8 @@ Příklad: polština (`pl`).
   dokumentů a jejich kompilace; `tests/Unit/Module/Core/Units/PrintShortcutsTest.php`
   — tiskové zkratky jednotek proti seedu;
   `tests/Unit/Module/Docs/Core/Prints/` — bloky, titulky,
-  strana tisku (`DocPrintPartyTest`), QR platba, šablony dokladů a Kontace do HTML;
+  strana tisku (`DocPrintPartyTest`), QR platba, šablony dokladů a Kontace do HTML
+  (opravný doklad nad fixture `invoiceCorrective.json` ve všech jazycích tisku);
   `tests/Unit/Command/DataSource/PrintRunCommandTest.php` — `--format=html`
   a `--data` bez databáze; `tests/Unit/Api/Controller/PrintsApiTest.php`
   — routa, controller (`Content-Language`, chybové kódy), akce v detailu

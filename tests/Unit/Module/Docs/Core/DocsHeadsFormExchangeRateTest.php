@@ -149,6 +149,45 @@ class DocsHeadsFormExchangeRateTest extends TestCase
         $this->assertFalse($this->element($form->buildFormDefinition(['doc_currency' => 'eur'], false), 'exchange_rate')->hidden);
     }
 
+    /** Opravný doklad (#92 D4, U7): kurz z lístku se nedotahuje ani nepřepisuje, domácí měna dá 1. */
+    public function testCorrectiveDocumentKeepsRateAndSkipsTheList(): void
+    {
+        $form = $this->form();
+        $data = ['corrective' => 1, 'doc_currency' => 'eur', 'accounting_date' => '2026-10-20', 'exchange_rate' => 23.5];
+        $result = $form->recalculate('accounting_date', $data);
+        $this->assertSame(23.5, $result->data['exchange_rate'], 'změna účetního data kurz nepřepíše');
+        $this->assertSame([], $form->resolver?->lookups, 'lístek se nedotahuje');
+        $this->assertArrayNotHasKey(DocsHeadsFormBase::EXCHANGE_RATE_HINT_KEY, $result->data);
+
+        $result = $form->recalculate('doc_currency', $data);
+        $this->assertSame(23.5, $result->data['exchange_rate'], 'ani změna měny');
+        $this->assertSame([], $form->resolver?->lookups);
+
+        // Prázdný kurz zůstává prázdný bez upozornění — doplní ho výběr
+        // původního dokladu, u souhrnného dokladu uživatel (chybějící kurz
+        // při potvrzení zastaví stávající kontrola „Kurz je povinný“).
+        $result = $this->form([])->recalculate('doc_currency', [
+            'corrective' => 1, 'doc_currency' => 'eur', 'accounting_date' => '2026-10-20',
+            DocsHeadsFormBase::EXCHANGE_RATE_HINT_KEY => 'stará nápověda',
+        ]);
+        $this->assertArrayNotHasKey('exchange_rate', $result->data);
+        $this->assertArrayNotHasKey(DocsHeadsFormBase::EXCHANGE_RATE_HINT_KEY, $result->data);
+
+        // Domácí měna → 1 i u opravného dokladu.
+        $result = $form->recalculate('doc_currency', ['corrective' => 1, 'doc_currency' => 'czk', 'exchange_rate' => 23.5]);
+        $this->assertSame(1, $result->data['exchange_rate']);
+
+        // Nový opravný doklad v cizí měně kurz z lístku nedostane.
+        $data = ['doc_type' => 'invno', 'corrective' => 1, 'vat_mode' => 0, 'payment_method' => 1, 'doc_currency' => 'eur', 'issue_date' => '2026-10-16'];
+        $this->form(withDb: true)->applyNewRecordDefaults($data);
+        $this->assertArrayNotHasKey('exchange_rate', $data);
+
+        // Vypnutý příznak = lístek jako dnes.
+        $form = $this->form();
+        $result = $form->recalculate('accounting_date', ['corrective' => 0, 'doc_currency' => 'eur', 'accounting_date' => '2026-10-20', 'exchange_rate' => 23.5]);
+        $this->assertSame(24.5, $result->data['exchange_rate']);
+    }
+
     public function testBaseFormWithoutDbHasNoResolver(): void
     {
         $data = ['doc_currency' => 'eur', 'accounting_date' => '2026-10-16', 'exchange_rate' => 23.5];

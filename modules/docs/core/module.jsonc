@@ -121,6 +121,15 @@
         }
     ],
 
+    "lookups": [
+        {
+            // Výběr původního dokladu na opravném dokladu (#92 U9): jen
+            // doklady V pořádku, filtry doc_type a partner.
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Docs\\Core\\DocsHeadsLookup"
+        }
+    ],
+
     "documentClasses": [
         {
             "table": "docs_core_number_series",

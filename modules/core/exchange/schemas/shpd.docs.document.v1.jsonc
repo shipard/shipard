@@ -15,6 +15,8 @@
     //     `totalAmount` less than 1.00 away from a computed variant passes
     //     (rounded invoice total — Applier derives `total_rounding_mode`
     //     from the numbers, `totals.totalRounding` itself is informative).
+    //     `totals.totalRoundingAuto` is the one authoritative key there
+    //     (#73 D8): automatic rounding by payment method on sales documents.
 
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://shipard.cz/schemas/shpd.docs.document.v1.json",
@@ -183,6 +185,25 @@
             "additionalProperties": { "type": "string" }
         },
 
+        // ── Opravný daňový doklad (#92 D10, task B U1) ─────────────────
+        // Objekt = opravný doklad (docs_core_heads.corrective = 1), null nebo
+        // chybějící klíč = běžný doklad. Applier ho bere jen u typu dokladu
+        // s příznakem docTypes[].corrective (invno); jinde varování
+        // correction_not_supported. Původní doklad: _resolve.correction
+        // useExisting:<id>, jinak dohledání podle originalDocNumber mezi
+        // doklady téhož typu ve stavu V pořádku; s odkazem applier číslo
+        // a datum plnění přepíše z původního dokladu. Objekt se samými null
+        // je platný (import ze starého Shipardu nese jen příznak).
+        "correction": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+                "originalDocNumber":    { "type": ["string", "null"], "maxLength": 40 },
+                "originalTaxPointDate": { "type": ["string", "null"], "format": "date" },
+                "reason":               { "type": ["string", "null"] }
+            }
+        },
+
         // ── Rows ────────────────────────────────────────────────────────
         "rows": {
             "type": "array",
@@ -201,7 +222,11 @@
                 "totalBase":     { "type": ["number", "null"] },
                 "totalVat":      { "type": ["number", "null"] },
                 "totalAmount":   { "type": ["number", "null"] },
-                "totalRounding": { "type": ["number", "null"] }
+                "totalRounding": { "type": ["number", "null"] },
+                // Automatické zaokrouhlení podle způsobu úhrady (#73 D8):
+                // explicitní hodnota vyhrává; null / chybí = zapnuto u
+                // prodejního dokladu bez totalAmount, jinak vypnuto.
+                "totalRoundingAuto": { "type": ["boolean", "null"] }
             }
         },
 

@@ -84,8 +84,9 @@ class VatRecapForm extends TableForm
     }
 
     /**
-     * Sazba kódu k datu sazby dokladu (DUZP; u nedaňového dokladu datum
-     * vystavení, `DocHeadVatContext`) — jen předvolba, uživatel ji smí přepsat
+     * Sazba kódu k datu sazby dokladu (u opravného dokladu datum plnění
+     * původního dokladu, jinak DUZP, u nedaňového dokladu datum vystavení —
+     * `DocHeadVatContext::vatRateDate`) — jen předvolba, uživatel ji smí přepsat
      * (spec `docs/vat-calculation.md` § 5: sazba z dokladu je vstup,
      * neshoda se sazebníkem je warning, ne blok).
      *

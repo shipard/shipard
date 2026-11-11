@@ -29,13 +29,14 @@ class DocumentExporterTest extends TestCase
             'fiscal_year' => 1, 'fiscal_month' => 6, 'vat_registration' => 1, 'vat_period' => 12,
             'vat_mode' => 1, 'vat_calc_source' => 0, 'vat_place' => 0,
             'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => null,
-            'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
+            'total_rounding_auto' => 0, 'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
             'total_base' => '1500.00', 'total_vat' => '315.00', 'total_amount' => '1815.00', 'total_rounding' => '0.00',
             'total_base_dom' => '1500.00', 'total_vat_dom' => '315.00', 'total_amount_dom' => '1815.00', 'total_rounding_dom' => '0.00',
             'payment_method' => 1, 'bank_account' => 4, 'payment_reference' => '2026031', 'specific_symbol' => null, 'constant_symbol' => '0308',
             'source_kind' => 'aiExtraction', 'source_message' => 55, 'source_extracted_at' => new \DateTimeImmutable('2026-06-01 08:00:00'),
             'supplier_snapshot' => '{}', 'customer_snapshot' => null,
             'notice' => 'interní', 'doc_notice' => null,
+            'corrective' => 0, 'corrected_doc' => null, 'corrected_doc_number' => null, 'corrected_doc_date' => null, 'correction_reason' => null,
             'docState' => 40, 'docStateMain' => 4, 'doc_state_changed_at' => null,
             'accounting_state' => 1, 'accounting_messages' => null,
             // joins
@@ -291,7 +292,11 @@ class DocumentExporterTest extends TestCase
         $this->assertArrayNotHasKey('account', $row);
 
         $this->assertSame([['vatCode' => 'highEU', 'vatPct' => 21.0, 'base' => 1500.0, 'tax' => 315.0, 'total' => 1815.0]], $c['vatRecap']);
-        $this->assertSame(['totalBase' => 1500.0, 'totalVat' => 315.0, 'totalAmount' => 1815.0, 'totalRounding' => 0.0], $c['totals'], '0.0 is a value, not empty — kept');
+        $this->assertSame(
+            ['totalBase' => 1500.0, 'totalVat' => 315.0, 'totalAmount' => 1815.0, 'totalRounding' => 0.0, 'totalRoundingAuto' => false],
+            $c['totals'],
+            '0.0 and false are values, not empty — kept',
+        );
 
         $this->assertSame([
             'targetDocState'       => 40,
@@ -317,6 +322,61 @@ class DocumentExporterTest extends TestCase
 
         $this->assertSame('closing', $exporter->exportDocument($this->headRow(['fiscal_period_type' => 'closing']))->data['fiscalPeriodType']);
         $this->assertArrayNotHasKey('fiscalPeriodType', $exporter->exportDocument($this->headRow())->data, 'běžný doklad: null se ořeže');
+    }
+
+    /**
+     * Opravný daňový doklad (#92 D10, task B U5): blok `correction` jen
+     * u dokladu s příznakem — číslo, datum plnění a důvod ze sloupců; odkaz
+     * se nevyváží (po seedu ho obnoví dohledání podle čísla).
+     */
+    public function testCorrectionBlockExportedOnlyForCorrectiveDocument(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+
+        $this->assertArrayNotHasKey('correction', $exporter->exportDocument($this->headRow())->data, 'běžný doklad blok nenese');
+
+        $c = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'invno', 'corrective' => 1, 'corrected_doc' => 77,
+            'corrected_doc_number' => 'FV26-00123', 'corrected_doc_date' => new \DateTimeImmutable('2026-03-15'),
+            'correction_reason' => 'Sleva za vadu',
+        ]))->data;
+        $this->assertSame(
+            ['originalDocNumber' => 'FV26-00123', 'originalTaxPointDate' => '2026-03-15', 'reason' => 'Sleva za vadu'],
+            $c['correction'],
+        );
+        $this->assertSame('invoiceIssued', $c['docType']);
+
+        $schema = new SchemaValidator(SchemaLoader::default());
+        $this->assertSame([], $schema->validate($c, 'shpd.docs.document', '1'), 'blok odpovídá schématu');
+    }
+
+    /** Import ze starého Shipardu nese jen příznak — blok se samými null nesmí prune odstranit (U1). */
+    public function testCorrectionBlockWithOnlyFlagSurvivesPrune(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+
+        $c = $exporter->exportDocument($this->headRow(['doc_type' => 'invno', 'corrective' => 1]))->data;
+        $this->assertSame(['originalDocNumber' => null, 'originalTaxPointDate' => null, 'reason' => null], $c['correction']);
+
+        $schema = new SchemaValidator(SchemaLoader::default());
+        $this->assertSame([], $schema->validate($c, 'shpd.docs.document', '1'));
+    }
+
+    /** #73 D8: automatika musí přežít dump → seed — deklarovaná částka by ji bez příznaku vypnula. */
+    public function testTotalRoundingAutoRoundTrips(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+
+        $this->assertTrue($exporter->exportDocument($this->headRow(['total_rounding_auto' => 1]))->data['totals']['totalRoundingAuto']);
+        $this->assertFalse($exporter->exportDocument($this->headRow())->data['totals']['totalRoundingAuto']);
+
+        $row = $this->headRow();
+        unset($row['total_rounding_auto']);
+        $this->assertArrayNotHasKey(
+            'totalRoundingAuto',
+            $exporter->exportDocument($row)->data['totals'],
+            'zdroj dat před ds-upgrade: bez sloupce se klíč ořeže',
+        );
     }
 
     public function testManualControlStatementModeIsExported(): void
@@ -565,8 +625,10 @@ class DocumentExporterTest extends TestCase
                 $this->assertStringContainsString('[h.docState] <> 90', $sql);
                 $this->assertStringContainsString('[cd.code] AS [cash_desk_code]', $sql, 'kód pokladny jde z číselníku (#59 D12)');
                 $this->assertStringContainsString('LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]', $sql);
+                // Opravné doklady až za běžnými doklady téhož typu (#92 task B
+                // U5) — odkaz se po seedu obnovuje podle čísla původního dokladu.
                 $this->assertStringContainsString(
-                    'ORDER BY [h.doc_type], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]',
+                    'ORDER BY [h.doc_type], [h.corrective], [ns.doc_number_code], [h.sequence_number], [h.doc_number], [h.issue_date], [h.id]',
                     $sql,
                 );
                 return [];
