@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 441 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 406.
+Celkem 442 tasků: **naplánováno** 9 · **částečně** 26 · **zrušeno** 1 · **hotovo** 406.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -31,6 +31,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `design-system-date-format.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D73) |
 | `design-system-report-account-label.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D68) |
 | `design-system-tone-colors.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72) |
+| `mail-card-band-special-place.md` | naplánováno | rozhodnutí D17, D18 potvrzená 2026-11-11 (#89, doplněk tasku A) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `vat-reverse-charge-subjects.md` | naplánováno | rozhodnutí D6–D16 potvrzená 2026-11-11 (#89, task B) |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -42,7 +43,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
-| `exchange-received-foreign-vat.md` | částečně | commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11 se schválenými snímky deníku); zbývá ověření na dev zdroji (body 1–6) a výsledek do #89 (task A) |
+| `exchange-received-foreign-vat.md` | částečně | commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11); ověřeno na dev zdroji 2026-11-11 datovou sadou plátce (body 1, 5, 6; `dataset-verify` 6× `ok`), body 2–4 jen testy; zbývá ruční proklik náhledu (body 2–4); navazuje `mail-card-band-special-place.md` (D17, D18) |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
@@ -289,6 +290,7 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
 | `exchange-received-non-vat-payer.md` | Přijatý doklad u neplátce DPH — Bez DPH s daní dodavatele v cenách řádků, plátcovství k datu, ceny s daní z ISDOC (#97) |
 | `exchange-received-foreign-vat.md` | Přijatý doklad se zahraniční DPH nebo zvláštním místem plnění — vznikne Bez DPH s daní dodavatele v cenách řádků, ruční Bez DPH mimo tuzemsko platí (#89 D1–D5) |
+| `mail-card-band-special-place.md` | Karta návrhu se zvláštním místem plnění jde do kontroly (strop pásma), varování applieru v odpovědi `mail_draft_document` (#89 D17, D18) |
 | `exchange-format-persons-phase1.md` | Výměnný formát osob (`shpd.persons.person.v1`) |
 | `exchange-format-items-phase1.md` | Výměnný formát položek (`shpd.items.item.v1`) |
 | `docs-import-number-mode.md` | Import-mód čísla dokladu + fix validace bank. spojení |

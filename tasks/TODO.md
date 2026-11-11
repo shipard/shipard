@@ -154,3 +154,30 @@ nebo varianta podle `selfParty`.
 
 **Priorita:** nízká — z došlé pošty chodí jen přijaté doklady; vystavené
 přes náhled jdou jen z importu / API.
+
+---
+
+## Návrh se zahraniční DPH: kód z historie řádků ruší doklad Bez DPH
+
+**Zjištěno:** 11/2026 při ověření `exchange-received-foreign-vat.md` (#89, task A).
+
+Doklad od dodavatele mimo tuzemsko, který účtuje vlastní DPH, vzniká
+z návrhu Bez DPH (#89 D2). Neplatí to, když některý řádek dostane kód
+DPH z historie řádků (`RowHistoryEnricher`) a kontrola souladu ho nechá
+projít: `DocumentApplier::outOfScopeKind()` u ponechaného kódu
+(`matchedBy: "input"`) vrací `null` a doklad zůstane se samovyměřením,
+i když na něm dodavatel daň účtuje. Kontrola souladu
+(`VatCodeDerivation::conflict()`) kód samovyměření odmítne jen při
+`vat.reverseCharge: false`; při `null` (typicky ISDOC od dodavatele z EU,
+`tasks/einvoice-reader-reverse-charge.md`) ho nezpochybní.
+
+Chování je stejné jako před #89 (dřív by takový doklad prošel se
+samovyměřením také); případ je úzký — dodavatel, od kterého dřív přišel
+doklad se samovyměřením, pošle fakturu s vlastní DPH a bez příznaku
+přenesení.
+
+**Směr řešení:** v `conflict()` brát kladnou sazbu řádku u místa mimo
+tuzemsko a kódu samovyměření jako rozpor i při `reverseCharge: null`,
+nebo aspoň warning v náhledu.
+
+**Priorita:** nízká.

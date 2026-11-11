@@ -1,6 +1,6 @@
 # Task: Přijatý doklad se zahraniční DPH a zvláštním místem plnění — doklad Bez DPH
 
-**Stav:** částečně — commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11 se schválenými snímky deníku); zbývá ověření na dev zdroji (body 1–6) a výsledek do #89 (task A)
+**Stav:** částečně — commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11); ověřeno na dev zdroji 2026-11-11 datovou sadou plátce (body 1, 5, 6; `dataset-verify` 6× `ok`), body 2–4 jen testy; zbývá ruční proklik náhledu (body 2–4); navazuje `mail-card-band-special-place.md` (D17, D18)
 
 **Issue:** #89 (task A; task B je `vat-reverse-charge-subjects.md`)
 
@@ -125,6 +125,8 @@ Upřesnění při implementaci (2026-11-11):
   věrnosti `ApplyFidelityCheck::EXCEPTIONS_OUT_OF_SCOPE` čtené z návrhu.
   Sady mají 22 / 18 / 18 zpráv; dřívější běhy evaluací neodpovídají
   aktuální sadě.
+- **Snímky deníku** s variantou 11 (přírůstek jen na 512100 a 321100
+  o součet obou dokladů) schválené člověkem 2026-11-11.
 - **Jednoklik a MCP:** varování apply neblokuje, doklad vznikne jako
   koncept. Karta feedu ani odpověď `mail_draft_document` varování nenesou
   — je vidět jen v náhledu. Pásmo karty (`capBand`) applier nepouští,
@@ -263,4 +265,8 @@ Na volném zdroji dat (třída `free`) s registrací DPH a s analyzovanou pošto
 - [x] `docs/exchange-format.md` a help aktualizované; `help-index.py`
       a `tasks-index.py` prošly.
 - [x] Varianta korpusu se zahraniční DPH (nebo zapsaný důvod, proč ne).
-- [ ] Ověření na dev zdroji (body 1–6) a výsledek do #89.
+- [ ] Ověření na dev zdroji (body 1–6) a výsledek do #89 — body 1, 5, 6
+      ověřené 2026-11-11 datovou sadou plátce (dva doklady varianty 11:
+      Bez DPH, řádky v cenách s daní = částka k úhradě, bez rekapitulace,
+      512100 / 321100, nic na 343), výsledek v #89; zbývá ruční proklik
+      náhledu (body 2–4).
