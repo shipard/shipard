@@ -271,7 +271,10 @@ Zdroj pravdy: fiskální období (`economy_codebooks_fiscal_years` /
 
 ### 7.1 UI (D10)
 
-- Navigace: podsekce **Reporty** v sekci Účtárna.
+- Navigace: podsekce **Reporty** v každé sekci, která má reporty (Účtárna,
+  Majetek). Id skupiny nese sekci — `reports:accounting`, `reports:assets` —,
+  protože id uzlu musí být ve stromu navigace jedinečné: sidebar podle něj
+  drží rozbalení skupin (#133).
 - Jedna generická stránka `ReportViewer` parametrizovaná `reportId`.
 - **Parametry v URL** — deep-link „výsledovka 2026/5 v tisících" jde poslat
   kolegovi.
@@ -445,8 +448,8 @@ Body, kde implementace zpřesnila návrh (tvar §3.1 platí beze změn):
   jen renderer.
 - **Navigace z deklarace (duch D7)**: report deklarace nese volitelné
   `navSection` + `navOrder`; `NavigationController::collectReportItems()`
-  z nich staví skupinu `{id: 'reports', label: Reporty/Reports, children}`
-  v cílové sekci. Child = `{id: 'report:<reportId>', type: 'panel',
+  z nich staví skupinu `{id: 'reports:<navSection>', label: Reporty/Reports,
+  children}` v cílové sekci (id per sekce, viz §7.1). Child = `{id: 'report:<reportId>', type: 'panel',
   panelId: 'reports', panelParams: {reportId}, icon: 'chart'}` — jedna
   generická komponenta `ReportsPage` parametrizovaná přes `panelParams`.
   Panel `reports` v module.jsonc je bez `navSection` (do navigace vstupují

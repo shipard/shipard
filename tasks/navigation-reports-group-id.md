@@ -1,6 +1,6 @@
 # Navigace — skupina Reporty s id podle sekce
 
-**Stav:** naplánováno — 2026-11-11 (#133 Další nesoulady)
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady)
 
 ## Kontext / Cíl
 
@@ -79,10 +79,21 @@ Je-li oprava malá, smí být v jednom commitu.
 
 ## Hotovo když
 
-- [ ] Skupiny Reporty mají id podle sekce a rozbalují se nezávisle
-- [ ] Test jedinečnosti id skupin ve stromu navigace
-- [ ] Classic a wild beze změny
-- [ ] Dokumentace, `**Stav:**` aktualizovaný, index tasků přegenerovaný
+- [x] Skupiny Reporty mají id podle sekce a rozbalují se nezávisle
+- [x] Test jedinečnosti id skupin ve stromu navigace
+- [x] Classic a wild beze změny
+- [x] Dokumentace, `**Stav:**` aktualizovaný, index tasků přegenerovaný
+
+## Výsledek (2026-11-11)
+
+- Změna jen v `NavigationController::collectReportItems()` — id skupiny
+  `reports:<sekce>`; frontend beze změny. Classic a wild fungovaly i dřív,
+  protože `NavFlyoutStrip` / `NavTabStrip` dostávají vždy jen děti jedné
+  sekce.
+- Popisek skupiny zůstal dvojjazyčným zápisem v PHP — katalog textů
+  navigace neexistuje (mimo rozsah).
+- Ověřeno v Chromiu na volném zdroji dat `zey0-g`: sidebar (klikání, deep
+  link na report v obou sekcích), classic a wild.
 
 ## Pasti
 

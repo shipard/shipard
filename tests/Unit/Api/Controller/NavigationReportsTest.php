@@ -16,8 +16,9 @@ use Shipard\Core\Utils\JsoncParser;
 
 /**
  * Skupina Reporty v hlavní navigaci (Fáze 3, docs/reports.md D10) — report
- * deklarace s navSection se seskupí do `{id: 'reports', children: [...]}`
- * v cílové sekci; child je panel leaf s panelParams.reportId. Reálné moduly
+ * deklarace s navSection se seskupí do `{id: 'reports:<sekce>', children:
+ * [...]}` v cílové sekci; child je panel leaf s panelParams.reportId. Id
+ * skupiny nese sekci, protože reporty žijí ve víc sekcích. Reálné moduly
  * z modules/, cfgItem mockovaný (vzor NavigationControllerTest).
  */
 class NavigationReportsTest extends TestCase
@@ -87,14 +88,14 @@ class NavigationReportsTest extends TestCase
         return $resp->getPayload()['data'];
     }
 
-    private function reportsGroup(array $tree): ?array
+    private function reportsGroup(array $tree, string $section = 'accounting'): ?array
     {
         foreach ($tree as $node) {
-            if (($node['id'] ?? null) !== 'accounting') {
+            if (($node['id'] ?? null) !== $section) {
                 continue;
             }
             foreach ($node['children'] as $child) {
-                if (($child['id'] ?? null) === 'reports') {
+                if (($child['id'] ?? null) === 'reports:' . $section) {
                     return $child;
                 }
             }
@@ -177,9 +178,43 @@ class NavigationReportsTest extends TestCase
             }
             $ids = array_column($node['children'], 'id');
             // navOrder 60 řadí skupinu za deník (10) a účtový rozvrh (20).
-            $this->assertSame('reports', end($ids));
+            $this->assertSame('reports:accounting', end($ids));
             return;
         }
         $this->fail('accounting section not found');
+    }
+
+    public function testEachSectionHasItsOwnReportsGroup(): void
+    {
+        // Reporty žijí ve dvou sekcích — skupiny se stejným id by ve
+        // frontendu sdílely stav rozbalení (#133).
+        $tree       = $this->tree();
+        $accounting = $this->reportsGroup($tree, 'accounting');
+        $assets     = $this->reportsGroup($tree, 'assets');
+
+        $this->assertNotNull($accounting, 'accounting section must contain its reports group');
+        $this->assertNotNull($assets, 'assets section must contain its reports group');
+        $this->assertSame('reports:accounting', $accounting['id']);
+        $this->assertSame('reports:assets', $assets['id']);
+        $this->assertSame('Reporty', $assets['label']);
+
+        // Reporty majetku v pořadí dle navOrder (50–54), jen ve své sekci.
+        $this->assertSame(
+            [
+                'report:economy.assets.depreciationSchedule',
+                'report:economy.assets.movements',
+                'report:economy.assets.taxDepreciationReturn',
+                'report:economy.assets.journalCheck',
+                'report:economy.assets.register',
+            ],
+            array_column($assets['children'], 'id'),
+        );
+        $this->assertSame(
+            [],
+            array_intersect(
+                array_column($accounting['children'], 'id'),
+                array_column($assets['children'], 'id'),
+            ),
+        );
     }
 }

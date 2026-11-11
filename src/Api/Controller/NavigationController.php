@@ -469,7 +469,7 @@ class NavigationController
 
     /**
      * Skupina Reporty per sekce z report deklarací (`reports` v module.jsonc,
-     * viz docs/reports.md D7/D10). Child = leaf `{type: 'panel', panelId:
+     * viz docs/reports.md D7/D10), id `reports:<sekce>`. Child = leaf `{type: 'panel', panelId:
      * 'reports', panelParams: {reportId}}` — jednu generickou stránku
      * parametrizuje id reportu. Reporty bez `navSection` do navigace
      * nevstupují. Loader se volá jen když má některý modul deklarace;
@@ -524,10 +524,11 @@ class NavigationController
                     'icon'        => 'chart',
                 ];
             }
-            // Id skupiny je stabilní 'reports' — v praxi žijí reporty v jedné
-            // sekci (accounting); víc sekcí by chtělo id per sekce.
+            // Id skupiny nese sekci (`reports:accounting`, `reports:assets`) —
+            // reporty žijí ve víc sekcích a id uzlu musí být ve stromu
+            // jedinečné: frontend podle něj drží rozbalení skupin.
             $items[] = [
-                'id'       => 'reports',
+                'id'       => 'reports:' . $section,
                 'label'    => $language === 'cs' ? 'Reporty' : 'Reports',
                 'children' => $children,
                 '_section' => (string) $section,

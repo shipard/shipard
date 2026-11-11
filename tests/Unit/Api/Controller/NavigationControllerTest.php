@@ -354,6 +354,32 @@ class NavigationControllerTest extends TestCase
         $this->assertSame('base.persons', $basic['children'][0]['viewerId']);
     }
 
+    public function testGroupIdsUniqueAcrossTree(): void
+    {
+        // Frontend drží rozbalení skupin podle id uzlu — dvě skupiny se
+        // stejným id by se rozbalovaly spolu (#133, skupina Reporty ve
+        // dvou sekcích).
+        $ids = $this->allGroupIds($this->tree(['install.base']));
+
+        $this->assertNotSame([], $ids);
+        $duplicates = array_keys(array_filter(array_count_values($ids), fn(int $count) => $count > 1));
+        $this->assertSame([], $duplicates, 'group ids must be unique across the navigation tree');
+    }
+
+    /** Rekurzivně sesbírá id všech skupin (uzlů s `children`). @return string[] */
+    private function allGroupIds(array $tree): array
+    {
+        $ids = [];
+        foreach ($tree as $n) {
+            if (!array_key_exists('children', $n)) {
+                continue;
+            }
+            $ids[] = (string) $n['id'];
+            $ids   = array_merge($ids, $this->allGroupIds($n['children']));
+        }
+        return $ids;
+    }
+
     // --- navigation providers (dynamické datové položky) ---
 
     public function testProviderItemsMergedIntoSection(): void
