@@ -41,8 +41,8 @@ ve `variables.css` platí dál. Chyba nebo varování u jednoho pole, položky
 nebo řádku není hláška — zůstává textem u prvku a tón nese jen barvou
 textu (`--shpd-color-danger`, `--shpd-color-warning`).
 
-Výjimky jsou vyjmenované níže v pojmenovaných konstantách, každá s důvodem:
-dočasná `ReportView` a vývojářský dashboard s vlastním vzhledem.
+Jediná výjimka je vyjmenovaná níže v pojmenované konstantě i s důvodem:
+vývojářský dashboard s vlastním vzhledem.
 
 Použití:
     python3 scripts/check-css-tokens.py
@@ -92,12 +92,6 @@ ALERT_OWNERS = frozenset({
     "frontend/src/components/ui/PageBanner.svelte",
 })
 
-# Dočasná výjimka — do vyřešení bodu reportů v #133 (D61): štítek a barevné
-# řádky reportu. Po vyřešení řádek smazat, ne přidávat další.
-ALERT_TEMPORARY_EXCEPTIONS = frozenset({
-    "frontend/src/components/reports/ReportView.svelte",
-})
-
 # Vývojářský dashboard má vlastní vzhled mimo design systém aplikace
 # (#133 D12) — `Notice` aplikace nepoužívá, hlášky si kreslí v `dev.css`.
 ALERT_EXEMPT_DIRS = (
@@ -118,7 +112,7 @@ def scannable(path: Path) -> bool:
 
 def alert_family_allowed(rel: str) -> bool:
     """Smí soubor (cesta od kořene repozitáře) použít `--shpd-color-alert-*`?"""
-    if rel in ALERT_OWNERS or rel in ALERT_TEMPORARY_EXCEPTIONS:
+    if rel in ALERT_OWNERS:
         return True
     return rel.startswith(ALERT_EXEMPT_DIRS)
 
