@@ -4530,6 +4530,20 @@ class DocumentApplier
         return $name === false ? null : $name;
     }
 
+    /** docs_core_heads.vat_place → canonical `vat.place` (opravný doklad, #92 task B). */
+    public static function canonicalVatPlace(int $vatPlace): ?string
+    {
+        $name = array_search($vatPlace, self::VAT_PLACE_MAP, true);
+        return $name === false ? null : $name;
+    }
+
+    /** docs_core_heads.vat_calc_source → canonical `vat.calcSource`. */
+    public static function canonicalVatCalcSource(int $calcSource): ?string
+    {
+        $name = array_search($calcSource, self::VAT_CALC_SOURCE_MAP, true);
+        return $name === false ? null : $name;
+    }
+
     /**
      * Kanonický kód → interní hodnota pro importy, které nesou kódy
      * dokladového formátu mimo doklad (fakturační předpis zakázky, #110).

@@ -539,6 +539,15 @@ class Router
 			return new Route('workOrders', $workOrderActions[$subpath]);
 		}
 
+		// POST /_docs/corrective {docId} — Vystavit opravný doklad k potvrzené
+		// faktuře (#92 D6, tasks/corrective-doc-exchange.md U8)
+		if ($subpath === '/_docs/corrective') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('docs', 'corrective');
+		}
+
 		if ($subpath === '/_mcp') {
 			if ($method !== 'POST') {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);

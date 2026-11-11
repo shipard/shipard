@@ -1910,7 +1910,7 @@ target = opakovaný apply vrátí existující entitu, nevzniká duplicita.
 
 | Sloupec | Typ | Význam |
 |---------|-----|--------|
-| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
+| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `workOrder` (periodická fakturace) / `correctiveDoc` (opravný doklad z akce Vystavit opravný doklad, #92 D6) / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
 | `source_message` | `int nullable` ref `core_mail_incoming_messages`, index `idx_source_message` | Zdrojová zpráva došlé pošty; plní server-side injection `source.message` při apply návrhu. |
 | `source_extracted_at` | `datetime nullable` | Časový bod extrakce / importu. |
 
