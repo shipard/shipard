@@ -65,6 +65,8 @@
   // Číslo mají i mezisoučty (prefix třídy, skupiny, syntetiky), hierarchii
   // tak nese délka čísla a tučné mezisoučty — název se v účtovém reportu
   // neodsazuje. Report bez účtů odsazuje název podle `level` jako dřív.
+  // Popisek sloupce určuje definice reportu (`result.accountLabel`, D68 —
+  // „Řádek“ u Přiznání k DPH, „Oddíl“ u Kontrolního hlášení), jinak „Účet“.
   const hasAccount = $derived(rows.some((row) => row.account != null && row.account !== ''));
 
   function fmt(value) {
@@ -123,7 +125,7 @@
           <thead>
             <tr>
               {#if hasAccount}
-                <th class="shpd-report__th shpd-report__th--account" rowspan={hasSides ? 2 : 1}>{t('reports.column.account')}</th>
+                <th class="shpd-report__th shpd-report__th--account" rowspan={hasSides ? 2 : 1}>{result?.accountLabel ?? t('reports.column.account')}</th>
               {/if}
               <th class="shpd-report__th shpd-report__th--label" rowspan={hasSides ? 2 : 1}></th>
               {#each columns as column (column.id)}

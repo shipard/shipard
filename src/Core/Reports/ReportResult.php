@@ -24,6 +24,10 @@ final class ReportResult
      * @param ReportMessage[] $messages
      * @param ReportColumn[] $columns
      * @param ReportRow[] $rows
+     * @param ?string $accountLabel Popisek sloupce s číslem řádku (pole
+     *        `account`), když v něm report nenese číslo účtu (#133 D68).
+     *        Builder ho nezadává — doplňuje ho `ReportRunner` z definice
+     *        reportu přes `withAccountLabel()`. Null = výchozí „Účet“.
      */
     public function __construct(
         public readonly string $reportId,
@@ -33,15 +37,36 @@ final class ReportResult
         public readonly array $columns,
         public readonly array $rows,
         ?\DateTimeImmutable $generatedAt = null,
+        public readonly ?string $accountLabel = null,
     ) {
         $this->status      = ReportStatus::fromMessages($messages);
         $this->generatedAt = $generatedAt ?? new \DateTimeImmutable();
     }
 
-    /** @return array<string, mixed> */
+    /** Kopie výsledku s popiskem sloupce s číslem; čas vytvoření zůstává. */
+    public function withAccountLabel(?string $accountLabel): self
+    {
+        return new self(
+            reportId: $this->reportId,
+            params: $this->params,
+            dataSource: $this->dataSource,
+            messages: $this->messages,
+            columns: $this->columns,
+            rows: $this->rows,
+            generatedAt: $this->generatedAt,
+            accountLabel: $accountLabel,
+        );
+    }
+
+    /**
+     * `accountLabel` je ve výstupu jen když je vyplněný — tvar účtových
+     * reportů (REST, MCP, `report-diff`) se nemění.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
-        return [
+        $out = [
             'reportId'    => $this->reportId,
             'params'      => $this->params,
             'generatedAt' => $this->generatedAt->format(\DateTimeInterface::ATOM),
@@ -49,7 +74,12 @@ final class ReportResult
             'status'      => $this->status->value,
             'messages'    => array_map(static fn (ReportMessage $m): array => $m->toArray(), $this->messages),
             'columns'     => array_map(static fn (ReportColumn $c): array => $c->toArray(), $this->columns),
-            'rows'        => array_map(static fn (ReportRow $r): array => $r->toArray(), $this->rows),
         ];
+        if ($this->accountLabel !== null) {
+            $out['accountLabel'] = $this->accountLabel;
+        }
+        $out['rows'] = array_map(static fn (ReportRow $r): array => $r->toArray(), $this->rows);
+
+        return $out;
     }
 }

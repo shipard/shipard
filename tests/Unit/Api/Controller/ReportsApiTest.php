@@ -218,6 +218,63 @@ class ReportsApiTest extends TestCase
         );
     }
 
+    // ── Popisek sloupce s číslem (#133 D68) ─────────────────────────────────
+
+    public function testRunAddsAccountLabelFromDefinition(): void
+    {
+        $controller = $this->makeVatPeriodControllerWithFakeReport('Oddíl');
+
+        $data = $controller->run('test.vatFake', ['period' => '12'])->getPayload()['data'];
+
+        // Builder o popisku neví — doplňuje ho ReportRunner z definice.
+        $this->assertSame('Oddíl', $data['accountLabel']);
+        $this->assertSame(
+            ['reportId', 'params', 'generatedAt', 'dataSource', 'status', 'messages', 'columns', 'accountLabel', 'rows'],
+            array_keys($data),
+        );
+    }
+
+    public function testRunWithoutAccountColumnKeepsResultShape(): void
+    {
+        $controller = $this->makeVatPeriodControllerWithFakeReport();
+
+        $data = $controller->run('test.vatFake', ['period' => '12'])->getPayload()['data'];
+
+        $this->assertArrayNotHasKey('accountLabel', $data);
+    }
+
+    public function testVatDeclarationsCarryLocalizedAccountColumn(): void
+    {
+        // Reálná deklarace modulu: Přiznání nese v `account` číslo řádku,
+        // Kontrolní hlášení kód oddílu, Souhrnné hlášení nic.
+        $declarations = JsoncParser::parseFile(
+            dirname(__DIR__, 4) . '/modules/economy/vat/config/reports.jsonc',
+        );
+        $expected = [
+            'cs' => ['Řádek', 'Oddíl'],
+            'en' => ['Line', 'Section'],
+            // Jazyk bez varianty padá na `en`.
+            'de' => ['Line', 'Section'],
+        ];
+
+        foreach ($expected as $language => [$returnLabel, $controlLabel]) {
+            $labels = [];
+            foreach ($declarations as $raw) {
+                $definition = ReportDefinition::fromArray(
+                    ConfigLocalizer::localize($raw, $language),
+                    'economy.vat',
+                );
+                $labels[$definition->id] = $definition->accountLabel;
+            }
+
+            $this->assertSame([
+                'economy.vat.returnLive'                  => $returnLabel,
+                'economy.vat.controlStatementLive'        => $controlLabel,
+                'economy.vat.recapitulativeStatementLive' => null,
+            ], $labels, "jazyk {$language}");
+        }
+    }
+
     public function testRunVatPeriodReportRejectsWrongType(): void
     {
         $controller = $this->makeVatPeriodControllerWithFakeReport();
@@ -330,7 +387,7 @@ class ReportsApiTest extends TestCase
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
-    private function makeVatPeriodControllerWithFakeReport(): ReportsController
+    private function makeVatPeriodControllerWithFakeReport(?string $accountLabel = null): ReportsController
     {
         $registry = new ReportRegistry();
         $registry->add(new ReportDefinition(
@@ -342,6 +399,7 @@ class ReportsApiTest extends TestCase
             moduleId: 'test.module',
             periodSource: 'vatPeriod',
             vatReportType: 'cs',
+            accountLabel: $accountLabel,
         ));
         $vatPeriods = $this->makeVatPeriods();
         return new ReportsController(

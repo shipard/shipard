@@ -62,7 +62,7 @@ final class ReportRunner
             );
         }
 
-        return $builder->build(new ReportRequest(
+        $result = $builder->build(new ReportRequest(
             reportId: $reportId,
             range: $validated['range'],
             params: $validated['params'],
@@ -73,5 +73,10 @@ final class ReportRunner
             vatRange: $validated['vatRange'],
             country: $this->country,
         ));
+
+        // Popisek sloupce s číslem je věc definice (#133 D68) — builder o něm neví.
+        return $definition->accountLabel !== null
+            ? $result->withAccountLabel($definition->accountLabel)
+            : $result;
     }
 }

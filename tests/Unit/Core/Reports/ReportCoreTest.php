@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Core\Reports;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Reports\FiscalPeriodProvider;
 use Shipard\Core\Reports\ReportColumn;
@@ -533,5 +534,85 @@ class ReportCoreTest extends TestCase
         ReportDefinition::fromArray($this->declaration([
             'id' => 'format', 'type' => 'enum', 'options' => ['a'], 'default' => 'a',
         ]), 'test.module');
+    }
+
+    // ── Popisek sloupce s číslem (#133 D68) ─────────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function plainDeclaration(): array
+    {
+        return [
+            'id'                  => 'test.report',
+            'name'                => 'Test report',
+            'builder'             => 'TestBuilder',
+            'periodGranularities' => ['year'],
+        ];
+    }
+
+    public function testDefinitionReadsAccountColumnName(): void
+    {
+        // Vstup je už lokalizovaný — `name` nese jazyk požadavku.
+        $definition = ReportDefinition::fromArray(
+            $this->plainDeclaration() + ['accountColumn' => ['name' => 'Řádek']],
+            'test.module',
+        );
+
+        $this->assertSame('Řádek', $definition->accountLabel);
+    }
+
+    public function testDefinitionWithoutAccountColumnHasNoLabel(): void
+    {
+        $definition = ReportDefinition::fromArray($this->plainDeclaration(), 'test.module');
+
+        $this->assertNull($definition->accountLabel);
+    }
+
+    /** @return array<string, array{0: mixed}> */
+    public static function invalidAccountColumns(): array
+    {
+        return [
+            'řetězec místo objektu' => ['Řádek'],
+            'null'                  => [null],
+            'objekt bez name'       => [['label' => 'Řádek']],
+            'prázdné name'          => [['name' => '']],
+            'name není řetězec'     => [['name' => 5]],
+        ];
+    }
+
+    #[DataProvider('invalidAccountColumns')]
+    public function testDefinitionRejectsInvalidAccountColumn(mixed $accountColumn): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Report 'test.report': 'accountColumn' must be an object with a non-empty 'name'");
+        ReportDefinition::fromArray(
+            $this->plainDeclaration() + ['accountColumn' => $accountColumn],
+            'test.module',
+        );
+    }
+
+    public function testResultEmitsAccountLabelOnlyWhenSet(): void
+    {
+        $generatedAt = new \DateTimeImmutable('2026-08-21T12:00:00+02:00');
+        $plain = new ReportResult('economy.vat.returnLive', [], 'ds', [], [], [], $generatedAt);
+
+        $this->assertNull($plain->accountLabel);
+        $this->assertArrayNotHasKey('accountLabel', $plain->toArray());
+
+        $labeled = $plain->withAccountLabel('Řádek');
+
+        $this->assertSame('Řádek', $labeled->accountLabel);
+        $this->assertSame(
+            ['reportId', 'params', 'generatedAt', 'dataSource', 'status', 'messages', 'columns', 'accountLabel', 'rows'],
+            array_keys($labeled->toArray()),
+        );
+        $this->assertSame('Řádek', $labeled->toArray()['accountLabel']);
+        // Kopie se liší jen popiskem — čas vytvoření zůstává.
+        $this->assertSame($generatedAt, $labeled->generatedAt);
+        $this->assertSame(
+            $plain->toArray(),
+            array_diff_key($labeled->toArray(), ['accountLabel' => true]),
+        );
+        // Původní výsledek se nemění.
+        $this->assertNull($plain->accountLabel);
     }
 }

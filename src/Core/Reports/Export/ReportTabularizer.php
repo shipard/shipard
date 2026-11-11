@@ -15,8 +15,8 @@ use Shipard\Core\Reports\ReportStatus;
  * `ReportResult` → `ReportTable` (docs/reports.md §15). Čistá funkce bez
  * DB — jediné místo s pravidly převodu, XLSX i CSV writer jen zapisují.
  *
- * Sloupce: [Účet, je-li u některého řádku `account`] + Název + sloupce
- * reportu; money `display: balance` = jedna číselná buňka (zůstatek),
+ * Sloupce: [Účet, je-li u některého řádku `account` — popisek přepisuje
+ * `accountLabel` výsledku, D68] + Název + sloupce reportu; money `display: balance` = jedna číselná buňka (zůstatek),
  * `display: sides` = trojice „{label} — MD / D / Zůstatek". Čísla vždy
  * přesně (přepínač „v tisících" je věc zobrazení v UI) a nula jako číslo,
  * prázdná buňka jen tam, kde hodnota v řádku chybí.
@@ -34,7 +34,10 @@ final class ReportTabularizer
             }
         }
 
-        $headers = $hasAccount ? [$labels->get('account'), $labels->get('label')] : [$labels->get('label')];
+        // Popisek sloupce s číslem určuje definice reportu, výchozí „Účet“ (#133 D68).
+        $headers = $hasAccount
+            ? [$result->accountLabel ?? $labels->get('account'), $labels->get('label')]
+            : [$labels->get('label')];
         $hasMoney = false;
         foreach ($result->columns as $column) {
             if ($column->type !== ReportColumn::TYPE_MONEY) {

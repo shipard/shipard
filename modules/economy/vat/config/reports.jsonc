@@ -3,6 +3,11 @@
 // instance daňového tvrzení (periodSource vatPeriod, parametr `period`),
 // vatReportType určuje typ instance a sloupec hlavičky pro výběr dokladů.
 // Žádné per-report parametry.
+//
+// `accountColumn` = popisek sloupce s číslem řádku na obrazovce i v exportu
+// (#133 D68). Pole `account` tu nenese číslo účtu, ale číslo řádku přiznání
+// a kód oddílu kontrolního hlášení — výchozí „Účet“ by nad nimi lhal.
+// Souhrnné hlášení `account` neplní, sloupec nemá.
 [
     {
         "id": "economy.vat.returnLive",
@@ -14,6 +19,7 @@
         "builder": "Shipard\\Module\\Economy\\Vat\\Reports\\VatReturnLiveBuilder",
         "periodSource": "vatPeriod",
         "vatReportType": "return",
+        "accountColumn": {"name": "Line", "name:cs": "Řádek", "name:en": "Line"},
         "params": []
     },
     {
@@ -26,6 +32,7 @@
         "builder": "Shipard\\Module\\Economy\\Vat\\Reports\\VatControlStatementLiveBuilder",
         "periodSource": "vatPeriod",
         "vatReportType": "cs",
+        "accountColumn": {"name": "Section", "name:cs": "Oddíl", "name:en": "Section"},
         "params": []
     },
     {

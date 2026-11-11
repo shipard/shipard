@@ -40,6 +40,10 @@ final class ReportDefinition
      *        nebo 'vatPeriod' (instance daňového tvrzení — parametr `period`).
      * @param ?string $vatReportType Typ instance tvrzení (`return`|`cs`|`rs`),
      *        povinný právě u `periodSource: 'vatPeriod'` (D11).
+     * @param ?string $accountLabel Popisek sloupce s číslem řádku (pole
+     *        `account`) z `accountColumn.name` — pro reporty, které v něm
+     *        nenesou číslo účtu (řádek přiznání, oddíl hlášení; #133 D68).
+     *        Null = výchozí „Účet“ prezentace.
      */
     public function __construct(
         public readonly string $id,
@@ -52,6 +56,7 @@ final class ReportDefinition
         public readonly int $navOrder = 1000,
         public readonly string $periodSource = 'fiscal',
         public readonly ?string $vatReportType = null,
+        public readonly ?string $accountLabel = null,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -175,6 +180,17 @@ final class ReportDefinition
             throw new \InvalidArgumentException("Report '{$id}': 'navOrder' must be an integer");
         }
 
+        $accountLabel = null;
+        if (array_key_exists('accountColumn', $data)) {
+            $accountColumn = $data['accountColumn'];
+            $accountLabel  = is_array($accountColumn) ? ($accountColumn['name'] ?? null) : null;
+            if (!is_string($accountLabel) || $accountLabel === '') {
+                throw new \InvalidArgumentException(
+                    "Report '{$id}': 'accountColumn' must be an object with a non-empty 'name'",
+                );
+            }
+        }
+
         return new self(
             id: $id,
             name: $name,
@@ -186,6 +202,7 @@ final class ReportDefinition
             navOrder: $navOrder,
             periodSource: $periodSource,
             vatReportType: $vatReportType,
+            accountLabel: $accountLabel,
         );
     }
 }

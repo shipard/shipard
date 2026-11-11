@@ -54,6 +54,47 @@ class ReportTabularizerTest extends TestCase
         $this->assertSame(['Řádek 1', 10.0], $table->rows[0]->cells);
     }
 
+    public function testAccountHeaderComesFromResultLabel(): void
+    {
+        // Popisek z definice reportu (#133 D68) — Přiznání k DPH nese v
+        // `account` číslo řádku, ne účet.
+        $result = (new ReportResult(
+            reportId: 'test.vat',
+            params: [],
+            dataSource: 'abcd-efgh-ijkl-mnop',
+            messages: [],
+            columns: [new ReportColumn('base', ReportColumn::TYPE_MONEY, 'Základ')],
+            rows: [new ReportRow(ReportRowKind::Detail, 0, '40', 'Z přijatých plnění', [
+                'base' => ['md' => 0.0, 'd' => 0.0, 'balance' => 10.0],
+            ])],
+        ))->withAccountLabel('Řádek');
+
+        $table = (new ReportTabularizer())->tabularize($result, ReportExportFixtures::context());
+
+        $this->assertSame(['Řádek', 'Název', 'Základ'], $table->headers);
+        $this->assertSame(1, $table->labelColumn);
+        $this->assertSame(['40', 'Z přijatých plnění', 10.0], $table->rows[0]->cells);
+    }
+
+    public function testAccountLabelDoesNotAddColumnWithoutAccounts(): void
+    {
+        // Pravidlo „sloupec jen když některý řádek má account“ se nemění.
+        $result = (new ReportResult(
+            reportId: 'test.vat',
+            params: [],
+            dataSource: 'abcd-efgh-ijkl-mnop',
+            messages: [],
+            columns: [new ReportColumn('base', ReportColumn::TYPE_MONEY, 'Základ')],
+            rows: [new ReportRow(ReportRowKind::Detail, 1, null, 'Řádek 1', [
+                'base' => ['md' => 0.0, 'd' => 0.0, 'balance' => 10.0],
+            ])],
+        ))->withAccountLabel('Řádek');
+
+        $table = (new ReportTabularizer())->tabularize($result, ReportExportFixtures::context());
+
+        $this->assertSame(['Název', 'Základ'], $table->headers);
+    }
+
     // ── Řádky a buňky ───────────────────────────────────────────────────────
 
     public function testCellsCarryTypedValues(): void

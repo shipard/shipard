@@ -16,7 +16,10 @@ final class ReportRow
 {
     /**
      * @param ?string $account Číslo účtu (u error řádků chybová maska,
-     *                         u total/computed null).
+     *                         u total/computed null). DPH reporty v něm
+     *                         nesou číslo řádku přiznání a kód oddílu
+     *                         hlášení — popisek sloupce pak určuje
+     *                         `accountColumn` definice reportu (#133 D68).
      * @param array<string, array{md: float, d: float, balance: float}|string> $values
      * @param ?string $key Stabilní identita řádku, který není účet (např.
      *                     `asset:68`, `event:412`) — klíč párování v
