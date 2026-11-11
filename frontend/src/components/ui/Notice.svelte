@@ -1,11 +1,12 @@
 <script>
-  // Hláška v obsahu (#137 D40): jedna sdílená komponenta pro chybu
-  // přihlášení, bannery formuláře (chyba, validace, varování), zámek
-  // dokladu, hlášení náhledu tisku, pojistku pošty v dialogu i blok
-  // `notice` v detailu záznamu. Tóny `info` / `success` / `warning` /
+  // Hláška v obsahu (#137 D40): jedna sdílená komponenta pro výsledek akce
+  // a stav formuláře, dialogu nebo panelu — kde všude stojí a kdy je to
+  // místo ní chyba u prvku, říká docs/design-system.md §8 Hlášky a pruhy
+  // (D60, D61). Tóny `info` / `success` / `warning` /
   // `danger` berou barvy jen z rodiny `--shpd-color-alert-*` (pozadí, text,
   // rámeček 1 px v barvě tónu; `success` jsou aliasy na zelené, `danger`
-  // mapuje na `alert-error-*`), zaoblení md, odsazení sm / md, písmo body.
+  // mapuje na `alert-error-*`; rodinu smí použít jen tahle komponenta
+  // a `PageBanner`), zaoblení md, odsazení sm / md, písmo body.
   // Bez levého pruhu a bez vnějšího okraje — mezeru dává rodič (obal,
   // nebo mezera flex sloupce). Není to karta (§8 D35) ani pruh nad
   // obsahem (`PageBanner`, D41).

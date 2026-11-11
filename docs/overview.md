@@ -256,7 +256,8 @@ pole katalogu — hlídá `OverviewTextsCatalogTest` (společný základ
   (`formatMoney` z `utils/formatNumber.js` — sdílené s pruhem Připraveno
   na Dashboardu), `asOf`, `dueDate` (zvýrazněný ≤ 7 dní před termínem
   a po něm), stav `stale` / `missing` jako badge, poznámka; zprávy sekce
-  jako pruhy podle severity. Prokliky jako v `ReportsPage`:
+  jako hlášky `Notice` s tónem podle severity, odkaz uvnitř
+  (`docs/design-system.md` §8 Hlášky a pruhy, #133 D61). Prokliky jako v `ReportsPage`:
   `open_detail` → `ViewerDetailModal`, `open_viewer` →
   `navigateToViewer(viewerId, recordId, viewGroup, filters)`,
   `open_report` → `navigateToReport(reportId, params)`.

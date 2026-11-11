@@ -191,6 +191,8 @@ lifecycle (Active / Snoozed / Resolved / Dismissed). Stejná struktura tokenů
 
 Mapování stringu `severity` (z `core.alerts.severities.style`) na CSS třídy:
 `shpd-alert--severity-{style}`. Tokeny: `--shpd-color-alert-{info|warning|error}-{bar|bg|text}`.
+Rodinu smí v komponentách použít jen `Notice` a `PageBanner` (§8 Hlášky
+a pruhy, D61).
 
 Proč ne sdílet s `--shpd-color-state-*`? Alerty nemají stavy v doc-state
 smyslu — `severity` je horizontální (závažnost), zatímco `alert_state`
@@ -442,7 +444,8 @@ obrazovka sama jako `children`.
 
 ### Hlášky a pruhy
 
-Rozhodnutí D40 a D41 (task 3 #137) z #133. Hláška v obsahu je sdílená
+Rozhodnutí D40 a D41 (task 3 #137), D60 a D61
+(`tasks/design-system-notices.md`) z #133. Hláška v obsahu je sdílená
 `Notice.svelte`, pruh nad obsahem `PageBanner.svelte` (obě `components/ui/`).
 
 - **Hláška** (D40, `Notice`): tóny `info` / `success` / `warning` /
@@ -476,15 +479,55 @@ Rozhodnutí D40 a D41 (task 3 #137) z #133. Hláška v obsahu je sdílená
   je obsah s vlastním nadpisem a akcemi; toast (`GlobalToast`) je pomíjivé
   potvrzení akce. Rámeček 1 px v barvě tónu má jen hláška — karta má
   rámeček `--shpd-color-border`, nebo tón jen v barvě rámečku.
+- **Hláška, nebo chyba u prvku** (D61): chyba nebo varování, které patří
+  k **jednomu poli, položce seznamu nebo řádku**, zůstává textem u prvku —
+  tón nese jen barva textu (`--shpd-color-danger`, `--shpd-color-warning`),
+  bez pozadí a rámečku. **Výsledek akce a stav celého formuláře, dialogu
+  nebo panelu** je `Notice`.
+  - Chyba u prvku: chyby inputů (`ui/*Input`, `Select`, `TextArea`),
+    chyba karty v kontrole front (`QueueCategoriesPrompt`), varování
+    u jednotlivého majetku v řádku dialogu odpisů, chyba nahrání obrázku
+    (`ImageSlotField`, `AvatarSlotField`), chyba pole v předvyplnění
+    registrace DPH a v průvodci nastavení, chyba adresy v dialogu Odeslat,
+    chyba hledání u pole (`LookupInput`, rozhodnutí v review). Jejich
+    sjednocení mezi sebou je případný další bod.
+  - Hláška: uložení Nastavení, změna hesla, limit souborů a chyba nahrání
+    pošty, chyba založení zdroje dat, chyba chatu (nad polem zprávy, mimo
+    rolovací oblast zpráv), varování průvodce nastavení (jedna hláška se
+    seznamem), blokace zaúčtování odpisů (jedna hláška se seznamem), chyba
+    odeslání.
+  - Ani jedno: varování na kartě a řádku feedu je součást karty, text
+    potvrzovacího dialogu je tělo dialogu.
+
+  Rodina `--shpd-color-alert-*` **je** vzhled hlášky — použít ji
+  (`var(…)`) smí jen `Notice` a `PageBanner`. Kdo ji potřebuje jinde,
+  kopíruje `Notice`. Hlídá `scripts/check-css-tokens.py` v pre-commitu;
+  výjimky má vyjmenované: dočasně `ReportView` (štítek a barevné řádky
+  reportu, do vyřešení bodu reportů v #133) a vývojářský dashboard
+  s vlastním vzhledem (D12).
+- **Chyba načtení místo obsahu** (D60): když chyba **nahrazuje obsah**
+  (seznam, detail, modal, stránka), je to `Notice` v tónu `danger` nahoře
+  v oblasti, kde by obsah byl — ne vycentrovaný červený text ve volné
+  ploše. Odsazení od krajů dává obal oblasti (`--shpd-space-md`, nemá-li
+  oblast vlastní — modal `flush`, prohlížeč tabulek). „Zkusit znovu“,
+  pokud ho místo má, je `Button` `secondary` `sm` uvnitř hlášky pod textem
+  (Přehled firmy, portál, katalog reportů). Chyba při obnovení, kdy stará
+  data zůstávají na obrazovce, obsah nenahrazuje a sem nepatří.
 - **Pravidlo:** nová hláška = `Notice`, nový pruh = `PageBanner`, ne
   vlastní třída s kopií pozadí a rámečku. Dnes na `Notice` stojí chyba
   a potvrzení přihlášení, chyby OP přihlášení a nastavení hesla, relace
   účtu, bannery formuláře (chyba načtení, validace, varování), chyba
   sub-tabulky, chyby reportů, hlášení náhledu tisku, zámek dokladu,
-  pojistka pošty v dialogu Odeslat a blok `notice` v detailu (§12).
-  Zbylé vlastní hlášky (zpráva stránky Nastavení a změny hesla, chyby
-  nahrání pošty a nového zdroje dat, varování průvodce zdroje dat, zprávy
-  Přehledu firmy, nálezy náhledu importu) jsou kandidáti na převod.
+  pojistka pošty, nálezy návrhu a chyba odeslání v dialogu Odeslat, blok
+  `notice` v detailu (§12), nálezy review dokladu, výsledek uložení
+  Nastavení a změny hesla, hlášky nahrání pošty, nového zdroje dat
+  a chatu, varování průvodce nastavení, příznak odeslání přílohy,
+  transport odeslané zprávy, dialog odpisů, chyby akcí v Nastavení
+  (registrace DPH, bankovní účet, štítky obsahu, nabídka položek, průvodce
+  registru), chyby načtení podle D60 a **zprávy sekcí Přehledu firmy** —
+  každá zpráva vlastní hláška s tónem podle závažnosti (`info` / `warning`
+  / `error` → `danger`), odkaz *Otevřít* uvnitř vpravo od textu, při
+  nedostatku místa pod ním; seznam zpráv zůstává `<ul>`.
 
 ### Modální dialogy
 
@@ -1402,7 +1445,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 |---|---|
 | `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny (v rem, D46) |
 | `scripts/check-css-units.py` | Kontrola jednotek v pre-commitu (§10): px v mezerách, zaoblení, písmu a **rozměrech** (`width`, `height`, `min-*`, `max-*`, `flex`), rozměrové propy komponent, layout tokeny; breakpointy (§8) |
-| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu) |
+| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; výjimky v pojmenovaných konstantách (dočasně `ReportView`, vývojářský dashboard) |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
