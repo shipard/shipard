@@ -81,7 +81,7 @@ class VatCodeDerivationTest extends TestCase
         ?string $tagSupply = null,
     ): void {
         $result = $this->derivation()->derive('cz', $date, $place, $reverseCharge, $pct, $supplyKind, $reverseChargeCode, $tagSupply);
-        $this->assertSame(['code' => $expected, 'reason' => null], $result);
+        $this->assertSame(['code' => $expected, 'reason' => null, 'kind' => null], $result);
     }
 
     public function testCountryIsCaseInsensitive(): void
@@ -132,6 +132,13 @@ class VatCodeDerivationTest extends TestCase
         $this->assertNull($result['code']);
         $this->assertIsString($result['reason']);
         $this->assertStringContainsString($reasonFragment, $result['reason']);
+        // #89: druh důvodu jen u zahraniční DPH a zvláštního místa plnění —
+        // applier podle něj rozlišuje, texty neporovnává.
+        $this->assertSame(match ($reasonFragment) {
+            'zahraniční DPH'      => VatCodeDerivation::FAIL_FOREIGN_VAT,
+            'zvláštním pravidlem' => VatCodeDerivation::FAIL_SPECIAL_PLACE,
+            default               => null,
+        }, $result['kind']);
     }
 
     public function testUnknownCountryReturnsReason(): void

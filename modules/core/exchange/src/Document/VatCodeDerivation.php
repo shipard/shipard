@@ -30,9 +30,12 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *     `reduced2` platily jen 2015–2023.
  *
  * Výsledek je kód jen tehdy, když zbyde právě jeden kandidát; jinak `null`
- * s důvodem pro zprávu issue. Snížená sazba u samovyměření, zahraniční
- * DPH naúčtovaná dodavatelem a smíšené doklady jsou mimo rozsah (D7) —
- * derivace u nich vrací `null`, applier hlásí `vat_code_unknown`.
+ * s důvodem pro zprávu issue. Snížená sazba u samovyměření a smíšené
+ * doklady jsou mimo rozsah (D7) — derivace u nich vrací `null`, applier
+ * hlásí `vat_code_unknown`. Zahraniční DPH naúčtovaná dodavatelem a zvláštní
+ * místo plnění vracejí `null` s druhem důvodu (`kind`); o tom, že takový
+ * doklad vznikne celý Bez DPH (#89 D2, D3), rozhoduje applier nad celým
+ * dokladem, ne derivace řádku.
  *
  * Dvě pojistky proti tichému chybnému samovyměření
  * (tasks/exchange-received-supply-kind.md D3/D4), obě jen mimo tuzemsko:
@@ -43,8 +46,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *   - **zvláštní místo plnění** — štítek řádku s `crossBorderSupply:
  *     "special"` (ubytování, doprava osob, stravování, nemovitost, mýto,
  *     parkování; `core.exchange.contentTags`) veto přes `$tagSupply`,
- *     i s druhem plnění z AI a i s `reverseCharge: true`. Chyba je lepší
- *     než samovyměření tam, kde se daň v ČR nepřiznává.
+ *     i s druhem plnění z AI a i s `reverseCharge: true` — samovyměření
+ *     se neodvozuje tam, kde se daň v ČR nepřiznává.
  *
  * Fallback chybějícího `supplyKind` ze štítku řádku (D2) dělá applier —
  * derivace dostane už efektivní druh; taxonomii nečte.
@@ -77,6 +80,16 @@ final class VatCodeDerivation
     public const TAG_SUPPLY_SPECIAL = 'special';
     public const TAG_SUPPLY_VALUES = [self::TAG_SUPPLY_GOODS, self::TAG_SUPPLY_SERVICES, self::TAG_SUPPLY_SPECIAL];
 
+    /**
+     * Druh důvodu, proč derivace kód nevrátila (`kind` výsledku) — jen u
+     * dvou případů, se kterými applier dál pracuje (#89): dodavatel mimo
+     * tuzemsko účtuje vlastní daň, a zvláštní místo plnění ze štítku
+     * řádku. Ostatní selhání druh nemají (`null`). Text `reason` je pro
+     * zprávu issue — neporovnávat.
+     */
+    public const FAIL_FOREIGN_VAT = 'foreignVat';
+    public const FAIL_SPECIAL_PLACE = 'specialPlace';
+
     public function __construct(
         private readonly VatRateResolver $vat,
     ) {}
@@ -91,7 +104,8 @@ final class VatCodeDerivation
      *                                       `rows[].vat.supplyKind`, nebo fallback ze štítku (D2).
      * @param string|null $reverseChargeCode `rows[].vat.reverseChargeCode` (tuzemské PDP).
      * @param string|null $tagSupply         `crossBorderSupply` štítku řádku (`special` = veto D4).
-     * @return array{code: ?string, reason: ?string}
+     * @return array{code: ?string, reason: ?string, kind: ?string}
+     *         kind = FAIL_FOREIGN_VAT | FAIL_SPECIAL_PLACE u selhání, jinak null.
      */
     public function derive(
         string $country,
@@ -131,6 +145,7 @@ final class VatCodeDerivation
         if ($cfgPlace !== 'domestic' && $reverseCharge !== true && $pct !== null && abs($pct) > 0.001) {
             return self::fail(
                 'dodavatel mimo tuzemsko účtuje DPH (zahraniční DPH) — to není přenesení daňové povinnosti',
+                self::FAIL_FOREIGN_VAT,
             );
         }
 
@@ -147,6 +162,7 @@ final class VatCodeDerivation
                 return self::fail(
                     'místo plnění se řídí zvláštním pravidlem (ubytování, doprava osob, stravování,'
                     . ' nemovitost, mýto, parkování) — samovyměření se neodvozuje',
+                    self::FAIL_SPECIAL_PLACE,
                 );
             }
             if ($supplyKind === null || trim($supplyKind) === '') {
@@ -307,7 +323,7 @@ final class VatCodeDerivation
      * sazba k datu odpovídá sazbě řádku (±0,001).
      *
      * @param array<string, array<string, mixed>> $candidates
-     * @return array{code: ?string, reason: ?string}
+     * @return array{code: ?string, reason: ?string, kind: ?string}
      */
     private function deriveDomestic(string $country, string $date, array $candidates, ?float $pct): array
     {
@@ -333,12 +349,12 @@ final class VatCodeDerivation
 
     /**
      * @param array<string, array<string, mixed>> $candidates
-     * @return array{code: ?string, reason: ?string}
+     * @return array{code: ?string, reason: ?string, kind: ?string}
      */
     private static function pick(array $candidates, string $what): array
     {
         if (count($candidates) === 1) {
-            return ['code' => (string) array_key_first($candidates), 'reason' => null];
+            return ['code' => (string) array_key_first($candidates), 'reason' => null, 'kind' => null];
         }
         if ($candidates === []) {
             return self::fail("pro {$what} není v číselníku žádný kód");
@@ -346,10 +362,10 @@ final class VatCodeDerivation
         return self::fail("pro {$what} je v číselníku víc kódů: " . implode(', ', array_keys($candidates)));
     }
 
-    /** @return array{code: null, reason: string} */
-    private static function fail(string $reason): array
+    /** @return array{code: null, reason: string, kind: ?string} */
+    private static function fail(string $reason, ?string $kind = null): array
     {
-        return ['code' => null, 'reason' => $reason];
+        return ['code' => null, 'reason' => $reason, 'kind' => $kind];
     }
 
     private static function placeLabel(string $cfgPlace): string

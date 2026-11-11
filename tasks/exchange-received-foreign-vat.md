@@ -1,6 +1,6 @@
 # Task: Přijatý doklad se zahraniční DPH a zvláštním místem plnění — doklad Bez DPH
 
-**Stav:** naplánováno — rozhodnutí D1–D5 potvrzená 2026-11-11 (#89, task A)
+**Stav:** částečně — commit 1/3 hotový 2026-11-11 (D1–D3: doklad se zahraniční DPH / zvláštním místem plnění vznikne Bez DPH); zbývá D4 + náhled + help (2/3) a korpus (3/3) (#89, task A)
 
 **Issue:** #89 (task A; task B je `vat-reverse-charge-subjects.md`)
 
@@ -101,6 +101,19 @@ plnění, tedy po pinu místa) a nese se v kontextu, např.
 | cokoli jiného | není mimo DPH — chování jako dnes |
 
 Tuzemské místo plnění, neplátce, vystavený doklad a import se nemění.
+
+Upřesnění při implementaci (2026-11-11):
+
+- **Ponechaný kód ruší režim mimo DPH.** Řádek s platným kódem z canonicalu
+  nebo z historie řádků, který je v souladu se signály, dnes projde se
+  samovyměřením (veto `special` se kódu z historie netýká) — takový doklad
+  zůstává, jak byl. Režim mimo DPH nahrazuje jen dřívější chybu.
+- **`specialPlace` platí i s `vat.reverseCharge: true`** (tabulka výše
+  podmínku nemá; veto štítku jde před příznak už dnes).
+- **Blok `vatCode` řádku** u dokladu mimo DPH: `{status: "matched",
+  matchedBy: "outOfScope"}` bez kódu — náhled na něm drží volbu kódu.
+- **`vat_registration`** doklad mimo DPH nese (naše registrace) — formulář
+  ji při přepnutí na *Bez DPH* jen skrývá, nemaže.
 
 ### Co skončí na dokladu
 

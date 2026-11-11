@@ -3401,7 +3401,11 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(0, $this->invokeTransform($applier, $payload)['vat_mode']);
     }
 
-    /** Zahraniční DPH naúčtovaná dodavatelem z EU není samovyměření (D7 otevřené) — bez tichého cz-217. */
+    /**
+     * Zahraniční DPH naúčtovaná dodavatelem z EU není samovyměření — bez
+     * tichého cz-217. Doklad vznikne Bez DPH (#89 D2; podrobně
+     * DocumentApplierOutOfScopeTest), dřív končil chybou `vat_code_unknown`.
+     */
     public function testReceivedForeignVatChargedBySupplierIsNotSelfAssessed(): void
     {
         $payload = $this->euServicesPayload();
@@ -3409,9 +3413,13 @@ class DocumentApplierTest extends TestCase
         $payload['rows'][0]['vat']['pct'] = 19;
         $result = $this->buildVatDerivingApplier()->preview($payload);
 
-        $issue = $this->issueByCode($result, 'vat_code_unknown');
-        $this->assertNotNull($issue);
-        $this->assertStringContainsString('zahraniční DPH', $issue['message']);
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame('outOfScope', $resolve['vat']['mode']['source']);
+        $this->assertSame('foreignVat', $resolve['vat']['mode']['reason']);
+        $this->assertArrayNotHasKey('createPayload', $resolve['rows'][0]['vatCode']);
+        $codes = $this->issueCodes($result);
+        $this->assertContains('vat_foreign_tax', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
     }
 
     /** Explicitní declared (import ze starého Shipardu) s oddaňovacím párem zůstává převzatá. */
@@ -4526,18 +4534,25 @@ class DocumentApplierTest extends TestCase
         $this->assertNotContains('vat_code_unknown', $codes);
     }
 
-    /** D4: štítek se zvláštním místem plnění vetuje samovyměření i proti druhu z AI. */
+    /**
+     * D4: štítek se zvláštním místem plnění vetuje samovyměření i proti
+     * druhu z AI. Doklad, kde ho nesou všechny řádky, vznikne Bez DPH
+     * s varováním (#89 D3; podrobně DocumentApplierOutOfScopeTest), dřív
+     * končil chybou `vat_code_unknown`.
+     */
     public function testReceivedSpecialTagVetoesReverseChargeDespiteAiSupplyKind(): void
     {
         $payload = $this->thirdCountrySoftwarePayload(tag: 'travel.accommodation');
         $payload['rows'][0]['vat']['supplyKind'] = 'services';
         $result = $this->buildVatDerivingApplier()->preview($payload);
 
-        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
-        $issue = $this->issueByCode($result, 'vat_code_unknown');
-        $this->assertNotNull($issue);
-        $this->assertStringContainsString('zvláštním pravidlem', $issue['message']);
-        $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame('specialPlace', $resolve['vat']['mode']['reason']);
+        $this->assertArrayNotHasKey('createPayload', $resolve['rows'][0]['vatCode'], 'žádné cz-417');
+        $codes = $this->issueCodes($result);
+        $this->assertContains('vat_special_place', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertNotContains('supply_kind_derived', $codes);
     }
 
     /** Tuzemský doklad: štítek special ani fallback nic nemění. */
