@@ -343,6 +343,19 @@ v pod-sekci *Dropdown / popover komponenty*.
 - Detail má volitelnou hlavičku (title + subtitle + badges) — vykreslí se
   jen pokud backend pošle `detail.title` (kontrakt §5, rozvržení a písmo
   §12 Detail záznamu)
+- **Řetěz výšky** (#133): obsahová oblast `.shpd-content` je rolovací
+  kontejner. Obsah, který roluje po částech, má kořen `height: 100%;
+  overflow: hidden` a pod ním už jen flex (`flex: 1; min-height: 0`) —
+  seznam a detail rolují každý zvlášť, `.shpd-content` sama neroluje.
+  **Stránka chatu** (`ChatView`) používá stejný řetěz: seznam konverzací
+  a vlákno rolují každé zvlášť, pole zprávy drží dole.
+- **Vedle kořene s `height: 100%` nesmí v `.shpd-content` ležet nic
+  dalšího** — obsah by byl o výšku toho prvku vyšší než oblast, spodek
+  uříznutý a celá stránka by rolovala. Proto pruhy nad obsahem leží nad
+  rolovací oblastí, ne v ní (*Hlášky a pruhy* níže). Totéž o úroveň níž:
+  `height: 100%` uvnitř flex sloupce s dalším prvkem (lišta, hlavička
+  panelu) dá víc než 100 % — patří tam `flex: 1; min-height: 0`
+  (`ChatThread` v `ChatView`, `ChatPanel` i `SectionAssistant`).
 
 ### Karty
 
@@ -452,7 +465,11 @@ Rozhodnutí D40 a D41 (task 3 #137) z #133. Hláška v obsahu je sdílená
   `alert-<tón>-bar`, body strong, na střed; bez zaoblení a bez okraje.
   Tón `warning` výchozí, `info` / `danger` pro budoucí pruhy. Dnes: jen ke
   čtení, kopie reálných dat, cron vypnutý, pojistka pošty — texty a logika
-  zůstávají v jejich komponentách, vzhled má jedno místo.
+  zůstávají v jejich komponentách, vzhled má jedno místo. Pruhy kreslí
+  `ContentArea` v kontejneru `.shpd-content__banners` **nad** rolovací
+  oblastí `.shpd-content` (sourozenec ve flex sloupci shellu, ne
+  `position: sticky` uvnitř) — jsou stále vidět a obsahu neubírají
+  výšku naslepo (#133, řetěz výšky u *Viewer* výše).
 - **Hláška, pruh, karta, nebo toast**: hláška patří k místu, kde vznikla
   (formulář, dialog, tab detailu), a trvá, dokud trvá důvod; pruh je stav
   celého zdroje dat nad obsahem; karta s tónem (`FailureCard`, Karty výše)

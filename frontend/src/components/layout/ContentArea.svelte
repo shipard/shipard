@@ -36,27 +36,38 @@
   const PanelComponent = $derived(
     activeItem?.type === 'panel' ? (panelComponents[activeItem.panelId] ?? null) : null
   );
+
+  // Pruh pojistky pošty jen u položek odchozí pošty; jestli se podle režimu
+  // pojistky opravdu vykreslí, rozhoduje MailSafetyNotice (jinak zůstane
+  // kontejner pruhů prázdný, bez výšky).
+  const mailSafetyBanner = $derived(isOutboundMailItem(activeItem));
+  const hasBanners = $derived(
+    appInfoStore.readOnly || appInfoStore.realCopy || appInfoStore.cronDisabled || mailSafetyBanner
+  );
 </script>
 
+<!-- Pruhy leží NAD rolovací oblastí, ne v ní (#133): obsah s `height: 100%`
+     (viewer, chat, reporty) by jinak byl o výšku pruhů vyšší než
+     `.shpd-content` — spodek uříznutý a celá stránka rolovala pod pruhy.
+     Rodič je ve všech shellech flex sloupec; pruhy pod sebou (jen ke čtení →
+     kopie reálných dat → vypnutý cron → pojistka pošty). -->
+{#if hasBanners}
+  <div class="shpd-content__banners">
+    {#if appInfoStore.readOnly}
+      <ReadOnlyBanner />
+    {/if}
+    {#if appInfoStore.realCopy}
+      <RealCopyBanner />
+    {/if}
+    {#if appInfoStore.cronDisabled}
+      <CronOffBanner />
+    {/if}
+    {#if mailSafetyBanner}
+      <MailSafetyNotice banner />
+    {/if}
+  </div>
+{/if}
 <main class="shpd-content">
-  {#if appInfoStore.readOnly || appInfoStore.realCopy || appInfoStore.cronDisabled}
-    <!-- Jeden sticky kontejner: stavové pruhy pod sebou (jen ke čtení →
-         kopie reálných dat → vypnutý cron), žádný překryv. -->
-    <div class="shpd-content__banners">
-      {#if appInfoStore.readOnly}
-        <ReadOnlyBanner />
-      {/if}
-      {#if appInfoStore.realCopy}
-        <RealCopyBanner />
-      {/if}
-      {#if appInfoStore.cronDisabled}
-        <CronOffBanner />
-      {/if}
-    </div>
-  {/if}
-  {#if isOutboundMailItem(activeItem)}
-    <MailSafetyNotice banner />
-  {/if}
   {#if activeItem?.type === 'dashboard'}
     <Dashboard />
   {:else if activeItem?.type === 'chat'}
@@ -90,9 +101,7 @@
   }
 
   .shpd-content__banners {
-    position: sticky;
-    top: 0;
-    z-index: 5;
+    flex-shrink: 0;
   }
 
   .shpd-content__empty {

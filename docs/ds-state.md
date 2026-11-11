@@ -337,7 +337,7 @@ vyřazené úlohy vypíše. Podrobně [cli.md](cli.md) § `cron --slot`.
 | `shpd-server ds-cron` | přehled `ID \| Name \| Cron \| State` + souhrn počtu vypnutých |
 | `shpd-server doctor`, sekce Data source states | souhrn `cron off N`; per DS na **produkci** `⚠ … cron off — periodic jobs are not running (shpd-ds ds-state cron --on)`, jinde `· … cron off`; nezávisle na řádku o stavu, bez vlivu na exit kód; „All data sources active ✓" jen bez vypnutého cronu |
 | vývojářský dashboard `/_dev/` | sloupec Cron (`on` / zvýrazněné `off`), `GET /_dev/api/data-sources` nese `cron` a `state`; jen zobrazení |
-| aplikace | `GET /_app/info` → `cronEnabled` (jen boolean, endpoint je veřejný) → `appInfoStore.cronDisabled` → trvalý `CronOffBanner` v `ContentArea` pro všechny přihlášené; s `ReadOnlyBanner` sdílí sticky kontejner `.shpd-content__banners`, pruhy se skládají pod sebe |
+| aplikace | `GET /_app/info` → `cronEnabled` (jen boolean, endpoint je veřejný) → `appInfoStore.cronDisabled` → trvalý `CronOffBanner` v `ContentArea` pro všechny přihlášené; s `ReadOnlyBanner` sdílí kontejner `.shpd-content__banners` nad rolovací oblastí obsahu, pruhy se skládají pod sebe |
 
 **Ovládání.** `shpd-ds ds-state cron --on|--off` (per DS, z adresáře DS),
 `shpd-server ds-cron` (přehled; `--off --all`, `--on|--off <id>…` —

@@ -133,10 +133,4 @@
     display: flex;
     flex-direction: column;
   }
-
-  /* ChatThread má height: 100% — dej mu určenou výšku flex itemu. */
-  .shpd-chat-panel__body > :global(.shpd-thread) {
-    flex: 1;
-    min-height: 0;
-  }
 </style>

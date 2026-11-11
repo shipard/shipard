@@ -2,8 +2,9 @@
   // Pruh nad obsahem (#137 D41): jen ke čtení, kopie reálných dat, cron
   // vypnutý, pojistka pošty. Je to jiný prvek než hláška `Notice`: celá
   // šířka, linka 2 px dole, bez zaoblení a bez okraje — jedna komponenta
-  // místo dřívějších čtyř kopií CSS, vzhled beze změny. Sticky pozici drží
-  // kontejner `.shpd-content__banners` v ContentArea, ne pruh sám.
+  // místo dřívějších čtyř kopií CSS, vzhled beze změny. Místo drží
+  // kontejner `.shpd-content__banners` v ContentArea — leží nad rolovací
+  // oblastí `.shpd-content`, ne v ní (#133), pruh sám pozici neřeší.
   // `tone` `warning` (výchozí) | `info` | `danger` (tokeny `alert-error-*`)
   // pro budoucí pruhy; text dává volající (`children`), atributy
   // (`data-testid`) jdou na kořen, `role="status"` je výchozí.

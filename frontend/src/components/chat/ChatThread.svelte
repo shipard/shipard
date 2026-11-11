@@ -117,10 +117,14 @@
 </div>
 
 <style>
+  /* Rodič je vždy flex sloupec (ChatView, ChatPanel, SectionAssistant) —
+     vlákno zabere zbytek jeho výšky. Ne `height: 100%`: s dalším prvkem ve
+     sloupci (mobilní lišta, hlavička panelu) by to bylo víc než 100 %. */
   .shpd-thread {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
     background-color: var(--shpd-color-bg-secondary);
   }
