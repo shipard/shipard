@@ -24,6 +24,22 @@
             "name": "No further details.",
             "name:cs": "Záznam nemá žádné další údaje.",
             "name:en": "No further details."
-        }
+        },
+
+        // Řádek seznamu a štítek detailu: příznak vlastní firmy.
+        "own": { "name": "Own", "name:cs": "Vlastní", "name:en": "Own" },
+        // Řádek seznamu — identifikátory s hodnotou.
+        "rowCompanyId": { "name": "Company ID: {value}", "name:cs": "IČO: {value}", "name:en": "Company ID: {value}" },
+        "rowTaxId": { "name": "Tax ID: {value}", "name:cs": "DIČ: {value}", "name:en": "Tax ID: {value}" },
+        // Podtitul hlavičky detailu.
+        "headerCompanyId": { "name": "Company ID {value}", "name:cs": "IČO {value}", "name:en": "Company ID {value}" },
+        "headerTaxId": { "name": "Tax ID {value}", "name:cs": "DIČ {value}", "name:en": "Tax ID {value}" },
+        "headerBirthDate": { "name": "Date of birth {date}", "name:cs": "Datum narození {date}", "name:en": "Date of birth {date}" },
+        "headerPersonCode": { "name": "Person code {value}", "name:cs": "Kód osoby {value}", "name:en": "Person code {value}" },
+        // Skupiny Přehledu; `contact` i jako popisek kontaktu bez názvu,
+        // `address` jako popisek adresy bez názvu a typu.
+        "contact": { "name": "Contact", "name:cs": "Kontakt", "name:en": "Contact" },
+        "groupPersonal": { "name": "Personal data", "name:cs": "Osobní údaje", "name:en": "Personal data" },
+        "address": { "name": "Address", "name:cs": "Adresa", "name:en": "Address" }
     }
 }

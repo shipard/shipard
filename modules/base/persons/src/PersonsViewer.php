@@ -22,6 +22,8 @@ class PersonsViewer extends TableViewer
 	 */
 	private bool $showAllStates = false;
 
+	private const LABELS_CFG_ITEM = 'base.persons.viewerDetailLabels';
+
 	/** Maps stateStyle to a span class for the state badge in t2. */
 	private const STATE_SPAN_CLASS = [
 		'concept'   => 'warning',
@@ -108,13 +110,13 @@ class PersonsViewer extends TableViewer
 		// Line 2: badge "Vlastní" for is_own, then IČO/DIČ, plus state badge for non-default states
 		$t2 = [];
 		if (!empty($rowData['is_own'])) {
-			$t2[] = ['text' => 'Vlastní', 'class' => 'primary'];
+			$t2[] = ['text' => $this->text('own', 'Own'), 'class' => 'primary'];
 		}
 		if (!empty($rowData['company_id'])) {
-			$t2[] = ['text' => 'IČO: ' . $rowData['company_id']];
+			$t2[] = ['text' => $this->text('rowCompanyId', 'Company ID: {value}', ['value' => $rowData['company_id']])];
 		}
 		if (!empty($rowData['tax_id'])) {
-			$t2[] = ['text' => 'DIČ: ' . $rowData['tax_id']];
+			$t2[] = ['text' => $this->text('rowTaxId', 'Tax ID: {value}', ['value' => $rowData['tax_id']])];
 		}
 
 		$docState  = (int) ($rowData['docState'] ?? 10);
@@ -158,25 +160,25 @@ class PersonsViewer extends TableViewer
 		$subtitleParts = [];
 		if ($personType === 2) {
 			if (!empty($record['company_id'])) {
-				$subtitleParts[] = 'IČO ' . $record['company_id'];
+				$subtitleParts[] = $this->text('headerCompanyId', 'Company ID {value}', ['value' => $record['company_id']]);
 			}
 			if (!empty($record['tax_id'])) {
-				$subtitleParts[] = 'DIČ ' . $record['tax_id'];
+				$subtitleParts[] = $this->text('headerTaxId', 'Tax ID {value}', ['value' => $record['tax_id']]);
 			}
 		} else {
 			$birthDate = $this->formatDate($record['birth_date'] ?? null);
 			if ($birthDate !== null) {
-				$subtitleParts[] = 'Datum narození ' . $birthDate;
+				$subtitleParts[] = $this->text('headerBirthDate', 'Date of birth {date}', ['date' => $birthDate]);
 			}
 		}
 		if (!empty($record['person_id'])) {
-			$subtitleParts[] = 'Kód osoby ' . $record['person_id'];
+			$subtitleParts[] = $this->text('headerPersonCode', 'Person code {value}', ['value' => $record['person_id']]);
 		}
 
 		$fullName = trim((string) ($record['full_name'] ?? ''));
 
 		return new DetailHeader(
-			$fullName !== '' ? $fullName : '(bez názvu)',
+			$fullName !== '' ? $fullName : $this->sharedText('untitled', '(untitled)'),
 			$subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
 			$personType === 2 ? 'company' : 'user',
 		);
@@ -185,7 +187,7 @@ class PersonsViewer extends TableViewer
 	/** Příznak Vlastní za štítkem stavu. */
 	protected function detailBadges(array $record): array
 	{
-		return !empty($record['is_own']) ? [['label' => 'Vlastní', 'style' => 'primary']] : [];
+		return !empty($record['is_own']) ? [['label' => $this->text('own', 'Own'), 'style' => 'primary']] : [];
 	}
 
 	/**
@@ -243,30 +245,30 @@ class PersonsViewer extends TableViewer
 		// IČO, DIČ, kód osoby a datum narození jsou v hlavičce detailu —
 		// tady zůstávají méně časté identifikátory.
 		$identityItems = [];
-		$this->addItem($identityItems, 'DIČ pro DPH', $record['vat_id'] ?? null);
-		$this->addItem($identityItems, 'Zápis v obchodním rejstříku', $record['court_registration'] ?? null);
-		$this->addItem($identityItems, 'ID datové schránky', $record['gov_e_box_id'] ?? null);
+		$this->addItem($identityItems, $this->columnLabel('vat_id', 'VAT ID'), $record['vat_id'] ?? null);
+		$this->addItem($identityItems, $this->columnLabel('court_registration', 'Court registration'), $record['court_registration'] ?? null);
+		$this->addItem($identityItems, $this->columnLabel('gov_e_box_id', 'Government e-box ID'), $record['gov_e_box_id'] ?? null);
 
 		// Telefon čitelně podle země osoby (#118 D21) — uložený tvar je kanonický.
 		$country = $this->personContext()->country((int) ($record['id'] ?? 0));
 		$contactItems = [];
-		$this->addItem($contactItems, 'E-mail', $record['email'] ?? null);
-		$this->addItem($contactItems, 'Telefon', $this->readablePhone($record['phone'] ?? null, $country));
-		$this->addItem($contactItems, 'Web', $record['web'] ?? null);
+		$this->addItem($contactItems, $this->columnLabel('email', 'E-mail'), $record['email'] ?? null);
+		$this->addItem($contactItems, $this->columnLabel('phone', 'Phone'), $this->readablePhone($record['phone'] ?? null, $country));
+		$this->addItem($contactItems, $this->columnLabel('web', 'Website'), $record['web'] ?? null);
 
 		$personalItems = [];
-		$this->addItem($personalItems, 'Rodné číslo', $record['national_id'] ?? null);
-		$this->addItem($personalItems, 'Číslo osobního dokladu', $record['id_card_number'] ?? null);
+		$this->addItem($personalItems, $this->columnLabel('national_id', 'National ID number'), $record['national_id'] ?? null);
+		$this->addItem($personalItems, $this->columnLabel('id_card_number', 'ID card number'), $record['id_card_number'] ?? null);
 
 		$groups = [];
 		if ($identityItems !== []) {
-			$groups[] = ['title' => 'Identifikace', 'items' => $identityItems];
+			$groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identityItems];
 		}
 		if ($contactItems !== []) {
-			$groups[] = ['title' => 'Kontakt', 'items' => $contactItems];
+			$groups[] = ['title' => $this->text('contact', 'Contact'), 'items' => $contactItems];
 		}
 		if ($personalItems !== []) {
-			$groups[] = ['title' => 'Osobní údaje', 'items' => $personalItems];
+			$groups[] = ['title' => $this->text('groupPersonal', 'Personal data'), 'items' => $personalItems];
 		}
 		if ($groups !== []) {
 			$blocks[] = ['type' => 'properties', 'groups' => $groups];
@@ -278,7 +280,7 @@ class PersonsViewer extends TableViewer
 			$blocks[] = [
 				'type'   => 'properties',
 				'groups' => [[
-					'title' => $this->detailTabLabel('base.persons.viewerDetailLabels', 'contacts', 'Contacts'),
+					'title' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'contacts', 'Contacts'),
 					'items' => $contactRowItems,
 				]],
 			];
@@ -290,7 +292,7 @@ class PersonsViewer extends TableViewer
 			$blocks[] = [
 				'type'   => 'properties',
 				'groups' => [[
-					'title' => $this->detailTabLabel('base.persons.viewerDetailLabels', 'addresses', 'Addresses'),
+					'title' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'addresses', 'Addresses'),
 					'items' => $addressItems,
 				]],
 			];
@@ -299,7 +301,7 @@ class PersonsViewer extends TableViewer
 		if ($blocks === []) {
 			return [
 				'type' => 'empty',
-				'text' => $this->detailText('base.persons.viewerDetailLabels', 'noDetails', 'No further details.'),
+				'text' => $this->text('noDetails', 'No further details.'),
 			];
 		}
 		if (count($blocks) === 1) {
@@ -328,7 +330,7 @@ class PersonsViewer extends TableViewer
 		foreach ($contacts as $c) {
 			$label = trim((string) ($c['name'] ?? ''));
 			if ($label === '') {
-				$label = 'Kontakt';
+				$label = $this->text('contact', 'Contact');
 			}
 
 			$parts = [];
@@ -383,7 +385,7 @@ class PersonsViewer extends TableViewer
 			}
 			$label = trim((string) ($a['name'] ?? ''));
 			if ($label === '') {
-				$label = $typeLabels[(int) ($a['address_type'] ?? 0)] ?? 'Adresa';
+				$label = $typeLabels[(int) ($a['address_type'] ?? 0)] ?? $this->text('address', 'Address');
 			}
 			$items[] = ['label' => $label, 'value' => $value];
 		}
@@ -403,6 +405,16 @@ class PersonsViewer extends TableViewer
 		}
 		$dt = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $value);
 		return $dt instanceof \DateTimeImmutable ? $dt->format('d.m.Y') : null;
+	}
+
+	/**
+	 * Text vieweru z katalogu `base.persons.viewerDetailLabels` (sekce `texts`).
+	 *
+	 * @param array<string, scalar> $params
+	 */
+	private function text(string $key, string $englishFallback, array $params = []): string
+	{
+		return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
 	}
 
 	/** @param array<int, array{label: string, value: string}> $items */

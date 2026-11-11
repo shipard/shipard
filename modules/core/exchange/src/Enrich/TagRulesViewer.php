@@ -116,7 +116,7 @@ class TagRulesViewer extends TableViewer
 
         $rule = [];
         $this->addItem($rule, $isCs ? 'Štítek' : 'Tag', $this->cfgLabel('core.exchange.contentTags', (string) ($record['tag'] ?? '')));
-        $this->addItem($rule, 'IČO', $companyId);
+        $this->addItem($rule, $this->columnLabel('company_id', 'Company ID'), $companyId);
         $this->addItem($rule, $isCs ? 'Partner' : 'Partner', $partner['full_name'] ?? null);
         $this->addItem($rule, $isCs ? 'Původ' : 'Origin', $this->cfgLabel('core.exchange.tagRuleOrigins', (string) ($record['origin'] ?? '')));
 

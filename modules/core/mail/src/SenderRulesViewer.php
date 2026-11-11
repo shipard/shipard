@@ -9,6 +9,8 @@ use Shipard\Core\Viewer\TableViewer;
 
 class SenderRulesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -105,18 +107,18 @@ class SenderRulesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $rule = [];
-        $this->addItem($rule, 'Druh vzoru', $this->cfgLabel('core.mail.senderRulePatternKinds', (string) ($record['pattern_kind'] ?? '')));
-        $this->addItem($rule, 'Akce', $this->cfgLabel('core.mail.senderRuleDispositions', (string) ($record['disposition'] ?? '')));
-        $this->addItem($rule, 'Původ', $this->cfgLabel('core.mail.senderRuleOrigins', (string) ($record['origin'] ?? '')));
-        $this->addItem($rule, 'Poznámka', $record['notice'] ?? null);
+        $this->addItem($rule, $this->columnLabel('pattern_kind', 'Pattern kind'), $this->cfgLabel('core.mail.senderRulePatternKinds', (string) ($record['pattern_kind'] ?? '')));
+        $this->addItem($rule, $this->columnLabel('disposition', 'Disposition'), $this->cfgLabel('core.mail.senderRuleDispositions', (string) ($record['disposition'] ?? '')));
+        $this->addItem($rule, $this->columnLabel('origin', 'Origin'), $this->cfgLabel('core.mail.senderRuleOrigins', (string) ($record['origin'] ?? '')));
+        $this->addItem($rule, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $stats = [];
-        $this->addItem($stats, 'Počet zásahů', (string) (int) ($record['hit_count'] ?? 0));
-        $this->addItem($stats, 'Poslední zásah', $record['last_hit_at'] ?? null);
+        $this->addItem($stats, $this->columnLabel('hit_count', 'Hit count'), (string) (int) ($record['hit_count'] ?? 0));
+        $this->addItem($stats, $this->columnLabel('last_hit_at', 'Last hit'), $record['last_hit_at'] ?? null);
 
         $status = [];
-        $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($status, 'Změněno', $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
 
         return [[
             'id'      => 'overview',
@@ -124,9 +126,9 @@ class SenderRulesViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => 'Pravidlo', 'items' => $rule],
-                    ['title' => 'Statistiky', 'items' => $stats],
-                    ['title' => 'Stav', 'items' => $status],
+                    ['title' => $this->text('groupRule', 'Rule'), 'items' => $rule],
+                    ['title' => $this->text('groupStatistics', 'Statistics'), 'items' => $stats],
+                    ['title' => $this->text('status', 'Status'), 'items' => $status],
                 ],
             ],
         ]];
@@ -151,6 +153,16 @@ class SenderRulesViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
+    }
+
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

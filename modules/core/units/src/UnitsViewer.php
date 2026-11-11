@@ -11,6 +11,8 @@ class UnitsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private const LABELS_CFG_ITEM = 'core.units.viewerDetailLabels';
+
     private const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
         'confirmed' => 'primary',
@@ -86,7 +88,7 @@ class UnitsViewer extends TableViewer
             $t2[] = ['text' => $quantityLabel, 'class' => 'muted'];
         }
         if (!empty($rowData['is_base'])) {
-            $t2[] = ['text' => 'základní', 'class' => 'success'];
+            $t2[] = ['text' => $this->text('base', 'base'), 'class' => 'success'];
         }
         if ($docState !== 10) {
             $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
@@ -100,7 +102,7 @@ class UnitsViewer extends TableViewer
 
         $coefficient = $rowData['coefficient'] ?? null;
         if ($coefficient !== null && $coefficient !== '') {
-            $row['t3'] = 'Koef.: ' . $this->formatCoefficient((float) $coefficient);
+            $row['t3'] = $this->text('rowCoefficient', 'Coef.: {value}', ['value' => $this->formatCoefficient((float) $coefficient)]);
         } else {
             $row['t3'] = null;
         }
@@ -119,14 +121,14 @@ class UnitsViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $items = [];
-        $this->addItem($items, 'Veličina', $this->resolveQuantityLabel((string) ($record['quantity'] ?? '')));
+        $this->addItem($items, $this->columnLabel('quantity', 'Quantity'), $this->resolveQuantityLabel((string) ($record['quantity'] ?? '')));
         $coefficient = $record['coefficient'] ?? null;
         if ($coefficient !== null && $coefficient !== '') {
-            $this->addItem($items, 'Koeficient', $this->formatCoefficient((float) $coefficient));
+            $this->addItem($items, $this->columnLabel('coefficient', 'Coefficient'), $this->formatCoefficient((float) $coefficient));
         }
-        $this->addItem($items, 'Základní jednotka', !empty($record['is_base']) ? 'Ano' : 'Ne');
+        $this->addItem($items, $this->columnLabel('is_base', 'Base unit'), $this->yesNoText(!empty($record['is_base'])));
         if (!empty($record['system_code'])) {
-            $this->addItem($items, 'Systémový kód', (string) $record['system_code']);
+            $this->addItem($items, $this->columnLabel('system_code', 'System code'), (string) $record['system_code']);
         }
 
         return [[
@@ -134,7 +136,7 @@ class UnitsViewer extends TableViewer
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => 'Měrná jednotka', 'items' => $items]],
+                'groups' => [['title' => $this->text('unit', 'Unit of measure'), 'items' => $items]],
             ],
         ]];
     }
@@ -165,6 +167,16 @@ class UnitsViewer extends TableViewer
         // Show up to 4 decimals but trim trailing zeros for human-readable output.
         $formatted = rtrim(rtrim(number_format($value, 4, ',', ' '), '0'), ',');
         return $formatted !== '' ? $formatted : '0';
+    }
+
+    /**
+     * Text vieweru z katalogu `core.units.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

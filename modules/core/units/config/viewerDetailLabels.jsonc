@@ -1,0 +1,16 @@
+{
+    // core.units.viewerDetailLabels
+    //
+    // Texty UnitsViewer (Měrné jednotky). Sdílený tab „Přehled“ a Ano / Ne
+    // jsou v core.system.viewerDetailLabels; popisky položek jdou
+    // z definice tabulky core_units.
+
+    // Texty seznamu a detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // Řádek seznamu: štítek základní jednotky veličiny a koeficient.
+        "base": { "name": "base", "name:cs": "základní", "name:en": "base" },
+        "rowCoefficient": { "name": "Coef.: {value}", "name:cs": "Koef.: {value}", "name:en": "Coef.: {value}" },
+        // Skupina vlastností Přehledu.
+        "unit": { "name": "Unit of measure", "name:cs": "Měrná jednotka", "name:en": "Unit of measure" }
+    }
+}

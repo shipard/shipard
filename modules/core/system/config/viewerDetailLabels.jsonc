@@ -17,5 +17,41 @@
             "name:cs": "Přílohy",
             "name:en": "Attachments"
         }
+    },
+
+    // Sdílené texty viewerů (#133 D66) — text, který se opakuje ve třech
+    // a více modulech, je tady jednou; čte `TableViewer::sharedText()`.
+    // Holé `name` je anglická varianta a shoduje se s fallbackem v PHP.
+    "texts": {
+        // Ano / Ne u logických hodnot v detailu — `TableViewer::yesNoText()`.
+        "yes": { "name": "Yes", "name:cs": "Ano", "name:en": "Yes" },
+        "no": { "name": "No", "name:cs": "Ne", "name:en": "No" },
+        // Platnost v řádku seznamu a v podtitulku: „od 1. 1. 2026“, „do 31. 12. 2026“.
+        "fromDate": { "name": "from {date}", "name:cs": "od {date}", "name:en": "from {date}" },
+        "toDate": { "name": "to {date}", "name:cs": "do {date}", "name:en": "to {date}" },
+        "noEnd": { "name": "no end", "name:cs": "bez konce", "name:en": "no end" },
+        // Nadpisy skupin vlastností, které se opakují napříč moduly.
+        "groupIdentity": { "name": "Identity", "name:cs": "Identifikace", "name:en": "Identity" },
+        "groupValidity": { "name": "Validity", "name:cs": "Platnost", "name:en": "Validity" },
+        // Zástupné texty a volby.
+        "untitled": { "name": "(untitled)", "name:cs": "(bez názvu)", "name:en": "(untitled)" },
+        "all": { "name": "All", "name:cs": "Vše", "name:en": "All" },
+        // Stavová slova ve štítcích řádku seznamu.
+        "statusDefault": { "name": "default", "name:cs": "výchozí", "name:en": "default" },
+        "statusActive": { "name": "active", "name:cs": "aktivní", "name:en": "active" },
+        "statusInactive": { "name": "inactive", "name:cs": "neaktivní", "name:en": "inactive" },
+        "statusSystem": { "name": "system", "name:cs": "systémový", "name:en": "system" },
+        // Štítek správce v seznamu uživatelů (`UsersViewer`).
+        "statusAdmin": { "name": "admin", "name:cs": "admin", "name:en": "admin" },
+        // Relativní čas — zkratky jednotek, bez skloňování.
+        "justNow": { "name": "just now", "name:cs": "právě teď", "name:en": "just now" },
+        "agoMinutes": { "name": "{n} min ago", "name:cs": "před {n} min", "name:en": "{n} min ago" },
+        "agoHours": { "name": "{n} h ago", "name:cs": "před {n} h", "name:en": "{n} h ago" },
+        "agoDays": { "name": "{n} d ago", "name:cs": "před {n} d", "name:en": "{n} d ago" },
+        "inDays": { "name": "in {n} d", "name:cs": "za {n} d", "name:en": "in {n} d" },
+        "today": { "name": "today", "name:cs": "dnes", "name:en": "today" },
+        "yesterday": { "name": "yesterday", "name:cs": "včera", "name:en": "yesterday" },
+        "yesterdayAt": { "name": "yesterday {time}", "name:cs": "včera {time}", "name:en": "yesterday {time}" },
+        "tomorrow": { "name": "tomorrow", "name:cs": "zítra", "name:en": "tomorrow" }
     }
 }

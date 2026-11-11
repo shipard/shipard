@@ -1,0 +1,25 @@
+{
+    // core.prints.viewerDetailLabels
+    //
+    // Texty PrintTextsViewer (Texty na tiscích). Sdílený tab „Přehled“,
+    // skupina „Platnost“ a „od {date}“ / „do {date}“ jsou
+    // v core.system.viewerDetailLabels; popisky položek jdou z definice
+    // tabulky core_prints_texts.
+
+    // Texty seznamu a detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // Řádek seznamu: štítek textu, který by se dnes vytiskl, a cílení.
+        "validToday": { "name": "Valid today", "name:cs": "Platí dnes", "name:en": "Valid today" },
+        "selectedTypesAndSeries": { "name": "selected types and series only", "name:cs": "jen vybrané typy a řady", "name:en": "selected types and series only" },
+        // Cílení bez omezení — řádek seznamu i detail.
+        "allPrints": { "name": "All prints", "name:cs": "Všechny tisky", "name:en": "All prints" },
+        "allLanguages": { "name": "All languages", "name:cs": "Všechny jazyky", "name:en": "All languages" },
+        // Skupiny vlastností Přehledu.
+        "groupText": { "name": "Text", "name:cs": "Text", "name:en": "Text" },
+        "groupTarget": { "name": "Where the text is used", "name:cs": "Kde se text použije", "name:en": "Where the text is used" },
+        // Položka „Dnes“ ve skupině Platnost a její hodnoty.
+        "today": { "name": "Today", "name:cs": "Dnes", "name:en": "Today" },
+        "valid": { "name": "Valid", "name:cs": "Platí", "name:en": "Valid" },
+        "notValid": { "name": "Not valid", "name:cs": "Neplatí", "name:en": "Not valid" }
+    }
+}

@@ -13,6 +13,8 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class PreprocessRulesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -112,14 +114,14 @@ class PreprocessRulesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $rule = [];
-        $this->addItem($rule, 'Původ', $this->cfgLabel('core.mail.preprocessRuleOrigins', (string) ($record['origin'] ?? '')));
-        $this->addItem($rule, 'Poznámka', $record['notice'] ?? null);
+        $this->addItem($rule, $this->columnLabel('origin', 'Origin'), $this->cfgLabel('core.mail.preprocessRuleOrigins', (string) ($record['origin'] ?? '')));
+        $this->addItem($rule, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $match = [];
-        $this->addItem($match, 'E-mail odesílatele', $record['sender_email'] ?? null);
-        $this->addItem($match, 'Doména odesílatele', $record['sender_domain'] ?? null);
-        $this->addItem($match, 'Regex předmětu', $record['subject_regex'] ?? null);
-        $this->addItem($match, 'Regex těla', $record['body_regex'] ?? null);
+        $this->addItem($match, $this->columnLabel('sender_email', 'Sender e-mail'), $record['sender_email'] ?? null);
+        $this->addItem($match, $this->columnLabel('sender_domain', 'Sender domain'), $record['sender_domain'] ?? null);
+        $this->addItem($match, $this->columnLabel('subject_regex', 'Subject regex'), $record['subject_regex'] ?? null);
+        $this->addItem($match, $this->columnLabel('body_regex', 'Body regex'), $record['body_regex'] ?? null);
 
         $actions = [];
         foreach (PreprocessRuleMatcher::decodeActions($record['actions'] ?? null) ?? [] as $i => $action) {
@@ -133,23 +135,23 @@ class PreprocessRulesViewer extends TableViewer
             );
         }
         if ($actions === []) {
-            $this->addItem($actions, 'Akce', (string) ($record['actions'] ?? ''));
+            $this->addItem($actions, $this->columnLabel('actions', 'Actions'), (string) ($record['actions'] ?? ''));
         }
 
         $stats = [];
-        $this->addItem($stats, 'Počet zásahů', (string) (int) ($record['hit_count'] ?? 0));
-        $this->addItem($stats, 'Poslední zásah', $record['last_hit_at'] ?? null);
+        $this->addItem($stats, $this->columnLabel('hit_count', 'Hit count'), (string) (int) ($record['hit_count'] ?? 0));
+        $this->addItem($stats, $this->columnLabel('last_hit_at', 'Last hit'), $record['last_hit_at'] ?? null);
 
         $status = [];
-        $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($status, 'Změněno', $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
 
         return [$this->propertiesTab([
-            ['title' => 'Pravidlo', 'items' => $rule],
-            ['title' => 'Podmínky shody', 'items' => $match],
-            ['title' => 'Akce', 'items' => $actions],
-            ['title' => 'Statistiky', 'items' => $stats],
-            ['title' => 'Stav', 'items' => $status],
+            ['title' => $this->text('groupRule', 'Rule'), 'items' => $rule],
+            ['title' => $this->text('groupMatchConditions', 'Match conditions'), 'items' => $match],
+            ['title' => $this->text('groupActions', 'Actions'), 'items' => $actions],
+            ['title' => $this->text('groupStatistics', 'Statistics'), 'items' => $stats],
+            ['title' => $this->text('status', 'Status'), 'items' => $status],
         ])];
     }
 
@@ -157,16 +159,17 @@ class PreprocessRulesViewer extends TableViewer
     private function describeConditions(array $row): string
     {
         $parts = [];
-        foreach ([
-            'sender_email' => 'e-mail',
-            'sender_domain' => 'doména',
-            'subject_regex' => 'předmět',
-            'body_regex' => 'tělo',
-        ] as $column => $label) {
+        foreach (['sender_email', 'sender_domain', 'subject_regex', 'body_regex'] as $column) {
             $value = trim((string) ($row[$column] ?? ''));
-            if ($value !== '') {
-                $parts[] = $label . ': ' . $value;
+            if ($value === '') {
+                continue;
             }
+            $parts[] = match ($column) {
+                'sender_email'  => $this->text('conditionEmail', 'e-mail: {value}', ['value' => $value]),
+                'sender_domain' => $this->text('conditionDomain', 'domain: {value}', ['value' => $value]),
+                'subject_regex' => $this->text('conditionSubject', 'subject: {value}', ['value' => $value]),
+                'body_regex'    => $this->text('conditionBody', 'body: {value}', ['value' => $value]),
+            };
         }
         return implode(' · ', $parts);
     }
@@ -190,6 +193,16 @@ class PreprocessRulesViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
+    }
+
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

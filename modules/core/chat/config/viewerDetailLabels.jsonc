@@ -1,0 +1,13 @@
+{
+    // core.chat.viewerDetailLabels
+    //
+    // Texty ConversationsViewer (Konverzace chatu). Sdílený tab „Přehled“
+    // a zástupný titulek „(bez názvu)“ jsou v core.system.viewerDetailLabels;
+    // popisky položek jdou z definice tabulky core_chat_conversations.
+
+    // Texty detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // Skupina vlastností Přehledu.
+        "conversation": { "name": "Conversation", "name:cs": "Konverzace", "name:en": "Conversation" }
+    }
+}

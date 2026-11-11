@@ -17,7 +17,10 @@
         }
     },
 
-    // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
+    // Texty detailu (#137 D30) a seznamu (#133 D66) — čte
+    // `TableViewer::detailText()`. Popisky akcí Odložit / Zamítnout jsou
+    // v `core.alerts.viewerDefaults` → `rowActions`, stavy v
+    // `core.alerts.alertStates`.
     "texts": {
         // Nadpisy bloků tabu Kontext (výpis JSON).
         "actions": {
@@ -29,6 +32,22 @@
             "name": "Context",
             "name:cs": "Kontext",
             "name:en": "Context"
-        }
+        },
+
+        // Řádek seznamu: poslední výskyt (relativní čas) a odložení.
+        "lastSeen": { "name": "Last seen {when}", "name:cs": "Naposled {when}", "name:en": "Last seen {when}" },
+        "momentAgo": { "name": "a moment ago", "name:cs": "před chvílí", "name:en": "a moment ago" },
+        "snoozedUntil": { "name": "snoozed until {date}", "name:cs": "odloženo do {date}", "name:en": "snoozed until {date}" },
+        // Skupina Přehledu.
+        "groupIdentityState": { "name": "Identity and state", "name:cs": "Identifikace a stav", "name:en": "Identity and state" },
+        // Filtr stavu: aktivní + odložená upozornění.
+        "open": { "name": "Open", "name:cs": "Otevřené", "name:en": "Open" },
+        // Akce Odložit — nabídka dob odložení.
+        "duration1h": { "name": "1 h", "name:cs": "1 h", "name:en": "1 h" },
+        "duration4h": { "name": "4 h", "name:cs": "4 h", "name:en": "4 h" },
+        "duration1d": { "name": "1 day", "name:cs": "1 den", "name:en": "1 day" },
+        "duration1w": { "name": "1 week", "name:cs": "1 týden", "name:en": "1 week" },
+        // Akce Zamítnout — potvrzovací dotaz.
+        "dismissConfirm": { "name": "Really dismiss?", "name:cs": "Opravdu zamítnout?", "name:en": "Really dismiss?" }
     }
 }

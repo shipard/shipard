@@ -18,6 +18,8 @@ class PrintTextsViewer extends TableViewer
     /** Stav, ve kterém se text tiskne. */
     private const ACTIVE_DOC_STATE = 40;
 
+    private const LABELS_CFG_ITEM = 'core.prints.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     private ?PrintTextChoices $choices = null;
@@ -73,7 +75,7 @@ class PrintTextsViewer extends TableViewer
 
         $badges = [['text' => $choices->slotName((string) ($rowData['slot'] ?? '')), 'class' => 'primary']];
         if (self::appliesOn($rowData, new \DateTimeImmutable('today'))) {
-            $badges[] = ['text' => 'Platí dnes', 'class' => 'success'];
+            $badges[] = ['text' => $this->text('validToday', 'Valid today'), 'class' => 'success'];
         }
 
         $target = [$this->printsLabel(self::listValue($rowData['prints'] ?? null))];
@@ -84,10 +86,10 @@ class PrintTextsViewer extends TableViewer
         if (self::listValue($rowData['doc_types'] ?? null) !== []
             || self::listValue($rowData['number_series'] ?? null) !== []
         ) {
-            $target[] = 'jen vybrané typy a řady';
+            $target[] = $this->text('selectedTypesAndSeries', 'selected types and series only');
         }
 
-        $validity = self::validityLabel($rowData['valid_from'] ?? null, $rowData['valid_to'] ?? null);
+        $validity = $this->validityLabel($rowData['valid_from'] ?? null, $rowData['valid_to'] ?? null);
 
         return [
             'id'         => (int) $rowData['id'],
@@ -110,9 +112,9 @@ class PrintTextsViewer extends TableViewer
         $slot    = (string) ($record['slot'] ?? '');
 
         $text = [];
-        $this->addItem($text, 'Umístění', $choices->slotName($slot));
-        $this->addItem($text, 'Text', $record['text'] ?? null);
-        $this->addItem($text, 'Poznámka', $record['note'] ?? null);
+        $this->addItem($text, $this->columnLabel('slot', 'Placement'), $choices->slotName($slot));
+        $this->addItem($text, $this->columnLabel('text', 'Text'), $record['text'] ?? null);
+        $this->addItem($text, $this->columnLabel('note', 'Note'), $record['note'] ?? null);
 
         $printIds  = array_map('strval', self::listValue($record['prints'] ?? null));
         $targeting = $choices->targeting($printIds, $slot);
@@ -121,27 +123,31 @@ class PrintTextsViewer extends TableViewer
         $language  = (string) ($record['language'] ?? '');
 
         $target = [];
-        $this->addItem($target, 'Tisky', $this->printsLabel($printIds));
+        $this->addItem($target, $this->columnLabel('prints', 'Prints'), $this->printsLabel($printIds));
         if ($docTypes !== []) {
             $labels = $targeting === null ? [] : $choices->docTypes($targeting, $printIds, $slot);
-            $this->addItem($target, 'Typy dokladů', implode(', ', array_map(
+            $this->addItem($target, $this->columnLabel('doc_types', 'Document types'), implode(', ', array_map(
                 static fn (mixed $type): string => $labels[(string) $type] ?? (string) $type,
                 $docTypes,
             )));
         }
         if ($series !== []) {
-            $this->addItem($target, 'Číselné řady', implode(', ', $this->seriesNames($targeting, $series)));
+            $this->addItem($target, $this->columnLabel('number_series', 'Number series'), implode(', ', $this->seriesNames($targeting, $series)));
         }
-        $this->addItem($target, 'Jazyk', $language === '' ? 'Všechny jazyky' : ($choices->languages()[$language] ?? $language));
+        $this->addItem($target, $this->columnLabel('language', 'Language'), $language === ''
+            ? $this->text('allLanguages', 'All languages')
+            : ($choices->languages()[$language] ?? $language));
 
         $validity = [];
-        $this->addItem($validity, 'Platí od', self::dateLabel($record['valid_from'] ?? null));
-        $this->addItem($validity, 'Platí do', self::dateLabel($record['valid_to'] ?? null));
-        $this->addItem($validity, 'Pořadí', (string) (int) ($record['order_pos'] ?? 0));
+        $this->addItem($validity, $this->columnLabel('valid_from', 'Valid from'), self::dateLabel($record['valid_from'] ?? null));
+        $this->addItem($validity, $this->columnLabel('valid_to', 'Valid to'), self::dateLabel($record['valid_to'] ?? null));
+        $this->addItem($validity, $this->columnLabel('order_pos', 'Order'), (string) (int) ($record['order_pos'] ?? 0));
         $this->addItem(
             $validity,
-            'Dnes',
-            self::appliesOn($record, new \DateTimeImmutable('today')) ? 'Platí' : 'Neplatí',
+            $this->text('today', 'Today'),
+            self::appliesOn($record, new \DateTimeImmutable('today'))
+                ? $this->text('valid', 'Valid')
+                : $this->text('notValid', 'Not valid'),
         );
 
         return [[
@@ -150,9 +156,9 @@ class PrintTextsViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => 'Text', 'items' => $text, 'wide' => true],
-                    ['title' => 'Kde se text použije', 'items' => $target],
-                    ['title' => 'Platnost', 'items' => $validity],
+                    ['title' => $this->text('groupText', 'Text'), 'items' => $text, 'wide' => true],
+                    ['title' => $this->text('groupTarget', 'Where the text is used'), 'items' => $target],
+                    ['title' => $this->sharedText('groupValidity', 'Validity'), 'items' => $validity],
                 ],
             ],
         ]];
@@ -186,7 +192,7 @@ class PrintTextsViewer extends TableViewer
     private function printsLabel(array $printIds): string
     {
         if ($printIds === []) {
-            return 'Všechny tisky';
+            return $this->text('allPrints', 'All prints');
         }
         $prints = $this->choices()->prints();
         return implode(', ', array_map(
@@ -212,7 +218,7 @@ class PrintTextsViewer extends TableViewer
         return array_map(static fn (int $id): string => $names[$id] ?? (string) $id, $ids);
     }
 
-    private static function validityLabel(mixed $from, mixed $to): string
+    private function validityLabel(mixed $from, mixed $to): string
     {
         $from = self::dateLabel($from);
         $to   = self::dateLabel($to);
@@ -220,9 +226,9 @@ class PrintTextsViewer extends TableViewer
             return $from . ' – ' . $to;
         }
         if ($from !== null) {
-            return 'od ' . $from;
+            return $this->sharedText('fromDate', 'from {date}', ['date' => $from]);
         }
-        return $to !== null ? 'do ' . $to : '';
+        return $to !== null ? $this->sharedText('toDate', 'to {date}', ['date' => $to]) : '';
     }
 
     private static function dateLabel(mixed $value): ?string
@@ -259,6 +265,16 @@ class PrintTextsViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
+    }
+
+    /**
+     * Text vieweru z katalogu `core.prints.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

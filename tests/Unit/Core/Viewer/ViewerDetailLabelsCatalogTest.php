@@ -10,10 +10,10 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Utils\JsoncParser;
 
 /**
- * Úplnost katalogů `*.viewerDetailLabels` (#137 D30): sekce `tabs` /
- * `labels` / `texts` čtené přes `TableViewer::detailTabLabel()`,
- * `IncomingMessagesViewer::viewerLabel()` a `TableViewer::detailText()`
- * a sekce `fields` Spisovny (popisky polí metadat, #133 —
+ * Úplnost katalogů `*.viewerDetailLabels` (#137 D30, #133 D66): sekce
+ * `tabs` / `texts` čtené přes `TableViewer::detailTabLabel()`
+ * a `TableViewer::detailText()` (texty detailu i seznamu, sdílené texty
+ * `core.system` přes `sharedText()`) a sekce `fields` Spisovny (popisky polí metadat, #133 —
  * `TableViewer::detailSectionText()`) — každá položka má holé pole `name`
  * i obě jazykové varianty a holé pole je anglická varianta. Nový katalog
  * se do testu přidá sám.
@@ -21,12 +21,14 @@ use Shipard\Core\Utils\JsoncParser;
 class ViewerDetailLabelsCatalogTest extends TestCase
 {
     private const SUFFIX = '.viewerDetailLabels';
-    private const SECTIONS = ['tabs', 'labels', 'texts', 'fields'];
+    private const SECTIONS = ['tabs', 'texts', 'fields'];
     private const FIELDS = ['name', 'name:cs', 'name:en'];
 
-    /** Katalogy, které v repozitáři musí existovat (viewery s texty prázdného stavu a tabu Kontext). */
+    /** Katalogy, které v repozitáři musí existovat (texty viewerů modulu, #133 D66). */
     private const EXPECTED = [
-        'base.persons', 'base.registry', 'core.mail', 'core.alerts', 'economy.accounting', 'core.system',
+        'base.persons', 'base.registry',
+        'core.alerts', 'core.chat', 'core.mail', 'core.prints', 'core.system', 'core.units',
+        'economy.accounting',
     ];
 
     /** @return array<string, array<string, mixed>> cfgItem id → surový katalog */

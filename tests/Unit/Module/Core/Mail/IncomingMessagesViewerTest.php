@@ -341,7 +341,7 @@ final class IncomingMessagesViewerTest extends TestCase
         $this->assertSame('table', $content['type']);
         $ids = array_column($content['columns'], 'id');
         $this->assertSame(['analyzed_at', 'status', 'error'], array_slice($ids, 0, 3));
-        $this->assertSame('Chyba', $content['columns'][2]['label']);
+        $this->assertSame('Error', $content['columns'][2]['label']);
         $this->assertSame('The AI response did not fit within the limit', $content['rows'][0]['error']);
         $this->assertSame('AI returned an unusable proposal', $content['rows'][1]['error']);
         $this->assertSame('—', $content['rows'][2]['error']);
@@ -405,7 +405,7 @@ final class IncomingMessagesViewerTest extends TestCase
             if ($block['type'] === 'failure') {
                 $failure = $i;
             }
-            if ($block['type'] === 'properties' && ($block['groups'][0]['title'] ?? '') === 'Předzpracování') {
+            if ($block['type'] === 'properties' && ($block['groups'][0]['title'] ?? '') === 'Preprocessing') {
                 $properties = $i;
             }
         }

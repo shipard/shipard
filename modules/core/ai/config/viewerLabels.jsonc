@@ -1,7 +1,8 @@
 {
     // core.ai.viewerLabels — popisky viewerů AI v Nastavení (Modely, AI
-    // funkce): skupiny a položky detailu, badge řádků, hodnoty. Viewery je
-    // čtou přes AiViewerBase::text(klíč, anglický fallback, parametry);
+    // funkce, AI připojení): skupiny a položky detailu, badge řádků, hodnoty.
+    // Viewery je čtou přes AiViewerBase::text(klíč, anglický fallback,
+    // parametry) — AIBackendsViewer přes vlastní text() nad týmž katalogem;
     // `{param}` se nahradí z parametrů. PHP nenese `cs() ? … : …`.
 
     // --- přehled modelů: řádek ---
@@ -75,6 +76,15 @@
     "value.notSent":       { "name": "not sent",              "name:cs": "neposílá se",            "name:en": "not sent" },
     "value.noChanges":     { "name": "None — the model accepts every value as set", "name:cs": "Žádné — model přijme všechny hodnoty tak, jak jsou nastavené", "name:en": "None — the model accepts every value as set" },
     "value.callOk":        { "name": "OK — the connection has a key stored; ai-test checks whether it works", "name:cs": "V pořádku — připojení má uložený klíč; zda funguje, ověří ai-test", "name:en": "OK — the connection has a key stored; ai-test checks whether it works" },
+
+    // --- AI připojení (AIBackendsViewer): detail ---
+    "group.credentials":   { "name": "Credentials",           "name:cs": "Přístup",                "name:en": "Credentials" },
+    "group.flags":         { "name": "Flags",                 "name:cs": "Příznaky",               "name:en": "Flags" },
+    "label.connectionCode": { "name": "Connection code",      "name:cs": "Kód připojení",          "name:en": "Connection code" },
+    "label.defaultConnection": { "name": "Default connection", "name:cs": "Výchozí připojení",     "name:en": "Default connection" },
+    "value.platformDefaultUrl": { "name": "{url} (platform default)", "name:cs": "{url} (výchozí platformy)", "name:en": "{url} (platform default)" },
+    "value.keySet":        { "name": "set",                   "name:cs": "nastaven",               "name:en": "set" },
+    "value.keyNotSet":     { "name": "not set",               "name:cs": "nenastaven",             "name:en": "not set" },
 
     // --- hodnoty ---
     "value.active":        { "name": "Active",                "name:cs": "Aktivní",                "name:en": "Active" },

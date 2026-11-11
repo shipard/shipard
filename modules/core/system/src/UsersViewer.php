@@ -54,7 +54,7 @@ class UsersViewer extends TableViewer
 
         $badges = [];
         if (!empty($rowData['is_admin'])) {
-            $badges[] = ['text' => 'admin', 'class' => 'info'];
+            $badges[] = ['text' => $this->sharedText('statusAdmin', 'admin'), 'class' => 'info'];
         }
         if (!empty($rowData['is_system'])) {
             $badges[] = ['text' => $isCs ? 'systémový' : 'system', 'class' => 'muted'];
@@ -117,7 +117,7 @@ class UsersViewer extends TableViewer
         $no  = $isCs ? 'Ne' : 'No';
 
         $identity = [
-            ['label' => 'E-mail', 'value' => (string) ($record['email'] ?? '')],
+            ['label' => $this->columnLabel('email', 'E-mail'), 'value' => (string) ($record['email'] ?? '')],
         ];
         if (array_key_exists('person', $record)) {
             $identity[] = [

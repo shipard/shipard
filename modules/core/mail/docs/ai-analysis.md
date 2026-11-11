@@ -931,7 +931,7 @@ Pořadí priorit tedy je: ruční volba ve formuláři > Použít / cílový dok
 **Zobrazení** (`IncomingMessagesViewer`, D7): t1 předmět, t2 partner
 (`full_name` Osoby přes LEFT JOIN, jinak `partner_name`) s fallbackem na
 odesílatele; když t2 nese partnera, odesílatel se přesune do t3 jako
-`[Schránka] od: …` (popisek z `core.mail.viewerDetailLabels.labels.from`).
+`[Schránka] od: …` (vzor `core.mail.viewerDetailLabels` → `texts.fromSender`).
 Hlavička detailu: partner · od: odesílatel · schránka · doručeno. Fulltext
 prohledává navíc `partner_name` i `full_name` Osoby. Smazaná Osoba řádek
 nefiltruje (LEFT JOIN), t2 padá na `partner_name`.
@@ -997,8 +997,8 @@ sloupec `core_mail_incoming_messages.ai_title` (varchar 200):
   i `ai_title` vždy.
 - **Kde se pravidlo uplatňuje:** `IncomingMessagesViewer` (t1 řádku, titulek
   hlavičky detailu; když titulek nahradil předmět, původní předmět je
-  v Technických údajích detailu — popisek
-  `core.mail.viewerDetailLabels.labels.subject`), `IncomingMessagesForm`
+  v Technických údajích detailu — popisek sloupce `subject` z definice
+  tabulky), `IncomingMessagesForm`
   (`header_info`), `FileFromMessageService` (název registry dokumentu ze
   zprávy), `RegistryDocumentsViewer` (Zdrojová zpráva). Technická místa
   (pravidla předzpracování, název souboru renderu těla, kontext promptu)

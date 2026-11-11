@@ -73,11 +73,11 @@ class AIBackendsViewer extends TableViewer
 
         $badges = [];
         if (!empty($rowData['is_default'])) {
-            $badges[] = ['text' => 'výchozí', 'class' => 'success'];
+            $badges[] = ['text' => $this->sharedText('statusDefault', 'default'), 'class' => 'success'];
         }
         $badges[] = !empty($rowData['is_active'])
-            ? ['text' => 'aktivní', 'class' => 'primary']
-            : ['text' => 'neaktivní', 'class' => 'muted'];
+            ? ['text' => $this->sharedText('statusActive', 'active'), 'class' => 'primary']
+            : ['text' => $this->sharedText('statusInactive', 'inactive'), 'class' => 'muted'];
         $row['i1'] = $badges;
 
         // Jen přístup (D39): platforma a případná vlastní adresa (gateway).
@@ -107,34 +107,38 @@ class AIBackendsViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $identity = [];
-        $this->addItem($identity, 'Kód připojení', $record['backend_id'] ?? null);
+        $this->addItem($identity, $this->text('label.connectionCode', 'Connection code'), $record['backend_id'] ?? null);
 
         $provider = [];
         $platforms = AiPlatforms::fromConfig($this->config);
         $platformId = trim((string) ($record['provider'] ?? ''));
-        $this->addItem($provider, 'Platforma', $platformId !== '' ? $platforms->label($platformId) : null);
+        $this->addItem($provider, $this->columnLabel('provider', 'Platform'), $platformId !== '' ? $platforms->label($platformId) : null);
         $baseUrl = trim((string) ($record['base_url'] ?? ''));
         $defaultUrl = $platformId !== '' ? $platforms->getOrFallback($platformId)->baseUrl : '';
         // Prázdná adresa = výchozí adresa platformy — ukaž, kam se skutečně volá.
-        $this->addItem($provider, 'Base URL', $baseUrl !== '' ? $baseUrl : ($defaultUrl !== '' ? "{$defaultUrl} (výchozí platformy)" : null));
+        $this->addItem($provider, $this->columnLabel('base_url', 'Base URL'), $baseUrl !== '' ? $baseUrl : (
+            $defaultUrl !== '' ? $this->text('value.platformDefaultUrl', '{url} (platform default)', ['url' => $defaultUrl]) : null
+        ));
 
         $access = [];
-        $this->addItem($access, 'API klíč', !empty($record['has_api_key']) ? 'nastaven' : 'nenastaven');
+        $this->addItem($access, $this->columnLabel('api_key', 'API key'), !empty($record['has_api_key'])
+            ? $this->text('value.keySet', 'set')
+            : $this->text('value.keyNotSet', 'not set'));
 
         $flags = [];
-        $this->addItem($flags, 'Výchozí připojení', !empty($record['is_default']) ? 'Ano' : 'Ne');
-        $this->addItem($flags, 'Aktivní', !empty($record['is_active']) ? 'Ano' : 'Ne');
+        $this->addItem($flags, $this->text('label.defaultConnection', 'Default connection'), $this->yesNoText(!empty($record['is_default'])));
+        $this->addItem($flags, $this->columnLabel('is_active', 'Active'), $this->yesNoText(!empty($record['is_active'])));
 
         $status = [];
-        $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($status, 'Změněno', $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
 
         return [$this->propertiesTab([
-            ['title' => 'Identifikace', 'items' => $identity],
-            ['title' => 'Platforma', 'items' => $provider],
-            ['title' => 'Přístup', 'items' => $access],
-            ['title' => 'Příznaky', 'items' => $flags],
-            ['title' => 'Stav', 'items' => $status],
+            ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],
+            ['title' => $this->text('label.platform', 'Platform'), 'items' => $provider],
+            ['title' => $this->text('group.credentials', 'Credentials'), 'items' => $access],
+            ['title' => $this->text('group.flags', 'Flags'), 'items' => $flags],
+            ['title' => $this->text('label.status', 'Status'), 'items' => $status],
         ])];
     }
 
@@ -154,6 +158,17 @@ class AIBackendsViewer extends TableViewer
             return null;
         }
         return AiPlatforms::fromConfig($this->config)->label((string) $value);
+    }
+
+    /**
+     * Popisek z plochého katalogu `core.ai.viewerLabels` (sdílený s viewery
+     * nad `AiViewerBase`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->labelText(AiViewerBase::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

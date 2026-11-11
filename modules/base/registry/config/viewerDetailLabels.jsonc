@@ -1,7 +1,7 @@
 {
     // base.registry.viewerDetailLabels
     //
-    // Labels for RegistryDocumentsViewer — detail tabs (Content / Origin;
+    // Labels for RegistryDocumentsViewer and BindersViewer — detail tabs (Content / Origin;
     // attachments come from the shared section, #140 D27), the bottom
     // binder-tab bar sentinels (All / Unfiled), detail texts and labels
     // of document metadata fields (`fields`).
@@ -36,7 +36,12 @@
             "name": "The document has no content.",
             "name:cs": "Dokument nemá žádný obsah.",
             "name:en": "The document has no content."
-        }
+        },
+        // Tab Původ: odesílatel zdrojové zprávy (jméno, jinak e-mail).
+        "sender": { "name": "Sender", "name:cs": "Odesílatel", "name:en": "Sender" },
+        // Detail šanonu (`BindersViewer`).
+        "groupBinder": { "name": "Binder", "name:cs": "Šanon", "name:en": "Binder" },
+        "documentCount": { "name": "Number of documents", "name:cs": "Počet dokumentů", "name:en": "Number of documents" }
     },
 
     // Popisky polí metadat (#133) — klíče = pole všech druhů z

@@ -54,6 +54,10 @@
         {
             "id": "core.units.printShortcuts",
             "file": "config/printShortcuts.jsonc"
+        },
+        {
+            "id": "core.units.viewerDetailLabels",
+            "file": "config/viewerDetailLabels.jsonc"
         }
     ]
 }

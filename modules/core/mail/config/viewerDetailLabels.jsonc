@@ -5,6 +5,12 @@
     // tabs are Content / Analyses / Proposal / Original. The `attachments`
     // key is not a tab anymore — it labels the attachments section heading
     // inside the Content tab.
+    //
+    // Section `texts` holds the texts of all core.mail viewers
+    // (IncomingMessagesViewer, MailboxesViewer, SendersViewer,
+    // AIProfilesViewer, SenderRulesViewer, PreprocessRulesViewer) — list
+    // rows and detail (#133 D66). Bare `name` is the English variant and
+    // equals the fallback in PHP.
 
     "tabs": {
         "content": {
@@ -34,23 +40,6 @@
         }
     },
 
-    // Drobné popisky řádku / hlavičky detailu.
-    "labels": {
-        // „od: odesílatel" v t3 a v subtitle detailu, když t2 nese partnera.
-        "from": {
-            "name": "from",
-            "name:cs": "od",
-            "name:en": "from"
-        },
-        // Původní předmět v Technických údajích, když hlavička ukazuje
-        // titulek z AI (IncomingMessageTitle, D3).
-        "subject": {
-            "name": "Subject",
-            "name:cs": "Předmět",
-            "name:en": "Subject"
-        }
-    },
-
     // Texty detailu (#137 D30) — čte `TableViewer::detailText()`.
     "texts": {
         // Tab Obsah bez těla, příloh i technických údajů.
@@ -76,6 +65,70 @@
             "name": "The original was deleted or is not available.",
             "name:cs": "Originál byl smazán nebo není dostupný.",
             "name:en": "The original was deleted or is not available."
-        }
+        },
+
+        // --- Došlá pošta (`IncomingMessagesViewer`) ---
+        // „od: odesílatel" v t3 a v podtitulku detailu, když t2 nese partnera.
+        "fromSender": { "name": "from: {sender}", "name:cs": "od: {sender}", "name:en": "from: {sender}" },
+        // Štítek hromadné pošty v řádku seznamu.
+        "bulk": { "name": "bulk", "name:cs": "hromadná", "name:en": "bulk" },
+        // Titulek detailu zprávy bez předmětu i titulku z AI.
+        "noSubject": { "name": "(no subject)", "name:cs": "(bez předmětu)", "name:en": "(no subject)" },
+        // Tab Obsah: nadpisy skupin vlastností.
+        "groupPreprocess": { "name": "Preprocessing", "name:cs": "Předzpracování", "name:en": "Preprocessing" },
+        "groupTechnical": { "name": "Technical details", "name:cs": "Technické údaje", "name:en": "Technical details" },
+        // Skupina Předzpracování: běh spuštěný jen kvůli importu ISDOC, pravidla,
+        // pokusy, výsledek akce („OK — poznámka (příloha #12)“), stav ISDOC, čas.
+        "triggeredBy": { "name": "Triggered by", "name:cs": "Spuštěno", "name:en": "Triggered by" },
+        "triggerIsdocImport": { "name": "ISDOC import", "name:cs": "ISDOC import", "name:en": "ISDOC import" },
+        "rules": { "name": "Rules", "name:cs": "Pravidla", "name:en": "Rules" },
+        "attempts": { "name": "Attempts", "name:cs": "Pokusy", "name:en": "Attempts" },
+        "resultOk": { "name": "OK", "name:cs": "OK", "name:en": "OK" },
+        "attachmentRef": { "name": "(attachment #{id})", "name:cs": "(příloha #{id})", "name:en": "(attachment #{id})" },
+        "action": { "name": "Action", "name:cs": "Akce", "name:en": "Action" },
+        "isdoc": { "name": "ISDOC", "name:cs": "ISDOC", "name:en": "ISDOC" },
+        "finished": { "name": "Finished", "name:cs": "Dokončeno", "name:en": "Finished" },
+        // Chyba — výsledek akce předzpracování i sloupec tabu Analýzy.
+        "error": { "name": "Error", "name:cs": "Chyba", "name:en": "Error" },
+        // Tab Analýzy: stav běhu a sloupce, které nejsou hodnotou jednoho sloupce
+        // tabulky analýz (model = název + verze, trvání v sekundách).
+        "analysisRunning": { "name": "Running", "name:cs": "Probíhá", "name:en": "Running" },
+        "analysisSucceeded": { "name": "Success", "name:cs": "Úspěch", "name:en": "Success" },
+        "analysisFailed": { "name": "Failed", "name:cs": "Selhala", "name:en": "Failed" },
+        "model": { "name": "Model", "name:cs": "Model", "name:en": "Model" },
+        "duration": { "name": "Duration", "name:cs": "Trvání", "name:en": "Duration" },
+        "analysisTime": { "name": "Time", "name:cs": "Čas", "name:en": "Time" },
+        "analysisCost": { "name": "Cost", "name:cs": "Cena", "name:en": "Cost" },
+        // Tab Návrh: shrnutí návrhu — číslo dokladu a měna, když ji návrh nenese.
+        "summaryNumber": { "name": "no. {number}", "name:cs": "č. {number}", "name:en": "no. {number}" },
+        "defaultCurrency": { "name": "CZK", "name:cs": "Kč", "name:en": "CZK" },
+        // Tab Originál: skupina vlastností souboru .eml a čas jeho uložení.
+        "groupOriginalEml": { "name": "Original .eml", "name:cs": "Originální .eml", "name:en": "Original .eml" },
+        "stored": { "name": "Stored", "name:cs": "Uloženo", "name:en": "Stored" },
+        // --- Číselníky pošty (schránky, AI profily, pravidla) ---
+        // Nadpisy skupin vlastností sdílené více viewery modulu.
+        "status": { "name": "Status", "name:cs": "Stav", "name:en": "Status" },
+        "groupRule": { "name": "Rule", "name:cs": "Pravidlo", "name:en": "Rule" },
+        "groupStatistics": { "name": "Statistics", "name:cs": "Statistiky", "name:en": "Statistics" },
+        // Schránky (`MailboxesViewer`).
+        "groupConfiguration": { "name": "Configuration", "name:cs": "Konfigurace", "name:en": "Configuration" },
+        // AI profily (`AIProfilesViewer`): skupiny, hodnota nepřepsaného nastavení
+        // a popisek limitu tokenů (sloupec nese nápovědu formuláře).
+        "groupScope": { "name": "Scope", "name:cs": "Záběr", "name:en": "Scope" },
+        "prompt": { "name": "Prompt", "name:cs": "Prompt", "name:en": "Prompt" },
+        "groupFunctionOverride": { "name": "AI function override", "name:cs": "Přepsání AI funkce", "name:en": "AI function override" },
+        "groupFlags": { "name": "Flags", "name:cs": "Příznaky", "name:en": "Flags" },
+        "byFunction": { "name": "by function", "name:cs": "podle funkce", "name:en": "by function" },
+        "maxTokens": { "name": "Max tokens", "name:cs": "Max. tokenů", "name:en": "Max tokens" },
+        // Pravidla předzpracování (`PreprocessRulesViewer`): skupiny a podmínky
+        // shody v řádku seznamu.
+        "groupMatchConditions": { "name": "Match conditions", "name:cs": "Podmínky shody", "name:en": "Match conditions" },
+        "groupActions": { "name": "Actions", "name:cs": "Akce", "name:en": "Actions" },
+        "conditionEmail": { "name": "e-mail: {value}", "name:cs": "e-mail: {value}", "name:en": "e-mail: {value}" },
+        "conditionDomain": { "name": "domain: {value}", "name:cs": "doména: {value}", "name:en": "domain: {value}" },
+        "conditionSubject": { "name": "subject: {value}", "name:cs": "předmět: {value}", "name:en": "subject: {value}" },
+        "conditionBody": { "name": "body: {value}", "name:cs": "tělo: {value}", "name:en": "body: {value}" },
+        // Odesílatelé (`SendersViewer`): skupina i položka s adresou serveru.
+        "smtp": { "name": "SMTP", "name:cs": "SMTP", "name:en": "SMTP" }
     }
 }

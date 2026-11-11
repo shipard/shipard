@@ -9,6 +9,8 @@ use Shipard\Core\Viewer\TableViewer;
 
 class BindersViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'base.registry.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -93,12 +95,12 @@ class BindersViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $items = [];
-        $this->addItem($items, 'Ikona', $record['icon'] ?? null);
-        $this->addItem($items, 'Pořadí', (string) ($record['order_pos'] ?? 0));
-        $this->addItem($items, 'Poznámka', $record['notice'] ?? null);
-        $this->addItem($items, 'Počet dokumentů', (string) ($record['doc_count'] ?? 0));
+        $this->addItem($items, $this->columnLabel('icon', 'Icon'), $record['icon'] ?? null);
+        $this->addItem($items, $this->columnLabel('order_pos', 'Order'), (string) ($record['order_pos'] ?? 0));
+        $this->addItem($items, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
+        $this->addItem($items, $this->detailText(self::LABELS_CFG_ITEM, 'documentCount', 'Number of documents'), (string) ($record['doc_count'] ?? 0));
 
-        return [$this->propertiesTab([['title' => 'Šanon', 'items' => $items]])];
+        return [$this->propertiesTab([['title' => $this->detailText(self::LABELS_CFG_ITEM, 'groupBinder', 'Binder'), 'items' => $items]])];
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

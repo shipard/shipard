@@ -16,7 +16,14 @@ class PrintTextsViewerTest extends TestCase
     private function viewer(): PrintTextsViewer
     {
         $viewer = new PrintTextsViewer($this->createStub(DataSourceConnection::class), 'core_prints_texts');
-        $viewer->setConfig($this->config());
+        // Katalog textů vieweru v češtině — bez něj viewer vrací anglický fallback.
+        $viewer->setConfig($this->config([
+            'core.prints.viewerDetailLabels' => ['texts' => [
+                'validToday'             => ['name' => 'Platí dnes'],
+                'selectedTypesAndSeries' => ['name' => 'jen vybrané typy a řady'],
+                'allPrints'              => ['name' => 'Všechny tisky'],
+            ]],
+        ]));
         return $viewer;
     }
 

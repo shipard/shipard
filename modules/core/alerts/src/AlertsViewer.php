@@ -24,6 +24,8 @@ class AlertsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = null;   // alerts NEjsou doc-state
 
+    private const LABELS_CFG_ITEM = 'core.alerts.viewerDetailLabels';
+
     /** Mapping severity (int z DB) na CSS class span pro t2 badge. */
     private const SEVERITY_SPAN_CLASS = [
         10 => 'primary',    // info
@@ -129,14 +131,14 @@ class AlertsViewer extends TableViewer
         // Line 3: relative last_seen + seen_count if >1
         $parts = [];
         if (!empty($rowData['last_seen_at'])) {
-            $parts[] = 'Naposled ' . $this->formatRelative((string) $rowData['last_seen_at']);
+            $parts[] = $this->text('lastSeen', 'Last seen {when}', ['when' => $this->formatRelative((string) $rowData['last_seen_at'])]);
         }
         $sc = (int) ($rowData['seen_count'] ?? 1);
         if ($sc > 1) {
             $parts[] = $sc . '×';
         }
         if ($alertState === AlertReconciler::STATE_SNOOZED && !empty($rowData['snoozed_until'])) {
-            $parts[] = 'odloženo do ' . substr((string) $rowData['snoozed_until'], 0, 16);
+            $parts[] = $this->text('snoozedUntil', 'snoozed until {date}', ['date' => substr((string) $rowData['snoozed_until'], 0, 16)]);
         }
         $row['t3'] = $parts !== [] ? implode(' • ', $parts) : null;
 
@@ -153,31 +155,31 @@ class AlertsViewer extends TableViewer
 
         // Overview
         $overviewItems = [
-            ['label' => 'Závažnost',   'value' => $this->severityLabel($severity)],
-            ['label' => 'Stav',        'value' => $this->stateLabel($alertState)],
-            ['label' => 'Kontrola',    'value' => (string) ($record['check_id'] ?? '')],
-            ['label' => 'Klíč nálezu', 'value' => (string) ($record['finding_key'] ?? '')],
-            ['label' => 'Poprvé spatřeno',  'value' => (string) ($record['first_seen_at'] ?? '')],
-            ['label' => 'Naposled spatřeno','value' => (string) ($record['last_seen_at'] ?? '')],
-            ['label' => 'Počet pozorování', 'value' => (string) ((int) ($record['seen_count'] ?? 1))],
+            ['label' => $this->columnLabel('severity', 'Severity'),          'value' => $this->severityLabel($severity)],
+            ['label' => $this->columnLabel('alert_state', 'State'),          'value' => $this->stateLabel($alertState)],
+            ['label' => $this->columnLabel('check_id', 'Check ID'),          'value' => (string) ($record['check_id'] ?? '')],
+            ['label' => $this->columnLabel('finding_key', 'Finding key'),    'value' => (string) ($record['finding_key'] ?? '')],
+            ['label' => $this->columnLabel('first_seen_at', 'First seen at'), 'value' => (string) ($record['first_seen_at'] ?? '')],
+            ['label' => $this->columnLabel('last_seen_at', 'Last seen at'),  'value' => (string) ($record['last_seen_at'] ?? '')],
+            ['label' => $this->columnLabel('seen_count', 'Seen count'),      'value' => (string) ((int) ($record['seen_count'] ?? 1))],
         ];
         if ($alertState === AlertReconciler::STATE_SNOOZED && !empty($record['snoozed_until'])) {
-            $overviewItems[] = ['label' => 'Odloženo do', 'value' => (string) $record['snoozed_until']];
+            $overviewItems[] = ['label' => $this->columnLabel('snoozed_until', 'Snoozed until'), 'value' => (string) $record['snoozed_until']];
         }
         if ($alertState === AlertReconciler::STATE_DISMISSED && !empty($record['dismissed_at'])) {
-            $overviewItems[] = ['label' => 'Zamítnuto',   'value' => (string) $record['dismissed_at']];
+            $overviewItems[] = ['label' => $this->columnLabel('dismissed_at', 'Dismissed at'), 'value' => (string) $record['dismissed_at']];
         }
         if ($alertState === AlertReconciler::STATE_RESOLVED && !empty($record['resolved_at'])) {
-            $overviewItems[] = ['label' => 'Vyřešeno',    'value' => (string) $record['resolved_at']];
+            $overviewItems[] = ['label' => $this->columnLabel('resolved_at', 'Resolved at'), 'value' => (string) $record['resolved_at']];
         }
 
         $overviewGroups = [
-            ['title' => 'Identifikace a stav', 'items' => $overviewItems],
+            ['title' => $this->text('groupIdentityState', 'Identity and state'), 'items' => $overviewItems],
         ];
 
         if (!empty($record['message'])) {
             $overviewGroups[] = [
-                'title' => 'Zpráva',
+                'title' => $this->columnLabel('message', 'Message'),
                 'items' => [['label' => '', 'value' => (string) $record['message']]],
                 'wide'  => true,
             ];
@@ -186,7 +188,7 @@ class AlertsViewer extends TableViewer
         $tabs = [
             [
                 'id'      => 'overview',
-                'label'   => $this->detailTabLabel('core.alerts.viewerDetailLabels', 'overview', 'Overview'),
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'overview', 'Overview'),
                 'content' => ['type' => 'properties', 'groups' => $overviewGroups],
             ],
         ];
@@ -204,7 +206,7 @@ class AlertsViewer extends TableViewer
             }
             $contextBlocks[] = [
                 'type' => 'heading',
-                'text' => $this->detailText('core.alerts.viewerDetailLabels', $column, $fallback),
+                'text' => $this->text($column, $fallback),
             ];
             $contextBlocks[] = [
                 'type' => 'code',
@@ -214,7 +216,7 @@ class AlertsViewer extends TableViewer
         if ($contextBlocks !== []) {
             $tabs[] = [
                 'id'      => 'context',
-                'label'   => $this->detailTabLabel('core.alerts.viewerDetailLabels', 'context', 'Context'),
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'context', 'Context'),
                 'content' => ['type' => 'composite', 'blocks' => $contextBlocks],
             ];
         }
@@ -288,40 +290,28 @@ class AlertsViewer extends TableViewer
 
     private function snoozeDropdownAction(): array
     {
-        $lang = $this->language ?? 'en';
-        $labels = [
-            'cs' => ['action' => 'Odložit', 'items' => ['1 h', '4 h', '1 den', '1 týden']],
-            'en' => ['action' => 'Snooze',  'items' => ['1 h', '4 h', '1 day', '1 week']],
-        ];
-        $l = $labels[$lang] ?? $labels['en'];
         return [
             'id'      => 'snooze',
-            'label'   => $l['action'],
+            'label'   => $this->rowActionLabel('snooze', 'Snooze'),
             'kind'    => 'dropdown',
             'variant' => 'secondary',
             'items'   => [
-                ['label' => $l['items'][0], 'value' => 'PT1H'],
-                ['label' => $l['items'][1], 'value' => 'PT4H'],
-                ['label' => $l['items'][2], 'value' => 'P1D'],
-                ['label' => $l['items'][3], 'value' => 'P7D'],
+                ['label' => $this->text('duration1h', '1 h'), 'value' => 'PT1H'],
+                ['label' => $this->text('duration4h', '4 h'), 'value' => 'PT4H'],
+                ['label' => $this->text('duration1d', '1 day'), 'value' => 'P1D'],
+                ['label' => $this->text('duration1w', '1 week'), 'value' => 'P7D'],
             ],
         ];
     }
 
     private function dismissAction(): array
     {
-        $lang = $this->language ?? 'en';
-        $labels = [
-            'cs' => ['label' => 'Zamítnout',    'confirm' => 'Opravdu zamítnout?'],
-            'en' => ['label' => 'Dismiss',      'confirm' => 'Really dismiss?'],
-        ];
-        $l = $labels[$lang] ?? $labels['en'];
         return [
             'id'      => 'dismiss',
-            'label'   => $l['label'],
+            'label'   => $this->rowActionLabel('dismiss', 'Dismiss'),
             'kind'    => 'button',
             'variant' => 'danger',
-            'confirm' => $l['confirm'],
+            'confirm' => $this->text('dismissConfirm', 'Really dismiss?'),
         ];
     }
 
@@ -360,16 +350,16 @@ class AlertsViewer extends TableViewer
     {
         return [[
             'id'      => 'alert_state',
-            'label'   => 'Stav',
+            'label'   => $this->columnLabel('alert_state', 'State'),
             'type'    => 'enum',
             'default' => 'open',
             'options' => [
-                ['value' => 'open',      'label' => 'Otevřené'],
-                ['value' => 'active',    'label' => 'Aktivní'],
-                ['value' => 'snoozed',   'label' => 'Odložené'],
-                ['value' => 'resolved',  'label' => 'Vyřešené'],
-                ['value' => 'dismissed', 'label' => 'Zamítnuté'],
-                ['value' => 'all',       'label' => 'Vše'],
+                ['value' => 'open',      'label' => $this->text('open', 'Open')],
+                ['value' => 'active',    'label' => $this->stateLabel(AlertReconciler::STATE_ACTIVE)],
+                ['value' => 'snoozed',   'label' => $this->stateLabel(AlertReconciler::STATE_SNOOZED)],
+                ['value' => 'resolved',  'label' => $this->stateLabel(AlertReconciler::STATE_RESOLVED)],
+                ['value' => 'dismissed', 'label' => $this->stateLabel(AlertReconciler::STATE_DISMISSED)],
+                ['value' => 'all',       'label' => $this->sharedText('all', 'All')],
             ],
         ]];
     }
@@ -425,6 +415,26 @@ class AlertsViewer extends TableViewer
         return (string) ($cfg[(string) $alertState]['name'] ?? self::STATE_LABEL_FALLBACK[$alertState] ?? 'State ' . $alertState);
     }
 
+    /**
+     * Popisek akce řádku z `core.alerts.viewerDefaults` → `rowActions`
+     * (tentýž cfgItem jako toolbar); bez konfigurace anglický fallback.
+     */
+    private function rowActionLabel(string $id, string $englishFallback): string
+    {
+        $defs = ($this->config?->cfgItem('core.alerts.viewerDefaults') ?? [])['rowActions'] ?? [];
+        return (string) ($defs[$id]['name'] ?? $englishFallback);
+    }
+
+    /**
+     * Text vieweru z katalogu `core.alerts.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
+    }
+
     private function formatRelative(string $datetime): string
     {
         $ts = strtotime($datetime);
@@ -432,10 +442,10 @@ class AlertsViewer extends TableViewer
             return $datetime;
         }
         $diff = time() - $ts;
-        if ($diff < 60)     return 'před chvílí';
-        if ($diff < 3600)   return 'před ' . (int) ($diff / 60) . ' min';
-        if ($diff < 86400)  return 'před ' . (int) ($diff / 3600) . ' h';
-        if ($diff < 86400 * 7) return 'před ' . (int) ($diff / 86400) . ' dny';
+        if ($diff < 60)     return $this->text('momentAgo', 'a moment ago');
+        if ($diff < 3600)   return $this->sharedText('agoMinutes', '{n} min ago', ['n' => (int) ($diff / 60)]);
+        if ($diff < 86400)  return $this->sharedText('agoHours', '{n} h ago', ['n' => (int) ($diff / 3600)]);
+        if ($diff < 86400 * 7) return $this->sharedText('agoDays', '{n} d ago', ['n' => (int) ($diff / 86400)]);
         return substr($datetime, 0, 10);
     }
 }

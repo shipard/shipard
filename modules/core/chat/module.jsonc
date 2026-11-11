@@ -48,6 +48,10 @@
             "file": "config/settings.jsonc"
         },
         {
+            "id": "core.chat.viewerDetailLabels",
+            "file": "config/viewerDetailLabels.jsonc"
+        },
+        {
             "id": "core.chat.sectionContexts",
             "file": "config/sectionContexts.jsonc"
         }

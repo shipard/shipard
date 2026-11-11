@@ -32,6 +32,8 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
  */
 class IncomingMessagesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.mail.docStatesIncoming';
 
     /** Mapování docState → span class (tamtéž jako v PersonsViewer). */
@@ -159,7 +161,7 @@ class IncomingMessagesViewer extends TableViewer
             ];
         }
         if (!empty($rowData['is_bulk'])) {
-            $i2[] = ['text' => 'hromadná', 'class' => 'muted'];
+            $i2[] = ['text' => $this->text('bulk', 'bulk'), 'class' => 'muted'];
         }
         $row['i2'] = $i2;
 
@@ -172,7 +174,7 @@ class IncomingMessagesViewer extends TableViewer
             $t3Parts[] = ['text' => '[' . $mailboxName . ']', 'class' => 'muted'];
         }
         if ($partner !== '' && $sender !== '') {
-            $t3Parts[] = ['text' => $this->fromLabel() . ': ' . $sender, 'class' => 'muted'];
+            $t3Parts[] = ['text' => $this->fromSender($sender), 'class' => 'muted'];
         }
         if ($bodyPreview !== '') {
             $t3Parts[] = ['text' => $bodyPreview];
@@ -322,7 +324,7 @@ class IncomingMessagesViewer extends TableViewer
             $subtitleParts[] = $partner;
         }
         if ($sender !== '') {
-            $subtitleParts[] = $partner !== '' ? $this->fromLabel() . ': ' . $sender : $sender;
+            $subtitleParts[] = $partner !== '' ? $this->fromSender($sender) : $sender;
         }
         $mailbox = $this->formatMailbox($record);
         if ($mailbox !== '') {
@@ -334,7 +336,7 @@ class IncomingMessagesViewer extends TableViewer
         }
 
         return new DetailHeader(
-            $subject !== '' ? $subject : '(bez předmětu)',
+            $subject !== '' ? $subject : $this->text('noSubject', '(no subject)'),
             $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
         );
     }
@@ -418,11 +420,11 @@ class IncomingMessagesViewer extends TableViewer
         // Když hlavička ukazuje titulek z AI místo generického předmětu,
         // původní předmět zůstává dohledatelný tady (D3).
         if ($this->usesAiTitle($record)) {
-            $this->addItem($techItems, $this->viewerLabel('subject', 'Subject'), $record['subject'] ?? null);
+            $this->addItem($techItems, $this->columnLabel('subject', 'Subject'), $record['subject'] ?? null);
         }
-        $this->addItem($techItems, 'Kód zprávy', $record['message_id'] ?? null);
+        $this->addItem($techItems, $this->columnLabel('message_id', 'Message code'), $record['message_id'] ?? null);
         if (!empty($record['external_message_id'])) {
-            $this->addItem($techItems, 'Message-ID', (string) $record['external_message_id']);
+            $this->addItem($techItems, $this->columnLabel('external_message_id', 'External Message-ID'), (string) $record['external_message_id']);
         }
 
         $bodyHtml = (string) ($record['body_html'] ?? '');
@@ -463,13 +465,13 @@ class IncomingMessagesViewer extends TableViewer
         if ($preprocessItems !== []) {
             $blocks[] = [
                 'type'   => 'properties',
-                'groups' => [['title' => 'Předzpracování', 'items' => $preprocessItems]],
+                'groups' => [['title' => $this->text('groupPreprocess', 'Preprocessing'), 'items' => $preprocessItems]],
             ];
         }
         if ($techItems !== []) {
             $blocks[] = [
                 'type'   => 'properties',
-                'groups' => [['title' => 'Technické údaje', 'items' => $techItems]],
+                'groups' => [['title' => $this->text('groupTechnical', 'Technical details'), 'items' => $techItems]],
             ];
         }
 
@@ -503,12 +505,12 @@ class IncomingMessagesViewer extends TableViewer
 
         $items = [];
         $badge = $this->buildCfgStateBadge('core.mail.preprocessStates', $state);
-        $this->addItem($items, 'Stav', $badge['label'] ?? (string) $state);
+        $this->addItem($items, $this->columnLabel('preprocess_state', 'Preprocess state'), $badge['label'] ?? (string) $state);
 
         if (($log['trigger'] ?? null) === PreprocessRunner::TRIGGER_ISDOC) {
             // ISDOC-only běh (#81): žádná pravidla, runner spuštěn jen kvůli
             // importu — bez tohoto řádku by blok ukazoval jen stav a ISDOC.
-            $this->addItem($items, 'Spuštěno', 'ISDOC import');
+            $this->addItem($items, $this->text('triggeredBy', 'Triggered by'), $this->text('triggerIsdocImport', 'ISDOC import'));
         }
 
         $plan = is_array($log['plan'] ?? null) ? $log['plan'] : [];
@@ -518,11 +520,11 @@ class IncomingMessagesViewer extends TableViewer
                 $ruleIds[] = (string) $entry['ruleId'];
             }
         }
-        $this->addItem($items, 'Pravidla', implode(', ', $ruleIds));
+        $this->addItem($items, $this->text('rules', 'Rules'), implode(', ', $ruleIds));
 
         $attempts = (int) ($log['attempts'] ?? 0);
         if ($attempts > 0) {
-            $this->addItem($items, 'Pokusy', (string) $attempts);
+            $this->addItem($items, $this->text('attempts', 'Attempts'), (string) $attempts);
         }
 
         foreach (is_array($log['results'] ?? null) ? $log['results'] : [] as $result) {
@@ -530,21 +532,21 @@ class IncomingMessagesViewer extends TableViewer
                 continue;
             }
             $label = trim(((string) ($result['ruleId'] ?? '')) . ' / ' . ((string) ($result['action'] ?? '')), ' /');
-            $value = !empty($result['ok']) ? 'OK' : 'Chyba';
+            $value = !empty($result['ok']) ? $this->text('resultOk', 'OK') : $this->text('error', 'Error');
             $note = trim((string) ($result['note'] ?? ''));
             if ($note !== '') {
                 $value .= ' — ' . $note;
             }
             if (!empty($result['attachmentId'])) {
-                $value .= ' (příloha #' . (int) $result['attachmentId'] . ')';
+                $value .= ' ' . $this->text('attachmentRef', '(attachment #{id})', ['id' => (int) $result['attachmentId']]);
             }
-            $this->addItem($items, $label !== '' ? $label : 'Akce', $value);
+            $this->addItem($items, $label !== '' ? $label : $this->text('action', 'Action'), $value);
         }
 
         if (!empty($log['isdoc']) && $log['isdoc'] !== 'skipped') {
-            $this->addItem($items, 'ISDOC', (string) $log['isdoc']);
+            $this->addItem($items, $this->text('isdoc', 'ISDOC'), (string) $log['isdoc']);
         }
-        $this->addItem($items, 'Dokončeno', $this->formatDateTime($log['finishedAt'] ?? null));
+        $this->addItem($items, $this->text('finished', 'Finished'), $this->formatDateTime($log['finishedAt'] ?? null));
 
         return $items;
     }
@@ -655,7 +657,11 @@ class IncomingMessagesViewer extends TableViewer
             ];
         }
 
-        $statusLabels = [1 => 'Probíhá', 2 => 'Úspěch', 3 => 'Selhala'];
+        $statusLabels = [
+            1 => $this->text('analysisRunning', 'Running'),
+            2 => $this->text('analysisSucceeded', 'Success'),
+            3 => $this->text('analysisFailed', 'Failed'),
+        ];
         $resolutionMap = $this->loadAnalysisResolutions();
         $presenter = new AnalysisErrorPresenter($this->db, $this->config);
         $rows = [];
@@ -688,7 +694,7 @@ class IncomingMessagesViewer extends TableViewer
                 'model'       => trim(($a['model_name'] ?? '') . ' ' . ($a['model_version'] ?? '')),
                 'prompt'      => $a['prompt_version'] ?? '',
                 'confidence'  => $confidence,
-                'proposal'    => !empty($a['has_proposal']) ? 'ano' : 'ne',
+                'proposal'    => $this->yesNoText(!empty($a['has_proposal'])),
                 'resolution'  => $resolution !== null
                     ? ($resolutionMap[$resolution]['name'] ?? (string) $resolution)
                     : '—',
@@ -700,16 +706,20 @@ class IncomingMessagesViewer extends TableViewer
         return [
             'type'    => 'table',
             'columns' => [
-                ['id' => 'analyzed_at', 'label' => 'Čas'],
-                ['id' => 'status',      'label' => 'Stav'],
-                ['id' => 'error',       'label' => 'Chyba'],
-                ['id' => 'model',       'label' => 'Model'],
-                ['id' => 'prompt',      'label' => 'Prompt'],
-                ['id' => 'confidence',  'label' => 'Jistota'],
-                ['id' => 'proposal',    'label' => 'Návrh'],
-                ['id' => 'resolution',  'label' => 'Verdikt'],
-                ['id' => 'cost',        'label' => 'Cena'],
-                ['id' => 'duration',    'label' => 'Trvání'],
+                ['id' => 'analyzed_at', 'label' => $this->text('analysisTime', 'Time')],
+                ['id' => 'status',      'label' => $this->text('status', 'Status')],
+                // Hlavičky sloupců jsou krátké texty z katalogu — plný popisek
+                // sloupce (`Čas analýzy`, `Verze promptu`) by desetisloupcovou
+                // tabulku roztáhl. Chyba = hláška z katalogu chyb, Model = název
+                // + verze, Návrh = příznak, Trvání v sekundách.
+                ['id' => 'error',       'label' => $this->text('error', 'Error')],
+                ['id' => 'model',       'label' => $this->text('model', 'Model')],
+                ['id' => 'prompt',      'label' => $this->text('prompt', 'Prompt')],
+                ['id' => 'confidence',  'label' => $this->columnLabel('confidence', 'Confidence', 'core_mail_message_analyses')],
+                ['id' => 'proposal',    'label' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'proposal', 'Proposal')],
+                ['id' => 'resolution',  'label' => $this->columnLabel('resolution', 'Resolution', 'core_mail_message_analyses')],
+                ['id' => 'cost',        'label' => $this->text('analysisCost', 'Cost')],
+                ['id' => 'duration',    'label' => $this->text('duration', 'Duration')],
             ],
             'rows' => $rows,
         ];
@@ -954,10 +964,10 @@ class IncomingMessagesViewer extends TableViewer
         }
         $parts = [];
         if (!empty($fields['invoice_number'])) {
-            $parts[] = 'č. ' . (string) $fields['invoice_number'];
+            $parts[] = $this->text('summaryNumber', 'no. {number}', ['number' => (string) $fields['invoice_number']]);
         }
         if (!empty($fields['total_amount'])) {
-            $currency = (string) ($fields['currency'] ?? 'Kč');
+            $currency = (string) ($fields['currency'] ?? $this->text('defaultCurrency', 'CZK'));
             $parts[] = number_format((float) $fields['total_amount'], 2, ',', ' ') . ' ' . $currency;
         }
         $supplier = $fields['supplier']['name'] ?? null;
@@ -1000,12 +1010,12 @@ class IncomingMessagesViewer extends TableViewer
         return [
             'type'   => 'properties',
             'groups' => [[
-                'title' => 'Originální .eml',
+                'title' => $this->text('groupOriginalEml', 'Original .eml'),
                 'items' => [
-                    ['label' => 'Název',     'value' => (string) ($raw['name'] ?? $raw['file_name'])],
-                    ['label' => 'Velikost',  'value' => $this->formatFileSize((int) ($raw['file_size'] ?? 0))],
-                    ['label' => 'MIME',      'value' => (string) ($raw['mime_type'] ?? '')],
-                    ['label' => 'Uloženo',   'value' => $this->formatDateTime($raw['created'] ?? null)],
+                    ['label' => $this->columnLabel('name', 'Name', 'core_attachments_files'), 'value' => (string) ($raw['name'] ?? $raw['file_name'])],
+                    ['label' => $this->columnLabel('file_size', 'File size', 'core_attachments_files'), 'value' => $this->formatFileSize((int) ($raw['file_size'] ?? 0))],
+                    ['label' => $this->columnLabel('mime_type', 'MIME type', 'core_attachments_files'), 'value' => (string) ($raw['mime_type'] ?? '')],
+                    ['label' => $this->text('stored', 'Stored'), 'value' => $this->formatDateTime($raw['created'] ?? null)],
                 ],
             ]],
         ];
@@ -1026,26 +1036,14 @@ class IncomingMessagesViewer extends TableViewer
         return $stateData['stateStyle'] ?? 'concept';
     }
 
+    /**
+     * Název primárního typu pro štítek řádku a hlavičky — z cfgItem
+     * `core.mail.primaryTypes`; bez konfigurace klíč typu (jako
+     * `primaryTypeLabelFor()`), žádná druhá sada názvů v PHP.
+     */
     private function resolvePrimaryTypeLabel(string $key): string
     {
-        if ($this->config !== null) {
-            $types = $this->config->cfgItem('core.mail.primaryTypes');
-            if (is_array($types) && isset($types[$key]['name'])) {
-                return (string) $types[$key]['name'];
-            }
-        }
-
-        // Fallback bez configu
-        return match ($key) {
-            'invoiceReceived' => 'Přijatá faktura',
-            'other'           => 'Ostatní',
-            'creditNote'      => 'Dobropis',
-            'order'           => 'Objednávka',
-            'quotation'       => 'Nabídka',
-            'statement'       => 'Výpis / Saldo',
-            'complaint'       => 'Reklamace',
-            default           => $key,
-        };
+        return $this->primaryTypeLabelFor($key);
     }
 
     /**
@@ -1064,19 +1062,22 @@ class IncomingMessagesViewer extends TableViewer
     }
 
     /**
-     * Popisek „od" před odesílatelem (t3, subtitle detailu) — z cfgItem
-     * `core.mail.viewerDetailLabels.labels.from`, bez configu anglicky.
+     * „od: odesílatel" (t3, subtitle detailu), když t2 / podtitulek nese
+     * partnera — celý vzor z katalogu, bez configu anglicky.
      */
-    private function fromLabel(): string
+    private function fromSender(string $sender): string
     {
-        return $this->viewerLabel('from', 'from');
+        return $this->text('fromSender', 'from: {sender}', ['sender' => $sender]);
     }
 
-    /** Drobný popisek z `core.mail.viewerDetailLabels.labels.*`, bez configu anglický fallback. */
-    private function viewerLabel(string $key, string $englishFallback): string
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
     {
-        $labels = ($this->config?->cfgItem('core.mail.viewerDetailLabels') ?? [])['labels'] ?? [];
-        return (string) ($labels[$key]['name'] ?? $englishFallback);
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /**
@@ -1136,22 +1137,19 @@ class IncomingMessagesViewer extends TableViewer
         $diff = time() - $ts;
 
         if ($diff < 60) {
-            return 'právě teď';
+            return $this->sharedText('justNow', 'just now');
         }
         if ($diff < 3600) {
-            $mins = (int) floor($diff / 60);
-            return 'před ' . $mins . ' min';
+            return $this->sharedText('agoMinutes', '{n} min ago', ['n' => (int) floor($diff / 60)]);
         }
         if ($diff < 86400) {
-            $hrs = (int) floor($diff / 3600);
-            return 'před ' . $hrs . ' h';
+            return $this->sharedText('agoHours', '{n} h ago', ['n' => (int) floor($diff / 3600)]);
         }
         if ($diff < 2 * 86400) {
-            return 'včera ' . date('H:i', $ts);
+            return $this->sharedText('yesterdayAt', 'yesterday {time}', ['time' => date('H:i', $ts)]);
         }
         if ($diff < 7 * 86400) {
-            $days = (int) floor($diff / 86400);
-            return 'před ' . $days . ' d';
+            return $this->sharedText('agoDays', '{n} d ago', ['n' => (int) floor($diff / 86400)]);
         }
 
         // Starší než týden → datum

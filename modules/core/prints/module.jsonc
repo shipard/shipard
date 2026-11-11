@@ -58,6 +58,10 @@
         {
             "id": "core.prints.textSlots",
             "file": "config/textSlots.jsonc"
+        },
+        {
+            "id": "core.prints.viewerDetailLabels",
+            "file": "config/viewerDetailLabels.jsonc"
         }
     ],
 

@@ -785,6 +785,25 @@ abstract class TableViewer
     }
 
     /**
+     * Sdílený text viewerů z `core.system.viewerDetailLabels`, sekce
+     * `texts` (#133 D66): text, který se opakuje ve třech a více modulech
+     * (Ano / Ne, „od {date}“, stavová slova, relativní čas…). Text jednoho
+     * modulu patří do jeho katalogu, ne sem.
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function sharedText(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText('core.system.viewerDetailLabels', $key, $englishFallback, $params);
+    }
+
+    /** Ano / Ne pro logickou hodnotu v detailu (sdílený text). */
+    protected function yesNoText(bool $value): string
+    {
+        return $value ? $this->sharedText('yes', 'Yes') : $this->sharedText('no', 'No');
+    }
+
+    /**
      * Shortcut for the most common case — the "Overview" tab shared by
      * almost every viewer's detail panel. Lives in core.system so all
      * modules pick up the same translation.

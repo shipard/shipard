@@ -218,7 +218,7 @@ class RegistryDocumentsViewer extends TableViewer
         }
         $validTo = $this->formatDate($record['valid_to'] ?? null);
         if ($validTo !== null) {
-            $subtitleParts[] = 'do ' . $validTo;
+            $subtitleParts[] = $this->sharedText('toDate', 'to {date}', ['date' => $validTo]);
         }
 
         $title = trim((string) ($record['title'] ?? ''));
@@ -275,28 +275,28 @@ class RegistryDocumentsViewer extends TableViewer
 
         // Druh je štítek, partner a šanon podtitul hlavičky (#140 D26).
         $identity = [];
-        $this->addItem($identity, 'Číslo / značka', $record['ref_number'] ?? null);
+        $this->addItem($identity, $this->columnLabel('ref_number', 'Number / reference'), $record['ref_number'] ?? null);
 
         // Konec platnosti nese podtitul hlavičky („do <datum>“, #140 D26).
         $validity = [];
-        $this->addItem($validity, 'Platnost od', $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($validity, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
 
         $groups = [];
         if ($identity !== []) {
-            $groups[] = ['title' => 'Identifikace', 'items' => $identity];
+            $groups[] = ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity];
         }
         if ($validity !== []) {
-            $groups[] = ['title' => 'Platnost', 'items' => $validity];
+            $groups[] = ['title' => $this->sharedText('groupValidity', 'Validity'), 'items' => $validity];
         }
 
         $metadataItems = $this->buildMetadataItems($record);
         if ($metadataItems !== []) {
-            $groups[] = ['title' => 'Metadata', 'items' => $metadataItems];
+            $groups[] = ['title' => $this->columnLabel('metadata', 'Metadata'), 'items' => $metadataItems];
         }
 
         $notice = trim((string) ($record['notice'] ?? ''));
         if ($notice !== '') {
-            $groups[] = ['title' => 'Poznámka', 'items' => [['label' => '', 'value' => $notice]], 'wide' => true];
+            $groups[] = ['title' => $this->columnLabel('notice', 'Notice'), 'items' => [['label' => '', 'value' => $notice]], 'wide' => true];
         }
 
         if ($groups !== []) {
@@ -381,7 +381,7 @@ class RegistryDocumentsViewer extends TableViewer
         $items = [];
 
         $sourceKind = (string) ($record['source_kind'] ?? '');
-        $this->addItem($items, 'Zdroj', $this->resolveSourceKindLabel($sourceKind));
+        $this->addItem($items, $this->columnLabel('source_kind', 'Source'), $this->resolveSourceKindLabel($sourceKind));
 
         if (!empty($record['source_message'])) {
             $message = $this->db->fetchRow(
@@ -395,23 +395,23 @@ class RegistryDocumentsViewer extends TableViewer
                     $sender = trim((string) ($message['sender_email'] ?? ''));
                 }
                 // Lidský název zprávy (titulek z AI u skenů, jinak předmět — D3).
-                $this->addItem($items, 'Zdrojová zpráva', IncomingMessageTitle::display(
+                $this->addItem($items, $this->columnLabel('source_message', 'Source message'), IncomingMessageTitle::display(
                     (string) ($message['subject'] ?? ''),
                     isset($message['ai_title']) ? (string) $message['ai_title'] : null,
                     (int) ($message['source_type'] ?? 0),
                     IncomingMessageTitle::patternsFrom($this->config),
                 ));
-                $this->addItem($items, 'Odesílatel', $sender);
-                $this->addItem($items, 'Doručeno', $this->formatDateTime($message['received_at'] ?? null));
+                $this->addItem($items, $this->detailText(self::LABELS_CFG_ITEM, 'sender', 'Sender'), $sender);
+                $this->addItem($items, $this->columnLabel('received_at', 'Received at', 'core_mail_incoming_messages'), $this->formatDateTime($message['received_at'] ?? null));
             }
         }
 
-        $this->addItem($items, 'Vytvořeno', $this->formatDateTime($record['created'] ?? null));
-        $this->addItem($items, 'Změněno', $this->formatDateTime($record['modified'] ?? null));
+        $this->addItem($items, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($items, $this->columnLabel('modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
 
         return [
             'type'   => 'properties',
-            'groups' => [['title' => 'Původ', 'items' => $items]],
+            'groups' => [['title' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'origin', 'Origin'), 'items' => $items]],
         ];
     }
 
@@ -437,11 +437,11 @@ class RegistryDocumentsViewer extends TableViewer
         $days = (int) floor(($ts - $today) / 86400);
 
         $text = match (true) {
-            $days < -1  => 'před ' . abs($days) . ' d',
-            $days === -1 => 'včera',
-            $days === 0 => 'dnes',
-            $days === 1 => 'zítra',
-            $days <= 60 => 'za ' . $days . ' d',
+            $days < -1  => $this->sharedText('agoDays', '{n} d ago', ['n' => abs($days)]),
+            $days === -1 => $this->sharedText('yesterday', 'yesterday'),
+            $days === 0 => $this->sharedText('today', 'today'),
+            $days === 1 => $this->sharedText('tomorrow', 'tomorrow'),
+            $days <= 60 => $this->sharedText('inDays', 'in {n} d', ['n' => $days]),
             default     => date('j. n. Y', $ts),
         };
 

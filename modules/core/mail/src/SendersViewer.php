@@ -14,6 +14,8 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class SendersViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT `id`, `email_from`, `smtp_host`, `smtp_port`, `smtp_security`,'
@@ -94,7 +96,7 @@ class SendersViewer extends TableViewer
         ];
 
         $transport = [
-            ['label' => 'SMTP', 'value' => $record['smtp_host'] . ':' . $record['smtp_port']],
+            ['label' => $this->detailText(self::LABELS_CFG_ITEM, 'smtp', 'SMTP'), 'value' => $record['smtp_host'] . ':' . $record['smtp_port']],
             ['label' => $isCs ? 'Zabezpečení' : 'Security', 'value' => (string) $record['smtp_security']],
             ['label' => $isCs ? 'Uživatel' : 'Username', 'value' => (string) ($record['smtp_username'] ?? '')],
             [
@@ -112,7 +114,7 @@ class SendersViewer extends TableViewer
                 'type'   => 'properties',
                 'groups' => [
                     ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                    ['title' => 'SMTP', 'items' => $transport],
+                    ['title' => $this->detailText(self::LABELS_CFG_ITEM, 'smtp', 'SMTP'), 'items' => $transport],
                 ],
             ],
         ]];

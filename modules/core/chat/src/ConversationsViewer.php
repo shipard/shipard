@@ -74,7 +74,7 @@ class ConversationsViewer extends TableViewer
 
         $title = trim((string) ($rowData['title'] ?? ''));
         if ($title === '') {
-            $title = '(bez názvu)';
+            $title = $this->sharedText('untitled', '(untitled)');
         }
 
         $row = [
@@ -109,20 +109,23 @@ class ConversationsViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $items = [];
-        $this->addItem($items, 'Název', $record['title'] ?? null);
-        $this->addItem($items, 'Model', $record['model_snapshot'] ?? null);
-        $this->addItem($items, 'Vstupní tokeny', (string) ($record['tokens_input'] ?? 0));
-        $this->addItem($items, 'Výstupní tokeny', (string) ($record['tokens_output'] ?? 0));
-        $this->addItem($items, 'Náklady', (string) ($record['cost'] ?? 0));
-        $this->addItem($items, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($items, 'Změněno', $record['modified'] ?? null);
+        $this->addItem($items, $this->columnLabel('title', 'Title'), $record['title'] ?? null);
+        $this->addItem($items, $this->columnLabel('model_snapshot', 'Model snapshot'), $record['model_snapshot'] ?? null);
+        $this->addItem($items, $this->columnLabel('tokens_input', 'Input tokens'), (string) ($record['tokens_input'] ?? 0));
+        $this->addItem($items, $this->columnLabel('tokens_output', 'Output tokens'), (string) ($record['tokens_output'] ?? 0));
+        $this->addItem($items, $this->columnLabel('cost', 'Cost'), (string) ($record['cost'] ?? 0));
+        $this->addItem($items, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
+        $this->addItem($items, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
 
         return [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => 'Konverzace', 'items' => $items]],
+                'groups' => [[
+                    'title' => $this->detailText('core.chat.viewerDetailLabels', 'conversation', 'Conversation'),
+                    'items' => $items,
+                ]],
             ],
         ]];
     }

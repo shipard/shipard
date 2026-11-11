@@ -10,6 +10,8 @@ use Shipard\Core\Viewer\TableViewer;
 
 class AIProfilesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -76,11 +78,11 @@ class AIProfilesViewer extends TableViewer
 
         $badges = [];
         if (!empty($rowData['is_default'])) {
-            $badges[] = ['text' => 'výchozí', 'class' => 'success'];
+            $badges[] = ['text' => $this->sharedText('statusDefault', 'default'), 'class' => 'success'];
         }
         $badges[] = !empty($rowData['is_active'])
-            ? ['text' => 'aktivní', 'class' => 'primary']
-            : ['text' => 'neaktivní', 'class' => 'muted'];
+            ? ['text' => $this->sharedText('statusActive', 'active'), 'class' => 'primary']
+            : ['text' => $this->sharedText('statusInactive', 'inactive'), 'class' => 'muted'];
         $row['i1'] = $badges;
 
         // Připojení i model jsou přepsání funkce mail.extraction (D4):
@@ -126,35 +128,38 @@ class AIProfilesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $identity = [];
-        $this->addItem($identity, 'Kód profilu', $record['profile_id'] ?? null);
+        $this->addItem($identity, $this->columnLabel('profile_id', 'Profile code'), $record['profile_id'] ?? null);
 
         $scope = [];
-        $this->addItem($scope, 'Podporované typy dokumentů', $record['supported_doc_types'] ?? null);
-        $this->addItem($scope, 'Jazyk', $record['language'] ?? null);
+        $this->addItem($scope, $this->columnLabel('supported_doc_types', 'Supported doc types'), $record['supported_doc_types'] ?? null);
+        $this->addItem($scope, $this->columnLabel('language', 'Language'), $record['language'] ?? null);
 
         // prompt_template / output_schema / confidence_thresholds jsou dlouhé
         // strojové hodnoty — do properties nepatří, zobrazíme jen verzi promptu.
         $prompt = [];
-        $this->addItem($prompt, 'Verze promptu', $record['prompt_version'] ?? null);
+        $this->addItem($prompt, $this->columnLabel('prompt_version', 'Prompt version'), $record['prompt_version'] ?? null);
 
         // Přepsání AI funkce mail.extraction (D4): prázdné = podle funkce.
+        $byFunction = $this->text('byFunction', 'by function');
         $override = [];
-        $this->addItem($override, 'AI připojení', ($record['backend'] ?? null) !== null
+        $this->addItem($override, $this->columnLabel('backend', 'AI connection'), ($record['backend'] ?? null) !== null
             ? (string) ($record['backend_name'] ?? ('#' . (int) $record['backend']))
-            : 'podle funkce');
-        $this->addItem($override, 'Model', $record['model'] ?? 'podle funkce');
-        $this->addItem($override, 'Tvarovat jako model', $record['model_like'] ?? null);
-        $this->addItem($override, 'Přemýšlení', $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
-        $this->addItem($override, 'Úsilí', $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
-        $this->addItem($override, 'Max. tokenů', ((int) ($record['max_tokens'] ?? 0)) > 0 ? (int) $record['max_tokens'] : 'podle funkce');
+            : $byFunction);
+        $this->addItem($override, $this->columnLabel('model', 'Model'), $record['model'] ?? $byFunction);
+        $this->addItem($override, $this->columnLabel('model_like', 'Shape request like model'), $record['model_like'] ?? null);
+        $this->addItem($override, $this->columnLabel('thinking', 'Thinking'), $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
+        $this->addItem($override, $this->columnLabel('effort', 'Effort'), $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
+        // Popisek sloupce nese nápovědu formuláře „(0 = podle funkce)“ — v detailu
+        // se místo nuly ukazuje text, proto vlastní popisek z katalogu.
+        $this->addItem($override, $this->text('maxTokens', 'Max tokens'), ((int) ($record['max_tokens'] ?? 0)) > 0 ? (int) $record['max_tokens'] : $byFunction);
 
         $flags = [];
-        $this->addItem($flags, 'Výchozí profil', !empty($record['is_default']) ? 'Ano' : 'Ne');
-        $this->addItem($flags, 'Aktivní', !empty($record['is_active']) ? 'Ano' : 'Ne');
+        $this->addItem($flags, $this->columnLabel('is_default', 'Default profile'), $this->yesNoText(!empty($record['is_default'])));
+        $this->addItem($flags, $this->columnLabel('is_active', 'Active'), $this->yesNoText(!empty($record['is_active'])));
 
         $status = [];
-        $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($status, 'Změněno', $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
 
         return [[
             'id'      => 'overview',
@@ -162,12 +167,12 @@ class AIProfilesViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => 'Identifikace', 'items' => $identity],
-                    ['title' => 'Záběr', 'items' => $scope],
-                    ['title' => 'Prompt', 'items' => $prompt],
-                    ['title' => 'Přepsání AI funkce', 'items' => $override],
-                    ['title' => 'Příznaky', 'items' => $flags],
-                    ['title' => 'Stav', 'items' => $status],
+                    ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],
+                    ['title' => $this->text('groupScope', 'Scope'), 'items' => $scope],
+                    ['title' => $this->text('prompt', 'Prompt'), 'items' => $prompt],
+                    ['title' => $this->text('groupFunctionOverride', 'AI function override'), 'items' => $override],
+                    ['title' => $this->text('groupFlags', 'Flags'), 'items' => $flags],
+                    ['title' => $this->text('status', 'Status'), 'items' => $status],
                 ],
             ],
         ]];
@@ -192,6 +197,16 @@ class AIProfilesViewer extends TableViewer
         $cfg = $this->config?->cfgItem($cfgItemId);
         $entry = is_array($cfg) ? ($cfg[$value] ?? null) : null;
         return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
+    }
+
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

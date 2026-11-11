@@ -9,6 +9,8 @@ use Shipard\Core\Viewer\TableViewer;
 
 class MailboxesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     private const STATE_SPAN_CLASS = [
@@ -77,7 +79,7 @@ class MailboxesViewer extends TableViewer
         ];
 
         $row['i1'] = !empty($rowData['is_default'])
-            ? [['text' => 'výchozí', 'class' => 'success']]
+            ? [['text' => $this->sharedText('statusDefault', 'default'), 'class' => 'success']]
             : null;
 
         $email = (string) ($rowData['email_address'] ?? '');
@@ -106,21 +108,21 @@ class MailboxesViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $identity = [];
-        $this->addItem($identity, 'E-mailová adresa', $record['email_address'] ?? null);
-        $this->addItem($identity, 'Popis', $record['description'] ?? null);
+        $this->addItem($identity, $this->columnLabel('email_address', 'E-mail address'), $record['email_address'] ?? null);
+        $this->addItem($identity, $this->columnLabel('description', 'Description'), $record['description'] ?? null);
 
         $config = [];
-        $this->addItem($config, 'Výchozí primární typ', $this->resolvePrimaryTypeLabel($record['default_primary_type'] ?? null));
-        $this->addItem($config, 'Výchozí schránka', !empty($record['is_default']) ? 'Ano' : 'Ne');
+        $this->addItem($config, $this->columnLabel('default_primary_type', 'Default primary type'), $this->resolvePrimaryTypeLabel($record['default_primary_type'] ?? null));
+        $this->addItem($config, $this->columnLabel('is_default', 'Default mailbox'), $this->yesNoText(!empty($record['is_default'])));
 
         $status = [];
-        $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($status, 'Změněno', $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
 
         return [$this->propertiesTab([
-            ['title' => 'Identifikace', 'items' => $identity],
-            ['title' => 'Konfigurace', 'items' => $config],
-            ['title' => 'Stav', 'items' => $status],
+            ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],
+            ['title' => $this->text('groupConfiguration', 'Configuration'), 'items' => $config],
+            ['title' => $this->text('status', 'Status'), 'items' => $status],
         ])];
     }
 
@@ -144,6 +146,16 @@ class MailboxesViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
+    }
+
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */
