@@ -216,11 +216,11 @@
     width: 0.4375rem;
     height: 0.4375rem;
     border-radius: 50%;
-    background-color: var(--shpd-color-warning, #d97706);
+    background-color: var(--shpd-color-warning);
   }
 
   .shpd-topmenu__badge--danger .shpd-topmenu__badge-dot {
-    background-color: var(--shpd-color-danger, #ef4444);
+    background-color: var(--shpd-color-danger);
   }
 
   .shpd-topmenu__actions {

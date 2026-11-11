@@ -221,12 +221,12 @@
     font-weight: 700;
     line-height: 0.875rem;
     text-align: center;
-    color: #fff;
-    background-color: var(--shpd-color-warning, #d97706);
+    color: var(--shpd-color-text-on-fill);
+    background-color: var(--shpd-color-warning);
   }
 
   .shpd-rail__badge--danger {
-    background-color: var(--shpd-color-danger, #ef4444);
+    background-color: var(--shpd-color-danger);
   }
 
   .shpd-rail__footer {

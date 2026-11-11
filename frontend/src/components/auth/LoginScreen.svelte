@@ -334,7 +334,7 @@
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     font-size: var(--shpd-font-size-base);
     font-weight: 500;
-    color: #ffffff;
+    color: var(--shpd-color-text-on-fill);
     background-color: var(--shpd-color-primary);
     border-radius: var(--shpd-radius-md);
     transition: background-color 0.15s;

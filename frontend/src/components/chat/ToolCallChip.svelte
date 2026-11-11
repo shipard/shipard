@@ -35,7 +35,7 @@
   }
   .shpd-toolchip--error {
     background-color: var(--shpd-color-danger);
-    color: #fff;
+    color: var(--shpd-color-text-on-fill);
   }
   .shpd-toolchip__label {
     overflow: hidden;

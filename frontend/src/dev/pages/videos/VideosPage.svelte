@@ -248,5 +248,5 @@
   .intro { margin-top: 0; }
   .ds-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--shpd-space-sm); margin-bottom: var(--shpd-space-sm); }
   .download { display: inline-flex; align-items: center; gap: var(--shpd-space-xs); }
-  .player { display: block; width: 100%; max-width: 60rem; border: 1px solid var(--shpd-color-border); border-radius: var(--shpd-radius-md); background: #000; }
+  .player { display: block; width: 100%; max-width: 60rem; border: 1px solid var(--shpd-color-border); border-radius: var(--shpd-radius-md); background: var(--dev-player-bg); }
 </style>

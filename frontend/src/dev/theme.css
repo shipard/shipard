@@ -45,11 +45,21 @@
   --dev-stripe-bg: #eb6507;                    /* pruh DEVELOPMENT DASHBOARD */
   --dev-stripe-ink: #14202c;                   /* tmavý text v pruhu, kontrast 5 : 1 (D13) */
   --dev-stripe-chip-bg: rgb(20 32 44 / 0.14);  /* štítky v pruhu (fáze 3) */
+  --dev-stripe-ink-hover: #000000;             /* tmavý štítek v pruhu pod kurzorem a rozbalený */
   --dev-toolbar-bg: #005089;                   /* lišta */
   --dev-toolbar-link: #cfe0ee;                 /* navigace v liště */
   --dev-toolbar-link-active: #ffffff;          /* hover a aktivní položka */
   --dev-class-real-bg: #fff3c4;                /* štítek „reálná kopie“ — žlutá pracovního pruhu webu */
   --dev-class-real-text: #5a4300;
+  /* Blok výstupu příkazů — tmavá konzole s vlastními barvami i ve světlém dashboardu */
+  --dev-output-bg: #0f172a;
+  --dev-output-text: #e2e8f0;
+  --dev-output-muted: #64748b;                 /* zástupný text prázdného výstupu */
+  --dev-output-step: #7dd3fc;
+  --dev-output-error: #fca5a5;
+  --dev-output-done: #86efac;
+  --dev-pdf-backdrop: #525659;                 /* podklad náhledu PDF — šedá prohlížeče PDF v Chromiu */
+  --dev-player-bg: #000000;                    /* podklad přehrávače videa */
   /* Výška pruhu + lišty pro lepicí prvky pod lištou (PdfPane). Výchozí odhad;
      DevApp ji na .dev-shell přepisuje naměřenou výškou, pruh i lišta smí zalomit. */
   --dev-top-height: 5.25rem;

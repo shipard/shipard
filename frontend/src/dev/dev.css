@@ -102,7 +102,7 @@
 }
 .dev-stripe__badge--strong {
   background: var(--dev-stripe-ink);
-  color: #ffffff;
+  color: var(--shpd-color-text-on-fill);
 }
 .dev-stripe__caret {
   display: inline-flex;
@@ -138,13 +138,13 @@
 
 .dev-stripe__chip--strong {
   background: var(--dev-stripe-ink);
-  color: #ffffff;
+  color: var(--shpd-color-text-on-fill);
 }
 
 .dev-stripe__chip--strong:hover,
 .dev-stripe__chip--strong[aria-expanded='true'] {
-  color: #ffffff;
-  background: #000000;
+  color: var(--shpd-color-text-on-fill);
+  background: var(--dev-stripe-ink-hover);
 }
 
 .dev-topbar {
@@ -504,7 +504,7 @@ code, .dev-code {
   border: 1px solid var(--shpd-color-primary);
   border-radius: var(--shpd-radius-md);
   background: var(--shpd-color-primary);
-  color: #ffffff;
+  color: var(--shpd-color-text-on-fill);
   font-size: var(--shpd-font-size-sm);
   font-weight: 500;
   line-height: 1;
@@ -516,7 +516,7 @@ code, .dev-code {
 .dev-btn-primary:hover {
   background: var(--shpd-color-primary-hover);
   border-color: var(--shpd-color-primary-hover);
-  color: #ffffff;
+  color: var(--shpd-color-text-on-fill);
 }
 
 .dev-btn-primary--md { padding: var(--shpd-space-sm) var(--shpd-space-lg); font-size: var(--shpd-font-size-base); }
@@ -569,8 +569,8 @@ code, .dev-code {
 
 /* ---- Výstup příkazů ---- */
 .dev-output {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--dev-output-bg);
+  color: var(--dev-output-text);
   font-family: var(--dev-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
   font-size: var(--shpd-font-size-xs);
   line-height: 1.5;
@@ -586,12 +586,12 @@ code, .dev-code {
 /* Prázdný výstup — text dává komponenta přes data-empty (slovník dashboardu, D12). */
 .dev-output:empty::before {
   content: attr(data-empty);
-  color: #64748b;
+  color: var(--dev-output-muted);
 }
 
-.dev-output__step { color: #7dd3fc; font-weight: 600; }
-.dev-output__error { color: #fca5a5; font-weight: 600; }
-.dev-output__done { color: #86efac; font-weight: 600; }
+.dev-output__step { color: var(--dev-output-step); font-weight: 600; }
+.dev-output__error { color: var(--dev-output-error); font-weight: 600; }
+.dev-output__done { color: var(--dev-output-done); font-weight: 600; }
 
 /* ---- Odznak stavu polí (prohlížeč výsledků) ---- */
 .dev-state {

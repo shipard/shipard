@@ -34,6 +34,6 @@
     min-height: 35rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);
-    background: #525659;
+    background: var(--dev-pdf-backdrop);
   }
 </style>

@@ -91,7 +91,7 @@
   /* Primary */
   .shpd-btn--primary {
     background-color: var(--shpd-color-primary);
-    color: #ffffff;
+    color: var(--shpd-color-text-on-fill);
     border-color: var(--shpd-color-primary);
   }
 
@@ -116,7 +116,7 @@
   /* Danger */
   .shpd-btn--danger {
     background-color: var(--shpd-color-danger);
-    color: #ffffff;
+    color: var(--shpd-color-text-on-fill);
     border-color: var(--shpd-color-danger);
   }
 
@@ -130,7 +130,7 @@
    * Záměrně málo častý — většina akcí jsou primary nebo secondary. */
   .shpd-btn--success {
     background-color: var(--shpd-color-success);
-    color: #ffffff;
+    color: var(--shpd-color-text-on-fill);
     border-color: var(--shpd-color-success);
   }
 

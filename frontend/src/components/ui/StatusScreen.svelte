@@ -46,7 +46,7 @@
     border: none;
     border-radius: var(--shpd-radius-md);
     background: var(--shpd-color-primary);
-    color: #fff;
+    color: var(--shpd-color-text-on-fill);
     font: inherit;
     font-weight: 600;
     cursor: pointer;

@@ -269,6 +269,6 @@
   }
 
   .shpd-palette__status--error {
-    color: var(--shpd-color-danger-text, #ef4444);
+    color: var(--shpd-color-danger-text);
   }
 </style>

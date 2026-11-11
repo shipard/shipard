@@ -59,7 +59,7 @@
   .shpd-feed-filter__chip--active {
     background: var(--shpd-color-primary);
     border-color: var(--shpd-color-primary);
-    color: #ffffff;
+    color: var(--shpd-color-text-on-fill);
   }
 
   .shpd-feed-filter__count {
