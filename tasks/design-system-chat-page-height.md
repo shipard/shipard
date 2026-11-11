@@ -1,6 +1,6 @@
 # Chat — stránka konverzací roluje celá, pole zprávy uříznuté
 
-**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady); příčina byla ve stavových pruzích v `ContentArea`, ne v chatu — pruhy přesunuty nad rolovací oblast (varianta A, viz Zjištění a Odchylky); ověřeno v Chromiu s podvrženými daty chatu, ruční ověření chatu na zdroji s pruhem „kopie reálných dat“ prošlo
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D62); příčina byla ve stavových pruzích v `ContentArea`, ne v chatu — pruhy přesunuty nad rolovací oblast (varianta A, viz Zjištění a Odchylky); ověřeno v Chromiu s podvrženými daty chatu, ruční ověření chatu na zdroji s pruhem „kopie reálných dat“ prošlo
 
 ## Kontext / Cíl
 
@@ -342,7 +342,7 @@ je na konci:
   - **B — `.shpd-content` jako flex sloupec**, kořeny obsahu `flex: 1;
     min-height: 0` místo `height: 100%` (zasahuje každý typ obsahu)
 
-  byla 2026-11-11 vybrána **A**. Číslo rozhodnutí v #133 zatím nemá.
+  byla 2026-11-11 vybrána **A** — v #133 zapsaná jako **D62**.
 - **Pruh pojistky pošty** dřív roloval s obsahem (ležel pod přilepenými
   stavovými pruhy), teď je s nimi v jednom kontejneru nad obsahem a je
   vidět stále.

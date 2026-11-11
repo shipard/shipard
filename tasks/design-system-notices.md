@@ -1,6 +1,6 @@
 # Design system — hlášky do `Notice` (D60, D61)
 
-**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D60, D61); nad rámec seznamu převedeno dalších osm komponent a kontrola tokenů má výjimku pro vývojářský dashboard (viz Odchylky); ověřeno v Chromiu s podvrženými odpověďmi API a průchodem sady `cz/association`, místa bez ověření v prohlížeči jsou vyjmenovaná v Odchylkách; ruční ověření na dev serveru čeká
+**Stav:** hotovo — 2026-11-11 (#133 Další nesoulady, D60, D61); nad rámec seznamu převedeno dalších osm komponent a kontrola tokenů má výjimku pro vývojářský dashboard (viz Odchylky); ověřeno v Chromiu s podvrženými odpověďmi API a průchodem sady `cz/association`, místa bez ověření v prohlížeči jsou vyjmenovaná v Odchylkách; ruční ověření na dev serveru prošlo (viz Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -332,3 +332,18 @@ konstantě s komentářem „do vyřešení bodu reportů v #133 (D61)“.
   a `app.shell: null`, `SettingsController` u typů `theme` / `shell`
   vyžaduje objekt a vrací 422 `VALIDATION_ERROR`. S hláškami nesouvisí —
   úspěch uložení byl pro snímek podvržený.
+
+## Ruční ověření (2026-11-11)
+
+Firefox, dev zdroj `lh6x` (chat na zdroji bez AI připojení): chyby
+načtení přes režim Offline v DevTools (dashboard, Přehled firmy, katalog
+reportů, stránky Nastavení, O zdroji dat, detail v modalu, review) —
+hláška nahoře, „Zkusit znovu“ načte znovu; uložení Nastavení → Aplikace
+(úspěch, zároveň oprava `ddf10c7c`); změna hesla (chyba); nahrání pošty
+(limit souborů i chyba); dialog Odeslat (nálezy návrhu); chyba chatu;
+chyby u prvku beze změny.
+
+Ručně neověřeno — na zdroji nebyl stav, který hlášku vyvolá: blokace
+dialogu odpisů, varování průvodce nastavení, zprávy sekcí Přehledu firmy.
+Ty pokrylo jen ověření v Chromiu s podvrženými daty (Ověření — co
+proběhlo).

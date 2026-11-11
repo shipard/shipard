@@ -472,7 +472,7 @@ Rozhodnutí D40 a D41 (task 3 #137), D60 a D61
   `ContentArea` v kontejneru `.shpd-content__banners` **nad** rolovací
   oblastí `.shpd-content` (sourozenec ve flex sloupci shellu, ne
   `position: sticky` uvnitř) — jsou stále vidět a obsahu neubírají
-  výšku naslepo (#133, řetěz výšky u *Viewer* výše).
+  výšku naslepo (#133 D62, řetěz výšky u *Viewer* výše).
 - **Hláška, pruh, karta, nebo toast**: hláška patří k místu, kde vznikla
   (formulář, dialog, tab detailu), a trvá, dokud trvá důvod; pruh je stav
   celého zdroje dat nad obsahem; karta s tónem (`FailureCard`, Karty výše)
