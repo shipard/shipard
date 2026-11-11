@@ -1941,12 +1941,24 @@ a posílá v API odpovědi v aktuálním jazyce (`Accept-Language` header):
   `Attachments` / `Přílohy`, …) — `TableViewer::detailTabLabel()` /
   `defaultOverviewLabel()` čte z `*.viewerDetailLabels.tabs.*` per-modul
   (`core.system`, `base.persons`, `base.registry`, `core.mail`,
-  `core.alerts`, `economy.accounting`, `economy.codebooks`, `economy.items`,
-  `economy.exchangeRates`); texty detailu (prázdný stav tabu, nadpisy bloků
+  `core.alerts`, `core.chat`, `core.prints`, `core.units`,
+  `economy.accounting`, `economy.accbal`, `economy.bank`,
+  `economy.codebooks`, `economy.items`, `economy.exchangeRates`,
+  `economy.vat`, `hosting.core`, `tasks.core`); texty detailu (prázdný stav tabu, nadpisy bloků
   Kontextu upozornění, přípona řádku u hlášení účtování) —
   `TableViewer::detailText()` ze sekce `texts` téhož katalogu (`{param}`
   z parametrů, #137 D30); úplnost cs + en všech sekcí hlídá
   `ViewerDetailLabelsCatalogTest`.
+- popisky vlastností, štítky a texty řádků seznamu ve vieweru (#133
+  D65–D67) — žádný literál jen v jednom jazyce: popisek shodný se sloupcem
+  `TableViewer::columnLabel()` (`formLabel ?? name` z lokalizované definice
+  tabulky, i z připojené tabulky třetím parametrem), ostatní z katalogu
+  modulu (`detailText()` / `labelText()`), text společný třem a více
+  modulům `TableViewer::sharedText()` / `yesNoText()` z
+  `core.system.viewerDetailLabels` → `texts`. Prefix s hodnotou je celý
+  vzor s parametrem (`"IČO: {value}"`), plurály se nepoužívají
+  (`"před {n} d"`). Zdroje viewerů hlídá `ViewerSourceTextsTest`;
+  dvojjazyčný zápis `$cs ? … : …` má výjimku do převodu v tasku F2.
 - názvy modulů, tabulek, sloupců — `ConfigLocalizer` /
   `LocalizedFieldResolver` z jsonc.
 

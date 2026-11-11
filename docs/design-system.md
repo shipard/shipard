@@ -1313,6 +1313,12 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   `--shpd-color-text-secondary`; text z katalogu popisků vieweru
   (`*.viewerDetailLabels` sekce `texts`, `TableViewer::detailText()`),
   cs i en, ne natvrdo v PHP.
+- **Zdroj textů detailu i seznamu** (#133 D66): popisek vlastnosti shodný
+  s popiskem sloupce jde z definice tabulky (`TableViewer::columnLabel()`,
+  stejný text jako ve formuláři), nadpisy skupin, štítky, zástupné texty
+  a vzory s hodnotou (`"IČO: {value}"`) z katalogu modulu; text společný
+  třem a více modulům z `core.system.viewerDetailLabels` (`sharedText()`).
+  Literál v PHP jen v jednom jazyce zastaví `ViewerSourceTextsTest` (D67).
 - **Prostý text**: blok `text` `{text}` — odstavec body, `white-space:
   pre-wrap` a `overflow-wrap: anywhere` (tělo pošty bez HTML, AI shrnutí
   Spisovny).

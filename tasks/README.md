@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 432 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 399.
+Celkem 433 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 400.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -199,6 +199,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-chat-page-height.md` | Stránka chatu: seznam konverzací a vlákno rolují každé zvlášť, pole zprávy vždy vidět — nejdřív měření řetězu výšky v Chromiu, pak oprava; `ChatThread` jako flex item bez přebití v `ChatPanel` (#133) |
 | `design-system-notices.md` | Hlášky formulářů, dialogů a panelů na `Notice`, chyba načtení místo obsahu jako `Notice` s „Zkusit znovu“ (D60), zprávy Přehledu firmy jako `Notice`, tokeny `--shpd-color-alert-*` jen v `Notice` / `PageBanner` s kontrolou (D61) (#133) |
 | `design-system-report-table.md` | Tabulka reportu: číslo účtu ve vlastním sloupci jako v exportu, bez odsazení názvu v účtových reportech (D63); stav reportu jako `Notice`, řádek se zprávou barvou textu a ikonou, zprávy pod čarou bez `alert-*`, konec výjimky v kontrole tokenů (D64) (#133) |
+| `design-system-viewer-texts.md` | Texty viewerů (detail i seznam) z katalogů místo literálů v PHP: popisek sloupce z definice tabulky (`columnLabel()`), ostatní `*.viewerDetailLabels` / `*.viewerLabels`, sdílené stavy v `core.system`; test proti literálům (D65–D67, F1, #133) |
 
 ## Mobilní (responzivní) UI
 
