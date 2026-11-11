@@ -303,5 +303,5 @@ Firefox na desktopu a telefon, čeština; rozložení sidebar, classic i wild
 - Tmavý vzhled v pořádku; na telefonu se číslo účtu neláme a tabulka
   roluje do strany ve svém obalu.
 
-Ručně neověřeno: angličtina a stav `errors` (na zdroji není report
+Angličtina ověřena dodatečně (hlavička „Account“ v Hlavní knize). Ručně neověřeno: stav `errors` (na zdroji není report
 s chybou — pokrylo jen Chromium s podvrženou odpovědí API).

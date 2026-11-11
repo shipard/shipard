@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 433 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 400.
+Celkem 435 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 400.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,8 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-report-account-label.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D68) |
+| `design-system-tone-colors.md` | naplánováno | 2026-11-11 (#133 Další nesoulady, D69, D70, D71, D72) |
 | `doc-row-unit-price-negative-qty.md` | naplánováno | zadání 2026-11-10 |
 | `doc-total-rounding-auto.md` | naplánováno | zadání 2026-11-10 (D1–D8 zamčené v #73) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -200,6 +202,8 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-notices.md` | Hlášky formulářů, dialogů a panelů na `Notice`, chyba načtení místo obsahu jako `Notice` s „Zkusit znovu“ (D60), zprávy Přehledu firmy jako `Notice`, tokeny `--shpd-color-alert-*` jen v `Notice` / `PageBanner` s kontrolou (D61) (#133) |
 | `design-system-report-table.md` | Tabulka reportu: číslo účtu ve vlastním sloupci jako v exportu, bez odsazení názvu v účtových reportech (D63); stav reportu jako `Notice`, řádek se zprávou barvou textu a ikonou, zprávy pod čarou bez `alert-*`, konec výjimky v kontrole tokenů (D64) (#133) |
 | `design-system-viewer-texts.md` | Texty viewerů (detail i seznam) z katalogů místo literálů v PHP: popisek sloupce z definice tabulky (`columnLabel()`), ostatní `*.viewerDetailLabels` / `*.viewerLabels`, sdílené stavy v `core.system`; test proti literálům (D65–D67, F1, #133) |
+| `design-system-report-account-label.md` | Report: popisek sloupce s číslem podle definice reportu (`accountColumn`), výchozí „Účet“; Přiznání k DPH „Řádek“, Kontrolní hlášení „Oddíl“ — obrazovka i export (D68, #133) |
+| `design-system-tone-colors.md` | Tónové barvy jako plocha a `-text` token s kontrastem 4,5 : 1 v obou vzhledech, hex jen v definicích tokenů s kontrolou v pre-commitu, varování v reportu i textem (D69–D72, #133) |
 
 ## Mobilní (responzivní) UI
 
