@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Mail;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
+use Shipard\Module\Core\Exchange\Enrich\ItemContentTags;
 use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
 use Shipard\Tests\Unit\Module\Core\Exchange\Document\OutOfScopeHarness;
 
@@ -13,7 +15,9 @@ use Shipard\Tests\Unit\Module\Core\Exchange\Document\OutOfScopeHarness;
  * podmínka stropu smí být širší, **nikdy užší**. Nad canonicaly z
  * {@see \Shipard\Tests\Unit\Module\Core\Exchange\Document\DocumentApplierOutOfScopeTest}
  * (skutečný applier, skutečná taxonomie štítků) — každý, u kterého applier
- * rozhodne `specialPlace`, musí strop dostat.
+ * rozhodne `specialPlace`, musí strop dostat. Platí i pro `special` ze
+ * štítků položky pokrytého řádku (D19, D20): applier i strop čtou štítky
+ * položek z téže databáze.
  */
 final class SpecialPlaceCapTest extends TestCase
 {
@@ -51,6 +55,20 @@ final class SpecialPlaceCapTest extends TestCase
         $domesticTagged = $this->happyPayload();
         $domesticTagged['_resolve']['contentTag'] = ['tag' => 'travel.accommodation', 'tagSource' => 'llm', 'rowExceptions' => []];
 
+        $combined = $this->coveredPayload(['CEST', 'CEST']);
+        unset($combined['rows'][0]['item']['ourCode']);
+        $combined['_resolve']['contentTag'] = [
+            'tag'           => null,
+            'rowExceptions' => [['rowIndex' => 0, 'tag' => 'travel.accommodation']],
+        ];
+
+        $coveredPlaceDomestic = $this->coveredPayload(['CEST', 'CEST']);
+        $coveredPlaceDomestic['vat']['place'] = 'domestic';
+
+        $domesticCovered = $this->happyPayload();
+        $domesticCovered['rows'][0]['item']['ourCode'] = 'CEST';
+        $domesticCovered['rows'][0]['vat'] = ['code' => null, 'pct' => 0];
+
         return [
             'zvláštní místo plnění'                    => [$special, true],
             'i s příznakem přenesení'                  => [$reverseCharge, true],
@@ -66,18 +84,29 @@ final class SpecialPlaceCapTest extends TestCase
             'bez štítku'                               => [$this->specialPlacePayload(tag: null), false],
             'zahraniční DPH'                           => [$this->hotelPayload(), false],
             'tuzemský doklad se štítkem special'       => [$domesticTagged, false],
+            // Opakovaný dodavatel: řádky pokryté položkami, bez bloku štítku (D19).
+            'special ze štítků položky'                => [$this->coveredPayload(['CEST', 'CEST']), true],
+            'položka se štítkem bez určení'            => [$this->coveredPayload(['CEST', 'MYTO']), true],
+            'štítek z bloku i štítky položky'          => [$combined, true],
+            'položka special, místo z AI tuzemsko'     => [$coveredPlaceDomestic, true],
+            'nejednoznačná položka'                    => [$this->coveredPayload(['CEST', 'OSTAT']), false],
+            'část řádků special z položky'             => [$this->coveredPayload(['CEST', 'SOFT']), false],
+            'položka bez štítků'                       => [$this->coveredPayload(['NEZNAMA', 'NEZNAMA']), false],
+            'tuzemský doklad s položkou special'       => [$domesticCovered, false],
         ];
     }
 
     public function testCapIsNeverNarrowerThanApplierDecision(): void
     {
-        $applier = $this->buildApplier();
+        $db = $this->db(self::TAGGED_ITEMS);
+        $applier = $this->buildApplier($db);
         $taxonomy = $this->contentTaxonomy();
         $specialPlace = 0;
 
         foreach ($this->variants() as $name => [$payload, $expectedCap]) {
             $reason = $applier->preview($payload)->canonical['_resolve']['vat']['mode']['reason'] ?? null;
-            $cap = AnalysisConfidenceResolver::capsSpecialPlace($payload, $taxonomy);
+            $itemTags = ItemContentTags::forCodes($db, SpecialPlaceSupply::itemCodes($payload));
+            $cap = AnalysisConfidenceResolver::capsSpecialPlace($payload, $taxonomy, $itemTags);
 
             if ($reason === 'specialPlace') {
                 $specialPlace++;
@@ -86,14 +115,59 @@ final class SpecialPlaceCapTest extends TestCase
             $this->assertSame($expectedCap, $cap, $name);
         }
 
-        // Pojistka proti prázdnému testu: applier v šesti variantách rozhoduje specialPlace.
-        $this->assertSame(6, $specialPlace);
+        // Pojistka proti prázdnému testu: applier v deseti variantách rozhoduje
+        // specialPlace — šest štítkem z bloku, čtyři (i) štítky položky.
+        $this->assertSame(10, $specialPlace);
     }
 
     public function testEmptyTaxonomyMeansNoCapAndNoApplierDecision(): void
     {
         // Bez taxonomie applier zvláštní místo plnění neohlásí — strop ho
         // proto nehlídá; obě strany čtou tentýž cfgItem.
-        $this->assertFalse(AnalysisConfidenceResolver::capsSpecialPlace($this->specialPlacePayload(), []));
+        $this->assertFalse(AnalysisConfidenceResolver::capsSpecialPlace($this->specialPlacePayload(), [], []));
+    }
+
+    /**
+     * Strop D21 proti applieru: řádek s nejednoznačnou položkou a prázdným
+     * kódem dostane od applieru varování `vat_special_place_ambiguous`
+     * a karta strop. Opačný směr záměrně neplatí vždy — řádek s kódem
+     * z historie strop nemá, i kdyby applier kód nahradil odvozeným.
+     */
+    public function testAmbiguousItemCapMatchesApplierWarning(): void
+    {
+        $db = $this->db(self::TAGGED_ITEMS);
+        $applier = $this->buildApplier($db);
+        $taxonomy = $this->contentTaxonomy();
+
+        $keptCode = $this->coveredPayload(['OSTAT', 'OSTAT']);
+        $keptCode['rows'][0]['vat']['code'] = 'cz-217';
+        $keptCode['rows'][1]['vat']['code'] = 'cz-217';
+        $withSupplierVat = $this->hotelPayload();
+        $withSupplierVat['rows'][0]['item']['ourCode'] = 'OSTAT';
+        $domestic = $this->happyPayload();
+        $domestic['rows'][0]['item']['ourCode'] = 'OSTAT';
+        $domestic['rows'][0]['vat'] = ['code' => null, 'pct' => 21];
+
+        $variants = [
+            'nejednoznačná položka bez kódu'  => [$this->coveredPayload(['OSTAT', 'SOFT']), true],
+            'nejednoznačná i special položka' => [$this->coveredPayload(['CEST', 'OSTAT']), true],
+            'kód ponechaný z historie'        => [$keptCode, false],
+            'položka jen special'             => [$this->coveredPayload(['CEST', 'CEST']), false],
+            'běžná položka'                   => [$this->coveredPayload(['SOFT', 'SOFT']), false],
+            'doklad s daní dodavatele'        => [$withSupplierVat, false],
+            'tuzemský doklad'                 => [$domestic, false],
+        ];
+        foreach ($variants as $name => [$payload, $expected]) {
+            $issues = $applier->preview($payload)->canonical['_resolve']['issues'] ?? [];
+            $warned = in_array('vat_special_place_ambiguous', array_column($issues, 'code'), true);
+            $itemTags = ItemContentTags::forCodes($db, SpecialPlaceSupply::itemCodes($payload));
+
+            $this->assertSame($expected, $warned, "{$name}: varování applieru");
+            $this->assertSame(
+                $expected,
+                AnalysisConfidenceResolver::capsAmbiguousItem($payload, $taxonomy, $itemTags),
+                "{$name}: strop",
+            );
+        }
     }
 }

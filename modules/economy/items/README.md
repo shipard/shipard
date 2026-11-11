@@ -63,6 +63,29 @@ obě osnovy používají stejná čísla pro jiné účty, takže filtr podle
 existence čísla by byl chyba. Vygenerované položky nesou
 `source_kind = 'setup.accountingItems'` a `source_ref` s kódem ze seedu.
 
+## Obsahové štítky a místo plnění
+
+Sloupec `content_tags` (JSON list klíčů taxonomie
+`core.exchange.contentTags`) neslouží jen párování řádků návrhu na položku
+(obsahová eskalace, `tasks/content-tag-enrichment.md`). U přijatého
+dokladu od dodavatele mimo tuzemsko podle něj `core.exchange` rozhoduje
+i o **zvláštním místě plnění** řádku pokrytého položkou (#89 D19–D21,
+`docs/exchange-format.md` § 8.4 → *Zvláštní místo plnění ze štítků
+položky*). Počítají se jen štítky, které mají v taxonomii
+`crossBorderSupply`:
+
+- položka jen se štítky `special` (ubytování + jízdné; mýto + správní
+  poplatky — štítek bez určení se nepočítá) → řádek má zvláštní místo
+  plnění, doklad bez daně dodavatele vznikne Bez DPH;
+- **sběrná položka s různorodými štítky** (parkování a ostraha `special`,
+  přeprava `services`) → výsledek je nejednoznačný: návrh počítá se
+  samovyměřením, řádek dostane varování a karta jde do kontroly.
+
+Položka založená pro štítek nese právě jeden; víc štítků mají nabídkové
+a ručně upravené položky. Kdo chce jednoznačný výsledek, sběrnou položku
+rozdělí — štítky na položce jsou tu zdroj pravdy, štítek se na řádek
+dokladu neukládá.
+
 ## Seedovaná data
 
 Provisioner při `ds-upgrade` naplní **4 systémové druhy**, jeden per

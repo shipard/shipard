@@ -1,6 +1,6 @@
 # Task: Zvláštní místo plnění u řádku pokrytého položkou — štítek z položky
 
-**Stav:** naplánováno — rozhodnutí D19–D21 potvrzená 2026-11-11 (#89, varianta A)
+**Stav:** hotovo — implementováno a ověřeno 2026-11-11 (D19–D21; cílené testy včetně stropu proti skutečnému applieru, `dataset-seed` + `dataset-verify` sady plátce bez nálezů na `jfpl-7`); náhled v prohlížeči neproklikán — korpus doklad od opakovaného zahraničního dodavatele se zvláštním místem plnění nemá
 
 **Issue:** #89 (mezera v D3 zjištěná při ověření `mail-card-band-special-place.md`)
 
@@ -122,6 +122,42 @@ Jeden commit — `feat(exchange): zvláštní místo plnění u pokrytého řád
    `help/posta/kontrola-vytezeni.md`; `python3 scripts/help-index.py`.
 7. `**Stav:**` tasku a `python3 scripts/tasks-index.py`.
 
+## Upřesnění z implementace
+
+- **Volba režimu potlačí varování D21 (potvrzeno 2026-11-11).** Zadání
+  mluví jen o volbě na řádku. Kdo v náhledu zvolil režim s DPH, rozhodl
+  se vědomě — rada „přepni na Bez DPH“ by byla šum; stejně se chová
+  `vat_special_place`. Volba kódu na jednom řádku varování ostatních
+  řádků neruší.
+- **Řádek s volbou položky se z položky neklasifikuje (potvrzeno
+  2026-11-11).** Když uživatel v náhledu zvolí jinou nebo novou položku
+  (`_resolve.rows[i].item.userAction`), canonical dál nese původní
+  `item.ourCode` — doklad by vznikl Bez DPH podle položky, která na něm
+  není. Pravidlo je v `SpecialPlaceSupply`, uložený návrh volbu nenese,
+  takže strop se nemění a applier je nanejvýš užší.
+- **Štítky položek jen mimo tuzemsko.** `effectiveSupplyKinds()` se na
+  mapu ptá, jen když je efektivní místo mimo tuzemsko — tuzemský doklad
+  nedostane ani dotaz navíc. Mapa je memoizovaná podle sady kódů
+  (`itemTagsFor()`), klíč cache `vatContext()` nese `item.ourCode` řádků
+  i volby položek.
+- **Štítky podle kódu:** `ItemContentTags::forCodes()` (`Enrich/`), klíč
+  mapy malými písmeny — sloupec `code` se v databázi porovnává bez
+  rozlišení velikosti. Na naseedované sadě plátce: 26 otagovaných
+  položek, 8 `special`, 1 nejednoznačná (*Ostatní služby*), 17 nic.
+- **Zdroj `special`:** `_resolve.rows[].vatCode.specialSource` (`"tag"` /
+  `"item"`) u dokladu mimo české DPH i u veta smíšeného dokladu. Zpráva
+  `vat_special_place` jmenuje položky, jen když `special` plyne z položky
+  (text u štítku z bloku se nezměnil); u veta ji jmenuje
+  `vat_code_unknown`.
+- **Odvozený kód = samovyměření.** Mimo tuzemsko derivace jiný kód než
+  samovyměření nevrací, proto varování D21 stačí `matchedBy: "derived"`
+  a další kontrola číselníku není potřeba.
+- **Strop:** `AnalysisConfidenceResolver::itemTagsFor()` sbírá kódy jen
+  z návrhů přijatých dokladů a ptá se jednou; `capBand()` /
+  `bandForAnalysis()` mají mapu povinným parametrem. Strop D21 je
+  `capsAmbiguousItem()`. Test oběma směry (`SpecialPlaceCapTest`) čte
+  štítky položek pro applier i strop z téže databáze.
+
 ## Mimo rozsah
 
 - Štítek uložený na řádku dokladu a vrácený z historie (varianta B) —
@@ -147,12 +183,12 @@ Jeden commit — `feat(exchange): zvláštní místo plnění u pokrytého řád
 
 ## Hotovo když
 
-- [ ] Pokrytý řádek čte štítky položky podle D19; `special` z položky dává
+- [x] Pokrytý řádek čte štítky položky podle D19; `special` z položky dává
       doklad mimo české DPH i veto (D20); nejednoznačná položka varuje
       a karta jde do kontroly (D21).
-- [ ] Testy `SpecialPlaceSupply|DocumentApplierOutOfScope|SpecialPlaceCap|AnalysisConfidenceResolver|MailSuggestionsSource`
+- [x] Testy `SpecialPlaceSupply|DocumentApplierOutOfScope|SpecialPlaceCap|AnalysisConfidenceResolver|MailSuggestionsSource`
       a `DocumentApplierTest` zelené.
-- [ ] Dokumentace a help aktualizované; `help-index.py` a `tasks-index.py`
+- [x] Dokumentace a help aktualizované; `help-index.py` a `tasks-index.py`
       prošly.
-- [ ] Ověření na dev zdroji: `dataset-seed` + `dataset-verify` sady plátce
+- [x] Ověření na dev zdroji: `dataset-seed` + `dataset-verify` sady plátce
       bez nálezů (regrese — doklady se zahraniční DPH beze změny).

@@ -220,7 +220,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
             ['value' => 'none', 'source' => 'outOfScope', 'auto' => 'none', 'reason' => 'specialPlace'],
             $resolve['vat']['mode'],
         );
-        $this->assertSame(self::OUT_OF_SCOPE_BLOCK, $resolve['rows'][0]['vatCode']);
+        $this->assertSame(self::OUT_OF_SCOPE_BLOCK + ['specialSource' => 'tag'], $resolve['rows'][0]['vatCode']);
         $this->assertNotSame([], $resolve['vatCodeOptions']);
         // Ceny beze změny — doklad žádnou daň nenese.
         $this->assertSame([200.00, 30.00], array_column($resolve['computed']['rows'], 'totalPrice'));
@@ -231,6 +231,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $this->assertSame('warning', $issue['severity']);
         $this->assertSame('vat.mode', $issue['path']);
         $this->assertStringContainsString('vyber kód DPH u řádku', $issue['message']);
+        $this->assertStringNotContainsString('položky', $issue['message']);
         $codes = $this->issueCodes($result->canonical);
         foreach ([...self::SUPPRESSED, 'vat_foreign_tax', 'computed_total_mismatch'] as $code) {
             $this->assertNotContains($code, $codes);
@@ -415,5 +416,220 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $this->assertContains('vat_non_payer', $codes);
         $this->assertNotContains('vat_foreign_tax', $codes);
         $this->assertSame(249.70, $resolve['computed']['totals']['totalAmount']);
+    }
+
+    // ── D19–D21: zvláštní místo plnění ze štítků položky pokrytého řádku ────
+
+    /** D20: `special` z položky se chová jako štítek řádku — doklad je mimo české DPH. */
+    public function testSpecialPlaceFromItemTagsIsWithoutVatWithWarning(): void
+    {
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['CEST', 'MYTO']));
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame(
+            ['value' => 'none', 'source' => 'outOfScope', 'auto' => 'none', 'reason' => 'specialPlace'],
+            $resolve['vat']['mode'],
+        );
+        $this->assertSame(self::OUT_OF_SCOPE_BLOCK + ['specialSource' => 'item'], $resolve['rows'][0]['vatCode']);
+        $this->assertSame(self::OUT_OF_SCOPE_BLOCK + ['specialSource' => 'item'], $resolve['rows'][1]['vatCode']);
+
+        $issue = $this->issue($result->canonical, 'vat_special_place');
+        $this->assertNotNull($issue);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertStringContainsString('ze štítků položek „CEST“, „MYTO“', $issue['message']);
+        $codes = $this->issueCodes($result->canonical);
+        foreach ([...self::SUPPRESSED, 'vat_special_place_ambiguous'] as $code) {
+            $this->assertNotContains($code, $codes);
+        }
+        // Štítky položek jedním dotazem na doklad.
+        $this->assertSame(1, $this->itemTagQueries);
+    }
+
+    public function testSpecialPlaceFromItemTagsAppliesWithoutVat(): void
+    {
+        $payload = $this->coveredPayload();
+        $payload['applyOptions'] = ['autoCreateMode' => 'safe', 'targetDocState' => 10];
+
+        $applied = $this->buildApplier($this->db(self::TAGGED_ITEMS))->apply($payload);
+
+        $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
+        $this->assertContains('vat_special_place', $this->issueCodes($applied->canonical));
+        $this->assertSame(0, (int) $this->savedHeadsData['vat_mode']);
+        $this->assertTrue(empty($this->savedHeadsData['rows'][0]['vat_code']));
+        $this->assertSame(1, $this->itemTagQueries);
+    }
+
+    /** Řádek se štítkem z bloku a řádek pokrytý položkou — obojí `special`. */
+    public function testSpecialPlaceCombinesBlockTagAndItemTags(): void
+    {
+        $payload = $this->coveredPayload(['CEST', 'CEST']);
+        unset($payload['rows'][0]['item']['ourCode']);
+        $payload['_resolve']['contentTag'] = [
+            'tag'           => null,
+            'rowExceptions' => [['rowIndex' => 0, 'tag' => 'travel.accommodation']],
+        ];
+
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload);
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame('specialPlace', $resolve['vat']['mode']['reason'] ?? null);
+        $this->assertSame('tag', $resolve['rows'][0]['vatCode']['specialSource']);
+        $this->assertSame('item', $resolve['rows'][1]['vatCode']['specialSource']);
+        $this->assertStringContainsString('ze štítků položky „CEST“', $this->issue($result->canonical, 'vat_special_place')['message']);
+    }
+
+    /** D20: veto ze štítků položky u smíšeného dokladu — řádek zůstává bez kódu jako dřív. */
+    public function testPartlySpecialItemRowsKeepVeto(): void
+    {
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['CEST', 'SOFT']));
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
+        $this->assertSame('notFound', $resolve['rows'][0]['vatCode']['status']);
+        $this->assertSame('item', $resolve['rows'][0]['vatCode']['specialSource']);
+        $this->assertSame('cz-217', $resolve['rows'][1]['vatCode']['createPayload']['code']);
+        $issue = $this->issue($result->canonical, 'vat_code_unknown');
+        $this->assertNotNull($issue);
+        $this->assertSame('rows.0.vat.code', $issue['path']);
+        $this->assertStringContainsString('zvláštním pravidlem', $issue['message']);
+        $this->assertStringContainsString('ze štítků položky „CEST“', $issue['message']);
+        $this->assertSame([], array_intersect(
+            ['vat_special_place', 'vat_special_place_ambiguous'],
+            $this->issueCodes($result->canonical),
+        ));
+    }
+
+    /** D21: nejednoznačná položka — samovyměření jako dřív, varování na řádku s odvozeným kódem. */
+    public function testAmbiguousItemWarnsOnRowWithDerivedCode(): void
+    {
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['OSTAT', 'SOFT']));
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
+        $this->assertSame('cz-217', $resolve['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertSame('derived', $resolve['rows'][0]['vatCode']['matchedBy']);
+        $this->assertArrayNotHasKey('specialSource', $resolve['rows'][0]['vatCode']);
+
+        $warnings = array_values(array_filter(
+            $result->canonical['_resolve']['issues'],
+            static fn (array $issue): bool => $issue['code'] === 'vat_special_place_ambiguous',
+        ));
+        $this->assertCount(1, $warnings);
+        $this->assertSame('warning', $warnings[0]['severity']);
+        $this->assertSame('rows.0.vat.code', $warnings[0]['path']);
+        $this->assertStringContainsString('Položka „OSTAT“', $warnings[0]['message']);
+        $this->assertStringContainsString('přepni režim DPH na Bez DPH', $warnings[0]['message']);
+        $this->assertNotContains('vat_special_place', $this->issueCodes($result->canonical));
+    }
+
+    /** D21: varování apply neblokuje a doklad vznikne se samovyměřením. */
+    public function testAmbiguousItemAppliesSelfAssessed(): void
+    {
+        $payload = $this->coveredPayload(['OSTAT', 'OSTAT']);
+        $payload['applyOptions'] = ['autoCreateMode' => 'safe', 'targetDocState' => 10];
+
+        $applied = $this->buildApplier($this->db(self::TAGGED_ITEMS))->apply($payload);
+
+        $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
+        $this->assertContains('vat_special_place_ambiguous', $this->issueCodes($applied->canonical));
+        $this->assertSame(1, (int) $this->savedHeadsData['vat_mode']);
+        $this->assertSame('cz-217', $this->savedHeadsData['rows'][0]['vat_code']);
+    }
+
+    /** D21: kód ponechaný z historie potvrdil člověk — bez varování. */
+    public function testAmbiguousItemWithKeptCodeDoesNotWarn(): void
+    {
+        $payload = $this->coveredPayload(['OSTAT', 'OSTAT']);
+        $payload['rows'][0]['vat']['code'] = 'cz-217';
+        $payload['rows'][1]['vat']['code'] = 'cz-217';
+
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload);
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame('cz-217', $resolve['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertSame('cfgItem', $resolve['rows'][0]['vatCode']['matchedBy']);
+        $this->assertNotContains('vat_special_place_ambiguous', $this->issueCodes($result->canonical));
+    }
+
+    /** D21: volba uživatele (kód řádku, režim s DPH, režim Bez DPH) varování nedostane. */
+    public function testAmbiguousItemWithUserChoiceDoesNotWarn(): void
+    {
+        $payload = $this->coveredPayload(['OSTAT', 'OSTAT']);
+
+        $rowPin = $this->buildApplier($this->db(self::TAGGED_ITEMS))
+            ->preview($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-217']));
+        $warned = array_column(array_filter(
+            $rowPin->canonical['_resolve']['issues'],
+            static fn (array $issue): bool => $issue['code'] === 'vat_special_place_ambiguous',
+        ), 'path');
+        $this->assertSame(['rows.1.vat.code'], array_values($warned));
+
+        foreach (['fromBase', 'none'] as $mode) {
+            $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))
+                ->preview($this->withPins($payload, ['vat.mode' => "useValue:{$mode}"]));
+            $this->assertNotContains('vat_special_place_ambiguous', $this->issueCodes($result->canonical), $mode);
+        }
+    }
+
+    /** Položka bez `special` štítku, bez štítků nebo neznámá: beze změny. */
+    public function testItemWithoutSpecialTagChangesNothing(): void
+    {
+        foreach ([['SOFT', 'SOFT'], ['NEZNAMA', 'NEZNAMA']] as $codes) {
+            $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload($codes));
+
+            $resolve = $result->canonical['_resolve'];
+            $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
+            $this->assertSame('cz-217', $resolve['rows'][0]['vatCode']['createPayload']['code']);
+            $this->assertSame([], array_intersect(
+                ['vat_special_place', 'vat_special_place_ambiguous', 'vat_code_unknown'],
+                $this->issueCodes($result->canonical),
+            ));
+        }
+    }
+
+    /** Volba položky v náhledu: na dokladu skončí jiná položka — z původní se neklasifikuje. */
+    public function testRowWithUserItemChoiceIsNotClassifiedByItem(): void
+    {
+        $payload = $this->coveredPayload(['CEST', 'CEST']);
+        $payload['_resolve']['rows'][0]['item']['userAction'] = 'useExisting:18';
+
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload);
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
+        $this->assertSame('cz-217', $resolve['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertSame('notFound', $resolve['rows'][1]['vatCode']['status']);
+    }
+
+    /** Tuzemsko a doklad s daní dodavatele se nepohnuly — ani varování, ani dotaz na štítky. */
+    public function testDomesticAndSupplierVatDocumentsStayUntouched(): void
+    {
+        $domestic = $this->happyPayload();
+        $domestic['rows'][0]['item']['ourCode'] = 'OSTAT';
+        $resolve = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($domestic)->canonical['_resolve'];
+        $this->assertSame('fromBase', $resolve['vat']['mode']['value']);
+        $this->assertSame('cz-110', $resolve['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertSame([], array_intersect(
+            ['vat_special_place', 'vat_special_place_ambiguous'],
+            array_column($resolve['issues'], 'code'),
+        ));
+        $this->assertSame(0, $this->itemTagQueries);
+
+        $foreignVat = $this->hotelPayload();
+        $foreignVat['rows'][0]['item']['ourCode'] = 'OSTAT';
+        $foreignVat['rows'][1]['item']['ourCode'] = 'CEST';
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($foreignVat);
+        $this->assertSame('foreignVat', $result->canonical['_resolve']['vat']['mode']['reason'] ?? null);
+        $this->assertSame([], array_intersect(
+            ['vat_special_place', 'vat_special_place_ambiguous'],
+            $this->issueCodes($result->canonical),
+        ));
+
+        // Daň dodavatele i příznak přenesení (smíšený doklad, D5): samovyměření bez varování.
+        $mixed = $foreignVat;
+        $mixed['vat']['reverseCharge'] = true;
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($mixed);
+        $this->assertNotSame('outOfScope', $result->canonical['_resolve']['vat']['mode']['source']);
+        $this->assertNotContains('vat_special_place_ambiguous', $this->issueCodes($result->canonical));
     }
 }

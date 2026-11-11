@@ -414,7 +414,7 @@ pojistka, prompt je zakazuje. Confidence pásmo se počítá za běhu
   záměrně nenabízí.)
 
 **Strop pásma** (`AnalysisConfidenceResolver::capBand()`, jediná metoda
-pro feed i detail zprávy) sráží `ready` na `review` ze tří důvodů —
+pro feed i detail zprávy) sráží `ready` na `review` ze čtyř důvodů —
 kterýkoli stačí, nižší pásma se nemění:
 
 1. **pokrytí řádků** — položkový řádek bez položky, s položkou
@@ -424,17 +424,30 @@ kterýkoli stačí, nižší pásma se nemění:
    BIC, nebo oprava IBAN ↔ číslo účtu;
 3. **zvláštní místo plnění** (#89 D17) — přijatý doklad, který by applier
    založil Bez DPH s varováním `vat_special_place`: nenese daň dodavatele,
-   každý položkový řádek má štítek s `crossBorderSupply: "special"`
-   a dodavatel není tuzemský. Rozhodnutí stojí na štítku, ne na údaji
-   z faktury, proto ho má vidět člověk. Doklad se zahraniční DPH
-   (`vat_foreign_tax`) strop nedostane.
+   každý položkový řádek má zvláštní místo plnění — štítkem z bloku
+   (`crossBorderSupply: "special"`), nebo štítky položky pokrytého řádku
+   (#89 D19, D20) — a dodavatel není tuzemský. Rozhodnutí stojí na
+   štítku, ne na údaji z faktury, proto ho má vidět člověk. Doklad se
+   zahraniční DPH (`vat_foreign_tax`) strop nedostane;
+4. **nejednoznačná položka** (#89 D21) — přijatý doklad bez daně
+   dodavatele, od dodavatele mimo tuzemsko, s řádkem pokrytým položkou,
+   jejíž štítky místo plnění neurčují jednoznačně (`special` i jiná
+   hodnota), a bez kódu DPH v canonicalu. Applier takovému řádku odvodí
+   samovyměření s varováním `vat_special_place_ambiguous`; jestli jde
+   o zvláštní místo plnění, musí rozhodnout člověk.
 
-Třetí důvod applier nevolá (feed sbírá desítky karet) a jeho rozhodnutí
-neopakuje — podmínka je záměrně **širší, nikdy užší**
-(`AnalysisConfidenceResolver::capsSpecialPlace()`). Pravidlo o štítcích
-řádků sdílí s applierem (`SpecialPlaceSupply::allItemRowsSpecial()`),
-taxonomii čtou oba z téhož cfgItemu `core.exchange.contentTags`
-(`contentTagsFrom()`; volající ji stropu předat musí). „Dodavatel není
+Třetí a čtvrtý důvod applier nevolají (feed sbírá desítky karet) a jeho
+rozhodnutí neopakují. Podmínka třetího je záměrně **širší, nikdy užší**
+(`AnalysisConfidenceResolver::capsSpecialPlace()`). Čtvrtý
+(`capsAmbiguousItem()`) je naopak vědomě **užší** než varování: řádek
+s kódem z historie strop nedává, ani když kontrola souladu v applieru kód
+zahodí a odvodí nový — strop souladem neprochází. Pravidlo o štítcích
+řádků sdílejí s applierem (`SpecialPlaceSupply::classifyRow()` /
+`allItemRowsSpecial()`), taxonomii čtou oba z téhož cfgItemu
+`core.exchange.contentTags` (`contentTagsFrom()`) a štítky položek
+z téhož místa (`ItemContentTags`, přes `itemTagsFor()` — **jeden dotaz**
+na sběr karet, v detailu zprávy jeden na zprávu, žádný bez řádku
+pokrytého položkou). Volající stropu předat musí obojí. „Dodavatel není
 tuzemský“ je hrubý signál canonicalu: `vat.place` je `intracom` /
 `thirdCountry`, nebo se prefix DIČ či země dodavatele liší od odběratele
 (jeho prefix DIČ, jinak země); když odběratel nedává prefix ani zemi —

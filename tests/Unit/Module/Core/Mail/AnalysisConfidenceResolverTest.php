@@ -12,7 +12,8 @@ use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
 /**
  * Runtime mapování confidence → pásmo návrhu (tasks/mail-message-centric.md
  * D3): prahy profilu s fallbacky + strop D7 podle pokrytí řádků položkami,
- * D15 podle nálezů hodnot a D17 u zvláštního místa plnění (#89).
+ * D15 podle nálezů hodnot, D17 u zvláštního místa plnění a D21
+ * u nejednoznačné položky (#89).
  * Pásmo se počítá za běhu, nikam se nezapisuje — testuje se resolver přímo,
  * hlavně thresholds fallbacky a hranice stropu.
  */
@@ -23,6 +24,15 @@ class AnalysisConfidenceResolverTest extends TestCase
         'travel.accommodation' => ['crossBorderSupply' => 'special'],
         'premises.rent'        => ['crossBorderSupply' => 'special'],
         'it.software'          => ['crossBorderSupply' => 'services'],
+        'vehicle.parking'      => ['crossBorderSupply' => 'special'],
+        'admin.fees'           => [],
+    ];
+
+    /** Štítky položek podle kódu — tvar `AnalysisConfidenceResolver::itemTagsFor()`. */
+    private const ITEM_TAGS = [
+        'ubyt'  => ['travel.accommodation', 'admin.fees'],
+        'ostat' => ['vehicle.parking', 'it.software'],
+        'soft'  => ['it.software'],
     ];
 
     private function resolver(?DataSourceConnection $db = null): AnalysisConfidenceResolver
@@ -120,6 +130,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -136,6 +147,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -152,6 +164,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -164,6 +177,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_LOW,
                 ['rows' => [['rowKind' => 'item', 'item' => []]]],
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -192,6 +206,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -232,6 +247,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -262,6 +278,7 @@ class AnalysisConfidenceResolverTest extends TestCase
                 AnalysisConfidenceResolver::BAND_READY,
                 $canonical,
                 self::TAGS,
+                [],
             ),
         );
     }
@@ -275,7 +292,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
         );
     }
 
@@ -292,7 +309,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
         );
     }
 
@@ -307,7 +324,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
         );
     }
 
@@ -315,8 +332,8 @@ class AnalysisConfidenceResolverTest extends TestCase
     {
         $canonical = ['supplier' => ['country' => 'cz', 'companyId' => '12345678']];
 
-        $this->assertSame(AnalysisConfidenceResolver::BAND_REVIEW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_REVIEW, $canonical, self::TAGS));
-        $this->assertSame(AnalysisConfidenceResolver::BAND_LOW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_LOW, $canonical, self::TAGS));
+        $this->assertSame(AnalysisConfidenceResolver::BAND_REVIEW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_REVIEW, $canonical, self::TAGS, []));
+        $this->assertSame(AnalysisConfidenceResolver::BAND_LOW, $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_LOW, $canonical, self::TAGS, []));
     }
 
     // ── strop D17: zvláštní místo plnění (#89) ──────────────────────────────
@@ -350,12 +367,12 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
         );
         // Bez taxonomie strop D17 neplatí — a jiný důvod stropu canonical nemá.
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, []),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, [], []),
         );
     }
 
@@ -368,7 +385,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
         );
     }
 
@@ -385,7 +402,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             $canonical['customer'] = $customer;
             $this->assertSame(
                 AnalysisConfidenceResolver::BAND_READY,
-                $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+                $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
             );
         }
     }
@@ -397,7 +414,7 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS),
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, []),
         );
     }
 
@@ -408,7 +425,7 @@ class AnalysisConfidenceResolverTest extends TestCase
         $base = $this->specialPlaceCanonical();
         $base['vat'] = ['mode' => 'fromBase', 'place' => 'domestic'];
         $base['supplier'] = ['name' => 'Dodavatel'];
-        $caps = static fn (array $canonical): bool => AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS);
+        $caps = static fn (array $canonical): bool => AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS, []);
         $customerCz = ['name' => 'Odběratel s.r.o.', 'country' => 'cz'];
 
         // Dodavatel bez DIČ a bez země signál nedá.
@@ -457,7 +474,132 @@ class AnalysisConfidenceResolverTest extends TestCase
         // Applier o dokladu mimo české DPH rozhoduje jen u přijatého dokladu.
         $canonical = ['selfParty' => 'supplier'] + $this->specialPlaceCanonical();
 
-        $this->assertFalse(AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS));
+        $this->assertFalse(AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS, []));
+    }
+
+    // ── strop D20, D21: štítky položky pokrytého řádku (#89) ─────────────────
+
+    /**
+     * Opakovaný dodavatel: řádky pokryté položkami, blok štítku chybí.
+     *
+     * @param list<string> $codes kód položky per řádek
+     * @return array<string, mixed>
+     */
+    private function coveredCanonical(array $codes): array
+    {
+        $canonical = $this->specialPlaceCanonical();
+        unset($canonical['_resolve']);
+        foreach ($codes as $idx => $code) {
+            $canonical['rows'][$idx]['item']['ourCode'] = $code;
+        }
+        return $canonical;
+    }
+
+    public function testCapDowngradesReadyForSpecialPlaceFromItemTags(): void
+    {
+        $canonical = $this->coveredCanonical(['UBYT', 'UBYT']);
+        $cap = fn (array $itemTags): string => $this->resolver()
+            ->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, $itemTags);
+
+        $this->assertSame(AnalysisConfidenceResolver::BAND_REVIEW, $cap(self::ITEM_TAGS));
+        // Bez štítků položek (neaktivní / neotagovaná položka) strop neplatí.
+        $this->assertSame(AnalysisConfidenceResolver::BAND_READY, $cap([]));
+    }
+
+    public function testCapDowngradesReadyForAmbiguousItemWithoutVatCode(): void
+    {
+        $canonical = $this->coveredCanonical(['OSTAT', 'SOFT']);
+
+        $this->assertTrue(AnalysisConfidenceResolver::capsAmbiguousItem($canonical, self::TAGS, self::ITEM_TAGS));
+        $this->assertFalse(AnalysisConfidenceResolver::capsSpecialPlace($canonical, self::TAGS, self::ITEM_TAGS));
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_REVIEW,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, self::ITEM_TAGS),
+        );
+    }
+
+    public function testCapKeepsReadyForAmbiguousItemWithVatCode(): void
+    {
+        // Kód z historie řádků potvrdil člověk — strop D21 se ho netýká.
+        $canonical = $this->coveredCanonical(['OSTAT', 'OSTAT']);
+        $canonical['rows'][0]['vat']['code'] = 'cz-217';
+        $canonical['rows'][1]['vat']['code'] = 'cz-217';
+
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_READY,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, self::ITEM_TAGS),
+        );
+        // Stačí jeden nejednoznačný řádek bez kódu.
+        $canonical['rows'][1]['vat']['code'] = null;
+        $this->assertSame(
+            AnalysisConfidenceResolver::BAND_REVIEW,
+            $this->resolver()->capBand(AnalysisConfidenceResolver::BAND_READY, $canonical, self::TAGS, self::ITEM_TAGS),
+        );
+    }
+
+    public function testAmbiguousItemCapLeavesDomesticAndSupplierVatAlone(): void
+    {
+        $caps = static fn (array $canonical): bool
+            => AnalysisConfidenceResolver::capsAmbiguousItem($canonical, self::TAGS, self::ITEM_TAGS);
+        $base = $this->coveredCanonical(['OSTAT', 'OSTAT']);
+        $this->assertTrue($caps($base));
+
+        // Tuzemský dodavatel.
+        $domestic = $base;
+        $domestic['supplier'] = ['name' => 'Dodavatel s.r.o.', 'country' => 'cz', 'vatId' => 'CZ12345678'];
+        $domestic['customer'] = ['name' => 'Odběratel s.r.o.', 'country' => 'cz'];
+        $domestic['vat'] = ['mode' => 'fromBase', 'place' => 'domestic'];
+        $this->assertFalse($caps($domestic));
+
+        // Doklad s daní dodavatele — údaj z faktury, ne odhad.
+        $supplierVat = $base;
+        $supplierVat['rows'][0]['vat']['pct'] = 19;
+        $supplierVat['vatRecap'] = [['vatPct' => 19, 'base' => 230.0, 'tax' => 43.7, 'total' => 273.7]];
+        $this->assertFalse($caps($supplierVat));
+
+        // Vystavený doklad, běžná položka, položka mimo mapu.
+        $this->assertFalse($caps(['selfParty' => 'supplier'] + $base));
+        $this->assertFalse($caps($this->coveredCanonical(['SOFT', 'SOFT'])));
+        $this->assertFalse(AnalysisConfidenceResolver::capsAmbiguousItem($base, self::TAGS, []));
+        // Štítek z bloku má přednost před položkou.
+        $withBlock = $base;
+        $withBlock['_resolve']['contentTag'] = ['tag' => 'it.software', 'rowExceptions' => []];
+        $this->assertFalse($caps($withBlock));
+    }
+
+    public function testItemTagsForAsksOnceForAllProposals(): void
+    {
+        $captured = [];
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->expects($this->once())->method('fetchAll')->willReturnCallback(
+            static function (mixed ...$args) use (&$captured): array {
+                $captured = $args;
+                return [['code' => 'OSTAT', 'content_tags' => '["vehicle.parking","it.software"]']];
+            },
+        );
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('getDibiConnection')->willReturn($dibi);
+
+        $itemTags = AnalysisConfidenceResolver::itemTagsFor($db, self::TAGS, [
+            $this->coveredCanonical(['OSTAT', 'SOFT']),
+            $this->coveredCanonical(['ostat', 'UBYT']),
+            // Návrh se štítkem z bloku a vystavený doklad se na položky neptají.
+            $this->specialPlaceCanonical(),
+            ['selfParty' => 'supplier'] + $this->coveredCanonical(['VYDANA']),
+        ]);
+
+        $this->assertSame(['ostat' => ['vehicle.parking', 'it.software']], $itemTags);
+        $this->assertSame(['OSTAT', 'SOFT', 'UBYT'], $captured[1]);
+    }
+
+    public function testItemTagsForWithoutTaxonomyOrCodesDoesNotQuery(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->expects($this->never())->method('getDibiConnection');
+
+        $this->assertSame([], AnalysisConfidenceResolver::itemTagsFor($db, [], [$this->coveredCanonical(['OSTAT'])]));
+        $this->assertSame([], AnalysisConfidenceResolver::itemTagsFor($db, self::TAGS, [$this->specialPlaceCanonical()]));
+        $this->assertSame([], AnalysisConfidenceResolver::itemTagsFor($db, self::TAGS, []));
     }
 
     public function testContentTagsFromConfig(): void
@@ -484,7 +626,7 @@ class AnalysisConfidenceResolverTest extends TestCase
         // 0.85 ≥ profile ready 0.8 → ready; canonical bez řádků strop nesráží.
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_READY,
-            $this->resolver($db)->bandForAnalysis(0.85, 17, [], self::TAGS),
+            $this->resolver($db)->bandForAnalysis(0.85, 17, [], self::TAGS, []),
         );
 
         // Řádek bez ourCode → strop D7 sráží ready na review.
@@ -492,7 +634,7 @@ class AnalysisConfidenceResolverTest extends TestCase
             AnalysisConfidenceResolver::BAND_REVIEW,
             $this->resolver($db)->bandForAnalysis(0.85, 17, [
                 'rows' => [['rowKind' => 'item', 'item' => ['name' => 'X']]],
-            ], self::TAGS),
+            ], self::TAGS, []),
         );
     }
 
@@ -504,11 +646,11 @@ class AnalysisConfidenceResolverTest extends TestCase
 
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_LOW,
-            $this->resolver($db)->bandForAnalysis(null, null, [], self::TAGS),
+            $this->resolver($db)->bandForAnalysis(null, null, [], self::TAGS, []),
         );
         $this->assertSame(
             AnalysisConfidenceResolver::BAND_REVIEW,
-            $this->resolver($db)->bandForAnalysis(0.7, null, [], self::TAGS),
+            $this->resolver($db)->bandForAnalysis(0.7, null, [], self::TAGS, []),
         );
     }
 }

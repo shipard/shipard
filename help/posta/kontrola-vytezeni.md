@@ -289,6 +289,21 @@ bez kódů a bez daně a náhled připomene, že se daň v Česku nepřizná. Vo
 *Automaticky* vrátí původní návrh. U tuzemské faktury s přenesením daňové
 povinnosti se *Bez DPH* zvolit nedá, Shipard režim vrátí zpět.
 
+**Faktura ze zahraničí od dodavatele, kterého už znáš.** Řádky takové
+faktury Shipard rovnou zařadí na tvoje položky a kategorii dokladu
+neurčuje. Službu se zvláštním místem plnění pak pozná podle **Obsahových
+štítků** položky. Když má položka jen štítky takových služeb (třeba
+*Ubytování* a *Jízdné a letenky*), návrh vznikne *Bez DPH* stejně jako
+výše, upozornění položku jmenuje a návrh jde **Ke kontrole**. Když položka
+sbírá i jiné služby (například *Parkovné* spolu s *Přepravou a kurýry*),
+Shipard to rozhodnout neumí: návrh počítá se samovyměřením, u řádku
+upozorní, že položka nese štítky s různým místem plnění, a návrh jde také
+**Ke kontrole**. Pokud se daň v Česku nepřiznává, zvol v hlavičce **Režim
+DPH** *Bez DPH*. Řádku, který kód DPH převzal z tvých dřívějších dokladů,
+se upozornění netýká. Aby se to neopakovalo, rozděl sběrnou položku na
+víc položek podle druhu služby a každé nech jen štítky, které k ní patří
+— viz [Obsahové štítky](../polozky/obsahove-stitky.md).
+
 **Neplátce DPH.** Když k datu faktury nejsi plátcem DPH, daň dodavatele
 si odečíst nemůžeš — je součástí ceny. Návrh faktury od plátce proto
 vznikne s **Režimem DPH** *Bez DPH* (náhled u něj píše *neplátce DPH —

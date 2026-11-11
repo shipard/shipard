@@ -134,8 +134,28 @@ trait OutOfScopeHarness
         return $config;
     }
 
-    /** DB zdroje: jedna aktivní registrace DPH (cz, id 5); ostatní dotazy prázdné. */
-    private function db(): Connection
+    /**
+     * Položky se štítky na zdroji (#89 D19) — tvary ze sady plátce: cestovné
+     * (jen `special`), mýto se správními poplatky (štítek bez určení se
+     * nepočítá), sběrné ostatní služby (`special` i `services`), software.
+     */
+    private const TAGGED_ITEMS = [
+        'CEST'  => ['travel.accommodation', 'travel.fares'],
+        'MYTO'  => ['vehicle.toll', 'admin.fees'],
+        'OSTAT' => ['vehicle.parking', 'premises.security', 'services.shipping', 'services.postage'],
+        'SOFT'  => ['it.software'],
+    ];
+
+    /** Počet dotazů na štítky položek ({@see db()}) — jeden na doklad. */
+    private int $itemTagQueries = 0;
+
+    /**
+     * DB zdroje: jedna aktivní registrace DPH (cz, id 5), štítky položek
+     * podle kódu (`ItemContentTags`); ostatní dotazy prázdné.
+     *
+     * @param array<string, list<string>> $taggedItems kód položky → štítky
+     */
+    private function db(array $taggedItems = []): Connection
     {
         $db = $this->createMock(Connection::class);
         $db->method('fetch')->willReturnCallback(static function (mixed ...$args): ?Row {
@@ -144,7 +164,20 @@ trait OutOfScopeHarness
                 ? new Row(['id' => 5, 'country' => 'cz'])
                 : null;
         });
-        $db->method('fetchAll')->willReturn([]);
+        $db->method('fetchAll')->willReturnCallback(function (mixed ...$args) use ($taggedItems): array {
+            if (!str_contains((string) ($args[0] ?? ''), '[content_tags] FROM [economy_items]')) {
+                return [];
+            }
+            $this->itemTagQueries++;
+            $wanted = array_map('mb_strtolower', (array) ($args[1] ?? []));
+            $rows = [];
+            foreach ($taggedItems as $code => $tags) {
+                if (in_array(mb_strtolower($code), $wanted, true)) {
+                    $rows[] = new Row(['code' => $code, 'content_tags' => json_encode($tags)]);
+                }
+            }
+            return $rows;
+        });
         $db->method('getInsertId')->willReturn(0);
         return $db;
     }
@@ -306,6 +339,22 @@ trait OutOfScopeHarness
                 'promptVersion' => 'tag-v1',
                 'rowExceptions' => $rowExceptions,
             ];
+        }
+        return $payload;
+    }
+
+    /**
+     * Hotel bez vyčíslené daně u **opakovaného dodavatele**: řádky pokryté
+     * položkami z historie, žádný blok `_resolve.contentTag` (#89 D19).
+     *
+     * @param list<string> $itemCodes kód položky per řádek ({@see TAGGED_ITEMS})
+     * @return array<string, mixed>
+     */
+    private function coveredPayload(array $itemCodes = ['CEST', 'CEST']): array
+    {
+        $payload = $this->specialPlacePayload(tag: null);
+        foreach ($itemCodes as $idx => $code) {
+            $payload['rows'][$idx]['item']['ourCode'] = $code;
         }
         return $payload;
     }

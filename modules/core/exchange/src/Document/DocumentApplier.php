@@ -15,6 +15,7 @@ use Shipard\Module\Base\Persons\PersonType;
 use Shipard\Module\Base\Persons\Values\PersonValues;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
+use Shipard\Module\Core\Exchange\Enrich\ItemContentTags;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
@@ -82,6 +83,14 @@ class DocumentApplier
      * @var array{key: string, ctx: array<string, mixed>}|null
      */
     private ?array $vatContextCache = null;
+
+    /**
+     * Štítky položek pokrytých řádků ({@see itemTagsFor()}, #89 D19) —
+     * jeden dotaz na doklad; klíč = sada kódů položek.
+     *
+     * @var array{key: string, tags: array<string, list<string>>}|null
+     */
+    private ?array $itemTagsCache = null;
 
     /**
      * Opravný doklad ({@see correctionDecision()}) — dohledání původního
@@ -1976,9 +1985,14 @@ class DocumentApplier
      *     input: string, derived: ?string, reason: ?string,
      *     effective: ?string, matchedBy: ?string,
      *     issue: ?array{severity: string, code: string, message: string},
-     *     supplyKind: ?string, supplyKindSource: ?string, tag: ?string, reasonKind: ?string
-     *   }>
+     *     supplyKind: ?string, supplyKindSource: ?string, tag: ?string, reasonKind: ?string,
+     *     specialSource: ?string, specialItem: ?string, ambiguousItem: ?string
+     *   }>,
+     *   special: array<int, array{source: string, item: ?string}>
      * }
+     *   `special` = řádky se zvláštním místem plnění a zdroj (`tag` = štítek
+     *   z bloku, `item` = štítky položky s jejím kódem, #89 D19) — přežije
+     *   i doklad mimo české DPH, kde se `rows` zahodí.
      */
     private function vatContext(array $canonical): array
     {
@@ -1991,8 +2005,9 @@ class DocumentApplier
         // dokladu a výjimky řádků o druhu plnění (D2), volby uživatele
         // (#87 B) o místě i kódech, data a import mód o registraci k datu
         // (#97), daň dodavatele (rekapitulace a `computed` řádků) o dokladu
-        // mimo české DPH (#89) — bez nich by cache vrátila kontext jiného
-        // dokladu / bez fallbacku / bez pinu.
+        // mimo české DPH (#89), položka řádku a volba položky o zvláštním
+        // místě plnění ze štítků položky (D19) — bez nich by cache vrátila
+        // kontext jiného dokladu / bez fallbacku / bez pinu.
         $key = md5((string) json_encode([
             $canonical['selfParty'] ?? null,
             $canonical['vat'] ?? null,
@@ -2009,9 +2024,13 @@ class DocumentApplier
             [$pins['place'], $pins['mode'], $pins['rows']],
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
-                    ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null]
+                    ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null, $row['item']['ourCode'] ?? null]
                     : null,
                 $rows,
+            ),
+            array_map(
+                static fn (mixed $rowResolve): mixed => is_array($rowResolve) ? ($rowResolve['item']['userAction'] ?? null) : null,
+                is_array($canonical['_resolve']['rows'] ?? null) ? $canonical['_resolve']['rows'] : [],
             ),
         ]));
         if ($this->vatContextCache !== null && $this->vatContextCache['key'] === $key) {
@@ -2050,6 +2069,7 @@ class DocumentApplier
             'pins'              => $pins,
             'codeOptions'       => [],
             'rows'              => [],
+            'special'           => [],
         ];
 
         if (($canonical['selfParty'] ?? null) === 'customer') {
@@ -2168,7 +2188,23 @@ class DocumentApplier
             } else {
                 $ctx['autoOutOfScope'] = $ctx['outOfScope'];
             }
+            // D21: nejednoznačná položka varuje jen u řádku s odvozeným kódem
+            // (mimo tuzemsko je každý odvozený kód samovyměření) na dokladu
+            // bez daně dodavatele a bez volby režimu. Ponechaný kód i volba
+            // uživatele varování nedostanou; v tuzemsku nejednoznačný řádek
+            // nevznikne (štítky položek se čtou jen mimo tuzemsko).
+            $warnAmbiguous = $pins['mode'] === null && !SupplierVatPrices::carriesSupplierVat($canonical);
+            foreach ($decisions as $idx => $decision) {
+                if (!$warnAmbiguous || $decision['matchedBy'] !== 'derived') {
+                    $decisions[$idx]['ambiguousItem'] = null;
+                }
+            }
             $ctx['rows'] = $ctx['outOfScope'] === null ? $decisions : [];
+            foreach ($kinds['rows'] as $idx => $kind) {
+                if ($kind['specialSource'] !== null) {
+                    $ctx['special'][$idx] = ['source' => $kind['specialSource'], 'item' => $kind['item']];
+                }
+            }
         }
 
         $this->vatContextCache = ['key' => $key, 'ctx' => $ctx];
@@ -2188,7 +2224,7 @@ class DocumentApplier
      *   řádek s ponechaným kódem z canonicalu / historie → null (jako dřív)
      *   doklad nese daň dodavatele, bez `reverseCharge`  → foreignVat
      *   doklad nese daň i `reverseCharge: true`          → null (smíšený, D5)
-     *   bez daně, každý položkový řádek štítek `special` → specialPlace
+     *   bez daně, každý položkový řádek `special`        → specialPlace
      *   cokoli jiného                                    → null
      *
      * Ponechaný kód (`matchedBy: "input"`) je kód, který derivace ani
@@ -2201,8 +2237,9 @@ class DocumentApplier
      * tam se Bez DPH se samovyměřením dál tiše přepíná na „Ze základu“
      * ({@see effectiveVatMode()}, D11 z #87).
      *
-     * Pravidlo „každý položkový řádek má štítek `special`“ drží
-     * {@see SpecialPlaceSupply::allItemRowsSpecial()} — sdílí ho strop
+     * Pravidlo „každý položkový řádek je `special`“ — štítkem z bloku
+     * `_resolve.contentTag`, nebo štítky položky pokrytého řádku (D19, D20)
+     * — drží {@see SpecialPlaceSupply::allItemRowsSpecial()}; sdílí ho strop
      * pásma karty návrhu (#89 D17), který smí být širší, nikdy užší.
      *
      * @param array<string, mixed> $canonical
@@ -2234,7 +2271,7 @@ class DocumentApplier
         if (SupplierVatPrices::carriesSupplierVat($canonical)) {
             return $reverseCharge === true ? null : VatCodeDerivation::FAIL_FOREIGN_VAT;
         }
-        return SpecialPlaceSupply::allItemRowsSpecial($canonical, $this->contentTags)
+        return SpecialPlaceSupply::allItemRowsSpecial($canonical, $this->contentTags, $this->itemTagsFor($canonical))
             ? VatCodeDerivation::FAIL_SPECIAL_PLACE
             : null;
     }
@@ -2352,7 +2389,10 @@ class DocumentApplier
     }
 
     /** Řádek bez informace o druhu plnění ({@see effectiveSupplyKinds()}). */
-    private const NO_SUPPLY_KIND = ['supplyKind' => null, 'source' => null, 'tag' => null, 'tagSupply' => null];
+    private const NO_SUPPLY_KIND = [
+        'supplyKind' => null, 'source' => null, 'tag' => null, 'tagSupply' => null,
+        'specialSource' => null, 'item' => null, 'ambiguous' => false,
+    ];
 
     /**
      * Efektivní druh plnění položkových řádků (tasks/exchange-received-supply-kind.md
@@ -2362,19 +2402,32 @@ class DocumentApplier
      * {@see RowEnrichmentPipeline::rowContentTagOf()}). `tagSupply` nese
      * hodnotu štítku vždy — veto `special` (D4) kontroluje derivace sama,
      * i proti druhu z AI. Bez bloku `_resolve.contentTag` (pokrytý doklad,
-     * žádný LLM běh) fallback není. Canonical se nemění; `changed` =
-     * fallback aspoň jeden druh doplnil.
+     * žádný LLM běh) fallback druhu plnění není. Canonical se nemění;
+     * `changed` = fallback aspoň jeden druh doplnil.
+     *
+     * Řádek bez štítku z bloku, pokrytý položkou, se mimo tuzemsko
+     * klasifikuje podle štítků své položky (#89 D19–D21,
+     * {@see SpecialPlaceSupply::classifyRow()}): `special` z položky se
+     * chová jako štítek řádku (`tagSupply: "special"`, `specialSource:
+     * "item"`) — veto i doklad mimo české DPH fungují beze změny logiky;
+     * nejednoznačná položka nese `ambiguous` (chování se nemění, jen
+     * varování). `item` = kód položky, ze které klasifikace plyne. Druh
+     * plnění se z položky neodvozuje; v tuzemsku se štítky položek nečtou.
      *
      * @param array<string, mixed> $canonical
      * @param array<int|string, mixed> $rows
      * @return array{
-     *   rows: array<int, array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string}>,
+     *   rows: array<int, array{
+     *     supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string,
+     *     specialSource: ?string, item: ?string, ambiguous: bool
+     *   }>,
      *   changed: bool
      * }
      */
     private function effectiveSupplyKinds(array $canonical, array $rows, ?string $place): array
     {
         $crossBorder = $place !== null && $place !== 'domestic';
+        $itemTags = $crossBorder ? $this->itemTagsFor($canonical) : [];
         $out = ['rows' => [], 'changed' => false];
         foreach ($rows as $idx => $row) {
             if (!is_array($row)
@@ -2385,10 +2438,22 @@ class DocumentApplier
             $idx = (int) $idx;
             $ai = $row['vat']['supplyKind'] ?? null;
             $ai = is_string($ai) && trim($ai) !== '' ? trim($ai) : null;
-            $tag = RowEnrichmentPipeline::rowContentTagOf($canonical, $idx);
-            $tagSupply = $tag !== null ? $this->tagSupplyOf($tag) : null;
+            $class = SpecialPlaceSupply::classifyRow($canonical, $idx, $this->contentTags, $itemTags);
+            $tag = $class['tag'];
+            $special = $class['state'] === SpecialPlaceSupply::ROW_SPECIAL;
+            $tagSupply = $tag !== null
+                ? $this->tagSupplyOf($tag)
+                : ($special ? VatCodeDerivation::TAG_SUPPLY_SPECIAL : null);
 
-            $entry = ['supplyKind' => $ai, 'source' => $ai !== null ? 'ai' : null, 'tag' => $tag, 'tagSupply' => $tagSupply];
+            $entry = [
+                'supplyKind'    => $ai,
+                'source'        => $ai !== null ? 'ai' : null,
+                'tag'           => $tag,
+                'tagSupply'     => $tagSupply,
+                'specialSource' => $special ? $class['source'] : null,
+                'item'          => $class['item'],
+                'ambiguous'     => $class['state'] === SpecialPlaceSupply::ROW_AMBIGUOUS,
+            ];
             if ($ai === null && $crossBorder
                 && in_array($tagSupply, [VatCodeDerivation::TAG_SUPPLY_GOODS, VatCodeDerivation::TAG_SUPPLY_SERVICES], true)
             ) {
@@ -2399,6 +2464,31 @@ class DocumentApplier
             $out['rows'][$idx] = $entry;
         }
         return $out;
+    }
+
+    /**
+     * Štítky položek řádků, které se klasifikují podle položky (#89 D19) —
+     * jeden dotaz na doklad ({@see ItemContentTags}), memoizovaný podle sady
+     * kódů. Bez taxonomie nebo bez takového řádku žádný dotaz.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<string, list<string>>
+     */
+    private function itemTagsFor(array $canonical): array
+    {
+        if ($this->contentTags === []) {
+            return [];
+        }
+        $codes = SpecialPlaceSupply::itemCodes($canonical);
+        if ($codes === []) {
+            return [];
+        }
+        sort($codes);
+        $key = implode("\n", $codes);
+        if ($this->itemTagsCache === null || $this->itemTagsCache['key'] !== $key) {
+            $this->itemTagsCache = ['key' => $key, 'tags' => ItemContentTags::forCodes($this->db, $codes)];
+        }
+        return $this->itemTagsCache['tags'];
     }
 
     /** `crossBorderSupply` štítku z taxonomie; neznámá hodnota nebo štítek = null. */
@@ -2492,7 +2582,7 @@ class DocumentApplier
      * štítku — kód potvrzený člověkem štítek nezpochybňuje.
      *
      * @param array<string, mixed> $rowVat canonical `rows[].vat`
-     * @param array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string} $kind
+     * @param array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string, specialSource: ?string, item: ?string, ambiguous: bool} $kind
      *        efektivní druh plnění řádku ({@see effectiveSupplyKinds()})
      * @param string|null $pinned  kód zvolený uživatelem (`useCode:`), {@see vatPins()}
      * @param list<array{code: string, label: string, pct: float, reverseCharge: bool, reducedDeduction: bool, supplyKind: ?string}> $options
@@ -2501,8 +2591,12 @@ class DocumentApplier
      *   input: string, derived: ?string, reason: ?string,
      *   effective: ?string, matchedBy: ?string,
      *   issue: ?array{severity: string, code: string, message: string},
-     *   supplyKind: ?string, supplyKindSource: ?string, tag: ?string, reasonKind: ?string
+     *   supplyKind: ?string, supplyKindSource: ?string, tag: ?string, reasonKind: ?string,
+     *   specialSource: ?string, specialItem: ?string, ambiguousItem: ?string
      * }
+     *   `specialSource` tag | item = odkud je `special` řádku, `specialItem`
+     *   kód položky u zdroje item; `ambiguousItem` = kód nejednoznačné
+     *   položky (#89 D21) — zda se varuje, rozhoduje {@see vatContext()}.
      */
     private function decideRowVatCode(
         string $country,
@@ -2548,6 +2642,9 @@ class DocumentApplier
             'tag'              => $kind['tag'],
             // Druh důvodu selhání derivace (zahraniční DPH / zvláštní místo), #89.
             'reasonKind'       => $derived['kind'],
+            'specialSource'    => $kind['specialSource'],
+            'specialItem'      => $kind['specialSource'] === SpecialPlaceSupply::SOURCE_ITEM ? $kind['item'] : null,
+            'ambiguousItem'    => $kind['ambiguous'] ? $kind['item'] : null,
         ];
         $useDerived = static function (array $out, string $code, ?array $issue): array {
             $out['effective'] = $code;
@@ -2722,9 +2819,14 @@ class DocumentApplier
                 // zablokoval apply kvůli hodnotě, která se zahodí.
                 // #89: doklad mimo české DPH má blok bez kódu — náhled na něm
                 // drží volbu kódu, kterou se uživatel vrátí k samovyměření.
-                return $vatCtx['outOfScope'] !== null && self::rowHasVatDecision($row)
-                    ? self::OUT_OF_SCOPE_VAT_CODE
+                if ($vatCtx['outOfScope'] === null || !self::rowHasVatDecision($row)) {
+                    return null;
+                }
+                // Odkud je `special` řádku (štítek z bloku / štítky položky, D19).
+                $source = $vatCtx['outOfScope'] === VatCodeDerivation::FAIL_SPECIAL_PLACE
+                    ? ($vatCtx['special'][$idx]['source'] ?? null)
                     : null;
+                return self::OUT_OF_SCOPE_VAT_CODE + ($source !== null ? ['specialSource' => $source] : []);
             }
             $code = trim((string) ($rowVat['code'] ?? ''));
             if ($code === '') {
@@ -2760,12 +2862,29 @@ class DocumentApplier
                 ),
             ];
         }
+        // Veto zvláštního místa plnění (D4) ze štítků položky (D20) — zpráva
+        // řekne, odkud se vzalo; u štítku z bloku ho náhled ukazuje sám.
+        $vetoFromItem = $decision['reasonKind'] === VatCodeDerivation::FAIL_SPECIAL_PLACE
+            && $decision['specialItem'] !== null;
         if ($decision['issue'] !== null) {
             $issues[] = [
                 'severity' => $decision['issue']['severity'],
                 'path'     => "rows.{$idx}.vat.code",
                 'code'     => $decision['issue']['code'],
-                'message'  => $decision['issue']['message'],
+                'message'  => $decision['issue']['message']
+                    . ($vetoFromItem && $decision['effective'] === null
+                        ? " Zvláštní místo plnění plyne ze štítků položky „{$decision['specialItem']}“."
+                        : ''),
+            ];
+        }
+        if ($decision['ambiguousItem'] !== null) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => "rows.{$idx}.vat.code",
+                'code'     => 'vat_special_place_ambiguous',
+                'message'  => "Položka „{$decision['ambiguousItem']}“ nese štítky s různým místem plnění — nedá se poznat,"
+                    . ' jestli jde o službu se zvláštním místem plnění (ubytování, doprava osob, parkování, mýto …).'
+                    . ' Návrh počítá se samovyměřením; pokud se daň v ČR nepřiznává, přepni režim DPH na Bez DPH.',
             ];
         }
         if ($decision['effective'] === null) {
@@ -2775,6 +2894,9 @@ class DocumentApplier
             $notFound = ResolveResult::notFound()->toArray();
             if ($fromTag) {
                 $notFound['supplyKindSource'] = 'tag';
+            }
+            if ($decision['reasonKind'] === VatCodeDerivation::FAIL_SPECIAL_PLACE && $decision['specialSource'] !== null) {
+                $notFound['specialSource'] = $decision['specialSource'];
             }
             return $notFound;
         }
@@ -3618,7 +3740,7 @@ class DocumentApplier
             return;
         }
         if ($vatCtx['outOfScope'] !== null) {
-            $this->appendOutOfScopeIssues($vatCtx['outOfScope'], $issues);
+            $this->appendOutOfScopeIssues($vatCtx['outOfScope'], $vatCtx['special'], $issues);
             return;
         }
         $effective = $this->effectiveVatMode($canonical, $vatCtx);
@@ -3709,14 +3831,22 @@ class DocumentApplier
      *   řádků; vysvětlí, proč jsou ceny jiné než na předloze.
      * - warning `vat_special_place` — služba se zvláštním místem plnění
      *   bez daně na dokladu; rozhodnutí stojí na štítku, proto varování
-     *   s cestou zpět.
+     *   s cestou zpět. Když `special` plyne ze štítků položky pokrytého
+     *   řádku (D19, D20), zpráva položku jmenuje.
      * - warning `vat_out_of_scope_user` (D4) — režim Bez DPH zvolil
      *   uživatel; připomene, že se daň v ČR nepřizná.
      *
+     * @param array<int, array{source: string, item: ?string}> $special {@see vatContext()} `special`
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function appendOutOfScopeIssues(string $kind, array &$issues): void
+    private function appendOutOfScopeIssues(string $kind, array $special, array &$issues): void
     {
+        $items = array_values(array_unique(array_filter(array_column($special, 'item'))));
+        $fromItems = match (count($items)) {
+            0       => '',
+            1       => " Místo plnění plyne ze štítků položky „{$items[0]}“.",
+            default => ' Místo plnění plyne ze štítků položek „' . implode('“, „', $items) . '“.',
+        };
         $issues = array_values(array_filter(
             $issues,
             static fn (array $issue): bool => ($issue['code'] ?? null) !== 'vat_mode_suspect',
@@ -3733,7 +3863,8 @@ class DocumentApplier
                 'path'     => 'vat.mode',
                 'code'     => 'vat_special_place',
                 'message'  => 'Služba se zvláštním místem plnění (ubytování, doprava osob, stravování, nemovitost,'
-                    . ' mýto, parkování) — doklad vznikne bez DPH. Pokud daň v ČR přiznat máš, vyber kód DPH u řádku.',
+                    . ' mýto, parkování) — doklad vznikne bez DPH. Pokud daň v ČR přiznat máš, vyber kód DPH u řádku.'
+                    . $fromItems,
             ],
             default => [
                 'severity' => 'info',

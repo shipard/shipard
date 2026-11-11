@@ -9,6 +9,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
 use Shipard\Module\Core\Exchange\Document\SupplierVatPrices;
 use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
+use Shipard\Module\Core\Exchange\Enrich\ItemContentTags;
 use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
@@ -16,9 +17,9 @@ use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
 /**
  * Runtime resolver confidence pásem dokumentového návrhu: mapování
  * confidence na pásmo podle prahů profilu + strop podle pokrytí řádků
- * položkami (D7), podle nálezů hodnot (#118 D15) a u dokladu se zvláštním
- * místem plnění (#89 D17) — jedna metoda {@see capBand()} pro feed
- * i detail zprávy. Pásmo NENÍ perzistentní stav
+ * položkami (D7), podle nálezů hodnot (#118 D15), u dokladu se zvláštním
+ * místem plnění (#89 D17, D20) a u řádku s nejednoznačnou položkou (#89
+ * D21) — jedna metoda {@see capBand()} pro feed i detail zprávy. Pásmo NENÍ perzistentní stav
  * (D3 z mail-message-centric) — počítá se za běhu; používá dashboard
  * (kind karty), detail zprávy (badge) a preview. Nikam se nezapisuje.
  */
@@ -123,21 +124,53 @@ class AnalysisConfidenceResolver
     }
 
     /**
-     * Jediný strop pásma (D7 + #118 D15 + #89 D17): `ready` smí zůstat, jen
-     * když je každý item řádek pokrytý položkou, validace hodnot canonicalu
-     * nevrátí žádný nález — nevalidní IČO, DIČ, PSČ, účet, IBAN, BIC ani
-     * oprava IBAN ↔ číslo účtu (`_resolve.valueRepairs` →
-     * `bank_account_repaired`) — a doklad není služba se zvláštním místem
-     * plnění od dodavatele mimo tuzemsko ({@see capsSpecialPlace()}).
-     * Nižší pásma se nemění.
+     * Štítky položek pro {@see capBand()} (#89 D19): mapa kód položky →
+     * štítky pro řádky návrhů, které se klasifikují podle položky —
+     * **jeden dotaz** na celou sadu návrhů (feed ji volá jednou na sběr
+     * karet, detail zprávy jednou na zprávu). Čte tatáž místa jako applier
+     * ({@see SpecialPlaceSupply::itemCodes()}, {@see ItemContentTags}).
+     * Strop se týká jen přijatých dokladů — jiné návrhy kódy nedávají;
+     * bez taxonomie nebo bez kódů žádný dotaz.
      *
-     * Taxonomie je povinná — bez ní třetí důvod vyhodnotit nejde
-     * ({@see contentTagsFrom()}).
+     * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
+     * @param iterable<array<string, mixed>> $canonicals návrhy dokladů
+     * @return array<string, list<string>>
+     */
+    public static function itemTagsFor(DataSourceConnection $db, array $contentTags, iterable $canonicals): array
+    {
+        if ($contentTags === []) {
+            return [];
+        }
+        $codes = [];
+        foreach ($canonicals as $canonical) {
+            if (($canonical['selfParty'] ?? null) !== 'customer') {
+                continue;
+            }
+            foreach (SpecialPlaceSupply::itemCodes($canonical) as $code) {
+                $codes[ItemContentTags::key($code)] ??= $code;
+            }
+        }
+        return $codes === [] ? [] : ItemContentTags::forCodes($db->getDibiConnection(), array_values($codes));
+    }
+
+    /**
+     * Jediný strop pásma (D7 + #118 D15 + #89 D17, D21): `ready` smí zůstat,
+     * jen když je každý item řádek pokrytý položkou, validace hodnot
+     * canonicalu nevrátí žádný nález — nevalidní IČO, DIČ, PSČ, účet, IBAN,
+     * BIC ani oprava IBAN ↔ číslo účtu (`_resolve.valueRepairs` →
+     * `bank_account_repaired`) —, doklad není služba se zvláštním místem
+     * plnění od dodavatele mimo tuzemsko ({@see capsSpecialPlace()}) a žádný
+     * jeho řádek nemá nejednoznačnou položku bez kódu DPH
+     * ({@see capsAmbiguousItem()}). Nižší pásma se nemění.
+     *
+     * Taxonomie i štítky položek jsou povinné — bez nich poslední dva
+     * důvody vyhodnotit nejde ({@see contentTagsFrom()}, {@see itemTagsFor()}).
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
+     * @param array<string, list<string>> $itemTags {@see itemTagsFor()}
      */
-    public function capBand(string $band, array $canonical, array $contentTags): string
+    public function capBand(string $band, array $canonical, array $contentTags, array $itemTags): string
     {
         if ($band !== self::BAND_READY) {
             return $band;
@@ -148,7 +181,10 @@ class AnalysisConfidenceResolver
         if (CanonicalValueValidator::validate($canonical) !== []) {
             return self::BAND_REVIEW;
         }
-        if (self::capsSpecialPlace($canonical, $contentTags)) {
+        if (self::capsSpecialPlace($canonical, $contentTags, $itemTags)) {
+            return self::BAND_REVIEW;
+        }
+        if (self::capsAmbiguousItem($canonical, $contentTags, $itemTags)) {
             return self::BAND_REVIEW;
         }
         return $band;
@@ -160,22 +196,62 @@ class AnalysisConfidenceResolver
      * štítek řádků, ne údaj z faktury. Takové rozhodnutí má vidět člověk.
      *
      * Podmínka je záměrně **širší** než rozhodnutí applieru, nikdy užší:
-     * doklad nenese daň dodavatele, každý položkový řádek má štítek se
-     * zvláštním místem plnění ({@see SpecialPlaceSupply}) a dodavatel není
-     * tuzemský podle hrubého signálu canonicalu
+     * doklad nenese daň dodavatele, každý položkový řádek má zvláštní místo
+     * plnění — štítkem z bloku, nebo štítky položky pokrytého řádku (D19,
+     * D20; {@see SpecialPlaceSupply}) — a dodavatel není tuzemský podle
+     * hrubého signálu canonicalu
      * ({@see supplierNotDomestic()}). Applier místo plnění určuje přesně
      * (registrace, členství v unii k datu) — ta logika se tu neopakuje.
      * Doklad se zahraniční DPH strop nedostane: daň je údaj z faktury.
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
+     * @param array<string, list<string>> $itemTags {@see itemTagsFor()}
      */
-    public static function capsSpecialPlace(array $canonical, array $contentTags): bool
+    public static function capsSpecialPlace(array $canonical, array $contentTags, array $itemTags): bool
     {
         return ($canonical['selfParty'] ?? null) === 'customer'
             && !SupplierVatPrices::carriesSupplierVat($canonical)
-            && SpecialPlaceSupply::allItemRowsSpecial($canonical, $contentTags)
+            && SpecialPlaceSupply::allItemRowsSpecial($canonical, $contentTags, $itemTags)
             && self::supplierNotDomestic($canonical);
+    }
+
+    /**
+     * Strop D21 (#89): přijatý doklad bez daně dodavatele, od dodavatele
+     * mimo tuzemsko ({@see supplierNotDomestic()}), s položkovým řádkem,
+     * jehož položka nese štítky s různým místem plnění
+     * ({@see SpecialPlaceSupply::ROW_AMBIGUOUS}) a který v canonicalu nemá
+     * kód DPH. Applier takovému řádku kód samovyměření odvodí a přidá
+     * varování `vat_special_place_ambiguous` — jestli jde o zvláštní místo
+     * plnění, musí rozhodnout člověk.
+     *
+     * Řádek s kódem (typicky z historie řádků, potvrzený člověkem) strop
+     * nedává. Je to **užší** než varování applieru: když kontrola souladu
+     * kód z historie zahodí a applier odvodí nový, varování přijde, karta
+     * strop nemá — strop souladem neprochází, vědomě.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
+     * @param array<string, list<string>> $itemTags {@see itemTagsFor()}
+     */
+    public static function capsAmbiguousItem(array $canonical, array $contentTags, array $itemTags): bool
+    {
+        if (($canonical['selfParty'] ?? null) !== 'customer'
+            || SupplierVatPrices::carriesSupplierVat($canonical)
+            || !self::supplierNotDomestic($canonical)) {
+            return false;
+        }
+        foreach ((array) ($canonical['rows'] ?? []) as $idx => $row) {
+            if (!is_array($row) || !RowHistoryEnricher::rowExpectsItem($row)
+                || trim((string) ($row['vat']['code'] ?? '')) !== '') {
+                continue;
+            }
+            $state = SpecialPlaceSupply::classifyRow($canonical, (int) $idx, $contentTags, $itemTags)['state'];
+            if ($state === SpecialPlaceSupply::ROW_AMBIGUOUS) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -284,14 +360,20 @@ class AnalysisConfidenceResolver
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $contentTags cfgItem `core.exchange.contentTags`
+     * @param array<string, list<string>> $itemTags {@see itemTagsFor()}
      */
-    public function bandForAnalysis(?float $confidence, ?int $profileNdx, array $canonical, array $contentTags): string
-    {
+    public function bandForAnalysis(
+        ?float $confidence,
+        ?int $profileNdx,
+        array $canonical,
+        array $contentTags,
+        array $itemTags,
+    ): string {
         $thresholds = $profileNdx !== null
             ? $this->thresholdsForProfile($profileNdx)
             : $this->thresholdsForDefaultProfile();
         $band = $this->bandFor($confidence ?? 0.0, $thresholds);
-        return $this->capBand($band, $canonical, $contentTags);
+        return $this->capBand($band, $canonical, $contentTags, $itemTags);
     }
 
     /**
