@@ -83,6 +83,22 @@ entitě spouští recompute parenta — je užitečný všude, kde má hlavička
 odvozené hodnoty od child setů. Detaily k save semantice gatewayů viz
 `docs/document-system.md` sekce 6.
 
+### Předmět plnění u tuzemského přenesení (#89, `tasks/vat-reverse-charge-subjects.md`)
+
+Sloupec `reverse_charge_code` v `docs_core_rows` i `docs_core_vat_recap` —
+kód předmětu plnění pro kontrolní hlášení A.1 / B.1 z číselníku
+`world.vat.<země>.reverseChargeSubjects`. Nese ho jen řádek s kódem DPH
+s příznakem `reverseCharge` (a oddaňovací pár rekapitulace); klíč skupiny
+rekapitulace je (kód DPH, sazba, předmět). Pravidla drží
+`ReverseChargeSubjects` (hodnota, nulování u jiného kódu, chyba hodnoty,
+nabídka a viditelnost pole formuláře) — používají je `DocDocument`
+(`validateReverseChargeSubjects`, `computeAmounts`), `DocRowsDocument`,
+`VatRecapDocument`, `DocRowsForm` a `VatRecapForm`. Pole **Předmět plnění**
+je ve formuláři řádku viditelné a povinné jen u kódu přenesení; nabízí
+předměty platné k datu sazby dokladu. Rekapitulace (sub-tabulka, tab
+i detail) předmět ukazuje u sazby, sub-tabulka řádků ve vlastním sloupci,
+jen když ho některý řádek nese. Viz `docs/vat-calculation.md` § 4.1.
+
 ### Opravný daňový doklad (#92, `tasks/corrective-doc-core.md`)
 
 Faktura vydaná s příznakem `corrective` na hlavičce, ne nový typ dokladu;

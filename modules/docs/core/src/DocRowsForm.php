@@ -70,6 +70,10 @@ class DocRowsForm extends TableForm
         }
 
         $showVat = $headHasVat && !$isText;
+        // Předmět plnění jen u kódu tuzemského přenesení (#89 D14) — po změně
+        // kódu DPH (triggers: 'reload') se viditelnost přepočítá.
+        $showSubject = $showVat
+            && ReverseChargeSubjects::fieldVisible($headContext, $this->config, $data['vat_code'] ?? null);
         // Způsob výpočtu řídí, které cenové pole je read-only (#71): z ceny za
         // jednotku (0) se dopočítává Cena celkem, z celkové (1) Cena/jednotka.
         $calcMode = (int) ($data['price_calc_mode'] ?? 0);
@@ -157,6 +161,11 @@ class DocRowsForm extends TableForm
                         triggers: 'reload',
                         required: $showVat,
                         hidden: !$showVat,
+                    )
+                    ->select(ReverseChargeSubjects::COLUMN,
+                        options: ReverseChargeSubjects::options($headContext, $this->config),
+                        required: $showSubject,
+                        hidden: !$showSubject,
                     )
                     ->number('vat_pct',
                         hidden: !$showVat,
@@ -582,6 +591,10 @@ class DocRowsForm extends TableForm
 
         if ($changedColumn === 'vat_code') {
             $this->deriveVatPct($data, $headContext);
+            // Kód bez přenesení předmět plnění nenese (#89 D7).
+            if (!ReverseChargeSubjects::fieldVisible($headContext, $this->config, $data['vat_code'] ?? null)) {
+                $data[ReverseChargeSubjects::COLUMN] = null;
+            }
         }
 
         // Kontační řádek (cmnbkp): při změně operace / typu řádku zajisti

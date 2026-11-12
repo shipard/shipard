@@ -66,7 +66,7 @@ class DocDocumentVatRecapDeclaredTest extends TestCase
     private function doc(): TestableDocsHeadsDocument
     {
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturn(new Row(['country' => 'cz']));
+        $db->method('fetch')->willReturn(new Row(['country' => 'cz', 'id' => 1]));
         $db->method('fetchAll')->willReturnCallback(
             function (string $sql) {
                 $source = str_contains($sql, 'docs_core_vat_recap') ? $this->dbRecap : $this->dbRows;
@@ -427,5 +427,85 @@ class DocDocumentVatRecapDeclaredTest extends TestCase
 
         $this->assertSame(45.46, (float) $rows[0]['vat_base']);
         $this->assertSame(9.54, (float) $rows[0]['vat_amount']);
+    }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D7) ───────────────────────
+
+    public function testDeclaredRecapTakesSubjectOverAndDropsItOnOtherCodes(): void
+    {
+        $doc = $this->doc();
+        $this->dbRows = [];
+        $data = $this->declaredData([
+            ['vat_code' => 'cz-115', 'vat_pct' => 21.0, 'base' => 100.0, 'tax' => 21.0, 'total' => 100.0,
+                'reverse_charge_code' => '4a'],
+            ['vat_code' => 'cz-203', 'vat_pct' => 21.0, 'base' => 100.0, 'tax' => 21.0, 'total' => 121.0,
+                'is_reverse_pair' => 1, 'reverse_charge_code' => '4a'],
+            ['vat_code' => 'cz-110', 'vat_pct' => 21.0, 'base' => 50.0, 'tax' => 10.5, 'total' => 60.5,
+                'reverse_charge_code' => '4a'],
+        ], ['vat_mode' => 1]);
+
+        [, $recap] = $this->runPipeline($doc, $data, []);
+
+        $this->assertSame(
+            ['4a', '4a', null],
+            array_column($recap, 'reverse_charge_code'),
+            'kód přenesení a oddaňovací pár předmět nesou, jiný kód ne',
+        );
+    }
+
+    public function testRowsAreMatchedToDeclaredRecapPerSubject(): void
+    {
+        $doc = $this->doc();
+        // Dva řádky se stejným kódem a sazbou, různý předmět = dvě skupiny;
+        // součet řádků se porovnává s rekapitulací po předmětech.
+        $this->dbRows = [
+            $this->row('cz-115', 21.0, 100.00, 1) + ['reverse_charge_code' => '4'],
+            $this->row('cz-115', 21.0, 200.00, 2) + ['reverse_charge_code' => '14'],
+        ];
+        $data = $this->declaredData([
+            ['vat_code' => 'cz-115', 'vat_pct' => 21.0, 'base' => 100.0, 'tax' => 21.0, 'total' => 100.0,
+                'reverse_charge_code' => '4'],
+            ['vat_code' => 'cz-115', 'vat_pct' => 21.0, 'base' => 200.0, 'tax' => 42.0, 'total' => 200.0,
+                'reverse_charge_code' => '14'],
+        ], ['vat_mode' => 1]);
+
+        $codes = array_column($this->warnings($doc, $data), 'code');
+        $this->assertNotContains('rows_recap_mismatch', $codes);
+
+        // Prohozené předměty v rekapitulaci = součty řádků nesedí.
+        $data['vatRecap'][0]['reverse_charge_code'] = '14';
+        $data['vatRecap'][1]['reverse_charge_code'] = '4';
+        $codes = array_column($this->warnings($doc, $data), 'code');
+        $this->assertContains('rows_recap_mismatch', $codes);
+    }
+
+    public function testDeclaredRecapLineWithReverseChargeCodeNeedsSubjectOnConfirmation(): void
+    {
+        $doc = $this->doc();
+        $this->dbRows = [];
+        $recap = [
+            ['vat_code' => 'cz-115', 'vat_pct' => 21.0, 'base' => 100.0, 'tax' => 21.0, 'total' => 100.0],
+            ['vat_code' => 'cz-203', 'vat_pct' => 21.0, 'base' => 100.0, 'tax' => 21.0, 'total' => 121.0,
+                'is_reverse_pair' => 1],
+        ];
+        $recapErrors = static fn (array $data): array => array_values(array_filter(
+            array_map(static fn ($e) => $e->toArray(), $doc->validate($data)->getErrors()),
+            static fn (array $e): bool => $e['column'] === 'recap',
+        ));
+
+        $draft = $this->declaredData($recap, ['docState' => 10, 'vat_mode' => 1]);
+        $this->assertSame([], $recapErrors($draft), 'Koncept se bez předmětu uloží');
+
+        $confirmed = $this->declaredData($recap, ['docState' => 40, 'vat_mode' => 1]);
+        $errors = $recapErrors($confirmed);
+        $this->assertCount(1, $errors, 'jen řádek s kódem přenesení, pár ne');
+        $this->assertSame('required', $errors[0]['code']);
+
+        $recap[0]['reverse_charge_code'] = '99';
+        $unknown = $this->declaredData($recap, ['docState' => 10, 'vat_mode' => 1]);
+        $errors = $recapErrors($unknown);
+        $this->assertCount(1, $errors, 'předmět mimo číselník je chyba i v Konceptu');
+        $this->assertSame('invalid_value', $errors[0]['code']);
     }
 }

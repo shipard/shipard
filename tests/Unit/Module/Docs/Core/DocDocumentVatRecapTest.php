@@ -724,4 +724,74 @@ class DocDocumentVatRecapTest extends TestCase
         $this->assertContains('cz-110', $codes);
         $this->assertContains('cz-111', $codes);
     }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D7) ───────────────────────
+
+    public function testTwoSubjectsOnOneCodeProduceTwoGroupsEachWithItsPair(): void
+    {
+        $doc = $this->buildDoc();
+        $data = [
+            'rows' => [
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 100, 'reverse_charge_code' => '4'],
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 200, 'reverse_charge_code' => '14'],
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 50,  'reverse_charge_code' => ' 4 '],
+            ],
+            'vat_registration' => 1,
+            'vat_duzp' => '2026-05-06',
+            'exchange_rate' => 1.0,
+        ];
+        $recap = $doc->buildVatRecapitulationPub($data);
+
+        $this->assertSame(
+            [['cz-115', '4', 0], ['cz-203', '4', 1], ['cz-115', '14', 0], ['cz-203', '14', 1]],
+            array_map(
+                static fn (array $r): array => [$r['vat_code'], $r['reverse_charge_code'], $r['is_reverse_pair']],
+                $recap,
+            ),
+        );
+        $this->assertSame(150.0, $recap[0]['base']);
+        $this->assertSame(31.5, $recap[1]['tax']);
+        $this->assertSame(200.0, $recap[2]['base']);
+        $this->assertSame(42.0, $recap[3]['tax']);
+    }
+
+    public function testSubjectOnCodeWithoutReverseChargeIsDroppedAndDoesNotSplitGroup(): void
+    {
+        $doc = $this->buildDoc();
+        $data = [
+            'rows' => [
+                ['row_kind' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 21, 'total_price' => 100, 'reverse_charge_code' => '4'],
+                ['row_kind' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 21, 'total_price' => 200],
+            ],
+            'vat_registration' => 1,
+            'vat_duzp' => '2026-05-06',
+            'exchange_rate' => 1.0,
+        ];
+        $recap = $doc->buildVatRecapitulationPub($data);
+
+        $this->assertCount(1, $recap);
+        $this->assertSame(300.0, $recap[0]['base']);
+        $this->assertNull($recap[0]['reverse_charge_code']);
+    }
+
+    public function testReverseChargeRowsWithoutSubjectStayInOneGroup(): void
+    {
+        $doc = $this->buildDoc();
+        $data = [
+            'rows' => [
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 100],
+                ['row_kind' => 1, 'vat_code' => 'cz-115', 'vat_pct' => 21, 'total_price' => 200, 'reverse_charge_code' => ''],
+            ],
+            'vat_registration' => 1,
+            'vat_duzp' => '2026-05-06',
+            'exchange_rate' => 1.0,
+        ];
+        $recap = $doc->buildVatRecapitulationPub($data);
+
+        $this->assertCount(2, $recap, 'jedna skupina + oddaňovací pár');
+        $this->assertSame(300.0, $recap[0]['base']);
+        $this->assertNull($recap[0]['reverse_charge_code']);
+        $this->assertNull($recap[1]['reverse_charge_code']);
+    }
 }

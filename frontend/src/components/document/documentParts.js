@@ -81,6 +81,18 @@ export function detailRows(rows) {
   });
 }
 
+/**
+ * Sazba řádku rekapitulace: „21 %“, u tuzemského přenesení daňové povinnosti
+ * s předmětem plnění „21 % · předmět plnění 4a“ (`subject` je hotový text
+ * z backendu, #89 D14) — dvě skupiny se stejnou sazbou se liší jen jím.
+ */
+function recapRate(r) {
+  const pct = r?.vat_pct === null || r?.vat_pct === undefined || r?.vat_pct === '' ? null : `${r.vat_pct} %`;
+  const subject = textOrNull(r?.subject);
+  if (subject === null) return pct;
+  return pct === null ? subject : `${pct} ${MIDDOT} ${subject}`;
+}
+
 function withCurrency(value, currency) {
   const text = textOrNull(value);
   if (text === null) return null;
@@ -96,7 +108,7 @@ function withCurrency(value, currency) {
 export function detailTotals(vatRecap, totals) {
   const recap = (Array.isArray(vatRecap) ? vatRecap : []).map((r, i) => ({
     key: i,
-    rate: r?.vat_pct === null || r?.vat_pct === undefined || r?.vat_pct === '' ? null : `${r.vat_pct} %`,
+    rate: recapRate(r),
     base: textOrNull(r?.base),
     tax: textOrNull(r?.tax),
     total: textOrNull(r?.total),

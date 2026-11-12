@@ -942,7 +942,7 @@ class DocsHeadsViewer extends TableViewer
     private function buildDetailVatRecap(int $recordId): array
     {
         $rows = $this->db->fetchAll(
-            'SELECT `vat_pct`, `base`, `tax`, `total`'
+            'SELECT `vat_pct`, `reverse_charge_code`, `base`, `tax`, `total`'
             . ' FROM `docs_core_vat_recap`'
             . ' WHERE `doc_head` = %i'
             . ' ORDER BY `order_pos` ASC, `id` ASC',
@@ -951,8 +951,14 @@ class DocsHeadsViewer extends TableViewer
 
         $out = [];
         foreach ($rows as $row) {
+            // Předmět plnění tuzemského přenesení (#89 D14) — hotový text;
+            // dvě skupiny se stejnou sazbou se v detailu liší jen jím.
+            $subject = ReverseChargeSubjects::value($row['reverse_charge_code'] ?? null);
             $out[] = [
                 'vat_pct' => $this->formatTrimmedNumber($row['vat_pct'] ?? null, 2),
+                'subject' => $subject !== null
+                    ? $this->text('recap.reverseChargeSubject', 'subject {code}', ['code' => $subject])
+                    : null,
                 'base'    => $this->formatMoney($row['base'] ?? null),
                 'tax'     => $this->formatMoney($row['tax'] ?? null),
                 'total'   => $this->formatMoney($row['total'] ?? null),

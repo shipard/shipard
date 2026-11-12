@@ -92,7 +92,9 @@ class DocDocumentPdpOutputTest extends TestCase
         $duzp = $code === 'cz-350' ? '2023-06-15' : '2026-06-10';
         $data = [
             'rows' => [
-                ['row_kind' => 1, 'vat_code' => $code, 'vat_pct' => $pct, 'total_price' => 1000.0],
+                // Kódy cz-152 / cz-117 zatím existují (ruší je až 5/7) — s předmětem 5.
+                ['row_kind' => 1, 'vat_code' => $code, 'vat_pct' => $pct, 'total_price' => 1000.0,
+                    'reverse_charge_code' => $code === 'cz-152' ? '5' : '4'],
             ],
             'vat_registration' => 1,
             'vat_duzp'         => $duzp,
@@ -102,6 +104,11 @@ class DocDocumentPdpOutputTest extends TestCase
 
         $this->assertCount(1, $recap, "Kód {$code} nesmí generovat oddaňovací pár");
         $this->assertSame($code, $recap[0]['vat_code']);
+        $this->assertSame(
+            $code === 'cz-152' ? '5' : '4',
+            $recap[0]['reverse_charge_code'],
+            "Kód {$code}: rekapitulace nese předmět plnění řádku",
+        );
         $this->assertSame(1000.0, $recap[0]['base']);
         $this->assertSame(0.0, $recap[0]['tax'], "Kód {$code}: daň odvádí zákazník, recap musí mít tax = 0");
         $this->assertSame(1000.0, $recap[0]['total']);

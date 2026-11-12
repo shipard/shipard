@@ -1,6 +1,6 @@
 # Tabulka: docs_core_vat_recap
 
-Rekapitulace DPH per (vat_code, vat_pct) na hlavičce. **Persistovaná**
+Rekapitulace DPH per (vat_code, vat_pct, reverse_charge_code) na hlavičce. **Persistovaná**
 tabulka — sestavovaná v `Document::beforeSave` hlavičky (Fáze 2). Stará
 rekapitulace se smaže, nová se vloží přes child-tables sync v
 `TableGateway`.
@@ -20,6 +20,7 @@ rekapitulace se smaže, nová se vloží přes child-tables sync v
 |---|---|---|
 | `doc_head` | int → `docs_core_heads` | Hlavička |
 | `vat_code` | varchar(20), nullable=false | Kód DPH (jako u `docs_core_rows.vat_code`, viz tam pro důvod proč varchar a ne enumString) |
+| `reverse_charge_code` | varchar(3), nullable | Předmět plnění u tuzemského přenesení daňové povinnosti — třetí složka klíče skupiny; nese ho řádek s kódem přenesení i jeho oddaňovací pár. Odtud ho čte kontrolní hlášení (A.1 / B.1) |
 | `vat_pct` | numeric(5,2) | Procento DPH platné pro DUZP |
 | `base`, `tax`, `total` | numeric(15,2) | Částky v měně dokladu |
 | `base_dom`, `tax_dom`, `total_dom` | numeric(15,2) | Částky v domácí měně (přes `exchange_rate`) |

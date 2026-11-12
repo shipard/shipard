@@ -113,7 +113,7 @@ class VatRecapFormTest extends TestCase
         $els = $this->elements($def);
 
         $this->assertSame(
-            ['vat_code', 'vat_pct', 'base', 'tax', 'total'],
+            ['vat_code', 'reverse_charge_code', 'vat_pct', 'base', 'tax', 'total'],
             array_keys($els),
             'formulář obsahuje jen to, co je vstupem — _dom a sum_* dopočítá uložení',
         );
@@ -187,5 +187,27 @@ class VatRecapFormTest extends TestCase
         ]);
 
         $this->assertSame(12.0, $result->data['vat_pct'], 'snížená sazba cz-111 k roku 2026');
+    }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D14) ─────────────────────
+
+    public function testSubjectFieldFollowsReverseChargeCode(): void
+    {
+        $form = $this->form($this->receivedInvoiceHead());
+
+        $els = $this->elements($form->buildFormDefinition(['doc_head' => 1, 'vat_code' => 'cz-115'], false));
+        $this->assertFalse($els['reverse_charge_code']->hidden);
+        $this->assertTrue($els['reverse_charge_code']->required);
+        $this->assertContains('4a', array_column($els['reverse_charge_code']->options, 'value'));
+
+        $els = $this->elements($form->buildFormDefinition(['doc_head' => 1, 'vat_code' => 'cz-110'], false));
+        $this->assertTrue($els['reverse_charge_code']->hidden);
+        $this->assertFalse($els['reverse_charge_code']->required);
+
+        $result = $form->recalculate('vat_code', [
+            'doc_head' => 1, 'vat_code' => 'cz-110', 'reverse_charge_code' => '4',
+        ]);
+        $this->assertNull($result->data['reverse_charge_code']);
     }
 }
