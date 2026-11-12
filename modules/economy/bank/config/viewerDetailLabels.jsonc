@@ -1,12 +1,51 @@
 {
     // economy.bank.viewerDetailLabels
     //
-    // Texty vieweru bankovních transakcí (BankTransactionsViewer). Jen sekce
-    // `texts`; sdílený tab „Přehled“ je v core.system.viewerDetailLabels.
+    // Texty viewerů bankovních transakcí (BankTransactionsViewer) a výpisů
+    // (BankStatementsViewer). Jen sekce `texts`; sdílený tab „Přehled“ je
+    // v core.system.viewerDetailLabels, tab „Zaúčtování“ v economy.accounting.
 
-    // Texty seznamu — čte `TableViewer::detailText()`.
+    // Texty seznamu a detailu — čte `TableViewer::detailText()`.
     "texts": {
         // Řádek seznamu — variabilní symbol transakce.
-        "rowPaymentReference": { "name": "Ref. {value}", "name:cs": "VS {value}", "name:en": "Ref. {value}" }
+        "rowPaymentReference": { "name": "Ref. {value}", "name:cs": "VS {value}", "name:en": "Ref. {value}" },
+
+        // BankTransactionsViewer — stav účtování v řádku seznamu a ve sloupci gridu.
+        "posted": { "name": "posted", "name:cs": "zaúčtováno", "name:en": "posted" },
+        "postingError": { "name": "posting error", "name:cs": "chyba účtování", "name:en": "posting error" },
+        // Štítek detailu transakce s chybou účtování.
+        "badgePostingError": { "name": "Posting error", "name:cs": "Chyba účtování", "name:en": "Posting error" },
+
+        // Protistrana — sloupec gridu a tabulky transakcí výpisu, skupina Přehledu transakce.
+        "counterparty": { "name": "Counterparty", "name:cs": "Protistrana", "name:en": "Counterparty" },
+        // BankTransactionsViewer — sloupce gridu.
+        "operation": { "name": "Operation", "name:cs": "Operace", "name:en": "Operation" },
+        "accounting": { "name": "Accounting", "name:cs": "Zaúčtování", "name:en": "Accounting" },
+
+        // BankTransactionsViewer — položky Přehledu.
+        "inHomeCurrency": { "name": "In home currency", "name:cs": "V domácí měně", "name:en": "In home currency" },
+        "message": { "name": "Message", "name:cs": "Zpráva", "name:en": "Message" },
+        // BankTransactionsViewer — skupiny Přehledu (Částky jsou sdílené v core.system).
+        "groupTransaction": { "name": "Transaction", "name:cs": "Transakce", "name:en": "Transaction" },
+        "groupAccountAndStatement": { "name": "Account & statement", "name:cs": "Účet a výpis", "name:en": "Account & statement" },
+
+        // BankTransactionsViewer — akce detailu, filtr seznamu.
+        "actionReaccount": { "name": "Re-account", "name:cs": "Přeúčtovat", "name:en": "Re-account" },
+        "filterPostingErrorsOnly": { "name": "Posting errors only", "name:cs": "Jen chyby účtování", "name:en": "Posting errors only" },
+
+        // BankTransactionsViewer — tab Zaúčtování, strany zápisu v tabulce řádků deníku.
+        "debit": { "name": "Debit", "name:cs": "MD", "name:en": "Debit" },
+        "credit": { "name": "Credit", "name:cs": "DAL", "name:en": "Credit" },
+
+        // BankStatementsViewer — položka a skupiny Přehledu.
+        "reconciliation": { "name": "Reconciliation", "name:cs": "Rekonciliace", "name:en": "Reconciliation" },
+        "groupStatement": { "name": "Statement", "name:cs": "Výpis", "name:en": "Statement" },
+        "groupBalances": { "name": "Balances", "name:cs": "Zůstatky", "name:en": "Balances" },
+        // BankStatementsViewer — akce nástrojové lišty.
+        "actionImportStatement": { "name": "Import statement", "name:cs": "Importovat výpis", "name:en": "Import statement" },
+        // BankStatementsViewer — transakce výpisu: nadpis a sloupec variabilního
+        // symbolu (zkratka VS v obou jazycích).
+        "headingTransactions": { "name": "Transactions", "name:cs": "Transakce", "name:en": "Transactions" },
+        "paymentReferenceVs": { "name": "VS", "name:cs": "VS", "name:en": "VS" }
     }
 }

@@ -104,11 +104,9 @@ class BalancesViewer extends TableViewer
     /** Přehled: identifikace skupiny a tabulka účtů saldokonta. */
     protected function detailTabs(array $record): array
     {
-        $cs = $this->language === 'cs';
-
         $blocks = [
-            $this->identityBlock($record, $cs),
-            $this->accountsTable((int) $record['id'], $cs),
+            $this->identityBlock($record),
+            $this->accountsTable((int) $record['id']),
         ];
 
         return [[
@@ -119,27 +117,27 @@ class BalancesViewer extends TableViewer
     }
 
     /** Properties blok — Identifikace skupiny. */
-    private function identityBlock(array $record, bool $cs): array
+    private function identityBlock(array $record): array
     {
         $items = [];
-        $this->addItem($items, $cs ? 'Kód' : 'Code', $record['code'] ?? null);
+        $this->addItem($items, $this->columnLabel('code', 'Code'), $record['code'] ?? null);
         // Název je titulkem; zkrácený název jen když se od něj liší (#140 D26, §2).
         $shortName = trim((string) ($record['short_name'] ?? ''));
         if ($shortName !== trim((string) ($record['name'] ?? ''))) {
-            $this->addItem($items, $cs ? 'Zkrácený název' : 'Short name', $shortName);
+            $this->addItem($items, $this->columnLabel('short_name', 'Short name'), $shortName);
         }
-        $this->addItem($items, $cs ? 'Platnost od' : 'Valid from', $this->formatDate($record['valid_from'] ?? null));
-        $this->addItem($items, $cs ? 'Platnost do' : 'Valid to', $this->formatDate($record['valid_to'] ?? null));
-        $this->addItem($items, $cs ? 'Pořadí' : 'Order', (string) ($record['sort_order'] ?? 0));
+        $this->addItem($items, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($items, $this->columnLabel('valid_to', 'Valid to'), $this->formatDate($record['valid_to'] ?? null));
+        $this->addItem($items, $this->columnLabel('sort_order', 'Order'), (string) ($record['sort_order'] ?? 0));
 
         return [
             'type'   => 'properties',
-            'groups' => [['title' => $cs ? 'Identifikace' : 'Identity', 'items' => $items]],
+            'groups' => [['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $items]],
         ];
     }
 
     /** Vnořená tabulka účtů skupiny — ekvivalent „Nastavení účtů". */
-    private function accountsTable(int $balanceId, bool $cs): array
+    private function accountsTable(int $balanceId): array
     {
         $rows = $this->db->fetchAll(
             'SELECT `account_number`, `acc_side`, `amounts_sign`, `bal_side`, `modify_sign`, `note`'
@@ -149,13 +147,14 @@ class BalancesViewer extends TableViewer
             $balanceId,
         );
 
+        $accounts = 'economy_accbal_balance_accounts';
         $columns = [
-            ['id' => 'account', 'label' => $cs ? 'Účet' : 'Account'],
-            ['id' => 'side',    'label' => $cs ? 'Strana' : 'Side'],
-            ['id' => 'amounts', 'label' => $cs ? 'Částky' : 'Amounts'],
-            ['id' => 'role',    'label' => $cs ? 'Předpis/Úhrada' : 'Role'],
+            ['id' => 'account', 'label' => $this->detailText('economy.accbal.viewerDetailLabels', 'account', 'Account')],
+            ['id' => 'side',    'label' => $this->columnLabel('acc_side', 'Side', $accounts)],
+            ['id' => 'amounts', 'label' => $this->columnLabel('amounts_sign', 'Amounts', $accounts)],
+            ['id' => 'role',    'label' => $this->columnLabel('bal_side', 'Role', $accounts)],
             ['id' => 'invert',  'label' => $this->detailText('economy.accbal.viewerDetailLabels', 'invertSign', '×−1'), 'align' => 'center'],
-            ['id' => 'note',    'label' => $cs ? 'Poznámka' : 'Note'],
+            ['id' => 'note',    'label' => $this->columnLabel('note', 'Note', $accounts)],
         ];
 
         $tableRows = [];

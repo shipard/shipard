@@ -142,27 +142,25 @@ class BalanceAccountsViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $cs = $this->language === 'cs';
-
         $items = [];
         // Číslo účtu je titulkem (#140 D26).
-        $this->addItem($items, $cs ? 'Saldokonto' : 'Balance', $record['balance_name'] ?? null);
-        $this->addItem($items, $cs ? 'Strana' : 'Side', $this->enumLabel('economy.accbal.accSides', $record['acc_side'] ?? null));
-        $this->addItem($items, $cs ? 'Částky' : 'Amounts', $this->enumLabel('economy.accbal.amountsSigns', $record['amounts_sign'] ?? null));
-        $this->addItem($items, $cs ? 'Předpis/Úhrada' : 'Role', $this->enumLabel('economy.accbal.balSides', $record['bal_side'] ?? null));
-        $this->addItem($items, $cs ? 'Obrátit znaménko' : 'Invert sign', (int) ($record['modify_sign'] ?? 0) === 1 ? ($cs ? 'Ano' : 'Yes') : ($cs ? 'Ne' : 'No'));
-        $this->addItem($items, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
-        $this->addItem($items, $cs ? 'Platnost od' : 'Valid from', $this->formatDate($record['valid_from'] ?? null));
-        $this->addItem($items, $cs ? 'Platnost do' : 'Valid to', $this->formatDate($record['valid_to'] ?? null));
-        $this->addItem($items, $cs ? 'Pořadí' : 'Order', (string) ($record['sort_order'] ?? 0));
+        $this->addItem($items, $this->columnLabel('balance', 'Balance'), $record['balance_name'] ?? null);
+        $this->addItem($items, $this->columnLabel('acc_side', 'Side'), $this->enumLabel('economy.accbal.accSides', $record['acc_side'] ?? null));
+        $this->addItem($items, $this->columnLabel('amounts_sign', 'Amounts'), $this->enumLabel('economy.accbal.amountsSigns', $record['amounts_sign'] ?? null));
+        $this->addItem($items, $this->columnLabel('bal_side', 'Role'), $this->enumLabel('economy.accbal.balSides', $record['bal_side'] ?? null));
+        $this->addItem($items, $this->columnLabel('modify_sign', 'Invert sign'), $this->yesNoText((int) ($record['modify_sign'] ?? 0) === 1));
+        $this->addItem($items, $this->columnLabel('note', 'Note'), $record['note'] ?? null);
+        $this->addItem($items, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate($record['valid_from'] ?? null));
+        $this->addItem($items, $this->columnLabel('valid_to', 'Valid to'), $this->formatDate($record['valid_to'] ?? null));
+        $this->addItem($items, $this->columnLabel('sort_order', 'Order'), (string) ($record['sort_order'] ?? 0));
 
-        return [$this->propertiesTab([['title' => $cs ? 'Účet saldokonta' : 'Balance account', 'items' => $items]])];
+        $title = $this->detailText('economy.accbal.viewerDetailLabels', 'balanceAccount', 'Balance account');
+
+        return [$this->propertiesTab([['title' => $title, 'items' => $items]])];
     }
 
     public function getFilters(): array
     {
-        $cs = $this->language === 'cs';
-
         $options = [];
         $balances = $this->db->fetchAll(
             'SELECT `id`, `name` FROM `economy_accbal_balances`'
@@ -175,7 +173,7 @@ class BalanceAccountsViewer extends TableViewer
         return [
             [
                 'id'      => 'balance',
-                'label'   => $cs ? 'Saldokonto' : 'Balance',
+                'label'   => $this->columnLabel('balance', 'Balance'),
                 'type'    => 'select',
                 'options' => $options,
             ],

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Bank\BankStatementsViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 
 /**
  * Detail výpisu (#140 D26, §2): číslo, účet a období nese hlavička,
@@ -48,10 +49,14 @@ class BankStatementsViewerTest extends TestCase
             ['core.system.docStatesArchive', [
                 '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'viewGroup' => 'active', 'detailBadge' => false, 'goto' => []],
             ]],
+            // Texty vieweru ze zdrojových katalogů v češtině (#133 D66).
+            ['economy.bank.viewerDetailLabels', ViewerTexts::catalog('economy.bank.viewerDetailLabels')],
+            ['core.system.viewerDetailLabels', ViewerTexts::catalog('core.system.viewerDetailLabels')],
         ]);
 
         $viewer = new BankStatementsViewer($db, 'economy_bank_statements');
         $viewer->setConfig($config);
+        $viewer->setTables(ViewerTexts::tables(['economy_bank_statements', 'economy_bank_transactions']));
         $viewer->setLanguage('cs');
         return $viewer->renderDetail(3);
     }

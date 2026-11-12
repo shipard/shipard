@@ -128,26 +128,24 @@ class BankStatementsViewer extends TableViewer
      */
     protected function detailTabs(array $record): array
     {
-        $cs = $this->language !== 'en';
-
         // Účet, číslo a období nese hlavička; Rekonciliace jen bez štítku, tj. Nezkontrolováno (#140 D26, §2).
         $stmtItems = [];
         if ($this->reconciliationBadge($record) === null) {
             $this->addItem(
                 $stmtItems,
-                $cs ? 'Rekonciliace' : 'Reconciliation',
+                $this->text('reconciliation', 'Reconciliation'),
                 $this->enumLabel('economy.bank.reconciliationStates', $record['reconciliation_state'] ?? null, 'int'),
             );
         }
 
         $curCode = strtoupper((string) ($record['currency'] ?? ''));
         $balanceItems = [];
-        $this->addItem($balanceItems, $cs ? 'Počáteční zůstatek' : 'Opening balance', $this->balanceLabel($record['opening_balance'] ?? null, $curCode));
-        $this->addItem($balanceItems, $cs ? 'Koncový zůstatek' : 'Closing balance', $this->balanceLabel($record['closing_balance'] ?? null, $curCode));
+        $this->addItem($balanceItems, $this->columnLabel('opening_balance', 'Opening balance'), $this->balanceLabel($record['opening_balance'] ?? null, $curCode));
+        $this->addItem($balanceItems, $this->columnLabel('closing_balance', 'Closing balance'), $this->balanceLabel($record['closing_balance'] ?? null, $curCode));
 
         $groups = [];
-        $this->addGroup($groups, $cs ? 'Výpis' : 'Statement', $stmtItems);
-        $this->addGroup($groups, $cs ? 'Zůstatky' : 'Balances', $balanceItems);
+        $this->addGroup($groups, $this->text('groupStatement', 'Statement'), $stmtItems);
+        $this->addGroup($groups, $this->text('groupBalances', 'Balances'), $balanceItems);
 
         $blocks = [['type' => 'properties', 'groups' => $groups]];
         foreach ($this->detailTransactionBlocks((int) $record['id']) as $txBlock) {
@@ -165,10 +163,9 @@ class BankStatementsViewer extends TableViewer
     {
         // Bez „nový" — výpis vzniká importem. Akce Importovat výpis (vždy)
         // + Open na vybraném řádku (edit + přílohy).
-        $cs = $this->language !== 'en';
         $actions = [[
             'id'      => 'import_statement',
-            'label'   => $cs ? 'Importovat výpis' : 'Import statement',
+            'label'   => $this->text('actionImportStatement', 'Import statement'),
             'variant' => 'primary',
         ]];
         if ($selectedRow !== null) {
@@ -262,15 +259,14 @@ class BankStatementsViewer extends TableViewer
             return [];
         }
 
-        $cs = $this->language !== 'en';
         $txCfg = DocStateConfig::fromCfgItem($this->config?->cfgItem('economy.bank.txStates'));
 
         $columns = [
-            ['id' => 'date',    'label' => $cs ? 'Datum' : 'Date'],
-            ['id' => 'amount',  'label' => $cs ? 'Částka' : 'Amount', 'align' => 'right'],
-            ['id' => 'party',   'label' => $cs ? 'Protistrana' : 'Counterparty'],
-            ['id' => 'vs',      'label' => $cs ? 'VS' : 'VS'],
-            ['id' => 'state',   'label' => $cs ? 'Stav' : 'State'],
+            ['id' => 'date',    'label' => $this->sharedText('date', 'Date')],
+            ['id' => 'amount',  'label' => $this->columnLabel('amount', 'Amount', 'economy_bank_transactions'), 'align' => 'right'],
+            ['id' => 'party',   'label' => $this->text('counterparty', 'Counterparty')],
+            ['id' => 'vs',      'label' => $this->text('paymentReferenceVs', 'VS')],
+            ['id' => 'state',   'label' => $this->sharedText('state', 'State')],
         ];
 
         $tableRows = [];
@@ -294,12 +290,22 @@ class BankStatementsViewer extends TableViewer
         }
 
         return [
-            ['type' => 'heading', 'text' => $cs ? 'Transakce' : 'Transactions'],
+            ['type' => 'heading', 'text' => $this->text('headingTransactions', 'Transactions')],
             ['type' => 'table', 'columns' => $columns, 'rows' => $tableRows],
         ];
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
+
+    /**
+     * Text vieweru z katalogu `economy.bank.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText('economy.bank.viewerDetailLabels', $key, $englishFallback, $params);
+    }
 
     private function balanceLabel(mixed $value, string $curCode): ?string
     {

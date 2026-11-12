@@ -33,6 +33,13 @@
         // Nadpisy skupin vlastností, které se opakují napříč moduly.
         "groupIdentity": { "name": "Identity", "name:cs": "Identifikace", "name:en": "Identity" },
         "groupValidity": { "name": "Validity", "name:cs": "Platnost", "name:en": "Validity" },
+        "groupAmounts": { "name": "Amounts", "name:cs": "Částky", "name:en": "Amounts" },
+        // Krátké popisky vlastností a záhlaví sloupců, které se opakují
+        // napříč moduly a nejsou popiskem sloupce tabulky.
+        "date": { "name": "Date", "name:cs": "Datum", "name:en": "Date" },
+        "state": { "name": "State", "name:cs": "Stav", "name:en": "State" },
+        "person": { "name": "Person", "name:cs": "Osoba", "name:en": "Person" },
+        "paymentReferenceShort": { "name": "Reference", "name:cs": "VS", "name:en": "Reference" },
         // Zástupné texty a volby.
         "untitled": { "name": "(untitled)", "name:cs": "(bez názvu)", "name:en": "(untitled)" },
         "all": { "name": "All", "name:cs": "Vše", "name:en": "All" },

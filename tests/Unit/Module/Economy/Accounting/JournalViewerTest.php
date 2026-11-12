@@ -10,6 +10,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\Accounting\JournalViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
 /**
@@ -54,12 +55,15 @@ class JournalViewerTest extends TestCase
                     JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/economy/accounting/config/viewerDetailLabels.jsonc'),
                     'cs',
                 ),
+                // Sdílené texty viewerů (Datum, VS, Osoba, Částky).
+                'core.system.viewerDetailLabels' => ViewerTexts::catalog($id),
                 default                   => null,
             },
         );
 
         $viewer = new JournalViewer($db, 'economy_accounting_journal');
         $viewer->setConfig($config);
+        $viewer->setTables(ViewerTexts::tables(['economy_accounting_journal']));
         $viewer->setLanguage('cs');
         return $viewer;
     }

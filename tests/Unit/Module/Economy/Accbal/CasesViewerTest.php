@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Accbal\CaseQuery;
 use Shipard\Module\Economy\Accbal\CasesViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
 /**
@@ -42,6 +43,8 @@ class CasesViewerTest extends TestCase
 
         $viewer = new CasesViewer($db, 'economy_accbal_ledger');
         $viewer->setLanguage('cs');
+        $viewer->setConfig(ViewerTexts::config(['economy.accbal.viewerDetailLabels']));
+        $viewer->setTables(ViewerTexts::tables(['economy_accbal_ledger']));
         return $viewer;
     }
 

@@ -2,8 +2,9 @@
     // economy.accbal.viewerDetailLabels
     //
     // Texty viewerů saldokonta — BalancesViewer (skupiny saldokonta),
-    // CasesViewer (případy) a LedgerViewer (pohyby). Jen sekce `texts`;
-    // sdílený tab „Přehled“ je v core.system.viewerDetailLabels.
+    // BalanceAccountsViewer (účty saldokont), CasesViewer (případy)
+    // a LedgerViewer (pohyby). Jen sekce `texts`; sdílený tab „Přehled“
+    // je v core.system.viewerDetailLabels.
 
     // Texty seznamu a detailu — čte `TableViewer::detailText()`.
     "texts": {
@@ -16,6 +17,102 @@
 
         // LedgerViewer — druh pohybu (Předpis / Úhrada / Příjem / Výdaj):
         // sloupec tabulky a položka skupiny Pohyb v detailu.
-        "role": { "name": "Role", "name:cs": "Role", "name:en": "Role" }
+        "role": { "name": "Role", "name:cs": "Role", "name:en": "Role" },
+
+        // BalancesViewer — záhlaví sloupce s číslem účtu v tabulce účtů skupiny.
+        "account": { "name": "Account", "name:cs": "Účet", "name:en": "Account" },
+
+        // BalanceAccountsViewer — název skupiny vlastností v detailu účtu.
+        "balanceAccount": { "name": "Balance account", "name:cs": "Účet saldokonta", "name:en": "Balance account" },
+
+        // AccbalViewerBase — filtr období (CasesViewer, LedgerViewer) a sloupec
+        // období v tabulce případů.
+        "period": { "name": "Period", "name:cs": "Období", "name:en": "Period" },
+
+        // AccbalViewerBase — typ otevřenosti případu: řádek seznamu, položka Stav
+        // v detailu, volby filtru Typ.
+        "kindDebt": { "name": "Debt", "name:cs": "Dluh", "name:en": "Debt" },
+        "kindOverpayment": { "name": "Overpayment", "name:cs": "Přeplatek", "name:en": "Overpayment" },
+        "kindUnrequested": { "name": "Payment without request", "name:cs": "Úhrada bez předpisu", "name:en": "Payment without request" },
+        "kindClosed": { "name": "Closed", "name:cs": "Uzavřeno", "name:en": "Closed" },
+
+        // CasesViewer, LedgerViewer — splatnost v řádku seznamu, sloupec tabulky
+        // a položka detailu.
+        "rowDue": { "name": "due {date}", "name:cs": "splatnost {date}", "name:en": "due {date}" },
+        "dueDate": { "name": "Due date", "name:cs": "Splatnost", "name:en": "Due date" },
+
+        // CasesViewer, LedgerViewer — řádek a skupina tabulky bez partnera.
+        "noPartnerPlaceholder": { "name": "(No partner)", "name:cs": "(Bez partnera)", "name:en": "(No partner)" },
+
+        // CasesViewer, LedgerViewer — krátké záhlaví sloupce specifického symbolu.
+        "specificSymbolShort": { "name": "Spec. symbol", "name:cs": "SS", "name:en": "Spec. symbol" },
+
+        // CasesViewer, LedgerViewer — součty případu: sloupce a patička tabulky,
+        // položky detailu.
+        "requests": { "name": "Requests", "name:cs": "Předpisy", "name:en": "Requests" },
+        "payments": { "name": "Payments", "name:cs": "Úhrady", "name:en": "Payments" },
+
+        // CasesViewer, LedgerViewer — počet pohybů případu a skupina Případ v detailu.
+        "movementsCount": { "name": "Movements", "name:cs": "Pohybů", "name:en": "Movements" },
+        "case": { "name": "Case", "name:cs": "Případ", "name:en": "Case" },
+
+        // CasesViewer — součty případu v řádku seznamu.
+        "rowRequests": { "name": "requests {amount}", "name:cs": "předpisy {amount}", "name:en": "requests {amount}" },
+        "rowPayments": { "name": "payments {amount}", "name:cs": "úhrady {amount}", "name:en": "payments {amount}" },
+
+        // CasesViewer — zůstatek případu: sloupce a patička tabulky, položky
+        // detailu ({currency} = kód domácí měny).
+        "residual": { "name": "Residual", "name:cs": "Zůstatek", "name:en": "Residual" },
+        "residualHome": { "name": "Residual (home)", "name:cs": "Zůstatek (dom.)", "name:en": "Residual (home)" },
+        "residualIn": { "name": "Residual {currency}", "name:cs": "Zůstatek {currency}", "name:en": "Residual {currency}" },
+
+        // CasesViewer — součet zůstatku partnera v hlavičce skupiny tabulky.
+        "groupPartnerBalance": { "name": "balance {amount}", "name:cs": "zůstatek {amount}", "name:en": "balance {amount}" },
+
+        // CasesViewer — sloupce tabulky (dny po splatnosti, počet pohybů).
+        "overdue": { "name": "Overdue", "name:cs": "Po splatnosti", "name:en": "Overdue" },
+        "moves": { "name": "Moves", "name:cs": "Pohybů", "name:en": "Moves" },
+
+        // CasesViewer — titulek detailu případu bez partnera, položka detailu
+        // a akce detailu.
+        "noPartner": { "name": "No partner", "name:cs": "Bez partnera", "name:en": "No partner" },
+        "daysOverdue": { "name": "Days overdue", "name:cs": "Dní po splatnosti", "name:en": "Days overdue" },
+        "caseMovements": { "name": "Case movements", "name:cs": "Pohyby případu", "name:en": "Case movements" },
+
+        // CasesViewer — filtry (`overdue` je i filtr Po splatnosti).
+        "caseKind": { "name": "Type", "name:cs": "Typ", "name:en": "Type" },
+        "dueWithinDays": { "name": "Due within (days)", "name:cs": "Splatné do (dní)", "name:en": "Due within (days)" },
+        "includingClosed": { "name": "Including closed", "name:cs": "Včetně uzavřených", "name:en": "Including closed" },
+
+        // LedgerViewer — druh pohybu z bankovní transakce podle směru (Předpis /
+        // Úhrada jde z výčtu economy.accbal.balSides).
+        "roleIncoming": { "name": "Incoming payment", "name:cs": "Příjem", "name:en": "Incoming payment" },
+        "roleOutgoing": { "name": "Outgoing payment", "name:cs": "Výdaj", "name:en": "Outgoing payment" },
+        "roleBankPayment": { "name": "Bank payment", "name:cs": "Platba", "name:en": "Bank payment" },
+
+        // LedgerViewer — zůstatek případu v řádku seznamu a sloupec tabulky.
+        "rowCaseResidual": { "name": "case {amount}", "name:cs": "případ {amount}", "name:en": "case {amount}" },
+        "caseBalance": { "name": "Case balance", "name:cs": "Zůstatek případu", "name:en": "Case balance" },
+
+        // LedgerViewer — částka pohybu: sloupec tabulky a přepočet v detailu
+        // ({currency} = kód domácí měny).
+        "amount": { "name": "Amount", "name:cs": "Částka", "name:en": "Amount" },
+        "amountIn": { "name": "Amount {currency}", "name:cs": "Částka {currency}", "name:en": "Amount {currency}" },
+
+        // LedgerViewer — zůstatek: patička tabulky a případ pohybu v detailu.
+        "residualBalance": { "name": "Balance", "name:cs": "Zůstatek", "name:en": "Balance" },
+        "residualBalanceIn": { "name": "Balance {currency}", "name:cs": "Zůstatek {currency}", "name:en": "Balance {currency}" },
+
+        // LedgerViewer — názvy skupin vlastností v detailu pohybu.
+        "movement": { "name": "Movement", "name:cs": "Pohyb", "name:en": "Movement" },
+        "groupPayment": { "name": "Payment", "name:cs": "Platba", "name:en": "Payment" },
+
+        // LedgerViewer — akce detailu pohybu.
+        "openDocument": { "name": "Open document", "name:cs": "Otevřít doklad", "name:en": "Open document" },
+        "openTransaction": { "name": "Open transaction", "name:cs": "Otevřít transakci", "name:en": "Open transaction" },
+        "openJournalRow": { "name": "Open journal row", "name:cs": "Otevřít řádek deníku", "name:en": "Open journal row" },
+
+        // LedgerViewer — filtr otevřenosti případu.
+        "openCasesOnly": { "name": "Open cases only", "name:cs": "Jen otevřené případy", "name:en": "Open cases only" }
     }
 }

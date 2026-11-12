@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Economy\Accbal;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Accbal\LedgerViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
 /**
@@ -41,6 +42,8 @@ class LedgerViewerTest extends TestCase
 
         $viewer = new LedgerViewer($db, 'economy_accbal_ledger');
         $viewer->setLanguage('cs');
+        $viewer->setConfig(ViewerTexts::config(['economy.accbal.viewerDetailLabels', 'economy.accbal.balSides']));
+        $viewer->setTables(ViewerTexts::tables(['economy_accbal_ledger']));
         return $viewer;
     }
 

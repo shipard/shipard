@@ -86,7 +86,7 @@ abstract class AccbalViewerBase extends TableViewer
     /** Filtr období (první filtr obou pohledů): select roků, výchozí aktuální rok. */
     protected function periodFilter(): array
     {
-        return $this->fiscalYearFilter($this->language === 'cs' ? 'Období' : 'Period');
+        return $this->fiscalYearFilter($this->text('period', 'Period'));
     }
 
     /**
@@ -104,12 +104,11 @@ abstract class AccbalViewerBase extends TableViewer
     /** Lokalizovaný název typu otevřenosti případu ({@see CaseQuery::kindOf}). */
     protected function kindLabel(string $kind): string
     {
-        $cs = $this->language === 'cs';
         return match ($kind) {
-            CaseQuery::KIND_DEBT        => $cs ? 'Dluh' : 'Debt',
-            CaseQuery::KIND_OVERPAYMENT => $cs ? 'Přeplatek' : 'Overpayment',
-            CaseQuery::KIND_UNREQUESTED => $cs ? 'Úhrada bez předpisu' : 'Payment without request',
-            default                     => $cs ? 'Uzavřeno' : 'Closed',
+            CaseQuery::KIND_DEBT        => $this->text('kindDebt', 'Debt'),
+            CaseQuery::KIND_OVERPAYMENT => $this->text('kindOverpayment', 'Overpayment'),
+            CaseQuery::KIND_UNREQUESTED => $this->text('kindUnrequested', 'Payment without request'),
+            default                     => $this->text('kindClosed', 'Closed'),
         };
     }
 

@@ -36,6 +36,21 @@
         "credit": { "name": "Credit", "name:cs": "DAL", "name:en": "Credit" },
         // Částka v měně dokladu u cizoměnového řádku ({currency} = kód měny).
         "debitInCurrency": { "name": "Debit {currency}", "name:cs": "MD {currency}", "name:en": "Debit {currency}" },
-        "creditInCurrency": { "name": "Credit {currency}", "name:cs": "DAL {currency}", "name:en": "Credit {currency}" }
+        "creditInCurrency": { "name": "Credit {currency}", "name:cs": "DAL {currency}", "name:en": "Credit {currency}" },
+
+        // JournalViewer — položky Přehledu řádku deníku, které nejsou popiskem sloupce.
+        "operation": { "name": "Operation", "name:cs": "Operace", "name:en": "Operation" },
+        "dueDate": { "name": "Due date", "name:cs": "Splatnost", "name:en": "Due date" },
+        // Hodnota položky Chybový řádek (jen u chybového řádku).
+        "errorRowYes": { "name": "⚠ Yes", "name:cs": "⚠ Ano", "name:en": "⚠ Yes" },
+        // JournalViewer — skupiny Přehledu (Částky jsou sdílené v core.system).
+        "groupEntry": { "name": "Entry", "name:cs": "Zápis", "name:en": "Entry" },
+        "groupDocument": { "name": "Document", "name:cs": "Doklad", "name:en": "Document" },
+        "groupPayment": { "name": "Payment", "name:cs": "Platba", "name:en": "Payment" },
+        // JournalViewer — akce detailu (odkaz na zdrojový doklad řádku).
+        "actionOpenDocument": { "name": "Open document", "name:cs": "Otevřít doklad", "name:en": "Open document" },
+        // JournalViewer — filtry seznamu.
+        "month": { "name": "Month", "name:cs": "Měsíc", "name:en": "Month" },
+        "filterErrorsOnly": { "name": "Errors only", "name:cs": "Jen chyby", "name:en": "Errors only" }
     }
 }

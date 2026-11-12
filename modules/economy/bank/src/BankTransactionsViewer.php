@@ -127,9 +127,9 @@ class BankTransactionsViewer extends TableViewer
 
         $accState = (int) ($rowData['accounting_state'] ?? 0);
         if ($accState === 2) {
-            $row['i2'] = [['text' => '⚠ ' . ($this->language === 'en' ? 'posting error' : 'chyba účtování'), 'class' => 'danger']];
+            $row['i2'] = [['text' => '⚠ ' . $this->text('postingError', 'posting error'), 'class' => 'danger']];
         } elseif ($accState === 1) {
-            $row['i2'] = [['text' => $this->language === 'en' ? 'posted' : 'zaúčtováno', 'class' => 'muted']];
+            $row['i2'] = [['text' => $this->text('posted', 'posted'), 'class' => 'muted']];
         }
 
         $row['stateStyle'] = $this->stateStyleFor($rowData);
@@ -147,29 +147,25 @@ class BankTransactionsViewer extends TableViewer
 
     public function getGridColumns(): ?array
     {
-        $cs = $this->language !== 'en';
-
         return [
-            ['id' => 'date_transaction', 'label' => $cs ? 'Datum' : 'Date', 'width' => 96, 'sortable' => true],
-            ['id' => 'amount', 'label' => $cs ? 'Částka' : 'Amount', 'width' => 130, 'align' => 'right', 'sortable' => true],
-            ['id' => 'counterparty_name', 'label' => $cs ? 'Protistrana' : 'Counterparty', 'grow' => true],
+            ['id' => 'date_transaction', 'label' => $this->sharedText('date', 'Date'), 'width' => 96, 'sortable' => true],
+            ['id' => 'amount', 'label' => $this->columnLabel('amount', 'Amount'), 'width' => 130, 'align' => 'right', 'sortable' => true],
+            ['id' => 'counterparty_name', 'label' => $this->text('counterparty', 'Counterparty'), 'grow' => true],
             ['id' => 'partner_name', 'label' => $this->columnLabel('partner', 'Partner')],
-            ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 120],
-            ['id' => 'operation', 'label' => $cs ? 'Operace' : 'Operation', 'width' => 110],
-            ['id' => 'accounting', 'label' => $cs ? 'Zaúčtování' : 'Accounting', 'width' => 120],
+            ['id' => 'payment_reference', 'label' => $this->sharedText('paymentReferenceShort', 'Reference'), 'width' => 120],
+            ['id' => 'operation', 'label' => $this->text('operation', 'Operation'), 'width' => 110],
+            ['id' => 'accounting', 'label' => $this->text('accounting', 'Accounting'), 'width' => 120],
         ];
     }
 
     public function renderGridRow(array $rowData): array
     {
-        $cs = $this->language !== 'en';
-
         // Chybu účtování nese badge — řádek se nečervená (rowClass), chybových
         // může být hodně (D11). Proužek patří stavu transakce (docState).
         $accState = (int) ($rowData['accounting_state'] ?? 0);
         $accounting = match ($accState) {
-            1       => ['text' => $cs ? 'zaúčtováno' : 'posted', 'badge' => 'success'],
-            2       => ['text' => $cs ? 'chyba účtování' : 'posting error', 'badge' => 'danger'],
+            1       => ['text' => $this->text('posted', 'posted'), 'badge' => 'success'],
+            2       => ['text' => $this->text('postingError', 'posting error'), 'badge' => 'danger'],
             default => null,
         };
 
@@ -220,51 +216,49 @@ class BankTransactionsViewer extends TableViewer
     /** Přehled (transakce, částky, protistrana, účet a výpis) a tab Zaúčtování, když má co ukázat. */
     protected function detailTabs(array $record): array
     {
-        $cs = $this->language !== 'en';
-
         // Datum transakce nese podtitul, stav štítek (#140 D26).
         $txItems = [];
-        $this->addItem($txItems, $cs ? 'Datum valuty' : 'Value date', $this->formatDate($record['date_value'] ?? null));
-        $this->addItem($txItems, $cs ? 'Směr' : 'Direction', $this->enumLabel('economy.bank.txDirections', $record['direction'] ?? null, 'int'));
-        $this->addItem($txItems, $cs ? 'Pohyb' : 'Operation', $this->enumLabel('economy.bank.txOperations', $record['operation'] ?? null, 'string'));
+        $this->addItem($txItems, $this->columnLabel('date_value', 'Value date'), $this->formatDate($record['date_value'] ?? null));
+        $this->addItem($txItems, $this->columnLabel('direction', 'Direction'), $this->enumLabel('economy.bank.txDirections', $record['direction'] ?? null, 'int'));
+        $this->addItem($txItems, $this->columnLabel('operation', 'Operation'), $this->enumLabel('economy.bank.txOperations', $record['operation'] ?? null, 'string'));
 
         // Částku se znaménkem a měnou nese titulek; přepočet a kurz jen u cizí měny.
         $amountItems = [];
         $rate = (float) ($record['exchange_rate'] ?? 1);
         if (abs($rate - 1.0) > 0.0000001) {
-            $this->addItem($amountItems, $cs ? 'V domácí měně' : 'In home currency', $this->formatMoney($record['amount_dom'] ?? 0));
-            $this->addItem($amountItems, $cs ? 'Kurz' : 'Exchange rate', number_format($rate, 6, ',', ' '));
+            $this->addItem($amountItems, $this->text('inHomeCurrency', 'In home currency'), $this->formatMoney($record['amount_dom'] ?? 0));
+            $this->addItem($amountItems, $this->columnLabel('exchange_rate', 'Exchange rate'), number_format($rate, 6, ',', ' '));
         }
 
         // Partner je v podtitulku; bez něj je tam název protistrany (#140 §2).
         // Název z výpisu se ukáže jen vedle partnera a jen když se od něj liší.
         $cpItems = [];
-        $this->addItem($cpItems, $cs ? 'Protiúčet' : 'Counterparty account', $record['counterparty_account'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Název protistrany' : 'Counterparty name', $this->counterpartyBesidePartner($record));
-        $this->addItem($cpItems, $cs ? 'Variabilní symbol' : 'Variable symbol', $record['payment_reference'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
-        $this->addItem($cpItems, $cs ? 'Zpráva' : 'Message', $record['message'] ?? null);
+        $this->addItem($cpItems, $this->columnLabel('counterparty_account', 'Counterparty account'), $record['counterparty_account'] ?? null);
+        $this->addItem($cpItems, $this->columnLabel('counterparty_name', 'Counterparty name'), $this->counterpartyBesidePartner($record));
+        $this->addItem($cpItems, $this->columnLabel('payment_reference', 'Variable symbol'), $record['payment_reference'] ?? null);
+        $this->addItem($cpItems, $this->columnLabel('specific_symbol', 'Specific symbol'), $record['specific_symbol'] ?? null);
+        $this->addItem($cpItems, $this->columnLabel('constant_symbol', 'Constant symbol'), $record['constant_symbol'] ?? null);
+        $this->addItem($cpItems, $this->text('message', 'Message'), $record['message'] ?? null);
 
         $accountLabel = trim(
             (string) ($record['account_code'] ?? '')
             . (($record['account_name'] ?? null) !== null ? ' — ' . $record['account_name'] : ''),
         );
         $ctxItems = [];
-        $this->addItem($ctxItems, $cs ? 'Bankovní účet' : 'Bank account', $accountLabel !== '' ? $accountLabel : null);
+        $this->addItem($ctxItems, $this->columnLabel('bank_account', 'Bank account'), $accountLabel !== '' ? $accountLabel : null);
         if (($record['st_start'] ?? null) !== null && ($record['st_end'] ?? null) !== null) {
             $this->addItem(
                 $ctxItems,
-                $cs ? 'Výpis' : 'Statement',
+                $this->columnLabel('statement', 'Statement'),
                 $this->formatDate($record['st_start']) . ' – ' . $this->formatDate($record['st_end']),
             );
         }
 
         $groups = [];
-        $this->addGroup($groups, $cs ? 'Transakce' : 'Transaction', $txItems);
-        $this->addGroup($groups, $cs ? 'Částky' : 'Amounts', $amountItems);
-        $this->addGroup($groups, $cs ? 'Protistrana' : 'Counterparty', $cpItems);
-        $this->addGroup($groups, $cs ? 'Účet a výpis' : 'Account & statement', $ctxItems);
+        $this->addGroup($groups, $this->text('groupTransaction', 'Transaction'), $txItems);
+        $this->addGroup($groups, $this->sharedText('groupAmounts', 'Amounts'), $amountItems);
+        $this->addGroup($groups, $this->text('counterparty', 'Counterparty'), $cpItems);
+        $this->addGroup($groups, $this->text('groupAccountAndStatement', 'Account & statement'), $ctxItems);
 
         $tabs = [[
             'id'      => 'overview',
@@ -347,7 +341,7 @@ class BankTransactionsViewer extends TableViewer
             return [];
         }
         return [[
-            'label' => $this->language === 'en' ? 'Posting error' : 'Chyba účtování',
+            'label' => $this->text('badgePostingError', 'Posting error'),
             'style' => 'error',
         ]];
     }
@@ -364,7 +358,7 @@ class BankTransactionsViewer extends TableViewer
         }
         return [[
             'id'      => 'reaccountTransaction',
-            'label'   => $this->language === 'en' ? 'Re-account' : 'Přeúčtovat',
+            'label'   => $this->text('actionReaccount', 'Re-account'),
             'kind'    => 'button',
             'variant' => 'secondary',
         ]];
@@ -418,12 +412,11 @@ class BankTransactionsViewer extends TableViewer
      */
     private function accountingJournalTable(array $journalRows): array
     {
-        $cs = $this->language !== 'en';
         $columns = [
-            ['id' => 'account', 'label' => $cs ? 'Účet' : 'Account'],
+            ['id' => 'account', 'label' => $this->columnLabel('account', 'Account', 'economy_accounting_journal')],
             ['id' => 'text',    'label' => $this->columnLabel('text', 'Text', 'economy_accounting_journal')],
-            ['id' => 'md',      'label' => $cs ? 'MD' : 'Debit',  'align' => 'right'],
-            ['id' => 'dal',     'label' => $cs ? 'DAL' : 'Credit', 'align' => 'right'],
+            ['id' => 'md',      'label' => $this->text('debit', 'Debit'),  'align' => 'right'],
+            ['id' => 'dal',     'label' => $this->text('credit', 'Credit'), 'align' => 'right'],
         ];
 
         $rows = [];
@@ -481,15 +474,24 @@ class BankTransactionsViewer extends TableViewer
 
     public function getFilters(): array
     {
-        $cs = $this->language !== 'en';
         return [[
             'id'    => 'only_errors',
-            'label' => $cs ? 'Jen chyby účtování' : 'Posting errors only',
+            'label' => $this->text('filterPostingErrorsOnly', 'Posting errors only'),
             'type'  => 'checkbox',
         ]];
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
+
+    /**
+     * Text vieweru z katalogu `economy.bank.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText('economy.bank.viewerDetailLabels', $key, $englishFallback, $params);
+    }
 
     private function enumLabel(string $cfgItemId, mixed $value, string $keyType = 'int', string $field = 'name'): ?string
     {

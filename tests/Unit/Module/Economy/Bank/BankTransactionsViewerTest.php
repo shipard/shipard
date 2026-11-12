@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Bank\BankTransactionsViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 
 /**
  * Grid layout bankovních transakcí (F2, docs/viewer-grid.md §7.3, D11):
@@ -43,12 +44,16 @@ class BankTransactionsViewerTest extends TestCase
                 'economy.bank.txOperations' => [
                     'payment.in' => ['name' => 'Příchozí platba'],
                 ],
+                // Texty vieweru ze zdrojových katalogů v češtině (#133 D66).
+                'economy.bank.viewerDetailLabels',
+                'core.system.viewerDetailLabels' => ViewerTexts::catalog($id),
                 default => null,
             },
         );
 
         $viewer = new BankTransactionsViewer($db, 'economy_bank_transactions');
         $viewer->setConfig($config);
+        $viewer->setTables(ViewerTexts::tables(['economy_bank_transactions', 'economy_accounting_journal']));
         $viewer->setLanguage('cs');
         return $viewer;
     }

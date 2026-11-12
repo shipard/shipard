@@ -97,7 +97,6 @@ class CasesViewer extends AccbalViewerBase
 
     public function renderRow(array $rowData): array
     {
-        $cs = $this->language === 'cs';
         $case = CaseQuery::decorate($rowData, $this->today());
         $curCode = strtoupper((string) ($rowData['currency'] ?? ''));
         $partnerName = trim((string) ($rowData['partner_name'] ?? ''));
@@ -115,18 +114,18 @@ class CasesViewer extends AccbalViewerBase
         }
         $due = $this->formatDate($rowData['due_date'] ?? null);
         if ($due !== null) {
-            $t2[] = ['text' => ($cs ? 'splatnost ' : 'due ') . $due, 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('rowDue', 'due {date}', ['date' => $due]), 'class' => 'muted'];
         }
         $t2[] = ['text' => $this->kindLabel($case['kind']), 'class' => 'muted'];
 
         $i2 = [
-            ['text' => ($cs ? 'předpisy ' : 'requests ') . $this->formatMoney($case['sum_requests']), 'class' => 'muted'],
-            ['text' => ($cs ? 'úhrady ' : 'payments ') . $this->formatMoney($case['sum_payments']), 'class' => 'muted'],
+            ['text' => $this->text('rowRequests', 'requests {amount}', ['amount' => $this->formatMoney($case['sum_requests'])]), 'class' => 'muted'],
+            ['text' => $this->text('rowPayments', 'payments {amount}', ['amount' => $this->formatMoney($case['sum_payments'])]), 'class' => 'muted'],
         ];
 
         return [
             'id'         => (int) ($rowData['row_id'] ?? 0),
-            't1'         => $partnerName !== '' ? $partnerName : ($cs ? '(Bez partnera)' : '(No partner)'),
+            't1'         => $partnerName !== '' ? $partnerName : $this->text('noPartnerPlaceholder', '(No partner)'),
             'i1'         => $this->formatMoney($case['residual']) . ' ' . $curCode,
             'stateStyle' => $this->stateStyleOf($case),
             't2'         => $t2,
@@ -141,28 +140,25 @@ class CasesViewer extends AccbalViewerBase
      */
     public function getGridColumns(): ?array
     {
-        $cs = $this->language === 'cs';
-
         return [
-            ['id' => 'fiscal_year', 'label' => $cs ? 'Období' : 'Period', 'width' => 80],
-            ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 110],
-            ['id' => 'specific_symbol', 'label' => $cs ? 'SS' : 'Spec. symbol', 'width' => 90],
-            ['id' => 'currency', 'label' => $cs ? 'Měna' : 'Currency', 'width' => 60],
-            ['id' => 'sum_requests', 'label' => $cs ? 'Předpisy' : 'Requests', 'width' => 120, 'align' => 'right'],
-            ['id' => 'sum_payments', 'label' => $cs ? 'Úhrady' : 'Payments', 'width' => 120, 'align' => 'right'],
-            ['id' => 'residual', 'label' => $cs ? 'Zůstatek' : 'Residual', 'width' => 120, 'align' => 'right'],
-            ['id' => 'residual_hc', 'label' => $cs ? 'Zůstatek (dom.)' : 'Residual (home)', 'width' => 120, 'align' => 'right'],
-            ['id' => 'due_date', 'label' => $cs ? 'Splatnost' : 'Due date', 'width' => 96],
-            ['id' => 'overdue', 'label' => $cs ? 'Po splatnosti' : 'Overdue', 'width' => 90, 'align' => 'right'],
-            ['id' => 'moves', 'label' => $cs ? 'Pohybů' : 'Moves', 'width' => 70, 'align' => 'right'],
+            ['id' => 'fiscal_year', 'label' => $this->text('period', 'Period'), 'width' => 80],
+            ['id' => 'payment_reference', 'label' => $this->sharedText('paymentReferenceShort', 'Reference'), 'width' => 110],
+            ['id' => 'specific_symbol', 'label' => $this->text('specificSymbolShort', 'Spec. symbol'), 'width' => 90],
+            ['id' => 'currency', 'label' => $this->columnLabel('currency', 'Currency'), 'width' => 60],
+            ['id' => 'sum_requests', 'label' => $this->text('requests', 'Requests'), 'width' => 120, 'align' => 'right'],
+            ['id' => 'sum_payments', 'label' => $this->text('payments', 'Payments'), 'width' => 120, 'align' => 'right'],
+            ['id' => 'residual', 'label' => $this->text('residual', 'Residual'), 'width' => 120, 'align' => 'right'],
+            ['id' => 'residual_hc', 'label' => $this->text('residualHome', 'Residual (home)'), 'width' => 120, 'align' => 'right'],
+            ['id' => 'due_date', 'label' => $this->text('dueDate', 'Due date'), 'width' => 96],
+            ['id' => 'overdue', 'label' => $this->text('overdue', 'Overdue'), 'width' => 90, 'align' => 'right'],
+            ['id' => 'moves', 'label' => $this->text('moves', 'Moves'), 'width' => 70, 'align' => 'right'],
             // Se zvoleným chipem redundantní, na „Vše" užitečné.
-            ['id' => 'balance', 'label' => $cs ? 'Saldokonto' : 'Balance', 'grow' => true],
+            ['id' => 'balance', 'label' => $this->columnLabel('balance', 'Balance'), 'grow' => true],
         ];
     }
 
     public function renderGridRow(array $rowData): array
     {
-        $cs = $this->language === 'cs';
         $case = CaseQuery::decorate($rowData, $this->today());
         $curCode = strtoupper((string) ($rowData['currency'] ?? ''));
         $hcCode = strtoupper((string) ($rowData['home_currency'] ?? ''));
@@ -176,10 +172,11 @@ class CasesViewer extends AccbalViewerBase
             // partnera sdílí 'p0') se součtem zůstatku partnera v HC.
             'group' => [
                 'key'   => 'p' . (int) ($rowData['partner'] ?? 0),
-                'label' => ($partnerName !== '' ? $partnerName : ($cs ? '(Bez partnera)' : '(No partner)'))
-                    . ' · ' . ($cs ? 'zůstatek ' : 'balance ')
-                    . $this->formatMoney($rowData['partner_residual_hc'] ?? 0)
-                    . ($hcCode !== '' ? ' ' . $hcCode : ''),
+                'label' => ($partnerName !== '' ? $partnerName : $this->text('noPartnerPlaceholder', '(No partner)'))
+                    . ' · ' . $this->text('groupPartnerBalance', 'balance {amount}', [
+                        'amount' => $this->formatMoney($rowData['partner_residual_hc'] ?? 0)
+                            . ($hcCode !== '' ? ' ' . $hcCode : ''),
+                    ]),
             ],
             'cells' => [
                 'fiscal_year'       => (string) ($rowData['fiscal_year_name'] ?? ''),
@@ -209,7 +206,6 @@ class CasesViewer extends AccbalViewerBase
      */
     public function renderGridFooter(?string $search, array $filters): ?array
     {
-        $cs   = $this->language === 'cs';
         $rows = (new CaseTotals($this->db, $this->table))->totals($filters, $this->today());
 
         $currency = null;
@@ -233,19 +229,19 @@ class CasesViewer extends AccbalViewerBase
             $code = ' ' . strtoupper($currency);
             return [
                 'sum_requests' => [
-                    ['text' => $cs ? 'Předpisy' : 'Requests', 'class' => 'muted'],
+                    ['text' => $this->text('requests', 'Requests'), 'class' => 'muted'],
                     ['text' => $this->formatMoney($row['sum_requests']) . $code],
                 ],
                 'sum_payments' => [
-                    ['text' => $cs ? 'Úhrady' : 'Payments', 'class' => 'muted'],
+                    ['text' => $this->text('payments', 'Payments'), 'class' => 'muted'],
                     ['text' => $this->formatMoney($row['sum_payments']) . $code],
                 ],
                 'residual' => [
-                    ['text' => $cs ? 'Zůstatek' : 'Residual', 'class' => 'muted'],
+                    ['text' => $this->text('residual', 'Residual'), 'class' => 'muted'],
                     ['text' => $this->formatMoney($row['residual']) . $code, 'class' => 'amount'],
                 ],
                 'residual_hc' => [
-                    ['text' => $cs ? 'Zůstatek (dom.)' : 'Residual (home)', 'class' => 'muted'],
+                    ['text' => $this->text('residualHome', 'Residual (home)'), 'class' => 'muted'],
                     ['text' => $this->formatMoney($residualHc) . $hc, 'class' => 'amount'],
                 ],
             ];
@@ -260,15 +256,15 @@ class CasesViewer extends AccbalViewerBase
 
         return [
             'sum_requests' => [
-                ['text' => $cs ? 'Předpisy' : 'Requests', 'class' => 'muted'],
+                ['text' => $this->text('requests', 'Requests'), 'class' => 'muted'],
                 ['text' => $this->formatMoney($sumRequests) . $hc],
             ],
             'sum_payments' => [
-                ['text' => $cs ? 'Úhrady' : 'Payments', 'class' => 'muted'],
+                ['text' => $this->text('payments', 'Payments'), 'class' => 'muted'],
                 ['text' => $this->formatMoney($sumPayments) . $hc],
             ],
             'residual_hc' => [
-                ['text' => $cs ? 'Zůstatek' : 'Residual', 'class' => 'muted'],
+                ['text' => $this->text('residual', 'Residual'), 'class' => 'muted'],
                 ['text' => $this->formatMoney($residualHc) . $hc, 'class' => 'amount'],
             ],
         ];
@@ -305,7 +301,6 @@ class CasesViewer extends AccbalViewerBase
     /** Titulek partner (bez partnera „Bez partnera"), podtitul saldokonto · VS · období (#136 §6). */
     protected function detailHeader(array $record): DetailHeader
     {
-        $cs = $this->language === 'cs';
         $partnerName = trim((string) ($record['partner_name'] ?? ''));
         $subtitle = implode(' · ', array_filter([
             (string) ($record['balance_name'] ?? ''),
@@ -314,7 +309,7 @@ class CasesViewer extends AccbalViewerBase
         ], static fn (string $v): bool => $v !== ''));
 
         return new DetailHeader(
-            $partnerName !== '' ? $partnerName : ($cs ? 'Bez partnera' : 'No partner'),
+            $partnerName !== '' ? $partnerName : $this->text('noPartner', 'No partner'),
             $subtitle !== '' ? $subtitle : null,
         );
     }
@@ -324,32 +319,31 @@ class CasesViewer extends AccbalViewerBase
     {
         $key = $record['key'];
         $case = $record['case'];
-        $cs = $this->language === 'cs';
         $curCode = strtoupper((string) ($key['currency'] ?? ''));
         $hcCode = strtoupper((string) ($case['home_currency'] ?? ''));
 
         // Partner je titulkem; saldokonto, variabilní symbol a období podtitulkem (#140 D26).
         $keyItems = [];
-        $this->addItem($keyItems, $cs ? 'Specifický symbol' : 'Specific symbol', $key['specific_symbol'] ?? null);
-        $this->addItem($keyItems, $cs ? 'Měna' : 'Currency', $curCode);
+        $this->addItem($keyItems, $this->columnLabel('specific_symbol', 'Specific symbol'), $key['specific_symbol'] ?? null);
+        $this->addItem($keyItems, $this->columnLabel('currency', 'Currency'), $curCode);
 
         $amountItems = [];
-        $this->addItem($amountItems, $cs ? 'Předpisy' : 'Requests', $this->formatMoney($case['sum_requests']) . ' ' . $curCode);
-        $this->addItem($amountItems, $cs ? 'Úhrady' : 'Payments', $this->formatMoney($case['sum_payments']) . ' ' . $curCode);
-        $this->addItem($amountItems, $cs ? 'Zůstatek' : 'Residual', $this->formatMoney($case['residual']) . ' ' . $curCode);
+        $this->addItem($amountItems, $this->text('requests', 'Requests'), $this->formatMoney($case['sum_requests']) . ' ' . $curCode);
+        $this->addItem($amountItems, $this->text('payments', 'Payments'), $this->formatMoney($case['sum_payments']) . ' ' . $curCode);
+        $this->addItem($amountItems, $this->text('residual', 'Residual'), $this->formatMoney($case['residual']) . ' ' . $curCode);
         if ($hcCode !== '' && $hcCode !== $curCode) {
-            $this->addItem($amountItems, ($cs ? 'Zůstatek ' : 'Residual ') . $hcCode, $this->formatMoney($case['residual_hc']));
+            $this->addItem($amountItems, $this->text('residualIn', 'Residual {currency}', ['currency' => $hcCode]), $this->formatMoney($case['residual_hc']));
         }
-        $this->addItem($amountItems, $cs ? 'Stav' : 'State', $this->kindLabel($case['kind']));
-        $this->addItem($amountItems, $cs ? 'Splatnost' : 'Due date', $this->formatDate($case['due_date'] ?? null));
+        $this->addItem($amountItems, $this->sharedText('state', 'State'), $this->kindLabel($case['kind']));
+        $this->addItem($amountItems, $this->text('dueDate', 'Due date'), $this->formatDate($case['due_date'] ?? null));
         if ($case['days_overdue'] > 0) {
-            $this->addItem($amountItems, $cs ? 'Dní po splatnosti' : 'Days overdue', $case['days_overdue']);
+            $this->addItem($amountItems, $this->text('daysOverdue', 'Days overdue'), $case['days_overdue']);
         }
-        $this->addItem($amountItems, $cs ? 'Pohybů' : 'Movements', $case['moves']);
+        $this->addItem($amountItems, $this->text('movementsCount', 'Movements'), $case['moves']);
 
         return [$this->propertiesTab([
-            ['title' => $cs ? 'Případ' : 'Case', 'items' => $keyItems],
-            ['title' => $cs ? 'Částky' : 'Amounts', 'items' => $amountItems],
+            ['title' => $this->text('case', 'Case'), 'items' => $keyItems],
+            ['title' => $this->sharedText('groupAmounts', 'Amounts'), 'items' => $amountItems],
         ])];
     }
 
@@ -361,7 +355,6 @@ class CasesViewer extends AccbalViewerBase
     protected function detailActions(array $record): array
     {
         $key = $record['key'];
-        $cs = $this->language === 'cs';
         $partnerName = trim((string) ($record['partner_name'] ?? ''));
 
         $filters = [];
@@ -380,7 +373,7 @@ class CasesViewer extends AccbalViewerBase
 
         return [[
             'id'        => 'open_ledger',
-            'label'     => $cs ? 'Pohyby případu' : 'Case movements',
+            'label'     => $this->text('caseMovements', 'Case movements'),
             'kind'      => 'open_viewer',
             'viewerId'  => 'economy.accbal.ledger',
             'viewGroup' => (string) ($record['balance_code'] ?? 'all'),
@@ -391,15 +384,13 @@ class CasesViewer extends AccbalViewerBase
 
     public function getFilters(): array
     {
-        $cs = $this->language === 'cs';
-
         return [
             $this->periodFilter(),
             ['id' => 'partner', 'label' => $this->columnLabel('partner', 'Partner'), 'type' => 'text'],
-            ['id' => 'payment_reference', 'label' => $cs ? 'Variabilní symbol' : 'Payment reference', 'type' => 'text'],
+            ['id' => 'payment_reference', 'label' => $this->columnLabel('payment_reference', 'Payment reference'), 'type' => 'text'],
             [
                 'id'      => 'kind',
-                'label'   => $cs ? 'Typ' : 'Type',
+                'label'   => $this->text('caseKind', 'Type'),
                 'type'    => 'select',
                 'options' => [
                     ['value' => CaseQuery::KIND_DEBT, 'label' => $this->kindLabel(CaseQuery::KIND_DEBT)],
@@ -408,10 +399,10 @@ class CasesViewer extends AccbalViewerBase
                     ['value' => CaseQuery::KIND_CLOSED, 'label' => $this->kindLabel(CaseQuery::KIND_CLOSED)],
                 ],
             ],
-            ['id' => CaseTotals::FILTER_CURRENCY, 'label' => $cs ? 'Měna' : 'Currency', 'type' => 'select', 'options' => $this->currencyOptions()],
-            ['id' => 'overdue', 'label' => $cs ? 'Po splatnosti' : 'Overdue', 'type' => 'checkbox'],
-            ['id' => CaseTotals::FILTER_DUE_WITHIN, 'label' => $cs ? 'Splatné do (dní)' : 'Due within (days)', 'type' => 'text'],
-            ['id' => 'include_closed', 'label' => $cs ? 'Včetně uzavřených' : 'Including closed', 'type' => 'checkbox'],
+            ['id' => CaseTotals::FILTER_CURRENCY, 'label' => $this->columnLabel('currency', 'Currency'), 'type' => 'select', 'options' => $this->currencyOptions()],
+            ['id' => 'overdue', 'label' => $this->text('overdue', 'Overdue'), 'type' => 'checkbox'],
+            ['id' => CaseTotals::FILTER_DUE_WITHIN, 'label' => $this->text('dueWithinDays', 'Due within (days)'), 'type' => 'text'],
+            ['id' => 'include_closed', 'label' => $this->text('includingClosed', 'Including closed'), 'type' => 'checkbox'],
         ];
     }
 

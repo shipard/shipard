@@ -6,6 +6,7 @@ namespace Shipard\Tests\Integration\Accbal;
 
 use Shipard\Module\Economy\Accbal\CaseQuery;
 use Shipard\Module\Economy\Accbal\CasesViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
@@ -214,6 +215,8 @@ class CasesViewerTest extends IntegrationTestCase
     {
         $viewer = new CasesViewer($this->db, 'economy_accbal_ledger');
         $viewer->setLanguage('cs');
+        $viewer->setConfig(ViewerTexts::config(['economy.accbal.viewerDetailLabels']));
+        $viewer->setTables(ViewerTexts::tables(['economy_accbal_ledger']));
         return $viewer;
     }
 

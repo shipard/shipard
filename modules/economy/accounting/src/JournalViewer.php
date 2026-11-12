@@ -202,16 +202,14 @@ class JournalViewer extends TableViewer
 
     public function getGridColumns(): ?array
     {
-        $cs = $this->language === 'cs';
-
         $columns = [
-            ['id' => 'accounting_date', 'label' => $cs ? 'Datum' : 'Date', 'width' => 96, 'sortable' => true],
-            ['id' => 'doc_number', 'label' => $cs ? 'Doklad' : 'Document'],
-            ['id' => 'account_number', 'label' => $cs ? 'Účet' : 'Account', 'width' => 80, 'sortable' => true],
+            ['id' => 'accounting_date', 'label' => $this->sharedText('date', 'Date'), 'width' => 96, 'sortable' => true],
+            ['id' => 'doc_number', 'label' => $this->columnLabel('doc_head', 'Document')],
+            ['id' => 'account_number', 'label' => $this->columnLabel('account', 'Account'), 'width' => 80, 'sortable' => true],
             ['id' => 'money_dr', 'label' => $this->text('debit', 'Debit'), 'width' => 110, 'align' => 'right', 'sortable' => true],
             ['id' => 'money_cr', 'label' => $this->text('credit', 'Credit'), 'width' => 110, 'align' => 'right', 'sortable' => true],
-            ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 130],
-            ['id' => 'partner_name', 'label' => $cs ? 'Osoba' : 'Person'],
+            ['id' => 'payment_reference', 'label' => $this->sharedText('paymentReferenceShort', 'Reference'), 'width' => 130],
+            ['id' => 'partner_name', 'label' => $this->sharedText('person', 'Person')],
         ];
         foreach ($this->dimensions() as $dimension) {
             $columns[] = ['id' => 'dim_' . $dimension->id, 'label' => $dimension->name];
@@ -331,28 +329,26 @@ class JournalViewer extends TableViewer
     /** Přehled: zápis (operace, partner, dimenze, období — datum, účet a text nese hlavička), částky, doklad, platba. */
     protected function detailTabs(array $record): array
     {
-        $cs = $this->language === 'cs';
-
         $entryItems = [];
         $this->addItem(
             $entryItems,
-            $cs ? 'Operace' : 'Operation',
+            $this->text('operation', 'Operation'),
             $this->cfgItemName('docs.core.rowOperations', $record['operation'] ?? null),
         );
         $this->addItem($entryItems, $this->columnLabel('partner', 'Partner'), $record['partner_name'] ?? null);
         foreach ($this->dimensions() as $dimension) {
             $this->addItem($entryItems, $dimension->name, $this->dimensionLabel($dimension, $record));
         }
-        $this->addItem($entryItems, $cs ? 'Fiskální rok' : 'Fiscal year', $record['fiscal_year_name'] ?? null);
+        $this->addItem($entryItems, $this->columnLabel('fiscal_year', 'Fiscal year'), $record['fiscal_year_name'] ?? null);
         if (($record['calendar_month'] ?? null) !== null && ($record['calendar_year'] ?? null) !== null) {
             $this->addItem(
                 $entryItems,
-                $cs ? 'Fiskální měsíc' : 'Fiscal month',
+                $this->columnLabel('fiscal_month', 'Fiscal month'),
                 $record['calendar_month'] . '/' . $record['calendar_year'],
             );
         }
         if ((int) ($record['is_error'] ?? 0) === 1) {
-            $this->addItem($entryItems, $cs ? 'Chybový řádek' : 'Error line', $cs ? '⚠ Ano' : '⚠ Yes');
+            $this->addItem($entryItems, $this->columnLabel('is_error', 'Error line'), $this->text('errorRowYes', '⚠ Yes'));
         }
 
         $amountItems = [];
@@ -369,26 +365,26 @@ class JournalViewer extends TableViewer
         $docItems = [];
         $this->addItem(
             $docItems,
-            $cs ? 'Typ dokladu' : 'Document type',
+            $this->columnLabel('doc_type', 'Document type'),
             $this->cfgItemName('docs.core.docTypes', $record['doc_type'] ?? null),
         );
-        $this->addItem($docItems, $cs ? 'Číslo dokladu' : 'Document number', $record['doc_number'] ?? null);
+        $this->addItem($docItems, $this->columnLabel('doc_number', 'Document number'), $record['doc_number'] ?? null);
 
         $paymentItems = [];
-        $this->addItem($paymentItems, $cs ? 'Variabilní symbol' : 'Payment reference', $record['payment_reference'] ?? null);
-        $this->addItem($paymentItems, $cs ? 'Specifický symbol' : 'Specific symbol', $record['specific_symbol'] ?? null);
-        $this->addItem($paymentItems, $cs ? 'Konstantní symbol' : 'Constant symbol', $record['constant_symbol'] ?? null);
-        $this->addItem($paymentItems, $cs ? 'Splatnost' : 'Due date', $this->formatDate($record['due_date'] ?? null));
+        $this->addItem($paymentItems, $this->columnLabel('payment_reference', 'Payment reference'), $record['payment_reference'] ?? null);
+        $this->addItem($paymentItems, $this->columnLabel('specific_symbol', 'Specific symbol'), $record['specific_symbol'] ?? null);
+        $this->addItem($paymentItems, $this->columnLabel('constant_symbol', 'Constant symbol'), $record['constant_symbol'] ?? null);
+        $this->addItem($paymentItems, $this->text('dueDate', 'Due date'), $this->formatDate($record['due_date'] ?? null));
 
         $groups = [
-            ['title' => $cs ? 'Zápis' : 'Entry', 'items' => $entryItems],
-            ['title' => $cs ? 'Částky' : 'Amounts', 'items' => $amountItems],
+            ['title' => $this->text('groupEntry', 'Entry'), 'items' => $entryItems],
+            ['title' => $this->sharedText('groupAmounts', 'Amounts'), 'items' => $amountItems],
         ];
         if ($docItems !== []) {
-            $groups[] = ['title' => $cs ? 'Doklad' : 'Document', 'items' => $docItems];
+            $groups[] = ['title' => $this->text('groupDocument', 'Document'), 'items' => $docItems];
         }
         if ($paymentItems !== []) {
-            $groups[] = ['title' => $cs ? 'Platba' : 'Payment', 'items' => $paymentItems];
+            $groups[] = ['title' => $this->text('groupPayment', 'Payment'), 'items' => $paymentItems];
         }
 
         return [$this->propertiesTab($groups)];
@@ -401,11 +397,10 @@ class JournalViewer extends TableViewer
         if ($docHead <= 0) {
             return [];
         }
-        $cs = $this->language === 'cs';
 
         return [[
             'id'       => 'open_doc',
-            'label'    => $cs ? 'Otevřít doklad' : 'Open document',
+            'label'    => $this->text('actionOpenDocument', 'Open document'),
             'kind'     => 'open_viewer',
             'viewerId' => 'docs.core.heads',
             'recordId' => $docHead,
@@ -420,8 +415,6 @@ class JournalViewer extends TableViewer
      */
     public function getFilters(): array
     {
-        $cs = $this->language === 'cs';
-
         $monthOptions = [];
         $months = $this->db->fetchAll(
             'SELECT `id`, `fiscal_year`, `calendar_year`, `calendar_month`'
@@ -436,17 +429,17 @@ class JournalViewer extends TableViewer
         }
 
         return [
-            $this->fiscalYearFilter($cs ? 'Fiskální rok' : 'Fiscal year'),
+            $this->fiscalYearFilter($this->columnLabel('fiscal_year', 'Fiscal year')),
             [
                 'id'           => 'fiscal_month',
-                'label'        => $cs ? 'Měsíc' : 'Month',
+                'label'        => $this->text('month', 'Month'),
                 'type'         => 'select',
                 'parentFilter' => 'fiscal_year',
                 'options'      => $monthOptions,
             ],
             [
                 'id'    => 'account',
-                'label' => $cs ? 'Účet' : 'Account',
+                'label' => $this->columnLabel('account', 'Account'),
                 'type'  => 'text',
             ],
             [
@@ -456,13 +449,13 @@ class JournalViewer extends TableViewer
             ],
             [
                 'id'    => 'payment_reference',
-                'label' => $cs ? 'Variabilní symbol' : 'Payment reference',
+                'label' => $this->columnLabel('payment_reference', 'Payment reference'),
                 'type'  => 'text',
             ],
             ...$this->dimensionFilters(),
             [
                 'id'    => 'only_errors',
-                'label' => $cs ? 'Jen chyby' : 'Errors only',
+                'label' => $this->text('filterErrorsOnly', 'Errors only'),
                 'type'  => 'checkbox',
             ],
         ];
