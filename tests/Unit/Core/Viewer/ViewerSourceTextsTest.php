@@ -11,21 +11,21 @@ use PHPUnit\Framework\TestCase;
  * sloupcem jde z definice tabulky (`TableViewer::columnLabel()`), ostatní
  * z katalogu modulu (`detailText()` / `labelText()`, sdílené
  * `sharedText()`). Test čte zdroje viewerů tokenizerem — komentáře se
- * vynechají samy — a hlídá dva vzory:
+ * vynechají samy — a hlídá tři vzory:
  *
  *  1. žádný řetězcový literál s českou diakritikou (ani část
  *     interpolovaného řetězce),
  *  2. žádný literál s písmenem jako popisek: druhý argument `addItem()`
  *     nebo hodnota klíče `'title'` / `'label'` / `'text'` v poli. Anglický
  *     fallback v `detailText(…, 'Fallback')` je argument jiné funkce
- *     a smí zůstat.
- *
- * Výjimka do F2 (F2 odstraní): dvojjazyčný zápis přímo v PHP —
- * literál ve větvi ternárního výrazu, jehož podmínka je proměnná jazyka
- * (`$cs`, `$isCs`) nebo porovnání s kódem jazyka (`$this->language === 'cs'`,
- * `… === 'en'`), a hodnota pod klíčem `'cs'` / `'en'`. Výjimka je pravidlem vzoru, ne
- * seznamem souborů: řada viewerů má oba zápisy vedle sebe a výjimka po
- * souborech by schovala i literály jen v jednom jazyce.
+ *     a smí zůstat,
+ *  3. žádný dvojjazyčný zápis přímo v PHP: literál s písmenem ve větvi
+ *     ternárního výrazu, jehož podmínka je proměnná jazyka (`$cs`,
+ *     `$isCs`) nebo porovnání s kódem jazyka (`$this->language === 'cs'`,
+ *     `… === 'en'`), a literál s písmenem pod klíčem `'cs'` / `'en'`.
+ *     Funguje v obou jazycích, ale obchází katalogy. Literál bez písmene
+ *     (oddělovač čísla) porušením není — podmínka jazyka smí vybírat
+ *     formát, ne text.
  *
  * Co test neuhlídá: text bez diakritiky mimo místo popisku („Ano“ / „Ne“
  * jako hodnota, text složený mimo pole) — ten hlídá jen review.
@@ -37,11 +37,13 @@ class ViewerSourceTextsTest extends TestCase
     /** Klíče pole, jejichž hodnota je text pro uživatele. */
     private const LABEL_KEYS = ['title', 'label', 'text'];
 
-    /** Proměnné jazyka v podmínce dvojjazyčného ternáru (F2 odstraní). */
+    /** Proměnné jazyka v podmínce dvojjazyčného ternáru. */
     private const LANGUAGE_VARIABLES = ['$cs', '$isCs'];
 
     /** Kódy jazyka, se kterými se podmínka dvojjazyčného ternáru porovnává. */
     private const LANGUAGE_CODES = ['cs', 'en'];
+
+    private const BILINGUAL = 'dvojjazyčný zápis — text do katalogu';
 
     private const HINT = 'použij columnLabel() (popisek sloupce), detailText() / labelText() (katalog modulu)'
         . ' nebo sharedText() (core.system)';
@@ -60,7 +62,7 @@ class ViewerSourceTextsTest extends TestCase
 
         $this->assertTrue(
             $violations === [],
-            'Texty viewerů jen v jednom jazyce (' . count($violations) . ') — ' . self::HINT . ":\n" . implode("\n", $violations),
+            'Texty viewerů mimo katalogy (' . count($violations) . ') — ' . self::HINT . ":\n" . implode("\n", $violations),
         );
     }
 
@@ -101,7 +103,7 @@ class ViewerSourceTextsTest extends TestCase
         $this->assertSame([], self::violationsIn($source));
     }
 
-    public function testBilingualNotationIsExemptUntilF2(): void
+    public function testBilingualNotationIsViolation(): void
     {
         $source = <<<'PHP'
             <?php
@@ -111,6 +113,31 @@ class ViewerSourceTextsTest extends TestCase
             $names = ['cs' => 'Česky', 'en' => 'Czech'];
             $yes = $on ? ($cs ? 'Ano' : 'Yes') : ($cs ? 'Ne' : 'No');
             $badge = ['text' => '⚠ ' . ($this->language === 'en' ? 'posting error' : 'chyba účtování')];
+            $filed = $cs ? "podáno {$date}" : "filed {$date}";
+            PHP;
+        $expected = [];
+        foreach ([
+            [2, "'Účet'"], [2, "'Account'"],
+            [3, "'Zůstatky'"], [3, "'Balances'"], [3, "'Období'"], [3, "'Period'"],
+            [4, "'splatnost '"], [4, "'due '"],
+            [5, "'Česky'"], [5, "'Czech'"],
+            [6, "'Ano'"], [6, "'Yes'"], [6, "'Ne'"], [6, "'No'"],
+            [7, "'posting error'"], [7, "'chyba účtování'"],
+            [8, 'podáno '], [8, 'filed '],
+        ] as [$line, $literal]) {
+            $expected[] = [$line, $literal, self::BILINGUAL];
+        }
+        $this->assertSame($expected, self::violationsIn($source));
+    }
+
+    public function testLanguageConditionMaySelectNonText(): void
+    {
+        $source = <<<'PHP'
+            <?php
+            $amount = number_format($value, 2, $this->language === 'cs' ? ',' : '.', ' ');
+            $separator = $cs ? ' · ' : ' | ';
+            $marks = ['cs' => '„“', 'en' => '“”'];
+            $lang = $this->language ?? 'en';
             PHP;
         $this->assertSame([], self::violationsIn($source));
     }
@@ -181,8 +208,12 @@ class ViewerSourceTextsTest extends TestCase
             }
 
             $key = $isConstant ? self::arrayKeyOf($tokens, $i) : null;
-            // Výjimka do F2 — dvojjazyčný zápis (F2 odstraní).
+            // Dvojjazyčný zápis: text má být v katalogu; literál bez písmene
+            // (oddělovač čísla) text není.
             if (in_array($key, self::LANGUAGE_CODES, true) || self::inLanguageTernary($tokens, $i)) {
+                if (preg_match('/\p{L}/u', $value) === 1) {
+                    $violations[] = [$token['line'], $token['text'], self::BILINGUAL];
+                }
                 continue;
             }
 
@@ -276,15 +307,26 @@ class ViewerSourceTextsTest extends TestCase
      * Je literál ve větvi ternárního výrazu s jazykovou podmínkou
      * (`$cs ? … : …`, `$this->language === 'cs' ? … : …`, `… === 'en' ? … : …`)? Hledá se zpět
      * v rámci téhož výrazu — čárka, středník, přiřazení a `=>` ho ukončují.
+     * Interpolovaný řetězec (`"podáno {$date}"`) se bere jako celek: od
+     * jeho části se začíná před úvodní uvozovkou a řetězec dřívější větve
+     * se přeskočí — složené závorky uvnitř výraz neukončují.
      *
      * @param list<array{id: ?int, text: string, line: int}> $tokens
      */
     private static function inLanguageTernary(array $tokens, int $i): bool
     {
         $depth = 0;
-        for ($j = $i - 1; $j >= 0; $j--) {
+        $start = $i - 1;
+        if ($tokens[$i]['id'] === T_ENCAPSED_AND_WHITESPACE) {
+            $start = self::openingQuote($tokens, $i) - 1;
+        }
+        for ($j = $start; $j >= 0; $j--) {
             $token = $tokens[$j];
             $text = $token['text'];
+            if ($text === '"') {
+                $j = self::openingQuote($tokens, $j); // celý řetězec dřívější větve
+                continue;
+            }
             if ($text === ')' || $text === ']') {
                 $depth++;
                 continue;
@@ -307,6 +349,22 @@ class ViewerSourceTextsTest extends TestCase
             }
         }
         return false;
+    }
+
+    /**
+     * Index úvodní uvozovky interpolovaného řetězce před pozicí `$i`
+     * (uvozovka je u něj samostatný token); -1, když žádná není.
+     *
+     * @param list<array{id: ?int, text: string, line: int}> $tokens
+     */
+    private static function openingQuote(array $tokens, int $i): int
+    {
+        for ($j = $i - 1; $j >= 0; $j--) {
+            if ($tokens[$j]['text'] === '"') {
+                return $j;
+            }
+        }
+        return -1;
     }
 
     /**
