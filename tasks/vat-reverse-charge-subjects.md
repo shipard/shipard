@@ -1,6 +1,6 @@
 # Task: Předmět plnění u tuzemského přenesení daňové povinnosti — samostatný údaj řádku a rekapitulace
 
-**Stav:** částečně — kód, korpus a ověření na dev zdroji hotové 2026-11-12 (7 commitů); zbývá schválit snímky hlavní knihy sad, legislativní ověření číselníku, kontrola XML na portálu, `ai-eval` a komentář do #89
+**Stav:** částečně — kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); zbývá legislativní ověření číselníku, kontrola XML na portálu, `ai-eval` a komentář do #89
 
 **Issue:** #89 (task B; task A je `exchange-received-foreign-vat.md`)
 
@@ -406,8 +406,7 @@ Na volném zdroji dat (třída `free`) po `ds-upgrade` a přeseedování:
 - [x] Volba předmětu v náhledu, prompt v4.12.0, help (D12, D15); build
       frontendu, i18n parita, `help-index.py`.
 - [x] Varianta korpusu s předmětem 14 (nebo zapsaný důvod, proč ne) —
-      varianta 12; **snímky hlavní knihy sad čekají na schválení člověkem**
-      (viz Stav implementace).
+      varianta 12; snímky hlavní knihy sad schválené 2026-11-12.
 - [ ] Legislativní ověření (vyhláška č. 387/2025 Sb. příloha 12, stav
       k 1. 1. 2027) zapsané v komentáři číselníku a v #89.
 - [ ] Ověření na dev zdroji (body 1–6), `tasks-index.py`, výsledek do #89 —
@@ -417,7 +416,8 @@ Na volném zdroji dat (třída `free`) po `ds-upgrade` a přeseedování:
 ## Stav implementace (2026-11-12)
 
 Sedm commitů na `stable` podle Kroků a commitů, pořadí dodrženo, commit 2
-a 3 zůstaly oddělené (celá sada byla po commitu 2 zelená).
+a 3 zůstaly oddělené (celá sada byla po commitu 2 zelená); osmý commit
+přebírá schválené snímky hlavní knihy sad.
 
 ### Odchylky od zadání a upřesnění
 
@@ -466,14 +466,16 @@ a 3 zůstaly oddělené (celá sada byla po commitu 2 zelená).
   nad volným zdrojem dat.
 - Datové sady (bod 6): `dataset-seed` + `dataset-verify` na zdrojích korpusu
   `ob9b-7` (plátce), `r1lf-w` (neplátce), `wp66-o` (spolek) — kontroly 1–5
-  v pořádku u všech tří (přiznání i KH včetně B.1 s kódem 14). **Kontrola 6
-  (deník proti schválenému snímku) hlásí rozdíl přesně o dva nové doklady**:
+  v pořádku u všech tří (přiznání i KH včetně B.1 s kódem 14). Kontrola 6
+  (deník proti schválenému snímku) se lišila přesně o dva nové doklady:
   plátce 321100 a 501201 + 229 180,00, 343115 a 343203 + 48 127,80; neplátce
-  a spolek 321100 a 501201 + 277 307,80. Kandidáti snímků jsou připravené
-  k odsouhlasení (`dataset-verify --no-apply --write-ledger-snapshot`);
-  po schválení do `profiles/<profil>/approved/` a `build.py --refresh-approved`.
+  a spolek 321100 a 501201 + 277 307,80. Nové snímky schválil člověk
+  2026-11-12; po převzetí do `profiles/<profil>/approved/`
+  a `build.py --refresh-approved` dává `dataset-seed` + `dataset-verify`
+  u všech tří sad 6 kontrol z 6 v pořádku.
 - Proklikání sady plátce v prohlížeči (`dataset-e2e`): 24 / 24 návrhů
-  použito přes náhled, bez chyb prohlížeče; jediný nález je kontrola 6.
+  použito přes náhled, bez chyb prohlížeče; jediný nález byla kontrola 6
+  před schválením snímků.
 - Body 1–3 a 5 přes skutečné API na volném testovacím zdroji `060z-b`:
   vydaná faktura s `cz-150` bez předmětu se nepotvrdí (applier 422
   `reverse_charge_code_missing`, hlavička 422 `rows.0.reverse_charge_code`);
@@ -499,7 +501,6 @@ a 3 zůstaly oddělené (celá sada byla po commitu 2 zelená).
 
 ### Zbývá (člověk)
 
-- Odsouhlasit snímky hlavní knihy tří sad (rozdíl výše) a přestavět sady.
 - Legislativní ověření číselníku proti vyhlášce č. 387/2025 Sb. příloha 12
   — komentář v `vat-cz.jsonc` říká „ověření čeká“.
 - Kontrola XML s kódem `4a` na daňovém portálu; `ai-eval` po změně promptu.

@@ -1010,6 +1010,12 @@ po opravě předpisů pro osnovu NNO (#122): zaokrouhlení jde na 549100 /
 2026-10-15 bez cizí měny. Od 2026-11-11 nesou i dva doklady varianty 11
 (#89): u všech tří profilů 17 387,32 Kč na 512100 proti 321100 —
 8 389,98 + 8 997,34, celá částka včetně daně dodavatele, žádný účet 343.
+Od 2026-11-12 nesou i dva doklady varianty 12 (#89 D16, mobilní telefony
+s přenesením daňové povinnosti): plátce 229 180,00 Kč na 501201 proti
+321100 a samovyměření 48 127,80 Kč na 343115 (odpočet) a 343203
+(oddanění); neplátce a spolek 277 307,80 Kč na 501201 proti 321100
+(běžná faktura 21 %, daň v ceně), jejich snímek je tím nově za měsíce
+7–12 (druhý doklad je z října).
 
 ### Pasti
 

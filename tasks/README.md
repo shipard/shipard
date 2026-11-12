@@ -58,7 +58,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `vat-filings-import.md` | částečně | kód, testy, CLI, UI a docs hotové 2026-09-13 (4 commity); |
 | `vat-period-lock.md` | částečně | shpd hotové 2026-09-11 (6 commitů: jádro lock providerů, zámek instance, |
 | `vat-report-periods.md` | částečně | implementace kompletní (5 commitů 2026-09-03: tabulka + eventy jádra, přiřazení + on-demand, reporty nad instancemi, cron + zrušení `vat_periods`, docs); E2E na dev DS prošlo (uložení dokladu → koncepty, reporty `--period`, alert, guard, přepočet, ruční přesun). Zbývá ruční proklik UI (picker, viewer Daňová tvrzení, selecty na dokladu) a ověření po re-importu qrce (task 30) — poslední bod „Hotovo když“. |
-| `vat-reverse-charge-subjects.md` | částečně | kód, korpus a ověření na dev zdroji hotové 2026-11-12 (7 commitů); zbývá schválit snímky hlavní knihy sad, legislativní ověření číselníku, kontrola XML na portálu, `ai-eval` a komentář do #89 |
+| `vat-reverse-charge-subjects.md` | částečně | kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); zbývá legislativní ověření číselníku, kontrola XML na portálu, `ai-eval` a komentář do #89 |
 | `video-publish.md` | zrušeno | galerie přes nginx a `gallery.mjs` odstraněny 2026-10-27 (#103 F7b D122, D129); videa se prohlížejí a stahují v oddílu **Videa** vývojářského dashboardu (`tasks/testing-phase7b.md`). Text níže je historie D15–D17. |
 
 <!-- STAV:END -->
