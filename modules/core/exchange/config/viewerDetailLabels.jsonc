@@ -1,0 +1,21 @@
+{
+    // core.exchange.viewerDetailLabels
+    //
+    // Texty vieweru pravidel obsahových štítků (TagRulesViewer). Jen sekce
+    // `texts`; sdílený tab „Přehled“ je v core.system.viewerDetailLabels.
+    // Holé `name` je anglická varianta a shoduje se s fallbackem v PHP.
+
+    // Texty detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // Přehled: nadpisy skupin vlastností.
+        "groupRule": { "name": "Rule", "name:cs": "Pravidlo", "name:en": "Rule" },
+        "groupStatistics": { "name": "Statistics", "name:cs": "Statistiky", "name:en": "Statistics" },
+        "status": { "name": "Status", "name:cs": "Stav", "name:en": "Status" },
+        // Skupina Pravidlo: štítek (krátce, sloupec je „Obsahový štítek“)
+        // a jméno partnera dohledané podle IČO.
+        "tag": { "name": "Tag", "name:cs": "Štítek", "name:en": "Tag" },
+        "partner": { "name": "Partner", "name:cs": "Partner", "name:en": "Partner" },
+        // Akce detailu: smazání pravidla.
+        "deleteRule": { "name": "Delete rule", "name:cs": "Smazat pravidlo", "name:en": "Delete rule" }
+    }
+}

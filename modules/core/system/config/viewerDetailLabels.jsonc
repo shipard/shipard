@@ -59,6 +59,16 @@
         "today": { "name": "today", "name:cs": "dnes", "name:en": "today" },
         "yesterday": { "name": "yesterday", "name:cs": "včera", "name:en": "yesterday" },
         "yesterdayAt": { "name": "yesterday {time}", "name:cs": "včera {time}", "name:en": "yesterday {time}" },
-        "tomorrow": { "name": "tomorrow", "name:cs": "zítra", "name:en": "tomorrow" }
+        "tomorrow": { "name": "tomorrow", "name:cs": "zítra", "name:en": "tomorrow" },
+
+        // UsersViewer — texty jen pro Uživatele (nejsou sdílené): štítek účtu
+        // bez hesla v řádku seznamu, skupina Účet a lokální heslo v Přehledu
+        // (jen příznak nastaveno / nenastaveno), akce detailu Poslat pozvánku.
+        "noPassword": { "name": "no password", "name:cs": "bez hesla", "name:en": "no password" },
+        "groupAccount": { "name": "Account", "name:cs": "Účet", "name:en": "Account" },
+        "localPassword": { "name": "Local password", "name:cs": "Lokální heslo", "name:en": "Local password" },
+        "valueSet": { "name": "set", "name:cs": "nastaveno", "name:en": "set" },
+        "valueNotSet": { "name": "not set", "name:cs": "nenastaveno", "name:en": "not set" },
+        "sendInvitation": { "name": "Send invitation", "name:cs": "Poslat pozvánku", "name:en": "Send invitation" }
     }
 }

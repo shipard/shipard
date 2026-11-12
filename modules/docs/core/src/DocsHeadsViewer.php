@@ -417,7 +417,7 @@ class DocsHeadsViewer extends TableViewer
         if (array_key_exists('accounting_state', $record)) {
             $actions[] = [
                 'id'      => 'reaccount',
-                'label'   => $this->language === 'cs' ? 'Přeúčtovat' : 'Re-account',
+                'label'   => $this->text('action.reaccount', 'Re-account'),
                 'kind'    => 'button',
                 'variant' => 'secondary',
             ];
@@ -495,14 +495,13 @@ class DocsHeadsViewer extends TableViewer
      */
     private function accountingJournalTable(array $record, array $journalRows): array
     {
-        $cs = $this->language === 'cs';
         $foreign = $this->isForeignCurrency($record);
         $curCode = strtoupper((string) ($record['doc_currency'] ?? ''));
 
-        $mdLabel = $cs ? 'MD' : 'Debit';
-        $dalLabel = $cs ? 'DAL' : 'Credit';
+        $mdLabel = $this->text('column.moneyDr', 'Debit');
+        $dalLabel = $this->text('column.moneyCr', 'Credit');
         $columns = [
-            ['id' => 'account', 'label' => $cs ? 'Účet' : 'Account'],
+            ['id' => 'account', 'label' => $this->columnLabel('account', 'Account', 'economy_accounting_journal')],
             ['id' => 'text',    'label' => $this->columnLabel('text', 'Text', 'economy_accounting_journal')],
         ];
         // Dimenze deníku (majetek, …) — sloupec jen když ji některý řádek nese.

@@ -103,7 +103,6 @@ class TagRulesViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
         $companyId = (string) ($record['company_id'] ?? '');
 
         $partner = $this->db->fetchRow(
@@ -115,18 +114,18 @@ class TagRulesViewer extends TableViewer
         );
 
         $rule = [];
-        $this->addItem($rule, $isCs ? 'Štítek' : 'Tag', $this->cfgLabel('core.exchange.contentTags', (string) ($record['tag'] ?? '')));
+        $this->addItem($rule, $this->text('tag', 'Tag'), $this->cfgLabel('core.exchange.contentTags', (string) ($record['tag'] ?? '')));
         $this->addItem($rule, $this->columnLabel('company_id', 'Company ID'), $companyId);
-        $this->addItem($rule, $isCs ? 'Partner' : 'Partner', $partner['full_name'] ?? null);
-        $this->addItem($rule, $isCs ? 'Původ' : 'Origin', $this->cfgLabel('core.exchange.tagRuleOrigins', (string) ($record['origin'] ?? '')));
+        $this->addItem($rule, $this->text('partner', 'Partner'), $partner['full_name'] ?? null);
+        $this->addItem($rule, $this->columnLabel('origin', 'Origin'), $this->cfgLabel('core.exchange.tagRuleOrigins', (string) ($record['origin'] ?? '')));
 
         $stats = [];
-        $this->addItem($stats, $isCs ? 'Počet zásahů' : 'Hit count', (string) (int) ($record['hit_count'] ?? 0));
-        $this->addItem($stats, $isCs ? 'Poslední zásah' : 'Last hit', $this->formatDateTime($record['last_hit_at'] ?? null));
+        $this->addItem($stats, $this->columnLabel('hit_count', 'Hit count'), (string) (int) ($record['hit_count'] ?? 0));
+        $this->addItem($stats, $this->columnLabel('last_hit_at', 'Last hit'), $this->formatDateTime($record['last_hit_at'] ?? null));
 
         $status = [];
-        $this->addItem($status, $isCs ? 'Vytvořeno' : 'Created', $this->formatDateTime($record['created'] ?? null));
-        $this->addItem($status, $isCs ? 'Změněno' : 'Modified', $this->formatDateTime($record['modified'] ?? null));
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
 
         return [[
             'id'      => 'overview',
@@ -134,9 +133,9 @@ class TagRulesViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => $isCs ? 'Pravidlo' : 'Rule', 'items' => $rule],
-                    ['title' => $isCs ? 'Statistiky' : 'Statistics', 'items' => $stats],
-                    ['title' => $isCs ? 'Stav' : 'Status', 'items' => $status],
+                    ['title' => $this->text('groupRule', 'Rule'), 'items' => $rule],
+                    ['title' => $this->text('groupStatistics', 'Statistics'), 'items' => $stats],
+                    ['title' => $this->text('status', 'Status'), 'items' => $status],
                 ],
             ],
         ]];
@@ -144,11 +143,9 @@ class TagRulesViewer extends TableViewer
 
     protected function detailActions(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         return [[
             'id'      => 'deleteTagRule',
-            'label'   => $isCs ? 'Smazat pravidlo' : 'Delete rule',
+            'label'   => $this->text('deleteRule', 'Delete rule'),
             'kind'    => 'button',
             'variant' => 'danger',
         ]];
@@ -182,6 +179,16 @@ class TagRulesViewer extends TableViewer
             return (string) $cfg[$key]['name'];
         }
         return $key;
+    }
+
+    /**
+     * Text vieweru z katalogu `core.exchange.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText('core.exchange.viewerDetailLabels', $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

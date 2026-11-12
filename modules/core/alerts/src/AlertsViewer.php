@@ -317,14 +317,9 @@ class AlertsViewer extends TableViewer
 
     private function recheckAction(string $checkId): array
     {
-        $lang = $this->language ?? 'en';
-        $labels = [
-            'cs' => 'Zkontrolovat znovu',
-            'en' => 'Re-check',
-        ];
         return [
             'id'      => 'recheck',
-            'label'   => $labels[$lang] ?? $labels['en'],
+            'label'   => $this->rowActionLabel('recheck', 'Re-check'),
             'kind'    => 'button',
             'variant' => 'secondary',
             'meta'    => ['checkId' => $checkId],
@@ -333,14 +328,9 @@ class AlertsViewer extends TableViewer
 
     private function unsnoozeAction(): array
     {
-        $lang = $this->language ?? 'en';
-        $labels = [
-            'cs' => 'Vrátit do aktivních',
-            'en' => 'Unsnooze',
-        ];
         return [
             'id'      => 'unsnooze',
-            'label'   => $labels[$lang] ?? $labels['en'],
+            'label'   => $this->rowActionLabel('unsnooze', 'Unsnooze'),
             'kind'    => 'button',
             'variant' => 'secondary',
         ];

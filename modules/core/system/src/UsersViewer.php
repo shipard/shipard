@@ -50,20 +50,18 @@ class UsersViewer extends TableViewer
 
     public function renderRow(array $rowData): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         $badges = [];
         if (!empty($rowData['is_admin'])) {
             $badges[] = ['text' => $this->sharedText('statusAdmin', 'admin'), 'class' => 'info'];
         }
         if (!empty($rowData['is_system'])) {
-            $badges[] = ['text' => $isCs ? 'systémový' : 'system', 'class' => 'muted'];
+            $badges[] = ['text' => $this->sharedText('statusSystem', 'system'), 'class' => 'muted'];
         }
         if (empty($rowData['is_active'])) {
-            $badges[] = ['text' => $isCs ? 'neaktivní' : 'inactive', 'class' => 'muted'];
+            $badges[] = ['text' => $this->sharedText('statusInactive', 'inactive'), 'class' => 'muted'];
         }
         if (empty($rowData['has_password']) && empty($rowData['is_system'])) {
-            $badges[] = ['text' => $isCs ? 'bez hesla' : 'no password', 'class' => 'warning'];
+            $badges[] = ['text' => $this->text('noPassword', 'no password'), 'class' => 'warning'];
         }
 
         return [
@@ -112,28 +110,24 @@ class UsersViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-        $yes = $isCs ? 'Ano' : 'Yes';
-        $no  = $isCs ? 'Ne' : 'No';
-
         $identity = [
             ['label' => $this->columnLabel('email', 'E-mail'), 'value' => (string) ($record['email'] ?? '')],
         ];
         if (array_key_exists('person', $record)) {
             $identity[] = [
-                'label' => $isCs ? 'Osoba' : 'Person',
+                'label' => $this->sharedText('person', 'Person'),
                 'value' => $this->personName($record['person'] ?? null),
             ];
         }
 
         $account = [
-            ['label' => $isCs ? 'Aktivní' : 'Active', 'value' => !empty($record['is_active']) ? $yes : $no],
-            ['label' => $isCs ? 'Administrátor' : 'Administrator', 'value' => !empty($record['is_admin']) ? $yes : $no],
+            ['label' => $this->columnLabel('is_active', 'Active'), 'value' => $this->yesNoText(!empty($record['is_active']))],
+            ['label' => $this->columnLabel('is_admin', 'Administrator'), 'value' => $this->yesNoText(!empty($record['is_admin']))],
             [
-                'label' => $isCs ? 'Lokální heslo' : 'Local password',
+                'label' => $this->text('localPassword', 'Local password'),
                 'value' => !empty($record['has_password'])
-                    ? ($isCs ? 'nastaveno' : 'set')
-                    : ($isCs ? 'nenastaveno' : 'not set'),
+                    ? $this->text('valueSet', 'set')
+                    : $this->text('valueNotSet', 'not set'),
             ],
         ];
 
@@ -143,8 +137,8 @@ class UsersViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                    ['title' => $isCs ? 'Účet' : 'Account', 'items' => $account],
+                    ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],
+                    ['title' => $this->text('groupAccount', 'Account'), 'items' => $account],
                 ],
             ],
         ]];
@@ -160,14 +154,23 @@ class UsersViewer extends TableViewer
             || trim((string) ($record['email'] ?? '')) === '') {
             return [];
         }
-        $isCs = ($this->language ?? 'en') === 'cs';
 
         return [[
             'id'      => 'invite',
-            'label'   => $isCs ? 'Poslat pozvánku' : 'Send invitation',
+            'label'   => $this->text('sendInvitation', 'Send invitation'),
             'kind'    => 'button',
             'variant' => 'secondary',
         ]];
+    }
+
+    /**
+     * Text vieweru z katalogu `core.system.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText('core.system.viewerDetailLabels', $key, $englishFallback, $params);
     }
 
     /** Jméno navázané Osoby; prázdné bez vazby i u vazby na neexistující Osobu. */

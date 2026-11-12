@@ -51,15 +51,13 @@ class SendersViewer extends TableViewer
 
     public function renderRow(array $rowData): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         $badges = [];
         if (empty($rowData['is_active'])) {
-            $badges[] = ['text' => $isCs ? 'neaktivní' : 'inactive', 'class' => 'muted'];
+            $badges[] = ['text' => $this->sharedText('statusInactive', 'inactive'), 'class' => 'muted'];
         }
         $badges[] = !empty($rowData['has_password'])
-            ? ['text' => $isCs ? 'heslo nastaveno' : 'password set', 'class' => 'success']
-            : ['text' => $isCs ? 'bez hesla' : 'no password', 'class' => 'warning'];
+            ? ['text' => $this->text('passwordSet', 'password set'), 'class' => 'success']
+            : ['text' => $this->text('noPassword', 'no password'), 'class' => 'warning'];
 
         return [
             'id' => (int) $rowData['id'],
@@ -86,24 +84,20 @@ class SendersViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-        $yes = $isCs ? 'Ano' : 'Yes';
-        $no  = $isCs ? 'Ne' : 'No';
-
         $identity = [
-            ['label' => $isCs ? 'Aktivní' : 'Active', 'value' => !empty($record['is_active']) ? $yes : $no],
-            ['label' => $isCs ? 'Vytvořeno' : 'Created', 'value' => $this->formatDateTime($record['created'] ?? null) ?? ''],
+            ['label' => $this->columnLabel('is_active', 'Active'), 'value' => $this->yesNoText(!empty($record['is_active']))],
+            ['label' => $this->columnLabel('created', 'Created'), 'value' => $this->formatDateTime($record['created'] ?? null) ?? ''],
         ];
 
         $transport = [
-            ['label' => $this->detailText(self::LABELS_CFG_ITEM, 'smtp', 'SMTP'), 'value' => $record['smtp_host'] . ':' . $record['smtp_port']],
-            ['label' => $isCs ? 'Zabezpečení' : 'Security', 'value' => (string) $record['smtp_security']],
-            ['label' => $isCs ? 'Uživatel' : 'Username', 'value' => (string) ($record['smtp_username'] ?? '')],
+            ['label' => $this->text('smtp', 'SMTP'), 'value' => $record['smtp_host'] . ':' . $record['smtp_port']],
+            ['label' => $this->columnLabel('smtp_security', 'Security'), 'value' => (string) $record['smtp_security']],
+            ['label' => $this->text('username', 'Username'), 'value' => (string) ($record['smtp_username'] ?? '')],
             [
-                'label' => $isCs ? 'Heslo' : 'Password',
+                'label' => $this->text('password', 'Password'),
                 'value' => !empty($record['has_password'])
-                    ? ($isCs ? 'nastaveno' : 'set')
-                    : ($isCs ? 'nenastaveno' : 'not set'),
+                    ? $this->text('valueSet', 'set')
+                    : $this->text('valueNotSet', 'not set'),
             ],
         ];
 
@@ -113,8 +107,8 @@ class SendersViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                    ['title' => $this->detailText(self::LABELS_CFG_ITEM, 'smtp', 'SMTP'), 'items' => $transport],
+                    ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],
+                    ['title' => $this->text('smtp', 'SMTP'), 'items' => $transport],
                 ],
             ],
         ]];
@@ -122,13 +116,21 @@ class SendersViewer extends TableViewer
 
     protected function detailActions(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         return [[
             'id'      => 'setPassword',
-            'label'   => $isCs ? 'Nastavit heslo' : 'Set password',
+            'label'   => $this->text('setPassword', 'Set password'),
             'kind'    => 'button',
             'variant' => 'secondary',
         ]];
+    }
+
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 }

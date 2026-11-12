@@ -19,6 +19,8 @@ use Shipard\Module\Base\Persons\Send\SendPurposes;
  */
 class SentMessagesViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'core.mail.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.mail.docStatesSent';
 
     /** Styl štítku stavu transportu → třída spanu v řádku. */
@@ -130,17 +132,16 @@ class SentMessagesViewer extends TableViewer
     /** Předmět jako titulek, Komu · vytvořeno v podtitulku; štítek stavu (Odeslaná) přidává builder. */
     protected function detailHeader(array $record): DetailHeader
     {
-        $cs = ($this->language ?? 'en') === 'cs';
         $to = AddressList::format(AddressList::parse($record['email_to'] ?? null));
         $subject = trim((string) ($record['subject'] ?? ''));
 
         $subtitle = array_filter([
-            $to !== '' ? ($cs ? 'Komu: ' : 'To: ') . $to : null,
+            $to !== '' ? $this->text('toRecipients', 'To: {to}', ['to' => $to]) : null,
             $this->formatDateTime($record['created'] ?? null),
         ]);
 
         return new DetailHeader(
-            $subject !== '' ? $subject : ($cs ? '(bez předmětu)' : '(no subject)'),
+            $subject !== '' ? $subject : $this->text('noSubject', '(no subject)'),
             $subtitle !== [] ? implode(' · ', $subtitle) : null,
         );
     }
@@ -164,7 +165,6 @@ class SentMessagesViewer extends TableViewer
      */
     protected function detailTabs(array $record): array
     {
-        $cs        = ($this->language ?? 'en') === 'cs';
         $transport = $this->transportInfo()->state($record);
 
         $blocks = [];
@@ -177,7 +177,7 @@ class SentMessagesViewer extends TableViewer
         if ($attachments !== []) {
             $blocks[] = [
                 'type' => 'heading',
-                'text' => $this->detailTabLabel('core.mail.viewerDetailLabels', 'attachments', 'Attachments'),
+                'text' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'attachments', 'Attachments'),
             ];
             $blocks[] = ['type' => 'attachment-grid', 'attachments' => $attachments];
         }
@@ -187,33 +187,33 @@ class SentMessagesViewer extends TableViewer
             : (string) $record['email_from'];
 
         $message = [];
-        $this->addItem($message, $cs ? 'Odesílatel' : 'From', $from);
-        $this->addItem($message, $cs ? 'Kopie' : 'Cc', AddressList::format(AddressList::parse($record['email_cc'] ?? null)));
-        $this->addItem($message, $cs ? 'Osoba' : 'Person', $record['recipient_name'] ?? null);
-        $this->addItem($message, $cs ? 'Záznam' : 'Record', $record['target_label'] ?? null);
+        $this->addItem($message, $this->columnLabel('email_from', 'From'), $from);
+        $this->addItem($message, $this->columnLabel('email_cc', 'Cc'), AddressList::format(AddressList::parse($record['email_cc'] ?? null)));
+        $this->addItem($message, $this->sharedText('person', 'Person'), $record['recipient_name'] ?? null);
+        $this->addItem($message, $this->text('record', 'Record'), $record['target_label'] ?? null);
         if (!empty($record['purpose'])) {
-            $this->addItem($message, $cs ? 'Účel' : 'Purpose', SendPurposes::label((string) $record['purpose'], $this->config));
+            $this->addItem($message, $this->columnLabel('purpose', 'Purpose'), SendPurposes::label((string) $record['purpose'], $this->config));
         }
-        $this->addItem($message, $cs ? 'Jazyk' : 'Language', $record['language'] ?? null);
+        $this->addItem($message, $this->columnLabel('language', 'Language'), $record['language'] ?? null);
 
         $sending = [];
-        $this->addItem($sending, $cs ? 'Odesláno' : 'Sent at', $this->formatDateTime($record['sent_at'] ?? null));
-        $this->addItem($sending, $cs ? 'Počet odeslání' : 'Send count', (string) (int) ($record['send_count'] ?? 0));
-        $this->addItem($sending, $cs ? 'Poslední chyba' : 'Last error', $record['last_error'] ?? null);
-        $this->addItem($sending, $cs ? 'Spuštěno' : 'Trigger', $this->triggerLabel((string) ($record['send_trigger'] ?? '')));
-        $this->addItem($sending, $cs ? 'Odeslal' : 'Sent by', $record['author_name'] ?? null);
+        $this->addItem($sending, $this->columnLabel('sent_at', 'Sent at'), $this->formatDateTime($record['sent_at'] ?? null));
+        $this->addItem($sending, $this->columnLabel('send_count', 'Send count'), (string) (int) ($record['send_count'] ?? 0));
+        $this->addItem($sending, $this->columnLabel('last_error', 'Last error'), $record['last_error'] ?? null);
+        $this->addItem($sending, $this->columnLabel('send_trigger', 'Trigger'), $this->triggerLabel((string) ($record['send_trigger'] ?? '')));
+        $this->addItem($sending, $this->text('sentBy', 'Sent by'), $record['author_name'] ?? null);
 
         $blocks[] = [
             'type'   => 'properties',
             'groups' => [
-                ['title' => $cs ? 'Zpráva' : 'Message', 'items' => $message],
-                ['title' => $cs ? 'Odeslání' : 'Sending', 'items' => $sending],
+                ['title' => $this->text('groupMessage', 'Message'), 'items' => $message],
+                ['title' => $this->text('groupSending', 'Sending'), 'items' => $sending],
             ],
         ];
 
         return [[
             'id'      => 'content',
-            'label'   => $this->detailTabLabel('core.mail.viewerDetailLabels', 'content', 'Content'),
+            'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'content', 'Content'),
             'content' => count($blocks) === 1 ? $blocks[0] : ['type' => 'composite', 'blocks' => $blocks],
         ]];
     }
@@ -224,11 +224,10 @@ class SentMessagesViewer extends TableViewer
         if (empty($record['target_table_id']) || (int) ($record['target_row'] ?? 0) <= 0) {
             return [];
         }
-        $cs = ($this->language ?? 'en') === 'cs';
 
         return [[
             'id'      => 'openSentMessageTarget',
-            'label'   => $cs ? 'Otevřít záznam' : 'Open record',
+            'label'   => $this->text('openRecord', 'Open record'),
             'kind'    => 'open_form',
             'variant' => 'secondary',
             'target'  => [
@@ -295,6 +294,16 @@ class SentMessagesViewer extends TableViewer
         $states = $this->config?->cfgItem((string) $this->docStatesCfgItem);
         $state  = is_array($states) ? ($states[(string) $docState] ?? null) : null;
         return is_array($state) ? $state : [];
+    }
+
+    /**
+     * Text vieweru z katalogu `core.mail.viewerDetailLabels` (sekce `texts`).
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

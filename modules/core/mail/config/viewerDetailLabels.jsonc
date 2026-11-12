@@ -8,7 +8,8 @@
     //
     // Section `texts` holds the texts of all core.mail viewers
     // (IncomingMessagesViewer, MailboxesViewer, SendersViewer,
-    // AIProfilesViewer, SenderRulesViewer, PreprocessRulesViewer) — list
+    // AIProfilesViewer, SenderRulesViewer, PreprocessRulesViewer,
+    // SentMessagesViewer) — list
     // rows and detail (#133 D66). Bare `name` is the English variant and
     // equals the fallback in PHP.
 
@@ -129,6 +130,28 @@
         "conditionSubject": { "name": "subject: {value}", "name:cs": "předmět: {value}", "name:en": "subject: {value}" },
         "conditionBody": { "name": "body: {value}", "name:cs": "tělo: {value}", "name:en": "body: {value}" },
         // Odesílatelé (`SendersViewer`): skupina i položka s adresou serveru.
-        "smtp": { "name": "SMTP", "name:cs": "SMTP", "name:en": "SMTP" }
+        "smtp": { "name": "SMTP", "name:cs": "SMTP", "name:en": "SMTP" },
+        // Odesílatelé: štítky hesla v řádku seznamu, položky skupiny SMTP
+        // (uživatel, heslo jen jako příznak nastaveno / nenastaveno) a akce
+        // detailu Nastavit heslo.
+        "passwordSet": { "name": "password set", "name:cs": "heslo nastaveno", "name:en": "password set" },
+        "noPassword": { "name": "no password", "name:cs": "bez hesla", "name:en": "no password" },
+        "username": { "name": "Username", "name:cs": "Uživatel", "name:en": "Username" },
+        "password": { "name": "Password", "name:cs": "Heslo", "name:en": "Password" },
+        "valueSet": { "name": "set", "name:cs": "nastaveno", "name:en": "set" },
+        "valueNotSet": { "name": "not set", "name:cs": "nenastaveno", "name:en": "not set" },
+        "setPassword": { "name": "Set password", "name:cs": "Nastavit heslo", "name:en": "Set password" },
+
+        // --- Odeslaná pošta (`SentMessagesViewer`) ---
+        // Podtitulek detailu: „Komu: adresy“ (titulek bez předmětu = `noSubject`).
+        "toRecipients": { "name": "To: {to}", "name:cs": "Komu: {to}", "name:en": "To: {to}" },
+        // Tab Obsah: skupiny vlastností Zpráva / Odeslání a položky, které
+        // nejsou popiskem sloupce (popisek záznamu, autor odeslání).
+        "groupMessage": { "name": "Message", "name:cs": "Zpráva", "name:en": "Message" },
+        "groupSending": { "name": "Sending", "name:cs": "Odeslání", "name:en": "Sending" },
+        "record": { "name": "Record", "name:cs": "Záznam", "name:en": "Record" },
+        "sentBy": { "name": "Sent by", "name:cs": "Odeslal", "name:en": "Sent by" },
+        // Akce detailu: odkaz na záznam, ke kterému zpráva patří.
+        "openRecord": { "name": "Open record", "name:cs": "Otevřít záznam", "name:en": "Open record" }
     }
 }

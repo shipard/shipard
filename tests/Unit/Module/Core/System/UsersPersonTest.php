@@ -11,6 +11,7 @@ use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\JsoncFormLoader;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\System\UsersViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 
 /**
  * Uživatel ↔ Osoba (#93 D6): sloupec `person` přidává rozšíření
@@ -109,6 +110,7 @@ class UsersPersonTest extends TestCase
         );
 
         $viewer = new UsersViewer($db, self::TABLE);
+        $viewer->setConfig(ViewerTexts::config([]));
         $viewer->setLanguage('cs');
         if ($withPerson) {
             $viewer->setTables([self::TABLE => $this->usersDef(true)]);

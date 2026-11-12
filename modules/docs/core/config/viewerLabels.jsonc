@@ -32,5 +32,13 @@
     "column.number": { "name": "Number", "name:cs": "Číslo", "name:en": "Number" },
     "column.issueDate": { "name": "Issued", "name:cs": "Vystaveno", "name:en": "Issued" },
     "column.amount": { "name": "Amount", "name:cs": "Částka", "name:en": "Amount" },
-    "column.state": { "name": "State", "name:cs": "Stav", "name:en": "State" }
+    "column.state": { "name": "State", "name:cs": "Stav", "name:en": "State" },
+
+    // Akce detailu potvrzeného dokladu se stavem zaúčtování — Viewer.svelte
+    // volá POST /_accounting/reaccount.
+    "action.reaccount": { "name": "Re-account", "name:cs": "Přeúčtovat", "name:en": "Re-account" },
+    // Tab Zaúčtování: záhlaví sloupců stran zápisu v tabulce řádků deníku
+    // (u cizoměnového dokladu s kódem měny za popiskem).
+    "column.moneyDr": { "name": "Debit", "name:cs": "MD", "name:en": "Debit" },
+    "column.moneyCr": { "name": "Credit", "name:cs": "DAL", "name:en": "Credit" }
 }

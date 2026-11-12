@@ -9,14 +9,15 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Form\FormElement;
 use Shipard\Module\Core\Mail\Sent\SentMessagesForm;
 use Shipard\Module\Core\Mail\Sent\SentMessagesViewer;
-use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 
 /** Agenda Odeslaná pošta a formulář zprávy (#90 D41, D45). */
 class SentMessagesViewerTest extends TestCase
 {
     private function config(): \Shipard\Core\Config\ConfigRuntime
     {
-        return ConfigRuntimeFactory::fromItems([
+        // Texty vieweru ze skutečného katalogu modulu; výčty a stavy testu mají přednost.
+        return ViewerTexts::config(['core.mail.viewerDetailLabels'], 'cs', [
             'core.mail.docStatesSent' => [
                 '40' => ['stateName' => 'Odeslaná', 'stateStyle' => 'done', 'viewGroup' => 'active'],
                 '70' => ['stateName' => 'V archivu', 'stateStyle' => 'archive', 'viewGroup' => 'archive'],
@@ -54,6 +55,7 @@ class SentMessagesViewerTest extends TestCase
 
         $viewer = new SentMessagesViewer($db, 'core_mail_sent_messages');
         $viewer->setConfig($this->config());
+        $viewer->setTables(ViewerTexts::tables(['core_mail_sent_messages']));
         $viewer->setLanguage('cs');
         return $viewer;
     }

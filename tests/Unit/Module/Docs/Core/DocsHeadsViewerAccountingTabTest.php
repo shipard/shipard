@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Docs\Core\DocsHeadsViewer;
+use Shipard\Tests\Fixtures\Core\Viewer\ViewerTexts;
 
 /**
  * Tab Zaúčtování v detailu dokladu (Fáze 3 účtování): podmíněné zobrazení
@@ -106,6 +107,7 @@ class DocsHeadsViewerAccountingTabTest extends TestCase
                 'docs.core.docTypes'                      => self::DOC_TYPES,
                 'economy.accounting.accountingStates'     => self::ACCOUNTING_STATES,
                 'economy.accounting.viewerDetailLabels'   => $labels,
+                'docs.core.viewerLabels'                  => ViewerTexts::catalog('docs.core.viewerLabels'),
                 default                                   => null,
             },
         );

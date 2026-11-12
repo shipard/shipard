@@ -29,6 +29,11 @@
             "name": "Re-check",
             "name:cs": "Zkontrolovat znovu",
             "name:en": "Re-check"
+        },
+        "unsnooze": {
+            "name": "Unsnooze",
+            "name:cs": "Vrátit do aktivních",
+            "name:en": "Unsnooze"
         }
     }
 }
