@@ -1,6 +1,6 @@
 # Design system — jeden formát data na obrazovce (D73)
 
-**Stav:** hotovo — 2026-11-12 (#133 Další nesoulady, D73; 6 commitů, odchylky viz „Odchylky od zadání“); ověřeno snímkem výstupu viewerů a v Chromiu nad demo sadou IT servis v `cs` i `en` (viz Ověření při implementaci), ruční ověření na dev serveru zbývá
+**Stav:** hotovo — 2026-11-12 (#133 Další nesoulady, D73; 6 commitů, odchylky viz „Odchylky od zadání“); ověřeno snímkem výstupu viewerů a v Chromiu nad demo sadou IT servis v `cs` i `en` (viz Ověření při implementaci), ruční ověření na dev serveru prošlo (viz Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -290,3 +290,9 @@ Všechny soubory s vlastním vzorem data jsou vyjmenované v
   testy a stejný jazyk formuláře jako u sub-tabulek; viewery bez dat na
   volných zdrojích (Upozornění, Odeslaná pošta, Úkoly, Podání DPH, Texty na
   tiscích, číselníky bez záznamů) a modul `hosting.core` — jen testy.
+
+## Ruční ověření (2026-11-12)
+
+Firefox, dev zdroj `lh6x`, čeština i angličtina — v pořádku: datum
+v detailech, seznamech a mřížkách česky `dd.mm.yyyy`, anglicky
+`yyyy-mm-dd`, bez nálezů.
