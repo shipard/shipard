@@ -12,7 +12,7 @@ u převzaté) → `sumTotals` / `applyTotalRoundingAuto` / `applyTotalRounding` 
 | úroveň | tabulka | role |
 |---|---|---|
 | řádek | `docs_core_rows` | cena, množství, sazba, DPH kód; `vat_base` / `vat_amount` / `vat_total` jsou **informativní** (tisk řádku) |
-| rekapitulace | `docs_core_vat_recap` | **autoritativní** DPH dokladu per (kód, sazba): `base`, `tax`, `total` + `_dom` |
+| rekapitulace | `docs_core_vat_recap` | **autoritativní** DPH dokladu per (kód, sazba, předmět plnění): `base`, `tax`, `total` + `_dom` |
 | hlavička | `docs_core_heads` | součty z rekapitulace (`total_base`, `total_vat`, `total_amount`, `total_rounding`) |
 
 Z rekapitulace čte účtování (343), saldo, DPH výstupy (DP3/KH/SH) a podání.
@@ -69,8 +69,39 @@ historické doklady kryje převzatá rekapitulace.
   odpočet (DP3 ř. 43/44), párový řádek `is_reverse_pair` oddanění; do `total`
   vstupuje jen daň placená dodavateli (`noPayTax` → jen základ).
 - **`noPayTax` / 0 % / osvobozené:** daň 0 nebo informativní, `total = base`.
+- **Tuzemské přenesení daňové povinnosti — předmět plnění:** viz § 4.1.
 - **`sum_base` / `sum_tax` / `sum_total`** z definice kódu říkají, co z řádku
   rekapitulace vstupuje do součtů hlavičky.
+
+### 4.1 Předmět plnění u tuzemského přenesení (#89 D7)
+
+Kód DPH s příznakem `reverseCharge` (vstup `cz-115` / `cz-116` / `cz-340`,
+výstup `cz-150` / `cz-151` / `cz-350`) nese jen místo, směr a sazbu. **Co** se
+plní — kód předmětu plnění pro kontrolní hlášení A.1 / B.1 (`4` stavební
+práce, `4a`, `5`, `14` mobilní telefony …) — je samostatný údaj
+`reverse_charge_code` na řádku dokladu i na řádku rekapitulace, vybíraný
+z číselníku `world.vat.<země>.reverseChargeSubjects` s platností v čase
+(čte ho jen `VatRateResolver`).
+
+- **Klíč skupiny rekapitulace = (kód DPH, sazba, předmět)** — jediné místo
+  `DocDocument::vatGroupKeyOf()`. Dva řádky se stejným kódem a sazbou, ale
+  různým předmětem jsou dvě skupiny a u vstupu dva oddaňovací páry; pár nese
+  předmět své skupiny. Prázdný předmět dává klíč beze změny — doklady bez
+  přenesení se seskupují jako dřív.
+- **Jiný kód předmět nenese:** při uložení se vynuluje bez hlášky
+  (`ReverseChargeSubjects::normalized()` — řádky z payloadu v
+  `computeAmounts()`, řádek ze sub-formuláře v `DocRowsDocument`, řádek
+  převzaté rekapitulace ve `VatRecapDocument` a `takeOverVatRecapitulation()`).
+- **Validace** (`DocDocument::validateReverseChargeSubjects()`): předmět mimo
+  číselník nebo neplatný k datu sazby (§ 5.2) je chyba **vždy**
+  (`rows.N.reverse_charge_code`, u převzaté rekapitulace pole `recap`);
+  chybějící předmět u kódu přenesení je chyba při **potvrzení** dokladu
+  (stav V pořádku). Koncept ani V opravě se bez něj uložit smí — starý doklad
+  bez předmětu musí jít otevřít k opravě. Platí i v importním módu.
+- **Jedna autorita pro výstupy:** kontrolní hlášení čte předmět jen
+  z rekapitulace, nikdy z řádků ani z definice kódu.
+
+Pravidla sloupce drží `modules/docs/core/src/ReverseChargeSubjects.php`.
 
 ## 5. Autorita rekapitulace — `vat_recap_source`
 
@@ -126,7 +157,8 @@ dle režimu) — signál neúplných nebo špatně zadaných řádků.
   v rekapitulaci není (import s jiným mapováním kódů), by se jinak započítal
   podruhé. Prázdná rekapitulace = fallback na řádky jako dřív.
 - **Rekapitulace se neváže na řádky** — `docs_core_vat_recap` nemá FK na
-  řádky, párování při `rows_recap_mismatch` je jen per (kód, sazba).
+  řádky, párování při `rows_recap_mismatch` je jen per (kód, sazba, předmět
+  plnění — § 4.1).
 - **Editace** ve formuláři: přepnutí na převzatou se projeví **po uložení**
   (tehdy vznikne kopie přepočítané rekapitulace, kterou jde editovat); tab
   se řídí uloženou hodnotou, ne přepínačem. Tab „Rekapitulace DPH" je u převzaté sub-tabulka

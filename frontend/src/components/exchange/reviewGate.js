@@ -17,12 +17,16 @@
  *    rodič = strana — panel potřebuje její id);
  *  - položky řádků `rows[i].item` (`item`), jednotky se nerozhodují
  *    (výchozí applieru);
- *  - kódy DPH řádků `rows[i].vatCode` (`vatCode`).
+ *  - kódy DPH řádků `rows[i].vatCode` (`vatCode`);
+ *  - předmět plnění řádků s kódem tuzemského přenesení
+ *    `rows[i].reverseChargeCode` (`reverseChargeCode`, #89 D12).
  *
  * Čekání na rozhodnutí (`isPending`, D17, #76): nenapárovaný blok strany,
  * účtu nebo položky bez rozhodnutí; kód DPH se stavem `notFound` potřebuje
  * `useCode:<kód>` z nabídky `vatCodeOptions` — volba mimo nabídku by
- * skončila `validation_failed` při apply.
+ * skončila `validation_failed` při apply. Předmět plnění se stavem
+ * `notFound` (chybí, není v číselníku, neplatná volba) potřebuje
+ * `useValue:<kód>` z nabídky `reverseChargeOptions`.
  */
 
 /** Tabulky entit pro hledání a „Vytvořit“ v panelu rozhodnutí (kód DPH entitu nemá). */
@@ -42,10 +46,11 @@ export function bankParentPath(path) {
 
 /**
  * Všechny rozhodované reference v pořadí brány (strany, účty stran, položky,
- * kódy DPH) — i napárované, položka a kód DPH jsou klikací i u matched.
+ * kódy DPH, předměty plnění) — i napárované; položka, kód DPH a předmět
+ * plnění jsou klikací i u matched.
  *
  * @param {object|null|undefined} resolve  blok `canonical._resolve` z náhledu
- * @returns {{path: string, kind: 'party'|'bankAccount'|'item'|'vatCode', block: object, parentPath?: string}[]}
+ * @returns {{path: string, kind: 'party'|'bankAccount'|'item'|'vatCode'|'reverseChargeCode', block: object, parentPath?: string}[]}
  */
 export function reviewReferences(resolve) {
   if (!resolve) return [];
@@ -63,6 +68,11 @@ export function reviewReferences(resolve) {
   for (let i = 0; i < rows.length; i++) {
     if (rows[i]?.vatCode) refs.push({ path: `rows[${i}].vatCode`, kind: 'vatCode', block: rows[i].vatCode });
   }
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i]?.reverseChargeCode) {
+      refs.push({ path: `rows[${i}].reverseChargeCode`, kind: 'reverseChargeCode', block: rows[i].reverseChargeCode });
+    }
+  }
   return refs;
 }
 
@@ -71,7 +81,7 @@ export function reviewReferences(resolve) {
  *
  * @param {{path: string, kind: string, block: object}} ref
  * @param {Record<string, string|null>|null|undefined} userActions  plochá mapa rozhodnutí
- * @param {object|null|undefined} resolve  kvůli `vatCodeOptions`
+ * @param {object|null|undefined} resolve  kvůli `vatCodeOptions` a `reverseChargeOptions`
  */
 export function isPending(ref, userActions, resolve) {
   const action = (userActions ?? {})[ref.path];
@@ -86,6 +96,12 @@ export function isPending(ref, userActions, resolve) {
       const codes = new Set((resolve?.vatCodeOptions ?? []).map((o) => o.code));
       return !(typeof action === 'string' && action.startsWith('useCode:')
         && codes.has(action.slice('useCode:'.length)));
+    }
+    case 'reverseChargeCode': {
+      if (ref.block?.status !== 'notFound') return false;
+      const codes = new Set((resolve?.reverseChargeOptions ?? []).map((o) => o.code));
+      return !(typeof action === 'string' && action.startsWith('useValue:')
+        && codes.has(action.slice('useValue:'.length)));
     }
     default:
       return false;
@@ -108,15 +124,16 @@ export function pendingPaths(resolve, userActions) {
 /**
  * Má reference v náhledu ovládací odznak (klikací, otevírá rozhodnutí)?
  * Read-only náhled (`interactive: false`) ovládání nemá. Napárovaná strana
- * ani účet se nemění (#111 D4 — jen položka a kód DPH jsou klikací i u
- * matched). Neznámý druh ovládání nemá — test pravidla D98 ho odhalí.
+ * ani účet se nemění (#111 D4 — jen položka, kód DPH a předmět plnění jsou
+ * klikací i u matched). Neznámý druh ovládání nemá — test pravidla D98 ho
+ * odhalí.
  *
  * @param {{kind: string, block: object}} ref
  * @param {{interactive: boolean}} options
  */
 export function hasControl(ref, { interactive }) {
   if (!interactive || !ref?.block || !ref.kind) return false;
-  if (ref.kind === 'item' || ref.kind === 'vatCode') return true;
+  if (ref.kind === 'item' || ref.kind === 'vatCode' || ref.kind === 'reverseChargeCode') return true;
   if (ref.kind === 'party' || ref.kind === 'bankAccount') return ref.block.status !== 'matched';
   return false;
 }

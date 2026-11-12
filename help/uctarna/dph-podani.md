@@ -232,6 +232,12 @@ nic nastavovat nemusíš.
 - **Když má doklad kód DPH, který Shipard neumí zařadit do výstupu**,
   sestavení se zastaví s chybou. Je to schválně: z podání nesmí nic tiše
   vypadnout. Oprav kód na dokladu a zkus to znovu.
+- **Kontrolní hlášení hlásí, že chybí kód předmětu plnění.** Doklad
+  s přenesením daňové povinnosti (oddíly A.1 a B.1) nemá na řádku vyplněný
+  **Předmět plnění**. Otevři doklad, dej ho do stavu **V opravě**, na
+  řádcích s přenesením **Předmět plnění** doplň, vrať doklad **V pořádku**
+  a podání sestav znovu. Doklad s více předměty má v kontrolním hlášení
+  za každý předmět vlastní řádek.
 - **Období se podáním nezamkne samo.** Po podání klikni v detailu podání
   na **Zaúčtovat** a pak na **Uzamknout tvrzení** — od té chvíle doklady
   s DPH za to období nejde měnit ani do něj dopisovat. Když na zámek

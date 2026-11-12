@@ -150,12 +150,15 @@ class VatRateResolverTest extends TestCase
 
         // Expected visible codes for output+domestic:
         // cz-120, cz-121, cz-310, cz-311, cz-122, cz-123, cz-150, cz-151,
-        // cz-350, cz-152. Hidden cz-203 / cz-204 / cz-370 must be excluded.
+        // cz-350. Hidden cz-203 / cz-204 / cz-370 must be excluded.
         $this->assertContains('cz-120', $keys);
         $this->assertContains('cz-150', $keys);
         $this->assertNotContains('cz-110', $keys); // input
         $this->assertNotContains('cz-201', $keys); // intracom
         $this->assertNotContains('cz-203', $keys); // hidden
+        // Kódy přenesení DP5 zanikly (#89 D8) — předmět plnění je údaj řádku.
+        $this->assertNotContains('cz-152', $keys);
+        $this->assertNull($r->getVatCode('cz', 'cz-117'));
     }
 
     public function testGetVatCodesSkipsHiddenByDefault(): void
@@ -185,7 +188,7 @@ class VatRateResolverTest extends TestCase
     {
         $r = $this->realResolver();
         $codes = $r->getVatCodes('cz', includeHidden: true);
-        $this->assertCount(61, $codes);
+        $this->assertCount(59, $codes);
     }
 
     // --- getVatCode ---------------------------------------------------------
@@ -197,7 +200,9 @@ class VatRateResolverTest extends TestCase
         $this->assertNotNull($code);
         $this->assertSame('standard', $code['category']);
         $this->assertSame('cz-203', $code['reverseVatCode']);
-        $this->assertSame(4, $code['reverseChargeCode']);
+        // Kód přenesení nese jen příznak — předmět plnění je údaj řádku (#89 D8).
+        $this->assertSame(1, $code['reverseCharge']);
+        $this->assertArrayNotHasKey('reverseChargeCode', $code);
     }
 
     public function testGetVatCodeMissingReturnsNull(): void
@@ -222,9 +227,108 @@ class VatRateResolverTest extends TestCase
     {
         $r = $this->realResolver();
         $notes = $r->getVatNotes('cz');
-        $this->assertArrayHasKey('pdp4', $notes);
-        $this->assertArrayHasKey('pdp5', $notes);
+        $this->assertArrayHasKey('pdp', $notes);
+        $this->assertArrayNotHasKey('pdp4', $notes);
+        $this->assertArrayNotHasKey('pdp5', $notes);
         $this->assertArrayHasKey('eu', $notes);
+    }
+
+    // --- reverseChargeSubjects (#89 D6) -------------------------------------
+
+    public function testReverseChargeSubjectsListKeepsStringCodesInConfigOrder(): void
+    {
+        $subjects = $this->realResolver()->getReverseChargeSubjects('cz');
+        $codes = array_column($subjects, 'code');
+
+        $this->assertSame(
+            ['1', '1a', '3', '3a', '4', '4a', '5', '6', '7', '11', '12', '13',
+                '14', '15', '16', '17', '18', '19', '20', '21'],
+            $codes,
+        );
+        $byCode = array_column($subjects, null, 'code');
+        $this->assertSame('§ 92e odst. 2', $byCode['4a']['legal']);
+        $this->assertSame('2017-07-01', $byCode['4a']['validFrom']);
+        $this->assertNull($byCode['4']['validFrom']);
+        $this->assertNull($byCode['14']['validTo']);
+    }
+
+    public function testReverseChargeSubjectValidityFollowsValidFrom(): void
+    {
+        $r = $this->realResolver();
+
+        $this->assertFalse($r->isReverseChargeSubjectValid('cz', '4a', '2017-06-30'));
+        $this->assertTrue($r->isReverseChargeSubjectValid('cz', '4a', '2017-07-01'));
+        $this->assertTrue($r->isReverseChargeSubjectValid('cz', '4', '2016-01-01'));
+        // Bez data se ověřuje jen existence.
+        $this->assertTrue($r->isReverseChargeSubjectValid('cz', '4a', null));
+
+        $before = array_column($r->getReverseChargeSubjectsValidAt('cz', '2017-06-30'), 'code');
+        $after  = array_column($r->getReverseChargeSubjectsValidAt('cz', '2017-07-01'), 'code');
+        $this->assertNotContains('4a', $before);
+        $this->assertContains('4', $before);
+        $this->assertContains('4a', $after);
+    }
+
+    public function testReverseChargeSubjectUnknownOrEmptyIsInvalid(): void
+    {
+        $r = $this->realResolver();
+
+        $this->assertFalse($r->isReverseChargeSubjectValid('cz', '99', '2026-01-01'));
+        $this->assertFalse($r->isReverseChargeSubjectValid('cz', '', '2026-01-01'));
+        $this->assertFalse($r->isReverseChargeSubjectValid('cz', null, '2026-01-01'));
+    }
+
+    public function testReverseChargeSubjectValidityRespectsValidTo(): void
+    {
+        $r = $this->resolverFromArray([
+            'vatCategories' => [],
+            'vatCodes' => [],
+            'vatPercents' => [],
+            'vatNotes' => [],
+            'reverseChargeSubjects' => [
+                '11' => ['name' => 'Allowances', 'validTo' => '2026-12-31'],
+            ],
+        ]);
+
+        $this->assertTrue($r->isReverseChargeSubjectValid('cz', '11', '2026-12-31'));
+        $this->assertFalse($r->isReverseChargeSubjectValid('cz', '11', '2027-01-01'));
+        $this->assertSame([], $r->getReverseChargeSubjectsValidAt('cz', '2027-01-01'));
+    }
+
+    public function testIsReverseChargeCodeFollowsFlagNotReverseVatCode(): void
+    {
+        $r = $this->realResolver();
+
+        $this->assertTrue($r->isReverseChargeCode('cz', 'cz-115'));
+        $this->assertTrue($r->isReverseChargeCode('cz', 'cz-150'));
+        // Oddaňovací pár a pořízení z EU mají reverseVatCode, ne příznak.
+        $this->assertFalse($r->isReverseChargeCode('cz', 'cz-203'));
+        $this->assertFalse($r->isReverseChargeCode('cz', 'cz-205'));
+        $this->assertFalse($r->isReverseChargeCode('cz', 'cz-110'));
+        $this->assertFalse($r->isReverseChargeCode('cz', 'cz-999'));
+        $this->assertFalse($r->isReverseChargeCode('cz', null));
+    }
+
+    public function testValidateCountryConfigDetectsBrokenReverseChargeSubject(): void
+    {
+        $r = $this->resolverFromArray([
+            'vatCategories' => [],
+            'vatCodes' => [],
+            'vatPercents' => [],
+            'vatNotes' => [],
+            'reverseChargeSubjects' => [
+                '4'  => ['name' => 'OK'],
+                '4a' => ['name' => 'Bad date', 'validFrom' => '2017-7-1'],
+                '5'  => ['name' => ''],
+                '6'  => ['name' => 'Swapped', 'validFrom' => '2020-01-01', 'validTo' => '2019-01-01'],
+            ],
+        ]);
+
+        $errors = $r->validateCountryConfig('cz');
+        $this->assertCount(3, $errors);
+        $this->assertStringContainsString("['4a']: invalid validFrom '2017-7-1'", $errors[0]);
+        $this->assertStringContainsString("['5']: missing name", $errors[1]);
+        $this->assertStringContainsString("['6']: validFrom is after validTo", $errors[2]);
     }
 
     // --- validateCountryConfig ----------------------------------------------
@@ -299,7 +403,7 @@ class VatRateResolverTest extends TestCase
                 ],
             ],
             'vatPercents' => [],
-            'vatNotes' => ['pdp4' => ['text' => 'X']],
+            'vatNotes' => ['pdp' => ['text' => 'X']],
         ]);
         $errors = $r->validateCountryConfig('cz');
         $this->assertCount(1, $errors);

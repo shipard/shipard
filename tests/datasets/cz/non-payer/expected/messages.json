@@ -6,6 +6,12 @@
     "form": "pdf"
   },
   {
+    "messageId": "MSG-CORPUS-NP-1101",
+    "stem": "1101-eu-foreign-vat",
+    "variant": "eu-foreign-vat",
+    "form": "pdf"
+  },
+  {
     "messageId": "MSG-CORPUS-NP-0601",
     "stem": "0601-eu-goods",
     "variant": "eu-goods",
@@ -45,6 +51,12 @@
     "messageId": "MSG-CORPUS-NP-1001",
     "stem": "1001-long-document",
     "variant": "long-document",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1201",
+    "stem": "1201-domestic-reverse-charge-phones",
+    "variant": "domestic-reverse-charge-phones",
     "form": "pdf"
   },
   {
@@ -93,6 +105,18 @@
     "messageId": "MSG-CORPUS-NP-1002",
     "stem": "1002-long-document",
     "variant": "long-document",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1102",
+    "stem": "1102-eu-foreign-vat",
+    "variant": "eu-foreign-vat",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1202",
+    "stem": "1202-domestic-reverse-charge-phones",
+    "variant": "domestic-reverse-charge-phones",
     "form": "pdfIsdoc"
   }
 ]

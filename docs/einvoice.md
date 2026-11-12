@@ -17,7 +17,7 @@ ISDOC má smysl **jen mezi dvěma českými subjekty s IČO** (D10): zahraničn�
 partnerovi ani soukromé osobě k ničemu není. Generátor proto vyžaduje IČO
 a úplnou adresu obou stran; prázdné smějí zůstat jen prvky bankovního
 spojení, které nemáme (název banky, BIC). V korpusu mají podobu PDF + ISDOC
-jen druhé doklady variant 1–4, 7 a 10.
+jen druhé doklady variant 1–4, 7, 10 a 12.
 
 V1 generuje jen **doklady v Kč** (D4 — ISDOC chce všechny částky v tuzemské
 měně a jednotkovou cenu v cizí měně nemá) a jen typy **faktura** (`DocumentType`

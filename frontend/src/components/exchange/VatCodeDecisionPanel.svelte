@@ -20,6 +20,9 @@
     currentUserAction = null,  // 'useCode:<kód>' | null
     bulkCount = 0,
     bulkDecidedCount = 0,
+    // Doklad mimo české DPH (#89): řádky kód nemají záměrně. Volba kódu na
+    // jediném řádku vrací k DPH celý doklad — panel to musí říct předem.
+    withoutVat = false,
     onDecide = () => {},
   } = $props();
 
@@ -53,6 +56,10 @@
         {t('exchange.preview.decide.unselect')}
       </button>
     </div>
+  {/if}
+
+  {#if withoutVat && !currentCode}
+    <p class="shpd-vatcode__hint" data-testid="vatcode-without-vat">{t('exchange.preview.vatCode.withoutVatHint')}</p>
   {/if}
 
   {#if bulkCount > 0}

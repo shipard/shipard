@@ -34,7 +34,8 @@ final class VatDocumentSelection
      *         doc_number, partner_doc_number, total_amount_dom, vat_duzp,
      *         vat_dppd (ISO string|null), customer_vat_id, supplier_vat_id,
      *         cs_mode (ruční zařazení do KH, #77), recap (list řádků:
-     *         vat_code, vat_pct, base_dom, tax_dom, is_reverse_pair).
+     *         vat_code, vat_pct, base_dom, tax_dom, is_reverse_pair,
+     *         reverse_charge_code — předmět plnění tuzemského přenesení, ?string).
      */
     /**
      * @param int $periodId id instance `economy_vat_report_periods`
@@ -65,7 +66,7 @@ final class VatDocumentSelection
 
         $recapByHead = [];
         $recapRows = $this->db->fetchAll(
-            'SELECT [doc_head], [vat_code], [vat_pct], [base_dom], [tax_dom], [is_reverse_pair]'
+            'SELECT [doc_head], [vat_code], [vat_pct], [reverse_charge_code], [base_dom], [tax_dom], [is_reverse_pair]'
             . ' FROM [docs_core_vat_recap]'
             . ' WHERE [doc_head] IN %in'
             . ' ORDER BY [doc_head], [order_pos]',
@@ -78,6 +79,9 @@ final class VatDocumentSelection
                 'base_dom'        => (float) $row['base_dom'],
                 'tax_dom'         => (float) $row['tax_dom'],
                 'is_reverse_pair' => (bool) $row['is_reverse_pair'],
+                // Předmět plnění tuzemského přenesení (#89 D13) — jediný
+                // zdroj kódu předmětu pro KH A.1 / B.1.
+                'reverse_charge_code' => self::subject($row['reverse_charge_code'] ?? null),
             ];
         }
 
@@ -121,5 +125,12 @@ final class VatDocumentSelection
         }
         $string = (string) ($value ?? '');
         return $string !== '' ? $string : null;
+    }
+
+    /** Předmět plnění řádku rekapitulace: oříznutý řetězec ("4a"), prázdné = null. */
+    private static function subject(mixed $value): ?string
+    {
+        $text = trim((string) ($value ?? ''));
+        return $text === '' ? null : $text;
     }
 }

@@ -20,7 +20,8 @@ final readonly class VatReturnAccountingInput
      * @param string $kind `regular` / `corrective` / `supplementary`
      * @param string $periodName název instance („01/2026")
      * @param string $dateEnd konec období (ISO) — splatnosti, SS, datum účtování
-     * @param array<string, float> $taxByCode Σ daně per kód DPH tohoto podání
+     * @param array<string, float> $taxByCode Σ daně per kód DPH tohoto podání; klíč je kód, u předmětu
+     *        plnění s vlastní analytikou `kód|předmět` (`VatAnalytics::key()`, #89 D9)
      * @param array<string, float> $previousTaxByCode totéž u předchozího podaného podání
      * @param array<int, array{base: float, taxFull: float, taxReduced: float}> $exactRows
      *        přesné řádky tohoto podání (krácený sloupec ř. 46, odpočet ř. 52)
@@ -31,7 +32,7 @@ final readonly class VatReturnAccountingInput
      *        kumulativní podaný stav před tímto podáním
      * @param array<string, array<string, mixed>> $vatCodes kódy `world.vat.cz` (`direction`, `fullName`)
      * @param \Closure(string): ?array{id: int, number: string} $analyticAccount
-     *        účet analytiky 343 pro kód DPH (dle `docs/accounting.md` §5), null = chybí v rozvrhu
+     *        účet analytiky 343 pro klíč z `$taxByCode` (dle `docs/accounting.md` §5), null = chybí v rozvrhu
      * @param array<string, ?array{id: int, number: string}> $categoryAccounts
      *        `payable`, `receivable`, `nondeductible`, `roundingCost`, `roundingRevenue`
      * @param array{payableDueDays: int, refundDueDays: int, specificSymbolPrefix: string, constantSymbol: string} $accounting

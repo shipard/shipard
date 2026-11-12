@@ -29,6 +29,8 @@ class VatRecapForm extends TableForm
         $headContext = DocHeadVatContext::load($this->db, $this->config, $data['doc_head'] ?? null);
         $codeOptions = DocHeadVatContext::vatCodeOptions($headContext, $this->config);
         $fromTotal = (int) ($headContext['vat_mode'] ?? 1) === 2;
+        // Předmět plnění jen u kódu tuzemského přenesení (#89 D14).
+        $showSubject = ReverseChargeSubjects::fieldVisible($headContext, $this->config, $data['vat_code'] ?? null);
 
         $basic = $this->tab('basic', $this->defaultGeneralTabLabel())
             ->section()
@@ -37,6 +39,11 @@ class VatRecapForm extends TableForm
                         options: $codeOptions,
                         triggers: 'reload',
                         required: true,
+                    )
+                    ->select(ReverseChargeSubjects::COLUMN,
+                        options: ReverseChargeSubjects::options($headContext, $this->config),
+                        required: $showSubject,
+                        hidden: !$showSubject,
                     )
                     ->number('vat_pct', required: true, hint: 'Sazba z dokladu — sazebník ji předplní podle kódu')
                     ->number('base', required: true)
@@ -77,6 +84,10 @@ class VatRecapForm extends TableForm
             // jinak zaokrouhlená a ta je pro převzatou rekapitulaci fakt.
             $data['vat_pct'] = null;
             $this->deriveVatPct($data, $headContext);
+            // Kód bez přenesení předmět plnění nenese (#89 D7).
+            if (!ReverseChargeSubjects::fieldVisible($headContext, $this->config, $data['vat_code'] ?? null)) {
+                $data[ReverseChargeSubjects::COLUMN] = null;
+            }
         }
 
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';

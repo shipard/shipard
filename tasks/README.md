@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 442 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 411.
+Celkem 446 tasků: **naplánováno** 4 · **částečně** 27 · **zrušeno** 1 · **hotovo** 414.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -38,6 +38,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
+| `exchange-received-foreign-vat.md` | částečně | commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11); ověřeno na dev zdroji 2026-11-11 datovou sadou plátce (body 1, 5, 6; `dataset-verify` 6× `ok`), body 2–4 jen testy; zbývá ruční proklik náhledu (body 2–4); navazuje `mail-card-band-special-place.md` (D17, D18) |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
@@ -50,11 +51,11 @@ nevypisují — níže je jen to, co není dokončené.
 | `taxes-phase01.md` | částečně | implementace kompletní (mapping, jádro reportů s periodSource vatPeriod + text/date sloupci, kalkulátory, buildery, UI, testy); zbývá ds-upgrade + proklik na dev DS a read-only ověření na alfě dle „Hotovo když" |
 | `testing-clean-server.md` | částečně | kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; `php8.5-bcmath` na testovacím serveru doinstalovaný 2026-10-28; zbývá ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146 |
 | `testing-phase3.md` | částečně | implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); snímek spolku schválený 2026-10-15 po #122 (kontrola 5 `ok` u všech tří sad); zbývá alfa |
-| `vat-cs-mode.md` | částečně | shpd hotové 2026-09-11 (4 commity: sloupec + kalkulátor, formuláře |
 | `vat-filing-xml.md` | částečně | implementace hotová 2026-09-10 (commity 1–7), nálezy prvního běhu |
 | `vat-filings-import.md` | částečně | kód, testy, CLI, UI a docs hotové 2026-09-13 (4 commity); |
 | `vat-period-lock.md` | částečně | shpd hotové 2026-09-11 (6 commitů: jádro lock providerů, zámek instance, |
 | `vat-report-periods.md` | částečně | implementace kompletní (5 commitů 2026-09-03: tabulka + eventy jádra, přiřazení + on-demand, reporty nad instancemi, cron + zrušení `vat_periods`, docs); E2E na dev DS prošlo (uložení dokladu → koncepty, reporty `--period`, alert, guard, přepočet, ruční přesun). Zbývá ruční proklik UI (picker, viewer Daňová tvrzení, selecty na dokladu) a ověření po re-importu qrce (task 30) — poslední bod „Hotovo když“. |
+| `vat-reverse-charge-subjects.md` | částečně | kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); nezávislé ověření a legislativní ověření číselníku 2026-11-12, výsledek v #89; zbývá kontrola XML s kódem `4a` na portálu, `ai-eval` po změně promptu a kontrola stavu předmětů 11–21 k 1. 1. 2027 (prosinec 2026) |
 | `video-publish.md` | zrušeno | galerie přes nginx a `gallery.mjs` odstraněny 2026-10-27 (#103 F7b D122, D129); videa se prohlížejí a stahují v oddílu **Videa** vývojářského dashboardu (`tasks/testing-phase7b.md`). Text níže je historie D15–D17. |
 
 <!-- STAV:END -->
@@ -225,6 +226,7 @@ Základ pro dokladový systém — osoby, měna/země, položky, období.
 |------|---------|
 | `persons-is-own-extension.md` | `base.persons`: `is_own` (vlastní firma) + obchodní rejstřík |
 | `world-vat-cz.md` | Modul `world.vat` — CZ DPH kódy a procenta |
+| `vat-reverse-charge-subjects.md` | Předmět plnění tuzemského přenesení daňové povinnosti jako samostatný údaj řádku a rekapitulace — číselník předmětů s platností, obecné kódy přenesení (zrušení `cz-117` / `cz-152`), kontrolní hlášení A.1 / B.1 z rekapitulace, volba v náhledu návrhu; prompt v4.12.0 (#89 D6–D16) |
 | `economy-items-phase1.md` | Položky + měrné jednotky |
 | `economy-cash-and-bank.md` | Pokladny + vlastní bankovní spojení |
 | `economy-fiscal-periods.md` | Fiskální období (roky/měsíce) |
@@ -286,6 +288,9 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-received-reverse-charge.md` | Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů AI, registrace z naší DPH, přepočítaná rekapitulace; prompt v4.6.0 (#86) |
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
 | `exchange-received-non-vat-payer.md` | Přijatý doklad u neplátce DPH — Bez DPH s daní dodavatele v cenách řádků, plátcovství k datu, ceny s daní z ISDOC (#97) |
+| `exchange-received-foreign-vat.md` | Přijatý doklad se zahraniční DPH nebo zvláštním místem plnění — vznikne Bez DPH s daní dodavatele v cenách řádků, ruční Bez DPH mimo tuzemsko platí (#89 D1–D5) |
+| `mail-card-band-special-place.md` | Karta návrhu se zvláštním místem plnění jde do kontroly (strop pásma), varování applieru v odpovědi `mail_draft_document` (#89 D17, D18) |
+| `exchange-special-place-covered-rows.md` | Zvláštní místo plnění u řádku pokrytého položkou — štítky položky ve třech stavech (`special` / nejednoznačné / nic), varování a strop pásma u nejednoznačné položky (#89 D19–D21) |
 | `exchange-format-persons-phase1.md` | Výměnný formát osob (`shpd.persons.person.v1`) |
 | `exchange-format-items-phase1.md` | Výměnný formát položek (`shpd.items.item.v1`) |
 | `docs-import-number-mode.md` | Import-mód čísla dokladu + fix validace bank. spojení |

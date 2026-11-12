@@ -95,9 +95,9 @@ class IsdocCorpusRoundTripTest extends TestCase
     public function testCorpusHasIsdocForEveryIsdocCell(): void
     {
         $files = iterator_to_array(self::corpusIsdocFiles());
-        $this->assertGreaterThanOrEqual(18, count($files), '6 dokladů (varianty 1–4, 7, 10) × 3 profily (D10)');
+        $this->assertGreaterThanOrEqual(21, count($files), '7 dokladů (varianty 1–4, 7, 10, 12) × 3 profily (D10)');
         foreach (array_keys($files) as $key) {
-            $this->assertMatchesRegularExpression('~/(0[1-4]|07|10)02-~', $key, 'ISDOC jen druhé doklady variant 1–4, 7 a 10');
+            $this->assertMatchesRegularExpression('~/(0[1-4]|07|10|12)02-~', $key, 'ISDOC jen druhé doklady variant 1–4, 7, 10 a 12');
         }
     }
 

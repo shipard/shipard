@@ -481,4 +481,36 @@ final class VatReturnAccountingBuilderTest extends TestCase
         $this->assertSame('2026-04-25', self::rowOf($plan, '343801')['due_date']);
         $this->assertSame('Odvod DPH Q1/2026', self::rowOf($plan, '343801')['description']);
     }
+
+
+    /**
+     * #89 D9: odpočet u předmětu plnění 5 je v deníku na 343117 — uzávěrka
+     * analytik ho nuluje tam, ostatní předměty téhož kódu na 343115.
+     */
+    public function testSubjectWithOwnAnalyticIsSettledOnItsAccount(): void
+    {
+        $accounts = ['cz-115' => '343115', 'cz-115|5' => '343117', 'cz-203' => '343203'];
+        $plan = $this->build([
+            'taxByCode' => ['cz-115' => 420.00, 'cz-115|5' => 210.00, 'cz-203' => 630.00],
+            'exactRows' => self::rows([10 => 630.00, 43 => 630.00, 46 => 630.00, 62 => 630.00, 63 => 630.00]),
+            'filedRows' => self::rows([10 => 630.00, 43 => 630.00, 46 => 630.00, 62 => 630.00, 63 => 630.00]),
+            'vatCodes'  => [
+                'cz-115' => ['direction' => 'input',  'fullName' => 'Tuzemsko/Vstup/Základní - přenesení DP'],
+                'cz-203' => ['direction' => 'output', 'fullName' => 'Tuzemsko/Výstup/Základní - přenesení DP (odběratel)'],
+            ],
+            'analyticAccount' => static fn (string $key): ?array => isset($accounts[$key]) ? self::acc($accounts[$key]) : null,
+        ]);
+
+        $this->assertTrue($plan->isOk());
+        $this->assertBalanced($plan);
+        $byAccount = self::byAccount($plan);
+        $this->assertSame(['side' => self::DAL, 'amount' => 420.00], $byAccount['343115']);
+        $this->assertSame(['side' => self::DAL, 'amount' => 210.00], $byAccount['343117']);
+        $this->assertSame(['side' => self::MD, 'amount' => 630.00], $byAccount['343203']);
+        $this->assertSame(
+            'Tuzemsko/Vstup/Základní - přenesení DP · předmět plnění 5',
+            self::rowOf($plan, '343117')['description'],
+        );
+        $this->assertSame('Tuzemsko/Vstup/Základní - přenesení DP', self::rowOf($plan, '343115')['description']);
+    }
 }

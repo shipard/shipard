@@ -140,6 +140,13 @@ routách).
 | Čtení | `true` | `persons_search`, `persons_get`, `documents_search`, `documents_aggregate`, `mail_list_pending`, `registry_search`, `help_search`, `help_get_page`, `feed_cards` |
 | Zápis (koncepty/akce) | `false` | `mail_draft_document` |
 
+`mail_draft_document` vrací u založeného konceptu (`drafted: true`) pole
+`warnings: [{path, message}]` — varování applieru z `_resolve.issues`
+(jen `severity: "warning"`, např. `vat_special_place`; prázdné pole = bez
+varování), aby na ně asistent uživatele upozornil (#89 D18). Apply
+neblokují; informační hlášky se nevracejí. Návrh, který čeká na dořešení
+referencí, nese místo toho `unresolved` (jen chyby).
+
 `feed_cards` (UI shells Fáze 5) je první core nástroj v `src/Api/Mcp/`:
 čte feed upozornění a návrhů přes `FeedCollector` (tentýž sběr jako
 dashboard), volitelný parametr `section` filtruje na jednu sekci navigace,

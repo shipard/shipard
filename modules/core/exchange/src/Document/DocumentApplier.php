@@ -15,6 +15,7 @@ use Shipard\Module\Base\Persons\PersonType;
 use Shipard\Module\Base\Persons\Values\PersonValues;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
+use Shipard\Module\Core\Exchange\Enrich\ItemContentTags;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
@@ -82,6 +83,14 @@ class DocumentApplier
      * @var array{key: string, ctx: array<string, mixed>}|null
      */
     private ?array $vatContextCache = null;
+
+    /**
+     * Štítky položek pokrytých řádků ({@see itemTagsFor()}, #89 D19) —
+     * jeden dotaz na doklad; klíč = sada kódů položek.
+     *
+     * @var array{key: string, tags: array<string, list<string>>}|null
+     */
+    private ?array $itemTagsCache = null;
 
     /**
      * Opravný doklad ({@see correctionDecision()}) — dohledání původního
@@ -501,7 +510,11 @@ class DocumentApplier
                     'tax'           => (float) ($r['tax'] ?? 0),
                     'total'         => (float) ($r['total'] ?? 0),
                     'isReversePair' => !empty($r['is_reverse_pair']),
-                ],
+                    // Předmět plnění skupiny (#89 D10) — klíč jen u skupiny
+                    // tuzemského přenesení, ostatní řádky beze změny.
+                ] + (isset($r['reverse_charge_code']) && $r['reverse_charge_code'] !== ''
+                    ? ['reverseChargeCode' => (string) $r['reverse_charge_code']]
+                    : []),
                 array_values($computed['recap']),
             ),
             'totals' => [
@@ -573,6 +586,7 @@ class DocumentApplier
             'resolvedRowItems'     => [],
             'resolvedRowUnits'     => [],
             'resolvedRowVatCodes'  => [],
+            'resolvedRowReverseChargeCodes' => [],
             'resolvedRowAccounts'  => [],
             'resolvedRowPartners'  => [],
             'resolvedHeadPartner'  => null,
@@ -588,6 +602,7 @@ class DocumentApplier
                 ? ($unitFresh['matchedId'] ?? null)
                 : null;
             $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
+            $plan['resolvedRowReverseChargeCodes'][$i] = self::matchedReverseChargeCode($rowResolve);
         }
         return $plan;
     }
@@ -984,6 +999,18 @@ class DocumentApplier
             if ($vatResolve !== null) {
                 $rowResolve['vatCode'] = $vatResolve;
             }
+            $subjectResolve = $this->resolveRowReverseChargeCode(
+                (int) $idx,
+                is_array($row) ? $row : [],
+                $vatResolve,
+                $vatCtx,
+                $vatCountry,
+                $supplierCountry,
+                $issues,
+            );
+            if ($subjectResolve !== null) {
+                $rowResolve['reverseChargeCode'] = $subjectResolve;
+            }
             $rowsResolve[] = $rowResolve;
         }
 
@@ -1094,7 +1121,8 @@ class DocumentApplier
      *   resolvedSupplierBank: ?int,
      *   resolvedRowItems: array<int, int|null>,
      *   resolvedRowUnits: array<int, int|null>,
-     *   resolvedRowVatCodes: array<int, array<string, mixed>|null>
+     *   resolvedRowVatCodes: array<int, array<string, mixed>|null>,
+     *   resolvedRowReverseChargeCodes: array<int, ?string>
      * }
      */
     private function reconcile(array $resolved, array $clientResolve, array &$issues, array $rowSkips): array
@@ -1118,6 +1146,7 @@ class DocumentApplier
             'resolvedRowItems'    => [],
             'resolvedRowUnits'    => [],
             'resolvedRowVatCodes' => [],
+            'resolvedRowReverseChargeCodes' => [],
             'resolvedRowAccounts' => [],
             'resolvedRowPartners' => [],
             'resolvedHeadPartner' => null,
@@ -1210,6 +1239,7 @@ class DocumentApplier
             $plan['resolvedRowDimensions'][$i] = self::matchedDimensionIds($rowResolve['dimensions'] ?? []);
 
             $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
+            $plan['resolvedRowReverseChargeCodes'][$i] = self::matchedReverseChargeCode($rowResolve);
 
             // Účet z čísla (kontace) — passthrough, žádná userAction (číslo je
             // autoritativní; nenalezeno už dalo warning v resolveAll).
@@ -1632,10 +1662,11 @@ class DocumentApplier
         // Koriguje se jen interní vat_mode, canonical vč. totals zůstává
         // nedotčený a DocDocument si base/VAT/totals přepočítá sám.
         $vatMode = self::VAT_MODE_MAP[$this->effectiveVatMode($canonical, $vatCtx)['value']];
-        // Přijatý doklad neplátce DPH (#97): ceny řádků včetně daně dodavatele
-        // (prázdné = nic se nepřevádí). Hlavička bez registrace a rekapitulace
-        // plyne z téhož kontextu v resolveVatRegistrationFor() / resolveRecapSource().
-        $nonPayerGross = $this->nonPayerGrossTotals($canonical, $vatCtx);
+        // Přijatý doklad neplátce DPH (#97) a doklad mimo české DPH (#89):
+        // ceny řádků včetně daně dodavatele (prázdné = nic se nepřevádí).
+        // Doklad bez rekapitulace plyne z téhož kontextu v resolveRecapSource();
+        // registraci nenese jen neplátce (resolveVatRegistrationFor()).
+        $supplierVatGross = $this->supplierVatGrossTotals($canonical, $vatCtx);
         // Místo plnění: u přijatého dokladu efektivní místo z kontextu
         // (odvozené z prefixu DIČ dodavatele, jinak hodnota z canonicalu) —
         // tasks/exchange-received-vat-place.md D1. Stejné místo dostala
@@ -1745,7 +1776,7 @@ class DocumentApplier
             'total_rounding_auto'  => $totalRoundingAuto ? 1 : 0,
             'total_rounding_mode'  => $totalRoundingAuto ? null : $this->deriveTotalRoundingMode(
                 $canonical,
-                $nonPayerGross !== [] ? round(array_sum($nonPayerGross), 2) : null,
+                $supplierVatGross !== [] ? round(array_sum($supplierVatGross), 2) : null,
             ),
             'payment_method'       => $paymentMethod,
             'payment_reference'    => $canonical['payment']['paymentReference'] ?? null,
@@ -1770,8 +1801,8 @@ class DocumentApplier
                 $canonical['rows'] ?? [],
                 $plan,
                 $sideIds,
-                $vatCtx['nonPayer'],
-                $nonPayerGross,
+                self::savedWithoutVat($vatCtx),
+                $supplierVatGross,
             ),
             'vatRecap'             => $recapSource['recap'] !== [] ? $recapSource['recap'] : null,
         ];
@@ -1922,12 +1953,25 @@ class DocumentApplier
      *
      * `nonPayer` (#97 D2): přijatý doklad, ke kterému žádná registrace
      * k datu neplatí — zdroj tehdy nebyl plátcem. Doklad vznikne Bez DPH
-     * s daní dodavatele v cenách řádků ({@see nonPayerGrossTotals()}).
+     * s daní dodavatele v cenách řádků ({@see supplierVatGrossTotals()}).
      * Plátcovství je registrace k datu, ne příznak `economy.vatAgenda`
      * (docs/ds-setup.md D5): bývalý plátce má příznak vypnutý, ale starší
      * doklady s DPH. Import (`applyOptions.importNumber` — starý Shipard,
      * datové sady) přenáší hotové doklady: platnost registrace se u něj
      * nezkoumá a `nonPayer` je vždy false.
+     *
+     * `outOfScope` (#89 D2–D4): doklad od dodavatele mimo tuzemsko, který
+     * je **mimo české DPH** a vznikne celý Bez DPH — `"foreignVat"`
+     * (dodavatel účtuje vlastní daň; skončí v cenách řádků jako u neplátce),
+     * `"specialPlace"` (služba se zvláštním místem plnění, bez daně na
+     * dokladu) nebo `"user"` (uživatel v náhledu zvolil režim Bez DPH);
+     * jinak null. `autoOutOfScope` a `autoReverseCharge` říkají, jak by
+     * doklad dopadl **bez volby režimu** — z nich je hodnota „Automaticky“
+     * v náhledu, protože rozhodnutí o řádcích se u dokladu mimo DPH zahodí. Rozhoduje {@see outOfScopeKind()} jednou na
+     * doklad až po konečném místě plnění (tedy po pinu místa). `derive`
+     * i `codeOptions` zůstávají — volbou kódu řádku se uživatel vrátí
+     * k samovyměření —, `rows` jsou prázdné: kódy se nerozhodují, stejně
+     * jako u neplátce.
      *
      * `place` je místo, které na dokladu skončí: u přijatého dokladu
      * odvozené z prefixu DIČ dodavatele ({@see VatPlaceDerivation},
@@ -1946,6 +1990,9 @@ class DocumentApplier
      * @return array{
      *   derive: bool,
      *   nonPayer: bool,
+     *   outOfScope: ?string,
+     *   autoOutOfScope: ?string,
+     *   autoReverseCharge: bool,
      *   ownCountry: ?string,
      *   ownRegistrationId: ?int,
      *   taxPointDate: ?string,
@@ -1959,9 +2006,14 @@ class DocumentApplier
      *     input: string, derived: ?string, reason: ?string,
      *     effective: ?string, matchedBy: ?string,
      *     issue: ?array{severity: string, code: string, message: string},
-     *     supplyKind: ?string, supplyKindSource: ?string, tag: ?string
-     *   }>
+     *     supplyKind: ?string, supplyKindSource: ?string, tag: ?string, reasonKind: ?string,
+     *     specialSource: ?string, specialItem: ?string, ambiguousItem: ?string
+     *   }>,
+     *   special: array<int, array{source: string, item: ?string}>
      * }
+     *   `special` = řádky se zvláštním místem plnění a zdroj (`tag` = štítek
+     *   z bloku, `item` = štítky položky s jejím kódem, #89 D19) — přežije
+     *   i doklad mimo české DPH, kde se `rows` zahodí.
      */
     private function vatContext(array $canonical): array
     {
@@ -1973,8 +2025,10 @@ class DocumentApplier
         // Klíč cache: strany dokladu (DIČ) rozhodují o místě plnění, štítek
         // dokladu a výjimky řádků o druhu plnění (D2), volby uživatele
         // (#87 B) o místě i kódech, data a import mód o registraci k datu
-        // (#97) — bez nich by cache vrátila kontext jiného dokladu / bez
-        // fallbacku / bez pinu.
+        // (#97), daň dodavatele (rekapitulace a `computed` řádků) o dokladu
+        // mimo české DPH (#89), položka řádku a volba položky o zvláštním
+        // místě plnění ze štítků položky (D19) — bez nich by cache vrátila
+        // kontext jiného dokladu / bez fallbacku / bez pinu.
         $key = md5((string) json_encode([
             $canonical['selfParty'] ?? null,
             $canonical['vat'] ?? null,
@@ -1983,16 +2037,21 @@ class DocumentApplier
             $canonical['correction'] ?? null,
             $canonical['_resolve']['correction']['userAction'] ?? null,
             $importMode,
+            SupplierVatPrices::carriesSupplierVat($canonical),
             $supplierVatId,
             $customerVatId,
             $canonical['_resolve']['contentTag']['tag'] ?? null,
             $canonical['_resolve']['contentTag']['rowExceptions'] ?? null,
-            [$pins['place'], $pins['mode'], $pins['rows']],
+            [$pins['place'], $pins['mode'], $pins['rows'], $pins['subjects']],
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
-                    ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null]
+                    ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null, $row['item']['ourCode'] ?? null]
                     : null,
                 $rows,
+            ),
+            array_map(
+                static fn (mixed $rowResolve): mixed => is_array($rowResolve) ? ($rowResolve['item']['userAction'] ?? null) : null,
+                is_array($canonical['_resolve']['rows'] ?? null) ? $canonical['_resolve']['rows'] : [],
             ),
         ]));
         if ($this->vatContextCache !== null && $this->vatContextCache['key'] === $key) {
@@ -2016,6 +2075,9 @@ class DocumentApplier
         $ctx = [
             'derive'            => false,
             'nonPayer'          => false,
+            'outOfScope'        => null,
+            'autoOutOfScope'    => null,
+            'autoReverseCharge' => false,
             'ownCountry'        => null,
             'ownRegistrationId' => null,
             'taxPointDate'      => is_string($taxPointDate) && $taxPointDate !== '' ? $taxPointDate : null,
@@ -2028,6 +2090,7 @@ class DocumentApplier
             'pins'              => $pins,
             'codeOptions'       => [],
             'rows'              => [],
+            'special'           => [],
         ];
 
         if (($canonical['selfParty'] ?? null) === 'customer') {
@@ -2106,18 +2169,16 @@ class DocumentApplier
             // ne chyba vat_code_unknown (#103 F3 nález B). Mimo tuzemsko
             // zůstává samovyměření (služba ze třetí země bez DPH).
             $noVat = ($vat['mode'] ?? null) === 'none';
+            $decisions = [];
             foreach ($rows as $idx => $row) {
-                if (!is_array($row)
-                    || (string) ($row['rowKind'] ?? 'item') !== 'item'
-                    || isset($row['accSide'])
-                    || !is_array($row['vat'] ?? null)) {
+                if (!self::rowHasVatDecision($row)) {
                     continue;
                 }
                 $rowVat = $row['vat'];
                 if ($noVat && !isset($rowVat['pct'])) {
                     $rowVat['pct'] = 0;
                 }
-                $ctx['rows'][(int) $idx] = $this->decideRowVatCode(
+                $decisions[(int) $idx] = $this->decideRowVatCode(
                     (string) $ctx['ownCountry'],
                     $ctx['taxPointDate'],
                     $place,
@@ -2128,35 +2189,164 @@ class DocumentApplier
                     $ctx['codeOptions'],
                 );
             }
+            // #89 D2–D4: doklad mimo české DPH — kódy řádků se nerozhodují
+            // (rozhodnutí výše sloužila jen k vyhodnocení), doklad je Bez DPH.
+            $ctx['outOfScope'] = $importMode
+                ? null
+                : $this->outOfScopeKind($canonical, $place, $pins, $reverseCharge, $decisions);
+            if ($ctx['outOfScope'] === self::OUT_OF_SCOPE_USER) {
+                // Hodnota „Automaticky“ = výsledek bez volby režimu; řádky
+                // se zahodí, proto se samovyměření zjistí tady.
+                $ctx['autoOutOfScope'] = $this->outOfScopeKind(
+                    $canonical,
+                    $place,
+                    ['mode' => null] + $pins,
+                    $reverseCharge,
+                    $decisions,
+                );
+                $ctx['autoReverseCharge'] = $ctx['autoOutOfScope'] === null
+                    && $this->decisionsCarryReverseCharge($decisions, (string) $ctx['ownCountry'], $ctx['taxPointDate']);
+            } else {
+                $ctx['autoOutOfScope'] = $ctx['outOfScope'];
+            }
+            // D21: nejednoznačná položka varuje jen u řádku s odvozeným kódem
+            // (mimo tuzemsko je každý odvozený kód samovyměření) na dokladu
+            // bez daně dodavatele a bez volby režimu. Ponechaný kód i volba
+            // uživatele varování nedostanou; v tuzemsku nejednoznačný řádek
+            // nevznikne (štítky položek se čtou jen mimo tuzemsko).
+            $warnAmbiguous = $pins['mode'] === null && !SupplierVatPrices::carriesSupplierVat($canonical);
+            foreach ($decisions as $idx => $decision) {
+                if (!$warnAmbiguous || $decision['matchedBy'] !== 'derived') {
+                    $decisions[$idx]['ambiguousItem'] = null;
+                }
+            }
+            $ctx['rows'] = $ctx['outOfScope'] === null ? $decisions : [];
+            foreach ($kinds['rows'] as $idx => $kind) {
+                if ($kind['specialSource'] !== null) {
+                    $ctx['special'][$idx] = ['source' => $kind['specialSource'], 'item' => $kind['item']];
+                }
+            }
         }
 
         $this->vatContextCache = ['key' => $key, 'ctx' => $ctx];
         return $ctx;
     }
 
+    /** Doklad mimo české DPH z volby uživatele (režim Bez DPH v náhledu, #89 D4). */
+    private const OUT_OF_SCOPE_USER = 'user';
+
+    /**
+     * Je doklad **mimo české DPH** (#89 D2–D4)? Vyhodnocuje se jednou na
+     * doklad, jen ve větvi derivace (přijatý doklad na zdroji s registrací
+     * DPH k datu, mimo import) a jen s efektivním místem mimo tuzemsko:
+     *
+     *   volba režimu Bez DPH                             → user (D4)
+     *   volba režimu s DPH, nebo kódu na některém řádku  → null (jako dřív)
+     *   řádek s ponechaným kódem z canonicalu / historie → null (jako dřív)
+     *   doklad nese daň dodavatele, bez `reverseCharge`  → foreignVat
+     *   doklad nese daň i `reverseCharge: true`          → null (smíšený, D5)
+     *   bez daně, každý položkový řádek `special`        → specialPlace
+     *   cokoli jiného                                    → null
+     *
+     * Ponechaný kód (`matchedBy: "input"`) je kód, který derivace ani
+     * kontrola souladu nezpochybnily — typicky z historie řádků, tedy
+     * potvrzený člověkem. Takový doklad dřív prošel se samovyměřením
+     * a projde dál; režim mimo DPH nahrazuje jen dřívější chybu.
+     *
+     * Volba Bez DPH (D4) má přednost před vším — i před volbou kódu řádku
+     * (ta se pak ignoruje s info `vat_pin_ignored`). V tuzemsku neplatí:
+     * tam se Bez DPH se samovyměřením dál tiše přepíná na „Ze základu“
+     * ({@see effectiveVatMode()}, D11 z #87).
+     *
+     * Pravidlo „každý položkový řádek je `special`“ — štítkem z bloku
+     * `_resolve.contentTag`, nebo štítky položky pokrytého řádku (D19, D20)
+     * — drží {@see SpecialPlaceSupply::allItemRowsSpecial()}; sdílí ho strop
+     * pásma karty návrhu (#89 D17), který smí být širší, nikdy užší.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array{place: ?string, mode: ?string, rows: array<int, string>, invalid: list<array<string, string>>} $pins
+     * @param array<int, array<string, mixed>> $decisions rozhodnutí o kódech ({@see decideRowVatCode()})
+     * @return string|null foreignVat | specialPlace | user
+     */
+    private function outOfScopeKind(
+        array $canonical,
+        ?string $place,
+        array $pins,
+        ?bool $reverseCharge,
+        array $decisions,
+    ): ?string {
+        if (!in_array($place, ['intracom', 'thirdCountry'], true)) {
+            return null;
+        }
+        if ($pins['mode'] === 'none') {
+            return self::OUT_OF_SCOPE_USER;
+        }
+        if ($pins['mode'] !== null || $pins['rows'] !== []) {
+            return null;
+        }
+        foreach ($decisions as $decision) {
+            if ($decision['matchedBy'] === 'input') {
+                return null;
+            }
+        }
+        if (SupplierVatPrices::carriesSupplierVat($canonical)) {
+            return $reverseCharge === true ? null : VatCodeDerivation::FAIL_FOREIGN_VAT;
+        }
+        return SpecialPlaceSupply::allItemRowsSpecial($canonical, $this->contentTags, $this->itemTagsFor($canonical))
+            ? VatCodeDerivation::FAIL_SPECIAL_PLACE
+            : null;
+    }
+
+    /**
+     * Doklad vznikne **Bez DPH** bez ohledu na to, co říká canonical:
+     * přijatý doklad neplátce (#97), nebo doklad mimo české DPH (#89).
+     * Jedna podmínka pro režim, kódy řádků, rekapitulaci i převod cen.
+     *
+     * @param array<string, mixed> $vatCtx {@see vatContext()}
+     */
+    private static function savedWithoutVat(array $vatCtx): bool
+    {
+        return $vatCtx['nonPayer'] || $vatCtx['outOfScope'] !== null;
+    }
+
+    /**
+     * Řádek, o jehož kódu DPH se ve větvi derivace rozhoduje: položkový,
+     * bez kontace, s objektem `vat`. Stejné řádky nesou v náhledu blok
+     * `_resolve.rows[].vatCode` s volbou kódu.
+     */
+    private static function rowHasVatDecision(mixed $row): bool
+    {
+        return is_array($row)
+            && (string) ($row['rowKind'] ?? 'item') === 'item'
+            && !isset($row['accSide'])
+            && is_array($row['vat'] ?? null);
+    }
+
     /**
      * Volby uživatele k DPH z `_resolve` (#87 task B, D8): místo plnění
      * a režim hlavičky (`useValue:<hodnota>`), kód DPH řádku
-     * (`useCode:<klíč číselníku>`). Jediné místo, kde se prefixy parsují.
+     * (`useCode:<klíč číselníku>`) a předmět plnění řádku u tuzemského
+     * přenesení (`useValue:<kód předmětu>`, #89 D12 — `subjects`). Jediné
+     * místo, kde se prefixy parsují.
      * Neplatná hodnota nebo akce → `invalid` (error `vat_pin_invalid`, D11)
      * a do voleb se nedostane. Zda volby platí (jen větev derive, D9),
      * rozhoduje {@see vatContext()}; řádky jsou klíčované indexem canonicalu
      * jako v {@see reconcile()}.
      *
      * @param array<string, mixed> $canonical
-     * @return array{place: ?string, mode: ?string, rows: array<int, string>, invalid: list<array{severity: string, path: string, code: string, message: string}>}
+     * @return array{place: ?string, mode: ?string, rows: array<int, string>, subjects: array<int, string>, invalid: list<array{severity: string, path: string, code: string, message: string}>}
      */
     private function vatPins(array $canonical): array
     {
-        $pins = ['place' => null, 'mode' => null, 'rows' => [], 'invalid' => []];
+        $pins = ['place' => null, 'mode' => null, 'rows' => [], 'subjects' => [], 'invalid' => []];
         $resolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         $invalid = static function (string $path, string $action) use (&$pins): void {
             $pins['invalid'][] = [
                 'severity' => 'error',
                 'path'     => $path,
                 'code'     => 'vat_pin_invalid',
-                'message'  => "Neplatná volba „{$action}“ — u místa plnění a režimu se čeká useValue:<hodnota>,"
-                    . ' u kódu DPH řádku useCode:<kód>.',
+                'message'  => "Neplatná volba „{$action}“ — u místa plnění, režimu a předmětu plnění řádku"
+                    . ' se čeká useValue:<hodnota>, u kódu DPH řádku useCode:<kód>.',
             ];
         };
 
@@ -2183,6 +2373,21 @@ class DocumentApplier
                 $pins['rows'][(int) $idx] = $code;
             } else {
                 $invalid("rows.{$idx}.vat.code", $action);
+            }
+        }
+        // Předmět plnění řádku (#89 D12). Zda je hodnota v číselníku
+        // a platí k datu, ověřuje až resolveRowReverseChargeCode() — proti
+        // téže množině, kterou klient dostal v `reverseChargeOptions`.
+        foreach ((is_array($resolve['rows'] ?? null) ? $resolve['rows'] : []) as $idx => $rowResolve) {
+            $action = is_array($rowResolve) ? ($rowResolve['reverseChargeCode']['userAction'] ?? null) : null;
+            if (!is_string($action) || $action === '') {
+                continue;
+            }
+            $value = str_starts_with($action, 'useValue:') ? trim(substr($action, strlen('useValue:'))) : '';
+            if ($value !== '') {
+                $pins['subjects'][(int) $idx] = $value;
+            } else {
+                $invalid("rows.{$idx}.vat.reverseChargeCode", $action);
             }
         }
         return $pins;
@@ -2222,7 +2427,10 @@ class DocumentApplier
     }
 
     /** Řádek bez informace o druhu plnění ({@see effectiveSupplyKinds()}). */
-    private const NO_SUPPLY_KIND = ['supplyKind' => null, 'source' => null, 'tag' => null, 'tagSupply' => null];
+    private const NO_SUPPLY_KIND = [
+        'supplyKind' => null, 'source' => null, 'tag' => null, 'tagSupply' => null,
+        'specialSource' => null, 'item' => null, 'ambiguous' => false,
+    ];
 
     /**
      * Efektivní druh plnění položkových řádků (tasks/exchange-received-supply-kind.md
@@ -2232,19 +2440,32 @@ class DocumentApplier
      * {@see RowEnrichmentPipeline::rowContentTagOf()}). `tagSupply` nese
      * hodnotu štítku vždy — veto `special` (D4) kontroluje derivace sama,
      * i proti druhu z AI. Bez bloku `_resolve.contentTag` (pokrytý doklad,
-     * žádný LLM běh) fallback není. Canonical se nemění; `changed` =
-     * fallback aspoň jeden druh doplnil.
+     * žádný LLM běh) fallback druhu plnění není. Canonical se nemění;
+     * `changed` = fallback aspoň jeden druh doplnil.
+     *
+     * Řádek bez štítku z bloku, pokrytý položkou, se mimo tuzemsko
+     * klasifikuje podle štítků své položky (#89 D19–D21,
+     * {@see SpecialPlaceSupply::classifyRow()}): `special` z položky se
+     * chová jako štítek řádku (`tagSupply: "special"`, `specialSource:
+     * "item"`) — veto i doklad mimo české DPH fungují beze změny logiky;
+     * nejednoznačná položka nese `ambiguous` (chování se nemění, jen
+     * varování). `item` = kód položky, ze které klasifikace plyne. Druh
+     * plnění se z položky neodvozuje; v tuzemsku se štítky položek nečtou.
      *
      * @param array<string, mixed> $canonical
      * @param array<int|string, mixed> $rows
      * @return array{
-     *   rows: array<int, array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string}>,
+     *   rows: array<int, array{
+     *     supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string,
+     *     specialSource: ?string, item: ?string, ambiguous: bool
+     *   }>,
      *   changed: bool
      * }
      */
     private function effectiveSupplyKinds(array $canonical, array $rows, ?string $place): array
     {
         $crossBorder = $place !== null && $place !== 'domestic';
+        $itemTags = $crossBorder ? $this->itemTagsFor($canonical) : [];
         $out = ['rows' => [], 'changed' => false];
         foreach ($rows as $idx => $row) {
             if (!is_array($row)
@@ -2255,10 +2476,22 @@ class DocumentApplier
             $idx = (int) $idx;
             $ai = $row['vat']['supplyKind'] ?? null;
             $ai = is_string($ai) && trim($ai) !== '' ? trim($ai) : null;
-            $tag = RowEnrichmentPipeline::rowContentTagOf($canonical, $idx);
-            $tagSupply = $tag !== null ? $this->tagSupplyOf($tag) : null;
+            $class = SpecialPlaceSupply::classifyRow($canonical, $idx, $this->contentTags, $itemTags);
+            $tag = $class['tag'];
+            $special = $class['state'] === SpecialPlaceSupply::ROW_SPECIAL;
+            $tagSupply = $tag !== null
+                ? $this->tagSupplyOf($tag)
+                : ($special ? VatCodeDerivation::TAG_SUPPLY_SPECIAL : null);
 
-            $entry = ['supplyKind' => $ai, 'source' => $ai !== null ? 'ai' : null, 'tag' => $tag, 'tagSupply' => $tagSupply];
+            $entry = [
+                'supplyKind'    => $ai,
+                'source'        => $ai !== null ? 'ai' : null,
+                'tag'           => $tag,
+                'tagSupply'     => $tagSupply,
+                'specialSource' => $special ? $class['source'] : null,
+                'item'          => $class['item'],
+                'ambiguous'     => $class['state'] === SpecialPlaceSupply::ROW_AMBIGUOUS,
+            ];
             if ($ai === null && $crossBorder
                 && in_array($tagSupply, [VatCodeDerivation::TAG_SUPPLY_GOODS, VatCodeDerivation::TAG_SUPPLY_SERVICES], true)
             ) {
@@ -2271,11 +2504,35 @@ class DocumentApplier
         return $out;
     }
 
+    /**
+     * Štítky položek řádků, které se klasifikují podle položky (#89 D19) —
+     * jeden dotaz na doklad ({@see ItemContentTags}), memoizovaný podle sady
+     * kódů. Bez taxonomie nebo bez takového řádku žádný dotaz.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<string, list<string>>
+     */
+    private function itemTagsFor(array $canonical): array
+    {
+        if ($this->contentTags === []) {
+            return [];
+        }
+        $codes = SpecialPlaceSupply::itemCodes($canonical);
+        if ($codes === []) {
+            return [];
+        }
+        sort($codes);
+        $key = implode("\n", $codes);
+        if ($this->itemTagsCache === null || $this->itemTagsCache['key'] !== $key) {
+            $this->itemTagsCache = ['key' => $key, 'tags' => ItemContentTags::forCodes($this->db, $codes)];
+        }
+        return $this->itemTagsCache['tags'];
+    }
+
     /** `crossBorderSupply` štítku z taxonomie; neznámá hodnota nebo štítek = null. */
     private function tagSupplyOf(string $tag): ?string
     {
-        $value = $this->contentTags[$tag]['crossBorderSupply'] ?? null;
-        return is_string($value) && in_array($value, VatCodeDerivation::TAG_SUPPLY_VALUES, true) ? $value : null;
+        return SpecialPlaceSupply::tagSupplyOf($this->contentTags, $tag);
     }
 
     /** Lokalizovaný `name` štítku z taxonomie (compiled config jazyka requestu), fallback klíč. */
@@ -2363,7 +2620,7 @@ class DocumentApplier
      * štítku — kód potvrzený člověkem štítek nezpochybňuje.
      *
      * @param array<string, mixed> $rowVat canonical `rows[].vat`
-     * @param array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string} $kind
+     * @param array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string, specialSource: ?string, item: ?string, ambiguous: bool} $kind
      *        efektivní druh plnění řádku ({@see effectiveSupplyKinds()})
      * @param string|null $pinned  kód zvolený uživatelem (`useCode:`), {@see vatPins()}
      * @param list<array{code: string, label: string, pct: float, reverseCharge: bool, reducedDeduction: bool, supplyKind: ?string}> $options
@@ -2372,8 +2629,12 @@ class DocumentApplier
      *   input: string, derived: ?string, reason: ?string,
      *   effective: ?string, matchedBy: ?string,
      *   issue: ?array{severity: string, code: string, message: string},
-     *   supplyKind: ?string, supplyKindSource: ?string, tag: ?string
+     *   supplyKind: ?string, supplyKindSource: ?string, tag: ?string, reasonKind: ?string,
+     *   specialSource: ?string, specialItem: ?string, ambiguousItem: ?string
      * }
+     *   `specialSource` tag | item = odkud je `special` řádku, `specialItem`
+     *   kód položky u zdroje item; `ambiguousItem` = kód nejednoznačné
+     *   položky (#89 D21) — zda se varuje, rozhoduje {@see vatContext()}.
      */
     private function decideRowVatCode(
         string $country,
@@ -2402,10 +2663,9 @@ class DocumentApplier
                 $reverseCharge,
                 $pct,
                 $supplyKind,
-                $reverseChargeCode,
                 $kind['tagSupply'],
             )
-            : ['code' => null, 'reason' => 'doklad nemá DUZP ani datum vystavení'];
+            : ['code' => null, 'reason' => 'doklad nemá DUZP ani datum vystavení', 'kind' => null];
 
         $out = [
             'input'            => $input,
@@ -2417,6 +2677,11 @@ class DocumentApplier
             'supplyKind'       => $supplyKind,
             'supplyKindSource' => $kind['source'],
             'tag'              => $kind['tag'],
+            // Druh důvodu selhání derivace (zahraniční DPH / zvláštní místo), #89.
+            'reasonKind'       => $derived['kind'],
+            'specialSource'    => $kind['specialSource'],
+            'specialItem'      => $kind['specialSource'] === SpecialPlaceSupply::SOURCE_ITEM ? $kind['item'] : null,
+            'ambiguousItem'    => $kind['ambiguous'] ? $kind['item'] : null,
         ];
         $useDerived = static function (array $out, string $code, ?array $issue): array {
             $out['effective'] = $code;
@@ -2474,7 +2739,7 @@ class DocumentApplier
             $out['issue'] = [
                 'severity' => 'error',
                 'code'     => 'vat_code_unknown',
-                'message'  => "Kód DPH řádku nejde odvodit ({$derived['reason']}) — doklad založ ručně.",
+                'message'  => "Kód DPH řádku nejde odvodit ({$derived['reason']}) — " . self::unknownVatCodeAdvice($derived['kind']),
             ];
             return $out;
         }
@@ -2508,7 +2773,7 @@ class DocumentApplier
                 'severity' => 'error',
                 'code'     => 'vat_code_unknown',
                 'message'  => "Kód DPH „{$input}“ neodpovídá dokladu ({$conflict}) a jiný nejde odvodit"
-                    . " ({$derived['reason']}) — doklad založ ručně.",
+                    . " ({$derived['reason']}) — " . self::unknownVatCodeAdvice($derived['kind']),
             ];
             return $out;
         }
@@ -2523,10 +2788,31 @@ class DocumentApplier
         $out['issue'] = [
             'severity' => 'error',
             'code'     => 'vat_code_unknown',
-            'message'  => "Neznámý kód DPH „{$input}“; kód nejde odvodit ({$derived['reason']}) — doklad založ ručně.",
+            'message'  => "Neznámý kód DPH „{$input}“; kód nejde odvodit ({$derived['reason']}) — "
+                . self::unknownVatCodeAdvice($derived['kind']),
         ];
         return $out;
     }
+
+    /**
+     * Rada na konci zprávy `vat_code_unknown`. U zahraniční DPH a zvláštního
+     * místa plnění, které nevedly k dokladu mimo české DPH (smíšený doklad,
+     * zvolený režim s DPH), má uživatel dvě cesty v náhledu (#89 D4).
+     */
+    private static function unknownVatCodeAdvice(?string $kind): string
+    {
+        return $kind !== null
+            ? 'vyber kód DPH u řádku, nebo zvol režim Bez DPH.'
+            : 'doklad založ ručně.';
+    }
+
+    /**
+     * Blok `_resolve.rows[].vatCode` řádku dokladu mimo české DPH (#89):
+     * vyřešený, bez kódu — na řádek se nic nepropíše (`transformRows()` čte
+     * kód z `createPayload`), souhrn ho počítá jako spárovaný a brána
+     * náhledu na něj nečeká.
+     */
+    private const OUT_OF_SCOPE_VAT_CODE = ['status' => 'matched', 'matchedBy' => 'outOfScope'];
 
     /**
      * `_resolve.rows[].vatCode` jednoho řádku. Null = řádek bez kódu, u
@@ -2559,14 +2845,25 @@ class DocumentApplier
                     'severity' => 'info',
                     'path'     => "rows.{$idx}.vat.code",
                     'code'     => 'vat_pin_ignored',
-                    'message'  => 'Volba kódu DPH platí jen u přijatého dokladu na zdroji s registrací DPH — ignorována.',
+                    'message'  => $vatCtx['outOfScope'] === self::OUT_OF_SCOPE_USER
+                        ? 'Doklad má zvolený režim Bez DPH — volba kódu DPH řádku se nepoužije.'
+                        : 'Volba kódu DPH platí jen u přijatého dokladu na zdroji s registrací DPH — ignorována.',
                 ];
             }
-            if ($vatCtx['nonPayer']) {
+            if (self::savedWithoutVat($vatCtx)) {
                 // #97: na doklad Bez DPH se kód nepropisuje, proto se ani
                 // neresolvuje — neznámý kód z historie řádků by jinak
                 // zablokoval apply kvůli hodnotě, která se zahodí.
-                return null;
+                // #89: doklad mimo české DPH má blok bez kódu — náhled na něm
+                // drží volbu kódu, kterou se uživatel vrátí k samovyměření.
+                if ($vatCtx['outOfScope'] === null || !self::rowHasVatDecision($row)) {
+                    return null;
+                }
+                // Odkud je `special` řádku (štítek z bloku / štítky položky, D19).
+                $source = $vatCtx['outOfScope'] === VatCodeDerivation::FAIL_SPECIAL_PLACE
+                    ? ($vatCtx['special'][$idx]['source'] ?? null)
+                    : null;
+                return self::OUT_OF_SCOPE_VAT_CODE + ($source !== null ? ['specialSource' => $source] : []);
             }
             $code = trim((string) ($rowVat['code'] ?? ''));
             if ($code === '') {
@@ -2602,12 +2899,29 @@ class DocumentApplier
                 ),
             ];
         }
+        // Veto zvláštního místa plnění (D4) ze štítků položky (D20) — zpráva
+        // řekne, odkud se vzalo; u štítku z bloku ho náhled ukazuje sám.
+        $vetoFromItem = $decision['reasonKind'] === VatCodeDerivation::FAIL_SPECIAL_PLACE
+            && $decision['specialItem'] !== null;
         if ($decision['issue'] !== null) {
             $issues[] = [
                 'severity' => $decision['issue']['severity'],
                 'path'     => "rows.{$idx}.vat.code",
                 'code'     => $decision['issue']['code'],
-                'message'  => $decision['issue']['message'],
+                'message'  => $decision['issue']['message']
+                    . ($vetoFromItem && $decision['effective'] === null
+                        ? " Zvláštní místo plnění plyne ze štítků položky „{$decision['specialItem']}“."
+                        : ''),
+            ];
+        }
+        if ($decision['ambiguousItem'] !== null) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => "rows.{$idx}.vat.code",
+                'code'     => 'vat_special_place_ambiguous',
+                'message'  => "Položka „{$decision['ambiguousItem']}“ nese štítky s různým místem plnění — nedá se poznat,"
+                    . ' jestli jde o službu se zvláštním místem plnění (ubytování, doprava osob, parkování, mýto …).'
+                    . ' Návrh počítá se samovyměřením; pokud se daň v ČR nepřiznává, přepni režim DPH na Bez DPH.',
             ];
         }
         if ($decision['effective'] === null) {
@@ -2617,6 +2931,9 @@ class DocumentApplier
             $notFound = ResolveResult::notFound()->toArray();
             if ($fromTag) {
                 $notFound['supplyKindSource'] = 'tag';
+            }
+            if ($decision['reasonKind'] === VatCodeDerivation::FAIL_SPECIAL_PLACE && $decision['specialSource'] !== null) {
+                $notFound['specialSource'] = $decision['specialSource'];
             }
             return $notFound;
         }
@@ -2652,6 +2969,130 @@ class DocumentApplier
     }
 
     /**
+     * `_resolve.rows[].reverseChargeCode` jednoho řádku (#89 D10): předmět
+     * plnění u řádku, na kterém skončí kód tuzemského přenesení — ať kód
+     * vznikl derivací, z canonicalu, z historie řádků nebo volbou. Null =
+     * řádek kód přenesení nemá (předmět se pak ignoruje) nebo doklad vznikne
+     * Bez DPH.
+     *
+     * Předmět se bere z `rows[].vat.reverseChargeCode` a ověřuje proti
+     * číselníku k datu sazby; chybějící (`reverse_charge_code_missing`) ani
+     * neznámý (`reverse_charge_code_unknown`) se nedoplňuje — error, který
+     * blokuje apply i v importním módu.
+     *
+     * @param array<string, mixed> $row
+     * @param array<string, mixed>|null $vatResolve {@see resolveRowVatCode()}
+     * @param array<string, mixed> $vatCtx {@see vatContext()}
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * Volba uživatele (`_resolve.rows[].reverseChargeCode.userAction:
+     * "useValue:<kód>"`, D12) má přednost; mimo nabídku je error
+     * `reverse_charge_code_pin_invalid`. U řádku bez kódu přenesení se
+     * ignoruje i volba.
+     *
+     * @return array{value: ?string, source: ?string, status: string}|null
+     */
+    private function resolveRowReverseChargeCode(
+        int $idx,
+        array $row,
+        ?array $vatResolve,
+        array $vatCtx,
+        string $vatCountry,
+        string $supplierCountry,
+        array &$issues,
+    ): ?array {
+        if ($vatResolve === null || ($vatResolve['status'] ?? null) !== 'matched' || self::savedWithoutVat($vatCtx)) {
+            return null;
+        }
+        $code = trim((string) ($vatResolve['createPayload']['code'] ?? ''));
+        if ($code === '') {
+            return null;
+        }
+        $country = $this->vatCountryForCode($code, $vatCountry, $supplierCountry);
+        $country = $country !== '' ? $country : $vatCountry;
+        $date = is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null;
+
+        // D12: volba uživatele má přednost před dokladem. Platí jen předmět
+        // z nabídky (`reverseChargeOptions` — číselník platný k datu sazby);
+        // volba mimo nabídku je error a předmět z dokladu ji nenahradí.
+        $pinned = $vatCtx['pins']['subjects'][$idx] ?? null;
+        if ($pinned !== null) {
+            $decision = $this->vatCodeDerivation->reverseChargeSubject($country, $code, $date, $pinned);
+            if (!$decision['applies']) {
+                return null; // řádek kód přenesení nemá — volba se ignoruje
+            }
+            if ($decision['status'] !== 'matched') {
+                $issues[] = [
+                    'severity' => 'error',
+                    'path'     => "rows.{$idx}.vat.reverseChargeCode",
+                    'code'     => 'reverse_charge_code_pin_invalid',
+                    'message'  => "Zvolený předmět plnění „{$pinned}“ není v nabídce"
+                        . ($date !== null ? " platné k datu {$date}" : '') . ' — vyber jiný.',
+                ];
+            }
+            return [
+                'value'  => $decision['value'],
+                'source' => 'user',
+                'status' => $decision['status'] === 'matched' ? 'matched' : 'notFound',
+            ];
+        }
+
+        $input = trim((string) ($row['vat']['reverseChargeCode'] ?? ''));
+        $decision = $this->vatCodeDerivation->reverseChargeSubject($country, $code, $date, $input);
+        if (!$decision['applies']) {
+            return null;
+        }
+        if ($decision['status'] !== 'matched') {
+            $issues[] = self::reverseChargeCodeIssue("rows.{$idx}.vat.reverseChargeCode", $decision, $date);
+        }
+        return [
+            'value'  => $decision['value'],
+            'source' => $decision['value'] !== null ? 'document' : null,
+            'status' => $decision['status'] === 'matched' ? 'matched' : 'notFound',
+        ];
+    }
+
+    /**
+     * Issue chybějícího / neznámého předmětu plnění — jeden text pro řádek
+     * i řádek převzaté rekapitulace.
+     *
+     * @param array{status: ?string, value: ?string} $decision {@see VatCodeDerivation::reverseChargeSubject()}
+     * @return array{severity: string, path: string, code: string, message: string}
+     */
+    private static function reverseChargeCodeIssue(string $path, array $decision, ?string $date, string $prefix = ''): array
+    {
+        if ($decision['status'] === 'missing') {
+            return [
+                'severity' => 'error',
+                'path'     => $path,
+                'code'     => 'reverse_charge_code_missing',
+                'message'  => $prefix . 'U přenesení daňové povinnosti chybí předmět plnění'
+                    . ' (kód pro kontrolní hlášení, např. 4 stavební práce, 5 zboží z přílohy č. 5).',
+            ];
+        }
+        return [
+            'severity' => 'error',
+            'path'     => $path,
+            'code'     => 'reverse_charge_code_unknown',
+            'message'  => $prefix . "Předmět plnění „{$decision['value']}“ není v číselníku"
+                . ($date !== null ? " nebo k datu {$date} neplatí." : '.'),
+        ];
+    }
+
+    /**
+     * Předmět plnění řádku pro doklad: jen ověřený (`matched`) — neznámý se
+     * na doklad nepropíše, apply stejně zablokuje error.
+     *
+     * @param array<string, mixed> $rowResolve
+     */
+    private static function matchedReverseChargeCode(array $rowResolve): ?string
+    {
+        $block = $rowResolve['reverseChargeCode'] ?? null;
+        return is_array($block) && ($block['status'] ?? null) === 'matched' && ($block['value'] ?? null) !== null
+            ? (string) $block['value']
+            : null;
+    }
+
+    /**
      * D3: má některý položkový řádek (po derivaci) kód s `reverseVatCode`?
      * Jen u přijatého dokladu na zdroji s registrací DPH — jinde se
      * rekapitulace řídí dnešními pravidly.
@@ -2663,14 +3104,29 @@ class DocumentApplier
         if (!$vatCtx['derive']) {
             return false;
         }
-        foreach ($vatCtx['rows'] as $decision) {
+        return $this->decisionsCarryReverseCharge(
+            $vatCtx['rows'],
+            (string) $vatCtx['ownCountry'],
+            $vatCtx['taxPointDate'],
+        );
+    }
+
+    /**
+     * Má některé rozhodnutí o kódu řádku ({@see decideRowVatCode()}) kód
+     * s `reverseVatCode`?
+     *
+     * @param array<int, array<string, mixed>> $decisions
+     */
+    private function decisionsCarryReverseCharge(array $decisions, string $country, ?string $date): bool
+    {
+        foreach ($decisions as $decision) {
             if ($decision['effective'] === null) {
                 continue;
             }
             $codeR = $this->vatCodeResolver->resolve(
                 $decision['effective'],
-                (string) $vatCtx['ownCountry'],
-                $vatCtx['taxPointDate'],
+                $country,
+                $date,
                 null,
             );
             if ($codeR->status === ResolveStatus::Matched && !empty($codeR->createPayload['reverseVatCode'])) {
@@ -2821,7 +3277,8 @@ class DocumentApplier
      * Přijatý doklad neplátce DPH (#97 D8) rekapitulaci nemá nikdy — ani
      * při explicitním `declared`. Daň dodavatele je součástí ceny řádků,
      * rekapitulace zůstává jen v canonicalu analýzy; bez důvodu fallbacku,
-     * info o tom nese `vat_non_payer`.
+     * info o tom nese `vat_non_payer`. Totéž platí pro doklad mimo české
+     * DPH (#89, `vat_foreign_tax` / `vat_special_place`).
      *
      * „Dohledatelný kód" (I7) = existuje v číselníku země registrace, ověřuje
      * se stejným `VatCodeResolver` a stejnou kaskádou země jako kódy řádků.
@@ -2836,12 +3293,14 @@ class DocumentApplier
      *
      * @param array<string, mixed> $canonical
      * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
-     * @return array{source: int, recap: array<int, array<string, mixed>>, fallback: ?string}
+     * @return array{source: int, recap: array<int, array<string, mixed>>, fallback: ?string,
+     *     issues?: list<array{severity: string, path: string, code: string, message: string}>}
+     *     `issues` = chyby předmětu plnění převzaté rekapitulace (#89 D10).
      */
     private function resolveRecapSource(array $canonical, array $rowSkips = []): array
     {
         $computed = ['source' => 0, 'recap' => [], 'fallback' => null];
-        if ($this->vatContext($canonical)['nonPayer']) {
+        if (self::savedWithoutVat($this->vatContext($canonical))) {
             return $computed;
         }
         $flag = $canonical['vat']['recapSource'] ?? null;
@@ -2888,7 +3347,8 @@ class DocumentApplier
         // Sazba rekapitulace k datu sazby (opravný doklad = původní plnění, #92 D4).
         $taxPointDate = $vatCtx['rateDate'];
         $recap = [];
-        foreach ($entries as $entry) {
+        $subjectIssues = [];
+        foreach ($entries as $position => $entry) {
             if (!is_array($entry)) {
                 continue;
             }
@@ -2941,6 +3401,34 @@ class DocumentApplier
                 'total'           => round((float) ($entry['total'] ?? 0), 2),
                 'is_reverse_pair' => ($entry['isReversePair'] ?? null) === true ? 1 : 0,
             ];
+            // Předmět plnění tuzemského přenesení (#89 D10): přebírá se ze
+            // vstupu, nic se nedoplňuje — chybějící nebo neznámý je chyba
+            // i v importním módu. Oddaňovací pár nese předmět skupiny, sám
+            // se neověřuje.
+            $subject = trim((string) ($entry['reverseChargeCode'] ?? ''));
+            $last = array_key_last($recap);
+            if (($entry['isReversePair'] ?? null) === true) {
+                $recap[$last]['reverse_charge_code'] = $subject !== '' ? $subject : null;
+                continue;
+            }
+            $decision = $this->vatCodeDerivation->reverseChargeSubject(
+                $country !== '' ? $country : $vatCountry,
+                $code,
+                is_string($taxPointDate) ? $taxPointDate : null,
+                $subject,
+            );
+            if (!$decision['applies']) {
+                continue;
+            }
+            $recap[$last]['reverse_charge_code'] = $decision['value'];
+            if ($decision['status'] !== 'matched') {
+                $subjectIssues[] = self::reverseChargeCodeIssue(
+                    'vatRecap.' . $position . '.reverseChargeCode',
+                    $decision,
+                    is_string($taxPointDate) ? $taxPointDate : null,
+                    "Rekapitulace DPH, řádek {$code}: ",
+                );
+            }
         }
 
         if ($recap === []) {
@@ -2948,7 +3436,7 @@ class DocumentApplier
                 ? ['source' => 0, 'recap' => [], 'fallback' => 'rekapitulace je prázdná']
                 : $computed;
         }
-        return ['source' => 1, 'recap' => $recap, 'fallback' => null];
+        return ['source' => 1, 'recap' => $recap, 'fallback' => null, 'issues' => $subjectIssues];
     }
 
     /**
@@ -3028,6 +3516,9 @@ class DocumentApplier
     private function appendRecapSourceIssue(array $canonical, array &$issues, array $rowSkips = []): void
     {
         $resolved = $this->resolveRecapSource($canonical, $rowSkips);
+        foreach ($resolved['issues'] ?? [] as $issue) {
+            $issues[] = $issue;
+        }
         if ($resolved['fallback'] === null) {
             return;
         }
@@ -3443,6 +3934,10 @@ class DocumentApplier
             $this->appendNonPayerIssues($canonical, $issues);
             return;
         }
+        if ($vatCtx['outOfScope'] !== null) {
+            $this->appendOutOfScopeIssues($vatCtx['outOfScope'], $vatCtx['special'], $issues);
+            return;
+        }
         $effective = $this->effectiveVatMode($canonical, $vatCtx);
         if ($effective['pinned']) {
             // D10/D11 (#87 B): zvolený režim se nehlásí jako odvozený (ani
@@ -3492,7 +3987,7 @@ class DocumentApplier
             $issues,
             static fn (array $issue): bool => ($issue['code'] ?? null) !== 'vat_mode_suspect',
         ));
-        if ($this->carriesSupplierVat($canonical)) {
+        if (SupplierVatPrices::carriesSupplierVat($canonical)) {
             $issues[] = [
                 'severity' => 'info',
                 'path'     => 'vat.mode',
@@ -3521,11 +4016,67 @@ class DocumentApplier
     }
 
     /**
+     * Issues dokladu mimo české DPH (#89 D2–D4) — místo hlášek o režimu,
+     * kódech a rekapitulaci, které u dokladu Bez DPH nedávají smysl
+     * (`vat_mode_derived`, `vat_mode_suspect`; `vat_code_unknown`,
+     * `vat_code_derived` a `recap_source_computed_fallback` nevzniknou,
+     * protože se kódy nerozhodují a rekapitulace nepřebírá):
+     *
+     * - info `vat_foreign_tax` — dodavatel účtuje vlastní daň, je v cenách
+     *   řádků; vysvětlí, proč jsou ceny jiné než na předloze.
+     * - warning `vat_special_place` — služba se zvláštním místem plnění
+     *   bez daně na dokladu; rozhodnutí stojí na štítku, proto varování
+     *   s cestou zpět. Když `special` plyne ze štítků položky pokrytého
+     *   řádku (D19, D20), zpráva položku jmenuje.
+     * - warning `vat_out_of_scope_user` (D4) — režim Bez DPH zvolil
+     *   uživatel; připomene, že se daň v ČR nepřizná.
+     *
+     * @param array<int, array{source: string, item: ?string}> $special {@see vatContext()} `special`
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function appendOutOfScopeIssues(string $kind, array $special, array &$issues): void
+    {
+        $items = array_values(array_unique(array_filter(array_column($special, 'item'))));
+        $fromItems = match (count($items)) {
+            0       => '',
+            1       => " Místo plnění plyne ze štítků položky „{$items[0]}“.",
+            default => ' Místo plnění plyne ze štítků položek „' . implode('“, „', $items) . '“.',
+        };
+        $issues = array_values(array_filter(
+            $issues,
+            static fn (array $issue): bool => ($issue['code'] ?? null) !== 'vat_mode_suspect',
+        ));
+        $issues[] = match ($kind) {
+            self::OUT_OF_SCOPE_USER => [
+                'severity' => 'warning',
+                'path'     => 'vat.mode',
+                'code'     => 'vat_out_of_scope_user',
+                'message'  => 'Doklad od dodavatele mimo tuzemsko vznikne bez DPH — daň se v ČR nepřizná.',
+            ],
+            VatCodeDerivation::FAIL_SPECIAL_PLACE => [
+                'severity' => 'warning',
+                'path'     => 'vat.mode',
+                'code'     => 'vat_special_place',
+                'message'  => 'Služba se zvláštním místem plnění (ubytování, doprava osob, stravování, nemovitost,'
+                    . ' mýto, parkování) — doklad vznikne bez DPH. Pokud daň v ČR přiznat máš, vyber kód DPH u řádku.'
+                    . $fromItems,
+            ],
+            default => [
+                'severity' => 'info',
+                'path'     => 'vat.mode',
+                'code'     => 'vat_foreign_tax',
+                'message'  => 'Dodavatel mimo tuzemsko účtuje vlastní DPH — doklad vznikne bez DPH'
+                    . ' a daň dodavatele je součástí cen řádků.',
+            ],
+        };
+    }
+
+    /**
      * Režim výpočtu, jak ho říká doklad: deklarovaný `vat.mode` (default
      * fromBase), u jiného než „Bez DPH“ ověřený proti číslům
      * ({@see VatModeDerivation}). Říká, **v jakých cenách jsou řádky** —
      * čte ho {@see effectiveVatMode()} i převod cen neplátce
-     * ({@see nonPayerGrossTotals()}), který výsledný režim dokladu mění.
+     * ({@see supplierVatGrossTotals()}), který výsledný režim dokladu mění.
      *
      * @param array<string, mixed> $canonical
      * @return array{mode: string, source: string, reason: ?string}
@@ -3561,11 +4112,17 @@ class DocumentApplier
      * před derivací i ochranou samovyměření — ta stojí na registraci
      * a neplátce by s `vat_mode` 1 padl na povinné registraci DPH.
      *
+     * Doklad mimo české DPH (#89 D2–D4) je „Bez DPH“ se zdrojem
+     * `outOfScope` a důvodem `foreignVat` / `specialPlace` / `user`.
+     * Důvod `user` (D4) mění D11 z #87 jen mimo tuzemsko: tam volba Bez DPH
+     * platí; v tuzemsku a u `none` deklarovaného AI zůstává tiché přepnutí.
+     *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $vatCtx {@see vatContext()}
      * @return array{value: string, source: string, reason: ?string, pinned: bool, auto: string}
-     *         value klíč VAT_MODE_MAP; source user | derived | ai | default | nonPayer;
-     *         reason jen u derived (reverseCharge | rowsWithVat | rowsWithoutVat);
+     *         value klíč VAT_MODE_MAP; source user | derived | ai | default | nonPayer | outOfScope;
+     *         reason u derived (reverseCharge | rowsWithVat | rowsWithoutVat)
+     *         a u outOfScope (foreignVat | specialPlace | user);
      *         auto = hodnota bez volby uživatele (náhled: „Automaticky (…)“).
      */
     private function effectiveVatMode(array $canonical, array $vatCtx): array
@@ -3573,10 +4130,38 @@ class DocumentApplier
         if ($vatCtx['nonPayer']) {
             return ['value' => 'none', 'source' => 'nonPayer', 'reason' => null, 'pinned' => false, 'auto' => 'none'];
         }
+        $userOutOfScope = $vatCtx['outOfScope'] === self::OUT_OF_SCOPE_USER;
+        if ($vatCtx['outOfScope'] !== null && !$userOutOfScope) {
+            return [
+                'value'  => 'none',
+                'source' => 'outOfScope',
+                'reason' => $vatCtx['outOfScope'],
+                'pinned' => false,
+                'auto'   => 'none',
+            ];
+        }
         $pin = $vatCtx['derive'] ? $vatCtx['pins']['mode'] : null;
 
         // Automatická hodnota se počítá vždy — i při volbě ji náhled ukazuje.
         ['mode' => $auto, 'source' => $autoSource, 'reason' => $reason] = $this->documentVatMode($canonical);
+        if ($userOutOfScope) {
+            // D4: volba Bez DPH mimo tuzemsko platí. „Automaticky“ = co by
+            // vyšlo bez ní — doklad mimo DPH sám od sebe, nebo režim dokladu
+            // s ochranou samovyměření (řádky se u dokladu mimo DPH nerozhodují,
+            // proto příznak z kontextu).
+            if ($vatCtx['autoOutOfScope'] !== null) {
+                $auto = 'none';
+            } elseif ($auto === 'none' && $vatCtx['autoReverseCharge']) {
+                $auto = 'fromBase';
+            }
+            return [
+                'value'  => 'none',
+                'source' => 'outOfScope',
+                'reason' => self::OUT_OF_SCOPE_USER,
+                'pinned' => true,
+                'auto'   => $auto,
+            ];
+        }
         if ($auto === 'none' && $this->rowsCarryReverseCharge($vatCtx)) {
             $auto = 'fromBase';
             $autoSource = 'derived';
@@ -3595,186 +4180,34 @@ class DocumentApplier
         return ['value' => $value, 'source' => $source, 'reason' => null, 'pinned' => true, 'auto' => $auto];
     }
 
-    // ── Přijatý doklad neplátce DPH: daň dodavatele v cenách řádků (#97) ────
+    // ── Doklad Bez DPH s daní dodavatele v cenách řádků (#97, #89) ─────────
 
     /**
-     * Nese doklad daň dodavatele? Některý položkový řádek má kladnou sazbu
-     * nebo nenulovou daň, případně ji nese rekapitulace. Jediný predikát
-     * pro převod cen ({@see nonPayerGrossTotals()}) i info `vat_non_payer`
-     * — doklad od neplátce (bez daně) zůstává, jak přišel, a nic se nehlásí.
-     *
-     * @param array<string, mixed> $canonical
-     */
-    private function carriesSupplierVat(array $canonical): bool
-    {
-        $nonZero = static fn (mixed $v): bool => $v !== null && is_numeric($v) && abs((float) $v) >= 0.005;
-        $positive = static fn (mixed $v): bool => $v !== null && is_numeric($v) && (float) $v > 0.0;
-
-        foreach ((array) ($canonical['rows'] ?? []) as $row) {
-            if (!is_array($row)
-                || (string) ($row['rowKind'] ?? 'item') !== 'item'
-                || isset($row['accSide'])) {
-                continue;
-            }
-            if ($positive($row['vat']['pct'] ?? null) || $nonZero($row['computed']['vatAmount'] ?? null)) {
-                return true;
-            }
-        }
-        foreach ((array) ($canonical['vatRecap'] ?? []) as $entry) {
-            if (!is_array($entry) || ($entry['isReversePair'] ?? null) === true) {
-                continue;
-            }
-            if ($positive($entry['vatPct'] ?? null) || $nonZero($entry['tax'] ?? null)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Ceny položkových řádků přijatého dokladu neplátce DPH **včetně daně
-     * dodavatele** (#97 D4, D5): index canonicalu → cena, která skončí na
-     * řádku jako `total_price` (`price_calc_mode` 1, bez slev — cena je už
-     * obsahuje). Daň je pro neplátce součástí ceny pořízení: musí skončit
-     * v nákladech a v závazku, ne zmizet. Jediné místo výpočtu — čte ho
+     * Ceny položkových řádků **včetně daně dodavatele** ({@see SupplierVatPrices},
+     * #97 D4, D5): index canonicalu → cena, která skončí na řádku jako
+     * `total_price`. Jediné místo, kde applier o převodu rozhoduje — čte ho
      * `transform()` při apply i v náhledu.
      *
-     * Prázdné pole = nic se nepřevádí: zdroj je plátce, nebo doklad daň
-     * dodavatele nenese ({@see carriesSupplierVat()}). Jinak jdou do
-     * výsledku **všechny** položkové řádky (ne kontační — ty účtují částku
-     * přímo), aby součet řádků dokladu byl přesně součet vrácených cen.
-     *
-     * Cena řádku (D4), první dostupné:
-     *  1. `computed.vatTotal` od dodavatele (ISDOC, případně AI),
-     *  2. řádky už v cenách s daní ({@see documentVatMode()} fromTotal)
-     *     → cena řádku beze změny,
-     *  3. cena řádku × (1 + sazba / 100), na 2 místa; řádek bez sazby
-     *     nebo s 0 % beze změny.
-     *
-     * Dorovnání (D5): při úplné rekapitulaci
-     * ({@see VatModeDerivation::recapIsComplete()}) se řádky každé sazby
-     * srovnají na `vatRecap[].total` té sazby — rozdíl do tolerance
-     * zaokrouhlení jde na řádek s největší absolutní částkou. Doklad pak
-     * sedí na částku k úhradě i v haléřích. Větší rozdíl se nedorovnává
-     * (řádky jsou neúplné; náhled ho ukáže jako `computed_total_mismatch`).
+     * Prázdné pole = nic se nepřevádí: doklad nevzniká Bez DPH z rozhodnutí
+     * applieru ({@see savedWithoutVat()} — neplátce, doklad mimo české
+     * DPH), nebo daň dodavatele nenese
+     * ({@see SupplierVatPrices::carriesSupplierVat()}).
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $vatCtx {@see vatContext()}
      * @return array<int, float>
      */
-    private function nonPayerGrossTotals(array $canonical, array $vatCtx): array
+    private function supplierVatGrossTotals(array $canonical, array $vatCtx): array
     {
-        if (!$vatCtx['nonPayer'] || !$this->carriesSupplierVat($canonical)) {
+        if (!self::savedWithoutVat($vatCtx) || !SupplierVatPrices::carriesSupplierVat($canonical)) {
             return [];
         }
         $cfgOps = $this->config->cfgItem('docs.core.rowOperations');
-        $cfgOps = is_array($cfgOps) ? $cfgOps : [];
-        $pricesWithVat = $this->documentVatMode($canonical)['mode'] === 'fromTotal';
-
-        $gross = [];
-        $rateOf = [];
-        foreach ((array) ($canonical['rows'] ?? []) as $idx => $row) {
-            if (!is_array($row)
-                || (string) ($row['rowKind'] ?? 'item') !== 'item'
-                || isset($row['accSide'])
-                || isset($cfgOps[(string) ($row['operation'] ?? '')]['rowSide'])) {
-                continue;
-            }
-            $pct = isset($row['vat']['pct']) && is_numeric($row['vat']['pct']) ? (float) $row['vat']['pct'] : 0.0;
-            $vatTotal = $row['computed']['vatTotal'] ?? null;
-            if ($vatTotal !== null && is_numeric($vatTotal)) {
-                $value = round((float) $vatTotal, 2);
-            } else {
-                $net = $this->rowNetTotal($row);
-                if ($net === null) {
-                    continue;
-                }
-                $value = $pricesWithVat || $pct <= 0.0 ? $net : round($net * (1.0 + $pct / 100.0), 2);
-            }
-            $gross[(int) $idx] = $value;
-            $rateOf[(int) $idx] = self::rateKey($pct);
-        }
-
-        $recap = $canonical['vatRecap'] ?? null;
-        if (!VatModeDerivation::recapIsComplete($recap)) {
-            return $gross;
-        }
-        $recapByRate = [];
-        foreach ($recap as $entry) {
-            if (($entry['isReversePair'] ?? null) === true) {
-                continue;
-            }
-            $key = self::rateKey($entry['vatPct'] ?? null);
-            $recapByRate[$key] = ($recapByRate[$key] ?? 0.0) + (float) $entry['total'];
-        }
-        foreach ($recapByRate as $key => $recapTotal) {
-            $indices = array_keys($rateOf, $key, true);
-            if ($indices === []) {
-                continue;
-            }
-            $sum = 0.0;
-            $target = $indices[0];
-            foreach ($indices as $i) {
-                $sum += $gross[$i];
-                if (abs($gross[$i]) > abs($gross[$target])) {
-                    $target = $i;
-                }
-            }
-            $diff = round($recapTotal - $sum, 2);
-            if (abs($diff) < 0.005 || abs($diff) > VatModeDerivation::tolerance(count($indices)) + 1e-9) {
-                continue;
-            }
-            $gross[$target] = round($gross[$target] + $diff, 2);
-        }
-        return $gross;
-    }
-
-    /**
-     * Cena položkového řádku canonicalu po slevě, bez přičtení daně — vstup
-     * převodu cen neplátce ({@see nonPayerGrossTotals()}).
-     *
-     * Bez slevy je to `totalPrice` (částka řádku z dokladu dodavatele);
-     * chybí-li, množství × jednotková cena — jinak by se řádek nepřevedl
-     * a daň by se u něj ztratila dál.
-     *
-     * Se slevou rozhoduje `priceCalcMode`, stejně jako u dokladu plátce
-     * ({@see DocRowCalculator::computePrice()}): z ceny za jednotku se
-     * sleva odečítá od množství × jednotkové ceny — `totalPrice` z dokladu
-     * dodavatele slevu zpravidla už obsahuje a odečetla by se podruhé.
-     *
-     * @param array<string, mixed> $row
-     */
-    private function rowNetTotal(array $row): ?float
-    {
-        $num = static fn (mixed $v): ?float => $v !== null && is_numeric($v) ? (float) $v : null;
-        $quantity = $num($row['quantity'] ?? null);
-        $unitPrice = $num($row['unitPrice'] ?? null);
-        $total = $num($row['totalPrice'] ?? null);
-        $fromUnit = $quantity !== null && $unitPrice !== null ? round($quantity * $unitPrice, 2) : null;
-
-        $discounted = !empty($row['discountPct']) || !empty($row['discountAmount']);
-        $unitMode = (self::PRICE_CALC_MODE_MAP[(string) ($row['priceCalcMode'] ?? 'fromUnitPrice')] ?? 0) === 0;
-        $base = $discounted && $unitMode ? ($fromUnit ?? $total) : ($total ?? $fromUnit);
-        if ($base === null) {
-            return null;
-        }
-        if (!$discounted) {
-            return round($base, 2);
-        }
-        return DocRowCalculator::computePrice([
-            'row_kind'        => 1,
-            'price_calc_mode' => 1,
-            'quantity'        => $quantity,
-            'total_price'     => $base,
-            'discount_pct'    => $row['discountPct'] ?? null,
-            'discount_amount' => $row['discountAmount'] ?? null,
-        ])['net_total'];
-    }
-
-    /** Sazba jako klíč skupiny — `21`, `21.0` i `"21"` jsou tatáž sazba. */
-    private static function rateKey(mixed $pct): string
-    {
-        return number_format($pct !== null && is_numeric($pct) ? (float) $pct : 0.0, 2, '.', '');
+        return SupplierVatPrices::grossTotals(
+            $canonical,
+            $this->documentVatMode($canonical)['mode'] === 'fromTotal',
+            is_array($cfgOps) ? $cfgOps : [],
+        );
     }
 
     // ── Doplnění pohybu (operation) na item řádcích ─────────────────────────
@@ -3955,7 +4388,7 @@ class DocumentApplier
      * canonicalu by u řádků v cenách s daní přičetl sazbu podruhé.
      *
      * @param array<string, mixed> $canonical
-     * @param float|null $rowsTotal Σ {@see nonPayerGrossTotals()}; null = odvodit z canonicalu
+     * @param float|null $rowsTotal Σ {@see supplierVatGrossTotals()}; null = odvodit z canonicalu
      */
     private function deriveTotalRoundingMode(array $canonical, ?float $rowsTotal = null): ?int
     {
@@ -4042,9 +4475,10 @@ class DocumentApplier
      * @param array<int, mixed> $rows
      * @param array<string, mixed> $plan
      * @param array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>} $sideIds
-     * @param bool $nonPayer Přijatý doklad neplátce DPH (#97): doklad je Bez DPH,
-     *        kód z historie řádků ani sazba dodavatele se na řádky nepropisují.
-     * @param array<int, float> $grossTotals {@see nonPayerGrossTotals()} — řádek
+     * @param bool $withoutVat Doklad vznikne Bez DPH z rozhodnutí applieru
+     *        ({@see savedWithoutVat()}): kód z historie řádků ani sazba
+     *        dodavatele se na řádky nepropisují.
+     * @param array<int, float> $grossTotals {@see supplierVatGrossTotals()} — řádek
      *        s cenou včetně daně jde na doklad z celkové ceny: bez jednotkové
      *        ceny bez daně (dopočítá ji DocRowCalculator) a bez slev, které
      *        cena už obsahuje.
@@ -4054,7 +4488,7 @@ class DocumentApplier
         array $rows,
         array $plan,
         array $sideIds,
-        bool $nonPayer = false,
+        bool $withoutVat = false,
         array $grossTotals = [],
     ): array {
         // Kontační operace (vlajka rowSide v docs.core.rowOperations) účtují
@@ -4076,10 +4510,15 @@ class DocumentApplier
             $vat = $plan['resolvedRowVatCodes'][$i] ?? null;
             $vatPct = null;
             $vatCode = null;
-            if (!$nonPayer && is_array($vat) && ($vat['status'] ?? null) === 'matched') {
+            if (!$withoutVat && is_array($vat) && ($vat['status'] ?? null) === 'matched') {
                 $vatPct = $vat['createPayload']['pct'] ?? null;
                 $vatCode = $vat['createPayload']['code'] ?? null;
             }
+            // Předmět plnění jen u řádku, na kterém skončil kód přenesení
+            // (#89 D10) — o tom rozhodl resolveRowReverseChargeCode().
+            $reverseChargeCode = $vatCode !== null
+                ? ($plan['resolvedRowReverseChargeCodes'][$i] ?? null)
+                : null;
             $gross = $grossTotals[$i] ?? null;
 
             $out[] = array_filter([
@@ -4107,6 +4546,7 @@ class DocumentApplier
                 'discount_amount' => $gross !== null ? null : ($row['discountAmount'] ?? null),
                 'vat_code'        => $vatCode,
                 'vat_pct'         => $vatPct,
+                'reverse_charge_code' => $reverseChargeCode,
                 // Text řádku skládá výhradně CanonicalRowText (#84 D1/D2):
                 // top-level description první (účetní doklad, export), jinak
                 // item.name + " — " + item.description. Stejný text vidí
@@ -4694,7 +5134,8 @@ class DocumentApplier
     /**
      * Efektivní hlavička DPH a nabídka kódů do `_resolve` (#87 task B,
      * D13/D14): `vat.place` / `vat.mode` = {value, source, auto} (source ai |
-     * vatId | user | derived | default) — náhled zobrazuje tohle, ne canonical;
+     * vatId | user | derived | default | nonPayer | outOfScope; u outOfScope
+     * navíc `reason`) — náhled zobrazuje tohle, ne canonical;
      * `vatCodeOptions` jen ve větvi derive (jinde není z čeho vybírat).
      * buildSummary() čte pevné klíče, bloky navíc ho nerozhodí.
      *
@@ -4717,10 +5158,32 @@ class DocumentApplier
                 'source' => $placeKnown ? ($vatCtx['placeSource'] ?? 'default') : 'default',
                 'auto'   => is_string($autoPlace) && isset(self::VAT_PLACE_MAP[$autoPlace]) ? $autoPlace : 'domestic',
             ],
-            'mode' => ['value' => $mode['value'], 'source' => $mode['source'], 'auto' => $mode['auto']],
+            'mode' => ['value' => $mode['value'], 'source' => $mode['source'], 'auto' => $mode['auto']]
+                // Důvod jen u dokladu mimo české DPH (#89) — náhled z něj skládá popisek.
+                + ($mode['source'] === 'outOfScope' ? ['reason' => $mode['reason']] : []),
         ];
         if ($vatCtx['derive']) {
             $resolved['vatCodeOptions'] = $vatCtx['codeOptions'];
+        }
+        // Nabídka předmětů plnění (#89 D12) — jednou na doklad, jen když má
+        // některý řádek kód tuzemského přenesení (blok `reverseChargeCode`).
+        // Táž množina validuje volbu v resolveRowReverseChargeCode().
+        foreach ($resolved['rows'] ?? [] as $rowResolve) {
+            if (!is_array($rowResolve) || !isset($rowResolve['reverseChargeCode'])) {
+                continue;
+            }
+            $country = $vatCtx['derive']
+                ? (string) $vatCtx['ownCountry']
+                : $this->vatCountryForCode(
+                    (string) ($rowResolve['vatCode']['createPayload']['code'] ?? ''),
+                    strtolower((string) ($canonical['vat']['registrationCountry'] ?? '')),
+                    strtolower((string) ($canonical['supplier']['country'] ?? '')),
+                );
+            $resolved['reverseChargeOptions'] = $this->vatCodeDerivation->reverseChargeSubjectOptions(
+                $country,
+                is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null,
+            );
+            break;
         }
         return $resolved;
     }
@@ -5027,7 +5490,7 @@ class DocumentApplier
             elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
         }
         foreach ($resolved['rows'] ?? [] as $rowR) {
-            foreach (['item', 'unit', 'vatCode'] as $k) {
+            foreach (['item', 'unit', 'vatCode', 'reverseChargeCode'] as $k) {
                 $status = $rowR[$k]['status'] ?? null;
                 if ($status === 'matched') $matched++;
                 elseif ($status === 'ambiguous') $ambiguous++;

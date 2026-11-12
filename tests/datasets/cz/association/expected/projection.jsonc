@@ -169,7 +169,7 @@
 		"paymentMethod":     { "regex": "^(?:cash|bankTransfer|card)$" },
 		"supplyKind":        { "regex": "^(?:goods|services)$" },
 		"priceCalcMode":     { "regex": "^(?:fromUnitPrice|fromTotal)$" },
-		"reverseChargeCode": { "regex": "^[0-9]{1,2}$" },
+		"reverseChargeCode": { "regex": "^[0-9]{1,2}[a-z]?$" },
 		"number":            { "check": "number" },
 		"amount":            { "check": "amount" },
 		"index":             { "check": "index" },

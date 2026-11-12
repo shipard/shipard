@@ -58,6 +58,8 @@ final class MailSuggestionsSourceTest extends TestCase
      * @param array<string,mixed>|null $profileVersionRow řádek s `prompt_version` výchozího profilu
      * @param bool $withCatalog dodávaný katalog textů feedu (core.mail.feedTexts)
      *        vrstvený nad `$config`; bez něj zdroj dává anglický fallback (#101 D15)
+     * @param \Dibi\Connection|null $dibi spojení pro štítky položek pokrytých řádků
+     *        (#89 D19, `ItemContentTags`); bez něj prázdný mock = žádná otagovaná položka
      */
     private function context(
         array $suggestionRows,
@@ -69,8 +71,12 @@ final class MailSuggestionsSourceTest extends TestCase
         array $profileRows = [],
         ?array $profileVersionRow = null,
         bool $withCatalog = true,
+        ?\Dibi\Connection $dibi = null,
     ): FeedContext {
         $db = $this->createMock(DataSourceConnection::class);
+        if ($dibi !== null) {
+            $db->method('getDibiConnection')->willReturn($dibi);
+        }
         $db->method('fetchAll')->willReturnCallback(
             static function (mixed ...$args) use ($suggestionRows, $errorRows, $notInvoiceRows, $attachmentRows): array {
                 $sql = (string) $args[0];
@@ -435,6 +441,112 @@ final class MailSuggestionsSourceTest extends TestCase
 
         $this->assertSame('review', $cards[0]['kind']);
         $this->assertSame(['review', 'reject'], array_column($cards[0]['actions'], 'id'));
+    }
+
+    public function testSpecialPlaceCapsReadyToReview(): void
+    {
+        // #89 D17: ubytování v zahraničí bez vyčíslené daně, všechny řádky
+        // se štítkem zvláštního místa plnění → doklad by vznikl Bez DPH jen
+        // podle štítku; karta jde do kontroly, jednoklik se nenabízí.
+        $row = $this->suggestionRow(0.95);
+        $canonical = json_decode((string) $row['canonical_json'], true);
+        $canonical['supplier'] = ['name' => 'Hotel Beispiel GmbH', 'country' => 'de'];
+        $canonical['vat'] = ['mode' => 'fromBase', 'place' => 'intracom'];
+        $canonical['rows'] = [['rowKind' => 'item', 'item' => ['ourCode' => 'UBYT'], 'vat' => ['pct' => 0]]];
+        $canonical['_resolve'] = ['contentTag' => ['tag' => 'travel.accommodation', 'tagSource' => 'rule']];
+        $row['canonical_json'] = json_encode($canonical);
+
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn(string $id): mixed => match ($id) {
+                'core.mail.primaryTypes'    => ['invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs']],
+                'core.exchange.contentTags' => ['travel.accommodation' => ['name' => 'Ubytování', 'crossBorderSupply' => 'special']],
+                default                     => null,
+            },
+        );
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$row], [], $config));
+        $this->assertSame('review', $cards[0]['kind']);
+        $this->assertSame(['review', 'reject'], array_column($cards[0]['actions'], 'id'));
+
+        // Tentýž návrh s daní dodavatele (zahraniční DPH) zůstává připravený.
+        $canonical['rows'][0]['vat']['pct'] = 7;
+        $row['canonical_json'] = json_encode($canonical);
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$row], [], $config));
+        $this->assertSame('ready', $cards[0]['kind']);
+    }
+
+    public function testItemTagsCapBandWithOneQueryPerCollect(): void
+    {
+        // #89 D19–D21: opakovaný dodavatel — řádky pokryté položkami, blok
+        // štítku chybí. Štítky položek čte sběr jedním dotazem pro všechny
+        // karty: `special` z položky i nejednoznačná položka bez kódu DPH
+        // jdou do kontroly, běžná položka zůstává připravená.
+        $rowFor = function (int $messageNdx, string $itemCode, ?string $vatCode = null): array {
+            $row = $this->suggestionRow(0.95, $messageNdx);
+            $canonical = json_decode((string) $row['canonical_json'], true);
+            $canonical['supplier'] = ['name' => 'Hotel Beispiel GmbH', 'country' => 'de'];
+            $canonical['vat'] = ['mode' => 'fromBase', 'place' => 'intracom'];
+            $canonical['rows'] = [
+                ['rowKind' => 'item', 'item' => ['ourCode' => $itemCode], 'vat' => ['pct' => 0, 'code' => $vatCode]],
+            ];
+            $row['canonical_json'] = json_encode($canonical);
+            return $row;
+        };
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn(string $id): mixed => match ($id) {
+                'core.mail.primaryTypes'    => ['invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs']],
+                'core.exchange.contentTags' => [
+                    'travel.accommodation' => ['name' => 'Ubytování', 'crossBorderSupply' => 'special'],
+                    'vehicle.parking'      => ['name' => 'Parkovné', 'crossBorderSupply' => 'special'],
+                    'services.shipping'    => ['name' => 'Přeprava', 'crossBorderSupply' => 'services'],
+                    'it.software'          => ['name' => 'Software', 'crossBorderSupply' => 'services'],
+                ],
+                default                     => null,
+            },
+        );
+        $queries = [];
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->method('fetchAll')->willReturnCallback(static function (mixed ...$args) use (&$queries): array {
+            $queries[] = $args;
+            return [
+                ['code' => 'CEST', 'content_tags' => '["travel.accommodation"]'],
+                ['code' => 'OSTAT', 'content_tags' => '["vehicle.parking","services.shipping"]'],
+                ['code' => 'SOFT', 'content_tags' => '["it.software"]'],
+            ];
+        });
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context(
+            [$rowFor(101, 'CEST'), $rowFor(102, 'OSTAT'), $rowFor(103, 'OSTAT', 'cz-217'), $rowFor(104, 'SOFT')],
+            [],
+            $config,
+            dibi: $dibi,
+        ));
+
+        $this->assertSame(['review', 'review', 'ready', 'ready'], array_column($cards, 'kind'));
+        $this->assertCount(1, $queries);
+        $this->assertStringContainsString('economy_items', (string) $queries[0][0]);
+        $this->assertSame(['CEST', 'OSTAT', 'SOFT'], $queries[0][1]);
+    }
+
+    public function testNoItemTagsQueryWithoutCoveredRows(): void
+    {
+        // Návrh bez řádků pokrytých položkou a sběr bez návrhů se na štítky položek neptají.
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn(string $id): mixed => match ($id) {
+                'core.mail.primaryTypes'    => ['invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs']],
+                'core.exchange.contentTags' => ['travel.accommodation' => ['name' => 'Ubytování', 'crossBorderSupply' => 'special']],
+                default                     => null,
+            },
+        );
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->expects($this->never())->method('fetchAll');
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$this->suggestionRow(0.95)], [], $config, dibi: $dibi));
+        $this->assertSame('ready', $cards[0]['kind']);
+        $this->assertSame([], (new MailSuggestionsSource())->collectCards($this->context([], [], $config, dibi: $dibi)));
     }
 
     public function testProfileThresholdsAreUsedForBand(): void

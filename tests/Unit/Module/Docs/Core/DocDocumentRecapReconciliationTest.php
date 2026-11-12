@@ -322,4 +322,41 @@ class DocDocumentRecapReconciliationTest extends TestCase
         $this->assertSame(1000.0, $data['total_amount']);
         $this->assertSame(0.0, $data['total_vat'], 'sumTax = 0 → daň se do hlavičky nesčítá');
     }
+
+
+    /**
+     * Dva předměty plnění na jednom kódu a sazbě (#89 D7) = dvě skupiny:
+     * každá se dorovnává na svůj řádek rekapitulace, ne na společný součet.
+     */
+    public function testRowsWithDifferentSubjectsReconcileToTheirOwnGroups(): void
+    {
+        $doc = $this->doc();
+        $data = [
+            'vat_mode' => 1, 'vat_registration' => 1, 'vat_duzp' => '2026-05-06',
+            'exchange_rate' => 1.0, 'total_rounding_mode' => 0,
+        ];
+        $rows = [
+            $this->row('cz-115', 21.0, 33.33) + ['reverse_charge_code' => '4'],
+            $this->row('cz-115', 21.0, 33.33) + ['reverse_charge_code' => '4'],
+            $this->row('cz-115', 21.0, 33.33) + ['reverse_charge_code' => '14'],
+        ];
+
+        [$rows, $recap] = $this->runPipeline($doc, $data, $rows);
+
+        $primary = array_values(array_filter($recap, static fn (array $r): bool => empty($r['is_reverse_pair'])));
+        $this->assertSame(['4', '14'], array_column($primary, 'reverse_charge_code'));
+        foreach ($primary as $r) {
+            $rowBase = 0.0;
+            $rowTax  = 0.0;
+            foreach ($rows as $row) {
+                if ($row['reverse_charge_code'] === $r['reverse_charge_code']) {
+                    $rowBase += (float) $row['vat_base'];
+                    $rowTax  += (float) $row['vat_amount'];
+                }
+            }
+            $this->assertEqualsWithDelta((float) $r['base'], $rowBase, self::DELTA);
+            $this->assertEqualsWithDelta((float) $r['tax'], $rowTax, self::DELTA);
+        }
+        $this->assertCount(4, $recap, 'dvě skupiny, každá se svým oddaňovacím párem');
+    }
 }

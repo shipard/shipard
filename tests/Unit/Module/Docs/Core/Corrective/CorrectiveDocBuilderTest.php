@@ -208,4 +208,20 @@ class CorrectiveDocBuilderTest extends TestCase
         $this->assertSame(['targetDocState' => 10, 'numberSeriesId' => 3], $c['applyOptions']);
         $this->assertSame('2026-03-01', $c['correction']['originalTaxPointDate'], 'bez DUZP datum vystavení');
     }
+
+
+    /** Opravný doklad přebírá předmět plnění původního řádku (#89 D10). */
+    public function testReverseChargeSubjectIsTakenOverFromOriginalRow(): void
+    {
+        $rows = self::rows();
+        $rows[0]['vat_code'] = 'cz-150';
+        $rows[0]['reverse_charge_code'] = '4a';
+        $rows[1]['reverse_charge_code'] = null;
+
+        $c = CorrectiveDocBuilder::build(self::head(), $rows, self::CUSTOMER, [], '2026-04-20');
+
+        $this->assertSame(['code' => 'cz-150', 'reverseChargeCode' => '4a'], $c['rows'][0]['vat']);
+        $this->assertSame(['code' => 'cz-110'], $c['rows'][1]['vat']);
+        $this->assertValidCanonical($c);
+    }
 }

@@ -390,4 +390,55 @@ class DocRowsFormTest extends TestCase
         $this->assertSame(3, $data['quantity']);
         $this->assertSame(30.0, $data['total_price']);
     }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D14) ─────────────────────
+
+    public function testSubjectFieldIsVisibleAndRequiredOnlyForReverseChargeCode(): void
+    {
+        $form = $this->formWithVatHead([]);
+
+        $def = $form->buildFormDefinition(['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-150'], false);
+        $subject = $this->findElement($def, 'reverse_charge_code');
+        $this->assertNotNull($subject);
+        $this->assertSame('select', $subject->type);
+        $this->assertFalse($subject->hidden);
+        $this->assertTrue($subject->required);
+        $values = array_column($subject->options, 'value');
+        $this->assertContains('4', $values);
+        $this->assertContains('4a', $values);
+        $this->assertContains('14', $values);
+        $labels = array_column($subject->options, 'label', 'value');
+        $this->assertStringStartsWith('14 — ', $labels['14']);
+
+        $def = $form->buildFormDefinition(['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-120'], false);
+        $subject = $this->findElement($def, 'reverse_charge_code');
+        $this->assertTrue($subject->hidden);
+        $this->assertFalse($subject->required);
+    }
+
+    public function testSubjectOptionsFollowVatRateDate(): void
+    {
+        // Předmět 4a platí od 1. 7. 2017 — doklad s dřívějším plněním ho nenabízí.
+        $form = $this->formWithVatHead(['vat_duzp' => '2017-06-30', 'issue_date' => '2017-06-30']);
+        $def = $form->buildFormDefinition(['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-150'], false);
+
+        $values = array_column($this->findElement($def, 'reverse_charge_code')->options, 'value');
+        $this->assertContains('4', $values);
+        $this->assertNotContains('4a', $values);
+    }
+
+    public function testChangingVatCodeAwayFromReverseChargeClearsSubject(): void
+    {
+        $form = $this->formWithVatHead([]);
+        $row = ['doc_head' => 1, 'row_kind' => 1, 'quantity' => '1', 'unit_price' => '100', 'reverse_charge_code' => '4'];
+
+        $kept = $form->recalculate('vat_code', $row + ['vat_code' => 'cz-151']);
+        $this->assertSame('4', $kept->data['reverse_charge_code'], 'jiný kód přenesení předmět drží');
+        $this->assertFalse($this->findElement($kept->formDefinition, 'reverse_charge_code')->hidden);
+
+        $cleared = $form->recalculate('vat_code', $row + ['vat_code' => 'cz-120']);
+        $this->assertNull($cleared->data['reverse_charge_code']);
+        $this->assertTrue($this->findElement($cleared->formDefinition, 'reverse_charge_code')->hidden);
+    }
 }

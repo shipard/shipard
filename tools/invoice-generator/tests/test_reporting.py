@@ -9,7 +9,8 @@ from pathlib import Path
 from invoicegen.corpus import VARIANTS
 from invoicegen.rates import Rate
 from invoicegen.reporting import (
-    ReportingError, accounting_date_of, cost_record, exchange_rate_record, load_vat_reporting, vat_record,
+    ReportingError, accounting_date_of, cost_record, exchange_rate_record, load_vat_reporting, out_of_czech_vat,
+    vat_record,
 )
 from tests.fixtures import DATA_DOMESTIC, DATA_EU_SERVICES, DATA_NO_VAT, DATA_RECEIPT, DATA_THIRD_COUNTRY, REPO_ROOT, data
 from tests.test_expected import expected_for
@@ -225,6 +226,33 @@ class CostRecordTest(unittest.TestCase):
         # řádky s DPH 1 566,04 + 673,78 + 53,55 = 2 293,37 = rekapitulace; × 24,345 zvlášť:
         # 38 125,24 + 16 403,17 + 1 303,67 = 55 832,08 (celkem × kurz by dalo 55 832,09)
         self.assertEqual(D("55832.08"), cost_record("MSG-7", expected, vat_payer=False, rate=D("24.345000"))["cost"])
+
+    def test_payer_out_of_czech_vat_costs_gross_rows_and_stays_out_of_return(self) -> None:
+        # #89 D2: hotel v EU účtuje vlastní DPH — plátce má doklad Bez DPH, náklad s daní
+        # dodavatele (jako neplátce), přiznání ani KH nic.
+        doc = data(DATA_EU_SERVICES, variant="eu-foreign-vat", vatTreatment="standard", skipProfiles={}, rows=[
+            {"text": "Room", "qty": 3, "unit": "night", "unitPrice": D("94.00"), "vatPct": 7, "supplyKind": "services"},
+            {"text": "Breakfast", "qty": 3, "unit": "pcs", "unitPrice": D("10.45"), "vatPct": 19, "supplyKind": "services"},
+            {"text": "Parking", "qty": 3, "unit": "day", "unitPrice": D("8.15"), "vatPct": 19, "supplyKind": "services"},
+        ])
+        expected = expected_for(doc)
+        self.assertTrue(out_of_czech_vat(expected))
+        self.assertEqual(D("368.14"), expected["totals"]["totalAmount"])
+        # řádky s daní 301,74 + 37,31 + 29,10 = 368,15 → dorovnání na rekapitulaci 19 % (66,40):
+        # 301,74 + 37,30 + 29,10; × 24,44 zvlášť: 7 374,53 + 911,61 + 711,20 = 8 997,34
+        payer = cost_record("MSG-11", expected, vat_payer=True, rate=D("24.440000"))
+        self.assertEqual(D("8997.34"), payer["cost"])
+        self.assertEqual(payer, cost_record("MSG-11", expected, vat_payer=False, rate=D("24.440000")))
+        record = vat_record("MSG-11", "eu-foreign-vat", expected, REPORTING, rate=D("24.440000"))
+        self.assertIsNone(record["period"])
+        self.assertEqual({}, record["return"])
+        self.assertIsNone(record["controlStatement"])
+        # Mapování s režimem přiznání by zahraniční daň poslalo do odpočtu — chyba.
+        with self.assertRaisesRegex(ReportingError, "mimo české DPH"):
+            vat_record("MSG-11", "domestic-goods", expected, REPORTING, rate=D("24.440000"))
+        # Samovyměření a tuzemský doklad mimo DPH nejsou.
+        self.assertFalse(out_of_czech_vat(expected_for(data(DATA_EU_SERVICES))))
+        self.assertFalse(out_of_czech_vat(expected_for(data(DATA_DOMESTIC))))
 
     def test_foreign_currency_cost_in_czk(self) -> None:
         eu = cost_record("MSG-4", expected_for(data(DATA_EU_SERVICES)), vat_payer=True, rate=EUR)

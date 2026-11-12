@@ -507,10 +507,13 @@ final class DocumentExporter implements RecordExporter
                 'priceCalcMode'  => self::PRICE_CALC_MODE_NAMES[(int) ($r['price_calc_mode'] ?? 0)] ?? null,
                 'discountPct'    => V::float($r['discount_pct'] ?? null),
                 'discountAmount' => V::float($r['discount_amount'] ?? null),
-                'vat'            => [
+                'vat'            => array_filter([
                     'code' => V::str($r['vat_code'] ?? null),
                     'pct'  => V::float($r['vat_pct'] ?? null),
-                ],
+                    // Předmět plnění tuzemského přenesení (#89 D10) — klíč
+                    // jen když ho řádek nese, ostatní řádky beze změny.
+                    'reverseChargeCode' => V::str($r['reverse_charge_code'] ?? null),
+                ], static fn (mixed $v, string $k): bool => $k !== 'reverseChargeCode' || $v !== null, ARRAY_FILTER_USE_BOTH),
                 'computed'       => [
                     'vatBase'   => V::float($r['vat_base'] ?? null),
                     'vatAmount' => V::float($r['vat_amount'] ?? null),
@@ -548,6 +551,7 @@ final class DocumentExporter implements RecordExporter
                 'tax'           => V::float($r['tax'] ?? null),
                 'total'         => V::float($r['total'] ?? null),
                 'isReversePair' => ((int) ($r['is_reverse_pair'] ?? 0)) === 1 ? true : null,
+                'reverseChargeCode' => V::str($r['reverse_charge_code'] ?? null),
             ]);
         }
         return $out;

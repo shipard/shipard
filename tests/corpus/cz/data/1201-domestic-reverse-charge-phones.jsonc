@@ -1,0 +1,35 @@
+// Varianta 12, podoba pdf — mobilní telefony s přenesením daňové povinnosti (cs-b):
+// 0 % + „daň odvede zákazník“, předmět plnění 14 (§ 92f), základ nad 100 000 Kč (#89 D16).
+// Kód předmětu plnění doklad netiskne — plyne z toho, co se dodává.
+// Žádný řádek nepřesahuje 80 000 Kč ani s daní (neplátce má ceny s DPH): nad ním štítek it.hardware návrh účtu nedává
+// (amountGuard „možný dlouhodobý majetek“) a doklad by nebyl pokrytý nabídkou osnovy.
+// Pro neplátce (non-payer, association) běžná faktura 21 % bez přenesení — přepis profilu.
+{
+	"variant": "domestic-reverse-charge-phones",
+	"form": "pdf",
+	"supplier": "fonarium",
+	"docNumber": "FV-26-03418",
+	"paymentReference": "2603418",
+	"dates": { "issue": "2026-09-08", "tax": "2026-09-07", "due": "2026-09-22" },
+	"currency": "CZK",
+	"vatTreatment": "reverseCharge",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.hardware",
+	"rows": [
+		{ "text": "Mobilní telefon Orbita X5, 128 GB, černý", "supplierCode": "ORB-X5-128-BK", "qty": 7, "unit": "ks", "unitPrice": 8990.00, "vatPct": 0, "reverseChargeCode": "14" },
+		{ "text": "Mobilní telefon Orbita X5 Pro, 256 GB, šedý", "supplierCode": "ORB-X5P-256-GR", "qty": 4, "unit": "ks", "unitPrice": 13490.00, "vatPct": 0, "reverseChargeCode": "14" },
+	],
+	"rounding": "none",
+	"template": "cs-b",
+	"notes": { "onDocument": "Dodávka dle rámcové kupní smlouvy č. RKS-2026-014." },
+	"overrides": {
+		"non-payer": {
+			"vatTreatment": "standard",
+			"rows": [
+				{ "text": "Mobilní telefon Orbita X5, 128 GB, černý", "supplierCode": "ORB-X5-128-BK", "qty": 7, "unit": "ks", "unitPrice": 8990.00, "vatPct": 21 },
+				{ "text": "Mobilní telefon Orbita X5 Pro, 256 GB, šedý", "supplierCode": "ORB-X5P-256-GR", "qty": 4, "unit": "ks", "unitPrice": 13490.00, "vatPct": 21 },
+			],
+		},
+		"association": "non-payer",
+	},
+}

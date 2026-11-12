@@ -19,7 +19,7 @@
 // obsahuje přesně to, co dodavatel na dokladu tiskne (null = netiskne); profil = vlastní
 // firma jako odběratel. `vatPayer: false` = na dokladu „Nejsem plátce DPH“, bez DIČ.
 {
-	"verifiedAt": "2026-10-14",
+	"verifiedAt": "2026-11-11",
 
 	"profiles": {
 		"vat-payer": {
@@ -183,6 +183,34 @@
 			"address": { "street": "Skladištní", "houseNumber": "17", "city": "Hradec Králové", "zip": "50002", "country": "cz" },
 			"contact": { "name": null, "email": "objednavky@matice-velkoobchod.example", "phone": "+420000512780", "web": "www.matice-velkoobchod.example" },
 			"bankAccount": { "accountNumber": "6427159018/0800", "iban": "CZ9708000000006427159018", "bic": "GIBACZPX" },
+		},
+		// varianta 11 — hotel v EU, který účtuje německou DPH (en)
+		"kranichturm": {
+			"vatPayer": true,
+			"name": "Kranichturm Hotelbetrieb GmbH",
+			"country": "de",
+			"companyId": null,
+			"taxId": null,
+			"vatId": "DE294718364",
+			"courtRegistration": "Amtsgericht München, HRB 996204",
+			"address": { "street": "Uferpromenade", "houseNumber": "11", "city": "München", "zip": "80331", "country": "de" },
+			"contact": { "name": null, "email": "reception@kranichturm.example", "phone": "+490008215530", "web": "www.kranichturm.example" },
+			"bankAccount": { "accountNumber": null, "iban": "DE95700500000003918274", "bic": "KRNTDEMMXXX" },
+		},
+		// varianta 12 — mobilní telefony s přenesením daňové povinnosti, předmět plnění 14 (cs-b).
+		// Identita ověřena samostatně 2026-11-12 (ARES: IČO volné, název 0 zásahů; VIES: DIČ neplatné);
+		// hromadné --verify-identities ten den neprošlo (VIES MS_MAX_CONCURRENT_REQ), verifiedAt proto zůstává.
+		"fonarium": {
+			"vatPayer": true,
+			"name": "Fonarium Distribuce s.r.o.",
+			"country": "cz",
+			"companyId": "95700013",
+			"taxId": "CZ95700013",
+			"vatId": "CZ95700013",
+			"courtRegistration": "C 993615 vedená u Krajského soudu v Brně",
+			"address": { "street": "Vysílací", "houseNumber": "27/4", "city": "Brno", "zip": "61200", "country": "cz" },
+			"contact": { "name": null, "email": "velkoobchod@fonarium.example", "phone": "+420000548216", "web": "www.fonarium.example" },
+			"bankAccount": { "accountNumber": "3305117713/0800", "iban": "CZ5308000000003305117713", "bic": "GIBACZPX" },
 		},
 	},
 }

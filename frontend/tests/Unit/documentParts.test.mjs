@@ -116,6 +116,19 @@ test('detailTotals: hodnoty s měnou, zaokrouhlení, rekapitulace', () => {
   });
 });
 
+test('detailTotals: předmět plnění přenesení rozliší skupiny se stejnou sazbou', () => {
+  const totals = detailTotals([
+    { vat_pct: '21', subject: 'předmět plnění 4', base: '100,00', tax: '21,00', total: '100,00' },
+    { vat_pct: '21', subject: 'předmět plnění 14', base: '200,00', tax: '42,00', total: '200,00' },
+    { vat_pct: '21', subject: null, base: '300,00', tax: '63,00', total: '363,00' },
+  ], null);
+  assert.deepEqual(totals.recap.map((r) => r.rate), [
+    '21 % · předmět plnění 4',
+    '21 % · předmět plnění 14',
+    '21 %',
+  ]);
+});
+
 test('detailTotals: zaokrouhlení null / prázdné se vynechá, domácí měna', () => {
   const totals = detailTotals([], {
     currency: 'EUR', base: '100,00', vat: '21,00', amount: '121,00', rounding: null,

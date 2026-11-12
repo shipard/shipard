@@ -73,26 +73,27 @@ class DocDocumentPdpOutputTest extends TestCase
     }
 
     /**
-     * @return array<string, array{string, float}> code => [code, pct k 2026]
+     * @return array<string, array{string, float, string}> popis => [kód, sazba k 2026, předmět plnění]
      */
     public static function pdpOutputCodes(): array
     {
         return [
-            'cz-150 (základní PDP4)'       => ['cz-150', 21.0],
-            'cz-151 (snížená PDP4)'        => ['cz-151', 12.0],
-            'cz-152 (základní PDP5)'       => ['cz-152', 21.0],
-            'cz-350 (první snížená PDP4)'  => ['cz-350', 15.0],
+            'cz-150 (základní, předmět 4)'      => ['cz-150', 21.0, '4'],
+            'cz-150 (základní, předmět 5)'      => ['cz-150', 21.0, '5'],
+            'cz-151 (snížená, předmět 4a)'      => ['cz-151', 12.0, '4a'],
+            'cz-350 (první snížená, předmět 4)' => ['cz-350', 15.0, '4'],
         ];
     }
 
     #[DataProvider('pdpOutputCodes')]
-    public function testPdpOutputCodeProducesNoTax(string $code, float $pct): void
+    public function testPdpOutputCodeProducesNoTax(string $code, float $pct, string $subject): void
     {
         $doc = $this->buildDocWithRealConfig();
         $duzp = $code === 'cz-350' ? '2023-06-15' : '2026-06-10';
         $data = [
             'rows' => [
-                ['row_kind' => 1, 'vat_code' => $code, 'vat_pct' => $pct, 'total_price' => 1000.0],
+                ['row_kind' => 1, 'vat_code' => $code, 'vat_pct' => $pct, 'total_price' => 1000.0,
+                    'reverse_charge_code' => $subject],
             ],
             'vat_registration' => 1,
             'vat_duzp'         => $duzp,
@@ -102,6 +103,11 @@ class DocDocumentPdpOutputTest extends TestCase
 
         $this->assertCount(1, $recap, "Kód {$code} nesmí generovat oddaňovací pár");
         $this->assertSame($code, $recap[0]['vat_code']);
+        $this->assertSame(
+            $subject,
+            $recap[0]['reverse_charge_code'],
+            "Kód {$code}: rekapitulace nese předmět plnění řádku",
+        );
         $this->assertSame(1000.0, $recap[0]['base']);
         $this->assertSame(0.0, $recap[0]['tax'], "Kód {$code}: daň odvádí zákazník, recap musí mít tax = 0");
         $this->assertSame(1000.0, $recap[0]['total']);

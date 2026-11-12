@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Vat;
 
+use Shipard\Module\Economy\Accounting\AccountingRules;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\StructuredFields\StructuredFieldValues;
@@ -219,7 +220,8 @@ final class FilingComposer
                     'dp3_col'            => $dp3 !== null ? ($dp3['col'] ?? null) : null,
                     'kh_group'           => $kh !== null ? (string) $kh['group'] : null,
                     'kh_section'         => $section,
-                    'kh_kod_pred_pl'     => $kh !== null && isset($kh['kodPredPl']) ? (int) $kh['kodPredPl'] : null,
+                    // Předmět plnění z rekapitulace dokladu (#89 D13), řetězec.
+                    'kh_reverse_charge_code' => $recapRow['reverse_charge_code'] ?? null,
                     'sh_kod'             => $sh !== null ? (int) $sh['kod'] : null,
                 ])->execute();
                 $count++;
@@ -378,7 +380,7 @@ final class FilingComposer
                     'doc_number'     => (string) ($row['evidNumber'] ?? ''),
                     'partner_vat_id' => (string) ($row['vatId'] ?? ''),
                     'vat_dppd'       => $row['dppd'],
-                    'kod_pred_pl'    => $row['kodPredPl'],
+                    'reverse_charge_code' => $row['kodPredPl'],
                     'base1'          => $row['base1'],
                     'tax1'           => $row['tax1'],
                     'base2'          => $row['base2'],
@@ -521,7 +523,11 @@ final class FilingComposer
         array &$result,
         array &$messages,
     ): void {
-        $check = (new VatJournalCrossCheck($dsConnection, $vatCodes))->check($docs);
+        // Analytiky řádků rekapitulace podle týchž pravidel předpisu jako
+        // účtování dokladů (343117 pro předmět plnění 5, #89 D9).
+        $rules = AccountingRules::resolve($this->config, $this->db);
+        $accountRules = is_array($rules) && is_array($rules['accounts'] ?? null) ? $rules['accounts'] : [];
+        $check = (new VatJournalCrossCheck($dsConnection, $vatCodes, $accountRules))->check($docs);
         $result['crossCheck'] = [
             'differences'      => count($check['differences']),
             'journalErrorRows' => $check['journalErrorRows'],

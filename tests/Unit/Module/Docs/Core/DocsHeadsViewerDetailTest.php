@@ -601,7 +601,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         $content = $this->detailContent($viewer);
 
         $this->assertSame(
-            [['vat_pct' => '21', 'base' => '6 000,00', 'tax' => '1 260,00', 'total' => '7 260,00']],
+            [['vat_pct' => '21', 'subject' => null, 'base' => '6 000,00', 'tax' => '1 260,00', 'total' => '7 260,00']],
             $content['vat_recap'],
         );
         $this->assertSame([

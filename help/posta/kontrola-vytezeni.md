@@ -265,6 +265,60 @@ dáš **V pořádku** — v Konceptu se dá kdykoli přepsat i ručně.
 Co u samovyměření návrh zatím neumí, je v
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
+**Faktura ze zahraničí bez české DPH.** Dodavatel mimo Česko, který ti
+naúčtoval DPH svého státu (hotel, tankování nebo nákup v cizině), ti dal
+daň, kterou si v českém přiznání neodečteš a ani ji nepřiznáváš. Návrh
+takové faktury vznikne s **Režimem DPH** *Bez DPH* (náhled u něj píše
+*zahraniční DPH — daň dodavatele v ceně*): řádky ukazují ceny **včetně
+daně dodavatele**, u sazby je místo kódu *bez DPH*, **DPH rekapitulace**
+chybí a **Celkem** se rovná částce k úhradě na faktuře. Do nákladů i do
+závazku jde celá zaplacená částka a doklad se nedostane do přiznání ani
+do kontrolního hlášení. Stejně vznikne faktura za službu se zvláštním
+místem plnění — ubytování, jízdenky a letenky, stravování, nájem a služby
+k nemovitosti, mýto, parkování v cizině —, i když na ní žádná daň není
+(náhled píše *zvláštní místo plnění — mimo české DPH* a upozorní na to).
+Shipard to pozná podle kategorie dokladu, proto zkontroluj, že kategorie
+sedí. Návrh takové faktury proto nikdy není **K použití** — jde vždy
+**Ke kontrole**, ať je jistota jakkoli vysoká. Faktury se zahraniční daní
+se to netýká, tam Shipard vychází z daně vytištěné na faktuře. Když daň v Česku přiznat máš, klikni na odznak u sazby řádku
+a vyber kód z nabídky: doklad se tím vrátí k samovyměření a kód pak
+potřebuje každý řádek (jde to naráz tlačítkem **Kód DPH u řádků**).
+Opačně to jde také: u faktury ze zahraničí, kterou Shipard navrhl se
+samovyměřením, zvol v hlavičce **Režim DPH** *Bez DPH* — doklad vznikne
+bez kódů a bez daně a náhled připomene, že se daň v Česku nepřizná. Volba
+*Automaticky* vrátí původní návrh. U tuzemské faktury s přenesením daňové
+povinnosti se *Bez DPH* zvolit nedá, Shipard režim vrátí zpět.
+
+**Předmět plnění u tuzemského přenesení daňové povinnosti.** Faktura od
+českého dodavatele s textem *daň odvede zákazník* potřebuje u každého
+řádku **Předmět plnění** — kód, pod kterým jde řádek do kontrolního
+hlášení (*4* stavební a montážní práce, *5* zboží z přílohy č. 5, *14*
+mobilní telefony a další). Shipard ho převezme z faktury a ukáže ho
+u sazby řádku jako *předmět 4*. Když ho na faktuře nenajde nebo ho
+nezná, řádek ukazuje *předmět chybí* s červeným odznakem a tlačítka
+**Vystavit koncept** i **Vystavit a uzavřít** jsou zablokovaná, stejně
+jako **Použít** na kartě. Klikni na odznak a vyber předmět z nabídky;
+má-li faktura takových řádků víc, zvol ho pro všechny naráz tlačítkem
+**Předmět plnění u řádků**. Stejně opravíš i předmět, který Shipard
+převzal špatně. V **DPH rekapitulaci** pak má každý předmět vlastní
+řádek daně a oddaňovací řádek. Jestli plnění přenesení opravdu podléhá
+(například hranice 100 000 Kč u mobilních telefonů), Shipard neposuzuje.
+
+**Faktura ze zahraničí od dodavatele, kterého už znáš.** Řádky takové
+faktury Shipard rovnou zařadí na tvoje položky a kategorii dokladu
+neurčuje. Službu se zvláštním místem plnění pak pozná podle **Obsahových
+štítků** položky. Když má položka jen štítky takových služeb (třeba
+*Ubytování* a *Jízdné a letenky*), návrh vznikne *Bez DPH* stejně jako
+výše, upozornění položku jmenuje a návrh jde **Ke kontrole**. Když položka
+sbírá i jiné služby (například *Parkovné* spolu s *Přepravou a kurýry*),
+Shipard to rozhodnout neumí: návrh počítá se samovyměřením, u řádku
+upozorní, že položka nese štítky s různým místem plnění, a návrh jde také
+**Ke kontrole**. Pokud se daň v Česku nepřiznává, zvol v hlavičce **Režim
+DPH** *Bez DPH*. Řádku, který kód DPH převzal z tvých dřívějších dokladů,
+se upozornění netýká. Aby se to neopakovalo, rozděl sběrnou položku na
+víc položek podle druhu služby a každé nech jen štítky, které k ní patří
+— viz [Obsahové štítky](../polozky/obsahove-stitky.md).
+
 **Neplátce DPH.** Když k datu faktury nejsi plátcem DPH, daň dodavatele
 si odečíst nemůžeš — je součástí ceny. Návrh faktury od plátce proto
 vznikne s **Režimem DPH** *Bez DPH* (náhled u něj píše *neplátce DPH —

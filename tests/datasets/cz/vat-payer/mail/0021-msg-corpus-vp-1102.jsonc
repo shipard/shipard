@@ -1,0 +1,428 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-VP-1102",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Invoice KT-2026-05102",
+    "senderEmail": "reception@kranichturm.example",
+    "senderName": "Kranichturm Hotelbetrieb GmbH",
+    "partnerName": "Kranichturm Hotelbetrieb GmbH",
+    "receivedAt": "2026-10-01T08:00:00",
+    "bodyPlain": "Hello,\n\nplease find attached invoice KT-2026-05102.\n\nKranichturm Hotelbetrieb GmbH",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura KT-2026-05102 — Kranichturm Hotelbetrieb GmbH, 368,14 EUR",
+    "created": "2026-10-01T08:00:00",
+    "attachments": [
+        {
+            "file": "1102-eu-foreign-vat.pdf",
+            "name": "1102-eu-foreign-vat.pdf",
+            "mimeType": "application/pdf",
+            "size": 32537,
+            "sha256": "aa421882974bbed951c44ee82e13bb89860d802088fff940ae4c2805f4d0a4ee",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-10-01T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "travel.accommodation",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-10-01T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura KT-2026-05102 — Kranichturm Hotelbetrieb GmbH, 368,14 EUR"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-10-01T08:01:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "KT-2026-05102",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Kranichturm Hotelbetrieb GmbH",
+                            "country": "de",
+                            "companyId": null,
+                            "taxId": null,
+                            "vatId": "DE294718364",
+                            "courtRegistration": "Amtsgericht München, HRB 996204",
+                            "address": {
+                                "street": "Uferpromenade",
+                                "houseNumber": "11",
+                                "city": "München",
+                                "zip": "80331",
+                                "country": "de"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "reception@kranichturm.example",
+                                "phone": "+490008215530",
+                                "web": "www.kranichturm.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": "DE95700500000003918274",
+                                "bic": "KRNTDEMMXXX"
+                            }
+                        },
+                        "customer": {
+                            "name": "Tvarokov s.r.o.",
+                            "country": "cz",
+                            "companyId": "27893286",
+                            "taxId": "CZ27893286",
+                            "vatId": "CZ27893286",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Lisovací",
+                                "houseNumber": "418/2",
+                                "city": "Zlín",
+                                "zip": "76001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-30",
+                            "dueDate": "2026-10-14",
+                            "taxPointDate": "2026-09-30",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "EUR",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "intracom",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": null,
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Payment within 14 days by bank transfer. Thank you for staying with us."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Single room, 3 nights",
+                                    "description": "Arrival 09/27/2026, departure 09/30/2026"
+                                },
+                                "unit": "night",
+                                "quantity": 3,
+                                "unitPrice": 94,
+                                "totalPrice": 282,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 7,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Breakfast buffet",
+                                    "description": null
+                                },
+                                "unit": "pcs",
+                                "quantity": 3,
+                                "unitPrice": 10.45,
+                                "totalPrice": 31.35,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 19,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Garage parking",
+                                    "description": null
+                                },
+                                "unit": "day",
+                                "quantity": 3,
+                                "unitPrice": 8.15,
+                                "totalPrice": 24.45,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 19,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 19,
+                                "base": 55.8,
+                                "tax": 10.6,
+                                "total": 66.4
+                            },
+                            {
+                                "vatPct": 7,
+                                "base": 282,
+                                "tax": 19.74,
+                                "total": 301.74
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 337.8,
+                            "totalVat": 30.34,
+                            "totalAmount": 368.14,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "1102-eu-foreign-vat.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-10-01T08:01:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "KT-2026-05102",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Kranichturm Hotelbetrieb GmbH",
+                    "country": "de",
+                    "companyId": null,
+                    "taxId": null,
+                    "vatId": "DE294718364",
+                    "courtRegistration": "Amtsgericht München, HRB 996204",
+                    "address": {
+                        "street": "Uferpromenade",
+                        "houseNumber": "11",
+                        "city": "München",
+                        "zip": "80331",
+                        "country": "de"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "reception@kranichturm.example",
+                        "phone": "+490008215530",
+                        "web": "www.kranichturm.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": "DE95700500000003918274",
+                        "bic": "KRNTDEMMXXX"
+                    }
+                },
+                "customer": {
+                    "name": "Tvarokov s.r.o.",
+                    "country": "cz",
+                    "companyId": "27893286",
+                    "taxId": "CZ27893286",
+                    "vatId": "CZ27893286",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Lisovací",
+                        "houseNumber": "418/2",
+                        "city": "Zlín",
+                        "zip": "76001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-30",
+                    "dueDate": "2026-10-14",
+                    "taxPointDate": "2026-09-30",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "EUR",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "intracom",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": null,
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Payment within 14 days by bank transfer. Thank you for staying with us."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Single room, 3 nights",
+                            "description": "Arrival 09/27/2026, departure 09/30/2026"
+                        },
+                        "unit": "night",
+                        "quantity": 3,
+                        "unitPrice": 94,
+                        "totalPrice": 282,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 7,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Breakfast buffet",
+                            "description": null
+                        },
+                        "unit": "pcs",
+                        "quantity": 3,
+                        "unitPrice": 10.45,
+                        "totalPrice": 31.35,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 19,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Garage parking",
+                            "description": null
+                        },
+                        "unit": "day",
+                        "quantity": 3,
+                        "unitPrice": 8.15,
+                        "totalPrice": 24.45,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 19,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 19,
+                        "base": 55.8,
+                        "tax": 10.6,
+                        "total": 66.4
+                    },
+                    {
+                        "vatPct": 7,
+                        "base": 282,
+                        "tax": 19.74,
+                        "total": 301.74
+                    }
+                ],
+                "totals": {
+                    "totalBase": 337.8,
+                    "totalVat": 30.34,
+                    "totalAmount": 368.14,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "1102-eu-foreign-vat.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "travel.accommodation",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+// Varianta 11, podoba pdf (D10 #119: bez ISDOC) — hotel v Německu účtuje vlastní DPH (en), EUR,
+// dvě sazby dodavatele (ubytování 7 %, snídaně 19 %), úhrada převodem.
+// Plátce: doklad je mimo české DPH — vznikne Bez DPH s daní dodavatele v cenách řádků (#89 D2).
+// Neplátce a spolek: totéž cestou #97. Zvláštní místo plnění (štítek travel.accommodation).
+{
+	"variant": "eu-foreign-vat",
+	"form": "pdf",
+	"supplier": "kranichturm",
+	"docNumber": "KT-2026-04417",
+	"paymentReference": null,
+	"dates": { "issue": "2026-08-18", "tax": "2026-08-18", "due": "2026-09-01" },
+	"currency": "EUR",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "travel.accommodation",
+	"rows": [
+		{ "text": "Double room, 2 nights", "description": "Arrival 08/16/2026, departure 08/18/2026", "qty": 2, "unit": "night", "unitPrice": 129.00, "vatPct": 7, "supplyKind": "services" },
+		{ "text": "Breakfast buffet", "qty": 4, "unit": "pcs", "unitPrice": 14.90, "vatPct": 19, "supplyKind": "services" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Company booking, payment within 14 days by bank transfer. Thank you for staying with us." },
+}

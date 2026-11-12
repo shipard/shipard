@@ -13,6 +13,10 @@ Poskytuje:
 - **Časově proměnná procenta** per kód (`vatPercents`: cz-110 → 20 % do 2012,
   21 % od 2013)
 - **Texty na doklad** (`vatNotes`: "Daň odvede zákazník" pro PDP a EU)
+- **Předměty plnění** tuzemského přenesení daňové povinnosti
+  (`reverseChargeSubjects`: `4` stavební práce, `4a`, `5`, `14` mobilní
+  telefony …) s platností v čase — kód pro oddíly A.1 a B.1 kontrolního
+  hlášení
 
 ## Stav
 
@@ -36,6 +40,12 @@ $codes = $resolver->getVatCodes('cz', direction: 'output', place: 'domestic');
 
 // Detail kódu
 $code = $resolver->getVatCode('cz', 'cz-115');
+
+// Tuzemské přenesení daňové povinnosti: kód s příznakem `reverseCharge`
+// vyžaduje předmět plnění z číselníku platného k datu sazby dokladu
+$resolver->isReverseChargeCode('cz', 'cz-115');                       // → true
+$resolver->getReverseChargeSubjectsValidAt('cz', '2026-11-01');       // → [{code, name, legal, validFrom, validTo}, …]
+$resolver->isReverseChargeSubjectValid('cz', '4a', '2017-06-30');     // → false (platí od 1. 7. 2017)
 ```
 
 ## Struktura cfgItem
@@ -46,6 +56,11 @@ Viz `config/vat-cz.jsonc` jako referenční vzor. Detailní popis atributů:
 - `vatCodes` — konkrétní kódy (klíč: `{country}-{nnn}`, value: object s atributy)
 - `vatPercents` — pole časových intervalů per kód
 - `vatNotes` — texty pro tisk dokladu
+- `reverseChargeSubjects` — předměty plnění tuzemského přenesení (klíč: kód
+  jako řetězec, value: `name` vícejaz., `legal`, nepovinné `validFrom` /
+  `validTo` ve tvaru `YYYY-MM-DD`; chybějící = bez omezení). Číselník čte
+  **jen** `VatRateResolver` — předmět nese řádek dokladu a rekapitulace
+  (`reverse_charge_code`), ne kód DPH.
 
 Plný popis atributů `vatCodes` viz `docs/docs-mvp.md` sekce 4.
 

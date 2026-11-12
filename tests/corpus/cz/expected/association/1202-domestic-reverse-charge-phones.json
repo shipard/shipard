@@ -1,0 +1,146 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "FV-26-03902",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Fonarium Distribuce s.r.o.",
+    "country": "cz",
+    "companyId": "95700013",
+    "taxId": "CZ95700013",
+    "vatId": "CZ95700013",
+    "courtRegistration": "C 993615 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Vysílací",
+      "houseNumber": "27/4",
+      "city": "Brno",
+      "zip": "61200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "velkoobchod@fonarium.example",
+      "phone": "+420000548216",
+      "web": "www.fonarium.example"
+    },
+    "bankAccount": {
+      "accountNumber": "3305117713/0800",
+      "iban": "CZ5308000000003305117713",
+      "bic": "GIBACZPX"
+    }
+  },
+  "customer": {
+    "name": "Spolek Zelený kopec, z. s.",
+    "country": "cz",
+    "companyId": "28647645",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Pod Strání",
+      "houseNumber": "92",
+      "city": "Říčany",
+      "zip": "25101",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-10-06",
+    "dueDate": "2026-10-20",
+    "taxPointDate": "2026-10-05",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "2603902",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Dodávka dle rámcové kupní smlouvy č. RKS-2026-014."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "LUM-A3-64",
+        "ean": null,
+        "name": "Mobilní telefon Lumeo A3, 64 GB",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 15,
+      "unitPrice": 4290.00,
+      "totalPrice": 64350.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "LUM-A7-128",
+        "ean": null,
+        "name": "Mobilní telefon Lumeo A7, 128 GB",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 7990.00,
+      "totalPrice": 47940.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 112290.00,
+      "tax": 23580.90,
+      "total": 135870.90
+    }
+  ],
+  "totals": {
+    "totalBase": 112290.00,
+    "totalVat": 23580.90,
+    "totalAmount": 135870.90,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "it.hardware",
+      "rowExceptions": []
+    }
+  }
+}

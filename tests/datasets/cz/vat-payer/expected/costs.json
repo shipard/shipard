@@ -5,6 +5,11 @@
     "cost": 3905.19
   },
   {
+    "messageId": "MSG-CORPUS-VP-1101",
+    "currency": "EUR",
+    "cost": 8389.98
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0601",
     "currency": "EUR",
     "cost": 108060.42
@@ -50,6 +55,11 @@
     "cost": 25496.20
   },
   {
+    "messageId": "MSG-CORPUS-VP-1201",
+    "currency": "CZK",
+    "cost": 116890.00
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0102",
     "currency": "CZK",
     "cost": 9691.80
@@ -90,6 +100,11 @@
     "cost": 45179.90
   },
   {
+    "messageId": "MSG-CORPUS-VP-1102",
+    "currency": "EUR",
+    "cost": 8997.34
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0502",
     "currency": "EUR",
     "cost": 11324.52
@@ -98,5 +113,10 @@
     "messageId": "MSG-CORPUS-VP-0802",
     "currency": "USD",
     "cost": 5305.48
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1202",
+    "currency": "CZK",
+    "cost": 112290.00
   }
 ]

@@ -139,9 +139,12 @@ export function reviewParty(party, t) {
  * Efektivní kód a sazba DPH řádku — to, co applier zapíše na doklad
  * (`_resolve.rows[i].vatCode.createPayload`); u samovyměření 21 %, i když
  * dodavatel uvádí 0 %. Bez napárovaného kódu null (sazba z canonicalu).
+ * Řádek dokladu mimo české DPH (`matchedBy: "outOfScope"`, #89) kód ani
+ * sazbu nemá — `withoutVat: true`, sazba dodavatele se neukazuje.
  */
 export function effectiveRowVat(block) {
   if (block?.status !== 'matched') return null;
+  if (block.matchedBy === 'outOfScope') return { code: null, pct: null, withoutVat: true };
   const payload = block.createPayload ?? {};
   return { code: payload.code ?? null, pct: payload.pct ?? null };
 }
@@ -150,11 +153,12 @@ export function effectiveRowVat(block) {
  * Řádky canonicalu → data `DocRows` (D45): popis = text řádku složený
  * serverem (`_resolve.rows[i].rowText`, #84), bez něj název položky, bez
  * obojího „—“ (chybějící vytěžení je informace); ceny z přepočtu dokladem
- * (`computedRowPrices` podle indexu, #97), sazba z efektivního kódu DPH;
+ * (`computedRowPrices` podle indexu, #97), sazba z efektivního kódu DPH
+ * (u dokladu mimo české DPH text „bez DPH“ přes `t`);
  * textový řádek = canonical `rowKind: "text"`. `extra` pro snippety
  * review: `index`, `supplierCode`, `vatCode`.
  */
-export function reviewRows(canonical, resolve, computedRowPrices) {
+export function reviewRows(canonical, resolve, computedRowPrices, t = null) {
   const currency = textOrNull(canonical?.currency);
   return (Array.isArray(canonical?.rows) ? canonical.rows : []).map((row, i) => {
     const rowResolve = resolve?.rows?.[i] ?? null;
@@ -170,7 +174,9 @@ export function reviewRows(canonical, resolve, computedRowPrices) {
       quantity: textOrNull(row?.quantity),
       unit: textOrNull(row?.unit),
       unitPrice: formatMoney(prices?.unitPrice ?? row?.unitPrice, currency),
-      vat: pct === null || pct === undefined || pct === '' ? null : `${pct} %`,
+      vat: effVat?.withoutVat
+        ? (t ? t('exchange.preview.vatCode.withoutVat') : null)
+        : (pct === null || pct === undefined || pct === '' ? null : `${pct} %`),
       total: formatMoney(prices?.totalPrice ?? row?.totalPrice, currency),
       supplierCode: textOrNull(row?.item?.supplierCode),
       vatCode: effVat?.code ?? null,
@@ -182,7 +188,8 @@ export function reviewRows(canonical, resolve, computedRowPrices) {
  * Rekapitulace a součty (přepočet `_resolve.computed`, nebo canonical) →
  * data `DocTotals` (D52, D55): hodnoty s měnou, zaokrouhlení jen když je
  * nenulové, bez přepočtu v domácí měně. Řádek rekapitulace nese navíc
- * `vatCode` a `isReversePair` pro snippet `rate` (`DocTotals` je nečte).
+ * `vatCode`, `subject` (předmět plnění přenesení) a `isReversePair` pro
+ * snippet `rate` (`DocTotals` je nečte).
  */
 export function reviewTotals(recapRows, totals, currency) {
   const cur = textOrNull(currency);
@@ -193,6 +200,8 @@ export function reviewTotals(recapRows, totals, currency) {
     tax: formatMoney(r?.tax, cur),
     total: formatMoney(r?.total, cur),
     vatCode: textOrNull(r?.vatCode),
+    // Předmět plnění skupiny u tuzemského přenesení (#89 D12) — pro snippet `rate`.
+    subject: textOrNull(r?.reverseChargeCode),
     isReversePair: r?.isReversePair === true,
   }));
   const summary = totals

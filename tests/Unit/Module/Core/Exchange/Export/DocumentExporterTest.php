@@ -638,4 +638,28 @@ class DocumentExporterTest extends TestCase
 
         $this->assertSame([], (new DocumentExporter($db))->exportAll());
     }
+
+
+    /** Předmět plnění tuzemského přenesení (#89 D10): na řádku i v rekapitulaci, jen když ho nesou. */
+    public function testReverseChargeSubjectIsExportedOnRowAndRecap(): void
+    {
+        $db = $this->db(
+            rows: [
+                ['vat_code' => 'cz-150', 'reverse_charge_code' => '14'] + $this->itemRowRow(),
+                ['id' => 2, 'vat_code' => 'cz-120', 'reverse_charge_code' => null] + $this->itemRowRow(),
+            ],
+            recap: [
+                ['id' => 1, 'doc_head' => 100, 'vat_code' => 'cz-150', 'vat_pct' => '21.00', 'base' => '1500.00',
+                    'tax' => '0.00', 'total' => '1500.00', 'is_reverse_pair' => 0, 'order_pos' => 0, 'reverse_charge_code' => '14'],
+                ['id' => 2, 'doc_head' => 100, 'vat_code' => 'cz-120', 'vat_pct' => '21.00', 'base' => '1500.00',
+                    'tax' => '315.00', 'total' => '1815.00', 'is_reverse_pair' => 0, 'order_pos' => 1, 'reverse_charge_code' => null],
+            ],
+        );
+        $c = (new DocumentExporter($db))->exportDocument($this->headRow())->data;
+
+        $this->assertSame(['code' => 'cz-150', 'pct' => 21.0, 'reverseChargeCode' => '14'], $c['rows'][0]['vat']);
+        $this->assertSame(['code' => 'cz-120', 'pct' => 21.0], $c['rows'][1]['vat'], 'řádek bez přenesení beze změny');
+        $this->assertSame('14', $c['vatRecap'][0]['reverseChargeCode']);
+        $this->assertArrayNotHasKey('reverseChargeCode', $c['vatRecap'][1]);
+    }
 }

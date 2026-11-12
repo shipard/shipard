@@ -10,6 +10,10 @@
     // Řádek seznamu dokladů: datum splatnosti.
     "row.dueDate": { "name": "due {date}", "name:cs": "splat. {date}", "name:en": "due {date}" },
 
+    // Rekapitulace DPH v detailu dokladu: předmět plnění tuzemského
+    // přenesení daňové povinnosti u sazby (#89 D14).
+    "recap.reverseChargeSubject": { "name": "subject {code}", "name:cs": "předmět plnění {code}", "name:en": "subject {code}" },
+
     // Číselné řady — řádek seznamu: vazba řady na pokladnu / sklad (kód).
     "row.cashDesk": { "name": "Cash desk {code}", "name:cs": "Pokladna {code}", "name:en": "Cash desk {code}" },
     "row.warehouse": { "name": "Warehouse {code}", "name:cs": "Sklad {code}", "name:en": "Warehouse {code}" },

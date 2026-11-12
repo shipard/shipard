@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Vat\Reports;
 
+use Shipard\Module\Economy\Accounting\AccountingRules;
 use Shipard\Core\Reports\ReportBuilder;
 use Shipard\Core\Reports\ReportColumn;
 use Shipard\Core\Reports\ReportMessage;
@@ -154,7 +155,10 @@ final class VatReturnLiveBuilder implements ReportBuilder
      */
     private function crossCheckMessages(ReportRequest $request, VatReportSupport $support, array $docs, bool $cs): array
     {
-        $check    = (new VatJournalCrossCheck($request->db, $support->vatCodes($request)))->check($docs);
+        // Analytiky podle týchž pravidel předpisu jako účtování dokladů (#89 D9).
+        $rules        = AccountingRules::resolve($request->config, $request->db->getDibiConnection());
+        $accountRules = is_array($rules) && is_array($rules['accounts'] ?? null) ? $rules['accounts'] : [];
+        $check    = (new VatJournalCrossCheck($request->db, $support->vatCodes($request), $accountRules))->check($docs);
         $messages = [];
         foreach ($check['differences'] as $diff) {
             $messages[] = new ReportMessage(

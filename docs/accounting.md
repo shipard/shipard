@@ -529,8 +529,9 @@ Specifika `src: vat`:
         {"cat": "receivables",      "accountMask": "311"},
         {"cat": "payables",         "accountMask": "321"},
 
-        // DPH analytiky per kód — 55 mapovacích řádků, konvence 343{NNN}
-        // (generováno z vat-cz.jsonc, úplnost hlídá VatAnalyticsCompletenessTest)
+        // DPH analytiky per kód — konvence 343{NNN} (generováno z vat-cz.jsonc,
+        // úplnost hlídá VatAnalyticsCompletenessTest); jediná výjimka 343117
+        // pro cz-115 + předmět plnění 5, viz Konvence DPH analytik
         {"cat": "vat", "accountMask": "343110", "query": {"vat_code": "cz-110"}},
         {"cat": "vat", "accountMask": "343111", "query": {"vat_code": "cz-111"}},
         // ... všechny kódy s možnou nenulovou daní ...
@@ -903,6 +904,19 @@ podle `is_error`.
   řady kvůli zpětně datovaným a migrovaným dokladům + cíle
   `reverseVatCode`); úplnost vůči číselníku i seed rozvrhům hlídá
   `VatAnalyticsCompletenessTest`.
+- **Výjimka podle předmětu plnění** (#89 D9): odpočet u tuzemského
+  přenesení daňové povinnosti (`cz-115`) s předmětem plnění `5` (zboží
+  z přílohy č. 5) se účtuje na **343117** — řádek
+  `{"vat_code": "cz-115", "reverse_charge_code": "5"}` stojí **před**
+  obecným řádkem `cz-115` (první odpovídající vyhrává; `query` se
+  vyhodnocuje nad řádkem rekapitulace, který předmět nese). Důvod: deník
+  po reimportu sedí po účtech se starým systémem (kód `EUCZ117`); ostatní
+  předměty jdou na 343115. Kódy přenesení DP5 a účet 343152 zanikly.
+  Stejná pravidla čtou i místa mimo engine — zaúčtování přiznání
+  (uzávěrka analytik, `VatReturnAccountingService`) a křížová kontrola
+  přiznání proti deníku (`VatJournalCrossCheck`) — přes `VatAnalytics`
+  a sdílené vyhodnocení `RuleQuery::matches()`; nové pravidlo zpřesněné
+  dalším sloupcem rekapitulace tak platí všude najednou.
 - **Zahraničí (budoucí OSS)**: `343{CC}{NNN}` (`de-120` → `343DE120`).
   Zahraniční účty se **neprovisionují** do každého DS — vzniknou on-demand
   s budoucím OSS úkolem (enablement per stát = doprovisionování účtů +

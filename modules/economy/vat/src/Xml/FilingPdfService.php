@@ -210,7 +210,9 @@ final class FilingPdfService implements FilingPdfRenderer
                     'label' => trim(implode(' · ', array_filter([
                         (string) ($row['partner_vat_id'] ?? ''),
                         self::date($row['vat_dppd'] ?? null),
-                        $row['kod_pred_pl'] !== null ? 'kód ' . (int) $row['kod_pred_pl'] : '',
+                        trim((string) ($row['reverse_charge_code'] ?? '')) !== ''
+                            ? 'kód ' . trim((string) $row['reverse_charge_code'])
+                            : '',
                     ]))),
                     'cells' => [
                         self::money((float) $row['base1'] + (float) $row['base2'] + (float) $row['base3']),

@@ -1,9 +1,10 @@
 # Task: Kontrolní hlášení — ruční režim zařazení dokladu (`cs_mode`) — #77
 
-**Stav:** částečně — shpd hotové 2026-09-11 (4 commity: sloupec + kalkulátor, formuláře
-+ help, živé KH, canonical import/export), `ds-upgrade` na 4l3j i btpg-p. Zbývá `old_shipard`
-`DocsRunner` (`vatCS` → `vat.controlStatementMode`, David), reimport `btpg-p`, přepočet
-konceptů KH a zlatý test; ruční proklik formuláře v prohlížeči
+**Stav:** hotovo — 2026-11-11 (shpd 2026-09-11, 4 commity: sloupec + kalkulátor, formuláře
++ help, živé KH, canonical import/export; `old_shipard` `DocsRunner` a reimport `btpg-p`
+proběhly; zlatý test KH 01/2026 nad `btpg-p` 2026-11-11 má jediný rozdíl — známou výjimku
+F3-7 (nulový doklad), tolerance se pro ni vědomě nezavádí, test proto formálně neprochází;
+ruční proklik formulářů hotový; #77 zavřeno)
 **Issue:** #77
 **Návaznost:** `economy.vat` živé KH (`ControlStatementCalculator`, `tasks/taxes-phase01.md`),
 snapshot podání (`economy_vat_filing_items.kh_section`, `tasks/vat-filings.md`), canonical
@@ -63,14 +64,15 @@ jako starý Shipard (`heads.vatCS`), aby import migrovaných dokladů dal stejn�
 
 - [x] Testy zelené (5 849 unit, integrační `FilingComposerTest` na 4l3j); `ds-upgrade`
       na 4l3j a btpg-p; select je ve formuláři FVB/FPB (ověřeno přes `/_ui/form` meta,
-      **proklik v prohlížeči zbývá**).
+      proklik v prohlížeči 2026-11-11).
 - [x] Živé KH i snapshot podání respektují režim 1/2/3, A4 bez DIČ varuje
       (`ControlStatementCalculatorTest`, `FilingComposerTest`, sloupec Zařazení ověřen
       přes `report-run`).
 - [x] Dataset dump → seed zachová režim; canonical `exclude` → `cs_mode = 3`
       (`DocumentExporterTest`, `DocumentApplierTest`).
-- [ ] Po reimportu `btpg-p` zlatý test KH 01/2026 bez rozdílů mimo F3-1 a známou výjimku
-      (nulový doklad) — čeká na `old_shipard`.
+- [x] Po reimportu `btpg-p` zlatý test KH 01/2026 bez rozdílů mimo známou výjimku
+      (nulový doklad) — ověřeno 2026-11-11: tři řádky B2 vynucené ručním režimem se
+      spárovaly, rozdíly z F3-1 zmizely.
 
 ## Poznámky z implementace
 

@@ -168,6 +168,18 @@
             "length": 20,
             "nullable": true
         },
+        // Předmět plnění u tuzemského přenesení daňové povinnosti (#89 D7) —
+        // kód z číselníku world.vat.<země>.reverseChargeSubjects ("4", "4a",
+        // "14" …), jen u kódu DPH s příznakem reverseCharge; jinde NULL.
+        {
+            "id": "reverse_charge_code",
+            "name": "Reverse charge subject",
+            "name:cs": "Předmět plnění",
+            "name:en": "Reverse charge subject",
+            "type": "varchar",
+            "length": 3,
+            "nullable": true
+        },
         {
             "id": "vat_pct",
             "name": "VAT %",

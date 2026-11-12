@@ -330,7 +330,7 @@ final class VatOutputsMapping
         return $this->forCode($vatCode)['dp3'];
     }
 
-    /** @return ?array{group: string, kodPredPl?: int} */
+    /** @return ?array{group: string} Skupina KH; předmět plnění A.1 / B.1 nese rekapitulace dokladu (#89 D13). */
     public function kh(string $vatCode): ?array
     {
         return $this->forCode($vatCode)['kh'];

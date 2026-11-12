@@ -502,7 +502,7 @@ s někdejšími stavy extrahovaných dokumentů (tabulka
 **Confidence pásma nejsou perzistentní stav.** Pásmo `ready` / `review` /
 `low` počítá za běhu `AnalysisConfidenceResolver` z `confidence` běhu vs.
 thresholds profilu (`confidence_thresholds`, fallback
-`{"ready": 0.9, "review": 0.6}`), se stropem podle pokrytí řádků — viz
+`{"ready": 0.9, "review": 0.6}`), se stropem pásma — viz
 „Obohacení řádků z historie" níže. Používá ho dashboard (kind karty),
 detail zprávy (badge) a preview; nikam se nezapisuje.
 
@@ -558,7 +558,7 @@ i pro nenapárované a přeskočené řádky:
 }
 ```
 
-**Strop pásma (D7, #118 D15):** `AnalysisConfidenceResolver::capBand`
+**Strop pásma (D7, #118 D15, #89 D17):** `AnalysisConfidenceResolver::capBand`
 — jediná metoda stropu pro feed i detail zprávy — sníží runtime pásmo
 `ready` na `review`, pokud po enrichmentu existuje item řádek bez
 `item.ourCode`, **nebo** řádek doplněný enrichmentem s confidence `low`
@@ -567,7 +567,11 @@ i pro nenapárované a přeskočené řádky:
 canonicalu (`CanonicalValueValidator`, `docs/exchange-format.md` →
 Normalizace a validace hodnot) vrátí nález — nevalidní IČO, DIČ, PSČ,
 číslo účtu, IBAN, BIC, nebo IBAN ↔ číslo účtu opravený z redundance
-(`_resolve.valueRepairs`). Kontační řádky (`acc.record` / `accSide`)
+(`_resolve.valueRepairs`), **nebo** jde o přijatý doklad se zvláštním
+místem plnění od dodavatele mimo tuzemsko, který by applier založil Bez
+DPH s varováním `vat_special_place` (`capsSpecialPlace()` — podmínka širší
+než rozhodnutí applieru, nikdy užší; taxonomii štítků volající předává,
+`docs/dashboard.md` § 5.1). Kontační řádky (`acc.record` / `accSide`)
 položku nemají validně — stropu se netýkají. Strop se počítá za běhu při
 každém čtení (feed, detail, preview) — nic se nepersistuje.
 

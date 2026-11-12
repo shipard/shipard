@@ -11,7 +11,7 @@ Dvě věci, které tabulka umožňuje a bez kterých by podání bylo jen čísl
   doklad se změnil, přidal nebo vypadl (podle `doc_head` + `vat_code` + `vat_pct`);
 - **výklad obsahu i po změně konfigurace** — výsledek mapování je
   materializovaný (`dp3_row`, `dp3_col`, `kh_group`, `kh_section`,
-  `kh_kod_pred_pl`, `sh_kod`), takže XML jde regenerovat i po pozdější
+  `kh_reverse_charge_code`, `sh_kod`), takže XML jde regenerovat i po pozdější
   úpravě `vat-reports-cz.jsonc`.
 
 Systémová tabulka bez docStates — vlastníkem je podání, zapisuje výhradně
@@ -44,7 +44,7 @@ Systémová tabulka bez docStates — vlastníkem je podání, zapisuje výhradn
 | `dp3_col` | varchar(10), nullable | `full` / `reduced` — sloupec odpočtu u ř. 40/41/43/44 |
 | `kh_group` | varchar(10), nullable | Skupina z configu (`A1`/`A2`/`A4A5`/`B1`/`B2B3`) — před rozpadem |
 | `kh_section` | varchar(5), nullable | Sekce po rozpadu enginem (`A1`…`B3`) — to, co reálně šlo do hlášení |
-| `kh_kod_pred_pl` | tinyint, nullable | Kód PDP (4 / 5) |
+| `kh_reverse_charge_code` | varchar(3), nullable | Kód předmětu plnění z rekapitulace dokladu (`4`, `4a`, `14` …). Nahradil tinyint `kh_kod_pred_pl` (#89 D13), který v databázi zůstává nepoužitý |
 | `sh_kod` | tinyint, nullable | Kód plnění DPHSHV (0 zboží, 3 služby) |
 
 ## Indexy

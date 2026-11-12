@@ -37,6 +37,7 @@ nebo druhý, druhý se dopočte v Fázi 2 výpočtu řádku.
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `vat_code` | varchar(20), nullable | Kód DPH (např. `cz-110`). Bez fixního cfgItem — odvozuje se z `vat_registration` na hlavičce dynamicky. Pole se chová jako volný string s enforcementem na úrovni aplikace |
+| `reverse_charge_code` | varchar(3), nullable | Předmět plnění u tuzemského přenesení daňové povinnosti (`4`, `4a`, `14` … z `world.vat.{country}.reverseChargeSubjects`). Jen u kódu DPH s příznakem `reverseCharge`; u jiného kódu se při uložení nuluje (#89 D7) |
 | `vat_pct` | numeric(5,2) | Resolvované procento (z `world.vat.{country}.vatPercents` podle DUZP) |
 
 `vat_code` je v Phase 1 schválně `varchar` místo `enumString` — framework

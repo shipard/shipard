@@ -151,16 +151,26 @@ final class MailSuggestionsSource implements FeedSource
 
         $resolver = new AnalysisConfidenceResolver($ctx->db);
         $thresholdsByProfile = [];
+        // Taxonomie štítků jednou za sběr — strop zvláštního místa plnění (#89 D17).
+        $contentTags = AnalysisConfidenceResolver::contentTagsFrom($ctx->config);
         // Jeden presenter per sběr — verzi výchozího profilu čte jednou.
         $presenter = new AnalysisErrorPresenter($ctx->db, $ctx->config);
         $preprocess = new PreprocessErrorPresenter($ctx->config);
         $texts = FeedTexts::forContext($ctx, self::FEED_TEXTS_CFG_ITEM);
 
-        $cards = [];
-        foreach ($suggestionRows as $row) {
-            $attachments = $attachmentsByMessage[(int) $row['message_ndx']] ?? [];
+        // Návrhy se dekódují předem: štítky položek pokrytých řádků se čtou
+        // jedním dotazem na sběr, ne na kartu (#89 D19).
+        $canonicals = [];
+        foreach ($suggestionRows as $i => $row) {
             $canonical = json_decode((string) ($row['canonical_json'] ?? ''), true);
-            $canonical = is_array($canonical) ? $canonical : [];
+            $canonicals[$i] = is_array($canonical) ? $canonical : [];
+        }
+        $itemTags = AnalysisConfidenceResolver::itemTagsFor($ctx->db, $contentTags, $canonicals);
+
+        $cards = [];
+        foreach ($suggestionRows as $i => $row) {
+            $attachments = $attachmentsByMessage[(int) $row['message_ndx']] ?? [];
+            $canonical = $canonicals[$i];
 
             // Nevalidní výstup běhu (forenzní wrapper z /result) → chybová
             // karta s reanalyze, návrh nelze použít.
@@ -182,6 +192,8 @@ final class MailSuggestionsSource implements FeedSource
             $band = $resolver->capBand(
                 $resolver->bandFor((float) ($row['confidence'] ?? 0.0), $thresholdsByProfile[$profileKey]),
                 $canonical,
+                $contentTags,
+                $itemTags,
             );
 
             $cards[] = $this->withPreprocessWarning(

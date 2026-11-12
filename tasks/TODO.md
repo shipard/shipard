@@ -154,3 +154,60 @@ nebo varianta podle `selfParty`.
 
 **Priorita:** nízká — z došlé pošty chodí jen přijaté doklady; vystavené
 přes náhled jdou jen z importu / API.
+
+---
+
+## Návrh se zahraniční DPH: kód z historie řádků ruší doklad Bez DPH
+
+**Zjištěno:** 11/2026 při ověření `exchange-received-foreign-vat.md` (#89, task A).
+
+Doklad od dodavatele mimo tuzemsko, který účtuje vlastní DPH, vzniká
+z návrhu Bez DPH (#89 D2). Neplatí to, když některý řádek dostane kód
+DPH z historie řádků (`RowHistoryEnricher`) a kontrola souladu ho nechá
+projít: `DocumentApplier::outOfScopeKind()` u ponechaného kódu
+(`matchedBy: "input"`) vrací `null` a doklad zůstane se samovyměřením,
+i když na něm dodavatel daň účtuje. Kontrola souladu
+(`VatCodeDerivation::conflict()`) kód samovyměření odmítne jen při
+`vat.reverseCharge: false`; při `null` (typicky ISDOC od dodavatele z EU,
+`tasks/einvoice-reader-reverse-charge.md`) ho nezpochybní.
+
+Chování je stejné jako před #89 (dřív by takový doklad prošel se
+samovyměřením také); případ je úzký — dodavatel, od kterého dřív přišel
+doklad se samovyměřením, pošle fakturu s vlastní DPH a bez příznaku
+přenesení.
+
+**Směr řešení:** v `conflict()` brát kladnou sazbu řádku u místa mimo
+tuzemsko a kódu samovyměření jako rozpor i při `reverseCharge: null`,
+nebo aspoň warning v náhledu.
+
+**Priorita:** nízká.
+
+---
+
+## Periodická fakturace: řádek předpisu s kódem přenesení nemá předmět plnění
+
+**Zjištěno:** 11/2026 při `vat-reverse-charge-subjects.md` (#89, task B).
+
+Řádek fakturačního předpisu zakázky (`economy_work_orders_rows`) nese
+`vat_code`, ale ne předmět plnění. `WorkOrderRowsForm` nabízí všechny
+tuzemské výstupní kódy včetně kódů přenesení daňové povinnosti
+(`cz-150` / `cz-151` / `cz-350`) a `WorkOrderRowDocument` kód nijak
+neomezuje. `InvoiceBuilder` pak do canonicalu posílá jen `rows[].vat.code`.
+
+Od #89 D10 je kód přenesení bez předmětu v applieru error
+`reverse_charge_code_missing` (i u generovaných dokladů), takže
+`InvoicingRunService::applyCanonical()` skončí výjimkou, období zůstane
+naplánované bez dokladu a běh u zakázky hlásí chybu. Dřív by faktura
+vznikla (s kódem DP4 / DP5 a předmětem z definice kódu).
+
+**Směr řešení:** sloupec `reverse_charge_code` na řádku předpisu (stejná
+pravidla jako řádek dokladu — `ReverseChargeSubjects`, pole ve formuláři
+jen u kódu přenesení, platnost k datu vystavení faktury), `InvoiceBuilder`
+ho pošle v `rows[].vat.reverseChargeCode`, import zakázek
+(`shpd.workOrders.workOrder.v1`) a datová sada pole ponesou. Do té doby
+uživatelská dokumentace říká, že takovou fakturu je třeba vystavit ručně
+(`help/co-dnes-nejde.md`).
+
+**Priorita:** střední — periodicky fakturované stavební nebo montážní
+práce v režimu přenesení jsou reálný případ; chyba je hlasitá, ne tichá.
+

@@ -117,14 +117,14 @@ class VatModeDerivationTest extends TestCase
 
     public function testNoPayTaxRecapConfirmsDeclaredFromBase(): void
     {
-        // PDP (cz-117): Σ řádků == recap base; informativní daň v recap
+        // PDP (cz-115): Σ řádků == recap base; informativní daň v recap
         // total. Derivace vrátí 1 == deklarovaný mode → žádná korekce.
         $canonical = [
             'rows' => [
-                ['rowKind' => 'item', 'totalPrice' => 10000.00, 'vat' => ['code' => 'cz-117', 'pct' => 21]],
+                ['rowKind' => 'item', 'totalPrice' => 10000.00, 'vat' => ['code' => 'cz-115', 'pct' => 21]],
             ],
             'vatRecap' => [
-                ['vatCode' => 'cz-117', 'vatPct' => 21, 'base' => 10000.00, 'tax' => 2100.00, 'total' => 12100.00],
+                ['vatCode' => 'cz-115', 'vatPct' => 21, 'base' => 10000.00, 'tax' => 2100.00, 'total' => 12100.00],
             ],
         ];
         $this->assertSame(1, VatModeDerivation::derive($canonical));
@@ -136,7 +136,7 @@ class VatModeDerivationTest extends TestCase
         // refBase ≈ refTotal derivaci vyřadí.
         $canonical = [
             'rows' => [
-                ['rowKind' => 'item', 'totalPrice' => 10000.00, 'vat' => ['code' => 'cz-117', 'pct' => 21]],
+                ['rowKind' => 'item', 'totalPrice' => 10000.00, 'vat' => ['code' => 'cz-115', 'pct' => 21]],
             ],
             'totals' => [
                 'totalBase' => 10000.00, 'totalAmount' => 10000.00,

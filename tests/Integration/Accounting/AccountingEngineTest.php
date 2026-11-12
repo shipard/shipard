@@ -490,6 +490,52 @@ class AccountingEngineTest extends IntegrationTestCase
     }
 
     /**
+     * #89 D9: tuzemské přenesení se dvěma předměty plnění na jednom kódu —
+     * odpočet u předmětu 5 jde na 343117 (pravidlo předpisu zpřesněné
+     * `reverse_charge_code`), ostatní předměty na 343115; oddanění obou
+     * skupin na 343203.
+     */
+    public function testInvniDomesticPdpSubjectFiveBooksDeductionOnItsOwnAnalytic(): void
+    {
+        $headId = $this->insertHead('invni', [
+            'total_base' => 3000.0, 'total_vat' => 0.0, 'total_amount' => 3000.0,
+            'total_base_dom' => 3000.0, 'total_vat_dom' => 0.0, 'total_amount_dom' => 3000.0,
+        ]);
+        $this->insertRow($headId, 'purchase.other', 2000.0, 21.0, ['vat_code' => 'cz-115', 'reverse_charge_code' => '4']);
+        $this->insertRow($headId, 'purchase.other', 1000.0, 21.0, ['vat_code' => 'cz-115', 'reverse_charge_code' => '5']);
+        $order = 0;
+        foreach ([['4', 2000.0, 420.0], ['5', 1000.0, 210.0]] as [$subject, $base, $tax]) {
+            $this->insertRecap($headId, $base, $tax, [
+                'vat_code' => 'cz-115', 'total' => $base, 'total_dom' => $base, 'sum_tax' => 0,
+                'reverse_charge_code' => $subject, 'order_pos' => $order++,
+            ]);
+            $this->insertRecap($headId, $base, $tax, [
+                'vat_code' => 'cz-203', 'is_reverse_pair' => 1, 'order_pos' => $order++,
+                'sum_base' => 0, 'sum_tax' => 0, 'sum_total' => 0, 'reverse_charge_code' => $subject,
+            ]);
+        }
+
+        $result = $this->engine->accountDocument($headId);
+
+        $this->assertSame(1, $result['state'], 'PDP vstup musí být vyrovnaný: ' . json_encode($result['messages']));
+        $journal = $this->journalOf($headId);
+        $this->assertBalanced($journal);
+
+        $turnover = static function (array $journal, string $account, string $column): float {
+            $sum = 0.0;
+            foreach ($journal as $line) {
+                if (str_starts_with((string) $line['account_number'], $account)) {
+                    $sum += (float) $line[$column];
+                }
+            }
+            return $sum;
+        };
+        $this->assertEqualsWithDelta(420.0, $turnover($journal, '343115', 'money_dr'), 0.001, 'předmět 4 na 343115');
+        $this->assertEqualsWithDelta(210.0, $turnover($journal, '343117', 'money_dr'), 0.001, 'předmět 5 na 343117');
+        $this->assertEqualsWithDelta(630.0, $turnover($journal, '343203', 'money_cr'), 0.001, 'oddanění obou skupin');
+    }
+
+    /**
      * Vlna C: invni s odpočtem poskytnuté zálohy — odpočet je na dokladu
      * záporný (−5 000 základ, −1 050 DPH), reverseSign ho otočí na kladný
      * DAL; rekapitulace záporné řádky netuje (5 000 / 1 050). Účet dohledá

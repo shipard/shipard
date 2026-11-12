@@ -181,6 +181,11 @@ final class CorrectiveDocBuilder
         if ($vatCode !== null) {
             // Jen kód — sazbu určí applier k datu původního plnění (U4).
             $out['vat'] = ['code' => $vatCode];
+            // Opravný doklad přebírá předmět plnění původního řádku (#89 D10).
+            $subject = V::str($r['reverse_charge_code'] ?? null);
+            if ($subject !== null) {
+                $out['vat']['reverseChargeCode'] = $subject;
+            }
         }
         if ($description !== null) {
             $out['description'] = $description;

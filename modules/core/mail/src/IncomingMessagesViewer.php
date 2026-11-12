@@ -797,7 +797,15 @@ class IncomingMessagesViewer extends TableViewer
         if (!$aiFailed && $resolution === null) {
             $resolver = new AnalysisConfidenceResolver($this->db);
             $profileNdx = $analysis['profile'] !== null ? (int) $analysis['profile'] : null;
-            $band = $resolver->bandForAnalysis($confidence, $profileNdx, $canonical);
+            $contentTags = AnalysisConfidenceResolver::contentTagsFrom($this->config);
+            $band = $resolver->bandForAnalysis(
+                $confidence,
+                $profileNdx,
+                $canonical,
+                $contentTags,
+                // Štítky položek pokrytých řádků — jeden dotaz na zprávu (#89 D19).
+                AnalysisConfidenceResolver::itemTagsFor($this->db, $contentTags, [$canonical]),
+            );
         }
 
         $docState = (int) ($record['docState'] ?? 0);

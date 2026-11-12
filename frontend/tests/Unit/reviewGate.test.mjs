@@ -43,6 +43,17 @@ test('pendingPaths: položky řádků v pořadí, rozhodnutí null se nepočít�
   assert.deepEqual(pendingPaths(resolve, { 'rows[0].item': 'noItem', 'rows[2].item': 'useExisting:3' }), []);
 });
 
+test('doklad mimo české DPH: řádek bez kódu na rozhodnutí nečeká, ale ovládání má (#89)', () => {
+  const block = { status: 'matched', matchedBy: 'outOfScope' };
+  const resolve = {
+    vatCodeOptions: [{ code: 'cz-217' }],
+    rows: [{ item: { status: 'matched', id: 1 }, vatCode: block }],
+  };
+  assert.deepEqual(pendingPaths(resolve, {}), []);
+  assert.equal(hasControl({ kind: 'vatCode', block }, { interactive: true }), true);
+  assert.equal(hasControl({ kind: 'vatCode', block }, { interactive: false }), false);
+});
+
 test('pendingPaths: kód DPH notFound chce useCode z nabídky', () => {
   const resolve = {
     vatCodeOptions: [{ code: 'IN21' }, { code: 'IN12' }],
@@ -111,6 +122,45 @@ test('hasControl: read-only nic; napárovaná strana a účet ne; položka a kó
   assert.equal(hasControl({ kind: 'party', block: null }, { interactive: true }), false);
 });
 
+// Předmět plnění u tuzemského přenesení (#89 D12): řádek s kódem přenesení
+// bez předmětu blokuje Použít, dokud uživatel nezvolí předmět z nabídky.
+test('předmět plnění: chybějící nebo neznámý čeká na useValue z nabídky', () => {
+  const resolve = {
+    reverseChargeOptions: [{ code: '4' }, { code: '4a' }, { code: '14' }],
+    rows: [
+      { vatCode: { status: 'matched' }, reverseChargeCode: { value: null, source: null, status: 'notFound' } },
+      { vatCode: { status: 'matched' }, reverseChargeCode: { value: '99', source: 'document', status: 'notFound' } },
+      { vatCode: { status: 'matched' }, reverseChargeCode: { value: '4', source: 'document', status: 'matched' } },
+      { vatCode: { status: 'matched' } },
+    ],
+  };
+  assert.deepEqual(
+    reviewReferences(resolve).filter((r) => r.kind === 'reverseChargeCode').map((r) => r.path),
+    ['rows[0].reverseChargeCode', 'rows[1].reverseChargeCode', 'rows[2].reverseChargeCode'],
+    'řádek bez kódu přenesení referenci nemá',
+  );
+  assert.deepEqual(pendingPaths(resolve, {}), ['rows[0].reverseChargeCode', 'rows[1].reverseChargeCode']);
+  assert.deepEqual(
+    pendingPaths(resolve, { 'rows[0].reverseChargeCode': 'useValue:14', 'rows[1].reverseChargeCode': 'useValue:99' }),
+    ['rows[1].reverseChargeCode'],
+    'volba mimo nabídku nestačí',
+  );
+  assert.deepEqual(
+    pendingPaths(resolve, { 'rows[0].reverseChargeCode': 'useCode:14', 'rows[1].reverseChargeCode': 'useValue:4a' }),
+    ['rows[0].reverseChargeCode'],
+    'předmět se volí akcí useValue, ne useCode',
+  );
+  // Odznak je klikací i u předmětu převzatého z dokladu; read-only náhled ovládání nemá.
+  const matched = resolve.rows[2].reverseChargeCode;
+  assert.equal(hasControl({ kind: 'reverseChargeCode', block: matched }, { interactive: true }), true);
+  assert.equal(hasControl({ kind: 'reverseChargeCode', block: matched }, { interactive: false }), false);
+  // Prázdná nabídka: blokující cesta zůstává (a má ovládání — panel řekne proč).
+  assert.deepEqual(
+    pendingPaths({ ...resolve, reverseChargeOptions: [] }, { 'rows[0].reverseChargeCode': 'useValue:14' }),
+    ['rows[0].reverseChargeCode', 'rows[1].reverseChargeCode'],
+  );
+});
+
 // Pravidlo D98 (#103): každá cesta, kterou brána vrací jako blokující, má
 // v náhledu ovládání. Nová blokující cesta bez větve v hasControl nebo bez
 // tabulky entity tu padne — i když má náhled jinak všechno správně.
@@ -125,14 +175,24 @@ test('pravidlo D98: každá blokující cesta má ovládání', () => {
         customer: block(status),
         supplierBank: block(status),
         customerBank: block(status),
-        rows: statuses.map((s) => ({ item: block(s), vatCode: block(s), unit: block(s), account: block(s) })),
+        reverseChargeOptions: vatCodeOptions.length > 0 ? [{ code: '4' }] : [],
+        rows: statuses.map((s) => ({
+          item: block(s), vatCode: block(s), unit: block(s), account: block(s),
+          reverseChargeCode: { status: s === 'matched' ? 'matched' : 'notFound', value: null, source: null },
+        })),
       };
       const refs = reviewReferences(resolve);
       for (const ref of refs) {
-        assert.ok(ref.kind === 'vatCode' || REFERENCE_TABLES[ref.kind], `druh ${ref.kind} má tabulku entity`);
+        assert.ok(
+          ref.kind === 'vatCode' || ref.kind === 'reverseChargeCode' || REFERENCE_TABLES[ref.kind],
+          `druh ${ref.kind} má tabulku entity`,
+        );
       }
       const controlled = new Set(refs.filter((r) => hasControl(r, { interactive: true })).map((r) => r.path));
-      for (const userActions of [{}, { supplier: 'useExisting:9', 'rows[1].item': 'skip', 'rows[2].vatCode': 'useCode:IN21' }]) {
+      for (const userActions of [{}, {
+        supplier: 'useExisting:9', 'rows[1].item': 'skip', 'rows[2].vatCode': 'useCode:IN21',
+        'rows[3].reverseChargeCode': 'useValue:4',
+      }]) {
         for (const path of pendingPaths(resolve, userActions)) {
           assert.ok(controlled.has(path), `blokující cesta ${path} (stav ${status}, nabídka ${vatCodeOptions.length}) nemá ovládání`);
         }

@@ -36,6 +36,16 @@ class DocRowsDocument extends Document
     {
         $result = new ValidationResult();
 
+        // Předmět plnění tuzemského přenesení (#89 D7): hodnota mimo číselník
+        // nebo neplatná k datu sazby je chyba vždy; chybějící předmět hlídá
+        // až potvrzení dokladu. Nezávisí na konfiguraci pohybů níže.
+        if ((int) ($data['row_kind'] ?? 1) === 1 && !empty($data[ReverseChargeSubjects::COLUMN])) {
+            $problem = ReverseChargeSubjects::lineProblem($this->db, $this->config, $data);
+            if ($problem !== null) {
+                $result->addError(ReverseChargeSubjects::COLUMN, $problem['message'], $problem['code']);
+            }
+        }
+
         $head = $this->loadHeadContext($data['doc_head'] ?? null);
         $cfg = $this->config?->cfgItem('docs.core.rowOperations');
         if ($head === null || !is_array($cfg)) {
@@ -76,6 +86,9 @@ class DocRowsDocument extends Document
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
         parent::beforeSave($data, $originalData);
+        // Předmět plnění smí nést jen řádek s kódem přenesení (#89 D7) — po
+        // změně kódu DPH se nuluje bez hlášky.
+        ReverseChargeSubjects::normalizeLine($this->db, $this->config, $data);
         if ($originalData !== null) {
             return;
         }

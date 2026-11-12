@@ -122,6 +122,11 @@ test('formatAddress / formatMoney: prázdné je null', () => {
 test('effectiveRowVat: jen napárovaný kód', () => {
   assert.deepEqual(effectiveRowVat({ status: 'matched', createPayload: { code: 'cz-217', pct: 21 } }), { code: 'cz-217', pct: 21 });
   assert.equal(effectiveRowVat({ status: 'canCreate' }), null);
+  // #89: řádek dokladu mimo české DPH — vyřešený, ale bez kódu a sazby.
+  assert.deepEqual(
+    effectiveRowVat({ status: 'matched', matchedBy: 'outOfScope' }),
+    { code: null, pct: null, withoutVat: true },
+  );
   assert.equal(effectiveRowVat(null), null);
 });
 
@@ -155,6 +160,16 @@ test('reviewRows: text řádku ze serveru, ceny z přepočtu, sazba z kódu, ext
   });
 });
 
+test('reviewRows: řádek dokladu mimo české DPH má „bez DPH“ místo sazby dodavatele a žádný kód', () => {
+  const canonical = { currency: 'EUR', rows: [{ item: { name: 'Ubytování' }, unitPrice: 100, totalPrice: 200, vat: { pct: 7 } }] };
+  const resolve = { rows: [{ vatCode: { status: 'matched', matchedBy: 'outOfScope' } }] };
+  const prices = new Map([[0, { unitPrice: 107, totalPrice: 214 }]]);
+  const rows = reviewRows(canonical, resolve, prices, (key) => (key === 'exchange.preview.vatCode.withoutVat' ? 'bez DPH' : key));
+  assert.equal(rows[0].vat, 'bez DPH');
+  assert.equal(rows[0].vatCode, null);
+  assert.match(rows[0].total, /214,00/);
+});
+
 test('reviewRows: bez resolve název položky a ceny z canonicalu, bez ničeho „—“', () => {
   const rows = reviewRows({ currency: 'EUR', rows: [{ item: { name: 'Věc' }, unitPrice: 10, totalPrice: 10, vat: { pct: 21 } }, {}] }, null, null);
   assert.equal(rows[0].description, 'Věc');
@@ -176,6 +191,9 @@ test('reviewTotals: rekapitulace s kódem a dvojicí, souhrn, zaokrouhlení jen 
   assert.equal(totals.recap[0].vatCode, 'cz-217');
   assert.equal(totals.recap[0].isReversePair, false);
   assert.equal(totals.recap[1].isReversePair, true);
+  assert.equal(totals.recap[0].subject, null);
+  // Předmět plnění skupiny u tuzemského přenesení (#89 D12).
+  assert.equal(reviewTotals([{ vatPct: 21, base: 1, tax: 0, total: 1, vatCode: 'cz-115', reverseChargeCode: '4a' }], null, 'CZK').recap[0].subject, '4a');
   assert.match(totals.summary.total, /121,00/);
   assert.equal(totals.summary.rounding, null);
   assert.equal(totals.domestic, null);

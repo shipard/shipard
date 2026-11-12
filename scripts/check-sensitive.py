@@ -38,6 +38,13 @@ ALLOWED = {
     "shpd-font-size-base",
     "ab12-cd34-ef56-gh78",  # příklad --ds-id v docs/cli.md a DsCreateCommandTest
     "4l3j-z0bz-kz39-echj",  # ukázkový/testovací DS — z anonymizace vyjmutý (CLAUDE.md → Zdroje dat ve veřejných textech)
+    # Testovací zdroje dat korpusu (seed sad cz-vat-payer / cz-non-payer /
+    # cz-association) — jejich ID nese pole `dataSource` schváleného snímku
+    # hlavní knihy (tests/corpus/cz/profiles/<profil>/approved/, kopie
+    # v tests/datasets/cz/<profil>/expected/); vyjmuté stejně jako 4l3j.
+    "ob9b-79rj-8ytg-45ii",
+    "r1lf-wrb4-s7ed-2l0v",
+    "wp66-o35z-tl9n-rt1t",
 }
 
 # Skupiny, ze kterých se skládají zjevně syntetická ID (testovací fixtures,

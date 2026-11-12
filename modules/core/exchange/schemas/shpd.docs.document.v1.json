@@ -306,7 +306,8 @@
                 "base":          { "type": ["number", "null"] },
                 "tax":           { "type": ["number", "null"] },
                 "total":         { "type": ["number", "null"] },
-                "isReversePair": { "type": ["boolean", "null"] }
+                "isReversePair": { "type": ["boolean", "null"] },
+                "reverseChargeCode": { "type": ["string", "null"] }
             }
         },
         "Attachment": {

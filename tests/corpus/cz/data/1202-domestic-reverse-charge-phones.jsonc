@@ -1,0 +1,31 @@
+// Varianta 12, podoba pdfIsdoc — mobilní telefony s přenesením daňové povinnosti (cs-b),
+// předmět plnění 14; ISDOC nese kód předmětu v LocalReverseChargeCode.
+{
+	"variant": "domestic-reverse-charge-phones",
+	"form": "pdfIsdoc",
+	"supplier": "fonarium",
+	"docNumber": "FV-26-03902",
+	"paymentReference": "2603902",
+	"dates": { "issue": "2026-10-06", "tax": "2026-10-05", "due": "2026-10-20" },
+	"currency": "CZK",
+	"vatTreatment": "reverseCharge",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.hardware",
+	"rows": [
+		{ "text": "Mobilní telefon Lumeo A3, 64 GB", "supplierCode": "LUM-A3-64", "qty": 15, "unit": "ks", "unitPrice": 4290.00, "vatPct": 0, "reverseChargeCode": "14" },
+		{ "text": "Mobilní telefon Lumeo A7, 128 GB", "supplierCode": "LUM-A7-128", "qty": 6, "unit": "ks", "unitPrice": 7990.00, "vatPct": 0, "reverseChargeCode": "14" },
+	],
+	"rounding": "none",
+	"template": "cs-b",
+	"notes": { "onDocument": "Dodávka dle rámcové kupní smlouvy č. RKS-2026-014." },
+	"overrides": {
+		"non-payer": {
+			"vatTreatment": "standard",
+			"rows": [
+				{ "text": "Mobilní telefon Lumeo A3, 64 GB", "supplierCode": "LUM-A3-64", "qty": 15, "unit": "ks", "unitPrice": 4290.00, "vatPct": 21 },
+				{ "text": "Mobilní telefon Lumeo A7, 128 GB", "supplierCode": "LUM-A7-128", "qty": 6, "unit": "ks", "unitPrice": 7990.00, "vatPct": 21 },
+			],
+		},
+		"association": "non-payer",
+	},
+}

@@ -50,6 +50,7 @@
   import { formatDate } from '../../utils/formatDate.js';
   import ResolveDecisionPanel from './ResolveDecisionPanel.svelte';
   import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
+  import ReverseChargeDecisionPanel from './ReverseChargeDecisionPanel.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import { enrichedRowCount, matchKindKey, suggestedFieldKeys } from './enrichBadge.js';
   import { REFERENCE_TABLES, bankParentPath, hasControl } from './reviewGate.js';
@@ -106,6 +107,10 @@
   // (vystavený doklad, přijatý doklad neplátce DPH, canonical bez _resolve)
   // se nic nevolí; hlavička ukazuje efektivní hodnotu se zdrojem
   // (u neplátce „Bez DPH“ / nonPayer), bez _resolve canonical jako dřív.
+  // Doklad mimo české DPH (#89: zahraniční DPH, zvláštní místo plnění,
+  // zvolené Bez DPH mimo tuzemsko) má režim „Bez DPH“ se zdrojem outOfScope
+  // a důvodem; řádky nesou blok vatCode bez kódu (matchedBy outOfScope) —
+  // odznak „bez DPH“ je klikací a volbou kódu se doklad vrátí k DPH.
   let vatCodeOptions = $derived(Array.isArray(resolve?.vatCodeOptions) ? resolve.vatCodeOptions : []);
   let vatCodeOptionCodes = $derived(new Set(vatCodeOptions.map((o) => o.code)));
   let effectiveVat = $derived(resolve?.vat ?? null);
@@ -120,6 +125,25 @@
     return out;
   });
   let bulkVatCodeVisible = $derived(vatChoiceEnabled && vatCodeRowIndices.length >= 2);
+
+  // ── Předmět plnění u tuzemského přenesení (#89 D12) ─────────────────────
+  // Blok `_resolve.rows[i].reverseChargeCode {value, source, status}` mají
+  // jen řádky, na kterých skončí kód přenesení; nabídka
+  // `_resolve.reverseChargeOptions` (předměty platné k datu sazby) je jedna
+  // na doklad. Volba jde do téže mapy rozhodnutí jako kód DPH
+  // (`rows[i].reverseChargeCode` = `useValue:<kód>`); chybějící předmět
+  // blokuje Použít (reviewGate).
+  let subjectOptions = $derived(Array.isArray(resolve?.reverseChargeOptions) ? resolve.reverseChargeOptions : []);
+  let subjectOptionCodes = $derived(new Set(subjectOptions.map((o) => o.code)));
+  let subjectRowIndices = $derived.by(() => {
+    const rows = resolve?.rows ?? [];
+    const out = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i]?.reverseChargeCode) out.push(i);
+    }
+    return out;
+  });
+  let bulkSubjectVisible = $derived(onUserActionsChange !== null && subjectRowIndices.length >= 2);
   // Sloupec Účet ukazuje účet, podle kterého se řádek zaúčtuje
   // (_resolve.rows[i].effectiveAccount, #111 D7b: účetní položka → její
   // účet, kontace / „jen účet“ / návrh → účet řádku, služba bez účtu → „—“).
@@ -262,6 +286,7 @@
     if (s === 'canCreateDecided') return '+';
     if (s === 'skipped') return '⊘';
     if (s === 'noItemDecided') return '✓';
+    if (s === 'withoutVat') return '–';
     return null;
   }
 
@@ -518,6 +543,56 @@
     };
   }
 
+  // Odznak předmětu plnění je klikací i u předmětu převzatého z dokladu —
+  // uživatel smí opravit i to, co AI opsala.
+  function openSubjectDecision(event, path, block) {
+    if (onUserActionsChange === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    decisionOpen = { anchor: event.currentTarget, path, resolveBlock: block, kind: 'reverseChargeCode', parentMatchedId: null };
+  }
+
+  function openBulkSubjectDecision(event) {
+    if (!bulkSubjectVisible) return;
+    event.preventDefault();
+    event.stopPropagation();
+    decisionOpen = {
+      anchor: event.currentTarget,
+      path: null,
+      resolveBlock: null,
+      kind: 'reverseChargeCode',
+      parentMatchedId: null,
+      bulkPaths: subjectRowIndices.map((i) => `rows[${i}].reverseChargeCode`),
+    };
+  }
+
+  // Platná volba předmětu v mapě rozhodnutí (z nabídky), jinak null.
+  function chosenSubject(path) {
+    const ua = onUserActionsChange !== null ? (userActions[path] ?? null) : null;
+    const code = typeof ua === 'string' && ua.startsWith('useValue:') ? ua.slice('useValue:'.length) : null;
+    return code !== null && subjectOptionCodes.has(code) ? code : null;
+  }
+
+  // Předmět, který řádek ponese: platná volba (i před příchodem nového
+  // náhledu), jinak ověřená hodnota ze serveru.
+  function effectiveSubject(path, block) {
+    return chosenSubject(path) ?? (block?.status === 'matched' ? (block.value ?? null) : null);
+  }
+
+  function subjectStatusKey(path, block) {
+    if (chosenSubject(path) !== null) return 'matchedDecided';
+    if (block?.source === 'user' && block?.status === 'matched') return 'matchedDecided';
+    return statusKey(block?.status);
+  }
+
+  function subjectStatusLabel(path, block) {
+    const chosen = chosenSubject(path) ?? (block?.source === 'user' && block?.status === 'matched' ? block.value : null);
+    if (chosen !== null && chosen !== undefined) return t('exchange.preview.status.decided.useSubject', { code: chosen });
+    if (block?.status === 'matched') return t('exchange.preview.subject.fromDocument', { code: block.value });
+    if (block?.value) return t('exchange.preview.subject.unknown', { code: block.value });
+    return t('exchange.preview.subject.missing');
+  }
+
   // Volba místa plnění / režimu hlavičky; '' = automaticky (klíč smazat).
   // Změna místa smaže volby kódů řádků v témže novém objektu — kódy
   // jiného místa by byly neplatné (D15); jedno uložení, jeden refresh.
@@ -549,7 +624,22 @@
     if (block?.matchedBy === 'user') return 'matchedDecided';
     const chosen = chosenVatCode(path);
     if (chosen !== null && vatCodeOptionCodes.has(chosen)) return 'matchedDecided';
+    if (block?.matchedBy === 'outOfScope') return 'withoutVat';
     return statusKey(block?.status);
+  }
+
+  // Zdroj efektivního místa / režimu DPH v hlavičce; doklad mimo české DPH
+  // má vlastní text podle důvodu (#89).
+  function vatSourceLabel(eff) {
+    return eff.source === 'outOfScope'
+      ? t(`exchange.preview.vatChoice.source.outOfScope.${eff.reason ?? 'foreignVat'}`)
+      : t(`exchange.preview.vatChoice.source.${eff.source}`);
+  }
+
+  // Platí volba uživatele? Bez DPH mimo tuzemsko se vrací se zdrojem
+  // outOfScope a důvodem user (#89 D4).
+  function vatChoiceHonored(eff) {
+    return eff.source === 'user' || (eff.source === 'outOfScope' && eff.reason === 'user');
   }
 
   function vatCodeStatusLabel(path, block) {
@@ -558,6 +648,7 @@
     if (chosen !== null && (code !== null || vatCodeOptionCodes.has(chosen))) {
       return t('exchange.preview.status.decided.useCode', { code: chosen });
     }
+    if (block?.matchedBy === 'outOfScope') return t('exchange.preview.status.withoutVat');
     return statusLabel(block);
   }
 
@@ -717,10 +808,10 @@
   let header = $derived(reviewHeader(canonical, summary, t));
   let supplierParty = $derived(reviewParty(canonical?.supplier ?? null, t));
   let customerParty = $derived(reviewParty(canonical?.customer ?? null, t));
-  let rows = $derived(reviewRows(canonical, resolve, computedRowPrices));
+  let rows = $derived(reviewRows(canonical, resolve, computedRowPrices, t));
   let totalsData = $derived(reviewTotals(recapRows, totals, canonical?.currency ?? null));
   let issueNoticeData = $derived(issueNotice(issues));
-  let rowsAsideVisible = $derived(enrichedCount > 0 || bulkItemVisible || bulkVatCodeVisible);
+  let rowsAsideVisible = $derived(enrichedCount > 0 || bulkItemVisible || bulkVatCodeVisible || bulkSubjectVisible);
   let aiFailedItems = $derived(
     (wrapper?._validationIssues ?? []).map((issue) => ({ text: issue?.message ?? '', meta: issue?.path ?? '' })),
   );
@@ -867,16 +958,16 @@
         {/each}
       </select>
       <span class="shpd-exchange__field-hint">
-        {chosen !== null && eff.source !== 'user'
+        {chosen !== null && !vatChoiceHonored(eff)
           ? t('exchange.preview.vatChoice.overridden', { value: effLabel })
-          : t(`exchange.preview.vatChoice.source.${eff.source}`)}
+          : vatSourceLabel(eff)}
       </span>
     </span>
     {:else}
     <span>
       {eff ? effLabel : display.text}
       {#if eff}
-        <span class="shpd-exchange__field-hint">{t(`exchange.preview.vatChoice.source.${eff.source}`)}</span>
+        <span class="shpd-exchange__field-hint">{vatSourceLabel(eff)}</span>
       {:else if display.isDefault}
         <span class="shpd-exchange__field-hint">{t('exchange.preview.defaultHint')}</span>
       {/if}
@@ -893,7 +984,10 @@
     {@const path = `rows[${i}].vatCode`}
     {@const modifier = vatCodeStatusKey(path, block)}
     {@const label = vatCodeStatusLabel(path, block)}
-    {#if hasControl({ kind: 'vatCode', block }, { interactive: onUserActionsChange !== null })}
+    {#if modifier === 'withoutVat' && onUserActionsChange === null}
+      <!-- Read-only náhled: text „bez DPH“ ve sloupci stačí, odznak bez
+           ovládání by nic neřekl. -->
+    {:else if hasControl({ kind: 'vatCode', block }, { interactive: onUserActionsChange !== null })}
       <button
         type="button"
         class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
@@ -901,6 +995,40 @@
         data-testid="review-ref:{path}"
         data-status={modifier}
         onclick={(e) => openVatCodeDecision(e, path, block)}
+      >
+        <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
+      </button>
+    {:else}
+      <span class="shpd-exchange__status shpd-exchange__status--{modifier}" title={label}>
+        <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
+      </span>
+    {/if}
+  {/if}
+{/snippet}
+
+
+<!-- Předmět plnění řádku s kódem tuzemského přenesení (#89 D12): text
+     „předmět 4a“ / „předmět chybí“ a odznak stavu, klikací i u předmětu
+     z dokladu. Chybějící předmět je blokující cesta — ovládání má vždy (D98). -->
+{#snippet subjectBadge(i, block)}
+  {#if block && statusKey(block.status)}
+    {@const path = `rows[${i}].reverseChargeCode`}
+    {@const modifier = subjectStatusKey(path, block)}
+    {@const label = subjectStatusLabel(path, block)}
+    {@const subject = effectiveSubject(path, block)}
+    <span class="shpd-exchange__row-code" data-testid="review-subject:{i}">
+      {subject !== null
+        ? t('exchange.preview.subject.short', { code: subject })
+        : t('exchange.preview.subject.shortMissing')}
+    </span>
+    {#if hasControl({ kind: 'reverseChargeCode', block }, { interactive: onUserActionsChange !== null })}
+      <button
+        type="button"
+        class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
+        title={label}
+        data-testid="review-ref:{path}"
+        data-status={modifier}
+        onclick={(e) => openSubjectDecision(e, path, block)}
       >
         <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
       </button>
@@ -938,6 +1066,15 @@
         variant="secondary"
         label={t('exchange.preview.vatCode.bulkButton', { count: vatCodeRowIndices.length })}
         onclick={openBulkVatCodeDecision}
+      />
+    {/if}
+    {#if bulkSubjectVisible}
+      <Button
+        size="sm"
+        variant="secondary"
+        label={t('exchange.preview.subject.bulkButton', { count: subjectRowIndices.length })}
+        testid="review-ref-bulk:reverseChargeCode"
+        onclick={openBulkSubjectDecision}
       />
     {/if}
   </span>
@@ -990,6 +1127,7 @@
     <span class="shpd-exchange__row-code">{row.vatCode}</span>
   {/if}
   {@render vatCodeBadge(i, resolve?.rows?.[i]?.vatCode)}
+  {@render subjectBadge(i, resolve?.rows?.[i]?.reverseChargeCode)}
 {/snippet}
 
 <!-- Řádek složeného režimu (D45): „množství jednotka × cena · sazba kód“
@@ -1012,6 +1150,7 @@
       <span class="shpd-exchange__row-code">{row.vatCode}</span>
     {/if}
     {@render vatCodeBadge(i, vatBlock)}
+    {@render subjectBadge(i, resolve?.rows?.[i]?.reverseChargeCode)}
   {/if}
   {#if acc}
     {' \u00b7 '}<span class="shpd-exchange__row-code" title={acc.name ?? ''}>{acc.number}</span>
@@ -1044,6 +1183,9 @@
   {r.rate ?? '—'}
   {#if r.vatCode}
     <span class="shpd-exchange__row-code">{r.vatCode}</span>
+  {/if}
+  {#if r.subject}
+    <span class="shpd-exchange__row-code">{t('exchange.preview.subject.short', { code: r.subject })}</span>
   {/if}
   {#if r.isReversePair}
     <span class="shpd-exchange__recap-pair">{t('exchange.preview.recap.reversePair')}</span>
@@ -1175,7 +1317,19 @@
     {#if decisionOpen?.kind === 'vatCode'}
       <VatCodeDecisionPanel
         options={vatCodeOptions}
+        withoutVat={effectiveVat?.mode?.source === 'outOfScope'}
         currentUserAction={decisionOpen?.path != null ? userActions[decisionOpen.path] ?? null : null}
+        bulkCount={decisionOpen?.bulkPaths?.length ?? 0}
+        bulkDecidedCount={decisionOpen?.bulkPaths
+          ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
+          : 0}
+        onDecide={handleDecide}
+      />
+    {:else if decisionOpen?.kind === 'reverseChargeCode'}
+      <ReverseChargeDecisionPanel
+        options={subjectOptions}
+        currentUserAction={decisionOpen?.path != null ? userActions[decisionOpen.path] ?? null : null}
+        documentValue={decisionOpen?.resolveBlock?.status === 'matched' ? decisionOpen.resolveBlock.value ?? null : null}
         bulkCount={decisionOpen?.bulkPaths?.length ?? 0}
         bulkDecidedCount={decisionOpen?.bulkPaths
           ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
@@ -1392,6 +1546,13 @@
   .shpd-exchange__status--skipped {
     background: var(--shpd-color-text-secondary);
     color: var(--shpd-color-bg);
+  }
+
+  /* Řádek dokladu mimo české DPH (#89) — bez kódu záměrně, ne chyba:
+     neutrální paleta, žádná zelená „napárováno“ ani červená „nenalezeno“. */
+  .shpd-exchange__status--withoutVat {
+    background: var(--shpd-color-bg-secondary);
+    color: var(--shpd-color-text-secondary);
   }
 
   /* noItem — řádek půjde jen s účtem, bez položky. Pozitivní rozhodnutí

@@ -350,9 +350,11 @@ class DatasetExpectationsTest extends TestCase
 
             // Náklad v domácí měně, každá účtovaná částka přepočtená zvlášť (nález H):
             // plátce položky rekapitulace (samovyměření po druzích plnění — nález G), bez DPH
-            // celková částka; neplátce řádky s DPH dodavatele dorovnané na rekapitulaci.
+            // celková částka; neplátce řádky s DPH dodavatele dorovnané na rekapitulaci —
+            // stejně tak doklad mimo české DPH u plátce (#89 D2).
             $cost = 0.0;
-            foreach ($vatPayer ? self::payerCostLines($doc) : self::nonPayerGrossRows($doc) as $line) {
+            $payerLines = $vatPayer && !self::outOfCzechVat($doc);
+            foreach ($payerLines ? self::payerCostLines($doc) : self::nonPayerGrossRows($doc) as $line) {
                 $cost = round($cost + self::cents($line, $rate), 2);
             }
             $record = $costs[$id] ?? [];
@@ -541,6 +543,27 @@ class DatasetExpectationsTest extends TestCase
      *
      * @return list<float>
      */
+    /**
+     * Doklad mimo české DPH (#89 D2) — zrcadlo `reporting.out_of_czech_vat`:
+     * místo plnění mimo tuzemsko, bez přenesení daňové povinnosti,
+     * rekapitulace nese daň dodavatele.
+     *
+     * @param array<string, mixed> $doc
+     */
+    private static function outOfCzechVat(array $doc): bool
+    {
+        $place = $doc['vat']['place'] ?? null;
+        if ($place === null || $place === 'domestic' || ($doc['vat']['reverseCharge'] ?? null) === true) {
+            return false;
+        }
+        foreach ($doc['vatRecap'] ?? [] as $entry) {
+            if ((int) $entry['vatPct'] !== 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static function payerCostLines(array $doc): array
     {
         $recap = (array) ($doc['vatRecap'] ?? []);

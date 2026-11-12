@@ -26,8 +26,9 @@ class VatOutputsMappingTest extends TestCase
         $this->assertSame(['group' => 'B2B3'], $mapping->kh('cz-110'));
         $this->assertNull($mapping->sh('cz-110'));
 
-        $this->assertSame(['group' => 'B1', 'kodPredPl' => 4], $mapping->kh('cz-115'));
-        $this->assertSame(['group' => 'B1', 'kodPredPl' => 5], $mapping->kh('cz-117'));
+        // Předmět plnění mapování nenese — čte se z rekapitulace dokladu (#89 D13).
+        $this->assertSame(['group' => 'B1'], $mapping->kh('cz-115'));
+        $this->assertSame(['group' => 'A1'], $mapping->kh('cz-150'));
         $this->assertSame(['row' => 40, 'col' => 'reduced'], $mapping->dp3('cz-118'));
         $this->assertSame(['kod' => 0], $mapping->sh('cz-201'));
         $this->assertSame(['kod' => 3], $mapping->sh('cz-202'));

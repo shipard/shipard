@@ -874,7 +874,7 @@ abstract class DocsHeadsFormBase extends TableForm
         $out = [];
         foreach (array_values($rows) as $i => $row) {
             $cells = ['order_pos' => $this->rowNumber($row, $i)];
-            $cells['vat_code'] = $this->vatCodeLabel((string) ($row['vat_code'] ?? ''), $parentData);
+            $cells['vat_code'] = $this->vatCodeLabelWithSubject($row, $parentData);
             $this->putCell($cells, 'vat_pct', SubtableCellFormatter::trimmedNumber($row['vat_pct'] ?? null, 2));
 
             foreach (['base' => 'sum_base', 'tax' => 'sum_tax', 'total' => 'sum_total'] as $col => $flag) {
@@ -931,6 +931,16 @@ abstract class DocsHeadsFormBase extends TableForm
         } else {
             $columns[] = ['id' => 'total_price', 'label' => $this->subtableLabel($t, 'total_price', 'Cena celkem'), 'align' => 'right'];
         }
+        // Předmět plnění tuzemského přenesení (#89 D14) — sloupec jen když ho
+        // aspoň jeden řádek nese; doklady bez přenesení zůstávají beze změny.
+        $subjectColumn = ReverseChargeSubjects::COLUMN;
+        $hasSubject = $hasVat && array_filter(
+            $rows,
+            static fn (array $row): bool => ReverseChargeSubjects::value($row[$subjectColumn] ?? null) !== null,
+        ) !== [];
+        if ($hasSubject) {
+            $columns[] = ['id' => $subjectColumn, 'label' => $this->subtableLabel($t, $subjectColumn, 'Předmět plnění')];
+        }
 
         $units = $this->loadUnitShortcuts($rows);
 
@@ -962,6 +972,9 @@ abstract class DocsHeadsFormBase extends TableForm
                 $this->putCell($cells, 'vat_pct', SubtableCellFormatter::trimmedNumber($row['vat_pct'] ?? null, 2));
                 $this->putCell($cells, 'vat_amount', SubtableCellFormatter::money($row['vat_amount'] ?? null));
                 $this->putCell($cells, 'vat_total', SubtableCellFormatter::money($row['vat_total'] ?? null));
+                if ($hasSubject) {
+                    $this->putCell($cells, $subjectColumn, ReverseChargeSubjects::value($row[$subjectColumn] ?? null));
+                }
             } else {
                 $this->putCell($cells, 'total_price', SubtableCellFormatter::money($row['total_price'] ?? null));
             }
@@ -1954,7 +1967,7 @@ abstract class DocsHeadsFormBase extends TableForm
             $html .= '<tr class="' . $rowClass . '">';
             $html .= "<td rowspan=\"{$rowSpan}\">{$lineNo}.</td>";
             $html .= "<td rowspan=\"{$rowSpan}\">"
-                . htmlspecialchars($this->vatCodeLabel($code, $data)) . '</td>';
+                . htmlspecialchars($this->vatCodeLabelWithSubject($r, $data)) . '</td>';
             $html .= "<td rowspan=\"{$rowSpan}\">{$pct} %</td>";
             $html .= '<td>' . strtoupper(htmlspecialchars($currency)) . '</td>';
             $html .= '<td' . ($sumBase ? '' : ' class="grayed"') . '>'
@@ -2130,6 +2143,21 @@ abstract class DocsHeadsFormBase extends TableForm
     }
 
     /** @param array<string, mixed> $data */
+    /**
+     * Popisek kódu DPH řádku rekapitulace doplněný o předmět plnění
+     * tuzemského přenesení (#89 D14) — dvě skupiny se stejným kódem a sazbou
+     * se liší jen jím.
+     *
+     * @param array<string, mixed> $recapRow
+     * @param array<string, mixed> $data hlavička
+     */
+    protected function vatCodeLabelWithSubject(array $recapRow, array $data): string
+    {
+        $label = $this->vatCodeLabel((string) ($recapRow['vat_code'] ?? ''), $data);
+        $subject = ReverseChargeSubjects::value($recapRow[ReverseChargeSubjects::COLUMN] ?? null);
+        return $subject === null ? $label : "{$label} · předmět plnění {$subject}";
+    }
+
     protected function vatCodeLabel(string $code, array $data): string
     {
         if ($code === '') {

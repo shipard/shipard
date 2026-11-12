@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Dataset\Verify;
 
 use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
+use Shipard\Module\Core\Exchange\Document\SupplierVatPrices;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\World\Vat\VatRateResolver;
 
@@ -36,7 +37,6 @@ final class ApplyFidelityCheck implements VerifyCheck
     /** @var array<string, string> cesta uzlu projekce → důvod (odkaz na kód) */
     public const EXCEPTIONS = [
         'rows[].item.supplierCode' => 'kód dodavatele se učí per položka a dodavatel (`economy_items_supplier_codes`, DocumentApplier::learnSupplierCodes, INSERT IGNORE) — účetní položka sdílená více řádky nese jen první; export ho nenese (DocumentExporter::rows)',
-        'rows[].vat.reverseChargeCode' => 'kód předmětu plnění nese kód DPH řádku (VatCodeDerivation: cz-115 ↔ kód 4), řádek ho neukládá; hlídá kontrola DPH přes KH B.1 (kodPredPl)',
         'rows[].item.ean' => 'applier EAN neukládá — economy_items sloupec ean má, učení per položka (jako kód dodavatele) chybí; export ho nenese (#103 nález D, schváleno 2026-10-20)',
     ];
 
@@ -73,6 +73,25 @@ final class ApplyFidelityCheck implements VerifyCheck
         'totals.totalVat'      => 'neplátce DPH neeviduje (#97)',
     ];
 
+    /**
+     * Doklad mimo české DPH u plátce (#89 D2): dodavatel mimo tuzemsko
+     * účtuje vlastní daň — doklad vznikne Bez DPH s daní v cenách řádků,
+     * stejné uzly jako u neplátce. Ke schválení (docs/test-corpus.md § 17).
+     *
+     * @var array<string, string>
+     */
+    public const EXCEPTIONS_OUT_OF_SCOPE = [
+        'rows[].unitPrice'     => 'doklad mimo české DPH ukládá cenu řádku s daní dodavatele (#89 D2, DocumentApplier::outOfScopeKind / SupplierVatPrices)',
+        'rows[].totalPrice'    => 'doklad mimo české DPH ukládá cenu řádku s daní dodavatele (#89 D2)',
+        'rows[].priceCalcMode' => 'převod na cenu s daní zapíše fromTotal (#89 D2)',
+        'rows[].discountPct'   => 'sleva se rozpustí do ceny s daní, procento se neukládá (#89 D2)',
+        'rows[].vat'           => 'řádek dokladu mimo české DPH nemá kód ani sazbu DPH (#89 D1)',
+        'vat.mode'             => 'doklad mimo české DPH ukládá vat_mode 0 = none (#89 D2)',
+        'vatRecap'             => 'doklad mimo české DPH nemá rekapitulaci DPH (#89 D2)',
+        'totals.totalBase'     => 'základ = částka včetně daně dodavatele (#89 D2)',
+        'totals.totalVat'      => 'zahraniční daň se v české DPH neeviduje (#89 D2)',
+    ];
+
     /** @var array<string, string> doklad v cizí měně (#103 D79, schváleno 2026-10-20) */
     public const EXCEPTIONS_FOREIGN_CURRENCY = [
         'exchangeRate' => 'papír kurz nenese, applier ho doplní z kurzovního lístku k účetnímu datu (#121 D6, DocumentApplier::exchangeRateDecision); hodnotu i datum hlídá kontrola Kurzy (ExchangeRateCheck) proti expected/exchange-rates.json',
@@ -95,7 +114,8 @@ final class ApplyFidelityCheck implements VerifyCheck
 
     /**
      * Výjimky platné pro doklad: vždy + bez DPH + bez splatnosti / VS
-     * + zdroj dat bez agendy DPH + cizí měna (jen když je známa domácí měna).
+     * + zdroj dat bez agendy DPH nebo doklad mimo české DPH u plátce
+     * + cizí měna (jen když je známa domácí měna).
      *
      * @param array<string, mixed>|null $proposal canonical návrhu
      * @return array<string, string> cesta uzlu projekce → důvod
@@ -121,8 +141,26 @@ final class ApplyFidelityCheck implements VerifyCheck
         }
         if (!$vatAgenda) {
             $out += self::EXCEPTIONS_NON_PAYER;
+        } elseif (self::proposalOutOfCzechVat($proposal)) {
+            $out += self::EXCEPTIONS_OUT_OF_SCOPE;
         }
         return $out;
+    }
+
+    /**
+     * Návrh, který u plátce vznikne mimo české DPH (#89 D2): místo plnění
+     * mimo tuzemsko, bez přenesení daňové povinnosti a s daní dodavatele —
+     * stejné signály jako DocumentApplier, čtené z návrhu (ne z dokladu,
+     * jinak by výjimka zakryla i doklad, který Bez DPH vzniknout neměl).
+     *
+     * @param array<string, mixed>|null $proposal
+     */
+    private static function proposalOutOfCzechVat(?array $proposal): bool
+    {
+        $place = $proposal['vat']['place'] ?? null;
+        return in_array($place, ['intracom', 'thirdCountry'], true)
+            && ($proposal['vat']['reverseCharge'] ?? null) !== true
+            && SupplierVatPrices::carriesSupplierVat((array) $proposal);
     }
 
     public function run(VerifyContext $ctx): CheckResult

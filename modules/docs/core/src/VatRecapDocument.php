@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Docs\Core;
 
 use Shipard\Core\Document\Document;
+use Shipard\Core\Document\ValidationResult;
 
 /**
  * Document pro `docs_core_vat_recap` — existuje jen pro **převzatou**
@@ -24,12 +25,31 @@ use Shipard\Core\Document\Document;
 class VatRecapDocument extends Document
 {
     /**
+     * Předmět plnění tuzemského přenesení (#89 D7): hodnota mimo číselník
+     * nebo neplatná k datu sazby je chyba vždy; chybějící předmět u kódu
+     * přenesení hlídá až potvrzení dokladu (`DocDocument::validate`).
+     */
+    public function validate(array &$data): ValidationResult
+    {
+        $result = parent::validate($data);
+        if (empty($data['is_reverse_pair']) && !empty($data[ReverseChargeSubjects::COLUMN])) {
+            $problem = ReverseChargeSubjects::lineProblem($this->db, $this->config, $data);
+            if ($problem !== null) {
+                $result->addError(ReverseChargeSubjects::COLUMN, $problem['message'], $problem['code']);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Nový řádek rekapitulace bez pořadí dostane MAX(order_pos) + 1
      * v rámci dokladu — stejná úmluva jako u řádků dokladu.
      */
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
         parent::beforeSave($data, $originalData);
+        // Předmět jen u kódu přenesení a u oddaňovacího páru (#89 D7).
+        ReverseChargeSubjects::normalizeLine($this->db, $this->config, $data);
         if ($originalData !== null || (int) ($data['order_pos'] ?? 0) > 0) {
             return;
         }

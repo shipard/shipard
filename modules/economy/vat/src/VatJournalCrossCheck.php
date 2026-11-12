@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Vat;
 
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Economy\Accounting\VatAnalytics;
 
 /**
  * Křížová kontrola živého přiznání proti účetnímu deníku (D1): součty daně
  * per kód DPH z `vat_recap` výběru vs. 343 analytiky deníku za tentýž výběr
  * dokladů — dvě nezávislé cesty ke stejným číslům.
  *
- * Konvence analytik `343{NNN}` z `cz-NNN` (docs/accounting.md §5). Strana
+ * Analytika řádku rekapitulace = táž pravidla předpisu, podle kterých účtuje
+ * engine ({@see VatAnalytics::masks()}): konvence `343{NNN}` z `cz-NNN`
+ * (docs/accounting.md §5) a výjimka podle předmětu plnění tuzemského
+ * přenesení (343117 pro cz-115 + předmět 5, #89 D9). Bez pravidel předpisu
+ * platí jen konvence. Strana
  * v deníku dle směru kódu: vstup (odpočet) = MD, výstup = D — párové řádky
  * samovyměření nesou výstupní kód, takže znaménko vychází ze směru kódu
  * (tatáž konvence jako AccountingEngine::buildVatLines).
@@ -24,10 +29,14 @@ final class VatJournalCrossCheck
     /**
      * @param array<string, array<string, mixed>> $vatCodes Definice kódů
      *        z world.vat (klíč = kód; používá se pole `direction`).
+     * @param list<array<string, mixed>> $accountRules Sekce `accounts`
+     *        efektivního účtovacího předpisu (`AccountingRules::resolve()`);
+     *        prázdná = jen konvence `343{NNN}`.
      */
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly array $vatCodes,
+        private readonly array $accountRules = [],
     ) {}
 
     /**
@@ -39,12 +48,26 @@ final class VatJournalCrossCheck
      */
     public function check(array $docs): array
     {
-        $recapByCode = [];
+        // Očekávaný netto zůstatek (MD − D) per analytika: vstupní kód
+        // (odpočet) je MD (+daň), výstupní D (−daň).
+        $expectedByAccount = [];
         foreach ($docs as $doc) {
             foreach ($doc['recap'] ?? [] as $row) {
                 $code = (string) $row['vat_code'];
-                $recapByCode[$code] = ($recapByCode[$code] ?? 0.0) + (float) $row['tax_dom'];
+                if (!str_contains($code, '-')) {
+                    continue;
+                }
+                $account   = $this->analyticAccount($code, $row['reverse_charge_code'] ?? null);
+                $direction = (string) ($this->vatCodes[$code]['direction'] ?? 'input');
+                $tax       = (float) $row['tax_dom'];
+                $expectedByAccount[$account] = [
+                    'vatCode' => $code,
+                    'net'     => ($expectedByAccount[$account]['net'] ?? 0.0) + ($direction === 'input' ? $tax : -$tax),
+                ];
             }
+        }
+        foreach ($expectedByAccount as $account => $expected) {
+            $expectedByAccount[$account]['net'] = round($expected['net'], 2);
         }
 
         $journalByAccount = [];
@@ -70,23 +93,6 @@ final class VatJournalCrossCheck
             }
         }
 
-        // Očekávaný netto zůstatek (MD − D) per analytika dle konvence
-        // 343{NNN}: vstupní kód (odpočet) je MD (+daň), výstupní D (−daň).
-        $expectedByAccount = [];
-        foreach ($recapByCode as $code => $tax) {
-            $dash = strpos($code, '-');
-            if ($dash === false) {
-                continue;
-            }
-            $account   = '343' . substr($code, $dash + 1);
-            $direction = (string) ($this->vatCodes[$code]['direction'] ?? 'input');
-            $net       = $direction === 'input' ? $tax : -$tax;
-            $expectedByAccount[$account] = [
-                'vatCode' => $code,
-                'net'     => round(($expectedByAccount[$account]['net'] ?? 0.0) + $net, 2),
-            ];
-        }
-
         $accounts = array_unique(array_merge(array_keys($expectedByAccount), array_keys($journalByAccount)));
         sort($accounts);
 
@@ -107,5 +113,21 @@ final class VatJournalCrossCheck
         }
 
         return ['differences' => $differences, 'journalErrorRows' => $errorRows];
+    }
+
+    /**
+     * Analytika 343 řádku rekapitulace: první maska pravidla předpisu, která
+     * je číslem účtu; maska se zástupnými znaky nebo chybějící pravidla =
+     * konvence `343{NNN}`.
+     */
+    private function analyticAccount(string $code, mixed $subject): string
+    {
+        $subject = trim((string) ($subject ?? ''));
+        foreach (VatAnalytics::masks($this->accountRules, $code, $subject !== '' ? $subject : null) as $mask) {
+            if (preg_match('/^[0-9A-Z]+$/', $mask) === 1) {
+                return $mask;
+            }
+        }
+        return '343' . substr($code, (int) strpos($code, '-') + 1);
     }
 }

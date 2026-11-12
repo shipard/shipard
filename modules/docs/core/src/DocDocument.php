@@ -189,6 +189,7 @@ abstract class DocDocument extends Document
             $this->validateRowOperations($data, $result);
         }
 
+        $this->validateReverseChargeSubjects($data, $result, $newState === 40);
         $this->validateDeclaredRecap($data, $result);
         $this->validateTotalRounding($data, $result);
 
@@ -370,6 +371,11 @@ abstract class DocDocument extends Document
         if ($rows === []) {
             return;
         }
+        // Stejný klíč skupiny jako při výpočtu — validate() běží před
+        // beforeSave, řádky i rekapitulace jsou tu ještě nenormalizované.
+        $vatCodes = $this->resolveVatCodesForDoc($data)['codes'] ?? null;
+        $this->normalizeReverseChargeSubjects($rows, $vatCodes);
+        $this->normalizeReverseChargeSubjects($recap, $vatCodes);
         $fromTotal = (int) ($data['vat_mode'] ?? 1) === 2;
 
         $sums = [];
@@ -377,7 +383,7 @@ abstract class DocDocument extends Document
             if ((int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
                 continue;
             }
-            $key = $this->vatGroupKey($row['vat_code'], $row['vat_pct'] ?? 0);
+            $key = $this->vatGroupKeyOf($row);
             $sums[$key] ??= ['sum' => 0.0, 'count' => 0];
             $sums[$key]['sum'] += DocRowCalculator::computePrice($row)['net_total'];
             $sums[$key]['count']++;
@@ -387,7 +393,7 @@ abstract class DocDocument extends Document
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {
                 continue;
             }
-            $key = $this->vatGroupKey($r['vat_code'] ?? '', $r['vat_pct'] ?? 0);
+            $key = $this->vatGroupKeyOf($r);
             $rowSum = round($sums[$key]['sum'] ?? 0.0, 2);
             $count  = $sums[$key]['count'] ?? 0;
             $expected = round((float) ($fromTotal ? ($r['total'] ?? 0) : ($r['base'] ?? 0)), 2);
@@ -476,6 +482,81 @@ abstract class DocDocument extends Document
     protected function headPartnerRequired(): bool
     {
         return true;
+    }
+
+    /**
+     * Předmět plnění u tuzemského přenesení daňové povinnosti (#89 D7):
+     * kód DPH s příznakem `reverseCharge` ho vyžaduje při potvrzení dokladu
+     * (stav 40 — Koncept ani V opravě se bez něj uložit smí, jinak by starý
+     * doklad bez předmětu nešel otevřít k opravě); předmět mimo číselník
+     * nebo neplatný k datu sazby ({@see DocHeadVatContext::vatRateDate()})
+     * je chyba vždy. Platí i v importním módu — nic se tiše nedoplňuje.
+     *
+     * Řádky: `rows.{index}.reverse_charge_code`. Řádky převzaté rekapitulace
+     * (jen `vat_recap_source` 1 — přepočítaná vzniká z řádků): pole `recap`.
+     * Předmět u jiného kódu chybou není, při uložení se vynuluje.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateReverseChargeSubjects(
+        array &$data,
+        ValidationResult $result,
+        bool $requireFilled,
+    ): void {
+        if ((int) ($data['vat_mode'] ?? 1) === 0) {
+            return;
+        }
+        // Kandidáti = položkové řádky s kódem DPH a řádky převzaté
+        // rekapitulace; bez nich se země ani číselník nehledají.
+        $rows = array_filter(
+            $this->resolveRowsForCompute($data),
+            static fn (mixed $row): bool => is_array($row)
+                && (int) ($row['row_kind'] ?? 1) === 1 && !empty($row['vat_code']),
+        );
+        $recap = [];
+        if ((int) ($data['vat_recap_source'] ?? 0) === 1) {
+            $recap = isset($data['vatRecap']) && is_array($data['vatRecap']) && $data['vatRecap'] !== []
+                ? $data['vatRecap']
+                : $this->loadVatRecapFromDb($data['id'] ?? null);
+        }
+        if ($rows === [] && $recap === []) {
+            return;
+        }
+        $resolved = $this->resolveVatCodesForDoc($data);
+        if ($resolved === null) {
+            return;
+        }
+        $country  = $resolved['country'];
+        $vatCodes = $resolved['codes'];
+        $rateDate = DocHeadVatContext::vatRateDate($data);
+        $resolver = $this->vatRateResolver();
+
+        foreach ($rows as $i => $row) {
+            $problem = ReverseChargeSubjects::problem($resolver, $country, $vatCodes, $row, $rateDate, $requireFilled);
+            if ($problem !== null) {
+                $result->addError(
+                    "rows.{$i}." . ReverseChargeSubjects::COLUMN,
+                    $problem['message'],
+                    $problem['code'],
+                );
+            }
+        }
+
+        foreach ($recap as $r) {
+            if (!is_array($r) || !empty($r['is_reverse_pair'])) {
+                continue;
+            }
+            $problem = ReverseChargeSubjects::problem($resolver, $country, $vatCodes, $r, $rateDate, $requireFilled);
+            if ($problem !== null) {
+                $code = (string) ($r['vat_code'] ?? '');
+                $pct  = (float) ($r['vat_pct'] ?? 0);
+                $result->addError(
+                    'recap',
+                    "Rekapitulace DPH, řádek {$code} {$pct} %: {$problem['message']}.",
+                    $problem['code'],
+                );
+            }
+        }
     }
 
     /**
@@ -782,6 +863,10 @@ abstract class DocDocument extends Document
         $resolved = $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
         $rowsForCompute = $this->resolveRowsForCompute($data);
+        // Předmět plnění jen u kódů přenesení (#89 D7): řádky z payloadu se
+        // s vynulovanou hodnotou i uloží; řádky ze sub-formuláře nuluje
+        // DocRowsDocument, tady jde jen o klíč skupiny rekapitulace.
+        $this->normalizeReverseChargeSubjects($rowsForCompute, $vatCodes);
         foreach ($rowsForCompute as &$row) {
             $this->calculateRowPrice($row);
             $this->calculateRowVat($row, $vatMode, $vatCodes);
@@ -1218,7 +1303,12 @@ abstract class DocDocument extends Document
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $calcSource = (int) ($data['vat_calc_source'] ?? 0);
 
-        // 1. Group rows by (vat_code, vat_pct) — co se sčítá, určuje metoda
+        // Předmět plnění jen u kódů přenesení (#89 D7) — přímé volání mimo
+        // computeAmounts dostává řádky tak, jak jsou; idempotentní.
+        $this->normalizeReverseChargeSubjects($rows, $vatCodes);
+
+        // 1. Group rows by (vat_code, vat_pct, předmět plnění) — co se sčítá,
+        //    určuje metoda
         $grouped = $calcSource === 1
             ? $this->groupRowVatForRecap($rows)
             : $this->groupRowPricesForRecap($rows);
@@ -1258,6 +1348,7 @@ abstract class DocDocument extends Document
             $primary = [
                 'vat_code'        => $code,
                 'vat_pct'         => $entry['vat_pct'],
+                ReverseChargeSubjects::COLUMN => $entry['subject'] ?? null,
                 'base'            => $base,
                 'tax'             => $tax,
                 'total'           => round($base + $payableTax, 2),
@@ -1289,6 +1380,8 @@ abstract class DocDocument extends Document
                 $paired = [
                     'vat_code'        => $reverseCodeKey,
                     'vat_pct'         => $entry['vat_pct'],
+                    // Oddaňovací pár nese předmět své skupiny (#89 D7).
+                    ReverseChargeSubjects::COLUMN => $entry['subject'] ?? null,
                     'base'            => $base,
                     'tax'             => $tax,
                     'total'           => round($base + $tax, 2),
@@ -1321,7 +1414,7 @@ abstract class DocDocument extends Document
      * i ze součtů hlavičky zmizel.
      *
      * @param array<int, array<string, mixed>> $rows
-     * @return array<string, array{vat_code: string, vat_pct: float, price: float, base: float, tax: float}>
+     * @return array<string, array{vat_code: string, vat_pct: float, subject: ?string, price: float, base: float, tax: float}>
      */
     private function groupRowPricesForRecap(array $rows): array
     {
@@ -1330,10 +1423,11 @@ abstract class DocDocument extends Document
             if ((int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
                 continue;
             }
-            $key = $this->vatGroupKey($row['vat_code'], $row['vat_pct'] ?? 0);
+            $key = $this->vatGroupKeyOf($row);
             $grouped[$key] ??= [
                 'vat_code' => (string) $row['vat_code'],
                 'vat_pct'  => (float) ($row['vat_pct'] ?? 0),
+                'subject'  => ReverseChargeSubjects::value($row[ReverseChargeSubjects::COLUMN] ?? null),
                 'price'    => 0.0,
                 'base'     => 0.0,
                 'tax'      => 0.0,
@@ -1350,7 +1444,7 @@ abstract class DocDocument extends Document
      * hodnoty, takže recapAmountsFromRows je jen jejich součet.
      *
      * @param array<int, array<string, mixed>> $rows
-     * @return array<string, array{vat_code: string, vat_pct: float, price: float, base: float, tax: float}>
+     * @return array<string, array{vat_code: string, vat_pct: float, subject: ?string, price: float, base: float, tax: float}>
      */
     private function groupRowVatForRecap(array $rows): array
     {
@@ -1359,10 +1453,11 @@ abstract class DocDocument extends Document
             if ((int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
                 continue;
             }
-            $key = $this->vatGroupKey($row['vat_code'], $row['vat_pct'] ?? 0);
+            $key = $this->vatGroupKeyOf($row);
             $grouped[$key] ??= [
                 'vat_code' => (string) $row['vat_code'],
                 'vat_pct'  => (float) ($row['vat_pct'] ?? 0),
+                'subject'  => ReverseChargeSubjects::value($row[ReverseChargeSubjects::COLUMN] ?? null),
                 'price'    => 0.0,
                 'base'     => 0.0,
                 'tax'      => 0.0,
@@ -1576,6 +1671,11 @@ abstract class DocDocument extends Document
             $line = [
                 'vat_code'        => $code,
                 'vat_pct'         => (float) ($r['vat_pct'] ?? 0),
+                // Předmět plnění se přebírá ze vstupu (#89 D7) — jen u kódu
+                // přenesení a u oddaňovacího páru, jinde se nuluje.
+                ReverseChargeSubjects::COLUMN => $vatCodes !== null
+                    ? ReverseChargeSubjects::normalized(['vat_code' => $code] + $r, $vatCodes)
+                    : ReverseChargeSubjects::value($r[ReverseChargeSubjects::COLUMN] ?? null),
                 'base'            => $base,
                 'tax'             => $tax,
                 'total'           => $total,
@@ -1693,7 +1793,7 @@ abstract class DocDocument extends Document
     {
         $recapKeys = [];
         foreach ($recap as $r) {
-            $recapKeys[$this->vatGroupKey($r['vat_code'] ?? '', $r['vat_pct'] ?? 0)] = true;
+            $recapKeys[$this->vatGroupKeyOf($r)] = true;
         }
 
         $sum = ['base' => 0.0, 'vat' => 0.0, 'total' => 0.0, 'base_dom' => 0.0, 'vat_dom' => 0.0];
@@ -1701,7 +1801,7 @@ abstract class DocDocument extends Document
             if ((int) ($row['row_kind'] ?? 1) !== 1) {
                 continue;
             }
-            if (isset($recapKeys[$this->vatGroupKey($row['vat_code'] ?? '', $row['vat_pct'] ?? 0)])) {
+            if (isset($recapKeys[$this->vatGroupKeyOf($row)])) {
                 continue;
             }
             $sum['base']     += (float) ($row['vat_base'] ?? 0);
@@ -1953,7 +2053,7 @@ abstract class DocDocument extends Document
             if (!empty($r['is_reverse_pair'])) {
                 continue;
             }
-            $key = $this->vatGroupKey($r['vat_code'] ?? '', $r['vat_pct'] ?? 0);
+            $key = $this->vatGroupKeyOf($r);
 
             $sumBase = 0.0;
             $sumAmount = 0.0;
@@ -1964,7 +2064,7 @@ abstract class DocDocument extends Document
             foreach ($rows as $i => $row) {
                 if ((int) ($row['row_kind'] ?? 1) !== 1
                     || empty($row['vat_code'])
-                    || $this->vatGroupKey($row['vat_code'], $row['vat_pct'] ?? 0) !== $key
+                    || $this->vatGroupKeyOf($row) !== $key
                 ) {
                     continue;
                 }
@@ -2040,10 +2140,57 @@ abstract class DocDocument extends Document
     /**
      * Normalized group key matching buildVatRecapitulation's grouping —
      * pct via float cast so '21.00' (DB) and 21.0 (recap) compare equal.
+     *
+     * Třetí složka = předmět plnění tuzemského přenesení (#89 D7): dva řádky
+     * se stejným kódem a sazbou, ale jiným předmětem jsou dvě skupiny.
+     * Prázdný předmět dává klíč beze změny — doklady bez přenesení se
+     * seskupují jako dřív.
      */
-    private function vatGroupKey(mixed $vatCode, mixed $vatPct): string
+    private function vatGroupKey(mixed $vatCode, mixed $vatPct, mixed $subject = null): string
     {
-        return (string) $vatCode . '|' . (string) (float) $vatPct;
+        $key = (string) $vatCode . '|' . (string) (float) $vatPct;
+        $subject = ReverseChargeSubjects::value($subject);
+        return $subject === null ? $key : $key . '|' . $subject;
+    }
+
+    /**
+     * Klíč skupiny řádku dokladu nebo řádku rekapitulace — jediné místo,
+     * které ví, ze kterých sloupců se klíč skládá.
+     *
+     * @param array<string, mixed> $line
+     */
+    private function vatGroupKeyOf(array $line): string
+    {
+        return $this->vatGroupKey(
+            $line['vat_code'] ?? '',
+            $line['vat_pct'] ?? 0,
+            $line[ReverseChargeSubjects::COLUMN] ?? null,
+        );
+    }
+
+    /**
+     * Předmět plnění smí nést jen řádek s kódem přenesení (a oddaňovací pár
+     * rekapitulace) — jinde se nuluje bez hlášky. Bez definic kódů (neplátce,
+     * nedohledaná země) se hodnota jen ořízne.
+     *
+     * @param array<int, array<string, mixed>> $lines řádky dokladu nebo rekapitulace
+     * @param array<string, array<string, mixed>>|null $vatCodes
+     */
+    private function normalizeReverseChargeSubjects(array &$lines, ?array $vatCodes): void
+    {
+        foreach ($lines as &$line) {
+            if (!is_array($line)) {
+                continue;
+            }
+            $subject = $vatCodes === null
+                ? ReverseChargeSubjects::value($line[ReverseChargeSubjects::COLUMN] ?? null)
+                : ReverseChargeSubjects::normalized($line, $vatCodes);
+            if ($subject === null && !array_key_exists(ReverseChargeSubjects::COLUMN, $line)) {
+                continue;
+            }
+            $line[ReverseChargeSubjects::COLUMN] = $subject;
+        }
+        unset($line);
     }
 
     // ── Number assignment ───────────────────────────────────────────────────

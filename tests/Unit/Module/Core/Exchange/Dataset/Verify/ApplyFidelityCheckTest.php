@@ -52,8 +52,35 @@ class ApplyFidelityCheckTest extends TestCase
         // Bez DPH ze třetí země (#103 nález F): applier samovyměří, režim DPH se nesrovnává.
         $third = ApplyFidelityCheck::exceptionsFor(['vat' => ['mode' => 'none', 'place' => 'thirdCountry']], true);
         $this->assertSame([...$always, 'dates.taxPointDate', 'vat.mode'], array_keys($third));
+        // Doklad mimo české DPH u plátce (#89 D2): zahraniční daň dodavatele bez přenesení
+        // daňové povinnosti — stejné uzly jako u neplátce; samovyměření a tuzemsko ne.
+        $hotel = [
+            'vat'      => ['mode' => 'fromBase', 'place' => 'intracom', 'reverseCharge' => false],
+            'rows'     => [['rowKind' => 'item', 'vat' => ['pct' => 7]]],
+            'vatRecap' => [['vatPct' => 7, 'base' => 100.0, 'tax' => 7.0, 'total' => 107.0]],
+        ];
+        $this->assertSame(
+            [...$always, ...array_keys(ApplyFidelityCheck::EXCEPTIONS_OUT_OF_SCOPE)],
+            array_keys(ApplyFidelityCheck::exceptionsFor($hotel, true)),
+        );
+        $this->assertSame(
+            array_keys(ApplyFidelityCheck::EXCEPTIONS_NON_PAYER),
+            array_keys(ApplyFidelityCheck::EXCEPTIONS_OUT_OF_SCOPE),
+            'doklad mimo české DPH se liší v týchž uzlech jako doklad neplátce',
+        );
+        $reverseCharge = ['vat' => ['reverseCharge' => true]] + $hotel;
+        $reverseCharge['vat'] += $hotel['vat'];
+        $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor($reverseCharge, true)), 'smíšený doklad výjimku nemá');
+        $domestic = $hotel;
+        $domestic['vat']['place'] = 'domestic';
+        $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor($domestic, true)));
+        $selfAssessed = $hotel;
+        $selfAssessed['rows'][0]['vat']['pct'] = 0;
+        $selfAssessed['vatRecap'] = [['vatPct' => 0, 'base' => 100.0, 'tax' => 0, 'total' => 100.0]];
+        $this->assertSame($always, array_keys(ApplyFidelityCheck::exceptionsFor($selfAssessed, true)));
         $this->assertContains('rows[].item.ean', $always, 'EAN applier neukládá (nález D)');
         foreach (ApplyFidelityCheck::EXCEPTIONS + ApplyFidelityCheck::EXCEPTIONS_NO_VAT + ApplyFidelityCheck::EXCEPTIONS_NON_PAYER
+            + ApplyFidelityCheck::EXCEPTIONS_OUT_OF_SCOPE
             + ApplyFidelityCheck::EXCEPTIONS_NO_DUE_DATE + ApplyFidelityCheck::EXCEPTIONS_NO_PAYMENT_REFERENCE
             + ApplyFidelityCheck::EXCEPTIONS_FOREIGN_CURRENCY + ApplyFidelityCheck::EXCEPTIONS_NO_VAT_THIRD_COUNTRY as $path => $reason) {
             $this->assertNotSame('', trim($reason), "{$path}: výjimka bez důvodu");

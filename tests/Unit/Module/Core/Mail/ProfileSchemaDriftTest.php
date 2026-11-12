@@ -86,7 +86,7 @@ class ProfileSchemaDriftTest extends TestCase
         [$profile] = $this->loadProfile();
 
         $this->assertSame('czech_general', $profile['profile_id']);
-        $this->assertSame('v4.11.0', $profile['prompt_version']);
+        $this->assertSame('v4.12.0', $profile['prompt_version']);
         $this->assertContains('invoiceReceived', $profile['supported_doc_types']);
         foreach (['contract', 'insurance', 'quotation', 'certificate', 'official'] as $registryType) {
             $this->assertContains($registryType, $profile['supported_doc_types']);
@@ -110,6 +110,7 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringContainsString('120 znaků', $prompt);
         // Verze v promptu (source.promptVersion + ukázka) sleduje prompt_version profilu.
         $this->assertSame(2, substr_count($prompt, $profile['prompt_version']));
+        $this->assertStringNotContainsString('v4.11.0', $prompt);
         $this->assertStringNotContainsString('v4.8.0', $prompt);
         $this->assertStringNotContainsString('v4.7.1', $prompt);
         $this->assertStringNotContainsString('v4.7.0', $prompt);
@@ -177,6 +178,7 @@ class ProfileSchemaDriftTest extends TestCase
         }
 
         $this->assertStringContainsString('"' . $profile['prompt_version'] . '"', $prompt, 'prompt must pin its own version');
+        $this->assertStringNotContainsString('v4.11.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.8.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.7.1', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.7.0', $prompt, 'stale prompt version reference');
@@ -224,6 +226,36 @@ class ProfileSchemaDriftTest extends TestCase
         // Ukázka: žádný konkrétní kód DPH, jinak ho model opisuje.
         $this->assertStringNotContainsString('"cz-110"', $prompt);
         $this->assertStringNotContainsString('isReversePair": false', $prompt);
+    }
+
+    /**
+     * #89 D15: prompt vyjmenovává předměty plnění tuzemského přenesení —
+     * každý kód číselníku `world.vat.cz` → `reverseChargeSubjects` musí být
+     * v pravidle `rows[].vat.reverseChargeCode`, jinak ho model nezná
+     * a návrh skončí `reverse_charge_code_missing`. Rekapitulaci model
+     * předmětem neplní.
+     */
+    public function testPromptEnumeratesReverseChargeSubjects(): void
+    {
+        [$profile] = $this->loadProfile();
+        $prompt = (string) $profile['prompt_template'];
+        $start = strpos($prompt, '"rows"[].vat.reverseChargeCode vyplň');
+        $this->assertNotFalse($start, 'pravidlo o předmětu plnění v promptu chybí');
+        $rule = substr($prompt, $start, (int) strpos($prompt, "\n", $start) - $start);
+
+        $vatCz = JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/world/vat/config/vat-cz.jsonc');
+        $codes = array_map('strval', array_keys($vatCz['reverseChargeSubjects']));
+        $this->assertNotEmpty($codes);
+        foreach ($codes as $code) {
+            $this->assertStringContainsString('"' . $code . '" ', $rule, "prompt nezná předmět plnění {$code}");
+        }
+        preg_match_all('/"([0-9]{1,2}[a-z]?)" /', $rule, $m);
+        $this->assertSame($codes, $m[1], 'výčet v promptu = číselník, ve stejném pořadí');
+
+        $this->assertStringContainsString('NEPOSUZUJ', $rule, 'limit 100 000 Kč model neposuzuje');
+        $this->assertStringContainsString('"vatRecap"[].reverseChargeCode VYNECH', $prompt);
+        $vatRecapEntry = $this->extractedJsonOneOf($profile)[0]['$defs']['VatRecapEntry']['properties'];
+        $this->assertArrayHasKey('reverseChargeCode', $vatRecapEntry, 'schéma pole nese (vyváží ho exporter)');
     }
 
     public function testPromptRulesForBankAccountReverseChargeAndAddress(): void

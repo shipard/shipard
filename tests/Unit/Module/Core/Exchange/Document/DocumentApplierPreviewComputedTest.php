@@ -517,6 +517,44 @@ class DocumentApplierPreviewComputedTest extends TestCase
         }
     }
 
+    /**
+     * Tuzemské přenesení s předmětem plnění mimo 4 a 5 (#89 D10): náhled
+     * i uložený doklad nesou předmět na řádku, v rekapitulaci i na
+     * oddaňovacím páru.
+     */
+    public function testDomesticReverseChargeSubjectReachesRowsAndRecap(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['vat'] = ['mode' => 'fromBase', 'place' => 'domestic', 'reverseCharge' => true, 'registrationCountry' => null];
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'supplyKind' => null, 'reverseChargeCode' => '14'];
+        $payload['rows'][0]['computed'] = ['vatBase' => 10330.58, 'vatAmount' => 0, 'vatTotal' => 10330.58];
+        $payload['vatRecap'] = [['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58]];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+
+        $applier = $this->buildApplier();
+        $resolve = $applier->preview($payload)->canonical['_resolve'];
+
+        $this->assertSame(
+            ['value' => '14', 'source' => 'document', 'status' => 'matched'],
+            $resolve['rows'][0]['reverseChargeCode'],
+        );
+        $this->assertSame(
+            [['cz-115', '14', false], ['cz-203', '14', true]],
+            array_map(
+                static fn (array $r): array => [$r['vatCode'], $r['reverseChargeCode'] ?? null, $r['isReversePair']],
+                $resolve['computed']['vatRecap'],
+            ),
+        );
+
+        $applied = $applier->apply($payload);
+        $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
+        $saved = $this->savedHeadsData;
+        $this->assertIsArray($saved);
+        $this->assertSame('cz-115', $saved['rows'][0]['vat_code']);
+        $this->assertSame('14', $saved['rows'][0]['reverse_charge_code']);
+        $this->assertSame(['14', '14'], array_column(array_values($saved['vatRecap']), 'reverse_charge_code'));
+    }
+
     // ── Ceny řádků v náhledu a přijatý doklad neplátce DPH (#97) ────────────
 
     /** Zdroj bez registrace DPH — přijatý doklad je dokladem neplátce. */

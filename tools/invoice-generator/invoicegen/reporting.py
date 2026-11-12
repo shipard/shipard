@@ -27,6 +27,11 @@ rekapitulace (základ per sazba, u samovyměření per druh plnění; bez DPH
 celková částka), neplátce a spolek Σ řádků s DPH dodavatele v ceně (#97),
 dorovnaných na rekapitulaci papíru per sazba; haléřový zbytek proti
 celkem × kurz jde v Shipardu na účet zaokrouhlení.
+
+Doklad **mimo české DPH** (#89 D2, `out_of_czech_vat`): dodavatel mimo
+tuzemsko účtuje vlastní daň (hotel v cizině) — i u plátce vznikne Bez DPH,
+do přiznání ani KH nejde (mapování varianty musí být `none`) a náklad je
+jako u neplátce Σ řádků s daní dodavatele.
 """
 
 from __future__ import annotations
@@ -209,6 +214,9 @@ def vat_record(message_id: str, variant: str, expected: dict, reporting: VatRepo
     if spec["regime"] == REGIME_NONE:
         record["period"] = None
         return record
+    if out_of_czech_vat(expected):
+        raise ReportingError(f"{message_id}: doklad mimo české DPH (zahraniční daň dodavatele) — "
+                             f"varianta {variant!r} musí mít režim none")
 
     groups = _groups(expected, spec, message_id, rate)
     rows: dict[int, dict[str, Decimal]] = {}
@@ -292,12 +300,23 @@ def _non_payer_cost(expected: dict, rate: Decimal) -> Decimal:
     return sum((_cents(g * rate) for g in gross), Decimal("0"))
 
 
+def out_of_czech_vat(expected: dict) -> bool:
+    """Doklad mimo české DPH (#89 D2): místo plnění mimo tuzemsko, doklad
+    neuvádí přenesení daňové povinnosti a rekapitulace nese daň dodavatele.
+    Odvozeno z očekávaného canonicalu, nezávisle na Shipardu."""
+    vat = expected.get("vat") or {}
+    if vat.get("place") in (None, "domestic") or vat.get("reverseCharge") is True:
+        return False
+    return any(int(entry["vatPct"]) != 0 for entry in expected.get("vatRecap") or [])
+
+
 def cost_record(message_id: str, expected: dict, *, vat_payer: bool, rate: Decimal) -> dict:
     """Záznam `expected/costs.json`: náklad v Kč bez zaokrouhlení, každá
     účtovaná částka přepočtená zvlášť — plátce položky rekapitulace
     (samovyměření po druzích plnění), bez DPH celková částka; neplátce
-    řádky s DPH dodavatele. `currency` zůstává měna dokladu."""
-    if vat_payer:
+    řádky s DPH dodavatele, stejně tak doklad mimo české DPH u plátce
+    (#89). `currency` zůstává měna dokladu."""
+    if vat_payer and not out_of_czech_vat(expected):
         cost = sum((_cents(line * rate) for line in _payer_cost_lines(expected)), Decimal("0"))
     else:
         cost = _non_payer_cost(expected, rate)

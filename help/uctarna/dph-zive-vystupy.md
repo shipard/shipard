@@ -124,6 +124,10 @@ s sebou.
 - **Chybějící DIČ nebo číslo dokladu dodavatele** hlásí kontrolní hlášení
   jako upozornění a řádek podbarví. Doplň údaj na dokladu (u přijaté
   faktury je číslo dodavatele v poli **Číslo dokladu partnera**).
+- **Sloupec Kód u oddílů A.1 a B.1** je předmět plnění u přenesení daňové
+  povinnosti — bere se z pole **Předmět plnění** na řádcích dokladu.
+  Prázdný kód znamená, že ho doklad nemá vyplněný; doplň ho na dokladu,
+  jinak podání neprojde kontrolou.
 - Do výstupů vstupují **jen doklady ve stavu V pořádku** — koncept ani
   doklad v opravě v číslech nejsou. Tvrzení ve stavu Koncept je ale
   čitelné normálně.

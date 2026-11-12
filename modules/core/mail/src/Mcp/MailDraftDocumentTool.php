@@ -13,7 +13,9 @@ use Shipard\Module\Core\Mail\MessageProposalApplier;
  * (faktury) z dokumentového návrhu zprávy. Vždy `autoCreateMode='safe'`
  * + `targetDocState=10` (Koncept) — AI nikdy nefinalizuje ani nezakládá
  * master data. Reference vyžadující rozhodnutí → koncept se nezaloží a
- * nástroj nahlásí, co dořešit ručně.
+ * nástroj nahlásí, co dořešit ručně. Založený koncept nese `warnings` —
+ * varování applieru (např. `vat_special_place`, #89 D18), aby na ně
+ * asistent uživatele upozornil; apply neblokují.
  *
  * Sdílí apply jádro s HTTP endpointem přes {@see MessageProposalApplier}.
  * Závislost jde konstruktorem (nullable — bez ConfigRuntime degraduje na
@@ -40,7 +42,9 @@ final class MailDraftDocumentTool implements McpTool
             . 'revizi — AI ho NIKDY nefinalizuje ani neúčtuje. Existující '
             . 'dodavatele a položky napáruje; nové NEzakládá — pokud reference '
             . 'vyžaduje rozhodnutí, koncept nezaloží a nahlásí, co je třeba '
-            . 'dořešit ručně v aplikaci. `message_id` získáš z `mail_list_pending` '
+            . 'dořešit ručně v aplikaci. Založený koncept může nést `warnings` '
+            . '(varování k dokladu, např. k DPH) — vždy je uživateli sděl, koncept '
+            . 'podle nich má zkontrolovat. `message_id` získáš z `mail_list_pending` '
             . '(zprávy s `has_open_proposal`). Nepoužívej na zprávy bez analýzy.';
     }
 
@@ -90,12 +94,16 @@ final class MailDraftDocumentTool implements McpTool
                     'pagination' => null,
                 ];
             }
+            $warnings = $this->issuesFrom($outcome->canonical, 'warning');
+            $count = count($warnings);
             return [
-                'summary' => "Z pošty #{$messageId}: založen koncept dokladu.",
+                'summary' => "Z pošty #{$messageId}: založen koncept dokladu"
+                    . ($count > 0 ? " — varování k dokladu: {$count}." : '.'),
                 'items'   => [[
                     'message_ref'  => $messageRef,
                     'drafted'      => true,
                     'document_ref' => ['type' => 'document', 'id' => (int) ($outcome->savedDocId ?? 0)],
+                    'warnings'     => $warnings,
                 ]],
                 'pagination' => null,
             ];
@@ -109,7 +117,7 @@ final class MailDraftDocumentTool implements McpTool
                     'drafted'          => false,
                     'needs_resolution' => true,
                     'reason'           => 'Reference vyžadují rozhodnutí — dořeš v aplikaci.',
-                    'unresolved'       => $this->unresolvedFrom($outcome->canonical),
+                    'unresolved'       => $this->issuesFrom($outcome->canonical, 'error'),
                 ]],
                 'pagination' => null,
             ];
@@ -129,13 +137,14 @@ final class MailDraftDocumentTool implements McpTool
     }
 
     /**
-     * Kurátorovaný seznam nevyřešených referencí z `_resolve.issues`
-     * (jen severity=error) — cesta + lidský popis, ať agent ví, co chybí.
+     * Kurátorovaný seznam z `_resolve.issues` jedné závažnosti — cesta +
+     * lidský popis: `error` = nevyřešené reference (co chybí), `warning` =
+     * varování k založenému konceptu (na co uživatele upozornit).
      *
      * @param array<string, mixed>|null $canonical
-     * @return array<int, array{path: string, message: string}>
+     * @return list<array{path: string, message: string}>
      */
-    private function unresolvedFrom(?array $canonical): array
+    private function issuesFrom(?array $canonical, string $severity): array
     {
         $issues = $canonical['_resolve']['issues'] ?? null;
         if (!is_array($issues)) {
@@ -143,7 +152,7 @@ final class MailDraftDocumentTool implements McpTool
         }
         $out = [];
         foreach ($issues as $issue) {
-            if (!is_array($issue) || ($issue['severity'] ?? null) !== 'error') {
+            if (!is_array($issue) || ($issue['severity'] ?? null) !== $severity) {
                 continue;
             }
             $out[] = [

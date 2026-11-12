@@ -3330,8 +3330,11 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(1, $this->invokeTransform($applier, $canonical)['vat_place']);
     }
 
-    /** Totéž bez kódu na řádku — přenesení jen příznakem v rekapitulaci nestačí k určení kódu, ale hlásí se, ne mlčí. */
-    public function testReceivedIsdocWithoutLineCodeDoesNotGuessPdpCode(): void
+    /**
+     * Totéž bez předmětu plnění na řádku (#89 D10, D11): kód je obecný kód
+     * přenesení, předmět se ale nehádá — chybí a hlásí se errorem.
+     */
+    public function testReceivedIsdocWithoutSubjectDerivesGeneralCodeButDoesNotGuessSubject(): void
     {
         $xml = (string) preg_replace(
             '~\s*<LocalReverseCharge>.*?</LocalReverseCharge>~s',
@@ -3343,8 +3346,12 @@ class DocumentApplierTest extends TestCase
 
         $result = $this->buildVatDerivingApplier()->preview($canonical);
 
-        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
-        $this->assertContains('vat_code_unknown', $this->issueCodes($result));
+        $row = $result->canonical['_resolve']['rows'][0];
+        $this->assertSame('cz-115', $row['vatCode']['createPayload']['code']);
+        $this->assertSame(['value' => null, 'source' => null, 'status' => 'notFound'], $row['reverseChargeCode']);
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertContains('reverse_charge_code_missing', $codes);
     }
 
     public function testReceivedUnsupportedCaseReportsReasonAndBlocksApply(): void
@@ -3401,7 +3408,11 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(0, $this->invokeTransform($applier, $payload)['vat_mode']);
     }
 
-    /** Zahraniční DPH naúčtovaná dodavatelem z EU není samovyměření (D7 otevřené) — bez tichého cz-217. */
+    /**
+     * Zahraniční DPH naúčtovaná dodavatelem z EU není samovyměření — bez
+     * tichého cz-217. Doklad vznikne Bez DPH (#89 D2; podrobně
+     * DocumentApplierOutOfScopeTest), dřív končil chybou `vat_code_unknown`.
+     */
     public function testReceivedForeignVatChargedBySupplierIsNotSelfAssessed(): void
     {
         $payload = $this->euServicesPayload();
@@ -3409,9 +3420,13 @@ class DocumentApplierTest extends TestCase
         $payload['rows'][0]['vat']['pct'] = 19;
         $result = $this->buildVatDerivingApplier()->preview($payload);
 
-        $issue = $this->issueByCode($result, 'vat_code_unknown');
-        $this->assertNotNull($issue);
-        $this->assertStringContainsString('zahraniční DPH', $issue['message']);
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame('outOfScope', $resolve['vat']['mode']['source']);
+        $this->assertSame('foreignVat', $resolve['vat']['mode']['reason']);
+        $this->assertArrayNotHasKey('createPayload', $resolve['rows'][0]['vatCode']);
+        $codes = $this->issueCodes($result);
+        $this->assertContains('vat_foreign_tax', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
     }
 
     /** Explicitní declared (import ze starého Shipardu) s oddaňovacím párem zůstává převzatá. */
@@ -4526,18 +4541,25 @@ class DocumentApplierTest extends TestCase
         $this->assertNotContains('vat_code_unknown', $codes);
     }
 
-    /** D4: štítek se zvláštním místem plnění vetuje samovyměření i proti druhu z AI. */
+    /**
+     * D4: štítek se zvláštním místem plnění vetuje samovyměření i proti
+     * druhu z AI. Doklad, kde ho nesou všechny řádky, vznikne Bez DPH
+     * s varováním (#89 D3; podrobně DocumentApplierOutOfScopeTest), dřív
+     * končil chybou `vat_code_unknown`.
+     */
     public function testReceivedSpecialTagVetoesReverseChargeDespiteAiSupplyKind(): void
     {
         $payload = $this->thirdCountrySoftwarePayload(tag: 'travel.accommodation');
         $payload['rows'][0]['vat']['supplyKind'] = 'services';
         $result = $this->buildVatDerivingApplier()->preview($payload);
 
-        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
-        $issue = $this->issueByCode($result, 'vat_code_unknown');
-        $this->assertNotNull($issue);
-        $this->assertStringContainsString('zvláštním pravidlem', $issue['message']);
-        $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame('specialPlace', $resolve['vat']['mode']['reason']);
+        $this->assertArrayNotHasKey('createPayload', $resolve['rows'][0]['vatCode'], 'žádné cz-417');
+        $codes = $this->issueCodes($result);
+        $this->assertContains('vat_special_place', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertNotContains('supply_kind_derived', $codes);
     }
 
     /** Tuzemský doklad: štítek special ani fallback nic nemění. */
@@ -4652,5 +4674,180 @@ class DocumentApplierTest extends TestCase
         $this->assertCount(1, $result->canonical['_resolve']['valueRepairs']);
         $this->assertNotNull($this->issueByCode($result, 'bank_account_repaired'));
         $this->assertSame('CZ8520100000002308417557', $saved['partner_bank_iban'] ?? null, 'na hlavičku jde opravený IBAN');
+    }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D10, D11) ─────────────────
+
+    /**
+     * Přijatá tuzemská faktura s přenesením daňové povinnosti (tvar promptu):
+     * DPH 0, kód null, předmět plnění na řádku.
+     *
+     * @return array<string, mixed>
+     */
+    private function domesticReverseChargePayload(?string $subject): array
+    {
+        $payload = $this->happyPayload();
+        $payload['vat'] = ['mode' => 'fromBase', 'place' => 'domestic', 'reverseCharge' => true, 'registrationCountry' => null];
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'supplyKind' => null, 'reverseChargeCode' => $subject];
+        $payload['vatRecap'] = [['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58]];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        return $payload;
+    }
+
+    public function testReverseChargeSubjectOutsideFourAndFiveIsTakenFromDocument(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->domesticReverseChargePayload('14'));
+
+        $row = $result->canonical['_resolve']['rows'][0];
+        $this->assertSame('cz-115', $row['vatCode']['createPayload']['code'], 'obecný kód přenesení, předmět kód nevybírá');
+        $this->assertSame(['value' => '14', 'source' => 'document', 'status' => 'matched'], $row['reverseChargeCode']);
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertNotContains('reverse_charge_code_missing', $codes);
+        $this->assertNotContains('reverse_charge_code_unknown', $codes);
+    }
+
+    public function testMissingReverseChargeSubjectKeepsCodeReportsErrorAndBlocksApply(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->domesticReverseChargePayload(null);
+
+        $result = $applier->preview($payload);
+        $row = $result->canonical['_resolve']['rows'][0];
+        $this->assertSame('cz-115', $row['vatCode']['createPayload']['code']);
+        $this->assertSame('notFound', $row['reverseChargeCode']['status']);
+        $issue = $this->issueByCode($result, 'reverse_charge_code_missing');
+        $this->assertNotNull($issue);
+        $this->assertSame('error', $issue['severity']);
+        $this->assertSame('rows.0.vat.reverseChargeCode', $issue['path']);
+        $this->assertSame('needsAttention', $result->canonical['_resolve']['summary']['status']);
+
+        $applied = $applier->apply($payload);
+        $this->assertFalse($applied->success);
+        $this->assertSame('validation_failed', $applied->errorCode);
+    }
+
+    public function testUnknownReverseChargeSubjectIsReportedWithItsValue(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->domesticReverseChargePayload('99'));
+
+        $row = $result->canonical['_resolve']['rows'][0];
+        $this->assertSame(['value' => '99', 'source' => 'document', 'status' => 'notFound'], $row['reverseChargeCode']);
+        $issue = $this->issueByCode($result, 'reverse_charge_code_unknown');
+        $this->assertNotNull($issue);
+        $this->assertSame('error', $issue['severity']);
+        $this->assertStringContainsString('„99“', $issue['message']);
+        $this->assertNotContains('reverse_charge_code_missing', $this->issueCodes($result));
+    }
+
+    /** Předmět u řádku, na kterém kód přenesení neskončí, se ignoruje — bez bloku i bez hlášky. */
+    public function testReverseChargeSubjectOnOtherVatCodeIsIgnored(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['vat']['reverseChargeCode'] = '4';
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $row = $result->canonical['_resolve']['rows'][0];
+        $this->assertSame('cz-110', $row['vatCode']['createPayload']['code']);
+        $this->assertArrayNotHasKey('reverseChargeCode', $row);
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('reverse_charge_code_missing', $codes);
+        $this->assertNotContains('reverse_charge_code_unknown', $codes);
+    }
+
+    /** Předmět se propíše na řádek dokladu; neověřený (neznámý) ne. */
+    public function testTransformStoresVerifiedSubjectOnRow(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $matchedCode = ['status' => 'matched', 'createPayload' => ['code' => 'cz-115', 'pct' => 21.0]];
+        $plan = [
+            'resolvedSupplier' => 5, 'resolvedCustomer' => null, 'resolvedSupplierBank' => null,
+            'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [],
+            'resolvedRowVatCodes' => [0 => $matchedCode],
+            'resolvedRowReverseChargeCodes' => [0 => '4a'],
+        ];
+        $data = $this->invokeTransformWithPlan($applier, $this->domesticReverseChargePayload('4a'), $plan);
+        $this->assertSame('cz-115', $data['rows'][0]['vat_code']);
+        $this->assertSame('4a', $data['rows'][0]['reverse_charge_code']);
+
+        $plan['resolvedRowReverseChargeCodes'] = [0 => null];
+        $data = $this->invokeTransformWithPlan($applier, $this->domesticReverseChargePayload('99'), $plan);
+        $this->assertArrayNotHasKey('reverse_charge_code', $data['rows'][0]);
+    }
+
+    /**
+     * Mimo derivaci (explicitní kód — import, vystavené doklady, fakturace
+     * zakázek) platí totéž, i v importním módu: nic se tiše nedoplňuje.
+     */
+    public function testExplicitReverseChargeCodeNeedsSubjectEvenInImportMode(): void
+    {
+        $issuesFor = function (array $rowVat): array {
+            $payload = $this->happyPayload();
+            $payload['applyOptions'] = self::IMPORT_OPTIONS;
+            $payload['rows'][0]['vat'] = $rowVat;
+            // DB bez registrace DPH + import mód = cesta mimo derivaci.
+            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload);
+            return [$result->canonical['_resolve']['rows'][0], $this->issueCodes($result)];
+        };
+
+        [$row, $codes] = $issuesFor(['code' => 'cz-115', 'pct' => 21, 'reverseChargeCode' => '5']);
+        $this->assertSame(['value' => '5', 'source' => 'document', 'status' => 'matched'], $row['reverseChargeCode']);
+        $this->assertNotContains('reverse_charge_code_missing', $codes);
+
+        [$row, $codes] = $issuesFor(['code' => 'cz-115', 'pct' => 21]);
+        $this->assertSame('notFound', $row['reverseChargeCode']['status']);
+        $this->assertContains('reverse_charge_code_missing', $codes);
+
+        [$row, $codes] = $issuesFor(['code' => 'cz-110', 'pct' => 21, 'reverseChargeCode' => '5']);
+        $this->assertArrayNotHasKey('reverseChargeCode', $row);
+        $this->assertNotContains('reverse_charge_code_missing', $codes);
+    }
+
+    /** Převzatá rekapitulace: předmět ze vstupu na řádek i oddaňovací pár, jiný kód ho nenese. */
+    public function testDeclaredRecapCarriesSubjectFromCanonical(): void
+    {
+        $payload = [
+            'vat'      => ['recapSource' => 'declared'],
+            'vatRecap' => [
+                ['vatCode' => 'cz-115', 'vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1000.00,
+                    'reverseChargeCode' => '4a'],
+                ['vatCode' => 'cz-203', 'vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1210.00,
+                    'isReversePair' => true, 'reverseChargeCode' => '4a'],
+                ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => 100.00, 'tax' => 21.00, 'total' => 121.00,
+                    'reverseChargeCode' => '4a'],
+            ],
+        ];
+        $data = $this->transformWithRecap($payload);
+
+        $this->assertSame(1, $data['vat_recap_source']);
+        $this->assertSame('4a', $data['vatRecap'][0]['reverse_charge_code']);
+        $this->assertSame('4a', $data['vatRecap'][1]['reverse_charge_code']);
+        $this->assertArrayNotHasKey('reverse_charge_code', $data['vatRecap'][2]);
+        $this->assertSame([], $this->recapIssues($payload));
+    }
+
+    public function testDeclaredRecapWithoutSubjectOrWithUnknownOneIsAnError(): void
+    {
+        $recap = static fn (array $extra): array => [
+            'vat'      => ['recapSource' => 'declared'],
+            'vatRecap' => [
+                ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => 100.00, 'tax' => 21.00, 'total' => 121.00],
+                ['vatCode' => 'cz-115', 'vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1000.00] + $extra,
+            ],
+        ];
+
+        $missing = $this->recapIssues($recap([]));
+        $this->assertCount(1, $missing);
+        $this->assertSame('reverse_charge_code_missing', $missing[0]['code']);
+        $this->assertSame('error', $missing[0]['severity']);
+        $this->assertSame('vatRecap.1.reverseChargeCode', $missing[0]['path']);
+
+        $unknown = $this->recapIssues($recap(['reverseChargeCode' => '99']));
+        $this->assertCount(1, $unknown);
+        $this->assertSame('reverse_charge_code_unknown', $unknown[0]['code']);
+
+        // Rekapitulace zůstává převzatá — chyba blokuje apply, nepřepočítává se.
+        $this->assertSame(1, $this->transformWithRecap($recap([]))['vat_recap_source']);
     }
 }

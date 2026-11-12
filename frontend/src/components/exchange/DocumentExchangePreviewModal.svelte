@@ -118,7 +118,8 @@
   let refreshSeq = 0;
 
   // Cesty rozhodnutí, po jejichž změně se náhled obnoví ze serveru.
-  const REFRESH_PATH_RE = /^(vat\.(place|mode)|rows\[\d+\]\.(vatCode|item))$/;
+  // Předmět plnění (#89 D12) mění rekapitulaci (skupina per předmět) i issues.
+  const REFRESH_PATH_RE = /^(vat\.(place|mode)|rows\[\d+\]\.(vatCode|item|reverseChargeCode))$/;
 
   $effect(() => {
     if (open && messageNdx !== null && messageNdx !== undefined) {

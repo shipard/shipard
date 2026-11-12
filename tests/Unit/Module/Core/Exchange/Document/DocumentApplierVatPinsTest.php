@@ -259,8 +259,8 @@ class DocumentApplierVatPinsTest extends TestCase
     private function withPins(array $payload, array $flat): array
     {
         foreach ($flat as $path => $action) {
-            if (preg_match('/^rows\[(\d+)\]\.vatCode$/', $path, $m) === 1) {
-                $payload['_resolve']['rows'][(int) $m[1]]['vatCode']['userAction'] = $action;
+            if (preg_match('/^rows\[(\d+)\]\.(vatCode|reverseChargeCode)$/', $path, $m) === 1) {
+                $payload['_resolve']['rows'][(int) $m[1]][$m[2]]['userAction'] = $action;
             } elseif (preg_match('/^vat\.(place|mode)$/', $path, $m) === 1) {
                 $payload['_resolve']['vat'][$m[1]]['userAction'] = $action;
             } else {
@@ -468,17 +468,125 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertSame(2, $this->savedHeadsData['vat_mode']);
     }
 
-    public function testModePinNoneWithReverseChargeSilentlyFallsBackToFromBase(): void
+    /**
+     * D11 (#87) platí v tuzemsku dál: Bez DPH u dokladu s přenesením daňové
+     * povinnosti se tiše přepne na „Ze základu“ — jinak by se ztratil nárok
+     * i oddanění.
+     */
+    public function testModePinNoneWithDomesticReverseChargeSilentlyFallsBackToFromBase(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['vat']['reverseCharge'] = true;
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'reverseChargeCode' => '4'];
+        $payload['rows'][0]['computed'] = ['vatBase' => 10330.58, 'vatAmount' => 0, 'vatTotal' => 10330.58];
+        $payload['vatRecap'] = [
+            ['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58],
+        ];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        $payload = $this->withPins($payload, ['vat.mode' => 'useValue:none']);
+        $applier = $this->buildApplier();
+
+        $preview = $applier->preview($payload)->canonical;
+        $this->assertSame('cz-115', $preview['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertSame(['value' => 'fromBase', 'source' => 'derived', 'auto' => 'fromBase'], $preview['_resolve']['vat']['mode']);
+        $codes = $this->issueCodes($preview);
+        $this->assertNotContains('vat_mode_derived', $codes, 'proti volbě tiše (D11)');
+        $this->assertNotContains('vat_out_of_scope_user', $codes);
+
+        $this->assertTrue($applier->apply($payload)->success);
+        $this->assertSame(1, $this->savedHeadsData['vat_mode']);
+    }
+
+    /**
+     * #89 D4: mimo tuzemsko volba Bez DPH platí — doklad je mimo české DPH,
+     * bez kódů a rekapitulace. „Automaticky“ dál ukazuje samovyměření.
+     */
+    public function testModePinNoneOutsideDomesticMakesDocumentOutOfScope(): void
     {
         $payload = $this->withPins($this->euServicesPayload(), ['vat.mode' => 'useValue:none']);
         $applier = $this->buildApplier();
 
         $preview = $applier->preview($payload)->canonical;
-        $this->assertSame(['value' => 'fromBase', 'source' => 'derived', 'auto' => 'fromBase'], $preview['_resolve']['vat']['mode']);
-        $this->assertNotContains('vat_mode_derived', $this->issueCodes($preview), 'proti volbě tiše (D11)');
+        $resolve = $preview['_resolve'];
+        $this->assertSame(
+            ['value' => 'none', 'source' => 'outOfScope', 'auto' => 'fromBase', 'reason' => 'user'],
+            $resolve['vat']['mode'],
+        );
+        $this->assertSame(['status' => 'matched', 'matchedBy' => 'outOfScope'], $resolve['rows'][0]['vatCode']);
+        $this->assertNotSame([], $resolve['vatCodeOptions']);
+        $this->assertSame([], $resolve['computed']['vatRecap']);
+        $this->assertSame(10330.58, $resolve['computed']['totals']['totalAmount']);
+        $warning = $this->issuesOf($preview, 'vat_out_of_scope_user');
+        $this->assertCount(1, $warning);
+        $this->assertSame('warning', $warning[0]['severity']);
+        $this->assertSame('vat.mode', $warning[0]['path']);
+        $codes = $this->issueCodes($preview);
+        foreach (['vat_mode_derived', 'vat_mode_suspect', 'vat_code_unknown', 'recap_source_computed_fallback'] as $code) {
+            $this->assertNotContains($code, $codes);
+        }
 
         $this->assertTrue($applier->apply($payload)->success);
-        $this->assertSame(1, $this->savedHeadsData['vat_mode']);
+        $this->assertSame(0, (int) $this->savedHeadsData['vat_mode']);
+        $this->assertSame([], $this->savedHeadsData['vatRecap']);
+        $this->assertTrue(empty($this->savedHeadsData['rows'][0]['vat_code']));
+        $this->assertSame(10330.58, (float) $this->savedHeadsData['total_amount']);
+    }
+
+    /** Bez volby (režim `none` jen deklarovala AI) zůstává tiché přepnutí i mimo tuzemsko. */
+    public function testDeclaredNoneWithoutPinStillFallsBackToFromBase(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['vat']['mode'] = 'none';
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $this->assertSame(['value' => 'fromBase', 'source' => 'derived', 'auto' => 'fromBase'], $preview['_resolve']['vat']['mode']);
+        $this->assertSame('cz-217', $preview['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_out_of_scope_user', $this->issueCodes($preview));
+    }
+
+    /**
+     * Volba Bez DPH u dokladu se zahraniční DPH: důvod je volba uživatele,
+     * „Automaticky“ ukazuje, že by doklad vznikl bez DPH i bez ní, a daň
+     * dodavatele jde do cen řádků.
+     */
+    public function testModePinNoneOnForeignVatDocumentKeepsSupplierTaxInPrices(): void
+    {
+        $payload = $this->euServicesPayload(19.0);
+        $payload['vat']['reverseCharge'] = false;
+        unset($payload['rows'][0]['computed'], $payload['vatRecap']);
+        $payload['totals'] = ['totalAmount' => 12293.39];
+        $payload = $this->withPins($payload, ['vat.mode' => 'useValue:none']);
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $this->assertSame(
+            ['value' => 'none', 'source' => 'outOfScope', 'auto' => 'none', 'reason' => 'user'],
+            $preview['_resolve']['vat']['mode'],
+        );
+        // 10 330,58 × 1,19
+        $this->assertSame(12293.39, $preview['_resolve']['computed']['totals']['totalAmount']);
+        $codes = $this->issueCodes($preview);
+        $this->assertContains('vat_out_of_scope_user', $codes);
+        $this->assertNotContains('vat_foreign_tax', $codes);
+    }
+
+    /** Volba Bez DPH má přednost před volbou kódu řádku — ta se ohlásí jako nepoužitá. */
+    public function testModePinNoneBeatsRowCodePin(): void
+    {
+        $payload = $this->withPins($this->euServicesPayload(), [
+            'vat.mode'        => 'useValue:none',
+            'rows[0].vatCode' => 'useCode:cz-217',
+        ]);
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $this->assertSame('user', $preview['_resolve']['vat']['mode']['reason']);
+        $this->assertSame(['status' => 'matched', 'matchedBy' => 'outOfScope'], $preview['_resolve']['rows'][0]['vatCode']);
+        $ignored = $this->issuesOf($preview, 'vat_pin_ignored');
+        $this->assertCount(1, $ignored);
+        $this->assertSame('rows.0.vat.code', $ignored[0]['path']);
+        $this->assertStringContainsString('Bez DPH', $ignored[0]['message']);
     }
 
     public function testHeaderWithoutPinsReportsEffectiveSources(): void
@@ -547,5 +655,138 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertSame(['cz-218', 'cz-208'], array_column($saved['vatRecap'], 'vat_code'));
         $this->assertSame($computed['totals']['totalAmount'], (float) $saved['total_amount']);
         $this->assertSame('user', $applied->canonical['_resolve']['rows'][0]['vatCode']['matchedBy']);
+    }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D12) ──────────────────────
+
+    /** Přijatá tuzemská faktura s přenesením daňové povinnosti; `$subject` = předmět z dokladu. */
+    private function domesticReverseChargePayload(?string $subject): array
+    {
+        $payload = $this->happyPayload();
+        $payload['vat']['reverseCharge'] = true;
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'reverseChargeCode' => $subject];
+        $payload['rows'][0]['computed'] = ['vatBase' => 10330.58, 'vatAmount' => 0, 'vatTotal' => 10330.58];
+        $payload['vatRecap'] = [
+            ['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58],
+        ];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        return $payload;
+    }
+
+    public function testSubjectPinResolvesMissingSubjectAndIsSaved(): void
+    {
+        $applier = $this->buildApplier();
+        $missing = $this->domesticReverseChargePayload(null);
+
+        // Bez volby: chybí, nabídka je k dispozici, apply stojí.
+        $preview = $applier->preview($missing)->canonical;
+        $this->assertContains('reverse_charge_code_missing', $this->issueCodes($preview));
+        $options = array_column($preview['_resolve']['reverseChargeOptions'], 'label', 'code');
+        $this->assertArrayHasKey('4', $options);
+        $this->assertArrayHasKey('4a', $options);
+        $this->assertStringStartsWith('14 — ', $options['14']);
+        $this->assertFalse($applier->apply($missing)->success);
+
+        $payload = $this->withPins($missing, ['rows[0].reverseChargeCode' => 'useValue:14']);
+        $preview = $applier->preview($payload)->canonical;
+        $this->assertSame(
+            ['value' => '14', 'source' => 'user', 'status' => 'matched'],
+            $preview['_resolve']['rows'][0]['reverseChargeCode'],
+        );
+        $codes = $this->issueCodes($preview);
+        $this->assertNotContains('reverse_charge_code_missing', $codes);
+        $this->assertNotContains('reverse_charge_code_pin_invalid', $codes);
+
+        $applied = $applier->apply($payload);
+        $this->assertTrue($applied->success, (string) $applied->errorMessage);
+        $this->assertSame('cz-115', $this->savedHeadsData['rows'][0]['vat_code']);
+        $this->assertSame('14', $this->savedHeadsData['rows'][0]['reverse_charge_code']);
+        $this->assertSame(['14', '14'], array_column(array_values($this->savedHeadsData['vatRecap']), 'reverse_charge_code'));
+    }
+
+    public function testSubjectPinBeatsSubjectFromDocument(): void
+    {
+        $payload = $this->withPins(
+            $this->domesticReverseChargePayload('4'),
+            ['rows[0].reverseChargeCode' => 'useValue:4a'],
+        );
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $this->assertSame(
+            ['value' => '4a', 'source' => 'user', 'status' => 'matched'],
+            $preview['_resolve']['rows'][0]['reverseChargeCode'],
+        );
+    }
+
+    public function testSubjectPinOutsideOptionsIsInvalidAndBlocksApply(): void
+    {
+        $applier = $this->buildApplier();
+        // Předmět z dokladu je platný — neplatnou volbu ale nenahradí.
+        $payload = $this->withPins(
+            $this->domesticReverseChargePayload('4'),
+            ['rows[0].reverseChargeCode' => 'useValue:99'],
+        );
+
+        $preview = $applier->preview($payload)->canonical;
+
+        $this->assertSame('notFound', $preview['_resolve']['rows'][0]['reverseChargeCode']['status']);
+        $invalid = $this->issuesOf($preview, 'reverse_charge_code_pin_invalid');
+        $this->assertCount(1, $invalid);
+        $this->assertSame('error', $invalid[0]['severity']);
+        $this->assertSame('rows.0.vat.reverseChargeCode', $invalid[0]['path']);
+
+        $applied = $applier->apply($payload);
+        $this->assertFalse($applied->success);
+        $this->assertSame('validation_failed', $applied->errorCode);
+    }
+
+    /** Řádek, na kterém kód přenesení neskončí: volba předmětu se ignoruje, nabídka není. */
+    public function testSubjectPinOnRowWithoutReverseChargeCodeIsIgnored(): void
+    {
+        $payload = $this->withPins($this->happyPayload(), ['rows[0].reverseChargeCode' => 'useValue:4']);
+        $applier = $this->buildApplier();
+
+        $preview = $applier->preview($payload)->canonical;
+
+        $this->assertArrayNotHasKey('reverseChargeCode', $preview['_resolve']['rows'][0]);
+        $this->assertArrayNotHasKey('reverseChargeOptions', $preview['_resolve']);
+        $this->assertSame([], $this->issuesOf($preview, 'reverse_charge_code_pin_invalid'));
+
+        $this->assertTrue($applier->apply($payload)->success);
+        $this->assertArrayNotHasKey('reverse_charge_code', $this->savedHeadsData['rows'][0]);
+    }
+
+    /** Zvolený kód přenesení (snížená sazba) + zvolený předmět — obě volby v jedné mapě. */
+    public function testCodePinToReducedReverseChargeKeepsSubjectChoice(): void
+    {
+        $payload = $this->withPins($this->domesticReverseChargePayload(null), [
+            'rows[0].vatCode'           => 'useCode:cz-116',
+            'rows[0].reverseChargeCode' => 'useValue:4',
+        ]);
+
+        $row = $this->buildApplier()->preview($payload)->canonical['_resolve']['rows'][0];
+
+        $this->assertSame('cz-116', $row['vatCode']['createPayload']['code']);
+        $this->assertSame(['value' => '4', 'source' => 'user', 'status' => 'matched'], $row['reverseChargeCode']);
+    }
+
+    public function testMalformedSubjectActionIsReportedAsInvalidPin(): void
+    {
+        $payload = $this->withPins(
+            $this->domesticReverseChargePayload('4'),
+            ['rows[0].reverseChargeCode' => 'useCode:14'],
+        );
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $invalid = $this->issuesOf($preview, 'vat_pin_invalid');
+        $this->assertSame(['rows.0.vat.reverseChargeCode'], array_column($invalid, 'path'));
+        // Neplatná akce se neuplatní — předmět zůstává z dokladu.
+        $this->assertSame(
+            ['value' => '4', 'source' => 'document', 'status' => 'matched'],
+            $preview['_resolve']['rows'][0]['reverseChargeCode'],
+        );
     }
 }

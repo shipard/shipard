@@ -6,6 +6,12 @@
     "form": "pdf"
   },
   {
+    "messageId": "MSG-CORPUS-VP-1101",
+    "stem": "1101-eu-foreign-vat",
+    "variant": "eu-foreign-vat",
+    "form": "pdf"
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0601",
     "stem": "0601-eu-goods",
     "variant": "eu-goods",
@@ -60,6 +66,12 @@
     "form": "pdf"
   },
   {
+    "messageId": "MSG-CORPUS-VP-1201",
+    "stem": "1201-domestic-reverse-charge-phones",
+    "variant": "domestic-reverse-charge-phones",
+    "form": "pdf"
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0102",
     "stem": "0102-domestic-goods",
     "variant": "domestic-goods",
@@ -108,6 +120,12 @@
     "form": "pdfIsdoc"
   },
   {
+    "messageId": "MSG-CORPUS-VP-1102",
+    "stem": "1102-eu-foreign-vat",
+    "variant": "eu-foreign-vat",
+    "form": "pdf"
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0502",
     "stem": "0502-eu-services",
     "variant": "eu-services",
@@ -118,5 +136,11 @@
     "stem": "0802-third-country-services",
     "variant": "third-country-services",
     "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1202",
+    "stem": "1202-domestic-reverse-charge-phones",
+    "variant": "domestic-reverse-charge-phones",
+    "form": "pdfIsdoc"
   }
 ]
