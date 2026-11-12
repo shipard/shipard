@@ -192,12 +192,9 @@ final class VatCodeDerivation
         // sazby. Předmět plnění kód nevybírá — je to samostatný údaj řádku,
         // který ověřuje {@see reverseChargeSubject()}. Sníženou sazbu volí
         // uživatel výběrem kódu v náhledu.
-        // Dočasně (do zrušení cz-117 v #89 5/7): kód, který si předmět nese
-        // v definici, obecným kódem není.
         $candidates = array_filter(
             $candidates,
-            static fn (array $def): bool => !empty($def['reverseCharge'])
-                && !isset($def['reverseChargeCode']),
+            static fn (array $def): bool => !empty($def['reverseCharge']),
         );
         return self::pick($candidates, 'tuzemské přenesení daňové povinnosti');
     }

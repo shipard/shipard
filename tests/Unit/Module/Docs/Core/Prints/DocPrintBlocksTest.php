@@ -124,13 +124,14 @@ class DocPrintBlocksTest extends TestCase
             vatCodes: new DocVatCodes(
                 [
                     'cz-120' => ['name' => 'Základní', 'print' => 'Základní'],
-                    'cz-150' => ['name' => 'Základní - PDP 4', 'print' => 'Základní - přenesení', 'note' => 'pdp4'],
-                    'cz-152' => ['name' => 'Základní - PDP 5', 'note' => 'pdp5'],
+                    'cz-150' => ['name' => 'Základní - PDP', 'print' => 'Základní - přenesení', 'note' => 'pdp'],
+                    // Jiná poznámka se stejným textem a kód bez `print`.
+                    'cz-151' => ['name' => 'Snížená - PDP', 'note' => 'pdpReduced'],
                     'cz-190' => ['name' => 'EU', 'print' => 'EU/Zboží', 'note' => 'eu'],
                 ],
                 [
-                    'pdp4' => ['text' => 'Daň odvede zákazník'],
-                    'pdp5' => ['text' => 'Daň odvede zákazník'],
+                    'pdp'        => ['text' => 'Daň odvede zákazník'],
+                    'pdpReduced' => ['text' => 'Daň odvede zákazník'],
                     'eu'   => ['text' => 'Osvobozeno podle § 64'],
                 ],
             ),
@@ -689,7 +690,7 @@ class DocPrintBlocksTest extends TestCase
             rows: [
                 self::itemRow(['vat_code' => 'cz-190']),
                 self::itemRow(['vat_code' => 'cz-150']),
-                self::itemRow(['vat_code' => 'cz-152']),
+                self::itemRow(['vat_code' => 'cz-151']),
             ],
             recap: [
                 ['vat_code' => 'cz-150', 'vat_pct' => 21.0, 'base' => 1000.0, 'tax' => 0.0, 'total' => 1000.0,
@@ -704,9 +705,9 @@ class DocPrintBlocksTest extends TestCase
         $rows = (new DocRowsBlock())->build($context)['rows'];
         $data = (new DocVatRecapBlock())->build($context);
 
-        // Značky v pořadí prvního použití; pdp4 a pdp5 mají stejný text → jedna značka.
+        // Značky v pořadí prvního použití; dvě poznámky se stejným textem → jedna značka.
         $this->assertSame(['1', '2', '2'], array_map(static fn (array $r) => $r['vat']['noteMark'], $rows));
-        $this->assertSame('Základní - PDP 5', $rows[2]['vat']['label'], 'bez `print` → název kódu');
+        $this->assertSame('Snížená - PDP', $rows[2]['vat']['label'], 'bez `print` → název kódu');
 
         $this->assertSame([
             ['label' => 'Základní - přenesení', 'pct' => 21.0, 'base' => 1000.0, 'tax' => 0.0, 'total' => 1000.0,

@@ -393,8 +393,8 @@ státu (např. `sk-110` na Slovensku).
         "vatReturnRow": 40
     },
     "cz-115": {
-        "fullName":  "Tuzemsko/Vstup/Základní - přenesení DP4",
-        "name":      "Základní - PDP 4",
+        "fullName":  "Tuzemsko/Vstup/Základní - přenesení DP",
+        "name":      "Základní - PDP",
         "category":  "standard",
         "place":     "domestic",
         "direction": "input",
@@ -402,7 +402,6 @@ státu (např. `sk-110` na Slovensku).
         "sumTax":         0,
         "reverseVatCode": "cz-203",
         "reverseCharge":      1,
-        "reverseChargeCode":  4,
         "vatReturnRow":   43
     },
     "cz-203": {
@@ -438,8 +437,7 @@ státu (např. `sk-110` na Slovensku).
 | `sumTotal` | 0/1 | 1 | Započítávat celkem do součtu |
 | `hidden` | 0/1 | 0 | Skrýt v roletce výběru (jen pro odpárované generování) |
 | `reverseVatCode` | string | null | Klíč párového kódu (oddanění) |
-| `reverseCharge` | 0/1 | 0 | Jde o reverse charge plnění |
-| `reverseChargeCode` | int | null | Kód PDP (4 nebo 5 v ČR) |
+| `reverseCharge` | 0/1 | 0 | Tuzemské přenesení daňové povinnosti. Kód nese jen místo, směr a sazbu; **předmět plnění** (kód pro kontrolní hlášení A.1 / B.1) je samostatný údaj řádku dokladu a rekapitulace (`reverse_charge_code`) z číselníku `reverseChargeSubjects` — řádek s takovým kódem ho vyžaduje (#89, `docs/vat-calculation.md` § 4.1) |
 | `vatReturnRow` | int | 0 | Řádek v Přiznání DPH (0 = nezahrnuto) |
 | `intracomCode` | int | null | Kód pro Souhrnné hlášení (zboží 0, služby 3) |
 | `note` | string | null | Klíč do `vatNotes` (text na doklad pro uživatele) |
@@ -516,7 +514,7 @@ pro Přiznání DPH a budoucí účtování.
 Mechanismus:
 
 1. Uživatel vybere na řádku dokladu kód s `reverseVatCode != null`
-   (např. `cz-115` Tuzemsko/Vstup/Základní – PDP 4)
+   (např. `cz-115` Tuzemsko/Vstup/Základní – PDP)
 2. Při sestavení rekapitulace v `Document::beforeSave`:
    - **Dodanění** = řádek pro `cz-115` se základem ze vstupních dat,
      `tax = 0` (`noPayTax: 1`, `sumTax: 0` znamená nezapočítávat do součtu)
@@ -555,8 +553,7 @@ Texty, které se mohou objevit na dokladu (podle použitých kódů).
 
 ```jsonc
 "vatNotes": {
-    "pdp4": { "text": "Daň odvede zákazník" },
-    "pdp5": { "text": "Daň odvede zákazník" },
+    "pdp":  { "text": "Daň odvede zákazník" },
     "eu":   { "text": "Daň odvede zákazník" }
 }
 ```

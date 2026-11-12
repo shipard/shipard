@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Vat\Accounting;
 
+use Shipard\Module\Economy\Accounting\VatAnalytics;
 use Shipard\Module\Economy\Vat\FilingDocument;
 use Shipard\Module\Economy\Vat\FilingSnapshotLoader;
 
@@ -94,9 +95,12 @@ final class VatReturnAccountingBuilder
     {
         $codes = array_unique(array_merge(array_keys($in->taxByCode), array_keys($in->previousTaxByCode)));
         sort($codes);
-        foreach ($codes as $code) {
-            $code  = (string) $code;
-            $delta = round(($in->taxByCode[$code] ?? 0.0) - ($in->previousTaxByCode[$code] ?? 0.0), 2);
+        foreach ($codes as $key) {
+            // Klíč = kód DPH, u předmětu plnění s vlastní analytikou
+            // `kód|předmět` (343117 pro cz-115 + předmět 5, #89 D9).
+            $key   = (string) $key;
+            [$code, $subject] = VatAnalytics::splitKey($key);
+            $delta = round(($in->taxByCode[$key] ?? 0.0) - ($in->previousTaxByCode[$key] ?? 0.0), 2);
             if (abs($delta) < self::TOLERANCE) {
                 continue;
             }
@@ -115,7 +119,7 @@ final class VatReturnAccountingBuilder
             if ($delta < 0) {
                 $side = $side === self::SIDE_CREDIT ? self::SIDE_DEBIT : self::SIDE_CREDIT;
             }
-            $account = ($in->analyticAccount)($code);
+            $account = ($in->analyticAccount)($key);
             if ($account === null) {
                 $this->message(
                     self::MSG_ACCOUNT_MISSING,
@@ -124,7 +128,12 @@ final class VatReturnAccountingBuilder
                 );
                 continue;
             }
-            $this->row($account, $side, abs($delta), (string) ($vatCode['fullName'] ?? $code));
+            $this->row(
+                $account,
+                $side,
+                abs($delta),
+                (string) ($vatCode['fullName'] ?? $code) . ($subject !== null ? " · předmět plnění {$subject}" : ''),
+            );
         }
     }
 

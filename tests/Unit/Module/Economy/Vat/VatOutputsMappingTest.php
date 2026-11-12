@@ -28,7 +28,7 @@ class VatOutputsMappingTest extends TestCase
 
         // Předmět plnění mapování nenese — čte se z rekapitulace dokladu (#89 D13).
         $this->assertSame(['group' => 'B1'], $mapping->kh('cz-115'));
-        $this->assertSame(['group' => 'B1'], $mapping->kh('cz-117'));
+        $this->assertSame(['group' => 'A1'], $mapping->kh('cz-150'));
         $this->assertSame(['row' => 40, 'col' => 'reduced'], $mapping->dp3('cz-118'));
         $this->assertSame(['kod' => 0], $mapping->sh('cz-201'));
         $this->assertSame(['kod' => 3], $mapping->sh('cz-202'));

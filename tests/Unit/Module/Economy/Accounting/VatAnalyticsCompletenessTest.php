@@ -16,6 +16,10 @@ use Shipard\Core\Utils\JsoncParser;
  *      v accountingRules.cz.jsonc,
  *   2. účet 343{NNN} v accountChartDefault.jsonc i accountChartNpo.jsonc.
  *
+ * Jediná výjimka z konvence (#89 D9): odpočet u tuzemského přenesení
+ * s předmětem plnění 5 jde na 343117 — řádek zpřesněný sloupcem
+ * `reverse_charge_code`, který musí předcházet obecnému řádku cz-115.
+ *
  * Programová kontrola — žádný ruční seznam; nový kód v číselníku bez
  * mapování/účtu tenhle test shodí.
  */
@@ -64,10 +68,14 @@ class VatAnalyticsCompletenessTest extends TestCase
             self::MODULES . '/economy/accounting/config/accountingRules.cz.jsonc',
         );
 
+        // Obecný řádek kódu = query jen s `vat_code`; řádky zpřesněné
+        // dalším sloupcem (předmět plnění, viz test níže) konvenci nenesou.
         $mapped = [];
         foreach ($rules['accounts'] as $entry) {
-            if (($entry['cat'] ?? null) === 'vat' && isset($entry['query']['vat_code'])) {
-                $mapped[(string) $entry['query']['vat_code']] = (string) $entry['accountMask'];
+            if (($entry['cat'] ?? null) === 'vat' && array_keys($entry['query'] ?? []) === ['vat_code']) {
+                $code = (string) $entry['query']['vat_code'];
+                $this->assertArrayNotHasKey($code, $mapped, "Kód {$code} má dva obecné mapovací řádky");
+                $mapped[$code] = (string) $entry['accountMask'];
             }
         }
 
@@ -123,6 +131,61 @@ class VatAnalyticsCompletenessTest extends TestCase
                     "Rozvrh {$label} nemá účet {$account} (kód {$code})",
                 );
             }
+        }
+    }
+
+
+    /**
+     * #89 D9: 343117 pro cz-115 + předmět plnění 5 — řádek před obecným
+     * řádkem cz-115 (první odpovídající vyhrává), účet v obou seed osnovách;
+     * kódy cz-117 / cz-152 a účet 343152 zanikly.
+     */
+    public function testSubjectFiveRuleStandsBeforeGeneralReverseChargeRow(): void
+    {
+        $rules = JsoncParser::parseFile(
+            self::MODULES . '/economy/accounting/config/accountingRules.cz.jsonc',
+        );
+        $vatRules = array_values(array_filter(
+            $rules['accounts'],
+            static fn (array $e): bool => ($e['cat'] ?? null) === 'vat',
+        ));
+
+        $refined = array_values(array_filter(
+            $vatRules,
+            static fn (array $e): bool => count($e['query'] ?? []) > 1,
+        ));
+        $this->assertSame(
+            [['cat' => 'vat', 'accountMask' => '343117', 'query' => ['vat_code' => 'cz-115', 'reverse_charge_code' => '5']]],
+            $refined,
+            'jediný řádek zpřesněný předmětem plnění',
+        );
+
+        $position = static function (array $query) use ($vatRules): int {
+            foreach ($vatRules as $i => $entry) {
+                if (($entry['query'] ?? null) === $query) {
+                    return $i;
+                }
+            }
+            return -1;
+        };
+        $this->assertGreaterThanOrEqual(0, $position(['vat_code' => 'cz-115']));
+        $this->assertLessThan(
+            $position(['vat_code' => 'cz-115']),
+            $position(['vat_code' => 'cz-115', 'reverse_charge_code' => '5']),
+            'řádek 343117 musí být před obecným řádkem cz-115',
+        );
+
+        foreach ($vatRules as $entry) {
+            $this->assertNotContains($entry['query']['vat_code'] ?? null, ['cz-117', 'cz-152']);
+            $this->assertNotSame('343152', $entry['accountMask']);
+        }
+        foreach (['accountChartDefault.jsonc', 'accountChartNpo.jsonc'] as $chart) {
+            $numbers = array_map(
+                static fn (array $e): string => (string) $e['number'],
+                JsoncParser::parseFile(self::MODULES . '/economy/accounting/config/' . $chart),
+            );
+            $this->assertContains('343117', $numbers, $chart);
+            $this->assertNotContains('343152', $numbers, $chart);
         }
     }
 }

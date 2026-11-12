@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Vat;
 
+use Shipard\Module\Economy\Accounting\VatAnalytics;
+
 /**
  * Čtení snapshotu podání DPH (#55 D15) — řádky přiznání, dokladové součty
  * per kód a **kumulativní podaný stav** instance. Sdílené `FilingComposer`
@@ -55,19 +57,30 @@ final class FilingSnapshotLoader
      * řádky, které jdou do přiznání (`dp3_row` není NULL): kód mimo přiznání
      * vypořádání analytik 343 nemění.
      *
-     * @return array<string, float> kód → daň
+     * Předmět plnění tuzemského přenesení dělí součet jen tam, kde ho
+     * účtovací předpis rozlišuje vlastní analytikou (`$distinguished`,
+     * {@see VatAnalytics::distinguishedSubjects()} — odpočet u předmětu 5
+     * na 343117, #89 D9): klíč je pak `kód|předmět`, jinak jen kód.
+     *
+     * @param array<string, list<string>> $distinguished kód DPH → předměty s vlastní analytikou
+     * @return array<string, float> klíč ({@see VatAnalytics::key()}) → daň
      */
-    public function taxByCode(int $filingId): array
+    public function taxByCode(int $filingId, array $distinguished = []): array
     {
         $rows = $this->db->fetchAll(
-            'SELECT [vat_code], SUM([tax_dom]) AS [tax] FROM [economy_vat_filing_items]'
-            . ' WHERE [filing] = %i AND [dp3_row] IS NOT NULL GROUP BY [vat_code] ORDER BY [vat_code]',
+            'SELECT [vat_code], [kh_reverse_charge_code] AS [subject], SUM([tax_dom]) AS [tax]'
+            . ' FROM [economy_vat_filing_items]'
+            . ' WHERE [filing] = %i AND [dp3_row] IS NOT NULL'
+            . ' GROUP BY [vat_code], [kh_reverse_charge_code] ORDER BY [vat_code], [kh_reverse_charge_code]',
             $filingId,
         );
         $out = [];
         foreach ($rows as $row) {
-            $out[(string) $row['vat_code']] = round((float) $row['tax'], 2);
+            $subject = trim((string) ($row['subject'] ?? ''));
+            $key = VatAnalytics::key((string) $row['vat_code'], $subject !== '' ? $subject : null, $distinguished);
+            $out[$key] = round(($out[$key] ?? 0.0) + (float) $row['tax'], 2);
         }
+        ksort($out);
         return $out;
     }
 

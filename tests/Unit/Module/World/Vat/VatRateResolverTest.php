@@ -150,12 +150,15 @@ class VatRateResolverTest extends TestCase
 
         // Expected visible codes for output+domestic:
         // cz-120, cz-121, cz-310, cz-311, cz-122, cz-123, cz-150, cz-151,
-        // cz-350, cz-152. Hidden cz-203 / cz-204 / cz-370 must be excluded.
+        // cz-350. Hidden cz-203 / cz-204 / cz-370 must be excluded.
         $this->assertContains('cz-120', $keys);
         $this->assertContains('cz-150', $keys);
         $this->assertNotContains('cz-110', $keys); // input
         $this->assertNotContains('cz-201', $keys); // intracom
         $this->assertNotContains('cz-203', $keys); // hidden
+        // Kódy přenesení DP5 zanikly (#89 D8) — předmět plnění je údaj řádku.
+        $this->assertNotContains('cz-152', $keys);
+        $this->assertNull($r->getVatCode('cz', 'cz-117'));
     }
 
     public function testGetVatCodesSkipsHiddenByDefault(): void
@@ -185,7 +188,7 @@ class VatRateResolverTest extends TestCase
     {
         $r = $this->realResolver();
         $codes = $r->getVatCodes('cz', includeHidden: true);
-        $this->assertCount(61, $codes);
+        $this->assertCount(59, $codes);
     }
 
     // --- getVatCode ---------------------------------------------------------
@@ -224,8 +227,9 @@ class VatRateResolverTest extends TestCase
     {
         $r = $this->realResolver();
         $notes = $r->getVatNotes('cz');
-        $this->assertArrayHasKey('pdp4', $notes);
-        $this->assertArrayHasKey('pdp5', $notes);
+        $this->assertArrayHasKey('pdp', $notes);
+        $this->assertArrayNotHasKey('pdp4', $notes);
+        $this->assertArrayNotHasKey('pdp5', $notes);
         $this->assertArrayHasKey('eu', $notes);
     }
 
@@ -399,7 +403,7 @@ class VatRateResolverTest extends TestCase
                 ],
             ],
             'vatPercents' => [],
-            'vatNotes' => ['pdp4' => ['text' => 'X']],
+            'vatNotes' => ['pdp' => ['text' => 'X']],
         ]);
         $errors = $r->validateCountryConfig('cz');
         $this->assertCount(1, $errors);

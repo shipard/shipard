@@ -543,7 +543,8 @@ plnil zemí dodavatele a `vat.place` hodnotami mimo číselník
   s `vatCode: null` a bez `isReversePair`.
 - Server (nezávisle na verzi promptu): `VatCodeDerivation` odvodí kód
   z číselníku země naší registrace k DUZP (EU služby `cz-217`, EU zboží
-  `cz-215`, třetí země `cz-417`, PDP `cz-115` / `cz-117`, tuzemsko podle
+  `cz-215`, třetí země `cz-417`, PDP `cz-115` (tehdy i zvláštní kód pro
+  předmět 5, zrušený v #89), tuzemsko podle
   sazby); `registrationCountry` u přijatého dokladu vždy z naší
   registrace (D2); rekapitulace dodavatele se u samovyměření nepřebírá
   (D3); kód v rozporu se signály (i z historie řádků) nahradí odvozený

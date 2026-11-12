@@ -15,6 +15,7 @@ use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Economy\Accounting\AccountingRules;
+use Shipard\Module\Economy\Accounting\VatAnalytics;
 use Shipard\Module\Economy\Accounting\AccountMaskResolver;
 use Shipard\Module\Economy\Vat\FilingDocument;
 use Shipard\Module\Economy\Vat\FilingSnapshotLoader;
@@ -230,6 +231,9 @@ final class VatReturnAccountingService
         $accountRules = is_array($rules) && is_array($rules['accounts'] ?? null) ? $rules['accounts'] : [];
         $resolver     = new AccountMaskResolver($this->db);
         $dateEnd      = (string) $period['date_end'];
+        // Předměty plnění s vlastní analytikou (343117 pro cz-115 + předmět
+        // 5, #89 D9) — jen pro ně se součet daně dělí podle předmětu.
+        $distinguished = VatAnalytics::distinguishedSubjects($accountRules);
 
         $previousId = (int) ($filing['previous_filing'] ?? 0);
         $context['previousFilingId'] = $previousId > 0 ? $previousId : null;
@@ -238,16 +242,16 @@ final class VatReturnAccountingService
             kind: (string) $filing['filing_kind'],
             periodName: (string) $period['name'],
             dateEnd: $dateEnd,
-            taxByCode: $loader->taxByCode($filingId),
-            previousTaxByCode: $previousId > 0 ? $loader->taxByCode($previousId) : [],
+            taxByCode: $loader->taxByCode($filingId, $distinguished),
+            previousTaxByCode: $previousId > 0 ? $loader->taxByCode($previousId, $distinguished) : [],
             exactRows: $loader->exactRows($filingId),
             previousExactRows: $previousId > 0 ? $loader->exactRows($previousId) : [],
             filedRows: $loader->filedRows($filingId),
             previousCumulativeFiledRows: $previousId > 0 ? $loader->cumulativeFiledRows($previousId) : [],
             vatCodes: $vatCodes,
-            analyticAccount: fn (string $code): ?array => $this->resolveMasks(
+            analyticAccount: fn (string $key): ?array => $this->resolveMasks(
                 $resolver,
-                $this->analyticMasks($accountRules, $code),
+                VatAnalytics::masks($accountRules, ...VatAnalytics::splitKey($key)),
                 $dateEnd,
             ),
             categoryAccounts: [
@@ -297,33 +301,6 @@ final class VatReturnAccountingService
             }
         }
         return $masks;
-    }
-
-    /**
-     * Analytika 343 pro kód DPH: maska z předpisu (`cat: vat`, `query.vat_code`),
-     * jinak konvence `343{NNN}` / `343{CC}{NNN}` z docs/accounting.md §5.
-     *
-     * @param list<array<string, mixed>> $accountRules
-     * @return list<string>
-     */
-    private function analyticMasks(array $accountRules, string $code): array
-    {
-        $masks = [];
-        foreach ($accountRules as $rule) {
-            if (($rule['cat'] ?? null) !== 'vat' || (($rule['query']['vat_code'] ?? null) !== $code)) {
-                continue;
-            }
-            foreach ((array) ($rule['accountMask'] ?? []) as $mask) {
-                $masks[] = (string) $mask;
-            }
-        }
-        if ($masks !== []) {
-            return $masks;
-        }
-        $dash    = strpos($code, '-');
-        $country = $dash !== false ? substr($code, 0, $dash) : 'cz';
-        $number  = $dash !== false ? substr($code, $dash + 1) : $code;
-        return [$country === 'cz' ? '343' . $number : '343' . strtoupper($country) . $number];
     }
 
     /**

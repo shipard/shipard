@@ -28,7 +28,7 @@ class ControlStatementCalculatorTest extends TestCase
             'cz-123' => ['dp3' => ['row' => 50], 'kh' => null, 'sh' => null],
             'cz-110' => ['dp3' => ['row' => 40, 'col' => 'full'], 'kh' => ['group' => 'B2B3'], 'sh' => null],
             'cz-115' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1'], 'sh' => null],
-            'cz-117' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1'], 'sh' => null],
+            'cz-116' => ['dp3' => ['row' => 44, 'col' => 'full'], 'kh' => ['group' => 'B1'], 'sh' => null],
             'cz-150' => ['dp3' => ['row' => 25], 'kh' => ['group' => 'A1'], 'sh' => null],
             'cz-203' => ['dp3' => ['row' => 10], 'kh' => null, 'sh' => null],
             'cz-205' => ['dp3' => ['row' => 3], 'kh' => ['group' => 'A2'], 'sh' => null],
@@ -42,7 +42,7 @@ class ControlStatementCalculatorTest extends TestCase
             'cz-123' => ['category' => 'exempt'],
             'cz-110' => ['category' => 'standard'],
             'cz-115' => ['category' => 'standard'],
-            'cz-117' => ['category' => 'standard'],
+            'cz-116' => ['category' => 'reduced'],
             'cz-150' => ['category' => 'standard'],
             'cz-203' => ['category' => 'standard'],
             'cz-205' => ['category' => 'standard'],
@@ -311,14 +311,15 @@ class ControlStatementCalculatorTest extends TestCase
         $doc = $this->doc([
             'recap' => [
                 ['vat_code' => 'cz-115', 'base_dom' => 20000.0, 'tax_dom' => 4200.0, 'reverse_charge_code' => '4'],
-                ['vat_code' => 'cz-117', 'base_dom' => 10000.0, 'tax_dom' => 2100.0, 'reverse_charge_code' => '4'],
+                ['vat_code' => 'cz-116', 'base_dom' => 10000.0, 'tax_dom' => 1200.0, 'reverse_charge_code' => '4'],
             ],
         ]);
         $rows = $this->calculator()->calculate([$doc])['sections']['B1'];
 
         $this->assertCount(1, $rows);
         $this->assertSame('4', $rows[0]['kodPredPl']);
-        $this->assertSame(30000.0, $rows[0]['base1']);
+        $this->assertSame(20000.0, $rows[0]['base1']);
+        $this->assertSame(10000.0, $rows[0]['base2']);
     }
 
     /**

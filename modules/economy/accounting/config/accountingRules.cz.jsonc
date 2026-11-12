@@ -105,7 +105,8 @@
         {"cat": "proformas.in",      "accountMask": "757"},
         {"cat": "offbalance.contra", "accountMask": "799"},
 
-        // DPH analytiky per kód — konvence 343{NNN}, NNN = číselná část kódu.
+        // DPH analytiky per kód — konvence 343{NNN}, NNN = číselná část kódu
+        // (jediná výjimka: 343117 pro cz-115 + předmět plnění 5, viz níže).
         // Řádek má každý kód, který může vyprodukovat nenulovou daň: nenulová
         // hodnota ve vatPercents (vč. historické 3xx řady — zpětně datované
         // a migrované doklady) nebo cíl reverseVatCode (oddaňovací páry).
@@ -117,10 +118,15 @@
         {"cat": "vat", "accountMask": "343111", "query": {"vat_code": "cz-111"}},
         {"cat": "vat", "accountMask": "343301", "query": {"vat_code": "cz-301"}},
         {"cat": "vat", "accountMask": "343302", "query": {"vat_code": "cz-302"}},
+        // Tuzemské přenesení daňové povinnosti (#89 D9): odpočet u předmětu
+        // plnění 5 (zboží z přílohy č. 5) se účtuje na 343117, aby deník
+        // seděl po účtech se starým systémem (kód EUCZ117). Řádek musí být
+        // PŘED obecným řádkem cz-115 — první odpovídající vyhrává; předmět
+        // nese řádek rekapitulace (`reverse_charge_code`).
+        {"cat": "vat", "accountMask": "343117", "query": {"vat_code": "cz-115", "reverse_charge_code": "5"}},
         {"cat": "vat", "accountMask": "343115", "query": {"vat_code": "cz-115"}},
         {"cat": "vat", "accountMask": "343116", "query": {"vat_code": "cz-116"}},
         {"cat": "vat", "accountMask": "343340", "query": {"vat_code": "cz-340"}},
-        {"cat": "vat", "accountMask": "343117", "query": {"vat_code": "cz-117"}},
         {"cat": "vat", "accountMask": "343118", "query": {"vat_code": "cz-118"}},
         {"cat": "vat", "accountMask": "343119", "query": {"vat_code": "cz-119"}},
         {"cat": "vat", "accountMask": "343341", "query": {"vat_code": "cz-341"}},
@@ -132,7 +138,6 @@
         {"cat": "vat", "accountMask": "343150", "query": {"vat_code": "cz-150"}},
         {"cat": "vat", "accountMask": "343151", "query": {"vat_code": "cz-151"}},
         {"cat": "vat", "accountMask": "343350", "query": {"vat_code": "cz-350"}},
-        {"cat": "vat", "accountMask": "343152", "query": {"vat_code": "cz-152"}},
         {"cat": "vat", "accountMask": "343203", "query": {"vat_code": "cz-203"}},
         {"cat": "vat", "accountMask": "343204", "query": {"vat_code": "cz-204"}},
         {"cat": "vat", "accountMask": "343370", "query": {"vat_code": "cz-370"}},

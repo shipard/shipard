@@ -480,39 +480,11 @@ final class AccountingEngine
 
     /**
      * Obecný filtr `query` {sloupec: hodnota} nad zdrojovým záznamem —
-     * volné porovnání (DB vrací stringy, předpis píše čísla). Hodnota-pole
-     * je operátorový objekt: `{"$ne": v}` (nerovnost), `{"$in": [v, …]}`.
-     * Neznámý operátor je chyba předpisu a padá hlasitě — tiché „nikdy
-     * nematchne" by krok jen zmizel. Sdílené kroky i `accounts[]` kategorie.
+     * sdílené kroky i `accounts[]` kategorie; vyhodnocení {@see RuleQuery}.
      */
     private function matchesQuery(array $step, array $record): bool
     {
-        $query = $step['query'] ?? null;
-        if (!is_array($query)) {
-            return true;
-        }
-        foreach ($query as $col => $expected) {
-            $actual = $record[$col] ?? null;
-            if (is_array($expected)) {
-                foreach ($expected as $op => $value) {
-                    $ok = match ((string) $op) {
-                        '$ne'   => $actual != $value,
-                        '$in'   => in_array($actual, is_array($value) ? $value : [$value]),
-                        default => throw new \LogicException(
-                            "Účtovací předpis: neznámý operátor '{$op}' ve query sloupce '{$col}'",
-                        ),
-                    };
-                    if (!$ok) {
-                        return false;
-                    }
-                }
-                continue;
-            }
-            if ($actual != $expected) {
-                return false;
-            }
-        }
-        return true;
+        return RuleQuery::matches($step['query'] ?? null, $record);
     }
 
     /**
