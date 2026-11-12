@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Assets\Depreciation;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\I18n\DisplayDate;
 
 /**
  * Texty hlášení plánu odpisů z cfgItem `economy.assets.planMessages`
@@ -17,8 +18,14 @@ final class PlanMessageTexts
 {
     public const CFG_ITEM = 'economy.assets.planMessages';
 
-    public function __construct(private readonly ?ConfigRuntime $config)
-    {
+    /**
+     * @param string $language Jazyk, ve kterém se do textu zapíše datum
+     *        (`DisplayDate`, #133 D73) — jazyk požadavku tam, kde ho volající zná.
+     */
+    public function __construct(
+        private readonly ?ConfigRuntime $config,
+        private readonly string $language = 'en',
+    ) {
     }
 
     public function text(PlanMessage $message): string
@@ -36,18 +43,18 @@ final class PlanMessageTexts
 
         $replace = [];
         foreach ($message->params as $name => $value) {
-            $replace['{' . $name . '}'] = self::format($value);
+            $replace['{' . $name . '}'] = $this->format($value);
         }
         return strtr($template, $replace);
     }
 
-    private static function format(mixed $value): string
+    private function format(mixed $value): string
     {
         if (is_float($value)) {
             return Amounts::money($value);
         }
         if (is_string($value) && Period::isDate($value)) {
-            return (new \DateTimeImmutable($value))->format('j. n. Y');
+            return (string) DisplayDate::date($value, $this->language);
         }
         return (string) $value;
     }

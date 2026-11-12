@@ -42,7 +42,7 @@ class PersonsLookupTest extends TestCase
         ]);
 
         $this->assertSame('Jan Novák', $item->primary);
-        $this->assertSame('Datum narození 14.05.1990', $item->secondary);
+        $this->assertSame('Datum narození 1990-05-14', $item->secondary);
     }
 
     public function testPersonWithoutBirthDateHasNoSecondary(): void
@@ -101,7 +101,7 @@ class PersonsLookupTest extends TestCase
         $this->assertSame('#13', $item->primary);
     }
 
-    public function testInvalidBirthDateProducesNoSecondary(): void
+    public function testInvalidBirthDateKeepsValue(): void
     {
         $item = PersonsLookup::buildItem([
             'id'          => 5,
@@ -112,7 +112,8 @@ class PersonsLookupTest extends TestCase
             'person_id'   => 'P000005',
         ]);
 
-        $this->assertNull($item->secondary);
+        // Hodnota, která datem není, se vrací beze změny (DisplayDate, #133 D73).
+        $this->assertSame('Datum narození not-a-date', $item->secondary);
     }
 
     public function testResolveOnNullDbReturnsEmpty(): void

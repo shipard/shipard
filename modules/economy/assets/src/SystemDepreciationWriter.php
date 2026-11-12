@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Assets;
 
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 use Shipard\Module\Economy\Assets\Depreciation\PlanRow;
 use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
@@ -45,7 +46,7 @@ class SystemDepreciationWriter
             $locked = $this->lockedMonthLabel($row->date);
             if ($locked !== null) {
                 throw new \DomainException(
-                    'Odpis k ' . (new \DateTimeImmutable($row->date))->format('j. n. Y')
+                    'Odpis k ' . DisplayDate::date($row->date, 'cs')
                     . " nelze založit — účetní měsíc {$locked} je zamčený.",
                 );
             }

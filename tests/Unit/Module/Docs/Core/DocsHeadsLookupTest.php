@@ -53,7 +53,7 @@ class DocsHeadsLookupTest extends TestCase
         $this->assertCount(1, $items);
         $this->assertSame(50, $items[0]->id);
         $this->assertSame('126A0007 — Alfa s.r.o.', $items[0]->primary);
-        $this->assertSame('10. 3. 2026 · 1 210,00 CZK', $items[0]->secondary);
+        $this->assertSame('2026-03-10 · 1 210,00 CZK', $items[0]->secondary);
     }
 
     public function testFiltersByDocTypeAndPartner(): void
@@ -95,7 +95,7 @@ class DocsHeadsLookupTest extends TestCase
         $item = DocsHeadsLookup::buildItem(['id' => 7, 'doc_number' => '', 'partner_name' => 'Beta a.s.',
             'issue_date' => '2026-01-05', 'total_amount' => -500.5, 'doc_currency' => 'eur']);
         $this->assertSame('Beta a.s.', $item->primary, 'koncept bez čísla: jen partner');
-        $this->assertSame('5. 1. 2026 · -500,50 EUR', $item->secondary);
+        $this->assertSame('2026-01-05 · -500,50 EUR', $item->secondary);
 
         $item = DocsHeadsLookup::buildItem(['id' => 8, 'doc_number' => '', 'partner_name' => '']);
         $this->assertSame('#8', $item->primary);

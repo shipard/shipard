@@ -180,7 +180,7 @@ class AssetsForm extends TableForm
                         required: true,
                         hint: $acquired === null
                             ? 'Nabídka platí pro dnešní zařazení; platnost k datu zařazení se ověří při zařazení.'
-                            : 'Nabídka platí pro zařazení ' . (new \DateTimeImmutable($acquired))->format('j. n. Y') . '.',
+                            : 'Nabídka platí pro zařazení ' . $this->formatDate($acquired) . '.',
                     )
                     ->select(
                         'tax_rule',

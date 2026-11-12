@@ -116,7 +116,7 @@ class DepreciationScheduleBuilderTest extends AssetReportTestCase
         // Rok zařazení: daňový odpis celý (11 %), účetní až od dalšího měsíce.
         $this->assertSame(5500.0, $this->balance($rows['asset:2'], 'taxDepreciation'));
         $this->assertSame(0.0, $this->balance($rows['asset:2'], 'accDepreciation'));
-        $this->assertStringContainsString('vyřazeno 1. 1. 2024', $rows['asset:3']['values']['state']);
+        $this->assertStringContainsString('vyřazeno 01.01.2024', $rows['asset:3']['values']['state']);
         $this->assertSame(0.0, $this->balance($rows['asset:3'], 'taxResidual'));
         $this->assertSame(0.0, $this->balance($rows['asset:3'], 'accResidual'));
         $this->assertSame(80000.0, $this->balance($rows['asset:3'], 'accEntry'));

@@ -31,6 +31,14 @@ class LookupRegistry
         $this->map[$table] = $class;
     }
 
+    /** Jazyk požadavku — předává se každému vytvořenému lookupu (`setLanguage`). */
+    private ?string $language = null;
+
+    public function setLanguage(string $language): void
+    {
+        $this->language = $language;
+    }
+
     public function has(string $table): bool
     {
         return isset($this->map[$table]);
@@ -49,6 +57,9 @@ class LookupRegistry
         $instance = new $class();
         $instance->setDb($db);
         $instance->setConfig($config);
+        if ($this->language !== null) {
+            $instance->setLanguage($this->language);
+        }
         if ($tableDef !== null) {
             $instance->setTableDef($tableDef);
         }

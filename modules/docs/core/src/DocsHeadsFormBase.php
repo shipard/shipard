@@ -180,7 +180,7 @@ abstract class DocsHeadsFormBase extends TableForm
         $data[self::EXCHANGE_RATE_HINT_KEY] = sprintf(
             'Kurz %s k %s není v kurzovním lístku — zadej ho ručně.',
             strtoupper($currency),
-            self::formatDateForHint($date),
+            $this->formatDate($date) ?? $date,
         );
     }
 
@@ -205,12 +205,6 @@ abstract class DocsHeadsFormBase extends TableForm
             ExchangeRateListTypes::fromConfig($this->config, $this->dsConfig?->getCountry() ?? 'cz'),
             strtolower($this->homeCurrency()),
         );
-    }
-
-    private static function formatDateForHint(string $date): string
-    {
-        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
-        return $parsed !== false ? $parsed->format('j. n. Y') : $date;
     }
 
     /**
@@ -1824,8 +1818,8 @@ abstract class DocsHeadsFormBase extends TableForm
             if (!isset($options[$type])) {
                 continue;
             }
-            $begin = $row['date_begin'] instanceof \DateTimeInterface ? $row['date_begin']->format('d.m.Y') : (string) $row['date_begin'];
-            $end = $row['date_end'] instanceof \DateTimeInterface ? $row['date_end']->format('d.m.Y') : (string) $row['date_end'];
+            $begin = $this->formatDate($row['date_begin']) ?? '';
+            $end = $this->formatDate($row['date_end']) ?? '';
             $options[$type][] = [
                 'value' => (int) $row['id'],
                 'label' => $row['name'] . ' (' . $begin . ' – ' . $end . ')',

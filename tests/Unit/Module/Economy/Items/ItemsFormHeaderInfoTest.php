@@ -94,7 +94,7 @@ class ItemsFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Platí', 'value' => '14.05.2024 – 31.12.2024']],
+            [['label' => 'Platí', 'value' => '2024-05-14 – 2024-12-31']],
             $info->info,
         );
     }
@@ -110,7 +110,7 @@ class ItemsFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Platí', 'value' => 'od 14.05.2024']],
+            [['label' => 'Platí', 'value' => 'od 2024-05-14']],
             $info->info,
         );
     }
@@ -126,7 +126,7 @@ class ItemsFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Platí', 'value' => 'do 31.12.2024']],
+            [['label' => 'Platí', 'value' => 'do 2024-12-31']],
             $info->info,
         );
     }
@@ -160,12 +160,11 @@ class ItemsFormHeaderInfoTest extends TestCase
         $this->assertSame([], $info->info);
     }
 
-    public function testValidityMalformedDateSkipped(): void
+    public function testValidityMalformedDateKeepsValue(): void
     {
         $form = $this->createForm();
 
-        // Když je datum v nepoužitelném formátu, formatHeaderDate vrátí ''
-        // a celá hodnota platnosti se zachová jako kdyby tam ten konec nebyl.
+        // Hodnota, která datem není, se vrací beze změny (DisplayDate, #133 D73).
         $info = $form->buildHeaderInfo([
             'name'       => 'Mléko 1 litr',
             'valid_from' => 'not-a-date',
@@ -174,7 +173,7 @@ class ItemsFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Platí', 'value' => 'do 31.12.2024']],
+            [['label' => 'Platí', 'value' => 'not-a-date – 2024-12-31']],
             $info->info,
         );
     }
@@ -222,7 +221,7 @@ class ItemsFormHeaderInfoTest extends TestCase
         $this->assertSame(
             [
                 ['label' => 'Kód',   'value' => 'ITEM-0001'],
-                ['label' => 'Platí', 'value' => '14.05.2024 – 31.12.2024'],
+                ['label' => 'Platí', 'value' => '2024-05-14 – 2024-12-31'],
             ],
             $info->info,
         );

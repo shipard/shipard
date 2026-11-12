@@ -252,7 +252,7 @@ final class JournalCheckBuilder implements ReportBuilder
                     [
                         'number'     => $finding['number'],
                         'kind'       => $cs ? 'nezaúčtovaná událost' : 'unposted event',
-                        'measure'    => $kind . ' ' . AssetReportSupport::czDate($finding['date']),
+                        'measure'    => $kind . ' ' . AssetReportSupport::displayDate($finding['date'], $cs),
                         'evidence'   => AssetReportSupport::money($finding['amount']),
                         'journal'    => AssetReportSupport::money(0.0),
                         'difference' => AssetReportSupport::money($finding['amount']),
@@ -264,8 +264,8 @@ final class JournalCheckBuilder implements ReportBuilder
                     ReportMessageSeverity::Warning,
                     'assets.journalCheck.unposted',
                     $cs
-                        ? sprintf('%s: %s z %s (%s) není zaúčtované.', $title, $kind, AssetReportSupport::czDate($finding['date']), Amounts::money($finding['amount']))
-                        : sprintf('%s: %s of %s (%s) is not posted.', $title, $kind, AssetReportSupport::czDate($finding['date']), Amounts::money($finding['amount'])),
+                        ? sprintf('%s: %s z %s (%s) není zaúčtované.', $title, $kind, AssetReportSupport::displayDate($finding['date'], $cs), Amounts::money($finding['amount']))
+                        : sprintf('%s: %s of %s (%s) is not posted.', $title, $kind, AssetReportSupport::displayDate($finding['date'], $cs), Amounts::money($finding['amount'])),
                 ),
             ];
         }

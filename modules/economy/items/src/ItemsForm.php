@@ -209,8 +209,8 @@ class ItemsForm extends TableForm
      */
     protected function formatValidityRange(mixed $validFrom, mixed $validTo): string
     {
-        $from = $this->formatHeaderDate($validFrom);
-        $to   = $this->formatHeaderDate($validTo);
+        $from = $this->formatDate($validFrom) ?? '';
+        $to   = $this->formatDate($validTo) ?? '';
 
         if ($from !== '' && $to !== '') {
             return $from . ' – ' . $to;
@@ -222,19 +222,6 @@ class ItemsForm extends TableForm
             return 'do ' . $to;
         }
         return '';
-    }
-
-    /**
-     * Bezpečně z DB datové hodnoty (DATE jako 'Y-m-d' string) udělá formát
-     * vhodný pro hlavičku („14.05.2024"). Konzistentní s PersonsForm.
-     */
-    protected function formatHeaderDate(mixed $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-        $dt = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $value);
-        return $dt instanceof \DateTimeImmutable ? $dt->format('d.m.Y') : '';
     }
 
     public function recalculate(string $changedColumn, array $data): RecalculateResult

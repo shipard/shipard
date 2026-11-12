@@ -52,6 +52,7 @@ class AssetsDepreciationController
         private readonly ?DocumentRegistry $documents = null,
         private readonly array $tables = [],
         private readonly ?DocumentEventDispatcher $dispatcher = null,
+        private readonly string $language = 'en',
     ) {
     }
 
@@ -209,7 +210,7 @@ class AssetsDepreciationController
             $planService,
             new SystemDepreciationWriter($dibi),
             $dibi,
-            new PlanMessageTexts($this->config),
+            new PlanMessageTexts($this->config, $this->language),
         );
     }
 
@@ -223,7 +224,7 @@ class AssetsDepreciationController
         return new AssetPostingService(
             $dibi,
             $planService,
-            new DepreciationRunService($planService, $writer, $dibi, new PlanMessageTexts($this->config)),
+            new DepreciationRunService($planService, $writer, $dibi, new PlanMessageTexts($this->config, $this->language)),
             $writer,
             new AssetPostingDocuments($dibi, $this->config, $this->dsConfig, $this->documents, $this->tables, $this->dispatcher),
             $settings,

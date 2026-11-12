@@ -165,7 +165,7 @@ class IncomingMessagesFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Doručeno', 'value' => '28.05.2024 14:30']],
+            [['label' => 'Doručeno', 'value' => '2024-05-28 14:30']],
             $info->info,
         );
     }
@@ -183,7 +183,7 @@ class IncomingMessagesFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Doručeno', 'value' => '28.05.2024 14:30']],
+            [['label' => 'Doručeno', 'value' => '2024-05-28 14:30']],
             $info->info,
         );
     }
@@ -214,7 +214,7 @@ class IncomingMessagesFormHeaderInfoTest extends TestCase
         $this->assertSame([], $info->info);
     }
 
-    public function testReceivedAtMalformedSkipped(): void
+    public function testReceivedAtMalformedKeepsValue(): void
     {
         $form = $this->createForm();
 
@@ -223,8 +223,9 @@ class IncomingMessagesFormHeaderInfoTest extends TestCase
             'received_at' => 'not-a-date-at-all',
         ]);
 
+        // Hodnota, která datem není, se vrací beze změny (DisplayDate, #133 D73).
         $this->assertNotNull($info);
-        $this->assertSame([], $info->info);
+        $this->assertSame([['label' => 'Doručeno', 'value' => 'not-a-date-at-all']], $info->info);
     }
 
     public function testFullExampleOrdering(): void
@@ -243,7 +244,7 @@ class IncomingMessagesFormHeaderInfoTest extends TestCase
         $this->assertSame(
             [
                 ['label' => 'Od',       'value' => 'Jan Novák'],
-                ['label' => 'Doručeno', 'value' => '28.05.2024 14:30'],
+                ['label' => 'Doručeno', 'value' => '2024-05-28 14:30'],
             ],
             $info->info,
         );

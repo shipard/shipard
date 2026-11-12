@@ -140,7 +140,7 @@ class AssetPostingServiceTest extends TestCase
             4 => AssetPostingBuilder::ERROR_ACCOUNT_MISSING,
             5 => DepreciationRunService::REASON_EARLIER_MISSING,
         ], $this->excluded($preview));
-        $this->assertSame('1. 5. 2023', array_column($preview['excluded'], 'detail', 'id')[3]);
+        $this->assertSame('01.05.2023', array_column($preview['excluded'], 'detail', 'id')[3]);
     }
 
     public function testTaxCircuitAndOpeningBalanceAreNeverOffered(): void

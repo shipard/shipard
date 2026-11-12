@@ -88,7 +88,7 @@ class DocsHeadsFormExchangeRateTest extends TestCase
         $result = $this->form([])->recalculate('doc_currency', ['doc_currency' => 'eur', 'accounting_date' => '2026-10-16', 'exchange_rate' => 23.5]);
 
         $this->assertSame(23.5, $result->data['exchange_rate']);
-        $hint = 'Kurz EUR k 16. 10. 2026 není v kurzovním lístku — zadej ho ručně.';
+        $hint = 'Kurz EUR k 2026-10-16 není v kurzovním lístku — zadej ho ručně.';
         $this->assertSame($hint, $result->data[DocsHeadsFormBase::EXCHANGE_RATE_HINT_KEY]);
         $this->assertSame($hint, $this->element($result->formDefinition, 'exchange_rate')->hint);
 

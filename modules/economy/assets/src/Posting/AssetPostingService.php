@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Assets\Posting;
 
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Settings\KeyValueStore;
 use Shipard\Module\Economy\Assets\AssetDocument;
 use Shipard\Module\Economy\Assets\AssetEventDocument;
@@ -558,9 +559,7 @@ class AssetPostingService
 
     private static function czDate(string $date): string
     {
-        return preg_match('/^\d{4}-\d{2}-\d{2}/', $date)
-            ? (new \DateTimeImmutable(substr($date, 0, 10)))->format('j. n. Y')
-            : $date;
+        return (string) DisplayDate::date($date, 'cs');
     }
 
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────

@@ -101,7 +101,7 @@ class TasksFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Termín', 'value' => '15.05.2024']],
+            [['label' => 'Termín', 'value' => '2024-05-15']],
             $info->info,
         );
     }
@@ -120,7 +120,7 @@ class TasksFormHeaderInfoTest extends TestCase
         $this->assertSame(
             [
                 ['label' => 'Priorita', 'value' => 'Kritická'],
-                ['label' => 'Termín',   'value' => '15.05.2024'],
+                ['label' => 'Termín',   'value' => '2024-05-15'],
             ],
             $info->info,
         );
@@ -168,7 +168,7 @@ class TasksFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Termín', 'value' => '15.05.2024']],
+            [['label' => 'Termín', 'value' => '2024-05-15']],
             $info->info,
         );
     }
@@ -199,7 +199,7 @@ class TasksFormHeaderInfoTest extends TestCase
         $this->assertSame([], $info->info);
     }
 
-    public function testMalformedDueDateSkipped(): void
+    public function testMalformedDueDateKeepsValue(): void
     {
         $form = $this->createFormWithPriorities();
 
@@ -208,7 +208,8 @@ class TasksFormHeaderInfoTest extends TestCase
             'due_date' => 'not-a-date',
         ]);
 
+        // Hodnota, která datem není, se vrací beze změny (DisplayDate, #133 D73).
         $this->assertNotNull($info);
-        $this->assertSame([], $info->info);
+        $this->assertSame([['label' => 'Termín', 'value' => 'not-a-date']], $info->info);
     }
 }

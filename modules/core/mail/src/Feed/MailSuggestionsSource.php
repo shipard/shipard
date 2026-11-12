@@ -7,6 +7,7 @@ namespace Shipard\Module\Core\Mail\Feed;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Feed\FeedSource;
 use Shipard\Core\Feed\FeedTexts;
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
 use Shipard\Module\Core\Mail\AnalysisErrorInfo;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
@@ -976,7 +977,7 @@ final class MailSuggestionsSource implements FeedSource
         return $this->formatDate($ctx, $value);
     }
 
-    /** Lokalizované datum (cs `j. n. Y`, en `Y-m-d`); prázdný/nevalidní vstup → null. */
+    /** Datum v jazyce feedu přes `DisplayDate` (#133 D73); prázdný/nevalidní vstup → null. */
     private function formatDate(FeedContext $ctx, string $value): ?string
     {
         $value = trim($value);
@@ -988,7 +989,7 @@ final class MailSuggestionsSource implements FeedSource
         } catch (\Exception) {
             return null;
         }
-        return $ctx->language === 'cs' ? $date->format('j. n. Y') : $date->format('Y-m-d');
+        return DisplayDate::date($date, $ctx->language);
     }
 
     /**

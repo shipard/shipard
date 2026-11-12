@@ -7,6 +7,7 @@ namespace Shipard\Module\Docs\Core;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
+use Shipard\Core\I18n\DisplayDate;
 
 /**
  * Lookup dokladů (`docs_core_heads`, #92 U9) — výběr původního dokladu
@@ -66,7 +67,7 @@ class DocsHeadsLookup extends TableLookup
         $sql .= ' ORDER BY h.`issue_date` DESC, h.`id` DESC LIMIT %i';
         $args[] = $limit;
 
-        return array_map(static fn (array $r) => self::buildItem($r), $this->db->fetchAll($sql, ...$args));
+        return array_map(fn (array $r) => self::buildItem($r, $this->language), $this->db->fetchAll($sql, ...$args));
     }
 
     public function resolve(array $ids): array
@@ -79,7 +80,7 @@ class DocsHeadsLookup extends TableLookup
             return [];
         }
         $rows = $this->db->fetchAll(self::SELECT . ' WHERE h.`id` IN %in', $intIds);
-        return array_map(static fn (array $r) => self::buildItem($r), $rows);
+        return array_map(fn (array $r) => self::buildItem($r, $this->language), $rows);
     }
 
     /**
@@ -87,7 +88,7 @@ class DocsHeadsLookup extends TableLookup
      *
      * @param array<string, mixed> $row
      */
-    public static function buildItem(array $row): LookupItem
+    public static function buildItem(array $row, string $language = 'en'): LookupItem
     {
         $number = trim((string) ($row['doc_number'] ?? ''));
         $partner = trim((string) ($row['partner_name'] ?? ''));
@@ -99,7 +100,7 @@ class DocsHeadsLookup extends TableLookup
         };
 
         $parts = [];
-        $date = self::formatDate($row['issue_date'] ?? null);
+        $date = DisplayDate::date($row['issue_date'] ?? null, $language);
         if ($date !== null) {
             $parts[] = $date;
         }
@@ -117,16 +118,4 @@ class DocsHeadsLookup extends TableLookup
         );
     }
 
-    private static function formatDate(mixed $value): ?string
-    {
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y');
-        }
-        $text = trim((string) ($value ?? ''));
-        if ($text === '') {
-            return null;
-        }
-        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', substr($text, 0, 10));
-        return $parsed !== false ? $parsed->format('j. n. Y') : $text;
-    }
 }

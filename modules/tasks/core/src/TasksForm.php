@@ -58,7 +58,7 @@ class TasksForm extends TableForm
             $info[] = ['label' => 'Priorita', 'value' => $priority];
         }
 
-        $dueDate = $this->formatHeaderDate($data['due_date'] ?? null);
+        $dueDate = $this->formatDate($data['due_date'] ?? null) ?? '';
         if ($dueDate !== '') {
             $info[] = ['label' => 'Termín', 'value' => $dueDate];
         }
@@ -85,19 +85,6 @@ class TasksForm extends TableForm
             return (string) $cfg[$key]['name'];
         }
         return '';
-    }
-
-    /**
-     * Bezpečně z DB datové hodnoty (DATE jako 'Y-m-d' string) udělá formát
-     * vhodný pro hlavičku („15.05.2024"). Konzistentní s PersonsForm / ItemsForm.
-     */
-    protected function formatHeaderDate(mixed $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-        $dt = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $value);
-        return $dt instanceof \DateTimeImmutable ? $dt->format('d.m.Y') : '';
     }
 
     /**

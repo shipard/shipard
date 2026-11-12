@@ -141,7 +141,7 @@ class IncomingMessagesForm extends TableForm
             $info[] = ['label' => 'Od', 'value' => $sender];
         }
 
-        $receivedAt = $this->formatHeaderDateTime($data['received_at'] ?? null);
+        $receivedAt = $this->formatDateTime($data['received_at'] ?? null) ?? '';
         if ($receivedAt !== '') {
             $info[] = ['label' => 'Doručeno', 'value' => $receivedAt];
         }
@@ -164,26 +164,6 @@ class IncomingMessagesForm extends TableForm
             return $name;
         }
         return trim((string) ($data['sender_email'] ?? ''));
-    }
-
-    /**
-     * Bezpečně z DB DATETIME hodnoty (normálně 'Y-m-d\TH:i:s' string přes
-     * DataSourceConnection) udělá formát vhodný pro hlavičku — „28.05.2024 14:30".
-     * Dibi DateTime objekty jsou taky podporované (defenzivně).
-     */
-    protected function formatHeaderDateTime(mixed $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('d.m.Y H:i');
-        }
-        try {
-            return (new \DateTimeImmutable((string) $value))->format('d.m.Y H:i');
-        } catch (\Exception) {
-            return '';
-        }
     }
 
     public function recalculate(string $changedColumn, array $data): RecalculateResult

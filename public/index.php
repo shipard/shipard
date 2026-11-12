@@ -116,6 +116,7 @@ try {
 
 	// ── 4c2. Build lookup registry ───────────────────────────────────────────
 	$lookupRegistry = LookupLoader::load($resolved->config, $modulePathResolver);
+	$lookupRegistry->setLanguage($language);
 
 	// ── 4d. Build document registry ───────────────────────────────────────────
 	$documentRegistry = DocumentLoader::load($resolved->config, $modulePathResolver);
@@ -564,6 +565,7 @@ function dispatchAssets(
 		$documentRegistry,
 		$tables,
 		$documentEventDispatcher,
+		resolveLanguage($request, $resolved->config),
 	);
 	return match ($route->action) {
 		'depreciationRunOptions' => $ctrl->options($request),
@@ -1426,6 +1428,7 @@ function dispatchAnalysis(
 		static function (int $messageId) use ($analysisSpawner): void {
 			$analysisSpawner->spawn($messageId);
 		},
+		resolveLanguage($request, $resolved->config),
 	);
 	return match ($route->action) {
 		'reanalyze'         => $ctrl->reanalyze($auth, $request, (int) $route->id),

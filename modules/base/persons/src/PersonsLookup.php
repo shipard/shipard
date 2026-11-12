@@ -7,6 +7,7 @@ namespace Shipard\Module\Base\Persons;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
+use Shipard\Core\I18n\DisplayDate;
 
 /**
  * Lookup pro tabulku osob s vyhledáváním přes několik polí (full_name,
@@ -43,7 +44,7 @@ class PersonsLookup extends TableLookup
                 ...[...$searchParams, $limit],
             );
         }
-        return array_map(fn(array $r) => self::buildItem($r), $rows);
+        return array_map(fn(array $r) => self::buildItem($r, $this->language), $rows);
     }
 
     public function resolve(array $ids): array
@@ -61,13 +62,13 @@ class PersonsLookup extends TableLookup
             . ' WHERE `id` IN %in',
             $intIds,
         );
-        return array_map(fn(array $r) => self::buildItem($r), $rows);
+        return array_map(fn(array $r) => self::buildItem($r, $this->language), $rows);
     }
 
     /**
      * @param array<string, mixed> $row
      */
-    public static function buildItem(array $row): LookupItem
+    public static function buildItem(array $row, string $language = 'en'): LookupItem
     {
         $primary = trim((string) ($row['full_name'] ?? '')) ?: ('#' . (string) $row['id']);
         $personType = (int) ($row['person_type'] ?? 0);
@@ -76,10 +77,7 @@ class PersonsLookup extends TableLookup
         if ($personType === PersonType::Company->value && !empty($row['company_id'])) {
             $secondary = 'IČO ' . (string) $row['company_id'];
         } elseif ($personType === PersonType::Person->value && !empty($row['birth_date'])) {
-            $dt = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $row['birth_date']);
-            if ($dt instanceof \DateTimeImmutable) {
-                $secondary = 'Datum narození ' . $dt->format('d.m.Y');
-            }
+            $secondary = 'Datum narození ' . DisplayDate::date($row['birth_date'], $language);
         }
 
         return new LookupItem(

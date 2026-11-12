@@ -493,7 +493,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
             'ndx'        => 100,
             'code'       => 'MSG-20260905-0012',
             'codeShort'  => '260905-0012',
-            'receivedAt' => '5. 9. 2026 14:32',
+            'receivedAt' => '2026-09-05 14:32',
             'sender'     => 'Dodavatel s.r.o.',
         ], $resp->getPayload()['data']['message']);
     }
@@ -574,7 +574,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         );
 
         $data = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100)->getPayload()['data'];
-        $this->assertSame('2. 1. 2026 08:05', $data['message']['receivedAt']);
+        $this->assertSame('2026-01-02 08:05', $data['message']['receivedAt']);
     }
 
     /**

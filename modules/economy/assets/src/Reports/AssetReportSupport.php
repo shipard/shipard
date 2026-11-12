@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Assets\Reports;
 
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Reports\ReportMessage;
 use Shipard\Core\Reports\ReportMessageSeverity;
 use Shipard\Core\Reports\ReportRequest;
@@ -318,7 +319,7 @@ class AssetReportSupport
     public function planErrors(ReportRequest $request, AssetYear $item, array $rowIndex): array
     {
         $cs = $request->language === 'cs';
-        $texts = new PlanMessageTexts($request->config);
+        $texts = new PlanMessageTexts($request->config, $request->language);
         $index = $rowIndex['asset:' . $item->id()] ?? null;
 
         $messages = [];
@@ -358,9 +359,10 @@ class AssetReportSupport
         return $count . ' ' . ($count === 1 ? 'karta' : ($count >= 2 && $count <= 4 ? 'karty' : 'karet'));
     }
 
-    public static function czDate(string $date): string
+    /** Datum v textu reportu v jazyce požadavku (`DisplayDate`, #133 D73). */
+    public static function displayDate(string $date, bool $cs): string
     {
-        return (new \DateTimeImmutable($date))->format('j. n. Y');
+        return (string) DisplayDate::date($date, $cs ? 'cs' : 'en');
     }
 
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────

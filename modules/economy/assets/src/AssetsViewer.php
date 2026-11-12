@@ -849,7 +849,7 @@ class AssetsViewer extends AssetsViewerBase
      */
     private function messageRows(Plan $plan): array
     {
-        $texts = new PlanMessageTexts($this->config);
+        $texts = new PlanMessageTexts($this->config, $this->language ?? 'en');
         $rows = [];
         $add = function (PlanMessage $message, ?PlanRow $row) use (&$rows, $texts): void {
             $text = $texts->text($message);

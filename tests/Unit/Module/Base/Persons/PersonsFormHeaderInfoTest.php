@@ -115,7 +115,7 @@ class PersonsFormHeaderInfoTest extends TestCase
         $this->assertSame('Jan Novák', $info->title);
         $this->assertSame(
             [
-                ['label' => 'Datum narození', 'value' => '14.05.1990'],
+                ['label' => 'Datum narození', 'value' => '1990-05-14'],
                 ['label' => 'Kód osoby',      'value' => 'TEST-0001'],
             ],
             $info->info,
@@ -160,7 +160,7 @@ class PersonsFormHeaderInfoTest extends TestCase
         );
     }
 
-    public function testPersonWithMalformedBirthDate(): void
+    public function testPersonWithMalformedBirthDateKeepsValue(): void
     {
         $form = $this->createForm();
 
@@ -171,9 +171,10 @@ class PersonsFormHeaderInfoTest extends TestCase
             'person_id'   => 'TEST-0001',
         ]);
 
+        // Hodnota, která datem není, se vrací beze změny (DisplayDate, #133 D73).
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Kód osoby', 'value' => 'TEST-0001']],
+            [['label' => 'Datum narození', 'value' => 'not-a-date'], ['label' => 'Kód osoby', 'value' => 'TEST-0001']],
             $info->info,
         );
     }
@@ -191,7 +192,7 @@ class PersonsFormHeaderInfoTest extends TestCase
 
         $this->assertNotNull($info);
         $this->assertSame(
-            [['label' => 'Datum narození', 'value' => '14.05.1990']],
+            [['label' => 'Datum narození', 'value' => '1990-05-14']],
             $info->info,
         );
     }

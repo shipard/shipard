@@ -144,7 +144,7 @@ class DepreciationInputsTest extends TestCase
             $texts->text(PlanMessage::warning(PlanMessage::MISMATCH, ['confirmed' => 10000.0, 'computed' => 11000.0])),
         );
         $this->assertSame(
-            'Pravidlo cz-6 neplatí pro majetek zařazený 15. 3. 2003.',
+            'Pravidlo cz-6 neplatí pro majetek zařazený 2003-03-15.',
             $texts->text(PlanMessage::error(PlanMessage::RULE_NOT_VALID, ['rule' => 'cz-6', 'date' => '2003-03-15'])),
         );
         $this->assertSame(

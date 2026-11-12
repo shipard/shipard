@@ -357,7 +357,7 @@ final class MailSuggestionsSourceTest extends TestCase
         );
         $this->assertSame(94, $card['confidencePct']);
         $this->assertSame('Faktura 2026000123', $card['emailSubject']);
-        $this->assertSame('28. 6. 2026', $card['receivedDateText']);
+        $this->assertSame('28.06.2026', $card['receivedDateText']);
         $this->assertArrayNotHasKey('subtitle', $card);
         // Default canonical nemá docNumber/dueDate/paymentReference → bez details.
         $this->assertArrayNotHasKey('details', $card);
@@ -530,7 +530,7 @@ final class MailSuggestionsSourceTest extends TestCase
         // Předmět jde strukturovaně; subtitle nese odesílatele (bez duplikace).
         $this->assertSame('Dodavatel s.r.o.', $card['subtitle']);
         $this->assertSame('Nečitelná faktura', $card['emailSubject']);
-        $this->assertSame('27. 6. 2026', $card['receivedDateText']);
+        $this->assertSame('27.06.2026', $card['receivedDateText']);
         $this->assertArrayNotHasKey('headline', $card);
         $this->assertSame(['What happened', 'What to do'], array_column($card['details'], 'label'));
 
@@ -779,7 +779,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('Expirace domén', $card['emailSubject']);
         $this->assertSame($due, $card['sortKey']);
         $this->assertSame('later', $card['dueState']);
-        $this->assertSame('do ' . date('j. n. Y', strtotime($due)), $card['dueText']);
+        $this->assertSame('do ' . date('d.m.Y', strtotime($due)), $card['dueText']);
         $this->assertArrayNotHasKey('archivable', $card);
         // Vyřízeno = archiv jako primární akce, popisek podle id `done`.
         $this->assertSame(['done', 'openMail', 'trash'], array_column($card['actions'], 'id'));
@@ -954,7 +954,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('Pojistná smlouva 2026', $card['emailSubject']);
         $this->assertArrayNotHasKey('subtitle', $card);
         // details: jediný řádek „Platí do" (klíč přes inverzi promote)
-        $this->assertSame([['label' => 'Platí do', 'value' => '31. 12. 2026']], $card['details']);
+        $this->assertSame([['label' => 'Platí do', 'value' => '31.12.2026']], $card['details']);
         $this->assertSame('registry', $card['category']);
         $this->assertSame('registry', $card['context']['target']);
         // Action kinds jsou pro oba targety shodné — 0.91 ≥ 0.9 → ready → apply.
@@ -1043,7 +1043,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame(
             [
                 ['label' => 'Číslo dokladu', 'value' => '2026000123'],
-                ['label' => 'Splatnost', 'value' => '29. 4. 2026'],
+                ['label' => 'Splatnost', 'value' => '29.04.2026'],
                 ['label' => 'Variabilní symbol', 'value' => '2026000123'],
             ],
             $cards[0]['details'],

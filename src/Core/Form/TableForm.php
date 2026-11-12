@@ -9,6 +9,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\ColumnDefinition;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\StructuredFields\StructuredFieldFormBuilder;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
@@ -73,6 +74,23 @@ abstract class TableForm
     public function setTables(array $tables): void
     {
         $this->tables = $tables;
+    }
+
+    /**
+     * Datum pro obrazovku v jazyce požadavku (`01.01.2026` / `2026-01-01`,
+     * #133 D73) — informační řádky hlavičky, nápovědy, popisky voleb.
+     * Prázdná hodnota → null, hodnota, která datem není, beze změny.
+     * Formuláře si vlastní formát data nepíší.
+     */
+    protected function formatDate(mixed $value): ?string
+    {
+        return DisplayDate::date($value, $this->language);
+    }
+
+    /** Datum s časem na minuty (`01.01.2026 14:05` / `2026-01-01 14:05`). */
+    protected function formatDateTime(mixed $value): ?string
+    {
+        return DisplayDate::dateTime($value, $this->language);
     }
 
     abstract public function buildFormDefinition(array $data, bool $isNew): FormDefinition;

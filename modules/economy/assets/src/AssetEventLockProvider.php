@@ -6,6 +6,7 @@ namespace Shipard\Module\Economy\Assets;
 
 use Shipard\Core\Document\AbstractDocumentLockProvider;
 use Shipard\Core\Document\DocumentLockReason;
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
 
@@ -134,7 +135,7 @@ class AssetEventLockProvider extends AbstractDocumentLockProvider
 
     private static function czDate(string $date): string
     {
-        return $date !== '' ? (new \DateTimeImmutable($date))->format('j. n. Y') : '';
+        return $date !== '' ? (string) DisplayDate::date($date, 'cs') : '';
     }
 
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────

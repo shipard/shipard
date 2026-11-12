@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Assets;
 
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Module\Economy\Assets\Depreciation\DepreciationSettings;
 use Shipard\Module\World\Assets\TaxDepreciationRules;
 
@@ -118,6 +119,6 @@ final class DepreciationSettingsValidator
 
     private static function czDate(string $date): string
     {
-        return (new \DateTimeImmutable($date))->format('j. n. Y');
+        return (string) DisplayDate::date($date, 'cs');
     }
 }

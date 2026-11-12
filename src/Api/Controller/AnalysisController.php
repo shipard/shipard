@@ -14,6 +14,7 @@ use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Document\TableGateway;
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Mail\IncomingMessageCode;
 use Shipard\Module\Core\Attachments\AttachmentService;
@@ -101,6 +102,7 @@ class AnalysisController
         private readonly ?DocumentEventDispatcher $eventDispatcher = null,
         private readonly ?RowEnrichmentPipeline $enricher = null,
         private readonly ?\Closure $analysisSpawner = null,
+        private readonly string $language = 'en',
     ) {}
 
     private function services(): AnalysisServices
@@ -685,11 +687,7 @@ class AnalysisController
         if ($value === null || $value === '') {
             return null;
         }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y H:i');
-        }
-        $ts = is_string($value) ? strtotime($value) : false;
-        return $ts !== false ? date('j. n. Y H:i', $ts) : null;
+        return DisplayDate::dateTime($value, $this->language);
     }
 
     /**

@@ -473,7 +473,7 @@ class AssetImportApplier
         if ($plans === null) {
             return [];
         }
-        $texts = new PlanMessageTexts($this->config);
+        $texts = new PlanMessageTexts($this->config, 'cs');
         $labels = [AssetEvent::SCOPE_TAX => 'Plán daňových odpisů', AssetEvent::SCOPE_ACC => 'Plán účetních odpisů'];
         $out = [];
         foreach ($plans as $circuit => $plan) {

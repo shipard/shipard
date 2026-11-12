@@ -24,6 +24,9 @@ abstract class TableLookup
     protected ?DataSourceConnection $db = null;
     protected ?TableDefinition $tableDef = null;
 
+    /** Jazyk požadavku — zápis data v položce (`DisplayDate`, #133 D73); bez registru anglicky. */
+    protected string $language = 'en';
+
     final public function setDb(DataSourceConnection $db): void
     {
         $this->db = $db;
@@ -37,6 +40,11 @@ abstract class TableLookup
     final public function setTableDef(TableDefinition $def): void
     {
         $this->tableDef = $def;
+    }
+
+    final public function setLanguage(string $language): void
+    {
+        $this->language = $language;
     }
 
     /**

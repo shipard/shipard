@@ -7,6 +7,7 @@ namespace Shipard\Module\Economy\Assets;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Module\Economy\Assets\Depreciation\Amounts;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 use Shipard\Module\Economy\Assets\Depreciation\Period;
@@ -545,7 +546,7 @@ class AssetEventDocument extends Document
                 $simulated['confirmed'] = true;
                 unset($simulated['id']);
                 $plans = $service->plan($card, [...$siblings, $simulated]);
-                $texts = new PlanMessageTexts($this->config);
+                $texts = new PlanMessageTexts($this->config, 'cs');
                 foreach ($plans as $circuit => $plan) {
                     foreach ($plan->allMessages() as $message) {
                         if ($message->isError()) {
@@ -811,7 +812,7 @@ class AssetEventDocument extends Document
 
     private static function czDate(string $date): string
     {
-        return Period::isDate($date) ? (new \DateTimeImmutable($date))->format('j. n. Y') : $date;
+        return (string) DisplayDate::date($date, 'cs');
     }
 
     protected function categories(): AssetCategories

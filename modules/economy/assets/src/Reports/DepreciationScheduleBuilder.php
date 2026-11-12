@@ -67,7 +67,7 @@ final class DepreciationScheduleBuilder implements ReportBuilder
             }
             $disposal = $item->disposalDate();
             if ($disposal !== null && $disposal <= $period['yearEnd']) {
-                $state[] = ($cs ? 'vyřazeno ' : 'disposed ') . AssetReportSupport::czDate($disposal);
+                $state[] = ($cs ? 'vyřazeno ' : 'disposed ') . AssetReportSupport::displayDate($disposal, $cs);
             }
 
             $detailRows[] = new ReportRow(

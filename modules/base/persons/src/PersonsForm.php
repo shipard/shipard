@@ -304,12 +304,9 @@ class PersonsForm extends TableForm
             }
         } elseif ($personType === PersonType::Person) {
             $icon = 'user';
-            $birthDate = $data['birth_date'] ?? null;
-            if ($birthDate !== null && $birthDate !== '') {
-                $dt = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $birthDate);
-                if ($dt instanceof \DateTimeImmutable) {
-                    $info[] = ['label' => 'Datum narození', 'value' => $dt->format('d.m.Y')];
-                }
+            $birthDate = $this->formatDate($data['birth_date'] ?? null);
+            if ($birthDate !== null) {
+                $info[] = ['label' => 'Datum narození', 'value' => $birthDate];
             }
         } else {
             return null;
