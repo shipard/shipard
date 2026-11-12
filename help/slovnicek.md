@@ -87,6 +87,7 @@ a čekají na tebe, zbytek je už vyřízený:
 | kód pro kontrolní hlášení | **Kód DPH** | Označení režimu plnění u řádku. Není to sazba — sazba je procento, kód říká, jak se plnění vykazuje |
 | součet daní dole na faktuře | **Rekapitulace DPH** | Rozpis základu a daně po jednotlivých sazbách |
 | daň platí odběratel, přenesená daň | **Reverse charge** / **samovyměření** | Režim, kdy daň neodvádí dodavatel, ale odběratel. Typicky u zboží z EU nebo u stavebních prací |
+| kód předmětu plnění, kód plnění, PDP 4, PDP 5 | **Předmět plnění** | Co se dodává v režimu tuzemského přenesení daňové povinnosti (*4* stavební a montážní práce, *5* zboží z přílohy č. 5, *14* mobilní telefony …). Vybírá se na řádku dokladu a jde do kontrolního hlášení |
 | dodavatel, odběratel, partner | **Osoba** (sekce *Základní*) | Jedna evidence pro firmy i fyzické osoby |
 | natáhnout českou firmu podle IČO | **Z registru** | Tlačítko v Osobách; otevře dialog **Přidat firmu z registru**, kde stačí IČO nebo název. Existující osobu nepřepíše |
 

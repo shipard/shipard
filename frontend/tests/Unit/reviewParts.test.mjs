@@ -194,6 +194,9 @@ test('reviewTotals: rekapitulace s kódem a dvojicí, souhrn, zaokrouhlení jen 
   assert.equal(totals.recap[0].vatCode, 'cz-217');
   assert.equal(totals.recap[0].isReversePair, false);
   assert.equal(totals.recap[1].isReversePair, true);
+  assert.equal(totals.recap[0].subject, null);
+  // Předmět plnění skupiny u tuzemského přenesení (#89 D12).
+  assert.equal(reviewTotals([{ vatPct: 21, base: 1, tax: 0, total: 1, vatCode: 'cz-115', reverseChargeCode: '4a' }], null, 'CZK').recap[0].subject, '4a');
   assert.match(totals.summary.total, /121,00/);
   assert.equal(totals.summary.rounding, null);
   assert.equal(totals.domestic, null);

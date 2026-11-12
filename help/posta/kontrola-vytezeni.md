@@ -289,6 +289,21 @@ bez kódů a bez daně a náhled připomene, že se daň v Česku nepřizná. Vo
 *Automaticky* vrátí původní návrh. U tuzemské faktury s přenesením daňové
 povinnosti se *Bez DPH* zvolit nedá, Shipard režim vrátí zpět.
 
+**Předmět plnění u tuzemského přenesení daňové povinnosti.** Faktura od
+českého dodavatele s textem *daň odvede zákazník* potřebuje u každého
+řádku **Předmět plnění** — kód, pod kterým jde řádek do kontrolního
+hlášení (*4* stavební a montážní práce, *5* zboží z přílohy č. 5, *14*
+mobilní telefony a další). Shipard ho převezme z faktury a ukáže ho
+u sazby řádku jako *předmět 4*. Když ho na faktuře nenajde nebo ho
+nezná, řádek ukazuje *předmět chybí* s červeným odznakem a tlačítka
+**Vystavit koncept** i **Vystavit a uzavřít** jsou zablokovaná, stejně
+jako **Použít** na kartě. Klikni na odznak a vyber předmět z nabídky;
+má-li faktura takových řádků víc, zvol ho pro všechny naráz tlačítkem
+**Předmět plnění u řádků**. Stejně opravíš i předmět, který Shipard
+převzal špatně. V **DPH rekapitulaci** pak má každý předmět vlastní
+řádek daně a oddaňovací řádek. Jestli plnění přenesení opravdu podléhá
+(například hranice 100 000 Kč u mobilních telefonů), Shipard neposuzuje.
+
 **Faktura ze zahraničí od dodavatele, kterého už znáš.** Řádky takové
 faktury Shipard rovnou zařadí na tvoje položky a kategorii dokladu
 neurčuje. Službu se zvláštním místem plnění pak pozná podle **Obsahových

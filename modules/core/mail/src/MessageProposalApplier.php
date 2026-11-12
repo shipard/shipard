@@ -61,7 +61,9 @@ final class MessageProposalApplier
      * apply, nebo persistenci rozhodnutí (#76).
      */
     private const USER_ACTION_TOP_PATHS = ['supplier', 'customer', 'supplierBank', 'customerBank'];
-    private const USER_ACTION_ROW_PATH_RE = '/^rows\[(\d+)\]\.(item|unit|vatCode)$/';
+    // `reverseChargeCode` = předmět plnění řádku u tuzemského přenesení
+    // (`useValue:<kód>`, #89 D12) — applier ho čte ve `vatPins()`.
+    private const USER_ACTION_ROW_PATH_RE = '/^rows\[(\d+)\]\.(item|unit|vatCode|reverseChargeCode)$/';
     /**
      * Volby DPH hlavičky (tasks/exchange-preview-vat-choices.md D8, #87 B):
      * `vat.place` / `vat.mode` → `_resolve.vat.{place|mode}.userAction`

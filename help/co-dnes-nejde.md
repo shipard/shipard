@@ -272,23 +272,42 @@ je v [TESTERS.md](../TESTERS.md).
   doplníš ručně.
 - **Samovyměření (reverse charge) má v návrhu své meze.** Fakturu za
   služby nebo zboží z EU, služby ze třetí země a tuzemské přenesení
-  daňové povinnosti (stavební práce, odpad a šrot) návrh zpracuje sám:
-  kód DPH řádků určí podle údajů na dokladu a **DPH rekapitulaci**
-  přepočítá s oddaňovacím řádkem. Sníženou sazbu u samovyměření sám
-  nepozná (dá základní) — vyber ji v náhledu kliknutím na odznak u sazby
-  řádku. Fakturu se zahraniční DPH (hotel nebo tankování v cizině)
+  daňové povinnosti (stavební práce, odpad a šrot, mobilní telefony,
+  kovy, obiloviny, povolenky a další) návrh zpracuje sám: kód DPH řádků
+  určí podle údajů na dokladu a **DPH rekapitulaci** přepočítá
+  s oddaňovacím řádkem. U tuzemského přenesení k tomu převezme z faktury
+  **Předmět plnění**; když ho nepozná, vybereš ho v náhledu (viz
+  [Kontrola vytěžení](posta/kontrola-vytezeni.md)). Sníženou sazbu
+  u samovyměření sám nepozná (dá základní) — vyber ji v náhledu kliknutím
+  na odznak u sazby řádku. Fakturu se zahraniční DPH (hotel nebo tankování v cizině)
   a službu ze zahraničí se zvláštním místem plnění (ubytování, jízdenky
   a letenky, stravování, nájem a služby k nemovitosti, mýto, parkování)
   návrh zpracuje jako doklad *Bez DPH* — postup je v
   [Kontrole vytěžení](posta/kontrola-vytezeni.md). Co zatím neumí:
-  přenesení daňové povinnosti mimo stavební práce a přílohu 5 (mobilní
-  telefony, povolenky…), **dovoz zboží ze třetí země** (DPH se řeší
-  z celního dokladu, ne z faktury dodavatele) a **smíšenou fakturu ze
-  zahraničí** — část řádků se zahraniční DPH nebo se zvláštním místem
-  plnění a část se samovyměřením. U přenesení a dovozu v nabídce kódů
-  v náhledu nic není, návrh skončí chybou kódu DPH a doklad založíš
-  ručně; u smíšené faktury vyber kód u každého řádku, nebo dej celému
-  dokladu **Režim DPH** *Bez DPH*.
+  **dovoz zboží ze třetí země** (DPH se řeší z celního dokladu, ne
+  z faktury dodavatele) a **smíšenou fakturu ze zahraničí** — část řádků
+  se zahraniční DPH nebo se zvláštním místem plnění a část se
+  samovyměřením. U dovozu v nabídce kódů v náhledu nic není, návrh skončí
+  chybou kódu DPH a doklad založíš ručně; u smíšené faktury vyber kód
+  u každého řádku, nebo dej celému dokladu **Režim DPH** *Bez DPH*.
+- **Předmět plnění u přenesení daňové povinnosti si Shipard nedomyslí.**
+  Řádek s kódem DPH pro tuzemské přenesení daňové povinnosti potřebuje
+  **Předmět plnění** (kód pro kontrolní hlášení) a bez něj doklad nejde
+  dát **V pořádku**. Výchozí hodnota podle partnera ani podle položky
+  není — vybíráš ho na každém řádku. Shipard také **neposuzuje, jestli
+  plnění přenesení podléhá** (například hranici 100 000 Kč u mobilních
+  telefonů, kovů nebo obilovin) — řídí se tím, jaký kód DPH na řádek dáš.
+  Na vytištěné faktuře předmět plnění není; text *Daň odvede zákazník*
+  ano.
+- **Starší doklady s přenesením daňové povinnosti nemají předmět plnění.**
+  Doklad potvrzený dřív, než se předmět plnění začal evidovat, ho na
+  řádcích nemá. Kontrolní hlášení u něj hlásí chybějící kód předmětu
+  plnění a soubor pro portál se nevyrobí. Dej doklad do stavu **V opravě**,
+  na řádcích doplň **Předmět plnění** a vrať ho **V pořádku**.
+- **Periodická fakturace neumí řádek s přenesením daňové povinnosti.**
+  Řádek předpisu zakázky předmět plnění nemá, takže za zakázku s kódem
+  DPH pro přenesení daňové povinnosti se faktura nevystaví a běh fakturace
+  u ní skončí chybou. Takovou fakturu vystav ručně.
 - **Zahraniční DPH se nevrací.** Daň, kterou ti naúčtoval dodavatel v jiném
   státě, je na dokladu součástí ceny. Žádost o její vrácení z jiného
   členského státu Shipard nepřipravuje ani neeviduje.

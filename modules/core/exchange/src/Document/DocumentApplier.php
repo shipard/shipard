@@ -2042,7 +2042,7 @@ class DocumentApplier
             $customerVatId,
             $canonical['_resolve']['contentTag']['tag'] ?? null,
             $canonical['_resolve']['contentTag']['rowExceptions'] ?? null,
-            [$pins['place'], $pins['mode'], $pins['rows']],
+            [$pins['place'], $pins['mode'], $pins['rows'], $pins['subjects']],
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
                     ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null, $row['item']['ourCode'] ?? null]
@@ -2325,26 +2325,28 @@ class DocumentApplier
     /**
      * Volby uživatele k DPH z `_resolve` (#87 task B, D8): místo plnění
      * a režim hlavičky (`useValue:<hodnota>`), kód DPH řádku
-     * (`useCode:<klíč číselníku>`). Jediné místo, kde se prefixy parsují.
+     * (`useCode:<klíč číselníku>`) a předmět plnění řádku u tuzemského
+     * přenesení (`useValue:<kód předmětu>`, #89 D12 — `subjects`). Jediné
+     * místo, kde se prefixy parsují.
      * Neplatná hodnota nebo akce → `invalid` (error `vat_pin_invalid`, D11)
      * a do voleb se nedostane. Zda volby platí (jen větev derive, D9),
      * rozhoduje {@see vatContext()}; řádky jsou klíčované indexem canonicalu
      * jako v {@see reconcile()}.
      *
      * @param array<string, mixed> $canonical
-     * @return array{place: ?string, mode: ?string, rows: array<int, string>, invalid: list<array{severity: string, path: string, code: string, message: string}>}
+     * @return array{place: ?string, mode: ?string, rows: array<int, string>, subjects: array<int, string>, invalid: list<array{severity: string, path: string, code: string, message: string}>}
      */
     private function vatPins(array $canonical): array
     {
-        $pins = ['place' => null, 'mode' => null, 'rows' => [], 'invalid' => []];
+        $pins = ['place' => null, 'mode' => null, 'rows' => [], 'subjects' => [], 'invalid' => []];
         $resolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         $invalid = static function (string $path, string $action) use (&$pins): void {
             $pins['invalid'][] = [
                 'severity' => 'error',
                 'path'     => $path,
                 'code'     => 'vat_pin_invalid',
-                'message'  => "Neplatná volba „{$action}“ — u místa plnění a režimu se čeká useValue:<hodnota>,"
-                    . ' u kódu DPH řádku useCode:<kód>.',
+                'message'  => "Neplatná volba „{$action}“ — u místa plnění, režimu a předmětu plnění řádku"
+                    . ' se čeká useValue:<hodnota>, u kódu DPH řádku useCode:<kód>.',
             ];
         };
 
@@ -2371,6 +2373,21 @@ class DocumentApplier
                 $pins['rows'][(int) $idx] = $code;
             } else {
                 $invalid("rows.{$idx}.vat.code", $action);
+            }
+        }
+        // Předmět plnění řádku (#89 D12). Zda je hodnota v číselníku
+        // a platí k datu, ověřuje až resolveRowReverseChargeCode() — proti
+        // téže množině, kterou klient dostal v `reverseChargeOptions`.
+        foreach ((is_array($resolve['rows'] ?? null) ? $resolve['rows'] : []) as $idx => $rowResolve) {
+            $action = is_array($rowResolve) ? ($rowResolve['reverseChargeCode']['userAction'] ?? null) : null;
+            if (!is_string($action) || $action === '') {
+                continue;
+            }
+            $value = str_starts_with($action, 'useValue:') ? trim(substr($action, strlen('useValue:'))) : '';
+            if ($value !== '') {
+                $pins['subjects'][(int) $idx] = $value;
+            } else {
+                $invalid("rows.{$idx}.vat.reverseChargeCode", $action);
             }
         }
         return $pins;
@@ -2967,6 +2984,11 @@ class DocumentApplier
      * @param array<string, mixed>|null $vatResolve {@see resolveRowVatCode()}
      * @param array<string, mixed> $vatCtx {@see vatContext()}
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * Volba uživatele (`_resolve.rows[].reverseChargeCode.userAction:
+     * "useValue:<kód>"`, D12) má přednost; mimo nabídku je error
+     * `reverse_charge_code_pin_invalid`. U řádku bez kódu přenesení se
+     * ignoruje i volba.
+     *
      * @return array{value: ?string, source: ?string, status: string}|null
      */
     private function resolveRowReverseChargeCode(
@@ -2986,14 +3008,36 @@ class DocumentApplier
             return null;
         }
         $country = $this->vatCountryForCode($code, $vatCountry, $supplierCountry);
+        $country = $country !== '' ? $country : $vatCountry;
         $date = is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null;
+
+        // D12: volba uživatele má přednost před dokladem. Platí jen předmět
+        // z nabídky (`reverseChargeOptions` — číselník platný k datu sazby);
+        // volba mimo nabídku je error a předmět z dokladu ji nenahradí.
+        $pinned = $vatCtx['pins']['subjects'][$idx] ?? null;
+        if ($pinned !== null) {
+            $decision = $this->vatCodeDerivation->reverseChargeSubject($country, $code, $date, $pinned);
+            if (!$decision['applies']) {
+                return null; // řádek kód přenesení nemá — volba se ignoruje
+            }
+            if ($decision['status'] !== 'matched') {
+                $issues[] = [
+                    'severity' => 'error',
+                    'path'     => "rows.{$idx}.vat.reverseChargeCode",
+                    'code'     => 'reverse_charge_code_pin_invalid',
+                    'message'  => "Zvolený předmět plnění „{$pinned}“ není v nabídce"
+                        . ($date !== null ? " platné k datu {$date}" : '') . ' — vyber jiný.',
+                ];
+            }
+            return [
+                'value'  => $decision['value'],
+                'source' => 'user',
+                'status' => $decision['status'] === 'matched' ? 'matched' : 'notFound',
+            ];
+        }
+
         $input = trim((string) ($row['vat']['reverseChargeCode'] ?? ''));
-        $decision = $this->vatCodeDerivation->reverseChargeSubject(
-            $country !== '' ? $country : $vatCountry,
-            $code,
-            $date,
-            $input,
-        );
+        $decision = $this->vatCodeDerivation->reverseChargeSubject($country, $code, $date, $input);
         if (!$decision['applies']) {
             return null;
         }
@@ -5120,6 +5164,26 @@ class DocumentApplier
         ];
         if ($vatCtx['derive']) {
             $resolved['vatCodeOptions'] = $vatCtx['codeOptions'];
+        }
+        // Nabídka předmětů plnění (#89 D12) — jednou na doklad, jen když má
+        // některý řádek kód tuzemského přenesení (blok `reverseChargeCode`).
+        // Táž množina validuje volbu v resolveRowReverseChargeCode().
+        foreach ($resolved['rows'] ?? [] as $rowResolve) {
+            if (!is_array($rowResolve) || !isset($rowResolve['reverseChargeCode'])) {
+                continue;
+            }
+            $country = $vatCtx['derive']
+                ? (string) $vatCtx['ownCountry']
+                : $this->vatCountryForCode(
+                    (string) ($rowResolve['vatCode']['createPayload']['code'] ?? ''),
+                    strtolower((string) ($canonical['vat']['registrationCountry'] ?? '')),
+                    strtolower((string) ($canonical['supplier']['country'] ?? '')),
+                );
+            $resolved['reverseChargeOptions'] = $this->vatCodeDerivation->reverseChargeSubjectOptions(
+                $country,
+                is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null,
+            );
+            break;
         }
         return $resolved;
     }

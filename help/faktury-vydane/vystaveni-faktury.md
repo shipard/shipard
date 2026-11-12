@@ -96,6 +96,13 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    - **Kód DPH** je předvybraný na základní sazbu (*Tuzemsko/Výstup/Základní*)
      a **DPH %** je doplněné podle DUZP. Potřebuje-li řádek jinou sazbu, změň
      kód — procento se přepočítá.
+   - Fakturuješ-li v režimu přenesení daňové povinnosti, vyber **Kód DPH**
+     s přenesením (*Tuzemsko/Výstup/Základní - přenesení DP*). Pod kódem se
+     objeví pole **Předmět plnění** — vyber, co dodáváš (*4* stavební
+     a montážní práce, *5* zboží z přílohy č. 5, *14* mobilní telefony
+     a další). Podle něj se řádek zařadí do kontrolního hlášení; bez něj
+     fakturu nepotvrdíš. Dva řádky s různým předmětem mají v **DPH
+     rekapitulaci** každý svůj řádek.
 
    Potřebuješ-li na faktuře mezititulek nebo komentář, přepni **Typ řádku**
    na *Textový řádek*. Do součtů nevstupuje.

@@ -259,8 +259,8 @@ class DocumentApplierVatPinsTest extends TestCase
     private function withPins(array $payload, array $flat): array
     {
         foreach ($flat as $path => $action) {
-            if (preg_match('/^rows\[(\d+)\]\.vatCode$/', $path, $m) === 1) {
-                $payload['_resolve']['rows'][(int) $m[1]]['vatCode']['userAction'] = $action;
+            if (preg_match('/^rows\[(\d+)\]\.(vatCode|reverseChargeCode)$/', $path, $m) === 1) {
+                $payload['_resolve']['rows'][(int) $m[1]][$m[2]]['userAction'] = $action;
             } elseif (preg_match('/^vat\.(place|mode)$/', $path, $m) === 1) {
                 $payload['_resolve']['vat'][$m[1]]['userAction'] = $action;
             } else {
@@ -655,5 +655,138 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertSame(['cz-218', 'cz-208'], array_column($saved['vatRecap'], 'vat_code'));
         $this->assertSame($computed['totals']['totalAmount'], (float) $saved['total_amount']);
         $this->assertSame('user', $applied->canonical['_resolve']['rows'][0]['vatCode']['matchedBy']);
+    }
+
+
+    // ── Předmět plnění tuzemského přenesení (#89 D12) ──────────────────────
+
+    /** Přijatá tuzemská faktura s přenesením daňové povinnosti; `$subject` = předmět z dokladu. */
+    private function domesticReverseChargePayload(?string $subject): array
+    {
+        $payload = $this->happyPayload();
+        $payload['vat']['reverseCharge'] = true;
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'reverseChargeCode' => $subject];
+        $payload['rows'][0]['computed'] = ['vatBase' => 10330.58, 'vatAmount' => 0, 'vatTotal' => 10330.58];
+        $payload['vatRecap'] = [
+            ['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58],
+        ];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        return $payload;
+    }
+
+    public function testSubjectPinResolvesMissingSubjectAndIsSaved(): void
+    {
+        $applier = $this->buildApplier();
+        $missing = $this->domesticReverseChargePayload(null);
+
+        // Bez volby: chybí, nabídka je k dispozici, apply stojí.
+        $preview = $applier->preview($missing)->canonical;
+        $this->assertContains('reverse_charge_code_missing', $this->issueCodes($preview));
+        $options = array_column($preview['_resolve']['reverseChargeOptions'], 'label', 'code');
+        $this->assertArrayHasKey('4', $options);
+        $this->assertArrayHasKey('4a', $options);
+        $this->assertStringStartsWith('14 — ', $options['14']);
+        $this->assertFalse($applier->apply($missing)->success);
+
+        $payload = $this->withPins($missing, ['rows[0].reverseChargeCode' => 'useValue:14']);
+        $preview = $applier->preview($payload)->canonical;
+        $this->assertSame(
+            ['value' => '14', 'source' => 'user', 'status' => 'matched'],
+            $preview['_resolve']['rows'][0]['reverseChargeCode'],
+        );
+        $codes = $this->issueCodes($preview);
+        $this->assertNotContains('reverse_charge_code_missing', $codes);
+        $this->assertNotContains('reverse_charge_code_pin_invalid', $codes);
+
+        $applied = $applier->apply($payload);
+        $this->assertTrue($applied->success, (string) $applied->errorMessage);
+        $this->assertSame('cz-115', $this->savedHeadsData['rows'][0]['vat_code']);
+        $this->assertSame('14', $this->savedHeadsData['rows'][0]['reverse_charge_code']);
+        $this->assertSame(['14', '14'], array_column(array_values($this->savedHeadsData['vatRecap']), 'reverse_charge_code'));
+    }
+
+    public function testSubjectPinBeatsSubjectFromDocument(): void
+    {
+        $payload = $this->withPins(
+            $this->domesticReverseChargePayload('4'),
+            ['rows[0].reverseChargeCode' => 'useValue:4a'],
+        );
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $this->assertSame(
+            ['value' => '4a', 'source' => 'user', 'status' => 'matched'],
+            $preview['_resolve']['rows'][0]['reverseChargeCode'],
+        );
+    }
+
+    public function testSubjectPinOutsideOptionsIsInvalidAndBlocksApply(): void
+    {
+        $applier = $this->buildApplier();
+        // Předmět z dokladu je platný — neplatnou volbu ale nenahradí.
+        $payload = $this->withPins(
+            $this->domesticReverseChargePayload('4'),
+            ['rows[0].reverseChargeCode' => 'useValue:99'],
+        );
+
+        $preview = $applier->preview($payload)->canonical;
+
+        $this->assertSame('notFound', $preview['_resolve']['rows'][0]['reverseChargeCode']['status']);
+        $invalid = $this->issuesOf($preview, 'reverse_charge_code_pin_invalid');
+        $this->assertCount(1, $invalid);
+        $this->assertSame('error', $invalid[0]['severity']);
+        $this->assertSame('rows.0.vat.reverseChargeCode', $invalid[0]['path']);
+
+        $applied = $applier->apply($payload);
+        $this->assertFalse($applied->success);
+        $this->assertSame('validation_failed', $applied->errorCode);
+    }
+
+    /** Řádek, na kterém kód přenesení neskončí: volba předmětu se ignoruje, nabídka není. */
+    public function testSubjectPinOnRowWithoutReverseChargeCodeIsIgnored(): void
+    {
+        $payload = $this->withPins($this->happyPayload(), ['rows[0].reverseChargeCode' => 'useValue:4']);
+        $applier = $this->buildApplier();
+
+        $preview = $applier->preview($payload)->canonical;
+
+        $this->assertArrayNotHasKey('reverseChargeCode', $preview['_resolve']['rows'][0]);
+        $this->assertArrayNotHasKey('reverseChargeOptions', $preview['_resolve']);
+        $this->assertSame([], $this->issuesOf($preview, 'reverse_charge_code_pin_invalid'));
+
+        $this->assertTrue($applier->apply($payload)->success);
+        $this->assertArrayNotHasKey('reverse_charge_code', $this->savedHeadsData['rows'][0]);
+    }
+
+    /** Zvolený kód přenesení (snížená sazba) + zvolený předmět — obě volby v jedné mapě. */
+    public function testCodePinToReducedReverseChargeKeepsSubjectChoice(): void
+    {
+        $payload = $this->withPins($this->domesticReverseChargePayload(null), [
+            'rows[0].vatCode'           => 'useCode:cz-116',
+            'rows[0].reverseChargeCode' => 'useValue:4',
+        ]);
+
+        $row = $this->buildApplier()->preview($payload)->canonical['_resolve']['rows'][0];
+
+        $this->assertSame('cz-116', $row['vatCode']['createPayload']['code']);
+        $this->assertSame(['value' => '4', 'source' => 'user', 'status' => 'matched'], $row['reverseChargeCode']);
+    }
+
+    public function testMalformedSubjectActionIsReportedAsInvalidPin(): void
+    {
+        $payload = $this->withPins(
+            $this->domesticReverseChargePayload('4'),
+            ['rows[0].reverseChargeCode' => 'useCode:14'],
+        );
+
+        $preview = $this->buildApplier()->preview($payload)->canonical;
+
+        $invalid = $this->issuesOf($preview, 'vat_pin_invalid');
+        $this->assertSame(['rows.0.vat.reverseChargeCode'], array_column($invalid, 'path'));
+        // Neplatná akce se neuplatní — předmět zůstává z dokladu.
+        $this->assertSame(
+            ['value' => '4', 'source' => 'document', 'status' => 'matched'],
+            $preview['_resolve']['rows'][0]['reverseChargeCode'],
+        );
     }
 }

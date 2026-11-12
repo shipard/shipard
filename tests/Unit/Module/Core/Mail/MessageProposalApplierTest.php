@@ -1154,6 +1154,9 @@ class MessageProposalApplierTest extends TestCase
             'vat.place'       => 'useValue:intracom',
             'vat.mode'        => 'useValue:fromTotal',
             'rows[0].vatCode' => 'useCode:cz-218',
+            // Předmět plnění řádku u tuzemského přenesení (#89 D12).
+            'rows[0].reverseChargeCode' => 'useValue:14',
+            'rows[1].reverseChargeCode' => 'useValue:4a',
             'vat.bogus'       => 'useValue:x',
         ]);
 
@@ -1162,8 +1165,22 @@ class MessageProposalApplierTest extends TestCase
                 'place' => ['userAction' => 'useValue:intracom'],
                 'mode'  => ['userAction' => 'useValue:fromTotal'],
             ],
-            'rows' => [0 => ['vatCode' => ['userAction' => 'useCode:cz-218']]],
+            'rows' => [
+                0 => [
+                    'vatCode'           => ['userAction' => 'useCode:cz-218'],
+                    'reverseChargeCode' => ['userAction' => 'useValue:14'],
+                ],
+                1 => ['reverseChargeCode' => ['userAction' => 'useValue:4a']],
+            ],
         ], $expanded);
+        $this->assertSame(
+            ['rows[0].reverseChargeCode' => 'useValue:14'],
+            MessageProposalApplier::sanitizeUserActions([
+                'rows[0].reverseChargeCode' => 'useValue:14',
+                'rows[0].reverseCharge'     => 'useValue:14',
+            ]),
+            'persistence drží předmět plnění, neznámé pole řádku zahodí',
+        );
     }
 
     public function testSanitizeUserActionsKeepsVatHeaderPaths(): void

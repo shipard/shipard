@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.11.0)
+## Default prompt (v4.12.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -64,14 +64,16 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.11.0`).
+  shodná s `prompt_version` profilu (`v4.12.0`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
   `intracom` / `thirdCountry`), `vat.reverseCharge` (bool), řádkové
   `vat.pct` opisem z dokladu (i 0), `vat.supplyKind` (`goods` /
   `services`, jen dodavatel mimo ČR), `vat.reverseChargeCode` (jen
-  tuzemské přenesení daňové povinnosti: `4`, `5`, …). Kód z nich odvodí
+  tuzemské přenesení daňové povinnosti — kód předmětu plnění z výčtu
+  v promptu, `1` … `21` vč. `1a`, `3a`, `4a`; od v4.12.0 se ukládá na
+  řádek dokladu, kód DPH nevybírá). Kód z nich odvodí
   `VatCodeDerivation` v applieru
   ([`docs/exchange-format.md`](../../../../docs/exchange-format.md) § 8.4).
 - **`vat.place` podle DIČ dodavatele, ne podle adresy** (od v4.6.1):
@@ -305,6 +307,30 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.12.0 (2026-11-12)
+
+Předmět plnění u tuzemského přenesení daňové povinnosti je samostatný
+údaj řádku dokladu a rekapitulace
+([tasks/vat-reverse-charge-subjects.md](../../../../tasks/vat-reverse-charge-subjects.md),
+#89 D15). Dosud prompt znal jen `"4"` a `"5"` a u jiného předmětu návrh
+končil chybou kódu DPH; teď `rows[].vat.reverseChargeCode` jde rovnou na
+řádek a kód DPH je vždy obecný kód přenesení.
+
+- PRAVIDLA: pravidlo `rows[].vat.reverseChargeCode` nese **celý výčet
+  předmětů plnění** s krátkým popisem (`"1"` zlato … `"21"` služby
+  elektronických komunikací, vč. `"1a"`, `"3a"`, `"4a"`) — shodný
+  s číselníkem `world.vat.cz` → `reverseChargeSubjects`, hlídá
+  `ProfileSchemaDriftTest::testPromptEnumeratesReverseChargeSubjects`.
+  Kód uvedený na dokladu model opisuje, jinak ho určí podle toho, co se
+  dodává; **neposuzuje**, zda plnění přenesení podléhá (limit
+  100 000 Kč u předmětů 12–17); když předmět nepozná, vrací `null`
+  a uživatel ho vybere v náhledu.
+- `vatRecap[].reverseChargeCode` (nové nepovinné pole schématu) model
+  **nevyplňuje** — stejně jako `isReversePair`; rekapitulace dodavatele
+  se u přenesení nepřebírá.
+- Ukázka beze změny. Evaluace po změně promptu nebyla spuštěna —
+  rozhoduje o ní člověk.
 
 ### v4.11.0 (2026-10-26)
 

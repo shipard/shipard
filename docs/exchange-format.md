@@ -1268,7 +1268,15 @@ per (kód, sazba, předmět). **Nic se tiše nedoplňuje** — ani v importním 
 | kód přenesení | platný k datu sazby | `_resolve.rows[].reverseChargeCode {value, source: "document", status: "matched"}`, bez issue |
 | kód přenesení | chybí | `{value: null, source: null, status: "notFound"}` + error `reverse_charge_code_missing` |
 | kód přenesení | mimo číselník / neplatný k datu | `{value: "<hodnota>", source: "document", status: "notFound"}` + error `reverse_charge_code_unknown` s hodnotou ve zprávě |
-| jiný kód, bez kódu, doklad Bez DPH | cokoli | bez bloku, předmět se ignoruje |
+| jiný kód, bez kódu, doklad Bez DPH | cokoli | bez bloku, předmět se ignoruje (i z volby) |
+| kód přenesení, **volba uživatele** `userAction: "useValue:<kód>"` (D12) | cokoli | zvolený předmět, `{value, source: "user", status: "matched"}`; mimo `_resolve.reverseChargeOptions` → `status: "notFound"` + error `reverse_charge_code_pin_invalid` (předmět z dokladu neplatnou volbu nenahradí) |
+
+Volba předmětu jde stejnou mapou rozhodnutí jako kód DPH (#76, #87):
+cesta `rows[i].reverseChargeCode`, akce `useValue:<kód>` — u řádku
+i hromadně. `_resolve.reverseChargeOptions [{code, label}]` = předměty
+platné k datu sazby, jednou na doklad a jen když má některý řádek kód
+přenesení; táž množina volbu validuje. Řádek se stavem `notFound` blokuje
+jednoklikové použití (`reviewGate.js`).
 
 Na doklad se propíše jen ověřený předmět. Blok `reverseChargeCode` se počítá
 do `_resolve.summary` jako ostatní reference řádku.
@@ -1586,6 +1594,11 @@ do něj přidávají vlastní bloky bez změny schématu:
   hodnoty a jejich zdroj (z AI, z DIČ, odvozeno, zvoleno, výchozí);
   `auto` je hodnota bez volby uživatele pro položku „Automaticky (…)“;
   canonical `vat.*` zůstává vstupem.
+- `_resolve.reverseChargeOptions` — nabídka předmětů plnění u tuzemského
+  přenesení daňové povinnosti (#89 D12): `[{code, label}]`, předměty
+  číselníku platné k datu sazby; jen když má některý řádek blok
+  `reverseChargeCode`. Stejná množina validuje `useValue:` u
+  `rows[i].reverseChargeCode` (`reverse_charge_code_pin_invalid`).
 - `_resolve.vatCodeOptions` — nabídka kódů DPH pro ruční volbu řádků
   (#87 task B, D13), jen přijatý doklad na zdroji s registrací DPH.
   Kandidáti k efektivnímu místu a DUZP; stejná množina, proti které
@@ -1633,7 +1646,7 @@ do něj přidávají vlastní bloky bez změny schématu:
 | `"skip"` | Vynechat řádek — `rows[i].item` („Vynechat řádek“ v review) nebo řádková `rows[i].userAction`; řádek se na doklad nezapíše a v `/preview` chybí v `_resolve.computed` (#111 D9). Pro hlavičkové reference je default `null`. |
 | `"noItem"` | Jen `rows[i].item`: řádek se pořídí bez položky, s účtem řádku (`tasks/content-tag-ui.md` D24); bez platného účtu `no_item_requires_account`. |
 | `"useCode:<kód>"` | Jen `rows[i].vatCode` (#87 task B): zvolený kód DPH řádku z `_resolve.vatCodeOptions`. |
-| `"useValue:<hodnota>"` | Jen `_resolve.vat.place` (`domestic` / `intracom` / `thirdCountry`) a `_resolve.vat.mode` (`fromBase` / `fromTotal` / `none`) (#87 task B). |
+| `"useValue:<hodnota>"` | `_resolve.vat.place` (`domestic` / `intracom` / `thirdCountry`) a `_resolve.vat.mode` (`fromBase` / `fromTotal` / `none`) (#87 task B); `rows[i].reverseChargeCode` — předmět plnění řádku u tuzemského přenesení z `_resolve.reverseChargeOptions` (#89 D12). |
 
 Klient vyplňuje `userAction` mezi `/preview` a `/apply`. `/apply` aktion
 zvalidnuje a buď uloží, nebo vrátí chybu se seznamem nerozhodnutých referencí.
@@ -1658,9 +1671,10 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
 | `reverse_charge_code_missing` | error | Řádek (path `rows.N.vat.reverseChargeCode`) nebo řádek převzaté rekapitulace (`vatRecap.N.reverseChargeCode`) s kódem tuzemského přenesení daňové povinnosti nemá předmět plnění. Blokuje apply i v importním módu — výchozí hodnota neexistuje (#89 D10). |
 | `reverse_charge_code_unknown` | error | Předmět plnění není v číselníku `reverseChargeSubjects` nebo k datu sazby dokladu neplatí; zpráva nese hodnotu. Blokuje apply i v importním módu (#89 D10). |
+| `reverse_charge_code_pin_invalid` | error | Zvolený předmět plnění řádku (`useValue:`) není v `_resolve.reverseChargeOptions` k datu sazby — blokuje apply; vyber jiný (#89 D12). |
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
-| `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce); path dle volby (#87 B). |
+| `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce — i u předmětu plnění řádku, kde se čeká `useValue:<kód>`); path dle volby (#87 B, #89 D12). |
 | `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). |
 | `supply_kind_derived` | warning | Řádek přijatého dokladu mimo tuzemsko bez `vat.supplyKind` — druh plnění doplněn ze štítku řádku (`crossBorderSupply` taxonomie, § 8.4). Zpráva nese název štítku a druh; path `rows.N.vat.supplyKind`. Hlásí se jen, když na doplněném druhu výsledek stojí (odvozený kód nebo `vat_code_unknown`). |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |

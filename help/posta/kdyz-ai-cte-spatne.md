@@ -81,8 +81,10 @@ něco *jiného*, než co je tam popsané, ozvi se. Kód DPH u samovyměření
 zvolí jiný kód, než na fakturu patří, vyber kód přímo v náhledu u řádku.
 Faktura se zahraniční DPH (hotel, tankování v cizině) kód nepotřebuje —
 návrh vznikne *Bez DPH*, viz [Kontrola vytěžení](kontrola-vytezeni.md).
-Co v nabídce není (přenesení daňové povinnosti mimo stavební práce
-a přílohu 5, dovoz zboží), je vyjmenované tamtéž a doklad založíš ručně.
+U tuzemského přenesení daňové povinnosti potřebuje řádek ještě **Předmět
+plnění**; když ho návrh z faktury nepřevezme, vyber ho v náhledu stejným
+způsobem — kliknutím na odznak u řádku. Co v nabídce kódů není (dovoz
+zboží), je vyjmenované tamtéž a doklad založíš ručně.
 
 **Čím víc dokladů od dodavatele máš, tím méně chyb.** Shipard doplňuje
 položky, sazby a účty z tvých dřívějších dokladů od téhož partnera. První

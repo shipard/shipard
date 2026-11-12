@@ -198,7 +198,8 @@ export function reviewRows(canonical, resolve, computedRowPrices, t = null) {
  * Rekapitulace a součty (přepočet `_resolve.computed`, nebo canonical) →
  * data `DocTotals` (D52, D55): hodnoty s měnou, zaokrouhlení jen když je
  * nenulové, bez přepočtu v domácí měně. Řádek rekapitulace nese navíc
- * `vatCode` a `isReversePair` pro snippet `rate` (`DocTotals` je nečte).
+ * `vatCode`, `subject` (předmět plnění přenesení) a `isReversePair` pro
+ * snippet `rate` (`DocTotals` je nečte).
  */
 export function reviewTotals(recapRows, totals, currency) {
   const cur = textOrNull(currency);
@@ -209,6 +210,8 @@ export function reviewTotals(recapRows, totals, currency) {
     tax: formatMoney(r?.tax, cur),
     total: formatMoney(r?.total, cur),
     vatCode: textOrNull(r?.vatCode),
+    // Předmět plnění skupiny u tuzemského přenesení (#89 D12) — pro snippet `rate`.
+    subject: textOrNull(r?.reverseChargeCode),
     isReversePair: r?.isReversePair === true,
   }));
   const summary = totals
