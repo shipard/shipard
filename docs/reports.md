@@ -548,7 +548,8 @@ Rozšíření jádra pro živé DPH výstupy modulu `economy.vat`
   tvrzení" je per typ (`reports.noVatRegistrations`).
 - **Sloupce `text` a `date`** (`ReportColumn`): buňka je prostý string
   (datum ISO `YYYY-MM-DD`), `display: 'sides'` je pro ně zakázaný.
-  `ReportView` je vykresluje vlevo (datum lokalizovaně), suffix
+  `ReportView` je vykresluje vlevo (datum přes `utils/formatDate.js` —
+  česky `dd.mm.yyyy`, anglicky ISO, #133 D73), suffix
   „(v tis.)" dostávají jen money sloupce; `SubtotalAggregator` string
   buňky ignoruje. **`ReportDiff`** porovnává text/date sloupce striktně
   jako string (`field: 'value'`, `a`/`b` string, `delta: null`); chybějící

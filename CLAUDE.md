@@ -254,7 +254,7 @@ smí názvy nést — tam jsou potřeba k práci.
   overridy: `DocsHeadsFormBase` (řádky dokladu), `AccountingDocsForm` (kontace),
   `PersonsForm` (kontakty / adresy / účty).
 - Formát čísel, částek a dat v buňkách **jen** přes `SubtableCellFormatter` — nepřidávat
-  další privátní `formatMoney()`. Boolean labely z cfgItem `core.system.formDefaults`.
+  další privátní `formatMoney()`; datum bere jazyk formuláře (`$this->language`, #133 D73). Boolean labely z cfgItem `core.system.formDefaults`.
 - Read-only rodič → `FormDialog readOnly` (jen Zobrazit); mazání přes `ui/ConfirmDialog`
   → `POST …/subtable/{tabId}/{parentId}/delete` = `TableGateway::deleteDocument` dětské
   tabulky (zámky, `afterDelete` = přepočet hlavičky), **ne** generické `DELETE /{table}/{id}`.
@@ -478,7 +478,8 @@ smí názvy nést — tam jsou potřeba k práci.
   `DevDashboardController` jen v módu `development`, JSON API a streamy
   `/_dev/api/*` beze změny kontraktu, prohlížeč Testování čte jen soubory
   (`DevTestingController`, `Eval/Browse/`). Texty ze slovníku dashboardu
-  (`src/dev/i18n/`, cs + en); sdílí jen `styles/`, `icons.js`, `Button`, `Icon`
+  (`src/dev/i18n/`, cs + en); sdílí jen `styles/`, `icons.js`, `Button`, `Icon`,
+  čisté jádro formátu data `utils/formatDateCore.js`
   (dialogy dev-lokální `DevDialog` / `DevConfirm`, ne `Modal`).
   Nová stránka = routa v `frontend/src/dev/routes.js` **a** segment
   v `DevDashboardController::SPA_PAGES`. **Vzhled** (#129 fáze 1,
@@ -636,6 +637,7 @@ smí názvy nést — tam jsou potřeba k práci.
 - Backend dostává volbu přes `Accept-Language` header v `api/client.js`
 - Lint: `cd frontend && npm run check:i18n` — kontroluje paritu klíčů cs ↔ en (aplikace i dashboard), u dashboardu navíc existenci staticky použitých klíčů, nepoužité klíče a ICU syntaxi zpráv
 - **Vývojářský dashboard** má vlastní slovník a `t()` v `frontend/src/dev/i18n/` (klíč `shpd_dev_language`, jazyk podle prohlížeče, přepínač CS · EN v liště, reload po přepnutí); nikdy neimportuje `i18n/index.js` ani `stores/language.svelte.js` aplikace a naopak. Kódy ze serveru přes `label(prefix, code)` (bez klíče kód, ne klíč). Viz `docs/frontend.md` → Vývojářský dashboard
+- **Datum a čas na obrazovce** jen přes `frontend/src/utils/formatDate.js` — `formatDate()` / `formatDateTime()` v jazyce rozhraní (česky `01.01.2026`, anglicky `2026-01-01`, čas `HH:mm`; čisté jádro `formatDateCore.js`, #133 D73). Žádné `toLocaleDateString()` ani `Intl.DateTimeFormat` v komponentách — hlídá `dateFormatUsage.test.mjs` v `npm test`. Viz `docs/design-system.md` §11 → Datum a čas
 - Mapování chybových kódů: `frontend/src/i18n/errors.js` `translateError(error)` přeloží `error.code` přes klíče `error.<CODE>`, fallback na server `error.message`
 
 ### Backend — Vícejazyčnost server-driven labels
@@ -649,6 +651,7 @@ Lokalizace UI textů, které generuje backend (toolbar tlačítka, taby formulá
 - **JSONC form titulky/taby**: `JsoncFormLoader::load($lang)` aplikuje `ConfigLocalizer::localize()` rekurzivně na `:cs`/`:en` varianty v `title`, `titleNew`, `tabs[].label`, `elements[].label` (separátory)
 - **Texty karet feedu** (#101 D11): katalog `*.feedTexts` per modul, který kartu vyrábí (`core.mail` / `core.alerts` / `core.exchange`, `config/feedTexts.jsonc`, položka `{text, text:cs, text:en}`), čte `Shipard\Core\Feed\FeedTexts::t(klíč, anglický fallback, params)`. Vzor = ICU MessageFormat jako ve frontendu (plurály `{n, plural, one {# …} few {…} other {…}}`) — uvnitř plurálu **vždy `#`** (PHP intl neumí `{n}` v plurálové větvi), apostrof `''`. Fallback v PHP musí být znak po znaku holé pole katalogu (`FeedTextsCatalogTest` to hlídá). Bez katalogu (DS před `ds-upgrade`) tiše anglicky; warning jen pro chybějící klíč v existujícím katalogu. Viz `docs/dashboard.md` §5
 - **Fallback při chybějícím compiled configu**: anglický řetězec přímo v PHP — lokalizace funguje degradovaně, ne crash
+- **Datum a čas pro obrazovku** tvoří jen `Shipard\Core\I18n\DisplayDate` (#133 D73): česky `01.01.2026`, anglicky a jinak ISO `2026-01-01`, s časem na minuty. Viewer volá `TableViewer::formatDate()` / `formatDateTime()`, formulář `TableForm::formatDate()` / `formatDateTime()` (jazyk dává `FormRegistry::setLanguage()`, lookupu `LookupRegistry::setLanguage()`), buňka sub-tabulky `SubtableCellFormatter::date()` s jazykem. Česká věta bez jazyka požadavku (validační hláška, zámek) bere jazyk `cs`. Vlastní `format('j. n. Y')` / `'d.m.Y'` smí jen tisk, export a text uložený v datech — `DisplayDateUsageTest` hlídá zdroje `src/` a modulů, výjimky jsou vyjmenované s důvodem. Viz `docs/design-system.md` §11 → Datum a čas
 
 `DataSourceConfig::getDefaultLanguage()` čte volitelné pole `defaultLanguage` z `config/main.json` (default `'en'`); `resolveLanguage()` v `public/index.php` ho použije jako fallback když chybí `Accept-Language`.
 

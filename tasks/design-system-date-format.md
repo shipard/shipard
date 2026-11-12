@@ -1,6 +1,6 @@
 # Design system — jeden formát data na obrazovce (D73)
 
-**Stav:** naplánováno — 2026-11-11 (#133 Další nesoulady, D73)
+**Stav:** hotovo — 2026-11-12 (#133 Další nesoulady, D73; 6 commitů, odchylky viz „Odchylky od zadání“); ověřeno snímkem výstupu viewerů a v Chromiu nad demo sadou IT servis v `cs` i `en` (viz Ověření při implementaci), ruční ověření na dev serveru zbývá
 
 ## Kontext / Cíl
 
@@ -171,14 +171,14 @@ v backendu a na jednom ve frontendu; kontrola, aby kopie nevznikaly znovu.
 
 ## Hotovo když
 
-- [ ] Backend formátuje datum pro obrazovku jen přes `DisplayDate`;
+- [x] Backend formátuje datum pro obrazovku jen přes `DisplayDate`;
       privátní kopie ve viewerech zmizely
-- [ ] Frontend formátuje datum jen přes `utils/formatDate.js`
-- [ ] Čeština `01.01.2026`, angličtina `2026-01-01` (i s časem) všude
+- [x] Frontend formátuje datum jen přes `utils/formatDate.js`
+- [x] Čeština `01.01.2026`, angličtina `2026-01-01` (i s časem) všude
       v rozsahu D73
-- [ ] Texty uložené v datech a mimo rozsah vypsané v odchylkách
-- [ ] Obě kontroly procházejí
-- [ ] Dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
+- [x] Texty uložené v datech a mimo rozsah vypsané v odchylkách
+- [x] Obě kontroly procházejí
+- [x] Dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
 
 ## Pasti
@@ -194,3 +194,99 @@ v backendu a na jednom ve frontendu; kontrola, aby kopie nevznikaly znovu.
   ověř jazyk u obou cest, ne jen u viewerů.
 - `ds-upgrade` není potřeba (žádný nový cfgItem); pokud ano, jen na
   zdrojích s třídou `free`.
+
+## Odchylky od zadání
+
+- **Frontend ve dvou souborech.** Store jazyka (`language.svelte.js`, runy)
+  nejde v `npm test` načíst. Zápis tvoří čisté jádro
+  `utils/formatDateCore.js` (`formatDateIn(value, lang)`,
+  `formatDateTimeIn(value, lang)`, testy), `utils/formatDate.js` jen
+  doplňuje jazyk rozhraní.
+- **Jazyk ve formulářích a lookupech.** `TableForm` a `TableLookup` jazyk
+  požadavku neznaly — dostaly `setLanguage()` z registrů
+  (`FormRegistry::setLanguage()`, `LookupRegistry::setLanguage()`, nastavuje
+  `public/index.php`). `SubtableCellFormatter::date()` / `dateTime()` mají
+  jazyk jako povinný parametr; výchozí `en` mají jen konstruktory
+  `StructuredFieldRenderer`, `SentMessageTransportInfo`, `PlanMessageTexts`,
+  `AnalysisController`, `AssetsDepreciationController` a `RecordPattern::
+  render()` (testy, tisk Kontace, CLI).
+- **České věty bez jazyka požadavku** — vrstva dokumentů jazyk nezná.
+  Validační hlášky a zámky událostí majetku a hlášky zaúčtování odpisů
+  (`AssetEventDocument`, `DepreciationSettingsValidator`,
+  `AssetEventLockProvider`, `AssetPostingService`,
+  `SystemDepreciationWriter`, texty plánu v `AssetEventDocument`
+  a `AssetImportApplier`) berou `DisplayDate` s jazykem `cs`. Česká nápověda
+  ve formuláři (kurz, metoda odpisu) bere jazyk požadavku — v anglickém
+  rozhraní je česká věta s ISO datem, dokud texty formulářů nejsou
+  dvojjazyčné.
+- **`RecordPattern` formátuje i datum jako řetězec.** Databázová vrstva
+  vrací datum jako `Y-m-d` / `Y-m-d\TH:i:s`, ne jako objekt — větev pro
+  `DateTimeInterface` se v praxi nepoužila a vzor s datem
+  (`{list_type} {valid_from}`) dával ISO.
+- **Hodnota, která datem není, se ukáže beze změny** (podle zadání).
+  Dřív ji `PersonsViewer`, hlavičky formulářů Osob, Položek, Úkolů a Došlé
+  pošty a `PersonsLookup` vynechaly; pět testů přepsáno. Sloupce jsou typu
+  `date` / `datetime`, v praxi se neprojeví.
+- **Nad rámec výčtu — backend:** surový časový údaj z databáze
+  (`2026-10-27T13:14:37`) v detailech AI připojení a funkcí, schránek, AI
+  profilů, pravidel pošty a štítků, odesílatelů, konverzací, upozornění
+  a hostingu jde přes `formatDateTime()`.
+- **Datum na konci relativního času:** Došlá pošta starší než týden ukazuje
+  plné datum místo `5. 11.` (sloupec je širší), stejně Spisovna (platnost
+  nad 60 dní) a Upozornění (starší než týden). Relativní část beze změny.
+- **Nad rámec výčtu — frontend:** `SessionsPanel` (`toLocaleString()` podle
+  prohlížeče), `AssetsDepreciationRunDialog` (vlastní `15. 3. 2026`),
+  `DocumentExchangePreview` (přes `reviewParts.js` — `formatDate` tam
+  zrušen, adaptér zůstává čistý).
+- **Vývojářský dashboard převeden** (`dev/format.js` → sdílené čisté jádro
+  v jazyce dashboardu, `16.10.2026 14:05` / `2026-10-16 14:05`); čas řádků
+  logu beze změny. Dashboard tím sdílí s aplikací další soubor
+  (`utils/formatDateCore.js`).
+- **Výstup pro obrazovku i export z jednoho textu:** věta reportu majetku
+  s datem (`AssetReportSupport::displayDate()`) se mění i v exportu téhož
+  reportu.
+- **Časové pásmo:** backend nepřevádí (jako dosud u hodnot z databáze);
+  kopie postavené na `strtotime()` + `date()` by hodnotu s posunem převedly
+  do pásma serveru — hodnoty z databáze posun nenesou, rozdíl se neprojeví.
+  Frontend hodnotu s výslovným posunem (`…Z`, `…+00:00` — O zdroji dat,
+  přihlášená zařízení) ukazuje v místním čase prohlížeče jako dosud.
+
+### Beze změny (text uložený v datech nebo mimo obrazovku)
+
+| Místo | Kam text jde |
+|-------|--------------|
+| `RegistryExpirationAlertCheck`, `StaleInRepairCheck`, `BankAccountingErrorsCheck`, `PeriodCheckBase` (+ `CatchupBlockedCheck`) | text upozornění uložený při běhu kontroly (`core_alerts_alerts`) |
+| `AssetPostingBuilder` | popis účetního zápisu uložený v dokladu odpisů |
+| `DocumentApplier::exchangeRateDateText()` | zpráva výsledku importu uložená u návrhu dokladu |
+| `ReportPeriodFormatter`, `ReportTabularizer`, `ReportXlsxWriter` | export reportu (XLSX / CSV) |
+| `EpoXmlFormat` | XML podání DPH |
+| AI titulek zprávy a text e-mailu v Došlé poště (`Expirace … do 8. 11. 2026`) | data — text vytěžený z dokumentu |
+
+Všechny soubory s vlastním vzorem data jsou vyjmenované v
+`DisplayDateUsageTest::ALLOWED`.
+
+## Ověření při implementaci
+
+- `php -l` na změněných souborech; PHPUnit Unit celá sada (11 349 testů)
+  prochází; `ViewerDetailContractTest` (integrační) nad `zey0-g…` prochází.
+  Očekávání data přepsaná ve 38 testových souborech.
+- `npm run build`, `npm test` (299 testů, `formatDate.test.mjs` běží
+  s `TZ=America/New_York`), `npm run check:i18n` v pořádku.
+- **Snímek výstupu viewerů** (58 viewerů — meta, seznam, mřížka, detail
+  prvních osmi záznamů) nad volnými zdroji `zey0-g…` a `nham-q…` v `cs`
+  i `en` před a po: liší se jen hodnoty s datem (`zey0-g…` 1 393 hodnot
+  česky, 1 583 anglicky); v `cs` nezůstalo žádné ISO datum, v `en` žádný
+  český zápis kromě textů z dat. Mimo změnu formátu: surové časové údaje
+  a datum na konci relativního času (viz odchylky).
+- **Chromium** (Playwright, uživatel `e2e`, `zey0-g…`): všechny viewery
+  hlavní navigace i Nastavení — seznam, detail prvního záznamu a jeho taby
+  (94 obrazovek česky, 98 anglicky), dashboard, Přehled firmy, report
+  Pohyby majetku (datový sloupec), O zdroji dat, review dokladu z pošty.
+  Česky jen `dd.mm.yyyy`, anglicky jen `yyyy-mm-dd`; jediný jiný zápis je
+  AI titulek karty feedu (data). Sub-tabulky formulářů (události majetku,
+  měsíce fiskálního roku) ověřené dotazem na API formuláře s oběma jazyky.
+- **Neověřeno v prohlížeči:** informační řádky hlavičky formuláře (Osoby,
+  Položky, Úkoly, Došlá pošta) a nápovědy s datem — kryjí je jednotkové
+  testy a stejný jazyk formuláře jako u sub-tabulek; viewery bez dat na
+  volných zdrojích (Upozornění, Odeslaná pošta, Úkoly, Podání DPH, Texty na
+  tiscích, číselníky bez záznamů) a modul `hosting.core` — jen testy.

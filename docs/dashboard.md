@@ -238,7 +238,8 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   (tasks/dashboard-other-row-title.md D3). Frontend přidává ikonu obálky
   a uvozovky.
 - `receivedDateText` — **volitelné**, lokalizované datum doručení zprávy
-  (server-formátované, cs `j. n. Y` / en `Y-m-d`); posílají ho všechny tři
+  (server-formátované přes `DisplayDate`, cs `dd.mm.yyyy` / en `Y-m-d`);
+  posílají ho všechny tři
   druhy mail karet. Frontend ho zobrazuje za typem dokladu / subtitle
   (oddělené „·“). Na rozdíl od `timestamp` (řadicí pole všech karet,
   u alertů = last_seen) nese význam „kdy pošta přišla“.
@@ -393,7 +394,7 @@ $texts->t('digest.title', '{n, plural, one {# message auto-archived} other {# me
   `tests/Fixtures/Core/Feed/ShippedFeedTexts` dodává katalogy testům
   zdrojů (bez nich by assertovaly anglický fallback).
 - Mimo katalog (D17): labely akcí mail karet (frontend podle
-  `action.id`), formát data (`j. n. Y` / `Y-m-d` ve zdroji), prompt AI
+  `action.id`), formát data (`DisplayDate` ve zdroji, #133 D73), prompt AI
   shrnutí, titulky a zprávy samotných alertů (#102), hlášky selhané
   analýzy (`analysisErrorKinds`, `preprocessErrorKinds`).
 
@@ -496,7 +497,8 @@ denormalizace headline do sloupců je pozdější optimalizace.
   `headline.typeLabel` = `docTypeLabel()`,
   `headline.amountText` = `formatAmount()`; `confidencePct`; `emailSubject`;
   `details` v pořadí číslo dokladu (`docNumber`), splatnost (`dates.dueDate`,
-  formát cs `j. n. Y` / en `Y-m-d`, nevalidní datum → řádek vynechat),
+  formát `DisplayDate` — cs `dd.mm.yyyy` / en `Y-m-d`, nevalidní datum →
+  řádek vynechat),
   variabilní symbol (`payment.paymentReference`) — jen neprázdné.
 - **Registry karta**: `partnerName` = `party.name`, `typeLabel` =
   `docKindLabel()`, bez `amountText`; `details` = jediný řádek „Platí do"

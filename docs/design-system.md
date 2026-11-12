@@ -328,6 +328,9 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
    (`--shpd-space-*`, `--shpd-radius-*`, `--shpd-font-size-*`) nebo rem; px
    jen čarám, okrajům, stínům a stavovému / aktivnímu proužku. Hlídá
    `scripts/check-css-units.py` — viz §10 Jednotky a mezery.
+5. **Datum a čas jen přes sdílené funkce** (D73) — `DisplayDate`
+   v backendu, `utils/formatDate.js` ve frontendu; žádné vlastní
+   `format('j. n. Y')` ani `toLocaleDateString()`. Viz §11 → Datum a čas.
 
 ### Anti-patterny
 
@@ -1178,6 +1181,64 @@ heading: má být ve velikosti řádků.
   přes `SectionHeading` — verzálky a šedá nadpisu sekce zanikly, §11
   verzálky jen ve větších nadpisech). `check-css-units.py` hlídá jen px
   — role nehlídá nic než tahle kapitola.
+
+### Datum a čas
+
+Datum na obrazovce má **jeden zápis podle jazyka rozhraní** (D73):
+
+| Jazyk | Datum | Datum s časem |
+|-------|-------|---------------|
+| čeština | `01.01.2026` | `01.01.2026 14:05` |
+| angličtina (a každý jiný jazyk) | `2026-01-01` | `2026-01-01 14:05` |
+
+Oba zápisy mají pevnou délku (data ve sloupci pod sebou „neskáčou“)
+a jsou jednoznačné — anglické rozhraní nedostane americký ani český zápis.
+Platí pro detail, seznam, mřížku, review, report na obrazovce, hlavičku
+formuláře i sub-tabulku.
+
+Zápis tvoří jedno místo v backendu a jedno ve frontendu:
+
+- **Backend** — `Shipard\Core\I18n\DisplayDate::date()` / `dateTime()`
+  s jazykem požadavku. Viewer volá `TableViewer::formatDate()` /
+  `formatDateTime()`, formulář `TableForm::formatDate()` /
+  `formatDateTime()`, buňka sub-tabulky `SubtableCellFormatter::date()`
+  (jazyk povinný), hlavička detailu `RecordPattern` (jazyk od vieweru).
+  Formuláři a lookupu dává jazyk registr (`FormRegistry::setLanguage()`,
+  `LookupRegistry::setLanguage()`).
+- **Frontend** — `utils/formatDate.js`: `formatDate(value)`
+  a `formatDateTime(value)` v jazyce rozhraní; zápis tvoří čisté jádro
+  `utils/formatDateCore.js` (jazyk parametrem, bez `Intl`, testy). Jádro
+  sdílí i vývojářský dashboard se svým jazykem.
+
+Pravidla:
+
+- **Prázdná hodnota** → backend `null` (vlastnost se v detailu vynechá),
+  frontend `''`; pomlčku si doplní volající. **Hodnota, která datem není,
+  se vrací beze změny** — neztratí se.
+- **Časové pásmo se nepřevádí.** Čisté datum (`2026-01-01`) a čas bez
+  posunu se zapíšou tak, jak v hodnotě stojí; frontend je čte z řetězce
+  ručně (`new Date('2026-01-01')` je půlnoc UTC a západně od UTC by dala
+  31. 12.). Jen hodnota s výslovným posunem (`…Z`, `…+02:00`) je okamžik
+  a frontend ji ukáže v místním čase prohlížeče.
+- **Česká věta bez jazyka požadavku** (validační hláška, zámek — vrstva
+  dokumentů jazyk nezná) bere `DisplayDate` s jazykem `cs`: datum ladí
+  s větou.
+
+Mimo pravidlo (vlastní formát, beze změny):
+
+- pole formuláře pro zadání data (`DateInput`);
+- tisk (Twig, formáty přes `ext-intl` v jazyce dokladu), export reportu
+  (XLSX / CSV), výměnný formát, ISDOC, XML podání;
+- **texty uložené v datech** — text upozornění z běhu kontroly, popis
+  účetního zápisu, zprávy importu: vznikly jednou v jednom jazyce;
+- relativní čas („před 3 d“, „za 5 d“) — jen jeho konec, kde už se píše
+  datum, jde přes sdílenou funkci.
+
+Kopie hlídají dva testy: `DisplayDateUsageTest` (žádný literál se vzorem
+`j. n. Y`, `d.m.Y`, `d. m. Y`, `j. n.` ve zdrojích `src/` a modulů mimo
+vyjmenované soubory s důvodem) a `dateFormatUsage.test.mjs` v `npm test`
+(`toLocaleDateString`, `toLocaleTimeString`, `toLocaleString`
+a `Intl.DateTimeFormat` ve zdrojích aplikace jen ve výjimkách s důvodem).
 
 ---
 

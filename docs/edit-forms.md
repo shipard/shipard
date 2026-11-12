@@ -1154,7 +1154,8 @@ issue #55):
 - buňky (`defaultSubtableCell()`): cfgItem → `name` položky; boolean →
   Ano / Ne z cfgItem `core.system.formDefaults` (`booleanYes`,
   `booleanNo` — po přidání nutný `ds-upgrade`); numeric → dle `scale`;
-  date → `d.m.Y`; datetime → `d.m.Y H:i`; `reference` → surové id (default
+  date a datetime → `DisplayDate` v jazyce požadavku (`01.01.2026` /
+  `2026-01-01`, s časem na minuty — #133 D73); `reference` → surové id (default
   má být levný, bez dotazů — pojmenované FK řeší override); null / `''` →
   buňka chybí;
 - `stateStyle` přes `subtableRowStateStyle()` u tabulek s docStates

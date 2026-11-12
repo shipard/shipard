@@ -126,7 +126,8 @@ Nginx konfigurace: viz `docs/nginx/app.conf`.
 Druhý vstup Vite (`dev.html`, `vite.dev.config.js`, #103 D57): samostatná
 malá SPA pro vývojářský dashboard (`docs/dev/dev-daily.md` § 1), sestavená
 do `public/_dev/` s `base: '/_dev/'` a bez `publicDir`. S aplikací sdílí
-`styles/`, `icons.js`, `Button`, `Icon` a `Popover` (kebab menu) — a záměrně
+`styles/`, `icons.js`, `Button`, `Icon`, `Popover` (kebab menu) a čisté jádro
+formátu data `utils/formatDateCore.js` (#133 D73, jazyk parametrem) — a záměrně
 nic, co tahá `t()` aplikace nebo `api/client.js`; texty má ve vlastním slovníku
 `src/dev/i18n/` (cs + en, viz níže), který `check:i18n` kontroluje také. Index servíruje `DevDashboardController`
 (jen v módu development, bez buildu 503 s návodem), assety nginx.
@@ -711,7 +712,7 @@ Generická komponenta — dostane název tabulky a vykreslí prohlížeč s daty
 ### Funkce
 
 - **Dynamické sloupce** — z metadat, filtrované (bez id, password_hash, json)
-- **Formátování podle typu** — varchar→text, int→číslo vpravo, boolean→Ano/Ne, date→dd.mm.yyyy, datetime→dd.mm.yyyy hh:mm, numeric→desetinná místa
+- **Formátování podle typu** — varchar→text, int→číslo vpravo, boolean→Ano/Ne, date a datetime přes `utils/formatDate.js` (česky `dd.mm.yyyy` / `dd.mm.yyyy hh:mm`, anglicky `yyyy-mm-dd` / `yyyy-mm-dd hh:mm` — `docs/design-system.md` §11 → Datum a čas), numeric→desetinná místa
 - **Řazení** — klik na hlavičku, toggle asc/desc, API sort parametr
 - **Stránkování** — offset-based, 20/50/100 na stránku, předchozí/další
 - **Tlačítko „Nový záznam"** — otevře FormDialog pro vytvoření
