@@ -1,6 +1,6 @@
 # Design system — dvojjazyčné texty viewerů z katalogů (D65–D67, F2)
 
-**Stav:** hotovo — 2026-11-12 (#133 Další nesoulady, D65, D66, D67; 6 commitů, odchylky viz „Odchylky od zadání“); ověřeno snímkem výstupu viewerů a v Chromiu v `cs` i `en` (viz Ověření při implementaci), ruční ověření na dev serveru čeká
+**Stav:** hotovo — 2026-11-12 (#133 Další nesoulady, D65, D66, D67; 6 commitů, odchylky viz „Odchylky od zadání“); ověřeno snímkem výstupu viewerů a v Chromiu v `cs` i `en` (viz Ověření při implementaci), ruční ověření na dev serveru prošlo (viz Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -313,3 +313,26 @@ platí, dokud nepřijde commit 5):
   katalogu a porovnání výstupu tříd před převodem a po něm v procesu nad
   zdrojovými katalogy (`cs`, `en`, bez konfigurace) — 78 porovnání bez
   rozdílu.
+
+## Ruční ověření (2026-11-12)
+
+Firefox, dev zdroj `lh6x` (po `ds-upgrade`), čeština i angličtina —
+v pořádku: Podání DPH (seznam, detail, taby, přeformulované plurály),
+saldokonto (případy, saldo pohybů, skupiny a účty v Nastavení), banka
+(výpisy, transakce), účetní deník a tab Zaúčtování faktury, Uživatelé,
+Upozornění; v angličtině „Account side“ a „Payment reference“.
+
+Bez dat na `lh6x`: Pravidla štítků („Last hit at“), Odesílatelé, Odeslaná
+pošta, akce Vrátit do aktivních (žádné vyřešené upozornění), chybný řádek
+deníku („Error row“).
+
+Nálezy v angličtině mimo rozsah F2:
+
+- **Upozornění — tlačítko „Otevřít doklad“** česky: popisek akce vzniká
+  v kontrole při jejím běhu a ukládá se u upozornění (dvojjazyčný zápis
+  v `*Check.php`, viz Odchylky — mimo viewery) → #154.
+- **Sidebar česky** — ověřeno: po přepnutí i po obnovení stránky je
+  navigace anglicky, česky jsou jen skupiny saldokonta (data, viz níže).
+- **Skupiny saldokonta v navigaci** („Pohledávky“, „Zál. faktury vyd.“…) —
+  názvy jsou data zdroje (seed `balancesDefault.cz.jsonc`, upravitelné
+  uživatelem), v angličtině zůstávají česky jako ostatní data.
