@@ -104,6 +104,103 @@ final class VatRateResolver
         return $cfg['vatNotes'] ?? [];
     }
 
+    // --- Tuzemské přenesení daňové povinnosti (#89 D6, D7) -------------------
+
+    /**
+     * Je kód DPH kódem tuzemského přenesení daňové povinnosti (příznak
+     * `reverseCharge`, vstup i výstup)? Jen takový kód nese předmět plnění;
+     * `reverseVatCode` mají i kódy EU a dovozu, které předmět nemají.
+     */
+    public function isReverseChargeCode(string $countryCode, ?string $vatCode): bool
+    {
+        if ($vatCode === null || $vatCode === '') {
+            return false;
+        }
+        $cfg = $this->loadCountryConfig($countryCode);
+        return !empty($cfg['vatCodes'][$vatCode]['reverseCharge']);
+    }
+
+    /**
+     * Číselník předmětů plnění (kontrolní hlášení A.1 / B.1) v pořadí
+     * konfigurace.
+     *
+     * @return list<array{code: string, name: string, legal: ?string, validFrom: ?string, validTo: ?string}>
+     */
+    public function getReverseChargeSubjects(string $countryCode): array
+    {
+        $cfg = $this->loadCountryConfig($countryCode);
+
+        $out = [];
+        foreach ($cfg['reverseChargeSubjects'] ?? [] as $code => $def) {
+            // JSON klíč "4" je v PHP int — kód je vždy řetězec ("4a").
+            $out[] = [
+                'code'      => (string) $code,
+                'name'      => (string) ($def['name'] ?? $code),
+                'legal'     => self::nullIfEmpty($def['legal'] ?? null),
+                'validFrom' => self::nullIfEmpty($def['validFrom'] ?? null),
+                'validTo'   => self::nullIfEmpty($def['validTo'] ?? null),
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Předměty plnění platné k datu (`YYYY-MM-DD`); bez data celý číselník.
+     *
+     * @return list<array{code: string, name: string, legal: ?string, validFrom: ?string, validTo: ?string}>
+     */
+    public function getReverseChargeSubjectsValidAt(string $countryCode, ?string $date): array
+    {
+        return array_values(array_filter(
+            $this->getReverseChargeSubjects($countryCode),
+            static fn (array $subject): bool => self::subjectValidAt($subject, $date),
+        ));
+    }
+
+    /**
+     * Existuje předmět plnění v číselníku a platí k datu? Bez data se
+     * ověřuje jen existence.
+     */
+    public function isReverseChargeSubjectValid(string $countryCode, ?string $code, ?string $date): bool
+    {
+        if ($code === null || $code === '') {
+            return false;
+        }
+        foreach ($this->getReverseChargeSubjects($countryCode) as $subject) {
+            if ($subject['code'] === $code) {
+                return self::subjectValidAt($subject, $date);
+            }
+        }
+        return false;
+    }
+
+    /** @param array{validFrom: ?string, validTo: ?string} $subject */
+    private static function subjectValidAt(array $subject, ?string $date): bool
+    {
+        if ($date === null || $date === '') {
+            return true;
+        }
+        $date = substr($date, 0, 10);
+        if ($subject['validFrom'] !== null && $date < $subject['validFrom']) {
+            return false;
+        }
+        return $subject['validTo'] === null || $date <= $subject['validTo'];
+    }
+
+    private static function isIsoDate(mixed $value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return $date !== false && $date->format('Y-m-d') === $value;
+    }
+
+    private static function nullIfEmpty(mixed $value): ?string
+    {
+        return $value === null || $value === '' ? null : (string) $value;
+    }
+
     /**
      * Validate cfgItem integrity — every reference between sections must
      * resolve. Returns list of error messages (empty array = OK).
@@ -144,6 +241,26 @@ final class VatRateResolver
             if (isset($code['supplyKind'])
                 && !in_array($code['supplyKind'], self::SUPPLY_KINDS, true)) {
                 $errors[] = "vatCodes['{$key}']: unknown supplyKind '{$code['supplyKind']}'";
+            }
+        }
+
+        // Předměty plnění tuzemského přenesení: název a tvar dat platnosti —
+        // překlep v datu by předmět tiše vyřadil (nebo nechal platit navždy).
+        foreach ($cfg['reverseChargeSubjects'] ?? [] as $key => $subject) {
+            if (!is_array($subject) || trim((string) ($subject['name'] ?? '')) === '') {
+                $errors[] = "reverseChargeSubjects['{$key}']: missing name";
+                continue;
+            }
+            foreach (['validFrom', 'validTo'] as $bound) {
+                $value = $subject[$bound] ?? null;
+                if ($value !== null && $value !== '' && !self::isIsoDate($value)) {
+                    $errors[] = "reverseChargeSubjects['{$key}']: invalid {$bound} '"
+                        . (is_scalar($value) ? $value : '?') . "'";
+                }
+            }
+            if (!empty($subject['validFrom']) && !empty($subject['validTo'])
+                && $subject['validFrom'] > $subject['validTo']) {
+                $errors[] = "reverseChargeSubjects['{$key}']: validFrom is after validTo";
             }
         }
 

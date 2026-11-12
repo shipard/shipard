@@ -12,6 +12,9 @@
     //                      (place × direction × category)
     //   - vatPercents    — časově proměnná procenta per kód
     //   - vatNotes       — texty pro tisk dokladu
+    //   - reverseChargeSubjects — kódy předmětu plnění u tuzemského přenesení
+    //                      daňové povinnosti (kontrolní hlášení A.1 / B.1)
+    //                      s platností v čase; čte je jen VatRateResolver
     //
     // Příznaky na kódu pro odvození kódu DPH z přijatého dokladu
     // (tasks/exchange-received-reverse-charge.md, VatCodeDerivation):
@@ -73,6 +76,150 @@
             "text:en": "Reverse charge – VAT to be paid by the customer",
             "text:sk": "Prenesenie daňovej povinnosti",
             "text:de": "Steuerschuldnerschaft des Leistungsempfängers"
+        }
+    },
+
+    // Kód předmětu plnění u tuzemského přenesení daňové povinnosti (#89 D6) —
+    // kontrolní hlášení, oddíly A.1 a B.1. Klíč = kód (řetězec, i s písmenem);
+    // `legal` = ustanovení ZDPH; `validFrom` / `validTo` (YYYY-MM-DD) omezují
+    // platnost, chybějící = bez omezení. Platnost se ověřuje k datu sazby
+    // dokladu (DocHeadVatContext::vatRateDate()).
+    //
+    // Zdroj: metodická informace Finanční správy k vyplnění kontrolního
+    // hlášení, číselník „Kód předmětu plnění“, stav k 1. 1. 2024.
+    // Ověření proti pokynům ve vyhlášce č. 387/2025 Sb. (příloha 12, účinná
+    // od 1. 1. 2026) ČEKÁ — viz tasks/vat-reverse-charge-subjects.md.
+    // Předměty 11–21 stojí na dočasném režimu (§ 92f, nařízení vlády
+    // č. 361/2014 Sb.); `validTo` se nastaví, až se změní český předpis.
+    "reverseChargeSubjects": {
+        "1": {
+            "name": "Gold",
+            "name:cs": "Zlato",
+            "name:en": "Gold",
+            "legal": "§ 92b odst. 1 a 2"
+        },
+        "1a": {
+            "name": "Gold — brokerage of a supply of investment gold",
+            "name:cs": "Zlato — zprostředkování dodání investičního zlata",
+            "name:en": "Gold — brokerage of a supply of investment gold",
+            "legal": "§ 92b odst. 3",
+            "validFrom": "2017-07-01"
+        },
+        "3": {
+            "name": "Supply of immovable property",
+            "name:cs": "Dodání nemovité věci",
+            "name:en": "Supply of immovable property",
+            "legal": "§ 92d odst. 1"
+        },
+        "3a": {
+            "name": "Supply of immovable property in a forced sale",
+            "name:cs": "Dodání nemovité věci v nuceném prodeji",
+            "name:en": "Supply of immovable property in a forced sale",
+            "legal": "§ 92d odst. 2",
+            "validFrom": "2017-07-01"
+        },
+        "4": {
+            "name": "Construction and assembly work",
+            "name:cs": "Stavební a montážní práce",
+            "name:en": "Construction and assembly work",
+            "legal": "§ 92e odst. 1"
+        },
+        "4a": {
+            "name": "Construction and assembly work — provision of workers",
+            "name:cs": "Stavební a montážní práce — poskytnutí pracovníků",
+            "name:en": "Construction and assembly work — provision of workers",
+            "legal": "§ 92e odst. 2",
+            "validFrom": "2017-07-01"
+        },
+        "5": {
+            "name": "Goods listed in Annex 5",
+            "name:cs": "Zboží uvedené v příloze č. 5",
+            "name:en": "Goods listed in Annex 5",
+            "legal": "§ 92c"
+        },
+        "6": {
+            "name": "Supply of goods originally provided as security",
+            "name:cs": "Dodání zboží poskytnutého původně jako záruka",
+            "name:en": "Supply of goods originally provided as security",
+            "legal": "§ 92ea písm. a)",
+            "validFrom": "2017-07-01"
+        },
+        "7": {
+            "name": "Supply of goods after assignment of retention of title",
+            "name:cs": "Dodání zboží po postoupení výhrady vlastnictví",
+            "name:en": "Supply of goods after assignment of retention of title",
+            "legal": "§ 92ea písm. b)",
+            "validFrom": "2017-07-01"
+        },
+        "11": {
+            "name": "Greenhouse gas emission allowances",
+            "name:cs": "Povolenky na emise skleníkových plynů",
+            "name:en": "Greenhouse gas emission allowances",
+            "legal": "§ 92f"
+        },
+        "12": {
+            "name": "Cereals and industrial crops",
+            "name:cs": "Obiloviny a technické plodiny",
+            "name:en": "Cereals and industrial crops",
+            "legal": "§ 92f"
+        },
+        "13": {
+            "name": "Metals",
+            "name:cs": "Kovy",
+            "name:en": "Metals",
+            "legal": "§ 92f"
+        },
+        "14": {
+            "name": "Mobile phones",
+            "name:cs": "Mobilní telefony",
+            "name:en": "Mobile phones",
+            "legal": "§ 92f"
+        },
+        "15": {
+            "name": "Integrated circuits",
+            "name:cs": "Integrované obvody",
+            "name:en": "Integrated circuits",
+            "legal": "§ 92f"
+        },
+        "16": {
+            "name": "Portable devices for automated data processing",
+            "name:cs": "Přenosná zařízení pro automatizované zpracování dat",
+            "name:en": "Portable devices for automated data processing",
+            "legal": "§ 92f"
+        },
+        "17": {
+            "name": "Video game consoles",
+            "name:cs": "Videoherní konzole",
+            "name:en": "Video game consoles",
+            "legal": "§ 92f"
+        },
+        "18": {
+            "name": "Supply of electricity certificates",
+            "name:cs": "Dodání certifikátů elektřiny",
+            "name:en": "Supply of electricity certificates",
+            "legal": "§ 92f",
+            "validFrom": "2016-02-01"
+        },
+        "19": {
+            "name": "Supply of electricity through systems or networks to a trader",
+            "name:cs": "Dodání elektřiny soustavami nebo sítěmi obchodníkovi",
+            "name:en": "Supply of electricity through systems or networks to a trader",
+            "legal": "§ 92f",
+            "validFrom": "2016-02-01"
+        },
+        "20": {
+            "name": "Supply of gas through systems or networks to a trader",
+            "name:cs": "Dodání plynu soustavami nebo sítěmi obchodníkovi",
+            "name:en": "Supply of gas through systems or networks to a trader",
+            "legal": "§ 92f",
+            "validFrom": "2016-02-01"
+        },
+        "21": {
+            "name": "Supply of specified electronic communications services",
+            "name:cs": "Poskytnutí vymezených služeb elektronických komunikací",
+            "name:en": "Supply of specified electronic communications services",
+            "legal": "§ 92f",
+            "validFrom": "2016-10-01"
         }
     },
 
