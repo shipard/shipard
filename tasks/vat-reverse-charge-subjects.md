@@ -1,6 +1,6 @@
 # Task: Předmět plnění u tuzemského přenesení daňové povinnosti — samostatný údaj řádku a rekapitulace
 
-**Stav:** částečně — kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); zbývá legislativní ověření číselníku, kontrola XML na portálu, `ai-eval` a komentář do #89
+**Stav:** částečně — kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); nezávislé ověření a legislativní ověření číselníku 2026-11-12, výsledek v #89; zbývá kontrola XML s kódem `4a` na portálu, `ai-eval` po změně promptu a kontrola stavu předmětů 11–21 k 1. 1. 2027 (prosinec 2026)
 
 **Issue:** #89 (task B; task A je `exchange-received-foreign-vat.md`)
 
@@ -407,11 +407,18 @@ Na volném zdroji dat (třída `free`) po `ds-upgrade` a přeseedování:
       frontendu, i18n parita, `help-index.py`.
 - [x] Varianta korpusu s předmětem 14 (nebo zapsaný důvod, proč ne) —
       varianta 12; snímky hlavní knihy sad schválené 2026-11-12.
-- [ ] Legislativní ověření (vyhláška č. 387/2025 Sb. příloha 12, stav
-      k 1. 1. 2027) zapsané v komentáři číselníku a v #89.
+- [x] Legislativní ověření zapsané v komentáři číselníku a v #89 —
+      2026-11-12: seznam 20 kódů se shoduje s pokyny k elektronickému
+      formuláři kontrolního hlášení (25 5564/1 MFin 5564/1, vzor č. 2,
+      číselník „pro období od 1. 7. 2017“); příloha 12 vyhlášky
+      č. 387/2025 Sb. nese pokyny k témuž formuláři, výčet v jejím znění
+      přímo porovnán nebyl. Stav k 1. 1. 2027 nerozhodnutý (prodloužení
+      článku 199a nepřijato) — `validTo` prázdné, kontrola v prosinci 2026.
 - [ ] Ověření na dev zdroji (body 1–6), `tasks-index.py`, výsledek do #89 —
-      ověření a index hotové 2026-11-12 (viz Stav implementace), komentář
-      do #89 a kontrola XML na portálu zbývají.
+      ověření, index i komentář do #89 hotové 2026-11-12 (nezávisle znovu:
+      `dataset-seed` + `dataset-verify` sady plátce 6× `ok`, předmět na
+      řádcích i v rekapitulaci, 343115 / 343203); zbývá kontrola XML
+      na portálu.
 
 ## Stav implementace (2026-11-12)
 
@@ -501,8 +508,8 @@ přebírá schválené snímky hlavní knihy sad.
 
 ### Zbývá (člověk)
 
-- Legislativní ověření číselníku proti vyhlášce č. 387/2025 Sb. příloha 12
-  — komentář v `vat-cz.jsonc` říká „ověření čeká“.
+- Kontrola stavu předmětů 11–21 k 1. 1. 2027 (prosinec 2026) — podle
+  českého předpisu případně doplnit `validTo`.
 - Kontrola XML s kódem `4a` na daňovém portálu; `ai-eval` po změně promptu.
 - `ds-upgrade` zdrojů dat (nové sloupce, prompt v4.12.0); podání DPH
   sestavená dřív přepočítat, testovací zdroje přeseedovat, importované

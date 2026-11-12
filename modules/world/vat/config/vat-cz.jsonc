@@ -88,10 +88,16 @@
     //
     // Zdroj: metodická informace Finanční správy k vyplnění kontrolního
     // hlášení, číselník „Kód předmětu plnění“, stav k 1. 1. 2024.
-    // Ověření proti pokynům ve vyhlášce č. 387/2025 Sb. (příloha 12, účinná
-    // od 1. 1. 2026) ČEKÁ — viz tasks/vat-reverse-charge-subjects.md.
+    // Ověřeno 2026-11-12 proti pokynům k elektronickému formuláři kontrolního
+    // hlášení (25 5564/1 MFin 5564/1, vzor č. 2): číselník „pro období od
+    // 1. 7. 2017“ má těchto 20 kódů. Příloha 12 vyhlášky č. 387/2025 Sb.
+    // (účinná od 1. 1. 2026) nese pokyny k témuž formuláři; výčet v jejím znění
+    // přímo porovnán nebyl.
     // Předměty 11–21 stojí na dočasném režimu (§ 92f, nařízení vlády
     // č. 361/2014 Sb.); `validTo` se nastaví, až se změní český předpis.
+    // Článek 199a směrnice o DPH platí do 31. 12. 2026; návrh na prodloužení
+    // do 30. 6. 2030 (COM(2026) 515) nebyl k 2026-11-12 přijat — stav
+    // k 1. 1. 2027 ověřit znovu v prosinci 2026.
     "reverseChargeSubjects": {
         "1": {
             "name": "Gold",
