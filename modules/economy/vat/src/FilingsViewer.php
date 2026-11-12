@@ -38,20 +38,6 @@ class FilingsViewer extends TableViewer
     /** Klíč porovnání dokladové úrovně mezi podáními. */
     private const DIFF_KEY_COLUMNS = ['doc_head', 'vat_code', 'vat_pct'];
 
-    /** Popisky slotů řádku přiznání v záložce Rozdíly importu. */
-    private const SLOT_LABELS = [
-        'base'    => ['cs' => 'Základ', 'en' => 'Base'],
-        'full'    => ['cs' => 'V plné výši', 'en' => 'Full'],
-        'reduced' => ['cs' => 'Krácený', 'en' => 'Reduced'],
-    ];
-
-    /** Popisky druhů rozdílu řádků hlášení (`EpoXmlLineComparer`). */
-    private const LINE_KIND_LABELS = [
-        'value'   => ['cs' => 'jiná hodnota', 'en' => 'value'],
-        'missing' => ['cs' => 'jen v podaném', 'en' => 'filed only'],
-        'extra'   => ['cs' => 'jen v sestaveném', 'en' => 'composed only'],
-    ];
-
     /** @var ?array<int, array<string, mixed>> */
     private ?array $periods = null;
 
@@ -122,13 +108,12 @@ class FilingsViewer extends TableViewer
 
     public function renderRow(array $rowData): array
     {
-        $cs   = $this->language !== 'en';
         $type = (string) ($rowData['report_type'] ?? '');
 
         $row = [
             'id' => (int) $rowData['id'],
             't1' => (string) ($rowData['name'] ?? ''),
-            'i1' => $this->resultSummary($type, $this->decodeJson($rowData['result'] ?? null), $cs),
+            'i1' => $this->resultSummary($type, $this->decodeJson($rowData['result'] ?? null)),
         ];
 
         $t2 = [];
@@ -143,8 +128,8 @@ class FilingsViewer extends TableViewer
 
         $filed = ($this->formatDate($rowData['date_filed'] ?? null) ?? '');
         $t2[] = ['text' => $filed !== ''
-            ? ($cs ? "podáno {$filed}" : "filed {$filed}")
-            : ($cs ? 'sestaveno ' : 'composed ') . ($this->formatDate($rowData['date_issue'] ?? null) ?? '')];
+            ? $this->text('rowFiled', 'filed {date}', ['date' => $filed])
+            : $this->text('rowComposed', 'composed {date}', ['date' => $this->formatDate($rowData['date_issue'] ?? null) ?? ''])];
 
         $docState  = (int) ($rowData['docState'] ?? 10);
         $stateData = $this->docStates()->getState($docState);
@@ -169,25 +154,24 @@ class FilingsViewer extends TableViewer
     protected function detailTabs(array $record): array
     {
         $recordId = (int) $record['id'];
-        $cs   = $this->language !== 'en';
         $type = (string) ($record['report_type'] ?? '');
 
         $tabs = [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
-            'content' => ['type' => 'properties', 'groups' => $this->overviewGroups($record, $type, $cs)],
+            'content' => ['type' => 'properties', 'groups' => $this->overviewGroups($record, $type)],
         ]];
 
         $rowsContent = match ($type) {
-            'return' => $this->returnRowsTable($recordId, $cs),
-            'cs'     => $this->controlStatementRowsTable($recordId, $cs),
-            'rs'     => $this->recapitulativeRowsTable($recordId, $cs),
+            'return' => $this->returnRowsTable($recordId),
+            'cs'     => $this->controlStatementRowsTable($recordId),
+            'rs'     => $this->recapitulativeRowsTable($recordId),
             default  => null,
         };
         if ($rowsContent !== null) {
             $tabs[] = [
                 'id'      => 'rows',
-                'label'   => $cs ? 'Výstupní řádky' : 'Output rows',
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'outputRows', 'Output rows'),
                 'content' => $rowsContent,
             ];
         }
@@ -202,7 +186,7 @@ class FilingsViewer extends TableViewer
         if ($headerGroups !== []) {
             $tabs[] = [
                 'id'      => 'header',
-                'label'   => $cs ? 'Hlavička' : 'Header',
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'header', 'Header'),
                 'content' => ['type' => 'properties', 'groups' => $headerGroups],
             ];
         }
@@ -211,8 +195,8 @@ class FilingsViewer extends TableViewer
         if ($previousId > 0) {
             $tabs[] = [
                 'id'      => 'diff',
-                'label'   => $cs ? 'Rozdíly' : 'Differences',
-                'content' => $this->diffTable($recordId, $previousId, $cs),
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'differences', 'Differences'),
+                'content' => $this->diffTable($recordId, $previousId),
             ];
         }
 
@@ -223,15 +207,15 @@ class FilingsViewer extends TableViewer
         if ($imported) {
             $tabs[] = [
                 'id'      => 'import',
-                'label'   => $cs ? 'Rozdíly importu' : 'Import differences',
-                'content' => $this->importDiffTable($messages, $cs),
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'importDifferences', 'Import differences'),
+                'content' => $this->importDiffTable($messages),
             ];
         }
         if ($messages !== []) {
             $tabs[] = [
                 'id'      => 'messages',
-                'label'   => $cs ? 'Zprávy' : 'Messages',
-                'content' => $this->messagesTable($messages, $cs),
+                'label'   => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'messages', 'Messages'),
+                'content' => $this->messagesTable($messages),
             ];
         }
 
@@ -245,7 +229,6 @@ class FilingsViewer extends TableViewer
     protected function detailActions(array $record): array
     {
         $recordId = (int) $record['id'];
-        $cs       = $this->language !== 'en';
         $type     = (string) ($record['report_type'] ?? '');
         $messages = $this->decodeJson($record['messages'] ?? null);
         $imported = $this->isImported((array) $record);
@@ -261,12 +244,12 @@ class FilingsViewer extends TableViewer
             $actions = [
                 [
                     'id'      => 'recomposeFiling',
-                    'label'   => $cs ? 'Přepočítat' : 'Recompose',
+                    'label'   => $this->text('recompose', 'Recompose'),
                     'variant' => 'secondary',
                 ],
                 [
                     'id'      => 'reloadFilingHeader',
-                    'label'   => $cs ? 'Načíst hlavičku z profilu' : 'Load header from profile',
+                    'label'   => $this->text('loadHeaderFromProfile', 'Load header from profile'),
                     'variant' => 'secondary',
                 ],
             ];
@@ -281,14 +264,16 @@ class FilingsViewer extends TableViewer
         if ($canAccount) {
             $actions[] = [
                 'id'      => 'accountFiling',
-                'label'   => $accDoc === null ? ($cs ? 'Zaúčtovat' : 'Post to accounting') : ($cs ? 'Zaúčtovat znovu' : 'Post again'),
+                'label'   => $accDoc === null
+                    ? $this->text('postToAccounting', 'Post to accounting')
+                    : $this->text('postAgain', 'Post again'),
                 'variant' => 'primary',
             ];
         }
         if ($accDoc !== null && $accDoc['live']) {
             $actions[] = [
                 'id'       => 'openAccountingDocument',
-                'label'    => ($cs ? 'Účetní doklad ' : 'Accounting document ') . $accDoc['label'],
+                'label'    => $this->text('accountingDocument', 'Accounting document {number}', ['number' => $accDoc['label']]),
                 'variant'  => 'secondary',
                 'kind'     => 'open_viewer',
                 'viewerId' => 'docs.accountingDocs.heads',
@@ -310,7 +295,7 @@ class FilingsViewer extends TableViewer
                 $actions[] = ReportPeriodsViewer::lockAction(
                     $periodId,
                     $canAccount ? 'secondary' : 'primary',
-                    $cs ? 'Uzamknout tvrzení' : 'Lock period',
+                    $this->text('lockPeriod', 'Lock period'),
                 );
             }
         }
@@ -323,7 +308,7 @@ class FilingsViewer extends TableViewer
         if ($docState !== FilingDocument::DOC_STATE_CANCELLED && !$imported) {
             $actions[] = [
                 'id'      => 'generateFilingFiles',
-                'label'   => $cs ? 'Vytvořit soubory' : 'Create files',
+                'label'   => $this->text('createFiles', 'Create files'),
                 'variant' => 'secondary',
             ];
         }
@@ -333,8 +318,7 @@ class FilingsViewer extends TableViewer
 
     public function getFilters(): array
     {
-        $cs = $this->language !== 'en';
-        $all = $cs ? 'Vše' : 'All';
+        $all = $this->sharedText('all', 'All');
 
         $typeOptions = [['value' => 'all', 'label' => $all]];
         foreach ($this->typeLabels() as $key => $label) {
@@ -348,14 +332,14 @@ class FilingsViewer extends TableViewer
         $filters = [
             [
                 'id'      => 'report_type',
-                'label'   => $cs ? 'Typ tvrzení' : 'Report type',
+                'label'   => $this->columnLabel('report_type', 'Report type'),
                 'type'    => 'enum',
                 'default' => 'all',
                 'options' => $typeOptions,
             ],
             [
                 'id'      => 'filing_kind',
-                'label'   => $cs ? 'Druh podání' : 'Filing kind',
+                'label'   => $this->columnLabel('filing_kind', 'Filing kind'),
                 'type'    => 'enum',
                 'default' => 'all',
                 'options' => $kindOptions,
@@ -374,7 +358,7 @@ class FilingsViewer extends TableViewer
             }
             $filters[] = [
                 'id'      => 'year',
-                'label'   => $cs ? 'Rok' : 'Year',
+                'label'   => $this->text('year', 'Year'),
                 'type'    => 'enum',
                 'default' => '0',
                 'options' => $yearOptions,
@@ -390,7 +374,7 @@ class FilingsViewer extends TableViewer
      * @param array<string, mixed>|\Dibi\Row $record
      * @return list<array{title: string, items: list<array{label: string, value: string}>}>
      */
-    private function overviewGroups($record, string $type, bool $cs): array
+    private function overviewGroups($record, string $type): array
     {
         $periods    = $this->periods();
         $periodId   = (int) ($record['report_period'] ?? 0);
@@ -398,67 +382,65 @@ class FilingsViewer extends TableViewer
         $previousId = (int) ($record['previous_filing'] ?? 0);
 
         $items = [
-            ['label' => $cs ? 'Daňové tvrzení' : 'Report period',
+            ['label' => $this->columnLabel('report_period', 'Report period'),
              'value' => $period !== null ? $this->periodLabel($period) : ('#' . $periodId)],
-            ['label' => $cs ? 'Typ tvrzení' : 'Report type', 'value' => $this->typeLabels()[$type] ?? $type],
-            ['label' => $cs ? 'Druh podání' : 'Filing kind',
+            ['label' => $this->columnLabel('report_type', 'Report type'), 'value' => $this->typeLabels()[$type] ?? $type],
+            ['label' => $this->columnLabel('filing_kind', 'Filing kind'),
              'value' => $this->kindLabels()[(string) $record['filing_kind']] ?? (string) $record['filing_kind']],
-            ['label' => $cs ? 'Pořadí v tvrzení' : 'Sequence', 'value' => (string) ($record['sequence'] ?? '')],
-            ['label' => $cs ? 'Sestaveno' : 'Composed on', 'value' => ($this->formatDate($record['date_issue'] ?? null) ?? '')],
+            ['label' => $this->text('sequenceInPeriod', 'Sequence'), 'value' => (string) ($record['sequence'] ?? '')],
+            ['label' => $this->columnLabel('date_issue', 'Composed on'), 'value' => ($this->formatDate($record['date_issue'] ?? null) ?? '')],
         ];
         if ($this->isImported((array) $record)) {
-            $items[] = ['label' => $cs ? 'Původ' : 'Origin', 'value' => $this->importSummary((array) $record, $cs)];
+            $items[] = ['label' => $this->columnLabel('origin', 'Origin'), 'value' => $this->importSummary((array) $record)];
         }
         $filed = ($this->formatDate($record['date_filed'] ?? null) ?? '');
-        $items[] = ['label' => $cs ? 'Podáno' : 'Filed on', 'value' => $filed !== '' ? $filed : '—'];
+        $items[] = ['label' => $this->columnLabel('date_filed', 'Filed on'), 'value' => $filed !== '' ? $filed : '—'];
 
         $found = ($this->formatDate($record['date_found'] ?? null) ?? '');
         if ($found !== '') {
-            $items[] = ['label' => $cs ? 'Datum zjištění důvodů' : 'Reasons found on', 'value' => $found];
+            $items[] = ['label' => $this->columnLabel('date_found', 'Reasons found on'), 'value' => $found];
         }
         if ($previousId > 0) {
             $previousName = (string) $this->db->fetchSingle(
                 'SELECT `name` FROM `' . $this->table . '` WHERE `id` = %i', $previousId,
             );
-            $items[] = ['label' => $cs ? 'Předchozí podání' : 'Previous filing', 'value' => $previousName];
+            $items[] = ['label' => $this->columnLabel('previous_filing', 'Previous filing'), 'value' => $previousName];
         }
         if (!empty($record['note'])) {
-            $items[] = ['label' => $cs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];
+            $items[] = ['label' => $this->columnLabel('note', 'Note'), 'value' => (string) $record['note']];
         }
         // Zaúčtování přiznání (#55 F4b) — jen u podaného přiznání; hlášení
         // se neúčtují, koncept ještě nemá co účtovat.
         if ($type === 'return' && (int) ($record['docState'] ?? 0) === FilingDocument::DOC_STATE_FILED) {
             $accDoc = $this->accountingDocument($record);
             $items[] = [
-                'label' => $cs ? 'Zaúčtování' : 'Accounting',
+                'label' => $this->text('accounting', 'Accounting'),
                 'value' => match (true) {
-                    $accDoc === null   => $cs ? 'Nezaúčtováno' : 'Not posted',
-                    $accDoc['live']    => ($cs ? 'Účetní doklad ' : 'Accounting document ') . $accDoc['label'] . ' (' . $accDoc['state'] . ')',
-                    default            => ($cs ? 'Doklad ' : 'Document ') . $accDoc['label'] . ' ' . ($cs ? 'je stornovaný — zaúčtujte znovu' : 'is cancelled — post again'),
+                    $accDoc === null => $this->text('notPosted', 'Not posted'),
+                    $accDoc['live']  => $this->text('accountingDocumentState', 'Accounting document {number} ({state})', ['number' => $accDoc['label'], 'state' => $accDoc['state']]),
+                    default          => $this->text('documentCancelled', 'Document {number} is cancelled — post again', ['number' => $accDoc['label']]),
                 },
             ];
         }
 
         $groups = [[
-            'title' => $cs ? 'Podání' : 'Filing',
+            'title' => $this->text('groupFiling', 'Filing'),
             'items' => $items,
         ]];
 
         $result = $this->decodeJson($record['result'] ?? null);
         if ($result === []) {
             $groups[] = [
-                'title' => $cs ? 'Výsledek' : 'Result',
+                'title' => $this->text('groupResult', 'Result'),
                 'items' => [[
-                    'label' => $cs ? 'Snapshot' : 'Snapshot',
-                    'value' => $cs
-                        ? 'Nesestavený — spusťte Přepočítat.'
-                        : 'Not composed — use Recompose.',
+                    'label' => $this->text('snapshot', 'Snapshot'),
+                    'value' => $this->text('notComposedHint', 'Not composed — use Recompose.'),
                 ]],
             ];
             return $groups;
         }
 
-        $groups[] = ['title' => $cs ? 'Výsledek' : 'Result', 'items' => $this->resultItems($type, $result, $cs)];
+        $groups[] = ['title' => $this->text('groupResult', 'Result'), 'items' => $this->resultItems($type, $result)];
         return $groups;
     }
 
@@ -466,19 +448,18 @@ class FilingsViewer extends TableViewer
      * @param array<string, mixed> $result
      * @return list<array{label: string, value: string}>
      */
-    private function resultItems(string $type, array $result, bool $cs): array
+    private function resultItems(string $type, array $result): array
     {
         $items = [];
         if (!empty($result['isEmpty'])) {
             $items[] = [
-                'label' => $cs ? 'Obsah' : 'Content',
-                'value' => $cs ? 'Prázdné podání' : 'Empty filing',
+                'label' => $this->text('content', 'Content'),
+                'value' => $this->text('emptyFiling', 'Empty filing'),
             ];
         }
         $items[] = [
-            'label' => $cs ? 'Doklady' : 'Documents',
-            'value' => (string) ($result['docCount'] ?? 0) . ' / '
-                . (string) ($result['itemCount'] ?? 0) . ($cs ? ' řádků' : ' rows'),
+            'label' => $this->text('documentsAndRows', 'Documents / rows'),
+            'value' => (string) ($result['docCount'] ?? 0) . ' / ' . (string) ($result['itemCount'] ?? 0),
         ];
 
         if ($type === 'return') {
@@ -488,25 +469,24 @@ class FilingsViewer extends TableViewer
                     continue;
                 }
                 $items[] = [
-                    'label' => ($cs ? 'Ř. ' : 'Row ') . $row . ' — ' . $this->returnRowShortLabel($row, $cs),
+                    'label' => $this->text('resultRow', 'Row {row} — {label}', ['row' => $row, 'label' => $this->returnRowShortLabel($row)]),
                     'value' => $this->formatMoney($value),
                 ];
             }
         } elseif ($type === 'cs') {
             foreach ((array) ($result['cs']['sections'] ?? []) as $section => $summary) {
                 $items[] = [
-                    'label' => ($cs ? 'Sekce ' : 'Section ') . $section,
-                    'value' => sprintf(
-                        $cs ? '%d řádků · základ %s · daň %s' : '%d rows · base %s · tax %s',
-                        (int) ($summary['rows'] ?? 0),
-                        $this->formatMoney((float) ($summary['base'] ?? 0.0)),
-                        $this->formatMoney((float) ($summary['tax'] ?? 0.0)),
-                    ),
+                    'label' => $this->text('resultSection', 'Section {section}', ['section' => $section]),
+                    'value' => $this->text('sectionSummary', 'Rows: {count} · base {base} · tax {tax}', [
+                        'count' => (int) ($summary['rows'] ?? 0),
+                        'base'  => $this->formatMoney((float) ($summary['base'] ?? 0.0)),
+                        'tax'   => $this->formatMoney((float) ($summary['tax'] ?? 0.0)),
+                    ]),
                 ];
             }
         } elseif ($type === 'rs') {
             $items[] = [
-                'label' => $cs ? 'Plnění' : 'Supplies',
+                'label' => $this->text('supplies', 'Supplies'),
                 'value' => (string) ($result['rs']['supplies'] ?? 0) . ' · '
                     . $this->formatMoney((float) ($result['rs']['valueFiled'] ?? 0.0)),
             ];
@@ -515,10 +495,10 @@ class FilingsViewer extends TableViewer
         if (isset($result['crossCheck'])) {
             $differences = (int) ($result['crossCheck']['differences'] ?? 0);
             $items[] = [
-                'label' => $cs ? 'Křížová kontrola' : 'Cross-check',
+                'label' => $this->text('crossCheck', 'Cross-check'),
                 'value' => $differences === 0
-                    ? ($cs ? 'Souhlasí s deníkem' : 'Matches the journal')
-                    : sprintf($cs ? '%d rozdílů proti deníku' : '%d differences against the journal', $differences),
+                    ? ($this->text('matchesJournal', 'Matches the journal'))
+                    : $this->text('journalDifferences', 'Differences against the journal: {count}', ['count' => $differences]),
             ];
         }
         return $items;
@@ -527,7 +507,7 @@ class FilingsViewer extends TableViewer
     // ── Výstupní řádky ──────────────────────────────────────────────────────
 
     /** @return array<string, mixed> */
-    private function returnRowsTable(int $filingId, bool $cs): array
+    private function returnRowsTable(int $filingId): array
     {
         $mapping = VatOutputsMapping::fromConfig($this->config);
         $rows = $this->db->fetchAll(
@@ -551,18 +531,18 @@ class FilingsViewer extends TableViewer
         }
 
         return ['type' => 'table', 'columns' => [
-            ['id' => 'row',       'label' => $cs ? 'Ř.' : 'Row'],
-            ['id' => 'label',     'label' => $cs ? 'Popis' : 'Description'],
-            ['id' => 'base',      'label' => $cs ? 'Základ (podáno)' : 'Base (filed)', 'align' => 'right'],
-            ['id' => 'tax',       'label' => $cs ? 'Daň (podáno)' : 'Tax (filed)', 'align' => 'right'],
-            ['id' => 'reduced',   'label' => $cs ? 'Krácený' : 'Reduced', 'align' => 'right'],
-            ['id' => 'baseExact', 'label' => $cs ? 'Základ (přesně)' : 'Base (exact)', 'align' => 'right'],
-            ['id' => 'taxExact',  'label' => $cs ? 'Daň (přesně)' : 'Tax (exact)', 'align' => 'right'],
+            ['id' => 'row',       'label' => $this->text('colRow', 'Row')],
+            ['id' => 'label',     'label' => $this->text('colDescription', 'Description')],
+            ['id' => 'base',      'label' => $this->text('colBaseFiled', 'Base (filed)'), 'align' => 'right'],
+            ['id' => 'tax',       'label' => $this->text('colTaxFiled', 'Tax (filed)'), 'align' => 'right'],
+            ['id' => 'reduced',   'label' => $this->text('reduced', 'Reduced'), 'align' => 'right'],
+            ['id' => 'baseExact', 'label' => $this->text('colBaseExact', 'Base (exact)'), 'align' => 'right'],
+            ['id' => 'taxExact',  'label' => $this->text('colTaxExact', 'Tax (exact)'), 'align' => 'right'],
         ], 'rows' => $tableRows];
     }
 
     /** @return array<string, mixed> */
-    private function controlStatementRowsTable(int $filingId, bool $cs): array
+    private function controlStatementRowsTable(int $filingId): array
     {
         $rows = $this->db->fetchAll(
             'SELECT * FROM `economy_vat_filing_cs_rows` WHERE `filing` = %i'
@@ -589,18 +569,18 @@ class FilingsViewer extends TableViewer
         }
 
         return ['type' => 'table', 'columns' => [
-            ['id' => 'section', 'label' => $cs ? 'Sekce' : 'Section'],
-            ['id' => 'evid',    'label' => $cs ? 'Ev. číslo' : 'Evidence no.'],
+            ['id' => 'section', 'label' => $this->text('colSection', 'Section')],
+            ['id' => 'evid',    'label' => $this->text('colEvidenceNumber', 'Evidence no.')],
             ['id' => 'vatId',   'label' => $this->detailText(self::LABELS_CFG_ITEM, 'colVatId', 'VAT ID')],
             ['id' => 'dppd',    'label' => $this->detailText(self::LABELS_CFG_ITEM, 'colDppd', 'DPPD')],
-            ['id' => 'kod',     'label' => $cs ? 'Kód PDP' : 'RC code'],
-            ['id' => 'base',    'label' => $cs ? 'Základ' : 'Base', 'align' => 'right'],
-            ['id' => 'tax',     'label' => $cs ? 'Daň' : 'Tax', 'align' => 'right'],
+            ['id' => 'kod',     'label' => $this->text('colReverseChargeCode', 'RC code')],
+            ['id' => 'base',    'label' => $this->text('base', 'Base'), 'align' => 'right'],
+            ['id' => 'tax',     'label' => $this->text('tax', 'Tax'), 'align' => 'right'],
         ], 'rows' => $tableRows];
     }
 
     /** @return array<string, mixed> */
-    private function recapitulativeRowsTable(int $filingId, bool $cs): array
+    private function recapitulativeRowsTable(int $filingId): array
     {
         $rows = $this->db->fetchAll(
             'SELECT * FROM `economy_vat_filing_rs_rows` WHERE `filing` = %i ORDER BY `partner_vat_id`, `kod`',
@@ -619,11 +599,11 @@ class FilingsViewer extends TableViewer
         }
 
         return ['type' => 'table', 'columns' => [
-            ['id' => 'vatId',      'label' => $cs ? 'DIČ odběratele' : 'Customer VAT id'],
-            ['id' => 'kod',        'label' => $cs ? 'Kód plnění' : 'Supply code'],
-            ['id' => 'count',      'label' => $cs ? 'Počet' : 'Count', 'align' => 'right'],
-            ['id' => 'valueFiled', 'label' => $cs ? 'Hodnota (podáno)' : 'Value (filed)', 'align' => 'right'],
-            ['id' => 'value',      'label' => $cs ? 'Hodnota (přesně)' : 'Value (exact)', 'align' => 'right'],
+            ['id' => 'vatId',      'label' => $this->text('colCustomerVatId', 'Customer VAT id')],
+            ['id' => 'kod',        'label' => $this->text('colSupplyCode', 'Supply code')],
+            ['id' => 'count',      'label' => $this->text('colCount', 'Count'), 'align' => 'right'],
+            ['id' => 'valueFiled', 'label' => $this->text('colValueFiled', 'Value (filed)'), 'align' => 'right'],
+            ['id' => 'value',      'label' => $this->text('colValueExact', 'Value (exact)'), 'align' => 'right'],
         ], 'rows' => $tableRows];
     }
 
@@ -636,7 +616,7 @@ class FilingsViewer extends TableViewer
      *
      * @return array<string, mixed>
      */
-    private function diffTable(int $filingId, int $previousId, bool $cs): array
+    private function diffTable(int $filingId, int $previousId): array
     {
         $current  = $this->itemsByKey($filingId);
         $previous = $this->itemsByKey($previousId);
@@ -656,7 +636,7 @@ class FilingsViewer extends TableViewer
                     continue;
                 }
                 $tableRows[] = [
-                    'change'  => $cs ? 'změněno' : 'changed',
+                    'change'  => $this->text('changeChanged', 'changed'),
                     'doc'     => $this->itemLabel($now),
                     'code'    => (string) $now['vat_code'],
                     'base'    => $this->formatMoney($baseDelta),
@@ -667,7 +647,7 @@ class FilingsViewer extends TableViewer
             }
             if ($now !== null) {
                 $tableRows[] = [
-                    'change' => $cs ? 'přidáno' : 'added',
+                    'change' => $this->text('changeAdded', 'added'),
                     'doc'    => $this->itemLabel($now),
                     'code'   => (string) $now['vat_code'],
                     'base'   => $this->formatMoney((float) $now['base_dom']),
@@ -676,7 +656,7 @@ class FilingsViewer extends TableViewer
                 continue;
             }
             $tableRows[] = [
-                'change' => $cs ? 'odebráno' : 'removed',
+                'change' => $this->text('changeRemoved', 'removed'),
                 'doc'    => $this->itemLabel($was),
                 'code'   => (string) $was['vat_code'],
                 'base'   => $this->formatMoney(-(float) $was['base_dom']),
@@ -686,8 +666,8 @@ class FilingsViewer extends TableViewer
 
         if ($tableRows === []) {
             $tableRows[] = [
-                'change' => $cs ? 'bez změny' : 'unchanged',
-                'doc'    => $cs ? 'Obsah období je proti předchozímu podání shodný.' : 'Content matches the previous filing.',
+                'change' => $this->text('changeNone', 'unchanged'),
+                'doc'    => $this->text('contentMatchesPrevious', 'Content matches the previous filing.'),
                 'code'   => '',
                 'base'   => '',
                 'tax'    => '',
@@ -695,11 +675,11 @@ class FilingsViewer extends TableViewer
         }
 
         return ['type' => 'table', 'columns' => [
-            ['id' => 'change', 'label' => $cs ? 'Změna' : 'Change'],
-            ['id' => 'doc',    'label' => $cs ? 'Doklad' : 'Document'],
-            ['id' => 'code',   'label' => $cs ? 'Kód DPH' : 'VAT code'],
-            ['id' => 'base',   'label' => $cs ? 'Základ (rozdíl)' : 'Base (delta)', 'align' => 'right'],
-            ['id' => 'tax',    'label' => $cs ? 'Daň (rozdíl)' : 'Tax (delta)', 'align' => 'right'],
+            ['id' => 'change', 'label' => $this->text('colChange', 'Change')],
+            ['id' => 'doc',    'label' => $this->text('colDocument', 'Document')],
+            ['id' => 'code',   'label' => $this->text('colVatCode', 'VAT code')],
+            ['id' => 'base',   'label' => $this->text('colBaseDelta', 'Base (delta)'), 'align' => 'right'],
+            ['id' => 'tax',    'label' => $this->text('colTaxDelta', 'Tax (delta)'), 'align' => 'right'],
         ], 'rows' => $tableRows];
     }
 
@@ -761,7 +741,7 @@ class FilingsViewer extends TableViewer
      *
      * @param array<string, mixed> $record
      */
-    private function importSummary(array $record, bool $cs): string
+    private function importSummary(array $record): string
     {
         $rows  = 0;
         $lines = 0;
@@ -772,18 +752,17 @@ class FilingsViewer extends TableViewer
                 default                                => null,
             };
         }
-        $text = $cs ? 'Importováno ze starého Shipardu' : 'Imported from the old Shipard';
         if ($rows === 0 && $lines === 0) {
-            return $text . ($cs ? ' — podané hodnoty odpovídají dnešnímu sestavení' : ' — filed values match today\'s composition');
+            return $this->text('importSummaryMatches', 'Imported from the old Shipard — filed values match today\'s composition');
         }
         $parts = [];
         if ($rows > 0) {
-            $parts[] = ($cs ? 'rozdílné řádky přiznání: ' : 'return rows filed differently: ') . $rows;
+            $parts[] = $this->text('importReturnRowDifferences', 'return rows filed differently: {count}', ['count' => $rows]);
         }
         if ($lines > 0) {
-            $parts[] = ($cs ? 'rozdíly v řádcích hlášení: ' : 'statement line differences: ') . $lines;
+            $parts[] = $this->text('importLineDifferences', 'statement line differences: {count}', ['count' => $lines]);
         }
-        return $text . ' — ' . implode(', ', $parts);
+        return $this->text('importSummaryDifferences', 'Imported from the old Shipard — {differences}', ['differences' => implode(', ', $parts)]);
     }
 
     /**
@@ -794,9 +773,8 @@ class FilingsViewer extends TableViewer
      * @param list<array<string, mixed>> $messages
      * @return array<string, mixed>
      */
-    private function importDiffTable(array $messages, bool $cs): array
+    private function importDiffTable(array $messages): array
     {
-        $lang = $cs ? 'cs' : 'en';
         $rows = [];
         foreach ($messages as $message) {
             $code = (string) ($message['code'] ?? '');
@@ -807,21 +785,21 @@ class FilingsViewer extends TableViewer
                         continue;
                     }
                     $rows[] = [
-                        'what'     => ($cs ? 'ř. ' : 'row ') . (string) ($message['row'] ?? ''),
-                        'field'    => self::SLOT_LABELS[(string) $slot][$lang] ?? (string) $slot,
+                        'what'     => $this->text('importRow', 'row {row}', ['row' => (string) ($message['row'] ?? '')]),
+                        'field'    => $this->slotLabel((string) $slot),
                         'composed' => $this->formatMoney($composed),
                         'filed'    => $this->formatMoney((float) $filed),
-                        'kind'     => self::LINE_KIND_LABELS['value'][$lang],
+                        'kind'     => $this->lineKindLabel('value'),
                         '_class'   => 'error',
                     ];
                 }
             } elseif ($code === FilingImportService::MSG_ROW_UNMAPPED) {
                 $rows[] = [
                     'what'     => (string) ($message['veta'] ?? '') . '/@' . (string) ($message['attribute'] ?? ''),
-                    'field'    => $cs ? 'řádek mimo dnešní formulář' : 'row outside the current form',
+                    'field'    => $this->text('rowOutsideForm', 'row outside the current form'),
                     'composed' => '',
                     'filed'    => (string) ($message['value'] ?? ''),
-                    'kind'     => $cs ? 'nemapováno' : 'unmapped',
+                    'kind'     => $this->text('unmapped', 'unmapped'),
                 ];
             } elseif ($code === FilingImportService::MSG_LINE_MISMATCH) {
                 $rows[] = [
@@ -829,14 +807,14 @@ class FilingsViewer extends TableViewer
                     'field'    => (string) ($message['field'] ?? ''),
                     'composed' => (string) ($message['composed'] ?? '—'),
                     'filed'    => (string) ($message['filed'] ?? '—'),
-                    'kind'     => self::LINE_KIND_LABELS[(string) ($message['kind'] ?? '')][$lang] ?? (string) ($message['kind'] ?? ''),
+                    'kind'     => $this->lineKindLabel((string) ($message['kind'] ?? '')),
                     '_class'   => 'error',
                 ];
             }
         }
         if ($rows === []) {
             $rows[] = [
-                'what'     => $cs ? 'Podané hodnoty odpovídají dnešnímu sestavení.' : 'Filed values match today\'s composition.',
+                'what'     => $this->text('importValuesMatch', 'Filed values match today\'s composition.'),
                 'field'    => '',
                 'composed' => '',
                 'filed'    => '',
@@ -844,11 +822,11 @@ class FilingsViewer extends TableViewer
             ];
         }
         return ['type' => 'table', 'columns' => [
-            ['id' => 'what',     'label' => $cs ? 'Řádek' : 'Row'],
-            ['id' => 'field',    'label' => $cs ? 'Sloupec / pole' : 'Column / field'],
-            ['id' => 'composed', 'label' => $cs ? 'Sestaveno' : 'Composed', 'align' => 'right'],
-            ['id' => 'filed',    'label' => $cs ? 'Podáno' : 'Filed', 'align' => 'right'],
-            ['id' => 'kind',     'label' => $cs ? 'Druh rozdílu' : 'Difference'],
+            ['id' => 'what',     'label' => $this->text('colImportRow', 'Row')],
+            ['id' => 'field',    'label' => $this->text('colField', 'Column / field')],
+            ['id' => 'composed', 'label' => $this->text('colComposed', 'Composed'), 'align' => 'right'],
+            ['id' => 'filed',    'label' => $this->text('colFiled', 'Filed'), 'align' => 'right'],
+            ['id' => 'kind',     'label' => $this->text('colDifferenceKind', 'Difference')],
         ], 'rows' => $rows];
     }
 
@@ -858,7 +836,7 @@ class FilingsViewer extends TableViewer
      * @param list<array<string, mixed>> $messages
      * @return array<string, mixed>
      */
-    private function messagesTable(array $messages, bool $cs): array
+    private function messagesTable(array $messages): array
     {
         $rows = [];
         foreach ($messages as $message) {
@@ -873,37 +851,37 @@ class FilingsViewer extends TableViewer
             ];
         }
         return ['type' => 'table', 'columns' => [
-            ['id' => 'code',   'label' => $cs ? 'Kód' : 'Code'],
-            ['id' => 'detail', 'label' => $cs ? 'Podrobnosti' : 'Details'],
+            ['id' => 'code',   'label' => $this->text('colCode', 'Code')],
+            ['id' => 'detail', 'label' => $this->text('colDetails', 'Details')],
         ], 'rows' => $rows];
     }
 
     // ── Pomocné ─────────────────────────────────────────────────────────────
 
     /** @param array<string, mixed> $result */
-    private function resultSummary(string $type, array $result, bool $cs): string
+    private function resultSummary(string $type, array $result): string
     {
         if ($result === []) {
-            return $cs ? 'nesestaveno' : 'not composed';
+            return $this->text('summaryNotComposed', 'not composed');
         }
         if (!empty($result['isEmpty'])) {
-            return $cs ? 'prázdné podání' : 'empty filing';
+            return $this->text('summaryEmptyFiling', 'empty filing');
         }
 
         if ($type === 'return') {
             $row66 = (float) ($result['return']['row66'] ?? 0.0);
             if (abs($row66) >= 0.005) {
-                return ($cs ? 'ř. 66 ' : 'row 66 ') . $this->formatMoney($row66);
+                return $this->text('summaryRow66', 'row 66 {amount}', ['amount' => $this->formatMoney($row66)]);
             }
             $row64 = (float) ($result['return']['row64'] ?? 0.0);
             if ($row64 > 0.005) {
-                return ($cs ? 'vlastní daň ' : 'tax liability ') . $this->formatMoney($row64);
+                return $this->text('summaryTaxLiability', 'tax liability {amount}', ['amount' => $this->formatMoney($row64)]);
             }
             $row65 = (float) ($result['return']['row65'] ?? 0.0);
             if ($row65 > 0.005) {
-                return ($cs ? 'nadměrný odpočet ' : 'excess deduction ') . $this->formatMoney($row65);
+                return $this->text('summaryExcessDeduction', 'excess deduction {amount}', ['amount' => $this->formatMoney($row65)]);
             }
-            return $cs ? 'nulová povinnost' : 'zero position';
+            return $this->text('summaryZeroPosition', 'zero position');
         }
 
         if ($type === 'cs') {
@@ -911,24 +889,55 @@ class FilingsViewer extends TableViewer
             foreach ((array) ($result['cs']['sections'] ?? []) as $section => $summary) {
                 $parts[] = $section . ' ' . (int) ($summary['rows'] ?? 0);
             }
-            return $parts === [] ? ($cs ? 'bez řádků' : 'no rows') : implode(' · ', $parts);
+            return $parts === [] ? $this->text('summaryNoRows', 'no rows') : implode(' · ', $parts);
         }
 
-        return sprintf(
-            $cs ? '%d plnění · %s' : '%d supplies · %s',
-            (int) ($result['rs']['supplies'] ?? 0),
-            $this->formatMoney((float) ($result['rs']['valueFiled'] ?? 0.0)),
-        );
+        return $this->text('summarySupplies', 'Supplies: {count} · {value}', [
+            'count' => (int) ($result['rs']['supplies'] ?? 0),
+            'value' => $this->formatMoney((float) ($result['rs']['valueFiled'] ?? 0.0)),
+        ]);
     }
 
-    private function returnRowShortLabel(int $row, bool $cs): string
+    /** Popisek slotu řádku přiznání v záložce Rozdíly importu. */
+    private function slotLabel(string $slot): string
+    {
+        return match ($slot) {
+            'base'    => $this->text('base', 'Base'),
+            'full'    => $this->text('slotFull', 'Full'),
+            'reduced' => $this->text('reduced', 'Reduced'),
+            default   => $slot,
+        };
+    }
+
+    /** Popisek druhu rozdílu řádku hlášení (`EpoXmlLineComparer`). */
+    private function lineKindLabel(string $kind): string
+    {
+        return match ($kind) {
+            'value'   => $this->text('lineKindValue', 'value'),
+            'missing' => $this->text('lineKindMissing', 'filed only'),
+            'extra'   => $this->text('lineKindExtra', 'composed only'),
+            default   => $kind,
+        };
+    }
+
+    /**
+     * Text vieweru z katalogu `economy.vat.viewerDetailLabels`, sekce `texts`.
+     *
+     * @param array<string, scalar> $params
+     */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
+    }
+
+    private function returnRowShortLabel(int $row): string
     {
         return match ($row) {
-            62      => $cs ? 'daň na výstupu' : 'output tax',
-            63      => $cs ? 'odpočet' : 'deduction',
-            64      => $cs ? 'vlastní daň' : 'tax liability',
-            65      => $cs ? 'nadměrný odpočet' : 'excess deduction',
-            default => $cs ? 'změna daňové povinnosti' : 'change of tax liability',
+            62      => $this->text('rowOutputTax', 'output tax'),
+            63      => $this->text('rowDeduction', 'deduction'),
+            64      => $this->text('rowTaxLiability', 'tax liability'),
+            65      => $this->text('rowExcessDeduction', 'excess deduction'),
+            default => $this->text('rowLiabilityChange', 'change of tax liability'),
         };
     }
 

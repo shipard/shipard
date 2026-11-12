@@ -2,11 +2,20 @@
     // economy.vat.viewerDetailLabels
     //
     // Texty viewerů DPH — `ReportPeriodsViewer` (Daňová tvrzení),
-    // `DeductionCoefficientsViewer` (Koeficienty odpočtu) a čip Import
-    // ve `FilingsViewer`. Jen sekce `texts` (čte `TableViewer::detailText()`);
-    // tab Přehled a sdílené texty (Vše, Ano / Ne) jsou v
+    // `DeductionCoefficientsViewer` (Koeficienty odpočtu) a `FilingsViewer`
+    // (Podání DPH). Sekce `tabs` (taby detailu podání) a `texts` (čte
+    // `TableViewer::detailText()`); tab Přehled a sdílené texty (Vše, Ano / Ne) jsou v
     // core.system.viewerDetailLabels. Holé `name` je anglická varianta
     // a shoduje se s fallbackem v PHP.
+
+    // Taby detailu podání — čte `TableViewer::detailTabLabel()`.
+    "tabs": {
+        "outputRows": { "name": "Output rows", "name:cs": "Výstupní řádky", "name:en": "Output rows" },
+        "header": { "name": "Header", "name:cs": "Hlavička", "name:en": "Header" },
+        "differences": { "name": "Differences", "name:cs": "Rozdíly", "name:en": "Differences" },
+        "importDifferences": { "name": "Import differences", "name:cs": "Rozdíly importu", "name:en": "Import differences" },
+        "messages": { "name": "Messages", "name:cs": "Zprávy", "name:en": "Messages" }
+    },
 
     "texts": {
         // Filtr roku (Daňová tvrzení, Koeficienty odpočtu).
@@ -65,6 +74,158 @@
         "notSettled": { "name": "not settled", "name:cs": "nevypořádáno", "name:en": "not settled" },
 
         // ── Podání DPH ──────────────────────────────────────────────────
+        // Řádek seznamu: datum podání nebo sestavení a shrnutí výsledku.
+        "rowFiled": { "name": "filed {date}", "name:cs": "podáno {date}", "name:en": "filed {date}" },
+        "rowComposed": { "name": "composed {date}", "name:cs": "sestaveno {date}", "name:en": "composed {date}" },
+        "summaryRow66": { "name": "row 66 {amount}", "name:cs": "ř. 66 {amount}", "name:en": "row 66 {amount}" },
+        "summaryTaxLiability": { "name": "tax liability {amount}", "name:cs": "vlastní daň {amount}", "name:en": "tax liability {amount}" },
+        "summaryExcessDeduction": {
+            "name": "excess deduction {amount}",
+            "name:cs": "nadměrný odpočet {amount}",
+            "name:en": "excess deduction {amount}"
+        },
+        "summaryNoRows": { "name": "no rows", "name:cs": "bez řádků", "name:en": "no rows" },
+        "summarySupplies": { "name": "Supplies: {count} · {value}", "name:cs": "Plnění: {count} · {value}", "name:en": "Supplies: {count} · {value}" },
+        "summaryNotComposed": { "name": "not composed", "name:cs": "nesestaveno", "name:en": "not composed" },
+        "summaryEmptyFiling": { "name": "empty filing", "name:cs": "prázdné podání", "name:en": "empty filing" },
+        "summaryZeroPosition": { "name": "zero position", "name:cs": "nulová povinnost", "name:en": "zero position" },
+        // Akce detailu.
+        "postToAccounting": { "name": "Post to accounting", "name:cs": "Zaúčtovat", "name:en": "Post to accounting" },
+        "postAgain": { "name": "Post again", "name:cs": "Zaúčtovat znovu", "name:en": "Post again" },
+        "accountingDocument": {
+            "name": "Accounting document {number}",
+            "name:cs": "Účetní doklad {number}",
+            "name:en": "Accounting document {number}"
+        },
+        "recompose": { "name": "Recompose", "name:cs": "Přepočítat", "name:en": "Recompose" },
+        "loadHeaderFromProfile": { "name": "Load header from profile", "name:cs": "Načíst hlavičku z profilu", "name:en": "Load header from profile" },
+        "lockPeriod": { "name": "Lock period", "name:cs": "Uzamknout tvrzení", "name:en": "Lock period" },
+        "createFiles": { "name": "Create files", "name:cs": "Vytvořit soubory", "name:en": "Create files" },
+        // Přehled — skupina Podání (ostatní popisky jsou popisky sloupců tabulky).
+        "notPosted": { "name": "Not posted", "name:cs": "Nezaúčtováno", "name:en": "Not posted" },
+        "accountingDocumentState": {
+            "name": "Accounting document {number} ({state})",
+            "name:cs": "Účetní doklad {number} ({state})",
+            "name:en": "Accounting document {number} ({state})"
+        },
+        "documentCancelled": {
+            "name": "Document {number} is cancelled — post again",
+            "name:cs": "Doklad {number} je stornovaný — zaúčtujte znovu",
+            "name:en": "Document {number} is cancelled — post again"
+        },
+        "sequenceInPeriod": { "name": "Sequence", "name:cs": "Pořadí v tvrzení", "name:en": "Sequence" },
+        "accounting": { "name": "Accounting", "name:cs": "Zaúčtování", "name:en": "Accounting" },
+        "groupFiling": { "name": "Filing", "name:cs": "Podání", "name:en": "Filing" },
+        // Přehled — skupina Výsledek. Počty bez skloňování („Řádků: 9“).
+        "notComposedHint": {
+            "name": "Not composed — use Recompose.",
+            "name:cs": "Nesestavený — spusťte Přepočítat.",
+            "name:en": "Not composed — use Recompose."
+        },
+        "documentsAndRows": { "name": "Documents / rows", "name:cs": "Doklady / řádky", "name:en": "Documents / rows" },
+        "resultRow": { "name": "Row {row} — {label}", "name:cs": "Ř. {row} — {label}", "name:en": "Row {row} — {label}" },
+        "resultSection": { "name": "Section {section}", "name:cs": "Sekce {section}", "name:en": "Section {section}" },
+        "sectionSummary": {
+            "name": "Rows: {count} · base {base} · tax {tax}",
+            "name:cs": "Řádků: {count} · základ {base} · daň {tax}",
+            "name:en": "Rows: {count} · base {base} · tax {tax}"
+        },
+        "journalDifferences": {
+            "name": "Differences against the journal: {count}",
+            "name:cs": "Rozdíly proti deníku: {count}",
+            "name:en": "Differences against the journal: {count}"
+        },
+        "groupResult": { "name": "Result", "name:cs": "Výsledek", "name:en": "Result" },
+        "snapshot": { "name": "Snapshot", "name:cs": "Snapshot", "name:en": "Snapshot" },
+        "content": { "name": "Content", "name:cs": "Obsah", "name:en": "Content" },
+        "emptyFiling": { "name": "Empty filing", "name:cs": "Prázdné podání", "name:en": "Empty filing" },
+        "supplies": { "name": "Supplies", "name:cs": "Plnění", "name:en": "Supplies" },
+        "crossCheck": { "name": "Cross-check", "name:cs": "Křížová kontrola", "name:en": "Cross-check" },
+        "matchesJournal": { "name": "Matches the journal", "name:cs": "Souhlasí s deníkem", "name:en": "Matches the journal" },
+        // Krátké popisky řádků 62–66 přiznání ve Výsledku.
+        "rowOutputTax": { "name": "output tax", "name:cs": "daň na výstupu", "name:en": "output tax" },
+        "rowDeduction": { "name": "deduction", "name:cs": "odpočet", "name:en": "deduction" },
+        "rowTaxLiability": { "name": "tax liability", "name:cs": "vlastní daň", "name:en": "tax liability" },
+        "rowExcessDeduction": { "name": "excess deduction", "name:cs": "nadměrný odpočet", "name:en": "excess deduction" },
+        "rowLiabilityChange": { "name": "change of tax liability", "name:cs": "změna daňové povinnosti", "name:en": "change of tax liability" },
+        // Záhlaví tabulek Výstupní řádky (přiznání, kontrolní a souhrnné hlášení) — krátká.
+        "colRow": { "name": "Row", "name:cs": "Ř.", "name:en": "Row" },
+        "colDescription": { "name": "Description", "name:cs": "Popis", "name:en": "Description" },
+        "colBaseFiled": { "name": "Base (filed)", "name:cs": "Základ (podáno)", "name:en": "Base (filed)" },
+        "colTaxFiled": { "name": "Tax (filed)", "name:cs": "Daň (podáno)", "name:en": "Tax (filed)" },
+        "reduced": { "name": "Reduced", "name:cs": "Krácený", "name:en": "Reduced" },
+        "colBaseExact": { "name": "Base (exact)", "name:cs": "Základ (přesně)", "name:en": "Base (exact)" },
+        "colTaxExact": { "name": "Tax (exact)", "name:cs": "Daň (přesně)", "name:en": "Tax (exact)" },
+        "colSection": { "name": "Section", "name:cs": "Sekce", "name:en": "Section" },
+        "colEvidenceNumber": { "name": "Evidence no.", "name:cs": "Ev. číslo", "name:en": "Evidence no." },
+        "colReverseChargeCode": { "name": "RC code", "name:cs": "Kód PDP", "name:en": "RC code" },
+        "base": { "name": "Base", "name:cs": "Základ", "name:en": "Base" },
+        "tax": { "name": "Tax", "name:cs": "Daň", "name:en": "Tax" },
+        "colCustomerVatId": { "name": "Customer VAT id", "name:cs": "DIČ odběratele", "name:en": "Customer VAT id" },
+        "colSupplyCode": { "name": "Supply code", "name:cs": "Kód plnění", "name:en": "Supply code" },
+        "colCount": { "name": "Count", "name:cs": "Počet", "name:en": "Count" },
+        "colValueFiled": { "name": "Value (filed)", "name:cs": "Hodnota (podáno)", "name:en": "Value (filed)" },
+        "colValueExact": { "name": "Value (exact)", "name:cs": "Hodnota (přesně)", "name:en": "Value (exact)" },
+        // Tab Rozdíly proti předchozímu podání.
+        "changeChanged": { "name": "changed", "name:cs": "změněno", "name:en": "changed" },
+        "changeAdded": { "name": "added", "name:cs": "přidáno", "name:en": "added" },
+        "changeRemoved": { "name": "removed", "name:cs": "odebráno", "name:en": "removed" },
+        "changeNone": { "name": "unchanged", "name:cs": "bez změny", "name:en": "unchanged" },
+        "contentMatchesPrevious": {
+            "name": "Content matches the previous filing.",
+            "name:cs": "Obsah období je proti předchozímu podání shodný.",
+            "name:en": "Content matches the previous filing."
+        },
+        "colChange": { "name": "Change", "name:cs": "Změna", "name:en": "Change" },
+        "colDocument": { "name": "Document", "name:cs": "Doklad", "name:en": "Document" },
+        "colVatCode": { "name": "VAT code", "name:cs": "Kód DPH", "name:en": "VAT code" },
+        "colBaseDelta": { "name": "Base (delta)", "name:cs": "Základ (rozdíl)", "name:en": "Base (delta)" },
+        "colTaxDelta": { "name": "Tax (delta)", "name:cs": "Daň (rozdíl)", "name:en": "Tax (delta)" },
+        // Importované podání: původ v Přehledu a tab Rozdíly importu.
+        "importSummaryMatches": {
+            "name": "Imported from the old Shipard — filed values match today's composition",
+            "name:cs": "Importováno ze starého Shipardu — podané hodnoty odpovídají dnešnímu sestavení",
+            "name:en": "Imported from the old Shipard — filed values match today's composition"
+        },
+        "importReturnRowDifferences": {
+            "name": "return rows filed differently: {count}",
+            "name:cs": "rozdílné řádky přiznání: {count}",
+            "name:en": "return rows filed differently: {count}"
+        },
+        "importLineDifferences": {
+            "name": "statement line differences: {count}",
+            "name:cs": "rozdíly v řádcích hlášení: {count}",
+            "name:en": "statement line differences: {count}"
+        },
+        "importSummaryDifferences": {
+            "name": "Imported from the old Shipard — {differences}",
+            "name:cs": "Importováno ze starého Shipardu — {differences}",
+            "name:en": "Imported from the old Shipard — {differences}"
+        },
+        "importRow": { "name": "row {row}", "name:cs": "ř. {row}", "name:en": "row {row}" },
+        "rowOutsideForm": {
+            "name": "row outside the current form",
+            "name:cs": "řádek mimo dnešní formulář",
+            "name:en": "row outside the current form"
+        },
+        "unmapped": { "name": "unmapped", "name:cs": "nemapováno", "name:en": "unmapped" },
+        "importValuesMatch": {
+            "name": "Filed values match today's composition.",
+            "name:cs": "Podané hodnoty odpovídají dnešnímu sestavení.",
+            "name:en": "Filed values match today's composition."
+        },
+        "colImportRow": { "name": "Row", "name:cs": "Řádek", "name:en": "Row" },
+        "colField": { "name": "Column / field", "name:cs": "Sloupec / pole", "name:en": "Column / field" },
+        "colComposed": { "name": "Composed", "name:cs": "Sestaveno", "name:en": "Composed" },
+        "colFiled": { "name": "Filed", "name:cs": "Podáno", "name:en": "Filed" },
+        "colDifferenceKind": { "name": "Difference", "name:cs": "Druh rozdílu", "name:en": "Difference" },
+        "slotFull": { "name": "Full", "name:cs": "V plné výši", "name:en": "Full" },
+        "lineKindValue": { "name": "value", "name:cs": "jiná hodnota", "name:en": "value" },
+        "lineKindMissing": { "name": "filed only", "name:cs": "jen v podaném", "name:en": "filed only" },
+        "lineKindExtra": { "name": "composed only", "name:cs": "jen v sestaveném", "name:en": "composed only" },
+        // Tab Zprávy.
+        "colCode": { "name": "Code", "name:cs": "Kód", "name:en": "Code" },
+        "colDetails": { "name": "Details", "name:cs": "Podrobnosti", "name:en": "Details" },
         // Čip importovaného podání v řádku seznamu.
         "importBadge": { "name": "Import", "name:cs": "Import", "name:en": "Import" },
         // Hlavičky tabulky řádků kontrolního hlášení — krátké.
