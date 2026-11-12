@@ -510,7 +510,11 @@ class DocumentApplier
                     'tax'           => (float) ($r['tax'] ?? 0),
                     'total'         => (float) ($r['total'] ?? 0),
                     'isReversePair' => !empty($r['is_reverse_pair']),
-                ],
+                    // Předmět plnění skupiny (#89 D10) — klíč jen u skupiny
+                    // tuzemského přenesení, ostatní řádky beze změny.
+                ] + (isset($r['reverse_charge_code']) && $r['reverse_charge_code'] !== ''
+                    ? ['reverseChargeCode' => (string) $r['reverse_charge_code']]
+                    : []),
                 array_values($computed['recap']),
             ),
             'totals' => [
@@ -582,6 +586,7 @@ class DocumentApplier
             'resolvedRowItems'     => [],
             'resolvedRowUnits'     => [],
             'resolvedRowVatCodes'  => [],
+            'resolvedRowReverseChargeCodes' => [],
             'resolvedRowAccounts'  => [],
             'resolvedRowPartners'  => [],
             'resolvedHeadPartner'  => null,
@@ -597,6 +602,7 @@ class DocumentApplier
                 ? ($unitFresh['matchedId'] ?? null)
                 : null;
             $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
+            $plan['resolvedRowReverseChargeCodes'][$i] = self::matchedReverseChargeCode($rowResolve);
         }
         return $plan;
     }
@@ -993,6 +999,18 @@ class DocumentApplier
             if ($vatResolve !== null) {
                 $rowResolve['vatCode'] = $vatResolve;
             }
+            $subjectResolve = $this->resolveRowReverseChargeCode(
+                (int) $idx,
+                is_array($row) ? $row : [],
+                $vatResolve,
+                $vatCtx,
+                $vatCountry,
+                $supplierCountry,
+                $issues,
+            );
+            if ($subjectResolve !== null) {
+                $rowResolve['reverseChargeCode'] = $subjectResolve;
+            }
             $rowsResolve[] = $rowResolve;
         }
 
@@ -1103,7 +1121,8 @@ class DocumentApplier
      *   resolvedSupplierBank: ?int,
      *   resolvedRowItems: array<int, int|null>,
      *   resolvedRowUnits: array<int, int|null>,
-     *   resolvedRowVatCodes: array<int, array<string, mixed>|null>
+     *   resolvedRowVatCodes: array<int, array<string, mixed>|null>,
+     *   resolvedRowReverseChargeCodes: array<int, ?string>
      * }
      */
     private function reconcile(array $resolved, array $clientResolve, array &$issues, array $rowSkips): array
@@ -1127,6 +1146,7 @@ class DocumentApplier
             'resolvedRowItems'    => [],
             'resolvedRowUnits'    => [],
             'resolvedRowVatCodes' => [],
+            'resolvedRowReverseChargeCodes' => [],
             'resolvedRowAccounts' => [],
             'resolvedRowPartners' => [],
             'resolvedHeadPartner' => null,
@@ -1219,6 +1239,7 @@ class DocumentApplier
             $plan['resolvedRowDimensions'][$i] = self::matchedDimensionIds($rowResolve['dimensions'] ?? []);
 
             $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
+            $plan['resolvedRowReverseChargeCodes'][$i] = self::matchedReverseChargeCode($rowResolve);
 
             // Účet z čísla (kontace) — passthrough, žádná userAction (číslo je
             // autoritativní; nenalezeno už dalo warning v resolveAll).
@@ -2625,7 +2646,6 @@ class DocumentApplier
                 $reverseCharge,
                 $pct,
                 $supplyKind,
-                $reverseChargeCode,
                 $kind['tagSupply'],
             )
             : ['code' => null, 'reason' => 'doklad nemá DUZP ani datum vystavení', 'kind' => null];
@@ -2932,6 +2952,103 @@ class DocumentApplier
     }
 
     /**
+     * `_resolve.rows[].reverseChargeCode` jednoho řádku (#89 D10): předmět
+     * plnění u řádku, na kterém skončí kód tuzemského přenesení — ať kód
+     * vznikl derivací, z canonicalu, z historie řádků nebo volbou. Null =
+     * řádek kód přenesení nemá (předmět se pak ignoruje) nebo doklad vznikne
+     * Bez DPH.
+     *
+     * Předmět se bere z `rows[].vat.reverseChargeCode` a ověřuje proti
+     * číselníku k datu sazby; chybějící (`reverse_charge_code_missing`) ani
+     * neznámý (`reverse_charge_code_unknown`) se nedoplňuje — error, který
+     * blokuje apply i v importním módu.
+     *
+     * @param array<string, mixed> $row
+     * @param array<string, mixed>|null $vatResolve {@see resolveRowVatCode()}
+     * @param array<string, mixed> $vatCtx {@see vatContext()}
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array{value: ?string, source: ?string, status: string}|null
+     */
+    private function resolveRowReverseChargeCode(
+        int $idx,
+        array $row,
+        ?array $vatResolve,
+        array $vatCtx,
+        string $vatCountry,
+        string $supplierCountry,
+        array &$issues,
+    ): ?array {
+        if ($vatResolve === null || ($vatResolve['status'] ?? null) !== 'matched' || self::savedWithoutVat($vatCtx)) {
+            return null;
+        }
+        $code = trim((string) ($vatResolve['createPayload']['code'] ?? ''));
+        if ($code === '') {
+            return null;
+        }
+        $country = $this->vatCountryForCode($code, $vatCountry, $supplierCountry);
+        $date = is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null;
+        $input = trim((string) ($row['vat']['reverseChargeCode'] ?? ''));
+        $decision = $this->vatCodeDerivation->reverseChargeSubject(
+            $country !== '' ? $country : $vatCountry,
+            $code,
+            $date,
+            $input,
+        );
+        if (!$decision['applies']) {
+            return null;
+        }
+        if ($decision['status'] !== 'matched') {
+            $issues[] = self::reverseChargeCodeIssue("rows.{$idx}.vat.reverseChargeCode", $decision, $date);
+        }
+        return [
+            'value'  => $decision['value'],
+            'source' => $decision['value'] !== null ? 'document' : null,
+            'status' => $decision['status'] === 'matched' ? 'matched' : 'notFound',
+        ];
+    }
+
+    /**
+     * Issue chybějícího / neznámého předmětu plnění — jeden text pro řádek
+     * i řádek převzaté rekapitulace.
+     *
+     * @param array{status: ?string, value: ?string} $decision {@see VatCodeDerivation::reverseChargeSubject()}
+     * @return array{severity: string, path: string, code: string, message: string}
+     */
+    private static function reverseChargeCodeIssue(string $path, array $decision, ?string $date, string $prefix = ''): array
+    {
+        if ($decision['status'] === 'missing') {
+            return [
+                'severity' => 'error',
+                'path'     => $path,
+                'code'     => 'reverse_charge_code_missing',
+                'message'  => $prefix . 'U přenesení daňové povinnosti chybí předmět plnění'
+                    . ' (kód pro kontrolní hlášení, např. 4 stavební práce, 5 zboží z přílohy č. 5).',
+            ];
+        }
+        return [
+            'severity' => 'error',
+            'path'     => $path,
+            'code'     => 'reverse_charge_code_unknown',
+            'message'  => $prefix . "Předmět plnění „{$decision['value']}“ není v číselníku"
+                . ($date !== null ? " nebo k datu {$date} neplatí." : '.'),
+        ];
+    }
+
+    /**
+     * Předmět plnění řádku pro doklad: jen ověřený (`matched`) — neznámý se
+     * na doklad nepropíše, apply stejně zablokuje error.
+     *
+     * @param array<string, mixed> $rowResolve
+     */
+    private static function matchedReverseChargeCode(array $rowResolve): ?string
+    {
+        $block = $rowResolve['reverseChargeCode'] ?? null;
+        return is_array($block) && ($block['status'] ?? null) === 'matched' && ($block['value'] ?? null) !== null
+            ? (string) $block['value']
+            : null;
+    }
+
+    /**
      * D3: má některý položkový řádek (po derivaci) kód s `reverseVatCode`?
      * Jen u přijatého dokladu na zdroji s registrací DPH — jinde se
      * rekapitulace řídí dnešními pravidly.
@@ -3132,7 +3249,9 @@ class DocumentApplier
      *
      * @param array<string, mixed> $canonical
      * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
-     * @return array{source: int, recap: array<int, array<string, mixed>>, fallback: ?string}
+     * @return array{source: int, recap: array<int, array<string, mixed>>, fallback: ?string,
+     *     issues?: list<array{severity: string, path: string, code: string, message: string}>}
+     *     `issues` = chyby předmětu plnění převzaté rekapitulace (#89 D10).
      */
     private function resolveRecapSource(array $canonical, array $rowSkips = []): array
     {
@@ -3184,7 +3303,8 @@ class DocumentApplier
         // Sazba rekapitulace k datu sazby (opravný doklad = původní plnění, #92 D4).
         $taxPointDate = $vatCtx['rateDate'];
         $recap = [];
-        foreach ($entries as $entry) {
+        $subjectIssues = [];
+        foreach ($entries as $position => $entry) {
             if (!is_array($entry)) {
                 continue;
             }
@@ -3237,6 +3357,34 @@ class DocumentApplier
                 'total'           => round((float) ($entry['total'] ?? 0), 2),
                 'is_reverse_pair' => ($entry['isReversePair'] ?? null) === true ? 1 : 0,
             ];
+            // Předmět plnění tuzemského přenesení (#89 D10): přebírá se ze
+            // vstupu, nic se nedoplňuje — chybějící nebo neznámý je chyba
+            // i v importním módu. Oddaňovací pár nese předmět skupiny, sám
+            // se neověřuje.
+            $subject = trim((string) ($entry['reverseChargeCode'] ?? ''));
+            $last = array_key_last($recap);
+            if (($entry['isReversePair'] ?? null) === true) {
+                $recap[$last]['reverse_charge_code'] = $subject !== '' ? $subject : null;
+                continue;
+            }
+            $decision = $this->vatCodeDerivation->reverseChargeSubject(
+                $country !== '' ? $country : $vatCountry,
+                $code,
+                is_string($taxPointDate) ? $taxPointDate : null,
+                $subject,
+            );
+            if (!$decision['applies']) {
+                continue;
+            }
+            $recap[$last]['reverse_charge_code'] = $decision['value'];
+            if ($decision['status'] !== 'matched') {
+                $subjectIssues[] = self::reverseChargeCodeIssue(
+                    'vatRecap.' . $position . '.reverseChargeCode',
+                    $decision,
+                    is_string($taxPointDate) ? $taxPointDate : null,
+                    "Rekapitulace DPH, řádek {$code}: ",
+                );
+            }
         }
 
         if ($recap === []) {
@@ -3244,7 +3392,7 @@ class DocumentApplier
                 ? ['source' => 0, 'recap' => [], 'fallback' => 'rekapitulace je prázdná']
                 : $computed;
         }
-        return ['source' => 1, 'recap' => $recap, 'fallback' => null];
+        return ['source' => 1, 'recap' => $recap, 'fallback' => null, 'issues' => $subjectIssues];
     }
 
     /**
@@ -3324,6 +3472,9 @@ class DocumentApplier
     private function appendRecapSourceIssue(array $canonical, array &$issues, array $rowSkips = []): void
     {
         $resolved = $this->resolveRecapSource($canonical, $rowSkips);
+        foreach ($resolved['issues'] ?? [] as $issue) {
+            $issues[] = $issue;
+        }
         if ($resolved['fallback'] === null) {
             return;
         }
@@ -4319,6 +4470,11 @@ class DocumentApplier
                 $vatPct = $vat['createPayload']['pct'] ?? null;
                 $vatCode = $vat['createPayload']['code'] ?? null;
             }
+            // Předmět plnění jen u řádku, na kterém skončil kód přenesení
+            // (#89 D10) — o tom rozhodl resolveRowReverseChargeCode().
+            $reverseChargeCode = $vatCode !== null
+                ? ($plan['resolvedRowReverseChargeCodes'][$i] ?? null)
+                : null;
             $gross = $grossTotals[$i] ?? null;
 
             $out[] = array_filter([
@@ -4346,6 +4502,7 @@ class DocumentApplier
                 'discount_amount' => $gross !== null ? null : ($row['discountAmount'] ?? null),
                 'vat_code'        => $vatCode,
                 'vat_pct'         => $vatPct,
+                'reverse_charge_code' => $reverseChargeCode,
                 // Text řádku skládá výhradně CanonicalRowText (#84 D1/D2):
                 // top-level description první (účetní doklad, export), jinak
                 // item.name + " — " + item.description. Stejný text vidí
@@ -5269,7 +5426,7 @@ class DocumentApplier
             elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
         }
         foreach ($resolved['rows'] ?? [] as $rowR) {
-            foreach (['item', 'unit', 'vatCode'] as $k) {
+            foreach (['item', 'unit', 'vatCode', 'reverseChargeCode'] as $k) {
                 $status = $rowR[$k]['status'] ?? null;
                 if ($status === 'matched') $matched++;
                 elseif ($status === 'ambiguous') $ambiguous++;

@@ -20,6 +20,10 @@
     // (tasks/exchange-received-reverse-charge.md, VatCodeDerivation):
     //   - supplyKind        — "goods" | "services", jen mimo tuzemsko
     //   - reducedDeduction  — 1 = krácený odpočet; derivace ho nikdy nevybere
+    //   - reverseCharge     — 1 = tuzemské přenesení daňové povinnosti; kód
+    //                         nese jen místo, směr a sazbu, předmět plnění je
+    //                         samostatný údaj řádku dokladu a rekapitulace
+    //                         (reverseChargeSubjects, #89 D7)
     // =========================================================================
 
     "vatCategories": {
@@ -321,7 +325,6 @@
             "sumTax": 0,
             "reverseVatCode": "cz-203",
             "reverseCharge": 1,
-            "reverseChargeCode": 4,
             "vatReturnRow": 43
         },
         "cz-116": {
@@ -341,7 +344,6 @@
             "sumTax": 0,
             "reverseVatCode": "cz-204",
             "reverseCharge": 1,
-            "reverseChargeCode": 4,
             "vatReturnRow": 44
         },
         "cz-340": {
@@ -361,7 +363,6 @@
             "sumTax": 0,
             "reverseVatCode": "cz-370",
             "reverseCharge": 1,
-            "reverseChargeCode": 4,
             "vatReturnRow": 44
         },
         "cz-117": {
@@ -559,7 +560,6 @@
             "noPayTax": 1,
             "sumTax": 0,
             "reverseCharge": 1,
-            "reverseChargeCode": 4,
             "vatReturnRow": 25,
             "note": "pdp4"
         },
@@ -579,7 +579,6 @@
             "noPayTax": 1,
             "sumTax": 0,
             "reverseCharge": 1,
-            "reverseChargeCode": 4,
             "vatReturnRow": 25,
             "note": "pdp4"
         },
@@ -599,7 +598,6 @@
             "noPayTax": 1,
             "sumTax": 0,
             "reverseCharge": 1,
-            "reverseChargeCode": 4,
             "vatReturnRow": 25,
             "note": "pdp4"
         },

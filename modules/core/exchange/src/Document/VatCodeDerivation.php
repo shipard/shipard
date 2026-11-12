@@ -13,9 +13,11 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * AI extrakce ani ISDOC neznají per-country klíče číselníku (`cz-217`) —
  * model vracel vymyšlené kódy (`reverse-charge`, `eu-reverse`) a návrh
  * končil `vat_code_unknown`. Kód proto určuje systém: z hlavičky
- * `vat.place` + `vat.reverseCharge`, z řádku `vat.pct`, `vat.supplyKind`
- * a `vat.reverseChargeCode`, vždy v číselníku země **naší** registrace
- * DPH (D2) k DUZP.
+ * `vat.place` + `vat.reverseCharge`, z řádku `vat.pct` a `vat.supplyKind`,
+ * vždy v číselníku země **naší** registrace DPH (D2) k DUZP. Předmět plnění
+ * tuzemského přenesení (`vat.reverseChargeCode`) kód nevybírá — je to
+ * samostatný údaj řádku, který se tu jen ověřuje proti číselníku
+ * ({@see reverseChargeSubject()}, #89 D10, D11).
  *
  * Kandidáti = vstupní kódy pro místo plnění bez `hidden` a bez
  * `reducedDeduction` (krácený odpočet se nikdy neodvozuje — má stejnou
@@ -24,7 +26,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *
  *   - samovyměření (`reverseCharge === true`, nebo místo ≠ tuzemsko):
  *     kódy s `reverseVatCode` kategorie `standard`; mimo tuzemsko navíc
- *     `supplyKind` řádku, v tuzemsku `reverseChargeCode` řádku;
+ *     `supplyKind` řádku, v tuzemsku příznak `reverseCharge` kódu (obecný
+ *     kód přenesení — předmět plnění kód nevybírá, #89 D11);
  *   - tuzemsko bez samovyměření: kódy bez `reverseVatCode`, jejichž sazba
  *     k datu = `pct` řádku. Nerozhoduje název kategorie — `reduced1` /
  *     `reduced2` platily jen 2015–2023.
@@ -102,7 +105,6 @@ final class VatCodeDerivation
      * @param float|null  $pct               Sazba z řádku dokladu (`rows[].vat.pct`).
      * @param string|null $supplyKind        Efektivní druh plnění řádku (goods / services) —
      *                                       `rows[].vat.supplyKind`, nebo fallback ze štítku (D2).
-     * @param string|null $reverseChargeCode `rows[].vat.reverseChargeCode` (tuzemské PDP).
      * @param string|null $tagSupply         `crossBorderSupply` štítku řádku (`special` = veto D4).
      * @return array{code: ?string, reason: ?string, kind: ?string}
      *         kind = FAIL_FOREIGN_VAT | FAIL_SPECIAL_PLACE u selhání, jinak null.
@@ -114,7 +116,6 @@ final class VatCodeDerivation
         ?bool $reverseCharge,
         ?float $pct,
         ?string $supplyKind,
-        ?string $reverseChargeCode,
         ?string $tagSupply = null,
     ): array {
         $country = strtolower(trim($country));
@@ -187,17 +188,73 @@ final class VatCodeDerivation
             ));
         }
 
-        if ($reverseChargeCode === null || trim($reverseChargeCode) === '') {
-            return self::fail('u tuzemského přenesení daňové povinnosti chybí kód předmětu plnění');
-        }
-        // Číselník nese kód předmětu plnění jako int, canonical jako string.
-        $rc = trim($reverseChargeCode);
+        // Tuzemské přenesení (#89 D11): obecný vstupní kód přenesení základní
+        // sazby. Předmět plnění kód nevybírá — je to samostatný údaj řádku,
+        // který ověřuje {@see reverseChargeSubject()}. Sníženou sazbu volí
+        // uživatel výběrem kódu v náhledu.
+        // Dočasně (do zrušení cz-117 v #89 5/7): kód, který si předmět nese
+        // v definici, obecným kódem není.
         $candidates = array_filter(
             $candidates,
-            static fn (array $def): bool => isset($def['reverseChargeCode'])
-                && (string) $def['reverseChargeCode'] === $rc,
+            static fn (array $def): bool => !empty($def['reverseCharge'])
+                && !isset($def['reverseChargeCode']),
         );
-        return self::pick($candidates, "tuzemské přenesení daňové povinnosti, předmět plnění {$rc}");
+        return self::pick($candidates, 'tuzemské přenesení daňové povinnosti');
+    }
+
+    /**
+     * Předmět plnění řádku s kódem tuzemského přenesení (#89 D10): ověření
+     * proti číselníku `reverseChargeSubjects` k datu sazby dokladu. Nic
+     * nedoplňuje — chybějící ani neznámý předmět nemá výchozí hodnotu.
+     *
+     * @param string|null $date    Datum sazby (`Y-m-d`); null = jen existence.
+     * @param string|null $subject `rows[].vat.reverseChargeCode` nebo volba uživatele.
+     * @return array{applies: bool, status: 'matched'|'missing'|'unknown'|null, value: ?string}
+     *         `applies` false = kód DPH předmět nenese (status i value null).
+     */
+    public function reverseChargeSubject(string $country, string $vatCode, ?string $date, ?string $subject): array
+    {
+        $country = strtolower(trim($country));
+        try {
+            $applies = $this->vat->isReverseChargeCode($country, $vatCode);
+        } catch (\LogicException) {
+            $applies = false;
+        }
+        if (!$applies) {
+            return ['applies' => false, 'status' => null, 'value' => null];
+        }
+        $value = $subject !== null ? trim($subject) : '';
+        if ($value === '') {
+            return ['applies' => true, 'status' => 'missing', 'value' => null];
+        }
+        return [
+            'applies' => true,
+            'status'  => $this->vat->isReverseChargeSubjectValid($country, $value, $date) ? 'matched' : 'unknown',
+            'value'   => $value,
+        ];
+    }
+
+    /**
+     * Nabídka předmětů plnění platných k datu sazby — pro volbu v náhledu
+     * návrhu (`_resolve.reverseChargeOptions`, #89 D12); táž množina volbu
+     * validuje.
+     *
+     * @return list<array{code: string, label: string}>
+     */
+    public function reverseChargeSubjectOptions(string $country, ?string $date): array
+    {
+        try {
+            $subjects = $this->vat->getReverseChargeSubjectsValidAt(strtolower(trim($country)), $date);
+        } catch (\LogicException) {
+            return [];
+        }
+        return array_map(
+            static fn (array $subject): array => [
+                'code'  => $subject['code'],
+                'label' => "{$subject['code']} — {$subject['name']}",
+            ],
+            $subjects,
+        );
     }
 
     /**

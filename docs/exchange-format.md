@@ -401,6 +401,15 @@ import ze starého Shipardu a pro doklad dodavatele: nárok na odpočet je
 U `"computed"` (a u vystavených dokladů vždy) je `vatRecap` **informativní**
 a v DB je autoritativní hodnota vypočtená z řádků.
 
+**`vatRecap[].reverseChargeCode`** (nepovinné, #89 D10) — předmět plnění
+skupiny u tuzemského přenesení daňové povinnosti; klíč skupiny rekapitulace
+je (kód DPH, sazba, předmět). U převzaté rekapitulace ho řádek s kódem
+přenesení **musí** nést (jinak error `reverse_charge_code_missing` /
+`reverse_charge_code_unknown`, path `vatRecap.N.reverseChargeCode`),
+oddaňovací pár nese předmět své skupiny, u jiného kódu se ignoruje.
+Exporter ho vyváží; AI extrakce ho nevyplňuje (rekapitulace dodavatele se
+u přenesení nepřebírá).
+
 **Odvození, když `recapSource` chybí (`null`):** u dokladu, který přijímáme
 (`selfParty: "customer"` — typicky AI extrakce faktury dodavatele), je
 `declared` tehdy, když je rekapitulace neprázdná, každý řádek projde
@@ -794,7 +803,10 @@ nebo import mezi dvěma cizími subjekty.
                                    //   `supply_kind_derived`)
     "reverseChargeCode": null      // kód předmětu plnění u tuzemského
                                    //   přenesení daňové povinnosti ("4"
-                                   //   stavební práce, "5" příloha 5)
+                                   //   stavební práce, "4a", "5" příloha 5,
+                                   //   "14" mobilní telefony … — číselník
+                                   //   world.vat reverseChargeSubjects);
+                                   //   ukládá se na řádek dokladu (§ 8.4)
   },
 
   // Computed (informative)
@@ -1214,17 +1226,19 @@ přišlo), vystavené doklady.
 
 AI ani ISDOC neznají klíče číselníku (model vracel `reverse-charge`,
 `eu-reverse`); kód proto určuje systém ze sémantických signálů — hlavička
-`vat.place` (efektivní místo, viz výše), `vat.reverseCharge`, řádek `vat.pct`, `vat.supplyKind`,
-`vat.reverseChargeCode` (`tasks/exchange-received-reverse-charge.md`
-D1/D4). Kandidáti = vstupní kódy číselníku naší registrace pro místo
+`vat.place` (efektivní místo, viz výše), `vat.reverseCharge`, řádek `vat.pct`, `vat.supplyKind`
+(`tasks/exchange-received-reverse-charge.md` D1/D4). Kandidáti = vstupní kódy číselníku naší registrace pro místo
 plnění, bez `hidden` a bez `reducedDeduction` (krácený odpočet se nikdy
 neodvozuje):
 
 - **samovyměření** (`reverseCharge: true`, nebo místo ≠ tuzemsko): kódy
   s `reverseVatCode` kategorie `standard`; mimo tuzemsko rozhoduje
   `supplyKind` (EU zboží `cz-215`, služby `cz-217`; třetí země služby
-  `cz-417` — dovoz zboží se neodvozuje, viz níže), v tuzemsku
-  `reverseChargeCode` (`4` → `cz-115`, `5` → `cz-117`);
+  `cz-417` — dovoz zboží se neodvozuje, viz níže), v tuzemsku obecný
+  vstupní kód přenesení základní sazby (`cz-115`, příznak `reverseCharge`
+  kódu) — **předmět plnění kód nevybírá**, je to samostatný údaj řádku
+  (viz „Předmět plnění“ níže); sníženou sazbu volí uživatel výběrem kódu
+  v náhledu;
 - **tuzemsko bez samovyměření:** kód bez `reverseVatCode`, jehož sazba
   k DUZP = `pct` řádku (`cz-110`, `cz-111`, `cz-112`; historicky `cz-301`).
 
@@ -1239,6 +1253,25 @@ z číselníku k DUZP — u samovyměření tedy 21, ne 0 z dokladu dodavatele.
 | neznámý / prázdný | `null` | `notFound` + error `vat_code_unknown` s důvodem a „doklad založ ručně“ (doklad mimo české DPH se k řádkům nedostane — viz výše) |
 | prázdný, bez signálů | — | bez bloku `vatCode` (jako dřív) |
 | libovolný, **volba uživatele** `userAction: "useCode:<kód>"` (#87 task B) | cokoli | zvolený kód, `matchedBy: "user"`, sazba z číselníku k DUZP; kód mimo `_resolve.vatCodeOptions` → `notFound` + error `vat_code_pin_invalid`; v rozporu se signály warning `vat_code_pin_conflict` (volba platí, zpráva nese odvozený kód) |
+
+**Předmět plnění u tuzemského přenesení** (#89 D10, D11,
+`tasks/vat-reverse-charge-subjects.md`). U každého položkového řádku, na
+kterém **skončí** kód DPH s příznakem `reverseCharge` (odvozený, z canonicalu,
+z historie řádků i zvolený; přijaté i vystavené doklady, i importní mód),
+applier vezme `rows[].vat.reverseChargeCode`, ověří ho proti číselníku
+`reverseChargeSubjects` k datu sazby (`VatCodeDerivation::reverseChargeSubject()`)
+a uloží na řádek dokladu (`reverse_charge_code`); rekapitulace se pak skládá
+per (kód, sazba, předmět). **Nic se tiše nedoplňuje** — ani v importním módu:
+
+| efektivní kód řádku | `rows[].vat.reverseChargeCode` | výsledek |
+|---|---|---|
+| kód přenesení | platný k datu sazby | `_resolve.rows[].reverseChargeCode {value, source: "document", status: "matched"}`, bez issue |
+| kód přenesení | chybí | `{value: null, source: null, status: "notFound"}` + error `reverse_charge_code_missing` |
+| kód přenesení | mimo číselník / neplatný k datu | `{value: "<hodnota>", source: "document", status: "notFound"}` + error `reverse_charge_code_unknown` s hodnotou ve zprávě |
+| jiný kód, bez kódu, doklad Bez DPH | cokoli | bez bloku, předmět se ignoruje |
+
+Na doklad se propíše jen ověřený předmět. Blok `reverseChargeCode` se počítá
+do `_resolve.summary` jako ostatní reference řádku.
 
 „V souladu“ = místo kódu odpovídá `vat.place`; má `reverseVatCode` ⇔
 `reverseCharge`; `supplyKind` sedí, když je na obou stranách; u tuzemska
@@ -1623,6 +1656,8 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, vynechaný řádek) — spočítá se z řádků; zpráva nese důvod. U samovyměření (D3) vlastní text: dodavatel uvádí 0 % DPH, daň přiznáváte vy, rekapitulace se sestaví z řádků (daň na výstupu a nárok na odpočet). |
 | `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. U dokladu mimo české DPH (`vat_foreign_tax` / `vat_special_place` / `vat_out_of_scope_user`) se nehlásí. U zahraniční DPH a zvláštního místa plnění, které k dokladu mimo DPH nevedly (smíšený doklad, zvolený režim s DPH), zpráva radí kód u řádku nebo režim Bez DPH. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
+| `reverse_charge_code_missing` | error | Řádek (path `rows.N.vat.reverseChargeCode`) nebo řádek převzaté rekapitulace (`vatRecap.N.reverseChargeCode`) s kódem tuzemského přenesení daňové povinnosti nemá předmět plnění. Blokuje apply i v importním módu — výchozí hodnota neexistuje (#89 D10). |
+| `reverse_charge_code_unknown` | error | Předmět plnění není v číselníku `reverseChargeSubjects` nebo k datu sazby dokladu neplatí; zpráva nese hodnotu. Blokuje apply i v importním módu (#89 D10). |
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
 | `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce); path dle volby (#87 B). |

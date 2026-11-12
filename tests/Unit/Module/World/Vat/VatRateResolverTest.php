@@ -197,7 +197,9 @@ class VatRateResolverTest extends TestCase
         $this->assertNotNull($code);
         $this->assertSame('standard', $code['category']);
         $this->assertSame('cz-203', $code['reverseVatCode']);
-        $this->assertSame(4, $code['reverseChargeCode']);
+        // Kód přenesení nese jen příznak — předmět plnění je údaj řádku (#89 D8).
+        $this->assertSame(1, $code['reverseCharge']);
+        $this->assertArrayNotHasKey('reverseChargeCode', $code);
     }
 
     public function testGetVatCodeMissingReturnsNull(): void

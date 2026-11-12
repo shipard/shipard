@@ -37,7 +37,6 @@ final class ApplyFidelityCheck implements VerifyCheck
     /** @var array<string, string> cesta uzlu projekce → důvod (odkaz na kód) */
     public const EXCEPTIONS = [
         'rows[].item.supplierCode' => 'kód dodavatele se učí per položka a dodavatel (`economy_items_supplier_codes`, DocumentApplier::learnSupplierCodes, INSERT IGNORE) — účetní položka sdílená více řádky nese jen první; export ho nenese (DocumentExporter::rows)',
-        'rows[].vat.reverseChargeCode' => 'kód předmětu plnění nese kód DPH řádku (VatCodeDerivation: cz-115 ↔ kód 4), řádek ho neukládá; hlídá kontrola DPH přes KH B.1 (kodPredPl)',
         'rows[].item.ean' => 'applier EAN neukládá — economy_items sloupec ean má, učení per položka (jako kód dodavatele) chybí; export ho nenese (#103 nález D, schváleno 2026-10-20)',
     ];
 

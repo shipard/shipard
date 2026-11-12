@@ -220,7 +220,7 @@ final class SavedDocumentProjection
 
     /**
      * Papírové „přenesení daňové povinnosti“ (nález E) z kódů samovyměření
-     * dokladu: tuzemské PDP (kód s kódem předmětu plnění nebo příznakem),
+     * dokladu: tuzemské PDP (kód s příznakem `reverseCharge`),
      * nebo doklad jen se službami z EU (čl. 196). Pořízení zboží z EU
      * (čl. 138) — i s dopravným jako službou — a plnění ze třetí země ne.
      *
@@ -232,7 +232,7 @@ final class SavedDocumentProjection
         $euGoods = false;
         foreach ($codes as $code) {
             $def = $this->codeDef($code);
-            if (!empty($def['reverseCharge']) || isset($def['reverseChargeCode'])) {
+            if (!empty($def['reverseCharge'])) {
                 return true;
             }
             if (($def['place'] ?? null) === 'intracom') {

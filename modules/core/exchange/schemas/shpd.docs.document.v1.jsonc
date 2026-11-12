@@ -462,7 +462,9 @@
                 // cz-215 vs. služby cz-217).
                 "supplyKind": { "enum": ["goods", "services", null] },
                 // Kód předmětu plnění u tuzemského přenesení daňové
-                // povinnosti ("4" stavební práce, "5" příloha 5).
+                // povinnosti ("4" stavební práce, "4a", "5" příloha 5, "14"
+                // mobilní telefony … — číselník world.vat reverseChargeSubjects).
+                // Ukládá se na řádek dokladu (#89 D10).
                 "reverseChargeCode": { "type": ["string", "null"] }
             }
         },
@@ -487,7 +489,11 @@
                 "base":          { "type": ["number", "null"] },
                 "tax":           { "type": ["number", "null"] },
                 "total":         { "type": ["number", "null"] },
-                "isReversePair": { "type": ["boolean", "null"] }
+                "isReversePair": { "type": ["boolean", "null"] },
+                // Předmět plnění skupiny u tuzemského přenesení daňové
+                // povinnosti (#89 D10) — nepovinné; vyváží ho exporter,
+                // AI extrakce ho nevyplňuje.
+                "reverseChargeCode": { "type": ["string", "null"] }
             }
         },
 
