@@ -1968,8 +1968,10 @@ a posílá v API odpovědi v aktuálním jazyce (`Accept-Language` header):
   modulům `TableViewer::sharedText()` / `yesNoText()` z
   `core.system.viewerDetailLabels` → `texts`. Prefix s hodnotou je celý
   vzor s parametrem (`"IČO: {value}"`), plurály se nepoužívají
-  (`"před {n} d"`). Zdroje viewerů hlídá `ViewerSourceTextsTest`;
-  dvojjazyčný zápis `$cs ? … : …` má výjimku do převodu v tasku F2.
+  (`"před {n} d"`, `"Řádků: {count}"`). Zdroje viewerů hlídá
+  `ViewerSourceTextsTest` — odmítne i dvojjazyčný zápis přímo v PHP
+  (text ve větvi `$cs ? … : …` nebo pod klíčem `'cs'` / `'en'`);
+  podmínka jazyka smí vybírat jen to, co text není (oddělovač čísla).
 - názvy modulů, tabulek, sloupců — `ConfigLocalizer` /
   `LocalizedFieldResolver` z jsonc.
 

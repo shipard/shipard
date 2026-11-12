@@ -1,6 +1,6 @@
 # Design system — dvojjazyčné texty viewerů z katalogů (D65–D67, F2)
 
-**Stav:** naplánováno — 2026-11-11 (#133 Další nesoulady, D65, D66, D67)
+**Stav:** hotovo — 2026-11-12 (#133 Další nesoulady, D65, D66, D67; 6 commitů, odchylky viz „Odchylky od zadání“); ověřeno snímkem výstupu viewerů a v Chromiu v `cs` i `en` (viz Ověření při implementaci), ruční ověření na dev serveru čeká
 
 ## Kontext / Cíl
 
@@ -188,14 +188,14 @@ platí, dokud nepřijde commit 5):
 
 ## Hotovo když
 
-- [ ] Ve viewerech není dvojjazyčný zápis s textem (ternár jazyka ani pole
+- [x] Ve viewerech není dvojjazyčný zápis s textem (ternár jazyka ani pole
       `'cs'` / `'en'`)
-- [ ] Texty jdou z existujícího zdroje nebo katalogu podle D66
-- [ ] `ViewerSourceTextsTest` bez výjimky; dvojjazyčný zápis s textem
+- [x] Texty jdou z existujícího zdroje nebo katalogu podle D66
+- [x] `ViewerSourceTextsTest` bez výjimky; dvojjazyčný zápis s textem
       hlásí jako porušení
-- [ ] Výstup v `cs` i `en` beze změny (kromě vypsaných plurálů a převzatých
+- [x] Výstup v `cs` i `en` beze změny (kromě vypsaných plurálů a převzatých
       textů)
-- [ ] Dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
+- [x] Dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
 
 ## Pasti
@@ -211,3 +211,105 @@ platí, dokud nepřijde commit 5):
   fallback i v češtině — na zdroji `realCopy` ho nespouštěj; po nasazení
   ho spustí člověk.
 - Formát data — pokud task D73 ještě není hotový, F2 nezačínej.
+
+## Odchylky od zadání
+
+- **Inventura:** tokenizerem 815 literálů ve větvi ternáru jazyka a 16 pod
+  klíči `'cs'` / `'en'` na 494 řádcích ve 22 souborech. `AiFunctionsViewer`
+  má jen desetinný oddělovač (`',' : '.'`) — zůstal beze změny, je to
+  jediná podmínka jazyka, která ve viewerech zbyla. `SentMessagesViewer`
+  dál předává jazyk do `SentMessageTransportInfo` (není výběr textu).
+- **Pořadí commitů:** hosting šel před core a docs (commity 3 a 4 jsou
+  prohozené); každý commit nechává strom zelený.
+- **core.exchange katalog neměl** (F1 ho nezaložil) — nový
+  `core.exchange.viewerDetailLabels` s registrací a záznamem
+  v `ViewerDetailLabelsCatalogTest::EXPECTED`.
+- **Popisek sloupce jen při přesné shodě češtiny.** Kde se český text liší
+  i jen formou („Splatnost“ × „Datum splatnosti“, „Částka“ × „Částka (měna
+  dokladu)“, „Pořadí v tvrzení“ × „Pořadí“), šel 1 : 1 do katalogu —
+  čeština se tak nemění nikde. Na `columnLabel()` jde 120 textů.
+- **Angličtina změněná převzetím popisku sloupce** (čeština shodná):
+  účty saldokonta a tabulka účtů skupiny „Side“ → „Account side“; bankovní
+  transakce „Variable symbol“ → „Payment reference“; deník „Error line“ →
+  „Error row“; pravidla štítků „Last hit“ → „Last hit at“.
+- **Plurály přeformulované** (Podání DPH): „Doklady: 27 / 27 řádků“ →
+  „Doklady / řádky: 27 / 27“; „9 řádků · základ … · daň …“ → „Řádků: 9 ·
+  základ … · daň …“; „5 rozdílů proti deníku“ → „Rozdíly proti deníku: 5“;
+  „3 plnění · …“ → „Plnění: 3 · …“ (česky se neskloňuje, anglické
+  „1 supplies“ ano). Anglicky stejně („Rows: 9 · …“).
+- **Podání DPH — nic z konfigurace podání:** krátké popisky řádků 62–66
+  ani sloty Základ / V plné výši / Krácený v `modules/economy/vat/config/`
+  nejsou (`vat-reports-cz.jsonc` má jen dlouhé názvy řádků) → katalog
+  vieweru. Názvy tabů jsou v nové sekci `tabs` katalogu
+  (`detailTabLabel()`); mapy `SLOT_LABELS` a `LINE_KIND_LABELS` nahradily
+  metody s `match` a literálními klíči (dají se staticky zkontrolovat proti
+  katalogu).
+- **Existující zdroje (krok 1):** `LedgerViewer` Předpis / Úhrada z výčtu
+  `economy.accbal.balSides`; akce Upozornění Zkontrolovat znovu / Vrátit do
+  aktivních z `core.alerts.viewerDefaults` → `rowActions` (`unsnooze`
+  doplněn); „(bez předmětu)“ Odeslané pošty z existujícího klíče
+  `noSubject`.
+- **Sdílené texty:** do `core.system.viewerDetailLabels` přibylo pět textů,
+  které se opakují ve třech modulech a nejsou popiskem sloupce — Částky
+  (`groupAmounts`), Datum, Stav („State“), Osoba a krátké VS
+  („Reference“). Texty jen pro Uživatele (bez hesla, Lokální heslo…) jsou
+  v témže katalogu, protože je to katalog modulu `core.system`.
+  **Nesdílené, i když jsou ve třech a více modulech:** MD / DAL
+  („Debit“ / „Credit“ — accounting, assets a workOrders už od F1, nově bank
+  a docs.core) a „Stav“ / „Status“ (mail, ai, assets od F1, nově exchange).
+  F1 je nechal v katalozích modulů; stěhování starších klíčů je mimo rozsah.
+- **`!== 'en'` × `=== 'cs'`:** banka a DPH měly `$cs = $this->language
+  !== 'en'` — čeština pro každý jiný jazyk než angličtinu. Katalog dává
+  pro neznámý jazyk angličtinu. Rozhraní má jen `cs` a `en`.
+- **Privátní `enumLabel()`** (pět viewerů, dvě signatury) se
+  nesjednocovala — F2 ji nepotřeboval.
+- **Test:** hledání podmínky jazyka bere interpolovaný řetězec jako celek
+  (dřív ho ukončila složená závorka `{$date}` — druhou větev
+  `$cs ? "podáno {$d}" : "filed {$d}"` test neviděl). Porušením je každý
+  literál s písmenem, tedy i `$cs ? 'cs' : 'en'` — kód jazyka se z podmínky
+  jazyka ve vieweru skládat nemá. Nad zdroji před převodem hlásí 832
+  literálů ve 21 viewerech.
+- **Testy viewerů** berou texty ze skutečných zdrojů: nový helper
+  `tests/Fixtures/Core/Viewer/ViewerTexts` (katalogy a definice tabulek ze
+  zdrojových jsonc, lokalizované jako při kompilaci). Očekávané texty se
+  nezměnily; upraven i integrační `tests/Integration/Accbal/CasesViewerTest`.
+  Trvalý test shody fallbacku s holým `name` nepřibyl (jako v F1) —
+  jednorázová kontrola 747 volání prošla, dva starší nálezy mimo rozsah
+  (`AssetsViewer` `text.notActivated`, složený literál `unlockConfirm`).
+- **Dvojjazyčný zápis mimo viewery** (mimo rozsah, tokenizerem): 62
+  souborů, 446 literálů v ternáru a 32 pod klíči jazyka — kontroly
+  upozornění 32 souborů (216 literálů), buildery reportů a export 18
+  (216), `SetupController` 18, `NavigationController` 12, XML a období DPH
+  6 souborů (10), `ActiveUsersOptions`, `PeriodLabel`
+  a `DashboardSummaryService` po 2.
+- **Dokumentace navíc:** `docs/frontend.md` (lokalizace textů z backendu).
+
+## Ověření při implementaci
+
+- `php -l` na změněných souborech; celá sada `--testsuite Unit` (11 350
+  testů) prošla po posledním commitu; integrační `tests/Integration/Bank`
+  a `tests/Integration/Accbal` prošly.
+- **Výstup beze změny:** snímek výstupu všech 58 viewerů (meta, řádky
+  seznamu, mřížka s patičkou, detail až šesti záznamů) před převodem a po
+  něm na volných zdrojích `zey0-g` a `nham-q` po `ds-upgrade`, v `cs`
+  i `en`. Čeština: jen čtyři plurály Podání DPH. Angličtina: navíc tři
+  převzaté popisky sloupců, které se na datech ukázaly (Side, Variable
+  symbol, Last hit); „Error line“ se neukázal — na volných zdrojích není
+  chybový řádek deníku.
+- **Podání DPH** na volných zdrojích nebyla — na `zey0-g` jsou pro ověření
+  sestavená tři (`vat-filing-compose`: přiznání, kontrolní a souhrnné
+  hlášení za 01/2026); zůstanou tam do příštího seedu zdroje.
+- **Prohlížeč** (Playwright, `zey0-g`, `cs` i `en`): seznam, detail a taby
+  u Podání DPH (všechna tři), Pohledávek, Saldo pohybů, Bankovních výpisů
+  a transakcí, Účetního deníku, Faktur přijatých (tab Zaúčtování)
+  a v Nastavení u Skupin a Účtů saldokonta a Pravidel štítků — bez chyby
+  stránky a bez odpovědi 5xx.
+- **Jen testy a `php -l`** (bez dat na volných zdrojích): Odesílatelé,
+  Odeslaná pošta, Upozornění; u Podání DPH taby Rozdíly, Rozdíly importu
+  a Zprávy a akce podaného podání (není předchozí, importované ani podané
+  podání). Uživatelé jsou ověření snímkem, v navigaci Nastavení na `zey0-g`
+  nejsou.
+- **`hosting.core`** na vývojovém zdroji není: kontrola volání proti
+  katalogu a porovnání výstupu tříd před převodem a po něm v procesu nad
+  zdrojovými katalogy (`cs`, `en`, bez konfigurace) — 78 porovnání bez
+  rozdílu.
