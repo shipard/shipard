@@ -211,7 +211,7 @@ class CashRegisterFormAndViewerTest extends TestCase
             'cash_dir' => 0, 'payment_method' => 2, 'partner_name' => null,
         ]);
 
-        $this->assertSame([['text' => '10. 6. 2026'], ['text' => 'Kartou', 'class' => 'muted']], $row['t2']);
+        $this->assertSame([['text' => '2026-06-10'], ['text' => 'Kartou', 'class' => 'muted']], $row['t2']);
         $this->assertSame('-1 210,00 CZK', $row['i2']['text'], 'vratka je záporná');
     }
 }

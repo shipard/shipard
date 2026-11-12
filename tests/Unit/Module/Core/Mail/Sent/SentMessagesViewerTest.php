@@ -249,7 +249,7 @@ class SentMessagesViewerTest extends TestCase
         $this->assertSame('Mailbox unavailable', $transport['lastError']);
         $this->assertTrue($transport['canResend'], 'selhanou zprávu ve stavu Odeslaná jde odeslat znovu');
         $this->assertSame(
-            [['at' => '04.10.2026 14:31', 'ok' => false, 'transport' => 'relay:587', 'response' => 'Mailbox unavailable']],
+            [['at' => '2026-10-04 14:31', 'ok' => false, 'transport' => 'relay:587', 'response' => 'Mailbox unavailable']],
             $transport['attempts'],
         );
     }

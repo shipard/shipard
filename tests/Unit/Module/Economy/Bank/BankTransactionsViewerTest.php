@@ -107,7 +107,7 @@ class BankTransactionsViewerTest extends TestCase
         $this->assertSame(7, $row['id']);
         $this->assertSame('done', $row['stateStyle'], 'Proužek ze stavu transakce (txStates)');
         $this->assertArrayNotHasKey('rowClass', $row, 'Chybu nese badge, řádek se nečervená');
-        $this->assertSame('2. 6. 2026', $row['cells']['date_transaction']);
+        $this->assertSame('02.06.2026', $row['cells']['date_transaction']);
         $this->assertSame(
             [
                 ['text' => '+1 500,00', 'class' => 'amount'],
@@ -188,7 +188,7 @@ class BankTransactionsViewerTest extends TestCase
         $detail = $this->makeViewer(detailRow: $this->txRow())->renderDetail(7);
 
         $this->assertSame('+1 500,00 CZK', $detail['title']);
-        $this->assertSame('ACME, spol. s r.o. · 2. 6. 2026', $detail['subtitle']);
+        $this->assertSame('ACME, spol. s r.o. · 02.06.2026', $detail['subtitle']);
         $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
         $this->assertArrayNotHasKey('Částky', $byTitle, 'částku nese titulek; bez cizí měny skupina chybí');
         $tx = array_column($byTitle['Transakce'], 'value', 'label');
@@ -200,7 +200,7 @@ class BankTransactionsViewerTest extends TestCase
 
         // Bez partnera je v podtitulku název protistrany — v Přehledu pak není (#140 §2).
         $detail = $this->makeViewer(detailRow: $this->txRow(['partner_name' => null]))->renderDetail(7);
-        $this->assertSame('ACME s.r.o. · 2. 6. 2026', $detail['subtitle']);
+        $this->assertSame('ACME s.r.o. · 02.06.2026', $detail['subtitle']);
         $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
         $this->assertArrayNotHasKey('Název protistrany', array_column($byTitle['Protistrana'], 'value', 'label'));
     }
@@ -212,7 +212,7 @@ class BankTransactionsViewerTest extends TestCase
         $row = $this->txRow(['partner_name' => 'ACME s.r.o.', 'counterparty_name' => ' acme  S.R.O. ']);
         $detail = $this->makeViewer(detailRow: $row)->renderDetail(7);
 
-        $this->assertSame('ACME s.r.o. · 2. 6. 2026', $detail['subtitle']);
+        $this->assertSame('ACME s.r.o. · 02.06.2026', $detail['subtitle']);
         $byTitle = array_column($detail['tabs'][0]['content']['groups'], 'items', 'title');
         $cp = array_column($byTitle['Protistrana'], 'value', 'label');
         $this->assertArrayNotHasKey('Název protistrany', $cp);

@@ -266,14 +266,14 @@ class AssetsForm extends TableForm
         $out = [];
         foreach ($rows as $row) {
             $cells = [
-                'event_date' => SubtableCellFormatter::date($row['event_date'] ?? null) ?? '',
+                'event_date' => SubtableCellFormatter::date($row['event_date'] ?? null, $this->language) ?? '',
                 'event_kind' => $this->cfgItemLabel('economy.assets.eventKinds', $row['event_kind'] ?? '')
                     . (!empty($row['half_year']) ? ' (½)' : ''),
                 'scope'      => $this->cfgItemLabel('economy.assets.eventScopes', $row['scope'] ?? ''),
                 'origin'     => $this->cfgItemLabel('economy.assets.eventOrigins', $row['origin'] ?? ''),
             ];
             if (!empty($row['period_begin']) && !empty($row['period_end'])) {
-                $cells['period'] = SubtableCellFormatter::date($row['period_begin']) . ' – ' . SubtableCellFormatter::date($row['period_end']);
+                $cells['period'] = SubtableCellFormatter::date($row['period_begin'], $this->language) . ' – ' . SubtableCellFormatter::date($row['period_end'], $this->language);
             }
             if ((string) ($row['event_kind'] ?? '') !== 'interruption' && (string) ($row['event_kind'] ?? '') !== 'disposal') {
                 $cells['amount'] = SubtableCellFormatter::number($row['amount'] ?? 0, 2) ?? '';

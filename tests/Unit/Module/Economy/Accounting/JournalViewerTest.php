@@ -166,7 +166,7 @@ class JournalViewerTest extends TestCase
         $this->assertSame('done', $row['stateStyle']);
         $this->assertSame(
             [
-                ['text' => '28. 5. 2026'],
+                ['text' => '28.05.2026'],
                 ['text' => 'FP-2026-0016', 'class' => 'muted'],
                 ['text' => 'Česká Tech, s.r.o.', 'class' => 'muted'],
             ],
@@ -272,7 +272,7 @@ class JournalViewerTest extends TestCase
         $this->assertSame(42, $row['id']);
         $this->assertNull($row['stateStyle'], 'Proužek u deníku nenese informaci');
         $this->assertNull($row['rowClass']);
-        $this->assertSame('28. 5. 2026', $row['cells']['accounting_date']);
+        $this->assertSame('28.05.2026', $row['cells']['accounting_date']);
         $this->assertSame(['text' => 'FP-2026-0016', 'class' => 'primary'], $row['cells']['doc_number']);
         $this->assertSame('518100', $row['cells']['account_number']);
         $this->assertSame([['text' => '6 000,00', 'class' => 'amount']], $row['cells']['money_dr']);

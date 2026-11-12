@@ -158,8 +158,8 @@ class AIProfilesViewer extends TableViewer
         $this->addItem($flags, $this->columnLabel('is_active', 'Active'), $this->yesNoText(!empty($record['is_active'])));
 
         $status = [];
-        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
-        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
 
         return [[
             'id'      => 'overview',

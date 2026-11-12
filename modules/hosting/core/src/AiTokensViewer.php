@@ -80,7 +80,7 @@ class AiTokensViewer extends TableViewer
         ];
         if (!empty($rowData['last_used'])) {
             $t2[] = [
-                'text'  => ($isCs ? 'použit ' : 'used ') . $this->formatDateTime($rowData['last_used']),
+                'text'  => ($isCs ? 'použit ' : 'used ') . ($this->formatDateTime($rowData['last_used']) ?? ''),
                 'class' => 'muted',
             ];
         }
@@ -127,13 +127,13 @@ class AiTokensViewer extends TableViewer
         if (!empty($record['last_used'])) {
             $items[] = [
                 'label' => $isCs ? 'Naposledy použit' : 'Last used',
-                'value' => $this->formatDateTime($record['last_used']),
+                'value' => ($this->formatDateTime($record['last_used']) ?? ''),
             ];
         }
         if (!empty($record['note'])) {
             $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];
         }
-        $items[] = ['label' => $isCs ? 'Vytvořen' : 'Created', 'value' => $this->formatDateTime($record['created'])];
+        $items[] = ['label' => $isCs ? 'Vytvořen' : 'Created', 'value' => ($this->formatDateTime($record['created']) ?? '')];
 
         return [[
             'id'      => 'overview',
@@ -152,14 +152,5 @@ class AiTokensViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
-    }
-
-    private function formatDateTime(mixed $value): string
-    {
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y H:i');
-        }
-        $ts = is_string($value) ? strtotime($value) : false;
-        return $ts !== false ? date('j. n. Y H:i', $ts) : (string) $value;
     }
 }

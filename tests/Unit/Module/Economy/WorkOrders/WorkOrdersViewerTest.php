@@ -146,7 +146,7 @@ class WorkOrdersViewerTest extends TestCase
             [
                 ['text' => 'Alfa s.r.o.', 'class' => 'primary'],
                 ['text' => 'Projekty', 'class' => 'muted'],
-                ['text' => '01.03.2026'],
+                ['text' => '2026-03-01'],
                 ['text' => 'Confirmed', 'class' => 'success'],
             ],
             $row['t2'],
@@ -258,13 +258,13 @@ class WorkOrdersViewerTest extends TestCase
         $this->assertSame('Invoicing', $tab['label']);
         $blocks = $tab['content']['blocks'];
         $items = $blocks[0]['groups'][0]['items'];
-        $this->assertSame(['label' => 'Next period due', 'value' => '01.11.2026 – 30.11.2026'], $items[0]);
+        $this->assertSame(['label' => 'Next period due', 'value' => '2026-11-01 – 2026-11-30'], $items[0]);
         $this->assertSame(['label' => 'Periodicity', 'value' => 'Měsíčně'], $items[1]);
         $this->assertSame(['label' => 'Document type', 'value' => 'Faktura vydaná'], $items[4]);
 
         $rows = $blocks[2]['rows'];
         $this->assertSame(['period', 'state', 'document', 'amount', 'message'], array_column($blocks[2]['columns'], 'id'));
-        $this->assertSame('01.10.2026 – 31.10.2026', $rows[0]['period']);
+        $this->assertSame('2026-10-01 – 2026-10-31', $rows[0]['period']);
         $this->assertSame('Vystaveno', $rows[0]['state']);
         $this->assertSame('draft #605', $rows[0]['document']);
         $this->assertSame('17 545,00 CZK', $rows[0]['amount']);
@@ -282,8 +282,8 @@ class WorkOrdersViewerTest extends TestCase
         $this->assertSame(['workOrderIssueDue', 'workOrderRegenerate', 'workOrderRestore'], array_column($actions, 'id'));
         $this->assertSame('button', $actions[0]['kind']);
         $this->assertSame('dropdown', $actions[1]['kind']);
-        $this->assertSame([['label' => '01.10.2026 – 31.10.2026 — draft #605', 'value' => '3']], $actions[1]['items']);
-        $this->assertSame([['label' => '01.09.2026 – 30.09.2026', 'value' => '2']], $actions[2]['items']);
+        $this->assertSame([['label' => '2026-10-01 – 2026-10-31 — draft #605', 'value' => '3']], $actions[1]['items']);
+        $this->assertSame([['label' => '2026-09-01 – 2026-09-30', 'value' => '2']], $actions[2]['items']);
 
         // Koncept zakázky bez období: bez akcí, místo tabulky jen text.
         $draftViewer = $this->viewer($q2, ['docState' => 10] + $record);

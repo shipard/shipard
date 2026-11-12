@@ -141,7 +141,7 @@ class TableFormSubtableTest extends TestCase
             'amount'     => '1 234,50',
             'active'     => 'Ano',
             'kind'       => 'Speciální',
-            'valid_from' => '31.01.2026',
+            'valid_from' => '2026-01-31',
         ], $first['cells']);
         $this->assertArrayNotHasKey('secret', $first['cells']);
         $this->assertArrayNotHasKey('stateStyle', $first);

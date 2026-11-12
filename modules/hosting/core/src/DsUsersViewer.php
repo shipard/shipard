@@ -183,7 +183,7 @@ class DsUsersViewer extends TableViewer
             ['label' => $isCs ? 'Role' : 'Role', 'value' => $this->resolveRoleLabel((string) ($record['role'] ?? 'member'))],
         ];
         if (!empty($record['last_entered'])) {
-            $items[] = ['label' => $isCs ? 'Poslední vstup' : 'Last entered', 'value' => (string) $record['last_entered']];
+            $items[] = ['label' => $isCs ? 'Poslední vstup' : 'Last entered', 'value' => $this->formatDateTime($record['last_entered']) ?? ''];
         }
 
         return [[

@@ -271,7 +271,7 @@ class WorkOrdersFormTest extends TestCase
         $this->assertSame('měs', $cells['unit']);
         $this->assertSame('12 000,00', $cells['unit_price']);
         $this->assertSame('out21', $cells['vat_code']);
-        $this->assertSame('01.08.2026', $cells['valid_from']);
+        $this->assertSame('2026-08-01', $cells['valid_from']);
         $this->assertSame('', $cells['valid_to']);
     }
 }

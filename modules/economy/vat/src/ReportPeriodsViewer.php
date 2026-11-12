@@ -116,7 +116,7 @@ class ReportPeriodsViewer extends TableViewer
         ];
 
         $t2 = [];
-        $range = $this->formatDate($rowData['date_begin'] ?? null) . ' – ' . $this->formatDate($rowData['date_end'] ?? null);
+        $range = ($this->formatDate($rowData['date_begin'] ?? null) ?? '') . ' – ' . ($this->formatDate($rowData['date_end'] ?? null) ?? '');
         $t2[] = ['text' => $range];
 
         $registrations = $this->registrationNames();
@@ -161,8 +161,8 @@ class ReportPeriodsViewer extends TableViewer
                 'label' => $this->columnLabel('vat_registration', 'VAT registration'),
                 'value' => $registrations[(int) ($record['vat_registration'] ?? 0)] ?? '',
             ],
-            ['label' => $this->columnLabel('date_begin', 'Begin date'), 'value' => $this->formatDate($record['date_begin'] ?? null)],
-            ['label' => $this->columnLabel('date_end', 'End date'), 'value' => $this->formatDate($record['date_end'] ?? null)],
+            ['label' => $this->columnLabel('date_begin', 'Begin date'), 'value' => ($this->formatDate($record['date_begin'] ?? null) ?? '')],
+            ['label' => $this->columnLabel('date_end', 'End date'), 'value' => ($this->formatDate($record['date_end'] ?? null) ?? '')],
             [
                 'label' => $this->columnLabel('locked', 'Locked'),
                 'value' => $locked ? $this->lockLabel($record) : $this->yesNoText(false),
@@ -320,7 +320,7 @@ class ReportPeriodsViewer extends TableViewer
      */
     private function lockLabel(array $record): string
     {
-        $at = SubtableCellFormatter::dateTime($record['locked_at'] ?? null);
+        $at = $this->formatDateTime($record['locked_at'] ?? null);
         if ($at === null) {
             return $this->text('lockedImport', 'Yes (import)');
         }
@@ -392,8 +392,8 @@ class ReportPeriodsViewer extends TableViewer
             $rows[] = [
                 'sequence' => (string) $filing['sequence'],
                 'kind'     => $kindLabels[$kind] ?? $kind,
-                'issued'   => $this->formatDate($filing['date_issue'] ?? null),
-                'filed'    => $this->formatDate($filing['date_filed'] ?? null),
+                'issued'   => ($this->formatDate($filing['date_issue'] ?? null) ?? ''),
+                'filed'    => ($this->formatDate($filing['date_filed'] ?? null) ?? ''),
                 'state'    => (string) ($stateConfig->getState((int) $filing['docState'])['stateName'] ?? ''),
             ];
         }
@@ -505,17 +505,6 @@ class ReportPeriodsViewer extends TableViewer
     private function text(string $key, string $englishFallback, array $params = []): string
     {
         return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
-    }
-
-    private function formatDate(mixed $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        return substr((string) $value, 0, 10);
     }
 
     /**

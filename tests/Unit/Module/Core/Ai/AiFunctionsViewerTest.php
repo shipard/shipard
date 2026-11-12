@@ -181,7 +181,7 @@ final class AiFunctionsViewerTest extends TestCase
         $status = $this->items($detail, 'Stav volání');
         $this->assertStringStartsWith('V pořádku — připojení má uložený klíč', $status['Výsledek']);
         $this->assertSame('shpd-ds ai-test --function mail.extraction', $status['Ověření z konzole']);
-        $this->assertSame(['Vytvořeno' => '2026-10-01 10:00:00'], $this->items($detail, 'Záznam'));
+        $this->assertSame(['Vytvořeno' => '01.10.2026 10:00'], $this->items($detail, 'Záznam'));
     }
 
     public function testDetailListsAdjustmentsForASeries5ModelSetOnTheFunction(): void

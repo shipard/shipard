@@ -6,7 +6,6 @@ namespace Shipard\Module\Core\Mail\Sent;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
-use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Mail\AddressList;
 use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
@@ -96,7 +95,7 @@ class SentMessagesViewer extends TableViewer
         return [
             'id'         => (int) $rowData['id'],
             't1'         => (string) ($rowData['subject'] ?? ''),
-            'i1'         => SubtableCellFormatter::dateTime($rowData['created'] ?? null),
+            'i1'         => $this->formatDateTime($rowData['created'] ?? null),
             // Bez osoby i adresy (importovaná zpráva bez příjemce, #104 D4) „—“.
             't2'         => $recipient !== '' ? $recipient : ($to !== '' ? $to : '—'),
             'i2'         => array_values(array_filter([
@@ -137,7 +136,7 @@ class SentMessagesViewer extends TableViewer
 
         $subtitle = array_filter([
             $to !== '' ? ($cs ? 'Komu: ' : 'To: ') . $to : null,
-            SubtableCellFormatter::dateTime($record['created'] ?? null),
+            $this->formatDateTime($record['created'] ?? null),
         ]);
 
         return new DetailHeader(
@@ -198,7 +197,7 @@ class SentMessagesViewer extends TableViewer
         $this->addItem($message, $cs ? 'Jazyk' : 'Language', $record['language'] ?? null);
 
         $sending = [];
-        $this->addItem($sending, $cs ? 'Odesláno' : 'Sent at', SubtableCellFormatter::dateTime($record['sent_at'] ?? null));
+        $this->addItem($sending, $cs ? 'Odesláno' : 'Sent at', $this->formatDateTime($record['sent_at'] ?? null));
         $this->addItem($sending, $cs ? 'Počet odeslání' : 'Send count', (string) (int) ($record['send_count'] ?? 0));
         $this->addItem($sending, $cs ? 'Poslední chyba' : 'Last error', $record['last_error'] ?? null);
         $this->addItem($sending, $cs ? 'Spuštěno' : 'Trigger', $this->triggerLabel((string) ($record['send_trigger'] ?? '')));
@@ -270,7 +269,7 @@ class SentMessagesViewer extends TableViewer
 
     private function transportInfo(): SentMessageTransportInfo
     {
-        return new SentMessageTransportInfo($this->db, $this->config);
+        return new SentMessageTransportInfo($this->db, $this->config, $this->language ?? 'en');
     }
 
     /** Popisek `send_trigger` z `core.mail.sendTriggers`; bez konfigurace kód. */

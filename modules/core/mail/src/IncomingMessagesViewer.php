@@ -1152,17 +1152,8 @@ class IncomingMessagesViewer extends TableViewer
             return $this->sharedText('agoDays', '{n} d ago', ['n' => (int) floor($diff / 86400)]);
         }
 
-        // Starší než týden → datum
-        return date('j. n.', $ts);
-    }
-
-    private function formatDateTime(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        $ts = $this->parseDateTime($value);
-        return $ts !== null ? date('j. n. Y H:i', $ts) : null;
+        // Starší než týden → datum (plné, jako všude na obrazovce — #133 D73)
+        return $this->formatDate($value);
     }
 
     private function parseDateTime(mixed $value): ?int

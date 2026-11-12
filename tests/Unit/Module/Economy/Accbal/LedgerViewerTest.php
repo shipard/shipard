@@ -206,7 +206,7 @@ class LedgerViewerTest extends TestCase
         $this->assertSame('77', $row['cells']['specific_symbol']);
         $this->assertSame(['text' => '12 100,00', 'class' => 'amount'], $row['cells']['case_residual']);
         $this->assertSame('Pohledávky', $row['cells']['balance'], 'short_name má přednost');
-        $this->assertSame('1. 7. 2026', $row['cells']['accounting_date']);
+        $this->assertSame('01.07.2026', $row['cells']['accounting_date']);
     }
 
     public function testRenderGridRowWithoutPartnerAndSettled(): void

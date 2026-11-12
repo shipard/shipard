@@ -69,7 +69,7 @@ class SentMessageTransportInfoTest extends TestCase
 
         $this->assertTrue($described['imported']);
         $this->assertFalse($described['canResend']);
-        $this->assertSame('01.06.2021 09:12', $described['sentAt']);
+        $this->assertSame('2021-06-01 09:12', $described['sentAt']);
         $this->assertSame(1, $described['sendCount']);
     }
 

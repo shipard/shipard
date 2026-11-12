@@ -180,15 +180,4 @@ class TransportsViewer extends TableViewer
             $items[] = ['label' => $label, 'value' => (string) $value];
         }
     }
-
-    private function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        return (string) $value;
-    }
 }

@@ -395,8 +395,8 @@ class DocsHeadsViewerDetailTest extends TestCase
         $viewer = $this->makeViewer($this->baseRecord());
         $meta = $this->detailContent($viewer)['meta'];
 
-        $this->assertSame('28. 5. 2026', $meta['issue_date']);
-        $this->assertSame('11. 6. 2026', $meta['due_date']);
+        $this->assertSame('2026-05-28', $meta['issue_date']);
+        $this->assertSame('2026-06-11', $meta['due_date']);
         $this->assertSame('CZK', $meta['currency']);
         $this->assertNull($meta['exchange_rate'], 'Kurz jen u cizí měny');
         $this->assertSame('Převodem', $meta['payment_method']);
@@ -436,7 +436,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         $this->assertSame([
             ['label' => 'Původní doklad', 'value' => '126A0007',
              'action' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 50]]],
-            ['label' => 'Datum plnění původního dokladu', 'value' => '10. 3. 2026'],
+            ['label' => 'Datum plnění původního dokladu', 'value' => '2026-03-10'],
             ['label' => 'Důvod opravy', 'value' => 'Vrácené zboží'],
         ], $content['correction']['items']);
     }
@@ -515,9 +515,9 @@ class DocsHeadsViewerDetailTest extends TestCase
         $this->assertTrue($table['columns'][0]['link']);
         $this->assertSame('right', $table['columns'][2]['align']);
         $this->assertSame([
-            ['number' => '126A0012', 'issue_date' => '15. 4. 2026', 'amount' => '-1 210,00 CZK', 'state' => 'V pořádku',
+            ['number' => '126A0012', 'issue_date' => '2026-04-15', 'amount' => '-1 210,00 CZK', 'state' => 'V pořádku',
              '_action' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 61]]],
-            ['number' => '!0000000062', 'issue_date' => '2. 5. 2026', 'amount' => '-500,00 CZK', 'state' => 'Koncept',
+            ['number' => '!0000000062', 'issue_date' => '2026-05-02', 'amount' => '-500,00 CZK', 'state' => 'Koncept',
              '_action' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 62]]],
         ], $table['rows']);
 
@@ -681,7 +681,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         // Kód mimo vzor MSG-YYYYMMDD-NNNN zůstává v krátkém tvaru beze změny (D8).
         $this->assertSame('MSG-A', $groups[0]['message_code_short']);
         $this->assertSame(11, $groups[0]['message_ndx']);
-        $this->assertSame('1. 6. 2026', $groups[0]['received_at']);
+        $this->assertSame('2026-06-01', $groups[0]['received_at']);
         $this->assertSame(
             ['id' => 101, 'name' => 'faktura.pdf', 'mime_type' => 'application/pdf', 'file_size' => 2048],
             $groups[0]['attachments'][0],

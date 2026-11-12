@@ -397,16 +397,6 @@ class PersonsViewer extends TableViewer
 	// Private — formátovací helpery
 	// -------------------------------------------------------------------------
 
-	/** DB datum (Y-m-d) → d.m.Y; neplatné/prázdné → null. */
-	private function formatDate(mixed $value): ?string
-	{
-		if ($value === null || $value === '') {
-			return null;
-		}
-		$dt = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $value);
-		return $dt instanceof \DateTimeImmutable ? $dt->format('d.m.Y') : null;
-	}
-
 	/**
 	 * Text vieweru z katalogu `base.persons.viewerDetailLabels` (sekce `texts`).
 	 *

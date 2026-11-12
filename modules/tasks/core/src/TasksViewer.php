@@ -106,7 +106,7 @@ class TasksViewer extends TableViewer
 
         $dueDate = $rowData['due_date'] ?? null;
         if ($dueDate !== null && $dueDate !== '') {
-            $formatted = $this->formatDate($dueDate);
+            $formatted = ($this->formatDate($dueDate) ?? '');
             $isOverdue = $this->isOverdue($dueDate, $docState);
             $t2[] = [
                 'text'  => $formatted,
@@ -152,7 +152,7 @@ class TasksViewer extends TableViewer
     {
         $items = [];
         $this->addItem($items, $this->columnLabel('created_by', 'Created by'), $this->resolveCreatorLabel($record));
-        $this->addItem($items, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($items, $this->columnLabel('created', 'Created'), ($this->formatDateTime($record['created'] ?? null) ?? ''));
 
         $description = trim((string) ($record['description'] ?? ''));
 
@@ -171,7 +171,7 @@ class TasksViewer extends TableViewer
     /** Titulek název úkolu, podtitul „Termín …"; štítek stavu přidává builder (#136 D20). */
     protected function detailHeader(array $record): DetailHeader
     {
-        $dueDate = $this->formatDate($record['due_date'] ?? null);
+        $dueDate = ($this->formatDate($record['due_date'] ?? null) ?? '');
         $title = trim((string) ($record['title'] ?? ''));
 
         return new DetailHeader(
@@ -240,18 +240,6 @@ class TasksViewer extends TableViewer
         }
         $today = (int) strtotime(date('Y-m-d') . ' 00:00:00');
         return $ts < $today;
-    }
-
-    private function formatDate(mixed $value): string
-    {
-        $ts = $this->parseDateTs($value);
-        return $ts !== null ? date('j. n. Y', $ts) : '';
-    }
-
-    private function formatDateTime(mixed $value): string
-    {
-        $ts = $this->parseDateTs($value);
-        return $ts !== null ? date('j. n. Y H:i', $ts) : '';
     }
 
     private function parseDateTs(mixed $value): ?int

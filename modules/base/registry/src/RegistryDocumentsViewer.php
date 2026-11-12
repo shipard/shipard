@@ -442,7 +442,7 @@ class RegistryDocumentsViewer extends TableViewer
             $days === 0 => $this->sharedText('today', 'today'),
             $days === 1 => $this->sharedText('tomorrow', 'tomorrow'),
             $days <= 60 => $this->sharedText('inDays', 'in {n} d', ['n' => $days]),
-            default     => date('j. n. Y', $ts),
+            default     => $this->formatDate($validTo) ?? '',
         };
 
         $class = match (true) {
@@ -503,18 +503,6 @@ class RegistryDocumentsViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
-    }
-
-    private function formatDate(mixed $value): ?string
-    {
-        $ts = $this->parseDate($value);
-        return $ts !== null ? date('j. n. Y', $ts) : null;
-    }
-
-    private function formatDateTime(mixed $value): ?string
-    {
-        $ts = $this->parseDate($value);
-        return $ts !== null ? date('j. n. Y H:i', $ts) : null;
     }
 
     private function parseDate(mixed $value): ?int

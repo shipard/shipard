@@ -71,8 +71,8 @@ class ExchangeRateListsViewer extends TableViewer
             'i1' => !empty($rowData['list_number']) ? $this->text('listNumber', 'No. {number}', ['number' => $rowData['list_number']]) : null,
         ];
 
-        $t2 = [['text' => $this->sharedText('fromDate', 'from {date}', ['date' => SubtableCellFormatter::date($rowData['valid_from'] ?? null) ?? ''])]];
-        $validTo = SubtableCellFormatter::date($rowData['valid_to'] ?? null);
+        $t2 = [['text' => $this->sharedText('fromDate', 'from {date}', ['date' => $this->formatDate($rowData['valid_from'] ?? null) ?? ''])]];
+        $validTo = $this->formatDate($rowData['valid_to'] ?? null);
         if ($validTo !== null) {
             $t2[] = ['text' => $this->sharedText('toDate', 'to {date}', ['date' => $validTo])];
         }
@@ -96,8 +96,8 @@ class ExchangeRateListsViewer extends TableViewer
     {
         $type = $this->types()->labelOf((string) ($record['list_type'] ?? ''));
         $validity = implode(' – ', array_filter([
-            SubtableCellFormatter::date($record['valid_from'] ?? null),
-            SubtableCellFormatter::date($record['valid_to'] ?? null),
+            $this->formatDate($record['valid_from'] ?? null),
+            $this->formatDate($record['valid_to'] ?? null),
         ]));
         $number = trim((string) ($record['list_number'] ?? ''));
         $subtitle = implode(' · ', array_filter(

@@ -259,7 +259,7 @@ class ViewerController
 				$detail['actions'] = [...($detail['actions'] ?? []), $sendAction];
 			}
 
-			$sentMessages = self::sentMessages($def->table, $recordId, $db, $config);
+			$sentMessages = self::sentMessages($def->table, $recordId, $db, $config, $language ?? 'en');
 			if ($sentMessages !== []) {
 				$detail['sentMessages'] = $sentMessages;
 			}
@@ -323,10 +323,10 @@ class ViewerController
 	 *
 	 * @return list<array<string, mixed>>
 	 */
-	private static function sentMessages(string $table, int $recordId, DataSourceConnection $db, ?ConfigRuntime $config): array
+	private static function sentMessages(string $table, int $recordId, DataSourceConnection $db, ?ConfigRuntime $config, string $language): array
 	{
 		$store = new SentMessageStore($db);
-		$info  = new SentMessageTransportInfo($db, $config);
+		$info  = new SentMessageTransportInfo($db, $config, $language);
 
 		try {
 			$messages = $store->forTarget($table, $recordId);
@@ -347,7 +347,7 @@ class ViewerController
 
 			$out[] = [
 				'id'          => (int) $message['id'],
-				'createdAt'   => SubtableCellFormatter::dateTime($message['created'] ?? null),
+				'createdAt'   => SubtableCellFormatter::dateTime($message['created'] ?? null, $language),
 				'to'          => AddressList::parse($message['email_to'] ?? null),
 				'subject'     => (string) ($message['subject'] ?? ''),
 				'transport'   => $info->state($message),

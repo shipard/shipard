@@ -121,7 +121,7 @@ class MailRoutersViewer extends TableViewer
             ],
         ];
         if (!empty($record['last_seen'])) {
-            $items[] = ['label' => $isCs ? 'Naposledy viděn' : 'Last seen', 'value' => (string) $record['last_seen']];
+            $items[] = ['label' => $isCs ? 'Naposledy viděn' : 'Last seen', 'value' => $this->formatDateTime($record['last_seen']) ?? ''];
         }
         if (!empty($record['note'])) {
             $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];

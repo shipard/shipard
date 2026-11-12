@@ -175,18 +175,6 @@ class ItemKindsViewer extends TableViewer
         };
     }
 
-    private function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y');
-        }
-        $ts = is_string($value) ? strtotime($value) : null;
-        return $ts !== null && $ts !== false ? date('j. n. Y', $ts) : null;
-    }
-
     /** @param array<int, array{label: string, value: string}> $items */
     private function addItem(array &$items, string $label, mixed $value): void
     {

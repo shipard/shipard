@@ -257,17 +257,6 @@ class VatRegistrationsViewer extends TableViewer
         }
     }
 
-    private function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        return (string) $value;
-    }
-
     /** @return array<string, string> */
     private function resolveRegionLabels(): array
     {

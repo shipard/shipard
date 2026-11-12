@@ -308,7 +308,7 @@ class AssetsViewerTest extends TestCase
         $table = $overview['blocks'][2];
         $this->assertTrue($table['columns'][0]['link']);
         $this->assertSame('2260010', $table['rows'][0]['document']);
-        $this->assertSame('05.03.2026', $table['rows'][0]['date']);
+        $this->assertSame('2026-03-05', $table['rows'][0]['date']);
         $this->assertSame('042100', $table['rows'][0]['account']);
         $this->assertSame('80 000,00', $table['rows'][0]['amount']);
         $this->assertSame(
@@ -670,7 +670,7 @@ class AssetsViewerTest extends TestCase
         $this->assertContains(['text' => 'Drobný majetek', 'class' => 'muted'], $small['t2']);
         $this->assertContains(['text' => 'Cizí · Půjčovna', 'class' => 'warning'], $small['t2']);
         $this->assertContains(['text' => '4 990,00', 'class' => 'amount'], $small['i2']);
-        $this->assertContains(['text' => '01.03.2026', 'class' => 'muted'], $small['i2']);
+        $this->assertContains(['text' => '2026-03-01', 'class' => 'muted'], $small['i2']);
 
         $this->assertNotContains(['text' => 'Not posted', 'class' => 'warning'], $small['t2']);
 

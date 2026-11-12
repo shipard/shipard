@@ -35,6 +35,7 @@ final class SentMessageTransportInfo
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly ?ConfigRuntime $config = null,
+        private readonly string $language = 'en',
     ) {}
 
     /**
@@ -103,7 +104,7 @@ final class SentMessageTransportInfo
 
         return $this->state($message) + [
             'messageId' => (int) $message['id'],
-            'sentAt'    => SubtableCellFormatter::dateTime($message['sent_at'] ?? null),
+            'sentAt'    => SubtableCellFormatter::dateTime($message['sent_at'] ?? null, $this->language),
             'sendCount' => (int) ($message['send_count'] ?? 0),
             'lastError' => isset($message['last_error']) && $message['last_error'] !== ''
                 ? (string) $message['last_error']
@@ -138,8 +139,8 @@ final class SentMessageTransportInfo
             return [];
         }
 
-        return array_map(static fn (array $row): array => [
-            'at'        => SubtableCellFormatter::dateTime($row['ts'] ?? null),
+        return array_map(fn (array $row): array => [
+            'at'        => SubtableCellFormatter::dateTime($row['ts'] ?? null, $this->language),
             'ok'        => (string) ($row['result'] ?? '') === 'ok',
             'transport' => (string) ($row['transport'] ?? ''),
             'response'  => isset($row['smtp_response']) && $row['smtp_response'] !== ''

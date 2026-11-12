@@ -103,12 +103,12 @@ class ExchangeRateListsViewerTest extends TestCase
         $this->assertSame(5, $row['id']);
         $this->assertSame('ČNB — kurzy ostatních měn', $row['t1']);
         $this->assertSame('č. 10', $row['i1']);
-        $this->assertSame([['text' => 'od 01.10.2026'], ['text' => 'do 31.10.2026']], $row['t2']);
+        $this->assertSame([['text' => 'od 2026-10-01'], ['text' => 'do 2026-10-31']], $row['t2']);
         $this->assertSame([['text' => 'Počet měn: 3'], ['text' => 'Datová sada', 'class' => 'muted']], $row['t3']);
 
         $daily = $this->viewer($calls)->renderRow(['id' => 6, 'list_type' => 'cz.cnb.daily', 'valid_from' => '2026-10-16', 'valid_to' => null, 'list_number' => null, 'source' => 1, 'rate_count' => 31]);
         $this->assertNull($daily['i1']);
-        $this->assertSame([['text' => 'od 16.10.2026']], $daily['t2']);
+        $this->assertSame([['text' => 'od 2026-10-16']], $daily['t2']);
         $this->assertSame('Počet měn: 31', $daily['t3'][0]['text']);
     }
 
@@ -127,7 +127,7 @@ class ExchangeRateListsViewerTest extends TestCase
         $items = array_column($detail['tabs'][0]['content']['groups'][0]['items'], 'value', 'label');
         // Typ, platnost a číslo lístku nese hlavička — Přehled je neopakuje (#140 D26).
         $this->assertSame('ČNB — kurzy devizového trhu', $detail['title']);
-        $this->assertSame('16.10.2026 · č. 201', $detail['subtitle']);
+        $this->assertSame('2026-10-16 · č. 201', $detail['subtitle']);
         $this->assertSame(['Domácí měna', 'Zdroj', 'Počet měn'], array_keys($items));
         $this->assertSame('Soubor', $items['Zdroj']);
         $this->assertSame('2', $items['Počet měn']);

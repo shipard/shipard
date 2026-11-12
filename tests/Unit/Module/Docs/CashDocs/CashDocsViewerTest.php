@@ -65,7 +65,7 @@ class CashDocsViewerTest extends TestCase
         $this->assertSame('31HP12600001', $row['i1']);
         $this->assertSame([
             ['text' => 'Příjem'],
-            ['text' => '10. 6. 2026'],
+            ['text' => '2026-06-10'],
             ['text' => 'Hotovost', 'class' => 'muted'],
         ], $row['t2']);
         $this->assertSame(['text' => '1 210,00 CZK', 'class' => 'amount'], $row['i2']);

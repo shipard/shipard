@@ -95,18 +95,6 @@ abstract class AssetsViewerBase extends TableViewer
         ];
     }
 
-    protected function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('d.m.Y');
-        }
-        $dt = \DateTimeImmutable::createFromFormat('Y-m-d', substr((string) $value, 0, 10));
-        return $dt instanceof \DateTimeImmutable ? $dt->format('d.m.Y') : (string) $value;
-    }
-
     protected function formatAmount(mixed $value): ?string
     {
         if ($value === null || $value === '') {

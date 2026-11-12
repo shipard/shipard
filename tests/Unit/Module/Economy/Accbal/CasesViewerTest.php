@@ -270,7 +270,7 @@ class CasesViewerTest extends TestCase
         $this->assertSame('CZK', $row['cells']['currency']);
         $this->assertSame(['text' => '12 100,00', 'class' => 'amount'], $row['cells']['sum_requests']);
         $this->assertSame(['text' => '10 000,00', 'class' => 'amount'], $row['cells']['residual']);
-        $this->assertSame('31. 12. 2099', $row['cells']['due_date']);
+        $this->assertSame('31.12.2099', $row['cells']['due_date']);
         $this->assertNull($row['cells']['overdue']);
         $this->assertSame('2', $row['cells']['moves']);
         $this->assertSame('Pohledávky', $row['cells']['balance']);

@@ -202,18 +202,6 @@ class ItemsViewer extends TableViewer
         };
     }
 
-    private function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y');
-        }
-        $ts = is_string($value) ? strtotime($value) : null;
-        return $ts !== null && $ts !== false ? date('j. n. Y', $ts) : null;
-    }
-
     /**
      * Mezera + symbol domácí měny za cenu: kód z nastavení
      * `economy.homeCurrency`, symbol z `world.base.currencies` (bez symbolu

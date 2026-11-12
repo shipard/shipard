@@ -141,10 +141,10 @@ class FilingsViewer extends TableViewer
             ];
         }
 
-        $filed = $this->formatDate($rowData['date_filed'] ?? null);
+        $filed = ($this->formatDate($rowData['date_filed'] ?? null) ?? '');
         $t2[] = ['text' => $filed !== ''
             ? ($cs ? "podáno {$filed}" : "filed {$filed}")
-            : ($cs ? 'sestaveno ' : 'composed ') . $this->formatDate($rowData['date_issue'] ?? null)];
+            : ($cs ? 'sestaveno ' : 'composed ') . ($this->formatDate($rowData['date_issue'] ?? null) ?? '')];
 
         $docState  = (int) ($rowData['docState'] ?? 10);
         $stateData = $this->docStates()->getState($docState);
@@ -404,15 +404,15 @@ class FilingsViewer extends TableViewer
             ['label' => $cs ? 'Druh podání' : 'Filing kind',
              'value' => $this->kindLabels()[(string) $record['filing_kind']] ?? (string) $record['filing_kind']],
             ['label' => $cs ? 'Pořadí v tvrzení' : 'Sequence', 'value' => (string) ($record['sequence'] ?? '')],
-            ['label' => $cs ? 'Sestaveno' : 'Composed on', 'value' => $this->formatDate($record['date_issue'] ?? null)],
+            ['label' => $cs ? 'Sestaveno' : 'Composed on', 'value' => ($this->formatDate($record['date_issue'] ?? null) ?? '')],
         ];
         if ($this->isImported((array) $record)) {
             $items[] = ['label' => $cs ? 'Původ' : 'Origin', 'value' => $this->importSummary((array) $record, $cs)];
         }
-        $filed = $this->formatDate($record['date_filed'] ?? null);
+        $filed = ($this->formatDate($record['date_filed'] ?? null) ?? '');
         $items[] = ['label' => $cs ? 'Podáno' : 'Filed on', 'value' => $filed !== '' ? $filed : '—'];
 
-        $found = $this->formatDate($record['date_found'] ?? null);
+        $found = ($this->formatDate($record['date_found'] ?? null) ?? '');
         if ($found !== '') {
             $items[] = ['label' => $cs ? 'Datum zjištění důvodů' : 'Reasons found on', 'value' => $found];
         }
@@ -576,7 +576,7 @@ class FilingsViewer extends TableViewer
                 'section'   => (string) $row['section'],
                 'evid'      => (string) ($row['doc_number'] ?? ''),
                 'vatId'     => (string) ($row['partner_vat_id'] ?? ''),
-                'dppd'      => $this->formatDate($row['vat_dppd'] ?? null),
+                'dppd'      => ($this->formatDate($row['vat_dppd'] ?? null) ?? ''),
                 'kod'       => $row['kod_pred_pl'] !== null ? (string) $row['kod_pred_pl'] : '',
                 'base'      => $this->formatMoney(
                     (float) $row['base1'] + (float) $row['base2'] + (float) $row['base3'],
@@ -1014,8 +1014,8 @@ class FilingsViewer extends TableViewer
     /** @param array<string, mixed> $period */
     private function periodLabel($period): string
     {
-        return (string) $period['name'] . ' (' . $this->formatDate($period['date_begin'] ?? null)
-            . ' – ' . $this->formatDate($period['date_end'] ?? null) . ')';
+        return (string) $period['name'] . ' (' . ($this->formatDate($period['date_begin'] ?? null) ?? '')
+            . ' – ' . ($this->formatDate($period['date_end'] ?? null) ?? '') . ')';
     }
 
     /** @return array<string, mixed> */
@@ -1039,16 +1039,5 @@ class FilingsViewer extends TableViewer
     private function formatNonZeroMoney(float $value): string
     {
         return abs($value) < 0.005 ? '' : $this->formatMoney($value);
-    }
-
-    private function formatDate(mixed $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        return substr((string) $value, 0, 10);
     }
 }

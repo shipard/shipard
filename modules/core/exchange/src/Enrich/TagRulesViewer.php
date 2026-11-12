@@ -82,7 +82,7 @@ class TagRulesViewer extends TableViewer
         if ($hitCount > 0) {
             $t3Parts[] = $hitCount . '×';
         }
-        $lastHit = (string) ($rowData['last_hit_at'] ?? '');
+        $lastHit = $this->formatDateTime($rowData['last_hit_at'] ?? null) ?? '';
         if ($lastHit !== '') {
             $t3Parts[] = $lastHit;
         }
@@ -122,11 +122,11 @@ class TagRulesViewer extends TableViewer
 
         $stats = [];
         $this->addItem($stats, $isCs ? 'Počet zásahů' : 'Hit count', (string) (int) ($record['hit_count'] ?? 0));
-        $this->addItem($stats, $isCs ? 'Poslední zásah' : 'Last hit', $record['last_hit_at'] ?? null);
+        $this->addItem($stats, $isCs ? 'Poslední zásah' : 'Last hit', $this->formatDateTime($record['last_hit_at'] ?? null));
 
         $status = [];
-        $this->addItem($status, $isCs ? 'Vytvořeno' : 'Created', $record['created'] ?? null);
-        $this->addItem($status, $isCs ? 'Změněno' : 'Modified', $record['modified'] ?? null);
+        $this->addItem($status, $isCs ? 'Vytvořeno' : 'Created', $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($status, $isCs ? 'Změněno' : 'Modified', $this->formatDateTime($record['modified'] ?? null));
 
         return [[
             'id'      => 'overview',

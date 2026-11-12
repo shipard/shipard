@@ -53,7 +53,7 @@ class RegistryDocumentsViewerMetadataTest extends TestCase
             ['label' => 'Pojišťovna', 'value' => 'Pojišťovna A'],
             // Datum jen jako celá hodnota — číslo pojistky s datem uvnitř zůstává.
             ['label' => 'Číslo pojistky', 'value' => '2026-01-31/7'],
-            ['label' => 'Platnost do', 'value' => '31. 1. 2026'],
+            ['label' => 'Platnost do', 'value' => '2026-01-31'],
             ['label' => 'Roční pojistné', 'value' => '12500.5'],
             // Klíč mimo druh (import) nemá popisek — ukáže se klíč.
             ['label' => 'legacyKind', 'value' => 'pojistky'],
@@ -69,7 +69,7 @@ class RegistryDocumentsViewerMetadataTest extends TestCase
         ]);
 
         $this->assertSame(['label' => 'insurer', 'value' => 'Pojišťovna A'], $items[0]);
-        $this->assertSame(['label' => 'validTo', 'value' => '31. 1. 2026'], $items[1]);
+        $this->assertSame(['label' => 'validTo', 'value' => '2026-01-31'], $items[1]);
     }
 
     public function testWithoutConfigGivesKeysInMetadataOrder(): void
@@ -80,6 +80,6 @@ class RegistryDocumentsViewerMetadataTest extends TestCase
             ['legacyKind', 'validTo', 'insurer', 'annualPremium', 'policyNumber'],
             array_column($items, 'label'),
         );
-        $this->assertSame('31. 1. 2026', $items[1]['value']);
+        $this->assertSame('2026-01-31', $items[1]['value']);
     }
 }

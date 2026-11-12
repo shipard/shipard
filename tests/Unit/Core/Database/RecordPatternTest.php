@@ -28,14 +28,25 @@ class RecordPatternTest extends TestCase
         );
     }
 
-    public function testDateIsFormattedCzechStyle(): void
+    public function testDateIsFormattedInCallersLanguage(): void
     {
         $pattern = new RecordPattern('{number} · {date_issue}');
+        $record = ['number' => 'FV-1', 'date_issue' => new \DateTimeImmutable('2026-06-03')];
 
-        $this->assertSame(
-            'FV-1 · 3. 6. 2026',
-            $pattern->render(['number' => 'FV-1', 'date_issue' => new \DateTimeImmutable('2026-06-03')]),
-        );
+        $this->assertSame('FV-1 · 03.06.2026', $pattern->render($record, '', 'cs'));
+        $this->assertSame('FV-1 · 2026-06-03', $pattern->render($record, '', 'en'));
+        $this->assertSame('FV-1 · 2026-06-03', $pattern->render($record), 'bez jazyka anglicky');
+    }
+
+    public function testDateStringsFromDatabaseLayerAreFormatted(): void
+    {
+        // Databázová vrstva vrací datum jako `Y-m-d`, čas jako `Y-m-d\TH:i:s`.
+        $pattern = new RecordPattern('{valid_from} — {analyzed_at}');
+        $record = ['d__valid_from' => '2026-06-03', 'd__analyzed_at' => '2026-06-03T14:05:59'];
+
+        $this->assertSame('03.06.2026 — 03.06.2026 14:05', $pattern->render($record, 'd__', 'cs'));
+        $this->assertSame('2026-06-03 — 2026-06-03 14:05', $pattern->render($record, 'd__', 'en'));
+        $this->assertSame('FV-2026-06-03', (new RecordPattern('{number}'))->render(['number' => 'FV-2026-06-03'], '', 'cs'));
     }
 
     public function testEmptyLeadingValueDropsItsSeparator(): void

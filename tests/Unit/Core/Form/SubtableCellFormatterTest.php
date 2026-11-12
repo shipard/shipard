@@ -23,8 +23,8 @@ class SubtableCellFormatterTest extends TestCase
         $this->assertNull(SubtableCellFormatter::money(''));
         $this->assertNull(SubtableCellFormatter::number(null, 4));
         $this->assertNull(SubtableCellFormatter::trimmedNumber('', 4));
-        $this->assertNull(SubtableCellFormatter::date(null));
-        $this->assertNull(SubtableCellFormatter::dateTime(''));
+        $this->assertNull(SubtableCellFormatter::date(null, 'cs'));
+        $this->assertNull(SubtableCellFormatter::dateTime('', 'en'));
     }
 
     public function testNumberKeepsRequestedScale(): void
@@ -53,15 +53,18 @@ class SubtableCellFormatterTest extends TestCase
 
     public function testDateFormats(): void
     {
-        $this->assertSame('05.03.2026', SubtableCellFormatter::date('2026-03-05'));
-        $this->assertSame('05.03.2026', SubtableCellFormatter::date('2026-03-05 00:00:00'));
-        $this->assertSame('05.03.2026', SubtableCellFormatter::date(new \DateTimeImmutable('2026-03-05')));
-        $this->assertSame('05.03.2026 14:07', SubtableCellFormatter::dateTime('2026-03-05T14:07:33'));
+        // Zápis podle jazyka požadavku tvoří DisplayDate (#133 D73).
+        $this->assertSame('05.03.2026', SubtableCellFormatter::date('2026-03-05', 'cs'));
+        $this->assertSame('05.03.2026', SubtableCellFormatter::date('2026-03-05 00:00:00', 'cs'));
+        $this->assertSame('05.03.2026', SubtableCellFormatter::date(new \DateTimeImmutable('2026-03-05'), 'cs'));
+        $this->assertSame('05.03.2026 14:07', SubtableCellFormatter::dateTime('2026-03-05T14:07:33', 'cs'));
+        $this->assertSame('2026-03-05', SubtableCellFormatter::date('2026-03-05', 'en'));
+        $this->assertSame('2026-03-05 14:07', SubtableCellFormatter::dateTime('2026-03-05T14:07:33', 'en'));
     }
 
     public function testUnparsableDateIsReturnedVerbatim(): void
     {
-        $this->assertSame('not-a-date', SubtableCellFormatter::date('not-a-date'));
+        $this->assertSame('not-a-date', SubtableCellFormatter::date('not-a-date', 'cs'));
     }
 
     public function testBooleanLabels(): void

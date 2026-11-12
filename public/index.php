@@ -112,6 +112,7 @@ try {
 
 	// ── 4c. Build form registry ───────────────────────────────────────────────
 	$formRegistry = FormLoader::load($resolved->config, $modulePathResolver);
+	$formRegistry->setLanguage($language);
 
 	// ── 4c2. Build lookup registry ───────────────────────────────────────────
 	$lookupRegistry = LookupLoader::load($resolved->config, $modulePathResolver);

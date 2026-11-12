@@ -68,7 +68,7 @@ class StructuredFieldRendererTest extends TestCase
                 'title' => 'Kontakt',
                 'items' => [
                     ['label' => 'E-mail', 'value' => 'a@b.cz'],
-                    ['label' => 'Narození', 'value' => '29.02.1980'],
+                    ['label' => 'Narození', 'value' => '1980-02-29'],
                     ['label' => 'Podíl', 'value' => '12,50'],
                     ['label' => 'Podepsáno', 'value' => 'Ano'],
                 ],

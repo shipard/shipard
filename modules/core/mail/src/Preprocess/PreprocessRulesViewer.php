@@ -92,7 +92,7 @@ class PreprocessRulesViewer extends TableViewer
         if ($hitCount > 0) {
             $t3Parts[] = $hitCount . '×';
         }
-        $lastHit = (string) ($rowData['last_hit_at'] ?? '');
+        $lastHit = $this->formatDateTime($rowData['last_hit_at'] ?? null) ?? '';
         if ($lastHit !== '') {
             $t3Parts[] = $lastHit;
         }
@@ -140,11 +140,11 @@ class PreprocessRulesViewer extends TableViewer
 
         $stats = [];
         $this->addItem($stats, $this->columnLabel('hit_count', 'Hit count'), (string) (int) ($record['hit_count'] ?? 0));
-        $this->addItem($stats, $this->columnLabel('last_hit_at', 'Last hit'), $record['last_hit_at'] ?? null);
+        $this->addItem($stats, $this->columnLabel('last_hit_at', 'Last hit'), $this->formatDateTime($record['last_hit_at'] ?? null));
 
         $status = [];
-        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
-        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
 
         return [$this->propertiesTab([
             ['title' => $this->text('groupRule', 'Rule'), 'items' => $rule],

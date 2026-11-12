@@ -138,7 +138,7 @@ class AlertsViewer extends TableViewer
             $parts[] = $sc . '×';
         }
         if ($alertState === AlertReconciler::STATE_SNOOZED && !empty($rowData['snoozed_until'])) {
-            $parts[] = $this->text('snoozedUntil', 'snoozed until {date}', ['date' => substr((string) $rowData['snoozed_until'], 0, 16)]);
+            $parts[] = $this->text('snoozedUntil', 'snoozed until {date}', ['date' => $this->formatDateTime($rowData['snoozed_until']) ?? '']);
         }
         $row['t3'] = $parts !== [] ? implode(' • ', $parts) : null;
 
@@ -159,18 +159,18 @@ class AlertsViewer extends TableViewer
             ['label' => $this->columnLabel('alert_state', 'State'),          'value' => $this->stateLabel($alertState)],
             ['label' => $this->columnLabel('check_id', 'Check ID'),          'value' => (string) ($record['check_id'] ?? '')],
             ['label' => $this->columnLabel('finding_key', 'Finding key'),    'value' => (string) ($record['finding_key'] ?? '')],
-            ['label' => $this->columnLabel('first_seen_at', 'First seen at'), 'value' => (string) ($record['first_seen_at'] ?? '')],
-            ['label' => $this->columnLabel('last_seen_at', 'Last seen at'),  'value' => (string) ($record['last_seen_at'] ?? '')],
+            ['label' => $this->columnLabel('first_seen_at', 'First seen at'), 'value' => $this->formatDateTime($record['first_seen_at'] ?? null) ?? ''],
+            ['label' => $this->columnLabel('last_seen_at', 'Last seen at'),  'value' => $this->formatDateTime($record['last_seen_at'] ?? null) ?? ''],
             ['label' => $this->columnLabel('seen_count', 'Seen count'),      'value' => (string) ((int) ($record['seen_count'] ?? 1))],
         ];
         if ($alertState === AlertReconciler::STATE_SNOOZED && !empty($record['snoozed_until'])) {
-            $overviewItems[] = ['label' => $this->columnLabel('snoozed_until', 'Snoozed until'), 'value' => (string) $record['snoozed_until']];
+            $overviewItems[] = ['label' => $this->columnLabel('snoozed_until', 'Snoozed until'), 'value' => $this->formatDateTime($record['snoozed_until']) ?? ''];
         }
         if ($alertState === AlertReconciler::STATE_DISMISSED && !empty($record['dismissed_at'])) {
-            $overviewItems[] = ['label' => $this->columnLabel('dismissed_at', 'Dismissed at'), 'value' => (string) $record['dismissed_at']];
+            $overviewItems[] = ['label' => $this->columnLabel('dismissed_at', 'Dismissed at'), 'value' => $this->formatDateTime($record['dismissed_at']) ?? ''];
         }
         if ($alertState === AlertReconciler::STATE_RESOLVED && !empty($record['resolved_at'])) {
-            $overviewItems[] = ['label' => $this->columnLabel('resolved_at', 'Resolved at'), 'value' => (string) $record['resolved_at']];
+            $overviewItems[] = ['label' => $this->columnLabel('resolved_at', 'Resolved at'), 'value' => $this->formatDateTime($record['resolved_at']) ?? ''];
         }
 
         $overviewGroups = [
@@ -446,6 +446,6 @@ class AlertsViewer extends TableViewer
         if ($diff < 3600)   return $this->sharedText('agoMinutes', '{n} min ago', ['n' => (int) ($diff / 60)]);
         if ($diff < 86400)  return $this->sharedText('agoHours', '{n} h ago', ['n' => (int) ($diff / 3600)]);
         if ($diff < 86400 * 7) return $this->sharedText('agoDays', '{n} d ago', ['n' => (int) ($diff / 86400)]);
-        return substr($datetime, 0, 10);
+        return $this->formatDate($datetime) ?? $datetime;
     }
 }

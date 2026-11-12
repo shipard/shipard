@@ -73,7 +73,7 @@ class PrintTextsViewerTest extends TestCase
             $row['i1'],
         );
         $this->assertSame('Faktura, Pokladní doklad · němčina · jen vybrané typy a řady', $row['t2']['text']);
-        $this->assertSame('1. 1. 2020 – 31. 12. 2099', $row['t3']);
+        $this->assertSame('2020-01-01 – 2099-12-31', $row['t3']);
         $this->assertSame('done', $row['stateStyle']);
     }
 

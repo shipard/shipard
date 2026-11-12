@@ -182,8 +182,8 @@ class AiFunctionsViewer extends AiViewerBase
         $groups[] = ['title' => $this->text('group.callStatus', 'Call status'), 'items' => $this->statusItems($preview, $functionId, $texts)];
 
         $record_ = [];
-        $this->addItem($record_, $this->text('label.created', 'Created'), $record['created'] ?? null);
-        $this->addItem($record_, $this->text('label.modified', 'Modified'), $record['modified'] ?? null);
+        $this->addItem($record_, $this->text('label.created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($record_, $this->text('label.modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
         if ($record_ !== []) {
             $groups[] = ['title' => $this->text('group.status', 'Record'), 'items' => $record_];
         }

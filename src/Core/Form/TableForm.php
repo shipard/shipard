@@ -31,6 +31,12 @@ abstract class TableForm
     /** Konfigurace zdroje dat (stát…) — injektuje FormRegistry; v testech může chybět. */
     protected ?DataSourceConfig $dsConfig = null;
 
+    /**
+     * Jazyk požadavku — injektuje FormRegistry; řídí zápis data na obrazovce
+     * (`DisplayDate`, #133 D73). Bez registru (testy) anglicky.
+     */
+    protected string $language = 'en';
+
     /** @var array<string, TableDefinition> Všechny tabulky DS — default renderer sub-tabulky z nich bere definici dětské tabulky. */
     protected array $tables = [];
 
@@ -56,6 +62,11 @@ abstract class TableForm
     public function setTableDef(TableDefinition $tableDef): void
     {
         $this->tableDef = $tableDef;
+    }
+
+    public function setLanguage(string $language): void
+    {
+        $this->language = $language;
     }
 
     /** @param array<string, TableDefinition> $tables Indexované názvem tabulky (výstup TableLoader::load). */
@@ -418,8 +429,8 @@ abstract class TableForm
             'boolean'  => SubtableCellFormatter::boolean($value, ...$this->booleanLabels()),
             'numeric'  => SubtableCellFormatter::number($value, (int) ($col->scale ?? 2)),
             'float'    => SubtableCellFormatter::trimmedNumber($value, 4),
-            'date'     => SubtableCellFormatter::date($value),
-            'datetime' => SubtableCellFormatter::dateTime($value),
+            'date'     => SubtableCellFormatter::date($value, $this->language),
+            'datetime' => SubtableCellFormatter::dateTime($value, $this->language),
             'json'     => null,
             default    => is_scalar($value) ? (string) $value : null,
         };

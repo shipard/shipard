@@ -167,7 +167,7 @@ final class ModelCatalogViewerTest extends TestCase
         $sonnet45 = $viewer->renderRow($rows[2]);
         $this->assertSame([
             ['text' => 'Vyvážený', 'class' => 'muted'],
-            ['text' => 'Končí 30. 11. 2026', 'class' => 'warning'],
+            ['text' => 'Končí 30.11.2026', 'class' => 'warning'],
         ], $sonnet45['i1'], 'vyřazovaný model nese datum konce, na nic neukazuje');
 
         $haiku = $viewer->renderRow($rows[0]);
@@ -241,7 +241,7 @@ final class ModelCatalogViewerTest extends TestCase
 
         $model = $this->items($detail, 'Model');
         $this->assertSame('Aktivní', $model['Stav']);
-        $this->assertSame('22. 9. 2027', $model['Dostupný nejméně do']);
+        $this->assertSame('22.09.2027', $model['Dostupný nejméně do']);
         $this->assertArrayNotHasKey('Náhrada', $model);
 
         $this->assertSame(['Výchozí model úrovní' => 'Žádná'], $this->items($detail, 'Úrovně'));
@@ -265,7 +265,7 @@ final class ModelCatalogViewerTest extends TestCase
 
         $sonnet45 = $viewer->renderDetail(3);
         $model = $this->items($sonnet45, 'Model');
-        $this->assertSame('Končí 30. 11. 2026', $model['Stav']);
+        $this->assertSame('Končí 30.11.2026', $model['Stav']);
         $this->assertSame('claude-sonnet-4-6', $model['Náhrada']);
         $caps = $this->items($sonnet45, 'Schopnosti');
         $this->assertSame('Neznámo — posílá se beze změny', $caps['Přijímá teplotu']);

@@ -21,6 +21,14 @@ class FormRegistry
         $this->dsConfig = $dsConfig;
     }
 
+    /** Jazyk požadavku — předává se každému vytvořenému formuláři (`setLanguage`). */
+    private ?string $language = null;
+
+    public function setLanguage(string $language): void
+    {
+        $this->language = $language;
+    }
+
     /** @var array<string, string> tableId → form id (per-table, ne per-type) */
     private array $formIds = [];
 
@@ -89,6 +97,9 @@ class FormRegistry
         }
         if ($this->dsConfig !== null) {
             $form->setDsConfig($this->dsConfig);
+        }
+        if ($this->language !== null) {
+            $form->setLanguage($this->language);
         }
         return $form;
     }

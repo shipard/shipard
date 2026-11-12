@@ -116,8 +116,8 @@ class MailboxesViewer extends TableViewer
         $this->addItem($config, $this->columnLabel('is_default', 'Default mailbox'), $this->yesNoText(!empty($record['is_default'])));
 
         $status = [];
-        $this->addItem($status, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
-        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
+        $this->addItem($status, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($status, $this->columnLabel('modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
 
         return [$this->propertiesTab([
             ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],

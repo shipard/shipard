@@ -139,8 +139,8 @@ class PrintTextsViewer extends TableViewer
             : ($choices->languages()[$language] ?? $language));
 
         $validity = [];
-        $this->addItem($validity, $this->columnLabel('valid_from', 'Valid from'), self::dateLabel($record['valid_from'] ?? null));
-        $this->addItem($validity, $this->columnLabel('valid_to', 'Valid to'), self::dateLabel($record['valid_to'] ?? null));
+        $this->addItem($validity, $this->columnLabel('valid_from', 'Valid from'), $this->formatDate(self::dateValue($record['valid_from'] ?? null)));
+        $this->addItem($validity, $this->columnLabel('valid_to', 'Valid to'), $this->formatDate(self::dateValue($record['valid_to'] ?? null)));
         $this->addItem($validity, $this->columnLabel('order_pos', 'Order'), (string) (int) ($record['order_pos'] ?? 0));
         $this->addItem(
             $validity,
@@ -220,8 +220,8 @@ class PrintTextsViewer extends TableViewer
 
     private function validityLabel(mixed $from, mixed $to): string
     {
-        $from = self::dateLabel($from);
-        $to   = self::dateLabel($to);
+        $from = $this->formatDate(self::dateValue($from));
+        $to   = $this->formatDate(self::dateValue($to));
         if ($from !== null && $to !== null) {
             return $from . ' – ' . $to;
         }
@@ -229,16 +229,6 @@ class PrintTextsViewer extends TableViewer
             return $this->sharedText('fromDate', 'from {date}', ['date' => $from]);
         }
         return $to !== null ? $this->sharedText('toDate', 'to {date}', ['date' => $to]) : '';
-    }
-
-    private static function dateLabel(mixed $value): ?string
-    {
-        $date = self::dateValue($value);
-        if ($date === null) {
-            return null;
-        }
-        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
-        return $parsed instanceof \DateTimeImmutable ? $parsed->format('j. n. Y') : null;
     }
 
     private static function dateValue(mixed $value): ?string

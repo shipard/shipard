@@ -114,8 +114,8 @@ class ConversationsViewer extends TableViewer
         $this->addItem($items, $this->columnLabel('tokens_input', 'Input tokens'), (string) ($record['tokens_input'] ?? 0));
         $this->addItem($items, $this->columnLabel('tokens_output', 'Output tokens'), (string) ($record['tokens_output'] ?? 0));
         $this->addItem($items, $this->columnLabel('cost', 'Cost'), (string) ($record['cost'] ?? 0));
-        $this->addItem($items, $this->columnLabel('created', 'Created'), $record['created'] ?? null);
-        $this->addItem($items, $this->columnLabel('modified', 'Modified'), $record['modified'] ?? null);
+        $this->addItem($items, $this->columnLabel('created', 'Created'), $this->formatDateTime($record['created'] ?? null));
+        $this->addItem($items, $this->columnLabel('modified', 'Modified'), $this->formatDateTime($record['modified'] ?? null));
 
         return [[
             'id'      => 'overview',

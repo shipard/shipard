@@ -1178,16 +1178,4 @@ class DocsHeadsViewer extends TableViewer
         }
         return $this->ownCompanyResolver;
     }
-
-    protected function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y');
-        }
-        $ts = is_string($value) ? strtotime($value) : false;
-        return $ts !== false ? date('j. n. Y', $ts) : null;
-    }
 }

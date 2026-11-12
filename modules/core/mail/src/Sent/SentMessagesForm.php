@@ -23,7 +23,7 @@ class SentMessagesForm extends TableForm
         $tableId = $this->tableDef?->tableId ?? SentMessageStore::TABLE_ID;
 
         $transport = $this->db !== null && !$isNew && !empty($data['id'])
-            ? (new SentMessageTransportInfo($this->db, $this->config))->describe($data)
+            ? (new SentMessageTransportInfo($this->db, $this->config, $this->language))->describe($data)
             : null;
 
         $basic = $this->tab('basic', 'Zpráva')
@@ -68,7 +68,7 @@ class SentMessagesForm extends TableForm
         $to   = AddressList::parse($data['email_to'] ?? null);
         // Importovaná zpráva bez zaznamenané adresy (#104 D4) ukáže „—“.
         $info[] = ['label' => 'Komu', 'value' => $to !== [] ? AddressList::format($to) : '—'];
-        $created = SubtableCellFormatter::dateTime($data['created'] ?? null);
+        $created = SubtableCellFormatter::dateTime($data['created'] ?? null, $this->language);
         if ($created !== null) {
             $info[] = ['label' => 'Vytvořeno', 'value' => $created];
         }

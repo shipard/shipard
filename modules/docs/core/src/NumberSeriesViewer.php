@@ -274,15 +274,4 @@ class NumberSeriesViewer extends TableViewer
     {
         return $this->labelText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
-
-    private function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        return (string) $value;
-    }
 }

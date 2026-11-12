@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Codebooks;
 
 use Shipard\Core\Document\DocStateConfig;
-use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Viewer\TableViewer;
 
 class FiscalYearsViewer extends TableViewer
@@ -137,7 +136,7 @@ class FiscalYearsViewer extends TableViewer
             $type = (int) ($m['period_type'] ?? 1);
             // Zámek měsíce (#55 D27) — přepíná se ve formuláři měsíce
             // (sub-tabulka roku); s časem zamknutí, bez něj (import) holé.
-            $lockedAt = !empty($m['locked']) ? SubtableCellFormatter::dateTime($m['locked_at'] ?? null) : null;
+            $lockedAt = !empty($m['locked']) ? $this->formatDateTime($m['locked_at'] ?? null) : null;
             $lockedText = $lockedAt !== null
                 ? $this->text('lockedAt', 'Locked ({at})', ['at' => $lockedAt])
                 : $this->text('locked', 'Locked');
@@ -209,17 +208,6 @@ class FiscalYearsViewer extends TableViewer
         if ($value !== null && $value !== '') {
             $items[] = ['label' => $label, 'value' => (string) $value];
         }
-    }
-
-    private function formatDate(mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        return (string) $value;
     }
 
     /** @return array<int, string> */

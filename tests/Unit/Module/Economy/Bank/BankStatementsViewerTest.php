@@ -71,7 +71,7 @@ class BankStatementsViewerTest extends TestCase
         $detail = $this->detail();
 
         $this->assertSame('2026/07', $detail['title']);
-        $this->assertSame('FIO — Fio běžný · 1. 7. 2026 – 31. 7. 2026', $detail['subtitle']);
+        $this->assertSame('FIO — Fio běžný · 01.07.2026 – 31.07.2026', $detail['subtitle']);
         $this->assertSame([], $detail['badges'], 'Nezkontrolováno štítek nemá');
         $this->assertSame(['Rekonciliace' => 'Nezkontrolováno'], self::group($detail, 'Výpis'));
         $this->assertSame('1 000,00 CZK', self::group($detail, 'Zůstatky')['Počáteční zůstatek']);
@@ -89,7 +89,7 @@ class BankStatementsViewerTest extends TestCase
     {
         $detail = $this->detail(['statement_number' => null]);
 
-        $this->assertSame('1. 7. 2026 – 31. 7. 2026', $detail['title']);
+        $this->assertSame('01.07.2026 – 31.07.2026', $detail['title']);
         $this->assertSame('FIO — Fio běžný', $detail['subtitle']);
         $this->assertSame(['Rekonciliace' => 'Nezkontrolováno'], self::group($detail, 'Výpis'));
     }

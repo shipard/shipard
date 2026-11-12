@@ -11,6 +11,7 @@ use Shipard\Core\Database\RecordPattern;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
 use Shipard\Core\Viewer\Detail\DetailHeader;
@@ -444,7 +445,7 @@ abstract class TableViewer
         $title = null;
         foreach ([$declared['title'] ?? null, ($this->tables[$this->table] ?? null)?->displayPattern] as $pattern) {
             if (is_string($pattern) && $pattern !== '') {
-                $title = (new RecordPattern($pattern))->render($record);
+                $title = (new RecordPattern($pattern))->render($record, '', $this->language ?? 'en');
             }
             if ($title !== null) {
                 break;
@@ -453,7 +454,7 @@ abstract class TableViewer
 
         $subtitlePattern = $declared['subtitle'] ?? null;
         $subtitle = is_string($subtitlePattern) && $subtitlePattern !== ''
-            ? (new RecordPattern($subtitlePattern))->render($record)
+            ? (new RecordPattern($subtitlePattern))->render($record, '', $this->language ?? 'en')
             : null;
         if ($subtitle === $title) {
             $subtitle = null;
@@ -618,7 +619,7 @@ abstract class TableViewer
         if ($schema === null) {
             return [];
         }
-        return (new StructuredFieldRenderer($this->config))->properties($schema, $value);
+        return (new StructuredFieldRenderer($this->config, $this->language ?? 'en'))->properties($schema, $value);
     }
 
     /**
@@ -801,6 +802,23 @@ abstract class TableViewer
     protected function yesNoText(bool $value): string
     {
         return $value ? $this->sharedText('yes', 'Yes') : $this->sharedText('no', 'No');
+    }
+
+    /**
+     * Datum pro obrazovku v jazyce požadavku (#133 D73): česky
+     * `01.01.2026`, anglicky `2026-01-01`. Prázdná hodnota → null (vlastnost
+     * se v detailu vynechá), hodnota, která datem není, beze změny. Viewery
+     * si vlastní formát data nepíší — zápis tvoří jen `DisplayDate`.
+     */
+    protected function formatDate(mixed $value): ?string
+    {
+        return DisplayDate::date($value, $this->language ?? 'en');
+    }
+
+    /** Datum s časem na minuty (`01.01.2026 14:05` / `2026-01-01 14:05`). */
+    protected function formatDateTime(mixed $value): ?string
+    {
+        return DisplayDate::dateTime($value, $this->language ?? 'en');
     }
 
     /**

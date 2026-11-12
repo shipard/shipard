@@ -289,8 +289,8 @@ class WorkOrdersForm extends TableForm
                 'unit'        => $units[(int) ($row['unit'] ?? 0)] ?? '',
                 'unit_price'  => SubtableCellFormatter::number($row['unit_price'] ?? null, 2) ?? '',
                 'vat_code'    => (string) ($row['vat_code'] ?? ''),
-                'valid_from'  => SubtableCellFormatter::date($row['valid_from'] ?? null) ?? '',
-                'valid_to'    => SubtableCellFormatter::date($row['valid_to'] ?? null) ?? '',
+                'valid_from'  => SubtableCellFormatter::date($row['valid_from'] ?? null, $this->language) ?? '',
+                'valid_to'    => SubtableCellFormatter::date($row['valid_to'] ?? null, $this->language) ?? '',
             ];
             $out[] = ['id' => (int) ($row['id'] ?? 0), 'cells' => $cells];
         }

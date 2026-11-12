@@ -92,7 +92,7 @@ class SendersViewer extends TableViewer
 
         $identity = [
             ['label' => $isCs ? 'Aktivní' : 'Active', 'value' => !empty($record['is_active']) ? $yes : $no],
-            ['label' => $isCs ? 'Vytvořeno' : 'Created', 'value' => (string) ($record['created'] ?? '')],
+            ['label' => $isCs ? 'Vytvořeno' : 'Created', 'value' => $this->formatDateTime($record['created'] ?? null) ?? ''],
         ];
 
         $transport = [

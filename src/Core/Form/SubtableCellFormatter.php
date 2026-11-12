@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Form;
 
+use Shipard\Core\I18n\DisplayDate;
+
 /**
  * Sdílené formátování buněk sub-tabulek (docs/edit-forms.md kap. 15).
  *
  * Používá ho default renderer v `TableForm::renderSubtable()` i per-form
  * overridy (`DocsHeadsFormBase`, `PersonsForm`), aby částky, čísla a data
- * vypadaly ve všech sub-tabulkách stejně. Formát čísel je záměrně shodný
+ * vypadaly ve všech sub-tabulkách stejně. Datum jde přes `DisplayDate`
+ * v jazyce požadavku (#133 D73). Formát čísel je záměrně shodný
  * s privátními `formatMoney()` ve viewerech (čárka, mezera po tisících);
  * jejich sjednocení sem je mimo rozsah (tasks/TODO.md).
  *
@@ -74,24 +77,21 @@ final class SubtableCellFormatter
         return $frac === '' ? $int : $int . self::DECIMAL_POINT . $frac;
     }
 
-    /** Datum `Y-m-d` (nebo DateTimeInterface) → `d.m.Y`; neparsovatelný vstup se vrátí beze změny. */
-    public static function date(mixed $value): ?string
+    /**
+     * Datum v jazyce požadavku (`01.01.2026` / `2026-01-01`, #133 D73) —
+     * zápis tvoří `DisplayDate`; neparsovatelný vstup se vrátí beze změny.
+     * Jazyk je povinný: formulář ho má v `TableForm::$language`, viewer
+     * používá vlastní `formatDate()`.
+     */
+    public static function date(mixed $value, string $language): ?string
     {
-        $dt = self::toDateTime($value);
-        if ($dt === null) {
-            return self::isPresent($value) ? (string) $value : null;
-        }
-        return $dt->format('d.m.Y');
+        return DisplayDate::date($value, $language);
     }
 
-    /** Datum a čas → `d.m.Y H:i`; neparsovatelný vstup se vrátí beze změny. */
-    public static function dateTime(mixed $value): ?string
+    /** Datum a čas na minuty v jazyce požadavku; neparsovatelný vstup se vrátí beze změny. */
+    public static function dateTime(mixed $value, string $language): ?string
     {
-        $dt = self::toDateTime($value);
-        if ($dt === null) {
-            return self::isPresent($value) ? (string) $value : null;
-        }
-        return $dt->format('d.m.Y H:i');
+        return DisplayDate::dateTime($value, $language);
     }
 
     /**
@@ -109,20 +109,5 @@ final class SubtableCellFormatter
     private static function isPresent(mixed $value): bool
     {
         return $value !== null && $value !== '';
-    }
-
-    private static function toDateTime(mixed $value): ?\DateTimeInterface
-    {
-        if ($value instanceof \DateTimeInterface) {
-            return $value;
-        }
-        if (!is_string($value) || trim($value) === '') {
-            return null;
-        }
-        try {
-            return new \DateTimeImmutable(trim($value));
-        } catch (\Exception) {
-            return null;
-        }
     }
 }

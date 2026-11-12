@@ -22,7 +22,11 @@ use Shipard\Core\Form\SubtableCellFormatter;
  */
 final class StructuredFieldRenderer
 {
-    public function __construct(private readonly ?ConfigRuntime $config = null) {}
+    /** @param string $language Jazyk požadavku — zápis data (`DisplayDate`, #133 D73). */
+    public function __construct(
+        private readonly ?ConfigRuntime $config = null,
+        private readonly string $language = 'en',
+    ) {}
 
     /**
      * @param mixed $value hodnota sloupce (JSON string z DB, pole, null)
@@ -101,7 +105,7 @@ final class StructuredFieldRenderer
 
         return match ($field->type) {
             'boolean' => $this->boolean($raw),
-            'date'    => SubtableCellFormatter::date($raw),
+            'date'    => SubtableCellFormatter::date($raw, $this->language),
             'numeric' => SubtableCellFormatter::number($raw, $field->scale ?? 2),
             default   => is_scalar($raw) ? (string) $raw : null,
         };

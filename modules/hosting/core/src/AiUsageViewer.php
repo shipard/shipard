@@ -97,7 +97,7 @@ class AiUsageViewer extends TableViewer
 
         $t2 = [
             ['text' => $dsName !== '' ? $dsName : (string) ($rowData['ds_ds_id'] ?? ''), 'class' => 'muted'],
-            ['text' => $this->formatDateTime($rowData['created'] ?? null), 'class' => 'muted'],
+            ['text' => ($this->formatDateTime($rowData['created'] ?? null) ?? ''), 'class' => 'muted'],
         ];
         if ($isError) {
             $t2[] = ['text' => $this->text('rowHttpStatus', 'HTTP {status}', ['status' => $status]), 'class' => 'danger'];
@@ -154,7 +154,7 @@ class AiUsageViewer extends TableViewer
             'stateStyle' => null,
             'rowClass'   => $isError ? 'error' : null,
             'cells' => [
-                'created'               => $this->formatDateTime($rowData['created'] ?? null),
+                'created'               => ($this->formatDateTime($rowData['created'] ?? null) ?? ''),
                 'ds_name'               => $dsName !== '' ? $dsName : (string) ($rowData['ds_ds_id'] ?? ''),
                 'model'                 => (string) ($rowData['model'] ?? ''),
                 'input_tokens'          => $this->gridCountCell($rowData['input_tokens'] ?? 0),
@@ -221,7 +221,7 @@ class AiUsageViewer extends TableViewer
                 'value' => trim((string) ($record['ds_name'] ?? '')) . ' (' . $record['ds_ds_id'] . ')',
             ],
             ['label' => $this->columnLabel('model', 'Model'), 'value' => (string) $record['model']],
-            ['label' => $cs ? 'Čas' : 'Time', 'value' => $this->formatDateTime($record['created'])],
+            ['label' => $cs ? 'Čas' : 'Time', 'value' => ($this->formatDateTime($record['created']) ?? '')],
             ['label' => $this->columnLabel('http_status', 'HTTP status'), 'value' => (string) $record['http_status']],
             ['label' => $this->columnLabel('stream', 'Stream'), 'value' => (int) ($record['stream'] ?? 0) === 1 ? ($cs ? 'ano' : 'yes') : ($cs ? 'ne' : 'no')],
         ];
@@ -298,14 +298,5 @@ class AiUsageViewer extends TableViewer
     private function formatCount(mixed $value): string
     {
         return number_format((float) ($value ?? 0), 0, ',', ' ');
-    }
-
-    private function formatDateTime(mixed $value): string
-    {
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('j. n. Y H:i');
-        }
-        $ts = is_string($value) ? strtotime($value) : false;
-        return $ts !== false ? date('j. n. Y H:i', $ts) : (string) $value;
     }
 }

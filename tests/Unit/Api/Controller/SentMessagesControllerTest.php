@@ -60,7 +60,7 @@ class SentMessagesControllerTest extends TestCase
         $this->assertSame('sent', $data['transportState']);
         $this->assertSame(2, $data['transport']['sendCount']);
         $this->assertTrue($data['transport']['canResend']);
-        $this->assertSame('04.10.2026 14:31', $data['transport']['sentAt']);
+        $this->assertSame('2026-10-04 14:31', $data['transport']['sentAt']);
     }
 
     public function testMessageLeftInQueueReportsQueuedAndCannotBeResentYet(): void

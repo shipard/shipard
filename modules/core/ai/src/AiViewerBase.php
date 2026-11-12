@@ -69,22 +69,6 @@ abstract class AiViewerBase extends TableViewer
         return $this->platforms()->label($platform);
     }
 
-    /** Datum `YYYY-MM-DD` pro uživatele: česky `30. 11. 2026`, jinak ISO. */
-    protected function formatDate(?string $date): ?string
-    {
-        if ($date === null || $date === '') {
-            return null;
-        }
-        if ($this->language !== 'cs') {
-            return $date;
-        }
-        try {
-            return (new \DateTimeImmutable($date))->format('j. n. Y');
-        } catch (\Exception) {
-            return $date;
-        }
-    }
-
     /** @param array<int, array{label: string, value: string}> $items */
     protected function addItem(array &$items, string $label, mixed $value): void
     {

@@ -126,7 +126,7 @@ class WorkOrderSettingsViewersTest extends TestCase
                 ['text' => 'Externí jednorázová', 'class' => 'muted'],
                 ['text' => '%C%y%4'],
                 ['text' => 'Po roce', 'class' => 'muted'],
-                ['text' => '01.01.2026 – …', 'class' => 'muted'],
+                ['text' => '2026-01-01 – …', 'class' => 'muted'],
             ],
             $row['t2'],
         );
