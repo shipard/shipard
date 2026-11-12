@@ -26,6 +26,8 @@
 		"long-document":               { "regime": "domesticDeduction", "controlStatement": "B2orB3" },
 		"receipt":                     { "regime": "domesticDeduction", "controlStatement": "B3" },
 		"domestic-reverse-charge":     { "regime": "domesticReverseCharge", "controlStatement": "B1", "czRate": 21 },
+		// Mobilní telefony v režimu přenesení (§ 92f), předmět plnění 14 — stejný režim, jiný kód v B.1 (#89 D16).
+		"domestic-reverse-charge-phones": { "regime": "domesticReverseCharge", "controlStatement": "B1", "czRate": 21 },
 		"eu-services":                 { "regime": "intracomServices",     "controlStatement": "A2", "czRate": 21 },
 		"eu-goods":                    { "regime": "intracomGoods",        "controlStatement": "A2", "czRate": 21 },
 		"third-country-services":      { "regime": "thirdCountryServices", "controlStatement": "A2", "czRate": 21 },

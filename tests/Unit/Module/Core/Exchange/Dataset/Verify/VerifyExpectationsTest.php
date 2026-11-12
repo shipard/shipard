@@ -29,8 +29,8 @@ class VerifyExpectationsTest extends TestCase
     {
         $reader = DatasetReader::open(dirname(__DIR__, 7) . '/tests/datasets/cz/vat-payer');
         $e = VerifyExpectations::load($reader);
-        $this->assertCount(22, $e->vat);
-        $this->assertCount(22, $e->costs);
+        $this->assertCount(24, $e->vat);
+        $this->assertCount(24, $e->costs);
         $this->assertSame(['customer'], $e->projection->nullableNodes());
         $this->assertArrayHasKey('MSG-CORPUS-VP-0101', $e->vatByMessage());
         $this->assertSame('CZK', $e->costsByMessage()['MSG-CORPUS-VP-0101']['currency']);

@@ -1,0 +1,146 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "FV-26-03418",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Fonarium Distribuce s.r.o.",
+    "country": "cz",
+    "companyId": "95700013",
+    "taxId": "CZ95700013",
+    "vatId": "CZ95700013",
+    "courtRegistration": "C 993615 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Vysílací",
+      "houseNumber": "27/4",
+      "city": "Brno",
+      "zip": "61200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "velkoobchod@fonarium.example",
+      "phone": "+420000548216",
+      "web": "www.fonarium.example"
+    },
+    "bankAccount": {
+      "accountNumber": "3305117713/0800",
+      "iban": "CZ5308000000003305117713",
+      "bic": "GIBACZPX"
+    }
+  },
+  "customer": {
+    "name": "Spolek Zelený kopec, z. s.",
+    "country": "cz",
+    "companyId": "28647645",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Pod Strání",
+      "houseNumber": "92",
+      "city": "Říčany",
+      "zip": "25101",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-08",
+    "dueDate": "2026-09-22",
+    "taxPointDate": "2026-09-07",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "2603418",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Dodávka dle rámcové kupní smlouvy č. RKS-2026-014."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "ORB-X5-128-BK",
+        "ean": null,
+        "name": "Mobilní telefon Orbita X5, 128 GB, černý",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 7,
+      "unitPrice": 8990.00,
+      "totalPrice": 62930.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "ORB-X5P-256-GR",
+        "ean": null,
+        "name": "Mobilní telefon Orbita X5 Pro, 256 GB, šedý",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 4,
+      "unitPrice": 13490.00,
+      "totalPrice": 53960.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 116890.00,
+      "tax": 24546.90,
+      "total": 141436.90
+    }
+  ],
+  "totals": {
+    "totalBase": 116890.00,
+    "totalVat": 24546.90,
+    "totalAmount": 141436.90,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "it.hardware",
+      "rowExceptions": []
+    }
+  }
+}

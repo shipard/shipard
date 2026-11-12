@@ -45,6 +45,11 @@
     "cost": 30051.21
   },
   {
+    "messageId": "MSG-CORPUS-NP-1201",
+    "currency": "CZK",
+    "cost": 141436.90
+  },
+  {
     "messageId": "MSG-CORPUS-NP-0102",
     "currency": "CZK",
     "cost": 11727.08
@@ -88,5 +93,10 @@
     "messageId": "MSG-CORPUS-NP-1102",
     "currency": "EUR",
     "cost": 8997.34
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1202",
+    "currency": "CZK",
+    "cost": 135870.90
   }
 ]

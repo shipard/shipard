@@ -31,6 +31,7 @@ VARIANTS = {
     "receipt": 9,
     "long-document": 10,
     "eu-foreign-vat": 11,
+    "domestic-reverse-charge-phones": 12,
 }
 RECEIPT_TEMPLATES = frozenset({"receipt"})
 # Jazyk šablony — řídí jazyk tisku i předmět / tělo zprávy v datové sadě.
@@ -289,7 +290,8 @@ def validate_document(doc: dict, *, supplier: dict, templates: set[str], taxonom
         if not foreign and kind is not None:
             bad(f"{where}: supplyKind jen u dodavatele mimo ČR")
         code = row.get("reverseChargeCode")
-        if domestic_rc and not (isinstance(code, str) and re.fullmatch(r"[0-9]{1,2}", code)):
+        # Kód předmětu plnění je řetězec, i s písmenem ("4a", #89 D6).
+        if domestic_rc and not (isinstance(code, str) and re.fullmatch(r"[0-9]{1,2}[a-z]?", code)):
             bad(f"{where}: tuzemské přenesení chce reverseChargeCode")
         if not domestic_rc and code is not None:
             bad(f"{where}: reverseChargeCode jen u tuzemského přenesení")

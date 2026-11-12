@@ -461,7 +461,7 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame('cz-vat-payer', $run['set']['name']);
 
         $this->assertSame(1, $run['set']['messages']);
-        $this->assertSame(22, $run['set']['messagesInSet']);
+        $this->assertSame(24, $run['set']['messagesInSet']);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $run['set']['hash']);
         $this->assertSame(['commit' => 'abc1234', 'dirty' => false], $run['git']);
         $this->assertSame('baseline', $run['variant']['name']);

@@ -273,6 +273,35 @@
     }
   },
   {
+    "messageId": "MSG-CORPUS-VP-1201",
+    "variant": "domestic-reverse-charge-phones",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "10": {
+        "base": 116890.00,
+        "tax": 24546.90
+      },
+      "43": {
+        "base": 116890.00,
+        "tax": 24546.90
+      }
+    },
+    "controlStatement": {
+      "section": "B.1",
+      "supplierVatId": "CZ95700013",
+      "documentNumber": "FV-26-03418",
+      "taxPointDate": "2026-09-07",
+      "rates": {
+        "21": {
+          "base": 116890.00,
+          "tax": 24546.90
+        }
+      },
+      "reverseChargeCode": "14"
+    }
+  },
+  {
     "messageId": "MSG-CORPUS-VP-0102",
     "variant": "domestic-goods",
     "currency": "CZK",
@@ -555,6 +584,35 @@
         }
       },
       "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1202",
+    "variant": "domestic-reverse-charge-phones",
+    "currency": "CZK",
+    "period": "2026-10",
+    "return": {
+      "10": {
+        "base": 112290.00,
+        "tax": 23580.90
+      },
+      "43": {
+        "base": 112290.00,
+        "tax": 23580.90
+      }
+    },
+    "controlStatement": {
+      "section": "B.1",
+      "supplierVatId": "CZ95700013",
+      "documentNumber": "FV-26-03902",
+      "taxPointDate": "2026-10-05",
+      "rates": {
+        "21": {
+          "base": 112290.00,
+          "tax": 23580.90
+        }
+      },
+      "reverseChargeCode": "14"
     }
   }
 ]

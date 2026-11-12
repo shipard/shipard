@@ -1,6 +1,6 @@
 # Task: Předmět plnění u tuzemského přenesení daňové povinnosti — samostatný údaj řádku a rekapitulace
 
-**Stav:** naplánováno — rozhodnutí D6–D16 potvrzená 2026-11-11 (#89, task B)
+**Stav:** částečně — kód, korpus a ověření na dev zdroji hotové 2026-11-12 (7 commitů); zbývá schválit snímky hlavní knihy sad, legislativní ověření číselníku, kontrola XML na portálu, `ai-eval` a komentář do #89
 
 **Issue:** #89 (task B; task A je `exchange-received-foreign-vat.md`)
 
@@ -393,19 +393,117 @@ Na volném zdroji dat (třída `free`) po `ds-upgrade` a přeseedování:
 
 ## Hotovo když
 
-- [ ] Číselník předmětů s platností, sloupce na řádku a v rekapitulaci,
+- [x] Číselník předmětů s platností, sloupce na řádku a v rekapitulaci,
       validace a formuláře podle D6, D7, D14; testy `DocDocument|DocRowsForm|VatRateResolver`
       zelené.
-- [ ] Výměnný formát, derivace a export podle D10, D11; testy
+- [x] Výměnný formát, derivace a export podle D10, D11; testy
       `DocumentApplier|VatCodeDerivation|SchemaDrift` zelené.
-- [ ] Kontrolní hlášení čte předmět z rekapitulace, kód je řetězec až do XML
+- [x] Kontrolní hlášení čte předmět z rekapitulace, kód je řetězec až do XML
       (D13); testy `ControlStatement|Filing|VatReportsMapping|VatXml` zelené.
-- [ ] `cz-117` a `cz-152` v repozitáři nejsou (kromě historických tasků
+- [x] `cz-117` a `cz-152` v repozitáři nejsou (kromě historických tasků
       a tohoto zadání); 343117 pro předmět 5 (D8, D9); testy
       `VatAnalyticsCompleteness|AccountingEngine` zelené.
-- [ ] Volba předmětu v náhledu, prompt v4.12.0, help (D12, D15); build
+- [x] Volba předmětu v náhledu, prompt v4.12.0, help (D12, D15); build
       frontendu, i18n parita, `help-index.py`.
-- [ ] Varianta korpusu s předmětem 14 (nebo zapsaný důvod, proč ne).
+- [x] Varianta korpusu s předmětem 14 (nebo zapsaný důvod, proč ne) —
+      varianta 12; **snímky hlavní knihy sad čekají na schválení člověkem**
+      (viz Stav implementace).
 - [ ] Legislativní ověření (vyhláška č. 387/2025 Sb. příloha 12, stav
       k 1. 1. 2027) zapsané v komentáři číselníku a v #89.
-- [ ] Ověření na dev zdroji (body 1–6), `tasks-index.py`, výsledek do #89.
+- [ ] Ověření na dev zdroji (body 1–6), `tasks-index.py`, výsledek do #89 —
+      ověření a index hotové 2026-11-12 (viz Stav implementace), komentář
+      do #89 a kontrola XML na portálu zbývají.
+
+## Stav implementace (2026-11-12)
+
+Sedm commitů na `stable` podle Kroků a commitů, pořadí dodrženo, commit 2
+a 3 zůstaly oddělené (celá sada byla po commitu 2 zelená).
+
+### Odchylky od zadání a upřesnění
+
+- **343 analytiku odvozovala z kódu DPH ještě dvě místa mimo engine** —
+  uzávěrka analytik při zaúčtování přiznání (`VatReturnAccountingService`)
+  a křížová kontrola přiznání proti deníku (`VatJournalCrossCheck`).
+  S pravidlem 343117 (D9) by uzávěrka nulovala špatný účet a kontrola
+  hlásila falešný rozdíl. Commit 5 proto zavádí sdílené vyhodnocení `query`
+  (`RuleQuery::matches()`) a `VatAnalytics` (analytika řádku rekapitulace
+  podle pravidel předpisu); součet daně snapshotu se dělí podle předmětu
+  jen tam, kde má vlastní účet (klíč `kód|předmět`).
+- **`reverseChargeCode` zmizel z definic šesti obecných kódů už v commitu 3**
+  — dočasné vyřazení `cz-117` podle „vlastního `reverseChargeCode`
+  v definici“ by jinak vyřadilo i `cz-115`.
+- **Předmět ověřuje applier, ne derivace** — u každého řádku, na kterém
+  skončí kód přenesení (i explicitní kód: import, vystavené doklady, opravný
+  doklad, fakturace zakázek). `VatCodeDerivation::derive()` už parametr
+  předmětu nemá; číselník čte `reverseChargeSubject()` /
+  `reverseChargeSubjectOptions()` tamtéž.
+- **Chybějící předmět blokuje jen stav V pořádku (40), ne V opravě (80)** —
+  jinak by starý doklad bez předmětu nešel otevřít k opravě. Formulář řádku
+  pole značí jako povinné, uložení řádku v Konceptu bez předmětu ale projde
+  (Koncept = minimum); chybu hodnoty (mimo číselník / neplatná k datu)
+  hlásí řádek i hlavička vždy.
+- **`allDecided()` neexistuje** — brána je `reviewGate.js` (nový druh
+  reference `reverseChargeCode`) a `REFRESH_PATH_RE` v modalu.
+- **`vatGroupKey()` má osm volání** (ne deset); všechna jdou přes
+  `vatGroupKeyOf()`.
+- **Regex předmětu** v projekci korpusu a v `invoicegen/corpus.py` rozšířen
+  na `^[0-9]{1,2}[a-z]?$` (`4a`); zmrazená kopie pro evaluace beze změny.
+- **Detail dokladu a sub-tabulka řádků kód DPH neukazují** — předmět je
+  vidět u sazby v rekapitulaci (sub-tabulka, tab, detail, náhled návrhu)
+  a v sub-tabulce řádků jako sloupec, jen když ho některý řádek nese.
+- **Fakturační předpis zakázek kód přenesení dovolí** a předmět nenese —
+  nález zapsán do `tasks/TODO.md` (periodická fakturace u takové zakázky
+  končí chybou `reverse_charge_code_missing`) a do `help/co-dnes-nejde.md`.
+- **Varianta korpusu 12 má řádky pod 80 000 Kč i s daní** — nad tím štítek
+  `it.hardware` návrh účtu nedává (`amountGuard`) a kontrola položek sady
+  hlásí rozdíl; základ dokladu zůstává nad 100 000 Kč.
+
+### Ověření
+
+- Testy: celá sada PHPUnit zelená po každém commitu (na konci 11 510 testů),
+  frontend 291 testů, `check:i18n`, build, generátor
+  korpusu 324 testů; integrační `AccountingEngineTest` (46 testů vč. 343117)
+  nad volným zdrojem dat.
+- Datové sady (bod 6): `dataset-seed` + `dataset-verify` na zdrojích korpusu
+  `ob9b-7` (plátce), `r1lf-w` (neplátce), `wp66-o` (spolek) — kontroly 1–5
+  v pořádku u všech tří (přiznání i KH včetně B.1 s kódem 14). **Kontrola 6
+  (deník proti schválenému snímku) hlásí rozdíl přesně o dva nové doklady**:
+  plátce 321100 a 501201 + 229 180,00, 343115 a 343203 + 48 127,80; neplátce
+  a spolek 321100 a 501201 + 277 307,80. Kandidáti snímků jsou připravené
+  k odsouhlasení (`dataset-verify --no-apply --write-ledger-snapshot`);
+  po schválení do `profiles/<profil>/approved/` a `build.py --refresh-approved`.
+- Proklikání sady plátce v prohlížeči (`dataset-e2e`): 24 / 24 návrhů
+  použito přes náhled, bez chyb prohlížeče; jediný nález je kontrola 6.
+- Body 1–3 a 5 přes skutečné API na volném testovacím zdroji `060z-b`:
+  vydaná faktura s `cz-150` bez předmětu se nepotvrdí (applier 422
+  `reverse_charge_code_missing`, hlavička 422 `rows.0.reverse_charge_code`);
+  s předměty 4 a 14 má rekapitulace dvě skupiny a živé KH v A.1 dva řádky;
+  přijatá faktura s předměty 4a a 5 má v B.1 dva řádky (4a, 5), odpočet
+  4a na 343115 a 5 na 343117, oddanění na 343203, přiznání ř. 10 a 43
+  = základ 30 000 a zpráva „Součty daně souhlasí s účetním deníkem“;
+  snapshot podání nese kódy jako řetězce. Formulář řádku k DUZP 15. 6. 2017
+  předmět 4a nenabízí a uložení s ním odmítne.
+- Bod 4 v headless prohlížeči nad zdrojem `ob9b-7` (náhled zprávy upravený
+  tak, jako by doklad předmět nenesl): řádky ukazují „předmět chybí“,
+  Použít je zablokované, volba u řádku i hromadná volba předmět doplní,
+  rekapitulace ukáže „předmět 14“ u odpočtu i oddaňovacího řádku.
+- **Neověřeno:** XML kontrolního hlášení na zdroji dat nevzniklo (testovací
+  zdroj nemá vyplněnou hlavičku podání — typ subjektu a finanční úřad);
+  kód `4a` proti schématu portálu ověřuje jen test
+  `Kh1XmlWriterTest::testSubjectWithLetterIsWrittenAsIsAndValidates`.
+  Kontrola na portálu a platnost předmětu k datu v návrhu z pošty (jen
+  testy applieru — zdroje dat nemají registraci DPH platnou v roce 2017).
+- Nová identita korpusu ověřena v ARES a VIES samostatně; hromadné
+  `--verify-identities` neprošlo kvůli přetížení VIES, `verifiedAt` zůstává
+  na 2026-11-11.
+
+### Zbývá (člověk)
+
+- Odsouhlasit snímky hlavní knihy tří sad (rozdíl výše) a přestavět sady.
+- Legislativní ověření číselníku proti vyhlášce č. 387/2025 Sb. příloha 12
+  — komentář v `vat-cz.jsonc` říká „ověření čeká“.
+- Kontrola XML s kódem `4a` na daňovém portálu; `ai-eval` po změně promptu.
+- `ds-upgrade` zdrojů dat (nové sloupce, prompt v4.12.0); podání DPH
+  sestavená dřív přepočítat, testovací zdroje přeseedovat, importované
+  reimportovat (D8). Runner importu ve starém Shipardu je mimo rozsah.
+- Push a komentář do #89.

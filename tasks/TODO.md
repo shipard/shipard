@@ -181,3 +181,33 @@ tuzemsko a kódu samovyměření jako rozpor i při `reverseCharge: null`,
 nebo aspoň warning v náhledu.
 
 **Priorita:** nízká.
+
+---
+
+## Periodická fakturace: řádek předpisu s kódem přenesení nemá předmět plnění
+
+**Zjištěno:** 11/2026 při `vat-reverse-charge-subjects.md` (#89, task B).
+
+Řádek fakturačního předpisu zakázky (`economy_work_orders_rows`) nese
+`vat_code`, ale ne předmět plnění. `WorkOrderRowsForm` nabízí všechny
+tuzemské výstupní kódy včetně kódů přenesení daňové povinnosti
+(`cz-150` / `cz-151` / `cz-350`) a `WorkOrderRowDocument` kód nijak
+neomezuje. `InvoiceBuilder` pak do canonicalu posílá jen `rows[].vat.code`.
+
+Od #89 D10 je kód přenesení bez předmětu v applieru error
+`reverse_charge_code_missing` (i u generovaných dokladů), takže
+`InvoicingRunService::applyCanonical()` skončí výjimkou, období zůstane
+naplánované bez dokladu a běh u zakázky hlásí chybu. Dřív by faktura
+vznikla (s kódem DP4 / DP5 a předmětem z definice kódu).
+
+**Směr řešení:** sloupec `reverse_charge_code` na řádku předpisu (stejná
+pravidla jako řádek dokladu — `ReverseChargeSubjects`, pole ve formuláři
+jen u kódu přenesení, platnost k datu vystavení faktury), `InvoiceBuilder`
+ho pošle v `rows[].vat.reverseChargeCode`, import zakázek
+(`shpd.workOrders.workOrder.v1`) a datová sada pole ponesou. Do té doby
+uživatelská dokumentace říká, že takovou fakturu je třeba vystavit ručně
+(`help/co-dnes-nejde.md`).
+
+**Priorita:** střední — periodicky fakturované stavební nebo montážní
+práce v režimu přenesení jsou reálný případ; chyba je hlasitá, ne tichá.
+

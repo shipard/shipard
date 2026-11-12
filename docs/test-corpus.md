@@ -145,7 +145,8 @@ je, validace dat je odmítne) —, `qty` (nejvýš 3 desetinná místa), `unit`
 (tiskne se doslova), `unitPrice` (nejvýš 2 desetinná místa), `vatPct`
 (`null` u `noVat`), `discountPct` (volitelné, sleva v %), `supplyKind`
 (`goods` | `services`, u dodavatele mimo ČR povinné, u tuzemského
-zakázané), `reverseChargeCode` (jen tuzemské přenesení, pak povinné),
+zakázané), `reverseChargeCode` (jen tuzemské přenesení, pak povinné —
+kód předmětu plnění jako řetězec, i s písmenem: `"4"`, `"4a"`, `"14"`),
 `tag` (výjimka štítku řádku, musí se lišit od štítku dokladu),
 `priceCalcMode: "fromTotal"` + `totalPrice` (autoritativní cena řádku,
 od `qty × unitPrice` se smí lišit o méně než 1,00; bez slevy).
@@ -208,9 +209,10 @@ země o DPH nemluví vůbec.
 
 ## 6. Varianty a matice
 
-Deset variant první vlny (D16) a varianta 11 (#89 — zahraniční DPH), každá
+Deset variant první vlny (D16), varianta 11 (#89 — zahraniční DPH)
+a varianta 12 (#89 D16 — přenesení s předmětem plnění mimo 4 a 5), každá
 se dvěma doklady (`01`, `02`). Podobu `pdfIsdoc` má podle D10 (#119) jen
-druhý doklad variant 1–4, 7 a 10; druhé doklady variant 5, 6, 8, 11
+druhý doklad variant 1–4, 7, 10 a 12; druhé doklady variant 5, 6, 8, 11
 (zahraniční dodavatel) a 9 (účtenka) zůstávají `pdf`:
 
 | V | Slug | Dodavatel | Měna | Šablona | `vatTreatment` | Podoba `02` | Štítek | Prověří |
@@ -225,6 +227,7 @@ druhý doklad variant 1–4, 7 a 10; druhé doklady variant 5, 6, 8, 11
 | 8 | `third-country-services` | US | USD | `en` | `noVat` | `pdf` | `it.software` | `thirdCountry`, `supplyKind` bez zmínky o DPH, úhrada kartou, období jen v textu řádku (D112, `unprinted`) |
 | 9 | `receipt` | CZ | CZK | `receipt` | `pricesWithVat` 21 % (+ 12 %) | `pdf` | `vehicle.fuel` | účtenka bez odběratele a splatnosti, `fromTotal` u PHM |
 | 10 | `long-document` | CZ | CZK | `cs-c` | `standard` 21 % + 12 % | `pdfIsdoc` | `office.cleaning`, potraviny a potřeby ke kávě `people.catering` | 44–48 řádků přes dvě strany, úplnost řádků; žádná nejednoznačná položka (D104) |
+| 12 | `domestic-reverse-charge-phones` | CZ | CZK | `cs-b` | `reverseCharge` | `pdfIsdoc` | `it.hardware` | tuzemské přenesení s předmětem plnění mimo 4 a 5: mobilní telefony, `reverseChargeCode: "14"` (§ 92f), základ nad 100 000 Kč; kód doklad netiskne — plyne z toho, co se dodává (ISDOC ho nese); KH B.1 s kódem 14 (#89 D16) |
 | 11 | `eu-foreign-vat` | DE | EUR | `en` | `standard` 7 % + 19 % (daň dodavatele) | `pdf` | `travel.accommodation` | hotel v EU s vlastní DPH: doklad **mimo české DPH** — Bez DPH, řádky v cenách s daní, součet = částka k úhradě (#89 D2); u `02` haléřové dorovnání řádků na rekapitulaci dodavatele (#97 D5) |
 
 První doklad (`01`) každé varianty je `pdf`.
@@ -234,12 +237,12 @@ Matice variant × profil (D17). Identifikovaná osoba se v první vlně neřeš�
 | V | `vat-payer` | `non-payer` | `association` |
 |---|-------------|-------------|---------------|
 | 1–3, 7, 9, 10, 11 | ✓ | ✓ | ✓ |
-| 4 | ✓ | přepis: běžná faktura 21 %, bez přenesení | přepis jako `non-payer` |
+| 4, 12 | ✓ | přepis: běžná faktura 21 %, bez přenesení | přepis jako `non-payer` |
 | 5 | ✓ | vynecháno: identifikovaná osoba — druhá vlna | vynecháno: identifikovaná osoba — druhá vlna |
 | 6 | ✓ | přepis: DPH dodavatele 19 %, bez DIČ odběratele, bez textu čl. 138 | přepis jako `non-payer` |
 | 8 | ✓ | vynecháno: identifikovaná osoba — druhá vlna | vynecháno: identifikovaná osoba — druhá vlna |
 
-Celkem 22 + 18 + 18 = **58 buněk** (PDF + očekávaný výsledek), 8 vynechaných.
+Celkem 24 + 20 + 20 = **64 buněk** (PDF + očekávaný výsledek), 8 vynechaných.
 
 Varianta 11 je u všech profilů tentýž doklad a končí stejně — Bez DPH
 s daní dodavatele v cenách řádků: u plátce cestou dokladu mimo české DPH
@@ -627,6 +630,13 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
   jen z rozsahu 555-01xx). Číslo, které vypadá skutečně, může patřit někomu
   živému a tiskne se do veřejného PDF; model může `000` v analýze
   „opravovat“ — to je nález evaluace, ne důvod pravidlo obejít.
+- **Řádek se štítkem `it.hardware` / `office.equipment` nad 80 000 Kč**
+  návrh účtu nedostane (`amountGuard` „možný dlouhodobý majetek“,
+  `economy.items.contentTagDefaults`) — Použít pak založí položku z řádku
+  a kontrola 2 (§ 17) hlásí rozdíl. Hranice se počítá z ceny řádku, jak
+  ji doklad uloží: u neplátce a spolku **včetně DPH**. Varianta 12 má
+  proto základ dokladu nad 100 000 Kč, ale každý řádek pod 80 000 Kč
+  i s daní.
 - **Pole projekce nechybí** — chybějící klíč by znamenal „neporovnávat“.
 - **Pravidla odvozených polí sledují prompt** (§ 9).
 - **`exemptIntraCommunity` ≠ `reverseCharge`**: čl. 138 `reverseCharge`
@@ -950,7 +960,6 @@ z běhu se sepíší a člověk rozhodne.
 | Cesta | Kdy | Proč |
 |-------|-----|------|
 | `rows[].item.supplierCode` | vždy | kód dodavatele se učí per položka a dodavatel, účetní položka sdílená více řádky nese jen první; export ho nenese |
-| `rows[].vat.reverseChargeCode` | vždy | nese ho kód DPH řádku (cz-115 ↔ 4); hlídá KH B.1 |
 | `rows[].item.ean` | vždy (schváleno 2026-10-20, nález D) | applier EAN neukládá (`economy_items` sloupec má, učení per položka chybí); export ho nenese |
 | `dates.taxPointDate` | doklad bez DPH (`vat.mode` none) | `DocDocument::applyDateDefaults` doplní datum vystavení |
 | `dates.dueDate` | návrh bez splatnosti (účtenka) | tatáž metoda doplní vystavení + lhůtu |

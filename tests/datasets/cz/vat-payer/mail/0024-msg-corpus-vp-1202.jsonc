@@ -1,0 +1,382 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-VP-1202",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura FV-26-03902",
+    "senderEmail": "velkoobchod@fonarium.example",
+    "senderName": "Fonarium Distribuce s.r.o.",
+    "partnerName": "Fonarium Distribuce s.r.o.",
+    "receivedAt": "2026-10-07T08:00:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu FV-26-03902.\n\nFonarium Distribuce s.r.o.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura FV-26-03902 — Fonarium Distribuce s.r.o., 112 290,00 Kč",
+    "created": "2026-10-07T08:00:00",
+    "attachments": [
+        {
+            "file": "1202-domestic-reverse-charge-phones.pdf",
+            "name": "1202-domestic-reverse-charge-phones.pdf",
+            "mimeType": "application/pdf",
+            "size": 29806,
+            "sha256": "073df76f825b61243af3dc1b43bad32db2cdf6a34b13c9b13d670272f7b08ce1",
+            "order": 1
+        },
+        {
+            "file": "1202-domestic-reverse-charge-phones.isdoc",
+            "name": "1202-domestic-reverse-charge-phones.isdoc",
+            "mimeType": "text/xml",
+            "size": 5898,
+            "sha256": "9eb9717a5c6e0b25fce6b5ab35c692c9dbc8a2f8482043eb44f4f3ff6f031ac9",
+            "order": 2
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-10-07T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.hardware",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-10-07T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1,
+                    "title": "Faktura FV-26-03902 — Fonarium Distribuce s.r.o., 112 290,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-10-07T08:01:00+00:00",
+                            "confidence": 1,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "FV-26-03902",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Fonarium Distribuce s.r.o.",
+                            "country": "cz",
+                            "companyId": "95700013",
+                            "taxId": "CZ95700013",
+                            "vatId": "CZ95700013",
+                            "courtRegistration": "C 993615 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Vysílací",
+                                "houseNumber": "27/4",
+                                "city": "Brno",
+                                "zip": "61200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "velkoobchod@fonarium.example",
+                                "phone": "+420000548216",
+                                "web": "www.fonarium.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "3305117713/0800",
+                                "iban": "CZ5308000000003305117713",
+                                "bic": "GIBACZPX"
+                            }
+                        },
+                        "customer": {
+                            "name": "Tvarokov s.r.o.",
+                            "country": "cz",
+                            "companyId": "27893286",
+                            "taxId": "CZ27893286",
+                            "vatId": "CZ27893286",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Lisovací",
+                                "houseNumber": "418/2",
+                                "city": "Zlín",
+                                "zip": "76001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-10-06",
+                            "dueDate": "2026-10-20",
+                            "taxPointDate": "2026-10-05",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": true
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "2603902",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Dodávka dle rámcové kupní smlouvy č. RKS-2026-014."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "LUM-A3-64",
+                                    "ean": null,
+                                    "name": "Mobilní telefon Lumeo A3, 64 GB",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 15,
+                                "unitPrice": 4290,
+                                "totalPrice": 64350,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": "14"
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "LUM-A7-128",
+                                    "ean": null,
+                                    "name": "Mobilní telefon Lumeo A7, 128 GB",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 6,
+                                "unitPrice": 7990,
+                                "totalPrice": 47940,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": "14"
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 0,
+                                "base": 112290,
+                                "tax": 0,
+                                "total": 112290
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 112290,
+                            "totalVat": 0,
+                            "totalAmount": 112290,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "1202-domestic-reverse-charge-phones.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-10-07T08:01:00+00:00",
+                    "confidence": 1,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "FV-26-03902",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Fonarium Distribuce s.r.o.",
+                    "country": "cz",
+                    "companyId": "95700013",
+                    "taxId": "CZ95700013",
+                    "vatId": "CZ95700013",
+                    "courtRegistration": "C 993615 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Vysílací",
+                        "houseNumber": "27/4",
+                        "city": "Brno",
+                        "zip": "61200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "velkoobchod@fonarium.example",
+                        "phone": "+420000548216",
+                        "web": "www.fonarium.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "3305117713/0800",
+                        "iban": "CZ5308000000003305117713",
+                        "bic": "GIBACZPX"
+                    }
+                },
+                "customer": {
+                    "name": "Tvarokov s.r.o.",
+                    "country": "cz",
+                    "companyId": "27893286",
+                    "taxId": "CZ27893286",
+                    "vatId": "CZ27893286",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Lisovací",
+                        "houseNumber": "418/2",
+                        "city": "Zlín",
+                        "zip": "76001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-10-06",
+                    "dueDate": "2026-10-20",
+                    "taxPointDate": "2026-10-05",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": true
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "2603902",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Dodávka dle rámcové kupní smlouvy č. RKS-2026-014."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "LUM-A3-64",
+                            "ean": null,
+                            "name": "Mobilní telefon Lumeo A3, 64 GB",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 15,
+                        "unitPrice": 4290,
+                        "totalPrice": 64350,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": null,
+                            "reverseChargeCode": "14"
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "LUM-A7-128",
+                            "ean": null,
+                            "name": "Mobilní telefon Lumeo A7, 128 GB",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 6,
+                        "unitPrice": 7990,
+                        "totalPrice": 47940,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": null,
+                            "reverseChargeCode": "14"
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 0,
+                        "base": 112290,
+                        "tax": 0,
+                        "total": 112290
+                    }
+                ],
+                "totals": {
+                    "totalBase": 112290,
+                    "totalVat": 0,
+                    "totalAmount": 112290,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "1202-domestic-reverse-charge-phones.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.hardware",
+                        "tagSource": "llm",
+                        "tagConfidence": 1,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

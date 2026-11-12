@@ -50,7 +50,7 @@ final class EvalCatalogTest extends TestCase
         $this->assertNotNull($dataset);
         $this->assertSame('cz', $dataset->country);
         $this->assertSame('vat-payer', $dataset->profile);
-        $this->assertSame(22, $dataset->messages);
+        $this->assertSame(24, $dataset->messages);
         $this->assertSame(self::repoRoot() . '/tests/datasets/cz/vat-payer', $dataset->dir);
         $this->assertSame(['name', 'title', 'country', 'profile', 'messages'], array_keys($dataset->toArray()));
     }

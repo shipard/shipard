@@ -54,6 +54,12 @@
     "form": "pdf"
   },
   {
+    "messageId": "MSG-CORPUS-NP-1201",
+    "stem": "1201-domestic-reverse-charge-phones",
+    "variant": "domestic-reverse-charge-phones",
+    "form": "pdf"
+  },
+  {
     "messageId": "MSG-CORPUS-NP-0102",
     "stem": "0102-domestic-goods",
     "variant": "domestic-goods",
@@ -106,5 +112,11 @@
     "stem": "1102-eu-foreign-vat",
     "variant": "eu-foreign-vat",
     "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1202",
+    "stem": "1202-domestic-reverse-charge-phones",
+    "variant": "domestic-reverse-charge-phones",
+    "form": "pdfIsdoc"
   }
 ]

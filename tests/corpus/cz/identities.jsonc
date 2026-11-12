@@ -197,5 +197,20 @@
 			"contact": { "name": null, "email": "reception@kranichturm.example", "phone": "+490008215530", "web": "www.kranichturm.example" },
 			"bankAccount": { "accountNumber": null, "iban": "DE95700500000003918274", "bic": "KRNTDEMMXXX" },
 		},
+		// varianta 12 — mobilní telefony s přenesením daňové povinnosti, předmět plnění 14 (cs-b).
+		// Identita ověřena samostatně 2026-11-12 (ARES: IČO volné, název 0 zásahů; VIES: DIČ neplatné);
+		// hromadné --verify-identities ten den neprošlo (VIES MS_MAX_CONCURRENT_REQ), verifiedAt proto zůstává.
+		"fonarium": {
+			"vatPayer": true,
+			"name": "Fonarium Distribuce s.r.o.",
+			"country": "cz",
+			"companyId": "95700013",
+			"taxId": "CZ95700013",
+			"vatId": "CZ95700013",
+			"courtRegistration": "C 993615 vedená u Krajského soudu v Brně",
+			"address": { "street": "Vysílací", "houseNumber": "27/4", "city": "Brno", "zip": "61200", "country": "cz" },
+			"contact": { "name": null, "email": "velkoobchod@fonarium.example", "phone": "+420000548216", "web": "www.fonarium.example" },
+			"bankAccount": { "accountNumber": "3305117713/0800", "iban": "CZ5308000000003305117713", "bic": "GIBACZPX" },
+		},
 	},
 }

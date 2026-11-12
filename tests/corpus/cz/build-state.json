@@ -17,6 +17,8 @@
   "association/1002-long-document": "d3f9f05a97c8be616376b41b77d5dcc9dae125155913bc7270b3ed04de8a168d",
   "association/1101-eu-foreign-vat": "ad1e7a44423e944249d6f91599fc28742b237ba437978f1e323da3e91b1de94d",
   "association/1102-eu-foreign-vat": "c7d86f774d799df8e93e2e80d321c52ef678454a1bcfe31125a11fcc1e547795",
+  "association/1201-domestic-reverse-charge-phones": "5a0cde1f01c31b6372031b93256d12cd76d39a35692d4cd7212645b65356d79f",
+  "association/1202-domestic-reverse-charge-phones": "dfd3190f6b1610749962bc3a1f90ae699c66440281ffeab96b512849dcc529a4",
   "non-payer/0101-domestic-goods": "a23ecce6eec4647faf76c3de14b62181f11c1ee3ab83d7718f213872399e461b",
   "non-payer/0102-domestic-goods": "8c8dd60404d9e366e3306d8563fd3e18d8ebcdd5f2930075a0e73f0ecfdb8970",
   "non-payer/0201-domestic-two-rates": "23608a847d42b57a2631106c4512162b386babc534ae239c5a7e9674e97929de",
@@ -35,6 +37,8 @@
   "non-payer/1002-long-document": "ecf9e8fd7d1ec6bff813d43874a9bcea3df4ed4c6c92780065aceda23934bfce",
   "non-payer/1101-eu-foreign-vat": "9d1e3989a37314202fc700485d1fc888f45ae9b46fb6dd3a45a78ecbd1e0e3c8",
   "non-payer/1102-eu-foreign-vat": "1c70cb108233826b3239d63069f43160a0cd2a038fc56f58fc5734f0d242bf6c",
+  "non-payer/1201-domestic-reverse-charge-phones": "3d278ba34b32ecd35715bea8a3f3ab1d57efff74c4e05ba406e1a507834171be",
+  "non-payer/1202-domestic-reverse-charge-phones": "c95773f8da24842d00ab576a8fe69e9256c03fa2bbdf5d7eeedf49985573bafe",
   "vat-payer/0101-domestic-goods": "043235f5514657a931c750769ff180f89b42e4e732bc13fed738f3a08ef39867",
   "vat-payer/0102-domestic-goods": "d3c901dc9dad2721e978d770b8f44a667b77252fd2ac74d653a5b1124eda3b0e",
   "vat-payer/0201-domestic-two-rates": "86afebd6e03c2adec8a27940bdd2d27ac993a3577ce6fca7e4b118661c8cba34",
@@ -56,5 +60,7 @@
   "vat-payer/1001-long-document": "4dbab9b1037852c6898a5e3b67184177aeb8583dce4d24abe5a31296415d5e48",
   "vat-payer/1002-long-document": "d4bbf5088d9127d8b9ebd815a3cd96c2ad03916c8521ee47a55f194bab554640",
   "vat-payer/1101-eu-foreign-vat": "7df7ec3de945634ec23b13c38899285da31cffbd15affbbc31655a449177751c",
-  "vat-payer/1102-eu-foreign-vat": "1f1a5aaaf0374a62427d60cde8bb7e66887e3c4bfe6583337fb833d935ff4984"
+  "vat-payer/1102-eu-foreign-vat": "1f1a5aaaf0374a62427d60cde8bb7e66887e3c4bfe6583337fb833d935ff4984",
+  "vat-payer/1201-domestic-reverse-charge-phones": "ba0d619ead0425fa8c8aff75c04aafe330b528066b5ed9a5a5ac94815b2d2a4d",
+  "vat-payer/1202-domestic-reverse-charge-phones": "9e8e1e6764b7d31afb41aa59a2b714f635461a31324b63dcdcba2eb6315ab4db"
 }
