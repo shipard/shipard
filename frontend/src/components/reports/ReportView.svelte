@@ -24,7 +24,7 @@
   import { iconWarning, iconInfo, iconAlert } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { formatAmount } from '../../utils/formatNumber.js';
-  import { language } from '../../stores/language.svelte.js';
+  import { formatDate } from '../../utils/formatDate.js';
 
   let { result, thousands = false, onAction = null } = $props();
 
@@ -84,13 +84,7 @@
 
   function fmtText(column, cell) {
     const value = typeof cell === 'string' ? cell : '';
-    if (column.type === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      const d = new Date(value);
-      if (!Number.isNaN(d.getTime())) {
-        return d.toLocaleDateString(language.current === 'en' ? 'en-US' : 'cs-CZ');
-      }
-    }
-    return value;
+    return column.type === 'date' ? formatDate(value) : value;
   }
 
   function headerLabel(column) {

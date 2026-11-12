@@ -5,6 +5,7 @@
   import FormDialog from '../form/FormDialog.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import { formatDate, formatDateTime } from '../../utils/formatDate.js';
 
   let { tab } = $props();
 
@@ -35,24 +36,6 @@
     return ['int', 'smallint', 'bigint', 'numeric'].includes(type);
   }
 
-  function formatDate(str) {
-    const d = new Date(str);
-    if (isNaN(d.getTime())) return str;
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    return `${dd}.${mm}.${d.getFullYear()}`;
-  }
-
-  function formatDatetime(str) {
-    const d = new Date(str);
-    if (isNaN(d.getTime())) return str;
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    return `${dd}.${mm}.${d.getFullYear()} ${hh}:${min}`;
-  }
-
   function formatCell(value, col) {
     if (value === null || value === undefined) return '—';
     switch (col.type) {
@@ -69,7 +52,7 @@
       case 'date':
         return typeof value === 'string' ? formatDate(value) : String(value);
       case 'datetime':
-        return typeof value === 'string' ? formatDatetime(value) : String(value);
+        return typeof value === 'string' ? formatDateTime(value) : String(value);
       default:
         return String(value);
     }

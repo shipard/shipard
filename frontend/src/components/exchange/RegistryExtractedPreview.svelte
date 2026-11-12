@@ -13,6 +13,7 @@
   import DetailHeader from '../ui/DetailHeader.svelte';
   import PropertyGroups from '../ui/PropertyGroups.svelte';
   import { registryHeader } from './reviewParts.js';
+  import { formatDate } from '../../utils/formatDate.js';
 
   let { canonical = null } = $props();
 
@@ -30,10 +31,9 @@
     if (typeof value === 'number') {
       return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
     }
-    // ISO datum → lokalizované datum, ostatní stringy beze změny.
+    // ISO datum → datum v jazyce rozhraní, ostatní stringy beze změny.
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      const d = new Date(value + 'T00:00:00');
-      return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString();
+      return formatDate(value);
     }
     return String(value);
   }

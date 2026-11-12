@@ -28,16 +28,6 @@ export function formatMoney(value, currency) {
   }
 }
 
-/** Datum z ISO („12. 10. 2026“); prázdné → null. */
-export function formatDate(iso) {
-  if (!iso) return null;
-  try {
-    return new Intl.DateTimeFormat('cs-CZ').format(new Date(iso));
-  } catch {
-    return String(iso);
-  }
-}
-
 /** Adresa canonicalu (camelCase) jedním řádkem — `displayLine` má přednost. */
 export function formatAddress(addr) {
   if (!addr) return null;

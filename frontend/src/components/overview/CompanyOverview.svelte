@@ -10,7 +10,7 @@
    * open_detail → ViewerDetailModal, open_viewer / open_report → navigace.
    */
   import { onMount } from 'svelte';
-  import { t, language } from '../../i18n/index.js';
+  import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
@@ -20,6 +20,7 @@
   import { iconOverview, iconRefresh, resolveIcon } from '../../icons.js';
   import { fetchOverview } from '../../api/overview.js';
   import { formatMoney } from '../../utils/formatNumber.js';
+  import { formatDate as formatDisplayDate } from '../../utils/formatDate.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import ViewerDetailModal from '../viewer/ViewerDetailModal.svelte';
 
@@ -60,10 +61,7 @@
   }
 
   function formatDate(iso) {
-    const d = parseIso(iso);
-    if (!d) return DASH;
-    const locale = language.current === 'en' ? 'en-US' : 'cs-CZ';
-    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(d);
+    return parseIso(iso) ? formatDisplayDate(iso) : DASH;
   }
 
   /** Dny do termínu vůči datu sběru (`asOf`); záporné = po termínu. */

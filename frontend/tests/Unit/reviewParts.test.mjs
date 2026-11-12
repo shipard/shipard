@@ -4,7 +4,6 @@ import {
   counterparty,
   effectiveRowVat,
   formatAddress,
-  formatDate,
   formatMoney,
   issueNotice,
   registryHeader,
@@ -110,12 +109,10 @@ test('reviewParty: kontaktní osoba první mezi kontakty, účet z IBAN před č
   assert.equal(reviewParty(null, t), null);
 });
 
-test('formatAddress / formatDate / formatMoney: prázdné je null', () => {
+test('formatAddress / formatMoney: prázdné je null', () => {
   assert.equal(formatAddress(null), null);
   assert.equal(formatAddress({ street: 'Dlouhá', houseNumber: '5', zip: '110 00', city: 'Praha' }), 'Dlouhá 5, 110 00 Praha');
   assert.equal(formatAddress({}), null);
-  assert.equal(formatDate(null), null);
-  assert.equal(formatDate('2026-10-12'), '12. 10. 2026');
   assert.equal(formatMoney(null, 'CZK'), null);
   assert.equal(formatMoney('', 'CZK'), null);
   assert.equal(typeof formatMoney(1234.5, 'CZK'), 'string');

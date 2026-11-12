@@ -8,6 +8,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import TableScroll from '../ui/TableScroll.svelte';
+  import { formatDateTime } from '../../utils/formatDate.js';
 
   let sessions = $state([]);
   let loading = $state(true);
@@ -56,10 +57,6 @@
     await load();
   }
 
-  function formatDate(iso) {
-    return new Date(iso).toLocaleString();
-  }
-
   load();
 </script>
 
@@ -88,7 +85,7 @@
           {#each sessions as session (session.id)}
             <tr>
               <td>
-                {formatDate(session.created)}
+                {formatDateTime(session.created)}
                 {#if session.current}
                   <span class="shpd-sessions-panel__badge">{t('account.security.current')}</span>
                 {/if}

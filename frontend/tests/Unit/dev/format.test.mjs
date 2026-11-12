@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { use } from '../../../src/dev/i18n/index.js';
 import {
   formatNumber, formatPercent, formatPercentDelta, formatDelta, formatUsd, formatMs, formatCommit,
-  dataClassLabel, dataClassTitle, truncate, versionLabel, formatDateTime,
+  dataClassLabel, dataClassTitle, truncate, versionLabel, formatDate, formatDateTime,
 } from '../../../src/dev/format.js';
 
 // Popisky se testují česky; v Node je navigator.language en-US.
@@ -76,7 +76,8 @@ test('anglicky: en-GB formáty, pp a popisky třídy dat', () => {
     assert.equal(norm(formatNumber(1234.5, 1)), '1,234.5');
     assert.equal(norm(formatPercent(0.9412)), '94.1 %');
     assert.equal(norm(formatPercentDelta(0.004)), '+0.4 pp');
-    assert.match(norm(formatDateTime('2026-10-16T14:05:00')), /^16\/10\/2026, 14:05$/);
+    assert.equal(formatDateTime('2026-10-16T14:05:00'), '2026-10-16 14:05');
+    assert.equal(formatDate('2026-10-16'), '2026-10-16');
     assert.equal(dataClassLabel('free'), 'free');
     assert.equal(dataClassLabel('realCopy'), 'real copy');
     assert.equal(dataClassTitle({ dataClass: 'realCopy', dataClassExplicit: false }), 'missing in main.json — treated as a real copy');

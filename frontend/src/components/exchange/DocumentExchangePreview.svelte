@@ -40,7 +40,6 @@
   import DocRows from '../document/DocRows.svelte';
   import DocTotals from '../document/DocTotals.svelte';
   import {
-    formatDate,
     formatMoney,
     issueNotice,
     reviewHeader,
@@ -48,6 +47,7 @@
     reviewRows,
     reviewTotals,
   } from './reviewParts.js';
+  import { formatDate } from '../../utils/formatDate.js';
   import ResolveDecisionPanel from './ResolveDecisionPanel.svelte';
   import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';

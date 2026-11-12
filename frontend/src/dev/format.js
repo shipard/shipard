@@ -1,10 +1,12 @@
 /**
  * Formátování pro dev dashboard podle jeho jazyka (#129 D12): `cs-CZ`
- * / `en-GB` pro čísla a data, popisky ze slovníku dashboardu
+ * / `en-GB` pro čísla a čas řádků logu, datum stejným zápisem jako
+ * aplikace (#133 D73), popisky ze slovníku dashboardu
  * (`i18n/index.js`), bez závislosti na i18n aplikace. Čisté funkce, testy
  * v tests/Unit/dev/format.test.mjs (nastavují jazyk přes `use()`).
  */
 import { currentLanguage, t } from './i18n/index.js';
+import { formatDateIn, formatDateTimeIn } from '../utils/formatDateCore.js';
 
 const LOCALES = { cs: 'cs-CZ', en: 'en-GB' };
 const DASH = '—';
@@ -53,18 +55,18 @@ export function formatMs(ms) {
   return `${formatNumber(ms / 60_000, 1)} min`;
 }
 
-/** ISO → `16. 10. 2026 14:05` / `16/10/2026, 14:05`. */
+/**
+ * ISO → `16.10.2026 14:05` / `2026-10-16 14:05` — stejný zápis jako
+ * v aplikaci (#133 D73, sdílené čisté jádro `utils/formatDateCore.js`),
+ * jazyk podle dashboardu.
+ */
 export function formatDateTime(iso) {
-  const d = toDate(iso);
-  if (!d) return iso ?? DASH;
-  return d.toLocaleString(locale(), { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return formatDateTimeIn(iso, currentLanguage()) || DASH;
 }
 
-/** ISO → `16. 10. 2026`. */
+/** ISO → `16.10.2026` / `2026-10-16`. */
 export function formatDate(iso) {
-  const d = toDate(iso);
-  if (!d) return iso ?? DASH;
-  return d.toLocaleDateString(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' });
+  return formatDateIn(iso, currentLanguage()) || DASH;
 }
 
 /** ISO → `14:05:33` (řádky logu). */

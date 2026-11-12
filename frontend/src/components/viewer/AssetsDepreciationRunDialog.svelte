@@ -28,6 +28,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import TableScroll from '../ui/TableScroll.svelte';
+  import { formatDate } from '../../utils/formatDate.js';
 
   /** Viewer, ve kterém se otevírá detail účetního dokladu majetku. */
   const DOC_VIEWER_ID = 'docs.core.heads';
@@ -185,11 +186,6 @@
     return item.detail ? `${text} (${item.detail})` : text;
   }
 
-  /** ISO datum → `15. 3. 2026`. */
-  function formatDate(iso) {
-    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
-    return m ? `${Number(m[3])}. ${Number(m[2])}. ${m[1]}` : (iso ?? '');
-  }
 </script>
 
 <Modal title={posting ? t('assets.posting.title') : t('assets.depreciationRun.title')} {open} {onClose} width="47.5rem">

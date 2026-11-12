@@ -13,6 +13,7 @@
   import { iconInfo } from '../../icons.js';
   import { fetchDsAbout } from '../../api/dsAbout.js';
   import { formatFileSize } from '../../api/attachments.js';
+  import { formatDate as formatDisplayDate, formatDateTime as formatDisplayDateTime } from '../../utils/formatDate.js';
 
   let loading = $state(true);
   let error = $state(null);
@@ -65,15 +66,11 @@
   }
 
   function formatDate(iso) {
-    const d = toDate(iso);
-    return d ? new Intl.DateTimeFormat(locale(), { dateStyle: 'medium' }).format(d) : DASH;
+    return toDate(iso) ? formatDisplayDate(iso) : DASH;
   }
 
   function formatDateTime(iso) {
-    const d = toDate(iso);
-    return d
-      ? new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', timeStyle: 'short' }).format(d)
-      : DASH;
+    return toDate(iso) ? formatDisplayDateTime(iso) : DASH;
   }
 
   function vatLabel(p) {
