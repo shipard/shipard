@@ -577,7 +577,7 @@ class FilingsViewer extends TableViewer
                 'evid'      => (string) ($row['doc_number'] ?? ''),
                 'vatId'     => (string) ($row['partner_vat_id'] ?? ''),
                 'dppd'      => $this->formatDate($row['vat_dppd'] ?? null),
-                'kod'       => $row['kod_pred_pl'] !== null ? (string) $row['kod_pred_pl'] : '',
+                'kod'       => (string) ($row['reverse_charge_code'] ?? ''),
                 'base'      => $this->formatMoney(
                     (float) $row['base1'] + (float) $row['base2'] + (float) $row['base3'],
                 ),

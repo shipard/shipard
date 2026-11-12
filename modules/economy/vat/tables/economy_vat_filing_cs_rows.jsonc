@@ -93,11 +93,15 @@
             "nullable": true
         },
         {
-            "id": "kod_pred_pl",
-            "name": "Reverse charge code",
-            "name:cs": "Kód PDP",
-            "name:en": "Reverse charge code",
-            "type": "tinyint",
+            // Kód předmětu plnění (A.1 / B.1) — řetězec ("4a"). Nahradil
+            // tinyint `kod_pred_pl` (#89 D13); starý sloupec v databázi
+            // zůstává nepoužitý (ds-upgrade nemaže ani nepřetypovává).
+            "id": "reverse_charge_code",
+            "name": "Reverse charge subject",
+            "name:cs": "Předmět plnění",
+            "name:en": "Reverse charge subject",
+            "type": "varchar",
+            "length": 3,
             "nullable": true
         },
 

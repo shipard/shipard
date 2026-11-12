@@ -219,7 +219,8 @@ final class FilingComposer
                     'dp3_col'            => $dp3 !== null ? ($dp3['col'] ?? null) : null,
                     'kh_group'           => $kh !== null ? (string) $kh['group'] : null,
                     'kh_section'         => $section,
-                    'kh_kod_pred_pl'     => $kh !== null && isset($kh['kodPredPl']) ? (int) $kh['kodPredPl'] : null,
+                    // Předmět plnění z rekapitulace dokladu (#89 D13), řetězec.
+                    'kh_reverse_charge_code' => $recapRow['reverse_charge_code'] ?? null,
                     'sh_kod'             => $sh !== null ? (int) $sh['kod'] : null,
                 ])->execute();
                 $count++;
@@ -378,7 +379,7 @@ final class FilingComposer
                     'doc_number'     => (string) ($row['evidNumber'] ?? ''),
                     'partner_vat_id' => (string) ($row['vatId'] ?? ''),
                     'vat_dppd'       => $row['dppd'],
-                    'kod_pred_pl'    => $row['kodPredPl'],
+                    'reverse_charge_code' => $row['kodPredPl'],
                     'base1'          => $row['base1'],
                     'tax1'           => $row['tax1'],
                     'base2'          => $row['base2'],

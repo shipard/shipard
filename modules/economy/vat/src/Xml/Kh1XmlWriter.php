@@ -94,10 +94,9 @@ final class Kh1XmlWriter extends EpoXmlWriter
         }
 
         if (isset($definition['kodPredPl'])) {
-            $code = $row['kod_pred_pl'] ?? null;
-            $attributes[(string) $definition['kodPredPl']] = $code === null || $code === ''
-                ? null
-                : (string) (int) $code;
+            // Kód předmětu plnění je řetězec ("4a") — bez přetypování (#89 D13).
+            $code = trim((string) ($row['reverse_charge_code'] ?? ''));
+            $attributes[(string) $definition['kodPredPl']] = $code === '' ? null : $code;
         }
         foreach ($definition['constants'] ?? [] as $attribute => $value) {
             $attributes[(string) $attribute] = (string) $value;

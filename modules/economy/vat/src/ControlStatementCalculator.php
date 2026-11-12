@@ -19,7 +19,7 @@ namespace Shipard\Module\Economy\Vat;
  * - datum per sekce (#55 X12): A1 a B1 vykazují **DUZP**, ostatní sekce
  *   DPPD — tak to má formulář i XML (atributy `duzp` vs. `dppd`); druhé
  *   datum slouží jako fallback, když chybí,
- * - doklad se dvěma PDP kódy (kodPredPl 4 i 5) = dva řádky A1/B1,
+ * - doklad se dvěma předměty plnění (např. 4 a 14) = dva řádky A1/B1,
  * - A5/B3 = jeden agregátní součtový řádek (pásma ve sloupcích),
  * - ruční zařazení `cs_mode` (#77, 1:1 se starým `vatCS`): 1 vynutí detail
  *   i pod limitem a i bez CZ DIČ (A4 pak dostane měkkou chybu
@@ -176,11 +176,12 @@ final class ControlStatementCalculator
     }
 
     /**
-     * Recap řádky dokladu seskupené per KH cíl — skupina + PDP kód; doklad
-     * se dvěma PDP kódy tak vyrobí dva řádky.
+     * Recap řádky dokladu seskupené per KH cíl — skupina + předmět plnění
+     * z řádku rekapitulace (#89 D13); doklad se dvěma předměty tak vyrobí
+     * dva řádky.
      *
      * @param array<string, mixed> $doc
-     * @return list<array{group: string, kodPredPl: ?int, bands: array<string, float>}>
+     * @return list<array{group: string, kodPredPl: ?string, bands: array<string, float>}>
      */
     private function groupRecap(array $doc): array
     {
@@ -195,13 +196,30 @@ final class ControlStatementCalculator
             if ($band === null) {
                 continue; // zero/exempt se do pásem neakumulují
             }
-            $kodPredPl = isset($kh['kodPredPl']) ? (int) $kh['kodPredPl'] : null;
+            // Kód předmětu plnění (A.1 / B.1) nese řádek rekapitulace
+            // dokladu, ne mapování kódu DPH (#89 D13). Řádek bez předmětu
+            // (starý nebo rozpracovaný doklad) zůstane s null — podání na
+            // něm skončí chybou „chybí kód předmětu plnění“, žádná výchozí
+            // hodnota.
+            $kodPredPl = in_array($kh['group'], self::SUBJECT_GROUPS, true)
+                ? self::subject($row['reverse_charge_code'] ?? null)
+                : null;
             $key       = $kh['group'] . ($kodPredPl !== null ? ".{$kodPredPl}" : '');
             $groups[$key] ??= ['group' => $kh['group'], 'kodPredPl' => $kodPredPl, 'bands' => $this->emptyBands()];
             $groups[$key]['bands']["base{$band}"] += (float) $row['base_dom'];
             $groups[$key]['bands']["tax{$band}"]  += (float) $row['tax_dom'];
         }
         return array_values($groups);
+    }
+
+    /** Skupiny KH s kódem předmětu plnění (tuzemské přenesení daňové povinnosti). */
+    private const SUBJECT_GROUPS = ['A1', 'B1'];
+
+    /** Předmět plnění jako řetězec ("4", "4a", "14"); prázdné = null. */
+    private static function subject(mixed $value): ?string
+    {
+        $text = trim((string) ($value ?? ''));
+        return $text === '' ? null : $text;
     }
 
     /** Sazbové pásmo KH (sloupce 1/2/3) z kategorie kódu. */
@@ -254,7 +272,7 @@ final class ControlStatementCalculator
     }
 
     /**
-     * @param array{group: string, kodPredPl: ?int, bands: array<string, float>} $group
+     * @param array{group: string, kodPredPl: ?string, bands: array<string, float>} $group
      * @param array<string, mixed> $doc
      * @param list<array{code: string, docId: int, docNumber: string, section: string}> $errors
      * @return array<string, mixed>

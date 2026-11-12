@@ -206,11 +206,16 @@
             "nullable": true
         },
         {
-            "id": "kh_kod_pred_pl",
-            "name": "Reverse charge code",
-            "name:cs": "Kód PDP",
-            "name:en": "Reverse charge code",
-            "type": "tinyint",
+            // Kód předmětu plnění z rekapitulace dokladu — řetězec ("4a").
+            // Nahradil tinyint `kh_kod_pred_pl` (#89 D13): ds-upgrade typ
+            // tinyint → varchar nemění, proto nový sloupec; starý v databázi
+            // zůstává nepoužitý.
+            "id": "kh_reverse_charge_code",
+            "name": "Reverse charge subject",
+            "name:cs": "Předmět plnění",
+            "name:en": "Reverse charge subject",
+            "type": "varchar",
+            "length": 3,
             "nullable": true
         },
         {

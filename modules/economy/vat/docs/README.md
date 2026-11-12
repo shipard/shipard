@@ -42,8 +42,17 @@ zůstávají na 0. Zadání: `tasks/vat-cs-mode.md`.
 ## Mapovací konfigurace
 
 `config/vat-reports-cz.jsonc` (cfgItem `economy.vat.reports.cz`) mapuje
-**každý** kód `world.vat.cz` na výstupy: `dp3 {row, col?}`, `kh {group,
-kodPredPl?}`, `sh {kod}` — i vyloučení je explicitní `null`. Princip
+**každý** kód `world.vat.cz` na výstupy: `dp3 {row, col?}`, `kh {group}`,
+`sh {kod}` — i vyloučení je explicitní `null`. **Kód předmětu plnění**
+kontrolního hlášení (A.1 / B.1, tuzemské přenesení daňové povinnosti)
+mapování nenese: čte se z rekapitulace dokladu
+(`docs_core_vat_recap.reverse_charge_code` → `VatDocumentSelection` →
+`ControlStatementCalculator`, skupina = oddíl + předmět) a od snapshotu
+podání (`economy_vat_filing_items.kh_reverse_charge_code`,
+`economy_vat_filing_cs_rows.reverse_charge_code`) po XML atribut
+`kod_pred_pl` je řetězec (`4a`). Řádek rekapitulace s kódem přenesení bez
+předmětu skončí chybou validace podání „chybí kód předmětu plnění“ — žádná
+výchozí hodnota (#89 D13). Princip
 shodný s rozhodnutím #8 účtování: `world.vat` zůstává legislativní vrstva
 bez výkaznických konvencí (D3), výkaznictví per country žije tady.
 Úplnost vůči číselníku a shodu s `vatReturnRow` hlídá

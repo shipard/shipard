@@ -268,7 +268,7 @@ final class FilingXmlValidator
                     'vatId'      => self::isBlank($row['partner_vat_id'] ?? null),
                     'evidNumber' => self::isBlank($row['doc_number'] ?? null),
                     'date'       => self::isBlank($row['vat_dppd'] ?? null),
-                    'kodPredPl'  => self::isBlank($row['kod_pred_pl'] ?? null),
+                    'kodPredPl'  => self::isBlank($row['reverse_charge_code'] ?? null),
                     default      => false, // pásma: nula je hodnota
                 };
                 if ($missing) {

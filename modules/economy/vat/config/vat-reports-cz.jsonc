@@ -12,9 +12,11 @@
 //        „Krácený odpočet". Krácený sloupec vstupuje do nároku přes ř. 52
 //        (× zálohový koeficient odpočtu, #59 D13); roční vypořádání ř. 53
 //        je mimo scope.
-//   kh:  { group: "A1" | "A2" | "A4A5" | "B1" | "B2B3", kodPredPl?: 4 | 5 } | null
+//   kh:  { group: "A1" | "A2" | "A4A5" | "B1" | "B2B3" } | null
 //        Rozpad A4/A5 a B2/B3 (limit 10 000 Kč vč. daně, CZ DIČ) řeší engine
-//        per doklad; config nese jen skupinu. kodPredPl jen u A1/B1 (PDP).
+//        per doklad; config nese jen skupinu. Kód předmětu plnění u A1/B1
+//        (tuzemské přenesení) tu není — nese ho rekapitulace dokladu
+//        (`docs_core_vat_recap.reverse_charge_code`, #89 D13).
 //   sh:  { kod: 0 | 3 } | null   (0 zboží, 3 služby)
 //
 // Proč tuzemské PDP páry (cz-203/204/370, ř. 10/11) v KH nejsou: jejich daň
@@ -29,10 +31,10 @@
         "cz-301": { "dp3": { "row": 41, "col": "full" }, "kh": { "group": "B2B3" }, "sh": null },
         "cz-302": { "dp3": { "row": 41, "col": "full" }, "kh": { "group": "B2B3" }, "sh": null },
         "cz-112": { "dp3": null, "kh": null, "sh": null },
-        "cz-115": { "dp3": { "row": 43, "col": "full" }, "kh": { "group": "B1", "kodPredPl": 4 }, "sh": null },
-        "cz-116": { "dp3": { "row": 44, "col": "full" }, "kh": { "group": "B1", "kodPredPl": 4 }, "sh": null },
-        "cz-340": { "dp3": { "row": 44, "col": "full" }, "kh": { "group": "B1", "kodPredPl": 4 }, "sh": null },
-        "cz-117": { "dp3": { "row": 43, "col": "full" }, "kh": { "group": "B1", "kodPredPl": 5 }, "sh": null },
+        "cz-115": { "dp3": { "row": 43, "col": "full" }, "kh": { "group": "B1" }, "sh": null },
+        "cz-116": { "dp3": { "row": 44, "col": "full" }, "kh": { "group": "B1" }, "sh": null },
+        "cz-340": { "dp3": { "row": 44, "col": "full" }, "kh": { "group": "B1" }, "sh": null },
+        "cz-117": { "dp3": { "row": 43, "col": "full" }, "kh": { "group": "B1" }, "sh": null },
         "cz-118": { "dp3": { "row": 40, "col": "reduced" }, "kh": { "group": "B2B3" }, "sh": null },
         "cz-119": { "dp3": { "row": 41, "col": "reduced" }, "kh": { "group": "B2B3" }, "sh": null },
         "cz-341": { "dp3": { "row": 41, "col": "reduced" }, "kh": { "group": "B2B3" }, "sh": null },
@@ -45,10 +47,10 @@
         "cz-311": { "dp3": { "row": 2 }, "kh": { "group": "A4A5" }, "sh": null },
         "cz-122": { "dp3": null, "kh": null, "sh": null },
         "cz-123": { "dp3": { "row": 50 }, "kh": null, "sh": null },
-        "cz-150": { "dp3": { "row": 25 }, "kh": { "group": "A1", "kodPredPl": 4 }, "sh": null },
-        "cz-151": { "dp3": { "row": 25 }, "kh": { "group": "A1", "kodPredPl": 4 }, "sh": null },
-        "cz-350": { "dp3": { "row": 25 }, "kh": { "group": "A1", "kodPredPl": 4 }, "sh": null },
-        "cz-152": { "dp3": { "row": 25 }, "kh": { "group": "A1", "kodPredPl": 5 }, "sh": null },
+        "cz-150": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
+        "cz-151": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
+        "cz-350": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
+        "cz-152": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
         "cz-203": { "dp3": { "row": 10 }, "kh": null, "sh": null },
         "cz-204": { "dp3": { "row": 11 }, "kh": null, "sh": null },
         "cz-370": { "dp3": { "row": 11 }, "kh": null, "sh": null },

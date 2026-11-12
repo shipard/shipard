@@ -21,7 +21,7 @@ Systémová tabulka bez docStates — zapisuje výhradně `FilingComposer`.
 | `doc_number` | varchar(40) | Evidenční číslo daňového dokladu, jak šlo do hlášení: A1/A4 naše číslo, A2/B1/B2 číslo dodavatele |
 | `partner_vat_id` | varchar(20) | DIČ protistrany |
 | `vat_dppd` | date, nullable | DPPD (fallback DUZP) |
-| `kod_pred_pl` | tinyint, nullable | Kód PDP (4 / 5) u sekcí A1/B1 |
+| `reverse_charge_code` | varchar(3), nullable | Kód předmětu plnění u sekcí A1/B1 (`4`, `4a`, `14` …) z rekapitulace dokladu; v XML atribut `kod_pred_pl`. Nahradil tinyint `kod_pred_pl` (#89 D13), který v databázi zůstává nepoužitý |
 | `base1`, `tax1` | numeric(15,2) | Základní sazba |
 | `base2`, `tax2` | numeric(15,2) | První snížená sazba |
 | `base3`, `tax3` | numeric(15,2) | Druhá snížená sazba |

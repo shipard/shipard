@@ -27,9 +27,9 @@ class ControlStatementCalculatorTest extends TestCase
             'cz-122' => ['dp3' => null, 'kh' => null, 'sh' => null],
             'cz-123' => ['dp3' => ['row' => 50], 'kh' => null, 'sh' => null],
             'cz-110' => ['dp3' => ['row' => 40, 'col' => 'full'], 'kh' => ['group' => 'B2B3'], 'sh' => null],
-            'cz-115' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1', 'kodPredPl' => 4], 'sh' => null],
-            'cz-117' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1', 'kodPredPl' => 5], 'sh' => null],
-            'cz-150' => ['dp3' => ['row' => 25], 'kh' => ['group' => 'A1', 'kodPredPl' => 4], 'sh' => null],
+            'cz-115' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1'], 'sh' => null],
+            'cz-117' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1'], 'sh' => null],
+            'cz-150' => ['dp3' => ['row' => 25], 'kh' => ['group' => 'A1'], 'sh' => null],
             'cz-203' => ['dp3' => ['row' => 10], 'kh' => null, 'sh' => null],
             'cz-205' => ['dp3' => ['row' => 3], 'kh' => ['group' => 'A2'], 'sh' => null],
         ]]);
@@ -271,40 +271,95 @@ class ControlStatementCalculatorTest extends TestCase
 
     // ── A1/B1: PDP kódy ─────────────────────────────────────────────────────
 
-    public function testB1RowPerPdpCode(): void
+    /**
+     * Předmět plnění nese řádek rekapitulace dokladu (#89 D13): tři předměty
+     * na jednom dokladu a kódu = tři řádky B1, kód je řetězec (i s písmenem).
+     */
+    public function testB1RowPerSubjectFromRecap(): void
     {
-        // Doklad se dvěma PDP kódy (4 i 5) → dva řádky B1.
         $doc = $this->doc([
-            'total_amount_dom' => 30000.0,
+            'total_amount_dom' => 60000.0,
             'recap' => [
-                ['vat_code' => 'cz-115', 'base_dom' => 20000.0, 'tax_dom' => 4200.0],
-                ['vat_code' => 'cz-117', 'base_dom' => 10000.0, 'tax_dom' => 2100.0],
-                // párový řádek samovyměření — kh null, do KH nevstupuje
-                ['vat_code' => 'cz-203', 'base_dom' => 30000.0, 'tax_dom' => 6300.0],
+                ['vat_code' => 'cz-115', 'base_dom' => 20000.0, 'tax_dom' => 4200.0, 'reverse_charge_code' => '4'],
+                // párový řádek samovyměření — kh null, do KH nevstupuje (i s předmětem)
+                ['vat_code' => 'cz-203', 'base_dom' => 20000.0, 'tax_dom' => 4200.0, 'reverse_charge_code' => '4'],
+                ['vat_code' => 'cz-115', 'base_dom' => 10000.0, 'tax_dom' => 2100.0, 'reverse_charge_code' => '4a'],
+                ['vat_code' => 'cz-203', 'base_dom' => 10000.0, 'tax_dom' => 2100.0, 'reverse_charge_code' => '4a'],
+                ['vat_code' => 'cz-115', 'base_dom' => 30000.0, 'tax_dom' => 6300.0, 'reverse_charge_code' => '14'],
+                ['vat_code' => 'cz-203', 'base_dom' => 30000.0, 'tax_dom' => 6300.0, 'reverse_charge_code' => '14'],
             ],
         ]);
         $result = $this->calculator()->calculate([$doc]);
 
-        $this->assertCount(2, $result['sections']['B1']);
-        $byKod = array_column($result['sections']['B1'], null, 'kodPredPl');
-        $this->assertSame(20000.0, $byKod[4]['base1']);
-        $this->assertSame(4200.0, $byKod[4]['tax1']);
-        $this->assertSame(10000.0, $byKod[5]['base1']);
-        $this->assertSame('DOD-99', $byKod[4]['evidNumber']);
+        $this->assertCount(3, $result['sections']['B1']);
+        $byKod = [];
+        foreach ($result['sections']['B1'] as $row) {
+            $this->assertIsString($row['kodPredPl']);
+            $byKod[$row['kodPredPl']] = $row;
+        }
+        $this->assertSame(['4', '4a', '14'], array_map('strval', array_keys($byKod)));
+        $this->assertSame(20000.0, $byKod['4']['base1']);
+        $this->assertSame(4200.0, $byKod['4']['tax1']);
+        $this->assertSame(10000.0, $byKod['4a']['base1']);
+        $this->assertSame(30000.0, $byKod['14']['base1']);
+        $this->assertSame('DOD-99', $byKod['4a']['evidNumber']);
+    }
+
+    /** Dva řádky rekapitulace se stejným předmětem (základní + snížená sazba) = jeden řádek B1. */
+    public function testB1SameSubjectAcrossCodesIsOneRow(): void
+    {
+        $doc = $this->doc([
+            'recap' => [
+                ['vat_code' => 'cz-115', 'base_dom' => 20000.0, 'tax_dom' => 4200.0, 'reverse_charge_code' => '4'],
+                ['vat_code' => 'cz-117', 'base_dom' => 10000.0, 'tax_dom' => 2100.0, 'reverse_charge_code' => '4'],
+            ],
+        ]);
+        $rows = $this->calculator()->calculate([$doc])['sections']['B1'];
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('4', $rows[0]['kodPredPl']);
+        $this->assertSame(30000.0, $rows[0]['base1']);
+    }
+
+    /**
+     * Řádek rekapitulace s kódem přenesení bez předmětu (starý nebo
+     * rozpracovaný doklad): žádná výchozí hodnota — řádek KH zůstane bez
+     * kódu a podání na něm skončí chybou validace.
+     */
+    public function testRecapWithoutSubjectHasNoDefaultCode(): void
+    {
+        $doc = $this->doc([
+            'recap' => [['vat_code' => 'cz-115', 'base_dom' => 20000.0, 'tax_dom' => 4200.0]],
+        ]);
+        $rows = $this->calculator()->calculate([$doc])['sections']['B1'];
+
+        $this->assertCount(1, $rows);
+        $this->assertNull($rows[0]['kodPredPl']);
+    }
+
+    /** Předmět na řádku mimo A1 / B1 se do KH nepropisuje. */
+    public function testSubjectOutsideReverseChargeSectionsIsIgnored(): void
+    {
+        $doc = $this->doc([
+            'recap' => [['vat_code' => 'cz-120', 'base_dom' => 10000.0, 'tax_dom' => 2100.0, 'reverse_charge_code' => '4']],
+        ]);
+        $result = $this->calculator()->calculate([$doc]);
+
+        $this->assertNull($result['sections']['A4'][0]['kodPredPl']);
     }
 
     public function testA1CarriesBaseOnly(): void
     {
         // Výstupní PDP (cz-150): daň odvádí zákazník — recap má tax 0.
         $doc = $this->doc([
-            'recap' => [['vat_code' => 'cz-150', 'base_dom' => 50000.0, 'tax_dom' => 0.0]],
+            'recap' => [['vat_code' => 'cz-150', 'base_dom' => 50000.0, 'tax_dom' => 0.0, 'reverse_charge_code' => '4']],
             'total_amount_dom' => 50000.0,
         ]);
         $result = $this->calculator()->calculate([$doc]);
 
         $this->assertCount(1, $result['sections']['A1']);
         $row = $result['sections']['A1'][0];
-        $this->assertSame(4, $row['kodPredPl']);
+        $this->assertSame('4', $row['kodPredPl']);
         $this->assertSame('FV-001', $row['evidNumber']);
         $this->assertSame(50000.0, $row['base1']);
         $this->assertSame(0.0, $row['tax1']);

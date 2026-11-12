@@ -126,7 +126,7 @@ final class FilingXmlInputLoader
     {
         $rows = $this->db->fetchAll(
             'SELECT [section], [row_kind], [doc_head], [doc_number], [partner_vat_id], [vat_dppd],'
-            . ' [kod_pred_pl], [base1], [tax1], [base2], [tax2], [base3], [tax3]'
+            . ' [reverse_charge_code], [base1], [tax1], [base2], [tax2], [base3], [tax3]'
             . ' FROM [economy_vat_filing_cs_rows] WHERE [filing] = %i ORDER BY [id]',
             $filingId,
         );

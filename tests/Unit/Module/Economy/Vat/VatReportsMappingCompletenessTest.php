@@ -127,19 +127,13 @@ class VatReportsMappingCompletenessTest extends TestCase
             $kh = $record['kh'];
             if ($kh !== null) {
                 $this->assertContains($kh['group'], self::KH_GROUPS, "Kód {$code}: kh.group");
-                if (in_array($kh['group'], ['A1', 'B1'], true)) {
-                    $this->assertContains(
-                        $kh['kodPredPl'] ?? null,
-                        [4, 5],
-                        "Kód {$code}: PDP sekce {$kh['group']} vyžaduje kodPredPl 4|5",
-                    );
-                } else {
-                    $this->assertArrayNotHasKey(
-                        'kodPredPl',
-                        $kh,
-                        "Kód {$code}: kodPredPl patří jen sekcím A1/B1",
-                    );
-                }
+                // Kód předmětu plnění A.1 / B.1 nese rekapitulace dokladu,
+                // ne mapování kódu DPH (#89 D13).
+                $this->assertArrayNotHasKey(
+                    'kodPredPl',
+                    $kh,
+                    "Kód {$code}: kodPredPl do mapování nepatří — předmět plnění je v rekapitulaci dokladu",
+                );
             }
 
             $sh = $record['sh'];

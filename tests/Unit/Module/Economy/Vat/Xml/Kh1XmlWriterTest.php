@@ -109,7 +109,7 @@ class Kh1XmlWriterTest extends TestCase
     public function testRequiredBandIsWrittenEvenWhenZero(): void
     {
         $xml = $this->write($this->input([
-            'rows' => [$this->row('A1', ['base1' => 0.0, 'kod_pred_pl' => 4])],
+            'rows' => [$this->row('A1', ['base1' => 0.0, 'reverse_charge_code' => '4'])],
         ]));
         $this->assertStringContainsString('zakl_dane1="0.00"', $xml);
         $this->assertSame([], (new EpoXsdValidator())->validate($xml, 'cs'));
@@ -173,12 +173,29 @@ class Kh1XmlWriterTest extends TestCase
     public function testMissingReverseChargeCodeIsRejected(): void
     {
         $errors = $this->validate($this->input([
-            'rows' => [$this->row('A1', ['kod_pred_pl' => null])],
+            'rows' => [$this->row('A1', ['reverse_charge_code' => null])],
         ]));
 
         $this->assertCount(1, $errors);
         $this->assertSame('incomplete_row', $errors[0]->code);
         $this->assertStringContainsString('kód předmětu plnění', $errors[0]->message);
+    }
+
+    /** Kód předmětu plnění je řetězec až do XML (#89 D13) — `4a` projde i schématem portálu. */
+    public function testSubjectWithLetterIsWrittenAsIsAndValidates(): void
+    {
+        $input = $this->input([
+            'rows' => [
+                $this->row('A1', ['reverse_charge_code' => '4a']),
+                $this->row('B1', ['reverse_charge_code' => '14', 'doc_number' => 'DOD-7', 'tax1' => 210.0]),
+            ],
+        ]);
+
+        $this->assertSame([], $this->validate($input));
+        $xml = $this->write($input);
+        $this->assertStringContainsString('kod_pred_pl="4a"', $xml);
+        $this->assertStringContainsString('kod_pred_pl="14"', $xml);
+        $this->assertSame([], (new EpoXsdValidator())->validate($xml, 'cs'));
     }
 
     public function testMissingPartnerVatIdAndNumberAreReported(): void
@@ -245,7 +262,7 @@ class Kh1XmlWriterTest extends TestCase
     {
         return [
             $this->row('A1', ['doc_number' => 'FV-1', 'partner_vat_id' => 'CZ87654321',
-                'vat_dppd' => '2026-04-10', 'kod_pred_pl' => 4, 'base1' => 50000.0]),
+                'vat_dppd' => '2026-04-10', 'reverse_charge_code' => '4', 'base1' => 50000.0]),
             $this->row('A2', ['doc_number' => 'DE-77', 'partner_vat_id' => 'DE123456789',
                 'vat_dppd' => '2026-04-12', 'base1' => 1000.0, 'tax1' => 210.0]),
             $this->row('A4', ['doc_number' => 'FV-2', 'partner_vat_id' => 'CZ11111111',
@@ -271,7 +288,7 @@ class Kh1XmlWriterTest extends TestCase
             'doc_number'     => 'FV-1',
             'partner_vat_id' => 'CZ87654321',
             'vat_dppd'       => '2026-04-10',
-            'kod_pred_pl'    => null,
+            'reverse_charge_code' => null,
             'base1'          => 1000.0,
             'tax1'           => 210.0,
             'base2'          => 0.0,
