@@ -13,6 +13,8 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class MailRoutersViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'hosting.core.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     private const STATE_SPAN_CLASS = [
@@ -72,15 +74,14 @@ class MailRoutersViewer extends TableViewer
     {
         $docState = (int) ($rowData['docState'] ?? 10);
         $stateStyle = $this->resolveStateStyle($docState);
-        $isCs = ($this->language ?? 'en') === 'cs';
 
         $t2 = [
             ['text' => (string) ($rowData['domains'] ?? ''), 'class' => 'muted'],
         ];
         $hasKey = ($rowData['api_key_prefix'] ?? null) !== null;
         $t2[] = $hasKey
-            ? ['text' => $isCs ? 'klíč: nastaven' : 'key: set', 'class' => 'success']
-            : ['text' => $isCs ? 'klíč: chybí' : 'key: missing', 'class' => 'warning'];
+            ? ['text' => $this->text('rowKeySet', 'key: set'), 'class' => 'success']
+            : ['text' => $this->text('rowKeyMissing', 'key: missing'), 'class' => 'warning'];
         if ($docState !== 10) {
             $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
             $stateData = $cfg->getState($docState);
@@ -108,23 +109,21 @@ class MailRoutersViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         $items = [
-            ['label' => $isCs ? 'Název' : 'Name', 'value' => (string) $record['name']],
-            ['label' => $isCs ? 'Domény' : 'Domains', 'value' => (string) $record['domains']],
+            ['label' => $this->columnLabel('name', 'Name'), 'value' => (string) $record['name']],
+            ['label' => $this->columnLabel('domains', 'Domains'), 'value' => (string) $record['domains']],
             [
-                'label' => $isCs ? 'API klíč' : 'API key',
+                'label' => $this->text('apiKey', 'API key'),
                 'value' => ($record['api_key_prefix'] ?? null) !== null
-                    ? ($isCs ? 'nastaven' : 'set') . ' (' . $record['api_key_prefix'] . '…)'
-                    : ($isCs ? 'chybí' : 'missing'),
+                    ? $this->text('apiKeySet', 'set ({prefix}…)', ['prefix' => $record['api_key_prefix']])
+                    : $this->text('apiKeyMissing', 'missing'),
             ],
         ];
         if (!empty($record['last_seen'])) {
-            $items[] = ['label' => $isCs ? 'Naposledy viděn' : 'Last seen', 'value' => $this->formatDateTime($record['last_seen']) ?? ''];
+            $items[] = ['label' => $this->columnLabel('last_seen', 'Last seen'), 'value' => $this->formatDateTime($record['last_seen']) ?? ''];
         }
         if (!empty($record['note'])) {
-            $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];
+            $items[] = ['label' => $this->columnLabel('note', 'Note'), 'value' => (string) $record['note']];
         }
 
         return [[
@@ -132,9 +131,15 @@ class MailRoutersViewer extends TableViewer
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => $isCs ? 'Mail-router' : 'Mail router', 'items' => $items]],
+                'groups' => [['title' => $this->text('groupMailRouter', 'Mail router'), 'items' => $items]],
             ],
         ]];
+    }
+
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     private function resolveStateStyle(int $docState): string

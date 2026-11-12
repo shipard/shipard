@@ -1,20 +1,70 @@
 {
     // hosting.core.viewerDetailLabels
     //
-    // Texty viewerů hostingu — `AiUsageViewer` (Spotřeba AI): řádek seznamu
-    // a zkrácené hlavičky sloupců mřížky. Jen sekce `texts` (čte
+    // Texty viewerů hostingu — seznamy a detaily: `AiUsageViewer` (Spotřeba
+    // AI), `AiTokensViewer`, `DataSourcesViewer`, `DsUsersViewer`,
+    // `MailRoutersViewer`, `ServersViewer`. Jen sekce `texts` (čte
     // `TableViewer::detailText()`); tab Přehled je sdílený
     // v core.system.viewerDetailLabels. Holé `name` je anglická varianta
     // a shoduje se s fallbackem v PHP.
 
     "texts": {
-        // Řádek seznamu: chybový stav průchodu a výstupní tokeny.
+        // ── AiUsageViewer (Spotřeba AI) ─────────────────────────────────
+        // Řádek seznamu: chybový stav průchodu, vstupní a výstupní tokeny.
         "rowHttpStatus": { "name": "HTTP {status}", "name:cs": "HTTP {status}", "name:en": "HTTP {status}" },
+        "rowInputTokens": { "name": "in {count}", "name:cs": "in {count}", "name:en": "in {count}" },
         "rowOutputTokens": { "name": "out {count}", "name:cs": "out {count}", "name:en": "out {count}" },
         // Mřížka: zkratky úzkých sloupců (plné popisky nese definice tabulky).
         "gridInputTokens": { "name": "In", "name:cs": "In", "name:en": "In" },
         "gridOutputTokens": { "name": "Out", "name:cs": "Out", "name:en": "Out" },
+        "gridCacheWrite": { "name": "Cache write", "name:cs": "Cache zápis", "name:en": "Cache write" },
+        "gridCacheRead": { "name": "Cache read", "name:cs": "Cache čtení", "name:en": "Cache read" },
         "gridHttpStatus": { "name": "HTTP", "name:cs": "HTTP", "name:en": "HTTP" },
-        "gridStream": { "name": "SSE", "name:cs": "SSE", "name:en": "SSE" }
+        "gridStream": { "name": "SSE", "name:cs": "SSE", "name:en": "SSE" },
+        // Mřížka i detail: čas průchodu a trvání (popisky sloupců jsou
+        // „Vytvořeno“ a „Trvání (ms)“).
+        "time": { "name": "Time", "name:cs": "Čas", "name:en": "Time" },
+        "duration": { "name": "Duration", "name:cs": "Trvání", "name:en": "Duration" },
+        // Detail: hodnota příznaku Stream (malými písmeny — sdílené Ano / Ne
+        // mají velké písmeno) a nadpisy skupin vlastností.
+        "valueYes": { "name": "yes", "name:cs": "ano", "name:en": "yes" },
+        "valueNo": { "name": "no", "name:cs": "ne", "name:en": "no" },
+        "groupRequest": { "name": "Request", "name:cs": "Průchod", "name:en": "Request" },
+        "groupTokens": { "name": "Tokens", "name:cs": "Tokeny", "name:en": "Tokens" },
+        // Filtr seznamu.
+        "filterErrorsOnly": { "name": "Errors only", "name:cs": "Jen chyby", "name:en": "Errors only" },
+
+        // ── AiTokensViewer (AI gateway tokeny) ──────────────────────────
+        // Stav tokenu v řádku seznamu i v detailu (aktivní je sdílený text).
+        "statusRevoked": { "name": "revoked", "name:cs": "revokován", "name:en": "revoked" },
+        // Řádek seznamu: poslední použití tokenu.
+        "rowUsed": { "name": "used {date}", "name:cs": "použit {date}", "name:en": "used {date}" },
+        // Detail: prefix tokenu, čas vydání a nadpis skupiny vlastností.
+        "token": { "name": "Token", "name:cs": "Token", "name:en": "Token" },
+        "tokenCreated": { "name": "Created", "name:cs": "Vytvořen", "name:en": "Created" },
+        "groupAiToken": { "name": "AI gateway token", "name:cs": "AI gateway token", "name:en": "AI gateway token" },
+
+        // ── DataSourcesViewer (Zdroje dat) ──────────────────────────────
+        // Detail: skupina vlastností s adresou, serverem a vlastníkem.
+        "groupPlacement": { "name": "Placement", "name:cs": "Umístění", "name:en": "Placement" },
+
+        // ── DsUsersViewer (Uživatelé zdrojů dat) ────────────────────────
+        // Detail: nadpis skupiny vlastností vazby uživatel ↔ zdroj dat.
+        "groupLink": { "name": "Link", "name:cs": "Vazba", "name:en": "Link" },
+
+        // ── MailRoutersViewer (Mail-routery) ────────────────────────────
+        // Řádek seznamu: stav API klíče.
+        "rowKeySet": { "name": "key: set", "name:cs": "klíč: nastaven", "name:en": "key: set" },
+        "rowKeyMissing": { "name": "key: missing", "name:cs": "klíč: chybí", "name:en": "key: missing" },
+        // Detail: API klíč (popisek a hodnota s prefixem klíče) a nadpis
+        // skupiny vlastností.
+        "apiKey": { "name": "API key", "name:cs": "API klíč", "name:en": "API key" },
+        "apiKeySet": { "name": "set ({prefix}…)", "name:cs": "nastaven ({prefix}…)", "name:en": "set ({prefix}…)" },
+        "apiKeyMissing": { "name": "missing", "name:cs": "chybí", "name:en": "missing" },
+        "groupMailRouter": { "name": "Mail router", "name:cs": "Mail-router", "name:en": "Mail router" },
+
+        // ── ServersViewer (Servery) ─────────────────────────────────────
+        // Detail: nadpis skupiny vlastností.
+        "groupServer": { "name": "Server", "name:cs": "Server", "name:en": "Server" }
     }
 }

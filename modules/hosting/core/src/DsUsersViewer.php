@@ -171,19 +171,17 @@ class DsUsersViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         $items = [
             [
-                'label' => $isCs ? 'Uživatel' : 'User',
+                'label' => $this->columnLabel('user', 'User'),
                 'value' => (string) ($record['user_name'] ?? '')
                     . (!empty($record['user_login']) ? ' (' . $record['user_login'] . ')' : ''),
             ],
-            ['label' => $isCs ? 'Zdroj dat' : 'Data source', 'value' => (string) ($record['ds_name'] ?? '')],
-            ['label' => $isCs ? 'Role' : 'Role', 'value' => $this->resolveRoleLabel((string) ($record['role'] ?? 'member'))],
+            ['label' => $this->columnLabel('data_source', 'Data source'), 'value' => (string) ($record['ds_name'] ?? '')],
+            ['label' => $this->columnLabel('role', 'Role'), 'value' => $this->resolveRoleLabel((string) ($record['role'] ?? 'member'))],
         ];
         if (!empty($record['last_entered'])) {
-            $items[] = ['label' => $isCs ? 'Poslední vstup' : 'Last entered', 'value' => $this->formatDateTime($record['last_entered']) ?? ''];
+            $items[] = ['label' => $this->columnLabel('last_entered', 'Last entered'), 'value' => $this->formatDateTime($record['last_entered']) ?? ''];
         }
 
         return [[
@@ -191,7 +189,10 @@ class DsUsersViewer extends TableViewer
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => $isCs ? 'Vazba' : 'Link', 'items' => $items]],
+                'groups' => [[
+                    'title' => $this->detailText('hosting.core.viewerDetailLabels', 'groupLink', 'Link'),
+                    'items' => $items,
+                ]],
             ],
         ]];
     }

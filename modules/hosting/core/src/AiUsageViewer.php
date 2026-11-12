@@ -89,7 +89,6 @@ class AiUsageViewer extends TableViewer
 
     public function renderRow(array $rowData): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
         $status = (int) ($rowData['http_status'] ?? 0);
         $isError = $status >= 400 || $status === 0;
 
@@ -108,7 +107,10 @@ class AiUsageViewer extends TableViewer
             't1'         => (string) ($rowData['model'] ?? ''),
             't2'         => $t2,
             'i2'         => [
-                ['text' => ($isCs ? 'in ' : 'in ') . $this->formatCount($rowData['input_tokens'] ?? 0), 'class' => 'muted'],
+                [
+                    'text'  => $this->text('rowInputTokens', 'in {count}', ['count' => $this->formatCount($rowData['input_tokens'] ?? 0)]),
+                    'class' => 'muted',
+                ],
                 [
                     'text'  => $this->text('rowOutputTokens', 'out {count}', ['count' => $this->formatCount($rowData['output_tokens'] ?? 0)]),
                     'class' => 'amount',
@@ -127,19 +129,17 @@ class AiUsageViewer extends TableViewer
 
     public function getGridColumns(): ?array
     {
-        $cs = $this->language === 'cs';
-
         return [
-            ['id' => 'created', 'label' => $cs ? 'Čas' : 'Time', 'width' => 140, 'sortable' => true],
-            ['id' => 'ds_name', 'label' => $cs ? 'Zdroj dat' : 'Data source'],
+            ['id' => 'created', 'label' => $this->text('time', 'Time'), 'width' => 140, 'sortable' => true],
+            ['id' => 'ds_name', 'label' => $this->columnLabel('data_source', 'Data source')],
             ['id' => 'model', 'label' => $this->columnLabel('model', 'Model')],
             ['id' => 'input_tokens', 'label' => $this->text('gridInputTokens', 'In'), 'width' => 90, 'align' => 'right', 'sortable' => true],
             ['id' => 'output_tokens', 'label' => $this->text('gridOutputTokens', 'Out'), 'width' => 90, 'align' => 'right', 'sortable' => true],
-            ['id' => 'cache_creation_tokens', 'label' => $cs ? 'Cache zápis' : 'Cache write', 'width' => 100, 'align' => 'right'],
-            ['id' => 'cache_read_tokens', 'label' => $cs ? 'Cache čtení' : 'Cache read', 'width' => 100, 'align' => 'right'],
+            ['id' => 'cache_creation_tokens', 'label' => $this->text('gridCacheWrite', 'Cache write'), 'width' => 100, 'align' => 'right'],
+            ['id' => 'cache_read_tokens', 'label' => $this->text('gridCacheRead', 'Cache read'), 'width' => 100, 'align' => 'right'],
             ['id' => 'http_status', 'label' => $this->text('gridHttpStatus', 'HTTP'), 'width' => 60, 'align' => 'right'],
             ['id' => 'stream', 'label' => $this->text('gridStream', 'SSE'), 'width' => 50],
-            ['id' => 'duration_ms', 'label' => $cs ? 'Trvání' : 'Duration', 'width' => 90, 'align' => 'right', 'sortable' => true],
+            ['id' => 'duration_ms', 'label' => $this->text('duration', 'Duration'), 'width' => 90, 'align' => 'right', 'sortable' => true],
         ];
     }
 
@@ -213,27 +213,25 @@ class AiUsageViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $cs = ($this->language ?? 'en') === 'cs';
-
         $items = [
             [
-                'label' => $cs ? 'Zdroj dat' : 'Data source',
+                'label' => $this->columnLabel('data_source', 'Data source'),
                 'value' => trim((string) ($record['ds_name'] ?? '')) . ' (' . $record['ds_ds_id'] . ')',
             ],
             ['label' => $this->columnLabel('model', 'Model'), 'value' => (string) $record['model']],
-            ['label' => $cs ? 'Čas' : 'Time', 'value' => ($this->formatDateTime($record['created']) ?? '')],
+            ['label' => $this->text('time', 'Time'), 'value' => ($this->formatDateTime($record['created']) ?? '')],
             ['label' => $this->columnLabel('http_status', 'HTTP status'), 'value' => (string) $record['http_status']],
-            ['label' => $this->columnLabel('stream', 'Stream'), 'value' => (int) ($record['stream'] ?? 0) === 1 ? ($cs ? 'ano' : 'yes') : ($cs ? 'ne' : 'no')],
+            ['label' => $this->columnLabel('stream', 'Stream'), 'value' => (int) ($record['stream'] ?? 0) === 1 ? $this->text('valueYes', 'yes') : $this->text('valueNo', 'no')],
         ];
         if (($record['duration_ms'] ?? null) !== null) {
-            $items[] = ['label' => $cs ? 'Trvání' : 'Duration', 'value' => $this->formatCount($record['duration_ms']) . ' ms'];
+            $items[] = ['label' => $this->text('duration', 'Duration'), 'value' => $this->formatCount($record['duration_ms']) . ' ms'];
         }
 
         $tokenItems = [
-            ['label' => $cs ? 'Vstupní tokeny' : 'Input tokens', 'value' => $this->formatCount($record['input_tokens'] ?? 0)],
-            ['label' => $cs ? 'Výstupní tokeny' : 'Output tokens', 'value' => $this->formatCount($record['output_tokens'] ?? 0)],
-            ['label' => $cs ? 'Tokeny — zápis cache' : 'Cache creation tokens', 'value' => $this->formatCount($record['cache_creation_tokens'] ?? 0)],
-            ['label' => $cs ? 'Tokeny — čtení cache' : 'Cache read tokens', 'value' => $this->formatCount($record['cache_read_tokens'] ?? 0)],
+            ['label' => $this->columnLabel('input_tokens', 'Input tokens'), 'value' => $this->formatCount($record['input_tokens'] ?? 0)],
+            ['label' => $this->columnLabel('output_tokens', 'Output tokens'), 'value' => $this->formatCount($record['output_tokens'] ?? 0)],
+            ['label' => $this->columnLabel('cache_creation_tokens', 'Cache creation tokens'), 'value' => $this->formatCount($record['cache_creation_tokens'] ?? 0)],
+            ['label' => $this->columnLabel('cache_read_tokens', 'Cache read tokens'), 'value' => $this->formatCount($record['cache_read_tokens'] ?? 0)],
         ];
 
         return [[
@@ -242,8 +240,8 @@ class AiUsageViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => $cs ? 'Průchod' : 'Request', 'items' => $items],
-                    ['title' => $cs ? 'Tokeny' : 'Tokens', 'items' => $tokenItems],
+                    ['title' => $this->text('groupRequest', 'Request'), 'items' => $items],
+                    ['title' => $this->text('groupTokens', 'Tokens'), 'items' => $tokenItems],
                 ],
             ],
         ]];
@@ -251,8 +249,6 @@ class AiUsageViewer extends TableViewer
 
     public function getFilters(): array
     {
-        $cs = ($this->language ?? 'en') === 'cs';
-
         $dsOptions = [];
         $rows = $this->db->fetchAll(
             'SELECT `id`, `name`, `ds_id` FROM `hosting_core_data_sources`'
@@ -269,13 +265,13 @@ class AiUsageViewer extends TableViewer
         return [
             [
                 'id'      => 'data_source',
-                'label'   => $cs ? 'Zdroj dat' : 'Data source',
+                'label'   => $this->columnLabel('data_source', 'Data source'),
                 'type'    => 'select',
                 'options' => $dsOptions,
             ],
             [
                 'id'    => 'only_errors',
-                'label' => $cs ? 'Jen chyby' : 'Errors only',
+                'label' => $this->text('filterErrorsOnly', 'Errors only'),
                 'type'  => 'checkbox',
             ],
         ];

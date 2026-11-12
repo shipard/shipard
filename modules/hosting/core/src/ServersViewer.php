@@ -103,14 +103,12 @@ class ServersViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         $items = [
-            ['label' => $isCs ? 'Název' : 'Name', 'value' => (string) $record['name']],
+            ['label' => $this->columnLabel('name', 'Name'), 'value' => (string) $record['name']],
             ['label' => $this->columnLabel('fqdn', 'FQDN'), 'value' => (string) $record['fqdn']],
         ];
         if (!empty($record['note'])) {
-            $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];
+            $items[] = ['label' => $this->columnLabel('note', 'Note'), 'value' => (string) $record['note']];
         }
 
         return [[
@@ -118,7 +116,10 @@ class ServersViewer extends TableViewer
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => $isCs ? 'Server' : 'Server', 'items' => $items]],
+                'groups' => [[
+                    'title' => $this->detailText('hosting.core.viewerDetailLabels', 'groupServer', 'Server'),
+                    'items' => $items,
+                ]],
             ],
         ]];
     }

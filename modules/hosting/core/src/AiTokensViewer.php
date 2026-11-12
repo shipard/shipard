@@ -15,6 +15,8 @@ use Shipard\Core\Viewer\TableViewer;
  */
 class AiTokensViewer extends TableViewer
 {
+    private const LABELS_CFG_ITEM = 'hosting.core.viewerDetailLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -66,7 +68,6 @@ class AiTokensViewer extends TableViewer
 
     public function renderRow(array $rowData): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
         $isActive = (int) ($rowData['active'] ?? 0) === 1;
 
         $dsName = trim((string) ($rowData['ds_name'] ?? ''));
@@ -75,12 +76,12 @@ class AiTokensViewer extends TableViewer
         $t2 = [
             ['text' => (string) ($rowData['token_prefix'] ?? '') . '…', 'class' => 'muted'],
             $isActive
-                ? ['text' => $isCs ? 'aktivní' : 'active', 'class' => 'success']
-                : ['text' => $isCs ? 'revokován' : 'revoked', 'class' => 'danger'],
+                ? ['text' => $this->sharedText('statusActive', 'active'), 'class' => 'success']
+                : ['text' => $this->text('statusRevoked', 'revoked'), 'class' => 'danger'],
         ];
         if (!empty($rowData['last_used'])) {
             $t2[] = [
-                'text'  => ($isCs ? 'použit ' : 'used ') . ($this->formatDateTime($rowData['last_used']) ?? ''),
+                'text'  => $this->text('rowUsed', 'used {date}', ['date' => $this->formatDateTime($rowData['last_used']) ?? '']),
                 'class' => 'muted',
             ];
         }
@@ -110,39 +111,44 @@ class AiTokensViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
         $isActive = (int) ($record['active'] ?? 0) === 1;
 
         $items = [
             [
-                'label' => $isCs ? 'Zdroj dat' : 'Data source',
+                'label' => $this->columnLabel('data_source', 'Data source'),
                 'value' => trim((string) ($record['ds_name'] ?? '')) . ' (' . $record['ds_ds_id'] . ')',
             ],
-            ['label' => $isCs ? 'Token' : 'Token', 'value' => (string) $record['token_prefix'] . '…'],
+            ['label' => $this->text('token', 'Token'), 'value' => (string) $record['token_prefix'] . '…'],
             [
-                'label' => $isCs ? 'Stav' : 'State',
-                'value' => $isActive ? ($isCs ? 'aktivní' : 'active') : ($isCs ? 'revokován' : 'revoked'),
+                'label' => $this->sharedText('state', 'State'),
+                'value' => $isActive ? $this->sharedText('statusActive', 'active') : $this->text('statusRevoked', 'revoked'),
             ],
         ];
         if (!empty($record['last_used'])) {
             $items[] = [
-                'label' => $isCs ? 'Naposledy použit' : 'Last used',
+                'label' => $this->columnLabel('last_used', 'Last used'),
                 'value' => ($this->formatDateTime($record['last_used']) ?? ''),
             ];
         }
         if (!empty($record['note'])) {
-            $items[] = ['label' => $isCs ? 'Poznámka' : 'Note', 'value' => (string) $record['note']];
+            $items[] = ['label' => $this->columnLabel('note', 'Note'), 'value' => (string) $record['note']];
         }
-        $items[] = ['label' => $isCs ? 'Vytvořen' : 'Created', 'value' => ($this->formatDateTime($record['created']) ?? '')];
+        $items[] = ['label' => $this->text('tokenCreated', 'Created'), 'value' => ($this->formatDateTime($record['created']) ?? '')];
 
         return [[
             'id'      => 'overview',
             'label'   => $this->defaultOverviewLabel(),
             'content' => [
                 'type'   => 'properties',
-                'groups' => [['title' => $isCs ? 'AI gateway token' : 'AI gateway token', 'items' => $items]],
+                'groups' => [['title' => $this->text('groupAiToken', 'AI gateway token'), 'items' => $items]],
             ],
         ]];
+    }
+
+    /** @param array<string, scalar> $params */
+    private function text(string $key, string $englishFallback, array $params = []): string
+    {
+        return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
     private function resolveStateStyle(int $docState): string

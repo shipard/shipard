@@ -140,26 +140,24 @@ class DataSourcesViewer extends TableViewer
 
     protected function detailTabs(array $record): array
     {
-        $isCs = ($this->language ?? 'en') === 'cs';
-
         $identity = [
-            ['label' => $isCs ? 'Název' : 'Name', 'value' => (string) $record['name']],
-            ['label' => $isCs ? 'ID zdroje dat' : 'Data source ID', 'value' => (string) $record['ds_id']],
+            ['label' => $this->columnLabel('name', 'Name'), 'value' => (string) $record['name']],
+            ['label' => $this->columnLabel('ds_id', 'Data source ID'), 'value' => (string) $record['ds_id']],
         ];
         if (!empty($record['web_id'])) {
             $identity[] = ['label' => $this->columnLabel('web_id', 'Web ID'), 'value' => (string) $record['web_id']];
         }
         $identity[] = [
-            'label' => $isCs ? 'Jazyk' : 'Language',
+            'label' => $this->columnLabel('language', 'Language'),
             'value' => $this->resolveCfgLabel('world.base.languages', (string) ($record['language'] ?? '')),
         ];
         $identity[] = [
-            'label' => $isCs ? 'Země' : 'Country',
+            'label' => $this->columnLabel('country', 'Country'),
             'value' => $this->resolveCfgLabel('world.base.countries', (string) ($record['country'] ?? '')),
         ];
 
         $placement = [
-            ['label' => $isCs ? 'URL aplikace' : 'Application URL', 'value' => (string) $record['url_app']],
+            ['label' => $this->columnLabel('url_app', 'Application URL'), 'value' => (string) $record['url_app']],
             [
                 'label' => $this->columnLabel('lifecycle', 'Lifecycle'),
                 'value' => $this->resolveLifecycleLabel((string) ($record['lifecycle'] ?? 'active')),
@@ -169,7 +167,7 @@ class DataSourcesViewer extends TableViewer
             $placement[] = ['label' => $this->columnLabel('server', 'Server'), 'value' => (string) $record['server_name']];
         }
         if (!empty($record['install_module'])) {
-            $placement[] = ['label' => $isCs ? 'Install modul' : 'Install module', 'value' => (string) $record['install_module']];
+            $placement[] = ['label' => $this->columnLabel('install_module', 'Install module'), 'value' => (string) $record['install_module']];
         }
         if (!empty($record['owner'])) {
             $ownerRow = $this->db->fetchRow(
@@ -179,14 +177,14 @@ class DataSourcesViewer extends TableViewer
             if ($ownerRow !== null) {
                 $ownerName = trim((string) ($ownerRow['full_name'] ?? ''));
                 $placement[] = [
-                    'label' => $isCs ? 'Vlastník' : 'Owner',
+                    'label' => $this->columnLabel('owner', 'Owner'),
                     'value' => $ownerName !== '' ? $ownerName . ' (' . $ownerRow['login'] . ')' : (string) $ownerRow['login'],
                 ];
             }
         }
         if (!empty($record['provision_error'])) {
             $placement[] = [
-                'label' => $isCs ? 'Chyba provisioningu' : 'Provisioning error',
+                'label' => $this->columnLabel('provision_error', 'Provisioning error'),
                 'value' => (string) $record['provision_error'],
             ];
         }
@@ -197,8 +195,11 @@ class DataSourcesViewer extends TableViewer
             'content' => [
                 'type'   => 'properties',
                 'groups' => [
-                    ['title' => $isCs ? 'Identifikace' : 'Identity', 'items' => $identity],
-                    ['title' => $isCs ? 'Umístění' : 'Placement', 'items' => $placement],
+                    ['title' => $this->sharedText('groupIdentity', 'Identity'), 'items' => $identity],
+                    [
+                        'title' => $this->detailText('hosting.core.viewerDetailLabels', 'groupPlacement', 'Placement'),
+                        'items' => $placement,
+                    ],
                 ],
             ],
         ]];
