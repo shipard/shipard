@@ -1,6 +1,6 @@
 # Design system — panel, volitelný řádek, segmentový přepínač, nadpis stránky
 
-**Stav:** hotovo — 2026-11-16 (#149, D75–D78); v prohlížeči neověřeno: Portál, předmět přenesení a kandidáti partnera (Odchylky 12)
+**Stav:** hotovo — 2026-11-16 (#149, D75–D78); ručně ověřeno 2026-11-16 (Odchylky 14); neověřeno: Portál (jen alfa), předmět přenesení, dialog převodu bankovních účtů (jen na čerstvém zdroji dat); nálezy řeší `tasks/design-system-shared-controls-fixes.md` (D79, D80)
 
 ## Kontext / Cíl
 
@@ -11,7 +11,8 @@ po svém (audit v komentáři #149):
   průvodce zdrojem dat, paleta vzhledu, souhrn předvyplnění registrace DPH,
   nápověda a „aktuální volba“ v rozhodovacích panelech importu, rozbalený
   detail karty feedu; tři různé rámečky, odsazení i zaoblení, panel v panelu;
-- **volitelné řádky** — import ze Spisovny, převod bankovních účtů, kód DPH,
+- **volitelné řádky** — dialog Přidat firmu z registru (v tasku původně
+  chybně „import ze Spisovny“), převod bankovních účtů, kód DPH,
   předmět přenesení, kandidáti partnera; každý jiný stav pod kurzorem,
   vybraný stav jen u poloviny, zakázaný 0,7 / 0,6;
 - **segmentový přepínač** — pět kopií v Nastavení a reportech + pilulky
@@ -24,7 +25,7 @@ z auditu na ně, kapitoly v `docs/design-system.md`.
 
 **Mimo rozsah:** prvek `html` ve formulářích (#150 — rekapitulace DPH,
 fakturační údaje a nápovědy formulářů přijdou na řadu tam), kontrast tónů
-na plochách mimo pozadí stránky (#153), štítky uvnitř řádků Spisovny a
+na plochách mimo pozadí stránky (#153), štítky uvnitř řádků dialogu z registru a
 převodu účtů (vlastní třídy `__badge` — badge systém §5, samostatně),
 kódové bloky (role `code`, D30), obrazovky s kartou uprostřed
 (`CenteredScreen`, `StatusScreen`), titulek dialogu (`Modal`).
@@ -127,7 +128,7 @@ pozadí, odsazení a zaoblení; mezera nad (`margin-top: sm`), mezera mezi
   kompaktní řádek je tlačítko s `role` podle rodiče — rozhodovací panely
   mají dnes `role="listbox"` / `role="option"` s `aria-selected`; to
   zachovat (prop `role`, výchozí `radio` s `aria-checked`).
-- vzhled podle D76; `:focus-visible` obrys `primary` jako dnes ve Spisovně;
+- vzhled podle D76; `:focus-visible` obrys `primary` jako dnes v dialogu z registru;
   zakázaný `opacity: 0.6` + `cursor: not-allowed`.
 
 Převod:
@@ -252,7 +253,7 @@ plná i 360 px:
 2. Nastavení → nabídka položek (bez boxu v boxu), průvodce zdrojem dat,
    paleta vzhledu, předvyplnění registrace DPH — panely stejné.
 3. Dashboard → karta feedu, rozbalený detail bez šedého pozadí.
-4. Import ze Spisovny — řádky s radio, výběr myší i klávesnicí, zakázaný
+4. Dialog Přidat firmu z registru — řádky s radio, výběr myší i klávesnicí, zakázaný
    řádek; převod bankovních účtů — checkboxy, klik na řádek přepíná.
 5. Náhled importu dokladu — kód DPH, předmět přenesení, kandidáti partnera:
    kompaktní řádky, vybraný stav, „aktuální volba“ modře.
@@ -303,7 +304,7 @@ plná i 360 px:
    (`currentUserAction === useExisting:<id>`) — platí, ať popover po
    kliknutí zůstane, nebo ne — a seznam je nově `listbox` s `aria-label`
    z klíče `exchange.preview.decide.candidates`.
-7. **Výsledky Spisovny:** seznam je `div role="radiogroup"` (ne `ul`),
+7. **Výsledky hledání v registru:** seznam je `div role="radiogroup"` (ne `ul`),
    `aria-label` z titulku dialogu — klíč pro skupinu v katalogu není.
    Řádek s prázdným `aside` (bez štítků) má vpravo prázdný prvek
    s mezerou md. Zakázaný řádek má 0,6 místo 0,7; pod kurzorem jen
@@ -335,7 +336,7 @@ plná i 360 px:
     literálem. Lišta reportů má svisle 12 px místo 16 px a ovládací prvky
     jsou vpravo (dřív hned za nadpisem).
 12. **Ověření** (Playwright nad volným zdrojem dat `zey0-g…`, světlý
-    i tmavý vzhled, 1500 a 360 px; dialogy průvodce a hledání ve Spisovně
+    i tmavý vzhled, 1500 a 360 px; dialogy průvodce a hledání v registru
     s podvrženými odpověďmi API): body 1–8 prošly — sekce formuláře má
     stejné vypočtené styly jako dřív a kontejner `form-section` skládá
     sloupce na 360 px; žádný panel v panelu ani na `bg-secondary`
@@ -346,9 +347,21 @@ plná i 360 px:
     tentýž obal je ověřený v Nastavení aplikace). Barva textu „aktuální
     volby“ (`primary` na `primary-soft`) má v tmavém vzhledu slabý
     kontrast — beze změny, patří do #153.
-13. **Štítky uvnitř řádků** (Spisovna, bankovní účty) beze změny včetně
+13. **Štítky uvnitř řádků** (dialog z registru, bankovní účty) beze změny včetně
     tloušťky 500 — mimo rozsah (badge systém §5); u štítku účtu jen
     `rgba()` za token.
+14. **Ruční ověření v prohlížeči** (2026-11-16, člověk): segmenty
+    v Nastavení, panely v Nastavení (slabší rámeček čitelný), reporty
+    včetně telefonu (ovládací prvky zalomené pod nadpis), dialog Přidat
+    firmu z registru, kandidáti partnera v náhledu importu a paleta
+    příkazů `ok`. Nálezy: šipky v segmentovém přepínači rovnou mění
+    volbu — jazyk znovu načte stránku, průvodce ukládá (D79); popis ve
+    volitelném řádku (adresa, IČO, DŤČ, účet) je meta šedě a moc malý,
+    odporuje §11 (D80); tlačítko „Vytvořit z registru“ v kartě strany
+    náhledu importu na střední šířce přetéká (nesouvisí s tímto taskem,
+    `Button` má `nowrap`). Mimo rozsah: tlačítko Export v liště reportů
+    má jinou velikost než ostatní ovládací prvky — sjednotit později.
+    Kontrast „aktuální volby“ v tmavém vzhledu předán do #153.
 
 ## Pasti
 

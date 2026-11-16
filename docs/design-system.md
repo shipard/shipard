@@ -496,7 +496,7 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
   třída s kopií rámečku. Dnes na nich stojí Přehled firmy, feed dashboardu
   (karta feedu, AI shrnutí), čtyři karty Nastavení, strany dokladu
   v detailu i v náhledu importu, karta návrhu z pošty, karta selhání
-  a náhled v průvodci importem ze Spisovny.
+  a náhled v dialogu Přidat firmu z registru.
 
 ### Vložené panely
 
@@ -567,7 +567,8 @@ Rozhodnutí D76 z #149. Jedna volba ze seznamu je sdílený
 - **Řízený:** `selected` drží rodič, `onselect(checked)` hlásí změnu
   (checkbox stav po přepnutí, radio a tlačítko `true`). `data-testid`
   jde na kořen / na tlačítko.
-- **Kde:** výsledky importu ze Spisovny (velký, radio), převod bankovních
+- **Kde:** výsledky hledání v dialogu Přidat firmu z registru (velký,
+  radio), převod bankovních
   účtů (velký, checkbox), kód DPH, předmět přenesení a kandidáti partnera
   v náhledu importu (kompaktní, `option`). Štítky uvnitř řádků mají dál
   vlastní třídy — sjednotí je badge systém (§5).
