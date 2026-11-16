@@ -15,14 +15,11 @@
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
-  import Badge from '../ui/Badge.svelte';
-  import Notice from '../ui/Notice.svelte';
-  import PropertyGroups from '../ui/PropertyGroups.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
-  import TableScroll from '../ui/TableScroll.svelte';
+  import ContentBlock from '../content/ContentBlock.svelte';
 
   // hideSingleTabBar: opt-in pro hostitele s jediným tabem (ViewerDetailModal) —
   // skryje tab lištu, když není mezi čím přepínat. Default false, aby se
@@ -288,90 +285,12 @@
       </div>
     {/if}
 
-    {#snippet renderContent(content)}
-      {#if content?.type === 'properties'}
-        <!-- Skupiny vlastností sdílenou komponentou (#137 D29): dva sloupce,
-             skupina `wide` přes celou šířku, prázdné skupiny a hodnoty
-             vynechá komponenta. Nadpis skupiny h4 jako dosud. -->
-        <PropertyGroups groups={content.groups} headingLevel={4} />
-
-      {:else if content?.type === 'table'}
-        <TableScroll>
-          <table class="shpd-detail__table">
-            <thead>
-              <tr>
-                {#each content.columns ?? [] as col (col.id)}
-                  <th class="shpd-detail__th" class:shpd-detail__th--num={col.align === 'right'}>{col.label}</th>
-                {/each}
-              </tr>
-            </thead>
-            <tbody>
-              {#if (content.rows ?? []).length === 0}
-                <tr>
-                  <td class="shpd-detail__empty-cell" colspan={content.columns?.length ?? 1}>
-                    {t('common.empty')}
-                  </td>
-                </tr>
-              {:else}
-                <!-- row._class (error | total | muted) — klasifikace řádku od
-                     backendu: chybové a součtové řádky účetního deníku,
-                     tlumené plánované řádky (odpisy majetku). -->
-                {#each content.rows ?? [] as row}
-                  <tr
-                    class:shpd-detail__tr--error={row._class === 'error'}
-                    class:shpd-detail__tr--total={row._class === 'total'}
-                    class:shpd-detail__tr--muted={row._class === 'muted'}
-                  >
-                    <!-- col.link + row._action: buňka je odkaz, klik spustí
-                         akci řádku (typicky open_detail dokladu). Bez
-                         onAction (read-only modal) zůstává prostý text. -->
-                    {#each content.columns ?? [] as col (col.id)}
-                      <td class="shpd-detail__td" class:shpd-detail__td--num={col.align === 'right'}>
-                        {#if col.link && row._action && onAction}
-                          <button type="button" class="shpd-detail__cell-link" onclick={() => handleAction(row._action)}>
-                            {row[col.id] ?? '—'}
-                          </button>
-                        {:else}
-                          {row[col.id] ?? '—'}
-                        {/if}
-                      </td>
-                    {/each}
-                  </tr>
-                {/each}
-              {/if}
-            </tbody>
-          </table>
-        </TableScroll>
-
-      {:else if content?.type === 'notice'}
-        <!-- Hláška v obsahu (#137 D30, D40): backend posílá tón a text
-             nebo položky, vzhled dává sdílená Notice. -->
-        <Notice tone={content.tone} title={content.title ?? ''} items={content.items}>
-          {#if content.text}{content.text}{/if}
-        </Notice>
-
-      {:else if content?.type === 'badges'}
-        <!-- Řada štítků (stav zaúčtování) — tytéž styly jako štítky hlavičky. -->
-        <div class="shpd-detail__badges">
-          {#each content.items ?? [] as badge}
-            <Badge style={badge.style ?? 'neutral'} label={badge.label} />
-          {/each}
-        </div>
-
-      {:else if content?.type === 'empty'}
-        <p class="shpd-detail__empty">{content.text}</p>
-
-      {:else if content?.type === 'text'}
-        <!-- Prostý text (tělo pošty bez HTML, AI shrnutí) — vkládá se jako
-             text, zalomení z obsahu zůstávají. -->
-        <p class="shpd-detail__text">{content.text}</p>
-
-      {:else if content?.type === 'code'}
-        <!-- Strojový výpis (JSON kontextu upozornění) — neproporcionální
-             písmo, dlouhý řádek roluje v bloku. -->
-        <pre class="shpd-detail__code">{content.text}</pre>
-
-      {:else if content?.type === 'untrusted-html'}
+    <!-- Jednoduché bloky obsahu kreslí sdílená `ContentBlock` (#150 D83),
+         včetně `composite`; bloky vázané na viewer (stav, akce, přílohy
+         detailu) jí hostitel dodává tímto snippetem — volá ho pro každý
+         typ, který sama nezná, i uvnitř `composite`. -->
+    {#snippet viewerBlock(content)}
+      {#if content?.type === 'untrusted-html'}
         <SandboxedHtml html={content.html} title={t('viewer.detail.mailBody')} />
 
       {:else if content?.type === 'failure'}
@@ -515,25 +434,12 @@
 
       {:else if content?.type === 'document'}
         <DocumentDetail content={content} onAction={onAction} />
-
-      {:else if content?.type === 'heading'}
-        <SectionHeading level={3}>{content.text}</SectionHeading>
-
-      {:else if content?.type === 'composite'}
-        <!-- Composite = seznam bloků, každý blok je libovolný známý content
-             typ. Rekurzivní render přes tentýž snippet. Mezeru mezi bloky
-             dává obal bloku (D28), blok `heading` je nadpis bloku pod ním. -->
-        {#each content.blocks ?? [] as block}
-          <div class="shpd-detail__block" class:shpd-detail__block--heading={block?.type === 'heading'}>
-            {@render renderContent(block)}
-          </div>
-        {/each}
       {/if}
     {/snippet}
 
     <!-- Tab content -->
     <div class="shpd-detail__content">
-      {@render renderContent(activeContent)}
+      <ContentBlock block={activeContent} onAction={onAction ? handleAction : null} other={viewerBlock} />
 
       {#if isOverviewTab}
         <!-- Přílohy záznamu (#136 D21) — sdílená sekce na konci Přehledu
@@ -829,135 +735,21 @@
     padding: var(--shpd-space-md);
   }
 
+  /* Prázdný stav panelu (žádný vybraný záznam) — text body šedě uprostřed
+     plochy. Stejný vzhled má blok `empty` ve sdílené `ContentBlock`. */
   .shpd-detail__empty {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--shpd-color-text-secondary);
-    font-size: var(--shpd-font-size-meta);
-  }
-
-  /* Bloky composite: sekce od sebe odděluje mezera (D28) — dává ji obal
-     bloku, ne nadpis (SectionHeading horní odsazení nemá). Blok `heading` je
-     nadpis bloku pod ním (tabulka podzakázek, Kontrola deníku), proto ten
-     mezeru nad sebou nemá. Skupiny vlastností kreslí PropertyGroups. */
-  .shpd-detail__block + .shpd-detail__block {
-    margin-top: var(--shpd-space-lg);
-  }
-
-  .shpd-detail__block--heading + .shpd-detail__block {
-    margin-top: 0;
-  }
-
-  /* Table content — obal s posunem do strany dává `TableScroll` (D44). */
-  .shpd-detail__table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--shpd-font-size-body);
-  }
-
-  /* Hlavička sloupce — body + strong ve velikosti řádků (není heading,
-     #137 task 2b). */
-  .shpd-detail__th {
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    text-align: left;
-    font-size: var(--shpd-font-size-body);
-    font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-text);
-    border-bottom: 2px solid var(--shpd-color-border);
-    white-space: nowrap;
-  }
-
-  .shpd-detail__td {
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-bottom: 1px solid var(--shpd-color-border);
-    color: var(--shpd-color-text);
-  }
-
-  .shpd-detail__empty-cell {
-    padding: var(--shpd-space-md);
-    text-align: center;
-    color: var(--shpd-color-text-secondary);
-    border-bottom: 1px solid var(--shpd-color-border);
-  }
-
-  /* Číselné sloupce (columns[].align === 'right') — stejná konvence jako
-     .num v DocumentDetail. */
-  .shpd-detail__th--num,
-  .shpd-detail__td--num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Buňka-odkaz (col.link + row._action) — vypadá jako odkaz, chová se
-     jako tlačítko. Dědí písmo i zarovnání buňky. */
-  .shpd-detail__cell-link {
-    padding: 0;
-    border: none;
-    background: transparent;
-    font: inherit;
-    color: var(--shpd-color-primary);
-    cursor: pointer;
-    text-align: inherit;
-  }
-
-  .shpd-detail__cell-link:hover {
-    color: var(--shpd-color-primary-hover);
-    text-decoration: underline;
-  }
-
-  /* Klasifikace řádků (row._class) — chybové a součtové řádky. */
-  .shpd-detail__tr--error > .shpd-detail__td {
-    background: var(--shpd-color-state-error-bg);
-    color: var(--shpd-color-state-error-text);
-  }
-
-  .shpd-detail__tr--total > .shpd-detail__td {
-    font-weight: var(--shpd-font-weight-strong);
-    border-top: 2px solid var(--shpd-color-border);
-    border-bottom: none;
-  }
-
-  .shpd-detail__tr--muted > .shpd-detail__td {
-    color: var(--shpd-color-text-secondary);
-  }
-
-  /* Obecné typy obsahu (#137 D30): hláška kreslí Notice, štítky Badge;
-     prázdný stav, prostý text a kód jsou odstavce v rolích body / meta.
-     Backend HTML se vzhledem neposílá — jediné HTML je `untrusted-html`
-     v sandboxu. */
-  .shpd-detail__badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--shpd-space-sm);
-  }
-
-  .shpd-detail__empty {
-    margin: 0;
     font-size: var(--shpd-font-size-body);
     line-height: 1.5;
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-detail__text {
-    margin: 0;
-    font-size: var(--shpd-font-size-body);
-    line-height: 1.5;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-
-  .shpd-detail__code {
-    margin: 0;
-    padding: var(--shpd-space-sm);
-    overflow-x: auto;
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg-secondary);
-    font-family: var(--shpd-font-family-mono);
-    font-size: var(--shpd-font-size-meta);
-    line-height: 1.5;
-  }
+  /* Jednoduché bloky obsahu (vlastnosti, tabulka, hláška, štítky, prázdný
+     stav, text, kód, nápověda, composite) kreslí sdílená `ContentBlock`
+     (#150 D83) i se svým CSS; tady zůstávají jen bloky vázané na viewer. */
 
   /* Extracted documents tab */
   .shpd-extracted {

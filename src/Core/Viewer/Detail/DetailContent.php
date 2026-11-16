@@ -9,8 +9,8 @@ namespace Shipard\Core\Viewer\Detail;
  * unit `DetailContractTest` (žádný zdroj neposílá `html`) a integrační
  * `ViewerDetailContractTest` (obsah každého tabu prvního záznamu je jen
  * ze známých typů). Backend HTML se vzhledem neposílá: hláška je `notice`,
- * štítky `badges`, prázdný stav `empty`, prostý text `text`, strojový výpis
- * `code`; jediné HTML v kontraktu je `untrusted-html` (tělo e-mailu
+ * štítky `badges`, prázdný stav `empty`, prostý text `text`, nápověda
+ * `hint` (#150 D84), strojový výpis `code`; jediné HTML v kontraktu je `untrusted-html` (tělo e-mailu
  * v sandboxu). Tvar jednotlivých typů: docs/frontend.md → Formát detail
  * panelu.
  */
@@ -18,9 +18,21 @@ final class DetailContent
 {
     public const TYPES = [
         'properties', 'table', 'heading', 'composite',
-        'notice', 'badges', 'empty', 'text', 'code',
+        'notice', 'badges', 'empty', 'text', 'code', 'hint',
         'untrusted-html', 'attachment-grid', 'attachments',
         'failure', 'proposal', 'document',
+    ];
+
+    /**
+     * Jednoduché bloky, které kreslí sdílená komponenta frontendu
+     * (`components/content/ContentBlock.svelte`, #150 D83) — smí je nést
+     * detail i prvek formuláře `content` (`FormElement`). Ostatní typy jsou
+     * vázané na viewer (přílohy, návrh, doklad, tělo e-mailu) a do formuláře
+     * nepatří.
+     */
+    public const SHARED_TYPES = [
+        'properties', 'table', 'heading', 'composite',
+        'notice', 'badges', 'empty', 'text', 'code', 'hint',
     ];
 
     /**

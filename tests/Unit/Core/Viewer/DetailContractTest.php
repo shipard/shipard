@@ -139,6 +139,17 @@ class DetailContractTest extends TestCase
         $this->assertSame(array_values(array_unique(DetailContent::TYPES)), DetailContent::TYPES);
     }
 
+    /** Bloky sdílené s formulářem (#150 D83) jsou podmnožina typů detailu, bez typů vázaných na viewer. */
+    public function testSharedTypesAreSubsetOfContentTypes(): void
+    {
+        $this->assertSame([], array_values(array_diff(DetailContent::SHARED_TYPES, DetailContent::TYPES)));
+        $this->assertSame(array_values(array_unique(DetailContent::SHARED_TYPES)), DetailContent::SHARED_TYPES);
+        $this->assertContains('hint', DetailContent::SHARED_TYPES);
+        foreach (['untrusted-html', 'attachment-grid', 'attachments', 'failure', 'proposal', 'document'] as $viewerType) {
+            $this->assertNotContains($viewerType, DetailContent::SHARED_TYPES);
+        }
+    }
+
     public function testNoPhpSourceEmitsHtmlContent(): void
     {
         $repo = realpath(__DIR__ . '/../../../..');
