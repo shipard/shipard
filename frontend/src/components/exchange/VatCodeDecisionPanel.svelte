@@ -14,6 +14,7 @@
   // naráz — jedno volání onUserActionsChange, jedno uložení, jeden refresh.
 
   import { t } from '../../i18n/index.js';
+  import Panel from '../ui/Panel.svelte';
 
   let {
     options = [],              // [{code, label, pct, reverseCharge, reducedDeduction, supplyKind}]
@@ -43,19 +44,19 @@
 
 <div class="shpd-vatcode">
   {#if currentCode}
-    <div class="shpd-vatcode__current">
+    <Panel variant="compact" tone="info" class="shpd-vatcode__current">
       <span>{t('exchange.preview.vatCode.current', { code: currentCode })}</span>
       <button type="button" class="shpd-vatcode__unselect" onclick={() => onDecide(null)}>
         {t('exchange.preview.decide.unselect')}
       </button>
-    </div>
+    </Panel>
   {:else if bulkCount > 0 && bulkDecidedCount > 0}
-    <div class="shpd-vatcode__current">
+    <Panel variant="compact" tone="info" class="shpd-vatcode__current">
       <span>{t('exchange.preview.bulk.decided', { count: bulkDecidedCount })}</span>
       <button type="button" class="shpd-vatcode__unselect" onclick={() => onDecide(null)}>
         {t('exchange.preview.decide.unselect')}
       </button>
-    </div>
+    </Panel>
   {/if}
 
   {#if withoutVat && !currentCode}
@@ -106,11 +107,10 @@
     min-height: 0;
   }
 
-  .shpd-vatcode__current {
-    background-color: var(--shpd-color-primary-soft);
+  /* „Aktuální volba“ je sdílený Panel (compact, tón info — #149 D75);
+     třída nese jen rozložení a barvu textu. */
+  .shpd-vatcode :global(.shpd-vatcode__current) {
     color: var(--shpd-color-primary);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
     display: flex;
     justify-content: space-between;
     align-items: center;

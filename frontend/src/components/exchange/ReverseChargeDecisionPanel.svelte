@@ -13,6 +13,7 @@
   // přenesení naráz — jedno volání onUserActionsChange, jedno uložení.
 
   import { t } from '../../i18n/index.js';
+  import Panel from '../ui/Panel.svelte';
 
   let {
     options = [],              // [{code, label}]
@@ -34,19 +35,19 @@
 
 <div class="shpd-rcsubject">
   {#if currentCode}
-    <div class="shpd-rcsubject__current">
+    <Panel variant="compact" tone="info" class="shpd-rcsubject__current">
       <span>{t('exchange.preview.subject.current', { code: currentCode })}</span>
       <button type="button" class="shpd-rcsubject__unselect" onclick={() => onDecide(null)}>
         {t('exchange.preview.decide.unselect')}
       </button>
-    </div>
+    </Panel>
   {:else if bulkCount > 0 && bulkDecidedCount > 0}
-    <div class="shpd-rcsubject__current">
+    <Panel variant="compact" tone="info" class="shpd-rcsubject__current">
       <span>{t('exchange.preview.bulk.decided', { count: bulkDecidedCount })}</span>
       <button type="button" class="shpd-rcsubject__unselect" onclick={() => onDecide(null)}>
         {t('exchange.preview.decide.unselect')}
       </button>
-    </div>
+    </Panel>
   {/if}
 
   {#if bulkCount > 0}
@@ -88,11 +89,10 @@
     min-height: 0;
   }
 
-  .shpd-rcsubject__current {
-    background-color: var(--shpd-color-primary-soft);
+  /* „Aktuální volba“ je sdílený Panel (compact, tón info — #149 D75);
+     třída nese jen rozložení a barvu textu. */
+  .shpd-rcsubject :global(.shpd-rcsubject__current) {
     color: var(--shpd-color-primary);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
     display: flex;
     justify-content: space-between;
     align-items: center;

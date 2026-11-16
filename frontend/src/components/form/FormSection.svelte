@@ -1,5 +1,9 @@
 <script>
+  // Sekce formuláře stojí na sdíleném Panelu (#149 D75) s hustým odsazením
+  // (`padding="form"`). Třída `shpd-form-section` na kořeni panelu nese jen
+  // rozložení: pojmenovaný kontejner a roztažení sekce s fill sloupcem.
   import FormColumn from './FormColumn.svelte';
+  import Panel from '../ui/Panel.svelte';
 
   let {
     section,
@@ -15,7 +19,7 @@
 </script>
 
 {#if !section.hidden}
-  <section class="shpd-form-section">
+  <Panel as="section" padding="form" class="shpd-form-section">
     {#if section.title}
       <h3 class="shpd-form-section__title">{section.title}</h3>
     {/if}
@@ -37,15 +41,12 @@
         />
       {/each}
     </div>
-  </section>
+  </Panel>
 {/if}
 
 <style>
-  .shpd-form-section {
-    background: var(--shpd-color-bg-secondary);
-    border: 1px solid var(--shpd-color-border-subtle);
-    border-radius: var(--shpd-radius-md);
-    padding: var(--shpd-form-section-padding-y) var(--shpd-space-lg);
+  /* Kořen je Panel — třídu rozsahu této komponenty nenese, proto `:global`. */
+  :global(.shpd-form-section) {
     /* Pojmenovaný kontejner pro @container (#133 D43): sekce reaguje na
        svou šířku (formulář bývá v modalu i v panelu), ne na okno. Jméno
        `form-section` sdílí FormAttachmentsView — náhled příloh uvnitř
@@ -57,7 +58,7 @@
 
   .shpd-form-section__title {
     font-size: var(--shpd-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text-secondary);
     margin: 0 0 var(--shpd-space-sm) 0;
     text-transform: uppercase;
@@ -74,14 +75,14 @@
      tabu; grid se sloupci vyplní zbytek karty a jeho řádek se natáhne
      (align-content default stretch) — levý sloupec drží pole nahoře
      (align-content: start), fill sloupec dostane celou výšku. */
-  .shpd-form-section:has(:global(.shpd-form-column--fill)) {
+  :global(.shpd-form-section:has(.shpd-form-column--fill)) {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
   }
 
-  .shpd-form-section:has(:global(.shpd-form-column--fill)) .shpd-form-section__columns {
+  :global(.shpd-form-section:has(.shpd-form-column--fill)) .shpd-form-section__columns {
     flex: 1;
     min-height: 0;
   }

@@ -12,6 +12,7 @@
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
+  import Panel from '../ui/Panel.svelte';
   import Select from '../ui/Select.svelte';
   import DateInput from '../ui/DateInput.svelte';
   import { t } from '../../i18n/index.js';
@@ -121,11 +122,11 @@
     {:else if values}
       <!-- Předvyplněný zbytek jen k nahlédnutí — zdrojem je vlastní Osoba
            a vrstva A, editace patří do plného formuláře („Zadat ručně"). -->
-      <dl class="shpd-vat-prefill__summary">
-        <div><dt>{t('setup.vatDialog.field.name')}</dt><dd>{values.name || '—'}</dd></div>
-        <div><dt>{t('setup.vatDialog.field.vatId')}</dt><dd class="shpd-vat-prefill__mono">{values.vat_id ?? '—'}</dd></div>
-        <div><dt>{t('setup.vatDialog.field.country')}</dt><dd>{(values.country ?? '').toUpperCase()}</dd></div>
-      </dl>
+      <Panel as="dl" class="shpd-vat-prefill__summary">
+        <div class="shpd-vat-prefill__pair"><dt>{t('setup.vatDialog.field.name')}</dt><dd>{values.name || '—'}</dd></div>
+        <div class="shpd-vat-prefill__pair"><dt>{t('setup.vatDialog.field.vatId')}</dt><dd class="shpd-vat-prefill__mono">{values.vat_id ?? '—'}</dd></div>
+        <div class="shpd-vat-prefill__pair"><dt>{t('setup.vatDialog.field.country')}</dt><dd>{(values.country ?? '').toUpperCase()}</dd></div>
+      </Panel>
 
       <div class="shpd-vat-prefill__field">
         <label for="vat-prefill-valid-from">{t('setup.vatDialog.validFrom')}</label>
@@ -198,27 +199,23 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  .shpd-vat-prefill__summary {
-    margin: 0;
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg-secondary);
+  /* Souhrn je sdílený Panel (`as="dl"`, #149 D75); třída nese jen mřížku. */
+  .shpd-vat-prefill :global(.shpd-vat-prefill__summary) {
     display: grid;
     grid-template-columns: max-content 1fr;
     gap: var(--shpd-space-xs) var(--shpd-space-lg);
   }
 
-  .shpd-vat-prefill__summary div {
+  .shpd-vat-prefill__pair {
     display: contents;
   }
 
-  .shpd-vat-prefill__summary dt {
+  .shpd-vat-prefill__pair dt {
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-sm);
   }
 
-  .shpd-vat-prefill__summary dd {
+  .shpd-vat-prefill__pair dd {
     margin: 0;
     color: var(--shpd-color-text);
   }

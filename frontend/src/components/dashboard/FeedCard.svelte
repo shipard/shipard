@@ -420,14 +420,13 @@
     text-decoration: underline;
   }
 
+  /* Rozbalený detail není panel (#149 D75): bez pozadí a vlastního
+     odsazení, jen mezera nad a mezi řádky. */
   .shpd-feed-card__details {
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
     margin-top: var(--shpd-space-sm);
-    padding: var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
-    background: var(--shpd-color-bg-secondary);
   }
 
   .shpd-feed-card__detail-row {

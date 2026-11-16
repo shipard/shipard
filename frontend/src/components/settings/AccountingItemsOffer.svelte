@@ -10,6 +10,7 @@
   import { onMount } from 'svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
+  import Panel from '../ui/Panel.svelte';
   import Checkbox from '../ui/Checkbox.svelte';
   import Icon from '../ui/Icon.svelte';
   import { iconChevronDown, iconChevronRight } from '../../icons.js';
@@ -133,7 +134,7 @@
   onMount(load);
 </script>
 
-<div class="shpd-items-offer">
+<Panel>
   <div class="shpd-items-offer__head">
     <span class="shpd-items-offer__title">{t('setup.offer.items.title')}</span>
   </div>
@@ -225,16 +226,9 @@
       />
     </div>
   {/if}
-</div>
+</Panel>
 
 <style>
-  .shpd-items-offer {
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
   .shpd-items-offer__head {
     display: flex;
     align-items: center;
@@ -268,12 +262,10 @@
     font-style: italic;
   }
 
+  /* Souhrn generování: jen text — box v boxu zanikl (#149 D75, panel
+     v panelu se nepoužívá). */
   .shpd-items-offer__summary {
     margin-top: var(--shpd-space-sm);
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-bg);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text);
   }

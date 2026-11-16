@@ -9,6 +9,7 @@
   // inline ThemeSwatches.
   import ThemeModeSegments from './ThemeModeSegments.svelte';
   import ThemeSwatches from './ThemeSwatches.svelte';
+  import Panel from '../ui/Panel.svelte';
 
   let { value, onchange } = $props();
 
@@ -46,7 +47,7 @@
   <ThemeModeSegments mode={current.mode} onSelect={selectMode} />
 
   {#if current.mode === 'custom'}
-    <div class="shpd-ds-theme-field__swatches">
+    <Panel class="shpd-ds-theme-field__swatches">
       <ThemeSwatches
         custom={current.custom}
         onSelectBase={(b) => patchCustom({ base: b })}
@@ -54,7 +55,7 @@
         onSelectGradient={(s) => patchCustom({ sidebar: { type: 'gradient', stops: s } })}
         onSelectOpacity={(o) => patchCustom({ opacity: Number(o) })}
       />
-    </div>
+    </Panel>
   {/if}
 </div>
 
@@ -67,11 +68,7 @@
 
   /* Inline editor pod segmented controlem — omezená šířka, ať grid presetů
      nevytéká přes celou stránku nastavení. */
-  .shpd-ds-theme-field__swatches {
+  .shpd-ds-theme-field :global(.shpd-ds-theme-field__swatches) {
     max-width: 20rem;
-    padding: var(--shpd-space-md);
-    background: var(--shpd-color-bg-secondary);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
   }
 </style>

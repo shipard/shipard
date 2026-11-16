@@ -15,6 +15,7 @@
   import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
+  import Panel from '../ui/Panel.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import VatRegistrationPrefillDialog from './VatRegistrationPrefillDialog.svelte';
@@ -255,7 +256,7 @@
       {:else}
         <ul class="shpd-ds-setup__list">
           {#each items as item (item.checkId)}
-            <li class="shpd-ds-setup__item">
+            <Panel as="li">
               <div class="shpd-ds-setup__item-head">
                 <Icon icon={iconWarning} size="sm" />
                 <span class="shpd-ds-setup__item-title">{item.title ?? item.name ?? item.checkId}</span>
@@ -278,7 +279,7 @@
                   {/each}
                 </div>
               {/if}
-            </li>
+            </Panel>
           {/each}
         </ul>
       {/if}
@@ -288,12 +289,12 @@
           <summary class="shpd-ds-setup__decided-summary">{t('setup.decided')}</summary>
           <ul class="shpd-ds-setup__list">
             {#each decidedKeys as key (key)}
-              <li class="shpd-ds-setup__item">
+              <Panel as="li">
                 <div class="shpd-ds-setup__item-head">
                   <span class="shpd-ds-setup__item-title">{t(`setup.param.${key}`)}</span>
                 </div>
                 {@render parameterControl(key)}
-              </li>
+              </Panel>
             {/each}
           </ul>
         </details>
@@ -424,13 +425,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-md);
-  }
-
-  .shpd-ds-setup__item {
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background-color: var(--shpd-color-bg-secondary);
   }
 
   .shpd-ds-setup__item-head {

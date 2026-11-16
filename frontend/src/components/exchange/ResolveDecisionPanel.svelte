@@ -27,6 +27,7 @@
   import { onMount } from 'svelte';
   import { get } from '../../api/client.js';
   import { t } from '../../i18n/index.js';
+  import Panel from '../ui/Panel.svelte';
   import FormDialog from '../form/FormDialog.svelte';
 
   let {
@@ -258,27 +259,27 @@
 
 <div class="shpd-resolve" data-testid="review-ref-panel">
   {#if bulkCount > 0}
-    <p class="shpd-resolve__hint">{t('exchange.preview.bulk.hint', { count: bulkCount })}</p>
+    <Panel variant="compact" as="p" class="shpd-resolve__hint">{t('exchange.preview.bulk.hint', { count: bulkCount })}</Panel>
   {/if}
 
   {#if automaticLabel}
-    <p class="shpd-resolve__hint shpd-resolve__automatic">{automaticLabel}</p>
+    <Panel variant="compact" as="p" class="shpd-resolve__hint shpd-resolve__automatic">{automaticLabel}</Panel>
   {/if}
 
   {#if currentUserAction !== null && currentUserAction !== undefined}
-    <div class="shpd-resolve__current">
+    <Panel variant="compact" tone="info" class="shpd-resolve__current">
       <span>{t('exchange.preview.decide.selected', { label: currentLabelText })}</span>
       <button type="button" class="shpd-resolve__unselect" onclick={chooseUnselect}>
         {t('exchange.preview.decide.unselect')}
       </button>
-    </div>
+    </Panel>
   {:else if bulkCount > 0 && bulkDecidedCount > 0}
-    <div class="shpd-resolve__current">
+    <Panel variant="compact" tone="info" class="shpd-resolve__current">
       <span>{t('exchange.preview.bulk.decided', { count: bulkDecidedCount })}</span>
       <button type="button" class="shpd-resolve__unselect" onclick={chooseUnselect}>
         {t('exchange.preview.decide.unselect')}
       </button>
-    </div>
+    </Panel>
   {/if}
 
   {#if resolveBlock?.status === 'ambiguous' && candidates.length > 0}
@@ -320,9 +321,9 @@
   {/if}
 
   {#if bankBlocked}
-    <p class="shpd-resolve__hint">
+    <Panel variant="compact" as="p" class="shpd-resolve__hint">
       {t('exchange.preview.decide.bankRequiresSupplier')}
-    </p>
+    </Panel>
     <div class="shpd-resolve__actions">
       <button
         type="button"
@@ -433,15 +434,16 @@
     min-height: 0;
   }
 
-  .shpd-resolve > * {
+  /* `:global(*)` — přímým potomkem je i kořen sdíleného Panelu (nápověda,
+     „Vybráno“), který třídu rozsahu této komponenty nenese. */
+  .shpd-resolve > :global(*) {
     flex-shrink: 0;
   }
 
-  .shpd-resolve__current {
-    background-color: var(--shpd-color-primary-soft);
+  /* „Aktuální volba“ je sdílený Panel (compact, tón info — #149 D75);
+     třída nese jen rozložení a barvu textu. */
+  .shpd-resolve :global(.shpd-resolve__current) {
     color: var(--shpd-color-primary);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -642,18 +644,15 @@
     opacity: 0.7;
   }
 
-  .shpd-resolve__hint {
-    margin: 0;
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    background-color: var(--shpd-color-bg-secondary);
-    border-radius: var(--shpd-radius-sm);
+  /* Nápověda je sdílený Panel (compact — #149 D75); třída nese jen písmo. */
+  .shpd-resolve :global(.shpd-resolve__hint) {
     color: var(--shpd-color-text-secondary);
     font-size: var(--shpd-font-size-meta);
   }
 
   /* Napárovaná položka nad hledáním (#111 D5) — tišší než „Vybráno“,
      zalamuje dlouhé názvy. */
-  .shpd-resolve__automatic {
+  .shpd-resolve :global(.shpd-resolve__automatic) {
     overflow-wrap: anywhere;
   }
 </style>
