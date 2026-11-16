@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 449 tasků: **naplánováno** 4 · **částečně** 27 · **zrušeno** 1 · **hotovo** 417.
+Celkem 450 tasků: **naplánováno** 5 · **částečně** 27 · **zrušeno** 1 · **hotovo** 417.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-form-content.md` | naplánováno | rozhodnutí D82–D87 potvrzená v #150 2026-11-16 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -208,6 +209,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-shared-controls.md` | Sdílený panel, volitelný řádek, segmentový přepínač a nadpis stránky (`Panel`, `OptionRow`, `SegmentedControl`, `PageHeader`) — převod všech výskytů, barva výběru `primary`, typografická role `page` (#149, D75–D78) |
 | `design-system-shared-controls-fixes.md` | Opravy z ověření: segmentový přepínač vybírá až potvrzením (šipky jen přesouvají fokus), popis volitelného řádku body barvou textu, tlačítko „Vytvořit z registru“ se zalomí (`Button` `wrap`) (#149, D79, D80) |
 | `design-system-option-row-narrow.md` | Volitelný řádek na úzké šířce — obsah vpravo (štítky) pod popis, text přes celou šířku řádku; pojmenovaný kontejner `option-row` (#149, D81) |
+| `design-system-form-content.md` | Prvek `content` s bloky detailu místo `html` ve formulářích, blok `hint`, katalog textů formulářů `formTexts`; rekapitulace DPH ve formuláři jako rozšířená sdílená tabulka, fakturační údaje na `PartyCard` (#150, D82–D87) |
 
 ## Mobilní (responzivní) UI
 
