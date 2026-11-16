@@ -1,6 +1,6 @@
 # Design system — volitelný řádek na úzké šířce
 
-**Stav:** naplánováno — rozhodnutí D81 potvrzené v #149 2026-11-16
+**Stav:** hotovo — 2026-11-16 (#149, D81); ověřeno skriptem v prohlížeči (1500 a 360 px, Odchylky 4), ruční kontrola na telefonu zbývá
 
 ## Kontext / Cíl
 
@@ -93,14 +93,43 @@ V prohlížeči na volném dev zdroji dat, světlý vzhled, šířky 1500 a 360 
 
 ## Hotovo když
 
-- [ ] D81 v `OptionRow`, štítky dialogu z registru vedle sebe na úzké šířce
-- [ ] ověření 1–3
-- [ ] `docs/design-system.md` §8
-- [ ] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
+- [x] D81 v `OptionRow`, štítky dialogu z registru vedle sebe na úzké šířce
+- [x] ověření 1–3 (skriptem, Odchylky 4)
+- [x] `docs/design-system.md` §8
+- [x] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+1. **`aside` je pod popisem `display: flex`** (nad rámec zadání). Radio
+   „výchozí“ v převodu účtů je `<label>` s `display: flex` — v blokovém
+   `aside` na celou šířku by se roztáhl přes řádek a klik do prázdna
+   vpravo od něj by volil výchozí účet místo řádku. Takhle si obsah
+   `aside` drží vlastní šířku; `BankAccountBridgeDialog` zůstal beze změny.
+2. **Dva štítky se na 360 px vedle sebe nevejdou** („Firma již existuje“
+   + „Ukončeno …“ mají dohromady 267 px, místa je 244 px) — zalomí se pod
+   sebe, zarovnané vlevo s textem. Vedle sebe jsou od šířky okna zhruba
+   385 px. Štítky proto v dotazu dostaly i `flex-shrink: 1` (jinak by
+   z řádku přetekly).
+3. **Práh se měří na obsahu řádku, ne na jeho vnější šířce** — tak
+   `@container` funguje. Řádek se přepne, když je jeho vnitřek (bez
+   odsazení md a rámečku) užší než 30rem, tj. při vnější šířce pod
+   ~32rem. Na 1500 px to nic nemění (převod účtů má obsah řádku 558 px).
+   Obal mezi kořenem a obsahem nebyl potřeba. Šířku ukazatele drží lokální
+   token `--shpd-option-row-indicator` (ukazatel i odsazení `aside`).
+4. **Ověření skriptem** (Playwright, volný zdroj dat `zey0-g`, světlý
+   vzhled, podvržené odpovědi registru a kandidátů účtů; dialog z registru
+   otevřený z průvodce zdrojem dat — tatáž komponenta jako Osoby →
+   „Z registru“):
+   - registr 360 px: tělo řádku se štítkem i bez má 244 px (před změnou
+     77 px se štítkem), `aside` 16 px pod popisem, levý okraj štítků =
+     levý okraj názvu; 1500 px: snímky před a po pixelově shodné;
+   - klik na štítek pod popisem vybere řádek, klik na štítek zakázaného
+     řádku nic nezmění;
+   - převod účtů 360 px: „výchozí“ pod popisem zarovnané s názvem, klik
+     na něj mění jen radio, klik vedle něj přepíná checkbox řádku;
+     1500 px pixelově shodné;
+   - navíc 420 px (dva štítky vedle sebe) a 520 / 540 px (okolí prahu).
+   Tmavý vzhled a skutečný telefon skript nepokryl.
 
 ## Pasti
 
