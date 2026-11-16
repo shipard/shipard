@@ -69,9 +69,6 @@ a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
      **Z registru** v Osobách); po **Uložit** se osoba rovnou vybere,
    - **Vytvořit novou osobu**, **Vytvořit novou položku** nebo
      **Vytvořit nový účet** — podle toho, čeho se rozhodnutí týká,
-   - **Jen účet — bez položky** — jen u řádku faktury, který už nese
-     účet (typicky doplněný obsahovou klasifikací). Řádek se pořídí
-     s účtem a bez položky; to je v pořádku, položku zakládat nemusíš,
    - **Vynechat řádek**, ale jen u řádku faktury. Řádek se na doklad
      nezapíše a nezapočítá se do součtů v náhledu; **DPH rekapitulace**
      se pak spočítá z řádků, které zůstaly. Když kvůli tomu **Celkem**
@@ -94,15 +91,13 @@ a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
    špatně, klikni na zelený odznak ✓ nebo rovnou na ten druhý řádek:
    otevře se stejný panel jako u nenapárované položky, nahoře s řádkem
    *Napárováno automaticky: …*, pod ním **Hledat…**, **Vytvořit novou
-   položku** (předvyplněnou textem řádku), **Jen účet — bez položky**
-   (jen u řádku, který nese účet) a **Vynechat řádek**. Po volbě se pod
-   řádkem hned objeví název zvolené položky se zdrojem *zvoleno ručně*,
-   odznak ✓ dostane obrys a náhled se obnoví — sloupec **Účet** pak
-   ukazuje účet nové položky. **Zrušit výběr** vrátí automatické
-   napárování. Rozhodnutí *jen účet* a *vynechat řádek* vidíš pod řádkem
-   slovy (*jen účet 518100 …*, *řádek se vynechá*). Napárované řádky
-   měníš po jednom; hromadné **+** v hlavičce sloupce **Položka** plní
-   jen řádky bez položky.
+   položku** (předvyplněnou textem řádku) a **Vynechat řádek**. Po volbě
+   se pod řádkem hned objeví název zvolené položky se zdrojem *zvoleno
+   ručně*, odznak ✓ dostane obrys a náhled se obnoví — sloupec **Účet**
+   pak ukazuje účet nové položky. **Zrušit výběr** vrátí automatické
+   napárování. Vynechaný řádek poznáš podle slov *řádek se vynechá* pod
+   řádkem. Napárované řádky měníš po jednom; hromadné **+** v hlavičce
+   sloupce **Položka** plní jen řádky bez položky.
 
 7. **Vystav doklad, nebo návrh zamítni.**
    - **Vystavit a uzavřít** — **Faktura přijatá** vznikne rovnou ve
@@ -209,19 +204,22 @@ dodavatele býváš zvyklý", ne že to je na téhle faktuře.
 **Obsahová klasifikace.** Když historie mlčí, AI doklad zařadí podle
 obsahu. Když kategorie určí položku, je pod řádkem se zdrojem *kategorie
 Pohonné hmoty* (jantarově — ověř) a po najetí myší vidíš, zda ji dala
-*pravidlo dodavatele*, nebo *AI*. Když kategorie najde jen účet, ne
-položku, je u řádku ikona ⟲ se stejnou poznámkou. U kategorií jako
-občerstvení poznámka navíc upozorní na DPH typicky bez nároku na odpočet.
+*pravidlo dodavatele*, nebo *AI*. Když kategorie nemá v tabulce položek
+žádnou položku, je u řádku jen ikona ⟲ s kategorií v poznámce — řádek
+zůstává bez položky i bez účtu. Položku u něj vyber nebo založ v panelu,
+případně ji založ kartou v sekci **Položky k založení** na
+**Dashboardu**; náhled ji pak napáruje sám. U kategorií jako občerstvení
+poznámka navíc upozorní na DPH typicky bez nároku na odpočet.
 Detaily a správa kategorií:
 [Obsahové štítky](../polozky/obsahove-stitky.md).
 
 **Sloupec Účet.** Ukazuje, kam se řádek zaúčtuje: u řádku s účetní
-položkou účet té položky, u řádku *jen účet* a u účetního dokladu účet
-řádku. Služba nebo zásoba bez vlastního účtu mají **—** — účtují se
-podle druhu položky, i když historie nebo kategorie nějaký účet
-navrhly. Sloupec se ukazuje, jen když má účet aspoň jeden řádek. Když
-u řádku vybereš položku ručně, účet navržený historií nebo kategorií se
-na doklad nezapíše; kód DPH řádku se změnou položky nemění.
+položkou účet té položky, u účetního dokladu účet řádku. Služba nebo
+zásoba bez vlastního účtu mají **—** — účtují se podle druhu položky,
+i když historie nebo kategorie nějaký účet navrhly. Sloupec se ukazuje,
+jen když má účet aspoň jeden řádek. Když u řádku vybereš položku ručně,
+účet navržený historií nebo kategorií se na doklad nezapíše; kód DPH
+řádku se změnou položky nemění.
 
 **Oprava napárování se zapamatuje.** Když u řádku s kódem dodavatele
 vybereš jinou položku, než Shipard napároval, uloží si pro ten kód

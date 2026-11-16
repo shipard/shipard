@@ -8,10 +8,10 @@ import {
   hasSecondLine,
 } from '../../src/components/exchange/rowMatch.js';
 
-test('itemDecision: useExisting / noItem / skip / nic', () => {
-  const ua = { 'rows[0].item': 'useExisting:77', 'rows[1].item': 'noItem', 'rows[2].item': 'skip' };
+test('itemDecision: useExisting / skip / nic', () => {
+  const ua = { 'rows[0].item': 'useExisting:77', 'rows[2].item': 'skip' };
   assert.deepEqual(itemDecision(ua, 0), { kind: 'useExisting', id: 77 });
-  assert.deepEqual(itemDecision(ua, 1), { kind: 'noItem' });
+  assert.equal(itemDecision(ua, 1), null);
   assert.deepEqual(itemDecision(ua, 2), { kind: 'skip' });
   assert.equal(itemDecision(ua, 3), null);
   assert.equal(itemDecision(null, 0), null);
@@ -21,6 +21,8 @@ test('itemDecision: neplatný tvar → null', () => {
   assert.equal(itemDecision({ 'rows[0].item': 'useExisting:abc' }, 0), null);
   assert.equal(itemDecision({ 'rows[0].item': 'useExisting:0' }, 0), null);
   assert.equal(itemDecision({ 'rows[0].item': 'create' }, 0), null);
+  // Zrušená volba „jen účet“ (#36 D1) není rozhodnutí.
+  assert.equal(itemDecision({ 'rows[0].item': 'noItem' }, 0), null);
   assert.equal(itemDecision({ 'rows[0].item': 42 }, 0), null);
 });
 
@@ -48,7 +50,7 @@ test('matchSourceKey: ourCode z AI (kód se s návrhem neshoduje nebo enrichment
     matchSourceKey(block, { matchedBy: 'historyFuzzy', suggested: { ourCode: 'OTHER' } }, { code: 'NET500' }),
     'ourCode',
   );
-  // Enrichment jen s účtem (resolution accountOnly) — kód nedoplnil.
+  // Enrichment jen s účtem (uložený návrh z doby před #36 D3) — kód nedoplnil.
   assert.equal(
     matchSourceKey(block, { matchedBy: 'contentTag', suggested: { account: '518100' } }, { code: 'NET500' }),
     'ourCode',
@@ -73,7 +75,6 @@ test('isWeakSource / isEnrichmentSource', () => {
 });
 
 test('hasSecondLine: rozhodnutí nebo efektivní položka', () => {
-  assert.equal(hasSecondLine({ kind: 'noItem' }, null), true);
   assert.equal(hasSecondLine({ kind: 'skip' }, null), true);
   assert.equal(hasSecondLine({ kind: 'useExisting', id: 7 }, null), true);
   assert.equal(hasSecondLine(null, { id: 18, code: 'A', name: 'B', pinned: false }), true);

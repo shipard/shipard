@@ -147,7 +147,7 @@
   let bulkSubjectVisible = $derived(onUserActionsChange !== null && subjectRowIndices.length >= 2);
   // Sloupec Účet ukazuje účet, podle kterého se řádek zaúčtuje
   // (_resolve.rows[i].effectiveAccount, #111 D7b: účetní položka → její
-  // účet, kontace / „jen účet“ / návrh → účet řádku, služba bez účtu → „—“).
+  // účet, kontace / návrh → účet řádku, služba bez účtu → „—“).
   // Sloupec je vidět, jen když ho aspoň jeden řádek nese (D23); canonical
   // bez effectiveAccount (starší server, bez _resolve) → účet z canonicalu.
   let hasAccountColumn = $derived.by(() => {
@@ -286,27 +286,14 @@
     if (s === 'matchedDecided') return '✓';
     if (s === 'canCreateDecided') return '+';
     if (s === 'skipped') return '⊘';
-    if (s === 'noItemDecided') return '✓';
     if (s === 'withoutVat') return '–';
     return null;
-  }
-
-  // „Jen účet — bez položky" (D24) se nabízí jen na řádku, který účet
-  // reálně nese (z extrakce nebo propsaný enrichmentem do canonical).
-  function rowHasAccount(i) {
-    const account = canonical?.rows?.[i]?.account;
-    return account != null && String(account) !== '';
-  }
-
-  function rowHasAccountForPath(path) {
-    const m = /^rows\[(\d+)\]\.item$/.exec(path ?? '');
-    return m !== null && rowHasAccount(Number(m[1]));
   }
 
   // ── Napárovaná položka v řádku (tasks/exchange-preview-matched-item.md) ──
   // Druhý řádek buňky Položka: efektivní položka (volba > napárování,
   // `_resolve.rows[i].item.display` ze serveru) se zdrojem napárování,
-  // nebo rozhodnutí slovy („jen účet …“, „řádek se vynechá“). Po volbě drží
+  // nebo rozhodnutí slovy („řádek se vynechá“). Po volbě drží
   // `pendingLabels` název z panelu, než nový náhled přinese `display`
   // se stejným id (D3).
   let pendingLabels = $state({});
@@ -355,11 +342,6 @@
     const decision = block ? itemDecision(userActions, i) : null;
     if (decision?.kind === 'skip') {
       return { kind: 'skip', weak: false, title: t('exchange.preview.status.decided.skip') };
-    }
-    if (decision?.kind === 'noItem') {
-      const acc = rowEffectiveAccount(i);
-      const account = acc ? [acc.number, acc.name].filter(Boolean).join(' ') : '';
-      return { kind: 'noItem', account, weak: false, title: t('exchange.preview.status.decided.noItem') };
     }
     if (decision?.kind === 'useExisting') {
       const sourceText = matchSourceText('user', null);
@@ -462,9 +444,6 @@
       kind: 'item',
       parentMatchedId: null,
       bulkPaths: bulkItemIndices.map((i) => `rows[${i}].item`),
-      // Bulk noItem jen když účet nesou všechny cílové řádky — částečný
-      // zápis by na zbytku vyrobil apply chybu no_item_requires_account.
-      allowNoItem: bulkItemIndices.every((i) => rowHasAccount(i)),
       ...entityConfigForKind('item'),
     };
   }
@@ -508,7 +487,6 @@
       resolveBlock,
       kind,
       parentMatchedId: parentMatchedIdForPath(path, kind),
-      allowNoItem: kind === 'item' && rowHasAccountForPath(path),
       ...cfg,
     };
   }
@@ -782,7 +760,6 @@
     if (typeof ua === 'string' && ua.startsWith('useExisting:')) return 'matchedDecided';
     if (ua === 'create') return 'canCreateDecided';
     if (ua === 'skip') return 'skipped';
-    if (ua === 'noItem') return 'noItemDecided';
     return original;
   }
 
@@ -799,7 +776,6 @@
     }
     if (ua === 'create') return t('exchange.preview.status.decided.create');
     if (ua === 'skip') return t('exchange.preview.status.decided.skip');
-    if (ua === 'noItem') return t('exchange.preview.status.decided.noItem');
     return statusLabel(resolveBlock);
   }
 
@@ -910,9 +886,7 @@
 {#snippet rowMatchLine(i, match)}
   {@const text = match.kind === 'skip'
     ? t('exchange.preview.match.skip')
-    : match.kind === 'noItem'
-      ? t('exchange.preview.match.noItem', { account: match.account })
-      : `${match.label} \u00b7 ${match.sourceText}`}
+    : `${match.label} \u00b7 ${match.sourceText}`}
   {#if onUserActionsChange !== null && resolve?.rows?.[i]?.item}
     <button
       type="button"
@@ -1350,7 +1324,6 @@
         createPayload={decisionOpen?.resolveBlock?.createPayload ?? null}
         parentMatchedId={decisionOpen?.parentMatchedId ?? null}
         currentUserAction={decisionOpen?.path != null ? userActions[decisionOpen.path] ?? null : null}
-        allowNoItem={decisionOpen?.allowNoItem ?? false}
         automaticLabel={decisionOpen?.kind === 'item' && decisionOpen?.path != null
           ? automaticMatchLabel(decisionOpen.path)
           : null}
@@ -1565,16 +1538,6 @@
   .shpd-exchange__status--withoutVat {
     background: var(--shpd-color-bg-secondary);
     color: var(--shpd-color-text-secondary);
-  }
-
-  /* noItem — řádek půjde jen s účtem, bez položky. Pozitivní rozhodnutí
-     (řádek se pořídí), proto ✓ + outline; neutrální paleta odlišuje od
-     matched (zelená) i canCreate (žlutá). */
-  .shpd-exchange__status--noItemDecided {
-    background: var(--shpd-color-state-confirmed-bg);
-    color: var(--shpd-color-state-confirmed-text);
-    outline: 2px solid var(--shpd-color-state-confirmed-text);
-    outline-offset: 1px;
   }
 
   /* ── Enrichment badge (Row History Enrichment) ───────────────────────────

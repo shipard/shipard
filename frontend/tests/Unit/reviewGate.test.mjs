@@ -40,7 +40,7 @@ test('pendingPaths: položky řádků v pořadí, rozhodnutí null se nepočít�
   };
   assert.deepEqual(pendingPaths(resolve, {}), ['rows[0].item', 'rows[2].item']);
   assert.deepEqual(pendingPaths(resolve, { 'rows[0].item': 'skip', 'rows[2].item': null }), ['rows[2].item']);
-  assert.deepEqual(pendingPaths(resolve, { 'rows[0].item': 'noItem', 'rows[2].item': 'useExisting:3' }), []);
+  assert.deepEqual(pendingPaths(resolve, { 'rows[0].item': 'create', 'rows[2].item': 'useExisting:3' }), []);
 });
 
 test('doklad mimo české DPH: řádek bez kódu na rozhodnutí nečeká, ale ovládání má (#89)', () => {

@@ -6,7 +6,7 @@
 /**
  * Rozhodnutí uživatele o položce řádku `i` z ploché mapy userActions
  * (`rows[i].item`):
- *   {kind: 'useExisting', id} | {kind: 'noItem'} | {kind: 'skip'} | null.
+ *   {kind: 'useExisting', id} | {kind: 'skip'} | null.
  * Neplatný tvar (`useExisting:` bez čísla, jiná hodnota) → null.
  */
 export function itemDecision(userActions, i) {
@@ -16,7 +16,6 @@ export function itemDecision(userActions, i) {
     const id = Number(ua.slice('useExisting:'.length));
     return Number.isInteger(id) && id > 0 ? { kind: 'useExisting', id } : null;
   }
-  if (ua === 'noItem') return { kind: 'noItem' };
   if (ua === 'skip') return { kind: 'skip' };
   return null;
 }
@@ -64,11 +63,11 @@ export function isEnrichmentSource(key) {
 }
 
 /**
- * Řádek má druhý řádek (efektivní položka, nebo rozhodnutí noItem / skip)
+ * Řádek má druhý řádek (efektivní položka, nebo rozhodnutí skip)
  * — ⟲ enrichment badge se pak nekreslí (U1).
  */
 export function hasSecondLine(decision, display) {
-  if (decision?.kind === 'noItem' || decision?.kind === 'skip') return true;
+  if (decision?.kind === 'skip') return true;
   if (decision?.kind === 'useExisting') return true;
   return display != null;
 }

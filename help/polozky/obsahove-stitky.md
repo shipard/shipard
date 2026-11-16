@@ -19,8 +19,8 @@ položku i účet.
 - Na **Dashboardu** se v sekci **Položky k založení** objevila karta
   s názvem kategorie (třeba *Pohonné hmoty*) a chceš vědět, co udělá
   tlačítko **Založit položku**.
-- Návrh dokladu má u řádku jen účet, ale žádnou položku, a chceš, aby se
-  příště předvyplňovala položka.
+- Řádek v návrhu dokladu má kategorii (ikona ⟲), ale žádnou položku,
+  a chceš, aby se příště předvyplňovala.
 - Chceš zkontrolovat, které kategorie už máš pokryté, nebo hromadně
   otagovat položky po migraci.
 
@@ -83,9 +83,12 @@ položky k založení čekají, průchod začne dialogem **Nejdřív založte
 položky** se stejnými tlačítky jako na kartách — viz
 [Kontrola vytěženého dokladu](../posta/kontrola-vytezeni.md).
 
-**Návrh „jen účet" je platný.** Když kategorie nemá otagovanou položku,
-návrh řádku nese aspoň účet z nabídky. Takový doklad použiješ volbou
-**Jen účet — bez položky** v náhledu — viz
+**Kategorie bez položky se řeší založením položky.** Když kategorie
+nemá otagovanou položku, řádek návrhu zůstane bez položky i bez účtu
+a čeká na tvé rozhodnutí. Nejrychlejší je **Založit položku** — na kartě
+v sekci **Položky k založení** nebo v dialogu **Nejdřív založte
+položky**; návrh pak položku napáruje sám. Položku můžeš vybrat nebo
+založit i přímo u řádku v náhledu — viz
 [Kontrola vytěženého dokladu](../posta/kontrola-vytezeni.md).
 
 **Karta i pro vedlejší řádky.** Karta v sekci **Položky k založení** se
