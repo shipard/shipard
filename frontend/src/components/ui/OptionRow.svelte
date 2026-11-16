@@ -1,11 +1,15 @@
 <script>
-  // Volitelný řádek (#149 D76): jedna volba ze seznamu — import ze Spisovny,
-  // převod bankovních účtů, kód DPH, předmět přenesení, kandidáti partnera.
+  // Volitelný řádek (#149 D76, D80): jedna volba ze seznamu — dialog Přidat
+  // firmu z registru, převod bankovních účtů, kód DPH, předmět přenesení,
+  // kandidáti partnera.
   //
   // `size` podle místa:
   //   `large`   volba s popisem, potvrzuje se tlačítkem dialogu — odsazení
   //             md, zaoblení md, ukazatel volby vlevo, název body strong,
-  //             popis meta šedě, `aside` vpravo;
+  //             popis body barvou textu (D80 — nese běžné údaje: adresu,
+  //             identifikátory, účet; šedou meta si skutečný doplněk dává
+  //             sám), `aside` vpravo — jen když ho rodič předá, prázdný
+  //             obal se nekreslí;
   //   `compact` jednořádková volba aplikovaná kliknutím (popover) —
   //             odsazení xs × sm, zaoblení sm, bez ukazatele.
   // Vybraný: rámeček `primary` + pozadí `primary-soft`; pod kurzorem
@@ -268,9 +272,12 @@
     color: var(--shpd-color-text);
   }
 
+  /* Popis nese běžné údaje (adresa, identifikátory, účet) — body barvou
+     textu, od názvu se liší jen tloušťkou (D80, §11). */
   .shpd-option-row__description {
-    font-size: var(--shpd-font-size-meta);
-    color: var(--shpd-color-text-secondary);
+    font-size: var(--shpd-font-size-body);
+    font-weight: var(--shpd-font-weight-normal);
+    color: var(--shpd-color-text);
   }
 
   .shpd-option-row__aside {

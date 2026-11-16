@@ -536,14 +536,23 @@ Rozhodnutí D75 z #149. Šedá plocha uvnitř obsahu je sdílený
 
 ### Volitelné řádky
 
-Rozhodnutí D76 z #149. Jedna volba ze seznamu je sdílený
+Rozhodnutí D76 a D80 z #149. Jedna volba ze seznamu je sdílený
 `ui/OptionRow.svelte`, ve dvou velikostech podle místa:
 
 - **Velký** (`size="large"`, výchozí) — volba s popisem, která se
   potvrzuje tlačítkem dialogu: odsazení `--shpd-space-md`, zaoblení
   `--shpd-radius-md`, ukazatel volby vždy vlevo (`indicator` `radio`
   výchozí | `checkbox`), název body strong, popis (snippet `description`)
-  meta šedě, obsah vpravo (snippet `aside` — štítky, doplňková volba).
+  **body barvou textu**, tloušťka normal (D80), obsah vpravo (snippet
+  `aside` — štítky, doplňková volba).
+- **Popis nese běžné údaje** — adresu, IČO a DIČ, číslo účtu a měnu —
+  a ty jsou podle §11 body barvou textu; od názvu se liší jen tloušťkou.
+  Šedá meta patří jen skutečnému doplňku a dává si ji obsah popisu sám
+  (vlastní třída uvnitř snippetu), ne `OptionRow`.
+- **`aside` jen s obsahem:** rodič snippet předá, jen když má co ukázat
+  (`aside={maStitky ? stitky : undefined}`, snippet pojmenovaný vedle
+  řádku). Podmínka uvnitř snippetu nechá vpravo prázdný obal s mezerou
+  md.
 - **Kompaktní** (`size="compact"`) — jednořádková volba aplikovaná
   kliknutím (popover): odsazení xs × sm, zaoblení `--shpd-radius-sm`, bez
   ukazatele.
@@ -1738,7 +1747,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/Panel.svelte` | Vložený panel (§8 Vložené panely, D75) — `bg-secondary` s rámečkem `border-subtle`, `variant` compact, `tone` info, `padding` form, `as`; na něm `FormSection` |
-| `frontend/src/components/ui/OptionRow.svelte` | Volitelný řádek (§8 Volitelné řádky, D76) — velký s ukazatelem radio / checkbox a snippety `description` / `aside`, kompaktní jako tlačítko s `role` option / radio; vybraný `primary` + `primary-soft` |
+| `frontend/src/components/ui/OptionRow.svelte` | Volitelný řádek (§8 Volitelné řádky, D76, D80) — velký s ukazatelem radio / checkbox a snippety `description` (body barvou textu) / `aside`, kompaktní jako tlačítko s `role` option / radio; vybraný `primary` + `primary-soft` |
 | `frontend/src/components/ui/SegmentedControl.svelte` | Segmentový přepínač (§8, D77) — `radiogroup` oddělených tlačítek, `options`, bindable `value`, `onchange`; šipky přesouvají jen fokus, vybírá mezerník / Enter / klik (D79) |
 | `frontend/src/components/ui/PageHeader.svelte` | Nadpis stránky (§8, D78) — `h1` s ikonou z navigace a `aside`; `flow` (role page) / `bar` (lišta jako hlavička detailu) |
 | `frontend/src/components/ui/CenteredScreen.svelte` | Obrazovka s kartou uprostřed (§8) — obal `100dvh` s odsazením md a plovoucí plocha `25rem`; přihlášení, nastavení hesla, OpAuth, `StatusScreen` |

@@ -122,11 +122,27 @@
           {@const disabled = candidate.existsInCodebook}
           {@const isChecked = !disabled && !!checked[candidate.id]}
           <li>
+            <!-- Radio „výchozí“ jde do `aside` jen u zaškrtnutého účtu —
+                 jinak by vpravo zůstal prázdný obal s mezerou. -->
+            {#snippet defaultChoice()}
+              <label class="shpd-bank-bridge__default">
+                <input
+                  type="radio"
+                  name="bank-bridge-default"
+                  value={candidate.id}
+                  checked={defaultId === candidate.id}
+                  disabled={saving}
+                  onchange={() => { defaultId = candidate.id; }}
+                />
+                <span>{t('setup.bankDialog.default')}</span>
+              </label>
+            {/snippet}
             <OptionRow
               indicator="checkbox"
               selected={isChecked}
               disabled={disabled || saving}
               onselect={(value) => { checked[candidate.id] = value; }}
+              aside={isChecked ? defaultChoice : undefined}
             >
               <span class="shpd-bank-bridge__name">
                 <span>{candidate.name || accountLine(candidate)}</span>
@@ -146,21 +162,6 @@
                     <span class="shpd-bank-bridge__currency">{candidate.currency.toUpperCase()}</span>
                   {/if}
                 </span>
-              {/snippet}
-              {#snippet aside()}
-                {#if isChecked}
-                  <label class="shpd-bank-bridge__default">
-                    <input
-                      type="radio"
-                      name="bank-bridge-default"
-                      value={candidate.id}
-                      checked={defaultId === candidate.id}
-                      disabled={saving}
-                      onchange={() => { defaultId = candidate.id; }}
-                    />
-                    <span>{t('setup.bankDialog.default')}</span>
-                  </label>
-                {/if}
               {/snippet}
             </OptionRow>
           </li>

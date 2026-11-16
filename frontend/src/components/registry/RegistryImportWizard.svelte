@@ -324,12 +324,30 @@
             {@const key = rowKey(row)}
             {@const isSelected = selectedKey === key}
             {@const isDisabled = row.existsInDb}
+            {@const hasBadges = Boolean(row.existsInDb || (!row.isValid && row.validTo))}
+            <!-- Štítky jdou do `aside` jen tehdy, když řádek nějaké má —
+                 jinak by vpravo zůstal prázdný obal s mezerou. -->
+            {#snippet rowBadges()}
+              <div class="shpd-registry-wizard__row-badges">
+                {#if row.existsInDb}
+                  <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--warning">
+                    {t('registry.wizard.badge.existsInDb')}
+                  </span>
+                {/if}
+                {#if !row.isValid && row.validTo}
+                  <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--muted">
+                    {t('registry.wizard.badge.terminated', { date: row.validTo })}
+                  </span>
+                {/if}
+              </div>
+            {/snippet}
             <OptionRow
               name="registry-wizard-result"
               value={key}
               selected={isSelected}
               disabled={isDisabled}
               onselect={() => handleRowClick(row)}
+              aside={hasBadges ? rowBadges : undefined}
             >
               {row.fullName}
               {#snippet description()}
@@ -345,22 +363,6 @@
                     <span class="shpd-registry-wizard__mono">DIČ {row.vatId}</span>
                   {/if}
                 </span>
-              {/snippet}
-              {#snippet aside()}
-                {#if row.existsInDb || (!row.isValid && row.validTo)}
-                  <div class="shpd-registry-wizard__row-badges">
-                    {#if row.existsInDb}
-                      <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--warning">
-                        {t('registry.wizard.badge.existsInDb')}
-                      </span>
-                    {/if}
-                    {#if !row.isValid && row.validTo}
-                      <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--muted">
-                        {t('registry.wizard.badge.terminated', { date: row.validTo })}
-                      </span>
-                    {/if}
-                  </div>
-                {/if}
               {/snippet}
             </OptionRow>
           {/each}
@@ -528,7 +530,8 @@
     gap: var(--shpd-space-sm);
   }
 
-  /* Obsah popisu řádku (OptionRow dává písmo meta a šedou) — jen rozložení. */
+  /* Obsah popisu řádku — adresa, IČO a DIČ jsou běžné údaje: písmo body
+     a barvu textu dává OptionRow (D80), tady jen rozložení. */
   .shpd-registry-wizard__row-address {
     display: flex;
     align-items: center;
