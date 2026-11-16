@@ -1,6 +1,6 @@
 # Design system — opravy z ověření sdílených ovládacích prvků
 
-**Stav:** hotovo — 2026-11-16 (#149, D79, D80); ověřeno skriptem v prohlížeči (Odchylky 7), ruční ověření čeká; navíc opravena šířka popoveru na úzkém displeji (Odchylky 8)
+**Stav:** hotovo — 2026-11-16 (#149, D79, D80); ověřeno skriptem v prohlížeči (Odchylky 7) a ručně 2026-11-16 (body 1–3, 5, popover na 360 px `ok`; bod 4 převod bankovních účtů jen skriptem); navíc opravena šířka popoveru na úzkém displeji (Odchylky 8); patička review na telefonu → #155
 
 ## Kontext / Cíl
 
