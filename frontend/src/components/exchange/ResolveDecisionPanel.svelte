@@ -29,6 +29,8 @@
   import { t } from '../../i18n/index.js';
   import Panel from '../ui/Panel.svelte';
   import OptionRow from '../ui/OptionRow.svelte';
+  import Icon from '../ui/Icon.svelte';
+  import { iconAdd } from '../../icons.js';
   import FormDialog from '../form/FormDialog.svelte';
 
   let {
@@ -316,9 +318,10 @@
         onclick={onRegistryQuickAdd}
         disabled={registryBusy}
       >
-        + {registryBusy
+        <Icon icon={iconAdd} size="sm" />
+        <span>{registryBusy
           ? t('exchange.preview.registry.creating')
-          : t('exchange.preview.registry.quickAdd', { name: registryHit.fullName })}
+          : t('exchange.preview.registry.quickAdd', { name: registryHit.fullName })}</span>
       </button>
       {#if registryError}
         <div class="shpd-resolve__status shpd-resolve__status--error">{registryError}</div>
@@ -336,7 +339,8 @@
         class="shpd-resolve__create"
         onclick={chooseCreateViaApplier}
       >
-        + {createLabel}
+        <Icon icon={iconAdd} size="sm" />
+        <span>{createLabel}</span>
       </button>
     </div>
   {:else}
@@ -383,7 +387,8 @@
         data-testid={path ? `review-ref-create:${path}` : 'review-ref-create'}
         onclick={openCreateDialog}
       >
-        + {createLabel}
+        <Icon icon={iconAdd} size="sm" />
+        <span>{createLabel}</span>
       </button>
       {#if referenceKind === 'party' && onOpenRegistrySearch}
         <button
@@ -580,9 +585,12 @@
     gap: var(--shpd-space-xs);
   }
 
+  /* Tlačítka „vytvořit“ (nový záznam, rychlé založení z registru): „+“ je
+     ikona, ne součást textu. Dlouhý popisek s názvem firmy se zalomí —
+     ikona sedí na účaří prvního řádku, posunutá jako ikona v textu. */
   .shpd-resolve__create {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: var(--shpd-space-xs);
     width: 100%;
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
@@ -594,6 +602,16 @@
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     text-align: left;
+  }
+
+  .shpd-resolve__create :global(.shpd-icon) {
+    position: relative;
+    top: 0.125em;
+  }
+
+  .shpd-resolve__create span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .shpd-resolve__create:hover {

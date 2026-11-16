@@ -110,8 +110,10 @@
     font-style: italic;
   }
 
-  /* Patička karty (review: založení z registru) — pod tělem s mezerou. */
+  /* Patička karty (review: založení z registru) — pod tělem s mezerou;
+     obsah se smí zúžit s kartou, nikdy ji neroztáhne. */
   .shpd-party-card__footer {
+    min-width: 0;
     margin-top: var(--shpd-space-sm);
   }
 </style>

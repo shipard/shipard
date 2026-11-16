@@ -13,6 +13,14 @@
     onclick?: () => void;
     /** Volitelný `data-testid` pro automatizaci (video-runner, smoke E2E). */
     testid?: string;
+    /**
+     * Dlouhý popisek se smí zalomit (výchozí `false` = jeden řádek). Jen pro
+     * tlačítko s proměnným textem v úzkém místě (rychlé založení z registru
+     * s názvem firmy): text vlevo, výška podle obsahu, ikona u prvního
+     * řádku, nejvýš šířka rodiče. Jednořádkové je stejně vysoké jako bez
+     * `wrap`.
+     */
+    wrap?: boolean;
   }
 
   let {
@@ -26,6 +34,7 @@
     type = 'button',
     onclick,
     testid,
+    wrap = false,
   }: Props = $props();
 
   const isDisabled = $derived(disabled || loading);
@@ -35,6 +44,7 @@
   class="shpd-btn shpd-btn--{variant} shpd-btn--{size}"
   class:shpd-btn--loading={loading}
   class:shpd-btn--icon-only={iconOnly}
+  class:shpd-btn--wrap={wrap}
   {type}
   data-testid={testid}
   disabled={isDisabled}
@@ -150,6 +160,38 @@
   .shpd-btn--ghost:hover:not(:disabled) {
     background-color: var(--shpd-color-bg-hover);
     color: var(--shpd-color-text);
+  }
+
+  /* Zalamovaný popisek (prop `wrap`, opt-in — výchozí tlačítko zůstává na
+   * jednom řádku). Řádkování jako běžný text, text vlevo, nejvýš šířka
+   * rodiče. Svislé odsazení je menší o půl prokladu řádku, takže
+   * jednořádkové tlačítko je stejně vysoké jako bez `wrap` a mezera mezi
+   * textem a rámečkem se nemění. Ikona a spinner sedí na účaří prvního
+   * řádku a jsou posunuté jako ikona v textu. */
+  .shpd-btn--wrap {
+    align-items: baseline;
+    justify-content: flex-start;
+    min-width: 0;
+    max-width: 100%;
+    padding-block: max(0rem, calc(var(--shpd-space-sm) - (1lh - 1em) / 2));
+    white-space: normal;
+    line-height: normal;
+    text-align: left;
+  }
+
+  .shpd-btn--wrap.shpd-btn--sm {
+    padding-block: max(0rem, calc(var(--shpd-space-xs) - (1lh - 1em) / 2));
+  }
+
+  .shpd-btn--wrap .shpd-btn__label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .shpd-btn--wrap :global(.shpd-icon),
+  .shpd-btn--wrap .shpd-btn__spinner {
+    position: relative;
+    top: 0.125em;
   }
 
   /* Spinner */

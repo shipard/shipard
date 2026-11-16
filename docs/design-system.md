@@ -1700,8 +1700,11 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 - **Strany** (D50): `PartyCard` ×2 v mřížce dvou sloupců (pod 30 rem pod
   sebe) se snippety `status` (stav strany vpravo v nadpisu karty —
   `Card` `aside`), `bankStatus` (značka účtu za číslem; účet se ukáže
-  i bez čísla, když má vlastní rozhodnutí) a `footer` („Založit
-  z registru“ jako `Button` secondary sm); kontaktní osoba je první
+  i bez čísla, když má vlastní rozhodnutí) a `footer` („Vytvořit
+  z registru: název“ jako `Button` secondary sm s ikonou `iconAdd`
+  a `wrap` — popisek s názvem firmy se zalomí uvnitř tlačítka, které je
+  nejvýš tak široké jako karta; stejné tlačítko v rozhodovacím panelu
+  partnera má „+“ také jako ikonu); kontaktní osoba je první
   položka kontaktů („Kontaktní osoba: …“).
 - **Údaje** (D51): `PropertyGroups` se skupinami Data / Platba / DPH
   a `emptyValue="—"` — prázdné pole se ukazuje, kontroluje se vytěžení;
@@ -1743,7 +1746,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard). Třetí pravidlo (D71): hex barva jen ve `styles/variables.css` a `dev/theme.css` — hledá se v hodnotách deklarací, atributu `style` a direktivě `style:` mimo komentáře; výjimky po souborech s důvodem (`HEX_EXEMPT`), hex v JS datech se nehlídá |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
-| `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
+| `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami. Popisek je vždy na jednom řádku (`nowrap`); prop `wrap` (opt-in) ho dovolí zalomit — text vlevo, výška podle obsahu, ikona u prvního řádku, nejvýš šířka rodiče, jednořádkové stejně vysoké jako bez `wrap`. Jen pro tlačítko s proměnným textem v úzkém místě (rychlé založení z registru s názvem firmy), ne jako obecný vzhled |
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/Panel.svelte` | Vložený panel (§8 Vložené panely, D75) — `bg-secondary` s rámečkem `border-subtle`, `variant` compact, `tone` info, `padding` form, `as`; na něm `FormSection` |

@@ -48,6 +48,7 @@
     reviewTotals,
   } from './reviewParts.js';
   import { formatDate } from '../../utils/formatDate.js';
+  import { iconAdd } from '../../icons.js';
   import ResolveDecisionPanel from './ResolveDecisionPanel.svelte';
   import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
   import ReverseChargeDecisionPanel from './ReverseChargeDecisionPanel.svelte';
@@ -1245,14 +1246,18 @@
           {@render statusBadge(bankResolve, bankPath, 'bankAccount')}
         {/snippet}
         {#snippet partyFooter()}
+          <!-- Popisek nese název firmy — tlačítko se smí zalomit (`wrap`),
+               „+“ je ikona, ne součást textu. -->
           <div class="shpd-exchange__party-footer">
             <Button
               size="sm"
               variant="secondary"
+              icon={iconAdd}
+              wrap
               disabled={quickAddBusy[path] ?? false}
               label={quickAddBusy[path]
                 ? t('exchange.preview.registry.creating')
-                : `+ ${t('exchange.preview.registry.quickAdd', { name: registryHits[path].fullName })}`}
+                : t('exchange.preview.registry.quickAdd', { name: registryHits[path].fullName })}
               onclick={() => handleRegistryQuickAdd(path)}
             />
             {#if quickAddError[path]}
@@ -1424,11 +1429,18 @@
     }
   }
 
-  /* Patička karty strany: rychlé založení z registru + chyba pod ním. */
+  /* Patička karty strany: rychlé založení z registru + chyba pod ním.
+     Tlačítko je široké podle popisku, nejvýš jako karta (`Button wrap`
+     popisek zalomí); chyba pod ním zůstává přes celou šířku. */
   .shpd-exchange__party-footer {
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-xs);
+    min-width: 0;
+  }
+
+  .shpd-exchange__party-footer :global(.shpd-btn) {
+    align-self: flex-start;
   }
 
   /* Řádek nadpisu Řádky dokladu: souhrn obohacení a hromadné akce. */
