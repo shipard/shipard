@@ -7,6 +7,9 @@
   //   open       boolean
   //   anchor     HTMLElement | null — element to position relative to
   //   placement  'bottom' | 'top' | 'right' | 'left' (default 'bottom')
+  //   width      pevná šířka panelu (`25rem`) | 'auto' | null; panel není
+  //              nikdy širší než okno bez okrajů — na úzkém displeji se
+  //              zúží, i když má pevnou šířku
   //   onClose    () => void  — fires on Escape or outside click
   //   testid     volitelný `data-testid` kořene panelu (vzor Button / Modal)
   //   children   Svelte 5 children snippet
@@ -36,6 +39,14 @@
   const GAP = 8; // mezera mezi kotvou a panelem
   const MARGIN = 8; // minimální odstup od okraje viewportu
   const MIN_HEIGHT = 160; // pod tuto výšku panel nestlačujeme
+
+  // Pevná šířka je zároveň strop — ale nejvýš okno bez okrajů (1rem = dva
+  // odstupy MARGIN), jinak by panel na telefonu přesahoval vpravo a
+  // reposition() by ho neměl kam posunout. `auto` a null nechávají strop
+  // na výchozím pravidle třídy.
+  let maxWidth = $derived(
+    width && width !== 'auto' ? `min(${width}, calc(100vw - 1rem))` : null,
+  );
 
   // Spočítá pozici (a případně max-height) panelu vůči kotvě a viewportu.
   //
@@ -169,7 +180,7 @@
     style:top="{position.top}px"
     style:left="{position.left}px"
     style:width={width}
-    style:max-width={width}
+    style:max-width={maxWidth}
     role="dialog"
     data-testid={testid}
   >
@@ -182,7 +193,8 @@
     position: fixed;
     z-index: 1000;
     min-width: 15rem;
-    max-width: 22.5rem;
+    /* Nejvýš okno bez okrajů (viz `maxWidth` u pevné šířky). */
+    max-width: min(22.5rem, calc(100vw - 1rem));
     background: var(--shpd-color-bg);
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-md);

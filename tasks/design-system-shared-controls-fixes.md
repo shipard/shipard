@@ -1,6 +1,6 @@
 # Design system — opravy z ověření sdílených ovládacích prvků
 
-**Stav:** hotovo — 2026-11-16 (#149, D79, D80); ověřeno skriptem v prohlížeči (Odchylky 7), ruční ověření čeká; nález mimo rozsah: popover rozhodnutí na 360 px přesahuje okno (Odchylky 8)
+**Stav:** hotovo — 2026-11-16 (#149, D79, D80); ověřeno skriptem v prohlížeči (Odchylky 7), ruční ověření čeká; navíc opravena šířka popoveru na úzkém displeji (Odchylky 8)
 
 ## Kontext / Cíl
 
@@ -218,12 +218,17 @@ V prohlížeči na volném dev zdroji dat, světlý i tmavý vzhled:
      a 360 px — tlačítko uvnitř karty, popisek uvnitř tlačítka, stránka
      bez vodorovného posuvu; totéž tlačítko v panelu. Na tlačítko se
      neklikalo (založilo by osobu).
-8. **Nálezy mimo rozsah, neopravené:**
-   - popover rozhodnutí v náhledu importu má pevnou šířku 25 rem a na
-     360 px přesahuje okno vpravo (tlačítka uvnitř panel nepřesahují);
-   - v dialogu z registru na 360 px zabere štítek tolik místa, že tělo
-     řádku se štítkem má kolem 110 px — štítky uvnitř řádků řeší badge
-     systém (§5).
+8. **Nálezy mimo rozsah:**
+   - **opraveno navíc** (po dohodě): popover rozhodnutí v náhledu importu
+     měl pevnou šířku 25 rem a na 360 px přesahoval okno vpravo, takže
+     bod 5 ověření na telefonu neplatil pro panel partnera. `Popover`
+     teď není nikdy širší než okno bez okrajů (`min(šířka, 100vw − 1rem)`,
+     stejně výchozí strop 22,5 rem). Ověřeno na 360 a 320 px: rozhodnutí
+     partnera, kód DPH, výběr období reportu (ten přesahoval o 8 px
+     také), menu exportu; na 1500 a 760 px šířky beze změny;
+   - **neopraveno:** v dialogu z registru na 360 px zabere štítek tolik
+     místa, že tělo řádku se štítkem má kolem 110 px — štítky uvnitř
+     řádků řeší badge systém (§5).
 
 ## Pasti
 

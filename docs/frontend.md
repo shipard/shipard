@@ -1334,6 +1334,13 @@ kódové vzorce: **toggle při kliku na trigger** a **close-on-outside přes
 document click listener registrovaný v `$effect`**. Tyhle dva vzorce spolu
 mají jednu nepříjemnou interakci, na které se dá lehce spálit.
 
+Sdílený `ui/Popover.svelte` není nikdy širší než okno bez okrajů: výchozí
+strop je `min(22.5rem, 100vw − 1rem)` a pevná šířka z propu `width`
+(`25rem` u rozhodnutí v náhledu importu) se na úzkém displeji zúží na
+okno. Obsah popoveru proto nesmí počítat s pevnou šířkou — má se zúžit
+a zalomit. Bez toho panel na telefonu přesahoval vpravo, protože
+vodorovné dorovnání k okraji okna nemá u širšího panelu kam posunout.
+
 #### Past: zavírání menu z handleru položky uvnitř menu
 
 Nechci zavírat menu pomocí `closeMenu()` v handleru položky, která spouští
