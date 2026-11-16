@@ -325,6 +325,7 @@ class JsoncFormLoader
             inputType: $inputType,
             lookup: $lookup,
             allowCustom: (bool) ($elData['allowCustom'] ?? false),
+            blocks: $elData['blocks'] ?? null,
         );
     }
 

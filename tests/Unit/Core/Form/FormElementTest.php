@@ -119,6 +119,87 @@ class FormElementTest extends TestCase
         new FormElement(type: 'html');
     }
 
+    // ── content (#150 D83) ───────────────────────────────────────────────────
+
+    public function testContentSerializesBlocks(): void
+    {
+        $blocks = [
+            ['type' => 'hint', 'text' => 'Nápověda'],
+            ['type' => 'composite', 'blocks' => [
+                ['type' => 'heading', 'text' => 'Nadpis'],
+                ['type' => 'properties', 'groups' => [['title' => '', 'items' => [['label' => 'A', 'value' => 'B']]]]],
+            ]],
+        ];
+        $el = new FormElement(type: 'content', blocks: $blocks);
+        $arr = $el->toArray();
+
+        $this->assertSame('content', $arr['type']);
+        $this->assertSame($blocks, $arr['blocks']);
+        $this->assertArrayNotHasKey('content', $arr);
+    }
+
+    public function testContentRequiresBlocks(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('content element requires a non-empty list of blocks');
+
+        new FormElement(type: 'content');
+    }
+
+    public function testContentRejectsEmptyBlocks(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('content element requires a non-empty list of blocks');
+
+        new FormElement(type: 'content', blocks: []);
+    }
+
+    public function testContentRejectsUnknownBlockType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('content.blocks[1] has type "html"');
+
+        new FormElement(type: 'content', blocks: [
+            ['type' => 'text', 'text' => 'ok'],
+            ['type' => 'html', 'html' => '<p>no</p>'],
+        ]);
+    }
+
+    public function testContentRejectsBlockWithoutType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('content.blocks[0] has type ""');
+
+        new FormElement(type: 'content', blocks: [['text' => 'bez typu']]);
+    }
+
+    /** Blok vázaný na viewer do formuláře nesmí ani vnořený v `composite`. */
+    public function testContentRejectsViewerBlockInsideComposite(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('content.blocks[0] has type "document"');
+
+        new FormElement(type: 'content', blocks: [
+            ['type' => 'composite', 'blocks' => [['type' => 'document']]],
+        ]);
+    }
+
+    public function testContentRejectsNonArrayBlock(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('content.blocks[0] must be array');
+
+        new FormElement(type: 'content', blocks: ['text']);
+    }
+
+    public function testBlocksOnlyValidForContent(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('blocks are only valid for content elements');
+
+        new FormElement(type: 'separator', blocks: [['type' => 'text', 'text' => 'x']]);
+    }
+
     public function testToArrayOmitsNullProperties(): void
     {
         $el = new FormElement(type: 'input', column: 'name', label: 'Name');

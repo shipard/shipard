@@ -413,6 +413,27 @@ final class TabBuilder
         return $this;
     }
 
+    /**
+     * Prvek `content` (#150 D83): bloky obsahu detailu záznamu
+     * (`DetailContent::SHARED_TYPES` — vlastnosti, tabulka, hláška, text,
+     * nápověda `hint`…) přes obě kolony sloupce. Texty bloků z katalogu
+     * (`TableForm::formText()`), ne literály; HTML se neposílá.
+     *
+     * @param list<array<string, mixed>> $blocks
+     */
+    public function content(array $blocks, bool $hidden = false): static
+    {
+        $this->requireOpenColumn('content()');
+        if ($this->inlineBuffer !== null) {
+            throw new \LogicException(sprintf(
+                'TabBuilder["%s"]: content cannot appear inside inline group',
+                $this->id,
+            ));
+        }
+        $this->currentElements[] = new FormElement(type: 'content', hidden: $hidden, blocks: $blocks);
+        return $this;
+    }
+
     public function component(string $name, ?array $params = null): static
     {
         $this->requireOpenColumn('component()');

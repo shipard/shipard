@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Form;
 
+use Shipard\Core\Viewer\Detail\DetailContent;
+
 final class FormElement
 {
     public const ALLOWED_TYPES = [
@@ -14,6 +16,7 @@ final class FormElement
         'separator',
         'inline',
         'component',
+        'content',
         'html',
     ];
 
@@ -39,6 +42,9 @@ final class FormElement
      * @param FormElement[]|null $elements Used by inline groups.
      * @param array<int, array{value: mixed, label: string}>|null $options
      * @param array{table: string, filter: array<string, scalar>|null}|null $lookup
+     * @param list<array<string, mixed>>|null $blocks Bloky obsahu prvku `content`
+     *     (#150 D83) — kontrakt detailu záznamu (`DetailContent`), jen typy
+     *     sdílené komponenty frontendu (`DetailContent::SHARED_TYPES`).
      */
     public function __construct(
         public readonly string $type,
@@ -58,6 +64,7 @@ final class FormElement
         public readonly ?array $lookup = null,
         public readonly ?array $params = null,
         public readonly bool $allowCustom = false,
+        public readonly ?array $blocks = null,
     ) {
         if (!in_array($type, self::ALLOWED_TYPES, true)) {
             throw new \InvalidArgumentException(sprintf(
@@ -114,6 +121,12 @@ final class FormElement
             throw new \InvalidArgumentException('html element requires content');
         }
 
+        if ($type === 'content') {
+            self::assertContentBlocks($blocks);
+        } elseif ($blocks !== null) {
+            throw new \InvalidArgumentException('blocks are only valid for content elements');
+        }
+
         if ($type === 'lookup') {
             if ($column === null || $column === '') {
                 throw new \InvalidArgumentException('lookup element requires column');
@@ -139,6 +152,35 @@ final class FormElement
             }
             if (array_key_exists('create_defaults', $lookup) && !is_bool($lookup['create_defaults'])) {
                 throw new \InvalidArgumentException('lookup.create_defaults must be bool');
+            }
+        }
+    }
+
+    /**
+     * Prvek `content`: neprázdný seznam bloků, každý blok pole s typem ze
+     * sdílené komponenty — včetně bloků vnořených v `composite`. Blok vázaný
+     * na viewer (`document`, `attachments`…) ani HTML do formuláře nepatří.
+     */
+    private static function assertContentBlocks(?array $blocks): void
+    {
+        if ($blocks === null || $blocks === [] || !array_is_list($blocks)) {
+            throw new \InvalidArgumentException('content element requires a non-empty list of blocks');
+        }
+        foreach ($blocks as $i => $block) {
+            if (!is_array($block)) {
+                throw new \InvalidArgumentException(
+                    sprintf('content.blocks[%d] must be array, got %s', $i, get_debug_type($block)),
+                );
+            }
+            foreach (DetailContent::types($block) as $blockType) {
+                if (!in_array($blockType, DetailContent::SHARED_TYPES, true)) {
+                    throw new \InvalidArgumentException(sprintf(
+                        'content.blocks[%d] has type "%s"; allowed: %s',
+                        $i,
+                        $blockType,
+                        implode(', ', DetailContent::SHARED_TYPES),
+                    ));
+                }
             }
         }
     }
@@ -185,6 +227,9 @@ final class FormElement
         }
         if ($this->content !== null) {
             $result['content'] = $this->content;
+        }
+        if ($this->blocks !== null) {
+            $result['blocks'] = $this->blocks;
         }
         if ($this->componentName !== null) {
             $result['component_name'] = $this->componentName;

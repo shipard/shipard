@@ -9,6 +9,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\ColumnDefinition;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\I18n\CatalogText;
 use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\StructuredFields\StructuredFieldFormBuilder;
@@ -91,6 +92,26 @@ abstract class TableForm
     protected function formatDateTime(mixed $value): ?string
     {
         return DisplayDate::dateTime($value, $this->language);
+    }
+
+    /**
+     * Text formuláře z katalogu modulu `<modul>.formTexts`, sekce `texts`
+     * (`{"texts": {<klíč>: {name, name:cs, name:en}}}` — stejný tvar jako
+     * texty viewerů v `*.viewerDetailLabels`; #150 D87). Jazyk dává
+     * konfigurace zkompilovaná v jazyce požadavku, `{param}` v textu nahradí
+     * `$params`. Bez katalogu (konfigurace před `ds-upgrade`) i pro chybějící
+     * klíč anglický fallback — holé `name` v katalogu se s ním shoduje znak
+     * po znaku. Implementaci sdílí s viewery ({@see CatalogText}).
+     *
+     * Texty prvků formuláře (nápovědy, prázdné stavy, hlášky, popisky bloků
+     * `content`) nejsou literály v PHP.
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function formText(string $cfgItemId, string $key, string $englishFallback, array $params = []): string
+    {
+        $catalog = $this->config?->cfgItem($cfgItemId);
+        return CatalogText::resolve(is_array($catalog) ? ($catalog['texts'] ?? null) : null, $key, $englishFallback, $params);
     }
 
     abstract public function buildFormDefinition(array $data, bool $isNew): FormDefinition;

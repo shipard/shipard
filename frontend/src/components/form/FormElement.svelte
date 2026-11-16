@@ -10,6 +10,7 @@
   import LookupInput from '../ui/LookupInput.svelte';
   import FormFieldRow from './FormFieldRow.svelte';
   import FormInline from './FormInline.svelte';
+  import ContentBlock from '../content/ContentBlock.svelte';
   import { formComponents } from './formComponents.js';
 
   let {
@@ -52,6 +53,13 @@
 {:else if element.type === 'html'}
   <div class="shpd-form-html" class:shpd-form-html--hidden={element.hidden}>
     {@html element.content}
+  </div>
+
+{:else if element.type === 'content'}
+  <!-- Bloky obsahu detailu (#150 D83) — tatáž komponenta jako v detailu
+       záznamu; seznam bloků se kreslí jako `composite` (mezery mezi bloky). -->
+  <div class="shpd-form-content" class:shpd-form-content--hidden={element.hidden}>
+    <ContentBlock block={{ type: 'composite', blocks: element.blocks ?? [] }} />
   </div>
 
 {:else if element.type === 'component'}
@@ -126,12 +134,13 @@
 
 <style>
   /*
-   * separator / inline / html / component / checkbox-row span both grid tracks
+   * separator / inline / html / content / component / checkbox-row span both grid tracks
    * of the parent FormColumn (label + input). FormInline is the exception —
    * its outer label IS the first track, so it does NOT span.
    */
   .shpd-form-separator,
   .shpd-form-html,
+  .shpd-form-content,
   .shpd-form-component,
   .shpd-form-checkbox-row {
     grid-column: 1 / -1;
@@ -159,6 +168,7 @@
 
   .shpd-form-separator--hidden,
   .shpd-form-html--hidden,
+  .shpd-form-content--hidden,
   .shpd-form-component--hidden,
   .shpd-form-checkbox-row--hidden {
     display: none;
@@ -167,6 +177,12 @@
   .shpd-form-html {
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text);
+  }
+
+  /* Obsah z bloků (#150 D83): písmo a barvy dávají bloky samy; `min-width: 0`
+     nechá tabulku v bloku posouvat se v obalu místo roztažení sloupce. */
+  .shpd-form-content {
+    min-width: 0;
   }
 
   .shpd-form-component {

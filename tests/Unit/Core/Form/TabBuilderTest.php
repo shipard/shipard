@@ -308,6 +308,44 @@ class TabBuilderTest extends TestCase
         $this->assertSame('<p>Hi</p>', $el->content);
     }
 
+    public function testContent(): void
+    {
+        $blocks = [['type' => 'hint', 'text' => 'Nápověda']];
+        $tab = (new TabBuilder('t', 'T'))
+            ->section()->col()->content($blocks)
+            ->build();
+        $el = $tab->sections[0]->columns[0]->elements[0];
+        $this->assertSame('content', $el->type);
+        $this->assertSame($blocks, $el->blocks);
+        $this->assertFalse($el->hidden);
+    }
+
+    public function testContentHidden(): void
+    {
+        $tab = (new TabBuilder('t', 'T'))
+            ->section()->col()->content([['type' => 'text', 'text' => 'x']], hidden: true)
+            ->build();
+        $this->assertTrue($tab->sections[0]->columns[0]->elements[0]->hidden);
+    }
+
+    public function testContentRejectsUnknownBlockType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new TabBuilder('t', 'T'))->section()->col()->content([['type' => 'attachments']]);
+    }
+
+    public function testContentNotAllowedInsideInline(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('content cannot appear inside inline group');
+
+        (new TabBuilder('t', 'T'))
+            ->section()->col()
+            ->inline()
+            ->content([['type' => 'text', 'text' => 'x']]);
+    }
+
     public function testComponent(): void
     {
         $tab = (new TabBuilder('t', 'T'))

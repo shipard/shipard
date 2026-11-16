@@ -11,6 +11,7 @@ use Shipard\Core\Database\RecordPattern;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\I18n\CatalogText;
 use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
@@ -771,18 +772,14 @@ abstract class TableViewer
     }
 
     /**
-     * Jediné místo, kde se z definic `{<key>: {name}}` bere text, nahrazují
-     * parametry a vrací fallback.
+     * Text z definic `{<key>: {name}}` — implementaci sdílí s formuláři
+     * (`TableForm::formText()`) třída {@see CatalogText}.
      *
      * @param array<string, scalar> $params
      */
     private static function catalogText(mixed $defs, string $key, string $fallback, array $params): string
     {
-        $text = is_array($defs) ? (string) ($defs[$key]['name'] ?? $fallback) : $fallback;
-        foreach ($params as $name => $value) {
-            $text = str_replace('{' . $name . '}', (string) $value, $text);
-        }
-        return $text;
+        return CatalogText::resolve($defs, $key, $fallback, $params);
     }
 
     /**
