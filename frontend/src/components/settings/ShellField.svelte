@@ -11,6 +11,8 @@
   import { t } from '../../i18n/index.js';
   import ShellSegments from './ShellSegments.svelte';
 
+  let { label = undefined } = $props();
+
   const FOLLOW = 'follow';
 
   const options = [
@@ -35,7 +37,7 @@
 </script>
 
 <div class="shpd-shell-field">
-  <ShellSegments value={current} {options} onSelect={select} />
+  <ShellSegments value={current} {options} onSelect={select} {label} />
 
   {#if shellStore.follow}
     <div class="shpd-shell-field__note">

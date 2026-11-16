@@ -21,7 +21,7 @@
   import { iconPalette } from '../../icons.js';
   import ThemeModeSegments from './ThemeModeSegments.svelte';
 
-  let { onOpenThemePanel, showFollow = true } = $props();
+  let { onOpenThemePanel, showFollow = true, label = undefined } = $props();
 
   // Otevření panelu deferujeme za aktuální klik (setTimeout 0). ThemePanel
   // si na desktopu po otevření přidá document click listener; bez deferu by
@@ -68,7 +68,7 @@
   {/if}
 
   {#if !showFollow || !themeStore.follow}
-    <ThemeModeSegments mode={themeStore.mode} onSelect={select} />
+    <ThemeModeSegments mode={themeStore.mode} onSelect={select} {label} />
 
     {#if themeStore.mode === 'custom'}
       <button type="button" class="shpd-theme-field__edit" onclick={openPanel}>

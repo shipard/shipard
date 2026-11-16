@@ -184,24 +184,26 @@
                 <AvatarSlotField />
               {:else if field.type === 'theme'}
                 {#if (definition.scope ?? 'ds') === 'user'}
-                  <ThemeField {onOpenThemePanel} />
+                  <ThemeField {onOpenThemePanel} label={field.label} />
                 {:else}
                   <DsThemeField
+                    label={field.label}
                     value={values[field.id]}
                     onchange={(v) => { values[field.id] = v; }}
                   />
                 {/if}
               {:else if field.type === 'shell'}
                 {#if (definition.scope ?? 'ds') === 'user'}
-                  <ShellField />
+                  <ShellField label={field.label} />
                 {:else}
                   <DsShellField
+                    label={field.label}
                     value={values[field.id]}
                     onchange={(v) => { values[field.id] = v; }}
                   />
                 {/if}
               {:else if field.type === 'language'}
-                <LanguageField />
+                <LanguageField label={field.label} />
               {:else if field.type === 'color'}
                 <ColorField
                   id={`settings-${field.id}`}

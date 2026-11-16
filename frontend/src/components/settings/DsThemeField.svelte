@@ -11,7 +11,7 @@
   import ThemeSwatches from './ThemeSwatches.svelte';
   import Panel from '../ui/Panel.svelte';
 
-  let { value, onchange } = $props();
+  let { value, onchange, label = undefined } = $props();
 
   // Sdílené s theme.svelte.js DEFAULT_CUSTOM (Shipard modrá, světlá báze).
   const DEFAULT_CUSTOM = {
@@ -44,7 +44,7 @@
 </script>
 
 <div class="shpd-ds-theme-field">
-  <ThemeModeSegments mode={current.mode} onSelect={selectMode} />
+  <ThemeModeSegments mode={current.mode} onSelect={selectMode} {label} />
 
   {#if current.mode === 'custom'}
     <Panel class="shpd-ds-theme-field__swatches">

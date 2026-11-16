@@ -21,6 +21,7 @@
   import Checkbox from '../ui/Checkbox.svelte';
   import Button from '../ui/Button.svelte';
   import Popover from '../ui/Popover.svelte';
+  import SegmentedControl from '../ui/SegmentedControl.svelte';
   import { iconDownload } from '../../icons.js';
   import { noticeStore } from '../../stores/notice.svelte.js';
   import { t } from '../../i18n/index.js';
@@ -194,6 +195,11 @@
     }
   }
 
+  const formatOptions = [
+    { value: false, label: t('reports.format.exact') },
+    { value: true, label: t('reports.format.thousands') },
+  ];
+
   function setThousands(value) {
     thousands = value;
     const saved = reportId ? sessionState.get(reportId) : null;
@@ -281,24 +287,11 @@
           {/if}
         </span>
       {/each}
-      <div class="shpd-reports__format" role="radiogroup">
-        <button
-          type="button"
-          class="shpd-reports__format-segment"
-          class:shpd-reports__format-segment--active={!thousands}
-          role="radio"
-          aria-checked={!thousands}
-          onclick={() => setThousands(false)}
-        >{t('reports.format.exact')}</button>
-        <button
-          type="button"
-          class="shpd-reports__format-segment"
-          class:shpd-reports__format-segment--active={thousands}
-          role="radio"
-          aria-checked={thousands}
-          onclick={() => setThousands(true)}
-        >{t('reports.format.thousands')}</button>
-      </div>
+      <SegmentedControl
+        options={formatOptions}
+        value={thousands}
+        onchange={setThousands}
+      />
       <span class="shpd-reports__export" bind:this={exportAnchor}>
         <Button
           label={t('reports.export.label')}
@@ -400,31 +393,6 @@
   .shpd-reports__param-field {
     width: auto;
     min-width: 10em;
-  }
-
-  .shpd-reports__format {
-    display: inline-flex;
-    gap: var(--shpd-space-xs);
-  }
-
-  .shpd-reports__format-segment {
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-sm);
-    cursor: pointer;
-  }
-
-  .shpd-reports__format-segment:hover {
-    background-color: var(--shpd-color-bg-secondary);
-  }
-
-  .shpd-reports__format-segment--active {
-    border-color: var(--shpd-color-accent);
-    background-color: var(--shpd-color-bg-secondary);
-    font-weight: 500;
   }
 
   .shpd-reports__export-menu {

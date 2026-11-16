@@ -6,7 +6,7 @@
   import { KNOWN_SHELLS, DEFAULT_SHELL } from '../../utils/shell.js';
   import ShellSegments from './ShellSegments.svelte';
 
-  let { value, onchange } = $props();
+  let { value, onchange, label = undefined } = $props();
 
   const options = [
     { value: 'sidebar', labelKey: 'shell.option.sidebar' },
@@ -25,4 +25,4 @@
   }
 </script>
 
-<ShellSegments value={current} {options} onSelect={select} />
+<ShellSegments value={current} {options} onSelect={select} {label} />

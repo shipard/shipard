@@ -16,6 +16,7 @@
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
   import Panel from '../ui/Panel.svelte';
+  import SegmentedControl from '../ui/SegmentedControl.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import VatRegistrationPrefillDialog from './VatRegistrationPrefillDialog.svelte';
@@ -316,21 +317,13 @@
     {#if key === VAT_KEY}
       <!-- Tři explicitní stavy — nerozhodnuto je legitimní hodnota a nesmí
            vypadat jako neplátce. -->
-      <div class="shpd-ds-setup__segments" role="radiogroup">
-        {#each vatStates as state (String(state.value))}
-          <button
-            type="button"
-            class="shpd-ds-setup__segment"
-            class:shpd-ds-setup__segment--active={draft[key] === state.value}
-            role="radio"
-            aria-checked={draft[key] === state.value}
-            disabled={savingKey !== null}
-            onclick={() => setParameter(key, state.value)}
-          >
-            {state.label}
-          </button>
-        {/each}
-      </div>
+      <SegmentedControl
+        options={vatStates}
+        bind:value={draft[key]}
+        label={t(`setup.param.${key}`)}
+        disabled={savingKey !== null}
+        onchange={(value) => setParameter(key, value)}
+      />
     {:else}
       <div class="shpd-ds-setup__select">
         <Select
@@ -454,33 +447,6 @@
 
   .shpd-ds-setup__select {
     max-width: 20rem;
-  }
-
-  .shpd-ds-setup__segments {
-    display: inline-flex;
-    gap: var(--shpd-space-xs);
-    flex-wrap: wrap;
-  }
-
-  .shpd-ds-setup__segment {
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
-    background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-sm);
-    cursor: pointer;
-  }
-
-  .shpd-ds-setup__segment--active {
-    border-color: var(--shpd-color-primary);
-    background-color: var(--shpd-color-bg-secondary);
-    font-weight: 600;
-  }
-
-  .shpd-ds-setup__segment:disabled {
-    opacity: 0.6;
-    cursor: default;
   }
 
   .shpd-ds-setup__hint {

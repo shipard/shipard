@@ -9,6 +9,7 @@
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
+  import SegmentedControl from '../ui/SegmentedControl.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { uploadMailMessages } from '../../api/mail.js';
@@ -69,6 +70,11 @@
     files = files.filter((_, i) => i !== index);
     if (files.length < MAX_FILES) limitHit = false;
   }
+
+  const modeOptions = MODES.map((value) => ({
+    value,
+    label: t(value === 'single' ? 'dashboard.upload.modeSingle' : 'dashboard.upload.modePerFile'),
+  }));
 
   function selectMode(value) {
     mode = value;
@@ -167,20 +173,14 @@
   {/if}
 
   {#if files.length > 1}
-    <div class="shpd-mail-upload__modes" role="radiogroup" aria-label={t('dashboard.upload.modeLabel')}>
-      {#each MODES as value (value)}
-        <button
-          type="button"
-          role="radio"
-          class="shpd-mail-upload__mode"
-          class:shpd-mail-upload__mode--active={mode === value}
-          aria-checked={mode === value}
-          disabled={submitting}
-          onclick={() => selectMode(value)}
-        >
-          {t(value === 'single' ? 'dashboard.upload.modeSingle' : 'dashboard.upload.modePerFile')}
-        </button>
-      {/each}
+    <div class="shpd-mail-upload__modes">
+      <SegmentedControl
+        options={modeOptions}
+        value={mode}
+        label={t('dashboard.upload.modeLabel')}
+        disabled={submitting}
+        onchange={selectMode}
+      />
     </div>
   {/if}
 
@@ -281,30 +281,9 @@
     margin-top: var(--shpd-space-md);
   }
 
+  /* Režim nahrání je sdílený SegmentedControl (#149 D77) — obal dává jen
+     mezeru nad ním. */
   .shpd-mail-upload__modes {
-    display: flex;
-    gap: var(--shpd-space-sm);
     margin-top: var(--shpd-space-md);
-  }
-
-  .shpd-mail-upload__mode {
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-full);
-    background: var(--shpd-color-bg);
-    color: var(--shpd-color-text);
-    font: inherit;
-    font-size: var(--shpd-font-size-sm);
-    cursor: pointer;
-  }
-
-  .shpd-mail-upload__mode:hover:not(.shpd-mail-upload__mode--active):not(:disabled) {
-    background: var(--shpd-color-bg-hover);
-  }
-
-  .shpd-mail-upload__mode--active {
-    background: var(--shpd-color-primary);
-    border-color: var(--shpd-color-primary);
-    color: var(--shpd-color-text-on-fill);
   }
 </style>
