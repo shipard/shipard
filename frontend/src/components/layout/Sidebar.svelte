@@ -84,8 +84,10 @@
     return e.message ?? t('sidebar.navigationLoadFailed');
   });
 
+  // `icon` nese položka kvůli nadpisu stránky (PageHeader, #149 D78)
+  // a recents palety — stejně jako ClassicShell / WildShell.
   function handleItemClick(item) {
-    const navItem = { id: item.id, label: item.label, type: item.type, table: item.table, viewerId: item.viewerId, pageId: item.pageId, panelId: item.panelId, panelParams: item.panelParams, filter: item.filter, fixedViewGroup: item.fixedViewGroup };
+    const navItem = { id: item.id, label: item.label, type: item.type, table: item.table, viewerId: item.viewerId, pageId: item.pageId, panelId: item.panelId, panelParams: item.panelParams, filter: item.filter, fixedViewGroup: item.fixedViewGroup, icon: item.icon };
     navigationStore.navigate(navItem);
     onNavigate?.(navItem);
   }

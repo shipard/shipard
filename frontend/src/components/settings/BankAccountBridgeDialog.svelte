@@ -220,8 +220,8 @@
   .shpd-bank-bridge__badge {
     padding: 0.0625rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-meta);
-    font-weight: var(--shpd-font-weight-normal);
+    font-size: var(--shpd-font-size-xs);
+    font-weight: 500;
     background: var(--shpd-color-primary-soft);
     color: var(--shpd-color-primary);
     border: 1px solid var(--shpd-color-primary);
