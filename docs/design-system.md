@@ -577,7 +577,7 @@ Rozhodnutí D76 z #149. Jedna volba ze seznamu je sdílený
 
 ### Segmentový přepínač
 
-Rozhodnutí D77 z #149. Jedna volba z několika málo je sdílený
+Rozhodnutí D77 a D79 z #149. Jedna volba z několika málo je sdílený
 `ui/SegmentedControl.svelte`.
 
 - **Vzhled:** oddělená tlačítka s mezerou `--shpd-space-xs`, která se
@@ -593,10 +593,16 @@ Rozhodnutí D77 z #149. Jedna volba z několika málo je sdílený
   `disabled`, `size` (jen `md`). `icon` jen tam, kde je součástí popisku
   (vzhled). Řízené použití bez `bind:` — rodič po `onchange` hodnotu
   změní.
-- **Sémantika a klávesnice:** `role="radiogroup"`, tlačítka `role="radio"`
-  s `aria-checked`; roving tabindex — Tab vstoupí na vybranou volbu, šipky
-  vlevo / vpravo (nahoru / dolů) přesouvají výběr dokola přes zakázané
-  volby, Home / End na první / poslední.
+- **Sémantika a klávesnice** (D79 — výběr až potvrzením):
+  `role="radiogroup"`, tlačítka `role="radio"` s `aria-checked`. Tab
+  vstoupí na vybranou volbu (bez výběru na první povolenou); šipky vlevo
+  / vpravo (nahoru / dolů) a Home / End přesouvají **jen fokus**, dokola
+  přes zakázané volby; volbu vybere mezerník, Enter nebo klik. Roving
+  tabindex sleduje fokus a po odchodu ze skupiny se vrací na vybranou
+  volbu. Je to záměrná odchylka od ARIA vzoru radio group, který vybírá
+  už šipkou: volby tu mají okamžitý účinek (jazyk znovu načte stránku,
+  průvodce zdrojem dat ukládá). Nativních radií ve volitelných řádcích
+  se netýká — tam výběr potvrzuje tlačítko dialogu.
 - **Kde:** vzhled a rozvržení (Nastavení aplikace i účtu — tenké obaly
   `ThemeModeSegments`, `ShellSegments` s konkrétními volbami), jazyk,
   plátce DPH v průvodci zdrojem dat, formát čísel reportu, způsob nahrání
@@ -1733,7 +1739,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/Panel.svelte` | Vložený panel (§8 Vložené panely, D75) — `bg-secondary` s rámečkem `border-subtle`, `variant` compact, `tone` info, `padding` form, `as`; na něm `FormSection` |
 | `frontend/src/components/ui/OptionRow.svelte` | Volitelný řádek (§8 Volitelné řádky, D76) — velký s ukazatelem radio / checkbox a snippety `description` / `aside`, kompaktní jako tlačítko s `role` option / radio; vybraný `primary` + `primary-soft` |
-| `frontend/src/components/ui/SegmentedControl.svelte` | Segmentový přepínač (§8, D77) — `radiogroup` oddělených tlačítek, `options`, bindable `value`, `onchange`, roving tabindex |
+| `frontend/src/components/ui/SegmentedControl.svelte` | Segmentový přepínač (§8, D77) — `radiogroup` oddělených tlačítek, `options`, bindable `value`, `onchange`; šipky přesouvají jen fokus, vybírá mezerník / Enter / klik (D79) |
 | `frontend/src/components/ui/PageHeader.svelte` | Nadpis stránky (§8, D78) — `h1` s ikonou z navigace a `aside`; `flow` (role page) / `bar` (lišta jako hlavička detailu) |
 | `frontend/src/components/ui/CenteredScreen.svelte` | Obrazovka s kartou uprostřed (§8) — obal `100dvh` s odsazením md a plovoucí plocha `25rem`; přihlášení, nastavení hesla, OpAuth, `StatusScreen` |
 | `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |

@@ -15,9 +15,13 @@
   // `disabled` zakáže celou skupinu. Zbylé atributy (`data-testid`) jdou na
   // kořen.
   //
-  // Klávesnice (roving tabindex): Tab vstoupí na vybranou volbu, šipky
-  // vlevo / vpravo (nahoru / dolů) přesouvají výběr přes zakázané volby
-  // dokola, Home / End na první / poslední.
+  // Klávesnice (#149 D79) — výběr až potvrzením: Tab vstoupí na vybranou
+  // volbu, šipky vlevo / vpravo (nahoru / dolů) a Home / End přesouvají
+  // jen fokus (přes zakázané volby dokola), volbu vybere mezerník, Enter
+  // nebo klik — nativní `click` tlačítka. Volby mají okamžitý účinek
+  // (načtení stránky, uložení), proto šipka nevybírá; záměrná odchylka od
+  // ARIA vzoru radio group. Roving tabindex sleduje fokus a po odchodu ze
+  // skupiny se vrací na vybranou volbu.
   // Pravidla: docs/design-system.md §8 Segmentový přepínač.
   import Icon from './Icon.svelte';
 
@@ -32,17 +36,21 @@
     ...rest
   } = $props();
 
+  let root = $state(null);
   let buttons = $state([]);
+  // Volba s fokusem; -1 = fokus je mimo skupinu.
+  let focusIndex = $state(-1);
   // Jediná velikost; prop je připravený na další bez změny volajících.
   let safeSize = $derived(['md'].includes(size) ? size : 'md');
 
   let selectedIndex = $derived(options.findIndex((opt) => opt.value === value));
-  // Bez vybrané volby dostane Tab první povolenou.
-  let tabIndex = $derived(
-    selectedIndex >= 0 && !options[selectedIndex].disabled
-      ? selectedIndex
-      : options.findIndex((opt) => !opt.disabled),
-  );
+  // Tab patří volbě s fokusem; mimo skupinu vybrané, bez výběru první
+  // povolené.
+  let tabIndex = $derived.by(() => {
+    if (focusIndex >= 0 && options[focusIndex] && !options[focusIndex].disabled) return focusIndex;
+    if (selectedIndex >= 0 && !options[selectedIndex].disabled) return selectedIndex;
+    return options.findIndex((opt) => !opt.disabled);
+  });
 
   function select(index) {
     const opt = options[index];
@@ -70,16 +78,22 @@
     else return;
     event.preventDefault();
     if (target < 0 || target === index) return;
+    // Jen fokus (D79) — vybírá až mezerník, Enter nebo klik.
     buttons[target]?.focus();
-    select(target);
+  }
+
+  function handleFocusOut(event) {
+    if (!root?.contains(event.relatedTarget)) focusIndex = -1;
   }
 </script>
 
 <div
+  bind:this={root}
   class="shpd-segmented shpd-segmented--{safeSize} {extraClass}"
   role="radiogroup"
   aria-label={label || undefined}
   aria-disabled={disabled || undefined}
+  onfocusout={handleFocusOut}
   {...rest}
 >
   {#each options as opt, index (index)}
@@ -93,6 +107,7 @@
       tabindex={index === tabIndex ? 0 : -1}
       disabled={disabled || opt.disabled}
       onclick={() => select(index)}
+      onfocus={() => (focusIndex = index)}
       onkeydown={(event) => handleKeydown(event, index)}
     >
       {#if opt.icon}
