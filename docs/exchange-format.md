@@ -1447,8 +1447,8 @@ klient drží jeden payload mezi step preview a apply.
       },
       // Účet, podle kterého se řádek zaúčtuje (jen /preview, #111 D7b);
       // null = sloupec Účet ukáže „—“. source: item (účetní položka) |
-      // row (kontační řádek, volba noItem, nebo návrh účtu řádku bez
-      // efektivní položky).
+      // row (kontační řádek, nebo návrh účtu řádku bez efektivní
+      // položky).
       "effectiveAccount": { "id": 412, "number": "501300",
                             "name": "Spotřeba materiálu", "source": "item" },
       "unit":     { "status": "matched", "unitId": 3, "matchedBy": "iso" },
@@ -1566,8 +1566,8 @@ do něj přidávají vlastní bloky bez změny schématu:
 - `_resolve.rows[i].item.display` — efektivní položka řádku `{id, code,
   name, pinned}` (#111 D3), jen `/preview`: uložená volba `useExisting:<id>`
   (`pinned: true`) má přednost před automatickým napárováním (`status:
-  matched`, `pinned: false`). U `noItem`, `skip`, nerozhodnutého
-  nenapárovaného řádku a volby na neexistující položku klíč chybí.
+  matched`, `pinned: false`). U `skip`, nerozhodnutého nenapárovaného
+  řádku a volby na neexistující položku klíč chybí.
   Review modal z něj kreslí druhý řádek buňky Položka.
 - `_resolve.rows[i].item.matchedDisplay` — automaticky napárovaná položka
   `{id, code, name}` u každého bloku `status: matched`, nezávisle na volbě
@@ -1577,13 +1577,14 @@ do něj přidávají vlastní bloky bez změny schématu:
 - `_resolve.rows[i].effectiveAccount` — účet, podle kterého se řádek
   zaúčtuje, nebo návrh účtu řádku, `{id, number, name, source}` | `null`
   (#111 D7b), jen `/preview`, klíč na každém řádku. `skip` → `null`;
-  kontační řádek (`accSide`) nebo `noItem` → účet řádku (`source: "row"`);
+  kontační řádek (`accSide`) → účet řádku (`source: "row"`);
   efektivní položka → její `accounting_account`, jen u účetní položky
   (`item_type` 2; `source: "item"`), jinak `null` — služba a zásoba se
   účtují maskou kategorie a účet doplněný historií nebo štítkem se na
   řádek s ručně zvolenou položkou nezapíše; bez efektivní položky → účet
-  řádku jako návrh (`source: "row"`). Bez extension `economy.accounting`
-  je účet z položky vždy `null`.
+  řádku jako návrh (`source: "row"`) — účet z extrakce nebo kontace,
+  obsahový štítek bez položky účet nenavrhuje (#36 D3). Bez extension
+  `economy.accounting` je účet z položky vždy `null`.
 - `_resolve.contentTag` — dokument-level obsahový štítek
   (`{tag, tagSource: "rule"|"llm", ruleId? | tagConfidence?,
   promptVersion?, rowExceptions?}`), persistuje se při `/result`,
@@ -1644,7 +1645,6 @@ do něj přidávají vlastní bloky bez změny schématu:
 | `"useExisting:<id>"` | Použít konkrétní existující záznam — kandidáta z `candidates`, výsledek hledání, nebo jinou položku než napárovanou: u `rows[i].item` platí i nad `status == "matched"` a automatické napárování přebije (#111 D4). |
 | `"create"` | Vytvořit novou entitu z payloadu (jen pro `canCreate`). |
 | `"skip"` | Vynechat řádek — `rows[i].item` („Vynechat řádek“ v review) nebo řádková `rows[i].userAction`; řádek se na doklad nezapíše a v `/preview` chybí v `_resolve.computed` (#111 D9). Pro hlavičkové reference je default `null`. |
-| `"noItem"` | Jen `rows[i].item`: řádek se pořídí bez položky, s účtem řádku (`tasks/content-tag-ui.md` D24); bez platného účtu `no_item_requires_account`. |
 | `"useCode:<kód>"` | Jen `rows[i].vatCode` (#87 task B): zvolený kód DPH řádku z `_resolve.vatCodeOptions`. |
 | `"useValue:<hodnota>"` | `_resolve.vat.place` (`domestic` / `intracom` / `thirdCountry`) a `_resolve.vat.mode` (`fromBase` / `fromTotal` / `none`) (#87 task B); `rows[i].reverseChargeCode` — předmět plnění řádku u tuzemského přenesení z `_resolve.reverseChargeOptions` (#89 D12). |
 

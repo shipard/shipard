@@ -334,6 +334,8 @@ Orchestrátor obou vrstev; nahrazuje přímé volání `RowHistoryEnricher`:
     "resolution": "item" | "accountOnly" | "ambiguous" | "unmapped" | "guarded"
   }
   ```
+  > `accountOnly` zaniklo (#36 D3, `tasks/exchange-no-item-removal.md`):
+  > štítek bez živé otagované položky je `unmapped` a účet nenavrhuje.
 - **Precedence dominance (D13):** setting `contentTagBeforeDominance`
   (default true). True → dominantní položka (stupeň 3 Vrstvy 0) se
   uplatní až na řádky, které contentTag nepokryl → implementačně:

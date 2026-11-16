@@ -1,6 +1,14 @@
 # Task: Zrušení volby „Jen účet — bez položky“ v kontrole vytěženého dokladu
 
-**Stav:** naplánováno — #36 D1–D4 potvrzené 2026-11-16
+**Stav:** částečně — kód, testy, help a docs hotové 2026-11-16 (3 commity); zbývá ruční ověření na volném zdroji dat (karta **Založit položku** → napárování → vystavení dokladu)
+
+> Implementováno 2026-11-16. Odchylky od zadání:
+> - **Help je v commitu 2**, ne 3 — stránka helpu jde ve stejném commitu
+>   jako změna funkce, kterou popisuje (`CLAUDE.md`).
+> - Konstruktor `ContentTagResolver` bez nabídky se dotkl i
+>   `EvalRunnerTest` (zadání ho nejmenovalo).
+> - Náhled ověřen v headless prohlížeči s podvrženou odpovědí `/preview`
+>   (skutečný výstup applieru); průchod naostro zbývá — viz Hotovo když.
 
 **Issue:** #36
 
@@ -158,15 +166,15 @@ změny).
 
 ## Hotovo když
 
-- [ ] V náhledu volba „Jen účet — bez položky“ není (řádek ani hromadně);
+- [x] V náhledu volba „Jen účet — bez položky“ není (řádek ani hromadně);
       `noItem` v `_resolve` applier odmítne chybou neznámé userAction.
-- [ ] Řádek se štítkem bez živé otagované položky nemá účet, audit
+- [x] Řádek se štítkem bez živé otagované položky nemá účet, audit
       `resolution: unmapped` a ⟲ s kategorií; karta Položky k založení beze
       změny.
-- [ ] `vendor/bin/phpunit --filter 'DocumentApplierNoItem|DocumentApplierItemPin|DocumentApplierRowDisplay|ContentTagResolver|RowEnrichmentPipeline|ContentTagsController|AccountingItemsOffer'`
+- [x] `vendor/bin/phpunit --filter 'DocumentApplierNoItem|DocumentApplierItemPin|DocumentApplierRowDisplay|ContentTagResolver|RowEnrichmentPipeline|ContentTagsController|AccountingItemsOffer'`
       zelené, pak celá sada; `npm test`, `npm run check:i18n`,
       `npm run build`.
-- [ ] Help a docs aktualizované; `help-index.py` a `tasks-index.py`
+- [x] Help a docs aktualizované; `help-index.py` a `tasks-index.py`
       prošly.
 - [ ] Ověření na volném zdroji dat (třída `free`): zpráva s fakturou, jejíž
       kategorie nemá v tabulce položku → náhled bez účtu a bez volby

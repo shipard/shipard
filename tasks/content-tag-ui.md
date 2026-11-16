@@ -2,6 +2,10 @@
 
 **Stav:** hotovo
 
+> **D24 zrušeno #36 D1** (`tasks/exchange-no-item-removal.md`): volba
+> „Jen účet — bez položky“ (userAction `noItem`) zanikla; text rozhodnutí
+> níž je historický.
+
 > Implementováno 2026-08-19. Odchylky od zadání:
 > - **`noItem` je stringová userAction** (jako `skip`/`create`), ne objekt
 >   `{kind}` — flat mapa userActions připouští jen stringy

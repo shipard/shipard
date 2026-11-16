@@ -617,9 +617,9 @@ zařazení stejně jako u AI extrakce).
 5. **Resolution štítek → položka** (`ContentTagResolver`, fresh při každém
    čtení): tag řádku = `rowExceptions[rowIndex] ?? primaryTag`; právě
    jedna živá položka s tagem v `economy_items.content_tags` → trojice
-   {ourCode, account}; více → `ambiguous`; žádná → fallback účet z nabídky
-   účetních položek aktivní varianty osnovy (`AccountingItemsOffer`,
-   prefix fallback `vehicle.*`) → `accountOnly`; ani ten → `unmapped`.
+   {ourCode, account}; více → `ambiguous`; žádná → `unmapped` — řádek
+   zůstane bez položky i bez účtu, štítek sám účet nenavrhuje (#36 D3)
+   a kategorie se řeší založením položky (karta níž).
    `amountGuard` z `economy.items.contentTagDefaults` návrh zadrží
    (`guarded`, možný dlouhodobý majetek). Propisují se jen prázdná pole.
 
@@ -639,7 +639,7 @@ Audit per řádek (`_resolve.rows[i].enrichment`):
     "itemName":   "Spotřeba PHM",         // jen resolution item
     "sourceItemId": 123,                  // jen resolution item
     "suggested":  { "ourCode": "…", "account": "…" },  // co reálně doplnil
-    "resolution": "item" | "accountOnly" | "ambiguous" | "unmapped" | "guarded",
+    "resolution": "item" | "ambiguous" | "unmapped" | "guarded",
     "candidates": ["FUEL-A", "FUEL-B"],   // jen ambiguous
     "guard":      "amount",               // jen guarded
     "vatHint":    "nonDeductible",        // informativní (D4), z contentTagDefaults
@@ -661,13 +661,9 @@ převedl `ds-upgrade` do řádku funkce a klíč smazal (D41).
 
 - **Review modal**: podmíněný sloupec Účet (render, když aspoň jeden řádek
   `account` nese), badge tooltip „Obsahová klasifikace — {tagLabel}
-  (pravidlo dodavatele / AI)" + řádek vatHint. Row-level userAction
-  **`noItem`** („Jen účet — bez položky", stringová akce jako `skip`):
-  klient ji nabídne, jen když řádek nese `account`; `DocumentApplier`
-  reconcile pořídí řádek bez item FK s účtem, chybějící účet = 422
-  `no_item_requires_account`; pin přebíjí fresh resolve i enrichment
-  návrh (D3). Response označí řádek `_resolve.rows[i].item.status =
-  "noItem"`.
+  (pravidlo dodavatele / AI)" + řádek vatHint. Řádek faktury se pořídí
+  vždy s položkou, nebo se vynechá — volba „Jen účet — bez položky"
+  (userAction `noItem`) zanikla (#36 D1).
 - **Dashboard karta „Nová kategorie"** (`ContentTagSuggestionsSource`,
   `modules/core/exchange/src/Dashboard/`): jedna karta per štítek
   s otevřenými návrhy bez živé otagované položky; akce
