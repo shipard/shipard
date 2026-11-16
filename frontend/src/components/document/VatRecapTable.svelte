@@ -34,7 +34,7 @@
 </script>
 
 <TableScroll>
-  <table class="shpd-vat-recap">
+  <table class="shpd-recap-table">
     {#if extended}
       <thead>
         <tr>
@@ -48,29 +48,29 @@
       </thead>
       <tbody>
         {#each rows as r, i (i)}
-          <tr class:shpd-vat-recap__pair={r.dom}>
-            <td class="shpd-vat-recap__label" rowspan={r.dom ? 2 : 1}>{r.label ?? DASH}</td>
-            <td class="num shpd-vat-recap__span" rowspan={r.dom ? 2 : 1}>{r.pct ?? DASH}</td>
+          <tr class:shpd-recap-table__pair={r.dom}>
+            <td class="shpd-recap-table__label" rowspan={r.dom ? 2 : 1}>{r.label ?? DASH}</td>
+            <td class="num shpd-recap-table__span" rowspan={r.dom ? 2 : 1}>{r.pct ?? DASH}</td>
             <td>{currency}</td>
-            <td class="num" class:shpd-vat-recap__unsummed={!r.sum?.base}>{r.base ?? DASH}</td>
-            <td class="num" class:shpd-vat-recap__unsummed={!r.sum?.tax}>{r.tax ?? DASH}</td>
-            <td class="num" class:shpd-vat-recap__unsummed={!r.sum?.total}>{r.total ?? DASH}</td>
+            <td class="num" class:shpd-recap-table__unsummed={!r.sum?.base}>{r.base ?? DASH}</td>
+            <td class="num" class:shpd-recap-table__unsummed={!r.sum?.tax}>{r.tax ?? DASH}</td>
+            <td class="num" class:shpd-recap-table__unsummed={!r.sum?.total}>{r.total ?? DASH}</td>
           </tr>
           {#if r.dom}
             <tr>
               <td>{homeCurrency}</td>
-              <td class="num" class:shpd-vat-recap__unsummed={!r.sum?.base}>{r.dom.base ?? DASH}</td>
-              <td class="num" class:shpd-vat-recap__unsummed={!r.sum?.tax}>{r.dom.tax ?? DASH}</td>
-              <td class="num" class:shpd-vat-recap__unsummed={!r.sum?.total}>{r.dom.total ?? DASH}</td>
+              <td class="num" class:shpd-recap-table__unsummed={!r.sum?.base}>{r.dom.base ?? DASH}</td>
+              <td class="num" class:shpd-recap-table__unsummed={!r.sum?.tax}>{r.dom.tax ?? DASH}</td>
+              <td class="num" class:shpd-recap-table__unsummed={!r.sum?.total}>{r.dom.total ?? DASH}</td>
             </tr>
           {/if}
         {/each}
       </tbody>
       {#if totals}
         <tfoot>
-          <tr class="shpd-vat-recap__total" class:shpd-vat-recap__pair={totals.dom}>
-            <td class="shpd-vat-recap__label" colspan="2" rowspan={totals.dom ? 2 : 1}>
-              {t('document.totals.total')}{#if totals.rate}{' '}<span class="shpd-vat-recap__exchange">({totals.rate})</span>{/if}
+          <tr class="shpd-recap-table__total" class:shpd-recap-table__pair={totals.dom}>
+            <td class="shpd-recap-table__label" colspan="2" rowspan={totals.dom ? 2 : 1}>
+              {t('document.totals.total')}{#if totals.rate}{' '}<span class="shpd-recap-table__exchange">({totals.rate})</span>{/if}
             </td>
             <td>{currency}</td>
             <td class="num">{totals.base ?? DASH}</td>
@@ -78,7 +78,7 @@
             <td class="num">{totals.total ?? DASH}</td>
           </tr>
           {#if totals.dom}
-            <tr class="shpd-vat-recap__total shpd-vat-recap__total--dom">
+            <tr class="shpd-recap-table__total shpd-recap-table__total--dom">
               <td>{homeCurrency}</td>
               <td class="num">{totals.dom.base ?? DASH}</td>
               <td class="num">{totals.dom.tax ?? DASH}</td>
@@ -111,14 +111,14 @@
 </TableScroll>
 
 <style>
-  .shpd-vat-recap {
+  .shpd-recap-table {
     width: 100%;
     border-collapse: collapse;
     font-size: var(--shpd-font-size-body);
   }
 
-  .shpd-vat-recap th,
-  .shpd-vat-recap td {
+  .shpd-recap-table th,
+  .shpd-recap-table td {
     padding: 0.375rem var(--shpd-space-xs);
     border-bottom: 1px solid var(--shpd-color-border);
     text-align: left;
@@ -127,7 +127,7 @@
   /* Hlavička sloupce — body + strong: stejná velikost jako řádky, silnější,
      barvou textu, bez verzálek (není heading); čára pod ní silnější než
      mezi řádky. Rekapitulace se nezvýrazňuje (§12 Součty). */
-  .shpd-vat-recap th {
+  .shpd-recap-table th {
     font-size: var(--shpd-font-size-body);
     font-weight: var(--shpd-font-weight-strong);
     color: var(--shpd-color-text);
@@ -136,13 +136,13 @@
 
   /* Čísla vpravo; buňky rekapitulace se nelámou — v úzkém obalu se
      tabulka posune (TableScroll, D44), ne rozpadne na dva řádky. */
-  .shpd-vat-recap .num {
+  .shpd-recap-table .num {
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
 
-  .shpd-vat-recap th,
-  .shpd-vat-recap td {
+  .shpd-recap-table th,
+  .shpd-recap-table td {
     white-space: nowrap;
   }
 
@@ -150,40 +150,40 @@
 
   /* Sazba a % přes řádek měny dokladu i domácí měny — zarovnané nahoru.
      Název kódu DPH je jediný text tabulky, který se smí zalomit. */
-  .shpd-vat-recap__label,
-  .shpd-vat-recap__span {
+  .shpd-recap-table__label,
+  .shpd-recap-table__span {
     vertical-align: top;
   }
 
-  .shpd-vat-recap td.shpd-vat-recap__label {
+  .shpd-recap-table td.shpd-recap-table__label {
     min-width: 10rem;
     white-space: normal;
   }
 
   /* Dvojice řádků jedné sazby (měna dokladu + domácí měna): mezi nimi
      čára není, drží ji až spodní řádek; buňky přes oba řádky čáru nesou. */
-  .shpd-vat-recap__pair > td:not([rowspan]) {
+  .shpd-recap-table__pair > td:not([rowspan]) {
     border-bottom: none;
   }
 
   /* Jediná šedá v tabulce: hodnota, která se do součtu dokladu nesčítá. */
-  .shpd-vat-recap td.shpd-vat-recap__unsummed {
+  .shpd-recap-table td.shpd-recap-table__unsummed {
     color: var(--shpd-color-text-secondary);
   }
 
   /* Řádek Celkem — strong, čára nad; pod součtem čára není. */
-  .shpd-vat-recap__total > td {
+  .shpd-recap-table__total > td {
     font-weight: var(--shpd-font-weight-strong);
     border-top: 2px solid var(--shpd-color-border);
     border-bottom: none;
   }
 
-  .shpd-vat-recap__total--dom > td {
+  .shpd-recap-table__total--dom > td {
     border-top: none;
   }
 
   /* Kurz za slovem Celkem je údaj, ne součet — běžnou tloušťkou. */
-  .shpd-vat-recap__exchange {
+  .shpd-recap-table__exchange {
     font-weight: var(--shpd-font-weight-normal);
   }
 </style>

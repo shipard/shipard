@@ -50,11 +50,6 @@
 {:else if element.type === 'inline'}
   <FormInline {element} bind:formData {fieldErrors} disabled={elDisabled} {onTrigger} id={inputId} />
 
-{:else if element.type === 'html'}
-  <div class="shpd-form-html" class:shpd-form-html--hidden={element.hidden}>
-    {@html element.content}
-  </div>
-
 {:else if element.type === 'content'}
   <!-- Bloky obsahu detailu (#150 D83) — tatáž komponenta jako v detailu
        záznamu; seznam bloků se kreslí jako `composite` (mezery mezi bloky). -->
@@ -134,12 +129,11 @@
 
 <style>
   /*
-   * separator / inline / html / content / component / checkbox-row span both grid tracks
+   * separator / inline / content / component / checkbox-row span both grid tracks
    * of the parent FormColumn (label + input). FormInline is the exception —
    * its outer label IS the first track, so it does NOT span.
    */
   .shpd-form-separator,
-  .shpd-form-html,
   .shpd-form-content,
   .shpd-form-component,
   .shpd-form-checkbox-row {
@@ -167,16 +161,10 @@
   }
 
   .shpd-form-separator--hidden,
-  .shpd-form-html--hidden,
   .shpd-form-content--hidden,
   .shpd-form-component--hidden,
   .shpd-form-checkbox-row--hidden {
     display: none;
-  }
-
-  .shpd-form-html {
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
   }
 
   /* Obsah z bloků (#150 D83): písmo a barvy dávají bloky samy; `min-width: 0`

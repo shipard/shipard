@@ -400,19 +400,6 @@ final class TabBuilder
         return $this;
     }
 
-    public function html(string $content): static
-    {
-        $this->requireOpenColumn('html()');
-        if ($this->inlineBuffer !== null) {
-            throw new \LogicException(sprintf(
-                'TabBuilder["%s"]: html cannot appear inside inline group',
-                $this->id,
-            ));
-        }
-        $this->currentElements[] = new FormElement(type: 'html', content: $content);
-        return $this;
-    }
-
     /**
      * Prvek `content` (#150 D83): bloky obsahu detailu záznamu
      * (`DetailContent::SHARED_TYPES` — vlastnosti, tabulka, hláška, text,

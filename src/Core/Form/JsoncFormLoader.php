@@ -319,7 +319,6 @@ class JsoncFormLoader
             hint: $elData['hint'] ?? null,
             options: $options,
             elements: $elements,
-            content: $elData['content'] ?? null,
             componentName: $elData['componentName'] ?? null,
             params: $elData['params'] ?? null,
             inputType: $inputType,

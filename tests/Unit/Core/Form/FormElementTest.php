@@ -111,10 +111,13 @@ class FormElementTest extends TestCase
         new FormElement(type: 'component');
     }
 
-    public function testHtmlRequiresContent(): void
+    /** Prvek `html` zanikl (#150 D82) — formulář HTML se vzhledem neposílá. */
+    public function testHtmlTypeIsRejected(): void
     {
+        $this->assertNotContains('html', FormElement::ALLOWED_TYPES);
+
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('html element requires content');
+        $this->expectExceptionMessage('Invalid element type "html"');
 
         new FormElement(type: 'html');
     }
@@ -311,15 +314,6 @@ class FormElementTest extends TestCase
         new FormElement(type: 'inline', elements: [
             new FormElement(type: 'multiselect', column: 'content_tags'),
         ]);
-    }
-
-    public function testHtmlSerialization(): void
-    {
-        $el = new FormElement(type: 'html', content: '<p>Hello</p>');
-        $arr = $el->toArray();
-
-        $this->assertSame('html', $arr['type']);
-        $this->assertSame('<p>Hello</p>', $arr['content']);
     }
 
     public function testComponentSerialization(): void

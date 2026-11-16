@@ -6,6 +6,12 @@ namespace Shipard\Core\Form;
 
 use Shipard\Core\Viewer\Detail\DetailContent;
 
+/**
+ * Prvek formuláře. Typ `html` zanikl (#150 D82, obdoba D30 v detailu):
+ * formulář HTML se vzhledem neposílá — jednoduchý obsah nese prvek
+ * `content` s bloky detailu (`$blocks`), složitější pojmenovaná komponenta
+ * (`component`). Hlídá `FormContractTest`.
+ */
 final class FormElement
 {
     public const ALLOWED_TYPES = [
@@ -17,7 +23,6 @@ final class FormElement
         'inline',
         'component',
         'content',
-        'html',
     ];
 
     public const ALLOWED_INPUT_TYPES = [
@@ -58,7 +63,6 @@ final class FormElement
         public readonly ?string $hint = null,
         public readonly ?array $options = null,
         public readonly ?array $elements = null,
-        public readonly ?string $content = null,
         public readonly ?string $componentName = null,
         public readonly ?string $inputType = null,
         public readonly ?array $lookup = null,
@@ -115,10 +119,6 @@ final class FormElement
 
         if ($type === 'component' && ($componentName === null || $componentName === '')) {
             throw new \InvalidArgumentException('component element requires componentName');
-        }
-
-        if ($type === 'html' && $content === null) {
-            throw new \InvalidArgumentException('html element requires content');
         }
 
         if ($type === 'content') {
@@ -224,9 +224,6 @@ final class FormElement
                 fn(FormElement $el) => $el->toArray(),
                 $this->elements,
             );
-        }
-        if ($this->content !== null) {
-            $result['content'] = $this->content;
         }
         if ($this->blocks !== null) {
             $result['blocks'] = $this->blocks;

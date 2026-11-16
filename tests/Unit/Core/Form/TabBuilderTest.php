@@ -298,16 +298,6 @@ class TabBuilderTest extends TestCase
         $this->assertSame('checkbox', $els[3]->inputType);
     }
 
-    public function testHtml(): void
-    {
-        $tab = (new TabBuilder('t', 'T'))
-            ->section()->col()->html('<p>Hi</p>')
-            ->build();
-        $el = $tab->sections[0]->columns[0]->elements[0];
-        $this->assertSame('html', $el->type);
-        $this->assertSame('<p>Hi</p>', $el->content);
-    }
-
     public function testContent(): void
     {
         $blocks = [['type' => 'hint', 'text' => 'Nápověda']];
