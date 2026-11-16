@@ -28,6 +28,7 @@
   import { get } from '../../api/client.js';
   import { t } from '../../i18n/index.js';
   import Panel from '../ui/Panel.svelte';
+  import OptionRow from '../ui/OptionRow.svelte';
   import FormDialog from '../form/FormDialog.svelte';
 
   let {
@@ -287,16 +288,21 @@
       <div class="shpd-resolve__heading">
         {t('exchange.preview.decide.candidates')}
       </div>
-      <div class="shpd-resolve__candidate-list">
+      <div
+        class="shpd-resolve__candidate-list"
+        role="listbox"
+        aria-label={t('exchange.preview.decide.candidates')}
+      >
         {#each candidates as c (c.id)}
-          <button
-            type="button"
-            class="shpd-resolve__candidate"
-            onclick={() => chooseCandidate(c.id, c.name ?? null)}
+          <OptionRow
+            size="compact"
+            role="option"
+            selected={currentUserAction === `useExisting:${c.id}`}
+            onselect={() => chooseCandidate(c.id, c.name ?? null)}
           >
             <span class="shpd-resolve__candidate-id">#{c.id}</span>
             <span class="shpd-resolve__candidate-name">{c.name ?? '—'}</span>
-          </button>
+          </OptionRow>
         {/each}
       </div>
     </div>
@@ -478,25 +484,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
-  }
-
-  .shpd-resolve__candidate {
-    display: flex;
-    align-items: baseline;
-    gap: var(--shpd-space-xs);
-    width: 100%;
-    text-align: left;
-    background: transparent;
-    border: 1px solid var(--shpd-color-border);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
-    cursor: pointer;
-    color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-body);
-  }
-
-  .shpd-resolve__candidate:hover {
-    background-color: var(--shpd-color-primary-soft);
   }
 
   .shpd-resolve__candidate-id {

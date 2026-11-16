@@ -10,7 +10,7 @@
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
-  import Checkbox from '../ui/Checkbox.svelte';
+  import OptionRow from '../ui/OptionRow.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { fetchBankAccountCandidates, bridgeBankAccounts } from '../../api/setup.js';
@@ -70,7 +70,7 @@
 
   // Default drží krok s výběrem: odškrtnutý účet nemůže zůstat výchozí,
   // první/jediný vybraný je výchozí automaticky. Effect místo handleru,
-  // protože checkboxy jsou bind:checked (klávesnice i myš).
+  // protože výběr mění řádek (OptionRow) myší i klávesnicí.
   $effect(() => {
     const ids = selectedIds;
     if (ids.length === 0) {
@@ -121,15 +121,14 @@
         {#each candidates as candidate (candidate.id)}
           {@const disabled = candidate.existsInCodebook}
           {@const isChecked = !disabled && !!checked[candidate.id]}
-          <li
-            class="shpd-bank-bridge__row"
-            class:shpd-bank-bridge__row--disabled={disabled}
-          >
-            <div class="shpd-bank-bridge__check">
-              <Checkbox bind:checked={checked[candidate.id]} disabled={disabled || saving} />
-            </div>
-            <div class="shpd-bank-bridge__body">
-              <div class="shpd-bank-bridge__name">
+          <li>
+            <OptionRow
+              indicator="checkbox"
+              selected={isChecked}
+              disabled={disabled || saving}
+              onselect={(value) => { checked[candidate.id] = value; }}
+            >
+              <span class="shpd-bank-bridge__name">
                 <span>{candidate.name || accountLine(candidate)}</span>
                 {#if candidate.source === 2}
                   <span class="shpd-bank-bridge__badge">{t('setup.bankDialog.badge.published')}</span>
@@ -139,27 +138,31 @@
                     {t('setup.bankDialog.badge.exists')}
                   </span>
                 {/if}
-              </div>
-              <div class="shpd-bank-bridge__detail">
-                <span class="shpd-bank-bridge__mono">{accountLine(candidate)}</span>
-                {#if candidate.currency}
-                  <span class="shpd-bank-bridge__currency">{candidate.currency.toUpperCase()}</span>
+              </span>
+              {#snippet description()}
+                <span class="shpd-bank-bridge__detail">
+                  <span class="shpd-bank-bridge__mono">{accountLine(candidate)}</span>
+                  {#if candidate.currency}
+                    <span class="shpd-bank-bridge__currency">{candidate.currency.toUpperCase()}</span>
+                  {/if}
+                </span>
+              {/snippet}
+              {#snippet aside()}
+                {#if isChecked}
+                  <label class="shpd-bank-bridge__default">
+                    <input
+                      type="radio"
+                      name="bank-bridge-default"
+                      value={candidate.id}
+                      checked={defaultId === candidate.id}
+                      disabled={saving}
+                      onchange={() => { defaultId = candidate.id; }}
+                    />
+                    <span>{t('setup.bankDialog.default')}</span>
+                  </label>
                 {/if}
-              </div>
-            </div>
-            {#if isChecked}
-              <label class="shpd-bank-bridge__default">
-                <input
-                  type="radio"
-                  name="bank-bridge-default"
-                  value={candidate.id}
-                  checked={defaultId === candidate.id}
-                  disabled={saving}
-                  onchange={() => { defaultId = candidate.id; }}
-                />
-                <span>{t('setup.bankDialog.default')}</span>
-              </label>
-            {/if}
+              {/snippet}
+            </OptionRow>
           </li>
         {/each}
       </ul>
@@ -207,47 +210,19 @@
     gap: var(--shpd-space-sm);
   }
 
-  .shpd-bank-bridge__row {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--shpd-space-md);
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg);
-  }
-
-  .shpd-bank-bridge__row--disabled {
-    opacity: 0.6;
-  }
-
-  .shpd-bank-bridge__check {
-    flex-shrink: 0;
-  }
-
-  .shpd-bank-bridge__body {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
   .shpd-bank-bridge__name {
     display: flex;
     align-items: center;
     gap: var(--shpd-space-sm);
     flex-wrap: wrap;
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-bank-bridge__badge {
     padding: 0.0625rem var(--shpd-space-sm);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs);
-    font-weight: 500;
-    background: var(--shpd-color-primary-soft, rgba(34, 102, 238, 0.1));
+    font-size: var(--shpd-font-size-meta);
+    font-weight: var(--shpd-font-weight-normal);
+    background: var(--shpd-color-primary-soft);
     color: var(--shpd-color-primary);
     border: 1px solid var(--shpd-color-primary);
   }
@@ -261,8 +236,6 @@
   .shpd-bank-bridge__detail {
     display: flex;
     gap: var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-bank-bridge__mono {

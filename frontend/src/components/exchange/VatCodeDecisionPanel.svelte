@@ -15,6 +15,7 @@
 
   import { t } from '../../i18n/index.js';
   import Panel from '../ui/Panel.svelte';
+  import OptionRow from '../ui/OptionRow.svelte';
 
   let {
     options = [],              // [{code, label, pct, reverseCharge, reducedDeduction, supplyKind}]
@@ -75,13 +76,11 @@
   {/if}
   <div class="shpd-vatcode__list" role="listbox" aria-label={t('exchange.preview.vatCode.heading')}>
     {#each options as option (option.code)}
-      <button
-        type="button"
+      <OptionRow
+        size="compact"
         role="option"
-        aria-selected={option.code === currentCode}
-        class="shpd-vatcode__option"
-        class:shpd-vatcode__option--active={option.code === currentCode}
-        onclick={() => onDecide(`useCode:${option.code}`)}
+        selected={option.code === currentCode}
+        onselect={() => onDecide(`useCode:${option.code}`)}
       >
         <span class="shpd-vatcode__code">{option.code}</span>
         <span class="shpd-vatcode__label">{option.label}</span>
@@ -92,7 +91,7 @@
         {#if option.reducedDeduction}
           <span class="shpd-vatcode__tag">{t('exchange.preview.vatCode.reducedDeduction')}</span>
         {/if}
-      </button>
+      </OptionRow>
     {/each}
   </div>
 </div>
@@ -146,33 +145,6 @@
     gap: 0.125rem;
     overflow-y: auto;
     min-height: 0;
-  }
-
-  .shpd-vatcode__option {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: var(--shpd-space-xs);
-    width: 100%;
-    text-align: left;
-    background: transparent;
-    border: 1px solid var(--shpd-color-border);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
-    cursor: pointer;
-    color: var(--shpd-color-text);
-    font: inherit;
-  }
-
-  .shpd-vatcode__option:hover,
-  .shpd-vatcode__option:focus-visible {
-    background: var(--shpd-color-bg-secondary);
-    outline: none;
-  }
-
-  .shpd-vatcode__option--active {
-    border-color: var(--shpd-color-primary);
-    background: var(--shpd-color-primary-soft);
   }
 
   .shpd-vatcode__code {

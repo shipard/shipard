@@ -14,6 +14,7 @@
 
   import { t } from '../../i18n/index.js';
   import Panel from '../ui/Panel.svelte';
+  import OptionRow from '../ui/OptionRow.svelte';
 
   let {
     options = [],              // [{code, label}]
@@ -64,17 +65,15 @@
   {/if}
   <div class="shpd-rcsubject__list" role="listbox" aria-label={t('exchange.preview.subject.heading')}>
     {#each options as option (option.code)}
-      <button
-        type="button"
+      <OptionRow
+        size="compact"
         role="option"
-        aria-selected={option.code === activeCode}
-        class="shpd-rcsubject__option"
-        class:shpd-rcsubject__option--active={option.code === activeCode}
+        selected={option.code === activeCode}
         data-testid="subject-option:{option.code}"
-        onclick={() => onDecide(`useValue:${option.code}`)}
+        onselect={() => onDecide(`useValue:${option.code}`)}
       >
         {option.label}
-      </button>
+      </OptionRow>
     {/each}
   </div>
 </div>
@@ -128,28 +127,5 @@
     gap: 0.125rem;
     overflow-y: auto;
     min-height: 0;
-  }
-
-  .shpd-rcsubject__option {
-    width: 100%;
-    text-align: left;
-    background: transparent;
-    border: 1px solid var(--shpd-color-border);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
-    cursor: pointer;
-    color: var(--shpd-color-text);
-    font: inherit;
-  }
-
-  .shpd-rcsubject__option:hover,
-  .shpd-rcsubject__option:focus-visible {
-    background: var(--shpd-color-bg-secondary);
-    outline: none;
-  }
-
-  .shpd-rcsubject__option--active {
-    border-color: var(--shpd-color-primary);
-    background: var(--shpd-color-primary-soft);
   }
 </style>

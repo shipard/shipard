@@ -25,6 +25,7 @@
   import Notice from '../ui/Notice.svelte';
   import Icon from '../ui/Icon.svelte';
   import Card from '../ui/Card.svelte';
+  import OptionRow from '../ui/OptionRow.svelte';
   import { iconCompany, iconUser, iconSpinner } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -312,53 +313,58 @@
           {t('registry.wizard.search.noResults')}
         </div>
       {:else}
-        <ul class="shpd-registry-wizard__list">
-          {#each searchResults as row, i (rowKey(row))}
+        <!-- Výsledky = skupina radií (#149 D76): řádek je sdílený OptionRow,
+             na místě pořadového čísla je ukazatel volby. -->
+        <div
+          class="shpd-registry-wizard__list"
+          role="radiogroup"
+          aria-label={t(asOwn ? 'registry.wizard.titleOwn' : 'registry.wizard.title')}
+        >
+          {#each searchResults as row (rowKey(row))}
             {@const key = rowKey(row)}
             {@const isSelected = selectedKey === key}
             {@const isDisabled = row.existsInDb}
-            <li class="shpd-registry-wizard__list-item">
-              <button
-                type="button"
-                class="shpd-registry-wizard__row"
-                class:shpd-registry-wizard__row--selected={isSelected}
-                class:shpd-registry-wizard__row--disabled={isDisabled}
-                onclick={() => handleRowClick(row)}
-                disabled={isDisabled}
-                aria-pressed={isSelected}
-              >
-                <span class="shpd-registry-wizard__row-index">{i + 1}.</span>
-                <div class="shpd-registry-wizard__row-body">
-                  <div class="shpd-registry-wizard__row-name">{row.fullName}</div>
-                  {#if row.primaryAddressText}
-                    <div class="shpd-registry-wizard__row-address">
-                      <Icon icon={iconCompany} size="sm" />
-                      <span>{row.primaryAddressText}</span>
-                    </div>
+            <OptionRow
+              name="registry-wizard-result"
+              value={key}
+              selected={isSelected}
+              disabled={isDisabled}
+              onselect={() => handleRowClick(row)}
+            >
+              {row.fullName}
+              {#snippet description()}
+                {#if row.primaryAddressText}
+                  <span class="shpd-registry-wizard__row-address">
+                    <Icon icon={iconCompany} size="sm" />
+                    <span>{row.primaryAddressText}</span>
+                  </span>
+                {/if}
+                <span class="shpd-registry-wizard__row-ids">
+                  <span class="shpd-registry-wizard__mono">IČO {row.companyId}</span>
+                  {#if row.vatId}
+                    <span class="shpd-registry-wizard__mono">DIČ {row.vatId}</span>
                   {/if}
-                  <div class="shpd-registry-wizard__row-ids">
-                    <span class="shpd-registry-wizard__mono">IČO {row.companyId}</span>
-                    {#if row.vatId}
-                      <span class="shpd-registry-wizard__mono">DIČ {row.vatId}</span>
+                </span>
+              {/snippet}
+              {#snippet aside()}
+                {#if row.existsInDb || (!row.isValid && row.validTo)}
+                  <div class="shpd-registry-wizard__row-badges">
+                    {#if row.existsInDb}
+                      <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--warning">
+                        {t('registry.wizard.badge.existsInDb')}
+                      </span>
+                    {/if}
+                    {#if !row.isValid && row.validTo}
+                      <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--muted">
+                        {t('registry.wizard.badge.terminated', { date: row.validTo })}
+                      </span>
                     {/if}
                   </div>
-                </div>
-                <div class="shpd-registry-wizard__row-badges">
-                  {#if row.existsInDb}
-                    <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--warning">
-                      {t('registry.wizard.badge.existsInDb')}
-                    </span>
-                  {/if}
-                  {#if !row.isValid && row.validTo}
-                    <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--muted">
-                      {t('registry.wizard.badge.terminated', { date: row.validTo })}
-                    </span>
-                  {/if}
-                </div>
-              </button>
-            </li>
+                {/if}
+              {/snippet}
+            </OptionRow>
           {/each}
-        </ul>
+        </div>
       {/if}
     </div>
   {:else if screen === 'preview'}
@@ -517,88 +523,21 @@
   }
 
   .shpd-registry-wizard__list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-sm);
   }
 
-  .shpd-registry-wizard__list-item {
-    margin: 0;
-  }
-
-  .shpd-registry-wizard__row {
-    width: 100%;
-    text-align: left;
-    font: inherit;
-    color: inherit;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: var(--shpd-space-md);
-    align-items: flex-start;
-    padding: var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-md);
-    background: var(--shpd-color-bg);
-    cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-  }
-
-  .shpd-registry-wizard__row:hover:not(:disabled) {
-    border-color: var(--shpd-color-primary);
-    background: var(--shpd-color-bg-hover);
-  }
-
-  .shpd-registry-wizard__row:focus-visible {
-    outline: 2px solid var(--shpd-color-primary);
-    outline-offset: 2px;
-  }
-
-  .shpd-registry-wizard__row--selected {
-    border-color: var(--shpd-color-primary);
-    background: var(--shpd-color-primary-soft, rgba(34, 102, 238, 0.08));
-  }
-
-  .shpd-registry-wizard__row--disabled,
-  .shpd-registry-wizard__row:disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-
-  .shpd-registry-wizard__row-index {
-    color: var(--shpd-color-text-secondary);
-    font-variant-numeric: tabular-nums;
-    min-width: 2ch;
-    text-align: right;
-  }
-
-  .shpd-registry-wizard__row-body {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .shpd-registry-wizard__row-name {
-    font-weight: 600;
-    color: var(--shpd-color-text);
-  }
-
+  /* Obsah popisu řádku (OptionRow dává písmo meta a šedou) — jen rozložení. */
   .shpd-registry-wizard__row-address {
     display: flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-registry-wizard__row-ids {
     display: flex;
     gap: var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text-secondary);
     margin-top: 0.125rem;
   }
 
