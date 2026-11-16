@@ -6,7 +6,6 @@ namespace Shipard\Module\Core\Exchange\Enrich;
 
 use Dibi\Connection;
 use Shipard\Core\Config\ConfigRuntime;
-use Shipard\Module\Economy\Items\AccountingItemsOffer;
 use Shipard\Module\World\Validations\CompanyId;
 use Shipard\Module\World\Validations\ValueRulesRegistry;
 
@@ -19,9 +18,8 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
  *    až při skutečném použití ({@see markRuleHit()}),
  *  - resolution štítek → účetní položka přes `economy_items.content_tags`
  *    (D9): právě jedna živá otagovaná položka → návrh trojice
- *    {ourCode, account}; více → ambiguous (bez návrhu); žádná → fallback
- *    účet z nabídky aktivní varianty osnovy včetně prefix fallbacku (D3,
- *    {@see AccountingItemsOffer::defaultAccountForTag()}),
+ *    {ourCode, account}; více → ambiguous (bez návrhu); žádná → unmapped
+ *    (bez návrhu — štítek sám účet nenavrhuje, #36 D3),
  *  - amountGuard z economy.items.contentTagDefaults (D4) — řádek nad
  *    limitem návrh nedostane.
  *
@@ -36,7 +34,6 @@ final class ContentTagResolver
 
     public function __construct(
         private readonly Connection $db,
-        private readonly ?AccountingItemsOffer $offer = null,
         private readonly ?ConfigRuntime $config = null,
     ) {}
 
@@ -97,13 +94,9 @@ final class ContentTagResolver
      *                    nese {ourCode, account?}, + itemName/sourceItemId,
      *  - `ambiguous`   — více otagovaných položek; bez návrhu, `candidates`
      *                    vyjmenovává kódy pro audit,
-     *  - `accountOnly` — žádná otagovaná položka, ale nabídka aktivní
-     *                    varianty osnovy nese fallback účet; `suggested`
-     *                    má jen {account},
-     *  - `unmapped`    — ani fallback účet. Nabídka pokrývá každý štítek
-     *                    kromě admin.other (ds-setup Task 12) a ten dovede
-     *                    prefix `admin.*` na účet, takže sem reálně spadne
-     *                    jen štítek s prefixem, který nabídka nezná.
+     *  - `unmapped`    — žádná živá otagovaná položka; bez návrhu — účet
+     *                    štítek sám nenavrhuje (#36 D3), kategorie se řeší
+     *                    založením položky (karta Položky k založení).
      *
      * @return array{status: string, suggested: array<string, string>,
      *               itemName?: string, sourceItemId?: int, candidates?: list<string>}
@@ -133,11 +126,6 @@ final class ContentTagResolver
                 'suggested'  => [],
                 'candidates' => array_map(static fn($it): string => (string) $it['code'], $items),
             ];
-        }
-
-        $account = $this->offer?->defaultAccountForTag($tag);
-        if ($account !== null && $account !== '') {
-            return ['status' => 'accountOnly', 'suggested' => ['account' => $account]];
         }
 
         return ['status' => 'unmapped', 'suggested' => []];

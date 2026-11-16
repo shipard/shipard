@@ -12,9 +12,9 @@ use Shipard\Core\Utils\JsoncParser;
 
 /**
  * Nabídka účetních položek (accountingItemsDefault/Npo.jsonc) — sdílená
- * čtečka pro SetupController (generátor položek) a ContentTagResolver
- * (derivace fallback účtu pro obsahový štítek). Varianta osnovy se čte
- * ze settings klíče economy.accountChart.
+ * čtečka pro SetupController (generátor položek), materializaci položky
+ * ze štítku a přehled štítků v Nastavení. Varianta osnovy se čte ze
+ * settings klíče economy.accountChart.
  *
  * Nabídka je kurátorovaná: při více položkách se stejným štítkem vyhrává
  * první v pořadí souboru.
@@ -148,11 +148,14 @@ class AccountingItemsOffer
     }
 
     /**
-     * Fallback účet pro obsahový štítek z nabídky aktivní varianty osnovy —
+     * Výchozí účet pro obsahový štítek z nabídky aktivní varianty osnovy —
      * číslo účtu první položky nabídky nesoucí přesně tento štítek; když
      * žádná není, prefix fallback (D3): první položka se štítkem stejné
      * skupiny (`vehicle.consumables` → `vehicle.*`). null = štítek nemá
      * v nabídce mapování (vědomé review, např. admin.other, goods.stock).
+     *
+     * Čte ho přehled štítků v Nastavení (stav „výchozí účet z nabídky“);
+     * na řádek vytěženého dokladu se účet odtud nenavrhuje (#36 D3).
      */
     public function defaultAccountForTag(string $tag): ?string
     {

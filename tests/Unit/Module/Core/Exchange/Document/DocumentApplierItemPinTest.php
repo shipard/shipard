@@ -222,13 +222,8 @@ class DocumentApplierItemPinTest extends TestCase
         $this->assertStringContainsString('INSERT IGNORE', $sql[0]);
     }
 
-    public function testNoItemAndSkipWriteNoMapping(): void
+    public function testSkipWritesNoMapping(): void
     {
-        $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), 55);
-        $result = $applier->apply($this->payload('518100', null, 'noItem'));
-        $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
-        $this->assertSame([], $this->supplierCodeSql($applier));
-
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), 55);
         $result = $applier->apply($this->payload('518100', null, 'skip'));
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
@@ -260,15 +255,5 @@ class DocumentApplierItemPinTest extends TestCase
         $this->assertCount(1, $rows, 'vynechaný řádek 0 na dokladu není');
         $this->assertSame(1, $rows[0]['order_pos']);
         $this->assertSame(18, $rows[0]['item']);
-    }
-
-    public function testNoItemStillRequiresAccount(): void
-    {
-        $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
-
-        $result = $applier->apply($this->payload(null, null, 'noItem'));
-
-        $this->assertFalse($result->success);
-        $this->assertSame('no_item_requires_account', $result->errorCode);
     }
 }

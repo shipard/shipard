@@ -8,7 +8,6 @@ use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\DocumentResult;
-use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
@@ -28,9 +27,9 @@ use Shipard\Module\World\Trade\TradeUnionResolver;
 use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
- * userAction `noItem` — „jen účet, bez položky" (tasks/content-tag-ui.md D24):
- * řádek se pořídí bez item FK, účet řádku je povinný, pin přebíjí fresh
- * resolve i enrichment návrh.
+ * userAction `noItem` („jen účet, bez položky") je zrušená (#36 D1, D2 —
+ * tasks/exchange-no-item-removal.md): applier ji nezná a odmítne ji jako
+ * každou jinou neznámou userAction, i když řádek nese platný účet.
  */
 class DocumentApplierNoItemTest extends TestCase
 {
@@ -41,7 +40,6 @@ class DocumentApplierNoItemTest extends TestCase
         ResolveResult $itemResult,
         ?int $accountId,
         ?TransactionlessTableGateway $items = null,
-        ?ConfigRuntime $config = null,
     ): DocumentApplier {
         $party = $this->createMock(PartyResolver::class);
         $party->method('resolve')->willReturn(ResolveResult::matched(42, 'companyId'));
@@ -80,7 +78,7 @@ class DocumentApplierNoItemTest extends TestCase
 
         return new TestableDocumentApplier(
             db: $db,
-            config: $config ?? $this->createMock(ConfigRuntime::class),
+            config: $this->createMock(ConfigRuntime::class),
             headsGateway: $heads,
             personsGateway: $this->createMock(TransactionlessTableGateway::class),
             itemsGateway: $items ?? $this->createMock(TransactionlessTableGateway::class),
@@ -99,8 +97,7 @@ class DocumentApplierNoItemTest extends TestCase
     }
 
     /**
-     * Happy fixture s pinem noItem na rows[0]; volitelně s účtem na řádku
-     * (enrichment ho na fresh cestě propisuje do canonical.rows[i].account).
+     * Happy fixture s pinem noItem na rows[0]; volitelně s účtem na řádku.
      *
      * @return array<string, mixed>
      */
@@ -119,86 +116,23 @@ class DocumentApplierNoItemTest extends TestCase
         return $payload;
     }
 
-    private function rowOperationConfig(): ConfigRuntime
+    public function testNoItemIsRejectedAsUnknownUserAction(): void
     {
-        $root = dirname(__DIR__, 6);
-        $config = $this->createMock(ConfigRuntime::class);
-        $config->method('cfgItem')->willReturnMap([
-            ['docs.core.rowOperations',
-             JsoncParser::parseFile($root . '/modules/docs/core/config/rowOperations.jsonc')],
-            ['docs.core.applyRowOperations',
-             JsoncParser::parseFile($root . '/modules/docs/core/config/applyRowOperations.jsonc')],
-        ]);
-        return $config;
-    }
-
-    public function testNoItemWithAccountAppliesRowWithoutItem(): void
-    {
-        $applier = $this->buildApplier(
-            itemResult: ResolveResult::canCreate(['name' => 'Konzultace']),
-            accountId: 55,
-            config: $this->rowOperationConfig(),
-        );
-
-        $result = $applier->apply($this->payloadWithNoItemPin('503100'));
-
-        $this->assertTrue(
-            $result->success,
-            "Expected success; errorCode={$result->errorCode} msg={$result->errorMessage}",
-        );
-        $this->assertSame(1234, $result->savedId);
-
-        $row = $this->savedHeadsData['rows'][0] ?? null;
-        $this->assertIsArray($row);
-        $this->assertArrayNotHasKey('item', $row);
-        $this->assertSame(55, $row['account']);
-        // Pohyb spadl na default docTypu (invni bez item_type → acc.entry).
-        $this->assertSame('acc.entry', $row['operation']);
-
-        // Response označí rozhodnutý řádek statusem noItem (jen _resolve).
-        $this->assertSame('noItem', $result->canonical['_resolve']['rows'][0]['item']['status']);
-    }
-
-    public function testNoItemWithoutAccountFailsWithCleanError(): void
-    {
-        $applier = $this->buildApplier(
-            itemResult: ResolveResult::canCreate(['name' => 'Konzultace']),
-            accountId: null,
-        );
-
-        $result = $applier->apply($this->payloadWithNoItemPin(null));
-
-        $this->assertFalse($result->success);
-        $this->assertSame('no_item_requires_account', $result->errorCode);
-        $this->assertSame(422, $result->statusCode);
-        $codes = array_column($result->canonical['_resolve']['issues'] ?? [], 'code');
-        $this->assertContains('no_item_requires_account', $codes);
-        $this->assertNull($this->savedHeadsData, 'Save nesmí proběhnout');
-    }
-
-    public function testNoItemOverridesMatchedItemAndSkipsSideCreate(): void
-    {
-        // Fresh resolve položku najde (matched) — pin noItem ji přesto
-        // přebíjí (D3) a žádný item side-create neproběhne.
         $items = $this->createMock(TransactionlessTableGateway::class);
         $items->expects($this->never())->method('saveDocument');
 
         $applier = $this->buildApplier(
-            itemResult: ResolveResult::matched(18, 'ourCode'),
+            itemResult: ResolveResult::canCreate(['name' => 'Konzultace']),
             accountId: 55,
             items: $items,
         );
 
         $result = $applier->apply($this->payloadWithNoItemPin('503100'));
 
-        $this->assertTrue(
-            $result->success,
-            "Expected success; errorCode={$result->errorCode} msg={$result->errorMessage}",
-        );
-        $row = $this->savedHeadsData['rows'][0] ?? null;
-        $this->assertIsArray($row);
-        $this->assertArrayNotHasKey('item', $row);
-        $this->assertSame(55, $row['account']);
-        $this->assertSame('noItem', $result->canonical['_resolve']['rows'][0]['item']['status']);
+        $this->assertFalse($result->success);
+        $this->assertSame('conflict', $result->errorCode);
+        $this->assertStringContainsString('Neznámá userAction „noItem"', (string) $result->errorMessage);
+        $this->assertStringContainsString('rows.0.item', (string) $result->errorMessage);
+        $this->assertNull($this->savedHeadsData, 'Save nesmí proběhnout');
     }
 }

@@ -49,7 +49,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         return new RowEnrichmentPipeline(
             new RowHistoryEnricher($dibi, $party),
-            new ContentTagResolver($dibi, null, $config),
+            new ContentTagResolver($dibi, $config),
             $classifier,
             $beforeDominance,
         );
@@ -393,7 +393,48 @@ class RowEnrichmentPipelineTest extends TestCase
         $result = $pipeline->enrichFresh($this->canonical([$this->itemRow('Cosi')]));
 
         $this->assertNull($result['rows'][0]['item']['ourCode']);
-        $this->assertSame('unmapped', $this->enrichmentAt($result, 0)['resolution']);
+        $this->assertNull($result['rows'][0]['account'], 'štítek bez položky účet nenavrhuje (#36 D3)');
+        $enrichment = $this->enrichmentAt($result, 0);
+        $this->assertSame('unmapped', $enrichment['resolution']);
+        $this->assertSame('admin.other', $enrichment['tag']);
+        $this->assertSame([], $enrichment['suggested']);
+    }
+
+    /**
+     * Persistnutý canonical z `/result` může nést účet z dřívějšího běhu
+     * `accountOnly` — další čtení ho odvolá a řádek zůstane bez účtu (#36 D3).
+     */
+    public function testPersistedAccountOnlySuggestionIsReverted(): void
+    {
+        $pipeline = $this->pipeline(classifier: $this->neverCalledClassifier());
+
+        $row = $this->itemRow('Natural 95');
+        $row['account'] = '503100';
+        $canonical = $this->canonical([$row]);
+        $canonical['_resolve'] = [
+            'contentTag' => ['tag' => 'vehicle.fuel', 'tagSource' => 'llm'],
+            'rows' => [[
+                'index' => 0,
+                'enrichment' => [
+                    'matchedBy'  => 'contentTag',
+                    'confidence' => 'medium',
+                    'tag'        => 'vehicle.fuel',
+                    'tagSource'  => 'llm',
+                    'resolution' => 'accountOnly',
+                    'suggested'  => ['account' => '503100'],
+                ],
+            ]],
+        ];
+
+        $result = $pipeline->enrichFresh($canonical);
+
+        $this->assertNull($result['rows'][0]['account']);
+        $this->assertNull($result['rows'][0]['item']['ourCode']);
+        $enrichment = $this->enrichmentAt($result, 0);
+        $this->assertSame('unmapped', $enrichment['resolution']);
+        $this->assertSame('vehicle.fuel', $enrichment['tag']);
+        $this->assertSame([], $enrichment['suggested']);
+        $this->assertNull($enrichment['confidence']);
     }
 
     // ── D13: precedence contentTag vs. dominance ────────────────────────────

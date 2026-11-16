@@ -13,7 +13,6 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Settings\SettingsStore;
-use Shipard\Module\Economy\Items\AccountingItemsOffer;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 
 /**
@@ -69,11 +68,7 @@ final class RowEnrichmentPipeline
 
         return new self(
             RowHistoryEnricher::create($dibi),
-            new ContentTagResolver(
-                $dibi,
-                new AccountingItemsOffer($db),
-                $configRuntime,
-            ),
+            new ContentTagResolver($dibi, $configRuntime),
             new ContentTagClassifier(
                 $llm ?? new AnthropicLlmClient(ModelCatalog::fromConfig($configRuntime)),
                 new AiFunctionResolver($db, $configRuntime, $dsConfig),
@@ -262,7 +257,9 @@ final class RowEnrichmentPipeline
      * rowExceptions[rowIndex] ?? primaryTag, resolution štítek → položka
      * běží fresh ({@see ContentTagResolver::resolveItemForTag()}),
      * amountGuard návrh zadrží (D4). Propisují se jen prázdná pole (D3,
-     * vzor Vrstvy 0), audit jde do `_resolve.rows[i].enrichment`.
+     * vzor Vrstvy 0), audit jde do `_resolve.rows[i].enrichment`. Kód
+     * i účet nese jen resolution `item` — štítek bez živé otagované
+     * položky (`unmapped`) na řádek nic nezapíše (#36 D3).
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $block  persistnutý/čerstvý `_resolve.contentTag`
@@ -327,7 +324,7 @@ final class RowEnrichmentPipeline
             $resolution = $this->resolver->resolveItemForTag($rowTag);
             $enrichment['resolution'] = $resolution['status'];
 
-            if ($resolution['status'] === 'item' || $resolution['status'] === 'accountOnly') {
+            if ($resolution['status'] === 'item') {
                 $suggested = [];
                 $suggestedCode = $resolution['suggested']['ourCode'] ?? null;
                 if (is_string($suggestedCode) && $suggestedCode !== '') {

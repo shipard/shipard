@@ -218,16 +218,14 @@ class DocumentApplierRowDisplayTest extends TestCase
         $this->assertSame(18, $row['item']['display']['id']);
     }
 
-    public function testNoItemAndSkipKeepMatchedDisplayWithoutDisplay(): void
+    public function testSkipKeepsMatchedDisplayWithoutDisplay(): void
     {
-        foreach (['noItem', 'skip'] as $action) {
-            $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
+        $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-            $row = $this->previewRow($applier, $this->payload('503100', $action));
+        $row = $this->previewRow($applier, $this->payload('503100', 'skip'));
 
-            $this->assertArrayNotHasKey('display', $row['item'], $action);
-            $this->assertSame(18, $row['item']['matchedDisplay']['id'], $action);
-        }
+        $this->assertArrayNotHasKey('display', $row['item']);
+        $this->assertSame(18, $row['item']['matchedDisplay']['id']);
     }
 
     public function testRowLevelSkipHasNeitherDisplayNorAccount(): void
@@ -270,21 +268,8 @@ class DocumentApplierRowDisplayTest extends TestCase
 
         $this->assertSame(30, $row['item']['display']['id']);
         $this->assertNull($row['effectiveAccount'], 'služba bez účtu → „—“, i když canonical nese účet');
-        // Resolve účtu řádku je dál k dispozici (badge, noItem).
+        // Resolve účtu řádku je dál k dispozici (badge).
         $this->assertSame('matched', $row['account']['status']);
-    }
-
-    public function testNoItemShowsRowAccountWithoutDisplay(): void
-    {
-        $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
-
-        $row = $this->previewRow($applier, $this->payload('503100', 'noItem'));
-
-        $this->assertArrayNotHasKey('display', $row['item']);
-        $this->assertSame(
-            ['id' => 55, 'number' => '503100', 'name' => 'Spotřeba energie', 'source' => 'row'],
-            $row['effectiveAccount'],
-        );
     }
 
     public function testSkipHasNeitherDisplayNorAccount(): void

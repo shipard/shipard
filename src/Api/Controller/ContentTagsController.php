@@ -340,7 +340,7 @@ class ContentTagsController
     /** Seam pro testy (vzor saveItemRow). */
     protected function resolver(): ContentTagResolver
     {
-        return new ContentTagResolver($this->db->getDibiConnection(), $this->offer(), $this->config);
+        return new ContentTagResolver($this->db->getDibiConnection(), $this->config);
     }
 
     /** Sdílená služba reverzního otagování položek (D34). */

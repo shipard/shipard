@@ -9,20 +9,17 @@ use Dibi\Row;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Core\Exchange\Enrich\ContentTagResolver;
-use Shipard\Module\Economy\Items\AccountingItemsOffer;
 
 class ContentTagResolverTest extends TestCase
 {
     /**
      * @param list<array<string, mixed>> $items      řádky economy_items (fetchAll)
      * @param array<string, mixed>|null  $rule       řádek pravidla (fetch)
-     * @param array<string, string>      $offerMap   tag → fallback účet z nabídky
      * @param array<string, mixed>       $defaults   cfgItem contentTagDefaults
      */
     private function resolver(
         array $items = [],
         ?array $rule = null,
-        array $offerMap = [],
         array $defaults = [],
     ): ContentTagResolver {
         $db = $this->createMock(Connection::class);
@@ -32,17 +29,12 @@ class ContentTagResolverTest extends TestCase
         ));
         $db->method('fetch')->willReturn($rule !== null ? new Row($rule) : null);
 
-        $offer = $this->createMock(AccountingItemsOffer::class);
-        $offer->method('defaultAccountForTag')->willReturnCallback(
-            static fn(string $tag): ?string => $offerMap[$tag] ?? null,
-        );
-
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['economy.items.contentTagDefaults', $defaults],
         ]);
 
-        return new ContentTagResolver($db, $offer, $config);
+        return new ContentTagResolver($db, $config);
     }
 
     /** @return array<string, mixed> */
@@ -134,19 +126,10 @@ class ContentTagResolverTest extends TestCase
         $this->assertSame(['FUEL-A', 'FUEL-B'], $res['candidates']);
     }
 
-    public function testNoTaggedItemFallsBackToOfferAccount(): void
+    /** Štítek bez živé otagované položky účet nenavrhuje (#36 D3). */
+    public function testNoTaggedItemIsUnmappedWithoutSuggestion(): void
     {
-        $resolver = $this->resolver(offerMap: ['vehicle.fuel' => '503100']);
-
-        $res = $resolver->resolveItemForTag('vehicle.fuel');
-
-        $this->assertSame('accountOnly', $res['status']);
-        $this->assertSame(['account' => '503100'], $res['suggested']);
-    }
-
-    public function testNoMappingAnywhereIsUnmapped(): void
-    {
-        $res = $this->resolver()->resolveItemForTag('admin.other');
+        $res = $this->resolver()->resolveItemForTag('vehicle.fuel');
 
         $this->assertSame('unmapped', $res['status']);
         $this->assertSame([], $res['suggested']);
@@ -155,10 +138,10 @@ class ContentTagResolverTest extends TestCase
     public function testTrashedItemDoesNotCount(): void
     {
         // Mock fetchAll simuluje SQL filtr docState IN (10,40,80): položka
-        // v Koši se do výsledku vůbec nedostane → fallback na nabídku.
-        $resolver = $this->resolver(items: [], offerMap: ['vehicle.fuel' => '503100']);
+        // v Koši se do výsledku vůbec nedostane → štítek je bez položky.
+        $resolver = $this->resolver(items: []);
 
-        $this->assertSame('accountOnly', $resolver->resolveItemForTag('vehicle.fuel')['status']);
+        $this->assertSame('unmapped', $resolver->resolveItemForTag('vehicle.fuel')['status']);
     }
 
     // ── amountGuard + vatHint ───────────────────────────────────────────────

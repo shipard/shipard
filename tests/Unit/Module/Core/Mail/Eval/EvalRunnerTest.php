@@ -327,7 +327,7 @@ final class EvalRunnerTest extends TestCase
         $dibi->method('fetch')->willReturn(null);
         $party = $this->createMock(PartyResolver::class);
         $party->method('resolve')->willReturn(ResolveResult::matched(77, 'companyId'));
-        $enricher = new RowEnrichmentPipeline(new RowHistoryEnricher($dibi, $party), new ContentTagResolver($dibi, null, $config), new ContentTagClassifier($llm, $functions, $config));
+        $enricher = new RowEnrichmentPipeline(new RowHistoryEnricher($dibi, $party), new ContentTagResolver($dibi, $config), new ContentTagClassifier($llm, $functions, $config));
 
         $ai = new ScriptedComputation([self::okOutcome($m0101->expectedCanonical)]);
         $router = new EvalComputationRouter($ai, new IsdocDocumentCollector(new SchemaValidator(SchemaLoader::default()), $dsDir), $attachments, $enricher);

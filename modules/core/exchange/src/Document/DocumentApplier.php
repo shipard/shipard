@@ -577,7 +577,6 @@ class DocumentApplier
             'bankCreate'           => null,
             'rowItemCreates'       => [],
             'rowSkips'             => $rowSkips,
-            'rowNoItems'           => [],
             'rowItemPins'          => [],
             'resolvedSupplier'     => null,
             'resolvedCustomer'     => null,
@@ -856,7 +855,6 @@ class DocumentApplier
 
         // Mark canCreate references as matched (with newly-assigned ids).
         $resolved = $this->annotateSideCreated($resolved, $sideCreatedIds);
-        $resolved = $this->annotateNoItemRows($resolved, $plan['rowNoItems']);
         $finalCanonical = $this->withResolve($canonical, $resolved, $validatorIssues);
         $finalCanonical['savedDocId'] = $savedDocId;
 
@@ -1115,7 +1113,6 @@ class DocumentApplier
      *   bankCreate: ?array<string, mixed>,
      *   rowItemCreates: array<int, array<string, mixed>>,
      *   rowSkips: list<int>,
-     *   rowNoItems: list<int>,
      *   rowItemPins: list<int>,
      *   resolvedSupplier: ?int, resolvedCustomer: ?int, resolvedBalanceParty: ?int,
      *   resolvedSupplierBank: ?int,
@@ -1134,7 +1131,6 @@ class DocumentApplier
             'bankCreate'          => null,
             'rowItemCreates'      => [],
             'rowSkips'            => $rowSkips,
-            'rowNoItems'          => [],
             // Řádky s výslovnou volbou položky useExisting:<id> (#111 D7b, D8):
             // účet navržený historií / štítkem se nezapíše, mapování kódu
             // dodavatele se přepíše.
@@ -1211,22 +1207,13 @@ class DocumentApplier
             if ($itemFresh !== null) {
                 $itemClient = is_array($clientRow['item'] ?? null) ? $clientRow['item'] : null;
                 $itemAction = $itemClient['userAction'] ?? null;
-                if ($itemAction === 'noItem') {
-                    // „Jen účet — bez položky" (D24): řádek se pořídí bez item
-                    // FK. resolveOne se nevolá — pin přebíjí fresh status i
-                    // enrichment návrh (D3). Povinnost účtu se validuje níž,
-                    // až je resolvedRowAccounts pro řádek známé.
-                    $plan['rowNoItems'][] = $i;
-                    $plan['resolvedRowItems'][$i] = null;
-                } else {
-                    $itemRes = $this->resolveOne("rows.{$i}.item", $itemFresh, $itemAction, 'economy_items', $plan, $issues);
-                    $plan['resolvedRowItems'][$i] = $itemRes['id'];
-                    if ($itemRes['autoCreate']) {
-                        $plan['rowItemCreates'][$i] = $itemFresh['createPayload'] ?? [];
-                    }
-                    if ($itemRes['id'] !== null && is_string($itemAction) && str_starts_with($itemAction, 'useExisting:')) {
-                        $plan['rowItemPins'][] = $i;
-                    }
+                $itemRes = $this->resolveOne("rows.{$i}.item", $itemFresh, $itemAction, 'economy_items', $plan, $issues);
+                $plan['resolvedRowItems'][$i] = $itemRes['id'];
+                if ($itemRes['autoCreate']) {
+                    $plan['rowItemCreates'][$i] = $itemFresh['createPayload'] ?? [];
+                }
+                if ($itemRes['id'] !== null && is_string($itemAction) && str_starts_with($itemAction, 'useExisting:')) {
+                    $plan['rowItemPins'][] = $i;
                 }
             } else {
                 $plan['resolvedRowItems'][$i] = null;
@@ -1251,26 +1238,13 @@ class DocumentApplier
             // D7b (#111): u ručně zvolené položky jde účet s položkou — účet
             // řádku navržený historií nebo štítkem (shoda čísla se
             // `enrichment.suggested.account`) se nezapíše. Účet od uživatele
-            // nebo z AI zůstává; `noItem` se nemění.
+            // nebo z AI zůstává.
             $suggestedAccount = $enrichmentByIndex[(int) ($rowResolve['index'] ?? $i)]['suggested']['account'] ?? null;
             if ($plan['resolvedRowAccounts'][$i] !== null
                 && in_array($i, $plan['rowItemPins'], true)
                 && is_string($suggestedAccount)
                 && trim((string) ($accountFresh['number'] ?? '')) === trim($suggestedAccount)) {
                 $plan['resolvedRowAccounts'][$i] = null;
-            }
-
-            // Řádek s pinem noItem bez naresolvovaného účtu nemá co účtovat —
-            // apply musí selhat srozumitelně, ne až při účtování konceptu.
-            if (in_array($i, $plan['rowNoItems'], true) && $plan['resolvedRowAccounts'][$i] === null) {
-                $plan['errorCode'] = 'no_item_requires_account';
-                $plan['errorMessage'] = "Řádek {$i}: volba „jen účet — bez položky\" vyžaduje platný účet.";
-                $issues[] = [
-                    'severity' => 'error',
-                    'path'     => "rows.{$i}.item",
-                    'code'     => 'no_item_requires_account',
-                    'message'  => 'Volba „jen účet — bez položky" vyžaduje řádek s platným účtem.',
-                ];
             }
 
             // Per-řádkový partner — pin přes _resolve.rows[i].partner.
@@ -5254,12 +5228,12 @@ class DocumentApplier
      *    uložená volba `useExisting:<id>` (`pinned: true`) má přednost před
      *    automatickým napárováním (`status: matched`, `pinned: false`).
      *    Volba na neexistující nebo smazanou položku → klíč chybí (apply ji
-     *    stejně odmítne `conflict`). `noItem`, `skip` a nerozhodnutý
-     *    nenapárovaný řádek `display` nemají.
+     *    stejně odmítne `conflict`). `skip` a nerozhodnutý nenapárovaný
+     *    řádek `display` nemají.
      *  - `effectiveAccount` = účet, podle kterého se řádek zaúčtuje, nebo
      *    návrh účtu řádku; `null` = sloupec Účet ukáže „—“. Klíč je na
-     *    každém řádku. Volba `skip` → null; kontační řádek (`accSide`) nebo
-     *    volba `noItem` → účet řádku (`source: "row"`); efektivní položka →
+     *    každém řádku. Volba `skip` → null; kontační řádek (`accSide`) →
+     *    účet řádku (`source: "row"`); efektivní položka →
      *    její účet, jen u účetní položky (`item_type` 2) s vyplněným
      *    `accounting_account` (`source: "item"`), jinak null — účet doplněný
      *    historií nebo štítkem se na řádek s položkou při apply nezapíše
@@ -5324,8 +5298,6 @@ class DocumentApplier
                     $decision = 'useExisting';
                     $itemId = (int) $idStr;
                 }
-            } elseif ($itemAction === 'noItem') {
-                $decision = 'noItem';
             }
             if ($decision === null) {
                 $itemId = $matchedId;
@@ -5386,7 +5358,7 @@ class DocumentApplier
 
             if ($decision === 'skip') {
                 $effective = null;
-            } elseif ($contation || $decision === 'noItem') {
+            } elseif ($contation) {
                 $effective = $rowAccount;
             } elseif ($item !== null) {
                 $effective = $item['item_type'] === 2 && $item['account_id'] !== null
@@ -5523,29 +5495,6 @@ class DocumentApplier
             }
         }
         return false;
-    }
-
-    /**
-     * Stamp rows decided as `noItem` with status `noItem` in the response
-     * `_resolve` — the fresh resolve status (canCreate/notFound) would
-     * otherwise suggest an unresolved reference on a successfully applied
-     * row. Response-only status (schema has additionalProperties).
-     *
-     * @param array<string, mixed> $resolved
-     * @param list<int> $noItemRows
-     * @return array<string, mixed>
-     */
-    private function annotateNoItemRows(array $resolved, array $noItemRows): array
-    {
-        if ($noItemRows === []) {
-            return $resolved;
-        }
-        foreach ($resolved['rows'] ?? [] as $i => $rowR) {
-            if (isset($rowR['item']) && in_array($i, $noItemRows, true)) {
-                $resolved['rows'][$i]['item']['status'] = 'noItem';
-            }
-        }
-        return $resolved;
     }
 
     /**
