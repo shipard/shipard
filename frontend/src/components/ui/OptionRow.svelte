@@ -1,7 +1,7 @@
 <script>
-  // Volitelný řádek (#149 D76, D80): jedna volba ze seznamu — dialog Přidat
-  // firmu z registru, převod bankovních účtů, kód DPH, předmět přenesení,
-  // kandidáti partnera.
+  // Volitelný řádek (#149 D76, D80, D81): jedna volba ze seznamu — dialog
+  // Přidat firmu z registru, převod bankovních účtů, kód DPH, předmět
+  // přenesení, kandidáti partnera.
   //
   // `size` podle místa:
   //   `large`   volba s popisem, potvrzuje se tlačítkem dialogu — odsazení
@@ -9,7 +9,11 @@
   //             popis body barvou textu (D80 — nese běžné údaje: adresu,
   //             identifikátory, účet; šedou meta si skutečný doplněk dává
   //             sám), `aside` vpravo — jen když ho rodič předá, prázdný
-  //             obal se nekreslí;
+  //             obal se nekreslí. Na úzké šířce (D81 — řádek je pojmenovaný
+  //             kontejner `option-row`, práh 30rem) jde `aside` pod popis,
+  //             zarovnaný s textem, a text zůstává přes celou šířku řádku;
+  //             obsah `aside` si drží vlastní šířku. Rodič se na týž
+  //             kontejner ptá jménem (štítky registru vedle sebe);
   //   `compact` jednořádková volba aplikovaná kliknutím (popover) —
   //             odsazení xs × sm, zaoblení sm, bez ukazatele.
   // Vybraný: rámeček `primary` + pozadí `primary-soft`; pod kurzorem
@@ -128,6 +132,9 @@
 
 <style>
   .shpd-option-row {
+    /* Šířka ukazatele volby — bere ji ukazatel i odsazení `aside` pod
+       popisem (D81). */
+    --shpd-option-row-indicator: 1.125rem;
     position: relative;
     box-sizing: border-box;
     display: flex;
@@ -145,7 +152,14 @@
     transition: border-color 0.15s ease, background-color 0.15s ease;
   }
 
+  /* Velký řádek je pojmenovaný kontejner (D81, §8 Responzivita): dotaz
+     níže přesune `aside` pod popis. Kořen má `width: 100%`, nulovou šířku
+     tedy nedostane. `flex-wrap` je tady, ne v dotazu — dotaz na kontejner
+     sám nedosáhne; na široké šířce se nic nezalomí, text má základ 0. */
   .shpd-option-row--large {
+    container-type: inline-size;
+    container-name: option-row;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--shpd-space-md);
     padding: var(--shpd-space-md);
@@ -221,8 +235,8 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 1.125rem;
-    height: 1.125rem;
+    width: var(--shpd-option-row-indicator);
+    height: var(--shpd-option-row-indicator);
     margin-top: 0.0625rem;
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
@@ -294,5 +308,21 @@
 
   .shpd-option-row__aside--over :global(:is(a, button, input, select, textarea, label)) {
     pointer-events: auto;
+  }
+
+  /* Úzká šířka (D81): `aside` na vlastní řádek pod popis, svislá mezera je
+     mezera řádku. `display: flex` drží obsahu vlastní šířku — ovládací
+     prvek („výchozí“ u bankovních účtů) se neroztáhne přes celý řádek
+     a klik vedle něj dál volí řádek. */
+  @container option-row (max-width: 30rem) {
+    .shpd-option-row__aside {
+      display: flex;
+      flex-basis: 100%;
+    }
+
+    /* S ukazatelem volby zarovnaný s textem — za ukazatelem a mezerou. */
+    .shpd-option-row__aside--over {
+      padding-left: calc(var(--shpd-option-row-indicator) + var(--shpd-space-md));
+    }
   }
 </style>

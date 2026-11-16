@@ -556,6 +556,18 @@
     flex-shrink: 0;
   }
 
+  /* Úzký řádek (D81): `OptionRow` dává štítky pod popis — tam se řadí
+     vedle sebe. Dotaz jménem, v `Modal` může být kontejnerem i jiný předek. */
+  @container option-row (max-width: 30rem) {
+    .shpd-registry-wizard__row-badges {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      /* Dva štítky se vedle sebe nemusí vejít — smí se zalomit. */
+      flex-shrink: 1;
+    }
+  }
+
   .shpd-registry-wizard__badge {
     display: inline-block;
     padding: 0.125rem var(--shpd-space-sm);

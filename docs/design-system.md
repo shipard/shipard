@@ -536,7 +536,7 @@ Rozhodnutí D75 z #149. Šedá plocha uvnitř obsahu je sdílený
 
 ### Volitelné řádky
 
-Rozhodnutí D76 a D80 z #149. Jedna volba ze seznamu je sdílený
+Rozhodnutí D76, D80 a D81 z #149. Jedna volba ze seznamu je sdílený
 `ui/OptionRow.svelte`, ve dvou velikostech podle místa:
 
 - **Velký** (`size="large"`, výchozí) — volba s popisem, která se
@@ -553,6 +553,16 @@ Rozhodnutí D76 a D80 z #149. Jedna volba ze seznamu je sdílený
   (`aside={maStitky ? stitky : undefined}`, snippet pojmenovaný vedle
   řádku). Podmínka uvnitř snippetu nechá vpravo prázdný obal s mezerou
   md.
+- **Úzká šířka (D81):** velký řádek je pojmenovaný kontejner
+  `option-row`. Když je jeho obsah užší než práh úzkého obsahu
+  (`@container option-row (max-width: 30rem)`, §8 Responzivita — měří se
+  vnitřek řádku bez odsazení), `aside` se přesune pod popis, zarovnaný
+  s textem (za ukazatelem volby; řádek bez ukazatele bez odsazení), a název
+  i popis jdou přes celou šířku řádku. Svislá mezera je mezera řádku (md).
+  Obsah `aside` si pod popisem drží vlastní šířku — ovládací prvek uvnitř
+  se neroztáhne přes řádek a klik vedle něj dál volí řádek. Štítky, které
+  jsou vpravo pod sebou, si rodič stejným dotazem (jménem kontejneru) řadí
+  vedle sebe a nechá je zalomit, když se nevejdou.
 - **Kompaktní** (`size="compact"`) — jednořádková volba aplikovaná
   kliknutím (popover): odsazení xs × sm, zaoblení `--shpd-radius-sm`, bez
   ukazatele.
@@ -807,7 +817,7 @@ používají `@container`, ne `@media`.
 |---|---|---|
 | `48rem` (768 px) | `@media` v aplikaci | shell: drawer, fullscreen modal, seznam / detail, taby review modalu, výšky ve `vh` |
 | `68.75rem` (1100 px) | `@media` ve `frontend/src/dev/` | shell vývojářského dashboardu (split dvou sloupců) |
-| `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole, strany dokladu pod sebe, patička dialogu zalomená |
+| `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole, strany dokladu pod sebe, patička dialogu zalomená, obsah vpravo volitelného řádku pod popis (`option-row`, #149 D81) |
 | `36rem` (576 px) | `@container` | složené řádky dokladu (`DocRows`, pojmenovaný kontejner `doc-rows`, #139 D45) |
 | `55rem` (880 px) | JS, šířka vieweru (`VIEWER_SPLIT_MIN`) | viewer se seznamem: užší viewer má seznam přes celou šířku a detail v draweru (D58) |
 
@@ -838,7 +848,11 @@ písmo se **nenastavuje** i kvůli tomu.
   sloupci, ne podle nejbližšího kontejneru. Stejně `DocRows` (#139): kořen
   má `container-name: doc-rows` a dotaz `@container doc-rows (max-width:
   36rem)`, protože uvnitř detailu je kontejnerem i `.shpd-docdetail`
-  (strany pod sebe) a nepojmenovaný dotaz by se ptal jeho.
+  (strany pod sebe) a nepojmenovaný dotaz by se ptal jeho. A `OptionRow`
+  (#149 D81): velký řádek má `container-name: option-row`; ptá se ho
+  sám (`aside` pod popis) i rodič, který do `aside` vkládá štítky
+  (`RegistryImportWizard`) — řádek bývá v `Modal` a uvnitř dalších
+  kontejnerů.
 - Obsah vykreslený snippetem `Modal` (patička přes `footer`) je mimo kořen
   komponenty — kořenový kontejner na něj nedosáhne. Takový kus dostane
   vlastní obal na celou šířku snippetu (`PrintPreviewDialog`:
@@ -848,7 +862,10 @@ písmo se **nenastavuje** i kvůli tomu.
   a style containment, ne layout containment; ověřeno v Chromiu (lookup
   dropdown ve `FormSection` sedí pod polem a není ořezaný).
 - Vzory: `PropertyGroups` (kontejner na obalu mřížky), `DocumentDetail`
-  (strany dokladu), `SettingsPage`, `SendDialog`, `FormSection`.
+  (strany dokladu), `SettingsPage`, `SendDialog`, `FormSection`,
+  `OptionRow` (pojmenovaný kontejner `option-row` přímo na kořeni řádku —
+  kořen má `width: 100%`; `flex-wrap` je na kořeni mimo dotaz, dotaz mění
+  jen potomka `aside`).
 
 **Nová hodnota = nové rozhodnutí v #133.** Kontrola v pre-commitu
 (`scripts/check-css-units.py`, §10) odmítne `@media` s rysem šířky mimo
@@ -1750,7 +1767,7 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/Panel.svelte` | Vložený panel (§8 Vložené panely, D75) — `bg-secondary` s rámečkem `border-subtle`, `variant` compact, `tone` info, `padding` form, `as`; na něm `FormSection` |
-| `frontend/src/components/ui/OptionRow.svelte` | Volitelný řádek (§8 Volitelné řádky, D76, D80) — velký s ukazatelem radio / checkbox a snippety `description` (body barvou textu) / `aside`, kompaktní jako tlačítko s `role` option / radio; vybraný `primary` + `primary-soft` |
+| `frontend/src/components/ui/OptionRow.svelte` | Volitelný řádek (§8 Volitelné řádky, D76, D80, D81) — velký s ukazatelem radio / checkbox a snippety `description` (body barvou textu) / `aside` (na úzké šířce pod popisem, kontejner `option-row`), kompaktní jako tlačítko s `role` option / radio; vybraný `primary` + `primary-soft` |
 | `frontend/src/components/ui/SegmentedControl.svelte` | Segmentový přepínač (§8, D77) — `radiogroup` oddělených tlačítek, `options`, bindable `value`, `onchange`; šipky přesouvají jen fokus, vybírá mezerník / Enter / klik (D79) |
 | `frontend/src/components/ui/PageHeader.svelte` | Nadpis stránky (§8, D78) — `h1` s ikonou z navigace a `aside`; `flow` (role page) / `bar` (lišta jako hlavička detailu) |
 | `frontend/src/components/ui/CenteredScreen.svelte` | Obrazovka s kartou uprostřed (§8) — obal `100dvh` s odsazením md a plovoucí plocha `25rem`; přihlášení, nastavení hesla, OpAuth, `StatusScreen` |
