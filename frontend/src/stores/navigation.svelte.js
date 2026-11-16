@@ -55,6 +55,8 @@ const DASHBOARD_ITEM = Object.freeze({
   id: 'dashboard',
   label: 'Dashboard',
   type: 'dashboard',
+  // Klíč ikony jako u syntetického leafu v NavigationController.
+  icon: 'dashboard',
   table: null,
   viewerId: null,
   filter: null,
@@ -65,6 +67,9 @@ function navigate(item) {
     id: item.id,
     label: item.label,
     type: item.type,
+    // Klíč ikony položky navigace — nadpis stránky (PageHeader, #149 D78)
+    // kreslí stejnou ikonu jako menu; ad-hoc cíle ji nemají.
+    icon: item.icon ?? null,
     table: item.table,
     viewerId: item.viewerId,
     pageId: item.pageId ?? null,
@@ -231,6 +236,7 @@ function activateReportDeepLink(navTree) {
     id: leaf.id,
     label: leaf.label,
     type: leaf.type,
+    icon: leaf.icon ?? null,
     table: leaf.table ?? null,
     viewerId: leaf.viewerId ?? null,
     pageId: leaf.pageId ?? null,
@@ -262,6 +268,7 @@ function navigateToReport(reportId, params = null) {
     id: leaf.id,
     label: leaf.label,
     type: leaf.type,
+    icon: leaf.icon ?? null,
     table: leaf.table ?? null,
     viewerId: leaf.viewerId ?? null,
     pageId: leaf.pageId ?? null,
@@ -327,6 +334,7 @@ function ensureDefaultActiveItem(navTree = null) {
     id: leaf.id,
     label: leaf.label,
     type: leaf.type,
+    icon: leaf.icon ?? null,
     table: leaf.table ?? null,
     viewerId: leaf.viewerId ?? null,
     pageId: leaf.pageId ?? null,

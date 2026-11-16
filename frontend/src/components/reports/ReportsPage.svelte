@@ -21,8 +21,9 @@
   import Checkbox from '../ui/Checkbox.svelte';
   import Button from '../ui/Button.svelte';
   import Popover from '../ui/Popover.svelte';
+  import PageHeader from '../ui/PageHeader.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
-  import { iconDownload } from '../../icons.js';
+  import { iconDownload, resolveIcon } from '../../icons.js';
   import { noticeStore } from '../../stores/notice.svelte.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -33,6 +34,9 @@
   import { defaultReportParams, overlayReportParams, deepLinkEntries } from '../../utils/reportParams.js';
 
   let { item } = $props();
+
+  // Ikona z položky navigace (PageHeader, #149 D78) — bez ní nadpis bez ikony.
+  const pageIcon = $derived(item?.icon ? resolveIcon(item.icon) : undefined);
 
   const reportId = $derived(item?.panelParams?.reportId ?? null);
 
@@ -247,65 +251,66 @@
 </script>
 
 <div class="shpd-reports">
-  <div class="shpd-reports__toolbar">
-    <h1 class="shpd-reports__title">{item?.label ?? ''}</h1>
-    {#if catalog && reportDef && !noPeriods}
-      {#if periodSource === 'vatPeriod'}
-        <VatPeriodPicker
-          registrations={catalog.vatRegistrations}
-          reportType={vatReportType}
-          value={params}
-          onChange={changePeriod}
-        />
-      {:else}
-        <PeriodPicker
-          fiscalYears={catalog.fiscalYears}
-          granularities={reportDef.periodGranularities}
-          value={params}
-          onChange={changePeriod}
-        />
-      {/if}
-      {#each declaredParams as param (param.id)}
-        <span class="shpd-reports__param" title={param.name ?? param.id} data-testid="report-param-{param.id}">
-          {#if param.type === 'bool'}
-            <Checkbox
-              bind:checked={() => paramValue(param) === true, (v) => setParam(param.id, v)}
-              label={param.name ?? param.id}
-            />
-          {:else}
-            {#if showParamLabels}
-              <label class="shpd-reports__param-label" for="report-param-{param.id}">{param.name ?? param.id}</label>
-            {/if}
-            <span class="shpd-reports__param-field">
-              <Select
-                id="report-param-{param.id}"
-                bind:value={() => paramValue(param), (v) => setParam(param.id, v)}
-                options={paramOptions(param)}
-                required
+  <PageHeader variant="bar" title={item?.label ?? ''} icon={pageIcon}>
+    {#snippet aside()}
+      {#if catalog && reportDef && !noPeriods}
+        {#if periodSource === 'vatPeriod'}
+          <VatPeriodPicker
+            registrations={catalog.vatRegistrations}
+            reportType={vatReportType}
+            value={params}
+            onChange={changePeriod}
+          />
+        {:else}
+          <PeriodPicker
+            fiscalYears={catalog.fiscalYears}
+            granularities={reportDef.periodGranularities}
+            value={params}
+            onChange={changePeriod}
+          />
+        {/if}
+        {#each declaredParams as param (param.id)}
+          <span class="shpd-reports__param" title={param.name ?? param.id} data-testid="report-param-{param.id}">
+            {#if param.type === 'bool'}
+              <Checkbox
+                bind:checked={() => paramValue(param) === true, (v) => setParam(param.id, v)}
+                label={param.name ?? param.id}
               />
-            </span>
-          {/if}
-        </span>
-      {/each}
-      <SegmentedControl
-        options={formatOptions}
-        value={thousands}
-        onchange={setThousands}
-      />
-      <span class="shpd-reports__export" bind:this={exportAnchor}>
-        <Button
-          label={t('reports.export.label')}
-          icon={iconDownload}
-          variant="secondary"
-          size="sm"
-          disabled={!result || loading}
-          loading={exporting}
-          onclick={() => { exportOpen = !exportOpen; }}
-          testid="report-export"
+            {:else}
+              {#if showParamLabels}
+                <label class="shpd-reports__param-label" for="report-param-{param.id}">{param.name ?? param.id}</label>
+              {/if}
+              <span class="shpd-reports__param-field">
+                <Select
+                  id="report-param-{param.id}"
+                  bind:value={() => paramValue(param), (v) => setParam(param.id, v)}
+                  options={paramOptions(param)}
+                  required
+                />
+              </span>
+            {/if}
+          </span>
+        {/each}
+        <SegmentedControl
+          options={formatOptions}
+          value={thousands}
+          onchange={setThousands}
         />
-      </span>
-    {/if}
-  </div>
+        <span class="shpd-reports__export" bind:this={exportAnchor}>
+          <Button
+            label={t('reports.export.label')}
+            icon={iconDownload}
+            variant="secondary"
+            size="sm"
+            disabled={!result || loading}
+            loading={exporting}
+            onclick={() => { exportOpen = !exportOpen; }}
+            testid="report-export"
+          />
+        </span>
+      {/if}
+    {/snippet}
+  </PageHeader>
 
   {#if exportOpen}
     <Popover open={true} anchor={exportAnchor} placement="bottom" onClose={() => { exportOpen = false; }}>
@@ -359,23 +364,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-  }
-
-  .shpd-reports__toolbar {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-md);
-    flex-wrap: wrap;
-    padding: var(--shpd-space-md);
-    background-color: var(--shpd-color-bg);
-    border-bottom: 1px solid var(--shpd-color-border);
-  }
-
-  .shpd-reports__title {
-    margin: 0;
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 600;
-    color: var(--shpd-color-text);
   }
 
   .shpd-reports__param {

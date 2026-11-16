@@ -230,6 +230,9 @@
   --shpd-font-size-heading: var(--shpd-font-size-base); /* 16 px — nadpis sekce, název entity, název karty feedu */
   --shpd-font-size-body:    var(--shpd-font-size-sm);   /* 14 px — popisky i hodnoty, řádky tabulek i jejich hlavička, podtitul hlavičky detailu (D56) */
   --shpd-font-size-meta:    var(--shpd-font-size-xs);  /* 12 px — doplňky, štítek */
+  /* Nadpis stránky v toku (#149 D78, ui/PageHeader) — jediná role na xl;
+     nadpis stránky v liště (reporty) je title jako hlavička detailu. */
+  --shpd-font-size-page:    var(--shpd-font-size-xl);  /* 20 px — nadpis stránky */
   --shpd-font-weight-normal: 400;
   --shpd-font-weight-strong: 600;
 
@@ -252,6 +255,9 @@
   --shpd-sidebar-width: 16.25rem;          /* 260px při 16px */
   --shpd-sidebar-width-collapsed: 3rem;    /*  48px */
   --shpd-header-height: 3.5rem;            /*  56px */
+  /* Svislé odsazení lišty nad obsahem — hlavička detailu (ui/DetailHeader)
+     a nadpis stránky v liště (ui/PageHeader `bar`, #149 D78) ho sdílí. */
+  --shpd-bar-padding-y: 0.75rem;           /*  12px */
   /* Levý pás classic shellu (ikona + popisek pod sebou). */
   --shpd-classic-strip-width: 4.75rem;     /*  76px */
   /* Levý rail wild shellu (ikona + popisek pod sebou, Issue #51). */

@@ -10,9 +10,15 @@
   import { t } from '../../i18n/index.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
+  import PageHeader from '../ui/PageHeader.svelte';
   import Notice from '../ui/Notice.svelte';
   import NewDatasourceModal from './NewDatasourceModal.svelte';
-  import { iconAdd, iconDatabase, iconOpenExternal, iconSpinner, iconSuccess, iconWarning } from '../../icons.js';
+  import { iconAdd, iconDatabase, iconOpenExternal, iconSpinner, iconSuccess, iconWarning, resolveIcon } from '../../icons.js';
+
+  // Položka navigace, odkud stránka vznikla — nadpis stránky kreslí její
+  // ikonu (PageHeader, #149 D78); bez ikony v navigaci je nadpis bez ikony.
+  let { item = null } = $props();
+  const pageIcon = $derived(item?.icon ? resolveIcon(item.icon) : undefined);
 
   let items = $state(null);   // null = načítá se
   let error = $state(false);
@@ -142,21 +148,25 @@
   });
 </script>
 
+{#snippet createAction()}
+  <span title={createDisabledHint ?? undefined}>
+    <Button
+      label={t('portal.create.button')}
+      icon={iconAdd}
+      size="sm"
+      disabled={!canCreate}
+      onclick={() => (modalOpen = true)}
+    />
+  </span>
+{/snippet}
+
 <div class="portal">
-  <div class="portal__header">
-    <h1 class="portal__title">{t('portal.subtitle')}</h1>
-    {#if showCreateButton}
-      <span title={createDisabledHint ?? undefined}>
-        <Button
-          label={t('portal.create.button')}
-          icon={iconAdd}
-          size="sm"
-          disabled={!canCreate}
-          onclick={() => (modalOpen = true)}
-        />
-      </span>
-    {/if}
-  </div>
+  <PageHeader
+    title={t('portal.subtitle')}
+    icon={pageIcon}
+    class="portal__header"
+    aside={showCreateButton ? createAction : undefined}
+  />
 
   {#if items === null}
     <div class="portal__status">{t('portal.loading')}</div>
@@ -262,19 +272,10 @@
     padding: var(--shpd-space-xl);
   }
 
-  .portal__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--shpd-space-md);
+  /* Nadpis stránky je sdílený PageHeader (#149 D78) — třída dává jen mezeru
+     pod ním. */
+  .portal :global(.portal__header) {
     margin-bottom: var(--shpd-space-lg);
-  }
-
-  .portal__title {
-    margin: 0;
-    font-size: var(--shpd-font-size-lg);
-    font-weight: 700;
-    color: var(--shpd-color-text);
   }
 
   .portal__status {

@@ -22,6 +22,13 @@
   } from '../../api/contentTags.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import TableScroll from '../ui/TableScroll.svelte';
+  import PageHeader from '../ui/PageHeader.svelte';
+  import { resolveIcon } from '../../icons.js';
+
+  // Položka navigace, odkud stránka vznikla — nadpis stránky kreslí její
+  // ikonu (PageHeader, #149 D78); bez ikony v navigaci je nadpis bez ikony.
+  let { item = null } = $props();
+  const pageIcon = $derived(item?.icon ? resolveIcon(item.icon) : undefined);
 
   let loading = $state(true);
   let loadError = $state(null);
@@ -122,7 +129,7 @@
 </script>
 
 <div class="shpd-content-tags">
-  <h2 class="shpd-content-tags__title">{t('settings.contentTags.title')}</h2>
+  <PageHeader title={t('settings.contentTags.title')} icon={pageIcon} />
   <p class="shpd-content-tags__desc">{t('settings.contentTags.description')}</p>
 
   {#if loading}
@@ -254,12 +261,6 @@
   .shpd-content-tags {
     padding: var(--shpd-space-lg);
     max-width: 56.25rem;
-  }
-
-  .shpd-content-tags__title {
-    margin: 0;
-    font-size: var(--shpd-font-size-xl);
-    font-weight: 600;
   }
 
   .shpd-content-tags__subtitle {

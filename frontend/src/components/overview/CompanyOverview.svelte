@@ -12,17 +12,22 @@
   import { onMount } from 'svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
-  import Icon from '../ui/Icon.svelte';
+  import PageHeader from '../ui/PageHeader.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
   import Card from '../ui/Card.svelte';
   import CardGrid from '../ui/CardGrid.svelte';
-  import { iconOverview, iconRefresh, resolveIcon } from '../../icons.js';
+  import { iconRefresh, resolveIcon } from '../../icons.js';
   import { fetchOverview } from '../../api/overview.js';
   import { formatMoney } from '../../utils/formatNumber.js';
   import { formatDate as formatDisplayDate } from '../../utils/formatDate.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import ViewerDetailModal from '../viewer/ViewerDetailModal.svelte';
+
+  // Položka navigace, odkud stránka vznikla — nadpis stránky kreslí její
+  // ikonu (PageHeader, #149 D78); bez ikony v navigaci je nadpis bez ikony.
+  let { item = null } = $props();
+  const pageIcon = $derived(item?.icon ? resolveIcon(item.icon) : undefined);
 
   let loading = $state(true);
   let error = $state(null);
@@ -108,12 +113,8 @@
 </script>
 
 <div class="shpd-overview">
-  <header class="shpd-overview__header">
-    <h1 class="shpd-overview__title">
-      <Icon icon={iconOverview} size="md" />
-      <span>{t('overview.title')}</span>
-    </h1>
-    <div class="shpd-overview__header-right">
+  <PageHeader title={t('overview.title')} icon={pageIcon}>
+    {#snippet aside()}
       {#if data?.asOf}
         <span class="shpd-overview__asof">{t('overview.asOf', { date: formatDate(data.asOf) })}</span>
       {/if}
@@ -125,8 +126,8 @@
         onclick={load}
         disabled={loading}
       />
-    </div>
-  </header>
+    {/snippet}
+  </PageHeader>
 
   {#if loading && !data}
     <p class="shpd-overview__state">{t('overview.loading')}</p>
@@ -256,29 +257,6 @@
     flex-direction: column;
     gap: var(--shpd-space-lg);
     min-height: 100%;
-  }
-
-  .shpd-overview__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--shpd-space-md);
-    flex-wrap: wrap;
-  }
-
-  .shpd-overview__title {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-sm);
-    margin: 0;
-    font-size: var(--shpd-font-size-xl);
-    color: var(--shpd-color-text);
-  }
-
-  .shpd-overview__header-right {
-    display: flex;
-    align-items: center;
-    gap: var(--shpd-space-md);
   }
 
   .shpd-overview__asof {

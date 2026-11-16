@@ -8,8 +8,10 @@
   // `icon` je už rozřešený objekt ikony (hostitel volá `resolveIcon`;
   // bez ikony se box nekreslí), `badges` `[{label, style}]` se styly
   // `Badge`. Rozměry 40×40 px a mezery 0.75rem zůstávají jako dřív —
-  // převod na tokeny je D46 (#138 task 4). Titulek je `<h2>` i v modalu
-  // review: nadpis obsahu pod titulkem dialogu.
+  // převod na tokeny je D46 (#138 task 4); svislé odsazení lišty je token
+  // `--shpd-bar-padding-y`, sdílený s nadpisem stránky v liště (`PageHeader`
+  // `bar`, #149 D78). Titulek je `<h2>` i v modalu review: nadpis obsahu
+  // pod titulkem dialogu.
   import Icon from './Icon.svelte';
   import Badge from './Badge.svelte';
 
@@ -44,7 +46,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem var(--shpd-space-md);
+    padding: var(--shpd-bar-padding-y) var(--shpd-space-md);
     border-bottom: 1px solid var(--shpd-color-border);
     background-color: var(--shpd-color-bg);
     flex-shrink: 0;

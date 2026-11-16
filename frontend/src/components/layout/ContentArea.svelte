@@ -69,7 +69,7 @@
 {/if}
 <main class="shpd-content">
   {#if activeItem?.type === 'dashboard'}
-    <Dashboard />
+    <Dashboard item={activeItem} />
   {:else if activeItem?.type === 'chat'}
     <ChatView />
   {:else if activeItem?.type === 'viewer'}

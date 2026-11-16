@@ -10,9 +10,10 @@
   } from '../../api/exchange.js';
   import { confirmSenderRule, rejectSenderRule, undoAutoArchive } from '../../api/mail.js';
   import { materializeContentTag } from '../../api/contentTags.js';
-  import { iconRefresh, iconUpload } from '../../icons.js';
+  import { iconRefresh, iconUpload, resolveIcon } from '../../icons.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import Button from '../ui/Button.svelte';
+  import PageHeader from '../ui/PageHeader.svelte';
   import Notice from '../ui/Notice.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import DocumentExchangePreviewModal from '../exchange/DocumentExchangePreviewModal.svelte';
@@ -24,6 +25,11 @@
   import QueueCategoriesPrompt from './QueueCategoriesPrompt.svelte';
   import RejectReasonPrompt from './RejectReasonPrompt.svelte';
   import ViewerDetailModal from '../viewer/ViewerDetailModal.svelte';
+
+  // Položka navigace, odkud stránka vznikla — nadpis stránky kreslí její
+  // ikonu (PageHeader, #149 D78); bez ikony v navigaci je nadpis bez ikony.
+  let { item = null } = $props();
+  const pageIcon = $derived(item?.icon ? resolveIcon(item.icon) : undefined);
 
   const HEADS_TABLE = 'docs_core_heads';
   const REGISTRY_TABLE = 'base_registry_documents';
@@ -639,28 +645,29 @@
   ondragleave={handleDashboardDragLeave}
   ondrop={handleDashboardDrop}
 >
-  <header class="shpd-dashboard__header">
-    <h1 class="shpd-dashboard__title">{t('dashboard.title')}</h1>
-    <div class="shpd-dashboard__actions">
-      {#if caps.mailUpload}
+  <PageHeader title={t('dashboard.title')} icon={pageIcon}>
+    {#snippet aside()}
+      <div class="shpd-dashboard__actions">
+        {#if caps.mailUpload}
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={iconUpload}
+            label={t('dashboard.upload.button')}
+            onclick={() => (uploadModal = { open: true, files: [] })}
+          />
+        {/if}
         <Button
           variant="ghost"
           size="sm"
-          icon={iconUpload}
-          label={t('dashboard.upload.button')}
-          onclick={() => (uploadModal = { open: true, files: [] })}
+          icon={iconRefresh}
+          label={t('dashboard.refresh')}
+          onclick={load}
+          disabled={loading}
         />
-      {/if}
-      <Button
-        variant="ghost"
-        size="sm"
-        icon={iconRefresh}
-        label={t('dashboard.refresh')}
-        onclick={load}
-        disabled={loading}
-      />
-    </div>
-  </header>
+      </div>
+    {/snippet}
+  </PageHeader>
 
   {#if dragActive}
     <div class="shpd-dashboard__drop-overlay" aria-hidden="true">
@@ -807,12 +814,6 @@
     position: relative;
   }
 
-  .shpd-dashboard__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
   .shpd-dashboard__actions {
     display: flex;
     align-items: center;
@@ -843,12 +844,6 @@
     color: var(--shpd-color-text);
     font-size: var(--shpd-font-size-base);
     box-shadow: var(--shpd-shadow-lg, 0 4px 16px rgba(0, 0, 0, 0.25));
-  }
-
-  .shpd-dashboard__title {
-    margin: 0;
-    font-size: var(--shpd-font-size-xl);
-    color: var(--shpd-color-text);
   }
 
   /* Řádek filtr + Projít frontu. Filtr dostává flex:1 + min-width:0, aby
