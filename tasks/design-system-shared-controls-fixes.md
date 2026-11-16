@@ -1,6 +1,6 @@
 # Design system — opravy z ověření sdílených ovládacích prvků
 
-**Stav:** naplánováno — rozhodnutí D79, D80 potvrzená v #149 2026-11-16
+**Stav:** hotovo — 2026-11-16 (#149, D79, D80); ověřeno skriptem v prohlížeči (Odchylky 7), ruční ověření čeká; nález mimo rozsah: popover rozhodnutí na 360 px přesahuje okno (Odchylky 8)
 
 ## Kontext / Cíl
 
@@ -165,15 +165,65 @@ V prohlížeči na volném dev zdroji dat, světlý i tmavý vzhled:
 
 ## Hotovo když
 
-- [ ] D79 v `SegmentedControl`, ověření 1–2
-- [ ] D80 v `OptionRow`, prázdný `aside` pryč, ověření 3–4
-- [ ] tlačítko rychlého založení z registru se vejde, ověření 5
-- [ ] `docs/design-system.md` podle kroku 4
-- [ ] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
+- [x] D79 v `SegmentedControl`, ověření 1–2
+- [x] D80 v `OptionRow`, prázdný `aside` pryč, ověření 3–4
+- [x] tlačítko rychlého založení z registru se vejde, ověření 5
+- [x] `docs/design-system.md` podle kroku 4
+- [x] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+1. **`ResolveDecisionPanel` zůstal u vlastního tlačítka** (varianta
+   „jinak“ ze zadání). Převod na `Button` by vzal text barvou `primary`
+   a shodu se dvěma sousedními `.shpd-resolve__create` („Vytvořit
+   nový“), která jsou mimo rozsah; `Button` navíc nemá šířku 100 %.
+   Tlačítko se zalamovalo už dřív (nemělo `nowrap`) — změnila se jen
+   ikona a její poloha u prvního řádku.
+2. **Ikonu `iconAdd` mají všechna tři `.shpd-resolve__create`**, ne jen
+   tlačítko z registru — jinak by v jednom panelu pod sebou byla ikona
+   a textové „+“. Výška jednořádkového tlačítka se nezměnila.
+3. **`Button` `wrap` — řádkování a výška.** Tělo aplikace nemá vlastní
+   řádkování (`line-height: normal`), `wrap` proto bere `normal`, ne
+   pevné číslo. Svislé odsazení je menší o půl prokladu řádku (jednotka
+   `lh`), takže jednořádkové tlačítko s `wrap` je vysoké stejně jako bez
+   něj (`sm` 24 px) a mezera mezi textem a rámečkem se nemění. Ikona
+   není zarovnaná „nahoru“, ale na účaří prvního řádku s posunem jako
+   ikona v textu — sedí na střed prvního řádku při jakémkoli řádkování.
+4. **Tlačítko v patičce karty strany je široké podle popisku**, nejvýš
+   jako karta. Dřív ho sloupcový flex roztahoval přes celou kartu
+   s textem na středu; s textem vlevo by roztažené tlačítko vypadalo
+   jako řádek. Chyba pod tlačítkem (`Notice`) zůstává přes celou šířku.
+   Mřížka stran (`1fr 1fr`) se měnit nemusela.
+5. **`data-testid`** na tlačítkách rychlého založení nebyl ani na jednom
+   místě — nic se nepřidávalo ani neztratilo (`review-ref-create:…` na
+   „Vytvořit nový“ zůstává).
+6. **Ikona firmy u adresy** v dialogu z registru dědí barvu textu, takže
+   ztmavla spolu s adresou.
+7. **Ověření skriptem** (Playwright, volný zdroj dat `zey0-g`, světlý
+   i tmavý vzhled), ruční ověření zbývá:
+   - body 1–2: šipka, Home a End jen přesouvají fokus, žádný požadavek
+     ani načtení stránky, `tabindex="0"` na volbě s fokusem, Tab ven
+     a zpět vstoupí na vybranou — rozvržení a jazyk (Nastavení účtu),
+     plátce DPH v průvodci, vzhled (Nastavení aplikace), formát čísel
+     reportu, režim nahrání pošty; mezerník a Enter vybírají (report),
+     mezerník mění jazyk a načte stránku. Přepínač vzhledu v Nastavení
+     účtu se neověřil — účet sleduje vzhled zdroje dat a přepínač se
+     neukazuje.
+   - body 3–4: oba dialogy s podvrženou odpovědí API (hledání v registru,
+     kandidáti účtů), šířky 1500 a 360 px — popis 14 px barvou textu,
+     název strong, řádek bez štítků bez `aside`, zakázaný řádek
+     průhlednost 0,6; u účtů `aside` jen u zaškrtnutého.
+   - bod 5: náhled z karty feedu s podvrženým nenapárovaným dodavatelem
+     a nálezem v registru (dlouhý i krátký název), šířky 1500, 1000, 760
+     a 360 px — tlačítko uvnitř karty, popisek uvnitř tlačítka, stránka
+     bez vodorovného posuvu; totéž tlačítko v panelu. Na tlačítko se
+     neklikalo (založilo by osobu).
+8. **Nálezy mimo rozsah, neopravené:**
+   - popover rozhodnutí v náhledu importu má pevnou šířku 25 rem a na
+     360 px přesahuje okno vpravo (tlačítka uvnitř panel nepřesahují);
+   - v dialogu z registru na 360 px zabere štítek tolik místa, že tělo
+     řádku se štítkem má kolem 110 px — štítky uvnitř řádků řeší badge
+     systém (§5).
 
 ## Pasti
 
