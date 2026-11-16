@@ -287,6 +287,9 @@ export default {
   'document.totals.vat': 'VAT',
   'document.totals.rounding': 'Rounding',
   'document.totals.total': 'Total',
+  'document.recap.rate': 'Rate',
+  'document.recap.pct': '%',
+  'document.recap.currency': 'Currency',
 
   // ── Form (FormDialog, FormEditor, FormRenderer, FormStateBar) ───────────
   'form.titleNew': 'New record',

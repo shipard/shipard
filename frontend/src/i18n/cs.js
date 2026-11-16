@@ -296,6 +296,9 @@ export default {
   'document.totals.vat': 'DPH',
   'document.totals.rounding': 'Zaokrouhlení',
   'document.totals.total': 'Celkem',
+  'document.recap.rate': 'Sazba',
+  'document.recap.pct': '%',
+  'document.recap.currency': 'Měna',
 
   // ── Form (FormDialog, FormEditor, FormRenderer, FormStateBar) ───────────
   'form.titleNew': 'Nový záznam',

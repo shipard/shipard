@@ -57,7 +57,7 @@ class DocsHeadsFormTest extends TestCase
         return null;
     }
 
-    /** Find the first element of a given type in a tab (e.g. 'html'). */
+    /** Find the first element of a given type in a tab (e.g. 'component'). */
     private function findElementByType(FormDefinition $def, string $tabId, string $type): ?FormElement
     {
         $tab = $this->findTab($def, $tabId);
@@ -588,15 +588,30 @@ class DocsHeadsFormTest extends TestCase
         $this->assertSame('docs.core.rows', $rowsTab->subtable['formId']);
     }
 
-    // ── Recap tab always present and has html ────────────────────────────────
+    // ── Recap tab always present, never html (#150 D82, D86) ─────────────────
 
-    public function testRecapTabHasHtmlElement(): void
+    public function testRecapTabOfNewDocumentIsContentElement(): void
     {
         $form = $this->createForm();
         $def = $form->buildFormDefinition([], true);
 
-        $html = $this->findElementByType($def, 'recap', 'html');
-        $this->assertNotNull($html);
+        $this->assertNotNull($this->findElementByType($def, 'recap', 'content'));
+        $this->assertNull($this->findElementByType($def, 'recap', 'component'));
+    }
+
+    /** Žádný tab formuláře dokladu nenese prvek `html` (#150 D82). */
+    public function testNoTabCarriesHtmlElement(): void
+    {
+        $form = $this->createForm();
+        $def = $form->buildFormDefinition([
+            'doc_currency' => 'czk', 'home_currency' => 'czk',
+            'supplier_snapshot' => ['name' => 'Naše firma s.r.o.'],
+            'vatRecap' => [['vat_code' => 'std', 'vat_pct' => 21, 'base' => 1, 'tax' => 0.21, 'total' => 1.21]],
+        ], false);
+
+        foreach ($def->tabs as $tab) {
+            $this->assertNull($this->findElementByType($def, $tab->id, 'html'), "tab {$tab->id}");
+        }
     }
 
     /** #75: převzatá rekapitulace je editovatelná sub-tabulka, ne přehled. */
@@ -612,7 +627,8 @@ class DocsHeadsFormTest extends TestCase
         $this->assertSame('doc_head', $tab->subtable['foreignKey']);
         $this->assertSame('docs.core.vatRecap', $tab->subtable['formId']);
         $this->assertSame('order_pos', $tab->subtable['orderColumn']);
-        $this->assertNull($this->findElementByType($def, 'recap', 'html'));
+        $this->assertNull($this->findElementByType($def, 'recap', 'content'));
+        $this->assertNull($this->findElementByType($def, 'recap', 'component'));
     }
 
     public function testComputedRecapTabStaysReadOnlyOverview(): void
@@ -623,7 +639,7 @@ class DocsHeadsFormTest extends TestCase
         $tab = $this->findTab($def, 'recap');
         $this->assertNotNull($tab);
         $this->assertNotSame('subtable', $tab->type);
-        $this->assertNotNull($this->findElementByType($def, 'recap', 'html'));
+        $this->assertNotNull($this->findElementByType($def, 'recap', 'content'));
     }
 
     public function testRecapSourceSelectIsInVatSection(): void
@@ -654,7 +670,7 @@ class DocsHeadsFormTest extends TestCase
 
         $tab = $this->findTab($def, 'recap');
         $this->assertNotSame('subtable', $tab->type);
-        $this->assertNotNull($this->findElementByType($def, 'recap', 'html'));
+        $this->assertNotNull($this->findElementByType($def, 'recap', 'content'));
     }
 
     public function testRecapWithoutRowsShowsEmptyState(): void
@@ -662,12 +678,28 @@ class DocsHeadsFormTest extends TestCase
         $form = $this->createForm();
         $def = $form->buildFormDefinition([], true);
 
-        $html = $this->findElementByType($def, 'recap', 'html');
-        $this->assertNotNull($html);
-        $this->assertStringContainsString('zatím nemá rekapitulaci', (string) $html->content);
+        // Blok `empty` s textem z katalogu (bez konfigurace anglický fallback).
+        $el = $this->findElementByType($def, 'recap', 'content');
+        $this->assertNotNull($el);
+        $this->assertSame(
+            [[
+                'type' => 'empty',
+                'text' => 'The document has no VAT recap yet — add rows and save the document to recalculate.',
+            ]],
+            $el->blocks,
+        );
     }
 
-    public function testRecapWithVatRecapRendersTable(): void
+    /** Params komponenty `docVatRecap` (#150 D86). */
+    private function recapParams(FormDefinition $def): array
+    {
+        $el = $this->findElementByType($def, 'recap', 'component');
+        $this->assertNotNull($el);
+        $this->assertSame('docVatRecap', $el->componentName);
+        return $el->params;
+    }
+
+    public function testRecapWithVatRecapSendsTableParams(): void
     {
         $form = $this->createForm();
         $def = $form->buildFormDefinition([
@@ -689,13 +721,31 @@ class DocsHeadsFormTest extends TestCase
             ],
         ], false);
 
-        $html = (string) $this->findElementByType($def, 'recap', 'html')->content;
-        $this->assertStringContainsString('<table class="vat-recap">', $html);
-        $this->assertStringContainsString('1 000,00', $html);
-        $this->assertStringContainsString('1 210,00', $html);
+        // Doklad v domácí měně: žádný řádek v domácí měně, žádný kurz.
+        $this->assertSame([
+            'currency'     => 'CZK',
+            'homeCurrency' => null,
+            'rows'         => [[
+                'label' => 'std',
+                'pct'   => '21 %',
+                'base'  => '1 000,00',
+                'tax'   => '210,00',
+                'total' => '1 210,00',
+                'sum'   => ['base' => true, 'tax' => true, 'total' => true],
+                'dom'   => null,
+            ]],
+            'totals'       => [
+                'base'  => '1 000,00',
+                'tax'   => '210,00',
+                'total' => '1 210,00',
+                'rate'  => null,
+                'dom'   => null,
+            ],
+        ], $this->recapParams($def));
     }
 
-    public function testReverseChargePairGetsGrayedTaxColumn(): void
+    /** Přenesená povinnost: nesčítané hodnoty nesou `sum: false` (šedě), sazba s předmětem plnění. */
+    public function testReverseChargeRowCarriesSumFlagsAndSubject(): void
     {
         $form = $this->createForm();
         $def = $form->buildFormDefinition([
@@ -705,21 +755,34 @@ class DocsHeadsFormTest extends TestCase
                 [
                     'vat_code' => 'rcv',
                     'vat_pct'  => 21,
+                    'reverse_charge_code' => '4a',
                     'base'     => 1000,
                     'tax'      => 210,
                     'total'    => 1210,
                     'sum_base' => 1, 'sum_tax' => 0, 'sum_total' => 0,
                     'is_reverse_pair' => 1,
                 ],
+                [
+                    'vat_code' => 'low',
+                    'vat_pct'  => 12.5,
+                    'base'     => 100,
+                    'tax'      => 12.5,
+                    'total'    => 112.5,
+                ],
             ],
         ], false);
 
-        $html = (string) $this->findElementByType($def, 'recap', 'html')->content;
-        $this->assertStringContainsString('reverse-pair', $html);
-        $this->assertStringContainsString('grayed', $html);
+        $rows = $this->recapParams($def)['rows'];
+        $this->assertSame(['base' => true, 'tax' => false, 'total' => false], $rows[0]['sum']);
+        $this->assertSame('rcv · subject 4a', $rows[0]['label']);
+        $this->assertSame('21 %', $rows[0]['pct']);
+        // Řádek bez příznaků se nesčítá; sazba s desetinnou částí bez zaokrouhlení.
+        $this->assertSame(['base' => false, 'tax' => false, 'total' => false], $rows[1]['sum']);
+        $this->assertSame('low', $rows[1]['label']);
+        $this->assertSame('12,5 %', $rows[1]['pct']);
     }
 
-    public function testForeignCurrencyRecapRendersTwoRows(): void
+    public function testForeignCurrencyRecapCarriesDomesticRowsAndRate(): void
     {
         $form = $this->createForm();
         $def = $form->buildFormDefinition([
@@ -744,58 +807,69 @@ class DocsHeadsFormTest extends TestCase
             ],
         ], false);
 
-        $html = (string) $this->findElementByType($def, 'recap', 'html')->content;
-        $this->assertStringContainsString('EUR', $html);
-        $this->assertStringContainsString('CZK', $html);
-        $this->assertStringContainsString('rowspan="2"', $html);
+        $params = $this->recapParams($def);
+        $this->assertSame('EUR', $params['currency']);
+        $this->assertSame('CZK', $params['homeCurrency']);
+        $this->assertSame('100,00', $params['rows'][0]['base']);
+        $this->assertSame(
+            ['base' => '2 450,00', 'tax' => '514,50', 'total' => '2 964,50'],
+            $params['rows'][0]['dom'],
+        );
+        $this->assertSame([
+            'base'  => '100,00',
+            'tax'   => '21,00',
+            'total' => '121,00',
+            'rate'  => '1 EUR = 24,5 CZK',
+            'dom'   => ['base' => '2 450,00', 'tax' => '514,50', 'total' => '2 964,50'],
+        ], $params['totals']);
     }
 
-    // ── Snapshots tab content ───────────────────────────────────────────────
+    // ── Snapshots tab content (#150 D85) ────────────────────────────────────
 
-    public function testSnapshotsTabRendersBothBlocks(): void
+    /** Params komponenty `docParties`. */
+    private function partiesParams(FormDefinition $def): array
     {
-        $form = $this->createForm();
-        $def = $form->buildFormDefinition([
-            'supplier_snapshot' => [
-                'name'       => 'Naše firma s.r.o.',
-                'company_id' => '12345678',
-                'tax_id'     => 'CZ12345678',
-            ],
-            'customer_snapshot' => [
-                'name'       => 'Zákazník a.s.',
-                'company_id' => '87654321',
-            ],
-        ], false);
-
-        $html = (string) $this->findElementByType($def, 'snapshots', 'html')->content;
-        $this->assertStringContainsString('Naše firma s.r.o.', $html);
-        $this->assertStringContainsString('Zákazník a.s.', $html);
-        $this->assertStringContainsString('IČO: 12345678', $html);
-        $this->assertStringContainsString('Dodavatel', $html);
-        $this->assertStringContainsString('Odběratel', $html);
+        $el = $this->findElementByType($def, 'snapshots', 'component');
+        $this->assertNotNull($el);
+        $this->assertSame('docParties', $el->componentName);
+        return $el->params;
     }
 
-    public function testSnapshotJsonStringIsDecoded(): void
+    public function testSnapshotsTabSendsBothParties(): void
+    {
+        $supplier = ['name' => 'Naše firma s.r.o.', 'company_id' => '12345678', 'tax_id' => 'CZ12345678'];
+        $customer = ['name' => 'Zákazník a.s.', 'company_id' => '87654321'];
+        $form = $this->createForm();
+        $def = $form->buildFormDefinition(['supplier_snapshot' => $supplier, 'customer_snapshot' => $customer], false);
+
+        // Zmrazené snapshoty beze změny tvaru — kreslí je PartyCard jako detail.
+        $this->assertSame(['supplier' => $supplier, 'customer' => $customer], $this->partiesParams($def));
+    }
+
+    public function testSnapshotJsonStringIsDecodedAndMissingPartyIsNull(): void
     {
         $form = $this->createForm();
         $def = $form->buildFormDefinition([
             'supplier_snapshot' => json_encode(['name' => 'JSON Supplier']),
         ], false);
 
-        $html = (string) $this->findElementByType($def, 'snapshots', 'html')->content;
-        $this->assertStringContainsString('JSON Supplier', $html);
+        $this->assertSame(
+            ['supplier' => ['name' => 'JSON Supplier'], 'customer' => null],
+            $this->partiesParams($def),
+        );
     }
 
-    public function testSnapshotEscapesHtml(): void
+    /** Text jde ven jako data, ne jako HTML — neescapuje se, frontend ho vkládá jako text. */
+    public function testSnapshotTextIsNotHtmlEscaped(): void
     {
         $form = $this->createForm();
         $def = $form->buildFormDefinition([
-            'supplier_snapshot' => ['name' => '<script>x</script>'],
+            'supplier_snapshot' => ['name' => '<script>x</script>', 'person_id' => 5],
         ], false);
 
-        $html = (string) $this->findElementByType($def, 'snapshots', 'html')->content;
-        $this->assertStringNotContainsString('<script>x</script>', $html);
-        $this->assertStringContainsString('&lt;script&gt;', $html);
+        $params = $this->partiesParams($def);
+        $this->assertSame('<script>x</script>', $params['supplier']['name']);
+        $this->assertArrayNotHasKey('person_id', $params['supplier'], 'jméno ve formuláři není odkaz');
     }
 
     // ── Neplátce DPH — economy.vatAgenda (vat-payer-01, ds-setup D10) ────────

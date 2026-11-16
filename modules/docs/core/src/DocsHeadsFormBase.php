@@ -1215,11 +1215,26 @@ abstract class DocsHeadsFormBase extends TableForm
         // FormController::meta loads only the head row (SELECT * FROM heads),
         // so $data doesn't carry the recap from the docs_core_vat_recap child
         // table. Load it here — same pattern as DocDocument::resolveRowsForCompute.
-        $recap = $this->resolveRecapForRender($data);
-        return $this->tab('recap', 'Rekapitulace DPH')
-            ->section()
-                ->col()
-                    ->html($this->renderRecapHtml($data, $recap))
+        $recap = array_values(array_filter($this->resolveRecapForRender($data), 'is_array'));
+        $col = $this->tab('recap', 'Rekapitulace DPH')->section()->col();
+
+        // Prázdná rekapitulace = blok `empty` s textem z katalogu; jinak
+        // sdílená tabulka rekapitulace v rozšířené podobě (#150 D86) —
+        // formulář HTML neposílá.
+        if ($recap === []) {
+            return $col
+                ->content([[
+                    'type' => 'empty',
+                    'text' => $this->formText(
+                        'docs.core.formTexts',
+                        'recap.empty',
+                        'The document has no VAT recap yet — add rows and save the document to recalculate.',
+                    ),
+                ]])
+                ->build();
+        }
+        return $col
+            ->component('docVatRecap', $this->buildRecapParams($data, $recap))
             ->build();
     }
 
@@ -1273,11 +1288,29 @@ abstract class DocsHeadsFormBase extends TableForm
     /** @param array<string, mixed> $data */
     protected function buildSnapshotsTab(array $data): FormTab
     {
+        // Zmrazené snapshoty stran ve tvaru obsahu `document` detailu —
+        // frontend je kreslí kartami strany `PartyCard` jako detail (#150
+        // D85). Bez `person_id`: formulář ukazuje zmrazené údaje, jméno
+        // není odkaz na živý záznam osoby.
         return $this->tab('snapshots', 'Fakturační údaje')
             ->section()
                 ->col()
-                    ->html($this->renderSnapshotsHtml($data))
+                    ->component('docParties', [
+                        'supplier' => $this->snapshotParty($data['supplier_snapshot'] ?? null),
+                        'customer' => $this->snapshotParty($data['customer_snapshot'] ?? null),
+                    ])
             ->build();
+    }
+
+    /** @return array<string, mixed>|null strana dokladu ze snapshotu; prázdný nebo nečitelný → null */
+    protected function snapshotParty(mixed $snapshot): ?array
+    {
+        $party = $this->decodeSnapshot($snapshot);
+        if ($party === null || $party === []) {
+            return null;
+        }
+        unset($party['person_id']);
+        return $party;
     }
 
     protected function buildNotesTab(): FormTab
@@ -1926,114 +1959,70 @@ abstract class DocsHeadsFormBase extends TableForm
         return $options;
     }
 
-    // ── HTML renderers ──────────────────────────────────────────────────────
+    // ── Rekapitulace DPH a strany dokladu (#150 D85, D86) ───────────────────
 
     /**
-     * @param array<string, mixed> $data
+     * Params formulářové komponenty `docVatRecap` — rozšířená podoba sdílené
+     * tabulky rekapitulace (`VatRecapTable.svelte`): `{currency,
+     * homeCurrency, rows, totals}`. Hodnoty jsou **hotové texty**, frontend
+     * částky neformátuje. Řádek `{label, pct, base, tax, total, sum: {base,
+     * tax, total}, dom}`: `label` = název kódu DPH (u tuzemského přenesení
+     * s předmětem plnění), `sum` = sčítá se hodnota do součtu dokladu
+     * (ne = šedě), `dom` = tytéž částky v domácí měně. Domácí měna
+     * (`homeCurrency`, `dom`, kurz `totals.rate`) se posílá jen u dokladu
+     * v cizí měně, jinak `null`. `totals` = řádek Celkem.
+     *
+     * @param array<string, mixed> $data hlavička
      * @param list<array<string, mixed>> $recap
+     * @return array<string, mixed>
      */
-    protected function renderRecapHtml(array $data, array $recap = []): string
+    protected function buildRecapParams(array $data, array $recap): array
     {
-        if ($recap === []) {
-            return '<p class="muted"><em>Doklad zatím nemá rekapitulaci'
-                . ' — přidejte řádky a uložte doklad pro přepočet.</em></p>';
-        }
+        $currency = strtoupper((string) ($data['doc_currency'] ?? 'czk'));
+        $homeCurrency = strtoupper((string) ($data['home_currency'] ?? 'czk'));
+        $hasExchange = $homeCurrency !== '' && $currency !== $homeCurrency;
 
-        $currency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
-        $homeCurrency = strtolower((string) ($data['home_currency'] ?? 'czk'));
-        $hasExchange = $currency !== $homeCurrency && $homeCurrency !== '';
-
-        $html = '<table class="vat-recap">';
-        $html .= '<thead><tr>'
-            . '<th>#</th><th>Sazba</th><th>%</th>'
-            . '<th>Měna</th><th>Základ</th><th>Daň</th><th>Celkem</th>'
-            . '</tr></thead><tbody>';
-
-        $lineNo = 1;
+        $rows = [];
         foreach ($recap as $r) {
-            if (!is_array($r)) {
-                continue;
-            }
-            $code = (string) ($r['vat_code'] ?? '');
-            $pct = number_format((float) ($r['vat_pct'] ?? 0), 0, ',', ' ');
-            $isPair = !empty($r['is_reverse_pair']);
-            $sumBase  = !empty($r['sum_base']);
-            $sumTax   = !empty($r['sum_tax']);
-            $sumTotal = !empty($r['sum_total']);
-
-            $rowClass = $isPair ? 'reverse-pair' : 'primary';
-            $rowSpan = $hasExchange ? 2 : 1;
-
-            $html .= '<tr class="' . $rowClass . '">';
-            $html .= "<td rowspan=\"{$rowSpan}\">{$lineNo}.</td>";
-            $html .= "<td rowspan=\"{$rowSpan}\">"
-                . htmlspecialchars($this->vatCodeLabelWithSubject($r, $data)) . '</td>';
-            $html .= "<td rowspan=\"{$rowSpan}\">{$pct} %</td>";
-            $html .= '<td>' . strtoupper(htmlspecialchars($currency)) . '</td>';
-            $html .= '<td' . ($sumBase ? '' : ' class="grayed"') . '>'
-                . $this->formatMoney($r['base'] ?? 0) . '</td>';
-            $html .= '<td' . ($sumTax ? '' : ' class="grayed"') . '>'
-                . $this->formatMoney($r['tax'] ?? 0) . '</td>';
-            $html .= '<td' . ($sumTotal ? '' : ' class="grayed"') . '>'
-                . $this->formatMoney($r['total'] ?? 0) . '</td>';
-            $html .= '</tr>';
-
-            if ($hasExchange) {
-                $html .= '<tr class="' . $rowClass . '">';
-                $html .= '<td>' . strtoupper(htmlspecialchars($homeCurrency)) . '</td>';
-                $html .= '<td' . ($sumBase ? '' : ' class="grayed"') . '>'
-                    . $this->formatMoney($r['base_dom'] ?? 0) . '</td>';
-                $html .= '<td' . ($sumTax ? '' : ' class="grayed"') . '>'
-                    . $this->formatMoney($r['tax_dom'] ?? 0) . '</td>';
-                $html .= '<td' . ($sumTotal ? '' : ' class="grayed"') . '>'
-                    . $this->formatMoney($r['total_dom'] ?? 0) . '</td>';
-                $html .= '</tr>';
-            }
-
-            $lineNo++;
+            $rows[] = [
+                'label' => $this->vatCodeLabelWithSubject($r, $data),
+                'pct'   => $this->formatPercent($r['vat_pct'] ?? 0),
+                'base'  => $this->formatMoney($r['base'] ?? 0),
+                'tax'   => $this->formatMoney($r['tax'] ?? 0),
+                'total' => $this->formatMoney($r['total'] ?? 0),
+                'sum'   => [
+                    'base'  => !empty($r['sum_base']),
+                    'tax'   => !empty($r['sum_tax']),
+                    'total' => !empty($r['sum_total']),
+                ],
+                'dom'   => $hasExchange
+                    ? [
+                        'base'  => $this->formatMoney($r['base_dom'] ?? 0),
+                        'tax'   => $this->formatMoney($r['tax_dom'] ?? 0),
+                        'total' => $this->formatMoney($r['total_dom'] ?? 0),
+                    ]
+                    : null,
+            ];
         }
 
-        $html .= '<tr class="total"><td></td><td colspan="2"><strong>Celkem'
-            . ($hasExchange ? ' (' . htmlspecialchars($this->formatExchangeRate($data)) . ')' : '')
-            . '</strong></td>';
-        $html .= '<td>' . strtoupper(htmlspecialchars($currency)) . '</td>';
-        $html .= '<td><strong>' . $this->formatMoney($data['total_base']   ?? 0) . '</strong></td>';
-        $html .= '<td><strong>' . $this->formatMoney($data['total_vat']    ?? 0) . '</strong></td>';
-        $html .= '<td><strong>' . $this->formatMoney($data['total_amount'] ?? 0) . '</strong></td>';
-        $html .= '</tr>';
-
-        if ($hasExchange) {
-            $html .= '<tr class="total"><td></td><td colspan="2"></td>';
-            $html .= '<td>' . strtoupper(htmlspecialchars($homeCurrency)) . '</td>';
-            $html .= '<td><strong>' . $this->formatMoney($data['total_base_dom']   ?? 0) . '</strong></td>';
-            $html .= '<td><strong>' . $this->formatMoney($data['total_vat_dom']    ?? 0) . '</strong></td>';
-            $html .= '<td><strong>' . $this->formatMoney($data['total_amount_dom'] ?? 0) . '</strong></td>';
-            $html .= '</tr>';
-        }
-
-        $html .= '</tbody></table>';
-
-        return $html;
-    }
-
-    /** @param array<string, mixed> $data */
-    protected function renderSnapshotsHtml(array $data): string
-    {
-        $supplier = $this->decodeSnapshot($data['supplier_snapshot'] ?? null);
-        $customer = $this->decodeSnapshot($data['customer_snapshot'] ?? null);
-
-        $html = '<div class="snapshots-container">';
-        $html .= '<div class="snapshot-block">';
-        $html .= '<h4>Dodavatel</h4>';
-        $html .= $this->renderPersonSnapshot($supplier);
-        $html .= '</div>';
-        $html .= '<div class="snapshot-block">';
-        $html .= '<h4>Odběratel</h4>';
-        $html .= $this->renderPersonSnapshot($customer);
-        $html .= '</div>';
-        $html .= '</div>';
-
-        return $html;
+        return [
+            'currency'     => $currency,
+            'homeCurrency' => $hasExchange ? $homeCurrency : null,
+            'rows'         => $rows,
+            'totals'       => [
+                'base'  => $this->formatMoney($data['total_base'] ?? 0),
+                'tax'   => $this->formatMoney($data['total_vat'] ?? 0),
+                'total' => $this->formatMoney($data['total_amount'] ?? 0),
+                'rate'  => $hasExchange ? $this->formatExchangeRate($data) : null,
+                'dom'   => $hasExchange
+                    ? [
+                        'base'  => $this->formatMoney($data['total_base_dom'] ?? 0),
+                        'tax'   => $this->formatMoney($data['total_vat_dom'] ?? 0),
+                        'total' => $this->formatMoney($data['total_amount_dom'] ?? 0),
+                    ]
+                    : null,
+            ],
+        ];
     }
 
     /** @return array<string, mixed>|null */
@@ -2049,88 +2038,18 @@ abstract class DocsHeadsFormBase extends TableForm
         return null;
     }
 
-    /** @param array<string, mixed>|null $snap */
-    protected function renderPersonSnapshot(?array $snap): string
-    {
-        if ($snap === null || $snap === []) {
-            return '<p class="muted"><em>Není vyplněno</em></p>';
-        }
-
-        $h = '';
-        if (!empty($snap['name'])) {
-            $h .= '<p class="name"><strong>' . htmlspecialchars((string) $snap['name']) . '</strong></p>';
-        }
-
-        $idLines = [];
-        if (!empty($snap['company_id'])) {
-            $idLines[] = 'IČO: ' . htmlspecialchars((string) $snap['company_id']);
-        }
-        if (!empty($snap['tax_id'])) {
-            $idLines[] = 'DIČ: ' . htmlspecialchars((string) $snap['tax_id']);
-        }
-        if (!empty($snap['vat_id']) && ($snap['vat_id'] ?? null) !== ($snap['tax_id'] ?? null)) {
-            $idLines[] = 'DIČ DPH: ' . htmlspecialchars((string) $snap['vat_id']);
-        }
-        if ($idLines !== []) {
-            $h .= '<p>' . implode('<br>', $idLines) . '</p>';
-        }
-
-        $address = $snap['address'] ?? null;
-        if (is_array($address) && !empty($address['display_block'])) {
-            $h .= '<pre class="address">'
-                . htmlspecialchars((string) $address['display_block']) . '</pre>';
-        }
-
-        if (!empty($snap['court_registration'])) {
-            $h .= '<p class="muted">' . htmlspecialchars((string) $snap['court_registration']) . '</p>';
-        }
-
-        $contact = $snap['contact'] ?? null;
-        if (is_array($contact)) {
-            $contactLines = [];
-            if (!empty($contact['email'])) {
-                $contactLines[] = 'E-mail: ' . htmlspecialchars((string) $contact['email']);
-            }
-            if (!empty($contact['phone'])) {
-                $contactLines[] = 'Tel: ' . htmlspecialchars((string) $contact['phone']);
-            }
-            if ($contactLines !== []) {
-                $h .= '<p class="contact">' . implode('<br>', $contactLines) . '</p>';
-            }
-        }
-
-        $bank = $snap['bank_account'] ?? null;
-        if (is_array($bank)) {
-            $bankLines = [];
-            if (!empty($bank['account_number'])) {
-                $bankLines[] = htmlspecialchars((string) $bank['account_number']);
-            }
-            if (!empty($bank['iban'])) {
-                $bankLines[] = 'IBAN: ' . htmlspecialchars((string) $bank['iban']);
-            }
-            if (!empty($bank['bic'])) {
-                $bankLines[] = 'BIC: ' . htmlspecialchars((string) $bank['bic']);
-            }
-            if ($bankLines !== []) {
-                $h .= '<p class="bank"><strong>Bankovní spojení:</strong><br>'
-                    . implode('<br>', $bankLines) . '</p>';
-            }
-        }
-
-        $vatReg = $snap['vat_registration'] ?? null;
-        if (is_array($vatReg) && !empty($vatReg['vat_id'])) {
-            $h .= '<p class="vat-reg"><strong>DIČ pro DPH:</strong> '
-                . htmlspecialchars((string) $vatReg['vat_id']) . '</p>';
-        }
-
-        return $h;
-    }
-
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     protected function formatMoney(mixed $amount): string
     {
         return number_format((float) ($amount ?? 0), 2, ',', ' ');
+    }
+
+    /** Sazba jako text „21 %“ — nejvýš dvě desetinná místa, koncové nuly pryč („12,5 %“). */
+    protected function formatPercent(mixed $pct): string
+    {
+        $text = number_format((float) ($pct ?? 0), 2, ',', ' ');
+        return rtrim(rtrim($text, '0'), ',') . ' %';
     }
 
     /** @param array<string, mixed> $data */
@@ -2139,14 +2058,14 @@ abstract class DocsHeadsFormBase extends TableForm
         $rate = (float) ($data['exchange_rate'] ?? 1.0);
         $doc = strtoupper((string) ($data['doc_currency'] ?? ''));
         $home = strtoupper((string) ($data['home_currency'] ?? ''));
-        return "1 {$doc} = " . rtrim(rtrim(number_format($rate, 4, '.', ''), '0'), '.') . " {$home}";
+        return "1 {$doc} = " . rtrim(rtrim(number_format($rate, 4, ',', ' '), '0'), ',') . " {$home}";
     }
 
-    /** @param array<string, mixed> $data */
     /**
      * Popisek kódu DPH řádku rekapitulace doplněný o předmět plnění
      * tuzemského přenesení (#89 D14) — dvě skupiny se stejným kódem a sazbou
-     * se liší jen jím.
+     * se liší jen jím. Vzor textu je z katalogu `docs.core.formTexts`
+     * (#150 D87).
      *
      * @param array<string, mixed> $recapRow
      * @param array<string, mixed> $data hlavička
@@ -2155,7 +2074,15 @@ abstract class DocsHeadsFormBase extends TableForm
     {
         $label = $this->vatCodeLabel((string) ($recapRow['vat_code'] ?? ''), $data);
         $subject = ReverseChargeSubjects::value($recapRow[ReverseChargeSubjects::COLUMN] ?? null);
-        return $subject === null ? $label : "{$label} · předmět plnění {$subject}";
+        if ($subject === null) {
+            return $label;
+        }
+        return $this->formText(
+            'docs.core.formTexts',
+            'recap.reverseChargeSubject',
+            '{label} · subject {code}',
+            ['label' => $label, 'code' => $subject],
+        );
     }
 
     protected function vatCodeLabel(string $code, array $data): string

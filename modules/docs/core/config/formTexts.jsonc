@@ -11,6 +11,20 @@
             "name": "The number series has no cash desk — check the number series of the document.",
             "name:cs": "Řada nemá pokladnu — zkontroluj číselnou řadu dokladu.",
             "name:en": "The number series has no cash desk — check the number series of the document."
+        },
+
+        // Tab Rekapitulace DPH — doklad zatím bez rekapitulace.
+        "recap.empty": {
+            "name": "The document has no VAT recap yet — add rows and save the document to recalculate.",
+            "name:cs": "Doklad zatím nemá rekapitulaci — přidejte řádky a uložte doklad pro přepočet.",
+            "name:en": "The document has no VAT recap yet — add rows and save the document to recalculate."
+        },
+        // Název kódu DPH s předmětem plnění tuzemského přenesení (#89 D14) —
+        // řádek rekapitulace i buňka kódu DPH v řádcích dokladu.
+        "recap.reverseChargeSubject": {
+            "name": "{label} · subject {code}",
+            "name:cs": "{label} · předmět plnění {code}",
+            "name:en": "{label} · subject {code}"
         }
     }
 }

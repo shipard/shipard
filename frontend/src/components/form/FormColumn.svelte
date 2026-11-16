@@ -1,5 +1,6 @@
 <script>
   import FormElement from './FormElement.svelte';
+  import { flowFormComponents } from './formComponents.js';
 
   let {
     column,
@@ -15,8 +16,11 @@
 
   // Sloupec složený jen z `component` elementů (např. náhledy příloh)
   // nediktuje výšku řádku sekce — přizpůsobí se sousednímu sloupci.
+  // Výjimka: komponenty s výškou podle obsahu (`flowFormComponents` —
+  // rekapitulace DPH, strany dokladu) sloupec neroztahují.
   const fillOnly = $derived(
-    column.elements.length > 0 && column.elements.every((e) => e.type === 'component'),
+    column.elements.length > 0
+      && column.elements.every((e) => e.type === 'component' && !flowFormComponents.has(e.component_name)),
   );
 
   // Víc komponent pod sebou (stav transportu nad náhledy příloh): výšku
