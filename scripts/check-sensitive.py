@@ -57,6 +57,7 @@ DUMMY_GROUPS = (
         "dead", "beef", "shpd", "font", "size", "base", "oidc",
         "ctrl", "0001", "0002",
         "body", "meta",  # tokeny rolí --shpd-font-size-body / -meta (#135)
+        "page",  # token role --shpd-font-size-page (#149 D78)
     }
 )
 

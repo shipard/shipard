@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 446 tasků: **naplánováno** 4 · **částečně** 27 · **zrušeno** 1 · **hotovo** 414.
+Celkem 447 tasků: **naplánováno** 5 · **částečně** 27 · **zrušeno** 1 · **hotovo** 414.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-shared-controls.md` | naplánováno | rozhodnutí D75–D78 potvrzená v #149 2026-11-16 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -205,6 +206,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-mark-colors.md` | Značky bez textu (tečky, donut jistoty, proužek karty) vlastním tokenem `-mark` s prahem 3 : 1 — ve světlém vzhledu světlejší než `-text`, tmavý beze změny (D74, #133) |
 | `design-system-date-format.md` | Jeden formát data na obrazovce podle jazyka — cs `01.01.2026`, en ISO `2026-01-01`; sdílený `DisplayDate` v backendu a `utils/formatDate.js` ve frontendu místo ~30 + 7 kopií, kontrola testy (D73, #133) |
 | `navigation-reports-group-id.md` | Navigace: skupina Reporty s id podle sekce (`reports:<sekce>`) — v sidebaru se podskupiny pod Majetkem a Účtárnou rozbalovaly spolu; test jedinečnosti id skupin (#133) |
+| `design-system-shared-controls.md` | Sdílený panel, volitelný řádek, segmentový přepínač a nadpis stránky (`Panel`, `OptionRow`, `SegmentedControl`, `PageHeader`) — převod všech výskytů, barva výběru `primary`, typografická role `page` (#149, D75–D78) |
 
 ## Mobilní (responzivní) UI
 
