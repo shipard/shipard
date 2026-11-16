@@ -1,0 +1,16 @@
+{
+    // core.ai.formTexts
+    //
+    // Texty prvků formulářů AI (#150 D87) — čte `TableForm::formText()`
+    // ze sekce `texts`. Holé `name` je anglická varianta a shoduje se
+    // s fallbackem v PHP znak po znaku. Názvy tabů, sekcí, zástupné texty
+    // a nápovědy polí sem zatím nepatří (#154).
+    "texts": {
+        // Nastavení AI funkce — popisky souhrnu funkce (blok vlastností).
+        "function.name":        { "name": "Function",    "name:cs": "Funkce",    "name:en": "Function" },
+        "function.description": { "name": "Description", "name:cs": "Popis",     "name:en": "Description" },
+        "function.tier":        { "name": "Tier",        "name:cs": "Úroveň",    "name:en": "Tier" },
+        "function.model":       { "name": "Model",       "name:cs": "Model",     "name:en": "Model" },
+        "function.platform":    { "name": "Platform",    "name:cs": "Platforma", "name:en": "Platform" }
+    }
+}

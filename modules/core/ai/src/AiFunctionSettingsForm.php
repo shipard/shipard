@@ -19,7 +19,8 @@ use Shipard\Core\Form\TableForm;
  * `model_like` (validace v AiFunctionSettingsDocument). Model úrovně
  * v souhrnu a v placeholderu platí pro platformu efektivního připojení
  * (vybrané, jinak výchozí; `platformModels`, tasks/ai-bedrock-eu.md D58)
- * — změna připojení formulář přestaví (`triggers: reload`).
+ * — změna připojení formulář přestaví (`triggers: reload`). Souhrn funkce
+ * je prvek `content` s blokem vlastností (#150 D83), ne HTML.
  */
 class AiFunctionSettingsForm extends TableForm
 {
@@ -41,7 +42,7 @@ class AiFunctionSettingsForm extends TableForm
         $basic = $this->tab('basic', 'AI funkce')
             ->section()
                 ->col()
-                    ->html($this->functionSummary($function?->name ?? $functionId, $function?->description ?? '', $tierName, $tierModel, $tierPlatform))
+                    ->content([$this->functionSummary($function?->name ?? $functionId, $function?->description ?? '', $tierName, $tierModel, $tierPlatform)])
                     ->input('function_id', readOnly: true)
                     ->lookup(
                         'connection',
@@ -84,18 +85,29 @@ class AiFunctionSettingsForm extends TableForm
         );
     }
 
-    private function functionSummary(string $name, string $description, ?string $tierName, ?string $tierModel, ?string $tierPlatform): string
+    /**
+     * Souhrn funkce jako blok vlastností (#150 D83): jedna skupina bez
+     * nadpisu — funkce, popis, úroveň, model úrovně a platforma (jen když
+     * se model úrovně pro platformu připojení liší od obecného). Prázdné
+     * položky se vynechají; popisky z katalogu `core.ai.formTexts`.
+     *
+     * @return array<string, mixed>
+     */
+    private function functionSummary(string $name, string $description, ?string $tierName, ?string $tierModel, ?string $tierPlatform): array
     {
-        $html = '<p><strong>' . htmlspecialchars($name, ENT_QUOTES) . '</strong>';
-        if ($description !== '') {
-            $html .= '<br>' . htmlspecialchars($description, ENT_QUOTES);
+        $items = [];
+        foreach ([
+            [$this->formText('core.ai.formTexts', 'function.name', 'Function'), $name],
+            [$this->formText('core.ai.formTexts', 'function.description', 'Description'), $description],
+            [$this->formText('core.ai.formTexts', 'function.tier', 'Tier'), $tierName],
+            [$this->formText('core.ai.formTexts', 'function.model', 'Model'), $tierName !== null ? $tierModel : null],
+            [$this->formText('core.ai.formTexts', 'function.platform', 'Platform'), $tierName !== null ? $tierPlatform : null],
+        ] as [$label, $value]) {
+            if ($value !== null && $value !== '') {
+                $items[] = ['label' => $label, 'value' => $value];
+            }
         }
-        if ($tierName !== null) {
-            $html .= '<br>Úroveň: ' . htmlspecialchars($tierName, ENT_QUOTES)
-                . ($tierModel !== null ? ' → ' . htmlspecialchars($tierModel, ENT_QUOTES) : '')
-                . ($tierPlatform !== null ? ' (na platformě ' . htmlspecialchars($tierPlatform, ENT_QUOTES) . ')' : '');
-        }
-        return $html . '</p>';
+        return ['type' => 'properties', 'groups' => [['title' => '', 'items' => $items]]];
     }
 
     /**

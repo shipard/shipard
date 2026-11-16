@@ -313,6 +313,11 @@
         {
             "id": "economy.codebooks.viewerDetailLabels",
             "file": "config/viewerDetailLabels.jsonc"
+        },
+        {
+            // Texty prvků formulářů (#150 D87) — čte TableForm::formText().
+            "id": "economy.codebooks.formTexts",
+            "file": "config/formTexts.jsonc"
         }
     ]
 }

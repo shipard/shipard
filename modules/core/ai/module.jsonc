@@ -110,6 +110,11 @@
             "file": "config/viewerLabels.jsonc"
         },
         {
+            // Texty prvků formulářů AI (#150 D87) — čte TableForm::formText().
+            "id": "core.ai.formTexts",
+            "file": "config/formTexts.jsonc"
+        },
+        {
             // Věty k AI volání (chyby resolveru s radou, úpravy požadavku,
             // původ hodnot, chyby API) — jeden zdroj pro detail funkce,
             // `ai-test` i chybu asistenta; čte Shipard\Core\Ai\AiTexts (#85 D51).

@@ -1,0 +1,16 @@
+{
+    // economy.vat.formTexts
+    //
+    // Texty prvků formulářů DPH (#150 D87) — čte `TableForm::formText()`
+    // ze sekce `texts`. Holé `name` je anglická varianta a shoduje se
+    // s fallbackem v PHP znak po znaku. Názvy tabů, sekcí a oddělovačů
+    // formulářů sem zatím nepatří (#154).
+    "texts": {
+        // Podání DPH — nápověda tabu Hlavička.
+        "filing.headerHint": {
+            "name": "Data that go into the header of the file for the tax portal. Pre-filled from the Filing details of the VAT registration and from your own company; changes here apply to this filing only.",
+            "name:cs": "Údaje, které jdou do hlavičky souboru pro daňový portál. Předvyplněné z Podacích údajů registrace k DPH a z vlastní firmy; úpravy tady platí jen pro toto podání.",
+            "name:en": "Data that go into the header of the file for the tax portal. Pre-filled from the Filing details of the VAT registration and from your own company; changes here apply to this filing only."
+        }
+    }
+}

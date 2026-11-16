@@ -79,11 +79,20 @@ final class AiFunctionSettingsFormTest extends TestCase
         $this->fail("element {$column} missing");
     }
 
-    private function summary(FormDefinition $def): string
+    /**
+     * Souhrn funkce = prvek `content` s jedním blokem vlastností (#150 D83).
+     *
+     * @return array<string, string> popisek → hodnota
+     */
+    private function summary(FormDefinition $def): array
     {
         foreach ($def->tabs[0]->sections[0]->columns[0]->elements as $el) {
-            if ($el->type === 'html') {
-                return (string) $el->content;
+            if ($el->type === 'content') {
+                $this->assertCount(1, $el->blocks);
+                $this->assertSame('properties', $el->blocks[0]['type']);
+                $this->assertCount(1, $el->blocks[0]['groups']);
+                $this->assertSame('', $el->blocks[0]['groups'][0]['title']);
+                return array_column($el->blocks[0]['groups'][0]['items'], 'value', 'label');
             }
         }
         $this->fail('summary missing');
@@ -96,13 +105,20 @@ final class AiFunctionSettingsFormTest extends TestCase
         // Bez vybraného připojení: výchozí připojení (Anthropic) → obecný model úrovně.
         $def = $form->buildFormDefinition(['function_id' => 'mail.extraction', 'connection' => null], false);
         $this->assertSame('Podle úrovně (claude-sonnet-4-6)', $this->element($def, 'model')->placeholder);
-        $this->assertStringContainsString('Úroveň: Vyvážený → claude-sonnet-4-6</p>', $this->summary($def));
+        $summary = $this->summary($def);
+        $this->assertSame('Vyvážený', $summary['Tier']);
+        $this->assertSame('claude-sonnet-4-6', $summary['Model']);
+        $this->assertArrayHasKey('Function', $summary);
+        $this->assertArrayNotHasKey('Platform', $summary, 'obecný model úrovně platformu neuvádí');
         $this->assertSame('reload', $this->element($def, 'connection')->triggers, 'změna připojení formulář přestaví');
 
         // Připojení na Bedrocku EU → model úrovně pro platformu, souhrn říká kterou.
         $def = $form->buildFormDefinition(['function_id' => 'mail.extraction', 'connection' => 7], false);
         $this->assertSame('Podle úrovně (claude-sonnet-5-5)', $this->element($def, 'model')->placeholder);
-        $this->assertStringContainsString('Úroveň: Vyvážený → claude-sonnet-5-5 (na platformě Amazon Bedrock (EU))', $this->summary($def));
+        $summary = $this->summary($def);
+        $this->assertSame('Vyvážený', $summary['Tier']);
+        $this->assertSame('claude-sonnet-5-5', $summary['Model']);
+        $this->assertSame('Amazon Bedrock (EU)', $summary['Platform']);
 
         // Recalculate po změně připojení dává totéž co build.
         $recalc = $form->recalculate('connection', ['id' => 3, 'function_id' => 'mail.extraction', 'connection' => 7]);

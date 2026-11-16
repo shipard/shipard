@@ -1,0 +1,22 @@
+{
+    // economy.codebooks.formTexts
+    //
+    // Texty prvků formulářů číselníků (#150 D87) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku. Názvy tabů,
+    // sekcí a oddělovačů formulářů sem zatím nepatří (#154).
+    "texts": {
+        // Registrace DPH — nápověda pod oddělovačem Krácený nárok na odpočet.
+        "vatRegistration.deductionHint": {
+            "name": "Deduction coefficients (advance and settlement, per calendar year) are managed in Settings → Accounting → VAT deduction coefficients. Without a record the full deduction (1.00) applies.",
+            "name:cs": "Koeficienty odpočtu (zálohový a vypořádací per kalendářní rok) spravujete v Nastavení → Účetnictví → Koeficienty odpočtu DPH. Bez záznamu platí plný nárok (1,00).",
+            "name:en": "Deduction coefficients (advance and settlement, per calendar year) are managed in Settings → Accounting → VAT deduction coefficients. Without a record the full deduction (1.00) applies."
+        },
+        // Registrace DPH — nápověda tabu Podací údaje.
+        "vatRegistration.filingHint": {
+            "name": "Details for filing returns and statements on the tax portal — who files, to whom and who prepared the output. They are filled into the filing header.",
+            "name:cs": "Údaje pro podání přiznání a hlášení na daňový portál — kdo podává, komu a kdo výstup sestavil. Vyplní se do hlavičky podání.",
+            "name:en": "Details for filing returns and statements on the tax portal — who files, to whom and who prepared the output. They are filled into the filing header."
+        }
+    }
+}

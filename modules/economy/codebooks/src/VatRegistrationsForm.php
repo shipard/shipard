@@ -64,9 +64,11 @@ class VatRegistrationsForm extends TableForm
         // existuje v kompilované konfiguraci).
         if (!$isNew && is_array($this->config?->cfgItem('economy.vat.reportTypes'))) {
             $tab->separator('Krácený nárok na odpočet')
-                ->html('<p class="muted">Koeficienty odpočtu (zálohový a vypořádací per kalendářní rok) '
-                    . 'spravujete v Nastavení → Účetnictví → <strong>Koeficienty odpočtu DPH</strong>. '
-                    . 'Bez záznamu platí plný nárok (1,00).</p>');
+                ->content([['type' => 'hint', 'text' => $this->formText(
+                    'economy.codebooks.formTexts',
+                    'vatRegistration.deductionHint',
+                    'Deduction coefficients (advance and settlement, per calendar year) are managed in Settings → Accounting → VAT deduction coefficients. Without a record the full deduction (1.00) applies.',
+                )]]);
         }
         $basic = $tab->build();
 
@@ -80,8 +82,11 @@ class VatRegistrationsForm extends TableForm
             $tabs[] = $this->tab('filing', 'Podací údaje')
                 ->section()
                     ->col()
-                        ->html('<p class="muted">Údaje pro podání přiznání a hlášení na daňový portál — '
-                            . 'kdo podává, komu a kdo výstup sestavil. Vyplní se do hlavičky podání.</p>')
+                        ->content([['type' => 'hint', 'text' => $this->formText(
+                            'economy.codebooks.formTexts',
+                            'vatRegistration.filingHint',
+                            'Details for filing returns and statements on the tax portal — who files, to whom and who prepared the output. They are filled into the filing header.',
+                        )]])
                         ->addElements($this->structuredFieldElements('filing_profile', $data))
                 ->build();
         }

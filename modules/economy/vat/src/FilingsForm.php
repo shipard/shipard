@@ -126,9 +126,11 @@ class FilingsForm extends TableForm
             $tabs[] = $this->tab('header', 'Hlavička')
                 ->section()
                     ->col()
-                        ->html('<p class="muted">Údaje, které jdou do hlavičky souboru pro daňový portál. '
-                            . 'Předvyplněné z <strong>Podacích údajů</strong> registrace k DPH a z vlastní firmy; '
-                            . 'úpravy tady platí jen pro toto podání.</p>')
+                        ->content([['type' => 'hint', 'text' => $this->formText(
+                            'economy.vat.formTexts',
+                            'filing.headerHint',
+                            'Data that go into the header of the file for the tax portal. Pre-filled from the Filing details of the VAT registration and from your own company; changes here apply to this filing only.',
+                        )]])
                         ->addElements($this->structuredFieldElements(FilingHeaderSchema::COLUMN, $data))
                 ->build();
         }

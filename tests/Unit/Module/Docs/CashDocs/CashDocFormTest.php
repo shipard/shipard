@@ -110,15 +110,15 @@ class CashDocFormTest extends TestCase
         return null;
     }
 
-    /** @return list<string> obsah html elementů basic tabu */
-    private function htmlBlocks(FormDefinition $def): array
+    /** @return list<array<string, mixed>> bloky prvků `content` basic tabu (#150 D83) */
+    private function contentBlocks(FormDefinition $def): array
     {
         $out = [];
         foreach ($def->tabs[0]->sections as $section) {
             foreach ($section->columns as $col) {
                 foreach ($col->elements as $el) {
-                    if ($el->type === 'html') {
-                        $out[] = (string) $el->content;
+                    if ($el->type === 'content') {
+                        $out = [...$out, ...$el->blocks];
                     }
                 }
             }
@@ -313,7 +313,25 @@ class CashDocFormTest extends TestCase
 
         $this->assertTrue($this->findElement($def, 'doc_currency')->readOnly);
         $this->assertNull($this->findElement($def, 'cash_desk'), 'pokladna se nezadává');
-        $this->assertStringContainsString('HP1 — Hlavní pokladna · CZK', implode("\n", $this->htmlBlocks($def)));
+        $this->assertSame(
+            [['type' => 'text', 'text' => 'HP1 — Hlavní pokladna · CZK']],
+            $this->contentBlocks($def),
+        );
+    }
+
+    /** Řada bez pokladny: hláška `warning` z katalogu textů formuláře, ne HTML (#150 D83). */
+    public function testCashDeskSectionWarnsWhenSeriesHasNoDesk(): void
+    {
+        $def = $this->form()->buildFormDefinition(['doc_type' => 'cash'], true);
+
+        $this->assertSame(
+            [[
+                'type' => 'notice',
+                'tone' => 'warning',
+                'text' => 'The number series has no cash desk — check the number series of the document.',
+            ]],
+            $this->contentBlocks($def),
+        );
     }
 
     public function testRecalculatePaymentMethodKeepsCashDesk(): void

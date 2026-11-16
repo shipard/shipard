@@ -1,0 +1,16 @@
+{
+    // docs.core.formTexts
+    //
+    // Texty prvků formulářů dokladů (#150 D87) — čte `TableForm::formText()`
+    // ze sekce `texts`. Holé `name` je anglická varianta a shoduje se
+    // s fallbackem v PHP znak po znaku. Názvy tabů, sekcí a oddělovačů
+    // formulářů sem zatím nepatří (#154).
+    "texts": {
+        // Pokladní doklady — sekce Pokladna, když číselná řada pokladnu nemá.
+        "cashDesk.missing": {
+            "name": "The number series has no cash desk — check the number series of the document.",
+            "name:cs": "Řada nemá pokladnu — zkontroluj číselnou řadu dokladu.",
+            "name:en": "The number series has no cash desk — check the number series of the document."
+        }
+    }
+}

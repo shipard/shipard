@@ -220,16 +220,31 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
         );
     }
 
-    /** Sekce „Pokladna" (readOnly text): kód — název · měna. */
+    /**
+     * Sekce „Pokladna" jen ke čtení (#150 D83): pokladna jako blok `text`
+     * (kód — název · měna); řada bez pokladny = hláška `warning` s textem
+     * z katalogu `docs.core.formTexts`.
+     */
     protected function addCashDeskSection(TabBuilder $tab, array $data): TabBuilder
     {
         $desk = $this->resolveCashDesk($data);
-        $text = $desk === null
-            ? 'Řada nemá pokladnu — zkontroluj číselnou řadu dokladu.'
-            : trim(sprintf('%s — %s · %s', $desk['code'], $desk['name'], strtoupper($desk['currency'])), ' —·');
+        $block = $desk === null
+            ? [
+                'type' => 'notice',
+                'tone' => 'warning',
+                'text' => $this->formText(
+                    'docs.core.formTexts',
+                    'cashDesk.missing',
+                    'The number series has no cash desk — check the number series of the document.',
+                ),
+            ]
+            : [
+                'type' => 'text',
+                'text' => trim(sprintf('%s — %s · %s', $desk['code'], $desk['name'], strtoupper($desk['currency'])), ' —·'),
+            ];
         return $tab
             ->section(title: 'Pokladna')
                 ->col()
-                    ->html('<p>' . htmlspecialchars($text, ENT_QUOTES, 'UTF-8') . '</p>');
+                    ->content([$block]);
     }
 }
