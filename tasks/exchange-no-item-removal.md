@@ -1,6 +1,6 @@
 # Task: Zrušení volby „Jen účet — bez položky“ v kontrole vytěženého dokladu
 
-**Stav:** částečně — kód, testy, help a docs hotové 2026-11-16 (3 commity); zbývá ruční ověření na volném zdroji dat (karta **Založit položku** → napárování → vystavení dokladu)
+**Stav:** hotovo — implementováno a ověřeno 2026-11-16 (#36 D1–D4; ruční proklik na volném zdroji dat: kategorie bez položky → karta Založit položku → napárování → vystavení a zaúčtování)
 
 > Implementováno 2026-11-16. Odchylky od zadání:
 > - **Help je v commitu 2**, ne 3 — stránka helpu jde ve stejném commitu
@@ -176,7 +176,11 @@ změny).
       `npm run build`.
 - [x] Help a docs aktualizované; `help-index.py` a `tasks-index.py`
       prošly.
-- [ ] Ověření na volném zdroji dat (třída `free`): zpráva s fakturou, jejíž
+- [x] Ověření na volném zdroji dat (třída `free`): zpráva s fakturou, jejíž
       kategorie nemá v tabulce položku → náhled bez účtu a bez volby
       „Jen účet“; karta **Založit položku** → náhled položku napáruje;
-      doklad jde vystavit.
+      doklad jde vystavit. Ověřeno 2026-11-16: řádek bez účtu, ⟲ jen
+      s kategorií, panel bez volby; karta založila účetní položku, náhled
+      ji napároval, doklad vystaven ve stavu V pořádku s pohybem Účetní
+      položka a zaúčtován na MD účet položky / DAL závazek bez chybových
+      řádků.
