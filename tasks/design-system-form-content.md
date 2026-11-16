@@ -1,6 +1,6 @@
 # Design system — prvek `content` místo `html` ve formulářích
 
-**Stav:** hotovo — implementováno 2026-11-16 (D82–D87, #150); ruční ověření na dev serveru čeká
+**Stav:** hotovo — implementováno 2026-11-16 (D82–D87, #150); ručně ověřeno 2026-11-16 (body 1–3, 5–9 včetně telefonu a angličtiny `ok`; řádek Celkem v rekapitulaci a fakturační údaje v rozsahu karty strany schválené); bod 4 a řada bez pokladny jen podvrženými daty a testy
 
 ## Kontext / Cíl
 
