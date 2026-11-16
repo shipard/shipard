@@ -1,6 +1,6 @@
 # Design system — panel, volitelný řádek, segmentový přepínač, nadpis stránky
 
-**Stav:** naplánováno — rozhodnutí D75–D78 potvrzená v #149 2026-11-16
+**Stav:** hotovo — 2026-11-16 (#149, D75–D78); v prohlížeči neověřeno: Portál, předmět přenesení a kandidáti partnera (Odchylky 12)
 
 ## Kontext / Cíl
 
@@ -268,16 +268,87 @@ plná i 360 px:
 
 ## Hotovo když
 
-- [ ] čtyři komponenty v `components/ui/` podle D75–D78
-- [ ] všechny výskyty z kroků 1–4 převedené, jejich vlastní CSS vzhledu pryč
-- [ ] role `page` ve `variables.css` a §11
-- [ ] `docs/design-system.md` §8, §11, §3, §13
-- [ ] ověření 1–8 prošlo, nálezy v Odchylkách
-- [ ] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
+- [x] čtyři komponenty v `components/ui/` podle D75–D78
+- [x] všechny výskyty z kroků 1–4 převedené, jejich vlastní CSS vzhledu pryč
+- [x] role `page` ve `variables.css` a §11
+- [x] `docs/design-system.md` §8, §11, §3, §13
+- [x] ověření 1–8 prošlo, nálezy v Odchylkách
+- [x] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+1. **`Panel` má prop `padding`** (`md` | `form`) — čistší než výjimka ve
+   `FormSection`: odsazení zůstává vlastností panelu a `FormSection` ho
+   nepřebíjí vlastní třídou. Třída `shpd-form-section` na kořeni panelu
+   nese jen pojmenovaný kontejner a roztažení sekce s fill sloupcem
+   (`:global`, kořen cizí komponenty třídu rozsahu nenese). Stejně nesou
+   rozložení třídy `shpd-vat-prefill__summary` (mřížka `dl`),
+   `shpd-ds-theme-field__swatches` (`max-width`) a `__current` / `__hint`
+   rozhodovacích panelů (řádek, písmo).
+2. **„Aktuální volba“ je `compact` + `info`** (zadání uvádí jen tón) —
+   výchozí varianta by ji v popoveru nafoukla na odsazení a zaoblení md.
+   Svislé odsazení nápovědy a „aktuální volby“ je sm místo dnešních xs.
+3. **Rámeček panelů v Nastavení** (nabídka položek, položka průvodce,
+   paleta, souhrn DPH) je `border-subtle` místo dosavadního `border` —
+   důsledek D75, ne „stejné“ doslova. Položka průvodce je `Panel as="li"`.
+4. **Ukazatel volby kreslí `OptionRow` sám** stejnými tokeny jako
+   `Checkbox` (asi 20 řádků CSS navíc). Sdílený `Checkbox` je sám
+   `<label>` s `margin-bottom: md` a do řádku vložit nejde.
+5. **Řádek s ukazatelem není celý `<label>`:** kořen je `div`, label
+   s ukazatelem a textem je roztažený přes řádek (`::after`) a `aside`
+   leží mimo něj. Důvod: převod bankovních účtů má v řádku radio
+   „výchozí“ s vlastním `<label>` a vnořený label je neplatný.
+   Neinteraktivní obsah `aside` (štítky) klik propustí na řádek.
+6. **Kandidáti partnera** mají `selected` z aktuální volby
+   (`currentUserAction === useExisting:<id>`) — platí, ať popover po
+   kliknutí zůstane, nebo ne — a seznam je nově `listbox` s `aria-label`
+   z klíče `exchange.preview.decide.candidates`.
+7. **Výsledky Spisovny:** seznam je `div role="radiogroup"` (ne `ul`),
+   `aria-label` z titulku dialogu — klíč pro skupinu v katalogu není.
+   Řádek s prázdným `aside` (bez štítků) má vpravo prázdný prvek
+   s mezerou md. Zakázaný řádek má 0,6 místo 0,7; pod kurzorem jen
+   `bg-hover` (rámeček `primary` pod kurzorem zanikl).
+8. **`SegmentedControl` má navíc `onchange(value)`** (průvodce a reporty
+   volají funkci) a hodnoty smí být `null` / boolean. Dosavadní kopie
+   šipky neřešily — roving tabindex (šipky, Home / End) je nový; šipka
+   výběr rovnou mění, u jazyka tedy znovu načte stránku a v průvodci
+   ukládá. `ThemeModeSegments` a `ShellSegments` zůstaly jako tenké obaly
+   (po dvou použitích), `LanguageField` volá komponentu přímo. Průvodce
+   váže `bind:value={draft[key]}` — po chybě uložení se volba vrátí.
+9. **Popisek skupiny (`aria-label`):** pole Nastavení ho berou
+   z `field.label` (nový prop `label` na `ThemeField`, `DsThemeField`,
+   `ShellField`, `DsShellField`, `LanguageField`), průvodce
+   z `setup.param.*`. **Formát čísel reportu zůstal bez popisku** — klíč
+   pro něj v katalogu není a nové texty zadání zakazuje.
+10. **Kde se bere ikona nadpisu:** z `icon` aktivní položky navigace.
+    `stores/navigation.svelte.js` ji dosud zahazoval — nově ji nese
+    `navigate()`, výchozí položka, deep-link a proklik do reportu
+    i `DASHBOARD_ITEM`; `Sidebar.handleItemClick` ji předává (dřív ne —
+    nález z ověření; recents palety ze sidebaru tím dostaly ikonu také)
+    a `ContentArea` dává `item` i Dashboardu. Stránka předává
+    `item?.icon ? resolveIcon(item.icon) : undefined`. **Portál ikonu
+    v navigaci má** (`database`), v nadpisu ji proto má také — zadání
+    čekalo opak. Ad-hoc cíle (`navigateToPanel`) ikonu nenesou.
+11. **Lišta `bar`:** svislé odsazení je nový layout token
+    `--shpd-bar-padding-y` (0.75rem) sdílený s `DetailHeader` — detail se
+    nemění, vodorovná mezera `gap: 0.75rem` v `DetailHeader` zůstala
+    literálem. Lišta reportů má svisle 12 px místo 16 px a ovládací prvky
+    jsou vpravo (dřív hned za nadpisem).
+12. **Ověření** (Playwright nad volným zdrojem dat `zey0-g…`, světlý
+    i tmavý vzhled, 1500 a 360 px; dialogy průvodce a hledání ve Spisovně
+    s podvrženými odpověďmi API): body 1–8 prošly — sekce formuláře má
+    stejné vypočtené styly jako dřív a kontejner `form-section` skládá
+    sloupce na 360 px; žádný panel v panelu ani na `bg-secondary`
+    podkladu. **Neověřeno v prohlížeči:** Portál (na stroji není zdroj
+    dat s hostingem), předmět přenesení a kandidáti partnera (demo sada
+    je nemá — stojí na stejném `OptionRow` jako ověřený kód DPH),
+    přepínač vzhledu v Nastavení účtu (účet sleduje výchozí vzhled;
+    tentýž obal je ověřený v Nastavení aplikace). Barva textu „aktuální
+    volby“ (`primary` na `primary-soft`) má v tmavém vzhledu slabý
+    kontrast — beze změny, patří do #153.
+13. **Štítky uvnitř řádků** (Spisovna, bankovní účty) beze změny včetně
+    tloušťky 500 — mimo rozsah (badge systém §5); u štítku účtu jen
+    `rgba()` za token.
 
 ## Pasti
 

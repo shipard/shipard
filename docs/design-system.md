@@ -94,6 +94,10 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 | `--shpd-color-focus-ring` | `rgb(0 80 137 / 0.18)` | Glow okolo focusovaného inputu |
 | `--shpd-color-error-ring` | `rgb(220 38 38 / 0.15)` | Glow okolo chybného inputu |
 
+**Barvou výběru je `primary`** (D77, #149): vybraná volba — volitelný řádek
+i segment přepínače — má rámeček `--shpd-color-primary` a pozadí
+`--shpd-color-primary-soft`. `accent` zůstává barvou značky a výběr neznačí.
+
 ### Stavové (semantické)
 
 Tón má **tři role a tři tokeny** (#133 D69, D70, D74) — jedna hodnota
@@ -482,10 +486,10 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
 - **Karta, nebo ne** (D35): rámeček + zaoblení md = karta v obsahu;
   zaoblení lg + stín = plovoucí plocha (`Modal`, přihlášení, `StatusScreen`,
   panel vzhledu, `Popover`, uživatelské menu) — karta stín nemá. Kartou
-  nejsou ani vložené panely se šedým pozadím (`FormSection`, nabídka
-  položek, souhrny v dialozích), hlášky a pruhy (chyba, varování, zámek
-  dokladu — `Notice` / `PageBanner`, viz Hlášky a pruhy níže) ani
-  volitelné řádky (tlačítko volby v průvodci, řádek seznamu).
+  nejsou ani vložené panely se šedým pozadím (`Panel`, viz Vložené panely
+  níže), hlášky a pruhy (chyba, varování, zámek dokladu — `Notice` /
+  `PageBanner`, viz Hlášky a pruhy níže) ani volitelné řádky (`OptionRow`,
+  viz Volitelné řádky níže).
   Hláška selhání analýzy (`FailureCard`) je karta s tónem — rámeček
   v barvě, bez levého pruhu.
 - **Pravidlo:** nová karta = `Card` (v mřížce `CardGrid`), ne vlastní
@@ -493,6 +497,139 @@ v obsahu je sdílená `Card.svelte`, mřížka karet `CardGrid.svelte` (obě
   (karta feedu, AI shrnutí), čtyři karty Nastavení, strany dokladu
   v detailu i v náhledu importu, karta návrhu z pošty, karta selhání
   a náhled v průvodci importem ze Spisovny.
+
+### Vložené panely
+
+Rozhodnutí D75 z #149. Šedá plocha uvnitř obsahu je sdílený
+`ui/Panel.svelte` — kartou není (D35).
+
+- **Vzhled:** pozadí `--shpd-color-bg-secondary`, rámeček
+  `--shpd-color-border-subtle`, zaoblení `--shpd-radius-md`, odsazení
+  `--shpd-space-md`; žádný stín ani vnější okraj — mezery dává rodič.
+  V tmavém vzhledu bez úprav (tokeny se přepínají; `bg-secondary` je tam
+  tmavší než plocha, §9).
+- **Varianta `compact`:** bez rámečku, odsazení `--shpd-space-sm`, zaoblení
+  `--shpd-radius-sm` — drobná nápověda a „aktuální volba“ v popoveru
+  rozhodovacích panelů importu.
+- **Tón `info`:** pozadí `--shpd-color-primary-soft`, bez rámečku
+  („aktuální volba“ = `compact` + `info`).
+- **`padding="form"`:** husté odsazení sekce formuláře
+  (`--shpd-form-section-padding-y` × `--shpd-space-lg`) — jen `FormSection`,
+  která na panelu stojí (`as="section"`).
+- **`as`** volí značku (`div` výchozí, `section`, `li`, `dl`, `p`); zbylé
+  atributy (`data-testid`, `role`, `class`) jdou na kořen.
+- **Rodič kořen nestyluje:** pozadí, rámeček, odsazení a zaoblení jsou
+  propy panelu. Třída rodiče na kořeni smí nést jen rozložení obsahu
+  (mřížka souhrnu, `max-width` palety, pojmenovaný kontejner
+  `form-section`) — v CSS rodiče jako `:global(.třída)` pod vlastním
+  selektorem, protože kořen cizí komponenty třídu rozsahu nenese.
+- **Panel v panelu se nepoužívá** a panel neleží na `bg-secondary`
+  podkladu (šedá na šedé) — patří na plochu `bg` (karta, dialog, popover).
+  Souhrn uvnitř nabídky položek je proto jen text, ne další box.
+- **Panelem není** rozbalený detail karty feedu (bez pozadí a vlastního
+  odsazení, jen mezera nad a mezi řádky).
+- **Kde:** sekce formuláře, nabídka položek a položky průvodce zdrojem
+  dat, paleta výchozího vzhledu, souhrn předvyplnění registrace DPH,
+  nápověda a „aktuální volba“ v rozhodovacích panelech importu.
+- **Pravidlo:** nová šedá plocha v obsahu = `Panel`, ne vlastní třída
+  s kopií pozadí a rámečku.
+
+### Volitelné řádky
+
+Rozhodnutí D76 z #149. Jedna volba ze seznamu je sdílený
+`ui/OptionRow.svelte`, ve dvou velikostech podle místa:
+
+- **Velký** (`size="large"`, výchozí) — volba s popisem, která se
+  potvrzuje tlačítkem dialogu: odsazení `--shpd-space-md`, zaoblení
+  `--shpd-radius-md`, ukazatel volby vždy vlevo (`indicator` `radio`
+  výchozí | `checkbox`), název body strong, popis (snippet `description`)
+  meta šedě, obsah vpravo (snippet `aside` — štítky, doplňková volba).
+- **Kompaktní** (`size="compact"`) — jednořádková volba aplikovaná
+  kliknutím (popover): odsazení xs × sm, zaoblení `--shpd-radius-sm`, bez
+  ukazatele.
+- **Stavy:** základ rámeček `--shpd-color-border` na ploše `bg`; vybraný
+  rámeček `--shpd-color-primary` + pozadí `--shpd-color-primary-soft`; pod
+  kurzorem `--shpd-color-bg-hover` (ne `bg-secondary`, §9); zakázaný
+  průhlednost 0,6 a `cursor: not-allowed`; `:focus-visible` obrys 2 px
+  `primary` (u kompaktního dovnitř, ať ho rolovací seznam neořízne).
+- **Sémantika s ukazatelem:** nativní `<input type="radio|checkbox">`
+  v `<label>`; radia jedné skupiny sdílí `name` a rodič jim dá obal
+  `role="radiogroup"` s `aria-label`. Label je roztažený přes celý řádek
+  (`::after`), klik kamkoli volí. `aside` leží mimo label: jeho
+  neinteraktivní obsah klik propustí na řádek, ovládací prvky uvnitř
+  (radio „výchozí“ u bankovních účtů) fungují samy — vnořený `<label>`
+  by byl neplatný. Ukazatel kreslí `OptionRow` stejnými tokeny jako
+  `Checkbox`; sdílený `Checkbox` je sám `<label>` s vlastním okrajem a do
+  řádku vložit nejde.
+- **Sémantika bez ukazatele:** `<button>` s `role` podle rodiče — `radio`
+  (výchozí, `aria-checked`) nebo `option` (`aria-selected`, rodič je
+  `listbox`).
+- **Řízený:** `selected` drží rodič, `onselect(checked)` hlásí změnu
+  (checkbox stav po přepnutí, radio a tlačítko `true`). `data-testid`
+  jde na kořen / na tlačítko.
+- **Kde:** výsledky importu ze Spisovny (velký, radio), převod bankovních
+  účtů (velký, checkbox), kód DPH, předmět přenesení a kandidáti partnera
+  v náhledu importu (kompaktní, `option`). Štítky uvnitř řádků mají dál
+  vlastní třídy — sjednotí je badge systém (§5).
+- **Pravidlo:** nový volitelný řádek = `OptionRow`, ne vlastní třída
+  s kopií rámečku a stavů.
+
+### Segmentový přepínač
+
+Rozhodnutí D77 z #149. Jedna volba z několika málo je sdílený
+`ui/SegmentedControl.svelte`.
+
+- **Vzhled:** oddělená tlačítka s mezerou `--shpd-space-xs`, která se
+  zalamují (`flex-wrap`); tlačítko odsazení xs × md, rámeček
+  `--shpd-color-border`, zaoblení `--shpd-radius-md`, pozadí `bg`, písmo
+  body; pod kurzorem `--shpd-color-bg-hover`. Vybraná volba jako volitelný
+  řádek: rámeček `primary` + pozadí `primary-soft`, **tloušťka normal** —
+  stav nese barva, ne tučné písmo ani fajfka.
+- **Props:** `options` `[{value, label, icon?, disabled?}]` (hodnota
+  libovolného typu, i `null` / boolean — nerozhodnuto je legitimní volba),
+  `value` (bindable), `onchange(value)`, `label` (`aria-label` skupiny —
+  z existujícího textu: popisek pole nastavení, název parametru),
+  `disabled`, `size` (jen `md`). `icon` jen tam, kde je součástí popisku
+  (vzhled). Řízené použití bez `bind:` — rodič po `onchange` hodnotu
+  změní.
+- **Sémantika a klávesnice:** `role="radiogroup"`, tlačítka `role="radio"`
+  s `aria-checked`; roving tabindex — Tab vstoupí na vybranou volbu, šipky
+  vlevo / vpravo (nahoru / dolů) přesouvají výběr dokola přes zakázané
+  volby, Home / End na první / poslední.
+- **Kde:** vzhled a rozvržení (Nastavení aplikace i účtu — tenké obaly
+  `ThemeModeSegments`, `ShellSegments` s konkrétními volbami), jazyk,
+  plátce DPH v průvodci zdrojem dat, formát čísel reportu, způsob nahrání
+  pošty.
+- **Pravidlo:** nový přepínač = `SegmentedControl`, ne vlastní třída;
+  barvou výběru je `primary`, nikdy `accent` (§3).
+
+### Nadpis stránky
+
+Rozhodnutí D78 z #149. Stránka, která není prohlížeč ani detail, má
+nadpis ze sdíleného `ui/PageHeader.svelte` — vždy `<h1>`.
+
+- **V toku stránky** (`variant="flow"`, výchozí): typografická role
+  **page** (`--shpd-font-size-page` = xl, strong; §11), bez pozadí
+  a vnějšího okraje — mezeru pod nadpisem dává stránka.
+- **V liště** (`variant="bar"`): tvar hlavičky detailu — role title,
+  odsazení `--shpd-bar-padding-y` × `--shpd-space-md` (token sdílený
+  s `DetailHeader`), pozadí `bg`, linka dole.
+- **Ikona** (obdoba D38): z položky navigace, odkud stránka vznikla —
+  stejná jako v menu. Aktivní položka navigace nese klíč `icon`
+  (`stores/navigation.svelte.js`), stránka ho dostane v `item` a předá
+  `item?.icon ? resolveIcon(item.icon) : undefined`. Stránka bez ikony
+  v navigaci (ad-hoc cíl) má nadpis bez ikony — žádný fallback. Kreslí se
+  jako v `SectionHeading`: `Icon size="md"`, šedá
+  `--shpd-color-text-secondary`, mezera sm, dekorace (`aria-hidden`).
+- **Obsah vpravo** (snippet `aside` — akce, datum „k“, výběr období):
+  sedí vpravo v řádku nadpisu a při nedostatku místa se zalomí pod nadpis
+  (`flex-wrap`), nadpis se nestlačuje.
+- **Kde:** Dashboard, Přehled firmy, Štítky obsahu, Portál (`flow`),
+  reporty (`bar` — výběr období, parametry, formát a export v `aside`).
+  Titulek dialogu (`Modal`) a obrazovky s kartou uprostřed mají vlastní
+  nadpis.
+- **Pravidlo:** nový nadpis stránky = `PageHeader`, ne vlastní `<h1>`
+  s velikostí ze škály.
 
 ### Obrazovka s kartou uprostřed
 
@@ -1001,7 +1138,7 @@ Hodnoty tokenů jsou v rem; sloupec px je ekvivalent při 16 px.
 | `--shpd-radius-lg` | `0.5rem` | 8 | dialogy, panely |
 | `--shpd-radius-full` | `9999px` | — | pilulka: čipy, štítky stavů |
 | `--shpd-font-size-xs` … `-xl` | `0.75` / `0.875` / `1` / `1.125` / `1.25rem` | 12 / 14 / 16 / 18 / 20 | škála velikostí písma |
-| `--shpd-font-size-title` / `-heading` / `-body` / `-meta` | `lg` / `sm` / `sm` / `xs` | 18 / 14 / 14 / 12 | typografické role (§11) |
+| `--shpd-font-size-page` / `-title` / `-heading` / `-body` / `-meta` | `xl` / `lg` / `base` / `sm` / `xs` | 20 / 18 / 16 / 14 / 12 | typografické role (§11) |
 | `--shpd-font-weight-normal` / `-strong` | `400` / `600` | — | dvě tloušťky písma (§11) |
 
 `--shpd-radius-full` je jediná px hodnota zaoblení: znamená „maximum“, ne
@@ -1046,6 +1183,11 @@ a tečky u textu, `min-height` míst držících výšku obsahu — a stejně
 | `--shpd-header-height` | `3.5rem` | 56 |
 | `--shpd-classic-strip-width` | `4.75rem` | 76 |
 | `--shpd-rail-width` | `4.75rem` | 76 |
+| `--shpd-bar-padding-y` | `0.75rem` | 12 |
+
+`--shpd-bar-padding-y` je svislé odsazení lišty nad obsahem — sdílí ho
+hlavička detailu (`DetailHeader`) a nadpis stránky v liště (`PageHeader`
+`bar`, D78).
 
 - **Šířka modalu a popoveru je prop v rem**: `<Modal width="30rem">`,
   `<Popover width="25rem">`, výchozí `Modal` `40rem`. Obsahové modaly
@@ -1133,9 +1275,10 @@ rozhodnutí v #133 (§8 Responzivita).
 ## 11. Typografie
 
 Pravidla D6, D15 a D16 z #133, zavedená pilotem #135 (detail dokladu).
-**Čtyři velikosti, dvě tloušťky, žádné verzálky.** Role jsou tokeny ve
+**Pět velikostí, dvě tloušťky, žádné verzálky.** Role jsou tokeny ve
 `variables.css` a odkazují na škálu `--shpd-font-size-*`; žádná nová
-velikost nevzniká. Základní text je **14 px** (`sm`): D6 původně mířilo na
+velikost nevzniká — pátou roli page (#149 D78) nese `xl`, který ve škále
+je. Základní text je **14 px** (`sm`): D6 původně mířilo na
 16 px, při ověření pilotu se ukázalo přestřelené a 14 px se drží všude
 dál — proto se role mění na jednom místě. Nadpis (heading) je od #137
 task 2b **16 px** (`base`): do té doby měl velikost body a lišil se jen
@@ -1144,6 +1287,7 @@ v kartě Nastavení moc malý, a rozdělení proběhlo tím jedním místem.
 
 | Role | Token | Velikost | Tloušťka | Barva | Kde |
 |---|---|---|---|---|---|
+| page | `--shpd-font-size-page` | `xl` (1.25rem) | strong | text | nadpis stránky v toku (`PageHeader` — Dashboard, Přehled firmy, Štítky obsahu, Portál; D78). Nadpis stránky v liště (reporty) je title |
 | title | `--shpd-font-size-title` | `lg` (1.125rem) | strong | text | titulek detailu, řádek Celkem, nadpis karty jako samostatné části stránky (Přehled firmy, karty Nastavení — D36), hlavní částka karty (Přehled firmy, feed) |
 | heading | `--shpd-font-size-heading` | `base` (1rem) | strong | text | nadpis sekce (detail i feed dashboardu), nadpis karty uvnitř obsahu, název entity v kartě, název karty feedu, mezinadpis v kartě Nastavení |
 | body | `--shpd-font-size-body` | `sm` (0.875rem) | normal (hlavička sloupce strong) | text | popisky i hodnoty, řádky tabulek i hlavička sloupce (ve velikosti řádků, silnější), taby, podtitul hlavičky detailu (D56) |
@@ -1586,6 +1730,10 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami |
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
+| `frontend/src/components/ui/Panel.svelte` | Vložený panel (§8 Vložené panely, D75) — `bg-secondary` s rámečkem `border-subtle`, `variant` compact, `tone` info, `padding` form, `as`; na něm `FormSection` |
+| `frontend/src/components/ui/OptionRow.svelte` | Volitelný řádek (§8 Volitelné řádky, D76) — velký s ukazatelem radio / checkbox a snippety `description` / `aside`, kompaktní jako tlačítko s `role` option / radio; vybraný `primary` + `primary-soft` |
+| `frontend/src/components/ui/SegmentedControl.svelte` | Segmentový přepínač (§8, D77) — `radiogroup` oddělených tlačítek, `options`, bindable `value`, `onchange`, roving tabindex |
+| `frontend/src/components/ui/PageHeader.svelte` | Nadpis stránky (§8, D78) — `h1` s ikonou z navigace a `aside`; `flow` (role page) / `bar` (lišta jako hlavička detailu) |
 | `frontend/src/components/ui/CenteredScreen.svelte` | Obrazovka s kartou uprostřed (§8) — obal `100dvh` s odsazením md a plovoucí plocha `25rem`; přihlášení, nastavení hesla, OpAuth, `StatusScreen` |
 | `frontend/src/components/ui/CardGrid.svelte` | Mřížka karet (§8 Karty, D34) — `auto-fill` s `min()` ve `minmax`, `minWidth` podle použití, karty v řádku stejně vysoké |
 | `frontend/src/components/ui/PropertyList.svelte` | Seznam popisek–hodnota jedné skupiny (§12, D29) — mřížka `max-content 1fr`, zalamování, prázdný popisek přes oba sloupce; `emptyValue` a položka se `snippet` (D51) |

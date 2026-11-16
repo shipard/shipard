@@ -218,9 +218,9 @@
   --shpd-font-size-lg: 1.125rem;
   --shpd-font-size-xl: 1.25rem;
 
-  /* Typografické role (#135, docs/design-system.md → Typografie). Čtyři
-     velikosti, dvě tloušťky, žádné verzálky: komponenty používají role,
-     ne škálu, tam kde role sedí. Základní text je 14 px (D6 upřesněno při
+  /* Typografické role (#135, docs/design-system.md → Typografie). Pět
+     velikostí (page přidalo #149 D78), dvě tloušťky, žádné verzálky:
+     komponenty používají role, ne škálu, tam kde role sedí. Základní text je 14 px (D6 upřesněno při
      ověření pilotu — 16 px bylo přestřelené). heading měl stejnou velikost
      jako body a lišil se jen tloušťkou; při ověření #137 task 2b byl
      nadpis v kartě moc malý, proto je heading 16 px — rozdělení na tomto
