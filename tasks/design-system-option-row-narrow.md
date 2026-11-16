@@ -1,6 +1,6 @@
 # Design system — volitelný řádek na úzké šířce
 
-**Stav:** hotovo — 2026-11-16 (#149, D81); ověřeno skriptem v prohlížeči (1500 a 360 px, Odchylky 4), ruční kontrola na telefonu zbývá
+**Stav:** hotovo — 2026-11-16 (#149, D81); ověřeno skriptem v prohlížeči (1500 a 360 px, Odchylky 4) a ručně na telefonu 2026-11-16 (dialog z registru: řádek se štítkem má text přes celou šířku, štítek pod popisem); převod bankovních účtů jen skriptem
 
 ## Kontext / Cíl
 
