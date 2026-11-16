@@ -1075,6 +1075,15 @@ obecné varianty (`neutral`, `primary`, `accent`, `success`, `warning`,
 `danger`) i doc-state styly (`concept`, `edit`, `confirmed`, `done`,
 `archive`, `trash`, `cancelled`, `error`) — viz `docs/design-system.md`.
 
+**Sdílená komponenta bloků** (#150 D83): jednoduché typy — `properties`,
+`table`, `heading`, `composite`, `notice`, `badges`, `empty`, `text`, `code`,
+`hint` (`DetailContent::SHARED_TYPES`) — kreslí
+`components/content/ContentBlock.svelte`, tatáž pro detail i pro prvek
+formuláře `content` (`docs/edit-forms.md` §4.5). `ViewerDetail` jí snippetem
+`other` dodává typy vázané na viewer (`untrusted-html`, `failure`,
+`proposal`, `attachment-grid`, `attachments`, `document`), i když jsou
+vnořené v `composite`; ve formuláři tyto typy backend odmítne.
+
 Typy obsahu:
 
 | Typ | Popis |
@@ -1085,11 +1094,12 @@ Typy obsahu:
 | `badges` | řada štítků `{items: [{label, style}]}` — tytéž styly jako `detail.badges`, kreslí `Badge`; stav zaúčtování (warning / success / danger) |
 | `empty` | prázdný stav tabu `{text}` — odstavec body šedě; text z katalogu `*.viewerDetailLabels` sekce `texts` přes `TableViewer::detailText()` (cs + en), ne natvrdo v PHP |
 | `text` | prostý text `{text}` — odstavec body, zalomení z obsahu zůstávají (`white-space: pre-wrap`), dlouhé řetězce se lámou; tělo došlé pošty bez HTML, odeslaná pošta, AI shrnutí Spisovny. Čistý text bez `htmlspecialchars` — frontend ho vkládá jako text |
+| `hint` | nápověda `{text}` (#150 D84) — odstavec body šedě (`--shpd-color-text-secondary`), zalomení z textu, bez tučného zvýraznění; vysvětlující věta ve formuláři (prvek `content`), smí ji nést i detail |
 | `code` | strojový výpis `{text}` — `<pre>` neproporcionálním písmem (`--shpd-font-family-mono`), velikost meta, dlouhý řádek roluje v bloku; JSON akcí a kontextu upozornění |
 | `untrusted-html` | **jediné HTML v kontraktu** (#137 D30: typ `html` zanikl — backend HTML se vzhledem neposílá; seznam typů `Core\Viewer\Detail\DetailContent::TYPES` hlídají unit `DetailContractTest` a integrační `ViewerDetailContractTest`). HTML z nedůvěryhodného zdroje (tělo e-mailu); renderuje se v sandboxovaném `<iframe srcdoc>` bez `allow-scripts` (`SandboxedHtml.svelte`): izolace skriptů i CSS oběma směry, odkazy do nového tabu (`<base target="_blank">`, whitelist protokolů — `javascript:` apod. se zahazuje), odstranění `meta refresh`, auto-height dle obsahu. **Nikdy nerozšiřovat sandbox o `allow-scripts`** — s `allow-same-origin` by skript z e-mailu četl Bearer token z localStorage |
 | `heading` | mezititulek sekce (`text`) |
 | `attachment-grid` | plochý grid příloh (`attachments`: `id`, `name`, `mime_type`, `file_size` v bajtech); přepínání miniatury/velké náhledy přes sdílený store `attachmentView.svelte.js` |
-| `composite` | seznam `blocks[]` — každý blok je libovolný z ostatních typů, renderuje se rekurzivně týmž snippetem |
+| `composite` | seznam `blocks[]` — každý blok je libovolný z ostatních typů, renderuje se rekurzivně touž komponentou |
 | `attachments` | tab Přílohy záznamu (`{type: "attachments"}`, bez dalších polí) — frontend kreslí `detail.attachments.groups` sdílenou `DetailAttachments.svelte`; přidává ho builder u vieweru s `detailAttachments: "tab"`, jen má-li záznam přílohu |
 | `proposal`, `document` | doménové typy: dokumentový návrh zprávy (tab „Návrh" — jedna karta s typem, pásmem/verdiktem a akcemi Použít/Zamítnout/Zobrazit detail), textový detail dokladu (`DocumentDetail` — skládá sdílené části dokladu `PartyCard` / `PropertyGroups` / `DocRows` / `DocTotals` z `components/document/` přes adaptér `documentParts.js`, #139 D48; kontrakt obsahu beze změny, vzhled a složený řádek pod `36rem` v `docs/design-system.md` §12; hlavička dokladu je nad taby — titulek protistrana, číslo · text dokladu v podtitulku, štítek jen stav mimo V pořádku, typ nese ikona, #135 D13–D14, #136 D20; klíč `header` se v contentu neposílá, přílohy dokladu nese `detail.attachments`, ne content). Písmo detailu podle typografických rolí: `design-system.md` §11–§12. V `document` contentu je jméno partnera klikatelné (klíč `person_id` přidává backend jen na partnerské straně podle `trade_dir` — vlastní firma ho nedostane) a popis řádku s vazbou na Položku též (`item_id` se posílá jen když položka v DB existuje, včetně archivu a koše; tehdy má řádek i badge `item_state: {label, style}`). Klik volá `onAction` s generickou akcí `kind: open_form` — otevře `FormDialog` osoby (`base_persons_persons`) / položky (`economy_items`), po uložení se detail i seznam refreshnou. Opravný daňový doklad (#92 U10) nese volitelný klíč `correction` `{title, items: [{label, value, action?}]}` — `DocumentDetail` ho kreslí jako třetí skupinu `PropertyGroups` za Daty a Platbou, položka s `action` (původní doklad, `kind: open_detail`) je odkaz na read-only náhled; texty posílá server z `docs.core.viewerLabels`. Původní faktura s opravnými doklady má obsah `composite` [`document`, `heading`, `table` s odkazy `open_detail`] |
 

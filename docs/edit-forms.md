@@ -158,7 +158,7 @@ Formulář má vždy alespoň jeden tab. Je-li tab jen jeden, tab bar se nezobra
 
 Element žije uvnitř sloupce (`section.columns[i].elements[]`). Sám si nediktuje šířku — tu určuje sloupec.
 
-Povolené typy: `input`, `select`, `multiselect`, `separator`, `inline`, `html`, `component`.
+Povolené typy: `input`, `select`, `multiselect`, `lookup`, `separator`, `inline`, `content`, `component`. Typ `html` zanikl (#150 D82) — formulář HTML se vzhledem neposílá, viz §4.5.
 
 ### 4.1 `input`
 
@@ -286,13 +286,47 @@ proto JS store místo media query (stejný typ rozhodnutí jako viewer
 list/detail ve fázi 2). Label zůstává **vedle** inputu i na mobilu (grid
 `max-content 1fr` v `FormColumn` se nemění) — ověřeno na reálném telefonu.
 
-### 4.5 `html`
+### 4.5 `content`
 
 ```json
-{ "type": "html", "content": "<p>Poznámka</p>" }
+{
+    "type": "content",
+    "blocks": [
+        { "type": "hint", "text": "Údaje pro podání přiznání a hlášení na daňový portál." }
+    ]
+}
 ```
 
-Vlastní HTML uvnitř sloupce; rendruje se přes obě kolony.
+Obsah jen ke čtení z **bloků obsahu detailu záznamu** (#150 D83) — stejný
+kontrakt (`Core\Viewer\Detail\DetailContent`, tvar bloků `docs/frontend.md`
+→ Formát detail panelu) a stejná komponenta frontendu
+(`components/content/ContentBlock.svelte`) jako v detailu. Rendruje se přes
+obě kolony, bloky pod sebou s mezerou jako v `composite`; volitelně `hidden`.
+
+Povolené jsou jen typy sdílené komponenty (`DetailContent::SHARED_TYPES`):
+
+| Blok | Použití ve formuláři |
+|---|---|
+| `hint` `{text}` | nápověda — odstavec body šedě, bez tučného (D84); Registrace DPH, Podání DPH |
+| `text` `{text}` | prostý text — pokladna pokladního dokladu |
+| `notice` `{tone, title?, text? \| items?}` | hláška — řada bez pokladny (`warning`) |
+| `properties` `{groups[]}` | popisek–hodnota — souhrn AI funkce |
+| `empty` `{text}` | prázdný stav — doklad bez rekapitulace DPH |
+| `table`, `heading`, `badges`, `code`, `composite` | jako v detailu |
+
+Typ vázaný na viewer (`document`, `attachments`, `proposal`…), neznámý typ,
+blok bez typu nebo prázdný seznam = výjimka v konstruktoru `FormElement` —
+i u bloku vnořeného v `composite`. Odkaz v buňce tabulky (`_action`) se ve
+formuláři nekreslí, zůstává text.
+
+**Texty bloků nejsou literály v PHP** — jdou z katalogu textů formuláře
+(`TableForm::formText()`, kapitola 11). Co je složitější než bloky
+(rekapitulace DPH, strany dokladu), je pojmenovaná komponenta (§4.6).
+
+**`html` zanikl** (#150 D82, obdoba D30 v detailu): `FormElement` typ `html`
+nepřijme, `TabBuilder::html()` neexistuje a frontend ve formuláři nemá žádné
+`{@html}`. Hlídá `FormContractTest` (žádný zdroj formuláře v `src/`
+a `modules/` nevolá `->html(`, žádná jsonc definice nemá `"type": "html"`).
 
 ### 4.6 `component`
 
@@ -311,6 +345,12 @@ Registrované komponenty:
 | `component_name` | Komponenta | Params | Použití |
 |---|---|---|---|
 | `attachmentsView` | `FormAttachmentsView` | `table_id` (číselné ID tabulky) | Read-only velké náhledy příloh záznamu (AttachmentGrid `mode="full"`); PDF a obrázky řadí před nenáhledovatelné typy, scrolluje uvnitř (výšku udává fill mechanismus, viz Layout). Např. došlá pošta — pravý sloupec tabu Zpráva. |
+| `docVatRecap` | `FormDocVatRecap` | `currency`, `homeCurrency` (jen u cizí měny, jinak `null`), `rows[] {label, pct, base, tax, total, sum: {base, tax, total}, dom: {base, tax, total} \| null}`, `totals {base, tax, total, rate, dom}` — hodnoty hotové texty, `sum` booleany | Rekapitulace DPH v tabu formuláře dokladu (#150 D86): sdílená `VatRecapTable` v rozšířené podobě — Sazba / % / Měna / Základ / DPH / Celkem, u cizí měny řádek v domácí měně, šedě jen nesčítané hodnoty, patička Celkem s kurzem. Params skládá `DocsHeadsFormBase::buildRecapParams()`; prázdná rekapitulace je prvek `content` s blokem `empty`. Vzhled `docs/design-system.md` §12 Součty. |
+| `docParties` | `FormDocParties` | `supplier`, `customer` — zmrazené snapshoty stran ve tvaru obsahu `document` detailu (bez `person_id`), chybějící strana `null` | Fakturační údaje v tabu formuláře dokladu (#150 D85): dvě `PartyCard` přes adaptér `detailParty()` jako v detailu, pod 30 rem pod sebou. |
+
+`docVatRecap` a `docParties` mají výšku podle vlastního obsahu — jsou
+v `flowFormComponents` (`formComponents.js`) a sloupec složený jen z nich se
+neroztahuje na výšku tabu (viz Fill sloupce v kapitole 6).
 
 ### 4.7 `lookup`
 
@@ -336,7 +376,7 @@ Detailně viz [kapitolu 22](#22-lookup-pole). Pravidla:
 
 ### Zaniklé typy
 
-`group` a `subtable` (jako element uvnitř tabu) byly v novém systému odstraněny. `subtable` je vždy vlastní tab (`type: "subtable"`); pro grupování polí se používají sekce nebo `inline`.
+`html` zanikl v #150 (D82) — nahrazuje ho `content` (§4.5) nebo pojmenovaná komponenta (§4.6). `group` a `subtable` (jako element uvnitř tabu) byly v novém systému odstraněny. `subtable` je vždy vlastní tab (`type: "subtable"`); pro grupování polí se používají sekce nebo `inline`.
 
 ---
 
@@ -440,13 +480,16 @@ Na úzkém viewportu (<700px) se sloupce lámou pod sebe (`grid-template-columns
 
 ### Full-span elementy
 
-`separator`, `html`, `component` a `checkbox` se rendují přes obě grid kolony (`grid-column: 1 / -1`). `inline` má vlastní label + flex container, takže do gridu vchází jako dvě běžné kolony.
+`separator`, `content`, `component` a `checkbox` se rendují přes obě grid kolony (`grid-column: 1 / -1`). `inline` má vlastní label + flex container, takže do gridu vchází jako dvě běžné kolony.
 
 ### Fill sloupce (sloupec jen s komponentami)
 
 Sloupec složený **výhradně z `component` elementů** dostane modifikátor
-`.shpd-form-column--fill` (detekce ve `FormColumn`). Chová se jinak než
-běžný sloupec:
+`.shpd-form-column--fill` (detekce ve `FormColumn`). Výjimka: komponenty
+s výškou podle vlastního obsahu — tabulka, karty — vyjmenované
+ve `flowFormComponents` (`formComponents.js`: `docVatRecap`, `docParties`,
+#150) sloupec neroztahují; fill je pro komponenty s vlastním rolovacím oknem.
+Fill sloupec se chová jinak než běžný sloupec:
 
 - **Nediktuje výšku řádku sekce** — komponenta uvnitř (např.
   `FormAttachmentsView`) má scroll container `position: absolute`, takže do
@@ -783,6 +826,46 @@ abstract class TableForm
 
 `TableForm` instance vyrábí `FormRegistry::createForm($table, $data, $db, $config)`; registry navíc každému formuláři předá `DataSourceConfig` (`setDsConfig()`, nastavuje `FormLoader::load()`) — formuláře závislé na státu zdroje dat (`getCountry()`, pravidla odpisů) ho čtou z `$this->dsConfig`, v testech může chybět. Pro polymorfní tabulky (`docs_core_heads` přes `doc_type`) `$data` rozhodne o konkrétní subclass. Detaily viz [kapitola 23](#23-polymorfní-dispatch-formulářů-přes-typecolumn). Per-typ rodina formulářů typicky tvoří abstract base (`DocsHeadsFormBase`) se společnou logikou + tenké subclassy, které přepisují virtuální `getFormTitle()` / `getNewFormTitle()` (a do budoucna jednotlivé `buildXxxTab()` metody).
 
+### Texty formuláře z katalogu — `formText()`
+
+Texty prvků formuláře, které nejsou popiskem sloupce (nápovědy `hint`,
+prázdné stavy, hlášky, popisky bloku `properties`, vzory s hodnotou), **nejsou
+literály v PHP** (#150 D87). Jdou z katalogu modulu `<modul>.formTexts`
+(`config/formTexts.jsonc`, registrace v `module.jsonc` → `config`), jediná
+sekce `texts` — stejný tvar jako texty viewerů v `*.viewerDetailLabels`:
+
+```jsonc
+{
+    "texts": {
+        "recap.empty": {
+            "name": "The document has no VAT recap yet — add rows and save the document to recalculate.",
+            "name:cs": "Doklad zatím nemá rekapitulaci — přidejte řádky a uložte doklad pro přepočet.",
+            "name:en": "The document has no VAT recap yet — add rows and save the document to recalculate."
+        }
+    }
+}
+```
+
+```php
+$this->formText('docs.core.formTexts', 'recap.empty',
+    'The document has no VAT recap yet — add rows and save the document to recalculate.');
+$this->formText('docs.core.formTexts', 'recap.reverseChargeSubject',
+    '{label} · subject {code}', ['label' => $label, 'code' => $subject]);
+```
+
+- Jazyk dává konfigurace zkompilovaná v jazyce požadavku; `{param}` nahradí
+  čtvrtý parametr (prostý `str_replace`, žádné ICU — text s počtem se píše
+  bez skloňování).
+- Holé `name` je anglická varianta a **shoduje se s fallbackem v PHP znak po
+  znaku**; bez katalogu (konfigurace před `ds-upgrade`) formulář ukáže
+  fallback.
+- Volání má literální id katalogu, klíč i fallback — `FormTextsCatalogTest`
+  z nich ověřuje shodu s katalogem a hlásí klíč, který nikdo nečte.
+- Implementaci sdílí s viewery (`Core\I18n\CatalogText`).
+- Katalogy dnes: `docs.core`, `core.ai`, `economy.codebooks`, `economy.vat`.
+  Názvy tabů, sekcí a oddělovačů, zástupné texty a nápovědy polí (`hint`
+  inputu) v PHP formulářích zůstávají česky natvrdo do #154.
+
 ### Auto-label z TableDefinition
 
 `TableForm` dostane `TableDefinition` přes `setTableDef()` před voláním `buildFormDefinition`. Helper `tab()` sestaví mapu `column_id => name` a mapu `column_id => ColumnDefinition` a předá obě `TabBuilder`u (`colLabels`, `colDefs`). Element factory metody pak doplní `label` automaticky z labelů pokud není zadán explicitně; `select()` z definic odvodí `required` (`!nullable`), pokud volající nerozhodl explicitně. Bez `TableDefinition` (unit testy) se `required` selectu neodvozuje a je `false`.
@@ -879,7 +962,7 @@ $col->multiselect(string $column, ?string $label = null, ?array $options = null,
     ?string $triggers = null, bool $required = false, ...): static;
 
 $col->separator(?string $label = null, bool $hidden = false): static;
-$col->html(string $content): static;
+$col->content(array $blocks, bool $hidden = false): static;   // bloky obsahu detailu (§4.5)
 $col->component(string $name, ?array $params = null): static;
 
 // Inline
@@ -1426,7 +1509,8 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 | `FormColumn.svelte` | Sloupec se sdílenou auto-šířkou labelů (`max-content 1fr`) |
 | `FormFieldRow.svelte` | Wrapper jedné label+input dvojice — emituje DVA sourozence do FormColumn gridu |
 | `FormInline.svelte` | Inline skupina (víc polí v jedné řádce); první pole použije label řádky, ostatní mají mini-labely |
-| `FormElement.svelte` | Renderer elementu — switch podle `type` + delegace na UI komponenty |
+| `FormElement.svelte` | Renderer elementu — switch podle `type` + delegace na UI komponenty; `content` kreslí sdílená `content/ContentBlock.svelte` (§4.5), `component` registr `formComponents.js` (§4.6) |
+| `FormDocVatRecap.svelte`, `FormDocParties.svelte` | Komponenty formuláře dokladu `docVatRecap` / `docParties` nad sdílenými částmi dokladu (`document/VatRecapTable.svelte`, `document/PartyCard.svelte`) — §4.6 |
 | `FormSubTable.svelte` | Sub-tabulka: sloupce a řádky ze serveru (`/subtable`), Přidat / Upravit / Smazat (ConfirmDialog) nebo Zobrazit v read-only, klientský filtr od 11 řádků — kap. 15 |
 | `FormStateBar.svelte` | Spodní toolbar: Uložit + přechodová tlačítka; `readOnly` skryje obojí, bez jediné akce se nerenderuje. `isNew` + `onSaveAndContinue` → Přidat + Přidat a pokračovat (na mobilu v kebabu; kebab má generické položky `{label, danger, run}`) |
 | `FormStateBadge.svelte` | Badge stavu v záhlaví Modalu |
@@ -1444,12 +1528,12 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 ### `src/Core/Form/`
 | Třída | Popis |
 |-------|-------|
-| `TableForm` | Abstraktní bázová třída; auto-label z TableDefinition; `setTables()` + default `renderSubtable()` sub-tabulek (kap. 15) |
+| `TableForm` | Abstraktní bázová třída; auto-label z TableDefinition; `formText()` — texty z katalogu `*.formTexts` (kap. 11); `setTables()` + default `renderSubtable()` sub-tabulek (kap. 15) |
 | `SubtableCellFormatter` | Sdílené formátování buněk sub-tabulek: `money`, `number`, `trimmedNumber`, `price`, `date`, `dateTime`, `boolean` |
 | `TabBuilder` | Fluent builder; autoHideSeparators |
 | `FormDefinition` | Datová třída; `toArray()` → snake_case JSON |
 | `FormTab` | Datová třída |
-| `FormElement` | Datová třída; `input_type`, `hidden`, `triggers` |
+| `FormElement` | Datová třída; `input_type`, `hidden`, `triggers`; `blocks` prvku `content` (validace typů bloků, §4.5) |
 | `FormRegistry` | Registr PHP tříd formulářů; podporuje per-table polymorfismus přes `typeColumn` + `classes` + `defaultClass` (`createForm($table, $data, ...)`) — viz kap. 23 |
 | `FormController` | HTTP controller; volá `createForm($table, $data, ...)` ve všech metodách (`resolveFormDefinition`, `recalculate`, `enrichHeaderInfo`, `resolveSubtableContext` pro `subtable` / `subtableMove`) |
 | `AutoFormBuilder` | Generuje FormDefinition z TableDefinition |

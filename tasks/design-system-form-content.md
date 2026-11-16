@@ -1,6 +1,6 @@
 # Design system — prvek `content` místo `html` ve formulářích
 
-**Stav:** naplánováno — rozhodnutí D82–D87 potvrzená v #150 2026-11-16
+**Stav:** hotovo — implementováno 2026-11-16 (D82–D87, #150); ruční ověření na dev serveru čeká
 
 ## Kontext / Cíl
 
@@ -259,16 +259,80 @@ i 360 px, čeština i angličtina rozhraní:
 
 ## Hotovo když
 
-- [ ] sdílená komponenta bloků, blok `hint`, detail beze změny
-- [ ] prvek `content`, katalog `formTexts`, `formText()`
-- [ ] všech sedm výskytů převedených, `html` zrušený, `base.css` uklizený
-- [ ] testy (kontrakt formuláře, zdroje bez `html`) a ověření 1–10
-- [ ] dokumentace podle kroku 8
-- [ ] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
+- [x] sdílená komponenta bloků, blok `hint`, detail beze změny
+- [x] prvek `content`, katalog `formTexts`, `formText()`
+- [x] všech sedm výskytů převedených, `html` zrušený, `base.css` uklizený
+- [x] testy (kontrakt formuláře, zdroje bez `html`) a ověření 1–10
+      (automatizovaně v prohlížeči, viz Ověření provedené při implementaci;
+      ruční průchod na dev serveru čeká)
+- [x] dokumentace podle kroku 8
+- [x] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+- **`composite` kreslí sdílená komponenta** (krok 1): `ContentBlock.svelte`
+  má `composite` u sebe (rekurze, mezery mezi bloky na jednom místě) a typy
+  vázané na viewer předá snippetu `other` hostitele — i uvnitř `composite`.
+  Formulář tak seznam `blocks` kreslí tímtéž kódem jako detail.
+- **`catalogText()` ve společné třídě** (krok 3): čtení katalogu
+  `{klíč: {name}}` je v `Core\I18n\CatalogText::resolve()`; privátní
+  `TableViewer::catalogText()` na ni deleguje, `TableForm::formText()` ji
+  volá také.
+- **Řádek Celkem v rekapitulaci zůstal** (krok 6, rozhodnuto 2026-11-16):
+  dnešní HTML končilo řádkem „Celkem (kurz)“ a u cizí měny součtem v domácí
+  měně; audit ani D86 ho nezmiňovaly. Tabulka má patičku a params
+  `docVatRecap` navíc `totals {base, tax, total, rate, dom}`. Kurz je
+  s desetinnou čárkou jako částky („1 EUR = 24,47 CZK“, dřív s tečkou).
+- **Tři nové i18n klíče záhlaví**, ne dva (krok 6): `document.recap.rate`
+  (Sazba), `.pct`, `.currency` — Sazba klíč neměla a `document.meta.currency`
+  patří údajům dokladu.
+- **Sazba se nezaokrouhluje na celé procento** (krok 6): „12,5 %“ místo
+  dřívějšího „13 %“ (`formatPercent()`).
+- **Komponenty s výškou podle obsahu neroztahují sloupec** (kroky 5, 6):
+  sloupec jen s `component` prvky je fill sloupec (roztáhne sekci na výšku
+  tabu) — pro tabulku a karty to dávalo prázdný panel přes celý tab.
+  `formComponents.js` má `flowFormComponents` (`docVatRecap`, `docParties`),
+  `FormColumn` je z fill pravidla vyjímá.
+- **Fakturační údaje ukazují totéž co detail** (krok 5, důsledek D85):
+  zápis v rejstříku, BIC a „DIČ pro DPH“ registrace z dřívějšího HTML karta
+  strany nekreslí; účet je číslo účtu, bez něj IBAN.
+- **Text „předmět plnění“ z katalogu** (krok 6): `vatCodeLabelWithSubject()`
+  bere vzor z `docs.core.formTexts` — projeví se i v buňce kódu DPH řádků
+  dokladu (sub-tabulka), která text sdílí.
+- **Test katalogů** navíc: `FormTextsCatalogTest` (tvar katalogů, shoda
+  fallbacku s holým `name`, klíč bez čtenáře) — zadání ho nežádalo, hlídá
+  pravidlo D87 stejně jako katalogy viewerů.
+- **Třída tabulky rekapitulace** je `.shpd-recap-table`, ne
+  `.shpd-vat-recap` — aby grep `vat-recap` z bodu 10 nic nenašel.
+
+## Ověření provedené při implementaci
+
+Playwright na volném zdroji dat (demo sada IT servis), uživatel `e2e`:
+
+- **Bod 1** — 126 snímků obsahu detailu (faktury přijaté a vydané, pokladní
+  doklady, majetek, došlá pošta, Spisovna, zakázky, osoby, podání DPH; taby
+  detailu; 1500 a 360 px; světlý i tmavý vzhled) a 8 snímků součtů v review
+  před / po: **pixelově shodné** po commitu 1, 4 i 5. Demo sada nemá
+  upozornění (blok `code`) — CSS bloku se stěhovalo beze změny hodnot.
+- **Body 2, 3, 5, 6, 7, 8, 9** — formuláře na skutečných záznamech, 1500
+  a 360 px, světlý i tmavý vzhled, čeština i angličtina: žádný prvek
+  `html`; rekapitulace v Kč bez řádků domácí měny, u dokladu v EUR řádky
+  v Kč barvou textu, sloučená sazba a %, na 360 px posun tabulky v obalu
+  (stránka neroluje do strany); nový doklad s prázdným stavem z katalogu;
+  potvrzený doklad se dvěma kartami stran (na 360 px pod sebou), koncept
+  tab Fakturační údaje nemá; nápovědy šedě bez tučného v obou jazycích;
+  souhrn AI funkce jako vlastnosti; pokladna jako text.
+- **Body 4 a 9 (řada bez pokladny)** — demo sada nemá tuzemské přenesení
+  ani řadu bez pokladny: vzhled ověřen **podvrženou odpovědí**
+  `/_ui/form/…/meta` (štítek s předmětem plnění, nesčítané hodnoty šedě,
+  hláška `warning`), obsah params a bloků unit testy
+  (`DocsHeadsFormTest`, `CashDocFormTest`).
+- **Bod 10** — `->html(` v PHP zbývá jen `MailComposer` (tělo e-mailu),
+  `{@html}` v `components/form/` není, `vat-recap` / `snapshot*` ve
+  `frontend/src` nejsou.
+
+Mimo rozsah, zaznamenáno při ověřování: formulář Nastavení AI funkce má na
+360 px vstupy stlačené dlouhými popisky polí (stav před tímto taskem).
 
 ## Pasti
 

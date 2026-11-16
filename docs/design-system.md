@@ -1586,8 +1586,8 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   Účet), `unit`, `vat`, `meta` (řádek složeného režimu). Složený řádek pod
   `36rem` viz Úzká šířka.
 - **Součty** (`components/document/DocTotals.svelte`, #139 D52, D55):
-  rekapitulace DPH vlevo (tabulka v `TableScroll`, nezvýrazňuje se),
-  souhrn vpravo — Základ, DPH, Zaokrouhlení (jen když je), Celkem title
+  rekapitulace DPH vlevo (sdílená `VatRecapTable.svelte` v kompaktní
+  podobě — tabulka v `TableScroll`, nezvýrazňuje se), souhrn vpravo — Základ, DPH, Zaokrouhlení (jen když je), Celkem title
   s čarou nad, hodnoty strong (token); přepočet v domácí měně meta šedě.
   Popisek řádku součtu je **„Celkem“**, ne „Celkem k úhradě“ (D55): u
   pokladního dokladu, zaplacené faktury nebo interního dokladu by
@@ -1595,6 +1595,20 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
   nad rekapitulací, meta), `rate` (sazba s kódem DPH, dvojice přenesené
   povinnosti) a `after` (`Notice` při nesouladu s částkou dodavatele);
   `totalTestId` → `data-testid` řádku Celkem.
+- **Rekapitulace DPH ve formuláři** (`VatRecapTable.svelte` s `extended`,
+  komponenta formuláře `docVatRecap`, #150 D86): podrobnější než v detailu
+  a review, ale táž tabulka a tytéž styly. Sloupce Sazba (název kódu DPH,
+  u tuzemského přenesení s předmětem plnění), %, Měna, Základ, DPH, Celkem;
+  čísla vpravo, `tabular-nums`, nezalomená — zalomit se smí jen název
+  sazby. U dokladu v cizí měně je pod řádkem v měně dokladu řádek v domácí
+  měně **barvou textu**, bez čáry mezi nimi; Sazba a % jdou přes oba řádky
+  (`rowspan`), zarovnané nahoru. **Šedá (`--shpd-color-text-secondary`) má
+  v tabulce jediný význam: hodnota, která se nesčítá do součtu dokladu**
+  (přenesená daňová povinnost) — žádné podbarvení řádku, žádná průhlednost.
+  Patička: řádek Celkem strong s čarou nad (jako součtový řádek tabulky),
+  u cizí měny s kurzem běžnou tloušťkou a s řádkem součtu v domácí měně.
+  Pořadové číslo řádku tabulka nemá. Prázdná rekapitulace je blok `empty`.
+  Detail a review zůstávají u kompaktní podoby.
 - **Přílohy**: na konci Přehledu (D8, #136 D21), sdílená
   `DetailAttachments.svelte` nad `detail.attachments.groups` u každého
   vieweru: skupiny s nadpisem `SectionHeading` (kód zprávy jako odkaz,
@@ -1626,19 +1640,35 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
 - **Prostý text**: blok `text` `{text}` — odstavec body, `white-space:
   pre-wrap` a `overflow-wrap: anywhere` (tělo pošty bez HTML, AI shrnutí
   Spisovny).
+- **Nápověda** (#150 D84): blok `hint` `{text}` — odstavec body
+  `--shpd-color-text-secondary`, `white-space: pre-wrap`, bez vnějšího
+  okraje a **bez tučného zvýraznění** (§11 — tučné je jen role nadpisu);
+  cesta v Nastavení se píše prostým textem („Nastavení → Účetnictví → …“).
+  Vysvětlující věta nad poli formuláře (Registrace DPH, Podání DPH); smí ji
+  nést i detail.
 - **Kód**: blok `code` `{text}` — `<pre>` v `--shpd-font-family-mono`,
   velikost meta, pozadí `--shpd-color-bg-secondary`, zaoblení md, odsazení
   sm, dlouhý řádek roluje v bloku (JSON kontextu upozornění).
-- **Backend HTML se vzhledem neposílá** (D30): typ `html` v kontraktu
-  detailu není; všechny typy nesou čistý text a frontend ho vkládá jako
-  text, nikdy `{@html}`. Jediné HTML je `untrusted-html` — tělo e-mailu
-  v sandboxu. Hlídá `DetailContent::TYPES` (unit `DetailContractTest`:
-  žádný PHP zdroj blok `html` neskládá; integrační
-  `ViewerDetailContractTest`: obsah tabů prvního záznamu každého vieweru
-  jen ze známých typů).
-- **Obecný detail i doklad kreslí tytéž komponenty**: `ViewerDetail.svelte`
-  (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`,
-  Odeslaná pošta), `DocumentDetail.svelte` i `DetailAttachments.svelte`
+- **Backend HTML se vzhledem neposílá** (D30, #150 D82): typ `html` není
+  v kontraktu detailu **ani formuláře**; všechny typy nesou čistý text
+  a frontend ho vkládá jako text, nikdy `{@html}`. Jediné HTML je
+  `untrusted-html` — tělo e-mailu v sandboxu. Detail hlídá
+  `DetailContent::TYPES` (unit `DetailContractTest`: žádný PHP zdroj blok
+  `html` neskládá; integrační `ViewerDetailContractTest`: obsah tabů prvního
+  záznamu každého vieweru jen ze známých typů). Formulář nese jednoduchý
+  obsah prvkem `content` s týmiž bloky (`DetailContent::SHARED_TYPES`),
+  rekapitulaci DPH a strany dokladu pojmenovanými komponentami nad
+  sdílenými částmi dokladu; hlídá `FormContractTest` (prvek `html`
+  neexistuje, žádný zdroj formuláře nevolá `->html(`). Globální třídy
+  `.vat-recap*` a `.snapshot*` v `base.css` zanikly. Viz
+  `docs/edit-forms.md` §4.5–4.6.
+- **Obecný detail i doklad kreslí tytéž komponenty**: jednoduché bloky
+  (`properties`, `table`, `heading`, `composite`, `notice`, `badges`,
+  `empty`, `text`, `code`, `hint`) kreslí sdílená
+  `components/content/ContentBlock.svelte` (#150 D83) — v detailu
+  (`ViewerDetail.svelte`, který jí snippetem dodává bloky vázané na viewer)
+  i ve formuláři (prvek `content`); `ViewerDetail.svelte` (Odeslaná pošta),
+  `DocumentDetail.svelte` i `DetailAttachments.svelte`
   používají `SectionHeading` a `PropertyGroups` — každý detail má stejné
   písmo i mezery; obecný typ `table` používá tytéž role. **Sdílené části
   dokladu** (#139 D48): `DocumentDetail.svelte` jen skládá `PartyCard`,
@@ -1781,10 +1811,13 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/document/documentParts.js` | Adaptér detailu dokladu (čisté funkce, `t` parametrem, #139 D48): `detailParty`, `detailRows`, `detailTotals`, `formatAddress`, `rowMetaLine` — jeden tvar dat částí s hotovými texty |
 | `frontend/src/components/document/PartyCard.svelte` | Karta strany dokladu (§12, D50) — `Card`, pořadí D16, snippety `name` / `status` / `bankStatus` / `footer` |
 | `frontend/src/components/document/DocRows.svelte` | Řádky dokladu (§12, D45) — tabulka v `TableScroll`, složený řádek pod `36rem` (pojmenovaný kontejner `doc-rows`), snippety `description` / `below` / `account` / `unit` / `vat` / `meta`, `aside` nadpisu |
-| `frontend/src/components/document/DocTotals.svelte` | Součty dokladu (§12, D52, D55) — rekapitulace DPH v `TableScroll`, souhrn s řádkem Celkem, snippety `before` / `rate` / `after`, `totalTestId` |
+| `frontend/src/components/document/DocTotals.svelte` | Součty dokladu (§12, D52, D55) — rekapitulace DPH (`VatRecapTable` kompaktní), souhrn s řádkem Celkem, snippety `before` / `rate` / `after`, `totalTestId` |
+| `frontend/src/components/document/VatRecapTable.svelte` | Tabulka rekapitulace DPH (§12 Součty, #150 D86) — v `TableScroll`; kompaktní podoba pro detail a review, `extended` pro formulář dokladu (měna, řádky domácí měny, nesčítané hodnoty šedě, patička Celkem) |
+| `frontend/src/components/content/ContentBlock.svelte` | Jeden blok obsahu (§12, #150 D83) — sdílené vykreslení jednoduchých bloků kontraktu `DetailContent` pro detail i prvek formuláře `content`; `composite` rekurzivně, ostatní typy snippetem `other` hostitele |
+| `frontend/src/components/form/FormDocVatRecap.svelte`, `FormDocParties.svelte` | Komponenty formuláře dokladu `docVatRecap` / `docParties` (#150 D85, D86) — rekapitulace DPH a strany dokladu nad `VatRecapTable` a `PartyCard` |
 | `frontend/src/components/ui/PageBanner.svelte` | Pruh nad obsahem (§8 Hlášky a pruhy, D41) — celá šířka, linka 2 px dole, tóny `warning` / `info` / `danger` |
 | `frontend/src/components/viewer/ViewerRow.svelte` | Řádek seznamu se stavovým pruhem |
-| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou (`DetailHeader`), taby, štítky (`Badge`); obecné typy obsahu (`properties`, `heading`, `notice`, `badges`, `empty`, `text`, `code`) sdílenými komponentami a podle rolí (§12); HTML jen `untrusted-html` v sandboxu (D30) |
+| `frontend/src/components/viewer/ViewerDetail.svelte` | Detail s hlavičkou (`DetailHeader`), taby, štítky (`Badge`); obecné typy obsahu kreslí sdílená `ContentBlock` (§12), bloky vázané na viewer (návrh, přílohy, doklad) jí dodává snippetem; HTML jen `untrusted-html` v sandboxu (D30) |
 | `frontend/src/components/viewer/DocumentDetail.svelte` | Detail dokladu — referenční implementace §12: skládá sdílené části dokladu (`PartyCard`, `PropertyGroups`, `DocRows`, `DocTotals`) přes adaptér `documentParts.js`; vlastní jen kořen (container query stran), mřížka stran a odkazy na záznamy |
 | `frontend/src/components/exchange/reviewParts.js` | Adaptér review dokladu a náhledu Spisovny (§12 Review, #139 D49–D53): `counterparty`, `reviewHeader`, `registryHeader`, `reviewParty`, `reviewRows`, `reviewTotals`, `issueNotice`, formátování peněz / data / adresy — canonical → tvar sdílených částí |
 | `frontend/src/components/exchange/DocumentExchangePreview.svelte` | Review dokladu na sdílených částech (§12 Review): stav review (rozhodnutí, značky, popovery, výběr DPH, registr) a snippety do částí; vlastní CSS jen mřížka stran, stavové značky, napárování, kódy, výběr DPH |

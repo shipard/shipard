@@ -410,7 +410,7 @@ Shortcut když nepotřebuješ vlastní labely:
 | `multiselect(col, options: ...)` | json — výběr více hodnot z cfgItem číselníku, hodnota = list; Document dělá `json_encode` v `beforeSave()` |
 | `separator(label: ...)` | — |
 | `lookup(col, table: ...)` | FK na velkou tabulku (viz reference kap. 22) |
-| `html(content: ...)`, `component(name: ...)` | custom HTML / pojmenovaná Svelte komponenta |
+| `content(blocks: [...])`, `component(name: ...)` | obsah jen ke čtení z bloků detailu (nápověda `hint`, text, hláška, vlastnosti — texty přes `formText()`) / pojmenovaná Svelte komponenta. HTML se neposílá — `html()` zanikl (#150 D82) |
 
 ```php
 ->col()

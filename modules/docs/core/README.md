@@ -147,15 +147,16 @@ ve `Viewer.svelte` otevře koncept ve formuláři.
 
 ### Server-driven UI s formuláři
 
-`DocsHeadsForm` výpočty rekapitulace nepošle do form definition jako
-samostatné elementy — místo toho v `buildRecapTab` zavolá
-`renderRecapHtml(...)` a výsledný HTML výstup předá do `addHtml(...)`.
-Frontend ho jen zobrazí. Stejný pattern používá i tab Fakturační údaje.
-
-Výhody: rekapitulace má server-side editovaný render (rozlišení reverse
-charge párů, dvouřádkové zobrazení pro cizí měnu, atd.) bez nutnosti
-frontend custom komponent. Cena: nelze stylování editovat z frontu;
-změna prezentační vrstvy vyžaduje deploy backendu.
+Formulář dokladu HTML neposílá (#150 D82). Tab **Rekapitulace DPH**
+(přepočítaná rekapitulace) je pojmenovaná komponenta `docVatRecap` —
+`DocsHeadsFormBase::buildRecapParams()` pošle hotové texty (řádky sazeb
+s příznaky sčítání, u cizí měny i částky v domácí měně, součet s kurzem)
+a frontend je kreslí sdílenou tabulkou `VatRecapTable` v rozšířené podobě;
+doklad bez rekapitulace má prvek `content` s blokem `empty`. Tab
+**Fakturační údaje** je komponenta `docParties` — zmrazené snapshoty stran
+kreslí `PartyCard` jako detail dokladu. Texty jdou z katalogu
+`docs.core.formTexts` (`TableForm::formText()`). Kontrakt:
+`docs/edit-forms.md` §4.5–4.6, vzhled `docs/design-system.md` §12.
 
 ## Konfigurace
 

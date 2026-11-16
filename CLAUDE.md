@@ -246,6 +246,21 @@ smí názvy nést — tam jsou potřeba k práci.
 - `lookup` element **nelze** umístit do `inline` skupiny.
 - Detailně viz `docs/edit-forms.md` kapitola 22.
 
+### Editační formuláře — obsah jen ke čtení (`content`, ne HTML)
+- Formulář **HTML neposílá** (#150 D82): prvek `html` a `TabBuilder::html()`
+  zanikly, frontend ve formuláři nemá `{@html}`; hlídá `FormContractTest`.
+- Jednoduchý obsah (nápověda, text, hláška, vlastnosti, prázdný stav) =
+  `TabBuilder::content([bloky])` — bloky kontraktu detailu
+  (`DetailContent::SHARED_TYPES`, vč. `hint` = šedá nápověda bez tučného),
+  kreslí je sdílená `components/content/ContentBlock.svelte` jako v detailu.
+  Složitější obsah = pojmenovaná komponenta (`formComponents.js`; formulář
+  dokladu `docVatRecap` nad `VatRecapTable`, `docParties` nad `PartyCard`).
+- Texty těchto prvků jdou z katalogu `<modul>.formTexts` přes
+  `TableForm::formText(katalog, klíč, anglický fallback, params)` — literální
+  argumenty, fallback = holé `name` katalogu (`FormTextsCatalogTest`); názvy
+  tabů a sekcí PHP formulářů zůstávají do #154.
+- Viz `docs/edit-forms.md` §4.5–4.6 a kap. 11, `docs/design-system.md` §12.
+
 ### Editační formuláře — sub-tabulky
 - Tab typu `subtable` (`TableForm::subtableTab()`) zobrazuje child tabulku; **sloupce
   i buňky definuje server** přes `GET /_ui/form/{parentTable}/subtable/{tabId}/{parentId}`
@@ -648,6 +663,7 @@ Lokalizace UI textů, které generuje backend (toolbar tlačítka, taby formulá
 - **AutoFormBuilder General tab**: `core.system.formDefaults.generalTabLabel`
 - **Detail taby vieweru**: `*.viewerDetailLabels.tabs.*` per-modul (`core.system` má sdílený `overview`, ostatní moduly mají specifické klíče). Helper `TableViewer::detailTabLabel()` / `defaultOverviewLabel()`; texty detailu ze sekce `texts` přes `detailText()` (jiná sekce `detailSectionText()` — popisky polí Spisovny `fields`). Plochý katalog `*.viewerLabels` (`{<klíč>: {name}}`, seznamy a detaily Majetku, Zakázek a AI) čte `TableViewer::labelText()` — báze modulu mají jen tenkou `text()`, náhrada `{param}` a anglický fallback jsou v `TableViewer` jednou
 - **Texty viewerů nejsou literály v PHP** (#133 D65–D67): popisek vlastnosti shodný s popiskem sloupce jde z lokalizované definice tabulky přes `TableViewer::columnLabel(sloupec, anglický fallback, ?tabulka)` (`formLabel ?? name`, jako formulář); ostatní texty detailu **i seznamu** (štítky, zástupné texty, prefixy jako celý vzor s parametrem — `"IČO: {value}"`) z katalogu modulu — plochý `*.viewerLabels`, kde ho modul má, jinak `*.viewerDetailLabels` sekce `texts`. Text, který se opakuje ve třech a více modulech (Ano / Ne, „od {date}“, „bez konce“, Identifikace, stavová slova, relativní čas), je jednou v `core.system.viewerDetailLabels` → `texts` a čte ho `TableViewer::sharedText()` / `yesNoText()`. Holé `name` v katalogu = anglická varianta = fallback v PHP znak po znaku. Hlídá `ViewerSourceTextsTest`: žádný literál s českou diakritikou a žádný literál jako popisek (`addItem()`, klíče `'title'` / `'label'` / `'text'`) ve zdrojích viewerů, a žádný dvojjazyčný zápis přímo v PHP — text ve větvi ternáru s podmínkou jazyka (`$cs ? 'česky' : 'anglicky'`) ani pod klíčem `'cs'` / `'en'`; podmínka jazyka smí vybírat jen to, co text není (oddělovač čísla). Texty s počtem se píší bez skloňování („Řádků: {count}“), katalogy nemají ICU
+- **Texty prvků formuláře** (#150 D87): nápovědy, prázdné stavy, hlášky a popisky bloků prvku `content` z katalogu modulu `*.formTexts` (sekce `texts`, tvar jako `*.viewerDetailLabels`) přes `TableForm::formText()`; čtení katalogu sdílí s viewery `Core\I18n\CatalogText`. Názvy tabů, sekcí a oddělovačů PHP formulářů zatím česky natvrdo (#154)
 - **JSONC form titulky/taby**: `JsoncFormLoader::load($lang)` aplikuje `ConfigLocalizer::localize()` rekurzivně na `:cs`/`:en` varianty v `title`, `titleNew`, `tabs[].label`, `elements[].label` (separátory)
 - **Texty karet feedu** (#101 D11): katalog `*.feedTexts` per modul, který kartu vyrábí (`core.mail` / `core.alerts` / `core.exchange`, `config/feedTexts.jsonc`, položka `{text, text:cs, text:en}`), čte `Shipard\Core\Feed\FeedTexts::t(klíč, anglický fallback, params)`. Vzor = ICU MessageFormat jako ve frontendu (plurály `{n, plural, one {# …} few {…} other {…}}`) — uvnitř plurálu **vždy `#`** (PHP intl neumí `{n}` v plurálové větvi), apostrof `''`. Fallback v PHP musí být znak po znaku holé pole katalogu (`FeedTextsCatalogTest` to hlídá). Bez katalogu (DS před `ds-upgrade`) tiše anglicky; warning jen pro chybějící klíč v existujícím katalogu. Viz `docs/dashboard.md` §5
 - **Fallback při chybějícím compiled configu**: anglický řetězec přímo v PHP — lokalizace funguje degradovaně, ne crash
