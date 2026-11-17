@@ -42,6 +42,7 @@
                 "accountingDate":    { "type": ["string", "null"], "format": "date" },
                 "taxPointDate":      { "type": ["string", "null"], "format": "date" },
                 "vatObligationDate": { "type": ["string", "null"], "format": "date" },
+                "vatRateDate":       { "type": ["string", "null"], "format": "date" },
                 "periodFrom":        { "type": ["string", "null"], "format": "date" },
                 "periodTo":          { "type": ["string", "null"], "format": "date" }
             }
@@ -61,7 +62,8 @@
                 "reverseCharge":       { "type": ["boolean", "null"] },
                 "recapSource":         { "enum": ["computed", "declared", null] },
                 "calcSource":          { "enum": ["header", "rows", null] },
-                "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] }
+                "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] },
+                "rateSource":          { "enum": ["auto", "document", "rows", null] }
             }
         },
         "payment": {
@@ -285,7 +287,8 @@
                 "code": { "type": ["string", "null"] },
                 "pct":  { "type": ["number", "null"] },
                 "supplyKind": { "enum": ["goods", "services", null] },
-                "reverseChargeCode": { "type": ["string", "null"] }
+                "reverseChargeCode": { "type": ["string", "null"] },
+                "rateDate": { "type": ["string", "null"], "format": "date" }
             }
         },
         "RowComputed": {
@@ -307,7 +310,8 @@
                 "tax":           { "type": ["number", "null"] },
                 "total":         { "type": ["number", "null"] },
                 "isReversePair": { "type": ["boolean", "null"] },
-                "reverseChargeCode": { "type": ["string", "null"] }
+                "reverseChargeCode": { "type": ["string", "null"] },
+                "rateDate": { "type": ["string", "null"], "format": "date" }
             }
         },
         "Attachment": {

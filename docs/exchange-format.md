@@ -213,6 +213,9 @@ Top-level struktura:
     "accountingDate":    "2026-04-15",
     "taxPointDate":      "2026-04-15",  // DUZP
     "vatObligationDate": "2026-04-15",  // DPPD
+    "vatRateDate":       null,          // vlastní datum sazby DPH dokladu —
+                                        //   jen při vat.rateSource "document"
+                                        //   (#159, viz „Datum sazby DPH“ níže)
     "periodFrom":        null,
     "periodTo":          null
   },
@@ -304,6 +307,18 @@ Top-level struktura:
                                    //   null → auto. Applier auto do payloadu
                                    //   nedává (default sloupce), exporter
                                    //   hodnotu vypisuje vždy (round-trip).
+    "rateSource": "auto"          // auto | document | rows | null
+                                   //   Přepínač „Sazby DPH podle“
+                                   //   (docs_core_heads.vat_rate_source, cfgItem
+                                   //   docs.core.vatRateSources, #159 D11):
+                                   //   k jakému datu se hledá sazba kódů DPH.
+                                   //   auto = DPPD → DUZP → datum vystavení
+                                   //   (opravný doklad: původní plnění),
+                                   //   document = dates.vatRateDate,
+                                   //   rows = rows[].vat.rateDate
+                                   //   a vatRecap[].rateDate. null → auto.
+                                   //   Exporter vypisuje jen document / rows.
+                                   //   Viz „Datum sazby DPH“ níže.
   },
 
   // ── Payment ──────────────────────────────────────────────────────────────
@@ -409,6 +424,14 @@ přenesení **musí** nést (jinak error `reverse_charge_code_missing` /
 oddaňovací pár nese předmět své skupiny, u jiného kódu se ignoruje.
 Exporter ho vyváží; AI extrakce ho nevyplňuje (rekapitulace dodavatele se
 u přenesení nepřebírá).
+
+**`vatRecap[].rateDate`** (nepovinné, #159 D11) — vlastní datum sazby DPH
+řádku rekapitulace při `vat.rateSource: "rows"`; prázdné = automatické datum
+dokladu. Kód a předmět plnění řádku převzaté rekapitulace applier ověřuje
+k tomuto datu, takže doklad smí nést dvě skupiny téhož kódu s různou sazbou
+(vyúčtování záloh zdaněných starou sazbou). Procento skupiny na dokladu je
+vždy sazba z číselníku k datu sazby (`docs/vat-calculation.md` § 5.2);
+`vatPct` ze vstupu slouží dohledání kódu a kontrole konzistence.
 
 **Odvození, když `recapSource` chybí (`null`):** u dokladu, který přijímáme
 (`selfParty: "customer"` — typicky AI extrakce faktury dodavatele), je
@@ -599,6 +622,45 @@ vynechána. Validace polymorfismu je v PHP
 (`DocumentValidator::checkPerDocType()`), JSON Schema definuje jen společnou
 strukturu.
 
+### Datum sazby DPH — `vat.rateSource` a vlastní data (#159 D11)
+
+Procento DPH se na dokladu nezadává: řádek i řádek rekapitulace dostane
+sazbu z číselníku podle kódu a **data sazby** (`docs/vat-calculation.md`
+§ 5.2). Výměnný formát nese přepínač a vlastní data 1:1 se sloupci dokladu:
+
+| canonical | sloupec | význam |
+|---|---|---|
+| `vat.rateSource` | `docs_core_heads.vat_rate_source` | `auto` (0, i `null`) — opravný doklad k datu původního plnění, jinak DPPD (`dates.vatObligationDate`), bez něj DUZP, bez něj datum vystavení; `document` (1) — vlastní datum dokladu; `rows` (2) — vlastní datum na řádcích |
+| `dates.vatRateDate` | `docs_core_heads.vat_rate_date` | datum sazby všech řádků i řádků rekapitulace při `document` |
+| `rows[].vat.rateDate` | `docs_core_rows.vat_rate_date` | datum sazby řádku při `rows`; prázdné = automatika |
+| `vatRecap[].rateDate` | `docs_core_vat_recap.vat_rate_date` | datum sazby řádku převzaté rekapitulace při `rows`; prázdné = automatika |
+
+Applier datum sazby nepočítá vlastním kódem: z canonicalu složí hlavičku
+(`DocumentApplier::vatRateHead()`) a volá `VatRateDates::headDate()` /
+`lineDate()` — totéž pravidlo jako dokument. **K datu sazby řádku** hledá
+kód DPH (odvození, kontrola souladu, volba uživatele), sazbu a platnost
+předmětu plnění, u řádku převzaté rekapitulace k datu řádku rekapitulace
+(§ 8.4). Místo plnění, registrace DPH k datu, neplátce a zařazení do období
+dál čtou `dates.taxPointDate`.
+
+Hodnoty se na doklad jen předají; mazání dat mimo režim a zdroj `auto`
+u nedaňového dokladu a dokladu bez DPH dělá dokument při uložení. Vlastní
+datum mimo svůj režim (`dates.vatRateDate` při `rateSource` ≠ `document`,
+`rows[].vat.rateDate` / `vatRecap[].rateDate` při `rateSource` ≠ `rows`)
+applier ignoruje a hlásí jednou na doklad info **`vat_rate_date_ignored`**.
+
+`vat.pct` řádku zůstává **signálem** pro odvození kódu a kontrolu souladu —
+teď k datu sazby řádku. Přijatá faktura z ledna 2013 s plněním dodavatele
+31. 12. 2012 (`vatObligationDate`) a řádkem `cz-110` 20 % tak kód ponechá;
+dřív končila `vat_code_unknown`. Importní mód nemá výjimku: kód, který
+k datu sazby řádku sazbu nemá, applier nenahrazuje (pokud ho neodvodil
+podle pravidel § 8.4) a doklad odmítne validace dokumentu
+(`vat_rate_missing`).
+
+Exporter (datové sady) vypisuje `vat.rateSource` jen pro `document` / `rows`
+a data jen vyplněná — doklad v automatice se exportuje beze změny. AI
+extrakce pole nevyplňuje (#159 D12), ISDOC je nenese.
+
 ### Opravný daňový doklad — blok `correction`
 
 Opravný doklad (#92, `tasks/corrective-doc-core.md` D1–D5,
@@ -639,11 +701,13 @@ i odvození sazeb DPH běží dřív a čtou je z dat
 v `_resolve.correction` (`status` matched | notFound | ambiguous | none,
 `matchedId`, `matchedBy` pin | number, `docNumber`, `taxPointDate`).
 
-**Datum sazby DPH** (D4): kódy a sazby DPH řádků i rekapitulace se
-u opravného dokladu hledají k datu plnění původního dokladu (z odkazu, jinak
-`originalTaxPointDate`; bez obojího k DUZP jako dnes) — klíč `rateDate`
-ve `vatContext()`. Místo plnění, registrace k datu, období DPH a KH dál
-čtou `taxPointDate` / DUZP opravného dokladu.
+**Datum sazby DPH** (D4): automatické datum sazby opravného dokladu je
+datum plnění původního dokladu (z odkazu, jinak `originalTaxPointDate`; bez
+obojího běžná automatika DPPD → DUZP → datum vystavení) — jedna větev
+pravidla `VatRateDates::automaticDate()`, viz „Datum sazby DPH“ výše.
+Vlastní datum (`vat.rateSource` `document` / `rows`) má přednost i tady.
+Místo plnění, registrace k datu, období DPH a KH dál čtou `taxPointDate` /
+DUZP opravného dokladu.
 
 **Kurz** (D4): u opravného dokladu v cizí měně applier kurz z lístku
 nedoplňuje. S odkazem a shodnou měnou převezme kurz původního dokladu (info
@@ -795,18 +859,26 @@ nebo import mezi dvěma cizími subjekty.
     "code": "cz-110",              // klíč z per-country VAT codes; u přijatého
                                    //   dokladu smí být null — kód odvodí
                                    //   applier ze signálů (§ 8.4)
-    "pct":  21,                    // optional; resolver doplní z code+date
+    "pct":  21,                    // optional; signál pro odvození kódu
+                                   //   a kontrolu souladu — na doklad jde
+                                   //   vždy sazba z číselníku k datu sazby
+                                   //   řádku (#159 D1)
     "supplyKind": null,            // goods | services | null — druh plnění,
                                    //   rozhoduje jen mimo tuzemsko; u přijatého
                                    //   dokladu bez hodnoty ho applier doplní
                                    //   ze štítku řádku (§ 8.4, warning
                                    //   `supply_kind_derived`)
-    "reverseChargeCode": null      // kód předmětu plnění u tuzemského
+    "reverseChargeCode": null,     // kód předmětu plnění u tuzemského
                                    //   přenesení daňové povinnosti ("4"
                                    //   stavební práce, "4a", "5" příloha 5,
                                    //   "14" mobilní telefony … — číselník
                                    //   world.vat reverseChargeSubjects);
                                    //   ukládá se na řádek dokladu (§ 8.4)
+    "rateDate": null               // vlastní datum sazby DPH řádku — jen při
+                                   //   vat.rateSource "rows" (řádek odpočtu
+                                   //   zálohy ve staré sazbě); prázdné =
+                                   //   automatické datum dokladu (#159, § 5
+                                   //   „Datum sazby DPH“)
   },
 
   // Computed (informative)
@@ -960,7 +1032,8 @@ Postup:
 
 ### 8.4 VatCodeResolver
 
-Vstup: `vat.code` string + země registrace + `dates.taxPointDate`.
+Vstup: `vat.code` string + země registrace + **datum sazby řádku**
+(`VatRateDates::lineDate()` — § 5 „Datum sazby DPH“, #159; ne DUZP).
 
 Postup:
 
@@ -1240,10 +1313,20 @@ neodvozuje):
   (viz „Předmět plnění“ níže); sníženou sazbu volí uživatel výběrem kódu
   v náhledu;
 - **tuzemsko bez samovyměření:** kód bez `reverseVatCode`, jehož sazba
-  k DUZP = `pct` řádku (`cz-110`, `cz-111`, `cz-112`; historicky `cz-301`).
+  k datu sazby řádku = `pct` řádku (`cz-110`, `cz-111`, `cz-112`; historicky
+  `cz-301`).
 
 Kód vznikne jen z **právě jednoho** kandidáta. Odvozený kód dostane sazbu
-z číselníku k DUZP — u samovyměření tedy 21, ne 0 z dokladu dodavatele.
+z číselníku k datu sazby řádku — u samovyměření tedy 21, ne 0 z dokladu
+dodavatele.
+
+**Co se řídí datem sazby a co DUZP (#159 U3).** K datu sazby řádku:
+odvození kódu a kontrola souladu, nabídka kódů pro validaci volby
+uživatele, sazba v `createPayload.pct` (shodná s tím, co odvodí dokument),
+platnost předmětu plnění; u řádku převzaté rekapitulace k datu řádku
+rekapitulace. K DUZP (`dates.taxPointDate`, fallback datum vystavení):
+místo plnění (`VatPlaceDerivation`), registrace DPH k datu a neplátce
+(#97), rozhodnutí o samovyměření pro rekapitulaci a zařazení do období.
 
 | vstupní `vat.code` | derivace | výsledek v `_resolve.rows[].vatCode` |
 |---|---|---|
@@ -1252,7 +1335,7 @@ z číselníku k DUZP — u samovyměření tedy 21, ne 0 z dokladu dodavatele.
 | neznámý, nebo v rozporu se signály | kód | odvozený kód + warning `vat_code_derived` (původní hodnota ve zprávě) |
 | neznámý / prázdný | `null` | `notFound` + error `vat_code_unknown` s důvodem a „doklad založ ručně“ (doklad mimo české DPH se k řádkům nedostane — viz výše) |
 | prázdný, bez signálů | — | bez bloku `vatCode` (jako dřív) |
-| libovolný, **volba uživatele** `userAction: "useCode:<kód>"` (#87 task B) | cokoli | zvolený kód, `matchedBy: "user"`, sazba z číselníku k DUZP; kód mimo `_resolve.vatCodeOptions` → `notFound` + error `vat_code_pin_invalid`; v rozporu se signály warning `vat_code_pin_conflict` (volba platí, zpráva nese odvozený kód) |
+| libovolný, **volba uživatele** `userAction: "useCode:<kód>"` (#87 task B) | cokoli | zvolený kód, `matchedBy: "user"`, sazba z číselníku k datu sazby řádku; kód mimo nabídku k datu sazby řádku (`_resolve.vatCodeOptions` je nabídka k datu sazby dokladu) → `notFound` + error `vat_code_pin_invalid`; v rozporu se signály warning `vat_code_pin_conflict` (volba platí, zpráva nese odvozený kód) |
 
 **Předmět plnění u tuzemského přenesení** (#89 D10, D11,
 `tasks/vat-reverse-charge-subjects.md`). U každého položkového řádku, na
@@ -1274,8 +1357,9 @@ per (kód, sazba, předmět). **Nic se tiše nedoplňuje** — ani v importním 
 Volba předmětu jde stejnou mapou rozhodnutí jako kód DPH (#76, #87):
 cesta `rows[i].reverseChargeCode`, akce `useValue:<kód>` — u řádku
 i hromadně. `_resolve.reverseChargeOptions [{code, label}]` = předměty
-platné k datu sazby, jednou na doklad a jen když má některý řádek kód
-přenesení; táž množina volbu validuje. Řádek se stavem `notFound` blokuje
+platné k datu sazby dokladu, jednou na doklad a jen když má některý řádek
+kód přenesení; volbu i předmět z dokladu validuje týž číselník k datu sazby
+řádku (#159). Řádek se stavem `notFound` blokuje
 jednoklikové použití (`reviewGate.js`).
 
 Na doklad se propíše jen ověřený předmět. Blok `reverseChargeCode` se počítá
@@ -1292,8 +1376,9 @@ nezpochybňuje.
 **Volba uživatele** (`tasks/exchange-preview-vat-choices.md`, #87 task B):
 náhled nabízí kódy z `_resolve.vatCodeOptions` — země naší registrace,
 směr `input`, efektivní místo plnění, bez `hidden`, jen se sazbou platnou
-k DUZP, **včetně** kráceného odpočtu a dovozu zboží
-(`VatCodeDerivation::options()`, táž množina validuje volbu). Volba kódu
+k datu sazby dokladu, **včetně** kráceného odpočtu a dovozu zboží
+(`VatCodeDerivation::options()`; táž funkce validuje volbu — u řádku
+s vlastním datem sazby proti nabídce k datu řádku, #159). Volba kódu
 (`rows[i].vatCode.userAction = "useCode:<kód>"`), místa plnění
 (`_resolve.vat.place.userAction = "useValue:domestic|intracom|thirdCountry"`)
 a režimu (`_resolve.vat.mode.userAction = "useValue:fromBase|fromTotal|none"`)
@@ -1597,9 +1682,9 @@ do něj přidávají vlastní bloky bez změny schématu:
   canonical `vat.*` zůstává vstupem.
 - `_resolve.reverseChargeOptions` — nabídka předmětů plnění u tuzemského
   přenesení daňové povinnosti (#89 D12): `[{code, label}]`, předměty
-  číselníku platné k datu sazby; jen když má některý řádek blok
-  `reverseChargeCode`. Stejná množina validuje `useValue:` u
-  `rows[i].reverseChargeCode` (`reverse_charge_code_pin_invalid`).
+  číselníku platné k datu sazby dokladu; jen když má některý řádek blok
+  `reverseChargeCode`. `useValue:` u `rows[i].reverseChargeCode` validuje
+  týž číselník k datu sazby řádku (`reverse_charge_code_pin_invalid`).
 - `_resolve.vatCodeOptions` — nabídka kódů DPH pro ruční volbu řádků
   (#87 task B, D13), jen přijatý doklad na zdroji s registrací DPH.
   Kandidáti k efektivnímu místu a DUZP; stejná množina, proti které
@@ -1672,10 +1757,11 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `reverse_charge_code_missing` | error | Řádek (path `rows.N.vat.reverseChargeCode`) nebo řádek převzaté rekapitulace (`vatRecap.N.reverseChargeCode`) s kódem tuzemského přenesení daňové povinnosti nemá předmět plnění. Blokuje apply i v importním módu — výchozí hodnota neexistuje (#89 D10). |
 | `reverse_charge_code_unknown` | error | Předmět plnění není v číselníku `reverseChargeSubjects` nebo k datu sazby dokladu neplatí; zpráva nese hodnotu. Blokuje apply i v importním módu (#89 D10). |
 | `reverse_charge_code_pin_invalid` | error | Zvolený předmět plnění řádku (`useValue:`) není v `_resolve.reverseChargeOptions` k datu sazby — blokuje apply; vyber jiný (#89 D12). |
-| `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |
+| `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v nabídce kódů k efektivnímu místu a **datu sazby řádku** (`_resolve.vatCodeOptions` je nabídka k datu sazby dokladu; u řádku s vlastním datem se ověřuje nabídka k jeho datu, #159) — blokuje apply; vyber jiný (#87 B). |
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
 | `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce — i u předmětu plnění řádku, kde se čeká `useValue:<kód>`); path dle volby (#87 B, #89 D12). |
 | `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). |
+| `vat_rate_date_ignored` | info | Vlastní datum sazby DPH mimo svůj režim (#159 D11): `dates.vatRateDate` při `vat.rateSource` ≠ `document`, `rows[].vat.rateDate` nebo `vatRecap[].rateDate` při `rateSource` ≠ `rows`. Jedno na doklad, `path` = první výskyt. Applier s datem nepočítá, dokument ho při uložení smaže. |
 | `supply_kind_derived` | warning | Řádek přijatého dokladu mimo tuzemsko bez `vat.supplyKind` — druh plnění doplněn ze štítku řádku (`crossBorderSupply` taxonomie, § 8.4). Zpráva nese název štítku a druh; path `rows.N.vat.supplyKind`. Hlásí se jen, když na doplněném druhu výsledek stojí (odvozený kód nebo `vat_code_unknown`). |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
 | `vat_place_derived` | warning | Místo plnění přijatého dokladu odvozené z prefixu DIČ dodavatele (`VatPlaceDerivation`) se liší od neprázdné hodnoty `vat.place` z AI — použije se odvozené. Zpráva nese obě hodnoty a prefix. |

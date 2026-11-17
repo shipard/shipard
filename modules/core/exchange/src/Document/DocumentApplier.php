@@ -28,6 +28,7 @@ use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Docs\Core\RoundingModes;
 use Shipard\Module\Docs\Core\TotalRoundingAuto;
+use Shipard\Module\Docs\Core\VatRateDates;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
@@ -113,6 +114,16 @@ class DocumentApplier
     private const VAT_RECAP_SOURCE_MAP = [
         'computed' => 0,
         'declared' => 1,
+    ];
+
+    /**
+     * Canonical `vat.rateSource` → docs_core_heads.vat_rate_source
+     * (cfgItem docs.core.vatRateSources, #159 D11). Chybí / null = auto.
+     */
+    private const VAT_RATE_SOURCE_MAP = [
+        'auto'     => VatRateDates::SOURCE_AUTO,
+        'document' => VatRateDates::SOURCE_DOCUMENT,
+        'rows'     => VatRateDates::SOURCE_ROWS,
     ];
 
     /**
@@ -394,6 +405,7 @@ class DocumentApplier
         $this->appendAuthorIssue($canonical, $issues);
         $this->appendVatModeIssue($canonical, $issues);
         $this->appendVatHeaderIssues($canonical, $issues);
+        $this->appendVatRateDateIssue($canonical, $issues);
         $this->appendRecapSourceIssue($canonical, $issues, $rowSkips);
         $this->appendExchangeRateIssue($canonical, $issues);
         $this->appendCorrectionIssues($canonical, $issues);
@@ -649,6 +661,7 @@ class DocumentApplier
         $this->appendAuthorIssue($canonical, $validatorIssues);
         $this->appendVatModeIssue($canonical, $validatorIssues);
         $this->appendVatHeaderIssues($canonical, $validatorIssues);
+        $this->appendVatRateDateIssue($canonical, $validatorIssues);
         $this->appendRecapSourceIssue($canonical, $validatorIssues, $rowSkips);
         $this->appendExchangeRateIssue($canonical, $validatorIssues);
         $this->appendCorrectionIssues($canonical, $validatorIssues);
@@ -1722,6 +1735,11 @@ class DocumentApplier
             'accounting_date'      => $accountingDate,
             'vat_duzp'             => $taxDocument ? ($canonical['dates']['taxPointDate'] ?? null) : null,
             'vat_dppd'             => $taxDocument ? ($canonical['dates']['vatObligationDate'] ?? null) : null,
+            // Datum sazby DPH (#159 D11, U4): přepínač a vlastní datum se jen
+            // předají — mazání podle režimu a zdroj 0 u nedaňového dokladu
+            // a dokladu bez DPH dělá dokument (VatRateDates::normalizeHead).
+            VatRateDates::SOURCE_COLUMN => $vatCtx['rateHead'][VatRateDates::SOURCE_COLUMN],
+            VatRateDates::COLUMN   => $vatCtx['rateHead'][VatRateDates::COLUMN],
             'period_from'          => $canonical['dates']['periodFrom'] ?? null,
             'period_to'            => $canonical['dates']['periodTo'] ?? null,
             // Otevírací / uzávěrkové období (#69 D20) — jen import mód;
@@ -1970,6 +1988,8 @@ class DocumentApplier
      *   ownCountry: ?string,
      *   ownRegistrationId: ?int,
      *   taxPointDate: ?string,
+     *   rateDate: ?string,
+     *   rateHead: array<string, mixed>,
      *   place: ?string,
      *   placeSource: ?string,
      *   placePrefix: ?string,
@@ -2005,6 +2025,10 @@ class DocumentApplier
         // kontext jiného dokladu / bez fallbacku / bez pinu.
         $key = md5((string) json_encode([
             $canonical['selfParty'] ?? null,
+            // Typ dokladu (#159): nedaňový typ má vždy automatické datum sazby
+            // k datu vystavení — zálohová faktura a faktura se stejnými daty
+            // a řádky by jinak sdílely kontext.
+            $canonical['docType'] ?? null,
             $canonical['vat'] ?? null,
             $canonical['dates'] ?? null,
             // Opravný doklad (#92): datum sazby závisí na bloku a pinu.
@@ -2032,19 +2056,12 @@ class DocumentApplier
             return $this->vatContextCache['ctx'];
         }
 
+        // Dvě data (#159 D11): `taxPointDate` (DUZP, fallback datum vystavení)
+        // řídí místo plnění, registraci k datu, neplátce a období; kód DPH,
+        // sazbu a předmět plnění řídí datum sazby — `rateHead` je hlavička
+        // pro VatRateDates, `rateDate` datum sazby dokladu, datum řádku dává
+        // {@see lineRateDate()}. Obojí se plní níž, až je známá větev derive.
         $taxPointDate = $canonical['dates']['taxPointDate'] ?? ($canonical['dates']['issueDate'] ?? null);
-        // Datum sazby DPH (#92 D4, task B U4): u opravného dokladu datum plnění
-        // původního dokladu (z odkazu, jinak correction.originalTaxPointDate),
-        // jinak DUZP. Mezistav do tasku B (#159 U12): dokument procento
-        // při uložení přepočítá k datu sazby (VatRateDates — DPPD před DUZP).
-        // Místo plnění a registrace k datu dál čtou taxPointDate.
-        $rateDate = $taxPointDate;
-        $correction = $this->correctionDecision($canonical);
-        if ($correction !== null && $correction['supported']) {
-            $rateDate = $correction['originalDate']
-                ?? self::dateText($canonical['correction']['originalTaxPointDate'] ?? null)
-                ?? $taxPointDate;
-        }
         $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
         $inputPlace = is_string($vat['place'] ?? null) ? $vat['place'] : null;
         $ctx = [
@@ -2056,7 +2073,8 @@ class DocumentApplier
             'ownCountry'        => null,
             'ownRegistrationId' => null,
             'taxPointDate'      => is_string($taxPointDate) && $taxPointDate !== '' ? $taxPointDate : null,
-            'rateDate'          => is_string($rateDate) && $rateDate !== '' ? $rateDate : null,
+            'rateDate'          => null,
+            'rateHead'          => [],
             'place'             => $inputPlace,
             'placeSource'       => $inputPlace !== null ? 'ai' : null,
             'placePrefix'       => null,
@@ -2078,6 +2096,10 @@ class DocumentApplier
                 $ctx['nonPayer'] = true;
             }
         }
+
+        // Volba režimu platí jen ve větvi derive (D9, #87 B) — proto až tady.
+        $ctx['rateHead'] = $this->vatRateHead($canonical, $ctx['derive'] ? $pins['mode'] : null);
+        $ctx['rateDate'] = VatRateDates::headDate($ctx['rateHead'], $this->config);
 
         if ($ctx['derive']) {
             // Místo plnění před kódem — kód na místu závisí (cz-217 vs cz-417)
@@ -2132,12 +2154,20 @@ class DocumentApplier
 
         if ($ctx['derive']) {
             // Nabídka kódů pro ruční volbu (D13) — až po konečném místě;
-            // táž množina validuje piny v decideRowVatCode() (jedna funkce,
-            // jinak by UI nabídlo a server odmítl). Bez DUZP není z čeho.
-            $ctx['codeOptions'] = $ctx['taxPointDate'] !== null
-                ? $this->vatCodeDerivation->options((string) $ctx['ownCountry'], $ctx['taxPointDate'], $ctx['place'])
-                : [];
+            // táž funkce validuje piny v decideRowVatCode() (jinak by UI
+            // nabídlo a server odmítl). Klient dostává nabídku k datu sazby
+            // dokladu, pin řádku se ověřuje proti nabídce k datu sazby
+            // **řádku** (#159 U3) — nabídky per datum. Bez data není z čeho.
             $place = $ctx['place'];
+            $ownCountry = (string) $ctx['ownCountry'];
+            $optionsByDate = [];
+            $optionsAt = function (?string $date) use (&$optionsByDate, $ownCountry, $place): array {
+                if ($date === null) {
+                    return [];
+                }
+                return $optionsByDate[$date] ??= $this->vatCodeDerivation->options($ownCountry, $date, $place);
+            };
+            $ctx['codeOptions'] = $optionsAt($ctx['rateDate']);
             $reverseCharge = is_bool($vat['reverseCharge'] ?? null) ? $vat['reverseCharge'] : null;
             // Doklad bez DPH (`vat.mode` none — dodavatel neplátce): řádky
             // nemají sazbu a v tuzemsku jim patří kód bez daně (cz-112),
@@ -2153,15 +2183,17 @@ class DocumentApplier
                 if ($noVat && !isset($rowVat['pct'])) {
                     $rowVat['pct'] = 0;
                 }
+                // Odvození, soulad i pin k datu sazby řádku (#159 U3).
+                $rowRateDate = $this->lineRateDate($ctx, $rowVat['rateDate'] ?? null);
                 $decisions[(int) $idx] = $this->decideRowVatCode(
-                    (string) $ctx['ownCountry'],
-                    $ctx['taxPointDate'],
+                    $ownCountry,
+                    $rowRateDate,
                     $place,
                     $reverseCharge,
                     $rowVat,
                     $kinds['rows'][(int) $idx] ?? self::NO_SUPPLY_KIND,
                     $pins['rows'][(int) $idx] ?? null,
-                    $ctx['codeOptions'],
+                    $optionsAt($rowRateDate),
                 );
             }
             // #89 D2–D4: doklad mimo české DPH — kódy řádků se nerozhodují
@@ -2597,9 +2629,10 @@ class DocumentApplier
      * @param array<string, mixed> $rowVat canonical `rows[].vat`
      * @param array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string, specialSource: ?string, item: ?string, ambiguous: bool} $kind
      *        efektivní druh plnění řádku ({@see effectiveSupplyKinds()})
+     * @param string|null $date    datum sazby řádku ({@see lineRateDate()}, #159 U3) — ne DUZP
      * @param string|null $pinned  kód zvolený uživatelem (`useCode:`), {@see vatPins()}
      * @param list<array{code: string, label: string, pct: float, reverseCharge: bool, reducedDeduction: bool, supplyKind: ?string}> $options
-     *        nabídka kódů k efektivnímu místu a DUZP (D13) — jediná platná množina pinů
+     *        nabídka kódů k efektivnímu místu a datu sazby řádku (D13) — jediná platná množina pinů
      * @return array{
      *   input: string, derived: ?string, reason: ?string,
      *   effective: ?string, matchedBy: ?string,
@@ -2640,7 +2673,7 @@ class DocumentApplier
                 $supplyKind,
                 $kind['tagSupply'],
             )
-            : ['code' => null, 'reason' => 'doklad nemá DUZP ani datum vystavení', 'kind' => null];
+            : ['code' => null, 'reason' => 'doklad nemá datum, ke kterému by se určila sazba DPH', 'kind' => null];
 
         $out = [
             'input'            => $input,
@@ -2808,8 +2841,9 @@ class DocumentApplier
     ): ?array {
         $rowVat = is_array($row['vat'] ?? null) ? $row['vat'] : [];
         $pct = isset($rowVat['pct']) && is_numeric($rowVat['pct']) ? (float) $rowVat['pct'] : null;
-        // Sazba k datu sazby (opravný doklad = původní plnění, #92 D4).
-        $date = $vatCtx['rateDate'];
+        // Sazba k datu sazby řádku (#159 U3; opravný doklad = původní plnění,
+        // #92 D4) — totéž datum, ke kterému procento odvodí dokument (D1).
+        $date = $this->lineRateDate($vatCtx, $rowVat['rateDate'] ?? null);
         $decision = $vatCtx['rows'][$idx] ?? null;
 
         if ($decision === null) {
@@ -2912,9 +2946,9 @@ class DocumentApplier
             }
             return $notFound;
         }
-        // Odvozený i zvolený kód dostane sazbu z číselníku k DUZP (D4; #87 B
-        // D10) — `pct` z dokladu dodavatele (u samovyměření 0) se u nich
-        // nepoužije ani jako fallback.
+        // Odvozený i zvolený kód dostane sazbu z číselníku k datu sazby řádku
+        // (D4; #87 B D10) — `pct` z dokladu dodavatele (u samovyměření 0) se
+        // u nich nepoužije ani jako fallback.
         $fromCodebook = in_array($decision['matchedBy'], ['derived', 'user'], true);
         $resolved = $this->vatCodeResolver
             ->resolve($decision['effective'], $vatCountry, $date, $fromCodebook ? null : $pct)
@@ -2951,7 +2985,7 @@ class DocumentApplier
      * Bez DPH.
      *
      * Předmět se bere z `rows[].vat.reverseChargeCode` a ověřuje proti
-     * číselníku k datu sazby; chybějící (`reverse_charge_code_missing`) ani
+     * číselníku k datu sazby řádku; chybějící (`reverse_charge_code_missing`) ani
      * neznámý (`reverse_charge_code_unknown`) se nedoplňuje — error, který
      * blokuje apply i v importním módu.
      *
@@ -2984,11 +3018,13 @@ class DocumentApplier
         }
         $country = $this->vatCountryForCode($code, $vatCountry, $supplierCountry);
         $country = $country !== '' ? $country : $vatCountry;
-        $date = is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null;
+        // Platnost předmětu k datu sazby řádku (#159 U3).
+        $date = $this->lineRateDate($vatCtx, $row['vat']['rateDate'] ?? null);
 
         // D12: volba uživatele má přednost před dokladem. Platí jen předmět
-        // z nabídky (`reverseChargeOptions` — číselník platný k datu sazby);
-        // volba mimo nabídku je error a předmět z dokladu ji nenahradí.
+        // z číselníku platný k datu sazby řádku (klient dostává nabídku
+        // `reverseChargeOptions` k datu sazby dokladu); volba mimo je error
+        // a předmět z dokladu ji nenahradí.
         $pinned = $vatCtx['pins']['subjects'][$idx] ?? null;
         if ($pinned !== null) {
             $decision = $this->vatCodeDerivation->reverseChargeSubject($country, $code, $date, $pinned);
@@ -3208,6 +3244,115 @@ class DocumentApplier
         }
     }
 
+    // ── Datum sazby DPH (#159 D11, tasks/vat-rate-date-exchange.md) ─────────
+
+    /**
+     * Hlavička dokladu ve tvaru, který čte {@see VatRateDates} — applier
+     * datum sazby nepočítá vlastním kódem (U2). DUZP a DPPD jen u daňového
+     * typu a příznak s datem opravy z {@see correctionColumns()}, tedy tytéž
+     * hodnoty, které do dokladu pošle {@see transform()}.
+     *
+     * `vat_mode` rozhoduje jen o tom, zda přepínač platí (doklad bez DPH má
+     * vždy automatiku): volba uživatele, jinak režim dokladu
+     * ({@see documentVatMode()}). Konečný režim ({@see effectiveVatMode()})
+     * závisí na rozhodnutích o kódech řádků a ta na datu sazby — proto odhad.
+     * Rozejde se jen u dokladu „Bez DPH“, který ochrana samovyměření přepne
+     * na výpočet zdola a který zároveň nese vlastní data sazby: applier tam
+     * hledá k automatickému datu, dokument k vlastnímu.
+     *
+     * @param array<string, mixed> $canonical
+     * @param string|null $pinnedMode volba režimu DPH (jen větev derive)
+     * @return array<string, mixed>
+     */
+    private function vatRateHead(array $canonical, ?string $pinnedMode): array
+    {
+        $docType = $this->mapDocType($canonical);
+        $taxDocument = DocTypes::isTaxDocument($this->config, $docType);
+        $dates = is_array($canonical['dates'] ?? null) ? $canonical['dates'] : [];
+        $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
+        $source = $vat['rateSource'] ?? null;
+        $correction = $this->correctionColumns($canonical);
+        return [
+            'doc_type'                  => $docType,
+            'vat_mode'                  => self::VAT_MODE_MAP[$pinnedMode ?? $this->documentVatMode($canonical)['mode']],
+            VatRateDates::SOURCE_COLUMN => is_string($source)
+                ? (self::VAT_RATE_SOURCE_MAP[$source] ?? VatRateDates::SOURCE_AUTO)
+                : VatRateDates::SOURCE_AUTO,
+            VatRateDates::COLUMN        => self::dateText($dates['vatRateDate'] ?? null),
+            'vat_dppd'                  => $taxDocument ? self::dateText($dates['vatObligationDate'] ?? null) : null,
+            'vat_duzp'                  => $taxDocument ? self::dateText($dates['taxPointDate'] ?? null) : null,
+            'issue_date'                => self::dateText($dates['issueDate'] ?? null),
+            'corrective'                => $correction['corrective'] ?? 0,
+            'corrected_doc_date'        => $correction['corrected_doc_date'] ?? null,
+        ];
+    }
+
+    /**
+     * Datum sazby řádku dokladu nebo řádku rekapitulace
+     * ({@see VatRateDates::lineDate()}): při zdroji „na řádcích“ vlastní
+     * datum řádku, prázdné = automatika; jinak datum sazby dokladu. Datum
+     * mimo režim pravidlo samo ignoruje (U5).
+     *
+     * @param array<string, mixed> $vatCtx {@see vatContext()} — stačí `rateHead`
+     * @param mixed $ownDate `rows[].vat.rateDate` / `vatRecap[].rateDate`
+     */
+    private function lineRateDate(array $vatCtx, mixed $ownDate): ?string
+    {
+        return VatRateDates::lineDate(
+            $vatCtx['rateHead'],
+            [VatRateDates::COLUMN => self::dateText($ownDate)],
+            $this->config,
+        );
+    }
+
+    /**
+     * U5: vlastní datum sazby mimo svůj režim — `dates.vatRateDate` při
+     * `vat.rateSource` ≠ `document`, `rows[].vat.rateDate` nebo
+     * `vatRecap[].rateDate` při `rateSource` ≠ `rows`. Jedno info na doklad
+     * s cestou k prvnímu výskytu; applier s datem nepočítá a dokument ho při
+     * uložení smaže. Posuzuje se hodnota z canonicalu — přepínač, který
+     * dokument vrátí na automatiku sám (nedaňový doklad, doklad bez DPH),
+     * se nehlásí.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function appendVatRateDateIssue(array $canonical, array &$issues): void
+    {
+        $source = $canonical['vat']['rateSource'] ?? null;
+        $source = is_string($source) && isset(self::VAT_RATE_SOURCE_MAP[$source]) ? $source : 'auto';
+        $path = null;
+        if ($source !== 'document' && self::dateText($canonical['dates']['vatRateDate'] ?? null) !== null) {
+            $path = 'dates.vatRateDate';
+        }
+        if ($path === null && $source !== 'rows') {
+            foreach ((array) ($canonical['rows'] ?? []) as $idx => $row) {
+                if (is_array($row) && is_array($row['vat'] ?? null) && self::dateText($row['vat']['rateDate'] ?? null) !== null) {
+                    $path = "rows.{$idx}.vat.rateDate";
+                    break;
+                }
+            }
+        }
+        if ($path === null && $source !== 'rows') {
+            foreach ((array) ($canonical['vatRecap'] ?? []) as $idx => $entry) {
+                if (is_array($entry) && self::dateText($entry['rateDate'] ?? null) !== null) {
+                    $path = "vatRecap.{$idx}.rateDate";
+                    break;
+                }
+            }
+        }
+        if ($path === null) {
+            return;
+        }
+        $label = ['auto' => 'automaticky', 'document' => 'vlastní datum dokladu', 'rows' => 'vlastní datum na řádcích'][$source];
+        $issues[] = [
+            'severity' => 'info',
+            'path'     => $path,
+            'code'     => 'vat_rate_date_ignored',
+            'message'  => "Datum sazby DPH se nepoužije — doklad má sazby DPH podle „{$label}“ (vat.rateSource).",
+        ];
+    }
+
     /**
      * Název místa plnění pro zprávu issue z cfgItem `docs.core.vatPlaces`
      * (`name:cs` v surové, `name` v kompilované konfiguraci — zprávy
@@ -3319,8 +3464,6 @@ class DocumentApplier
             ? (string) $vatCtx['ownCountry']
             : strtolower((string) ($canonical['vat']['registrationCountry'] ?? ''));
         $supplierCountry = strtolower((string) ($canonical['supplier']['country'] ?? ''));
-        // Sazba rekapitulace k datu sazby (opravný doklad = původní plnění, #92 D4).
-        $taxPointDate = $vatCtx['rateDate'];
         $recap = [];
         $subjectIssues = [];
         foreach ($entries as $position => $entry) {
@@ -3328,6 +3471,9 @@ class DocumentApplier
                 continue;
             }
             $pct = (float) ($entry['vatPct'] ?? 0);
+            // Kód i předmět k datu sazby řádku rekapitulace (#159 U3; opravný
+            // doklad = původní plnění, #92 D4).
+            $rateDate = $this->lineRateDate($vatCtx, $entry['rateDate'] ?? null);
             $code = trim((string) ($entry['vatCode'] ?? ''));
             if ($code === '') {
                 // I7: ISDOC rekapitulaci kódy nenese — dohledáme je z řádků,
@@ -3347,7 +3493,7 @@ class DocumentApplier
             $codeR = $this->vatCodeResolver->resolve(
                 $code,
                 $country !== '' ? $country : null,
-                is_string($taxPointDate) ? $taxPointDate : null,
+                $rateDate,
                 $pct,
             );
             if ($codeR->status === ResolveStatus::NotFound) {
@@ -3376,6 +3522,12 @@ class DocumentApplier
                 'total'           => round((float) ($entry['total'] ?? 0), 2),
                 'is_reverse_pair' => ($entry['isReversePair'] ?? null) === true ? 1 : 0,
             ];
+            // Vlastní datum sazby řádku (#159 U4) se jen předá — mimo režim
+            // „na řádcích“ ho dokument při uložení smaže.
+            $ownRateDate = self::dateText($entry['rateDate'] ?? null);
+            if ($ownRateDate !== null) {
+                $recap[array_key_last($recap)][VatRateDates::COLUMN] = $ownRateDate;
+            }
             // Předmět plnění tuzemského přenesení (#89 D10): přebírá se ze
             // vstupu, nic se nedoplňuje — chybějící nebo neznámý je chyba
             // i v importním módu. Oddaňovací pár nese předmět skupiny, sám
@@ -3389,7 +3541,7 @@ class DocumentApplier
             $decision = $this->vatCodeDerivation->reverseChargeSubject(
                 $country !== '' ? $country : $vatCountry,
                 $code,
-                is_string($taxPointDate) ? $taxPointDate : null,
+                $rateDate,
                 $subject,
             );
             if (!$decision['applies']) {
@@ -3400,7 +3552,7 @@ class DocumentApplier
                 $subjectIssues[] = self::reverseChargeCodeIssue(
                     'vatRecap.' . $position . '.reverseChargeCode',
                     $decision,
-                    is_string($taxPointDate) ? $taxPointDate : null,
+                    $rateDate,
                     "Rekapitulace DPH, řádek {$code}: ",
                 );
             }
@@ -4521,6 +4673,8 @@ class DocumentApplier
                 'discount_amount' => $gross !== null ? null : ($row['discountAmount'] ?? null),
                 'vat_code'        => $vatCode,
                 'vat_pct'         => $vatPct,
+                // Vlastní datum sazby řádku (#159 U4) — jen se předá.
+                VatRateDates::COLUMN => self::dateText($row['vat']['rateDate'] ?? null),
                 'reverse_charge_code' => $reverseChargeCode,
                 // Text řádku skládá výhradně CanonicalRowText (#84 D1/D2):
                 // top-level description první (účetní doklad, export), jinak
@@ -5140,9 +5294,10 @@ class DocumentApplier
         if ($vatCtx['derive']) {
             $resolved['vatCodeOptions'] = $vatCtx['codeOptions'];
         }
-        // Nabídka předmětů plnění (#89 D12) — jednou na doklad, jen když má
-        // některý řádek kód tuzemského přenesení (blok `reverseChargeCode`).
-        // Táž množina validuje volbu v resolveRowReverseChargeCode().
+        // Nabídka předmětů plnění (#89 D12) — jednou na doklad k datu sazby
+        // dokladu, jen když má některý řádek kód tuzemského přenesení (blok
+        // `reverseChargeCode`). Volbu validuje resolveRowReverseChargeCode()
+        // týmž číselníkem k datu sazby řádku (#159 U3).
         foreach ($resolved['rows'] ?? [] as $rowResolve) {
             if (!is_array($rowResolve) || !isset($rowResolve['reverseChargeCode'])) {
                 continue;

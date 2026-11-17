@@ -325,6 +325,13 @@
                                                     ],
                                                     "format": "date"
                                                 },
+                                                "vatRateDate": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "date"
+                                                },
                                                 "periodFrom": {
                                                     "type": [
                                                         "string",
@@ -411,6 +418,14 @@
                                                         "detail",
                                                         "aggregate",
                                                         "exclude",
+                                                        null
+                                                    ]
+                                                },
+                                                "rateSource": {
+                                                    "enum": [
+                                                        "auto",
+                                                        "document",
+                                                        "rows",
                                                         null
                                                     ]
                                                 }
@@ -1062,6 +1077,13 @@
                                                         "string",
                                                         "null"
                                                     ]
+                                                },
+                                                "rateDate": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "date"
                                                 }
                                             }
                                         },
@@ -1137,6 +1159,13 @@
                                                         "string",
                                                         "null"
                                                     ]
+                                                },
+                                                "rateDate": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "date"
                                                 }
                                             }
                                         },

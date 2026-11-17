@@ -89,6 +89,10 @@
                 "accountingDate":    { "type": ["string", "null"], "format": "date" },
                 "taxPointDate":      { "type": ["string", "null"], "format": "date" },
                 "vatObligationDate": { "type": ["string", "null"], "format": "date" },
+                // Vlastní datum sazby DPH dokladu (#159 D11) — platí jen při
+                // `vat.rateSource: "document"`, jinak se ignoruje (info
+                // `vat_rate_date_ignored`). Pravidla: VatRateDates (docs.core).
+                "vatRateDate":       { "type": ["string", "null"], "format": "date" },
                 "periodFrom":        { "type": ["string", "null"], "format": "date" },
                 "periodTo":          { "type": ["string", "null"], "format": "date" }
             }
@@ -146,7 +150,16 @@
                 // "auto" podle limitu 10 000 Kč, "detail" vždy A4/B2,
                 // "aggregate" vždy A5/B3, "exclude" mimo hlášení. Hodnoty
                 // 1:1 se starým vatCS 0–3; null → auto.
-                "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] }
+                "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] },
+
+                // Přepínač „Sazby DPH podle“ (docs.core.vatRateSources, sloupec
+                // vat_rate_source, #159 D11): k jakému datu se hledá sazba kódu
+                // DPH řádků a řádků rekapitulace. "auto" = opravný doklad
+                // k datu původního plnění, jinak DPPD → DUZP → datum vystavení;
+                // "document" = `dates.vatRateDate`; "rows" = `rows[].vat.rateDate`
+                // a `vatRecap[].rateDate`, prázdné = automatika. null → auto.
+                // Jediné místo pravidel je VatRateDates (docs.core).
+                "rateSource":          { "enum": ["auto", "document", "rows", null] }
             }
         },
 
@@ -465,7 +478,11 @@
                 // povinnosti ("4" stavební práce, "4a", "5" příloha 5, "14"
                 // mobilní telefony … — číselník world.vat reverseChargeSubjects).
                 // Ukládá se na řádek dokladu (#89 D10).
-                "reverseChargeCode": { "type": ["string", "null"] }
+                "reverseChargeCode": { "type": ["string", "null"] },
+                // Vlastní datum sazby DPH řádku (#159 D11) — platí jen při
+                // `vat.rateSource: "rows"`; prázdné = automatické datum
+                // dokladu (VatRateDates::lineDate).
+                "rateDate": { "type": ["string", "null"], "format": "date" }
             }
         },
 
@@ -493,7 +510,10 @@
                 // Předmět plnění skupiny u tuzemského přenesení daňové
                 // povinnosti (#89 D10) — nepovinné; vyváží ho exporter,
                 // AI extrakce ho nevyplňuje.
-                "reverseChargeCode": { "type": ["string", "null"] }
+                "reverseChargeCode": { "type": ["string", "null"] },
+                // Vlastní datum sazby DPH řádku rekapitulace (#159 D11) —
+                // jen při `vat.rateSource: "rows"`, jako `rows[].vat.rateDate`.
+                "rateDate": { "type": ["string", "null"], "format": "date" }
             }
         },
 
