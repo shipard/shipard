@@ -1,0 +1,30 @@
+{
+    // docs.core.vatRateSources
+    //
+    // K jakému datu se hledají sazby DPH dokladu (#159 D2–D5,
+    // docs/vat-calculation.md → Datum sazby DPH). Procento řádku ani řádku
+    // rekapitulace se nezadává — vždy se odvodí z kódu DPH a data sazby:
+    //   0 = automaticky — opravný doklad k datu plnění původního dokladu,
+    //       jinak DPPD, bez něj DUZP, bez něj datum vystavení
+    //   1 = vlastní datum dokladu (`docs_core_heads.vat_rate_date`) pro
+    //       všechny řádky i řádky převzaté rekapitulace
+    //   2 = vlastní datum na řádcích (`vat_rate_date` řádku dokladu a řádku
+    //       rekapitulace); prázdné = automatika
+    // Pravidla drží na jednom místě `VatRateDates` (docs.core).
+
+    "0": {
+        "name": "Automatic (VAT obligation date)",
+        "name:cs": "Automaticky (DPPD)",
+        "name:en": "Automatic (VAT obligation date)"
+    },
+    "1": {
+        "name": "Document date",
+        "name:cs": "Vlastní datum dokladu",
+        "name:en": "Document date"
+    },
+    "2": {
+        "name": "Date per row",
+        "name:cs": "Vlastní datum na řádcích",
+        "name:en": "Date per row"
+    }
+}

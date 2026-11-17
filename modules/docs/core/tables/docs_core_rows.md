@@ -38,7 +38,8 @@ nebo druhý, druhý se dopočte v Fázi 2 výpočtu řádku.
 |---|---|---|
 | `vat_code` | varchar(20), nullable | Kód DPH (např. `cz-110`). Bez fixního cfgItem — odvozuje se z `vat_registration` na hlavičce dynamicky. Pole se chová jako volný string s enforcementem na úrovni aplikace |
 | `reverse_charge_code` | varchar(3), nullable | Předmět plnění u tuzemského přenesení daňové povinnosti (`4`, `4a`, `14` … z `world.vat.{country}.reverseChargeSubjects`). Jen u kódu DPH s příznakem `reverseCharge`; u jiného kódu se při uložení nuluje (#89 D7) |
-| `vat_pct` | numeric(5,2) | Resolvované procento (z `world.vat.{country}.vatPercents` podle DUZP) |
+| `vat_pct` | numeric(5,2) | Procento odvozené z kódu DPH a data sazby řádku (`world.vat.{country}.vatPercents`, `VatRateDates`) — nezadává se (#159 D1) |
+| `vat_rate_date` | date, nullable | Vlastní datum sazby DPH řádku — jen při `vat_rate_source` hlavičky = 2, prázdné = automatika dokladu; jinak NULL (#159 D5, D6) |
 
 `vat_code` je v Phase 1 schválně `varchar` místo `enumString` — framework
 vyžaduje fixní cfgItem u enumString, kdežto zde se cfgItem volí podle státu

@@ -195,6 +195,17 @@ potvrzené jako D15):
   kde DPPD a DUZP leží na různých stranách změny sazby, může kód zvolený
   applierem k DUZP k DPPD sazbu nemít → chyba při potvrzení. Vyřeší task B
   (applier k datu sazby); v datech dnes takový doklad z pošty není.
+- **U13 — DPPD následuje DUZP u dokladu směru prodej** (potvrzeno při
+  plánování implementace 2026-11-17). `applyDateDefaults` doplňuje DPPD jen
+  prázdné a formulář faktury vydané, prodejky ani příjmového pokladního
+  dokladu ho neukazuje — po změně DUZP zůstalo staré a automatika (D3) by
+  brala sazbu k datu, které uživatel nevidí. Na dev zdrojích takové doklady
+  jsou (jednotky až nízké desítky na zdroj). Pravidlo
+  `VatRateDates::followObligationDate()`: u daňového dokladu směru prodej
+  DPPD následuje změnu DUZP, pokud ho v uloženém dokladu sledovalo (obě data
+  shodná) a payload ho sám nemění; odlišné DPPD z importu zůstává. Přijatého
+  dokladu se netýká — tam je DPPD viditelný samostatný údaj. Běží ve
+  `validate()` i `beforeSave()`.
 
 ## Co je potřeba udělat
 

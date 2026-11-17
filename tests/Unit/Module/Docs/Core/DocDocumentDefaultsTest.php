@@ -165,6 +165,38 @@ class DocDocumentDefaultsTest extends TestCase
         $this->assertSame('2026-05-20', $data['due_date']);
     }
 
+    // ── DPPD následuje DUZP u dokladu směru prodej (#159 U13) ───────────────
+
+    public function testIssuedInvoiceDppdFollowsChangedDuzp(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setConfig($this->configWithProforma());
+        $original = ['vat_duzp' => '2024-01-05', 'vat_dppd' => '2024-01-05'];
+
+        $data = ['doc_type' => 'invno', 'vat_duzp' => '2023-12-20', 'vat_dppd' => '2024-01-05'];
+        $doc->followVatObligationDatePub($data, $original);
+        $this->assertSame('2023-12-20', $data['vat_dppd'], 'formulář DPPD neukazuje — následuje DUZP');
+
+        $new = ['doc_type' => 'invno', 'vat_duzp' => '2023-12-20', 'vat_dppd' => '2024-01-05'];
+        $doc->followVatObligationDatePub($new, null);
+        $this->assertSame('2024-01-05', $new['vat_dppd'], 'nový doklad: DPPD z payloadu zůstává');
+    }
+
+    public function testReceivedInvoiceDppdDoesNotFollowDuzp(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setConfig($this->configWithProforma());
+        $original = ['vat_duzp' => '2013-01-04', 'vat_dppd' => '2013-01-04'];
+
+        $data = ['doc_type' => 'invni', 'vat_duzp' => '2013-01-08', 'vat_dppd' => '2013-01-04'];
+        $doc->followVatObligationDatePub($data, $original);
+        $this->assertSame('2013-01-04', $data['vat_dppd'], 'u přijaté faktury je DPPD samostatný údaj');
+
+        $unknown = ['doc_type' => 'xxx', 'vat_duzp' => '2013-01-08', 'vat_dppd' => '2013-01-04'];
+        $doc->followVatObligationDatePub($unknown, $original);
+        $this->assertSame('2013-01-04', $unknown['vat_dppd'], 'neznámý typ (bez směru) se nenásleduje');
+    }
+
     public function testTaxDocumentKeepsDuzpDefaultsWithConfig(): void
     {
         $doc = new TestableDocsHeadsDocument();

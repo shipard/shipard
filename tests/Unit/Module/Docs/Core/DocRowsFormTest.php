@@ -169,7 +169,7 @@ class DocRowsFormTest extends TestCase
 
     /**
      * Nedaňový doklad (zálohová faktura) DUZP nemá — sazba kódu DPH se
-     * odvodí k datu vystavení (`DocHeadVatContext::vat_rate_date`).
+     * odvodí k datu vystavení (`effective_rate_date` kontextu hlavičky).
      */
     public function testVatCodeRateFallsBackToIssueDateWithoutDuzp(): void
     {

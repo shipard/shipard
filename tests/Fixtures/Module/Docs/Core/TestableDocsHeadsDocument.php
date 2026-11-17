@@ -34,6 +34,11 @@ class TestableDocsHeadsDocument extends DocsHeadsDocument
         $this->applyDateDefaults($data);
     }
 
+    public function followVatObligationDatePub(array &$data, ?array $originalData): void
+    {
+        $this->followVatObligationDate($data, $originalData);
+    }
+
     public function applyHomeCurrencyPub(array &$data): void
     {
         $this->applyHomeCurrency($data);

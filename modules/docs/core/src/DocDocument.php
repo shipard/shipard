@@ -137,6 +137,9 @@ abstract class DocDocument extends Document
         // validate() běží před beforeSave — typ, pokladna z řady a směr se
         // kontrolují nad denormalizovanými hodnotami (idempotentní, 1 SELECT).
         $this->denormalizeFromSeries($data);
+        // DPPD prodejního dokladu následuje změnu DUZP (#159 U13) už tady —
+        // kontroly sazeb níž čtou datum sazby z dat, ne z výsledku beforeSave.
+        $this->followVatObligationDate($data, $this->storedVatDates($data));
         $this->validateBindingAndDirection($data, $result);
         // Plátce (osoba pro saldokonto) se odvozuje už tady, aby validace
         // brány / plátce (CashDeskDocumentBase) běžely nad odvozenou hodnotou.
@@ -268,8 +271,7 @@ abstract class DocDocument extends Document
      *
      * - `vat_recap_inconsistent` — řádek si vnitřně neodpovídá (`base + tax`
      *   ≠ `total`, daň ≠ sazba ze základu, u kódu ze sazebníku neznámá sazba
-     *   k datu sazby — `DocHeadVatContext::vatRateDate`, u opravného
-     *   dokladu datum plnění původního dokladu). Oddaňovací páry a nulové
+     *   k datu sazby dokladu — `VatRateDates::headDate`). Oddaňovací páry a nulové
      *   sazby se přeskakují.
      * - `rows_recap_mismatch` — Σ řádkových cen per (kód, sazba) neodpovídá
      *   rekapitulaci (v mode 1 základu, v mode 2 celkem). Mez je stejná jako
@@ -297,9 +299,8 @@ abstract class DocDocument extends Document
         $resolved = $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
         $country  = $resolved['country'] ?? null;
-        // Datum sazby: u opravného dokladu datum plnění původního dokladu
-        // (#92 D4), jinak DUZP / datum vystavení — jedno místo pravidla.
-        $duzp     = (string) (DocHeadVatContext::vatRateDate($data) ?? '');
+        // Datum sazby dokladu — jedno místo pravidla (VatRateDates, #159).
+        $duzp     = (string) (VatRateDates::headDate($data, $this->config) ?? '');
 
         foreach ($recap as $r) {
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {
@@ -489,7 +490,7 @@ abstract class DocDocument extends Document
      * kód DPH s příznakem `reverseCharge` ho vyžaduje při potvrzení dokladu
      * (stav 40 — Koncept ani V opravě se bez něj uložit smí, jinak by starý
      * doklad bez předmětu nešel otevřít k opravě); předmět mimo číselník
-     * nebo neplatný k datu sazby ({@see DocHeadVatContext::vatRateDate()})
+     * nebo neplatný k datu sazby ({@see VatRateDates})
      * je chyba vždy. Platí i v importním módu — nic se tiše nedoplňuje.
      *
      * Řádky: `rows.{index}.reverse_charge_code`. Řádky převzaté rekapitulace
@@ -528,7 +529,7 @@ abstract class DocDocument extends Document
         }
         $country  = $resolved['country'];
         $vatCodes = $resolved['codes'];
-        $rateDate = DocHeadVatContext::vatRateDate($data);
+        $rateDate = VatRateDates::headDate($data, $this->config);
         $resolver = $this->vatRateResolver();
 
         foreach ($rows as $i => $row) {
@@ -795,6 +796,7 @@ abstract class DocDocument extends Document
         $this->denormalizeFromSeries($data);
         $this->resolvePartnerBalance($data);
         $this->applyCorrectiveColumns($data);
+        $this->followVatObligationDate($data, $originalData);
         $this->applyDateDefaults($data);
         $this->applyHomeCurrency($data);
         $this->applyHomeCurrencyRate($data);
@@ -1133,6 +1135,54 @@ abstract class DocDocument extends Document
                 ->modify("+{$days} days")
                 ->format('Y-m-d');
         }
+    }
+
+    /**
+     * DPPD následuje změnu DUZP u daňového dokladu směru prodej (#159 U13,
+     * pravidlo {@see VatRateDates::followObligationDate()}): formulář faktury
+     * vydané, prodejky ani příjmového pokladního dokladu DPPD neukazuje
+     * a `applyDateDefaults` ho doplňuje jen prázdné. Přijatý doklad má DPPD
+     * jako samostatný viditelný údaj (DUZP dodavatele) — tam se nenásleduje.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $originalData uložený stav; null = nový doklad
+     */
+    protected function followVatObligationDate(array &$data, ?array $originalData): void
+    {
+        if ($originalData === null || !$this->vatObligationDateFollows($data)) {
+            return;
+        }
+        VatRateDates::followObligationDate($data, $originalData);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function vatObligationDateFollows(array $data): bool
+    {
+        return self::resolveTradeDir($data, $this->config) === 1
+            && DocTypes::isTaxDocument($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Uložené DUZP a DPPD pro {@see followVatObligationDate()} ve validaci
+     * (ta originál nedostává). null = nový doklad, doklad bez DB, nebo typ,
+     * u kterého se DPPD nenásleduje — pak se do DB nesahá.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>|null
+     */
+    private function storedVatDates(array $data): ?array
+    {
+        if (empty($data['id']) || $this->db === null || !$this->vatObligationDateFollows($data)) {
+            return null;
+        }
+        $row = $this->db->fetch(
+            'SELECT [vat_duzp], [vat_dppd] FROM [docs_core_heads] WHERE [id] = %i',
+            (int) $data['id'],
+        );
+        if ($row === null || $row === false) {
+            return null;
+        }
+        return $row instanceof \Dibi\Row ? $row->toArray() : (array) $row;
     }
 
     protected function resolvePartnerPaymentTermDays(mixed $partnerId): ?int

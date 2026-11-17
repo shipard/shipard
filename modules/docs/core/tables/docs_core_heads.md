@@ -30,8 +30,16 @@ sloupce pro ruční přepis čísla účtu / IBAN / BIC.
 ### `dates`
 
 `issue_date`, `due_date`, `accounting_date`, `vat_duzp`, `vat_dppd`,
-`period_from`, `period_to`. Defaults plněné v Form recalculate / Document
-beforeSave (Fáze 2).
+`vat_rate_date`, `period_from`, `period_to`. Defaults plněné v Form
+recalculate / Document beforeSave (Fáze 2).
+
+`vat_dppd` u dokladu směru prodej (faktura vydaná, prodejka, příjmový
+pokladní doklad), jehož formulář DPPD neukazuje, **následuje změnu DUZP**
+— jen když ho v uloženém dokladu sledovalo a payload ho sám nemění
+(#159 U13, `VatRateDates::followObligationDate()`).
+
+`vat_rate_date` (date, nullable) — vlastní datum sazby DPH dokladu, jen při
+`vat_rate_source` = 1; jinak NULL (#159 D4, D6).
 
 ### `accounting`
 
@@ -62,8 +70,14 @@ zapíná nastavení Dimenze na dokladech:
 normy / 1 z řádků = historický součet řádkových daní),
 `vat_recap_source` (0 přepočítaná z řádků při každém uložení / 1 převzatá =
 rekapitulace existujícího dokladu je vstup a fakt — import, přijatý doklad,
-ruční oprava; `beforeSave` ji nepřepočítá), `vat_place` (tuzemsko /
-intracom / zahraničí). Pravidla výpočtu: `docs/vat-calculation.md`.
+ruční oprava; `beforeSave` ji nepřepočítá), `vat_rate_source` (k jakému
+datu se hledají sazby DPH řádků a rekapitulace: 0 automaticky — opravný
+doklad k datu plnění původního dokladu, jinak DPPD, bez něj DUZP, bez něj
+datum vystavení / 1 vlastní datum dokladu `vat_rate_date` / 2 vlastní datum
+na řádcích; nedaňový doklad a doklad bez DPH má vždy 0 — #159 D2,
+cfgItem `docs.core.vatRateSources`, pravidla `VatRateDates`), `vat_place`
+(tuzemsko / intracom / zahraničí). Pravidla výpočtu:
+`docs/vat-calculation.md`.
 
 ### `currency`
 

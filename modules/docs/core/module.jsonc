@@ -184,6 +184,7 @@
         { "id": "docs.core.vatModes",        "file": "config/vatModes.jsonc" },
         { "id": "docs.core.vatCalcSources",  "file": "config/vatCalcSources.jsonc" },
         { "id": "docs.core.vatRecapSources", "file": "config/vatRecapSources.jsonc" },
+        { "id": "docs.core.vatRateSources",  "file": "config/vatRateSources.jsonc" },
         { "id": "docs.core.vatPlaces",       "file": "config/vatPlaces.jsonc" },
         { "id": "docs.core.priceCalcModes",  "file": "config/priceCalcModes.jsonc" },
         { "id": "docs.core.rowKinds",        "file": "config/rowKinds.jsonc" },

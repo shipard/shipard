@@ -18,8 +18,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * Sub-form for docs_core_rows (Phase 3).
  *
  * Loads parent header context (vat_registration → country, doc_type →
- * direction, vat_place, vat_rate_date = DUZP or issue date — original tax
- * point date on a corrective document (`DocHeadVatContext::vatRateDate`),
+ * direction, vat_place, effective_rate_date = VAT rate date of the document
+ * (`VatRateDates::headDate`),
  * vat_mode, doc_currency) on every render in order to filter VAT codes and
  * resolve vat_pct.
  *
@@ -381,9 +381,7 @@ class DocRowsForm extends TableForm
 
     /**
      * Sazba DPH z kódu podle země registrace hlavičky a data sazby
-     * (`vat_rate_date`: u opravného dokladu datum plnění původního dokladu,
-     * jinak DUZP, u nedaňového dokladu datum vystavení —
-     * `DocHeadVatContext::vatRateDate`). Bez
+     * (`effective_rate_date` — `VatRateDates::headDate`). Bez
      * data (doklad před uložením) nebo bez známé sazby zůstává ruční zadání
      * — UI ukáže varování. Sdílené hookem a recalculate('vat_code').
      *
@@ -394,7 +392,7 @@ class DocRowsForm extends TableForm
         if (empty($data['vat_code'])
             || $headContext === null
             || empty($headContext['country'])
-            || empty($headContext['vat_rate_date'])
+            || empty($headContext['effective_rate_date'])
             || $this->config === null
         ) {
             return;
@@ -404,7 +402,7 @@ class DocRowsForm extends TableForm
             $data['vat_pct'] = $resolver->resolveVatPct(
                 (string) $headContext['country'],
                 (string) $data['vat_code'],
-                (string) $headContext['vat_rate_date'],
+                (string) $headContext['effective_rate_date'],
             );
         } catch (\LogicException) {
             // Unknown rate / no period — leave manual entry; UI shows warning.
@@ -696,7 +694,7 @@ class DocRowsForm extends TableForm
      *     direction: ?string,
      *     place: string,
      *     vat_duzp: ?string,
-     *     vat_rate_date: ?string,
+     *     effective_rate_date: ?string,
      *     vat_mode: int,
      *     doc_type: string,
      *     cash_dir: int,

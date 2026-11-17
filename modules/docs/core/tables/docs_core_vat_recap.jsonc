@@ -63,6 +63,17 @@
             "scale": 2,
             "nullable": false
         },
+        // Datum sazby DPH řádku rekapitulace (#159 D5, U5) — jen při
+        // `vat_rate_source` hlavičky = 2: u převzaté rekapitulace vstup,
+        // u přepočítané datum prvního řádku skupiny.
+        {
+            "id": "vat_rate_date",
+            "name": "VAT rate date",
+            "name:cs": "Datum sazby DPH",
+            "name:en": "VAT rate date",
+            "type": "date",
+            "nullable": true
+        },
 
         // --- amounts in document currency ---
 

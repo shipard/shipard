@@ -21,7 +21,8 @@ rekapitulace se smaže, nová se vloží přes child-tables sync v
 | `doc_head` | int → `docs_core_heads` | Hlavička |
 | `vat_code` | varchar(20), nullable=false | Kód DPH (jako u `docs_core_rows.vat_code`, viz tam pro důvod proč varchar a ne enumString) |
 | `reverse_charge_code` | varchar(3), nullable | Předmět plnění u tuzemského přenesení daňové povinnosti — třetí složka klíče skupiny; nese ho řádek s kódem přenesení i jeho oddaňovací pár. Odtud ho čte kontrolní hlášení (A.1 / B.1) |
-| `vat_pct` | numeric(5,2) | Procento DPH platné pro DUZP |
+| `vat_pct` | numeric(5,2) | Procento odvozené z kódu DPH a data sazby (`VatRateDates`) — ani u převzaté rekapitulace není vstupem (#159 D1, D8) |
+| `vat_rate_date` | date, nullable | Datum sazby DPH řádku rekapitulace — jen při `vat_rate_source` hlavičky = 2: u převzaté rekapitulace vstup, u přepočítané datum prvního řádku skupiny; jinak NULL. Klíč skupiny ho neobsahuje (#159 D5, U5) |
 | `base`, `tax`, `total` | numeric(15,2) | Částky v měně dokladu |
 | `base_dom`, `tax_dom`, `total_dom` | numeric(15,2) | Částky v domácí měně (přes `exchange_rate`) |
 | `sum_base`, `sum_tax`, `sum_total` | boolean default 1 | Flagy z `vatCode` definice |

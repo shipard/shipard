@@ -1764,7 +1764,7 @@ class DocumentApplier
             // Opravný daňový doklad (#92 D10, task B U2–U3): jen u typu
             // s příznakem. Číslo a datum plnění původního dokladu jdou už
             // odsud — validate() i sazby DPH je čtou z dat před beforeSave()
-            // (DocHeadVatContext::vatRateDate), dokument pak z odkazu potvrdí
+            // (VatRateDates::automaticDate), dokument pak z odkazu potvrdí
             // tytéž hodnoty. Bez bloku žádný klíč — příznak zůstane na 0.
             ...$this->correctionColumns($canonical),
             // Dimenze deníku (#110 T2): sloupce hlavičky podle deklarace
@@ -2035,7 +2035,8 @@ class DocumentApplier
         $taxPointDate = $canonical['dates']['taxPointDate'] ?? ($canonical['dates']['issueDate'] ?? null);
         // Datum sazby DPH (#92 D4, task B U4): u opravného dokladu datum plnění
         // původního dokladu (z odkazu, jinak correction.originalTaxPointDate),
-        // jinak DUZP — totéž pravidlo jako DocHeadVatContext::vatRateDate().
+        // jinak DUZP. Mezistav do tasku B (#159 U12): dokument procento
+        // při uložení přepočítá k datu sazby (VatRateDates — DPPD před DUZP).
         // Místo plnění a registrace k datu dál čtou taxPointDate.
         $rateDate = $taxPointDate;
         $correction = $this->correctionDecision($canonical);

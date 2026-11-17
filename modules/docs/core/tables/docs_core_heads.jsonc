@@ -256,6 +256,17 @@
             "nullable": true,
             "group": "dates"
         },
+        // Vlastní datum sazby DPH dokladu (#159 D4) — jen při
+        // `vat_rate_source` = 1, jinak NULL (D6). Pravidla: VatRateDates.
+        {
+            "id": "vat_rate_date",
+            "name": "VAT rate date",
+            "name:cs": "Datum sazby DPH",
+            "name:en": "VAT rate date",
+            "type": "date",
+            "nullable": true,
+            "group": "dates"
+        },
         {
             "id": "period_from",
             "name": "Period from",
@@ -406,6 +417,19 @@
             "type": "enumInt",
             "default": 0,
             "cfgItem": "docs.core.vatRecapSources",
+            "group": "vat"
+        },
+        // K jakému datu se hledají sazby DPH řádků a rekapitulace (#159 D2):
+        // 0 automaticky (DPPD), 1 vlastní datum dokladu, 2 vlastní datum
+        // na řádcích. Nedaňový doklad a doklad bez DPH má vždy 0.
+        {
+            "id": "vat_rate_source",
+            "name": "VAT rates as of",
+            "name:cs": "Sazby DPH podle",
+            "name:en": "VAT rates as of",
+            "type": "enumInt",
+            "default": 0,
+            "cfgItem": "docs.core.vatRateSources",
             "group": "vat"
         },
         {

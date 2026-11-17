@@ -190,6 +190,16 @@
             "scale": 2,
             "nullable": true
         },
+        // Vlastní datum sazby DPH řádku (#159 D5) — jen při
+        // `vat_rate_source` hlavičky = 2; prázdné = automatika dokladu.
+        {
+            "id": "vat_rate_date",
+            "name": "VAT rate date",
+            "name:cs": "Datum sazby DPH",
+            "name:en": "VAT rate date",
+            "type": "date",
+            "nullable": true
+        },
 
         // --- calculated (system) ---
 

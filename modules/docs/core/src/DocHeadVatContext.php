@@ -20,43 +20,22 @@ use Shipard\Module\World\Vat\VatRateResolver;
 final class DocHeadVatContext
 {
     /**
-     * Datum, ke kterému se hledá sazba kódu DPH (#92 D4, U6) — jediné místo
-     * pravidla: u opravného dokladu s vyplněným datem plnění původního
-     * dokladu toto datum (oprava používá sazbu původního plnění), jinak DUZP
-     * a bez něj datum vystavení (nedaňový doklad DUZP nemá, #79 D1).
-     * Konzumenti: `load()` (→ `DocRowsForm`, `VatRecapForm`)
-     * a `DocDocument::validateDeclaredRecap()`. Zařazení do období DPH, KH
-     * a zámky období se dál řídí `vat_duzp` — tohle datum tam nepatří.
-     *
-     * @param array<string, mixed> $head hlavička z DB nebo data k uložení
-     */
-    public static function vatRateDate(array $head): ?string
-    {
-        if (!empty($head['corrective'])) {
-            $corrected = self::dateString($head['corrected_doc_date'] ?? null);
-            if ($corrected !== null) {
-                return $corrected;
-            }
-        }
-        return self::dateString($head['vat_duzp'] ?? null) ?? self::dateString($head['issue_date'] ?? null);
-    }
-
-    private static function dateString(mixed $value): ?string
-    {
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        $text = trim((string) ($value ?? ''));
-        return $text !== '' ? substr($text, 0, 10) : null;
-    }
-
-    /**
-     * `vat_rate_date` = datum, ke kterému se hledá sazba kódu DPH
-     * ({@see vatRateDate}: datum plnění původního dokladu u opravného
-     * dokladu, jinak DUZP, bez něj datum vystavení).
+     * Kontext nese i sloupce hlavičky, ze kterých {@see VatRateDates} určuje
+     * datum sazby (#159) — jde ho proto předat rovnou jako `$head` do
+     * `VatRateDates::lineDate()`:
+     *  - `vat_rate_source` — platný zdroj data sazby (0 / 1 / 2),
+     *  - `vat_rate_date` — vlastní datum dokladu (sloupec hlavičky),
+     *  - `effective_rate_date` — datum sazby dokladu
+     *    (`VatRateDates::headDate()`: vlastní datum při zdroji 1, jinak
+     *    automatika),
+     *  - `automatic_rate_date` — automatické datum
+     *    (`VatRateDates::automaticDate()`), platí pro řádek bez vlastního
+     *    data při zdroji 2.
      *
      * @return array{doc_type: string, cash_dir: int, vat_place: int,
-     *     vat_duzp: mixed, vat_rate_date: mixed, vat_mode: int,
+     *     vat_duzp: mixed, vat_dppd: mixed, issue_date: mixed, corrective: mixed,
+     *     corrected_doc_date: mixed, vat_rate_source: int, vat_rate_date: ?string,
+     *     effective_rate_date: ?string, automatic_rate_date: ?string, vat_mode: int,
      *     doc_currency: string, home_currency: string, exchange_rate: float,
      *     country: ?string, direction: ?string, place: string}|null
      */
@@ -66,8 +45,8 @@ final class DocHeadVatContext
             return null;
         }
         $head = $db->fetchRow(
-            'SELECT `vat_registration`, `doc_type`, `cash_dir`, `vat_place`, `vat_duzp`, `issue_date`,'
-            . ' `corrective`, `corrected_doc_date`,'
+            'SELECT `vat_registration`, `doc_type`, `cash_dir`, `vat_place`, `vat_duzp`, `vat_dppd`, `issue_date`,'
+            . ' `corrective`, `corrected_doc_date`, `vat_rate_source`, `vat_rate_date`,'
             . ' `vat_mode`, `doc_currency`, `home_currency`, `exchange_rate`'
             . ' FROM `docs_core_heads` WHERE `id` = %i',
             (int) $docHeadId,
@@ -81,7 +60,14 @@ final class DocHeadVatContext
             'cash_dir'      => (int) ($head['cash_dir'] ?? 0),
             'vat_place'     => (int) ($head['vat_place'] ?? 0),
             'vat_duzp'      => $head['vat_duzp'] ?? null,
-            'vat_rate_date' => self::vatRateDate($head),
+            'vat_dppd'      => $head['vat_dppd'] ?? null,
+            'issue_date'    => $head['issue_date'] ?? null,
+            'corrective'    => $head['corrective'] ?? null,
+            'corrected_doc_date' => $head['corrected_doc_date'] ?? null,
+            'vat_rate_source'     => VatRateDates::source($head, $config),
+            'vat_rate_date'       => VatRateDates::dateString($head['vat_rate_date'] ?? null),
+            'effective_rate_date' => VatRateDates::headDate($head, $config),
+            'automatic_rate_date' => VatRateDates::automaticDate($head),
             'vat_mode'      => (int) ($head['vat_mode'] ?? 1),
             'doc_currency'  => (string) ($head['doc_currency'] ?? ''),
             'home_currency' => (string) ($head['home_currency'] ?? ''),

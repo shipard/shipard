@@ -17,7 +17,7 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *  - kód DPH s příznakem `reverseCharge` předmět vyžaduje (při potvrzení
  *    dokladu), jiný kód ho mít nesmí — při uložení se vynuluje;
  *  - předmět mimo číselník nebo neplatný k datu sazby dokladu
- *    ({@see DocHeadVatContext::vatRateDate()}) je chyba vždy;
+ *    ({@see VatRateDates}) je chyba vždy;
  *  - oddaňovací pár rekapitulace nese předmět své skupiny.
  */
 final class ReverseChargeSubjects
@@ -113,7 +113,7 @@ final class ReverseChargeSubjects
         if ($context === null || empty($context['country']) || $config === null) {
             return [];
         }
-        $date = $context['vat_rate_date'] ?? null;
+        $date = $context['effective_rate_date'] ?? null;
         try {
             $subjects = (new VatRateResolver($config))->getReverseChargeSubjectsValidAt(
                 (string) $context['country'],
@@ -146,7 +146,8 @@ final class ReverseChargeSubjects
             return null;
         }
         $head = $db->fetch(
-            'SELECT [vat_registration], [vat_mode], [vat_duzp], [issue_date], [corrective], [corrected_doc_date]'
+            'SELECT [vat_registration], [doc_type], [vat_mode], [vat_duzp], [vat_dppd], [issue_date],'
+            . ' [corrective], [corrected_doc_date], [vat_rate_source], [vat_rate_date]'
             . ' FROM [docs_core_heads] WHERE [id] = %i',
             $headId,
         );
@@ -172,7 +173,7 @@ final class ReverseChargeSubjects
         return [
             'country'  => (string) $country,
             'codes'    => $codes,
-            'rateDate' => DocHeadVatContext::vatRateDate($head),
+            'rateDate' => VatRateDates::headDate($head, $config),
         ];
     }
 
