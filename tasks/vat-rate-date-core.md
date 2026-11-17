@@ -375,6 +375,10 @@ potvrzené jako D15):
   na `4l3j-z`, `blkm-i` a zdrojích kola. Ruční proklik nových polí
   v prohlížeči zbývá.
 - **Milník v `docs/roadmap.md`** — #159 tam není, čeká na zařazení.
+- **Mezistav U12 skončil** (2026-11-17, task B
+  `tasks/vat-rate-date-exchange.md`): applier hledá kód i sazbu k datu sazby
+  řádku podle `VatRateDates`, výměnný formát a export dokladu nesou přepínač
+  a vlastní data.
 
 ## Hotovo když
 

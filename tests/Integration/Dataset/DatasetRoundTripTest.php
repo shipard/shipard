@@ -83,6 +83,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private const COMPANY_ID = '99990001';
     private const ITEM_CODE = 'IT-DS-001';
     private const DOC_NUMBER = 'IT-DS-0001';
+    /** Přijaté faktury s vlastním datem sazby DPH (#159 D11): datum dokladu / data na řádcích. */
+    private const RATE_DOC_NUMBER = 'IT-DS-0003';
+    private const RATE_ROWS_NUMBER = 'IT-DS-0004';
     private const CASH_DESK_CODE = 'ITDS';
     /** `%D%C%y%5` řady prodejky (doc_id_code 14, kód pokladny, rok 2026, pořadí 1). */
     private const CASHREG_NUMBER = '14ITDS2600001';
@@ -280,9 +283,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame(1, $counts['persons']['ok']);
         $this->assertSame(1, $counts['items']['ok']);
         $this->assertSame(
-            2 + ($this->hasWorkOrders ? 2 : 0) + ($this->hasAssets ? 2 : 0),
+            4 + ($this->hasWorkOrders ? 2 : 0) + ($this->hasAssets ? 2 : 0),
             $counts['docs']['ok'],
-            'faktura přijatá + prodejka (+ vydaná ze zakázky + opravný doklad k ní) (+ pořízení majetku + účetní doklad)',
+            'faktura přijatá + prodejka + dvě faktury s vlastním datem sazby (+ vydaná ze zakázky + opravný doklad k ní) (+ pořízení majetku + účetní doklad)',
         );
         $this->assertSame(1, $counts['registry']['ok']);
         $this->assertSame(1, $counts['mail']['ok']);
@@ -327,6 +330,38 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame(1, (int) $doc['accounting_state'], 'doklad ve 40 se přes dispatcher zaúčtoval');
             $this->assertGreaterThan(0, (int) $dibi->fetchSingle('SELECT COUNT(*) FROM economy_accounting_journal WHERE doc_head = %i', $docId));
         }
+
+        // Datum sazby DPH (#159 D11): přepínač a vlastní data přežijí seed,
+        // procenta odpovídají kódu a datu sazby — ne DUZP dokladu (2026 = 21 %).
+        $rateDocId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::RATE_DOC_NUMBER);
+        $rateRowsId = (int) $dibi->fetchSingle('SELECT id FROM docs_core_heads WHERE doc_number = %s AND docState <> 90', self::RATE_ROWS_NUMBER);
+        $this->assertGreaterThan(0, $rateDocId);
+        $this->assertGreaterThan(0, $rateRowsId);
+        $rateDoc = $dibi->fetch('SELECT * FROM docs_core_heads WHERE id = %i', $rateDocId)->toArray();
+        $this->assertSame(40, (int) $rateDoc['docState']);
+        $this->assertSame(1, (int) $rateDoc['vat_rate_source'], 'vlastní datum dokladu');
+        $this->assertSame('2012-12-31', substr((string) $rateDoc['vat_rate_date'], 0, 10));
+        $this->assertSame(200.0, (float) $rateDoc['total_vat'], '20 % k datu sazby');
+        $this->assertSame(
+            [20.0],
+            array_map('floatval', array_values($dibi->fetchPairs('SELECT id, vat_pct FROM docs_core_rows WHERE doc_head = %i ORDER BY order_pos', $rateDocId))),
+        );
+        $this->assertSame(
+            [20.0],
+            array_map('floatval', array_values($dibi->fetchPairs('SELECT id, vat_pct FROM docs_core_vat_recap WHERE doc_head = %i ORDER BY order_pos, id', $rateDocId))),
+        );
+        $rateRows = $dibi->fetch('SELECT * FROM docs_core_heads WHERE id = %i', $rateRowsId)->toArray();
+        $this->assertSame(40, (int) $rateRows['docState']);
+        $this->assertSame(2, (int) $rateRows['vat_rate_source'], 'vlastní datum na řádcích');
+        $this->assertNull($rateRows['vat_rate_date'], 'datum hlavičky jen při vlastním datu dokladu');
+        $this->assertSame(1, (int) $rateRows['vat_recap_source'], 'převzatá rekapitulace');
+        $this->assertSame(110.0, (float) $rateRows['total_vat'], '210 − 100: odpočet zálohy ve staré sazbě');
+        $datedLines = static fn (string $table, string $order): array => array_map(
+            static fn ($r): array => [(float) $r['vat_pct'], $r['vat_rate_date'] !== null ? substr((string) $r['vat_rate_date'], 0, 10) : null],
+            $dibi->fetchAll("SELECT vat_pct, vat_rate_date FROM {$table} WHERE doc_head = %i ORDER BY {$order}", $rateRowsId),
+        );
+        $this->assertSame([[21.0, null], [20.0, '2012-06-30']], $datedLines('docs_core_rows', 'order_pos'), 'řádek odpočtu nese datum i starou sazbu');
+        $this->assertSame([[21.0, null], [20.0, '2012-06-30']], $datedLines('docs_core_vat_recap', 'order_pos, id'), 'dvě skupiny téhož kódu');
 
         // Prodejka (#59 D12): řada vázaná na pokladnu vznikla líně, pokladna
         // hlavičky je denormalizovaná z řady, číslo i pořadí převzaté.
@@ -593,6 +628,33 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame(40, $docOut['applyOptions']['targetDocState']);
         $this->assertArrayNotHasKey('cashDesk', $docOut, 'faktura na převod pokladnu nenese');
         $this->assertArrayNotHasKey('cashDirection', $docOut);
+        // Doklad v automatice se exportuje bez klíčů data sazby (#159 U7).
+        $this->assertArrayNotHasKey('rateSource', $docOut['vat']);
+        $this->assertArrayNotHasKey('vatRateDate', $docOut['dates']);
+        $this->assertArrayNotHasKey('rateDate', $docOut['rows'][0]['vat']);
+
+        // Datum sazby DPH (#159 D11): přepínač, data i procenta se vrátí beze změny.
+        $rateOut = [];
+        foreach ($docExporter->exportByIds([$rateDocId, $rateRowsId]) as $record) {
+            $rateOut[$record->id] = $record->data;
+        }
+        $pick = static fn (array $entries, array $keys): array => array_map(
+            static fn (array $entry): array => array_intersect_key($entry, array_flip($keys)),
+            $entries,
+        );
+        $srcRateDoc = $reader->readJsonc('docs/0007-it-ds-0003.jsonc');
+        $this->assertSame('document', $rateOut[$rateDocId]['vat']['rateSource']);
+        $this->assertSame($srcRateDoc['dates']['vatRateDate'], $rateOut[$rateDocId]['dates']['vatRateDate']);
+        $this->assertSame(array_column($srcRateDoc['rows'], 'vat'), array_column($rateOut[$rateDocId]['rows'], 'vat'));
+        $this->assertSame($srcRateDoc['vatRecap'], $rateOut[$rateDocId]['vatRecap']);
+        $this->assertSame($srcRateDoc['totals'], $pick([$rateOut[$rateDocId]['totals']], array_keys($srcRateDoc['totals']))[0]);
+        $srcRateRows = $reader->readJsonc('docs/0008-it-ds-0004.jsonc');
+        $this->assertSame('rows', $rateOut[$rateRowsId]['vat']['rateSource']);
+        $this->assertSame('declared', $rateOut[$rateRowsId]['vat']['recapSource']);
+        $this->assertArrayNotHasKey('vatRateDate', $rateOut[$rateRowsId]['dates']);
+        $this->assertSame(array_column($srcRateRows['rows'], 'vat'), array_column($rateOut[$rateRowsId]['rows'], 'vat'), 'jen řádek odpočtu nese rateDate');
+        $this->assertSame($srcRateRows['vatRecap'], $rateOut[$rateRowsId]['vatRecap'], 'datum jen u skupiny ve staré sazbě');
+        $this->assertSame($srcRateRows['totals'], $pick([$rateOut[$rateRowsId]['totals']], array_keys($srcRateRows['totals']))[0]);
 
         $srcCashreg = $reader->readJsonc('docs/0002-14itds2600001.jsonc');
         $this->assertSame('cashRegisterDocument', $cashregOut['docType']);
@@ -777,6 +839,55 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'importNumber' => ['docNumber' => self::DOC_NUMBER, 'sequenceNumber' => null],
                 'numberSeriesCode' => $this->seriesCode,
             ], static fn($v) => $v !== null),
+        ]);
+        // Datum sazby DPH (#159 D11): faktura s vlastním datem dokladu (plnění
+        // dodavatele ve staré sazbě 20 %) a faktura s daty na řádcích — běžný
+        // řádek 21 %, odpočet zálohy z roku 2012 ve 20 %, převzatá rekapitulace
+        // se dvěma skupinami téhož kódu. Soubory až za ostatními doklady sady.
+        $rateDocBase = [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+            'docType' => 'invoiceReceived', 'selfParty' => 'customer',
+            'supplier' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
+                           'bankAccount' => ['accountNumber' => '9999000001/0100', 'iban' => 'CZ0901000000009999000001']],
+            'currency' => 'CZK',
+        ];
+        $rateRow = static fn (int $pos, float $quantity, array $vat): array => [
+            'rowKind' => 'item', 'operation' => 'purchase.services', 'orderPos' => $pos,
+            'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+            'quantity' => $quantity, 'unitPrice' => 500.0, 'totalPrice' => $quantity * 500.0, 'priceCalcMode' => 'fromUnitPrice',
+            'vat' => $vat, 'description' => 'Konzultace IT-DS ' . $pos,
+        ];
+        $rateOptions = fn (string $number): array => array_filter([
+            'targetDocState' => 40,
+            'importNumber' => ['docNumber' => $number, 'sequenceNumber' => null],
+            'numberSeriesCode' => $this->seriesCode,
+        ], static fn($v) => $v !== null);
+        $w->writeJsonc('docs/0007-it-ds-0003.jsonc', $rateDocBase + [
+            'docNumber' => '2026-IT-DS-78', 'docText' => self::P . ' faktura, sazba k datu dokladu',
+            'dates' => ['issueDate' => '2026-06-05', 'dueDate' => '2026-06-19', 'accountingDate' => '2026-06-05', 'taxPointDate' => '2026-06-05',
+                        'vatRateDate' => '2012-12-31'],
+            'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz', 'rateSource' => 'document'],
+            'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260605'],
+            'rows' => [$rateRow(1, 2.0, ['code' => 'cz-110', 'pct' => 20.0])],
+            'vatRecap' => [['vatCode' => 'cz-110', 'vatPct' => 20.0, 'base' => 1000.0, 'tax' => 200.0, 'total' => 1200.0]],
+            'totals' => ['totalBase' => 1000.0, 'totalVat' => 200.0, 'totalAmount' => 1200.0, 'totalRounding' => 0.0],
+            'applyOptions' => $rateOptions(self::RATE_DOC_NUMBER),
+        ]);
+        $w->writeJsonc('docs/0008-it-ds-0004.jsonc', $rateDocBase + [
+            'docNumber' => '2026-IT-DS-79', 'docText' => self::P . ' faktura, sazby k datům řádků',
+            'dates' => ['issueDate' => '2026-06-08', 'dueDate' => '2026-06-22', 'accountingDate' => '2026-06-08', 'taxPointDate' => '2026-06-08'],
+            'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz', 'recapSource' => 'declared', 'rateSource' => 'rows'],
+            'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260608'],
+            'rows' => [
+                $rateRow(1, 2.0, ['code' => 'cz-110', 'pct' => 21.0]),
+                $rateRow(2, -1.0, ['code' => 'cz-110', 'pct' => 20.0, 'rateDate' => '2012-06-30']),
+            ],
+            'vatRecap' => [
+                ['vatCode' => 'cz-110', 'vatPct' => 21.0, 'base' => 1000.0, 'tax' => 210.0, 'total' => 1210.0],
+                ['vatCode' => 'cz-110', 'vatPct' => 20.0, 'base' => -500.0, 'tax' => -100.0, 'total' => -600.0, 'rateDate' => '2012-06-30'],
+            ],
+            'totals' => ['totalBase' => 500.0, 'totalVat' => 110.0, 'totalAmount' => 610.0, 'totalRounding' => 0.0],
+            'applyOptions' => $rateOptions(self::RATE_ROWS_NUMBER),
         ]);
         // Prodejka na testovací pokladně (#59 D12): anonymní, hotově, číslo ve
         // tvaru vázané řady `%D%C%y%5`. `numberSeriesCode` sada nenese — řadu
@@ -1019,7 +1130,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $w->writeManifest(new DatasetManifest('it-ds', 'Integration round-trip', null, 'fixed', '2026-08-26T10:00:00Z',
             ['setup' => ($this->hasWorkOrders ? 2 : 0) + ($this->hasAssets ? 2 : 0), 'persons' => 1, 'items' => 1]
             + ($this->hasWorkOrders ? ['workOrders' => 1] : []) + ($this->hasAssets ? ['assets' => 1] : [])
-            + ['docs' => 2 + ($this->hasWorkOrders ? 1 : 0) + ($this->hasAssets ? 2 : 0)]
+            + ['docs' => 4 + ($this->hasWorkOrders ? 1 : 0) + ($this->hasAssets ? 2 : 0)]
             + ($this->hasBank ? ['bank' => 1] : []) + ['registry' => 1, 'mail' => 1]));
     }
 
@@ -1082,7 +1193,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $deskIds = array_map('intval', $dibi->fetchPairs('SELECT id, id FROM economy_codebooks_cash_desks WHERE code = %s', self::CASH_DESK_CODE));
         $docs = $dibi->fetchAll(
             'SELECT id FROM docs_core_heads WHERE doc_number IN %in' . ($deskIds !== [] ? ' OR cash_desk IN %in' : ''),
-            [self::DOC_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER, self::CORRECTIVE_NUMBER, self::ASSET_DOC_NUMBER, self::POSTING_DOC_NUMBER],
+            [self::DOC_NUMBER, self::RATE_DOC_NUMBER, self::RATE_ROWS_NUMBER, self::CASHREG_NUMBER, self::INVNO_NUMBER, self::CORRECTIVE_NUMBER, self::ASSET_DOC_NUMBER, self::POSTING_DOC_NUMBER],
             ...($deskIds !== [] ? [$deskIds] : []),
         );
         foreach ($docs as $r) {

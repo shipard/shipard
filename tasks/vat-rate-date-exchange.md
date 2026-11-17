@@ -1,6 +1,6 @@
 # Task: Datum sazby DPH — task B: výměnný formát, applier, export
 
-**Stav:** naplánováno — zadání 2026-11-17 (#159 D11)
+**Stav:** hotovo — implementováno 2026-11-17 ve dvou commitech (#159 D11, U1–U8; odchylky v „Poznámky k implementaci“); ověřeno testy, integračně a přes API na `blkm-i`, testovací kolo veřejných sad `ok`; zbývá dump → seed do čistého zdroje příkazy CLI a task pro runner starého systému
 
 **Issue:** #159
 
@@ -228,16 +228,56 @@ téže skupiny; pak reimport.
   validace dokumentu odmítne — applier ho nesmí tiše „opravit“ jiným
   kódem, pokud ho neodvodil podle dnešních pravidel.
 
+## Poznámky k implementaci (2026-11-17)
+
+- **Hlavička pro `VatRateDates`** vzniká v `DocumentApplier::vatRateHead()`,
+  datum řádku dává `lineRateDate()`; kontext nese `rateHead` a `rateDate`
+  (datum sazby dokladu). Ruční větev opravného dokladu ve `vatContext()`
+  zanikla — pokrývá ji `VatRateDates::automaticDate()`.
+- **`vat_mode` v hlavičce pro pravidla je odhad** (volba uživatele, jinak
+  režim dokladu z canonicalu): konečný režim závisí na rozhodnutích o kódech
+  řádků a ta na datu sazby. Rozejde se jen u dokladu „Bez DPH“, který ochrana
+  samovyměření přepne na výpočet zdola a který zároveň nese vlastní data
+  sazby — applier tam hledá k automatickému datu, dokument k vlastnímu.
+- **Klíč cache `vatContext()` nese nově typ dokladu.** Nedaňový typ má vždy
+  automatiku k datu vystavení; zálohová faktura a faktura se stejnými daty
+  a řádky by jinak při seedu sdílely kontext.
+- **Nabídky v náhledu zůstávají k datu sazby dokladu** — `vatCodeOptions`
+  (U3) i `reverseChargeOptions`; volba kódu a předmět plnění se ověřují
+  k datu sazby řádku. Náhled pošty se nemění (D12), kód platný jen k datu
+  řádku v něm tedy vybrat nejde.
+- **`vat_rate_date_ignored` se posuzuje podle `vat.rateSource` z canonicalu**
+  (U5). Přepínač, který dokument vrátí na automatiku sám (nedaňový doklad,
+  doklad bez DPH), se nehlásí — runner starého systému ho posílá i takovým
+  dokladům.
+- **Test `vat_rate_missing` je unit**, ne integrační: nový
+  `DocumentApplierVatRateDateTest` má v gatewayi skutečný
+  `DocsHeadsDocument` (`validate()` i `beforeSave()`), vzor
+  `DocumentApplierVatPinsTest`.
+- **Round-trip** (`DatasetRoundTripTest`) nese dvě přijaté faktury: vlastní
+  datum dokladu a data na řádcích s převzatou rekapitulací o dvou skupinách
+  téhož kódu.
+- **Ověření:** celá unit sada; integrační testy dokladů, DPH, účtování,
+  saldokonta, výměnného formátu a datových sad nad `blkm-i` (jediné selhání
+  tam je i bez těchto změn — IČO vlastní firmy ve
+  `VatReturnAccountingServiceTest`); přes API na `blkm-i` v importním módu
+  přijatá faktura z ledna 2013 s DPPD 31. 12. 2012 (řádek i rekapitulace
+  20 %) a faktura vydaná se zdrojem `rows` (detail ukazuje „k 30.06.2012“),
+  `dataset-dump` zdroje s oběma doklady (automatika bez nových klíčů, zdroj
+  `rows` s `rateSource` a `rateDate`); zkušební doklady a dodavatel po
+  ověření smazány. Seed dumpu do čistého zdroje příkazem `dataset-seed`
+  neproběhl — dump → seed pokrývá jen `DatasetRoundTripTest`.
+
 ## Hotovo když
 
-- [ ] Výměnný formát nese přepínač a data sazby ve všech třech kopiích
+- [x] Výměnný formát nese přepínač a data sazby ve všech třech kopiích
       schématu.
-- [ ] Applier určuje kód, sazbu a předmět k datu sazby řádku; místo,
+- [x] Applier určuje kód, sazbu a předmět k datu sazby řádku; místo,
       registrace a období zůstávají u DUZP.
-- [ ] Přijatá faktura z přelomu sazeb s DPPD dodavatele projde bez
+- [x] Přijatá faktura z přelomu sazeb s DPPD dodavatele projde bez
       `vat_code_unknown`.
-- [ ] Export a dump → seed zachovají přepínač i data; doklady
+- [x] Export a dump → seed zachovají přepínač i data; doklady
       v automatice se exportují beze změny.
-- [ ] Dokumentace aktuální, mezistav U12 tasku A ukončený.
-- [ ] Testy zelené (cíleně, pak celá sada).
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.
+- [x] Dokumentace aktuální, mezistav U12 tasku A ukončený.
+- [x] Testy zelené (cíleně, pak celá sada).
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.

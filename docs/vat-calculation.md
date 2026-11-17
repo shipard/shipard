@@ -268,10 +268,19 @@ sloupec Datum sazby, detail dokladu stopu u údajů dokladu a u řádků.
 **Zařazení do období DPH, kontrolního hlášení a zámky období datum sazby
 nečtou** — řídí se dál `vat_duzp` / `vat_dppd` (`economy.vat`).
 
-Mezistav do tasku B (výměnný formát): applier posílá `vat_pct` z číselníku
-k DUZP, dokument ho přepočítá k datu sazby. U přijatého dokladu, kde DPPD
-a DUZP leží na různých stranách změny sazby, může kód zvolený applierem
-k DUZP sazbu k DPPD nemít → chyba při potvrzení.
+**Výměnný formát a applier** (#159 task B, D11): canonical nese přepínač
+a vlastní data — `vat.rateSource` (`auto` | `document` | `rows`),
+`dates.vatRateDate`, `rows[].vat.rateDate`, `vatRecap[].rateDate`. Applier
+datum sazby nepočítá vlastním kódem: složí hlavičku ve tvaru, který čte
+`VatRateDates` (`DocumentApplier::vatRateHead()`), a kód DPH (odvození,
+kontrola souladu, volba uživatele), sazbu i platnost předmětu plnění hledá
+**k datu sazby řádku**, u převzaté rekapitulace k datu řádku rekapitulace.
+Místo plnění, registrace k datu, neplátce a období čtou dál DUZP. Hodnoty
+na doklad jen předá; mazání podle režimu dělá dokument. Přijatá faktura,
+jejíž DPPD a DUZP leží na různých stranách změny sazby, tak projde se sazbou
+dodavatele (dřív `vat_code_unknown`, resp. chyba při potvrzení). Export
+dokladu (datové sady) přepínač a data nese, takže dump → seed je zachová.
+Viz `docs/exchange-format.md` § 5 „Datum sazby DPH“ a § 8.4.
 
 ## 6. Zaokrouhlení celkové částky — `total_rounding_mode`, `total_rounding_auto`
 

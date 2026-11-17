@@ -28,6 +28,7 @@ class DocumentExporterTest extends TestCase
             'vat_duzp' => '2026-06-01', 'vat_dppd' => null, 'period_from' => null, 'period_to' => null,
             'fiscal_year' => 1, 'fiscal_month' => 6, 'vat_registration' => 1, 'vat_period' => 12,
             'vat_mode' => 1, 'vat_calc_source' => 0, 'vat_place' => 0,
+            'vat_rate_source' => 0, 'vat_rate_date' => null,
             'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => null,
             'total_rounding_auto' => 0, 'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
             'total_base' => '1500.00', 'total_vat' => '315.00', 'total_amount' => '1815.00', 'total_rounding' => '0.00',
@@ -661,5 +662,55 @@ class DocumentExporterTest extends TestCase
         $this->assertSame(['code' => 'cz-120', 'pct' => 21.0], $c['rows'][1]['vat'], 'řádek bez přenesení beze změny');
         $this->assertSame('14', $c['vatRecap'][0]['reverseChargeCode']);
         $this->assertArrayNotHasKey('reverseChargeCode', $c['vatRecap'][1]);
+    }
+
+    /**
+     * Datum sazby DPH (#159 D11, U7): přepínač jen mimo automatiku, data jen
+     * vyplněná. Doklad v automatice se exportuje beze změny — přesný tvar
+     * `dates`, `vat`, řádku i rekapitulace hlídá
+     * {@see testReceivedInvoiceMapsToCanonicalAndValidates()}.
+     */
+    public function testVatRateSourceAndDatesAreExportedOnlyOutsideAutomatic(): void
+    {
+        $recapRow = ['id' => 1, 'doc_head' => 100, 'vat_code' => 'cz-120', 'vat_pct' => '21.00', 'base' => '1500.00',
+            'tax' => '315.00', 'total' => '1815.00', 'is_reverse_pair' => 0, 'order_pos' => 0, 'vat_rate_date' => null];
+
+        // Automatika: žádný z nových klíčů, ani s prázdnými sloupci.
+        $db = $this->db(rows: [['vat_rate_date' => null] + $this->itemRowRow()], recap: [$recapRow]);
+        $c = (new DocumentExporter($db))->exportDocument($this->headRow())->data;
+        $this->assertArrayNotHasKey('rateSource', $c['vat']);
+        $this->assertArrayNotHasKey('vatRateDate', $c['dates']);
+        $this->assertArrayNotHasKey('rateDate', $c['rows'][0]['vat']);
+        $this->assertArrayNotHasKey('rateDate', $c['vatRecap'][0]);
+
+        // Vlastní datum dokladu.
+        $c = (new DocumentExporter($db))->exportDocument($this->headRow([
+            'vat_rate_source' => 1, 'vat_rate_date' => new \DateTimeImmutable('2012-12-31'),
+        ]))->data;
+        $this->assertSame('document', $c['vat']['rateSource']);
+        $this->assertSame('2012-12-31', $c['dates']['vatRateDate']);
+        $this->assertArrayNotHasKey('rateDate', $c['rows'][0]['vat']);
+
+        // Vlastní datum na řádcích: řádek i řádek rekapitulace s datem ho nesou, bez data ne.
+        $db = $this->db(
+            rows: [
+                ['vat_code' => 'cz-120', 'vat_rate_date' => null] + $this->itemRowRow(),
+                ['id' => 2, 'vat_code' => 'cz-120', 'vat_pct' => '20.00', 'vat_rate_date' => new \DateTimeImmutable('2012-06-30')] + $this->itemRowRow(),
+            ],
+            recap: [
+                $recapRow,
+                ['id' => 2, 'vat_pct' => '20.00', 'order_pos' => 1, 'vat_rate_date' => '2012-06-30'] + $recapRow,
+            ],
+        );
+        $c = (new DocumentExporter($db))->exportDocument($this->headRow(['vat_rate_source' => 2]))->data;
+        $this->assertSame('rows', $c['vat']['rateSource']);
+        $this->assertArrayNotHasKey('vatRateDate', $c['dates']);
+        $this->assertSame(['code' => 'cz-120', 'pct' => 21.0], $c['rows'][0]['vat']);
+        $this->assertSame(['code' => 'cz-120', 'pct' => 20.0, 'rateDate' => '2012-06-30'], $c['rows'][1]['vat']);
+        $this->assertArrayNotHasKey('rateDate', $c['vatRecap'][0]);
+        $this->assertSame('2012-06-30', $c['vatRecap'][1]['rateDate']);
+
+        $schema = (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1');
+        $this->assertSame([], $schema, 'export s daty sazby odpovídá schématu');
     }
 }

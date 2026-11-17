@@ -382,6 +382,15 @@ hotově nese `cashDesk` také. Strany: prodejka jako vydaná faktura,
 pokladní doklad podle směru (příjem jako vydaná, výdej jako přijatá vč.
 bankovního spojení dodavatele).
 
+**Datum sazby DPH** (#159 D11): doklad s přepínačem „Sazby DPH podle“
+mimo automatiku nese `vat.rateSource` (`document` / `rows`) a vyplněná
+vlastní data — `dates.vatRateDate`, `rows[].vat.rateDate`,
+`vatRecap[].rateDate`. Seed je předá applieru a ten kódy i sazby hledá
+k datu sazby řádku, takže doklad s řádkem ve staré sazbě (odpočet zálohy)
+projde dump → seed beze změny procent. Doklad v automatice se exportuje
+bez těchto klíčů — sady vzniklé před #159 se nemění
+(`docs/exchange-format.md` § 5 „Datum sazby DPH“).
+
 Exportery jsou zrcadlem applierů (`DocumentApplier::transform()`,
 `PersonApplier::transformHeaderForCreate`, …). Odvozené sloupce se
 neexportují (fiskální rok, DPH období, domácí měna, snapshoty partnera,

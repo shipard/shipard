@@ -51,6 +51,13 @@ final class DocumentExporter implements RecordExporter
     private const VAT_PLACE_NAMES = [0 => 'domestic', 1 => 'intracom', 2 => 'thirdCountry'];
     private const VAT_RECAP_SOURCE_NAMES = [0 => 'computed', 1 => 'declared'];
     private const VAT_CALC_SOURCE_NAMES = [0 => 'header', 1 => 'rows'];
+    /**
+     * docs_core_heads.vat_rate_source → canonical vat.rateSource (#159 D11).
+     * Automatika (0) v mapě chybí záměrně: klíč se pak nevypíše a doklad
+     * v automatice se exportuje beze změny.
+     */
+    private const VAT_RATE_SOURCE_NAMES = [1 => 'document', 2 => 'rows'];
+
     /** docs_core_heads.cs_mode → canonical vat.controlStatementMode (#77). */
     private const CS_MODE_NAMES = [0 => 'auto', 1 => 'detail', 2 => 'aggregate', 3 => 'exclude'];
     private const PAYMENT_METHOD_NAMES = [0 => 'cash', 1 => 'bankTransfer', 2 => 'card', 3 => 'cashOnDelivery', 4 => 'setOff', 5 => 'paymentGateway'];
@@ -327,6 +334,8 @@ final class DocumentExporter implements RecordExporter
                 'accountingDate'    => V::date($h['accounting_date'] ?? null),
                 'taxPointDate'      => V::date($h['vat_duzp'] ?? null),
                 'vatObligationDate' => V::date($h['vat_dppd'] ?? null),
+                // Vlastní datum sazby DPH dokladu (#159 D11) — jen vyplněné.
+                'vatRateDate'       => V::date($h['vat_rate_date'] ?? null),
                 'periodFrom'        => V::date($h['period_from'] ?? null),
                 'periodTo'          => V::date($h['period_to'] ?? null),
             ],
@@ -347,6 +356,10 @@ final class DocumentExporter implements RecordExporter
                 // Ruční zařazení do KH — bez něj by seed vrátil doklad
                 // do automatiky a hlášení by vyšlo jinak než podané.
                 'controlStatementMode' => self::CS_MODE_NAMES[(int) ($h['cs_mode'] ?? 0)] ?? null,
+                // Přepínač „Sazby DPH podle“ (#159 D11) — jen mimo automatiku;
+                // bez něj by seed vlastní data sazby zahodil a procenta
+                // řádků ve staré sazbě přepočítal.
+                'rateSource'          => self::VAT_RATE_SOURCE_NAMES[(int) ($h['vat_rate_source'] ?? 0)] ?? null,
             ],
             'payment'       => [
                 'method'           => self::PAYMENT_METHOD_NAMES[(int) ($h['payment_method'] ?? 1)] ?? null,
@@ -513,7 +526,9 @@ final class DocumentExporter implements RecordExporter
                     // Předmět plnění tuzemského přenesení (#89 D10) — klíč
                     // jen když ho řádek nese, ostatní řádky beze změny.
                     'reverseChargeCode' => V::str($r['reverse_charge_code'] ?? null),
-                ], static fn (mixed $v, string $k): bool => $k !== 'reverseChargeCode' || $v !== null, ARRAY_FILTER_USE_BOTH),
+                    // Vlastní datum sazby DPH řádku (#159 D11) — totéž.
+                    'rateDate' => V::date($r['vat_rate_date'] ?? null),
+                ], static fn (mixed $v, string $k): bool => !in_array($k, ['reverseChargeCode', 'rateDate'], true) || $v !== null, ARRAY_FILTER_USE_BOTH),
                 'computed'       => [
                     'vatBase'   => V::float($r['vat_base'] ?? null),
                     'vatAmount' => V::float($r['vat_amount'] ?? null),
@@ -552,6 +567,8 @@ final class DocumentExporter implements RecordExporter
                 'total'         => V::float($r['total'] ?? null),
                 'isReversePair' => ((int) ($r['is_reverse_pair'] ?? 0)) === 1 ? true : null,
                 'reverseChargeCode' => V::str($r['reverse_charge_code'] ?? null),
+                // Vlastní datum sazby DPH řádku rekapitulace (#159 D11).
+                'rateDate'      => V::date($r['vat_rate_date'] ?? null),
             ]);
         }
         return $out;
