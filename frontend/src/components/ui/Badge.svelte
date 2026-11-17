@@ -1,7 +1,7 @@
 <script>
   // Štítek z hlavičky detailu (#137 task 3, docs/design-system.md §5):
   // pilulka v roli meta, normální tloušťka. `style` je obecná varianta
-  // (`neutral` výchozí, `primary`, `accent`, `success`, `warning`, `danger`)
+  // (`neutral` výchozí, `primary`, `success`, `warning`, `danger`)
   // nebo doc-state styl (`concept`, `edit`, `confirmed`, `archive`, `trash`,
   // `cancelled`, `done`, `error`) — tytéž tokeny jako FormStateBadge
   // a štítek návrhu, aby stejný stav vypadal všude stejně; neznámý styl
@@ -11,7 +11,7 @@
   let { style = 'neutral', label = '', ...rest } = $props();
 
   const STYLES = [
-    'neutral', 'primary', 'accent', 'success', 'warning', 'danger',
+    'neutral', 'primary', 'success', 'warning', 'danger',
     'concept', 'edit', 'confirmed', 'archive', 'trash', 'cancelled', 'done', 'error',
   ];
   let safeStyle = $derived(STYLES.includes(style) ? style : 'neutral');
@@ -34,7 +34,6 @@
      tam, kde to barevně sedí. */
   .shpd-badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
   .shpd-badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
-  .shpd-badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
   .shpd-badge--success   { background: var(--shpd-color-state-done-bg); color: var(--shpd-color-state-done-text); }
   .shpd-badge--warning   { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
   .shpd-badge--danger    { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }

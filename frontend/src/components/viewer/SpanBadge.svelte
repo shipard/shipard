@@ -28,7 +28,6 @@
    * .shpd-badge--* v ui/Badge.svelte. */
   .shpd-span-badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
   .shpd-span-badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
-  .shpd-span-badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
   .shpd-span-badge--warning   { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
   .shpd-span-badge--danger    { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
 
