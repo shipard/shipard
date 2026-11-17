@@ -150,4 +150,118 @@ class DocRowsDocumentTest extends TestCase
         $this->assertCount(1, $early);
         $this->assertStringContainsString('2017-06-30', $early[0]['message']);
     }
+
+    // ── Datum sazby DPH (#159 D1, D5, D6, D15, U7) ─────────────────────────
+
+    /**
+     * Dokument nad hlavičkou plátce DPH: DPPD 1. 2. 2024, zdroj data sazby
+     * podle parametru.
+     */
+    private function docWithRateHead(int $source, ?string $headRateDate = null): DocRowsDocument
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new \Dibi\Row([
+            'vat_registration' => 1, 'vat_mode' => 1, 'doc_type' => 'invni', 'cash_dir' => 0,
+            'vat_duzp' => '2024-02-01', 'vat_dppd' => '2024-02-01', 'issue_date' => '2024-02-05',
+            'corrective' => 0, 'corrected_doc_date' => null,
+            'vat_rate_source' => $source, 'vat_rate_date' => $headRateDate,
+        ]));
+        $db->method('fetchSingle')->willReturnCallback(
+            static fn (mixed ...$args): mixed => str_contains((string) $args[0], 'vat_registrations') ? 'cz' : 1,
+        );
+        $doc = new DocRowsDocument();
+        $doc->setDb($db);
+        $doc->setConfig(\Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory::fromItems([
+            'world.vat.cz' => \Shipard\Core\Utils\JsoncParser::parseFile(
+                dirname(__DIR__, 5) . '/modules/world/vat/config/vat-cz.jsonc',
+            ),
+        ]));
+        return $doc;
+    }
+
+    public function testRowPercentIsDerivedFromCodeAndRowDate(): void
+    {
+        $row = ['doc_head' => 7, 'order_pos' => 1, 'row_kind' => 1, 'vat_code' => 'cz-302', 'vat_pct' => 99,
+            'vat_rate_date' => '2023-11-30'];
+        $this->docWithRateHead(2)->beforeSave($row, null);
+        $this->assertSame(10.0, $row['vat_pct'], 'Druhá snížená k datu řádku');
+        $this->assertSame('2023-11-30', $row['vat_rate_date']);
+
+        $row = ['doc_head' => 7, 'order_pos' => 1, 'row_kind' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 99,
+            'vat_rate_date' => '2012-12-31'];
+        $this->docWithRateHead(0)->beforeSave($row, null);
+        $this->assertSame(21.0, $row['vat_pct'], 'zdroj 0: automatika dokladu');
+        $this->assertNull($row['vat_rate_date'], 'datum řádku mimo svůj režim se maže');
+
+        $row = ['doc_head' => 7, 'order_pos' => 1, 'row_kind' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 99];
+        $this->docWithRateHead(1, '2012-12-31')->beforeSave($row, null);
+        $this->assertSame(20.0, $row['vat_pct'], 'zdroj 1: vlastní datum dokladu');
+        $this->assertNull($row['vat_rate_date']);
+    }
+
+    public function testRowWithoutRateKeepsPercentAndPartialWriteIsUntouched(): void
+    {
+        $row = ['doc_head' => 7, 'order_pos' => 1, 'row_kind' => 1, 'vat_code' => 'cz-302', 'vat_pct' => 10];
+        $this->docWithRateHead(0)->beforeSave($row, null);
+        $this->assertSame(10, $row['vat_pct'], 'kód bez sazby k datu: procento zůstává, hlásí validace');
+
+        $partial = ['id' => 3, 'doc_head' => 7, 'order_pos' => 4];
+        $this->docWithRateHead(2)->beforeSave($partial, ['id' => 3]);
+        $this->assertArrayNotHasKey('vat_pct', $partial);
+        $this->assertArrayNotHasKey('vat_rate_date', $partial, 'zápis bez kódu i data se nemění');
+
+        $text = ['doc_head' => 7, 'order_pos' => 1, 'row_kind' => 0, 'vat_code' => 'cz-110'];
+        $this->docWithRateHead(0)->beforeSave($text, null);
+        $this->assertArrayNotHasKey('vat_pct', $text, 'textový řádek procento nemá');
+    }
+
+    public function testRowValidationRejectsCodeWithoutRateAndWarnsOnLateDate(): void
+    {
+        $collect = static function (DocRowsDocument $doc, array $row): array {
+            $row += ['doc_head' => 7, 'row_kind' => 1];
+            $result = $doc->validate($row);
+            return [
+                'errors'   => array_map(static fn ($e): array => $e->toArray(), $result->getErrors()),
+                'warnings' => array_map(static fn ($w): array => $w->toArray(), $result->getWarnings()),
+            ];
+        };
+        $ofCode = static fn (array $list, string $code): array => array_values(array_filter(
+            $list,
+            static fn (array $f): bool => $f['code'] === $code,
+        ));
+
+        $missing = $collect($this->docWithRateHead(0), ['vat_code' => 'cz-302']);
+        $errors = $ofCode($missing['errors'], 'vat_rate_missing');
+        $this->assertCount(1, $errors, 'ze sub-formuláře je kód bez sazby chyba');
+        $this->assertSame('vat_code', $errors[0]['column']);
+
+        $dated = $collect($this->docWithRateHead(2), ['vat_code' => 'cz-302', 'vat_rate_date' => '2023-11-30']);
+        $this->assertSame([], $ofCode($dated['errors'], 'vat_rate_missing'));
+
+        $late = $collect($this->docWithRateHead(2), ['vat_code' => 'cz-110', 'vat_rate_date' => '2024-03-01']);
+        $this->assertSame([], $ofCode($late['errors'], 'vat_rate_date_late'));
+        $warnings = $ofCode($late['warnings'], 'vat_rate_date_late');
+        $this->assertCount(1, $warnings);
+        $this->assertSame('vat_rate_date', $warnings[0]['column']);
+    }
+
+    public function testSubjectIsCheckedAtRowDate(): void
+    {
+        $errors = static function (DocRowsDocument $doc, array $row): array {
+            $row += ['doc_head' => 7, 'row_kind' => 1];
+            return array_values(array_filter(
+                array_map(static fn ($e): array => $e->toArray(), $doc->validate($row)->getErrors()),
+                static fn (array $e): bool => $e['column'] === 'reverse_charge_code',
+            ));
+        };
+        // 4a platí od 1. 7. 2017; doklad je z roku 2024.
+        $row = ['vat_code' => 'cz-150', 'reverse_charge_code' => '4a'];
+        $this->assertSame([], $errors($this->docWithRateHead(2), $row));
+        $this->assertCount(1, $errors($this->docWithRateHead(2), $row + ['vat_rate_date' => '2017-06-30']));
+        $this->assertSame(
+            [],
+            $errors($this->docWithRateHead(0), $row + ['vat_rate_date' => '2017-06-30']),
+            'mimo zdroj 2 se datum řádku nečte',
+        );
+    }
 }

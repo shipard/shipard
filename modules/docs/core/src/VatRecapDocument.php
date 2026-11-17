@@ -38,6 +38,16 @@ class VatRecapDocument extends Document
                 $result->addError(ReverseChargeSubjects::COLUMN, $problem['message'], $problem['code']);
             }
         }
+        // Datum sazby DPH (#159 D9, D15): kód bez sazby k datu sazby řádku je
+        // chyba, pozdější vlastní datum varování; oddaňovací pár kontrolu
+        // nemá (U6).
+        if (empty($data['is_reverse_pair'])) {
+            foreach (VatRateDates::subformLineProblems($this->db, $this->config, $data) as $problem) {
+                $problem['warning']
+                    ? $result->addWarning($problem['column'], $problem['message'], $problem['code'])
+                    : $result->addError($problem['column'], $problem['message'], $problem['code']);
+            }
+        }
         return $result;
     }
 
@@ -50,6 +60,14 @@ class VatRecapDocument extends Document
         parent::beforeSave($data, $originalData);
         // Předmět jen u kódu přenesení a u oddaňovacího páru (#89 D7).
         ReverseChargeSubjects::normalizeLine($this->db, $this->config, $data);
+        // Procento není vstup (#159 D1, D8) — z kódu a data sazby řádku;
+        // oddaňovací pár ho dědí z primární skupiny při přepočtu hlavičky.
+        VatRateDates::applyToSubformLine(
+            $this->db,
+            $this->config,
+            $data,
+            derivePct: empty($data['is_reverse_pair']),
+        );
         if ($originalData !== null || (int) ($data['order_pos'] ?? 0) > 0) {
             return;
         }

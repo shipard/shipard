@@ -103,17 +103,18 @@ final class ReverseChargeSubjects
     }
 
     /**
-     * Nabídka pro select formuláře: předměty platné k datu sazby hlavičky.
+     * Nabídka pro select formuláře: předměty platné k datu sazby — řádku
+     * (`$rateDate`, #159 U7), bez něj dokladu.
      *
      * @param array<string, mixed>|null $context {@see DocHeadVatContext::load()}
      * @return list<array{value: string, label: string}>
      */
-    public static function options(?array $context, ?ConfigRuntime $config): array
+    public static function options(?array $context, ?ConfigRuntime $config, ?string $rateDate = null): array
     {
         if ($context === null || empty($context['country']) || $config === null) {
             return [];
         }
-        $date = $context['effective_rate_date'] ?? null;
+        $date = $rateDate ?? $context['effective_rate_date'] ?? null;
         try {
             $subjects = (new VatRateResolver($config))->getReverseChargeSubjectsValidAt(
                 (string) $context['country'],
@@ -134,10 +135,11 @@ final class ReverseChargeSubjects
     /**
      * Kontext hlavičky pro dětské dokumenty (řádek dokladu, řádek převzaté
      * rekapitulace), které se ukládají samostatně ze sub-formuláře: země
-     * registrace DPH, definice kódů a datum sazby. null = bez DPH nebo bez
-     * konfigurace — pravidla předmětu se pak neuplatní.
+     * registrace DPH, definice kódů, datum sazby dokladu a sloupce hlavičky
+     * pro {@see VatRateDates} (`head` — datum sazby řádku). null = bez DPH
+     * nebo bez konfigurace — pravidla předmětu ani sazby se pak neuplatní.
      *
-     * @return array{country: string, codes: array<string, array<string, mixed>>, rateDate: ?string}|null
+     * @return array{country: string, codes: array<string, array<string, mixed>>, rateDate: ?string, head: array<string, mixed>}|null
      */
     public static function headContext(?\Dibi\Connection $db, ?ConfigRuntime $config, mixed $headId): ?array
     {
@@ -174,12 +176,13 @@ final class ReverseChargeSubjects
             'country'  => (string) $country,
             'codes'    => $codes,
             'rateDate' => VatRateDates::headDate($head, $config),
+            'head'     => $head,
         ];
     }
 
     /**
      * Validace předmětu řádku ukládaného ze sub-formuláře: jen hodnota
-     * (mimo číselník / neplatná k datu). Chybějící předmět tady chybou
+     * (mimo číselník / neplatná k datu sazby řádku). Chybějící předmět tady chybou
      * není — hlídá ho potvrzení dokladu (`DocDocument::validate`).
      *
      * @param array<string, mixed> $line
@@ -196,7 +199,7 @@ final class ReverseChargeSubjects
             $context['country'],
             $context['codes'],
             $line,
-            $context['rateDate'],
+            VatRateDates::lineDate($context['head'], $line, $config),
             requireFilled: false,
         );
     }

@@ -278,6 +278,78 @@ final class VatRateDates
     }
 
     /**
+     * Nálezy řádku ukládaného samostatně ze sub-formuláře (řádek dokladu,
+     * řádek převzaté rekapitulace). Kód bez sazby k datu je tu chyba vždy
+     * (D15) — formulář takový kód nenabízí. Bez kontextu hlavičky (doklad
+     * bez DPH, bez registrace, bez konfigurace) se nekontroluje (U8).
+     *
+     * @param array<string, mixed> $line
+     * @return list<array{column: string, message: string, code: string, warning: bool}>
+     */
+    public static function subformLineProblems(?\Dibi\Connection $db, ?ConfigRuntime $config, array $line): array
+    {
+        $context = ReverseChargeSubjects::headContext($db, $config, $line['doc_head'] ?? null);
+        if ($context === null || $config === null) {
+            return [];
+        }
+        return self::lineProblems(
+            new VatRateResolver($config),
+            $context['country'],
+            $context['head'],
+            $line,
+            $config,
+            strict: true,
+        );
+    }
+
+    /**
+     * Datum sazby a procento řádku ukládaného ze sub-formuláře (D1, D6):
+     * vlastní datum jen při zdroji „vlastní datum na řádcích“, procento
+     * z kódu a data sazby řádku. Částečný zápis bez kódu DPH i bez data se
+     * nemění; bez kontextu hlavičky se datum jen normalizuje (U8). Procento
+     * řádku bez sazby k datu zůstává — hlásí validace.
+     *
+     * Záchytnou sítí je přepočet hlavičky po uložení řádku
+     * (`DocHeadRecomputer`), který procenta a data všech řádků srovná.
+     *
+     * @param array<string, mixed> $line
+     * @param bool $derivePct false = jen datum (textový řádek, oddaňovací pár)
+     */
+    public static function applyToSubformLine(
+        ?\Dibi\Connection $db,
+        ?ConfigRuntime $config,
+        array &$line,
+        bool $derivePct = true,
+    ): void {
+        $hasDate = array_key_exists(self::COLUMN, $line);
+        if (!$hasDate && !array_key_exists('vat_code', $line)) {
+            return;
+        }
+        $context = ReverseChargeSubjects::headContext($db, $config, $line['doc_head'] ?? null);
+        if ($context === null || $config === null) {
+            if ($hasDate) {
+                $line[self::COLUMN] = self::dateString($line[self::COLUMN]);
+            }
+            return;
+        }
+        if ($hasDate || self::source($context['head'], $config) !== self::SOURCE_ROWS) {
+            self::normalizeLine($context['head'], $line, $config);
+        }
+        if (!$derivePct) {
+            return;
+        }
+        $pct = self::pct(
+            new VatRateResolver($config),
+            $context['country'],
+            $line['vat_code'] ?? null,
+            self::lineDate($context['head'], $line, $config),
+        );
+        if ($pct !== null) {
+            $line['vat_pct'] = $pct;
+        }
+    }
+
+    /**
      * Varování U11: vlastní datum sazby pozdější než automatické datum
      * dokladu — sazba „z budoucnosti“ bývá překlep.
      *

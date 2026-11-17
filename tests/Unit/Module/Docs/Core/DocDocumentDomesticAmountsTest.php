@@ -260,11 +260,36 @@ class DocDocumentDomesticAmountsTest extends TestCase
         $this->assertCount(1, $doc->executedSql);
         $this->assertStringContainsString('UPDATE [docs_core_rows]', $doc->executedSql[0]['sql']);
         $set = $doc->executedSql[0]['args'][0];
+        // Procento se zapisuje s vypočtenými sloupci (#159 D1) — řádek ho nese.
         $this->assertSame(
-            ['vat_base', 'vat_amount', 'vat_total', 'vat_base_dom', 'vat_amount_dom', 'vat_total_dom'],
+            ['vat_base', 'vat_amount', 'vat_total', 'vat_base_dom', 'vat_amount_dom', 'vat_total_dom', 'vat_pct'],
             array_keys($set),
         );
         $this->assertSame(7, $doc->executedSql[0]['args'][1]);
+    }
+
+    /**
+     * Procento a datum sazby se zapisují jen z klíčů, které řádek nese
+     * (#159 U8): řádek z payloadu bez procenta uložené nepřepíše, řádek
+     * s datem (i NULL po přepnutí zdroje) ho propíše.
+     */
+    public function testPersistRowComputedColumnsWritesRateColumnsOnlyWhenPresent(): void
+    {
+        $doc = $this->doc();
+        $doc->setDb($this->createMock(\Dibi\Connection::class));
+        $withoutPct = $this->row('cz-101', 21.0, 100.0, id: 7);
+        unset($withoutPct['vat_pct']);
+        $withDate = $this->row('cz-101', 21.0, 100.0, id: 8) + ['vat_rate_date' => null];
+        $doc->setComputedRows([$withoutPct, $withDate]);
+
+        $doc->persistRowComputedColumns();
+
+        $this->assertArrayNotHasKey('vat_pct', $doc->executedSql[0]['args'][0]);
+        $this->assertArrayNotHasKey('vat_rate_date', $doc->executedSql[0]['args'][0]);
+        $second = $doc->executedSql[1]['args'][0];
+        $this->assertSame(21.0, (float) $second['vat_pct']);
+        $this->assertArrayHasKey('vat_rate_date', $second);
+        $this->assertNull($second['vat_rate_date']);
     }
 
     public function testPersistRowComputedColumnsNoDbIsNoop(): void

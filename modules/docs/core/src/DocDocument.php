@@ -193,6 +193,7 @@ abstract class DocDocument extends Document
         }
 
         $this->validateReverseChargeSubjects($data, $result, $newState === 40);
+        $this->validateVatRates($data, $result, $newState === 40 || $this->isLockExempt($data));
         $this->validateDeclaredRecap($data, $result);
         $this->validateTotalRounding($data, $result);
 
@@ -270,9 +271,11 @@ abstract class DocDocument extends Document
      * úkolem kontroly je nesrovnalost zviditelnit.
      *
      * - `vat_recap_inconsistent` — řádek si vnitřně neodpovídá (`base + tax`
-     *   ≠ `total`, daň ≠ sazba ze základu, u kódu ze sazebníku neznámá sazba
-     *   k datu sazby dokladu — `VatRateDates::headDate`). Oddaňovací páry a nulové
-     *   sazby se přeskakují.
+     *   ≠ `total`, daň ≠ sazba ze základu). Sazba není vstup (#159 D1, D8):
+     *   odvodí se z kódu a data sazby řádku ({@see applyVatRatesToRecap}),
+     *   takže rekapitulace dodavatele v jiné sazbě se ukáže právě tady.
+     *   Kód bez sazby k datu hlásí {@see validateVatRates}. Oddaňovací páry
+     *   a nulové sazby se přeskakují.
      * - `rows_recap_mismatch` — Σ řádkových cen per (kód, sazba) neodpovídá
      *   rekapitulaci (v mode 1 základu, v mode 2 celkem). Mez je stejná jako
      *   u dorovnání řádků ({@see reconcileRowsToRecap}), takže warning padne
@@ -298,9 +301,9 @@ abstract class DocDocument extends Document
 
         $resolved = $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
-        $country  = $resolved['country'] ?? null;
-        // Datum sazby dokladu — jedno místo pravidla (VatRateDates, #159).
-        $duzp     = (string) (VatRateDates::headDate($data, $this->config) ?? '');
+        // validate() běží před beforeSave — procento ze vstupu se tu odvodí
+        // stejně jako při uložení, kontroly níž čtou už odvozenou sazbu.
+        $this->applyVatRatesToRecap($recap, $data, $resolved);
 
         foreach ($recap as $r) {
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {
@@ -332,18 +335,6 @@ abstract class DocDocument extends Document
                         . " (očekáváno ~{$expectedTax})";
                 }
             }
-            if ($country !== null && $duzp !== '' && $code !== '') {
-                try {
-                    $codePct = $this->vatRateResolver()->resolveVatPct($country, $code, $duzp);
-                    if (abs($codePct - $pct) > 0.001) {
-                        $problems[] = "sazba {$pct} % nepatří ke kódu {$code} k datu {$duzp}"
-                            . " (sazebník má {$codePct} %)";
-                    }
-                } catch (\LogicException) {
-                    // Kód bez sazby k datu (oddaňovací kódy, historické
-                    // kombinace) — sazbu z rekapitulace nemáme čím ověřit.
-                }
-            }
             if ($problems !== []) {
                 $result->addWarning(
                     'recap',
@@ -353,7 +344,7 @@ abstract class DocDocument extends Document
             }
         }
 
-        $this->checkRowsAgainstDeclaredRecap($data, $recap, $result);
+        $this->checkRowsAgainstDeclaredRecap($data, $recap, $resolved, $result);
     }
 
     /**
@@ -361,11 +352,13 @@ abstract class DocDocument extends Document
      * `rows_recap_mismatch` v {@see validateDeclaredRecap}.
      *
      * @param array<string, mixed> $data
-     * @param array<int, array<string, mixed>> $recap
+     * @param array<int, array<string, mixed>> $recap rekapitulace s už odvozenou sazbou
+     * @param array{country: string, codes: array<string, array<string, mixed>>}|null $resolved
      */
     private function checkRowsAgainstDeclaredRecap(
         array $data,
         array $recap,
+        ?array $resolved,
         ValidationResult $result,
     ): void {
         $rows = $this->resolveRowsForCompute($data);
@@ -373,8 +366,10 @@ abstract class DocDocument extends Document
             return;
         }
         // Stejný klíč skupiny jako při výpočtu — validate() běží před
-        // beforeSave, řádky i rekapitulace jsou tu ještě nenormalizované.
-        $vatCodes = $this->resolveVatCodesForDoc($data)['codes'] ?? null;
+        // beforeSave, řádky i rekapitulace jsou tu ještě nenormalizované
+        // (předmět plnění, procento k datu sazby).
+        $vatCodes = $resolved['codes'] ?? null;
+        $this->applyVatRatesToRows($rows, $data, $resolved);
         $this->normalizeReverseChargeSubjects($rows, $vatCodes);
         $this->normalizeReverseChargeSubjects($recap, $vatCodes);
         $fromTotal = (int) ($data['vat_mode'] ?? 1) === 2;
@@ -490,8 +485,8 @@ abstract class DocDocument extends Document
      * kód DPH s příznakem `reverseCharge` ho vyžaduje při potvrzení dokladu
      * (stav 40 — Koncept ani V opravě se bez něj uložit smí, jinak by starý
      * doklad bez předmětu nešel otevřít k opravě); předmět mimo číselník
-     * nebo neplatný k datu sazby ({@see VatRateDates})
-     * je chyba vždy. Platí i v importním módu — nic se tiše nedoplňuje.
+     * nebo neplatný k datu sazby svého řádku
+     * ({@see VatRateDates::lineDate()}, #159 U7) je chyba vždy. Platí i v importním módu — nic se tiše nedoplňuje.
      *
      * Řádky: `rows.{index}.reverse_charge_code`. Řádky převzaté rekapitulace
      * (jen `vat_recap_source` 1 — přepočítaná vzniká z řádků): pole `recap`.
@@ -529,10 +524,10 @@ abstract class DocDocument extends Document
         }
         $country  = $resolved['country'];
         $vatCodes = $resolved['codes'];
-        $rateDate = VatRateDates::headDate($data, $this->config);
         $resolver = $this->vatRateResolver();
 
         foreach ($rows as $i => $row) {
+            $rateDate = VatRateDates::lineDate($data, $row, $this->config);
             $problem = ReverseChargeSubjects::problem($resolver, $country, $vatCodes, $row, $rateDate, $requireFilled);
             if ($problem !== null) {
                 $result->addError(
@@ -547,6 +542,7 @@ abstract class DocDocument extends Document
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {
                 continue;
             }
+            $rateDate = VatRateDates::lineDate($data, $r, $this->config);
             $problem = ReverseChargeSubjects::problem($resolver, $country, $vatCodes, $r, $rateDate, $requireFilled);
             if ($problem !== null) {
                 $code = (string) ($r['vat_code'] ?? '');
@@ -558,6 +554,82 @@ abstract class DocDocument extends Document
                 );
             }
         }
+    }
+
+    /**
+     * Kontroly data sazby DPH (#159 D9, D15, U4, U11) — nálezy dává
+     * {@see VatRateDates}:
+     *
+     *  - `vat_rate_missing` — kód DPH řádku nebo řádku převzaté rekapitulace
+     *    nemá k datu sazby sazbu. Chyba v přísném režimu (potvrzení dokladu,
+     *    importní mód), v rozpracovaném dokladu varování: jinak by změna DPPD
+     *    na hlavičce nešla uložit, dokud nejsou opravené řádky, a ty se řídí
+     *    uloženou hlavičkou;
+     *  - `vat_rate_date_required` — „vlastní datum dokladu“ bez data; chyba
+     *    jen v přísném režimu, do té doby platí automatika;
+     *  - `vat_rate_date_late` — vlastní datum pozdější než automatické;
+     *    varování vždy.
+     *
+     * Řádky: `rows.{index}.vat_code` / `rows.{index}.vat_rate_date`; řádky
+     * převzaté rekapitulace: pole `recap`. Oddaňovací pár vlastní kontrolu
+     * nemá (U6). Bez země registrace nebo konfigurace se nekontroluje (U8).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateVatRates(array &$data, ValidationResult $result, bool $strict): void
+    {
+        if ((int) ($data['vat_mode'] ?? 1) === 0) {
+            return;
+        }
+        foreach (VatRateDates::headProblems($data, $this->config, $strict) as $problem) {
+            $this->addVatRateProblem($result, $problem, $problem['column'], $problem['message']);
+        }
+
+        $rows = array_filter(
+            $this->resolveRowsForCompute($data),
+            static fn (mixed $row): bool => is_array($row)
+                && (int) ($row['row_kind'] ?? 1) === 1 && !empty($row['vat_code']),
+        );
+        $recap = [];
+        if ((int) ($data['vat_recap_source'] ?? 0) === 1) {
+            $recap = isset($data['vatRecap']) && is_array($data['vatRecap']) && $data['vatRecap'] !== []
+                ? $data['vatRecap']
+                : $this->loadVatRecapFromDb($data['id'] ?? null);
+        }
+        if ($rows === [] && $recap === []) {
+            return;
+        }
+        $resolved = $this->resolveVatCodesForDoc($data);
+        if ($resolved === null) {
+            return;
+        }
+        $resolver = $this->vatRateResolver();
+
+        foreach ($rows as $i => $row) {
+            $problems = VatRateDates::lineProblems($resolver, $resolved['country'], $data, $row, $this->config, $strict);
+            foreach ($problems as $problem) {
+                $this->addVatRateProblem($result, $problem, "rows.{$i}.{$problem['column']}", $problem['message']);
+            }
+        }
+
+        foreach ($recap as $r) {
+            if (!is_array($r) || !empty($r['is_reverse_pair'])) {
+                continue;
+            }
+            $problems = VatRateDates::lineProblems($resolver, $resolved['country'], $data, $r, $this->config, $strict);
+            foreach ($problems as $problem) {
+                $message = rtrim($problem['message'], '.');
+                $this->addVatRateProblem($result, $problem, 'recap', "Rekapitulace DPH: {$message}.");
+            }
+        }
+    }
+
+    /** @param array{code: string, warning: bool} $problem */
+    private function addVatRateProblem(ValidationResult $result, array $problem, string $column, string $message): void
+    {
+        $problem['warning']
+            ? $result->addWarning($column, $message, $problem['code'])
+            : $result->addError($column, $message, $problem['code']);
     }
 
     /**
@@ -798,6 +870,7 @@ abstract class DocDocument extends Document
         $this->applyCorrectiveColumns($data);
         $this->followVatObligationDate($data, $originalData);
         $this->applyDateDefaults($data);
+        $this->applyVatRateSource($data, $originalData);
         $this->applyHomeCurrency($data);
         $this->applyHomeCurrencyRate($data);
         $this->resolveAccountingPeriods($data);
@@ -869,6 +942,9 @@ abstract class DocDocument extends Document
         // s vynulovanou hodnotou i uloží; řádky ze sub-formuláře nuluje
         // DocRowsDocument, tady jde jen o klíč skupiny rekapitulace.
         $this->normalizeReverseChargeSubjects($rowsForCompute, $vatCodes);
+        // Procento se nezadává (#159 D1): odvodí se z kódu a data sazby řádku
+        // dřív, než z něj řádek spočítá daň a rekapitulace složí skupiny.
+        $this->applyVatRatesToRows($rowsForCompute, $data, $resolved);
         foreach ($rowsForCompute as &$row) {
             $this->calculateRowPrice($row);
             $this->calculateRowVat($row, $vatMode, $vatCodes);
@@ -1007,18 +1083,24 @@ abstract class DocDocument extends Document
             if ($rowId === 0) {
                 continue;
             }
-            $this->executeSql(
-                'UPDATE [docs_core_rows] SET %a WHERE [id] = %i',
-                [
-                    'vat_base'       => $row['vat_base']       ?? null,
-                    'vat_amount'     => $row['vat_amount']     ?? null,
-                    'vat_total'      => $row['vat_total']      ?? null,
-                    'vat_base_dom'   => $row['vat_base_dom']   ?? null,
-                    'vat_amount_dom' => $row['vat_amount_dom'] ?? null,
-                    'vat_total_dom'  => $row['vat_total_dom']  ?? null,
-                ],
-                $rowId,
-            );
+            $columns = [
+                'vat_base'       => $row['vat_base']       ?? null,
+                'vat_amount'     => $row['vat_amount']     ?? null,
+                'vat_total'      => $row['vat_total']      ?? null,
+                'vat_base_dom'   => $row['vat_base_dom']   ?? null,
+                'vat_amount_dom' => $row['vat_amount_dom'] ?? null,
+                'vat_total_dom'  => $row['vat_total_dom']  ?? null,
+            ];
+            // Procento a datum sazby (#159 D1, D6): uložení hlavičky bez řádků
+            // v payloadu (změna DPPD nebo přepínače) je tudy propíše do řádků
+            // v DB. Jen klíče, které řádek nese — řádek z payloadu bez
+            // procenta, u kterého se nic neodvodilo (U8), uložené nepřepíše.
+            foreach (['vat_pct', VatRateDates::COLUMN] as $column) {
+                if (array_key_exists($column, $row)) {
+                    $columns[$column] = $row[$column];
+                }
+            }
+            $this->executeSql('UPDATE [docs_core_rows] SET %a WHERE [id] = %i', $columns, $rowId);
         }
     }
 
@@ -1363,6 +1445,10 @@ abstract class DocDocument extends Document
             ? $this->groupRowVatForRecap($rows)
             : $this->groupRowPricesForRecap($rows);
 
+        // Datum sazby skupiny = datum jejího prvního řádku, jen při zdroji
+        // „vlastní datum na řádcích“ (#159 U5); klíč skupiny ho neobsahuje.
+        $withRateDates = VatRateDates::source($data, $this->config) === VatRateDates::SOURCE_ROWS;
+
         // 2. For each group build primary line + optional reverse charge pair
         $recap = [];
         $sortOrder = 0;
@@ -1395,9 +1481,12 @@ abstract class DocDocument extends Document
             $tax  = $amounts['tax'];
             $payableTax = empty($codeDef['noPayTax']) ? $tax : 0.0;
 
+            $rateDate = $withRateDates ? ($entry['rate_date'] ?? null) : null;
+
             $primary = [
                 'vat_code'        => $code,
                 'vat_pct'         => $entry['vat_pct'],
+                VatRateDates::COLUMN => $rateDate,
                 ReverseChargeSubjects::COLUMN => $entry['subject'] ?? null,
                 'base'            => $base,
                 'tax'             => $tax,
@@ -1430,6 +1519,7 @@ abstract class DocDocument extends Document
                 $paired = [
                     'vat_code'        => $reverseCodeKey,
                     'vat_pct'         => $entry['vat_pct'],
+                    VatRateDates::COLUMN => $rateDate,
                     // Oddaňovací pár nese předmět své skupiny (#89 D7).
                     ReverseChargeSubjects::COLUMN => $entry['subject'] ?? null,
                     'base'            => $base,
@@ -1464,7 +1554,7 @@ abstract class DocDocument extends Document
      * i ze součtů hlavičky zmizel.
      *
      * @param array<int, array<string, mixed>> $rows
-     * @return array<string, array{vat_code: string, vat_pct: float, subject: ?string, price: float, base: float, tax: float}>
+     * @return array<string, array{vat_code: string, vat_pct: float, rate_date: ?string, subject: ?string, price: float, base: float, tax: float}>
      */
     private function groupRowPricesForRecap(array $rows): array
     {
@@ -1477,6 +1567,7 @@ abstract class DocDocument extends Document
             $grouped[$key] ??= [
                 'vat_code' => (string) $row['vat_code'],
                 'vat_pct'  => (float) ($row['vat_pct'] ?? 0),
+                'rate_date' => VatRateDates::dateString($row[VatRateDates::COLUMN] ?? null),
                 'subject'  => ReverseChargeSubjects::value($row[ReverseChargeSubjects::COLUMN] ?? null),
                 'price'    => 0.0,
                 'base'     => 0.0,
@@ -1494,7 +1585,7 @@ abstract class DocDocument extends Document
      * hodnoty, takže recapAmountsFromRows je jen jejich součet.
      *
      * @param array<int, array<string, mixed>> $rows
-     * @return array<string, array{vat_code: string, vat_pct: float, subject: ?string, price: float, base: float, tax: float}>
+     * @return array<string, array{vat_code: string, vat_pct: float, rate_date: ?string, subject: ?string, price: float, base: float, tax: float}>
      */
     private function groupRowVatForRecap(array $rows): array
     {
@@ -1507,6 +1598,7 @@ abstract class DocDocument extends Document
             $grouped[$key] ??= [
                 'vat_code' => (string) $row['vat_code'],
                 'vat_pct'  => (float) ($row['vat_pct'] ?? 0),
+                'rate_date' => VatRateDates::dateString($row[VatRateDates::COLUMN] ?? null),
                 'subject'  => ReverseChargeSubjects::value($row[ReverseChargeSubjects::COLUMN] ?? null),
                 'price'    => 0.0,
                 'base'     => 0.0,
@@ -1656,9 +1748,13 @@ abstract class DocDocument extends Document
     }
 
     /**
-     * Převzatá rekapitulace: vstup se **nepřepočítává**, jen normalizuje.
-     * Zdroj je payload (formulář, applier), jinak stav v DB (uložení
-     * hlavičky bez dotčené rekapitulace).
+     * Převzatá rekapitulace: částky ze vstupu se **nepřepočítávají**, jen
+     * normalizují. Zdroj je payload (formulář, applier), jinak stav v DB
+     * (uložení hlavičky bez dotčené rekapitulace).
+     *
+     * Procento vstupem není (#159 D1, D8): odvodí se z kódu a data sazby
+     * řádku ({@see applyVatRatesToRecap}); datum řádku se drží jen při
+     * zdroji „vlastní datum na řádcích“.
      *
      * Z definice kódu se vždy doplní flagy sčítání (`sum_*`) — autoritou je
      * definice, ne vstup; `total` se dopočte jen když ho vstup nenese
@@ -1687,6 +1783,7 @@ abstract class DocDocument extends Document
 
         $resolved ??= $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
+        $this->applyVatRatesToRecap($incoming, $data, $resolved);
 
         $exchRate = (float) ($data['exchange_rate'] ?? 1.0);
         if ($exchRate <= 0) {
@@ -1721,6 +1818,7 @@ abstract class DocDocument extends Document
             $line = [
                 'vat_code'        => $code,
                 'vat_pct'         => (float) ($r['vat_pct'] ?? 0),
+                VatRateDates::COLUMN => $r[VatRateDates::COLUMN] ?? null,
                 // Předmět plnění se přebírá ze vstupu (#89 D7) — jen u kódu
                 // přenesení a u oddaňovacího páru, jinde se nuluje.
                 ReverseChargeSubjects::COLUMN => $vatCodes !== null
@@ -2216,6 +2314,112 @@ abstract class DocDocument extends Document
             $line['vat_pct'] ?? 0,
             $line[ReverseChargeSubjects::COLUMN] ?? null,
         );
+    }
+
+    /**
+     * Přepínač „Sazby DPH podle“ a vlastní datum dokladu k uložení (#159 D2,
+     * D4, D6): zdroj 0 u nedaňového dokladu a dokladu bez DPH, vlastní datum
+     * jen při zdroji 1 ({@see VatRateDates::normalizeHead()}). Payload bez
+     * těchto klíčů (částečný zápis) uložené hodnoty nemění.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $originalData
+     */
+    protected function applyVatRateSource(array &$data, ?array $originalData): void
+    {
+        if ($originalData !== null) {
+            foreach ([VatRateDates::SOURCE_COLUMN, VatRateDates::COLUMN] as $column) {
+                if (!array_key_exists($column, $data)) {
+                    $data[$column] = $originalData[$column] ?? null;
+                }
+            }
+        }
+        VatRateDates::normalizeHead($data, $this->config);
+    }
+
+    /**
+     * Datum sazby a procento řádků dokladu (#159 D1, D5, D6): vlastní datum
+     * řádku jen při zdroji „vlastní datum na řádcích“, procento položkového
+     * řádku s kódem DPH z kódu a data sazby řádku.
+     *
+     * Procento zůstává, jak je, když ho není z čeho odvodit: bez země
+     * registrace nebo konfigurace (U8) a u kódu bez sazby k datu (U4 —
+     * hlásí {@see validateVatRates}).
+     *
+     * @param array<int, array<string, mixed>> $rows
+     * @param array<string, mixed> $head
+     * @param array{country: string, codes: array<string, array<string, mixed>>}|null $resolved
+     */
+    private function applyVatRatesToRows(array &$rows, array $head, ?array $resolved): void
+    {
+        $keepsRowDates = VatRateDates::source($head, $this->config) === VatRateDates::SOURCE_ROWS;
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            // Při zdroji 2 se řádku bez klíče datum nepřidává — částečný
+            // řádek z payloadu by jinak uložené datum smazal.
+            if (!$keepsRowDates || array_key_exists(VatRateDates::COLUMN, $row)) {
+                VatRateDates::normalizeLine($head, $row, $this->config);
+            }
+            if ($resolved === null || (int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
+                continue;
+            }
+            $pct = VatRateDates::pct(
+                $this->vatRateResolver(),
+                $resolved['country'],
+                $row['vat_code'],
+                VatRateDates::lineDate($head, $row, $this->config),
+            );
+            if ($pct !== null) {
+                $row['vat_pct'] = $pct;
+            }
+        }
+        unset($row);
+    }
+
+    /**
+     * Datum sazby a procento řádků **převzaté** rekapitulace (#159 D1, D8):
+     * stejné pravidlo jako u řádků dokladu. Oddaňovací pár (U6) procento
+     * i datum dědí z primární skupiny — z nejbližšího předchozího řádku,
+     * jehož kód na něj ukazuje (`reverseVatCode`); bez něj zůstává vstup.
+     *
+     * @param array<int, mixed> $recap řádky rekapitulace ze vstupu nebo z DB
+     * @param array<string, mixed> $head
+     * @param array{country: string, codes: array<string, array<string, mixed>>}|null $resolved
+     */
+    private function applyVatRatesToRecap(array &$recap, array $head, ?array $resolved): void
+    {
+        $vatCodes = $resolved['codes'] ?? [];
+        $primary = null;
+        foreach ($recap as &$line) {
+            if (!is_array($line)) {
+                continue;
+            }
+            VatRateDates::normalizeLine($head, $line, $this->config);
+            $code = trim((string) ($line['vat_code'] ?? ''));
+            if (!empty($line['is_reverse_pair'])) {
+                $primaryCode = trim((string) ($primary['vat_code'] ?? ''));
+                if ($primary !== null && (string) ($vatCodes[$primaryCode]['reverseVatCode'] ?? '') === $code) {
+                    $line['vat_pct'] = $primary['vat_pct'] ?? 0;
+                    $line[VatRateDates::COLUMN] = $primary[VatRateDates::COLUMN] ?? null;
+                }
+                continue;
+            }
+            if ($resolved !== null && $code !== '') {
+                $pct = VatRateDates::pct(
+                    $this->vatRateResolver(),
+                    $resolved['country'],
+                    $code,
+                    VatRateDates::lineDate($head, $line, $this->config),
+                );
+                if ($pct !== null) {
+                    $line['vat_pct'] = $pct;
+                }
+            }
+            $primary = $line;
+        }
+        unset($line);
     }
 
     /**

@@ -46,6 +46,17 @@ class DocRowsDocument extends Document
             }
         }
 
+        // Datum sazby DPH (#159 D9, D15): kód bez sazby k datu sazby řádku
+        // je při uložení ze sub-formuláře chyba, pozdější vlastní datum
+        // varování.
+        if ((int) ($data['row_kind'] ?? 1) === 1 && !empty($data['vat_code'])) {
+            foreach (VatRateDates::subformLineProblems($this->db, $this->config, $data) as $problem) {
+                $problem['warning']
+                    ? $result->addWarning($problem['column'], $problem['message'], $problem['code'])
+                    : $result->addError($problem['column'], $problem['message'], $problem['code']);
+            }
+        }
+
         $head = $this->loadHeadContext($data['doc_head'] ?? null);
         $cfg = $this->config?->cfgItem('docs.core.rowOperations');
         if ($head === null || !is_array($cfg)) {
@@ -89,6 +100,14 @@ class DocRowsDocument extends Document
         // Předmět plnění smí nést jen řádek s kódem přenesení (#89 D7) — po
         // změně kódu DPH se nuluje bez hlášky.
         ReverseChargeSubjects::normalizeLine($this->db, $this->config, $data);
+        // Procento se nezadává (#159 D1) — z kódu a data sazby řádku; datum
+        // řádku jen při zdroji „vlastní datum na řádcích“ (D6).
+        VatRateDates::applyToSubformLine(
+            $this->db,
+            $this->config,
+            $data,
+            derivePct: (int) ($data['row_kind'] ?? 1) === 1,
+        );
         if ($originalData !== null) {
             return;
         }
