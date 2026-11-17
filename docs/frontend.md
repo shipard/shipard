@@ -811,7 +811,7 @@ Stejný drawer používá i list layout, když je viewer užší než `55rem`
 (#133 D58, výše *Úzký viewer se seznamem*).
 Buňky používají stejný span formát jako list vč. badge varianty
 (`{text, badge: style}` → pilulka, sdílená `SpanBadge.svelte` +
-`viewerSpans.js`).
+`viewerSpans.js`; `badge: success` = tečka + text, #153 D99).
 
 **Řazení** (F2): sloupce se `sortable: true` mají klikatelnou hlavičku
 (cyklus asc → desc → výchozí, indikátor ↑/↓); server dostává
@@ -994,15 +994,17 @@ select), prefix účtu, partner, jen chyby.
 ```json
 {
     "id": 42,
-    "stateStyle": "done",
+    "stateStyle": "archive",
     "t1": "Název záznamu",
     "i1": "#kód",
-    "t2": [{"text": "IČO: 12345"}, {"text": "V pořádku", "class": "success"}],
+    "t2": [{"text": "IČO: 12345"}, {"text": "V archívu", "class": "muted"}],
     "t3": "email@example.com"
 }
 ```
 
-Pole `t1`, `i1`, `t2`, `i2`, `t3` přijímají string, objekt `{text, class?}` nebo pole objektů. `stateStyle` se mapuje na CSS třídu `docState_{stateStyle}` na řádku. Dostupné span třídy: `amount`, `muted`, `bold`, `primary`, `success`, `warning`, `danger`.
+Pole `t1`, `i1`, `t2`, `i2`, `t3` přijímají string, objekt `{text, class?}` nebo pole objektů. `stateStyle` se mapuje na CSS třídu `docState_{stateStyle}` na řádku. Dostupné span třídy: `amount`, `muted`, `bold`, `primary`, `success`, `warning`, `danger`. `success` je klidný tón — kreslí se jako tečka před textem, text má barvu řádku (#153 D99); `muted` je `text-secondary` bez průhlednosti (D100). Řádek se `stateStyle` `archive` / `trash` má tlumený text, nic se nepřeškrtává (D101).
+
+**Stav v řádku** skládá jen `TableViewer::rowStateTag(int $docState): ?array` (#153 D98): vrací span `{text, class}`, nebo `null` pro Koncept (`stateStyle` `concept`) a pro stav s `detailBadge: false` („V pořádku“) — viewer ho přidá do `t2` jen když není `null` a vlastní mapu stav → třída nemá. Pravidla: `docs/design-system.md` §4 Stav v řádku seznamu.
 
 Pole `icon` (string, optional) — identifikátor ikony z `iconMap`
 (`user`, `company`, `invoice`, …). Když ho `renderRow()` nevrátí,
@@ -1080,7 +1082,7 @@ ji sdílená `components/ui/DetailHeader.svelte` (#139 D48).
 `icon` (klíč z `icons.js`, typicky `viewers[].icon` daného modulu) se
 vykreslí ve 40×40 boxu vlevo od title — stejný vizuál jako ikona ve
 formulářovém modalu (`shpd-modal__header-icon`). Badge `style` přijímá
-obecné varianty (`neutral`, `primary`, `accent`, `success`, `warning`,
+obecné varianty (`neutral`, `primary`, `success`, `warning`,
 `danger`) i doc-state styly (`concept`, `edit`, `confirmed`, `done`,
 `archive`, `trash`, `cancelled`, `error`) — viz `docs/design-system.md`.
 

@@ -17,7 +17,7 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 - **Modrá = primary akce a navigace.** Aktivní položka v sidebaru, primary
   tlačítka, odkazy, focus indikátor.
 - **Oranžová = brand accent, „kde jsem".** Levý proužek u aktivní položky
-  v navigaci (sidebar, shelly), accent badge (VIP). **V seznamech záznamů
+  v navigaci (sidebar, shelly). **V seznamech záznamů
   se oranžová pro výběr nepoužívá** — výběr nese jen modré pozadí, aby
   se accent nebil se stavovým proužkem.
   **Oranžová není stav** — žádný doc-state ji nesmí používat.
@@ -36,7 +36,7 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 
 | Token | Hodnota | Použití |
 |---|---|---|
-| `--shpd-color-primary` | `#005089` | **Plocha**: primary tlačítka, aktivní stav navigace, rámeček výběru |
+| `--shpd-color-primary` | `#005089` | **Plocha**: primary tlačítka, aktivní stav navigace, výplň zaškrtnutého radia a zaškrtávátka |
 | `--shpd-color-primary-hover` | `#003e6b` | Hover na primary tlačítku — jen plocha, ne barva textu |
 | `--shpd-color-primary-text` | světlý `var(--primary)`, tmavý `#7fb2dc` | **Text, ikona a odkaz** v barvě primary (D92) — odkazy, ikony stavu, aktivní tab, Badge `primary`, avatar řádku |
 | `--shpd-color-primary-soft` | `#e6eef5` | Světlé pozadí pro primary badge a jemné zvýraznění |
@@ -55,7 +55,7 @@ na `primary-soft`. **Hover odkazu barvu nemění**, jen podtrhne.
 |---|---|---|
 | `--shpd-color-accent` | `#eb6507` | Levý proužek aktivní položky v navigaci, avatar VIP, focus přízvuky |
 | `--shpd-color-accent-hover` | `#c45405` | Hover na accent prvcích |
-| `--shpd-color-accent-soft` | `#fdebdc` | Pozadí accent badge |
+| `--shpd-color-accent-soft` | `#fdebdc` | Světlý podklad v barvě značky (štítek `accent` zanikl, D102) |
 
 ---
 
@@ -109,8 +109,11 @@ místo 2,49. `outline` u `:focus-visible` ani okraj pole s fokusem nebere
 (`AttachmentPanel`, `Dashboard`) bere `--shpd-color-primary-text`.
 
 **Barvou výběru je `primary`** (D77, #149): vybraná volba — volitelný řádek
-i segment přepínače — má rámeček `--shpd-color-primary` a pozadí
-`--shpd-color-primary-soft`. `accent` zůstává barvou značky a výběr neznačí.
+i segment přepínače — má rámeček `--shpd-color-primary-text` a pozadí
+`--shpd-color-primary-soft` (D103, #153: plocha `primary` měla jako čára
+v tmavém vzhledu 2,49 : 1, `primary-text` má vůči podkladu výběru 6,07;
+světlý vzhled beze změny). Výplň zaškrtnutého radia a zaškrtávátka zůstává
+`primary`. `accent` zůstává barvou značky a výběr neznačí.
 
 ### Stavové (semantické)
 
@@ -175,7 +178,10 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
     v obou vzhledech na jakékoli barvě pod ní. Platí pro tečku odznaku
     sekce (`NavTree`, `TopMenuBar`), pilulku s počtem v railu
     (`SectionRail`) a tečku chipu feedu (`FeedFilter`; posuvný kontejner
-    chipů má pro ni rezervu, jinak by obrys ořízl);
+    chipů má pro ni rezervu, jinak by obrys ořízl). Stejně se kreslí
+    tečka klidného tónu na **vybraném řádku seznamu** (D99, §4): plocha
+    `--shpd-color-success` s obrysem, 5,02 : 1 vůči obrysu — `success-mark`
+    má vůči `bg-selected` ve světlém vzhledu jen 2,1–2,5;
   - **text i ikona mají barvu textu sidebaru** (D89): chyba načtení
     navigace nese význam tvarem ikony a textem, ne tónem
     (`--shpd-color-text-sidebar`, 10,9 / 11,1 : 1).
@@ -183,10 +189,10 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
   (konstanta `EXCEPTIONS`):
   - **D94** — okraj tlačítka `danger` pod kurzorem v tmavém vzhledu má
     vůči dialogu 2,31 : 1 (`danger-hover` na `bg`); tlačítko identifikuje
-    text (6,47 : 1), ne okraj;
-  - **štítek stavu Koš** — `state-trash-text` na `state-trash-bg` má
-    3,90 (světlý) a 2,81 (tmavý) : 1; smazaný záznam je záměrně tlumený
-    a přeškrtnutý (#153).
+    text (6,47 : 1), ne okraj.
+
+  Štítek stavu Koš výjimkou už není (D101): `state-trash-text` má na
+  `state-trash-bg` 6,10 / 5,35 : 1.
 
 Vývojářský dashboard přepisuje `danger` i `danger-text` na `#c81e1e`
 (`dev/theme.css`), ostatní dědí — i značky: `danger-mark` je tam `#dc2626`,
@@ -217,8 +223,8 @@ badge (`shpd-detail__badge--{stateStyle}` resp. `shpd-form-state-badge.docState_
 | `done` | žádný | zelená | „Hotovo" — pozitivní cílový stav (např. použitý dokumentový návrh z pošty) |
 | `concept` | žlutá `#facc15` | žlutá | Rozpracováno, dopiš to |
 | `edit` | fialová `#a78bfa` | fialová | Právě se edituje (v opravě) |
-| `archive` | šedá `#cbd5e1` | šedá | Archív — tichý, mimo aktivní práci |
-| `trash` | tmavší šedá `#94a3b8` + line-through | šedá + line-through | V koši |
+| `archive` | šedá `#cbd5e1`, text řádku `text-secondary` | šedá | Archív — tichý, mimo aktivní práci |
+| `trash` | tmavší šedá `#94a3b8`, text řádku `text-secondary` | šedá, text `#4b5563` / `#9ca3af` | V koši — **bez přeškrtnutí**, smazaný záznam má jít přečíst (D101) |
 | `cancelled` | červená `#ef4444` | červená | Zrušeno, pozor |
 | `error` | — | červená | Chyba (např. AI selhala) |
 
@@ -230,8 +236,8 @@ Každý stav má až tři tokeny:
 - `--shpd-color-state-{name}-bg` — pozadí badge v hlavičce detailu / formuláři
 - `--shpd-color-state-{name}-text` — text uvnitř badge
 
-Plus speciální `--shpd-color-state-archive-row` pro tlumený text řádku
-v archive stavu (jiný kontext než badge text). Confirmed a done nemají
+Text archivního a smazaného řádku bere `--shpd-color-text-secondary`
+(D101, #153; token `state-archive-row` zanikl). Confirmed a done nemají
 `-bar` token, protože jejich proužek je záměrně absent.
 
 Všechny tokeny jsou definované v `frontend/src/styles/variables.css`.
@@ -251,6 +257,38 @@ takže změna barvy stavu v jednom místě se projeví všude.
   je fialový. Před touto úpravou byla oranžová a kolizovala s aktivní/výběr
   proužkem.
 
+### Stav v řádku seznamu
+
+Řádek seznamu vypisuje stav textem jen tam, kde nese informaci (#153):
+
+- **Koncept ani „V pořádku“ se nevypisují** (D98). Koncept (`stateStyle`
+  `concept`) nese proužek, stav s `detailBadge: false` je běžný stav —
+  totéž pravidlo jako štítek v hlavičce detailu (D20). Ostatní stavy se
+  vypisují spanem. Rozhoduje jediná metoda `TableViewer::rowStateTag()`;
+  třídu spanu dává `rowStateClass()` z jedné mapy (`concept` / `edit` →
+  `warning`, `confirmed` → `primary`, `done` → `success`, `cancelled` →
+  `danger`, `archive` / `trash` → `muted`). Viewer si vlastní mapu ani
+  podmínku na hodnotu stavu nepíše (`TableViewerRowStateTagTest`); přepsat
+  smí třídu jednoho stylu (Úkoly: `edit` = Pozastaveno → `muted`). Podání
+  DPH tak v řádku nevypisuje Sestaveno, ale Podáno ano; koeficienty odpočtu
+  a období DPH nevypisují Koncept.
+- **Klidný tón je tečka, ne zelený text** (D99). Span `success` i pilulka
+  `SpanBadge` `success` se kreslí jako tečka `--shpd-color-success-mark`
+  (`0.5rem`, jako tečky nadpisů feedu) před textem v barvě okolí —
+  v seznamu, mřížce i sub-tabulce formuláře, a všude jinde, kde se
+  `SpanBadge` používá (stav „Odesláno“ v Odeslané poště). Tečka má
+  3,30 : 1 na `bg` a 3,10 pod kurzorem (tmavý 6,56 / 5,55). Ostatní tóny
+  (`primary`, `warning`, `danger`) a pilulky zůstávají.
+- **Tlumený text je barva, ne průhlednost** (D100). Span `muted` a třetí
+  řádek seznamu berou `--shpd-color-text-secondary` (5,68 : 1 na `bg`,
+  5,34 pod kurzorem; tmavý 5,88 / 4,97). Průhlednost dávala 2,5–3,1 : 1
+  u spanu a 3,5–4,3 u třetího řádku.
+- **Archivní a smazaný řádek** (D101) má text `text-secondary` — v seznamu,
+  mřížce i sub-tabulce — a nic se nepřeškrtává. `ViewerRow` a `ViewerGrid`
+  si barvu řádku / buňky nastavují samy, proto mají pro `.docState_archive`
+  a `.docState_trash` vlastní pravidlo (globální třída scoped barvu
+  nepřebije); sub-tabulka barvu dědí. Karta feedu se netlumí.
+
 ### Při výběru řádku
 
 Když uživatel označí řádek v seznamu:
@@ -260,15 +298,18 @@ Když uživatel označí řádek v seznamu:
 - **Stavový proužek zůstává** — koncept je dál žlutý, hotový záznam dál
   bez proužku (průhledný pruh splyne s modrým pozadím). Výběr stav nepřebíjí.
 - **Tónové a šedé texty mají barvu běžného textu** (D91, #153): tónové
-  spany (`primary`, `success`, `warning`, `danger`), sekundární texty
+  spany (`primary`, `warning`, `danger`), tlumený span `muted`, text
+  archivního a smazaného řádku, sekundární texty
   řádku (číslo, druhý a třetí řádek, údaj vpravo), text chybového řádku
   mřížky a štítek sekce vybrané konverzace berou `--shpd-color-text`.
   Na `bg-selected` a hlavně `bg-selected-hover` tón ani `text-secondary`
   4,5 : 1 nedrží (`text-secondary` 4,31 / 3,62 ve světlém, 4,61 / 3,81
   v tmavém; `success-text` pod kurzorem 3,2 / 4,3); běžný text má
-  13,5 / 11,4 a 9,6 / 7,9. Tlumený span (`--muted`, průhlednost) má na
-  vybraném řádku průhlednost 0,8 místo 0,6. Nemění se `SpanBadge` a avatar
-  (vlastní podklad) ani ikona řádku (stačí jí 3 : 1). Jedno pravidlo na
+  13,5 / 11,4 a 9,6 / 7,9. **Tečka klidného tónu** je na vybraném řádku
+  plocha `--shpd-color-success` s obrysem `1px` `text-on-fill` (D99, D88,
+  D96) — vůči obrysu 5,02 : 1 v obou vzhledech; text u ní má barvu řádku
+  vždy. Nemění se pilulky `SpanBadge` a avatar (vlastní podklad) ani ikona
+  řádku (stačí jí 3 : 1). Jedno pravidlo na
   komponentu — selektor vybraného řádku přepíše barvu potomků, žádné
   podmínky v markupu (`ViewerRow`, `ViewerGrid`, `ConversationList`).
 
@@ -339,10 +380,17 @@ v obou vzhledech. `neutral` zůstává štítkům v hlavičce detailu.
 |---|---|---|
 | `--neutral` | šedá | Default, typový badge bez významu (např. „Fyzická osoba") |
 | `--primary` | modrá soft, text `primary-text` | Důležitá info (kód, vlastnost záznamu) |
-| `--accent` | oranžová soft | „VIP klient", důležité, „za pozornost" |
 | `--success` | zelená | Úspěch (mimo doc-state) |
 | `--warning` | žlutá | Varování |
 | `--danger` | červená | Chyba |
+
+Varianta `accent` zanikla (D102, #153): nikdo ji nepoužíval a měla
+3,92 : 1; tokeny `accent-*` zůstávají barvou značky.
+
+`SpanBadge` (štítek v řádku seznamu, buňce mřížky a sub-tabulky) má tytéž
+styly. Styl `success` ale nekreslí jako pilulku: je to tečka + text (D99,
+§4 Stav v řádku seznamu) — klidný stav nevyčnívá. `Badge` v hlavičce
+detailu zůstává pilulkou i pro `success`.
 
 ### API kontrakt pro backend
 
@@ -366,7 +414,7 @@ dokladu jdou do `subtitle`, doklad bez partnera má titulkem číslo (D14).
 Podtitul skládá server, frontend ho jen vypíše. **Štítek typu záznamu se
 neposílá** — typ nese `icon` (D13); `badges` jsou pro stav a pro
 vlastnosti, které nejsou zřejmé z kontextu (např. „VIP klient“ se stylem
-`accent`). Volitelný `icon` (klíč z `icons.js`, typicky shodný
+`primary`). Volitelný `icon` (klíč z `icons.js`, typicky shodný
 s `viewers[].icon` v `module.jsonc`) přidá 40×40 ikonu vlevo od title.
 Bez `title` se hlavička přeskočí (graceful fallback — backend nemusí být
 upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
@@ -411,7 +459,7 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
    když dvojice popředí × pozadí nesplní práh — text **4,5 : 1**, značka,
    ikona a obrys **3 : 1**. Hlídá: tón jako text a značku na `bg` /
    `bg-hover` / `bg-secondary`, bílý text na plochách, značku vůči obrysu
-   (D88), `primary-text` na pozadích stránky a `primary-soft` (D92),
+   (D88, D99), `primary-text` na pozadích stránky a `primary-soft` (D92),
    obrys fokusu (D95), běžný a sekundární text, text na vybraném řádku
    (D91), text sidebaru (D89), dvojice `Badge` (`state-…`, D90)
    a `Notice` (`alert-…`). `--list` vypíše všechny dvojice s poměrem —
@@ -438,8 +486,8 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   `var(--shpd-color-warning)` (D71).
 - ❌ `color: var(--shpd-color-primary)` — plocha primary jako barva textu;
   v tmavém vzhledu dá na pozadí 2,1–2,8 : 1. ✅ Text, ikona a odkaz berou
-  `var(--shpd-color-primary-text)` (D92); `--shpd-color-primary` je pozadí
-  a rámeček výběru. Totéž platí pro `primary-hover` jako barvu textu
+  `var(--shpd-color-primary-text)` (D92), rámeček výběru také (D103);
+  `--shpd-color-primary` je jen plocha. Totéž platí pro `primary-hover` jako barvu textu
   při hoveru — odkaz se jen podtrhne.
 - ❌ `background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent)`
   pod tónovým textem — podklad vyrobený na místě, kontrast 3,9 : 1. ✅
@@ -661,7 +709,8 @@ Rozhodnutí D76, D80 a D81 z #149. Jedna volba ze seznamu je sdílený
   kliknutím (popover): odsazení xs × sm, zaoblení `--shpd-radius-sm`, bez
   ukazatele.
 - **Stavy:** základ rámeček `--shpd-color-border` na ploše `bg`; vybraný
-  rámeček `--shpd-color-primary` + pozadí `--shpd-color-primary-soft`; pod
+  rámeček `--shpd-color-primary-text` (D103, #153 — v tmavém vzhledu 6,07 : 1
+  vůči podkladu místo 2,49) + pozadí `--shpd-color-primary-soft`; pod
   kurzorem `--shpd-color-bg-hover` (ne `bg-secondary`, §9); zakázaný
   průhlednost 0,6 a `cursor: not-allowed`; `:focus-visible` obrys 2 px
   `primary` (u kompaktního dovnitř, ať ho rolovací seznam neořízne).
@@ -721,7 +770,8 @@ Rozhodnutí D77 a D79 z #149. Jedna volba z několika málo je sdílený
   plátce DPH v průvodci zdrojem dat, formát čísel reportu, způsob nahrání
   pošty.
 - **Pravidlo:** nový přepínač = `SegmentedControl`, ne vlastní třída;
-  barvou výběru je `primary`, nikdy `accent` (§3).
+  barvou výběru je `primary`, nikdy `accent` (§3); rámeček vybraného
+  segmentu bere `--shpd-color-primary-text` jako volitelný řádek (D103).
 
 ### Nadpis stránky
 

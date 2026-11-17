@@ -151,8 +151,12 @@ formátuje viewer v `renderGridRow()` (stejně jako dnes `renderRow()` přes
 
 Span objekt se rozšiřuje o `badge: <style>` — místo barevného textu se
 vykreslí **pilulka** s paletou badge systému (`neutral`, `primary`,
-`accent`, `success`, `warning`, `danger` + doc-state styly, viz
+`success`, `warning`, `danger` + doc-state styly, viz
 design-system.md §5). `class` a `badge` se vylučují; `badge` má přednost.
+Klidný tón `success` není pilulka ani zelený text: `badge: success`
+i `class: success` se kreslí jako tečka před textem v barvě řádku;
+`class: muted` je `text-secondary` bez průhlednosti (#153 D99, D100,
+design-system.md §4 Stav v řádku seznamu).
 
 Platí pro **oba layouty** — normalizace spanů se vytahuje z
 `ViewerRow.svelte` do sdílené utility a badge tak dostávají i list řádky

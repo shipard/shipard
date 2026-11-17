@@ -353,6 +353,16 @@ smí názvy nést — tam jsou potřeba k práci.
   (stejná jako v sidebaru). Per-row override v `renderRow()`
   (např. PersonsViewer podle person_type).
 
+### Viewery — stav v řádku seznamu
+
+- Stav v řádku seznamu vypisuje jen `TableViewer::rowStateTag($docState)`
+  (#153 D98): `null` pro Koncept (`stateStyle` `concept`) a pro stav
+  s `detailBadge: false` („V pořádku“), jinak span se třídou z jediné mapy
+  (`rowStateClass()`, přepsat smí viewer jen třídu jednoho stylu). Viewer
+  nemá vlastní `STATE_SPAN_CLASS` ani podmínku `!== 10` / `!== 40` — hlídá
+  `TableViewerRowStateTagTest`. Viz `docs/design-system.md` §4 Stav v řádku
+  seznamu.
+
 ### Viewery bez tabulky
 
 - Deklarace `viewers[]` bez `table` (`ViewerDefinition::$table === null`;

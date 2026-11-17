@@ -1,6 +1,6 @@
 # Design system — stavy a štítky v řádcích seznamů (D98–D103)
 
-**Stav:** naplánováno — #153, D98–D103
+**Stav:** hotovo — #153, D98–D103 (2026-11-17; ruční kontrola v Ověření)
 
 ## Kontext / Cíl
 
@@ -194,16 +194,16 @@ barvu běžného textu jako ostatní šedé texty.
 
 ## Hotovo když
 
-- [ ] Jedna metoda stavu v řádku, žádná kopie `STATE_SPAN_CLASS`, test
-- [ ] Koncept a V pořádku se v řádku nevypisují (D98)
-- [ ] `success` v řádku a `SpanBadge` = tečka + text (D99)
-- [ ] `muted` barvou `text-secondary` (D100)
-- [ ] Koš bez přeškrtnutí, tmavší štítek, archiv a koš šedým textem ve
+- [x] Jedna metoda stavu v řádku, žádná kopie `STATE_SPAN_CLASS`, test
+- [x] Koncept a V pořádku se v řádku nevypisují (D98)
+- [x] `success` v řádku a `SpanBadge` = tečka + text (D99)
+- [x] `muted` barvou `text-secondary` (D100)
+- [x] Koš bez přeškrtnutí, tmavší štítek, archiv a koš šedým textem ve
   všech místech, výjimka z `check-contrast.py` pryč (D101)
-- [ ] Bez `accent`, rámeček výběru `primary-text`, dva štítky na `Badge`
+- [x] Bez `accent`, rámeček výběru `primary-text`, dva štítky na `Badge`
   (D90, D102, D103)
-- [ ] Kontrast vykreslených barev v obou vzhledech (Ověření)
-- [ ] Dokumentace, `CLAUDE.md`, `**Stav:**`, index tasků
+- [x] Kontrast vykreslených barev v obou vzhledech (Ověření)
+- [x] Dokumentace, `CLAUDE.md`, `**Stav:**`, index tasků
 
 ## Pasti
 
@@ -221,8 +221,108 @@ barvu běžného textu jako ostatní šedé texty.
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+- **Došlá pošta** barvila mapou `STATE_SPAN_CLASS` stav **analýzy**, ne stav
+  dokladu — používá jen sdílený převod `rowStateClass()`, pravidlo D98 se
+  jí netýká (stav analýzy se vypisuje dál, i „čeká“).
+- **Konverzace chatu, Schránky, Bankovní výpisy** měly konstantu bez použití
+  (stav v řádku nevypisují) — jen smazána.
+- **Strom zakázek v detailu** (`WorkOrdersViewer::treeRow()`) bral název
+  stavu ze zaniklé `stateBadge()`. Není to řádek seznamu, sloupec Stav dál
+  vypisuje i „V pořádku“ (vlastní `treeStateName()`).
+- **Podání DPH**: stav Podáno nemá `detailBadge: false`, proto se nově
+  vypisuje (tečka + text); dřív ho podmínka `!== DOC_STATE_FILED` skrývala.
+  Odpovídá D98; konfigurace stavů se neměnila (štítek v hlavičce detailu
+  podle D20 zůstává).
+- **Třetí řádek seznamu** (`line--tertiary`) měl vedle `text-secondary`
+  průhlednost 0,8 (3,5–4,3 : 1). Zrušena v rámci D100 — odsouhlaseno před
+  implementací.
+- **Tečka na vybraném řádku** je plocha `--shpd-color-success`, ne
+  `success-mark`: značka má vůči `bg-selected` ve světlém vzhledu
+  2,1–2,5 : 1 a vůči bílému obrysu v tmavém 2,28. Plocha tónu s obrysem
+  `1px` (D88) má vůči obrysu 5,02 : 1 v obou vzhledech; dvojici `success` ×
+  `text-on-fill` hlídá `check-contrast.py`.
+- **`SpanBadge` `success`** se kreslí jako tečka + text všude, kde se
+  komponenta používá — i mimo řádky: stav transportu „Odesláno“ v detailu
+  a formuláři Odeslané pošty, výsledek v dialogu Odeslat. Ve sloupci Role
+  Saldo pohybů tak stojí vedle sebe pilulka `primary` (Předpis) a tečka
+  (Příjem / Úhrada).
+- **`FeedCard` se nemění** — odsouhlaseno. Globální třídy dál nastavují
+  zděděnou barvu, titulek archivní karty feedu má vlastní barvu běžného
+  textu (D101 v #153 mluví o seznamu, mřížce a sub-tabulce).
+- **Štítek UKONČENO** v průvodci Přidat firmu z registru jde přes `Badge`
+  `neutral` (nebyl tónový), aby dva štítky vedle sebe měly stejný tvar.
+  Zadání průvodce nazývá „průvodce importem Spisovny“ — jde o
+  `registry/RegistryImportWizard.svelte` = Přidat firmu z registru v Osobách.
+- **Tokeny `success-soft` a `warning-soft`** zůstaly po D90 bez použití;
+  nesmazány.
+- Starší `docs/docs-mvp.md` (tabulka stavů s `line-through`) ponechán —
+  historický dokument MVP.
 
 ## Ověření
 
-(vyplní implementace)
+Automatické kontroly (2026-11-17): `php -l` změněných souborů; celá unit
+sada `vendor/bin/phpunit --testsuite Unit` (11 586 testů) zelená;
+`ViewerDetailContractTest` (integrační, zdroj `lh6x-l`) zelený;
+`check-contrast.py` (60 dvojic, 1 výjimka — D94), `check-css-tokens.py`,
+`check-css-units.py`, `npm run build`, `npm test` (303) zelené. `tests/e2e/`
+ani `demo/scenarios/` text „V pořádku“ v seznamu ani `line-through`
+nehledají.
+
+**Snímek řádků všech viewerů před / po** (58 viewerů, cs + en, seznam
+i mřížka, všechny záložky stavů; volné zdroje `zey0-g` a `nham-q`): jediné
+rozdíly jsou zmizelé spany „V pořádku“ (Osoby, Jednotky, Položky, Druhy
+položek, Účty, Číselné řady, Saldokonta, Účty saldokont, Bankovní spojení,
+Pokladny, Fiskální období, Registrace DPH, Majetek + tři číselníky,
+Zakázky + dva číselníky), „Koncept“ (Osoby, Daňová tvrzení) a „Sestaveno“
+(Podání DPH). Žádné prázdné `t2` / `t3` jako `[]`.
+
+**Chromium** (Playwright, zdroj `zey0-g`, demo sada IT servis) — kontrast
+vykreslených barev, světlý / tmavý vzhled. Archivní a smazaný záznam,
+štítky v hlavičce detailu, smazaný řádek sub-tabulky a výsledky hledání
+v registru byly podvržené v odpovědi API v prohlížeči (do dat se nic
+nezapsalo).
+
+| Místo | Před | Po |
+|-------|------|----|
+| Osoby — „V pořádku“ v řádku | zelený text 5,02 / 6,56 | nevypisuje se |
+| Tečka klidného tónu (Bankovní výpisy „Souhlasí“, Jednotky „základní“) | zelený text 5,02 / 6,56 | tečka 3,30 / 6,56, text 5,68 / 5,88 |
+| Bankovní transakce „zaúčtováno“ (mřížka) | zelená pilulka 6,49 / 9,93 | tečka 3,30 / 6,56, text 17,85 / 12,18 |
+| Tečka na vybraném řádku pod kurzorem (seznam i mřížka) | — | plocha `success` s obrysem, vůči obrysu 5,02 / 5,02 |
+| Tlumený span (`muted`) v řádku | 2,51 / 3,06 | 5,68 / 5,88 |
+| Tlumený span na vybraném řádku pod kurzorem | 7,06 / 5,74 | 11,39 / 7,91 |
+| Tlumený span v buňce mřížky (měna) | 4,70 / 5,35 | 5,68 / 5,88 |
+| Třetí řádek seznamu (e-mail osoby) | 3,69 / 4,31 | 5,68 / 5,88 |
+| Archivní řádek — název (t1) | 17,85 / 12,18 (netlumený) | 5,68 / 5,88; pod kurzorem 5,34 / 4,97 |
+| Smazaný řádek — název (t1) | 17,85 / 12,18, přeškrtnutý | 5,68 / 5,88, bez přeškrtnutí |
+| Vybraný smazaný řádek pod kurzorem | 11,39 / 7,91, přeškrtnutý | 11,39 / 7,91, bez přeškrtnutí |
+| Mřížka — archivní a smazaný řádek | běžný text | 5,68 / 5,88 |
+| Sub-tabulka formuláře — smazaný řádek (Adresy osoby) | 2,56 / 5,83, přeškrtnutý | 5,68 / 5,88, bez přeškrtnutí |
+| Štítek Smazáno v hlavičce detailu | 3,90 / 2,81, přeškrtnutý | 6,10 / 5,35, bez přeškrtnutí |
+| Rámeček vybraného volitelného řádku a segmentu | `#005089` / `#2d6890` | `#005089` / `#7fb2dc` (vůči podkladu výběru 7,14 / 6,07) |
+| Štítek „Firma již existuje“ (Přidat firmu z registru) | 4,84 / 7,11 | 6,15 / 9,57 |
+| Štítek UKONČENO (tamtéž) | 5,34 / 4,97 | 6,92 / 9,05 |
+| Štítek „aktuální“ relace (Zabezpečení) | 4,79 / 6,76 | 6,49 / 9,93 |
+
+Tečka pod kurzorem na nevybraném řádku: 3,10 / 5,55 (`success-mark` ×
+`bg-hover`, hlídá `check-contrast.py`).
+
+**V prohlížeči neověřeno — na volných zdrojích nejsou data** (kryjí unit
+testy a snímek): Úkoly (Pozastaveno tlumeně), Podání DPH ve stavu Podáno,
+detail Odeslané pošty (tečka u „Odesláno“), viewery `hosting.core`,
+skutečně archivovaný / smazaný záznam (jen podvržený).
+
+Ruční kontrola (Anna, dev server, oba vzhledy):
+
+1. Osoby, Položky, číselník v Nastavení (Pokladny, Měrné jednotky): bez
+   „V pořádku“; Jednotky mají „základní“ s tečkou.
+2. Osoby → záložka Archiv / Koš / Vše se skutečně archivovanou a smazanou
+   osobou: šedý text, bez přeškrtnutí; po výběru řádku běžný text.
+3. Formulář se smazaným řádkem sub-tabulky a detail smazaného záznamu:
+   štítek Smazáno čitelný, bez přeškrtnutí.
+4. Bankovní výpisy, Bankovní transakce, Saldo pohyby: tečka místo zelené;
+   vybraný řádek s tečkou i pod kurzorem. Saldo pohyby — sloupec Role
+   míchá pilulku Předpis s tečkou Příjem / Úhrada.
+5. Úkoly (Pozastaveno, Hotovo), Podání DPH (Sestaveno bez textu, Podáno
+   s tečkou), Odeslaná pošta — detail zprávy.
+6. Tmavý vzhled: Nastavení účtu → Základní (segmenty), Osoby → Z registru
+   (volitelný řádek, štítek „Firma již existuje“), Zabezpečení („aktuální“).
