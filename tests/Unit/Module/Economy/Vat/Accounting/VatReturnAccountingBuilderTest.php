@@ -85,7 +85,7 @@ final class VatReturnAccountingBuilderTest extends TestCase
             'analyticAccount'             => self::analytic(),
             'categoryAccounts'            => self::categories(),
             'accounting'                  => self::ACCOUNTING,
-            'vatId'                       => 'CZ46343504',
+            'vatId'                       => 'CZ12345679',
             'taxOfficePerson'             => 339,
         ], $override);
         return new VatReturnAccountingInput(...$args);
@@ -140,7 +140,7 @@ final class VatReturnAccountingBuilderTest extends TestCase
 
         $balance = self::rowOf($plan, '343801');
         $this->assertSame(339, $balance['partner']);
-        $this->assertSame('46343504', $balance['payment_reference']);
+        $this->assertSame('12345679', $balance['payment_reference']);
         $this->assertSame('705202601', $balance['specific_symbol']);
         $this->assertSame('1148', $balance['constant_symbol']);
         $this->assertSame('2026-02-25', $balance['due_date']);
@@ -378,7 +378,7 @@ final class VatReturnAccountingBuilderTest extends TestCase
         $this->assertTrue($plan->isOk());
         $this->assertSame([VatReturnAccountingBuilder::MSG_TAX_OFFICE_MISSING], array_column($plan->warnings(), 'code'));
         $this->assertNull(self::rowOf($plan, '343801')['partner']);
-        $this->assertSame('46343504', self::rowOf($plan, '343801')['payment_reference']);
+        $this->assertSame('12345679', self::rowOf($plan, '343801')['payment_reference']);
     }
 
     public function testMissingVatIdIsWarningWithoutVariableSymbol(): void
