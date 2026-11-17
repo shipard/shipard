@@ -91,9 +91,11 @@
   --shpd-color-state-archive-bg:     #e5e7eb;
   --shpd-color-state-archive-text:   #374151;
 
-  --shpd-color-state-trash-bar:      #94a3b8;
-  --shpd-color-state-trash-bg:       #e5e7eb;
-  --shpd-color-state-trash-text:     #4b5563; /* 6,10 : 1 (#153 D101) */
+  /* Koš je výraznější než archiv (#153 D104): proužek 4,76 : 1 na `bg`
+   * (archiv 1,48), štítek plná tmavě šedá pilulka se světlým textem. */
+  --shpd-color-state-trash-bar:      #64748b;
+  --shpd-color-state-trash-bg:       #4b5563;
+  --shpd-color-state-trash-text:     #ffffff; /* 7,56 : 1 (#153 D104) */
 
   --shpd-color-state-cancelled-bar:  #ef4444;
   --shpd-color-state-cancelled-bg:   #fecaca;
@@ -382,7 +384,9 @@
   --shpd-color-overlay:       rgb(0 0 0 / 0.65);
 
   /* Doc-state palette — dark variants.
-   * Pruhy (-bar) zůstávají stejné (jasné barvy fungujou na tmavém).
+   * Pruhy (-bar) zůstávají stejné (jasné barvy fungujou na tmavém) —
+   * kromě archivu a koše (#153 D104): světlý proužek archivu by na tmavém
+   * pozadí byl výraznější než koš, proto je archiv ztlumený a koš světlejší.
    * Badge -bg je tmavá saturovaná, -text světlý pro kontrast. */
   --shpd-color-state-concept-bg:     #3d3214;
   --shpd-color-state-concept-text:   #fde047;
@@ -396,11 +400,13 @@
   --shpd-color-state-done-bg:        #14321f;
   --shpd-color-state-done-text:      #86efac;
 
+  --shpd-color-state-archive-bar:    #4b5563; /* 1,98 : 1 na `bg` — tichý (#153 D104) */
   --shpd-color-state-archive-bg:     #2a2e38;
   --shpd-color-state-archive-text:   #9ca3af;
 
-  --shpd-color-state-trash-bg:       #2a2e38;
-  --shpd-color-state-trash-text:     #9ca3af; /* 5,35 : 1 (#153 D101) */
+  --shpd-color-state-trash-bar:      #94a3b8; /* 5,83 : 1 na `bg` (#153 D104) */
+  --shpd-color-state-trash-bg:       #4b5563;
+  --shpd-color-state-trash-text:     #e5e7eb; /* 6,10 : 1 (#153 D104) */
 
   --shpd-color-state-cancelled-bg:   #3d1414;
   --shpd-color-state-cancelled-text: #fca5a5;

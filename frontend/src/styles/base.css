@@ -64,8 +64,9 @@ a:hover {
  *   edit      → fialový   (právě se edituje)
  *   error     → červený   (permanentní chyba)
  *   archive   → šedý      (tichý archiv), text `text-secondary`
- *   trash     → tmavší šedá, text `text-secondary` — bez přeškrtnutí,
- *               smazaný záznam má jít přečíst (#153 D101)
+ *   trash     → výrazná šedá, text `text-secondary` — bez přeškrtnutí,
+ *               smazaný záznam má jít přečíst (#153 D101); proužek je
+ *               v obou vzhledech výraznější než archiv (D104)
  *   cancelled → červený   (pozor!)
  *
  * docState_done schválně bez proužku — „V pořádku" je default cílový
