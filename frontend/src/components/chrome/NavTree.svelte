@@ -192,7 +192,8 @@
      uppercase a 0.75rem, badge si drží vlastní neutrální podobu.
      Tečka je plocha tónu s obrysem v `text-on-fill` (#153 D88): vůči
      sidebaru by sama měla 2,5–2,8 : 1 a vlastní vzhled barvu sidebaru
-     mění, vůči obrysu drží 4,8 (danger) a 5,0 (warning) vždy. */
+     mění, vůči obrysu drží 4,8 (danger) a 5,0 (warning) vždy. Obrys je
+     čára `1px` (D96) — širší by kolem malé tečky dal víc bílé než barvy. */
   .shpd-navtree__badge {
     display: inline-flex;
     align-items: center;
@@ -210,7 +211,7 @@
     height: 0.4375rem;
     border-radius: 50%;
     background-color: var(--shpd-color-warning);
-    box-shadow: 0 0 0 0.125rem var(--shpd-color-text-on-fill);
+    box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
   }
 
   .shpd-navtree__badge--danger .shpd-navtree__badge-dot {

@@ -166,8 +166,10 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
   navigace, aktivní chip — neplatí žádná z rolí: `-text` světlého vzhledu
   dá na `#00345c` jen 2,6 : 1, tečka v ploše tónu 2,5–2,8 a na aktivní
   položce 1,2–1,7; vlastní vzhled navíc barvu sidebaru mění. Proto:
-  - **značka má obrys** (D88): `box-shadow: 0 0 0 0.125rem
-    var(--shpd-color-text-on-fill)` a plochu tónu (`--shpd-color-danger` /
+  - **značka má obrys** (D88): `box-shadow: 0 0 0 1px
+    var(--shpd-color-text-on-fill)` — čára `1px` (D96, nahrazuje
+    `0,125rem` z D88: kolem malé tečky bylo víc bílé než barvy) —
+    a plochu tónu (`--shpd-color-danger` /
     `-warning`, ne `-mark` — ta je v tmavém vzhledu světlejší a vůči bílé
     by měla 2,8). Tečka má vůči obrysu 4,83 (danger) a 5,02 (warning) : 1
     v obou vzhledech na jakékoli barvě pod ní. Platí pro tečku odznaku
@@ -318,10 +320,18 @@ archive, trash, cancelled). Plus mají vlastní **typové varianty** mimo doc-st
 **`Badge` je jediný způsob, jak napsat tónový text na tónovaný podklad**
 (D90, #153). Komponenta si vlastní štítek s `color-mix(…)` nebo `-soft`
 pod tónovým textem nekreslí — použije `<Badge style="danger" label=… />`
-(lhůta karty feedu, odznaky Přehledu firmy, „Selhalo“ v portálu).
+(lhůta karty feedu po termínu nebo do 3 dnů, odznaky Přehledu firmy,
+„Selhalo“ v portálu).
 `Badge` nese jen text a předává `...rest` (`data-testid`); rozmístění řeší
 obal, ne `class` na komponentě (přepsala by její vlastní třídy), ikona
 patří vedle štítku. Dvojice podklad / text hlídá `check-contrast.py`.
+
+**Klidný stav nevyčnívá** (D97, #153): neutrální informace, která jen
+doplňuje kartu nebo řádek, je text v roli meta
+(`--shpd-font-size-meta`, `--shpd-color-text-secondary`), ne pilulka.
+Lhůta karty K vyřízení je štítek `danger` jen po termínu nebo do 3 dnů;
+lhůta v klidu je šedý text — šedá pilulka `neutral` s kartou splývala
+v obou vzhledech. `neutral` zůstává štítkům v hlavičce detailu.
 
 ### Typové varianty (jen `.shpd-badge--*`)
 

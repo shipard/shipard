@@ -85,8 +85,9 @@
     /* Tečka s obrysem (#153 D88): obrys ji odděluje od aktivního chipu
        v barvě primary, na neaktivním světlém chipu splyne. Plocha `danger`,
        ne `danger-mark` — značka je v tmavém vzhledu světlejší a vůči bílému
-       obrysu by měla jen 2,8 : 1; plocha drží 4,8 : 1 v obou vzhledech. */
+       obrysu by měla jen 2,8 : 1; plocha drží 4,8 : 1 v obou vzhledech.
+       Obrys je čára `1px` (D96). */
     background: var(--shpd-color-danger);
-    box-shadow: 0 0 0 0.125rem var(--shpd-color-text-on-fill);
+    box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
   }
 </style>

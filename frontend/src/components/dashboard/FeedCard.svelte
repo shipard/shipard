@@ -86,15 +86,18 @@
         <div class="shpd-feed-card__heading">
           <div class="shpd-feed-card__title">{card.headline ? card.headline.partnerName : card.title}</div>
           {#if card.dueText}
-            <!-- Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4):
-                 text i stav (overdue / soon / later) posílá server. Text na
-                 tónovaném podkladu jen přes sdílený Badge (#153 D90). -->
+            <!-- Lhůta karty K vyřízení (tasks/mail-other-attention.md D4):
+                 text i stav (overdue / soon / later) posílá server. Po
+                 termínu nebo do 3 dnů štítek danger — text na tónovaném
+                 podkladu jen přes sdílený Badge (#153 D90). Lhůta v klidu
+                 (later i neznámý stav) je šedý text bez pilulky: klidný stav
+                 nevyčnívá a šedá pilulka s kartou splývala (D97). -->
             <div class="shpd-feed-card__due">
-              <Badge
-                style={card.dueState === 'overdue' || card.dueState === 'soon' ? 'danger' : 'neutral'}
-                label={card.dueText}
-                data-testid="card-due"
-              />
+              {#if card.dueState === 'overdue' || card.dueState === 'soon'}
+                <Badge style="danger" label={card.dueText} data-testid="card-due" />
+              {:else}
+                <span class="shpd-feed-card__due-text" data-testid="card-due">{card.dueText}</span>
+              {/if}
             </div>
           {/if}
           {#if subLine}
@@ -268,10 +271,16 @@
     color: var(--shpd-color-text);
   }
 
-  /* Obal štítku lhůty (K vyřízení) — jen odstup pod titulkem; vzhled
-     nese Badge (neutral, po lhůtě nebo do 3 dnů danger). */
+  /* Obal lhůty (K vyřízení) — jen odstup pod titulkem; po lhůtě nebo
+     do 3 dnů nese vzhled Badge danger, v klidu prostý text (D97). */
   .shpd-feed-card__due {
     margin-top: 0.125rem;
+  }
+
+  /* Klidná lhůta — text v roli meta, bez podkladu (D97). */
+  .shpd-feed-card__due-text {
+    font-size: var(--shpd-font-size-meta);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-feed-card__subtitle {

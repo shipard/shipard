@@ -287,10 +287,11 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   karty).
 - `dueText` + `dueState` — **volitelná**, jen karta K vyřízení
   (`mail_attention:*`, #105 D4) se známou lhůtou: `dueText` je
-  server-formátovaný badge („do 15. 10. 2026" / „po lhůtě 1. 10. 2026",
+  server-formátovaný text („do 15. 10. 2026" / „po lhůtě 1. 10. 2026",
   katalog `attention.due` / `attention.overdue`, datum jako
   `receivedDateText`), `dueState` ∈ `overdue` | `soon` (≤ 3 dny) |
-  `later` — frontend jen kreslí (overdue a soon v barvě danger).
+  `later` — frontend jen kreslí: overdue a soon jako štítek `danger`,
+  `later` (i neznámý stav) jako šedý text bez pilulky (#153 D97).
 - `timestamp` — sekundární řazení uvnitř pásma (ATOM).
 - `sortKey` a `archivable` — **interní pole pro collector**, klient je
   nedostane (`stripInternalFields`): `sortKey` (string, nižší dřív) řadí
@@ -518,7 +519,8 @@ z odesílatele) → `kind=review`, `feedSection=attention`,
 `stateStyle=confirmed`, ikona `question`, `category=other`. Titulek
 `ai_title` (fallback `other.title`), podtitulek věta `action_note` („co
 udělat"; bez ní odesílatel jako u Ostatních), s lhůtou `action_due`
-badge `dueText` + `dueState` (§4; po lhůtě nebo do 3 dnů `danger`)
+lhůta `dueText` + `dueState` (§4; po lhůtě nebo do 3 dnů štítek
+`danger`, jinak šedý text)
 a interní `sortKey` = lhůta (bez lhůty na konec sekce). Akce
 `archive_message` s `id: done` (**Vyřízeno**, primary), `open_detail`,
 `trash_message`. Pravidlo odesílatele `archiveIfOther` tyto zprávy

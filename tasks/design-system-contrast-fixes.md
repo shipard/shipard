@@ -1,6 +1,6 @@
 # Design system — opravy z ověření kontrastu (D96, D97)
 
-**Stav:** naplánováno — #153, D96, D97; drobnost v klasickém rozložení
+**Stav:** hotovo — 2026-11-17, #153 (D96, D97); odchylky níže (dokumentace dashboardu, karta feedu pozadí pod kurzorem nemění)
 
 ## Kontext / Cíl
 
@@ -96,11 +96,11 @@ Může být jeden commit.
 
 ## Hotovo když
 
-- [ ] Obrys `1px` ve čtyřech místech (D96)
-- [ ] Mezera mezi názvem sekce / ikonou Domů a odznakem v horním menu
-- [ ] Klidná lhůta jako šedý text, `Badge` `danger` jen `overdue` / `soon`
+- [x] Obrys `1px` ve čtyřech místech (D96)
+- [x] Mezera mezi názvem sekce / ikonou Domů a odznakem v horním menu
+- [x] Klidná lhůta jako šedý text, `Badge` `danger` jen `overdue` / `soon`
   (D97); `data-testid` zachovaný
-- [ ] Dokumentace, `**Stav:**`, index tasků
+- [x] Dokumentace, `**Stav:**`, index tasků
 
 ## Pasti
 
@@ -109,8 +109,55 @@ Může být jeden commit.
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+1. **`docs/dashboard.md` navíc.** Zadání jmenuje jen
+   `docs/design-system.md`. Kontrakt karty (§4, pole `dueText` /
+   `dueState`) a popis karty K vyřízení ale lhůtu popisovaly jako badge —
+   doplněno, že `later` i neznámý stav je šedý text bez pilulky (D97).
+2. **Příklad u `Badge` v §5.** Věta „`Badge` je jediný způsob…“ uváděla
+   jako příklad „lhůta karty feedu“ — upřesněno na lhůtu po termínu nebo
+   do 3 dnů, jinak by odporovala D97.
+3. **Karta feedu pozadí pod kurzorem nemění.** `FeedCard` nemá pravidlo
+   `:hover` s pozadím, stav „karta pod kurzorem“ z Ověření v aplikaci
+   nenastává (měřeno: pozadí pod kurzorem zůstává `bg`). Dvojici
+   `text-secondary` × `bg-hover` hlídá `check-contrast.py` (5,34 světlý,
+   4,97 tmavý) — platí, kdyby karta pozadí pod kurzorem dostala.
+4. **Bez značky `px-ok`.** `check-css-units.py` vlastnost `box-shadow`
+   nehlídá, stín `1px` projde bez výjimky.
+5. **Past `card-due` je prázdná.** `data-testid="card-due"` nehledá
+   žádný e2e test, scénář videa ani nástroj — jen `FeedCard.svelte`.
+   Obě větve ho nesou na prvku s textem lhůty (`Badge` přes `...rest`,
+   jinak `span.shpd-feed-card__due-text`).
 
 ## Ověření
 
-(vyplní implementace)
+Kontroly: `check-contrast.py` (59 dvojic, 118 měření, 2 výjimky),
+`check-css-tokens.py`, `check-css-units.py` — exit 0; `npm run build`
+bez chyb, `npm test` 303 / 303, `npm run check:i18n` v pořádku.
+
+Měření a snímky v Chromiu (Playwright, 1280 × 900, `deviceScaleFactor`
+3, volný zdroj dat `zey0-g…` s demo sadou IT servis, světlý i tmavý
+vzhled; odznaky sekcí a karty K vyřízení s lhůtou `overdue` / `soon` /
+`later` podvržené v odpovědích `/_ui/section-badges` a `/_ui/dashboard`
+jako v `tasks/design-system-contrast.md`). Snímky „před“ ze sestavení
+HEAD, 24 dvojic.
+
+| místo | před | po |
+|---|---|---|
+| obrys tečky — sidebar, horní menu, chip feedu, pilulka railu | `0 0 0 2px` | `0 0 0 1px` |
+| tečka vůči obrysu (danger / warning), oba vzhledy | 4,83 / 5,02 | 4,83 / 5,02 |
+| mezera název sekce → odznak, ikona Domů → odznak (aktivní i neaktivní) | 4 px | 8 px |
+| lhůta `later` — světlý | pilulka `neutral`, 6,92 : 1 | text `#5b6878` na `#ffffff`, 5,68 : 1 |
+| lhůta `later` — tmavý | pilulka `neutral` | text `#9ba3af` na `#232730`, 5,88 : 1 |
+| lhůta `overdue`, `soon` | `Badge` `danger` 5,74 (světlý) / 8,46 (tmavý) | beze změny, snímky pixelově shodné |
+
+- Písmo klidné lhůty 12 px (`--shpd-font-size-meta`), prvek bez podkladu.
+- Tečka chipu feedu zůstává celá na neaktivním i aktivním chipu v obou
+  vzhledech (rezerva kontejneru `0.25rem` ponechána); pilulka railu
+  v rohu položky není oříznutá.
+- Snímky se liší jen na dotčených místech: tečky a pilulky odznaků,
+  položky horního menu posunuté o přidanou mezeru, řádek lhůty karty
+  `later` (karta je o výšku pilulky nižší, obsah pod ní se posunul).
+
+Ručně zůstává: vlastní vzhled se světlým sidebarem (obrys `1px` na
+světlé barvě splyne, tečka má vůči bílé 4,8 / 5,0 : 1), mobilní drawer
+a úzká šířka (měřeno jen 1280 px).
