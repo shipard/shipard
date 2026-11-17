@@ -1,6 +1,6 @@
 # Design system — stavy a štítky v řádcích seznamů (D98–D103)
 
-**Stav:** hotovo — #153, D98–D103 (2026-11-17; ruční kontrola v Ověření)
+**Stav:** hotovo — #153, D98–D103 (2026-11-17); ručně ověřeno 2026-11-17, navazuje `design-system-trash-role.md` (D104, D105)
 
 ## Kontext / Cíl
 
@@ -326,3 +326,21 @@ Ruční kontrola (Anna, dev server, oba vzhledy):
    s tečkou), Odeslaná pošta — detail zprávy.
 6. Tmavý vzhled: Nastavení účtu → Základní (segmenty), Osoby → Z registru
    (volitelný řádek, štítek „Firma již existuje“), Zabezpečení („aktuální“).
+
+### Ruční ověření (2026-11-17, Firefox, oba vzhledy)
+
+- Osoby: v řádcích není „V pořádku“ ani „Koncept“ (i záložka Vše);
+  archivní a smazaná osoba šedě, smazaná bez přeškrtnutí; vybraný smazaný
+  řádek běžným textem; štítek Smazáno v detailu — v pořádku. Koš je ale
+  málo odlišený od archivu → D104.
+- Bankovní výpisy („Souhlasí“), Bankovní transakce („zaúčtováno“): tečka
+  a text, na vybraném řádku tečka s obrysem — v pořádku (chybu zaúčtování
+  data nemají).
+- Číselníky v Nastavení (Jednotky „základní“), šedé texty v řádcích —
+  v pořádku.
+- Podání DPH: Sestaveno bez textu, Podáno s tečkou — odpovídá D98
+  (Sestaveno je koncept, Podáno je stav), ponecháno. „Odesláno“ s tečkou
+  (Odeslaná pošta) — stav, ponecháno (v datech není).
+- Saldo pohybů: tečka u role v mřížce zbytečná → D105.
+- Rámeček vybrané volby v tmavém vzhledu, štítky v Přidat firmu
+  z registru a v Zabezpečení — v pořádku.

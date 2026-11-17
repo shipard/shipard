@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 454 tasků: **naplánováno** 4 · **částečně** 27 · **zrušeno** 1 · **hotovo** 422.
+Celkem 455 tasků: **naplánováno** 5 · **částečně** 27 · **zrušeno** 1 · **hotovo** 422.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-trash-role.md` | naplánováno | #153, D104, D105 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -212,6 +213,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-contrast.md` | Kontrast tónů mimo pozadí stránky: token `primary-text` a `info-mark` v tmavém vzhledu, značky s obrysem na sidebaru a chipu, ikona chyby v barvě sidebaru, text na tónovaném podkladu jen přes `Badge`, vybraný řádek bez tónových textů, obrys fokusu v tmavém vzhledu, skript `check-contrast.py` v pre-commitu (#153, D88–D95) |
 | `design-system-contrast-fixes.md` | Opravy z ověření kontrastu: tenčí obrys teček odznaků, mezera odznaku v horním menu, klidná lhůta na kartě feedu bez pilulky (#153, D96, D97) |
 | `design-system-row-states.md` | Stavy a štítky v řádcích seznamů: stav jednou sdílenou metodou bez Konceptu a V pořádku, klidný tón tečkou, tlumený text bez průhlednosti, Koš a Archiv bez přeškrtnutí šedým textem, bez štítku `accent`, rámeček výběru `primary-text` (#153, D98–D103) |
+| `design-system-trash-role.md` | Koš výraznější než Archiv v obou vzhledech (proužek, plný štítek Smazáno), role v mřížce Salda pohybů prostým textem (#153, D104, D105) |
 
 ## Mobilní (responzivní) UI
 
