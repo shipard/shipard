@@ -4,6 +4,10 @@
   // ne kopie CSS v obou. Paleta = badge systém (design-system.md §5),
   // stejné tokeny jako ui/Badge.svelte (.shpd-badge--*), ale lokální třídy
   // (žádné :global — anti-pattern §6). `badge` má přednost před `class`.
+  // Klidný tón `success` není pilulka (#153 D99): tečka `success-mark`
+  // + text barvou a písmem okolí, stejně jako span `success` v řádku —
+  // klidný stav nevyčnívá. Tečku na vybraném řádku (plocha tónu s obrysem)
+  // přebarvuje rodič (`ViewerRow`, `ViewerGrid`).
   let { style = 'neutral', text } = $props();
 </script>
 
@@ -25,9 +29,30 @@
   .shpd-span-badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
   .shpd-span-badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
   .shpd-span-badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
-  .shpd-span-badge--success   { background: var(--shpd-color-state-done-bg); color: var(--shpd-color-state-done-text); }
   .shpd-span-badge--warning   { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
   .shpd-span-badge--danger    { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
+
+  /* Klidný tón (D99): bez podkladu a odsazení, písmo a barva z okolí,
+     před textem tečka (velikost jako tečky nadpisů feedu). */
+  .shpd-span-badge--success {
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  .shpd-span-badge--success::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: var(--shpd-space-xs);
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--shpd-color-success-mark);
+  }
 
   /* Doc-state varianty — sdílené tokeny, stejný stav vypadá všude stejně. */
   .shpd-span-badge--concept   { background: var(--shpd-color-state-concept-bg);   color: var(--shpd-color-state-concept-text); }

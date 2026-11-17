@@ -67,7 +67,8 @@
   }
 </script>
 
-<!-- Render spanů jedné buňky. Span s `badge` → pilulka (přednost před `class`). -->
+<!-- Render spanů jedné buňky. Span s `badge` → pilulka (přednost před `class`;
+     klidný tón `success` jako tečka + text). -->
 {#snippet cellSpans(value)}
   {#each normalizeSpans(value) ?? [] as span}
     {#if span.badge}
@@ -292,16 +293,19 @@
     color: var(--shpd-color-text);
   }
 
+  .shpd-grid__tr--selected .shpd-grid__span--muted,
   .shpd-grid__tr--selected .shpd-grid__span--primary,
-  .shpd-grid__tr--selected .shpd-grid__span--success,
   .shpd-grid__tr--selected .shpd-grid__span--warning,
   .shpd-grid__tr--selected .shpd-grid__span--danger {
     color: var(--shpd-color-text);
   }
 
-  /* Tlumený span tlumí průhledností — na vybraném řádku méně. */
-  .shpd-grid__tr--selected .shpd-grid__span--muted {
-    opacity: 0.8;
+  /* Tečka klidného tónu na vybraném řádku: plocha tónu s obrysem `1px`
+     (D99, D88, D96) — stejně jako ve ViewerRow. */
+  .shpd-grid__tr--selected .shpd-grid__span--success::before,
+  .shpd-grid__tr--selected :global(.shpd-span-badge--success::before) {
+    background: var(--shpd-color-success);
+    box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
   }
 
   .shpd-grid__tr--selected:hover > .shpd-grid__td {
@@ -347,10 +351,20 @@
 
   /* Styled span variants — stejný slovník jako ViewerRow. */
   .shpd-grid__span--amount   { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .shpd-grid__span--muted    { opacity: 0.6; }
+  .shpd-grid__span--muted    { color: var(--shpd-color-text-secondary); }
   .shpd-grid__span--bold     { font-weight: 600; }
   .shpd-grid__span--primary  { color: var(--shpd-color-primary-text); }
-  .shpd-grid__span--success  { color: var(--shpd-color-success-text); }
+  /* Klidný tón (D99): tečka před textem, text barvou buňky. */
+  .shpd-grid__span--success::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: var(--shpd-space-xs);
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--shpd-color-success-mark);
+  }
   .shpd-grid__span--warning  { color: var(--shpd-color-warning-text); }
   .shpd-grid__span--danger   { color: var(--shpd-color-danger-text); }
 

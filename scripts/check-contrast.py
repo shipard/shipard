@@ -88,8 +88,9 @@ def _pairs() -> list[Pair]:
     # Bílý text na ploše (#133 D69).
     for tone in (*TONES, "primary"):
         add(["text-on-fill"], [tone, f"{tone}-hover"], TEXT, "D69 text na ploše")
-    # Tečka na sidebaru, aktivní položce a chipu: plocha vůči obrysu (D88).
-    add(["danger", "warning"], ["text-on-fill"], MARK, "D88 značka s obrysem")
+    # Tečka na sidebaru, aktivní položce a chipu: plocha vůči obrysu (D88);
+    # `success` = tečka klidného tónu na vybraném řádku seznamu (D99).
+    add(["danger", "warning", "success"], ["text-on-fill"], MARK, "D88, D99 značka s obrysem")
     # Primary jako text, ikona a odkaz (D92); na `primary-soft` Badge `primary` (D90).
     add(["primary-text"], PAGE, TEXT, "D92 primary jako text")
     add(["primary-text"], ["primary-soft"], TEXT, "D90, D92 Badge primary")
