@@ -162,7 +162,7 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
   `danger-text` na `color-mix(danger 14 %)` má ve světlém vzhledu 3,9 : 1,
   na `danger-soft` 4,4 — a nikdo ho nespočítá, protože barva vzniká až
   v prohlížeči. `Badge` bere dvojice tokenů `state-…-bg` / `-text`
-  (5,7–9,9 : 1 v obou vzhledech, hlídá `check-contrast.py`). Tónový
+  (5,3–9,9 : 1 v obou vzhledech, hlídá `check-contrast.py`). Tónový
   `color-mix(…)` v komponentě je nález `check-css-tokens.py`. `-soft` je
   **pozadí bez tónového textu** (podbarvení plochy, řádku).
 - **Na ploše, která není pozadí stránky** — sidebar, aktivní položka
@@ -192,7 +192,8 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
     text (6,47 : 1), ne okraj.
 
   Štítek stavu Koš výjimkou už není (D101): `state-trash-text` má na
-  `state-trash-bg` 6,10 / 5,35 : 1.
+  `state-trash-bg` 7,56 / 6,10 : 1 (plná pilulka, D104; po D101
+  6,10 / 5,35).
 
 Vývojářský dashboard přepisuje `danger` i `danger-text` na `#c81e1e`
 (`dev/theme.css`), ostatní dědí — i značky: `danger-mark` je tam `#dc2626`,
@@ -223,8 +224,8 @@ badge (`shpd-detail__badge--{stateStyle}` resp. `shpd-form-state-badge.docState_
 | `done` | žádný | zelená | „Hotovo" — pozitivní cílový stav (např. použitý dokumentový návrh z pošty) |
 | `concept` | žlutá `#facc15` | žlutá | Rozpracováno, dopiš to |
 | `edit` | fialová `#a78bfa` | fialová | Právě se edituje (v opravě) |
-| `archive` | šedá `#cbd5e1`, text řádku `text-secondary` | šedá | Archív — tichý, mimo aktivní práci |
-| `trash` | tmavší šedá `#94a3b8`, text řádku `text-secondary` | šedá, text `#4b5563` / `#9ca3af` | V koši — **bez přeškrtnutí**, smazaný záznam má jít přečíst (D101) |
+| `archive` | tichá šedá `#cbd5e1` / tmavý `#4b5563`, text řádku `text-secondary` | světle šedá | Archív — tichý, mimo aktivní práci |
+| `trash` | výrazná šedá `#64748b` / tmavý `#94a3b8`, text řádku `text-secondary` | **plná tmavě šedá pilulka** `#4b5563`, text `#ffffff` / `#e5e7eb` | V koši — **bez přeškrtnutí**, smazaný záznam má jít přečíst (D101); výraznější než archiv (D104) |
 | `cancelled` | červená `#ef4444` | červená | Zrušeno, pozor |
 | `error` | — | červená | Chyba (např. AI selhala) |
 
@@ -239,6 +240,32 @@ Každý stav má až tři tokeny:
 Text archivního a smazaného řádku bere `--shpd-color-text-secondary`
 (D101, #153; token `state-archive-row` zanikl). Confirmed a done nemají
 `-bar` token, protože jejich proužek je záměrně absent.
+
+Proužky (`-bar`) mají v tmavém vzhledu stejnou hodnotu jako ve světlém —
+kromě archivu a koše, které tmavý blok přepisuje (D104, níže).
+
+### Koš a Archiv
+
+Smazaný záznam má být na první pohled odlišný od archivního v **obou
+vzhledech** (D104, #153). Text řádku mají oba stejný (`text-secondary`,
+D101), rozdíl proto nese proužek a štítek:
+
+- **Proužek koše je výrazný, archivu tichý.** Poměr vůči pozadí řádku:
+
+  | Proužek | Světlý `bg` / pod kurzorem / vybraný / vybraný pod kurzorem | Tmavý |
+  |---|---|---|
+  | archiv `#cbd5e1` / `#4b5563` | 1,48 / 1,39 / 1,13 / 1,06 | 1,98 / 1,67 / 1,55 / 1,28 |
+  | koš `#64748b` / `#94a3b8` | 4,76 / 4,47 / 3,61 / 3,04 | 5,83 / 4,94 / 4,58 / 3,78 |
+
+  Proužek koše drží 3 : 1 i na vybraném řádku pod kurzorem. Do D104 měl
+  koš ve světlém vzhledu 2,56 : 1 a v tmavém dědily oba proužky světlé
+  hodnoty — archiv (10,07 : 1) tam byl výraznější než koš (5,83).
+- **Štítek Smazáno je plná tmavě šedá pilulka** se světlým textem
+  (`state-trash-bg` `#4b5563` v obou vzhledech, text 7,56 / 6,10 : 1);
+  štítek V archívu zůstává světle šedý (v tmavém vzhledu byly oba štítky
+  totožné). Tokeny sdílí `Badge` (hlavička detailu), `FormStateBadge`
+  (formulář) i `SpanBadge` (buňka mřížky) — štítek vypadá všude stejně.
+  `state-trash-bg` je podklad pilulky, ne plochy.
 
 Všechny tokeny jsou definované v `frontend/src/styles/variables.css`.
 Komponenty (`ViewerRow`, `ViewerDetail`, `FormStateBadge`) je sdílí,

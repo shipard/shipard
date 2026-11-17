@@ -1,6 +1,6 @@
 # Design system — Koš výraznější než Archiv, role v Saldu pohybů textem (D104, D105)
 
-**Stav:** naplánováno — #153, D104, D105
+**Stav:** hotovo — #153, D104, D105 (2026-11-17); čeká na ruční ověření
 
 ## Kontext / Cíl
 
@@ -104,10 +104,10 @@ očekávání buňky role (`--filter LedgerViewerTest`).
 
 ## Hotovo když
 
-- [ ] Tokeny podle tabulky, štítek Smazáno plná pilulka, koš výraznější
+- [x] Tokeny podle tabulky, štítek Smazáno plná pilulka, koš výraznější
   než archiv ve světlém i tmavém vzhledu (D104)
-- [ ] Role v mřížce Salda pohybů textem, testy (D105)
-- [ ] Dokumentace, `**Stav:**`, index tasků
+- [x] Role v mřížce Salda pohybů textem, testy (D105)
+- [x] Dokumentace, `**Stav:**`, index tasků
 
 ## Pasti
 
@@ -118,8 +118,72 @@ očekávání buňky role (`--filter LedgerViewerTest`).
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+Hodnoty tokenů i rozsah jsou podle zadání. Zjištění, která zadání
+nepředpokládalo:
+
+- **Sub-tabulka formuláře proužek nekreslí.** `FormSubTable` dává řádku
+  třídu `docState_*` jen kvůli tlumenému textu (D101); `--shpd-row-bar`
+  čtou `ViewerRow`, `ViewerGrid` a `FeedCard`. Změna proužku se
+  sub-tabulky netýká.
+- **Pilulku `trash` do mřížky dnes backend neposílá.** Stav v řádku
+  seznamu i mřížky vypisuje `rowStateTag()` jako tlumený text (D98).
+  Varianta `SpanBadge` `trash` sdílí tokeny s `Badge` a `FormStateBadge`,
+  takže vypadá stejně — ověřeno na buňce podvržené v odpovědi API.
+- **`state-trash-bg` neslouží nikde jako podklad plochy** — jen pilulky
+  (`Badge`, `SpanBadge`, `FormStateBadge`). `state-archive-bg` / `-text`
+  používá i `ViewerDetail` (štítek návrhu) a vývojářský dashboard
+  (`dev.css`) — beze změny.
+- **Integrační `LedgerViewerTest` buňku role netestuje** — beze změny,
+  jen spuštěn. Dokumentace saldokonta (`docs/accbal.md`,
+  `docs/viewer-grid.md`, `docs/frontend.md`) barvu role nepopisuje —
+  beze změny.
+- V `docs/design-system.md` §3 opraven rozsah kontrastu dvojic `Badge`
+  (5,7–9,9 → 5,3–9,9): štítek V archívu má v tmavém vzhledu 5,35 : 1 už
+  od D101.
 
 ## Ověření
 
-(vyplní implementace)
+`check-contrast.py` (60 dvojic, 120 měření), `check-css-tokens.py`,
+`check-css-units.py`, `npm run build`, `npm test` (303), `phpunit --filter
+LedgerViewerTest` (unit 17, integrační 2) a celá sada (11 586 testů,
+3 přeskočené) — v pořádku.
+
+Chromium (Playwright, volný zdroj `zey0-g` s demo sadou IT servis, oba
+vzhledy), snímky před / po a kontrast z vykreslených barev. Archivní
+a smazaný záznam, štítky v hlavičce detailu a ve formuláři, pilulky
+v buňce mřížky a karty feedu byly podvržené v odpovědi API (do dat se
+nic nezapsalo). Hodnoty světlý / tmavý vzhled.
+
+| Místo | Před | Po |
+|-------|------|----|
+| Proužek koše — seznam, mřížka, karta feedu | 2,56 / 5,83 | 4,76 / 5,83 |
+| Proužek archivu — seznam, mřížka, karta feedu | 1,48 / 10,07 | 1,48 / 1,98 |
+| Proužek koše pod kurzorem | 2,41 / 4,94 | 4,47 / 4,94 |
+| Proužek archivu pod kurzorem | 1,39 / 8,53 | 1,39 / 1,67 |
+| Proužek koše, vybraný řádek / pod kurzorem | 1,94 / 4,58 · 1,64 / 3,78 | 3,61 / 4,58 · 3,04 / 3,78 |
+| Proužek archivu, vybraný řádek / pod kurzorem | 1,13 / 7,91 · 1,06 / 6,54 | 1,13 / 1,55 · 1,06 / 1,28 |
+| Štítek Smazáno — text (detail, formulář, mřížka) | 6,10 / 5,35 | 7,56 / 6,10 |
+| Štítek Smazáno — pilulka vůči pozadí | 1,24 / 1,10 | 7,56 / 1,98 |
+| Štítek V archívu — text | 8,33 / 5,35 | beze změny |
+| Štítek V archívu — pilulka vůči pozadí | 1,24 / 1,10 | beze změny |
+| Saldo pohybů, sloupec Role (50 řádků) | 26 pilulek, 24 teček | 50× prostý text |
+
+Štítek Smazáno vypadá stejně v hlavičce detailu (`Badge`), ve formuláři
+(`FormStateBadge`) i v buňce mřížky (`SpanBadge`). V tmavém vzhledu je
+proužek archivu dál vidět (1,98 : 1), na vybraném řádku skoro splývá
+(1,55 / 1,28) — stejně jako ve světlém (1,13 / 1,06).
+
+**V prohlížeči neověřeno:** skutečně archivovaný / smazaný záznam (jen
+podvržený).
+
+Ruční kontrola (Anna, dev server, oba vzhledy):
+
+1. Osoby → záložka Vše s archivovanou a smazanou osobou pod sebou:
+   proužek koše zřetelně tmavší (v tmavém vzhledu světlejší) než archivu;
+   po výběru řádku i pod kurzorem.
+2. Detail a formulář smazané osoby: štítek Smazáno plná tmavě šedá
+   pilulka; detail archivní osoby: štítek V archívu světle šedý.
+3. Dashboard: karta feedu archivního záznamu (pokud v datech je) —
+   horní proužek tichý i v tmavém vzhledu.
+4. Saldo pohybů v mřížce: sloupec Role prostým textem, bez pilulky
+   a tečky; seznam (úzké okno) a detail pohybu beze změny.
