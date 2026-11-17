@@ -312,15 +312,16 @@
     color: var(--shpd-color-text-sidebar-muted);
   }
 
-  /* Chyba na pozadí sidebaru: tónový text tu nedá 4,5 : 1 (`danger-text`
-     na výchozím sidebaru 2,6 : 1), proto text v barvě sidebaru a tón nese
-     jen ikona (#133 D69). */
+  /* Chyba na pozadí sidebaru: tónová barva tu nedá kontrast textu ani
+     ikony (`danger-text` na výchozím sidebaru 2,6 : 1, vlastní vzhled barvu
+     sidebaru mění). Text i ikona proto mají barvu textu sidebaru — tón
+     nenese ani ikona, význam nese její tvar a text (#153 D89). */
   .shpd-sidebar__status--error {
     color: var(--shpd-color-text-sidebar);
   }
 
   .shpd-sidebar__status-icon {
     flex: none;
-    color: var(--shpd-color-danger-text);
+    color: var(--shpd-color-text-sidebar);
   }
 </style>

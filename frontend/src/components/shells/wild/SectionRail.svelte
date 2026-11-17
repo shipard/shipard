@@ -208,7 +208,9 @@
   }
 
   /* Badge — počet v pilulce vpravo nahoře (ikonový rail nemá místo
-     na tečku + počet vedle textu jako NavTree/TopMenuBar). */
+     na tečku + počet vedle textu jako NavTree/TopMenuBar). Pilulku
+     od railu i od aktivní položky odděluje obrys v `text-on-fill`
+     (#153 D88). */
   .shpd-rail__badge {
     position: absolute;
     top: 0;
@@ -223,6 +225,7 @@
     text-align: center;
     color: var(--shpd-color-text-on-fill);
     background-color: var(--shpd-color-warning);
+    box-shadow: 0 0 0 0.125rem var(--shpd-color-text-on-fill);
   }
 
   .shpd-rail__badge--danger {

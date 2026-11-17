@@ -203,7 +203,8 @@
     background-color: var(--shpd-color-accent);
   }
 
-  /* Badge — stejná řeč jako NavTree (tečka severity + počet). */
+  /* Badge — stejná řeč jako NavTree (tečka severity + počet); tečka má
+     obrys v `text-on-fill`, drží i na aktivní položce (#153 D88). */
   .shpd-topmenu__badge {
     display: inline-flex;
     align-items: center;
@@ -217,6 +218,7 @@
     height: 0.4375rem;
     border-radius: 50%;
     background-color: var(--shpd-color-warning);
+    box-shadow: 0 0 0 0.125rem var(--shpd-color-text-on-fill);
   }
 
   .shpd-topmenu__badge--danger .shpd-topmenu__badge-dot {
