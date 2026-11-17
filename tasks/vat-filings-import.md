@@ -1,7 +1,8 @@
 # Task: Import starých podání DPH — `POST /_vat/filing-import`, `origin`, override podaných hodnot z XML (#55 D21, D32–D39)
 
-**Stav:** částečně — kód, testy, CLI, UI a docs hotové 2026-09-13 (4 commity);
-zbývá D39 na `btpg-p` po runneru (`old_shipard` task 37) a `ds-upgrade` tam.
+**Stav:** hotovo — kód, testy, CLI, UI a docs 2026-09-13 (4 commity); D39 na `btpg-p`
+ověřeno 2026-11-17: import, zámky a rozdíly řádků v pořádku, kontrola zůstatků 343 hlásí
+víc období než 08/2019 → #158. Uzavřeno s #55.
 Protějšek: `old_shipard` `modules/imports/newShipard/tasks/37-vat-filings-import.md`
 (runner). Nasazení: nejdřív tato strana (`ds-upgrade`: sloupec `origin`), pak
 runner; ověření `ds-reset` + reimport `btpg-p` (D39).
@@ -193,7 +194,8 @@ odkazem (není to exchange formát, je to dedikovaný endpoint).
 
 ## Hotovo když
 
-- [x] `ds-upgrade` na 4l3j projde (`origin`) — 2026-09-13; `btpg-p` zbývá.
+- [x] `ds-upgrade` na 4l3j projde (`origin`) — 2026-09-13; na `btpg-p` později
+      (importovaná podání mají `origin = imported`).
 - [x] Testy §6 zelené (úzké `--filter`) — `FilingDocumentTest`,
       `Dp3XmlReaderTest`, `EpoXmlLineComparerTest`, integrační
       `FilingImportServiceTest` + `VatFilingImportCommandTest` na 4l3j.
@@ -201,16 +203,22 @@ odkazem (není to exchange formát, je to dedikovaný endpoint).
       `origin = imported`, přílohy nahrané před `finish` zůstaly (`epo-xml` /
       `epo-imported`), žádné nové soubory — automatizováno
       v `VatFilingImportCommandTest` (izolované úložiště, po testu uklizeno);
-      záložka Rozdíly importu zbývá prokliknout v prohlížeči.
-- [ ] **D39 na `btpg-p` po reimportu (`old_shipard` task 37):** všechna podaná
-      stará podání importována (počty per typ = souhrn runneru); podání s
-      `imported_row_mismatch` vypsána (očekávány jednotky, 08/2019 mezi nimi);
-      `closed_period_balance` po `alerts-run --check` = jen 08/2019;
-      `filed_unlocked_periods` prázdné; `vat-filing-xml-diff` původní XML vs.
-      writer nad snapshotem pro všechna DP3 — počet rozdílů = počet
-      `imported_row_mismatch` (nic navíc).
+      proklik záložky Rozdíly importu → #158.
+- [x] **D39 na `btpg-p` po reimportu (`old_shipard` task 37)** — ověřeno
+      2026-11-17 jen čtením; dva body přecházejí do #158:
+      - [x] stará podání importována: 144 přiznání, 137 KH, 6 SH;
+      - [x] `imported_row_mismatch` u 7 přiznání (12/2024 řádné i opravné,
+            11/2025, 01–04/2026); u 01–04/2026 jen ř. 40/46/52 — rozdělení
+            kráceného odpočtu (F3-6), které porovnání při importu nesčítá.
+            08/2019 mezi nimi není, podání nemá XML;
+      - [x] `filed_unlocked_periods` prázdné;
+      - [ ] `closed_period_balance` = jen 08/2019 — **neplatí**: nenulové
+            zůstatky 343 má 18 podaných instancí (dotazem jako
+            `ClosedPeriodBalanceService`, upozornění na kopii neběží) → #158;
+      - [ ] `vat-filing-xml-diff` pro všechna DP3 → #158.
 - [ ] Dodatečné podání založené nad `btpg-p` za instanci s importovaným řádným
-      se sestaví jako diff proti importovaným podaným hodnotám.
+      se sestaví jako diff proti importovaným podaným hodnotám → #158
+      (sestavení na kopii reálných dat je zápis, jen po schválení).
 
 ## Odchylky od zadání
 

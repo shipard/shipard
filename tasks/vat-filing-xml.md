@@ -1,11 +1,11 @@
 # Task: Podání DPH — XML pro EPO (DPHDP3 / DPHKH1 / DPHSHV), hlavička, PDF opis (M1 Fáze 3) — #55
 
-**Stav:** částečně — implementace hotová 2026-09-10 (commity 1–7), nálezy prvního běhu
+**Stav:** hotovo — uzavřeno 2026-11-17 s #55; implementace 2026-09-10 (commity 1–7), nálezy prvního běhu
 zlatého testu opravené 2026-09-11 (F3-3 číselník zemí, F3-4 nula ≡ chybějící, F3-5 akce
 Načíst hlavičku z profilu, F3-6 (a) v porovnávači; F3-1 je chyba importu v `old_shipard`,
 F3-2 zaniklo se strukturou). **Zlatý test DP3 01–04/2026 sedí** až na prohozená jména
 oprávněné osoby v profilu (data). **Zlatý test KH 01/2026 sedí** až na známou výjimku F3-7
-(2026-11-11, po reimportu a #77). Zbývá ruční proklik UI a nasazení na alfě
+(2026-11-11, po reimportu a #77). Nasazení na alfě vypuštěno; SH proti podanému XML → #158
 **Issue:** #55 (Fáze 3), návaznost D19 (#74 hotovo), D20 (přílohy na podání), D17 (zaokrouhlení)
 **Návaznost:** staví na Fázi 2 (`tasks/vat-filings.md` — snapshot `economy_vat_filings`
 + výstupní řádky `_return_rows` / `_cs_rows` / `_rs_rows`), na strukturovaných polích
@@ -311,26 +311,21 @@ Věta C součty; SHV řádek per (stát, DIČ, kód plnění).
 - [x] Dev DS 4l3j: tab Hlavička se kreslí se 35 poli a českými popisky, „Vytvořit
       soubory" uloží XML + 2 PDF jako přílohy, po podání je guard zamkne, vadná
       hlavička vrátí 422 s chybami na `header.*`. Ověřeno přes API a integrační
-      testy; **ruční proklik v prohlížeči zbývá**.
-- [ ] **Zlatý test:** čeká na podané soubory zdroje 689089
-      (`tests/Fixtures/vat-xml/689089/`, viz README v adresáři). Harness hotový
-      a ověřený proti vygenerovanému souboru — `GoldenFilingXmlTest` se zatím
-      přeskakuje.
+      testy, UI v používání na dev serveru (2026-11-17).
+- [x] **Zlatý test** (`GoldenFilingXmlTest`, podané soubory zdroje 689089 jen
+      lokálně v `tests/Fixtures/vat-xml/689089/`): DP3 01–04/2026 sedí až na data
+      profilu, KH 01/2026 formálně neprochází jen kvůli známé výjimce F3-7
+      (tolerance se vědomě nezavádí) — viz běhy níže.
 - [x] XML vygenerované z podání ve 40 je bajtově stejné při opakovaném generování
       (determinismus ze snapshotu).
 
 ## Zbývá
 
-- Ruční proklik v prohlížeči (tab Hlavička, akce Vytvořit soubory, Načíst hlavičku
-  z profilu, Přílohy).
-- Zlatý test KH: oprava importu `partner_doc_number` v `old_shipard` (F3-1) + #77
-  (`kh_mode`) → reimport `btpg-p` → přepočet konceptů → nový běh. Souhrnné hlášení
-  zdroj 689089 nepodává, třístranný obchod (`k_pln_eu` = 2) zůstává neověřený.
-- Opravit prohozená jména oprávněné osoby v profilu `btpg-p` a načíst hlavičku
-  u konceptů #6–#10 (data, ne kód).
-- Nasazení na alfu: `ds-upgrade` (nové cfgItems vč. `world.cz.epoCountries`, jinak
-  generování skončí na chybějícím `valueScale` / chybě `header.stat`) a kontrola, že
-  render služba běží.
+Nic — uzavřeno 2026-11-17 s #55. Ruční proklik nahradilo používání na dev
+serveru, nasazení na alfu je vypuštěné (vývojové servery ho nahradily).
+Souhrnné hlášení a třístranný obchod (`k_pln_eu` = 2) proti podanému XML
+zůstávají neověřené → #158 (zdroj 689089 SH s XML nemá, jiné kopie reálných
+dat ano). Prohozená jména oprávněné osoby v profilu `btpg-p` jsou data, ne kód.
 
 ## Zlatý test — první běh (2026-09-11, dev DS `btpg-p`, podání #6–#10 z opraveného profilu)
 

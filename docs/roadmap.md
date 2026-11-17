@@ -55,30 +55,37 @@ message-centric nasazení).
 
 ---
 
-## M1 — Výstupy pro DPH ▸ **aktivní**
+## M1 — Výstupy pro DPH ✓ **hotovo** (17. 11. 2026)
 
 Bez přiznání k DPH a kontrolního hlášení nemůže být Shipard jedinou evidencí
 firmy — účetní ho nepřevezme a systém zůstane doplňkem.
 
-Stav po revizi 7. 9. 2026: **výpočet existuje, podání ne.** Modul
-`economy.taxes` skládá přiznání, kontrolní hlášení i souhrnné hlášení
-on-demand jako reporty nad instancemi daňových tvrzení
-(`economy_vat_report_periods`) — issue #55, rozhodnutí D1–D13. Chybí
-persistence podaného tvrzení, XML pro daňový portál a zámek období.
-
 | Co | Zadání |
 |---|---|
-| Mapování kódů DPH → řádky přiznání / sekce KH / SH, živé reporty | `taxes-phase01.md` (částečně — zbývá ds-upgrade, proklik, ověření na alfě) |
-| Instance daňových tvrzení místo mřížky období DPH | `vat-report-periods.md` (částečně — zbývá proklik UI, ověření po re-importu) |
-| Podání — persistence podaného tvrzení, XML pro portál | — (issue #55, Fáze 2) |
-| Uzamčení období po podání (zámek proti dodatečným změnám) | — |
+| Mapování kódů DPH → řádky přiznání / sekce KH / SH, živé reporty | `taxes-phase01.md` |
+| Modul `economy.vat` (přejmenování z `economy.taxes`) | `vat-rename.md` |
+| Instance daňových tvrzení místo mřížky období DPH | `vat-report-periods.md` |
+| Podání — snapshot podaného tvrzení, řádné / opravné / dodatečné | `vat-filings.md` |
+| XML pro daňový portál (DPHDP3, DPHKH1, DPHSHV), hlavička, PDF opis | `vat-filing-xml.md` |
+| Uzamčení období po podání (zámek proti dodatečným změnám) | `vat-period-lock.md` |
+| Zaúčtování přiznání, kontrola zůstatků 343 | `vat-filing-accounting.md` |
+| Import starých podání ze starého Shipardu | `vat-filings-import.md` |
 
 **Hotovo když:** za uzavřené období lze vygenerovat přiznání i kontrolní
 hlášení ve formátu přijatelném pro daňový portál a čísla souhlasí s deníkem.
 
+**Uzavřeno 17. 11. 2026** — issue #55 zavřené (rozhodnutí D1–D39). Modul
+`economy.vat` skládá přiznání, kontrolní hlášení i souhrnné hlášení nad
+instancemi daňových tvrzení, podání drží snapshot, z něj generuje XML pro
+daňový portál, období se po podání zamyká a přiznání se účtuje. Na kopii
+reálných dat sedí přiznání 01–04/2026 na podaná XML i na staré účetní doklady
+přiznání a kontrolní hlášení 01/2026 až na jednu známou výjimku. Porovnání
+s historií podání na dalších kopiích reálných dat (zůstatky 343, rozdíly
+proti původním XML, souhrnné hlášení) pokračuje v #158.
+
 ---
 
-## M2 — Uzavřený kruh na přijaté faktuře
+## M2 — Uzavřený kruh na přijaté faktuře ▸ **aktivní**
 
 Pošta → AI analýza → doklad → účetní deník → saldokonto → párování s bankovní
 platbou, bez ručního zásahu mimo kontrolu. Tady je hotovo víc, než se zdá:
@@ -225,6 +232,8 @@ v každé diskuzi.
 
 ### Historie revizí
 
+- **17. 11. 2026:** M1 uzavřen (#55); ověření výstupů DPH proti historii
+  podání na kopiích reálných dat pokračuje v #158. Aktivní milník je M2.
 - **16. 10. 2026:** M4 „AI modely“ — výchozí modely úrovní na řadě 5
   po evaluaci #103 (`ai-tiers-series5.md`); termín Sonnetu 4.6 přestal
   být blokátor.

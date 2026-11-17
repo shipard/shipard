@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 451 tasků: **naplánováno** 4 · **částečně** 27 · **zrušeno** 1 · **hotovo** 419.
+Celkem 451 tasků: **naplánováno** 4 · **částečně** 22 · **zrušeno** 1 · **hotovo** 424.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -48,13 +48,8 @@ nevypisují — níže je jen to, co není dokončené.
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |
 | `prints-phase3.md` | částečně | kód, dokumentace a nápověda hotové 2026-10-05 (#90 D46–D52; podklad loga z D46 po prokliku zrušen); ověřeno na ukázkovém zdroji včetně ručního prokliku nastavení a výsledného tisku, `ds-upgrade` jen tam; zbývá nasazení na alfu (`ds-upgrade` všech zdrojů — bez něj se tiskne bez textů a s výchozím vzhledem) a komentář do #90 |
 | `prints-phase4.md` | částečně | implementace hotová (7 commitů); zbývá ověření skutečného odeslání přes SMTP (dev server nemá relay), ruční proklik dialogu a náhledů PDF, `ds-upgrade` zdrojů dat při nasazení a revize `sk` / `de` textů e-mailu (`tasks/prints-languages.md`) |
-| `taxes-phase01.md` | částečně | implementace kompletní (mapping, jádro reportů s periodSource vatPeriod + text/date sloupci, kalkulátory, buildery, UI, testy); zbývá ds-upgrade + proklik na dev DS a read-only ověření na alfě dle „Hotovo když" |
 | `testing-clean-server.md` | částečně | kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; `php8.5-bcmath` na testovacím serveru doinstalovaný 2026-10-28; zbývá ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146 |
 | `testing-phase3.md` | částečně | implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); snímek spolku schválený 2026-10-15 po #122 (kontrola 5 `ok` u všech tří sad); zbývá alfa |
-| `vat-filing-xml.md` | částečně | implementace hotová 2026-09-10 (commity 1–7), nálezy prvního běhu |
-| `vat-filings-import.md` | částečně | kód, testy, CLI, UI a docs hotové 2026-09-13 (4 commity); |
-| `vat-period-lock.md` | částečně | shpd hotové 2026-09-11 (6 commitů: jádro lock providerů, zámek instance, |
-| `vat-report-periods.md` | částečně | implementace kompletní (5 commitů 2026-09-03: tabulka + eventy jádra, přiřazení + on-demand, reporty nad instancemi, cron + zrušení `vat_periods`, docs); E2E na dev DS prošlo (uložení dokladu → koncepty, reporty `--period`, alert, guard, přepočet, ruční přesun). Zbývá ruční proklik UI (picker, viewer Daňová tvrzení, selecty na dokladu) a ověření po re-importu qrce (task 30) — poslední bod „Hotovo když“. |
 | `vat-reverse-charge-subjects.md` | částečně | kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); nezávislé ověření a legislativní ověření číselníku 2026-11-12, výsledek v #89; zbývá kontrola XML s kódem `4a` na portálu, `ai-eval` po změně promptu a kontrola stavu předmětů 11–21 k 1. 1. 2027 (prosinec 2026) |
 | `video-publish.md` | zrušeno | galerie přes nginx a `gallery.mjs` odstraněny 2026-10-27 (#103 F7b D122, D129); videa se prohlížejí a stahují v oddílu **Videa** vývojářského dashboardu (`tasks/testing-phase7b.md`). Text níže je historie D15–D17. |
 

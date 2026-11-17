@@ -1,6 +1,6 @@
 # Task: `economy.taxes` — Fáze 0+1: mapování DPH výstupů + živé přiznání / KH / SH
 
-**Stav:** částečně — implementace kompletní (mapping, jádro reportů s periodSource vatPeriod + text/date sloupci, kalkulátory, buildery, UI, testy); zbývá ds-upgrade + proklik na dev DS a read-only ověření na alfě dle „Hotovo když"
+**Stav:** hotovo — uzavřeno 2026-11-17 s #55; ověřeno na kopii reálných dat na dev serveru (zlatý test DP3 01–04/2026 a KH 01/2026 zdroje 689089), ověřování na alfě vypuštěno; souhrnné hlášení a rozdíly proti historii dalších zdrojů řeší #158
 **Issue:** #55 (M1 — DPH), rozhodnutí D1–D6
 
 ## Kontext
@@ -222,12 +222,14 @@ a `docs/README.md` neaktualizuj (dělá David).
 
 ## Hotovo když
 
-- [ ] Testy zelené (úplnost, cross-check, sekce KH, dopočty DP3).
-- [ ] `bin/shpd-ds ds-upgrade` projde (rebuild kompilovaného configu).
-- [ ] Na alfě (read-only ověření) pro migrovaný DS a uzavřené období sedí
-      živé přiznání na přiznání skutečně podané ze starého Shipardu
-      (řádek po řádku), KH sedí počty řádků sekcí a součty, SH sedí na
-      starou VatRS.
-- [ ] Křížová kontrola proti deníku hlásí nulové rozdíly na migrovaných DS.
-- [ ] V UI lze zvolit registraci + období a přečíst všechny tři živé výstupy
-      včetně operativního stavu DPH (ř. 64/65).
+- [x] Testy zelené (úplnost, cross-check, sekce KH, dopočty DP3).
+- [x] `bin/shpd-ds ds-upgrade` projde (rebuild kompilovaného configu).
+- [x] Na kopii reálných dat na dev serveru (zdroj 689089; původně alfa,
+      vypuštěno 2026-11-17) sedí živé přiznání na přiznání skutečně podané ze
+      starého Shipardu řádek po řádku (DP3 01–04/2026, #55 Fáze 2) a KH na
+      podané XML (KH 01/2026 až na známou výjimku F3-7, `vat-filing-xml.md`).
+      SH proti podanému XML zatím neověřené → #158.
+- [x] Křížová kontrola proti deníku hlásí nulové rozdíly (zdroj 689089,
+      DP3 01–04/2026). Rozdíly proti historii dalších zdrojů → #158.
+- [x] V UI lze zvolit registraci + období a přečíst všechny tři živé výstupy
+      včetně operativního stavu DPH (ř. 64/65) — v používání na dev serveru.

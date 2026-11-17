@@ -1,9 +1,9 @@
 # Task: Instance daňových tvrzení (`economy_vat_report_periods`) místo období DPH
 
-**Stav:** částečně — implementace kompletní (5 commitů 2026-09-03: tabulka + eventy jádra, přiřazení + on-demand, reporty nad instancemi, cron + zrušení `vat_periods`, docs); E2E na dev DS prošlo (uložení dokladu → koncepty, reporty `--period`, alert, guard, přepočet, ruční přesun). Zbývá ruční proklik UI (picker, viewer Daňová tvrzení, selecty na dokladu) a ověření po re-importu qrce (task 30) — poslední bod „Hotovo když“.
+**Stav:** hotovo — implementace 2026-09-03 (5 commitů: tabulka + eventy jádra, přiřazení + on-demand, reporty nad instancemi, cron + zrušení `vat_periods`, docs); E2E na dev DS prošlo; invarianta KH ⊂ přiznání ověřená 2026-11-17 na kopii reálných dat čtvrtletního plátce `e8w1-i` místo alfy (vypuštěna). Uzavřeno s #55.
 **Issue:** #55 — komentář „Revize návrhu po fázi 1", rozhodnutí D7–D13
 **Návaznost:** po `tasks/vat-rename.md` (staví na `economy.vat`, `cs_/rs_period_kind`).
-Import instancí a re-import alfy řeší `old_shipard: …/tasks/30-vat-report-periods-import.md`
+Import instancí a reimport řeší `old_shipard: …/tasks/30-vat-report-periods-import.md`
 — nasazení této (nové) strany předchází staré straně.
 
 ## Kontext
@@ -126,7 +126,7 @@ konzistentně; docs.core nesmí záviset na economy.vat):
 
 - Tabulky podání a snapshoty (Fáze 2 — podání se věší na instance).
 - Vynucení zámku (Fáze 4), OSS, parametr registrace v UI reportů.
-- Stará strana importu a re-import alfy (task 30).
+- Stará strana importu a reimport (task 30).
 
 ## Commity
 
@@ -147,7 +147,10 @@ konzistentně; docs.core nesmí záviset na economy.vat):
 - [x] `grep -rn "vat_periods"` nevrací nic mimo tasks/ a archiv.
 - [x] Picker KH na čtvrtletním plátci nabízí měsíce (instance), DP3 čtvrtletí
       — pokryto `testReturnAndCsReportsUseInstancesOfTheirOwnType`;
-      ruční proklik UI zbývá.
-- [ ] Po re-importu (task 30) na qrce: DP3 Q1/2026 ř. 64 = 99 042,86,
-      křížová kontrola 0 rozdílů; měsíční KH 01–03/2026 dávají dohromady
-      přesně obsah Q1 (invarianta na reálných datech).
+      UI v používání na dev serveru.
+- [x] Invarianta na reálných datech čtvrtletního plátce (původně qrce na alfě
+      po re-importu tasku 30; alfa vypuštěna 2026-11-17): na kopii `e8w1-i`
+      leží za 2023–2026 všech 2 162 dokladů z KH ve čtvrtletí svého přiznání,
+      žádný doklad KH není bez přiznání a každý měsíc KH spadá celý do jednoho
+      čtvrtletí. Shoda řádků s podaným přiznáním → #158 (Q1 i Q2/2026 hlásí
+      `imported_row_mismatch`).

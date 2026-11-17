@@ -1,9 +1,9 @@
 # Task: Zámek období — instance tvrzení DPH a fiskální měsíc, lock providery, kontrola zůstatků 343 (M1 Fáze 4a) — #55 D23–D27, D31
 
-**Stav:** částečně — shpd hotové 2026-09-11 (6 commitů: jádro lock providerů, zámek instance,
+**Stav:** hotovo — shpd 2026-09-11 (6 commitů: jádro lock providerů, zámek instance,
 zámek měsíce, kontroly + alerty, UI/endpointy/CLI, dokumentace + help), `ds-upgrade` na 4l3j,
-smoke přes HTTP i CLI prošel. Zbývá `ds-upgrade` + proklik na alfě a reimport zdroje 689089
-po `old_shipard` tasku 36 (zámek importovaných instancí) — poslední bod „Hotovo když"
+smoke přes HTTP i CLI prošel; zámky po reimportu zdroje 689089 ověřené 2026-11-17, proklik
+na alfě vypuštěn. Uzavřeno s #55
 **Issue:** #55 — komentář „Fáze 4 — Zámek a zaúčtování: rozhodnutí D23–D31 (2026-09-11)"
 **Návaznost:** staví na instancích tvrzení (`economy_vat_report_periods`,
 `tasks/vat-report-periods.md`), podáních (`economy_vat_filings`, `tasks/vat-filings.md`)
@@ -343,8 +343,10 @@ v import módu) do zamčené instance projde.
       bez zaúčtování → `closed_period_balance` per 343 analytika (F4b ho zhasne).
 - [x] `reaccount` zamčeného dokladu odmítne (HTTP 422); CLI `doc-reaccount --force`
       projde a zaloguje (smoke na 4l3j).
-- [ ] Po reimportu zdroje 689089 s `old_shipard` taskem 36: instance kryté starým
-      stavem 9000 mají `locked = 1`, import dokladů do nich prošel.
+- [x] Po reimportu zdroje 689089 s `old_shipard` taskem 36: instance kryté starým
+      stavem 9000 mají `locked = 1`, import dokladů do nich prošel — 2026-11-17
+      na `btpg-p`: zamčeno 164 přiznání / 128 KH / 133 SH, každá instance
+      s podaným řádným podáním je zamčená, doklady v nich importované.
 - [x] Dokumentace dle §7 + help `uctarna/uzamceni-obdobi.md`.
 
 ## Odchylky od zadání

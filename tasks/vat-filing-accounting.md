@@ -1,8 +1,8 @@
 # Task: Zaúčtování přiznání DPH — účetní doklad per podání, správce daně, akce Zaúčtovat (M1 Fáze 4b) — #55 D28–D31
 
 **Stav:** hotovo — 2026-09-12 na dev DS (4l3j: integrační testy + HTTP smoke,
-btpg-p: zlatý test 01–04/2026); zbývá alfa (ds-upgrade, nastavit správce daně
-a `economy.vat.filingAccountingSeries`, proklik UI). Odchylky viz níže.
+btpg-p: zlatý test 01–04/2026); alfa vypuštěna 2026-11-17, ruční scénář
+dodatečného podání → #158. Uzavřeno s #55. Odchylky viz níže.
 **Issue:** #55 — komentář „Fáze 4 — Zámek a zaúčtování: rozhodnutí D23–D31 (2026-09-11)"
 **Návaznost:** staví na podáních a jejich snapshotu (`economy_vat_filings`,
 `economy_vat_filing_items`, `economy_vat_filing_return_rows` — `tasks/vat-filings.md`),
@@ -201,8 +201,8 @@ Idempotence: živý `acc_document` (≠ 30/90) → služba odmítne s odkazem
   tvrzení — F4a) — jen pořadí akcí v detailu, žádný nový dialog.
 - CLI `vat-filing-account <filingId> [--dry-run]` (`src/Command/DataSource/
   VatFilingAccountCommand.php`): `--dry-run` vypíše řádky (účet, strana, částka,
-  popis) bez zápisu — to je nástroj zlatého testu. Zápis na alfě = mutace,
-  spouští David.
+  popis) bez zápisu — to je nástroj zlatého testu. Zápis na kopii reálných dat
+  = mutace, spouští David.
 
 ### 5. Import (D21 návaznost)
 
@@ -287,16 +287,16 @@ do PRD importéru; tady jen guard: služba odmítne podání s `date_filed` pře
       volání `ALREADY_ACCOUNTED`, po smazání dokladu detail nabízí „Zaúčtovat
       znovu". Vypořádání po uzavření dokladu ověřuje integrační test kontroly
       zůstatků (deník přímo), ne proklik — proklik UI (uzavření dokladu →
-      Zůstatky DPH prázdné) zbývá.
+      Zůstatky DPH prázdné) patří do scénáře níže.
 - [ ] Dev DS ruční scénář: změna DPH dokladu v odemčené podané instanci →
       kontrola nenulová → dodatečné podání + zaúčtování → kontrola prázdná.
       Matematiku dodatečného (delta per kód + ř. 66) kryje builder test;
-      proklik zbývá spolu s alfou.
+      proklik → #158.
 - [x] **Zlatý test 689089 DP3 01–04/2026** (btpg-p, koncepty podání #1–#4
       přes `vat-filing-compose`, `vat-filing-account --dry-run`): per analytika
       343 **shodná strana i částka** ve všech čtyřech měsících (11 / 8 / 10 /
       10 řádků), saldo řádek 343801 DAL 260 864 / 135 796 / 120 203 / 143 583
-      = staré doklady, VS `46343504`, SS `705202601`…`705202604`, splatnost
+      = staré doklady, VS = DIČ bez `CZ`, SS `705202601`…`705202604`, splatnost
       +25 dní shodná. Zbytek 1,06 / 0,02 / −0,97 / 0,48 shodný se starými
       doklady včetně strany; liší se jen účet zaokrouhlení — předpis dává
       `rounding.revenue` 648001 / `rounding.cost` 548001, starý systém účtoval
