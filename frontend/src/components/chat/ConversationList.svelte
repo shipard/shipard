@@ -138,6 +138,11 @@
   .shpd-convlist__item--active {
     background-color: var(--shpd-color-bg-selected);
   }
+  /* Na vybrané konverzaci má šedý text barvu běžného textu (#153 D91) —
+     `text-secondary` na `bg-selected` dá ve světlém vzhledu 4,3 : 1. */
+  .shpd-convlist__item--active .shpd-convlist__section {
+    color: var(--shpd-color-text);
+  }
   .shpd-convlist__main {
     flex: 1;
     min-width: 0;

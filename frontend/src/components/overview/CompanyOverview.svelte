@@ -315,7 +315,7 @@
     padding: 0;
     font: inherit;
     cursor: pointer;
-    color: var(--shpd-color-primary, var(--shpd-color-text));
+    color: var(--shpd-color-primary-text);
     text-decoration: underline;
     text-decoration-color: transparent;
     transition: text-decoration-color 0.15s;

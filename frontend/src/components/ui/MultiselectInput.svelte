@@ -255,7 +255,7 @@
   }
 
   .shpd-multiselect__item-check--on {
-    color: var(--shpd-color-primary, var(--shpd-color-text));
+    color: var(--shpd-color-primary-text);
     border-color: var(--shpd-color-primary, var(--shpd-color-border-focus));
   }
 

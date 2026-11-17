@@ -615,7 +615,7 @@
     border: none;
     border-top: 1px solid var(--shpd-color-border);
     background: transparent;
-    color: var(--shpd-color-primary, var(--shpd-color-text));
+    color: var(--shpd-color-primary-text);
     font-size: var(--shpd-font-size-sm);
     font-family: var(--shpd-font-family);
     font-weight: 500;

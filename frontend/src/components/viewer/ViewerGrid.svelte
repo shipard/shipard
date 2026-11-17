@@ -284,9 +284,24 @@
 
   /* Výběr přepisuje error podbarvení i hover. Stavový proužek
      (--shpd-row-bar) výběr nemění — zůstává i u vybraného řádku,
-     stejně jako ve ViewerRow. */
+     stejně jako ve ViewerRow. Tónové a šedé texty mají na vybraném řádku
+     barvu běžného textu (#153 D91): číslo řádku, text chybového řádku
+     i tónové spany; `SpanBadge` má vlastní podklad a zůstává. */
   .shpd-grid__tr--selected > .shpd-grid__td {
     background-color: var(--shpd-color-bg-selected);
+    color: var(--shpd-color-text);
+  }
+
+  .shpd-grid__tr--selected .shpd-grid__span--primary,
+  .shpd-grid__tr--selected .shpd-grid__span--success,
+  .shpd-grid__tr--selected .shpd-grid__span--warning,
+  .shpd-grid__tr--selected .shpd-grid__span--danger {
+    color: var(--shpd-color-text);
+  }
+
+  /* Tlumený span tlumí průhledností — na vybraném řádku méně. */
+  .shpd-grid__tr--selected .shpd-grid__span--muted {
+    opacity: 0.8;
   }
 
   .shpd-grid__tr--selected:hover > .shpd-grid__td {

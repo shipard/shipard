@@ -137,6 +137,28 @@
     background-color: var(--shpd-color-bg-selected-hover);
   }
 
+  /* Na vybraném řádku mají tónové a šedé texty barvu běžného textu
+     (#153 D91): na `bg-selected` a hlavně `bg-selected-hover` tón ani
+     `text-secondary` 4,5 : 1 nedrží (3,5–4,3). Stav dál nese proužek.
+     Ikona řádku zůstává tlumená (stačí jí 3 : 1), `SpanBadge` a avatar mají
+     vlastní podklad a pravidlo se jich netýká. */
+  .shpd-viewer-row--selected .shpd-viewer-row__index,
+  .shpd-viewer-row--selected .shpd-viewer-row__i1,
+  .shpd-viewer-row--selected .shpd-viewer-row__line--secondary,
+  .shpd-viewer-row--selected .shpd-viewer-row__line--tertiary,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--primary,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--success,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--warning,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--danger {
+    color: var(--shpd-color-text);
+  }
+
+  /* Tlumený span tlumí průhledností — na vybraném řádku méně, aby text
+     držel 4,5 : 1 i pod kurzorem. */
+  .shpd-viewer-row--selected .shpd-viewer-row__span--muted {
+    opacity: 0.8;
+  }
+
   /* Doc-state proužky řeší globální .docState_* třídy v styles/base.css
    */
 
