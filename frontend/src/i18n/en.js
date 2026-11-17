@@ -267,6 +267,7 @@ export default {
   'document.meta.dueDate': 'Due date',
   'document.meta.accountingDate': 'Accounting date',
   'document.meta.taxPointDate': 'Tax point date',
+  'document.meta.vatRates': 'VAT rates',
   'document.meta.currency': 'Currency',
   'document.meta.exchangeRate': 'Exchange rate',
   'document.meta.paymentMethod': 'Payment method',

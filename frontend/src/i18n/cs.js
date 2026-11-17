@@ -276,6 +276,7 @@ export default {
   'document.meta.dueDate': 'Splatnost',
   'document.meta.accountingDate': 'Účetní datum',
   'document.meta.taxPointDate': 'DUZP',
+  'document.meta.vatRates': 'Sazby DPH',
   'document.meta.currency': 'Měna',
   'document.meta.exchangeRate': 'Kurz',
   'document.meta.paymentMethod': 'Způsob platby',

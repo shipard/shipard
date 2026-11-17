@@ -225,6 +225,59 @@ class DocsHeadsFormSubtableTest extends TestCase
         $this->assertCount(6, $result['columns']);
     }
 
+    // ── Sloupec „Datum sazby“ (#159 U10) ────────────────────────────────────
+
+    public function testRateDateColumnOnlyWithRowsSource(): void
+    {
+        $form = $this->form();
+        $rows = [
+            ['id' => 101, 'doc_head' => 1, 'row_kind' => 1, 'order_pos' => 1, 'description' => 'Dodávka',
+             'quantity' => '1.0000', 'unit_price' => '5000.0000', 'vat_base' => '5000.00', 'vat_pct' => '21.00',
+             'vat_amount' => '1050.00', 'vat_total' => '6050.00', 'vat_rate_date' => null],
+            ['id' => 102, 'doc_head' => 1, 'row_kind' => 1, 'order_pos' => 2, 'description' => 'Odpočet zálohy',
+             'quantity' => '1.0000', 'unit_price' => '-2000.0000', 'vat_base' => '-2000.00', 'vat_pct' => '20.00',
+             'vat_amount' => '-400.00', 'vat_total' => '-2400.00', 'vat_rate_date' => '2012-11-20'],
+        ];
+
+        $result = $form->renderSubtable($this->rowsTab(), $rows, ['id' => 1, 'vat_mode' => 1, 'vat_rate_source' => 2]);
+        $this->assertSame(
+            ['order_pos', 'description', 'quantity', 'unit', 'unit_price', 'vat_base', 'vat_pct', 'vat_rate_date', 'vat_amount', 'vat_total'],
+            array_column($result['columns'], 'id'),
+        );
+        $this->assertSame('Datum sazby', $this->columnsById($result)['vat_rate_date']['label']);
+        $this->assertArrayNotHasKey('vat_rate_date', $result['rows'][0]['cells'], 'řádek bez vlastního data');
+        $this->assertSame('2012-11-20', $result['rows'][1]['cells']['vat_rate_date']);
+
+        foreach ([0, 1] as $source) {
+            $result = $form->renderSubtable($this->rowsTab(), $rows, ['id' => 1, 'vat_mode' => 1, 'vat_rate_source' => $source]);
+            $this->assertNotContains('vat_rate_date', array_column($result['columns'], 'id'), "zdroj {$source}");
+        }
+
+        $result = $form->renderSubtable($this->rowsTab(), $rows, ['id' => 1, 'vat_mode' => 0, 'vat_rate_source' => 2]);
+        $this->assertNotContains('vat_rate_date', array_column($result['columns'], 'id'), 'doklad bez DPH');
+    }
+
+    public function testDeclaredRecapRateDateColumnOnlyWithRowsSource(): void
+    {
+        $form = $this->formWithRecap();
+        $rows = [[
+            'id' => 5, 'doc_head' => 1, 'order_pos' => 1, 'vat_code' => 'cz-110', 'vat_pct' => '20.00',
+            'vat_rate_date' => '2012-11-20', 'base' => '-2000.00', 'tax' => '-400.00', 'total' => '-2400.00',
+            'sum_base' => 1, 'sum_tax' => 1, 'sum_total' => 1, 'is_reverse_pair' => 0,
+        ]];
+        $head = ['id' => 1, 'vat_mode' => 1, 'doc_currency' => 'czk', 'home_currency' => 'czk'];
+
+        $result = $form->renderSubtable($this->recapTab(), $rows, $head + ['vat_rate_source' => 2]);
+        $this->assertSame(
+            ['order_pos', 'vat_code', 'vat_pct', 'vat_rate_date', 'base', 'tax', 'total'],
+            array_column($result['columns'], 'id'),
+        );
+        $this->assertSame('2012-11-20', $result['rows'][0]['cells']['vat_rate_date']);
+
+        $result = $form->renderSubtable($this->recapTab(), $rows, $head + ['vat_rate_source' => 1]);
+        $this->assertNotContains('vat_rate_date', array_column($result['columns'], 'id'));
+    }
+
     // ── Sub-tabulka převzaté rekapitulace DPH (#75) ────────────────────────
 
     public function testDeclaredRecapSubtableColumnsAndCells(): void

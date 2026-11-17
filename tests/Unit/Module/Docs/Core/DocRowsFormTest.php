@@ -138,7 +138,8 @@ class DocRowsFormTest extends TestCase
 
         $this->assertSame([
             ['label' => 'Základ', 'value' => '1 500,00'],
-            ['label' => 'DPH', 'value' => '315,00'],
+            // Procento se nezadává (#159 D1) — pruh ho ukazuje u daně.
+            ['label' => 'DPH 21 %', 'value' => '315,00'],
             ['label' => 'Celkem CZK', 'value' => '1 815,00'],
         ], $result->formDefinition->liveSummary);
     }
@@ -325,9 +326,116 @@ class DocRowsFormTest extends TestCase
         $def = $this->createForm()->buildFormDefinition(['row_kind' => 1, 'doc_head' => null], true);
 
         foreach (['quantity', 'unit_price', 'total_price', 'price_calc_mode',
-                  'discount_pct', 'discount_amount', 'vat_pct'] as $col) {
+                  'discount_pct', 'discount_amount'] as $col) {
             $this->assertSame('reload', $this->findElement($def, $col)?->triggers, "{$col} should trigger reload");
         }
+    }
+
+    // ── Datum sazby DPH (#159 D1, D5, D7, U9, U10) ────────────────────────
+
+    public function testPercentIsNotAFormField(): void
+    {
+        $def = $this->formWithVatHead([])->buildFormDefinition(
+            ['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-120', 'vat_pct' => 21.0],
+            false,
+        );
+
+        $this->assertNull($this->findElement($def, 'vat_pct'), 'procento se odvozuje, nezadává');
+        $this->assertNotNull($this->findElement($def, 'vat_code'));
+    }
+
+    public function testRowRateDateFieldOnlyWithRowsSource(): void
+    {
+        $row = ['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-120'];
+
+        $field = $this->findElement($this->formWithVatHead(['vat_rate_source' => 2])->buildFormDefinition($row, false), 'vat_rate_date');
+        $this->assertNotNull($field);
+        $this->assertFalse($field->hidden);
+        $this->assertSame('date', $field->inputType);
+        $this->assertSame('reload', $field->triggers, 'změna data přepočítá procento i nabídku kódů');
+
+        foreach ([0, 1] as $source) {
+            $field = $this->findElement(
+                $this->formWithVatHead(['vat_rate_source' => $source])->buildFormDefinition($row, false),
+                'vat_rate_date',
+            );
+            $this->assertTrue($field->hidden, "zdroj {$source}: datum řádku se nezadává");
+        }
+
+        $text = ['doc_head' => 1, 'row_kind' => 0];
+        $field = $this->findElement($this->formWithVatHead(['vat_rate_source' => 2])->buildFormDefinition($text, false), 'vat_rate_date');
+        $this->assertTrue($field->hidden, 'textový řádek DPH blok nemá');
+    }
+
+    public function testVatCodeOptionsFollowRateDateAndCarryPercent(): void
+    {
+        $options = function (array $head, array $row = []): array {
+            $def = $this->formWithVatHead($head)->buildFormDefinition($row + ['doc_head' => 1, 'row_kind' => 1], false);
+            return array_column($this->findElement($def, 'vat_code')->options, 'label', 'value');
+        };
+
+        // 2020: Snížená (cz-121) sazbu nemá, První a Druhá snížená ano.
+        $y2020 = $options(['vat_duzp' => '2020-06-01', 'issue_date' => '2020-06-01']);
+        $this->assertArrayHasKey('cz-120', $y2020);
+        $this->assertArrayNotHasKey('cz-121', $y2020);
+        $this->assertArrayHasKey('cz-310', $y2020);
+        $this->assertArrayHasKey('cz-311', $y2020);
+        $this->assertStringEndsWith(' — 21 %', $y2020['cz-120']);
+        $this->assertStringEndsWith(' — 15 %', $y2020['cz-310']);
+        $this->assertStringEndsWith(' — 10 %', $y2020['cz-311']);
+
+        // 2024: jedna Snížená 12 %, První a Druhá snížená zanikly.
+        $y2024 = $options(['vat_duzp' => '2024-06-01', 'issue_date' => '2024-06-01']);
+        $this->assertStringEndsWith(' — 12 %', $y2024['cz-121']);
+        $this->assertArrayNotHasKey('cz-310', $y2024);
+        $this->assertArrayNotHasKey('cz-311', $y2024);
+
+        // Zdroj 2: nabídka podle data řádku, ne dokladu.
+        $rowDated = $options(
+            ['vat_duzp' => '2024-06-01', 'issue_date' => '2024-06-01', 'vat_rate_source' => 2],
+            ['vat_rate_date' => '2012-11-20'],
+        );
+        $this->assertStringEndsWith(' — 20 %', $rowDated['cz-120']);
+        $this->assertStringEndsWith(' — 14 %', $rowDated['cz-121']);
+    }
+
+    public function testStoredCodeWithoutRateStaysVisibleAndMarked(): void
+    {
+        $form = $this->formWithVatHead(['vat_duzp' => '2024-06-01', 'issue_date' => '2024-06-01']);
+        $def = $form->buildFormDefinition(['doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-311'], false);
+        $labels = array_column($this->findElement($def, 'vat_code')->options, 'label', 'value');
+
+        $this->assertArrayHasKey('cz-311', $labels, 'uložený kód zůstává v nabídce, aby šel vědomě vyměnit');
+        $this->assertStringEndsWith(' — no rate at this date', $labels['cz-311']);
+        $this->assertArrayNotHasKey('cz-310', $labels, 'jiný kód bez sazby se nenabízí');
+    }
+
+    public function testRecalculateDerivesPercentOnCodeAndRowDateChange(): void
+    {
+        $form = $this->formWithVatHead(['vat_duzp' => '2014-03-10', 'issue_date' => '2014-03-10', 'vat_rate_source' => 2]);
+        $row = ['doc_head' => 1, 'row_kind' => 1, 'quantity' => 1, 'unit_price' => 1000,
+            'vat_code' => 'cz-120', 'vat_pct' => 21.0];
+
+        $result = $form->recalculate('vat_rate_date', ['vat_rate_date' => '2012-11-20'] + $row);
+        $this->assertSame(20.0, (float) $result->data['vat_pct'], 'datum řádku v roce 2012');
+        $this->assertSame(200.0, (float) $result->data['vat_amount'], 'živý přepočet s odvozeným procentem');
+        $this->assertSame('DPH 20 %', $result->formDefinition->liveSummary[1]['label']);
+
+        $result = $form->recalculate('vat_rate_date', ['vat_rate_date' => null] + $result->data);
+        $this->assertSame(21.0, (float) $result->data['vat_pct'], 'prázdné datum = automatika dokladu');
+
+        $result = $form->recalculate('vat_code', ['vat_code' => 'cz-121', 'vat_rate_date' => '2012-11-20'] + $row);
+        $this->assertSame(14.0, (float) $result->data['vat_pct'], 'změna kódu k datu řádku');
+    }
+
+    public function testNewRowDefaultsToFirstCodeWithRate(): void
+    {
+        $form = $this->formWithVatHead(['vat_duzp' => '2020-06-01', 'issue_date' => '2020-06-01']);
+        $data = ['doc_head' => 1, 'row_kind' => 1, 'operation' => 'x'];
+        $form->applyNewRecordDefaults($data);
+
+        $this->assertSame('cz-120', $data['vat_code']);
+        $this->assertSame(21.0, (float) $data['vat_pct']);
     }
 
     public function testRecalculateWithoutHeadComputesWithoutVat(): void

@@ -19,6 +19,13 @@
             "name:cs": "Doklad zatím nemá rekapitulaci — přidejte řádky a uložte doklad pro přepočet.",
             "name:en": "The document has no VAT recap yet — add rows and save the document to recalculate."
         },
+        // Nabídka kódů DPH řádku: uložený kód, který k datu sazby řádku
+        // sazbu nemá (#159 U9) — zůstává vidět, aby ho šlo vědomě vyměnit.
+        "vatCode.noRate": {
+            "name": "{label} — no rate at this date",
+            "name:cs": "{label} — k datu bez sazby",
+            "name:en": "{label} — no rate at this date"
+        },
         // Název kódu DPH s předmětem plnění tuzemského přenesení (#89 D14) —
         // řádek rekapitulace i buňka kódu DPH v řádcích dokladu.
         "recap.reverseChargeSubject": {

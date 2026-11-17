@@ -70,6 +70,17 @@ abstract class DocsHeadsFormBase extends TableForm
         . 'Převzatá = rekapitulace z dokladu, uložení ji nepřepočítá; '
         . 'po uložení ji jde upravit v tabu Rekapitulace DPH.';
 
+    /**
+     * Hint u selectu `vat_rate_source` (#159 D2, D10) — k jakému datu se
+     * berou sazby DPH řádků.
+     */
+    protected const VAT_RATE_SOURCE_HINT =
+        'Automaticky = sazby k DPPD (u opravného dokladu k datu původního plnění). '
+        . 'Vlastní datum jen tam, kde DPPD nestačí — třeba odpočet zálohy zdaněné starou sazbou.';
+
+    /** Hint u pole `vat_rate_date` hlavičky (#159 D4). */
+    protected const VAT_RATE_DATE_HINT = 'Sazby DPH všech řádků se berou k tomuto datu';
+
     /** Per-instance cache — viz vatAgendaDisabled(). */
     private ?bool $vatAgendaDisabled = null;
 
@@ -699,6 +710,7 @@ abstract class DocsHeadsFormBase extends TableForm
                     ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
                     ->date('vat_dppd', hidden: !$hasVat || !$taxDocument)
+                    ->date(VatRateDates::COLUMN, hidden: !$this->showsVatRateDate($data), hint: self::VAT_RATE_DATE_HINT)
                     ->date('period_from', hint: 'Volitelné, např. pronájem za období')
                     ->date('period_to')
 
@@ -717,6 +729,12 @@ abstract class DocsHeadsFormBase extends TableForm
                         options: $this->resolveCfgItemOptions('docs.core.vatRecapSources'),
                         hidden: !$hasVat,
                         hint: self::VAT_RECAP_SOURCE_HINT,
+                    )
+                    ->select('vat_rate_source',
+                        options: $this->resolveCfgItemOptions('docs.core.vatRateSources'),
+                        triggers: 'reload',
+                        hidden: !$this->showsVatRateSource($data),
+                        hint: self::VAT_RATE_SOURCE_HINT,
                     )
                     ->select('vat_place',
                         options: $this->resolveCfgItemOptions('docs.core.vatPlaces'),
@@ -860,6 +878,14 @@ abstract class DocsHeadsFormBase extends TableForm
             ['id' => 'order_pos', 'label' => '#', 'align' => 'right', 'width' => 44],
             ['id' => 'vat_code',  'label' => $this->subtableLabel($t, 'vat_code', 'Kód DPH'), 'grow' => true],
             ['id' => 'vat_pct',   'label' => $this->subtableLabel($t, 'vat_pct', 'DPH %'), 'align' => 'right'],
+        ];
+        // Datum sazby řádku jen při zdroji „vlastní datum na řádcích“ (#159 U10).
+        $hasRateDates = $this->showsRowRateDates($parentData);
+        if ($hasRateDates) {
+            $columns[] = ['id' => VatRateDates::COLUMN, 'label' => $this->subtableLabel($t, VatRateDates::COLUMN, 'Datum sazby')];
+        }
+        $columns = [
+            ...$columns,
             ['id' => 'base',      'label' => $this->subtableLabel($t, 'base', 'Základ'), 'align' => 'right'],
             ['id' => 'tax',       'label' => $this->subtableLabel($t, 'tax', 'Daň'), 'align' => 'right'],
             ['id' => 'total',     'label' => $this->subtableLabel($t, 'total', 'Celkem'), 'align' => 'right'],
@@ -876,6 +902,13 @@ abstract class DocsHeadsFormBase extends TableForm
             $cells = ['order_pos' => $this->rowNumber($row, $i)];
             $cells['vat_code'] = $this->vatCodeLabelWithSubject($row, $parentData);
             $this->putCell($cells, 'vat_pct', SubtableCellFormatter::trimmedNumber($row['vat_pct'] ?? null, 2));
+            if ($hasRateDates) {
+                $this->putCell(
+                    $cells,
+                    VatRateDates::COLUMN,
+                    SubtableCellFormatter::date($row[VatRateDates::COLUMN] ?? null, $this->language),
+                );
+            }
 
             foreach (['base' => 'sum_base', 'tax' => 'sum_tax', 'total' => 'sum_total'] as $col => $flag) {
                 $text = SubtableCellFormatter::money($row[$col] ?? null);
@@ -926,6 +959,11 @@ abstract class DocsHeadsFormBase extends TableForm
         if ($hasVat) {
             $columns[] = ['id' => 'vat_base',   'label' => $this->subtableLabel($t, 'vat_base', 'Základ DPH'), 'align' => 'right'];
             $columns[] = ['id' => 'vat_pct',    'label' => $this->subtableLabel($t, 'vat_pct', 'DPH %'), 'align' => 'right'];
+            // Datum sazby řádku jen při zdroji „vlastní datum na řádcích“
+            // (#159 U10) — odchylka od běžné sazby má viditelnou stopu.
+            if ($this->showsRowRateDates($parentData)) {
+                $columns[] = ['id' => VatRateDates::COLUMN, 'label' => $this->subtableLabel($t, VatRateDates::COLUMN, 'Datum sazby')];
+            }
             $columns[] = ['id' => 'vat_amount', 'label' => $this->subtableLabel($t, 'vat_amount', 'DPH'), 'align' => 'right'];
             $columns[] = ['id' => 'vat_total',  'label' => $this->subtableLabel($t, 'vat_total', 'Celkem s DPH'), 'align' => 'right'];
         } else {
@@ -941,6 +979,8 @@ abstract class DocsHeadsFormBase extends TableForm
         if ($hasSubject) {
             $columns[] = ['id' => $subjectColumn, 'label' => $this->subtableLabel($t, $subjectColumn, 'Předmět plnění')];
         }
+
+        $hasRateDates = $hasVat && $this->showsRowRateDates($parentData);
 
         $units = $this->loadUnitShortcuts($rows);
 
@@ -970,6 +1010,13 @@ abstract class DocsHeadsFormBase extends TableForm
             if ($hasVat) {
                 $this->putCell($cells, 'vat_base', SubtableCellFormatter::money($row['vat_base'] ?? null));
                 $this->putCell($cells, 'vat_pct', SubtableCellFormatter::trimmedNumber($row['vat_pct'] ?? null, 2));
+                if ($hasRateDates) {
+                    $this->putCell(
+                        $cells,
+                        VatRateDates::COLUMN,
+                        SubtableCellFormatter::date($row[VatRateDates::COLUMN] ?? null, $this->language),
+                    );
+                }
                 $this->putCell($cells, 'vat_amount', SubtableCellFormatter::money($row['vat_amount'] ?? null));
                 $this->putCell($cells, 'vat_total', SubtableCellFormatter::money($row['vat_total'] ?? null));
                 if ($hasSubject) {
@@ -1590,6 +1637,39 @@ abstract class DocsHeadsFormBase extends TableForm
     protected function isTaxDocument(array $data): bool
     {
         return DocTypes::isTaxDocument($this->config, (string) ($data['doc_type'] ?? ''));
+    }
+
+    /**
+     * Přepínač „Sazby DPH podle“ (#159 D2) má jen daňový doklad s DPH —
+     * nedaňový doklad a doklad bez DPH má vždy automatiku.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function showsVatRateSource(array $data): bool
+    {
+        return (int) ($data['vat_mode'] ?? 1) !== 0 && $this->isTaxDocument($data);
+    }
+
+    /**
+     * Sloupec „Datum sazby“ v sub-tabulce řádků a rekapitulace (#159 U10)
+     * jen při zdroji „vlastní datum na řádcích“.
+     *
+     * @param array<string, mixed> $head data hlavičky (rodič sub-tabulky)
+     */
+    protected function showsRowRateDates(array $head): bool
+    {
+        return VatRateDates::source($head, $this->config) === VatRateDates::SOURCE_ROWS;
+    }
+
+    /**
+     * Pole vlastního data sazby dokladu (#159 D4) jen při zdroji „vlastní
+     * datum dokladu“ ({@see VatRateDates::source()} — platný zdroj).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function showsVatRateDate(array $data): bool
+    {
+        return VatRateDates::source($data, $this->config) === VatRateDates::SOURCE_DOCUMENT;
     }
 
     /**

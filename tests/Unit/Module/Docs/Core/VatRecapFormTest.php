@@ -113,10 +113,13 @@ class VatRecapFormTest extends TestCase
         $els = $this->elements($def);
 
         $this->assertSame(
-            ['vat_code', 'reverse_charge_code', 'vat_pct', 'base', 'tax', 'total'],
+            ['vat_rate_date', 'vat_code', 'reverse_charge_code', 'base', 'tax', 'total'],
             array_keys($els),
-            'formulář obsahuje jen to, co je vstupem — _dom a sum_* dopočítá uložení',
+            'formulář obsahuje jen to, co je vstupem — sazbu, _dom a sum_* dopočítá uložení (#159 D1)',
         );
+        $this->assertTrue($els['vat_rate_date']->hidden, 'datum řádku jen při zdroji „vlastní datum na řádcích“');
+        $labels = array_column($els['vat_code']->options, 'label', 'value');
+        $this->assertStringEndsWith(' — 21 %', $labels['cz-110'], 'popisek kódu nese procento');
         $this->assertSame('select', $els['vat_code']->type);
         $this->assertNotEmpty($els['vat_code']->options);
         $codes = array_column($els['vat_code']->options, 'value');
@@ -153,14 +156,38 @@ class VatRecapFormTest extends TestCase
         $this->assertArrayNotHasKey('vat_pct', $data);
     }
 
-    public function testRateFromDocumentIsNotOverwritten(): void
+    /** Sazba není vstup (#159 D1, D8): hodnotu z dat přepíše sazba kódu k datu sazby. */
+    public function testRateIsAlwaysDerivedFromCodeAndRateDate(): void
     {
         $form = $this->form($this->receivedInvoiceHead());
-        // Historická sazba opsaná z dokladu — defaulty ji nesmí přepsat.
         $data = ['doc_head' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 20.0];
         $form->applyNewRecordDefaults($data);
+        $this->assertSame(21.0, $data['vat_pct']);
 
+        // Jinou sazbu dodavatele nese datum sazby dokladu, ne přepsané číslo.
+        $form = $this->form(['vat_rate_source' => 1, 'vat_rate_date' => '2012-12-31'] + $this->receivedInvoiceHead());
+        $data = ['doc_head' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 21.0];
+        $form->applyNewRecordDefaults($data);
         $this->assertSame(20.0, $data['vat_pct']);
+    }
+
+    public function testLineRateDateFieldAndOptionsWithRowsSource(): void
+    {
+        $form = $this->form(['vat_rate_source' => 2] + $this->receivedInvoiceHead());
+        $els = $this->elements($form->buildFormDefinition(
+            ['doc_head' => 1, 'vat_code' => 'cz-110', 'vat_rate_date' => '2012-11-20'],
+            false,
+        ));
+
+        $this->assertFalse($els['vat_rate_date']->hidden);
+        $this->assertSame('reload', $els['vat_rate_date']->triggers);
+        $labels = array_column($els['vat_code']->options, 'label', 'value');
+        $this->assertStringEndsWith(' — 20 %', $labels['cz-110'], 'nabídka k datu řádku');
+
+        $result = $form->recalculate('vat_rate_date', [
+            'doc_head' => 1, 'vat_code' => 'cz-110', 'vat_pct' => 21.0, 'vat_rate_date' => '2012-11-20',
+        ]);
+        $this->assertSame(20.0, $result->data['vat_pct'], 'změna data řádku přepočte sazbu');
     }
 
     /** Opravný doklad (#92 D4): sazba kódu k datu plnění původního dokladu, ne k DUZP opravy. */

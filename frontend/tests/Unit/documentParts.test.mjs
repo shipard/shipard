@@ -88,6 +88,16 @@ test('detailRows: položkový řádek, sazba z vat_pct, extra projde', () => {
   }]);
 });
 
+test('detailRows: vlastní datum sazby řádku za sazbou, do extra neprojde', () => {
+  const rows = detailRows([
+    { order_pos: 1, kind: 1, description: 'Odpočet zálohy', vat_pct: '20', vat_rate_note: 'k 20.11.2012', total_price: '-2 000,00' },
+    { order_pos: 2, kind: 1, description: 'Dodávka', vat_pct: '21', vat_rate_note: null, total_price: '5 000,00' },
+  ]);
+  assert.equal(rows[0].vat, '20 % · k 20.11.2012');
+  assert.equal(rows[1].vat, '21 %');
+  assert.equal('vat_rate_note' in rows[0], false);
+});
+
 test('detailRows: textový řádek, pořadí bez order_pos, prázdné hodnoty null', () => {
   const rows = detailRows([
     { kind: 0, description: 'Poznámka k dodávce' },
@@ -114,6 +124,19 @@ test('detailTotals: hodnoty s měnou, zaokrouhlení, rekapitulace', () => {
     summary: { base: '1 000,00 CZK', vat: '210,00 CZK', rounding: '-0,40 CZK', total: '1 210,00 CZK' },
     domestic: null,
   });
+});
+
+test('detailTotals: datum sazby skupiny rozliší dvě skupiny téhož kódu', () => {
+  const totals = detailTotals([
+    { vat_pct: '21', rate_note: null, subject: null, base: '8 000,00', tax: '1 680,00', total: '9 680,00' },
+    { vat_pct: '20', rate_note: 'k 20.11.2012', subject: null, base: '-2 000,00', tax: '-400,00', total: '-2 400,00' },
+    { vat_pct: '20', rate_note: 'k 31.12.2012', subject: 'předmět plnění 4', base: '100,00', tax: '20,00', total: '100,00' },
+  ], null);
+  assert.deepEqual(totals.recap.map((r) => r.rate), [
+    '21 %',
+    '20 % · k 20.11.2012',
+    '20 % · k 31.12.2012 · předmět plnění 4',
+  ]);
 });
 
 test('detailTotals: předmět plnění přenesení rozliší skupiny se stejnou sazbou', () => {

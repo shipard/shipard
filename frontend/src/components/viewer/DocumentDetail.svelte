@@ -43,6 +43,9 @@
         ['issue_date', 'document.meta.issueDate'],
         ['due_date', 'document.meta.dueDate'],
         ['vat_duzp', 'document.meta.taxPointDate'],
+        // Stopa data sazby DPH (#159) — hotový text ze serveru, jen když se
+        // sazby neurčují automaticky.
+        ['vat_rates', 'document.meta.vatRates'],
         ['accounting_date', 'document.meta.accountingDate'],
       ],
     },

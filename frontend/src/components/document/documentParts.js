@@ -59,13 +59,15 @@ export function detailParty(party, t) {
 
 /**
  * Řádky dokladu → data `DocRows` (D45): `pos` = `order_pos`, bez něj pořadí
- * od 1; textový řádek je `kind === 0`; sazba „21 %“ z `vat_pct`; prázdné
- * hodnoty `null`. Zbylé klíče (`item_id`, `item_state`) projdou jako
- * `extra` pro snippety volajícího.
+ * od 1; textový řádek je `kind === 0`; sazba „21 %“ z `vat_pct`, s vlastním
+ * datem sazby řádku „20 % · k 20.11.2012“ (`vat_rate_note` je hotový text
+ * z backendu, #159); prázdné hodnoty `null`. Zbylé klíče (`item_id`,
+ * `item_state`) projdou jako `extra` pro snippety volajícího.
  */
 export function detailRows(rows) {
   return (Array.isArray(rows) ? rows : []).map((row, i) => {
-    const { order_pos, kind, description, quantity, unit, unit_price, vat_pct, total_price, ...extra } = row ?? {};
+    const { order_pos, kind, description, quantity, unit, unit_price, vat_pct, vat_rate_note, total_price, ...extra } = row ?? {};
+    const pct = vat_pct === null || vat_pct === undefined || vat_pct === '' ? null : `${vat_pct} %`;
     return {
       ...extra,
       key: i,
@@ -75,7 +77,7 @@ export function detailRows(rows) {
       quantity: textOrNull(quantity),
       unit: textOrNull(unit),
       unitPrice: textOrNull(unit_price),
-      vat: vat_pct === null || vat_pct === undefined || vat_pct === '' ? null : `${vat_pct} %`,
+      vat: joinParts([pct, textOrNull(vat_rate_note)]),
       total: textOrNull(total_price),
     };
   });
@@ -85,12 +87,18 @@ export function detailRows(rows) {
  * Sazba řádku rekapitulace: „21 %“, u tuzemského přenesení daňové povinnosti
  * s předmětem plnění „21 % · předmět plnění 4a“ (`subject` je hotový text
  * z backendu, #89 D14) — dvě skupiny se stejnou sazbou se liší jen jím.
+ * Skupina s vlastním datem sazby ho nese za sazbou („20 % · k 20.11.2012“,
+ * `rate_note` je hotový text z backendu, #159).
  */
 function recapRate(r) {
   const pct = r?.vat_pct === null || r?.vat_pct === undefined || r?.vat_pct === '' ? null : `${r.vat_pct} %`;
-  const subject = textOrNull(r?.subject);
-  if (subject === null) return pct;
-  return pct === null ? subject : `${pct} ${MIDDOT} ${subject}`;
+  return joinParts([pct, textOrNull(r?.rate_note), textOrNull(r?.subject)]);
+}
+
+/** Neprázdné části spojené „ · “; bez částí null. */
+function joinParts(parts) {
+  const present = parts.filter((part) => part !== null);
+  return present.length > 0 ? present.join(` ${MIDDOT} `) : null;
 }
 
 function withCurrency(value, currency) {

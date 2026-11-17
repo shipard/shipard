@@ -70,6 +70,12 @@ class DocRowsForm extends TableForm
         }
 
         $showVat = $headHasVat && !$isText;
+        // Datum sazby DPH řádku (#159 D5): vlastní pole jen při zdroji
+        // „vlastní datum na řádcích“; nabídka kódů i předmětů plnění se řídí
+        // datem sazby tohoto řádku (D7, U7).
+        $rateDate = $this->rowRateDate($data, $headContext);
+        $showRateDate = $showVat
+            && (int) ($headContext['vat_rate_source'] ?? 0) === VatRateDates::SOURCE_ROWS;
         // Předmět plnění jen u kódu tuzemského přenesení (#89 D14) — po změně
         // kódu DPH (triggers: 'reload') se viditelnost přepočítá.
         $showSubject = $showVat
@@ -156,25 +162,27 @@ class DocRowsForm extends TableForm
                     ->number('discount_amount', hidden: $isText, hint: 'Sleva absolutně', triggers: 'reload')
 
                     ->separator('DPH', hidden: !$showVat)
+                    ->date(VatRateDates::COLUMN,
+                        triggers: 'reload',
+                        hidden: !$showRateDate,
+                        hint: 'Prázdné = podle dokladu',
+                    )
                     ->select('vat_code',
-                        options: $this->buildVatCodeOptions($headContext),
+                        options: $this->buildVatCodeOptions($headContext, $data),
                         triggers: 'reload',
                         required: $showVat,
                         hidden: !$showVat,
                     )
                     ->select(ReverseChargeSubjects::COLUMN,
-                        options: ReverseChargeSubjects::options($headContext, $this->config),
+                        options: ReverseChargeSubjects::options($headContext, $this->config, $rateDate),
                         required: $showSubject,
                         hidden: !$showSubject,
-                    )
-                    ->number('vat_pct',
-                        hidden: !$showVat,
-                        hint: 'Lze přepsat pro doklady z jiného státu',
-                        triggers: 'reload',
                     );
-        // Vypočtené vat_base / vat_amount / vat_total nejsou pole formuláře —
-        // ukazuje je živý pruh (buildLiveSummary). V $data dál žijí a save
-        // je pošle; autoritativně je zapisuje persistRowComputedColumns.
+        // Procento DPH není pole formuláře (#159 D1) — odvozuje se z kódu
+        // a data sazby; je vidět v popisku kódu a v živém pruhu. Vypočtené
+        // vat_base / vat_amount / vat_total ukazuje živý pruh také
+        // (buildLiveSummary). V $data dál žijí a save je pošle; autoritativně
+        // je zapisuje persistRowComputedColumns.
 
         $this->appendRowIdentityFields($col, $opAttrs);
 
@@ -217,9 +225,14 @@ class DocRowsForm extends TableForm
         if (!$this->headHasVat($headContext)) {
             return [['label' => $totalLabel, 'value' => $total]];
         }
+        // Procento se nezadává (#159 D1) — pruh ho ukazuje u částky daně.
+        $pct = $data['vat_pct'] ?? null;
+        $vatLabel = $pct !== null && $pct !== '' && !empty($data['vat_code'])
+            ? 'DPH ' . DocHeadVatContext::formatPct((float) $pct) . ' %'
+            : 'DPH';
         return [
             ['label' => 'Základ', 'value' => SubtableCellFormatter::money($data['vat_base'] ?? null) ?? '0,00'],
-            ['label' => 'DPH',    'value' => SubtableCellFormatter::money($data['vat_amount'] ?? null) ?? '0,00'],
+            ['label' => $vatLabel, 'value' => SubtableCellFormatter::money($data['vat_amount'] ?? null) ?? '0,00'],
             ['label' => $totalLabel, 'value' => $total],
         ];
     }
@@ -326,8 +339,8 @@ class DocRowsForm extends TableForm
      * Defaulty nového řádku z kontextu hlavičky (prefill `defaults[doc_head]`):
      *  - pohyb = první povolený pro doc_type hlavičky (nejnižší order),
      *  - Kód DPH = první z nabídky pro zemi registrace / směr / místo plnění
-     *    hlavičky (CZ tuzemsko → „Základní") včetně dopočtu vat_pct stejnou
-     *    cestou jako recalculate('vat_code') (issue #60).
+     *    hlavičky se sazbou k datu sazby (CZ tuzemsko → „Základní") včetně
+     *    dopočtu vat_pct stejnou cestou jako recalculate (issue #60).
      *  - Množství = 1 (položkový řádek bez množství nemá v módu „z ceny za
      *    jednotku" cenu celkem — po výběru položky tak Cena celkem hned ukáže
      *    1 × cena) a živý přepočet, aby vat_* byly konzistentní od prvního
@@ -356,12 +369,12 @@ class DocRowsForm extends TableForm
             return;
         }
         if ($this->headHasVat($headContext) && empty($data['vat_code'])) {
-            $vatOptions = $this->buildVatCodeOptions($headContext);
+            $vatOptions = $this->buildVatCodeOptions($headContext, $data);
             if ($vatOptions !== []) {
                 $data['vat_code'] = $vatOptions[0]['value'];
-                $this->deriveVatPct($data, $headContext);
             }
         }
+        $this->deriveVatPct($data, $headContext);
         if (!isset($data['quantity']) || $data['quantity'] === '') {
             $data['quantity'] = 1;
         }
@@ -380,32 +393,40 @@ class DocRowsForm extends TableForm
     }
 
     /**
-     * Sazba DPH z kódu podle země registrace hlavičky a data sazby
-     * (`effective_rate_date` — `VatRateDates::headDate`). Bez
-     * data (doklad před uložením) nebo bez známé sazby zůstává ruční zadání
-     * — UI ukáže varování. Sdílené hookem a recalculate('vat_code').
+     * Datum sazby DPH řádku ({@see VatRateDates::lineDate()}): při zdroji
+     * „vlastní datum na řádcích“ datum řádku, prázdné = automatika; jinak
+     * datum sazby dokladu. Kontext hlavičky nese sloupce, ze kterých ho
+     * pravidla určují. Bez kontextu null.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $headContext
+     */
+    private function rowRateDate(array $data, ?array $headContext): ?string
+    {
+        return $headContext !== null ? VatRateDates::lineDate($headContext, $data, $this->config) : null;
+    }
+
+    /**
+     * Procento DPH řádku z kódu a data sazby řádku (#159 D1) — stejné
+     * pravidlo jako při uložení (`VatRateDates::pct`). Procento se nezadává;
+     * kód bez sazby k datu (uložený kód po změně data) ho nechává, jak je —
+     * hlásí to validace při uložení. Sdílené hookem a recalculate.
      *
      * @param array<string, mixed>|null $headContext
      */
     private function deriveVatPct(array &$data, ?array $headContext): void
     {
-        if (empty($data['vat_code'])
-            || $headContext === null
-            || empty($headContext['country'])
-            || empty($headContext['effective_rate_date'])
-            || $this->config === null
-        ) {
+        if ($headContext === null || empty($headContext['country']) || $this->config === null) {
             return;
         }
-        $resolver = new VatRateResolver($this->config);
-        try {
-            $data['vat_pct'] = $resolver->resolveVatPct(
-                (string) $headContext['country'],
-                (string) $data['vat_code'],
-                (string) $headContext['effective_rate_date'],
-            );
-        } catch (\LogicException) {
-            // Unknown rate / no period — leave manual entry; UI shows warning.
+        $pct = VatRateDates::pct(
+            new VatRateResolver($this->config),
+            (string) $headContext['country'],
+            $data['vat_code'] ?? null,
+            $this->rowRateDate($data, $headContext),
+        );
+        if ($pct !== null) {
+            $data['vat_pct'] = $pct;
         }
     }
 
@@ -588,12 +609,14 @@ class DocRowsForm extends TableForm
         }
 
         if ($changedColumn === 'vat_code') {
-            $this->deriveVatPct($data, $headContext);
             // Kód bez přenesení předmět plnění nenese (#89 D7).
             if (!ReverseChargeSubjects::fieldVisible($headContext, $this->config, $data['vat_code'] ?? null)) {
                 $data[ReverseChargeSubjects::COLUMN] = null;
             }
         }
+        // Procento z kódu a data sazby řádku (#159 D1) — při změně kódu
+        // i data řádku; vždy, je to idempotentní jako živý přepočet níž.
+        $this->deriveVatPct($data, $headContext);
 
         // Kontační řádek (cmnbkp): při změně operace / typu řádku zajisti
         // price_calc_mode = 1, ať se ručně zadaná částka nepřepíše výpočtem.
@@ -694,7 +717,9 @@ class DocRowsForm extends TableForm
      *     direction: ?string,
      *     place: string,
      *     vat_duzp: ?string,
+     *     vat_rate_source: int,
      *     effective_rate_date: ?string,
+     *     automatic_rate_date: ?string,
      *     vat_mode: int,
      *     doc_type: string,
      *     cash_dir: int,
@@ -708,12 +733,22 @@ class DocRowsForm extends TableForm
     }
 
     /**
+     * Nabídka kódů DPH k datu sazby řádku, s procentem v popisku (#159 D7,
+     * U9); uložený kód bez sazby k datu zůstává vidět s označením.
+     *
      * @param array<string, mixed>|null $context
+     * @param array<string, mixed> $data řádek
      * @return list<array{value: string, label: string}>
      */
-    private function buildVatCodeOptions(?array $context): array
+    private function buildVatCodeOptions(?array $context, array $data = []): array
     {
-        return DocHeadVatContext::vatCodeOptions($context, $this->config);
+        return DocHeadVatContext::vatCodeOptions(
+            $context,
+            $this->config,
+            $this->rowRateDate($data, $context),
+            $data['vat_code'] ?? null,
+            $this->formText('docs.core.formTexts', 'vatCode.noRate', '{label} — no rate at this date'),
+        );
     }
 
     /** @return list<array{value: int, label: string}> */

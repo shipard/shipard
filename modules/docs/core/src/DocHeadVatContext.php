@@ -107,14 +107,27 @@ final class DocHeadVatContext
 
     /**
      * Nabídka DPH kódů pro sub-formulář: kódy země, směru a místa plnění
-     * hlavičky. Bez země nebo směru (neplátce, nedohledaná registrace)
-     * prázdná — pole pak nemá co nabídnout.
+     * hlavičky, **které mají k datu sazby sazbu** (#159 D7, U9) — popisek
+     * nese procento („Tuzemsko/Vstup/Základní — 21 %“). Bez země nebo směru
+     * (neplátce, nedohledaná registrace) prázdná — pole pak nemá co nabídnout.
+     *
+     * Datum sazby je datum řádku (`$rateDate` — `VatRateDates::lineDate()`),
+     * bez něj datum sazby dokladu z kontextu. Uložený kód řádku
+     * (`$currentCode`), který k datu sazbu nemá — rozpracovaný doklad po
+     * změně data — v nabídce zůstává s označením podle `$noRatePattern`
+     * (vzor s `{label}` z katalogu textů formuláře), aby ho šlo vědomě
+     * vyměnit.
      *
      * @param array<string, mixed>|null $context
      * @return list<array{value: string, label: string}>
      */
-    public static function vatCodeOptions(?array $context, ?ConfigRuntime $config): array
-    {
+    public static function vatCodeOptions(
+        ?array $context,
+        ?ConfigRuntime $config,
+        ?string $rateDate = null,
+        mixed $currentCode = null,
+        string $noRatePattern = '{label} — no rate at this date',
+    ): array {
         if ($context === null
             || empty($context['country'])
             || empty($context['direction'])
@@ -122,9 +135,11 @@ final class DocHeadVatContext
         ) {
             return [];
         }
+        $country = (string) $context['country'];
+        $resolver = new VatRateResolver($config);
         try {
-            $codes = (new VatRateResolver($config))->getVatCodes(
-                (string) $context['country'],
+            $codes = $resolver->getVatCodes(
+                $country,
                 (string) $context['direction'],
                 (string) $context['place'],
                 includeHidden: false,
@@ -132,13 +147,30 @@ final class DocHeadVatContext
         } catch (\LogicException) {
             return [];
         }
+        $date = $rateDate ?? VatRateDates::dateString($context['effective_rate_date'] ?? null);
+        $current = trim((string) ($currentCode ?? ''));
+
         $options = [];
         foreach ($codes as $key => $code) {
-            $options[] = [
-                'value' => (string) $key,
-                'label' => (string) ($code['fullName'] ?? $code['name'] ?? $key),
-            ];
+            $label = (string) ($code['fullName'] ?? $code['name'] ?? $key);
+            if ($date !== null) {
+                $pct = VatRateDates::pct($resolver, $country, (string) $key, $date);
+                if ($pct !== null) {
+                    $label .= ' — ' . self::formatPct($pct) . ' %';
+                } elseif ((string) $key === $current) {
+                    $label = strtr($noRatePattern, ['{label}' => $label]);
+                } else {
+                    continue;
+                }
+            }
+            $options[] = ['value' => (string) $key, 'label' => $label];
         }
         return $options;
+    }
+
+    /** Procento bez zbytečných nul: 21, 12, 12,5. */
+    public static function formatPct(float $pct): string
+    {
+        return rtrim(rtrim(number_format($pct, 2, ',', ''), '0'), ',');
     }
 }

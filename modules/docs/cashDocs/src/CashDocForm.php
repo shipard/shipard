@@ -98,6 +98,8 @@ class CashDocForm extends CashDeskFormBase
                     ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('vat_duzp', hidden: !$hasVat)
                     ->date('vat_dppd', hidden: !$hasVat || !$isReceipt)
+                    // Vlastní datum sazby DPH dokladu (#159 D4).
+                    ->date('vat_rate_date', hidden: !$this->showsVatRateDate($data), hint: self::VAT_RATE_DATE_HINT)
                     ->input('partner_doc_number')
 
                 ->col()
@@ -171,6 +173,14 @@ class CashDocForm extends CashDeskFormBase
                         triggers: 'reload',
                         required: $hasVat,
                         hidden: !$hasVat,
+                    )
+                    // K jakému datu se berou sazby DPH řádků (#159 D2).
+                    ->select(
+                        'vat_rate_source',
+                        options: $this->resolveCfgItemOptions('docs.core.vatRateSources'),
+                        triggers: 'reload',
+                        hidden: !$this->showsVatRateSource($data),
+                        hint: self::VAT_RATE_SOURCE_HINT,
                     )
 
             ->section(title: 'Zaokrouhlení')

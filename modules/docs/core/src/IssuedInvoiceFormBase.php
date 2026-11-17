@@ -111,7 +111,10 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
             ->date('due_date')
             ->date('accounting_date', required: true, triggers: 'reload')
             // Nedaňový doklad DUZP nemá (DocDocument ho nuluje) — pole skryté.
-            ->date('vat_duzp', hidden: !$hasVat || !$taxDocument);
+            ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
+            // Vlastní datum sazby DPH dokladu (#159 D4) — jen při volbě
+            // „Vlastní datum dokladu“ v tabu Nastavení.
+            ->date(VatRateDates::COLUMN, hidden: !$this->showsVatRateDate($data), hint: self::VAT_RATE_DATE_HINT);
         // Dimenze deníku (majetek) — jen u typu, který ji deklaruje (FV ano,
         // proforma ne).
         $this->addDimensionElements($tab, $data);
@@ -234,6 +237,14 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
                 options: $this->resolveCfgItemOptions('docs.core.vatRecapSources'),
                 hidden: !$hasVat,
                 hint: self::VAT_RECAP_SOURCE_HINT,
+            )
+            // K jakému datu se berou sazby DPH řádků (#159 D2).
+            ->select(
+                'vat_rate_source',
+                options: $this->resolveCfgItemOptions('docs.core.vatRateSources'),
+                triggers: 'reload',
+                hidden: !$this->showsVatRateSource($data),
+                hint: self::VAT_RATE_SOURCE_HINT,
             )
 
             // Automatické zaokrouhlení podle způsobu úhrady (#73 D4): při

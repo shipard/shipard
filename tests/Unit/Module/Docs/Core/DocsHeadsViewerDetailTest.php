@@ -50,6 +50,10 @@ class DocsHeadsViewerDetailTest extends TestCase
 
     /** Lokalizovaný katalog popisků vieweru (kompilace konfigurace dává `name` v jazyce rozhraní). */
     private const VIEWER_LABELS = [
+        'vatRates.document'        => ['name' => 'k {date} — vlastní datum dokladu'],
+        'vatRates.documentUnset'   => ['name' => 'vlastní datum dokladu není vyplněné'],
+        'vatRates.rows'            => ['name' => 'vlastní datum na řádcích'],
+        'vatRates.rowDate'         => ['name' => 'k {date}'],
         'badge.corrective'         => ['name' => 'Opravný doklad'],
         'group.correction'         => ['name' => 'Oprava'],
         'field.correctedDoc'       => ['name' => 'Původní doklad'],
@@ -404,6 +408,62 @@ class DocsHeadsViewerDetailTest extends TestCase
         $this->assertNull($meta['specific_symbol']);
     }
 
+    // ── Stopa data sazby DPH (#159 U10) ──────────────────────────────────────
+
+    public function testAutomaticRatesLeaveNoTrace(): void
+    {
+        $viewer = $this->makeViewer(
+            $this->baseRecord(['vat_rate_source' => 0, 'vat_rate_date' => null]),
+            rows: [['row_kind' => 1, 'order_pos' => 1, 'description' => 'A', 'vat_pct' => '21.00', 'vat_rate_date' => null]],
+        );
+        $content = $this->detailContent($viewer);
+
+        $this->assertNull($content['meta']['vat_rates']);
+        $this->assertArrayNotHasKey('vat_rate_note', $content['rows'][0]);
+    }
+
+    public function testDocumentRateDateShowsInMeta(): void
+    {
+        $viewer = $this->makeViewer($this->baseRecord(['vat_rate_source' => 1, 'vat_rate_date' => '2012-12-31']));
+        $this->assertSame('k 2012-12-31 — vlastní datum dokladu', $this->detailContent($viewer)['meta']['vat_rates']);
+
+        $viewer = $this->makeViewer($this->baseRecord(['vat_rate_source' => 1, 'vat_rate_date' => null]));
+        $this->assertSame('vlastní datum dokladu není vyplněné', $this->detailContent($viewer)['meta']['vat_rates']);
+    }
+
+    public function testRowRateDatesShowAtRowsAndRecap(): void
+    {
+        $viewer = $this->makeViewer(
+            $this->baseRecord(['vat_rate_source' => 2, 'vat_rate_date' => null]),
+            rows: [
+                ['row_kind' => 1, 'order_pos' => 1, 'description' => 'Dodávka', 'vat_pct' => '21.00', 'vat_rate_date' => null],
+                ['row_kind' => 1, 'order_pos' => 2, 'description' => 'Odpočet zálohy', 'vat_pct' => '20.00',
+                    'vat_rate_date' => '2012-11-20'],
+            ],
+            recap: [
+                ['vat_pct' => '21.00', 'vat_rate_date' => null, 'base' => '5000.00', 'tax' => '1050.00', 'total' => '6050.00'],
+                ['vat_pct' => '20.00', 'vat_rate_date' => '2012-11-20', 'base' => '-2000.00', 'tax' => '-400.00', 'total' => '-2400.00'],
+            ],
+        );
+        $content = $this->detailContent($viewer);
+
+        $this->assertSame('vlastní datum na řádcích', $content['meta']['vat_rates']);
+        $this->assertArrayNotHasKey('vat_rate_note', $content['rows'][0], 'řádek bez vlastního data');
+        $this->assertSame('k 2012-11-20', $content['rows'][1]['vat_rate_note']);
+        $this->assertNull($content['vat_recap'][0]['rate_note']);
+        $this->assertSame('k 2012-11-20', $content['vat_recap'][1]['rate_note']);
+    }
+
+    public function testRowDatesAreIgnoredOutsideRowsSource(): void
+    {
+        // Zbytek data v řádku (před normalizací) se mimo zdroj 2 neukazuje.
+        $viewer = $this->makeViewer(
+            $this->baseRecord(['vat_rate_source' => 0]),
+            rows: [['row_kind' => 1, 'order_pos' => 1, 'description' => 'A', 'vat_pct' => '21.00', 'vat_rate_date' => '2012-11-20']],
+        );
+        $this->assertArrayNotHasKey('vat_rate_note', $this->detailContent($viewer)['rows'][0]);
+    }
+
     // ── Opravný daňový doklad (#92 D2, D3, D7, U10) ──────────────────────────
 
     /** @return array<string, mixed> opravný doklad s odkazem na původní fakturu */
@@ -601,7 +661,7 @@ class DocsHeadsViewerDetailTest extends TestCase
         $content = $this->detailContent($viewer);
 
         $this->assertSame(
-            [['vat_pct' => '21', 'subject' => null, 'base' => '6 000,00', 'tax' => '1 260,00', 'total' => '7 260,00']],
+            [['vat_pct' => '21', 'rate_note' => null, 'subject' => null, 'base' => '6 000,00', 'tax' => '1 260,00', 'total' => '7 260,00']],
             $content['vat_recap'],
         );
         $this->assertSame([

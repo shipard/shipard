@@ -14,6 +14,14 @@
     // přenesení daňové povinnosti u sazby (#89 D14).
     "recap.reverseChargeSubject": { "name": "subject {code}", "name:cs": "předmět plnění {code}", "name:en": "subject {code}" },
 
+    // Datum sazby DPH v detailu dokladu (#159 U10): stopa u údajů dokladu,
+    // když se sazby neurčují automaticky, a datum u řádku / skupiny
+    // rekapitulace při datech na řádcích.
+    "vatRates.document": { "name": "as of {date} — document date", "name:cs": "k {date} — vlastní datum dokladu", "name:en": "as of {date} — document date" },
+    "vatRates.documentUnset": { "name": "document date not filled in", "name:cs": "vlastní datum dokladu není vyplněné", "name:en": "document date not filled in" },
+    "vatRates.rows": { "name": "dates on rows", "name:cs": "vlastní datum na řádcích", "name:en": "dates on rows" },
+    "vatRates.rowDate": { "name": "as of {date}", "name:cs": "k {date}", "name:en": "as of {date}" },
+
     // Číselné řady — řádek seznamu: vazba řady na pokladnu / sklad (kód).
     "row.cashDesk": { "name": "Cash desk {code}", "name:cs": "Pokladna {code}", "name:en": "Cash desk {code}" },
     "row.warehouse": { "name": "Warehouse {code}", "name:cs": "Sklad {code}", "name:en": "Warehouse {code}" },

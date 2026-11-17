@@ -197,6 +197,9 @@
             "name": "VAT rate date",
             "name:cs": "Datum sazby DPH",
             "name:en": "VAT rate date",
+            "formLabel": "Rate date",
+            "formLabel:cs": "Datum sazby",
+            "formLabel:en": "Rate date",
             "type": "date",
             "nullable": true
         },

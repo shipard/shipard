@@ -113,6 +113,9 @@ abstract class ReceivedInvoiceFormBase extends DocsHeadsFormBase
             // pole skrytá.
             ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
             ->date('vat_dppd', hidden: !$hasVat || !$taxDocument)
+            // Vlastní datum sazby DPH dokladu (#159 D4) — jen při volbě
+            // „Vlastní datum dokladu“ v tabu Nastavení.
+            ->date(VatRateDates::COLUMN, hidden: !$this->showsVatRateDate($data), hint: self::VAT_RATE_DATE_HINT)
             ->input('partner_doc_number');
         // Dimenze deníku (majetek) — výchozí hodnota pro řádky bez vlastní.
         $this->addDimensionElements($tab, $data);
@@ -198,6 +201,14 @@ abstract class ReceivedInvoiceFormBase extends DocsHeadsFormBase
                 'vat_rounding_mode',
                 options: $this->resolveCfgItemOptions('docs.core.vatRoundingModes'),
                 hidden: !$hasVat,
+            )
+            // K jakému datu se berou sazby DPH řádků (#159 D2).
+            ->select(
+                'vat_rate_source',
+                options: $this->resolveCfgItemOptions('docs.core.vatRateSources'),
+                triggers: 'reload',
+                hidden: !$this->showsVatRateSource($data),
+                hint: self::VAT_RATE_SOURCE_HINT,
             )
             // Ruční zařazení do KH (#77) — u přijaté faktury B2/B3.
             // Nedaňový doklad do KH nepatří — pole skryté.

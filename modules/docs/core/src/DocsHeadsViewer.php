@@ -320,8 +320,8 @@ class DocsHeadsViewer extends TableViewer
             'supplier'  => $supplier,
             'customer'  => $customer,
             'meta'      => $this->buildDetailMeta($record),
-            'rows'      => $this->buildDetailRows($recordId),
-            'vat_recap' => $this->buildDetailVatRecap($recordId),
+            'rows'      => $this->buildDetailRows($record),
+            'vat_recap' => $this->buildDetailVatRecap($record),
             'totals'    => $this->buildDetailTotals($record),
         ];
         // Opravný doklad (#92 D2, D3, U10): skupina Oprava mezi údaji dokladu —
@@ -824,6 +824,7 @@ class DocsHeadsViewer extends TableViewer
             'due_date'        => $this->formatDate($record['due_date'] ?? null),
             'accounting_date' => $this->formatDate($record['accounting_date'] ?? null),
             'vat_duzp'        => $this->formatDate($record['vat_duzp'] ?? null),
+            'vat_rates'       => $this->vatRatesNote($record),
             'currency'        => $currency !== '' ? $currency : null,
             'exchange_rate'   => $hasRate ? number_format((float) $rate, 3, ',', ' ') : null,
             'payment_method'  => $this->resolvePaymentMethodLabel($record['payment_method'] ?? null),
@@ -834,6 +835,43 @@ class DocsHeadsViewer extends TableViewer
             'specific_symbol' => $this->nullableString($record['specific_symbol'] ?? null),
             'constant_symbol' => $this->nullableString($record['constant_symbol'] ?? null),
         ];
+    }
+
+    /**
+     * Stopa odchylky od běžné sazby DPH (#159 U10): jen když doklad sazby
+     * neurčuje automaticky — „k 31.12.2012 — vlastní datum dokladu“ (zdroj 1;
+     * bez vyplněného data platí automatika a text to říká), „vlastní datum
+     * na řádcích“ (zdroj 2, data jsou u řádků). Automatika stopu nemá.
+     */
+    private function vatRatesNote(array $record): ?string
+    {
+        $source = VatRateDates::source($record, $this->config);
+        if ($source === VatRateDates::SOURCE_ROWS) {
+            return $this->text('vatRates.rows', 'dates on rows');
+        }
+        if ($source !== VatRateDates::SOURCE_DOCUMENT) {
+            return null;
+        }
+        $date = $this->formatDate($record[VatRateDates::COLUMN] ?? null);
+        return $date !== null && $date !== ''
+            ? $this->text('vatRates.document', 'as of {date} — document date', ['date' => $date])
+            : $this->text('vatRates.documentUnset', 'document date not filled in');
+    }
+
+    /**
+     * Datum sazby u řádku dokladu nebo rekapitulace v detailu (#159 U10) —
+     * hotový text „k 20.11.2012“, jen při zdroji „vlastní datum na řádcích“
+     * a u řádku s vlastním datem.
+     */
+    private function rowRateNote(bool $rowDates, mixed $date): ?string
+    {
+        if (!$rowDates) {
+            return null;
+        }
+        $text = $this->formatDate($date);
+        return $text !== null && $text !== ''
+            ? $this->text('vatRates.rowDate', 'as of {date}', ['date' => $text])
+            : null;
     }
 
     /** Jméno plátce (LEFT JOIN v renderDetail), jen liší-li se od partnera hlavičky. */
@@ -862,11 +900,13 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /** @return list<array<string, mixed>> */
-    private function buildDetailRows(int $recordId): array
+    private function buildDetailRows(array $record): array
     {
+        $recordId = (int) $record['id'];
+        $rowDates = VatRateDates::source($record, $this->config) === VatRateDates::SOURCE_ROWS;
         $rows = $this->db->fetchAll(
             'SELECT r.`row_kind`, r.`order_pos`, r.`description`, r.`quantity`,'
-            . ' r.`unit_price`, r.`total_price`, r.`vat_pct`,'
+            . ' r.`unit_price`, r.`total_price`, r.`vat_pct`, r.`vat_rate_date`,'
             . ' u.`shortcut` AS unit_shortcut,'
             . ' it.`id` AS item_id, it.`docState` AS item_doc_state'
             . ' FROM `docs_core_rows` r'
@@ -890,6 +930,11 @@ class DocsHeadsViewer extends TableViewer
                 'vat_pct'     => $this->formatTrimmedNumber($row['vat_pct'] ?? null, 2),
                 'total_price' => $this->formatMoney($row['total_price'] ?? null),
             ];
+            // Datum sazby řádku (#159 U10) — hotový text za sazbou.
+            $rateNote = $this->rowRateNote($rowDates, $row['vat_rate_date'] ?? null);
+            if ($rateNote !== null) {
+                $entry['vat_rate_note'] = $rateNote;
+            }
             // Vazba na Položky přes FK docs_core_rows.item — řádek bez FK
             // (typicky import z pošty s pouhým popisem) odkaz nemá.
             if ($itemId !== null) {
@@ -905,10 +950,12 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /** @return list<array<string, ?string>> */
-    private function buildDetailVatRecap(int $recordId): array
+    private function buildDetailVatRecap(array $record): array
     {
+        $recordId = (int) $record['id'];
+        $rowDates = VatRateDates::source($record, $this->config) === VatRateDates::SOURCE_ROWS;
         $rows = $this->db->fetchAll(
-            'SELECT `vat_pct`, `reverse_charge_code`, `base`, `tax`, `total`'
+            'SELECT `vat_pct`, `vat_rate_date`, `reverse_charge_code`, `base`, `tax`, `total`'
             . ' FROM `docs_core_vat_recap`'
             . ' WHERE `doc_head` = %i'
             . ' ORDER BY `order_pos` ASC, `id` ASC',
@@ -922,6 +969,9 @@ class DocsHeadsViewer extends TableViewer
             $subject = ReverseChargeSubjects::value($row['reverse_charge_code'] ?? null);
             $out[] = [
                 'vat_pct' => $this->formatTrimmedNumber($row['vat_pct'] ?? null, 2),
+                // Datum sazby skupiny (#159 U5, U10) — dvě skupiny téhož
+                // kódu se v detailu liší jím.
+                'rate_note' => $this->rowRateNote($rowDates, $row['vat_rate_date'] ?? null),
                 'subject' => $subject !== null
                     ? $this->text('recap.reverseChargeSubject', 'subject {code}', ['code' => $subject])
                     : null,

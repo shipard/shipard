@@ -86,6 +86,8 @@ class CashRegisterForm extends CashDeskFormBase
                     ->date('issue_date', required: true, triggers: 'reload')
                     ->date('accounting_date', required: true, triggers: 'reload')
                     ->date('vat_duzp', hidden: !$hasVat)
+                    // Vlastní datum sazby DPH dokladu (#159 D4).
+                    ->date('vat_rate_date', hidden: !$this->showsVatRateDate($data), hint: self::VAT_RATE_DATE_HINT)
 
                 ->col()
                     ->input('doc_currency', readOnly: true, hint: 'Měna pokladny')
@@ -146,6 +148,14 @@ class CashRegisterForm extends CashDeskFormBase
                         triggers: 'reload',
                         required: $hasVat,
                         hidden: !$hasVat,
+                    )
+                    // K jakému datu se berou sazby DPH řádků (#159 D2).
+                    ->select(
+                        'vat_rate_source',
+                        options: $this->resolveCfgItemOptions('docs.core.vatRateSources'),
+                        triggers: 'reload',
+                        hidden: !$this->showsVatRateSource($data),
+                        hint: self::VAT_RATE_SOURCE_HINT,
                     )
 
             ->section(title: 'Zaokrouhlení')
