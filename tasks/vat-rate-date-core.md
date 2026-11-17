@@ -1,6 +1,6 @@
 # Task: Datum sazby DPH — task A: model, výpočet, formuláře (docs.core)
 
-**Stav:** naplánováno — zadání 2026-11-17 (#159 D1–D10, D13–D15)
+**Stav:** hotovo — implementováno 2026-11-17 ve čtyřech commitech (#159 D1–D10, D13–D15, U13; odchylky v „Poznámky k implementaci“); ověřeno testy, integračně a přes API na `blkm-i`, testovací kolo veřejných sad (`dataset-seed`, `dataset-verify`, proklikání) `ok`; zbývá ruční proklik formulářů, `ds-upgrade` ostatních zdrojů dat a zařazení #159 do roadmapy
 
 **Issue:** #159
 
@@ -334,16 +334,58 @@ potvrzené jako D15):
 - **Unit testy bez konfigurace** (U8) procento neodvozují — test pravidla
   D1 musí konfiguraci mít.
 
+## Poznámky k implementaci (2026-11-17)
+
+- **U13** (DPPD následuje DUZP u dokladu směru prodej) je mimo původní
+  zadání, potvrzené při plánování — viz Upřesnění.
+- **`DocHeadVatContext::vatRateDate()` zaniklo** bez delegace; všichni
+  konzumenti čtou `VatRateDates`. Kontext hlavičky nese kromě
+  `effective_rate_date` i `automatic_rate_date`, `vat_rate_source`
+  a sloupce hlavičky, takže jde předat rovnou jako `$head` do
+  `VatRateDates::lineDate()`.
+- **Kontrola „sazba nepatří ke kódu“** ve `validateDeclaredRecap()` zanikla
+  — sazba je odvozená, jinou sazbu dodavatele ukazuje nesoulad daně se
+  sazbou (`vat_recap_inconsistent`); kód bez sazby k datu hlásí
+  `validateVatRates()`.
+- **`validate()` si procento odvozuje samo** nad kopií řádků a rekapitulace
+  (běží před `beforeSave()`), jinak by `rows_recap_mismatch` skládal klíč
+  skupiny ze starého procenta.
+- **`persistRowComputedColumns()`** zapisuje `vat_pct` a `vat_rate_date` jen
+  z klíčů, které řádek nese — řádek z payloadu bez procenta, u kterého se
+  nic neodvodilo (U8), uložené nepřepíše.
+- **Oddaňovací pár převzaté rekapitulace** dědí procento a datum od
+  nejbližšího předchozího řádku, jehož `reverseVatCode` je jeho kód.
+- **Částečný zápis hlavičky** bez klíčů `vat_rate_source` / `vat_rate_date`
+  přepínač nemění (`applyVatRateSource()` je doplní z uloženého stavu).
+- **Detail dokladu potřeboval změnu frontendu** (`DocumentDetail.svelte`,
+  `documentParts.js`): řádek **Sazby DPH** v údajích dokladu, datum za
+  sazbou u řádku a u skupiny rekapitulace; texty posílá server z katalogu
+  `docs.core.viewerLabels`.
+- **Živý pruh formuláře řádku** ukazuje procento v popisku daně
+  („DPH 21 %“).
+- **Přepínač je i ve výchozím formuláři** `DocsHeadsFormBase` (sekce DPH),
+  nejen ve čtyřech formulářích ze zadání.
+- **Nabídka kódů bez sazby k datu:** text označení uloženého kódu je
+  v katalogu `docs.core.formTexts` (`vatCode.noRate`).
+- **Ověření:** unit sada, frontend testy a build; integrační testy dokladů,
+  DPH, účtování a saldokonta nad `blkm-i` (jediné selhání tam je i bez těchto
+  změn); scénáře z oddílu Ověření přes API na `blkm-i`; testovací kolo
+  `test-round --only=datasets` nad třemi veřejnými sadami (`dataset-seed`,
+  `dataset-verify`, proklikání v prohlížeči) `ok`. `ds-upgrade` proběhl jen
+  na `4l3j-z`, `blkm-i` a zdrojích kola. Ruční proklik nových polí
+  v prohlížeči zbývá.
+- **Milník v `docs/roadmap.md`** — #159 tam není, čeká na zařazení.
+
 ## Hotovo když
 
-- [ ] Procento DPH nejde ve formuláři řádku ani řádku rekapitulace zadat;
+- [x] Procento DPH nejde ve formuláři řádku ani řádku rekapitulace zadat;
       vždy odpovídá kódu a datu sazby.
-- [ ] Přepínač „Sazby DPH podle“ funguje ve všech třech hodnotách, data
+- [x] Přepínač „Sazby DPH podle“ funguje ve všech třech hodnotách, data
       mimo režim se mažou.
-- [ ] Nabídka kódů je podle data, s procentem v popisku.
-- [ ] Kontroly D9 / U4 / U11 hlásí podle stavu dokladu a importního módu.
-- [ ] Stopa (datum sazby) je vidět v sub-tabulce i v detailu.
-- [ ] Existující doklady beze změny procent (`dataset-verify` `ok`).
-- [ ] Dokumentace a nápověda popisují nové chování.
-- [ ] Testy zelené (cíleně, pak celá sada).
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.
+- [x] Nabídka kódů je podle data, s procentem v popisku.
+- [x] Kontroly D9 / U4 / U11 hlásí podle stavu dokladu a importního módu.
+- [x] Stopa (datum sazby) je vidět v sub-tabulce i v detailu.
+- [x] Existující doklady beze změny procent (`dataset-verify` `ok`).
+- [x] Dokumentace a nápověda popisují nové chování.
+- [x] Testy zelené (cíleně, pak celá sada).
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.

@@ -114,8 +114,8 @@ a důvod opravy. Pravidla drží `DocDocument`:
   a ne na doklad sám (vždy), při potvrzení původní doklad V pořádku se
   stejným partnerem; mimo import mód je důvod opravy povinný a prázdný odkaz
   i číslo dají varování;
-- sazba DPH k datu plnění původního dokladu
-  (`DocHeadVatContext::vatRateDate`, `docs/vat-calculation.md` § 5.2); kurz
+- sazba DPH k datu plnění původního dokladu (automatické datum sazby —
+  `VatRateDates::automaticDate`, `docs/vat-calculation.md` § 5.2); kurz
   se z lístku nepřepisuje (`docs/exchange-rates.md` § 5.1).
 
 Formulář: sekce Oprava v tabu Nastavení faktury vydané

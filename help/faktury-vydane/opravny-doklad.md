@@ -41,7 +41,8 @@ k původnímu plnění — to všechno Shipard na dokladu hlídá.
    které se neopravují, nebo zmenši množství; při slevě uprav cenu. Vrubopis
    dostaneš obrácením množství na kladné. Sazba DPH u kódu zůstává podle
    **Data plnění původního dokladu** — když se mezitím sazba změnila,
-   dostaneš tu původní, správnou. Celková částka dobropisu vyjde záporná.
+   dostaneš tu původní, správnou. Nic k tomu nepřepínáš: **Sazby DPH
+   podle** nech na *Automaticky*. Celková částka dobropisu vyjde záporná.
 
 4. **Na záložce Nastavení napiš Důvod opravy** — třeba „Vrácené zboží“.
    Bez důvodu doklad do stavu **V pořádku** nepřejde.

@@ -2,7 +2,7 @@
 title: Dokončení dokladu
 summary: Co se děje po Vystavit koncept — od Konceptu k V pořádku a co se tím spustí.
 keywords: [dokončení, dokončit doklad, potvrdit doklad, koncept, v pořádku, vrátit do konceptu, uložit jako koncept, vystavit koncept, číslo faktury, číselná řada, zaúčtování, saldokonto, uzamčení dokladu]
-related: [posta/kontrola-vytezeni.md, faktury-prijate/oprava-dokladu.md, slovnicek.md]
+related: [posta/kontrola-vytezeni.md, faktury-prijate/oprava-dokladu.md, uctarna/datum-sazby-dph.md, slovnicek.md]
 ---
 
 # Dokončení dokladu
@@ -30,7 +30,10 @@ Kroky 1–2 se dějí v **editačním formuláři** — tom, který se ti otevř
    **DUZP** a **Datum splatnosti** — od nich se odvíjí období a saldokonto.
    U přijaté faktury se **Účetní datum** předvyplní podle **DUZP** (bez
    DUZP datem vystavení); k účetnímu datu se u dokladu v cizí měně
-   dohledá i **Kurz**.
+   dohledá i **Kurz**. **DPPD** vyplň dnem, kdy dodavatel plnil (na jeho
+   faktuře DUZP) — k němu se berou sazby DPH řádků; liší-li se od tvého
+   DUZP přes změnu sazby, je to rozdíl mezi starou a novou sazbou. Víc
+   v [Datum sazby DPH](../uctarna/datum-sazby-dph.md).
    Doklad z pošty už má nastavenou **číselnou řadu**, takže na ni myslet
    nemusíš. Rozdělaný doklad ulož tlačítkem **Uložit** — číslo ani
    zaúčtování se tím nespustí.
@@ -124,7 +127,8 @@ faktuře úplná a sedí si; jinak **Přepočítanou**.
 **Když rekapitulace nesedí na řádky, Shipard to napíše — ale uloží.** Nad
 formulářem se objeví žlutý pruh **Uloženo, ale zkontroluj:** s tím, která
 sazba nesedí. Není to chyba k odmítnutí: nejčastěji chybí řádek, nebo je
-u něj špatná částka. Oprav řádky (rekapitulace zůstane), nebo — když je
+u něj špatná částka. Procento v rekapitulaci neopisuješ — Shipard ho bere
+z kódu a data sazby; když dodavatel danil jinou sazbou, oprav **DPPD**. Oprav řádky (rekapitulace zůstane), nebo — když je
 špatně opsaná rekapitulace — uprav rovnou ji. Přepnutím na
 **Přepočítanou** se rekapitulace vytvoří z řádků znovu a přepnutím zpět na
 **Převzatou** ji můžeš dál upravovat.

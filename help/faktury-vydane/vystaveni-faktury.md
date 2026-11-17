@@ -2,7 +2,7 @@
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku.
 keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku, zaokrouhlení faktury, zaokrouhlení částky, zaokrouhlení na celé koruny, automatické zaokrouhlení, faktura za hotové na koruny, haléře na faktuře]
-related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, faktury-vydane/opravny-doklad.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+related: [uctarna/datum-sazby-dph.md, faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, faktury-vydane/opravny-doklad.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Vystavení faktury
@@ -93,9 +93,10 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    - Nad polem řádku vidíš průběžně **Základ**, **DPH** a **Celkem**.
      Přepočítají se, jakmile opustíš upravené pole — nemusíš řádek ukládat,
      abys viděl, kolik dělá s daní.
-   - **Kód DPH** je předvybraný na základní sazbu (*Tuzemsko/Výstup/Základní*)
-     a **DPH %** je doplněné podle DUZP. Potřebuje-li řádek jinou sazbu, změň
-     kód — procento se přepočítá.
+   - **Kód DPH** je předvybraný na základní sazbu (*Tuzemsko/Výstup/Základní*).
+     Procento nezadáváš — je vidět v nabídce u každého kódu a platí k DUZP.
+     Potřebuje-li řádek jinou sazbu, změň kód; má-li mít sazbu z jiného dne
+     (odpočet zálohy), viz [Datum sazby DPH](../uctarna/datum-sazby-dph.md).
    - Fakturuješ-li v režimu přenesení daňové povinnosti, vyber **Kód DPH**
      s přenesením (*Tuzemsko/Výstup/Základní - přenesení DP*). Pod kódem se
      objeví pole **Předmět plnění** — vyber, co dodáváš (*4* stavební

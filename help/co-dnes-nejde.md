@@ -2,7 +2,7 @@
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
 keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, kurz, kurzovní lístek, kurz ČNB, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
-related: [slovnicek.md]
+related: [slovnicek.md, uctarna/datum-sazby-dph.md]
 ---
 
 # Co Shipard dnes neumí
@@ -147,6 +147,13 @@ vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přij
 zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze**
 Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou. Viz
 [Zálohová faktura](faktury-vydane/zalohova-faktura.md).
+
+**Procento DPH ručně nepřepíšeš.** Sazba jde vždy z kódu DPH a data sazby
+— jinou sazbu dostaneš datem, ne číslem (viz
+[Datum sazby DPH](uctarna/datum-sazby-dph.md)). Datum sazby řádku odpočtu
+zálohy Shipard sám nedoplní — zadáš ho ručně. **Fakturu z pošty s odpočtem
+zálohy ve staré sazbě** návrh nezvládne, takový doklad založ ručně; u faktury
+z pošty přes změnu sazby si **DPPD** zkontroluj a případně doplň sám.
 
 **Výzvu k platbě od dodavatele Shipard z pošty sám nezaloží.** AI ji
 v poště pozná a dá ji na Dashboard do sekce **K vyřízení**, doklad z ní ale

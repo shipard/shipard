@@ -635,7 +635,7 @@ S odkazem applier přepíše `corrected_doc_number` a `corrected_doc_date`
 (DUZP původního dokladu, bez něj datum vystavení) už v `transform()` —
 dokument je z odkazu dosazuje znovu v `beforeSave()`, ale `validate()`
 i odvození sazeb DPH běží dřív a čtou je z dat
-(`DocHeadVatContext::vatRateDate`). Náhled vrací výsledek dohledání
+(`VatRateDates`). Náhled vrací výsledek dohledání
 v `_resolve.correction` (`status` matched | notFound | ambiguous | none,
 `matchedId`, `matchedBy` pin | number, `docNumber`, `taxPointDate`).
 

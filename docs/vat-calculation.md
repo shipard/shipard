@@ -129,9 +129,12 @@ Editace: při `převzatá` je rekapitulace editovatelná. Změna částek řádk
 rekapitulaci, nebo přepnout na `přepočítaná` (přegeneruje se z řádků) a případně
 zpět. Změny textů a jiných neobnosových polí rekapitulaci nedotknou.
 
+Procento řádku převzaté rekapitulace **vstupem není** — odvodí se z kódu
+a data sazby (§ 5.2); vstupem jsou kód, základ, daň a celkem.
+
 Kontroly (warning, neblokují): `vat_recap_inconsistent` (`tax ≠ base × pct`
 v toleranci `max(0,05; |base| × 0,001)`, `base + tax ≠ total` ± 0,02) — u převzaté
-zviditelní nesrovnalost dodavatele; `rows_recap_mismatch` (Σ řádků ≠ rekapitulace
+zviditelní nesrovnalost dodavatele, i jeho jinou sazbu; `rows_recap_mismatch` (Σ řádků ≠ rekapitulace
 dle režimu) — signál neúplných nebo špatně zadaných řádků.
 
 ### 5.1 Implementace
@@ -185,25 +188,90 @@ dle režimu) — signál neúplných nebo špatně zadaných řádků.
   z řádků, když je pro sazbu jednoznačný kód. Detaily
   `docs/exchange-format.md`.
 
-### 5.2 Datum sazby kódu DPH — opravný doklad (#92 D4)
+### 5.2 Datum sazby DPH (#159, #92 D4)
 
-Sazba kódu (`VatRateResolver::resolveVatPct`) se hledá k **datu sazby**,
-které na jednom místě dává `DocHeadVatContext::vatRateDate($head)`:
+**Procento DPH se nezadává.** Na řádku dokladu i na řádku rekapitulace se
+vždy odvodí z kódu DPH a **data sazby** (`VatRateResolver::resolveVatPct`);
+`vat_pct` zůstává jako uložená hodnota. Odchylka od běžné sazby má na dokladu
+viditelnou stopu — datum, ne přepsané číslo. Pravidla drží na jednom místě
+`VatRateDates` (`modules/docs/core/src/`).
 
-- **opravný daňový doklad** (`docs_core_heads.corrective` = 1,
-  `tasks/corrective-doc-core.md`) s vyplněným `corrected_doc_date` → datum
-  plnění původního dokladu — oprava používá sazbu původního plnění, ne sazbu
-  platnou k datu opravy;
-- jinak **DUZP** (`vat_duzp`), a bez něj datum vystavení (nedaňový doklad
-  DUZP nemá, #79 D1).
+Datum sazby určuje přepínač hlavičky **Sazby DPH podle**
+(`docs_core_heads.vat_rate_source`, cfgItem `docs.core.vatRateSources`):
 
-Konzumenti: `DocHeadVatContext::load()` (→ `vat_rate_date` pro sub-formuláře
-řádku `DocRowsForm` a rekapitulace `VatRecapForm`, kde se při výběru kódu
-předvyplní sazba) a kontrola převzaté rekapitulace
-`DocDocument::validateDeclaredRecap()` (`vat_recap_inconsistent`, když sazba
-řádku ke kódu k tomuto datu nepatří). **Zařazení do období DPH, kontrolního
-hlášení a zámky období se dál řídí `vat_duzp` opravného dokladu** —
-`economy.vat` datum sazby nečte.
+| Zdroj | Datum sazby |
+|---|---|
+| `0` Automaticky (DPPD) | **opravný daňový doklad** s vyplněným `corrected_doc_date` → datum plnění původního dokladu (oprava používá sazbu původního plnění, #92 D4); jinak **DPPD**, bez něj DUZP, bez něj datum vystavení (nedaňový doklad DUZP ani DPPD nemá, #79 D1) |
+| `1` Vlastní datum dokladu | `vat_rate_date` hlavičky pro všechny řádky i řádky převzaté rekapitulace; nevyplněné = do potvrzení automatika |
+| `2` Vlastní datum na řádcích | `vat_rate_date` řádku dokladu a řádku rekapitulace; prázdné = automatika |
+
+Proč DPPD před DUZP: sazba se řídí dnem vzniku povinnosti přiznat daň.
+U přijatého dokladu je to DUZP z dokladu dodavatele (v KH B.2 se uvádí jako
+DPPD); DUZP přijatého dokladu u nás řídí období přiznání (datum odpočtu),
+datem sazby proto není. Vlastní datum na řádcích pokrývá vyúčtování záloh
+zdaněných různými sazbami — jeden doklad nese víc sazeb (informace GFŘ
+k § 37a, příklad 3).
+
+- **Jen daňový doklad s DPH.** Nedaňový doklad a doklad s `vat_mode` 0 má
+  vždy zdroj 0 (`VatRateDates::source()`).
+- **Data mimo svůj režim se při uložení mažou** — `vat_rate_date` hlavičky
+  mimo zdroj 1, `vat_rate_date` řádků mimo zdroj 2.
+- **Kde se procento odvozuje:** `DocDocument::computeAmounts()` (řádky před
+  výpočtem daně), `takeOverVatRecapitulation()` (řádky převzaté
+  rekapitulace), `DocRowsDocument` / `VatRecapDocument` při uložení ze
+  sub-formuláře. `persistRowComputedColumns()` zapisuje i `vat_pct`
+  a `vat_rate_date`, takže uložení hlavičky bez řádků v payloadu (změna DPPD
+  nebo přepínače) propíše procento a datum do řádků v DB;
+  `DocHeadRecomputer` u převzaté rekapitulace mění na místě jen procento,
+  datum a odvozené sloupce, nikdy základ, daň a celkem.
+- **Bez země registrace nebo konfigurace** (doklad bez registrace DPH, unit
+  testy) se procento neodvozuje a zůstává hodnota ze vstupu.
+- **Rekapitulace při datech na řádcích:** přepočítaná rekapitulace nese
+  `vat_rate_date` prvního řádku skupiny; kopie při přepnutí na převzatou ho
+  převezme. Klíč skupiny se nemění (kód, sazba, předmět plnění) — řádky
+  s různým datem a stejným procentem jsou jedna skupina, řádky téhož kódu
+  s různým procentem dvě. Při zdroji 0 a 1 je datum řádků rekapitulace NULL.
+- **Oddaňovací pár** (`is_reverse_pair`) procento i datum dědí z primární
+  skupiny — u převzaté rekapitulace z nejbližšího předchozího řádku, jehož
+  kód na něj ukazuje (`reverseVatCode`); vlastní kontrolu sazby nemá.
+- **Předmět plnění** (§ 4.1) se ověřuje k datu sazby svého řádku.
+- **Převzatá rekapitulace** (§ 5): procento už není vstup, částky ano.
+  Rekapitulaci dodavatele v jiné sazbě ukáže `vat_recap_inconsistent` (daň
+  neodpovídá sazbě ze základu) — odstraní ji datum sazby, ne přepsané procento.
+
+Kontroly (`DocDocument::validateVatRates()`, nálezy `VatRateDates`):
+
+| Kód | Kdy | Závažnost |
+|---|---|---|
+| `vat_rate_missing` | kód DPH řádku (`rows.N.vat_code`) nebo řádku převzaté rekapitulace (`recap`) nemá k datu sazby sazbu | chyba při potvrzení dokladu, v importním módu a při uložení řádku ze sub-formuláře; v rozpracovaném dokladu (Koncept, V opravě) varování a procento řádku zůstává uložené |
+| `vat_rate_date_required` | zdroj 1 bez vyplněného data | chyba při potvrzení a v importním módu |
+| `vat_rate_date_late` | vlastní datum (dokladu nebo řádku) pozdější než automatické | varování, neblokuje |
+
+Varování místo chyby v rozpracovaném dokladu je záměr: jinak by změna DPPD
+na hlavičce nešla uložit, dokud nejsou opravené řádky, a řádky (nabídka kódů)
+se řídí uloženou hlavičkou.
+
+**DPPD u dokladu směru prodej následuje změnu DUZP** (U13,
+`VatRateDates::followObligationDate()`): formulář faktury vydané, prodejky
+ani příjmového pokladního dokladu DPPD neukazuje a `applyDateDefaults` ho
+doplňuje jen prázdné. Následuje se jen DPPD, které DUZP v uloženém dokladu
+sledovalo a které payload sám nemění; odlišné DPPD z importu zůstává.
+
+Formuláře: přepínač v tabu Nastavení (`triggers: 'reload'`), při zdroji 1
+pole data na hlavním tabu, při zdroji 2 pole data ve formuláři řádku a řádku
+rekapitulace. Nabídka kódů DPH (`DocHeadVatContext::vatCodeOptions()`) ukazuje
+jen kódy se sazbou k datu sazby řádku, s procentem v popisku; uložený kód
+bez sazby zůstává vidět s označením. Kontext hlavičky dává datum sazby dokladu
+jako `effective_rate_date`. Sub-tabulka řádků a rekapitulace má při zdroji 2
+sloupec Datum sazby, detail dokladu stopu u údajů dokladu a u řádků.
+
+**Zařazení do období DPH, kontrolního hlášení a zámky období datum sazby
+nečtou** — řídí se dál `vat_duzp` / `vat_dppd` (`economy.vat`).
+
+Mezistav do tasku B (výměnný formát): applier posílá `vat_pct` z číselníku
+k DUZP, dokument ho přepočítá k datu sazby. U přijatého dokladu, kde DPPD
+a DUZP leží na různých stranách změny sazby, může kód zvolený applierem
+k DUZP sazbu k DPPD nemít → chyba při potvrzení.
 
 ## 6. Zaokrouhlení celkové částky — `total_rounding_mode`, `total_rounding_auto`
 

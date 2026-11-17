@@ -331,8 +331,8 @@ Shipardu, jen s přejmenovanou terminologií:
 | **VAT procenta** (`vatPercents`) | Časově proměnná procenta per kód | `cz-110`: 20.0 do 2012, 21.0 od 2013 |
 
 Na **řádku dokladu** je sloupec `vat_code` (konkrétní kód) a `vat_pct`
-(resolvované procento, editovatelné). Kategorie se *neukládá* — odvozuje
-se z kódu při potřebě (zobrazení, agregace).
+(procento odvozené z kódu a data sazby — nezadává se, #159). Kategorie se
+*neukládá* — odvozuje se z kódu při potřebě (zobrazení, agregace).
 
 ### 4.2 Struktura cfgItem `world.vat.{country}`
 
@@ -499,11 +499,14 @@ function resolveVatPct(string $countryCode, string $vatCode, ?string $date = nul
 }
 ```
 
-V dokladech se jako referenční datum používá **`vat_duzp`** z hlavičky.
-Nový řádek dostává `vat_pct` resolved z DUZP. Při změně DUZP se procenta
-**nepřepočítávají automaticky** (mohl by uživatel přijít o ručně přepsanou
-hodnotu) — uživatel musí přepočet provést explicitně tlačítkem nebo změnou
-kódu.
+V dokladech se jako referenční datum používá **datum sazby** (#159,
+`docs/vat-calculation.md` § 5.2): podle přepínače hlavičky `vat_rate_source`
+automaticky (opravný doklad k datu plnění původního dokladu, jinak DPPD, bez
+něj DUZP, bez něj datum vystavení), vlastní datum dokladu (`vat_rate_date`
+hlavičky), nebo vlastní datum na řádcích (`vat_rate_date` řádku). Procento
+řádku i řádku rekapitulace se z kódu a data sazby **odvozuje při každém
+uložení** — ručně se nezadává, takže změna DPPD nebo přepínače procenta
+přepočítá. Pravidla drží `VatRateDates` (docs.core).
 
 ### 4.6 Reverse charge — párové kódy
 
@@ -966,9 +969,9 @@ na entitu (#59 D2, D3):
 |---|---|---|
 | `identity` | Identifikace dokladu | `doc_type`, `number_series`, `cash_dir`, `sequence_number`, `doc_number`, `doc_text` |
 | `partner` | Partner a jeho údaje | `partner`, `partner_address`, `partner_bank` + 3 string sloupce |
-| `dates` | Datumy | `issue_date`, `due_date`, `accounting_date`, `vat_duzp`, `vat_dppd`, `period_from`, `period_to` |
+| `dates` | Datumy | `issue_date`, `due_date`, `accounting_date`, `vat_duzp`, `vat_dppd`, `vat_rate_date`, `period_from`, `period_to` |
 | `accounting` | Účetní mapování (system) | `fiscal_year`, `fiscal_month`, `vat_registration`, `vat_period` |
-| `vat` | DPH chování | `vat_mode`, `vat_calc_source`, `vat_place` |
+| `vat` | DPH chování | `vat_mode`, `vat_calc_source`, `vat_recap_source`, `vat_rate_source`, `vat_place` |
 | `currency` | Měna a kurz | `doc_currency`, `home_currency`, `exchange_rate` |
 | `rounding` | Zaokrouhlení | `total_rounding_mode`, `vat_rounding_mode` |
 | `totals` | Součtové částky (system) | `total_base`, `total_vat`, `total_amount`, `total_rounding`, `*_dom` |
@@ -1227,7 +1230,7 @@ serveru v `Document::beforeSave`** podle povahy:
 | `issue_date` | dnes (klient) |
 | `accounting_date` | = `issue_date` (klient i recalculate); `beforeSave` u přijaté faktury (`invni`) = `vat_duzp` (`AccountingDateRule`, #103 D78) |
 | `vat_duzp` | = `issue_date` (klient i recalculate) |
-| `vat_dppd` | = `vat_duzp` (klient i recalculate) |
+| `vat_dppd` | = `vat_duzp` (klient i recalculate); u dokladu směru prodej následuje i pozdější změnu DUZP (#159 U13) |
 | `due_date` | = `issue_date` + (payment_term_days z partnera, fallback 14) — recalculate při změně partnera |
 | `doc_currency` | `czk` (z DS konfigurace) |
 | `home_currency` | z DS konfigurace, system, nepřepínatelný uživatelem |

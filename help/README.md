@@ -109,6 +109,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
+| [Datum sazby DPH](uctarna/datum-sazby-dph.md) | Jak dostat na doklad jinou sazbu DPH, než platí k jeho datu — DPPD u přijaté faktury přes změnu sazby, vlastní datum dokladu a data na řádcích u závěrečné faktury s odpočtem záloh. |
 | [Podání DPH](uctarna/dph-podani.md) | Jak z živého výpočtu udělat podání, vyrobit soubor pro daňový portál a mít trvalý záznam toho, co jsi za období odevzdal. |
 | [Živé výstupy DPH](uctarna/dph-zive-vystupy.md) | Jak si přečíst živé přiznání k DPH, kontrolní hlášení a souhrnné hlášení za zvolené období a co znamenají upozornění pod tabulkou. |
 | [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md) | Jak stáhnout hlavní knihu, výsledovku, rozvahu nebo výstup DPH jako sešit pro Excel nebo jako CSV a co ve staženém souboru najdeš. |

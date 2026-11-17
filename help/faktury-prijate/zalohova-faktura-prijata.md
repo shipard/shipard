@@ -47,8 +47,8 @@ zaplatit, a aby se poskytnutá záloha správně potkala s konečnou fakturou.
 
 3. **Dej Uložit a zadej řádky.** Tab **Řádky** → **Přidat**, stejně jako
    u faktury přijaté. Na výzvě jsou jen pohyby *Nákup zboží a materiálu*,
-   *Nákup služeb* a *Ostatní nákup*; **DPH %** se ke zvolenému kódu
-   doplní podle **Data vystavení**, protože DUZP výzva nemá. Na účtování
+   *Nákup služeb* a *Ostatní nákup*; sazba DPH u zvoleného kódu platí
+   k **Datu vystavení**, protože DUZP výzva nemá — procento nezadáváš. Na účtování
    řádky nemají vliv — zaúčtuje se jen celková částka.
 
 4. **Zkontroluj tab Rekapitulace DPH.** Je to rozpis částky, kterou máš

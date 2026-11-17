@@ -53,8 +53,9 @@ ještě neproběhlo.
 3. **Dej Uložit a zadej řádky.** Tab **Řádky** → **Přidat**, stejně jako
    u faktury — postup řádku najdeš ve
    [Vystavení faktury](vystaveni-faktury.md). Na proformě jsou jen pohyby
-   *Prodej služeb* a *Prodej zboží*. **DPH %** se ke zvolenému kódu doplní
-   podle **Data vystavení**, protože DUZP proforma nemá.
+   *Prodej služeb* a *Prodej zboží*. Sazba DPH u zvoleného kódu platí
+   k **Datu vystavení**, protože DUZP proforma nemá; procento nezadáváš,
+   je vidět v nabídce u kódu.
 
 4. **Zkontroluj tab Rekapitulace DPH.** Je to rozpis částky, kterou má
    odběratel zaplatit, po sazbách a celkem s daní.

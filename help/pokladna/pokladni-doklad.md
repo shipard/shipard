@@ -2,7 +2,7 @@
 title: Pokladní doklad
 summary: Jak zapsat příjem nebo výdej hotovosti či platbu kartou na pokladně — včetně úhrady faktury —, jak doklad vytisknout a co k tomu musí být nastavené.
 keywords: [pokladní doklad, příjmový pokladní doklad, výdajový pokladní doklad, příjmový doklad, výdajový doklad, pokladna, hotovost, platba hotově, platba kartou, úhrada faktury hotově, zaplaceno hotově, pokladní lístek, paragon, směr pokladního dokladu, příjem, výdej, převod peněz, odvod hotovosti do banky, dotace pokladny, převod mezi pokladnami, peníze na cestě, záloha v hotovosti, přijatá záloha, poskytnutá záloha, odpočet zálohy, vrácení zálohy, archivovaná pokladna, tisk pokladního dokladu, vytisknout pokladní doklad, PDF pokladního dokladu, podpis pokladníka, podpis příjemce, zaokrouhlení pokladního dokladu, zaokrouhlení na celé koruny, automatické zaokrouhlení, zaokrouhlení částky]
-related: [pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystaveni-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-dnes-nejde.md]
+related: [pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystaveni-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/kdyz-se-doklad-nezauctuje.md, uctarna/datum-sazby-dph.md, co-dnes-nejde.md]
 ---
 
 # Pokladní doklad
@@ -63,7 +63,9 @@ Pro rychlý prodej zboží bez partnera se víc hodí [Prodejka](prodejka.md).
    toho, co se stalo:
 
    - *Prodej služeb* / *Prodej zboží* — příjem za prodej; řádek má
-     množství, cenu a **Kód DPH** jako na faktuře.
+     množství, cenu a **Kód DPH** jako na faktuře. Procento nezadáváš,
+     je v nabídce u kódu; jiný den pro sazbu řeší
+     [Datum sazby DPH](../uctarna/datum-sazby-dph.md).
    - *Nákup zboží a materiálu* / *Nákup služeb* / *Ostatní nákup* — výdej
      za nákup, také s DPH.
    - *Úhrada pohledávky* (u příjmu) / *Úhrada závazku* (u výdeje) — zákazník
