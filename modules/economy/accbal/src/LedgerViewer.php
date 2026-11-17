@@ -119,29 +119,26 @@ class LedgerViewer extends AccbalViewerBase
      * popisuje se směrem podle operace řádku deníku (Příjem / Výdaj), ne
      * předpisem/úhradou — bankovní záloha na 324 je datově předpis, vratka
      * přeplatku na 311 MD také, uživateli to ale říká jen „platba". Ostatní
-     * zdroje Předpis / Úhrada z `bal_side`. Barva badge jde vždy z `bal_side`,
-     * aby bylo vidět, do kterého součtu patky pohyb padá.
+     * zdroje Předpis / Úhrada z `bal_side`. Role je druh pohybu, ne stav —
+     * vypisuje se prostým textem v seznamu, mřížce i detailu, bez pilulky
+     * a bez barvy podle `bal_side` (#153 D105).
      *
      * @param array<string, mixed> $r řádek s bal_side, source_kind, operation
-     * @return array{text: string, badge: string}
      */
-    private function roleOf(array $r): array
+    private function roleOf(array $r): string
     {
-        $balSide = (int) ($r['bal_side'] ?? 0);
         if (($r['source_kind'] ?? null) === 'bankTransaction') {
-            $text = match ((string) ($r['operation'] ?? '')) {
+            return match ((string) ($r['operation'] ?? '')) {
                 'payment.in'  => $this->text('roleIncoming', 'Incoming payment'),
                 'payment.out' => $this->text('roleOutgoing', 'Outgoing payment'),
                 default       => $this->text('roleBankPayment', 'Bank payment'),
             };
-        } else {
-            // Předpis / Úhrada — hodnoty výčtu economy.accbal.balSides.
-            $sides = $this->config?->cfgItem('economy.accbal.balSides');
-            $text = $balSide === 0
-                ? (string) ($sides['0']['name'] ?? 'Request')
-                : (string) ($sides['1']['name'] ?? 'Payment');
         }
-        return ['text' => $text, 'badge' => $balSide === 0 ? 'primary' : 'success'];
+        // Předpis / Úhrada — hodnoty výčtu economy.accbal.balSides.
+        $sides = $this->config?->cfgItem('economy.accbal.balSides');
+        return (int) ($r['bal_side'] ?? 0) === 0
+            ? (string) ($sides['0']['name'] ?? 'Request')
+            : (string) ($sides['1']['name'] ?? 'Payment');
     }
 
     public function renderRow(array $rowData): array
@@ -162,7 +159,7 @@ class LedgerViewer extends AccbalViewerBase
         if ($date !== null) {
             $t2[] = ['text' => $date];
         }
-        $t2[] = ['text' => $this->roleOf($rowData)['text'], 'class' => 'muted'];
+        $t2[] = ['text' => $this->roleOf($rowData), 'class' => 'muted'];
         $partnerName = trim((string) ($rowData['partner_name'] ?? ''));
         if ($partnerName !== '') {
             $t2[] = ['text' => $partnerName, 'class' => 'muted'];
@@ -239,7 +236,7 @@ class LedgerViewer extends AccbalViewerBase
             ],
             'cells' => [
                 'accounting_date' => $this->formatDate($rowData['accounting_date'] ?? null),
-                'role' => $this->roleOf($rowData),
+                'role' => ['text' => $this->roleOf($rowData)],
                 'payment_reference' => (string) ($rowData['payment_reference'] ?? ''),
                 'specific_symbol'   => (string) ($rowData['specific_symbol'] ?? ''),
                 'due_date' => $this->formatDate($rowData['due_date'] ?? null),
@@ -353,7 +350,7 @@ class LedgerViewer extends AccbalViewerBase
         // Partner a účet nese hlavička; text jen když není titulkem (#140 D26, §2).
         $moveItems = [];
         $this->addItem($moveItems, $this->columnLabel('balance', 'Balance'), $record['balance_name'] ?? null);
-        $this->addItem($moveItems, $this->text('role', 'Role'), $this->roleOf($record)['text']);
+        $this->addItem($moveItems, $this->text('role', 'Role'), $this->roleOf($record));
         if ($this->titleOf($record)['column'] !== 'text') {
             $this->addItem($moveItems, $this->columnLabel('text', 'Text'), $record['text'] ?? null);
         }
