@@ -36,10 +36,18 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 
 | Token | Hodnota | Použití |
 |---|---|---|
-| `--shpd-color-primary` | `#005089` | Primary tlačítka, aktivní stav navigace, odkazy, ikony stavu |
-| `--shpd-color-primary-hover` | `#003e6b` | Hover na primary tlačítku |
+| `--shpd-color-primary` | `#005089` | **Plocha**: primary tlačítka, aktivní stav navigace, rámeček výběru |
+| `--shpd-color-primary-hover` | `#003e6b` | Hover na primary tlačítku — jen plocha, ne barva textu |
+| `--shpd-color-primary-text` | světlý `var(--primary)`, tmavý `#7fb2dc` | **Text, ikona a odkaz** v barvě primary (D92) — odkazy, ikony stavu, aktivní tab, Badge `primary`, avatar řádku |
 | `--shpd-color-primary-soft` | `#e6eef5` | Světlé pozadí pro primary badge a jemné zvýraznění |
 | `--shpd-color-primary-soft-2` | `#cfdcea` | O stupeň silnější varianta |
+
+Primary má **dvě role** jako tóny (D92, #153): plocha (`primary`, pod
+`--shpd-color-text-on-fill`) a text (`primary-text`). Ve světlém vzhledu
+mají stejnou hodnotu; v tmavém je plocha ztlumená (`#2d6890`) a jako text
+by na pozadí dala jen 2,1–2,8 : 1, proto má text vlastní světlejší
+hodnotu — 6,63 na `bg`, 5,61 na `bg-hover`, 7,48 na `bg-secondary`, 6,07
+na `primary-soft`. **Hover odkazu barvu nemění**, jen podtrhne.
 
 ### Accent (oranžová)
 
@@ -90,9 +98,15 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 |---|---|---|
 | `--shpd-color-border` | `#e2e8f0` | Standardní hranice |
 | `--shpd-color-border-strong` | `#cbd5e1` | Silnější hranice |
-| `--shpd-color-border-focus` | `var(--primary)` | Hranice focusovaného inputu |
+| `--shpd-color-border-focus` | `var(--primary-text)` | Hranice focusovaného inputu a obrys fokusu (D95) |
 | `--shpd-color-focus-ring` | `rgb(0 80 137 / 0.18)` | Glow okolo focusovaného inputu |
 | `--shpd-color-error-ring` | `rgb(220 38 38 / 0.15)` | Glow okolo chybného inputu |
+
+**Obrys fokusu jde vždy přes token** (D95, #153): `--shpd-color-border-focus`
+odkazuje na `primary-text`, v tmavém vzhledu tak má vůči `bg` 6,63 : 1
+místo 2,49. `outline` u `:focus-visible` ani okraj pole s fokusem nebere
+`--shpd-color-primary` napřímo. Přerušovaný rámeček cíle přetažení souboru
+(`AttachmentPanel`, `Dashboard`) bere `--shpd-color-primary-text`.
 
 **Barvou výběru je `primary`** (D77, #149): vybraná volba — volitelný řádek
 i segment přepínače — má rámeček `--shpd-color-primary` a pozadí
@@ -125,27 +139,52 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
   karty, tečka chyby na tabu, tečka stavu a varovná výplň průběhového
   pruhu ve vývojářském dashboardu. Stačí jí práh grafiky **3 : 1** vůči pozadí, ve
   světlém vzhledu je proto světlejší než `-text`; v tmavém na `-text`
-  odkazuje. Čtvrtý tón `info` (modrá tečka Nové položky) má jen tuto roli.
+  odkazuje. Čtvrtý tón `info` (modrá tečka Nové položky) má jen tuto roli
+  a v obou vzhledech stejnou hodnotu (D93).
   **Ikona s významem je text**, ne značka: varování ve feedu, ikona řádku
   reportu a každá ikona s vlastním popiskem (`title`, `aria-label`) berou
   `-text`.
 
   | Tón | Značka světlý | Značka tmavý | Světlý na `bg` / `bg-hover` | Tmavý na `bg` / `bg-secondary` |
   |---|---|---|---|---|
-  | `info` | `#3b82f6` | `--shpd-color-primary` (`#2d6890`) | 3,68 / 3,45 | 2,49 / 2,81 |
+  | `info` | `#3b82f6` | `#3b82f6` (D93) | 3,68 / 3,45 | 4,07 / 4,59 |
   | `success` | `#16a34a` | `-text` (`#22c55e`) | 3,30 / 3,10 | 6,56 / 7,41 |
   | `warning` | `#d06f06` | `-text` (`#f59e0b`) | 3,52 / 3,31 | 6,96 / 7,86 |
   | `danger` | `#dc2626` | `-text` (`#f87171`) | 4,83 / 4,54 | 5,41 / 6,10 |
 
-  Modrá tečka v tmavém vzhledu zůstává pod prahem (D74 tmavý vzhled
-  nemění) — otevřený bod #133.
-- **Soft** (`-soft`) a tónovaný podklad `color-mix(… 14 % …)` z plochy:
-  pozadí štítku; text na něm je `-text`.
-- **Na pozadí sidebaru** neplatí žádná z rolí (`-text` světlého vzhledu
-  dá na `#00345c` jen 2,6 : 1): text je `--shpd-color-text-sidebar` a tón
-  nese ikona (chyba načtení navigace). Tečky odznaků sekcí (`NavTree`,
-  `TopMenuBar`) jsou zatím plocha — pod 3 : 1, tón pro sidebar je otevřený
-  bod #133.
+  Tmavý `info` do D93 odkazoval na `primary` (2,49 : 1 na `bg`); na
+  `bg-hover` má dnes 3,44.
+- **Text na tónovaném podkladu kreslí jen `Badge`** (D90, #153, §5).
+  Tónový text na tónovaném podkladu vyrobeném na místě kontrast nedrží —
+  `danger-text` na `color-mix(danger 14 %)` má ve světlém vzhledu 3,9 : 1,
+  na `danger-soft` 4,4 — a nikdo ho nespočítá, protože barva vzniká až
+  v prohlížeči. `Badge` bere dvojice tokenů `state-…-bg` / `-text`
+  (5,7–9,9 : 1 v obou vzhledech, hlídá `check-contrast.py`). Tónový
+  `color-mix(…)` v komponentě je nález `check-css-tokens.py`. `-soft` je
+  **pozadí bez tónového textu** (podbarvení plochy, řádku).
+- **Na ploše, která není pozadí stránky** — sidebar, aktivní položka
+  navigace, aktivní chip — neplatí žádná z rolí: `-text` světlého vzhledu
+  dá na `#00345c` jen 2,6 : 1, tečka v ploše tónu 2,5–2,8 a na aktivní
+  položce 1,2–1,7; vlastní vzhled navíc barvu sidebaru mění. Proto:
+  - **značka má obrys** (D88): `box-shadow: 0 0 0 0.125rem
+    var(--shpd-color-text-on-fill)` a plochu tónu (`--shpd-color-danger` /
+    `-warning`, ne `-mark` — ta je v tmavém vzhledu světlejší a vůči bílé
+    by měla 2,8). Tečka má vůči obrysu 4,83 (danger) a 5,02 (warning) : 1
+    v obou vzhledech na jakékoli barvě pod ní. Platí pro tečku odznaku
+    sekce (`NavTree`, `TopMenuBar`), pilulku s počtem v railu
+    (`SectionRail`) a tečku chipu feedu (`FeedFilter`; posuvný kontejner
+    chipů má pro ni rezervu, jinak by obrys ořízl);
+  - **text i ikona mají barvu textu sidebaru** (D89): chyba načtení
+    navigace nese význam tvarem ikony a textem, ne tónem
+    (`--shpd-color-text-sidebar`, 10,9 / 11,1 : 1).
+- **Výjimky** z prahů — vyjmenované i v `scripts/check-contrast.py`
+  (konstanta `EXCEPTIONS`):
+  - **D94** — okraj tlačítka `danger` pod kurzorem v tmavém vzhledu má
+    vůči dialogu 2,31 : 1 (`danger-hover` na `bg`); tlačítko identifikuje
+    text (6,47 : 1), ne okraj;
+  - **štítek stavu Koš** — `state-trash-text` na `state-trash-bg` má
+    3,90 (světlý) a 2,81 (tmavý) : 1; smazaný záznam je záměrně tlumený
+    a přeškrtnutý (#153).
 
 Vývojářský dashboard přepisuje `danger` i `danger-text` na `#c81e1e`
 (`dev/theme.css`), ostatní dědí — i značky: `danger-mark` je tam `#dc2626`,
@@ -218,6 +257,18 @@ Když uživatel označí řádek v seznamu:
   `--shpd-color-bg-selected-hover`).
 - **Stavový proužek zůstává** — koncept je dál žlutý, hotový záznam dál
   bez proužku (průhledný pruh splyne s modrým pozadím). Výběr stav nepřebíjí.
+- **Tónové a šedé texty mají barvu běžného textu** (D91, #153): tónové
+  spany (`primary`, `success`, `warning`, `danger`), sekundární texty
+  řádku (číslo, druhý a třetí řádek, údaj vpravo), text chybového řádku
+  mřížky a štítek sekce vybrané konverzace berou `--shpd-color-text`.
+  Na `bg-selected` a hlavně `bg-selected-hover` tón ani `text-secondary`
+  4,5 : 1 nedrží (`text-secondary` 4,31 / 3,62 ve světlém, 4,61 / 3,81
+  v tmavém; `success-text` pod kurzorem 3,2 / 4,3); běžný text má
+  13,5 / 11,4 a 9,6 / 7,9. Tlumený span (`--muted`, průhlednost) má na
+  vybraném řádku průhlednost 0,8 místo 0,6. Nemění se `SpanBadge` a avatar
+  (vlastní podklad) ani ikona řádku (stačí jí 3 : 1). Jedno pravidlo na
+  komponentu — selektor vybraného řádku přepíše barvu potomků, žádné
+  podmínky v markupu (`ViewerRow`, `ViewerGrid`, `ConversationList`).
 
 Dříve výběr přepisoval proužek na oranžový accent; bilo se to se stavy
 (žlutý koncept po kliknutí zoranžověl), proto bylo přepsání odstraněno.
@@ -264,12 +315,20 @@ Frontend má **tři vrstvy badge** s podobnou paletou:
 Všechny tři používají **stejnou doc-state paletu** (concept, edit, confirmed,
 archive, trash, cancelled). Plus mají vlastní **typové varianty** mimo doc-state:
 
+**`Badge` je jediný způsob, jak napsat tónový text na tónovaný podklad**
+(D90, #153). Komponenta si vlastní štítek s `color-mix(…)` nebo `-soft`
+pod tónovým textem nekreslí — použije `<Badge style="danger" label=… />`
+(lhůta karty feedu, odznaky Přehledu firmy, „Selhalo“ v portálu).
+`Badge` nese jen text a předává `...rest` (`data-testid`); rozmístění řeší
+obal, ne `class` na komponentě (přepsala by její vlastní třídy), ikona
+patří vedle štítku. Dvojice podklad / text hlídá `check-contrast.py`.
+
 ### Typové varianty (jen `.shpd-badge--*`)
 
 | Třída | Pozadí / text | Použití |
 |---|---|---|
 | `--neutral` | šedá | Default, typový badge bez významu (např. „Fyzická osoba") |
-| `--primary` | modrá soft | Důležitá info (kód, vlastnost záznamu) |
+| `--primary` | modrá soft, text `primary-text` | Důležitá info (kód, vlastnost záznamu) |
 | `--accent` | oranžová soft | „VIP klient", důležité, „za pozornost" |
 | `--success` | zelená | Úspěch (mimo doc-state) |
 | `--warning` | žlutá | Varování |
@@ -335,6 +394,21 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
 5. **Datum a čas jen přes sdílené funkce** (D73) — `DisplayDate`
    v backendu, `utils/formatDate.js` ve frontendu; žádné vlastní
    `format('j. n. Y')` ani `toLocaleDateString()`. Viz §11 → Datum a čas.
+6. **Kontrast hlídaných dvojic tokenů počítá skript** (#153 D88–D95).
+   `scripts/check-contrast.py` v pre-commitu vyhodnotí z `variables.css`
+   světlý (`:root`) i tmavý vzhled (`:root` přepsaný blokem
+   `[data-theme="dark"]`, `var()` až v cílovém vzhledu) a zastaví commit,
+   když dvojice popředí × pozadí nesplní práh — text **4,5 : 1**, značka,
+   ikona a obrys **3 : 1**. Hlídá: tón jako text a značku na `bg` /
+   `bg-hover` / `bg-secondary`, bílý text na plochách, značku vůči obrysu
+   (D88), `primary-text` na pozadích stránky a `primary-soft` (D92),
+   obrys fokusu (D95), běžný a sekundární text, text na vybraném řádku
+   (D91), text sidebaru (D89), dvojice `Badge` (`state-…`, D90)
+   a `Notice` (`alert-…`). `--list` vypíše všechny dvojice s poměrem —
+   čísla v tomto dokumentu jsou z něj. Výjimky jsou pojmenovaná konstanta
+   s důvodem (§3 Stavové → Výjimky); výjimka, kterou dvojice už
+   nepotřebuje, je nález. Skript nevidí vykreslené barvy (`opacity`,
+   pozadí složené přes předky), vlastní vzhled ani vývojářský dashboard.
 
 ### Anti-patterny
 
@@ -352,6 +426,16 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   `--shpd-color-danger` je jen pozadí pod `--shpd-color-text-on-fill`.
 - ❌ `var(--shpd-color-warning, #d97706)` — fallback s hexem. ✅
   `var(--shpd-color-warning)` (D71).
+- ❌ `color: var(--shpd-color-primary)` — plocha primary jako barva textu;
+  v tmavém vzhledu dá na pozadí 2,1–2,8 : 1. ✅ Text, ikona a odkaz berou
+  `var(--shpd-color-primary-text)` (D92); `--shpd-color-primary` je pozadí
+  a rámeček výběru. Totéž platí pro `primary-hover` jako barvu textu
+  při hoveru — odkaz se jen podtrhne.
+- ❌ `background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent)`
+  pod tónovým textem — podklad vyrobený na místě, kontrast 3,9 : 1. ✅
+  `<Badge style="danger" label=… />` (D90).
+- ❌ `outline: 2px solid var(--shpd-color-primary)` u `:focus-visible`. ✅
+  `var(--shpd-color-border-focus)` (D95).
 
 ---
 
@@ -1091,6 +1175,12 @@ z velké části recyklují solid paletu:
 - **Brand modrá je posunutá ztlumeným směrem** (z `#005089` na `#2d6890`)
   — aby fungovala na tmavém pozadí jako akcent, ale nebila do očí
   na aktivní položce sidebaru.
+- **Primary jako plocha a jako text jsou v tmavém vzhledu dvě hodnoty**
+  (D92): ztlumená plocha `#2d6890` nese bílý text (6,0 : 1), ale sama
+  jako text na tmavém pozadí dá 2,1–2,8 : 1. Text, ikona, odkaz a obrys
+  fokusu berou `primary-text` `#7fb2dc` (6,6 : 1 na `bg`). Modrá tečka
+  Nové položky (`info-mark`) má z téhož důvodu vlastní hodnotu `#3b82f6`
+  a na `primary` neodkazuje (D93).
 - **Brand oranžová zůstává podobná** (jen lehce světlejší `#ff7a26`) —
   funguje na obou módech.
 - **Doc-state pruhy zůstávají stejné** — jasné barvy (žlutá, fialová,
@@ -1790,7 +1880,8 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 |---|---|
 | `frontend/src/styles/variables.css` | **Centrum pravdy** — všechny barvy, spacing, typografie, layout tokeny (v rem, D46) |
 | `scripts/check-css-units.py` | Kontrola jednotek v pre-commitu (§10): px v mezerách, zaoblení, písmu a **rozměrech** (`width`, `height`, `min-*`, `max-*`, `flex`), rozměrové propy komponent, layout tokeny; breakpointy (§8) |
-| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard). Třetí pravidlo (D71): hex barva jen ve `styles/variables.css` a `dev/theme.css` — hledá se v hodnotách deklarací, atributu `style` a direktivě `style:` mimo komentáře; výjimky po souborech s důvodem (`HEX_EXEMPT`), hex v JS datech se nehlídá |
+| `scripts/check-contrast.py` | Kontrola kontrastu v pre-commitu (§6 pravidlo 6, #153): hlídané dvojice tokenů z `variables.css` ve světlém i tmavém vzhledu, prahy 4,5 : 1 (text) a 3 : 1 (značka, ikona, obrys), výjimky v konstantě `EXCEPTIONS`; `--list` vypíše všechny dvojice s poměrem |
+| `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard). Třetí pravidlo (D71): hex barva jen ve `styles/variables.css` a `dev/theme.css` — hledá se v hodnotách deklarací, atributu `style` a direktivě `style:` mimo komentáře; výjimky po souborech s důvodem (`HEX_EXEMPT`), hex v JS datech se nehlídá. Čtvrté pravidlo (#153 D90): `color-mix(…)` s tónovým tokenem (`danger`, `warning`, `success`, `info`) je nález — text na tónovaném podkladu kreslí jen `Badge`; tónovaná plocha bez textu jen jako výjimka po souborech (`TONE_MIX_EXEMPT`, dnes prázdná), `primary` s nízkým podílem pod cílem přetažení souboru se nehlídá |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
 | `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami. Popisek je vždy na jednom řádku (`nowrap`); prop `wrap` (opt-in) ho dovolí zalomit — text vlevo, výška podle obsahu, ikona u prvního řádku, nejvýš šířka rodiče, jednořádkové stejně vysoké jako bez `wrap`. Jen pro tlačítko s proměnným textem v úzkém místě (rychlé založení z registru s názvem firmy), ne jako obecný vzhled |

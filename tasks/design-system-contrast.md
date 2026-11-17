@@ -1,6 +1,6 @@
 # Design system — kontrast tónů mimo pozadí stránky (D88–D95)
 
-**Stav:** naplánováno — #153, D88–D95; zelené štítky a stav „V pořádku“ v seznamech jsou druhý task
+**Stav:** hotovo — 2026-11-17, #153 (D88–D95), 6 commitů; výjimka štítku Koš potřebuje číslo rozhodnutí v #153, odchylky níže; zelené štítky a stav „V pořádku“ v seznamech jsou druhý task
 
 ## Kontext / Cíl
 
@@ -271,17 +271,17 @@ Hodnoty kontrastu do dokumentace ber z `check-contrast.py --list`.
 
 ## Hotovo když
 
-- [ ] `primary-text` a `info-mark` podle D92, D93; žádné
+- [x] `primary-text` a `info-mark` podle D92, D93; žádné
   `color: var(--shpd-color-primary)` ve `frontend/src`
-- [ ] Obrys fokusu a rámeček přetažení podle D95
-- [ ] `check-contrast.py` v pre-commitu, exit 0, výjimka D94 vyjmenovaná
-- [ ] Značky s obrysem (D88), ikona chyby v barvě sidebaru (D89)
-- [ ] Tři štítky na `Badge`, kontrola tónového `color-mix` v
+- [x] Obrys fokusu a rámeček přetažení podle D95
+- [x] `check-contrast.py` v pre-commitu, exit 0, výjimka D94 vyjmenovaná
+- [x] Značky s obrysem (D88), ikona chyby v barvě sidebaru (D89)
+- [x] Tři štítky na `Badge`, kontrola tónového `color-mix` v
   `check-css-tokens.py` (D90)
-- [ ] Vybraný řádek podle D91 ve `ViewerRow`, `ViewerGrid`,
+- [x] Vybraný řádek podle D91 ve `ViewerRow`, `ViewerGrid`,
   `ConversationList`
-- [ ] Kontrast vykreslených barev změřený v obou vzhledech (Ověření)
-- [ ] Dokumentace, `CLAUDE.md` krok 3, `**Stav:**`, index tasků
+- [x] Kontrast vykreslených barev změřený v obou vzhledech (Ověření)
+- [x] Dokumentace, `CLAUDE.md` krok 3, `**Stav:**`, index tasků
 
 ## Pasti
 
@@ -303,8 +303,257 @@ Hodnoty kontrastu do dokumentace ber z `check-contrast.py --list`.
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+1. **Štítek stavu Koš je výjimka** (rozhodnuto při implementaci, číslo
+   rozhodnutí v #153 doplní chat). Tabulka dvojic hlídá
+   `state-trash-text` na `state-trash-bg`; má 3,90 (světlý) a 2,81 (tmavý)
+   : 1 a skript by skončil exit 1. Barvy se nemění — smazaný záznam je
+   záměrně tlumený a přeškrtnutý; výjimka je v konstantě `EXCEPTIONS`
+   vedle D94 a v `docs/design-system.md` §3.
+2. **`color: var(--shpd-color-primary)` bylo 53, ne 38.** 38 míst
+   v aplikaci sedí s výčtem; dalších 12 je ve vývojářském dashboardu
+   (`dev/dev.css`, `VersionMenu`, `DevKebabMenu`, `LogsPage`,
+   `LogException`) — převedena také, aby platilo „žádné ve
+   `frontend/src`“; dashboard je jen světlý a `primary-text` tam ukazuje
+   na jeho `primary`, vzhled se nemění. Tři místa měla zápis s fallbackem
+   `var(--shpd-color-primary, var(--shpd-color-text))`, který grep minul:
+   odkaz v Přehledu firmy (v tmavém 2,49 : 1 — našlo ho až měření
+   v prohlížeči), `LookupInput` („+ Vytvořit nový“), `MultiselectInput`
+   (zatržítko). Hover `dev-btn-outline` v dashboardu (`primary-hover`
+   jako barva textu) zůstal — jen světlý vzhled.
+3. **Tečka chipu feedu bere plochu `danger`, ne `danger-mark`.** Zadání
+   barvu nechávalo a počítalo s 4,8 : 1 vůči bílé; `danger-mark` je ale
+   v tmavém vzhledu `#f87171` a vůči bílému obrysu má 2,77. Plocha drží
+   4,83 v obou vzhledech jako ostatní tečky s obrysem.
+4. **Posuvný kontejner chipů tečku ořezával** (`overflow-x: auto` ořezává
+   i svisle; tečka přesahuje roh chipu o 2 px — ořez byl vidět už před
+   změnou). Kontejner dostal rezervu `0.25rem` nahoře a vpravo, záporný
+   horní okraj drží rozvržení — snímek dashboardu před / po se liší jen
+   v tečce. Rail obrys neořezává (snímek; rezerva `0.125rem` nad první
+   položkou stačí přesně), ve sbaleném sidebaru se odznaky sekcí
+   nekreslí.
+5. **`Badge` neumí ikonu ani `class`.** Štítek „Selhalo“ v portálu má
+   ikonu varování **před** štítkem v `danger-text` na pozadí karty
+   (rozhodnuto při implementaci); `class` na `Badge` by přes `...rest`
+   přepsala jeho vlastní třídy, rozmístění proto drží obal
+   (`.shpd-feed-card__due`, `.portal__failed`). Portál na dev stroji není
+   (zdroj dat bez `hosting.core`) — převod ověřen jen sestavením.
+6. **Řádky Přehledu firmy s odznakem jsou o ~4 px vyšší** — `Badge` má
+   vlastní odsazení a výšku řádku; lhůta karty feedu je naopak menší
+   (role meta, normální tloušťka místo 14 px tučně). Záměrná změna vzhledu
+   podle zadání, uvedeno kvůli snímkům.
+7. **Vybraný řádek — nad rámec výčtu D91:**
+   - tlumený span (`--muted`, průhlednost 0,6) měl na vybraném řádku
+     2,0–2,6 : 1; na vybraném řádku má průhlednost 0,8 (5,7–7,9 : 1);
+   - **archivní a smazaný řádek pravidlo nepotřebují** (rozhodnutí
+     „zahrnout“ je bez práce): `color` z globálních `docState_archive` /
+     `docState_trash` přebíjí už dnes vlastní barva řádku (scoped pravidlo
+     `ViewerRow` má vyšší specifičnost, buňky `ViewerGrid` barvu nedědí) —
+     text archivního i smazaného řádku má v seznamech barvu běžného
+     textu, zůstává proužek a přeškrtnutí. Ověřeno měřením s podvrženou
+     třídou. Token `state-archive-row` se tak v seznamech neprojevuje —
+     nález pro #153, vzhled se nemění;
+   - ikona řádku a ikony akcí konverzace zůstávají `text-secondary`
+     (4,3 / 3,6 světlý, 4,6 / 3,8 tmavý — práh ikony 3 : 1);
+   - oddělovač „·“ mezi spany (`__sep`, barva okraje) je dekorace a do
+     měření nevstupuje.
+8. **Kontrola zbytečné výjimky.** `check-contrast.py` hlásí jako nález
+   i výjimku, kterou dvojice už nepotřebuje (práh splňuje) — zadání to
+   nežádalo; drží seznam výjimek aktuální.
+9. **Nálezy mimo rozsah** (nic se neměnilo, pro druhý task #153):
+   - Badge a SpanBadge `accent` — `accent-hover` na `accent-soft` má ve
+     světlém vzhledu 3,92 : 1 (tmavý 6,62); tabulka dvojic ho nehlídá;
+   - dva vlastní štítky s tónovým textem na `-soft` mimo `Badge`:
+     průvodce importem ze Spisovny (`warning-text` na `warning-soft`,
+     4,84 / 7,11) a „aktuální relace“ v Zabezpečení (`success-text` na
+     `success-soft`, 4,79 / 6,76) — prahy drží, D90 by je ale chtělo
+     přes `Badge`; `danger-soft` po převodu portálu nikdo nepoužívá;
+   - text smazaného řádku mimo seznamy (`docState_trash`, barva
+     `state-trash-bar`) má ve světlém vzhledu 2,56 : 1 na `bg`;
+   - rámeček výběru v barvě `primary` (zatržítko `MultiselectInput`,
+     `Checkbox`, vybraný `OptionRow` / segment) má v tmavém vzhledu vůči
+     `bg` 2,49 : 1 — zadání plochy a rámečky výběru nechává na `primary`.
+10. **Vlastní vzhled** `primary` nepřebarvuje (`deriveSidebarTokens()`
+    odvozuje jen tokeny sidebaru) — past ze zadání nenastává.
+11. **`CodeSteps` testovacího kola** (vrstva kódu `test-round`) nový skript
+    nepouští — zadání to nežádá; pouští ho pre-commit.
 
 ## Ověření
 
-(vyplní implementace)
+Kontroly (2026-11-17): `python3 scripts/check-contrast.py` exit 0,
+`check-css-tokens.py` (čtvrtá kontrola na stavu před převodem najde přesně
+tři místa `FeedCard` a `CompanyOverview`, po převodu nic),
+`check-css-units.py`, `npm run build`, `npm test` (303 testů).
+
+### `check-contrast.py --list`
+
+```
+popředí               pozadí              práh  světlý   tmavý  proč
+danger-text           bg                   4,5    4,83    5,41  D70 tón jako text
+danger-text           bg-hover             4,5    4,54    4,58  D70 tón jako text
+danger-text           bg-secondary         4,5    4,54    6,10  D70 tón jako text
+warning-text          bg                   4,5    5,02    6,96  D70 tón jako text
+warning-text          bg-hover             4,5    4,72    5,89  D70 tón jako text
+warning-text          bg-secondary         4,5    4,72    7,86  D70 tón jako text
+success-text          bg                   4,5    5,02    6,56  D70 tón jako text
+success-text          bg-hover             4,5    4,71    5,55  D70 tón jako text
+success-text          bg-secondary         4,5    4,71    7,41  D70 tón jako text
+info-mark             bg                   3,0    3,68    4,07  D74, D93 značka
+info-mark             bg-hover             3,0    3,45    3,44  D74, D93 značka
+info-mark             bg-secondary         3,0    3,45    4,59  D74, D93 značka
+danger-mark           bg                   3,0    4,83    5,41  D74, D93 značka
+danger-mark           bg-hover             3,0    4,54    4,58  D74, D93 značka
+danger-mark           bg-secondary         3,0    4,54    6,10  D74, D93 značka
+warning-mark          bg                   3,0    3,52    6,96  D74, D93 značka
+warning-mark          bg-hover             3,0    3,31    5,89  D74, D93 značka
+warning-mark          bg-secondary         3,0    3,31    7,86  D74, D93 značka
+success-mark          bg                   3,0    3,30    6,56  D74, D93 značka
+success-mark          bg-hover             3,0    3,10    5,55  D74, D93 značka
+success-mark          bg-secondary         3,0    3,10    7,41  D74, D93 značka
+text-on-fill          danger               4,5    4,83    4,83  D69 text na ploše
+text-on-fill          danger-hover         4,5    6,47    6,47  D69 text na ploše
+text-on-fill          warning              4,5    5,02    5,02  D69 text na ploše
+text-on-fill          warning-hover        4,5    7,09    7,09  D69 text na ploše
+text-on-fill          success              4,5    5,02    5,02  D69 text na ploše
+text-on-fill          success-hover        4,5    7,13    7,13  D69 text na ploše
+text-on-fill          primary              4,5    8,37    6,01  D69 text na ploše
+text-on-fill          primary-hover        4,5   11,04    4,67  D69 text na ploše
+danger                text-on-fill         3,0    4,83    4,83  D88 značka s obrysem
+warning               text-on-fill         3,0    5,02    5,02  D88 značka s obrysem
+primary-text          bg                   4,5    8,37    6,63  D92 primary jako text
+primary-text          bg-hover             4,5    7,86    5,61  D92 primary jako text
+primary-text          bg-secondary         4,5    7,86    7,48  D92 primary jako text
+primary-text          primary-soft         4,5    7,14    6,07  D90, D92 Badge primary
+border-focus          bg                   3,0    8,37    6,63  D95 obrys fokusu
+border-focus          bg-hover             3,0    7,86    5,61  D95 obrys fokusu
+border-focus          bg-secondary         3,0    7,86    7,48  D95 obrys fokusu
+text                  bg                   4,5   17,85   12,18  text
+text                  bg-hover             4,5   16,77   10,31  text
+text                  bg-secondary         4,5   16,77   13,75  text
+text-secondary        bg                   4,5    5,68    5,88  text
+text-secondary        bg-hover             4,5    5,34    4,97  text
+text-secondary        bg-secondary         4,5    5,34    6,63  text
+text                  bg-selected          4,5   13,53    9,56  D91 vybraný řádek
+text                  bg-selected-hover    4,5   11,39    7,91  D91 vybraný řádek
+text-sidebar          bg-sidebar           4,5   10,88   11,06  D89 sidebar
+state-concept-text    state-concept-bg     4,5    6,15    9,57  D90 Badge
+state-edit-text       state-edit-bg        4,5    7,57    8,04  D90 Badge
+state-confirmed-text  state-confirmed-bg   4,5    6,92    9,05  D90 Badge
+state-archive-text    state-archive-bg     4,5    8,33    5,35  D90 Badge
+state-trash-text      state-trash-bg       4,5   3,90*   2,81*  D90 Badge
+state-cancelled-text  state-cancelled-bg   4,5    5,74    8,46  D90 Badge
+state-done-text       state-done-bg        4,5    6,49    9,93  D90 Badge
+state-error-text      state-error-bg       4,5    5,74    8,46  D90 Badge
+alert-info-text       alert-info-bg        4,5    7,15    6,38  Notice
+alert-warning-text    alert-warning-bg     4,5    6,37    9,63  Notice
+alert-error-text      alert-error-bg       4,5    6,80    8,46  Notice
+alert-success-text    alert-success-bg     4,5    6,49    9,93  Notice
+
+* = zdůvodněná výjimka
+
+Výjimky:
+  danger-hover / bg  tmavý  2,31 : 1 (práh 3,00)
+      D94: okraj tlačítka `danger` pod kurzorem v tmavém vzhledu; tlačítko identifikuje text (6,47 : 1), ne okraj
+  state-trash-text / state-trash-bg  světlý  3,90 : 1 (práh 4,50)
+      #153, tasks/design-system-contrast.md Odchylky: štítek stavu Koš je záměrně tlumený a přeškrtnutý — smazaný záznam nemá poutat pozornost
+  state-trash-text / state-trash-bg  tmavý  2,81 : 1 (práh 4,50)
+      #153, tasks/design-system-contrast.md Odchylky: štítek stavu Koš je záměrně tlumený a přeškrtnutý — smazaný záznam nemá poutat pozornost
+
+Kontrast tokenů v pořádku: 59 dvojic ve dvou vzhledech (118 měření), výjimek: 2.
+```
+
+### Kontrast vykreslených barev (Chromium)
+
+Playwright nad volným zdrojem dat `zey0-g…` (demo sada IT servis), 1280 px,
+světlý i tmavý vzhled, shelly sidebar / classic / wild. Barva popředí vůči
+pozadí složenému přes předky (včetně `opacity`), nejhorší hodnota místa;
+u značky s obrysem po změně poměr **vůči obrysu**. Podvrženo: odznaky sekcí
+(`/_ui/section-badges`), karty feedu s lhůtou a sekce Nové položky
+(`/_ui/dashboard`), stavy sekcí a položek Přehledu firmy (`/_ui/overview`),
+chyba navigace (500), konverzace chatu; `:hover` vybraného řádku mřížky
+vynucen přes CDP (detail je v draweru). Celkem 522 měření po změně,
+**žádné pod prahem**.
+
+| místo | stav | světlý před → po | tmavý před → po | práh |
+|---|---|---|---|---|
+| tečka odznaku sekce (NavTree) (po: vůči obrysu) | dashboard | 2,54 → 4,83 | 2,70 → 4,83 | 3 |
+| tečka chipu feedu (po: vůči obrysu) | dashboard, chip neaktivní | 4,83 → 4,83 | 5,41 → 4,83 | 3 |
+| modrá tečka Nové položky | dashboard | 3,45 → 3,45 | 2,81 → 4,59 | 3 |
+| lhůta karty feedu | dashboard | 3,88 → 5,74 | 4,60 → 8,46 | 4,5 |
+| primary jako text — ikona | dashboard | 7,14 → 7,14 | 2,28 → 6,07 | 3 |
+| primary jako text — text | dashboard | 7,14 → 7,14 | 2,28 → 6,07 | 4,5 |
+| lhůta karty feedu | dashboard, karta pod kurzorem | 3,88 → 5,74 | 4,60 → 8,46 | 4,5 |
+| tečka chipu feedu (po: vůči obrysu) | dashboard, chip pod kurzorem | 4,54 → 4,83 | 4,58 → 4,83 | 3 |
+| tečka chipu feedu (po: vůči obrysu) | dashboard, chip aktivní | 1,73 → 4,83 | 2,17 → 4,83 | 3 |
+| primary jako text — ikona | náhled importu | 7,14 → 7,14 | 2,28 → 6,07 | 3 |
+| primary jako text — text | náhled importu | 7,14 → 7,14 | 2,28 → 6,07 | 4,5 |
+| primary jako text — ikona | náhled importu, rozhodovací panel review-ref:rows[0].item | 7,14 → 7,14 | 2,28 → 6,07 | 3 |
+| primary jako text — text | náhled importu, rozhodovací panel review-ref:rows[0].item | 7,14 → 7,14 | 2,28 → 6,07 | 4,5 |
+| odznak Přehledu firmy | přehled firmy | 3,88 → 5,74 | 4,97 → 8,46 | 4,5 |
+| primary jako text — text | přehled firmy | 8,37 → 8,37 | 2,49 → 6,63 | 4,5 |
+| primary jako text — text | seznam Faktury přijaté | 8,37 → 8,37 | 2,49 → 6,63 | 4,5 |
+| vybraný řádek — ikona | Faktury přijaté, vybraný | 4,31 → 4,31 | 4,61 → 4,61 | 3 |
+| vybraný řádek — text | Faktury přijaté, vybraný | 2,21 → 7,94 | 2,64 → 6,77 | 4,5 |
+| vybraný řádek — ikona | Faktury přijaté, vybraný pod kurzorem | 3,62 → 3,62 | 3,81 → 3,81 | 3 |
+| vybraný řádek — text | Faktury přijaté, vybraný pod kurzorem | 2,03 → 7,06 | 2,34 → 5,74 | 4,5 |
+| primary jako text — text | seznam Faktury vydané | 8,37 → 8,37 | 2,49 → 6,63 | 4,5 |
+| vybraný řádek — ikona | Faktury vydané, vybraný | 4,31 → 4,31 | 4,61 → 4,61 | 3 |
+| vybraný řádek — text | Faktury vydané, vybraný | 2,21 → 7,94 | 2,64 → 6,77 | 4,5 |
+| vybraný řádek — ikona | Faktury vydané, vybraný pod kurzorem | 3,62 → 3,62 | 3,81 → 3,81 | 3 |
+| vybraný řádek — text | Faktury vydané, vybraný pod kurzorem | 2,03 → 7,06 | 2,34 → 5,74 | 4,5 |
+| primary jako text — text | seznam Bankovní výpisy | 8,37 → 8,37 | 2,49 → 6,63 | 4,5 |
+| vybraný řádek — ikona | Bankovní výpisy, vybraný | 4,31 → 4,31 | 4,61 → 4,61 | 3 |
+| vybraný řádek — text | Bankovní výpisy, vybraný | 2,21 → 7,94 | 2,64 → 6,77 | 4,5 |
+| vybraný řádek — ikona | Bankovní výpisy, vybraný pod kurzorem | 3,62 → 3,62 | 3,81 → 3,81 | 3 |
+| vybraný řádek — text | Bankovní výpisy, vybraný pod kurzorem | 2,03 → 7,06 | 2,34 → 5,74 | 4,5 |
+| primary jako text — text | seznam Bankovní transakce (tabulka) | 8,37 → 8,37 | 2,49 → 6,63 | 4,5 |
+| vybraný řádek — text | Bankovní transakce (tabulka), vybraný | — → 7,94 | — → 6,77 | 4,5 |
+| vybraný řádek — text | Bankovní transakce (tabulka), vybraný pod kurzorem | — → 7,06 | — → 5,74 | 4,5 |
+| vybraný řádek — text | Bankovní transakce (tabulka), vybraný chybový řádek (třída podvržena) | — → 7,94 | — → 6,77 | 4,5 |
+| vybraná konverzace — text | chat, vybraná konverzace | 4,31 → 13,53 | 4,61 → 9,56 | 4,5 |
+| vybraná konverzace — ikona | chat, vybraná konverzace | 4,31 → 4,31 | 4,61 → 4,61 | 3 |
+| vybraná konverzace — text | chat, vybraná konverzace pod kurzorem | 4,31 → 13,53 | 4,61 → 9,56 | 4,5 |
+| vybraná konverzace — ikona | chat, vybraná konverzace pod kurzorem | 4,31 → 4,31 | 4,61 → 4,61 | 3 |
+| obrys fokusu pole (hledání) | seznam, pole hledání s fokusem | 7,86 → 7,86 | 2,49 → 6,63 | 3 |
+| obrys fokusu pole (formulář) | formulář faktury, pole s fokusem | 8,37 → 8,37 | 2,49 → 6,63 | 3 |
+| obrys fokusu segmentového přepínače | nastavení účtu, segment s fokusem | 8,37 → 8,37 | 2,49 → 6,63 | 3 |
+| ikona chyby sidebaru | sidebar, chyba načtení navigace | 2,64 → 10,88 | 4,91 → 11,06 | 4,5 |
+| text chyby sidebaru | sidebar, chyba načtení navigace | 10,88 → 10,88 | 11,06 → 11,06 | 4,5 |
+| tečka odznaku (horní menu) (po: vůči obrysu) | horní menu, neaktivní položka | 2,54 → 4,83 | 2,70 → 4,83 | 3 |
+| tečka odznaku (horní menu) (po: vůči obrysu) | horní menu, aktivní položka | 1,73 → 4,83 | 1,24 → 4,83 | 3 |
+| tečka odznaku (horní menu) (po: vůči obrysu) | horní menu, položka pod kurzorem | 2,10 → 4,83 | 2,34 → 4,83 | 3 |
+| odznak railu (po: vůči obrysu) | rail, neaktivní položka | 2,54 → 4,83 | 2,70 → 4,83 | 3 |
+| odznak railu (po: vůči obrysu) | rail, aktivní položka | 1,73 → 4,83 | 1,24 → 4,83 | 3 |
+| odznak railu (po: vůči obrysu) | rail, položka pod kurzorem | 2,10 → 4,83 | 2,34 → 4,83 | 3 |
+
+„primary jako text“ = každý prvek s textem nebo ikonou v barvě `primary` /
+`primary-text` na dané obrazovce: odkazy a přepínač detailu karty, AI
+shrnutí, Badge `primary`, aktivní taby vieweru a detailu, odkazy v detailu
+dokladu a příloh, „aktuální volba“ a „Vytvořit“ v rozhodovacím panelu
+náhledu importu, odkazy Přehledu firmy. V rozhodovacích panelech prošlo
+šest odkazů náhledu (partner, položky, kód DPH); demo sada nemá doklad
+s předmětem přenesení (`ReverseChargeDecisionPanel` ověřen jen převodem
+tokenu).
+
+Modrá tečka Nové položky: světlý 3,45 (na `bg-secondary`), tmavý
+2,81 → 4,59.
+
+### Snímky před a po
+
+42 dvojic snímků (dashboard, Přehled firmy, seznamy s vybraným řádkem
+i pod kurzorem, sidebar, horní menu a rail s odznaky, chip feedu, chyba
+navigace, fokus pole a segmentu, rozhodovací panel, chat) v obou
+vzhledech. Světlý vzhled se liší jen na převedených místech: tečky
+s obrysem, štítky jako `Badge`, barva textů vybraného řádku, ikona chyby
+sidebaru; fokus, rozhodovací panel a ostatní `primary` texty jsou pixelově
+shodné. Tmavý vzhled navíc mění všechny `primary` texty a ikony
+(`#2d6890` → `#7fb2dc`), obrys fokusu a modrou tečku.
+
+### Co zůstává ručně
+
+- portál (`PortalContent`, štítek „Selhalo“) — na dev stroji není zdroj
+  dat s `hosting.core`;
+- vlastní vzhled se světlým sidebarem — tečka s obrysem na světlé barvě
+  sidebaru (obrys splyne, tečka má vůči bílé 4,8 / 5,0 : 1);
+- cíl přetažení souboru (rámeček `primary-text`) — přetažení souboru
+  Playwright nezkoušel;
+- mobilní drawer a úzká šířka (měřeno jen 1280 px).

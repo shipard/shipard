@@ -262,6 +262,15 @@ jako použitý design systém — proto kontrola, ne alias, a žádný seznam
 výjimek. Tentýž skript hlídá i hex barvy (#133 D71): hex smí být jen ve
 `styles/variables.css` a `dev/theme.css`, komponenta bere token a fallback
 ve `var(--x, #hex)` se nepíše; výjimky a meze v `docs/design-system.md` §6.
+A tónový `color-mix(…)` (#153 D90): text na tónovaném podkladu kreslí jen
+sdílený `Badge`.
+
+Kontrast barev hlídá `scripts/check-contrast.py` (#153 D88–D95): z tokenů
+`styles/variables.css` spočítá hlídané dvojice popředí × pozadí ve světlém
+i tmavém vzhledu (text 4,5 : 1, značka, ikona a obrys 3 : 1); `--list`
+vypíše všechny dvojice. Primary jako text, ikona a odkaz bere
+`--shpd-color-primary-text`, ne plochu `--shpd-color-primary` — viz
+`docs/design-system.md` §2 a §6.
 
 Px v mezerách, odsazení, zaoblení, písmu a pevných rozměrech hlídá
 `scripts/check-css-units.py` (#134 D10, pravidlo D1 a D46 z #133): tytéž
