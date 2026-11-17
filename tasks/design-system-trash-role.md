@@ -1,6 +1,6 @@
 # Design system — Koš výraznější než Archiv, role v Saldu pohybů textem (D104, D105)
 
-**Stav:** hotovo — #153, D104, D105 (2026-11-17); čeká na ruční ověření
+**Stav:** hotovo — #153, D104, D105 (2026-11-17); ručně ověřeno 2026-11-17
 
 ## Kontext / Cíl
 
@@ -187,3 +187,12 @@ Ruční kontrola (Anna, dev server, oba vzhledy):
    horní proužek tichý i v tmavém vzhledu.
 4. Saldo pohybů v mřížce: sloupec Role prostým textem, bez pilulky
    a tečky; seznam (úzké okno) a detail pohybu beze změny.
+
+### Ruční ověření (2026-11-17, Firefox, oba vzhledy)
+
+- Osoby, záložka Vše s archivní a smazanou osobou pod sebou: proužek koše
+  výraznější než archivu ve světlém i tmavém vzhledu, i na vybraném řádku
+  a pod kurzorem — v pořádku.
+- Štítek Smazáno (plná tmavě šedá pilulka) v detailu i formuláři, štítek
+  V archívu světle šedý — v pořádku.
+- Saldo pohybů: sloupec Role v mřížce prostým textem — v pořádku.
