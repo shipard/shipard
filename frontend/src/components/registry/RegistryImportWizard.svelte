@@ -24,6 +24,7 @@
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
   import Icon from '../ui/Icon.svelte';
+  import Badge from '../ui/Badge.svelte';
   import Card from '../ui/Card.svelte';
   import OptionRow from '../ui/OptionRow.svelte';
   import { iconCompany, iconUser, iconSpinner } from '../../icons.js';
@@ -330,14 +331,10 @@
             {#snippet rowBadges()}
               <div class="shpd-registry-wizard__row-badges">
                 {#if row.existsInDb}
-                  <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--warning">
-                    {t('registry.wizard.badge.existsInDb')}
-                  </span>
+                  <Badge style="warning" label={t('registry.wizard.badge.existsInDb')} />
                 {/if}
                 {#if !row.isValid && row.validTo}
-                  <span class="shpd-registry-wizard__badge shpd-registry-wizard__badge--muted">
-                    {t('registry.wizard.badge.terminated', { date: row.validTo })}
-                  </span>
+                  <Badge style="neutral" label={t('registry.wizard.badge.terminated', { date: row.validTo })} />
                 {/if}
               </div>
             {/snippet}
@@ -566,27 +563,6 @@
       /* Dva štítky se vedle sebe nemusí vejít — smí se zalomit. */
       flex-shrink: 1;
     }
-  }
-
-  .shpd-registry-wizard__badge {
-    display: inline-block;
-    padding: 0.125rem var(--shpd-space-sm);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-xs);
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  .shpd-registry-wizard__badge--warning {
-    background: var(--shpd-color-warning-soft);
-    color: var(--shpd-color-warning-text);
-    border: 1px solid var(--shpd-color-warning-text);
-  }
-
-  .shpd-registry-wizard__badge--muted {
-    background: var(--shpd-color-bg-hover);
-    color: var(--shpd-color-text-secondary);
-    border: 1px solid var(--shpd-color-border);
   }
 
   /* ── Preview screen ─────────────────────────────────────────────── */

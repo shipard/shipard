@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 452 tasků: **naplánováno** 5 · **částečně** 22 · **zrušeno** 1 · **hotovo** 424.
+Celkem 456 tasků: **naplánováno** 5 · **částečně** 22 · **zrušeno** 1 · **hotovo** 428.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -205,6 +205,10 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-shared-controls-fixes.md` | Opravy z ověření: segmentový přepínač vybírá až potvrzením (šipky jen přesouvají fokus), popis volitelného řádku body barvou textu, tlačítko „Vytvořit z registru“ se zalomí (`Button` `wrap`) (#149, D79, D80) |
 | `design-system-option-row-narrow.md` | Volitelný řádek na úzké šířce — obsah vpravo (štítky) pod popis, text přes celou šířku řádku; pojmenovaný kontejner `option-row` (#149, D81) |
 | `design-system-form-content.md` | Prvek `content` s bloky detailu místo `html` ve formulářích, blok `hint`, katalog textů formulářů `formTexts`; rekapitulace DPH ve formuláři jako rozšířená sdílená tabulka, fakturační údaje na `PartyCard` (#150, D82–D87) |
+| `design-system-contrast.md` | Kontrast tónů mimo pozadí stránky: token `primary-text` a `info-mark` v tmavém vzhledu, značky s obrysem na sidebaru a chipu, ikona chyby v barvě sidebaru, text na tónovaném podkladu jen přes `Badge`, vybraný řádek bez tónových textů, obrys fokusu v tmavém vzhledu, skript `check-contrast.py` v pre-commitu (#153, D88–D95) |
+| `design-system-contrast-fixes.md` | Opravy z ověření kontrastu: tenčí obrys teček odznaků, mezera odznaku v horním menu, klidná lhůta na kartě feedu bez pilulky (#153, D96, D97) |
+| `design-system-row-states.md` | Stavy a štítky v řádcích seznamů: stav jednou sdílenou metodou bez Konceptu a V pořádku, klidný tón tečkou, tlumený text bez průhlednosti, Koš a Archiv bez přeškrtnutí šedým textem, bez štítku `accent`, rámeček výběru `primary-text` (#153, D98–D103) |
+| `design-system-trash-role.md` | Koš výraznější než Archiv v obou vzhledech (proužek, plný štítek Smazáno), role v mřížce Salda pohybů prostým textem (#153, D104, D105) |
 
 ## Mobilní (responzivní) UI
 
@@ -255,7 +259,6 @@ Polymorfní jádro `docs.core` + per-typ faktury. Řídící dokument
 | `exchange-rates-download.md` | Kurzy cizích měn, task B: stahování lístků ze služby (`server.json`, okno od předchozího fiskálního roku, `five-minutes`, limit a pauza), CLI `exchange-rates-download`, upozornění na chybějící lístek, neznámá měna při importu přeskočena (#121 D2, D3, D9, U1–U7) |
 | `doc-row-unit-price-negative-qty.md` | Jednotková cena řádku z celkové ceny při záporném množství — `DocRowCalculator::computePrice()` (#98) |
 | `doc-total-rounding-auto.md` | Automatické zaokrouhlení částky podle způsobu úhrady, měny a země — sloupec `total_rounding_auto`, konfigurace hotovosti `world.base.cashRounding`, formuláře prodejních dokladů, varování, výměnný formát (#73 D1–D8) |
-| `vat-rate-date-core.md` | Datum sazby DPH, task A: procento DPH odvozené z kódu a data sazby (needituje se), přepínač „Sazby DPH podle“ (automaticky DPPD / vlastní datum dokladu / vlastní datum na řádcích), nabídka kódů podle data s procentem, kontroly, stopa v sub-tabulce a detailu (#159 D1–D10, D13–D15) |
 
 ## Tisky (doména print)
 

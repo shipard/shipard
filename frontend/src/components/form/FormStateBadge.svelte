@@ -33,7 +33,7 @@
    *   edit      → fialová (NE oranžová — ta je pro brand accent)
    *   confirmed → tichá šedá ("OK = klid")
    *   archive   → šedá
-   *   trash     → šedá + line-through
+   *   trash     → šedá, bez přeškrtnutí (#153 D101)
    *   cancelled → červená
    *   error     → červená
    */
@@ -42,7 +42,7 @@
   .shpd-form-state-badge.docState_edit      { background: var(--shpd-color-state-edit-bg);      color: var(--shpd-color-state-edit-text); }
   .shpd-form-state-badge.docState_confirmed { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
   .shpd-form-state-badge.docState_archive   { background: var(--shpd-color-state-archive-bg);   color: var(--shpd-color-state-archive-text); }
-  .shpd-form-state-badge.docState_trash     { background: var(--shpd-color-state-trash-bg);     color: var(--shpd-color-state-trash-text); text-decoration: line-through; }
+  .shpd-form-state-badge.docState_trash     { background: var(--shpd-color-state-trash-bg);     color: var(--shpd-color-state-trash-text); }
   .shpd-form-state-badge.docState_cancelled { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
   .shpd-form-state-badge.docState_error     { background: var(--shpd-color-state-error-bg);     color: var(--shpd-color-state-error-text); }
 </style>

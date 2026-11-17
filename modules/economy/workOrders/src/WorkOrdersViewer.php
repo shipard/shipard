@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Core\Document\DocStateConfig;
 use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
 use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodCalendar;
 use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
@@ -157,7 +158,7 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
         if ($end !== null) {
             $t2[] = ['text' => '– ' . $end, 'class' => 'muted'];
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }
@@ -434,16 +435,29 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
         ];
     }
 
+    /**
+     * Název stavu pro sloupec Stav stromu zakázek v detailu — mimo Koncept.
+     * Strom není řádek seznamu: „V pořádku“ se tu vypisuje (pravidlo
+     * `rowStateTag()` z #153 D98 se ho netýká).
+     */
+    private function treeStateName(int $docState): string
+    {
+        if ($docState === 10 || $this->config === null || $this->docStatesCfgItem === null) {
+            return '';
+        }
+        $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
+        return (string) ($cfg->getState($docState)['stateName'] ?? '');
+    }
+
     /** @return array<string, mixed> */
     private function treeRow(string $relation, int $id, ?string $number, string $title, ?string $customer, int $docState): array
     {
-        $state = $this->stateBadge($docState);
         return [
             'relation' => $relation,
             'number'   => $number !== null && $number !== '' ? $number : '—',
             'title'    => $title,
             'customer' => $customer ?? '',
-            'state'    => $state['text'] ?? '',
+            'state'    => $this->treeStateName($docState),
             '_action'  => [
                 'id'     => 'openWorkOrder',
                 'kind'   => 'open_detail',

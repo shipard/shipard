@@ -19,16 +19,6 @@ class DsUsersViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     /** @var array<int, string> */
     private array $userNames = [];
 
@@ -116,13 +106,9 @@ class DsUsersViewer extends TableViewer
                 'class' => 'muted',
             ],
         ];
-        if ($docState !== 10) {
-            $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
-            $stateData = $cfg->getState($docState);
-            $t2[] = [
-                'text'  => $stateData['stateName'] ?? '',
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
 
         $badges = [];

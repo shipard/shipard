@@ -273,7 +273,7 @@
   .bubble__hash {
     flex: none;
     font-family: var(--dev-font-mono);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     text-decoration: none;
   }
   .bubble__hash:hover { text-decoration: underline; }
@@ -293,7 +293,7 @@
     padding: 0;
     border: 0;
     background: none;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font: inherit;
     text-decoration: none;
     cursor: pointer;

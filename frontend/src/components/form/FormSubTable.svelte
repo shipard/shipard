@@ -518,7 +518,7 @@
      border-collapse: separate — s collapse by bordery sticky hlavičky
      odscrollovaly s obsahem (stejný důvod jako ViewerGrid). Barva textu
      na tabulce, ne na td — globální .docState_archive / .docState_trash
-     na <tr> ji přebíjí (tlumený archiv, škrtnutý koš). */
+     na <tr> ji přebíjí (archiv i koš tlumeně `text-secondary`, #153 D101). */
   .shpd-form-subtable__table {
     width: 100%;
     border-collapse: separate;
@@ -573,10 +573,20 @@
   /* Štítky v buňce (účely kontaktu) — mezera mezi pilulkami. */
   .shpd-form-subtable__badge { display: inline-block; margin: 0.0625rem var(--shpd-space-xs) 0.0625rem 0; }
   .shpd-form-subtable__span--amount  { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .shpd-form-subtable__span--muted   { opacity: 0.7; font-style: italic; }
+  .shpd-form-subtable__span--muted   { color: var(--shpd-color-text-secondary); font-style: italic; }
   .shpd-form-subtable__span--bold    { font-weight: 600; }
-  .shpd-form-subtable__span--primary { color: var(--shpd-color-primary); }
-  .shpd-form-subtable__span--success { color: var(--shpd-color-success-text); }
+  .shpd-form-subtable__span--primary { color: var(--shpd-color-primary-text); }
+  /* Klidný tón (D99): tečka před textem, text barvou řádku. */
+  .shpd-form-subtable__span--success::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: var(--shpd-space-xs);
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--shpd-color-success-mark);
+  }
   .shpd-form-subtable__span--warning { color: var(--shpd-color-warning-text); }
   .shpd-form-subtable__span--danger  { color: var(--shpd-color-danger-text); }
 

@@ -45,7 +45,7 @@ class AssetTypeGroupsViewer extends AssetsViewerBase
         if ($count > 0) {
             $t2[] = ['text' => $this->text('text.typesCount', 'Types: {count}', ['count' => $count]), 'class' => 'muted'];
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }

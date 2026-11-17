@@ -13,16 +13,6 @@ class MailboxesViewer extends TableViewer
 
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT `id`, `mailbox_id`, `name`, `email_address`, `default_primary_type`,'

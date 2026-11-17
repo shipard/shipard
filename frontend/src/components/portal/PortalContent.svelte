@@ -12,6 +12,7 @@
   import Button from '../ui/Button.svelte';
   import PageHeader from '../ui/PageHeader.svelte';
   import Notice from '../ui/Notice.svelte';
+  import Badge from '../ui/Badge.svelte';
   import NewDatasourceModal from './NewDatasourceModal.svelte';
   import { iconAdd, iconDatabase, iconOpenExternal, iconSpinner, iconSuccess, iconWarning, resolveIcon } from '../../icons.js';
 
@@ -216,7 +217,7 @@
               <div class="portal__card-stats">
                 <span class="portal__failed">
                   <Icon icon={iconWarning} size="sm" />
-                  {t('portal.state.failed')}
+                  <Badge style="danger" label={t('portal.state.failed')} />
                 </span>
                 <span class="portal__failed-hint">{t('portal.state.failedHint')}</span>
               </div>
@@ -383,15 +384,13 @@
     to { transform: rotate(360deg); }
   }
 
+  /* Ikona varování na pozadí karty (barva `danger-text`) a vedle ní štítek
+     — text na tónovaném podkladu jen přes sdílený Badge (#153 D90). */
   .portal__failed {
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 0.0625rem var(--shpd-space-sm);
-    font-weight: 500;
     color: var(--shpd-color-danger-text);
-    background-color: var(--shpd-color-danger-soft);
-    border-radius: var(--shpd-radius-full);
   }
 
   .portal__failed-hint {

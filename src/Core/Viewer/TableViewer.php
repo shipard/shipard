@@ -167,6 +167,57 @@ abstract class TableViewer
     }
 
     /**
+     * `stateStyle` stavu → třída spanu v řádku seznamu (#153 D98). Jediná
+     * mapa — viewery vlastní kopii nemají (`TableViewerRowStateTagTest`).
+     */
+    private const STATE_SPAN_CLASS = [
+        'concept'   => 'warning',
+        'edit'      => 'warning',
+        'confirmed' => 'primary',
+        'done'      => 'success',
+        'cancelled' => 'danger',
+        'archive'   => 'muted',
+        'trash'     => 'muted',
+    ];
+
+    /**
+     * Třída spanu pro `stateStyle`; neznámý styl = `muted`. Viewer smí
+     * přepsat pro jeden styl, který u něj znamená něco jiného (Úkoly:
+     * `edit` = Pozastaveno → `muted`).
+     */
+    protected function rowStateClass(string $stateStyle): string
+    {
+        return self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted';
+    }
+
+    /**
+     * Span se jménem stavu pro řádek seznamu (#153 D98) — jen tam, kde
+     * stav nese informaci: Koncept (`stateStyle` `concept`, nese ho proužek)
+     * ani stav s `detailBadge: false` („V pořádku“) se nevypisují, stejně
+     * jako štítek v hlavičce detailu (D20). Bez sady stavů, pro neznámý stav
+     * a stav bez názvu null.
+     *
+     * @return array{text: string, class: string}|null
+     */
+    protected function rowStateTag(int $docState): ?array
+    {
+        if ($this->config === null || $this->docStatesCfgItem === null) {
+            return null;
+        }
+        $cfg   = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
+        $state = $cfg->getState($docState);
+        if ($state === null) {
+            return null;
+        }
+        $style = (string) ($state['stateStyle'] ?? 'concept');
+        $name  = (string) ($state['stateName'] ?? '');
+        if ($name === '' || $style === 'concept' || !$cfg->showsDetailBadge($docState)) {
+            return null;
+        }
+        return ['text' => $name, 'class' => $this->rowStateClass($style)];
+    }
+
+    /**
      * Returns available viewGroup identifiers for this viewer's tab bar.
      * Derived automatically from $docStatesCfgItem if set.
      * Returns empty array when docStates are not supported.

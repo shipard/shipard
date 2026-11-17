@@ -3,6 +3,7 @@
   // řádek (kromě aktuální) + „Odhlásit ostatní zařízení". Tokeny server
   // nikdy neposílá — aktuální relaci značí flag `current`.
   import { listSessions, deleteSession, revokeOtherSessions } from '../../api/security.js';
+  import Badge from '../ui/Badge.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
   import { t } from '../../i18n/index.js';
@@ -87,7 +88,7 @@
               <td>
                 {formatDateTime(session.created)}
                 {#if session.current}
-                  <span class="shpd-sessions-panel__badge">{t('account.security.current')}</span>
+                  <span class="shpd-sessions-panel__current"><Badge style="success" label={t('account.security.current')} /></span>
                 {/if}
               </td>
               <td>{session.ip_address ?? '—'}</td>
@@ -164,15 +165,9 @@
     white-space: nowrap;
   }
 
-  .shpd-sessions-panel__badge {
+  /* Štítek aktuální relace kreslí `Badge` (#153 D90); obal drží jen odstup. */
+  .shpd-sessions-panel__current {
     margin-left: var(--shpd-space-xs);
-    padding: 0.125rem var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-xs);
-    font-weight: 500;
-    color: var(--shpd-color-success-text);
-    background-color: var(--shpd-color-success-soft);
-    border: 1px solid var(--shpd-color-success-text);
-    border-radius: var(--shpd-radius-full);
   }
 
   .shpd-sessions-panel__actions {

@@ -211,7 +211,7 @@
     padding: 0;
     font: inherit;
     text-align: left;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     cursor: pointer;
   }
 

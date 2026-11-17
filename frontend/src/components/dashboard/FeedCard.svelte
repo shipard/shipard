@@ -15,6 +15,7 @@
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
   import Card from '../ui/Card.svelte';
+  import Badge from '../ui/Badge.svelte';
   import FeedCardAttachment from './FeedCardAttachment.svelte';
   import { t } from '../../i18n/index.js';
 
@@ -85,9 +86,19 @@
         <div class="shpd-feed-card__heading">
           <div class="shpd-feed-card__title">{card.headline ? card.headline.partnerName : card.title}</div>
           {#if card.dueText}
-            <!-- Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4):
-                 text i stav (overdue / soon / later) posílá server. -->
-            <span class="shpd-feed-card__due shpd-feed-card__due--{card.dueState ?? 'later'}" data-testid="card-due">{card.dueText}</span>
+            <!-- Lhůta karty K vyřízení (tasks/mail-other-attention.md D4):
+                 text i stav (overdue / soon / later) posílá server. Po
+                 termínu nebo do 3 dnů štítek danger — text na tónovaném
+                 podkladu jen přes sdílený Badge (#153 D90). Lhůta v klidu
+                 (later i neznámý stav) je šedý text bez pilulky: klidný stav
+                 nevyčnívá a šedá pilulka s kartou splývala (D97). -->
+            <div class="shpd-feed-card__due">
+              {#if card.dueState === 'overdue' || card.dueState === 'soon'}
+                <Badge style="danger" label={card.dueText} data-testid="card-due" />
+              {:else}
+                <span class="shpd-feed-card__due-text" data-testid="card-due">{card.dueText}</span>
+              {/if}
+            </div>
           {/if}
           {#if subLine}
             <div class="shpd-feed-card__subtitle">{subLine}</div>
@@ -260,23 +271,16 @@
     color: var(--shpd-color-text);
   }
 
-  /* Badge lhůty (K vyřízení): neutrální, po lhůtě nebo do 3 dnů danger. */
+  /* Obal lhůty (K vyřízení) — jen odstup pod titulkem; po lhůtě nebo
+     do 3 dnů nese vzhled Badge danger, v klidu prostý text (D97). */
   .shpd-feed-card__due {
-    display: inline-block;
     margin-top: 0.125rem;
-    padding: 0 var(--shpd-space-xs);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: var(--shpd-font-weight-strong);
-    line-height: 1.6;
-    color: var(--shpd-color-text-secondary);
-    background: color-mix(in srgb, var(--shpd-color-text-secondary) 14%, transparent);
   }
 
-  .shpd-feed-card__due--overdue,
-  .shpd-feed-card__due--soon {
-    color: var(--shpd-color-danger-text);
-    background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
+  /* Klidná lhůta — text v roli meta, bez podkladu (D97). */
+  .shpd-feed-card__due-text {
+    font-size: var(--shpd-font-size-meta);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-feed-card__subtitle {
@@ -410,7 +414,7 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font-family: var(--shpd-font-family);
     font-size: var(--shpd-font-size-sm);
     cursor: pointer;

@@ -57,5 +57,5 @@ v tabulce existuje). Modifikace existujícího úkolu autora nemění.
   (`name`, `order`, `spanClass`); klient ji uvidí automaticky po
   `vendor/bin/shpd-ds ds-upgrade`.
 - **Další stav** — přidat klíč do `config/docStatesTasks.jsonc` včetně
-  `goto[]` přechodů od/do něj a doplnit `STATE_SPAN_CLASS` v
+  `goto[]` přechodů od/do něj a případně přepsat `rowStateClass()` v
   `TasksViewer` pro styl t2 badge.

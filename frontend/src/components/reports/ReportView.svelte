@@ -328,13 +328,12 @@
     border: none;
     background: transparent;
     font: inherit;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     cursor: pointer;
     text-align: inherit;
   }
 
   .shpd-report__link:hover {
-    color: var(--shpd-color-primary-hover);
     text-decoration: underline;
   }
 

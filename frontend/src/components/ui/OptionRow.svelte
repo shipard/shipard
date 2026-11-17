@@ -16,7 +16,8 @@
   //             kontejner ptá jménem (štítky registru vedle sebe);
   //   `compact` jednořádková volba aplikovaná kliknutím (popover) —
   //             odsazení xs × sm, zaoblení sm, bez ukazatele.
-  // Vybraný: rámeček `primary` + pozadí `primary-soft`; pod kurzorem
+  // Vybraný: rámeček `primary-text` + pozadí `primary-soft` (#153 D103 —
+  // `primary` jako čára měl v tmavém vzhledu 2,49 : 1); pod kurzorem
   // `bg-hover`; zakázaný průhlednost 0,6.
   //
   // `indicator` `radio` | `checkbox` | `none` (výchozí `radio` u `large`,
@@ -182,7 +183,7 @@
 
   .shpd-option-row--selected,
   .shpd-option-row--selected:hover {
-    border-color: var(--shpd-color-primary);
+    border-color: var(--shpd-color-primary-text);
     background: var(--shpd-color-primary-soft);
   }
 
@@ -195,7 +196,7 @@
 
   .shpd-option-row--button:focus-visible,
   .shpd-option-row:has(.shpd-option-row__native:focus-visible) {
-    outline: 2px solid var(--shpd-color-primary);
+    outline: 2px solid var(--shpd-color-border-focus);
     outline-offset: 2px;
   }
 

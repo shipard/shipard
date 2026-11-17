@@ -15,8 +15,8 @@
 </script>
 
 <!-- Render spanů jednoho pole (t1/i1/t2/i2/t3). Span s `badge` se kreslí
-     jako pilulka (SpanBadge, má přednost před `class`); sep=true vkládá
-     mezi spany oddělovač ` · ` (jen t2). -->
+     jako pilulka (SpanBadge, má přednost před `class`; klidný tón `success`
+     jako tečka + text); sep=true vkládá mezi spany oddělovač ` · ` (jen t2). -->
 {#snippet spanList(value, sep = false)}
   {#each normalizeSpans(value) ?? [] as span, i}
     {#if sep && i > 0}<span class="shpd-viewer-row__sep"> · </span>{/if}
@@ -137,8 +137,47 @@
     background-color: var(--shpd-color-bg-selected-hover);
   }
 
-  /* Doc-state proužky řeší globální .docState_* třídy v styles/base.css
-   */
+  /* Na vybraném řádku mají tónové a šedé texty barvu běžného textu
+     (#153 D91): na `bg-selected` a hlavně `bg-selected-hover` tón ani
+     `text-secondary` 4,5 : 1 nedrží (3,5–4,3). Stav dál nese proužek.
+     Ikona řádku zůstává tlumená (stačí jí 3 : 1), `SpanBadge` a avatar mají
+     vlastní podklad a pravidlo se jich netýká. Klidný tón (`success`) má
+     barvu řádku vždy — nese ho tečka (D99). */
+  .shpd-viewer-row--selected .shpd-viewer-row__index,
+  .shpd-viewer-row--selected .shpd-viewer-row__i1,
+  .shpd-viewer-row--selected .shpd-viewer-row__line--secondary,
+  .shpd-viewer-row--selected .shpd-viewer-row__line--tertiary,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--muted,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--primary,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--warning,
+  .shpd-viewer-row--selected .shpd-viewer-row__span--danger {
+    color: var(--shpd-color-text);
+  }
+
+  /* Tečka klidného tónu na vybraném řádku (D99, D88, D96): `success-mark`
+     má vůči `bg-selected` ve světlém vzhledu jen 2,1–2,5 : 1, proto plocha
+     tónu s obrysem `1px` — vůči obrysu 5,02 : 1 v obou vzhledech. Platí
+     pro span i pro `SpanBadge` (kořen cizí komponenty → `:global`). */
+  .shpd-viewer-row--selected .shpd-viewer-row__span--success::before,
+  .shpd-viewer-row--selected :global(.shpd-span-badge--success::before) {
+    background: var(--shpd-color-success);
+    box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
+  }
+
+  /* Doc-state proužky řeší globální .docState_* třídy v styles/base.css.
+   * Tlumení archivu a koše (#153 D101) musí být tady: řádek si barvu
+   * nastavuje sám a scoped pravidlo globální třídu přebíjí. Tlumí se t1
+   * (ostatní řádky jsou `text-secondary` už samy); na vybraném řádku platí
+   * D91 — běžný text. */
+  .shpd-viewer-row.docState_archive,
+  .shpd-viewer-row.docState_trash {
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-viewer-row--selected.docState_archive,
+  .shpd-viewer-row--selected.docState_trash {
+    color: var(--shpd-color-text);
+  }
 
   /* Levý sloupec — drží jen ikonu typu záznamu, vertikálně
    * vystředěnou v celé výšce řádku.
@@ -188,7 +227,7 @@
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.02em;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     background-color: var(--shpd-color-primary-soft);
     text-transform: uppercase;
   }
@@ -227,10 +266,11 @@
     color: var(--shpd-color-text-secondary);
   }
 
+  /* Bez průhlednosti (D100): `text-secondary` s průhledností 0,8 měl
+     3,5–4,3 : 1. */
   .shpd-viewer-row__line--tertiary {
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
-    opacity: 0.8;
   }
 
   .shpd-viewer-row__t2,
@@ -246,10 +286,22 @@
 
   /* Styled span variants */
   .shpd-viewer-row__span--amount   { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .shpd-viewer-row__span--muted    { opacity: 0.6; }
+  /* Tlumený text barvou, ne průhledností (D100) — 60 % dávalo 2,4–3,1 : 1. */
+  .shpd-viewer-row__span--muted    { color: var(--shpd-color-text-secondary); }
   .shpd-viewer-row__span--bold     { font-weight: 600; }
-  .shpd-viewer-row__span--primary  { color: var(--shpd-color-primary); }
-  .shpd-viewer-row__span--success  { color: var(--shpd-color-success-text); }
+  .shpd-viewer-row__span--primary  { color: var(--shpd-color-primary-text); }
+  /* Klidný tón (D99): tečka `success-mark` před textem, text barvou řádku —
+     klidný stav nevyčnívá. Velikost jako tečky nadpisů feedu. */
+  .shpd-viewer-row__span--success::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: var(--shpd-space-xs);
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--shpd-color-success-mark);
+  }
   .shpd-viewer-row__span--warning  { color: var(--shpd-color-warning-text); }
   .shpd-viewer-row__span--danger   { color: var(--shpd-color-danger-text); }
 </style>

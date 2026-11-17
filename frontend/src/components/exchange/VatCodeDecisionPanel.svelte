@@ -109,7 +109,7 @@
   /* „Aktuální volba“ je sdílený Panel (compact, tón info — #149 D75);
      třída nese jen rozložení a barvu textu. */
   .shpd-vatcode :global(.shpd-vatcode__current) {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     display: flex;
     justify-content: space-between;
     align-items: center;

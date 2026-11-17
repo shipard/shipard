@@ -44,7 +44,7 @@ class KindsViewer extends WorkOrdersViewerBase
         if ($type !== '') {
             $t2[] = ['text' => $this->types()->label($type), 'class' => 'primary'];
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }

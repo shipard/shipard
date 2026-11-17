@@ -394,7 +394,7 @@
   }
 
   .shpd-content-tags__suggestion {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
   }
 
   .shpd-content-tags__suggestion--muted {
@@ -410,7 +410,7 @@
     background: transparent;
     border: 0;
     padding: 0;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font-family: inherit;
     font-size: var(--shpd-font-size-sm);
     text-decoration: underline;

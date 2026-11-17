@@ -475,7 +475,7 @@
     font: inherit;
     font-weight: var(--shpd-font-weight-strong);
     font-variant-numeric: tabular-nums;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     cursor: pointer;
   }
 
@@ -542,7 +542,7 @@
   }
 
   .shpd-exchange-modal__mobile-tab--active {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     border-bottom-color: var(--shpd-color-primary);
     font-weight: var(--shpd-font-weight-strong);
   }

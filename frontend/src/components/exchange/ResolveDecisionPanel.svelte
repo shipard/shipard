@@ -436,7 +436,7 @@
   /* „Aktuální volba“ je sdílený Panel (compact, tón info — #149 D75);
      třída nese jen rozložení a barvu textu. */
   .shpd-resolve :global(.shpd-resolve__current) {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -578,7 +578,7 @@
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border: 1px solid var(--shpd-color-border);
     background-color: var(--shpd-color-bg);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font-family: inherit;
     font-size: var(--shpd-font-size-body);
     border-radius: var(--shpd-radius-sm);

@@ -94,9 +94,12 @@ class WorkOrderSettingsViewersTest extends TestCase
 
         $row = $viewer->renderRow(['id' => 3, 'name' => 'Servis', 'type' => 'project', 'notice' => 'pozn.', 'docState' => 40]);
         $this->assertSame('Servis', $row['t1']);
+        // V pořádku se v řádku nevypisuje (#153 D98), ostatní stavy ano.
+        $this->assertSame([['text' => 'Externí jednorázová', 'class' => 'primary']], $row['t2']);
+        $archived = $viewer->renderRow(['id' => 3, 'name' => 'Servis', 'type' => 'project', 'notice' => 'pozn.', 'docState' => 70]);
         $this->assertSame(
-            [['text' => 'Externí jednorázová', 'class' => 'primary'], ['text' => 'V pořádku', 'class' => 'success']],
-            $row['t2'],
+            [['text' => 'Externí jednorázová', 'class' => 'primary'], ['text' => 'V archívu', 'class' => 'muted']],
+            $archived['t2'],
         );
         $this->assertSame('pozn.', $row['t3']);
         $this->assertSame('done', $row['stateStyle']);

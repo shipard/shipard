@@ -187,7 +187,7 @@ Každý stav má `stateStyle` identifikátor. Systém přidává CSS třídu ve 
 | `done` | světle zelená | V pořádku — platný, readOnly |
 | `edit` | oranžová | V opravě — dočasně odemčen k editaci |
 | `archive` | šedá | V archívu — platný, neaktivní |
-| `trash` | černá/přeškrtnuté | Smazáno — neplatný, v koši |
+| `trash` | šedá, tlumený text (bez přeškrtnutí, #153 D101) | Smazáno — neplatný, v koši |
 | `cancelled` | červená | Storno — zrušený doklad (zachovává číslo dokladu) |
 
 CSS třídy jsou definovány v `ViewerRow.svelte` jako `:global` pravidla (aby se aplikovaly přes Svelte scoping). Výběr přebíjí barvu docState (always wins).

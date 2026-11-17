@@ -41,35 +41,44 @@ h4 {
 }
 
 a {
-  color: var(--shpd-color-primary);
+  color: var(--shpd-color-primary-text);
 }
 
+/* Hover barvu nemění — `primary-hover` je plocha, jako text má v tmavém
+   vzhledu kolem 3 : 1 (#153 D92). */
 a:hover {
-  color: var(--shpd-color-primary-hover);
+  text-decoration: underline;
 }
 
 /* ============================================================
  * Doc-state utility classes (globální)
  *
  * Nastavují CSS proměnnou `--shpd-row-bar` (barva levého stavového
- * proužku v řádku). Konzumují je `ViewerRow` (6px proužek)
- * a `WidgetRow` v dashboardu (4px proužek).
+ * proužku v řádku). Konzumují je `ViewerRow` a `ViewerGrid` (6px proužek)
+ * a `FeedCard` (4px proužek karty); `FormSubTable` z nich bere jen barvu
+ * textu archivu a koše.
  *
  * Konvence stavů viz docs/design-system.md:
  *   confirmed → bez proužku ("OK = klid")
  *   concept   → žlutý     (rozpracováno)
  *   edit      → fialový   (právě se edituje)
  *   error     → červený   (permanentní chyba)
- *   archive   → šedý      (tichý archiv)
- *   trash     → tmavší šedá + line-through
+ *   archive   → šedý      (tichý archiv), text `text-secondary`
+ *   trash     → výrazná šedá, text `text-secondary` — bez přeškrtnutí,
+ *               smazaný záznam má jít přečíst (#153 D101); proužek je
+ *               v obou vzhledech výraznější než archiv (D104)
  *   cancelled → červený   (pozor!)
  *
  * docState_done schválně bez proužku — „V pořádku" je default cílový
  * stav, neřeší pozornost.
+ *
+ * Barva textu archivu a koše se z těchto tříd jen dědí. Komponenta, která
+ * si barvu řádku nebo buňky nastavuje sama (`ViewerRow`, `ViewerGrid`), ji
+ * pro oba stavy přepisuje vlastním pravidlem — jinak ji scoped styl přebije.
  * ============================================================ */
 .docState_concept   { --shpd-row-bar: var(--shpd-color-state-concept-bar); }
 .docState_edit      { --shpd-row-bar: var(--shpd-color-state-edit-bar); }
 .docState_error     { --shpd-row-bar: var(--shpd-color-state-cancelled-bar); }
-.docState_archive   { --shpd-row-bar: var(--shpd-color-state-archive-bar); color: var(--shpd-color-state-archive-row); }
-.docState_trash     { --shpd-row-bar: var(--shpd-color-state-trash-bar); color: var(--shpd-color-state-trash-bar); text-decoration: line-through; }
+.docState_archive   { --shpd-row-bar: var(--shpd-color-state-archive-bar); color: var(--shpd-color-text-secondary); }
+.docState_trash     { --shpd-row-bar: var(--shpd-color-state-trash-bar); color: var(--shpd-color-text-secondary); }
 .docState_cancelled { --shpd-row-bar: var(--shpd-color-state-cancelled-bar); }

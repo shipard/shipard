@@ -35,16 +35,6 @@ class DocsHeadsViewer extends TableViewer
     private ?PersonSnapshotBuilder $personSnapshotBuilder = null;
     private ?OwnCompanyResolver $ownCompanyResolver = null;
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'edit'      => 'warning',
-        'done'      => 'success',
-        'cancelled' => 'danger',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-    ];
-
     /**
      * When set, this viewer is scoped to a single doc_type (e.g. 'invni' for
      * received invoices). Drives the implicit doc_type filter in selectRows(),
@@ -254,7 +244,7 @@ class DocsHeadsViewer extends TableViewer
                 'class' => 'muted',
             ];
         }
-        $stateTag = $this->stateTag($docState);
+        $stateTag = $this->rowStateTag($docState);
         if ($stateTag !== null) {
             $t2[] = $stateTag;
         }
@@ -275,29 +265,6 @@ class DocsHeadsViewer extends TableViewer
         }
 
         return $row;
-    }
-
-    /**
-     * Span se jménem stavu pro řádek vieweru — jen mimo běžné stavy Koncept
-     * (10) a V pořádku (40), které nese barva řádku. Sdílené per-typ
-     * viewery, které si t2 skládají samy.
-     *
-     * @return array{text: string, class: string}|null
-     */
-    protected function stateTag(int $docState): ?array
-    {
-        if ($docState === 10 || $docState === 40) {
-            return null;
-        }
-        $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem ?? ''));
-        $stateName = (string) ($cfg->getState($docState)['stateName'] ?? '');
-        if ($stateName === '') {
-            return null;
-        }
-        return [
-            'text'  => $stateName,
-            'class' => self::STATE_SPAN_CLASS[$this->resolveStateStyle($docState)] ?? 'muted',
-        ];
     }
 
     /**

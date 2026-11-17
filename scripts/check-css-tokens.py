@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Kontrola CSS tokenů ve frontendu (#129 D14, #133 D10, D61, D71).
+"""Kontrola CSS tokenů ve frontendu (#129 D14, #133 D10, D61, D71, #153 D90).
 
-Tři kontroly nad celým stromem `frontend/src`.
+Čtyři kontroly nad celým stromem `frontend/src`.
 
 **1. Nedefinované tokeny**
 
@@ -71,13 +71,29 @@ Vědomá mez: hex v JS datech mimo CSS — výchozí barvy v `<script>`
 barvu od jiného řetězce s mřížkou tam spolehlivě nejde a barvy v datech
 (vlastní vzhled) jsou legitimní.
 
+**4. Tónový `color-mix` jen s výjimkou (#153 D90)**
+
+`color-mix(…)` s tónovým tokenem (`--shpd-color-danger…`, `-warning…`,
+`-success…`, `-info…`) vyrábí tónovaný podklad na místě. Text na něm
+kontrast nedrží — `danger-text` na `color-mix(danger 14 %)` má ve světlém
+vzhledu 3,9 : 1 — a žádný skript ho nespočítá, protože barva vzniká až
+v prohlížeči. Text na tónovaném podkladu proto kreslí jen sdílený `Badge`
+(dvojice tokenů `state-…-bg` / `-text`, hlídá `check-contrast.py`).
+
+Hledá se tam, kde hex barvy: hodnoty deklarací v `.css` a blocích
+`<style>`, atribut `style` a direktiva `style:` v markupu, mimo komentáře.
+Tónovaná plocha **bez textu** smí zůstat jen jako výjimka po souborech
+v konstantě `TONE_MIX_EXEMPT` s důvodem. `primary` s nízkým podílem jako
+podklad cíle přetažení souboru (`AttachmentPanel`, `Dashboard`,
+`MailUploadModal`) tón není a kontrola ho nehlídá.
+
 Použití:
     python3 scripts/check-css-tokens.py
 
 Volá se z `pre-commit` hooku. Exit 1 = nedefinovaný token (výpis
-token → soubory na stderr), token hlášky mimo povolené soubory nebo hex
-barva mimo definice (obojí výpis soubor:řádek hodnota na stderr); běh
-vypíše všechny druhy nálezů najednou.
+token → soubory na stderr), token hlášky mimo povolené soubory, hex
+barva mimo definice nebo tónový `color-mix` (vše výpis soubor:řádek
+hodnota na stderr); běh vypíše všechny druhy nálezů najednou.
 """
 
 from __future__ import annotations
@@ -168,6 +184,20 @@ HEX_ADVICE = (
     " `var()` nepiš (docs/design-system.md §6)"
 )
 
+# --- Tónový color-mix (#153 D90) --------------------------------------------
+
+COLOR_MIX_RE = re.compile(r"color-mix\(")
+TONE_TOKEN_RE = re.compile(r"--shpd-color-(?:danger|warning|success|info)(?![A-Za-z0-9_])[A-Za-z0-9_-]*")
+
+# Výjimky po souborech, každá s důvodem — jen tónovaná plocha bez textu.
+TONE_MIX_EXEMPT: dict[str, str] = {}
+
+TONE_MIX_ADVICE = (
+    "text na tónovaném podkladu kreslí jen sdílený `Badge`"
+    " (docs/design-system.md §5); tónovaná plocha bez textu = výjimka"
+    " s důvodem v `TONE_MIX_EXEMPT`"
+)
+
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
 URL_RE = re.compile(r"url\([^)]*\)")
@@ -226,8 +256,12 @@ def attr_value_end(text: str, pos: int) -> int:
     return pos
 
 
-def hex_colors(path: Path, text: str) -> list[tuple[int, str]]:
-    """Hex barvy v CSS souboru nebo komponentě: seznam (řádek, hodnota)."""
+def style_spans(path: Path, text: str) -> list[tuple[int, str]]:
+    """Hodnoty stylů v CSS souboru nebo komponentě: seznam (posun, text).
+
+    Hodnoty deklarací v `.css` a blocích `<style>`, atribut `style`
+    a direktiva `style:` v markupu — bez komentářů a `url(…)`.
+    """
     spans: list[tuple[int, str]] = []  # (posun v souboru, prohledávaný text)
 
     def add_css(offset: int, css: str) -> None:
@@ -244,12 +278,36 @@ def hex_colors(path: Path, text: str) -> list[tuple[int, str]]:
             end = attr_value_end(markup, m.end())
             value = blank(blank(blank(markup[m.end():end], CSS_COMMENT_RE), LINE_COMMENT_RE), URL_RE)
             spans.append((m.end(), value))
+    return spans
 
+
+def hex_colors(text: str, spans: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    """Hex barvy v hodnotách stylů: seznam (řádek, hodnota)."""
     found = [
         (text.count("\n", 0, offset + m.start()) + 1, m.group(0))
         for offset, value in spans
         for m in HEX_RE.finditer(value)
     ]
+    return sorted(found)
+
+
+def tone_mixes(text: str, spans: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    """`color-mix(…)` s tónovým tokenem: seznam (řádek, token)."""
+    found = []
+    for offset, value in spans:
+        for m in COLOR_MIX_RE.finditer(value):
+            depth, end = 0, len(value)
+            for i in range(m.end() - 1, len(value)):
+                if value[i] == "(":
+                    depth += 1
+                elif value[i] == ")":
+                    depth -= 1
+                    if depth == 0:
+                        end = i
+                        break
+            tone = TONE_TOKEN_RE.search(value, m.end(), end)
+            if tone:
+                found.append((text.count("\n", 0, offset + m.start()) + 1, tone.group(0)))
     return sorted(found)
 
 
@@ -272,6 +330,7 @@ def main() -> int:
     with_fallback: set[str] = set()
     alert_misuse: list[tuple[str, int, str]] = []
     hex_misuse: list[tuple[str, int, str]] = []
+    tone_mix_misuse: list[tuple[str, int, str]] = []
 
     for path in sorted(FRONTEND_SRC.rglob("*")):
         if not scannable(path):
@@ -289,12 +348,12 @@ def main() -> int:
                 alert_misuse.extend(
                     (rel, lineno, m.group(1)) for m in ALERT_USAGE_RE.finditer(line)
                 )
-        if (
-            path.suffix in HEX_SUFFIXES
-            and rel not in HEX_DEFINITION_FILES
-            and rel not in HEX_EXEMPT
-        ):
-            hex_misuse.extend((rel, lineno, value) for lineno, value in hex_colors(path, text))
+        if path.suffix in HEX_SUFFIXES:
+            spans = style_spans(path, text)
+            if rel not in HEX_DEFINITION_FILES and rel not in HEX_EXEMPT:
+                hex_misuse.extend((rel, lineno, value) for lineno, value in hex_colors(text, spans))
+            if rel not in TONE_MIX_EXEMPT:
+                tone_mix_misuse.extend((rel, lineno, token) for lineno, token in tone_mixes(text, spans))
 
     failed = False
 
@@ -329,6 +388,15 @@ def main() -> int:
         for rel, lineno, value in hex_misuse:
             print(f"  {rel}:{lineno}  {value}", file=sys.stderr)
         print(f"\nRada: {HEX_ADVICE}.", file=sys.stderr)
+        failed = True
+
+    if tone_mix_misuse:
+        if failed:
+            print(file=sys.stderr)
+        print("Tónový color-mix v komponentě:\n", file=sys.stderr)
+        for rel, lineno, token in tone_mix_misuse:
+            print(f"  {rel}:{lineno}  color-mix(… {token} …)", file=sys.stderr)
+        print(f"\nRada: {TONE_MIX_ADVICE}.", file=sys.stderr)
         failed = True
 
     if failed:

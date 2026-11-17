@@ -382,7 +382,7 @@
   }
 
   .shpd-browser__th--sorted {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
   }
 
   .shpd-browser__th--numeric {
@@ -396,7 +396,7 @@
   .shpd-browser__sort-icon {
     font-size: 0.65rem;
     vertical-align: middle;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
   }
 
   /* Data rows */

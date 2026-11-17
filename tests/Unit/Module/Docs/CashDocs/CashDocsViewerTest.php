@@ -23,7 +23,7 @@ class CashDocsViewerTest extends TestCase
             static fn (string $id): mixed => match ($id) {
                 'docs.core.docStates' => [
                     '10' => ['stateName' => 'Koncept', 'stateStyle' => 'concept', 'mainState' => 1],
-                    '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3],
+                    '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'detailBadge' => false],
                     '90' => ['stateName' => 'Smazaný', 'stateStyle' => 'trash', 'mainState' => 9],
                 ],
                 'docs.core.docTypes'       => ['cash' => ['name' => 'Pokladní doklad', 'trade_dir' => 0]],

@@ -325,7 +325,7 @@
 
   .shpd-attachments--dragover {
     background: color-mix(in srgb, var(--shpd-color-primary) 6%, transparent);
-    outline: 2px dashed var(--shpd-color-primary);
+    outline: 2px dashed var(--shpd-color-primary-text);
     outline-offset: -4px;
     border-radius: var(--shpd-radius-md);
   }
@@ -491,7 +491,7 @@
 
   .shpd-attachments__send--on {
     background: var(--shpd-color-primary-soft);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font-weight: 500;
   }
 

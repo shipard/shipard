@@ -203,11 +203,15 @@
     background-color: var(--shpd-color-accent);
   }
 
-  /* Badge — stejná řeč jako NavTree (tečka severity + počet). */
+  /* Badge — stejná řeč jako NavTree (tečka severity + počet); tečka má
+     obrys v `text-on-fill`, drží i na aktivní položce (#153 D88), šířky
+     `1px` (D96). Odznak má od názvu sekce i od ikony Domů odstup navíc —
+     s mezerou tlačítka dohromady `--shpd-space-sm`. */
   .shpd-topmenu__badge {
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
+    margin-left: var(--shpd-space-xs);
     font-size: 0.7rem;
     font-weight: 600;
   }
@@ -217,6 +221,7 @@
     height: 0.4375rem;
     border-radius: 50%;
     background-color: var(--shpd-color-warning);
+    box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
   }
 
   .shpd-topmenu__badge--danger .shpd-topmenu__badge-dot {

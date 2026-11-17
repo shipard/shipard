@@ -3,8 +3,9 @@
   // rozvržení, jazyk, plátce DPH v průvodci, formát čísel reportu, způsob
   // nahrání pošty. Oddělená tlačítka s mezerou xs (zalamují se),
   // `radiogroup` / `radio`. Vybraná volba jako volitelný řádek (D76):
-  // rámeček `primary` + pozadí `primary-soft`, tloušťka normal — barvou
-  // výběru je v celé aplikaci `primary`, `accent` zůstává barvou značky.
+  // rámeček `primary-text` + pozadí `primary-soft` (#153 D103), tloušťka
+  // normal — barvou výběru je v celé aplikaci `primary`, `accent` zůstává
+  // barvou značky.
   // Stav nese barva a `aria-checked`, fajfka u vybrané volby není.
   //
   // `options` `[{value, label, icon?, disabled?}]` — `value` libovolného
@@ -152,12 +153,12 @@
 
   .shpd-segmented__option--selected,
   .shpd-segmented__option--selected:hover:not(:disabled) {
-    border-color: var(--shpd-color-primary);
+    border-color: var(--shpd-color-primary-text);
     background: var(--shpd-color-primary-soft);
   }
 
   .shpd-segmented__option:focus-visible {
-    outline: 2px solid var(--shpd-color-primary);
+    outline: 2px solid var(--shpd-color-border-focus);
     outline-offset: 2px;
   }
 

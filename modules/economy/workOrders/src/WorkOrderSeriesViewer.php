@@ -62,7 +62,7 @@ class WorkOrderSeriesViewer extends WorkOrdersViewerBase
         if ($validity !== null) {
             $t2[] = ['text' => $validity, 'class' => 'muted'];
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }

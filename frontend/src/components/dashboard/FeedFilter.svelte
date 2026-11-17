@@ -37,6 +37,10 @@
     gap: var(--shpd-space-sm);
     overflow-x: auto;
     white-space: nowrap;
+    /* Rezerva pro tečku s obrysem, která přesahuje roh chipu: posuvný
+       kontejner ořezává i svisle. Záporný okraj vrací rozvržení zpět. */
+    padding: 0.25rem 0.25rem 0 0;
+    margin-top: -0.25rem;
   }
 
   .shpd-feed-filter__chip {
@@ -78,6 +82,12 @@
     width: 0.375rem;
     height: 0.375rem;
     border-radius: 50%;
-    background: var(--shpd-color-danger-mark);
+    /* Tečka s obrysem (#153 D88): obrys ji odděluje od aktivního chipu
+       v barvě primary, na neaktivním světlém chipu splyne. Plocha `danger`,
+       ne `danger-mark` — značka je v tmavém vzhledu světlejší a vůči bílému
+       obrysu by měla jen 2,8 : 1; plocha drží 4,8 : 1 v obou vzhledech.
+       Obrys je čára `1px` (D96). */
+    background: var(--shpd-color-danger);
+    box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
   }
 </style>

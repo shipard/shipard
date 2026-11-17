@@ -36,17 +36,6 @@ class IncomingMessagesViewer extends TableViewer
 
     protected ?string $docStatesCfgItem = 'core.mail.docStatesIncoming';
 
-    /** Mapování docState → span class (tamtéž jako v PersonsViewer). */
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     /** Vzory generických předmětů z cfgItem — memoizované per instance. */
     private ?array $genericPatterns = null;
 
@@ -157,7 +146,7 @@ class IncomingMessagesViewer extends TableViewer
         if ($analysisBadge !== null) {
             $i2[] = [
                 'text'  => $analysisBadge['label'],
-                'class' => self::STATE_SPAN_CLASS[$analysisBadge['style']] ?? 'muted',
+                'class' => $this->rowStateClass($analysisBadge['style']),
             ];
         }
         if (!empty($rowData['is_bulk'])) {

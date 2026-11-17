@@ -201,7 +201,7 @@ class LedgerViewerTest extends TestCase
         $this->assertSame(7, $row['id']);
         $this->assertSame('primary', $row['stateStyle']);
         $this->assertSame(['key' => 'p42', 'label' => 'AKIMA, spol. s r.o.'], $row['group']);
-        $this->assertSame(['text' => 'Předpis', 'badge' => 'primary'], $row['cells']['role']);
+        $this->assertSame(['text' => 'Předpis'], $row['cells']['role']);
         $this->assertSame(
             [['text' => '12 100,00', 'class' => 'amount'], ['text' => 'CZK', 'class' => 'muted']],
             $row['cells']['amount'],
@@ -227,7 +227,7 @@ class LedgerViewerTest extends TestCase
 
         $this->assertSame(['key' => 'p0', 'label' => '(Bez partnera)'], $row['group']);
         $this->assertSame('done', $row['stateStyle']);
-        $this->assertSame(['text' => 'Úhrada', 'badge' => 'success'], $row['cells']['role']);
+        $this->assertSame(['text' => 'Úhrada'], $row['cells']['role']);
         $this->assertNull($row['cells']['case_residual'], 'uzavřený případ má prázdný zůstatek');
         $this->assertSame('Nespárované platby', $row['cells']['balance'], 'fallback na name');
     }
@@ -235,25 +235,26 @@ class LedgerViewerTest extends TestCase
     public function testBankMovementIsLabelledByDirectionNotBalSide(): void
     {
         // #69 D23: bankovní záloha na 324 DAL je datově předpis, uživatel vidí
-        // platbu podle směru; badge (a stateStyle) dál z bal_side.
+        // platbu podle směru; stateStyle řádku dál z bal_side. Role je prostý
+        // text bez pilulky (#153 D105).
         $viewer = $this->makeViewer();
         $base = ['id' => 9, 'source_kind' => 'bankTransaction', 'currency' => 'czk', 'amount' => 1000.0, 'case_residual' => 1000.0];
 
         $row = $viewer->renderGridRow($base + ['bal_side' => 0, 'operation' => 'payment.in']);
-        $this->assertSame(['text' => 'Příjem', 'badge' => 'primary'], $row['cells']['role']);
+        $this->assertSame(['text' => 'Příjem'], $row['cells']['role']);
         $this->assertSame('primary', $row['stateStyle']);
 
         $row = $viewer->renderGridRow($base + ['bal_side' => 1, 'operation' => 'payment.out']);
-        $this->assertSame(['text' => 'Výdaj', 'badge' => 'success'], $row['cells']['role']);
+        $this->assertSame(['text' => 'Výdaj'], $row['cells']['role']);
 
         $row = $viewer->renderGridRow($base + ['bal_side' => 1, 'operation' => 'fee.out']);
-        $this->assertSame(['text' => 'Platba', 'badge' => 'success'], $row['cells']['role'], 'jiná bankovní operace = obecná platba');
+        $this->assertSame(['text' => 'Platba'], $row['cells']['role'], 'jiná bankovní operace = obecná platba');
 
         $list = $viewer->renderRow($base + ['bal_side' => 0, 'operation' => 'payment.in', 'account_number' => '324001']);
         $this->assertContains(['text' => 'Příjem', 'class' => 'muted'], $list['t2']);
 
         $doc = $viewer->renderGridRow(['id' => 10, 'source_kind' => 'doc', 'bal_side' => 0, 'operation' => 'payment.receivable', 'currency' => 'czk', 'amount' => 100.0]);
-        $this->assertSame(['text' => 'Předpis', 'badge' => 'primary'], $doc['cells']['role'], 'doklad dál podle bal_side');
+        $this->assertSame(['text' => 'Předpis'], $doc['cells']['role'], 'doklad dál podle bal_side');
     }
 
     public function testRenderDetailJoinsJournalForOperation(): void

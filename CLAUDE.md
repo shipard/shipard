@@ -353,6 +353,16 @@ smí názvy nést — tam jsou potřeba k práci.
   (stejná jako v sidebaru). Per-row override v `renderRow()`
   (např. PersonsViewer podle person_type).
 
+### Viewery — stav v řádku seznamu
+
+- Stav v řádku seznamu vypisuje jen `TableViewer::rowStateTag($docState)`
+  (#153 D98): `null` pro Koncept (`stateStyle` `concept`) a pro stav
+  s `detailBadge: false` („V pořádku“), jinak span se třídou z jediné mapy
+  (`rowStateClass()`, přepsat smí viewer jen třídu jednoho stylu). Viewer
+  nemá vlastní `STATE_SPAN_CLASS` ani podmínku `!== 10` / `!== 40` — hlídá
+  `TableViewerRowStateTagTest`. Viz `docs/design-system.md` §4 Stav v řádku
+  seznamu.
+
 ### Viewery bez tabulky
 
 - Deklarace `viewers[]` bez `table` (`ViewerDefinition::$table === null`;
@@ -699,7 +709,7 @@ ve stejném commitu.
 
 1. `php -l` na změněných PHP souborech
 2. `vendor/bin/phpunit --filter 'ClassName'` cíleně, pak celá sada
-3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny, tokeny hlášek `--shpd-color-alert-*` mimo `Notice` / `PageBanner` a hex barvy mimo `styles/variables.css` / `dev/theme.css` (#133 D71; tón jako text a ikona bere `--shpd-color-{tón}-text`, značka bez textu — tečka, donut, proužek karty — `--shpd-color-{tón}-mark` (D74), plocha `--shpd-color-{tón}` jen pod `--shpd-color-text-on-fill`, D69); `python3 scripts/check-css-units.py` — px v mezerách, zaoblení, písmu a rozměrech (i prop `width` komponenty a layout tokeny) a breakpointy mimo D42 / D43, práh úzkého vieweru `VIEWER_SPLIT_MIN` D58; obě hlídá i pre-commit)
+3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce; `python3 scripts/check-css-tokens.py` — nedefinované CSS tokeny, tokeny hlášek `--shpd-color-alert-*` mimo `Notice` / `PageBanner` a hex barvy mimo `styles/variables.css` / `dev/theme.css` (#133 D71; tón jako text a ikona bere `--shpd-color-{tón}-text`, značka bez textu — tečka, donut, proužek karty — `--shpd-color-{tón}-mark` (D74), plocha `--shpd-color-{tón}` jen pod `--shpd-color-text-on-fill`, D69); `python3 scripts/check-css-units.py` — px v mezerách, zaoblení, písmu a rozměrech (i prop `width` komponenty a layout tokeny) a breakpointy mimo D42 / D43, práh úzkého vieweru `VIEWER_SPLIT_MIN` D58; `python3 scripts/check-contrast.py` — kontrast hlídaných dvojic barevných tokenů v obou vzhledech (#153); všechny tři hlídá i pre-commit)
 4. **Aktualizovat `**Stav:**` v task filu** + `python3 scripts/tasks-index.py`
 
 ## Otevřené úkoly

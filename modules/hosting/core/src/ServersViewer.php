@@ -15,16 +15,6 @@ class ServersViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT `id`, `name`, `fqdn`, `note`, `docState`, `docStateMain`'
@@ -76,13 +66,9 @@ class ServersViewer extends TableViewer
         $t2 = [
             ['text' => (string) ($rowData['fqdn'] ?? ''), 'class' => 'muted'],
         ];
-        if ($docState !== 10) {
-            $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
-            $stateData = $cfg->getState($docState);
-            $t2[] = [
-                'text'  => $stateData['stateName'] ?? '',
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
 
         return [

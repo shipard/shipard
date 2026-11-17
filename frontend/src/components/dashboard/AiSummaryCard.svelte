@@ -83,7 +83,7 @@
   }
 
   .shpd-ai-summary__icon {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     flex-shrink: 0;
     margin-top: 0.125rem;
   }
@@ -92,7 +92,7 @@
 
   .shpd-ai-summary__title {
     font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     margin-bottom: var(--shpd-space-xs);
   }
 
