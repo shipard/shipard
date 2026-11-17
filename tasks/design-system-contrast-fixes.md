@@ -1,6 +1,6 @@
 # Design system — opravy z ověření kontrastu (D96, D97)
 
-**Stav:** hotovo — 2026-11-17, #153 (D96, D97); odchylky níže (dokumentace dashboardu, karta feedu pozadí pod kurzorem nemění)
+**Stav:** hotovo — 2026-11-17, #153 (D96, D97); odchylky níže (dokumentace dashboardu, karta feedu pozadí pod kurzorem nemění); ručně ověřeno 2026-11-17
 
 ## Kontext / Cíl
 
@@ -158,6 +158,14 @@ HEAD, 24 dvojic.
   položky horního menu posunuté o přidanou mezeru, řádek lhůty karty
   `later` (karta je o výšku pilulky nižší, obsah pod ní se posunul).
 
-Ručně zůstává: vlastní vzhled se světlým sidebarem (obrys `1px` na
-světlé barvě splyne, tečka má vůči bílé 4,8 / 5,0 : 1), mobilní drawer
-a úzká šířka (měřeno jen 1280 px).
+### Ruční ověření (2026-11-17, Firefox, oba vzhledy)
+
+- tečky odznaků v sidebaru s tenčím obrysem — v pořádku, lepší než
+  `0,125rem`;
+- klasické rozložení: tečka odsazená od názvu sekce — v pořádku;
+- rozložení Kompaktní: pilulka s počtem u ikony sekce — v pořádku;
+- tečka na filtru feedu (aktivní i neaktivní) — celá, neoříznutá;
+- karty K vyřízení: lhůta v klidu bez pilulky, text čitelný; červená
+  pilulka po termínu / do 3 dnů beze změny;
+- vlastní vzhled se světlým sidebarem — tečky v pořádku;
+- telefon (mobilní drawer) — tečky v pořádku.
