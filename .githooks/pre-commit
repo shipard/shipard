@@ -3,7 +3,7 @@
 # pre-commit: ověří citlivé údaje ve staged souborech, soulad generovaných
 # souhrnů (tasks/README.md, help/README.md) se zdroji pravdy, metadata
 # stránek uživatelské dokumentace, CSS tokeny frontendu (nedefinovaný
-# token použitý bez fallbacku, #129 D14), jednotky v CSS frontendu (px
+# token použitý bez fallbacku, #129 D14; tónový color-mix, #153 D90), jednotky v CSS frontendu (px
 # v mezerách, zaoblení a písmu, #134 D10) a breakpointy (@media jen shell
 # 48rem / 68.75rem, @container jen 30rem / 36rem, JS konstanta shodná
 # s CSS, #133 D47) a kontrast hlídaných dvojic barevných tokenů v obou
@@ -40,10 +40,12 @@ fi
 if ! python3 "$REPO_ROOT/scripts/check-css-tokens.py"; then
     echo ""
     echo "==> Commit zastaven: frontend používá nedefinovaný CSS token, token"
-    echo "    hlášky mimo Notice / PageBanner, nebo hex barvu mimo soubory"
-    echo "    s definicemi tokenů (styles/variables.css, dev/theme.css)."
+    echo "    hlášky mimo Notice / PageBanner, hex barvu mimo soubory"
+    echo "    s definicemi tokenů (styles/variables.css, dev/theme.css), nebo"
+    echo "    color-mix() s tónovým tokenem (danger, warning, success, info)."
     echo "    Barvu ber z tokenu, bílý text na ploše z --shpd-color-text-on-fill;"
-    echo "    fallback var(--x, hodnota) nepomůže. Kontrola jde celým stromem:"
+    echo "    fallback var(--x, hodnota) nepomůže. Text na tónovaném podkladu"
+    echo "    kreslí jen sdílený Badge (#153 D90). Kontrola jde celým stromem:"
     echo "    python3 scripts/check-css-tokens.py"
     echo ""
     exit 1

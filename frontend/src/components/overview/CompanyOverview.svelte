@@ -16,6 +16,7 @@
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
   import Card from '../ui/Card.svelte';
+  import Badge from '../ui/Badge.svelte';
   import CardGrid from '../ui/CardGrid.svelte';
   import { iconRefresh, resolveIcon } from '../../icons.js';
   import { fetchOverview } from '../../api/overview.js';
@@ -151,9 +152,9 @@
       {#each sections as section (section.id)}
         {#snippet stateBadge()}
           {#if section.state === 'unavailable'}
-            <span class="shpd-overview__badge shpd-overview__badge--warning">{t('overview.section.unavailable')}</span>
+            <Badge style="warning" label={t('overview.section.unavailable')} />
           {:else}
-            <span class="shpd-overview__badge shpd-overview__badge--danger">{t('overview.section.error')}</span>
+            <Badge style="danger" label={t('overview.section.error')} />
           {/if}
         {/snippet}
         <Card
@@ -196,9 +197,9 @@
                       </span>
                     {/if}
                     {#if item.state === 'stale'}
-                      <span class="shpd-overview__badge shpd-overview__badge--warning">{t('overview.state.stale')}</span>
+                      <Badge style="warning" label={t('overview.state.stale')} />
                     {:else if item.state === 'missing'}
-                      <span class="shpd-overview__badge shpd-overview__badge--danger">{t('overview.state.missing')}</span>
+                      <Badge style="danger" label={t('overview.state.missing')} />
                     {/if}
                     {#if item.note}
                       <span class="shpd-overview__note">{item.note}</span>
@@ -352,25 +353,6 @@
 
   .shpd-overview__due--overdue {
     color: var(--shpd-color-danger-text);
-  }
-
-  .shpd-overview__badge {
-    display: inline-block;
-    padding: 0 var(--shpd-space-xs);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-meta);
-    font-weight: var(--shpd-font-weight-normal);
-    line-height: 1.5;
-  }
-
-  .shpd-overview__badge--warning {
-    color: var(--shpd-color-warning-text);
-    background: color-mix(in srgb, var(--shpd-color-warning) 14%, transparent);
-  }
-
-  .shpd-overview__badge--danger {
-    color: var(--shpd-color-danger-text);
-    background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
   }
 
   /* Zprávy sekce kreslí Notice — tady jen mezery seznamu a rozložení

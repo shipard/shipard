@@ -15,6 +15,7 @@
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
   import Card from '../ui/Card.svelte';
+  import Badge from '../ui/Badge.svelte';
   import FeedCardAttachment from './FeedCardAttachment.svelte';
   import { t } from '../../i18n/index.js';
 
@@ -86,8 +87,15 @@
           <div class="shpd-feed-card__title">{card.headline ? card.headline.partnerName : card.title}</div>
           {#if card.dueText}
             <!-- Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4):
-                 text i stav (overdue / soon / later) posílá server. -->
-            <span class="shpd-feed-card__due shpd-feed-card__due--{card.dueState ?? 'later'}" data-testid="card-due">{card.dueText}</span>
+                 text i stav (overdue / soon / later) posílá server. Text na
+                 tónovaném podkladu jen přes sdílený Badge (#153 D90). -->
+            <div class="shpd-feed-card__due">
+              <Badge
+                style={card.dueState === 'overdue' || card.dueState === 'soon' ? 'danger' : 'neutral'}
+                label={card.dueText}
+                data-testid="card-due"
+              />
+            </div>
           {/if}
           {#if subLine}
             <div class="shpd-feed-card__subtitle">{subLine}</div>
@@ -260,23 +268,10 @@
     color: var(--shpd-color-text);
   }
 
-  /* Badge lhůty (K vyřízení): neutrální, po lhůtě nebo do 3 dnů danger. */
+  /* Obal štítku lhůty (K vyřízení) — jen odstup pod titulkem; vzhled
+     nese Badge (neutral, po lhůtě nebo do 3 dnů danger). */
   .shpd-feed-card__due {
-    display: inline-block;
     margin-top: 0.125rem;
-    padding: 0 var(--shpd-space-xs);
-    border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-sm);
-    font-weight: var(--shpd-font-weight-strong);
-    line-height: 1.6;
-    color: var(--shpd-color-text-secondary);
-    background: color-mix(in srgb, var(--shpd-color-text-secondary) 14%, transparent);
-  }
-
-  .shpd-feed-card__due--overdue,
-  .shpd-feed-card__due--soon {
-    color: var(--shpd-color-danger-text);
-    background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
   }
 
   .shpd-feed-card__subtitle {
