@@ -1507,7 +1507,7 @@
   }
 
   .shpd-exchange__status--interactive:focus-visible {
-    outline: 2px solid var(--shpd-color-primary);
+    outline: 2px solid var(--shpd-color-border-focus);
     outline-offset: 1px;
   }
 
@@ -1616,7 +1616,7 @@
   }
 
   .shpd-exchange__row-match--interactive:focus-visible {
-    outline: 2px solid var(--shpd-color-primary);
+    outline: 2px solid var(--shpd-color-border-focus);
     outline-offset: 1px;
     border-radius: 0.125rem;
   }

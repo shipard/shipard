@@ -793,7 +793,7 @@
   }
   .shpd-form-editor__tab:hover { color: var(--shpd-color-text); }
   .shpd-form-editor__tab--active {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     border-bottom-color: var(--shpd-color-primary);
     font-weight: 600;
   }

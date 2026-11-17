@@ -1604,7 +1604,7 @@
   }
 
   .shpd-viewer__tab--active {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     border-bottom-color: var(--shpd-color-primary);
     font-weight: 600;
   }
@@ -1760,7 +1760,7 @@
   }
 
   .shpd-viewer__bottom-tab--active {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     border-top-color: var(--shpd-color-primary);
     font-weight: 600;
   }

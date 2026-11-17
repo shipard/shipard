@@ -41,11 +41,13 @@ h4 {
 }
 
 a {
-  color: var(--shpd-color-primary);
+  color: var(--shpd-color-primary-text);
 }
 
+/* Hover barvu nemění — `primary-hover` je plocha, jako text má v tmavém
+   vzhledu kolem 3 : 1 (#153 D92). */
 a:hover {
-  color: var(--shpd-color-primary-hover);
+  text-decoration: underline;
 }
 
 /* ============================================================

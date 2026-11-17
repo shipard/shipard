@@ -184,7 +184,7 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font-family: var(--shpd-font-family);
     font-size: var(--shpd-font-size-sm);
     cursor: pointer;
@@ -216,7 +216,7 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     font-family: var(--shpd-font-family);
     font-size: var(--shpd-font-size-sm);
     font-weight: 600;

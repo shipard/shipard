@@ -244,7 +244,7 @@
 .dev-page__head h1 {
   font-size: 1.625rem;
   font-weight: 600;
-  color: var(--shpd-color-primary);
+  color: var(--shpd-color-primary-text);
   margin-right: var(--shpd-space-sm);
 }
 
@@ -364,7 +364,7 @@ code, .dev-code {
 
 .dev-table th.is-sortable { cursor: pointer; user-select: none; }
 .dev-table th.is-sortable:hover { color: var(--shpd-color-text); }
-.dev-table th.is-sorted { color: var(--shpd-color-primary); }
+.dev-table th.is-sorted { color: var(--shpd-color-primary-text); }
 
 .dev-table td {
   padding: 0.4375rem 0.75rem;
@@ -468,7 +468,7 @@ code, .dev-code {
   vertical-align: middle;
 }
 
-.dev-badge--free { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
+.dev-badge--free { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
 .dev-badge--real { background: var(--dev-class-real-bg); color: var(--dev-class-real-text); }
 .dev-badge--outline { border-color: var(--shpd-color-border); color: var(--shpd-color-text-secondary); }
 
@@ -482,7 +482,7 @@ code, .dev-code {
   border: 1px solid var(--shpd-color-primary);
   border-radius: var(--shpd-radius-md);
   background: var(--shpd-color-bg);
-  color: var(--shpd-color-primary);
+  color: var(--shpd-color-primary-text);
   font-size: var(--shpd-font-size-sm);
   font-weight: 500;
   text-decoration: none;
@@ -525,7 +525,7 @@ code, .dev-code {
 .dev-start { display: flex; flex-wrap: wrap; gap: var(--shpd-space-lg); align-items: flex-start; }
 .dev-start__card { flex: 1 1 30rem; max-width: 45rem; }
 .dev-start__card .dev-badge { margin-bottom: var(--shpd-space-sm); }
-.dev-start__title { font-size: var(--shpd-font-size-xl); font-weight: 600; color: var(--shpd-color-primary); margin-bottom: var(--shpd-space-sm); }
+.dev-start__title { font-size: var(--shpd-font-size-xl); font-weight: 600; color: var(--shpd-color-primary-text); margin-bottom: var(--shpd-space-sm); }
 .dev-start__card p { margin-bottom: var(--shpd-space-md); line-height: 1.5; }
 .dev-start__steps { list-style: decimal; margin: 0 0 var(--shpd-space-lg); padding-left: 1.25rem; line-height: 1.6; }
 .dev-start__aside { flex: 1 1 17.5rem; max-width: 22.5rem; padding: var(--shpd-space-lg); border-radius: var(--shpd-radius-lg); background: var(--shpd-color-bg-hover); }
@@ -556,7 +556,7 @@ code, .dev-code {
 .dev-chip.is-on {
   background: var(--shpd-color-primary-soft);
   border-color: var(--shpd-color-primary);
-  color: var(--shpd-color-primary);
+  color: var(--shpd-color-primary-text);
 }
 
 .dev-toolbar {
@@ -604,7 +604,7 @@ code, .dev-code {
 }
 
 .dev-state--match { background: var(--shpd-color-state-done-bg); color: var(--shpd-color-state-done-text); }
-.dev-state--matchNormalized { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
+.dev-state--matchNormalized { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
 .dev-state--missing { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
 .dev-state--extra { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
 .dev-state--wrong { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }

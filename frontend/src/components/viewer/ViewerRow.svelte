@@ -188,7 +188,7 @@
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.02em;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     background-color: var(--shpd-color-primary-soft);
     text-transform: uppercase;
   }
@@ -248,7 +248,7 @@
   .shpd-viewer-row__span--amount   { font-variant-numeric: tabular-nums; font-weight: 600; }
   .shpd-viewer-row__span--muted    { opacity: 0.6; }
   .shpd-viewer-row__span--bold     { font-weight: 600; }
-  .shpd-viewer-row__span--primary  { color: var(--shpd-color-primary); }
+  .shpd-viewer-row__span--primary  { color: var(--shpd-color-primary-text); }
   .shpd-viewer-row__span--success  { color: var(--shpd-color-success-text); }
   .shpd-viewer-row__span--warning  { color: var(--shpd-color-warning-text); }
   .shpd-viewer-row__span--danger   { color: var(--shpd-color-danger-text); }

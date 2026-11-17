@@ -831,7 +831,7 @@
     justify-content: center;
     pointer-events: none;
     background: color-mix(in srgb, var(--shpd-color-primary) 8%, transparent);
-    outline: 2px dashed var(--shpd-color-primary);
+    outline: 2px dashed var(--shpd-color-primary-text);
     outline-offset: -8px;
     border-radius: var(--shpd-radius-md);
   }

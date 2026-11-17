@@ -230,12 +230,12 @@
   }
 
   .shpd-grid__th-btn:hover {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
   }
 
   .shpd-grid__sort-arrow {
     margin-left: 0.125rem;
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
   }
 
   .shpd-grid__tr {
@@ -334,7 +334,7 @@
   .shpd-grid__span--amount   { font-variant-numeric: tabular-nums; font-weight: 600; }
   .shpd-grid__span--muted    { opacity: 0.6; }
   .shpd-grid__span--bold     { font-weight: 600; }
-  .shpd-grid__span--primary  { color: var(--shpd-color-primary); }
+  .shpd-grid__span--primary  { color: var(--shpd-color-primary-text); }
   .shpd-grid__span--success  { color: var(--shpd-color-success-text); }
   .shpd-grid__span--warning  { color: var(--shpd-color-warning-text); }
   .shpd-grid__span--danger   { color: var(--shpd-color-danger-text); }

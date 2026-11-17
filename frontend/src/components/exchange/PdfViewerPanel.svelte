@@ -140,7 +140,7 @@
   }
 
   .shpd-pdf-panel__tab--active {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     border-bottom-color: var(--shpd-color-primary);
     font-weight: var(--shpd-font-weight-strong);
   }

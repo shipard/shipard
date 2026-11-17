@@ -265,7 +265,7 @@
     cursor: pointer;
   }
   .badge--debug { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
-  .badge--info { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
+  .badge--info { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
   .badge--warn { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }
   .badge--error { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
 

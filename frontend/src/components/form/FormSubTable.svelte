@@ -575,7 +575,7 @@
   .shpd-form-subtable__span--amount  { font-variant-numeric: tabular-nums; font-weight: 600; }
   .shpd-form-subtable__span--muted   { opacity: 0.7; font-style: italic; }
   .shpd-form-subtable__span--bold    { font-weight: 600; }
-  .shpd-form-subtable__span--primary { color: var(--shpd-color-primary); }
+  .shpd-form-subtable__span--primary { color: var(--shpd-color-primary-text); }
   .shpd-form-subtable__span--success { color: var(--shpd-color-success-text); }
   .shpd-form-subtable__span--warning { color: var(--shpd-color-warning-text); }
   .shpd-form-subtable__span--danger  { color: var(--shpd-color-danger-text); }

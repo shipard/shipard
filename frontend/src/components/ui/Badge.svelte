@@ -33,7 +33,7 @@
   /* Typové varianty (mimo doc-state) — sdílí paletu s doc-state tokeny
      tam, kde to barevně sedí. */
   .shpd-badge--neutral   { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
-  .shpd-badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary); }
+  .shpd-badge--primary   { background: var(--shpd-color-primary-soft); color: var(--shpd-color-primary-text); }
   .shpd-badge--accent    { background: var(--shpd-color-accent-soft); color: var(--shpd-color-accent-hover); }
   .shpd-badge--success   { background: var(--shpd-color-state-done-bg); color: var(--shpd-color-state-done-text); }
   .shpd-badge--warning   { background: var(--shpd-color-state-concept-bg); color: var(--shpd-color-state-concept-text); }

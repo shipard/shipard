@@ -161,7 +161,7 @@
   .dev-kebab__btn:hover,
   .dev-kebab__btn[aria-expanded='true'] {
     border-color: var(--shpd-color-primary);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
   }
   .dev-kebab__btn[aria-expanded='true'] {
     background: var(--shpd-color-primary-soft);

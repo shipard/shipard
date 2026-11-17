@@ -147,7 +147,7 @@
     font-size: 0.75em;
     line-height: 1.5;
     background: var(--shpd-color-primary-soft);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     vertical-align: middle;
   }
 
@@ -249,7 +249,7 @@
   }
 
   .shpd-attgrid__full-name:hover {
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     text-decoration: underline;
   }
 

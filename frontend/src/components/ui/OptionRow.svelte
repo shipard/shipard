@@ -195,7 +195,7 @@
 
   .shpd-option-row--button:focus-visible,
   .shpd-option-row:has(.shpd-option-row__native:focus-visible) {
-    outline: 2px solid var(--shpd-color-primary);
+    outline: 2px solid var(--shpd-color-border-focus);
     outline-offset: 2px;
   }
 

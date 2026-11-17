@@ -224,7 +224,7 @@
     font-size: var(--shpd-font-size-xs);
     font-weight: 500;
     background: var(--shpd-color-primary-soft);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     border: 1px solid var(--shpd-color-primary);
   }
 

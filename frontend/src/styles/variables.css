@@ -5,7 +5,8 @@
    * Primary  = Shipard blue   (#005089)
    * Accent   = Shipard orange (#EB6507)
    * Použití:
-   *   primary  → základní akce, aktivní stav navigace, odkazy
+   *   primary  → plocha: základní akce, aktivní stav navigace
+   *   primary-text → primary jako text, ikona a odkaz (#153 D92)
    *   accent   → drobné upozornění (VIP badge, focus indikátor,
    *              levý proužek u aktivního menu/řádku)
    */
@@ -15,6 +16,10 @@
   --shpd-color-primary-hover:  #003e6b;
   --shpd-color-primary-soft:   #e6eef5; /* světlé pozadí pro výběr/hover */
   --shpd-color-primary-soft-2: #cfdcea; /* o stupeň silnější varianta */
+  /* Primary jako text, ikona a odkaz (#153 D92) — druhá role vedle plochy,
+     jako `-text` u tónů. Světlý vzhled bere plochu (8,4 : 1 na `bg`); tmavý
+     má vlastní světlejší hodnotu, plocha tam dá na pozadí jen 2,1–2,8 : 1. */
+  --shpd-color-primary-text:   var(--shpd-color-primary);
 
   /* Accent (oranžová) */
   --shpd-color-accent:         #eb6507;
@@ -43,7 +48,8 @@
      karty, tečka chyby na tabu. Nenese text ani samostatný význam, proto
      jí stačí práh grafiky 3 : 1 vůči pozadí — ve světlém vzhledu je
      světlejší než `-text` (laděný na 4,5 : 1 pro malé písmo). `info` je
-     modrá tečka Nové položky. Tmavý vzhled odkazuje na `primary` a `-text`. */
+     modrá tečka Nové položky. Tmavý vzhled odkazuje na `-text`; `info` má
+     v obou vzhledech stejnou hodnotu (#153 D93). */
   --shpd-color-info-mark:     #3b82f6;
   --shpd-color-success-mark:  #16a34a;
   --shpd-color-warning-mark:  #d06f06;
@@ -181,7 +187,9 @@
   --shpd-color-border:        #e2e8f0;
   --shpd-color-border-strong: #cbd5e1;
   --shpd-color-border-subtle: #eef1f5;  /* hrana sekcí — jemnější než default border */
-  --shpd-color-border-focus:  var(--shpd-color-primary);
+  /* Obrys fokusu = primary v roli textu (#153 D95): v tmavém vzhledu
+     6,6 : 1 vůči `bg` místo 2,49. Komponenty berou token, ne `primary`. */
+  --shpd-color-border-focus:  var(--shpd-color-primary-text);
 
   /* Focus rings — jemné záře kolem inputu při focusu / chybě.
    * Používají se v Input/Checkbox/Select/atd. jako box-shadow. */
@@ -298,6 +306,9 @@
   --shpd-color-primary-hover:  #3a7aa3;
   --shpd-color-primary-soft:   #1a2f44;
   --shpd-color-primary-soft-2: #234562;
+  /* Primary jako text a ikona (#153 D92): 6,6 : 1 na `bg`, 5,6 na
+     `bg-hover`, 7,5 na `bg-secondary`, 6,1 na `primary-soft`. */
+  --shpd-color-primary-text:   #7fb2dc;
 
   /* Brand: accent oranžová — zůstává podobná, jen lehce světlejší */
   --shpd-color-accent:         #ff7a26;
@@ -307,7 +318,9 @@
   /* Tónové barvy (#133 D69, D70): plochy jako ve světlém vzhledu (bílý
      text na nich drží 4,5 : 1), světlejší jsou jen `-text` tokeny pro
      text a ikonu na tmavém pozadí. Značky bez textu (`-mark`, D74) tu
-     berou tytéž světlejší hodnoty, `info` primary — jako před D74. */
+     berou tytéž světlejší hodnoty; `info` už neodkazuje na `primary`
+     (2,49 : 1 na `bg`) a má hodnotu světlého vzhledu — 4,1 : 1 na `bg`,
+     3,4 na `bg-hover`, 4,6 na `bg-secondary` (#153 D93). */
   --shpd-color-danger:        #dc2626;
   --shpd-color-danger-hover:  #b91c1c;
   --shpd-color-success:       #15803d;
@@ -317,7 +330,7 @@
   --shpd-color-danger-text:   #f87171;
   --shpd-color-success-text:  #22c55e;
   --shpd-color-warning-text:  #f59e0b;
-  --shpd-color-info-mark:     var(--shpd-color-primary);
+  --shpd-color-info-mark:     #3b82f6;
   --shpd-color-success-mark:  var(--shpd-color-success-text);
   --shpd-color-warning-mark:  var(--shpd-color-warning-text);
   --shpd-color-danger-mark:   var(--shpd-color-danger-text);

@@ -113,7 +113,7 @@
     padding: 0;
     font: inherit;
     font-weight: var(--shpd-font-weight-strong);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     cursor: pointer;
   }
 

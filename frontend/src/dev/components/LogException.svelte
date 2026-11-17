@@ -41,7 +41,7 @@
     border: 0;
     padding: 0;
     margin-top: var(--shpd-space-xs);
-    color: var(--shpd-color-primary);
+    color: var(--shpd-color-primary-text);
     cursor: pointer;
     font: inherit;
     font-size: var(--shpd-font-size-sm);
