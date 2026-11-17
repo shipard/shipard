@@ -57,7 +57,7 @@ class AssetTypesViewer extends AssetsViewerBase
         if (!empty($rowData['acc_group_code'])) {
             $t2[] = ['text' => (string) $rowData['acc_group_code']];
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }

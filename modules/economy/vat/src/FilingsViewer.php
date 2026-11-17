@@ -29,12 +29,6 @@ class FilingsViewer extends TableViewer
 
     protected ?string $docStatesCfgItem = 'economy.vat.docStatesFilings';
 
-    private const STATE_SPAN_CLASS = [
-        'concept' => 'warning',
-        'done'    => 'success',
-        'trash'   => 'muted',
-    ];
-
     /** Klíč porovnání dokladové úrovně mezi podáními. */
     private const DIFF_KEY_COLUMNS = ['doc_head', 'vat_code', 'vat_pct'];
 
@@ -134,11 +128,9 @@ class FilingsViewer extends TableViewer
         $docState  = (int) ($rowData['docState'] ?? 10);
         $stateData = $this->docStates()->getState($docState);
         $stateStyle = $stateData['stateStyle'] ?? 'concept';
-        if ($docState !== FilingDocument::DOC_STATE_FILED) {
-            $t2[] = [
-                'text'  => $stateData['stateName'] ?? '',
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
 
         $row['t2'] = $t2;

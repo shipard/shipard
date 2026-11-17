@@ -16,14 +16,6 @@ class ConversationsViewer extends TableViewer
 {
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-    private const STATE_SPAN_CLASS = [
-        'concept' => 'warning',
-        'done'    => 'success',
-        'edit'    => 'warning',
-        'archive' => 'muted',
-        'trash'   => 'muted',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT `id`, `title`, `model_snapshot`, `created`, `modified`,'

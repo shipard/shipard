@@ -33,7 +33,7 @@ class CashRegisterFormAndViewerTest extends TestCase
             ],
             'docs.core.docStates' => [
                 '10' => ['stateName' => 'Koncept', 'stateStyle' => 'concept', 'mainState' => 1],
-                '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3],
+                '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'detailBadge' => false],
             ],
         ];
         $config = $this->createMock(ConfigRuntime::class);

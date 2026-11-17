@@ -58,7 +58,7 @@ class AccountingGroupsViewer extends AssetsViewerBase
                 $t2[] = ['text' => $number, 'class' => $column === 'account_asset' ? 'primary' : 'muted'];
             }
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }

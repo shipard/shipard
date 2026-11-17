@@ -18,16 +18,6 @@ class TasksViewer extends TableViewer
     // aby se inline state badge v t2 vizuálně neslévalo s `concept`
     // (Nový → `warning`). Levý pruh řádku a badge v hlavičce formuláře
     // si vlastní barvu drží přes CSS proměnnou --shpd-color-state-edit-*.
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'muted',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT t.`id`, t.`title`, t.`description`, t.`priority`, t.`due_date`,'
@@ -114,15 +104,9 @@ class TasksViewer extends TableViewer
             ];
         }
 
-        if ($docState !== 10) {
-            $cfg = DocStateConfig::fromCfgItem(
-                $this->config?->cfgItem($this->docStatesCfgItem),
-            );
-            $stateData = $cfg->getState($docState);
-            $t2[] = [
-                'text'  => (string) ($stateData['stateName'] ?? ''),
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
 
         $row['t2'] = $t2 !== [] ? $t2 : null;
@@ -209,6 +193,15 @@ class TasksViewer extends TableViewer
     private function text(string $key, string $englishFallback, array $params = []): string
     {
         return $this->detailText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
+    }
+
+    /**
+     * Styl `edit` je u úkolů Pozastaveno — klidný stav, ne rozpracovaná
+     * oprava: v řádku tlumeně, ne varovně.
+     */
+    protected function rowStateClass(string $stateStyle): string
+    {
+        return $stateStyle === 'edit' ? 'muted' : parent::rowStateClass($stateStyle);
     }
 
     private function resolveStateStyle(int $docState): string

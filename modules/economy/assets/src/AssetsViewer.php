@@ -186,7 +186,7 @@ class AssetsViewer extends AssetsViewerBase
                 'class' => 'warning',
             ];
         }
-        $badge = $this->stateBadge($docState);
+        $badge = $this->rowStateTag($docState);
         if ($badge !== null) {
             $t2[] = $badge;
         }

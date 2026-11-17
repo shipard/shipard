@@ -17,16 +17,6 @@ class MailRoutersViewer extends TableViewer
 
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT `id`, `name`, `domains`, `api_key_prefix`, `last_seen`, `docState`, `docStateMain`'
@@ -82,13 +72,9 @@ class MailRoutersViewer extends TableViewer
         $t2[] = $hasKey
             ? ['text' => $this->text('rowKeySet', 'key: set'), 'class' => 'success']
             : ['text' => $this->text('rowKeyMissing', 'key: missing'), 'class' => 'warning'];
-        if ($docState !== 10) {
-            $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
-            $stateData = $cfg->getState($docState);
-            $t2[] = [
-                'text'  => $stateData['stateName'] ?? '',
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
 
         return [

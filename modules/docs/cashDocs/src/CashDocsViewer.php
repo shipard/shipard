@@ -37,7 +37,7 @@ class CashDocsViewer extends DocsHeadsViewer
         if ($paymentMethod !== null) {
             $t2[] = ['text' => $paymentMethod, 'class' => 'muted'];
         }
-        $stateTag = $this->stateTag((int) ($rowData['docState'] ?? 10));
+        $stateTag = $this->rowStateTag((int) ($rowData['docState'] ?? 10));
         if ($stateTag !== null) {
             $t2[] = $stateTag;
         }

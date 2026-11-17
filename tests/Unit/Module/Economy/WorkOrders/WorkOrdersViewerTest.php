@@ -147,7 +147,6 @@ class WorkOrdersViewerTest extends TestCase
                 ['text' => 'Alfa s.r.o.', 'class' => 'primary'],
                 ['text' => 'Projekty', 'class' => 'muted'],
                 ['text' => '2026-03-01'],
-                ['text' => 'Confirmed', 'class' => 'success'],
             ],
             $row['t2'],
         );

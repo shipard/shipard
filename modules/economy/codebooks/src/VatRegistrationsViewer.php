@@ -13,16 +13,6 @@ class VatRegistrationsViewer extends TableViewer
 
     private const LABELS_CFG_ITEM = 'economy.codebooks.viewerDetailLabels';
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT `id`, `name`, `region`, `country`, `taxpayer_kind`, `vat_id`,'
@@ -107,11 +97,9 @@ class VatRegistrationsViewer extends TableViewer
         $stateData = $cfg->getState($docState);
         $stateStyle = $stateData['stateStyle'] ?? 'concept';
 
-        if ($docState !== 10) {
-            $t2[] = [
-                'text'  => $stateData['stateName'] ?? '',
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
 
         $row['t2'] = $t2 !== [] ? $t2 : null;

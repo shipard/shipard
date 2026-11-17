@@ -21,16 +21,6 @@ class ItemsViewer extends TableViewer
      */
     private ?string $priceSuffix = null;
 
-    private const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT i.`id`, i.`code`, i.`name`, i.`description`, i.`item_kind`, i.`item_type`,'
@@ -102,13 +92,9 @@ class ItemsViewer extends TableViewer
         if (!empty($rowData['kind_name'])) {
             $t2[] = ['text' => (string) $rowData['kind_name']];
         }
-        if ($docState !== 10) {
-            $cfg = DocStateConfig::fromCfgItem($this->config?->cfgItem($this->docStatesCfgItem));
-            $stateData = $cfg->getState($docState);
-            $t2[] = [
-                'text'  => $stateData['stateName'] ?? '',
-                'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-            ];
+        $stateTag = $this->rowStateTag($docState);
+        if ($stateTag !== null) {
+            $t2[] = $stateTag;
         }
         $row['t2'] = $t2 !== [] ? $t2 : null;
 

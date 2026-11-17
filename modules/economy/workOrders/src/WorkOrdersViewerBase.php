@@ -18,16 +18,6 @@ abstract class WorkOrdersViewerBase extends TableViewer
 
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-    protected const STATE_SPAN_CLASS = [
-        'concept'   => 'warning',
-        'confirmed' => 'primary',
-        'done'      => 'success',
-        'edit'      => 'warning',
-        'archive'   => 'muted',
-        'trash'     => 'muted',
-        'cancelled' => 'danger',
-    ];
-
     /**
      * Popisek z cfgItem `economy.workOrders.viewerLabels` — viz `TableViewer::labelText()`.
      *
@@ -69,21 +59,6 @@ abstract class WorkOrdersViewerBase extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return (string) ($cfg->getState($docState)['stateStyle'] ?? 'concept');
-    }
-
-    /** @return array{text: string, class: string}|null badge stavu mimo Koncept */
-    protected function stateBadge(int $docState): ?array
-    {
-        if ($docState === 10 || $this->config === null || $this->docStatesCfgItem === null) {
-            return null;
-        }
-        $cfg   = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
-        $state = $cfg->getState($docState);
-        $style = (string) ($state['stateStyle'] ?? 'concept');
-        return [
-            'text'  => (string) ($state['stateName'] ?? ''),
-            'class' => static::STATE_SPAN_CLASS[$style] ?? 'muted',
-        ];
     }
 
     protected function formatAmount(mixed $value): ?string

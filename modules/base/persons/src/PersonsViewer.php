@@ -14,26 +14,7 @@ class PersonsViewer extends TableViewer
 {
 	protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
-	/**
-	 * True when the active tab is "Vse" (viewGroup 'all'). Set in selectRows(),
-	 * read in renderRow() so archived/deleted records always get a state badge
-	 * in the combined list. Outside the 'all' tab each tab is self-evident, so
-	 * the badge stays demoted to non-default states only.
-	 */
-	private bool $showAllStates = false;
-
 	private const LABELS_CFG_ITEM = 'base.persons.viewerDetailLabels';
-
-	/** Maps stateStyle to a span class for the state badge in t2. */
-	private const STATE_SPAN_CLASS = [
-		'concept'   => 'warning',
-		'confirmed' => 'primary',
-		'done'      => 'success',
-		'edit'      => 'warning',
-		'archive'   => 'muted',
-		'trash'     => 'muted',
-		'cancelled' => 'danger',
-	];
 
 	public function selectRows(?string $search, array $filters, int $pageNumber): array
 	{
@@ -52,8 +33,6 @@ class PersonsViewer extends TableViewer
 				$viewGroup = (string) $filter['value'];
 			}
 		}
-
-		$this->showAllStates = ($viewGroup === 'all');
 
 		if ($viewGroup !== 'all') {
 			[$vgSql, $vgParams] = $this->buildViewGroupFilter($this->docStatesCfgItem, $viewGroup);
@@ -79,10 +58,10 @@ class PersonsViewer extends TableViewer
 			$sql .= ' WHERE ' . implode(' AND ', $conditions);
 		}
 
-		// Razeni: v zalozce "Vse" cistou abecedou (stav ignorujeme, badge je
-		// v renderRow), jinak docStateMain ASC (Koncepty nahore, pak V oprave,
-		// pak V poradku) a uvnitr skupiny abecedne.
-		if ($this->showAllStates) {
+		// Razeni: v zalozce "Vse" cistou abecedou (stav ignorujeme), jinak
+		// docStateMain ASC (Koncepty nahore, pak V oprave, pak V poradku)
+		// a uvnitr skupiny abecedne.
+		if ($viewGroup === 'all') {
 			$sql .= ' ORDER BY `last_name` ASC, `first_name` ASC, `id` ASC';
 		} else {
 			$sql .= ' ORDER BY `docStateMain` ASC, `last_name` ASC, `first_name` ASC, `id` ASC';
@@ -124,14 +103,11 @@ class PersonsViewer extends TableViewer
 		$stateData = $cfg->getState($docState);
 		$stateStyle = $stateData['stateStyle'] ?? 'concept';
 
-		// Badge non-default states so the user sees them at a glance.
-		// V zalozce "Vse" ukaz badge vzdy (i pro Koncept), aby archiv/kos
-		// nesplynuly s aktivnimi zaznamy; jinak zustava demoted na ne-vychozi.
-		if ($this->showAllStates || $docState !== 10) {
-			$t2[] = [
-				'text'  => $stateData['stateName'] ?? '',
-				'class' => self::STATE_SPAN_CLASS[$stateStyle] ?? 'muted',
-			];
+		// Stav jen tam, kde nese informaci (#153 D98): Koncept nese prouzek,
+		// V poradku je bezny stav — pravidlo je v TableViewer::rowStateTag().
+		$stateTag = $this->rowStateTag($docState);
+		if ($stateTag !== null) {
+			$t2[] = $stateTag;
 		}
 
 		$row['t2'] = $t2 !== [] ? $t2 : null;
