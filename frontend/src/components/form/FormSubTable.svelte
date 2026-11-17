@@ -518,7 +518,7 @@
      border-collapse: separate — s collapse by bordery sticky hlavičky
      odscrollovaly s obsahem (stejný důvod jako ViewerGrid). Barva textu
      na tabulce, ne na td — globální .docState_archive / .docState_trash
-     na <tr> ji přebíjí (tlumený archiv, škrtnutý koš). */
+     na <tr> ji přebíjí (archiv i koš tlumeně `text-secondary`, #153 D101). */
   .shpd-form-subtable__table {
     width: 100%;
     border-collapse: separate;

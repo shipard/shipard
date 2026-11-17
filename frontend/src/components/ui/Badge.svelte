@@ -44,7 +44,7 @@
   .shpd-badge--edit      { background: var(--shpd-color-state-edit-bg);      color: var(--shpd-color-state-edit-text); }
   .shpd-badge--confirmed { background: var(--shpd-color-state-confirmed-bg); color: var(--shpd-color-state-confirmed-text); }
   .shpd-badge--archive   { background: var(--shpd-color-state-archive-bg);   color: var(--shpd-color-state-archive-text); }
-  .shpd-badge--trash     { background: var(--shpd-color-state-trash-bg);     color: var(--shpd-color-state-trash-text); text-decoration: line-through; }
+  .shpd-badge--trash     { background: var(--shpd-color-state-trash-bg);     color: var(--shpd-color-state-trash-text); }
   .shpd-badge--cancelled { background: var(--shpd-color-state-cancelled-bg); color: var(--shpd-color-state-cancelled-text); }
   .shpd-badge--done      { background: var(--shpd-color-state-done-bg);      color: var(--shpd-color-state-done-text); }
   .shpd-badge--error     { background: var(--shpd-color-state-error-bg);     color: var(--shpd-color-state-error-text); }

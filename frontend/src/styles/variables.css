@@ -90,11 +90,10 @@
   --shpd-color-state-archive-bar:    #cbd5e1;
   --shpd-color-state-archive-bg:     #e5e7eb;
   --shpd-color-state-archive-text:   #374151;
-  --shpd-color-state-archive-row:    #64748b; /* tlumený text řádku v ViewerRow */
 
   --shpd-color-state-trash-bar:      #94a3b8;
   --shpd-color-state-trash-bg:       #e5e7eb;
-  --shpd-color-state-trash-text:     #6b7280;
+  --shpd-color-state-trash-text:     #4b5563; /* 6,10 : 1 (#153 D101) */
 
   --shpd-color-state-cancelled-bar:  #ef4444;
   --shpd-color-state-cancelled-bg:   #fecaca;
@@ -399,10 +398,9 @@
 
   --shpd-color-state-archive-bg:     #2a2e38;
   --shpd-color-state-archive-text:   #9ca3af;
-  --shpd-color-state-archive-row:    #8a92a0;
 
   --shpd-color-state-trash-bg:       #2a2e38;
-  --shpd-color-state-trash-text:     #6b7280;
+  --shpd-color-state-trash-text:     #9ca3af; /* 5,35 : 1 (#153 D101) */
 
   --shpd-color-state-cancelled-bg:   #3d1414;
   --shpd-color-state-cancelled-text: #fca5a5;

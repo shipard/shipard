@@ -276,6 +276,19 @@
     background-color: var(--shpd-row-bar, transparent);
   }
 
+  /* Archiv a koš tlumeně (#153 D101): buňka si barvu nastavuje sama,
+     globální .docState_* na <tr> by ji nepřebila. Na vybraném řádku běžný
+     text (D91). */
+  .shpd-grid__tr.docState_archive > .shpd-grid__td,
+  .shpd-grid__tr.docState_trash > .shpd-grid__td {
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-grid__tr--selected.docState_archive > .shpd-grid__td,
+  .shpd-grid__tr--selected.docState_trash > .shpd-grid__td {
+    color: var(--shpd-color-text);
+  }
+
   /* Chybové řádky (rowClass: 'error') — stejné tokeny jako
      .shpd-detail__tr--error v detail table. */
   .shpd-grid__tr--error > .shpd-grid__td {

@@ -164,8 +164,20 @@
     box-shadow: 0 0 0 1px var(--shpd-color-text-on-fill);
   }
 
-  /* Doc-state proužky řeší globální .docState_* třídy v styles/base.css
-   */
+  /* Doc-state proužky řeší globální .docState_* třídy v styles/base.css.
+   * Tlumení archivu a koše (#153 D101) musí být tady: řádek si barvu
+   * nastavuje sám a scoped pravidlo globální třídu přebíjí. Tlumí se t1
+   * (ostatní řádky jsou `text-secondary` už samy); na vybraném řádku platí
+   * D91 — běžný text. */
+  .shpd-viewer-row.docState_archive,
+  .shpd-viewer-row.docState_trash {
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-viewer-row--selected.docState_archive,
+  .shpd-viewer-row--selected.docState_trash {
+    color: var(--shpd-color-text);
+  }
 
   /* Levý sloupec — drží jen ikonu typu záznamu, vertikálně
    * vystředěnou v celé výšce řádku.

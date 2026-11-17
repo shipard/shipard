@@ -131,11 +131,6 @@ EXCEPTIONS = (
         "D94: okraj tlačítka `danger` pod kurzorem v tmavém vzhledu; tlačítko"
         " identifikuje text (6,47 : 1), ne okraj",
     ),
-    Exemption(
-        "state-trash-text", "state-trash-bg", THEMES, TEXT,
-        "#153, tasks/design-system-contrast.md Odchylky: štítek stavu Koš je"
-        " záměrně tlumený a přeškrtnutý — smazaný záznam nemá poutat pozornost",
-    ),
 )
 
 COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
