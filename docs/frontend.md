@@ -67,7 +67,7 @@ frontend/
 │   │   │   ├── Checkbox.svelte
 │   │   │   ├── DateInput.svelte
 │   │   │   ├── Icon.svelte             # Univerzální ikona (inline SVG z FA definition)
-│   │   │   ├── Popover.svelte          # Plovoucí panel ukotvený k prvku (klik mimo zavírá, Esc přes zásobník vrstev)
+│   │   │   ├── Popover.svelte          # Plovoucí panel ukotvený k prvku (dočasná vrstva: klik mimo zavírá, Esc přes zásobník vrstev)
 │   │   │   ├── KebabMenu.svelte        # Tlačítko ⋮ s bublinou akcí (jediný kebab aplikace, #155 D114)
 │   │   │   └── Modal.svelte
 │   │   ├── chrome/                     # Primitivy aplikačního chrome — shelly je komponují
@@ -103,7 +103,7 @@ frontend/
 │   │       ├── FormRenderer.svelte     # Generický formulář z metadat
 │   │       └── FormDialog.svelte       # Modal wrapper pro FormRenderer
 │   ├── utils/
-│   │   ├── layerStack.js               # Zásobník vrstev pro Esc — openLayer(), jediný posluchač keydown (#160 D121)
+│   │   ├── layerStack.js               # Zásobník vrstev — openLayer(), jediný posluchač Esc (#160 D121), dočasnost vrstvy a příznak data-transient-layer (D124)
 │   │   ├── navTree.js                  # Čisté helpery nad navigačním stromem (flattenLeaves, findLeafById, findRootSectionId)
 │   │   └── shell.js                    # resolveShell + normalizace hodnot shellu (KNOWN_SHELLS)
 │   └── styles/
@@ -1364,11 +1364,23 @@ document click listener registrovaný v `$effect`**. Tyhle dva vzorce spolu
 mají jednu nepříjemnou interakci, na které se dá lehce spálit.
 
 **Esc si žádná z nich neposlouchá sama.** Otevřená vrstva se zapíše do
-zásobníku `utils/layerStack.js` (`openLayer({ kind, onEscape })` v `$effect`,
-úklid = `remove`) a jediný posluchač `keydown` na `window` zavře jen vrstvu
-naposledy otevřenou — jeden stisk = jedna vrstva (#160 D121). Vlastní
-listener v komponentě řeší jen **klik mimo**, a to jen u dočasných vrstev
-(D122); postranní panely ho nemají. Pravidla a výjimky:
+zásobníku `utils/layerStack.js` (`openLayer({ kind, transient, onEscape })`
+v `$effect`, úklid = `remove`) a jediný posluchač `keydown` na `window` zavře
+jen vrstvu naposledy otevřenou — jeden stisk = jedna vrstva (#160 D121).
+Vlastní listener v komponentě řeší jen **klik mimo**, a to jen u dočasných
+vrstev (D122); postranní panely ho nemají.
+
+**Dočasnost říká vrstva zásobníku výslovně** — `transient: true` (klik mimo
+ji zavírá: bublina, nabídka pole, menu, panel vzhledu, paleta) nebo
+`transient: false` (modal, detail v draweru, boční chat, drawer sidebaru).
+Volba je povinná: bez ní `openLayer()` vyhodí výjimku a
+`tests/Unit/layerTransientUsage.test.mjs` zastaví `npm test`. Dokud je
+otevřená dočasná vrstva (nad posledním modalem — `hasTransientLayer()`),
+zásobník drží na `<html>` atribut `data-transient-layer` a pravidlo ve
+`styles/base.css` vypne klepnutí do vložených dokumentů (`<iframe>` — PDF,
+text e-mailu, náhledy příloh), takže klepnutí na ně dopadne na stránku
+a posluchač kliku mimo vrstvu zavře (D124). Komponenta s `<iframe>` ani
+komponenta vrstvy pro to nic nedělá. Pravidla a výjimky:
 `docs/design-system.md` §8 → Zavírání vrstev.
 
 Sdílený `ui/Popover.svelte` není nikdy širší než okno bez okrajů: výchozí

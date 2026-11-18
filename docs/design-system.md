@@ -574,11 +574,15 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   `ui/KebabMenu` s polem `items` (D114, §8 Akce na telefonu).
 - ❌ `if (e.key === 'Escape') onClose()` v komponentě vrstvy (vlastní
   posluchač na `document` / `window` / prvku) — jeden stisk pak zavře
-  bublinu i modal pod ní. ✅ `openLayer({ kind, onEscape })`
+  bublinu i modal pod ní. ✅ `openLayer({ kind, transient, onEscape })`
   z `utils/layerStack.js` v `$effect` (D121, §8 Zavírání vrstev);
   hlídá `escapeUsage.test.mjs`.
 - ❌ Posluchač kliku mimo u postranního panelu (detail v draweru, boční
   chat). ✅ Klik mimo zavírá jen dočasné vrstvy (D122).
+- ❌ Vlastní obsluha klepnutí do `<iframe>` v komponentě vrstvy (překryv
+  nad dokumentem, posluchač `blur` okna). ✅ Vrstva řekne zásobníku
+  `transient: true`, zbytek je jedno pravidlo v `styles/base.css` (D124,
+  §8 Zavírání vrstev).
 - ❌ Zavřít / Zrušit v patičce `Modal`u bez `dismiss` — na telefonu zabírá
   místo akcím a opakuje ×. ✅ `<Button dismiss … />`; výjimkou je odpověď
   potvrzovacího dotazu (D116, §8 Modální dialogy).
@@ -1169,10 +1173,22 @@ vrstvu; body scroll lock se uvolňuje až při zavření posledního modalu.
 
 ### Zavírání vrstev
 
-Rozhodnutí D121–D123 z #160. **Vrstva** je všechno, co se dá zavřít: modal,
+Rozhodnutí D121–D124 z #160. **Vrstva** je všechno, co se dá zavřít: modal,
 bublina (`Popover`, kebab, panel rozhodnutí, výběr období), nabídka pole
 (lookup, výběr více hodnot), detail v draweru, boční chat, panel vzhledu,
 uživatelské menu, paleta příkazů a drawer sidebaru na telefonu.
+
+Vrstva je buď **dočasná** — otevře se pro jednu volbu a klik mimo ji
+zavře —, nebo **nedočasná**. Dočasnost je vlastnost vrstvy, ne jejího
+druhu (`panel` je dočasný panel vzhledu i nedočasný detail v draweru):
+
+| dočasná (`transient: true`) | nedočasná (`transient: false`) |
+|---|---|
+| bublina `Popover` — i `KebabMenu`, panel rozhodnutí, výběr období | `Modal` (zavírá ho klik na ztmavené pozadí) |
+| nabídka `LookupInput` a `MultiselectInput` | detail v draweru `ViewerDetailDrawer` |
+| uživatelské menu `UserMenu` | boční chat `ChatPanel` |
+| panel vzhledu `ThemePanel` (na telefonu je to `Modal`) | drawer sidebaru na telefonu (zavírá ho klik na překryv) |
+| paleta příkazů `CommandPalette` | |
 
 - **Esc zavře jednu vrstvu — tu naposledy otevřenou** (D121). Další stisk
   zavře vrstvu pod ní. Esc v otevřené nabídce lookupu zavře nabídku,
@@ -1188,6 +1204,14 @@ uživatelské menu, paleta příkazů a drawer sidebaru na telefonu.
   pozadí.
 - **Boční chat** zavírá × a Esc (D123), i při psaní do pole zprávy;
   rozepsaný text zavření přežije (žije v `chatStore`, maže ho odeslání).
+- **Vložené dokumenty při otevřené dočasné vrstvě klepnutí nepřijímají**
+  (D124, doplňuje D122). Klepnutí do `<iframe>` — PDF v náhledu dokladu,
+  text e-mailu, velké náhledy příloh, náhled tisku — by jinak zůstalo
+  uvnitř vloženého dokumentu a vrstvu by nezavřelo. Dokud je dočasná vrstva
+  otevřená, klepnutí na dokument dopadne na stránku pod ním a zavře vrstvu
+  jako klepnutí kamkoli jinam; **další klepnutí už do dokumentu projde**.
+  Bez dočasné vrstvy se vložené dokumenty chovají jako vždy — i vedle
+  otevřeného detailu v draweru a bočního chatu.
 
 **Implementace** — jeden zásobník `utils/layerStack.js` a jeden posluchač
 `keydown` na `window`. Komponenta vrstvy se do něj zapíše na dobu otevření
@@ -1198,9 +1222,38 @@ import { openLayer } from '../../utils/layerStack.js';
 
 $effect(() => {
   if (!open) return;
-  return openLayer({ kind: 'popover', onEscape: () => onClose() }).remove;
+  return openLayer({ kind: 'popover', transient: true, onEscape: () => onClose() }).remove;
 });
 ```
+
+**`transient` je povinné u každé vrstvy** — bez něj `openLayer()` vyhodí
+výjimku a `tests/Unit/layerTransientUsage.test.mjs` zastaví `npm test`.
+Dokud je otevřená dočasná vrstva, drží zásobník na `<html>` atribut
+`data-transient-layer` (nastaví ho i uklidí sám, i když vrstva zmizí ze
+středu zásobníku) a jediné pravidlo ve `styles/base.css` podle něj vypne
+klepnutí do vložených dokumentů:
+
+```css
+html[data-transient-layer] iframe { pointer-events: none; }
+```
+
+Komponenta vrstvy ani komponenta s `<iframe>` proto klepnutí do dokumentu
+neřeší. Dvě upřesnění:
+
+- **Dočasná vrstva pod později otevřeným modalem se nepočítá**
+  (`hasTransientLayer()`): panel rozhodnutí zůstává otevřený pod vnořeným
+  formulářem z lookupu a kliky v něm záměrně ignoruje — vložený dokument
+  ve formuláři by jinak klepnutí nepřijal a žádné klepnutí by ho neodemklo.
+- **`<iframe>` uvnitř dočasné vrstvy** by pravidlo muselo vynechat, jinak
+  by v něm nešlo klepnout. Žádný takový není; kdo ho přidá, doplní
+  výjimku do selektoru.
+
+Kolečko nebo tah prstem nad dokumentem při otevřené dočasné vrstvě posouvá
+jeho okolí, ne dokument (PDF v náhledu dokladu okolí k posunutí nemá, takže
+se neposune nic) — vrstva se prvním klepnutím zavře a dokument se posouvá
+zase sám. Nabídka lookupu zavírá už na stisk tlačítka myši (`mousedown`):
+vrstva zmizí dřív, než tlačítko pustíš, a týž klik v dokumentu nic
+nespustí.
 
 `openLayer()` vrací `remove()` (úklid efektu — vrstva zmizí při zavření
 i při zničení komponenty), `isTop()` (je naposledy otevřená — `Modal` podle
@@ -1218,7 +1271,8 @@ v `npm test` zastaví každé další čtení klávesy `'Escape'` mimo zásobní
 Meze: nativní nabídka prohlížeče (`<select>`, výběr data) si Esc řeší sama
 a do aplikace ho nepustí; totéž platí pro fokus uvnitř `<iframe>` (náhled
 PDF) — tam Esc vrstvu nezavře. Vývojářský dashboard má vlastní `DevDialog`
-s vlastním posluchačem; sdílený `Popover` v něm jde přes zásobník.
+s vlastním posluchačem; sdílený `Popover` v něm jde přes zásobník
+a pravidlo pro vložené dokumenty platí i tam (`base.css` je sdílený).
 
 ### Akce na telefonu
 

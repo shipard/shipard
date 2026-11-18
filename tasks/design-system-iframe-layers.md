@@ -1,6 +1,6 @@
 # Design system — vložené dokumenty a klik mimo dočasnou vrstvu (D124)
 
-**Stav:** naplánováno — #160, D124
+**Stav:** hotovo — 2026-11-18 (#160, D124; 2 commity, odchylky viz Odchylky); scénáře ověřené v Chromiu (Playwright) na 390 px a 1280 px, skutečně vykreslené PDF a Firefox na telefonu zbývají na ruční ověření
 
 ## Kontext / Cíl
 
@@ -123,4 +123,87 @@ dokumentem, posluchač kliku mimo ho uvidí a vrstvu zavře.
 
 ## Odchylky
 
-_(doplní implementace)_
+**Zásobník (krok 1)**
+
+- Tvar: `openLayer({ kind, transient, onEscape })`, `transient` je **povinný
+  boolean** — chybějící nebo jiná hodnota vyhodí `TypeError`. Příznak je
+  atribut `data-transient-layer` na `<html>` (konstanta
+  `TRANSIENT_ATTRIBUTE`), přibyl export `hasTransientLayer()`.
+- **Proti zadání: dočasná vrstva pod později otevřeným modalem se
+  nepočítá.** Zadání říká „aspoň jedna dočasná vrstva v zásobníku“. Panel
+  rozhodnutí v náhledu dokladu ale zůstává otevřený, když se z jeho lookupu
+  otevře vnořený formulář nebo průvodce registrem, a `Popover.handleDocClick`
+  kliky v cizím modalu záměrně ignoruje. Vložený dokument ve vnořeném modalu
+  by tak klepnutí nepřijal a žádné klepnutí by ho neodemklo. Dnes tyto
+  formuláře PDF neobsahují — pravidlo je pojistka pro první formulář
+  s přílohami; po zavření vnořeného modalu se bublina zase počítá (test).
+- Navíc proti zadání `tests/Unit/layerTransientUsage.test.mjs`: každé volání
+  `openLayer()` ve zdrojích (i `src/dev/`) nese výslovné `transient`.
+  Výjimka za běhu by se u zřídka otevírané vrstvy ukázala až při otevření.
+- `ThemePanel` je dočasná vrstva jen na desktopu; na telefonu je uvnitř
+  `Modal`u, který se zapisuje sám jako nedočasný.
+- `CommandPalette` je dočasná kvůli úplnosti seznamu — má vlastní překryv
+  přes celé okno, klepnutí do dokumentu pod ní ji zavíralo i dřív.
+
+**Pravidlo pro vložené dokumenty (krok 2)**
+
+- `<iframe>` uvnitř dočasné vrstvy není žádný (grep `<iframe` ve `src/`:
+  `SandboxedHtml`, `AttachmentGrid` `mode="full"`, `PdfViewerPanel`,
+  `PrintPreviewDialog`, dev `PdfPane`) — selektor výjimku nemá.
+- Obal dokumentu s vlastním `onclick` není: klepnutí dopadne na
+  `.shpd-pdf-panel`, `figure.shpd-attgrid__full-item` nebo
+  `.shpd-content__block`, které na klik nereagují; `Modal` zavírá jen klik
+  přímo na překryv. Nic se neopravovalo.
+- **Posouvání při otevřené vrstvě:** kolečko nad PDF v náhledu dokladu
+  neposune nic (obal PDF se neposouvá) a vrstva zůstává otevřená; text
+  e-mailu má `<iframe>` na plnou výšku obsahu, posouvá se detail jako vždy.
+- **Nabídka lookupu zavírá na `mousedown`**, příznak tedy zmizí dřív, než
+  přijde `mouseup`: stránka dostane jen `mousedown`, vložený dokument jen
+  `mouseup` — klik nevznikne ani na jedné straně a nic dalšího se nespustí
+  (ověřeno ve formuláři zprávy vedle náhledu PDF). Další klik jde do
+  dokumentu.
+- Pravidlo platí i ve vývojářském dashboardu (`base.css` sdílí, kebab
+  a nabídka verze nad sdíleným `Popover`); tam neověřeno — headless Chromium
+  `PdfPane` nekreslí.
+
+**Ověření**
+
+- **Náhled tisku:** výběr jazyka je nativní `<select>`, ne bublina — scénář
+  odpadá. `<iframe>` náhledu tisku se v headless Chromiu nevykreslí vůbec.
+- **Text e-mailu:** zprávy demo sady mají jen prostý text; blok
+  `untrusted-html` jsem do odpovědi detailu podvrhla v prohlížeči (bez
+  zápisu do dat).
+- Panel vzhledu a výběr více hodnot vedle vloženého dokumentu neověřeny
+  (v aplikaci spolu na jedné obrazovce nejsou); mechanismus kliku mimo mají
+  stejný jako uživatelské menu.
+
+**Dokumentace (krok 3)**
+
+- Signaturu `openLayer()` citují jen `docs/design-system.md`
+  a `docs/frontend.md`; `docs/edit-forms.md`, `docs/viewer-grid.md`
+  a `docs/dashboard.md` zásobník jen zmiňují — beze změny.
+
+## Ověření — výsledek
+
+Chromium (Playwright), demo sada IT servis. V každém kroku přečtený příznak
+na `<html>`, `pointer-events` dokumentu, prvek pod bodem klepnutí
+(`elementFromPoint`), počet otevřených vrstev a události, které dostala
+stránka:
+
+| scénář | výsledek |
+|---|---|
+| 390 px, dotyk: náhled dokladu, tab PDF, kebab ⋮ → klepnutí do PDF | ✓ kebab zavřený, náhled zůstal; druhé klepnutí šlo do dokumentu, stránka nedostala žádnou událost, nic se neotevřelo |
+| 1280 px: náhled dokladu, panel rozhodnutí → klik do PDF vlevo | ✓ panel zavřený, náhled zůstal; druhý klik do dokumentu |
+| 1280 px: Došlá pošta, uživatelské menu → klik do textu e-mailu | ✓ menu zavřené |
+| 1280 px: Došlá pošta, paleta příkazů → klik do textu e-mailu | ✓ paleta zavřená (klik na její překryv) |
+| 1280 px: Došlá pošta, uživatelské menu → klik do velkého náhledu přílohy | ✓ menu zavřené; druhý klik do dokumentu |
+| 1280 px: formulář zprávy, nabídka lookupu → klik do náhledu PDF | ✓ nabídka zavřená, formulář zůstal; druhý klik do dokumentu |
+| bez dočasné vrstvy: PDF i text e-mailu | ✓ příznak není, `pointer-events: auto`, klik přesune fokus do dokumentu |
+| 1000 px: detail v draweru + boční chat (nedočasné) | ✓ příznak není, klik do textu e-mailu projde, drawer i chat zůstaly |
+
+`npm test` (328 testů), `npm run build`, `check-css-tokens.py`,
+`check-css-units.py`, `check-contrast.py` bez nálezů.
+
+**Zbývá ručně:** skutečně vykreslené PDF (výběr textu a posouvání bez
+otevřené vrstvy — headless Chromium PDF nekreslí), Firefox a telefon
+(původní nález z ručního ověření D121–D123).
