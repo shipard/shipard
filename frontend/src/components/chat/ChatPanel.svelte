@@ -5,8 +5,11 @@
    * s titulkem aktivní konverzace + Otevřít v Chatu (⧉) / Nová konverzace (+)
    * / ×. Historie konverzací žije v sekci Chat, panel žádný list nemá.
    *
-   * Zavírání v1 jen přes × — Esc listener by kolidoval s Esc ve
-   * FormDialogu/Modalu otevřeném nad panelem.
+   * Zavírání: × a Esc. Panel je po dobu svého života vrstva zásobníku
+   * (utils/layerStack.js) — Esc ho zavře, jen když nad ním není jiná vrstva
+   * (formulář otevřený z odpovědi, bublina). Klik mimo ho nezavírá, pracuje
+   * se vedle něj (#160 D122, D123). Rozepsaná zpráva zavření přežije (žije
+   * v chatStore).
    */
   import ChatThread from './ChatThread.svelte';
   import Button from '../ui/Button.svelte';
@@ -14,6 +17,7 @@
   import { chatPanelStore } from '../../stores/chatPanel.svelte.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import { layoutStore } from '../../stores/layout.svelte.js';
+  import { openLayer } from '../../utils/layerStack.js';
   import { iconOpenExternal, iconAdd, iconClose } from '../../icons.js';
   import { t } from '../../i18n/index.js';
 
@@ -23,6 +27,9 @@
     chatStore.conversations.find((c) => c.id === chatStore.activeId)?.title
       || t('chat.panel.title'),
   );
+
+  // Vrstva zásobníku po dobu života panelu — Esc ho zavře, je-li nahoře.
+  $effect(() => openLayer({ kind: 'panel', onEscape: () => chatPanelStore.close() }).remove);
 
   // Nav položka Chatu je hardcoded v NavigationController se stejným tvarem —
   // id 'chat' zajistí zvýraznění v sidebaru. activeId ve store zůstává,

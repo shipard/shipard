@@ -37,6 +37,11 @@ let error = $state(null); // { code, message } | null
 // před první zprávou odebere. Po založení drží scope řádek konverzace.
 let pendingSection = $state(null);
 
+// Rozepsaný text pole zprávy. Žije tady, ne v ChatInput, aby přežil zavření
+// bočního panelu (× i Esc, #160 D123) — panel se zavřením odmontuje. Maže
+// ho jen odeslání z pole; otevření panelu ani nová konverzace ho nechávají.
+let draft = $state('');
+
 async function loadConversations() {
   loadingList = true;
   try {
@@ -153,6 +158,8 @@ export const chatStore = {
   get thinking() { return thinking; },
   get error() { return error; },
   get pendingSection() { return pendingSection; },
+  get draft() { return draft; },
+  setDraft(text) { draft = text ?? ''; },
   // Efektivní scope vlákna: draft → pendingSection; založená konverzace →
   // section z detailu (activeConversation), fallback řádek ze seznamu
   // (detail hned po lazy create ještě nemusí být načtený).

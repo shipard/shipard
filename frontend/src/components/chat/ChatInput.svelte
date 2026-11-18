@@ -2,20 +2,22 @@
   /**
    * Message composer. Enter sends, Shift+Enter inserts a newline. Disabled
    * while a turn is streaming.
+   *
+   * Text je `value` (bindable) — vlákno ho drží v chatStore, aby rozepsaná
+   * zpráva přežila zavření bočního panelu. Esc pole neřeší: zavírá panel
+   * přes zásobník vrstev.
    */
   import Button from '../ui/Button.svelte';
   import { iconChat } from '../../icons.js';
   import { t } from '../../i18n/index.js';
 
-  let { disabled = false, onsend } = $props();
-
-  let text = $state('');
+  let { disabled = false, value = $bindable(''), onsend } = $props();
 
   function submit() {
-    const value = text.trim();
-    if (disabled || value === '') return;
-    text = '';
-    onsend?.(value);
+    const text = value.trim();
+    if (disabled || text === '') return;
+    value = '';
+    onsend?.(text);
   }
 
   function handleKeydown(e) {
@@ -29,7 +31,7 @@
 <div class="shpd-chat-input">
   <textarea
     class="shpd-chat-input__field"
-    bind:value={text}
+    bind:value
     {disabled}
     rows="2"
     placeholder={t('chat.input.placeholder')}
@@ -39,7 +41,7 @@
     icon={iconChat}
     label={t('chat.input.send')}
     variant="primary"
-    disabled={disabled || text.trim() === ''}
+    disabled={disabled || value.trim() === ''}
     onclick={submit}
   />
 </div>

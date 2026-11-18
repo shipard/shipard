@@ -119,7 +119,11 @@
       </span>
     </div>
   {/if}
-  <ChatInput disabled={chatStore.streaming} onsend={(text) => chatStore.send(text)} />
+  <ChatInput
+    disabled={chatStore.streaming}
+    bind:value={() => chatStore.draft, (text) => chatStore.setDraft(text)}
+    onsend={(text) => chatStore.send(text)}
+  />
 </div>
 
 <style>
