@@ -1,6 +1,6 @@
 # Design system — jednotná výška, písmo a rámeček ovládacích prvků (D106–D109)
 
-**Stav:** hotovo — #156, D106–D109 (2026-11-18)
+**Stav:** hotovo — #156, D106–D109 (2026-11-18); ručně ověřeno 2026-11-18, navazuje `design-system-controls-fixes.md` (D110–D112: 36 px, písmo 16 px, světlý rámeček zpět)
 
 ## Kontext / Cíl
 
@@ -369,3 +369,16 @@ hledání a filtr seznamu); tlačítka, spouštěč, segmenty a pilulky 14 px.
   samostatné stránce dala jednořádkové 32 / 28 px (jako bez `wrap`),
   dvouřádkové 47 px a `TextArea` s jedním řádkem 32 px.
 - Vývojářský dashboard jen pohledem na Zdroje dat (tlačítko `sm` 28 px).
+
+### Ruční ověření (2026-11-18, Firefox, oba vzhledy, telefon)
+
+- Stejná výška prvků v liště — lišta seznamu, hlavička detailu (akce,
+  Tisk ▾ jako sekundární), hlavička dashboardu (pilulky, Projít frontu,
+  Nahrát a Obnovit jako `ghost` s popiskem — v pořádku; tečka filtru
+  celá), lišta reportu, formulář faktury (datum i výběr ve Firefoxu),
+  dialog odeslání (pole + Přidat), Nastavení účtu — v pořádku.
+- Neaktivní pole světlé, kompaktní tlačítka na kartách feedu — v pořádku.
+- **Připomínky → D110–D112:** rámeček polí ve světlém vzhledu příliš
+  tmavý; písmo 14 px v polích malé; tlačítka v patičkách formuláře
+  a dialogu malá, zpět větší všude; na telefonu malý text tlačítek.
+- Panel rozhodnutí v náhledu importu na telefonu: tlačítka se nevejdou → #155.
