@@ -221,8 +221,9 @@
      Na telefonu jsou obě o stupeň vyšší (blok @media pod :root). */
   --shpd-control-height:    2rem;     /* 32px, na telefonu 40px */
   --shpd-control-height-sm: 1.75rem;  /* 28px, na telefonu 32px */
-  /* Svislé odsazení polí — dočasně, do převodu polí na výšku z tokenu. */
-  --shpd-input-padding-y: 0.25rem;
+  /* `--shpd-input-padding-y` zanikl: jednořádkové pole nemá svislé odsazení
+     (obsah centruje výška), víceřádkové ho dopočítá z výšky a řádku.
+     Vodorovné odsazení pole zůstává --shpd-space-sm. */
 
   /* Mezera mezi sekcemi ve FormTab a vertikální padding uvnitř sekce.
      Strany sekce zůstávají na --shpd-space-lg. Ladí kompaktnost formuláře. */

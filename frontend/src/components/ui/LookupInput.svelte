@@ -463,14 +463,17 @@
     align-items: stretch;
   }
 
+  /* Výška, písmo a rámeček z tokenů ovládacího prvku (#156 D106, D108,
+     D109): pole je stejně vysoké jako tlačítko a výběr vedle něj. */
   .shpd-lookup__input {
     width: 100%;
-    padding: var(--shpd-input-padding-y) var(--shpd-space-sm);
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
     /* Rezerva pro clear button. Při edit + clear se zvětší přes modifier. */
     padding-right: calc(var(--shpd-space-lg) + var(--shpd-space-sm));
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
@@ -501,6 +504,7 @@
     opacity: 0.6;
     cursor: not-allowed;
     background-color: var(--shpd-color-bg-secondary);
+    border-color: var(--shpd-color-border);
   }
 
   /* Kontejner napravo s edit + clear buttons. Flex z důvodu jednoduchého
@@ -584,7 +588,7 @@
     border: none;
     background: transparent;
     color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     cursor: pointer;
     text-align: left;

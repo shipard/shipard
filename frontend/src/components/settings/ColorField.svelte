@@ -64,14 +64,15 @@
     gap: var(--shpd-space-sm);
   }
 
-  /* Výška jako textové pole vedle — nativní input má vlastní rámeček. */
+  /* Výška ovládacího prvku jako textové pole vedle (#156 D106); rámeček
+     ovládacího prvku (D109). */
   .shpd-color-field__picker {
     flex: none;
     width: 2.75rem;
-    height: calc(var(--shpd-font-size-base, 1rem) * 1.5 + var(--shpd-input-padding-y) * 2 + 2px); /* px-ok: dva okraje po 1px */
+    height: var(--shpd-control-height);
     padding: 0.125rem;
     background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     cursor: pointer;
   }
@@ -79,6 +80,7 @@
   .shpd-color-field__picker:disabled {
     cursor: default;
     opacity: 0.6;
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-color-field__text {

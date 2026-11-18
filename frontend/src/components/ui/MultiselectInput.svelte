@@ -135,12 +135,15 @@
     align-items: center;
     gap: var(--shpd-space-xs);
     width: 100%;
-    min-height: calc(var(--shpd-input-padding-y) * 2 + 1.4em);
-    padding: var(--shpd-input-padding-y) var(--shpd-space-sm);
+    /* Výška ovládacího prvku jako minimum (#156 D106): s jedním řádkem čipů
+       je pole stejně vysoké jako výběr vedle něj, další řádky ho zvyšují.
+       Svislé odsazení jen drží čipy od rámečku. */
+    min-height: var(--shpd-control-height);
+    padding: 0.125rem var(--shpd-space-sm);
     padding-right: calc(var(--shpd-space-lg) + var(--shpd-space-sm));
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
@@ -168,6 +171,7 @@
     opacity: 0.6;
     cursor: not-allowed;
     background-color: var(--shpd-color-bg-secondary);
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-multiselect__placeholder {
@@ -230,7 +234,7 @@
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
     border: none;
     background: none;
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     color: var(--shpd-color-text);
     cursor: pointer;
@@ -248,7 +252,7 @@
     width: 1em;
     height: 1em;
     flex-shrink: 0;
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     font-size: var(--shpd-font-size-sm);
     color: transparent;

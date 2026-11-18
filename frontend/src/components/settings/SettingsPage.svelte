@@ -286,7 +286,8 @@
   }
 
   .shpd-settings-page__label {
-    padding-top: calc(var(--shpd-input-padding-y) + 0.0625rem);
+    /* Řádek popisku na svislém středu pole vedle (výška z tokenu, #156 D106). */
+    padding-top: calc((var(--shpd-control-height) - 1lh) / 2);
     font-size: var(--shpd-font-size-sm);
     font-weight: 500;
     color: var(--shpd-color-text);

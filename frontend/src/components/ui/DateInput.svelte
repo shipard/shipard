@@ -53,16 +53,19 @@
 {/if}
 
 <style>
+  /* Výška, písmo a rámeček z tokenů ovládacího prvku (#156 D106, D108,
+     D109): pole je stejně vysoké jako tlačítko a výběr vedle něj. */
   .shpd-input__field {
     width: 100%;
     /* Umožní zmenšení pod intrinsic šířku nativního date inputu (dd.mm.rrrr
        + ikona kalendáře) v grid/flex kontejneru — bez toho pole přetéká
        doprava na úzkých obrazovkách (mobil, inline rozpad). */
     min-width: 0;
-    padding: var(--shpd-input-padding-y) var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
@@ -88,6 +91,7 @@
     opacity: 0.6;
     cursor: not-allowed;
     background-color: var(--shpd-color-bg-secondary);
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-input__error {
