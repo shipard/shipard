@@ -1,6 +1,6 @@
 # Design system — vložené dokumenty a klik mimo dočasnou vrstvu (D124)
 
-**Stav:** hotovo — 2026-11-18 (#160, D124; 2 commity, odchylky viz Odchylky); scénáře ověřené v Chromiu (Playwright) na 390 px a 1280 px, skutečně vykreslené PDF a Firefox na telefonu zbývají na ruční ověření
+**Stav:** hotovo — 2026-11-18 (#160, D124; 2 commity, odchylky viz Odchylky); scénáře ověřené v Chromiu (Playwright) na 390 px a 1280 px; ručně ověřeno 2026-11-18 (Firefox, telefon)
 
 ## Kontext / Cíl
 
@@ -207,3 +207,18 @@ stránka:
 **Zbývá ručně:** skutečně vykreslené PDF (výběr textu a posouvání bez
 otevřené vrstvy — headless Chromium PDF nekreslí), Firefox a telefon
 (původní nález z ručního ověření D121–D123).
+
+## Ruční ověření (2026-11-18, Firefox, telefon)
+
+- Náhled dokladu: panel rozhodnutí → klik do vykresleného PDF panel zavře,
+  náhled zůstane; další klik do PDF funguje.
+- Bez otevřené bubliny: posouvání a výběr textu v PDF jako dřív.
+- Došlá pošta: uživatelské menu → klik do textu e-mailu i do velkého
+  náhledu PDF přílohy menu zavře.
+- Formulář zprávy s náhledem přílohy: nabídka lookupu → klik do PDF
+  nabídku zavře, formulář zůstane.
+- Boční chat zůstává otevřený při práci vedle (otevření e-mailu
+  z dashboardu); klik do textu e-mailu při otevřeném chatu ověřený
+  v Chromiu.
+- Telefon: tab PDF v náhledu dokladu, kebab ⋮ → klepnutí do plochy PDF
+  kebab zavře (původní nález).
