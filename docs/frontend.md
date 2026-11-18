@@ -763,15 +763,13 @@ Generický renderer — `FormRenderer` dostane tabulku a volitelně ID záznamu,
 - Auto-managed pole (id, created, modified) a systémové pole (`system: true`) se nezobrazují
 - password_hash se nezobrazuje v editaci
 
-**`FormInline` na mobilu** — inline skupina (víc polí na jednom řádku,
-např. „Platnost od / do") se na ≤ 48rem (mobilní režim shellu) rozpadne
-na samostatná pole pod
-sebou, každé se svým labelem vedle inputu (splyne s běžnými poli). Je to
-strukturní přepnutí markupu řízené `layoutStore.isMobile` (ne CSS) —
-desktop renderuje flex skupinu s mini-labely, mobil sérii label+input
-grid sourozenců, které `FormColumn` grid naskládá pod sebe. Input je
-sdílený mezi větvemi přes Svelte snippet `inputFor`. Detaily v
-[`edit-forms.md`](edit-forms.md) sekce *4.4 inline*.
+**`FormInline` v úzké sekci** — inline skupina (víc polí na jednom řádku,
+např. „Platnost od / do") se pod `30rem` šířky sekce (kontejner
+`form-section`, #157 D119) rozpadne na samostatná pole pod sebou, každé
+se svým popiskem nad sebou (splyne s běžnými poli, která mají v úzké
+sekci popisek také nad polem). Rozhoduje šířka sekce, ne okno; obě podoby
+jsou jedno DOM přepínané CSS (`@container`), `layoutStore.isMobile` se
+nepoužívá. Detaily v [`edit-forms.md`](edit-forms.md) sekce *4.4 inline*.
 
 **`FormStateBar` na mobilu** — footer formuláře má na desktopu Uložit
 + všechny přechody dokladu (Potvrdit, Archivovat, Storno…) vedle sebe.

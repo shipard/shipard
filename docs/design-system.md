@@ -577,6 +577,16 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   potvrzovacího dotazu (D116, §8 Modální dialogy).
 - ❌ `{#if !layoutStore.isMobile}` kolem zavíracího tlačítka dialogu. ✅
   Tlačítko se označí a skryje ho `Modal` — pravidlo je na jednom místě.
+- ❌ `grid-template-columns: max-content 1fr` v mřížce popisek–pole —
+  nejdelší popisek zúží pole bez omezení. ✅ `fit-content(40%)
+  minmax(0, 1fr)` (D118, §8 Popisky a pole); `max-content` zůstává mřížkám
+  jen ke čtení (`PropertyList`).
+- ❌ `white-space: nowrap` na popisku pole. ✅ Popisek se smí zalomit;
+  první řádek drží na středu pole horní odsazení, ne účaří (D118).
+- ❌ `{#if layoutStore.isMobile}` kolem popisků nebo skupiny polí —
+  formulář bývá v úzkém modalu i na desktopu. ✅ `@container` s prahem
+  `30rem` (ve formuláři pojmenovaný `form-section`), jedno DOM pro obě
+  podoby (D117, D119).
 - ❌ `border: 1px solid var(--shpd-color-border)` na poli, výběru nebo
   spouštěči — v tmavém vzhledu 1,4 : 1 vůči podkladu. ✅
   `var(--shpd-color-border-control)` (D109); ve světlém vzhledu mají oba
@@ -815,6 +825,55 @@ písma a řádkování.
   hledání průvodce registrem (záměrně větší; rámeček z tokenu mají),
   příkazová paleta. Ovládací prvek lišty nejsou: záložky, položky nabídek
   a popoverů, vzorky barev, čipy a přepínače o velikosti `meta`.
+
+### Popisky a pole
+
+Rozhodnutí D117–D119 z #157. Platí pro každou mřížku **popisek–ovládací
+prvek**: sloupec editačního formuláře (`FormColumn`, `FormFieldRow`,
+`FormInline`), stránku Nastavení (`SettingsPage`), změnu hesla
+(`ChangePasswordPanel`) a dialog odeslání (`SendDialog`). Mřížky jen ke
+čtení (`PropertyList`, souhrny dialogů) se jimi neřídí.
+
+- **Strop sloupce popisků** (D118): `grid-template-columns:
+  fit-content(40%) minmax(0, 1fr)`. Sloupec popisků je široký jako
+  nejdelší popisek, nejvýš ale 40 % šířky mřížky; delší popisek se zalomí
+  a zůstává zarovnaný doprava. `overflow-wrap: anywhere` nedovolí jednomu
+  dlouhému slovu strop přetlačit.
+- **Zarovnání nahoru** (D118): `align-items: start`, ne účaří. Popisek má
+  horní odsazení `calc((var(--shpd-control-height) - 1lh) / 2)` — první
+  řádek sedí na svislém středu pole, další řádky pod ním; výraz platí
+  i na telefonu, výšku mění token. Pole se k zalomenému popisku
+  nenatahuje a víceřádkové pole má popisek u svého prvního řádku
+  (s účařím seděl popisek u posledního řádku `TextArea`).
+- **Pole, jehož první řádek není vysoký jako ovládací prvek**, se
+  dorovná v komponentě pole, ne výjimkou v popisku: `TextArea`
+  a `MultiselectInput` dopočítávají svislé odsazení tak, aby první řádek
+  (řada čipů) měl střed ve výšce ovládacího prvku; čip adresy
+  v `SendDialog` stejným výrazem (adresa na středu, důvod pod ní čip jen
+  prodlouží) a řádek přílohy má výšku ovládacího prvku jako minimum.
+- **Popisky nad pole** (D117): pod prahem úzkého kontejneru `30rem` má
+  mřížka jednu stopu, popisek je vlevo nad polem a nemá horní odsazení.
+  Mezera popisek–pole `--shpd-space-xs`, mezi dvojicemi
+  `--shpd-space-md`. Kde jsou popisek a pole sourozenci přímo v mřížce
+  (`FormColumn`, `SendDialog`), má mřížka `row-gap` `md` a pole se
+  k popisku přitáhne záporným horním okrajem `calc(xs − md)` — nepotřebuje
+  pravidlo pro první popisek a skrytý prvek nenechá mezeru. Kde dvojici
+  drží obal (`SettingsPage`, `ChangePasswordPanel`), má obal `row-gap`
+  `xs`. Formulář se ptá pojmenovaného kontejneru `form-section`, takže se
+  popisky přepnou ve stejný okamžik jako sloupce sekce; mezera mezi
+  sloupci naskládanými pod sebe je také `md`.
+- **Skupina polí vedle sebe** (`inline`, D119) se přepíná podle šířky
+  sekce, ne okna: na široké šířce popisek prvního pole ve sloupci popisků
+  a další pole s malým popiskem před sebou, pod prahem pole pod sebou,
+  každé s popiskem nad sebou. Obě podoby jsou jedno DOM — každé pole má
+  jeden `<label for>`, který se pod prahem jen přesune nad pole. Na široké
+  šířce jsou položky skupiny buňky mřížky `repeat(auto-fit,
+  minmax(min(100%, 12rem), 1fr))`: dokud má každá položka (malý popisek
+  + pole) aspoň `12rem`, stojí v jedné řadě stejně široké; v užším sloupci
+  (dvousloupcová sekce na tabletu nebo v úzkém modalu) se zalomí na další
+  řádek, místo aby se pole smrskla a přetekla do sousedního sloupce.
+- **Popisek nad polem na každé šířce** (krátký dotaz v dialogu, pole
+  průvodce) má mezi popiskem a polem také `--shpd-space-xs`.
 
 ### Volitelné řádky
 
@@ -1157,7 +1216,7 @@ používají `@container`, ne `@media`.
 |---|---|---|
 | `48rem` (768 px) | `@media` v aplikaci | shell: drawer, fullscreen modal, seznam / detail, taby review modalu, výšky ve `vh` |
 | `68.75rem` (1100 px) | `@media` ve `frontend/src/dev/` | shell vývojářského dashboardu (split dvou sloupců) |
-| `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole, strany dokladu pod sebe, patička dialogu zalomená, obsah vpravo volitelného řádku pod popis (`option-row`, #149 D81) |
+| `30rem` (480 px) | `@container` | úzký obsah: sloupce pod sebe, popisky nad pole a skupina `inline` pod sebe (Popisky a pole výše, #157 D117, D119), strany dokladu pod sebe, patička dialogu zalomená, obsah vpravo volitelného řádku pod popis (`option-row`, #149 D81) |
 | `36rem` (576 px) | `@container` | složené řádky dokladu (`DocRows`, pojmenovaný kontejner `doc-rows`, #139 D45) |
 | `55rem` (880 px) | JS, šířka vieweru (`VIEWER_SPLIT_MIN`) | viewer se seznamem: užší viewer má seznam přes celou šířku a detail v draweru (D58) |
 

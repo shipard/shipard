@@ -1,6 +1,6 @@
 # Design system — popisky nad pole na úzké šířce, strop sloupce popisků (D117–D119)
 
-**Stav:** naplánováno — #157, D117–D119
+**Stav:** hotovo — #157, D117–D119 (2026-11-18); ruční ověření (Firefox, telefon) viz Odchylky → Zbývá ručně
 
 ## Kontext / Cíl
 
@@ -201,4 +201,98 @@ zapiš do Odchylek.
 
 ## Odchylky
 
-_(doplní implementace)_
+**Sloupec formuláře (D117, D118)**
+
+- Mezery pod prahem řeší `row-gap: md` mřížky sloupce a záporný horní
+  okraj pole `calc(xs − md)` (`FormFieldRow`, `FormInline`, stejně
+  `SendDialog`) — bez pravidla pro první popisek ve sloupci, skrytý prvek
+  nenechá mezeru. Prvky přes obě stopy mají pod prahem mezi sebou `md`
+  (na široké šířce `sm`); oddělovač pod prahem nemá vlastní horní okraj.
+  Mezera mezi sloupci sekce naskládanými pod sebe je `md` (dřív `sm`).
+- Popisek má `overflow-wrap: anywhere`: bez něj by jedno dlouhé slovo strop
+  40 % přetlačilo (`fit-content` neklesne pod `min-content`). Na měřených
+  formulářích se popisky lámou jen v mezerách.
+- Řádkování popisku se nenastavuje — `body` ho nemá, dva řádky nejsou
+  roztahané (snímek faktury na 700 px).
+- Účaří drželo popisek u **posledního** řádku víceřádkového pole (rozdíl
+  84–86 px u Poznámky adresy, majetku, řady, schránky a účetní skupiny) —
+  se zarovnáním nahoru je u prvního.
+- `MultiselectInput`: svislé odsazení dopočítané jako u `TextArea`
+  (jedna řada čipů = výška ovládacího prvku), první řada čipů je na středu
+  i u pole o více řadách. Ověřeno izolovaně (demo sada pole s více řadami
+  čipů nemá).
+
+**Skupina `inline` (D119)**
+
+- Jedno DOM bez skrývaných popisků: malý popisek je `<label for>` (dřív
+  `<span>`) a pod prahem se jen přesune nad pole. Hvězdičku povinného pole
+  proto nese popisek v obou podobách — na široké šířce nově i Jméno
+  a Příjmení osoby (dřív ji ukazovala jen telefonní podoba).
+- **Zalomení na široké šířce (nad rámec D119).** Měření na 700 px ukázalo,
+  že samotný práh `30rem` sekce nestačí: mezi ním a zhruba 770 px okna
+  (tablet na výšku, telefon naležato, užší modal) zůstala skupina vedle
+  sebe a pole se smrskla na 18 px a přetekla do sousedního sloupce (číslo
+  orientační v dvousloupcové sekci adresy, tři pole jména osoby) — dřív
+  tento rozsah pokrýval rozpad podle okna. Položky skupiny jsou proto buňky
+  mřížky `repeat(auto-fit, minmax(min(100%, 12rem), 1fr))`: dokud má každá
+  položka aspoň `12rem`, stojí v jedné řadě stejně široké (na 1280 px beze
+  změny, šířky polí shodné s původními), jinak se další pole zalomí na nový
+  řádek s malým popiskem před sebou (nejužší pole na 700 px 72 px místo
+  18 px, nic nepřetéká). Zvažovaná alternativa — rozpad do stopy popisků
+  podle šířky sloupce — by potřebovala další pojmenovaný kontejner na
+  `FormColumn` a tři pole jména v jednosloupcové sekci by stejně nevyřešila.
+
+**Ostatní mřížky (D117, D118)**
+
+- `ChangePasswordPanel`: stopy sdílí obal se `subgrid` (vzor
+  `SettingsPage`), sloupec popisků je podle nejdelšího popisku (131,5 px
+  místo pevných 180 px — pole se posunula vlevo), nápověda a tlačítko jdou
+  přes obě stopy. Barva popisku (`text-secondary`) zůstala.
+- `SendDialog`: čip adresy má svislé odsazení dopočítané jako `TextArea` —
+  jednořádkový čip je vysoký jako pole (36 px), čip s důvodem 54 px (dřív
+  45 px) a adresa je na středu výšky ovládacího prvku, kde sedí popisek.
+  Řádek přílohy má výšku ovládacího prvku jako minimum a zaškrtávátko
+  v něm nemá spodní okraj (dřív ho posouval nad střed řádku).
+- `SettingsPage`, pole s obrázkem (Ikona aplikace, Logo firmy): první řádek
+  pole je náhled obrázku, ne ovládací prvek — popisek zůstává ve výšce
+  ovládacího prvku od horního okraje (rozdíl 29 px před i po), beze změny.
+- Mřížky jen ke čtení, beze změny: souhrn ve
+  `VatRegistrationPrefillDialog` (`dl`), vlastnosti v `RegistryImportWizard`
+  (`dl`). `ResolveDecisionPanel` (`auto 1fr`) je ikona a text tlačítka.
+- Popisek nad polem na každé šířce: `RejectReasonPrompt`
+  a `SetPasswordPrompt` mají mezeru `space-xs` (dřív `0.375rem`);
+  `NewDatasourceModal`, pole ve `VatRegistrationPrefillDialog` a období
+  v `AssetsDepreciationRunDialog` ji měly. Beze změny, jiný účel: lišta
+  filtrů (`ViewerFilters`), parametry reportu (`ReportsPage`, v řadě),
+  přihlašovací obrazovky (vlastní měřítko).
+
+**Dokumentace**
+
+- Nad rámec kroku 4 upraveny i `docs/frontend.md` (`FormInline`)
+  a `docs/edit-forms-cookbook.md` (šířka labelu) — popisovaly
+  `isMobile` a `max-content 1fr`.
+- Řádek v `tasks/README.md` (oblast design systému) vznikl už se zadáním.
+
+**Ověření (Chromium, Playwright, demo sada IT servis, 18 scén × 360 / 390 /
+700 / 1280 px)**
+
+- 360 a 390 px: všechny popisky nad polem, pole přes celou šířku sloupce
+  (278 / 308 px; před tím nejužší 18 px u nastavení AI funkce, 42 px
+  u řady dokladů), mezera popisek–pole 4 px, mezi dvojicemi 16 px, nic
+  nepřetéká (před tím 3 přetečení u nové osoby na 360 px), hvězdičky
+  a chyby pod poli na místě.
+- 1280 px: šířka sloupce popisků se u žádného formuláře nezměnila (nejvíc
+  26 % sloupce u faktury přijaté), rozdíl středu prvního řádku popisku
+  a pole 0 px (před tím 0,5 px, u víceřádkových polí 84 px).
+- 700 px (úzký modal ověřen oknem ~700 px, varianta ze zadání; vnořený
+  formulář z „+ Vytvořit nový“ se neměřil): strop 40 % se uplatnil u faktur
+  (117 px, tři zalomené popisky), nastavení AI funkce a řady dokladů
+  (247 px místo 262 px); rozdíl středu 0 px.
+- Tmavý vzhled snímkem (Osoba, nastavení AI funkce, faktura, Nastavení,
+  odeslání na 360 a 1280 px).
+
+**Zbývá ručně**
+
+- Firefox: datum (`DateInput`) a poloha popisku — Firefox pro Playwright
+  na stroji není.
+- Skutečný telefon a tablet na výšku (zalomení skupiny `inline`).

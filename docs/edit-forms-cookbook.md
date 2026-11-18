@@ -572,7 +572,7 @@ nepřesouvají. Default, který stojí **jen** v `applyClientDefaults`, je mrtv�
 
 - **`lookup` v `inline`** — vyhodí `InvalidArgumentException` v konstruktoru `FormElement`. Inline povoluje jen `input` a `select`. Pro lookup udělej vlastní řádku v sloupci.
 - **JSONC zápis vs. wire formát** — v JSONC piš `camelCase` (`titleNew`, `inputType`, `foreignKey`, `formId`, `tableId`, `readOnly`). Loader převede na `snake_case` pro frontend.
-- **Šířka labelu** — synchronizuje se per-sloupec (CSS Grid `max-content 1fr`), **ne** napříč celou sekcí. Dva vedlejší sloupce v jedné sekci mohou mít různě široké label-dráhy. To je záměr.
+- **Šířka labelu** — synchronizuje se per-sloupec (CSS Grid `fit-content(40%) minmax(0, 1fr)` — nejvýš 40 % sloupce, delší popisek se zalomí), **ne** napříč celou sekcí. Dva vedlejší sloupce v jedné sekci mohou mít různě široké label-dráhy. To je záměr.
 - **`separator` `hidden`** — nenastavuj ručně. `autoHideSeparators` v `TabBuilder::build()` ho skryje, pokud jsou všechny elementy za ním ve stejném sloupci skryté.
 - **Pořadí scopů PHP builderu** — `tab() → section() → col() → element` (nebo `inline()`). Skipnutí úrovně → `LogicException`. `endInline()` je jediný explicitní close, který musíš volat.
 - **`subtable` a `attachments` jsou typy tabu, ne elementu** — v JSONC `"type": "subtable"` patří na úroveň tabu, nikoliv dovnitř `sections[].columns[].elements[]`. Loader starý zápis (`element.type: "subtable"`) odmítne s konkrétní hláškou.

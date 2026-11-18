@@ -117,7 +117,7 @@ Každý tab má `type`: `"fields"` (výchozí), `"subtable"`, nebo `"attachments
 ```
 
 - **Sekce** je vizuální karta s pozadím. Volitelný `title` (zobrazí se jako malý nadpis nahoře). `hidden: true` celou sekci skryje.
-- **Sloupce** uvnitř sekce jsou vertikální dráhy (1 a více). Šířka labelu se v rámci jednoho sloupce automaticky synchronizuje — CSS Grid `max-content 1fr`.
+- **Sloupce** uvnitř sekce jsou vertikální dráhy (1 a více). Šířka labelu se v rámci jednoho sloupce automaticky synchronizuje — CSS Grid `fit-content(40%) minmax(0, 1fr)`: podle nejdelšího popisku, nejvýš 40 % sloupce, delší popisek se zalomí (#157 D118).
 - **Elementy** žijí ve sloupcích, ne přímo v tabu. Element nemá `cols`; jeho šířka vyplývá z toho, ve kterém sloupci je.
 
 #### `type: "subtable"` — vlastní záložka pro child tabulku
@@ -275,16 +275,24 @@ Horizontální linka s volitelným textem. Pokrývá obě grid kolony (label + i
 
 Více polí v jedné řádce. Label prvního pole slouží jako „velký" label řádky (vlevo, v label dráze gridu). Ostatní pole mají vlastní mini-label vedle inputu. Uvnitř `inline.elements` jsou povoleny pouze `input` a `select`.
 
-Na mobilu (≤ 48rem, mobilní režim shellu) se inline skupina **rozpadne na
-samostatná pole pod
-sebou** — každý prvek skupiny dostane svůj label vedle inputu, jako běžné
-pole (mini-labely zanikají). Na desktopu zůstává skupina na jednom řádku
-(první prvek velký label vlevo, další mini-labely mezi poli). Řídí
-`layout.svelte.js` (`isMobile`) — je to **strukturní** přepnutí markupu
-(flex skupina + mini-labely → grid řádky + velké labely), ne jen CSS,
-proto JS store místo media query (stejný typ rozhodnutí jako viewer
-list/detail ve fázi 2). Label zůstává **vedle** inputu i na mobilu (grid
-`max-content 1fr` v `FormColumn` se nemění) — ověřeno na reálném telefonu.
+V úzké sekci (pod `30rem` šířky sekce — kontejner `form-section`, stejný
+práh jako skládání sloupců a popisky nad pole) se inline skupina **rozpadne
+na samostatná pole pod sebou**, každé se svým popiskem nad sebou jako běžné
+pole. Na širší šířce zůstává skupina na jednom řádku (první prvek velký
+label ve sloupci popisků, další pole s malým popiskem před sebou).
+Rozhoduje **šířka sekce, ne okno** (#157 D119): v úzkém modalu nebo panelu
+se skupina rozpadne i na desktopu a na telefonu naležato zůstane vedle
+sebe, dokud se sekce vejde. Obě podoby jsou **jedno DOM** přepínané CSS
+(`@container form-section (max-width: 30rem)`), žádný stav z JS — každé
+pole má jeden `<label for>`, malý popisek se pod prahem jen přesune nad
+pole. Hvězdičku povinného pole nese popisek v obou podobách.
+
+Na široké šířce jsou položky skupiny stejně široké buňky mřížky
+(`repeat(auto-fit, minmax(min(100%, 12rem), 1fr))`). Když by položka (malý
+popisek + pole) měla pod `12rem` — skupina ve dvousloupcové sekci na
+tabletu nebo v užším modalu — zalomí se další pole na nový řádek s malým
+popiskem před sebou; pole se nesmršťují k nule a nepřetékají do sousedního
+sloupce. Do skupiny proto patří krátká pole s krátkými popisky.
 
 ### 4.5 `content`
 
@@ -459,28 +467,39 @@ Formuláře se vykreslují ve dvou vrstvách CSS Gridu:
 }
 ```
 
-Na úzkém viewportu (<700px) se sloupce lámou pod sebe (`grid-template-columns: 1fr`).
+V úzké sekci (kontejner `form-section` pod `30rem`, #133 D43) se sloupce lámou pod sebe (`grid-template-columns: 1fr`), mezera mezi nimi je `md` jako mezi dvojicemi popisek–pole.
 
 ### Sloupec → label/input track
 
-`FormColumn` má vlastní dvouwidth grid: `max-content 1fr`. To znamená, že **všechny labely v daném sloupci jsou stejně široké** (podle nejdelšího), inputy zaberou zbytek. `FormFieldRow` emituje DVA sourozence (`<label>` a `<div>`) přímo do tohoto gridu, aby labely sdílely jednu dráhu.
+`FormColumn` má vlastní grid o dvou stopách: `fit-content(40%) minmax(0, 1fr)` (#157 D118). **Všechny labely v daném sloupci jsou stejně široké** (podle nejdelšího), nejvýš ale 40 % šířky sloupce — delší popisek se zalomí a zůstane zarovnaný doprava; inputy zaberou zbytek. `FormFieldRow` emituje DVA sourozence (`<label>` a `<div>`) přímo do tohoto gridu, aby labely sdílely jednu dráhu.
 
 ```css
 .shpd-form-column {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
   column-gap: var(--shpd-space-md);
   row-gap: var(--shpd-space-sm);
-  align-items: baseline;
+  align-items: start;
   align-content: start; /* při natáhnutí sekcí (vyšší soused) drží řádky nahoře */
 }
+
+/* popisek: první řádek na svislém středu pole vedle */
+.shpd-form-field-row__label {
+  padding-top: calc((var(--shpd-control-height) - 1lh) / 2);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
 ```
+
+Popisek a pole jsou zarovnané **nahoru**, ne na účaří: zalomený popisek pole nenatahuje a víceřádkové pole má popisek u svého prvního řádku. Pole, jehož první řádek není vysoký jako ovládací prvek, se dorovnává v komponentě pole (`TextArea`, `MultiselectInput`), ne výjimkou v popisku.
+
+**Úzká sekce** (kontejner `form-section` pod `30rem`, #157 D117): grid má jednu stopu, popisek je vlevo nad polem a smí se zalomit. Mezera popisek–pole je `xs`, mezi dvojicemi `md` — grid má `row-gap: md` a pole se ke svému popisku přitáhne záporným horním okrajem `calc(xs − md)`. Prvky přes obě stopy mají mezi sebou `md`. Pravidla sdílí stránka Nastavení, změna hesla a dialog odeslání — `docs/design-system.md` §8 Popisky a pole.
 
 Šířka labelu je **per-sloupec** — dva vedlejší sloupce v jedné sekci mohou mít různě široké labely. To je záměr; pokud by bylo třeba synchronizovat napříč sloupci, musel by se použít CSS subgrid.
 
 ### Full-span elementy
 
-`separator`, `content`, `component` a `checkbox` se rendují přes obě grid kolony (`grid-column: 1 / -1`). `inline` má vlastní label + flex container, takže do gridu vchází jako dvě běžné kolony.
+`separator`, `content`, `component` a `checkbox` se rendují přes obě grid kolony (`grid-column: 1 / -1`). `inline` má vlastní label + flex container, takže do gridu vchází jako dvě běžné kolony (v úzké sekci jako dva řádky jedné stopy).
 
 ### Fill sloupce (sloupec jen s komponentami)
 
@@ -897,7 +916,7 @@ formuláře. Např. `vat_duzp` má `name:cs` „Datum uskutečnění zdan. plně
 Lokalizace je zadarmo — `ConfigLocalizer::localize()` redukuje `formLabel:cs` /
 `formLabel:en` na holé `formLabel` ještě před `ColumnDefinition::fromArray()`,
 stejně jako u `name`. Mechanismus platí pro PHP builder i JSONC formy (oba jdou
-přes stejnou auto-label mapu) a funguje na desktopu i mobilu — na mobilu se
+přes stejnou auto-label mapu) a funguje na široké i úzké šířce — v úzké sekci se
 inline skupina rozpadne na samostatná pole, každé použije svůj (zkrácený) label.
 Explicitní `label:` v builderu / JSONC má pořád přednost před `formLabel`
 i `name`.
@@ -1506,9 +1525,9 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 | `FormEditor.svelte` | Hlavní shell: tab bar, obsah, toolbar (header je v Modal). Sleduje dirty stav (snapshot vs aktuální data), propaguje titulek/doc_states/dirty zpět do FormDialog přes callbacky `onFormLoaded` a `onDirtyChange`. Prop `readOnly`; `isReadOnly` / `isDisabled` zvlášť pro sub-tabulky; `handleSubtableChanged()` tichý reload rodiče; `saveRecord()` + `handleSave()` / `handleSaveAndContinue()` (`resetToNew()`, fokus prvního pole) |
 | `FormTab.svelte` | Jeden tab — vykreslí sekce / subtable / attachments podle `tab.type`; sub-tabulce předává `tabId`, `parentTable`, `readOnly`, `onSubtableChanged` |
 | `FormSection.svelte` | Karta s pozadím a volitelným titulkem; horizontální grid pro N sloupců |
-| `FormColumn.svelte` | Sloupec se sdílenou auto-šířkou labelů (`max-content 1fr`) |
-| `FormFieldRow.svelte` | Wrapper jedné label+input dvojice — emituje DVA sourozence do FormColumn gridu |
-| `FormInline.svelte` | Inline skupina (víc polí v jedné řádce); první pole použije label řádky, ostatní mají mini-labely |
+| `FormColumn.svelte` | Sloupec se sdílenou auto-šířkou labelů (`fit-content(40%) minmax(0, 1fr)`, zarovnání nahoru); v úzké sekci jedna stopa — popisky nad pole |
+| `FormFieldRow.svelte` | Wrapper jedné label+input dvojice — emituje DVA sourozence do FormColumn gridu; popisek s řádkem na středu pole, smí se zalomit |
+| `FormInline.svelte` | Inline skupina (víc polí v jedné řádce); první pole použije label řádky, ostatní mají mini-labely. V úzké sekci pole pod sebou s popisky nad sebou — jedno DOM, přepíná `@container form-section` |
 | `FormElement.svelte` | Renderer elementu — switch podle `type` + delegace na UI komponenty; `content` kreslí sdílená `content/ContentBlock.svelte` (§4.5), `component` registr `formComponents.js` (§4.6) |
 | `FormDocVatRecap.svelte`, `FormDocParties.svelte` | Komponenty formuláře dokladu `docVatRecap` / `docParties` nad sdílenými částmi dokladu (`document/VatRecapTable.svelte`, `document/PartyCard.svelte`) — §4.6 |
 | `FormSubTable.svelte` | Sub-tabulka: sloupce a řádky ze serveru (`/subtable`), Přidat / Upravit / Smazat (ConfirmDialog) nebo Zobrazit v read-only, klientský filtr od 11 řádků — kap. 15 |
@@ -1664,7 +1683,7 @@ Layout systém byl v PR „new-forms-01" kompletně přepracován:
 
 - **Pryč:** `cols: 1..4` na elementu, `type: "group"`, `type: "subtable"` jako element uvnitř tabu, label uvnitř UI komponent.
 - **Přibylo:** `FormSection`, `FormColumn` jako explicitní vrstvy mezi tabem a elementy. `FormFieldRow` a `FormInline` pro label-vně vykreslování. Subtable a attachments jsou vlastní typy tabu.
-- **Vizuál:** Sekce mají kartové pozadí (`--shpd-color-bg-secondary`) a jemnou hranu (`--shpd-color-border-subtle`). Labely vlevo s auto-šířkou v rámci sloupce (CSS Grid `max-content 1fr`).
+- **Vizuál:** Sekce mají kartové pozadí (`--shpd-color-bg-secondary`) a jemnou hranu (`--shpd-color-border-subtle`). Labely vlevo s auto-šířkou v rámci sloupce (CSS Grid `fit-content(40%) minmax(0, 1fr)`, od #157).
 - **Builder:** `TabBuilder` má scope management `section() → col() → elementy`. Bez `addInput`/`addSelect` prefixu; metody se jmenují podle widgetu (`input`, `select`, `date`, `textarea`, `checkbox`, …).
 - **JSONC:** stará struktura `tabs[].elements[]` s `cols` čísly je odmítnuta `JsoncFormLoader`em s konkrétní hláškou.
 - **`fullSize` flag odstraněn.** Všechny modaly mají jednotnou velikost, vnořené přes existující depth-shrink mechanismus (kap. 9). Žádný flag v JSONC ani PHP, žádný `full_size` ve wire formátu. Následně velikost top-level modalu přešla z pevných 1200×900 na `clamp(1200px, 80vw, 1700px)` × `clamp(720px, 88vh, 1100px)` — na větších monitorech se modal roztahuje, méně se scrolluje.
