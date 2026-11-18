@@ -29,7 +29,8 @@ a potřebuješ doklad, který dostane odběratel.
    s náhledem PDF — chvíli to trvá, doklad se teprve vyrábí.
 
 3. **Zkontroluj náhled** a dej **Stáhnout**. Soubor se uloží pod názvem
-   s číslem dokladu. Okno zavřeš tlačítkem **Zavřít**.
+   s číslem dokladu. Okno zavřeš tlačítkem **Zavřít**,
+   na telefonu křížkem vpravo nahoře.
 
 Doklad potřebuješ v jiném jazyce? Vlevo dole v okně **Tisk** je výběr
 **Jazyk** — čeština, angličtina, slovenština, němčina. Náhled se po změně

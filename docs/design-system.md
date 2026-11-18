@@ -570,6 +570,13 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
 - ❌ `<Button size="sm">` v liště, v patce dialogu nebo vedle pole. ✅
   Výchozí `md`; `sm` jen pro akci v řádku tabulky, na kartě a v hlavičce
   bloku (D107).
+- ❌ Vlastní tlačítko ⋮ s `Popover`em a položkami v komponentě. ✅
+  `ui/KebabMenu` s polem `items` (D114, §8 Akce na telefonu).
+- ❌ Zavřít / Zrušit v patičce `Modal`u bez `dismiss` — na telefonu zabírá
+  místo akcím a opakuje ×. ✅ `<Button dismiss … />`; výjimkou je odpověď
+  potvrzovacího dotazu (D116, §8 Modální dialogy).
+- ❌ `{#if !layoutStore.isMobile}` kolem zavíracího tlačítka dialogu. ✅
+  Tlačítko se označí a skryje ho `Modal` — pravidlo je na jednom místě.
 - ❌ `border: 1px solid var(--shpd-color-border)` na poli, výběru nebo
   spouštěči — v tmavém vzhledu 1,4 : 1 vůči podkladu. ✅
   `var(--shpd-color-border-control)` (D109); ve světlém vzhledu mají oba
@@ -1062,17 +1069,71 @@ posledního.
   s breakpointem shellu (D42, *Responzivita* níže) — tatáž hodnota jako
   `MOBILE_BREAKPOINT`, shodu hlídá kontrola v pre-commitu. Detaily v
   [`edit-forms.md`](edit-forms.md) sekce *Velikost modalu → Mobilní fullscreen*.
+- **Zavírací tlačítko patičky** (#155 D116): tlačítko, které dialog **jen
+  zavírá** — Zavřít / Zrušit se stejným účinkem jako × v hlavičce a Esc,
+  včetně stráže neuložených změn — nese prop `dismiss`
+  (`<Button dismiss … />`, značka `data-modal-dismiss`, žádná vlastní
+  logika kliku). Na telefonu ho `Modal` skryje: zavírá × a místo v patičce
+  zůstává akcím. Zbude-li v patičce jen zavírací tlačítko (dialog po
+  odeslání e-mailu, po zaúčtování odpisů), zmizí na telefonu celá patička.
+  Pravidlo je **jen v `Modal.svelte`** (`@media` shellu, D42) — dialog
+  kvůli němu `isMobile` nečte a tlačítko nevynechává sám. Skrývá se přes
+  potomky patičky (tlačítko smí být v obalu snippetu), prázdná patička se
+  pozná podle přímých dětí. Mimo telefon beze změny.
+  - **Výjimka — potvrzovací dotaz**: `ConfirmDialog`, dotaz na důvod
+    zamítnutí (`RejectReasonPrompt`) a jiný dotaz s odpovědí ano / ne
+    (smazání konverzace chatu). Zrušit je tam **odpověď na otázku**, ne
+    zavření — `dismiss` nenese a na telefonu zůstává.
+  - **Neoznačuje se** tlačítko, které dělá víc než zavření: vrací krok
+    průvodce (Zpět v importu z registru), ruší běžící operaci, zahazuje
+    rozpracovaná data jinak než ×.
 
 **Použití**:
 ```svelte
-<Modal title="Zamítnout dokument" {open} onClose={close} width="30rem">
+<Modal title="Nahrát do došlé pošty" {open} onClose={close} width="32.5rem">
   <p>Obsah dialogu</p>
   {#snippet footer()}
-    <Button label="Zrušit" variant="secondary" onclick={close} />
-    <Button label="Zamítnout" variant="danger" onclick={submit} />
+    <Button label="Zrušit" variant="secondary" dismiss onclick={close} />
+    <Button label="Nahrát" onclick={submit} />
   {/snippet}
 </Modal>
 ```
+
+### Akce na telefonu
+
+Rozhodnutí D113–D115 z #155. Lišta akcí, která se na telefon nevejde,
+se **nezalamuje do dvou řádků** a tlačítka se nezmenšují: viditelná zůstane
+hlavní akce a ostatní jdou do kebabu ⋮.
+
+- **Kebab je jedna komponenta** — `ui/KebabMenu` (D114): tlačítko ⋮
+  (čtverec výšky ovládacího prvku s rámečkem, `flex: none`) a bublina
+  `Popover` s položkami `{key, label, danger?, disabled?, testid?, run}`.
+  Bez položek se nevykreslí. Klik na položku bublinu zavře a zavolá
+  `run()`; druhé ťuknutí na ⋮ bublinu zavře. `placement` `top` (lišta
+  dole, výchozí) nebo `bottom`; `variant="plain"` je tlačítko bez rámečku
+  v barvě lišty pro horní lištu na barvě sidebaru (rozměr a hover dává
+  lišta přes `--shpd-kebab-size` / `--shpd-kebab-hover-bg`). Popisek
+  tlačítka je „Další akce“.
+- **Co jde do kebabu**: destruktivní akce (v menu červeně, `danger` — tón
+  `danger-text`) a vedlejší akce. **Viditelná zůstává hlavní akce** —
+  zelená / primární, ta, kterou uživatel na obrazovce nejčastěji dokončuje
+  — a postupové akce, kterých je v daném stavu pár. Neaktivní akce se
+  v kebabu ukáže neaktivní, ne skrytá; položka nese stejný `data-testid`
+  jako tlačítko na desktopu. Zavírací tlačítko dialogu do kebabu
+  **nepatří** — na telefonu ho skrývá `Modal` (D116, výše).
+- **O telefonu rozhoduje `layoutStore.isMobile`** (D115) — breakpoint
+  shellu, tentýž, při kterém `Modal` roztáhne patičku. Je to strukturní
+  přepnutí (tlačítka → kebab) v šabloně, ne CSS a ne container query.
+  Výčet akcí kebabu patří volajícímu, ne komponentě kebabu.
+- **Pořadí**: hlavní akce vlevo, ⋮ na pravém konci lišty.
+- **Vzory**: stavová lišta formuláře (`FormStateBar` — Uložit a postupové
+  přechody viditelné, destruktivní, `concept` a `mobileKebab` v kebabu),
+  horní lišta detailu (`MobileTopBar`, `plain`, `bottom`) a patička
+  náhledu dokladu z pošty (D113, §12 Review): **Vystavit a uzavřít** (u
+  Spisovny **Zařadit**) a ⋮ s **Vystavit koncept**, **Zamítnout**
+  a ve frontě **Přeskočit** — výčet v `exchange/reviewFooter.js`.
+- Vývojářský dashboard má vlastní `DevKebabMenu` (sdílí jen vybrané
+  komponenty).
 
 ### Responzivita
 
@@ -2063,6 +2124,13 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
   „protistrana · IČO“, štítek „Spisovna · druh“, bez stavu), shrnutí jako
   prostý text přes celou šířku, pole druhu a návrh šanonu (poslední
   položka) v jedné skupině `PropertyGroups`.
+- **Patička na telefonu** (#155 D113): hlavní akce a kebab ⋮
+  (`review-more`) — §8 Akce na telefonu. Hláška o neuloženém rozhodnutí
+  (`review-save-error`) má na telefonu vlastní řádek nad tlačítky; patička
+  má proto vlastní obal na celou šířku (`__footer-box`, vzor náhledu
+  tisku). V panelu rozhodnutí jsou tlačítka „Vytvořit …“ mřížkou
+  `auto 1fr` s `align-content: center` — popisek svisle uprostřed, ikona
+  na účaří prvního řádku i po zalomení.
 - **Typografie** (D54): v `components/exchange/` jen role — body pro
   texty, vstupy a tlačítka, meta pro doplňky (kódy, napárování, hinty,
   štítky, sekundární řádek výsledku), nadpisy sekcí panelů meta strong
@@ -2082,7 +2150,9 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `scripts/check-css-tokens.py` | Kontrola v pre-commitu: každý token ve `var(--x…)`, i s fallbackem, musí mít definici; u `var(--a, var(--b))` oba. Bez seznamu výjimek — definicí je i přiřazení do JS objektu (tokeny vlastního vzhledu). Druhé pravidlo (D61): rodina `--shpd-color-alert-*` smí být použitá jen v `Notice` a `PageBanner` — nález vypíše soubor, řádek a token; jediná výjimka v pojmenované konstantě (vývojářský dashboard). Třetí pravidlo (D71): hex barva jen ve `styles/variables.css` a `dev/theme.css` — hledá se v hodnotách deklarací, atributu `style` a direktivě `style:` mimo komentáře; výjimky po souborech s důvodem (`HEX_EXEMPT`), hex v JS datech se nehlídá. Čtvrté pravidlo (#153 D90): `color-mix(…)` s tónovým tokenem (`danger`, `warning`, `success`, `info`) je nález — text na tónovaném podkladu kreslí jen `Badge`; tónovaná plocha bez textu jen jako výjimka po souborech (`TONE_MIX_EXEMPT`, dnes prázdná), `primary` s nízkým podílem pod cílem přetažení souboru se nehlídá |
 | `frontend/src/styles/base.css` | Základní typografie a layout |
 | `frontend/src/styles/reset.css` | CSS reset |
-| `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami a velikostmi `md` / `sm` — výška z tokenu ovládacího prvku, bez popisku čtverec (§8 Výška ovládacího prvku). Popisek je vždy na jednom řádku (`nowrap`); prop `wrap` (opt-in) ho dovolí zalomit — text vlevo, výška prvku jako minimum, ikona u prvního řádku, nejvýš šířka rodiče, jednořádkové stejně vysoké jako bez `wrap`. Jen pro tlačítko s proměnným textem v úzkém místě (rychlé založení z registru s názvem firmy), ne jako obecný vzhled |
+| `frontend/src/components/ui/Button.svelte` | Tlačítkový primitiv s variantami a velikostmi `md` / `sm` — výška z tokenu ovládacího prvku, bez popisku čtverec (§8 Výška ovládacího prvku). Popisek je vždy na jednom řádku (`nowrap`); prop `wrap` (opt-in) ho dovolí zalomit — text vlevo, výška prvku jako minimum, ikona u prvního řádku, nejvýš šířka rodiče, jednořádkové stejně vysoké jako bez `wrap`. Jen pro tlačítko s proměnným textem v úzkém místě (rychlé založení z registru s názvem firmy), ne jako obecný vzhled. Prop `dismiss` označí tlačítko, které dialog jen zavírá — na telefonu ho skryje `Modal` (#155 D116) |
+| `frontend/src/components/ui/KebabMenu.svelte` | Kebab (§8 Akce na telefonu, #155 D114) — tlačítko ⋮ a bublina s akcemi, `items`, `placement`, `variant` `control` / `plain`; jediná implementace pro stavovou lištu formuláře, horní lištu na telefonu a patičku náhledu dokladu |
+| `frontend/src/components/ui/Modal.svelte` | Modální dialog (§8 Modální dialogy) — stack, fullscreen na telefonu, patička; na telefonu skrývá zavírací tlačítko `dismiss` a patičku, ve které nic jiného není (#155 D116) |
 | `frontend/src/components/ui/SectionHeading.svelte` | Nadpis sekce detailu (§12, D28) — heading bez linky, `level` 2–4, snippet `aside`; `role` title, `icon` tématu a `spacing` pro nadpis karty (§8 Karty, D36, D38) |
 | `frontend/src/components/ui/Card.svelte` | Karta v obsahu (§8 Karty, D33) — rámeček, odsazení md / `spacious` lg, nadpis `SectionHeading` + `aside`, `titleRole` a `icon` podle místa karty (D36, D38), tóny `warning` / `danger` / `info`, `as`, bez stínu a okraje |
 | `frontend/src/components/ui/Panel.svelte` | Vložený panel (§8 Vložené panely, D75) — `bg-secondary` s rámečkem `border-subtle`, `variant` compact, `tone` info, `padding` form, `as`; na něm `FormSection` |

@@ -67,6 +67,8 @@ frontend/
 │   │   │   ├── Checkbox.svelte
 │   │   │   ├── DateInput.svelte
 │   │   │   ├── Icon.svelte             # Univerzální ikona (inline SVG z FA definition)
+│   │   │   ├── Popover.svelte          # Plovoucí panel ukotvený k prvku
+│   │   │   ├── KebabMenu.svelte        # Tlačítko ⋮ s bublinou akcí (jediný kebab aplikace, #155 D114)
 │   │   │   └── Modal.svelte
 │   │   ├── chrome/                     # Primitivy aplikačního chrome — shelly je komponují
 │   │   │   ├── NavTree.svelte          # Rekurzivní renderer navigačního stromu
@@ -774,16 +776,18 @@ sdílený mezi větvemi přes Svelte snippet `inputFor`. Detaily v
 **`FormStateBar` na mobilu** — footer formuláře má na desktopu Uložit
 + všechny přechody dokladu (Potvrdit, Archivovat, Storno…) vedle sebe.
 Na ≤ 48rem se na úzkou obrazovku nevejdou, proto jdou do kebab menu (⋮)
-přes `Popover` (placement `top` — footer je dole, otevírá se nahoru):
+— sdílený `ui/KebabMenu` (#155 D114; placement `top` — footer je dole,
+otevírá se nahoru):
 **destruktivní** přechody (`archive`/`trash`/`cancelled` — Archivovat,
 Stornovat, Smazat; v kebabu červeně), **`concept`** (Uložit jako koncept
 — pomocná akce, v kebabu neutrálně) a přechody s příznakem **`mobileKebab`**
 v docStates (vedlejší akce, jejíž `stateStyle` na rozlišení nestačí — např.
 „Pozastavit" u úkolů má `edit` stejně jako „Opravit" u faktur). **Postupové**
 přechody (Potvrdit, V pořádku, Opravit…; v daném stavu jich je max pár)
-zůstávají viditelné vedle Uložit. Stejný vzor jako
-kebab ve vieweru (`MobileTopBar`) — strukturní přepnutí (tlačítka → kebab)
-řízené `layoutStore.isMobile` (ne CSS). Kebab volá stejný `onTransition`
+zůstávají viditelné vedle Uložit. Stejná komponenta jako
+kebab ve vieweru (`MobileTopBar`) a v patičce náhledu dokladu z pošty —
+strukturní přepnutí (tlačítka → kebab) řízené `layoutStore.isMobile`
+(ne CSS); pravidla v `design-system.md` §8 *Akce na telefonu*. Kebab volá stejný `onTransition`
 jako tlačítko, takže případný `confirm` proběhne stejně. Detaily v
 [`edit-forms.md`](edit-forms.md) sekce *Toolbar formuláře (FormStateBar)*.
 
@@ -839,7 +843,8 @@ v `layout.svelte.js`):
 
 - Seznam: hamburger + titul + akce seznamu jako ikony (Přidat, …).
 - Detail: ← zpět (vlevo, místo hamburgeru) + titul záznamu + hlavní
-  akce jako ikona + kebab (⋮) se zbytkem akcí (`Popover`).
+  akce jako ikona + kebab (⋮) se zbytkem akcí (sdílený `ui/KebabMenu`,
+  podoba `plain`).
 
 Viewer publikuje akce reaktivně přes `layoutStore.setScreenSurface(...)` podle
 `selectedRowId`; akce nesou navázaný `onClick`, takže MobileTopBar
@@ -1423,6 +1428,13 @@ function handleAction() {
   setTimeout(doSomething, 0);  // nebo queueMicrotask
 }
 ```
+
+Menu nad sdíleným `ui/Popover` (kebab `ui/KebabMenu`) tuhle past nemá:
+`Popover` hlídá klik mimo ve fázi **capture**, tedy dřív, než doběhne
+handler položky — položka je v tu chvíli ještě v DOM a klik se počítá
+jako klik uvnitř. `KebabMenu` proto bublinu zavře a akci zavolá hned
+(`run()`), na její dokončení nečeká. Vlastní kebab s vlastním
+listenerem se nepíše (#155 D114).
 
 #### Robustní logout / fetch v handleru
 

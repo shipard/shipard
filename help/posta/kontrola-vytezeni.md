@@ -113,6 +113,11 @@ a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
      nebo je vytěžení nepoužitelné. Důvod je povinný a uloží se k návrhu:
      *špatně rozpoznaný typ*, *není to faktura*.
 
+   Na telefonu je dole vidět jen **Vystavit a uzavřít**. **Vystavit
+   koncept** a **Zamítnout** (ve frontě i **Přeskočit**) najdeš pod
+   tlačítkem **Další akce** (⋮) vedle něj. Tlačítko **Zavřít** tam není —
+   náhled zavřeš křížkem vpravo nahoře.
+
 8. **Dokonči koncept.** Po **Vystavit koncept** se ti doklad hned otevře
    v editačním formuláři a je plně editovatelný — co jsi v náhledu jen
    zaregistroval, oprav teď. Zaúčtuje se teprve přechodem

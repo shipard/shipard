@@ -1,6 +1,6 @@
 # Design system — patička náhledu dokladu na telefonu, sdílený kebab, zavírací tlačítko v modalu (D113–D116)
 
-**Stav:** naplánováno — #155, D113–D116
+**Stav:** hotovo — #155, D113–D116 (2026-11-18); ruční ověření na telefonu a ve Firefoxu zbývá (viz Odchylky → Ověření)
 
 ## Kontext / Cíl
 
@@ -242,4 +242,103 @@ ovládacího prvku).
 
 ## Odchylky
 
-_(doplní implementace)_
+**Kebab (D114)**
+
+- `KebabMenu` má navíc prop `variant`: `control` (výchozí, čtverec
+  s rámečkem jako ve `FormStateBar`) a `plain` — bez rámečku, barvu dědí
+  z lišty. `plain` bere horní lišta na telefonu: tlačítko ⋮ tam sedí na
+  barvě sidebaru a rámeček ovládacího prvku s tmavým textem by neseděl.
+  Rozměr a podklad při hoveru dává lišta vlastnostmi `--shpd-kebab-size`
+  a `--shpd-kebab-hover-bg` (definuje je `MobileTopBar`).
+- `flex: none` tlačítka je zapsané selektorem s prvkem
+  (`button.shpd-kebab`), aby mělo vyšší specificitu než `flex: 1` patičky
+  `Modal`u — s jednou třídou by rozhodovalo pořadí CSS v bundlu.
+- Viditelné změny v horní liště: druhé ťuknutí na ⋮ bublinu zavře (dřív
+  zůstala otevřená) a položky mají odsazení stavové lišty (výška 41 px
+  místo 37 px). Stavová lišta formuláře je beze změny na pixel (390 px
+  i 1280 px, porovnání snímků).
+- Bublina je nově potomkem lišty (dřív sourozenec); `position: fixed`, na
+  rozvržení lišty nemá vliv.
+- Esc s otevřeným kebabem zavře bublinu **i** modal pod ní (oba
+  poslouchají klávesu zvlášť). Ve stavové liště formuláře to tak bylo už
+  dřív, v náhledu dokladu je to nově. Neopraveno — týká se `Popover`
+  v `Modal` obecně (i panelu rozhodnutí), ne kebabu.
+
+**Zavírací tlačítko (D116) — audit**
+
+- Označeno `dismiss`: náhled tisku (Zavřít), odeslání e-mailem (Zrušit
+  i Zavřít po odeslání), nahrání pošty, reanalýza ve vieweru, nastavení
+  hesla, běh odpisů (Zrušit / Zavřít po zaúčtování), průvodce importem
+  z registru (Zrušit na kroku hledání), předvyplnění registrace DPH,
+  propojení bankovního účtu, nový zdroj dat v portálu, náhled dokladu
+  (Zavřít), přejmenování konverzace chatu (Zrušit).
+- Neoznačeno:
+  - `ConfirmDialog`, `RejectReasonPrompt` — výjimka D116;
+  - smazání konverzace chatu — potvrzovací dotaz postavený přímo na
+    `Modal`, Zrušit je odpověď (stejný důvod jako `ConfirmDialog`);
+  - Zpět na kroku náhledu průvodce importem z registru — vrací krok;
+  - `QueueCategoriesPrompt` — v patičce je jen Pokračovat.
+- Přejmenování konverzace chatu je označené: je to malý formulář jako
+  nastavení hesla, ne dotaz.
+- Skrytí jde přes potomky patičky (ne jen přímé děti) — v náhledu tisku je
+  tlačítko v obalu snippetu. Prázdná patička se pozná podle přímých dětí.
+- `FormDialog`, `ViewerDetailModal` a `ThemePanel` patičku `Modal`u
+  nemají; dialogy vývojářského dashboardu (`DevDialog`) jsou mimo rozsah.
+
+**Patička náhledu (D113)**
+
+- Hláška `review-save-error` řádek na telefonu rozbíjela (vedle hlavní
+  akce a ⋮ by jí na 360 px zbylo necelých 90 px). Má vlastní řádek **nad**
+  tlačítky; patička má proto na telefonu vlastní obal na celou šířku
+  (`.shpd-exchange-modal__footer-box`, vzor náhledu tisku). Tlačítka
+  zůstávají v jednom řádku. Na desktopu beze změny.
+- Výčet akcí kebabu je čistá funkce `exchange/reviewFooter.js` s testem
+  (`tests/Unit/reviewFooter.test.mjs`) — nad rámec zadání.
+- Zavřít se vykresluje i na telefonu (skryté `Modal`em), `review-close`
+  zůstává v DOM.
+
+**Dokumentace**
+
+- Vedle `help/posta/kontrola-vytezeni.md` upravena i
+  `help/faktury-vydane/tisk-faktury.md` (okno Tisk se na telefonu zavírá
+  křížkem).
+- Zmínky o kebabu přes `Popover` upraveny i v `docs/edit-forms.md`.
+
+**Ověření**
+
+Chromium (Playwright), zdroj dat `zey0-g` (demo sada IT servis), šířky
+360, 390 a 1280 px, světlý i tmavý vzhled.
+
+| Místo | 360 px | 390 px | 1280 px |
+|---|---|---|---|
+| Patička náhledu — před | 2 tlačítka mimo okno (ve frontě 3) | 2 mimo okno | 4 (5) tlačítek |
+| Patička náhledu — po | Vystavit a uzavřít 264 px + ⋮ 40 px | 294 px + ⋮ 40 px | beze změny na pixel |
+| Kebab náhledu | Vystavit koncept, Zamítnout (červeně); ve frontě + Přeskočit | totéž | není |
+| Náhled tisku | Stáhnout 312 px, Zavřít skryté | Stáhnout 342 px | Zavřít + Stáhnout |
+| Odeslání po odeslání | patička skrytá, × zavírá | totéž | Zavřít |
+| Tlačítko „Vytvořit …“ — mezery nad / pod popiskem | 9 / 9 px (před 6 / 12) | 9 / 9 px | 7 / 7 px (před 6 / 8) |
+
+- Zalomený popisek „Vytvořit z registru: …“ (4 řádky na telefonu, 3 na
+  desktopu): mezery 6 / 6 px, ikona u prvního řádku jako dřív.
+- Naživo otevřené dialogy z auditu: náhled tisku, odeslání e-mailem (před
+  i po odeslání), nahrání pošty, průvodce importem z registru, náhled
+  dokladu; výjimky: neuložené změny formuláře, neuložená rozhodnutí
+  náhledu (`ConfirmDialog`) a dotaz na důvod zamítnutí — Zrušit / Zůstat
+  na telefonu vidět. Ostatní označené dialogy (reanalýza, nastavení
+  hesla, běh odpisů, dva dialogy Nastavení, nový zdroj dat, přejmenování
+  konverzace) naživo otevřené nebyly — mají stejnou značku a totéž
+  pravidlo `Modal`u.
+- Podvržená data (demo sada je nemá): dokument Spisovny (cíl náhledu
+  přepsaný v odpovědi serveru), hláška o neuloženém rozhodnutí (uložení
+  rozhodnutí vrací chybu), rychlé založení z registru s dlouhým názvem,
+  odeslání e-mailu (odpověď serveru podvržená, nic se neodeslalo).
+- Kebab ve stavové liště formuláře faktury a v horní liště detailu na
+  telefonu: stejné položky jako před změnou, v tmavém vzhledu destruktivní
+  položka v tónu `danger-text`.
+- `shpd-ds dataset-e2e` nad sadou `cz/association` (desktop): v pořádku,
+  bez nálezů — `review-close` i `review-apply-final` spec dál najde.
+- `check-css-tokens.py`, `check-css-units.py`, `check-contrast.py`,
+  `npm run build`, `npm test`, `npm run check:i18n` — v pořádku.
+- **Firefox neověřen** — na vývojovém stroji není. Pravidlo prázdné
+  patičky stojí na `:has()` (Firefox od verze 121).
+- Na skutečném telefonu neověřeno.
