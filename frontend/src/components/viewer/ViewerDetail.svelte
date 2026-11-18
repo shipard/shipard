@@ -627,7 +627,7 @@
 
   /* Dropdown trigger button — vizuálně stejný jako Button variant="secondary"
      (výška, písmo, odsazení, rámeček i zaoblení z týchž tokenů, #156
-     D106–D109), ale nativní <button> protože potřebujeme
+     D106–D110), ale nativní <button> protože potřebujeme
      `event.currentTarget` jako anchor pro Popover. */
   .shpd-detail__action-dropdown {
     display: inline-flex;
@@ -635,7 +635,7 @@
     gap: var(--shpd-space-xs);
     box-sizing: border-box;
     height: var(--shpd-control-height);
-    padding: 0 var(--shpd-space-md);
+    padding: 0 var(--shpd-space-lg);
     font-family: inherit;
     font-size: var(--shpd-font-size-control);
     font-weight: 500;

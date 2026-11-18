@@ -130,7 +130,7 @@
     align-self: flex-start;
     box-sizing: border-box;
     height: var(--shpd-control-height);
-    padding: 0 var(--shpd-space-md);
+    padding: 0 var(--shpd-space-lg);
     background: transparent;
     border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
