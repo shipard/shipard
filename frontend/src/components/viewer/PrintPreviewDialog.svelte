@@ -160,7 +160,7 @@
           />
         </div>
       {/if}
-      <Button label={t('common.close')} variant="secondary" onclick={onClose} />
+      <Button label={t('common.close')} variant="secondary" dismiss onclick={onClose} />
       <Button
         label={t('print.download')}
         icon={iconDownload}

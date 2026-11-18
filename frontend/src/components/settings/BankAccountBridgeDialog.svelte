@@ -175,7 +175,7 @@
   </div>
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" disabled={saving} onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" dismiss disabled={saving} onclick={onClose} />
     <Button
       label={saving ? t('common.saving') : t('setup.bankDialog.save', { count: selectedIds.length })}
       variant="primary"

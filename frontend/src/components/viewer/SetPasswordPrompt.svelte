@@ -41,7 +41,7 @@
   />
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" disabled={submitting} onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" dismiss disabled={submitting} onclick={onClose} />
     <Button
       label={submitting ? t('common.saving') : t('viewer.detail.setPassword')}
       variant="primary"

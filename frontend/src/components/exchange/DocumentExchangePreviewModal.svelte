@@ -390,6 +390,7 @@
       label={t('exchange.preview.actions.close')}
       variant="secondary"
       testid="review-close"
+      dismiss
       onclick={handleClose}
     />
     {#if queue}

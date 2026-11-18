@@ -475,5 +475,20 @@
     .shpd-modal__footer > :global(*) {
       flex: 1;
     }
+
+    /* Zavírací tlačítko (Zavřít / Zrušit, `<Button dismiss>`) patička na
+       telefonu nenese — zavírá × v hlavičce a místo zůstává akcím (#155
+       D116). Selektor přes potomky: tlačítko bývá i v obalu snippetu
+       (náhled tisku). Pravidlo je jen tady; dialogy kvůli němu `isMobile`
+       nečtou. */
+    .shpd-modal__footer :global([data-modal-dismiss]) {
+      display: none;
+    }
+
+    /* Zbylo-li v patičce jen zavírací tlačítko, zmizí celá (dialog po
+       odeslání, po zaúčtování). */
+    .shpd-modal__footer:not(:has(> :global(:not([data-modal-dismiss])))) {
+      display: none;
+    }
   }
 </style>

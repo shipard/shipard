@@ -95,7 +95,7 @@
 <Modal title={t('chat.rename.title')} open={renameId !== null} onClose={() => (renameId = null)} width="26.25rem">
   <Input bind:value={renameText} placeholder={t('chat.rename.placeholder')} />
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" size="sm" onclick={() => (renameId = null)} />
+    <Button label={t('common.cancel')} variant="secondary" size="sm" dismiss onclick={() => (renameId = null)} />
     <Button label={t('common.save')} variant="primary" size="sm" loading={busy} onclick={confirmRename} />
   {/snippet}
 </Modal>

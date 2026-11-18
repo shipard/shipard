@@ -177,7 +177,7 @@
   </div>
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" disabled={saving} onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" dismiss disabled={saving} onclick={onClose} />
     <Button
       label={saving ? t('common.saving') : t('setup.vatDialog.save')}
       variant="primary"

@@ -437,6 +437,7 @@
     <Button
       label={postResult ? t('common.close') : t('common.cancel')}
       variant="secondary"
+      dismiss
       disabled={submitting}
       onclick={onClose}
     />

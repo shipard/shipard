@@ -1485,7 +1485,7 @@
   </label>
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" disabled={reanalyzeSubmitting} onclick={closeReanalyzeDialog} />
+    <Button label={t('common.cancel')} variant="secondary" dismiss disabled={reanalyzeSubmitting} onclick={closeReanalyzeDialog} />
     <Button
       label={reanalyzeSubmitting ? t('viewer.reanalyze.submitting') : t('viewer.reanalyze.submit')}
       variant="primary"

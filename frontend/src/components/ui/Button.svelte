@@ -26,6 +26,14 @@
      * `wrap`.
      */
     wrap?: boolean;
+    /**
+     * Tlačítko, které dialog **jen zavírá** (Zavřít / Zrušit — stejný účinek
+     * jako × v hlavičce a Esc). Vykreslí značku `data-modal-dismiss`; patička
+     * `Modal`u takové tlačítko na telefonu skryje, zavírá × (#155 D116).
+     * Žádná vlastní logika kliku. Nepatří na odpověď potvrzovacího dotazu
+     * (`ConfirmDialog`) ani na tlačítko, které dělá víc než zavření.
+     */
+    dismiss?: boolean;
   }
 
   let {
@@ -40,6 +48,7 @@
     onclick,
     testid,
     wrap = false,
+    dismiss = false,
   }: Props = $props();
 
   const isDisabled = $derived(disabled || loading);
@@ -55,6 +64,7 @@
   class:shpd-btn--wrap={wrap}
   {type}
   data-testid={testid}
+  data-modal-dismiss={dismiss ? '' : undefined}
   disabled={isDisabled}
   title={iconOnly ? label : undefined}
   {onclick}

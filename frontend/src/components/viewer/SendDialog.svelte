@@ -396,9 +396,9 @@
 
   {#snippet footer()}
     {#if result}
-      <Button label={t('common.close')} variant="primary" onclick={onClose} />
+      <Button label={t('common.close')} variant="primary" dismiss onclick={onClose} />
     {:else}
-      <Button label={t('common.cancel')} variant="secondary" onclick={onClose} />
+      <Button label={t('common.cancel')} variant="secondary" dismiss onclick={onClose} />
       <Button
         label={sending ? t('send.sending') : t('send.submit')}
         icon={iconSend}

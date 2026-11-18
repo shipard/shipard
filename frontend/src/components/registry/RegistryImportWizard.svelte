@@ -438,6 +438,7 @@
       <Button
         label={t('registry.wizard.actions.cancel')}
         variant="secondary"
+        dismiss
         onclick={onClose}
       />
       <Button
