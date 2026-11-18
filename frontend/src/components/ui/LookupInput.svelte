@@ -3,6 +3,7 @@
   import { get, post } from '../../api/client.js';
   import { FORM_DATA_CONTEXT } from '../form/formContext.js';
   import { t } from '../../i18n/index.js';
+  import { openLayer } from '../../utils/layerStack.js';
   import Icon from './Icon.svelte';
   import { iconEdit, iconAdd } from '../../icons.js';
   // Přímý import FormDialog — stejný vzor jako FormSubTable.svelte. Vite zvládá
@@ -198,14 +199,6 @@
       return;
     }
 
-    if (e.key === 'Escape') {
-      if (open) {
-        e.preventDefault();
-        closeDropdown();
-      }
-      return;
-    }
-
     if (e.key === 'Tab') {
       // Tab opouští pole — zavři dropdown, ale nech default chování proběhnout
       // (žádný preventDefault), aby fokus přešel na další pole formuláře.
@@ -235,6 +228,13 @@
       document.addEventListener('mousedown', handleDocumentClick);
       return () => document.removeEventListener('mousedown', handleDocumentClick);
     }
+  });
+
+  // Otevřená nabídka je vrstva zásobníku: Esc zavře jen ji, formulář pod
+  // ní až dalším stiskem (#160 D121).
+  $effect(() => {
+    if (!open) return;
+    return openLayer({ kind: 'menu', onEscape: closeDropdown }).remove;
   });
 
   // ── Sub-form handlers ────────────────────────────────────────────────────

@@ -146,7 +146,13 @@
 
   function handleRenameKeydown(e) {
     if (e.key === 'Enter') confirmRename();
-    if (e.key === 'Escape') cancelRename();
+    if (e.key === 'Escape') {
+      // Esc tu ruší jen přejmenování. `preventDefault()` je značka pro
+      // zásobník vrstev (utils/layerStack.js), že stisk je spotřebovaný —
+      // jinak by týž Esc zavřel i formulář.
+      e.preventDefault();
+      cancelRename();
+    }
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────

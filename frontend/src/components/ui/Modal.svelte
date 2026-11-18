@@ -1,42 +1,17 @@
 <script lang="ts" module>
-  // Modul-level stack otevřených modalů. Esc reaguje pouze na ten poslední (nejvýše
-  // vykreslený) modal — jinak by se např. v subdialogu Kontaktu nad Osobou Esc trefil
-  // do obou window listenerů a zavřel by oba.
-  const modalStack: symbol[] = [];
+  import { hasLayer } from '../../utils/layerStack.js';
 
-  function isTopOfStack(id: symbol): boolean {
-    return modalStack[modalStack.length - 1] === id;
-  }
-
-  function pushModal(id: symbol): number {
-    modalStack.push(id);
-    return modalStack.length - 1;
-  }
-
-  function removeModal(id: symbol): void {
-    const i = modalStack.indexOf(id);
-    if (i !== -1) modalStack.splice(i, 1);
-  }
-
-  /** Je otevřený aspoň jeden modal? Pro Esc koordinaci non-modálních
-   *  vrstev (ViewerDetailDrawer) — drawer na Esc nereaguje, dokud je
-   *  nad ním modal. Jediný zdroj pravdy je tento stack. */
+  /** Je otevřený aspoň jeden modal? Čte `ViewerDetailDrawer`, dokud není
+   *  sám vrstvou zásobníku. */
   export function isModalOpen(): boolean {
-    return modalStack.length > 0;
+    return hasLayer('modal');
   }
-
-  /** Esc události, které už v tomto stisku zavřely nějaký modal. Prohlížeč mezi
-   *  jednotlivými listenery uživatelské události provádí microtask checkpoint,
-   *  takže Svelte stihne vyrenderovat modal otevřený prvním listenerem
-   *  (ConfirmDialog „Neuložené změny“ z FormDialog) a zapsat ho na vrchol stacku
-   *  dřív, než přijde na řadu jeho vlastní window listener — ten by ho týmž Esc
-   *  hned zase zavřel. Jeden stisk Esc = jeden zavřený modal. */
-  const consumedEscapes = new WeakSet<KeyboardEvent>();
 </script>
 
 <script lang="ts">
   import { type Snippet } from 'svelte';
   import { t } from '../../i18n/index.js';
+  import { openLayer, type LayerHandle } from '../../utils/layerStack.js';
 
   interface Props {
     title: string;
@@ -89,9 +64,11 @@
      *  FormDialog `navigation`), renderované mezi `summary` a `×`. Na mobilu
      *  zůstává viditelné — na rozdíl od summary. */
     headerNav?: Snippet;
-    /** Volitelný handler kláves. Modal ho volá jen když je tato karta na
-     *  vrcholu stacku (stejné pravidlo jako Esc), takže vnořený dialog
-     *  neposílá klávesy rodiči. Esc zůstává v režii Modalu. */
+    /** Volitelný handler kláves. Modal ho volá jen když je tato karta
+     *  naposledy otevřená vrstva (stejné pravidlo jako Esc), takže vnořený
+     *  dialog neposílá klávesy rodiči a klávesy nedostane ani modal, nad
+     *  kterým je otevřená bublina nebo nabídka pole. Esc obsluha neřeší —
+     *  zavírá ho zásobník vrstev. */
     onKeydown?: (e: KeyboardEvent) => void;
   }
 
@@ -114,19 +91,15 @@
     onKeydown,
   }: Props = $props();
 
-  // Unikátní ID této instance modalu — slouží k identifikaci ve stacku.
-  const modalId = Symbol('modal');
+  // Vrstva v zásobníku (utils/layerStack.js) po dobu otevření. Esc zavírá
+  // zásobník — jen naposledy otevřenou vrstvu, jeden stisk = jedna vrstva
+  // (#160 D121); modal vlastní posluchač Esc nemá.
+  let layer: LayerHandle | null = null;
 
-  // Klávesy jen pro modal na vrcholu stacku: Esc zavírá, ostatní dostane
-  // volající přes `onKeydown` (FormDialog: Alt+←/→ Předchozí/Další).
+  // Ostatní klávesy dostane volající přes `onKeydown` (FormDialog: Alt+←/→
+  // Předchozí/Další) — jen když je tento modal naposledy otevřená vrstva.
   function handleKeydown(e: KeyboardEvent) {
-    if (!isTopOfStack(modalId)) return;
-    if (e.key === 'Escape') {
-      if (consumedEscapes.has(e)) return;
-      consumedEscapes.add(e);
-      onClose();
-      return;
-    }
+    if (!layer?.isTop()) return;
     onKeydown?.(e);
   }
 
@@ -135,20 +108,24 @@
     if (e.target === e.currentTarget) onClose();
   }
 
-  // Hloubka ve stacku (0 = nejnižší/rodičovský, 1+ = vnořený). Používá se pro
-  // postupné zmenšení vnořených modalů, aby uživatel viděl rodičovský modal
-  // vyčnívat ze všech stran a vizuálně chápal hierarchii.
+  // Hloubka mezi otevřenými modaly (0 = nejnižší/rodičovský, 1+ = vnořený).
+  // Používá se pro postupné zmenšení vnořených modalů, aby uživatel viděl
+  // rodičovský modal vyčnívat ze všech stran a vizuálně chápal hierarchii.
   let depth = $state(0);
 
-  // Registrace ve stacku + body scroll lock při otevření; cleanup při zavření.
+  // Zápis do zásobníku vrstev + body scroll lock při otevření; úklid při
+  // zavření i zničení komponenty.
   $effect(() => {
     if (open) {
-      depth = pushModal(modalId);
+      const opened = openLayer({ kind: 'modal', onEscape: () => onClose() });
+      layer = opened;
+      depth = opened.depth;
       document.body.style.overflow = 'hidden';
       return () => {
-        removeModal(modalId);
+        opened.remove();
+        if (layer === opened) layer = null;
         // Body scroll obnovíme jen pokud už není otevřený žádný další modal.
-        if (modalStack.length === 0) {
+        if (!hasLayer('modal')) {
           document.body.style.overflow = '';
         }
       };
@@ -172,7 +149,7 @@
   });
 </script>
 
-<svelte:window onkeydown={open ? handleKeydown : undefined} />
+<svelte:window onkeydown={open && onKeydown ? handleKeydown : undefined} />
 
 {#if open}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->

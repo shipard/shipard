@@ -20,6 +20,8 @@
   // Without this guard, clicking inside the nested dialog would
   // simultaneously close the popover that opened it.
 
+  import { openLayer } from '../../utils/layerStack.js';
+
   let {
     open = false,
     anchor = null,
@@ -134,7 +136,8 @@
     };
   });
 
-  // Document-level click + Escape, only while open.
+  // Klik mimo (document, fáze capture) jen po dobu otevření. Bublina je
+  // dočasná vrstva — klik mimo ji zavírá (#160 D122).
   function handleDocClick(event) {
     if (!open || !panelEl) return;
     // Inside the panel → ignore.
@@ -155,20 +158,19 @@
     onClose();
   }
 
-  function handleKey(event) {
-    if (event.key === 'Escape' && open) {
-      onClose();
-    }
-  }
-
   $effect(() => {
     if (!open) return;
     document.addEventListener('click', handleDocClick, true);
-    document.addEventListener('keydown', handleKey);
     return () => {
       document.removeEventListener('click', handleDocClick, true);
-      document.removeEventListener('keydown', handleKey);
     };
+  });
+
+  // Esc jde přes zásobník vrstev: zavře bublinu, jen když je naposledy
+  // otevřená vrstva, a modal pod ní nechá být (#160 D121).
+  $effect(() => {
+    if (!open) return;
+    return openLayer({ kind: 'popover', onEscape: () => onClose() }).remove;
   });
 </script>
 

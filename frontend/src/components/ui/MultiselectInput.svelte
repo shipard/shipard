@@ -1,5 +1,6 @@
 <script>
   import { t } from '../../i18n/index.js';
+  import { openLayer } from '../../utils/layerStack.js';
 
   let {
     id,
@@ -46,24 +47,19 @@
     open = false;
   }
 
-  function handleKeydown(e) {
-    if (e.key === 'Escape' && open) {
-      e.stopPropagation();
-      open = false;
-    }
-  }
+  // Otevřená nabídka je vrstva zásobníku: Esc zavře jen ji (#160 D121).
+  $effect(() => {
+    if (!open) return;
+    return openLayer({ kind: 'menu', onEscape: () => { open = false; } }).remove;
+  });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -- keydown jen chytá
-     Escape probublaný z vnitřních fokusovatelných prvků, div sám není
-     interaktivní cíl. -->
 <div
   bind:this={rootEl}
   class="shpd-multiselect"
   class:shpd-multiselect--open={open}
   class:shpd-multiselect--disabled={disabled}
   onfocusout={handleFocusOut}
-  onkeydown={handleKeydown}
 >
   <button
     {id}
