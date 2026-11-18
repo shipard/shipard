@@ -574,9 +574,15 @@
      ikona sedí na účaří prvního řádku, posunutá jako ikona v textu. */
   /* Tlačítko přes šířku panelu, popisek se smí zalomit: výška ovládacího
      prvku jako minimum, písmo a rámeček z tokenů (#156 D106–D109). */
+  /* Mřížka místo flexu (#155): `align-items: baseline` drží ikonu na účaří
+     prvního řádku i u zalomeného popisku, `align-content: center` dává
+     řádek mřížky svisle doprostřed tlačítka — flex s baseline nechával
+     jednořádkový popisek nahoře (na telefonu o 3 px). */
   .shpd-resolve__create {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: baseline;
+    align-content: center;
     gap: var(--shpd-space-xs);
     width: 100%;
     box-sizing: border-box;
