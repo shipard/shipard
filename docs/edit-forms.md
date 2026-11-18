@@ -287,7 +287,7 @@ sebe, dokud se sekce vejde. Obě podoby jsou **jedno DOM** přepínané CSS
 pole má jeden `<label for>`, malý popisek se pod prahem jen přesune nad
 pole. Hvězdičku povinného pole nese popisek v obou podobách.
 
-Na široké šířce jsou položky skupiny stejně široké buňky mřížky
+Na široké šířce (#157 D120) jsou položky skupiny stejně široké buňky mřížky
 (`repeat(auto-fit, minmax(min(100%, 12rem), 1fr))`). Když by položka (malý
 popisek + pole) měla pod `12rem` — skupina ve dvousloupcové sekci na
 tabletu nebo v užším modalu — zalomí se další pole na nový řádek s malým

@@ -867,7 +867,7 @@ prvek**: sloupec editačního formuláře (`FormColumn`, `FormFieldRow`,
   a další pole s malým popiskem před sebou, pod prahem pole pod sebou,
   každé s popiskem nad sebou. Obě podoby jsou jedno DOM — každé pole má
   jeden `<label for>`, který se pod prahem jen přesune nad pole. Na široké
-  šířce jsou položky skupiny buňky mřížky `repeat(auto-fit,
+  šířce (D120) jsou položky skupiny buňky mřížky `repeat(auto-fit,
   minmax(min(100%, 12rem), 1fr))`: dokud má každá položka (malý popisek
   + pole) aspoň `12rem`, stojí v jedné řadě stejně široké; v užším sloupci
   (dvousloupcová sekce na tabletu nebo v úzkém modalu) se zalomí na další

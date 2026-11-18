@@ -1,6 +1,6 @@
 # Design system — popisky nad pole na úzké šířce, strop sloupce popisků (D117–D119)
 
-**Stav:** hotovo — #157, D117–D119 (2026-11-18); ruční ověření (Firefox, telefon) viz Odchylky → Zbývá ručně
+**Stav:** hotovo — #157, D117–D120 (2026-11-18); ručně ověřeno 2026-11-18 (Firefox, telefon, užší okno — viz Odchylky → Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -80,6 +80,11 @@ stejná pravidla v ostatních mřížkách popisek–pole.
   pole pod sebou, každé s plným popiskem nad polem (jako dnes na
   telefonu), ale podle šířky sekce, ne okna — přepne se spolu s popisky.
   Malé popisky vedle polí jen na široké šířce.
+- ✓ **D120** (doplňuje D119, potvrzeno po ověření) Na široké šířce jsou
+  pole skupiny `inline` buňky mřížky `repeat(auto-fit, minmax(min(100%,
+  12rem), 1fr))`: dokud má každá položka aspoň `12rem`, stojí v jedné
+  řadě, jinak se další pole zalomí na nový řádek s malým popiskem před
+  sebou (zalomené pole začíná ve stopě polí, ne pod popiskem skupiny).
 
 ## 1. Sloupec formuláře (D117, D118)
 
@@ -296,3 +301,20 @@ zapiš do Odchylek.
 - Firefox: datum (`DateInput`) a poloha popisku — Firefox pro Playwright
   na stroji není.
 - Skutečný telefon a tablet na výšku (zalomení skupiny `inline`).
+
+**Ruční ověření (2026-11-18, Firefox, telefon, oba vzhledy)**
+
+- Telefon: nastavení AI funkce — popisky nad poli; číselná řada dokladů —
+  oddělovač, popisek Poznámka a víceřádkové pole pod sebou; Osoba
+  a adresa — všechny popisky nad poli; uložení s prázdným povinným polem
+  (hvězdička, chyba) v pořádku.
+- Firefox na desktopu: data a popisky na středu pole, víceřádkové pole
+  s popiskem u prvního řádku — v pořádku.
+- Užší okno (~700 px): faktura přijatá — tři zalomené popisky, první
+  řádek na středu pole, pole se nezvětšilo; Osoba a adresa — zalomení
+  skupiny `inline` v pořádku (D120 potvrzeno); vnořený formulář přes
+  „+ Vytvořit nový“ v pořádku. Zalomené Příjmení začíná ve stopě polí
+  (pod polem Jméno, ne pod jeho popiskem) — záměr D120, ponecháno.
+- Změna hesla, Odeslat, hvězdičky Jméno / Příjmení na desktopu, mezera
+  mezi naskládanými sloupci sekce na telefonu — v pořádku.
+- Tmavý vzhled — v pořádku.
