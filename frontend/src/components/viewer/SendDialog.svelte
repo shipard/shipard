@@ -335,7 +335,7 @@
         </div>
 
         {#if addressError}
-          <span></span>
+          <span class="shpd-send__spacer"></span>
           <div class="shpd-send__address-error" role="alert">{addressError}</div>
         {/if}
 
@@ -430,19 +430,22 @@
     container-type: inline-size;
   }
 
+  /* Popisek–pole podle pravidel formuláře (#157 D117, D118): stopa popisků
+     nejvýš 40 %, popisek nahoře s řádkem na svislém středu pole vedle. */
   .shpd-send__grid {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
     gap: var(--shpd-space-sm) var(--shpd-space-md);
     align-items: start;
   }
 
   .shpd-send__grid > label,
   .shpd-send__label {
-    padding-top: 0.375rem;
+    padding-top: calc((var(--shpd-control-height) - 1lh) / 2);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
     text-align: right;
+    overflow-wrap: anywhere;
   }
 
   .shpd-send__chips,
@@ -459,11 +462,15 @@
     margin-bottom: var(--shpd-space-xs);
   }
 
+  /* Svislé odsazení čipu doplňuje jeho první řádek (adresu) do výšky
+     ovládacího prvku — stejný výraz jako TextArea: jednořádkový čip je
+     vysoký jako pole pod ním a adresa má střed tam, kde sedí popisek řádku
+     (#157 D118); důvod adresy na druhém řádku čip jen prodlouží dolů. */
   .shpd-send__chip {
     display: flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: 0.125rem var(--shpd-space-xs) 0.125rem var(--shpd-space-sm);
+    padding: max(0.125rem, calc((var(--shpd-control-height) - 1lh) / 2 - 1px)) var(--shpd-space-xs) max(0.125rem, calc((var(--shpd-control-height) - 1lh) / 2 - 1px)) var(--shpd-space-sm); /* px-ok: rámeček čipu */
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-bg-hover);
@@ -504,12 +511,20 @@
     color: var(--shpd-color-danger-text);
   }
 
+  /* Řádek přílohy má výšku ovládacího prvku — popisek „Přílohy“ sedí
+     u prvního řádku (#157 D118). */
   .shpd-send__attachments li {
     display: flex;
     align-items: center;
     gap: var(--shpd-space-sm);
-    padding: 0.125rem 0;
+    min-height: var(--shpd-control-height);
     font-size: var(--shpd-font-size-sm);
+  }
+
+  /* Zaškrtávátko má pod sebou okraj pro samostatný řádek formuláře — v řádku
+     přílohy by ho posunul nad střed (vůči velikosti souboru i popisku). */
+  .shpd-send__attachments li :global(.shpd-checkbox) {
+    margin-bottom: 0;
   }
 
   .shpd-send__attachment-size { color: var(--shpd-color-text-secondary); }
@@ -530,10 +545,19 @@
 
   .shpd-send__result p { margin: 0; }
 
-  /* Úzký kontejner: popisky nad poli. */
+  /* Úzký kontejner: popisky nad poli (#157 D117). Mezi dvojicemi `md`
+     z mřížky, pole se ke svému popisku přitáhne na `xs` záporným okrajem;
+     výplň ve stopě popisků (před chybou adresy) mizí. */
   @container (max-width: 30rem) {
-    .shpd-send__grid { grid-template-columns: minmax(0, 1fr); }
+    .shpd-send__grid {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--shpd-space-md);
+    }
     .shpd-send__grid > label,
     .shpd-send__label { text-align: left; padding-top: 0; }
+    .shpd-send__grid > :not(label, .shpd-send__label) {
+      margin-top: calc(var(--shpd-space-xs) - var(--shpd-space-md));
+    }
+    .shpd-send__spacer { display: none; }
   }
 </style>

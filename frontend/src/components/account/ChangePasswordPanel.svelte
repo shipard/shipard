@@ -56,27 +56,29 @@
     </div>
   {/if}
 
-  <div class="shpd-security-panel__field">
-    <label class="shpd-security-panel__label" for="current-password">{t('account.security.currentPassword')}</label>
-    <Input id="current-password" type="password" bind:value={currentPassword} disabled={saving} />
-  </div>
-  <div class="shpd-security-panel__field">
-    <label class="shpd-security-panel__label" for="new-password">{t('account.security.newPassword')}</label>
-    <Input id="new-password" type="password" bind:value={newPassword} disabled={saving} />
-  </div>
-  <div class="shpd-security-panel__field">
-    <label class="shpd-security-panel__label" for="confirm-password">{t('account.security.confirmPassword')}</label>
-    <Input id="confirm-password" type="password" bind:value={confirm} disabled={saving} />
-  </div>
+  <div class="shpd-security-panel__fields">
+    <div class="shpd-security-panel__field">
+      <label class="shpd-security-panel__label" for="current-password">{t('account.security.currentPassword')}</label>
+      <Input id="current-password" type="password" bind:value={currentPassword} disabled={saving} />
+    </div>
+    <div class="shpd-security-panel__field">
+      <label class="shpd-security-panel__label" for="new-password">{t('account.security.newPassword')}</label>
+      <Input id="new-password" type="password" bind:value={newPassword} disabled={saving} />
+    </div>
+    <div class="shpd-security-panel__field">
+      <label class="shpd-security-panel__label" for="confirm-password">{t('account.security.confirmPassword')}</label>
+      <Input id="confirm-password" type="password" bind:value={confirm} disabled={saving} />
+    </div>
 
-  <p class="shpd-security-panel__hint">{t('account.security.policyHint', { min: MIN_LENGTH })}</p>
+    <p class="shpd-security-panel__hint">{t('account.security.policyHint', { min: MIN_LENGTH })}</p>
 
-  <div class="shpd-security-panel__actions">
-    <Button
-      label={t('account.security.submit')}
-      loading={saving}
-      onclick={handleSubmit}
-    />
+    <div class="shpd-security-panel__actions">
+      <Button
+        label={t('account.security.submit')}
+        loading={saving}
+        onclick={handleSubmit}
+      />
+    </div>
   </div>
 </section>
 
@@ -99,42 +101,70 @@
     margin-bottom: var(--shpd-space-md);
   }
 
+  /* Popisek vlevo, pole vpravo podle pravidel formuláře (#157 D117, D118):
+     stopa popisků podle nejdelšího popisku, nejvýš 40 %, pole nejvýš 20rem;
+     popisek nahoře s řádkem na svislém středu pole. Řádky sdílejí stopy
+     přes subgrid (vzor SettingsPage); nápověda a tlačítko jdou přes obě
+     stopy, takže tlačítko končí u pravého okraje polí. */
+  .shpd-security-panel__fields {
+    display: grid;
+    grid-template-columns: fit-content(40%) minmax(0, 20rem);
+    column-gap: var(--shpd-space-md);
+    row-gap: var(--shpd-space-sm);
+    align-items: start;
+  }
+
   .shpd-security-panel__field {
     display: grid;
-    grid-template-columns: 11.25rem minmax(0, 20rem);
-    align-items: center;
-    gap: var(--shpd-space-md);
-    margin-bottom: var(--shpd-space-sm);
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    align-items: start;
   }
 
   .shpd-security-panel__label {
+    padding-top: calc((var(--shpd-control-height) - 1lh) / 2);
     font-size: var(--shpd-font-size-sm);
     font-weight: 500;
     color: var(--shpd-color-text-secondary);
     text-align: right;
+    overflow-wrap: anywhere;
   }
 
   .shpd-security-panel__hint {
-    margin: var(--shpd-space-sm) 0 var(--shpd-space-md);
+    grid-column: 1 / -1;
+    margin: 0 0 var(--shpd-space-sm);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
   }
 
   .shpd-security-panel__actions {
+    grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
-    max-width: calc(11.25rem + 20rem + var(--shpd-space-md));
   }
 
-  /* Úzký kontejner: popisky nad poli. */
+  /* Úzký kontejner: popisky nad poli; popisek–pole `xs`, mezi dvojicemi `md`. */
   @container (max-width: 30rem) {
+    .shpd-security-panel__fields,
     .shpd-security-panel__field {
-      grid-template-columns: 1fr;
-      gap: var(--shpd-space-xs);
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .shpd-security-panel__fields {
+      row-gap: var(--shpd-space-md);
+    }
+
+    .shpd-security-panel__field {
+      row-gap: var(--shpd-space-xs);
     }
 
     .shpd-security-panel__label {
+      padding-top: 0;
       text-align: left;
+    }
+
+    .shpd-security-panel__hint {
+      margin: 0;
     }
   }
 </style>

@@ -54,7 +54,7 @@
 <style>
   .shpd-setpw__label {
     display: block;
-    margin-bottom: 0.375rem;
+    margin-bottom: var(--shpd-space-xs);
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text);
   }

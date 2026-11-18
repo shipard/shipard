@@ -267,12 +267,13 @@
     margin-bottom: var(--shpd-space-md);
   }
 
-  /* Label vlevo (zarovnaný doprava), input vpravo — stejný vzor jako
-     FormFieldRow, ale s vlastním gridem (settings page nejede přes
-     FormEditor). */
+  /* Label vlevo (zarovnaný doprava), input vpravo — stejná pravidla jako
+     FormColumn / FormFieldRow (#157 D117, D118), ale s vlastním gridem
+     (settings page nejede přes FormEditor): stopa popisků nejvýš 40 %,
+     delší popisek se zalomí. */
   .shpd-settings-page__fields {
     display: grid;
-    grid-template-columns: max-content 1fr;
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
     column-gap: var(--shpd-space-md);
     row-gap: var(--shpd-space-md);
     align-items: start;
@@ -292,7 +293,7 @@
     font-weight: 500;
     color: var(--shpd-color-text);
     text-align: right;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   .shpd-settings-page__input {
@@ -321,11 +322,16 @@
     color: var(--shpd-color-text-secondary);
   }
 
-  /* Úzký kontejner: popisky nad pole, jeden sloupec. */
+  /* Úzký kontejner: popisky nad pole, jeden sloupec; popisek–pole `xs`,
+     mezi dvojicemi `md` z mřížky polí (#157 D117). */
   @container (max-width: 30rem) {
     .shpd-settings-page__fields,
     .shpd-settings-page__field {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .shpd-settings-page__field {
+      row-gap: var(--shpd-space-xs);
     }
 
     .shpd-settings-page__label {
