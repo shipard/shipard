@@ -1,6 +1,6 @@
 # Design system — patička náhledu dokladu na telefonu, sdílený kebab, zavírací tlačítko v modalu (D113–D116)
 
-**Stav:** hotovo — #155, D113–D116 (2026-11-18); ručně ověřeno 2026-11-18 (viz Odchylky → Ruční ověření)
+**Stav:** hotovo — #155, D113–D116 (2026-11-18); ručně ověřeno 2026-11-18 (Firefox, telefon — viz Odchylky → Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -344,6 +344,8 @@ Chromium (Playwright), zdroj dat `zey0-g` (demo sada IT servis), šířky
   Firefox od verze 121) — a jen v emulované šířce, ne na telefonu.
 
 **Ruční ověření (2026-11-18)**
+
+Ve Firefoxu a na telefonu — obojí, co automatické ověření nepokrylo.
 
 - Náhled dokladu přes **Zkontrolovat** i **Projít frontu**: všechna
   tlačítka jsou tam, kde mají být.
