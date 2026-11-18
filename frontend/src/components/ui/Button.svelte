@@ -6,6 +6,11 @@
     icon?: object;
     iconOnly?: boolean;
     variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'ghost';
+    /**
+     * `md` = běžná výška ovládacího prvku (lišta, patička dialogu, tlačítko
+     * vedle pole), `sm` = kompaktní — jen akce v řádku tabulky, na kartě
+     * a v hlavičce bloku (#156 D107).
+     */
     size?: 'sm' | 'md';
     disabled?: boolean;
     loading?: boolean;
@@ -38,12 +43,15 @@
   }: Props = $props();
 
   const isDisabled = $derived(disabled || loading);
+  // Bez popisku je tlačítko čtverec výšky ovládacího prvku (D107) — i když
+  // volající `iconOnly` nenastavil a popisek jen nepředal.
+  const square = $derived(iconOnly || !label);
 </script>
 
 <button
   class="shpd-btn shpd-btn--{variant} shpd-btn--{size}"
   class:shpd-btn--loading={loading}
-  class:shpd-btn--icon-only={iconOnly}
+  class:shpd-btn--icon-only={square}
   class:shpd-btn--wrap={wrap}
   {type}
   data-testid={testid}
@@ -62,14 +70,20 @@
 </button>
 
 <style>
+  /* Výška je token ovládacího prvku, ne součet odsazení a řádku (#156 D106,
+   * D107): tlačítko je stejně vysoké jako pole a výběr vedle něj. Svislé
+   * odsazení je nulové, obsah centruje flex. */
   .shpd-btn {
+    --shpd-btn-height: var(--shpd-control-height);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--shpd-space-sm);
-    padding: var(--shpd-space-sm) var(--shpd-space-lg);
+    box-sizing: border-box;
+    height: var(--shpd-btn-height);
+    padding: 0 var(--shpd-space-md);
     border-radius: var(--shpd-radius-md);
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-control);
     font-family: var(--shpd-font-family);
     font-weight: 500;
     cursor: pointer;
@@ -79,18 +93,18 @@
     line-height: 1;
   }
 
+  /* Kompaktní: písmo stejné, vodorovné odsazení 12 px — mezi `space-sm`
+   * (text se lepí na zaoblený roh) a `space-md` běžné velikosti. */
   .shpd-btn--sm {
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
-    font-size: var(--shpd-font-size-sm);
+    --shpd-btn-height: var(--shpd-control-height-sm);
+    padding: 0 0.75rem;
   }
 
+  /* Jen ikona: čtverec výšky tlačítka, v řadě se nemačká. */
   .shpd-btn--icon-only {
-    padding: var(--shpd-space-sm);
-    aspect-ratio: 1;
-  }
-
-  .shpd-btn--icon-only.shpd-btn--sm {
-    padding: var(--shpd-space-xs);
+    width: var(--shpd-btn-height);
+    padding: 0;
+    flex-shrink: 0;
   }
 
   .shpd-btn:disabled {
@@ -110,12 +124,18 @@
     border-color: var(--shpd-color-primary-hover);
   }
 
-  /* Secondary. Text a rámeček mají volitelné tokeny s fallbackem na dnešní
-   * hodnoty: aplikace je nedefinuje (vzhled beze změny), vývojářský dashboard
-   * je nastavuje v src/dev/theme.css — bílé tlačítko s modrým textem (#129 D1, D4). */
+  /* Secondary. Text a rámeček mají volitelné tokeny s fallbackem: aplikace
+   * je nedefinuje — rámeček je rámeček ovládacího prvku (#156 D109) —,
+   * vývojářský dashboard je nastavuje v src/dev/theme.css: bílé tlačítko
+   * s modrým textem (#129 D1, D4). */
   .shpd-btn--secondary {
     background-color: var(--shpd-color-bg);
     color: var(--shpd-btn-secondary-text, var(--shpd-color-text));
+    border-color: var(--shpd-btn-secondary-border, var(--shpd-color-border-control));
+  }
+
+  /* Neaktivní prvek nemá rámeček ovládacího prvku (D109). */
+  .shpd-btn--secondary:disabled {
     border-color: var(--shpd-btn-secondary-border, var(--shpd-color-border));
   }
 
@@ -149,12 +169,17 @@
     border-color: var(--shpd-color-success-hover);
   }
 
-  /* Ghost — bez pozadí, jen ikona/text */
+  /* Ghost — bez pozadí, jen ikona/text. Bez popisku čtverec jako každé
+   * ikonové tlačítko; s popiskem (Obnovit, Náhled) výška z tokenu a užší
+   * odsazení, protože nemá plochu ani rámeček. */
   .shpd-btn--ghost {
     background-color: transparent;
     color: var(--shpd-color-text-secondary);
     border-color: transparent;
-    padding: var(--shpd-space-xs);
+  }
+
+  .shpd-btn--ghost:not(.shpd-btn--icon-only) {
+    padding-inline: var(--shpd-space-sm);
   }
 
   .shpd-btn--ghost:hover:not(:disabled) {
@@ -164,23 +189,22 @@
 
   /* Zalamovaný popisek (prop `wrap`, opt-in — výchozí tlačítko zůstává na
    * jednom řádku). Řádkování jako běžný text, text vlevo, nejvýš šířka
-   * rodiče. Svislé odsazení je menší o půl prokladu řádku, takže
-   * jednořádkové tlačítko je stejně vysoké jako bez `wrap` a mezera mezi
-   * textem a rámečkem se nemění. Ikona a spinner sedí na účaří prvního
-   * řádku a jsou posunuté jako ikona v textu. */
+   * rodiče. Výška tlačítka je tu minimum, ne pevná hodnota: svislé odsazení
+   * doplňuje jeden řádek do výšky ovládacího prvku, takže jednořádkové
+   * tlačítko je stejně vysoké jako bez `wrap` a další řádky ho zvyšují.
+   * Ikona a spinner sedí na účaří prvního řádku a jsou posunuté jako ikona
+   * v textu. */
   .shpd-btn--wrap {
     align-items: baseline;
     justify-content: flex-start;
     min-width: 0;
     max-width: 100%;
-    padding-block: max(0rem, calc(var(--shpd-space-sm) - (1lh - 1em) / 2));
+    height: auto;
+    min-height: var(--shpd-btn-height);
+    padding-block: max(0rem, calc((var(--shpd-btn-height) - 1lh) / 2 - 1px)); /* px-ok: rámeček tlačítka */
     white-space: normal;
     line-height: normal;
     text-align: left;
-  }
-
-  .shpd-btn--wrap.shpd-btn--sm {
-    padding-block: max(0rem, calc(var(--shpd-space-xs) - (1lh - 1em) / 2));
   }
 
   .shpd-btn--wrap .shpd-btn__label {
