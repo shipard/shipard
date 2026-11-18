@@ -10,6 +10,8 @@
   //   - Footer: Zavřít / Zamítnout / Vystavit koncept / Vystavit a uzavřít
   //     (registry target: single Zařadit); both applies disabled for
   //     ai_failed / undecided references.
+  //   - Footer na telefonu (#155 D113, D115): jen hlavní akce (Vystavit
+  //     a uzavřít / Zařadit) a kebab ⋮ s ostatními — viz „Telefon" níž.
   //
   // Apply / reject delegate to parent callbacks — parent still owns the
   // actual API call (Dashboard / ViewerDetail).
@@ -68,16 +70,28 @@
   //     a subtitle řádkem při načítání další zprávy.
   //
   // Mobile (shell ≤ 48rem, #133 D42): single column with PDF/Preview tab switcher.
+  //
+  // Telefon — patička (#155 D113, D115, D116): pět tlačítek se do šířky
+  // nevejde ani po dvou, proto podle `layoutStore.isMobile` (breakpoint
+  // shellu, tentýž jako roztažená patička Modalu) zůstává vidět jen hlavní
+  // akce a vedlejší jdou do sdíleného kebabu — Vystavit koncept, Zamítnout,
+  // ve frontě Přeskočit (výčet `reviewFooter.js`). Položky kebabu nesou
+  // stejné `data-testid` jako tlačítka na desktopu. Zavřít je zavírací
+  // tlačítko (`dismiss`) — na telefonu ho skryje Modal, zavírá ×. Desktop
+  // beze změny.
 
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
   import Notice from '../ui/Notice.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
+  import KebabMenu from '../ui/KebabMenu.svelte';
   import DocumentExchangePreview from './DocumentExchangePreview.svelte';
   import RegistryExtractedPreview from './RegistryExtractedPreview.svelte';
   import PdfViewerPanel from './PdfViewerPanel.svelte';
   import { previewMessage, saveDecisions } from '../../api/exchange.js';
   import { pendingPaths } from './reviewGate.js';
+  import { mobileKebabActions } from './reviewFooter.js';
+  import { layoutStore } from '../../stores/layout.svelte.js';
   import { t } from '../../i18n/index.js';
 
   let {
@@ -260,6 +274,30 @@
   function handleApplyClick(applyOptions = null) {
     onApply(messageNdx, userActions, data?.target ?? 'docs', applyOptions);
   }
+
+  // Telefon: vedlejší akce v kebabu (viz hlavička). Volání jsou tatáž jako
+  // u tlačítek na desktopu.
+  const kebabRun = {
+    applyDraft: () => handleApplyClick(),
+    reject: () => onReject(messageNdx),
+    skip: () => handleSkip(),
+  };
+  let kebabItems = $derived(
+    mobileKebabActions({
+      isRegistry,
+      inQueue: Boolean(queue),
+      canApply,
+      hasData: data !== null,
+      loading,
+    }).map((action) => ({
+      key: action.id,
+      label: t(action.labelKey),
+      danger: action.danger,
+      disabled: action.disabled,
+      testid: action.testid,
+      run: kebabRun[action.id],
+    })),
+  );
 </script>
 
 {#snippet queueBadge()}
@@ -379,39 +417,14 @@
       data-pending-save={pendingSave}
       data-pending-paths={JSON.stringify(pending)}
     ></span>
-    {#if saveError}
+    {#snippet saveErrorNote()}
       <!-- Záchranná síť (#76): autosave selhal — klient mapu drží, další
            změna uložení zopakuje; apply funguje nezávisle. -->
       <span class="shpd-exchange-modal__save-error" role="status" data-testid="review-save-error">
         {t('exchange.preview.decisions.saveError')}
       </span>
-    {/if}
-    <Button
-      label={t('exchange.preview.actions.close')}
-      variant="secondary"
-      testid="review-close"
-      dismiss
-      onclick={handleClose}
-    />
-    {#if queue}
-      <!-- Jen batch mód (D4) — posun na další zprávu bez verdiktu,
-           karta zůstává ve feedu. Guard jako u zavření (#76). -->
-      <Button
-        label={t('exchange.preview.actions.skip')}
-        variant="secondary"
-        testid="review-skip"
-        disabled={loading}
-        onclick={handleSkip}
-      />
-    {/if}
-    <Button
-      label={t('exchange.preview.actions.reject')}
-      variant="danger"
-      testid="review-reject"
-      disabled={data === null}
-      onclick={() => onReject(messageNdx)}
-    />
-    {#if isRegistry}
+    {/snippet}
+    {#snippet applyRegistryButton()}
       <Button
         label={t('exchange.preview.actions.applyRegistry')}
         variant="success"
@@ -419,16 +432,8 @@
         disabled={!canApply}
         onclick={() => handleApplyClick()}
       />
-    {:else}
-      <!-- Oba apply gatuje stejné canApply (D3) — náležitosti stavu 40
-           hlídá backendová validace, chyba se ukáže alertem v hostiteli. -->
-      <Button
-        label={t('exchange.preview.actions.apply')}
-        variant="secondary"
-        testid="review-apply-draft"
-        disabled={!canApply}
-        onclick={() => handleApplyClick()}
-      />
+    {/snippet}
+    {#snippet applyFinalButton()}
       <Button
         label={t('exchange.preview.actions.applyFinal')}
         variant="success"
@@ -436,6 +441,67 @@
         disabled={!canApply}
         onclick={() => handleApplyClick({ targetDocState: 40 })}
       />
+    {/snippet}
+    {#if saveError && !layoutStore.isMobile}
+      {@render saveErrorNote()}
+    {/if}
+    <!-- Zavírací tlačítko (#155 D116): na telefonu ho skryje Modal. -->
+    <Button
+      label={t('exchange.preview.actions.close')}
+      variant="secondary"
+      testid="review-close"
+      dismiss
+      onclick={handleClose}
+    />
+    {#if layoutStore.isMobile}
+      <!-- Telefon (D113): hlavní akce a ⋮ v jednom řádku, pořadí jako ve
+           stavové liště formuláře. Vlastní obal na celou šířku patičky —
+           hláška o neuloženém rozhodnutí má řádek nad tlačítky, vedle nich
+           by jí zbylo pár desítek px. -->
+      <div class="shpd-exchange-modal__footer-box">
+        {#if saveError}
+          {@render saveErrorNote()}
+        {/if}
+        {#if isRegistry}
+          {@render applyRegistryButton()}
+        {:else}
+          {@render applyFinalButton()}
+        {/if}
+        <KebabMenu items={kebabItems} placement="top" testid="review-more" />
+      </div>
+    {:else}
+      {#if queue}
+        <!-- Jen batch mód (D4) — posun na další zprávu bez verdiktu,
+             karta zůstává ve feedu. Guard jako u zavření (#76). -->
+        <Button
+          label={t('exchange.preview.actions.skip')}
+          variant="secondary"
+          testid="review-skip"
+          disabled={loading}
+          onclick={handleSkip}
+        />
+      {/if}
+      <Button
+        label={t('exchange.preview.actions.reject')}
+        variant="danger"
+        testid="review-reject"
+        disabled={data === null}
+        onclick={() => onReject(messageNdx)}
+      />
+      {#if isRegistry}
+        {@render applyRegistryButton()}
+      {:else}
+        <!-- Oba apply gatuje stejné canApply (D3) — náležitosti stavu 40
+             hlídá backendová validace, chyba se ukáže alertem v hostiteli. -->
+        <Button
+          label={t('exchange.preview.actions.apply')}
+          variant="secondary"
+          testid="review-apply-draft"
+          disabled={!canApply}
+          onclick={() => handleApplyClick()}
+        />
+        {@render applyFinalButton()}
+      {/if}
     {/if}
   {/snippet}
 </Modal>
@@ -503,6 +569,27 @@
     align-self: center;
     color: var(--shpd-color-danger-text);
     font-size: var(--shpd-font-size-body);
+  }
+
+  /* Telefon (#155 D113): obal na celou šířku patičky (patička Modalu dává
+     svým dětem `flex: 1`). Hlavní akce zabere zbytek řádku, kebab je
+     čtverec vpravo; hláška o uložení má vlastní řádek nad nimi. */
+  .shpd-exchange-modal__footer-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--shpd-space-sm);
+    min-width: 0;
+  }
+
+  .shpd-exchange-modal__footer-box > :global(.shpd-btn) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .shpd-exchange-modal__footer-box > .shpd-exchange-modal__save-error {
+    flex: 1 0 100%;
+    margin-right: 0;
   }
 
   .shpd-exchange-modal__loading {
