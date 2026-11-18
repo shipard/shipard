@@ -191,12 +191,16 @@
   /* Obrys fokusu = primary v roli textu (#153 D95): v tmavém vzhledu
      6,6 : 1 vůči `bg` místo 2,49. Komponenty berou token, ne `primary`. */
   --shpd-color-border-focus:  var(--shpd-color-primary-text);
-  /* Rámeček ovládacího prvku (#156 D109): pole, výběr, spouštěč popoveru,
-     segment, pilulka filtru, nezaškrtnuté zaškrtávátko a radio, sekundární
-     tlačítko. Hranice prvku musí držet 3 : 1 (WCAG 1.4.11) — `border` má
-     1,2 : 1 a zůstává dělicím čarám, kartám a neaktivnímu prvku.
-     Světlý vzhled: 3,64 : 1 na `bg`, 3,42 na `bg-secondary` a `bg-hover`. */
-  --shpd-color-border-control: #7c8796;
+  /* Rámeček ovládacího prvku (#156 D109, D111): pole, výběr, spouštěč
+     popoveru, segment, pilulka filtru, nezaškrtnuté zaškrtávátko a radio,
+     sekundární tlačítko. Komponenty berou tento token, ne `border`.
+     Světlý vzhled je zdůvodněná výjimka z prahu 3 : 1 (D111): rámeček
+     `#7c8796` z D109 byl při ručním ověření příliš tmavý a rušil, proto má
+     token hodnotu `border` — 1,23 : 1 na `bg`, 1,16 na `bg-secondary`
+     a `bg-hover`; pole na šedém panelu nese i bílá plocha. Tmavý vzhled
+     práh drží (blok [data-theme="dark"]). Výjimka je vyjmenovaná
+     v check-contrast.py. */
+  --shpd-color-border-control: var(--shpd-color-border);
 
   /* Focus rings — jemné záře kolem inputu při focusu / chybě.
    * Používají se v Input/Checkbox/Select/atd. jako box-shadow. */
@@ -414,7 +418,8 @@
   --shpd-color-border-subtle: #2f343d;
   /* 3,55 : 1 na `bg`, 4,01 na `bg-secondary`, 3,01 na `bg-hover` — těsně;
      změna `bg-hover` v tmavém vzhledu znamená přepočítat i tento token
-     (#156 D109, hlídá check-contrast.py). */
+     (#156 D109, hlídá check-contrast.py). Světlý vzhled práh nedrží —
+     výjimka D111. */
   --shpd-color-border-control: #737c8c;
 
   /* Focus rings */

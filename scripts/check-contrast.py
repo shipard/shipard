@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kontrast hlídaných dvojic tokenů v obou vzhledech (#153 D88–D95, #156 D109).
+"""Kontrast hlídaných dvojic tokenů v obou vzhledech (#153 D88–D95, #156 D109–D112).
 
 Tónové tokeny jsou laděné na pozadí stránky. Jinde — na sidebaru, na
 tónovaném podkladu, na vybraném řádku a v tmavém vzhledu — kontrast
@@ -23,8 +23,9 @@ Prahy: text **4,5 : 1**, značka bez textu, ikona a obrys **3 : 1**.
 Dvojice jsou v konstantě `PAIRS`, každá skupina s rozhodnutím, které ji
 zavedlo. Dvojice, jejíž token v daném vzhledu neexistuje, se vynechá
 a `--list` ji uvede. **Výjimky** jsou v konstantě `EXCEPTIONS` — každá
-s důvodem a odkazem na rozhodnutí; výjimka, kterou dvojice už nepotřebuje
-(práh splňuje), je nález, aby seznam nezastarával.
+s důvodem a odkazem na rozhodnutí a jen pro vyjmenované vzhledy (dvojice
+zůstává v ostatních vzhledech hlídaná); výjimka, kterou dvojice už
+nepotřebuje (práh splňuje), je nález, aby seznam nezastarával.
 
 Co skript nehlídá:
 
@@ -98,8 +99,9 @@ def _pairs() -> list[Pair]:
     add(["border-focus"], PAGE, MARK, "D95 obrys fokusu")
     # Rámeček ovládacího prvku (#156 D109): pole a výběr stojí na `bg`
     # a `bg-secondary`, sekundární tlačítko, segment a pilulka filtru pod
-    # kurzorem na `bg-hover`.
-    add(["border-control"], PAGE, MARK, "D109 rámeček ovládacího prvku")
+    # kurzorem na `bg-hover`. Světlý vzhled je výjimka (D111, `EXCEPTIONS`),
+    # práh tu hlídá tmavý.
+    add(["border-control"], PAGE, MARK, "D109, D111 rámeček ovládacího prvku")
     # Běžný a sekundární text.
     add(["text", "text-secondary"], PAGE, TEXT, "text")
     # Vybraný řádek: tónové a šedé texty mají barvu běžného textu (D91).
@@ -128,12 +130,36 @@ class Exemption:
 
 
 # Zdůvodněné výjimky. Dvojice z `PAIRS` uvedená tady není nález; dvojice mimo
-# `PAIRS` (D94) je tu jen kvůli dokumentaci — `--list` ji vypíše s poměrem.
+# `PAIRS` (D94, D112) je tu jen kvůli dokumentaci — `--list` ji vypíše
+# s poměrem.
 EXCEPTIONS = (
     Exemption(
         "danger-hover", "bg", ("tmavý",), MARK,
         "D94: okraj tlačítka `danger` pod kurzorem v tmavém vzhledu; tlačítko"
         " identifikuje text (6,47 : 1), ne okraj",
+    ),
+    # #156 D111 (upravuje D109): ve světlém vzhledu má rámeček ovládacího
+    # prvku hodnotu `border`. Tmavý vzhled zůstává hlídaný prahem 3.
+    *(
+        Exemption(
+            "border-control", bg, ("světlý",), MARK,
+            "D111: rámeček ovládacího prvku ve světlém vzhledu = `border`;"
+            " rámeček nad prahem (`#7c8796`, D109) byl při ručním ověření"
+            " příliš tmavý a rušil",
+        )
+        for bg in PAGE
+    ),
+    # #156 D112 (rozšíření D94): plný prvek v barvě `primary` — primární
+    # tlačítko, zaškrtnuté zaškrtávátko, vybrané radio, aktivní pilulka
+    # filtru — vůči podkladu v tmavém vzhledu.
+    *(
+        Exemption(
+            "primary", bg, ("tmavý",), MARK,
+            "D112: plný prvek `primary` vůči podkladu v tmavém vzhledu; prvek"
+            " identifikuje bílý text nebo značka uvnitř (6,01 : 1), ne hrana"
+            " plochy",
+        )
+        for bg in ("bg", "bg-secondary")
     ),
 )
 
