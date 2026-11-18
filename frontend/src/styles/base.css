@@ -51,6 +51,26 @@ a:hover {
 }
 
 /* ============================================================
+ * Vložené dokumenty při otevřené dočasné vrstvě (#160 D124)
+ *
+ * Klepnutí do `<iframe>` (PDF, text e-mailu, náhled tisku, náhledy příloh)
+ * zůstává uvnitř vloženého dokumentu a posluchač kliku mimo na `document`
+ * ho neuvidí. Dokud je otevřená dočasná vrstva (bublina, nabídka pole,
+ * menu, panel vzhledu, paleta), drží zásobník `utils/layerStack.js` na
+ * `<html>` atribut `data-transient-layer` a vložené dokumenty klepnutí
+ * nepřijímají: dopadne na prvek pod nimi a vrstvu zavře jako klepnutí
+ * kamkoli jinam. Další klepnutí už do dokumentu projde.
+ *
+ * Jedno pravidlo pro všechny vrstvy i dokumenty — komponenta si klepnutí
+ * do `<iframe>` neřeší sama. `<iframe>` uvnitř dočasné vrstvy by pravidlo
+ * muselo vynechat; žádný takový není (docs/design-system.md §8 Zavírání
+ * vrstev).
+ * ============================================================ */
+html[data-transient-layer] iframe {
+  pointer-events: none;
+}
+
+/* ============================================================
  * Doc-state utility classes (globální)
  *
  * Nastavují CSS proměnnou `--shpd-row-bar` (barva levého stavového

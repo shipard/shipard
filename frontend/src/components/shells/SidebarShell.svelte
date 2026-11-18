@@ -36,7 +36,7 @@
   // když nad ním není jiná vrstva (uživatelské menu), #160 D121.
   $effect(() => {
     if (!layoutStore.isMobile || !layoutStore.drawerOpen) return;
-    return openLayer({ kind: 'drawer', onEscape: () => layoutStore.closeDrawer() }).remove;
+    return openLayer({ kind: 'drawer', transient: false, onEscape: () => layoutStore.closeDrawer() }).remove;
   });
 </script>
 

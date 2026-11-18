@@ -184,7 +184,7 @@
   // dalším stiskem (#160 D121).
   $effect(() => {
     if (!userMenuOpen) return;
-    return openLayer({ kind: 'menu', onEscape: closeUserMenu }).remove;
+    return openLayer({ kind: 'menu', transient: true, onEscape: closeUserMenu }).remove;
   });
 
   // Při přepnutí do kompaktu zavři otevřené menu (jinak by zůstalo viset).

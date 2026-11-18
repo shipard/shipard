@@ -29,7 +29,7 @@
   );
 
   // Vrstva zásobníku po dobu života panelu — Esc ho zavře, je-li nahoře.
-  $effect(() => openLayer({ kind: 'panel', onEscape: () => chatPanelStore.close() }).remove);
+  $effect(() => openLayer({ kind: 'panel', transient: false, onEscape: () => chatPanelStore.close() }).remove);
 
   // Nav položka Chatu je hardcoded v NavigationController se stejným tvarem —
   // id 'chat' zajistí zvýraznění v sidebaru. activeId ve store zůstává,

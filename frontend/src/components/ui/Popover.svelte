@@ -170,7 +170,7 @@
   // otevřená vrstva, a modal pod ní nechá být (#160 D121).
   $effect(() => {
     if (!open) return;
-    return openLayer({ kind: 'popover', onEscape: () => onClose() }).remove;
+    return openLayer({ kind: 'popover', transient: true, onEscape: () => onClose() }).remove;
   });
 </script>
 

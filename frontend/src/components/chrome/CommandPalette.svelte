@@ -47,7 +47,7 @@
   // zavře jen sebe.
   $effect(() => {
     if (!paletteStore.open) return;
-    return openLayer({ kind: 'palette', onEscape: () => paletteStore.closePalette() }).remove;
+    return openLayer({ kind: 'palette', transient: true, onEscape: () => paletteStore.closePalette() }).remove;
   });
 
   // Šipky a Enter lokálně po dobu otevření (vzor ThemePanel) — globální je

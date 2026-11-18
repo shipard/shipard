@@ -234,7 +234,7 @@
   // ní až dalším stiskem (#160 D121).
   $effect(() => {
     if (!open) return;
-    return openLayer({ kind: 'menu', onEscape: closeDropdown }).remove;
+    return openLayer({ kind: 'menu', transient: true, onEscape: closeDropdown }).remove;
   });
 
   // ── Sub-form handlers ────────────────────────────────────────────────────

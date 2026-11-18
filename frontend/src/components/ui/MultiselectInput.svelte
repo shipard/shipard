@@ -50,7 +50,7 @@
   // Otevřená nabídka je vrstva zásobníku: Esc zavře jen ji (#160 D121).
   $effect(() => {
     if (!open) return;
-    return openLayer({ kind: 'menu', onEscape: () => { open = false; } }).remove;
+    return openLayer({ kind: 'menu', transient: true, onEscape: () => { open = false; } }).remove;
   });
 </script>
 

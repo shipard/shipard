@@ -39,7 +39,7 @@
   // Drawer je po dobu svého života vrstva zásobníku: Esc ho zavře, jen
   // když nad ním není jiná vrstva (FormDialog z akce detailu, bublina) —
   // #160 D121. Klik mimo ho nezavírá, pracuje se vedle něj (D122).
-  $effect(() => openLayer({ kind: 'panel', onEscape: () => onClose?.() }).remove);
+  $effect(() => openLayer({ kind: 'panel', transient: false, onEscape: () => onClose?.() }).remove);
 </script>
 
 <div

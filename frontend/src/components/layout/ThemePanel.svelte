@@ -72,7 +72,7 @@
   // <Modal>, který se do zásobníku zapisuje sám.
   $effect(() => {
     if (!open || layoutStore.isMobile) return;
-    return openLayer({ kind: 'panel', onEscape: () => onClose() }).remove;
+    return openLayer({ kind: 'panel', transient: true, onEscape: () => onClose() }).remove;
   });
 </script>
 

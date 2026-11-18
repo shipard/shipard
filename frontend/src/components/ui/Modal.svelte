@@ -107,7 +107,7 @@
   // zavření i zničení komponenty.
   $effect(() => {
     if (open) {
-      const opened = openLayer({ kind: 'modal', onEscape: () => onClose() });
+      const opened = openLayer({ kind: 'modal', transient: false, onEscape: () => onClose() });
       layer = opened;
       depth = opened.depth;
       document.body.style.overflow = 'hidden';
