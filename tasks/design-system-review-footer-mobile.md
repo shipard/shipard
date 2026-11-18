@@ -1,6 +1,6 @@
 # Design system — patička náhledu dokladu na telefonu, sdílený kebab, zavírací tlačítko v modalu (D113–D116)
 
-**Stav:** hotovo — #155, D113–D116 (2026-11-18); ruční ověření na telefonu a ve Firefoxu zbývá (viz Odchylky → Ověření)
+**Stav:** hotovo — #155, D113–D116 (2026-11-18); ručně ověřeno 2026-11-18 (viz Odchylky → Ruční ověření)
 
 ## Kontext / Cíl
 
@@ -339,6 +339,15 @@ Chromium (Playwright), zdroj dat `zey0-g` (demo sada IT servis), šířky
   bez nálezů — `review-close` i `review-apply-final` spec dál najde.
 - `check-css-tokens.py`, `check-css-units.py`, `check-contrast.py`,
   `npm run build`, `npm test`, `npm run check:i18n` — v pořádku.
-- **Firefox neověřen** — na vývojovém stroji není. Pravidlo prázdné
-  patičky stojí na `:has()` (Firefox od verze 121).
-- Na skutečném telefonu neověřeno.
+- Automatické ověření běželo jen v Chromiu — Firefox pro Playwright na
+  vývojovém stroji není (pravidlo prázdné patičky stojí na `:has()`,
+  Firefox od verze 121) — a jen v emulované šířce, ne na telefonu.
+
+**Ruční ověření (2026-11-18)**
+
+- Náhled dokladu přes **Zkontrolovat** i **Projít frontu**: všechna
+  tlačítka jsou tam, kde mají být.
+- **Tisk** a **Odeslat** na faktuře vydané: Zavřít / Zrušit vidět není.
+- Potvrzovací dialogy: Zrušit / Zůstat mají.
+- Tlačítko „Vytvořit …“ v panelu rozhodnutí náhledu: popisek je
+  vycentrovaný.
