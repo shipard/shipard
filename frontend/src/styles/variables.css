@@ -213,13 +213,14 @@
   --shpd-space-lg: 1.5rem;   /* 24px */
   --shpd-space-xl: 2rem;     /* 32px */
 
-  /* Ovládací prvky (#156 D106–D108, docs/design-system.md → Výška
+  /* Ovládací prvky (#156 D106–D108, D110, docs/design-system.md → Výška
      ovládacího prvku). Výška je token, ne součet odsazení, písma a řádkování:
      běžnou sdílí tlačítko `md`, pole, výběr, spouštěč popoveru, segmentový
      přepínač a pilulka filtru; víceřádkové pole ji má jako minimum. Kompaktní
      je tlačítko `sm` — jen akce v řádku tabulky, na kartě a v hlavičce bloku.
-     Na telefonu jsou obě o stupeň vyšší (blok @media pod :root). */
-  --shpd-control-height:    2rem;     /* 32px, na telefonu 40px */
+     Na telefonu jsou obě o stupeň vyšší (blok @media pod :root). Běžná výška
+     je 36 px (D110) — 32 px z D106 bylo při ručním ověření málo. */
+  --shpd-control-height:    2.25rem;  /* 36px, na telefonu 40px */
   --shpd-control-height-sm: 1.75rem;  /* 28px, na telefonu 32px */
   /* `--shpd-input-padding-y` zanikl: jednořádkové pole nemá svislé odsazení
      (obsah centruje výška), víceřádkové ho dopočítá z výšky a řádku.
@@ -254,13 +255,18 @@
   /* Nadpis stránky v toku (#149 D78, ui/PageHeader) — jediná role na xl;
      nadpis stránky v liště (reporty) je title jako hlavička detailu. */
   --shpd-font-size-page:    var(--shpd-font-size-xl);  /* 20 px — nadpis stránky */
-  /* Písmo ovládacích prvků (#156 D108) — žádná nová velikost, obě jsou
-     `body`. Dva tokeny, protože se na telefonu rozcházejí: pole (text, který
-     uživatel píše — vstup, výběr, víceřádkový text) má tam 16 px, jinak iOS
-     při fokusu stránku přiblíží; tlačítko, spouštěč, segment a pilulka
-     zůstávají 14 px. */
-  --shpd-font-size-control: var(--shpd-font-size-body);
-  --shpd-font-size-field:   var(--shpd-font-size-body);
+  /* Písmo ovládacích prvků (#156 D110, upravuje D108) — žádná nová
+     velikost. Běžný prvek má 16 px na každé šířce: `control` tlačítko,
+     spouštěč, segment, pilulka a popisek zaškrtávátka, `field` pole (text,
+     který uživatel píše — vstup, výběr, víceřádkový text). Hodnotu mají
+     stejnou; zůstávají dva tokeny, protože role se mohou rozejít.
+     Kompaktní prvek má 14 px: `control-sm` tlačítko `sm`, `field-sm` pole
+     v řádku tabulky — to má na telefonu 16 px (blok @media pod :root),
+     jinak iOS při fokusu stránku přiblíží. */
+  --shpd-font-size-control:    var(--shpd-font-size-base);
+  --shpd-font-size-field:      var(--shpd-font-size-base);
+  --shpd-font-size-control-sm: var(--shpd-font-size-body);
+  --shpd-font-size-field-sm:   var(--shpd-font-size-body);
   --shpd-font-weight-normal: 400;
   --shpd-font-weight-strong: 600;
 
@@ -293,13 +299,14 @@
 }
 
 /* Telefon — breakpoint shellu (#133 D42). Ovládací prvky jsou o stupeň vyšší
-   (dotyk) a pole má 16 px (#156 D106, D108). Barvy se tu nemění, proto blok
-   platí pro oba vzhledy. */
+   (dotyk, #156 D106); běžné písmo je 16 px všude (D110), tady roste jen
+   kompaktní pole — iOS při fokusu pole s menším písmem stránku přiblíží.
+   Barvy se tu nemění, proto blok platí pro oba vzhledy. */
 @media (max-width: 48rem) {
   :root {
-    --shpd-control-height:    2.5rem;  /* 40px */
-    --shpd-control-height-sm: 2rem;    /* 32px */
-    --shpd-font-size-field:   var(--shpd-font-size-base);
+    --shpd-control-height:     2.5rem;  /* 40px */
+    --shpd-control-height-sm:  2rem;    /* 32px */
+    --shpd-font-size-field-sm: var(--shpd-font-size-base);
   }
 }
 

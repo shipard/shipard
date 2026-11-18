@@ -1440,11 +1440,12 @@
     gap: var(--shpd-space-xs);
   }
 
-  /* Výběr v řádku tabulky: kompaktní výška ovládacího prvku, písmo a rámeček
-     z tokenů (#156 D106–D109). */
+  /* Výběr v řádku tabulky: kompaktní výška ovládacího prvku, písmo
+     kompaktního pole (14 px, na telefonu 16 px) a rámeček z tokenů
+     (#156 D106–D110). */
   .shpd-exchange__vat-select {
     font: inherit;
-    font-size: var(--shpd-font-size-field);
+    font-size: var(--shpd-font-size-field-sm);
     box-sizing: border-box;
     height: var(--shpd-control-height-sm);
     padding: 0 var(--shpd-space-xs);

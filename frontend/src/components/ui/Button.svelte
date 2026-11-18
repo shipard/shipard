@@ -72,7 +72,8 @@
 <style>
   /* Výška je token ovládacího prvku, ne součet odsazení a řádku (#156 D106,
    * D107): tlačítko je stejně vysoké jako pole a výběr vedle něj. Svislé
-   * odsazení je nulové, obsah centruje flex. */
+   * odsazení je nulové, obsah centruje flex. Běžné tlačítko má písmo 16 px
+   * a vodorovné odsazení `space-lg` (D110). */
   .shpd-btn {
     --shpd-btn-height: var(--shpd-control-height);
     display: inline-flex;
@@ -81,7 +82,7 @@
     gap: var(--shpd-space-sm);
     box-sizing: border-box;
     height: var(--shpd-btn-height);
-    padding: 0 var(--shpd-space-md);
+    padding: 0 var(--shpd-space-lg);
     border-radius: var(--shpd-radius-md);
     font-size: var(--shpd-font-size-control);
     font-family: var(--shpd-font-family);
@@ -93,11 +94,12 @@
     line-height: 1;
   }
 
-  /* Kompaktní: písmo stejné, vodorovné odsazení 12 px — mezi `space-sm`
-   * (text se lepí na zaoblený roh) a `space-md` běžné velikosti. */
+  /* Kompaktní: písmo 14 px (D110), vodorovné odsazení 12 px — `space-sm`
+   * lepí text na zaoblený roh. */
   .shpd-btn--sm {
     --shpd-btn-height: var(--shpd-control-height-sm);
     padding: 0 0.75rem;
+    font-size: var(--shpd-font-size-control-sm);
   }
 
   /* Jen ikona: čtverec výšky tlačítka, v řadě se nemačká. */
