@@ -1,8 +1,6 @@
 <script>
   import Button from '../ui/Button.svelte';
-  import Popover from '../ui/Popover.svelte';
-  import Icon from '../ui/Icon.svelte';
-  import { iconMore } from '../../icons.js';
+  import KebabMenu from '../ui/KebabMenu.svelte';
   import { layoutStore } from '../../stores/layout.svelte.js';
   import { t } from '../../i18n/index.js';
 
@@ -72,7 +70,8 @@
   const showContinueInline = $derived(showContinue && !layoutStore.isMobile);
 
   // Položky kebabu (jen mobil): Přidat a pokračovat + přechody dle inKebab.
-  // Generické {key, label, danger, run}, aby kebab nebyl vázaný na přechody.
+  // Generické {key, label, danger, run} pro sdílený `ui/KebabMenu` (#155
+  // D114) — co do kebabu patří, rozhoduje tato lišta.
   const kebabItems = $derived.by(() => {
     if (!layoutStore.isMobile) return [];
     const items = [];
@@ -95,20 +94,6 @@
     }
     return items;
   });
-
-  let kebabOpen = $state(false);
-  let kebabAnchor = $state(null);
-
-  function openKebab(e) {
-    kebabAnchor = e.currentTarget;
-    kebabOpen = !kebabOpen;
-  }
-  function closeKebab() { kebabOpen = false; }
-
-  function runKebabItem(item) {
-    closeKebab();
-    item.run();
-  }
 </script>
 
 <!-- Bez jediné akce se lišta nerenderuje (read-only prohlížení) — prázdný
@@ -145,35 +130,9 @@
     />
   {/each}
 
-  {#if kebabItems.length > 0}
-    <button
-      type="button"
-      class="shpd-form-state-bar__kebab-btn"
-      onclick={openKebab}
-      disabled={saving}
-      aria-label={t('form.moreActions')}
-    >
-      <Icon icon={iconMore} size="md" />
-    </button>
-  {/if}
+  <!-- Bez položek (desktop, nic do kebabu) se nevykreslí. -->
+  <KebabMenu items={kebabItems} disabled={saving} placement="top" />
 </div>
-{/if}
-
-{#if kebabOpen}
-  <Popover open={true} anchor={kebabAnchor} placement="top" onClose={closeKebab}>
-    <div class="shpd-form-state-bar__kebab-menu">
-      {#each kebabItems as item (item.key)}
-        <button
-          type="button"
-          class="shpd-form-state-bar__kebab-item"
-          class:shpd-form-state-bar__kebab-item--danger={item.danger}
-          onclick={() => runKebabItem(item)}
-        >
-          {item.label}
-        </button>
-      {/each}
-    </div>
-  </Popover>
 {/if}
 
 <style>
@@ -188,59 +147,9 @@
     bottom: 0;
   }
 
-  /* Mobilní kebab tlačítko (⋮) — schovává ne-done přechody. Stejný vzor
-     jako kebab ve vieweru (fáze 2). Na desktopu se nerenderuje. */
-  /* Čtverec výšky ovládacího prvku jako tlačítka vedle (#156 D106, D107),
-     rámeček ovládacího prvku (D109). */
-  .shpd-form-state-bar__kebab-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    width: var(--shpd-control-height);
-    height: var(--shpd-control-height);
-    flex-shrink: 0;
-    /* Vždy na pravý konec footeru — vizuálně oddělený od akčních tlačítek. */
+  /* Kebab (sdílený `ui/KebabMenu`) vždy na pravém konci lišty — oddělený
+     od akčních tlačítek. Na desktopu se nevykreslí. */
+  .shpd-form-state-bar > :global(.shpd-kebab) {
     margin-left: auto;
-    color: var(--shpd-color-text);
-    background: transparent;
-    border: 1px solid var(--shpd-color-border-control);
-    border-radius: var(--shpd-radius-md);
-    cursor: pointer;
-    transition: background-color 0.15s;
-  }
-  .shpd-form-state-bar__kebab-btn:hover {
-    background-color: var(--shpd-color-bg-hover);
-  }
-  .shpd-form-state-bar__kebab-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Kebab menu — položky v Popoveru (světlé pozadí). Stejný vzor jako
-     kebab ve vieweru (fáze 2). */
-  .shpd-form-state-bar__kebab-menu {
-    display: flex;
-    flex-direction: column;
-    min-width: 11.25rem;
-    padding: var(--shpd-space-xs) 0;
-  }
-  .shpd-form-state-bar__kebab-item {
-    text-align: left;
-    padding: 0.625rem 0.875rem;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
-    cursor: pointer;
-  }
-  .shpd-form-state-bar__kebab-item:hover {
-    background-color: var(--shpd-color-bg-hover);
-  }
-  /* Destruktivní přechody (Archivovat, Smazat, Ukončit platnost) červeně —
-     uživatel si uvědomí závažnost i bez velkého tlačítka. */
-  .shpd-form-state-bar__kebab-item--danger {
-    color: var(--shpd-color-danger-text);
   }
 </style>

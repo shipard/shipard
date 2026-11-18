@@ -1,8 +1,8 @@
 <script>
   import Icon from '../ui/Icon.svelte';
-  import Popover from '../ui/Popover.svelte';
+  import KebabMenu from '../ui/KebabMenu.svelte';
   import {
-    iconMenu, iconChevronLeft, iconMore, iconAdd, iconEdit,
+    iconMenu, iconChevronLeft, iconAdd, iconEdit,
     iconDelete, iconRefresh, iconFilter, resolveIcon,
   } from '../../icons.js';
   import { layoutStore } from '../../stores/layout.svelte.js';
@@ -27,17 +27,14 @@
   // V seznamu: všechny akce jako ikony (reálně 1–2).
   let listActions = $derived(context === 'list' ? actions : []);
 
-  let kebabOpen = $state(false);
-  let kebabAnchor = $state(null);
-
-  function openKebab(e) {
-    kebabAnchor = e.currentTarget;
-    kebabOpen = true;
-  }
-  function closeKebab() { kebabOpen = false; }
+  // Položky sdíleného kebabu (`ui/KebabMenu`, #155 D114).
+  let kebabItems = $derived(kebabActions.map((action) => ({
+    key: action.id,
+    label: action.label,
+    run: () => action.onClick?.(),
+  })));
 
   function runAction(action) {
-    closeKebab();
     action.onClick?.();
   }
 
@@ -127,34 +124,15 @@
           {/if}
         </button>
       {/if}
-      {#if kebabActions.length > 0}
-        <button
-          class="shpd-topbar__action-btn"
-          onclick={openKebab}
-          aria-label={t('viewer.more')}
-        >
-          <Icon icon={iconMore} size="md" />
-        </button>
-      {/if}
+      <KebabMenu
+        items={kebabItems}
+        placement="bottom"
+        variant="plain"
+        ariaLabel={t('viewer.more')}
+      />
     {/if}
   </div>
 </header>
-
-{#if kebabOpen}
-  <Popover open={true} anchor={kebabAnchor} placement="bottom" onClose={closeKebab}>
-    <div class="shpd-topbar__kebab-menu">
-      {#each kebabActions as action (action.id)}
-        <button
-          type="button"
-          class="shpd-topbar__kebab-item"
-          onclick={() => runAction(action)}
-        >
-          {action.label}
-        </button>
-      {/each}
-    </div>
-  </Popover>
-{/if}
 
 <style>
   .shpd-topbar {
@@ -219,30 +197,9 @@
     flex-shrink: 0;
     min-width: 2.5rem;
     justify-content: flex-end;
-  }
-
-  /* Kebab menu — položky v Popoveru. Stejný vzor jako detail dropdown.
-     Popover má světlé pozadí (--shpd-color-bg), proto text --shpd-color-text
-     (ne sidebar text jako tlačítka v modrém top baru). */
-  .shpd-topbar__kebab-menu {
-    display: flex;
-    flex-direction: column;
-    min-width: 10rem;
-    padding: var(--shpd-space-xs) 0;
-  }
-
-  .shpd-topbar__kebab-item {
-    text-align: left;
-    padding: var(--shpd-space-sm) 0.875rem;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
-    color: var(--shpd-color-text);
-    cursor: pointer;
-  }
-
-  .shpd-topbar__kebab-item:hover {
-    background-color: var(--shpd-color-bg-hover);
+    /* Kebab (`ui/KebabMenu`, podoba `plain`) v rozměru a s hoverem
+       ostatních tlačítek lišty; barvu textu dědí z lišty. */
+    --shpd-kebab-size: 2.5rem;
+    --shpd-kebab-hover-bg: var(--shpd-color-bg-sidebar-hover);
   }
 </style>
