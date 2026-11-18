@@ -1,6 +1,6 @@
 # Design system — větší ovládací prvky, světlý rámeček, výjimka plných prvků (D110–D112)
 
-**Stav:** hotovo — #156, D110–D112 (2026-11-18); ruční ověření ve Firefoxu a na iOS zbývá
+**Stav:** hotovo — #156, D110–D112 (2026-11-18); ručně ověřeno 2026-11-18 (Firefox, oba vzhledy, telefon); iOS neověřeno (zařízení není)
 
 ## Kontext / Cíl
 
@@ -267,3 +267,17 @@ proti sestavení před taskem — nálezy v Odchylkách.
   prohlížeč tabulek, panel vlastního vzhledu, chat, portál, přihlašovací
   obrazovka, potvrzovací dialogy — sdílejí změřené komponenty a tokeny.
 - Vývojářský dashboard jen pohledem na Zdroje dat (tlačítko `sm` 28 px).
+
+### Ruční ověření (2026-11-18, Firefox, oba vzhledy, telefon)
+
+- Formulář faktury: větší písmo v polích, větší tlačítka ve stavové
+  liště, pole včetně data a výběru stejně vysoká — v pořádku, ponechat.
+- Dialog odeslání e-mailem (pole + Přidat, patička) — v pořádku.
+- Rámečky ve světlém vzhledu zpět jemné, v tmavém výraznější — v pořádku.
+- Lišta reportu, hlavička dashboardu (tečka filtru celá, kompaktní
+  tlačítka na kartách) — v pořádku.
+- Hlavička detailu dokladu: akce a Tisk ▾ stejně velké — v pořádku.
+- Nastavení účtu → Základní (segmenty, zaškrtávátka) — v pořádku.
+- Telefon: větší text tlačítek, zalamování akcí v hlavičce detailu —
+  v pořádku. Patička náhledu importu na telefonu → #155.
+- iOS přiblížení při fokusu neověřeno (zařízení není k dispozici).
