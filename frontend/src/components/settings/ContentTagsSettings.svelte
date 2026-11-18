@@ -238,7 +238,6 @@
           <div class="shpd-content-tags__actions">
             <Button
               label={t('settings.contentTags.untagged.tagSelected', { count: selected.length })}
-              size="sm"
               disabled={selected.length === 0 || tagging}
               loading={tagging}
               onclick={handleTagSelected}

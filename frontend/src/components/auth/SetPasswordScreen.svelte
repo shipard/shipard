@@ -167,6 +167,8 @@
     color: var(--shpd-color-text-secondary);
   }
 
+  /* Pole přihlašovací karty je záměrně větší než běžné pole (vlastní
+     měřítko obrazovky); rámeček má od ovládacího prvku (#156 D109). */
   .shpd-login__input {
     display: block;
     width: 100%;
@@ -174,7 +176,7 @@
     font-size: var(--shpd-font-size-base);
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     outline: none;
     transition: border-color 0.15s;
@@ -188,6 +190,7 @@
   .shpd-login__input:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-login__hint {

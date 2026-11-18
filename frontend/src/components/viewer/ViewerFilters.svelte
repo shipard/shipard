@@ -116,10 +116,12 @@
 
   .shpd-viewer-filters__select,
   .shpd-viewer-filters__input {
-    padding: 0.1875rem 0.375rem;
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 0.375rem;
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
-    border: 1px solid var(--shpd-color-border);
+    font-size: var(--shpd-font-size-field);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
@@ -130,6 +132,7 @@
   .shpd-viewer-filters__select:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-viewer-filters__input:focus,

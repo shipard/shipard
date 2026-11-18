@@ -480,11 +480,13 @@
     flex-shrink: 0;
   }
 
+  /* Hlavní hledání průvodce je záměrně větší než běžné pole; rámeček má od
+     ovládacího prvku (#156 D109). */
   .shpd-registry-wizard__search-input {
     width: 100%;
     padding: var(--shpd-space-sm) var(--shpd-space-md);
     font-size: var(--shpd-font-size-lg);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text);

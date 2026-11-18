@@ -56,7 +56,6 @@
       icon={iconAdd}
       label={t('chat.newConversation')}
       variant="primary"
-      size="sm"
       onclick={() => { chatStore.newConversation(); onselect?.(); }}
     />
   </div>

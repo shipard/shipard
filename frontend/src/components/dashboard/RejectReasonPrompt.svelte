@@ -47,11 +47,10 @@
   ></textarea>
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" size="sm" onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" onclick={onClose} />
     <Button
       label={submitting ? t('common.saving') : confirmLabel}
       variant="danger"
-      size="sm"
       disabled={submitting || reason.trim() === ''}
       onclick={handleConfirm}
     />
@@ -66,13 +65,16 @@
     color: var(--shpd-color-text);
   }
 
+  /* Víceřádkové pole: výška ovládacího prvku jako minimum, písmo a rámeček
+     z tokenů (#156 D106, D108, D109). */
   .shpd-reject__textarea {
     width: 100%;
     box-sizing: border-box;
-    padding: 0.375rem;
-    border: 1px solid var(--shpd-color-border);
+    min-height: var(--shpd-control-height);
+    padding: 0.375rem var(--shpd-space-sm);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-field);
   }
 </style>

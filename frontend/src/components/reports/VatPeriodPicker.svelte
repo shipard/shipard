@@ -163,16 +163,20 @@
 </Popover>
 
 <style>
+  /* Spouštěč popoveru = ovládací prvek lišty (#156 D106–D109): výška, písmo
+     a rámeček z tokenů, stejně jako výběr a tlačítko vedle něj. */
   .shpd-period__trigger {
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
     background-color: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-control);
     font-family: var(--shpd-font-family);
     cursor: pointer;
   }
@@ -180,6 +184,7 @@
   .shpd-period__trigger:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-period__trigger:hover:not(:disabled) {

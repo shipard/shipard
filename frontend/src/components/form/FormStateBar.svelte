@@ -190,18 +190,21 @@
 
   /* Mobilní kebab tlačítko (⋮) — schovává ne-done přechody. Stejný vzor
      jako kebab ve vieweru (fáze 2). Na desktopu se nerenderuje. */
+  /* Čtverec výšky ovládacího prvku jako tlačítka vedle (#156 D106, D107),
+     rámeček ovládacího prvku (D109). */
   .shpd-form-state-bar__kebab-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    box-sizing: border-box;
+    width: var(--shpd-control-height);
+    height: var(--shpd-control-height);
     flex-shrink: 0;
     /* Vždy na pravý konec footeru — vizuálně oddělený od akčních tlačítek. */
     margin-left: auto;
     color: var(--shpd-color-text);
     background: transparent;
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     cursor: pointer;
     transition: background-color 0.15s;

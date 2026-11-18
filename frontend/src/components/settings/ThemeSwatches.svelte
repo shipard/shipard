@@ -194,13 +194,16 @@
     gap: var(--shpd-space-xs);
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-theme-swatches__base-button {
     flex: 1;
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    font-size: var(--shpd-font-size-sm);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
+    font-size: var(--shpd-font-size-control);
     color: var(--shpd-color-text-secondary);
     background: var(--shpd-color-bg-secondary);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     transition: background-color 0.15s, color 0.15s, border-color 0.15s;
@@ -308,7 +311,7 @@
     height: 2.25rem;
     padding: 0.125rem;
     background: var(--shpd-color-bg);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
   }

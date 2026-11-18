@@ -238,7 +238,6 @@
         <Button
           label={action.label}
           variant={action.variant ?? 'secondary'}
-          size="sm"
           disabled={busyActionId === action.id}
           onclick={() => handleAction(action)}
         />
@@ -626,22 +625,25 @@
     flex-shrink: 0;
   }
 
-  /* Dropdown trigger button — vizuálně stejný jako Button variant="secondary",
-     ale nativní <button> protože potřebujeme `event.currentTarget` jako anchor
-     pro Popover. */
+  /* Dropdown trigger button — vizuálně stejný jako Button variant="secondary"
+     (výška, písmo, odsazení, rámeček i zaoblení z týchž tokenů, #156
+     D106–D109), ale nativní <button> protože potřebujeme
+     `event.currentTarget` jako anchor pro Popover. */
   .shpd-detail__action-dropdown {
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    padding: var(--shpd-space-xs) 0.625rem;
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-md);
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-control);
     font-weight: 500;
     line-height: 1.4;
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
-    border: 1px solid var(--shpd-color-border);
-    border-radius: var(--shpd-radius-sm);
+    border: 1px solid var(--shpd-color-border-control);
+    border-radius: var(--shpd-radius-md);
     cursor: pointer;
     transition: background-color 0.15s, border-color 0.15s;
   }

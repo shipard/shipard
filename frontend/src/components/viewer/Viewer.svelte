@@ -1306,7 +1306,6 @@
           <Button
             iconOnly
             variant="ghost"
-            size="sm"
             icon={isGrid ? iconList : iconTable}
             label={t(isGrid ? 'viewer.layout.showList' : 'viewer.layout.showGrid')}
             onclick={handleLayoutToggle}
@@ -1486,11 +1485,10 @@
   </label>
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={reanalyzeSubmitting} onclick={closeReanalyzeDialog} />
+    <Button label={t('common.cancel')} variant="secondary" disabled={reanalyzeSubmitting} onclick={closeReanalyzeDialog} />
     <Button
       label={reanalyzeSubmitting ? t('viewer.reanalyze.submitting') : t('viewer.reanalyze.submit')}
       variant="primary"
-      size="sm"
       disabled={reanalyzeSubmitting}
       onclick={submitReanalyze}
     />
@@ -1625,13 +1623,16 @@
     min-width: 0;
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-viewer__search-input {
     width: 100%;
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
     padding-right: 1.75rem;
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
-    border: 1px solid var(--shpd-color-border);
+    font-size: var(--shpd-font-size-field);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
@@ -1713,16 +1714,19 @@
     font-weight: 500;
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-reanalyze__input {
     display: block;
     margin-top: 0.375rem;
-    padding: 0.375rem 0.625rem;
-    border: 1px solid var(--shpd-color-border);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     min-width: 17.5rem;
     max-width: 100%;
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-field);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
   }

@@ -192,10 +192,9 @@
   {/if}
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={submitting} onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" disabled={submitting} onclick={onClose} />
     <Button
       label={submitting ? t('common.saving') : t('portal.create.submit')}
-      size="sm"
       disabled={!canSubmit}
       loading={submitting}
       onclick={submit}

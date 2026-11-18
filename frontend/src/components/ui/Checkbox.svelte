@@ -54,6 +54,8 @@
     pointer-events: none;
   }
 
+  /* Nezaškrtnuté políčko má rámeček ovládacího prvku (#156 D109) — bez něj
+     je na bílém podkladu neviditelné (1,2 : 1). */
   .shpd-checkbox__box {
     display: inline-flex;
     align-items: center;
@@ -61,10 +63,15 @@
     width: 1.125rem;
     height: 1.125rem;
     flex-shrink: 0;
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     background-color: var(--shpd-color-bg);
     transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  /* Neaktivní políčko zůstává na `border` (D109). */
+  .shpd-checkbox__native:disabled:not(:checked):not(:indeterminate) + .shpd-checkbox__box {
+    border-color: var(--shpd-color-border);
   }
 
   /* Checked state via sibling selector */
@@ -107,7 +114,7 @@
   }
 
   .shpd-checkbox__label {
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-control);
     color: var(--shpd-color-text);
   }
 </style>

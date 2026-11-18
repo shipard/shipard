@@ -122,7 +122,6 @@
       <Button
         label={t('overview.refresh')}
         variant="ghost"
-        size="sm"
         icon={iconRefresh}
         onclick={load}
         disabled={loading}

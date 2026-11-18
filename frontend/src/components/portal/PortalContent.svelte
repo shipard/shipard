@@ -154,7 +154,6 @@
     <Button
       label={t('portal.create.button')}
       icon={iconAdd}
-      size="sm"
       disabled={!canCreate}
       onclick={() => (modalOpen = true)}
     />
@@ -185,7 +184,6 @@
           <Button
             label={t('portal.create.button')}
             icon={iconAdd}
-            size="sm"
             onclick={() => (modalOpen = true)}
           />
         </div>

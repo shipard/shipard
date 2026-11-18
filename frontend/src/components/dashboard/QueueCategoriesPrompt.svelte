@@ -103,7 +103,6 @@
         ? t('dashboard.queue.precheckContinue')
         : t('dashboard.queue.precheckContinueWithout')}
       variant="primary"
-      size="sm"
       disabled={busyId !== null}
       onclick={onContinue}
     />

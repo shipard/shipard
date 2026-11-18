@@ -195,14 +195,12 @@
         <Button
           label={t('assets.depreciationRun.scopeTax')}
           variant={scope === 'tax' ? 'primary' : 'secondary'}
-          size="sm"
           disabled={loading || submitting}
           onclick={() => changeScope('tax')}
         />
         <Button
           label={assetId == null ? t('assets.depreciationRun.scopeAccPosting') : t('assets.depreciationRun.scopeAcc')}
           variant={scope === 'acc' ? 'primary' : 'secondary'}
-          size="sm"
           disabled={loading || submitting}
           onclick={() => changeScope('acc')}
         />
@@ -428,7 +426,6 @@
         <Button
           label={t('assets.posting.cancel')}
           variant="danger"
-          size="sm"
           disabled={loading || submitting}
           onclick={() => { cancelConfirmOpen = true; }}
         />
@@ -440,7 +437,6 @@
     <Button
       label={postResult ? t('common.close') : t('common.cancel')}
       variant="secondary"
-      size="sm"
       disabled={submitting}
       onclick={onClose}
     />
@@ -448,7 +444,6 @@
       <Button
         label={submitting ? t('common.saving') : (posting ? t('assets.posting.submit') : t('assets.depreciationRun.submit'))}
         variant="primary"
-        size="sm"
         disabled={!canSubmit}
         onclick={submit}
       />
@@ -503,12 +498,15 @@
     color: var(--shpd-color-text);
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-deprun__select {
-    padding: 0.375rem;
-    border: 1px solid var(--shpd-color-border);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 0.375rem;
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-field);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
   }

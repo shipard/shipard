@@ -301,7 +301,6 @@
             label={t('reports.export.label')}
             icon={iconDownload}
             variant="secondary"
-            size="sm"
             disabled={!result || loading}
             loading={exporting}
             onclick={() => { exportOpen = !exportOpen; }}

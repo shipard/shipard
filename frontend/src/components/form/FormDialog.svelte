@@ -249,7 +249,6 @@
     <Button
       icon={iconChevronLeft}
       iconOnly
-      size="sm"
       variant="ghost"
       label={t('form.navPrev')}
       disabled={!canPrev}
@@ -262,7 +261,6 @@
     <Button
       icon={iconChevronRight}
       iconOnly
-      size="sm"
       variant="ghost"
       label={t('form.navNext')}
       disabled={!canNext}

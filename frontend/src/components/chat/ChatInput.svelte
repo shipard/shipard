@@ -53,12 +53,15 @@
     border-top: 1px solid var(--shpd-color-border);
     background-color: var(--shpd-color-bg);
   }
+  /* Víceřádkové pole: výška ovládacího prvku jako minimum, písmo a rámeček
+     z tokenů (#156 D106, D108, D109). */
   .shpd-chat-input__field {
     flex: 1;
+    min-height: var(--shpd-control-height);
     padding: var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     color: var(--shpd-color-text);
     background-color: var(--shpd-color-bg);
@@ -73,5 +76,6 @@
   .shpd-chat-input__field:disabled {
     opacity: 0.6;
     background-color: var(--shpd-color-bg-secondary);
+    border-color: var(--shpd-color-border);
   }
 </style>

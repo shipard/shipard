@@ -231,6 +231,8 @@
   }
 
   /* Ukazatel volby — rozměr a barvy jako ui/Checkbox. */
+  /* Nevybraný ukazatel (radio i zaškrtávátko) má rámeček ovládacího prvku
+     (#156 D109). */
   .shpd-option-row__indicator {
     display: inline-flex;
     align-items: center;
@@ -239,7 +241,7 @@
     width: var(--shpd-option-row-indicator);
     height: var(--shpd-option-row-indicator);
     margin-top: 0.0625rem;
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-bg);
     transition: border-color 0.15s ease, background-color 0.15s ease;
@@ -247,6 +249,11 @@
 
   .shpd-option-row__indicator--radio {
     border-radius: 50%;
+  }
+
+  /* Neaktivní řádek: ukazatel zůstává na `border` (D109). */
+  .shpd-option-row--disabled .shpd-option-row__native:not(:checked) + .shpd-option-row__indicator {
+    border-color: var(--shpd-color-border);
   }
 
   .shpd-option-row__native:checked + .shpd-option-row__indicator {

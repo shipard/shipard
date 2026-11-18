@@ -131,19 +131,24 @@
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
     font: inherit;
-    font-size: var(--shpd-font-size-body);
+    font-size: var(--shpd-font-size-control);
     font-weight: var(--shpd-font-weight-normal);
     cursor: pointer;
     transition: background-color 0.12s, border-color 0.12s;
   }
 
+  /* Běžná výška ovládacího prvku (#156 D106) — segment stojí v liště vedle
+     výběru a tlačítka. Rámeček nevybraného segmentu je rámeček ovládacího
+     prvku (D109), vybraný má `primary-text` (D103). */
   .shpd-segmented--md .shpd-segmented__option {
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-md);
   }
 
   /* Pod kurzorem `bg-hover` (§9), ne `bg-secondary`. */
@@ -165,5 +170,9 @@
   .shpd-segmented__option:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  .shpd-segmented__option:disabled:not(.shpd-segmented__option--selected) {
+    border-color: var(--shpd-color-border);
   }
 </style>

@@ -61,7 +61,6 @@
     <Button
       label={cancelLabel}
       variant="secondary"
-      size="sm"
       disabled={busy}
       onclick={handleCancel}
       testid="confirm-cancel"
@@ -69,7 +68,6 @@
     <Button
       label={confirmLabel}
       variant={confirmVariant}
-      size="sm"
       loading={busy}
       disabled={busy}
       onclick={handleConfirm}

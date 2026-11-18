@@ -122,17 +122,20 @@
     flex-shrink: 0;
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-theme-field__edit {
     display: inline-flex;
     align-items: center;
     gap: var(--shpd-space-xs);
     align-self: flex-start;
-    padding: var(--shpd-space-xs) var(--shpd-space-md);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-md);
     background: transparent;
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);
     color: var(--shpd-color-text);
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-control);
     cursor: pointer;
     transition: background-color 0.12s;
   }

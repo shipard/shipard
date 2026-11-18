@@ -651,7 +651,6 @@
         {#if caps.mailUpload}
           <Button
             variant="ghost"
-            size="sm"
             icon={iconUpload}
             label={t('dashboard.upload.button')}
             onclick={() => (uploadModal = { open: true, files: [] })}
@@ -659,7 +658,6 @@
         {/if}
         <Button
           variant="ghost"
-          size="sm"
           icon={iconRefresh}
           label={t('dashboard.refresh')}
           onclick={load}
@@ -700,7 +698,6 @@
           <div class="shpd-dashboard__feed-queue">
             <Button
               variant="primary"
-              size="sm"
               label={t('dashboard.queue.button', { n: queueableCards.length })}
               onclick={() => startQueue()}
             />

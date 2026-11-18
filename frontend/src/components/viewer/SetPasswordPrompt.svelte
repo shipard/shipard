@@ -41,11 +41,10 @@
   />
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={submitting} onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" disabled={submitting} onclick={onClose} />
     <Button
       label={submitting ? t('common.saving') : t('viewer.detail.setPassword')}
       variant="primary"
-      size="sm"
       disabled={submitting || password === ''}
       onclick={handleConfirm}
     />
@@ -60,13 +59,15 @@
     color: var(--shpd-color-text);
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-setpw__input {
     width: 100%;
     box-sizing: border-box;
-    padding: 0.375rem;
-    border: 1px solid var(--shpd-color-border);
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
     font-family: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-field);
   }
 </style>

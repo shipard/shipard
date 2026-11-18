@@ -34,7 +34,7 @@
   >
     {#if layoutStore.isMobile}
       <div class="shpd-chat__mobile-bar">
-        <Button icon={iconChevronLeft} label={t('chat.backToList')} variant="ghost" size="sm" onclick={() => (showThread = false)} />
+        <Button icon={iconChevronLeft} label={t('chat.backToList')} variant="ghost" onclick={() => (showThread = false)} />
       </div>
     {/if}
     <ChatThread />

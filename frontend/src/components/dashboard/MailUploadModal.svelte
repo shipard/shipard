@@ -135,7 +135,6 @@
     <span class="shpd-mail-upload__hint">{t('dashboard.upload.dropHint')}</span>
     <Button
       variant="secondary"
-      size="sm"
       icon={iconUpload}
       label={t('dashboard.upload.selectFiles')}
       disabled={submitting}
@@ -189,10 +188,9 @@
   {/if}
 
   {#snippet footer()}
-    <Button label={t('common.cancel')} variant="secondary" size="sm" disabled={submitting} onclick={onClose} />
+    <Button label={t('common.cancel')} variant="secondary" disabled={submitting} onclick={onClose} />
     <Button
       label={submitting ? t('common.saving') : t('dashboard.upload.submit')}
-      size="sm"
       disabled={files.length === 0}
       loading={submitting}
       onclick={submit}

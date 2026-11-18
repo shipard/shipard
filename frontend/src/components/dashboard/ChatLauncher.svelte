@@ -50,7 +50,6 @@
       iconOnly
       label={t('dashboard.chatLauncher.send')}
       variant="primary"
-      size="sm"
       disabled={text.trim() === ''}
       onclick={submit}
     />
@@ -69,7 +68,7 @@
     align-items: center;
     gap: var(--shpd-space-sm);
     padding: var(--shpd-space-sm) var(--shpd-space-sm) var(--shpd-space-sm) var(--shpd-space-lg);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-full);
     background: color-mix(in srgb, var(--shpd-color-bg) 82%, transparent);
     backdrop-filter: blur(8px);
@@ -85,7 +84,7 @@
     border: none;
     background: none;
     padding: var(--shpd-space-xs) 0;
-    font-size: var(--shpd-font-size-base);
+    font-size: var(--shpd-font-size-field);
     font-family: var(--shpd-font-family);
     color: var(--shpd-color-text);
   }

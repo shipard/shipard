@@ -51,7 +51,6 @@
   <Button
     label={t('settingsPage.color.reset')}
     variant="ghost"
-    size="sm"
     disabled={disabled || value === null}
     onclick={() => onchange?.(null)}
   />

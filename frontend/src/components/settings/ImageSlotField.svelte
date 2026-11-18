@@ -97,7 +97,6 @@
         label={t('settingsPage.image.upload')}
         icon={iconUpload}
         variant="secondary"
-        size="sm"
         loading={busy}
         onclick={openFilePicker}
       />
@@ -106,7 +105,6 @@
           label={t('settingsPage.image.remove')}
           icon={iconDelete}
           variant="ghost"
-          size="sm"
           disabled={busy}
           onclick={handleRemove}
         />

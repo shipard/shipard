@@ -299,7 +299,7 @@
               onkeydown={(e) => addOnEnter(e, 'to')}
               testid="send-to-input"
             />
-            <Button label={t('common.add')} variant="secondary" size="sm" onclick={() => addAddress('to')} />
+            <Button label={t('common.add')} variant="secondary" onclick={() => addAddress('to')} />
           </div>
         </div>
 
@@ -330,7 +330,7 @@
               oninput={() => { addressError = null; }}
               onkeydown={(e) => addOnEnter(e, 'cc')}
             />
-            <Button label={t('common.add')} variant="secondary" size="sm" onclick={() => addAddress('cc')} />
+            <Button label={t('common.add')} variant="secondary" onclick={() => addAddress('cc')} />
           </div>
         </div>
 
@@ -396,14 +396,13 @@
 
   {#snippet footer()}
     {#if result}
-      <Button label={t('common.close')} variant="primary" size="sm" onclick={onClose} />
+      <Button label={t('common.close')} variant="primary" onclick={onClose} />
     {:else}
-      <Button label={t('common.cancel')} variant="secondary" size="sm" onclick={onClose} />
+      <Button label={t('common.cancel')} variant="secondary" onclick={onClose} />
       <Button
         label={sending ? t('send.sending') : t('send.submit')}
         icon={iconSend}
         variant="primary"
-        size="sm"
         disabled={!canSend}
         onclick={send}
         testid="send-submit"

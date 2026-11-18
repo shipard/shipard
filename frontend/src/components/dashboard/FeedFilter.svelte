@@ -43,16 +43,20 @@
     margin-top: -0.25rem;
   }
 
+  /* Pilulka filtru = ovládací prvek hlavičky dashboardu (#156 D106–D109):
+     běžná výška, písmo a rámeček z tokenů. */
   .shpd-feed-filter__chip {
     position: relative;
     flex-shrink: 0;
-    padding: var(--shpd-space-sm) var(--shpd-space-md);
-    border: 1px solid var(--shpd-color-border);
+    box-sizing: border-box;
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-md);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-full);
     background: var(--shpd-color-bg);
     color: var(--shpd-color-text);
     font: inherit;
-    font-size: var(--shpd-font-size-sm);
+    font-size: var(--shpd-font-size-control);
     cursor: pointer;
   }
 

@@ -219,7 +219,6 @@
     <div class="shpd-items-offer__actions">
       <Button
         label={generating ? t('common.saving') : t('setup.offer.items.generate', { count: selectedCodes.length })}
-        size="sm"
         disabled={selectedCodes.length === 0 || generating}
         loading={generating}
         onclick={handleGenerate}

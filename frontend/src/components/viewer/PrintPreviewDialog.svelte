@@ -160,12 +160,11 @@
           />
         </div>
       {/if}
-      <Button label={t('common.close')} variant="secondary" size="sm" onclick={onClose} />
+      <Button label={t('common.close')} variant="secondary" onclick={onClose} />
       <Button
         label={t('print.download')}
         icon={iconDownload}
         variant="primary"
-        size="sm"
         disabled={pdfUrl === null}
         onclick={download}
       />

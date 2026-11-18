@@ -61,7 +61,6 @@
           label={action.label}
           icon={action.icon}
           variant={action.variant ?? 'secondary'}
-          size="sm"
           onclick={() => onToolbarAction?.(action.id)}
         />
       {/each}

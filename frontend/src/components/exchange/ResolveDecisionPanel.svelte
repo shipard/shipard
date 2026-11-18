@@ -479,12 +479,14 @@
     font-size: var(--shpd-font-size-meta);
   }
 
+  /* Výška, písmo a rámeček ovládacího prvku z tokenů (#156 D106–D109). */
   .shpd-resolve__input {
     width: 100%;
-    padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
+    height: var(--shpd-control-height);
+    padding: 0 var(--shpd-space-sm);
+    border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-sm);
-    font-size: var(--shpd-font-size-body);
+    font-size: var(--shpd-font-size-field);
     font-family: inherit;
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text);
@@ -570,17 +572,21 @@
   /* Tlačítka „vytvořit“ (nový záznam, rychlé založení z registru): „+“ je
      ikona, ne součást textu. Dlouhý popisek s názvem firmy se zalomí —
      ikona sedí na účaří prvního řádku, posunutá jako ikona v textu. */
+  /* Tlačítko přes šířku panelu, popisek se smí zalomit: výška ovládacího
+     prvku jako minimum, písmo a rámeček z tokenů (#156 D106–D109). */
   .shpd-resolve__create {
     display: flex;
     align-items: baseline;
     gap: var(--shpd-space-xs);
     width: 100%;
+    box-sizing: border-box;
+    min-height: var(--shpd-control-height);
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-primary-text);
     font-family: inherit;
-    font-size: var(--shpd-font-size-body);
+    font-size: var(--shpd-font-size-control);
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     text-align: left;
@@ -601,14 +607,18 @@
   }
 
   .shpd-resolve__skip,
+  /* Tlačítko přes šířku panelu, popisek se smí zalomit: výška ovládacího
+     prvku jako minimum, písmo a rámeček z tokenů (#156 D106–D109). */
   .shpd-resolve__registry-search {
     width: 100%;
+    box-sizing: border-box;
+    min-height: var(--shpd-control-height);
     padding: var(--shpd-space-xs) var(--shpd-space-sm);
-    border: 1px solid var(--shpd-color-border);
+    border: 1px solid var(--shpd-color-border-control);
     background-color: var(--shpd-color-bg);
     color: var(--shpd-color-text-secondary);
     font-family: inherit;
-    font-size: var(--shpd-font-size-body);
+    font-size: var(--shpd-font-size-control);
     border-radius: var(--shpd-radius-sm);
     cursor: pointer;
     text-align: left;
