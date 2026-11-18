@@ -20,6 +20,7 @@
   import { shellStore } from '../../stores/shell.svelte.js';
   import { avatarStore } from '../../stores/avatar.svelte.js';
   import { language, t } from '../../i18n/index.js';
+  import { openLayer } from '../../utils/layerStack.js';
   import Icon from '../ui/Icon.svelte';
   import {
     iconLogout,
@@ -163,7 +164,7 @@
     authStore.clearAuth();
   }
 
-  // Zavři menu při kliknutí mimo něj nebo při Escape.
+  // Zavři menu při kliknutí mimo něj (dočasná vrstva, #160 D122).
   $effect(() => {
     if (!userMenuOpen) return;
 
@@ -172,16 +173,18 @@
         closeUserMenu();
       }
     }
-    function onKeyDown(e) {
-      if (e.key === 'Escape') closeUserMenu();
-    }
 
     document.addEventListener('click', onDocClick);
-    document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('click', onDocClick);
-      document.removeEventListener('keydown', onKeyDown);
     };
+  });
+
+  // Esc přes zásobník vrstev: zavře jen menu, drawer sidebaru pod ním až
+  // dalším stiskem (#160 D121).
+  $effect(() => {
+    if (!userMenuOpen) return;
+    return openLayer({ kind: 'menu', onEscape: closeUserMenu }).remove;
   });
 
   // Při přepnutí do kompaktu zavři otevřené menu (jinak by zůstalo viset).

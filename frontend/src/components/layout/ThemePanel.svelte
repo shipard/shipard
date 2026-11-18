@@ -14,6 +14,7 @@
   import { themeStore } from '../../stores/theme.svelte.js';
   import { layoutStore } from '../../stores/layout.svelte.js';
   import { t } from '../../i18n/index.js';
+  import { openLayer } from '../../utils/layerStack.js';
   import Modal from '../ui/Modal.svelte';
   import Icon from '../ui/Icon.svelte';
   import ThemeSwatches from '../settings/ThemeSwatches.svelte';
@@ -48,10 +49,10 @@
     themeStore.setCustom({ opacity: Number(value) });
   }
 
-  // Zavírání na desktopu: Esc + klik mimo panel. Listener se registruje
-  // až po otevření ($effect po renderu) — otevírací klik z dropdownu už
-  // dobublal, takže panel hned nezavře (viz past v docs/frontend.md
-  // sekce Konvence → Dropdown / popover komponenty).
+  // Zavírání na desktopu: klik mimo panel (dočasná vrstva, #160 D122).
+  // Listener se registruje až po otevření ($effect po renderu) —
+  // otevírací klik z dropdownu už dobublal, takže panel hned nezavře (viz
+  // past v docs/frontend.md sekce Konvence → Dropdown / popover komponenty).
   $effect(() => {
     if (!open || layoutStore.isMobile) return;
 
@@ -60,16 +61,18 @@
         onClose();
       }
     }
-    function onKeyDown(e) {
-      if (e.key === 'Escape') onClose();
-    }
 
     document.addEventListener('click', onDocClick);
-    document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('click', onDocClick);
-      document.removeEventListener('keydown', onKeyDown);
     };
+  });
+
+  // Esc přes zásobník vrstev (#160 D121). Na telefonu je panel uvnitř
+  // <Modal>, který se do zásobníku zapisuje sám.
+  $effect(() => {
+    if (!open || layoutStore.isMobile) return;
+    return openLayer({ kind: 'panel', onEscape: () => onClose() }).remove;
   });
 </script>
 

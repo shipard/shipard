@@ -8,7 +8,7 @@
   // seznam / detail přes celou šířku (D42).
   import ViewerDetail from './ViewerDetail.svelte';
   import Button from '../ui/Button.svelte';
-  import { isModalOpen } from '../ui/Modal.svelte';
+  import { openLayer } from '../../utils/layerStack.js';
   import { t } from '../../i18n/index.js';
 
   let {
@@ -36,17 +36,11 @@
     (actions ?? []).filter(a => a.id !== 'create' && a.id !== 'add' && a.id !== 'new')
   );
 
-  // Esc zavírá drawer jen když není otevřený žádný Modal — jinak patří
-  // event modálu na vrcholu stacku (FormDialog z detail akce). Modal se
-  // v témže keydownu zavře sám; drawer stack ještě vidí neprázdný.
-  function handleKeydown(e) {
-    if (e.key === 'Escape' && !isModalOpen()) {
-      onClose?.();
-    }
-  }
+  // Drawer je po dobu svého života vrstva zásobníku: Esc ho zavře, jen
+  // když nad ním není jiná vrstva (FormDialog z akce detailu, bublina) —
+  // #160 D121. Klik mimo ho nezavírá, pracuje se vedle něj (D122).
+  $effect(() => openLayer({ kind: 'panel', onEscape: () => onClose?.() }).remove);
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div
   class="shpd-drawer"

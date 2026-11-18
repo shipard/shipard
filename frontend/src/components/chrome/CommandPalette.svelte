@@ -2,9 +2,11 @@
   // Command palette overlay (Ctrl/Cmd+K) — shell-nezávislá, renderuje ji
   // AppShell; shelly dodávají jen trigger (docs/ui-shells.md §4, §9).
   // Vlastní overlay, ne ui/Modal (R2): panel v horní třetině, bez
-  // headeru/footeru, input jako první prvek. Lifecycle (Esc, klik mimo,
-  // keydown registrovaný až po otevření) dle vzoru ThemePanel.
+  // headeru/footeru, input jako první prvek. Lifecycle (klik mimo,
+  // keydown registrovaný až po otevření) dle vzoru ThemePanel; Esc zavírá
+  // zásobník vrstev.
   import { paletteStore } from '../../stores/palette.svelte.js';
+  import { openLayer } from '../../utils/layerStack.js';
   import { t } from '../../i18n/index.js';
   import Icon from '../ui/Icon.svelte';
   import { resolveIcon, iconSearch, iconWarning, iconSpinner } from '../../icons.js';
@@ -41,17 +43,21 @@
     return out;
   }
 
-  // Klávesy lokálně po dobu otevření (vzor ThemePanel) — globální je jen
-  // otevírací zkratka v AppShellu. Autofocus inputu po otevření.
+  // Esc přes zásobník vrstev (#160 D121): paleta otevřená nad modalem
+  // zavře jen sebe.
+  $effect(() => {
+    if (!paletteStore.open) return;
+    return openLayer({ kind: 'palette', onEscape: () => paletteStore.closePalette() }).remove;
+  });
+
+  // Šipky a Enter lokálně po dobu otevření (vzor ThemePanel) — globální je
+  // jen otevírací zkratka v AppShellu. Autofocus inputu po otevření.
   $effect(() => {
     if (!paletteStore.open) return;
     inputEl?.focus();
 
     function onKeyDown(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        paletteStore.closePalette();
-      } else if (e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
         paletteStore.moveActive(1);
       } else if (e.key === 'ArrowUp') {

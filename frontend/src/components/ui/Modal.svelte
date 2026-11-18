@@ -1,17 +1,7 @@
-<script lang="ts" module>
-  import { hasLayer } from '../../utils/layerStack.js';
-
-  /** Je otevřený aspoň jeden modal? Čte `ViewerDetailDrawer`, dokud není
-   *  sám vrstvou zásobníku. */
-  export function isModalOpen(): boolean {
-    return hasLayer('modal');
-  }
-</script>
-
 <script lang="ts">
   import { type Snippet } from 'svelte';
   import { t } from '../../i18n/index.js';
-  import { openLayer, type LayerHandle } from '../../utils/layerStack.js';
+  import { openLayer, hasLayer, type LayerHandle } from '../../utils/layerStack.js';
 
   interface Props {
     title: string;

@@ -8,6 +8,7 @@
   import MobileTopBar from '../layout/MobileTopBar.svelte';
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import { layoutStore } from '../../stores/layout.svelte.js';
+  import { openLayer } from '../../utils/layerStack.js';
 
   let {
     onOpenThemePanel,
@@ -31,14 +32,11 @@
     if (layoutStore.isMobile) layoutStore.closeDrawer();
   }
 
-  // Esc zavírá drawer (jen mobil + otevřený drawer).
+  // Otevřený drawer na telefonu je vrstva zásobníku — Esc ho zavře, jen
+  // když nad ním není jiná vrstva (uživatelské menu), #160 D121.
   $effect(() => {
     if (!layoutStore.isMobile || !layoutStore.drawerOpen) return;
-    function onKeyDown(e) {
-      if (e.key === 'Escape') layoutStore.closeDrawer();
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return openLayer({ kind: 'drawer', onEscape: () => layoutStore.closeDrawer() }).remove;
   });
 </script>
 

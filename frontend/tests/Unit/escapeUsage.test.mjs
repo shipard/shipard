@@ -20,12 +20,6 @@ const ALLOWED = {
   'utils/layerStack.js': 'zásobník vrstev — jediný posluchač Esc',
   'components/form/AttachmentPanel.svelte':
     'Esc ruší přejmenování přílohy (editace textu) a stisk označí `preventDefault()`',
-  // Do převodu v dalším commitu (#160, krok 2 zadání — zbytek vrstev):
-  'components/viewer/ViewerDetailDrawer.svelte': 'čeká na převod na zásobník',
-  'components/layout/ThemePanel.svelte': 'čeká na převod na zásobník',
-  'components/chrome/UserMenu.svelte': 'čeká na převod na zásobník',
-  'components/chrome/CommandPalette.svelte': 'čeká na převod na zásobník',
-  'components/shells/SidebarShell.svelte': 'čeká na převod na zásobník',
 };
 
 function sources(dir) {
