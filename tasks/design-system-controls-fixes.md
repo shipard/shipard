@@ -1,6 +1,6 @@
 # Design system — větší ovládací prvky, světlý rámeček, výjimka plných prvků (D110–D112)
 
-**Stav:** naplánováno — #156, D110–D112
+**Stav:** hotovo — #156, D110–D112 (2026-11-18); ruční ověření ve Firefoxu a na iOS zbývá
 
 ## Kontext / Cíl
 
@@ -132,12 +132,12 @@ neliší, nech je oba (role se mohou rozejít) — jen zapiš.
 
 ## Hotovo když
 
-- [ ] Tokeny podle tabulky (D110, D111), `--shpd-font-size-control-sm`
-- [ ] `Button` `md` odsazení `space-lg`, kompaktní místa písmo 14 px
-- [ ] `TextArea`, `MultiselectInput` přesně běžná výška
-- [ ] Výjimky D111 a D112 v `check-contrast.py`
-- [ ] Výšky a písmo změřené (Ověření)
-- [ ] Dokumentace, `**Stav:**`, index tasků
+- [x] Tokeny podle tabulky (D110, D111), `--shpd-font-size-control-sm`
+- [x] `Button` `md` odsazení `space-lg`, kompaktní místa písmo 14 px
+- [x] `TextArea`, `MultiselectInput` přesně běžná výška
+- [x] Výjimky D111 a D112 v `check-contrast.py`
+- [x] Výšky a písmo změřené (Ověření)
+- [x] Dokumentace, `**Stav:**`, index tasků
 
 ## Pasti
 
@@ -150,8 +150,120 @@ neliší, nech je oba (role se mohou rozejít) — jen zapiš.
 
 ## Odchylky od zadání
 
-(vyplní implementace)
+**Tokeny a písmo**
+
+- Vedle `--shpd-font-size-control-sm` přibyl `--shpd-font-size-field-sm`
+  (14 px, na telefonu 16 px). Bere ho jediné kompaktní **pole** — výběr
+  kódu DPH v řádku review: se 14 px by iOS při fokusu stránku přiblížil
+  (důvod D108). Tabulka měření má proto u tohoto prvku na telefonu
+  32 / 16, ne 32 / 14.
+- Kompaktní výšku (`--shpd-control-height-sm`) mají v kódu jen dvě místa —
+  `Button` `sm` a výběr kódu DPH; karty feedu a review, řádky a hlavička
+  `FormSubTable` jsou tlačítka `sm`. Jiné místo se neměnilo.
+- `--shpd-font-size-control` a `--shpd-font-size-field` mají teď stejnou
+  hodnotu; zůstávají oba (zapsáno v komentáři u tokenů).
+- S tokeny narostlo na 16 px i to, co je sleduje: popisek `Checkbox`,
+  položky nabídky `LookupInput` a `MultiselectInput`, pole chatu a panelu
+  rozhodnutí. Čipy `MultiselectInput` zůstávají 14 px (`font-size-sm`),
+  popisky polí formuláře 14 px (`body`) — nejsou ovládací prvek.
+- `TextArea` a `MultiselectInput` beze změny: dopočet z `1lh` a pevné 2 px
+  dávají s 36 px a 16 px přesně běžnou výšku (měření níže).
+
+**Tlačítko**
+
+- Odsazení `space-lg` dostala i dvě vlastní tlačítka v podobě sekundárního
+  `Button` — rozbalovací akce v hlavičce detailu (Tisk ▾) a Upravit
+  u vzhledu (`ThemeField`). Samostatný commit, proto jsou commity kódu tři.
+- Segment přepínače a pilulka filtru mají dál vodorovně `space-md` — D110
+  mluví jen o tlačítku `md`.
+
+**Výjimky kontrastu**
+
+- `check-contrast.py` výjimku per vzhled uměl (`Exemption.themes`) —
+  logika se neměnila, přibyly jen záznamy.
+- D112: výjimka je pro `primary` × `bg` a `bg-secondary`, mimo `PAIRS`
+  jako D94 (jen dokumentace ve `--list`). Na `bg-hover` vychází 2,11 : 1 —
+  mimo rozsah rozhodnutí (2,49–2,81), výjimku nemá; je zapsané
+  v `docs/design-system.md`.
+- D112 jmenuje „aktivní segment“ — vybraný segment plný není (D103:
+  rámeček `primary-text`, pozadí `primary-soft`). Plné jsou primární
+  tlačítko, zaškrtnuté zaškrtávátko, vybrané radio v `OptionRow`
+  a aktivní pilulka filtru; tak je to v důvodu výjimky i v dokumentaci.
+
+**Přetečení na 390 px (větší písmo a odsazení)**
+
+- **Patička náhledu importu (review)**: před změnou se nevešlo jedno
+  tlačítko ze čtyř (Vystavit a uzavřít), teď dvě (Vystavit koncept
+  oříznuté, Vystavit a uzavřít mimo obrazovku) — #155.
+- **Akce v hlavičce detailu** faktury se zalamují do tří řad místo dvou;
+  nic se neořezává.
+- Dialog odeslání, formulář faktury (stavová lišta s kebabem), lišta
+  reportu, hlavička dashboardu a panel rozhodnutí (tlačítka přes šířku
+  panelu) bez přetečení.
+
+**Vývojářský dashboard** sdílí `Button` a `variables.css`: tlačítka `md`
+tam mají 36 px, písmo 16 px a širší odsazení, `sm` beze změny (28 px,
+14 px). Rámeček sekundárního tlačítka si dál určuje `dev/theme.css`;
+vlastní prvky `dev/` jsem neměnila.
 
 ## Ověření
 
-(vyplní implementace)
+Kontroly: `check-contrast.py` (63 dvojic, 6 výjimek — D111 a D112 ve
+`--list`), `check-css-tokens.py`, `check-css-units.py`, `npm run build`,
+`npm test` (305) — v pořádku.
+
+Chromium (Playwright), zdroj dat `zey0-g…` (volný, demo sada IT servis),
+světlý i tmavý vzhled, 1280 a 390 px; „před“ = stav po D106–D109. Výška
+`getBoundingClientRect` / písmo v px, stejně v obou vzhledech.
+
+| místo | prvek | před 1280 | po 1280 | před 390 | po 390 |
+|---|---|---|---|---|---|
+| lišta seznamu | Přidat, Otevřít | 32 / 14 | 36 / 16 | lišta telefonu | beze změny |
+| | hledání, filtr (výběr) | 32 / 14 | 36 / 16 | 40 / 16 | 40 / 16 |
+| hlavička detailu | akce, Tisk ▾ | 32 / 14 | 36 / 16 | 40 / 14 | 40 / 16 |
+| hlavička dashboardu | pilulky filtru, Projít frontu, Nahrát, Obnovit | 32 / 14 | 36 / 16 | 40 / 14 | 40 / 16 |
+| lišta reportu | období, parametr, segmenty, Export | 32 / 14 | 36 / 16 | 40 / 14 (výběr 16) | 40 / 16 |
+| formulář faktury | pole, výběr, lookup, číslo, datum | 32 / 14 | 36 / 16 | 40 / 16 | 40 / 16 |
+| | stavová lišta (patička) | 32 / 14 | 36 / 16 | 40 / 14 | 40 / 16 |
+| odeslání e-mailem | pole + Přidat vedle, patička | 32 / 14 | 36 / 16 | 40 / 14 (pole 16) | 40 / 16 |
+| nastavení účtu / aplikace | segmenty, pole, Uložit, Nahrát | 32 / 14 | 36 / 16 | 40 / 14 (pole 16) | 40 / 16 |
+| panel rozhodnutí (review) | pole hledání, tlačítka | 32 / 14 | 36 / 16 | 40 / 14 (pole 16) | 40 / 16 |
+| **kompaktní** — karta feedu | Zkontrolovat, Zamítnout | 28 / 14 | 28 / 14 | 32 / 14 | 32 / 14 |
+| **kompaktní** — sub-tabulka | Přidat, ikony řádku | 28 / 14 | 28 / 14 | 32 / 14 | 32 / 14 |
+| **kompaktní** — řádek review | výběr kódu DPH | 28 / 14 | 28 / 14 | 32 / 16 | 32 / 16 |
+
+Ve změřených místech má každý běžný prvek 36 px / 16 px (101 prvků), na
+telefonu 40 / 16 (91), kompaktní tlačítko 28 / 14 a 32 / 14 (17). Řádek
+sub-tabulky zůstal 30 px.
+
+Pravidla s dopočtem na samostatné stránce (stejné CSS, výška 36 / 40 px):
+`TextArea` s jedním řádkem 36 / 40 px, `MultiselectInput` prázdný
+i s jedním řádkem čipů 36 / 40 px, zalamované tlačítko `wrap` jednořádkové
+36 / 40 px (`sm` 28 / 32), dvouřádkové 80 px (`sm` 47).
+
+Kontrast vykresleného rámečku vůči skutečnému podkladu:
+
+| podklad | světlý před | světlý po | tmavý (beze změny) |
+|---|---|---|---|
+| stránka, dialog (`bg`) | 3,64 | 1,23 | 3,55 |
+| šedý panel formuláře, pozadí seznamu (`bg-secondary`) | 3,42 | 1,16 | 4,01 |
+| neaktivní pole | 1,16 | 1,16 | 1,60 |
+| plný prvek `primary` na `bg` / `bg-secondary` (D112) | 8,37 / 7,86 | beze změny | 2,49 / 2,81 |
+
+Tečka filtru feedu (D88, D96) s větším písmem: snímek ve trojnásobném
+zvětšení na obou šířkách, neaktivní i aktivní pilulka — tečka i obrys celé.
+
+Snímky po v obou vzhledech (lišta reportu, formulář faktury s patičkou,
+dialog odeslání, karta feedu) prohlédnuté; přetečení na 390 px měřené
+proti sestavení před taskem — nálezy v Odchylkách.
+
+**Neověřeno v prohlížeči:**
+
+- **Firefox** a iOS — ruční ověření.
+- Odsazení Tisk ▾ a Upravit u vzhledu po srovnání s tlačítkem `md` —
+  změna jedné hodnoty, znovu neměřeno.
+- `MultiselectInput` a jednořádková `TextArea` v aplikaci (jen na
+  samostatné stránce); dialog odpisů, reanalýza, nastavení hesla,
+  prohlížeč tabulek, panel vlastního vzhledu, chat, portál, přihlašovací
+  obrazovka, potvrzovací dialogy — sdílejí změřené komponenty a tokeny.
+- Vývojářský dashboard jen pohledem na Zdroje dat (tlačítko `sm` 28 px).

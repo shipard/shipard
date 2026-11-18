@@ -98,7 +98,7 @@ na `primary-soft`. **Hover odkazu barvu nemění**, jen podtrhne.
 |---|---|---|
 | `--shpd-color-border` | `#e2e8f0` | Standardní hranice |
 | `--shpd-color-border-strong` | `#cbd5e1` | Silnější hranice |
-| `--shpd-color-border-control` | `#7c8796` (tmavý `#737c8c`) | Rámeček ovládacího prvku (D109) |
+| `--shpd-color-border-control` | `var(--border)` (tmavý `#737c8c`) | Rámeček ovládacího prvku (D109, D111) |
 | `--shpd-color-border-focus` | `var(--primary-text)` | Hranice focusovaného inputu a obrys fokusu (D95) |
 | `--shpd-color-focus-ring` | `rgb(0 80 137 / 0.18)` | Glow okolo focusovaného inputu |
 | `--shpd-color-error-ring` | `rgb(220 38 38 / 0.15)` | Glow okolo chybného inputu |
@@ -110,14 +110,20 @@ místo 2,49. `outline` u `:focus-visible` ani okraj pole s fokusem nebere
 (`AttachmentPanel`, `Dashboard`) bere `--shpd-color-primary-text`.
 
 **Rámeček ovládacího prvku je `--shpd-color-border-control`** (D109,
-#156): hranice prvku, se kterým uživatel pracuje, musí mít vůči podkladu
-3 : 1 (WCAG 1.4.11) — `border` má 1,2 : 1 a pole na bílém podkladu s ním
-nejde poznat. Token berou pole a výběry, spouštěč popoveru (výběr období),
+D111, #156). Token berou pole a výběry, spouštěč popoveru (výběr období),
 nevybraný segment přepínače, pilulka filtru feedu, nezaškrtnuté
-zaškrtávátko a radio a sekundární tlačítko. Světlý vzhled 3,64 : 1 na
-`bg` a 3,42 na `bg-secondary` / `bg-hover`, tmavý 3,55 / 4,01 / 3,01 —
-`bg-hover` v tmavém vzhledu je těsně nad prahem, změna jedné z obou
-hodnot znamená přepočítat druhou (hlídá `check-contrast.py`).
+zaškrtávátko a radio a sekundární tlačítko — komponenta nebere `border`
+napřímo, ani když má token ve světlém vzhledu stejnou hodnotu.
+
+- **Tmavý vzhled** drží práh hranice ovládacího prvku 3 : 1
+  (WCAG 1.4.11): `#737c8c` má 3,55 : 1 na `bg`, 4,01 na `bg-secondary`
+  a 3,01 na `bg-hover` — těsně nad prahem, změna jedné z obou hodnot
+  znamená přepočítat druhou (hlídá `check-contrast.py`).
+- **Světlý vzhled** je zdůvodněná výjimka (D111): token má hodnotu
+  `border` (`#e2e8f0`) — 1,23 : 1 na `bg`, 1,16 na `bg-secondary`
+  a `bg-hover`. Rámeček nad prahem (`#7c8796`, D109) byl při ručním
+  ověření příliš tmavý a rušil; pole na šedém panelu formuláře nese
+  i bílá plocha.
 
 - **Neaktivní prvek zůstává na `--shpd-color-border`** — nejde s ním
   pracovat, hranice ho nemá zvýrazňovat (`:disabled` pole, tlačítka,
@@ -212,6 +218,18 @@ v obou vzhledech, a značka bez textu nemá být tak těžká jako malé písmo:
   - **D94** — okraj tlačítka `danger` pod kurzorem v tmavém vzhledu má
     vůči dialogu 2,31 : 1 (`danger-hover` na `bg`); tlačítko identifikuje
     text (6,47 : 1), ne okraj.
+  - **D111** — rámeček ovládacího prvku ve světlém vzhledu
+    (`border-control` na `bg` 1,23 : 1, na `bg-secondary` a `bg-hover`
+    1,16): hodnota `border`, protože rámeček nad prahem rušil (#156,
+    výše Rámeček ovládacího prvku). Tmavý vzhled výjimku nemá.
+  - **D112** (rozšíření D94) — plný prvek v barvě `primary` v tmavém
+    vzhledu má vůči podkladu 2,49 : 1 (`bg`) a 2,81 (`bg-secondary`):
+    primární tlačítko, zaškrtnuté zaškrtávátko, vybrané radio volitelného
+    řádku a aktivní pilulka filtru. Prvek identifikuje bílý text nebo
+    značka uvnitř (6,01 : 1 vůči ploše), ne hrana plochy. Vybraný segment
+    přepínače plný není (D103: rámeček `primary-text`, pozadí
+    `primary-soft`). Na `bg-hover` (zaškrtávátko v řádku pod kurzorem)
+    vychází 2,11 : 1 — mimo vyjmenované dvojice.
 
   Štítek stavu Koš výjimkou už není (D101): `state-trash-text` má na
   `state-trash-bg` 7,56 / 6,10 : 1 (plná pilulka, D104; po D101
@@ -553,8 +571,10 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   Výchozí `md`; `sm` jen pro akci v řádku tabulky, na kartě a v hlavičce
   bloku (D107).
 - ❌ `border: 1px solid var(--shpd-color-border)` na poli, výběru nebo
-  spouštěči — 1,2 : 1 vůči podkladu. ✅
-  `var(--shpd-color-border-control)` (D109).
+  spouštěči — v tmavém vzhledu 1,4 : 1 vůči podkladu. ✅
+  `var(--shpd-color-border-control)` (D109); ve světlém vzhledu mají oba
+  tokeny stejnou hodnotu (výjimka D111), komponenta přesto bere token
+  ovládacího prvku.
 
 ---
 
@@ -739,16 +759,19 @@ Rozhodnutí D75 z #149. Šedá plocha uvnitř obsahu je sdílený
 
 ### Výška ovládacího prvku
 
-Rozhodnutí D106–D109 z #156. Ovládací prvky ve stejné liště nebo řádku
-jsou stejně vysoké, mají stejné písmo a rámeček nad prahem kontrastu.
-Výška je **token**, ne součet odsazení, písma a řádkování.
+Rozhodnutí D106–D112 z #156 (D110–D112 upravují D106–D109 po ručním
+ověření). Ovládací prvky ve stejné liště nebo řádku jsou stejně vysoké
+a mají stejné písmo a rámeček. Výška je **token**, ne součet odsazení,
+písma a řádkování.
 
 | Token | Běžná šířka | Telefon (≤ 48rem) | Kdo ho bere |
 |---|---|---|---|
-| `--shpd-control-height` | `2rem` (32 px) | `2.5rem` (40 px) | `Button` `md`, pole, výběr, spouštěč popoveru, segment, pilulka filtru |
+| `--shpd-control-height` | `2.25rem` (36 px) | `2.5rem` (40 px) | `Button` `md`, pole, výběr, spouštěč popoveru, segment, pilulka filtru |
 | `--shpd-control-height-sm` | `1.75rem` (28 px) | `2rem` (32 px) | `Button` `sm`, výběr v řádku tabulky |
-| `--shpd-font-size-control` | 14 px | 14 px | tlačítko, spouštěč, segment, pilulka, popisek zaškrtávátka |
-| `--shpd-font-size-field` | 14 px | 16 px | pole, výběr, víceřádkový text a položky jejich nabídky |
+| `--shpd-font-size-control` | 16 px | 16 px | tlačítko `md`, spouštěč, segment, pilulka, popisek zaškrtávátka |
+| `--shpd-font-size-field` | 16 px | 16 px | pole, výběr, víceřádkový text a položky jejich nabídky |
+| `--shpd-font-size-control-sm` | 14 px | 14 px | `Button` `sm` |
+| `--shpd-font-size-field-sm` | 14 px | 16 px | pole v řádku tabulky (výběr kódu DPH v review) |
 
 - **Jednořádkový prvek** má `height` z tokenu a svislé odsazení 0 — obsah
   centruje flex nebo sám prohlížeč. **Víceřádkový** (`TextArea`,
@@ -761,13 +784,19 @@ Výška je **token**, ne součet odsazení, písma a řádkování.
   Kompaktní (`size="sm"`) je jen akce v řádku tabulky, na kartě, v hlášce
   a v hlavičce bloku (Přidat nad sub-tabulkou, Nahrát nad přílohami,
   hromadné akce review, hlavička chat panelu).
-- **`Button`**: vodorovné odsazení `md` `--shpd-space-md`, `sm` 12 px.
-  Tlačítko bez popisku je čtverec své výšky (i `ghost`); `ghost`
+- **`Button`**: vodorovné odsazení `md` `--shpd-space-lg` (D110), `sm`
+  12 px. Tlačítko bez popisku je čtverec své výšky (i `ghost`); `ghost`
   s popiskem má výšku z tokenu a odsazení `--shpd-space-sm`. Ikona v poli
-  (`LookupInput` — upravit, zrušit) zůstává 24 px uvnitř pole.
-- **Písmo** (D108): ovládací prvky mají `body`. Pole má vlastní token,
-  protože na telefonu musí mít 16 px — iOS při fokusu pole s menším
-  písmem stránku přiblíží. Tlačítka a spouštěče zůstávají 14 px i tam.
+  (`LookupInput` — upravit, zrušit) zůstává 24 px uvnitř pole. Vlastní
+  `<button>` v podobě sekundárního tlačítka (rozbalovací akce v hlavičce
+  detailu, Upravit u vzhledu) má odsazení stejné.
+- **Písmo** (D110, upravuje D108): běžný ovládací prvek má 16 px (`base`)
+  na každé šířce — pole, tlačítko, spouštěč, segment i pilulka; 14 px
+  z D108 bylo při ručním ověření malé. `control` a `field` mají stejnou
+  hodnotu a zůstávají dva tokeny, protože role se mohou rozejít.
+  Kompaktní prvek má 14 px (`body`): tlačítko `sm` z `control-sm`, pole
+  v řádku tabulky z `field-sm` — to má na telefonu 16 px, protože iOS při
+  fokusu pole s menším písmem stránku přiblíží.
 - **Telefon**: tokeny se přepisují v bloku `@media (max-width: 48rem)`
   ve `variables.css` (breakpoint shellu, D42) — komponenty vlastní
   `@media` kvůli výšce nepíšou.
@@ -848,8 +877,8 @@ Rozhodnutí D77 a D79 z #149. Jedna volba z několika málo je sdílený
 
 - **Vzhled:** oddělená tlačítka s mezerou `--shpd-space-xs`, která se
   zalamují (`flex-wrap`); tlačítko má běžnou výšku ovládacího prvku
-  (`--shpd-control-height`, D106), vodorovné odsazení md, rámeček
-  `--shpd-color-border-control` (D109), zaoblení `--shpd-radius-md`,
+  (`--shpd-control-height`, D106, D110), vodorovné odsazení md, rámeček
+  `--shpd-color-border-control` (D109, D111), zaoblení `--shpd-radius-md`,
   pozadí `bg`, písmo `--shpd-font-size-control`; pod kurzorem
   `--shpd-color-bg-hover`. Vybraná volba jako volitelný
   řádek: rámeček `primary` + pozadí `primary-soft`, **tloušťka normal** —
@@ -1416,10 +1445,10 @@ Hodnoty tokenů jsou v rem; sloupec px je ekvivalent při 16 px.
 |---|---|---|---|
 | `--shpd-space-xs` | `0.25rem` | 4 | mezera ikona ↔ text, drobné odsazení |
 | `--shpd-space-sm` | `0.5rem` | 8 | vodorovné odsazení polí |
-| `--shpd-space-md` | `1rem` | 16 | mezera mezi bloky, odsazení obsahu, vodorovné odsazení tlačítka |
-| `--shpd-space-lg` | `1.5rem` | 24 | tělo dialogu, strany sekce formuláře |
+| `--shpd-space-md` | `1rem` | 16 | mezera mezi bloky, odsazení obsahu, vodorovné odsazení segmentu a pilulky filtru |
+| `--shpd-space-lg` | `1.5rem` | 24 | tělo dialogu, strany sekce formuláře, vodorovné odsazení tlačítka `md` (D110) |
 | `--shpd-space-xl` | `2rem` | 32 | velké odsazení stránky |
-| `--shpd-control-height` / `-sm` | `2rem` / `1.75rem` (telefon `2.5rem` / `2rem`) | 32 / 28 (40 / 32) | výška ovládacího prvku — běžná a kompaktní (§8 Výška ovládacího prvku) |
+| `--shpd-control-height` / `-sm` | `2.25rem` / `1.75rem` (telefon `2.5rem` / `2rem`) | 36 / 28 (40 / 32) | výška ovládacího prvku — běžná a kompaktní (§8 Výška ovládacího prvku) |
 | `--shpd-form-section-gap` | `0.5rem` | 8 | mezera mezi sekcemi formuláře |
 | `--shpd-form-section-padding-y` | `0.5rem` | 8 | svislé odsazení sekce formuláře |
 | `--shpd-radius-sm` | `0.25rem` | 4 | inputy, štítky, drobné prvky |
@@ -1428,7 +1457,8 @@ Hodnoty tokenů jsou v rem; sloupec px je ekvivalent při 16 px.
 | `--shpd-radius-full` | `9999px` | — | pilulka: čipy, štítky stavů |
 | `--shpd-font-size-xs` … `-xl` | `0.75` / `0.875` / `1` / `1.125` / `1.25rem` | 12 / 14 / 16 / 18 / 20 | škála velikostí písma |
 | `--shpd-font-size-page` / `-title` / `-heading` / `-body` / `-meta` | `xl` / `lg` / `base` / `sm` / `xs` | 20 / 18 / 16 / 14 / 12 | typografické role (§11) |
-| `--shpd-font-size-control` / `-field` | `body` / `body` (telefon `body` / `base`) | 14 / 14 (14 / 16) | písmo ovládacího prvku a pole (§8 Výška ovládacího prvku) |
+| `--shpd-font-size-control` / `-field` | `base` / `base` | 16 / 16 | písmo běžného ovládacího prvku a pole (§8 Výška ovládacího prvku) |
+| `--shpd-font-size-control-sm` / `-field-sm` | `body` / `body` (telefon `body` / `base`) | 14 / 14 (14 / 16) | písmo kompaktního tlačítka a pole v řádku tabulky (D110) |
 | `--shpd-font-weight-normal` / `-strong` | `400` / `600` | — | dvě tloušťky písma (§11) |
 
 `--shpd-radius-full` je jediná px hodnota zaoblení: znamená „maximum“, ne
