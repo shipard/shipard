@@ -1,6 +1,6 @@
 # Design system — jeden zásobník vrstev pro Esc, klik mimo, boční chat (D121–D123)
 
-**Stav:** hotovo — 2026-11-18 (#160, D121–D123; 5 commitů, odchylky viz Odchylky); scénáře ověřené v Chromiu (Playwright) na 1280 px a 390 px, `dataset-e2e` nad sadou `cz/vat-payer` bez nálezů; ruční ověření na dev serveru zbývá
+**Stav:** hotovo — 2026-11-18 (#160, D121–D123; 5 commitů, odchylky viz Odchylky); scénáře ověřené v Chromiu (Playwright) na 1280 px a 390 px, `dataset-e2e` nad sadou `cz/vat-payer` bez nálezů; ručně ověřeno 2026-11-18 (Firefox, telefon) — nález klepnutí do vloženého dokumentu → `tasks/design-system-iframe-layers.md` (D124)
 
 ## Kontext / Cíl
 
@@ -272,3 +272,22 @@ otevřené vrstvy:
 
 `shpd-ds dataset-e2e tests/datasets/cz/vat-payer` (desktop): 24 z 24 karet,
 0 chyb prohlížeče, `dataset-verify` 6× ok.
+
+## Ruční ověření (2026-11-18, Firefox, telefon)
+
+- Náhled dokladu (panel rozhodnutí, bez dotazu „Neuložená rozhodnutí“),
+  nová faktura přijatá (nabídka lookupu → formulář → dotaz → jen dotaz),
+  vnořený formulář, kalendář data a rozbalovací výběr ve Firefoxu, výběr
+  období v reportu (Esc i klik mimo), detail v draweru (zavře jen Esc,
+  klik vedle nic), boční chat (klik vedle nezavírá, Esc zavře, rozepsaný
+  text zůstává i v sekci Chat, modal nad chatem zavře Esc jako první),
+  paleta, uživatelské menu, panel vzhledu, přejmenování přílohy —
+  v pořádku.
+- Uživatelské menu: Esc v nabídce jazyka zavře celé menu — nabídka je
+  součástí menu, ne vrstva nad ním; ponecháno.
+- Telefon: drawer sidebaru, chat, kebab v pořádku. **Nález:** v náhledu
+  dokladu v tabu PDF klepnutí mimo bublinu nefunguje (klepnutí zůstane ve
+  vloženém dokumentu) → D124, `tasks/design-system-iframe-layers.md`.
+- Znovuotevření chatu ze sidebaru začíná novou konverzaci — ponecháno
+  (panel pro krátké dotazy, historie v sekci Chat).
+- PDF na telefonu se ve vloženém náhledu nevykreslí → #161.

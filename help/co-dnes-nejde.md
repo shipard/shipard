@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, kurz, kurzovní lístek, kurz ČNB, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
+keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, kurz, kurzovní lístek, kurz ČNB, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku, PDF na telefonu, náhled PDF, PDF se nezobrazí, jen první stránka]
 related: [slovnicek.md, uctarna/datum-sazby-dph.md]
 ---
 
@@ -381,6 +381,11 @@ o ISDOC dodavatele požádat.
   jako sešit pro Excel nebo jako CSV a vytiskneš z tabulkového procesoru —
   viz [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md).
   **Seznamy** (faktury, osoby, účetní deník…) do souboru stáhnout nejde.
+- **PDF se na telefonu v náhledu nezobrazí celé.** Na Androidu zůstane
+  plocha náhledu prázdná, na iPhonu uvidíš jen první stránku. Týká se
+  tabu **PDF** při kontrole dokladu z pošty, velkých náhledů příloh
+  a náhledu tisku. Soubor si stáhni tlačítkem **Stáhnout** a otevři
+  v telefonu, nebo kontrolu udělej na počítači.
 - **Anglické rozhraní není úplné.** Čeština je hlavní jazyk; v angličtině
   můžeš narazit na nepřeložené popisky.
 - **Narazíš na nedodělané obrazovky.** Nic tím nerozbiješ tak, abychom to

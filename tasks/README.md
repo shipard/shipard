@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 462 tasků: **naplánováno** 4 · **částečně** 22 · **zrušeno** 1 · **hotovo** 435.
+Celkem 463 tasků: **naplánováno** 5 · **částečně** 22 · **zrušeno** 1 · **hotovo** 435.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-iframe-layers.md` | naplánováno | #160, D124 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -213,6 +214,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-review-footer-mobile.md` | Patička náhledu dokladu na telefonu s kebabem, sdílený kebab `ui/`, zavírací tlačítko patičky modalu na telefonu skryté (výjimka potvrzovací dialogy), popisek tlačítek panelu rozhodnutí uprostřed (#155, D113–D116) |
 | `design-system-form-labels.md` | Popisky nad pole pod 30rem šířky sekce, sloupec popisků nejvýš 40 % se zalomením a zarovnáním nahoru, skupina `inline` podle šířky sekce; Nastavení, změna hesla a dialogy (#157, D117–D119) |
 | `design-system-escape-layers.md` | Jeden zásobník vrstev pro Esc (modal, bubliny, nabídky polí, drawer, panely, menu, paleta, boční chat), klik mimo jen u dočasných vrstev, boční chat se zavírá Esc (#160, D121–D123) |
+| `design-system-iframe-layers.md` | Klepnutí do vloženého dokumentu (PDF, text e-mailu, náhled tisku) zavře otevřenou dočasnou vrstvu; dočasnost vrstvy výslovně v zásobníku (#160, D124) |
 
 ## Mobilní (responzivní) UI
 
