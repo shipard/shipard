@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kontrast hlídaných dvojic tokenů v obou vzhledech (#153 D88–D95).
+"""Kontrast hlídaných dvojic tokenů v obou vzhledech (#153 D88–D95, #156 D109).
 
 Tónové tokeny jsou laděné na pozadí stránky. Jinde — na sidebaru, na
 tónovaném podkladu, na vybraném řádku a v tmavém vzhledu — kontrast
@@ -96,6 +96,10 @@ def _pairs() -> list[Pair]:
     add(["primary-text"], ["primary-soft"], TEXT, "D90, D92 Badge primary")
     # Obrys fokusu (D95).
     add(["border-focus"], PAGE, MARK, "D95 obrys fokusu")
+    # Rámeček ovládacího prvku (#156 D109): pole a výběr stojí na `bg`
+    # a `bg-secondary`, sekundární tlačítko, segment a pilulka filtru pod
+    # kurzorem na `bg-hover`.
+    add(["border-control"], PAGE, MARK, "D109 rámeček ovládacího prvku")
     # Běžný a sekundární text.
     add(["text", "text-secondary"], PAGE, TEXT, "text")
     # Vybraný řádek: tónové a šedé texty mají barvu běžného textu (D91).

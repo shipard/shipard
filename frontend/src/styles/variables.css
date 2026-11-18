@@ -191,6 +191,12 @@
   /* Obrys fokusu = primary v roli textu (#153 D95): v tmavém vzhledu
      6,6 : 1 vůči `bg` místo 2,49. Komponenty berou token, ne `primary`. */
   --shpd-color-border-focus:  var(--shpd-color-primary-text);
+  /* Rámeček ovládacího prvku (#156 D109): pole, výběr, spouštěč popoveru,
+     segment, pilulka filtru, nezaškrtnuté zaškrtávátko a radio, sekundární
+     tlačítko. Hranice prvku musí držet 3 : 1 (WCAG 1.4.11) — `border` má
+     1,2 : 1 a zůstává dělicím čarám, kartám a neaktivnímu prvku.
+     Světlý vzhled: 3,64 : 1 na `bg`, 3,42 na `bg-secondary` a `bg-hover`. */
+  --shpd-color-border-control: #7c8796;
 
   /* Focus rings — jemné záře kolem inputu při focusu / chybě.
    * Používají se v Input/Checkbox/Select/atd. jako box-shadow. */
@@ -207,10 +213,15 @@
   --shpd-space-lg: 1.5rem;   /* 24px */
   --shpd-space-xl: 2rem;     /* 32px */
 
-  /* Form controls */
-  /* Vertikální padding uvnitř inputů (Input, Select, NumberInput, DateInput,
-     TextArea, LookupInput). Horizontální padding zůstává --shpd-space-sm.
-     Snížení = kompaktnější formuláře (méně vertikálního scrollu). */
+  /* Ovládací prvky (#156 D106–D108, docs/design-system.md → Výška
+     ovládacího prvku). Výška je token, ne součet odsazení, písma a řádkování:
+     běžnou sdílí tlačítko `md`, pole, výběr, spouštěč popoveru, segmentový
+     přepínač a pilulka filtru; víceřádkové pole ji má jako minimum. Kompaktní
+     je tlačítko `sm` — jen akce v řádku tabulky, na kartě a v hlavičce bloku.
+     Na telefonu jsou obě o stupeň vyšší (blok @media pod :root). */
+  --shpd-control-height:    2rem;     /* 32px, na telefonu 40px */
+  --shpd-control-height-sm: 1.75rem;  /* 28px, na telefonu 32px */
+  /* Svislé odsazení polí — dočasně, do převodu polí na výšku z tokenu. */
   --shpd-input-padding-y: 0.25rem;
 
   /* Mezera mezi sekcemi ve FormTab a vertikální padding uvnitř sekce.
@@ -242,6 +253,13 @@
   /* Nadpis stránky v toku (#149 D78, ui/PageHeader) — jediná role na xl;
      nadpis stránky v liště (reporty) je title jako hlavička detailu. */
   --shpd-font-size-page:    var(--shpd-font-size-xl);  /* 20 px — nadpis stránky */
+  /* Písmo ovládacích prvků (#156 D108) — žádná nová velikost, obě jsou
+     `body`. Dva tokeny, protože se na telefonu rozcházejí: pole (text, který
+     uživatel píše — vstup, výběr, víceřádkový text) má tam 16 px, jinak iOS
+     při fokusu stránku přiblíží; tlačítko, spouštěč, segment a pilulka
+     zůstávají 14 px. */
+  --shpd-font-size-control: var(--shpd-font-size-body);
+  --shpd-font-size-field:   var(--shpd-font-size-body);
   --shpd-font-weight-normal: 400;
   --shpd-font-weight-strong: 600;
 
@@ -271,6 +289,17 @@
   --shpd-classic-strip-width: 4.75rem;     /*  76px */
   /* Levý rail wild shellu (ikona + popisek pod sebou, Issue #51). */
   --shpd-rail-width: 4.75rem;              /*  76px */
+}
+
+/* Telefon — breakpoint shellu (#133 D42). Ovládací prvky jsou o stupeň vyšší
+   (dotyk) a pole má 16 px (#156 D106, D108). Barvy se tu nemění, proto blok
+   platí pro oba vzhledy. */
+@media (max-width: 48rem) {
+  :root {
+    --shpd-control-height:    2.5rem;  /* 40px */
+    --shpd-control-height-sm: 2rem;    /* 32px */
+    --shpd-font-size-field:   var(--shpd-font-size-base);
+  }
 }
 
 /* ============================================================
@@ -375,6 +404,10 @@
   --shpd-color-border:        #3a3f4a;
   --shpd-color-border-strong: #4a4f5c;
   --shpd-color-border-subtle: #2f343d;
+  /* 3,55 : 1 na `bg`, 4,01 na `bg-secondary`, 3,01 na `bg-hover` — těsně;
+     změna `bg-hover` v tmavém vzhledu znamená přepočítat i tento token
+     (#156 D109, hlídá check-contrast.py). */
+  --shpd-color-border-control: #737c8c;
 
   /* Focus rings */
   --shpd-color-focus-ring:    rgb(90 155 207 / 0.30);
