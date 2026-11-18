@@ -88,13 +88,13 @@
   }
 
   /* Úzký kontejner (práh 30rem, #133 D43): sloupce se skládají pod sebe;
-     gap přepneme z xl (vodorovná mezera mezi sloupci vedle sebe) na sm,
-     aby svislá mezera mezi naskládanými sloupci navazovala na row-gap
-     polí uvnitř sloupce (FormColumn). */
+     gap přepneme z xl (vodorovná mezera mezi sloupci vedle sebe) na md,
+     aby svislá mezera mezi naskládanými sloupci navazovala na mezeru mezi
+     dvojicemi popisek–pole uvnitř sloupce (FormColumn, #157 D117). */
   @container form-section (max-width: 30rem) {
     .shpd-form-section__columns {
       grid-template-columns: 1fr;
-      gap: var(--shpd-space-sm);
+      gap: var(--shpd-space-md);
     }
   }
 </style>

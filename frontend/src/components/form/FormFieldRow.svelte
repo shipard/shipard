@@ -16,22 +16,25 @@
 
 <style>
   /*
-   * <label> and <.input> are two SEPARATE siblings inside the parent FormColumn
-   * grid (no wrapping element around them). That's how all labels in a column
-   * collapse to one shared "max-content" track.
+   * <label> a <.input> jsou dva SAMOSTATNÍ sourozenci v mřížce FormColumn
+   * (bez obalu) — proto popisky sloupce sdílejí jednu stopu.
    *
-   * The label/required rules are exposed via :global() because FormInline.svelte
-   * also emits a <label class="shpd-form-field-row__label"> as its grid label
-   * sibling. Without :global, Svelte's scoped styles would hash this rule to
-   * the FormFieldRow component only, leaving inline labels at the default
-   * text-align: left — inconsistent with non-inline labels in the same column.
+   * Pravidla popisku a hvězdičky jsou `:global()`, protože FormInline vkládá
+   * do téže mřížky vlastní <label class="shpd-form-field-row__label">; bez
+   * `:global` by je Svelte svázal jen s touto komponentou.
+   *
+   * Popisek (#157 D118): první řádek na svislém středu pole vedle — stejný
+   * výraz jako stránka Nastavení, výška pole je token. Smí se zalomit
+   * (strop stopy 40 % ve FormColumn); `overflow-wrap: anywhere` nedovolí
+   * jednomu dlouhému slovu strop přetlačit.
    */
   :global(.shpd-form-field-row__label) {
+    padding-top: calc((var(--shpd-control-height) - 1lh) / 2);
     font-size: var(--shpd-font-size-sm);
     font-weight: 500;
     color: var(--shpd-color-text);
     text-align: right;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
   :global(.shpd-form-field-row__required) {
     color: var(--shpd-color-danger-text);
@@ -44,5 +47,17 @@
     margin: var(--shpd-space-xs) 0 0;
     font-size: var(--shpd-font-size-sm);
     color: var(--shpd-color-text-secondary);
+  }
+
+  /* Úzká sekce (#157 D117): popisek vlevo nad polem, mezera `xs` — mřížka
+     sloupce má mezi řádky `md`, pole se přitáhne záporným okrajem. */
+  @container form-section (max-width: 30rem) {
+    :global(.shpd-form-field-row__label) {
+      padding-top: 0;
+      text-align: left;
+    }
+    .shpd-form-field-row__input {
+      margin-top: calc(var(--shpd-space-xs) - var(--shpd-space-md));
+    }
   }
 </style>

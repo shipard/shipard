@@ -188,4 +188,12 @@
   .shpd-form-checkbox-row {
     padding: var(--shpd-space-xs) 0;
   }
+
+  /* Úzká sekce (#157 D117): mřížka sloupce má mezi řádky `md` — oddělovač
+     k ní vlastní horní okraj nepřidává (na široké šířce dává `sm` + `sm`). */
+  @container form-section (max-width: 30rem) {
+    .shpd-form-separator {
+      margin-top: 0;
+    }
+  }
 </style>

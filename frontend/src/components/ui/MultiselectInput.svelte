@@ -137,9 +137,12 @@
     width: 100%;
     /* Výška ovládacího prvku jako minimum (#156 D106): s jedním řádkem čipů
        je pole stejně vysoké jako výběr vedle něj, další řádky ho zvyšují.
-       Svislé odsazení jen drží čipy od rámečku. */
+       Svislé odsazení doplňuje jednu řadu čipů (řádek 1.6 písma `sm` +
+       rámeček čipu) do výšky prvku — první řada tak sedí na středu výšky
+       ovládacího prvku i u pole o více řadách a popisek vedle (#157 D118)
+       je u ní. */
     min-height: var(--shpd-control-height);
-    padding: 0.125rem var(--shpd-space-sm);
+    padding: max(0.125rem, calc((var(--shpd-control-height) - 1.6 * var(--shpd-font-size-sm) - 2px) / 2 - 1px)) var(--shpd-space-sm); /* px-ok: rámeček čipu a pole */
     padding-right: calc(var(--shpd-space-lg) + var(--shpd-space-sm));
     border: 1px solid var(--shpd-color-border-control);
     border-radius: var(--shpd-radius-md);

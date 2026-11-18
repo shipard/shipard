@@ -50,17 +50,20 @@
 
 <style>
   /*
-   * Two-track grid: label column shrinks to the widest label, input column fills
-   * the remainder. Every <FormFieldRow> emits two siblings (a <label> and an
-   * <div class="shpd-form-field-row__input">) directly into this grid so labels
-   * align across the column.
+   * Dvě stopy: sloupec popisků je široký jako nejdelší popisek, nejvýš ale
+   * 40 % sloupce (#157 D118) — delší popisek se zalomí; pole dostane zbytek.
+   * <FormFieldRow> vkládá do mřížky dva sourozence (<label> a
+   * <div class="shpd-form-field-row__input">), takže popisky sloupce sdílejí
+   * jednu stopu. Popisek i pole jsou zarovnané nahoru: první řádek popisku
+   * sedí na svislém středu pole (odsazení popisku ve FormFieldRow), víceřádkové
+   * pole ani zalomený popisek druhou stranu nenatahují.
    */
   .shpd-form-column {
     display: grid;
-    grid-template-columns: max-content 1fr;
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
     column-gap: var(--shpd-space-md);
     row-gap: var(--shpd-space-sm);
-    align-items: baseline;
+    align-items: start;
     /* When a sibling column (e.g. attachment previews) is taller, the section
        grid stretches this container; without this the rows would spread out
        to fill it. Keep fields packed at the top instead. */
@@ -75,5 +78,16 @@
     align-content: stretch;
     align-items: stretch;
     min-height: 0;
+  }
+
+  /* Úzká sekce (práh 30rem jako skládání sloupců, #157 D117): jedna stopa,
+     popisek nad polem. Mezi dvojicemi `md`; pole se ke svému popisku
+     přitáhne na `xs` záporným okrajem (FormFieldRow, FormInline) — bez
+     pravidla pro první popisek ve sloupci a bez mezery po skrytém prvku. */
+  @container form-section (max-width: 30rem) {
+    .shpd-form-column {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--shpd-space-md);
+    }
   }
 </style>
