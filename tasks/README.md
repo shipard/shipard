@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 457 tasků: **naplánováno** 4 · **částečně** 22 · **zrušeno** 1 · **hotovo** 430.
+Celkem 458 tasků: **naplánováno** 5 · **částečně** 22 · **zrušeno** 1 · **hotovo** 430.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `design-system-controls.md` | naplánováno | #156, D106–D109 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -208,6 +209,7 @@ v [`docs/design-system.md`](../docs/design-system.md).
 | `design-system-contrast-fixes.md` | Opravy z ověření kontrastu: tenčí obrys teček odznaků, mezera odznaku v horním menu, klidná lhůta na kartě feedu bez pilulky (#153, D96, D97) |
 | `design-system-row-states.md` | Stavy a štítky v řádcích seznamů: stav jednou sdílenou metodou bez Konceptu a V pořádku, klidný tón tečkou, tlumený text bez průhlednosti, Koš a Archiv bez přeškrtnutí šedým textem, bez štítku `accent`, rámeček výběru `primary-text` (#153, D98–D103) |
 | `design-system-trash-role.md` | Koš výraznější než Archiv v obou vzhledech (proužek, plný štítek Smazáno), role v mřížce Salda pohybů prostým textem (#153, D104, D105) |
+| `design-system-controls.md` | Jednotná výška, písmo a rámeček ovládacích prvků: tokeny výšky (běžná, kompaktní, telefon), písmo `body` (pole na telefonu 16 px), rámeček `border-control` nad 3 : 1, velikosti `Button`, spouštěče, segmenty, filtr feedu (#156, D106–D109) |
 
 ## Mobilní (responzivní) UI
 
