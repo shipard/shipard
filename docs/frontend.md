@@ -67,7 +67,7 @@ frontend/
 │   │   │   ├── Checkbox.svelte
 │   │   │   ├── DateInput.svelte
 │   │   │   ├── Icon.svelte             # Univerzální ikona (inline SVG z FA definition)
-│   │   │   ├── Popover.svelte          # Plovoucí panel ukotvený k prvku
+│   │   │   ├── Popover.svelte          # Plovoucí panel ukotvený k prvku (klik mimo zavírá, Esc přes zásobník vrstev)
 │   │   │   ├── KebabMenu.svelte        # Tlačítko ⋮ s bublinou akcí (jediný kebab aplikace, #155 D114)
 │   │   │   └── Modal.svelte
 │   │   ├── chrome/                     # Primitivy aplikačního chrome — shelly je komponují
@@ -103,6 +103,7 @@ frontend/
 │   │       ├── FormRenderer.svelte     # Generický formulář z metadat
 │   │       └── FormDialog.svelte       # Modal wrapper pro FormRenderer
 │   ├── utils/
+│   │   ├── layerStack.js               # Zásobník vrstev pro Esc — openLayer(), jediný posluchač keydown (#160 D121)
 │   │   ├── navTree.js                  # Čisté helpery nad navigačním stromem (flattenLeaves, findLeafById, findRootSectionId)
 │   │   └── shell.js                    # resolveShell + normalizace hodnot shellu (KNOWN_SHELLS)
 │   └── styles/
@@ -128,7 +129,8 @@ Nginx konfigurace: viz `docs/nginx/app.conf`.
 Druhý vstup Vite (`dev.html`, `vite.dev.config.js`, #103 D57): samostatná
 malá SPA pro vývojářský dashboard (`docs/dev/dev-daily.md` § 1), sestavená
 do `public/_dev/` s `base: '/_dev/'` a bez `publicDir`. S aplikací sdílí
-`styles/`, `icons.js`, `Button`, `Icon`, `Popover` (kebab menu) a čisté jádro
+`styles/`, `icons.js`, `Button`, `Icon`, `Popover` (kebab menu; s ním
+zásobník vrstev `utils/layerStack.js`, který nic neimportuje) a čisté jádro
 formátu data `utils/formatDateCore.js` (#133 D73, jazyk parametrem) — a záměrně
 nic, co tahá `t()` aplikace nebo `api/client.js`; texty má ve vlastním slovníku
 `src/dev/i18n/` (cs + en, viz níže), který `check:i18n` kontroluje také. Index servíruje `DevDashboardController`
@@ -470,7 +472,9 @@ mobilního režimu (řídí
   zbytek ztmaví overlay. Recykluje stejný `Sidebar.svelte` jako desktop.
 - Drawer se zavírá: klikem na overlay, ✕ tlačítkem v hlavičce drawera
   (nahrazuje desktopový collapse toggle), klávesou Esc, a klikem na
-  položku navigace.
+  položku navigace. Esc jde přes zásobník vrstev (`SidebarShell` drawer
+  zapisuje jako vrstvu `drawer`): s otevřeným uživatelským menu zavře
+  první stisk menu, drawer až další.
 - Sbalovací logika (`collapsed`) se na mobilu nepoužívá — drawer je buď
   otevřený, nebo zavřený.
 
@@ -703,8 +707,9 @@ koncept §9). Realizováno Fází 2 UI shells (issue #45).
   (`enterSettings`/`enterAccount`/`exitToApp`) + `navigate()` s originálním
   objektem leafu ze stromu.
 - **UI** (`chrome/CommandPalette.svelte`): vlastní overlay v horní třetině
-  (ne `ui/Modal`), lifecycle dle vzoru `ThemePanel` (Esc, klik na backdrop,
-  keydown listener registrovaný až po otevření), šipky/Enter, autofocus,
+  (ne `ui/Modal`), lifecycle dle vzoru `ThemePanel` (klik na backdrop,
+  keydown listener registrovaný až po otevření; Esc přes zásobník vrstev —
+  paleta nad modalem zavře jen sebe), šipky/Enter, autofocus,
   `aria-activedescendant`; aktivní řádek mění `mousemove` (ne hover),
   aby se výběr nehýbal pod rukama při psaní.
 
@@ -1358,6 +1363,14 @@ kódové vzorce: **toggle při kliku na trigger** a **close-on-outside přes
 document click listener registrovaný v `$effect`**. Tyhle dva vzorce spolu
 mají jednu nepříjemnou interakci, na které se dá lehce spálit.
 
+**Esc si žádná z nich neposlouchá sama.** Otevřená vrstva se zapíše do
+zásobníku `utils/layerStack.js` (`openLayer({ kind, onEscape })` v `$effect`,
+úklid = `remove`) a jediný posluchač `keydown` na `window` zavře jen vrstvu
+naposledy otevřenou — jeden stisk = jedna vrstva (#160 D121). Vlastní
+listener v komponentě řeší jen **klik mimo**, a to jen u dočasných vrstev
+(D122); postranní panely ho nemají. Pravidla a výjimky:
+`docs/design-system.md` §8 → Zavírání vrstev.
+
 Sdílený `ui/Popover.svelte` není nikdy širší než okno bez okrajů: výchozí
 strop je `min(22.5rem, 100vw − 1rem)` a pevná šířka z propu `width`
 (`25rem` u rozhodnutí v náhledu importu) se na úzkém displeji zúží na
@@ -1778,8 +1791,9 @@ stop a interakce přepne na solid. Panel předává callbacky, které volají
 themeStore) — stejnou komponentu používá i `DsThemeField` (DS default).
 
 - **Desktop**: fixed panel vedle sidebaru (`left` podle
-  `collapsed` stavu); zavírání ✕ / Esc / klik mimo (document listener
-  v `$effect` — stejný vzor jako user menu).
+  `collapsed` stavu); zavírání ✕ / Esc / klik mimo (klik mimo = document
+  listener v `$effect`, stejný vzor jako user menu; Esc přes zásobník
+  vrstev).
 - **Mobil** (`layoutStore.isMobile`): strukturní přepnutí — obsah se
   renderuje uvnitř `<Modal>` (fullscreen automaticky).
 

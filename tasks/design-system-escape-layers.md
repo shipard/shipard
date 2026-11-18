@@ -1,6 +1,6 @@
 # Design system — jeden zásobník vrstev pro Esc, klik mimo, boční chat (D121–D123)
 
-**Stav:** naplánováno — #160, D121–D123
+**Stav:** hotovo — 2026-11-18 (#160, D121–D123; 5 commitů, odchylky viz Odchylky); scénáře ověřené v Chromiu (Playwright) na 1280 px a 390 px, `dataset-e2e` nad sadou `cz/vat-payer` bez nálezů; ruční ověření na dev serveru zbývá
 
 ## Kontext / Cíl
 
@@ -180,4 +180,95 @@ dnes zůstává — ověř a zapiš. Odstranit komentář „Zavírání v1 jen 
 
 ## Odchylky
 
-_(doplní implementace)_
+**Zásobník (krok 1)**
+
+- Modul je `frontend/src/utils/layerStack.js`, ne `components/ui/layers.js`:
+  čisté JS testované v `tests/Unit` žije v `utils/`. Nic neimportuje — přes
+  `Popover` ho sdílí i bundle vývojářského dashboardu, proto se posluchač
+  registruje v modulu při prvním `openLayer()`, ne v `AppShell`.
+- API: `openLayer({ kind, onEscape })` → `{ remove, isTop, depth }`,
+  `hasLayer(kind)`, `handleEscape(event)` (jádro posluchače kvůli testu).
+  `isModalOpen()` zanikl bez náhrady — drawer je vrstva.
+- Značka spotřebovaného stisku je `event.defaultPrevented`: zásobník ji po
+  zavření vrstvy nastaví a Esc, který ji už nese, nechá být. `consumedEscapes`
+  zanikl — posluchač je jediný a vrchol čte jednou, takže vrstva otevřená
+  uvnitř `onEscape` se týmž stiskem zavřít nemůže.
+- Navíc: držená klávesa (`repeat`) další vrstvy nezavírá (dřív jedno podržení
+  Esc zavřelo postupně všechny modaly) a Esc uprostřed skládání znaku
+  (`isComposing`) se ignoruje.
+
+**Převod vrstev (krok 2)**
+
+- Alt+←/→: `Modal` pouští `onKeydown` jen modalu, který je naposledy
+  otevřenou vrstvou (`isTop()`). V otevřeném lookupu se záznam nepřepínal ani
+  dřív — `FormDialog` klávesu ignoruje při fokusu v textovém poli; nově se
+  nepřepne ani pod otevřenou bublinou, výběrem více hodnot nebo paletou
+  (ověřeno paletou nad dialogem řádku faktury). `onKeydown` teď dostane i Esc
+  (dřív ho `Modal` nepředal) — `FormDialog` na něj nereaguje.
+- Přejmenování přílohy: podle kódu Esc dřív zrušil přejmenování **a** spustil
+  zavření formuláře (obsluha pole i posluchač modalu). Nově `handleRenameKeydown` volá
+  `preventDefault()` a formulář zůstává.
+- Nabídka lookupu se otevírá fokusem pole, takže zavření formuláře klávesou
+  z lookupu jsou dva stisky (odpovídá scénáři ověření). Klik do už
+  zaostřeného pole nabídku po Esc znovu neotevře — otevře ji psaní nebo ↓,
+  stejně jako dřív po výběru hodnoty.
+- Paleta příkazů otevřená nad modalem a uživatelské menu v draweru sidebaru
+  na telefonu dřív zavíraly Esc obě vrstvy naráz; teď po jedné.
+- Grep `'Escape'` ve `src/` (bez `dev/`): zbývá jen `utils/layerStack.js`
+  a `form/AttachmentPanel.svelte`. Navíc proti zadání to hlídá
+  `tests/Unit/escapeUsage.test.mjs` (vzor `dateFormatUsage.test.mjs`).
+- `DevDialog` (mimo rozsah) má dál vlastní posluchač; kebab dashboardu nad
+  sdíleným `Popover` jde přes zásobník, Esc i klik mimo ověřeny.
+
+**Boční chat (krok 3)**
+
+- Rozepsaný text **dnes zavřením panelu zanikal** (lokální stav `ChatInput`,
+  panel se odmontuje). Po dohodě navíc proti zadání: text drží
+  `chatStore.draft` a zavření panelu (× i Esc) ho nechává.
+- Text maže **jen odeslání z pole**, ne nová konverzace ani přepnutí
+  konverzace: otevření panelu ze sidebaru samo zakládá novou konverzaci, takže
+  mazání při nové konverzaci by text ztratilo právě po nechtěném Esc. Důsledek:
+  neodeslaný text zůstane v poli i po přepnutí na jinou konverzaci (pole sdílí
+  panel, sekce Chat i asistent sekce).
+- Beze změny zůstalo, že znovuotevření panelu ze sidebaru začíná novou
+  konverzaci — po nechtěném Esc uprostřed rozhovoru se v panelu neukáže
+  předchozí vlákno (je v sekci Chat). S Esc to bude častější než s ×;
+  případná změna je na samostatné rozhodnutí.
+
+**Nativní prvky a meze**
+
+- `<select>` ve formuláři: Mezerník + Esc v headless Chromiu zavřel jen
+  nativní nabídku, formulář zůstal. Výběr data a chování v dalších
+  prohlížečích v headless režimu ověřit nejde — ruční krok.
+- Fokus uvnitř `<iframe>` (náhled PDF) Esc do aplikace nepustí; vrstva se
+  nezavře, stejně jako dřív.
+
+**Dokumentace (krok 4)**
+
+- Kromě `docs/design-system.md` a `docs/frontend.md` upraveny i
+  `docs/edit-forms.md` (Vrstvení modalů, Alt+←/→, Esc v lookupu, tabulka
+  komponent), `docs/viewer-grid.md` §6, `docs/chat.md` a `docs/dashboard.md`
+  — popisovaly zásobník modalů a zavírání panelu.
+
+## Ověření — výsledek
+
+Chromium (Playwright), demo sada IT servis, po každém stisku spočítané
+otevřené vrstvy:
+
+| scénář | 1280 px | 390 px |
+|---|---|---|
+| náhled dokladu: panel rozhodnutí, selhané uložení → Esc v panelu bez dotazu, pak dotaz „Neuložená rozhodnutí“ a Esc jen dotaz | ✓ | panel ✓ |
+| náhled dokladu: kebab ⋮ | — | ✓ |
+| nová faktura: nabídka lookupu → formulář → dotaz „Neuložené změny“ → jen dotaz | ✓ | ✓ |
+| vnořený formulář „+ Vytvořit nový“ | ✓ | ✓ |
+| výběr období v reportu (Esc, klik mimo) | ✓ | — |
+| výběr více hodnot (Esc, klik mimo) | ✓ | — |
+| detail v draweru + modal z akce (1000 px), klik do seznamu drawer nezavře | ✓ | — |
+| boční chat: Esc, Esc při psaní (text zůstane), klik vedle nezavře, formulář nad chatem | ✓ | Esc ✓ |
+| paleta (Esc, klik mimo, nad modalem), uživatelské menu, panel vzhledu | ✓ | — |
+| drawer sidebaru, uživatelské menu nad ním, klik na překryv | — | ✓ |
+| přejmenování přílohy (Došlá pošta) | ✓ | — |
+| Alt+←/→ v dialogu řádku pod paletou | ✓ | — |
+
+`shpd-ds dataset-e2e tests/datasets/cz/vat-payer` (desktop): 24 z 24 karet,
+0 chyb prohlížeče, `dataset-verify` 6× ok.

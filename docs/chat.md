@@ -203,7 +203,14 @@ nástrojů.
   sdílí tentýž `chatStore` singleton jako sekce Chat — perzistence,
   streaming i error handling jsou reuse; „Otevřít v Chatu" (⧉) naviguje
   do sekce Chat se stejným vláknem. Otevřenost drží mini store
-  `chatPanel.svelte.js`. Viz `docs/dashboard.md` §8.
+  `chatPanel.svelte.js`. Panel zavírá × a **Esc** — i při psaní do pole
+  zprávy, pokud nad ním není jiná vrstva (formulář, bublina); klik mimo ho
+  nezavírá (#160 D122, D123, `docs/design-system.md` §8 → Zavírání vrstev).
+  **Rozepsaná zpráva** zavření přežije: text pole drží `chatStore.draft`
+  (`setDraft()`; `ChatInput` má `value` bindable, `ChatThread` ho váže na
+  store) a maže ho jen odeslání z pole — nová konverzace ne, protože tu
+  zakládá i samotné otevření panelu z chrome. Pole sdílí panel, sekce Chat
+  i asistent sekce. Viz `docs/dashboard.md` §8.
 - **Scope na sekci** (UI shells Fáze 5): nová konverzace zdědí scope
   z `navigationStore.activeSection` v okamžiku `newConversation()` —
   volají to launcher, „+" v panelu, **tlačítko chatu v chrome** (hlavička

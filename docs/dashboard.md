@@ -1094,7 +1094,9 @@ message-centrických `/_mail/messages/{ndx}/*` endpointů),
   ChatLauncheru přes mini store `stores/chatPanel.svelte.js`. Non-modální
   overlay zprava `width: min(480px, 90vw)`, z-index 80 (pod drawerem
   90/100, ThemePanelem 200, Modalem/FormDialogem 1000); mobil fullscreen
-  pod top barem. Obsah = sdílený `chatStore` + `<ChatThread />` — detaily
+  pod top barem. Zavírá × a Esc (vrstva zásobníku `utils/layerStack.js` —
+  jen když nad panelem není modal nebo bublina), klik mimo ne (#160 D122,
+  D123). Obsah = sdílený `chatStore` + `<ChatThread />` — detaily
   `docs/chat.md` §7.
 - **Ikony**: server posílá sémantický `icon` (check/question/warning/info/…),
   frontend překládá přes `resolveIcon()` (`icons.js`, fallback `iconTable`).

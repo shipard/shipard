@@ -728,11 +728,11 @@ karty modalu).
 
 ### Vrstvení modalů (Esc handling a depth shrink)
 
-`Modal.svelte` používá module-level stack otevřených modalů. Slouží dvěma účelům:
+Otevřený `Modal.svelte` se zapisuje do sdíleného zásobníku vrstev `utils/layerStack.js` (#160 D121; `docs/design-system.md` §8 → Zavírání vrstev). Slouží dvěma účelům:
 
-**Esc handling** — Esc handler reaguje pouze na modal na vrcholu stacku. Bez tohoto by Esc v subdialogu Kontaktu zavřel současně Kontakt i nadřazenou Osobu (oba modaly poslouchají window keydown). Klik na overlay tento problém nemá — overlay každého modalu zachytí jen kliky na vlastní plochu. Tlačítko `×` je per-modal element. Esc je ale globální event, proto vyžaduje stack.
+**Esc handling** — modal vlastní posluchač Esc nemá; jediný posluchač zásobníku zavře jen naposledy otevřenou vrstvu. Esc v subdialogu Kontaktu tak zavře jen Kontakt, ne nadřazenou Osobu — a Esc v otevřené nabídce lookupu, výběru více hodnot nebo v bublině nad formulářem zavře jen nabídku / bublinu, formulář až dalším stiskem. Klik na overlay tento problém nemá — overlay každého modalu zachytí jen kliky na vlastní plochu. Tlačítko `×` je per-modal element.
 
-**Depth-based shrink** — každý modal si při `pushModal()` zjistí svoji hloubku ve stacku (0 = kořenový, 1 = vnořený, atd.). Podle hloubky se `cardStyle` zmenší o 30 px na každé straně (60 px celkem na šířku i výšku). Vnořený modal je tak vycentrovaný a všechny strany rodičovského modalu rovnoměrně vyčnívají — uživatel vidí hierarchii. Funguje pro libovolnou hloubku vnoření (Doklad → Řádek → Položka = depth 2 → položka modal je o 120 px užší/nižší než doklad).
+**Depth-based shrink** — každý modal při zápisu do zásobníku dostane svoji hloubku mezi otevřenými modaly (`openLayer().depth`: 0 = kořenový, 1 = vnořený, atd.). Podle hloubky se `cardStyle` zmenší o 30 px na každé straně (60 px celkem na šířku i výšku). Vnořený modal je tak vycentrovaný a všechny strany rodičovského modalu rovnoměrně vyčnívají — uživatel vidí hierarchii. Funguje pro libovolnou hloubku vnoření (Doklad → Řádek → Položka = depth 2 → položka modal je o 120 px užší/nižší než doklad).
 
 Konkrétní offsety podle hloubky (odecténo od aktuálně vypočtené `clamp()` velikosti na každé straně):
 
@@ -1379,8 +1379,9 @@ přenačte přes svůj `$effect` na `recordId`. Šipky `‹ 2 / 12 ›` jsou
 v hlavičce modalu v novém slotu `Modal.headerNav` (mezi `summary` a `×`,
 na mobilu viditelné), na krajích disabled, u nového záznamu (`index = -1`)
 se nerenderují. Fungují i v read-only režimu (prohlížení). Klávesy
-**Alt+← / Alt+→** přes `Modal.onKeydown` — Modal ho volá jen pro kartu na
-vrcholu stacku (stejné pravidlo jako Esc); `FormDialog` klávesu ignoruje,
+**Alt+← / Alt+→** přes `Modal.onKeydown` — Modal ho volá jen pro kartu, která
+je naposledy otevřenou vrstvou (stejné pravidlo jako Esc — ne pod otevřenou
+bublinou, nabídkou pole nebo paletou); `FormDialog` klávesu ignoruje,
 když je fokus v textovém poli (na macOS Alt+šipka skáče po slovech), jinak
 `preventDefault` proti „zpět" v historii prohlížeče.
 
@@ -1519,7 +1520,7 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 
 | Komponenta | Popis |
 |------------|-------|
-| `Modal.svelte` (ui/) | Generický modal: header s titulkem a `×`, tělo, overlay, body scroll lock, modal stack pro Esc handling. Volitelný `headerExtra` snippet pro badge, `headerNav` (šipky navigace před `×`), `width` a `height` props, `fixedSize` (vyjme kartu z depth-shrinku — malé dialogy), `onKeydown` (klávesy jen pro kartu na vrcholu stacku). |
+| `Modal.svelte` (ui/) | Generický modal: header s titulkem a `×`, tělo, overlay, body scroll lock, zápis do zásobníku vrstev (Esc, hloubka vnoření). Volitelný `headerExtra` snippet pro badge, `headerNav` (šipky navigace před `×`), `width` a `height` props, `fixedSize` (vyjme kartu z depth-shrinku — malé dialogy), `onKeydown` (klávesy jen pro kartu, která je naposledy otevřenou vrstvou). |
 | `ConfirmDialog.svelte` (ui/) | Potvrzovací dialog nad Modal (480 px, `fixedSize`): `title`, `message`, `confirmLabel`, `variant` primary/danger, `busy`, `onConfirm` / `onCancel`; Enter = potvrdit (fokus na tlačítku), Esc = zrušit. Náhrada `window.confirm` — kap. 15.3 |
 | `FormDialog.svelte` | Orchestrátor — Modal s škálující se velikostí (clamp 1200–1700 px), poskytuje header (titulek + badge + subtitle + summary + šipky navigace), drží dirty stav, `guardDirty()` s `ConfirmDialog` Zahodit / Zůstat při zavření i Předchozí / Další. Meta načítá FormEditor uvnitř. Props `readOnly`, `notice`, `navigation`, `onSaveAndContinue`; `onSaved` info nese `hasDocStates` + `wasNew` — kap. 15.4 |
 | `FormEditor.svelte` | Hlavní shell: tab bar, obsah, toolbar (header je v Modal). Sleduje dirty stav (snapshot vs aktuální data), propaguje titulek/doc_states/dirty zpět do FormDialog přes callbacky `onFormLoaded` a `onDirtyChange`. Prop `readOnly`; `isReadOnly` / `isDisabled` zvlášť pro sub-tabulky; `handleSubtableChanged()` tichý reload rodiče; `saveRecord()` + `handleSave()` / `handleSaveAndContinue()` (`resetToNew()`, fokus prvního pole) |
@@ -2196,7 +2197,7 @@ Protipolný vzor v `DocRowsForm`. Změna `item` vždy přepisuje `description`, 
 - **Klávesnice:**
   - `↓`/`↑` navigace s wrap-around
   - `Enter` vybírá aktivní položku
-  - `Escape` zavírá dropdown
+  - `Escape` zavírá dropdown — jen dropdown; otevřená nabídka je vrstva zásobníku (`utils/layerStack.js`), formulář zavře až další stisk
   - `Tab` zavře dropdown a **nechá default chování proběhnout** (`preventDefault` se nevolá) — fokus přejde na další pole formuláře. Položky dropdownu mají `tabindex="-1"`, takže do nich Tab nemůže zabloudit.
   - `Backspace` na prázdném inputu při nastavené hodnotě clearuje.
 - **`×` tlačítko:** clear (jen pokud `hasValue && !disabled`, `tabindex="-1"`).

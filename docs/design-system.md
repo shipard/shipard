@@ -572,6 +572,13 @@ upraven). Rozvržení a písmo hlavičky: §12 Detail záznamu.
   bloku (D107).
 - ❌ Vlastní tlačítko ⋮ s `Popover`em a položkami v komponentě. ✅
   `ui/KebabMenu` s polem `items` (D114, §8 Akce na telefonu).
+- ❌ `if (e.key === 'Escape') onClose()` v komponentě vrstvy (vlastní
+  posluchač na `document` / `window` / prvku) — jeden stisk pak zavře
+  bublinu i modal pod ní. ✅ `openLayer({ kind, onEscape })`
+  z `utils/layerStack.js` v `$effect` (D121, §8 Zavírání vrstev);
+  hlídá `escapeUsage.test.mjs`.
+- ❌ Posluchač kliku mimo u postranního panelu (detail v draweru, boční
+  chat). ✅ Klik mimo zavírá jen dočasné vrstvy (D122).
 - ❌ Zavřít / Zrušit v patičce `Modal`u bez `dismiss` — na telefonu zabírá
   místo akcím a opakuje ×. ✅ `<Button dismiss … />`; výjimkou je odpověď
   potvrzovacího dotazu (D116, §8 Modální dialogy).
@@ -633,6 +640,8 @@ Na ≤ 48rem (768 px při výchozím písmu; breakpoint shellu, viz
 *Responzivita* níže) se sidebar mění na overlay drawer (vysune zleva přes
 obsah, overlay ztmaví zbytek). Spouští ho hamburger v `MobileTopBar`. Detaily
 v [`frontend.md`](frontend.md) sekce *Aplikační shell → Mobilní režim*.
+Otevřený drawer je vrstva zásobníku (*Zavírání vrstev* níže): Esc ho zavře,
+jen když nad ním není otevřené uživatelské menu.
 
 ### User dropdown v patce sidebaru
 
@@ -1105,9 +1114,9 @@ Rozhodnutí D40 a D41 (task 3 #137), D60 a D61
 ### Modální dialogy
 
 Všechny modální dialogy v aplikaci používají sdílenou `Modal.svelte` komponentu —
-včetně vnořených dialogů (modál nad modálem). Modal má vlastní stack management,
-takže Esc reaguje jen na top modál a body scroll lock se uvolňuje až při zavření
-posledního.
+včetně vnořených dialogů (modál nad modálem). Otevřený modal je vrstva sdíleného
+zásobníku (*Zavírání vrstev* níže), takže Esc zavře jen naposledy otevřenou
+vrstvu; body scroll lock se uvolňuje až při zavření posledního modalu.
 
 **Konvence**:
 - Overlay `var(--shpd-color-overlay)` (40 % černá v light, 65 % v dark)
@@ -1157,6 +1166,59 @@ posledního.
   {/snippet}
 </Modal>
 ```
+
+### Zavírání vrstev
+
+Rozhodnutí D121–D123 z #160. **Vrstva** je všechno, co se dá zavřít: modal,
+bublina (`Popover`, kebab, panel rozhodnutí, výběr období), nabídka pole
+(lookup, výběr více hodnot), detail v draweru, boční chat, panel vzhledu,
+uživatelské menu, paleta příkazů a drawer sidebaru na telefonu.
+
+- **Esc zavře jednu vrstvu — tu naposledy otevřenou** (D121). Další stisk
+  zavře vrstvu pod ní. Esc v otevřené nabídce lookupu zavře nabídku,
+  formulář až dalším stiskem; Esc v panelu rozhodnutí zavře panel, náhled
+  dokladu zůstává; paleta otevřená nad modalem zavře jen sebe.
+- **Jeden stisk = jedna vrstva**, i když zavření otevře další: Esc na
+  formuláři se změnami otevře dotaz „Neuložené změny“ a týž stisk ho
+  nezavře. Držená klávesa další vrstvy nezavírá.
+- **Klik mimo zavírá jen dočasné vrstvy** (D122): bubliny, nabídky polí,
+  uživatelské menu, panel vzhledu, paletu a drawer sidebaru (klik na
+  ztmavený překryv). **Postranní panely** — detail v draweru a boční chat —
+  klik mimo nezavírá, pracuje se vedle nich. Modal zavírá klik na ztmavené
+  pozadí.
+- **Boční chat** zavírá × a Esc (D123), i při psaní do pole zprávy;
+  rozepsaný text zavření přežije (žije v `chatStore`, maže ho odeslání).
+
+**Implementace** — jeden zásobník `utils/layerStack.js` a jeden posluchač
+`keydown` na `window`. Komponenta vrstvy se do něj zapíše na dobu otevření
+a **vlastní posluchač Esc nemá**:
+
+```js
+import { openLayer } from '../../utils/layerStack.js';
+
+$effect(() => {
+  if (!open) return;
+  return openLayer({ kind: 'popover', onEscape: () => onClose() }).remove;
+});
+```
+
+`openLayer()` vrací `remove()` (úklid efektu — vrstva zmizí při zavření
+i při zničení komponenty), `isTop()` (je naposledy otevřená — `Modal` podle
+něj pouští `onKeydown`, takže Alt+←/→ nepřepne záznam pod otevřenou bublinou
+nebo paletou) a `depth` (pořadí mezi vrstvami téhož druhu — zmenšení
+vnořených modalů). Druhy: `modal`, `popover`, `menu`, `panel`, `palette`,
+`drawer`.
+
+**Editace textu, která Esc ruší sama** (přejmenování přílohy), zůstává
+lokální a stisk označí `e.preventDefault()` — zásobník Esc
+s `defaultPrevented` nechá být, takže se zároveň nezavře formulář. Výjimky
+jsou vyjmenované s důvodem v `tests/Unit/escapeUsage.test.mjs`, který
+v `npm test` zastaví každé další čtení klávesy `'Escape'` mimo zásobník.
+
+Meze: nativní nabídka prohlížeče (`<select>`, výběr data) si Esc řeší sama
+a do aplikace ho nepustí; totéž platí pro fokus uvnitř `<iframe>` (náhled
+PDF) — tam Esc vrstvu nezavře. Vývojářský dashboard má vlastní `DevDialog`
+s vlastním posluchačem; sdílený `Popover` v něm jde přes zásobník.
 
 ### Akce na telefonu
 

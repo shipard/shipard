@@ -286,9 +286,10 @@ zprava** (~560 px):
   drawer od gridu.
 - Hlavička draweru: akce z `detailToolbar` (filtr `create` jako
   v mobile top baru — Přidat patří jen seznamu) + zavírací ✕.
-- Zavření: ✕, Esc, výběr se zruší (`selectedRowId = null`). Esc musí
-  koordinovat s Modal stackem — když je nad drawerem otevřený modál
-  (FormDialog z detail akce), Esc zavírá modál, ne drawer.
+- Zavření: ✕, Esc, výběr se zruší (`selectedRowId = null`). Drawer je
+  vrstva zásobníku `utils/layerStack.js` (#160 D121) — když je nad ním
+  otevřený modál (FormDialog z detail akce) nebo bublina, Esc zavírá je,
+  drawer až dalším stiskem. Klik mimo drawer nezavírá (D122).
 - Mobil drawer nepoužívá — tam platí stávající list/detail full-width
   přepínání.
 - **Drawer není širší než viewer** (#133 D58, doplnění): šířka `35rem`,
