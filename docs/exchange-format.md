@@ -1938,7 +1938,9 @@ Snapshoty stran se v import módu (`importNumber` přítomné) **nestaví
 z dnešního adresáře** — pro historické doklady by to bylo věcně špatně.
 Strana partnera (`supplier`/`customer` dle `selfParty`) se místo toho
 **mrazí do snapshotu dokladu** tak, jak přišla v payloadu (přeložená do
-tvaru `PersonSnapshotBuilder`); za dobové hodnoty — především `vatId`,
+tvaru `PersonSnapshotBuilder` — z `contact` jdou `email`, `phone` a `web`,
+ID datové schránky strana dokladu nenese a ve snapshotu je `null`, #162
+D133); za dobové hodnoty — především `vatId`,
 ze kterého kontrolní hlášení čte DIČ partnera — odpovídá exportér.
 Vlastní strana se staví standardně (dnešní adresářová data vlastní firmy
 + `bank_account` a `vat_registration` z hlavičky dokladu). Prázdná strana

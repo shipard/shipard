@@ -11,7 +11,8 @@ namespace Shipard\Module\Docs\Core;
  * Shared by DocDocument (frozen snapshots written at Confirm) and
  * DocsHeadsViewer (live party assembly for Koncept documents in detail).
  * The output shape is persisted in the supplier_snapshot / customer_snapshot
- * JSON columns — existing stored snapshots must stay compatible with it.
+ * JSON columns — existing stored snapshots must stay compatible with it:
+ * keys are only ever added, never renamed or removed.
  *
  * Partner bez vybrané adresy (`partner_address` prázdné — doklad z applieru,
  * z akce Vystavit opravný doklad, z periodické fakturace, nebo formulář,
@@ -97,9 +98,14 @@ final class PersonSnapshotBuilder
             'tax_id'             => $person['tax_id']             ?? null,
             'vat_id'             => $person['vat_id']             ?? null,
             'court_registration' => $person['court_registration'] ?? null,
+            // Web a ID datové schránky přibyly s kontakty v zápatí tisku
+            // (#162 D133); snapshoty dokladů vystavených dřív je nemají
+            // a nedopočítávají se — čtenář bere chybějící klíč jako prázdný.
             'contact'            => [
-                'email' => $person['email'] ?? null,
-                'phone' => $person['phone'] ?? null,
+                'email'        => $person['email']        ?? null,
+                'phone'        => $person['phone']        ?? null,
+                'web'          => $person['web']          ?? null,
+                'gov_e_box_id' => $person['gov_e_box_id'] ?? null,
             ],
         ];
 

@@ -94,9 +94,40 @@ class DocDocumentSnapshotsTest extends TestCase
         $this->assertSame('12345678', $snap['company_id']);
         $this->assertSame('Městský soud v Praze', $snap['court_registration']);
         $this->assertSame('info@beta.cz', $snap['contact']['email']);
+        // Osoba bez webu a datové schránky: klíče jsou, hodnoty prázdné.
+        $this->assertSame(
+            ['email' => 'info@beta.cz', 'phone' => '+420 1 23 45 67 89', 'web' => null, 'gov_e_box_id' => null],
+            $snap['contact'],
+        );
         $this->assertArrayNotHasKey('address', $snap);
         $this->assertArrayNotHasKey('bank_account', $snap);
         $this->assertArrayNotHasKey('vat_registration', $snap);
+    }
+
+    public function testBuildPersonSnapshotCarriesWebAndDataBox(): void
+    {
+        // Kontakty v zápatí tisku čtou jen snapshot (#162 D133).
+        $db = $this->dbReturning([
+            new Row([
+                'id' => 5, 'full_name' => 'Beta s.r.o.',
+                'email' => 'info@beta.example', 'phone' => '+420577000001',
+                'web' => 'www.beta.example', 'gov_e_box_id' => 'abc2def',
+            ]),
+        ]);
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($db);
+
+        $snap = $doc->buildPersonSnapshotPub(5, null, null, null);
+
+        $this->assertSame(
+            [
+                'email'        => 'info@beta.example',
+                'phone'        => '+420577000001',
+                'web'          => 'www.beta.example',
+                'gov_e_box_id' => 'abc2def',
+            ],
+            $snap['contact'],
+        );
     }
 
     public function testBuildPersonSnapshotWithAddressBankAndVatRegistration(): void

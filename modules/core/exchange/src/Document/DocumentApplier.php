@@ -1873,9 +1873,14 @@ class DocumentApplier
             'tax_id'             => $s($party['taxId'] ?? null),
             'vat_id'             => $s($party['vatId'] ?? null),
             'court_registration' => $s($party['courtRegistration'] ?? null),
+            // Tvar jako PersonSnapshotBuilder (#162 D133). Kanonická strana
+            // dokladu ID datové schránky nenese — klíč je ve snapshotu
+            // přítomný a prázdný.
             'contact'            => [
-                'email' => $s($party['contact']['email'] ?? null),
-                'phone' => $s($party['contact']['phone'] ?? null),
+                'email'        => $s($party['contact']['email'] ?? null),
+                'phone'        => $s($party['contact']['phone'] ?? null),
+                'web'          => $s($party['contact']['web'] ?? null),
+                'gov_e_box_id' => null,
             ],
         ];
 

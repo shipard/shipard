@@ -1332,7 +1332,9 @@ protected function buildSnapshots(array &$data): void
     },
     "contact": {
         "email": "info@beta-gastro.cz",
-        "phone": "+420 123 456 789"
+        "phone": "+420 123 456 789",
+        "web": "www.beta-gastro.cz",     // od #162 D133; starší snapshoty klíč nemají
+        "gov_e_box_id": "abc2def"        // ID datové schránky, od #162 D133
     },
     "bank_account": {           // jen u dodavatele na vydané faktuře (= náš účet)
         "name": "ČSOB hlavní",
@@ -1347,6 +1349,14 @@ protected function buildSnapshots(array &$data): void
     }
 }
 ```
+
+Tvar snapshotu se mění jen **přidáním klíče**: `contact.web`
+a `contact.gov_e_box_id` (sloupce osoby `web`, `gov_e_box_id`) přibyly
+s kontakty v zápatí tisku (#162 D133). Snapshoty dokladů uložených dřív se
+nedopočítávají — čtenář bere chybějící klíč jako prázdnou hodnotu.
+Snapshot partnera z importního módu (`DocumentApplier`) nese `web`
+z payloadu a `gov_e_box_id` vždy `null`: kanonická strana dokladu ID
+datové schránky nemá.
 
 Snapshot je **nezávislý dump** dat — kdykoli partner změní adresu, doklady
 zůstávají s původními údaji. Při explicitním volání „obnovit snapshot"

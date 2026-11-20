@@ -1818,6 +1818,10 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('MS v Praze, C 123', $snap['court_registration']);
         $this->assertSame('a@b.cz', $snap['contact']['email']);
         $this->assertSame('+420 111', $snap['contact']['phone']);
+        // Web kanonická strana nese; ID datové schránky ne (#162 D133).
+        $this->assertSame('https://b.cz', $snap['contact']['web']);
+        $this->assertArrayHasKey('gov_e_box_id', $snap['contact']);
+        $this->assertNull($snap['contact']['gov_e_box_id']);
         $this->assertSame('Hlavní', $snap['address']['street']);
         $this->assertSame('1', $snap['address']['house_number']);
         $this->assertSame('Nové Město', $snap['address']['city_part']);
@@ -1849,7 +1853,10 @@ class DocumentApplierTest extends TestCase
         $this->assertNull($snap['tax_id']);
         $this->assertArrayNotHasKey('address', $snap);
         $this->assertArrayNotHasKey('bank_account', $snap);
-        $this->assertNull($snap['contact']['email']);
+        $this->assertSame(
+            ['email' => null, 'phone' => null, 'web' => null, 'gov_e_box_id' => null],
+            $snap['contact'],
+        );
     }
 
     public function testTransformImportSnapshotUsesCustomerWhenSelfSupplier(): void
