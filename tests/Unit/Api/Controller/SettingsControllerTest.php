@@ -457,6 +457,20 @@ class SettingsControllerTest extends TestCase
         $this->assertNull($data['values']['prints.logoPlacement']);
     }
 
+    public function testPagePrintsAppearanceSectionIsLocalized(): void
+    {
+        $this->withPrintsModule();
+
+        $resp = $this->ctrl->page('printsAppearance', $this->config(), $this->resolver, 'en', $this->auth(), $this->mockDb());
+        $byType = array_column($resp->getPayload()['data']['definition']['fields'], null, 'type');
+
+        $this->assertSame('Footer contacts', $byType['section']['label']);
+        $this->assertSame(
+            "Taken from your own company's card. An empty value is not printed.",
+            $byType['section']['hint'],
+        );
+    }
+
     public function testPagePrintsAppearanceHasFooterContactSwitches(): void
     {
         // Čtyři zaškrtávátka kontaktů v zápatí, výchozí zapnuto (#162 D132);
@@ -478,13 +492,23 @@ class SettingsControllerTest extends TestCase
             array_column($switches, 'id'),
         );
         $this->assertSame(
-            ['E-mail v zápatí', 'Telefon v zápatí', 'Web v zápatí', 'Datová schránka v zápatí'],
+            ['E-mail', 'Telefon', 'Web', 'Datová schránka'],
             array_column($switches, 'label'),
         );
         foreach ($switches as $switch) {
             $this->assertTrue($switch['default'], $switch['id'] . ': výchozí zapnuto jako čtení v PrintRunner');
+            $this->assertArrayNotHasKey('hint', $switch, 'nápovědu nese mezinadpis, ne položky (D138)');
         }
-        $this->assertSame('Údaj z karty vlastní firmy. Prázdný se netiskne.', $switches[0]['hint']);
+
+        // Mezinadpis s úvodním textem stojí těsně před zaškrtávátky (D138).
+        $types = array_column($data['definition']['fields'], 'type');
+        $at    = array_search('section', $types, true);
+        $this->assertNotFalse($at);
+        $this->assertSame(['checkbox', 'checkbox', 'checkbox', 'checkbox'], array_slice($types, $at + 1));
+        $section = $data['definition']['fields'][$at];
+        $this->assertSame('Kontakty v zápatí', $section['label']);
+        $this->assertSame('Údaje z karty vlastní firmy. Prázdný údaj se netiskne.', $section['hint']);
+        $this->assertArrayNotHasKey($section['id'], $data['values']);
         $this->assertFalse($data['values']['prints.footer.phone']);
         $this->assertNull($data['values']['prints.footer.email'], 'nenastavený klíč = výchozí z definice');
     }
@@ -578,6 +602,10 @@ class SettingsControllerTest extends TestCase
                      'name' => 'On by default', 'name:cs' => 'Výchozí zapnuto', 'hint' => 'Hint', 'hint:cs' => 'Nápověda'],
                     ['id' => 'testx.noDefault', 'type' => 'checkbox', 'name' => 'No default'],
                     ['id' => 'testx.oddDefault', 'type' => 'checkbox', 'default' => 'yes', 'name' => 'Odd default'],
+                    // Mezinadpis (#162 D138) — bez hodnoty, žádný klíč nastavení.
+                    ['id' => 'testx.group', 'type' => 'section', 'default' => true,
+                     'name' => 'Group', 'name:cs' => 'Skupina', 'hint' => 'Intro', 'hint:cs' => 'Úvod'],
+                    ['id' => 'testx.afterGroup', 'type' => 'text', 'name' => 'After group'],
                 ],
             ]],
         ]));
@@ -632,6 +660,59 @@ class SettingsControllerTest extends TestCase
 
         $this->assertSame(200, $this->getStatus($resp));
         $this->assertSame(['testx.onByDefault' => 'false', 'testx.noDefault' => 'true'], $saved);
+    }
+
+    // --- položka section, mezinadpis bez hodnoty (#162 D138) ---
+
+    public function testPageSectionHasLabelAndHintButNoValue(): void
+    {
+        $this->withCheckboxModule();
+        // I kdyby pod jeho id v úložišti něco leželo, hodnota se neposílá.
+        $db = $this->mockDb([
+            ['key' => 'testx.group', 'value' => json_encode('stray')],
+        ]);
+
+        $resp = $this->ctrl->page('checksPage', $this->config(), $this->resolver, 'cs', $this->auth(), $db);
+        $data = $resp->getPayload()['data'];
+
+        $byId = array_column($data['definition']['fields'], null, 'id');
+        $this->assertSame(
+            ['id' => 'testx.group', 'type' => 'section', 'label' => 'Skupina', 'hint' => 'Úvod'],
+            $byId['testx.group'],
+            'bez default, nabídky a dalších vlastností pole',
+        );
+        $this->assertArrayNotHasKey('testx.group', $data['values']);
+        $this->assertArrayHasKey('testx.afterGroup', $data['values']);
+        // Pořadí položek drží deklaraci — mezinadpis stojí před svými poli.
+        $ids = array_column($data['definition']['fields'], 'id');
+        $this->assertSame(array_search('testx.group', $ids, true) + 1, array_search('testx.afterGroup', $ids, true));
+    }
+
+    public function testSavePageIgnoresValueOfSection(): void
+    {
+        $this->withCheckboxModule();
+        $saved = [];
+        $db = $this->mockDb();
+        $db->method('execute')->willReturnCallback(
+            static function (mixed ...$args) use (&$saved): void {
+                $saved[(string) $args[1]] = (string) $args[2];
+            },
+        );
+        $db->expects($this->never())->method('deleteWhere');
+
+        // Hodnota pod id mezinadpisu není chyba a neuloží se — ani `null`
+        // (ten by u pole znamenal smazání klíče).
+        foreach (['x', true, null, ['a' => 1]] as $stray) {
+            $resp = $this->ctrl->savePage(
+                'checksPage',
+                $this->saveRequest(['values' => ['testx.group' => $stray, 'testx.afterGroup' => 'kept']]),
+                $this->config(), $this->resolver, $this->auth(), $db,
+            );
+
+            $this->assertSame(200, $this->getStatus($resp));
+            $this->assertArrayNotHasKey('testx.group', $resp->getPayload()['data']['values']);
+        }
+        $this->assertSame(['testx.afterGroup' => '"kept"'], $saved);
     }
 
     /** @return array<string, array{mixed}> */

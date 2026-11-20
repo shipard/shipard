@@ -899,7 +899,8 @@ zapojuje do navigace přes `settingsItems` s `page`.
 ```
 
 Typy polí (`text` jako default, `image`, `select`, `color`, `checkbox`,
-`theme`, `shell`, `language`, `avatar`) a jejich atributy popisuje
+`theme`, `shell`, `language`, `avatar`), mezinadpis bez hodnoty
+(`section`) a jejich atributy popisuje
 [docs/app-settings.md](app-settings.md) §6. `name`/`hint` jsou
 vícejazyčné (`:cs`/`:en` suffixy, standardní fallback chain). Pole s
 neznámým typem nebo bez `id` se tolerantně přeskakují. `image` pole

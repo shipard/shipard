@@ -73,6 +73,7 @@ class DsSettingCommandTest extends TestCase
                         ['id' => 'testx.someKey', 'type' => 'text', 'name' => 'Some key'],
                         ['id' => 'testx.someImage', 'type' => 'image', 'name' => 'Some image'],
                         ['id' => 'testx.someCheck', 'type' => 'checkbox', 'default' => true, 'name' => 'Some check'],
+                        ['id' => 'testx.someSection', 'type' => 'section', 'name' => 'Some section'],
                     ],
                 ],
             ],
@@ -235,6 +236,29 @@ class DsSettingCommandTest extends TestCase
             $this->assertSame(1, $exitCode, $value);
             $this->assertStringContainsString('allowed values: true, false', $tester->getDisplay());
         }
+        $this->assertSame([], $this->kv);
+    }
+
+    public function testSectionIsNotSettingKey(): void
+    {
+        // Mezinadpis stránky nastavení (#162 D138) není klíč: nejde nastavit,
+        // smazat ani se nenabízí mezi povolenými klíči.
+        $tester = $this->createCommandTester();
+
+        $exitCode = $tester->execute(['action' => 'set', 'key' => 'testx.someSection', 'value' => 'x']);
+
+        $this->assertSame(1, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Unknown setting key: testx.someSection', $display);
+        $this->assertStringContainsString('testx.someCheck', $display, 'výpis povolených klíčů');
+        $this->assertSame(
+            1,
+            substr_count($display, 'testx.someSection'),
+            'mezinadpis je jen v hlášce o neznámém klíči, ne mezi povolenými',
+        );
+        $this->assertSame([], $this->kv);
+
+        $this->assertSame(1, $tester->execute(['action' => 'set', 'key' => 'testx.someSection', '--unset' => true]));
         $this->assertSame([], $this->kv);
     }
 

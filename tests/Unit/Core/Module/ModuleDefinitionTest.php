@@ -319,6 +319,9 @@ class ModuleDefinitionTest extends TestCase
                         ]],
                         ['id' => 'a.g', 'type' => 'color'],                   // podporovaný typ (#90 D46)
                         ['id' => 'a.h', 'type' => 'checkbox', 'default' => true], // podporovaný typ (#162 D132)
+                        // mezinadpis bez hodnoty (#162 D138): default a nabídka se zahodí
+                        ['id' => 'a.i', 'type' => 'section', 'name' => 'Group', 'hint' => 'Intro',
+                         'default' => true, 'options' => [['value' => 'x', 'label' => 'X']], 'optionsProvider' => 'Foo'],
                     ],
                 ],
             ],
@@ -326,7 +329,11 @@ class ModuleDefinitionTest extends TestCase
 
         $this->assertCount(1, $def->settingsPages);
         $this->assertSame('valid', $def->settingsPages[0]['id']);
-        $this->assertCount(5, $def->settingsPages[0]['fields']);
+        $this->assertCount(6, $def->settingsPages[0]['fields']);
+        $this->assertSame(
+            ['id' => 'a.i', 'type' => 'section', 'name' => 'Group', 'hint' => 'Intro'],
+            $def->settingsPages[0]['fields'][5],
+        );
         $this->assertSame('color', $def->settingsPages[0]['fields'][3]['type']);
         $this->assertSame('checkbox', $def->settingsPages[0]['fields'][4]['type']);
         $this->assertTrue($def->settingsPages[0]['fields'][4]['default']);

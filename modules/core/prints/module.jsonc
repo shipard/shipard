@@ -104,43 +104,52 @@
                         { "value": "right", "label": "Right", "label:cs": "Vpravo", "label:en": "Right" }
                     ]
                 },
-                // Kontakty vlastní firmy v zápatí dokladu (#162 D130, D132).
+                // Kontakty vlastní firmy v zápatí dokladu (#162 D130, D132)
+                // pod mezinadpisem s úvodním textem (D138) — položka
+                // `section` nemá hodnotu ani klíč nastavení.
+                {
+                    "id": "prints.footerContacts",
+                    "type": "section",
+                    "name": "Footer contacts",
+                    "name:cs": "Kontakty v zápatí",
+                    "name:en": "Footer contacts",
+                    "hint": "Taken from your own company's card. An empty value is not printed.",
+                    "hint:cs": "Údaje z karty vlastní firmy. Prázdný údaj se netiskne.",
+                    "hint:en": "Taken from your own company's card. An empty value is not printed."
+                },
                 // `default: true` musí odpovídat čtení v PrintRunner:
                 // nenastavený klíč = kontakt se tiskne.
                 {
                     "id": "prints.footer.email",
                     "type": "checkbox",
                     "default": true,
-                    "name": "E-mail in footer",
-                    "name:cs": "E-mail v zápatí",
-                    "name:en": "E-mail in footer",
-                    "hint": "Taken from your own company's card. An empty value is not printed.",
-                    "hint:cs": "Údaj z karty vlastní firmy. Prázdný se netiskne.",
-                    "hint:en": "Taken from your own company's card. An empty value is not printed."
+                    "name": "E-mail",
+                    "name:cs": "E-mail",
+                    "name:en": "E-mail"
                 },
                 {
                     "id": "prints.footer.phone",
                     "type": "checkbox",
                     "default": true,
-                    "name": "Phone in footer",
-                    "name:cs": "Telefon v zápatí",
-                    "name:en": "Phone in footer"
+                    "name": "Phone",
+                    "name:cs": "Telefon",
+                    "name:en": "Phone"
                 },
                 {
                     "id": "prints.footer.web",
                     "type": "checkbox",
                     "default": true,
-                    "name": "Website in footer",
-                    "name:cs": "Web v zápatí",
-                    "name:en": "Website in footer"
+                    "name": "Website",
+                    "name:cs": "Web",
+                    "name:en": "Website"
                 },
                 {
                     "id": "prints.footer.dataBox",
                     "type": "checkbox",
                     "default": true,
-                    "name": "Data box in footer",
-                    "name:cs": "Datová schránka v zápatí",
-                    "name:en": "Data box in footer"
+                    "name": "Data box",
+                    "name:cs": "Datová schránka",
+                    "name:en": "Data box"
                 }
             ]
         }

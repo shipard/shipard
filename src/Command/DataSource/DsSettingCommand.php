@@ -224,6 +224,10 @@ class DsSettingCommand extends Command
                     continue;
                 }
                 foreach ($page['fields'] as $field) {
+                    // Mezinadpis stránky není klíč nastavení (#162 D138).
+                    if (($field['type'] ?? 'text') === 'section') {
+                        continue;
+                    }
                     $declared[(string) $field['id']] = (string) ($field['type'] ?? 'text');
                 }
             }

@@ -13,6 +13,7 @@
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
   import Card from '../ui/Card.svelte';
+  import SectionHeading from '../ui/SectionHeading.svelte';
   import Notice from '../ui/Notice.svelte';
   import ImageSlotField from './ImageSlotField.svelte';
   import AvatarSlotField from './AvatarSlotField.svelte';
@@ -67,6 +68,8 @@
   // Pole ukládaná přes Uložit stránky: texty, select, color, checkbox + DS-scope theme/shell
   // (structured hodnoty v `values`). User-scope theme/shell/language jedou
   // live stores, image/avatar vlastní upload endpoint — mimo Uložit.
+  // Položka `section` je mezinadpis bez hodnoty (#162 D138) — do `values`
+  // nejde a neukládá se.
   function isSavedViaPage(field, scope) {
     return field.type === 'text'
       || field.type === 'select'
@@ -177,6 +180,16 @@
 
       <div class="shpd-settings-page__fields">
         {#each definition.fields as field (field.id)}
+          {#if field.type === 'section'}
+            <!-- Mezinadpis s úvodním textem přes celou šířku stránky — vzhled
+                 jako „Volitelné“ v průvodci nastavením (DsSetup). -->
+            <div class="shpd-settings-page__section">
+              <SectionHeading level={3}>{field.label}</SectionHeading>
+              {#if field.hint}
+                <p class="shpd-settings-page__section-intro">{field.hint}</p>
+              {/if}
+            </div>
+          {:else}
           <div class="shpd-settings-page__field">
             <!-- Zaškrtávátko nese popisek samo (sdílený Checkbox je <label>),
                  levý sloupec popisků u něj zůstává prázdný. -->
@@ -256,6 +269,7 @@
               {/if}
             </div>
           </div>
+          {/if}
         {/each}
       </div>
 
@@ -305,6 +319,26 @@
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
     align-items: start;
+  }
+
+  /* Mezinadpis (položka `section`): přes oba sloupce, od polí nad sebou
+     oddělený linkou a odstupy jako „Volitelné“ v DsSetup — nad linkou `xl`
+     (řádková mezera mřížky + okraj), pod ní `lg`. Mezeru pod úvodním textem
+     dává mřížka polí (`md`). První položka stránky linku ani odstup nemá. */
+  .shpd-settings-page__section {
+    grid-column: 1 / -1;
+  }
+
+  .shpd-settings-page__section:not(:first-child) {
+    margin-top: calc(var(--shpd-space-xl) - var(--shpd-space-md));
+    padding-top: var(--shpd-space-lg);
+    border-top: 1px solid var(--shpd-color-border);
+  }
+
+  .shpd-settings-page__section-intro {
+    margin: var(--shpd-space-xs) 0 0;
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-text-secondary);
   }
 
   .shpd-settings-page__label {

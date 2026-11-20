@@ -1061,7 +1061,8 @@ v `settingsPages` aktivních modulů (scope `ds`). Neznámý klíč → chyba
 s výpisem povolených; hodnoty parametrů vrstvy C se validují při zápisu.
 Klíče se strukturovanými hodnotami spravovanými aplikací (typy `image`,
 `avatar`, `theme`, `shell` — branding, vzhled, rozložení) přes CLI
-nastavit nejdou. Klíč pole typu `checkbox` bere jen `true` / `false`
+nastavit nejdou; mezinadpis stránky (`section`) klíč není vůbec. Klíč
+pole typu `checkbox` bere jen `true` / `false`
 a uloží boolean (jiná hodnota = chyba); hodnoty ostatních polí stránek
 nastavení se ukládají jako řetězec bez kontroly.
 

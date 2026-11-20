@@ -1090,7 +1090,11 @@ platí pro všechny tisky. **Ověřuje je i při čtení** — `ds-setting set`
 barvu a umístění nekontroluje, neplatná = výchozí vzhled.
 
 **Kontakty v zápatí** (#162 D130, D132): čtyři zaškrtávátka s
-`default: true`, klíče v `PrintRunner::SETTING_FOOTER_CONTACTS`. Runner
+`default: true`, klíče v `PrintRunner::SETTING_FOOTER_CONTACTS`. Na
+stránce stojí pod mezinadpisem „Kontakty v zápatí“ s úvodním textem
+(položka `section` bez hodnoty, D138; `docs/app-settings.md` §6) — samy
+nápovědu nemají a jmenují se jen E-mail, Telefon, Web, Datová schránka.
+Runner
 z nich skládá `branding.footerContacts` — kontakt vypíná jen uložené
 `false`; nenastavený klíč i hodnota jiného typu znamenají zapnuto, stejně
 jako výchozí stav zaškrtávátka. Přepínač říká, co se **smí** tisknout:

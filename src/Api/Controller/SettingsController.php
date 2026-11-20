@@ -222,6 +222,11 @@ class SettingsController
         foreach ($pageDef['fields'] as $field) {
             $id   = $field['id'];
             $type = $field['type'];
+            // Mezinadpis není pole — hodnota pod jeho id se ignoruje, nikdy
+            // se neuloží a není to chyba (#162 D138).
+            if ($type === 'section') {
+                continue;
+            }
             if (!array_key_exists($id, $values)) {
                 continue;
             }
@@ -478,11 +483,16 @@ class SettingsController
      */
     private function buildPageValues(array $page, KeyValueStore $store): array
     {
-        $keys = array_map(static fn(array $f): string => $f['id'], $page['fields']);
+        // Mezinadpis (`section`) nemá hodnotu — do klíčů ani do mapy nepatří.
+        $valueFields = array_values(array_filter(
+            $page['fields'],
+            static fn(array $f): bool => $f['type'] !== 'section',
+        ));
+        $keys = array_map(static fn(array $f): string => $f['id'], $valueFields);
         $raw  = $store->getMany($keys);
 
         $values = [];
-        foreach ($page['fields'] as $field) {
+        foreach ($valueFields as $field) {
             $id = $field['id'];
             if ($field['type'] === 'image') {
                 $metadata = $raw[$id];

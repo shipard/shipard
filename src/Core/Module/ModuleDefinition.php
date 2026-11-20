@@ -88,7 +88,13 @@ class ModuleDefinition
                     if (!is_array($field)) continue;
                     if (!isset($field['id']) || !is_string($field['id']) || $field['id'] === '') continue;
                     $type = $field['type'] ?? 'text';
-                    if (!in_array($type, ['text', 'image', 'theme', 'language', 'avatar', 'shell', 'select', 'color', 'checkbox'], true)) continue;
+                    if (!in_array($type, ['text', 'image', 'theme', 'language', 'avatar', 'shell', 'select', 'color', 'checkbox', 'section'], true)) continue;
+                    // section — mezinadpis s úvodním textem (`name`, `hint`),
+                    // ne pole: nemá hodnotu ani klíč nastavení, takže
+                    // `default` a nabídka u něj nic neznamenají (#162 D138).
+                    if ($type === 'section') {
+                        unset($field['default'], $field['options'], $field['optionsProvider']);
+                    }
                     // select — pevná nabídka {value, label(:lang)}, nebo
                     // dynamická z `optionsProvider` (FQCN třídy implementující
                     // SettingsOptionsProvider — číselník z dat zdroje). Bez

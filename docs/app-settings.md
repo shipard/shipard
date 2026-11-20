@@ -48,7 +48,9 @@ a u parametrů vrstvy C validuje hodnoty při zápisu.
 
 - Ukládají se **jen pole definovaná ve stránce** (whitelist) typů `text`,
   `select`, `color`, `checkbox`, a u stránek zdroje dat `theme` / `shell`;
-  klíče mimo definici a `image` pole se tiše ignorují.
+  klíče mimo definici a `image` pole se tiše ignorují. Stejně tak hodnota
+  pod id položky `section` (mezinadpis, §6) — není to pole, nic se
+  neuloží a není to chyba.
 - Hodnoty se trimují; validuje se `maxLength` (422 s details per pole).
 - **Prázdný string = smazání klíče** → čtenáři padnou na fallback
   (např. `app.name` → `main.json` `name`).
@@ -173,6 +175,18 @@ exempt nejsou.
    vedle zaškrtávátka (levý sloupec popisků zůstává prázdný), nápověda
    pod ním. Z CLI `ds-setting set <klíč> true|false` uloží boolean, jiná
    hodnota je chyba; `get` vypíše `true` / `false`.
+   Mezinadpis: `type: "section"` (#162 D138) — **položka bez hodnoty**,
+   ne pole: `name` je nadpis, `hint` úvodní text pod ním. Uvádí skupinu
+   polí, která následují v `fields` za ním (zaškrtávátka bez vlastní
+   nápovědy, příbuzné volby). `id` je povinné jako u pole, ale **není to
+   klíč nastavení**: `default` a nabídku `ModuleDefinition` zahodí,
+   `page` pro něj neposílá hodnotu, `savePage` hodnotu pod jeho id
+   ignoruje a `ds-setting` ho nezná (`set` skončí chybou neznámého
+   klíče, mezi povolenými klíči není). Renderuje sdílený
+   `ui/SectionHeading.svelte` úrovně 3 přes oba sloupce stránky, od polí
+   nad sebou oddělený linkou — stejný vzhled jako mezinadpis „Volitelné“
+   v `DsSetup`; první položka stránky linku nemá. První uživatel:
+   „Kontakty v zápatí“ na stránce Tisky.
 4. `vendor/bin/shpd-ds ds-upgrade` v dev DS (kvůli rekompilaci
    settingsSections, pokud přibyla sekce).
 5. Hodnoty čti v PHP přes `new SettingsStore($db)->get('klíč')` s fallbackem
@@ -191,7 +205,11 @@ v `DsSettingCommand::runSet()`) a tři v `SettingsPage.svelte`
 (`isSavedViaPage`, `splitValues`, render). Vzory: `color` — hodnota je
 prostý řetězec, do `STRUCTURED_FIELD_TYPES` nepatří a `ds-setting` ji
 uloží, jak přišla; `checkbox` (#162 D132) — hodnota není řetězec, takže
-`ds-setting set` ji podle typu pole převádí (`true` / `false` → boolean).
+`ds-setting set` ji podle typu pole převádí (`true` / `false` → boolean);
+`section` (#162 D138) — položka bez hodnoty: serverová místa ji jen
+přeskakují (`savePage`, `buildPageValues()`,
+`DsSettingCommand::collectDeclaredKeys()`) a stránka ji kreslí mimo
+mřížku popisek / pole.
 
 **Parametry vrstvy C (osnova, agenda DPH, fiskální rok, měna) settings
 stránku nemají a mít nebudou** — ovládají se v ručně psaném panelu
@@ -205,7 +223,8 @@ potřebují vysvětlující UI a `vatAgenda` je tříhodnotová
   JSON round-trip, upsert, cache (vyžaduje `SHIPARD_INTEGRATION_DS_PATH`).
 - `tests/Unit/Api/Controller/SettingsControllerTest.php` — page/savePage
   nad reálnou definicí appSettings, mockovaná DB; pole `select` a `color`
-  nad stránkami modulů majetku a tisků, pole `checkbox` nad fixture modulem.
+  nad stránkami modulů majetku a tisků, pole `checkbox` a mezinadpis
+  `section` nad fixture modulem.
 - `tests/Unit/Core/Utils/HexColorTest.php` — co je a není barva.
 - `tests/Unit/Api/Controller/AppControllerTest.php` — info fallbacky,
   upload validace, hlavičky, delete.

@@ -30,8 +30,8 @@ kontakty v zápatí nemá).
 3. **V poli Umístění loga vyber Vlevo nebo Vpravo.** Titulek dokladu
    s číslem je vždy na opačné straně než logo.
 
-4. **Zaškrtni, které kontakty mají být v zápatí** — viz
-   [Kontakty v zápatí](#kontakty-v-zápatí) níž.
+4. **Pod nadpisem Kontakty v zápatí zaškrtni, které se mají tisknout** —
+   viz [Kontakty v zápatí](#kontakty-v-zápatí) níž.
 
 5. **Dej Uložit.**
 
@@ -52,8 +52,8 @@ dvou řádcích:
 - první řádek **e-mail** a **telefon**,
 - druhý řádek **web** a **datová schránka**.
 
-Na stránce **Tisky** má každý z nich zaškrtávátko: **E-mail v zápatí**,
-**Telefon v zápatí**, **Web v zápatí** a **Datová schránka v zápatí**.
+Na stránce **Tisky** má každý z nich pod nadpisem **Kontakty v zápatí**
+zaškrtávátko: **E-mail**, **Telefon**, **Web** a **Datová schránka**.
 Všechna jsou zapnutá, dokud je nevypneš. Co odškrtneš a uložíš, se na
 dokladech přestane tisknout.
 
