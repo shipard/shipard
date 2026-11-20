@@ -166,7 +166,7 @@ Nadpis skupiny → `SectionHeading` s přepínačem náhledů ve snippetu
     `.shpd-docdetail`.
   - Pravidlo: nový nadpis sekce nebo seznam popisek–hodnota v detailu
     = sdílená komponenta, ne vlastní třída.
-- `docs/design-system.md` §13 Soubory: tři komponenty.
+- `docs/design-system.md` §14 Soubory: tři komponenty.
 - `docs/frontend.md` → Formát detail panelu: `wide` u skupiny
   `properties`.
 
@@ -177,7 +177,7 @@ Nadpis skupiny → `SectionHeading` s přepínačem náhledů ve snippetu
    `DetailAttachments`, úklid CSS
 2. `feat: široké skupiny vlastností — poznámky a popisy přes celou šířku (#137)`
    — `wide` ve viewerech, testy
-3. `docs: sdílený nadpis sekce a seznam vlastností (#137)` — §12, §13,
+3. `docs: sdílený nadpis sekce a seznam vlastností (#137)` — §12, §14,
    `frontend.md`, `**Stav:**` tasku, `python3 scripts/tasks-index.py`
 
 ## Ověření
@@ -208,7 +208,7 @@ kontejneru):
   `components/ui/`, čistá funkce s unit testem
 - [x] obecný detail, detail dokladu a přílohy na nich, staré třídy pryč
 - [x] `wide` v kontraktu a u skupin s volným textem
-- [x] `docs/design-system.md` §12, §13, `docs/frontend.md`
+- [x] `docs/design-system.md` §12, §14, `docs/frontend.md`
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Pasti

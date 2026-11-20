@@ -132,7 +132,7 @@ Dvě místa, stejný text `exchange.preview.registry.quickAdd`:
 - §8 Volitelné řádky — popis body barvou textu (D80), věta o šedé jen
   pro doplňky.
 - §8 Tlačítka / `Button`, je-li tam popis propů — prop `wrap`; jinak
-  krátká zmínka v §13 Soubory u `Button.svelte`.
+  krátká zmínka v §14 Soubory u `Button.svelte`.
 
 ## Commity
 

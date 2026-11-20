@@ -1,6 +1,6 @@
 # Vzhled tisku dokladů — typografické role, kontakty v zápatí (D125–D134)
 
-**Stav:** naplánováno — #162, D125–D134 zamčená 2026-11-20
+**Stav:** částečně — implementace hotová 2026-11-20 (5 commitů, #162 D125–D134); zbývá proklik s posouzením velikosti předmětu dokladu a barvy zápisu v rejstříku, revize `sk` / `de` popisku datové schránky kolegou (sekce „Formulace k revizi“), komentář do #162 a zavření #100
 
 ## Kontext / Cíl
 
@@ -249,13 +249,15 @@ a snímky do Odchylek:
 
 ## Hotovo když
 
-- [ ] Typ pole `checkbox` (server, CLI, `SettingsPage`), testy, `docs/app-settings.md`
-- [ ] Snapshot strany s `contact.web` a `contact.gov_e_box_id`
-- [ ] Zápatí podle D130 se čtyřmi přepínači (D132), blok Dodavatel podle D131
-- [ ] `doc-base.css` podle tabulky, záhlaví a zápatí s literálními rolemi, tloušťka strong ověřená
-- [ ] Kapitola 13 Tisk dokladu, přečíslování, `docs/prints.md`, `CLAUDE.md`
-- [ ] Nápověda + `help-index.py`; snímky v Odchylkách
-- [ ] `**Stav:**`, `tasks-index.py`; komentář do #162, zavřít #100 s odkazem
+- [x] Typ pole `checkbox` (server, CLI, `SettingsPage`), testy, `docs/app-settings.md`
+- [x] Snapshot strany s `contact.web` a `contact.gov_e_box_id`
+- [x] Zápatí podle D130 se čtyřmi přepínači (D132), blok Dodavatel podle D131
+- [x] `doc-base.css` podle tabulky, záhlaví a zápatí s literálními rolemi, tloušťka strong ověřená
+- [x] Kapitola 13 Tisk dokladu, přečíslování, `docs/prints.md`, `CLAUDE.md`
+- [x] Nápověda + `help-index.py`; ověření tisků v Odchylkách
+- [x] `**Stav:**`, `tasks-index.py`
+- [ ] Proklik (Anna) — velikost předmětu dokladu, zápis v rejstříku černě vs. šedě
+- [ ] Revize `sk` / `de` popisku datové schránky; komentář do #162, zavřít #100 s odkazem
 
 ## Pasti
 
@@ -273,6 +275,93 @@ a snímky do Odchylek:
 - Snapshoty v datových sadách: změna `PersonSnapshotBuilder` může změnit
   výstup `dataset-dump` / `dataset-verify` — ověř a případné schválené
   snímky sad aktualizuj s důvodem v commitu.
+
+## Odchylky od zadání a výsledek ověření
+
+Implementace 2026-11-20, pět commitů podle sekce Commity.
+
+### Odchylky
+
+- **Pole ID datové schránky ve formuláři Osoby** (navíc, odsouhlaseno při
+  implementaci): sloupec `gov_e_box_id` plnil jen import a detail ho jen
+  zobrazoval — ručně založená vlastní firma by přepínač datové schránky
+  neměla čím naplnit. Pole je v sekci Kontakt pod Webovou stránkou, bez
+  kontroly tvaru (`world.validations` pro něj pravidlo nemá).
+- **Nápověda pole se jmenuje `hint`**, ne `help`; text „Údaj z karty
+  vlastní firmy. Prázdný se netiskne.“ je jen u prvního zaškrtávátka.
+- **Řádek zaškrtávátka na stránce nastavení nemá popisek vlevo** — nese ho
+  sdílený `Checkbox` (je sám `<label>`), stojí ve sloupci polí.
+- **Tloušťka strong = 700.** `font-weight: 600` vložil v render službě
+  `NotoSans-Bold` — služba má Noto Sans jen v řezech Regular a Bold
+  (`pdffonts`). Po změně mají všechny tisky jeden tučný řez (u faktury
+  s odpočtem zálohy navíc Italic kurzívního řádku).
+- **Jedna tučná tloušťka i mimo tabulku zadání:** z proměnné ji bere také
+  vodoznak a dvě pravidla Kontace (`doc-journal.css`, součtový a chybový
+  řádek). Třída `party--customer` zmizela i ze šablony Kontace.
+- **Horní index poznámky DPH** je meta 7,5 pt (dřív 6,5 pt) — tisk nemá
+  šestou velikost.
+- **Výčet klíčů `contact` byl pevný i v `DocumentApplier`** (snapshot
+  partnera z importního módu): `web` bere z payloadu, `gov_e_box_id` je
+  vždy `null` — kanonická strana dokladu ID datové schránky nenese
+  a schéma výměnného formátu se nemění. Detail dokladu v aplikaci
+  (`documentParts.js`) dál ukazuje jen e-mail a telefon.
+- **Datové sady se nemění** — past ze zadání se nenaplnila: `dataset-dump`
+  ani `dataset-verify` snapshoty nečtou. Seed → dump → diff demo sady
+  ukázal jen rozdíl nesouvisející s tímto taskem (viz níže).
+- **`DocPrintStylesTest`** (navíc): hlídá, že styly tisku berou velikost,
+  tloušťku a šedou jen z rolí a že literály záhlaví a zápatí proměnným
+  odpovídají.
+- **Dokumentace nad rámec výčtu:** `docs/docs-mvp.md` (tvar snapshotu),
+  `docs/exchange-format.md`, `docs/cli.md`, `docs/modules.md` (zastaralý
+  výčet typů polí), `modules/core/prints/README.md`,
+  `help/osoby/zalozeni-osoby.md` (sekce se jmenuje *Kontakt*, ne
+  *Kontaktní údaje*).
+
+### Ověření tisků
+
+Volný zdroj dat `rpud-r` (demo sada it-servis; vlastní firmě doplněné ID
+datové schránky v kopii sady, sada v repozitáři beze změny), PDF přes
+render službu, `pdftoppm -r 100`, prohlédnuto před a po. Snímky se do
+repozitáře neukládají.
+
+| Tisk | Zdroj | Výsledek |
+|---|---|---|
+| faktura vydaná `cs` | doklad | role podle tabulky, strany bez rámečku, zápatí 2 řádky |
+| faktura vydaná `en` | doklad, `--language=en` | popisky anglicky, „Data box: …“ v zápatí |
+| faktura v cizí měně | doklad (EUR, jazyk podle partnera `sk`) + fixture s odpočtem zálohy | rekapitulace se šesti sloupci v písmu body se vejde; sloupec součtů je užší než dřív, ale nezalamuje se |
+| neplátce | fixture bez DPH | bez sloupců DPH a rekapitulace |
+| zálohová faktura | doklad + fixture | věta o nedaňovém dokladu tučně |
+| opravný doklad | fixture | původní doklad a důvod opravy v písmu body |
+| pokladní doklad příjem / výdej | fixture / doklad | u výdeje (`tradeDir` 2) kontakty vlastní firmy = odběratele; podpisová pole meta černě |
+| prodejka | doklad | beze změny rozvržení |
+| Kontace | doklad + fixture | zdědila role; vlastní zápatí s názvem účetní jednotky (mimo rozsah) |
+| vícestránkový doklad | fixture se 70 řádky, 3 strany | záhlaví i zápatí s kontakty a Vystavil na každé straně |
+| stornovaný doklad | fixture s vodoznakem | vodoznak beze změny vzhledu |
+| zápatí 2 / 1 / 0 řádků | doklad, přepínače přes `ds-setting` | všechny čtyři údaje → 2 řádky; jen web → 1 řádek dole; vše vypnuté → jen pravý sloupec; zápatí se vejde do dolního okraje |
+
+Stránka Tisky v prohlížeči (1280 a 390 px): čtyři zaškrtávátka zapnutá
+bez uložené hodnoty, po odškrtnutí dvou a Uložit jde na server explicitní
+`true` / `false` pro všechna čtyři, po novém načtení stav drží.
+`ds-setting set prints.footer.web false` uloží boolean, `… maybe` skončí
+chybou s výčtem, `get` vypíše `false`.
+
+### K posouzení při prokliku
+
+- **Předmět dokladu** (`.doc-subject`) je teď body 9 pt (dřív 10 pt) — na
+  stránce působí drobně; alternativa je heading 10,5 pt.
+- **Zápis v obchodním rejstříku** je černě v písmu body (dřív šedě 8 pt);
+  dlouhý zápis se v bloku Dodavatel zalomí na dva řádky.
+- **Nápověda u prvního zaškrtávátka** působí, jako by patřila jen
+  k e-mailu; druhá možnost je stejný text u všech čtyř.
+- **Sloupec součtů u dokladu v cizí měně** je užší, protože rekapitulace
+  se šesti sloupci v písmu body zabere víc místa.
+
+### Nález mimo task
+
+Demo sada v repozitáři zaostává za exportérem: `dataset-dump` po seedu
+přidává u všech 295 dokladů klíč `totalRoundingAuto`, který sada nemá.
+S tímto taskem to nesouvisí (snapshoty se do sady nedostávají); sada by
+chtěla přegenerovat samostatně.
 
 ## Formulace k revizi
 

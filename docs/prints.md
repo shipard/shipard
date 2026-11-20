@@ -473,7 +473,7 @@ modules/docs/core/prints/
         doc-base.html.twig    # kostra stránky dokladu s bloky
         header.html.twig      # záhlaví: logo, titulek, číslo dokladu
         footer.html.twig      # zápatí: kontakty vlastní firmy, Vystavil, stránkování
-        doc-base.css
+        doc-base.css          # typografické role tisku + styl těla dokladu
         messages.jsonc        # společný katalog
         text-variables.jsonc  # proměnné nabízené pro texty na tiscích (§12.5)
     _partials/
@@ -529,6 +529,15 @@ modules/economy/accounting/prints/docJournal/
   a z adresáře šablony (šablona má přednost); pushují se s HTML
   a referencují relativně (`<link href="doc-base.css">`). Logo z brandingu
   (slot `companyLogo`) jde jako asset pod názvem z `branding.logo`.
+- **Písmo a barvy** (#162 D125–D129) — `doc-base.css` má na začátku
+  typografické role tisku jako proměnné (`--print-font-page` / `-title` /
+  `-heading` / `-body` / `-meta`, `--print-weight-strong`,
+  `--print-color-meta`) a pravidla berou velikost, tučnou tloušťku a šedou
+  jen z nich; záhlaví a zápatí je nesou literálně. Pravidla (šedá jen
+  doplňkům, jedna tučná tloušťka, žádné verzálky, strany bez rámečku) jsou
+  v `docs/design-system.md` §13 Tisk dokladu, hlídá je `DocPrintStylesTest`.
+  Vlastní CSS šablony (blok `styles`) se rolí drží také — vzor
+  `doc-journal.css`.
 
 Šablona dostává `PrintData::toArray()`: proměnné `printId`, `language`,
 `record`, `meta`, `branding`, `texts`, `messages`, `data`.

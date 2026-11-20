@@ -216,7 +216,7 @@ Backend (`DocsHeadsFormBase`):
   jazyk.
 - `docs/design-system.md` §12 — blok `hint` (D84); Součty / Tabulka —
   rozšířená rekapitulace ve formuláři (D86); věta „Backend HTML se
-  vzhledem neposílá“ rozšířit na formuláře (D82); §13 Soubory — nové
+  vzhledem neposílá“ rozšířit na formuláře (D82); §14 Soubory — nové
   komponenty.
 - `docs/frontend.md` — kontrakt bloků: `hint`, sdílená komponenta.
 

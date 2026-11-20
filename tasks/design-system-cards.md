@@ -145,7 +145,7 @@ Tloušťky jen přes `--shpd-font-weight-*`, žádné `500` / `700`.
     pravidlo „nová karta = `Card`, ne vlastní třída“;
   - §12 Stavební prvky obsahu: Karta (strany dokladu) odkazuje na `Card`;
   - §11: Přehled firmy mezi místy s rolemi;
-  - §13 Soubory: `Card.svelte`, `CardGrid.svelte`.
+  - §14 Soubory: `Card.svelte`, `CardGrid.svelte`.
 - `docs/overview.md`: vzhled karet přes `Card` / `CardGrid` (jedna věta
   u `CompanyOverview.svelte`).
 

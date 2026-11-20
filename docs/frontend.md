@@ -1556,7 +1556,7 @@ Aplikace používá **Font Awesome** (SVG/JS varianta) pro ikony napříč celý
 
 - **`src/icons.js`** — centrální registr. Všechny ikony se importují a re-exportují z jednoho místa. Pojmenování podle *významu* (ne podle vzhledu): `iconAdd`, `iconEdit`, `iconUser`. Obsahuje `iconMap` pro překlad řetězců z API a funkci `resolveIcon(name, fallback)`.
 - **`components/ui/Icon.svelte`** — univerzální komponenta. Přijímá FA icon definition a vykreslí inline SVG. Podporuje velikosti (`xs`/`sm`/`md`/`lg`/`xl`) a animaci `spin`.
-- **`components/ui/Button.svelte`** — rozšířený o prop `icon`, `iconOnly` a variantu `ghost`; prop `wrap` (opt-in) dovolí dlouhý popisek zalomit (`docs/design-system.md` §13).
+- **`components/ui/Button.svelte`** — rozšířený o prop `icon`, `iconOnly` a variantu `ghost`; prop `wrap` (opt-in) dovolí dlouhý popisek zalomit (`docs/design-system.md` §14).
 
 ### Ikony v navigaci (server-driven)
 

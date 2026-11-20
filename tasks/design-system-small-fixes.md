@@ -44,7 +44,7 @@ vynutit nástrojem).
 ## Před implementací přečti
 
 - `docs/design-system.md` — §3 Paleta servisní (Text), §6 CSS proměnné
-  (pravidla), §13 Soubory
+  (pravidla), §14 Soubory
 - `scripts/check-css-tokens.py` — celé
 - `frontend/src/utils/themeColor.js` — jak vlastní vzhled nastavuje
   `--shpd-sidebar-bg-image`; `frontend/src/styles/variables.css` —
@@ -191,7 +191,7 @@ než viditelná plocha.
 
 - `docs/design-system.md` §3 Text: řádek `--shpd-color-text-on-fill`
   (D59); §6 pravidlo 1 doplnit „bílý text na plné barvě =
-  `--shpd-color-text-on-fill`“; §13 Soubory: popis
+  `--shpd-color-text-on-fill`“; §14 Soubory: popis
   `check-css-tokens.py` („každý `var(--x…)` i s fallbackem musí mít
   definici“) a řádek `CenteredScreen.svelte`.
 - `docs/registry-mvp.md` §4.1: popisky polí jsou v

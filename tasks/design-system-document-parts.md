@@ -279,7 +279,7 @@ dnes `review-total`, čte ho proklikání sady #103).
   - §12 Úzká šířka: složený řádek pod `36rem` je hotový (pojmenovaný
     kontejner `doc-rows`, proč), věta „obal tabulky řeší #138 task 3“
     upravit — obal existuje, #138 ho rozšíří na ostatní tabulky;
-  - §13 Soubory: `DetailHeader`, `TableScroll`, `components/document/*`,
+  - §14 Soubory: `DetailHeader`, `TableScroll`, `components/document/*`,
     `documentParts.js`; řádek `DocumentDetail` (skládá sdílené části).
 - `docs/frontend.md` → typ obsahu `document`: detail kreslí sdílené části
   dokladu přes adaptér `documentParts.js`; kontrakt beze změny.
@@ -336,7 +336,7 @@ přijaté i vydané:
       tabulky, druhý řádek meta
 - [x] snippety pro review podle tabulek v §3, §5, §6 (task 2 je jen použije)
 - [x] unit testy `documentParts.test.mjs`, `npm test`, `check:i18n`, kontroly CSS
-- [x] `docs/design-system.md` §12, §13, `docs/frontend.md`
+- [x] `docs/design-system.md` §12, §14, `docs/frontend.md`
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Odchylky od zadání a výsledek ověření (2026-11-09)

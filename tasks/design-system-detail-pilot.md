@@ -261,8 +261,8 @@ hlavičku popisují.
   všude dál.
 
 - Kapitoly v `docs/design-system.md` jsou **§11 Typografie** a **§12 Detail
-  záznamu** (po #134 je §10 Jednotky a mezery); Soubory jsou §13, Plánovaná
-  rozšíření §14. Zadání psalo „§10 Soubory“ podle staršího číslování.
+  záznamu** (po #134 je §10 Jednotky a mezery); Soubory jsou §14, Plánovaná
+  rozšíření §15. Zadání psalo „§10 Soubory“ podle staršího číslování.
 - `help/` hlavičku detailu dokladu nikde nepopisuje (projito `hlavič`,
   `štítek`, `detail`, `Přehled`, `typ dokladu`) — bez změny.
 - Ve `ViewerDetail.svelte` dostala role i karta návrhu v tabu Návrh

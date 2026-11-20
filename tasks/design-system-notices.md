@@ -170,7 +170,7 @@ konstantě s komentářem „do vyřešení bodu reportů v #133 (D61)“.
   - seznam „Dnes na `Notice` stojí …“ doplnit o převedená místa; věta
     o „kandidátech na převod“ zmizí;
   - Přehled firmy: zprávy sekcí jsou `Notice`.
-- `docs/design-system.md` §13 Soubory: u `check-css-tokens.py` doplnit
+- `docs/design-system.md` §14 Soubory: u `check-css-tokens.py` doplnit
   omezení rodiny `alert`.
 - Komentář v `Notice.svelte` (výčet míst) zkrátit na odkaz do §8 — výčet
   se jinak rozjede.

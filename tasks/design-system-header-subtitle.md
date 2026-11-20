@@ -49,7 +49,7 @@ komentáře podle D56. Nic jiného se nemění.
      detailu (D56)“, u **meta** „podtitul“ odebrat;
    - §12 Pořadí shora dolů, bod Hlavička: „podtitul (meta, barvou textu)“
      → „podtitul (body, barvou textu, D56)“;
-   - §13 Soubory, řádek `DetailHeader`: „podtitul meta“ → „podtitul body“.
+   - §14 Soubory, řádek `DetailHeader`: „podtitul meta“ → „podtitul body“.
 3. `frontend/src/styles/variables.css`: komentář u
    `--shpd-font-size-meta` („doplňky, podtitul, štítek“) → bez podtitulu,
    u `--shpd-font-size-body` doplnit podtitul hlavičky.
@@ -80,7 +80,7 @@ V prohlížeči (Firefox), okno 1440 a 1280 px a telefon 390 px:
 ## Hotovo když
 
 - [x] podtitul `DetailHeader` v roli body
-- [x] `docs/design-system.md` §11, §12, §13 a komentáře v `variables.css`
+- [x] `docs/design-system.md` §11, §12, §14 a komentáře v `variables.css`
       bez podtitulu v roli meta
 - [x] ověřeno v detailu tří typů záznamů, v review a v náhledu Spisovny
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`

@@ -1849,6 +1849,9 @@ v kartě Nastavení moc malý, a rozdělení proběhlo tím jedním místem.
 | body | `--shpd-font-size-body` | `sm` (0.875rem) | normal (hlavička sloupce strong) | text | popisky i hodnoty, řádky tabulek i hlavička sloupce (ve velikosti řádků, silnější), taby, podtitul hlavičky detailu (D56) |
 | meta | `--shpd-font-size-meta` | `xs` (0.75rem) | normal | text; šedá (`--shpd-color-text-secondary`) jen u kontaktů a doplňků | štítky, kontakty, přepočet v domácí měně |
 
+Tištěný doklad má tytéž role v bodech a vlastní proměnné — §13 Tisk
+dokladu.
+
 Tloušťky: `--shpd-font-weight-normal` (400) a `--shpd-font-weight-strong`
 (600). `heading` a `body` byly původně stejně velké a lišily se jen
 tloušťkou — dvě role právě proto, aby šly rozdělit jedním místem, což se
@@ -2315,7 +2318,95 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 
 ---
 
-## 13. Soubory
+## 13. Tisk dokladu
+
+Pravidla §11 převedená na papír (#162 D125–D134). Platí pro všechny tisky
+nad sdíleným layoutem dokladu `modules/docs/core/prints/_layout/` — faktura
+vydaná, zálohová faktura, pokladní doklad, prodejka — a přes zděděný
+`doc-base.css` i pro Kontaci. **Pět velikostí v pt, jedna tučná tloušťka,
+žádné verzálky, šedá jen doplňkům.** Tisk je černobílý; jediná barva je
+akcent z nastavení a patří jen záhlaví (#90 D46, `docs/prints.md` §12.1).
+
+Role jsou proměnné na začátku `doc-base.css`. Na tokeny aplikace
+(`--shpd-*`) se tisk neodkazuje — stránku skládá render služba mimo
+aplikaci a jednotkou je bod, ne rem.
+
+| Role | Proměnná | Velikost | Tloušťka | Barva | Kde |
+|---|---|---|---|---|---|
+| page | `--print-font-page` | 13 pt | strong (číslo dokladu normal) | černá | titulek a číslo dokladu v záhlaví |
+| title | `--print-font-title` | 11,5 pt | strong | černá | řádek K úhradě / Celkem |
+| heading | `--print-font-heading` | 10,5 pt | strong | černá | název strany (Dodavatel, Odběratel, účetní jednotka) |
+| body | `--print-font-body` | 9 pt | normal (hlavička tabulky strong) | černá | všechno ostatní: nadpis Dodavatel / Odběratel, adresa, IČO / DIČ, zápis v rejstříku, popisky a hodnoty dat a platby, řádky a hlavičky tabulek, rekapitulace DPH, součty, poznámky, uživatelské texty |
+| meta | `--print-font-meta` | 7,5 pt | normal | šedá `--print-color-meta` (`#666`); popisek podpisu a horní index černě | sleva na řádku, kurz, přepočet v domácí měně, popisek QR, popisek podpisového pole, horní index poznámky DPH, zápatí |
+
+Tučná tloušťka je `--print-weight-strong` = **700**. D126 chtělo 600,
+pokud ho písmo v render službě má jako řez: nemá — Noto Sans je tam
+v řezech Regular a Bold a `font-weight: 600` vloží tentýž Bold (ověřeno
+`pdffonts`, 2026-11-20). Až služba dostane SemiBold, mění se proměnná
+a literál v záhlaví, nic dalšího.
+
+### Pravidla
+
+- **Velikost, tloušťka a šedá jen z proměnných rolí.** Žádný literál
+  `font-size`, `font-weight` (kromě 400) ani `color` (kromě černé) ve
+  stylech tisku. Jediná výjimka je vodoznak (`.doc-watermark`): není to
+  text dokladu, má vlastní velikost a světle šedou; tučnou tloušťku ale
+  bere z role.
+- **Popisek a hodnota stejnou barvou i tloušťkou** — jako §11. Popisky
+  dat a platby, hlavičky tabulek, popisky součtů i textové řádky jsou
+  černé (D128).
+- **Jedna tučná úroveň.** Tučné je jen: titulek v záhlaví, název strany,
+  hlavička tabulky, K úhradě / Celkem, věta o nedaňovém dokladu, nadpisy
+  v uživatelských textech; v Kontaci navíc součtový a chybový řádek.
+- **Žádné verzálky ani prostrkání.** Nadpis Dodavatel / Odběratel je
+  běžný text; výraznost nese název strany pod ním (D127).
+- **Šedá je pro doplňky**, ne pro popisky: sleva na řádku, kurz, přepočet
+  v domácí měně (popisek i částka), popisek QR a zápatí. Adresa,
+  identifikátory, zápis v obchodním rejstříku a účet jsou běžné údaje
+  černě.
+- **Strany bez rámečku.** Dodavatel i Odběratel jsou stejně vysazené
+  sloupce; rámeček kolem Odběratele zanikl bez náhrady (D129). Linky
+  oddělují jen blok dat a platby, hlavičku tabulky a řádek K úhradě.
+- **Akcent jen v záhlaví** — pruh u titulku a linka pod záhlavím. Tělo
+  dokladu ani zápatí se nebarví.
+
+### Záhlaví a zápatí
+
+`header.html.twig` a `footer.html.twig` jsou **samostatné HTML dokumenty**
+pro render službu, tisknou se na každé straně a `doc-base.css` nevidí.
+Hodnoty rolí v nich proto stojí **literálně**, s komentářem, kterou roli
+nesou: titulek page tučně, číslo dokladu page normálně, zápatí meta šedě.
+Změna role = změna proměnné **a** těchto literálů; shodu hlídá test.
+
+Zápatí má **nejvýš dva řádky** a musí se vejít do dolního okraje stránky
+(2 cm): vlevo kontakty vlastní firmy — první řádek e-mail · telefon,
+druhý web · datová schránka (D130), vpravo Vystavil (jen s autorem)
+a Strana x / y. Sloupce jsou zarovnané dolů, jednořádková strana sedí na
+posledním řádku. Položka se nezalamuje; prázdný údaj se vynechá a prázdný
+řádek zmizí. Název firmy v zápatí není. Které kontakty se tisknou, říkají
+přepínače stránky Tisky (`docs/prints.md` §12.1).
+
+Kontace má vlastní zápatí (název účetní jednotky, Vystavil, strana) ve
+stejné roli meta; kontakty netiskne.
+
+### Soubory a kontrola
+
+- `modules/docs/core/prints/_layout/doc-base.css` — proměnné rolí
+  a pravidla těla dokladu.
+- `modules/docs/core/prints/_layout/header.html.twig`, `footer.html.twig`
+  — literální hodnoty rolí page a meta.
+- `modules/economy/accounting/prints/docJournal/doc-journal.css` — tabulka
+  zápisů Kontace, tučné z `--print-weight-strong`.
+- `tests/Unit/Module/Docs/Core/Prints/DocPrintStylesTest.php` — velikosti,
+  tloušťky a šedá jen z rolí, žádné verzálky, šedá jen u vyjmenovaných
+  doplňků, žádný rámečkový modifikátor strany, literály záhlaví a zápatí
+  shodné s proměnnými.
+- Vzhled se ověřuje nad PDF: `shpd-ds print-run … --format=pdf`,
+  `pdftoppm -r 100` a `pdffonts` (jeden tučný řez).
+
+---
+
+## 14. Soubory
 
 | Soubor | Obsah |
 |---|---|
@@ -2357,7 +2448,8 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 | `frontend/src/components/exchange/DocumentExchangePreview.svelte` | Review dokladu na sdílených částech (§12 Review): stav review (rozhodnutí, značky, popovery, výběr DPH, registr) a snippety do částí; vlastní CSS jen mřížka stran, stavové značky, napárování, kódy, výběr DPH |
 | `frontend/src/components/exchange/RegistryExtractedPreview.svelte` | Náhled Spisovny na `DetailHeader`, textu a `PropertyGroups` (§12 Review, D54) |
 | `frontend/src/components/form/FormStateBadge.svelte` | Stavový badge ve formuláři |
+| `modules/docs/core/prints/_layout/doc-base.css` | Styl tištěného dokladu (§13) — typografické role tisku v pt jako proměnné `--print-*`, pravidla těla dokladu; záhlaví a zápatí (`header.html.twig`, `footer.html.twig`) nesou hodnoty rolí literálně |
 
 ---
 
-## 14. Plánovaná rozšíření
+## 15. Plánovaná rozšíření

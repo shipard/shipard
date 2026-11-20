@@ -180,7 +180,7 @@ Jednoduchý skript nedělat — po tasku stačí ruční grep níže.
   - §12 Tabulka: dva druhy, `TableScroll` / `TableScroll fill`, proč obal
     s posunem jen do strany ruší sticky hlavičku, `thead` sticky u
     víceřádkové hlavičky; totéž v Úzká šířka (věta o #138 task 3 pryč);
-  - §13 Soubory: řádek `TableScroll` (`fill`, D57).
+  - §14 Soubory: řádek `TableScroll` (`fill`, D57).
 - `docs/edit-forms.md` kap. 15 (popis tabulky sub-tabulky): obal
   `TableScroll fill`, tab se sub-tabulkou má výšku oblasti, hlavička drží
   vůči obalu.
@@ -241,7 +241,7 @@ V prohlížeči (Firefox), zdroj dat ukázkové sady (třída `free`):
 - [x] sub-tabulka: obal `fill`, řetěz výšky tabu, dočasná media query pryč
 - [x] vývojářský dashboard v `TableScroll`
 - [x] grep z Ověření bez nálezu mimo `ViewerGrid` / `TableBrowser`
-- [x] `docs/design-system.md` §8, §12, §13, `docs/edit-forms.md`
+- [x] `docs/design-system.md` §8, §12, §14, `docs/edit-forms.md`
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 - [x] ruční ověření v aplikaci podle sekce Ověření
 - [x] doplnění po ručním ověření — tabulka v chatu roluje do strany

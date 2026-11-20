@@ -301,7 +301,7 @@ při 1280 px má obsah pod 36 rem, takže test vidí složené řádky.
     prázdné pole a proč, hlášky nahoře, Spisovna;
   - §8 Hlášky a pruhy: položka `Notice` s `meta`;
   - §12 Stavební prvky → Popisek–hodnota: `snippet` a `emptyValue`;
-  - §13 Soubory: `reviewParts.js`, řádek `DocumentExchangePreview`
+  - §14 Soubory: `reviewParts.js`, řádek `DocumentExchangePreview`
     a `RegistryExtractedPreview` (na sdílených částech).
 - `docs/dashboard.md` §6.3: odstavec, že náhled kreslí sdílené části
   dokladu (odkaz na design-system §12).
@@ -372,7 +372,7 @@ dashboardu:
 - [x] grep z Ověření v `components/exchange/` prázdný
 - [x] kopie CSS a textů pryč, `check:i18n` zelený
 - [x] proklikání sady projde
-- [x] `docs/design-system.md` §8, §12, §13, `docs/dashboard.md` §6.3
+- [x] `docs/design-system.md` §8, §12, §14, `docs/dashboard.md` §6.3
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`, checklist #139
 
 ## Odchylky od zadání a výsledek ověření (2026-11-09)

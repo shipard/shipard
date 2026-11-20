@@ -227,7 +227,7 @@ stránka dostane, a zapiš do Odchylek, kde se ikona bere.
   komponentách.
 - §3 Stavové barvy / Borders & focus: jedna věta, že barvou výběru je
   `primary` (D77), `accent` je barva značky.
-- §13 Soubory: nové komponenty.
+- §14 Soubory: nové komponenty.
 
 `tasks/README.md` — řádek v tabulce Design system, `python3
 scripts/tasks-index.py`.
@@ -272,7 +272,7 @@ plná i 360 px:
 - [x] čtyři komponenty v `components/ui/` podle D75–D78
 - [x] všechny výskyty z kroků 1–4 převedené, jejich vlastní CSS vzhledu pryč
 - [x] role `page` ve `variables.css` a §11
-- [x] `docs/design-system.md` §8, §11, §3, §13
+- [x] `docs/design-system.md` §8, §11, §3, §14
 - [x] ověření 1–8 prošlo, nálezy v Odchylkách
 - [x] `**Stav:**` aktualizovaný, `scripts/tasks-index.py`
 

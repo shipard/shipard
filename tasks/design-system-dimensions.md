@@ -43,7 +43,7 @@ a layout tokeny ve `variables.css`.
 ## Před implementací přečti
 
 - `docs/design-system.md` — Jednotky a mezery, §8 Layout konvence
-  (Responzivita), §13 Soubory
+  (Responzivita), §14 Soubory
 - `scripts/check-css-units.py` — celé (docstring, `PROPERTY`, výjimka
   `px-ok`, sken atributu `style` a direktivy `style:`)
 - `frontend/src/styles/variables.css` — sekce Layout
@@ -153,7 +153,7 @@ zapsat do Odchylek.
     věty „šířky zůstávají v px, řeší #138“ pryč;
   - §8 Responzivita: při větším písmu prohlížeče roste i shell a panely
     (důsledek pro úzký detail — odkaz na otevřený bod v #138);
-  - §13 Soubory: `check-css-units.py` hlídá i rozměry.
+  - §14 Soubory: `check-css-units.py` hlídá i rozměry.
 - `docs/frontend.md` — pokud uvádí `Modal width` v px (příklad), přepsat.
 - `tasks/README.md` — řádek v sekci Design system.
 
@@ -203,7 +203,7 @@ V prohlížeči (Firefox):
 - [x] `check-css-units.py` hlídá rozměrové vlastnosti, propy komponent
       a layout tokeny; celý `frontend/src` projde
 - [x] drobnosti z ověření tasku 3
-- [x] `docs/design-system.md` (Jednotky, §8, §13)
+- [x] `docs/design-system.md` (Jednotky, §8, §14)
 - [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Odchylky od zadání a výsledek ověření (2026-11-10)

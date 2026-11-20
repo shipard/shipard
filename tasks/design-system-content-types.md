@@ -187,7 +187,7 @@ Zaniklé třídy smazat a ověřit grepem (`--include=*.svelte --include=*.js`);
   - §12 Stavební prvky obsahu: typy `notice`, `badges`, `empty`, `text`,
     `code`; D30 — backend HTML se vzhledem neposílá, hlídá kontrakt;
   - §5 štítky: `Badge` jako komponenta;
-  - §13 Soubory: `Notice`, `Badge`, `PageBanner`.
+  - §14 Soubory: `Notice`, `Badge`, `PageBanner`.
 - `docs/frontend.md` → Formát detail panelu: tabulka typů (řádek `html`
   pryč, nové typy).
 
