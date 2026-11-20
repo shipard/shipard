@@ -437,7 +437,7 @@ class PersonsFormTest extends TestCase
         $this->assertNotNull($this->findElement($def, 'basic', 'gov_e_box_id'));
     }
 
-    public function testEmailAndPhoneAreInlinedInKontakt(): void
+    public function testKontaktHasTwoRowsOfTwoFields(): void
     {
         $form = $this->createForm();
         $def  = $form->buildFormDefinition([], true);
@@ -445,20 +445,18 @@ class PersonsFormTest extends TestCase
         $section = $this->findSection($def, 'basic', 'Kontakt');
         $this->assertNotNull($section);
 
-        $foundInline = null;
+        // Dva řádky po dvou polích: e-mail + telefon, web + ID datové
+        // schránky (#162 D139); žádné pole sekce nestojí samo.
+        $rows = [];
         foreach ($section->columns as $col) {
             foreach ($col->elements as $el) {
-                if ($el->type === 'inline') {
-                    $foundInline = $el;
-                    break 2;
-                }
+                $this->assertSame('inline', $el->type, 'sekce Kontakt má jen řádky po dvou polích');
+                $this->assertNotNull($el->elements);
+                $rows[] = array_map(fn($e) => $e->column, $el->elements);
             }
         }
 
-        $this->assertNotNull($foundInline, 'Inline group expected in Kontakt section');
-        $this->assertNotNull($foundInline->elements);
-        $columns = array_map(fn($e) => $e->column, $foundInline->elements);
-        $this->assertSame(['email', 'phone'], $columns);
+        $this->assertSame([['email', 'phone'], ['web', 'gov_e_box_id']], $rows);
     }
 
     // ── Settings tab ─────────────────────────────────────────────────────────

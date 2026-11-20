@@ -82,10 +82,14 @@ class PersonsForm extends TableForm
                         ->input('email', inputType: 'email')
                         ->input('phone', inputType: 'tel')
                     ->endInline()
-                    ->input('web', inputType: 'url')
-                    // ID datové schránky — vlastní firmě ho tiskne zápatí
-                    // dokladu (#162 D130); do té doby šlo jen z importu.
-                    ->input('gov_e_box_id')
+                    // Web a ID datové schránky na jednom řádku jako e-mail
+                    // a telefon (#162 D139). Datovou schránku vlastní firmě
+                    // tiskne zápatí dokladu (D130); do té doby šla jen
+                    // z importu.
+                    ->inline()
+                        ->input('web', inputType: 'url')
+                        ->input('gov_e_box_id')
+                    ->endInline()
             ->build();
 
         // ── Subtable a attachments taby ──────────────────────────────────────
