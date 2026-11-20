@@ -1,6 +1,6 @@
 # Vzhled tisku dokladů — úpravy po prokliku (D135–D140)
 
-**Stav:** částečně — implementace hotová 2026-11-20 (3 commity, #162 D135–D140); zbývá ruční proklik a komentář do #162
+**Stav:** částečně — implementace hotová 2026-11-20 (3 commity, #162 D135–D140), ručně proklikané 2026-11-20 (výsledek v #162); zbývá doplněk D141 (sekce níže) a ověření světlé čáry řádků na tiskárně
 
 ## Kontext / Cíl
 
@@ -241,3 +241,26 @@ Celá sada PHPUnit (11 720 testů) prochází; `npm run build`, `npm test`,
   polí), mezinadpis a text začínají u levého okraje karty — stejná mřížka
   jako zbytek stránky. Alternativa je zaškrtávátka od levého okraje.
 
+## Doplněk po prokliku — zaškrtávátko od levého okraje (D141)
+
+Proklik 2026-11-20 (#162): vše v pořádku kromě bodu „k posouzení“ —
+zaškrtávátka na stránce Tisky mají začínat u levého okraje karty jako
+mezinadpis nad nimi.
+
+- ✓ **D141** Zaškrtávátko na stránce nastavení přes oba sloupce mřížky
+  (od levého okraje karty), ne ve sloupci polí — popisek nese samo. Platí
+  pro všechna zaškrtávátka stránek nastavení.
+
+**Co udělat:**
+
+- `SettingsPage.svelte`: `.shpd-settings-page__input--checkbox`
+  `grid-column: 1 / -1` (na úzké šířce je mřížka jednosloupcová, pravidlo
+  pro telefon pak není potřeba — sjednotit); komentář u pravidla přepsat
+  (D141). Nápověda a chyba pole pod zaškrtávátkem lícují s ním.
+- `docs/app-settings.md` — u typu `checkbox` jedna věta o umístění (D141).
+
+**Ověření:** stránka Tisky 1280 a 390 px — mezinadpis, text a zaškrtávátka
+lícují vlevo; ostatní pole beze změny; bez vodorovného posuvu.
+`npm run build`, `npm test`.
+
+**Commit:** `fix(settings): zaškrtávátko na stránce nastavení od levého okraje (#162, D141)` — včetně `**Stav:**` a `python3 scripts/tasks-index.py`.

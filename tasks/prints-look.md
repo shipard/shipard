@@ -1,6 +1,6 @@
 # Vzhled tisku dokladů — typografické role, kontakty v zápatí (D125–D134)
 
-**Stav:** částečně — implementace hotová 2026-11-20 (5 commitů, #162 D125–D134), ručně proklikané 2026-11-20 (výsledek v #162); úpravy po prokliku v `tasks/prints-look-fixes.md` (D135–D140); zbývá revize `sk` / `de` popisku datové schránky kolegou (sekce „Formulace k revizi“) a zavření #100 po dokončení navazujícího tasku
+**Stav:** částečně — implementace hotová 2026-11-20 (5 commitů, #162 D125–D134), ručně proklikané 2026-11-20; úpravy po prokliku v `tasks/prints-look-fixes.md`; #100 zavřené; zbývá revize `sk` / `de` popisku datové schránky kolegou (sekce „Formulace k revizi“)
 
 ## Kontext / Cíl
 
