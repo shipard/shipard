@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 464 tasků: **naplánováno** 4 · **částečně** 23 · **zrušeno** 1 · **hotovo** 436.
+Celkem 465 tasků: **naplánováno** 5 · **částečně** 23 · **zrušeno** 1 · **hotovo** 436.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `prints-look-fixes.md` | naplánováno | #162, D135–D140 zamčená 2026-11-20 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -46,7 +47,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
 | `mail-safety.md` | částečně | implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení |
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |
-| `prints-look.md` | částečně | implementace hotová 2026-11-20 (5 commitů, #162 D125–D134); zbývá proklik s posouzením velikosti předmětu dokladu a barvy zápisu v rejstříku, revize `sk` / `de` popisku datové schránky kolegou (sekce „Formulace k revizi“), komentář do #162 a zavření #100 |
+| `prints-look.md` | částečně | implementace hotová 2026-11-20 (5 commitů, #162 D125–D134), ručně proklikané 2026-11-20 (výsledek v #162); úpravy po prokliku v `tasks/prints-look-fixes.md` (D135–D140); zbývá revize `sk` / `de` popisku datové schránky kolegou (sekce „Formulace k revizi“) a zavření #100 po dokončení navazujícího tasku |
 | `prints-phase3.md` | částečně | kód, dokumentace a nápověda hotové 2026-10-05 (#90 D46–D52; podklad loga z D46 po prokliku zrušen); ověřeno na ukázkovém zdroji včetně ručního prokliku nastavení a výsledného tisku, `ds-upgrade` jen tam; zbývá nasazení na alfu (`ds-upgrade` všech zdrojů — bez něj se tiskne bez textů a s výchozím vzhledem) a komentář do #90 |
 | `prints-phase4.md` | částečně | implementace hotová (7 commitů); zbývá ověření skutečného odeslání přes SMTP (dev server nemá relay), ruční proklik dialogu a náhledů PDF, `ds-upgrade` zdrojů dat při nasazení a revize `sk` / `de` textů e-mailu (`tasks/prints-languages.md`) |
 | `testing-clean-server.md` | částečně | kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; `php8.5-bcmath` na testovacím serveru doinstalovaný 2026-10-28; zbývá ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146 |
@@ -280,6 +281,7 @@ referenční dokument `docs/prints.md` (od Fáze 1).
 | `prints-languages.md` | 2b | Jazyky tisku `sk` a `de`, formátování přes intl, tiskové zkratky jednotek, přepínač jazyka v náhledu (#90 D29–D33, navazuje na #94) |
 | `prints-phase4.md` | 4 | Odesílání e-mailem: účely na kontaktech, resolver příjemců a odesílatele, Odeslaná pošta nad libovolnou tabulkou (pevný obsah, Odeslat znovu), dialog Odeslat (#90 D34–D45) |
 | `prints-look.md` | — | Vzhled tisku dokladů podle typografických rolí designového systému, bez rámečku Odběratele, kontakty vlastní firmy v zápatí s přepínači na stránce Tisky, typ pole `checkbox` v nastavení, web a datová schránka ve snapshotu strany (#162 D125–D134, přebírá #100) |
+| `prints-look-fixes.md` | — | Úpravy vzhledu tisku po prokliku: světlejší čáry, tučná hodnota splatnosti a VS, větší nadpisy stran, mezinadpis `section` na stránkách nastavení, web a datová schránka vedle sebe ve formuláři Osoby (#162 D135–D140) |
 | `persons-document-options.md` | — | Jazyk dokumentů na osobě (odvození podle země, živě), spojování příloh, příznak přílohy „odeslat s dokladem“ (#94 D1–D11) |
 
 ## Výměnný formát a import ze starého Shipardu
