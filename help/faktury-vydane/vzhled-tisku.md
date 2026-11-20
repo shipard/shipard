@@ -76,8 +76,9 @@ nejsou.
 (číslice a písmena *a* až *f*). Název barvy ani zkrácený zápis se třemi
 znaky nejde — nejjistější je vybrat barvu čtverečkem.
 
-**Barva je jen v hlavičce.** Tabulka řádků, součty ani rámeček odběratele
-se nebarví — viz [Co Shipard dnes neumí](../co-dnes-nejde.md).
+**Barva je jen v hlavičce.** Tabulka řádků ani součty se nebarví a text
+dokladu je černý; šedě jsou jen doplňky jako kontakty v zápatí nebo
+přepočet částky do korun — viz [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Doplnil jsem web nebo datovou schránku, a na starší faktuře nejsou.**
 Kontakty se na doklad zapisují ve chvíli, kdy ho dáš do **V pořádku** —

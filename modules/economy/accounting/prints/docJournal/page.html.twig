@@ -21,7 +21,7 @@
                 {% include '@docs.core/_partials/party.html.twig' with { party: data.accountingUnit, showRegistration: false } only %}
             {% endif %}
         </div>
-        <div class="party{% if data.partner %} party--customer{% endif %}">
+        <div class="party">
             {% if data.partner %}
                 <h2>{{ t('label.partner') }}</h2>
                 {% include '@docs.core/_partials/party.html.twig' with { party: data.partner, showRegistration: false } only %}

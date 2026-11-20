@@ -14,6 +14,10 @@
     Pozor na názvy tříd: prvky s třídami `title`, `date`, `url`,
     `pageNumber` a `totalPages` Chromium v záhlaví a zápatí přepisuje
     vlastním obsahem — web proto není `url`, ale `foot-item`.
+
+    Písmo: zápatí je samostatný dokument bez doc-base.css, hodnoty
+    typografické role meta (#162 D126, D130) tu proto stojí literálně
+    a musí odpovídat `--print-font-meta` a `--print-color-meta`.
 #}
 {%- set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier -%}
 {%- set author = data.document.author.name|default('') -%}
@@ -46,8 +50,8 @@
             width: 100%;
             padding: 0 1.6cm;
             font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
-            font-size: 7.5pt;
-            color: #666;
+            font-size: 7.5pt;     /* role meta */
+            color: #666;          /* --print-color-meta */
             display: flex;
             justify-content: space-between;
             /* Sloupce sedí na posledním řádku — jednořádková strana vedle

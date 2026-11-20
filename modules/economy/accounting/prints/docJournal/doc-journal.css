@@ -2,6 +2,8 @@
  * Tabulka účetních zápisů tisku Kontace (#90 D27) — navazuje na styl
  * dokladů (doc-base.css): střídmá, černobílá. Chybový zápis je zvýrazněný
  * i bez barvy, ať je vidět na černobílém výtisku.
+ * Tučné bere z role `--print-weight-strong` v doc-base.css (#162 D126 —
+ * jedna tučná tloušťka na celém tisku).
  */
 .doc-journal thead {
     display: table-header-group;
@@ -17,12 +19,12 @@
 }
 
 .doc-journal .row-error td {
-    font-weight: 700;
+    font-weight: var(--print-weight-strong);
     background: #ececec;
 }
 
 .doc-journal .row-total td {
     padding-top: 0.15cm;
     border-top: 0.5pt solid #000;
-    font-weight: 700;
+    font-weight: var(--print-weight-strong);
 }

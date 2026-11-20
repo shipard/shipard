@@ -12,6 +12,11 @@
     Pozor na názvy tříd: prvky s třídami `title`, `date`, `url`, `pageNumber`
     a `totalPages` Chromium v záhlaví a zápatí přepisuje vlastním obsahem
     (`title` = <title> stránky) — proto `head-title`, ne `title`.
+
+    Písmo: záhlaví je samostatný dokument bez doc-base.css, hodnoty
+    typografických rolí tisku (#162 D126) tu proto stojí literálně a musí
+    odpovídat proměnným v doc-base.css — titulek role page (13pt) tučně
+    (`--print-weight-strong`, 700), číslo dokladu page normálně.
 #}
 {% set accent = branding.accentColor %}
 {% set logoRight = branding.logoPlacement == 'right' %}
@@ -41,8 +46,8 @@
         .head-title {
             padding-right: 0.25cm;
             border-right: 4pt solid;
-            font-size: 13pt;
-            font-weight: 700;
+            font-size: 13pt;      /* role page */
+            font-weight: 700;     /* --print-weight-strong */
             text-align: right;
         }
         .head-inner--logo-right .head-title {
@@ -52,7 +57,7 @@
             border-left: 4pt solid;
             text-align: left;
         }
-        .head-number { font-size: 13pt; font-weight: 400; margin-left: 0.3cm; }
+        .head-number { font-size: 13pt; font-weight: 400; margin-left: 0.3cm; }  /* role page, normální */
     </style>
 </head>
 <body>

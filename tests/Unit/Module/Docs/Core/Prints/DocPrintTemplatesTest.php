@@ -156,6 +156,9 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringNotContainsString('fakturace@tiskarna.example', $html);
         $this->assertStringContainsString('Odběratel Zkušební a.s.', $html);
         $this->assertStringContainsString('DIČ: SK2020000027', $html);
+        // Obě strany stejně, bez rámečku Odběratele (#162 D129).
+        $this->assertSame(2, substr_count($html, '<div class="party">'));
+        $this->assertStringNotContainsString('party--customer', $html);
 
         // Data
         $this->assertStringContainsString('30.' . self::NBSP . '9.' . self::NBSP . '2026', $html);
@@ -481,7 +484,6 @@ class DocPrintTemplatesTest extends TestCase
         }));
         $this->assertStringContainsString('Dodavatel', $noCustomer->html);
         $this->assertStringNotContainsString('Odběratel', $noCustomer->html);
-        $this->assertStringNotContainsString('party--customer', $noCustomer->html, 'prázdné místo bez rámečku');
         $this->assertSame(2, substr_count($noCustomer->html, '<div class="party'), 'sloupec strany zůstává');
 
         // Vstup bez partnera: dodavatel chybí, vlastní firma je odběratel — i v zápatí.

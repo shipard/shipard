@@ -3,7 +3,40 @@
  * Akcentová barva z nastavení (D46) patří jen záhlaví (header.html.twig);
  * tělo dokladu se nebarví.
  * Okraje stránky a záhlaví / zápatí řeší render služba, ne @page.
+ *
+ * Typografické role tisku (#162 D125–D129, docs/design-system.md kap. 13
+ * Tisk dokladu) — pět velikostí, jedna tučná tloušťka, žádné verzálky.
+ * Velikost, tloušťku a šedou smí pravidla níž brát jen z těchto
+ * proměnných (hlídá DocPrintStylesTest); výjimkou je vodoznak, který není
+ * text dokladu.
+ *
+ *   page     titulek a číslo dokladu v záhlaví
+ *   title    K úhradě
+ *   heading  název strany
+ *   body     všechno ostatní včetně popisků a hlaviček tabulek
+ *   meta     doplňky: sleva na řádku, kurz a přepočet v domácí měně,
+ *            popisek QR, popisek podpisu, zápatí
+ *
+ * Šedá (`--print-color-meta`) patří jen doplňkům; popisky, hlavičky tabulek
+ * a identifikátory jsou černé. Záhlaví a zápatí jsou samostatné dokumenty
+ * bez tohoto souboru — hodnoty rolí tam stojí literálně (header.html.twig,
+ * footer.html.twig) a musí odpovídat.
+ *
+ * Tučná tloušťka je 700 (D126): render služba má Noto Sans jen v řezech
+ * Regular a Bold — `font-weight: 600` by vložil tentýž Bold (ověřeno
+ * `pdffonts` 2026-11-20). Až služba dostane řez SemiBold, stačí změnit
+ * tuto proměnnou a literál v záhlaví.
  */
+:root {
+    --print-font-page: 13pt;
+    --print-font-title: 11.5pt;
+    --print-font-heading: 10.5pt;
+    --print-font-body: 9pt;
+    --print-font-meta: 7.5pt;
+    --print-weight-strong: 700;
+    --print-color-meta: #666;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -11,18 +44,17 @@ html, body {
 
 body {
     font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
-    font-size: 9pt;
+    font-size: var(--print-font-body);
     line-height: 1.35;
     color: #000;
 }
 
+/* Nadpis strany (Dodavatel / Odběratel): běžný text, tučný je až název
+   strany pod ním (D127). */
 h2 {
     margin: 0 0 0.15cm;
-    font-size: 7.5pt;
+    font-size: var(--print-font-body);
     font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #666;
 }
 
 p {
@@ -30,7 +62,7 @@ p {
 }
 
 sup {
-    font-size: 6.5pt;
+    font-size: var(--print-font-meta);
     line-height: 0;
 }
 
@@ -40,10 +72,6 @@ dl {
     grid-template-columns: max-content 1fr;
     column-gap: 0.5cm;
     row-gap: 0.05cm;
-}
-
-dt {
-    color: #666;
 }
 
 dd {
@@ -60,7 +88,7 @@ dd {
     z-index: -1;
     transform: translate(-50%, -50%) rotate(-35deg);
     font-size: 110pt;
-    font-weight: 700;
+    font-weight: var(--print-weight-strong);
     line-height: 1;
     white-space: nowrap;
     color: #dcdcdc;
@@ -69,7 +97,6 @@ dd {
 
 .doc-subject {
     margin-bottom: 0.5cm;
-    font-size: 10pt;
 }
 
 /* Opravný doklad: původní doklad a důvod opravy (mřížka z `dl`). */
@@ -79,7 +106,7 @@ dd {
 
 .doc-note-nontax {
     margin-bottom: 0.5cm;
-    font-weight: 700;
+    font-weight: var(--print-weight-strong);
 }
 
 /* ── strany ─────────────────────────────────────────────────────────────── */
@@ -91,14 +118,10 @@ dd {
     margin-bottom: 0.6cm;
 }
 
-.party--customer {
-    padding: 0.3cm 0.4cm;
-    border: 0.5pt solid #666;
-}
-
+/* Obě strany bez rámečku (D129). */
 .party-name {
-    font-size: 10.5pt;
-    font-weight: 700;
+    font-size: var(--print-font-heading);
+    font-weight: var(--print-weight-strong);
 }
 
 .party-address {
@@ -110,10 +133,8 @@ dd {
     white-space: nowrap;
 }
 
-.party-detail {
-    color: #666;
-    font-size: 8pt;
-}
+/* `.party-detail` (zápis v obchodním rejstříku) je identifikátor — běžný
+   text bez vlastního stylu. */
 
 /* ── data a platba ──────────────────────────────────────────────────────── */
 
@@ -138,8 +159,8 @@ dd {
     width: 2.9cm;
     flex: none;
     text-align: center;
-    font-size: 7pt;
-    color: #666;
+    font-size: var(--print-font-meta);
+    color: var(--print-color-meta);
 }
 
 .doc-qr svg {
@@ -163,8 +184,7 @@ th, td {
 }
 
 thead th {
-    font-size: 7.5pt;
-    color: #666;
+    font-weight: var(--print-weight-strong);
     border-bottom: 0.5pt solid #000;
     white-space: nowrap;
 }
@@ -191,18 +211,14 @@ thead th {
     break-inside: avoid;
 }
 
-.row-text td {
-    color: #666;
-}
-
 .row-advance td {
     font-style: italic;
 }
 
 .row-discount {
     display: block;
-    font-size: 7.5pt;
-    color: #666;
+    font-size: var(--print-font-meta);
+    color: var(--print-color-meta);
 }
 
 /* ── rekapitulace a součty ──────────────────────────────────────────────── */
@@ -215,18 +231,10 @@ thead th {
     break-inside: avoid;
 }
 
-.doc-recap-table {
-    font-size: 8pt;
-}
-
 .doc-rate {
     margin-top: 0.15cm;
-    font-size: 8pt;
-    color: #666;
-}
-
-.doc-totals th {
-    color: #666;
+    font-size: var(--print-font-meta);
+    color: var(--print-color-meta);
 }
 
 .doc-totals td {
@@ -240,14 +248,15 @@ thead th {
     padding-bottom: 0.2cm;
     border-top: 0.5pt solid #000;
     border-bottom: 0.5pt solid #000;
-    font-size: 11.5pt;
-    font-weight: 700;
-    color: #000;
+    font-size: var(--print-font-title);
+    font-weight: var(--print-weight-strong);
 }
 
+/* Přepočet v domácí měně je doplněk — popisek i částka. */
 .doc-totals-home th,
 .doc-totals-home td {
-    font-size: 8pt;
+    font-size: var(--print-font-meta);
+    color: var(--print-color-meta);
 }
 
 /* ── poznámky ───────────────────────────────────────────────────────────── */
@@ -255,10 +264,6 @@ thead th {
 .doc-notes {
     margin-top: 0.6cm;
     break-inside: avoid;
-}
-
-.doc-vat-note {
-    font-size: 8pt;
 }
 
 .doc-notice {
@@ -270,7 +275,7 @@ thead th {
 /*
  * HTML z Markdownu textů na tiscích. Běžná velikost textu, žádná barva —
  * akcent patří jen záhlaví. Nadpisy Markdownu jsou jen tučný řádek: styl
- * `h2` výše je popisek sekce dokladu, ne nadpis textu.
+ * `h2` výše je nadpis strany dokladu, ne nadpis textu.
  */
 .print-text {
     margin: 0 0 0.5cm;
@@ -301,10 +306,7 @@ thead th {
 .print-text h6 {
     margin: 0 0 0.15cm;
     font-size: inherit;
-    font-weight: 700;
-    text-transform: none;
-    letter-spacing: 0;
-    color: inherit;
+    font-weight: var(--print-weight-strong);
 }
 
 .print-text blockquote {
@@ -344,7 +346,6 @@ thead th {
 .doc-signature {
     padding-top: 0.1cm;
     border-top: 0.5pt solid #000;
-    font-size: 7.5pt;
-    color: #666;
+    font-size: var(--print-font-meta);
     text-align: center;
 }

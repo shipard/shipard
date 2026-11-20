@@ -1,7 +1,7 @@
 {#
-    Dodavatel a odběratel vedle sebe. Strana, kterou doklad nemá (pokladní
-    doklad nebo prodejka bez partnera), se vynechá — její místo zůstane
-    prázdné.
+    Dodavatel a odběratel vedle sebe, obě strany stejně a bez rámečku
+    (#162 D129). Strana, kterou doklad nemá (pokladní doklad nebo prodejka
+    bez partnera), se vynechá — její místo zůstane prázdné.
 #}
 <section class="doc-parties">
     <div class="party">
@@ -10,7 +10,7 @@
             {% include '@docs.core/_partials/party.html.twig' with { party: data.supplier, showRegistration: true } only %}
         {% endif %}
     </div>
-    <div class="party{% if data.customer %} party--customer{% endif %}">
+    <div class="party">
         {% if data.customer %}
             <h2>{{ t('label.customer') }}</h2>
             {% include '@docs.core/_partials/party.html.twig' with { party: data.customer, showRegistration: false } only %}
