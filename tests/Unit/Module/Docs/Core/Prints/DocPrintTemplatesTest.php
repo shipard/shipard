@@ -539,6 +539,52 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('Page <span class="pageNumber">', (string) $document->footer);
     }
 
+    // ── klíčové platební údaje (#162 D136) ──────────────────────────────────
+
+    /** Hodnoty s třídou klíčového údaje, v pořadí výskytu. */
+    private static function keyValues(string $html): array
+    {
+        preg_match_all('~<dd class="doc-key-value">(.*?)</dd>~s', $html, $m);
+        return $m[1];
+    }
+
+    public function testDueDateAndPaymentReferenceValuesAreKeyValues(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $html = $this->render($definition, self::printData('invoice', $definition->id))->html;
+
+        // Tučná je hodnota, popisek zůstává běžný `dt`.
+        $this->assertSame(
+            ['14.' . self::NBSP . '10.' . self::NBSP . '2026', '2026000123'],
+            self::keyValues($html),
+        );
+        $this->assertStringContainsString('<dt>Datum splatnosti</dt>', $html);
+        $this->assertStringContainsString('<dt>Variabilní symbol</dt>', $html);
+        $this->assertStringNotContainsString('<dt class=', $html);
+    }
+
+    public function testKeyValuesDoNotDependOnLabelLanguage(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $html = $this->render($definition, self::printData('invoice', $definition->id, 'de'))->html;
+
+        // Popisek se jmenuje jinak, tučná je pořád hodnota reference.
+        $this->assertStringContainsString('<dt>Variables Symbol</dt>', $html);
+        $this->assertCount(2, self::keyValues($html));
+        $this->assertSame('2026000123', self::keyValues($html)[1]);
+    }
+
+    public function testDocumentWithoutPaymentReferenceHasOnlyDueDateAsKeyValue(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $html = $this->render($definition, self::printData('invoice', $definition->id, modify: static function (array $data): array {
+            $data['payment']['reference'] = null;
+            return $data;
+        }))->html;
+
+        $this->assertSame(['14.' . self::NBSP . '10.' . self::NBSP . '2026'], self::keyValues($html));
+    }
+
     public function testSnapshotWithoutOptionalKeysStillRenders(): void
     {
         $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
@@ -816,6 +862,7 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('Datum zdanitelného plnění', $html);
         $this->assertStringContainsString('Rekapitulace DPH', $html);
         $this->assertStringNotContainsString('doc-signature', $html, 'prodejka podpisy nemá');
+        $this->assertSame([], self::keyValues($html), 'bez splatnosti a reference žádný klíčový údaj');
     }
 
     public function testReceiptPaidByBankTransferLooksLikeInvoice(): void
@@ -829,6 +876,11 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('CZ65' . self::NBSP . '0800' . self::NBSP . '0000' . self::NBSP . '1920' . self::NBSP . '0014' . self::NBSP . '5399', $html, 'IBAN po čtveřicích (#118 D21)');
         $this->assertStringContainsString('<svg', $html);
         $this->assertStringContainsString('K úhradě', $html);
+        // D136: splatnost i variabilní symbol tučně i na prodejce.
+        $this->assertSame(
+            ['14.' . self::NBSP . '10.' . self::NBSP . '2026', '1426000001'],
+            self::keyValues($html),
+        );
     }
 
     public function testRefundHasOnlyDifferentTitleAndNegativeAmounts(): void

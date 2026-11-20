@@ -12,7 +12,7 @@
  *
  *   page     titulek a číslo dokladu v záhlaví
  *   title    K úhradě
- *   heading  název strany
+ *   heading  nadpis strany (Dodavatel / Odběratel) a název strany
  *   body     všechno ostatní včetně popisků a hlaviček tabulek
  *   meta     doplňky: sleva na řádku, kurz a přepočet v domácí měně,
  *            popisek QR, popisek podpisu, zápatí
@@ -21,6 +21,18 @@
  * a identifikátory jsou černé. Záhlaví a zápatí jsou samostatné dokumenty
  * bez tohoto souboru — hodnoty rolí tam stojí literálně (header.html.twig,
  * footer.html.twig) a musí odpovídat.
+ *
+ * Čáry (#162 D135) mají dvě role a jednu tloušťku `--print-rule-width`:
+ *
+ *   rule        strukturní — nad a pod blokem dat a platby, pod hlavičkou
+ *               tabulky, kolem K úhradě, součtový řádek Kontace, `hr`
+ *               a citace v uživatelských textech
+ *   rule-light  řádky tabulek (doklad i Kontace)
+ *
+ * Barvu čáry smí pravidla brát jen z těchto dvou proměnných. Výjimkou je
+ * podpisová linka (`.doc-signature`) — není to členění, ale místo pro
+ * podpis, a zůstává černá. `rule-light` je na hranici viditelnosti laserové
+ * tiskárny: dál se nezesvětluje.
  *
  * Tučná tloušťka je 700 (D126): render služba má Noto Sans jen v řezech
  * Regular a Bold — `font-weight: 600` by vložil tentýž Bold (ověřeno
@@ -35,6 +47,9 @@
     --print-font-meta: 7.5pt;
     --print-weight-strong: 700;
     --print-color-meta: #666;
+    --print-color-rule: #c8c8c8;
+    --print-color-rule-light: #e6e6e6;
+    --print-rule-width: 0.5pt;
 }
 
 html, body {
@@ -49,11 +64,11 @@ body {
     color: #000;
 }
 
-/* Nadpis strany (Dodavatel / Odběratel): běžný text, tučný je až název
-   strany pod ním (D127). */
+/* Nadpis strany (Dodavatel / Odběratel): velikost jako název strany pod
+   ním, ale normální tloušťka — tučný je až název (D127, D137). */
 h2 {
     margin: 0 0 0.15cm;
-    font-size: var(--print-font-body);
+    font-size: var(--print-font-heading);
     font-weight: 400;
 }
 
@@ -133,8 +148,11 @@ dd {
     white-space: nowrap;
 }
 
-/* `.party-detail` (zápis v obchodním rejstříku) je identifikátor — běžný
-   text bez vlastního stylu. */
+/* Zápis v obchodním rejstříku je identifikátor — běžný text. Od IČO / DIČ
+   ho dělí stejná mezera jako adresu od identifikátorů (D140). */
+.party-detail {
+    margin-top: 0.15cm;
+}
 
 /* ── data a platba ──────────────────────────────────────────────────────── */
 
@@ -145,8 +163,15 @@ dd {
     align-items: start;
     margin-bottom: 0.6cm;
     padding: 0.3cm 0;
-    border-top: 0.5pt solid #666;
-    border-bottom: 0.5pt solid #666;
+    border-top: var(--print-rule-width) solid var(--print-color-rule);
+    border-bottom: var(--print-rule-width) solid var(--print-color-rule);
+}
+
+/* Klíčový platební údaj — hodnota data splatnosti a platební reference
+   (variabilní symbol). Jediné místo, kde je hodnota tučně a popisek ne:
+   to, co příjemce hledá jako první, když platí (D136). */
+.doc-key-value {
+    font-weight: var(--print-weight-strong);
 }
 
 .doc-payment {
@@ -185,7 +210,7 @@ th, td {
 
 thead th {
     font-weight: var(--print-weight-strong);
-    border-bottom: 0.5pt solid #000;
+    border-bottom: var(--print-rule-width) solid var(--print-color-rule);
     white-space: nowrap;
 }
 
@@ -207,7 +232,7 @@ thead th {
 }
 
 .doc-rows tbody tr {
-    border-bottom: 0.25pt solid #ccc;
+    border-bottom: var(--print-rule-width) solid var(--print-color-rule-light);
     break-inside: avoid;
 }
 
@@ -246,8 +271,8 @@ thead th {
 .doc-totals-due td {
     padding-top: 0.2cm;
     padding-bottom: 0.2cm;
-    border-top: 0.5pt solid #000;
-    border-bottom: 0.5pt solid #000;
+    border-top: var(--print-rule-width) solid var(--print-color-rule);
+    border-bottom: var(--print-rule-width) solid var(--print-color-rule);
     font-size: var(--print-font-title);
     font-weight: var(--print-weight-strong);
 }
@@ -311,7 +336,7 @@ thead th {
 
 .print-text blockquote {
     padding-left: 0.3cm;
-    border-left: 1.5pt solid #ccc;
+    border-left: 1.5pt solid var(--print-color-rule);
 }
 
 .print-text code,
@@ -323,7 +348,7 @@ thead th {
 .print-text hr {
     margin: 0.2cm 0;
     border: 0;
-    border-top: 0.5pt solid #666;
+    border-top: var(--print-rule-width) solid var(--print-color-rule);
 }
 
 /* Text za poznámkami (slot footer) potřebuje odstup shora, ne zdola. */
@@ -334,7 +359,8 @@ thead th {
 
 /* ── podpisy ────────────────────────────────────────────────────────────── */
 
-/* Prázdné linky s popiskem pod nimi; místo nad linkou je na podpis. */
+/* Prázdné linky s popiskem pod nimi; místo nad linkou je na podpis.
+   Linka k podpisu není členění dokladu — zůstává černá (D135). */
 .doc-signatures {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -345,7 +371,7 @@ thead th {
 
 .doc-signature {
     padding-top: 0.1cm;
-    border-top: 0.5pt solid #000;
+    border-top: var(--print-rule-width) solid #000;
     font-size: var(--print-font-meta);
     text-align: center;
 }

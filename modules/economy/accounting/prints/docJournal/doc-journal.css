@@ -3,14 +3,15 @@
  * dokladů (doc-base.css): střídmá, černobílá. Chybový zápis je zvýrazněný
  * i bez barvy, ať je vidět na černobílém výtisku.
  * Tučné bere z role `--print-weight-strong` v doc-base.css (#162 D126 —
- * jedna tučná tloušťka na celém tisku).
+ * jedna tučná tloušťka na celém tisku), čáry z rolí `--print-color-rule`
+ * a `--print-color-rule-light` (D135).
  */
 .doc-journal thead {
     display: table-header-group;
 }
 
 .doc-journal tbody tr {
-    border-bottom: 0.25pt solid #ccc;
+    border-bottom: var(--print-rule-width) solid var(--print-color-rule-light);
     break-inside: avoid;
 }
 
@@ -25,6 +26,6 @@
 
 .doc-journal .row-total td {
     padding-top: 0.15cm;
-    border-top: 0.5pt solid #000;
+    border-top: var(--print-rule-width) solid var(--print-color-rule);
     font-weight: var(--print-weight-strong);
 }

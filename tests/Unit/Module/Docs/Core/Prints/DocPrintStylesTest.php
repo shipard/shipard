@@ -11,10 +11,11 @@ use PHPUnit\Framework\TestCase;
  * Typografické role tisku dokladu (#162 D125–D129): velikost písma, tučná
  * tloušťka a šedá jdou ve stylech tisku jen z proměnných rolí v
  * `doc-base.css`. Záhlaví a zápatí jsou samostatné dokumenty bez tohoto
- * souboru — jejich literální hodnoty musí proměnným odpovídat.
+ * souboru — jejich literální hodnoty musí proměnným odpovídat. Čáry mají
+ * dvě role barvy a jednu tloušťku (D135).
  *
- * Hlídá návrat starých hodnot (8pt, 700 natvrdo, šedé popisky, verzálky),
- * ne vzhled — ten se ověřuje nad vyrenderovaným PDF.
+ * Hlídá návrat starých hodnot (8pt, 700 natvrdo, šedé popisky, verzálky,
+ * černé čáry), ne vzhled — ten se ověřuje nad vyrenderovaným PDF.
  */
 class DocPrintStylesTest extends TestCase
 {
@@ -77,6 +78,11 @@ class DocPrintStylesTest extends TestCase
         $this->assertSame('7.5pt', $roles['--print-font-meta']);
         $this->assertSame('#666', $roles['--print-color-meta']);
         $this->assertContains($roles['--print-weight-strong'], ['600', '700'], 'jedna tučná tloušťka');
+
+        // D135: dvě barvy čar, jedna tloušťka.
+        $this->assertSame('#c8c8c8', $roles['--print-color-rule']);
+        $this->assertSame('#e6e6e6', $roles['--print-color-rule-light']);
+        $this->assertSame('0.5pt', $roles['--print-rule-width']);
     }
 
     /** @return array<string, array{string}> */
@@ -111,6 +117,125 @@ class DocPrintStylesTest extends TestCase
                 );
             }
         }
+    }
+
+    /**
+     * Deklarace čar jako [selektor, vlastnost, hodnota] — `border`,
+     * `border-<strana>` a jejich `-color` / `-width` / `-style`.
+     *
+     * @return list<array{string, string, string}>
+     */
+    private static function borders(string $css): array
+    {
+        $found = [];
+        preg_match_all('~([^{}]+)\{([^{}]*)\}~', $css, $rules, PREG_SET_ORDER);
+        foreach ($rules as $rule) {
+            preg_match_all(
+                '~(?<![\w-])(border(?:-(?:top|right|bottom|left))?(?:-(?:color|width|style))?)\s*:\s*([^;]+);~',
+                $rule[2],
+                $declarations,
+                PREG_SET_ORDER,
+            );
+            foreach ($declarations as $declaration) {
+                $found[] = [
+                    trim((string) preg_replace('~\s+~', ' ', $rule[1])),
+                    $declaration[1],
+                    trim($declaration[2]),
+                ];
+            }
+        }
+        return $found;
+    }
+
+    #[DataProvider('stylesheets')]
+    public function testRulesComeOnlyFromRoles(string $path): void
+    {
+        $role = '~^var\(--print-rule-width\) solid var\(--print-color-rule(-light)?\)$~';
+
+        foreach (self::borders(self::css($path)) as [$selector, $property, $value]) {
+            $pattern = match ($selector) {
+                // Linka k podpisu není členění dokladu — zůstává černá.
+                '.doc-signature' => '~^var\(--print-rule-width\) solid #000$~',
+                // Citace v uživatelském textu: silnější, barva z role.
+                '.print-text blockquote' => '~^1\.5pt solid var\(--print-color-rule\)$~',
+                default => $role,
+            };
+            if ($value === '0') {
+                continue;
+            }
+            $this->assertMatchesRegularExpression(
+                $pattern,
+                $value,
+                "{$path}: `{$selector}` má `{$property}: {$value}` mimo role čar",
+            );
+        }
+    }
+
+    public function testRuleRolesAreAssignedByPlace(): void
+    {
+        $byRole = ['rule' => [], 'rule-light' => []];
+        foreach (self::stylesheets() as [$path]) {
+            foreach (self::borders(self::css($path)) as [$selector, , $value]) {
+                if (preg_match('~var\(--print-color-(rule(?:-light)?)\)~', $value, $m) === 1) {
+                    $byRole[$m[1]][] = $selector;
+                }
+            }
+        }
+        $byRole = array_map(static function (array $selectors): array {
+            $selectors = array_values(array_unique($selectors));
+            sort($selectors);
+            return $selectors;
+        }, $byRole);
+
+        // D135: světlá čára jen mezi řádky tabulek, strukturní všude jinde.
+        $this->assertSame(['.doc-journal tbody tr', '.doc-rows tbody tr'], $byRole['rule-light']);
+        $this->assertSame(
+            [
+                '.doc-info',
+                '.doc-journal .row-total td',
+                '.doc-totals-due th, .doc-totals-due td',
+                '.print-text blockquote',
+                '.print-text hr',
+                'thead th',
+            ],
+            $byRole['rule'],
+        );
+    }
+
+    public function testKeyValueIsStrong(): void
+    {
+        // D136: hodnota splatnosti a platební reference tučně, popisek ne.
+        $weights = [];
+        foreach (self::declarations(self::css(self::LAYOUT . '/doc-base.css'), 'font-weight') as [$selector, $value]) {
+            $weights[$selector] = $value;
+        }
+        $this->assertSame('var(--print-weight-strong)', $weights['.doc-key-value'] ?? null);
+        $this->assertArrayNotHasKey('dt', $weights);
+    }
+
+    public function testPartyHeadingIsHeadingSizeAndNormalWeight(): void
+    {
+        $css = self::css(self::LAYOUT . '/doc-base.css');
+
+        // D137: nadpis strany heading, normální tloušťka; název heading tučně.
+        $this->assertSame(1, preg_match('~(?<![\w.-])h2\s*\{([^}]*)\}~', $css, $heading));
+        $this->assertStringContainsString('font-size: var(--print-font-heading);', $heading[1]);
+        $this->assertStringContainsString('font-weight: 400;', $heading[1]);
+
+        $this->assertSame(1, preg_match('~\.party-name\s*\{([^}]*)\}~', $css, $name));
+        $this->assertStringContainsString('font-size: var(--print-font-heading);', $name[1]);
+        $this->assertStringContainsString('font-weight: var(--print-weight-strong);', $name[1]);
+    }
+
+    public function testCourtRegistrationHasTopSpacing(): void
+    {
+        // D140: zápis v rejstříku odsazený jako adresa od identifikátorů.
+        $css = self::css(self::LAYOUT . '/doc-base.css');
+        $this->assertSame(1, preg_match('~\.party-detail\s*\{([^}]*)\}~', $css, $detail));
+        $this->assertSame(1, preg_match('~\.party-address\s*\{([^}]*)\}~', $css, $address));
+        $this->assertSame(1, preg_match('~margin-top:\s*([^;]+);~', $detail[1], $top));
+        $this->assertSame(1, preg_match('~margin-bottom:\s*([^;]+);~', $address[1], $bottom));
+        $this->assertSame(trim($bottom[1]), trim($top[1]));
     }
 
     #[DataProvider('stylesheets')]

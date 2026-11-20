@@ -2320,11 +2320,11 @@ v `DocumentExchangePreview` a do částí jde snippety přes uzávěr.
 
 ## 13. Tisk dokladu
 
-Pravidla §11 převedená na papír (#162 D125–D134). Platí pro všechny tisky
+Pravidla §11 převedená na papír (#162 D125–D140). Platí pro všechny tisky
 nad sdíleným layoutem dokladu `modules/docs/core/prints/_layout/` — faktura
 vydaná, zálohová faktura, pokladní doklad, prodejka — a přes zděděný
 `doc-base.css` i pro Kontaci. **Pět velikostí v pt, jedna tučná tloušťka,
-žádné verzálky, šedá jen doplňkům.** Tisk je černobílý; jediná barva je
+žádné verzálky, šedá jen doplňkům, čáry ve dvou odstínech.** Tisk je černobílý; jediná barva je
 akcent z nastavení a patří jen záhlaví (#90 D46, `docs/prints.md` §12.1).
 
 Role jsou proměnné na začátku `doc-base.css`. Na tokeny aplikace
@@ -2335,8 +2335,8 @@ aplikaci a jednotkou je bod, ne rem.
 |---|---|---|---|---|---|
 | page | `--print-font-page` | 13 pt | strong (číslo dokladu normal) | černá | titulek a číslo dokladu v záhlaví |
 | title | `--print-font-title` | 11,5 pt | strong | černá | řádek K úhradě / Celkem |
-| heading | `--print-font-heading` | 10,5 pt | strong | černá | název strany (Dodavatel, Odběratel, účetní jednotka) |
-| body | `--print-font-body` | 9 pt | normal (hlavička tabulky strong) | černá | všechno ostatní: nadpis Dodavatel / Odběratel, adresa, IČO / DIČ, zápis v rejstříku, popisky a hodnoty dat a platby, řádky a hlavičky tabulek, rekapitulace DPH, součty, poznámky, uživatelské texty |
+| heading | `--print-font-heading` | 10,5 pt | název strany strong, nadpis strany normal | černá | nadpis strany (Dodavatel, Odběratel, Účetní jednotka, Partner) a název strany pod ním |
+| body | `--print-font-body` | 9 pt | normal (hlavička tabulky a klíčové platební údaje strong) | černá | všechno ostatní: adresa, IČO / DIČ, zápis v rejstříku, popisky a hodnoty dat a platby, řádky a hlavičky tabulek, rekapitulace DPH, součty, poznámky, uživatelské texty |
 | meta | `--print-font-meta` | 7,5 pt | normal | šedá `--print-color-meta` (`#666`); popisek podpisu a horní index černě | sleva na řádku, kurz, přepočet v domácí měně, popisek QR, popisek podpisového pole, horní index poznámky DPH, zápatí |
 
 Tučná tloušťka je `--print-weight-strong` = **700**. D126 chtělo 600,
@@ -2355,20 +2355,52 @@ a literál v záhlaví, nic dalšího.
 - **Popisek a hodnota stejnou barvou i tloušťkou** — jako §11. Popisky
   dat a platby, hlavičky tabulek, popisky součtů i textové řádky jsou
   černé (D128).
+- **Výjimka: klíčové platební údaje** (D136). **Hodnota** data splatnosti
+  a platební reference (variabilní symbol) je tučně, popisek normálně —
+  třída `doc-key-value`. Je to pojmenovaná výjimka tisku z §11, ne vzor
+  pro další pole: doklad na papíře nemá vyhledávání ani zvýraznění
+  a příjemce na něm při placení hledá právě tyto dva údaje. Platí všude,
+  kde se tisknou (faktura, zálohová faktura, prodejka převodem). Tučná je
+  vždy hodnota `payment.reference`, ať se popisek v jazyce tisku jmenuje
+  jakkoli. Další tučné hodnoty se nepřidávají — částku nese řádek
+  K úhradě.
 - **Jedna tučná úroveň.** Tučné je jen: titulek v záhlaví, název strany,
-  hlavička tabulky, K úhradě / Celkem, věta o nedaňovém dokladu, nadpisy
-  v uživatelských textech; v Kontaci navíc součtový a chybový řádek.
-- **Žádné verzálky ani prostrkání.** Nadpis Dodavatel / Odběratel je
-  běžný text; výraznost nese název strany pod ním (D127).
+  hlavička tabulky, hodnota splatnosti a platební reference, K úhradě /
+  Celkem, věta o nedaňovém dokladu, nadpisy v uživatelských textech;
+  v Kontaci navíc součtový a chybový řádek.
+- **Žádné verzálky ani prostrkání.** Nadpis strany (Dodavatel /
+  Odběratel) má velikost heading jako název strany pod ním, ale normální
+  tloušťku — tučný je až název (D137; D127 měl nadpis ve velikosti body
+  a při prokliku se ukázal jako malý).
+- **Zápis v obchodním rejstříku je odsazený** od IČO / DIČ stejnou
+  mezerou jako identifikátory od adresy (0,15 cm, D140) — je to další
+  skupina údajů bloku strany, ne pokračování řádku nad ním.
 - **Šedá je pro doplňky**, ne pro popisky: sleva na řádku, kurz, přepočet
   v domácí měně (popisek i částka), popisek QR a zápatí. Adresa,
   identifikátory, zápis v obchodním rejstříku a účet jsou běžné údaje
   černě.
 - **Strany bez rámečku.** Dodavatel i Odběratel jsou stejně vysazené
-  sloupce; rámeček kolem Odběratele zanikl bez náhrady (D129). Linky
-  oddělují jen blok dat a platby, hlavičku tabulky a řádek K úhradě.
+  sloupce; rámeček kolem Odběratele zanikl bez náhrady (D129).
 - **Akcent jen v záhlaví** — pruh u titulku a linka pod záhlavím. Tělo
   dokladu ani zápatí se nebarví.
+
+### Čáry
+
+Čáry dokladu člení, nemají být vidět první (D135). Mají **dvě role barvy
+a jednu tloušťku** `--print-rule-width` = 0,5 pt:
+
+| Role | Proměnná | Barva | Kde |
+|---|---|---|---|
+| rule | `--print-color-rule` | `#c8c8c8` | strukturní: nad a pod blokem dat a platby, pod hlavičkou tabulky, nad a pod K úhradě / Celkem, nad součtovým řádkem Kontace, `hr` a citace v uživatelských textech (citace 1,5 pt) |
+| rule-light | `--print-color-rule-light` | `#e6e6e6` | mezi řádky tabulek — řádky dokladu i zápisy Kontace |
+
+- **Barva čáry jen z těchto dvou proměnných**, žádný literál v `border*`.
+- **Podpisová linka je černá** (`.doc-signature`, tloušťka z role) — není
+  to členění, ale místo, kam se píše.
+- **Linka pod záhlavím a pruh u titulku** nesou akcent z nastavení;
+  výchozí neutrální akcent je stejná šedá jako role rule.
+- `rule-light` v 0,5 pt je na hranici toho, co laserová tiskárna
+  vykreslí — **dál se nezesvětluje** ani neztenčuje.
 
 ### Záhlaví a zápatí
 
@@ -2391,16 +2423,18 @@ stejné roli meta; kontakty netiskne.
 
 ### Soubory a kontrola
 
-- `modules/docs/core/prints/_layout/doc-base.css` — proměnné rolí
-  a pravidla těla dokladu.
+- `modules/docs/core/prints/_layout/doc-base.css` — proměnné rolí písma
+  a čar, pravidla těla dokladu.
 - `modules/docs/core/prints/_layout/header.html.twig`, `footer.html.twig`
   — literální hodnoty rolí page a meta.
 - `modules/economy/accounting/prints/docJournal/doc-journal.css` — tabulka
-  zápisů Kontace, tučné z `--print-weight-strong`.
+  zápisů Kontace, tučné z `--print-weight-strong`, čáry z rolí.
 - `tests/Unit/Module/Docs/Core/Prints/DocPrintStylesTest.php` — velikosti,
   tloušťky a šedá jen z rolí, žádné verzálky, šedá jen u vyjmenovaných
   doplňků, žádný rámečkový modifikátor strany, literály záhlaví a zápatí
-  shodné s proměnnými.
+  shodné s proměnnými; čáry jen z rolí a role podle místa, tučná třída
+  klíčového údaje, nadpis strany heading normálně, odsazení zápisu
+  v rejstříku.
 - Vzhled se ověřuje nad PDF: `shpd-ds print-run … --format=pdf`,
   `pdftoppm -r 100` a `pdffonts` (jeden tučný řez).
 

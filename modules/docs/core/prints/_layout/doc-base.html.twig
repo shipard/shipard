@@ -46,7 +46,7 @@
                 <dt>{{ t('label.issueDate') }}</dt>
                 <dd>{{ data.dates.issue|date }}</dd>
                 <dt>{{ t('label.dueDate') }}</dt>
-                <dd>{{ data.dates.due|date }}</dd>
+                <dd class="doc-key-value">{{ data.dates.due|date }}</dd>
                 {% if data.dates.duzp and showVat %}
                     <dt>{{ t('label.taxPointDate') }}</dt>
                     <dd>{{ data.dates.duzp|date }}</dd>

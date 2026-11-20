@@ -1,4 +1,8 @@
-{# Platební údaje a QR platba. #}
+{#
+    Platební údaje a QR platba. Hodnota platební reference (variabilní
+    symbol) je tučně — klíčový platební údaj, #162 D136; popisek se liší
+    podle jazyka, tučná je vždy hodnota `payment.reference`.
+#}
 {% set payment = data.payment %}
 {% set account = payment.bankAccount %}
 <div class="doc-payment">
@@ -21,7 +25,7 @@
         {% endif %}
         {% if payment.reference %}
             <dt>{{ t('label.paymentReference') }}</dt>
-            <dd>{{ payment.reference }}</dd>
+            <dd class="doc-key-value">{{ payment.reference }}</dd>
         {% endif %}
         {% if payment.specificSymbol %}
             <dt>{{ t('label.specificSymbol') }}</dt>

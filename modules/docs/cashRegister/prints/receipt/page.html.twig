@@ -13,7 +13,7 @@
         <dd>{{ data.dates.issue|date }}</dd>
         {% if data.payment.bankTransfer %}
             <dt>{{ t('label.dueDate') }}</dt>
-            <dd>{{ data.dates.due|date }}</dd>
+            <dd class="doc-key-value">{{ data.dates.due|date }}</dd>
         {% endif %}
         {% if data.dates.duzp and showVat %}
             <dt>{{ t('label.taxPointDate') }}</dt>

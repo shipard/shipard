@@ -538,6 +538,13 @@ modules/economy/accounting/prints/docJournal/
   v `docs/design-system.md` §13 Tisk dokladu, hlídá je `DocPrintStylesTest`.
   Vlastní CSS šablony (blok `styles`) se rolí drží také — vzor
   `doc-journal.css`.
+- **Čáry** (#162 D135) — barva jen z rolí `--print-color-rule`
+  (strukturní) a `--print-color-rule-light` (řádky tabulek), tloušťka
+  `--print-rule-width`; černá zůstává jen podpisová linka.
+- **Klíčové platební údaje** (#162 D136) — hodnota data splatnosti
+  a platební reference nese třídu `doc-key-value` (tučně). Šablona, která
+  přepíše blok `dates` nebo `payment` a tyto údaje tiskne, třídu dává
+  také (vzor prodejka `receipt/page.html.twig`).
 
 Šablona dostává `PrintData::toArray()`: proměnné `printId`, `language`,
 `record`, `meta`, `branding`, `texts`, `messages`, `data`.
