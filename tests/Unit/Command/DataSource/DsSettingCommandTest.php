@@ -72,6 +72,7 @@ class DsSettingCommandTest extends TestCase
                     'fields' => [
                         ['id' => 'testx.someKey', 'type' => 'text', 'name' => 'Some key'],
                         ['id' => 'testx.someImage', 'type' => 'image', 'name' => 'Some image'],
+                        ['id' => 'testx.someCheck', 'type' => 'checkbox', 'default' => true, 'name' => 'Some check'],
                     ],
                 ],
             ],
@@ -208,6 +209,33 @@ class DsSettingCommandTest extends TestCase
 
         $this->assertSame(0, $exitCode);
         $this->assertSame('"hello"', $this->kv['testx.someKey']);
+    }
+
+    public function testCheckboxKeyStoresBoolean(): void
+    {
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(['action' => 'set', 'key' => 'testx.someCheck', 'value' => 'false']));
+        $this->assertSame('false', $this->kv['testx.someCheck'], 'boolean, ne řetězec "false"');
+
+        $this->assertSame(0, $tester->execute(['action' => 'get', 'key' => 'testx.someCheck']));
+        $this->assertSame('false', trim($tester->getDisplay()));
+
+        $this->assertSame(0, $tester->execute(['action' => 'set', 'key' => 'testx.someCheck', 'value' => 'true']));
+        $this->assertSame('true', $this->kv['testx.someCheck']);
+    }
+
+    public function testCheckboxKeyRejectsOtherValues(): void
+    {
+        $tester = $this->createCommandTester();
+
+        foreach (['yes', '1', '0', 'TRUE'] as $value) {
+            $exitCode = $tester->execute(['action' => 'set', 'key' => 'testx.someCheck', 'value' => $value]);
+
+            $this->assertSame(1, $exitCode, $value);
+            $this->assertStringContainsString('allowed values: true, false', $tester->getDisplay());
+        }
+        $this->assertSame([], $this->kv);
     }
 
     public function testStructuredKeyRefused(): void

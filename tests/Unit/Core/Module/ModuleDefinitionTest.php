@@ -318,6 +318,7 @@ class ModuleDefinitionTest extends TestCase
                             ['value' => 'year', 'label' => 'Yearly', 'label:cs' => 'Ročně'],
                         ]],
                         ['id' => 'a.g', 'type' => 'color'],                   // podporovaný typ (#90 D46)
+                        ['id' => 'a.h', 'type' => 'checkbox', 'default' => true], // podporovaný typ (#162 D132)
                     ],
                 ],
             ],
@@ -325,8 +326,10 @@ class ModuleDefinitionTest extends TestCase
 
         $this->assertCount(1, $def->settingsPages);
         $this->assertSame('valid', $def->settingsPages[0]['id']);
-        $this->assertCount(4, $def->settingsPages[0]['fields']);
+        $this->assertCount(5, $def->settingsPages[0]['fields']);
         $this->assertSame('color', $def->settingsPages[0]['fields'][3]['type']);
+        $this->assertSame('checkbox', $def->settingsPages[0]['fields'][4]['type']);
+        $this->assertTrue($def->settingsPages[0]['fields'][4]['default']);
         $this->assertSame('a.c', $def->settingsPages[0]['fields'][0]['id']);
         $this->assertSame('shell', $def->settingsPages[0]['fields'][1]['type']);
         // select drží jen platné položky nabídky

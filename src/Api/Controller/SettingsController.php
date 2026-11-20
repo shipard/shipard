@@ -215,7 +215,7 @@ class SettingsController
         }
 
         // Whitelist: jen pole z definice, která chodí přes Uložit (text,
-        // select, color, theme, shell, language). `image` má vlastní upload
+        // select, color, checkbox, theme, shell, language). `image` má vlastní upload
         // endpoint a tiše se ignoruje. Klíče mimo definici taky.
         $toSave = [];
         $errors = [];
@@ -337,6 +337,15 @@ class SettingsController
                     continue;
                 }
                 $toSave[$id] = $color;
+            } elseif ($type === 'checkbox') {
+                // Zaškrtávátko: jen JSON boolean. Ukládá se vždy explicitní
+                // hodnota (i shodná s výchozí z deklarace) — nenastavený klíč
+                // znamená výchozí, `false` je uložená volba.
+                if (!is_bool($raw)) {
+                    $errors[] = ['field' => $id, 'code' => 'INVALID_VALUE', 'message' => 'Value must be true or false'];
+                    continue;
+                }
+                $toSave[$id] = $raw;
             }
             // image / avatar — ignorováno (vlastní upload endpoint).
         }
@@ -442,6 +451,11 @@ class SettingsController
                 if ($default !== null) {
                     $localized['default'] = $default;
                 }
+            }
+            // checkbox — stav zaškrtávátka bez uložené hodnoty; chybí nebo
+            // není boolean = nezaškrtnuto.
+            if ($field['type'] === 'checkbox') {
+                $localized['default'] = ($field['default'] ?? false) === true;
             }
             $fields[] = $localized;
         }

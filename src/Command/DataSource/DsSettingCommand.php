@@ -178,8 +178,20 @@ class DsSettingCommand extends Command
             } catch (\InvalidArgumentException $e) {
                 return $this->fail($output, $e->getMessage());
             }
+        } elseif ($fieldType === 'checkbox') {
+            // Zaškrtávátko stránky nastavení drží boolean — řetězec "false"
+            // by čtenář bral jako zapnuto.
+            $value = match ((string) $raw) {
+                'true'  => true,
+                'false' => false,
+                default => null,
+            };
+            if ($value === null) {
+                return $this->fail($output, "Setting '{$key}' is a checkbox — allowed values: true, false.");
+            }
         } else {
-            // Klíče mimo vrstvu C se neinterpretují — ukládá se string tak, jak přišel.
+            // Ostatní klíče mimo vrstvu C se neinterpretují — ukládá se
+            // string tak, jak přišel.
             $value = (string) $raw;
         }
 

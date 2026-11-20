@@ -47,8 +47,8 @@ a u parametrů vrstvy C validuje hodnoty při zápisu.
 ### Pravidla ukládání (`savePage`)
 
 - Ukládají se **jen pole definovaná ve stránce** (whitelist) typů `text`,
-  `select`, `color`, a u stránek zdroje dat `theme` / `shell`; klíče mimo
-  definici a `image` pole se tiše ignorují.
+  `select`, `color`, `checkbox`, a u stránek zdroje dat `theme` / `shell`;
+  klíče mimo definici a `image` pole se tiše ignorují.
 - Hodnoty se trimují; validuje se `maxLength` (422 s details per pole).
 - **Prázdný string = smazání klíče** → čtenáři padnou na fallback
   (např. `app.name` → `main.json` `name`).
@@ -59,6 +59,10 @@ a u parametrů vrstvy C validuje hodnoty při zápisu.
   `null` proto není chyba validace. U uživatelské stránky (`account.theme`,
   `account.shell`) `null` chybou zůstává; „bez vlastní volby“ se tam
   zapisuje jako `{follow:true}`.
+- **Zaškrtávátko (`checkbox`) je výjimka:** ukládá se vždy explicitní
+  `true` / `false`, i když se shoduje s výchozím stavem — `false` je
+  uložená volba, klíč se nemaže. `null` ani jiný typ než boolean
+  `savePage` nepřijme (422 `INVALID_VALUE`).
 
 ## 2. Klíče `app.*`
 
@@ -158,6 +162,17 @@ exempt nejsou.
    (`HexColor::normalize()`), než ji vloží do stylu: `ds-setting set`
    hodnotu nekontroluje. První uživatel: `prints.accentColor` (stránka
    Tisky modulu `core.prints`, [docs/prints.md](prints.md) §12.1).
+   Zaškrtávátko: `type: "checkbox"` — hodnota JSON boolean (`savePage`
+   nepřijme nic jiného, ani `"1"` nebo `null`; 422 `INVALID_VALUE`).
+   Atribut `default` (boolean, chybí = `false`) je stav bez uložené
+   hodnoty: jde na klienta v definici a stránka podle něj zaškrtávátko
+   ukáže, dokud klíč neexistuje. **Čtenář musí mít stejný výchozí stav
+   jako deklarace** — `SettingsStore::get()` vrací u nenastaveného klíče
+   `null`, o `default` z `module.jsonc` neví. Uložit zapisuje vždy
+   explicitní hodnotu. Renderuje sdílený `ui/Checkbox.svelte`: popisek je
+   vedle zaškrtávátka (levý sloupec popisků zůstává prázdný), nápověda
+   pod ním. Z CLI `ds-setting set <klíč> true|false` uloží boolean, jiná
+   hodnota je chyba; `get` vypíše `true` / `false`.
 4. `vendor/bin/shpd-ds ds-upgrade` v dev DS (kvůli rekompilaci
    settingsSections, pokud přibyla sekce).
 5. Hodnoty čti v PHP přes `new SettingsStore($db)->get('klíč')` s fallbackem
@@ -167,14 +182,16 @@ exempt nejsou.
    `SettingsController` vrací 403 v `page`/`savePage` a položku skrývá
    z navigace. První uživatel: `hostingOidc` (`hosting.oidc.issuer`).
 
-Další typy polí (`checkbox`, `textarea`) přijdou s první stránkou, která
-je potřebuje — nový typ znamená čtyři serverová místa (whitelist
+Další typ pole (`textarea`) přijde s první stránkou, která ho potřebuje
+— nový typ znamená čtyři serverová místa (whitelist
 v `ModuleDefinition::fromArray()`, větev v `SettingsController::savePage()`,
 propuštění atributů v `localizePageDefinition()`, případně
-`DsSettingCommand::STRUCTURED_FIELD_TYPES`) a tři v `SettingsPage.svelte`
-(`isSavedViaPage`, `splitValues`, render). Vzor posledního přidaného typu
-je `color`: hodnota je prostý řetězec, takže do
-`STRUCTURED_FIELD_TYPES` nepatří a jde nastavit i přes `ds-setting`.
+`DsSettingCommand::STRUCTURED_FIELD_TYPES` nebo větev parsování hodnoty
+v `DsSettingCommand::runSet()`) a tři v `SettingsPage.svelte`
+(`isSavedViaPage`, `splitValues`, render). Vzory: `color` — hodnota je
+prostý řetězec, do `STRUCTURED_FIELD_TYPES` nepatří a `ds-setting` ji
+uloží, jak přišla; `checkbox` (#162 D132) — hodnota není řetězec, takže
+`ds-setting set` ji podle typu pole převádí (`true` / `false` → boolean).
 
 **Parametry vrstvy C (osnova, agenda DPH, fiskální rok, měna) settings
 stránku nemají a mít nebudou** — ovládají se v ručně psaném panelu
@@ -188,7 +205,7 @@ potřebují vysvětlující UI a `vatAgenda` je tříhodnotová
   JSON round-trip, upsert, cache (vyžaduje `SHIPARD_INTEGRATION_DS_PATH`).
 - `tests/Unit/Api/Controller/SettingsControllerTest.php` — page/savePage
   nad reálnou definicí appSettings, mockovaná DB; pole `select` a `color`
-  nad stránkami modulů majetku a tisků.
+  nad stránkami modulů majetku a tisků, pole `checkbox` nad fixture modulem.
 - `tests/Unit/Core/Utils/HexColorTest.php` — co je a není barva.
 - `tests/Unit/Api/Controller/AppControllerTest.php` — info fallbacky,
   upload validace, hlavičky, delete.

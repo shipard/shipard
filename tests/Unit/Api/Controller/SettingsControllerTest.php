@@ -24,6 +24,7 @@ class SettingsControllerTest extends TestCase
     private string $dsDir;
     private ModulePathResolver $resolver;
     private SettingsController $ctrl;
+    private ?string $fixtureModulesDir = null;
 
     protected function setUp(): void
     {
@@ -44,6 +45,12 @@ class SettingsControllerTest extends TestCase
 
     protected function tearDown(): void
     {
+        if ($this->fixtureModulesDir !== null) {
+            @unlink($this->fixtureModulesDir . '/test/checks/module.jsonc');
+            @rmdir($this->fixtureModulesDir . '/test/checks');
+            @rmdir($this->fixtureModulesDir . '/test');
+            @rmdir($this->fixtureModulesDir);
+        }
         @unlink($this->dsDir . '/config/main.json');
         @rmdir($this->dsDir . '/config');
         @rmdir($this->dsDir);
@@ -513,6 +520,117 @@ class SettingsControllerTest extends TestCase
 
         $this->assertSame(200, $this->getStatus($resp));
         $this->assertNull($resp->getPayload()['data']['values']['prints.accentColor']);
+    }
+
+    // --- pole typu checkbox (#162 D132) ---
+
+    /**
+     * Zdroj dat s fixture modulem, jehož stránka má zaškrtávátka: jedno
+     * s výchozím stavem zapnuto, jedno bez `default` a jedno s `default`
+     * jiného typu než boolean.
+     */
+    private function withCheckboxModule(): void
+    {
+        $this->fixtureModulesDir = sys_get_temp_dir() . '/shpd_settingsctrl_modules_' . uniqid('', true);
+        $moduleDir = $this->fixtureModulesDir . '/test/checks';
+        mkdir($moduleDir, 0755, true);
+        file_put_contents($moduleDir . '/module.jsonc', json_encode([
+            'id'            => 'test.checks',
+            'name'          => 'Test checks',
+            'settingsPages' => [[
+                'id'     => 'checksPage',
+                'name'   => 'Checks',
+                'fields' => [
+                    ['id' => 'testx.onByDefault', 'type' => 'checkbox', 'default' => true,
+                     'name' => 'On by default', 'name:cs' => 'Výchozí zapnuto', 'hint' => 'Hint', 'hint:cs' => 'Nápověda'],
+                    ['id' => 'testx.noDefault', 'type' => 'checkbox', 'name' => 'No default'],
+                    ['id' => 'testx.oddDefault', 'type' => 'checkbox', 'default' => 'yes', 'name' => 'Odd default'],
+                ],
+            ]],
+        ]));
+
+        $main = json_decode((string) file_get_contents($this->dsDir . '/config/main.json'), true);
+        $main['modules'] = ['core.system', 'test.checks'];
+        file_put_contents($this->dsDir . '/config/main.json', json_encode($main));
+
+        $this->resolver = new ModulePathResolver([dirname(__DIR__, 4) . '/modules', $this->fixtureModulesDir]);
+    }
+
+    public function testPageCheckboxCarriesBooleanDefault(): void
+    {
+        $this->withCheckboxModule();
+        $db = $this->mockDb([
+            ['key' => 'testx.noDefault', 'value' => json_encode(true)],
+        ]);
+
+        $resp = $this->ctrl->page('checksPage', $this->config(), $this->resolver, 'cs', $this->auth(), $db);
+        $data = $resp->getPayload()['data'];
+
+        $byId = array_column($data['definition']['fields'], null, 'id');
+        $this->assertSame('checkbox', $byId['testx.onByDefault']['type']);
+        $this->assertSame('Výchozí zapnuto', $byId['testx.onByDefault']['label']);
+        $this->assertSame('Nápověda', $byId['testx.onByDefault']['hint']);
+        $this->assertTrue($byId['testx.onByDefault']['default']);
+        $this->assertFalse($byId['testx.noDefault']['default'], 'chybějící default = nezaškrtnuto');
+        $this->assertFalse($byId['testx.oddDefault']['default'], 'default jiného typu než boolean = nezaškrtnuto');
+        // Nenastavený klíč jde na klienta jako null — stav určí `default`.
+        $this->assertNull($data['values']['testx.onByDefault']);
+        $this->assertTrue($data['values']['testx.noDefault']);
+    }
+
+    public function testSavePageCheckboxStoresExplicitBooleans(): void
+    {
+        $this->withCheckboxModule();
+        $saved = [];
+        $db = $this->mockDb();
+        $db->method('execute')->willReturnCallback(
+            static function (mixed ...$args) use (&$saved): void {
+                $saved[(string) $args[1]] = (string) $args[2];
+            },
+        );
+        // `false` je uložená volba, ne smazání klíče.
+        $db->expects($this->never())->method('deleteWhere');
+
+        $resp = $this->ctrl->savePage(
+            'checksPage',
+            $this->saveRequest(['values' => ['testx.onByDefault' => false, 'testx.noDefault' => true]]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(200, $this->getStatus($resp));
+        $this->assertSame(['testx.onByDefault' => 'false', 'testx.noDefault' => 'true'], $saved);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidCheckboxValues(): array
+    {
+        return [
+            'řetězec "1"'    => ['1'],
+            'řetězec "true"' => ['true'],
+            'číslo'          => [1],
+            'null'           => [null],
+            'pole'           => [[true]],
+        ];
+    }
+
+    #[DataProvider('invalidCheckboxValues')]
+    public function testSavePageCheckboxRejectsNonBoolean(mixed $value): void
+    {
+        $this->withCheckboxModule();
+        $db = $this->mockDb();
+        $db->expects($this->never())->method('execute');
+        $db->expects($this->never())->method('deleteWhere');
+
+        $resp = $this->ctrl->savePage(
+            'checksPage',
+            $this->saveRequest(['values' => ['testx.onByDefault' => $value]]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(422, $this->getStatus($resp));
+        $detail = $resp->getPayload()['error']['details'][0];
+        $this->assertSame('testx.onByDefault', $detail['field']);
+        $this->assertSame('INVALID_VALUE', $detail['code']);
     }
 
     public function testPageAccountBasicReturnsThemeAndLanguageFields(): void

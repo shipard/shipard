@@ -9,6 +9,7 @@
   import { translateError } from '../../i18n/errors.js';
   import Input from '../ui/Input.svelte';
   import Select from '../ui/Select.svelte';
+  import Checkbox from '../ui/Checkbox.svelte';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
   import Card from '../ui/Card.svelte';
@@ -63,13 +64,14 @@
     })();
   });
 
-  // Pole ukládaná přes Uložit stránky: texty, select, color + DS-scope theme/shell
+  // Pole ukládaná přes Uložit stránky: texty, select, color, checkbox + DS-scope theme/shell
   // (structured hodnoty v `values`). User-scope theme/shell/language jedou
   // live stores, image/avatar vlastní upload endpoint — mimo Uložit.
   function isSavedViaPage(field, scope) {
     return field.type === 'text'
       || field.type === 'select'
       || field.type === 'color'
+      || field.type === 'checkbox'
       || ((field.type === 'theme' || field.type === 'shell') && scope === 'ds');
   }
 
@@ -91,6 +93,10 @@
       } else if (field.type === 'select' || field.type === 'color') {
         // Nezvolené = null → server klíč smaže, čtenáři použijí výchozí.
         texts[field.id] = serverValues[field.id] ?? null;
+      } else if (field.type === 'checkbox') {
+        // Vždy boolean: nenastavený klíč = výchozí z deklarace. Uložit pak
+        // pošle explicitní hodnotu, i když se shoduje s výchozí.
+        texts[field.id] = serverValues[field.id] ?? field.default ?? false;
       } else if (isSavedViaPage(field, scope)) {
         // DS default — structured objekt ({mode, custom} / {shell, params})
         // nebo null.
@@ -172,9 +178,24 @@
       <div class="shpd-settings-page__fields">
         {#each definition.fields as field (field.id)}
           <div class="shpd-settings-page__field">
-            <label class="shpd-settings-page__label" for={`settings-${field.id}`}>{field.label}</label>
-            <div class="shpd-settings-page__input">
-              {#if field.type === 'image'}
+            <!-- Zaškrtávátko nese popisek samo (sdílený Checkbox je <label>),
+                 levý sloupec popisků u něj zůstává prázdný. -->
+            {#if field.type !== 'checkbox'}
+              <label class="shpd-settings-page__label" for={`settings-${field.id}`}>{field.label}</label>
+            {/if}
+            <div class="shpd-settings-page__input" class:shpd-settings-page__input--checkbox={field.type === 'checkbox'}>
+              {#if field.type === 'checkbox'}
+                <div class="shpd-settings-page__checkbox">
+                  <Checkbox
+                    label={field.label}
+                    bind:checked={values[field.id]}
+                    disabled={saving}
+                  />
+                </div>
+                {#if fieldErrors[field.id]}
+                  <p class="shpd-settings-page__error">{fieldErrors[field.id]}</p>
+                {/if}
+              {:else if field.type === 'image'}
                 <ImageSlotField
                   slotId={field.slot}
                   slotState={imageStates[field.id]}
@@ -300,6 +321,29 @@
     min-width: 0;
   }
 
+  /* Řádek zaškrtávátka: bez popisku vlevo stojí ve sloupci polí, na výšku
+     pole jako sousední řádky. Sdílený Checkbox má vlastní spodní okraj —
+     tady mezery dává mřížka polí. */
+  .shpd-settings-page__input--checkbox {
+    grid-column: 2;
+  }
+
+  .shpd-settings-page__checkbox {
+    display: flex;
+    align-items: center;
+    min-height: var(--shpd-control-height);
+  }
+
+  .shpd-settings-page__checkbox :global(.shpd-checkbox) {
+    margin-bottom: 0;
+  }
+
+  .shpd-settings-page__error {
+    margin-top: var(--shpd-space-xs);
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-danger-text);
+  }
+
   .shpd-settings-page__hint {
     margin-top: var(--shpd-space-xs);
     font-size: var(--shpd-font-size-sm);
@@ -337,6 +381,10 @@
     .shpd-settings-page__label {
       padding-top: 0;
       text-align: left;
+    }
+
+    .shpd-settings-page__input--checkbox {
+      grid-column: 1;
     }
   }
 </style>
