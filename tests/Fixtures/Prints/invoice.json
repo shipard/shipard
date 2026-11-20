@@ -40,7 +40,7 @@
             "tax_id": "CZ00000019",
             "vat_id": "CZ00000019",
             "court_registration": "C 12345 vedená u Krajského soudu v Brně",
-            "contact": { "email": "fakturace@tiskarna.example", "phone": "+420 577 000 001" },
+            "contact": { "email": "fakturace@tiskarna.example", "phone": "+420 577 000 001", "web": "www.tiskarna.example", "gov_e_box_id": "abc2def" },
             "address": {
                 "street": "Dlouhá 1",
                 "house_number": null,

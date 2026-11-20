@@ -14,6 +14,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintData;
+use Shipard\Core\Prints\PrintRunner;
 
 /**
  * Testy settings pages (page/savePage) nad reálnou definicí appSettings
@@ -454,6 +455,38 @@ class SettingsControllerTest extends TestCase
         );
         $this->assertSame('#0a5c8f', $data['values']['prints.accentColor']);
         $this->assertNull($data['values']['prints.logoPlacement']);
+    }
+
+    public function testPagePrintsAppearanceHasFooterContactSwitches(): void
+    {
+        // Čtyři zaškrtávátka kontaktů v zápatí, výchozí zapnuto (#162 D132);
+        // pořadí = pořadí tisku v zápatí.
+        $this->withPrintsModule();
+        $db = $this->mockDb([
+            ['key' => 'prints.footer.phone', 'value' => json_encode(false)],
+        ]);
+
+        $resp = $this->ctrl->page('printsAppearance', $this->config(), $this->resolver, 'cs', $this->auth(), $db);
+        $data = $resp->getPayload()['data'];
+
+        $switches = array_values(array_filter(
+            $data['definition']['fields'],
+            static fn (array $field): bool => $field['type'] === 'checkbox',
+        ));
+        $this->assertSame(
+            array_values(PrintRunner::SETTING_FOOTER_CONTACTS),
+            array_column($switches, 'id'),
+        );
+        $this->assertSame(
+            ['E-mail v zápatí', 'Telefon v zápatí', 'Web v zápatí', 'Datová schránka v zápatí'],
+            array_column($switches, 'label'),
+        );
+        foreach ($switches as $switch) {
+            $this->assertTrue($switch['default'], $switch['id'] . ': výchozí zapnuto jako čtení v PrintRunner');
+        }
+        $this->assertSame('Údaj z karty vlastní firmy. Prázdný se netiskne.', $switches[0]['hint']);
+        $this->assertFalse($data['values']['prints.footer.phone']);
+        $this->assertNull($data['values']['prints.footer.email'], 'nenastavený klíč = výchozí z definice');
     }
 
     public function testSavePageColorIsStoredInLowercase(): void

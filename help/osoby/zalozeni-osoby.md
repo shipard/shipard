@@ -2,7 +2,7 @@
 title: Založení osoby
 summary: Jak přidat dodavatele nebo odběratele — natažením české firmy z registru podle IČO, nebo ručně.
 keywords: [osoby, osoba, nová osoba, založit osobu, přidat osobu, dodavatele, dodavatel, odběratele, odběratel, partner, protistrana, firma, fyzická osoba, IČO, DIČ, z registru, natáhnout firmu, přidat firmu z registru, zahraniční dodavatel, slovenská firma, německá firma, firma z EU, vlastní firma, chybí vlastní osoba, splatnost, kontakty, adresy, bankovní účet osoby, kód osoby, jazyk dokumentů, jazyk faktury pro odběratele, faktura anglicky, doklad v angličtině, přílohy do PDF dokladu]
-related: [osoby/kontakty-a-ucely.md, posta/kontrola-vytezeni.md, faktury-vydane/tisk-faktury.md, co-shipard-umi.md, slovnicek.md]
+related: [osoby/kontakty-a-ucely.md, posta/kontrola-vytezeni.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vzhled-tisku.md, co-shipard-umi.md, slovnicek.md]
 ---
 
 # Založení osoby
@@ -39,8 +39,10 @@ nezná — zadáš ručně.**
 2. **U firmy** vyplň **Celý název** (povinný) a v sekci *Identifikace
    firmy* **IČO** a **DIČ**. **U fyzické osoby** jsou povinné **Jméno**
    a **Příjmení**; navíc je tam sekce *Osobní údaje*.
-3. Doplň, co máš, do sekce *Kontaktní údaje* — **E-mail**, **Telefon**,
-   **Webová stránka**.
+3. Doplň, co máš, do sekce *Kontakt* — **E-mail**, **Telefon**,
+   **Webová stránka** a **ID datové schránky**. U tvé vlastní firmy se
+   tyhle údaje tisknou v zápatí dokladů — viz
+   [Vzhled tištěných dokladů](../faktury-vydane/vzhled-tisku.md).
 4. Ulož: **Uložit jako koncept**, nebo **V pořádku**. Na dokladech se
    osoba nabízí v obou stavech.
 

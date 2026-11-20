@@ -29,6 +29,18 @@ final class PrintRunner
     public const SETTING_ACCENT_COLOR   = 'prints.accentColor';
     public const SETTING_LOGO_PLACEMENT = 'prints.logoPlacement';
 
+    /**
+     * Přepínače kontaktů v zápatí (#162 D132): kontakt z
+     * `PrintData::FOOTER_CONTACTS` → klíč nastavení. Zaškrtávátka stránky
+     * Tisky mají `default: true` — nenastavený klíč proto znamená zapnuto.
+     */
+    public const SETTING_FOOTER_CONTACTS = [
+        'email'   => 'prints.footer.email',
+        'phone'   => 'prints.footer.phone',
+        'web'     => 'prints.footer.web',
+        'dataBox' => 'prints.footer.dataBox',
+    ];
+
     /** @var \Closure(string): ?ConfigRuntime */
     private readonly \Closure $configFactory;
 
@@ -156,6 +168,7 @@ final class PrintRunner
             watermark: $watermarkKey === null ? null : $translator->t($watermarkKey),
             logoPlacement: $this->logoPlacement(),
             accentColor: $this->accentColor(),
+            footerContacts: $this->footerContacts(),
         );
 
         // Uživatelské texty (#90 D50): vybírají se ke dni tisku (D52)
@@ -294,5 +307,27 @@ final class PrintRunner
     {
         return HexColor::normalize($this->settings?->get(self::SETTING_ACCENT_COLOR))
             ?? PrintData::DEFAULT_ACCENT_COLOR;
+    }
+
+    /**
+     * Zapnuté kontakty v zápatí. Kontakt vypíná jen uložené `false`;
+     * nenastavený klíč i hodnota jiného typu (zápis mimo stránku Tisky)
+     * znamenají výchozí stav — zapnuto.
+     *
+     * @return list<string>
+     */
+    private function footerContacts(): array
+    {
+        if ($this->settings === null) {
+            return PrintData::FOOTER_CONTACTS;
+        }
+        $values  = $this->settings->getMany(array_values(self::SETTING_FOOTER_CONTACTS));
+        $enabled = [];
+        foreach (self::SETTING_FOOTER_CONTACTS as $contact => $key) {
+            if (($values[$key] ?? null) !== false) {
+                $enabled[] = $contact;
+            }
+        }
+        return $enabled;
     }
 }

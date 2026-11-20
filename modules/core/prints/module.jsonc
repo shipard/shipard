@@ -65,10 +65,10 @@
         }
     ],
 
-    // Vzhled tisků (#90 D46). Klíče čte PrintRunner
-    // (SETTING_ACCENT_COLOR, SETTING_LOGO_PLACEMENT) a plní jimi `branding`
-    // v obálce tisku; chybějící klíč = výchozí vzhled (logo vlevo,
-    // neutrální šedý akcent).
+    // Vzhled tisků (#90 D46, #162 D132). Klíče čte PrintRunner
+    // (SETTING_ACCENT_COLOR, SETTING_LOGO_PLACEMENT, SETTING_FOOTER_CONTACTS)
+    // a plní jimi `branding` v obálce tisku; chybějící klíč = výchozí vzhled
+    // (logo vlevo, neutrální šedý akcent, všechny kontakty v zápatí).
     "settingsPages": [
         {
             "id": "printsAppearance",
@@ -103,6 +103,44 @@
                         { "value": "left",  "label": "Left",  "label:cs": "Vlevo",  "label:en": "Left" },
                         { "value": "right", "label": "Right", "label:cs": "Vpravo", "label:en": "Right" }
                     ]
+                },
+                // Kontakty vlastní firmy v zápatí dokladu (#162 D130, D132).
+                // `default: true` musí odpovídat čtení v PrintRunner:
+                // nenastavený klíč = kontakt se tiskne.
+                {
+                    "id": "prints.footer.email",
+                    "type": "checkbox",
+                    "default": true,
+                    "name": "E-mail in footer",
+                    "name:cs": "E-mail v zápatí",
+                    "name:en": "E-mail in footer",
+                    "hint": "Taken from your own company's card. An empty value is not printed.",
+                    "hint:cs": "Údaj z karty vlastní firmy. Prázdný se netiskne.",
+                    "hint:en": "Taken from your own company's card. An empty value is not printed."
+                },
+                {
+                    "id": "prints.footer.phone",
+                    "type": "checkbox",
+                    "default": true,
+                    "name": "Phone in footer",
+                    "name:cs": "Telefon v zápatí",
+                    "name:en": "Phone in footer"
+                },
+                {
+                    "id": "prints.footer.web",
+                    "type": "checkbox",
+                    "default": true,
+                    "name": "Website in footer",
+                    "name:cs": "Web v zápatí",
+                    "name:en": "Website in footer"
+                },
+                {
+                    "id": "prints.footer.dataBox",
+                    "type": "checkbox",
+                    "default": true,
+                    "name": "Data box in footer",
+                    "name:cs": "Datová schránka v zápatí",
+                    "name:en": "Data box in footer"
                 }
             ]
         }

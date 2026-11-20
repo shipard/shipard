@@ -281,7 +281,8 @@ Obálka je stejná pro všechny tisky, `data` patří tisku:
               "watermark": null },          // text přes každou stranu („STORNO“)
     "branding": { "logo": "logo.png",       // null bez loga
                   "logoPlacement": "left",  // left | right (§12.1)
-                  "accentColor": "#c8c8c8" },  // vždy `#rrggbb`
+                  "accentColor": "#c8c8c8", // vždy `#rrggbb`
+                  "footerContacts": ["email", "phone", "web", "dataBox"] },  // zapnuté kontakty v zápatí (§12.1)
     "texts": { "afterRows": "<div class=\"print-text\">…</div>",
                "emailSubject": "…" },       // slot → HTML / prostý text (§12)
     "messages": [ { "severity": "warning", "code": "payment.qrNoAccount", "text": "…" } ],
@@ -296,9 +297,13 @@ Obálka je stejná pro všechny tisky, `data` patří tisku:
 `PrintData::fromArray()` staví obálku zpět z JSON: povinné jsou `printId`,
 `version`, `language`, `record`, `meta` a `data`, zbytek má výchozí
 hodnoty — JSON z doby před nastavením vzhledu dostane logo vlevo
-a neutrální akcent. `branding.accentColor` jiného tvaru než `#rrggbb`,
-neznámé `logoPlacement` a `texts` s neznámým slotem obálka odmítne: barva
-jde do stylů záhlaví a texty do stránky bez escapování.
+a neutrální akcent, JSON bez `branding.footerContacts` všechny čtyři
+kontakty. `branding.accentColor` jiného tvaru než `#rrggbb`, neznámé
+`logoPlacement` a `texts` s neznámým slotem obálka odmítne: barva jde do
+stylů záhlaví a texty do stránky bez escapování. `footerContacts` je pevný
+výčet `PrintData::FOOTER_CONTACTS` (`email`, `phone`, `web`, `dataBox`) —
+neznámou hodnotu obálka odmítne, pořadí drží podle výčtu, prázdný seznam
+je platný (žádné kontakty).
 
 ### 4.1 `data` tisků dokladů nad `docs_core_heads`
 
@@ -381,6 +386,18 @@ Pravidla:
   nemá, je `null` a šablona ji vynechá: místo zůstane prázdné, bez
   zástupného textu. Zápatí a země DPH se berou z vlastní strany podle
   `tradeDir`.
+- **Blok Dodavatel / Odběratel** (#162 D131): název, adresa, IČO / DIČ
+  a u dodavatele zápis v obchodním rejstříku (`party.html.twig`, parametr
+  `showRegistration`). Kontakty strana netiskne.
+- **Kontakty v zápatí** (#162 D130): vlevo kontakty **vlastní** strany
+  (`tradeDir` 2 → `customer`, jinak `supplier`) z jejího `contact`, nejvýš
+  dva řádky — `email · phone` a `web · Datová schránka: <id>`. Položka se
+  tiskne, jen když je v `branding.footerContacts` (přepínače stránky Tisky,
+  §12.1) **a** snapshot ji nese vyplněnou; prázdný řádek se nevykreslí,
+  položka se nezalamuje. Telefon přes `phone(address.country)`, web tak,
+  jak je uložený, datová schránka s popiskem `footer.dataBox`. Název firmy
+  v zápatí není. Čte se jen snapshot — doklad uložený před #162 má jen
+  e-mail a telefon (D133).
 - **Vystavil** (#93 D4): `document.author.name` je jméno uživatele
   z `docs_core_heads.author`. Čte se **živě** (`DocPrintContext::loadAuthor`)
   — uživatel není strana dokladu a snapshot nemá, přejmenování se proto
@@ -455,7 +472,7 @@ modules/docs/core/prints/
     _layout/
         doc-base.html.twig    # kostra stránky dokladu s bloky
         header.html.twig      # záhlaví: logo, titulek, číslo dokladu
-        footer.html.twig      # zápatí: vlastní firma, Vystavil, stránkování
+        footer.html.twig      # zápatí: kontakty vlastní firmy, Vystavil, stránkování
         doc-base.css
         messages.jsonc        # společný katalog
         text-variables.jsonc  # proměnné nabízené pro texty na tiscích (§12.5)
@@ -505,7 +522,9 @@ modules/economy/accounting/prints/docJournal/
   `paper.margins.top`. **Pozor na názvy tříd:** prvky s třídami `title`,
   `date`, `url`, `pageNumber` a `totalPages` Chromium v záhlaví a zápatí
   přepisuje vlastním obsahem (`title` = `<title>` stránky) — vlastní prvky
-  proto pojmenuj jinak (`head-title`).
+  proto pojmenuj jinak (`head-title`, položka zápatí s webem `foot-item`,
+  ne `url`). Zápatí má nejvýš dva řádky vlevo i vpravo a musí se vejít do
+  `paper.margins.bottom`.
 - **Assety** — soubory `css`, obrázky a fonty ze sdílených adresářů
   a z adresáře šablony (šablona má přednost); pushují se s HTML
   a referencují relativně (`<link href="doc-base.css">`). Logo z brandingu
@@ -622,8 +641,9 @@ Formát podle jazyka tisku (D30); mezery uvnitř hodnot jsou nezlomitelné.
   `+420 577 123 456`, de `+49 301234567`; jiný stát, prázdná země nebo
   nekanonický tvar = normalizovaná hodnota, mezery nezlomitelné. Uložený
   tvar je kanonický — snapshoty stran se nemění, formátuje se až v šabloně
-  (`party.html.twig` PSČ jen ve větvi bez `display_block` a telefon
-  kontaktu podle `address.country`, `payment.html.twig` IBAN; číslo účtu,
+  (`party.html.twig` PSČ jen ve větvi bez `display_block`,
+  `footer.html.twig` telefon vlastní firmy podle `address.country`,
+  `payment.html.twig` IBAN; číslo účtu,
   BIC a `display_block` / `display_line` beze změny).
 
 `t('klíč', {param: hodnota})` čte katalog tisku, `qr_svg(data.payment.qr)`
@@ -996,7 +1016,7 @@ Příklad: polština (`pl`).
   `PrintTextRendererTest`, `PrintTextVariablesTest`;
   `PrintTemplateRawRuleTest` (`|raw` jen na `texts.*`);
   `DocPrintTemplatesTest` (akcent a logo v záhlaví, sloty na svých
-  místech); `PrintDeclarationsTest` (sloty tisků, popisky proměnných,
+  místech, kontakty v zápatí podle přepínačů a snapshotu); `PrintDeclarationsTest` (sloty tisků, popisky proměnných,
   každá nabízená ukázka projde nad fixture doklady);
   `tests/Unit/Module/Core/Prints/` — validace textu, nabídky formuláře,
   agenda, výběr textů; `HexColorTest` a `SettingsControllerTest` (typ pole
@@ -1036,7 +1056,7 @@ textů drží modul **`core.prints`** (`modules/core/prints/`, v `install.base`)
 — obecný, bez závislosti na dokladech. Výběr a vykreslení textů při tisku
 je v jádru (`src/Core/Prints/Texts/`).
 
-### 12.1 Vzhled (D46)
+### 12.1 Vzhled (D46, #162 D132)
 
 Stránka nastavení **Tisky** (`printsAppearance`, sekce Aplikace):
 
@@ -1044,12 +1064,25 @@ Stránka nastavení **Tisky** (`printsAppearance`, sekce Aplikace):
 |---|---|---|---|
 | `prints.accentColor` | `color` | akcentová barva hlavičky `#rrggbb` | `#c8c8c8` (`PrintData::DEFAULT_ACCENT_COLOR`) |
 | `prints.logoPlacement` | `select` | strana hlavičky s logem `left` / `right` | `left` |
+| `prints.footer.email` | `checkbox` | e-mail vlastní firmy v zápatí | zapnuto |
+| `prints.footer.phone` | `checkbox` | telefon vlastní firmy v zápatí | zapnuto |
+| `prints.footer.web` | `checkbox` | web vlastní firmy v zápatí | zapnuto |
+| `prints.footer.dataBox` | `checkbox` | ID datové schránky vlastní firmy v zápatí | zapnuto |
 
 `PrintRunner` hodnoty čte ze `SettingsStore` a plní jimi `branding` obálky;
 platí pro všechny tisky. **Ověřuje je i při čtení** — `ds-setting set`
-hodnotu nekontroluje, neplatná = výchozí vzhled.
+barvu a umístění nekontroluje, neplatná = výchozí vzhled.
 
-Vykresluje je **jen záhlaví** (`_layout/header.html.twig`): akcent barví
+**Kontakty v zápatí** (#162 D130, D132): čtyři zaškrtávátka s
+`default: true`, klíče v `PrintRunner::SETTING_FOOTER_CONTACTS`. Runner
+z nich skládá `branding.footerContacts` — kontakt vypíná jen uložené
+`false`; nenastavený klíč i hodnota jiného typu znamenají zapnuto, stejně
+jako výchozí stav zaškrtávátka. Přepínač říká, co se **smí** tisknout:
+zápatí vytiskne jen údaj, který snapshot vlastní firmy nese vyplněný (§4.1
+Kontakty v zápatí). Platí pro sdílené zápatí dokladů; Kontace má vlastní
+zápatí s názvem účetní jednotky a kontakty netiskne.
+
+Akcent a umístění loga vykresluje **jen záhlaví** (`_layout/header.html.twig`): akcent barví
 svislý pruh u titulku a linku pod záhlavím; text zůstává černý. Logo je bez
 podkladu — D46 s ním počítalo, ale za průhledným logem dělal barevný
 obdélník a po vyzkoušení se zrušil. Logo vpravo prohodí strany — titulek

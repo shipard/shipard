@@ -174,7 +174,10 @@ class PrintRunnerTest extends TestCase
                 'meta'        => [
                     'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
                 ],
-                'branding'    => ['logo' => null, 'logoPlacement' => 'left', 'accentColor' => '#c8c8c8'],
+                'branding'    => [
+                    'logo' => null, 'logoPlacement' => 'left', 'accentColor' => '#c8c8c8',
+                    'footerContacts' => ['email', 'phone', 'web', 'dataBox'],
+                ],
                 'texts'       => [],
                 'messages'    => [['severity' => 'warning', 'code' => 'qr.noAccount', 'text' => 'QR nevznikl']],
                 'data'        => ['document' => ['number' => '2026000123']],
@@ -453,7 +456,10 @@ class PrintRunnerTest extends TestCase
         ]))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
 
         $this->assertSame(
-            ['logo' => null, 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f'],
+            [
+                'logo' => null, 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f',
+                'footerContacts' => ['email', 'phone', 'web', 'dataBox'],
+            ],
             $output->printData->toArray()['branding'],
         );
     }
@@ -467,9 +473,53 @@ class PrintRunnerTest extends TestCase
         ]))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
 
         $this->assertSame(
-            ['logo' => null, 'logoPlacement' => 'left', 'accentColor' => PrintData::DEFAULT_ACCENT_COLOR],
+            [
+                'logo' => null, 'logoPlacement' => 'left', 'accentColor' => PrintData::DEFAULT_ACCENT_COLOR,
+                'footerContacts' => ['email', 'phone', 'web', 'dataBox'],
+            ],
             $output->printData->toArray()['branding'],
         );
+    }
+
+    // ── kontakty v zápatí (#162 D132) ───────────────────────────────────────
+
+    public function testFooterContactSwitchesGoToBranding(): void
+    {
+        $output = $this->runner(settings: self::settings([
+            PrintRunner::SETTING_FOOTER_CONTACTS['phone']   => false,
+            PrintRunner::SETTING_FOOTER_CONTACTS['dataBox'] => false,
+            PrintRunner::SETTING_FOOTER_CONTACTS['web']     => true,
+        ]))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        // Nenastavený klíč (e-mail) = zapnuto, jako `default: true` stránky Tisky.
+        $this->assertSame(['email', 'web'], $output->printData->toArray()['branding']['footerContacts']);
+    }
+
+    public function testAllFooterContactsCanBeSwitchedOff(): void
+    {
+        $output = $this->runner(settings: self::settings(
+            array_fill_keys(array_values(PrintRunner::SETTING_FOOTER_CONTACTS), false),
+        ))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame([], $output->printData->toArray()['branding']['footerContacts']);
+    }
+
+    public function testOnlyStoredFalseSwitchesFooterContactOff(): void
+    {
+        // Hodnota zapsaná mimo stránku Tisky jiným typem než boolean kontakt
+        // nevypne — tisk ji ověřuje při čtení jako barvu.
+        $output = $this->runner(settings: self::settings([
+            PrintRunner::SETTING_FOOTER_CONTACTS['email'] => 'false',
+            PrintRunner::SETTING_FOOTER_CONTACTS['phone'] => 0,
+            PrintRunner::SETTING_FOOTER_CONTACTS['web']   => ['x'],
+        ]))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame(PrintData::FOOTER_CONTACTS, $output->printData->toArray()['branding']['footerContacts']);
+    }
+
+    public function testFooterContactSettingsCoverTheWholeEnumeration(): void
+    {
+        $this->assertSame(PrintData::FOOTER_CONTACTS, array_keys(PrintRunner::SETTING_FOOTER_CONTACTS));
     }
 
     // ── uživatelské texty (#90 D47–D52) ─────────────────────────────────────

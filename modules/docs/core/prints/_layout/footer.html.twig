@@ -1,12 +1,39 @@
 {#
     Zápatí dokladu — samostatný HTML dokument pro render službu. Čísla stran
     doplňuje render služba do prvků s třídami `pageNumber` a `totalPages`.
-    Vlevo je vlastní firma: dodavatel na výstupu, odběratel na vstupu.
+
+    Vlevo kontakty vlastní firmy (#162 D130) — dodavatel na výstupu,
+    odběratel na vstupu — nejvýš na dvou řádcích: e-mail · telefon
+    a web · datová schránka. Položka se tiskne, jen když je zapnutá
+    (`branding.footerContacts`, přepínače stránky Tisky) a snapshot ji nese
+    vyplněnou; doklady uložené před #162 mají ve snapshotu jen e-mail
+    a telefon. Prázdný řádek se nevykreslí, název firmy v zápatí není.
     Vpravo nad číslem strany „Vystavil“ — jen u dokladu s autorem; tisk bez
     bloku `document` (nebo se staršími daty bez `author`) řádek nemá.
+
+    Pozor na názvy tříd: prvky s třídami `title`, `date`, `url`,
+    `pageNumber` a `totalPages` Chromium v záhlaví a zápatí přepisuje
+    vlastním obsahem — web proto není `url`, ale `foot-item`.
 #}
-{% set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier %}
-{% set author = data.document.author.name|default('') %}
+{%- set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier -%}
+{%- set author = data.document.author.name|default('') -%}
+{%- set contact = own.contact|default({}) -%}
+{%- set country = own.address.country|default('') -%}
+{%- set enabled = branding.footerContacts|default([]) -%}
+{%- set first = [] -%}
+{%- if 'email' in enabled and contact.email|default('') != '' -%}
+    {%- set first = first|merge([contact.email]) -%}
+{%- endif -%}
+{%- if 'phone' in enabled and contact.phone|default('') != '' -%}
+    {%- set first = first|merge([contact.phone|phone(country)]) -%}
+{%- endif -%}
+{%- set second = [] -%}
+{%- if 'web' in enabled and contact.web|default('') != '' -%}
+    {%- set second = second|merge([contact.web]) -%}
+{%- endif -%}
+{%- if 'dataBox' in enabled and contact.gov_e_box_id|default('') != '' -%}
+    {%- set second = second|merge([t('footer.dataBox') ~ ': ' ~ contact.gov_e_box_id]) -%}
+{%- endif -%}
 <!DOCTYPE html>
 <html lang="{{ language }}">
 <head>
@@ -23,14 +50,25 @@
             color: #666;
             display: flex;
             justify-content: space-between;
+            /* Sloupce sedí na posledním řádku — jednořádková strana vedle
+               dvouřádkové je dole. */
             align-items: flex-end;
+            column-gap: 0.5cm;
         }
-        .foot .right { text-align: right; }
+        .foot .right { flex: none; text-align: right; }
+        .foot-item { white-space: nowrap; }
     </style>
 </head>
 <body>
 <div class="foot">
-    <div>{{ own.name|default('') }}</div>
+    <div class="foot-contacts">
+        {% for line in [first, second] %}
+            {% if line is not empty %}
+                {% set separator = '' %}
+                <div>{% for item in line %}{{ separator }}<span class="foot-item">{{ item }}</span>{% set separator = ' · ' %}{% endfor %}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
     <div class="right">
         {% if author != '' %}<div>{{ t('footer.issuedBy') }}: {{ author }}</div>{% endif %}
         <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>

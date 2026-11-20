@@ -1,10 +1,12 @@
 {#
     Jedna strana dokladu ze snapshotu hlavičky. Proměnné: `party` (snapshot),
-    `showContact` (kontakt a zápis v rejstříku — jen u dodavatele).
+    `showRegistration` (zápis v obchodním rejstříku — jen u dodavatele,
+    #162 D131). Kontakty strana netiskne: kontakty vlastní firmy jsou
+    v zápatí (footer.html.twig, D130).
     Snapshot nemusí nést všechny klíče (starší doklady, import), proto
-    `default` u každého čtení. PSČ a telefon se formátují až tady podle
-    země adresy (#118 D21) — snapshot nese uložený (kanonický) tvar;
-    `display_block` se tiskne, jak je.
+    `default` u každého čtení. PSČ se formátuje až tady podle země adresy
+    (#118 D21) — snapshot nese uložený (kanonický) tvar; `display_block` se
+    tiskne, jak je.
 #}
 {% set address = party.address|default({}) %}
 {% set vatRegistration = party.vat_registration|default({}) %}
@@ -26,14 +28,6 @@
         <span class="party-id">{{ t('label.taxId') }}: {{ taxId }}</span>
     {% endif %}
 </p>
-{% if showContact %}
-    {% set contact = party.contact|default({}) %}
-    {% if party.court_registration|default('') %}
-        <p class="party-detail">{{ party.court_registration }}</p>
-    {% endif %}
-    {% if contact.email|default('') or contact.phone|default('') %}
-        <p class="party-detail">
-            {{ [contact.phone|default('')|phone(address.country|default('')), contact.email|default('')]|join(' · ') }}
-        </p>
-    {% endif %}
+{% if showRegistration and party.court_registration|default('') %}
+    <p class="party-detail">{{ party.court_registration }}</p>
 {% endif %}

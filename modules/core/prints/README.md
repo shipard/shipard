@@ -6,10 +6,11 @@ ani jiné agendy; samotný běh tisku (deklarace, builder, šablony, render)
 
 Drží dvě věci:
 
-- **Vzhled tisků** (#90 D46): akcentovou barvu hlavičky a umístění loga.
+- **Vzhled tisků** (#90 D46, #162 D132): akcentovou barvu hlavičky,
+  umístění loga a čtyři přepínače kontaktů vlastní firmy v zápatí.
   Hodnoty čte `PrintRunner` a plní jimi `branding` v obálce `PrintData`;
-  vykresluje je záhlaví tisku (`header.html.twig` layoutu dokladů). Tělo
-  dokladu se nebarví.
+  barvu a logo vykresluje záhlaví tisku (`header.html.twig` layoutu
+  dokladů), kontakty zápatí (`footer.html.twig`). Tělo dokladu se nebarví.
 - **Texty na tiscích** (#90 D47–D52): vlastní texty vkládané do slotů tisku
   a do e-mailu — agenda v Nastavení, tabulka `core_prints_texts`.
 
@@ -61,10 +62,17 @@ V sekci Aplikace jsou stránka **Tisky** (`printsAppearance`) a agenda
 |---|---|---|---|
 | `prints.accentColor` | `color` | Akcentová barva hlavičky jako `#rrggbb` — pruh u titulku a linka pod hlavičkou | neutrální šedá `#c8c8c8` (`PrintData::DEFAULT_ACCENT_COLOR`) |
 | `prints.logoPlacement` | `select` | Strana hlavičky s logem: `left` / `right` | `left` |
+| `prints.footer.email` | `checkbox` | E-mail vlastní firmy v zápatí dokladu | zapnuto |
+| `prints.footer.phone` | `checkbox` | Telefon vlastní firmy v zápatí dokladu | zapnuto |
+| `prints.footer.web` | `checkbox` | Web vlastní firmy v zápatí dokladu | zapnuto |
+| `prints.footer.dataBox` | `checkbox` | ID datové schránky vlastní firmy v zápatí dokladu | zapnuto |
 
 Barvu i umístění ověřuje `PrintRunner` znovu při čtení — do nastavení se dá
 zapsat i mimo stránku (`ds-setting set`), kde hodnotu nikdo nekontroluje.
-Neplatná hodnota = výchozí vzhled.
+Neplatná hodnota = výchozí vzhled. Kontakt v zápatí vypíná jen uložené
+`false` (`ds-setting set prints.footer.web false`); tiskne se jen údaj
+vyplněný na kartě vlastní firmy v době, kdy doklad vznikl — zápatí čte
+snapshot strany dokladu.
 
 Logo samotné se nahrává v **Nastavení → Aplikace** (branding slot
 `companyLogo`, [docs/app-settings.md](../../../docs/app-settings.md) §3).

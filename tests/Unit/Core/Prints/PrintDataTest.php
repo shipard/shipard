@@ -27,7 +27,10 @@ class PrintDataTest extends TestCase
             'meta'        => [
                 'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
             ],
-            'branding'    => ['logo' => 'logo.png', 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f'],
+            'branding'    => [
+                'logo' => 'logo.png', 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f',
+                'footerContacts' => ['email', 'web'],
+            ],
             'texts'       => ['footer' => '<div class="print-text"><p>Děkujeme.</p></div>', 'emailBody' => 'Dobrý den'],
             'messages'    => [['severity' => 'warning', 'code' => 'payment.qrNoAccount', 'text' => 'QR nevznikl']],
             'data'        => ['document' => ['number' => '2026000123'], 'rows' => []],
@@ -65,6 +68,7 @@ class PrintDataTest extends TestCase
         $this->assertSame([], $data->messages);
         $this->assertSame('left', $data->logoPlacement);
         $this->assertSame(PrintData::DEFAULT_ACCENT_COLOR, $data->accentColor);
+        $this->assertSame(PrintData::FOOTER_CONTACTS, $data->footerContacts);
     }
 
     public function testBrandingFromBeforeAppearanceSettingsGetsDefaults(): void
@@ -73,9 +77,39 @@ class PrintDataTest extends TestCase
         $envelope['branding'] = ['logo' => 'logo.png'];
 
         $this->assertSame(
-            ['logo' => 'logo.png', 'logoPlacement' => 'left', 'accentColor' => '#c8c8c8'],
+            [
+                'logo' => 'logo.png', 'logoPlacement' => 'left', 'accentColor' => '#c8c8c8',
+                // JSON z doby před kontakty v zápatí (#162 D132): všechny čtyři.
+                'footerContacts' => ['email', 'phone', 'web', 'dataBox'],
+            ],
             PrintData::fromArray($envelope)->toArray()['branding'],
         );
+    }
+
+    public function testFooterContactsKeepTheOrderOfTheEnumeration(): void
+    {
+        $envelope = self::envelope();
+        $envelope['branding']['footerContacts'] = ['dataBox', 'email', 'dataBox'];
+
+        $this->assertSame(['email', 'dataBox'], PrintData::fromArray($envelope)->footerContacts);
+    }
+
+    public function testNoFooterContactsIsValid(): void
+    {
+        $envelope = self::envelope();
+        $envelope['branding']['footerContacts'] = [];
+
+        $data = PrintData::fromArray($envelope);
+
+        $this->assertSame([], $data->footerContacts);
+        $this->assertSame([], $data->toArray()['branding']['footerContacts']);
+    }
+
+    public function testFooterContactsSurviveWithLanguageAndTexts(): void
+    {
+        $data = PrintData::fromArray(self::envelope())->withLanguage('en')->withTexts([]);
+
+        $this->assertSame(['email', 'web'], $data->footerContacts);
     }
 
     public function testAccentColorIsNormalizedToLowercase(): void
@@ -97,6 +131,11 @@ class PrintDataTest extends TestCase
             'barva není řetězec' => ['accentColor', 13158600],
             'neznámé umístění'   => ['logoPlacement', 'center'],
             'umístění je pole'   => ['logoPlacement', ['left']],
+            // Kontakty v zápatí jsou pevný výčet (#162 D132).
+            'neznámý kontakt'      => ['footerContacts', ['email', 'fax']],
+            'kontakty jako text'   => ['footerContacts', 'email'],
+            'kontakt není řetězec' => ['footerContacts', [true]],
+            'kontakty jako mapa'   => ['footerContacts', ['email' => false]],
         ];
     }
 

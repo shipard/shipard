@@ -74,6 +74,9 @@ stejný.
   **Logo firmy**. Záhlaví s titulkem a číslem dokladu a zápatí s číslem
   strany jsou na každé straně. Barvu hlavičky a stranu, na které logo je,
   si nastavíš — viz [Vzhled tištěných dokladů](vzhled-tisku.md).
+- **Kontakty tvé firmy** vlevo v zápatí — e-mail, telefon, web a datová
+  schránka z karty tvé firmy v **Osobách**. Které z nich se tisknou, si
+  nastavíš — viz [Vzhled tištěných dokladů](vzhled-tisku.md).
 - **Vystavil** se jménem toho, kdo doklad vystavil — vpravo v zápatí, nad
   číslem strany. Doklad bez autora řádek nemá; viz
   [Kdo doklad vystavil](vystavil-na-dokladu.md).

@@ -27,6 +27,13 @@ final class PrintData implements \JsonSerializable
     public const DEFAULT_ACCENT_COLOR = '#c8c8c8';
 
     /**
+     * Kontakty vlastní firmy, které zápatí dokladu smí tisknout (#162 D130,
+     * D132) — pevný výčet v pořadí tisku: první řádek e-mail a telefon,
+     * druhý web a datová schránka. Výchozí jsou všechny čtyři.
+     */
+    public const FOOTER_CONTACTS = ['email', 'phone', 'web', 'dataBox'];
+
+    /**
      * @param ?string $logo Název assetu s logem (`logo.png`), null když
      *        v brandingu žádné není.
      * @param list<PrintMessage> $messages
@@ -39,9 +46,15 @@ final class PrintData implements \JsonSerializable
      * @param array<string, string> $texts Uživatelské texty na tiscích (#90
      *        D50): slot (`PrintTextSlot`) → hotové HTML pro stránku tisku,
      *        u e-mailových slotů prostý text. Slot bez textu v mapě není.
-     * @throws \InvalidArgumentException Umístění loga nebo barva nemají
-     *         očekávaný tvar.
+     * @param list<string> $footerContacts Zapnuté kontakty v zápatí — hodnoty
+     *        z `FOOTER_CONTACTS`; obálka je drží v pořadí výčtu a bez
+     *        opakování. Tiskne se jen zapnutý a ve snapshotu vyplněný údaj.
+     * @throws \InvalidArgumentException Umístění loga, barva nebo kontakty
+     *         v zápatí nemají očekávaný tvar.
      */
+    /** @var list<string> Zapnuté kontakty v zápatí, v pořadí `FOOTER_CONTACTS`. */
+    public readonly array $footerContacts;
+
     public function __construct(
         public readonly string $printId,
         public readonly int $version,
@@ -59,6 +72,7 @@ final class PrintData implements \JsonSerializable
         public readonly string $logoPlacement = self::LOGO_PLACEMENTS[0],
         public readonly string $accentColor = self::DEFAULT_ACCENT_COLOR,
         public readonly array $texts = [],
+        array $footerContacts = self::FOOTER_CONTACTS,
     ) {
         if (!in_array($logoPlacement, self::LOGO_PLACEMENTS, true)) {
             throw new \InvalidArgumentException(
@@ -68,6 +82,17 @@ final class PrintData implements \JsonSerializable
         if (HexColor::normalize($accentColor) !== $accentColor) {
             throw new \InvalidArgumentException("Print data: 'branding.accentColor' must be a colour like '#rrggbb'");
         }
+        foreach ($footerContacts as $contact) {
+            if (!in_array($contact, self::FOOTER_CONTACTS, true)) {
+                throw new \InvalidArgumentException(
+                    "Print data: 'branding.footerContacts' must list only " . implode('|', self::FOOTER_CONTACTS),
+                );
+            }
+        }
+        $this->footerContacts = array_values(array_filter(
+            self::FOOTER_CONTACTS,
+            static fn (string $contact): bool => in_array($contact, $footerContacts, true),
+        ));
     }
 
     /**
@@ -138,6 +163,12 @@ final class PrintData implements \JsonSerializable
                 "Print data: 'branding.logoPlacement' and 'branding.accentColor' must be strings",
             );
         }
+        // JSON z doby před kontakty v zápatí (#162 D132) klíč nemá — tiskne
+        // se všechno, co snapshot nese.
+        $footerContacts = $branding['footerContacts'] ?? self::FOOTER_CONTACTS;
+        if (!is_array($footerContacts)) {
+            throw new \InvalidArgumentException("Print data: 'branding.footerContacts' must be a list");
+        }
         $messages = $envelope['messages'] ?? [];
         if (!is_array($messages)) {
             throw new \InvalidArgumentException("Print data: 'messages' must be an array");
@@ -181,6 +212,7 @@ final class PrintData implements \JsonSerializable
             logoPlacement: $logoPlacement,
             accentColor: strtolower($accentColor),
             texts: $texts,
+            footerContacts: array_values($footerContacts),
         );
     }
 
@@ -225,6 +257,7 @@ final class PrintData implements \JsonSerializable
             logoPlacement: $this->logoPlacement,
             accentColor: $this->accentColor,
             texts: $texts ?? $this->texts,
+            footerContacts: $this->footerContacts,
         );
     }
 
@@ -247,9 +280,10 @@ final class PrintData implements \JsonSerializable
                 'watermark' => $this->watermark,
             ],
             'branding'    => [
-                'logo'          => $this->logo,
-                'logoPlacement' => $this->logoPlacement,
-                'accentColor'   => $this->accentColor,
+                'logo'           => $this->logo,
+                'logoPlacement'  => $this->logoPlacement,
+                'accentColor'    => $this->accentColor,
+                'footerContacts' => $this->footerContacts,
             ],
             'texts'       => $this->texts,
             'messages'    => array_map(

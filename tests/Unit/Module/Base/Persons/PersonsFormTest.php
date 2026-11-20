@@ -428,6 +428,15 @@ class PersonsFormTest extends TestCase
         $this->assertSame('url',   $this->findElement($def, 'basic', 'web')->inputType);
     }
 
+    public function testDataBoxIdIsEditableInKontakt(): void
+    {
+        // Zápatí dokladu tiskne datovou schránku vlastní firmy (#162 D130) —
+        // bez pole ve formuláři by šla vyplnit jen importem.
+        $def = $this->createForm()->buildFormDefinition([], true);
+
+        $this->assertNotNull($this->findElement($def, 'basic', 'gov_e_box_id'));
+    }
+
     public function testEmailAndPhoneAreInlinedInKontakt(): void
     {
         $form = $this->createForm();

@@ -273,3 +273,18 @@ a snímky do Odchylek:
 - Snapshoty v datových sadách: změna `PersonSnapshotBuilder` může změnit
   výstup `dataset-dump` / `dataset-verify` — ověř a případné schválené
   snímky sad aktualizuj s důvodem v commitu.
+
+## Formulace k revizi
+
+Překlady `sk` a `de` navrhla implementace; reviduje je kolega jako
+v `tasks/prints-languages.md` (D32). Zdroj pravdy je katalog
+`modules/docs/core/prints/_layout/messages.jsonc`; opravy přijdou
+samostatným commitem.
+
+| Klíč | cs | en | sk | de |
+|---|---|---|---|---|
+| `footer.dataBox` | Datová schránka | Data box | Dátová schránka | Datenpostfach |
+
+Tiskne se v zápatí jako „<popisek>: <ID datové schránky>“. V němčině
+připadá v úvahu i ponechání českého pojmu (datová schránka je český
+institut bez přesného protějšku).

@@ -99,9 +99,10 @@ převzal poštovní server. Nedoručitelnost ani přečtení se nesledují.
 
 **Elektronická faktura (ISDOC) se k e-mailu nepřikládá.**
 
-**Vzhled tištěného dokladu změníš jen v hlavičce.** Nastavíš barvu
-hlavičky a stranu s logem; rozvržení dokladu je jedno. Jiné písmo, barvy
-v těle dokladu ani vlastní šablona zatím nejsou.
+**Vzhled tištěného dokladu změníš jen v hlavičce a v zápatí.** Nastavíš
+barvu hlavičky, stranu s logem a to, které kontakty tvé firmy jsou
+v zápatí; rozvržení dokladu je jedno. Jiné písmo, barvy v těle dokladu
+ani vlastní šablona zatím nejsou.
 
 **Podpis a razítko na doklad nedostaneš.** V zápatí je jméno toho, kdo
 doklad vystavil — viz
@@ -109,10 +110,13 @@ doklad vystavil — viz
 podpisu ani razítka ale vložit nejde. Pokladní doklad a Kontace mají jen
 prázdné linky na ruční podpis.
 
-**Kontakty tvé firmy v zápatí dokladu nejsou.** Zápatí nese název firmy,
-**Vystavil** a číslo strany; telefon, e-mail ani web se do něj zatím
-netisknou. Na doklad je dostaneš vlastním textem s umístěním **Konec
-dokumentu** — viz [Texty na tiscích](faktury-vydane/texty-na-tiscich.md).
+**Kontakty v zápatí dokladu jsou jen z karty tvé firmy.** Tiskne se
+e-mail, telefon, web a datová schránka tak, jak je máš v **Osobách** —
+viz [Vzhled tištěných dokladů](faktury-vydane/vzhled-tisku.md). Jiný
+kontakt pro jeden druh dokladu, druhý telefon ani kontaktní osobu do
+zápatí nedostaneš; pomůže vlastní text s umístěním **Konec dokumentu** —
+viz [Texty na tiscích](faktury-vydane/texty-na-tiscich.md). Kontace
+kontakty v zápatí nemá.
 
 **Vlastní text na doklad nejde omezit na jednoho odběratele ani na jednu
 pokladnu.** Cílit jde na tisk, typ dokladu, číselnou řadu a jazyk. Text

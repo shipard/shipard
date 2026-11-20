@@ -34,6 +34,9 @@ class DocPrintTemplatesTest extends TestCase
 {
     private const NBSP = "\u{00A0}";
 
+    /** Telefon vlastní firmy z fixture v čitelném tvaru (#118 D21). */
+    private const PHONE = '+420' . self::NBSP . '577' . self::NBSP . '000' . self::NBSP . '001';
+
     private ?string $dsPath = null;
 
     protected function setUp(): void
@@ -148,7 +151,9 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('IČ: 00000019', $html);
         $this->assertStringContainsString('DIČ: CZ00000019', $html);
         $this->assertStringContainsString('C 12345 vedená u Krajského soudu v Brně', $html);
-        $this->assertStringContainsString('+420' . self::NBSP . '577' . self::NBSP . '000' . self::NBSP . '001', $html, 'telefon dodavatele čitelně (#118 D21)');
+        // Kontakty vlastní firmy tělo dokladu netiskne — jsou v zápatí (#162 D130, D131).
+        $this->assertStringNotContainsString(self::PHONE, $html);
+        $this->assertStringNotContainsString('fakturace@tiskarna.example', $html);
         $this->assertStringContainsString('Odběratel Zkušební a.s.', $html);
         $this->assertStringContainsString('DIČ: SK2020000027', $html);
 
@@ -190,7 +195,196 @@ class DocPrintTemplatesTest extends TestCase
         // Zápatí: stránkování doplní render služba.
         $this->assertNotNull($document->footer);
         $this->assertStringContainsString('Strana <span class="pageNumber"></span> / <span class="totalPages"></span>', $document->footer);
-        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $document->footer);
+        $this->assertStringContainsString('fakturace@tiskarna.example', $document->footer);
+        $this->assertStringNotContainsString('Tiskárna Vzorová', $document->footer, 'název firmy v zápatí není (#162 D130)');
+    }
+
+    // ── zápatí: kontakty vlastní firmy (#162 D130–D133) ─────────────────────
+
+    /**
+     * Řádky levého sloupce zápatí jako prostý text — položky spojené
+     * oddělovačem tak, jak je zápatí tiskne.
+     *
+     * @return list<string>
+     */
+    private static function footerLines(string $footer): array
+    {
+        self::assertSame(1, preg_match('~<div class="foot-contacts">(.*?)</div>\s*<div class="right">~s', $footer, $m), 'levý sloupec zápatí');
+        preg_match_all('~<div>(.*?)</div>~s', $m[1], $lines);
+
+        return array_map(
+            static fn (string $line): string => html_entity_decode(strip_tags($line), ENT_QUOTES | ENT_HTML5),
+            $lines[1],
+        );
+    }
+
+    /** @return callable(array<string, mixed>): array<string, mixed> */
+    private static function withOwnContact(array $contact, string $party = 'supplier'): callable
+    {
+        return static function (array $data) use ($contact, $party): array {
+            $data[$party]['contact'] = $contact;
+            return $data;
+        };
+    }
+
+    public function testFooterPrintsContactsOfOwnCompanyOnTwoLines(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData('invoice', $definition->id))->footer;
+
+        $this->assertSame(
+            [
+                'fakturace@tiskarna.example · ' . self::PHONE,
+                'www.tiskarna.example · Datová schránka: abc2def',
+            ],
+            self::footerLines($footer),
+        );
+        // Položka se nezalamuje; třída `url` by Chromium přepsal adresou stránky.
+        $this->assertStringContainsString('<span class="foot-item">www.tiskarna.example</span>', $footer);
+        $this->assertStringNotContainsString('class="url"', $footer);
+        $this->assertStringNotContainsString('Tiskárna Vzorová', $footer, 'bez názvu firmy');
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function dataBoxLabels(): array
+    {
+        return [
+            'cs' => ['cs', 'Datová schránka: abc2def'],
+            'en' => ['en', 'Data box: abc2def'],
+            'sk' => ['sk', 'Dátová schránka: abc2def'],
+            'de' => ['de', 'Datenpostfach: abc2def'],
+        ];
+    }
+
+    #[DataProvider('dataBoxLabels')]
+    public function testDataBoxIsLabelledInEveryPrintLanguage(string $language, string $expected): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData('invoice', $definition->id, $language))->footer;
+
+        $this->assertSame('www.tiskarna.example · ' . $expected, self::footerLines($footer)[1]);
+    }
+
+    public function testSwitchedOffContactIsNotPrinted(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id, branding: ['footerContacts' => ['email', 'dataBox']],
+        ))->footer;
+
+        $this->assertSame(
+            ['fakturace@tiskarna.example', 'Datová schránka: abc2def'],
+            self::footerLines($footer),
+        );
+        $this->assertStringNotContainsString('577', $footer);
+        $this->assertStringNotContainsString('www.tiskarna.example', $footer);
+    }
+
+    public function testAllContactsSwitchedOffLeaveOnlyTheRightColumn(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id,
+            modify: self::withAuthor(['name' => 'Jana Příkladová']),
+            branding: ['footerContacts' => []],
+        ))->footer;
+
+        $this->assertSame([], self::footerLines($footer));
+        $this->assertStringNotContainsString('tiskarna.example', $footer);
+        $this->assertStringNotContainsString('abc2def', $footer);
+        $this->assertStringContainsString('Vystavil: Jana Příkladová', $footer);
+        $this->assertStringContainsString('Strana <span class="pageNumber"></span> / <span class="totalPages"></span>', $footer);
+    }
+
+    public function testOnlyWebFilledGivesSingleLine(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id,
+            modify: self::withOwnContact(['email' => null, 'phone' => '', 'web' => 'www.tiskarna.example', 'gov_e_box_id' => null]),
+        ))->footer;
+
+        // Žádný prázdný první řádek.
+        $this->assertSame(['www.tiskarna.example'], self::footerLines($footer));
+    }
+
+    public function testSnapshotFromBeforeWebAndDataBoxPrintsEmailAndPhone(): void
+    {
+        // Doklad uložený před #162 (D133): `contact` nemá klíče `web` a `gov_e_box_id`.
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id,
+            modify: self::withOwnContact(['email' => 'fakturace@tiskarna.example', 'phone' => '+420 577 000 001']),
+        ))->footer;
+
+        $this->assertSame(['fakturace@tiskarna.example · ' . self::PHONE], self::footerLines($footer));
+        $this->assertStringNotContainsString('Datová schránka', $footer);
+    }
+
+    public function testSnapshotWithoutContactHasEmptyLeftColumn(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id,
+            modify: static function (array $data): array {
+                unset($data['supplier']['contact']);
+                return $data;
+            },
+        ))->footer;
+
+        $this->assertSame([], self::footerLines($footer));
+    }
+
+    public function testFooterOfIncomingDocumentPrintsContactsOfCustomer(): void
+    {
+        // `tradeDir` 2: vlastní firma je odběratel — kontakty partnera
+        // (dodavatele) do zápatí nepatří.
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id,
+            modify: static function (array $data): array {
+                $data['document']['tradeDir'] = 2;
+                $data['customer']['contact'] = [
+                    'email' => 'nase@firma.example', 'phone' => null, 'web' => 'www.firma.example', 'gov_e_box_id' => 'xyz9abc',
+                ];
+                return $data;
+            },
+        ))->footer;
+
+        $this->assertSame(
+            ['nase@firma.example', 'www.firma.example · Datová schránka: xyz9abc'],
+            self::footerLines($footer),
+        );
+        $this->assertStringNotContainsString('tiskarna.example', $footer);
+    }
+
+    public function testFooterContactsAreEscaped(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id,
+            modify: self::withOwnContact(['email' => null, 'phone' => null, 'web' => '<b>web</b>', 'gov_e_box_id' => null]),
+        ))->footer;
+
+        $this->assertStringContainsString('&lt;b&gt;web&lt;/b&gt;', $footer);
+        $this->assertStringNotContainsString('<b>web</b>', $footer);
+    }
+
+    public function testSupplierBlockHasRegistrationButNoContacts(): void
+    {
+        // D131: blok Dodavatel = název, adresa, IČO / DIČ, zápis v rejstříku.
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $html = $this->render($definition, self::printData('invoice', $definition->id, modify: static function (array $data): array {
+            $data['customer']['court_registration'] = 'B 999 vedená u Městského soudu v Praze';
+            return $data;
+        }))->html;
+
+        $this->assertStringContainsString('<p class="party-detail">C 12345 vedená u Krajského soudu v Brně</p>', $html);
+        $this->assertSame(1, substr_count($html, 'class="party-detail"'), 'zápis v rejstříku jen u dodavatele, žádný kontaktní řádek');
+        $this->assertStringNotContainsString('B 999', $html);
+        foreach (['fakturace@tiskarna.example', self::PHONE, 'www.tiskarna.example', 'abc2def'] as $contact) {
+            $this->assertStringNotContainsString($contact, $html);
+        }
     }
 
     // ── zápatí: Vystavil (#93 D4) ───────────────────────────────────────────
@@ -217,8 +411,8 @@ class DocPrintTemplatesTest extends TestCase
             strpos($footer, 'Vystavil: Jana Příkladová'),
             '„Vystavil“ patří nad číslo strany',
         );
-        // Vlastní firma vlevo zůstává.
-        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $footer);
+        // Kontakty vlastní firmy vlevo zůstávají.
+        $this->assertStringContainsString('fakturace@tiskarna.example', $footer);
     }
 
     public function testFooterWithoutAuthorHasNoIssuedByLine(): void
@@ -298,7 +492,8 @@ class DocPrintTemplatesTest extends TestCase
         }));
         $this->assertStringNotContainsString('Dodavatel', $noSupplier->html);
         $this->assertStringContainsString('Odběratel Zkušební a.s.', $noSupplier->html);
-        $this->assertStringContainsString('Odběratel Zkušební a.s.', (string) $noSupplier->footer);
+        // Odběratel z fixture kontakty nemá — zápatí vlevo je prázdné, ne s kontakty partnera.
+        $this->assertSame([], self::footerLines((string) $noSupplier->footer));
     }
 
     public function testInvoiceOfNonPayerHasNoVatColumnsOrRecap(): void
@@ -542,7 +737,11 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('<div class="doc-signature">Podpis pokladníka</div>', $html);
         $this->assertStringNotContainsString('Podpis příjemce', $html);
 
-        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', (string) $document->footer);
+        // Fixture jako doklad uložený před #162: snapshot nese jen e-mail a telefon.
+        $this->assertSame(
+            ['fakturace@tiskarna.example · ' . self::PHONE],
+            self::footerLines((string) $document->footer),
+        );
     }
 
     public function testCashReceiptPayingInvoiceHasNoVat(): void
@@ -568,7 +767,11 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringNotContainsString('Dodavatel / přijal', $html);
         $this->assertStringContainsString('Odběratel / vydal', $html);
         $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $html);
-        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', (string) $document->footer);
+        // Výdej (`tradeDir` 2): kontakty v zápatí jsou odběratele = vlastní firmy.
+        $this->assertSame(
+            ['fakturace@tiskarna.example · ' . self::PHONE],
+            self::footerLines((string) $document->footer),
+        );
 
         $this->assertStringNotContainsString('Datum přijetí platby', $html);
         $this->assertStringNotContainsString('Datum zdanitelného plnění', $html, 'neplátce');
