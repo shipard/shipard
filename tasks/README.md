@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 463 tasků: **naplánováno** 4 · **částečně** 22 · **zrušeno** 1 · **hotovo** 436.
+Celkem 464 tasků: **naplánováno** 5 · **částečně** 22 · **zrušeno** 1 · **hotovo** 436.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `prints-look.md` | naplánováno | #162, D125–D134 zamčená 2026-11-20 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -278,6 +279,7 @@ referenční dokument `docs/prints.md` (od Fáze 1).
 | `prints-phase2.md` | 2 | Nástroje pro šablony (`print-run --format=html`, `--data`), vodoznak storna, strany bez partnera, pokladní doklad, prodejka, Kontace (#90 D22–D28) |
 | `prints-languages.md` | 2b | Jazyky tisku `sk` a `de`, formátování přes intl, tiskové zkratky jednotek, přepínač jazyka v náhledu (#90 D29–D33, navazuje na #94) |
 | `prints-phase4.md` | 4 | Odesílání e-mailem: účely na kontaktech, resolver příjemců a odesílatele, Odeslaná pošta nad libovolnou tabulkou (pevný obsah, Odeslat znovu), dialog Odeslat (#90 D34–D45) |
+| `prints-look.md` | — | Vzhled tisku dokladů podle typografických rolí designového systému, bez rámečku Odběratele, kontakty vlastní firmy v zápatí s přepínači na stránce Tisky, typ pole `checkbox` v nastavení, web a datová schránka ve snapshotu strany (#162 D125–D134, přebírá #100) |
 | `persons-document-options.md` | — | Jazyk dokumentů na osobě (odvození podle země, živě), spojování příloh, příznak přílohy „odeslat s dokladem“ (#94 D1–D11) |
 
 ## Výměnný formát a import ze starého Shipardu
