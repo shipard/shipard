@@ -1,6 +1,6 @@
 # Vzhled tisku dokladů — úpravy po prokliku (D135–D140)
 
-**Stav:** naplánováno — #162, D135–D140 zamčená 2026-11-20
+**Stav:** částečně — implementace hotová 2026-11-20 (3 commity, #162 D135–D140); zbývá ruční proklik a komentář do #162
 
 ## Kontext / Cíl
 
@@ -152,12 +152,13 @@ PHPUnit cíleně (`DocPrintStylesTest|DocPrintTemplatesTest|SettingsController|M
 
 ## Hotovo když
 
-- [ ] Čáry jen přes dvě role, podpisy černé (D135)
-- [ ] Hodnota splatnosti a VS tučně všude, kde se tisknou (D136)
-- [ ] Nadpis stran heading normální (D137), zápis v rejstříku odsazený (D140)
-- [ ] Položka `section` (server, CLI, `SettingsPage`), stránka Tisky podle D138
-- [ ] Web a datová schránka na jednom řádku (D139)
-- [ ] §13, nápověda, `help-index.py`, `**Stav:**`, `tasks-index.py`; komentář do #162
+- [x] Čáry jen přes dvě role, podpisy černé (D135)
+- [x] Hodnota splatnosti a VS tučně všude, kde se tisknou (D136)
+- [x] Nadpis stran heading normální (D137), zápis v rejstříku odsazený (D140)
+- [x] Položka `section` (server, CLI, `SettingsPage`), stránka Tisky podle D138
+- [x] Web a datová schránka na jednom řádku (D139)
+- [x] §13, nápověda, `help-index.py`, `**Stav:**`, `tasks-index.py`
+- [ ] Komentář do #162 (po ručním prokliku)
 
 ## Pasti
 
@@ -167,3 +168,76 @@ PHPUnit cíleně (`DocPrintStylesTest|DocPrintTemplatesTest|SettingsController|M
   symbol“ — tučná je vždy hodnota `payment.reference`, ne podle popisku.
 - `section` nesmí projít do `ds-setting set` ani do uložených hodnot —
   hlídá test.
+
+## Odchylky od zadání a výsledek ověření
+
+Implementace 2026-11-20, tři commity podle seznamu výše (čtvrtý `docs:`
+nezbyl — dokumentace jde s kódem svého kroku).
+
+### Odchylky
+
+- **Tloušťka čar je třetí proměnná** `--print-rule-width` (0,5 pt) vedle
+  dvou barev. Bere ji i podpisová linka (`var(--print-rule-width) solid
+  #000`) — černá zůstává jen barva.
+- **Nadpis strany je pravidlo `h2`**, takže heading v normální tloušťce
+  mají i nadpisy Účetní jednotka / Partner v Kontaci, ne jen Dodavatel /
+  Odběratel.
+- **Odsazení zápisu v rejstříku je 0,15 cm**, ne 0,1 cm: blok strany už
+  jednu mezeru mezi skupinami má (adresa → IČO / DIČ, 0,15 cm) a zápis
+  dostal tutéž. Shodu obou hodnot hlídá `DocPrintStylesTest`.
+- **Klíčový údaj jen tam, kde se tiskne:** společný blok dat
+  (`doc-base.html.twig`), prodejka převodem a platební blok. Pokladní
+  doklad ani Kontace splatnost a platební referenci netisknou. Specifický
+  a konstantní symbol tučné nejsou.
+- **Mezinadpis má id `prints.footerContacts`** — id je povinné jako
+  u pole, klíč nastavení to není. Mezinadpis na prvním místě stránky nemá
+  linku ani horní odstup (není od čeho oddělovat).
+- **`SettingsController::buildPageValues()`** mezinadpis přeskakuje také
+  (zadání jmenovalo jen `savePage` a `localizePageDefinition`) — bez toho
+  by `page` posílala pod jeho id `null`.
+- **Nápověda `help/osoby/`** se nemění: rozložení sekce Kontakt
+  nepopisuje, jen vyjmenovává pole.
+- `docs/cli.md`, `docs/modules.md` a řádek `docs/app-settings.md`
+  v `CLAUDE.md` doplněné o `section` nad rámec výčtu zadání.
+
+### Ověření
+
+PDF přes render službu nad volným zdrojem dat `rpud-r` (demo sada
+it-servis) a nad fixture `tests/Fixtures/Prints/` (`print-run --data`),
+`pdftoppm -r 100`, 19 tisků před a po:
+
+| Tisk | Zdroj | Výsledek |
+|---|---|---|
+| faktura `cs`, `en`, cizí měna | doklady sady | čáry ve dvou odstínech, splatnost a VS tučně jen hodnota, nadpisy stran ve velikosti názvu a netučné |
+| zálohová faktura | doklad sady, fixture | totéž |
+| prodejka převodem | fixture | splatnost i VS tučně |
+| prodejka hotově | doklad sady, fixture | bez splatnosti a VS — nic tučného v bloku dat |
+| pokladní doklad příjem / výdej | fixture, doklad sady | podpisové linky černé, ostatní čáry z rolí |
+| Kontace | doklad sady, fixture | řádky světle, součtový řádek strukturní čárou, linka Zaúčtoval černá |
+| doklad s textem (`hr`, citace) | fixture s `texts.beforeRows` | `hr` a pruh citace strukturní šedou |
+| neplátce, opravný doklad, tři strany, storno | fixture | beze změny proti kroku 4 `prints-look` kromě čar a nadpisů |
+
+Zápis v rejstříku je odsazený a dvouřádkový zápis (demo sada) se čte jako
+samostatná skupina.
+
+Stránka Tisky (Playwright, 1280 a 390 px): mezinadpis „Kontakty v zápatí“
+a text přes celou šířku, pod nimi čtyři zaškrtávátka bez nápovědy; Uložit
+posílá jen šest klíčů polí (žádný pro mezinadpis), hodnoty po novém
+načtení drží, bez vodorovného posuvu. `ds-setting set
+prints.footerContacts x` končí chybou neznámého klíče.
+
+Formulář Osoby (1280 a 390 px): Webová stránka a ID datové schránky na
+jednom řádku pod E-mailem a Telefonem, na šířce telefonu pod sebou.
+
+Celá sada PHPUnit (11 720 testů) prochází; `npm run build`, `npm test`,
+`check:i18n` a tři CSS skripty v pořádku. `ds-upgrade` není potřeba
+(stránky nastavení se čtou z `module.jsonc` za běhu).
+
+### K posouzení při prokliku
+
+- **Světlá čára řádků (`#e6e6e6`, 0,5 pt)** je v PNG při 100 dpi
+  i v náhledu PDF zřetelná; na laserové tiskárně ověřená není.
+- **Zaškrtávátka stojí ve sloupci polí** (odsazená pod popisky ostatních
+  polí), mezinadpis a text začínají u levého okraje karty — stejná mřížka
+  jako zbytek stránky. Alternativa je zaškrtávátka od levého okraje.
+
