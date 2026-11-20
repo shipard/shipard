@@ -1,6 +1,6 @@
 # Vzhled tisku dokladů — úpravy po prokliku (D135–D140)
 
-**Stav:** částečně — implementace hotová 2026-11-20 (3 commity, #162 D135–D140), ručně proklikané 2026-11-20 (výsledek v #162); zbývá doplněk D141 (sekce níže) a ověření světlé čáry řádků na tiskárně
+**Stav:** částečně — implementace hotová 2026-11-20 (3 commity, #162 D135–D140), ručně proklikané 2026-11-20 (výsledek v #162), doplněk D141 hotový 2026-11-20; zbývá ověření světlé čáry řádků na tiskárně
 
 ## Kontext / Cíl
 
@@ -264,3 +264,12 @@ lícují vlevo; ostatní pole beze změny; bez vodorovného posuvu.
 `npm run build`, `npm test`.
 
 **Commit:** `fix(settings): zaškrtávátko na stránce nastavení od levého okraje (#162, D141)` — včetně `**Stav:**` a `python3 scripts/tasks-index.py`.
+
+**Výsledek (2026-11-20):** hotovo podle zadání. Pravidlo pro úzký
+kontejner zaniklo — `grid-column: 1 / -1` dává v jednosloupcové mřížce
+tentýž sloupec. Stránka Tisky (Playwright, 1280 a 390 px): mezinadpis,
+úvodní text i všechna čtyři zaškrtávátka začínají na stejné souřadnici
+jako levý okraj mřížky polí; popisky a pole Akcentová barva hlavičky
+a Umístění loga se nepohnuly; bez vodorovného posuvu. Jiná stránka
+nastavení zaškrtávátko zatím nemá. `npm run build`, `npm test` (328)
+a CSS skripty v pořádku; PHP se neměnilo.

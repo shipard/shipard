@@ -172,8 +172,9 @@ exempt nejsou.
    jako deklarace** — `SettingsStore::get()` vrací u nenastaveného klíče
    `null`, o `default` z `module.jsonc` neví. Uložit zapisuje vždy
    explicitní hodnotu. Renderuje sdílený `ui/Checkbox.svelte`: popisek je
-   vedle zaškrtávátka (levý sloupec popisků zůstává prázdný), nápověda
-   pod ním. Z CLI `ds-setting set <klíč> true|false` uloží boolean, jiná
+   vedle zaškrtávátka a řádek stojí **přes oba sloupce stránky, od levého
+   okraje karty** (#162 D141) — ne ve sloupci polí, protože popisek vlevo
+   nemá; nápověda a chyba pole jsou pod ním ve stejném zákrytu. Z CLI `ds-setting set <klíč> true|false` uloží boolean, jiná
    hodnota je chyba; `get` vypíše `true` / `false`.
    Mezinadpis: `type: "section"` (#162 D138) — **položka bez hodnoty**,
    ne pole: `name` je nadpis, `hint` úvodní text pod ním. Uvádí skupinu

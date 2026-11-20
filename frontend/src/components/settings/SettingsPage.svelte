@@ -191,8 +191,9 @@
             </div>
           {:else}
           <div class="shpd-settings-page__field">
-            <!-- Zaškrtávátko nese popisek samo (sdílený Checkbox je <label>),
-                 levý sloupec popisků u něj zůstává prázdný. -->
+            <!-- Zaškrtávátko nese popisek samo (sdílený Checkbox je <label>):
+                 nemá popisek vlevo a stojí přes oba sloupce mřížky, od
+                 levého okraje karty (#162 D141). -->
             {#if field.type !== 'checkbox'}
               <label class="shpd-settings-page__label" for={`settings-${field.id}`}>{field.label}</label>
             {/if}
@@ -355,11 +356,15 @@
     min-width: 0;
   }
 
-  /* Řádek zaškrtávátka: bez popisku vlevo stojí ve sloupci polí, na výšku
-     pole jako sousední řádky. Sdílený Checkbox má vlastní spodní okraj —
-     tady mezery dává mřížka polí. */
+  /* Řádek zaškrtávátka (#162 D141): popisek nese samo, proto stojí přes oba
+     sloupce mřížky — od levého okraje karty, v zákrytu s mezinadpisem nad
+     sebou, ne ve sloupci polí. Nápověda a chyba pole jsou v témže obalu,
+     takže lícují s ním. V jednosloupcové mřížce úzkého kontejneru dává
+     totéž pravidlo jediný sloupec. Na výšku pole jako sousední řádky;
+     sdílený Checkbox má vlastní spodní okraj — tady mezery dává mřížka
+     polí. */
   .shpd-settings-page__input--checkbox {
-    grid-column: 2;
+    grid-column: 1 / -1;
   }
 
   .shpd-settings-page__checkbox {
@@ -415,10 +420,6 @@
     .shpd-settings-page__label {
       padding-top: 0;
       text-align: left;
-    }
-
-    .shpd-settings-page__input--checkbox {
-      grid-column: 1;
     }
   }
 </style>
