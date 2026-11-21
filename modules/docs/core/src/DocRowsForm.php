@@ -222,7 +222,11 @@ class DocRowsForm extends TableForm
         }
         $currency = strtoupper((string) ($headContext['doc_currency'] ?? ''));
         $totalLabel = $currency !== '' ? 'Celkem ' . $currency : 'Celkem';
-        if (!$this->headHasVat($headContext)) {
+        // Řádek „Mimo DPH“ není plnění (#164 D1) — základ ani daň nemá,
+        // pruh ukazuje jen částku, jako na dokladu bez DPH.
+        if (!$this->headHasVat($headContext)
+            || VatLineScope::isOutOfScope($data, $this->resolveVatCodesForRow($headContext))
+        ) {
             return [['label' => $totalLabel, 'value' => $total]];
         }
         // Procento se nezadává (#159 D1) — pruh ho ukazuje u částky daně.
@@ -369,7 +373,9 @@ class DocRowsForm extends TableForm
             return;
         }
         if ($this->headHasVat($headContext) && empty($data['vat_code'])) {
-            $vatOptions = $this->buildVatCodeOptions($headContext, $data);
+            // První kód nabídky — nikdy „Mimo DPH“ (#164 U4): je v nabídce
+            // poslední, a kdyby byl jediný, zůstane řádek bez kódu.
+            $vatOptions = $this->buildVatCodeOptions($headContext, $data, includeOutOfScope: false);
             if ($vatOptions !== []) {
                 $data['vat_code'] = $vatOptions[0]['value'];
             }
@@ -455,7 +461,7 @@ class DocRowsForm extends TableForm
      */
     private function hasRowSideLayout(?array $attrs): bool
     {
-        return is_array($attrs) && isset($attrs['rowSide']);
+        return DocRowOperationRules::entryHasRowSide($attrs);
     }
 
     /**
@@ -734,13 +740,14 @@ class DocRowsForm extends TableForm
 
     /**
      * Nabídka kódů DPH k datu sazby řádku, s procentem v popisku (#159 D7,
-     * U9); uložený kód bez sazby k datu zůstává vidět s označením.
+     * U9); uložený kód bez sazby k datu zůstává vidět s označením. „Mimo
+     * DPH“ je poslední a bez procenta (#164 U3, U4).
      *
      * @param array<string, mixed>|null $context
      * @param array<string, mixed> $data řádek
      * @return list<array{value: string, label: string}>
      */
-    private function buildVatCodeOptions(?array $context, array $data = []): array
+    private function buildVatCodeOptions(?array $context, array $data = [], bool $includeOutOfScope = true): array
     {
         return DocHeadVatContext::vatCodeOptions(
             $context,
@@ -748,6 +755,7 @@ class DocRowsForm extends TableForm
             $this->rowRateDate($data, $context),
             $data['vat_code'] ?? null,
             $this->formText('docs.core.formTexts', 'vatCode.noRate', '{label} — no rate at this date'),
+            $includeOutOfScope,
         );
     }
 

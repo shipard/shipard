@@ -283,6 +283,41 @@ class IsdocWriterTest extends TestCase
         $this->assertSame('Doména', $this->text($xp, "{$l}[2]/i:Item/i:Description"));
     }
 
+    /**
+     * Řádek „Mimo DPH“ (#164 D1 — odpočet nezdaněné zálohy) je mezi řádky
+     * a v částce k úhradě, daňový součet ale nevytvoří: `TaxSubTotal` vzniká
+     * jen z rekapitulace a v té řádek není.
+     */
+    public function testOutOfScopeRowIsALineButMakesNoTaxSubTotal(): void
+    {
+        $canonical = $this->fixture('issued_text_row');
+        $canonical['rows'][] = [
+            'rowKind' => 'item',
+            'item' => ['supplierCode' => null, 'ean' => null, 'name' => 'Odpočet zálohy', 'description' => null],
+            'unit' => 'ks', 'quantity' => 1, 'unitPrice' => -500, 'totalPrice' => -500,
+            'priceCalcMode' => 'fromUnitPrice', 'discountPct' => null, 'discountAmount' => null,
+            'vat' => ['code' => 'cz-000', 'pct' => 0, 'supplyKind' => null, 'reverseChargeCode' => null],
+            'computed' => ['vatBase' => -500, 'vatAmount' => 0, 'vatTotal' => -500],
+        ];
+        $canonical['totals'] = ['totalBase' => 780, 'totalVat' => 268.8, 'totalAmount' => 1048.8, 'totalRounding' => 0];
+
+        $xml = $this->writer->write($canonical, $this->options());
+        $this->assertValidIsdoc($xml);
+        $xp = $this->xpath($xml);
+
+        $l = '/i:Invoice/i:InvoiceLines/i:InvoiceLine';
+        $this->assertSame(3, $this->nodeCount($xp, $l));
+        $this->assertSame('-500.00', $this->text($xp, "{$l}[3]/i:LineExtensionAmount"));
+        $this->assertSame('0.00', $this->text($xp, "{$l}[3]/i:LineExtensionTaxAmount"));
+        $this->assertSame('0', $this->text($xp, "{$l}[3]/i:ClassifiedTaxCategory/i:Percent"));
+
+        $t = '/i:Invoice/i:TaxTotal';
+        $this->assertSame(1, $this->nodeCount($xp, "{$t}/i:TaxSubTotal"), 'jen skupina 21 % z rekapitulace');
+        $this->assertSame('1280.00', $this->text($xp, "{$t}/i:TaxSubTotal/i:TaxableAmount"));
+        $this->assertSame('268.80', $this->text($xp, "{$t}/i:TaxAmount"));
+        $this->assertSame('1048.80', $this->text($xp, '/i:Invoice/i:LegalMonetaryTotal/i:PayableAmount'));
+    }
+
     public function testPricesWithVatAndRounding(): void
     {
         $xp = $this->xpath($this->write('issued_prices_with_vat'));

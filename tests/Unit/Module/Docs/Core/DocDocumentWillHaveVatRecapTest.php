@@ -73,4 +73,29 @@ final class DocDocumentWillHaveVatRecapTest extends TestCase
         $data = ['vat_registration' => 5, 'rows' => [['vat_code' => 'cz-210']]];
         $this->assertTrue(DocDocument::willHaveVatRecap($data, false));
     }
+
+    /** Doklad jen s řádky „Mimo DPH“ rekapitulaci nemá (#164 U6). */
+    public function testOutOfScopeRowsAloneGiveNoRecap(): void
+    {
+        $codes = [
+            'cz-210' => ['category' => 'standard', 'place' => 'domestic', 'direction' => 'input'],
+            'cz-000' => ['category' => 'outOfScope'],
+        ];
+        $outOfScope = ['row_kind' => 1, 'vat_code' => 'cz-000'];
+
+        $this->assertFalse(DocDocument::willHaveVatRecap($this->base(['rows' => [$outOfScope]]), true, $codes));
+        $this->assertTrue(DocDocument::willHaveVatRecap(
+            $this->base(['rows' => [$outOfScope, ['row_kind' => 1, 'vat_code' => 'cz-210']]]),
+            false,
+            $codes,
+        ));
+        // Bez definic kódů se „Mimo DPH“ nepozná — řádek s kódem je řádek rekapitulace.
+        $this->assertTrue(DocDocument::willHaveVatRecap($this->base(['rows' => [$outOfScope]]), false));
+        // Převzatá rekapitulace uloženého dokladu řádky „Mimo DPH“ nezruší.
+        $this->assertTrue(DocDocument::willHaveVatRecap(
+            $this->base(['vat_recap_source' => 1, 'rows' => [$outOfScope]]),
+            true,
+            $codes,
+        ));
+    }
 }

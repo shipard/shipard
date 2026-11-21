@@ -53,6 +53,27 @@ final class DocRowOperationRules
     }
 
     /**
+     * Kontační řádek = operace s deklarovanou vlajkou `rowSide` (účetní
+     * doklad; `1` strana MD/DAL na řádku, `0` strany fixní z kroků předpisu).
+     * Formulář takovému řádku nestaví položkový blok ani pole Kód DPH
+     * (`DocRowsForm`), kontrola `vat_code_missing` ho proto vynechává —
+     * jedno pravidlo pro obojí (#164 U8).
+     *
+     * @param array<string, mixed>|null $entry atributy operace
+     */
+    public static function entryHasRowSide(?array $entry): bool
+    {
+        return is_array($entry) && isset($entry['rowSide']);
+    }
+
+    /** @param array<string, mixed> $cfgOperations cfgItem docs.core.rowOperations */
+    public static function hasRowSide(string $operation, array $cfgOperations): bool
+    {
+        $entry = $cfgOperations[$operation] ?? null;
+        return self::entryHasRowSide(is_array($entry) ? $entry : null);
+    }
+
+    /**
      * Samovyvažující pohyb (`selfBalancing: 1`, FX čtveřice): kroky předpisu
      * pokrývají obě strany, řádek stranu nenese. Kontrola vyrovnanosti ho
      * počítá do MD i DAL a `acc_side` ignoruje (migrace ho může poslat).

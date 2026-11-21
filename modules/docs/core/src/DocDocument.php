@@ -91,10 +91,21 @@ abstract class DocDocument extends Document
     /**
      * True, když se v posledním `beforeSave` použila **převzatá** rekapitulace
      * (a je neprázdná). Pak je autoritou celého dokladu: součty hlavičky se
-     * berou jen z ní, řádky mimo ni se nepřičítají — jinak by se u importu
-     * (kód řádku se s kódem rekapitulace nemusí krýt) základ započítal dvakrát.
+     * berou jen z ní a z řádků „Mimo DPH“ (#164 D7), ostatní řádky mimo ni se
+     * nepřičítají — jinak by se u importu (kód řádku se s kódem rekapitulace
+     * nemusí krýt) základ započítal dvakrát.
      */
     private bool $recapDeclared = false;
+
+    /**
+     * Definice kódů DPH země dokladu z posledního `computeAmounts()` — podle
+     * nich součty hlavičky a dorovnání řádků poznají řádek „Mimo DPH“
+     * ({@see VatLineScope}). Stav instance místo parametru: `sumTotals()`
+     * přetěžují subclassy. Null = země nebo konfigurace se nedohledala.
+     *
+     * @var array<string, array<string, mixed>>|null
+     */
+    private ?array $computeVatCodes = null;
 
     private ?VatRateResolver $vatRateResolver = null;
     private ?OwnCompanyResolver $ownCompanyResolver = null;
@@ -193,6 +204,7 @@ abstract class DocDocument extends Document
         }
 
         $this->validateReverseChargeSubjects($data, $result, $newState === 40);
+        $this->validateVatCodesFilled($data, $result, $newState === 40);
         $this->validateVatRates($data, $result, $newState === 40 || $this->isLockExempt($data));
         $this->validateDeclaredRecap($data, $result);
         $this->validateTotalRounding($data, $result);
@@ -266,10 +278,13 @@ abstract class DocDocument extends Document
 
     /**
      * Kontroly **převzaté** rekapitulace (spec `docs/vat-calculation.md` § 5).
-     * Obě jsou warningy — uložení neblokují: rekapitulace dodavatele je fakt
-     * i když je haléřově „špatně" (nárok na odpočet je částka z faktury),
-     * úkolem kontroly je nesrovnalost zviditelnit.
+     * První dvě jsou warningy — uložení neblokují: rekapitulace dodavatele je
+     * fakt i když je haléřově „špatně" (nárok na odpočet je částka z faktury),
+     * úkolem kontroly je nesrovnalost zviditelnit. Třetí je chyba.
      *
+     * - `vat_recap_out_of_scope` — řádek rekapitulace s kódem „Mimo DPH“
+     *   (#164 U6); chyba vždy. Řádky dokladu s tímto kódem do žádné skupiny
+     *   nepatří a kontroly níž je přeskakují.
      * - `vat_recap_inconsistent` — řádek si vnitřně neodpovídá (`base + tax`
      *   ≠ `total`, daň ≠ sazba ze základu). Sazba není vstup (#159 D1, D8):
      *   odvodí se z kódu a data sazby řádku ({@see applyVatRatesToRecap}),
@@ -304,6 +319,20 @@ abstract class DocDocument extends Document
         // validate() běží před beforeSave — procento ze vstupu se tu odvodí
         // stejně jako při uložení, kontroly níž čtou už odvozenou sazbu.
         $this->applyVatRatesToRecap($recap, $data, $resolved);
+
+        foreach ($recap as $r) {
+            // „Mimo DPH“ není plnění — řádek rekapitulace s ním je chyba
+            // vždy (#164 U6), i v importním módu: základ by se do součtů
+            // hlavičky dostal podruhé vedle řádků dokladu.
+            if (is_array($r) && VatLineScope::isOutOfScopeCode($r['vat_code'] ?? null, $vatCodes)) {
+                $code = (string) $r['vat_code'];
+                $result->addError(
+                    'recap',
+                    "Rekapitulace DPH: kód „Mimo DPH“ ({$code}) do rekapitulace nepatří — řádek rekapitulace odstraňte.",
+                    VatLineScope::RECAP_OUT_OF_SCOPE,
+                );
+            }
+        }
 
         foreach ($recap as $r) {
             if (!is_array($r) || !empty($r['is_reverse_pair'])) {
@@ -376,7 +405,7 @@ abstract class DocDocument extends Document
 
         $sums = [];
         foreach ($rows as $row) {
-            if ((int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
+            if (!is_array($row) || !VatLineScope::inRecap($row, $vatCodes)) {
                 continue;
             }
             $key = $this->vatGroupKeyOf($row);
@@ -553,6 +582,45 @@ abstract class DocDocument extends Document
                     $problem['code'],
                 );
             }
+        }
+    }
+
+    /**
+     * Řádek dokladu s DPH bez kódu DPH znamená „nevyplněno“ (#164 D2, U8):
+     * nález `vat_code_missing` na `rows.{index}.vat_code`. Chyba při
+     * potvrzení dokladu (stav 40, stejná podmínka jako chybějící předmět
+     * plnění), jinak varování; **v importním módu vždy jen varování** — na
+     * rozdíl od předmětu plnění a `vat_rate_missing` (o importu rozhodne
+     * navazující issue). Řádek, který není plněním, má kód „Mimo DPH“.
+     *
+     * Netýká se dokladu Bez DPH (`vat_mode` 0, D3), textových řádků ani
+     * kontačních řádků ({@see DocRowOperationRules::hasRowSide()} — formulář
+     * jim pole Kód DPH nenabízí). Bez země registrace nebo konfigurace se
+     * nekontroluje, jako u ostatních kontrol DPH.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function validateVatCodesFilled(array &$data, ValidationResult $result, bool $confirming): void
+    {
+        if ((int) ($data['vat_mode'] ?? 1) === 0) {
+            return;
+        }
+        $rowOperations = $this->config?->cfgItem('docs.core.rowOperations');
+        $rowOperations = is_array($rowOperations) ? $rowOperations : [];
+        $missing = array_filter(
+            $this->resolveRowsForCompute($data),
+            static fn (mixed $row): bool => is_array($row)
+                && VatLineScope::lacksCode($row)
+                && !DocRowOperationRules::hasRowSide((string) ($row['operation'] ?? ''), $rowOperations),
+        );
+        if ($missing === [] || $this->resolveVatCodesForDoc($data) === null) {
+            return;
+        }
+        $asError = $confirming && !$this->isLockExempt($data);
+        foreach (array_keys($missing) as $i) {
+            $asError
+                ? $result->addError("rows.{$i}.vat_code", VatLineScope::MISSING_CODE_MESSAGE, VatLineScope::MISSING_CODE)
+                : $result->addWarning("rows.{$i}.vat_code", VatLineScope::MISSING_CODE_MESSAGE, VatLineScope::MISSING_CODE);
         }
     }
 
@@ -900,10 +968,11 @@ abstract class DocDocument extends Document
      * Bez vedlejších efektů mimo instanci: žádný zápis do DB, číslování,
      * snapshoty ani přechody stavů. Z DB čte jen zemi registrace DPH a
      * (u uloženého dokladu bez řádků v payloadu) aktuální řádky či
-     * rekapitulaci. Nastavuje stav instance `$recapDeclared` (čte ho
-     * `headTotalsIncludeRowsOutsideRecap()` během `sumTotals`) a
-     * `$computedRows` (čte `persistRowComputedColumns()`); oba na začátku
-     * resetuje — instance může jít přes víc dokladů.
+     * rekapitulaci. Nastavuje stav instance `$recapDeclared` a
+     * `$computeVatCodes` (čtou je součty hlavičky během `sumTotals`
+     * a dorovnání řádků) a `$computedRows` (čte
+     * `persistRowComputedColumns()`); všechny na začátku resetuje — instance
+     * může jít přes víc dokladů.
      *
      * Součty skončí v `$data` (`total_base`, `total_vat`, `total_amount`,
      * `total_rounding`), rekapitulace v `$data['vatRecap']`. Řádky se do
@@ -925,6 +994,7 @@ abstract class DocDocument extends Document
         // Reset per výpočet — viz docblock.
         $this->recapDeclared = false;
         $this->computedRows = [];
+        $this->computeVatCodes = null;
 
         // Resolve rows for computation. Two scenarios:
         //   1. Client sent rows in payload (e.g. future mass-edit flow) — use them.
@@ -937,6 +1007,7 @@ abstract class DocDocument extends Document
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $resolved = $this->resolveVatCodesForDoc($data);
         $vatCodes = $resolved['codes'] ?? null;
+        $this->computeVatCodes = $vatCodes;
         $rowsForCompute = $this->resolveRowsForCompute($data);
         // Předmět plnění jen u kódů přenesení (#89 D7): řádky z payloadu se
         // s vynulovanou hodnotou i uloží; řádky ze sub-formuláře nuluje
@@ -1442,8 +1513,8 @@ abstract class DocDocument extends Document
         // 1. Group rows by (vat_code, vat_pct, předmět plnění) — co se sčítá,
         //    určuje metoda
         $grouped = $calcSource === 1
-            ? $this->groupRowVatForRecap($rows)
-            : $this->groupRowPricesForRecap($rows);
+            ? $this->groupRowVatForRecap($rows, $vatCodes)
+            : $this->groupRowPricesForRecap($rows, $vatCodes);
 
         // Datum sazby skupiny = datum jejího prvního řádku, jen při zdroji
         // „vlastní datum na řádcích“ (#159 U5); klíč skupiny ho neobsahuje.
@@ -1548,19 +1619,20 @@ abstract class DocDocument extends Document
      * po slevě — viz calculateRowPrice). Co cena znamená, řeší `vat_mode`
      * v recapAmountsFromHeader (mode 1 základ, mode 2 celkem s daní).
      *
-     * Do rekapitulace patří položkový řádek s DPH kódem; `vat_pct` smí být
-     * legitimně 0 (osvobozeno / 0% kódy), takže filtrovat přes
-     * `empty($row['vat_pct'])` nelze — základ té skupiny by ze recapu
-     * i ze součtů hlavičky zmizel.
+     * Do rekapitulace patří položkový řádek s DPH kódem, který není „Mimo
+     * DPH“ ({@see VatLineScope::inRecap()}); `vat_pct` smí být legitimně 0
+     * (osvobozeno / 0% kódy), takže filtrovat přes `empty($row['vat_pct'])`
+     * nelze — základ té skupiny by ze recapu i ze součtů hlavičky zmizel.
      *
      * @param array<int, array<string, mixed>> $rows
+     * @param array<string, array<string, mixed>>|null $vatCodes
      * @return array<string, array{vat_code: string, vat_pct: float, rate_date: ?string, subject: ?string, price: float, base: float, tax: float}>
      */
-    private function groupRowPricesForRecap(array $rows): array
+    private function groupRowPricesForRecap(array $rows, ?array $vatCodes): array
     {
         $grouped = [];
         foreach ($rows as $row) {
-            if ((int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
+            if (!VatLineScope::inRecap($row, $vatCodes)) {
                 continue;
             }
             $key = $this->vatGroupKeyOf($row);
@@ -1585,13 +1657,14 @@ abstract class DocDocument extends Document
      * hodnoty, takže recapAmountsFromRows je jen jejich součet.
      *
      * @param array<int, array<string, mixed>> $rows
+     * @param array<string, array<string, mixed>>|null $vatCodes
      * @return array<string, array{vat_code: string, vat_pct: float, rate_date: ?string, subject: ?string, price: float, base: float, tax: float}>
      */
-    private function groupRowVatForRecap(array $rows): array
+    private function groupRowVatForRecap(array $rows, ?array $vatCodes): array
     {
         $grouped = [];
         foreach ($rows as $row) {
-            if ((int) ($row['row_kind'] ?? 1) !== 1 || empty($row['vat_code'])) {
+            if (!VatLineScope::inRecap($row, $vatCodes)) {
                 continue;
             }
             $key = $this->vatGroupKeyOf($row);
@@ -1699,7 +1772,9 @@ abstract class DocDocument extends Document
      * podle kterého beforeSave rekapitulaci staví (`buildVatRecapitulation`
      * / `useDeclaredRecap`), jen bez výpočtu částek a bez DB: režim DPH
      * ≠ 0, registrace DPH a aspoň jeden položkový řádek (`row_kind` 1)
-     * s kódem DPH, nebo převzatá rekapitulace v payloadu. Payload bez klíče
+     * s kódem DPH, který není „Mimo DPH“ ({@see VatLineScope::inRecap()}),
+     * nebo převzatá rekapitulace v payloadu. Doklad jen s řádky „Mimo DPH“
+     * rekapitulaci nemá (#164 U6). Payload bez klíče
      * `rows` (header-only save, přechod stavu) řádky nemění — rozhoduje
      * uložený stav (`$storedRecap`), stejně jako `resolveRowsForCompute`
      * spadne na řádky z DB.
@@ -1710,8 +1785,11 @@ abstract class DocDocument extends Document
      *
      * @param array<string, mixed> $data nový stav dokladu
      * @param bool $storedRecap má uložený doklad řádky v docs_core_vat_recap
+     * @param array<string, array<string, mixed>>|null $vatCodes definice kódů
+     *        země registrace dokladu; bez nich se „Mimo DPH“ nepozná a každý
+     *        řádek s kódem se bere jako řádek rekapitulace.
      */
-    public static function willHaveVatRecap(array $data, bool $storedRecap): bool
+    public static function willHaveVatRecap(array $data, bool $storedRecap, ?array $vatCodes = null): bool
     {
         if ((int) ($data['vat_mode'] ?? 1) === 0 || empty($data['vat_registration'])) {
             return false;
@@ -1724,7 +1802,7 @@ abstract class DocDocument extends Document
             return $storedRecap;
         }
         foreach ($data['rows'] as $row) {
-            if (is_array($row) && (int) ($row['row_kind'] ?? 1) === 1 && !empty($row['vat_code'])) {
+            if (is_array($row) && VatLineScope::inRecap($row, $vatCodes)) {
                 return true;
             }
         }
@@ -1881,7 +1959,10 @@ abstract class DocDocument extends Document
             'SELECT [country] FROM [economy_codebooks_vat_registrations] WHERE [id] = %i',
             (int) $vatRegId,
         );
-        return $row !== null ? (string) $row['country'] : null;
+        // Registrace bez země se bere jako nedohledaná — kontroly DPH se
+        // pak neuplatní, stejně jako bez registrace.
+        $country = $row !== null ? ($row['country'] ?? null) : null;
+        return $country !== null && $country !== '' ? (string) $country : null;
     }
 
     /**
@@ -1915,23 +1996,33 @@ abstract class DocDocument extends Document
     // ── Totals, rounding, exchange ──────────────────────────────────────────
 
     /**
-     * Zda mají součty hlavičky zahrnout i řádky mimo DPH rekapitulaci (řádky
-     * bez kódu, doklady z období neplátcovství). Faktury ano — jinak by
-     * doklad bez DPH měl total_* = 0 a deník bez strany 321. Subclassy s
-     * vlastní logikou součtů (cmnbkp sčítá z řádků) hook vypnou.
+     * Zda součty hlavičky tohoto typu dokladu zahrnují i řádky mimo DPH
+     * rekapitulaci (řádky „Mimo DPH“, řádky bez kódu, doklady z období
+     * neplátcovství). Faktury ano — jinak by doklad bez DPH měl total_* = 0
+     * a deník bez strany 321. Subclassy s vlastní logikou součtů (cmnbkp
+     * sčítá z řádků) hook vypnou.
+     *
+     * Které z těch řádků se přičtou, řídí {@see sumRowsOutsideRecap()}:
+     * u převzaté rekapitulace jen řádky „Mimo DPH“ (#164 D7).
      */
     protected function headTotalsIncludeRowsOutsideRecap(): bool
     {
-        // Převzatá rekapitulace je autorita celého dokladu — viz $recapDeclared.
-        return !$this->recapDeclared;
+        return true;
     }
 
     /**
-     * Součet řádkových hodnot těch item řádků, jejichž skupina
-     * (`vatGroupKey`) není v rekapitulaci — tj. řádky bez `vat_code`, nebo
-     * všechny řádky když je recap prázdný (neplátce / nedohledaná země).
-     * Po Z3 mají bezkódové řádky vat_amount 0 a vat_total = vat_base, takže
-     * fallback je konzistentní se součty z recapu.
+     * Součet řádkových hodnot item řádků mimo rekapitulaci:
+     *
+     *  - řádky **„Mimo DPH“** ({@see VatLineScope::isOutOfScope()}) vždy —
+     *    i u převzaté rekapitulace (#164 D7): odpočet nezdaněné zálohy by
+     *    jinak z částky importovaného dokladu vypadl;
+     *  - ostatní řádky, jejichž skupina (`vatGroupKey`) není v rekapitulaci
+     *    — řádky bez `vat_code`, nebo všechny řádky když je recap prázdný
+     *    (neplátce / nedohledaná země) — jen u **přepočítané** rekapitulace.
+     *    Převzatá je autorita celého dokladu ({@see $recapDeclared}).
+     *
+     * Řádek „Mimo DPH“ i řádek bez kódu má vat_amount 0 a vat_total =
+     * vat_base, takže fallback je konzistentní se součty z recapu.
      *
      * @param array<int, array<string, mixed>> $rows
      * @param array<int, array<string, mixed>> $recap
@@ -1949,7 +2040,9 @@ abstract class DocDocument extends Document
             if ((int) ($row['row_kind'] ?? 1) !== 1) {
                 continue;
             }
-            if (isset($recapKeys[$this->vatGroupKeyOf($row)])) {
+            if (!VatLineScope::isOutOfScope($row, $this->computeVatCodes)
+                && ($this->recapDeclared || isset($recapKeys[$this->vatGroupKeyOf($row)]))
+            ) {
                 continue;
             }
             $sum['base']     += (float) ($row['vat_base'] ?? 0);
@@ -1963,8 +2056,9 @@ abstract class DocDocument extends Document
 
     /**
      * Součty hlavičky z rekapitulace DPH. Doplněné o řádky mimo rekapitulaci
-     * (bezkódové / doklady bez DPH) přes sumRowsOutsideRecap, jinak by měly
-     * total_* = 0. Subclassy bez DPH (cmnbkp) mají vlastní override.
+     * („Mimo DPH“, bezkódové / doklady bez DPH) přes sumRowsOutsideRecap,
+     * jinak by měly total_* = 0. Subclassy bez DPH (cmnbkp) mají vlastní
+     * override.
      *
      * @param array<int, array<string, mixed>> $rows Řádky po compute pipeline.
      */
@@ -2131,8 +2225,9 @@ abstract class DocDocument extends Document
 
         // 2. Head: base/vat as recap sums (same sum flags as sumTotals — NOT
         //    an independent rate conversion), amount by rate, rounding derived.
-        //    Řádky mimo rekapitulaci (bezkódové) se přičtou z jejich _dom
-        //    hodnot spočtených v kroku 1 — stejný fallback jako sumTotals.
+        //    Řádky mimo rekapitulaci („Mimo DPH“, bezkódové) se přičtou
+        //    z jejich _dom hodnot spočtených v kroku 1 — stejný fallback
+        //    jako sumTotals.
         $baseDom = 0.0;
         $vatDom  = 0.0;
         foreach ($recap as $r) {
@@ -2175,6 +2270,7 @@ abstract class DocDocument extends Document
      * týž řádek a `vat_total` zůstává konzistentní.
      *
      * Oddaňovací páry reverse charge nemají řádky dokladu — přeskakují se.
+     * Řádky „Mimo DPH“ do žádné skupiny nepatří ({@see VatLineScope}).
      *
      * @param array<int, array<string, mixed>> $rows Řádky po compute pipeline
      * @param array<int, array<string, mixed>> $recap Rekapitulace dokladu
@@ -2210,8 +2306,7 @@ abstract class DocDocument extends Document
             $lastBaseIdx = null;
             $lastAmountIdx = null;
             foreach ($rows as $i => $row) {
-                if ((int) ($row['row_kind'] ?? 1) !== 1
-                    || empty($row['vat_code'])
+                if (!VatLineScope::inRecap($row, $this->computeVatCodes)
                     || $this->vatGroupKeyOf($row) !== $key
                 ) {
                     continue;

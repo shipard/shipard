@@ -59,6 +59,19 @@ class DocRowsDocument extends Document
 
         $head = $this->loadHeadContext($data['doc_head'] ?? null);
         $cfg = $this->config?->cfgItem('docs.core.rowOperations');
+
+        // Řádek dokladu s DPH bez kódu znamená „nevyplněno“ (#164 D2, U8):
+        // při uložení ze sub-formuláře varování, potvrzení dokladu ho
+        // odmítne (`DocDocument::validateVatCodesFilled`). Kontačním řádkům
+        // formulář pole Kód DPH nenabízí; bez DPH kontextu hlavičky (doklad
+        // Bez DPH, nedohledaná země registrace) se nekontroluje.
+        if (VatLineScope::lacksCode($data)
+            && !DocRowOperationRules::hasRowSide((string) ($data['operation'] ?? ''), is_array($cfg) ? $cfg : [])
+            && ReverseChargeSubjects::headContext($this->db, $this->config, $data['doc_head'] ?? null) !== null
+        ) {
+            $result->addWarning('vat_code', VatLineScope::MISSING_CODE_MESSAGE, VatLineScope::MISSING_CODE);
+        }
+
         if ($head === null || !is_array($cfg)) {
             return $result;
         }

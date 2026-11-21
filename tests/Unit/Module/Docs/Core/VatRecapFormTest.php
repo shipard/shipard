@@ -237,4 +237,19 @@ class VatRecapFormTest extends TestCase
         ]);
         $this->assertNull($result->data['reverse_charge_code']);
     }
+
+    /** „Mimo DPH“ do rekapitulace nepatří (#164 U6) — formulář řádku rekapitulace ho nenabízí. */
+    public function testOutOfScopeCodeIsNotOfferedForRecapLine(): void
+    {
+        $form = $this->form($this->receivedInvoiceHead());
+        $def = $form->buildFormDefinition(['doc_head' => 1], true);
+        $codes = array_column($this->elements($def)['vat_code']->options, 'value');
+
+        $this->assertNotContains('cz-000', $codes);
+        $this->assertContains('cz-110', $codes);
+
+        $data = ['doc_head' => 1];
+        $form->applyNewRecordDefaults($data);
+        $this->assertSame($codes[0], $data['vat_code']);
+    }
 }

@@ -190,4 +190,21 @@ class VatRecapDocumentTest extends TestCase
             'oddaňovací pár vlastní kontrolu nemá',
         );
     }
+
+    /** „Mimo DPH“ do rekapitulace nepatří (#164 U6) — řádek rekapitulace s ním se neuloží. */
+    public function testOutOfScopeCodeIsRejectedOnRecapLine(): void
+    {
+        $doc = $this->docWithVatHead();
+        $errors = static function (array $line) use ($doc): array {
+            $line += ['doc_head' => 7];
+            return array_map(static fn ($e): array => $e->toArray(), $doc->validate($line)->getErrors());
+        };
+
+        $rejected = $errors(['vat_code' => 'cz-000', 'base' => 50, 'tax' => 0, 'total' => 50]);
+        $this->assertCount(1, $rejected);
+        $this->assertSame('vat_code', $rejected[0]['column']);
+        $this->assertSame('vat_recap_out_of_scope', $rejected[0]['code']);
+
+        $this->assertSame([], $errors(['vat_code' => 'cz-110', 'base' => 100, 'tax' => 21, 'total' => 121]));
+    }
 }

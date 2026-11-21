@@ -32,6 +32,18 @@ class VatRecapDocument extends Document
     public function validate(array &$data): ValidationResult
     {
         $result = parent::validate($data);
+        // „Mimo DPH“ není plnění — do rekapitulace nepatří (#164 U6).
+        // Formulář kód nenabízí, tady se chytí zápis mimo něj.
+        if (!empty($data['vat_code'])) {
+            $context = ReverseChargeSubjects::headContext($this->db, $this->config, $data['doc_head'] ?? null);
+            if ($context !== null && VatLineScope::isOutOfScopeCode($data['vat_code'], $context['codes'])) {
+                $result->addError(
+                    'vat_code',
+                    'Kód „Mimo DPH“ do rekapitulace DPH nepatří — řádek s ním je mimo rekapitulaci.',
+                    VatLineScope::RECAP_OUT_OF_SCOPE,
+                );
+            }
+        }
         if (empty($data['is_reverse_pair']) && !empty($data[ReverseChargeSubjects::COLUMN])) {
             $problem = ReverseChargeSubjects::lineProblem($this->db, $this->config, $data);
             if ($problem !== null) {

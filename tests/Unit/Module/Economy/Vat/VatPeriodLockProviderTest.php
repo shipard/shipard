@@ -60,6 +60,14 @@ final class TestableVatPeriodLockProvider extends VatPeriodLockProvider
         return $this;
     }
 
+    /** Země registrace DPH; null = nedohledána (kódy DPH se pak nečtou). */
+    public ?string $country = null;
+
+    protected function registrationCountry(int $regId): ?string
+    {
+        return $this->country;
+    }
+
     protected function hasStoredRecap(int $headId): bool
     {
         return ($this->storedRecaps[$headId] ?? []) !== [];
@@ -162,6 +170,41 @@ final class VatPeriodLockProviderTest extends TestCase
         $this->assertSame([], $p->lockReasons(self::TABLE, $data, null));
         // Kontrola: tentýž payload jako faktura zamčený je.
         $this->assertNotEmpty($p->lockReasons(self::TABLE, ['doc_type' => 'invno'] + $data, null));
+    }
+
+    /**
+     * Doklad jen s řádky „Mimo DPH“ rekapitulaci nemá (#164 U6) — do zamčené
+     * instance se nepočítá; s jediným řádkem plnění už ano.
+     */
+    public function testDocumentWithOnlyOutOfScopeRowsIsNotLocked(): void
+    {
+        $vatCz = ['vatCodes' => [
+            'cz-110' => ['category' => 'standard', 'place' => 'domestic', 'direction' => 'input'],
+            'cz-000' => ['category' => 'outOfScope'],
+        ]];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'world.vat.cz' ? $vatCz : null,
+        );
+        $p = $this->provider();
+        $p->setConfig($config);
+        $p->country = 'cz';
+        $outOfScope = ['row_kind' => 1, 'vat_code' => 'cz-000'];
+        $data = [
+            'docState' => 10, 'vat_registration' => 5, 'vat_mode' => 1,
+            'vat_duzp' => '2026-01-15', 'vat_period' => 101, 'rows' => [$outOfScope],
+        ];
+
+        $this->assertSame([], $p->lockReasons(self::TABLE, $data, null));
+
+        $data['rows'][] = ['row_kind' => 1, 'vat_code' => 'cz-110'];
+        $this->assertNotEmpty($p->lockReasons(self::TABLE, $data, null));
+
+        // Bez dohledané země se „Mimo DPH“ nepozná — řádek s kódem se bere
+        // jako řádek rekapitulace (bezpečná strana: zámek drží).
+        $p->country = null;
+        $data['rows'] = [$outOfScope];
+        $this->assertNotEmpty($p->lockReasons(self::TABLE, $data, null));
     }
 
     // ── původní stav ────────────────────────────────────────────────────────

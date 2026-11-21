@@ -549,4 +549,80 @@ class DocRowsFormTest extends TestCase
         $this->assertNull($cleared->data['reverse_charge_code']);
         $this->assertTrue($this->findElement($cleared->formDefinition, 'reverse_charge_code')->hidden);
     }
+
+    // ── Kód „Mimo DPH“ (#164 D1, U3, U4) ────────────────────────────────────
+
+    public function testOutOfScopeCodeIsLastOptionAndNeverTheDefault(): void
+    {
+        foreach ([0, 1, 2] as $vatPlace) {
+            $form = $this->formWithVatHead(['vat_place' => $vatPlace]);
+            $def = $form->buildFormDefinition(['doc_head' => 1, 'row_kind' => 1], false);
+            $options = $this->findElement($def, 'vat_code')->options;
+            $last = end($options);
+
+            $this->assertSame(['value' => 'cz-000', 'label' => 'Mimo DPH'], $last, "místo plnění {$vatPlace}");
+
+            $data = ['doc_head' => 1, 'row_kind' => 1, 'operation' => 'x'];
+            $form->applyNewRecordDefaults($data);
+            $this->assertSame($options[0]['value'], $data['vat_code'], 'nový řádek dostane první kód nabídky');
+            $this->assertNotSame('cz-000', $data['vat_code']);
+        }
+    }
+
+    public function testNewRowStaysWithoutCodeWhenOnlyOutOfScopeIsOffered(): void
+    {
+        // Žádný běžný kód k datu sazbu nemá — „Mimo DPH“ se nabídne, ale
+        // nový řádek ho jako výchozí nedostane (U4).
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(
+            static fn (mixed ...$args): ?array => str_contains((string) ($args[0] ?? ''), 'vat_registrations')
+                ? ['country' => 'cz']
+                : [
+                    'doc_type' => 'invno', 'cash_dir' => 0, 'vat_place' => 0, 'vat_duzp' => '2005-06-01',
+                    'issue_date' => '2005-06-01', 'vat_mode' => 1, 'vat_registration' => 1,
+                    'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => 1.0,
+                ],
+        );
+        $db->method('fetchAll')->willReturn([]);
+        $form = $this->createForm();
+        $form->setDb($db);
+        $form->setConfig(ConfigRuntimeFactory::fromItems([
+            'world.vat.cz' => [
+                'vatCodes' => [
+                    'cz-120' => ['fullName' => 'Základní', 'category' => 'standard', 'place' => 'domestic', 'direction' => 'output'],
+                    'cz-000' => ['fullName' => 'Mimo DPH', 'category' => 'outOfScope'],
+                ],
+                'vatPercents' => [
+                    ['code' => 'cz-120', 'from' => '2013-01-01', 'to' => '0000-00-00', 'value' => 21.0],
+                    ['code' => 'cz-000', 'from' => '0000-00-00', 'to' => '0000-00-00', 'value' => 0.0],
+                ],
+            ],
+            'docs.core.docTypes' => ['invno' => ['trade_dir' => 1]],
+        ]));
+
+        $def = $form->buildFormDefinition(['doc_head' => 1, 'row_kind' => 1], false);
+        $this->assertSame(['cz-000'], array_column($this->findElement($def, 'vat_code')->options, 'value'));
+
+        $data = ['doc_head' => 1, 'row_kind' => 1, 'operation' => 'x'];
+        $form->applyNewRecordDefaults($data);
+        $this->assertTrue(empty($data['vat_code']), 'řádek zůstane bez kódu — „nevyplněno“');
+    }
+
+    public function testOutOfScopeRowShowsOnlyTotalInLiveSummary(): void
+    {
+        $form = $this->formWithVatHead([]);
+        $result = $form->recalculate('vat_code', [
+            'doc_head' => 1, 'row_kind' => 1, 'price_calc_mode' => 0,
+            'quantity' => 1, 'unit_price' => -500, 'vat_code' => 'cz-000',
+        ]);
+
+        $this->assertSame(0.0, (float) $result->data['vat_pct']);
+        $this->assertSame(0.0, (float) $result->data['vat_amount']);
+        $this->assertSame(-500.0, (float) $result->data['vat_total']);
+        // Řádek není plnění — pruh bez základu a daně, jen částka.
+        $this->assertSame(
+            [['label' => 'Celkem CZK', 'value' => '-500,00']],
+            $result->formDefinition->liveSummary,
+        );
+    }
 }

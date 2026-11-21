@@ -9,6 +9,7 @@ use Shipard\Core\Document\AbstractDocumentLockProvider;
 use Shipard\Core\Document\DocumentLockReason;
 use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocTypes;
+use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
  * Zámek instance tvrzení DPH nad doklady (`documentLockProviders` pro
@@ -57,7 +58,7 @@ class VatPeriodLockProvider extends AbstractDocumentLockProvider
         $storedRecap = $headId > 0 && $this->hasStoredRecap($headId);
 
         $hasVatOriginal = $original !== null && $storedRecap;
-        $hasVatNew = DocDocument::willHaveVatRecap($data, $storedRecap);
+        $hasVatNew = DocDocument::willHaveVatRecap($data, $storedRecap, $this->vatCodesFor($data));
         if (!$hasVatOriginal && !$hasVatNew) {
             return [];
         }
@@ -193,7 +194,46 @@ class VatPeriodLockProvider extends AbstractDocumentLockProvider
         return $codes;
     }
 
+    /**
+     * Definice kódů DPH země registrace dokladu — podle nich
+     * `DocDocument::willHaveVatRecap` pozná řádek „Mimo DPH“ (#164 U6):
+     * doklad jen s takovými řádky rekapitulaci nemá a do zamčeného období se
+     * nepočítá. Potřeba jen s řádky v payloadu; null = bez registrace nebo
+     * konfigurace (každý řádek s kódem se pak bere jako řádek rekapitulace).
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, array<string, mixed>>|null
+     */
+    private function vatCodesFor(array $data): ?array
+    {
+        $regId = (int) ($data['vat_registration'] ?? 0);
+        if ($regId <= 0 || $this->config === null
+            || !array_key_exists('rows', $data) || !is_array($data['rows'])
+        ) {
+            return null;
+        }
+        $country = $this->registrationCountry($regId);
+        if ($country === null) {
+            return null;
+        }
+        try {
+            return (new VatRateResolver($this->config))->getVatCodes($country, null, null, true);
+        } catch (\LogicException) {
+            return null;
+        }
+    }
+
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────
+
+    /** Země registrace DPH (`economy_codebooks_vat_registrations.country`); null = nedohledána. */
+    protected function registrationCountry(int $regId): ?string
+    {
+        $country = $this->db?->fetchSingle(
+            'SELECT [country] FROM [economy_codebooks_vat_registrations] WHERE [id] = %i',
+            $regId,
+        );
+        return is_string($country) && $country !== '' ? $country : null;
+    }
 
     protected function hasStoredRecap(int $headId): bool
     {

@@ -264,4 +264,64 @@ class DocRowsDocumentTest extends TestCase
             'mimo zdroj 2 se datum řádku nečte',
         );
     }
+
+    // ── Řádek bez kódu DPH = nevyplněno (#164 D2, D3, U8) ──────────────────
+
+    /** @param array<string, mixed> $row */
+    private function missingCodeWarnings(DocRowsDocument $doc, array $row): array
+    {
+        $row += ['doc_head' => 7, 'row_kind' => 1];
+        return array_values(array_filter(
+            array_map(static fn ($w): array => $w->toArray(), $doc->validate($row)->getWarnings()),
+            static fn (array $w): bool => $w['code'] === 'vat_code_missing',
+        ));
+    }
+
+    public function testRowWithoutVatCodeOnVatDocumentWarnsOnSubformSave(): void
+    {
+        $doc = $this->docWithVatHead();
+
+        $warnings = $this->missingCodeWarnings($doc, ['vat_code' => null]);
+        $this->assertCount(1, $warnings, 'uložení řádku ze sub-formuláře jen varuje');
+        $this->assertSame('vat_code', $warnings[0]['column']);
+        $this->assertStringContainsString('Mimo DPH', $warnings[0]['message']);
+        $uncoded = ['doc_head' => 7, 'row_kind' => 1];
+        $this->assertSame([], array_filter(
+            array_map(static fn ($e): array => $e->toArray(), $doc->validate($uncoded)->getErrors()),
+            static fn (array $e): bool => $e['code'] === 'vat_code_missing',
+        ));
+
+        $this->assertSame([], $this->missingCodeWarnings($doc, ['vat_code' => 'cz-120']));
+        $this->assertSame([], $this->missingCodeWarnings($doc, ['vat_code' => 'cz-000']), '„Mimo DPH“ je vyplněný kód');
+        $this->assertSame([], $this->missingCodeWarnings($doc, ['vat_code' => null, 'row_kind' => 0]), 'textový řádek');
+    }
+
+    public function testRowWithoutVatCodeIsFineOnDocumentWithoutVatAndOnContationRow(): void
+    {
+        $config = \Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory::fromItems([
+            'world.vat.cz' => \Shipard\Core\Utils\JsoncParser::parseFile(
+                dirname(__DIR__, 5) . '/modules/world/vat/config/vat-cz.jsonc',
+            ),
+            'docs.core.rowOperations' => ['acc.record' => ['rowSide' => 1], 'sale' => []],
+        ]);
+        $docFor = function (int $vatMode) use ($config): DocRowsDocument {
+            $db = $this->createMock(Connection::class);
+            $db->method('fetch')->willReturn(new \Dibi\Row([
+                'vat_registration' => 1, 'vat_mode' => $vatMode, 'vat_duzp' => '2026-05-06',
+                'issue_date' => '2026-05-06', 'corrective' => 0, 'corrected_doc_date' => null,
+                'doc_type' => 'invno', 'cash_dir' => 0, 'operation' => '',
+            ]));
+            $db->method('fetchSingle')->willReturn('cz');
+            $doc = new DocRowsDocument();
+            $doc->setDb($db);
+            $doc->setConfig($config);
+            return $doc;
+        };
+
+        // D3: doklad Bez DPH kódy nenese.
+        $this->assertSame([], $this->missingCodeWarnings($docFor(0), ['vat_code' => null, 'operation' => 'sale']));
+        // Kontačnímu řádku formulář pole Kód DPH nenabízí.
+        $this->assertSame([], $this->missingCodeWarnings($docFor(1), ['vat_code' => null, 'operation' => 'acc.record']));
+        $this->assertCount(1, $this->missingCodeWarnings($docFor(1), ['vat_code' => null, 'operation' => 'sale']));
+    }
 }

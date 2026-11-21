@@ -128,6 +128,8 @@ class VatRecapForm extends TableForm
             $this->lineRateDate($data, $headContext),
             $data['vat_code'] ?? null,
             $this->formText('docs.core.formTexts', 'vatCode.noRate', '{label} — no rate at this date'),
+            // „Mimo DPH“ do rekapitulace nepatří (#164 U6) — nenabízí se.
+            includeOutOfScope: false,
         );
     }
 

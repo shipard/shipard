@@ -118,6 +118,12 @@ final class DocHeadVatContext
      * (vzor s `{label}` z katalogu textů formuláře), aby ho šlo vědomě
      * vyměnit.
      *
+     * Kód „Mimo DPH“ (#164 D1, U3, U4) je v nabídce vždy **poslední** — pro
+     * každý směr i místo plnění (pořadí dává `VatRateResolver::getVatCodes()`)
+     * — a bez procenta: řádek, který není plněním, sazbu nemá. Nabídka
+     * řádku **rekapitulace** ho nenese (`$includeOutOfScope` false) — do
+     * rekapitulace nepatří (`vat_recap_out_of_scope`).
+     *
      * @param array<string, mixed>|null $context
      * @return list<array{value: string, label: string}>
      */
@@ -127,6 +133,7 @@ final class DocHeadVatContext
         ?string $rateDate = null,
         mixed $currentCode = null,
         string $noRatePattern = '{label} — no rate at this date',
+        bool $includeOutOfScope = true,
     ): array {
         if ($context === null
             || empty($context['country'])
@@ -153,6 +160,12 @@ final class DocHeadVatContext
         $options = [];
         foreach ($codes as $key => $code) {
             $label = (string) ($code['fullName'] ?? $code['name'] ?? $key);
+            if (VatRateResolver::isOutOfScopeDefinition($code)) {
+                if ($includeOutOfScope) {
+                    $options[] = ['value' => (string) $key, 'label' => $label];
+                }
+                continue;
+            }
             if ($date !== null) {
                 $pct = VatRateDates::pct($resolver, $country, (string) $key, $date);
                 if ($pct !== null) {
