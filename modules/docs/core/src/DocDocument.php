@@ -328,7 +328,7 @@ abstract class DocDocument extends Document
                 $code = (string) $r['vat_code'];
                 $result->addError(
                     'recap',
-                    "Rekapitulace DPH: kód „Mimo DPH“ ({$code}) do rekapitulace nepatří — řádek rekapitulace odstraňte.",
+                    "Rekapitulace DPH: kód „Mimo DPH“ ({$code}) do rekapitulace nepatří — řádek rekapitulace odstraň.",
                     VatLineScope::RECAP_OUT_OF_SCOPE,
                 );
             }

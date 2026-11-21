@@ -164,7 +164,7 @@ starých kódů (`EUCZ000`, `EUCZ112`, `EUCZ122`) řeší navazující issue.
   chybí, platí dnešní pravidlo beze změny (jen u přepočítané
   rekapitulace).
 - **U8 — kontrola D2.** Nález `vat_code_missing` na `rows.N.vat_code`
-  („Řádek nemá kód DPH. Vyberte kód, nebo „Mimo DPH“.“). Platí pro
+  („Řádek nemá kód DPH. Vyber kód, nebo „Mimo DPH“.“). Platí pro
   položkový řádek (`row_kind` 1) dokladu s `vat_mode` ≠ 0, u kterého se
   dohledala země registrace (jinak se nekontroluje, jako u ostatních
   kontrol DPH). Chyba při potvrzení dokladu — stejná podmínka jako
@@ -450,8 +450,10 @@ každém z nich.
   nemá a `IsdocWriter` ho odmítne („chybí rekapitulace DPH“);
   `TaxExclusiveAmount` řádky „Mimo DPH“ obsahuje, součet `TaxSubTotal` ne.
   Signál „mimo DPH“ pro ISDOC je mimo rozsah.
-- **Text nálezu `vat_code_missing` vyká** („Vyberte kód…“), jak stojí
-  v U8; ostatní hlášky dokladu tykají.
+- **Texty nálezů `vat_code_missing` a `vat_recap_out_of_scope` vykaly**
+  („Vyberte kód…“, „…odstraňte“) — první tak stál v U8, ostatní hlášky
+  dokladu tykají. Opraveno doplňkem po ověření 2026-11-21 („Vyber kód…“,
+  „…odstraň“).
 - Řádek dokladu od neplátce má v náhledu sdílený stav „Bez DPH — doklad
   mimo české DPH“.
 - Integrační `DocJournalPrintTest::testInvoiceJournalMatchesContractSnapshot`

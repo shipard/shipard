@@ -34,7 +34,7 @@ final class VatLineScope
     public const MISSING_CODE = 'vat_code_missing';
 
     /** Text nálezu {@see MISSING_CODE} — stejný při potvrzení dokladu i při uložení řádku. */
-    public const MISSING_CODE_MESSAGE = 'Řádek nemá kód DPH. Vyberte kód, nebo „Mimo DPH“.';
+    public const MISSING_CODE_MESSAGE = 'Řádek nemá kód DPH. Vyber kód, nebo „Mimo DPH“.';
 
     /** Kód chyby řádku převzaté rekapitulace s kódem „Mimo DPH“ (#164 U6). */
     public const RECAP_OUT_OF_SCOPE = 'vat_recap_out_of_scope';
