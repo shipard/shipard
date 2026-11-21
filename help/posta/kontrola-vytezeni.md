@@ -2,7 +2,7 @@
 title: Kontrola vytěženého dokladu
 summary: Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout.
 keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, faktura z USA, software ze zahraničí, místo plnění, DIČ dodavatele, neplátce DPH, faktura od plátce, daň v ceně, bez DPH, napárování, napárovaná položka, špatná položka, změnit položku, položka řádku, zdroj napárování, kód dodavatele, sloupec Účet]
-related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md]
+related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md, uctarna/kod-dph-radku.md]
 ---
 
 # Kontrola vytěženého dokladu
@@ -291,6 +291,25 @@ samovyměřením, zvol v hlavičce **Režim DPH** *Bez DPH* — doklad vznikne
 bez kódů a bez daně a náhled připomene, že se daň v Česku nepřizná. Volba
 *Automaticky* vrátí původní návrh. U tuzemské faktury s přenesením daňové
 povinnosti se *Bez DPH* zvolit nedá, Shipard režim vrátí zpět.
+
+**Faktura od neplátce DPH.** Tuzemská faktura, na které žádná daň není
+a AI ji přečetla jako doklad bez DPH, vznikne s **Režimem DPH** *Bez DPH*
+(náhled u něj píše *doklad od neplátce DPH — bez kódů DPH*): řádky kód DPH
+nemají, **DPH rekapitulace** chybí a ceny řádků zůstávají, jak jsou na
+faktuře — neplátce daň neúčtuje. Do přiznání ani do kontrolního hlášení
+se doklad nedostane. Když dodavatel plátcem je a fakturu jen přečetla AI
+špatně, zvol v hlavičce **Režim DPH** s daní, nebo klikni na odznak
+u sazby řádku a vyber kód; kód pak potřebuje každý řádek. Stejně to
+funguje opačně: zvolíš-li u tuzemské faktury bez daně **Režim DPH** *Bez
+DPH*, návrh se změní na doklad od neplátce. Řádek s nulovou sazbou na
+faktuře **plátce** (pojištění, poštovné) je něco jiného — dostane kód
+*Tuzemsko/Vstup/Osvobozeno* a zůstává v rekapitulaci.
+
+**Řádek mimo DPH.** Nabídka kódů u řádku končí kódem *Mimo DPH*. Vyber ho
+u řádku, který není plněním — typicky odpočet zálohy na vyúčtovací
+faktuře. Řádek se počítá do **Celkem**, do **DPH rekapitulace** ne.
+Shipard ho sám nenavrhne; víc v
+[Řádek mimo DPH a řádek bez kódu DPH](../uctarna/kod-dph-radku.md).
 
 **Předmět plnění u tuzemského přenesení daňové povinnosti.** Faktura od
 českého dodavatele s textem *daň odvede zákazník* potřebuje u každého

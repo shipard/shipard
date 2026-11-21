@@ -63,6 +63,11 @@ cen u neplátce). Na tasku B nezávisí.
 
 - ✓ **D1 — bez `cz-000`.** Nedaňový řádek je `vat_code = null`. Doklad mimo
   české DPH vzniká celý Bez DPH (`vat_mode` 0).
+  **Nahrazeno #164 D1–D2** (`tasks/vat-codebook-revision.md`, 2026-11-21):
+  řádek dokladu s DPH, který není plněním, nese kód `cz-000` „Mimo DPH“
+  a `vat_code = null` na dokladu s DPH znamená „nevyplněno“. Druhá věta
+  platí dál — doklad Bez DPH kódy nenese (#164 D3) a přibyl k němu další
+  druh, doklad od neplátce v tuzemsku (#164 D5a).
 - ✓ **D2 — zahraniční DPH.** Přijatý doklad (`selfParty: "customer"`) na
   zdroji s registrací DPH platnou k datu, mimo import, efektivní místo
   plnění mimo tuzemsko, `vat.reverseCharge` není `true` a doklad nese daň

@@ -103,7 +103,10 @@ komentáře číselníku a do #89):
 
 ## Rozhodnutí k designu (potvrzená)
 
-Číslování navazuje na D1–D5 tasku A (obojí #89).
+Číslování navazuje na D1–D5 tasku A (obojí #89). D1 tasku A (nedaňový
+řádek je `vat_code = null`) **nahrazuje #164 D1–D2**
+(`tasks/vat-codebook-revision.md`): takový řádek nese kód `cz-000` „Mimo
+DPH“, řádek dokladu s DPH bez kódu znamená „nevyplněno“.
 
 - ✓ **D6 — číselník předmětů.** `world.vat.cz` dostane sekci
   `reverseChargeSubjects`: klíč = kód (řetězec), `name` / `name:cs` /

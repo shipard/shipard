@@ -97,6 +97,12 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
      Procento nezadáváš — je vidět v nabídce u každého kódu a platí k DUZP.
      Potřebuje-li řádek jinou sazbu, změň kód; má-li mít sazbu z jiného dne
      (odpočet zálohy), viz [Datum sazby DPH](../uctarna/datum-sazby-dph.md).
+   - Řádek, který není prodej — odpočet zálohy, ze které se daň
+     neodváděla, kauce, přeúčtovaný poplatek — dostane **Kód DPH** *Mimo
+     DPH* (poslední v nabídce). Do částky faktury se počítá, do **DPH
+     rekapitulace** ani do přiznání ne. Osvobozené plnění má kód
+     *Osvobozeno*; rozdíl je v
+     [Řádek mimo DPH a řádek bez kódu DPH](../uctarna/kod-dph-radku.md).
    - Fakturuješ-li v režimu přenesení daňové povinnosti, vyber **Kód DPH**
      s přenesením (*Tuzemsko/Výstup/Základní - přenesení DP*). Pod kódem se
      objeví pole **Předmět plnění** — vyber, co dodáváš (*4* stavební
@@ -154,6 +160,11 @@ firmy (doplníš jen datum a frekvence) a bankovní účty **převezme** z její
 bankovních spojení. Ručně obojí najdeš v **Nastavení → Účetnictví**.
 Číselnou řadu pro vydané faktury Shipard zakládá sám, o tu se starat
 nemusíš.
+
+**„Řádek nemá kód DPH.“** Na faktuře s DPH musí mít kód každý řádek
+s částkou. Rozpracovaná faktura se bez něj uloží s upozorněním, do stavu
+**V pořádku** ji Shipard nepustí. Otevři řádek a vyber kód — nebo *Mimo
+DPH*, když řádek plněním není.
 
 **Nabídka Kód DPH je prázdná.** Řádek si bere údaje o DPH z *uloženého*
 dokladu, takže musí být vybraná **Registrace DPH** (záložka **Nastavení**)

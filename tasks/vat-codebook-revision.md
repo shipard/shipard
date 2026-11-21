@@ -1,6 +1,6 @@
 # Task: Revize číselníku DPH — kód „Mimo DPH“, osvobozeno, nové kódy výkazů
 
-**Stav:** naplánováno — zadání podle #164 D1–D10
+**Stav:** hotovo — 2026-11-21 (4 commity; odchylky a ověření viz „Poznámky k implementaci“); zbývá push, komentář #164, ruční proklik formuláře řádku a panelu volby kódu v náhledu, `ds-upgrade` na alfě
 
 **Issue:** #164 (nahrazuje #89 D1; navazuje #165)
 
@@ -362,18 +362,133 @@ starých kódů (`EUCZ000`, `EUCZ112`, `EUCZ122`) řeší navazující issue.
 
 ## Hotovo když
 
-- [ ] `cz-000` je v číselníku, nabízí se na každém dokladu s DPH jako
+- [x] `cz-000` je v číselníku, nabízí se na každém dokladu s DPH jako
       poslední, není v rekapitulaci a je v částce dokladu — i u převzaté
       rekapitulace
-- [ ] řádek dokladu s DPH bez kódu: varování v konceptu, chyba při
+- [x] řádek dokladu s DPH bez kódu: varování v konceptu, chyba při
       potvrzení, varování v importním módu
-- [ ] `cz-112`, `cz-122` a kategorie `zero` v repu nejsou (kód, konfigurace,
+- [x] `cz-112`, `cz-122` a kategorie `zero` v repu nejsou (kód, konfigurace,
       testy, dokumentace)
-- [ ] přijatý doklad od neplátce v tuzemsku vzniká Bez DPH bez kódů
-- [ ] 0 % v tuzemsku se odvodí jako `cz-114`
-- [ ] `cz-124`, `cz-209`, `cz-402` plní ř. 26, `cz-220` ř. 30, `cz-221`
+- [x] přijatý doklad od neplátce v tuzemsku vzniká Bez DPH bez kódů
+- [x] 0 % v tuzemsku se odvodí jako `cz-114`
+- [x] `cz-124`, `cz-209`, `cz-402` plní ř. 26, `cz-220` ř. 30, `cz-221`
       ř. 31 a souhrnné hlášení kód 2; testy úplnosti mapování zelené
-- [ ] cílené testy zelené, `dataset-verify` veřejných sad `ok`, změněné
+- [x] cílené testy zelené, `dataset-verify` veřejných sad `ok`, změněné
       snímky vypsané v poznámkách
-- [ ] `docs/`, `help/`, `CLAUDE.md` a `**Stav:**` aktualizované ve stejných
+- [x] `docs/`, `help/`, `CLAUDE.md` a `**Stav:**` aktualizované ve stejných
       commitech jako kód
+
+## Poznámky k implementaci (2026-11-21)
+
+Čtyři commity podle zadání: číselník a výkazy → docs.core → applier
+a zrušení `cz-112` / `cz-122` → dokumentace. Celá sada testů zelená po
+každém z nich.
+
+### Odchylky od zadání
+
+- **`cz-114` přibyl až v commitu 3**, spolu s odstraněním `cz-112` (zadání
+  to připouští v pastech). Filtr kandidátů derivace a `conflict()` pro kód
+  `outOfScope` (U11) jsou naopak už v commitu 1: jakmile `getVatCodes()`
+  vrací `cz-000` pro každý směr a místo, mělo by 0 % v tuzemsku dva
+  kandidáty.
+- **U10 má výjimky navíc.** Podmínka „`vat.mode` none a žádný řádek se
+  sazbou“ by spolkla tuzemské přenesení daňové povinnosti (dnes `cz-115`
+  + „Ze základu“). `supplierNonPayer` proto nevznikne, když doklad nese
+  daň dodavatele nebo přenesení (hlavička, předmět plnění řádku, kód se
+  samovyměřením), při volbě režimu s DPH a — bez volby režimu — při volbě
+  kódu na řádku nebo ponechaném kódu. Volba režimu Bez DPH má přednost
+  před volbou kódu řádku, stejně jako mimo tuzemsko
+  (`DocumentApplier::isSupplierNonPayer()`).
+- **Formulář řádku rekapitulace „Mimo DPH“ nenabízí** (`vatCodeOptions()`
+  je sdílená s řádkem dokladu, U6 by tam kód rovnou odmítlo) a
+  `VatRecapDocument` kód odmítá i mimo formulář.
+- **`willHaveVatRecap()` má třetí, volitelný parametr** s definicemi kódů
+  — je statická a číselník nezná; dodává je `VatPeriodLockProvider`.
+- **Hook `headTotalsIncludeRowsOutsideRecap()`** říká už jen, zda typ
+  dokladu řádky mimo rekapitulaci přičítá (účetní doklad ne). Co se
+  přičte u převzaté rekapitulace (jen „Mimo DPH“), rozhoduje
+  `sumRowsOutsideRecap()`; `sumTotals()` signaturu nezměnila, definice
+  kódů drží instance z `computeAmounts()`.
+- **Frontend** zadání nezmiňovalo: klíč
+  `exchange.preview.vatChoice.source.outOfScope.supplierNonPayer` (cs, en),
+  panel volby kódu nevypisuje procento u položky s `outOfScope: true`
+  (nový příznak v `_resolve.vatCodeOptions`).
+- **Mimo seznam souborů:** generátor korpusu
+  (`tools/invoice-generator`: 0 % → `cz-114` / `cz-123`; sady se tím
+  nemění, řádek s 0 % v nich není) a `FilingPdfService` (popisek kódu
+  plnění 2 v opisu souhrnného hlášení).
+- **`supplyKind`:** `cz-220` má `goods`; test, který ho vyžadoval u každého
+  kódu mimo tuzemsko, ho nově vyžaduje jen u kódů samovyměření a jejich
+  párů (vstupní „Osvobozeno“ a ř. 26 druh nemají).
+- **`SavedDocumentProjection::withoutZeroVat()` zůstává.** Bez ní dá
+  věrnost apply nad sadou plátce 14 rozdílů: papírová podoba samovyměření
+  ze třetí země a základ / daň hlavičky u dokladu od neplátce.
+- `DocDocument::resolveCountryFromVatRegistration()` bere registraci bez
+  země jako nedohledanou (dřív prázdný řetězec → výjimka resolveru
+  → totéž).
+
+### Zjištění
+
+- **D7, věta „řádek s běžným kódem, který v převzaté rekapitulaci chybí,
+  zůstává chybou kontroly“ neodpovídá kódu.** Kontrola převzaté
+  rekapitulace prochází jen skupiny, které v rekapitulaci jsou; chybějící
+  skupinu nehlásí. Nedoplňoval jsem ji (U7: dnešní pravidlo beze změny),
+  je to popsané v `docs/vat-calculation.md` § 5.1.
+- **Vlajku `rowSide` mají i pohyby pokladního dokladu** (úhrady, převody,
+  zálohy), nejen účetní doklad — `vat_code_missing` je vynechává stejným
+  pravidlem jako formulář (`DocRowOperationRules::hasRowSide()`).
+- **Apply dokladu s řádkem bez kódu rovnou do V pořádku** končí
+  `internal_error` s textem validace („Save failed: rows.N.vat_code: …“) —
+  stávající tvar pro každou validační chybu brány. Hlášení už v náhledu
+  patří do navazujícího issue o ukládání dokladů.
+- **Importní mód:** tuzemský doklad s `vat.mode: "none"`, jehož řádky
+  nesou objekt `vat` bez kódu a sazby a hlavička místo plnění, dřív dostal
+  `cz-112`; teď končí `vat_code_unknown`. Řádky bez objektu `vat` (tak je
+  vyváží exporter u dokladu Bez DPH) projdou — seed sad to neovlivnilo.
+- **ISDOC:** `TaxSubTotal` vzniká jen z rekapitulace, řádek „Mimo DPH“
+  žádný nevytvoří (test). Doklad s DPH jen z řádků „Mimo DPH“ rekapitulaci
+  nemá a `IsdocWriter` ho odmítne („chybí rekapitulace DPH“);
+  `TaxExclusiveAmount` řádky „Mimo DPH“ obsahuje, součet `TaxSubTotal` ne.
+  Signál „mimo DPH“ pro ISDOC je mimo rozsah.
+- **Text nálezu `vat_code_missing` vyká** („Vyberte kód…“), jak stojí
+  v U8; ostatní hlášky dokladu tykají.
+- Řádek dokladu od neplátce má v náhledu sdílený stav „Bez DPH — doklad
+  mimo české DPH“.
+- Integrační `DocJournalPrintTest::testInvoiceJournalMatchesContractSnapshot`
+  selhává na snímku kontaktu (web, datová schránka — #162), s tímto taskem
+  nesouvisí.
+
+### Snímky datových sad
+
+**Žádný snímek se nezměnil** a nic nebylo třeba schvalovat. Po
+`dataset-seed` + `dataset-verify` jsou všechny tři veřejné sady
+(`cz-vat-payer`, `cz-non-payer`, `cz-association`) `ok` v šesti kontrolách.
+Doklady od neplátce v sadě plátce (2 doklady, 4 řádky) jsou uložené
+s `vat_mode` 0, bez kódů a bez rekapitulace; deník se nezměnil, protože
+nulová rekapitulace žádný řádek deníku nedávala. Demo sada `it-servis`
+(295 dokladů) se naseedovala bez chyby — řádek bez kódu na dokladu s DPH
+v ní není.
+
+### Ověření na dev zdroji
+
+Volné zdroje dat: sady na zdrojích testovacího kola, body 1–4 na zdroji
+demo sady (po ověření znovu naseedovaný).
+
+1. Formulář řádku přijaté faktury (API definice formuláře): 8 kódů, první
+   *Tuzemsko/Vstup/Základní — 21 %*, poslední *Mimo DPH* bez procenta.
+   Výchozí kód nového řádku jen testem.
+2. Faktura 4 900 Kč / 21 % + řádek „Mimo DPH“ −300 Kč: rekapitulace jen
+   21 %, částka 5 629 Kč, deník 518 MD 4 600, 343 MD 1 029, 321 DAL 5 629.
+3. Řádek bez kódu: koncept uložen, potvrzení skončilo chybou na
+   `rows.1.vat_code`.
+4. Vydaná faktura s `cz-209` a `cz-221`: živé přiznání má ř. 26 a ř. 31,
+   součty 46 / 62 beze změny; živé souhrnné hlášení kód 2. XML s kódem 2
+   proti XSD jen testem (`ShvXmlWriterTest`), podání na zdroji sestavené
+   nebylo.
+5. Doklad od neplátce → návrh Bez DPH bez kódů: sadou plátce a proklikáním
+   sady v prohlížeči (`dataset-e2e`: 24 karet, 0 chyb prohlížeče).
+6. `dataset-verify` veřejných sad `ok`.
+
+Integrační testy dokladů, DPH, výměnného formátu a tisků nad zdrojem sady
+plátce: 398 testů, kromě výše uvedeného jen známé selhání
+`VatReturnAccountingServiceTest` (IČO vlastní firmy).

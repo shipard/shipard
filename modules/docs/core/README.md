@@ -83,6 +83,28 @@ entitě spouští recompute parenta — je užitečný všude, kde má hlavička
 odvozené hodnoty od child setů. Detaily k save semantice gatewayů viz
 `docs/document-system.md` sekce 6.
 
+### Kód DPH řádku — tři stavy (#164, `tasks/vat-codebook-revision.md`)
+
+Položkový řádek dokladu s DPH je buď **plnění** (kód v rekapitulaci —
+i osvobozený s nulovou daní), nebo **„Mimo DPH“** (`cz-000`: mimo
+rekapitulaci, v částce dokladu vždy, i u převzaté rekapitulace), nebo je
+**bez kódu = nevyplněno** (`vat_code_missing`: varování v rozpracovaném
+dokladu, při uložení řádku a v importním módu, chyba při potvrzení). Doklad
+Bez DPH kódy nenese a kontrola se ho netýká.
+
+Jediné místo pravidla je `VatLineScope` (`inRecap()`, `isOutOfScope()`,
+`lacksCode()`). `empty($row['vat_code'])` znamená jen „řádek nemá kód“
+(kontroly sazby a předmětu plnění, odvození procenta); otázka „patří řádek
+do rekapitulace“ jde vždy přes `VatLineScope::inRecap()` — seskupení
+rekapitulace, kontrola převzaté rekapitulace, dorovnání řádků,
+`willHaveVatRecap()`. Součty hlavičky přičítají řádky „Mimo DPH“ vždy
+(`sumRowsOutsideRecap()`), řádek rekapitulace s tímto kódem je chyba
+`vat_recap_out_of_scope`. Nabídka kódů (`DocHeadVatContext::vatCodeOptions()`)
+má „Mimo DPH“ poslední a bez procenta, nový řádek ho jako výchozí nedostane
+a formulář řádku rekapitulace ho nenabízí; kontačním řádkům (operace
+s vlajkou `rowSide`, `DocRowOperationRules::hasRowSide()`) formulář pole Kód
+DPH nenabízí a kontrola je vynechává. Viz `docs/vat-calculation.md` § 1.1.
+
 ### Předmět plnění u tuzemského přenesení (#89, `tasks/vat-reverse-charge-subjects.md`)
 
 Sloupec `reverse_charge_code` v `docs_core_rows` i `docs_core_vat_recap` —

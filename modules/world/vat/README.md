@@ -7,7 +7,8 @@ tabulek — pouze cfgItem soubory a PHP resolver.
 
 Poskytuje:
 
-- **Klasifikaci** sazeb DPH (`vatCategories`: standard, reduced, …)
+- **Klasifikaci** sazeb DPH (`vatCategories`: standard, reduced, …;
+  `exempt` = v rekapitulaci s nulovou daní, `outOfScope` = mimo rekapitulaci)
 - **Konkrétní kódy DPH** per stát (`vatCodes`: cz-110, cz-150, …) — položky
   v roletce na řádku dokladu
 - **Časově proměnná procenta** per kód (`vatPercents`: cz-110 → 20 % do 2012,
@@ -41,6 +42,10 @@ $codes = $resolver->getVatCodes('cz', direction: 'output', place: 'domestic');
 // Detail kódu
 $code = $resolver->getVatCode('cz', 'cz-115');
 
+// „Mimo DPH“ — řádek, který není plněním: mimo rekapitulaci, v částce dokladu
+$resolver->isOutOfScopeCode('cz', 'cz-000');                          // → true
+VatRateResolver::isOutOfScopeDefinition($codes['cz-000']);            // totéž nad definicí kódu
+
 // Tuzemské přenesení daňové povinnosti: kód s příznakem `reverseCharge`
 // vyžaduje předmět plnění z číselníku platného k datu sazby dokladu
 $resolver->isReverseChargeCode('cz', 'cz-115');                       // → true
@@ -63,6 +68,28 @@ Viz `config/vat-cz.jsonc` jako referenční vzor. Detailní popis atributů:
   (`reverse_charge_code`), ne kód DPH.
 
 Plný popis atributů `vatCodes` viz `docs/docs-mvp.md` sekce 4.
+
+### Kód „Mimo DPH“ a kategorie kódů (#164)
+
+- **`cz-000` „Mimo DPH“** (kategorie `outOfScope`) je výslovný kód pro
+  řádek, který není plněním — odpočet nezdaněné zálohy, kauce, místní
+  poplatek, průběžná položka. Je **univerzální**: nemá `place` ani
+  `direction`, `getVatCodes()` ho vrací pro každý směr i místo plnění
+  a vždy jako **poslední** (první kód nabídky tak nikdy není „Mimo DPH“).
+  Sazbu má 0 bez omezení platnosti. Jediný znak „mimo rekapitulaci“ je
+  kategorie — čte ji `isOutOfScopeCode()` / `isOutOfScopeDefinition()`,
+  žádný druhý příznak na kódu není.
+- **`exempt`** = v rekapitulaci s nulovou daní: osvobozená plnění (`cz-123`,
+  `cz-124`, vstupní `cz-114` / `cz-214` / `cz-414`) i plnění s místem plnění
+  mimo tuzemsko (`cz-201`, `cz-202`, `cz-209`, `cz-401`, `cz-402`,
+  třístranný obchod `cz-220` / `cz-221`), kde je zařazení jen technické —
+  rozdíl nese řádek přiznání. Kategorie `zero` a kódy „Bez daně“ zanikly.
+- `validateCountryConfig()` hlídá: kód `outOfScope` nesmí mít `place`,
+  `direction`, `vatReturnRow`, `reverseVatCode` ani `supplyKind`; ostatní
+  kódy `place` i `direction` mít musí (chybějící místo by filtr tiše bral
+  jako tuzemsko).
+
+Jak s kódem zachází doklad: `docs/vat-calculation.md` § 1.1.
 
 ## Vztah k `world.base` a `world.trade`
 

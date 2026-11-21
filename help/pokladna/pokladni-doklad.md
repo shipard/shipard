@@ -65,7 +65,9 @@ Pro rychlý prodej zboží bez partnera se víc hodí [Prodejka](prodejka.md).
    - *Prodej služeb* / *Prodej zboží* — příjem za prodej; řádek má
      množství, cenu a **Kód DPH** jako na faktuře. Procento nezadáváš,
      je v nabídce u kódu; jiný den pro sazbu řeší
-     [Datum sazby DPH](../uctarna/datum-sazby-dph.md).
+     [Datum sazby DPH](../uctarna/datum-sazby-dph.md). Řádek, který není
+     prodej ani nákup (kauce, poplatek), dostane kód *Mimo DPH* — viz
+     [Řádek mimo DPH a řádek bez kódu DPH](../uctarna/kod-dph-radku.md).
    - *Nákup zboží a materiálu* / *Nákup služeb* / *Ostatní nákup* — výdej
      za nákup, také s DPH.
    - *Úhrada pohledávky* (u příjmu) / *Úhrada závazku* (u výdeje) — zákazník

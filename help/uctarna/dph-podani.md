@@ -232,6 +232,18 @@ nic nastavovat nemusíš.
 - **Když má doklad kód DPH, který Shipard neumí zařadit do výstupu**,
   sestavení se zastaví s chybou. Je to schválně: z podání nesmí nic tiše
   vypadnout. Oprav kód na dokladu a zkus to znovu.
+- **Řádek s kódem „Mimo DPH“ v podání není** — není to plnění, takže
+  nevstupuje do přiznání, kontrolního ani souhrnného hlášení. Totéž platí
+  pro přijaté osvobozené plnění (*Osvobozeno* na vstupu): v rekapitulaci
+  dokladu je, ve výkazech řádek nemá. Viz
+  [Řádek mimo DPH a řádek bez kódu DPH](kod-dph-radku.md).
+- **Řádky 26, 30 a 31 přiznání plní vlastní kódy.** Řádek 26 (ostatní
+  plnění s nárokem na odpočet): *Tuzemsko/Výstup/Osvobozeno s nárokem na
+  odpočet*, *EU/Výstup/Ostatní s nárokem na odpočet* a *VÝVOZ/Výstup/Služby
+  a ostatní*. Třístranný obchod prostřední osobou: pořízení *EU/Vstup/Zboží
+  — třístranný obchod* jde na řádek 30, dodání *EU/Výstup/Zboží —
+  třístranný obchod* na řádek 31 a do souhrnného hlášení s kódem plnění 2.
+  Do kontrolního hlášení nepatří žádný z nich.
 - **Kontrolní hlášení hlásí, že chybí kód předmětu plnění.** Doklad
   s přenesením daňové povinnosti (oddíly A.1 a B.1) nemá na řádku vyplněný
   **Předmět plnění**. Otevři doklad, dej ho do stavu **V opravě**, na

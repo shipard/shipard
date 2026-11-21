@@ -72,6 +72,18 @@ a nadměrného odpočtu DPH nejsou v saldokontu — platba z výpisu proti nim
 nesedne sama, přiřadíš ji ručně. Účetní doklad přiznání také vzniká vždy
 jako **koncept**: zaúčtuje se, až ho uzavřeš.
 
+**Některé řádky přiznání zatím nemají kód DPH.** Kódem na řádku dokladu
+naplníš běžné řádky a nově i řádky 26, 30 a 31. Chybí řádek 42 (odpočet
+při dovozu, když je správcem daně celní úřad), údaje „z toho“ na řádcích
+47 a 51, opravy a úpravy odpočtu a řádky 9, 23, 24 a 32. Shipard je do
+přiznání nevyplní — když je potřebuješ, doplň je do souboru před
+odevzdáním.
+
+**Starší doklady s řádkem bez kódu DPH nepotvrdíš, dokud kód nedoplníš.**
+Řádek bez kódu na dokladu s DPH dřív znamenal „mimo DPH“; teď je to
+nevyplněný řádek. Při opravě takového dokladu mu dej kód *Mimo DPH* —
+viz [Řádek mimo DPH a řádek bez kódu DPH](uctarna/kod-dph-radku.md).
+
 **Roční vypořádání koeficientu odpočtu (řádek 53) a úpravu odpočtu
 (řádek 60) živé přiznání nespočítá.** Krácený odpočet přes zálohový
 koeficient (řádek 52) funguje — koeficient per rok zadáš v Nastavení, viz

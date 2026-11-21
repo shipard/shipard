@@ -84,7 +84,8 @@ a čekají na tebe, zbytek je už vyřízený:
 | kam mi mají zaplatit, na jaký účet | **Náš bankovní účet** | Volba na dokladu, u faktur na záložce **Nastavení**. U vydané faktury povinná — je to účet, na který má odběratel zaplatit. Účty se zakládají v Nastavení → Účetnictví → Bankovní spojení |
 | datum, odkud se počítá DPH | **DUZP** | Datum uskutečnění zdanitelného plnění. Určuje, do jakého období DPH doklad spadne |
 | datum, kdy to patří do účetí | **Účetní datum** | Datum účetního případu. Vedle něj jsou na dokladu ještě **Datum vystavení** a **Datum splatnosti** |
-| kód pro kontrolní hlášení | **Kód DPH** | Označení režimu plnění u řádku. Není to sazba — sazba je procento, kód říká, jak se plnění vykazuje |
+| kód pro kontrolní hlášení | **Kód DPH** | Označení režimu plnění u řádku. Není to sazba — sazba je procento, kód říká, jak se plnění vykazuje. Na dokladu s DPH ho má mít každý řádek s částkou |
+| nedaňový řádek, řádek bez DPH, bez daně | **Mimo DPH** | Kód DPH pro řádek, který není plněním — odpočet nezdaněné zálohy, kauce, místní poplatek. Počítá se do částky dokladu, do rekapitulace DPH ani do přiznání ne. Osvobozené plnění má kód *Osvobozeno* — viz [Řádek mimo DPH a řádek bez kódu DPH](uctarna/kod-dph-radku.md) |
 | součet daní dole na faktuře | **Rekapitulace DPH** | Rozpis základu a daně po jednotlivých sazbách |
 | daň platí odběratel, přenesená daň | **Reverse charge** / **samovyměření** | Režim, kdy daň neodvádí dodavatel, ale odběratel. Typicky u zboží z EU nebo u stavebních prací |
 | kód předmětu plnění, kód plnění, PDP 4, PDP 5 | **Předmět plnění** | Co se dodává v režimu tuzemského přenesení daňové povinnosti (*4* stavební a montážní práce, *5* zboží z přílohy č. 5, *14* mobilní telefony …). Vybírá se na řádku dokladu a jde do kontrolního hlášení |

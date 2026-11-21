@@ -18,6 +18,39 @@ u převzaté) → `sumTotals` / `applyTotalRoundingAuto` / `applyTotalRounding` 
 Z rekapitulace čte účtování (343), saldo, DPH výstupy (DP3/KH/SH) a podání.
 Řádkové hodnoty DPH do žádného výkazu nevstupují.
 
+### 1.1 Tři stavy řádku dokladu s DPH (#164 D1–D3)
+
+Položkový řádek dokladu s DPH (`vat_mode` ≠ 0) je vždy v jednom ze tří
+stavů. Jediné místo pravidla je `VatLineScope` (docs.core):
+
+| stav | kód DPH | v rekapitulaci | v částce dokladu |
+|---|---|---|---|
+| **plnění** | kód, který není „Mimo DPH“ — i osvobozený nebo s 0 % | ano (i s nulovou daní) | ano, přes rekapitulaci |
+| **Mimo DPH** | `cz-000` (kategorie `outOfScope`) | ne | ano, vždy — i u převzaté rekapitulace (§ 5.1) |
+| **nevyplněno** | žádný | ne | jen u přepočítané rekapitulace |
+
+- **„Mimo DPH“** je řádek, který není plněním: odpočet nezdaněné zálohy,
+  kauce, místní poplatek, průběžná položka. Nemá místo plnění ani směr,
+  nabízí se na každém dokladu s DPH jako poslední, nemá řádek ve výkazech.
+  Počítá se jako řádek bez daně (`vat_pct` 0, `vat_amount` 0, `vat_total` =
+  `vat_base`) v obou režimech cen. Plnění s místem plnění mimo tuzemsko sem
+  nepatří — mají vlastní kódy.
+- **Řádek bez kódu znamená „nevyplněno“**, ne „mimo DPH“: nález
+  `vat_code_missing` na `rows.N.vat_code` je varování v rozpracovaném
+  dokladu, při uložení řádku ze sub-formuláře a **v importním módu**, chyba
+  při potvrzení dokladu (`DocDocument::validateVatCodesFilled()`). Netýká se
+  kontačních řádků (operace s vlajkou `rowSide` — formulář jim pole Kód DPH
+  nenabízí) a dokladu, u kterého se nedohledala země registrace.
+- **Doklad Bez DPH (`vat_mode` 0) kódy nenese** — řádky bez kódu jsou na
+  něm správně a kontrola se jich netýká.
+
+Jediný znak „mimo rekapitulaci“ je kategorie kódu `outOfScope`
+(`VatRateResolver::isOutOfScopeCode()`); žádný druhý příznak na kódu není.
+`empty($row['vat_code'])` má v `DocDocument` dva významy — „řádek nemá kód“
+(kontroly sazby a předmětu plnění, odvození procenta) zůstává dotazem na
+sloupec, „řádek nepatří do rekapitulace“ jde vždy přes
+`VatLineScope::inRecap()`.
+
 ## 2. Režim cen — `vat_mode`
 
 Vlastnost dokladu (`docs.core.vatModes`), určuje, co znamená cena na řádku:
@@ -69,6 +102,12 @@ historické doklady kryje převzatá rekapitulace.
   odpočet (DP3 ř. 43/44), párový řádek `is_reverse_pair` oddanění; do `total`
   vstupuje jen daň placená dodavateli (`noPayTax` → jen základ).
 - **`noPayTax` / 0 % / osvobozené:** daň 0 nebo informativní, `total = base`.
+  Osvobozené plnění je v rekapitulaci i na vstupu (`cz-114` tuzemsko,
+  `cz-214` EU, `cz-414` třetí země) — kvůli shodě s rekapitulací dodavatele;
+  do výkazů nejde.
+- **„Mimo DPH“ (`cz-000`):** řádek není plnění — do rekapitulace nevstupuje
+  vůbec, do součtů hlavičky vždy (§ 1.1). Doklad jen s takovými řádky
+  rekapitulaci nemá a do období DPH se nepočítá.
 - **Tuzemské přenesení daňové povinnosti — předmět plnění:** viz § 4.1.
 - **`sum_base` / `sum_tax` / `sum_total`** z definice kódu říkají, co z řádku
   rekapitulace vstupuje do součtů hlavičky.
@@ -135,7 +174,13 @@ a data sazby (§ 5.2); vstupem jsou kód, základ, daň a celkem.
 Kontroly (warning, neblokují): `vat_recap_inconsistent` (`tax ≠ base × pct`
 v toleranci `max(0,05; |base| × 0,001)`, `base + tax ≠ total` ± 0,02) — u převzaté
 zviditelní nesrovnalost dodavatele, i jeho jinou sazbu; `rows_recap_mismatch` (Σ řádků ≠ rekapitulace
-dle režimu) — signál neúplných nebo špatně zadaných řádků.
+dle režimu) — signál neúplných nebo špatně zadaných řádků. Řádky „Mimo DPH“
+do žádné skupiny nepatří a kontroly je přeskakují.
+
+Řádek převzaté rekapitulace s kódem „Mimo DPH“ je **chyba vždy**
+(`vat_recap_out_of_scope`, pole `recap`; i v importním módu) — není to
+plnění a základ by se do součtů dostal podruhé vedle řádků dokladu. Formulář
+řádku rekapitulace kód nenabízí.
 
 ### 5.1 Implementace
 
@@ -155,10 +200,16 @@ dle režimu) — signál neúplných nebo špatně zadaných řádků.
   ověří `VatCodeResolver`em (stejná kaskáda země jako u řádků) a
   nedohledatelný kód znamená přepočítanou + `recap_source_computed_fallback`
   s důvodem (I7), ne 500.
-- **Součty hlavičky** se u převzaté berou **jen z rekapitulace**
-  (`headTotalsIncludeRowsOutsideRecap()` = false): řádek s kódem, který
-  v rekapitulaci není (import s jiným mapováním kódů), by se jinak započítal
-  podruhé. Prázdná rekapitulace = fallback na řádky jako dřív.
+- **Součty hlavičky** se u převzaté berou **z rekapitulace a z řádků „Mimo
+  DPH“** (`sumRowsOutsideRecap()`, #164 D7): odpočet nezdaněné zálohy na
+  importovaném dokladu by jinak z částky dokladu vypadl. Řádek s běžným
+  kódem, který v rekapitulaci není (import s jiným mapováním kódů), a řádek
+  bez kódu se nepřičítají — započítaly by se podruhé; kontrola na chybějící
+  skupinu rekapitulace neexistuje, hlídá se jen součet skupin, které
+  v rekapitulaci jsou (`rows_recap_mismatch`). Prázdná rekapitulace =
+  fallback na řádky jako dřív. U přepočítané rekapitulace se přičítají
+  všechny řádky mimo ni. Typ dokladu s vlastními součty (účetní doklad)
+  přičítání vypíná celé (`headTotalsIncludeRowsOutsideRecap()` = false).
 - **Rekapitulace se neváže na řádky** — `docs_core_vat_recap` nemá FK na
   řádky, párování při `rows_recap_mismatch` je jen per (kód, sazba, předmět
   plnění — § 4.1).
