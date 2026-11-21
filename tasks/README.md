@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 465 tasků: **naplánováno** 4 · **částečně** 24 · **zrušeno** 1 · **hotovo** 436.
+Celkem 466 tasků: **naplánováno** 5 · **částečně** 24 · **zrušeno** 1 · **hotovo** 436.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `vat-codebook-revision.md` | naplánováno | zadání podle #164 D1–D10 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -268,6 +269,7 @@ Polymorfní jádro `docs.core` + per-typ faktury. Řídící dokument
 | `doc-total-rounding-auto.md` | Automatické zaokrouhlení částky podle způsobu úhrady, měny a země — sloupec `total_rounding_auto`, konfigurace hotovosti `world.base.cashRounding`, formuláře prodejních dokladů, varování, výměnný formát (#73 D1–D8) |
 | `vat-rate-date-core.md` | Datum sazby DPH, task A: procento DPH odvozené z kódu a data sazby (needituje se), přepínač „Sazby DPH podle“ (automaticky DPPD / vlastní datum dokladu / vlastní datum na řádcích), nabídka kódů podle data s procentem, kontroly, stopa v sub-tabulce a detailu (#159 D1–D10, D13–D15) |
 | `vat-rate-date-exchange.md` | Datum sazby DPH, task B: přepínač a data sazby ve výměnném formátu (`vat.rateSource`, `dates.vatRateDate`, `rows[].vat.rateDate`, `vatRecap[].rateDate`), applier určuje kód, sazbu a předmět k datu sazby řádku, export a datové sady (#159 D11) |
+| `vat-codebook-revision.md` | Revize číselníku DPH: kód `cz-000` „Mimo DPH“ (mimo rekapitulaci, v částce dokladu), řádek bez kódu = nevyplněno (chyba při potvrzení), vstupní „Osvobozeno“ `cz-114` / `cz-214` / `cz-414`, zrušení `cz-112` / `cz-122` a kategorie `zero`, doklad od neplátce celý Bez DPH, nové kódy pro ř. 26, 30 a 31 přiznání (#164 D1–D10) |
 
 ## Tisky (doména print)
 
