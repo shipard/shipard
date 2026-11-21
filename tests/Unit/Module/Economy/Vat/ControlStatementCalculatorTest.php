@@ -24,7 +24,7 @@ class ControlStatementCalculatorTest extends TestCase
             'cz-121' => ['dp3' => ['row' => 2], 'kh' => ['group' => 'A4A5'], 'sh' => null],
             'cz-310' => ['dp3' => ['row' => 2], 'kh' => ['group' => 'A4A5'], 'sh' => null],
             'cz-311' => ['dp3' => ['row' => 2], 'kh' => ['group' => 'A4A5'], 'sh' => null],
-            'cz-122' => ['dp3' => null, 'kh' => null, 'sh' => null],
+            'cz-124' => ['dp3' => ['row' => 26], 'kh' => null, 'sh' => null],
             'cz-123' => ['dp3' => ['row' => 50], 'kh' => null, 'sh' => null],
             'cz-110' => ['dp3' => ['row' => 40, 'col' => 'full'], 'kh' => ['group' => 'B2B3'], 'sh' => null],
             'cz-115' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => ['group' => 'B1'], 'sh' => null],
@@ -38,7 +38,7 @@ class ControlStatementCalculatorTest extends TestCase
             'cz-121' => ['category' => 'reduced'],
             'cz-310' => ['category' => 'reduced1'],
             'cz-311' => ['category' => 'reduced2'],
-            'cz-122' => ['category' => 'zero'],
+            'cz-124' => ['category' => 'exempt'],
             'cz-123' => ['category' => 'exempt'],
             'cz-110' => ['category' => 'standard'],
             'cz-115' => ['category' => 'standard'],
@@ -391,7 +391,7 @@ class ControlStatementCalculatorTest extends TestCase
                 ['vat_code' => 'cz-121', 'base_dom' => 2000.0, 'tax_dom' => 240.0],   // reduced → 2
                 ['vat_code' => 'cz-310', 'base_dom' => 3000.0, 'tax_dom' => 450.0],   // reduced1 → 2
                 ['vat_code' => 'cz-311', 'base_dom' => 4000.0, 'tax_dom' => 400.0],   // reduced2 → 3
-                ['vat_code' => 'cz-122', 'base_dom' => 5000.0, 'tax_dom' => 0.0],     // zero → mimo
+                ['vat_code' => 'cz-124', 'base_dom' => 5000.0, 'tax_dom' => 0.0],     // exempt, ř. 26 → kh null
                 ['vat_code' => 'cz-123', 'base_dom' => 6000.0, 'tax_dom' => 0.0],     // exempt → kh null
             ],
         ]);

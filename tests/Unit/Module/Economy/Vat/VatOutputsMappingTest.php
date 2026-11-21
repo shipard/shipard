@@ -34,7 +34,7 @@ class VatOutputsMappingTest extends TestCase
         $this->assertSame(['kod' => 3], $mapping->sh('cz-202'));
 
         // Explicitní vyloučení: záznam existuje, všechny výstupy null.
-        $this->assertSame(['dp3' => null, 'kh' => null, 'sh' => null], $mapping->forCode('cz-112'));
+        $this->assertSame(['dp3' => null, 'kh' => null, 'sh' => null], $mapping->forCode('cz-114'));
     }
 
     /** Ř. 26, 30 a 31 přiznání a souhrnné hlášení kód 2 (#164 D8, U12). */
@@ -50,8 +50,8 @@ class VatOutputsMappingTest extends TestCase
             ['dp3' => ['row' => 31], 'kh' => null, 'sh' => ['kod' => 2]],
             $mapping->forCode('cz-221'),
         );
-        // „Mimo DPH“ a vstupní „Osvobozeno“ mimo tuzemsko do výkazů nejdou.
-        foreach (['cz-000', 'cz-214', 'cz-414'] as $code) {
+        // „Mimo DPH“ a vstupní „Osvobozeno“ do výkazů nejdou.
+        foreach (['cz-000', 'cz-114', 'cz-214', 'cz-414'] as $code) {
             $this->assertSame(['dp3' => null, 'kh' => null, 'sh' => null], $mapping->forCode($code), $code);
         }
         foreach ([26, 30, 31] as $row) {

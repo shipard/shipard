@@ -136,7 +136,7 @@
                 "unitPrice": 0,
                 "unitPriceIncludesVat": false,
                 "discountPct": null,
-                "vat": { "code": "cz-122", "pct": 0, "label": "Bez daně", "noteMark": null },
+                "vat": { "code": "cz-000", "pct": 0, "label": "Mimo DPH", "noteMark": null },
                 "base": -500,
                 "vatAmount": 0,
                 "total": -500,
@@ -147,9 +147,7 @@
             { "label": "Základní", "pct": 21, "base": 1000, "tax": 210, "total": 1210,
               "baseDom": 24500, "taxDom": 5145, "totalDom": 29645, "noteMark": null },
             { "label": "Snížená", "pct": 12, "base": 90, "tax": 10.8, "total": 100.8,
-              "baseDom": 2205, "taxDom": 264.6, "totalDom": 2469.6, "noteMark": null },
-            { "label": "Bez daně", "pct": 0, "base": -500, "tax": 0, "total": -500,
-              "baseDom": -12250, "taxDom": 0, "totalDom": -12250, "noteMark": null }
+              "baseDom": 2205, "taxDom": 264.6, "totalDom": 2469.6, "noteMark": null }
         ],
         "vatNotes": [],
         "advances": { "base": 500, "vat": 0, "total": 500 },

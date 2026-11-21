@@ -296,23 +296,26 @@ class DocumentApplierVatPinsTest extends TestCase
 
     // ── Kód DPH řádku (D10–D13) ─────────────────────────────────────────────
 
-    public function testDocumentWithoutVatDerivesZeroRateCodeForDomesticRows(): void
+    public function testDocumentWithoutVatFromDomesticSupplierNeedsNoRowCodes(): void
     {
         // #103 F3 nález B: faktura od tuzemského neplátce (vat.mode none, řádky
-        // bez sazby) dostane kód bez daně cz-112, ne chybu vat_code_unknown.
+        // bez sazby) nesmí skončit chybou vat_code_unknown. Od #164 D5a
+        // nedostává kód „Bez daně“, ale vznikne celá Bez DPH s řádky bez kódu
+        // — podrobně DocumentApplierSupplierNonPayerTest.
         $payload = $this->happyPayload();
         $payload['vat'] = ['mode' => 'none', 'place' => 'domestic', 'registrationCountry' => null];
         $payload['rows'][0]['vat'] = ['code' => null, 'pct' => null, 'supplyKind' => null, 'reverseChargeCode' => null];
+        unset($payload['rows'][0]['computed']);
         $payload['vatRecap'] = [];
         $payload['totals'] = ['totalBase' => null, 'totalVat' => null, 'totalAmount' => $payload['totals']['totalAmount'], 'totalRounding' => 0];
 
         $canonical = $this->buildApplier()->preview($payload)->canonical;
 
         $this->assertNotContains('vat_code_unknown', $this->issueCodes($canonical));
+        $this->assertSame('supplierNonPayer', $canonical['_resolve']['vat']['mode']['reason']);
         $vatCode = $canonical['_resolve']['rows'][0]['vatCode'];
-        $this->assertSame('derived', $vatCode['matchedBy']);
-        $this->assertSame('cz-112', $vatCode['createPayload']['code']);
-        $this->assertSame(0.0, $vatCode['createPayload']['pct']);
+        $this->assertSame('outOfScope', $vatCode['matchedBy']);
+        $this->assertArrayNotHasKey('createPayload', $vatCode, 'řádek kód nenese');
     }
 
     public function testPinnedCodeFixesReducedRateEuServiceThatDerivationGivesStandard(): void

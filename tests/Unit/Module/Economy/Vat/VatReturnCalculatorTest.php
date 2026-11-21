@@ -24,7 +24,7 @@ class VatReturnCalculatorTest extends TestCase
             'cz-115' => ['dp3' => ['row' => 43, 'col' => 'full'], 'kh' => null, 'sh' => null],
             'cz-203' => ['dp3' => ['row' => 10], 'kh' => null, 'sh' => null],
             'cz-201' => ['dp3' => ['row' => 20], 'kh' => null, 'sh' => null],
-            'cz-122' => ['dp3' => null, 'kh' => null, 'sh' => null],
+            'cz-114' => ['dp3' => null, 'kh' => null, 'sh' => null],
             'cz-402' => ['dp3' => ['row' => 26], 'kh' => null, 'sh' => null],
             'cz-220' => ['dp3' => ['row' => 30], 'kh' => null, 'sh' => null],
             'cz-221' => ['dp3' => ['row' => 31], 'kh' => null, 'sh' => ['kod' => 2]],
@@ -44,7 +44,7 @@ class VatReturnCalculatorTest extends TestCase
                 ['vat_code' => 'cz-120', 'base_dom' => 1000.0, 'tax_dom' => 210.0],
                 ['vat_code' => 'cz-120', 'base_dom' => 500.0, 'tax_dom' => 105.0],
                 ['vat_code' => 'cz-121', 'base_dom' => 200.0, 'tax_dom' => 24.0],
-                ['vat_code' => 'cz-122', 'base_dom' => 999.0, 'tax_dom' => 0.0], // dp3 null → mimo
+                ['vat_code' => 'cz-114', 'base_dom' => 999.0, 'tax_dom' => 0.0], // dp3 null → mimo
             ]),
             $this->doc([
                 ['vat_code' => 'cz-110', 'base_dom' => 2000.0, 'tax_dom' => 420.0],

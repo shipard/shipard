@@ -233,7 +233,9 @@ trait PrintFixtureDocuments
                 'row_kind' => 1, 'operation' => 'sale.advanceDeduction',
                 'description' => 'Odpočet zálohy dle zálohové faktury',
                 'unit_price' => 0, 'total_price' => -500, 'price_calc_mode' => 1,
-                'vat_code' => 'cz-122', 'vat_pct' => 0,
+                // Odpočet nezdaněné zálohy není plnění — „Mimo DPH“ (#164 D1):
+                // tiskne se mezi řádky, v rekapitulaci není, částku k úhradě snižuje.
+                'vat_code' => 'cz-000', 'vat_pct' => 0,
                 'vat_base' => -500, 'vat_amount' => 0, 'vat_total' => -500,
             ],
             ...array_map(
@@ -250,8 +252,6 @@ trait PrintFixtureDocuments
              'base_dom' => 1886.5, 'tax_dom' => 396.17, 'total_dom' => 2282.67, 'is_reverse_pair' => 1],
             ['vat_code' => 'cz-121', 'vat_pct' => 12, 'base' => 90, 'tax' => 10.8, 'total' => 100.8,
              'base_dom' => 2205, 'tax_dom' => 264.6, 'total_dom' => 2469.6],
-            ['vat_code' => 'cz-122', 'vat_pct' => 0, 'base' => -500, 'tax' => 0, 'total' => -500,
-             'base_dom' => -12250, 'tax_dom' => 0, 'total_dom' => -12250],
         ]);
 
         return $headId;

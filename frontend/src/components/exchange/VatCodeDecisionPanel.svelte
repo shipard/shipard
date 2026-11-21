@@ -18,7 +18,7 @@
   import OptionRow from '../ui/OptionRow.svelte';
 
   let {
-    options = [],              // [{code, label, pct, reverseCharge, reducedDeduction, supplyKind}]
+    options = [],              // [{code, label, pct, reverseCharge, reducedDeduction, supplyKind, outOfScope}]
     currentUserAction = null,  // 'useCode:<kód>' | null
     bulkCount = 0,
     bulkDecidedCount = 0,
@@ -84,7 +84,10 @@
       >
         <span class="shpd-vatcode__code">{option.code}</span>
         <span class="shpd-vatcode__label">{option.label}</span>
-        <span class="shpd-vatcode__pct">{formatPct(option.pct)}</span>
+        <!-- „Mimo DPH“ (#164): řádek není plnění, sazbu nemá — bez procenta. -->
+        {#if !option.outOfScope}
+          <span class="shpd-vatcode__pct">{formatPct(option.pct)}</span>
+        {/if}
         {#if option.reverseCharge}
           <span class="shpd-vatcode__tag">{t('exchange.preview.vatCode.reverseCharge')}</span>
         {/if}

@@ -204,16 +204,18 @@ class ApplyFidelityCheckTest extends TestCase
 
     public function testAdapterStripsZeroVatRepresentationOfDocumentWithoutVat(): void
     {
-        // Faktura od neplátce u plátce: Shipard nese kód bez daně (cz-112) a nulovou
-        // rekapitulaci, papír DPH vůbec nemá — rovnocenné, jen když je daň nulová.
+        // Doklad, který je na papíře bez DPH, ale v Shipardu nese kód s nulovou
+        // sazbou a nulovou rekapitulaci (ručně zvolené „Osvobozeno“) — papír DPH
+        // vůbec nemá; rovnocenné, jen když je daň nulová. Doklad od neplátce
+        // sám vzniká Bez DPH bez kódů (#164 D5a) a projekci nepotřebuje.
         $export = [
-            'rows' => [['item' => ['ourCode' => '518100', 'name' => 'Služby'], 'description' => 'Kurz', 'unit' => 'pcs', 'vat' => ['code' => 'cz-112', 'pct' => 0]]],
-            'vatRecap' => [['vatCode' => 'cz-112', 'vatPct' => 0, 'base' => 5700, 'tax' => 0, 'total' => 5700]],
+            'rows' => [['item' => ['ourCode' => '518100', 'name' => 'Služby'], 'description' => 'Kurz', 'unit' => 'pcs', 'vat' => ['code' => 'cz-114', 'pct' => 0]]],
+            'vatRecap' => [['vatCode' => 'cz-114', 'vatPct' => 0, 'base' => 5700, 'tax' => 0, 'total' => 5700]],
             'totals' => ['totalBase' => 5700, 'totalVat' => 0, 'totalAmount' => 5700, 'totalRounding' => 0],
         ];
         $proposal = ['vat' => ['mode' => 'none'], 'rows' => [['unit' => 'ks']]];
         $out = $this->adapter()->build($export, $proposal, 42);
-        $this->assertSame(['code' => 'cz-112', 'pct' => null], $out['rows'][0]['vat']);
+        $this->assertSame(['code' => 'cz-114', 'pct' => null], $out['rows'][0]['vat']);
         $this->assertSame([], $out['vatRecap']);
         $this->assertSame(['totalBase' => null, 'totalVat' => null, 'totalAmount' => 5700, 'totalRounding' => 0], $out['totals']);
 

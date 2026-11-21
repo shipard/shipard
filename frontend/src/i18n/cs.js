@@ -569,6 +569,7 @@ export default {
   'exchange.preview.vatChoice.source.outOfScope.foreignVat': 'zahraniční DPH — daň dodavatele v ceně',
   'exchange.preview.vatChoice.source.outOfScope.specialPlace': 'zvláštní místo plnění — mimo české DPH',
   'exchange.preview.vatChoice.source.outOfScope.user': 'zvoleno — daň se v ČR nepřizná',
+  'exchange.preview.vatChoice.source.outOfScope.supplierNonPayer': 'doklad od neplátce DPH — bez kódů DPH',
   'exchange.preview.apply.disabled': 'Některé reference vyžadují rozhodnutí',
   'exchange.preview.apply.error.unresolved': 'Při ukládání se objevily další nerozhodnuté reference. Zobraz znovu a rozhodni je.',
 

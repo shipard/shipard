@@ -351,7 +351,10 @@ final class VatCodeDerivation
      * se rozešly. Štítek je `fullName` číselníku (compiled config jazyka
      * requestu, tedy už lokalizovaný).
      *
-     * @return list<array{code: string, label: string, pct: float, reverseCharge: bool, reducedDeduction: bool, supplyKind: ?string}>
+     * `outOfScope` = kód „Mimo DPH“ — náhled u něj nevypisuje procento
+     * (řádek, který není plněním, sazbu nemá).
+     *
+     * @return list<array{code: string, label: string, pct: float, reverseCharge: bool, reducedDeduction: bool, supplyKind: ?string, outOfScope: bool}>
      */
     public function options(string $country, string $date, ?string $place): array
     {
@@ -379,6 +382,7 @@ final class VatCodeDerivation
                 'reverseCharge'    => !empty($def['reverseVatCode']),
                 'reducedDeduction' => !empty($def['reducedDeduction']),
                 'supplyKind'       => isset($def['supplyKind']) ? (string) $def['supplyKind'] : null,
+                'outOfScope'       => VatRateResolver::isOutOfScopeDefinition($def),
             ];
         }
         return $out;

@@ -39,7 +39,7 @@ final class VatPeriodAssignerTest extends TestCase
             'vatOutputs' => [
                 'cz-210' => ['dp3' => ['row' => 1], 'kh' => ['group' => 'A4A5'], 'sh' => null],
                 'cz-410' => ['dp3' => ['row' => 20], 'kh' => null, 'sh' => ['kod' => 0]],
-                'cz-112' => ['dp3' => null, 'kh' => null, 'sh' => null],
+                'cz-114' => ['dp3' => null, 'kh' => null, 'sh' => null],
             ],
             // jako reálný config: KH od 1. 1. 2016 (#58), SH bez omezení
             'reportTypes' => ['cs' => ['validFrom' => '2016-01-01']],
@@ -114,7 +114,7 @@ final class VatPeriodAssignerTest extends TestCase
     {
         $out = $this->assigner()->compute(
             ['vat_registration' => 5, 'vat_duzp' => '2026-02-10', 'vat_dppd' => null],
-            [['vat_code' => 'cz-410'], ['vat_code' => 'cz-112']],
+            [['vat_code' => 'cz-410'], ['vat_code' => 'cz-114']],
         );
         $this->assertSame(['vat_period' => 1, 'cs_period' => null, 'rs_period' => 22], $out);
     }

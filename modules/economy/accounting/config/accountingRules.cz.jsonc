@@ -112,10 +112,10 @@
         // a migrované doklady) nebo cíl reverseVatCode (oddaňovací páry).
         // Generováno z world.vat/config/vat-cz.jsonc; úplnost hlídá test
         // VatAnalyticsCompletenessTest. Trvale nulové kódy řádek nemají —
-        // nulová daň žádný řádek deníku negeneruje: cz-112, cz-122, osvobozená
-        // plnění a plnění mimo tuzemsko (cz-123, cz-124, cz-201, cz-202,
-        // cz-209, cz-214, cz-220, cz-221, cz-401, cz-402, cz-414) a „Mimo DPH“
-        // cz-000, které v rekapitulaci vůbec není (#164).
+        // nulová daň žádný řádek deníku negeneruje: osvobozená plnění a plnění
+        // mimo tuzemsko (cz-114, cz-123, cz-124, cz-201, cz-202, cz-209,
+        // cz-214, cz-220, cz-221, cz-401, cz-402, cz-414) a „Mimo DPH“ cz-000,
+        // které v rekapitulaci vůbec není (#164).
         {"cat": "vat", "accountMask": "343110", "query": {"vat_code": "cz-110"}},
         {"cat": "vat", "accountMask": "343111", "query": {"vat_code": "cz-111"}},
         {"cat": "vat", "accountMask": "343301", "query": {"vat_code": "cz-301"}},

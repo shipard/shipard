@@ -556,6 +556,7 @@ export default {
   'exchange.preview.vatChoice.source.outOfScope.foreignVat': 'foreign VAT — supplier tax included in prices',
   'exchange.preview.vatChoice.source.outOfScope.specialPlace': 'special place of supply — outside Czech VAT',
   'exchange.preview.vatChoice.source.outOfScope.user': 'chosen — no VAT declared in Czechia',
+  'exchange.preview.vatChoice.source.outOfScope.supplierNonPayer': 'supplier is not a VAT payer — no VAT codes',
   'exchange.preview.apply.disabled': 'Some references need a decision',
   'exchange.preview.apply.error.unresolved': 'Apply found additional unresolved references. Reopen and decide them.',
 

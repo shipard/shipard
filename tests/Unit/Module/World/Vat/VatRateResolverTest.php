@@ -149,9 +149,11 @@ class VatRateResolverTest extends TestCase
         $keys = array_keys($codes);
 
         // Expected visible codes for output+domestic:
-        // cz-120, cz-121, cz-310, cz-311, cz-122, cz-123, cz-150, cz-151,
-        // cz-350. Hidden cz-203 / cz-204 / cz-370 must be excluded.
+        // cz-120, cz-121, cz-310, cz-311, cz-123, cz-124, cz-150, cz-151,
+        // cz-350 a univerzální cz-000. Hidden cz-203 / cz-204 / cz-370 must
+        // be excluded.
         $this->assertContains('cz-120', $keys);
+        $this->assertContains('cz-124', $keys);
         $this->assertContains('cz-150', $keys);
         $this->assertNotContains('cz-110', $keys); // input
         $this->assertNotContains('cz-201', $keys); // intracom
@@ -188,7 +190,7 @@ class VatRateResolverTest extends TestCase
     {
         $r = $this->realResolver();
         $codes = $r->getVatCodes('cz', includeHidden: true);
-        $this->assertCount(67, $codes);
+        $this->assertCount(66, $codes);
     }
 
     // --- kód „Mimo DPH“ (#164 D1, U2–U4) -------------------------------------
@@ -233,7 +235,7 @@ class VatRateResolverTest extends TestCase
 
         $this->assertTrue($r->isOutOfScopeCode('cz', 'cz-000'));
         // Osvobozené a nulové kódy v rekapitulaci jsou — kategorie exempt.
-        foreach (['cz-110', 'cz-123', 'cz-124', 'cz-214', 'cz-414', 'cz-201', 'cz-999'] as $code) {
+        foreach (['cz-110', 'cz-114', 'cz-123', 'cz-124', 'cz-214', 'cz-414', 'cz-201', 'cz-999'] as $code) {
             $this->assertFalse($r->isOutOfScopeCode('cz', $code), $code);
         }
         $this->assertFalse($r->isOutOfScopeCode('cz', null));
@@ -250,10 +252,9 @@ class VatRateResolverTest extends TestCase
     }
 
     /**
-     * Nové kódy výkazů a vstupní „Osvobozeno“ mimo tuzemsko (#164 D4, D8):
-     * kategorie exempt = v rekapitulaci s nulovou daní, sazba 0 bez omezení.
-     * `cz-114` přibude se zrušením `cz-112` — do té doby by 0 % v tuzemsku
-     * mělo dva kandidáty derivace.
+     * Nové kódy výkazů a vstupní „Osvobozeno“ ve třech místech plnění
+     * (#164 D4, D8): kategorie exempt = v rekapitulaci s nulovou daní, sazba
+     * 0 bez omezení platnosti.
      */
     public function testNewExemptCodesCarryPlaceDirectionAndZeroRate(): void
     {
@@ -264,6 +265,7 @@ class VatRateResolverTest extends TestCase
             'cz-402' => ['foreign', 'output', 26],
             'cz-220' => ['intracom', 'input', 30],
             'cz-221' => ['intracom', 'output', 31],
+            'cz-114' => ['domestic', 'input', 0],
             'cz-214' => ['intracom', 'input', 0],
             'cz-414' => ['foreign', 'input', 0],
         ];
@@ -280,6 +282,23 @@ class VatRateResolverTest extends TestCase
         }
         $this->assertSame(2, $r->getVatCode('cz', 'cz-221')['intracomCode']);
         $this->assertArrayNotHasKey('intracomCode', $r->getVatCode('cz', 'cz-209'));
+    }
+
+    /** „Bez daně“ a kategorie zero zanikly bez náhrady (#164 D5, D6). */
+    public function testZeroRateCodesAndCategoryAreGone(): void
+    {
+        $r = $this->realResolver();
+
+        $this->assertNull($r->getVatCode('cz', 'cz-112'));
+        $this->assertNull($r->getVatCode('cz', 'cz-122'));
+        $this->assertArrayNotHasKey('zero', $r->getVatCategories('cz'));
+        foreach ($r->getVatCodes('cz', includeHidden: true) as $key => $code) {
+            $this->assertNotSame('zero', $code['category'] ?? null, (string) $key);
+        }
+        // Plnění mimo tuzemsko bez daně jsou technicky `exempt` — rozdíl nese řádek přiznání.
+        foreach (['cz-201', 'cz-202', 'cz-401'] as $key) {
+            $this->assertSame('exempt', $r->getVatCode('cz', $key)['category'], $key);
+        }
     }
 
     // --- getVatCode ---------------------------------------------------------
@@ -309,7 +328,7 @@ class VatRateResolverTest extends TestCase
         $r = $this->realResolver();
         $cats = $r->getVatCategories('cz');
         $this->assertSame(
-            ['standard', 'reduced', 'reduced1', 'reduced2', 'zero', 'exempt', 'outOfScope'],
+            ['standard', 'reduced', 'reduced1', 'reduced2', 'exempt', 'outOfScope'],
             array_keys($cats),
         );
     }

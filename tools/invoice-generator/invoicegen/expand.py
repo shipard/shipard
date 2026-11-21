@@ -53,8 +53,10 @@ PURCHASE_ASSET = "purchase.asset"
 DOC_ID_CODES = {"invno": "1", "invpo": "12", "invni": "2", "invpi": "22", "cmnbkp": "60", "cash": "31", "cashreg": "14"}
 BOUND_TYPES = frozenset({"cash", "cashreg"})   # series_binding cash_desk → %D%C%y%5
 
-VAT_OUTPUT = {21: "cz-120", 12: "cz-121", 0: "cz-122"}
-VAT_INPUT = {21: "cz-110", 12: "cz-111", 0: "cz-112"}
+# 0 % = osvobozené plnění (#164 D5): „Bez daně“ zaniklo, řádek, který není
+# plněním, by nesl cz-000 „Mimo DPH“ — šablony sady takový nemají.
+VAT_OUTPUT = {21: "cz-120", 12: "cz-121", 0: "cz-123"}
+VAT_INPUT = {21: "cz-110", 12: "cz-111", 0: "cz-114"}
 VAT_EU_SERVICES = "cz-202"
 VAT_EU_SERVICES_INPUT = "cz-217"   # přijetí služby z EU, samovyměření (pár cz-207 skládá doccalc), #131 D28
 

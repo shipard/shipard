@@ -244,8 +244,11 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->assertSame('Bank transfer', $data['payment']['method']['label']);
         $this->assertSame('Standard rate', $data['rows'][0]['vat']['label']);
         $this->assertSame('pcs', $data['rows'][0]['unit']['label'], 'zkratka systémové jednotky v jazyce tisku');
+        // Odpočet zálohy je „Mimo DPH“ (#164 D1): tiskne se mezi řádky,
+        // v rekapitulaci není.
+        $this->assertSame('Outside the scope of VAT', $data['rows'][3]['vat']['label']);
         $this->assertSame(
-            ['Standard rate', 'Reduced rate', 'Zero rate'],
+            ['Standard rate', 'Reduced rate'],
             array_column($data['vatRecap'], 'label'),
         );
     }
@@ -260,7 +263,8 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->assertSame('faktura-it-print-inv.pdf', $sk->fileName);
         $this->assertSame('Prevodom', $sk->data['payment']['method']['label']);
         $this->assertSame('ks', $sk->data['rows'][0]['unit']['label']);
-        $this->assertSame(['Základná', 'Znížená', 'Bez dane'], array_column($sk->data['vatRecap'], 'label'));
+        $this->assertSame('Mimo DPH', $sk->data['rows'][3]['vat']['label']);
+        $this->assertSame(['Základná', 'Znížená'], array_column($sk->data['vatRecap'], 'label'));
         $this->assertSame([], $sk->messages);
 
         $de = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'de')->printData;
@@ -269,7 +273,8 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->assertSame('rechnung-it-print-inv.pdf', $de->fileName);
         $this->assertSame('Überweisung', $de->data['payment']['method']['label']);
         $this->assertSame('Stk', $de->data['rows'][0]['unit']['label']);
-        $this->assertSame(['Normalsatz', 'Ermäßigter Satz', 'Nullsatz'], array_column($de->data['vatRecap'], 'label'));
+        $this->assertSame('Nicht steuerbar', $de->data['rows'][3]['vat']['label']);
+        $this->assertSame(['Normalsatz', 'Ermäßigter Satz'], array_column($de->data['vatRecap'], 'label'));
         $this->assertSame([], $de->messages);
     }
 

@@ -78,7 +78,7 @@ class WorkOrderImportVerifierTest extends TestCase
             'economy_codebooks_bank_accounts' => [1],
         ];
         $v->units = ['pcs' => 7, 'ks' => 7, 'hr' => 8];
-        $v->vatCodes = ['cz-110', 'cz-112', 'cz-217'];
+        $v->vatCodes = ['cz-110', 'cz-114', 'cz-217'];
         $v->workOrders = ['Z260001' => ['id' => 50, 'docState' => 40]];
         return $v;
     }

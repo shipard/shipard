@@ -21,7 +21,7 @@ HUNDRED = Decimal("100")
 
 # DPH kódy bez placené daně (výstup do EU, osvobozené, nulové) — daň 0,
 # celkem = základ. Tuzemské samovyměření (cz-115/117) sada nemá.
-NO_TAX_CODES = frozenset({"cz-112", "cz-122", "cz-123", "cz-201", "cz-202"})
+NO_TAX_CODES = frozenset({"cz-114", "cz-123", "cz-201", "cz-202"})
 
 # Samovyměření při přijetí služby z EU (#131 D28): kód s `noPayTax` +
 # `reverseVatCode` — řádek i rekapitulace nesou spočtenou daň (nárok na

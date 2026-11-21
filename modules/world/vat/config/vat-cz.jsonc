@@ -2,18 +2,39 @@
     // =========================================================================
     // world.vat.cz — DPH model pro Českou republiku
     //
-    // Migrace ze starého Shipardu (modules/install/country-modules/debs/eu/
-    // config/vat-cz.json). Všechny kódy "EUCZ{NNN}" přejmenovány na "cz-{NNN}".
-    // EUCZ000 (nedaňový řádek) a EUCZ113 (artefakt zdroje) vynechány.
-    // EUCZ117 / EUCZ152 (přenesení DP5) zanikly (#89 D8): kódy přenesení
-    // cz-115 / cz-116 / cz-340 a cz-150 / cz-151 / cz-350 jsou obecné, předmět
-    // plnění je údaj řádku dokladu (EUCZ117 = cz-115 + předmět 5,
-    // EUCZ152 = cz-150 + předmět 5).
+    // Vychází z číselníku starého Shipardu (modules/install/country-modules/
+    // debs/eu/config/vat-cz.json); kódy "EUCZ{NNN}" se jmenují "cz-{NNN}".
+    // Od starého číselníku se liší (#89, #164):
+    //
+    //   - cz-000 „Mimo DPH“ (starý EUCZ000 „Nedaňový řádek“) — výslovný kód
+    //     pro řádek, který není plněním (odpočet nezdaněné zálohy, kauce,
+    //     místní poplatek, průběžná položka). Je mimo rekapitulaci, v částce
+    //     dokladu je. Řádek dokladu s DPH **bez kódu** znamená „nevyplněno“
+    //     a doklad s ním nejde potvrdit (#164 D1, D2).
+    //   - EUCZ112 / EUCZ122 „Bez daně“ nejsou (#164 D5). Nesly směs věcí:
+    //     řádky, které nejsou plněním (→ cz-000), osvobozená plnění
+    //     (→ cz-114 / cz-123) a doklady od neplátce (→ doklad Bez DPH
+    //     s řádky bez kódu).
+    //   - Vstupní „Osvobozeno“ cz-114 / cz-214 / cz-414 (#164 D4) — starý
+    //     číselník je neměl, protože přijaté osvobozené plnění se nikde
+    //     nevykazuje. V rekapitulaci je kvůli shodě s rekapitulací dodavatele.
+    //   - Kódy pro ř. 26, 30 a 31 přiznání: cz-124, cz-209, cz-402, cz-220,
+    //     cz-221 (#164 D8). Co chybí dál (ř. 42, 47, 51 …), je v #165.
+    //   - EUCZ113 (artefakt zdroje) vynechán.
+    //   - EUCZ117 / EUCZ152 (přenesení DP5) zanikly (#89 D8): kódy přenesení
+    //     cz-115 / cz-116 / cz-340 a cz-150 / cz-151 / cz-350 jsou obecné,
+    //     předmět plnění je údaj řádku dokladu (EUCZ117 = cz-115 + předmět 5,
+    //     EUCZ152 = cz-150 + předmět 5).
     //
     // Struktura:
-    //   - vatCategories  — klasifikace sazeb (sdíleno mezi kódy)
+    //   - vatCategories  — klasifikace sazeb (sdíleno mezi kódy):
+    //                      `exempt` = v rekapitulaci s nulovou daní — osvobozená
+    //                      plnění i plnění s místem plnění mimo tuzemsko, kde je
+    //                      zařazení jen technické a rozdíl nese řádek přiznání;
+    //                      `outOfScope` = mimo rekapitulaci (#164 D6)
     //   - vatCodes       — konkrétní kódy DPH per kombinace
-    //                      (place × direction × category)
+    //                      (place × direction × category); kód kategorie
+    //                      outOfScope místo ani směr nemá
     //   - vatPercents    — časově proměnná procenta per kód
     //   - vatNotes       — texty pro tisk dokladu
     //   - reverseChargeSubjects — kódy předmětu plnění u tuzemského přenesení
@@ -28,6 +49,9 @@
     //                         nese jen místo, směr a sazbu, předmět plnění je
     //                         samostatný údaj řádku dokladu a rekapitulace
     //                         (reverseChargeSubjects, #89 D7)
+    // V tuzemsku se kód odvozuje ze sazby řádku (0 % → cz-114); cz-000 ani
+    // vstupní kódy mimo tuzemsko bez samovyměření (cz-214, cz-414, cz-220) se
+    // neodvozují — volí je uživatel.
     // =========================================================================
 
     "vatCategories": {
@@ -50,11 +74,6 @@
             "name": "Second reduced rate",
             "name:cs": "Druhá snížená",
             "name:en": "Second reduced rate"
-        },
-        "zero": {
-            "name": "Zero rate",
-            "name:cs": "Bez daně",
-            "name:en": "Zero rate"
         },
         "exempt": {
             "name": "Exempt",
@@ -303,17 +322,20 @@
             "direction": "input",
             "vatReturnRow": 41
         },
-        "cz-112": {
-            "fullName": "Tuzemsko/Vstup/Bez daně",
-            "fullName:cs": "Tuzemsko/Vstup/Bez daně",
-            "name": "Bez daně",
-            "name:cs": "Bez daně",
-            "print": "Bez daně",
-            "print:cs": "Bez daně",
-            "print:en": "Zero rate",
-            "print:sk": "Bez dane",
-            "print:de": "Nullsatz",
-            "category": "zero",
+        // Osvobozené plnění na vstupu (#164 D4): v rekapitulaci, daň 0, bez
+        // řádku výkazů. Jediný tuzemský vstupní kód s 0 % — derivace ho
+        // odvodí z řádku s nulovou sazbou na dokladu plátce (D5b).
+        "cz-114": {
+            "fullName": "Tuzemsko/Vstup/Osvobozeno",
+            "fullName:cs": "Tuzemsko/Vstup/Osvobozeno",
+            "name": "Osvobozeno",
+            "name:cs": "Osvobozeno",
+            "print": "Osvobozeno",
+            "print:cs": "Osvobozeno",
+            "print:en": "Exempt",
+            "print:sk": "Oslobodené",
+            "print:de": "Steuerfrei",
+            "category": "exempt",
             "place": "domestic",
             "direction": "input",
             "vatReturnRow": 0
@@ -504,21 +526,6 @@
             "direction": "output",
             "vatReturnRow": 2
         },
-        "cz-122": {
-            "fullName": "Tuzemsko/Výstup/Bez daně",
-            "fullName:cs": "Tuzemsko/Výstup/Bez daně",
-            "name": "Bez daně",
-            "name:cs": "Bez daně",
-            "print": "Bez daně",
-            "print:cs": "Bez daně",
-            "print:en": "Zero rate",
-            "print:sk": "Bez dane",
-            "print:de": "Nullsatz",
-            "category": "zero",
-            "place": "domestic",
-            "direction": "output",
-            "vatReturnRow": 0
-        },
         "cz-123": {
             "fullName": "Tuzemsko/Výstup/Osvobozeno",
             "fullName:cs": "Tuzemsko/Výstup/Osvobozeno",
@@ -681,7 +688,7 @@
             "print:en": "EU/Goods",
             "print:sk": "EÚ/Tovar",
             "print:de": "EU/Waren",
-            "category": "zero",
+            "category": "exempt",
             "place": "intracom",
             "direction": "output",
             "supplyKind": "goods",
@@ -699,7 +706,7 @@
             "print:en": "EU/Services",
             "print:sk": "EÚ/Služby",
             "print:de": "EU/Dienstleistungen",
-            "category": "zero",
+            "category": "exempt",
             "place": "intracom",
             "direction": "output",
             "supplyKind": "services",
@@ -1117,7 +1124,7 @@
             "print:en": "Export/Goods",
             "print:sk": "VÝVOZ/Tovar",
             "print:de": "Export/Waren",
-            "category": "zero",
+            "category": "exempt",
             "place": "foreign",
             "direction": "output",
             "supplyKind": "goods",
@@ -1521,7 +1528,7 @@
         {"code": "cz-111", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
         {"code": "cz-111", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
         {"code": "cz-111", "from": "2024-01-01", "to": "0000-00-00", "value": 12.0},
-        {"code": "cz-112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-114", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-115", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
         {"code": "cz-115", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
         {"code": "cz-115", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
@@ -1550,7 +1557,6 @@
         {"code": "cz-121", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
         {"code": "cz-121", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
         {"code": "cz-121", "from": "2024-01-01", "to": "0000-00-00", "value": 12.0},
-        {"code": "cz-122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-124", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-150", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},

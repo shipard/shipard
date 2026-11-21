@@ -215,7 +215,7 @@ class DocDocumentOutOfScopeRowsTest extends TestCase
     /** @return array<string, array{0: string}> */
     public static function exemptInputCodes(): array
     {
-        return ['EU' => ['cz-214'], 'třetí země' => ['cz-414']];
+        return ['tuzemsko' => ['cz-114'], 'EU' => ['cz-214'], 'třetí země' => ['cz-414']];
     }
 
     /** Osvobozené plnění na vstupu (#164 D4) je v rekapitulaci: základ a nulová daň. */

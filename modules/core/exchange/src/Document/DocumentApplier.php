@@ -1962,6 +1962,8 @@ class DocumentApplier
      * (dodavatel účtuje vlastní daň; skončí v cenách řádků jako u neplátce),
      * `"specialPlace"` (služba se zvláštním místem plnění, bez daně na
      * dokladu) nebo `"user"` (uživatel v náhledu zvolil režim Bez DPH);
+     * v tuzemsku `"supplierNonPayer"` (#164 D5a — doklad od neplátce: režim
+     * Bez DPH z dokladu nebo z volby a žádná daň ani přenesení na dokladu);
      * jinak null. `autoOutOfScope` a `autoReverseCharge` říkají, jak by
      * doklad dopadl **bez volby režimu** — z nich je hodnota „Automaticky“
      * v náhledu, protože rozhodnutí o řádcích se u dokladu mimo DPH zahodí. Rozhoduje {@see outOfScopeKind()} jednou na
@@ -2174,20 +2176,17 @@ class DocumentApplier
             };
             $ctx['codeOptions'] = $optionsAt($ctx['rateDate']);
             $reverseCharge = is_bool($vat['reverseCharge'] ?? null) ? $vat['reverseCharge'] : null;
-            // Doklad bez DPH (`vat.mode` none — dodavatel neplátce): řádky
-            // nemají sazbu a v tuzemsku jim patří kód bez daně (cz-112),
-            // ne chyba vat_code_unknown (#103 F3 nález B). Mimo tuzemsko
-            // zůstává samovyměření (služba ze třetí země bez DPH).
-            $noVat = ($vat['mode'] ?? null) === 'none';
+            // Doklad od neplátce v tuzemsku (`vat.mode` none, řádky bez
+            // sazby) kódy nedostává — vznikne celý Bez DPH (#164 D5a,
+            // {@see outOfScopeKind()}); rozhodnutí níž slouží jen k jeho
+            // vyhodnocení. Mimo tuzemsko zůstává samovyměření (služba ze
+            // třetí země bez DPH).
             $decisions = [];
             foreach ($rows as $idx => $row) {
                 if (!self::rowHasVatDecision($row)) {
                     continue;
                 }
                 $rowVat = $row['vat'];
-                if ($noVat && !isset($rowVat['pct'])) {
-                    $rowVat['pct'] = 0;
-                }
                 // Odvození, soulad i pin k datu sazby řádku (#159 U3).
                 $rowRateDate = $this->lineRateDate($ctx, $rowVat['rateDate'] ?? null);
                 $decisions[(int) $idx] = $this->decideRowVatCode(
@@ -2205,16 +2204,20 @@ class DocumentApplier
             // (rozhodnutí výše sloužila jen k vyhodnocení), doklad je Bez DPH.
             $ctx['outOfScope'] = $importMode
                 ? null
-                : $this->outOfScopeKind($canonical, $place, $pins, $reverseCharge, $decisions);
-            if ($ctx['outOfScope'] === self::OUT_OF_SCOPE_USER) {
-                // Hodnota „Automaticky“ = výsledek bez volby režimu; řádky
-                // se zahodí, proto se samovyměření zjistí tady.
+                : $this->outOfScopeKind($canonical, $place, $pins, $reverseCharge, $decisions, $ownCountry, $ctx['taxPointDate']);
+            if ($ctx['outOfScope'] !== null && $pins['mode'] === 'none') {
+                // Režim Bez DPH zvolil uživatel (mimo tuzemsko druh `user`,
+                // v tuzemsku doklad od neplátce). Hodnota „Automaticky“ =
+                // výsledek bez volby režimu; řádky se zahodí, proto se
+                // samovyměření zjistí tady.
                 $ctx['autoOutOfScope'] = $this->outOfScopeKind(
                     $canonical,
                     $place,
                     ['mode' => null] + $pins,
                     $reverseCharge,
                     $decisions,
+                    $ownCountry,
+                    $ctx['taxPointDate'],
                 );
                 $ctx['autoReverseCharge'] = $ctx['autoOutOfScope'] === null
                     && $this->decisionsCarryReverseCharge($decisions, (string) $ctx['ownCountry'], $ctx['taxPointDate']);
@@ -2248,9 +2251,18 @@ class DocumentApplier
     private const OUT_OF_SCOPE_USER = 'user';
 
     /**
-     * Je doklad **mimo české DPH** (#89 D2–D4)? Vyhodnocuje se jednou na
-     * doklad, jen ve větvi derivace (přijatý doklad na zdroji s registrací
-     * DPH k datu, mimo import) a jen s efektivním místem mimo tuzemsko:
+     * Přijatý doklad od neplátce DPH v tuzemsku (#164 D5a, U10) — další druh
+     * dokladu mimo české DPH: vznikne celý Bez DPH s řádky bez kódu a bez
+     * rekapitulace, ceny řádků se nemění (neplátce daň neúčtuje).
+     */
+    private const OUT_OF_SCOPE_SUPPLIER_NON_PAYER = 'supplierNonPayer';
+
+    /**
+     * Je doklad **mimo české DPH** (#89 D2–D4, #164 D5a)? Vyhodnocuje se
+     * jednou na doklad, jen ve větvi derivace (přijatý doklad na zdroji
+     * s registrací DPH k datu, mimo import). S efektivním místem
+     * **v tuzemsku** jde jen o doklad od neplátce
+     * ({@see isSupplierNonPayer()}); mimo tuzemsko:
      *
      *   volba režimu Bez DPH                             → user (D4)
      *   volba režimu s DPH, nebo kódu na některém řádku  → null (jako dřív)
@@ -2278,7 +2290,9 @@ class DocumentApplier
      * @param array<string, mixed> $canonical
      * @param array{place: ?string, mode: ?string, rows: array<int, string>, invalid: list<array<string, string>>} $pins
      * @param array<int, array<string, mixed>> $decisions rozhodnutí o kódech ({@see decideRowVatCode()})
-     * @return string|null foreignVat | specialPlace | user
+     * @param string $country země naší registrace DPH
+     * @param string|null $date DUZP (fallback datum vystavení)
+     * @return string|null foreignVat | specialPlace | user | supplierNonPayer
      */
     private function outOfScopeKind(
         array $canonical,
@@ -2286,9 +2300,13 @@ class DocumentApplier
         array $pins,
         ?bool $reverseCharge,
         array $decisions,
+        string $country,
+        ?string $date,
     ): ?string {
         if (!in_array($place, ['intracom', 'thirdCountry'], true)) {
-            return null;
+            return $this->isSupplierNonPayer($canonical, $pins, $reverseCharge, $decisions, $country, $date)
+                ? self::OUT_OF_SCOPE_SUPPLIER_NON_PAYER
+                : null;
         }
         if ($pins['mode'] === 'none') {
             return self::OUT_OF_SCOPE_USER;
@@ -2310,8 +2328,82 @@ class DocumentApplier
     }
 
     /**
+     * Je to přijatý doklad **od neplátce DPH v tuzemsku** (#164 D5a, U10)?
+     * Režim Bez DPH — z dokladu, nebo volbou uživatele — a na dokladu žádná
+     * daň ani přenesení daňové povinnosti:
+     *
+     *   volba režimu s DPH                                → ne
+     *   režim není Bez DPH (ani z dokladu, ani z volby)   → ne
+     *   doklad nese daň dodavatele nebo řádek se sazbou   → ne (`none` u dokladu
+     *                                                       s daní řeší dál
+     *                                                       režim dokladu)
+     *   přenesení daňové povinnosti (hlavička, předmět
+     *   plnění řádku, kód řádku se samovyměřením)         → ne (Bez DPH se
+     *                                                       samovyměřením se dál
+     *                                                       přepíná na „Ze základu“,
+     *                                                       {@see effectiveVatMode()})
+     *   bez volby režimu: volba kódu na některém řádku,
+     *   nebo řádek s ponechaným kódem                     → ne (jako dřív —
+     *                                                       volbou kódu se
+     *                                                       uživatel vrací
+     *                                                       k dokladu s DPH)
+     *   cokoli jiného                                     → ano
+     *
+     * Volba Bez DPH má — stejně jako mimo tuzemsko — přednost před volbou
+     * kódu řádku (ta se ignoruje s info `vat_pin_ignored`).
+     *
+     * @param array<string, mixed> $canonical
+     * @param array{place: ?string, mode: ?string, rows: array<int, string>, invalid: list<array<string, string>>} $pins
+     * @param array<int, array<string, mixed>> $decisions
+     */
+    private function isSupplierNonPayer(
+        array $canonical,
+        array $pins,
+        ?bool $reverseCharge,
+        array $decisions,
+        string $country,
+        ?string $date,
+    ): bool {
+        $declared = $pins['mode'] ?? ($canonical['vat']['mode'] ?? null);
+        if ($declared !== 'none') {
+            return false;
+        }
+        if ($reverseCharge === true || SupplierVatPrices::carriesSupplierVat($canonical)) {
+            return false;
+        }
+        foreach ((array) ($canonical['rows'] ?? []) as $row) {
+            if (!self::rowHasVatDecision($row)) {
+                continue;
+            }
+            $pct = $row['vat']['pct'] ?? null;
+            if (is_numeric($pct) && abs((float) $pct) > 0.001) {
+                return false;
+            }
+            if (trim((string) ($row['vat']['reverseChargeCode'] ?? '')) !== '') {
+                return false;
+            }
+        }
+        if ($this->decisionsCarryReverseCharge($decisions, $country, $date)) {
+            return false;
+        }
+        if ($pins['mode'] === 'none') {
+            return true;
+        }
+        if ($pins['rows'] !== []) {
+            return false;
+        }
+        foreach ($decisions as $decision) {
+            if ($decision['matchedBy'] === 'input') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Doklad vznikne **Bez DPH** bez ohledu na to, co říká canonical:
-     * přijatý doklad neplátce (#97), nebo doklad mimo české DPH (#89).
+     * přijatý doklad neplátce (#97), nebo doklad mimo české DPH (#89, vč.
+     * dokladu od neplátce v tuzemsku — #164 D5a).
      * Jedna podmínka pro režim, kódy řádků, rekapitulaci i převod cen.
      *
      * @param array<string, mixed> $vatCtx {@see vatContext()}
@@ -2859,7 +2951,7 @@ class DocumentApplier
                     'severity' => 'info',
                     'path'     => "rows.{$idx}.vat.code",
                     'code'     => 'vat_pin_ignored',
-                    'message'  => $vatCtx['outOfScope'] === self::OUT_OF_SCOPE_USER
+                    'message'  => $vatCtx['outOfScope'] !== null
                         ? 'Doklad má zvolený režim Bez DPH — volba kódu DPH řádku se nepoužije.'
                         : 'Volba kódu DPH platí jen u přijatého dokladu na zdroji s registrací DPH — ignorována.',
                 ];
@@ -4162,6 +4254,8 @@ class DocumentApplier
      *   řádku (D19, D20), zpráva položku jmenuje.
      * - warning `vat_out_of_scope_user` (D4) — režim Bez DPH zvolil
      *   uživatel; připomene, že se daň v ČR nepřizná.
+     * - info `vat_supplier_non_payer` (#164 D5a) — doklad od neplátce
+     *   v tuzemsku; vysvětlí, proč řádky nemají kód a doklad rekapitulaci.
      *
      * @param array<int, array{source: string, item: ?string}> $special {@see vatContext()} `special`
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
@@ -4184,6 +4278,13 @@ class DocumentApplier
                 'path'     => 'vat.mode',
                 'code'     => 'vat_out_of_scope_user',
                 'message'  => 'Doklad od dodavatele mimo tuzemsko vznikne bez DPH — daň se v ČR nepřizná.',
+            ],
+            self::OUT_OF_SCOPE_SUPPLIER_NON_PAYER => [
+                'severity' => 'info',
+                'path'     => 'vat.mode',
+                'code'     => 'vat_supplier_non_payer',
+                'message'  => 'Doklad od neplátce DPH — vznikne bez DPH, řádky nemají kód DPH'
+                    . ' a doklad nemá rekapitulaci. Pokud dodavatel plátcem je, zvol režim s DPH.',
             ],
             VatCodeDerivation::FAIL_SPECIAL_PLACE => [
                 'severity' => 'warning',
@@ -4244,8 +4345,9 @@ class DocumentApplier
      * před derivací i ochranou samovyměření — ta stojí na registraci
      * a neplátce by s `vat_mode` 1 padl na povinné registraci DPH.
      *
-     * Doklad mimo české DPH (#89 D2–D4) je „Bez DPH“ se zdrojem
-     * `outOfScope` a důvodem `foreignVat` / `specialPlace` / `user`.
+     * Doklad mimo české DPH (#89 D2–D4, #164 D5a) je „Bez DPH“ se zdrojem
+     * `outOfScope` a důvodem `foreignVat` / `specialPlace` / `user` /
+     * `supplierNonPayer` (doklad od neplátce v tuzemsku).
      * Důvod `user` (D4) mění D11 z #87 jen mimo tuzemsko: tam volba Bez DPH
      * platí; v tuzemsku a u `none` deklarovaného AI zůstává tiché přepnutí.
      *
@@ -4254,7 +4356,7 @@ class DocumentApplier
      * @return array{value: string, source: string, reason: ?string, pinned: bool, auto: string}
      *         value klíč VAT_MODE_MAP; source user | derived | ai | default | nonPayer | outOfScope;
      *         reason u derived (reverseCharge | rowsWithVat | rowsWithoutVat)
-     *         a u outOfScope (foreignVat | specialPlace | user);
+     *         a u outOfScope (foreignVat | specialPlace | user | supplierNonPayer);
      *         auto = hodnota bez volby uživatele (náhled: „Automaticky (…)“).
      */
     private function effectiveVatMode(array $canonical, array $vatCtx): array
@@ -4262,7 +4364,10 @@ class DocumentApplier
         if ($vatCtx['nonPayer']) {
             return ['value' => 'none', 'source' => 'nonPayer', 'reason' => null, 'pinned' => false, 'auto' => 'none'];
         }
-        $userOutOfScope = $vatCtx['outOfScope'] === self::OUT_OF_SCOPE_USER;
+        // Režim Bez DPH zvolil uživatel: mimo tuzemsko druh `user` (D4),
+        // v tuzemsku doklad od neplátce z volby (#164 U10).
+        $userOutOfScope = $vatCtx['outOfScope'] !== null
+            && $vatCtx['derive'] && $vatCtx['pins']['mode'] === 'none';
         if ($vatCtx['outOfScope'] !== null && !$userOutOfScope) {
             return [
                 'value'  => 'none',
@@ -4289,7 +4394,7 @@ class DocumentApplier
             return [
                 'value'  => 'none',
                 'source' => 'outOfScope',
-                'reason' => self::OUT_OF_SCOPE_USER,
+                'reason' => $vatCtx['outOfScope'],
                 'pinned' => true,
                 'auto'   => $auto,
             ];

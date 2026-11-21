@@ -65,7 +65,8 @@ class VatCodeDerivationTest extends TestCase
             'tuzemsko 21 bez příznaku'         => ['domestic', null, 21.0, null, 'cz-110', self::DATE],
             'tuzemsko bez místa (null) 21'     => [null, null, 21.0, null, 'cz-110', self::DATE],
             'tuzemsko 12 (2026)'               => ['domestic', null, 12.0, null, 'cz-111', self::DATE],
-            'tuzemsko 0'                       => ['domestic', null, 0.0, null, 'cz-112', self::DATE],
+            // 0 % v tuzemsku = osvobozené plnění (#164 D5b); „Mimo DPH“ se neodvozuje.
+            'tuzemsko 0'                       => ['domestic', null, 0.0, null, 'cz-114', self::DATE],
             'tuzemsko 15 (2020, první snížená)' => ['domestic', null, 15.0, null, 'cz-301', '2020-06-01'],
             'tuzemsko 10 (2020, druhá snížená)' => ['domestic', null, 10.0, null, 'cz-302', '2020-06-01'],
         ];
@@ -227,6 +228,8 @@ class VatCodeDerivationTest extends TestCase
             $this->assertSame('cz-000', $last['code'], (string) $place);
             $this->assertSame('Mimo DPH', $last['label']);
             $this->assertSame(0.0, $last['pct']);
+            $this->assertTrue($last['outOfScope'], 'náhled u něj nevypisuje procento');
+            $this->assertFalse($options[0]['outOfScope']);
             $this->assertFalse($last['reverseCharge']);
             $this->assertNull($last['supplyKind']);
             $this->assertNotSame('cz-000', $options[0]['code'], 'první volba není „Mimo DPH“');

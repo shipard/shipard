@@ -161,9 +161,13 @@ final class SavedDocumentProjection
     }
 
     /**
-     * Doklad bez DPH (`vat.mode` none — dodavatel neplátce): Shipard nese kód
-     * bez daně (cz-112), nulovou rekapitulaci a základ = částka, papír DPH
-     * vůbec nemá. Rovnocenné jen při nulové dani — jinak zůstává rozdíl.
+     * Doklad, který je na papíře bez DPH (`vat.mode` none), ale v Shipardu
+     * nese kód s nulovou daní, nulovou rekapitulaci a základ = částka —
+     * samovyměření služby ze zahraničí v papírové podobě, ručně zvolený
+     * osvobozený kód. Papír DPH vůbec nemá. Rovnocenné jen při nulové dani
+     * — jinak zůstává rozdíl. Doklad od neplátce v tuzemsku vzniká rovnou
+     * Bez DPH bez kódů a rekapitulace (#164 D5a); u něj se tu srovnává jen
+     * základ a daň hlavičky, které papír nenese.
      *
      * @param array<string, mixed> $out
      * @return array<string, mixed>

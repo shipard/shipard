@@ -616,9 +616,12 @@
   }
 
   // Platí volba uživatele? Bez DPH mimo tuzemsko se vrací se zdrojem
-  // outOfScope a důvodem user (#89 D4).
+  // outOfScope a důvodem user (#89 D4), v tuzemsku s důvodem
+  // supplierNonPayer (doklad od neplátce, #164 D5a) — ten vzniká jen
+  // z režimu Bez DPH, takže se s volbou nikdy nerozchází.
   function vatChoiceHonored(eff) {
-    return eff.source === 'user' || (eff.source === 'outOfScope' && eff.reason === 'user');
+    return eff.source === 'user'
+      || (eff.source === 'outOfScope' && (eff.reason === 'user' || eff.reason === 'supplierNonPayer'));
   }
 
   function vatCodeStatusLabel(path, block) {
