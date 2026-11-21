@@ -354,9 +354,9 @@
         },
 
         // Řádek snapshotu (`economy_vat_filing_rs_rows`) → věta R.
-        // `kod` snapshotu je přímo `k_pln_eu` (0 zboží, 3 služby);
-        // číselník zná i 1 (přemístění obchodního majetku) a 2 (třístranný
-        // obchod, prostřední osoba) — dnes na ně nemapuje žádný kód DPH.
+        // `kod` snapshotu je přímo `k_pln_eu` (0 zboží, 2 třístranný obchod —
+        // prostřední osoba, 3 služby); číselník zná i 1 (přemístění obchodního
+        // majetku) — na ten dnes nemapuje žádný kód DPH.
         "row": {
             "veta": "VetaR",
             // Kód státu a DIČ jsou povinné v každém nestorno řádku, počet

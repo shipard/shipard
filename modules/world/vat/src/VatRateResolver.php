@@ -17,6 +17,16 @@ final class VatRateResolver
     /** Povolené hodnoty `vatCodes[].supplyKind` (zboží / služby). */
     public const SUPPLY_KINDS = ['goods', 'services'];
 
+    /**
+     * Kategorie kódu „Mimo DPH“ (#164 D1, D6): řádek není plněním, do
+     * rekapitulace nepatří, v částce dokladu je. Jediný znak „mimo
+     * rekapitulaci“ — žádný druhý příznak na kódu.
+     */
+    public const CATEGORY_OUT_OF_SCOPE = 'outOfScope';
+
+    /** Vlastnosti, které kód kategorie „Mimo DPH“ nést nesmí (nemá místo, směr ani výkaz). */
+    private const OUT_OF_SCOPE_FORBIDDEN = ['place', 'direction', 'vatReturnRow', 'reverseVatCode', 'supplyKind'];
+
     public function __construct(
         private readonly ConfigRuntime $config,
     ) {}
@@ -57,6 +67,11 @@ final class VatRateResolver
     /**
      * Get filtered list of VAT codes (for UI dropdown on document row).
      *
+     * Kód kategorie „Mimo DPH“ ({@see CATEGORY_OUT_OF_SCOPE}) je univerzální:
+     * nemá místo plnění ani směr, filtrem projde vždy a ve výsledku je
+     * **poslední** bez ohledu na pořadí v konfiguraci (#164 U2, U4) — první
+     * kód nabídky tak nikdy není „Mimo DPH“.
+     *
      * @return array<string, array> keyed by VAT code slug
      */
     public function getVatCodes(
@@ -68,8 +83,13 @@ final class VatRateResolver
         $cfg = $this->loadCountryConfig($countryCode);
 
         $result = [];
+        $universal = [];
         foreach ($cfg['vatCodes'] ?? [] as $key => $code) {
             if (!$includeHidden && !empty($code['hidden'])) {
+                continue;
+            }
+            if (self::isOutOfScopeDefinition($code)) {
+                $universal[$key] = $code;
                 continue;
             }
             if ($direction !== null && ($code['direction'] ?? null) !== $direction) {
@@ -80,7 +100,29 @@ final class VatRateResolver
             }
             $result[$key] = $code;
         }
-        return $result;
+        return $result + $universal;
+    }
+
+    /**
+     * Je kód „Mimo DPH“ — mimo rekapitulaci (#164 U1)? Neznámý nebo prázdný
+     * kód není.
+     */
+    public function isOutOfScopeCode(string $countryCode, ?string $vatCode): bool
+    {
+        if ($vatCode === null || $vatCode === '') {
+            return false;
+        }
+        $cfg = $this->loadCountryConfig($countryCode);
+        return self::isOutOfScopeDefinition($cfg['vatCodes'][$vatCode] ?? null);
+    }
+
+    /**
+     * Totéž nad definicí kódu — pro místa, která už pole definic drží
+     * (`getVatCodes()`), aby pravidlo zůstalo jedno.
+     */
+    public static function isOutOfScopeDefinition(mixed $codeDef): bool
+    {
+        return is_array($codeDef) && ($codeDef['category'] ?? null) === self::CATEGORY_OUT_OF_SCOPE;
     }
 
     /** Get details of a single VAT code; null if not found. */
@@ -241,6 +283,22 @@ final class VatRateResolver
             if (isset($code['supplyKind'])
                 && !in_array($code['supplyKind'], self::SUPPLY_KINDS, true)) {
                 $errors[] = "vatCodes['{$key}']: unknown supplyKind '{$code['supplyKind']}'";
+            }
+            // Kód „Mimo DPH“ je univerzální (#164 U2): bez místa, směru
+            // a výkazu. Ostatní kódy místo i směr mít musí — chybějící místo
+            // by filtr tiše bral jako tuzemsko.
+            if (self::isOutOfScopeDefinition($code)) {
+                foreach (self::OUT_OF_SCOPE_FORBIDDEN as $property) {
+                    if (array_key_exists($property, $code)) {
+                        $errors[] = "vatCodes['{$key}']: out-of-scope code must not have '{$property}'";
+                    }
+                }
+                continue;
+            }
+            foreach (['place', 'direction'] as $property) {
+                if (!isset($code[$property]) || $code[$property] === '') {
+                    $errors[] = "vatCodes['{$key}']: missing {$property}";
+                }
             }
         }
 

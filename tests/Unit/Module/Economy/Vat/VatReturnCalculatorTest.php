@@ -25,6 +25,9 @@ class VatReturnCalculatorTest extends TestCase
             'cz-203' => ['dp3' => ['row' => 10], 'kh' => null, 'sh' => null],
             'cz-201' => ['dp3' => ['row' => 20], 'kh' => null, 'sh' => null],
             'cz-122' => ['dp3' => null, 'kh' => null, 'sh' => null],
+            'cz-402' => ['dp3' => ['row' => 26], 'kh' => null, 'sh' => null],
+            'cz-220' => ['dp3' => ['row' => 30], 'kh' => null, 'sh' => null],
+            'cz-221' => ['dp3' => ['row' => 31], 'kh' => null, 'sh' => ['kod' => 2]],
         ]]));
     }
 
@@ -81,6 +84,28 @@ class VatReturnCalculatorTest extends TestCase
             ['base' => 3500.0, 'taxFull' => 630.0, 'taxReduced' => 105.0],
             $result['computed'][46],
         );
+    }
+
+    /** Ř. 26, 30 a 31 jsou doplňující údaje — do součtů 46, 62 a 63 nevstupují (#164 U12). */
+    public function testSupplementaryRowsStayOutOfComputedTotals(): void
+    {
+        $plain = [
+            ['vat_code' => 'cz-120', 'base_dom' => 1000.0, 'tax_dom' => 210.0],
+            ['vat_code' => 'cz-110', 'base_dom' => 400.0, 'tax_dom' => 84.0],
+        ];
+        $supplementary = [
+            ['vat_code' => 'cz-402', 'base_dom' => 5000.0, 'tax_dom' => 0.0],
+            ['vat_code' => 'cz-220', 'base_dom' => 3000.0, 'tax_dom' => 0.0],
+            ['vat_code' => 'cz-221', 'base_dom' => 3500.0, 'tax_dom' => 0.0],
+        ];
+
+        $without = $this->calculator()->calculate([$this->doc($plain)]);
+        $with = $this->calculator()->calculate([$this->doc($plain), $this->doc($supplementary, 2)]);
+
+        $this->assertSame(['base' => 5000.0, 'taxFull' => 0.0, 'taxReduced' => 0.0], $with['rows'][26]);
+        $this->assertSame(['base' => 3000.0, 'taxFull' => 0.0, 'taxReduced' => 0.0], $with['rows'][30]);
+        $this->assertSame(['base' => 3500.0, 'taxFull' => 0.0, 'taxReduced' => 0.0], $with['rows'][31]);
+        $this->assertSame($without['computed'], $with['computed']);
     }
 
     public function testOwnTaxLiability(): void

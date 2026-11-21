@@ -161,17 +161,94 @@ class VatCodeDerivationTest extends TestCase
         }
     }
 
-    /** Skutečný číselník: každý kód s `supplyKind` je mimo tuzemsko a hodnota je z výčtu. */
-    public function testSupplyKindIsPresentOnEveryCrossBorderCode(): void
+    /**
+     * Skutečný číselník: `supplyKind` má jen kód mimo tuzemsko a hodnota je
+     * z výčtu. Povinný je u kódů samovyměření (`reverseVatCode`) a jejich
+     * oddaňovacích párů — podle něj derivace mimo tuzemsko vybírá. Kódy,
+     * které se neodvozují a nejsou jen zboží nebo jen služba (vstupní
+     * „Osvobozeno“, ř. 26 přiznání, třístranný obchod — #164 D4, D8), ho mít
+     * nemusí.
+     */
+    public function testSupplyKindIsPresentOnEveryDerivableCrossBorderCode(): void
     {
         $cfg = JsoncParser::parseFile(dirname(__DIR__, 6) . self::VAT_CZ);
+        $pairs = [];
+        foreach ($cfg['vatCodes'] as $def) {
+            if (!empty($def['reverseVatCode'])) {
+                $pairs[(string) $def['reverseVatCode']] = true;
+            }
+        }
         foreach ($cfg['vatCodes'] as $key => $def) {
             $place = $def['place'] ?? 'domestic';
             if ($place === 'domestic') {
                 $this->assertArrayNotHasKey('supplyKind', $def, "{$key}: tuzemský kód nemá mít supplyKind");
                 continue;
             }
-            $this->assertContains($def['supplyKind'] ?? null, VatRateResolver::SUPPLY_KINDS, "{$key}: chybí supplyKind");
+            if (!empty($def['reverseVatCode']) || isset($pairs[$key])) {
+                $this->assertContains($def['supplyKind'] ?? null, VatRateResolver::SUPPLY_KINDS, "{$key}: chybí supplyKind");
+            } elseif (isset($def['supplyKind'])) {
+                $this->assertContains($def['supplyKind'], VatRateResolver::SUPPLY_KINDS, "{$key}: supplyKind mimo výčet");
+            }
+        }
+    }
+
+    // ── Kód „Mimo DPH“ a kódy, které se neodvozují (#164 D4, D5c, U11) ─────
+
+    /** „Mimo DPH“ ani kódy bez samovyměření mimo tuzemsko derivace nikdy nevrátí. */
+    public function testNeverDerivesOutOfScopeNorUserOnlyCodes(): void
+    {
+        $d = $this->derivation();
+        $never = ['cz-000', 'cz-214', 'cz-414', 'cz-220'];
+
+        foreach (['domestic', 'intracom', 'thirdCountry', null] as $place) {
+            foreach ([null, true, false] as $reverseCharge) {
+                foreach ([null, 0.0, 12.0, 21.0] as $pct) {
+                    foreach ([null, 'goods', 'services'] as $supplyKind) {
+                        $result = $d->derive('cz', self::DATE, $place, $reverseCharge, $pct, $supplyKind);
+                        $this->assertNotContains(
+                            $result['code'],
+                            $never,
+                            json_encode([$place, $reverseCharge, $pct, $supplyKind]),
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    public function testOutOfScopeCodeIsLastOptionForEveryPlace(): void
+    {
+        $d = $this->derivation();
+
+        foreach (['domestic', 'intracom', 'thirdCountry', null] as $place) {
+            $options = $d->options('cz', self::DATE, $place);
+            $last = end($options);
+
+            $this->assertSame('cz-000', $last['code'], (string) $place);
+            $this->assertSame('Mimo DPH', $last['label']);
+            $this->assertSame(0.0, $last['pct']);
+            $this->assertFalse($last['reverseCharge']);
+            $this->assertNull($last['supplyKind']);
+            $this->assertNotSame('cz-000', $options[0]['code'], 'první volba není „Mimo DPH“');
+        }
+    }
+
+    /** „Mimo DPH“ nemá místo, směr ani sazbu k porovnání — v rozporu není nikdy. */
+    public function testOutOfScopeCodeNeverConflicts(): void
+    {
+        $d = $this->derivation();
+
+        foreach (['domestic', 'intracom', 'thirdCountry', null] as $place) {
+            foreach ([null, true, false] as $reverseCharge) {
+                foreach ([null, 0.0, 21.0] as $pct) {
+                    foreach ([null, 'goods', 'services'] as $supplyKind) {
+                        $this->assertNull(
+                            $d->conflict('cz', 'cz-000', self::DATE, $place, $reverseCharge, $pct, $supplyKind),
+                            json_encode([$place, $reverseCharge, $pct, $supplyKind]),
+                        );
+                    }
+                }
+            }
         }
     }
 
@@ -238,7 +315,10 @@ class VatCodeDerivationTest extends TestCase
     {
         $options = $this->derivation()->options('cz', self::DATE, 'intracom');
 
-        $this->assertSame(['cz-215', 'cz-216', 'cz-217', 'cz-218'], array_column($options, 'code'));
+        $this->assertSame(
+            ['cz-215', 'cz-216', 'cz-217', 'cz-218', 'cz-214', 'cz-220', 'cz-000'],
+            array_column($options, 'code'),
+        );
         $services = $options[2];
         $this->assertSame('EU/Vstup/Služby/Základní', $services['label']);
         $this->assertSame(21.0, $services['pct']);
@@ -265,7 +345,11 @@ class VatCodeDerivationTest extends TestCase
         $derivation = $this->derivation();
 
         $foreign = array_column($derivation->options('cz', self::DATE, 'thirdCountry'), 'code');
-        $this->assertSame(['cz-415', 'cz-416', 'cz-417', 'cz-418'], $foreign, 'dovoz zboží se neodvozuje, ale nabízí');
+        $this->assertSame(
+            ['cz-415', 'cz-416', 'cz-417', 'cz-418', 'cz-414', 'cz-000'],
+            $foreign,
+            'dovoz zboží se neodvozuje, ale nabízí',
+        );
 
         $this->assertSame([], $derivation->options('cz', self::DATE, 'eu'), 'neznámé místo');
         $this->assertSame([], $derivation->options('xx', self::DATE, 'domestic'), 'země bez číselníku');

@@ -138,7 +138,11 @@ class VatReportsMappingCompletenessTest extends TestCase
 
             $sh = $record['sh'];
             if ($sh !== null) {
-                $this->assertContains($sh['kod'], [0, 3], "Kód {$code}: sh.kod musí být 0 (zboží) | 3 (služby)");
+                $this->assertContains(
+                    $sh['kod'],
+                    [0, 2, 3],
+                    "Kód {$code}: sh.kod musí být 0 (zboží) | 2 (třístranný obchod) | 3 (služby)",
+                );
             }
         }
     }

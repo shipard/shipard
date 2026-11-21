@@ -17,7 +17,8 @@
 //        per doklad; config nese jen skupinu. Kód předmětu plnění u A1/B1
 //        (tuzemské přenesení) tu není — nese ho rekapitulace dokladu
 //        (`docs_core_vat_recap.reverse_charge_code`, #89 D13).
-//   sh:  { kod: 0 | 3 } | null   (0 zboží, 3 služby)
+//   sh:  { kod: 0 | 2 | 3 } | null   (0 zboží, 2 třístranný obchod —
+//        prostřední osoba, 3 služby)
 //
 // Proč tuzemské PDP páry (cz-203/204/370, ř. 10/11) v KH nejsou: jejich daň
 // nese sekce B1 z odpočtové strany. EU/dovoz odpočty (cz-215…, cz-415…,
@@ -46,6 +47,7 @@
         "cz-311": { "dp3": { "row": 2 }, "kh": { "group": "A4A5" }, "sh": null },
         "cz-122": { "dp3": null, "kh": null, "sh": null },
         "cz-123": { "dp3": { "row": 50 }, "kh": null, "sh": null },
+        "cz-124": { "dp3": { "row": 26 }, "kh": null, "sh": null },
         "cz-150": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
         "cz-151": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
         "cz-350": { "dp3": { "row": 25 }, "kh": { "group": "A1" }, "sh": null },
@@ -56,6 +58,8 @@
         // ── EU / výstup ─────────────────────────────────────────────────────
         "cz-201": { "dp3": { "row": 20 }, "kh": null, "sh": { "kod": 0 } },
         "cz-202": { "dp3": { "row": 21 }, "kh": null, "sh": { "kod": 3 } },
+        "cz-209": { "dp3": { "row": 26 }, "kh": null, "sh": null },
+        "cz-221": { "dp3": { "row": 31 }, "kh": null, "sh": { "kod": 2 } },
         "cz-205": { "dp3": { "row": 3 }, "kh": { "group": "A2" }, "sh": null },
         "cz-206": { "dp3": { "row": 4 }, "kh": { "group": "A2" }, "sh": null },
         "cz-360": { "dp3": { "row": 4 }, "kh": { "group": "A2" }, "sh": null },
@@ -74,9 +78,12 @@
         "cz-218": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null },
         "cz-392": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null },
         "cz-393": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null },
+        "cz-214": { "dp3": null, "kh": null, "sh": null },
+        "cz-220": { "dp3": { "row": 30 }, "kh": null, "sh": null },
 
         // ── Zahraničí / výstup ──────────────────────────────────────────────
         "cz-401": { "dp3": { "row": 22 }, "kh": null, "sh": null },
+        "cz-402": { "dp3": { "row": 26 }, "kh": null, "sh": null },
         "cz-405": { "dp3": { "row": 7 }, "kh": null, "sh": null },
         "cz-406": { "dp3": { "row": 8 }, "kh": null, "sh": null },
         "cz-460": { "dp3": { "row": 8 }, "kh": null, "sh": null },
@@ -94,12 +101,17 @@
         "cz-417": { "dp3": { "row": 43, "col": "full" }, "kh": null, "sh": null },
         "cz-418": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null },
         "cz-492": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null },
-        "cz-493": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null }
+        "cz-493": { "dp3": { "row": 44, "col": "full" }, "kh": null, "sh": null },
+        "cz-414": { "dp3": null, "kh": null, "sh": null },
+
+        // ── Mimo DPH — řádek není plněním, v rekapitulaci dokladu není ─────
+        "cz-000": { "dp3": null, "kh": null, "sh": null }
     },
 
     // Popisky řádků DPHDP3 pro živý report (zkrácené názvy dle formuláře).
     // Řádek 52 se dopočítává (krácený × koeficient); 53/60/61 vstupují jen
-    // do dopočtu 63/62 a zatím jsou nulové.
+    // do dopočtu 63/62 a zatím jsou nulové. Řádky 26, 30 a 31 jsou doplňující
+    // údaje — do žádného součtu (46, 62, 63) nevstupují.
     "dp3Rows": {
         "1":  { "label": "Domestic supplies — standard rate", "label:cs": "Dodání zboží a poskytnutí služeb v tuzemsku — základní sazba" },
         "2":  { "label": "Domestic supplies — reduced rate", "label:cs": "Dodání zboží a poskytnutí služeb v tuzemsku — snížená sazba" },
@@ -117,6 +129,9 @@
         "21": { "label": "Supply of services to another EU member state", "label:cs": "Poskytnutí služeb s místem plnění v jiném členském státě" },
         "22": { "label": "Export of goods", "label:cs": "Vývoz zboží" },
         "25": { "label": "Domestic reverse charge — supplier", "label:cs": "Režim přenesení daňové povinnosti — dodavatel" },
+        "26": { "label": "Other supplies with deduction entitlement", "label:cs": "Ostatní uskutečněná plnění s nárokem na odpočet daně" },
+        "30": { "label": "Triangular transaction (middle person) — acquisition of goods", "label:cs": "Třístranný obchod prostřední osobou — pořízení zboží" },
+        "31": { "label": "Triangular transaction (middle person) — supply of goods", "label:cs": "Třístranný obchod prostřední osobou — dodání zboží" },
         "40": { "label": "Input tax deduction from domestic supplies — standard rate", "label:cs": "Nárok na odpočet z přijatých zdanitelných plnění — základní sazba" },
         "41": { "label": "Input tax deduction from domestic supplies — reduced rate", "label:cs": "Nárok na odpočet z přijatých zdanitelných plnění — snížená sazba" },
         "43": { "label": "Deduction from supplies reported on rows 3–13 — standard rate", "label:cs": "Odpočet ze zdanitelných plnění vykázaných na ř. 3–13 — základní sazba" },

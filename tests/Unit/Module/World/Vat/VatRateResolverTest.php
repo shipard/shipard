@@ -188,7 +188,98 @@ class VatRateResolverTest extends TestCase
     {
         $r = $this->realResolver();
         $codes = $r->getVatCodes('cz', includeHidden: true);
-        $this->assertCount(59, $codes);
+        $this->assertCount(67, $codes);
+    }
+
+    // --- kód „Mimo DPH“ (#164 D1, U2–U4) -------------------------------------
+
+    public function testOutOfScopeCodeIsOfferedForEveryDirectionAndPlaceAsLast(): void
+    {
+        $r = $this->realResolver();
+
+        foreach ([null, 'input', 'output'] as $direction) {
+            foreach ([null, 'domestic', 'intracom', 'foreign'] as $place) {
+                $keys = array_keys($r->getVatCodes('cz', direction: $direction, place: $place));
+                $label = ($direction ?? 'null') . ' / ' . ($place ?? 'null');
+
+                $this->assertSame('cz-000', end($keys), "{$label}: „Mimo DPH“ je poslední");
+                $this->assertNotSame('cz-000', $keys[0], "{$label}: první kód nabídky není „Mimo DPH“");
+                $this->assertSame(1, count(array_keys($keys, 'cz-000', true)), $label);
+            }
+        }
+    }
+
+    public function testOutOfScopeCodeIsLastRegardlessOfConfigOrder(): void
+    {
+        $r = $this->resolverFromArray([
+            'vatCategories' => ['standard' => ['name' => 'X'], 'outOfScope' => ['name' => 'Y']],
+            'vatCodes' => [
+                'cz-000' => ['category' => 'outOfScope'],
+                'cz-110' => ['category' => 'standard', 'direction' => 'input', 'place' => 'domestic'],
+                'cz-217' => ['category' => 'standard', 'direction' => 'input', 'place' => 'intracom'],
+            ],
+            'vatPercents' => [],
+            'vatNotes' => [],
+        ]);
+
+        $this->assertSame(['cz-110', 'cz-217', 'cz-000'], array_keys($r->getVatCodes('cz')));
+        $this->assertSame(['cz-217', 'cz-000'], array_keys($r->getVatCodes('cz', 'input', 'intracom')));
+        $this->assertSame(['cz-000'], array_keys($r->getVatCodes('cz', 'output', 'foreign')));
+    }
+
+    public function testIsOutOfScopeCodeFollowsCategory(): void
+    {
+        $r = $this->realResolver();
+
+        $this->assertTrue($r->isOutOfScopeCode('cz', 'cz-000'));
+        // Osvobozené a nulové kódy v rekapitulaci jsou — kategorie exempt.
+        foreach (['cz-110', 'cz-123', 'cz-124', 'cz-214', 'cz-414', 'cz-201', 'cz-999'] as $code) {
+            $this->assertFalse($r->isOutOfScopeCode('cz', $code), $code);
+        }
+        $this->assertFalse($r->isOutOfScopeCode('cz', null));
+        $this->assertFalse($r->isOutOfScopeCode('cz', ''));
+    }
+
+    public function testOutOfScopeCodeHasZeroRateWithoutValidityLimit(): void
+    {
+        $r = $this->realResolver();
+
+        foreach (['1999-01-01', '2026-11-21', '2099-12-31'] as $date) {
+            $this->assertSame(0.0, $r->resolveVatPct('cz', 'cz-000', $date), $date);
+        }
+    }
+
+    /**
+     * Nové kódy výkazů a vstupní „Osvobozeno“ mimo tuzemsko (#164 D4, D8):
+     * kategorie exempt = v rekapitulaci s nulovou daní, sazba 0 bez omezení.
+     * `cz-114` přibude se zrušením `cz-112` — do té doby by 0 % v tuzemsku
+     * mělo dva kandidáty derivace.
+     */
+    public function testNewExemptCodesCarryPlaceDirectionAndZeroRate(): void
+    {
+        $r = $this->realResolver();
+        $expected = [
+            'cz-124' => ['domestic', 'output', 26],
+            'cz-209' => ['intracom', 'output', 26],
+            'cz-402' => ['foreign', 'output', 26],
+            'cz-220' => ['intracom', 'input', 30],
+            'cz-221' => ['intracom', 'output', 31],
+            'cz-214' => ['intracom', 'input', 0],
+            'cz-414' => ['foreign', 'input', 0],
+        ];
+
+        foreach ($expected as $code => [$place, $direction, $row]) {
+            $def = $r->getVatCode('cz', $code);
+            $this->assertNotNull($def, $code);
+            $this->assertSame('exempt', $def['category'], $code);
+            $this->assertSame($place, $def['place'], $code);
+            $this->assertSame($direction, $def['direction'], $code);
+            $this->assertSame($row, $def['vatReturnRow'], $code);
+            $this->assertArrayNotHasKey('reverseVatCode', $def, "{$code}: neodvozuje se");
+            $this->assertSame(0.0, $r->resolveVatPct('cz', $code, '2026-11-21'), $code);
+        }
+        $this->assertSame(2, $r->getVatCode('cz', 'cz-221')['intracomCode']);
+        $this->assertArrayNotHasKey('intracomCode', $r->getVatCode('cz', 'cz-209'));
     }
 
     // --- getVatCode ---------------------------------------------------------
@@ -213,12 +304,12 @@ class VatRateResolverTest extends TestCase
 
     // --- getVatCategories / getVatNotes -------------------------------------
 
-    public function testGetVatCategoriesReturnsSixKnownKeys(): void
+    public function testGetVatCategoriesReturnsKnownKeys(): void
     {
         $r = $this->realResolver();
         $cats = $r->getVatCategories('cz');
         $this->assertSame(
-            ['standard', 'reduced', 'reduced1', 'reduced2', 'zero', 'exempt'],
+            ['standard', 'reduced', 'reduced1', 'reduced2', 'zero', 'exempt', 'outOfScope'],
             array_keys($cats),
         );
     }
@@ -344,7 +435,7 @@ class VatRateResolverTest extends TestCase
         $r = $this->resolverFromArray([
             'vatCategories' => ['standard' => ['name' => 'X']],
             'vatCodes' => [
-                'cz-110' => ['category' => 'standard', 'direction' => 'input'],
+                'cz-110' => ['category' => 'standard', 'direction' => 'input', 'place' => 'domestic'],
             ],
             'vatPercents' => [
                 ['code' => 'cz-110', 'from' => '0000-00-00', 'to' => '0000-00-00', 'value' => 21.0],
@@ -365,6 +456,7 @@ class VatRateResolverTest extends TestCase
                 'cz-115' => [
                     'category' => 'standard',
                     'direction' => 'input',
+                    'place' => 'domestic',
                     'reverseVatCode' => 'cz-missing',
                 ],
             ],
@@ -381,7 +473,7 @@ class VatRateResolverTest extends TestCase
         $r = $this->resolverFromArray([
             'vatCategories' => ['standard' => ['name' => 'X']],
             'vatCodes' => [
-                'cz-110' => ['category' => 'wrong', 'direction' => 'input'],
+                'cz-110' => ['category' => 'wrong', 'direction' => 'input', 'place' => 'domestic'],
             ],
             'vatPercents' => [],
             'vatNotes' => [],
@@ -399,6 +491,7 @@ class VatRateResolverTest extends TestCase
                 'cz-110' => [
                     'category' => 'standard',
                     'direction' => 'input',
+                    'place' => 'domestic',
                     'note' => 'unknown_note',
                 ],
             ],
@@ -408,6 +501,56 @@ class VatRateResolverTest extends TestCase
         $errors = $r->validateCountryConfig('cz');
         $this->assertCount(1, $errors);
         $this->assertStringContainsString("unknown note 'unknown_note'", $errors[0]);
+    }
+
+    public function testValidateCountryConfigRejectsPlaceOrReportOnOutOfScopeCode(): void
+    {
+        // #164 U2: kód „Mimo DPH“ je univerzální — místo, směr ani výkaz nemá.
+        $r = $this->resolverFromArray([
+            'vatCategories' => ['standard' => ['name' => 'X'], 'outOfScope' => ['name' => 'Y']],
+            'vatCodes' => [
+                'cz-110' => ['category' => 'standard', 'direction' => 'input', 'place' => 'domestic'],
+                'cz-000' => [
+                    'category' => 'outOfScope',
+                    'place' => 'domestic',
+                    'direction' => 'input',
+                    'vatReturnRow' => 0,
+                    'reverseVatCode' => 'cz-110',
+                    'supplyKind' => 'goods',
+                ],
+            ],
+            'vatPercents' => [],
+            'vatNotes' => [],
+        ]);
+
+        $errors = $r->validateCountryConfig('cz');
+        $this->assertCount(5, $errors);
+        foreach (['place', 'direction', 'vatReturnRow', 'reverseVatCode', 'supplyKind'] as $i => $property) {
+            $this->assertStringContainsString(
+                "vatCodes['cz-000']: out-of-scope code must not have '{$property}'",
+                $errors[$i],
+            );
+        }
+    }
+
+    public function testValidateCountryConfigRequiresPlaceAndDirectionOnOtherCodes(): void
+    {
+        // Chybějící místo by filtr getVatCodes() tiše bral jako tuzemsko.
+        $r = $this->resolverFromArray([
+            'vatCategories' => ['standard' => ['name' => 'X'], 'outOfScope' => ['name' => 'Y']],
+            'vatCodes' => [
+                'cz-110' => ['category' => 'standard', 'direction' => 'input'],
+                'cz-120' => ['category' => 'standard', 'place' => 'domestic'],
+                'cz-000' => ['category' => 'outOfScope'],
+            ],
+            'vatPercents' => [],
+            'vatNotes' => [],
+        ]);
+
+        $this->assertSame(
+            ["vatCodes['cz-110']: missing place", "vatCodes['cz-120']: missing direction"],
+            $r->validateCountryConfig('cz'),
+        );
     }
 
     public function testValidateCountryConfigDetectsUnknownSupplyKind(): void

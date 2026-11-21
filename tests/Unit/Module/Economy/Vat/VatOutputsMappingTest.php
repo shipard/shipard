@@ -37,6 +37,28 @@ class VatOutputsMappingTest extends TestCase
         $this->assertSame(['dp3' => null, 'kh' => null, 'sh' => null], $mapping->forCode('cz-112'));
     }
 
+    /** Ř. 26, 30 a 31 přiznání a souhrnné hlášení kód 2 (#164 D8, U12). */
+    public function testSupplementaryReturnRowsAndTriangularTrade(): void
+    {
+        $mapping = $this->mapping();
+
+        foreach (['cz-124', 'cz-209', 'cz-402'] as $code) {
+            $this->assertSame(['dp3' => ['row' => 26], 'kh' => null, 'sh' => null], $mapping->forCode($code), $code);
+        }
+        $this->assertSame(['dp3' => ['row' => 30], 'kh' => null, 'sh' => null], $mapping->forCode('cz-220'));
+        $this->assertSame(
+            ['dp3' => ['row' => 31], 'kh' => null, 'sh' => ['kod' => 2]],
+            $mapping->forCode('cz-221'),
+        );
+        // „Mimo DPH“ a vstupní „Osvobozeno“ mimo tuzemsko do výkazů nejdou.
+        foreach (['cz-000', 'cz-214', 'cz-414'] as $code) {
+            $this->assertSame(['dp3' => null, 'kh' => null, 'sh' => null], $mapping->forCode($code), $code);
+        }
+        foreach ([26, 30, 31] as $row) {
+            $this->assertNotNull($mapping->dp3RowLabel($row), "ř. {$row} má popisek");
+        }
+    }
+
     public function testUnknownCodeThrows(): void
     {
         $this->expectException(\DomainException::class);

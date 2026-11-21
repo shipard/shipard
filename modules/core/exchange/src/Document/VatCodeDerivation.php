@@ -22,7 +22,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * Kandidáti = vstupní kódy pro místo plnění bez `hidden` a bez
  * `reducedDeduction` (krácený odpočet se nikdy neodvozuje — má stejnou
  * sazbu, místo i kategorii jako plný nárok, bez příznaku by výběr nebyl
- * jednoznačný):
+ * jednoznačný) a bez kódu „Mimo DPH“ (kategorie `outOfScope`, #164 D5c —
+ * ze signálů se neodvozuje, jen ho nese nabídka {@see options()}):
  *
  *   - samovyměření (`reverseCharge === true`, nebo místo ≠ tuzemsko):
  *     kódy s `reverseVatCode` kategorie `standard`; mimo tuzemsko navíc
@@ -130,9 +131,13 @@ final class VatCodeDerivation
         } catch (\LogicException) {
             return self::fail('číselník DPH země ' . strtoupper($country) . ' není k dispozici');
         }
+        // „Mimo DPH“ se ze signálů nikdy neodvozuje (#164 D5c, U11): volí ho
+        // uživatel nebo přijde v payloadu. Mezi kandidáty by navíc 0 %
+        // v tuzemsku mělo dva kódy a `pick()` by neodvodil nic.
         $candidates = array_filter(
             $candidates,
-            static fn (array $def): bool => empty($def['reducedDeduction']),
+            static fn (array $def): bool => empty($def['reducedDeduction'])
+                && !VatRateResolver::isOutOfScopeDefinition($def),
         );
 
         $selfAssessed = $reverseCharge === true || $cfgPlace !== 'domestic';
@@ -283,6 +288,11 @@ final class VatCodeDerivation
         if ($def === null) {
             return null;
         }
+        // „Mimo DPH“ nemá místo, směr ani sazbu k porovnání (#164 U11) —
+        // řádek, který není plněním, se signály dokladu v rozporu být nemůže.
+        if (VatRateResolver::isOutOfScopeDefinition($def)) {
+            return null;
+        }
 
         $defPlace = (string) ($def['place'] ?? 'domestic');
         if ($place !== null) {
@@ -334,7 +344,9 @@ final class VatCodeDerivation
      * registrace, směr `input`, efektivní místo plnění, bez `hidden`, jen
      * kódy se sazbou platnou k datu (`cz-390`–`cz-393` mimo 2015–2023
      * vypadnou). Na rozdíl od derivace **včetně** kráceného odpočtu
-     * (`reducedDeduction`) a dovozu zboží — ručně jsou legitimní. Táž
+     * (`reducedDeduction`) a dovozu zboží — ručně jsou legitimní — a vždy
+     * s kódem „Mimo DPH“ jako posledním, pro každé místo (#164 U11; pořadí
+     * dává `VatRateResolver::getVatCodes()`). Táž
      * množina validuje volbu (`vat_code_pin_invalid`) — dvě implementace by
      * se rozešly. Štítek je `fullName` číselníku (compiled config jazyka
      * requestu, tedy už lokalizovaný).

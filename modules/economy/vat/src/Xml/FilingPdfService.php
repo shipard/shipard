@@ -241,7 +241,13 @@ final class FilingPdfService implements FilingPdfRenderer
         foreach ($input->recapRows as $row) {
             [$country, $number] = EpoXmlFormat::euVatId($row['partner_vat_id'] ?? null);
             $rows[] = [
-                'no'    => (string) ((int) $row['kod'] === 0 ? 'zboží' : 'služby'),
+                // Kód plnění souhrnného hlášení (`k_pln_eu`): 0 zboží,
+                // 2 třístranný obchod prostřední osobou, 3 služby.
+                'no'    => match ((int) $row['kod']) {
+                    0       => 'zboží',
+                    2       => 'třístranný obchod',
+                    default => 'služby',
+                },
                 'label' => trim(((string) $country) . ' ' . ((string) $number)),
                 'cells' => [(string) (int) $row['count'], self::money((float) $row['value_filed']), '', ''],
                 'total' => false,

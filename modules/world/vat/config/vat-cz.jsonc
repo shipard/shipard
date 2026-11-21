@@ -60,6 +60,13 @@
             "name": "Exempt",
             "name:cs": "Osvobozeno",
             "name:en": "Exempt"
+        },
+        // Mimo rekapitulaci DPH (#164 D6): řádek není plněním. Jediný znak
+        // „mimo rekapitulaci“ — čte ho VatRateResolver::isOutOfScopeCode().
+        "outOfScope": {
+            "name": "Outside the scope of VAT",
+            "name:cs": "Mimo DPH",
+            "name:en": "Outside the scope of VAT"
         }
     },
 
@@ -527,6 +534,21 @@
             "direction": "output",
             "vatReturnRow": 50
         },
+        "cz-124": {
+            "fullName": "Tuzemsko/Výstup/Osvobozeno s nárokem na odpočet",
+            "fullName:cs": "Tuzemsko/Výstup/Osvobozeno s nárokem na odpočet",
+            "name": "Osvobozeno s nárokem na odpočet",
+            "name:cs": "Osvobozeno s nárokem na odpočet",
+            "print": "Osvobozeno s nárokem na odpočet",
+            "print:cs": "Osvobozeno s nárokem na odpočet",
+            "print:en": "Exempt with right of deduction",
+            "print:sk": "Oslobodené s nárokom na odpočet",
+            "print:de": "Steuerfrei mit Vorsteuerabzug",
+            "category": "exempt",
+            "place": "domestic",
+            "direction": "output",
+            "vatReturnRow": 26
+        },
         "cz-150": {
             "fullName": "Tuzemsko/Výstup/Základní - přenesení DP",
             "fullName:cs": "Tuzemsko/Výstup/Základní - přenesení DP",
@@ -684,6 +706,41 @@
             "intracomCode": 3,
             "vatReturnRow": 21,
             "note": "eu"
+        },
+        // Ř. 26 přiznání: plnění s místem plnění v jiném členském státě, které
+        // nepatří na ř. 20 / 21 (§ 24a) — do souhrnného hlášení nejde.
+        "cz-209": {
+            "fullName": "EU/Výstup/Ostatní s nárokem na odpočet",
+            "fullName:cs": "EU/Výstup/Ostatní s nárokem na odpočet",
+            "name": "Ostatní EU",
+            "name:cs": "Ostatní EU",
+            "print": "EU/Ostatní",
+            "print:cs": "EU/Ostatní",
+            "print:en": "EU/Other",
+            "print:sk": "EÚ/Ostatné",
+            "print:de": "EU/Sonstiges",
+            "category": "exempt",
+            "place": "intracom",
+            "direction": "output",
+            "vatReturnRow": 26
+        },
+        // Třístranný obchod, prostřední osoba (§ 17): dodání kupujícímu —
+        // ř. 31 přiznání, souhrnné hlášení kód 2.
+        "cz-221": {
+            "fullName": "EU/Výstup/Zboží — třístranný obchod",
+            "fullName:cs": "EU/Výstup/Zboží — třístranný obchod",
+            "name": "Zboží EU — třístranný obchod",
+            "name:cs": "Zboží EU — třístranný obchod",
+            "print": "EU/Zboží/Třístranný obchod",
+            "print:cs": "EU/Zboží/Třístranný obchod",
+            "print:en": "EU/Goods/Triangular transaction",
+            "print:sk": "EÚ/Tovar/Trojstranný obchod",
+            "print:de": "EU/Waren/Dreiecksgeschäft",
+            "category": "exempt",
+            "place": "intracom",
+            "direction": "output",
+            "intracomCode": 2,
+            "vatReturnRow": 31
         },
         "cz-205": {
             "fullName": "EU/Výstup/Zboží/Základní (odběratel)",
@@ -1010,6 +1067,41 @@
             "reverseVatCode": "cz-363",
             "vatReturnRow": 44
         },
+        // Osvobozené plnění z jiného členského státu (#164 D4): v rekapitulaci,
+        // daň 0, bez řádku výkazů. Neodvozuje se — volí ho uživatel.
+        "cz-214": {
+            "fullName": "EU/Vstup/Osvobozeno",
+            "fullName:cs": "EU/Vstup/Osvobozeno",
+            "name": "Osvobozeno EU",
+            "name:cs": "Osvobozeno EU",
+            "print": "EU/Osvobozeno",
+            "print:cs": "EU/Osvobozeno",
+            "print:en": "EU/Exempt",
+            "print:sk": "EÚ/Oslobodené",
+            "print:de": "EU/Steuerfrei",
+            "category": "exempt",
+            "place": "intracom",
+            "direction": "input",
+            "vatReturnRow": 0
+        },
+        // Třístranný obchod, prostřední osoba (§ 17): pořízení od prodávajícího
+        // — ř. 30 přiznání. Neodvozuje se — volí ho uživatel.
+        "cz-220": {
+            "fullName": "EU/Vstup/Zboží — třístranný obchod",
+            "fullName:cs": "EU/Vstup/Zboží — třístranný obchod",
+            "name": "Zboží EU — třístranný obchod",
+            "name:cs": "Zboží EU — třístranný obchod",
+            "print": "EU/Zboží/Třístranný obchod",
+            "print:cs": "EU/Zboží/Třístranný obchod",
+            "print:en": "EU/Goods/Triangular transaction",
+            "print:sk": "EÚ/Tovar/Trojstranný obchod",
+            "print:de": "EU/Waren/Dreiecksgeschäft",
+            "category": "exempt",
+            "place": "intracom",
+            "direction": "input",
+            "supplyKind": "goods",
+            "vatReturnRow": 30
+        },
 
         // ---------------------------------------------------------------------
         // Vývoz (place=foreign, direction=output)
@@ -1030,6 +1122,23 @@
             "direction": "output",
             "supplyKind": "goods",
             "vatReturnRow": 22
+        },
+        // Ř. 26 přiznání: služby a ostatní plnění s místem plnění ve třetí
+        // zemi (§ 24a) a osvobozená plnění při vývozu mimo ř. 22.
+        "cz-402": {
+            "fullName": "VÝVOZ/Výstup/Služby a ostatní",
+            "fullName:cs": "VÝVOZ/Výstup/Služby a ostatní",
+            "name": "Služby a ostatní VÝVOZ",
+            "name:cs": "Služby a ostatní VÝVOZ",
+            "print": "VÝVOZ/Služby a ostatní",
+            "print:cs": "VÝVOZ/Služby a ostatní",
+            "print:en": "Export/Services and other",
+            "print:sk": "VÝVOZ/Služby a ostatné",
+            "print:de": "Export/Dienstleistungen und Sonstiges",
+            "category": "exempt",
+            "place": "foreign",
+            "direction": "output",
+            "vatReturnRow": 26
         },
 
         // ---------------------------------------------------------------------
@@ -1360,6 +1469,46 @@
             "sumTax": 0,
             "reverseVatCode": "cz-463",
             "vatReturnRow": 44
+        },
+        // Osvobozené plnění ze třetí země (#164 D4): v rekapitulaci, daň 0,
+        // bez řádku výkazů. Neodvozuje se — volí ho uživatel.
+        "cz-414": {
+            "fullName": "DOVOZ/Vstup/Osvobozeno",
+            "fullName:cs": "DOVOZ/Vstup/Osvobozeno",
+            "name": "Osvobozeno DOVOZ",
+            "name:cs": "Osvobozeno DOVOZ",
+            "print": "DOVOZ/Osvobozeno",
+            "print:cs": "DOVOZ/Osvobozeno",
+            "print:en": "Import/Exempt",
+            "print:sk": "DOVOZ/Oslobodené",
+            "print:de": "Import/Steuerfrei",
+            "category": "exempt",
+            "place": "foreign",
+            "direction": "input",
+            "vatReturnRow": 0
+        },
+
+        // ---------------------------------------------------------------------
+        // Mimo DPH (#164 D1) — řádek, který není plněním: odpočet nezdaněné
+        // zálohy, kauce, místní poplatek, průběžná položka. Bez místa plnění
+        // a směru: nabízí se na každém dokladu s DPH, vždy jako poslední.
+        // Je mimo rekapitulaci (kategorie outOfScope), v částce dokladu je.
+        // Plnění s místem plnění mimo tuzemsko sem nepatří — mají vlastní kódy.
+        // ---------------------------------------------------------------------
+
+        "cz-000": {
+            "fullName": "Mimo DPH",
+            "fullName:cs": "Mimo DPH",
+            "fullName:en": "Outside the scope of VAT",
+            "name": "Mimo DPH",
+            "name:cs": "Mimo DPH",
+            "name:en": "Outside the scope of VAT",
+            "print": "Mimo DPH",
+            "print:cs": "Mimo DPH",
+            "print:en": "Outside the scope of VAT",
+            "print:sk": "Mimo DPH",
+            "print:de": "Nicht steuerbar",
+            "category": "outOfScope"
         }
     },
 
@@ -1403,6 +1552,7 @@
         {"code": "cz-121", "from": "2024-01-01", "to": "0000-00-00", "value": 12.0},
         {"code": "cz-122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-124", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-150", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
         {"code": "cz-150", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
         {"code": "cz-150", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
@@ -1417,6 +1567,10 @@
         // EU
         {"code": "cz-201", "from": "2010-01-01", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-202", "from": "2010-01-01", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-209", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-214", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-220", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-221", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-215", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
         {"code": "cz-215", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
         {"code": "cz-215", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
@@ -1438,6 +1592,8 @@
 
         // Vývoz / Dovoz
         {"code": "cz-401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-402", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "cz-414", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
         {"code": "cz-415", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
         {"code": "cz-415", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
         {"code": "cz-415", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
@@ -1504,6 +1660,10 @@
         {"code": "cz-460", "from": "2015-01-01", "to": "2023-12-31", "value": 15.0}, // = cz-490
         {"code": "cz-461", "from": "2015-01-01", "to": "2023-12-31", "value": 10.0}, // = cz-491
         {"code": "cz-462", "from": "2015-01-01", "to": "2023-12-31", "value": 15.0}, // = cz-492
-        {"code": "cz-463", "from": "2015-01-01", "to": "2023-12-31", "value": 10.0}  // = cz-493
+        {"code": "cz-463", "from": "2015-01-01", "to": "2023-12-31", "value": 10.0}, // = cz-493
+
+        // Mimo DPH — sazba 0 bez omezení platnosti, aby řádek s tímto kódem
+        // nikdy nehlásil vat_rate_missing.
+        {"code": "cz-000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0}
     ]
 }

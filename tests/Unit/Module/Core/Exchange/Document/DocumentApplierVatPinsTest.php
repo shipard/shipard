@@ -406,9 +406,14 @@ class DocumentApplierVatPinsTest extends TestCase
     {
         $applier = $this->buildApplier();
 
-        // intracom k DUZP 2026: 8 vstupních kódů − 4 bez platné sazby (cz-390–393).
+        // intracom k DUZP 2026: 8 kódů samovyměření − 4 bez platné sazby
+        // (cz-390–393), vstupní „Osvobozeno“, třístranný obchod a jako
+        // poslední „Mimo DPH“ (#164 D1, D4, D8).
         $eu = $applier->preview($this->euServicesPayload())->canonical;
-        $this->assertSame(['cz-215', 'cz-216', 'cz-217', 'cz-218'], $this->optionCodes($eu));
+        $this->assertSame(
+            ['cz-215', 'cz-216', 'cz-217', 'cz-218', 'cz-214', 'cz-220', 'cz-000'],
+            $this->optionCodes($eu),
+        );
         $option = $eu['_resolve']['vatCodeOptions'][2];
         $this->assertSame('EU/Vstup/Služby/Základní', $option['label']);
         $this->assertSame(21.0, $option['pct']);

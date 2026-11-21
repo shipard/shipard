@@ -63,6 +63,20 @@ class ShvXmlWriterTest extends TestCase
         $this->assertStringContainsString('k_pln_eu="3"', $xml);
     }
 
+    /** Třístranný obchod prostřední osobou (kód 2, #164 D8) projde zapisovačem i XSD. */
+    public function testTriangularTradeCodeIsWrittenAndValid(): void
+    {
+        $input = $this->input(['rows' => [
+            ['kod' => 2, 'partner_vat_id' => 'DE123456789', 'count' => 1,
+             'value' => 4000.0, 'value_filed' => 4000.0],
+        ]]);
+        $xml = $this->write($input);
+
+        $this->assertStringContainsString('k_pln_eu="2"', $xml);
+        $this->assertSame([], (new EpoXsdValidator())->validate($xml, 'rs'));
+        $this->assertSame([], $this->validate($input));
+    }
+
     /** Hodnota plnění je v celých Kč — zaokrouhlení nahoru udělal snapshot. */
     public function testValueIsWrittenInWholeCrowns(): void
     {
