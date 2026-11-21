@@ -1,6 +1,6 @@
 # Task: Revize číselníku DPH — kód „Mimo DPH“, osvobozeno, nové kódy výkazů
 
-**Stav:** hotovo — 2026-11-21 (4 commity; odchylky a ověření viz „Poznámky k implementaci“); zbývá push, komentář #164, ruční proklik formuláře řádku a panelu volby kódu v náhledu, `ds-upgrade` na alfě
+**Stav:** hotovo — 2026-11-21 (4 commity; odchylky a ověření viz „Poznámky k implementaci“); nezávisle ověřeno a ručně prokliknuto 2026-11-21 (formulář řádku, panel volby kódu v náhledu), stav v #164; zbývá `ds-upgrade` na alfě
 
 **Issue:** #164 (nahrazuje #89 D1; navazuje #165)
 
