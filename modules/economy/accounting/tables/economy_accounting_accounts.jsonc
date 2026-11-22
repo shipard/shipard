@@ -1,6 +1,7 @@
 {
     "tableId": 412,
     "displayPattern": "{number} — {name}",
+    "exchangeKey": "number",
     "name": "Chart of accounts",
     "name:cs": "Účtový rozvrh",
     "name:en": "Chart of accounts",

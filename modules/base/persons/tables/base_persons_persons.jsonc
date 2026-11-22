@@ -5,6 +5,8 @@
     "name:en": "Persons",
 
     "displayPattern": "{person_id} — {full_name}",
+    "exchangeKey": "person_id",
+    "exchangeLookupColumns": ["company_id", "vat_id"],
 
     "docStates": {
         "stateColumn": "docState",

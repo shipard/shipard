@@ -6,6 +6,7 @@
     "name:en": "Asset type groups",
 
     "displayPattern": "{name}",
+    "exchangeKey": "name",
 
     "docStates": {
         "stateColumn": "docState",

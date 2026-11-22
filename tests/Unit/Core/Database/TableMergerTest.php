@@ -58,8 +58,12 @@ class TableMergerTest extends TestCase
             'name'          => 'core_test_items',
             'adminOnly'     => true,
             'systemManaged' => true,
+            'exchangeKey'   => 'code',
+            'exchangeLookupColumns' => ['ean'],
             'columns'       => [
                 ['id' => 'id', 'name' => 'ID', 'type' => 'int', 'primaryKey' => true, 'autoIncrement' => true],
+                ['id' => 'code', 'name' => 'Code', 'type' => 'varchar', 'length' => 20],
+                ['id' => 'ean', 'name' => 'EAN', 'type' => 'varchar', 'length' => 20, 'nullable' => true],
             ],
         ]);
         $ext = ExtensionDefinition::fromArray([
@@ -72,6 +76,10 @@ class TableMergerTest extends TestCase
         // Rozšíření cizím modulem nesmí tabulku odemknout.
         $this->assertTrue($merged->adminOnly);
         $this->assertTrue($merged->systemManaged);
+        // Přirozený klíč (#166 D8) rozšířením nezaniká — tabulky s extension
+        // (pokladny, bankovní účty, položky) by jinak nešly odkázat klíčem.
+        $this->assertSame('code', $merged->exchangeKey);
+        $this->assertSame(['ean'], $merged->exchangeLookupColumns);
     }
 
     public function testAddNewColumnGroup(): void

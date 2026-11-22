@@ -141,6 +141,8 @@ class StandardDimensionsTest extends TestCase
             $this->assertSame($expected[$dimension->id] ?? null, $dimension->exchangeKey, $dimension->id);
             $def = JsoncParser::parseFile(self::MODULES . '/' . $tables[$dimension->table]);
             $this->assertContains($dimension->exchangeKey, array_column($def['columns'], 'id'), "{$dimension->id}: klíč v tabulce");
+            // #166 D8: přirozený klíč je v definici cílové tabulky — týž sloupec.
+            $this->assertSame($dimension->exchangeKey, $def['exchangeKey'] ?? null, "{$dimension->id}: exchangeKey tabulky");
         }
     }
 

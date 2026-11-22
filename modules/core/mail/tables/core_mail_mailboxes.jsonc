@@ -5,6 +5,7 @@
     "name:en": "Mailboxes",
 
     "displayPattern": "{mailbox_id} — {name}",
+    "exchangeKey": "mailbox_id",
 
     "docStates": {
         "stateColumn": "docState",

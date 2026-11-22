@@ -19,6 +19,7 @@
     "name:en": "Work orders",
 
     "displayPattern": "{number} — {title}",
+    "exchangeKey": "number",
 
     "docStates": {
         "stateColumn": "docState",

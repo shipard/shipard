@@ -25,7 +25,28 @@ class TableDefinition
          * stavy dokumentu.
          */
         public readonly bool $systemManaged = false,
+        /**
+         * Přirozený klíč záznamu (#166 D8): id sloupce, kterým se záznam
+         * odkazuje ve výměnných formátech a datových sadách. Hledá přes něj
+         * jediný obecný resolver; jednoznačnost se ověřuje až při hledání.
+         */
+        public readonly ?string $exchangeKey = null,
+        /**
+         * Další sloupce, přes které smí hledat jmenovaná reference
+         * (`"@sloupec:hodnota"`, #166 D10). `exchangeKey` je povolený vždy
+         * a do seznamu se neuvádí.
+         *
+         * @var list<string>
+         */
+        public readonly array $exchangeLookupColumns = [],
     ) {}
+
+    /** Smí jmenovaná reference hledat přes tento sloupec? */
+    public function isExchangeLookupColumn(string $column): bool
+    {
+        return $column === $this->exchangeKey
+            || in_array($column, $this->exchangeLookupColumns, true);
+    }
 
     /** @return string[] Column ids flagged "sensitive": true */
     public function getSensitiveColumns(): array
@@ -89,6 +110,8 @@ class TableDefinition
             $data['indexes'] ?? [],
         );
 
+        [$exchangeKey, $exchangeLookupColumns] = self::exchangeColumns($data, $columns);
+
         return new self(
             tableId: $data['tableId'],
             name: $data['name'],
@@ -105,6 +128,77 @@ class TableDefinition
             stateTransitionsRunDocumentHooks: (bool) ($data['stateTransitionsRunDocumentHooks'] ?? false),
             adminOnly: (bool) ($data['adminOnly'] ?? false),
             systemManaged: (bool) ($data['systemManaged'] ?? false),
+            exchangeKey: $exchangeKey,
+            exchangeLookupColumns: $exchangeLookupColumns,
         );
+    }
+
+    /** Typy sloupce, který smí být přirozeným klíčem nebo sloupcem pro hledání. */
+    private const EXCHANGE_COLUMN_TYPES = ['varchar', 'tinyint', 'smallint', 'int', 'bigint'];
+
+    /**
+     * `exchangeKey` a `exchangeLookupColumns` (#166 D8, D10): sloupec musí
+     * existovat, nesmí být primární klíč ani citlivý a musí být řetězcový
+     * nebo celočíselný — jde do SQL podmínky a jeho hodnota do souborů.
+     *
+     * @param array<string, mixed>   $data
+     * @param list<ColumnDefinition> $columns
+     * @return array{0: ?string, 1: list<string>}
+     */
+    private static function exchangeColumns(array $data, array $columns): array
+    {
+        $table = (string) $data['name'];
+        $byId = [];
+        foreach ($columns as $column) {
+            $byId[$column->id] = $column;
+        }
+        $check = static function (mixed $columnId, string $field) use ($table, $byId): string {
+            if (!is_string($columnId) || $columnId === '') {
+                throw new \InvalidArgumentException("Table '{$table}': {$field} must be a non-empty column id");
+            }
+            $column = $byId[$columnId] ?? null;
+            if ($column === null) {
+                throw new \InvalidArgumentException("Table '{$table}': {$field} refers to unknown column '{$columnId}'");
+            }
+            if ($column->primaryKey) {
+                throw new \InvalidArgumentException("Table '{$table}': {$field} '{$columnId}' must not be the primary key");
+            }
+            if ($column->sensitive) {
+                throw new \InvalidArgumentException("Table '{$table}': {$field} '{$columnId}' must not be a sensitive column");
+            }
+            if (!in_array($column->type, self::EXCHANGE_COLUMN_TYPES, true)) {
+                throw new \InvalidArgumentException(
+                    "Table '{$table}': {$field} '{$columnId}' must be a varchar or integer column, got '{$column->type}'",
+                );
+            }
+            return $columnId;
+        };
+
+        $exchangeKey = array_key_exists('exchangeKey', $data) && $data['exchangeKey'] !== null
+            ? $check($data['exchangeKey'], 'exchangeKey')
+            : null;
+
+        $lookupColumns = [];
+        if (array_key_exists('exchangeLookupColumns', $data)) {
+            if (!is_array($data['exchangeLookupColumns']) || !array_is_list($data['exchangeLookupColumns'])) {
+                throw new \InvalidArgumentException("Table '{$table}': exchangeLookupColumns must be a list of column ids");
+            }
+            foreach ($data['exchangeLookupColumns'] as $columnId) {
+                $columnId = $check($columnId, 'exchangeLookupColumns');
+                if ($columnId === $exchangeKey) {
+                    throw new \InvalidArgumentException(
+                        "Table '{$table}': exchangeLookupColumns must not repeat exchangeKey '{$columnId}'",
+                    );
+                }
+                if (in_array($columnId, $lookupColumns, true)) {
+                    throw new \InvalidArgumentException(
+                        "Table '{$table}': exchangeLookupColumns has duplicate column '{$columnId}'",
+                    );
+                }
+                $lookupColumns[] = $columnId;
+            }
+        }
+
+        return [$exchangeKey, $lookupColumns];
     }
 }

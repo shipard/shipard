@@ -58,6 +58,8 @@ class TableMerger
             stateTransitionsRunDocumentHooks: $base->stateTransitionsRunDocumentHooks,
             adminOnly: $base->adminOnly,
             systemManaged: $base->systemManaged,
+            exchangeKey: $base->exchangeKey,
+            exchangeLookupColumns: $base->exchangeLookupColumns,
         );
     }
 }

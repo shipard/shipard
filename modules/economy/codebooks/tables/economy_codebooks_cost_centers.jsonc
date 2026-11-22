@@ -1,6 +1,7 @@
 {
     "tableId": 102,
     "displayPattern": "{code} — {name}",
+    "exchangeKey": "code",
     "name": "Cost centers",
     "name:cs": "Střediska",
     "name:en": "Cost centers",

@@ -5,6 +5,7 @@
     "name:en": "Cash desks",
 
     "displayPattern": "{code} — {name}",
+    "exchangeKey": "code",
 
     "docStates": {
         "stateColumn": "docState",

@@ -11,6 +11,7 @@
     "name:en": "Work order number series",
 
     "displayPattern": "{name}",
+    "exchangeKey": "number_code",
 
     "docStates": {
         "stateColumn": "docState",

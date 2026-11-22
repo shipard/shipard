@@ -9,6 +9,7 @@
     "name:en": "Asset accounting groups",
 
     "displayPattern": "{code} — {name}",
+    "exchangeKey": "code",
 
     "docStates": {
         "stateColumn": "docState",

@@ -393,4 +393,81 @@ class TableDefinitionTest extends TestCase
     {
         $this->assertSame([], TableDefinition::fromArray($this->coreSystemUsersData())->getStructuredColumns());
     }
+
+    public function testExchangeKeyAndLookupColumnsParsed(): void
+    {
+        $data = $this->coreSystemUsersData();
+        $data['columns'][] = ['id' => 'ext_number', 'name' => 'Number', 'type' => 'int', 'nullable' => true];
+        $data['exchangeKey'] = 'login';
+        $data['exchangeLookupColumns'] = ['email', 'ext_number'];
+
+        $table = TableDefinition::fromArray($data);
+
+        $this->assertSame('login', $table->exchangeKey);
+        $this->assertSame(['email', 'ext_number'], $table->exchangeLookupColumns);
+        $this->assertTrue($table->isExchangeLookupColumn('login'), 'přirozený klíč je povolený vždy');
+        $this->assertTrue($table->isExchangeLookupColumn('email'));
+        $this->assertFalse($table->isExchangeLookupColumn('full_name'));
+    }
+
+    public function testExchangeFieldsDefaultToNone(): void
+    {
+        $table = TableDefinition::fromArray($this->coreSystemUsersData());
+
+        $this->assertNull($table->exchangeKey);
+        $this->assertSame([], $table->exchangeLookupColumns);
+        $this->assertFalse($table->isExchangeLookupColumn('login'));
+    }
+
+    public function testLookupColumnsWorkWithoutExchangeKey(): void
+    {
+        $table = TableDefinition::fromArray(['exchangeLookupColumns' => ['email']] + $this->coreSystemUsersData());
+
+        $this->assertNull($table->exchangeKey);
+        $this->assertTrue($table->isExchangeLookupColumn('email'));
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: string}>
+     */
+    public static function rejectedExchangeColumns(): array
+    {
+        return [
+            'neexistující klíč'      => [['exchangeKey' => 'nope'], "exchangeKey refers to unknown column 'nope'"],
+            'klíč není řetězec'      => [['exchangeKey' => ['login']], 'exchangeKey must be a non-empty column id'],
+            'prázdný klíč'           => [['exchangeKey' => ''], 'exchangeKey must be a non-empty column id'],
+            'primární klíč'          => [['exchangeKey' => 'id'], "exchangeKey 'id' must not be the primary key"],
+            'citlivý sloupec'        => [['exchangeKey' => 'secret'], "exchangeKey 'secret' must not be a sensitive column"],
+            'šifrovaný sloupec'      => [['exchangeKey' => 'api_key'], "exchangeKey 'api_key' must not be a sensitive column"],
+            'jiný typ'               => [['exchangeKey' => 'is_active'], "must be a varchar or integer column, got 'boolean'"],
+            'seznam není pole'       => [['exchangeLookupColumns' => 'email'], 'exchangeLookupColumns must be a list of column ids'],
+            'seznam není list'       => [['exchangeLookupColumns' => ['a' => 'email']], 'exchangeLookupColumns must be a list of column ids'],
+            'neexistující v seznamu' => [['exchangeLookupColumns' => ['nope']], "exchangeLookupColumns refers to unknown column 'nope'"],
+            'primární v seznamu'     => [['exchangeLookupColumns' => ['id']], "exchangeLookupColumns 'id' must not be the primary key"],
+            'citlivý v seznamu'      => [['exchangeLookupColumns' => ['secret']], "exchangeLookupColumns 'secret' must not be a sensitive column"],
+            'jiný typ v seznamu'     => [['exchangeLookupColumns' => ['is_active']], "must be a varchar or integer column, got 'boolean'"],
+            'duplicita v seznamu'    => [['exchangeLookupColumns' => ['email', 'email']], "exchangeLookupColumns has duplicate column 'email'"],
+            'klíč v seznamu'         => [
+                ['exchangeKey' => 'login', 'exchangeLookupColumns' => ['login']],
+                "exchangeLookupColumns must not repeat exchangeKey 'login'",
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('rejectedExchangeColumns')]
+    public function testExchangeColumnsRejected(array $fields, string $message): void
+    {
+        $data = $fields + $this->coreSystemUsersData();
+        $data['columns'][] = ['id' => 'secret', 'name' => 'Secret', 'type' => 'varchar', 'length' => 50, 'sensitive' => true];
+        $data['columns'][] = ['id' => 'api_key', 'name' => 'API key', 'type' => 'encrypted_text', 'nullable' => true];
+
+        $this->expectException(\InvalidArgumentException::class);
+        // Výjimka nese název tabulky, aby šla chyba v definici dohledat.
+        $this->expectExceptionMessage("Table 'Users': ");
+        $this->expectExceptionMessageMatches('/' . preg_quote($message, '/') . '/');
+        TableDefinition::fromArray($data);
+    }
 }

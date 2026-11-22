@@ -7,6 +7,7 @@
     "name:en": "Asset types",
 
     "displayPattern": "{name}",
+    "exchangeKey": "name",
 
     "docStates": {
         "stateColumn": "docState",

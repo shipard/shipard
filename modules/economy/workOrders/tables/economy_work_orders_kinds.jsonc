@@ -11,6 +11,7 @@
     "name:en": "Work order kinds",
 
     "displayPattern": "{name}",
+    "exchangeKey": "name",
 
     "docStates": {
         "stateColumn": "docState",

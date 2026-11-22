@@ -5,6 +5,8 @@
     "name:en": "Items",
 
     "displayPattern": "{code} — {name}",
+    "exchangeKey": "code",
+    "exchangeLookupColumns": ["ean", "sku"],
 
     "docStates": {
         "stateColumn": "docState",

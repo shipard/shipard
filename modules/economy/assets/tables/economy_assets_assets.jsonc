@@ -11,6 +11,7 @@
     "name:en": "Assets",
 
     "displayPattern": "{asset_number} — {name}",
+    "exchangeKey": "asset_number",
 
     "docStates": {
         "stateColumn": "docState",

@@ -5,6 +5,7 @@
     "name:en": "Document headers",
 
     "displayPattern": "{doc_number} — {doc_text}",
+    "exchangeKey": "doc_number",
 
     "docStates": {
         "stateColumn": "docState",

@@ -5,6 +5,7 @@
     "name:en": "Bank accounts",
 
     "displayPattern": "{code} — {name}",
+    "exchangeKey": "code",
 
     "docStates": {
         "stateColumn": "docState",
