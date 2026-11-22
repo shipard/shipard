@@ -6,6 +6,7 @@ namespace Shipard\Tests\Integration\Exchange;
 
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\ApplyMode;
+use Shipard\Module\Docs\Core\RoundingModes;
 use Shipard\Tests\Integration\Exchange\RoundTrip\RoundTripEnvironment;
 use Shipard\Tests\Integration\Exchange\RoundTrip\RoundTripFixtures as F;
 use Shipard\Tests\Integration\Exchange\RoundTrip\SavedDocument;
@@ -17,7 +18,10 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * a proto je matice round-tripu ({@see DocumentRoundTripMatrixTest})
  * nepokryje: řádky s objektem `vat` bez kódu (import ze starého Shipardu),
  * místo plnění v rozporu s DIČ dodavatele, převzatá rekapitulace bez kódů,
- * ceny řádků s daní při `fromBase`.
+ * ceny řádků s daní při `fromBase`. Druhá skupina (#166 D25–D27,
+ * tasks/doc-totals-rounding-explicit.md U7): `totals` jako kontrolní součet
+ * a výslovný mód zaokrouhlení — součty, které se od výpočtu liší, mód
+ * v rozporu s automatikou, součty v cizí měně.
  *
  * Payload vzniká z dokladu pořízeného cestou formuláře (koncept → export)
  * a úpravou toho, co případ zkoumá; po apply se čte uložený doklad
@@ -272,6 +276,136 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame('fromTotal', $preview->canonical['_resolve']['vat']['mode']['value']);
     }
 
+    // ── `totals` jako kontrolní součet, výslovný mód zaokrouhlení ───────────
+
+    public function testTotalAmountOffByOneFailsTheChecksumAndSavesNothing(): void
+    {
+        $payload = $this->options($this->plainReceivedPayload(), 40);
+        $payload['totals']['totalAmount'] = 1211.00;
+        $before = $this->documentCount();
+
+        $preview = $this->applier->preview($payload);
+        $result = $this->applier->apply($payload);
+
+        $this->assertSame([['error', 'totals.totalAmount']], self::findings($preview, 'totals_check_failed'), 'náhled hlásí totéž předem');
+        $this->assertFalse($result->success);
+        $this->assertSame(['totals_check_failed', 422], [$result->errorCode, $result->statusCode]);
+        $finding = self::issue($result, 'totals_check_failed');
+        $this->assertSame(
+            ['error', 'totals.totalAmount', 1211.00, 1210.00],
+            [$finding['severity'], $finding['path'], $finding['declared'], $finding['computed']],
+        );
+        $this->assertCount(1, self::findings($result, 'totals_check_failed'), 'ostatní pole sedí');
+        $this->assertSame($before, $this->documentCount(), 'nic se neuložilo');
+    }
+
+    public function testDifferenceOfOneCentPassesTheChecksum(): void
+    {
+        $payload = $this->options($this->plainReceivedPayload(), 40);
+        $payload['totals']['totalAmount'] = 1210.01;
+        $payload['totals']['totalVat'] = 209.99;
+
+        $result = $this->applier->apply($payload);
+        $saved = $this->saved($result);
+
+        $this->assertSame([1210.00, 210.00], self::amounts($saved, 'total_amount', 'total_vat'));
+        $this->assertSame([], self::findings($result, 'totals_check_failed'));
+    }
+
+    /** Směrový mód z částek uhodnout nejde: 121,12 → nahoru 122,00, matematicky by vyšlo 121,00. */
+    public function testCorrectTotalsWithUnitUpAreSavedWithThatMode(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->payload($f->issuedHead('ruční zaokrouhlení nahoru', [
+            'total_rounding_auto' => 0,
+            'total_rounding_mode' => RoundingModes::UP_UNIT,
+        ]) + ['rows' => [$f->row(true, 'práce', 1, 100.10, $f->vatCode('output', 'domestic', 'standard'))]]);
+        $this->assertSame('unitUp', $payload['totals']['totalRoundingMode']);
+        $this->assertSame([false, 122.00, 0.88], [
+            $payload['totals']['totalRoundingAuto'], $payload['totals']['totalAmount'], $payload['totals']['totalRounding'],
+        ]);
+
+        $saved = $this->saved($this->applier->apply($this->options($payload, 10)));
+        $this->assertSame(RoundingModes::UP_UNIT, (int) $saved->head['total_rounding_mode']);
+        $this->assertSame([122.00, 0.88], self::amounts($saved, 'total_amount', 'total_rounding'));
+
+        // Bez módu je pokyn na haléře — mód neodhaduje, rozpor odhalí kontrolní součet.
+        unset($payload['totals']['totalRoundingMode']);
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame('totals_check_failed', $result->errorCode);
+        $this->assertSame(
+            [['error', 'totals.totalAmount'], ['error', 'totals.totalRounding']],
+            self::findings($result, 'totals_check_failed'),
+        );
+    }
+
+    /** #166 D26: automatika zapnutá a uvedený jiný mód → platí automatika, pokyn varuje. */
+    public function testModeDifferentFromAutomaticIsIgnoredWithWarning(): void
+    {
+        $f = $this->fixtures;
+        // Úhrada převodem: automatika dává „na haléře“.
+        $payload = $this->payload($f->issuedHead('automatika a jiný mód', ['total_rounding_auto' => 1]) + ['rows' => [
+            $f->row(true, 'práce', 1, 100.10, $f->vatCode('output', 'domestic', 'standard')),
+        ]]);
+        $this->assertTrue($payload['totals']['totalRoundingAuto']);
+        $this->assertArrayNotHasKey('totalRoundingMode', $payload['totals'], 'při automatice export mód nenese');
+        $payload = $this->options($payload, 10);
+        $payload['totals']['totalRoundingMode'] = 'unitUp';
+
+        $preview = $this->applier->preview($payload);
+        $result = $this->applier->apply($payload);
+        $saved = $this->saved($result);
+
+        $expected = [['warning', 'totals.totalRoundingMode']];
+        $this->assertSame($expected, self::findings($preview, 'total_rounding_mode_ignored'));
+        $this->assertSame($expected, self::findings($result, 'total_rounding_mode_ignored'));
+        $this->assertSame([1, RoundingModes::ON_CENT], [(int) $saved->head['total_rounding_auto'], (int) $saved->head['total_rounding_mode']]);
+        $this->assertSame([121.12], self::amounts($saved, 'total_amount'));
+
+        // Mód shodný s automatikou varování nedá.
+        $payload['totals']['totalRoundingMode'] = 'cent';
+        $this->assertSame([], self::findings($this->applier->apply($payload), 'total_rounding_mode_ignored'));
+    }
+
+    /** Součty jsou v měně dokladu; částka v domácí měně kontrolou neprojde. */
+    public function testTotalsInForeignCurrencyAreCheckedInDocumentCurrency(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->options($this->payload($f->issuedHead('součty v cizí měně', [
+            'doc_currency'  => $f->homeCurrency() === 'eur' ? 'usd' : 'eur',
+            'exchange_rate' => 24.565,
+        ]) + ['rows' => [$f->row(true, 'práce', 4, 125.25, $f->vatCode('output', 'domestic', 'standard'))]]), 10);
+        // 4 × 125,25 = 501,00 + 21 % = 606,21 v měně dokladu.
+        $this->assertSame(606.21, $payload['totals']['totalAmount']);
+
+        $saved = $this->saved($this->applier->apply($payload));
+        $this->assertSame([606.21, 14891.55], self::amounts($saved, 'total_amount', 'total_amount_dom'));
+
+        $payload['totals']['totalAmount'] = 14891.55;
+        $result = $this->applier->apply($payload);
+        $this->assertSame('totals_check_failed', $result->errorCode);
+        $finding = self::issue($result, 'totals_check_failed');
+        $this->assertSame([14891.55, 606.21], [$finding['declared'], $finding['computed']]);
+    }
+
+    /** #166 D28: týž chybný payload v návrhu se uloží s varováním jako dřív — kontrolní součet se nevyhodnocuje. */
+    public function testWrongTotalsAreOnlyAWarningInProposalMode(): void
+    {
+        $payload = $this->options($this->plainReceivedPayload(), 10);
+        $payload['totals']['totalAmount'] = 1215.00;
+
+        $this->assertSame('totals_check_failed', $this->applier->apply($payload)->errorCode, 'pokyn tentýž payload odmítne');
+
+        $preview = $this->applier->preview($payload, ApplyMode::Proposal);
+        $result = $this->applier->apply($payload, ApplyMode::Proposal);
+        $saved = $this->saved($result);
+
+        $this->assertSame([['warning', 'totals.totalAmount']], self::findings($preview, 'computed_total_mismatch'));
+        $this->assertSame([1210.00], self::amounts($saved, 'total_amount'));
+        $this->assertContains('totals_mismatch', self::codes($result));
+        $this->assertSame([], array_intersect(['totals_check_failed'], [...self::codes($preview), ...self::codes($result)]));
+    }
+
     public function testImportNumberInProposalModeIsAnError(): void
     {
         $f = $this->fixtures;
@@ -356,6 +490,20 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         return $payload;
     }
 
+    /** Přijatá faktura s DPH: 1 000,00 + 21 % = 1 210,00, součty z exportu. @return array<string, mixed> */
+    private function plainReceivedPayload(): array
+    {
+        $f = $this->fixtures;
+        $payload = $this->payload($f->receivedHead('kontrolní součet') + ['rows' => [
+            $f->row(false, 'služby', 1, 1000.00, $f->vatCode('input', 'domestic', 'standard')),
+        ]]);
+        $this->assertSame(
+            ['totalBase' => 1000.0, 'totalVat' => 210.0, 'totalAmount' => 1210.0, 'totalRounding' => 0.0],
+            array_intersect_key($payload['totals'], array_flip(['totalBase', 'totalVat', 'totalAmount', 'totalRounding'])),
+        );
+        return $payload;
+    }
+
     /** Přijatá faktura s DPH, řádek se sazbou a bez kódu. @return array<string, mixed> */
     private function payloadWithoutRowCode(): array
     {
@@ -400,6 +548,23 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
                 . json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
         );
         return SavedDocument::load($this->db, (int) $result->savedId);
+    }
+
+    /** Částky hlavičky zaokrouhlené na haléře. @return list<float> */
+    private static function amounts(SavedDocument $saved, string ...$columns): array
+    {
+        return array_map(static fn (string $column): float => round((float) $saved->head[$column], 2), $columns);
+    }
+
+    /** První nález s kódem. @return array<string, mixed> */
+    private static function issue(ApplyResult $result, string $code): array
+    {
+        foreach ((array) ($result->canonical['_resolve']['issues'] ?? []) as $issue) {
+            if (is_array($issue) && ($issue['code'] ?? null) === $code) {
+                return $issue;
+            }
+        }
+        self::fail("Nález {$code} v odpovědi není.");
     }
 
     /** Počet dokladů testu (texty nesou prefix fixtur). */

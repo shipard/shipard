@@ -19,8 +19,10 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
  * vlastní bankovní účet, dimenze a řada původního dokladu
  * (`applyOptions.numberSeriesId`). Nepřebírají se čísla a symboly, data
  * (vystavení = dnes, ostatní doplní dokument), text a poznámky, rekapitulace
- * ani součty (`totals` / `vatRecap` by vypnuly automatiku zaokrouhlení
- * a převzaly rekapitulaci původního dokladu), ruční zařazení do KH, přílohy.
+ * ani součty (`vatRecap` by převzal rekapitulaci původního dokladu; `totals`
+ * jsou v pokynu kontrolní součet a opravný doklad si částky počítá sám,
+ * #166 D27), mód zaokrouhlení (platí výchozí automatika podle způsobu
+ * úhrady), ruční zařazení do KH, přílohy.
  *
  * Řádky: textový beze změny; cenový řádek dá `net_total` s opačným
  * znaménkem — záporné množství a stejná jednotková cena, u řádku z celkové
