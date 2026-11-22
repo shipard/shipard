@@ -31,6 +31,13 @@ class NumberSeriesForm extends TableForm
             ->section()
                 ->col()
                     ->input('name', required: true)
+                    // Kód řady = přirozený klíč záznamu (#166 D17); u nové řady
+                    // předvyplněný, prázdný doplní Document při uložení.
+                    ->input('code', hint: $this->formText(
+                        'docs.core.formTexts',
+                        'numberSeries.codeHint',
+                        'Unique code of the series — data sets and imports refer to the series by it. It is independent of the code in the document number. Left empty, it is filled in on save.',
+                    ))
                     ->select(
                         'doc_type',
                         options: $docTypeOptions,
@@ -96,6 +103,27 @@ class NumberSeriesForm extends TableForm
         );
     }
 
+    /**
+     * Kód řady jde měnit i u řady ve stavu V pořádku (#166 U4) — odkazy
+     * v databázi jsou přes id. Document zvládá částečné uložení (merge
+     * s uloženým řádkem).
+     */
+    public function getReadOnlyEditableColumns(): array
+    {
+        return ['code'];
+    }
+
+    /** Nová řada otevřená s typem dokladu (prefill) dostane rovnou návrh kódu. */
+    public function applyNewRecordDefaults(array &$data): void
+    {
+        if (trim((string) ($data['code'] ?? '')) === '') {
+            $suggested = $this->suggestCode($data);
+            if ($suggested !== null) {
+                $data['code'] = $suggested;
+            }
+        }
+    }
+
     public function recalculate(string $changedColumn, array $data): RecalculateResult
     {
         if ($changedColumn === 'doc_type' && !empty($data['doc_type'])) {
@@ -140,7 +168,35 @@ class NumberSeriesForm extends TableForm
         }
 
         $isNew = empty($data['id']);
+
+        // Kód nové řady se odvozuje z typu a vázané entity (#166 D17) — při
+        // jejich změně se navrhne znovu, jinak by zůstal kód předchozí volby
+        // (`invno-2` u řady přijatých faktur). Vázaný typ bez vybrané
+        // entity návrh nemá.
+        if ($isNew && ($changedColumn === 'doc_type' || isset(NumberSeriesDocument::BINDINGS[$changedColumn]))) {
+            $data['code'] = $this->suggestCode($data);
+        }
+
         return new RecalculateResult($this->buildFormDefinition($data, $isNew), $data);
+    }
+
+    /**
+     * Návrh kódu nové řady podle {@see NumberSeriesCodeGenerator}; null =
+     * zatím nejde určit (chybí typ, vázaný typ bez entity, formulář bez DB).
+     *
+     * @param array<string, mixed> $data
+     */
+    private function suggestCode(array $data): ?string
+    {
+        $docType = (string) ($data['doc_type'] ?? '');
+        if ($this->db === null || $docType === '') {
+            return null;
+        }
+        $binding = $this->resolveSeriesBinding($docType);
+        if ($binding !== null && empty($data[$binding])) {
+            return null;
+        }
+        return (new NumberSeriesCodeGenerator($this->db->getDibiConnection()))->generate(['id' => null] + $data);
     }
 
     /**

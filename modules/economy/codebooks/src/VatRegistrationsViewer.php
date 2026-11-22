@@ -15,7 +15,7 @@ class VatRegistrationsViewer extends TableViewer
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
-        $sql = 'SELECT `id`, `name`, `region`, `country`, `taxpayer_kind`, `vat_id`,'
+        $sql = 'SELECT `id`, `code`, `name`, `region`, `country`, `taxpayer_kind`, `vat_id`,'
             . ' `tax_period_kind`, `cs_period_kind`, `rs_period_kind`, `valid_from`, `valid_to`,'
             . ' `docState`, `docStateMain`'
             . ' FROM `' . $this->table . '`';
@@ -39,7 +39,7 @@ class VatRegistrationsViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            [$searchSql, $searchParams] = $this->buildSearchCondition(['name', 'vat_id'], $search);
+            [$searchSql, $searchParams] = $this->buildSearchCondition(['name', 'code', 'vat_id'], $search);
             if ($searchSql !== '') {
                 $conditions[] = $searchSql;
                 $params = array_merge($params, $searchParams);
@@ -63,7 +63,9 @@ class VatRegistrationsViewer extends TableViewer
         $row = [
             'id' => (int) $rowData['id'],
             't1' => $rowData['name'] ?? '',
+            // Vpravo DIČ, pod ním kód registrace (přirozený klíč, #166 D17).
             'i1' => $rowData['vat_id'] ?? null,
+            'i2' => ($rowData['code'] ?? '') !== '' ? $rowData['code'] : null,
         ];
 
         $t2 = [];
@@ -158,6 +160,7 @@ class VatRegistrationsViewer extends TableViewer
         $periodKindLabels = $this->resolvePeriodKindLabels();
 
         $identityItems = [];
+        $this->addItem($identityItems, $this->columnLabel('code', 'Registration code'), $record['code'] ?? null);
 
         $regionKey = (string) ($record['region'] ?? '');
         if ($regionKey !== '') {

@@ -6,6 +6,13 @@
     // s fallbackem v PHP znak po znaku. Názvy tabů, sekcí a oddělovačů
     // formulářů sem zatím nepatří (#154).
     "texts": {
+        // Číselná řada — nápověda pole Kód řady (#166 D17).
+        "numberSeries.codeHint": {
+            "name": "Unique code of the series — data sets and imports refer to the series by it. It is independent of the code in the document number. Left empty, it is filled in on save.",
+            "name:cs": "Jedinečný kód řady — odkazují jím na řadu datové sady a importy. Nezávisí na kódu v čísle dokladu. Prázdné pole se při uložení doplní samo.",
+            "name:en": "Unique code of the series — data sets and imports refer to the series by it. It is independent of the code in the document number. Left empty, it is filled in on save."
+        },
+
         // Pokladní doklady — sekce Pokladna, když číselná řada pokladnu nemá.
         "cashDesk.missing": {
             "name": "The number series has no cash desk — check the number series of the document.",

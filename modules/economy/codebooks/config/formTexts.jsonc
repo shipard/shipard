@@ -12,6 +12,12 @@
             "name:cs": "Koeficienty odpočtu (zálohový a vypořádací per kalendářní rok) spravujete v Nastavení → Účetnictví → Koeficienty odpočtu DPH. Bez záznamu platí plný nárok (1,00).",
             "name:en": "Deduction coefficients (advance and settlement, per calendar year) are managed in Settings → Accounting → VAT deduction coefficients. Without a record the full deduction (1.00) applies."
         },
+        // Registrace DPH — nápověda pole Kód registrace (#166 D17).
+        "vatRegistration.codeHint": {
+            "name": "Unique code of the registration — data sets and imports refer to the registration by it. Left empty, it is filled in on save.",
+            "name:cs": "Jedinečný kód registrace — odkazují jím na registraci datové sady a importy. Prázdné pole se při uložení doplní samo.",
+            "name:en": "Unique code of the registration — data sets and imports refer to the registration by it. Left empty, it is filled in on save."
+        },
         // Registrace DPH — nápověda tabu Podací údaje.
         "vatRegistration.filingHint": {
             "name": "Details for filing returns and statements on the tax portal — who files, to whom and who prepared the output. They are filled into the filing header.",

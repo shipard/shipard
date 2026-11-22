@@ -6,10 +6,14 @@ namespace Shipard\Module\Economy\Codebooks;
 
 use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Form\FormDefinition;
+use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
 
 class VatRegistrationsForm extends TableForm
 {
+    /** Země nové registrace, dokud ji uživatel nezvolí (default sloupce). */
+    private const DEFAULT_COUNTRY = 'cz';
+
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition
     {
         if ($isNew) {
@@ -17,7 +21,7 @@ class VatRegistrationsForm extends TableForm
                 $data['region'] = 'eu';
             }
             if (empty($data['country'])) {
-                $data['country'] = 'cz';
+                $data['country'] = self::DEFAULT_COUNTRY;
             }
             if (!isset($data['taxpayer_kind']) || $data['taxpayer_kind'] === '' || $data['taxpayer_kind'] === null) {
                 $data['taxpayer_kind'] = 0;
@@ -42,9 +46,17 @@ class VatRegistrationsForm extends TableForm
             ->section()
                 ->col()
                     ->input('name', required: true)
+                    // Kód registrace = přirozený klíč záznamu (#166 D17);
+                    // u nové registrace předvyplněný, prázdný doplní Document.
+                    ->input('code', hint: $this->formText(
+                        'economy.codebooks.formTexts',
+                        'vatRegistration.codeHint',
+                        'Unique code of the registration — data sets and imports refer to the registration by it. Left empty, it is filled in on save.',
+                    ))
                     ->input('vat_id')
                     ->select('region', options: $regionOptions, required: true)
-                    ->select('country', options: $countryOptions, required: true)
+                    // U nové registrace změna země navrhne kód znovu.
+                    ->select('country', options: $countryOptions, required: true, triggers: $isNew ? 'reload' : null)
                     ->select('taxpayer_kind', options: $taxpayerKindOptions, required: true)
                     ->separator('Správce daně')
                     ->lookup('tax_office_person', 'base_persons_persons',
@@ -104,11 +116,50 @@ class VatRegistrationsForm extends TableForm
     /**
      * Správce daně smí přibýt i k registraci ve stavu V pořádku (#55 D30) —
      * jediná změna, kterou potvrzená registrace připouští bez „Opravit".
-     * Document zvládá částečné uložení (merge s uloženým řádkem).
+     * Document zvládá částečné uložení (merge s uloženým řádkem). Stejně
+     * tak kód registrace (#166 U4) — odkazy v databázi jsou přes id.
      */
     public function getReadOnlyEditableColumns(): array
     {
-        return ['tax_office_person'];
+        return ['tax_office_person', 'code'];
+    }
+
+    /** Nová registrace dostane rovnou návrh kódu podle země (#166 D17). */
+    public function applyNewRecordDefaults(array &$data): void
+    {
+        if (trim((string) ($data['code'] ?? '')) === '') {
+            $suggested = $this->suggestCode($data);
+            if ($suggested !== null) {
+                $data['code'] = $suggested;
+            }
+        }
+    }
+
+    public function recalculate(string $changedColumn, array $data): RecalculateResult
+    {
+        $isNew = empty($data['id']);
+        // Kód nové registrace se odvozuje ze země — při její změně se
+        // navrhne znovu, jinak by zůstal kód předchozí země.
+        if ($isNew && $changedColumn === 'country') {
+            $data['code'] = $this->suggestCode($data);
+        }
+        return new RecalculateResult($this->buildFormDefinition($data, $isNew), $data);
+    }
+
+    /**
+     * Návrh kódu nové registrace podle {@see VatRegistrationCodeGenerator};
+     * země bez hodnoty = výchozí země formuláře. Null = formulář bez DB.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function suggestCode(array $data): ?string
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $country = (string) ($data['country'] ?? '');
+        return (new VatRegistrationCodeGenerator($this->db->getDibiConnection()))
+            ->generate(['id' => null, 'country' => $country !== '' ? $country : self::DEFAULT_COUNTRY] + $data);
     }
 
     /**

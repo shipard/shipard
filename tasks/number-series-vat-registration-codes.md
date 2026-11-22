@@ -1,6 +1,6 @@
 # Task: Kód číselné řady a registrace DPH jako přirozený klíč
 
-**Stav:** částečně — commity 0–2 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document; doplnění existujících a provisionery); zbývají commity 3–5 (#166 D16, D17)
+**Stav:** částečně — commity 0–3 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document; doplnění existujících a provisionery; formuláře a viewery); zbývají commity 4–5 — datové sady, dokumentace a nápověda (#166 D16, D17)
 
 **Issue:** #166 (D16, D17; navazuje na etapu 2)
 
@@ -302,3 +302,16 @@ se taková dimenze jen nepřenesla.
 - **Ověřeno 2026-11-22** na `4l3j-z`, `jfpl-7` a `8yft-3`: první
   `ds-upgrade` doplnil kódy podle D17 (`invno`, `cmnbkp-MA`, `cash-POK`,
   `cashreg-POK`, registrace `cz`), druhý nic.
+- **Předvyplnění kódu ve formuláři řady:** u nové řady se kód navrhne
+  znovu při každé změně typu dokladu nebo pokladny / skladu (jinak by
+  zůstal kód předchozí volby); vázaný typ bez vybrané entity návrh nemá.
+  Pole `doc_number_code` přepočet nespouští — druhá řada typu má ve
+  formuláři `invno-2`, a kdo pole kódu vymaže, dostane při uložení
+  `invno-<kód z čísla dokladu>` z `beforeSave`.
+- **Formulář registrace:** země u nové registrace spouští přepočet
+  (`reload`) a navrhne kód znovu; u existující ne.
+- **Viewery:** řada má vpravo kód řady (`i1`) a pod ním kód z čísla
+  dokladu (`i2`), registrace DIČ a pod ním kód; hledání bere i kód.
+- **Ověřeno 2026-11-22 přes HTTP na `jfpl-7`:** předvyplnění, přepočet,
+  uložení samotného kódu u záznamu ve stavu V pořádku, odmítnutá duplicita
+  a vymazání, seznam, hledání a detail. V prohlížeči neproklikáno.

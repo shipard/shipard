@@ -15,7 +15,7 @@ class NumberSeriesViewer extends TableViewer
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
-        $sql = 'SELECT `id`, `doc_type`, `cash_desk`, `warehouse`, `name`, `doc_number_code`,'
+        $sql = 'SELECT `id`, `code`, `doc_type`, `cash_desk`, `warehouse`, `name`, `doc_number_code`,'
             . ' `doc_number_pattern`, `reset_scope`, `valid_from`, `valid_to`, `notice`,'
             . ' `docState`, `docStateMain`'
             . ' FROM `' . $this->table . '`';
@@ -39,7 +39,7 @@ class NumberSeriesViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            [$searchSql, $searchParams] = $this->buildSearchCondition(['name', 'doc_number_code'], $search);
+            [$searchSql, $searchParams] = $this->buildSearchCondition(['name', 'code', 'doc_number_code'], $search);
             if ($searchSql !== '') {
                 $conditions[] = $searchSql;
                 $params = array_merge($params, $searchParams);
@@ -102,7 +102,10 @@ class NumberSeriesViewer extends TableViewer
         $row = [
             'id' => (int) $rowData['id'],
             't1' => $rowData['name'] ?? '',
-            'i1' => $rowData['doc_number_code'] ?? null,
+            // Vpravo kód řady (přirozený klíč, #166 D17), pod ním kód
+            // z čísla dokladu (%C).
+            'i1' => ($rowData['code'] ?? '') !== '' ? $rowData['code'] : null,
+            'i2' => ($rowData['doc_number_code'] ?? '') !== '' ? $rowData['doc_number_code'] : null,
         ];
 
         $t2 = [];
@@ -168,6 +171,7 @@ class NumberSeriesViewer extends TableViewer
     private function buildOverviewContent(array $record): array
     {
         $identityItems = [];
+        $this->addItem($identityItems, $this->columnLabel('code', 'Series code'), $record['code'] ?? null);
         $this->addItem(
             $identityItems,
             $this->columnLabel('doc_type', 'Document type'),
