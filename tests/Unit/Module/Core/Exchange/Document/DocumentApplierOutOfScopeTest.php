@@ -398,7 +398,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->hotelPayload();
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
 
-        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Instruction);
 
         $this->assertNotSame('outOfScope', $result->canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_foreign_tax', $this->issueCodes($result->canonical));

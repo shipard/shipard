@@ -248,7 +248,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $result = $this->applier(byNumber: [self::ORIGINAL])->apply(self::issued([
             'correction'   => self::block(),
             'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => 'FV26-00200', 'sequenceNumber' => 200]],
-        ]), ApplyMode::Proposal);
+        ]), ApplyMode::Instruction);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(40, $this->saved['docState']);
@@ -377,7 +377,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $this->applier(byNumber: [self::ORIGINAL])->apply(self::issued([
             'correction'   => self::block(),
             'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => 'FV26-00200', 'sequenceNumber' => 200]],
-        ]), ApplyMode::Proposal);
+        ]), ApplyMode::Instruction);
 
         $this->assertSame(15.0, $this->saved['rows'][0]['vat_pct']);
     }

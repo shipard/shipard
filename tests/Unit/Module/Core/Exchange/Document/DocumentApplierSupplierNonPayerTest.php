@@ -207,7 +207,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $payload = $this->nonPayerPayload();
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
 
-        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical;
 
         $this->assertNotSame('outOfScope', $canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_supplier_non_payer', $this->issueCodes($canonical));

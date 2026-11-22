@@ -175,7 +175,7 @@ class DocumentApplierExchangeRateTest extends TestCase
         $resolver = new FakeExchangeRateResolver(self::RATES);
         $result = $this->applier($resolver)->apply(self::payload([
             'applyOptions' => ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]],
-        ]), ApplyMode::Proposal);
+        ]), ApplyMode::Instruction);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertArrayNotHasKey('exchange_rate', $this->saved, 'chybějící kurz zůstane chybějící');

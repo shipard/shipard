@@ -61,6 +61,7 @@ final class DocumentValidator
             $this->checkVatRecapArithmetic($canonical, $issues);
         }
         $this->checkPartnerDocNumber($canonical, $issues);
+        $this->checkImportRequiresInstruction($canonical, $mode, $issues);
         $this->checkParkingStateRequiresImport($canonical, $issues);
         $this->checkReplaceConceptOptions($canonical, $issues);
         $this->checkDimensions($canonical, $issues);
@@ -71,6 +72,27 @@ final class DocumentValidator
         }
 
         return $issues;
+    }
+
+    /**
+     * Importní mód (`applyOptions.importNumber`) přenáší hotový doklad —
+     * je to pokyn (#166 D22). V režimu návrh by ho interpretace znovu
+     * posuzovala, proto chyba `import_requires_instruction`.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkImportRequiresInstruction(array $canonical, ApplyMode $mode, array &$issues): void
+    {
+        if (!$mode->derives() || !is_array($canonical['applyOptions']['importNumber'] ?? null)) {
+            return;
+        }
+        $issues[] = [
+            'severity' => 'error',
+            'path'     => 'applyOptions.importNumber',
+            'code'     => 'import_requires_instruction',
+            'message'  => 'Import s vnuceným číslem (importNumber) ukládá hotový doklad — jde jen v režimu pokyn,'
+                . ' ne s interpretací (applyOptions.interpret).',
+        ];
     }
 
     /**

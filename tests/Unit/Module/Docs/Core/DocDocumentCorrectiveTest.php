@@ -369,7 +369,8 @@ class DocDocumentCorrectiveTest extends TestCase
         $this->assertSame([], $this->warningCodes($result));
     }
 
-    public function testImportModeRequiresNothingButStillChecksTheLink(): void
+    /** Importní mód výjimku z validace nemá (#166 D22): důvod opravy je při potvrzení povinný i v něm. */
+    public function testImportModeHasNoExceptionFromCorrectiveChecks(): void
     {
         $import = ['_importNumber' => ['docNumber' => 'X1', 'sequenceNumber' => null]];
         $result = $this->validate($this->doc(), $this->data($import + [
@@ -378,11 +379,20 @@ class DocDocumentCorrectiveTest extends TestCase
             'corrected_doc'        => null,
             'corrected_doc_number' => null,
         ]));
-        $this->assertSame([], $this->errorCodes($result), 'import mód důvod nevyžaduje');
-        $this->assertSame([], $this->warningCodes($result), 'import mód nevaruje');
+        $this->assertSame(['correction_reason_required'], $this->errorCodes($result));
+        $this->assertSame(['correction_original_missing'], $this->warningCodes($result));
+
+        // Mimo potvrzení (V opravě jako cíl importu) se důvod nevyžaduje.
+        $result = $this->validate($this->doc(), $this->data($import + [
+            'docState'             => 80,
+            'correction_reason'    => null,
+            'corrected_doc'        => null,
+            'corrected_doc_number' => null,
+        ]));
+        $this->assertSame([], $this->errorCodes($result));
 
         $this->original = null;
-        $result = $this->validate($this->doc(), $this->data($import + ['docState' => 40, 'correction_reason' => null]));
+        $result = $this->validate($this->doc(), $this->data($import + ['docState' => 40, 'correction_reason' => 'Sleva']));
         $this->assertSame(['corrective_doc_invalid'], $this->errorCodes($result), 'odkaz se kontroluje vždy');
     }
 

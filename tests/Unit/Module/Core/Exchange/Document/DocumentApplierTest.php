@@ -1638,7 +1638,7 @@ class DocumentApplierTest extends TestCase
      * @param array<string, mixed> $canonical
      * @return array<string, mixed>
      */
-    private function invokeTransform(DocumentApplier $applier, array $canonical): array
+    private function invokeTransform(DocumentApplier $applier, array $canonical, ApplyMode $mode = ApplyMode::Proposal): array
     {
         $plan = [
             'resolvedSupplier' => 5, 'resolvedCustomer' => null, 'resolvedSupplierBank' => null,
@@ -1647,7 +1647,7 @@ class DocumentApplierTest extends TestCase
         $sideIds = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
 
         $ref = new \ReflectionMethod($applier, 'transform');
-        return $ref->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Proposal);
+        return $ref->invoke($applier, $canonical, $plan, $sideIds, null, $mode);
     }
 
     public function testTransformPassesImportNumberAsVirtualField(): void
@@ -1840,15 +1840,24 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('cz', $snap['address']['country']);
         $this->assertSame('Hlavní 1, 110 00 Praha', $snap['address']['display_line']);
         $this->assertArrayNotHasKey('registryCode', $snap['address']);
-        $this->assertSame('123/0300', $snap['bank_account']['account_number']);
-        $this->assertSame('czk', $snap['bank_account']['currency']);
-        $this->assertNull($snap['bank_account']['name']);
+        // #166 D23: tvar jako snapshot partnera z formuláře — bez bankovního
+        // spojení (účet dodavatele nese hlavička, partner_bank*).
+        $this->assertArrayNotHasKey('bank_account', $snap);
+        $this->assertSame(
+            ['name', 'company_id', 'tax_id', 'vat_id', 'court_registration', 'contact', 'address'],
+            array_keys($snap),
+        );
+        $this->assertSame(
+            array_keys(\Shipard\Module\Docs\Core\PersonSnapshotBuilder::shape([], [])),
+            array_keys($snap),
+            'klíče dává PersonSnapshotBuilder',
+        );
     }
 
     public function testTransformImportSnapshotOmitsMissingSections(): void
     {
-        // Bez adresy a banky sekce chybí úplně; prázdné vatId → null (jako
-        // PersonSnapshotBuilder u prázdných DB sloupců).
+        // Bez adresy sekce chybí úplně; prázdné identifikátory jsou prázdný
+        // řetězec jako ve snapshotu z adresáře (#166 D23), kontakt null.
         $applier = $this->buildApplier();
         $canonical = [
             'docType'   => 'invoiceReceived',
@@ -1861,8 +1870,9 @@ class DocumentApplierTest extends TestCase
         $snap = $this->invokeTransform($applier, $canonical)['_importPartnerSnapshot'];
 
         $this->assertSame('Beta s.r.o.', $snap['name']);
-        $this->assertNull($snap['vat_id']);
-        $this->assertNull($snap['tax_id']);
+        $this->assertSame('', $snap['vat_id']);
+        $this->assertSame('', $snap['tax_id']);
+        $this->assertNull($snap['court_registration']);
         $this->assertArrayNotHasKey('address', $snap);
         $this->assertArrayNotHasKey('bank_account', $snap);
         $this->assertSame(
@@ -2230,8 +2240,10 @@ class DocumentApplierTest extends TestCase
     public function testRecapCodeResolvesWithSupplierCountryWhenNoPrefix(): void
     {
         $vat = $this->createMock(VatCodeResolver::class);
+        // Import je pokyn (#166 D20, D22): rekapitulace se přebírá jen
+        // s výslovným `declared` a procento z payloadu se resolveru nepředává.
         $vat->expects($this->once())->method('resolve')
-            ->with('special110', 'sk', '2026-07-01', 21.0)
+            ->with('special110', 'sk', '2026-07-01', null)
             ->willReturn(new ResolveResult(
                 ResolveStatus::Matched,
                 matchedId: 0,
@@ -2245,11 +2257,12 @@ class DocumentApplierTest extends TestCase
             'selfParty' => 'customer',
             'dates'     => ['issueDate' => '2026-07-01'],
             'supplier'  => ['country' => 'SK'],
+            'vat'       => ['recapSource' => 'declared'],
             'vatRecap'  => [
                 ['vatCode' => 'special110', 'vatPct' => 21, 'base' => 100.00, 'tax' => 21.00, 'total' => 121.00],
             ],
             'applyOptions' => self::IMPORT_OPTIONS,
-        ]);
+        ], ApplyMode::Instruction);
 
         $this->assertSame(1, $data['vat_recap_source']);
         $this->assertSame('special110', $data['vatRecap'][0]['vat_code']);
@@ -3081,7 +3094,7 @@ class DocumentApplierTest extends TestCase
         );
         unset($payload['vat']);
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $result = $applier->preview($payload, ApplyMode::Proposal);
+        $result = $applier->preview($payload, ApplyMode::Instruction);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -3120,7 +3133,7 @@ class DocumentApplierTest extends TestCase
         // Rekapitulace jde stejnou kaskádou — bez prefixu také země dodavatele.
         $payload['vatRecap'][0]['vatCode'] = 'special110';
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $applier->preview($payload, ApplyMode::Proposal);
+        $applier->preview($payload, ApplyMode::Instruction);
     }
 
     /** Explicitní vat.registrationCountry má přednost před prefixem kódu (zdroj bez registrace DPH). */
@@ -3149,7 +3162,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload['vat']['registrationCountry'] = 'DE';
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $applier->preview($payload, ApplyMode::Proposal);
+        $applier->preview($payload, ApplyMode::Instruction);
     }
 
     // ── Kód DPH přijatého dokladu ze signálů (VatCodeDerivation, D1–D5) ────
@@ -3922,13 +3935,14 @@ class DocumentApplierTest extends TestCase
         $data = $this->invokeTransform(
             $this->buildApplier(db: $this->dbWithVatRegistrationValidity('2026-08-01', null)),
             $canonical,
+            ApplyMode::Instruction,
         );
         $this->assertSame(1, $data['vat_mode']);
         $this->assertSame(5, $data['vat_registration']);
         $this->assertSame(1000.0, $data['rows'][0]['total_price']);
 
         // Zdroj bez registrace: doklad zůstává, jak ho import poslal.
-        $data = $this->invokeTransform($this->buildApplier(), $canonical);
+        $data = $this->invokeTransform($this->buildApplier(), $canonical, ApplyMode::Instruction);
         $this->assertSame(1, $data['vat_mode']);
         $this->assertSame(1000.0, $data['rows'][0]['unit_price']);
         $this->assertSame(0, $data['rows'][0]['price_calc_mode']);
@@ -4806,7 +4820,7 @@ class DocumentApplierTest extends TestCase
             $payload['applyOptions'] = self::IMPORT_OPTIONS;
             $payload['rows'][0]['vat'] = $rowVat;
             // DB bez registrace DPH + import mód = cesta mimo derivaci.
-            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload, ApplyMode::Proposal);
+            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload, ApplyMode::Instruction);
             return [$result->canonical['_resolve']['rows'][0], $this->issueCodes($result)];
         };
 

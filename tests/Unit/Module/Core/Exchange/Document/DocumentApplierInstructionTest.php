@@ -502,6 +502,29 @@ final class DocumentApplierInstructionTest extends TestCase
         }
     }
 
+    /** D22: `importNumber` v režimu návrh je chyba validace — nic se neuloží ani nenahlédne jako import. */
+    public function testImportNumberInProposalModeIsRejected(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
+        $applier = $this->buildApplier();
+
+        foreach ([$applier->validate($payload, ApplyMode::Proposal), $applier->apply($payload, ApplyMode::Proposal)] as $result) {
+            $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
+            $issue = $this->issue($result->canonical, 'import_requires_instruction');
+            $this->assertSame(['error', 'applyOptions.importNumber'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+        }
+        $this->assertNull($this->savedHeadsData);
+        $this->assertContains(
+            'import_requires_instruction',
+            $this->issueCodes($applier->preview($payload, ApplyMode::Proposal)->canonical),
+        );
+        $this->assertNotContains(
+            'import_requires_instruction',
+            $this->issueCodes($applier->validate($payload)->canonical),
+        );
+    }
+
     // ── Pomocné ─────────────────────────────────────────────────────────────
 
     /**

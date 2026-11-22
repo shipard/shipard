@@ -185,6 +185,26 @@ class DocumentValidatorTest extends TestCase
         $this->assertNull($this->findByCode($issues, 'partner_doc_number_missing'), 'vydaná strana číslo dodavatele nemá');
     }
 
+    /** Import s vnuceným číslem je pokyn (#166 D22) — v návrhu chyba. */
+    public function testImportNumberRequiresInstructionMode(): void
+    {
+        $canonical = [
+            'docType' => 'invoiceReceived',
+            'supplier' => ['name' => 'V'],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [],
+            'applyOptions' => ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]],
+        ];
+
+        $issue = $this->findByCode($this->v->validate($canonical, ApplyMode::Proposal), 'import_requires_instruction');
+        $this->assertNotNull($issue);
+        $this->assertSame(['error', 'applyOptions.importNumber'], [$issue['severity'], $issue['path']]);
+
+        $this->assertNull($this->findByCode($this->v->validate($canonical, ApplyMode::Instruction), 'import_requires_instruction'));
+        unset($canonical['applyOptions']);
+        $this->assertNull($this->findByCode($this->v->validate($canonical, ApplyMode::Proposal), 'import_requires_instruction'));
+    }
+
     /** Pokyn (#166 D19) čísla předlohy neposuzuje — heuristiky běží jen v návrhu; výchozí režim je pokyn. */
     public function testHeuristicChecksRunOnlyInProposalMode(): void
     {

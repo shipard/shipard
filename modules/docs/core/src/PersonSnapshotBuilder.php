@@ -71,6 +71,51 @@ final class PersonSnapshotBuilder
     }
 
     /**
+     * Tvar snapshotu osoby s adresou z hodnot sloupců — **jediné místo
+     * klíčů**. Staví jím {@see build()} z adresáře i importní mód výměnného
+     * formátu z kanonické strany dokladu (`DocumentApplier`, #166 D23), aby
+     * dobový snapshot z importu měl stejné klíče jako snapshot z formuláře.
+     * Hodnoty nemění; chybějící sloupec = null.
+     *
+     * Web a ID datové schránky přibyly s kontakty v zápatí tisku (#162
+     * D133); snapshoty dokladů vystavených dřív je nemají a nedopočítávají
+     * se — čtenář bere chybějící klíč jako prázdný.
+     *
+     * @param array<string, mixed> $person sloupce `base_persons_persons`
+     * @param array<string, mixed>|null $address sloupce `base_persons_addresses`; null = bez adresy
+     * @return array<string, mixed>
+     */
+    public static function shape(array $person, ?array $address): array
+    {
+        $snap = [
+            'name'               => (string) ($person['full_name'] ?? ''),
+            'company_id'         => $person['company_id']         ?? null,
+            'tax_id'             => $person['tax_id']             ?? null,
+            'vat_id'             => $person['vat_id']             ?? null,
+            'court_registration' => $person['court_registration'] ?? null,
+            'contact'            => [
+                'email'        => $person['email']        ?? null,
+                'phone'        => $person['phone']        ?? null,
+                'web'          => $person['web']          ?? null,
+                'gov_e_box_id' => $person['gov_e_box_id'] ?? null,
+            ],
+        ];
+        if ($address !== null) {
+            $snap['address'] = [
+                'street'        => $address['street']        ?? null,
+                'house_number'  => $address['house_number']  ?? null,
+                'city'          => $address['city']          ?? null,
+                'city_part'     => $address['city_part']     ?? null,
+                'zip'           => $address['zip']           ?? null,
+                'country'       => $address['country']       ?? null,
+                'display_block' => $address['display_block'] ?? null,
+                'display_line'  => $address['display_line']  ?? null,
+            ];
+        }
+        return $snap;
+    }
+
+    /**
      * @return array<string, mixed>  empty array when the person doesn't exist
      */
     public function build(
@@ -92,41 +137,10 @@ final class PersonSnapshotBuilder
         }
         $person = $personRow->toArray();
 
-        $snap = [
-            'name'               => (string) ($person['full_name'] ?? ''),
-            'company_id'         => $person['company_id']         ?? null,
-            'tax_id'             => $person['tax_id']             ?? null,
-            'vat_id'             => $person['vat_id']             ?? null,
-            'court_registration' => $person['court_registration'] ?? null,
-            // Web a ID datové schránky přibyly s kontakty v zápatí tisku
-            // (#162 D133); snapshoty dokladů vystavených dřív je nemají
-            // a nedopočítávají se — čtenář bere chybějící klíč jako prázdný.
-            'contact'            => [
-                'email'        => $person['email']        ?? null,
-                'phone'        => $person['phone']        ?? null,
-                'web'          => $person['web']          ?? null,
-                'gov_e_box_id' => $person['gov_e_box_id'] ?? null,
-            ],
-        ];
-
-        if ($addressId !== null) {
-            $addr = $this->db->fetch(
-                'SELECT * FROM [base_persons_addresses] WHERE [id] = %i',
-                (int) $addressId,
-            );
-            if ($addr !== null) {
-                $snap['address'] = [
-                    'street'        => $addr['street']        ?? null,
-                    'house_number'  => $addr['house_number']  ?? null,
-                    'city'          => $addr['city']          ?? null,
-                    'city_part'     => $addr['city_part']     ?? null,
-                    'zip'           => $addr['zip']           ?? null,
-                    'country'       => $addr['country']       ?? null,
-                    'display_block' => $addr['display_block'] ?? null,
-                    'display_line'  => $addr['display_line']  ?? null,
-                ];
-            }
-        }
+        $addr = $addressId !== null
+            ? $this->db->fetch('SELECT * FROM [base_persons_addresses] WHERE [id] = %i', (int) $addressId)
+            : null;
+        $snap = self::shape($person, $addr?->toArray());
 
         if ($bankAccountId !== null) {
             $bank = $this->db->fetch(

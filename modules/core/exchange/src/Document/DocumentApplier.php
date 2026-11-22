@@ -27,6 +27,7 @@ use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocRowCalculator;
 use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Docs\Core\PersonSnapshotBuilder;
 use Shipard\Module\Docs\Core\RoundingModes;
 use Shipard\Module\Docs\Core\TotalRoundingAuto;
 use Shipard\Module\Docs\Core\VatRateDates;
@@ -2060,7 +2061,9 @@ class DocumentApplier
 
     /**
      * Import mód: přeloží kanonickou stranu partnera (supplier/customer dle
-     * selfParty) do tvaru {@see \Shipard\Module\Docs\Core\PersonSnapshotBuilder}.
+     * selfParty) do tvaru snapshotu z formuláře — {@see PersonSnapshotBuilder::shape()}
+     * a `buildPartner()`: stejné klíče, bez bankovního spojení, prázdné
+     * identifikátory stejnou hodnotou (#166 D23).
      * DocDocument ji persistuje jako dobový snapshot partnera — snapshoty se
      * u importu nestaví z dnešního adresáře, dobová data (především `vat_id`
      * pro kontrolní hlášení) nese payload; za jejich dobovost odpovídá
@@ -2098,8 +2101,9 @@ class DocumentApplier
             return null;
         }
 
-        // Prázdný string = hodnota chybí — snapshot drží null jako
-        // PersonSnapshotBuilder u prázdných DB sloupců.
+        // Prázdná hodnota: kontakt a adresa null; identifikátory prázdný
+        // řetězec — tak je drží adresář, a tedy i snapshot z formuláře
+        // (#166 D23). Klíče dává PersonSnapshotBuilder::shape().
         $s = static function (mixed $v): ?string {
             if ($v === null) {
                 return null;
@@ -2107,28 +2111,29 @@ class DocumentApplier
             $t = trim((string) $v);
             return $t === '' ? null : $t;
         };
-
-        $snap = [
-            'name'               => (string) ($party['name'] ?? ''),
-            'company_id'         => $s($party['companyId'] ?? null),
-            'tax_id'             => $s($party['taxId'] ?? null),
-            'vat_id'             => $s($party['vatId'] ?? null),
-            'court_registration' => $s($party['courtRegistration'] ?? null),
-            // Tvar jako PersonSnapshotBuilder (#162 D133). Kanonická strana
-            // dokladu ID datové schránky nenese — klíč je ve snapshotu
-            // přítomný a prázdný.
-            'contact'            => [
-                'email'        => $s($party['contact']['email'] ?? null),
-                'phone'        => $s($party['contact']['phone'] ?? null),
-                'web'          => $s($party['contact']['web'] ?? null),
-                'gov_e_box_id' => null,
-            ],
-        ];
+        $id = static fn (mixed $v): string => $s($v) ?? '';
 
         $addr = is_array($party['address'] ?? null) ? $party['address'] : [];
-        if ($addr !== []) {
-            $country = $s($addr['country'] ?? null);
-            $snap['address'] = [
+        $country = $s($addr['country'] ?? null);
+
+        // Bankovní spojení partnera do snapshotu nepatří: formulářový
+        // snapshot partnera ho nemá (`PersonSnapshotBuilder::buildPartner()`),
+        // účet dodavatele nese hlavička (`partner_bank*`).
+        return PersonSnapshotBuilder::shape(
+            [
+                'full_name'          => (string) ($party['name'] ?? ''),
+                'company_id'         => $id($party['companyId'] ?? null),
+                'tax_id'             => $id($party['taxId'] ?? null),
+                'vat_id'             => $id($party['vatId'] ?? null),
+                'court_registration' => $s($party['courtRegistration'] ?? null),
+                'email'              => $s($party['contact']['email'] ?? null),
+                'phone'              => $s($party['contact']['phone'] ?? null),
+                'web'                => $s($party['contact']['web'] ?? null),
+                // Kanonická strana dokladu ID datové schránky nenese — klíč
+                // je ve snapshotu přítomný a prázdný (#162 D133).
+                'gov_e_box_id'       => null,
+            ],
+            $addr !== [] ? [
                 'street'        => $s($addr['street'] ?? null),
                 'house_number'  => $s($addr['houseNumber'] ?? null),
                 'city'          => $s($addr['city'] ?? null),
@@ -2137,22 +2142,8 @@ class DocumentApplier
                 'country'       => $country !== null ? strtolower($country) : null,
                 'display_block' => $s($addr['displayBlock'] ?? null),
                 'display_line'  => $s($addr['displayLine'] ?? null),
-            ];
-        }
-
-        $bank = is_array($party['bankAccount'] ?? null) ? $party['bankAccount'] : [];
-        if ($bank !== []) {
-            $currency = $s($bank['currency'] ?? null);
-            $snap['bank_account'] = [
-                'name'           => null, // canonical jméno účtu nenese
-                'account_number' => $s($bank['accountNumber'] ?? null),
-                'iban'           => $s($bank['iban'] ?? null),
-                'bic'            => $s($bank['bic'] ?? null),
-                'currency'       => $currency !== null ? strtolower($currency) : null,
-            ];
-        }
-
-        return $snap;
+            ] : null,
+        );
     }
 
     /**
@@ -2195,8 +2186,9 @@ class DocumentApplier
      * Plátcovství je registrace k datu, ne příznak `economy.vatAgenda`
      * (docs/ds-setup.md D5): bývalý plátce má příznak vypnutý, ale starší
      * doklady s DPH. Import (`applyOptions.importNumber` — starý Shipard,
-     * datové sady) přenáší hotové doklady: platnost registrace se u něj
-     * nezkoumá a `nonPayer` je vždy false.
+     * datové sady) přenáší hotové doklady **pokynem** (#166 D22): do této
+     * větve se nedostane, registraci bere bez ohledu na platnost k datu
+     * ({@see instructionVatRegistration()}).
      *
      * `outOfScope` (#89 D2–D4): doklad od dodavatele mimo tuzemsko, který
      * je **mimo české DPH** a vznikne celý Bez DPH — `"foreignVat"`
@@ -2363,13 +2355,15 @@ class DocumentApplier
             return $ctx;
         }
 
+        // Návrh je vždy mimo importní mód (#166 D22 — `importNumber` v návrhu
+        // odmítá validátor): plátcovství se posuzuje k datu dokladu.
         if (($canonical['selfParty'] ?? null) === 'customer') {
-            $own = $this->ownVatRegistration($importMode ? null : $this->registrationDate($canonical));
+            $own = $this->ownVatRegistration($this->registrationDate($canonical));
             if ($own !== null) {
                 $ctx['derive'] = true;
                 $ctx['ownCountry'] = $own['country'];
                 $ctx['ownRegistrationId'] = $own['id'];
-            } elseif (!$importMode) {
+            } else {
                 $ctx['nonPayer'] = true;
             }
         }
@@ -2472,9 +2466,15 @@ class DocumentApplier
             }
             // #89 D2–D4: doklad mimo české DPH — kódy řádků se nerozhodují
             // (rozhodnutí výše sloužila jen k vyhodnocení), doklad je Bez DPH.
-            $ctx['outOfScope'] = $importMode
-                ? null
-                : $this->outOfScopeKind($canonical, $place, $pins, $reverseCharge, $decisions, $ownCountry, $ctx['taxPointDate']);
+            $ctx['outOfScope'] = $this->outOfScopeKind(
+                $canonical,
+                $place,
+                $pins,
+                $reverseCharge,
+                $decisions,
+                $ownCountry,
+                $ctx['taxPointDate'],
+            );
             if ($ctx['outOfScope'] !== null && $pins['mode'] === 'none') {
                 // Režim Bez DPH zvolil uživatel (mimo tuzemsko druh `user`,
                 // v tuzemsku doklad od neplátce). Hodnota „Automaticky“ =

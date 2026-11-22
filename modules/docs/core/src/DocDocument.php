@@ -589,9 +589,8 @@ abstract class DocDocument extends Document
      * Řádek dokladu s DPH bez kódu DPH znamená „nevyplněno“ (#164 D2, U8):
      * nález `vat_code_missing` na `rows.{index}.vat_code`. Chyba při
      * potvrzení dokladu (stav 40, stejná podmínka jako chybějící předmět
-     * plnění), jinak varování; **v importním módu vždy jen varování** — na
-     * rozdíl od předmětu plnění a `vat_rate_missing` (o importu rozhodne
-     * navazující issue). Řádek, který není plněním, má kód „Mimo DPH“.
+     * plnění), jinak varování. Importní mód výjimku nemá (#166 D22): zdroj
+     * posílá validní kód; řádek, který není plněním, má kód „Mimo DPH“.
      *
      * Netýká se dokladu Bez DPH (`vat_mode` 0, D3), textových řádků ani
      * kontačních řádků ({@see DocRowOperationRules::hasRowSide()} — formulář
@@ -616,9 +615,8 @@ abstract class DocDocument extends Document
         if ($missing === [] || $this->resolveVatCodesForDoc($data) === null) {
             return;
         }
-        $asError = $confirming && !$this->isLockExempt($data);
         foreach (array_keys($missing) as $i) {
-            $asError
+            $confirming
                 ? $result->addError("rows.{$i}.vat_code", VatLineScope::MISSING_CODE_MESSAGE, VatLineScope::MISSING_CODE)
                 : $result->addWarning("rows.{$i}.vat_code", VatLineScope::MISSING_CODE_MESSAGE, VatLineScope::MISSING_CODE);
         }
@@ -743,7 +741,7 @@ abstract class DocDocument extends Document
      * (`corrective_doc_partner_mismatch`). Opravný doklad k opravnému dokladu
      * je povolený. Bez databáze se kontroly odkazu přeskočí.
      *
-     * U5 (potvrzení mimo import mód, {@see isLockExempt}): důvod opravy je
+     * U5 (potvrzení, i v importním módu — #166 D22): důvod opravy je
      * povinný (`correction_reason_required`); prázdný odkaz i číslo původního
      * dokladu je souhrnný opravný doklad — jen varování
      * (`correction_original_missing`), vymezení původních dokladů patří do
@@ -797,7 +795,7 @@ abstract class DocDocument extends Document
             }
         }
 
-        if (!$confirm || $this->isLockExempt($data)) {
+        if (!$confirm) {
             return;
         }
         if (trim((string) ($data['correction_reason'] ?? '')) === '') {

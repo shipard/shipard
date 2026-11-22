@@ -365,13 +365,20 @@ class DocDocumentOutOfScopeRowsTest extends TestCase
         );
     }
 
-    public function testRowWithoutCodeOnlyWarnsInImportMode(): void
+    /** Importní mód výjimku nemá (#166 D22): při potvrzení chyba, v cíli V opravě varování. */
+    public function testRowWithoutCodeIsAnErrorOnConfirmationEvenInImportMode(): void
     {
         $data = $this->head(
             [$this->row(null, 50.00)],
             ['docState' => 40, '_importNumber' => ['number' => 'X1']],
         );
 
+        $this->assertSame(
+            [['column' => 'rows.0.vat_code', 'code' => 'vat_code_missing', 'severity' => 'error']],
+            $this->findings($this->doc(), $data, 'vat_code_missing'),
+        );
+
+        $data['docState'] = 80;
         $this->assertSame(
             [['column' => 'rows.0.vat_code', 'code' => 'vat_code_missing', 'severity' => 'warning']],
             $this->findings($this->doc(), $data, 'vat_code_missing'),
