@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "FV-2026-2210",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00023",
         "name": "Velkoobchod Čip a Deska s.r.o.",
         "country": "cz",
         "companyId": "88462137",
@@ -41,7 +43,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -70,9 +72,9 @@
                 "vatTotal": 181500.0
             },
             "description": "Server 1U, 2× CPU, 64 GB RAM, 2× 960 GB SSD",
-            "account": "042100",
+            "account": "@042100",
             "dimensions": {
-                "asset": "MA0001"
+                "asset": "@MA0001"
             }
         },
         {
@@ -80,7 +82,7 @@
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "501100",
+                "ref": "@501100",
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",

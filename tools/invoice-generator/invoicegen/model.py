@@ -15,7 +15,7 @@ from .story import Item, Party
 @dataclass
 class RowRec:
     operation: str                         # sale.services | sale.goods | acc.entry | acc.record
-    item_code: str | None = None           # ourCode položky (vlastní nebo kód nabídky)
+    item_code: str | None = None           # kód položky (vlastní nebo kód nabídky)
     item_name: str | None = None           # název položky z číselníku (dump: item.name)
     description: str | None = None         # text řádku
     unit: str | None = None                # system_code jednotky
@@ -100,7 +100,7 @@ class DocRec:
     supplier_doc_number: str | None = None # číslo dodavatele (docNumber přijaté faktury)
     doc_text: str | None = None
     note_on_document: str | None = None
-    vat_registration: bool = True          # doklad nese registraci DPH (registrationCountry)
+    vat_registration: bool = True          # doklad nese registraci DPH (vat.registration)
     fiscal_period_type: str | None = None  # "opening" = otevírací doklad (exchange fiscalPeriodType, #69 D20)
     source_kind: str | None = None         # exchange source.kind ("workOrder" = z periodické fakturace, #131 fáze 2b)
     work_order: str | None = None          # dimenze zakázky na hlavičce (číslo zakázky)

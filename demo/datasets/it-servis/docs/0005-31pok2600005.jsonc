@@ -3,7 +3,7 @@
     "formatVersion": "1.0",
     "docType": "cashDocument",
     "selfParty": "customer",
-    "cashDesk": "POK",
+    "cashDesk": "@POK",
     "cashDirection": 2,
     "dates": {
         "issueDate": "2026-03-08",
@@ -17,7 +17,7 @@
     "vat": {
         "mode": "none",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -32,7 +32,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518203",
+                "ref": "@518203",
                 "name": "Poštovné"
             },
             "unit": "pcs",
@@ -60,7 +60,6 @@
         "importNumber": {
             "docNumber": "31POK2600005",
             "sequenceNumber": 5
-        },
-        "numberSeriesCode": "POK"
+        }
     }
 }

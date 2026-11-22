@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "NP-26-037",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00019",
         "name": "Správa nemovitostí Patro s.r.o.",
         "country": "cz",
         "companyId": "81973501",
@@ -40,7 +42,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -55,7 +57,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518205",
+                "ref": "@518205",
                 "name": "Nájemné"
             },
             "unit": "pcs",
@@ -79,7 +81,7 @@
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "518205",
+                "ref": "@518205",
                 "name": "Nájemné"
             },
             "unit": "pcs",

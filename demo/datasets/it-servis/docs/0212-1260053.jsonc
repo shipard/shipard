@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00006",
         "name": "Galvanovna Pokorný a syn s.r.o.",
         "country": "cz",
         "companyId": "18493068",
@@ -34,17 +36,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260053"
     },
     "dimensions": {
-        "workOrder": "P0001"
+        "workOrder": "@P0001"
     },
     "rows": [
         {
@@ -52,7 +55,7 @@
             "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "ROUTER",
+                "ref": "@ROUTER",
                 "name": "Router s firewallem"
             },
             "unit": "pcs",
@@ -76,7 +79,7 @@
             "operation": "sale.goods",
             "orderPos": 2,
             "item": {
-                "ourCode": "SWITCH-24",
+                "ref": "@SWITCH-24",
                 "name": "Síťový switch 24 portů, PoE"
             },
             "unit": "pcs",
@@ -100,7 +103,7 @@
             "operation": "sale.services",
             "orderPos": 3,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -141,7 +144,6 @@
         "importNumber": {
             "docNumber": "1260053",
             "sequenceNumber": 53
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

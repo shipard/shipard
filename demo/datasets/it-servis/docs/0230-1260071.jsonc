@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál červen 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00003",
         "name": "Dentální klinika Úsměvov s.r.o.",
         "country": "cz",
         "companyId": "85297135",
@@ -40,17 +42,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260071"
     },
     "dimensions": {
-        "workOrder": "S0003"
+        "workOrder": "@S0003"
     },
     "rows": [
         {
@@ -58,7 +61,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -99,7 +102,6 @@
         "importNumber": {
             "docNumber": "1260071",
             "sequenceNumber": 71
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "2026071247",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00004",
         "name": "Energie Jiskra a.s.",
         "country": "cz",
         "companyId": "31647090",
@@ -43,7 +45,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -58,7 +60,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "502100",
+                "ref": "@502100",
                 "name": "Spotřeba energie (elektřina)"
             },
             "unit": "mwh",
@@ -82,7 +84,7 @@
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "502100",
+                "ref": "@502100",
                 "name": "Spotřeba energie (elektřina)"
             },
             "unit": "mwh",
@@ -106,7 +108,7 @@
             "operation": "acc.entry",
             "orderPos": 3,
             "item": {
-                "ourCode": "502100",
+                "ref": "@502100",
                 "name": "Spotřeba energie (elektřina)"
             },
             "unit": "pcs",

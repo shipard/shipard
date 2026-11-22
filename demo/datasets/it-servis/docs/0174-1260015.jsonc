@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál únor 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00001",
         "name": "Autodoprava Kopretina s.r.o.",
         "country": "cz",
         "companyId": "83715266",
@@ -39,17 +41,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260015"
     },
     "dimensions": {
-        "workOrder": "S0001"
+        "workOrder": "@S0001"
     },
     "rows": [
         {
@@ -57,7 +60,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -98,7 +101,6 @@
         "importNumber": {
             "docNumber": "1260015",
             "sequenceNumber": 15
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

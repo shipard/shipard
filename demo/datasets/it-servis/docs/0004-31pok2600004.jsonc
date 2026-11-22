@@ -3,7 +3,7 @@
     "formatVersion": "1.0",
     "docType": "cashDocument",
     "selfParty": "customer",
-    "cashDesk": "POK",
+    "cashDesk": "@POK",
     "cashDirection": 2,
     "dates": {
         "issueDate": "2026-02-19",
@@ -17,7 +17,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -32,7 +32,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "501100S",
+                "ref": "@501100S",
                 "name": "Kancelářské potřeby"
             },
             "unit": "pcs",
@@ -73,7 +73,6 @@
         "importNumber": {
             "docNumber": "31POK2600004",
             "sequenceNumber": 4
-        },
-        "numberSeriesCode": "POK"
+        }
     }
 }

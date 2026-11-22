@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "IT-Betreuung — Pauschale Juli 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00025",
         "name": "Wolkenschiff Logistik GmbH",
         "country": "de",
         "vatId": "DE314670256",
@@ -38,17 +40,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "intracom",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU2",
         "paymentReference": "1260094"
     },
     "dimensions": {
-        "workOrder": "S0013"
+        "workOrder": "@S0013"
     },
     "rows": [
         {
@@ -56,7 +59,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -97,7 +100,6 @@
         "importNumber": {
             "docNumber": "1260094",
             "sequenceNumber": 94
-        },
-        "importOwnBankAccount": "BU2"
+        }
     }
 }

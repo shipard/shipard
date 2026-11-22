@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00003",
         "name": "Dentální klinika Úsměvov s.r.o.",
         "country": "cz",
         "companyId": "85297135",
@@ -34,13 +36,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260025"
     },
     "rows": [
@@ -49,7 +52,7 @@
             "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "NTB-14",
+                "ref": "@NTB-14",
                 "name": "Notebook 14\" business, 16 GB RAM"
             },
             "unit": "pcs",
@@ -73,7 +76,7 @@
             "operation": "sale.services",
             "orderPos": 2,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -114,7 +117,6 @@
         "importNumber": {
             "docNumber": "1260025",
             "sequenceNumber": 25
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

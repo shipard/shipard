@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00011",
         "name": "Lékárna Pod Modrou Věží s.r.o.",
         "country": "cz",
         "companyId": "81374623",
@@ -33,13 +35,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260054"
     },
     "rows": [
@@ -48,7 +51,7 @@
             "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "NTB-14",
+                "ref": "@NTB-14",
                 "name": "Notebook 14\" business, 16 GB RAM"
             },
             "unit": "pcs",
@@ -72,7 +75,7 @@
             "operation": "sale.services",
             "orderPos": 2,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -113,7 +116,6 @@
         "importNumber": {
             "docNumber": "1260054",
             "sequenceNumber": 54
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

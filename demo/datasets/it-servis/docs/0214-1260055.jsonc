@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00025",
         "name": "Wolkenschiff Logistik GmbH",
         "country": "de",
         "vatId": "DE314670256",
@@ -32,13 +34,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "intracom",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU2",
         "paymentReference": "1260055"
     },
     "rows": [
@@ -47,7 +50,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -88,7 +91,6 @@
         "importNumber": {
             "docNumber": "1260055",
             "sequenceNumber": 55
-        },
-        "importOwnBankAccount": "BU2"
+        }
     }
 }

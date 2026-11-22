@@ -3,6 +3,7 @@
     "formatVersion": "1.0",
     "docType": "accountingDocument",
     "docText": "Přeúčtování z nespárovaných plateb: Pojistné 06/2026",
+    "numberSeries": "@cmnbkp",
     "dates": {
         "issueDate": "2026-07-20",
         "dueDate": "2026-08-03",
@@ -37,7 +38,7 @@
                 "vatTotal": 47936.0
             },
             "description": "Odvody sociálního a zdravotního pojištění",
-            "account": "336100",
+            "account": "@336100",
             "accSide": "debit"
         },
         {
@@ -53,7 +54,7 @@
                 "vatTotal": 47936.0
             },
             "description": "Přeúčtování z nespárovaných plateb",
-            "account": "261300",
+            "account": "@261300",
             "accSide": "credit"
         }
     ],

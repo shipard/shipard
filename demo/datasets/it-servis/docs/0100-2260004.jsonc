@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "INV-2026-18407",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00014",
         "name": "Noordwolk Backup B.V.",
         "country": "nl",
         "vatId": "NL854721039B01",
@@ -38,7 +40,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "intracom",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -53,7 +55,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518206",
+                "ref": "@518206",
                 "name": "Software a cloudové služby"
             },
             "unit": "pcs",
@@ -77,7 +79,7 @@
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "518206",
+                "ref": "@518206",
                 "name": "Software a cloudové služby"
             },
             "unit": "pcs",

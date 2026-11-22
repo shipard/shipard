@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "FV-2026-2212",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00023",
         "name": "Velkoobchod Čip a Deska s.r.o.",
         "country": "cz",
         "companyId": "88462137",
@@ -41,7 +43,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -56,7 +58,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "501100",
+                "ref": "@501100",
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
@@ -80,7 +82,7 @@
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "501100",
+                "ref": "@501100",
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
@@ -104,7 +106,7 @@
             "operation": "acc.entry",
             "orderPos": 3,
             "item": {
-                "ourCode": "501100",
+                "ref": "@501100",
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
@@ -128,7 +130,7 @@
             "operation": "acc.entry",
             "orderPos": 4,
             "item": {
-                "ourCode": "501100",
+                "ref": "@501100",
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",
@@ -147,7 +149,7 @@
             },
             "description": "Přístupový bod Wi-Fi 6",
             "dimensions": {
-                "workOrder": "P0002"
+                "workOrder": "@P0002"
             }
         },
         {
@@ -155,7 +157,7 @@
             "operation": "acc.entry",
             "orderPos": 5,
             "item": {
-                "ourCode": "501100",
+                "ref": "@501100",
                 "name": "Spotřeba materiálu"
             },
             "unit": "pcs",

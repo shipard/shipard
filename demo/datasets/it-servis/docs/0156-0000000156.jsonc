@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál říjen 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00002",
         "name": "Cukrárna U Medvídka s.r.o.",
         "country": "cz",
         "companyId": "91740380",
@@ -39,16 +41,17 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
-        "method": "bankTransfer"
+        "method": "bankTransfer",
+        "ownBankAccount": "@BU1"
     },
     "dimensions": {
-        "workOrder": "S0002"
+        "workOrder": "@S0002"
     },
     "rows": [
         {
@@ -56,7 +59,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -97,7 +100,6 @@
         "importNumber": {
             "docNumber": "!0000000156",
             "sequenceNumber": null
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

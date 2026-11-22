@@ -23,6 +23,9 @@ BANK_FORMAT = "shpd.dataset.bankStatement.v1"
 WORK_ORDER_FORMAT = "shpd.dataset.workOrder.v1"
 ASSET_FORMAT = "shpd.dataset.asset.v1"
 
+# Typy s řadou vázanou na pokladnu (`docTypes[].series_binding`).
+CASH_DESK_BOUND_TYPES = ("cash", "cashreg")
+
 DOC_TYPE_NAMES = {
     "invni": "invoiceReceived", "invno": "invoiceIssued", "invpo": "proformaIssued", "invpi": "proformaReceived",
     "cmnbkp": "accountingDocument", "cash": "cashDocument", "cashreg": "cashRegisterDocument",
@@ -139,12 +142,19 @@ def item_slug(item: Item) -> str:
 
 # ── Doklady ──────────────────────────────────────────────────────────────────
 
-def party_block(identity: dict, *, with_bank: bool) -> dict:
-    """`CanonicalParty::fromPerson` — strana dokladu z osoby v DS."""
+def key_ref(key: str | None) -> str | None:
+    """Reference přirozeným klíčem (`DocumentExporter::keyReference`, #166 D30)."""
+    return f"@{key}" if key not in (None, "") else None
+
+
+def party_block(identity: dict, person_id: str, *, with_bank: bool) -> dict:
+    """`CanonicalParty::withReference` — strana dokladu z osoby v DS:
+    reference přirozeným klíčem (`person_id`) a data (#166 D34)."""
     address = identity.get("address") or {}
     contact = identity.get("contact") or {}
     bank = identity.get("bankAccount") or {}
     block = {
+        "ref": key_ref(person_id),
         "name": identity["name"],
         "country": identity["country"],
         "companyId": identity.get("companyId"),
@@ -170,7 +180,7 @@ def _row_block(row: RowRec, position: int) -> dict:
         "rowKind": "item",
         "operation": row.operation,
         "orderPos": position,
-        "item": {"ourCode": row.item_code, "name": row.item_name} if row.item_code else None,
+        "item": {"ref": key_ref(row.item_code), "name": row.item_name} if row.item_code else None,
         "unit": row.unit,
         "quantity": php_float(row.quantity) if row.quantity is not None else None,
         # Kontační řádek (částka bez množství): applier uloží fromTotal a
@@ -185,11 +195,11 @@ def _row_block(row: RowRec, position: int) -> dict:
             "vatTotal": php_float(row.vat_total) if row.vat_total is not None else None,
         },
         "description": row.description,
-        "account": row.account,
+        "account": key_ref(row.account),
         "accSide": row.acc_side,
         # Dimenze řádku (#131 fáze 2b, 2c) — poslední klíč bloku jako v exportéru,
         # v pořadí deklarace dimenzí (zakázka, majetek); prázdné pryč.
-        "dimensions": {"workOrder": row.work_order, "asset": row.asset},
+        "dimensions": {"workOrder": key_ref(row.work_order), "asset": key_ref(row.asset)},
     }
     return block
 
@@ -238,14 +248,15 @@ def doc_record(doc: DocRec, story: Story) -> dict:
     side = partner_side(doc)
     party = None
     if doc.partner_key is not None and side is not None:
-        party = party_block(story.party(doc.partner_key).identity, with_bank=side == "supplier")
+        partner = story.party(doc.partner_key)
+        party = party_block(partner.identity, partner.person_id, with_bank=side == "supplier")
     apply_options: dict = {"targetDocState": doc.state}
     if doc.number is not None:
         apply_options["importNumber"] = {"docNumber": doc.number, "sequenceNumber": doc.sequence}
-    if doc.series_code is not None:
-        apply_options["numberSeriesCode"] = doc.series_code
-    if doc.doc_type in ("invno", "invpo"):
-        apply_options["importOwnBankAccount"] = story.bank_account_for(doc.currency)
+    # Řada referencí kódem (#166 D30): výchozí řada typu má kód = typ dokladu
+    # (D17); u typu vázaného na pokladnu řadu určuje pokladna — nevyváží se.
+    number_series = None if doc.doc_type in CASH_DESK_BOUND_TYPES else key_ref(doc.doc_type)
+    own_bank = key_ref(story.bank_account_for(doc.currency)) if doc.doc_type in ("invno", "invpo") else None
     canonical = {
         "format": "shpd.docs.document",
         "formatVersion": "1.0",
@@ -255,7 +266,8 @@ def doc_record(doc: DocRec, story: Story) -> dict:
         "docNumber": doc.supplier_doc_number,
         "docText": doc.doc_text,
         "selfParty": doc.self_party,
-        "cashDesk": doc.cash_desk,
+        "cashDesk": key_ref(doc.cash_desk),
+        "numberSeries": number_series,
         "cashDirection": doc.cash_direction,
         "supplier": party if side == "supplier" else None,
         "customer": party if side == "customer" else None,
@@ -275,15 +287,16 @@ def doc_record(doc: DocRec, story: Story) -> dict:
         "vat": {
             "mode": doc.vat_mode,
             "place": doc.vat_place,
-            "registrationCountry": "cz" if doc.vat_registration else None,
+            # Registrace DPH referencí kódem (#166 D36) — kód = země (D17).
+            "registration": key_ref("cz") if doc.vat_registration else None,
             "recapSource": "computed",
             "calcSource": "header",
             "controlStatementMode": "auto",
         },
-        "payment": {"method": doc.payment_method, "paymentReference": doc.payment_reference},
+        "payment": {"method": doc.payment_method, "ownBankAccount": own_bank, "paymentReference": doc.payment_reference},
         "notes": {"onDocument": doc.note_on_document},
-        # Dimenze hlavičky přirozeným klíčem (zakázka číslem, #131 fáze 2b).
-        "dimensions": {"workOrder": doc.work_order} if doc.work_order else None,
+        # Dimenze hlavičky referencí přirozeným klíčem (zakázka číslem, #131 fáze 2b).
+        "dimensions": {"workOrder": key_ref(doc.work_order)} if doc.work_order else None,
         "rows": [_row_block(row, i) for i, row in enumerate(doc.rows, start=1)],
         "vatRecap": [{
             "vatCode": line.vat_code,

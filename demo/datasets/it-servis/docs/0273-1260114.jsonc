@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál září 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00006",
         "name": "Galvanovna Pokorný a syn s.r.o.",
         "country": "cz",
         "companyId": "18493068",
@@ -40,17 +42,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260114"
     },
     "dimensions": {
-        "workOrder": "S0005"
+        "workOrder": "@S0005"
     },
     "rows": [
         {
@@ -58,7 +61,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -99,7 +102,6 @@
         "importNumber": {
             "docNumber": "1260114",
             "sequenceNumber": 114
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

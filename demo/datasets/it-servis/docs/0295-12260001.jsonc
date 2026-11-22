@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "proformaIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invpo",
     "customer": {
+        "ref": "@F00009",
         "name": "Jazyková škola Mluvka s.r.o.",
         "country": "cz",
         "companyId": "93820461",
@@ -32,13 +34,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "12260001"
     },
     "rows": [
@@ -47,7 +50,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "ZALOHA-IT",
+                "ref": "@ZALOHA-IT",
                 "name": "Záloha na roční správu IT"
             },
             "unit": "pcs",
@@ -88,7 +91,6 @@
         "importNumber": {
             "docNumber": "12260001",
             "sequenceNumber": 1
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

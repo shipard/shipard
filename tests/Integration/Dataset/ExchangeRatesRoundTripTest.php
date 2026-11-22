@@ -184,14 +184,14 @@ class ExchangeRatesRoundTripTest extends IntegrationTestCase
         $w->writeJsonc('docs/0001-it-xr-thb.jsonc', [
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'source' => ['kind' => 'aiExtraction'],
             'docType' => 'invoiceReceived', 'docNumber' => 'TH-2019-77', 'docText' => self::DOC_TEXT, 'selfParty' => 'customer',
-            'supplier' => ['name' => self::P . ' Supplier Ltd.', 'country' => 'th', 'companyId' => self::COMPANY_ID],
+            'supplier' => ['ref' => '@company_id:' . self::COMPANY_ID, 'name' => self::P . ' Supplier Ltd.', 'country' => 'th', 'companyId' => self::COMPANY_ID],
             'dates' => ['issueDate' => '2019-06-08', 'dueDate' => '2019-06-22', 'accountingDate' => '2019-06-10'],
             'currency' => 'THB', 'exchangeRate' => null,
-            'vat' => ['mode' => 'none', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+            'vat' => ['mode' => 'none', 'place' => 'domestic'],
             'payment' => ['method' => 'bankTransfer'],
             'rows' => [[
                 'rowKind' => 'item', 'operation' => 'purchase.services', 'orderPos' => 1,
-                'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Služba'], 'unit' => 'hr',
+                'item' => ['ref' => '@' . self::ITEM_CODE, 'name' => self::P . ' Služba'], 'unit' => 'hr',
                 'quantity' => 1.0, 'unitPrice' => 1000.0, 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromUnitPrice',
                 'vat' => ['code' => null, 'pct' => 0.0], 'description' => 'Služba IT-XR',
             ]],

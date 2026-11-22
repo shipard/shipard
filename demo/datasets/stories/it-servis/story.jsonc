@@ -18,6 +18,7 @@
 	// Vlastní firma — identita v kanonickém tvaru (jako identities.jsonc korpusu).
 	"own": {
 		"name": "Zelený Terminál s.r.o.",
+		"personId": "F00026",
 		"country": "cz",
 		"companyId": "61204579",
 		"taxId": "CZ61204579",

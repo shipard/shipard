@@ -70,7 +70,7 @@ class BuildDemoDatasetTest(unittest.TestCase):
             self.assertEqual("!0000000156", medvidek["periods"][-1]["docNumber"], "koncept měsíce kotvy zástupným číslem")
             concept = load_jsonc(out / "docs" / "0156-0000000156.jsonc")
             self.assertEqual({"kind": "workOrder"}, concept["source"])
-            self.assertEqual({"workOrder": "S0002"}, concept["dimensions"])
+            self.assertEqual({"workOrder": "@S0002"}, concept["dimensions"])
             # Fáze 2d: ukončený paušál (D43) a nový paušál zahájený v okně (D44).
             stranka = load_jsonc(out / "workOrders" / "0009-s0007.jsonc")
             self.assertEqual(("finished", "2025-09-01", "2026-07-31", "2026-01-01"),
@@ -86,7 +86,7 @@ class BuildDemoDatasetTest(unittest.TestCase):
             self.assertNotIn("dateEnd", tlapka["workOrder"])
             self.assertEqual(6, len(tlapka["periods"]), "evidence květen–říjen")
             self.assertEqual("!0000000157", tlapka["periods"][-1]["docNumber"], "koncept měsíce kotvy převzal nový odběratel")
-            self.assertEqual({"workOrder": "S0014"}, load_jsonc(out / "docs" / "0157-0000000157.jsonc")["dimensions"])
+            self.assertEqual({"workOrder": "@S0014"}, load_jsonc(out / "docs" / "0157-0000000157.jsonc")["dimensions"])
             project = load_jsonc(out / "workOrders" / "0001-p0001.jsonc")
             self.assertEqual(["format", "workOrder"], list(project), "projekt bez předpisu a období")
             self.assertEqual(("finished", "2026-04-22"), (project["workOrder"]["state"], project["workOrder"]["dateEnd"]))
@@ -102,7 +102,7 @@ class BuildDemoDatasetTest(unittest.TestCase):
                              card["events"])
             purchase = load_jsonc(out / "docs" / "0107-2260011.jsonc")
             self.assertEqual("FV-2026-2210", purchase["docNumber"])
-            self.assertEqual(("purchase.asset", "042100", {"asset": "MA0001"}),
+            self.assertEqual(("purchase.asset", "@042100", {"asset": "@MA0001"}),
                              (purchase["rows"][0]["operation"], purchase["rows"][0]["account"], purchase["rows"][0]["dimensions"]))
             self.assertNotIn("item", purchase["rows"][0])
             settings_rows = load_jsonc(out / "setup" / "settings.jsonc")["rows"]

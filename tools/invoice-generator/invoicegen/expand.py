@@ -102,7 +102,8 @@ def assign_numbers(docs: list[DocRec]) -> None:
 
 def expand_persons(story: Story) -> list[PersonRec]:
     parties = sorted(story.parties().values(), key=lambda p: (czech_key(p.name), p.company_id or "", p.key))
-    return [PersonRec(party=p, person_id=f"F{i:05d}", is_own=p.kind == "own") for i, p in enumerate(parties, start=1)]
+    # Číslo osoby je z příběhu (#166 U7) — pořadí určuje jen pořadí souborů.
+    return [PersonRec(party=p, person_id=p.person_id, is_own=p.kind == "own") for p in parties]
 
 
 def expand_items(story: Story):

@@ -96,7 +96,7 @@ class DocDimensionsTest(unittest.TestCase):
         self.assertNotIn("source", record)
         self.assertNotIn("dimensions", record)
         self.assertEqual("dimensions", list(record["rows"][0])[-1])
-        self.assertEqual({"workOrder": "P0001"}, record["rows"][0]["dimensions"])
+        self.assertEqual({"workOrder": "@P0001"}, record["rows"][0]["dimensions"])
 
         plain_row = RowRec(operation="sale.services", item_code="SPRAVA-IT", item_name="Správa IT", description="paušál", unit="mnth",
                            quantity=Decimal("1"), unit_price=Decimal("100"), total_price=Decimal("100"), vat_pct=21, vat_code="cz-120")
@@ -110,8 +110,34 @@ class DocDimensionsTest(unittest.TestCase):
         self.assertEqual(keys.index("payment") + 1, keys.index("dimensions"), "za payment (notes prázdné → pryč), před rows")
         self.assertEqual(keys.index("dimensions") + 1, keys.index("rows"))
         self.assertNotIn("dimensions", record["rows"][0], "řádek bez dimenze ji nenese")
-        self.assertEqual({"workOrder": "S0001"}, record["dimensions"])
+        self.assertEqual({"workOrder": "@S0001"}, record["dimensions"])
         self.assertEqual(("2026-01-01", "2026-01-31"), (record["dates"]["periodFrom"], record["dates"]["periodTo"]))
+
+    def test_every_record_link_is_a_reference(self) -> None:
+        # #166 D30, D34: každý odkaz na záznam je reference přirozeným klíčem,
+        # stejně jako ji píše `DocumentExporter` — strana objekt s `ref` a daty,
+        # položka, řada, vlastní účet a registrace DPH; stará pole formát nemá.
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        row = RowRec(operation="sale.services", item_code="SPRAVA-IT", item_name="Správa IT", description="paušál", unit="mnth",
+                     quantity=Decimal("1"), unit_price=Decimal("100"), total_price=Decimal("100"), vat_pct=21, vat_code="cz-120")
+        record = doc_record(doc("invno", partner_key="kopretina", self_party="supplier", number="1260001", sequence=1, rows=[row]), story)
+
+        self.assertEqual("@F00001", record["customer"]["ref"])
+        self.assertEqual("ref", list(record["customer"])[0], "reference první, data za ní")
+        self.assertEqual("Autodoprava Kopretina s.r.o.", record["customer"]["name"])
+        self.assertEqual({"ref": "@SPRAVA-IT", "name": "Správa IT"}, record["rows"][0]["item"])
+        self.assertEqual("@invno", record["numberSeries"], "výchozí řada typu má kód = typ dokladu")
+        self.assertEqual("@BU1", record["payment"]["ownBankAccount"])
+        self.assertEqual("@cz", record["vat"]["registration"])
+        self.assertEqual({"targetDocState": 40, "importNumber": {"docNumber": "1260001", "sequenceNumber": 1}}, record["applyOptions"])
+        keys = list(record)
+        self.assertEqual(keys.index("selfParty") + 1, keys.index("numberSeries"), "pořadí klíčů jako v exportéru")
+
+        cash = doc_record(doc("cash", self_party="customer", number="31POK2600001", sequence=1, cash_desk="POK", cash_direction=2,
+                              series_code="POK", rows=[row]), story)
+        self.assertEqual("@POK", cash["cashDesk"])
+        self.assertNotIn("numberSeries", cash, "řadu typu vázaného na pokladnu určuje pokladna")
+        self.assertNotIn("ownBankAccount", cash["payment"])
 
     def test_asset_purchase_row_carries_account_and_card(self) -> None:
         # #131 fáze 2c: řádek pořízení bez položky, účet přímo, karta jako dimenze
@@ -126,9 +152,9 @@ class DocDimensionsTest(unittest.TestCase):
         record = doc_record(doc("invni", partner_key="cipdeska", self_party="customer", number="2260011", sequence=11, rows=[server, hosting]), story)
         row = record["rows"][0]
         self.assertNotIn("item", row, "řádek pořízení bez položky")
-        self.assertEqual(("purchase.asset", "042100"), (row["operation"], row["account"]))
+        self.assertEqual(("purchase.asset", "@042100"), (row["operation"], row["account"]))
         self.assertEqual(["workOrder", "asset"], list(row["dimensions"]))
-        self.assertEqual({"asset": "MA0001"}, record["rows"][1]["dimensions"])
+        self.assertEqual({"asset": "@MA0001"}, record["rows"][1]["dimensions"])
         self.assertEqual("dimensions", list(row)[-1])
         self.assertEqual(["description", "account", "dimensions"], list(row)[-3:])
 

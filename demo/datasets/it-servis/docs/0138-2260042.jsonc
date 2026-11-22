@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "202620419",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00012",
         "name": "Licenční dům Klíček s.r.o.",
         "country": "cz",
         "companyId": "48360210",
@@ -41,7 +43,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -56,7 +58,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518206",
+                "ref": "@518206",
                 "name": "Software a cloudové služby"
             },
             "unit": "pcs",

@@ -17,7 +17,8 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * řada se dohledá podle (typ, pokladna dle kódu), cash_desk se denormalizuje
  * z řady, cash_dir z cashDirection, číslo z importNumber se zachová,
  * doklad ve stavu 40 se zaúčtuje. Úhrada payment.* nese partnera přes pin
- * `_resolve.rows[i].partner` a paymentReference. Neznámá pokladna = čistá
+ * `_resolve.rows[i].partner` a paymentReference. Pokladna je reference
+ * (`"@kód"`, #166 D30); neznámá pokladna = čistá
  * 422 (cash_desk_not_found), žádný doklad. Faktura placená hotově s kódem
  * pokladny dostane cash_desk.
  */
@@ -227,7 +228,7 @@ class CashDocumentImportTest extends IntegrationTestCase
     /**
      * Pokladna založená mimo TableGateway (generický CRUD importu) nemá řady
      * — afterSave handler se nespustil. Applier je musí založit sám, jinak
-     * padá celý import pokladny (#59, import msi 2026-09-06).
+     * padá celý import pokladny (#59, import zdroje btpg-p 2026-09-06).
      */
     public function testCashDeskWithoutSeriesGetsProvisionedOnApply(): void
     {
@@ -247,7 +248,7 @@ class CashDocumentImportTest extends IntegrationTestCase
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-' . $seq;
         $canonical = $this->canonical('cashDocument', [
-            'cashDesk'      => $code,
+            'cashDesk'      => '@' . $code,
             'cashDirection' => 1,
             'payment'       => ['method' => 'cash'],
             'rows'          => [$this->serviceRow('sale.services', 100.0)],
@@ -288,7 +289,7 @@ class CashDocumentImportTest extends IntegrationTestCase
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-' . $seq;
         $canonical = $this->canonical('cashDocument', [
-            'cashDesk'      => $code,
+            'cashDesk'      => '@' . $code,
             'cashDirection' => 1,
             'payment'       => ['method' => 'cash'],
             'rows'          => [$this->serviceRow('sale.services', 100.0)],
@@ -334,7 +335,7 @@ class CashDocumentImportTest extends IntegrationTestCase
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-' . $seq;
         $canonical = $this->canonical('cashDocument', [
-            'cashDesk'      => 'NOPE' . substr(uniqid(), -4),
+            'cashDesk'      => '@NOPE' . substr(uniqid(), -4),
             'cashDirection' => 1,
             'payment'       => ['method' => 'cash'],
             'rows'          => [$this->serviceRow('sale.services', 100.0)],
@@ -342,9 +343,12 @@ class CashDocumentImportTest extends IntegrationTestCase
 
         $result = $this->applier->apply($canonical);
 
+        // Pokladna je reference (#166 D30): nenalezená = nález s kódem resolveru.
         $this->assertFalse($result->success);
-        $this->assertSame('cash_desk_not_found', $result->errorCode);
+        $this->assertSame('validation_failed', $result->errorCode);
         $this->assertSame(422, $result->statusCode);
+        $findings = array_column($result->canonical['_resolve']['issues'] ?? [], 'code', 'path');
+        $this->assertSame('reference_not_found', $findings['cashDesk'] ?? null);
         $this->assertNull($result->savedId);
         $this->assertNull($this->db->fetchRow('SELECT id FROM docs_core_heads WHERE doc_number = %s', $ourNumber), 'žádný částečný zápis');
     }
@@ -381,15 +385,15 @@ class CashDocumentImportTest extends IntegrationTestCase
 
         $canonical = $this->canonical('invoiceIssued', [
             'selfParty' => 'supplier',
-            'customer'  => ['name' => self::FIXTURE_PREFIX . ' Odběratel', 'companyId' => '00000097'],
+            // Odběratel referencí id (#166 D30) — pokyn podle jména nehledá.
+            'customer'  => $this->partnerId,
             'payment'   => ['method' => 'cash'],
             'rows'      => [$this->serviceRow('sale.services', 1000.0)],
-            '_resolve'  => ['customer' => ['userAction' => 'useExisting:' . $this->partnerId]],
         ], $ourNumber, $seq);
         // faktura hotově: stav 10 stačí (bank_account by byl při 40 povinný)
         $canonical['applyOptions']['targetDocState'] = 10;
-        if ($ownBank !== null) {
-            $canonical['applyOptions']['importOwnBankAccount'] = (string) $ownBank['code'];
+        if ($ownBank !== null && trim((string) $ownBank['code']) !== '') {
+            $canonical['payment']['ownBankAccount'] = '@' . $ownBank['code'];
         }
 
         $result = $this->applier->apply($canonical);
@@ -412,12 +416,13 @@ class CashDocumentImportTest extends IntegrationTestCase
             'format'        => 'shpd.docs.document',
             'formatVersion' => '1.0',
             'docType'       => $docType,
-            'cashDesk'      => $this->deskCode,
+            'cashDesk'      => '@' . $this->deskCode,
             'source'        => ['kind' => 'import'],
             'docText'       => 'IT import pokladna',
             'dates'         => ['issueDate' => self::ISSUE_DATE, 'accountingDate' => self::ISSUE_DATE, 'taxPointDate' => self::ISSUE_DATE],
             'currency'      => 'CZK',
-            'vat'           => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'CZ'],
+            // Bez `vat.registration` doplní pokyn výchozí registraci zdroje dat (#166 D36).
+            'vat'           => ['mode' => 'fromBase', 'place' => 'domestic'],
             'applyOptions'  => [
                 'targetDocState' => 40,
                 'importNumber'   => ['docNumber' => $ourNumber, 'sequenceNumber' => $seq],

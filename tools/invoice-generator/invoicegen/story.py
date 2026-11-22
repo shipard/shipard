@@ -71,6 +71,10 @@ class Party:
     key: str
     kind: str                       # own | customer | supplier
     identity: dict                  # kanonická identita (klíče IDENTITY_KEYS)
+    # Číslo osoby v adresáři (`personId`) — přirozený klíč, kterým doklady
+    # sady na osobu odkazují (`"@F00001"`, #166 D34). Stálé: zapsané
+    # v příběhu, ne odvozené z pořadí — přidaná osoba nepřečísluje ostatní.
+    person_id: str | None = None
     language: str | None = None
     currency: str | None = None
     vat_treatment: str | None = None
@@ -152,7 +156,7 @@ class Story:
 
     def bank_account_for(self, currency: str) -> str:
         """Náš účet, na který chodí platby dokladů v dané měně (a který
-        nese vydaná faktura jako `importOwnBankAccount`)."""
+        nese vydaná faktura jako `payment.ownBankAccount`)."""
         return self.bank_accounts[currency]
 
 
@@ -199,6 +203,24 @@ def identities_for_checks(own: dict, partners: dict[str, dict], verified_at: str
         "profiles": {"own": _identity(own)},
         "suppliers": {key: _identity(party) for key, party in partners.items()},
     }
+
+
+PERSON_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,29}")
+
+
+def _person_ids(parties: dict[str, dict], problems: _Problems) -> None:
+    """Každá osoba příběhu nese stálé `personId` (#166 U7): doklady sady na
+    ni odkazují referencí `"@<personId>"`, kterou po seedu vrátí i dump.
+    Tvar bez `@` a dvojtečky (gramatika reference, D15), bez duplicit."""
+    seen: dict[str, str] = {}
+    for key, raw in parties.items():
+        person_id = raw.get("personId")
+        if not isinstance(person_id, str) or not PERSON_ID_PATTERN.fullmatch(person_id):
+            problems.add(f"partners.{key}", "personId chybí nebo nemá tvar [A-Za-z0-9][A-Za-z0-9_-]{0,29}")
+            continue
+        if person_id in seen:
+            problems.add(f"partners.{key}", f"personId {person_id} už má {seen[person_id]}")
+        seen[person_id] = key
 
 
 def _overlap_with_corpus(parties: dict[str, dict], corpus: dict | None, problems: _Problems) -> None:
@@ -406,7 +428,8 @@ def _party(key: str, kind: str, raw: dict, problems: _Problems, catalogs: Catalo
                 problems.add(where, "dodavatel s fakturami potřebuje bankovní účet")
 
     return Party(
-        key=key, kind=kind, identity=_identity(raw), language=language, currency=currency, vat_treatment=treatment,
+        key=key, kind=kind, identity=_identity(raw), person_id=raw.get("personId"),
+        language=language, currency=currency, vat_treatment=treatment,
         send_purposes=tuple(purposes) if isinstance(purposes, list) else (),
         payment=dict(payment) if isinstance(payment, dict) else {},
         template=template, accent=raw.get("accent"), doc_number=doc_number, invoices=invoices,
@@ -1316,7 +1339,9 @@ def load_story(story_dir: Path, catalogs: Catalogs, *, anchor: date | None = Non
         problems.add("identity", problem)
     _overlap_with_corpus({"own": own_raw, **all_partners}, reserved_corpus, problems)
 
-    own = Party(key="own", kind="own", identity=_identity(own_raw), language=own_raw.get("language"))
+    own = Party(key="own", kind="own", identity=_identity(own_raw), person_id=own_raw.get("personId"),
+                language=own_raw.get("language"))
+    _person_ids({"own": own_raw, **all_partners}, problems)
     customers = {key: _party(key, "customer", raw, problems, catalogs, rates, period) for key, raw in customers_raw.items()}
     suppliers = {key: _party(key, "supplier", raw, problems, catalogs, rates, period) for key, raw in suppliers_raw.items()}
     names = [own.name] + [p.name for p in customers.values()] + [p.name for p in suppliers.values()]

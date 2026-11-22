@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "2026448204",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00020",
         "name": "Telekom Vlnka a.s.",
         "country": "cz",
         "companyId": "95278141",
@@ -41,7 +43,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -56,7 +58,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518201",
+                "ref": "@518201",
                 "name": "Telefonní poplatky"
             },
             "unit": "pcs",
@@ -80,7 +82,7 @@
             "operation": "acc.entry",
             "orderPos": 2,
             "item": {
-                "ourCode": "518202",
+                "ref": "@518202",
                 "name": "Internetové služby"
             },
             "unit": "pcs",

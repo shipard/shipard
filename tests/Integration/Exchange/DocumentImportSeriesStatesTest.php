@@ -17,19 +17,23 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * stavy 40/30" proti živému DS (`SHIPARD_INTEGRATION_DS_PATH`).
  *
  * Ověřuje:
- *   1. výběr řady kódem (numberSeriesCode → doc_number_code), ne první aktivní,
+ *   1. výběr řady referencí `numberSeries` (#166 D30), ne první aktivní,
  *   2. import na stav 40 + importNumber → číslo/sekvence verbatim, counter
  *      = GREATEST, a že se přes zapojený DocumentEventDispatcher spustilo
  *      účtování (accounting_state ≠ 0; deník existuje právě když state 40),
  *   3. import na stav 30 (Storno) → číslo+counter ano, deník ne,
- *   4. neznámý kód řady → apply-level error number_series_not_found (422),
+ *   4. neznámá řada → nález reference_not_found a 422 validation_failed,
  *      žádný doklad,
  *   5. importNumber se sequenceNumber = null (duplicitní klíče migrace) →
  *      doc_number verbatim, sequence_number = NULL (dva NULL v unq_series_seq
  *      nekolidují), čítač řady se nehne.
  *
+ * Doklady jdou applierem jako pokyn: partnera si test zakládá sám
+ * a odkazuje ho referencí id, položku bere existující (pokyn nic nezakládá).
+ *
  * Test po sobě uklízí: snapshot/restore number_counters pro dotčené řady +
- * smazání vytvořených dokladů/řádků/rekapitulace/deníku/partnera/položek.
+ * smazání vytvořených dokladů/řádků/rekapitulace/deníku a vlastního partnera;
+ * existující položky ani osoby nemaže.
  * tearDown běží i při selhání assertions, takže DS zůstává čistý.
  */
 class DocumentImportSeriesStatesTest extends IntegrationTestCase
@@ -46,8 +50,6 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
     private array $createdDocIds = [];
     /** @var list<int> */
     private array $createdPersonIds = [];
-    /** @var list<int> */
-    private array $createdItemIds = [];
 
     /** @var list<array<string, mixed>> */
     private array $counterSnapshot = [];
@@ -116,10 +118,6 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
             $dibi->query('DELETE FROM base_persons_bank_accounts WHERE person = %i', $id);
             $dibi->query('DELETE FROM base_persons_persons WHERE id = %i', $id);
         }
-        foreach ($this->createdItemIds as $id) {
-            $dibi->query('DELETE FROM economy_items_supplier_codes WHERE item = %i', $id);
-            $dibi->query('DELETE FROM economy_items WHERE id = %i', $id);
-        }
         if ($this->createdOwnCompany && $this->ownCompanyPersonId !== null) {
             $dibi->query('DELETE FROM base_persons_persons WHERE id = %i', $this->ownCompanyPersonId);
         }
@@ -142,7 +140,7 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
     {
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-40-' . $seq;
-        $canonical = $this->buildCanonical('5', 40, $ourNumber, $seq);
+        $canonical = $this->buildCanonical($this->seriesCode5Id, 40, $ourNumber, $seq);
 
         $result = $this->applier->apply($canonical);
         $this->assertTrue(
@@ -197,7 +195,7 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
     {
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-30-' . $seq;
-        $canonical = $this->buildCanonical('5', 30, $ourNumber, $seq);
+        $canonical = $this->buildCanonical($this->seriesCode5Id, 30, $ourNumber, $seq);
 
         $result = $this->applier->apply($canonical);
         $this->assertTrue(
@@ -238,7 +236,7 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
         $ourNumber = self::FIXTURE_PREFIX . '-NULL-' . $seq;
 
         // 1. Držitel sekvence: normální import, čítač → N.
-        $result1 = $this->applier->apply($this->buildCanonical('5', 40, $ourNumber, $seq));
+        $result1 = $this->applier->apply($this->buildCanonical($this->seriesCode5Id, 40, $ourNumber, $seq));
         $this->assertTrue(
             $result1->success,
             'apply 1 selhal: ' . $result1->errorCode . ' — ' . $result1->errorMessage . ' / ' . json_encode($result1->canonical['_resolve']['issues'] ?? []),
@@ -250,7 +248,7 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
 
         // 2. Duplicita: sufixované číslo, sequence null → uloží se bez
         //    unq_series_seq kolize, čítač zůstává na N.
-        $result2 = $this->applier->apply($this->buildCanonical('5', 40, $ourNumber . '-2', null));
+        $result2 = $this->applier->apply($this->buildCanonical($this->seriesCode5Id, 40, $ourNumber . '-2', null));
         $this->assertTrue(
             $result2->success,
             'apply 2 (null sekvence) selhal: ' . $result2->errorCode . ' — ' . $result2->errorMessage . ' / ' . json_encode($result2->canonical['_resolve']['issues'] ?? []),
@@ -267,7 +265,7 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
         $this->assertSame((int) $head1['fiscal_year'], (int) $head2['fiscal_year']);
 
         // 3. Druhý NULL v témže klíči (UNIQUE bere NULL jako distinct).
-        $result3 = $this->applier->apply($this->buildCanonical('5', 40, $ourNumber . '-3', null));
+        $result3 = $this->applier->apply($this->buildCanonical($this->seriesCode5Id, 40, $ourNumber . '-3', null));
         $this->assertTrue(
             $result3->success,
             'apply 3 (druhý NULL) selhal: ' . $result3->errorCode . ' — ' . $result3->errorMessage . ' / ' . json_encode($result3->canonical['_resolve']['issues'] ?? []),
@@ -291,13 +289,15 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
     {
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-ERR-' . $seq;
-        $canonical = $this->buildCanonical('9999', 40, $ourNumber, $seq);
+        $canonical = $this->buildCanonical('@neznama-rada-9999', 40, $ourNumber, $seq);
 
         $result = $this->applier->apply($canonical);
 
         $this->assertFalse($result->success);
-        $this->assertSame('number_series_not_found', $result->errorCode);
+        $this->assertSame('validation_failed', $result->errorCode);
         $this->assertSame(422, $result->statusCode);
+        $findings = array_column($result->canonical['_resolve']['issues'] ?? [], 'code', 'path');
+        $this->assertSame('reference_not_found', $findings['numberSeries'] ?? null);
         $this->assertNull($result->savedId);
 
         // Žádný doklad nevznikl.
@@ -319,30 +319,40 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
     }
 
     /**
+     * Partner dokladu je fixtura testu ({@see fixturePartner()}) — eviduje
+     * se při založení; doklad na něj jen odkazuje.
+     *
      * @param array<string, mixed>|\Dibi\Row $head
      */
     private function trackPartner($head): void
     {
-        $partnerId = (int) ($head['partner'] ?? 0);
-        if ($partnerId === 0) {
-            return;
-        }
-        // Smazat jen partnera, kterého jsme tímhle testem vytvořili (unikátní
-        // company_id), nikdy předem existující osobu.
-        $partner = $this->db->fetchRow('SELECT company_id FROM base_persons_persons WHERE id = %i', $partnerId);
-        if ($partner !== null && str_starts_with((string) $partner['company_id'], '88')) {
-            $this->createdPersonIds[] = $partnerId;
-        }
-        $rows = $this->db->fetchAll('SELECT item FROM docs_core_rows WHERE doc_head = %i AND item IS NOT NULL', (int) $head['id']);
-        foreach ($rows as $r) {
-            $this->createdItemIds[] = (int) $r['item'];
-        }
+        $this->assertContains((int) ($head['partner'] ?? 0), $this->createdPersonIds, 'doklad nese partnera z reference');
+    }
+
+    /** Vlastní partner testu (IČO s prefixem 88) — pokyn osoby nezakládá. */
+    private function fixturePartner(string $uniq): int
+    {
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('base_persons_persons', [
+            'person_id'    => 'S' . $uniq,
+            'person_type'  => 2,
+            'full_name'    => self::FIXTURE_PREFIX . ' Vendor ' . $uniq,
+            'last_name'    => self::FIXTURE_PREFIX . ' Vendor ' . $uniq,
+            'first_name'   => '',
+            'company_id'   => '88' . $uniq,
+            'vat_id'       => 'CZ88' . $uniq,
+            'docState'     => 40,
+            'docStateMain' => 3,
+        ])->execute();
+        $id = (int) $dibi->getInsertId();
+        $this->createdPersonIds[] = $id;
+        return $id;
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function buildCanonical(string $seriesCode, int $targetState, string $ourNumber, ?int $sequence): array
+    private function buildCanonical(int|string $numberSeries, int $targetState, string $ourNumber, ?int $sequence): array
     {
         $payload = json_decode(
             (string) file_get_contents(dirname(__DIR__, 2) . '/Fixtures/Exchange/invoiceReceived_happy.json'),
@@ -353,25 +363,42 @@ class DocumentImportSeriesStatesTest extends IntegrationTestCase
         $payload['source'] = ['kind' => 'import'];
 
         // Pohyb řádku (rowOperations) — povinný pro item-řádky na stavu 40.
-        // „Konzultace" = nákup služeb (platný pohyb pro invni).
+        // „Konzultace" = nákup služeb (platný pohyb pro invni). Položka
+        // referencí id na existující položku s účtem; bez ní řádek bez položky.
+        $item = $this->db->fetchRow(
+            'SELECT id FROM economy_items WHERE docState = 40 AND accounting_account IS NOT NULL ORDER BY id LIMIT 1',
+        );
         foreach ($payload['rows'] as &$r) {
             $r['operation'] = 'purchase.services';
+            $r['description'] = (string) ($r['item']['name'] ?? 'Konzultace');
+            $r['unit'] = 'hr';
+            if ($item !== null) {
+                $r['item'] = (int) $item['id'];
+            } else {
+                unset($r['item']);
+            }
         }
         unset($r);
 
-        // Unikátní dodavatel → safe autocreate, nikdy nematchne reálnou osobu.
+        // Dodavatel = vlastní partner testu, referencí id s dobovými daty.
         $uniq = substr((string) (microtime(true) * 10000), -6);
+        $payload['supplier'] = ['ref' => $this->fixturePartner($uniq)] + $payload['supplier'];
         $payload['supplier']['name'] = self::FIXTURE_PREFIX . ' Vendor ' . $uniq;
         $payload['supplier']['companyId'] = '88' . $uniq;
         $payload['supplier']['vatId'] = 'CZ88' . $uniq;
         $payload['supplier']['taxId'] = 'CZ88' . $uniq;
         $payload['docNumber'] = self::FIXTURE_PREFIX . '-PARTNER-' . $uniq; // partner_doc_number
+        // Signál návrhu (#166 D39) — pokyn bere výchozí registraci zdroje dat.
+        unset($payload['vat']['registrationCountry']);
 
+        // Součty fixtury jsou z papíru dodavatele (10 × 1 033,06 ≠ 10 330,58) —
+        // v pokynu by byly kontrolní součet (#166 D27); test je neposílá.
+        unset($payload['totals'], $payload['vatRecap']);
+
+        $payload['numberSeries'] = $numberSeries;
         $payload['applyOptions'] = [
-            'autoCreateMode'   => 'safe',
-            'numberSeriesCode' => $seriesCode,
-            'targetDocState'   => $targetState,
-            'importNumber'     => ['docNumber' => $ourNumber, 'sequenceNumber' => $sequence],
+            'targetDocState' => $targetState,
+            'importNumber'   => ['docNumber' => $ourNumber, 'sequenceNumber' => $sequence],
         ];
 
         return $payload;

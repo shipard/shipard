@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00006",
         "name": "Galvanovna Pokorný a syn s.r.o.",
         "country": "cz",
         "companyId": "18493068",
@@ -34,13 +36,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260121"
     },
     "rows": [
@@ -49,7 +52,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -90,7 +93,6 @@
         "importNumber": {
             "docNumber": "1260121",
             "sequenceNumber": 121
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

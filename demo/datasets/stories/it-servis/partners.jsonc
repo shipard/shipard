@@ -42,6 +42,7 @@
 		"kopretina": {
 			"vatPayer": true,
 			"name": "Autodoprava Kopretina s.r.o.",
+			"personId": "F00001",
 			"country": "cz", "companyId": "83715266", "taxId": "CZ83715266", "vatId": "CZ83715266",
 			"address": { "street": "Kamionová", "houseNumber": "1412", "city": "Zlín", "zip": "76001", "country": "cz" },
 			"contact": { "name": "Účtárna", "email": "uctarna@kopretina-doprava.example", "phone": "+420000204411", "web": null },
@@ -53,6 +54,7 @@
 		"medvidek": {
 			"vatPayer": true,
 			"name": "Cukrárna U Medvídka s.r.o.",
+			"personId": "F00002",
 			"country": "cz", "companyId": "91740380", "taxId": "CZ91740380", "vatId": "CZ91740380",
 			"address": { "street": "Perníková", "houseNumber": "12", "city": "Olomouc", "zip": "77900", "country": "cz" },
 			"contact": { "name": "Jana Perníčková", "email": "jana@cukrarna-medvidek.example", "phone": "+420000330217", "web": null },
@@ -64,6 +66,7 @@
 		"usmevov": {
 			"vatPayer": true,
 			"name": "Dentální klinika Úsměvov s.r.o.",
+			"personId": "F00003",
 			"country": "cz", "companyId": "85297135", "taxId": "CZ85297135", "vatId": "CZ85297135",
 			"address": { "street": "Zubařská", "houseNumber": "208/4", "city": "Brno", "zip": "61600", "country": "cz" },
 			"contact": { "name": "Recepce kliniky", "email": "recepce@usmevov.example", "phone": "+420000150933", "web": "www.usmevov.example" },
@@ -75,6 +78,7 @@
 		"pohybna": {
 			"vatPayer": true,
 			"name": "Fyzioterapie Pohybna s.r.o.",
+			"personId": "F00005",
 			"country": "cz", "companyId": "55839207", "taxId": "CZ55839207", "vatId": "CZ55839207",
 			"address": { "street": "Rehabilitační", "houseNumber": "77", "city": "Prostějov", "zip": "79601", "country": "cz" },
 			"contact": { "name": "Fakturace", "email": "fakturace@pohybna.example", "phone": "+420000341890", "web": null },
@@ -86,6 +90,7 @@
 		"galvanovna": {
 			"vatPayer": true,
 			"name": "Galvanovna Pokorný a syn s.r.o.",
+			"personId": "F00006",
 			"country": "cz", "companyId": "18493068", "taxId": "CZ18493068", "vatId": "CZ18493068",
 			"address": { "street": "Pokovovací", "houseNumber": "3301/2", "city": "Vyškov", "zip": "68201", "country": "cz" },
 			"contact": { "name": "Účtárna", "email": "uctarna@galvanovna-pokorny.example", "phone": "+420000348120", "web": "www.galvanovna-pokorny.example" },
@@ -97,6 +102,7 @@
 		"jelen": {
 			"vatPayer": true,
 			"name": "Hotel Modrý Jelen s.r.o.",
+			"personId": "F00008",
 			"country": "cz", "companyId": "33958173", "taxId": "CZ33958173", "vatId": "CZ33958173",
 			"address": { "street": "Lázeňská", "houseNumber": "5", "city": "Luhačovice", "zip": "76326", "country": "cz" },
 			"contact": { "name": "Ekonomické oddělení", "email": "ekonom@hotel-modry-jelen.example", "phone": "+420000130444", "web": "www.hotel-modry-jelen.example" },
@@ -108,6 +114,7 @@
 		"mluvka": {
 			"vatPayer": true,
 			"name": "Jazyková škola Mluvka s.r.o.",
+			"personId": "F00009",
 			"country": "cz", "companyId": "93820461", "taxId": "CZ93820461", "vatId": "CZ93820461",
 			"address": { "street": "Slovníková", "houseNumber": "19", "city": "Zlín", "zip": "76001", "country": "cz" },
 			"contact": { "name": "Kancelář školy", "email": "kancelar@skola-mluvka.example", "phone": "+420000215660", "web": "www.skola-mluvka.example" },
@@ -119,6 +126,7 @@
 		"stranka": {
 			"vatPayer": true,
 			"name": "Knihkupectví Stránka s.r.o.",
+			"personId": "F00010",
 			"country": "cz", "companyId": "90462718", "taxId": "CZ90462718", "vatId": "CZ90462718",
 			"address": { "street": "Záložková", "houseNumber": "640/11", "city": "Kroměříž", "zip": "76701", "country": "cz" },
 			"contact": { "name": "Knihkupectví Stránka", "email": "info@knihy-stranka.example", "phone": "+420000339012", "web": null },
@@ -130,6 +138,7 @@
 		"lekarna": {
 			"vatPayer": true,
 			"name": "Lékárna Pod Modrou Věží s.r.o.",
+			"personId": "F00011",
 			"country": "cz", "companyId": "81374623", "taxId": "CZ81374623", "vatId": "CZ81374623",
 			"address": { "street": "Věžní", "houseNumber": "2", "city": "Uherské Hradiště", "zip": "68601", "country": "cz" },
 			"contact": { "name": "Vedoucí lékárny", "email": "lekarna@podvezi.example", "phone": "+420000550128", "web": null },
@@ -141,6 +150,7 @@
 		"domovnik": {
 			"vatPayer": true,
 			"name": "Realitní kancelář Domovník s.r.o.",
+			"personId": "F00016",
 			"country": "cz", "companyId": "66902452", "taxId": "CZ66902452", "vatId": "CZ66902452",
 			"address": { "street": "Makléřská", "houseNumber": "1500/7", "city": "Brno", "zip": "60200", "country": "cz" },
 			"contact": { "name": "Fakturace", "email": "fakturace@rk-domovnik.example", "phone": "+420000218745", "web": "www.rk-domovnik.example" },
@@ -152,6 +162,7 @@
 		"dubovylist": {
 			"vatPayer": true,
 			"name": "Truhlárna Dubový list s.r.o.",
+			"personId": "F00021",
 			"country": "cz", "companyId": "86341928", "taxId": "CZ86341928", "vatId": "CZ86341928",
 			"address": { "street": "Hoblovaná", "houseNumber": "88", "city": "Holešov", "zip": "76901", "country": "cz" },
 			"contact": { "name": "Petr Dubový", "email": "petr@truhlarna-dubovy-list.example", "phone": "+420000398022", "web": null },
@@ -163,6 +174,7 @@
 		"nitra": {
 			"vatPayer": true,
 			"name": "Nitrianske Stroje s.r.o.",
+			"personId": "F00013",
 			"country": "sk", "companyId": "52398412", "taxId": null, "vatId": "SK2023845117",
 
 			"address": { "street": "Strojárenská", "houseNumber": "14", "city": "Nitra", "zip": "94901", "country": "sk" },
@@ -175,6 +187,7 @@
 		"tatranka": {
 			"vatPayer": true,
 			"name": "Horský Penzión Tatranka s.r.o.",
+			"personId": "F00007",
 			"country": "sk", "companyId": "47150823", "taxId": null, "vatId": "SK2020471508",
 
 			"address": { "street": "Pod Gerlachom", "houseNumber": "231", "city": "Poprad", "zip": "05801", "country": "sk" },
@@ -187,6 +200,7 @@
 		"wolkenschiff": {
 			"vatPayer": true,
 			"name": "Wolkenschiff Logistik GmbH",
+			"personId": "F00025",
 			"country": "de", "companyId": null, "taxId": null, "vatId": "DE314670256",
 
 			"address": { "street": "Hafenstraße", "houseNumber": "118", "city": "Köln", "zip": "50678", "country": "de" },
@@ -202,6 +216,7 @@
 		"tlapka": {
 			"vatPayer": true,
 			"name": "Veterinární klinika Tlapka s.r.o.",
+			"personId": "F00024",
 			"country": "cz", "companyId": "89310021", "taxId": "CZ89310021", "vatId": "CZ89310021",
 			"address": { "street": "Kočičí", "houseNumber": "315/9", "city": "Přerov", "zip": "75002", "country": "cz" },
 			"contact": { "name": "Recepce kliniky", "email": "recepce@veterina-tlapka.example", "phone": "+420000271455", "web": "www.veterina-tlapka.example" },
@@ -216,6 +231,7 @@
 		"mrak": {
 			"vatPayer": true,
 			"name": "Serverovna Mrak s.r.o.",
+			"personId": "F00018",
 			"country": "cz", "companyId": "90157389", "taxId": "CZ90157389", "vatId": "CZ90157389",
 			"courtRegistration": "Spisová značka C 301144 vedená u Městského soudu v Praze",
 			"address": { "street": "Datová", "houseNumber": "2048/1", "city": "Praha 4", "zip": "14000", "country": "cz" },
@@ -231,6 +247,7 @@
 		"klicek": {
 			"vatPayer": true,
 			"name": "Licenční dům Klíček s.r.o.",
+			"personId": "F00012",
 			"country": "cz", "companyId": "48360210", "taxId": "CZ48360210", "vatId": "CZ48360210",
 			"courtRegistration": "Spisová značka C 77012 vedená u Krajského soudu v Brně",
 			"address": { "street": "Softwarová", "houseNumber": "9", "city": "Brno", "zip": "63900", "country": "cz" },
@@ -247,6 +264,7 @@
 		"vlnka": {
 			"vatPayer": true,
 			"name": "Telekom Vlnka a.s.",
+			"personId": "F00020",
 			"country": "cz", "companyId": "95278141", "taxId": "CZ95278141", "vatId": "CZ95278141",
 			"courtRegistration": "Spisová značka B 9981 vedená u Městského soudu v Praze",
 			"address": { "street": "Anténní", "houseNumber": "400/22", "city": "Praha 10", "zip": "10000", "country": "cz" },
@@ -265,6 +283,7 @@
 		"patro": {
 			"vatPayer": true,
 			"name": "Správa nemovitostí Patro s.r.o.",
+			"personId": "F00019",
 			"country": "cz", "companyId": "81973501", "taxId": "CZ81973501", "vatId": "CZ81973501",
 			"courtRegistration": "Spisová značka C 64520 vedená u Krajského soudu v Brně",
 			"address": { "street": "Schodišťová", "houseNumber": "3", "city": "Brno", "zip": "60200", "country": "cz" },
@@ -283,6 +302,7 @@
 		"jiskra": {
 			"vatPayer": true,
 			"name": "Energie Jiskra a.s.",
+			"personId": "F00004",
 			"country": "cz", "companyId": "31647090", "taxId": "CZ31647090", "vatId": "CZ31647090",
 			"courtRegistration": "Spisová značka B 4477 vedená u Krajského soudu v Ostravě",
 			"address": { "street": "Elektrárenská", "houseNumber": "1", "city": "Ostrava", "zip": "70200", "country": "cz" },
@@ -303,6 +323,7 @@
 		"cipdeska": {
 			"vatPayer": true,
 			"name": "Velkoobchod Čip a Deska s.r.o.",
+			"personId": "F00023",
 			"country": "cz", "companyId": "88462137", "taxId": "CZ88462137", "vatId": "CZ88462137",
 			"courtRegistration": "Spisová značka C 220981 vedená u Krajského soudu v Hradci Králové",
 			"address": { "street": "Součástková", "houseNumber": "560/14", "city": "Hradec Králové", "zip": "50002", "country": "cz" },
@@ -324,6 +345,7 @@
 		"sloupec": {
 			"vatPayer": true,
 			"name": "Účetní kancelář Sloupec s.r.o.",
+			"personId": "F00022",
 			"country": "cz", "companyId": "52073963", "taxId": "CZ52073963", "vatId": "CZ52073963",
 			"courtRegistration": "Spisová značka C 88235 vedená u Krajského soudu v Brně",
 			"address": { "street": "Rozvahová", "houseNumber": "6", "city": "Brno", "zip": "61300", "country": "cz" },
@@ -343,6 +365,7 @@
 		"noordwolk": {
 			"vatPayer": true,
 			"name": "Noordwolk Backup B.V.",
+			"personId": "F00014",
 			"country": "nl", "companyId": null, "taxId": null, "vatId": "NL854721039B01",
 
 			"courtRegistration": "KvK 87654321",
@@ -364,6 +387,7 @@
 		"tecka": {
 			"vatPayer": true,
 			"name": "Registr Domén Tečka s.r.o.",
+			"personId": "F00017",
 			"country": "cz", "companyId": "16730488", "taxId": "CZ16730488", "vatId": "CZ16730488",
 			"address": { "street": "Doménová", "houseNumber": "404", "city": "Praha 7", "zip": "17000", "country": "cz" },
 			"contact": { "name": null, "email": "podpora@registr-tecka.example", "phone": "+420000999404", "web": "www.registr-tecka.example" },
@@ -373,6 +397,7 @@
 		"destnik": {
 			"vatPayer": true,
 			"name": "Pojišťovna Deštník a.s.",
+			"personId": "F00015",
 			"country": "cz", "companyId": "92614833", "taxId": "CZ92614833", "vatId": "CZ92614833",
 			"address": { "street": "Pojistná", "houseNumber": "1000/1", "city": "Praha 1", "zip": "11000", "country": "cz" },
 			"contact": { "name": null, "email": "klienti@pojistovna-destnik.example", "phone": "+420000551000", "web": "www.pojistovna-destnik.example" },

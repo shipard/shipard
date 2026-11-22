@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál srpen 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00008",
         "name": "Hotel Modrý Jelen s.r.o.",
         "country": "cz",
         "companyId": "33958173",
@@ -40,17 +42,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260103"
     },
     "dimensions": {
-        "workOrder": "S0006"
+        "workOrder": "@S0006"
     },
     "rows": [
         {
@@ -58,7 +61,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -99,7 +102,6 @@
         "importNumber": {
             "docNumber": "1260103",
             "sequenceNumber": 103
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

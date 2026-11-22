@@ -115,7 +115,10 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private string $setDir;
     private ConfigRuntime $config;
     private SeedContext $ctx;
-    private ?string $seriesCode = null;
+    /** Reference řady přijatých faktur (`"@<kód řady>"`, #166 D30). */
+    private string $seriesRef = '@invni';
+    /** Reference registrace DPH zdroje dat; null = zdroj bez registrace. */
+    private ?string $vatRegistrationRef = null;
     private int $cashDeskId = 0;
     /** Sekce bank jen s modulem banky a analytikou 221100 na DS. */
     private bool $hasBank = false;
@@ -124,7 +127,6 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private bool $hasWorkOrders = false;
     /** Kód řady invno — reference řady dokladů v setup/ a v obálce zakázky (#166 D17). */
     private string $invnoSeries = 'invno';
-    private ?string $invnoCode = null;
     /** Sekce assets jen s modulem majetku, úplnou účetní skupinou 022, účtem 042100 a účetním rokem data zařazení. */
     private bool $hasAssets = false;
 
@@ -133,17 +135,21 @@ class DatasetRoundTripTest extends IntegrationTestCase
         parent::setUp();
 
         $dibi = $this->db->getDibiConnection();
-        // Kód řady (%C) může být prázdný — pak exporter numberSeriesCode
-        // vynechává a applier bere první aktivní řadu (stejně jako dump z DS).
+        // Řada referencí kódem (#166 D30) — exporter ji u typu nevázaného na
+        // pokladnu vyváží vždy; řada bez kódu = zdroj dat před `ds-upgrade`.
         $series = $dibi->fetch(
-            "SELECT doc_number_code FROM docs_core_number_series
+            "SELECT code FROM docs_core_number_series
              WHERE doc_type = 'invni' AND docState IN (10, 40, 80) ORDER BY id LIMIT 1",
         );
-        if ($series === null) {
-            $this->markTestSkipped('DS nemá aktivní řadu pro invni.');
+        if ($series === null || trim((string) $series['code']) === '') {
+            $this->markTestSkipped('DS nemá aktivní řadu pro invni s kódem.');
         }
-        $code = trim((string) $series['doc_number_code']);
-        $this->seriesCode = $code !== '' ? $code : null;
+        $this->seriesRef = '@' . trim((string) $series['code']);
+        $registration = $dibi->fetch(
+            'SELECT code FROM economy_codebooks_vat_registrations WHERE docState IN (10, 40, 80) ORDER BY country, id LIMIT 1',
+        );
+        $code = trim((string) ($registration['code'] ?? ''));
+        $this->vatRegistrationRef = $code !== '' ? '@' . $code : null;
         if ($dibi->fetch('SELECT id FROM base_persons_persons WHERE is_own = 1 AND docState IN (10, 40, 80) LIMIT 1') === null) {
             $this->markTestSkipped('DS nemá vlastní firmu (is_own) — selfParty resolve by selhal.');
         }
@@ -191,8 +197,6 @@ class DatasetRoundTripTest extends IntegrationTestCase
             // Řada bez kódu = zdroj dat před `ds-upgrade` s doplněním kódů.
             && trim((string) $invnoSeries[0]['code']) !== '';
         if ($this->hasWorkOrders) {
-            $code = trim((string) $invnoSeries[0]['doc_number_code']);
-            $this->invnoCode = $code !== '' ? $code : null;
             $this->invnoSeries = (string) $invnoSeries[0]['code'];
         }
 
@@ -619,14 +623,16 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame($srcDoc['docNumber'], $docOut['docNumber']);
         $this->assertSame('customer', $docOut['selfParty']);
         $this->assertSame(self::COMPANY_ID, $docOut['supplier']['companyId']);
+        $this->assertSame('@' . $person['personId'], $docOut['supplier']['ref'], 'strana referencí číslem osoby (#166 D34); sada ji odkázala přes IČO (D35)');
         $this->assertSame($srcDoc['dates']['issueDate'], $docOut['dates']['issueDate']);
         $this->assertSame('CZK', $docOut['currency']);
-        $this->assertSame(self::ITEM_CODE, $docOut['rows'][0]['item']['ourCode']);
+        $this->assertSame('@' . self::ITEM_CODE, $docOut['rows'][0]['item']['ref']);
         $this->assertSame(2.0, $docOut['rows'][0]['quantity']);
         $this->assertSame(500.0, $docOut['rows'][0]['unitPrice']);
         $this->assertSame('cz-110', $docOut['rows'][0]['vat']['code']);
         $this->assertSame(['docNumber' => self::DOC_NUMBER, 'sequenceNumber' => null], $docOut['applyOptions']['importNumber']);
-        $this->assertSame($this->seriesCode, $docOut['applyOptions']['numberSeriesCode'] ?? null);
+        $this->assertSame($this->seriesRef, $docOut['numberSeries']);
+        $this->assertSame($this->vatRegistrationRef, $docOut['vat']['registration'] ?? null);
         $this->assertSame(40, $docOut['applyOptions']['targetDocState']);
         $this->assertArrayNotHasKey('cashDesk', $docOut, 'faktura na převod pokladnu nenese');
         $this->assertArrayNotHasKey('cashDirection', $docOut);
@@ -660,7 +666,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
 
         $srcCashreg = $reader->readJsonc('docs/0002-14itds2600001.jsonc');
         $this->assertSame('cashRegisterDocument', $cashregOut['docType']);
-        $this->assertSame(self::CASH_DESK_CODE, $cashregOut['cashDesk'], 'pokladna kódem — seed ji podle něj zase najde');
+        $this->assertSame('@' . self::CASH_DESK_CODE, $cashregOut['cashDesk'], 'pokladna referencí kódem — seed ji podle něj zase najde');
         $this->assertArrayNotHasKey('cashDirection', $cashregOut, 'prodejka směr nenese');
         $this->assertSame('supplier', $cashregOut['selfParty']);
         $this->assertArrayNotHasKey('supplier', $cashregOut);
@@ -677,7 +683,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame('CZK', $cashregOut['currency']);
         $this->assertSame('cash', $cashregOut['payment']['method']);
         $this->assertSame('sale.goods', $cashregOut['rows'][0]['operation']);
-        $this->assertSame(self::ITEM_CODE, $cashregOut['rows'][0]['item']['ourCode']);
+        $this->assertSame('@' . self::ITEM_CODE, $cashregOut['rows'][0]['item']['ref']);
         $this->assertSame(500.0, $cashregOut['rows'][0]['unitPrice']);
         // Seed s výslovně vypnutou automatikou (#73 D8, #166 U4) → dump ji vyváží stejně.
         $this->assertSame(
@@ -685,9 +691,8 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $cashregOut['totals'],
         );
         $this->assertSame(['docNumber' => self::CASHREG_NUMBER, 'sequenceNumber' => 1], $cashregOut['applyOptions']['importNumber']);
-        // Kód vázané řady = kód pokladny; applier ho u vázaných typů ignoruje
-        // (řadu určuje pokladna), v dumpu je ale přítomný.
-        $this->assertSame(self::CASH_DESK_CODE, $cashregOut['applyOptions']['numberSeriesCode']);
+        // Řadu vázaného typu určuje pokladna — dump ji nevyváží (#166 U5).
+        $this->assertArrayNotHasKey('numberSeries', $cashregOut);
         $this->assertSame(40, $cashregOut['applyOptions']['targetDocState']);
         $this->assertSame([], $docExporter->getWarnings());
 
@@ -733,14 +738,16 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame([$invnoId, $correctiveId], array_keys($issuedOut), 'opravný doklad řadí dump až za běžné doklady typu (U5)');
             $invnoOut = $issuedOut[$invnoId];
             $this->assertSame(['kind' => 'workOrder'], $invnoOut['source']);
-            $this->assertSame(['workOrder' => self::WO_NUMBER], $invnoOut['dimensions'], 'dimenze zakázky přežije round-trip');
+            $this->assertSame(['workOrder' => '@' . self::WO_NUMBER], $invnoOut['dimensions'], 'dimenze zakázky přežije round-trip');
+            $this->assertSame('@' . self::BANK_ACCOUNT_CODE, $invnoOut['payment']['ownBankAccount']);
+            $this->assertSame('@' . $this->invnoSeries, $invnoOut['numberSeries']);
             $this->assertArrayNotHasKey('dimensions', $invnoOut['rows'][0], 'řádek dimenzi nenese (deník ji dědí z hlavičky)');
             $this->assertArrayNotHasKey('correction', $invnoOut, 'běžná faktura blok opravy nenese');
             $correctiveOut = $issuedOut[$correctiveId];
             $this->assertSame(
                 $reader->readJsonc('docs/0006-it-ds-1002.jsonc')['correction'],
                 $correctiveOut['correction'],
-                'blok opravy se vrátí beze změny — číslo i datum plnění původního dokladu z odkazu',
+                'blok opravy se vrátí beze změny — odkaz referencí číslem, číslo i datum plnění původního dokladu z odkazu',
             );
             $this->assertSame(-1.0, $correctiveOut['rows'][0]['quantity']);
             $this->assertSame(-600.0, $correctiveOut['totals']['totalBase']);
@@ -768,8 +775,8 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame([$assetDocId], array_map(static fn($r) => $r->id, $assetDocs), 'doklad zaúčtování majetku (řádky asset.*) se nepřenáší');
             $row = $assetDocs[0]->data['rows'][0];
             $this->assertSame('purchase.asset', $row['operation']);
-            $this->assertSame('042100', $row['account']);
-            $this->assertSame(['asset' => self::ASSET_NUMBER], $row['dimensions'], 'dimenze majetku přežije round-trip');
+            $this->assertSame('@042100', $row['account']);
+            $this->assertSame(['asset' => '@' . self::ASSET_NUMBER], $row['dimensions'], 'dimenze majetku přežije round-trip');
             $this->assertArrayNotHasKey('dimensions', $assetDocs[0]->data, 'hlavička kartu nenese');
             $warnings = $withAssets->getWarnings();
             $this->assertCount(1, $warnings, implode("\n", $warnings));
@@ -823,14 +830,15 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $w->writeJsonc('docs/0001-it-ds-0001.jsonc', [
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'source' => ['kind' => 'aiExtraction'],
             'docType' => 'invoiceReceived', 'docNumber' => '2026-IT-DS-77', 'docText' => self::P . ' faktura', 'selfParty' => 'customer',
-            'supplier' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
+            'numberSeries' => $this->seriesRef,
+            'supplier' => ['ref' => '@company_id:' . self::COMPANY_ID, 'name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
                            'bankAccount' => ['accountNumber' => '9999000001/0100', 'iban' => 'CZ0901000000009999000001']],
             'dates' => ['issueDate' => '2026-06-01', 'dueDate' => '2026-06-15', 'accountingDate' => '2026-06-01', 'taxPointDate' => '2026-06-01'],
-            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef],
             'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260601'],
             'rows' => [[
                 'rowKind' => 'item', 'operation' => 'purchase.services', 'orderPos' => 1,
-                'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                'item' => ['ref' => '@' . self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
                 'quantity' => 2.0, 'unitPrice' => 500.0, 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromUnitPrice',
                 'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => 'Konzultace IT-DS',
             ]],
@@ -839,7 +847,6 @@ class DatasetRoundTripTest extends IntegrationTestCase
             'applyOptions' => array_filter([
                 'targetDocState' => 40,
                 'importNumber' => ['docNumber' => self::DOC_NUMBER, 'sequenceNumber' => null],
-                'numberSeriesCode' => $this->seriesCode,
             ], static fn($v) => $v !== null),
         ]);
         // Datum sazby DPH (#159 D11): faktura s vlastním datem dokladu (plnění
@@ -849,26 +856,26 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $rateDocBase = [
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
             'docType' => 'invoiceReceived', 'selfParty' => 'customer',
-            'supplier' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
+            'numberSeries' => $this->seriesRef,
+            'supplier' => ['ref' => '@company_id:' . self::COMPANY_ID, 'name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
                            'bankAccount' => ['accountNumber' => '9999000001/0100', 'iban' => 'CZ0901000000009999000001']],
             'currency' => 'CZK',
         ];
         $rateRow = static fn (int $pos, float $quantity, array $vat): array => [
             'rowKind' => 'item', 'operation' => 'purchase.services', 'orderPos' => $pos,
-            'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+            'item' => ['ref' => '@' . self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
             'quantity' => $quantity, 'unitPrice' => 500.0, 'totalPrice' => $quantity * 500.0, 'priceCalcMode' => 'fromUnitPrice',
             'vat' => $vat, 'description' => 'Konzultace IT-DS ' . $pos,
         ];
         $rateOptions = fn (string $number): array => array_filter([
             'targetDocState' => 40,
             'importNumber' => ['docNumber' => $number, 'sequenceNumber' => null],
-            'numberSeriesCode' => $this->seriesCode,
         ], static fn($v) => $v !== null);
         $w->writeJsonc('docs/0007-it-ds-0003.jsonc', $rateDocBase + [
             'docNumber' => '2026-IT-DS-78', 'docText' => self::P . ' faktura, sazba k datu dokladu',
             'dates' => ['issueDate' => '2026-06-05', 'dueDate' => '2026-06-19', 'accountingDate' => '2026-06-05', 'taxPointDate' => '2026-06-05',
                         'vatRateDate' => '2012-12-31'],
-            'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz', 'rateSource' => 'document'],
+            'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef, 'rateSource' => 'document'],
             'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260605'],
             'rows' => [$rateRow(1, 2.0, ['code' => 'cz-110', 'pct' => 20.0])],
             'vatRecap' => [['vatCode' => 'cz-110', 'vatPct' => 20.0, 'base' => 1000.0, 'tax' => 200.0, 'total' => 1200.0]],
@@ -878,7 +885,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $w->writeJsonc('docs/0008-it-ds-0004.jsonc', $rateDocBase + [
             'docNumber' => '2026-IT-DS-79', 'docText' => self::P . ' faktura, sazby k datům řádků',
             'dates' => ['issueDate' => '2026-06-08', 'dueDate' => '2026-06-22', 'accountingDate' => '2026-06-08', 'taxPointDate' => '2026-06-08'],
-            'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz', 'recapSource' => 'declared', 'rateSource' => 'rows'],
+            'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef, 'recapSource' => 'declared', 'rateSource' => 'rows'],
             'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260608'],
             'rows' => [
                 $rateRow(1, 2.0, ['code' => 'cz-110', 'pct' => 21.0]),
@@ -892,18 +899,18 @@ class DatasetRoundTripTest extends IntegrationTestCase
             'applyOptions' => $rateOptions(self::RATE_ROWS_NUMBER),
         ]);
         // Prodejka na testovací pokladně (#59 D12): anonymní, hotově, číslo ve
-        // tvaru vázané řady `%D%C%y%5`. `numberSeriesCode` sada nenese — řadu
-        // určuje pokladna (applier kód u vázaných typů ignoruje).
+        // tvaru vázané řady `%D%C%y%5`. `numberSeries` sada nenese — řadu
+        // určuje pokladna.
         $w->writeJsonc('docs/0002-14itds2600001.jsonc', [
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
             'docType' => 'cashRegisterDocument', 'docText' => self::P . ' prodejka', 'selfParty' => 'supplier',
-            'cashDesk' => self::CASH_DESK_CODE,
+            'cashDesk' => '@' . self::CASH_DESK_CODE,
             'dates' => ['issueDate' => '2026-06-02', 'accountingDate' => '2026-06-02', 'taxPointDate' => '2026-06-02'],
-            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef],
             'payment' => ['method' => 'cash'],
             'rows' => [[
                 'rowKind' => 'item', 'operation' => 'sale.goods', 'orderPos' => 1,
-                'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                'item' => ['ref' => '@' . self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
                 'quantity' => 1.0, 'unitPrice' => 500.0, 'totalPrice' => 500.0, 'priceCalcMode' => 'fromUnitPrice',
                 'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => 'Prodej IT-DS',
             ]],
@@ -1013,15 +1020,16 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $w->writeJsonc('docs/0003-it-ds-1001.jsonc', [
                 'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'source' => ['kind' => 'workOrder'],
                 'docType' => 'invoiceIssued', 'docText' => self::P . ' paušál červen 2026', 'selfParty' => 'supplier',
-                'customer' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
+                'numberSeries' => '@' . $this->invnoSeries,
+                'customer' => ['ref' => '@company_id:' . self::COMPANY_ID, 'name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
                 'dates' => ['issueDate' => '2026-06-01', 'dueDate' => '2026-06-15', 'accountingDate' => '2026-06-01', 'taxPointDate' => '2026-06-01',
                             'periodFrom' => '2026-06-01', 'periodTo' => '2026-06-30'],
-                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
-                'payment' => ['method' => 'bankTransfer', 'paymentReference' => '1001'],
-                'dimensions' => ['workOrder' => self::WO_NUMBER],
+                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef],
+                'payment' => ['method' => 'bankTransfer', 'ownBankAccount' => '@' . self::BANK_ACCOUNT_CODE, 'paymentReference' => '1001'],
+                'dimensions' => ['workOrder' => '@' . self::WO_NUMBER],
                 'rows' => [[
                     'rowKind' => 'item', 'operation' => 'sale.services', 'orderPos' => 1,
-                    'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                    'item' => ['ref' => '@' . self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
                     'quantity' => 1.0, 'unitPrice' => 600.0, 'totalPrice' => 600.0, 'priceCalcMode' => 'fromUnitPrice',
                     'vat' => ['code' => 'cz-120', 'pct' => 21.0], 'description' => self::P . ' paušál',
                 ]],
@@ -1030,25 +1038,25 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'applyOptions' => array_filter([
                     'targetDocState' => 40,
                     'importNumber' => ['docNumber' => self::INVNO_NUMBER, 'sequenceNumber' => null],
-                    'numberSeriesCode' => $this->invnoCode,
-                    'importOwnBankAccount' => self::BANK_ACCOUNT_CODE,
                 ], static fn($v) => $v !== null),
             ]);
             // Opravný doklad k vydané faktuře (#92 task B U1, U5): blok
-            // `correction` s číslem původního dokladu; odkaz sada nenese,
-            // obnoví ho applier dohledáním podle čísla (původní faktura je
-            // v souboru s nižším pořadím). Záporný řádek, stejný partner.
+            // `correction` s odkazem na původní doklad referencí číslem
+            // (#166 D30; původní faktura je v souboru s nižším pořadím).
+            // Záporný řádek, stejný partner.
             $w->writeJsonc('docs/0006-it-ds-1002.jsonc', [
                 'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
                 'docType' => 'invoiceIssued', 'docText' => self::P . ' dobropis k paušálu červen 2026', 'selfParty' => 'supplier',
-                'customer' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
+                'numberSeries' => '@' . $this->invnoSeries,
+                'customer' => ['ref' => '@company_id:' . self::COMPANY_ID, 'name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID],
                 'dates' => ['issueDate' => '2026-06-20', 'dueDate' => '2026-07-04', 'accountingDate' => '2026-06-20', 'taxPointDate' => '2026-06-20'],
-                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
-                'payment' => ['method' => 'bankTransfer', 'paymentReference' => '1002'],
-                'correction' => ['originalDocNumber' => self::INVNO_NUMBER, 'originalTaxPointDate' => '2026-06-01', 'reason' => self::CORRECTIVE_REASON],
+                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef],
+                'payment' => ['method' => 'bankTransfer', 'ownBankAccount' => '@' . self::BANK_ACCOUNT_CODE, 'paymentReference' => '1002'],
+                'correction' => ['originalDoc' => '@' . self::INVNO_NUMBER, 'originalDocNumber' => self::INVNO_NUMBER,
+                                 'originalTaxPointDate' => '2026-06-01', 'reason' => self::CORRECTIVE_REASON],
                 'rows' => [[
                     'rowKind' => 'item', 'operation' => 'sale.services', 'orderPos' => 1,
-                    'item' => ['ourCode' => self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
+                    'item' => ['ref' => '@' . self::ITEM_CODE, 'name' => self::P . ' Konzultace'], 'unit' => 'hr',
                     'quantity' => -1.0, 'unitPrice' => 600.0, 'totalPrice' => -600.0, 'priceCalcMode' => 'fromUnitPrice',
                     'vat' => ['code' => 'cz-120', 'pct' => 21.0], 'description' => self::P . ' dobropis paušál',
                 ]],
@@ -1057,8 +1065,6 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'applyOptions' => array_filter([
                     'targetDocState' => 40,
                     'importNumber' => ['docNumber' => self::CORRECTIVE_NUMBER, 'sequenceNumber' => null],
-                    'numberSeriesCode' => $this->invnoCode,
-                    'importOwnBankAccount' => self::BANK_ACCOUNT_CODE,
                 ], static fn($v) => $v !== null),
             ]);
         }
@@ -1093,23 +1099,23 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $w->writeJsonc('docs/0004-it-ds-0002.jsonc', [
                 'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
                 'docType' => 'invoiceReceived', 'docNumber' => '2026-IT-DS-78', 'docText' => self::P . ' server', 'selfParty' => 'customer',
-                'supplier' => ['name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
+                'numberSeries' => $this->seriesRef,
+                'supplier' => ['ref' => '@company_id:' . self::COMPANY_ID, 'name' => self::P . ' Dodavatel s.r.o.', 'country' => 'cz', 'companyId' => self::COMPANY_ID, 'vatId' => 'CZ' . self::COMPANY_ID,
                                'bankAccount' => ['accountNumber' => '9999000001/0100', 'iban' => 'CZ0901000000009999000001']],
                 'dates' => ['issueDate' => '2026-02-10', 'dueDate' => '2026-02-20', 'accountingDate' => '2026-02-10', 'taxPointDate' => '2026-02-10'],
-                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
+                'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => $this->vatRegistrationRef],
                 'payment' => ['method' => 'bankTransfer', 'paymentReference' => '20260210'],
                 'rows' => [[
                     'rowKind' => 'item', 'operation' => 'purchase.asset', 'orderPos' => 1, 'unit' => 'pcs',
                     'quantity' => 1.0, 'unitPrice' => 150000.0, 'totalPrice' => 150000.0, 'priceCalcMode' => 'fromUnitPrice',
-                    'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => self::P . ' Server 1U', 'account' => '042100',
-                    'dimensions' => ['asset' => self::ASSET_NUMBER],
+                    'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => self::P . ' Server 1U', 'account' => '@042100',
+                    'dimensions' => ['asset' => '@' . self::ASSET_NUMBER],
                 ]],
                 'vatRecap' => [['vatCode' => 'cz-110', 'vatPct' => 21.0, 'base' => 150000.0, 'tax' => 31500.0, 'total' => 181500.0]],
                 'totals' => ['totalBase' => 150000.0, 'totalVat' => 31500.0, 'totalAmount' => 181500.0, 'totalRounding' => 0.0],
                 'applyOptions' => array_filter([
                     'targetDocState' => 40,
                     'importNumber' => ['docNumber' => self::ASSET_DOC_NUMBER, 'sequenceNumber' => null],
-                    'numberSeriesCode' => $this->seriesCode,
                 ], static fn($v) => $v !== null),
             ]);
             $w->writeJsonc('docs/0005-it-ds-6001.jsonc', [
@@ -1120,9 +1126,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'payment' => ['method' => 'bankTransfer'],
                 'rows' => [
                     ['rowKind' => 'item', 'operation' => 'acc.record', 'orderPos' => 1, 'unitPrice' => 0.0, 'totalPrice' => 150000.0,
-                     'priceCalcMode' => 'fromTotal', 'description' => self::P . ' zařazení serveru', 'account' => '022100', 'accSide' => 'debit'],
+                     'priceCalcMode' => 'fromTotal', 'description' => self::P . ' zařazení serveru', 'account' => '@022100', 'accSide' => 'debit'],
                     ['rowKind' => 'item', 'operation' => 'acc.record', 'orderPos' => 2, 'unitPrice' => 0.0, 'totalPrice' => 150000.0,
-                     'priceCalcMode' => 'fromTotal', 'description' => self::P . ' pořízení serveru', 'account' => '042100', 'accSide' => 'credit'],
+                     'priceCalcMode' => 'fromTotal', 'description' => self::P . ' pořízení serveru', 'account' => '@042100', 'accSide' => 'credit'],
                 ],
                 'totals' => ['totalBase' => 150000.0, 'totalVat' => 0.0, 'totalAmount' => 150000.0, 'totalRounding' => 0.0],
                 'applyOptions' => [

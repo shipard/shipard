@@ -3,8 +3,10 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
-    "cashDesk": "POK",
+    "cashDesk": "@POK",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00001",
         "name": "Autodoprava Kopretina s.r.o.",
         "country": "cz",
         "companyId": "83715266",
@@ -34,13 +36,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "cash",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260067"
     },
     "rows": [
@@ -49,7 +52,7 @@
             "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "ROUTER",
+                "ref": "@ROUTER",
                 "name": "Router s firewallem"
             },
             "unit": "pcs",
@@ -90,7 +93,6 @@
         "importNumber": {
             "docNumber": "1260067",
             "sequenceNumber": 67
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál 1. štvrťrok 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00007",
         "name": "Horský Penzión Tatranka s.r.o.",
         "country": "sk",
         "companyId": "47150823",
@@ -39,17 +41,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "intracom",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU2",
         "paymentReference": "1260012"
     },
     "dimensions": {
-        "workOrder": "S0012"
+        "workOrder": "@S0012"
     },
     "rows": [
         {
@@ -57,7 +60,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -98,7 +101,6 @@
         "importNumber": {
             "docNumber": "1260012",
             "sequenceNumber": 12
-        },
-        "importOwnBankAccount": "BU2"
+        }
     }
 }

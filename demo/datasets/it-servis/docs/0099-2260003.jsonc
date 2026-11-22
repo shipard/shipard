@@ -4,7 +4,9 @@
     "docType": "invoiceReceived",
     "docNumber": "260118",
     "selfParty": "customer",
+    "numberSeries": "@invni",
     "supplier": {
+        "ref": "@F00022",
         "name": "Účetní kancelář Sloupec s.r.o.",
         "country": "cz",
         "companyId": "52073963",
@@ -40,7 +42,7 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
@@ -55,7 +57,7 @@
             "operation": "acc.entry",
             "orderPos": 1,
             "item": {
-                "ourCode": "518211",
+                "ref": "@518211",
                 "name": "Účetní a daňové služby"
             },
             "unit": "pcs",

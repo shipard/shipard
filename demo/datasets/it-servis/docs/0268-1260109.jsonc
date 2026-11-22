@@ -3,8 +3,10 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
-    "cashDesk": "POK",
+    "cashDesk": "@POK",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00002",
         "name": "Cukrárna U Medvídka s.r.o.",
         "country": "cz",
         "companyId": "91740380",
@@ -34,13 +36,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "cash",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260109"
     },
     "rows": [
@@ -49,7 +52,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -90,7 +93,6 @@
         "importNumber": {
             "docNumber": "1260109",
             "sequenceNumber": 109
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00008",
         "name": "Hotel Modrý Jelen s.r.o.",
         "country": "cz",
         "companyId": "33958173",
@@ -34,13 +36,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260135"
     },
     "rows": [
@@ -49,7 +52,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -90,7 +93,6 @@
         "importNumber": {
             "docNumber": "1260135",
             "sequenceNumber": 135
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

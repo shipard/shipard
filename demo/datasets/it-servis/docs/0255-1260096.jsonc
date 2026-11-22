@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00011",
         "name": "Lékárna Pod Modrou Věží s.r.o.",
         "country": "cz",
         "companyId": "81374623",
@@ -33,13 +35,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260096"
     },
     "rows": [
@@ -48,7 +51,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "PRACE-H",
+                "ref": "@PRACE-H",
                 "name": "Servisní práce technika"
             },
             "unit": "hr",
@@ -89,7 +92,6 @@
         "importNumber": {
             "docNumber": "1260096",
             "sequenceNumber": 96
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

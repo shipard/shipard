@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál březen 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00021",
         "name": "Truhlárna Dubový list s.r.o.",
         "country": "cz",
         "companyId": "86341928",
@@ -39,17 +41,18 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU1",
         "paymentReference": "1260034"
     },
     "dimensions": {
-        "workOrder": "S0010"
+        "workOrder": "@S0010"
     },
     "rows": [
         {
@@ -57,7 +60,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -98,7 +101,6 @@
         "importNumber": {
             "docNumber": "1260034",
             "sequenceNumber": 34
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

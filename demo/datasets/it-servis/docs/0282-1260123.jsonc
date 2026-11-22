@@ -3,7 +3,9 @@
     "formatVersion": "1.0",
     "docType": "invoiceIssued",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00013",
         "name": "Nitrianske Stroje s.r.o.",
         "country": "sk",
         "companyId": "52398412",
@@ -33,13 +35,14 @@
     "vat": {
         "mode": "fromBase",
         "place": "intracom",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
         "method": "bankTransfer",
+        "ownBankAccount": "@BU2",
         "paymentReference": "1260123"
     },
     "rows": [
@@ -48,7 +51,7 @@
             "operation": "sale.goods",
             "orderPos": 1,
             "item": {
-                "ourCode": "MON-27",
+                "ref": "@MON-27",
                 "name": "Monitor 27\" IPS"
             },
             "unit": "pcs",
@@ -89,7 +92,6 @@
         "importNumber": {
             "docNumber": "1260123",
             "sequenceNumber": 123
-        },
-        "importOwnBankAccount": "BU2"
+        }
     }
 }

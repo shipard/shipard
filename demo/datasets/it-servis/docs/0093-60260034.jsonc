@@ -3,6 +3,7 @@
     "formatVersion": "1.0",
     "docType": "accountingDocument",
     "docText": "Mzdy 09/2026",
+    "numberSeries": "@cmnbkp",
     "dates": {
         "issueDate": "2026-09-30",
         "dueDate": "2026-10-14",
@@ -37,7 +38,7 @@
                 "vatTotal": 92000.0
             },
             "description": "Hrubé mzdy",
-            "account": "521100",
+            "account": "@521100",
             "accSide": "debit"
         },
         {
@@ -53,7 +54,7 @@
                 "vatTotal": 31096.0
             },
             "description": "Pojistné hrazené zaměstnavatelem",
-            "account": "524100",
+            "account": "@524100",
             "accSide": "debit"
         },
         {
@@ -69,7 +70,7 @@
                 "vatTotal": 70896.0
             },
             "description": "Čisté mzdy k výplatě",
-            "account": "331100",
+            "account": "@331100",
             "accSide": "credit"
         },
         {
@@ -85,7 +86,7 @@
                 "vatTotal": 41216.0
             },
             "description": "Odvody sociálního a zdravotního pojištění",
-            "account": "336100",
+            "account": "@336100",
             "accSide": "credit"
         },
         {
@@ -101,7 +102,7 @@
                 "vatTotal": 10984.0
             },
             "description": "Záloha na daň z příjmů",
-            "account": "342100",
+            "account": "@342100",
             "accSide": "credit"
         }
     ],

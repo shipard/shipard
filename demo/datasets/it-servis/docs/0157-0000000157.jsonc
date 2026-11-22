@@ -7,7 +7,9 @@
     "docType": "invoiceIssued",
     "docText": "Správa IT — paušál říjen 2026",
     "selfParty": "supplier",
+    "numberSeries": "@invno",
     "customer": {
+        "ref": "@F00024",
         "name": "Veterinární klinika Tlapka s.r.o.",
         "country": "cz",
         "companyId": "89310021",
@@ -40,16 +42,17 @@
     "vat": {
         "mode": "fromBase",
         "place": "domestic",
-        "registrationCountry": "cz",
+        "registration": "@cz",
         "recapSource": "computed",
         "calcSource": "header",
         "controlStatementMode": "auto"
     },
     "payment": {
-        "method": "bankTransfer"
+        "method": "bankTransfer",
+        "ownBankAccount": "@BU1"
     },
     "dimensions": {
-        "workOrder": "S0014"
+        "workOrder": "@S0014"
     },
     "rows": [
         {
@@ -57,7 +60,7 @@
             "operation": "sale.services",
             "orderPos": 1,
             "item": {
-                "ourCode": "SPRAVA-IT",
+                "ref": "@SPRAVA-IT",
                 "name": "Správa IT — měsíční paušál"
             },
             "unit": "mnth",
@@ -98,7 +101,6 @@
         "importNumber": {
             "docNumber": "!0000000157",
             "sequenceNumber": null
-        },
-        "importOwnBankAccount": "BU1"
+        }
     }
 }

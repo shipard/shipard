@@ -43,7 +43,7 @@ class AccountingDocumentImportTest extends IntegrationTestCase
         $this->configRuntime = ConfigRuntime::load($this->realDsPath, 'cs');
 
         // cmnbkp řada (provisioner zakládá jednu, doc_number_code = null → bez
-        // numberSeriesCode se použije first-active fallback).
+        // pole numberSeries se použije výchozí řada typu).
         $series = $this->db->fetchRow(
             'SELECT id FROM docs_core_number_series WHERE doc_type = %s AND docState IN (%i, %i, %i) LIMIT 1',
             'cmnbkp', 10, 40, 80,
@@ -113,10 +113,10 @@ class AccountingDocumentImportTest extends IntegrationTestCase
             'dates'         => ['issueDate' => '2026-06-10', 'accountingDate' => '2026-06-10'],
             'rows' => [
                 // MD náklad 518100 / 1000
-                ['operation' => 'acc.record', 'account' => '518100', 'accSide' => 'debit',
+                ['operation' => 'acc.record', 'account' => '@518100', 'accSide' => 'debit',
                  'totalPrice' => 1000.0],
                 // DAL závazek 321100 / 1000 s partnerem + VS (per-řádková identita)
-                ['operation' => 'acc.record', 'account' => '321100', 'accSide' => 'credit',
+                ['operation' => 'acc.record', 'account' => '@321100', 'accSide' => 'credit',
                  'totalPrice' => 1000.0, 'paymentReference' => 'VS-' . $seq],
             ],
             '_resolve' => [
