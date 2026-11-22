@@ -1,6 +1,6 @@
 # Task: `totals` jako kontrolní součet a výslovný mód zaokrouhlení
 
-**Stav:** částečně — commity 1–4 z 5 hotové 2026-11-22 (pole formátu, pokyn, export, demo sada, kontrolní součet `totals`, případy payloadů, snapshot osoby); zbývá dokumentace (#166 etapa 3, část B; D4, D25–D29)
+**Stav:** hotovo — implementováno 2026-11-22 (#166 etapa 3, část B; D4, D25–D29)
 
 **Issue:** #166 (etapa 3; D4, D25–D29)
 
@@ -222,15 +222,110 @@ a u dokladu se zaokrouhlením `totalRoundingAuto: false`
 
 ## Hotovo když
 
-- [ ] `totals.totalRoundingMode` a `vat.roundingMode` ve schématu,
+- [x] `totals.totalRoundingMode` a `vat.roundingMode` ve schématu,
       exportu a applieru
-- [ ] pokyn mód neodhaduje; návrh odhaduje jen bez uvedeného módu
-- [ ] `totals` v pokynu je kontrolní součet (`totals_check_failed`),
+- [x] pokyn mód neodhaduje; návrh odhaduje jen bez uvedeného módu
+- [x] `totals` v pokynu je kontrolní součet (`totals_check_failed`),
       v náhledu i při uložení
-- [ ] matice round-tripu bez mezer; případy payloadů z U7
-- [ ] sady v repu projdou seedem a dump → seed → dump byte-shodně;
+- [x] matice round-tripu bez mezer; případy payloadů z U7
+- [x] sady v repu projdou seedem a dump → seed → dump byte-shodně;
       `dataset-verify` beze změny
-- [ ] cílené testy, pak celá unit sada
-- [ ] snapshot osoby nese prázdnou hodnotu jako `null` z obou cest;
+- [x] cílené testy, pak celá unit sada
+- [x] snapshot osoby nese prázdnou hodnotu jako `null` z obou cest;
       čtenáři berou `null` a `""` stejně
-- [ ] dokumentace podle commitu 5, stav tasku
+- [x] dokumentace podle commitu 5, stav tasku
+
+## Poznámky k implementaci
+
+Implementováno 2026-11-22 v pěti commitech (`4ae91147`, `2694aa6d`,
+`cf97bd90`, `be1adc6c` a commit dokumentace).
+
+### Upřesnění přijatá při plánování
+
+- **Názvy módů na jednom místě:** `RoundingModeNames` (core.exchange) pro
+  applier i exporter; test hlídá úplnost proti `RoundingModes::TABLE`
+  a `VAT_MODES` a shodu s výčtem ve schématu.
+- **Porovnání `TotalsCheck`** (U6) počítá v celých haléřích: rozdíl
+  jednoho haléře projde, dvou ne. Sloupec, který vrácená hlavička nenese,
+  se neporovnává — skutečná gateway vrací všechny čtyři, mocky unit testů
+  ne.
+- **`ApplyAbortedException` nese nálezy** (`issues`), které `apply()` přidá
+  do `_resolve.issues` — jinak by 422 neřeklo, které pole nesedí.
+- **`total_rounding_mode_ignored` jen v pokynu.** D28 říká, že návrh se
+  nemění s jedinou výjimkou, a varování mezi ni nepatří.
+- **`totalRoundingAuto: true` na dokladu, kde automatika neplatí,** zůstává
+  tiše vypnuté jako dřív (zadání o tom mlčí).
+- **Cesty nálezů:** `DocumentIssuePaths` zná `total_rounding_mode`,
+  `total_rounding_auto` a `vat_rounding_mode` — varování dokladu
+  `cash_rounding_mismatch` a `non_cash_rounding` mají cestu v canonicalu.
+
+### Odchylky od zadání
+
+- **Rozdělení commitů.** Matice (U7) a generátor sady s přegenerovanou
+  demo sadou (U8) jsou v commitu 1, ne ve třetím: po commitu 1 by jinak
+  test matice hlásil zavřenou mezeru a po commitu 2 by seed demo sady
+  spadl na sedmi fakturách. Commit 3 nese případy payloadů.
+- **Případ `issued-rounding-manual` má jinou částku** (121,12 → 122,00).
+  Původních 121,61 dalo nahoru i matematicky stejných 122,00, takže případ
+  směr módu nehlídal.
+- **Snapshot osoby (U9):** pravidlo prázdné hodnoty platí i pro bankovní
+  spojení a registraci DPH vlastní firmy (`build()`), které U9
+  nevyjmenovává — D29 mluví o snapshotu osoby jako celku.
+- **Čtenáři snapshotu úpravu nepotřebovali.** Šablony tisků (`|default('')`),
+  `DocPrintContext::text()`, platební blok a QR platba, `DocsHeadsViewer`,
+  `DocJournalPrintBuilder`, `VatDocumentSelection::vatIdFromSnapshot()`
+  a `documentParts.js` berou `null` a `""` stejně. Snímky kontraktu tisků
+  se nezměnily.
+
+### Stávající testy
+
+- **Unit testy pokynu** (`DocumentApplierInstructionTest`,
+  `DocumentApplierDocumentValidationTest`): payloady harnessu nesou součty
+  z dokladu dodavatele a testy je mění (jiný režim, řádek bez kódu).
+  Kontrolním součtem projít nemohou a není jejich předmětem — běží bez
+  číselných `totals` (`OutOfScopeHarness::withoutChecksum()`), očekávání
+  beze změny. Harness nově vrací data po `beforeSave()` jako skutečná
+  gateway.
+- **Fixtura `invoiceReceived_happy.json` zůstala.** Její nesoulad
+  (10 × 1 033,06 proti 10 330,58) jiné testy záměrně využívají k důkazu,
+  ze kterého zdroje se počítá.
+- **Dva případy payloadů z části A** dostaly druhou polovinu: řádek bez
+  kódu DPH se součty dokladu a ceny s daní při `fromBase` končí
+  `totals_check_failed`; bez součtů se chovají jako dřív.
+
+### Datové sady (U8)
+
+Generátor (`dumpshape.total_rounding_mode`) píše `totalRoundingMode:
+"unit"` u dokladu zaokrouhleného příběhem na koruny při vypnuté automatice.
+V demo sadě `it-servis` se změnilo sedm přijatých faktur sepsaných
+v poznámkách části A, každá o jedno pole; po seedu jsou zpět na částkách
+před částí A (4 788,00 až 4 480,00, mód „matematicky na 1“). Všech 295
+dokladů sady prošlo kontrolním součtem — žádný nález výpočtu generátoru
+proti `DocDocument`. Veřejné sady `tests/datasets/cz/*` sekci `docs/`
+nemají.
+
+### Ověření (2026-11-22)
+
+- Unit sada: 12 037 testů zelených; generátor sady 328 testů.
+- Integrační nad `blkm-i` (`free`): matice round-tripu 20 / 20 `holds`,
+  `DocumentInstructionPayloadTest` 21 / 21, `DatasetRoundTripTest`; širší
+  běh (`Docs|Vat|Accounting|Accbal|Exchange|Reports|Prints|Assets|`
+  `WorkOrders|Dataset|Mail`) 529 testů bez selhání.
+- `dataset-verify` tří veřejných sad (`jfpl-7`, `im3v-h`, `gsbg-b`): ok 6,
+  rozdíl 0, přeskočeno 0 jako ve výchozím stavu (porovnán souhrn a seznam
+  kontrol, ne výstup do znaku).
+- Demo sada na `8yft-3`: seed → dump → seed → dump shodné až na manifest;
+  sekce `docs/` dumpu byte-shodná se sadou v repu.
+- Periodická fakturace nad demo sadou: 10 konceptů, 0 selhání. Opravný
+  doklad přes REST: koncept s částkami původní faktury s opačným znaménkem.
+
+### Nálezy k dalším etapám
+
+- **Runner starého Shipardu (etapa 6)** musí posílat `totalVat` tak, jak
+  ho sčítá hlavička — daň samovyměření do něj nepatří — jinak ho kontrolní
+  součet odmítne.
+- **`CorrectiveDocBuilder` mód zaokrouhlení původního dokladu nepřebírá**;
+  opravný doklad k dokladu s ručním módem vznikne s výchozí automatikou.
+  Chování je stejné jako před taskem.
+- Export konceptu dál nese `importNumber` se zástupným číslem (beze změny,
+  viz část A).

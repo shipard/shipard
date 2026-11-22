@@ -428,6 +428,15 @@ musí také:
   všude, kde platí (prodejní typy), jinak vypnutou s módem na haléře.
   Generátor sad (`tools/invoice-generator`, `dumpshape.total_rounding_auto`)
   pole píše vždy: zapnuto tam, kde s automatikou vyjde stejná částka;
+- `totals.totalRoundingMode` u dokladu zaokrouhleného jinak než automatikou
+  (přijatá faktura na koruny, ručně zvolený mód) a `vat.roundingMode`
+  u daně zaokrouhlené na koruny — mód se z částek neodhaduje (#166 D25).
+  Dump i generátor (`dumpshape.total_rounding_mode`) je píšou jen
+  s nevýchozí hodnotou;
+- částky `totals`, které odpovídají výpočtu dokladu: seed je bere jako
+  **kontrolní součet** (#166 D27) a doklad s rozdílem nad 0,01 odmítne
+  (`totals_check_failed`). Doklad sady, který neprojde, je nález — chyba
+  v ručně psané šabloně, nebo rozdíl výpočtu generátoru proti `DocDocument`;
 - důvod opravy u opravného dokladu ve stavu V pořádku.
 
 Sekce `mail/` se nemění: zprávy nesou návrhy, které až `dataset-verify`
@@ -551,12 +560,12 @@ Vědomé normalizace a limity fáze 1:
   okamžik importu.
 - Doklady importované s `importNumber` nestaví snapshot partnera
   z adresáře, ale ze strany dokladu v souboru — ve tvaru snapshotu
-  z formuláře (`PersonSnapshotBuilder::shape()`, #166 D23).
-- **Mód zaokrouhlení formát nenese** (#166 U4): doklad zaokrouhlený jinak
-  než automatikou (přijatá faktura na koruny, ručně zvolený mód) po seedu
-  vyjde na haléře. V demo sadě `it-servis` je to sedm přijatých faktur
-  zaokrouhlených na koruny; zavře to výslovný mód ve formátu
-  (`tasks/doc-totals-rounding-explicit.md`).
+  z formuláře (`PersonSnapshotBuilder::shape()`, #166 D23), prázdná
+  hodnota je v obou `null` (D29).
+- Mód zaokrouhlení formát nese (#166 D25): doklad zaokrouhlený jinak než
+  automatikou má v dumpu `totals.totalRoundingMode`. V demo sadě
+  `it-servis` je to sedm přijatých faktur zaokrouhlených na koruny
+  (`"unit"`).
 - Řádkový partner účetního dokladu a hlavičkový partner `cmnbkp` se
   nepřenáší (formát ho nemá) → warning při dumpu.
 - Vlastní bankovní účet bez `code` v číselníku nelze přenést → warning.

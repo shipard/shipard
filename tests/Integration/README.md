@@ -70,8 +70,8 @@ SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/abcd-efgh-ijkl-mnop \
   `free`, vlastní firmou a registrací DPH, jednotlivé případy se přeskočí
   bez řady typu, pokladny nebo dimenze.
 
-  Po zavedení režimu pokyn (#166 etapa 3 část A) zbývá jediná mezera —
-  `issued-rounding-manual` (mód zaokrouhlení formát nenese).
+  Po zavedení režimu pokyn a výslovného módu zaokrouhlení (#166 etapa 3)
+  matice žádnou mezeru nemá — nová mezera je nález k nahlášení.
 
 - `Exchange/DocumentInstructionPayloadTest.php` — případy „payload →
   uložený doklad“ pro režim pokyn (#166 D24,

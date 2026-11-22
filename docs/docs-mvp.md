@@ -1371,6 +1371,17 @@ Snapshot partnera z importního módu (`DocumentApplier`) nese `web`
 z payloadu a `gov_e_box_id` vždy `null`: kanonická strana dokladu ID
 datové schránky nemá.
 
+**Prázdná hodnota je ve snapshotu vždy `null`** (#166 D29): prázdný řetězec
+i řetězec ze samých mezer — u identifikátorů, zápisu v rejstříku, kontaktu,
+adresy, bankovního spojení i registrace DPH. `name` zůstává řetězec. Jediné
+místo pravidla je `PersonSnapshotBuilder` (`shape()` / `emptyToNull()`),
+kterým jde snapshot z adresáře (formulář, partner i vlastní firma)
+i snapshot partnera z importního módu — adresář totiž drží prázdné hodnoty
+u jedné osoby jako `''`, u druhé jako `NULL`, a snapshot ten rozdíl
+přenášet nesmí. Uložené snapshoty se nepřepisují; čtenář (tisk, detail
+dokladu, kontrolní a souhrnné hlášení) bere `null`, `''` i chybějící klíč
+stejně.
+
 Snapshot je **nezávislý dump** dat — kdykoli partner změní adresu, doklady
 zůstávají s původními údaji. Při explicitním volání „obnovit snapshot"
 (přechod do V opravě, změna partnera) se znovu sestaví.

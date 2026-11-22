@@ -347,6 +347,16 @@ Kódy módů a výpočet `kód → (krok, směr)` drží `RoundingModes`
 historický kód 2 (matematicky na 0,01) byl totožný s 0 a `ds-upgrade` ho slévá
 (#63). `vat_rounding_mode` má užší nabídku `docs.core.vatRoundingModes` (§ 3).
 
+**Ve výměnném formátu** (#166 D25, D26) jsou oba módy výslovná pole:
+`totals.totalRoundingMode` (`cent` | `unit` | `unitUp` | `unitDown` |
+`fiveCent`) a `vat.roundingMode` (`cent` | `unit`); názvy ↔ kódy drží
+`RoundingModeNames` (core.exchange) a test hlídá úplnost proti
+`RoundingModes`. Pokyn mód bere z payloadu a neodhaduje ho (chybí = na
+haléře), návrh ho bez uvedené hodnoty odhadne z částek; export vypisuje jen
+nevýchozí hodnoty. Spočtené `total_base`, `total_vat`, `total_amount`
+a `total_rounding` jsou v pokynu protistranou kontrolního součtu `totals`
+— `docs/exchange-format.md` § 5.
+
 **Automatika podle způsobu úhrady** (#73 D1–D8, `tasks/doc-total-rounding-auto.md`).
 Prodejní doklad (`docTypes[].total_rounding_auto`: `invno`, `invpo`,
 `cashreg`, příjmový `cash` — směr přes `DocDocument::resolveTradeDir()`) si
@@ -373,7 +383,9 @@ Zapnutou automatiku dává novému dokladu formulář
 (`DocsHeadsFormBase::applyNewRecordDefaults`; select módu je při zapnuté
 automatice jen ke čtení a `recalculate` ho drží podle úhrady a měny,
 `docs/edit-forms.md` kap. 23) a applier (`totals.totalRoundingAuto`, D8,
-`docs/exchange-format.md`). Ostatní typy mají z formuláře mód Na haléře.
+`docs/exchange-format.md`; pokyn ji bez pole zapne všude, kde platí,
+a uvedený jiný mód ohlásí varováním `total_rounding_mode_ignored`).
+Ostatní typy mají z formuláře mód Na haléře.
 
 Při **vypnuté** automatice `DocDocument::validate()` varuje (`addWarning` na
 `total_rounding_mode`, jen prodejní typy, mimo import mód; uložení

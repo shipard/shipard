@@ -131,7 +131,7 @@ jedno a totéž.
 DPH; doklad neplátce a doklad mimo české DPH (ceny řádků s daní dodavatele,
 zahozená rekapitulace); korekce režimu DPH ze součtů a kvůli samovyměření;
 druh plnění ze štítků; odvození `recapSource` a dohledání kódu rekapitulace
-z řádků; odhad módu zaokrouhlení; vynechání řádků; heuristická varování
+z řádků; odhad módu zaokrouhlení (mód říká payload); vynechání řádků; heuristická varování
 validátoru (`totals_mismatch`, `rows_recap_mismatch`, `vat_mode_suspect`,
 `vat_recap_inconsistent`); oprava IBAN ↔ číslo účtu (normalizace tvaru
 hodnot zůstává); učení dodavatelských kódů. Volby DPH v `_resolve` se
@@ -147,7 +147,10 @@ ignorují s info `vat_pin_ignored`.
 | `rows[].vat.pct` | nepoužije se — procento je vždy z kódu a data sazby |
 | registrace DPH | `vat.registrationCountry` → registrace té země; bez údaje výchozí registrace zdroje dat jako ve formuláři (první podle země a id), jen u dokladu s DPH. Mimo importní mód musí platit k datu dokladu |
 | `vat.recapSource` | z payloadu; chybí = `computed`. `declared` vyžaduje `vatRecap` s kódem DPH na každém řádku — chybějící rekapitulace (`vat_recap_missing`), chybějící kód (`vat_recap_code_missing`) i neznámý kód (`vat_code_unknown`) je chyba, ne tichý přepočet z řádků |
-| `totals.totalRoundingAuto` | z payloadu; chybí = zapnuto tam, kde automatika platí (prodejní typy, #73), jinak vypnuto. Mód zaokrouhlení se neodhaduje — bez automatiky je na haléře; výslovný mód přinese `tasks/doc-totals-rounding-explicit.md` |
+| `totals.totalRoundingAuto` | z payloadu; chybí = zapnuto tam, kde automatika platí (prodejní typy, #73), jinak vypnuto. Na přítomnosti `totals.totalAmount` nezáleží (D26) |
+| `totals.totalRoundingMode` | při vypnuté automatice z payloadu, chybí = `cent`; mód se neodhaduje. Při zapnuté automatice ho určí způsob úhrady — liší-li se uvedený, varování `total_rounding_mode_ignored` (§ 5) |
+| `vat.roundingMode` | z payloadu; chybí = `cent` |
+| `totals` — částky | **kontrolní součet** (D4, D27): každé uvedené pole se porovná s výpočtem dokladu, rozdíl nad 0,01 = `totals_check_failed` a doklad se neuloží (§ 5) |
 
 Importní mód (`applyOptions.importNumber`) je vždy pokyn a nese jen
 historii — § 10 „Importní mód“.
@@ -416,7 +419,7 @@ Top-level struktura:
     { /* DocumentRow — viz sekce 7 */ }
   ],
 
-  // ── Computed (informative; applier recomputes) ───────────────────────────
+  // ── Computed (applier recomputes; `totals` v pokynu = kontrolní součet) ──
   "vatRecap": [
     {
       "vatCode": "cz-110", "vatPct": 21,
@@ -428,7 +431,9 @@ Top-level struktura:
     "totalBase":     10330.58,
     "totalVat":      2169.42,
     "totalAmount":   12500.00,
-    "totalRounding": 0.00
+    "totalRounding": 0.00,
+    "totalRoundingAuto": false,    // nepovinné; automatika podle způsobu úhrady
+    "totalRoundingMode": null      // nepovinné; cent | unit | unitUp | unitDown | fiveCent
   },
 
   // ── Attachments ──────────────────────────────────────────────────────────
@@ -519,12 +524,63 @@ není plátcem, rekapitulaci na doklad nedostane nikdy — ani při explicitním
 slouží jen k dorovnání řádků a zůstává v canonicalu analýzy. Import
 (`applyOptions.importNumber`) se větve neplátce netýká.
 
-`totals` zůstávají informativní vždy. Důvod, proč jsou obě pole v canonical:
+**`totals` nejsou autorita nikdy** — součty hlavičky vždy počítá
+`DocDocument`. Co s nimi applier udělá, říká režim (§ 3; #166 D4, D27, D28).
+
+**V pokynu jsou `totals` kontrolní součet.** Payload je nést nemusí; když
+je nese, každé uvedené číselné pole se porovná se sloupcem hlavičky, který
+`DocDocument` spočítal a uložil (v měně dokladu):
+
+| pole | sloupec hlavičky |
+|---|---|
+| `totals.totalBase` | `total_base` |
+| `totals.totalVat` | `total_vat` |
+| `totals.totalAmount` | `total_amount` |
+| `totals.totalRounding` | `total_rounding` |
+
+Rozdíl větší než 0,01 (porovnává se v celých haléřích) je chyba
+**`totals_check_failed`**: `/apply` vrátí 422 a nic se neuloží — kontrola
+běží v transakci hned po uložení dokladu, neshoda ji vrátí i se založenými
+entitami. `_resolve.issues` nese nález za každé pole, které nesedí:
+
+```json
+{
+  "severity": "error",
+  "path":     "totals.totalAmount",
+  "code":     "totals_check_failed",
+  "message":  "Kontrolní součet nesedí: totals.totalAmount uvádí 1211.00, výpočet dokladu dává 1210.00.",
+  "declared": 1211.0,
+  "computed": 1210.0
+}
+```
+
+`/preview` pokynu hlásí týž nález předem nad `_resolve.computed.totals`
+(místo varování `computed_total_mismatch`, které patří návrhu). Jedno
+porovnání pro obě cesty: `TotalsCheck` (core.exchange). Platí i v importním
+módu a pro každý cílový stav včetně Konceptu. Co kontrola znamená v praxi:
+
+- Pole, které payload neuvádí (nebo je `null`), se nekontroluje. Kdo chce
+  jen pojistku částky k úhradě, pošle samotné `totalAmount`.
+- Nic se nepočítá znovu: u převzaté rekapitulace jdou součty z rekapitulace
+  a z řádků „Mimo DPH“ (`docs/vat-calculation.md` § 5.1) — porovnává se
+  s tím, co doklad opravdu uložil.
+- `totalVat` je daň, kterou hlavička sčítá; daň samovyměření do ní nepatří
+  (`sum_tax` kódu). Export ji píše stejně, zdroj mimo Shipard se tomu musí
+  přizpůsobit.
+- `totalRounding` u dokladu s automatickým zaokrouhlením plyne ze způsobu
+  úhrady — neshoda tak odhalí i špatně uvedený způsob úhrady. To je záměr.
+- Generátory, které částky nepočítají (periodická fakturace, opravný
+  doklad), `totals` neposílají a kontrola se jich netýká.
+
+**V návrhu jsou `totals` signál** — kontrolní součet se nevyhodnocuje
+(D28), doklad se uloží s tím, co spočítal `DocDocument`, a rozdíl proti
+předloze ukážou varování. K čemu tam `totals` a `vatRecap` slouží:
 
 - **UI náhled** — chce je zobrazit (AI extrahovala součty z PDF, uživatel
   je kontroluje).
-- **Validace** — applier porovná deklarované totals s vypočtenými, pokud
-  se liší, vyrobí warning `totals_mismatch` v `_resolve.issues`. Silný
+- **Validace** — validátor porovná deklarované totals s odhadem
+  z canonicalu, pokud se liší, vyrobí warning `totals_mismatch`
+  v `_resolve.issues`. Silný
   signál chybné extrakce řádků. Výjimka: deklarovaná **celá** částka
   v pásmu < 1,00 od vypočtené varianty projde bez warningu — jde
   o zaokrouhlení celkové částky faktury. Tohle je **heuristika** validátoru
@@ -558,40 +614,75 @@ slouží jen k dorovnání řádků a zůstává v canonicalu analýzy. Import
   režimu DPH) místo opsání z dokladu. **Pozor:** u explicitního `declared`
   je to jen warning, ne důvod k přepočtu.
 
-`totals.totalRounding` nese zaokrouhlení celkové částky se znaménkem
-(zaokrouhleno dolů = záporné, např. `-0.05`). I ono je informativní —
-applier z něj **nečte**; `total_rounding_mode` dokladu (matematicky /
-nahoru / dolů na celé jednotky, nebo matematicky na 0,05 — hotovost SK)
-si odvozuje nezávisle porovnáním vypočtené a deklarované částky
-(`DocumentApplier::deriveTotalRoundingMode`, konzervativně jen pro rozdíl
->= 0,01 a < 1,00, který některý mod přesně reprodukuje — rozdíl o jediný
-haléř je platné zaokrouhlení, 69,99 → 70,00; celé jednotky mají přednost
-před 0,05, protože celá částka je násobek 0,05 taky). Validátor
-(`checkTotals`) mlčí přesně tam, kde applier mód přidělí.
-Výslednou částku a `total_rounding` pak dopočte `DocDocument` sám.
+**Mód zaokrouhlení — `totals.totalRoundingMode` a `vat.roundingMode`**
+(#166 D25, D26). Obě pole jsou nepovinná a jsou **záměr**; názvy ↔ kódy
+`RoundingModes` drží `RoundingModeNames` (core.exchange) pro applier
+i exporter:
+
+| `totals.totalRoundingMode` | `total_rounding_mode` | význam |
+|---|---|---|
+| `cent` | 0 | na haléře (výchozí) |
+| `unit` | 1 | matematicky na celé jednotky |
+| `unitUp` | 3 | na celé jednotky nahoru |
+| `unitDown` | 4 | na celé jednotky dolů |
+| `fiveCent` | 5 | matematicky na 0,05 (hotovost SK a část eurozóny) |
+
+`vat.roundingMode` (`vat_rounding_mode`, zaokrouhlení daně ve skupině
+rekapitulace): `cent` (0, výchozí) nebo `unit` (1). Platí z payloadu v obou
+režimech, odhad neexistuje.
+
+Mód celkové částky se uplatní **při vypnuté automatice**
+(`totals.totalRoundingAuto`, níže):
+
+- **pokyn** — mód z payloadu, chybí = `cent`. Nic se neodhaduje: doklad
+  zaokrouhlený na koruny bez `totalRoundingMode` vyjde na haléře a s `totals`
+  neprojde kontrolním součtem;
+- **návrh** — uvedený mód má přednost; bez něj ho applier odvodí porovnáním
+  vypočtené a deklarované částky (`DocumentApplier::deriveTotalRoundingMode`,
+  konzervativně jen pro rozdíl >= 0,01 a < 1,00, který některý mód přesně
+  reprodukuje — rozdíl o jediný haléř je platné zaokrouhlení, 69,99 → 70,00;
+  celé jednotky mají přednost před 0,05, protože celá částka je násobek 0,05
+  taky). Validátor (`checkTotals`) mlčí přesně tam, kde applier mód přidělí.
+
+Při **zapnuté automatice** mód určuje způsob úhrady a applier
+`total_rounding_mode` neposílá. Uvádí-li pokyn jiný mód, než jaký
+automatika dopočítala, platí automatika a `_resolve.issues` dostane varování
+**`total_rounding_mode_ignored`** (v `/preview` i po `/apply`); pro vlastní
+mód je potřeba `totalRoundingAuto: false`.
+
+`totals.totalRounding` nese rozdíl ze zaokrouhlení se znaménkem
+(zaokrouhleno dolů = záporné, např. `-0.05`). Applier z něj mód **nečte**:
+v pokynu je to pole kontrolního součtu, v návrhu signál. Výslednou částku
+a `total_rounding` dopočte `DocDocument` sám.
+
 **Důsledek pro zdroje dat:** `totalAmount` musí být částka **po** zaokrouhlení
 (placená) — starý Shipard drží `sumTotal` bez zaokrouhlení a runner musí
-poslat `sumTotal + rounding`, jinak vyjde mód 0 a doklad zaokrouhlení ztratí
-(reimport 2026-09-07: 211/311/321 o haléře jinak, saldo nespáruje 70,00
-proti 69,99). Platí pro AI extrakci i ISDOC
-(`PayableRoundingAmount`) — obě cesty jdou přes týž applier.
+poslat `sumTotal + rounding` (reimport 2026-09-07: 211/311/321 o haléře
+jinak, saldo nespáruje 70,00 proti 69,99). V pokynu k tomu patří
+`totalRoundingAuto: false` a `totalRoundingMode` podle nastavení zdrojového
+dokladu — jinak doklad vyjde na haléře a kontrolní součet ho odmítne. AI
+extrakce a ISDOC (`PayableRoundingAmount`) jdou návrhem a mód neuvádějí.
 
 **Automatické zaokrouhlení podle způsobu úhrady** (#73 D8, sloupec
 `total_rounding_auto`): u prodejního dokladu (`invoiceIssued`,
 `proformaIssued`, `cashRegisterDocument`, příjmový `cashDocument`) applier
 nastaví příznak podle `totals.totalRoundingAuto`. Explicitní `true` /
-`false` vyhrává; bez něj (nebo `null`) je automatika **zapnutá právě tehdy,
-když canonical nemá `totals.totalAmount`** — faktura ze zakázky
-(`InvoiceBuilder`). Při zapnuté automatice applier `total_rounding_mode`
-neposílá: mód určí `DocDocument::computeAmounts()` ze způsobu úhrady,
-měny dokladu a země zdroje dat (`TotalRoundingAuto`,
+`false` vyhrává. Bez něj (nebo `null`):
+
+- **pokyn** — zapnuto všude, kde automatika platí; na `totals` nezáleží
+  (#166 D26);
+- **návrh** — zapnuto právě tehdy, když canonical nemá `totals.totalAmount`.
+  Doklad s deklarovanou částkou (pošta, ISDOC) má automatiku vypnutou a mód
+  uvedený, jinak odvozený z čísel.
+
+Při zapnuté automatice mód určí `DocDocument::computeAmounts()` ze způsobu
+úhrady, měny dokladu a země zdroje dat (`TotalRoundingAuto`,
 `docs/vat-calculation.md` § 6) a náhled ho ukáže
-v `_resolve.computed.totals.totalRoundingMode`. Doklad s deklarovanou
-částkou (import ze starého Shipardu, pošta, ISDOC, generované datové sady)
-má automatiku vypnutou a mód odvozený z čísel jako dosud — nic se mu
-nepřepočítá. Přijatý doklad automatiku nemá nikdy. `DocumentExporter`
-příznak vyváží explicitně, aby dump → seed zachoval stav dokladu
-(dumpovaný doklad má `totalAmount` vždy).
+v `_resolve.computed.totals.totalRoundingMode`. Přijatý doklad automatiku
+nemá nikdy. `DocumentExporter` příznak vyváží vždy, mód celkové částky jen
+při vypnuté automatice a jen mimo `cent`, `vat.roundingMode` jen mimo `cent`
+— dump dokladů, kterých se zaokrouhlení netýká, se nemění a dump → seed
+zachová stav dokladu.
 
 ### Polymorfismus podle `docType`
 
@@ -1920,9 +2011,11 @@ Errors blokují `/apply`, warningy jen informují v UI.
 `vat_registration_country_derived`, `vat_place_derived`, `vat_non_payer`,
 `vat_foreign_tax`, `vat_special_place`, `vat_special_place_ambiguous`,
 `vat_out_of_scope_user`, `vat_supplier_non_payer`,
-`non_payer_reverse_charge` a `bank_account_repaired`. **Jen v pokynu:**
-`vat_recap_missing`, `vat_recap_code_missing`,
-`document_validation_unavailable` a nálezy dokladu v `/preview`.
+`non_payer_reverse_charge`, `bank_account_repaired`
+a `computed_total_mismatch`. **Jen v pokynu:** `vat_recap_missing`,
+`vat_recap_code_missing`, `totals_check_failed`,
+`total_rounding_mode_ignored`, `document_validation_unavailable` a nálezy
+dokladu v `/preview`.
 
 **Nálezy dokladu** (#166 D21): chyby a varování `DocDocument::validate()`
 nesou kód dokladu (`vat_code_missing`, `vat_rate_missing`,
@@ -1941,7 +2034,9 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `required` | error | Chybí povinné pole per `docType` (issueDate, rows, supplier/customer). |
 | `author_not_found` | error | `applyOptions.author` není id existujícího uživatele (#93 D9). `null` a chybějící klíč se nekontrolují. |
 | `totals_mismatch` | warning | Deklarovaná `totals.totalAmount` neodpovídá žádné vypočtené variantě (Σ řádků, Σ řádků s DPH, Σ recap). Heuristika validátoru; v `/preview` ji při dostupném `_resolve.computed` nahrazuje `computed_total_mismatch`. |
-| `computed_total_mismatch` | warning | Jen `/preview`: částka k úhradě podle skutečného výpočtu dokladu (`_resolve.computed.totals.totalAmount`) se od `totals.totalAmount` liší o víc než 0,01. Nese `declared` a `computed`; zpráva příčinu nehádá, jen vyzve ke kontrole řádků a režimu DPH. U samovyměření se liší daň, k úhradě sedí — warning nepadne. |
+| `computed_total_mismatch` | warning | Jen `/preview` návrhu: částka k úhradě podle skutečného výpočtu dokladu (`_resolve.computed.totals.totalAmount`) se od `totals.totalAmount` liší o víc než 0,01. Nese `declared` a `computed`; zpráva příčinu nehádá, jen vyzve ke kontrole řádků a režimu DPH. U samovyměření se liší daň, k úhradě sedí — warning nepadne. |
+| `totals_check_failed` | error | Jen pokyn (#166 D27): uvedené pole `totals` (`totalBase`, `totalVat`, `totalAmount`, `totalRounding`) se od hodnoty spočtené dokladem liší o víc než 0,01. Jeden nález za pole, `path` = `totals.<pole>`, nese `declared` a `computed`. `/apply` končí 422 `totals_check_failed` a nic se neuloží; `/preview` hlásí totéž nad `_resolve.computed`. § 5 „Pole `vatRecap` a `totals`“. |
+| `total_rounding_mode_ignored` | warning | Jen pokyn (#166 D26): doklad má zapnuté automatické zaokrouhlení a `totals.totalRoundingMode` uvádí jiný mód, než jaký dal způsob úhrady. Platí automatika; pro vlastní mód `totalRoundingAuto: false`. `path` = `totals.totalRoundingMode`. |
 | `computed_unavailable` | info | Jen `/preview`: výpočet `_resolve.computed` selhal výjimkou (zalogováno) — blok je `null`, náhled ukazuje údaje z canonicalu. |
 | `rows_recap_mismatch` | warning | Součet položkových řádků neodpovídá rekapitulaci/totals dle efektivního režimu DPH — řádky nejspíš neúplné. |
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
@@ -2095,12 +2190,15 @@ Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
 | reconcile | čte `userAction` vč. vynechání řádků | `userAction` stran a položek platí, řádky se nevynechávají |
 | side-creates | + učení dodavatelských kódů | bez učení |
 | transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5 | hodnoty z payloadu a výchozí hodnoty (§ 3, tabulka D20) |
-| po uložení | — | varování dokladu do `_resolve.issues` |
+| po uložení (v transakci) | — | kontrolní součet `totals` proti uložené hlavičce; neshoda = rollback a `totals_check_failed` (§ 5) |
+| po uložení | — | varování dokladu do `_resolve.issues`, `total_rounding_mode_ignored` |
 
 **`/preview` v pokynu** navíc spustí `DocDocument::validate()` pro cílový
 stav z `applyOptions.targetDocState` — nález, který by apply odmítl (řádek
 bez kódu DPH při cíli V pořádku, opravný doklad bez důvodu), je vidět před
-uložením. Data skládá stejnou cestou jako apply (reconcile, dohledání
+uložením; stejně tak neshodu kontrolního součtu `totals`
+(`totals_check_failed` nad `_resolve.computed`). Data skládá stejnou cestou
+jako apply (reconcile, dohledání
 pokladny a řady, výchozí pohyby řádků, transform) a nic nezapisuje; chybu
 dohledání pokladny, řady nebo vlastního účtu hlásí týmž kódem, jaký vrátí
 apply. Nehlásí, co posoudit nemůže: nálezy na referenci, kterou apply
@@ -2198,8 +2296,9 @@ historické doklady by to bylo věcně špatně. Strana partnera
 dokladu** tak, jak přišla v payloadu, **ve tvaru snapshotu z formuláře**
 (#166 D23): klíče dává `PersonSnapshotBuilder::shape()`, bankovní spojení
 partnera ve snapshotu není (formulářový snapshot partnera ho také nemá —
-účet dodavatele nese hlavička), prázdné IČO, DIČ a DIČ pro DPH jsou prázdný
-řetězec jako v adresáři. Z `contact` jdou `email`, `phone` a `web`; ID
+účet dodavatele nese hlavička), prázdná hodnota je u všech polí `null`
+(D29 — jedno pravidlo se snapshotem z formuláře, `docs/docs-mvp.md` § 6.4).
+Z `contact` jdou `email`, `phone` a `web`; ID
 datové schránky strana dokladu nenese a ve snapshotu je `null` (#162
 D133). Za dobové hodnoty — především `vatId`, ze kterého kontrolní hlášení
 čte DIČ partnera — odpovídá exportér. Vlastní strana se staví standardně
@@ -2402,15 +2501,15 @@ sloupec se hlídá sám. Kde invariant dnes neplatí, vede test **známou
 mezeru** s přesným rozdílem; seznam mezer žije v testu
 (`RoundTrip/RoundTripCases`), ne tady. Změna applieru nebo exportu, která
 mezeru zavře nebo otevře novou, test zastaví — viz
-`tests/Integration/README.md`. Po zavedení pokynu (#166 etapa 3 část A)
-zbývá jediná mezera: ručně zvolený mód zaokrouhlení, který formát nenese
-(`tasks/doc-totals-rounding-explicit.md`).
+`tests/Integration/README.md`. Po zavedení pokynu a výslovného módu
+zaokrouhlení (#166 etapa 3) matice žádnou mezeru nemá.
 
 Matice hlídá tvar, jaký vyrobí export. Tvary, které export nevyrobí —
 řádek s objektem `vat` bez kódu, místo plnění v rozporu s DIČ dodavatele,
-převzatá rekapitulace bez kódů, ceny řádků s daní při `fromBase` — drží
+převzatá rekapitulace bez kódů, ceny řádků s daní při `fromBase`, `totals`
+v rozporu s výpočtem, mód zaokrouhlení v rozporu s automatikou — drží
 `tests/Integration/Exchange/DocumentInstructionPayloadTest.php`
-(„payload → uložený doklad“, #166 D24).
+(„payload → uložený doklad“, #166 D24, D27).
 
 ## 11. REST API endpointy
 
@@ -2477,6 +2576,9 @@ preview indikoval `canCreate` / `ambiguous`).
   resolve scope (např. chybějící datum, neznámý kód DPH v pokynu), nebo
   doklad neprošel validací `DocDocument` při uložení (#166 D21); nic se
   neuložilo.
+- `422 totals_check_failed` — jen pokyn: `totals` payloadu se liší od
+  výpočtu dokladu (#166 D27); nálezy s `declared` / `computed` jsou
+  v `_resolve.issues`, nic se neuložilo.
 - `409 conflict` — během reconcile se zjistilo, že entita mezitím
   zmizela (`useExisting:42` ale person 42 už neexistuje).
 
