@@ -1,6 +1,6 @@
 # Task: Kód číselné řady a registrace DPH jako přirozený klíč
 
-**Stav:** naplánováno — zadání 2026-11-22 (#166 D16, D17); až po `tasks/exchange-key-references.md`
+**Stav:** částečně — commit 0 (export dokladu bez tabulky dimenze) hotový 2026-11-22; zbývají commity 1–5 (#166 D16, D17)
 
 **Issue:** #166 (D16, D17; navazuje na etapu 2)
 
@@ -261,7 +261,7 @@ se taková dimenze jen nepřenesla.
 
 ## Hotovo když
 
-- [ ] `DocumentExporter` bez definice cílové tabulky dimenze nepadá —
+- [x] `DocumentExporter` bez definice cílové tabulky dimenze nepadá —
       dimenze se nepřenese (commit 0)
 - [ ] obě tabulky mají `code` s unikátním indexem a `exchangeKey`
 - [ ] nový záznam (formulář, provisionery, líné založení) má kód podle

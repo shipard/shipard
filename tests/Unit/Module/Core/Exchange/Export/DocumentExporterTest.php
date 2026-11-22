@@ -113,18 +113,75 @@ class DocumentExporterTest extends TestCase
         return ModuleTables::load('economy_codebooks_cost_centers', 'economy_assets_assets');
     }
 
-    public function testDimensionWithoutTableDefinitionIsAWiringError(): void
+    public function testDimensionWithoutTableDefinitionIsNotCarried(): void
     {
-        // Bez definice cílové tabulky by se dimenze z exportu tiše ztratily.
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage("dimenze 'costCenter' míří na tabulku 'economy_codebooks_cost_centers'");
-        new DocumentExporter($this->db(), $this->configWithDimensions());
+        // #166: konfigurace dimenzí bez definic tabulek — žádná dimenze není
+        // přenosná. Export projde; varování jen za dimenzi, kterou doklad nese.
+        $rows = [['cost_center' => 5] + $this->itemRowRow()];
+        $exporter = new DocumentExporter($this->db(rows: $rows), $this->configWithDimensions());
+
+        $c = $exporter->exportDocument($this->headRow(['cost_center' => 3, 'asset' => null]))->data;
+
+        $this->assertArrayNotHasKey('dimensions', $c);
+        $this->assertArrayNotHasKey('dimensions', $c['rows'][0]);
+        $warnings = $exporter->getWarnings();
+        $this->assertCount(1, $warnings, implode("\n", $warnings));
+        $this->assertStringContainsString('dimenze Středisko se do sady nepřenáší (1 dokladů)', $warnings[0]);
+        $this->assertStringContainsString(
+            'tabulka economy_codebooks_cost_centers není mezi aktivními tabulkami zdroje dat',
+            $warnings[0],
+        );
+
+        // Doklad, který žádnou dimenzi nenese, varování nedá.
+        $silent = new DocumentExporter($this->db(rows: [$this->itemRowRow()]), $this->configWithDimensions());
+        $silent->exportDocument($this->headRow());
+        $this->assertSame([], $silent->getWarnings());
     }
 
-    /** cfgItem dimenzí deníku jako na DS: středisko (setup sady) a majetek (mimo sadu). */
-    private function configWithDimensions(): ConfigRuntime
+    public function testDimensionOfInactiveModuleIsNotCarriedAndOthersAre(): void
     {
-        $dimensions = [
+        // #166: dimenze deklaruje economy.accounting, který na modulech
+        // zakázek a majetku nezávisí — zdroj dat bez nich má tři dimenze,
+        // ale definici jen pro středisko. Středisko se přenese, zbylé dvě
+        // se nepřenesou s varováním.
+        $config = $this->configWithDimensions([
+            'workOrder' => [
+                'id' => 'workOrder', 'rowColumn' => 'work_order', 'headColumn' => 'work_order', 'journalColumn' => 'work_order',
+                'table' => 'economy_work_orders_heads', 'name' => 'Zakázka',
+            ],
+        ]);
+        $rows = [['cost_center' => 5, 'work_order' => 8, 'asset' => null] + $this->itemRowRow()];
+        $exporter = new DocumentExporter(
+            $this->db(rows: $rows),
+            $config,
+            tables: ModuleTables::load('economy_codebooks_cost_centers'),
+        );
+
+        $c = $exporter->exportDocument($this->headRow(['cost_center' => 3, 'work_order' => 8, 'asset' => 7]))->data;
+
+        $this->assertSame(['costCenter' => 'S01'], $c['dimensions']);
+        $this->assertSame(['costCenter' => 'V01'], $c['rows'][0]['dimensions']);
+        $warnings = $exporter->getWarnings();
+        $this->assertCount(2, $warnings, implode("\n", $warnings));
+        $all = implode("\n", $warnings);
+        $this->assertStringContainsString(
+            'dimenze Zakázka se do sady nepřenáší (1 dokladů) — tabulka economy_work_orders_heads není mezi aktivními tabulkami zdroje dat',
+            $all,
+        );
+        $this->assertStringContainsString(
+            'dimenze Majetek se do sady nepřenáší (1 dokladů) — tabulka economy_assets_assets není mezi aktivními tabulkami zdroje dat',
+            $all,
+        );
+    }
+
+    /**
+     * cfgItem dimenzí deníku jako na DS: středisko (setup sady) a majetek (mimo sadu).
+     *
+     * @param array<string, array<string, string>> $extra další dimenze
+     */
+    private function configWithDimensions(array $extra = []): ConfigRuntime
+    {
+        $dimensions = $extra + [
             'costCenter' => [
                 'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
                 'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',

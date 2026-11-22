@@ -87,8 +87,11 @@ final class DocumentExporter implements RecordExporter
      */
     private readonly array $dimensions;
 
-    /** @var list<JournalDimension> dimenze s klíčem, které sada neumí obnovit */
+    /** @var list<JournalDimension> dimenze, jejichž hodnotu sada neumí obnovit */
     private readonly array $unportableDimensions;
+
+    /** @var array<string, string> id nepřenosné dimenze → důvod do varování */
+    private readonly array $unportableReasons;
 
     /** Přirozený klíč záznamu cílové tabulky dimenze (`keyOf`). */
     private readonly ReferenceResolver $references;
@@ -103,8 +106,11 @@ final class DocumentExporter implements RecordExporter
      * @param list<string> $sectionTables cílové tabulky dimenzí, které sada
      *        nese ve vlastní sekci (dump je předá jen při aktivní tabulce)
      * @param array<string, TableDefinition> $tables aktivní tabulky DS —
-     *        přirozený klíč cílových tabulek dimenzí. Zdroj dat s dimenzemi
-     *        je bez nich neumí vyvézt, proto je chybějící definice chyba.
+     *        přirozený klíč cílových tabulek dimenzí. Dimenze, jejíž cílová
+     *        tabulka mezi nimi není (modul není aktivní — dimenze deklaruje
+     *        `economy.accounting`, který na zakázkách ani majetku nezávisí)
+     *        nebo nemá `exchangeKey`, se nepřenáší; varování vznikne, jen
+     *        když ji některý doklad opravdu nese.
      */
     public function __construct(
         private readonly Connection $db,
@@ -116,25 +122,27 @@ final class DocumentExporter implements RecordExporter
         $portableTables = [...array_column(SetupExporter::TABLES, 'table'), ...$sectionTables];
         $portable = [];
         $unportable = [];
+        $reasons = [];
         foreach (JournalDimensionSet::fromConfig($config) as $dimension) {
-            if (!isset($tables[$dimension->table])) {
-                // Tiché vynechání by dimenze z exportu ztratilo bez stopy.
-                throw new \LogicException(
-                    "DocumentExporter: dimenze '{$dimension->id}' míří na tabulku '{$dimension->table}',"
-                    . ' jejíž definici volající nepředal',
-                );
-            }
-            if (!$this->references->hasKey($dimension->table)) {
-                continue;
-            }
-            if (in_array($dimension->table, $portableTables, true)) {
+            $reason = match (true) {
+                !isset($tables[$dimension->table])
+                    => "tabulka {$dimension->table} není mezi aktivními tabulkami zdroje dat",
+                !$this->references->hasKey($dimension->table)
+                    => "tabulka {$dimension->table} nemá přirozený klíč (exchangeKey)",
+                !in_array($dimension->table, $portableTables, true)
+                    => "záznamy {$dimension->table} nejsou součást sady",
+                default => null,
+            };
+            if ($reason === null) {
                 $portable[] = $dimension;
             } else {
                 $unportable[] = $dimension;
+                $reasons[$dimension->id] = $reason;
             }
         }
         $this->dimensions = $portable;
         $this->unportableDimensions = $unportable;
+        $this->unportableReasons = $reasons;
     }
 
     public function section(): string
@@ -173,10 +181,10 @@ final class DocumentExporter implements RecordExporter
                 }
             }
             $warnings[] = sprintf(
-                'docs: dimenze %s se do sady nepřenáší (%d dokladů) — záznamy %s nejsou součást sady',
+                'docs: dimenze %s se do sady nepřenáší (%d dokladů) — %s',
                 $dimension?->name ?? $dimensionId,
                 count($labels),
-                $dimension?->table ?? '?',
+                $this->unportableReasons[$dimensionId] ?? '?',
             );
         }
         return $warnings;

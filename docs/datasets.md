@@ -417,7 +417,11 @@ nese v `setup/` — středisko (`cost_centers.jsonc`) — nebo ve vlastní sekci
 karta majetku inventárním číslem se sekcí `assets/`, fáze 2c). Dimenzi
 na záznamy mimo sadu (zdroj dat bez příslušné sekce) dump vynechá — seed
 by doklad odmítl `dimension_not_found` — a ohlásí to jedním varováním per
-dimenze s počtem dokladů.
+dimenze s počtem dokladů. Stejně dopadne dimenze, jejíž cílová tabulka
+na zdroji dat není aktivní (dimenze deklaruje `economy.accounting`, který
+na zakázkách ani majetku nezávisí) nebo nemá `exchangeKey`: hodnota se
+nepřenese a varování s důvodem vznikne, jen když ji některý doklad nese
+(#166).
 
 **Zaúčtování majetku** (#131 fáze 2c, D38): doklad s řádky `asset.*`
 (dávka Odpisy za období — zařazení, odpisy, vyřazení) `DocumentExporter`
