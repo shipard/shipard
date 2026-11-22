@@ -13,11 +13,54 @@ Stavy: standardní `core.system.docStatesArchive` (Koncept → V pořádku
 
 | Sloupec | Typ | Popis |
 |---|---|---|
+| `code` | varchar(40), nullable, unikátní (`unq_code`) | **Kód řady** — přirozený klíč záznamu (`exchangeKey`, #166 D16, D17). Viz „Dva kódy řady“ níže |
 | `doc_type` | enumString(20) → `docs.core.docTypes` | Typ dokladu (`invno`, `invni`, …) |
 | `cash_desk` | int, nullable → `economy_codebooks_cash_desks` | Pokladna — povinná pro typ s `series_binding: cash_desk`, jinak NULL |
 | `warehouse` | int, nullable → `economy_codebooks_warehouses` | Sklad — povinný pro typ s `series_binding: warehouse`, jinak NULL |
 | `name` | varchar(100) | Lidský název řady |
 | `notice` | varchar(250), nullable | Volná poznámka |
+
+### Dva kódy řady
+
+Řada má dva kódy s různým účelem (#166 D16, D17):
+
+| | `code` — Kód řady | `doc_number_code` — Kód v čísle dokladu |
+|---|---|---|
+| K čemu je | určuje řadu **mimo zdroj dat**: datové sady, importy, reference `"@invno"` | dosadí se do čísla dokladu za `%C` |
+| Jedinečnost | unikátní v celé tabulce, i proti řadám v koši; velikost písmen se nerozlišuje | žádná — dvě řady smí mít stejný |
+| Povinnost | každá řada ho má (prázdný doplní systém) | jen když vzorec obsahuje `%C` |
+| Změna | kdykoli, i ve stavu V pořádku — v databázi se na řadu odkazuje přes id | mění čísla nově vydaných dokladů |
+
+Hodnotu `code` dává `NumberSeriesCodeGenerator`:
+
+- **vázaná řada** (pokladna / sklad): `<typ dokladu>-<kód entity>` —
+  `cash-POK`, `cashreg-POK`;
+- **nevázaná řada typu s nejnižším id mezi nesmazanými**: `<typ dokladu>`
+  — `invno`; to je výchozí řada z provisioneru;
+- **další nevázaná řada**: `<typ dokladu>-<doc_number_code>` (`cmnbkp-MA`),
+  bez kódu v čísle dokladu `<typ dokladu>-<n>`, n od 2 (`invno-2`);
+- znak mimo povolený tvar (`Shipard\Core\Database\RecordCode` — bez mezer,
+  `@` a dvojtečky) se nahradí pomlčkou; obsazený kód dostane příponu `-2`,
+  `-3`, …
+
+Kdy kód vzniká:
+
+- **formulář** — u nové řady se navrhne po volbě typu dokladu a pokladny
+  (při jejich změně znovu) a jde přepsat; prázdné pole doplní
+  `NumberSeriesDocument::beforeSave`. Validace: tvar (`invalid_value`),
+  unikátnost (`duplicate`, zpráva jmenuje řadu, která kód má), vymazání
+  uloženého kódu (`required`);
+- **provisionery** (`NumberSeriesProvisioner`, `BoundNumberSeriesProvisioner`
+  i líně z `DocumentApplier`, `AssetPostingSeriesProvisioner`) vkládají
+  řádek mimo `Document` — kód doplní `NumberSeriesCodeBackfill` hned po
+  vložení;
+- **`ds-upgrade`** — `NumberSeriesCodeBackfill` vždy, i pod
+  `skipProvisioning`: řady z doby před sloupcem a řady z importu přes
+  generické CRUD. Živé řady podle id, pak koš; idempotentní.
+
+Přejmenování pokladny se do kódu řady nepropisuje, stejně jako do
+`doc_number_code` (#59 D3). Sloupec je `nullable` jen kvůli pořadí
+`ds-upgrade` (sloupec a unikátní index vzniknou před doplněním).
 
 ### Řady vázané na entitu
 
@@ -33,7 +76,7 @@ ji po založení řady nabízí jen ke čtení.
 
 | Sloupec | Typ | Popis |
 |---|---|---|
-| `doc_number_code` | varchar(10), nullable | Vkládá se do `%C` placeholderu vzorce |
+| `doc_number_code` | varchar(10), nullable | Kód v čísle dokladu — vkládá se do `%C` placeholderu vzorce; není to kód řady (`code`) |
 | `doc_number_pattern` | varchar(50) | Vzorec čísla dokladu — viz placeholdery níže |
 | `reset_scope` | enumString(15) → `docs.core.resetScopes` default `fiscal_year` | `none` (průběžný counter) / `fiscal_year` (restart každý rok) |
 

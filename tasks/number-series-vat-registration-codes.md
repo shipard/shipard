@@ -1,6 +1,6 @@
 # Task: Kód číselné řady a registrace DPH jako přirozený klíč
 
-**Stav:** částečně — commity 0–4 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document; doplnění existujících a provisionery; formuláře a viewery; datové sady); zbývá commit 5 — dokumentace a nápověda (#166 D16, D17)
+**Stav:** hotovo — 2026-11-22 (#166 D16, D17; 6 commitů); zadání 2026-11-22. Zbývá mimo kód: `ds-upgrade` na reálných kopiích a alfě (člověk), proklik formulářů v prohlížeči, komentář do #166
 
 **Issue:** #166 (D16, D17; navazuje na etapu 2)
 
@@ -263,18 +263,18 @@ se taková dimenze jen nepřenesla.
 
 - [x] `DocumentExporter` bez definice cílové tabulky dimenze nepadá —
       dimenze se nepřenese (commit 0)
-- [ ] obě tabulky mají `code` s unikátním indexem a `exchangeKey`
-- [ ] nový záznam (formulář, provisionery, líné založení) má kód podle
+- [x] obě tabulky mají `code` s unikátním indexem a `exchangeKey`
+- [x] nový záznam (formulář, provisionery, líné založení) má kód podle
       D17; existující ho dostanou při `ds-upgrade`, idempotentně
-- [ ] validace tvaru a unikátnosti, pole ve formulářích a viewerech
-- [ ] v `SetupReferences` není zvláštní větev řady dokladů; sady nesou
+- [x] validace tvaru a unikátnosti, pole ve formulářích a viewerech
+- [x] v `SetupReferences` není zvláštní větev řady dokladů; sady nesou
       řadu kódem; `vat_registrations` se upsertuje podle kódu
-- [ ] sady v repu převedené, dump → seed → dump byte-shodný,
+- [x] sady v repu převedené, dump → seed → dump byte-shodný,
       `dataset-verify` beze změny
-- [ ] cílené testy zelené, pak celá unit sada
-- [ ] dokumentace a nápověda podle commitu 5, stav tasku
+- [x] cílené testy zelené, pak celá unit sada
+- [x] dokumentace a nápověda podle commitu 5, stav tasku
 
-## Poznámky k implementaci (průběžně)
+## Odchylky od zadání a poznámky k implementaci (2026-11-22)
 
 - **Commit 0:** tabulka dimenze bez `exchangeKey` se dřív přeskakovala
   tiše, nově dává stejné varování jako chybějící definice (jen když
@@ -339,3 +339,20 @@ se taková dimenze jen nepřenesla.
   `totals.totalRoundingAuto`, které generátor sady nepíše (295 souborů),
   a `setup/settings.jsonc` v dumpu nese provozní stav stahování kurzů
   `economy.exchangeRates.downloadState`.
+- **Dokumentace a nápověda (commit 5):** dva kódy řady popisuje
+  `modules/docs/core/tables/docs_core_number_series.md` (odkaz z
+  `docs/docs-mvp.md` § 5.8), registraci její tabulková dokumentace;
+  `docs/datasets.md`, `docs/exchange-format.md` § 8.6,
+  `docs/table-definitions.md` § 4, `docs/cli.md` a `CLAUDE.md` bez výjimky
+  pro řady. Nápověda: samostatné stránky o číselných řadách ani
+  o registraci DPH v `help/` nebyly — vznikla jedna úlohová stránka
+  `help/uctarna/kod-rady-a-registrace.md`, odkázaná z řádku Faktury vydané
+  v `help/co-shipard-umi.md`.
+- **Bod „dump demo sady byte-shodný s repem“** je splněný pro soubory,
+  kterých se task týká (viz výše); celý dump byte-shodný není z důvodů
+  mimo tento task (nález mimo rozsah).
+- **Neověřeno:** formuláře řady a registrace v prohlížeči (ověřeno přes
+  HTTP — definice formuláře, přepočet, uložení); `ds-upgrade` na reálných
+  kopiích dat neběžel.
+- **Milník:** #166 v `docs/roadmap.md` není uvedené; task navazuje na
+  etapu 2 (`tasks/exchange-key-references.md`).

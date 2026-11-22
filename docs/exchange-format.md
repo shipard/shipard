@@ -1520,6 +1520,19 @@ najde. Třídy `ReferenceValue` (rozbor hodnoty, bez databáze),
 > používají datové sady (`SetupReferences`) a dimenze dokladů
 > (`DimensionResolver`) — obojí s holou hodnotou klíče, bez `@`.
 
+**Číselná řada dokladů a registrace DPH mají vlastní kód** (#166 D16, D17;
+`tasks/number-series-vat-registration-codes.md`): sloupec `code`
+s unikátním indexem je jejich `exchangeKey`, takže se odkazují stejnou
+gramatikou jako ostatní číselníky — řada `"@invno"`, `"@cash-POK"`,
+registrace `"@cz"`. Kód je nezávislý na `doc_number_code` řady (ten se
+propisuje do čísla dokladu jako `%C`). Tvar kódu hlídá
+`Shipard\Core\Database\RecordCode`: písmena bez diakritiky, číslice, tečka,
+podtržítko a pomlčka, první znak písmeno nebo číslice — **bez mezer, `@`
+a dvojtečky**, aby kód šel zapsat do reference a nekolidoval s pravidlem
+dvojtečky. Formát dokladu se tím nemění: `applyOptions.numberSeriesCode`
+dál nese `doc_number_code`, `numberSeriesId` id a `vat.registrationCountry`
+zemi; na reference přejdou až v etapě 3 (D11).
+
 **Gramatika hodnoty reference** (D9):
 
 | Hodnota v JSON | Význam |

@@ -219,8 +219,15 @@ smí názvy nést — tam jsou potřeba k práci.
   (`SetupReferences`, přenosná je jen tabulka sekce setup) a dimenze
   dokladů (`DimensionResolver`) jsou fasády nad ním; čtenář dimenzí potřebuje
   definice tabulek. Tabulka s klíčem bez unikátního indexu patří do seznamu
-  v `ExchangeKeyDefinitionsTest`. Viz `docs/table-definitions.md` § 4,
-  `docs/exchange-format.md` § 8.6
+  v `ExchangeKeyDefinitionsTest`. **Číselná řada dokladů a registrace DPH
+  mají vlastní kód** `code` (#166 D16, D17,
+  `tasks/number-series-vat-registration-codes.md`) — unikátní, nezávislý na
+  `doc_number_code` (`%C`); tvar říká jen `Core\Database\RecordCode` (bez
+  mezer, `@` a dvojtečky), hodnotu generátor tabulky (`invno`, `invno-2`,
+  `cash-<kód pokladny>`, `cz`, `cz-2`), řádkům vloženým mimo `Document`
+  ho doplní `RecordCodeBackfill` (provisionery řad hned po vložení,
+  `ds-upgrade` vždy, i pod `skipProvisioning`). Viz
+  `docs/table-definitions.md` § 4, `docs/exchange-format.md` § 8.6
 
 ### Kódové konvence
 - Datové třídy (*Definition): readonly, factory `fromArray()`, validace v konstruktoru

@@ -543,7 +543,7 @@ období, která starý Shipard nefakturoval.
 **Datová sada** (#131 fáze 2b, `tasks/demo-dataset-phase2b-work-orders.md`,
 D29–D37): sekce `workOrders/` s obálkou `shpd.dataset.workOrder.v1` nad
 importním formátem — místo id přirozené klíče (řada kódem, zákazník
-identifikátory, řada dokladů `{docType, code}`), evidence vystavených období
+identifikátory, řada dokladů kódem — #166 D17), evidence vystavených období
 s číslem dokladu, seed přes `WorkOrderImportApplier`, druhy a řady zakázek
 v `setup/`; demo sada „IT servis“ má 14 periodických paušálů (13 V pořádku,
 1 Ukončeno uprostřed okna, 1 zahájený uprostřed okna — fáze 2d,

@@ -959,6 +959,19 @@ na entitu (#59 D2, D3):
   nevyžaduje další kód, jen typ dokladu se `series_binding: warehouse`.
   Konkrétní typy (`cash`, `cashreg`) přidává Task B.
 
+### 5.8 Kód řady — přirozený klíč (#166 D16, D17)
+
+Řada má vedle `doc_number_code` (kód v čísle dokladu, `%C`) vlastní
+**kód řady** `code`: unikátní sloupec, který řadu určuje mimo zdroj dat
+(`exchangeKey` — datové sady, reference `"@invno"`). Výchozí řada typu má
+kód typu dokladu (`invno`), další řada `invno-<kód z čísla dokladu>` nebo
+`invno-2`, řada pokladny `cash-<kód pokladny>` / `cashreg-<kód pokladny>`.
+Kód dává `NumberSeriesCodeGenerator`; existujícím řadám a řadám
+z provisionerů ho doplní `NumberSeriesCodeBackfill` (`ds-upgrade` vždy,
+i pod `skipProvisioning`). Číslování dokladů (`%C`, čítače) se kódu řady
+netýká. Podrobně `modules/docs/core/tables/docs_core_number_series.md`
+→ Dva kódy řady.
+
 ---
 
 ## 6. Hlavička `docs_core_heads`

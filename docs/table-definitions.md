@@ -258,8 +258,14 @@ přirozený klíč** (#166 D8):
 ```
 
 - `exchangeKey` — jeden sloupec. Složené klíče se nezavádějí; tabulka,
-  jejíž záznam jeden sloupec neurčí (číselná řada dokladů, registrace DPH),
-  zůstává bez klíče, dokud vlastní kód nedostane.
+  jejíž záznam jeden sloupec neurčí, dostane vlastní kód. Tak ho dostaly
+  číselná řada dokladů a registrace DPH (#166 D16, D17): sloupec `code`
+  s unikátním indexem, tvar podle `Shipard\Core\Database\RecordCode`,
+  hodnota z generátoru tabulky (`NumberSeriesCodeGenerator`,
+  `VatRegistrationCodeGenerator`). Sloupec je `nullable` jen kvůli pořadí
+  `ds-upgrade` — sloupec a index vzniknou dřív, než se kód stávajícím
+  řádkům doplní (`RecordCodeBackfill`), a unikátní index víc `NULL` snese;
+  povinnost hlídá Document třída.
 - `exchangeLookupColumns` — sloupce, přes které smí hledat jmenovaná
   reference. `exchangeKey` je povolený vždy a do seznamu se neuvádí. Seznam
   jde deklarovat i bez `exchangeKey`.

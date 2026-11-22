@@ -11,12 +11,35 @@ nesahá.
 
 | Sloupec | Typ | Popis |
 |---|---|---|
+| `code` | varchar(20) NULL, unikátní (`unq_code`) | **Kód registrace** — přirozený klíč záznamu (`exchangeKey`, #166 D16, D17): určuje registraci mimo zdroj dat (datové sady ji párují kódem, reference `"@cz"`). Viz „Kód registrace“ níže |
 | `name` | varchar(50) | Lidský název registrace (např. `"ČR DPH"`, `"SK DPH OSS"`) |
 | `region` | enumString(10), cfgItem `world.trade.unions`, default `'eu'` | Klíč obchodní unie — ovlivňuje pravidla pro VAT-ID, intra-community plnění apod. |
 | `country` | enumString(2), cfgItem `world.base.countries`, default `'cz'` | ISO 3166-1 alpha-2 lowercase |
 | `taxpayer_kind` | enumInt default 0, cfgItem `economy.codebooks.vatTaxpayerKinds` | 0 = Klasický plátce, 1 = OSS (One-Stop-Shop pro EU služby) |
 | `vat_id` | varchar(30) NULL | DIČ; nullable kvůli stavu „v procesu registrace" — formálně registrace existuje, ale DIČ ještě nepřišlo |
-| `tax_office_person` | int NULL, reference `base_persons_persons` | Správce daně (#55 D30) — osoba finančního úřadu; partner saldo řádku účetního dokladu přiznání (`economy.vat`). Ručně vybraná osoba, žádný číselník FÚ. Jediný sloupec editovatelný i ve stavu V pořádku (formulář i `POST /_vat/registration-tax-office` pro import) |
+| `tax_office_person` | int NULL, reference `base_persons_persons` | Správce daně (#55 D30) — osoba finančního úřadu; partner saldo řádku účetního dokladu přiznání (`economy.vat`). Ručně vybraná osoba, žádný číselník FÚ. Vedle `code` jediný sloupec editovatelný i ve stavu V pořádku (formulář i `POST /_vat/registration-tax-office` pro import) |
+
+### Kód registrace
+
+`VatRegistrationCodeGenerator` (#166 D17): registrace země s nejnižším id
+mezi nesmazanými má kód = země malými písmeny (`cz`), další registrace téže
+země `cz-2`, `cz-3`, … Tvar hlídá `Shipard\Core\Database\RecordCode` (bez
+mezer, `@` a dvojtečky); kód je unikátní i proti registracím v koši
+a velikost písmen se nerozlišuje.
+
+- **Formulář** kód nové registraci navrhne podle země (při změně země
+  znovu) a jde přepsat; prázdné pole doplní
+  `VatRegistrationDocument::beforeSave`. Validace: tvar (`invalid_value`),
+  unikátnost (`duplicate`, zpráva jmenuje registraci, která kód má),
+  vymazání uloženého kódu (`required`). Kód jde změnit i ve stavu
+  V pořádku — v databázi se na registraci odkazuje přes id.
+- **`ds-upgrade`** doplní kód registracím bez něj
+  (`VatRegistrationCodeBackfill`, vždy, i pod `skipProvisioning`) —
+  registrace z doby před sloupcem a z importu přes generické CRUD. Živé
+  podle id, pak koš; idempotentní.
+
+Určení registrace dokladu (země + datum) se nemění — kód registrace do něj
+nevstupuje. Sloupec je `nullable` jen kvůli pořadí `ds-upgrade`.
 
 ### Skupina `period`
 
@@ -37,6 +60,7 @@ nesahá.
 
 ## Indexy
 
+- `unq_code` — unikátní na `code`
 - `idx_country` na `country`
 - `idx_validity` na `valid_from, valid_to`
 - `idx_doc_state` na `docStateMain ASC, name ASC`

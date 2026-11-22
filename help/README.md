@@ -115,6 +115,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md) | Jak stáhnout hlavní knihu, výsledovku, rozvahu nebo výstup DPH jako sešit pro Excel nebo jako CSV a co ve staženém souboru najdeš. |
 | [Když se doklad nezaúčtuje](uctarna/kdyz-se-doklad-nezauctuje.md) | Co znamenají hlášky u chyby účtování, kde se která spravuje a proč doklad nemusíš rozebírat. |
 | [Řádek mimo DPH a řádek bez kódu DPH](uctarna/kod-dph-radku.md) | Kdy dát řádku dokladu kód „Mimo DPH“, kdy „Osvobozeno“, co znamená upozornění, že řádek nemá kód DPH, a proč faktura od neplátce kódy nemá. |
+| [Kód číselné řady a registrace DPH](uctarna/kod-rady-a-registrace.md) | Co je kód řady dokladů a kód registrace DPH, kde ho najdeš, kdy ho měnit a proč se neplete s kódem v čísle dokladu. |
 | [Přehled firmy](uctarna/prehled-firmy.md) | Jak na tom firma je v číslech — peníze, pohledávky, závazky, DPH a výsledek hospodaření na jedné obrazovce, s datem, ke kterému každé číslo platí. |
 | [Střediska](uctarna/strediska.md) | Jak založit číselník středisek, zapnout středisko na dokladech, dát ho na hlavičku nebo jen na řádek a najít zápisy střediska v účetním deníku a na Kontaci. |
 | [Tisk kontace](uctarna/tisk-kontace.md) | Jak k dokladu vytisknout Kontaci — PDF s účetními zápisy, kterými je doklad zaúčtovaný — a co na ní je. |

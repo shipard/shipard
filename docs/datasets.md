@@ -102,10 +102,10 @@ které jsou uživatelská data. Sada proto nese (`SetupExporter::TABLES`):
 | `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují); `accounting_account` = číslo analytiky 221 (bez něj bankovní engine hlásí `bank_account_not_found`) |
 | `cash_desks.jsonc` | `economy_codebooks_cash_desks` | `code` | pokladny; výchozí (`is_default`) dostane v apply doklad placený hotově bez `cashDesk` (#103 F3) |
 | `cost_centers.jsonc` | `economy_codebooks_cost_centers` | `code` | střediska — doklady v sadě na ně odkazují kódem v objektu `dimensions` (#110 T2) |
-| `vat_registrations.jsonc` | `economy_codebooks_vat_registrations` | `country`, `name` | `DocDocument` vyžaduje při `vat_mode != 0` |
+| `vat_registrations.jsonc` | `economy_codebooks_vat_registrations` | `code` | `DocDocument` vyžaduje při `vat_mode != 0`; kód registrace = země (`cz`), druhá registrace téže země `cz-2` (#166 D17) |
 | `binders.jsonc` | `base_registry_binders` | `name` | šanony spisovny |
 | `mailboxes.jsonc` | `core_mail_mailboxes` | `mailbox_id` | `default` po resetu existuje, jen se aktualizuje |
-| `work_order_kinds.jsonc` | `economy_work_orders_kinds` | `name` | druhy zakázek (#131 fáze 2b, D29): periodický druh nese řadu dokladů `{docType, code}` (D37) a účet kódem |
+| `work_order_kinds.jsonc` | `economy_work_orders_kinds` | `name` | druhy zakázek (#131 fáze 2b, D29): periodický druh nese řadu dokladů kódem (`"invno"`, #166 D17) a účet kódem |
 | `work_order_series.jsonc` | `economy_work_orders_number_series` | `number_code` | číselné řady zakázek — druh názvem; řada bez kódu se nepřenese (dump varuje); sekce `workOrders/` odkazuje řadu kódem |
 | `asset_accounting_groups.jsonc` | `economy_assets_accounting_groups` | `code` | účetní skupiny majetku (#131 fáze 2c, D39): účty osnovy číslem; skupiny zakládá i `AccountingGroupsProvisioner` (jen ty s úplnými účty v osnově), upsert podle kódu je jen srovná — dump proto nese všechny, které na zdroji dat jsou |
 | `asset_type_groups.jsonc` | `economy_assets_type_groups` | `name` | skupiny typů majetku |
@@ -118,12 +118,13 @@ cílovém DS nejsou (jiná sada modulů), se přeskočí.
 Sloupec **Klíč** je klíč upsertu řádku souboru. U tabulky s přirozeným
 klíčem v definici (`exchangeKey`, `docs/table-definitions.md` § 4) ho
 `SetupExporter::upsertKey()` bere odtud; výslovný `key` v mapě
-`SetupExporter::TABLES` mají jen `settings` a `vat_registrations` (složený
-klíč — tabulka `exchangeKey` nemá). Každá položka mapy má právě jedno
-z toho (test).
+`SetupExporter::TABLES` má jen `settings` (pseudo-tabulka nastavení
+`exchangeKey` nemá). Každá položka mapy má právě jedno z toho (test).
+Registrace DPH se do #166 D16 párovala složeným klíčem (země, název); od
+zavedení kódu se páruje jím, a řádek souboru proto `code` nést musí.
 
-**Cizí klíče přes přirozený klíč** (`SetupReferences`, #131 fáze 2b D29,
-D37) — fasáda sad nad obecným `ReferenceResolver` (#166 D8,
+**Cizí klíče přes přirozený klíč** (`SetupReferences`, #131 fáze 2b D29)
+— fasáda sad nad obecným `ReferenceResolver` (#166 D8,
 `docs/exchange-format.md` § 8.6). Říká, kam FK sloupec sady ukáže a jak se
 hodnota překládá tam (dump) a zpět (seed):
 
@@ -131,12 +132,15 @@ hodnota překládá tam (dump) a zpět (seed):
   → hodnota klíče (druh zakázky názvem, bankovní účet kódem, středisko
   kódem, typ majetku a skupina typů názvem, účetní skupina majetku kódem,
   účet osnovy číslem, …). Soubor nese holou hodnotu bez `@`;
-- `docs_core_number_series` → objekt `{"docType": "invno", "code": null}`,
-  `null` se v souboru vynechá (`{"docType": "invno"}`). Výchozí řady
-  z provisioneru kód nemají, samotný kód by je nedohledal (D37). Seed hledá
-  jako `DocumentApplier::resolveNumberSeriesFor`, ale přísně: s kódem přesná
-  shoda `(doc_type, doc_number_code)`, bez kódu řada typu s prázdným kódem;
-  žádná nebo víc než jedna = chyba řádku;
+- `docs_core_number_series` → kód řady (`"invno"`, `"cash-POK"`,
+  `"cmnbkp-MA"`; #166 D16, D17) stejnou cestou jako ostatní číselníky.
+  Řadu sada **nenese** — není v `SetupExporter::TABLES`; odkazovat ji umí,
+  protože ji na cílovém zdroji dat založí provisionery se známým kódem
+  (`SetupReferences::PROVISIONED_TABLES`). Řada, kterou uživatel založil
+  ručně, se nepřenese a odkaz na ni seed odmítne jako nenalezený. Řada bez
+  kódu (zdroj dat před `ds-upgrade`) se z dumpu vynechá. Tvar sad před #166
+  — objekt `{"docType": "invno", "code": null}` — už neplatí, odmítne ho
+  schéma i seed (bez přechodného období, D14);
 - `economy_accounting_accounts` v sekci setup → číslo účtu s benevolentním
   hledáním jako dřív (chybějící analytika = `null`, ohlásí ji až engine) —
   výjimka `SetupSeeder`, ne resolveru;
@@ -171,7 +175,7 @@ Jeden soubor = jedna zakázka nad importním formátem
     "invoicing": {                       // jen periodický typ; chybějící přepis = hodnota druhu
       "periodicity": "month", "invoiceFrom": "2026-01-01",
       "docText": "Správa IT — paušál {období}",
-      "numberSeries": { "docType": "invno" },   // řada dokladů {docType, code} (D37)
+      "numberSeries": "invno",           // kód řady dokladů (#166 D17)
       "bankAccount": "BU2"               // kód vlastního účtu
     }
   },
@@ -190,7 +194,7 @@ Jeden soubor = jedna zakázka nad importním formátem
   přeloží klíče na id: řada zakázek kódem a středisko kódem
   (`SetupReferences`), zákazník jen podle identifikátorů (`PartyResolver`,
   nenalezený = chyba — osoba musí být v `persons/`), řada dokladů
-  `{docType, code}` a účet kódem, položka `ourCode` (`ItemResolver`,
+  a účet kódem, položka `ourCode` (`ItemResolver`,
   nenalezená = chyba); jednotka kódem dohledá verifier importu. Hlavičku ani
   řádky seeder nepíše mimo applier.
 - **Strana** je štíhlá identita (název, země, IČO, DIČ, VAT ID) — osoba sama

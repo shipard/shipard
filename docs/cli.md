@@ -934,7 +934,9 @@ VAT období, číselné řady, mail router). Bezpodmínečně (i pod
 `skipProvisioning`) běží jen enginové kontrakty: clearing 261200/261300
 se skupinou Nespárované platby, tranzit 261100, podrozvahové účty
 756100/799100 s opravou povahy 75–79 (`OffBalanceAccountsProvisioner`,
-#79 D2), AI připojení, řádky AI funkcí a profil pošty, pravidla předzpracování pošty a vázané řady.
+#79 D2), AI připojení, řádky AI funkcí a profil pošty, pravidla předzpracování pošty, vázané řady
+a doplnění kódů číselných řad dokladů a registrací DPH (#166 D17 — řádek
+`[FILL] … — filled: N` jen když se něco doplnilo).
 Určeno pro import dat
 z jiného systému, kde tyto údaje dodává sám import. Po dokončení importu
 nastav `skipProvisioning` zpět na `false` a spusť `ds-upgrade` znovu —
