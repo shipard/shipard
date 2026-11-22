@@ -275,13 +275,7 @@ final class DocumentApplierInstructionTest extends TestCase
 
     public function testTotalRoundingModeIsNotEstimatedFromAmounts(): void
     {
-        // Přijatá faktura zaokrouhlená na koruny: automatika u ní neplatí.
-        $payload = $this->happyPayload();
-        $payload['rows'][0]['unitPrice'] = 1033.03;
-        $payload['rows'][0]['totalPrice'] = 10330.30;
-        unset($payload['rows'][0]['computed']);
-        $payload['vatRecap'][0] = ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => 10330.30, 'tax' => 2169.36, 'total' => 12499.66];
-        $payload['totals'] = ['totalBase' => 10330.30, 'totalVat' => 2169.36, 'totalAmount' => 12500.00, 'totalRounding' => 0.34];
+        $payload = $this->roundedReceivedPayload();
 
         $proposal = $this->savedAfter($this->buildApplier()->apply($payload, ApplyMode::Proposal));
         $this->assertSame(1, $proposal['total_rounding_mode'], 'návrh mód odhadne z částek');
@@ -289,6 +283,82 @@ final class DocumentApplierInstructionTest extends TestCase
         $saved = $this->savedAfter($this->instruction($payload));
         $this->assertSame(0, $saved['total_rounding_auto']);
         $this->assertSame(0, $saved['total_rounding_mode']);
+        $this->assertSame([12499.66, 0.0], [$saved['total_amount'], $saved['total_rounding']]);
+    }
+
+    /** #166 D25, D26: při vypnuté automatice platí mód z payloadu — každý název módu. */
+    public function testExplicitTotalRoundingModeIsSavedWhenAutomaticIsOff(): void
+    {
+        // 12 499,66 → mód: [kód, částka, zaokrouhlení]
+        $expected = [
+            'cent'     => [0, 12499.66, 0.0],
+            'unit'     => [1, 12500.00, 0.34],
+            'unitUp'   => [3, 12500.00, 0.34],
+            'unitDown' => [4, 12499.00, -0.66],
+            'fiveCent' => [5, 12499.65, -0.01],
+        ];
+        foreach ($expected as $name => [$code, $amount, $rounding]) {
+            $payload = $this->roundedReceivedPayload();
+            $payload['totals']['totalRoundingMode'] = $name;
+
+            $saved = $this->savedAfter($this->instruction($payload));
+            $this->assertSame(
+                [0, $code, $amount, $rounding],
+                [$saved['total_rounding_auto'], $saved['total_rounding_mode'], $saved['total_amount'], $saved['total_rounding']],
+                $name,
+            );
+        }
+    }
+
+    /** #166 D26: automatika zapnutá a mód uvedený → platí automatika, mód dopočítá doklad. */
+    public function testExplicitTotalRoundingModeYieldsToAutomatic(): void
+    {
+        $payload = $this->issuedPayload();
+        $payload['totals']['totalRoundingMode'] = 'unitUp';
+
+        $saved = $this->savedAfter($this->instruction($payload));
+        $this->assertSame(1, $saved['total_rounding_auto']);
+        $this->assertNotSame(3, $saved['total_rounding_mode'] ?? 0, 'mód z payloadu se při automatice na doklad nedostane');
+
+        $payload['totals']['totalRoundingAuto'] = false;
+        $saved = $this->savedAfter($this->instruction($payload));
+        $this->assertSame([0, 3], [$saved['total_rounding_auto'], $saved['total_rounding_mode']]);
+    }
+
+    /** #166 D26: `vat.roundingMode` z payloadu, chybí = na haléře. */
+    public function testVatRoundingModeComesFromPayload(): void
+    {
+        $payload = $this->roundedReceivedPayload();
+        unset($payload['vatRecap']);
+        $this->assertSame(0, $this->savedAfter($this->instruction($payload))['vat_rounding_mode'] ?? 0);
+
+        $payload['vat']['roundingMode'] = 'unit';
+        $saved = $this->savedAfter($this->instruction($payload));
+        $this->assertSame(1, $saved['vat_rounding_mode']);
+        // 10 330,30 × 21 % = 2 169,36 → daň na koruny 2 169,00.
+        $this->assertSame([2169.0, 12499.30], [$saved['total_vat'], $saved['total_amount']]);
+
+        $payload['vat']['roundingMode'] = 'cent';
+        $this->assertSame(0, $this->savedAfter($this->instruction($payload))['vat_rounding_mode']);
+    }
+
+    /** #166 D28: návrh odhaduje jen bez uvedeného módu; uvedený má přednost i proti částkám. */
+    public function testExplicitRoundingModesWinOverEstimateInProposal(): void
+    {
+        $payload = $this->roundedReceivedPayload();
+        $applier = $this->buildApplier();
+
+        $payload['totals']['totalRoundingMode'] = 'unitUp';
+        $this->assertSame(3, $this->savedAfter($applier->apply($payload, ApplyMode::Proposal))['total_rounding_mode']);
+
+        $payload['totals']['totalRoundingMode'] = 'cent';
+        $saved = $this->savedAfter($applier->apply($payload, ApplyMode::Proposal));
+        $this->assertSame([0, 12499.66], [$saved['total_rounding_mode'], $saved['total_amount']], 'odhad z částek by dal mód 1');
+
+        $payload['totals']['totalRoundingMode'] = null;
+        $payload['vat']['roundingMode'] = 'unit';
+        $saved = $this->savedAfter($applier->apply($payload, ApplyMode::Proposal));
+        $this->assertSame([1, 1], [$saved['total_rounding_mode'], $saved['vat_rounding_mode']], 'null = neuvedeno, odhad zůstává');
     }
 
     /** U4: automatika nezávisí na `totals` — chybí = zapnuto tam, kde platí; výslovná hodnota vyhrává. */
@@ -532,6 +602,23 @@ final class DocumentApplierInstructionTest extends TestCase
      *
      * @return array<string, mixed>
      */
+    /**
+     * Přijatá faktura zaokrouhlená na koruny (12 499,66 → 12 500,00);
+     * automatika u přijatého dokladu neplatí.
+     *
+     * @return array<string, mixed>
+     */
+    private function roundedReceivedPayload(): array
+    {
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['unitPrice'] = 1033.03;
+        $payload['rows'][0]['totalPrice'] = 10330.30;
+        unset($payload['rows'][0]['computed']);
+        $payload['vatRecap'][0] = ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => 10330.30, 'tax' => 2169.36, 'total' => 12499.66];
+        $payload['totals'] = ['totalBase' => 10330.30, 'totalVat' => 2169.36, 'totalAmount' => 12500.00, 'totalRounding' => 0.34];
+        return $payload;
+    }
+
     private function issuedPayload(): array
     {
         $payload = $this->happyPayload();

@@ -22,6 +22,9 @@ final class DocumentIssuePathsTest extends TestCase
         $this->assertSame('correction.reason', DocumentIssuePaths::path('correction_reason', $received, []));
         $this->assertSame('vatRecap', DocumentIssuePaths::path('recap', $received, []));
         $this->assertSame('vat.registrationCountry', DocumentIssuePaths::path('vat_registration', $received, []));
+        $this->assertSame('totals.totalRoundingMode', DocumentIssuePaths::path('total_rounding_mode', $received, []));
+        $this->assertSame('totals.totalRoundingAuto', DocumentIssuePaths::path('total_rounding_auto', $received, []));
+        $this->assertSame('vat.roundingMode', DocumentIssuePaths::path('vat_rounding_mode', $received, []));
     }
 
     public function testPartnerIsTheOtherSideOfTheDocument(): void

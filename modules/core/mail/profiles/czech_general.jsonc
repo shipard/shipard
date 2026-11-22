@@ -428,6 +428,13 @@
                                                         "rows",
                                                         null
                                                     ]
+                                                },
+                                                "roundingMode": {
+                                                    "enum": [
+                                                        "cent",
+                                                        "unit",
+                                                        null
+                                                    ]
                                                 }
                                             }
                                         },
@@ -562,6 +569,16 @@
                                                     "type": [
                                                         "boolean",
                                                         "null"
+                                                    ]
+                                                },
+                                                "totalRoundingMode": {
+                                                    "enum": [
+                                                        "cent",
+                                                        "unit",
+                                                        "unitUp",
+                                                        "unitDown",
+                                                        "fiveCent",
+                                                        null
                                                     ]
                                                 }
                                             }

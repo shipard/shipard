@@ -1,6 +1,6 @@
 # Task: `totals` jako kontrolní součet a výslovný mód zaokrouhlení
 
-**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část B; D4, D25–D29); část A je hotová
+**Stav:** částečně — commit 1 z 5 hotový 2026-11-22 (pole formátu, pokyn, export, demo sada); zbývá kontrolní součet, payloady, snapshot osoby a dokumentace (#166 etapa 3, část B; D4, D25–D29)
 
 **Issue:** #166 (etapa 3; D4, D25–D29)
 

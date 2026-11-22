@@ -14,10 +14,9 @@ use Shipard\Tests\Integration\Exchange\RoundTrip\RoundTripFixtures as F;
  * z konfigurace zdroje dat přes {@see RoundTripFixtures}.
  *
  * Očekávání `gap` nese přesný rozdíl ze skutečného běhu (U5). Když ji další
- * etapa zavře, test to ohlásí a případ se přepne na `holds`. Po zavedení
- * režimu pokyn (#166 etapa 3 část A) zbývá jediná mezera — ručně zvolený
- * mód zaokrouhlení, který formát zatím nenese
- * (tasks/doc-totals-rounding-explicit.md).
+ * etapa zavře, test to ohlásí a případ se přepne na `holds`. Po výslovném
+ * módu zaokrouhlení ve formátu (#166 etapa 3 část B,
+ * tasks/doc-totals-rounding-explicit.md) matice žádnou mezeru nemá.
  */
 final class RoundTripCases
 {
@@ -73,25 +72,26 @@ final class RoundTripCases
                 ]],
             ),
 
-            RoundTripCase::gap(
+            RoundTripCase::holds(
                 'issued-rounding-manual',
                 'faktura vydaná, automatika vypnutá, ručně zvolený mód zaokrouhlení (nahoru na 1)',
-                // 100,50 + 21 % = 121,61 → nahoru 122,00; matematicky vyjde totéž.
+                // 100,10 + 21 % = 121,12 → nahoru 122,00; matematicky by vyšlo
+                // 121,00 — směr módu tak musí přenést formát
+                // (`totals.totalRoundingMode`, #166 D25), z částek uhodnout nejde.
                 static fn (F $f): array => $f->issuedHead('vydaná s ručním zaokrouhlením', [
                     'total_rounding_auto' => 0,
                     'total_rounding_mode' => RoundingModes::UP_UNIT,
                 ]) + ['rows' => [
-                    $f->row(true, 'práce', 1, 100.50, $f->vatCode('output', 'domestic', 'standard')),
+                    $f->row(true, 'práce', 1, 100.10, $f->vatCode('output', 'domestic', 'standard')),
                 ]],
-                // Export mód nenese a pokyn ho neodhaduje (#166 U4): bez automatiky
-                // je na haléře, takže se liší i částka. Zavře výslovný mód ve
-                // formátu (tasks/doc-totals-rounding-explicit.md).
-                ['diff' => [
-                    'head.total_amount'        => ['122.00', '121.61'],
-                    'head.total_amount_dom'    => ['122.00', '121.61'],
-                    'head.total_rounding'      => ['0.39', '0.00'],
-                    'head.total_rounding_dom'  => ['0.39', '0.00'],
-                    'head.total_rounding_mode' => [RoundingModes::UP_UNIT, RoundingModes::ON_CENT],
+            ),
+
+            RoundTripCase::holds(
+                'issued-vat-rounding-unit',
+                'faktura vydaná, zaokrouhlení DPH na koruny',
+                // 100,50 × 21 % = 21,11 → daň 21,00, celkem 121,50 (`vat.roundingMode`, #166 D25).
+                static fn (F $f): array => $f->issuedHead('vydaná s DPH na koruny', ['vat_rounding_mode' => RoundingModes::MATH_UNIT]) + ['rows' => [
+                    $f->row(true, 'práce', 1, 100.50, $f->vatCode('output', 'domestic', 'standard')),
                 ]],
             ),
 

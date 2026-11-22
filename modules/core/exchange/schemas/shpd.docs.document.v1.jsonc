@@ -9,14 +9,19 @@
     //     enforces per-docType rules (povinná pole, místo plnění apod.).
     //   - `additionalProperties` is false on top-level and on most objects;
     //     `source.raw` is the one exception (opaque vendor payload).
-    //   - `vatRecap` and `totals` are *informative* — Applier recomputes them
-    //     via DocDocument::beforeSave. Validator compares declared vs.
-    //     computed and emits `totals_mismatch` warning; a whole-number
-    //     `totalAmount` less than 1.00 away from a computed variant passes
-    //     (rounded invoice total — Applier derives `total_rounding_mode`
-    //     from the numbers, `totals.totalRounding` itself is informative).
-    //     `totals.totalRoundingAuto` is the one authoritative key there
-    //     (#73 D8): automatic rounding by payment method on sales documents.
+    //   - `vatRecap` and `totals` amounts are never the authority — Applier
+    //     recomputes them via DocDocument::beforeSave (#166 D4). In an
+    //     instruction the numeric `totals` fields are a **checksum**: a
+    //     declared value more than 0.01 away from the computed one fails
+    //     the apply with `totals_check_failed` and nothing is saved. In a
+    //     proposal (`applyOptions.interpret`) they stay a signal: Validator
+    //     emits the `totals_mismatch` warning and Applier derives
+    //     `total_rounding_mode` from the numbers when
+    //     `totals.totalRoundingMode` is absent.
+    //     `totals.totalRoundingAuto`, `totals.totalRoundingMode` and
+    //     `vat.roundingMode` are intent (#73 D8, #166 D25): automatic
+    //     rounding by payment method on sales documents, otherwise the
+    //     named mode.
 
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://shipard.cz/schemas/shpd.docs.document.v1.json",
@@ -159,7 +164,13 @@
                 // "document" = `dates.vatRateDate`; "rows" = `rows[].vat.rateDate`
                 // a `vatRecap[].rateDate`, prázdné = automatika. null → auto.
                 // Jediné místo pravidel je VatRateDates (docs.core).
-                "rateSource":          { "enum": ["auto", "document", "rows", null] }
+                "rateSource":          { "enum": ["auto", "document", "rows", null] },
+
+                // Zaokrouhlení DPH (docs.core.vatRoundingModes, sloupec
+                // vat_rounding_mode, #166 D25): "cent" = na haléře, "unit" =
+                // na celé jednotky měny. Záměr v obou režimech; null → "cent".
+                // Názvy ↔ kódy: RoundingModeNames (core.exchange).
+                "roundingMode":        { "enum": ["cent", "unit", null] }
             }
         },
 
@@ -224,7 +235,7 @@
             "items": { "$ref": "#/$defs/Row" }
         },
 
-        // ── Computed (informative; applier recomputes) ─────────────────
+        // ── Computed (applier recomputes; `totals` = checksum, #166 D4) ─
         "vatRecap": {
             "type": "array",
             "items": { "$ref": "#/$defs/VatRecapEntry" }
@@ -238,9 +249,18 @@
                 "totalAmount":   { "type": ["number", "null"] },
                 "totalRounding": { "type": ["number", "null"] },
                 // Automatické zaokrouhlení podle způsobu úhrady (#73 D8):
-                // explicitní hodnota vyhrává; null / chybí = zapnuto u
-                // prodejního dokladu bez totalAmount, jinak vypnuto.
-                "totalRoundingAuto": { "type": ["boolean", "null"] }
+                // explicitní hodnota vyhrává. null / chybí: pokyn ji zapne
+                // všude, kde automatika platí (prodejní typy; #166 D26),
+                // návrh jen u prodejního dokladu bez totalAmount.
+                "totalRoundingAuto": { "type": ["boolean", "null"] },
+                // Mód zaokrouhlení celkové částky (docs.core.roundingModes,
+                // sloupec total_rounding_mode, #166 D25): "cent" na haléře,
+                // "unit" matematicky na 1, "unitUp" / "unitDown" na 1 nahoru /
+                // dolů, "fiveCent" matematicky na 0,05. Platí při vypnuté
+                // automatice; null → pokyn "cent", návrh odhad z částek. Při
+                // zapnuté automatice mód určí způsob úhrady — liší-li se
+                // uvedený, pokyn hlásí `total_rounding_mode_ignored`.
+                "totalRoundingMode": { "enum": ["cent", "unit", "unitUp", "unitDown", "fiveCent", null] }
             }
         },
 

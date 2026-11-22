@@ -223,6 +223,17 @@ def total_rounding_auto(doc: DocRec) -> bool:
     return True
 
 
+def total_rounding_mode(doc: DocRec) -> str | None:
+    """`totals.totalRoundingMode` jako `DocumentExporter` (#166 D25, U5): jen
+    při vypnuté automatice a jen mimo výchozí „na haléře“. Pokyn mód
+    z částek neodhaduje — doklad zaokrouhlený příběhem na koruny
+    (`rounding: czk`, matematicky) ho musí nést, jinak by vyšel na haléře
+    a neprošel kontrolním součtem `totals`."""
+    if doc.rounding != "czk" or total_rounding_auto(doc):
+        return None
+    return "unit"
+
+
 def doc_record(doc: DocRec, story: Story) -> dict:
     side = partner_side(doc)
     party = None
@@ -289,6 +300,7 @@ def doc_record(doc: DocRec, story: Story) -> dict:
             "totalAmount": php_float(doc.total_amount),
             "totalRounding": php_float(doc.total_rounding),
             "totalRoundingAuto": total_rounding_auto(doc),
+            "totalRoundingMode": total_rounding_mode(doc),
         },
         "applyOptions": apply_options,
     }

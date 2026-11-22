@@ -457,6 +457,40 @@ class DocumentExporterTest extends TestCase
         );
     }
 
+    /**
+     * #166 D25, U5: mód zaokrouhlení jen s nevýchozí hodnotou — dump dokladů,
+     * kterých se to netýká, se nezmění. Mód celkové částky jen při vypnuté
+     * automatice (jinak ho určuje způsob úhrady).
+     */
+    public function testRoundingModesAreExportedOnlyWhenNotDefault(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+        $schema = new SchemaValidator(SchemaLoader::default());
+
+        $default = $exporter->exportDocument($this->headRow(['total_rounding_mode' => 0, 'vat_rounding_mode' => 0]))->data;
+        $this->assertArrayNotHasKey('totalRoundingMode', $default['totals']);
+        $this->assertArrayNotHasKey('roundingMode', $default['vat']);
+
+        $manual = $exporter->exportDocument($this->headRow(['total_rounding_mode' => 3, 'vat_rounding_mode' => 1]))->data;
+        $this->assertSame('unitUp', $manual['totals']['totalRoundingMode']);
+        $this->assertFalse($manual['totals']['totalRoundingAuto']);
+        $this->assertSame('unit', $manual['vat']['roundingMode']);
+        $this->assertSame([], $schema->validate($manual, 'shpd.docs.document', '1'));
+
+        foreach ([1 => 'unit', 4 => 'unitDown', 5 => 'fiveCent'] as $code => $name) {
+            $this->assertSame(
+                $name,
+                $exporter->exportDocument($this->headRow(['total_rounding_mode' => $code]))->data['totals']['totalRoundingMode'],
+            );
+        }
+
+        $auto = $exporter->exportDocument($this->headRow(['total_rounding_auto' => 1, 'total_rounding_mode' => 1]))->data;
+        $this->assertArrayNotHasKey('totalRoundingMode', $auto['totals'], 'při automatice mód určuje způsob úhrady');
+
+        $legacy = $exporter->exportDocument($this->headRow(['total_rounding_mode' => 2]))->data;
+        $this->assertArrayNotHasKey('totalRoundingMode', $legacy['totals'], 'historický kód 2 se chová jako na haléře');
+    }
+
     public function testManualControlStatementModeIsExported(): void
     {
         $exporter = new DocumentExporter($this->db(rows: [$this->itemRowRow()]));

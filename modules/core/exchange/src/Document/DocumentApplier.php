@@ -565,7 +565,8 @@ class DocumentApplier
                 'totalAmount'   => (float) ($data['total_amount'] ?? 0),
                 'totalRounding' => (float) ($data['total_rounding'] ?? 0),
                 // Mód, který skončí na dokladu — při automatice (#73 D8) ho
-                // určil computeAmounts, jinak odvození z čísel.
+                // určil computeAmounts, jinak výslovný mód z payloadu,
+                // v návrhu bez něj odvození z čísel.
                 'totalRoundingMode' => (int) ($data['total_rounding_mode'] ?? 0),
             ],
             'rows' => $computedRows,
@@ -1874,6 +1875,7 @@ class DocumentApplier
         // Směr pokladního dokladu (jen cashDocument; validátor hlídá 1/2).
         $cashDir = isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0;
         $totalRoundingAuto = $this->resolveTotalRoundingAuto($canonical, $docType, $cashDir, $mode);
+        $totalRoundingMode = RoundingModeNames::totalCode($canonical['totals']['totalRoundingMode'] ?? null);
         // Ruční plátce (#72): poslaná strana = partner_balance s příznakem
         // ručního zadání, aby ho odvození (terminál / dopravce) nepřepsalo.
         $balancePartyId = $sideIds['balanceParty'] ?? $plan['resolvedBalanceParty'] ?? null;
@@ -1997,21 +1999,25 @@ class DocumentApplier
             'exchange_rate'        => $canonical['exchangeRate'] ?? ($this->exchangeRateDecision($canonical)['value'] ?? null),
             // Automatické zaokrouhlení podle způsobu úhrady (#73 D8), viz
             // resolveTotalRoundingAuto(). Při zapnuté automatice mód určí
-            // DocDocument::computeAmounts (klíč vypadne). Jinak v návrhu
-            // odvozeno z čísel (computed vs declared), extrahovaný
-            // totals.totalRounding je jen informativní; null → klíč vypadne
-            // přes array_filter níže a platí default 0. Pokyn mód neodhaduje
-            // (#166 D19, U4): bez automatiky je na haléře — výslovný mód
-            // přinese tasks/doc-totals-rounding-explicit.md.
+            // DocDocument::computeAmounts (klíč vypadne). Jinak platí
+            // výslovný `totals.totalRoundingMode` (#166 D25, D26); bez něj
+            // je pokyn na haléře (mód neodhaduje, D19) a návrh mód odvodí
+            // z čísel (computed vs declared) — extrahovaný
+            // totals.totalRounding je jen signál; null → klíč vypadne přes
+            // array_filter níže a platí default 0.
             'total_rounding_auto'  => $totalRoundingAuto ? 1 : 0,
             'total_rounding_mode'  => match (true) {
-                $totalRoundingAuto => null,
-                !$mode->derives()  => RoundingModes::ON_CENT,
-                default            => $this->deriveTotalRoundingMode(
+                $totalRoundingAuto          => null,
+                $totalRoundingMode !== null => $totalRoundingMode,
+                !$mode->derives()           => RoundingModes::ON_CENT,
+                default                     => $this->deriveTotalRoundingMode(
                     $canonical,
                     $supplierVatGross !== [] ? round(array_sum($supplierVatGross), 2) : null,
                 ),
             },
+            // Zaokrouhlení DPH (#166 D25): záměr z payloadu v obou režimech,
+            // odhad neexistuje; null → klíč vypadne a platí default 0.
+            'vat_rounding_mode'    => RoundingModeNames::vatCode($canonical['vat']['roundingMode'] ?? null),
             'payment_method'       => $paymentMethod,
             'payment_reference'    => $canonical['payment']['paymentReference'] ?? null,
             'specific_symbol'      => $canonical['payment']['specificSymbol'] ?? null,
@@ -5082,11 +5088,12 @@ class DocumentApplier
      * Příznak automatického zaokrouhlení nového dokladu (#73 D8, U9): jen
      * doklad, kde automatika platí ({@see TotalRoundingAuto::applies()} —
      * prodejní typ, u pokladního dokladu příjem). Explicitní
-     * `totals.totalRoundingAuto` vyhrává (dump → seed zachová stav dokladu);
-     * bez něj zapnuto právě tehdy, když canonical nemá deklarovanou
-     * `totals.totalAmount` (faktura ze zakázky). Import ze starého Shipardu,
-     * pošta i ISDOC částku nesou — zůstávají u módu odvozeného z čísel
-     * ({@see deriveTotalRoundingMode()}), žádný doklad se jim nepřepočítá.
+     * `totals.totalRoundingAuto` vyhrává (dump → seed zachová stav dokladu).
+     * Bez něj: pokyn ji zapne všude, kde platí (#166 D26) — na `totals`
+     * nezáleží, mód při vypnuté automatice říká `totals.totalRoundingMode`;
+     * návrh ji zapne právě tehdy, když canonical nemá deklarovanou
+     * `totals.totalAmount`. Pošta i ISDOC částku nesou — zůstávají u módu
+     * uvedeného, jinak odvozeného z čísel ({@see deriveTotalRoundingMode()}).
      *
      * @param array<string, mixed> $canonical
      */

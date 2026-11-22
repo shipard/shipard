@@ -140,7 +140,8 @@
         "totalVat": 800.42,
         "totalAmount": 4612.0,
         "totalRounding": 0.08,
-        "totalRoundingAuto": false
+        "totalRoundingAuto": false,
+        "totalRoundingMode": "unit"
     },
     "applyOptions": {
         "targetDocState": 40,

@@ -8,6 +8,7 @@ from invoicegen.catalogs import load_catalogs
 from invoicegen.datasetio import dumps_dataset
 from invoicegen.dumpshape import (
     asset_record, asset_slug, asset_sort_key, bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, total_rounding_auto,
+    total_rounding_mode,
     php_float, work_order_record, work_order_slug, work_order_sort_key,
 )
 from invoicegen.model import AssetRec, DocRec, PeriodRec, RecapLine, RowRec, StatementRec, TxRec, WorkOrderRec, WorkOrderRowRec
@@ -59,6 +60,27 @@ class TotalRoundingAutoTest(unittest.TestCase):
         self.assertEqual("totalRoundingAuto", list(issued["totals"])[-1], "pořadí klíčů jako DocumentExporter")
         self.assertIs(True, issued["totals"]["totalRoundingAuto"])
         self.assertIs(False, received["totals"]["totalRoundingAuto"], "false se neprořezává — pokyn ho čte výslovně")
+
+
+class TotalRoundingModeTest(unittest.TestCase):
+    """`totals.totalRoundingMode` jen s nevýchozí hodnotou (#166 D25, U5)."""
+
+    def test_mode_is_written_only_for_manual_rounding(self) -> None:
+        whole, cents = Decimal("4788.00"), Decimal("4788.26")
+        self.assertEqual("unit", total_rounding_mode(doc("invni", rounding="czk", total_amount=whole)))
+        self.assertIsNone(total_rounding_mode(doc("invni", total_amount=cents)), "na haléře je výchozí hodnota")
+        self.assertIsNone(total_rounding_mode(doc("invno", payment_method="cash", rounding="czk", total_amount=whole)),
+                          "při automatice mód určuje způsob úhrady")
+
+    def test_record_carries_the_mode_after_the_flag(self) -> None:
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        rounded = doc_record(doc("invni", partner_key="cipdeska", self_party="customer", number="2260012", sequence=12,
+                                 rounding="czk"), story)
+        plain = doc_record(doc("invni", partner_key="cipdeska", self_party="customer", number="2260011", sequence=11), story)
+
+        self.assertEqual(["totalRoundingAuto", "totalRoundingMode"], list(rounded["totals"])[-2:], "pořadí jako DocumentExporter")
+        self.assertEqual("unit", rounded["totals"]["totalRoundingMode"])
+        self.assertNotIn("totalRoundingMode", plain["totals"])
 
 
 class DocDimensionsTest(unittest.TestCase):

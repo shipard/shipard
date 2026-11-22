@@ -12,6 +12,7 @@ use Shipard\Core\Database\TableDefinition;
 use Shipard\Module\Core\Exchange\Dataset\ExportedRecord;
 use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
+use Shipard\Module\Core\Exchange\Document\RoundingModeNames;
 use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
 
 /**
@@ -30,10 +31,12 @@ use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
  * koncepty bez čísla ho nemají a číslo dostanou až při potvrzení.
  * Odvozené sloupce (fiskální rok, DPH období, částky v domácí měně,
  * snapshoty partnera, účetní stav) se neexportují — `DocDocument` je při
- * seedu spočítá znovu. Zaokrouhlení: mód se neexportuje (applier ho odvodí
- * z deklarované částky), příznak automatiky ano (`totals.totalRoundingAuto`,
- * #73 D8 — jinak by deklarovaná částka automatiku vypnula). Řádkový partner
- * (účetní doklad) formát nenese → warning.
+ * seedu spočítá znovu. Zaokrouhlení: příznak automatiky vždy
+ * (`totals.totalRoundingAuto`, #73 D8), mód celkové částky a mód DPH jen
+ * s nevýchozí hodnotou (`totals.totalRoundingMode` při vypnuté automatice,
+ * `vat.roundingMode`; #166 D25) — pokyn mód neodhaduje, bez pole je na
+ * haléře. Částky `totals` jsou při seedu kontrolní součet (#166 D4).
+ * Řádkový partner (účetní doklad) formát nenese → warning.
  */
 final class DocumentExporter implements RecordExporter
 {
@@ -383,6 +386,11 @@ final class DocumentExporter implements RecordExporter
                 // bez něj by seed vlastní data sazby zahodil a procenta
                 // řádků ve staré sazbě přepočítal.
                 'rateSource'          => self::VAT_RATE_SOURCE_NAMES[(int) ($h['vat_rate_source'] ?? 0)] ?? null,
+                // Zaokrouhlení DPH (#166 D25) — jen mimo výchozí „na haléře“,
+                // aby se dump dokladů, kterých se to netýká, nezměnil.
+                'roundingMode'        => self::nonDefaultMode(
+                    RoundingModeNames::vatName((int) ($h['vat_rounding_mode'] ?? 0)),
+                ),
             ],
             'payment'       => [
                 'method'           => self::PAYMENT_METHOD_NAMES[(int) ($h['payment_method'] ?? 1)] ?? null,
@@ -415,6 +423,11 @@ final class DocumentExporter implements RecordExporter
                 // (#73 D8): pokyn ji bez pole zapne všude, kde platí (#166 U4),
                 // návrh by ji podle deklarované částky vypnul.
                 'totalRoundingAuto' => V::bool($h['total_rounding_auto'] ?? null),
+                // Ručně zvolený mód (#166 D25): jen při vypnuté automatice
+                // (jinak ho určuje způsob úhrady) a jen mimo „na haléře“.
+                'totalRoundingMode' => empty($h['total_rounding_auto'])
+                    ? self::nonDefaultMode(RoundingModeNames::totalName((int) ($h['total_rounding_mode'] ?? 0)))
+                    : null,
             ],
             'applyOptions'  => $applyOptions,
         ];
@@ -434,6 +447,12 @@ final class DocumentExporter implements RecordExporter
         }
 
         return new ExportedRecord($id, $slug, $pruned);
+    }
+
+    /** Název módu zaokrouhlení pro export: výchozí `cent` a kód bez názvu se nevypisují. */
+    private static function nonDefaultMode(?string $name): ?string
+    {
+        return $name === 'cent' ? null : $name;
     }
 
     // ── dimenze deníku ──────────────────────────────────────────────────────

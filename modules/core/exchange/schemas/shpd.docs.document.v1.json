@@ -63,7 +63,8 @@
                 "recapSource":         { "enum": ["computed", "declared", null] },
                 "calcSource":          { "enum": ["header", "rows", null] },
                 "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] },
-                "rateSource":          { "enum": ["auto", "document", "rows", null] }
+                "rateSource":          { "enum": ["auto", "document", "rows", null] },
+                "roundingMode":        { "enum": ["cent", "unit", null] }
             }
         },
         "payment": {
@@ -113,7 +114,8 @@
                 "totalVat":      { "type": ["number", "null"] },
                 "totalAmount":   { "type": ["number", "null"] },
                 "totalRounding": { "type": ["number", "null"] },
-                "totalRoundingAuto": { "type": ["boolean", "null"] }
+                "totalRoundingAuto": { "type": ["boolean", "null"] },
+                "totalRoundingMode": { "enum": ["cent", "unit", "unitUp", "unitDown", "fiveCent", null] }
             }
         },
         "attachments": {
