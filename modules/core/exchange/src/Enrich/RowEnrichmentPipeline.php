@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Enrich;
 
+use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Core\Ai\AiCallOverride;
 use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\LlmClient;
@@ -285,7 +286,7 @@ final class RowEnrichmentPipeline
             if (!is_array($row) || !RowHistoryEnricher::rowExpectsItem($row)) {
                 continue;
             }
-            if (trim((string) ($row['item']['ourCode'] ?? '')) !== '') {
+            if (CanonicalReferences::rowItemIsSet($row)) {
                 continue; // pokryto Vrstvou 0 / AI extrakcí / userActions
             }
 
@@ -327,17 +328,16 @@ final class RowEnrichmentPipeline
             if ($resolution['status'] === 'item') {
                 $suggested = [];
                 $suggestedCode = $resolution['suggested']['ourCode'] ?? null;
+                // Řádek dostává reference (#166 D33); `suggested` nese holé hodnoty.
                 if (is_string($suggestedCode) && $suggestedCode !== '') {
-                    $item = is_array($row['item'] ?? null) ? $row['item'] : [];
-                    $item['ourCode'] = $suggestedCode;
-                    $row['item'] = $item;
+                    $row = CanonicalReferences::suggestItem($row, $suggestedCode);
                     $suggested['ourCode'] = $suggestedCode;
                 }
                 $suggestedAccount = $resolution['suggested']['account'] ?? null;
                 if (is_string($suggestedAccount) && $suggestedAccount !== ''
-                    && trim((string) ($row['account'] ?? '')) === ''
+                    && !CanonicalReferences::rowAccountIsSet($row)
                 ) {
-                    $row['account'] = $suggestedAccount;
+                    $row = CanonicalReferences::suggestAccount($row, $suggestedAccount);
                     $suggested['account'] = $suggestedAccount;
                 }
                 $canonical['rows'][$idx] = $row;
@@ -367,7 +367,7 @@ final class RowEnrichmentPipeline
     {
         foreach ((array) ($canonical['rows'] ?? []) as $row) {
             if (is_array($row) && RowHistoryEnricher::rowExpectsItem($row)
-                && trim((string) ($row['item']['ourCode'] ?? '')) === ''
+                && !CanonicalReferences::rowItemIsSet($row)
             ) {
                 return true;
             }
@@ -425,11 +425,11 @@ final class RowEnrichmentPipeline
                 ? $entry['enrichment']['suggested']
                 : [];
             $row = $canonical['rows'][$idx];
-            if (isset($suggested['ourCode']) && ($row['item']['ourCode'] ?? null) === $suggested['ourCode']) {
-                $row['item']['ourCode'] = null;
+            if (isset($suggested['ourCode'])) {
+                $row = CanonicalReferences::revertSuggestedItem($row, (string) $suggested['ourCode']);
             }
-            if (isset($suggested['account']) && ($row['account'] ?? null) === $suggested['account']) {
-                $row['account'] = null;
+            if (isset($suggested['account'])) {
+                $row = CanonicalReferences::revertSuggestedAccount($row, (string) $suggested['account']);
             }
             $canonical['rows'][$idx] = $row;
         }

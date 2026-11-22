@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Exchange\Enrich;
 
 use Dibi\Connection;
 use Shipard\Module\Core\Exchange\Document\CanonicalRowText;
+use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
@@ -15,7 +16,8 @@ use Shipard\Module\Docs\Core\OwnCompanyResolver;
  * Obohacení řádků AI-extrahovaného canonical dokumentu z historie dokladů
  * téhož partnera (deterministická vrstva 0 „AI párování položek").
  *
- * Čistá funkce canonical → canonical: pro řádky bez `item.ourCode` dohledá
+ * Čistá funkce canonical → canonical: pro řádky bez položky (`item.ref`,
+ * u uložených návrhů `item.ourCode` — #166 D33, D39) dohledá
  * v řádcích dřívějších dokladů stejného partnera a doc_type shodný popis
  * a propíše z něj trojici `item.ourCode` + `vat.code` + `account` (D1).
  * Doplňuje jen prázdná pole — AI extrakce ani userActions se nepřepisují
@@ -126,7 +128,7 @@ final class RowHistoryEnricher
         $hasUncovered = false;
         foreach ($rows as $row) {
             if (is_array($row) && self::rowExpectsItem($row)
-                && trim((string) ($row['item']['ourCode'] ?? '')) === ''
+                && !CanonicalReferences::rowItemIsSet($row)
             ) {
                 $hasUncovered = true;
                 break;
@@ -148,7 +150,7 @@ final class RowHistoryEnricher
             if (!is_array($row) || !self::rowExpectsItem($row)) {
                 continue;
             }
-            if (trim((string) ($row['item']['ourCode'] ?? '')) !== '') {
+            if (CanonicalReferences::rowItemIsSet($row)) {
                 continue;
             }
             $match = $this->findDominantItem($history, $row);
@@ -203,7 +205,7 @@ final class RowHistoryEnricher
             $enrichment['skipped'] = 'noItemRow';
             return $this->writeEnrichment($canonical, $idx, $enrichment);
         }
-        if (trim((string) ($row['item']['ourCode'] ?? '')) !== '') {
+        if (CanonicalReferences::rowItemIsSet($row)) {
             $enrichment['skipped'] = 'hasOurCode';
             return $this->writeEnrichment($canonical, $idx, $enrichment);
         }
@@ -233,10 +235,11 @@ final class RowHistoryEnricher
     {
         [$hist, $matchedBy, $confidence, $matchedText] = $match;
 
+        // Řádek dostává reference (#166 D33): položka `item.ref`, účet
+        // `"@číslo"`. Auditní blok `suggested` nese holé hodnoty (kód
+        // položky, číslo účtu) — podle něj se návrh pozná a odvolá.
         $suggested = [];
-        $item = is_array($row['item'] ?? null) ? $row['item'] : [];
-        $item['ourCode'] = (string) $hist['item_code'];
-        $row['item'] = $item;
+        $row = CanonicalReferences::suggestItem($row, (string) $hist['item_code']);
         $suggested['ourCode'] = (string) $hist['item_code'];
 
         $histVat = trim((string) ($hist['vat_code'] ?? ''));
@@ -248,8 +251,8 @@ final class RowHistoryEnricher
         }
 
         $histAccount = trim((string) ($hist['account_number'] ?? ''));
-        if ($histAccount !== '' && trim((string) ($row['account'] ?? '')) === '') {
-            $row['account'] = $histAccount;
+        if ($histAccount !== '' && !CanonicalReferences::rowAccountIsSet($row)) {
+            $row = CanonicalReferences::suggestAccount($row, $histAccount);
             $suggested['account'] = $histAccount;
         }
 
@@ -528,14 +531,14 @@ final class RowHistoryEnricher
                 ? $entry['enrichment']['suggested']
                 : [];
             $row = $canonical['rows'][$idx];
-            if (isset($suggested['ourCode']) && ($row['item']['ourCode'] ?? null) === $suggested['ourCode']) {
-                $row['item']['ourCode'] = null;
+            if (isset($suggested['ourCode'])) {
+                $row = CanonicalReferences::revertSuggestedItem($row, (string) $suggested['ourCode']);
             }
             if (isset($suggested['vatCode']) && ($row['vat']['code'] ?? null) === $suggested['vatCode']) {
                 $row['vat']['code'] = null;
             }
-            if (isset($suggested['account']) && ($row['account'] ?? null) === $suggested['account']) {
-                $row['account'] = null;
+            if (isset($suggested['account'])) {
+                $row = CanonicalReferences::revertSuggestedAccount($row, (string) $suggested['account']);
             }
             $canonical['rows'][$idx] = $row;
         }

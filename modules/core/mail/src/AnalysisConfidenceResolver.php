@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail;
 
+use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
@@ -340,7 +341,7 @@ class AnalysisConfidenceResolver
             if (!is_array($row) || !RowHistoryEnricher::rowExpectsItem($row)) {
                 continue;
             }
-            if (trim((string) ($row['item']['ourCode'] ?? '')) === '') {
+            if (!CanonicalReferences::rowItemIsSet($row)) {
                 return false;
             }
             if (($enrichments[$idx]['confidence'] ?? null) === 'low') {

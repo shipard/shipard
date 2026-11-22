@@ -167,16 +167,17 @@ final class SpecialPlaceSupply
     }
 
     /**
-     * `item.ourCode` řádku, pokud se podle něj smí klasifikovat — řádek
-     * s volbou položky od uživatele kód nedává.
+     * Kód položky řádku (`item.ref` ve tvaru `"@kód"`, u uložených návrhů
+     * `item.ourCode` — #166 D33, D39), pokud se podle něj smí klasifikovat —
+     * řádek s volbou položky od uživatele kód nedává.
      *
      * @param array<string, mixed> $canonical
      */
     private static function classifiableItemCode(array $canonical, int $rowIndex): ?string
     {
         $row = $canonical['rows'][$rowIndex] ?? null;
-        $code = is_array($row) && is_scalar($row['item']['ourCode'] ?? null) ? trim((string) $row['item']['ourCode']) : '';
-        if ($code === '') {
+        $code = CanonicalReferences::rowItemCode($row);
+        if ($code === null) {
             return null;
         }
         $action = $canonical['_resolve']['rows'][$rowIndex]['item']['userAction'] ?? null;

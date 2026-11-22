@@ -2551,7 +2551,7 @@ class DocumentApplier
             [$pins['place'], $pins['mode'], $pins['rows'], $pins['subjects'], $pins['ignored']],
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
-                    ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null, $row['item']['ourCode'] ?? null]
+                    ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null, CanonicalReferences::rowItemCode($row)]
                     : null,
                 $rows,
             ),

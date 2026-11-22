@@ -24,8 +24,9 @@ export function itemDecision(userActions, i) {
  * Klíč zdroje napárování pro i18n (`exchange.preview.match.source.*`):
  *   user            — ruční volba (pin) nebo položka založená z náhledu
  *   historyExact / historyFuzzy / historyDominant / contentTag
- *                   — řádek napárovaný přes `ourCode`, který doplnil
- *                     enrichment (display.code === suggested.ourCode)
+ *                   — řádek napárovaný referencí (`ref`, u starších
+ *                     návrhů `ourCode`), kterou doplnil enrichment
+ *                     (display.code === suggested.ourCode)
  *   ourCode / supplierCode / ean / sku / name — podle `item.matchedBy`
  * Bez napárování null.
  */
@@ -34,7 +35,9 @@ export function matchSourceKey(itemBlock, enrichment, display, pinned = false) {
   const by = itemBlock?.matchedBy ?? null;
   if (by === null) return null;
   if (by === 'created') return 'user';
-  if (by === 'ourCode') {
+  // 'ref' = položka určená referencí (#166 D33) — tak ji zapisuje obohacení;
+  // 'ourCode' = starší uložený návrh (D39). Obojí je napárování naším kódem.
+  if (by === 'ourCode' || by === 'ref') {
     const suggested = enrichment?.suggested?.ourCode ?? null;
     if (suggested !== null && display?.code != null && display.code === suggested) {
       const e = enrichment?.matchedBy ?? null;

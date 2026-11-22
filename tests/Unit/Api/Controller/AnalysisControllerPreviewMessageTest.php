@@ -325,7 +325,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
             ->previewMessage($this->authed(), $this->request(), 100);
         $this->assertSame(200, $this->statusOf($resp));
 
-        $this->assertSame('KONZ01', $captured['rows'][0]['item']['ourCode']);
+        $this->assertSame('@KONZ01', $captured['rows'][0]['item']['ref']);
         $this->assertSame(
             'historyExactRaw',
             $captured['_resolve']['rows'][0]['enrichment']['matchedBy'],

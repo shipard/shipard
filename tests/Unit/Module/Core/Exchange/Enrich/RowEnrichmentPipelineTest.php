@@ -160,7 +160,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $result = $pipeline->enrichAtResult($this->canonical([$this->itemRow('Konzultace')]));
 
-        $this->assertSame('KONZ01', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@KONZ01', $result['rows'][0]['item']['ref']);
         $this->assertArrayNotHasKey('contentTag', $result['_resolve'] ?? []);
     }
 
@@ -184,8 +184,8 @@ class RowEnrichmentPipelineTest extends TestCase
             ['tag' => 'vehicle.fuel', 'tagSource' => 'rule', 'ruleId' => 5],
             $result['_resolve']['contentTag'],
         );
-        $this->assertSame('FUEL', $result['rows'][0]['item']['ourCode']);
-        $this->assertSame('503100', $result['rows'][0]['account']);
+        $this->assertSame('@FUEL', $result['rows'][0]['item']['ref']);
+        $this->assertSame('@503100', $result['rows'][0]['account']);
         $enrichment = $this->enrichmentAt($result, 0);
         $this->assertSame('contentTag', $enrichment['matchedBy']);
         $this->assertSame('medium', $enrichment['confidence']);
@@ -258,9 +258,9 @@ class RowEnrichmentPipelineTest extends TestCase
         $this->assertSame(ContentTagClassifier::TAG_PROMPT_VERSION, $block['promptVersion']);
         $this->assertSame(0.9, $block['tagConfidence']);
 
-        $this->assertSame('FUEL', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@FUEL', $result['rows'][0]['item']['ref']);
         // rowException přebije primaryTag na svém řádku
-        $this->assertSame('KAPAL', $result['rows'][1]['item']['ourCode']);
+        $this->assertSame('@KAPAL', $result['rows'][1]['item']['ref']);
         $this->assertSame('vehicle.consumables', $this->enrichmentAt($result, 1)['tag']);
     }
 
@@ -271,7 +271,7 @@ class RowEnrichmentPipelineTest extends TestCase
         $result = $pipeline->enrichAtResult($this->canonical([$this->itemRow('Něco')]));
 
         $this->assertArrayNotHasKey('contentTag', $result['_resolve'] ?? []);
-        $this->assertNull($result['rows'][0]['item']['ourCode']);
+        $this->assertNull($result['rows'][0]['item']['ref'] ?? null);
     }
 
     // ── Fresh běh (preview/apply) ───────────────────────────────────────────
@@ -292,7 +292,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $this->assertSame('rule', $result['_resolve']['contentTag']['tagSource']);
         $this->assertSame('vehicle.fuel', $result['_resolve']['contentTag']['tag']);
-        $this->assertSame('FUEL', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@FUEL', $result['rows'][0]['item']['ref']);
     }
 
     public function testRuleKeepsPersistedRowExceptions(): void
@@ -316,8 +316,8 @@ class RowEnrichmentPipelineTest extends TestCase
         $this->assertSame('rule', $block['tagSource']);
         $this->assertSame('services.training', $block['tag']);
         $this->assertSame([['rowIndex' => 1, 'tag' => 'travel.fares']], $block['rowExceptions']);
-        $this->assertSame('TRAIN', $result['rows'][0]['item']['ourCode']);
-        $this->assertSame('FARES', $result['rows'][1]['item']['ourCode']);
+        $this->assertSame('@TRAIN', $result['rows'][0]['item']['ref']);
+        $this->assertSame('@FARES', $result['rows'][1]['item']['ref']);
     }
 
     public function testFreshKeepsPersistedLlmTagWhenNoRule(): void
@@ -334,7 +334,7 @@ class RowEnrichmentPipelineTest extends TestCase
         $result = $pipeline->enrichFresh($canonical);
 
         $this->assertSame('llm', $result['_resolve']['contentTag']['tagSource']);
-        $this->assertSame('SW', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@SW', $result['rows'][0]['item']['ref']);
     }
 
     public function testFreshRunIsDeterministicAndIdempotent(): void
@@ -363,7 +363,7 @@ class RowEnrichmentPipelineTest extends TestCase
         $row['account'] = '501999'; // AI extrakce už účet dodala
         $result = $pipeline->enrichFresh($this->canonical([$row]));
 
-        $this->assertSame('FUEL', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@FUEL', $result['rows'][0]['item']['ref']);
         $this->assertSame('501999', $result['rows'][0]['account']);
         $this->assertSame(['ourCode' => 'FUEL'], $this->enrichmentAt($result, 0)['suggested']);
     }
@@ -378,7 +378,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $result = $pipeline->enrichFresh($this->canonical([$this->itemRow('Server', 95000.0)]));
 
-        $this->assertNull($result['rows'][0]['item']['ourCode']);
+        $this->assertNull($result['rows'][0]['item']['ref'] ?? null);
         $enrichment = $this->enrichmentAt($result, 0);
         $this->assertSame('guarded', $enrichment['resolution']);
         $this->assertSame('amount', $enrichment['guard']);
@@ -392,7 +392,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $result = $pipeline->enrichFresh($this->canonical([$this->itemRow('Cosi')]));
 
-        $this->assertNull($result['rows'][0]['item']['ourCode']);
+        $this->assertNull($result['rows'][0]['item']['ref'] ?? null);
         $this->assertNull($result['rows'][0]['account'], 'štítek bez položky účet nenavrhuje (#36 D3)');
         $enrichment = $this->enrichmentAt($result, 0);
         $this->assertSame('unmapped', $enrichment['resolution']);
@@ -429,7 +429,7 @@ class RowEnrichmentPipelineTest extends TestCase
         $result = $pipeline->enrichFresh($canonical);
 
         $this->assertNull($result['rows'][0]['account']);
-        $this->assertNull($result['rows'][0]['item']['ourCode']);
+        $this->assertNull($result['rows'][0]['item']['ref'] ?? null);
         $enrichment = $this->enrichmentAt($result, 0);
         $this->assertSame('unmapped', $enrichment['resolution']);
         $this->assertSame('vehicle.fuel', $enrichment['tag']);
@@ -483,7 +483,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $result = $pipeline->enrichFresh($this->canonical([$this->itemRow('Natural 95')]));
 
-        $this->assertSame('FUEL', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@FUEL', $result['rows'][0]['item']['ref']);
         $this->assertSame('contentTag', $this->enrichmentAt($result, 0)['matchedBy']);
     }
 
@@ -499,7 +499,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $result = $pipeline->enrichFresh($this->canonical([$this->itemRow('Cosi')]));
 
-        $this->assertSame('MAT', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@MAT', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyDominantItem', $this->enrichmentAt($result, 0)['matchedBy']);
     }
 
@@ -517,7 +517,7 @@ class RowEnrichmentPipelineTest extends TestCase
 
         $result = $pipeline->enrichAtResult($this->canonical([$this->itemRow('Natural 95')]));
 
-        $this->assertSame('MAT', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@MAT', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyDominantItem', $this->enrichmentAt($result, 0)['matchedBy']);
         $this->assertArrayNotHasKey('contentTag', $result['_resolve'] ?? []);
     }

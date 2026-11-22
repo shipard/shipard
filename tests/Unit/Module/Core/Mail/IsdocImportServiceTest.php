@@ -377,7 +377,7 @@ class IsdocImportServiceTest extends TestCase
 
         $this->assertTrue($result);
         $canonical = json_decode((string) $this->inserts[0][1]['canonical_json'], true);
-        $this->assertSame('SRV-TEST', $canonical['rows'][0]['item']['ourCode']);
+        $this->assertSame('@SRV-TEST', $canonical['rows'][0]['item']['ref']);
         $this->assertSame('cz-110', $canonical['rows'][0]['vat']['code']);
         $this->assertSame('historyExactRaw', $canonical['_resolve']['rows'][0]['enrichment']['matchedBy']);
         // Vrstva 0 pokryla vše → eskalace neběží, štítek není.

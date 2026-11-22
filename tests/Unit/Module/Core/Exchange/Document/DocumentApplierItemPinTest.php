@@ -35,6 +35,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierItemPinTest extends TestCase
 {
+    use ReferenceFixture;
+
     private ?array $savedHeadsData = null;
 
     private function buildApplier(ResolveResult $itemResult, ?int $accountId): TestableDocumentApplier
@@ -99,6 +101,11 @@ class DocumentApplierItemPinTest extends TestCase
             accountResolver: $account,
             vatCodeDerivation: new VatCodeDerivation(new VatRateResolver($this->createMock(ConfigRuntime::class))),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($this->createMock(ConfigRuntime::class))),
+            // Tvar, jaký píše obohacení (#166 D33): položka KONZ (18), účet 518100 (55).
+            references: $this->referenceResolver([
+                'economy_items'               => ['code=KONZ' => 18],
+                'economy_accounting_accounts' => ['number=518100' => 55],
+            ]),
         );
     }
 
@@ -173,6 +180,32 @@ class DocumentApplierItemPinTest extends TestCase
         $this->assertSame(77, $row['item']);
         $this->assertArrayNotHasKey('account', $row, 'účet z historie se s ruční položkou nezapíše (D7b)');
         $this->assertSame('cz-110', $row['vat_code'], 'kód DPH je z analýzy, položka ho nemění (D7a)');
+    }
+
+    /**
+     * Totéž nad tvarem, jaký píše obohacení od #166 (D33): položka `item.ref`,
+     * účet `"@číslo"`, `suggested` holými hodnotami. Volba uživatele přebíjí
+     * položku z obohacení a účet navržený s ní se nezapíše; bez volby platí obojí.
+     */
+    public function testPinDropsSuggestedAccountAlsoInReferenceShape(): void
+    {
+        $enriched = function (?string $itemAction): array {
+            $payload = $this->payload('@518100', '518100', $itemAction);
+            $payload['rows'][0]['item']['ref'] = '@KONZ';
+            return $payload;
+        };
+        $applier = $this->buildApplier(ResolveResult::notFound(), null);
+
+        $result = $applier->apply($enriched(null), ApplyMode::Proposal);
+        $this->assertTrue($result->success, "{$result->errorCode}: {$result->errorMessage}");
+        $this->assertSame(18, $this->savedHeadsData['rows'][0]['item'], 'položka z reference obohacení');
+        $this->assertSame(55, $this->savedHeadsData['rows'][0]['account']);
+        $this->assertSame('ref', $result->canonical['_resolve']['rows'][0]['item']['matchedBy']);
+
+        $result = $applier->apply($enriched('useExisting:77'), ApplyMode::Proposal);
+        $this->assertTrue($result->success, "{$result->errorCode}: {$result->errorMessage}");
+        $this->assertSame(77, $this->savedHeadsData['rows'][0]['item'], 'volba uživatele přebíjí položku z obohacení');
+        $this->assertArrayNotHasKey('account', $this->savedHeadsData['rows'][0], 'účet navržený s položkou se nezapíše (D7b)');
     }
 
     public function testPinKeepsAccountThatDiffersFromSuggestion(): void

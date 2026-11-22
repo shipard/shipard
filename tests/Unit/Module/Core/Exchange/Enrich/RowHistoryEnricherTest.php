@@ -121,9 +121,9 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $row = $result['rows'][0];
-        $this->assertSame('NET500', $row['item']['ourCode']);
+        $this->assertSame('@NET500', $row['item']['ref']);
         $this->assertSame('std21', $row['vat']['code']);
-        $this->assertSame('518001', $row['account']);
+        $this->assertSame('@518001', $row['account']);
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
         $this->assertSame(0, $result['_resolve']['rows'][0]['index']);
@@ -166,7 +166,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('L500', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@L500', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame('high', $enrichment['confidence']);
         $this->assertSame(2001, $enrichment['sourceDocId']);
@@ -184,7 +184,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('RENT-A', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@RENT-A', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyFuzzy', $enrichment['matchedBy']);
         $this->assertSame('medium', $enrichment['confidence']);
     }
@@ -219,6 +219,7 @@ class RowHistoryEnricherTest extends TestCase
         $result = $enricher->enrich($input);
 
         $this->assertSame('X1', $result['rows'][0]['item']['ourCode']);
+        $this->assertArrayNotHasKey('ref', $result['rows'][0]['item'], 'řádek s kódem od AI se nemění');
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
         $this->assertNull($enrichment['matchedBy']);
         $this->assertSame('hasOurCode', $enrichment['skipped']);
@@ -235,7 +236,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $row = $result['rows'][0];
-        $this->assertSame('NET500', $row['item']['ourCode']);
+        $this->assertSame('@NET500', $row['item']['ref']);
         $this->assertSame('osvob', $row['vat']['code']);
         $this->assertArrayNotHasKey('account', $row);
         $this->assertSame(
@@ -334,9 +335,9 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $row = $result['rows'][0];
-        $this->assertSame('NET1000', $row['item']['ourCode']);
+        $this->assertSame('@NET1000', $row['item']['ref']);
         $this->assertSame('cz-110', $row['vat']['code']);
-        $this->assertSame('518100', $row['account']);
+        $this->assertSame('@518100', $row['account']);
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
@@ -358,7 +359,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('LAN01', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@LAN01', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame('Konektivita 4LAN', $enrichment['matchedText']);
     }
@@ -378,7 +379,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('SUP01', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@SUP01', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame('Servisní podpora', $enrichment['matchedText']);
         $this->assertSame(3001, $enrichment['sourceDocId']);
@@ -401,7 +402,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('SRV01', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@SRV01', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame('high', $enrichment['confidence']);
         $this->assertSame('Údržba serveru', $enrichment['matchedText']);
@@ -419,7 +420,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('NET500', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@NET500', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame('Internet 500M', $enrichment['matchedText']);
     }
@@ -443,7 +444,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('NET500', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@NET500', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame('high', $enrichment['confidence']);
         $this->assertSame(
@@ -470,7 +471,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $matched = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('RENT-A', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@RENT-A', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyFuzzy', $matched['matchedBy']);
         $this->assertSame('medium', $matched['confidence']);
         $this->assertSame('Pronájem kancelářských prostor budova B 7/2026', $matched['matchedText']);
@@ -496,7 +497,7 @@ class RowHistoryEnricherTest extends TestCase
         $second = $enricher->enrich($first);
 
         $this->assertSame($first, $second);
-        $this->assertSame('NET500', $second['rows'][0]['item']['ourCode']);
+        $this->assertSame('@NET500', $second['rows'][0]['item']['ref']);
         $this->assertSame('historyExactNorm', $second['_resolve']['rows'][0]['enrichment']['matchedBy']);
     }
 
@@ -533,12 +534,66 @@ class RowHistoryEnricherTest extends TestCase
         $result = $enricher->enrich($persisted);
 
         $row = $result['rows'][0];
-        $this->assertNull($row['item']['ourCode']);
+        $this->assertNull($row['item']['ourCode'], 'uložený návrh starým tvarem (#166 D39) se odvolá stejně');
+        $this->assertNull($row['item']['ref'] ?? null);
         $this->assertNull($row['vat']['code']);
         $this->assertNull($row['account']);
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
         $this->assertNull($enrichment['matchedBy']);
         $this->assertSame([], $enrichment['suggested']);
+    }
+
+    /**
+     * #166 D33, D39: obohacení píše reference (`item.ref`, účet `"@číslo"`);
+     * uložený návrh starým tvarem (`item.ourCode`, holé číslo účtu) čte dál
+     * a při novém běhu ho přepíše na reference. `suggested` nese holé hodnoty.
+     */
+    public function testStoredProposalInOldShapeIsReadAndRewrittenAsReferences(): void
+    {
+        $enricher = $this->buildEnricher([
+            $this->histRow('Internet 500M 6/2026', 'NET500'),
+        ]);
+        $persisted = $this->canonical([
+            [
+                'description' => 'Internet 500M 7/2026',
+                'item'        => ['ourCode' => 'NET500'],
+                'vat'         => ['code' => 'std21'],
+                'account'     => '518001',
+            ],
+        ]);
+        $persisted['_resolve']['rows'] = [[
+            'index'      => 0,
+            'enrichment' => [
+                'matchedBy'  => 'historyExactNorm',
+                'confidence' => 'high',
+                'suggested'  => ['ourCode' => 'NET500', 'vatCode' => 'std21', 'account' => '518001'],
+            ],
+        ]];
+
+        $result = $enricher->enrich($persisted);
+
+        $row = $result['rows'][0];
+        $this->assertSame('@NET500', $row['item']['ref']);
+        $this->assertNull($row['item']['ourCode']);
+        $this->assertSame('@518001', $row['account']);
+        $this->assertSame(
+            ['ourCode' => 'NET500', 'vatCode' => 'std21', 'account' => '518001'],
+            $result['_resolve']['rows'][0]['enrichment']['suggested'],
+        );
+        $this->assertSame($result, $enricher->enrich($result), 'další běh nad novým tvarem je idempotentní');
+    }
+
+    /** Řádek s položkou určenou referencí (pokyn, ruční doplnění) obohacení nechává být. */
+    public function testRowWithItemReferenceIsSkipped(): void
+    {
+        $enricher = $this->buildEnricher([$this->histRow('Internet 500M', 'NET500')]);
+
+        $result = $enricher->enrich($this->canonical([
+            ['description' => 'Internet 500M', 'item' => ['ref' => 18]],
+        ]));
+
+        $this->assertSame(['ref' => 18], $result['rows'][0]['item']);
+        $this->assertSame('hasOurCode', $result['_resolve']['rows'][0]['enrichment']['skipped']);
     }
 
     // ── Úroveň 3 — dominantní položka partnera ──────────────────────────────
@@ -555,9 +610,9 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $row = $result['rows'][0];
-        $this->assertSame('MAT', $row['item']['ourCode']);
+        $this->assertSame('@MAT', $row['item']['ref']);
         $this->assertSame('std21', $row['vat']['code']);
-        $this->assertSame('501001', $row['account']);
+        $this->assertSame('@501001', $row['account']);
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
         $this->assertSame('historyDominantItem', $enrichment['matchedBy']);
@@ -616,13 +671,13 @@ class RowHistoryEnricherTest extends TestCase
         $this->assertArrayNotHasKey('item', $result['rows'][0]);
         $this->assertNull($result['_resolve']['rows'][0]['enrichment']['matchedBy']);
 
-        $this->assertSame('MAT', $result['rows'][1]['item']['ourCode']);
+        $this->assertSame('@MAT', $result['rows'][1]['item']['ref']);
         $this->assertSame(
             'historyDominantItem',
             $result['_resolve']['rows'][1]['enrichment']['matchedBy'],
         );
 
-        $this->assertSame('MAT', $result['rows'][2]['item']['ourCode']);
+        $this->assertSame('@MAT', $result['rows'][2]['item']['ref']);
         $this->assertSame(
             'historyDominantItem',
             $result['_resolve']['rows'][2]['enrichment']['matchedBy'],
@@ -642,7 +697,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('RENT-A', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@RENT-A', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyFuzzy', $enrichment['matchedBy']);
         $this->assertSame('medium', $enrichment['confidence']);
         $this->assertArrayNotHasKey('dominance', $enrichment);
@@ -659,7 +714,7 @@ class RowHistoryEnricherTest extends TestCase
         ]));
 
         $enrichment = $result['_resolve']['rows'][0]['enrichment'];
-        $this->assertSame('MAT', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('@MAT', $result['rows'][0]['item']['ref']);
         $this->assertSame('historyDominantItem', $enrichment['matchedBy']);
         $this->assertNull($enrichment['matchedText']);
         $this->assertSame(['share' => 1.0, 'rows' => 12], $enrichment['dominance']);
@@ -677,7 +732,7 @@ class RowHistoryEnricherTest extends TestCase
         $second = $enricher->enrich($first);
 
         $this->assertSame($first, $second);
-        $this->assertSame('MAT', $second['rows'][0]['item']['ourCode']);
+        $this->assertSame('@MAT', $second['rows'][0]['item']['ref']);
         $this->assertSame(
             'historyDominantItem',
             $second['_resolve']['rows'][0]['enrichment']['matchedBy'],

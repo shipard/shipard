@@ -14,7 +14,11 @@ namespace Shipard\Module\Core\Exchange\Document;
  *  - které údaje strany a položky „identifikují“ (objekt bez `ref` s nimi
  *    je v pokynu chyba `reference_missing`);
  *  - které volby `_resolve` pokyn nečte ({@see withoutReferencePins()});
- *  - účet řádku holým číslem je signál návrhu, ne reference.
+ *  - účet řádku holým číslem je signál návrhu, ne reference;
+ *  - položka a účet řádku, jak je čte a zapisuje obohacení návrhu
+ *    ({@see rowItemIsSet()}, {@see suggestItem()} …): nově reference
+ *    `"@kód"`, uložené návrhy starým tvarem (`item.ourCode`, holé číslo
+ *    účtu — D39) se čtou dál.
  */
 final class CanonicalReferences
 {
@@ -100,6 +104,108 @@ final class CanonicalReferences
             }
         }
         return false;
+    }
+
+    // ── Položka a účet řádku v návrhu (obohacení, D33, D39) ─────────────────
+
+    /**
+     * Je položka řádku určená — referencí, nebo signálem `item.ourCode`
+     * (uložené návrhy)? Takový řádek obohacení nechává být.
+     */
+    public static function rowItemIsSet(mixed $row): bool
+    {
+        $item = is_array($row) && is_array($row['item'] ?? null) ? $row['item'] : [];
+        return self::isSet($item['ref'] ?? null) || trim((string) ($item['ourCode'] ?? '')) !== '';
+    }
+
+    /**
+     * Kód položky řádku: z reference `"@kód"` (tvar, jaký píše obohacení),
+     * jinak ze signálu `item.ourCode`. Reference id nebo jmenovaným
+     * sloupcem (`"@ean:…"`) kód nedává — null.
+     */
+    public static function rowItemCode(mixed $row): ?string
+    {
+        $item = is_array($row) && is_array($row['item'] ?? null) ? $row['item'] : [];
+        $ref = $item['ref'] ?? null;
+        if (is_string($ref) && str_starts_with($ref, '@')) {
+            $key = substr($ref, 1);
+            if (str_starts_with($key, 'code:')) {
+                $key = substr($key, 5);
+            } elseif (preg_match('/^(ean|sku):/', $key) === 1) {
+                return null;
+            }
+            return $key !== '' ? $key : null;
+        }
+        if (self::isSet($ref)) {
+            return null;
+        }
+        $code = is_scalar($item['ourCode'] ?? null) ? trim((string) $item['ourCode']) : '';
+        return $code !== '' ? $code : null;
+    }
+
+    /**
+     * Položka navržená obohacením → `item.ref = "@kód"`.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    public static function suggestItem(array $row, string $code): array
+    {
+        $item = is_array($row['item'] ?? null) ? $row['item'] : [];
+        $item['ref'] = '@' . $code;
+        $row['item'] = $item;
+        return $row;
+    }
+
+    /**
+     * Odvolá položku navrženou obohacením, pokud ji od té doby nikdo
+     * nezměnil — nový tvar (`ref`) i starý (`ourCode`).
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    public static function revertSuggestedItem(array $row, string $code): array
+    {
+        if (!is_array($row['item'] ?? null)) {
+            return $row;
+        }
+        if (($row['item']['ref'] ?? null) === '@' . $code) {
+            $row['item']['ref'] = null;
+        }
+        if (($row['item']['ourCode'] ?? null) === $code) {
+            $row['item']['ourCode'] = null;
+        }
+        return $row;
+    }
+
+    /** Je na řádku účet (reference i holé číslo)? */
+    public static function rowAccountIsSet(mixed $row): bool
+    {
+        return is_array($row) && self::isSet($row['account'] ?? null);
+    }
+
+    /**
+     * Účet navržený obohacením → reference `"@číslo"`.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    public static function suggestAccount(array $row, string $number): array
+    {
+        $row['account'] = '@' . $number;
+        return $row;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    public static function revertSuggestedAccount(array $row, string $number): array
+    {
+        if (in_array($row['account'] ?? null, ['@' . $number, $number], true)) {
+            $row['account'] = null;
+        }
+        return $row;
     }
 
     /**

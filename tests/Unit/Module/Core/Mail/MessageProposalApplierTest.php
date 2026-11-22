@@ -513,8 +513,8 @@ class MessageProposalApplierTest extends TestCase
         $service->apply(self::MESSAGE_NDX, 7, ['rows[0].item' => 'useExisting:55']);
 
         $this->assertNotNull($captured);
-        $this->assertSame('KONZ01', $captured['rows'][0]['item']['ourCode']);
-        $this->assertSame('518100', $captured['rows'][0]['account']);
+        $this->assertSame('@KONZ01', $captured['rows'][0]['item']['ref']);
+        $this->assertSame('@518100', $captured['rows'][0]['account']);
         $rowResolve = $captured['_resolve']['rows'][0];
         $this->assertSame('useExisting:55', $rowResolve['item']['userAction']);
         $this->assertSame('historyExactRaw', $rowResolve['enrichment']['matchedBy']);
@@ -541,7 +541,7 @@ class MessageProposalApplierTest extends TestCase
             ->apply(self::MESSAGE_NDX, 7, null);
 
         $this->assertTrue($outcome->ok);
-        $this->assertNull($captured['rows'][0]['item']['ourCode']); // neobohaceno
+        $this->assertNull($captured['rows'][0]['item']['ref'] ?? null); // neobohaceno
     }
 
     // ── PrimaryTypes ────────────────────────────────────────────────────────

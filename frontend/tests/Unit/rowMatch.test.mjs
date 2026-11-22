@@ -43,6 +43,15 @@ test('matchSourceKey: ourCode z historie podle enrichment.matchedBy', () => {
   assert.equal(matchSourceKey(block, e('contentTag'), display), 'contentTag');
 });
 
+test('matchSourceKey: položka určená referencí (#166 D33) se čte jako ourCode', () => {
+  // Obohacení píše `item.ref`, applier pak hlásí matchedBy "ref".
+  const block = { matchedBy: 'ref' };
+  const e = { matchedBy: 'historyExactNorm', suggested: { ourCode: 'NET500' } };
+  assert.equal(matchSourceKey(block, e, { code: 'NET500' }), 'historyExact');
+  assert.equal(matchSourceKey(block, { matchedBy: 'contentTag', suggested: { ourCode: 'NET500' } }, { code: 'NET500' }), 'contentTag');
+  assert.equal(matchSourceKey(block, null, { code: 'NET500' }), 'ourCode');
+});
+
 test('matchSourceKey: ourCode z AI (kód se s návrhem neshoduje nebo enrichment chybí) → ourCode', () => {
   const block = { matchedBy: 'ourCode' };
   assert.equal(matchSourceKey(block, null, { code: 'NET500' }), 'ourCode');

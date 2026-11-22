@@ -66,6 +66,45 @@ final class CanonicalReferencesTest extends TestCase
         $this->assertFalse(CanonicalReferences::isAccountSignal(null));
     }
 
+    /** D33, D39: položku řádku návrhu čtou obohacení, pásmo karty i zvláštní místo plnění z obou tvarů. */
+    public function testRowItemIsReadFromReferenceAndFromStoredSignal(): void
+    {
+        $this->assertTrue(CanonicalReferences::rowItemIsSet(['item' => ['ref' => '@K-001']]));
+        $this->assertTrue(CanonicalReferences::rowItemIsSet(['item' => ['ref' => 18]]));
+        $this->assertTrue(CanonicalReferences::rowItemIsSet(['item' => ['ourCode' => 'K-001']]));
+        $this->assertFalse(CanonicalReferences::rowItemIsSet(['item' => ['ref' => null, 'ourCode' => ' ', 'name' => 'X']]));
+        $this->assertFalse(CanonicalReferences::rowItemIsSet(['description' => 'bez položky']));
+
+        $this->assertSame('K-001', CanonicalReferences::rowItemCode(['item' => ['ref' => '@K-001']]));
+        $this->assertSame('K-001', CanonicalReferences::rowItemCode(['item' => ['ref' => '@code:K-001']]));
+        $this->assertSame('K-001', CanonicalReferences::rowItemCode(['item' => ['ourCode' => ' K-001 ']]));
+        $this->assertNull(CanonicalReferences::rowItemCode(['item' => ['ref' => 18, 'ourCode' => 'JINY']]), 'reference id kód nedává a má přednost');
+        $this->assertNull(CanonicalReferences::rowItemCode(['item' => ['ref' => '@ean:8590000000017']]));
+        $this->assertNull(CanonicalReferences::rowItemCode(['item' => ['name' => 'X']]));
+    }
+
+    public function testSuggestedItemAndAccountAreWrittenAsReferencesAndRevertedInBothShapes(): void
+    {
+        $row = CanonicalReferences::suggestItem(['item' => ['name' => 'Internet', 'ourCode' => null]], 'NET500');
+        $row = CanonicalReferences::suggestAccount($row, '518001');
+        $this->assertSame(['item' => ['name' => 'Internet', 'ourCode' => null, 'ref' => '@NET500'], 'account' => '@518001'], $row);
+        $this->assertTrue(CanonicalReferences::rowAccountIsSet($row));
+
+        $reverted = CanonicalReferences::revertSuggestedAccount(CanonicalReferences::revertSuggestedItem($row, 'NET500'), '518001');
+        $this->assertNull($reverted['item']['ref']);
+        $this->assertNull($reverted['account']);
+        $this->assertFalse(CanonicalReferences::rowItemIsSet($reverted));
+
+        // Uložený návrh starým tvarem.
+        $old = ['item' => ['ourCode' => 'NET500'], 'account' => '518001'];
+        $reverted = CanonicalReferences::revertSuggestedAccount(CanonicalReferences::revertSuggestedItem($old, 'NET500'), '518001');
+        $this->assertSame(['item' => ['ourCode' => null], 'account' => null], $reverted);
+
+        // Hodnota, kterou mezitím někdo změnil, zůstává.
+        $changed = ['item' => ['ref' => '@JINA'], 'account' => '@501000'];
+        $this->assertSame($changed, CanonicalReferences::revertSuggestedAccount(CanonicalReferences::revertSuggestedItem($changed, 'NET500'), '518001'));
+    }
+
     /** D32: pokyn nečte volby, které určují referenci; ostatní bloky `_resolve` zůstávají. */
     public function testReferencePinsAreRemovedAndOtherBlocksKept(): void
     {

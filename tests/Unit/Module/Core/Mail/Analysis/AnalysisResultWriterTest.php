@@ -952,8 +952,8 @@ class AnalysisResultWriterTest extends TestCase
 
         $this->assertTrue($valid);
         $decoded = json_decode((string) $json, true);
-        $this->assertSame('KONZ01', $decoded['rows'][0]['item']['ourCode']);
-        $this->assertSame('518100', $decoded['rows'][0]['account']);
+        $this->assertSame('@KONZ01', $decoded['rows'][0]['item']['ref']);
+        $this->assertSame('@518100', $decoded['rows'][0]['account']);
         $enrichment = $decoded['_resolve']['rows'][0]['enrichment'];
         $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
         $this->assertSame(777, $enrichment['sourceDocId']);
@@ -979,7 +979,7 @@ class AnalysisResultWriterTest extends TestCase
         $this->assertTrue($valid);
         $decoded = json_decode((string) $json, true);
         $this->assertArrayNotHasKey('_resolve', $decoded);
-        $this->assertNull($decoded['rows'][0]['item']['ourCode']);
+        $this->assertNull($decoded['rows'][0]['item']['ref'] ?? null);
     }
 
     public function testValidateCanonicalNormalizesValuesBeforeEnrichment(): void
