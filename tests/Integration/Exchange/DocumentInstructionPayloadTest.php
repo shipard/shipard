@@ -21,7 +21,10 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * ceny řádků s daní při `fromBase`. Druhá skupina (#166 D25–D27,
  * tasks/doc-totals-rounding-explicit.md U7): `totals` jako kontrolní součet
  * a výslovný mód zaokrouhlení — součty, které se od výpočtu liší, mód
- * v rozporu s automatikou, součty v cizí měně.
+ * v rozporu s automatikou, součty v cizí měně. Třetí skupina (#166 D30–D39,
+ * tasks/doc-format-references.md U8): reference — nenalezená, nejednoznačná
+ * a špatně zapsaná, strana jen údaji, signály návrhu v pokynu, řada
+ * a registrace DPH referencí; kde to dává smysl, týž payload i v návrhu.
  *
  * Payload vzniká z dokladu pořízeného cestou formuláře (koncept → export)
  * a úpravou toho, co případ zkoumá; po apply se čte uložený doklad
@@ -421,7 +424,246 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame($before, $this->documentCount());
     }
 
+    // ── Reference (#166 D30–D39) ────────────────────────────────────────────
+
+    /** Export píše každý odkaz referencí přirozeným klíčem — a pokyn ho tak zase najde. */
+    public function testExportedReferencesAreFoundAgain(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->referencePayload();
+
+        $this->assertSame('@IT-RT-P2', $payload['supplier']['ref']);
+        $this->assertSame('@' . F::PREFIX . '-NAKUP', $payload['rows'][0]['item']['ref']);
+        $this->assertStringStartsWith('@', (string) $payload['numberSeries']);
+        $this->assertStringStartsWith('@', (string) $payload['vat']['registration']);
+        $this->assertArrayNotHasKey('numberSeriesCode', $payload['applyOptions']);
+
+        $saved = $this->saved($this->applier->apply($this->options($payload, 10)));
+
+        $this->assertSame($f->person('supplier'), (int) $saved->head['partner']);
+        $this->assertSame($f->item(false), (int) $saved->rows[0]['item']);
+        $this->assertSame($f->seriesId('invni'), (int) $saved->head['number_series']);
+        $this->assertSame($f->vatRegistrationId(), (int) $saved->head['vat_registration']);
+    }
+
+    /** D35: osoba přes IČO, položka jen referencí kódem (bez objektu). */
+    public function testPersonByCompanyIdAndItemByBareReference(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->referencePayload();
+        $payload['supplier'] = '@company_id:88200019';
+        $payload['rows'][0]['item'] = '@' . F::PREFIX . '-NAKUP';
+
+        $saved = $this->saved($this->applier->apply($this->options($payload, 10)));
+
+        $this->assertSame($f->person('supplier'), (int) $saved->head['partner']);
+        $this->assertSame($f->item(false), (int) $saved->rows[0]['item']);
+        $this->assertSame('služby', mb_substr((string) $saved->rows[0]['description'], -6), 'text řádku z pole description');
+    }
+
+    public function testUnknownReferenceIsAnErrorAndNothingIsSaved(): void
+    {
+        $payload = $this->referencePayload();
+        $before = $this->documentCount();
+
+        foreach ([
+            'supplier'    => static function (array $p): array { $p['supplier'] = '@IT-RT-NENI'; return $p; },
+            'rows.0.item' => static function (array $p): array { $p['rows'][0]['item'] = ['ref' => '@IT-RT-NENI', 'name' => 'x']; return $p; },
+            'numberSeries' => static function (array $p): array { $p['numberSeries'] = '@it-rt-neni'; return $p; },
+        ] as $path => $change) {
+            $result = $this->applier->apply($this->options($change($payload), 10));
+
+            $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode], $path);
+            $this->assertSame([['error', $path]], self::findings($result, 'reference_not_found'), $path);
+            $this->assertSame($before, $this->documentCount(), $path);
+        }
+    }
+
+    /** D35: dvě osoby se stejným IČO — nikdy první nalezená. */
+    public function testAmbiguousCompanyIdIsAnError(): void
+    {
+        $payload = $this->referencePayload();
+        $this->db->insertRow('base_persons_persons', [
+            'person_id'    => F::PREFIX . '-P9',
+            'person_type'  => 2,
+            'full_name'    => F::PREFIX . ' Dvojník s.r.o.',
+            'last_name'    => F::PREFIX . ' Dvojník s.r.o.',
+            'first_name'   => '',
+            'company_id'   => '88200019',
+            'docState'     => 40,
+            'docStateMain' => 3,
+        ]);
+        $payload['supplier'] = ['ref' => '@company_id:88200019'] + $payload['supplier'];
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($this->options($payload, 10));
+
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'supplier']], self::findings($result, 'reference_ambiguous'));
+        $this->assertSame($before, $this->documentCount());
+    }
+
+    /** D31: strana jen údaji není hledání podle jména ani tiché „bez partnera“. */
+    public function testPartyByDataOnlyIsReferenceMissing(): void
+    {
+        $payload = $this->referencePayload();
+        unset($payload['supplier']['ref']);
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($this->options($payload, 10));
+
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'supplier']], self::findings($result, 'reference_missing'));
+        $this->assertSame($before, $this->documentCount());
+
+        // Návrh podle údajů hledá jako dřív (IČO dodavatele je v adresáři).
+        $proposal = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $this->assertSame($this->fixtures->person('supplier'), (int) $proposal->head['partner']);
+    }
+
+    /** D9: číselný řetězec není id. */
+    public function testNumericStringIsAnInvalidReference(): void
+    {
+        $payload = $this->referencePayload();
+        $payload['supplier'] = (string) $this->fixtures->person('supplier');
+
+        $result = $this->applier->apply($this->options($payload, 10));
+
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'supplier']], self::findings($result, 'reference_invalid'));
+    }
+
+    /** D31, D39: účet — nenalezená reference je chyba; holé číslo je signál, v návrhu jen varování. */
+    public function testRowAccountReferenceAndSignal(): void
+    {
+        $payload = $this->referencePayload();
+
+        $payload['rows'][0]['account'] = '@999999999';
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'rows.0.account']], self::findings($result, 'reference_not_found'));
+
+        $payload['rows'][0]['account'] = '999999999';
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'rows.0.account']], self::findings($result, 'signal_not_allowed'));
+
+        $proposal = $this->applier->apply($this->options($payload, 10), ApplyMode::Proposal);
+        $this->saved($proposal);
+        $this->assertSame([['warning', 'rows.0.account']], self::findings($proposal, 'account_not_found'));
+    }
+
+    /** D37: jednotka je holý systémový kód; neznámá je v pokynu chyba. */
+    public function testUnknownUnitIsAnError(): void
+    {
+        $payload = $this->referencePayload();
+        $payload['rows'][0]['unit'] = 'sáh';
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($this->options($payload, 10));
+
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'rows.0.unit']], self::findings($result, 'unit_not_found'));
+        $this->assertSame($before, $this->documentCount());
+    }
+
+    /** D39: `item.ourCode` je signál návrhu — pokyn ho odmítá, týž payload v návrhu projde. */
+    public function testOurCodeIsRejectedInInstructionAndReadInProposal(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->referencePayload();
+        $payload['rows'][0]['item'] = ['ourCode' => F::PREFIX . '-NAKUP', 'name' => 'nákup služeb'];
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'rows.0.item.ourCode']], self::findings($result, 'signal_not_allowed'));
+        $this->assertSame($before, $this->documentCount());
+
+        $saved = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $this->assertSame($f->item(false), (int) $saved->rows[0]['item']);
+    }
+
+    /** D33: návrh s `ref` hledání podle údajů přeskočí — údaje jiné osoby nic nezmění. */
+    public function testProposalWithReferenceSkipsLookup(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->referencePayload();
+        $payload['supplier'] = ['ref' => '@IT-RT-P2', 'name' => 'Někdo úplně jiný a.s.', 'companyId' => '88300013', 'country' => 'cz'];
+        $nonPayer = $f->person('nonPayer');
+
+        $saved = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+
+        $this->assertSame($f->person('supplier'), (int) $saved->head['partner']);
+        $this->assertNotSame($nonPayer, (int) $saved->head['partner'], 'IČO v údajích patří jiné osobě — nehledá se');
+    }
+
+    /** D30: řada referencí kódem; u pokladního dokladu ji určuje pokladna a cizí řada je chyba. */
+    public function testNumberSeriesByKeyAndConflictOnCashDocument(): void
+    {
+        $f = $this->fixtures;
+        $invno = $f->seriesId('invno');
+        $invnoRef = '@' . $this->db->fetchRow('SELECT [code] FROM [docs_core_number_series] WHERE [id] = %i', $invno)['code'];
+
+        $issued = $this->payload($f->issuedHead('řada referencí') + ['rows' => [
+            $f->row(true, 'práce', 1, 500.00, $f->vatCode('output', 'domestic', 'standard')),
+        ]]);
+        $this->assertSame($invnoRef, $issued['numberSeries'], 'export řadu vyváží referencí kódem');
+        $saved = $this->saved($this->applier->apply($this->options($issued, 10)));
+        $this->assertSame($invno, (int) $saved->head['number_series']);
+
+        $desk = $f->cashDeskId();
+        $cash = $this->payload([
+            'doc_type' => 'cash', 'cash_dir' => 1, 'cash_desk' => $desk, 'number_series' => $f->seriesId('cash', $desk),
+            'partner' => $f->person('customer'), 'vat_registration' => $f->vatRegistrationId(), 'vat_mode' => 1,
+            'doc_currency' => $f->homeCurrency(), 'payment_method' => 0, 'issue_date' => F::DATE, 'accounting_date' => F::DATE,
+            'doc_text' => F::PREFIX . ' pokladní příjem s cizí řadou',
+            'rows' => [$f->row(true, 'práce', 1, 500.00, $f->vatCode('output', 'domestic', 'standard'))],
+        ]);
+        $this->assertArrayNotHasKey('numberSeries', $cash, 'řadu pokladního dokladu určuje pokladna — export ji nenese');
+        $cash['numberSeries'] = $invnoRef;
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($this->options($cash, 10));
+
+        $this->assertSame(['number_series_conflict', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame($before, $this->documentCount());
+    }
+
+    /** D36: registrace DPH referencí; bez pole výchozí registrace zdroje dat. */
+    public function testVatRegistrationByKeyAndDefault(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->referencePayload();
+
+        $withRef = $this->saved($this->applier->apply($this->options($payload, 10)));
+        $this->assertSame($f->vatRegistrationId(), (int) $withRef->head['vat_registration']);
+
+        unset($payload['vat']['registration']);
+        $default = $this->saved($this->applier->apply($this->options($payload, 10)));
+        $this->assertSame($f->vatRegistrationId(), (int) $default->head['vat_registration'], 'bez pole výchozí registrace');
+
+        $payload['vat']['registration'] = '@it-rt-neni';
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame([['error', 'vat.registration']], self::findings($result, 'reference_not_found'));
+
+        $payload['vat'] = ['registrationCountry' => $f->country()] + $payload['vat'];
+        unset($payload['vat']['registration']);
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame([['error', 'vat.registrationCountry']], self::findings($result, 'signal_not_allowed'));
+    }
+
     // ── Payloady ────────────────────────────────────────────────────────────
+
+    /** Přijatá faktura s DPH a položkou — export s referencemi, bez kontrolního součtu. @return array<string, mixed> */
+    private function referencePayload(): array
+    {
+        $f = $this->fixtures;
+        return self::withoutChecksum($this->payload($f->receivedHead('reference') + ['rows' => [
+            $f->row(false, 'služby', 1, 1000.00, $f->vatCode('input', 'domestic', 'standard')),
+        ]]));
+    }
 
     /**
      * Canonical dokladu pořízeného cestou formuláře jako koncept; bez
