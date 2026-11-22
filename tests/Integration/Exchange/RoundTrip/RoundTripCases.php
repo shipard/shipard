@@ -19,6 +19,38 @@ use Shipard\Tests\Integration\Exchange\RoundTrip\RoundTripFixtures as F;
 final class RoundTripCases
 {
     /**
+     * Mezera: snapshot dodavatele v importním módu skládá applier z payloadu
+     * včetně bankovního spojení, formulářová cesta ho bere z adresáře bez něj.
+     *
+     * @return array<string, array{0: mixed, 1: mixed}>
+     */
+    private static function snapshotBank(): array
+    {
+        return ['head.supplier_snapshot.bank_account' => [SavedDocumentComparator::ABSENT, [
+            'name'           => null,
+            'account_number' => F::SUPPLIER_ACCOUNT,
+            'iban'           => F::SUPPLIER_IBAN,
+            'bic'            => F::SUPPLIER_BIC,
+            'currency'       => null,
+        ]]];
+    }
+
+    /**
+     * Mezera: nevyplněný identifikátor partnera je ve snapshotu z adresáře
+     * prázdný řetězec, ve snapshotu z payloadu (importní mód) null.
+     *
+     * @return array<string, array{0: mixed, 1: mixed}>
+     */
+    private static function snapshotEmpty(string ...$keys): array
+    {
+        $diff = [];
+        foreach ($keys as $key) {
+            $diff["head.supplier_snapshot.{$key}"] = ['', null];
+        }
+        return $diff;
+    }
+
+    /**
      * @return list<RoundTripCase>
      */
     public static function all(): array
@@ -32,7 +64,7 @@ final class RoundTripCases
             ]],
         );
 
-        $receivedDeclaredRecap = RoundTripCase::holds(
+        $receivedDeclaredRecap = RoundTripCase::gap(
             'received-declared-recap',
             'faktura přijatá, tuzemsko, převzatá rekapitulace s haléřovým rozdílem proti řádkům',
             static function (F $f): array {
@@ -43,6 +75,7 @@ final class RoundTripCases
                     'vatRecap' => [['vat_code' => $code, 'base' => 99.99, 'tax' => 20.99, 'total' => 120.98]],
                 ];
             },
+            ['diff' => self::snapshotBank()],
         );
 
         return [
@@ -70,7 +103,7 @@ final class RoundTripCases
                 ]],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'issued-rounding-manual',
                 'faktura vydaná, automatika vypnutá, ručně zvolený mód zaokrouhlení (nahoru na 1)',
                 // 100,50 + 21 % = 121,61 → nahoru 122,00; matematicky vyjde totéž.
@@ -80,6 +113,8 @@ final class RoundTripCases
                 ]) + ['rows' => [
                     $f->row(true, 'práce', 1, 100.50, $f->vatCode('output', 'domestic', 'standard')),
                 ]],
+                // Export mód nenese, applier ho odhaduje z částek — matematický má přednost.
+                ['diff' => ['head.total_rounding_mode' => [RoundingModes::UP_UNIT, RoundingModes::MATH_UNIT]]],
             ),
 
             RoundTripCase::holds(
@@ -113,7 +148,7 @@ final class RoundTripCases
             $receivedDeclaredRecap,
             $receivedDeclaredRecap->asConcept(),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-eu-services',
                 'faktura přijatá, služba z EU, samovyměření',
                 static fn (F $f): array => $f->receivedHead('přijatá služba z EU', [
@@ -122,9 +157,10 @@ final class RoundTripCases
                 ]) + ['rows' => [
                     $f->row(false, 'licence', 1, 5000.00, $f->vatCode('input', 'intracom', 'standard', ['supplyKind' => 'services'])),
                 ]],
+                ['diff' => self::snapshotEmpty('company_id')],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-domestic-rc',
                 'faktura přijatá, tuzemské přenesení s předmětem plnění',
                 static fn (F $f): array => $f->receivedHead('přijatá v přenesení') + ['rows' => [
@@ -137,27 +173,31 @@ final class RoundTripCases
                         ['reverse_charge_code' => $f->reverseChargeSubject()],
                     ),
                 ]],
+                ['diff' => self::snapshotBank()],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-non-payer',
                 'faktura přijatá Bez DPH od tuzemského neplátce',
                 static fn (F $f): array => $f->receivedHead('přijatá od neplátce', [
                     'partner'  => $f->person('nonPayer'),
                     'vat_mode' => 0,
                 ]) + ['rows' => [$f->row(false, 'služby', 2, 750.00, null)]],
+                ['diff' => self::snapshotEmpty('tax_id', 'vat_id')],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-no-vat-foreign-id',
                 'faktura přijatá Bez DPH, dodavatel s DIČ jiného státu',
                 static fn (F $f): array => $f->receivedHead('přijatá bez DPH ze zahraničí', [
                     'partner'  => $f->person('euSupplier'),
                     'vat_mode' => 0,
                 ]) + ['rows' => [$f->row(false, 'služby', 1, 300.00, null)]],
+                // Místo plnění applier znovu odvodí z prefixu DIČ dodavatele (0 tuzemsko → 1 EU).
+                ['diff' => ['head.vat_place' => [0, 1]] + self::snapshotEmpty('company_id')],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-out-of-scope-row',
                 'faktura přijatá s DPH a řádkem „Mimo DPH“, převzatá rekapitulace',
                 static function (F $f): array {
@@ -170,9 +210,10 @@ final class RoundTripCases
                         'vatRecap' => [['vat_code' => $code, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1210.00]],
                     ];
                 },
+                ['diff' => self::snapshotBank()],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-rate-dates',
                 'faktura přijatá, datum sazby na řádcích (vat_rate_source 2), dvě data',
                 static function (F $f): array {
@@ -182,14 +223,16 @@ final class RoundTripCases
                         $f->row(false, 'služby dříve', 1, 500.00, $code, ['vat_rate_date' => $f->otherRateDate($code)]),
                     ]];
                 },
+                ['diff' => self::snapshotBank()],
             ),
 
-            RoundTripCase::holds(
+            RoundTripCase::gap(
                 'received-dimensions',
                 'faktura přijatá se střediskem na hlavičce i řádku',
                 static fn (F $f): array => $f->receivedHead('přijatá se střediskem', ['cost_center' => $f->costCenter()]) + ['rows' => [
                     $f->row(false, 'služby', 1, 400.00, $f->vatCode('input', 'domestic', 'standard'), ['cost_center' => $f->costCenter()]),
                 ]],
+                ['diff' => self::snapshotBank()],
             ),
 
             RoundTripCase::holds(

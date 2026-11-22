@@ -34,9 +34,9 @@ final class RoundTripFixtures
     public const DATE = '2026-06-10';
 
     /** Ukázkový tuzemský účet a jeho IBAN (vzor z dokumentace formátu IBAN). */
-    private const SUPPLIER_ACCOUNT = '19-2000145399/0800';
-    private const SUPPLIER_IBAN = 'CZ6508000000192000145399';
-    private const SUPPLIER_BIC = 'GIBACZPX';
+    public const SUPPLIER_ACCOUNT = '19-2000145399/0800';
+    public const SUPPLIER_IBAN = 'CZ6508000000192000145399';
+    public const SUPPLIER_BIC = 'GIBACZPX';
 
     /** Fixní osoby: klíč → [person_id, název, IČO, DIČ, země, město]. */
     private const PERSONS = [

@@ -213,3 +213,59 @@ a dokumentaci.
 - [ ] `dataset-verify` veřejných sad beze změny, výsledek v poznámkách
 - [ ] žádná změna v `modules/` ani `src/`
 - [ ] `docs/exchange-format.md`, `tests/Integration/README.md`, stav tasku
+
+## Poznámky k implementaci
+
+Běh nad ukázkovým zdrojem `blkm-i` (třída dat `free`, sada Plátce DPH),
+2026-11-22: 18 případů (16 z matice U4 a 2 varianty v Konceptu),
+9 `holds`, 9 `gap`.
+
+### Známé mezery
+
+Rozdíl je „doklad A (formulář) → doklad B (po exportu a apply)“. Přesné
+znění žije v `tests/Integration/Exchange/RoundTrip/RoundTripCases.php`.
+
+| případ | rozdíl | příčina v kódu | zavírá |
+|---|---|---|---|
+| `issued-rounding-manual` | `total_rounding_mode` 3 (nahoru na 1) → 1 (matematicky na 1) | `DocumentExporter::exportDocument()` mód nevyváží (jen `totals.totalRounding` a `totalRoundingAuto`); `DocumentApplier::deriveTotalRoundingMode()` ho odhaduje z rozdílu částek a matematický mód zkouší první | etapa 3 (D4) |
+| `received-no-vat-foreign-id` | `vat_place` 0 (tuzemsko) → 1 (EU) | `DocumentApplier::vatContext()`: místo plnění odvozené z prefixu DIČ dodavatele (`VatPlaceDerivation`) přepíše `vat.place` z payloadu, i v importním módu a u dokladu Bez DPH | etapa 3 (pokyn neodvozuje), úplně etapa 5 |
+| `received-declared-recap`, `received-domestic-rc`, `received-out-of-scope-row`, `received-rate-dates`, `received-dimensions` | `supplier_snapshot.bank_account`: klíč chybí → objekt s číslem účtu, IBAN a BIC | doklad s číslem jde přes export v importním módu: `DocumentApplier::buildImportPartnerSnapshot()` skládá snapshot partnera z payloadu včetně `supplier.bankAccount`; formulář ho staví z adresáře (`DocDocument::buildSnapshots()` → `PersonSnapshotBuilder::buildPartner()`) bez bankovního spojení | etapa 3 (D5 — dobový snapshot) |
+| `received-eu-services`, `received-non-payer`, `received-no-vat-foreign-id` | `supplier_snapshot.company_id` / `tax_id` / `vat_id`: `""` → `null` | `buildImportPartnerSnapshot()` převádí prázdnou hodnotu na `null`; `PersonSnapshotBuilder::build()` nechává prázdný řetězec ze sloupce adresáře (osoba bez IČO / DIČ má v adresáři `''`) | etapa 3 (D5) |
+
+Varianty v Konceptu (`issued-base@concept`, `received-declared-recap@concept`)
+drží: snapshot partnera se v Konceptu nestaví.
+
+### Odchylky od zadání a postřehy
+
+- **`vat_code_unknown` se v matici neprojevil.** Zadání ho u
+  `received-no-vat-foreign-id` čekalo. `DocumentExporter::rows()` ale řádku
+  bez kódu DPH objekt `vat` vůbec nevypíše, takže applier nemá co
+  posuzovat a doklad uloží — s odvozeným místem plnění (mezera výše).
+  Chyba vzniká až u payloadu, který objekt `vat` bez kódu nese (např.
+  `"vat": {"pct": 0}`, jak ho posílá runner starého Shipardu): ověřeno
+  mimo test dočasnou úpravou exportu — apply skončí `validation_failed`
+  s nálezem `vat_code_unknown`. Tentýž zásah u `received-non-payer`
+  doklad uloží, ale řádku odvodí kód `cz-114` a přidá řádek rekapitulace.
+  Do matice to nepatří (U2: v exportu se mění jen číslo); je to případ
+  pro etapu 3 nebo pro samostatný test payloadu importu.
+- **Export konceptu nese `importNumber`.** Koncept má zástupné číslo
+  `!<id>` a `DocumentExporter` ho od skutečného čísla neodlišuje — vyveze
+  `importNumber` se zástupným číslem a `sequenceNumber: null`. Komentář
+  třídy tvrdí, že koncepty číslo nemají. Doklad B varianty v Konceptu tak
+  vzniká v importním módu; test číslo nahrazuje jako u ostatních (U2
+  krok 4). Mimo rozsah tasku, k posouzení v etapě 3.
+- **Doklad A** vzniká dvěma uloženími jako ve formuláři (Koncept →
+  V pořádku), číslo bere z řady; čítače dotčených řad test vrací ze
+  snímku. `TableGateway` je sestavený jako ve `FormController` (se stavy
+  a definicí tabulky), jinak se neodvodí `docStateMain`.
+- **Pořadí řádků.** Řádky jdou s hlavičkou v jednom uložení (U2) a nesou
+  `order_pos` od 1, jak je čísluje sub-formulář (`DocRowsDocument`). Bez
+  něj by měly všechny 0 a applier by je přečísloval.
+- **Porovnání JSON sloupců** (snapshoty) jde po listech a rozlišuje
+  chybějící klíč od `null`; pořadí klíčů se nepočítá.
+- **Co matice nepokrývá:** `vat_rounding_mode` mimo výchozí hodnotu,
+  autora dokladu, dopravu a platební terminál, adresu partnera, partnera
+  na řádku účetního dokladu (export na něj jen varuje). Export tyhle
+  sloupce nenese; případy pro ně v U4 nejsou.
+- **Úklid** ověřený porovnáním počtu řádků všech tabulek zdroje a čítačů
+  řad před během a po něm — beze změny.
