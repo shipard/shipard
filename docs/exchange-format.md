@@ -339,12 +339,13 @@ Top-level struktura:
   // ── Dimenze deníku (#110 D20, T2) ────────────────────────────────────────
   "dimensions": {                 // klíč = id dimenze (journalDimensions
     "costCenter": "S01"           //   v economy.accounting), hodnota =
-  },                              //   přirozený klíč záznamu (`exchangeKey`:
-                                  //   středisko kód, majetek inventární
-                                  //   číslo). Hlavička = výchozí hodnota pro
+  },                              //   přirozený klíč záznamu (`exchangeKey`
+                                  //   cílové tabulky: středisko kód, zakázka
+                                  //   číslo, majetek inventární číslo).
+                                  //   Hlavička = výchozí hodnota pro
                                   //   řádky bez vlastní (→ docs_core_heads
-                                  //   .cost_center). Neznámé id / dimenze
-                                  //   bez exchangeKey → dimension_unknown,
+                                  //   .cost_center). Neznámé id / dimenze,
+                                  //   jejíž tabulka klíč nemá → dimension_unknown,
                                   //   hodnota bez záznamu → dimension_not_found
                                   //   (obě blokují apply). Chybějící objekt
                                   //   = sloupce zůstanou prázdné.
@@ -1505,6 +1506,69 @@ volajícího — applier bere vlastní účet kódem `importOwnBankAccount`):
 2. Žádný match → `notFound` (vlastní účet musí být v codebooks, applier
    ho nevytváří automaticky).
 
+### 8.6 Reference přirozeným klíčem (`ReferenceResolver`)
+
+Obecné hledání záznamu podle přirozeného klíče (#166 D8–D10, D15). Který
+sloupec je klíč, říká **definice cílové tabulky** (`exchangeKey`,
+`exchangeLookupColumns` — `docs/table-definitions.md` § 4); resolver ho jen
+najde. Třídy `ReferenceValue` (rozbor hodnoty, bez databáze),
+`ReferenceResolver` a `ReferenceException` v `modules/core/exchange/src/Resolve/`.
+
+> **Formát dokladu tuto gramatiku zatím nepoužívá.** Pole `shpd.docs.document.v1`
+> (`ourCode`, `numberSeriesCode`, `importOwnBankAccount`, strany dokladu, …)
+> se nemění; na reference přejdou až v etapě 3 (#166 D11–D14). Dnes resolver
+> používají datové sady (`SetupReferences`) a dimenze dokladů
+> (`DimensionResolver`) — obojí s holou hodnotou klíče, bez `@`.
+
+**Gramatika hodnoty reference** (D9):
+
+| Hodnota v JSON | Význam |
+|---|---|
+| `42` (celé číslo > 0) | primární klíč záznamu |
+| `"@K00042"` | přirozený klíč cílové tabulky (`exchangeKey`) |
+| `"@company_id:12345678"` | jmenovaný sloupec — jen `exchangeKey` nebo sloupec z `exchangeLookupColumns` |
+| cokoli jiného | chyba `reference_invalid`: `"42"`, `"K00042"`, `0`, `1.5`, `true`, `null`, pole, `"@"` |
+
+**Pravidlo dvojtečky** (D15): část před **první** dvojtečkou je sloupec jen
+tehdy, když jde o `exchangeKey` nebo deklarovaný sloupec pro hledání; jinak
+je celý text za `@` hodnota přirozeného klíče. `"@A:1"` tedy hledá klíč
+`A:1`, `"@vat_id:CZ:1"` hledá ve sloupci `vat_id` hodnotu `CZ:1`. Prázdná
+hodnota za deklarovaným sloupcem (`"@company_id:"`) je chyba.
+
+**Hledání** (D10):
+
+- přesná shoda v collation sloupce; hodnota se **neořezává** a nemění se
+  velikost písmen — `"0123"` a `"123"` jsou různé klíče;
+- právě jeden živý záznam. Žádný = `reference_not_found`, víc než jeden =
+  `reference_ambiguous` (zpráva nese počet a id záznamů) — nikdy první
+  nalezený;
+- záznam v koši (`docState` 90, jen u tabulky s `docStates`) se nepočítá,
+  ani při hledání primárním klíčem; archivovaný ano;
+- tabulka i sloupec jdou do SQL jen z definice tabulky, hodnota parametrem.
+
+**Rozhraní** `ReferenceResolver(Connection, definice aktivních tabulek)`:
+
+| Metoda | Použití |
+|---|---|
+| `resolve(tabulka, hodnota)` | hodnota podle gramatiky výše |
+| `resolveByKey(tabulka, hodnota)` | holá hodnota přirozeného klíče (datové sady, dimenze) |
+| `resolveByColumn(tabulka, sloupec, hodnota)` | deklarovaný sloupec pro hledání |
+| `keyOf(tabulka, id)` | přirozený klíč záznamu pro export; `null` = záznam není nebo má klíč prázdný (koš se nefiltruje) |
+| `hasKey(tabulka)` / `keyColumn(tabulka)` | má tabulka přirozený klíč a který sloupec to je |
+
+**Chyby** — `ReferenceException` s kódem (`errorCode`), tabulkou, sloupcem,
+hodnotou a u nejednoznačnosti seznamem id; volající si z nich skládá vlastní
+znění (datové sady `DatasetException`, dimenze `dimension_not_found`):
+
+| Kód | Kdy |
+|---|---|
+| `reference_invalid` | hodnota nemá tvar reference, nebo je prázdná |
+| `reference_table_unknown` | tabulka na zdroji dat není aktivní |
+| `reference_no_key` | tabulka nemá `exchangeKey` — záznam jde odkázat jen `id` |
+| `reference_column_not_allowed` | sloupec tabulka pro hledání nedeklaruje |
+| `reference_not_found` | žádný živý záznam |
+| `reference_ambiguous` | víc živých záznamů se stejnou hodnotou |
+
 ## 9. `_resolve` state
 
 Vyrábí ho `/preview`, čte `/apply`. Žije v stejném JSON dokumentu jako data —
@@ -1815,8 +1879,8 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `partner_doc_number_missing` | warning | Přijatá faktura cílí na stav ≥ 20 bez čísla dokladu dodavatele. |
 | `row_operation_config_invalid` | warning | Pohyb řádku nejde doplnit — chybná konfigurace rowOperations. |
 | `invalid_value` | error | `cashDirection` pokladního dokladu není 1 ani 2. |
-| `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo dimenze nemá `exchangeKey` (#110 T2). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
-| `dimension_not_found` | error | Hodnota dimenze (přirozený klíč — kód střediska, inventární číslo) nemá záznam v cílové tabulce (`DimensionResolver`, koš se nepočítá). Path dle místa, např. `rows.3.dimensions.costCenter`. Klíč je autoritativní, bez userAction. |
+| `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo cílová tabulka dimenze nemá `exchangeKey` (#110 T2, #166 D8). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
+| `dimension_not_found` | error | Hodnota dimenze (přirozený klíč — kód střediska, inventární číslo) nemá v cílové tabulce právě jeden živý záznam (`DimensionResolver` nad `ReferenceResolver`, § 8.6; koš se nepočítá, víc záznamů se stejným klíčem je také nenalezeno). Path dle místa, např. `rows.3.dimensions.costCenter`. Klíč je autoritativní, bez userAction. |
 | `cash_desk_ignored` | warning | `cashDesk` na faktuře bez `payment.method: "cash"` — pokladna se nepropíše. |
 | `cash_desk_defaulted` | info | Platba hotově bez `cashDesk` — doklad dostal výchozí pokladnu zdroje dat (`is_default`, #103 F3). |
 | `replace_concept_requires_draft` | error | `applyOptions.replaceConcept` s `targetDocState` jiným než 10 — přegenerování ukládá vždy Koncept (#110 Q2). |

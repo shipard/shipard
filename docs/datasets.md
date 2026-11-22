@@ -115,22 +115,34 @@ které jsou uživatelská data. Sada proto nese (`SetupExporter::TABLES`):
 upsert přes `TableGateway` podle klíče. Soubory pro tabulky, které na
 cílovém DS nejsou (jiná sada modulů), se přeskočí.
 
-**Cizí klíče přes přirozený klíč** (`SetupReferences`, #131 fáze 2b D29,
-D37) — jediné místo, které říká, kam FK sloupec sady ukáže a jak se hodnota
-překládá tam (dump) a zpět (seed):
+Sloupec **Klíč** je klíč upsertu řádku souboru. U tabulky s přirozeným
+klíčem v definici (`exchangeKey`, `docs/table-definitions.md` § 4) ho
+`SetupExporter::upsertKey()` bere odtud; výslovný `key` v mapě
+`SetupExporter::TABLES` mají jen `settings` a `vat_registrations` (složený
+klíč — tabulka `exchangeKey` nemá). Každá položka mapy má právě jedno
+z toho (test).
 
-- tabulka ze `SetupExporter::TABLES` s jednosloupcovým klíčem → hodnota
-  klíče (druh zakázky názvem, bankovní účet kódem, středisko kódem, typ
-  majetku a skupina typů názvem, účetní skupina majetku kódem, …);
+**Cizí klíče přes přirozený klíč** (`SetupReferences`, #131 fáze 2b D29,
+D37) — fasáda sad nad obecným `ReferenceResolver` (#166 D8,
+`docs/exchange-format.md` § 8.6). Říká, kam FK sloupec sady ukáže a jak se
+hodnota překládá tam (dump) a zpět (seed):
+
+- tabulka sekce setup (`SetupExporter::TABLES`) s `exchangeKey` v definici
+  → hodnota klíče (druh zakázky názvem, bankovní účet kódem, středisko
+  kódem, typ majetku a skupina typů názvem, účetní skupina majetku kódem,
+  účet osnovy číslem, …). Soubor nese holou hodnotu bez `@`;
 - `docs_core_number_series` → objekt `{"docType": "invno", "code": null}`,
   `null` se v souboru vynechá (`{"docType": "invno"}`). Výchozí řady
   z provisioneru kód nemají, samotný kód by je nedohledal (D37). Seed hledá
   jako `DocumentApplier::resolveNumberSeriesFor`, ale přísně: s kódem přesná
   shoda `(doc_type, doc_number_code)`, bez kódu řada typu s prázdným kódem;
   žádná nebo víc než jedna = chyba řádku;
-- `economy_accounting_accounts` → číslo účtu jako dřív (chybějící
-  analytika = `null`, ohlásí ji až engine);
-- ostatní reference (osoby, uživatelé) se s varováním vynechají.
+- `economy_accounting_accounts` v sekci setup → číslo účtu s benevolentním
+  hledáním jako dřív (chybějící analytika = `null`, ohlásí ji až engine) —
+  výjimka `SetupSeeder`, ne resolveru;
+- ostatní reference se s varováním vynechají — **i na tabulku, která
+  přirozený klíč má** (osoby, položky, doklady): sekce setup je nenese,
+  odkaz by na cílovém zdroji dat neměl kam ukázat.
 
 Nenalezený nebo nejednoznačný klíč je chyba řádku (soubor `failed`) — nikdy
 tiché vynechání ani první nalezený. Záznam v koši se nepočítá, archivovaný
@@ -399,7 +411,7 @@ neexportují (fiskální rok, DPH období, domácí měna, snapshoty partnera,
 
 **Dimenze deníku na dokladech** (#110 T2): `DocumentExporter` vypisuje
 objekt `dimensions` na hlavičce i řádcích s přirozeným klíčem
-(`exchangeKey` dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
+(`exchangeKey` cílové tabulky dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
 nese v `setup/` — středisko (`cost_centers.jsonc`) — nebo ve vlastní sekci
 (`$sectionTables`: zakázka číslem se sekcí `workOrders/`, #131 fáze 2b;
 karta majetku inventárním číslem se sekcí `assets/`, fáze 2c). Dimenzi

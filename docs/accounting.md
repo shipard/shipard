@@ -1038,7 +1038,7 @@ nad jednotným seznamem a o konkrétní dimenzi nevědí.
   "journalDimensions": [{
       "id": "asset", "rowColumn": "asset", "headColumn": "asset",
       "journalColumn": "asset", "table": "economy_assets_assets",
-      "rowFlag": "rowAsset", "exchangeKey": "asset_number",
+      "rowFlag": "rowAsset",
       "name": "Asset", "name:cs": "Majetek", "name:en": "Asset",
       "forms": {
           "docTypes": ["invni", "invno", "cash", "cmnbkp"],
@@ -1057,10 +1057,12 @@ nad jednotným seznamem a o konkrétní dimenzi nevědí.
   jejíž řádek **nese hodnotu sám**: výchozí hodnotu z hlavičky nedědí
   a pole mu staví layout operace, ne `forms` (majetek: `rowAsset` —
   pořízení je věc řádku, karta z hlavičky se u něj neřeší).
-  `exchangeKey` (volitelné, #110 T2) = sloupec cílové tabulky, který je
-  přirozeným klíčem ve výměnném formátu dokladu (objekt `dimensions`,
-  `docs/exchange-format.md` §5 a §7: středisko `code`, majetek
-  `asset_number`); dimenze bez něj ve formátu není.
+  **Klíč pro výměnný formát dimenze nedeklaruje** (#166 D8): hodnota
+  v objektu `dimensions` (`docs/exchange-format.md` §5 a §7) je přirozený
+  klíč cílové tabulky — `exchangeKey` v její definici (středisko `code`,
+  zakázka `number`, majetek `asset_number`; `docs/table-definitions.md`
+  § 4). „Dimenze je ve formátu“ = její cílová tabulka má `exchangeKey`;
+  pole `exchangeKey` v `journalDimensions` je chyba načtení modulu.
 - **Formuláře** (`forms`, volitelné; assets D59): na kterých formulářích
   dokladů se pole dimenze nabízí — typy dokladů, hlavička (`head`, chce
   `headColumn`) a řádky (`rows`), případně jen se zapnutým nastavením

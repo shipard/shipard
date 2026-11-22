@@ -188,9 +188,10 @@
         // ── Dimenze deníku (#110 D20, T2) ───────────────────────────────
         // Klíč = id dimenze (`journalDimensions` v economy.accounting:
         // costCenter, asset), hodnota = přirozený klíč záznamu cílové
-        // tabulky (`exchangeKey`: středisko kód, majetek inventární číslo).
+        // tabulky (`exchangeKey` v její definici: středisko kód, zakázka
+        // číslo, majetek inventární číslo).
         // Hlavička = výchozí hodnota pro řádky bez vlastní. Klíče hlídá PHP:
-        // neznámé id nebo dimenze bez exchangeKey → dimension_unknown,
+        // neznámé id nebo dimenze, jejíž tabulka klíč nemá → dimension_unknown,
         // hodnota bez záznamu → dimension_not_found (obě blokují apply).
         // Chybějící objekt nebo klíč = sloupec zůstane prázdný.
         "dimensions": {

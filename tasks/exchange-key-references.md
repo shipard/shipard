@@ -1,6 +1,6 @@
 # Task: Přirozený klíč tabulky a obecný resolver referencí
 
-**Stav:** naplánováno — zadání 2026-11-21 (#166 etapa 2, D8–D10)
+**Stav:** hotovo — 2026-11-22 (#166 etapa 2, D8–D10, D15); zadání 2026-11-21
 
 **Issue:** #166 (etapa 2)
 
@@ -234,13 +234,52 @@ přirozený klíč**.
 
 ## Hotovo když
 
-- [ ] `exchangeKey` a `exchangeLookupColumns` jsou v `TableDefinition`
+- [x] `exchangeKey` a `exchangeLookupColumns` jsou v `TableDefinition`
       s validací a v definicích tabulek podle U3
-- [ ] `ReferenceValue` a `ReferenceResolver` s unit testy všech tvarů
+- [x] `ReferenceValue` a `ReferenceResolver` s unit testy všech tvarů
       a chyb
-- [ ] `SetupReferences` a `DimensionResolver` hledají přes resolver;
+- [x] `SetupReferences` a `DimensionResolver` hledají přes resolver;
       v kódu není mapa přirozených klíčů mimo definice tabulek ani
       `exchangeKey` v `journalDimensions`
-- [ ] dump veřejných sad byte-shodný, `dataset-verify` beze změny
-- [ ] cílené testy zelené, pak celá unit sada
-- [ ] dokumentace podle commitu 5, stav tasku
+- [x] dump veřejných sad byte-shodný, `dataset-verify` beze změny
+- [x] cílené testy zelené, pak celá unit sada
+- [x] dokumentace podle commitu 5, stav tasku
+
+## Odchylky od zadání (2026-11-22)
+
+- **Přenosnost v sadách není „tabulka má `exchangeKey`“.** Osoby, položky
+  a doklady klíč dostaly, sekce setup je ale nenese — FK na ně by se začal
+  zapisovat do souborů sad (`vat_registrations.tax_office_person`).
+  `SetupReferences::isPortable()` = řada dokladů, nebo tabulka ze
+  `SetupExporter::TABLES` s `exchangeKey`.
+- **`isPortable()` a `keyColumn()` jsou metody instance** — bez definic
+  tabulek klíč nepřečtou. Volá je jen `SetupExporter` a `SetupSeeder`.
+- **`resolveByColumn()` navíc proti U5.** Kód `reference_column_not_allowed`
+  je přes `resolve()` nedosažitelný (nedeklarovaný text před dvojtečkou je
+  podle D15 hodnota klíče); hází ho přímé hledání jmenovaným sloupcem.
+- **Nejednoznačná hodnota dimenze** už není první záznam podle id, ale
+  nenalezeno (`dimension_not_found`) — D10. Všechny tři cílové tabulky mají
+  nad klíčem unikátní index.
+- **Unikátní index chybí šesti klíčům**, ne jen klíčům podle názvu: navíc
+  `economy_work_orders_number_series.number_code` a `docs_core_heads.doc_number`
+  (seznam v `ExchangeKeyDefinitionsTest`).
+- **Ořezávání zůstalo ve fasádách** (`ValueNormalizer::str` při exportu,
+  `trim` v `DimensionResolver`), resolver sám hodnotu nemění. `keyOf()` koš
+  nefiltruje, jako dosavadní export.
+- **Čtenáři dimenzí dostávají definice tabulek:** `DocumentExporter` (bez
+  definice cílové tabulky dimenze končí výjimkou), `DocumentValidator`,
+  `CorrectiveDocService`. Pole `exchangeKey` v `journalDimensions` je chyba
+  načtení modulu.
+- **Definice tabulek se nekompilují** — `TableLoader` je čte z modulů živě;
+  `ds-upgrade` je potřeba jen kvůli `journalDimensions` (a i bez něj se
+  zbylé pole ve zkompilované konfiguraci ignoruje).
+
+## Ověření (2026-11-22)
+
+- Dump čtyř ukázkových zdrojů dat (`jfpl-7`, `im3v-h`, `gsbg-b`, `8yft-3`
+  — poslední se zakázkami, majetkem a 140 doklady s dimenzemi) před změnou
+  a po ní včetně `ds-upgrade`: byte-shodný až na datum v manifestu.
+- `DatasetRoundTripTest` a `DocumentRoundTripMatrixTest` nad `blkm-i` zelené.
+- Vrstva sad testovacího kola (`test-round --only datasets`): čerstvý seed,
+  `dataset-verify` a `dataset-e2e` všech tří veřejných sad `ok`.
+- Celá unit sada zelená (11 850 testů).

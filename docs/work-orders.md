@@ -491,8 +491,8 @@ písmeny (`economy.workorders.*`).
   propisuje vždy.
 - Výměnný formát dokladu nese dimenze v objektu `dimensions` na hlavičce
   a řádcích, klíčem je id dimenze a hodnotou přirozený klíč cílové
-  tabulky (`exchangeKey` deklarace: středisko kód, majetek inventární
-  číslo). Datová sada nese jen dimenze, jejichž cílovou tabulku má
+  tabulky (`exchangeKey` v její definici: středisko kód, zakázka číslo,
+  majetek inventární číslo). Datová sada nese jen dimenze, jejichž cílovou tabulku má
   v `setup/` (středisko); majetek si ponechává vlastní postup doplnění
   karty na doklady (`docs/assets.md` §5.7) a do sady se nepřenáší.
 

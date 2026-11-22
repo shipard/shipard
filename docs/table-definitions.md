@@ -178,6 +178,8 @@ Název souboru (bez přípony) odpovídá názvu tabulky v databázi.
 | `tableId` | int | Ano | Ne | Unikátní numerické ID tabulky (globálně přes celý systém) |
 | `name` | string | Ano | Ano | Název tabulky pro UI |
 | `displayPattern` | string | Ne | Ne | Šablona pro zobrazení záznamu při referenci z jiné tabulky |
+| `exchangeKey` | string | Ne | Ne | Přirozený klíč záznamu — id sloupce, kterým se záznam odkazuje ve výměnných formátech a datových sadách |
+| `exchangeLookupColumns` | string[] | Ne | Ne | Další sloupce, přes které smí hledat jmenovaná reference `"@sloupec:hodnota"` |
 | `columnGroups` | object[] | Ne | — | Definice logických skupin sloupců |
 | `columns` | object[] | Ano | — | Definice sloupců |
 | `indexes` | object[] | Ne | — | Definice indexů |
@@ -242,6 +244,48 @@ Pravidla:
 - Placeholdery odkazují na ID sloupců v téže tabulce
 - Pokud tabulka nemá `displayPattern`, UI použije fallback — zobrazí hodnotu sloupce `id`
 - Šablona není vícejazyčná — obsahuje pouze reference na sloupce, jejichž hodnoty jsou v datech
+
+### `exchangeKey` a `exchangeLookupColumns` — přirozený klíč záznamu
+
+Interní `id` platí jen na jednom zdroji dat. Aby šel záznam odkázat odjinud
+(datová sada, výměnný formát, import), říká tabulka, **který její sloupec je
+přirozený klíč** (#166 D8):
+
+```jsonc
+// Osoba se odkazuje kódem; hledat ji jde i přes IČO a DIČ.
+"exchangeKey": "person_id",
+"exchangeLookupColumns": ["company_id", "vat_id"]
+```
+
+- `exchangeKey` — jeden sloupec. Složené klíče se nezavádějí; tabulka,
+  jejíž záznam jeden sloupec neurčí (číselná řada dokladů, registrace DPH),
+  zůstává bez klíče, dokud vlastní kód nedostane.
+- `exchangeLookupColumns` — sloupce, přes které smí hledat jmenovaná
+  reference. `exchangeKey` je povolený vždy a do seznamu se neuvádí. Seznam
+  jde deklarovat i bez `exchangeKey`.
+
+Hledá přes ně jediný obecný resolver (`ReferenceResolver`, gramatika hodnoty
+v `docs/exchange-format.md` § 8.6). Žádná jiná mapa přirozených klíčů v kódu
+není — datové sady i dimenze dokladů čtou tato pole.
+
+Pravidla (`TableDefinition::fromArray()` jinak skončí výjimkou s názvem
+tabulky):
+
+- sloupec musí v tabulce existovat — v její **základní** definici, sloupec
+  z extension klíčem být nemůže;
+- nesmí to být primární klíč ani sloupec `sensitive` / `encrypted_text`
+  (hodnota klíče se zapisuje do souborů);
+- typ `varchar` nebo celočíselný (`tinyint`, `smallint`, `int`, `bigint`);
+- seznam nesmí opakovat sloupec ani `exchangeKey`.
+
+**Unikátní index se nevyžaduje.** Klíč podle názvu (druh zakázky, typ
+majetku, pořadač) ho nemá a mít nemusí: resolver hledá přesnou shodu a víc
+než jeden živý záznam je chyba `reference_ambiguous`, nikdy „první
+nalezený“. Test `ExchangeKeyDefinitionsTest` drží seznam tabulek, jejichž
+klíč unikátní index nemá — nová tabulka na něm je rozhodnutí, ne opomenutí.
+
+Extension tato pole nastavit neumí (přidává jen sloupce, skupiny a indexy);
+klíč cizí tabulky patří do její definice.
 
 ### `hideFromNavigation` — skrytí tabulky ze sidebaru
 
@@ -365,6 +409,7 @@ Pravidla:
 - Cílová tabulka by měla mít definovaný `displayPattern` pro smysluplné zobrazení v UI
 - UI použije referenci pro: výběrové seznamy, prokliky na detail, zobrazení názvu místo ID
 - Validace referenční integrity se řeší na aplikační úrovni
+- Mimo zdroj dat (datová sada, výměnný formát) se místo `id` přenáší přirozený klíč cílové tabulky — její `exchangeKey` (§ 4)
 
 ### Citlivé sloupce — `sensitive`
 
@@ -805,6 +850,7 @@ Před provedením změn v databázi se provede validace:
 - Neexistující `cfgItem` reference u enum sloupců
 - Extension odkazuje na neexistující tabulku
 - Tabulka bez primárního klíče
+- `exchangeKey` / `exchangeLookupColumns` ukazuje na neexistující, primární, citlivý nebo jinak než řetězcový / celočíselný sloupec, nebo seznam obsahuje duplicitu
 
 ### Varování (upgrade pokračuje)
 

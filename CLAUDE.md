@@ -31,7 +31,7 @@ správce do `docs/operations/`; specifikace zůstávají v kořeni `docs/`.
 | `docs/services.md` | **Standard samostatných komponent** — pravidla pro repozitáře mimo `shpd` (`mail-router`, generátor videa, vendorovaná infra; `ai-analyzer` zrušen #85 D24). Přečti před prací v kterémkoli z nich a před zavedením nové komponenty |
 | `docs/architecture.md` | Mapa tříd, vrstvy, závislosti, tok dat — přečti pokud potřebuješ pochopit jak komponenty spolupracují |
 | `docs/modules.md` | Modulový systém — struktura modulů, závislosti, JSONC formát, vícejazyčnost (i18n), kompilace konfigurace, CLI příkaz `ds-upgrade` |
-| `docs/table-definitions.md` | Formát definice databázových tabulek — datové typy, sloupce, indexy, extensions, validace, bezpečné změny |
+| `docs/table-definitions.md` | Formát definice databázových tabulek — datové typy, sloupce, indexy, extensions, validace, bezpečné změny; **přirozený klíč záznamu** `exchangeKey` + `exchangeLookupColumns` (§ 4, #166 D8) |
 | `docs/document-system.md` | Dokumentový systém — Document třídy, hooky, validace, TableGateway, child tabulky, DocumentRegistry, **zámek záznamu** (`documentLockProviders`, §16), kdo plní `created_by` a **autor dokladu** (`DocAuthorResolver`, §13) |
 | `docs/alerts.md` | Systém upozornění — JSONC `alertChecks`, PHP `AlertCheck`, `AlertReconciler`, snooze/dismiss, CLI `alerts-run`; `AlertCheck` dostává volitelný 4. parametr `?DataSourceConfig` (země zdroje dat pro `world.<země>.*`, #121 task B) |
 | `docs/frontend.md` | Frontend architektura — Svelte 5, komponenty, ikony (Font Awesome), API komunikace |
@@ -41,7 +41,7 @@ správce do `docs/operations/`; specifikace zůstávají v kořeni `docs/`.
 | `docs/migration-guide.md` | Backup a přenos DS na jiný server — tarball, DB dump, perms, ověření |
 | `docs/dashboard.md` | Dashboard — home feed akčních karet (fáze 2), kartový kontrakt, zdroje, akce + undo, tasks widget, API kontrakt |
 | `docs/app-settings.md` | Settings pages + branding — `SettingsStore`, `settingsPages` v module.jsonc, klíče `app.*`, branding sloty, `/_app` endpointy, jak přidat další stránku, typy polí (`text`, `select`, `color`, `checkbox`, …) a mezinadpis bez hodnoty `section` |
-| `docs/accounting.md` | Účtování dokladů — rowOperations (vlajky vč. `rowAsset` / `system`), účtovací předpis (vč. **přepisů podle varianty osnovy** `chartOverrides` — efektivní předpis z `AccountingRules::resolve()`, NNO 549 / 649, strážce masek proti seedům, #122), `AccountingEngine`, deník, **standardní dimenze jádra** (#110 D20: středisko `cost_center` a majetek `asset` jako sloupce přímo v `docs_core_heads` / `docs_core_rows` / `economy_accounting_journal`, deklarace `journalDimensions` v `economy.accounting` vč. `headColumn`, `rowFlag`, polí na formulářích `forms` a `exchangeKey` pro výměnný formát; viditelnost polí řídí nastavení *Dimenze na dokladech* `economy.accounting.dimension.<id>`, §6), lifecycle (stav 40), zápis přes `NestedTransaction` (§7.3), endpoint reaccount, tab Zaúčtování + `JournalViewer` (Fáze 1–3 hotové), DPH analytiky per vatCode + reverse charge + konvence OSS |
+| `docs/accounting.md` | Účtování dokladů — rowOperations (vlajky vč. `rowAsset` / `system`), účtovací předpis (vč. **přepisů podle varianty osnovy** `chartOverrides` — efektivní předpis z `AccountingRules::resolve()`, NNO 549 / 649, strážce masek proti seedům, #122), `AccountingEngine`, deník, **standardní dimenze jádra** (#110 D20: středisko `cost_center` a majetek `asset` jako sloupce přímo v `docs_core_heads` / `docs_core_rows` / `economy_accounting_journal`, deklarace `journalDimensions` v `economy.accounting` vč. `headColumn`, `rowFlag` a polí na formulářích `forms` (klíč pro výměnný formát říká `exchangeKey` cílové tabulky, #166 D8); viditelnost polí řídí nastavení *Dimenze na dokladech* `economy.accounting.dimension.<id>`, §6), lifecycle (stav 40), zápis přes `NestedTransaction` (§7.3), endpoint reaccount, tab Zaúčtování + `JournalViewer` (Fáze 1–3 hotové), DPH analytiky per vatCode + reverse charge + konvence OSS |
 | `docs/ai.md` | **AI subsystém** — MCP nástroje, chat, analýza pošty; **AI připojení** (`core_ai_backends` = platforma + adresa + šifrovaný klíč, bez modelu), **katalog modelů** `core.ai.models` + mapa úrovní `core.ai.tiers` (`RequestShaper`), **AI funkce** (`aiFunctions` v `module.jsonc` → cfgItem `core.ai.functions`, tabulka `core_ai_function_settings` s přepsáním připojení / modelu / ladění, profil pošty přepisuje `mail.extraction`), **jeden resolver** `AiFunctionResolver` → `ResolvedAiCall::chatParams()` (pořadí přepsání → řádek funkce → deklarace / mapa úrovní; chyby `AiFunctionException`), vlastní ID modelu s `model_like`, upozornění `core.ai.model_retiring`; #85 fáze 1b (`tasks/ai-functions.md`); **fáze 1c** (`tasks/ai-settings-section.md`, D49–D52): sekce **AI** v Nastavení (Připojení / Funkce / Modely — `ModelCatalogViewer` je viewer bez tabulky), `AiFunctionResolver::plan()` / `preview()` (`AiCallPlan` bez klíče, `AiCallPreview`, `RequestChange`), **jeden zdroj textů** `core.ai.texts` (`AiTexts`) pro detail funkce, `ai-test` i chat, CLI `ai-test` (§5.6–5.7); **fáze 3a** (`tasks/ai-bedrock-eu.md`, D57–D61): platforma **Amazon Bedrock (EU)** — `core.ai.platforms` čte jen `AiPlatforms` / `AiPlatform` (dialekt, výchozí adresa, `modelIds` + `modelIdPrefix` → `eu.anthropic.…`, `priceMultiplier`, nápovědy formuláře), klient odmítá podle dialektu (`LlmChatParams::$dialect`), `platformModels` v mapě úrovní, cena jen přes `ResolvedAiCall::costUsd()`, texty `api.<druh>.<platforma>`, formulář `AIBackendForm` (§5.8) |
 | `docs/auth.md` | Autentizace — auth politika per DS (`auth` v main.json), OIDC relying party (start/callback/exchange, PKCE, handoff), `SessionService`, mapování identit + JIT, break-glass CLI, test s dockerovým Keycloakem, samoobsluha účtů Fáze 0b (pozvánky, forgot/reset/change hesla, sessions), uživatel ↔ Osoba a importovaní neaktivní uživatelé (#93) |
 | `docs/render.md` | PDF rendering — Gotenberg služba per stroj + `RenderClient` (`src/Core/Render/`), profily untrusted/report, post-processing (embedIsdoc/appendPdfs), degradace `errorKind`; provoz v `docs/operations/render-service.md` |
@@ -207,6 +207,20 @@ smí názvy nést — tam jsou potřeba k práci.
 - `enumInt` → SMALLINT, `enumString` → CHAR(len) CHARACTER SET ascii
 - `numeric(precision, scale)` pro finance
 - `ds-upgrade`: CREATE/ADD/bezpečný MODIFY, nikdy nesmaže
+- **Přirozený klíč záznamu** (#166 D8–D10, `tasks/exchange-key-references.md`):
+  který sloupec záznam určuje mimo zdroj dat, říká **jen definice tabulky**
+  (`exchangeKey`, pro jmenované hledání `exchangeLookupColumns`) — žádná
+  mapa klíčů v PHP ani `exchangeKey` u dimenze. Hledá jediný
+  `ReferenceResolver` (modules/core/exchange/src/Resolve/): přesně jeden
+  živý záznam, koš se nepočítá, nenalezeno i nejednoznačné je chyba
+  (`ReferenceException`), nikdy první nalezený; hodnotu neořezává. Gramatika
+  hodnoty (`42` | `"@klíč"` | `"@sloupec:hodnota"`) je `ReferenceValue` —
+  formát dokladu ji začne používat až v etapě 3. Datové sady
+  (`SetupReferences`, přenosná je jen tabulka sekce setup) a dimenze
+  dokladů (`DimensionResolver`) jsou fasády nad ním; čtenář dimenzí potřebuje
+  definice tabulek. Tabulka s klíčem bez unikátního indexu patří do seznamu
+  v `ExchangeKeyDefinitionsTest`. Viz `docs/table-definitions.md` § 4,
+  `docs/exchange-format.md` § 8.6
 
 ### Kódové konvence
 - Datové třídy (*Definition): readonly, factory `fromArray()`, validace v konstruktoru
