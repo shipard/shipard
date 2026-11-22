@@ -89,7 +89,8 @@ Položkový řádek dokladu s DPH je buď **plnění** (kód v rekapitulaci —
 i osvobozený s nulovou daní), nebo **„Mimo DPH“** (`cz-000`: mimo
 rekapitulaci, v částce dokladu vždy, i u převzaté rekapitulace), nebo je
 **bez kódu = nevyplněno** (`vat_code_missing`: varování v rozpracovaném
-dokladu, při uložení řádku a v importním módu, chyba při potvrzení). Doklad
+dokladu a při uložení řádku, chyba při potvrzení — i v importním módu,
+#166 D22). Doklad
 Bez DPH kódy nenese a kontrola se ho netýká.
 
 Jediné místo pravidla je `VatLineScope` (`inRecap()`, `isOutOfScope()`,
@@ -134,8 +135,8 @@ a důvod opravy. Pravidla drží `DocDocument`:
   z původního dokladu (`vat_duzp`, bez něj `issue_date`);
 - `validateCorrective()`: odkaz vede na existující doklad typu s příznakem
   a ne na doklad sám (vždy), při potvrzení původní doklad V pořádku se
-  stejným partnerem; mimo import mód je důvod opravy povinný a prázdný odkaz
-  i číslo dají varování;
+  stejným partnerem; při potvrzení je důvod opravy povinný a prázdný odkaz
+  i číslo dají varování — i v importním módu (#166 D22);
 - sazba DPH k datu plnění původního dokladu (automatické datum sazby —
   `VatRateDates::automaticDate`, `docs/vat-calculation.md` § 5.2); kurz
   se z lístku nepřepisuje (`docs/exchange-rates.md` § 5.1).

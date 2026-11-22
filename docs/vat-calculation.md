@@ -37,8 +37,12 @@ stavů. Jediné místo pravidla je `VatLineScope` (docs.core):
   nepatří — mají vlastní kódy.
 - **Řádek bez kódu znamená „nevyplněno“**, ne „mimo DPH“: nález
   `vat_code_missing` na `rows.N.vat_code` je varování v rozpracovaném
-  dokladu, při uložení řádku ze sub-formuláře a **v importním módu**, chyba
-  při potvrzení dokladu (`DocDocument::validateVatCodesFilled()`). Netýká se
+  dokladu a při uložení řádku ze sub-formuláře, chyba při potvrzení dokladu
+  (`DocDocument::validateVatCodesFilled()`) — **i v importním módu**, který
+  výjimku z kontroly nemá (#166 D22: zdroj posílá validní kód, u řádku,
+  který není plněním, „Mimo DPH“). Výměnný formát v režimu pokyn kód
+  neodvozuje — řádek s objektem `vat` bez kódu jde na doklad bez kódu
+  a rozhodne tahle kontrola (`docs/exchange-format.md` § 3). Netýká se
   kontačních řádků (operace s vlajkou `rowSide` — formulář jim pole Kód DPH
   nenabízí) a dokladu, u kterého se nedohledala země registrace.
 - **Doklad Bez DPH (`vat_mode` 0) kódy nenese** — řádky bez kódu jsou na

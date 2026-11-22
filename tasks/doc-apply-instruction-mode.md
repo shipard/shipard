@@ -1,6 +1,6 @@
 # Task: Pokyn × návrh — applier, který u pokynu neodvozuje
 
-**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část A; D18–D24)
+**Stav:** hotovo — 2026-11-22 (#166 etapa 3, část A; D18–D24; 6 commitů); zadání 2026-11-22. Zbývá mimo kód: komentář do #166, úprava runneru starého Shipardu (etapa 6), alfa
 
 **Issue:** #166 (etapa 3; D1–D7, D18–D24)
 
@@ -342,16 +342,150 @@ dokladů, které to nesplňují, selže čitelnou chybou.
 
 ## Hotovo když
 
-- [ ] `ApplyMode` na všech třech vstupech; volající podle U10
-- [ ] pokyn neprovádí žádné odvození z D19 a hodnoty DPH bere podle D20
-- [ ] chyba validace dokladu je 422 `validation_failed` s nálezy; náhled
+- [x] `ApplyMode` na všech třech vstupech; volající podle U10
+- [x] pokyn neprovádí žádné odvození z D19 a hodnoty DPH bere podle D20
+- [x] chyba validace dokladu je 422 `validation_failed` s nálezy; náhled
       pokynu ji ukáže předem
-- [ ] `DocDocument` nemá výjimku z validace pro import (kód DPH, důvod
+- [x] `DocDocument` nemá výjimku z validace pro import (kód DPH, důvod
       opravy); `importNumber` v návrhu je chyba
-- [ ] snapshot partnera z importu má tvar snapshotu z formuláře
-- [ ] `DocumentInstructionPayloadTest` zelený; v matici zbývá jen mezera
+- [x] snapshot partnera z importu má tvar snapshotu z formuláře
+- [x] `DocumentInstructionPayloadTest` zelený; v matici zbývá jen mezera
       zaokrouhlení
-- [ ] `dataset-verify` veřejných sad beze změny; sady v repu dump → seed
+- [x] `dataset-verify` veřejných sad beze změny; sady v repu dump → seed
       → dump byte-shodně
-- [ ] cílené testy, pak celá unit sada
-- [ ] dokumentace podle commitu 6, stav tasku
+- [x] cílené testy, pak celá unit sada
+- [x] dokumentace podle commitu 6, stav tasku
+
+## Poznámky k implementaci
+
+Implementováno 2026-11-22 v šesti commitech (`c561f9c3`, `31fd4bcc`,
+`2b03a7ef`, `346dff88`, `3192b956` a commit dokumentace).
+
+### Upřesnění přijatá při plánování
+
+- **Náhled pokynu skládá data jako apply** (U6): dnešní data náhledu
+  (`previewPlan()`) nemají řadu, partnera ani výchozí pohyby řádků, takže
+  validace cílového stavu nad nimi hlásila chyby, které apply nemá. Náhled
+  pokynu proto jde cestou `reconcile()` → `resolveSaveTargets()` (pokladna,
+  řada, vlastní účet — společný krok s apply, v náhledu bez zakládání řady)
+  → výchozí pohyby → `transform()` → `validate()` nad kopií dat. Nálezy na
+  referenci, kterou apply teprve založí nebo která čeká na rozhodnutí
+  (partner, položka řádku a její pohyb), a zámky záznamu náhled nehlásí.
+- **Režim u každého volání v testech** (U12): `ApplyMode::Proposal`
+  doplněný skriptem do volání ve 13 souborech, očekávání beze změny.
+
+### Odchylky od zadání
+
+- **Pošta volá návrh už od commitu 1** (`AnalysisController::previewMessage`,
+  `MessageProposalApplier`), ne až v commitu 4 — jinak by mezi commity
+  běžela pošta jako pokyn. `ExchangeController` (`interpret`) a schéma jsou
+  v commitu 4 podle zadání.
+- **Matice round-tripu se upravovala průběžně** (mezera místa plnění
+  a nový tvar mezery zaokrouhlení v commitu 1, snapshoty v commitu 3), aby
+  byly testy po každém commitu zelené; commit 5 nese jen
+  `DocumentInstructionPayloadTest` a sdílené prostředí
+  `RoundTrip/RoundTripEnvironment`.
+- **Nové kódy nálezů:** `vat_recap_missing` a `vat_recap_code_missing`
+  (převzatá rekapitulace bez řádků / bez kódu — D20 říká „chyba“, kód
+  neurčuje), `document_validation_unavailable` (náhled pokynu, když validace
+  dokladu spadne výjimkou).
+- **Varování dokladu z úspěšného uložení** jdou do `_resolve.issues` jen
+  v pokynu — výstup apply návrhu se nemění (`dataset-verify`).
+- **Doklad Bez DPH v pokynu** dostane registraci DPH jen s výslovným
+  `vat.registrationCountry`; bez něj žádnou (jako formulář).
+- **Info `vat_pin_ignored` v pokynu** dostane i volba předmětu plnění
+  a neplatná volba (pokyn volby nevaliduje).
+
+### Stávající testy
+
+- Testy applieru, které importují (`applyOptions.importNumber`), běží
+  v **pokynu** — import je pokyn (D22). Čtrnáct jich po zrušení importních
+  větví v odvozování selhalo v návrhu; dvanáct prošlo v pokynu **beze změny
+  očekávání**. Dva jsou upravené podle D20:
+  `testRecapCodeResolvesWithSupplierCountryWhenNoPrefix` (rekapitulace se
+  v pokynu přebírá jen s výslovným `declared`, procento z payloadu se
+  resolveru nepředává) a `testImportModeIsNotTreatedAsNonPayer` (jen režim).
+- `DocDocumentCorrectiveTest` a `DocDocumentOutOfScopeRowsTest` hlídaly
+  rušené výjimky importu — přepsané na pravidlo D22 (chyba při potvrzení
+  i v importu, cíl V opravě dál jen varuje).
+- Dva testy tvaru importního snapshotu (`DocumentApplierTest`) hlídaly
+  bankovní spojení a `null` u prázdného DIČ — přepsané na D23.
+- `DocumentExchangeEndpointTest` (integrační) čeká naučený kód dodavatele
+  → režim návrh. `DatasetRoundTripTest`: prodejka ve fixtuře nese výslovné
+  `totalRoundingAuto: false` (dřív plynulo z přítomnosti částky).
+
+### Datové sady (U11)
+
+Sekci `docs/` má v repu jen demo sada `it-servis` (295 dokladů); veřejné
+sady `tests/datasets/cz/*` nesou jen `mail/`. Žádný doklad demo sady
+nestál na odvození místa plnění, režimu ani kódu DPH. Generátor
+(`tools/invoice-generator`, `dumpshape.total_rounding_auto`) nově píše
+`totals.totalRoundingAuto` výslovně: zapnuto u prodejních typů tam, kde
+s automatikou vyjde stejná částka (177 dokladů), jinak vypnuto (118).
+Sada je přegenerovaná — v každém dokladu přibylo jen to jedno pole.
+
+**Doklady, které po tasku vycházejí s jinou částkou** (mód zaokrouhlení
+mimo automatiku formát nenese; zavře `tasks/doc-totals-rounding-explicit.md`)
+— sedm přijatých faktur zaokrouhlených na koruny:
+
+| doklad | před taskem | po tasku |
+|---|---|---|
+| 2260012 | 4 788,00 (zaokrouhlení −0,26) | 4 788,26 |
+| 2260017 | 4 744,00 (−0,18) | 4 744,18 |
+| 2260024 | 4 700,00 (−0,09) | 4 700,09 |
+| 2260035 | 4 612,00 (+0,08) | 4 611,92 |
+| 2260043 | 4 568,00 (+0,17) | 4 567,83 |
+| 2260049 | 4 524,00 (+0,26) | 4 523,74 |
+| 2260054 | 4 480,00 (+0,34) | 4 479,66 |
+
+Platby těchto faktur ve výpisech sady zůstávají na zaokrouhlených
+částkách, takže do části B po nich v saldokontu zbývají haléřové rozdíly
+(neověřováno — důsledek, ne měření).
+
+Dvě vydané faktury sady hrazené hotově (1260037, 1260067) příběh na
+koruny nezaokrouhlil — generátor u hotovostních faktur automatiku #73
+nemodeluje. Mají `totalRoundingAuto: false`, částka zůstává; se zapnutou
+automatikou by vyšly na koruny.
+
+### Ověření (2026-11-22)
+
+- Unit sada: 11 990 testů zelených.
+- Integrační nad `blkm-i` (`free`): matice round-tripu 18 / 18 (17 `holds`,
+  1 `gap` — `issued-rounding-manual`), `DocumentInstructionPayloadTest`
+  13 / 13, `DatasetRoundTripTest`, importní testy, `Docs`, `WorkOrders`.
+  Širší běh (`Docs|Vat|Accounting|Accbal|Exchange|Reports|Prints|Assets|`
+  `WorkOrders|Dataset|Mail`, 506 testů) má dvě selhání, obě **i na výchozím
+  commitu** `d3d81730`: `VatReturnAccountingServiceTest::`
+  `testAccountsFiledReturnAsDraftDocument` a `DocJournalPrintTest::`
+  `testInvoiceJournalMatchesContractSnapshot` (snímek kontraktu bez `web`
+  a `gov_e_box_id` v kontaktu).
+- `dataset-verify` tří veřejných sad (`jfpl-7`, `im3v-h`, `gsbg-b`):
+  JSON výsledku shodný s výchozím stavem po commitech 1 i 4 — cesta návrhu
+  se nepohnula.
+- Demo sada na `8yft-3`: seed → dump → seed → dump shodné až na manifest;
+  proti dumpu před taskem se liší `totalRoundingAuto` (177×) a částky sedmi
+  faktur výše, ostatní sekce beze změny (`setup/settings.jsonc` nese
+  provozní stav stahování kurzů jako dřív).
+- Periodická fakturace (10 konceptů) a opravný doklad nad demo sadou:
+  řádky a částky shodné s výchozím stavem; **koncepty periodické fakturace
+  nově dostávají výchozí registraci DPH** (dřív `vat_registration` prázdná)
+  — důsledek D20, `InvoiceBuilder` posílá jen `vat.mode`.
+- Živý náhled pokynu přes REST na `blkm-i`: řádek s `vat: {pct: 21}`
+  a cílem V pořádku → `vat_code_missing` (error) na `rows.0.vat.code`.
+
+### Nálezy k dalším etapám
+
+- **Prázdné hodnoty ve snapshotu závisí na tom, jak je drží adresář.**
+  D23 sjednotil identifikátory (IČO, DIČ, DIČ pro DPH: prázdný řetězec).
+  Kontakt, ID datové schránky a adresa jdou z importu jako `null`, kdežto
+  `PersonSnapshotBuilder` předává hodnotu sloupce — u osob uložených
+  s prázdným řetězcem (na demo sadě `web` u 8 z 26 osob, `gov_e_box_id`
+  u všech) dá formulář `""` a import `null`. Matice to neukáže, její
+  fixtury mají tyto sloupce `NULL`. Zavřít jde jen jedním pravidlem
+  prázdné hodnoty pro obě cesty (změna i formulářového snapshotu).
+- `computed_total_mismatch` zůstává v náhledu pokynu varováním; část B ho
+  nahradí kontrolním součtem `totals_check_failed`.
+- Export konceptu dál nese `importNumber` se zástupným číslem — koncept ze
+  sady vzniká v importním módu (mimo rozsah, beze změny).
+- `docs/datasets.md` § 4 tvrdil, že doklady s `importNumber` snapshot
+  partnera nestaví — opraveno podle skutečnosti.

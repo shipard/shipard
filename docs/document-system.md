@@ -729,9 +729,18 @@ Shipard je skládá z vlastních dat — periodická fakturace zakázek
 **i se přegenerovávají výhradně přes výměnný formát a `DocumentApplier`**
 (`docs/exchange-format.md` §1, § Apply a doc state → `replaceConcept`).
 Generátor sestaví kanonický `shpd.docs.document.v1` a applier udělá
-zbytek: validaci, resolve, odvození DPH, řadu, zaokrouhlení, dimenze,
+zbytek: validaci, resolve, řadu, výchozí hodnoty, dimenze,
 `TableGateway::saveDocument` s Document hooky. Žádné přímé skládání
 hlavičky a řádků mimo applier — druhá implementace by se rozešla.
+
+Generátor volá applier v režimu **pokyn** (`ApplyMode::Instruction`, #166
+D18 — `docs/exchange-format.md` § 3): ví, co chce uložit, takže applier
+nic neodvozuje ze signálů. Místo plnění, režim a kódy DPH jdou na doklad
+tak, jak je generátor napsal; co nenapíše, dostane výchozí hodnotu jako
+nový doklad ve formuláři (tuzemsko, Ze základu, výchozí registrace DPH,
+automatické zaokrouhlení tam, kde platí — proto generátor nepředává
+`totals`). Řádek dokladu s DPH má nést kód DPH: bez něj koncept vznikne
+s varováním a nepůjde potvrdit.
 
 Známé výjimky z doby před touto zásadou (#112): zaúčtování podaného
 přiznání DPH (`VatReturnAccountingService`) a účetní doklady majetku

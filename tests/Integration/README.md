@@ -70,6 +70,21 @@ SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/abcd-efgh-ijkl-mnop \
   `free`, vlastní firmou a registrací DPH, jednotlivé případy se přeskočí
   bez řady typu, pokladny nebo dimenze.
 
+  Po zavedení režimu pokyn (#166 etapa 3 část A) zbývá jediná mezera —
+  `issued-rounding-manual` (mód zaokrouhlení formát nenese).
+
+- `Exchange/DocumentInstructionPayloadTest.php` — případy „payload →
+  uložený doklad“ pro režim pokyn (#166 D24,
+  `tasks/doc-apply-instruction-mode.md` U8): tvary, které export nevyrobí,
+  a matice je proto nepokryje — doklad Bez DPH s řádky `vat` bez kódu,
+  tuzemské místo plnění u dodavatele s DIČ jiného státu, řádek bez kódu
+  podle cílového stavu (422 `validation_failed` i týž nález v náhledu),
+  opravný doklad bez důvodu v importu, převzatá rekapitulace s kódy a bez
+  nich, neznámý kód, ceny s daní při `fromBase` v pokynu a v návrhu,
+  `importNumber` v návrhu. Payload vzniká exportem konceptu pořízeného
+  cestou formuláře a úpravou zkoumaného pole. Prostředí, fixtury a úklid
+  sdílí s maticí (`RoundTrip/RoundTripEnvironment`).
+
 - `Mail/MailEndpointTest.php` — procedurální pokrytí `MailController::receiveIncoming`
   s reálnou DB + file storage:
   - happy path (raw_source + 2 přílohy)

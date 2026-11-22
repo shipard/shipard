@@ -107,6 +107,51 @@ Veškerá business logika (přidělení čísla, snapshoty, recap, totals, round
 state transitions) zůstává v `DocDocument`. Exchange formát je pouze "lepší
 vstup" — transformační vrstva nad existujícím dokumentovým systémem.
 
+### Dva režimy volání: pokyn × návrh (#166 D18–D20)
+
+`DocumentApplier::validate()`, `preview()` a `apply()` berou **režim**
+(`ApplyMode`). Režim je parametr volání, ne obsah payloadu — schéma je
+jedno a totéž.
+
+- **Pokyn** (`ApplyMode::Instruction`, výchozí) — volající ví, co chce
+  uložit. Applier dohledá reference, doplní výchozí hodnoty, nechá
+  `DocDocument` validovat a počítat — a **nic neodvozuje ze signálů**. Co
+  uloží formulář, uloží i pokyn („Invariant ukládání“, § 10).
+- **Návrh** (`ApplyMode::Proposal`) — interpretace papírové podoby dokladu:
+  odvozování z § 8.4, volby uživatele v `_resolve`, heuristická varování.
+
+| Volající | Režim |
+|---|---|
+| REST `/_exchange/docs/document/*` (API klient, import ze starého Shipardu) | pokyn; návrh na vyžádání `applyOptions.interpret: true` (§ 11) |
+| datové sady — sekce `docs/` (`DocumentSeeder`) | pokyn |
+| generátory dokladů — periodická fakturace, opravný doklad | pokyn |
+| pošta — náhled návrhu (`AnalysisController`) a jeho použití (`MessageProposalApplier`), tedy i ISDOC z přílohy a `dataset-verify` | návrh (určuje kód; `interpret` z payloadu se nečte) |
+
+**V pokynu neběží** (D19): místo plnění z DIČ; odvození ani náhrada kódu
+DPH; doklad neplátce a doklad mimo české DPH (ceny řádků s daní dodavatele,
+zahozená rekapitulace); korekce režimu DPH ze součtů a kvůli samovyměření;
+druh plnění ze štítků; odvození `recapSource` a dohledání kódu rekapitulace
+z řádků; odhad módu zaokrouhlení; vynechání řádků; heuristická varování
+validátoru (`totals_mismatch`, `rows_recap_mismatch`, `vat_mode_suspect`,
+`vat_recap_inconsistent`); oprava IBAN ↔ číslo účtu (normalizace tvaru
+hodnot zůstává); učení dodavatelských kódů. Volby DPH v `_resolve` se
+ignorují s info `vat_pin_ignored`.
+
+**Hodnoty DPH jsou v pokynu záměr** (D20):
+
+| Pole | Hodnota v pokynu |
+|---|---|
+| `vat.place` | z payloadu; chybí = tuzemsko |
+| `vat.mode` | z payloadu; chybí = `fromBase`. Doklad s `none` kódy řádků nenese (jako ve formuláři) a neověřují se |
+| `rows[].vat.code` | z payloadu, ověřený proti číselníku země registrace k datu sazby řádku; neznámý = chyba `vat_code_unknown`. Řádek bez kódu (i s objektem `vat` bez `code`) je „nevyplněno“ a rozhodne `DocDocument` (`vat_code_missing`, `docs/vat-calculation.md` § 1.1) |
+| `rows[].vat.pct` | nepoužije se — procento je vždy z kódu a data sazby |
+| registrace DPH | `vat.registrationCountry` → registrace té země; bez údaje výchozí registrace zdroje dat jako ve formuláři (první podle země a id), jen u dokladu s DPH. Mimo importní mód musí platit k datu dokladu |
+| `vat.recapSource` | z payloadu; chybí = `computed`. `declared` vyžaduje `vatRecap` s kódem DPH na každém řádku — chybějící rekapitulace (`vat_recap_missing`), chybějící kód (`vat_recap_code_missing`) i neznámý kód (`vat_code_unknown`) je chyba, ne tichý přepočet z řádků |
+| `totals.totalRoundingAuto` | z payloadu; chybí = zapnuto tam, kde automatika platí (prodejní typy, #73), jinak vypnuto. Mód zaokrouhlení se neodhaduje — bez automatiky je na haléře; výslovný mód přinese `tasks/doc-totals-rounding-explicit.md` |
+
+Importní mód (`applyOptions.importNumber`) je vždy pokyn a nese jen
+historii — § 10 „Importní mód“.
+
 ## 4. Životní cyklus
 
 ```
@@ -125,7 +170,9 @@ DB záznam v docs_core_heads + rows + vatRecap + případně nové persons/items
 
 `validate` a `preview` jsou idempotentní a bez vedlejších efektů. `apply`
 volitelně může vytvořit nové entity (osoby, položky) dle uživatelského pokynu
-v `_resolve.*.userAction`.
+v `_resolve.*.userAction`. Všechny tři vstupy běží v jednom ze dvou režimů
+(§ 3): canonical z adaptéru nebo AI analýzy jde **návrhem**, hotový doklad
+z importu, datové sady nebo generátoru **pokynem**.
 
 ### Adaptéry
 
@@ -1033,6 +1080,12 @@ Postup:
 
 ### 8.4 VatCodeResolver
 
+> **Odvozování v této kapitole platí pro režim návrh** (§ 3, #166 D19):
+> doklad neplátce, doklad mimo české DPH, místo plnění z DIČ, odvození
+> a náhrada kódu, volby uživatele. V **pokynu** se kód jen ověří (kroky 1,
+> 2 a 4 níže) v číselníku země registrace dokladu — `vat.pct` z payloadu
+> se nepoužije, chybějící kód zůstává „nevyplněno“ a nic se neodvodí.
+
 Vstup: `vat.code` string + země registrace + **datum sazby řádku**
 (`VatRateDates::lineDate()` — § 5 „Datum sazby DPH“, #159; ne DUZP).
 
@@ -1055,8 +1108,11 @@ ignoruje; při rozporu info issue `vat_registration_country_derived`.
 Přijatý doklad, ke kterému žádná registrace neplatí, je doklad neplátce —
 kódy DPH se u něj neresolvují vůbec (podsekce níže). U ostatních dokladů
 (vystavené, účetní) kaskáda `vat.registrationCountry` → prefix kódu
-(`cz-110` → `cz`) → země dodavatele. Import (`applyOptions.importNumber`)
-platnost registrace nezkoumá: s registrací jde naší zemí, bez ní kaskádou.
+(`cz-110` → `cz`) → země dodavatele. **Pokyn** (§ 3) hledá kódy v zemi
+registrace dokladu (`vat.registrationCountry`, jinak výchozí registrace
+zdroje dat); bez registrace zůstává kaskáda. Import
+(`applyOptions.importNumber`) je pokyn, který platnost registrace k datu
+nezkoumá.
 
 #### Přijatý doklad neplátce DPH
 
@@ -1856,6 +1912,30 @@ zvalidnuje a buď uloží, nebo vrátí chybu se seznamem nerozhodnutých refere
 Kódy v `_resolve.issues[]` (`DocumentValidator` + `DocumentApplier`).
 Errors blokují `/apply`, warningy jen informují v UI.
 
+**Jen v režimu návrh** (§ 3, #166 D19) vznikají: `totals_mismatch`,
+`rows_recap_mismatch`, `vat_recap_inconsistent`, `vat_mode_suspect`,
+`vat_mode_derived`, `recap_source_computed_fallback`, `vat_code_derived`,
+`vat_code_pin_invalid`, `vat_code_pin_conflict`, `vat_pin_invalid`,
+`reverse_charge_code_pin_invalid`, `supply_kind_derived`,
+`vat_registration_country_derived`, `vat_place_derived`, `vat_non_payer`,
+`vat_foreign_tax`, `vat_special_place`, `vat_special_place_ambiguous`,
+`vat_out_of_scope_user`, `vat_supplier_non_payer`,
+`non_payer_reverse_charge` a `bank_account_repaired`. **Jen v pokynu:**
+`vat_recap_missing`, `vat_recap_code_missing`,
+`document_validation_unavailable` a nálezy dokladu v `/preview`.
+
+**Nálezy dokladu** (#166 D21): chyby a varování `DocDocument::validate()`
+nesou kód dokladu (`vat_code_missing`, `vat_rate_missing`,
+`correction_reason_required`, `required`, `no_rows`, `no_own_company`, …
+— `docs/vat-calculation.md`, `docs/document-system.md`) a `path` přeložený
+ze sloupce na pole canonicalu tam, kde je vazba jednoznačná
+(`DocumentIssuePaths`: `rows.2.vat_code` → `rows.2.vat.code`, `issue_date`
+→ `dates.issueDate`, `partner` → `supplier` / `customer`,
+`correction_reason` → `correction.reason`, …); jinak zůstává sloupec
+(`number_series`, `_form`). Index řádku je index canonicalu. Do issues se
+dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
+(varování) a z `/preview` pokynu.
+
 | `code` | Severity | Význam |
 |--------|----------|--------|
 | `required` | error | Chybí povinné pole per `docType` (issueDate, rows, supplier/customer). |
@@ -1867,7 +1947,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
 | `vat_mode_derived` | warning | `DocumentApplier` koriguje `vat_mode` podle `VatModeDerivation` (Σ řádků sedí na total, ne na base — nebo zrcadlově); nebo deklarované `none` u dokladu, jehož řádky mají kód se samovyměřením → `fromBase` (Bez DPH by rekapitulaci nestavěl). |
 | `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, vynechaný řádek) — spočítá se z řádků; zpráva nese důvod. U samovyměření (D3) vlastní text: dodavatel uvádí 0 % DPH, daň přiznáváte vy, rekapitulace se sestaví z řádků (daň na výstupu a nárok na odpočet). |
-| `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. U dokladu mimo české DPH (`vat_foreign_tax` / `vat_special_place` / `vat_out_of_scope_user`) se nehlásí. U zahraniční DPH a zvláštního místa plnění, které k dokladu mimo DPH nevedly (smíšený doklad, zvolený režim s DPH), zpráva radí kód u řádku nebo režim Bez DPH. |
+| `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). V pokynu se neodvozuje: neznámý kód řádku (`rows.N.vat.code`) nebo řádku převzaté rekapitulace (`vatRecap.N.vatCode`) je chyba vždy. Zpráva nese důvod; blokuje apply. U dokladu mimo české DPH (`vat_foreign_tax` / `vat_special_place` / `vat_out_of_scope_user`) se nehlásí. U zahraniční DPH a zvláštního místa plnění, které k dokladu mimo DPH nevedly (smíšený doklad, zvolený režim s DPH), zpráva radí kód u řádku nebo režim Bez DPH. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
 | `reverse_charge_code_missing` | error | Řádek (path `rows.N.vat.reverseChargeCode`) nebo řádek převzaté rekapitulace (`vatRecap.N.reverseChargeCode`) s kódem tuzemského přenesení daňové povinnosti nemá předmět plnění. Blokuje apply i v importním módu — výchozí hodnota neexistuje (#89 D10). |
 | `reverse_charge_code_unknown` | error | Předmět plnění není v číselníku `reverseChargeSubjects` nebo k datu sazby dokladu neplatí; zpráva nese hodnotu. Blokuje apply i v importním módu (#89 D10). |
@@ -1875,7 +1955,11 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v nabídce kódů k efektivnímu místu a **datu sazby řádku** (`_resolve.vatCodeOptions` je nabídka k datu sazby dokladu; u řádku s vlastním datem se ověřuje nabídka k jeho datu, #159) — blokuje apply; vyber jiný (#87 B). |
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
 | `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce — i u předmětu plnění řádku, kde se čeká `useValue:<kód>`); path dle volby (#87 B, #89 D12). |
-| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). |
+| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). **V pokynu** každá volba DPH v `_resolve` (místo, režim, kód řádku, předmět plnění — i neplatná): pokyn volby nečte (#166 D19). |
+| `vat_recap_missing` | error | Jen pokyn: `vat.recapSource: "declared"` bez řádků `vatRecap` (#166 D20). Path `vatRecap`. |
+| `vat_recap_code_missing` | error | Jen pokyn: řádek převzaté rekapitulace nemá kód DPH — kód se z řádků nedohledává (#166 D20). Path `vatRecap.N.vatCode`. |
+| `import_requires_instruction` | error | `applyOptions.importNumber` v režimu návrh (REST s `applyOptions.interpret: true`): import přenáší hotový doklad, jde jen pokynem (#166 D22). Path `applyOptions.importNumber`. |
+| `document_validation_unavailable` | info | Jen `/preview` pokynu: validaci dokladu pro cílový stav nešlo spustit (výjimka, zalogováno) — nálezy dokladu ukáže až uložení. |
 | `vat_rate_date_ignored` | info | Vlastní datum sazby DPH mimo svůj režim (#159 D11): `dates.vatRateDate` při `vat.rateSource` ≠ `document`, `rows[].vat.rateDate` nebo `vatRecap[].rateDate` při `rateSource` ≠ `rows`. Jedno na doklad, `path` = první výskyt. Applier s datem nepočítá, dokument ho při uložení smaže. |
 | `supply_kind_derived` | warning | Řádek přijatého dokladu mimo tuzemsko bez `vat.supplyKind` — druh plnění doplněn ze štítku řádku (`crossBorderSupply` taxonomie, § 8.4). Zpráva nese název štítku a druh; path `rows.N.vat.supplyKind`. Hlásí se jen, když na doplněném druhu výsledek stojí (odvozený kód nebo `vat_code_unknown`). |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
@@ -1917,7 +2001,10 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `exchange_rate_from_original` | info | Opravný doklad v cizí měně bez `exchangeRate`: kurz převzat z původního dokladu (odkaz, shodná měna) místo lístku (#92 D4). Path `exchangeRate`. |
 | `exchange_rate_corrective_manual` | info | Opravný doklad v cizí měně bez odkazu a bez `exchangeRate`: lístek se nečte, kurz zůstane prázdný a potvrzení zastaví validace dokladu. |
 
-Apply-level kódy (`ApplyResult.errorCode`, 422): `number_series_not_found`,
+Apply-level kódy (`ApplyResult.errorCode`, 422): **`validation_failed`**
+(error v issues před uložením, nebo doklad neprošel validací `DocDocument`
+při uložení — #166 D21; nálezy jsou v `_resolve.issues`, nic se neuložilo),
+`number_series_not_found`,
 `number_series_conflict` (`numberSeriesCode` i `numberSeriesId` najednou),
 `replace_target_not_found` / `replace_target_type_mismatch` (422)
 a `replace_target_not_concept` (409) u `replaceConcept`,
@@ -1954,6 +2041,7 @@ POST /api/v1/_exchange/docs/document/apply
   │      - canCreate Item  → ItemDocument::saveDocument(...)
   │      - canCreate Bank  → BankAccountDocument::saveDocument(...)
   │      - per-partner item mapping → INSERT economy_items_supplier_codes
+  │        (učení — jen režim návrh, #166 D6)
   │
   ├─ 7. Transform canonical → interní $data
   │      - item řádky bez operation → pohyb dle
@@ -1966,7 +2054,8 @@ POST /api/v1/_exchange/docs/document/apply
   │        source_extracted_at
   │
   ├─ 8. TableGateway.saveDocument('docs_core_heads', $data)
-  │      → DocDocument::validate (+ subclass per docType)
+  │      → DocDocument::validate (+ subclass per docType); chyba =
+  │        rollback a 422 validation_failed s nálezy dokladu (#166 D21)
   │      → DocDocument::beforeSave (snapshoty, recap, totals, čísla)
   │      → insert docs_core_heads + rows + vat_recap; s replaceConcept
   │        update hlavičky (id cíle, sloupce mimo payload explicitně
@@ -1993,6 +2082,32 @@ POST /api/v1/_exchange/docs/document/apply
         - docNumber doplněn z přidělené series (jen pokud confirm — viz níže)
         - savedDocId v top-level (FK na docs_core_heads.id)
 ```
+
+### Pipeline pokynu vedle návrhu (#166)
+
+Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
+
+| Krok | Návrh | Pokyn |
+|---|---|---|
+| normalizace hodnot (před validací) | tvary + oprava IBAN ↔ číslo účtu | jen tvary |
+| `DocumentValidator` | včetně heuristik nad čísly předlohy | bez heuristik; `importNumber` povolené |
+| resolve — kódy DPH | odvození, soulad se signály, volby uživatele (§ 8.4) | kód z payloadu se jen ověří |
+| reconcile | čte `userAction` vč. vynechání řádků | `userAction` stran a položek platí, řádky se nevynechávají |
+| side-creates | + učení dodavatelských kódů | bez učení |
+| transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5 | hodnoty z payloadu a výchozí hodnoty (§ 3, tabulka D20) |
+| po uložení | — | varování dokladu do `_resolve.issues` |
+
+**`/preview` v pokynu** navíc spustí `DocDocument::validate()` pro cílový
+stav z `applyOptions.targetDocState` — nález, který by apply odmítl (řádek
+bez kódu DPH při cíli V pořádku, opravný doklad bez důvodu), je vidět před
+uložením. Data skládá stejnou cestou jako apply (reconcile, dohledání
+pokladny a řady, výchozí pohyby řádků, transform) a nic nezapisuje; chybu
+dohledání pokladny, řady nebo vlastního účtu hlásí týmž kódem, jaký vrátí
+apply. Nehlásí, co posoudit nemůže: nálezy na referenci, kterou apply
+teprve založí nebo která čeká na rozhodnutí (partner, položka řádku a její
+pohyb), řadu vázanou na pokladnu, kterou apply teprve zkusí založit,
+a zámky záznamu. Náhled návrhu validaci cílového stavu nemá — review
+pracuje s konceptem a chybu uložení vrátí až apply.
 
 ### Doplnění pohybu řádků (`operation`)
 
@@ -2036,32 +2151,62 @@ specifikovat:
     "targetDocState": 40,      // 10 (Koncept) | 40 (V pořádku) | 30 (Storno) | 80 (jen migrace, viz níže)
     "autoCreateMode": "safe",  // strict (default) | safe | liberal — viz níže
     "createMissingEntities": true,   // explicit consent k side-creates
-    "rejectOnIssues": ["error"]      // ["error"] | ["error","warning"] | []
+    "rejectOnIssues": ["error"],     // ["error"] | ["error","warning"] | []
+    "interpret": false               // jen REST: true = režim návrh (§ 3, § 11); výchozí pokyn
   }
 }
 ```
 
 Když `targetDocState` je 40, projde state transition v `DocDocument::processStateTransition`
-(přidělí číslo z series, vyrobí snapshoty). Pokud kterákoliv povinná reference
-chybí, applier selže (validace v `DocDocument::validate`).
+(přidělí číslo z series, vyrobí snapshoty). Doklad, který validací
+`DocDocument::validate` pro cílový stav neprojde (chybějící povinná
+reference, řádek bez kódu DPH, opravný doklad bez důvodu, …), se neuloží:
+apply vrátí **422 `validation_failed`** s nálezy dokladu v `_resolve.issues`
+(#166 D21, tabulka issue kódů) — ne `internal_error`. V pokynu je ukáže
+už `/preview`.
 
-`targetDocState: 80` (V opravě) je **parkovací cíl migrace** — validátor ho
-povoluje jen v kombinaci s `applyOptions.importNumber` (jinak error
-`target_state_80_requires_import`). Mimo migraci přes exchange dosažitelný
-není; číslo v tom případě nese `importNumber`.
+#### Importní mód (`applyOptions.importNumber`)
 
-Snapshoty stran se v import módu (`importNumber` přítomné) **nestaví
-z dnešního adresáře** — pro historické doklady by to bylo věcně špatně.
-Strana partnera (`supplier`/`customer` dle `selfParty`) se místo toho
-**mrazí do snapshotu dokladu** tak, jak přišla v payloadu (přeložená do
-tvaru `PersonSnapshotBuilder` — z `contact` jdou `email`, `phone` a `web`,
-ID datové schránky strana dokladu nenese a ve snapshotu je `null`, #162
-D133); za dobové hodnoty — především `vatId`,
-ze kterého kontrolní hlášení čte DIČ partnera — odpovídá exportér.
-Vlastní strana se staví standardně (dnešní adresářová data vlastní firmy
-+ `bank_account` a `vat_registration` z hlavičky dokladu). Prázdná strana
-partnera v payloadu = partnerský snapshot zůstává NULL (kanonické zdroje
-bez stran, např. účetní doklady).
+Importní mód je **pokyn** (v režimu návrh chyba
+`import_requires_instruction`) a nese **jen historii** dokladu (#166 D5,
+D22) — tohle je úplný seznam toho, co mění:
+
+- **vnucené číslo** dokladu a pořadové číslo (`importNumber.docNumber`,
+  `sequenceNumber`; `null` = číslo mimo vzorec řady);
+- **dobový snapshot partnera** z payloadu místo dnešního adresáře (níže);
+- **otevírací a uzávěrkové období** (`fiscalPeriodType`);
+- **archivní řady** — řada archivované pokladny;
+- **zápis do zamčených období** (zámky záznamu se nevyhodnocují,
+  `docs/document-system.md` § 16);
+- **registrace DPH bez ohledu na platnost k datu** dokladu;
+- **cílový stav V opravě** (`targetDocState: 80`) — parkovací cíl migrace;
+  validátor ho povoluje jen s `importNumber` (jinak error
+  `target_state_80_requires_import`), mimo migraci přes exchange
+  dosažitelný není;
+- **kurz z lístku se nedohledává** — chybějící kurz zůstane chybějící.
+
+**Výjimky z validace nemá.** Chybějící kód DPH řádku (`vat_code_missing`)
+a chybějící důvod opravy opravného dokladu (`correction_reason_required`)
+jsou při potvrzení chybou i v importu; zdroj posílá validní doklad (kód
+„Mimo DPH“ u řádku, který není plněním). Dál platí, co dokument pro import
+dělá sám: přísná kontrola sazby k datu (`vat_rate_missing`), ruční osoba
+pro saldokonto se nepřepisuje, varování zaokrouhlení se nehlásí.
+
+Snapshoty stran se v import módu **nestaví z dnešního adresáře** — pro
+historické doklady by to bylo věcně špatně. Strana partnera
+(`supplier`/`customer` dle `selfParty`) se místo toho **mrazí do snapshotu
+dokladu** tak, jak přišla v payloadu, **ve tvaru snapshotu z formuláře**
+(#166 D23): klíče dává `PersonSnapshotBuilder::shape()`, bankovní spojení
+partnera ve snapshotu není (formulářový snapshot partnera ho také nemá —
+účet dodavatele nese hlavička), prázdné IČO, DIČ a DIČ pro DPH jsou prázdný
+řetězec jako v adresáři. Z `contact` jdou `email`, `phone` a `web`; ID
+datové schránky strana dokladu nenese a ve snapshotu je `null` (#162
+D133). Za dobové hodnoty — především `vatId`, ze kterého kontrolní hlášení
+čte DIČ partnera — odpovídá exportér. Vlastní strana se staví standardně
+(dnešní adresářová data vlastní firmy + `bank_account`
+a `vat_registration` z hlavičky dokladu). Prázdná strana partnera
+v payloadu = partnerský snapshot zůstává NULL (kanonické zdroje bez stran,
+např. účetní doklady).
 
 `applyOptions.numberSeriesId` (#110) vybírá číselnou řadu **podle id**
 (`docs_core_number_series.id`) — pro doklady, které Shipard generuje sám
@@ -2162,7 +2307,9 @@ nekontrolovala. Dva kroky nad canonicalem `shpd.docs.document`
 (`modules/core/exchange/src/Values/`, pravidla per stát v modulu
 `world.validations` — `modules/world/validations/README.md`):
 
-- **Normalizace** (`CanonicalValueNormalizer::normalize()`) — čistá,
+- **Normalizace** (`CanonicalValueNormalizer::normalize()`; v režimu
+  pokyn jen `normalizeShapes()` — tvary bez opravy bankovního spojení,
+  #166 U5) — čistá,
   idempotentní, mlčky sjednocuje tvar a obsah nemění (D1): země malými;
   `companyId` (cz / sk: bez mezer, samé číslice do osmi míst dostanou
   vedoucí nuly), `taxId`, `vatId` (velkými, bez mezer / teček / pomlček;
@@ -2243,6 +2390,8 @@ uložený formulářem (`TableGateway` → `DocDocument`), vyvezený
 shodovat ve všech sloupcích `docs_core_heads`, `docs_core_rows`
 a `docs_core_vat_recap`, které nejsou identitou, auditem ani původem
 dokladu. Platí i opačně — co projde formátem, jde pořídit formulářem.
+Platí pro **režim pokyn** (§ 3): pokyn neodvozuje, proto doklad nemění;
+návrh je interpretace a invariant pro něj z definice neplatí.
 
 Invariant hlídá integrační test
 `tests/Integration/Exchange/DocumentRoundTripMatrixTest.php` nad maticí
@@ -2253,8 +2402,15 @@ sloupec se hlídá sám. Kde invariant dnes neplatí, vede test **známou
 mezeru** s přesným rozdílem; seznam mezer žije v testu
 (`RoundTrip/RoundTripCases`), ne tady. Změna applieru nebo exportu, která
 mezeru zavře nebo otevře novou, test zastaví — viz
-`tests/Integration/README.md`. Cílový model ukládání (pokyn × návrh)
-a etapy, které mezery zavírají, jsou v #166.
+`tests/Integration/README.md`. Po zavedení pokynu (#166 etapa 3 část A)
+zbývá jediná mezera: ručně zvolený mód zaokrouhlení, který formát nenese
+(`tasks/doc-totals-rounding-explicit.md`).
+
+Matice hlídá tvar, jaký vyrobí export. Tvary, které export nevyrobí —
+řádek s objektem `vat` bez kódu, místo plnění v rozporu s DIČ dodavatele,
+převzatá rekapitulace bez kódů, ceny řádků s daní při `fromBase` — drží
+`tests/Integration/Exchange/DocumentInstructionPayloadTest.php`
+(„payload → uložený doklad“, #166 D24).
 
 ## 11. REST API endpointy
 
@@ -2265,6 +2421,14 @@ dispatcher: `/_exchange/persons/person/`, `/_exchange/items/item/`,
 (jen `validate` + `apply`, admin nebo API klíč — §14 → Uživatelé) a import
 majetku `/_exchange/assets/asset/` + `/_exchange/assets/doc-links/apply`
 (stejná oprávnění — §14 → Majetek).
+
+**Režim** (§ 3, #166 D2, D18): dokladové endpointy běží jako **pokyn** —
+doklad se uloží, jak ho payload říká. Interpretaci (odvozování jako
+u pošty) si klient vyžádá výslovně:
+
+```jsonc
+{ "applyOptions": { "interpret": true } }   // režim návrh; s importNumber nejde
+```
 
 ### POST `/validate`
 
@@ -2281,11 +2445,14 @@ Validate + resolve. Bez DB writes.
 
 **Request body:** canonical JSON. Z klientského `_resolve` se čtou jen
 `contentTag` a volby DPH (`rows[i].vatCode.userAction`, `vat.place` /
-`vat.mode.userAction`, #87 task B); odpověď nese čerstvý `_resolve`,
+`vat.mode.userAction`, #87 task B — jen v režimu návrh; pokyn je ignoruje
+s `vat_pin_ignored`); odpověď nese čerstvý `_resolve`,
 takže `userAction` se v ní neobjeví — mapu rozhodnutí drží klient.
 
 **Response:** enriched canonical s vyplněným `_resolve` na top-level a
-issues uvnitř `_resolve.issues`.
+issues uvnitř `_resolve.issues`. V pokynu nese i nálezy validace dokladu
+pro cílový stav (§ 10 „Pipeline pokynu vedle návrhu“) — náhled vždy vrací
+200, o tom, zda apply projde, vypovídají issues se `severity: error`.
 
 ### POST `/apply`
 
@@ -2306,8 +2473,10 @@ preview indikoval `canCreate` / `ambiguous`).
 - `400` — schema validation failure (chyba struktury)
 - `422 unresolved` — applier běžel, ale narazil na nerozhodnuté reference
   bez `userAction`. Tělo obsahuje `_resolve` se seznamem.
-- `422 validation` — `_resolve.issues` obsahuje severity=error mimo
-  resolve scope (např. chybějící datum).
+- `422 validation_failed` — `_resolve.issues` obsahuje severity=error mimo
+  resolve scope (např. chybějící datum, neznámý kód DPH v pokynu), nebo
+  doklad neprošel validací `DocDocument` při uložení (#166 D21); nic se
+  neuložilo.
 - `409 conflict` — během reconcile se zjistilo, že entita mezitím
   zmizela (`useExisting:42` ale person 42 už neexistuje).
 

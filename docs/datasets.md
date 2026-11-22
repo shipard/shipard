@@ -413,6 +413,26 @@ neexportují (fiskální rok, DPH období, domácí měna, snapshoty partnera,
 účetní stav, rekapitulace je jen informativní) — při seedu je spočítá
 `DocDocument`.
 
+**Sekce `docs/` je pokyn** (#166 D18, U11 — `docs/exchange-format.md`
+§ 3): seed uloží doklad tak, jak ho soubor říká, a nic neodvozuje. Dump
+proto nese výsledné hodnoty výslovně a ručně psaná nebo generovaná sada
+musí také:
+
+- `vat.place`, `vat.mode` a `vat.recapSource` (chybí = tuzemsko, Ze
+  základu, přepočítaná rekapitulace — místo plnění se z DIČ dodavatele
+  neodvodí, režim se podle součtů neopraví);
+- kód DPH na každém řádku dokladu s DPH (řádek bez kódu je „nevyplněno“
+  a doklad ve stavu V pořádku se neuloží — ani s `importNumber`); převzatá
+  rekapitulace (`declared`) kód na každém řádku;
+- `totals.totalRoundingAuto` — bez pole má doklad automatiku zapnutou
+  všude, kde platí (prodejní typy), jinak vypnutou s módem na haléře.
+  Generátor sad (`tools/invoice-generator`, `dumpshape.total_rounding_auto`)
+  pole píše vždy: zapnuto tam, kde s automatikou vyjde stejná částka;
+- důvod opravy u opravného dokladu ve stavu V pořádku.
+
+Sekce `mail/` se nemění: zprávy nesou návrhy, které až `dataset-verify`
+použije cestou pošty, tedy v režimu **návrh**.
+
 **Dimenze deníku na dokladech** (#110 T2): `DocumentExporter` vypisuje
 objekt `dimensions` na hlavičce i řádcích s přirozeným klíčem
 (`exchangeKey` cílové tabulky dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
@@ -481,8 +501,9 @@ sada nese v `assets/`; po seedu ho založí znovu Odpisy za období
    `modules/economy/assets/src/Dataset/`, jen s tabulkami majetku: karta
    přes `AssetDocument` bez importního módu; před doklady — řádky pořízení
    odkazují kartu inventárním číslem), `DocumentSeeder` (applieři;
-   `DocumentApplier` s `DocumentEventDispatcher` → doklady ve 40 se
-   zaúčtují), **`WorkOrderPeriodsSeeder`** (evidence vystavených období
+   `DocumentApplier` **v režimu pokyn** s `DocumentEventDispatcher` →
+   doklady ve 40 se zaúčtují; viz „Sekce `docs/` je pokyn“ v § 2),
+   **`WorkOrderPeriodsSeeder`** (evidence vystavených období
    z `periods[]` — doklad číslem mezi vydanými doklady, `content_hash`
    z uloženého dokladu; sekce `workOrderPeriods` bez souborů),
    **`AssetEventsSeeder`** (události karet z `events[]` přes
@@ -528,8 +549,14 @@ Vědomé normalizace a limity fáze 1:
   po prvním cyklu ustálí).
 - `source.fetchedAt` osob a položek se neexportuje — applier razítkuje
   okamžik importu.
-- Doklady importované s `importNumber` nestaví snapshoty partnera
-  (`DocDocument::importMode`); detail dokladu bere partnera živě.
+- Doklady importované s `importNumber` nestaví snapshot partnera
+  z adresáře, ale ze strany dokladu v souboru — ve tvaru snapshotu
+  z formuláře (`PersonSnapshotBuilder::shape()`, #166 D23).
+- **Mód zaokrouhlení formát nenese** (#166 U4): doklad zaokrouhlený jinak
+  než automatikou (přijatá faktura na koruny, ručně zvolený mód) po seedu
+  vyjde na haléře. V demo sadě `it-servis` je to sedm přijatých faktur
+  zaokrouhlených na koruny; zavře to výslovný mód ve formátu
+  (`tasks/doc-totals-rounding-explicit.md`).
 - Řádkový partner účetního dokladu a hlavičkový partner `cmnbkp` se
   nepřenáší (formát ho nemá) → warning při dumpu.
 - Vlastní bankovní účet bez `code` v číselníku nelze přenést → warning.
