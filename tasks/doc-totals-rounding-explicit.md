@@ -1,8 +1,8 @@
 # Task: `totals` jako kontrolní součet a výslovný mód zaokrouhlení
 
-**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část B; D4); až po `tasks/doc-apply-instruction-mode.md`; upřesnění U1–U4 čekají na potvrzení
+**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část B; D4, D25–D28); až po `tasks/doc-apply-instruction-mode.md`
 
-**Issue:** #166 (etapa 3; D4)
+**Issue:** #166 (etapa 3; D4, D25–D28)
 
 **Cíl:** Dvě věci, které pokynu po části A chybí, aby šel doklad uložit
 přesně tak, jak vznikl ve formuláři:
@@ -63,19 +63,20 @@ Tím se zavře poslední mezera matice round-tripu
   neuloží. Import je posílá. Mód zaokrouhlení jde zadat výslovně,
   výchozí je automatika podle způsobu úhrady (#73).
   `vat.recapSource: "declared"` zůstává záměrem.
+- ✓ **D25–D28** — upřesnění U1–U4 níže (pole formátu, automatika
+  nezávislá na `totals`, kontrola každého uvedeného pole, návrh beze
+  změny), potvrzená 2026-11-22.
 
 ## Upřesnění pro implementaci
 
-**Čekají na potvrzení (U1–U4):**
-
-- **U1 — Pole formátu.**
+- **U1 (D25) — Pole formátu.**
   - `totals.totalRoundingMode`: `cent` | `unit` | `unitUp` | `unitDown`
     | `fiveCent` (↔ `RoundingModes` 0, 1, 3, 4, 5);
   - `vat.roundingMode`: `cent` | `unit` (↔ `RoundingModes::VAT_MODES`).
 
   Obě nepovinná, `null` = výchozí. Ve všech třech kopiích schématu;
   prompt profilu pošty se nemění (model pole neemituje).
-- **U2 — Pokyn a zaokrouhlení celkové částky.**
+- **U2 (D26) — Pokyn a zaokrouhlení celkové částky.**
   - `totalRoundingAuto` uvedené → platí; chybí → zapnuto tam, kde
     automatika platí (`TotalRoundingAuto::applies()`), jinak vypnuto.
     Přítomnost `totals.totalAmount` na to už nemá vliv (dnes automatiku
@@ -85,7 +86,7 @@ Tím se zavře poslední mezera matice round-tripu
     `DocDocument`); liší-li se uvedený mód od dopočítaného, varování
     `total_rounding_mode_ignored`.
   - `vat.roundingMode` z payloadu, chybí = `cent`.
-- **U3 — Kontrolní součet v pokynu.** Každé uvedené číselné pole
+- **U3 (D27) — Kontrolní součet v pokynu.** Každé uvedené číselné pole
   z `totals.totalBase`, `totalVat`, `totalAmount`, `totalRounding` se
   porovná s hodnotou, kterou spočítal `DocDocument` (sloupce hlavičky
   v měně dokladu). Rozdíl větší než 0,01 = chyba `totals_check_failed`
@@ -93,12 +94,10 @@ Tím se zavře poslední mezera matice round-tripu
   neuloží (rollback). `/preview` pokynu hlásí totéž jako chybu nad
   `_resolve.computed`. Platí i v importním módu. Heuristické
   `totals_mismatch` validátoru v pokynu neběží (část A, D19).
-- **U4 — Návrh se nemění**, s jedinou výjimkou: uvedený
+- **U4 (D28) — Návrh se nemění**, s jedinou výjimkou: uvedený
   `totalRoundingMode` / `vat.roundingMode` má přednost před odhadem.
   `totals` zůstávají signálem a zdrojem varování (`computed_total_mismatch`),
   kontrolní součet se v návrhu nevyhodnocuje.
-
-**Ostatní:**
 
 - **U5 — Export.** `DocumentExporter` vyváží `totalRoundingMode`
   a `vat.roundingMode` **jen s nevýchozí hodnotou** (mód jiný než
@@ -121,6 +120,10 @@ Tím se zavře poslední mezera matice round-tripu
   takže seed je nově kontroluje. Doklad sady, který neprojde, je nález:
   buď chyba v ručně psané šabloně (oprav data), nebo rozdíl výpočtu
   (nahlas, neobcházej). Po úpravě dump → seed → dump byte-shodně.
+  Generátory sad (`demo/datasets/build.py`, `tests/corpus/cz/build.py`,
+  šablony) píšou `totalRoundingAuto` výslovně (od části A) a u dokladu
+  s ručním zaokrouhlením nově i `totalRoundingMode` — doklady sepsané
+  v poznámkách části A se tím musí vrátit na částky před částí A.
 
 ## Co je potřeba udělat
 

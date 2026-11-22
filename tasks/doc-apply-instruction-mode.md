@@ -218,6 +218,22 @@ a položek (D11–D14); povinná pole a společné výchozí hodnoty s formulá�
   naseeduj a dumpni (dump nese výsledné hodnoty), po změně ověř dump →
   seed → dump byte-shodně. Šablony a `build.py`, které doklady generují,
   uprav stejně. Sekce `mail/` (návrhy) se nemění.
+
+  Dvě věci z ověření `tasks/number-series-vat-registration-codes.md`:
+  - Dump demo sady **není** byte-shodný se sestavenou sadou v repu už
+    dnes: doklady v dumpu nesou `totals.totalRoundingAuto`, které
+    generátor sady nepíše, a `setup/settings.jsonc` nese provozní stav
+    stahování kurzů. Kritérium je proto dump → seed → dump, ne dump
+    proti repu.
+  - Doklad sady s `totals.totalAmount` a bez `totalRoundingAuto` má dnes
+    automatiku vypnutou a mód odhadnutý z částek; po U4 má automatiku
+    zapnutou tam, kde platí, jinak mód „na haléře“. Generátory sad
+    (`demo/datasets/build.py`, `tests/corpus/cz/build.py`, šablony) proto
+    musí `totalRoundingAuto` psát výslovně. Doklad, který stál na
+    odhadnutém módu jiném než „na haléře“ (ruční zaokrouhlení mimo
+    automatiku), po tomhle tasku vyjde s jinou částkou — **neopravuj to
+    obcházením**, sepiš takové doklady do poznámek; zavře je
+    `tasks/doc-totals-rounding-explicit.md`.
 - **U12 — Stávající testy applieru** volají `apply()` / `preview()` bez
   režimu a testují odvozování — dostanou výslovně režim návrh. Neměň
   jejich očekávání; test, který po přepnutí na návrh selže, je nález.
@@ -276,7 +292,10 @@ a položek (D11–D14); povinná pole a společné výchozí hodnoty s formulá�
 2. `dataset-verify` tří veřejných sad: výsledky jako ve výchozím stavu
    v poznámkách `tasks/doc-saving-safety-net.md` (cesta návrhu se nesmí
    pohnout).
-3. Demo sada: `ds-reset` + `dataset-seed` + `dataset-dump` byte-shodně.
+3. Demo sada: `ds-reset` + `dataset-seed` + `dataset-dump`, pak znovu
+   seed a dump — druhý dump byte-shodný s prvním (až na manifest
+   a kurzovní lístky); rozdíly částek proti stavu před taskem jen
+   u dokladů sepsaných podle U11.
 4. Periodická fakturace a opravný doklad nad demo sadou: vystavený
    doklad stejný jako před taskem (porovnej export).
 

@@ -29,7 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `doc-apply-instruction-mode.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část A; D18–D24) |
-| `doc-totals-rounding-explicit.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část B; D4); až po `tasks/doc-apply-instruction-mode.md`; upřesnění U1–U4 čekají na potvrzení |
+| `doc-totals-rounding-explicit.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část B; D4, D25–D28); až po `tasks/doc-apply-instruction-mode.md` |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
